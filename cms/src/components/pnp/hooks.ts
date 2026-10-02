@@ -19,6 +19,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
+import { usePagedFold } from '@/components/pager'
 import { makeT } from '@/lib/i18n'
 import { track } from '@/lib/track'
 import {
@@ -28,9 +29,8 @@ import {
   channelListOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockCardOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
   makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, provGateCardsOf, qcChannelsOf,
-  aipEmpDataOf, aipEmpSpecsOf, aipExtraOf, aipSectionOf, aipShownRowsOf, channelSplitOf,
-  makeAipFold,
-  makeAipMore, makeAppendRest, makeLoadAipEmp, makeLoadAipRest, makePickOf, normName,
+  aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, aipSectionOf, channelSplitOf,
+  makeLoadAipEmp, makePickOf, normName,
 } from './functions'
 import type {
   EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel, DeadFlag, PnpData, PnpDataHookIn, PnpDataPanel,
@@ -269,6 +269,7 @@ export function usePnpProvStreams(x: PnpProvStreamsHookIn): PnpProvStreamsPanel 
  *
  * 2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」:卡底跳雇主板的链接撤,改原地「展开其他 N 家」—— 一次取 20
  * 家往后接、可收起(收起后再展开不重取)。
+ * 同日 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:按页取 + 展开收起那套并进 pager 桶 usePagedFold(相似雇主卡同一台)。
  *
  * @param x 取词函数与本岗。
  * @returns ref 盒、能不能渲、失败没、展示行、同招牌家数、本省总家数与卡底两只钮。
@@ -295,24 +296,22 @@ export function useAipEmpCard(x: AipEmpCardHookIn): AipEmpCardPanel {
     scrollIntoHit({ ref: matchRef })
   }, [data])
 
-  const [rest, setRest] = useState<AipEmpRowJson[]>([])
-  const [open, setOpen] = useState(false)
-  const [busy, setBusy] = useState(false)
   const got = aipEmpDataOf(data)
-  const restTotal = Math.max(0, got.total - got.rows.length)
-  const load = makeLoadAipRest({ province, key, offset: rest.length, onRows: makeAppendRest(setRest), setBusy })
+  const paged = usePagedFold<AipEmpRowJson>({
+    top: got.rows, total: got.total, url: aipEmpUrlOf({ province, key }), skip: 0,
+  })
   return {
     matchRef,
     ready: data != null || key === TEXT_NONE,
     failed,
-    rows: aipEmpSpecsOf(aipShownRowsOf({ top: got.rows, rest, open })),
+    rows: aipEmpSpecsOf(paged.rows),
     brandN: got.brandN,
     total: got.total,
-    hidden: restTotal,
-    extra: aipExtraOf({ open, loaded: rest.length }),
-    busy,
-    onMore: makeAipMore({ open, loaded: rest.length, remain: restTotal - rest.length, busy, setOpen, load }),
-    onFold: makeAipFold(setOpen),
+    hidden: paged.hidden,
+    extra: paged.extra,
+    busy: paged.busy,
+    onMore: paged.onMore,
+    onFold: paged.onFold,
   }
 }
 

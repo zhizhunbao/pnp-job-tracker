@@ -3295,6 +3295,11 @@ export type SimilarEmployer = {
    * 同类雇主总数(窗口计数,LIMIT 之前算;每行都带同一个数,卡头括号里的那个)。
    */
   total: number
+
+  /**
+   * 找同类的锚(这一家的雇主池主键;每行都带同一个,卡上「展开 20 家」取下一页带它 —— 2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」)。
+   */
+  anchor: string
 }
 
 /**
@@ -3318,6 +3323,26 @@ export type SimilarIn = {
  * `loadSimilarEmployers` 的返回。
  */
 export type SimilarOut = Promise<SimilarEmployer[]>
+
+/**
+ * `loadSimilarEmployersPage`(相似雇主「展开」的一页)的入参。
+ */
+export type SimilarPageIn = {
+  /**
+   * 数据库连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 找同类的锚(这一家的雇主池主键,同 SimilarIn.key)。
+   */
+  key: string
+
+  /**
+   * 跳过几家(首屏那几家也算在内)。
+   */
+  offset: number
+}
 
 /**
  * 邮件提醒命中一行(E5-03;列名保持 snake_case —— 邮件模板按它渲)。

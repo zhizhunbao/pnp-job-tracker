@@ -27,9 +27,10 @@ import {
   AIP_KEY_MAX_LEN, AIP_OFFSET_MAX, DIMS_CACHE_CONTROL, E_AIP_PARAMS, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT,
   JD_LIMIT_PREFIX, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE, POOL_KEY_RE, P_DIR,
   P_ID, P_KEY, P_NOC, P_OFFSET, P_PAGE, P_PROV, P_SORT, P_URL, PROV_CODE_RE, RADIX_DEC, REL_OCC_OFFSET_MAX, SORT_NONE, URL_CUT_RE, NL,
-  TITLE_IP_DAILY, TITLE_LIMIT_PREFIX, TITLE_MAX_LEN,
+  TITLE_IP_DAILY, TITLE_LIMIT_PREFIX, TITLE_MAX_LEN, E_SIMILAR_PARAMS, SIMILAR_OFFSET_MAX,
 } from './constants'
 import {
+  loadSimilarEmployersPage,
   emptySimilar, loadApplyEmail, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug,
   loadAipEmployers, loadAipEmployersRest, loadJobsPage, loadOccCompetition, loadQcChannels, loadSimilarEmployers, generateJdFormatted, getPnpOps, getPnpReqs, getSsrDims,
   hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadJdFormatted, loadJdState, loadJobById,
@@ -198,6 +199,36 @@ export async function jobsCompanyRoute(req: Request): Promise<Response> {
   }
   const similar = await loadSimilarEmployers({ db: db, key: company.slug }).catch(emptySimilar)
   return Response.json({ company, similar })
+}
+
+/**
+ * GET /api/jobs/similar?key=&offset=:相似雇主卡「展开 20 家」的一页(2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」
+ * 「全站统一 都改成 展开 20 和 收起」):卡头写的是同类总数,首屏只带前几家,其余由卡按页来取,一页 20 家,直到总数。
+ * key 是行上带的锚(有公司页 = slug,没有 = `n:` 开头的池键),形照 /api/jobs/company 的 { slug } 两道正则;offset 照 /api/jobs/aip 校验。
+ *
+ * @param req 请求(?key=锚&offset=跳过家数)。
+ * @returns { rows } 这一页;key / offset 缺位或非法 400。
+ */
+export async function jobsSimilarRoute(req: Request): Promise<Response> {
+  const params = new URL(req.url).searchParams
+  let key = PARAM_NONE
+  const keyParam = params.get(P_KEY)
+  if (keyParam != null) {
+    key = keyParam.trim()
+  }
+  if (COMPANY_SLUG_RE.test(key) === false && POOL_KEY_RE.test(key) === false) {
+    return Response.json({ error: E_SIMILAR_PARAMS }, { status: BAD_REQUEST })
+  }
+  const offsetParam = params.get(P_OFFSET)
+  if (offsetParam == null) {
+    return Response.json({ error: E_SIMILAR_PARAMS }, { status: BAD_REQUEST })
+  }
+  const offset = Number.parseInt(offsetParam, RADIX_DEC)
+  if (Number.isInteger(offset) === false || offset < 0 || offset > SIMILAR_OFFSET_MAX) {
+    return Response.json({ error: E_SIMILAR_PARAMS }, { status: BAD_REQUEST })
+  }
+  const rows = await loadSimilarEmployersPage({ db: await getDb(), key, offset })
+  return Response.json({ rows }, { headers: { [HDR_CACHE_CONTROL]: DIMS_CACHE_CONTROL } })
 }
 
 /**

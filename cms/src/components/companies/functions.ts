@@ -34,11 +34,12 @@ import {
   CLOCK_PAD, CLOCK_PAD_LEN, CLOCK_SEP,
   SITE_SRC_CURATED,
   MIME_JSON, NBSP, NOCS_TOP_N, PROV_LOCALE_ONLY, PROV_PAREN_RE, SECS_PER_MIN, SEC_PAIR_STEP, SEP_ENUM, SIGN_PLUS,
-  SIM_FIRST_N, STREAM_AGRI_RE,
+  P_SIM_KEY, STREAM_AGRI_RE,
   STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE,
   TRACK_KIND_COMPANY, TRACK_SIMILAR, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO,
   URL_CO_TRANSLATE,
-  URL_JOB_HEAD, URL_JOBS_COMPANY, URL_JOBS_ROW_HEAD, URL_PLAN_PR_HEAD, URL_PROV_HEAD, WIKI_PATH_SEP, WIKI_WORD_JOIN,
+  URL_JOB_HEAD, URL_JOBS_COMPANY, URL_JOBS_SIMILAR,
+  URL_JOBS_ROW_HEAD, URL_PLAN_PR_HEAD, URL_PROV_HEAD, WIKI_PATH_SEP, WIKI_WORD_JOIN,
   WIKI_WORD_SEP, YEAR_ONLY_RE,
   SITE_POLL_MS, SITE_POLLS_MAX, SITE_QUEUED_POLLS_MAX, STAGE_DONE, STAGE_FACTS, STAGE_FETCH, STAGE_FIND, STAGE_LABEL,
   STAGE_NONE, STAGE_OFF, STAGE_ORDER,
@@ -60,7 +61,7 @@ import type {
   PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn, SecKeyIn, SecTextIn, SecZhIn,
   SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, ToggleIn, TransJson, TvOpenIn,
   ZhLineClsIn, ZhShownIn,
-  OpenSiteIn, QueuedTextIn, ShownStageIn, SimShownIn, SimilarEmployer, SitePanel, SitePanelIn, SiteShownIn,
+  OpenSiteIn, QueuedTextIn, ShownStageIn, SimilarEmployer, SitePanel, SitePanelIn, SiteShownIn,
   SiteStageJson, SiteStep, SiteStepsIn,
   CompanyPeek, OpenCompanyFn, OpenJobFn, PeekStackRef,
   CardTitleIn, MiniSubIn,
@@ -988,17 +989,16 @@ export function makeToggle(x: ToggleIn): GoBackFn {
 }
 
 /**
- * 相似雇主卡该上屏的行(2026-09-22 Frank「这个相似雇主也是默认显示 6 个」):收起时前 6 家,展开了全给
- * (取数封顶 20,同日「如果大于 20 就展开 20」)。
+ * 相似雇主「展开 20 家」取页的接口地址(跳过几家由 pager 桶 usePagedFold 续在后面;2026-10-02 Frank「相似雇主 3000 多?
+ * 为什么只能展开 14 个」)。
  *
- * @param x 相似雇主与展开态。
- * @returns 该上屏的行。
+ * @param key 找同类的锚。
+ * @returns 地址。
  */
-export function simShownOf(x: SimShownIn): SimilarEmployer[] {
-  if (x.open) {
-    return x.similar
-  }
-  return x.similar.slice(0, SIM_FIRST_N)
+export function simPageUrlOf(key: string): string {
+  const q = new URLSearchParams()
+  q.set(P_SIM_KEY, key)
+  return URL_JOBS_SIMILAR + q.toString()
 }
 
 /**
@@ -1014,6 +1014,20 @@ export function simTotalOf(similar: SimilarEmployer[]): number {
     return 0
   }
   return first.total
+}
+
+/**
+ * 相似雇主卡的锚(行上带的那个;2026-10-02 取下一页带它,也作卡的 React key —— 换了一家公司,已取到的其余各家与展开态一并作废)。
+ *
+ * @param similar 相似雇主(空表给 '')。
+ * @returns 锚。
+ */
+export function simAnchorOf(similar: SimilarEmployer[]): string {
+  const first = similar[0]
+  if (first == null) {
+    return TEXT_NONE
+  }
+  return first.anchor
 }
 
 /**
@@ -1730,7 +1744,7 @@ export function makeLoadTrans(x: LoadTransIn): LoadFn {
     }
     function full(): Promise<void> {
       x.setBusy(true)
-      return fetchCoTrans({ company: x.company, lang: x.lang, storedOnly: false }).then(land)
+      return fetchCoTrans({ company: x.company, slug: x.slug, lang: x.lang, storedOnly: false }).then(land)
     }
     function afterStored(text: string): Promise<void> {
       if (flag.dead) {
@@ -1742,7 +1756,7 @@ export function makeLoadTrans(x: LoadTransIn): LoadFn {
       }
       return full()
     }
-    fetchCoTrans({ company: x.company, lang: x.lang, storedOnly: true }).then(afterStored)
+    fetchCoTrans({ company: x.company, slug: x.slug, lang: x.lang, storedOnly: true }).then(afterStored)
   }
 }
 
@@ -1771,7 +1785,7 @@ function fetchCoTrans(x: FetchCoTransIn): Promise<string> {
   return fetch(URL_CO_TRANSLATE, {
     method: METHOD_POST,
     headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-    body: JSON.stringify({ name: x.company, lang: x.lang, storedOnly: x.storedOnly }),
+    body: JSON.stringify({ name: x.company, slug: x.slug, lang: x.lang, storedOnly: x.storedOnly }),
   }).then(read).then(textOf).catch(fall)
 }
 

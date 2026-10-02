@@ -34,7 +34,7 @@ import {
   quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCardOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf, provGateCardsOf,
-  aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, aipExtraOf, aipRestUrlOf, aipShownRowsOf, normName, hiddenCountOf, streamRowsOf,
+  aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, normName, hiddenCountOf, streamRowsOf,
 } from '@/components/pnp/functions'
 import type {
   GateCardSpec, PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpOps, PnpPathway, PnpReq, PnpStream,
@@ -42,6 +42,7 @@ import type {
 import { CHAN_JOB_TAGS, CHAN_NOTE_TAGS, CHAN_TAG_COMPLEMENT } from '@/components/pnp/constants'
 import { blockedSetsOf, boardDimsOf, boardPnpOf } from '@/components/jobs/functions'
 import type { JobDims } from '@/components/jobs/types'
+import { pageUrlOf } from '@/components/pager/functions'
 import { makeT } from '@/lib/i18n'
 import { isOfferList } from '@/lib/jobs'
 
@@ -1504,17 +1505,9 @@ describe('AIP 指定雇主清单卡', () => {
   it('接口地址查询串编码(含翻页);没到的数据给空', () => {
     expect(aipEmpUrlOf({ province: 'NS', key: 'mary browns chicken' })).toBe('/api/jobs/aip?prov=NS&key=mary+browns+chicken')
     expect(aipEmpUrlOf({ province: 'NB', key: 'a&w' })).toBe('/api/jobs/aip?prov=NB&key=a%26w')
-    expect(aipRestUrlOf({ province: 'NB', key: 'a&w', offset: 20 })).toBe('/api/jobs/aip?prov=NB&key=a%26w&offset=20')
+    // 翻页:pager 桶 usePagedFold 在首屏地址后续跳过家数(2026-10-02 两套取页机并成一台)
+    expect(pageUrlOf({ url: aipEmpUrlOf({ province: 'NB', key: 'a&w' }), offset: 20 })).toBe('/api/jobs/aip?prov=NB&key=a%26w&offset=20')
     expect(aipEmpDataOf(null)).toEqual({ total: 0, brandN: 0, rows: [] })
-  })
-
-  it('卡底展开(2026-10-02 全站统一,钮走 pager 桶 FoldLine):已展开家数收着为 0、展开着 = 已取到的;展开着才接上其余各家', () => {
-    expect(aipExtraOf({ open: false, loaded: 40 })).toBe(0)
-    expect(aipExtraOf({ open: true, loaded: 40 })).toBe(40)
-    const top = [row('A', 'X', true)]
-    const rest = [row('B', 'Y'), row('C', 'Z')]
-    expect(aipShownRowsOf({ top, rest, open: false })).toEqual(top)
-    expect(aipShownRowsOf({ top, rest, open: true })).toEqual(top.concat(rest))
   })
 
   it('data/mart 真数据:四省每家拿自己的名字(前端 normName)都落在数据层算好的比对键里', () => {

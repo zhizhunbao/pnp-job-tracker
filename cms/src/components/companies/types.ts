@@ -374,6 +374,11 @@ export type SimilarEmployer = {
    * 同类雇主总数(每行同一个数,卡头括号里的那个;2026-09-23)。
    */
   total: number
+
+  /**
+   * 找同类的锚(这一家的雇主池主键;每行同一个,「展开 20 家」取下一页带它 —— 2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」)。
+   */
+  anchor: string
 }
 
 /**
@@ -1417,18 +1422,53 @@ export type JobMiniRowIn = {
 }
 
 /**
- * `simShownOf` 的入参。
+ * useSimilarCard(相似雇主卡的展开 / 取页整机)的入参。
  */
-export type SimShownIn = {
+export type SimCardHookIn = {
   /**
-   * 相似雇主。
+   * 首屏带来的那几家(服务器取的前几家,每行带同类总数与锚)。
    */
   similar: SimilarEmployer[]
+}
+
+/**
+ * useSimilarCard 交回的面板(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起」:卡底钮走 pager 桶 FoldLine)。
+ */
+export type SimCardPanel = {
+  /**
+   * 这一刻要露的行(首屏那几家,展开着再接上已取到的其余各家)。
+   */
+  rows: SimilarEmployer[]
 
   /**
-   * 展开态。
+   * 同类雇主总数(卡头括号里的那个)。
    */
-  open: boolean
+  total: number
+
+  /**
+   * 折起来的总数(总数减首屏那几家)。
+   */
+  hidden: number
+
+  /**
+   * 已展开几家(收着 0)。
+   */
+  extra: number
+
+  /**
+   * 取数中。
+   */
+  busy: boolean
+
+  /**
+   * 「展开」钮的手柄。
+   */
+  onMore: GoBackFn
+
+  /**
+   * 「收起」钮的手柄。
+   */
+  onFold: GoBackFn
 }
 
 /**
@@ -1927,6 +1967,11 @@ export type LoadTransIn = {
   company: string
 
   /**
+   * 公司 slug(接口按它认公司;'' = 没有,按名;2026-10-02)。
+   */
+  slug: string
+
+  /**
    * 界面语言。
    */
   lang: CompaniesLang
@@ -2047,6 +2092,11 @@ export type FetchCoTransIn = {
   company: string
 
   /**
+   * 公司 slug(接口按它认公司;'' = 没有,按名;2026-10-02)。
+   */
+  slug: string
+
+  /**
    * 界面语言。
    */
   lang: CompaniesLang
@@ -2080,6 +2130,11 @@ export type CompanyTransHookIn = {
    * 公司名。
    */
   name: string
+
+  /**
+   * 公司 slug(接口按它认公司,同名多行不串译文;2026-10-02)。
+   */
+  slug: string
 
   /**
    * 缓存的 K 调查简介;'' = 没有,不翻。

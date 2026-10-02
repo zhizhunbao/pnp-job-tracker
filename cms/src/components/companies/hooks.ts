@@ -2,6 +2,7 @@
 /**
  * companies 域的状态机器:公司本体族的三台 —— K 调查简介的懒查(useCompanyAi)、
  * 缓存简介的懒翻(useCompanyTrans)、公司弹框的取数与两个开关(useCompanyPanel)。
+ * 2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」:多一台 —— 相似雇主卡的展开 / 按页取(useSimilarCard)。
  * 体内只有 useState、具名 effect 壳与工厂装配;取数步骤与它们的口径注释全在
  * ./functions 的 make* 工厂里(hooks 抽屉的形制照样张 account/hooks.ts)。
  *
@@ -12,17 +13,20 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { useLayerStack } from '@/components/modal'
+import { usePagedFold } from '@/components/pager'
 import { LANG_EN, MS_PER_SEC, TEXT_NONE, TICK_MS,
 } from './constants'
 import {
   ignoreFlag, isSiteActive, makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel,
   makeLoadTrans, makeOpenSite, makePushCoLayer, makePushJobLayer, nextRevOf,
+  simAnchorOf, simPageUrlOf, simTotalOf,
 } from './functions'
 import type {
   CompanyAiHookIn, CompanyAiPanel, CompanyAliasHookIn, CompanyAliasPanel, CompanyBriefFact,
   CompanyOfJobHookIn, CompanyPanelData, CompanyPanelHookIn, CompanyPanelState, CompanyPeekPanel,
   CompanyTransHookIn,
   CompanySiteHookIn, CompanyTransPanel, DeadFlag, DescTransHookIn, PeekLayer, SitePanel,
+  SimCardHookIn, SimCardPanel, SimilarEmployer,
 } from './types'
 
 /**
@@ -65,7 +69,7 @@ export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
   useEffect(function loadTrans() {
     const flag: DeadFlag = { dead: false }
     if (trans == null && fact != null && x.lang != null && x.lang !== LANG_EN) {
-      makeLoadTrans({ company: x.company, lang: x.lang, setTrans, setBusy: ignoreFlag })(flag)
+      makeLoadTrans({ company: x.company, slug: TEXT_NONE, lang: x.lang, setTrans, setBusy: ignoreFlag })(flag)
     }
     return function stop(): void {
       flag.dead = true
@@ -182,12 +186,12 @@ export function useCompanyTrans(x: CompanyTransHookIn): CompanyTransPanel {
   useEffect(function loadTrans() {
     const flag: DeadFlag = { dead: false }
     if (trans == null && x.hasDesc === false && x.aiBrief !== '' && x.lang !== LANG_EN) {
-      makeLoadTrans({ company: x.name, lang: x.lang, setTrans, setBusy })(flag)
+      makeLoadTrans({ company: x.name, slug: x.slug, lang: x.lang, setTrans, setBusy })(flag)
     }
     return function stop(): void {
       flag.dead = true
     }
-  }, [x.hasDesc, x.aiBrief, x.name, x.lang, trans])
+  }, [x.hasDesc, x.aiBrief, x.name, x.slug, x.lang, trans])
 
   return { trans, busy }
 }
@@ -349,4 +353,29 @@ export function useCompanyDescTrans(x: DescTransHookIn): string {
 export function useCompanyPeek(): CompanyPeekPanel {
   const stack = useLayerStack<PeekLayer>()
   return { stack, onOpenJob: makePushJobLayer(stack), onOpenCompany: makePushCoLayer(stack) }
+}
+
+/**
+ * 相似雇主卡的展开 / 按页取(2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」「全站统一 都改成 展开 20 和 收起」;
+ * 形照 AIP 指定雇主卡 useAipEmpCard):卡头写同类总数,首屏是服务端带来的那几家;「展开 20 家」按页从 /api/jobs/similar 取 20 家往后接,
+ * 直到总数;收起后再展开不重取。换一家公司由卡的 React key(锚)整个重置。
+ * 按页取 + 展开收起那套是 pager 桶 usePagedFold(AIP 指定雇主卡同一台);接口从整表数起,跳过起点 = 首屏家数。
+ *
+ * @param x 首屏带来的那几家。
+ * @returns 要露的行、总数、折起来几家、已展开几家、取数中与两只手柄。
+ */
+export function useSimilarCard(x: SimCardHookIn): SimCardPanel {
+  const total = simTotalOf(x.similar)
+  const paged = usePagedFold<SimilarEmployer>({
+    top: x.similar, total, url: simPageUrlOf(simAnchorOf(x.similar)), skip: x.similar.length,
+  })
+  return {
+    rows: paged.rows,
+    total,
+    hidden: paged.hidden,
+    extra: paged.extra,
+    busy: paged.busy,
+    onMore: paged.onMore,
+    onFold: paged.onFold,
+  }
 }

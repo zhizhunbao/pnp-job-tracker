@@ -119,3 +119,19 @@ export const FOLD_KEYS: Record<string, string> = {
    */
   rest: 'fold.rest',
 }
+
+/**
+ * 按页取的清单接口上「跳过几行」的参数名(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:AIP 指定雇主卡与相似雇主卡两套取页机并进 usePagedFold,
+ * 两个接口都认它)。
+ */
+export const P_PAGE_OFFSET = 'offset'
+
+/**
+ * 接口地址后面续查询参数的连接符(调用方给的地址已带问号与至少一个参数)。
+ */
+export const PAGE_QS_JOIN = '&'
+
+/**
+ * 查询参数名与值之间的等号。
+ */
+export const PAGE_QS_EQ = '='

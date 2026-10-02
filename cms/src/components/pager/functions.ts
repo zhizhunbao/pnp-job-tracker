@@ -8,10 +8,11 @@
 import { cssOf } from '@/components/css'
 import {
   CLS_NONE, FOLD_KEYS, FOLD_MORE_FIRST, FOLD_MORE_NEXT, FOLD_MORE_NONE, FOLD_MORE_REST, FOLD_STEP, K_FOLD_BUSY,
-  K_FOLD_UP, MORE_BUSY,
+  K_FOLD_UP, MORE_BUSY, PAGE_QS_EQ, PAGE_QS_JOIN, P_PAGE_OFFSET,
 } from './constants'
 import type {
-  FoldLabelIn, FoldMoreIn, FoldT, FoldView, FoldViewIn, MoreLabelIn, PagerHandlesIn, PagerHandlesOut,
+  ClickFn, FoldLabelIn, FoldMoreIn, FoldT, FoldView, FoldViewIn, LoadPageIn, MoreLabelIn, PagedExtraIn, PagedMoreIn,
+  PagedRowsIn, PageJson, PageRowsFn, PageSetRestFn, PagerHandlesIn, PagerHandlesOut, PageUrlIn,
 } from './types'
 import css from './pager.module.css'
 
@@ -136,5 +137,118 @@ export function makeFoldMore(x: FoldMoreIn): () => void {
 export function makeFoldUp(setExtra: (v: number) => void): () => void {
   return function up(): void {
     setExtra(0)
+  }
+}
+
+/**
+ * 按页取的清单这一刻要露的行:首屏那几行,展开着再接上已取到的其余各行(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」)。
+ *
+ * @param x 首屏那几行、已取到的其余各行与展开态。
+ * @returns 要露的行。
+ */
+export function pagedRowsOf<T>(x: PagedRowsIn<T>): T[] {
+  if (x.open) {
+    return x.top.concat(x.rest)
+  }
+  return x.top
+}
+
+/**
+ * 按页取的清单交给 FoldLine 的「已展开几行」:收着 0,展开着 = 已取到的其余行数。
+ *
+ * @param x 展开态与已取到的行数。
+ * @returns 已展开行数。
+ */
+export function pagedExtraOf(x: PagedExtraIn): number {
+  if (x.open) {
+    return x.loaded
+  }
+  return 0
+}
+
+/**
+ * 按页取的清单「展开 / 再展开」手柄:收着而已取过的直接展开(收起后再展开不重取);否则还有没取的就取下一页并展开;
+ * 取数中不响应。
+ *
+ * @param x 展开态、已取 / 未取行数、取数中、展开态写口与取下一页。
+ * @returns 点击手柄。
+ */
+export function makePagedMore(x: PagedMoreIn): ClickFn {
+  return function more(): void {
+    if (x.busy) {
+      return
+    }
+    if (x.open === false && x.loaded > 0) {
+      x.setOpen(true)
+      return
+    }
+    if (x.remain > 0) {
+      x.setOpen(true)
+      x.load()
+    }
+  }
+}
+
+/**
+ * 按页取的清单「收起」手柄(已取到的行留着,再展开不重取)。
+ *
+ * @param setOpen 展开态写口。
+ * @returns 点击手柄。
+ */
+export function makePagedFold(setOpen: (v: boolean) => void): ClickFn {
+  return function fold(): void {
+    setOpen(false)
+  }
+}
+
+/**
+ * 取一页的手柄(取挂了这一页不接、取数中复位,下次点再取)。
+ *
+ * @param x 接口地址、跳过几行、接行与取数中两个写口。
+ * @returns 点击即取的手柄。
+ */
+export function makeLoadPage<T>(x: LoadPageIn<T>): ClickFn {
+  return function loadPage(): void {
+    function read(r: Response): Promise<PageJson<T>> {
+      if (r.ok) {
+        return r.json()
+      }
+      return Promise.resolve(null)
+    }
+    function land(j: PageJson<T>): void {
+      x.setBusy(false)
+      if (j != null && j.rows != null) {
+        x.onRows(j.rows)
+      }
+    }
+    function fall(): void {
+      x.setBusy(false)
+    }
+    x.setBusy(true)
+    fetch(pageUrlOf({ url: x.url, offset: x.offset })).then(read).then(land).catch(fall)
+  }
+}
+
+/**
+ * 一页的接口地址:调用方给的地址续上跳过几行。
+ *
+ * @param x 接口地址与跳过几行。
+ * @returns 地址。
+ */
+export function pageUrlOf(x: PageUrlIn): string {
+  return [x.url, PAGE_QS_JOIN, P_PAGE_OFFSET, PAGE_QS_EQ, String(x.offset)].join(CLS_NONE)
+}
+
+/**
+ * 一页到了往后接的写口。
+ *
+ * @param setRest 其余各行的状态写口。
+ * @returns 接行函数。
+ */
+export function makeAppendPage<T>(setRest: PageSetRestFn<T>): PageRowsFn<T> {
+  return function append(rows: T[]): void {
+    setRest(function add(prev: T[]): T[] {
+      return prev.concat(rows)
+    })
   }
 }

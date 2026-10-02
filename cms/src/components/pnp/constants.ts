@@ -1682,19 +1682,9 @@ export const K_AIP_EMP_COLS = ['aipemp.colTrade', 'aipemp.colStore', 'aipemp.col
 export const K_AIP_EMP_UNIT = 'fold.u.employer'
 
 /**
- * 指定雇主卡「展开其他 N 家」一次取几家(与 SQL.AIP_EMP_REST 的 LIMIT 同一个数)。
- */
-export const AIP_EMP_PAGE = 20
-
-/**
  * 职业清单展开钮的量词词条(「个」;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」)。
  */
 export const K_FOLD_UNIT_ITEM = 'fold.u.item'
-
-/**
- * 指定雇主卡接口的跳过家数参数名(「展开其他 N 家」翻页)。
- */
-export const P_AIP_OFFSET = 'offset'
 
 /**
  * 门店认不出时表格里那一格写的(长横)。

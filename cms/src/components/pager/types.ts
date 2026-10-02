@@ -271,3 +271,193 @@ export type FoldMoreIn = {
    */
   setExtra: (f: (prev: number) => number) => void
 }
+
+/**
+ * usePagedFold(服务器按页取的清单)的入参(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:AIP 指定雇主卡与相似雇主卡两套取页机并成这一台)。
+ */
+export type PagedFoldHookIn<T> = {
+  /**
+   * 首屏已带来的行(收着时露的就是这些)。
+   */
+  top: T[]
+
+  /**
+   * 清单总行数(含首屏那几行)。
+   */
+  total: number
+
+  /**
+   * 取一页的接口地址(已带问号与至少一个参数,跳过几行由本机续在后面)。
+   */
+  url: string
+
+  /**
+   * 接口跳过行数的起点:接口从整表数起 = 首屏行数;接口只数首屏之外的其余 = 0。
+   */
+  skip: number
+}
+
+/**
+ * usePagedFold 交回的面板(后五格直接喂 FoldLine)。
+ */
+export type PagedFoldPanel<T> = {
+  /**
+   * 这一刻要露的行:首屏那几行,展开着再接上已取到的其余各行。
+   */
+  rows: T[]
+
+  /**
+   * 折起来的行数(总数减首屏)。
+   */
+  hidden: number
+
+  /**
+   * 已展开的行数(收着为 0;收起后再展开直接用已取到的)。
+   */
+  extra: number
+
+  /**
+   * 下一页取数中。
+   */
+  busy: boolean
+
+  /**
+   * 「展开 / 再展开」手柄。
+   */
+  onMore: ClickFn
+
+  /**
+   * 「收起」手柄。
+   */
+  onFold: ClickFn
+}
+
+/**
+ * pagedRowsOf 的入参。
+ */
+export type PagedRowsIn<T> = {
+  /**
+   * 首屏那几行。
+   */
+  top: T[]
+
+  /**
+   * 已取到的其余各行。
+   */
+  rest: T[]
+
+  /**
+   * 展开着没。
+   */
+  open: boolean
+}
+
+/**
+ * pagedExtraOf 的入参。
+ */
+export type PagedExtraIn = {
+  /**
+   * 展开着没。
+   */
+  open: boolean
+
+  /**
+   * 已取到的其余行数。
+   */
+  loaded: number
+}
+
+/**
+ * makePagedMore 的入参。
+ */
+export type PagedMoreIn = {
+  /**
+   * 展开着没。
+   */
+  open: boolean
+
+  /**
+   * 已取到的其余行数。
+   */
+  loaded: number
+
+  /**
+   * 还没取的行数。
+   */
+  remain: number
+
+  /**
+   * 取数中。
+   */
+  busy: boolean
+
+  /**
+   * 展开态写口。
+   */
+  setOpen: (v: boolean) => void
+
+  /**
+   * 取下一页。
+   */
+  load: ClickFn
+}
+
+/**
+ * makeLoadPage 的入参。
+ */
+export type LoadPageIn<T> = {
+  /**
+   * 取一页的接口地址(不含跳过几行)。
+   */
+  url: string
+
+  /**
+   * 跳过几行。
+   */
+  offset: number
+
+  /**
+   * 一页到了往后接。
+   */
+  onRows: PageRowsFn<T>
+
+  /**
+   * 取数中写口。
+   */
+  setBusy: (v: boolean) => void
+}
+
+/**
+ * 一页的线格式(取挂了 = null;rows 缺席 = 接口没给行)。
+ */
+export type PageJson<T> = {
+  /**
+   * 这一页的行。
+   */
+  rows?: T[]
+} | null
+
+/**
+ * 一页到了往后接的函数。
+ */
+export type PageRowsFn<T> = (rows: T[]) => void
+
+/**
+ * 其余各行的状态写口(React setState 的更新函数形)。
+ */
+export type PageSetRestFn<T> = (f: (prev: T[]) => T[]) => void
+
+/**
+ * pageUrlOf 的入参。
+ */
+export type PageUrlIn = {
+  /**
+   * 接口地址(已带问号与至少一个参数)。
+   */
+  url: string
+
+  /**
+   * 跳过几行。
+   */
+  offset: number
+}

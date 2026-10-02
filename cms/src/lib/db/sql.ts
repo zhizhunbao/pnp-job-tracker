@@ -327,20 +327,23 @@ export const COMPANY_LMIA_NOCS = `SELECT lmia_nocs::text FROM companies WHERE id
  * 同日「如果大于 20 就展开 20」:取数封顶 20;「公司所在城市,是不是也加一下灰字」:带主市 / 主省两列。
  * 2026-09-23 Frank「也应该显示 () 数量吧」:卡头带总数 —— total 走窗口计数(LIMIT 之前算,是全部同类雇主数,
  * 不是取回来的 ≤20 家),每行都带同一个数。
+ * 2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」「全站统一 都改成 展开 20 和 收起」:改服务器分页 ——
+ * $2 = 跳过几家、$3 = 取几家(首屏 6 家,「展开 20 家」每页 20 家往后接,直到总数);上面「取数封顶 20」是历史。
+ * 每行多带锚 anchor(= $1,卡上取下一页带它);排序末键补 slug,同名同数时翻页不串行。
  */
 export const SIMILAR_EMPLOYERS = `WITH a AS (
        SELECT p.key, p.sector, ARRAY(SELECT jsonb_array_elements_text(p.loc_provs)) AS provs,
               CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END AS category
        FROM employer_pool p LEFT JOIN employer_explore x ON x.key = p.key WHERE p.key = $1)
      SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v, p.open_jobs_total::int open_count,
-       p.city, p.province, count(*) OVER ()::int AS total
+       p.city, p.province, count(*) OVER ()::int AS total, a.key AS anchor
      FROM a JOIN employer_pool p ON p.key <> a.key AND p.sector IS NOT DISTINCT FROM a.sector
        JOIN companies c ON c.slug = p.slug
        LEFT JOIN employer_explore x ON x.key = p.key
      WHERE CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END = a.category
        AND p.open_jobs_total > 0 AND c.slug <> ''
-     ORDER BY (p.loc_provs ?| a.provs) DESC NULLS LAST, p.open_jobs_total DESC, c.sponsor_grade DESC NULLS LAST, c.name
-     LIMIT 20`
+     ORDER BY (p.loc_provs ?| a.provs) DESC NULLS LAST, p.open_jobs_total DESC, c.sponsor_grade DESC NULLS LAST, c.name, c.slug
+     OFFSET $2 LIMIT $3`
 
 // =========================================================================
 // 5. 职业(NOC)

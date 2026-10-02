@@ -2162,6 +2162,28 @@ export const E_AIP_PARAMS = 'prov and key required'
 export const AIP_OFFSET_MAX = 5000
 
 /**
+ * 相似雇主首屏取几家(2026-09-22 Frank「这个相似雇主也是默认显示 6 个」;2026-10-02 改服务器分页后首屏只取这几家,
+ * 其余由卡上「展开 20 家」按页取)。
+ */
+export const SIMILAR_FIRST_ROWS = 6
+
+/**
+ * 相似雇主「展开」一页几家(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起」「展开 20, 再展开 20, 再开其余, 收起」;
+ * 与 pager 桶 FOLD_STEP 同数 —— 钮上写「展开 20 家」,一页就得是 20 家)。
+ */
+export const SIMILAR_PAGE_ROWS = 20
+
+/**
+ * /api/jobs/similar 跳过家数的上限(2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」;最宽的私营医疗约 5 千家,超了当坏请求)。
+ */
+export const SIMILAR_OFFSET_MAX = 20000
+
+/**
+ * 错误体:/api/jobs/similar 的 key / offset 缺位或非法。
+ */
+export const E_SIMILAR_PARAMS = 'key and offset required'
+
+/**
  * JD 摘录 IP 日限的默认值(env JD_DAILY 可覆盖;宽松防滥用,不是付费闸 —— #201)。
  */
 export const JD_DAILY_DEFAULT = 150

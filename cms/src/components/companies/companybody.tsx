@@ -18,6 +18,7 @@
  * 懒抓简介那一档只在简介位出一行「AI 调查中…」。同日「在招职位 和 相似雇主 下面的也算中文翻译」:那两卡名下的对照行跟开关走。
  * 2026-09-17 Frank「自动拨开去掉,但是后台要自动翻译」:译文一开框就在后台拉好存着(不看开关),开关默认关、只管显不显;
  * hold 留白与 hidden 随之撤,「翻译中…」只在开关拨开而译文未到时回报(后台在译不打扰关着的开关)。
+ * 2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」:相似卡改按页取,卡挂 React key = 锚(框里换一家时已取的页与展开态一并重置)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -26,7 +27,7 @@ import { CompanyBasicCard } from './companybasiccard'
 import { CompanyJobsCard } from './companyjobscard'
 import { CompanySimilarCard } from './companysimilarcard'
 import { useEffect, useState } from 'react'
-import { hasDescOf, ignoreDone } from './functions'
+import { hasDescOf, ignoreDone, simAnchorOf } from './functions'
 import { useCompanyTrans } from './hooks'
 import type { CompanyBodyIn } from './types'
 import css from './companies.module.css'
@@ -54,6 +55,7 @@ export function CompanyBody({
 }: CompanyBodyIn) {
   const tr = useCompanyTrans({
     name: company.name,
+    slug: company.slug,
     aiBrief: company.aiBrief,
     hasDesc: hasDescOf({ company }),
     lang,
@@ -83,7 +85,8 @@ export function CompanyBody({
         resolveJob={resolveJob}
         newTab={newTab}
         showTrans={showTrans} />
-      <CompanySimilarCard similar={similar} t={t} lang={lang} onOpenCompany={onOpenCompany} newTab={newTab}
+      <CompanySimilarCard key={simAnchorOf(similar)} similar={similar} t={t} lang={lang} onOpenCompany={onOpenCompany}
+        newTab={newTab}
         showTrans={showTrans} />
     </div>
   )

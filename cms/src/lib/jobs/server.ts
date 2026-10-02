@@ -22,7 +22,8 @@ export type { AlertHit, CompanyDetail, JobsFilters, RelatedJob, SimilarEmployer,
 
 export {
   jobsIdMetaRoute, jobsJdformatRoute, jobsJdTranslateRoute, jobsApplyhowRoute, jobsCompanyRoute, jobsCompetitionRoute, jobsDimsRoute,
-  jobsAipRoute, jobsPnpRoute, jobsQcRoute, jobsRelatedRoute, jobsRelatedOccRoute, jobsRetranslateRoute, jobsRoute, jobsRowRoute, jobsTextRoute, jobsTitleRoute,
+  jobsAipRoute, jobsPnpRoute, jobsQcRoute, jobsRelatedRoute, jobsRelatedOccRoute, jobsRetranslateRoute, jobsRoute, jobsRowRoute, jobsSimilarRoute, jobsTextRoute,
+  jobsTitleRoute,
 } from './routes'
 export {
   loadApplyUrlById, loadJdFormatted, loadJdState, loadJobOg,

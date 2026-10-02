@@ -44,6 +44,7 @@ import {
   META_SOME_EMPLOYER, META_SPACE, META_TAIL, NL, NOC_JOIN_SLASH, NOC_LEN, NOC_MINOR_LEN, NOC_NONE, NOC_RE,
   NOC_SEARCH_MIN, NOC_SUBMAJOR_LEN, NORM_DASH, NORM_DASH_RE, NORM_WS_RE, NO_LIST_PROVINCES, OCC_TITLE_NONE,
   OG_IMG_ALT, OG_IMG_H, OG_IMG_W, OG_JOB_PATH_HEAD, OG_JOB_PATH_TAIL, OPEN_COND, ORDER_DATE_TAIL, ORDER_DEFAULT_COL,
+  SIMILAR_FIRST_ROWS, SIMILAR_PAGE_ROWS,
   ORDER_FRESH, ORIGIN_TITLE_HEAD, PARAM_NONE, PCT, PCT_SCALE, PG_CODE_NONE, PG_UNDEFINED_COLUMN, PG_UNDEFINED_TABLE,
   PHONE_RE, PII_MASK, PREV_LINE_NONE, PROGRAM_PNP, PROOF_TTL_MS, PROV_CODE, PROV_CODE_NONE, PROV_MAX_WORDS,
   APPLIES_OFFER,
@@ -84,7 +85,7 @@ import type {
   ProvCount, ProvCounts, ProvListCoverage, ProvOption, QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount,
   RatioMap, RatioOfIn, RelatedIn, RelatedJob, RelatedOut, RelatedAnchorIn, RelatedAnchorOut, RelatedOccPageIn,
   RelatedOccPageOut, ReqStreamDisplayIn, ResetJdTransIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
-  SaveJdTransIn, SaveTitleTransIn, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SsrDimsOut, TranslateJdIn,
+  SaveJdTransIn, SaveTitleTransIn, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SimilarPageIn, SsrDimsOut, TranslateJdIn,
   TransJdOut, StrList, StreamDisplayIn, StripTitleIn, TimeLike, TitleCtxFact, TitleInCtxIn, TitleInCtxOut, TitleList,
   TitleReq, JdTitleBody, TitleTexts, TitleTransIn, TitlesOut, ToJobRowIn, TopNoc, TopNocsIn, TopNocsOut,
   TranslateTitlesIn, UrlHandle, WhereParam,
@@ -1658,6 +1659,7 @@ async function designatedOf(input: DesignatedIn): DesignatedOut {
  * 2026-09-19:没有岗位锚、公司也没有行业桶时,退到这家公司在招岗里最多的中类去找(COMPANY_TOP_MID),不再整卡不出。
  * 2026-09-21 Frank「应该是比如这个雇主是医院 相似的应该是其他医院。学校 相似的就是其他学校」:改按公司分类找
  * (同雇主类型、同公司分类),与点进来的是哪一岗、这家招什么岗无关 —— 上面那条按岗位中类的兜底随之撤,口径全在 SQL.SIMILAR_EMPLOYERS。
+ * 2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」:首屏只取 SIMILAR_FIRST_ROWS 家,其余由卡上「展开 20 家」走 loadSimilarEmployersPage 按页取。
  *
  * @param input 连接与这一家的雇主池主键。
  * @returns 相似雇主行;没有池键 = 空表。
@@ -1666,7 +1668,22 @@ export async function loadSimilarEmployers(input: SimilarIn): SimilarOut {
   if (input.key === PARAM_NONE) {
     return []
   }
-  return queryRows({ db: input.db, sql: SQL.SIMILAR_EMPLOYERS, params: [input.key], map: toSimilar })
+  return queryRows({
+    db: input.db, sql: SQL.SIMILAR_EMPLOYERS, params: [input.key, 0, SIMILAR_FIRST_ROWS], map: toSimilar,
+  })
+}
+
+/**
+ * 相似雇主「展开 20 家」的一页现查(2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」「全站统一 都改成 展开 20 和 收起」):
+ * 同一句 SQL.SIMILAR_EMPLOYERS 跳过已露的几家、取一页 20 家。查挂 → 空列(卡上展开钮照旧,点了没新行)。
+ *
+ * @param x 连接、锚与跳过家数。
+ * @returns 这一页的行。
+ */
+export async function loadSimilarEmployersPage(x: SimilarPageIn): SimilarOut {
+  return queryRowsOrEmpty({
+    db: x.db, sql: SQL.SIMILAR_EMPLOYERS, params: [x.key, x.offset, SIMILAR_PAGE_ROWS], map: toSimilar,
+  })
 }
 
 /**
@@ -3395,7 +3412,7 @@ export function toSimilar(r: Row): SimilarEmployer {
     slug: text(r.slug), name: text(r.name), industry: text(r.industry),
     sponsorGrade: numOrNull(r.sponsor_grade), openCount: count(r.open_count),
     aliasZh: vtext({ v: r.trans_v, cell: r.alias_zh }), aliasKo: vtext({ v: r.trans_v, cell: r.alias_ko }),
-    city: text(r.city), province: text(r.province), total: count(r.total),
+    city: text(r.city), province: text(r.province), total: count(r.total), anchor: text(r.anchor),
   }
 }
 

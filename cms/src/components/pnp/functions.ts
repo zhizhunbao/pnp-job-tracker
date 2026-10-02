@@ -48,7 +48,7 @@ import {
   PICK_NONE, PICK_PGWP, PICK_NO_PGWP,
   AIP_PATHWAY_KEY, AIP_CHANNEL_TEERS, AIP_F, AIP_TIER_PREFIX, AIP_TIER_SEP, AIP_EDU_HEAD, AIP_GRAD_NOTE,
   GATE_EXP_FACTORS, GATE_OP_NONE, GATE_WAGE_FACTORS, LANG_NOC_NOTE_MAX, CHAN_JOB_TAGS, CHAN_TAG_COMPLEMENT, AIP_APOS_RE,
-  CHAN_NOTE_TAGS, P_AIP_KEY, P_AIP_OFFSET, P_AIP_PROV, URL_API_JOBS_AIP, AIP_EMP_DASH,
+  CHAN_NOTE_TAGS, P_AIP_KEY, P_AIP_PROV, URL_API_JOBS_AIP, AIP_EMP_DASH,
   BASIS_ANY_NOC, BASIS_EXP_TEER, BASIS_FIELD, BASIS_ONE_NOC, BASIS_PAID, BASIS_RELATED,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   EXCL_KEY_SEP,
@@ -84,8 +84,7 @@ import type {
   ChannelHitIn, PickSetIn,
   LocalNameIn, PathwayChannelIn, StatusLinesIn,
   BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvGateCardsIn, ProvStreamCardIn, ProvStreamRowsIn,
-  AipEmpData, AipEmpJson, AipEmpRowJson, AipEmpRowSpec, AipEmpUrlIn, LoadAipEmpIn, ExpScopeIn, AipMoreIn,
-  AipExtraIn, AipRestJson, AipRestUrlIn, AipShownRowsIn, LoadAipRestIn, AipRowsFn, AipSetRestFn,
+  AipEmpData, AipEmpJson, AipEmpRowJson, AipEmpRowSpec, AipEmpUrlIn, LoadAipEmpIn, ExpScopeIn,
   TeerBandsIn, TierLineIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
@@ -1080,6 +1079,7 @@ export function streamKeyOf(s: PnpStream): string {
  * 洗一张清单要显示的职业行。Frank 走查#14:默认只显命中「本岗」项(其余折叠),
  * 点末尾「展开其他」才全量;命中置顶,其余保持原序;兜底:即便无命中也至少显 1 条。
  * 2026-09-23 Frank「这个已经高亮了不用显示本岗了吧」:命中行已高亮,「本岗」标撤(EE 类别清单同批撤)。
+ * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:开合改走 pager 桶 FoldLine —— 入参从开 / 关改成「已展开几个」,露的是默认那几行 + 其余的前 extra 个。
  *
  * @param x 取词函数、界面语言、译名开关、这张清单、本岗职业码、职业名字典与已展开个数。
  * @returns 展示行。
@@ -1100,8 +1100,8 @@ export function streamRowsOf(x: StreamRowsIn): StreamRowSpec[] {
     base = others.slice(0, ROWS_FALLBACK)
     rest = others.slice(ROWS_FALLBACK)
   }
+  const picked = base.concat(rest.slice(0, x.extra))
   const rows: StreamRowSpec[] = []
- * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:开合改走 pager 桶 FoldLine —— 入参从开 / 关改成「已展开几个」,露的是默认那几行 + 其余的前 extra 个。
   for (const o of picked) {
     const hit = o.noc === x.noc
     let gtaTag = TEXT_NONE
@@ -1123,7 +1123,6 @@ export function streamRowsOf(x: StreamRowsIn): StreamRowSpec[] {
 export function hiddenCountOf(x: HiddenCountIn): number {
   let n = 0
   for (const o of x.stream.occupations) {
-  const picked = base.concat(rest.slice(0, x.extra))
     if (o.noc !== x.noc) {
       n += 1
     }
@@ -4302,122 +4301,6 @@ export function aipEmpSpecsOf(rows: AipEmpRowJson[]): AipEmpRowSpec[] {
     })
   }
   return out
-}
-
-/**
- * 卡底 FoldLine 的「已展开几家」:收着 0,展开着 = 已取到的其余家数(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」)。
- *
- * @param x 展开态与已取到的家数。
- * @returns 已展开家数。
- */
-export function aipExtraOf(x: AipExtraIn): number {
-  if (x.open) {
-    return x.loaded
-  }
-  return 0
-}
-
-/**
- * 表格这一刻要露的行:本岗雇主与同招牌那几家,展开着再接上已取到的其余各家。
- *
- * @param x 两段行与展开态。
- * @returns 接口形的行。
- */
-export function aipShownRowsOf(x: AipShownRowsIn): AipEmpRowJson[] {
-  if (x.open) {
-    return x.top.concat(x.rest)
-  }
-  return x.top
-}
-
-/**
- * 「展开其他 / 再展开」钮的手柄:收着而已取过的直接展开(不重取);否则还有没取的就取下一页并展开;取数中不响应。
- *
- * @param x 展开态、已取 / 未取家数、取数中、展开态写口与取下一页。
- * @returns 点击手柄。
- */
-export function makeAipMore(x: AipMoreIn): ClickFn {
-  return function more(): void {
-    if (x.busy) {
-      return
-    }
-    if (x.open === false && x.loaded > 0) {
-      x.setOpen(true)
-      return
-    }
-    if (x.remain > 0) {
-      x.setOpen(true)
-      x.load()
-    }
-  }
-}
-
-/**
- * 「收起」钮的手柄(已取到的行留着,再展开不重取)。
- *
- * @param setOpen 展开态写口。
- * @returns 点击手柄。
- */
-export function makeAipFold(setOpen: (v: boolean) => void): ClickFn {
-  return function fold(): void {
-    setOpen(false)
-  }
-}
-
-/**
- * 「展开其他 N 家」一页的取数手柄(照 makeLoadAipEmp 的形;取挂了这一页不接、取数中复位,下次点再取)。
- *
- * @param x 省码、归一名、跳过家数、接行与取数中两个写口。
- * @returns 点击即取的手柄。
- */
-export function makeLoadAipRest(x: LoadAipRestIn): ClickFn {
-  return function loadAipRest(): void {
-    function read(r: Response): Promise<AipRestJson> {
-      if (r.ok) {
-        return r.json()
-      }
-      return Promise.resolve(null)
-    }
-    function land(j: AipRestJson): void {
-      x.setBusy(false)
-      if (j != null && j.rows != null) {
-        x.onRows(j.rows)
-      }
-    }
-    function fall(): void {
-      x.setBusy(false)
-    }
-    x.setBusy(true)
-    fetch(aipRestUrlOf({ province: x.province, key: x.key, offset: x.offset })).then(read).then(land).catch(fall)
-  }
-}
-
-/**
- * 「展开其他 N 家」一页的接口地址。
- *
- * @param x 省码、归一名与跳过家数。
- * @returns 地址。
- */
-export function aipRestUrlOf(x: AipRestUrlIn): string {
-  const q = new URLSearchParams()
-  q.set(P_AIP_PROV, x.province)
-  q.set(P_AIP_KEY, x.key)
-  q.set(P_AIP_OFFSET, String(x.offset))
-  return URL_API_JOBS_AIP + q.toString()
-}
-
-/**
- * 「展开其他 N 家」一页到了往后接的写口(行状态的更新函数)。
- *
- * @param setRest 其余各家的状态写口。
- * @returns 接行函数。
- */
-export function makeAppendRest(setRest: AipSetRestFn): AipRowsFn {
-  return function append(rows: AipEmpRowJson[]): void {
-    setRest(function add(prev: AipEmpRowJson[]): AipEmpRowJson[] {
-      return prev.concat(rows)
-    })
-  }
 }
 
 /**

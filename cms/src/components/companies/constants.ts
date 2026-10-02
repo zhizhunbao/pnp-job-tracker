@@ -331,9 +331,16 @@ export const JOBS_STEP_N = 20
 export const NOCS_TOP_N = 6
 
 /**
- * 相似雇主卡收起时先出几家(2026-09-22 Frank「这个相似雇主也是默认显示 6 个」;取数放宽到 24,展开看其余)。
+ * 相似雇主卡展开钮的量词词条(「家」;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:钮走 pager 桶 FoldLine)。
+ * 原「收起时先出几家」SIM_FIRST_N(2026-09-22 Frank「这个相似雇主也是默认显示 6 个」)随服务器分页撤:首屏几家改由服务端取数定
+ * (lib/jobs 的 SIMILAR_FIRST_ROWS),卡上露的就是带来的那几家。
  */
-export const SIM_FIRST_N = 6
+export const K_SIM_UNIT = 'fold.u.employer'
+
+/**
+ * 相似雇主「展开 20 家」接口的锚参数名(2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」)。
+ */
+export const P_SIM_KEY = 'key'
 
 /**
  * 「跨省在招」成立的省数门槛(知名度维的依据之一:覆盖 2 个省以上才算跨省)。
@@ -427,6 +434,11 @@ export const URL_CO_ALIAS = '/api/employers/alias'
  * 公司弹框取数接口(与 /companies/[slug] 页面同一份 CompanyDetail,免额度)。
  */
 export const URL_JOBS_COMPANY = '/api/jobs/company'
+
+/**
+ * 相似雇主「展开 20 家」一页的接口(后面接查询串;2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」)。
+ */
+export const URL_JOBS_SIMILAR = '/api/jobs/similar?'
 
 /**
  * 职位详情页地址头(拼岗位号)。
