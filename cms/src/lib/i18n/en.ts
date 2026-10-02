@@ -498,7 +498,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'detail.pnpSec': 'PNP streams', 'detail.pnpSecNote': 'rough signal, not an eligibility decision', 'detail.eeSec': 'Federal EE categories', 'detail.crumbHome': 'Job board',
   'detail.catSec': 'Occupation category',
   // 2026-09-26 date line under the job title (detail page and job modal): label of the deadline cell; the posted cell reuses col.datePosted
-  'detail.closes': 'Closes',
+  // 2026-10-01 date lines are labelled in English in all three languages (board column col.datePosted unchanged; separate detail.posted)
+  'detail.posted': 'Posted', 'detail.closes': 'Closes',
   // E12-08 grade (1-5) breakdown
   'gr.dim.channel': 'Immigration pathway', 'gr.dim.salary': 'Salary quality', 'gr.dim.emp': 'Employment quality',
   'gr.channel.5': 'Named on a provincial stream list: {v}', 'gr.channel.4': 'Skilled ({v}) in an in-demand group', 'gr.channel.3': 'Skilled tier ({v})',

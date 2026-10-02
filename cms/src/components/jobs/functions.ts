@@ -3375,7 +3375,7 @@ export function origLinkLabelOf(x: OrigLinkLabelIn): string {
 export function jobDatesOf(x: JobDatesOfIn): JobDateCell[] {
   const cells: JobDateCell[] = []
   if (x.job.datePosted !== TEXT_NONE) {
-    cells.push({ k: DATE_CELL.posted, label: x.t('col.datePosted'), iso: x.job.datePosted })
+    cells.push({ k: DATE_CELL.posted, label: x.t('detail.posted'), iso: x.job.datePosted })
   }
   if (x.job.validThrough !== TEXT_NONE && isExpiredJob({ job: x.job, today: todayOf(x.now) }) === false) {
     cells.push({ k: DATE_CELL.closes, label: x.t('detail.closes'), iso: x.job.validThrough })

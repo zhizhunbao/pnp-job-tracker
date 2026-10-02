@@ -493,7 +493,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'detail.pnpSec': '주정부 지명(PNP) 통로', 'detail.pnpSecNote': '대략적 신호이며 자격 판정이 아닙니다', 'detail.eeSec': '연방 EE 카테고리', 'detail.crumbHome': '채용 보드',
   'detail.catSec': '직업 분류',
   // 2026-09-26 공고명 아래 날짜 줄(상세 페이지와 공고 팝업 제목 아래): 마감 칸 라벨, 게시 칸은 col.datePosted 재사용
-  'detail.closes': '지원 마감',
+  // 2026-10-01 날짜 두 줄 라벨은 세 언어 모두 영어(게시판 열 이름 col.datePosted 는 그대로, detail.posted 따로)
+  'detail.posted': 'Posted', 'detail.closes': 'Closes',
   // E12-08 등급(1-5) 상세
   'gr.dim.channel': '이민 경로', 'gr.dim.salary': '급여 수준', 'gr.dim.emp': '고용 형태',
   'gr.channel.5': '주정부 지명 목록 포함: {v}', 'gr.channel.4': '{v} 기술직, 부족직종 그룹', 'gr.channel.3': '{v} 기술직',

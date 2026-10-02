@@ -52,24 +52,24 @@ const AFTER_MIDNIGHT_0927 = Date.UTC(2026, 8, 27, 4, 30)
 describe('金标:四种情形', () => {
   it('有截止日:发布、截止两格,发布在前', () => {
     expect(cellsOf(jobOf({ valid_through: '2026-10-16T00:00:00.000Z' }), NOON_0926)).toEqual([
-      ['col.datePosted', '2026-09-25'],
+      ['detail.posted', '2026-09-25'],
       ['detail.closes', '2026-10-16'],
     ])
   })
 
   it('没截止日:只出发布一格(不编预计截止)', () => {
-    expect(cellsOf(jobOf({ valid_through: null }), NOON_0926)).toEqual([['col.datePosted', '2026-09-25']])
+    expect(cellsOf(jobOf({ valid_through: null }), NOON_0926)).toEqual([['detail.posted', '2026-09-25']])
   })
 
   it('截止日已过:截止格不出', () => {
     expect(cellsOf(jobOf({ valid_through: '2026-09-25T00:00:00.000Z' }), NOON_0926)).toEqual([
-      ['col.datePosted', '2026-09-25'],
+      ['detail.posted', '2026-09-25'],
     ])
   })
 
   it('截止日就是今天:还算在期,两格都出', () => {
     expect(cellsOf(jobOf({ valid_through: '2026-09-26T00:00:00.000Z' }), NOON_0926)).toEqual([
-      ['col.datePosted', '2026-09-25'],
+      ['detail.posted', '2026-09-25'],
       ['detail.closes', '2026-09-26'],
     ])
   })
@@ -78,7 +78,7 @@ describe('金标:四种情形', () => {
 describe('金标:边角', () => {
   it('已下架:截止日还没到也不出截止格(与 JobPosting 同口径)', () => {
     expect(cellsOf(jobOf({ status: 'closed', valid_through: '2026-10-16T00:00:00.000Z' }), NOON_0926)).toEqual([
-      ['col.datePosted', '2026-09-25'],
+      ['detail.posted', '2026-09-25'],
     ])
   })
 
@@ -94,7 +94,7 @@ describe('金标:边角', () => {
 
   it('板帖带时区的截止日(东部零点落库成 UTC 04:00):裁出来仍是发帖方写的那天', () => {
     expect(cellsOf(jobOf({ valid_through: '2026-10-11T04:00:00.000Z' }), NOON_0926)).toEqual([
-      ['col.datePosted', '2026-09-25'],
+      ['detail.posted', '2026-09-25'],
       ['detail.closes', '2026-10-11'],
     ])
   })
@@ -104,11 +104,11 @@ describe('今天按多伦多日期', () => {
   const today = jobOf({ valid_through: '2026-09-26T00:00:00.000Z' })
 
   it('多伦多晚上 10 点(UTC 已是明天):截止日当天照出', () => {
-    expect(cellsOf(today, LATE_0926).map((c) => c[0])).toEqual(['col.datePosted', 'detail.closes'])
+    expect(cellsOf(today, LATE_0926).map((c) => c[0])).toEqual(['detail.posted', 'detail.closes'])
   })
 
   it('多伦多过了零点:昨天截止的收掉', () => {
-    expect(cellsOf(today, AFTER_MIDNIGHT_0927).map((c) => c[0])).toEqual(['col.datePosted'])
+    expect(cellsOf(today, AFTER_MIDNIGHT_0927).map((c) => c[0])).toEqual(['detail.posted'])
   })
 })
 
@@ -165,7 +165,7 @@ describe('性质:任意截止日 × 任意此刻 × 任意状态', () => {
       const wantCloses = vt != null && x.status !== 'closed' && vt.slice(0, 10) >= torontoToday(x.now)
       const want: string[] = []
       if (x.hasPosted) {
-        want.push('col.datePosted')
+        want.push('detail.posted')
       }
       if (wantCloses) {
         want.push('detail.closes')
@@ -208,13 +208,13 @@ describe('JobDates 渲染(真时钟,截止日取远未来 / 远过去,结果不�
 
   it('两格:标签、一个空格、YYYY-MM-DD', () => {
     expect(cellTexts(jobOf({ valid_through: '2999-12-31T00:00:00.000Z' }))).toEqual([
-      'col.datePosted 2026-09-25',
+      'detail.posted 2026-09-25',
       'detail.closes 2999-12-31',
     ])
   })
 
   it('截止日已过:只剩发布一格', () => {
-    expect(cellTexts(jobOf({ valid_through: '2000-01-01T00:00:00.000Z' }))).toEqual(['col.datePosted 2026-09-25'])
+    expect(cellTexts(jobOf({ valid_through: '2000-01-01T00:00:00.000Z' }))).toEqual(['detail.posted 2026-09-25'])
   })
 
   it('小标题:正文里一节「日期」,两行在它下面', () => {

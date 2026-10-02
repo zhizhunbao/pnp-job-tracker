@@ -537,7 +537,8 @@ export const jobsZh = {
   // #142 职业分类三级(可点即按该级筛职位板)
   'detail.catSec': '职业分类',
   // 2026-09-26 职位名下的日期行(详情页与职位弹框标题下):截止那格的标签;发布那格复用 col.datePosted
-  'detail.closes': '截止',
+  // 2026-10-01 Frank「另外这个改成英文」「只这一行改英文」:日期两行的标签三语一律英文(职位板「发布日期」列名不动,另用 detail.posted)
+  'detail.posted': 'Posted', 'detail.closes': 'Closes',
   // E12-08 档位(1-5)拆解
   'gr.dim.channel': '移民通道', 'gr.dim.salary': '薪资质量', 'gr.dim.emp': '雇佣质量',
   'gr.channel.5': '命中具体通道:{v}', 'gr.channel.4': '{v}:技能类职业,且属官方紧缺职业段', 'gr.channel.3': '{v}:技能类职业(TEER 0-3),满足多数省提名通道的职业门槛',
