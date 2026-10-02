@@ -284,6 +284,8 @@ export function makeSponsorClick(kind: string): ClickFn {
  * 原先这里按职业码自己找、取最后一个命中,也不跳过参考信号清单:NS 木匠一类 82 条格子写「NS Construction」
  * (数据层取清单最小的第一个命中),点开却是「NS Critical Vacancies」参考清单。参考信号清单(MB 在需、NS 紧缺空缺)
  * 数据层从不写进 pnp_stream,于是也不再当命中清单;排除清单照旧按职业码认。
+ * 2026-10-02 Frank「都修了」(属性测试偶发红):优先处理清单(NL 优先处理职位)同理不当命中清单 —— 它的卡只按职业码出(shownStreamsOf),
+ * 通道标签碰巧同名时原先会把它认成命中、反把排除清单卡挤掉,格子却照排除键判有卡,两边对不上。数据层同样从不把它写进 pnp_stream。
  *
  * @param x 本岗与扁平清单。
  * @returns 本省通道、命中与排除。
@@ -300,7 +302,7 @@ export function pnpMatchOf(x: PnpMatchIn): PnpMatchOut {
       }
     } else {
       hasInclusion = true
-      if (x.job.pnpStream !== TEXT_NONE && s.label === x.job.pnpStream) {
+      if (x.job.pnpStream !== TEXT_NONE && s.label === x.job.pnpStream && s.type !== TYPE_PRIORITY) {
         matched = s
       }
     }
