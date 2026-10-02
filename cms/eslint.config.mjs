@@ -24,8 +24,8 @@ const BARRELS = ['agent', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', '
   // 2026-09-05 批二立 guide 替 consult;批三 consult 目录已删,它那行一起撤。
   // 2026-09-28 advisor 域删(Frank「接口也删了吧」:/api/advisor 前端零调用方),它那一名与下面 server 门三条一起撤。
   'guide',
-  // 2026-10-01 立 traffic(挡非搜索类爬虫 + 出站流量记账):index 给页面门(边缘运行时),server 给启动钩子。
-  'traffic']
+  // 2026-10-01 立 bots(挡非搜索类爬虫,index 给页面门,边缘运行时)与 traffic(出站流量记账,只有 server 门给启动钩子)。
+  'bots', 'traffic']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 // jobs / points / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
 // 理由见 lib/jobs/index.ts 顶上那段:混着 payload 依赖的桶会把连接池打进浏览器包)。
