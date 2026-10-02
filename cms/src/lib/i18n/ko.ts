@@ -847,7 +847,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'match.r.lmia.lowOnly': '고용주 최근 2년 승인 LMIA {n}건(최근 {q})은 전부 농업/저임금 스트림 — 대부분 계절성 고용으로 숙련 스폰서 근거가 약해 가점 없음',
   'match.r.lmia.na': '이 고용주 최근 2년 승인 LMIA 기록 없음(대부분의 고용주는 필요한 적이 없음; 부정적 신호 아님)',
   // 付费墙(E3-05)
-  'grp.company': '회사', 'grp.pnpProv': '{p} 주정부 지명(PNP)', 'grp.pnpProvAip': '{p} 주정부 지명(PNP) 및 AIP', 'grp.immigration': '이민', 'grp.category': '직업 분류', 'grp.pnp': '주정부 지명(PNP)', 'grp.ee': '연방 EE', 'grp.aip': 'AIP 지정 고용주', 'grp.pilot': '시범 커뮤니티(RCIP/FCIP)', 'grp.salary': '급여 대조',
+  'grp.company': '회사', 'grp.pnpProv': '{p} 주정부 지명(PNP)', 'grp.immigration': '이민', 'grp.category': '직업 분류', 'grp.pnp': '주정부 지명(PNP)', 'grp.ee': '연방 EE', 'grp.aip': 'AIP 지정 고용주', 'grp.pilot': '시범 커뮤니티(RCIP/FCIP)', 'grp.salary': '급여 대조',
   'loc.src': '출처: IRCC 공개 데이터(연말 기준, 5 단위 반올림).',
   'loc.dirLink': '고용주 디렉토리',
   'cat.showZh': '한국어 대조 보기', 'cat.pair': '한국어 대조', 'cat.hideZh': '한국어 대조 접기', 'cat.translating': '번역 중…', 'cat.transErr': '번역 사용 불가',

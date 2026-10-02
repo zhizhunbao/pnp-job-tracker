@@ -1611,11 +1611,6 @@ export const TITLE_TRANS_GEN = 0
 export const K_KICKER_PROV = 'grp.pnpProv'
 
 /**
- * 页眉小标词条:「{省}提名(PNP)及 AIP」。
- */
-export const K_KICKER_PROV_AIP = 'grp.pnpProvAip'
-
-/**
  * 页眉小标词条:没有省 / 魁省(不参加 PNP)照旧写分组名。
  */
 export const K_KICKER_GROUP = 'grp.pnp'

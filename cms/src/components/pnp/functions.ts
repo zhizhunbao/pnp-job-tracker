@@ -50,7 +50,7 @@ import {
   AIP_OA_TAIL_RE, CHAN_NOTE_TAGS,
   AIP_HIT_MIN_LEN, BASIS_ANY_NOC, BASIS_EXP_TEER, BASIS_FIELD, BASIS_ONE_NOC, BASIS_PAID, BASIS_RELATED,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
-  K_KICKER_PROV_AIP, EXCL_KEY_SEP,
+  EXCL_KEY_SEP,
   DRAW_NO_SCORE_PROVS, DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
   PROGRAM_POOL, QUOTA_MIN_PREFIX, UNIT_APPLICATION, UNIT_SELECTION, YTD_COUNT_KIND, COUNT_INV_ONE_KEY,
   OPS_SCOPE_DRAW_STREAM,
@@ -5271,6 +5271,8 @@ export function pnpDataOf(data: PnpData | null): PnpData {
  * 选取与省提名邀请发在同一张抽选页):小标写「{省}提名(PNP)及 AIP」(2026-09-23 Frank「这里面还包含了 AIP 哈 不光是 PNP」)。
  * 2026-09-26 加 NS:数据层今起接入 NS 月度选取人数(etl/pnp 的 DRAWS_NS_LABEL「NSNP + AIP」—— NSNP 各通道与 AIP 走同一个 EOI 池,
  * 官方按月只发一个总数),抽选卡标题带 AIP,小标同口径。2026-09-28 随省提名弹框自 advisor 迁入。」
+ * 2026-10-01 Frank「PNP 弹框 里面的 AIP 部分 提出来,放到 AIP 弹框」「都做吧」:AIP 抽选卡与通道搬去 AIP 弹框,大西洋四省的小标随之
+ * 回到「{省}提名(PNP)」(「及 AIP」那支与词条 grp.pnpProvAip 撤;线上 375px 走查截图看出来的漏改)。
  *
  * @param x 取词函数与本岗省码。
  * @returns 小标文字。
@@ -5281,9 +5283,6 @@ export function pnpKickerOf(x: PnpKickerIn): string {
   }
   if (x.province === TEXT_NONE) {
     return x.t(K_KICKER_GROUP)
-  }
-  if (ATLANTIC_PROVS.includes(x.province)) {
-    return x.t(K_KICKER_PROV_AIP, { p: x.t(PROV_KEY_HEAD + x.province) })
   }
   return x.t(K_KICKER_PROV, { p: x.t(PROV_KEY_HEAD + x.province) })
 }

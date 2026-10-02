@@ -929,7 +929,7 @@ export const jobsZh = {
   'match.r.lmia.na': '该雇主近两年无获批 LMIA 记录(多数雇主从未办过,非负面信号)',
   // 付费墙(E3-05)
   // E8-10:三个弹框的页眉分组名(收编后标题不再取被点单元格的值)
-  'grp.company': '公司', 'grp.pnpProv': '{p}提名(PNP)', 'grp.pnpProvAip': '{p}提名(PNP)及 AIP', 'grp.immigration': '移民', 'grp.category': '职业分类', 'grp.pnp': '省提名(PNP)', 'grp.ee': '联邦 EE', 'grp.aip': 'AIP 指定雇主', 'grp.pilot': '试点社区(RCIP/FCIP)', 'grp.salary': '薪资对照',
+  'grp.company': '公司', 'grp.pnpProv': '{p}提名(PNP)', 'grp.immigration': '移民', 'grp.category': '职业分类', 'grp.pnp': '省提名(PNP)', 'grp.ee': '联邦 EE', 'grp.aip': 'AIP 指定雇主', 'grp.pilot': '试点社区(RCIP/FCIP)', 'grp.salary': '薪资对照',
   // E8-12 地点弹框:该省移民体量卡(IRCC 官方数;人话名主文案+代码灰注)。2026-09-28 地点弹框删,这段只剩别处还在用的词条
   'loc.src': '来源:IRCC 开放数据(年末存量,官方数四舍五入到 5)。',
   // E8-12b 市级卡(点市看市):就业市场/PGWP 院校/AIP 雇主。2026-09-28 随地点弹框删,这段只剩别处还在用的词条

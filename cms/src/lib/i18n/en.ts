@@ -869,7 +869,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'match.r.lmia.lowOnly': 'Employer’s {n} approved LMIA positions (latest {q}) are all Primary Agriculture / Low Wage streams — mostly seasonal hiring, weak evidence for skilled sponsorship; no points added',
   'match.r.lmia.na': 'No positive-LMIA record for this employer in the past two years (most employers never needed one; not a negative signal)',
   // 付费墙(E3-05)
-  'grp.company': 'Company', 'grp.pnpProv': '{p} PNP', 'grp.pnpProvAip': '{p} PNP and AIP', 'grp.immigration': 'Immigration', 'grp.category': 'Occupation', 'grp.pnp': 'PNP', 'grp.ee': 'Express Entry', 'grp.aip': 'AIP employer', 'grp.pilot': 'Pilot community (RCIP/FCIP)', 'grp.salary': 'Pay vs median',
+  'grp.company': 'Company', 'grp.pnpProv': '{p} PNP', 'grp.immigration': 'Immigration', 'grp.category': 'Occupation', 'grp.pnp': 'PNP', 'grp.ee': 'Express Entry', 'grp.aip': 'AIP employer', 'grp.pilot': 'Pilot community (RCIP/FCIP)', 'grp.salary': 'Pay vs median',
   'loc.src': 'Source: IRCC open data (year-end stock, rounded to the nearest 5).',
   'loc.dirLink': 'Employer directory',
   'cat.showZh': 'Show translation', 'cat.pair': 'Translation', 'cat.hideZh': 'Hide translation', 'cat.translating': 'Translating…', 'cat.transErr': 'Translation unavailable',

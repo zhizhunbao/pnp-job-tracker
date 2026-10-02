@@ -1054,7 +1054,8 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const flipped = nl.map((d) => draw({ ...d, program: 'PNP' }))
     expect(drawCardOf({ t: zh, lang: 'zh', province: 'NL', draws: flipped, ...dx })?.others.map((g) => g.key)).toEqual(['AIP (ITA batch)'])
     expect(aipCardOf({ t: zh, lang: 'zh', province: 'NL', draws: flipped, ...dx })).toBeNull()
-    expect(pnpKickerOf({ t: zh, province: 'NL' })).toBe('纽芬兰与拉布拉多省提名(PNP)及 AIP')
+    // 2026-10-01 AIP 搬去 AIP 弹框:大西洋省小标不再带「及 AIP」
+    expect(pnpKickerOf({ t: zh, province: 'NL' })).toBe('纽芬兰与拉布拉多省提名(PNP)')
   })
 
   it('NS:本省抽选头一行注明同池含 AIP、卡底写「N 个月,共 X 人入选」;AIP 卡指回本省抽选', () => {
@@ -1094,7 +1095,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     // 往年有轮次、这一年没有:写这一年还没有抽选
     const old = [draw({ province: 'MB', stream: 'Skilled Worker in Manitoba', drawDate: '2025-11-20' })]
     expect(drawCardOf({ t: zh, lang: 'zh', province: 'MB', draws: old, ...dx })?.lines).toEqual(['2026 年还没有抽选'])
-    expect(pnpKickerOf({ t: zh, province: 'PE' })).toBe('爱德华王子岛省提名(PNP)及 AIP')
+    expect(pnpKickerOf({ t: zh, province: 'PE' })).toBe('爱德华王子岛省提名(PNP)')
     expect(pnpKickerOf({ t: zh, province: 'MB' })).not.toContain('AIP')
   })
 
