@@ -1005,6 +1005,7 @@ export function dimSpecs(): DimSpecs {
  * 本轮不在板仓的板帖下架(2026-09-26)→ 重复标记 →
  * 「本轮见过但没进 mart」打 is_dup(2026-09-06)→ 心跳。
  * 全程单事务:任一步失败整体回滚,不再有半写状态(老逐行版没有原子性)。
+ * 2026-10-02 开事务先拿排队锁(SEED_LOCK):两轮并发时后到的等前一轮提交,不再交叉清灌把维度表灌成两份。
  *
  * @param x 连接池与 reset 开关(池由路由注入)。
  * @returns /seed 的响应体。
@@ -1017,6 +1018,7 @@ export async function runSeed(x: RunSeedIn): RunSeedOut {
   const client = await x.db.connect()
   try {
     await client.query(SQL.TX_BEGIN)
+    await client.query(SQL.SEED_LOCK)
     await client.query(SQL.SEED_STATE_CREATE)
     const prevHash = await loadSeedState(client)
     await seedDims({ client: client, now: now, prevHash: prevHash, counts: counts })
