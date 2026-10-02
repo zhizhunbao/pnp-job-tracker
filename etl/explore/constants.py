@@ -244,6 +244,20 @@ ALIAS_MAX_LEN = 100
 NOTE_PERSON = "person"
 """备注:人名雇主。"""
 
+NOTE_NUMBERED = "numbered"
+"""备注:编号公司(2026-10-02,见 NUMBERED_RE)。"""
+
+NUMBERED_RE = re.compile(
+    r"^\s*\d{5,}\s*[-–]?\s*"
+    r"(?:(?:canada|nova\s+scotia|new\s+brunswick|newfoundland|labrador|and|prince\s+edward\s+island|p\.?e\.?i\.?|ontario|"
+    r"alberta|british\s+columbia|b\.?c\.?|manitoba|saskatchewan|quebec|québec|yukon|n\.?s\.?|n\.?b\.?|n\.?l\.?)\s*)*"
+    r"(?:inc|ltd|limited|corp|corporation|incorporated|co|company|ltée|ltee|ulc)?\.?\s*$",
+    re.IGNORECASE,
+)
+"""编号公司名(2026-10-02 Frank「可以,编号公司不出灰字」):打头一串数字、后面只剩省名 / Canada / 公司后缀的
+(「3242367 NOVA SCOTIA LIMITED」「11174444 Canada Inc」)。模型译出来丢编号成「新斯科舍有限公司」,几家一模一样像一家;
+不送模型,直接判跳过(skip:板上与 AIP 名单连已有的译名也不出)。带真名的(「3035315 - STONEHOUSE MOTEL & RESTAURANT」)不算。"""
+
 NOTE_SHAPE = "shape"
 """备注:回答不成形(没有 PERSON 行)。"""
 

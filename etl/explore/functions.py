@@ -20,7 +20,7 @@ from explore.constants import (
     ALIAS_MAX_LEN, BROADS_HINT_MAX, BROADS_SEP, CJK_RE, ENV_LLM_BASE, ENV_LLM_MODEL, ENV_SEED_TOKEN, ENV_SEED_URL, FIELD_NONE, FLUSH_N, GEN_TOKENS,
     HANGUL_RE, HDR_SEED_TOKEN, HTTP_TIMEOUT_S, INDUSTRIES, INDUSTRY_RE, K_ALIAS_KO, K_ALIAS_ZH, K_BROADS, K_INDUSTRY, K_KEY, K_NAME, K_NOTE, K_RESULTS, K_STATUS,
     K_TODOS, KO_RE, LLM_MODEL_DEFAULT, LLM_TEMPERATURE, NAME_MAX_LEN, NET_ERRORS, NOTE_EMPTY, NOTE_HTTP_TPL,
-    NOTE_NO_LLM, NOTE_NO_SITE, NOTE_PERSON, NOTE_SHAPE, P_LIMIT, P_MODEL, P_NUM_PREDICT, P_OPTIONS, P_PROMPT,
+    NOTE_NO_LLM, NOTE_NO_SITE, NOTE_NUMBERED, NOTE_PERSON, NOTE_SHAPE, NUMBERED_RE, P_LIMIT, P_MODEL, P_NUM_PREDICT, P_OPTIONS, P_PROMPT,
     P_RESPONSE, P_STREAM, P_TEMPERATURE, P_THINK, PATH_DONE, PATH_OLLAMA_GENERATE, PATH_TODO, PERSON_RE, PERSON_YES,
     PRINT_ABORT_TPL, PRINT_DONE_TPL, PRINT_ROW_TPL, PRINT_TAKE_TPL, PROMPT_HEAD, PROMPT_TAIL_TPL, SCHEME_SEP, ST_DONE, ST_SKIP,
     STRIP_REPL, THINK_RE, URL_TAIL_SLASH, ZH_RE, ZH_TRIES,
@@ -160,8 +160,13 @@ def translate_filled(x: TranslateIn) -> Result:
 
 def translate_one(x: TranslateIn) -> Result:
     """一个雇主名:模型三行定式回答 → 人名的标 skip;其余取中 / 韩文译名,过不了校验的那一门留空
-    (品牌名只有拉丁字母写法时,空着比硬翻好);盒子掉线 / 超时转数据记异常类名,由入口判整轮中止。"""
+    (品牌名只有拉丁字母写法时,空着比硬翻好);盒子掉线 / 超时转数据记异常类名,由入口判整轮中止。
+    2026-10-02 Frank「可以,编号公司不出灰字」:编号公司(NUMBERED_RE)不送模型,直接标 skip。"""
     res = Result(key=x.todo.key)
+    if NUMBERED_RE.match(x.todo.name):
+        res.status = ST_SKIP
+        res.note = NOTE_NUMBERED
+        return res
     try:
         tail = PROMPT_TAIL_TPL.format(name=x.todo.name[:NAME_MAX_LEN], broads=BROADS_SEP.join(x.todo.broads))
         answer = call_llm(LlmCallIn(client=x.client, cfg=x.cfg, prompt=PROMPT_HEAD + tail))

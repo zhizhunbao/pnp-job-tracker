@@ -1916,6 +1916,7 @@ export const QC_NOC_CHANNELS = `SELECT channels FROM qc_noc_streams WHERE noc = 
  * 本岗雇主排最前,同招牌的接着,其余按招牌 / 门店 / 法人排;$3 = 跳过几家(从整表数起),$4 = 取几家。
  * 2026-10-02 Frank「这个也要加灰字 和 点击吧」:每行再带雇主池键与译名(先分好这一页再按名单原名去雇主池找,designated_names 的 GIN 索引;
  * 先接再分页实测一页要逐行查 1574 次,几十秒)。没对上雇主池的行三格为 NULL —— 那一行不出灰字、不可点。
+ * 同日 Frank「可以,编号公司不出灰字」:探索队列标了 skip 的(人名、编号公司)译名一律不出,同雇主板。
  */
 export const AIP_EMP_PAGE = `WITH mine AS (
        SELECT DISTINCT brand FROM designated_employers
@@ -1930,7 +1931,9 @@ export const AIP_EMP_PAGE = `WITH mine AS (
      SELECT g.trade, g.store, g.legal, g.brand_n, g.hit, pk.key AS pool_key, pk.alias_zh, pk.alias_ko
      FROM page g
      LEFT JOIN LATERAL (
-       SELECT p.key, COALESCE(NULLIF(c.alias_zh, ''), x.alias_zh) AS alias_zh, COALESCE(NULLIF(c.alias_ko, ''), x.alias_ko) AS alias_ko
+       SELECT p.key,
+              CASE WHEN x.status = 'skip' THEN NULL ELSE COALESCE(NULLIF(c.alias_zh, ''), x.alias_zh) END AS alias_zh,
+              CASE WHEN x.status = 'skip' THEN NULL ELSE COALESCE(NULLIF(c.alias_ko, ''), x.alias_ko) END AS alias_ko
        FROM employer_pool p LEFT JOIN companies c ON c.slug = p.slug LEFT JOIN employer_explore x ON x.key = p.key
        WHERE p.designated_names ? g.name LIMIT 1) pk ON true
      ORDER BY g.hit DESC, g.same_brand DESC, g.trade, g.store, g.legal`
