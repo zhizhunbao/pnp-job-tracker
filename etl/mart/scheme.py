@@ -819,6 +819,12 @@ class MartCtx:
     stated_none: dict
     """externalId → 原帖明写不公布的格 → 原文(板仓行 stated_none,如 Jobillico 薪资栏「À discuter」;2026-09-28)。"""
 
+    show_rep: dict
+    """展示去重键 → 那组进汇装的代表 externalId(2026-10-02,同组跳过的帖跟代表一起扣,见 held_split_of)。"""
+
+    dup_of: dict
+    """被展示去重跳过的 externalId → 同组代表 externalId(2026-10-02:代表没上线时它们一起进扣下名单)。"""
+
 
 @dataclass
 class SiteCheckIn:
@@ -2271,6 +2277,9 @@ class HeldSplitIn:
 
     pending: list
     """待修清单(pending_jobs_of 算的)。"""
+
+    dup_of: dict
+    """被展示去重跳过的 externalId → 同组代表 externalId(MartCtx.dup_of;2026-10-02)。"""
 
 
 @dataclass
@@ -4923,19 +4932,29 @@ class MartPendingTest(unittest.TestCase):
         from mart import functions as fn
         jobs = [{"externalId": "a"}, {"externalId": "b"}, {"externalId": "c"}, {"externalId": "d"}, {"externalId": "e"}]
         pending = [{"ext": "d"}, {"ext": "b"}, {"ext": "b"}]
-        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=pending))
+        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=pending, dup_of={}))
         self.assertEqual(out.kept, [{"externalId": "a"}, {"externalId": "c"}, {"externalId": "e"}])
         self.assertEqual(out.held, [{"externalId": "b"}, {"externalId": "d"}])
-        empty = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[]))
+        empty = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[], dup_of={}))
         self.assertEqual((empty.kept, empty.held), (jobs, []))
+
+    def test_held_dups(self) -> None:
+        """同组跳过的帖跟代表走(2026-10-02 补漏):代表被扣 → 一起扣;代表上线 → 不扣;代表没进汇装 → 一起扣;
+        自己也是上线行的不扣;保险丝不数跳过的帖。"""
+        from mart import functions as fn
+        jobs = [{"externalId": "a"}, {"externalId": "b"}, {"externalId": "c"}, {"externalId": "d"}, {"externalId": "e"}]
+        dup_of = {"b2": "b", "a2": "a", "z2": "z", "c": "b", "x1": "b", "x2": "b", "x3": "b"}
+        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[{"ext": "b"}], dup_of=dup_of))
+        self.assertEqual(out.kept, [{"externalId": "a"}, {"externalId": "c"}, {"externalId": "d"}, {"externalId": "e"}])
+        self.assertEqual([r["externalId"] for r in out.held], ["b", "b2", "x1", "x2", "x3", "z2"])
 
     def test_held_guard(self) -> None:
         """保险丝:扣下超过在招的 45% 抛错停轮(判「全」出错时不清空职位板);正好一半以下放行。"""
         from mart import functions as fn
         jobs = [{"externalId": "a"}, {"externalId": "b"}, {"externalId": "c"}, {"externalId": "d"}]
         with self.assertRaises(RuntimeError):
-            fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[{"ext": "a"}, {"ext": "b"}]))
-        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[{"ext": "a"}]))
+            fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[{"ext": "a"}, {"ext": "b"}], dup_of={}))
+        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[{"ext": "a"}], dup_of={}))
         self.assertEqual(len(out.kept), 3)
 
 

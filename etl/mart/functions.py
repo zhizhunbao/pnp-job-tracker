@@ -2367,8 +2367,10 @@ def collect_ats_rows(ctx: MartCtx) -> None:
             show = DEDUP_CITY_KEY_TPL.format(slug=slug, title=norm_title(j.get(K_TITLE, "")),
                                              city=norm_title(j.get(K_CITY, "")))
             if show in ctx.seen:
+                ctx.dup_of[ext] = ctx.show_rep[show]
                 continue
             ctx.seen.add(show)
+            ctx.show_rep[show] = ext
             fill_salary(FillSalaryIn(ctx=ctx, job=j))
             add_job(AddJobIn(ctx=ctx, external_id=ext, company_slug=slug,
                              fields=to_ats_job_fields(AtsJobIn(job=j, ats=ats,
@@ -2396,8 +2398,10 @@ def collect_jobbank_rows(ctx: MartCtx) -> None:
         show = DEDUP_CITY_KEY_TPL.format(slug=cslug, title=norm_title(j.get(K_TITLE, "")),
                                          city=norm_title(j.get(K_CITY, "")))
         if show in ctx.seen:
+            ctx.dup_of[ext] = ctx.show_rep[show]
             continue
         ctx.seen.add(show)
+        ctx.show_rep[show] = ext
         add_company(CompanyExtraIn(ctx=ctx, name=j.get(K_EMPLOYER) or EM_DASH, slug=cslug,
                                    extra=to_jb_company_extra(j)))
         fill_salary(FillSalaryIn(ctx=ctx, job=j))
@@ -2428,8 +2432,10 @@ def collect_board_rows(ctx: MartCtx) -> None:
             show = DEDUP_CITY_KEY_TPL.format(slug=cslug, title=norm_title(j.get(K_TITLE, "")),
                                              city=norm_title(j.get(K_CITY, "")))
             if show in ctx.seen:
+                ctx.dup_of[ext] = ctx.show_rep[show]
                 continue
             ctx.seen.add(show)
+            ctx.show_rep[show] = ext
             add_company(CompanyExtraIn(ctx=ctx, name=j.get(K_EMPLOYER) or EM_DASH, slug=cslug,
                                        extra=to_jb_company_extra(j)))
             fill_salary(FillSalaryIn(ctx=ctx, job=j))
@@ -5192,7 +5198,8 @@ def new_mart_ctx() -> MartCtx:
                    formatted=load_formatted(),
                    pilot_occ_sets=load_pilot_occ_sets(), expired=load_expired_ids(),
                    salary_guards=guards, companies={}, jobs=[], seen=set(),
-                   seen_ext=set(), seen_ids=set(), dropped_expired=0, late_salary=0, emp_src={}, stated_none={})
+                   seen_ext=set(), seen_ids=set(), dropped_expired=0, late_salary=0, emp_src={}, stated_none={},
+                   show_rep={}, dup_of={})
 
 
 def say_mart_tallies(ctx: MartCtx) -> None:
@@ -5239,7 +5246,7 @@ def to_mart_tables() -> dict:
     fill_apply_emails(ctx)
     say_mart_tallies(ctx)
     pending = pending_jobs_of(ctx)
-    split = held_split_of(HeldSplitIn(jobs=ctx.jobs, pending=pending))
+    split = held_split_of(HeldSplitIn(jobs=ctx.jobs, pending=pending, dup_of=ctx.dup_of))
     ctx.jobs = split.kept
     noc_i18n = load_i18n(I18N_NOC_FILE)
     city_i18n = load_i18n(I18N_CITY_FILE)
@@ -5379,7 +5386,10 @@ def pending_order_of(row: dict) -> str:
 def held_split_of(x: HeldSplitIn) -> HeldSplitOut:
     """接闸(2026-09-28 Frank「只要数据不全的都不上」「确认,下线吧」):待修清单里的岗扣下 —— 不进 jobs.json,
     出一行 {externalId} 进扣下名单交 seed 关掉在架的;其余照旧上线。扣下超过在招的 HELD_MAX_RATIO,
-    当判「全」出错,抛错停轮(不落盘不上传,线上保持上一版)。"""
+    当判「全」出错,抛错停轮(不落盘不上传,线上保持上一版)。
+    2026-10-02 补漏(Frank「这个没有薪资的岗位怎么漏进来的」,Maarut 两条):展示去重只让每组代表进汇装判「全」,
+    同组跳过的帖本轮见过、灌库不关,代表一扣下它们就以旧数据顶上职位板(当天在架 3,131 条没经过检查、761 条在显示)。
+    现在代表没上线(被扣或没进汇装)的,同组跳过的帖一起进扣下名单;保险丝照旧只数代表。"""
     held_ext: set = set()
     for p in x.pending:
         held_ext.add(p[K_P_EXT])
@@ -5388,11 +5398,18 @@ def held_split_of(x: HeldSplitIn) -> HeldSplitOut:
         raise RuntimeError(HELD_GUARD_TPL.format(held=len(held_ext), total=total, pct=len(held_ext) / total,
                                                  cap=HELD_MAX_RATIO))
     kept: list = []
+    kept_ext: set = set()
     for row in x.jobs:
-        if (row.get(K_EXTERNAL_ID) or "") not in held_ext:
+        ext = row.get(K_EXTERNAL_ID) or ""
+        if ext not in held_ext:
             kept.append(row)
+            kept_ext.add(ext)
+    held_all: set = set(held_ext)
+    for ext, rep in x.dup_of.items():
+        if rep not in kept_ext and ext not in kept_ext:
+            held_all.add(ext)
     held: list = []
-    for ext in sorted(held_ext):
+    for ext in sorted(held_all):
         held.append({K_EXTERNAL_ID: ext})
     if total > 0:
         say(HELD_DONE_TPL.format(held=len(held), pct=len(held) / total, kept=len(kept)))
