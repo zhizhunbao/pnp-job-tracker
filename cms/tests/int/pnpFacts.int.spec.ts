@@ -946,6 +946,25 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(one?.others[0]?.total).toBe('1 invitation')
   })
 
+  // 2026-10-01 Frank「这两个 是不是重复」:一组的卡,组头写了本年合计就不再出卡底合计
+  it('卡底合计:只有一组且组头有合计 → 不出;组头没合计 → 照出;多组 → 照出(全省合计)', () => {
+    const aos = [draw({ province: 'AB', label: 'AAIP', stream: AOS, drawDate: '2026-09-23', score: 58, invitations: 700 })]
+    const ops = [
+      ytd({ metric: 'invitations_ytd', value: 700, scopeKind: 'drawStream', scope: AOS }),
+      ytd({ metric: 'invitations_ytd', value: 900 }),
+    ]
+    const dx = { hitStreams: [], genDraw: '', reqs: [], year: '2026' }
+    const single = drawCardOf({ t: zh, lang: 'zh', province: 'AB', draws: aos, ...dx, ops })
+    expect(single?.others[0]?.total).toBe('共 700 份邀请')
+    expect(single?.foot).toEqual([])
+    // 探针:组头没合计(汇装没出这一组)→ 卡底照出
+    const bare = drawCardOf({ t: zh, lang: 'zh', province: 'AB', draws: aos, ...dx, ops: ops.slice(1) })
+    expect(bare?.foot.length).toBe(1)
+    // 探针:两组 → 卡底是全省合计,照出
+    const two = aos.concat([draw({ province: 'AB', label: 'AAIP', stream: 'Agri', drawDate: '2026-09-15', score: 60, invitations: 200 })])
+    expect(drawCardOf({ t: zh, lang: 'zh', province: 'AB', draws: two, ...dx, ops })?.foot.length).toBe(1)
+  })
+
   it('本省抽选卡只列配额卡那一年、卡底合计读汇装的数;官方只写上限的轮次写「少于 N」、合计写「至少」(AB)', () => {
     const law = (drawDate: string) => draw({
       province: 'AB', label: 'AAIP', stream: 'Law Enforcement Pathway', drawDate, score: 49, invitations: null, invitationsBelow: 10,

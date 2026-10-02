@@ -1977,6 +1977,8 @@ function noDrawReqOf(x: NoDrawReqIn): PnpReq | null {
 /**
  * 有轮次可列的抽选卡:本岗那几组(浅蓝组头行,开关收起时也留着)与其余组分开(2026-09-29 自 drawCardOf 体内提出,三张卡共用)。
  * 不折叠的卡(fold = false,AIP 卡)各组全放进常显的那一列,不设开关;组头照旧只按 hit 着色。
+ * 2026-10-01 Frank「这两个 是不是重复」(配图组头「共 2,300 份邀请 16 轮」与卡底「2026 年 16 轮,共 2,300 份邀请」):卡里只有一组、
+ * 且这一组组头写了本年合计时卡底合计不出 —— 一组的卡两者是同一个数;组头没合计(汇装没出那一组)照旧出卡底;多组照旧出(那是全省合计)。
  *
  * @param x 标题、轮次标签、各组、来源、灰字、卡底合计、开关键与折不折叠。
  * @returns 抽选卡。
@@ -1991,6 +1993,11 @@ function groupsCardOf(x: GroupsCardIn): DrawCard {
       others.push(g)
     }
   }
+  let foot = x.foot
+  const only = x.groups[0]
+  if (x.groups.length === 1 && only != null && only.total !== TEXT_NONE) {
+    foot = []
+  }
   return {
     title: x.title,
     label: x.label,
@@ -1999,7 +2006,7 @@ function groupsCardOf(x: GroupsCardIn): DrawCard {
     total: x.groups.length,
     source: x.source,
     lines: x.lines,
-    foot: x.foot,
+    foot,
     allKey: x.allKey,
   }
 }
