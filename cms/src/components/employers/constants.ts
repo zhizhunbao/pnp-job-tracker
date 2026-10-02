@@ -361,12 +361,6 @@ export const BTN_PRO = 'pro'
 export const BTN_GHOST = 'ghost'
 
 /**
- * 在招地点格默认露几枚胶囊(2026-09-13 定的三枚:板上一行放得下;2026-09-20 起数据层给全部在招地点,
- * 截断归这里,其余点「展开其余 N 个」列全)。
- */
-export const LOCS_FIRST_N = 3
-
-/**
  * 在招地点格展开钮的量词词条(「个」;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」)。
  */
 export const K_LOCS_UNIT = 'fold.u.item'

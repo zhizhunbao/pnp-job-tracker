@@ -1331,11 +1331,6 @@ export const PLAIN_BTN_KIND = 'ghost'
 export const SRC_BTN_KIND = 'secondary'
 
 /**
- * 清单兜底:即便一条都没命中,也至少显这么多条。
- */
-export const ROWS_FALLBACK = 1
-
-/**
  * 依据链一格里几行起算「多行」:多行的格一行一块,单行的格就地铺开。
  */
 export const CELL_MULTI_MIN = 2

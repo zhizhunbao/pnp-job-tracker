@@ -4,10 +4,12 @@
  *
  * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」「展开 20, 再展开 20, 再开其余, 收起」:加 FoldLine(清单展开 / 收起两只钮,全站唯一出口)与 useFold。
  * 同日加 usePagedFold(服务器按页取的清单:AIP 指定雇主卡、相似雇主卡)。
+ * 2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):导出 FOLD_FIRST(全站清单默认露几行)。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+export { FOLD_FIRST } from './constants'
 export { FoldLine } from './foldline'
 export { useFold, usePagedFold } from './hooks'
 export { MoreLine } from './moreline'

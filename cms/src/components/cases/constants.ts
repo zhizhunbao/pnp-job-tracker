@@ -101,12 +101,6 @@ export const EV_INDEX_PAGE = 'cases-index-page'
 export const EV_TO_QUIZ = 'case-to-quiz'
 
 /**
- * 其余路径摊开几条再折叠(走查 #299:整页太长,英文态 5.5k px ——
- * 前 5 条直出、其余收进 details;第 6 条往后都是「更慢或更难」的)。
- */
-export const HEAD_N = 5
-
-/**
  * 其余路径 / 走不通的两处展开钮的量词词条(「条」;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:
  * 原 details「展开其余 N 条」换成 pager 桶 FoldLine,一次展开 20 条)。
  */

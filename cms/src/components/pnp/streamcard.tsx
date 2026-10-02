@@ -7,14 +7,15 @@
  * 2026-08-28 换装批自 Pnp.tsx 的 PnpListSection 拆出成文件。
  * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:末尾开关换成 pager 桶 FoldLine(展开 20 个 → 再展开 20 个 → 展开其余 N 个 → 收起),开合由本卡
  * useFold 自管。
- *
+
+ * 2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):默认露前 20 行(命中置顶),不足 20 全露。 *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
-import { FoldLine, useFold } from '@/components/pager'
+import { FOLD_FIRST, FoldLine, useFold } from '@/components/pager'
 import { streamDisplay } from '@/lib/jobs'
 import { BOX_GAP_NONE, K_FOLD_UNIT_ITEM } from './constants'
-import { boxClsOf, hiddenCountOf, streamRowsOf } from './functions'
+import { boxClsOf, streamRowsOf } from './functions'
 import { StreamRow } from './streamrow'
 import type { StreamCardIn } from './types'
 import css from './pnp.module.css'
@@ -26,7 +27,7 @@ import css from './pnp.module.css'
  * @returns 清单卡。
  */
 export function StreamCard({ t, lang, showZh, stream, noc, nocRows, matchRef }: StreamCardIn) {
-  const hidden = hiddenCountOf({ stream, noc })
+  const hidden = Math.max(0, stream.occupations.length - FOLD_FIRST)
   const fold = useFold({ hidden })
   const rows = []
   for (const r of streamRowsOf({ t, lang, showZh, stream, noc, nocRows, extra: fold.extra })) {

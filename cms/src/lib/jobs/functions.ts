@@ -44,7 +44,7 @@ import {
   META_SOME_EMPLOYER, META_SPACE, META_TAIL, NL, NOC_JOIN_SLASH, NOC_LEN, NOC_MINOR_LEN, NOC_NONE, NOC_RE,
   NOC_SEARCH_MIN, NOC_SUBMAJOR_LEN, NORM_DASH, NORM_DASH_RE, NORM_WS_RE, NO_LIST_PROVINCES, OCC_TITLE_NONE,
   OG_IMG_ALT, OG_IMG_H, OG_IMG_W, OG_JOB_PATH_HEAD, OG_JOB_PATH_TAIL, OPEN_COND, ORDER_DATE_TAIL, ORDER_DEFAULT_COL,
-  SIMILAR_FIRST_ROWS, SIMILAR_PAGE_ROWS,
+  LIST_FIRST_ROWS, LIST_PAGE_ROWS,
   ORDER_FRESH, ORIGIN_TITLE_HEAD, PARAM_NONE, PCT, PCT_SCALE, PG_CODE_NONE, PG_UNDEFINED_COLUMN, PG_UNDEFINED_TABLE,
   PHONE_RE, PII_MASK, PREV_LINE_NONE, PROGRAM_PNP, PROOF_TTL_MS, PROV_CODE, PROV_CODE_NONE, PROV_MAX_WORDS,
   APPLIES_OFFER,
@@ -57,7 +57,7 @@ import {
   TITLE_CTX_STRIP_RE, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE,
   TITLE_MAX_LEN, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS,
   TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, TYPE_PRIORITY, UNCAT, VD, W, WAGE_NEAR_PCT_MIN,
-  JD_TRANS_MARKS_RE, REL_CO_FIRST_ROWS, REL_GROUP_CO, REL_OCC_FIRST_ROWS, REL_PAGE_ROWS,
+  JD_TRANS_MARKS_RE, REL_GROUP_CO,
 } from './constants'
 import {
   JD_FORMAT_PROMPT_HEAD, JD_FORMAT_RETRY_TAIL, TITLE_IN_CTX_PROMPT, TITLE_LANG_KO, TITLE_LANG_ZH,
@@ -1266,6 +1266,7 @@ export async function loadJobById(input: JobByIdIn): JobByIdOut {
  * 返回能筛出东西的最细一级 —— 下架页不能是死路。
  * 2026-09-23 职业分类改两级:只探大类(中 / 小类退役;职业那一级已由「同省同职业」组承担,组空了再探职业也是空)。
  * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:两组首屏只取露出来的那几条(同公司 3、同省同职业 6),其余由卡上「展开 20 个」走 loadRelatedPage 按页取。
+ * 2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):两组首屏都取 LIST_FIRST_ROWS(20)。
  *
  * @param input 连接与本岗。
  * @returns 两组瘦行与兜底级。
@@ -1275,12 +1276,12 @@ export async function loadRelatedJobs(input: RelatedIn): RelatedOut {
   let coRows: Row[] = []
   if (job.company !== '') {
     coRows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_COMPANY, params: [job.company, job.id,
-      REL_CO_FIRST_ROWS, 0], map: passRow })
+      LIST_FIRST_ROWS, 0], map: passRow })
   }
   let occRows: Row[] = []
   if (job.noc !== '' && job.province !== '') {
     occRows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_OCC, params: [job.province, job.noc, job.id,
-      job.company, job.city, REL_OCC_FIRST_ROWS, 0], map: passRow })
+      job.company, job.city, LIST_FIRST_ROWS, 0], map: passRow })
   }
   const sameCompany = coRows.map(toRelated)
   const sameOcc = occRows.map(toRelated)
@@ -1352,14 +1353,14 @@ export async function loadRelatedPage(input: RelatedPageIn): RelatedPageOut {
       return []
     }
     const coRows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_COMPANY, params: [job.company, job.id,
-      REL_PAGE_ROWS, input.offset], map: passRow })
+      LIST_PAGE_ROWS, input.offset], map: passRow })
     return coRows.map(toRelated)
   }
   if (job.noc === '' || job.province === '') {
     return []
   }
   const rows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_OCC, params: [job.province, job.noc, job.id,
-    job.company, job.city, REL_PAGE_ROWS, input.offset], map: passRow })
+    job.company, job.city, LIST_PAGE_ROWS, input.offset], map: passRow })
   return rows.map(toRelated)
 }
 
@@ -1681,7 +1682,7 @@ export async function loadSimilarEmployers(input: SimilarIn): SimilarOut {
     return []
   }
   return queryRows({
-    db: input.db, sql: SQL.SIMILAR_EMPLOYERS, params: [input.key, 0, SIMILAR_FIRST_ROWS], map: toSimilar,
+    db: input.db, sql: SQL.SIMILAR_EMPLOYERS, params: [input.key, 0, LIST_FIRST_ROWS], map: toSimilar,
   })
 }
 
@@ -1694,7 +1695,7 @@ export async function loadSimilarEmployers(input: SimilarIn): SimilarOut {
  */
 export async function loadSimilarEmployersPage(x: SimilarPageIn): SimilarOut {
   return queryRowsOrEmpty({
-    db: x.db, sql: SQL.SIMILAR_EMPLOYERS, params: [x.key, x.offset, SIMILAR_PAGE_ROWS], map: toSimilar,
+    db: x.db, sql: SQL.SIMILAR_EMPLOYERS, params: [x.key, x.offset, LIST_PAGE_ROWS], map: toSimilar,
   })
 }
 
@@ -3194,7 +3195,9 @@ export async function loadQcChannels(x: LoadQcChannelsIn): QcChannelsOut {
  * @returns 总家数、同招牌家数与行。
  */
 export async function loadAipEmployers(x: LoadAipEmpIn): AipEmpOut {
-  const rows = await queryRowsOrEmpty({ db: x.db, sql: SQL.AIP_EMP_ROWS, params: [x.province, x.key], map: toAipEmp })
+  const rows = await queryRowsOrEmpty({
+    db: x.db, sql: SQL.AIP_EMP_PAGE, params: [x.province, x.key, 0, LIST_FIRST_ROWS], map: toAipEmp,
+  })
   const totals = await queryRowsOrEmpty({ db: x.db, sql: SQL.AIP_EMP_TOTAL, params: [x.province], map: toAipEmpTotal })
   let total = 0
   const t = totals[0]
@@ -3211,13 +3214,16 @@ export async function loadAipEmployers(x: LoadAipEmpIn): AipEmpOut {
 
 /**
  * AIP 弹框指定雇主卡「展开其他 N 家」的一页现查(2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」):本省其余各家一页 20 家(SQL.AIP_EMP_REST)。
+ * 2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):首屏与续取并成一条排好序的 SQL.AIP_EMP_PAGE,offset 从整表数起。
  * 查挂 → 空列(卡上展开钮照旧,点了没新行)。
  *
  * @param x 连接、省码、本岗公司归一名与跳过家数。
  * @returns 这一页的行。
  */
 export async function loadAipEmployersRest(x: LoadAipRestIn): AipRestOut {
-  return queryRowsOrEmpty({ db: x.db, sql: SQL.AIP_EMP_REST, params: [x.province, x.key, x.offset], map: toAipEmp })
+  return queryRowsOrEmpty({
+    db: x.db, sql: SQL.AIP_EMP_PAGE, params: [x.province, x.key, x.offset, LIST_PAGE_ROWS], map: toAipEmp,
+  })
 }
 
 /**

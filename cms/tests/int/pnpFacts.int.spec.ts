@@ -34,7 +34,7 @@ import {
   quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCardOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf, provGateCardsOf,
-  aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, normName, hiddenCountOf, streamRowsOf,
+  aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, normName, streamRowsOf,
 } from '@/components/pnp/functions'
 import type {
   GateCardSpec, PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpOps, PnpPathway, PnpReq, PnpStream,
@@ -1538,27 +1538,27 @@ describe('AIP 指定雇主清单卡', () => {
 })
 
 // 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:省提名职业清单卡开合改走 pager 桶 FoldLine ——
-// streamRowsOf 从开 / 关改成「已展开几个」。金标:对上本岗默认只露本岗那一行;没对上露头 1 行、它不算折起来的;每展开一次多 20 行、封顶。
+// streamRowsOf 从开 / 关改成「已展开几个」。2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):默认露前 20 行(命中置顶),不足 20 全露。
+// 金标:25 个职业对上本岗 → 本岗打头的 20 行,展开 5 → 25 行;没对上 → 原序前 20 行;5 个职业的清单全露。
 describe('省提名职业清单卡的展开个数', () => {
   const zh = makeT('zh')
-  const occs = Array.from({ length: 25 }, (_, i) => ({ noc: String(10000 + i), name: 'Occ ' + i, gtaRestricted: false }))
-  const stream: PnpStream = { stream: 'S', label: 'L', type: 'list', url: '', fetched: '', occupations: occs }
-  const rows = (noc: string, extra: number) =>
+  const listOf = (n: number): PnpStream => ({
+    stream: 'S', label: 'L', type: 'list', url: '', fetched: '',
+    occupations: Array.from({ length: n }, (_, i) => ({ noc: String(10000 + i), name: 'Occ ' + i, gtaRestricted: false })),
+  })
+  const rows = (stream: PnpStream, noc: string, extra: number) =>
     streamRowsOf({ t: zh, lang: 'zh', showZh: false, stream, noc, nocRows: new Map(), extra }).map((r) => r.noc)
 
-  it('对上本岗:默认只露本岗;折起来 24 个;展开 20 → 21 行,再展开到 25 行封顶', () => {
-    expect(rows('10007', 0)).toEqual(['10007'])
-    expect(hiddenCountOf({ stream, noc: '10007' })).toBe(24)
-    expect(rows('10007', 20)).toHaveLength(21)
-    expect(rows('10007', 20)[0]).toBe('10007')
-    expect(rows('10007', 24)).toHaveLength(25)
+  it('对上本岗:本岗打头,默认 20 行;展开 5 → 25 行封顶', () => {
+    const s25 = listOf(25)
+    expect(rows(s25, '10022', 0)).toHaveLength(20)
+    expect(rows(s25, '10022', 0)[0]).toBe('10022')
+    expect(rows(s25, '10022', 5)).toHaveLength(25)
   })
 
-  it('没对上本岗:露头 1 行、它不算折起来的(折 24 个);展开 20 → 21 行', () => {
-    expect(rows('99999', 0)).toEqual(['10000'])
-    expect(hiddenCountOf({ stream, noc: '99999' })).toBe(24)
-    expect(rows('99999', 20)).toHaveLength(21)
-    expect(rows('99999', 24)).toHaveLength(25)
+  it('没对上本岗:原序前 20 行;不足 20 的清单全露', () => {
+    expect(rows(listOf(25), '99999', 0)).toEqual(Array.from({ length: 20 }, (_, i) => String(10000 + i)))
+    expect(rows(listOf(5), '99999', 0)).toHaveLength(5)
   })
 })
 

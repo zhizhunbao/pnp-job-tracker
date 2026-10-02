@@ -17,17 +17,18 @@
  * 没载入的由行自己现取(原先只有已载入的能开,其余跳页)。
  * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:卡底「再展开 N 个 / 收起」两枚自造钮换成 pager 桶 FoldLine
  * (展开 20 个 → 再展开 20 个 → 展开其余 N 个 → 收起),开合走 useFold(在招岗全量在手,不用按页取)。
- *
+
+ * 2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):首屏 8 条改 20 条(pager 桶 FOLD_FIRST)。 *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
 import { lazyTitleOf, titleSubOf, untranslatedOf, useTitleMap } from '@/components/jobtitle'
 import { cssOf } from '@/components/css'
-import { FoldLine, useFold } from '@/components/pager'
+import { FOLD_FIRST, FoldLine, useFold } from '@/components/pager'
 import { Updated } from '@/components/time'
 import { JobMiniRow } from './jobminirow'
 import {
-  CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, JOBS_FIRST_N, K_JOBS_UNIT, LANG_EN, PAREN_CLOSE, PAREN_OPEN,
+  CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, K_JOBS_UNIT, LANG_EN, PAREN_CLOSE, PAREN_OPEN,
 } from './constants'
 import {
   jobsShownOf, jobSubOf, zhShownOf,
@@ -44,8 +45,8 @@ import css from './companies.module.css'
 export function CompanyJobsCard({
   company, t, lang, updatedAt, onOpenJob, resolveJob, newTab, showTrans,
 }: CompanyJobsCardIn) {
-  const fold = useFold({ hidden: Math.max(0, company.jobs.length - JOBS_FIRST_N) })
-  const shown = jobsShownOf({ jobs: company.jobs, n: JOBS_FIRST_N + fold.extra })
+  const fold = useFold({ hidden: Math.max(0, company.jobs.length - FOLD_FIRST) })
+  const shown = jobsShownOf({ jobs: company.jobs, n: FOLD_FIRST + fold.extra })
   const titleMap = useTitleMap({ titles: untranslatedOf({ rows: shown, lang }), lang })
   if (company.jobs.length === 0) {
     return null
@@ -81,7 +82,7 @@ export function CompanyJobsCard({
         {rows}
         <FoldLine t={t}
           unit={t(K_JOBS_UNIT)}
-          hidden={Math.max(0, company.jobs.length - JOBS_FIRST_N)}
+          hidden={Math.max(0, company.jobs.length - FOLD_FIRST)}
           extra={fold.extra}
           busy={false}
           onMore={fold.onMore}

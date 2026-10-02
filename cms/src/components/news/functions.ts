@@ -14,6 +14,7 @@
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
+import { FOLD_FIRST } from '@/components/pager'
 import { SQL } from '@/lib/db'
 import { PROV_NAME } from '@/lib/stats'
 import { cssOf } from '@/components/css'
@@ -24,7 +25,7 @@ import {
   HDR_CONTENT_TYPE, HEAD_MARK_RE, HEAD_NONE, IMP_MIN, LANG_KO, LANG_ZH, METHOD_POST, MIME_JSON, NEWS_REGIONS,
   PARA_SEP_RE,
   PUBLISHER_FEDERAL, PUBLISHER_PROV_HEAD, PUBLISHER_QC, REGION_FEDERAL, REGION_IMG_CODES, REGION_IMG_HEAD,
-  REGION_IMG_TAIL, REGION_QC, REPLIES_OPEN_MAX, SIDE_MAX, SLIDE_MS, STATE_BUSY, STATE_ERR, STATE_IDLE,
+  REGION_IMG_TAIL, REGION_QC, SIDE_MAX, SLIDE_MS, STATE_BUSY, STATE_ERR, STATE_IDLE,
   STATE_SENT, SUMMARY_EN_COL, SUMMARY_NULL_COL, TEXT_CANADA, TEXT_IRCC, TEXT_NONE, TIP_SEP, URL_NEWS_HEAD,
 } from './constants'
 import type {
@@ -810,15 +811,13 @@ export function repliesAtOf(x: RepliesAtIn): NewsComment[] {
 /**
  * 楼内回复折起来几条:≤3 条恒展开(折 0 条),更多的整楼折起(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」
  * 「展开 20, 再展开 20, 再开其余, 收起」:折起来的交给 pager 桶 FoldLine 一次展开 20 条;原「展开 N 条回复 / 收起回复」开关撤)。
+ * 2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):默认露前 20 条,超出的才折;上面「≤3 恒展开、更多整楼折起」是历史。
  *
  * @param count 这座楼的回复条数。
  * @returns 折起来的条数。
  */
 export function replyHiddenOf(count: number): number {
-  if (count <= REPLIES_OPEN_MAX) {
-    return 0
-  }
-  return count
+  return Math.max(0, count - FOLD_FIRST)
 }
 
 /**

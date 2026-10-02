@@ -1912,31 +1912,22 @@ export const QC_NOC_CHANNELS = `SELECT channels FROM qc_noc_streams WHERE noc = 
  * AIP 弹框指定雇主卡(2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」)):本岗雇主那一行与同招牌的几家 —— 先按本岗公司的归一名对 match_keys 找到本岗雇主的招牌键,
  * 再取同省同招牌键的各家;本岗雇主排前,其余按招牌 / 门店 / 法人排。$1 = 省码,$2 = 本岗公司的归一名。
  * 同招牌最多的是 NB 的 Tim Hortons(55 行),LIMIT 80 只是护栏。match_keys / brand 由 mart with_designated_split 算好。
+ * 2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):首屏要露满 20 家,原「本岗与同招牌」与「其余各家」两句(AIP_EMP_ROWS / AIP_EMP_REST)并成这一句排好序的分页 ——
+ * 本岗雇主排最前,同招牌的接着,其余按招牌 / 门店 / 法人排;$3 = 跳过几家(从整表数起),$4 = 取几家。
  */
-export const AIP_EMP_ROWS = `WITH mine AS (
+export const AIP_EMP_PAGE = `WITH mine AS (
        SELECT DISTINCT brand FROM designated_employers
        WHERE source = 'AIP' AND province = $1 AND $2 = ANY(string_to_array(match_keys, '|')))
      SELECT trade, store, legal, brand_n, $2 = ANY(string_to_array(match_keys, '|')) AS hit
      FROM designated_employers
-     WHERE source = 'AIP' AND province = $1 AND brand IN (SELECT brand FROM mine)
-     ORDER BY hit DESC, trade, store, legal LIMIT 80`
+     WHERE source = 'AIP' AND province = $1
+     ORDER BY hit DESC, COALESCE(brand IN (SELECT brand FROM mine), false) DESC, trade, store, legal
+     OFFSET $3 LIMIT $4`
 
 /**
  * AIP 弹框指定雇主卡底链接上的本省总家数(同上);$1 = 省码。
  */
 export const AIP_EMP_TOTAL = `SELECT count(*) AS n FROM designated_employers WHERE source = 'AIP' AND province = $1`
-
-/**
- * AIP 弹框指定雇主卡「展开其他 N 家」的一页(2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」):本省其余各家(不含本岗雇主的招牌),按招牌 / 门店 / 法人排,
- * 一页 20 家;$1 = 省码,$2 = 本岗公司的归一名,$3 = 跳过几家。
- */
-export const AIP_EMP_REST = `WITH mine AS (
-       SELECT DISTINCT brand FROM designated_employers
-       WHERE source = 'AIP' AND province = $1 AND $2 = ANY(string_to_array(match_keys, '|')))
-     SELECT trade, store, legal, brand_n, false AS hit
-     FROM designated_employers
-     WHERE source = 'AIP' AND province = $1 AND (brand IS NULL OR brand NOT IN (SELECT brand FROM mine))
-     ORDER BY trade, store, legal OFFSET $3 LIMIT 20`
 
 /**
  * 首屏维度表·EE 类别。

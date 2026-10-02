@@ -5,12 +5,14 @@
  * 2026-09-20 数据层改给全部在招地点:格里默认露三枚、其余展开才出 —— 形态走通用 tag 桶的 TagFold(开合态住它里面;
  * 列渲染器是被当普通函数调的,放不了状态)。
  * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:TagFold 的开合钮换成 pager 桶 FoldLine,本格递取词函数与量词过去,不再递两枚现成钮面。
- *
+
+ * 2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):默认露 20 枚(原三枚,pager 桶 FOLD_FIRST),不足 20 全露。 *
  * @author Frank
  * @time 2026-09-19 03:30:00
  */
+import { FOLD_FIRST } from '@/components/pager'
 import { TagFold } from '@/components/tag'
-import { DASH_MARK, LOCS_FIRST_N, TAG_REGION } from './constants'
+import { DASH_MARK, TAG_REGION } from './constants'
 import type { EmployerCellRow } from './types'
 import css from './employers.module.css'
 
@@ -27,7 +29,7 @@ export function PoolLocsCell(r: EmployerCellRow) {
   return (
     <div className={css.locs}>
       <TagFold items={r.locs}
-        first={LOCS_FIRST_N}
+        first={FOLD_FIRST}
         variant={TAG_REGION}
         t={r.locsT}
         unit={r.locsUnit} />

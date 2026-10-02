@@ -11,6 +11,7 @@
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
+import { FOLD_FIRST } from '@/components/pager'
 import { makeT } from '@/lib/i18n'
 import { cssOf } from '@/components/css'
 import { tagClsOf as baseTagClsOf } from '@/components/tag'
@@ -32,7 +33,7 @@ import {
   KEY_NOC_EXACT, KEY_NOC_MINOR, KEY_NOC_NOPROFILE, KEY_NOC_UNCAT, KEY_PROV_EXCLUDED, KEY_PROV_GENERIC, KEY_PROV_NAMED,
   KEY_PROV_NOTTARGET, KEY_PROV_QC, KEY_PROV_UNCOVERED, KEY_SEP, KEY_TEER_CHANNEL, KEY_TEER_OK, KEY_WAGE_ABOVE,
   KEY_WAGE_BELOW, KEY_WAGE_NEAR, KIND_DRAW, KIND_NOTICE, FACTS_KEY_SEP, MATCH_LEVEL_HEAD, MONTH_DAYS, NOC_HEAD,
-  PROGRAM_AIP, PROGRAM_PNP, PROV_FED, PROV_KEY_HEAD, PROV_QC, ROWS_FALLBACK, RULE_EE, RULE_LMIA, RULE_NOC, RULE_PROV,
+  PROGRAM_AIP, PROGRAM_PNP, PROV_FED, PROV_KEY_HEAD, PROV_QC, RULE_EE, RULE_LMIA, RULE_NOC, RULE_PROV,
   RULE_TEER, RULE_WAGE, SALARY_DIV, SALARY_HEAD, SALARY_TAIL, SCROLL_BLOCK, SPACE, SPACE_RUN_RE, SRC_PNP, STREAM_REFORM,
   TEER_HEAD, TEER_SHORT_HEAD, TEXT_NONE, TIP_MARK, TONE_FAIL, TONE_NA, TONE_PASS, TONE_WARN, TYPE_INELIGIBLE,
   TYPE_PRIORITY,
@@ -67,7 +68,7 @@ import type {
   DrawsClsIn, EeDrawDateRow, CmpGroupIn, CmpHeadClsIn, CmpLineClsIn, CmpScoreClsIn, CmpLineIn, DrawHist, EeCmp,
   EeCmpGroup, EeCmpIn, EeCmpLine, EeChannelsIn, EeGroupIn, HistAtIn, InvTextIn, PnpDrawGroupsOfIn, PnpEeCatOcc,
   DrawSubIn,
-  AsOfLinesIn, ColAsOfIn, SelectionLabelIn, EeHitIn, FedLabelIn, HasProvDrawsIn, HiddenCountIn, HitClsIn,
+  AsOfLinesIn, ColAsOfIn, SelectionLabelIn, EeHitIn, FedLabelIn, HasProvDrawsIn, HitClsIn,
   HitRefFn, HitRefIn, LevelClsIn, LevelTextIn, FactKeyIn, LocalTitleIn, MatchResultIn, MmCellSpec, MmNocCellIn,
   MmNocListCellIn, MmProvCellIn, MmProvListCellIn, MmRowOfIn, MmRowSpec, MmRowsIn, MmRuleIn, MmSalaryTextIn,
   MmTeerCellIn, MmTone, NocRowMap, OccRowSpec, OccRowsIn, PnpDraw, PnpEeCat, PnpJob, PnpMatchIn, PnpMatchJob,
@@ -1102,6 +1103,7 @@ export function streamKeyOf(s: PnpStream): string {
  * 点末尾「展开其他」才全量;命中置顶,其余保持原序;兜底:即便无命中也至少显 1 条。
  * 2026-09-23 Frank「这个已经高亮了不用显示本岗了吧」:命中行已高亮,「本岗」标撤(EE 类别清单同批撤)。
  * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:开合改走 pager 桶 FoldLine —— 入参从开 / 关改成「已展开几个」,露的是默认那几行 + 其余的前 extra 个。
+ * 2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):默认露前 FOLD_FIRST(20)行,命中照旧置顶;上面「只显命中」「兜底 1 条」是历史。
  *
  * @param x 取词函数、界面语言、译名开关、这张清单、本岗职业码、职业名字典与已展开个数。
  * @returns 展示行。
@@ -1116,13 +1118,7 @@ export function streamRowsOf(x: StreamRowsIn): StreamRowSpec[] {
       others.push(o)
     }
   }
-  let base = hits
-  let rest = others
-  if (hits.length === 0) {
-    base = others.slice(0, ROWS_FALLBACK)
-    rest = others.slice(ROWS_FALLBACK)
-  }
-  const picked = base.concat(rest.slice(0, x.extra))
+  const picked = hits.concat(others).slice(0, FOLD_FIRST + x.extra)
   const rows: StreamRowSpec[] = []
   for (const o of picked) {
     const hit = o.noc === x.noc
@@ -1134,25 +1130,6 @@ export function streamRowsOf(x: StreamRowsIn): StreamRowSpec[] {
     rows.push({ key: o.noc + o.name, hit, noc: o.noc, name: o.name, zh, gtaTag })
   }
   return rows
-}
-
-/**
- * 折起来的条数(本岗之外的都算折起来的;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:一条都没对上本岗时先露的那 ROWS_FALLBACK 行不算折起来的)。
- *
- * @param x 这张清单与本岗职业码。
- * @returns 折起来的条数。
- */
-export function hiddenCountOf(x: HiddenCountIn): number {
-  let n = 0
-  for (const o of x.stream.occupations) {
-    if (o.noc !== x.noc) {
-      n += 1
-    }
-  }
-  if (n === x.stream.occupations.length) {
-    return Math.max(0, n - ROWS_FALLBACK)
-  }
-  return n
 }
 
 /**

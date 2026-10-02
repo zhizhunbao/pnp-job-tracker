@@ -270,6 +270,7 @@ export function usePnpProvStreams(x: PnpProvStreamsHookIn): PnpProvStreamsPanel 
  * 2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」:卡底跳雇主板的链接撤,改原地「展开其他 N 家」—— 一次取 20
  * 家往后接、可收起(收起后再展开不重取)。
  * 同日 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:按页取 + 展开收起那套并进 pager 桶 usePagedFold(相似雇主卡同一台)。
+ * 2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):首屏服务端给满 20 家(本岗、同招牌在前),续取的跳过家数从整表数起。
  *
  * @param x 取词函数与本岗。
  * @returns ref 盒、能不能渲、失败没、展示行、同招牌家数、本省总家数与卡底两只钮。
@@ -298,7 +299,7 @@ export function useAipEmpCard(x: AipEmpCardHookIn): AipEmpCardPanel {
 
   const got = aipEmpDataOf(data)
   const paged = usePagedFold<AipEmpRowJson>({
-    top: got.rows, total: got.total, url: aipEmpUrlOf({ province, key }), skip: 0,
+    top: got.rows, total: got.total, url: aipEmpUrlOf({ province, key }), skip: got.rows.length,
   })
   return {
     matchRef,

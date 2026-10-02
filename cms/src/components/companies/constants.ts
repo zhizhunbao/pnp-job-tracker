@@ -315,11 +315,6 @@ export const STREAM_AGRI_RE = /agricultur/
 export const DESC_MIN_LEN = 120
 
 /**
- * 在招职位首屏显示的条数(#198:其余的原地展开,不跳转)。
- */
-export const JOBS_FIRST_N = 8
-
-/**
  * 在招职位卡展开钮的量词词条(「个」;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:卡底钮走 pager 桶 FoldLine,一次展开 20 个 ——
  * 原「每点一次再展开几条」JOBS_STEP_N(2026-09-20 Frank「这种最好不要一次性展开 449 个」,BMO 457 个在招岗一批 20)由桶的 FOLD_STEP 接管)。
  */

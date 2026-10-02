@@ -2915,21 +2915,6 @@ export type StreamRowsIn = {
 }
 
 /**
- * hiddenCountOf 的入参。
- */
-export type HiddenCountIn = {
-  /**
-   * 这张清单。
-   */
-  stream: PnpStream
-
-  /**
-   * 本岗职业码。
-   */
-  noc: string
-}
-
-/**
  * localTitleOf 的入参。
  */
 export type LocalTitleIn = {
