@@ -225,7 +225,9 @@ from mart.constants import (
     OFFER_FORM_FACTOR, OFFER_FORM_FETCHED, OFFER_FORM_LABEL_SEP, OFFER_FORM_LABEL_TPL, OFFER_FORM_OP, OFFER_FORM_SECTION,
     OFFER_FORM_STREAM, OFFER_FORM_SUBJECT, OFFER_FORM_VALUE_SEP, OFFER_QUOTE_SEP, PROV_OFFER_QUOTE,
 )
-from mart.scheme import BrandGroupIn, BrandPrefixIn, DesignatedPartsIn, DesignatedPartsOut, OfferFormIn, PlaceSplitIn, StoreOfIn
+from mart.scheme import (
+    BrandGroupIn, BrandPrefixIn, DesignatedPartsIn, DesignatedPartsOut, OfferFormIn, PlaceSplitIn, StoreOfIn, StoreSplitOut,
+)
 from mart.constants import (  # 2026-09-29 魁省职业 → 通道对照表(qc_noc_streams;设计 docs/design/魁省门槛弹框-20260929.md)
     IN_QC_NOC_STREAMS, IN_QC_PEQ_REQ, IN_QC_REQ, K_CHANNELS, K_CODE, K_KIND, K_REGULATED, K_SCOPE_KO, K_SCOPE_ZH, QC_FACTOR_OCC, QC_KEY_PEQ_TFW,
     QC_KEY_PSTQ_TPL, QC_KIND_ALL, QC_KIND_PARTLY, QC_NOC_MISSING_TPL, QC_PEQ_NAME_SEP, QC_PEQ_TFW_PREFIX, QC_PROGRAM_PEQ, QC_PROGRAM_PSTQ,
@@ -3042,7 +3044,9 @@ def brand_group(x: BrandGroupIn) -> None:
         if heads:
             brand = heads[0]
             if r[K_STORE] == "":
-                r[K_STORE] = store_of(StoreOfIn(trade=r[K_TRADE], words=len(heads[-1]), places=x.places))
+                split = store_of(StoreOfIn(trade=r[K_TRADE], words=len(heads[-1]), places=x.places))
+                r[K_TRADE] = split.head
+                r[K_STORE] = split.store
         r[K_BRAND] = SPACE.join(brand)
         legals.setdefault(r[K_BRAND], set()).add(norm_name(r[K_LEGAL]))
     for r in x.members:
@@ -3108,19 +3112,20 @@ def paren_head_of(legal: str) -> str:
     return legal
 
 
-def store_of(x: StoreOfIn) -> str:
-    """招牌原文跳过开头 words 个归一词,剩下的原文是地名(或逗号前那段是地名)才当门店,否则空串(「Chicken」「& Taters」不算)。
-    按原文的词逐个归一计数,标点 / 公司后缀归一成空的词不算数。"""
+def store_of(x: StoreOfIn) -> StoreSplitOut:
+    """招牌原文跳过开头 words 个归一词,剩下的原文是地名(或逗号前那段是地名)才当门店,招牌只留开头那段
+    (「Mary Browns Chicken Greenwood」→ 招牌「Mary Browns Chicken」+ 门店「Greenwood」,线上卡里门店不再写两遍);
+    不是地名 = 门店空串、招牌原样(「Chicken」「& Taters」不算)。按原文的词逐个归一计数,标点 / 公司后缀归一成空的词不算数。"""
     tokens = x.trade.split()
     seen = 0
     for i, tok in enumerate(tokens):
         if seen >= x.words:
             rest = SPACE.join(tokens[i:]).strip(STORE_TRIM)
             if norm_name(rest.split(STORE_COMMA)[0]) in x.places:
-                return rest
-            return ""
+                return StoreSplitOut(head=SPACE.join(tokens[:i]).strip(STORE_TRIM), store=rest)
+            break
         seen += len(norm_name(tok).split())
-    return ""
+    return StoreSplitOut(head=x.trade, store="")
 
 
 def match_keys_of(raw: str) -> str:

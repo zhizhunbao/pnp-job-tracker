@@ -1324,6 +1324,17 @@ class StoreOfIn:
 
 
 @dataclass
+class StoreSplitOut:
+    """store_of() 出参:招牌开头那段与门店(2026-10-02)。"""
+
+    head: str
+    """招牌(拆出门店时只留开头那段;没拆出 = 原文)。"""
+
+    store: str
+    """门店;认不出 = 空串。"""
+
+
+@dataclass
 class DesignatedPartsIn:
     """designated_parts_of() 入参。"""
 
@@ -5375,6 +5386,7 @@ class MartDesignatedSplitTest(unittest.TestCase):
             "MBS Fairview Restaurant Limited o/a Mary Browns",
         ], self.PLACES)
         self.assertEqual([g[1] for g in got], ["New Minas", "Greenwood", "", ""])
+        self.assertEqual([g[0] for g in got], ["Mary Browns", "Mary Browns Chicken", "MARY BROWNS CHICKEN", "Mary Browns"])
         self.assertEqual({g[3] for g in got}, {"mary browns"})
         self.assertEqual({g[4] for g in got}, {4})
 
@@ -5387,6 +5399,7 @@ class MartDesignatedSplitTest(unittest.TestCase):
         self.assertEqual(brands[:2], ["moncton honda", "moncton truck stop"])
         self.assertEqual(brands[3:], ["tim hortons"] * 3)
         self.assertEqual([g[1] for g in got[3:5]], ["Dieppe, Paul St", "Dieppe, Amirault St"])
+        self.assertEqual([g[0] for g in got[3:5]], ["Tim Hortons", "Tim Hortons"])
         self.assertEqual(got[3][4], 2)
 
     def test_probes(self) -> None:
