@@ -454,6 +454,27 @@ export const CHAN_TAG_COMPLEMENT: Record<string, string> = {
 export const CHAN_NOTE_TAGS = ['fieldOfStudy']
 
 /**
+ * 通道卡「你有 PGWP 吗」没选时的值(2026-10-01 Frank「这个是不是改成两个子卡片。能走哪个高亮哪个。」「你都改完」;
+ * 选了就是 CHAN_TAG_COMPLEMENT 里那一对标签键之一:pgwp = 有、noPgwp = 没有)。
+ */
+export const PICK_NONE = ''
+
+/**
+ * 「有 PGWP」那一段对应的标签键。
+ */
+export const PICK_PGWP = 'pgwp'
+
+/**
+ * 「没有 PGWP」那一段对应的标签键。
+ */
+export const PICK_NO_PGWP = 'noPgwp'
+
+/**
+ * 分段钮档(通用钮桶 seg 档:挤成一组、当前那段蓝底)。
+ */
+export const BTN_SEG = 'seg'
+
+/**
  * 通道对照表里 AIP 那一行的编号(通道卡上段在本岗能走 AIP 时列它;2026-09-30 Frank「能走 AIP 就列,不能走就不列」)。
  */
 export const AIP_PATHWAY_KEY = 'aip'

@@ -12,6 +12,7 @@
  * 2026-09-30 资讯页「通道与门槛」:多一台 —— 一省的门槛卡(usePnpProvStreams,整表懒取同弹框)。
  * 2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」:多一台 —— AIP 指定雇主清单卡(useAipEmpCard)。
  * 同日 Frank「PNP 弹框 里面的 AIP 部分 提出来,放到 AIP 弹框」:多一台 —— AIP 弹框的通道卡与抽选卡(useAipSection)。
+ * 同日 Frank「这个是不是改成两个子卡片。能走哪个高亮哪个。」「你都改完」:多一台 —— 通道卡「你有 PGWP 吗」(useChannelPick)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
@@ -20,17 +21,20 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { makeT } from '@/lib/i18n'
 import { track } from '@/lib/track'
-import { AIP_EMP_OPEN_KEY, LANG_EN, PROV_QC, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD } from './constants'
+import {
+  AIP_EMP_OPEN_KEY, LANG_EN, PICK_NONE, PROV_QC, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD,
+} from './constants'
 import {
   channelListOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
   makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, provGateCardsOf, qcChannelsOf,
-  aipEmpHiddenOf, aipEmpListOf, aipEmpRowsOf, aipSectionOf,
+  aipEmpHiddenOf, aipEmpListOf, aipEmpRowsOf, aipSectionOf, channelSplitOf, makePickOf,
 } from './functions'
 import type {
   EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel, DeadFlag, PnpData, PnpDataHookIn, PnpDataPanel,
   PnpModalHookIn, PnpModalPanel, PnpProvStreamsHookIn, PnpProvStreamsPanel, QcChannel, QcChannelsHookIn,
-  QcChannelsPanel, AipEmpCardHookIn, AipEmpCardPanel, AipSectionHookIn, AipSectionPanel,
+  QcChannelsPanel, AipEmpCardHookIn, AipEmpCardPanel, AipSectionHookIn, AipSectionPanel, ChannelPickHookIn,
+  ChannelPickPanel,
 } from './types'
 import { CACHE } from './variables'
 
@@ -316,4 +320,16 @@ export function useAipSection(x: AipSectionHookIn): AipSectionPanel {
     drawOpen,
     drawToggleOf: makeToggleOf({ setKeys: setDrawOpen }),
   }
+}
+
+/**
+ * 通道卡「你有 PGWP 吗」整机(2026-10-01 Frank「这个是不是改成两个子卡片。能走哪个高亮哪个。」「你都改完」):卡里同时有 PGWP 互补的
+ * 两条才出;选项只活在这次打开的弹框里(不记、不读档案 —— 多数访客没登录)。
+ *
+ * @param x 卡里的通道条目。
+ * @returns 出不出、当前选项与点击手柄工厂。
+ */
+export function useChannelPick(x: ChannelPickHookIn): ChannelPickPanel {
+  const [pick, setPick] = useState<string>(PICK_NONE)
+  return { show: channelSplitOf(x.channels), pick, pickOf: makePickOf({ setPick }) }
 }

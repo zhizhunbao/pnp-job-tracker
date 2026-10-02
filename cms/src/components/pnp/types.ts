@@ -3661,6 +3661,66 @@ export type ChannelRowIn = {
    * 这一条。
    */
   c: ChannelSpec
+
+  /**
+   * 高亮(「你有 PGWP 吗」选中的那一边;2026-10-01)。
+   */
+  hit: boolean
+}
+
+/**
+ * useChannelPick 的入参(2026-10-01 通道卡拆子卡片 +「你有 PGWP 吗」)。
+ */
+export type ChannelPickHookIn = {
+  /**
+   * 卡里的通道条目。
+   */
+  channels: ChannelSpec[]
+}
+
+/**
+ * useChannelPick 交给通道卡的东西。
+ */
+export type ChannelPickPanel = {
+  /**
+   * 出不出「你有 PGWP 吗」(卡里同时有 PGWP 互补的两条才出)。
+   */
+  show: boolean
+
+  /**
+   * 当前选的那一边(PICK_PGWP / PICK_NO_PGWP;没选 = PICK_NONE)。
+   */
+  pick: string
+
+  /**
+   * 点某一段的手柄工厂(再点一次取消)。
+   */
+  pickOf: ToggleOfFn
+}
+
+/**
+ * makePickOf 的入参。
+ */
+export type PickSetIn = {
+  /**
+   * 选项的写入口。
+   */
+  setPick: React.Dispatch<React.SetStateAction<string>>
+}
+
+/**
+ * channelHitOf 的入参。
+ */
+export type ChannelHitIn = {
+  /**
+   * 这一条。
+   */
+  c: ChannelSpec
+
+  /**
+   * 当前选的那一边。
+   */
+  pick: string
 }
 
 /**

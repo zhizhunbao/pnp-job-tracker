@@ -616,6 +616,166 @@
 }
 
 /*
+ * 通道卡标题行:左标题、右「你有 PGWP 吗」(2026-10-01 Frank「这个是不是改成两个子卡片。能走哪个高亮哪个。」「你都改完」)。
+ */
+.chanHead {
+  /*
+   * 两端排开。
+   */
+  display: flex;
+
+  /*
+   * 左右两端。
+   */
+  justify-content: space-between;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 窄屏放不下就折到下一行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 两块之间留缝。
+   */
+  gap: 6px 12px;
+
+  /*
+   * 与子卡片的间距(同 .cardHead)。
+   */
+  margin-bottom: 6px;
+}
+
+/*
+ * 标题行里的标题不再自带下边距(间距由 .chanHead 管)。
+ */
+.chanHead .cardHead {
+  /*
+   * 清零。
+   */
+  margin-bottom: 0;
+}
+
+/*
+ * 「你有 PGWP 吗」问句 + 分段钮。
+ */
+.chanAsk {
+  /*
+   * 横排。
+   */
+  display: inline-flex;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 问句与钮之间。
+   */
+  gap: 6px;
+
+  /*
+   * 灰注字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 子卡片列。
+ */
+.chanList {
+  /*
+   * 竖排。
+   */
+  display: flex;
+
+  /*
+   * 竖向。
+   */
+  flex-direction: column;
+
+  /*
+   * 子卡片间距。
+   */
+  gap: 8px;
+}
+
+/*
+ * 一条通道的子卡片(2026-10-01 推翻 09-26 晚「条目不再套框」:一条一张细边框子卡)。
+ */
+.chanBox {
+  /*
+   * 细边框(同 .draws)。
+   */
+  border: 1px solid var(--hairline);
+
+  /*
+   * 圆角(同 .box)。
+   */
+  border-radius: 8px;
+
+  /*
+   * 内衬。
+   */
+  padding: 8px 12px;
+
+  /*
+   * 通道名字号(同 .channel)。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 常规字重(同 .channel)。
+   */
+  font-weight: 400;
+
+  /*
+   * 主文字色。
+   */
+  color: var(--text);
+}
+
+/*
+ * 选中那一边的子卡片:全站本岗高亮那一档浅蓝(同 .cmpHead.cmpHit;字不染蓝,蓝字在本站 = 能点)。
+ */
+.chanBox.chanHit {
+  /*
+   * 浅蓝底。
+   */
+  background: #dbeafe;
+
+  /*
+   * 浅蓝描边。
+   */
+  border-color: #bfdbfe;
+}
+
+/*
+ * 高亮子卡片里的译名灰注升次级灰(三级灰在浅蓝底上读不出来,理由同 .row.hit .zh)。
+ */
+.chanHit .zh {
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+}
+
+/*
  * 通道条目下的条件标签行(2026-09-30 通道补全批二:需先有 EE 档案 / 需本省毕业 …;标签走通用 Tag)。
  */
 .chanTags {

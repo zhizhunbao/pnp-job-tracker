@@ -30,7 +30,7 @@ import { describe, expect, it } from 'vitest'
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
 import {
   allGroupsLabelOf, channelListOf, channelsOf, drawCardOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
-  aipCardOf, aipChannelsOf, aipGateCardOf, aipSectionOf, drawCtxOf, cardYearOf, pnpKickerOf, preReformCardOf,
+  aipCardOf, aipChannelsOf, aipGateCardOf, aipSectionOf, drawCtxOf, cardYearOf, channelHitOf, channelSplitOf, makePickOf, pnpKickerOf, preReformCardOf,
   quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf, provGateCardsOf,
@@ -1203,6 +1203,26 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
         defaults: DEFAULTS, pathways: solo, occ: [] }))).toEqual(['pnp.gen.NL'])
       const enCard = up(job({ province: 'NL', teer: 2 }), [], 'en')
       expect(enCard[0]).toMatchObject({ name: 'NLPNP Skilled Worker Category', sub: '' })
+    })
+
+    // 2026-10-01 Frank「这个是不是改成两个子卡片。能走哪个高亮哪个。」「你都改完」
+    it('你有 PGWP 吗:互补的两条都在才出;选哪边亮哪边、两段互斥、再点取消', () => {
+      const two = up(job({ province: 'NL', teer: 2 }))
+      expect(channelSplitOf(two)).toBe(true)
+      expect(channelSplitOf(up(job({ province: 'NL', teer: 4 })))).toBe(false)
+      expect(channelSplitOf(up(job({ province: 'NS', teer: 2 })))).toBe(false)
+      const lit = (pick: string) => two.filter((c) => channelHitOf({ c, pick })).map((c) => c.key)
+      expect(lit('pgwp')).toEqual(['nl-international-graduate'])
+      expect(lit('noPgwp')).toEqual(['pnp.gen.NL'])
+      expect(lit('')).toEqual([])
+      let state = ''
+      const pickOf = makePickOf({ setPick: (f) => { state = typeof f === 'function' ? f(state) : f } })
+      pickOf('pgwp')()
+      expect(state).toBe('pgwp')
+      pickOf('noPgwp')()
+      expect(state).toBe('noPgwp')
+      pickOf('noPgwp')()
+      expect(state).toBe('')
     })
 
     it('NS 医生:职业码 + 雇主名(归一后比对)都对上才列;本省毕业生(要本省毕业)、两条快速通道(要 EE 档案)不列', () => {

@@ -9,11 +9,17 @@
  * 2026-09-30 通道补全批二(Frank「nl 之前不说有个毕业生通道吗?」「列进来,标需先有 EE 档案」「不看工作的也收」):一岗列出全部通道 ——
  * 上段本岗通道 + 其余跟工作有关的(按岗位筛),下段「不要 offer 的通道」(本省不看工作的);每条带条件标签。条目拆成 ChannelRow。
  * 同日晚 Frank「不要 offer 这个也删了,只列本岗能走的通道」:下段撤,卡里只剩本岗能走的通道。
+ * 2026-10-01 Frank「这个是不是改成两个子卡片。能走哪个高亮哪个。」「你都改完」(看过效果图):一条一张子卡;卡里同时有 PGWP 互补的两条
+ * (NL 技术工人 / 国际毕业生)时标题右边出「你有 PGWP 吗　有 | 没有」分段钮(通用钮桶 seg 档),选哪边亮哪边,再点取消。
  *
  * @author Frank
  * @time 2026-09-26 16:10:00
  */
+import { Button, SegGroup } from '@/components/button'
 import { ChannelRow } from './channelrow'
+import { BTN_SEG, PICK_NO_PGWP, PICK_PGWP } from './constants'
+import { channelHitOf } from './functions'
+import { useChannelPick } from './hooks'
 import type { PnpChannelCardIn } from './types'
 import css from './pnp.module.css'
 
@@ -24,14 +30,30 @@ import css from './pnp.module.css'
  * @returns 通道卡。
  */
 export function PnpChannelCard({ t, channels }: PnpChannelCardIn) {
+  const p = useChannelPick({ channels })
   const items = []
   for (const c of channels) {
-    items.push(<ChannelRow key={c.key} c={c} />)
+    items.push(<ChannelRow key={c.key} c={c} hit={channelHitOf({ c, pick: p.pick })} />)
   }
   return (
     <div className={css.card}>
-      <div className={css.cardHead}>{t('pnpfacts.streams')}</div>
-      {items}
+      <div className={css.chanHead}>
+        <span className={css.cardHead}>{t('pnpfacts.streams')}</span>
+        {p.show && (
+          <span className={css.chanAsk}>
+            {t('pnpchan.pgwpAsk')}
+            <SegGroup>
+              <Button kind={BTN_SEG} sm active={p.pick === PICK_PGWP} onClick={p.pickOf(PICK_PGWP)}>
+                {t('pnpchan.pgwpYes')}
+              </Button>
+              <Button kind={BTN_SEG} sm active={p.pick === PICK_NO_PGWP} onClick={p.pickOf(PICK_NO_PGWP)}>
+                {t('pnpchan.pgwpNo')}
+              </Button>
+            </SegGroup>
+          </span>
+        )}
+      </div>
+      <div className={css.chanList}>{items}</div>
     </div>
   )
 }

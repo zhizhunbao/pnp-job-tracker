@@ -44,6 +44,7 @@ import {
   GATE_UNIT_YEARS, PNP_BLOCK_UNFIT_CODES, PNP_BLOCK_UNFIT_KEY, JOB_NATURE_BLOCKS, CHAN_TAG_HEAD, CHAN_TAG_WARN,
   BASIS_WHERE, BASIS_WHERE_IN_PROV, BASIS_WHERE_ANYWHERE, BASIS_PERMITS, BASIS_PERMIT_SEP, BASIS_NO_IMPLIED, BASIS_PGWP,
   GATE_PERMIT_HEAD,
+  PICK_NONE, PICK_PGWP, PICK_NO_PGWP,
   AIP_PATHWAY_KEY, AIP_CHANNEL_TEERS, AIP_F, AIP_TIER_PREFIX, AIP_TIER_SEP, AIP_EDU_HEAD, AIP_GRAD_NOTE,
   GATE_EXP_FACTORS, GATE_OP_NONE, GATE_WAGE_FACTORS, LANG_NOC_NOTE_MAX, CHAN_JOB_TAGS, CHAN_TAG_COMPLEMENT, AIP_APOS_RE,
   AIP_OA_TAIL_RE, CHAN_NOTE_TAGS,
@@ -77,7 +78,7 @@ import type {
   CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
   ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn,
   ChannelListIn, ChannelTag, ChannelTagsIn, EmployerHitIn, ExtraFitsIn, JobDecidedIn, ListedIn,
-  AipSectionOfIn, AipSectionSpec, DrawCtxIn, DrawCtx, AipGateCardIn, AipRowOfIn, AipTierHitIn,
+  AipSectionOfIn, AipSectionSpec, DrawCtxIn, DrawCtx, AipGateCardIn, AipRowOfIn, AipTierHitIn, ChannelHitIn, PickSetIn,
   LocalNameIn, PathwayChannelIn, StatusLinesIn,
   BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvGateCardsIn, ProvStreamCardIn, ProvStreamRowsIn,
   AipEmpEntry, AipEmpHiddenIn, AipEmpHitIn, AipEmpListIn, AipEmpRowSpec, AipEmpRowsIn, ExpScopeIn,
@@ -4899,6 +4900,73 @@ export function cmpScoreClsOf(x: CmpScoreClsIn): string {
  */
 export function channelClsOf(): string {
   return cssOf(css.channel)
+}
+
+/**
+ * 通道卡里一条通道的子卡片类(2026-10-01 Frank「这个是不是改成两个子卡片。能走哪个高亮哪个。」「你都改完」:推翻 09-26 晚
+ * 「条目不再套框」—— 一条一张细边框子卡;高亮同全站本岗那一档浅蓝底)。
+ *
+ * @param hit 高亮。
+ * @returns 类名。
+ */
+export function chanBoxClsOf(hit: boolean): string {
+  if (hit) {
+    return cssOf(css.chanBox) + CLS_SEP + cssOf(css.chanHit)
+  }
+  return cssOf(css.chanBox)
+}
+
+/**
+ * 出不出「你有 PGWP 吗」:卡里一条带「需持 PGWP」、另一条带它的互补标签(CHAN_TAG_COMPLEMENT;眼下只有 NL 技术工人 / 国际毕业生)。
+ *
+ * @param channels 卡里的通道条目。
+ * @returns 出 = true。
+ */
+export function channelSplitOf(channels: ChannelSpec[]): boolean {
+  const keys = new Set<string>()
+  for (const c of channels) {
+    for (const g of c.tags) {
+      keys.add(g.key)
+    }
+  }
+  return keys.has(PICK_PGWP) && keys.has(PICK_NO_PGWP)
+}
+
+/**
+ * 这一条要不要高亮:选了哪一边,带那一边标签的那条亮;没选都不亮。
+ *
+ * @param x 这一条与当前选项。
+ * @returns 亮 = true。
+ */
+export function channelHitOf(x: ChannelHitIn): boolean {
+  if (x.pick === PICK_NONE) {
+    return false
+  }
+  for (const g of x.c.tags) {
+    if (g.key === x.pick) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * 「你有 PGWP 吗」两段的手柄工厂:点某一段选它,再点一次取消(两段互斥,不像折叠开关那样各管各的)。
+ *
+ * @param x 选项的写入口。
+ * @returns 给一段的值、拿它的点击手柄。
+ */
+export function makePickOf(x: PickSetIn): ToggleOfFn {
+  return function pickOf(value: string): ClickFn {
+    return function onPick(): void {
+      x.setPick(function next(prev: string): string {
+        if (prev === value) {
+          return PICK_NONE
+        }
+        return value
+      })
+    }
+  }
 }
 
 /**

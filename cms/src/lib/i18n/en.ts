@@ -717,6 +717,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpchan.tag.pgwp': 'PGWP holders only',
   'pnpchan.tag.noPgwp': 'Spousal open or LMIA work permit, etc.',
   'pnpchan.tag.fieldOfStudy': 'Job must match field of study',
+  // 2026-10-01 streams card: PGWP yes / no picker
+  'pnpchan.pgwpAsk': 'Do you hold a PGWP?', 'pnpchan.pgwpYes': 'Yes', 'pnpchan.pgwpNo': 'No',
   'pnpchan.tag.french': 'French required',
   'pnpchan.tag.employers': 'Designated employers only',
   'pnpchan.tag.timeLimited': 'Time-limited',

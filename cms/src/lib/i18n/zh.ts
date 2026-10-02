@@ -759,6 +759,8 @@ export const jobsZh = {
   'pnpchan.tag.pgwp': '需持 PGWP',
   'pnpchan.tag.noPgwp': '持配偶开放工签、LMIA 工签等',
   'pnpchan.tag.fieldOfStudy': '工作需与所学专业对口',
+  // 2026-10-01 Frank「这个是不是改成两个子卡片。能走哪个高亮哪个。」「你都改完」:通道卡标题右边的二选一
+  'pnpchan.pgwpAsk': '你有 PGWP 吗', 'pnpchan.pgwpYes': '有', 'pnpchan.pgwpNo': '没有',
   'pnpchan.tag.french': '需说法语',
   'pnpchan.tag.employers': '限指定雇主',
   'pnpchan.tag.timeLimited': '限时',

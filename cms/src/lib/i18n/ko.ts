@@ -695,6 +695,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpchan.tag.pgwp': 'PGWP 소지자만',
   'pnpchan.tag.noPgwp': '배우자 오픈 워크퍼밋, LMIA 워크퍼밋 등',
   'pnpchan.tag.fieldOfStudy': '전공과 관련된 직무여야 함',
+  // 2026-10-01 스트림 카드: PGWP 보유 여부 선택
+  'pnpchan.pgwpAsk': 'PGWP가 있나요?', 'pnpchan.pgwpYes': '있음', 'pnpchan.pgwpNo': '없음',
   'pnpchan.tag.french': '프랑스어 필요',
   'pnpchan.tag.employers': '지정 고용주만',
   'pnpchan.tag.timeLimited': '기간 한정',
