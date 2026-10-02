@@ -31,7 +31,7 @@ vi.mock('@/lib/db/server', () => ({ getDb: async () => ({ query: h.query }) }))
 const zh = makeT('zh')
 
 /** 首屏服务端取几家(lib/jobs 的 LIST_FIRST_ROWS;2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):6 → 20) */
-const FIRST = 20
+const FIRST = 10
 
 function emp(i: number, total: number): SimilarEmployer {
   return {
@@ -101,17 +101,18 @@ describe('相似雇主卡 服务器分页 + FoldLine', () => {
     }), { numRuns: 100 })
   })
 
-  it('金标:总数 3432(Frank 截图那张卡)首钮「展开 20 家」,再展开 20 家,末页「展开其余 12 家」;20 家以内不出钮', () => {
+  // 2026-10-02 Frank「默认显示 20 是不是太多了」→「改成 10」:首屏 10 家,「展开」一次仍 20 家
+  it('金标:总数 3432(Frank 截图那张卡)首钮「展开 20 家」,再展开 20 家,末页「展开其余 2 家」;10 家以内不出钮', () => {
     const unit = zh('fold.u.employer')
     const label = (hidden: number, extra: number) => foldMoreLabelOf({ t: zh, unit, view: foldViewOf({ hidden, extra }), busy: false })
     const c = makeCard(3432)
-    expect(c.hidden).toBe(3412)
+    expect(c.hidden).toBe(3422)
     expect(label(c.hidden, c.extra())).toBe('展开 20 家 ▾')
     c.more()
     expect(label(c.hidden, c.extra())).toBe('再展开 20 家 ▾')
-    expect(label(3412, 3400)).toBe('展开其余 12 家 ▾')
-    expect(makeCard(20).hidden).toBe(0)
-    expect(label(makeCard(20).hidden, 0)).toBe('')
+    expect(label(3422, 3420)).toBe('展开其余 2 家 ▾')
+    expect(makeCard(10).hidden).toBe(0)
+    expect(label(makeCard(10).hidden, 0)).toBe('')
     // 探针:旧口径(折起来 = 已取 20 − 露 6)写成「展开其余 14 家」,与上面金标分得开
     expect(label(20 - 6, 0)).toBe('展开其余 14 家 ▾')
   })

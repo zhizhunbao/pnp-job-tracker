@@ -51,7 +51,8 @@ export { STREAM_REFORM } from './constants'
 export { VerdictPill } from './verdictpill'
 export {
   eeIsDormant, eeLastDraw, pnpBlockedKeysOf, pnpCellActiveOf,
-  pnpBlockCellOf, pnpChannelKeyOf, pnpExcludedOf, pnpFactsIndexOf, pnpFactsShownOf, pnpNameOf, qcCellNameOf,
+  pnpBlockCellOf, pnpChannelKeyOf, pnpChannelOf, pnpExcludedOf, pnpFactsIndexOf, pnpFactsShownOf, pnpNameOf,
+  qcCellNameOf,
   wageLowAppliesOf,
 } from './functions'
 export { usePnpData } from './hooks'

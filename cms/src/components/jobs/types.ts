@@ -6483,6 +6483,11 @@ export type ImmSignalIn = {
    * 英文的格子上下文(主文案一律英文)。
    */
   cxEn: CellCtx
+
+  /**
+   * 通道对照表(PNP 行取官方原名)。
+   */
+  pathways: JobDims['pathways']
 }
 
 /**
@@ -6528,6 +6533,11 @@ export type ImmNameEnIn = {
    * 职位板英文那一格的字。
    */
   cellEn: string
+
+  /**
+   * 通道对照表(PNP 行取官方原名)。
+   */
+  pathways: JobDims['pathways']
 }
 
 /**

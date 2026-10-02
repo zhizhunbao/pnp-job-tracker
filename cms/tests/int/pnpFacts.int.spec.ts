@@ -1564,15 +1564,16 @@ describe('省提名职业清单卡的展开个数', () => {
   const rows = (stream: PnpStream, noc: string, extra: number) =>
     streamRowsOf({ t: zh, lang: 'zh', showZh: false, stream, noc, nocRows: new Map(), extra }).map((r) => r.noc)
 
-  it('对上本岗:本岗打头,默认 20 行;展开 5 → 25 行封顶', () => {
+  // 2026-10-02 Frank「默认显示 20 是不是太多了」→「改成 10」
+  it('对上本岗:本岗打头,默认 10 行;展开 5 → 15 行', () => {
     const s25 = listOf(25)
-    expect(rows(s25, '10022', 0)).toHaveLength(20)
+    expect(rows(s25, '10022', 0)).toHaveLength(10)
     expect(rows(s25, '10022', 0)[0]).toBe('10022')
-    expect(rows(s25, '10022', 5)).toHaveLength(25)
+    expect(rows(s25, '10022', 5)).toHaveLength(15)
   })
 
-  it('没对上本岗:原序前 20 行;不足 20 的清单全露', () => {
-    expect(rows(listOf(25), '99999', 0)).toEqual(Array.from({ length: 20 }, (_, i) => String(10000 + i)))
+  it('没对上本岗:原序前 10 行;不足 10 的清单全露', () => {
+    expect(rows(listOf(25), '99999', 0)).toEqual(Array.from({ length: 10 }, (_, i) => String(10000 + i)))
     expect(rows(listOf(5), '99999', 0)).toHaveLength(5)
   })
 })

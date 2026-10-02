@@ -20,7 +20,7 @@
  */
 import {
   eeIsDormant, eeLastDraw, pnpFactsIndexOf, pnpBlockedKeysOf, pnpCellActiveOf, qcCellNameOf,
-  pnpBlockCellOf, pnpChannelKeyOf,
+  pnpBlockCellOf, pnpChannelKeyOf, pnpChannelOf,
   pnpExcludedOf, pnpNameOf,
 } from '@/components/pnp'
 import { cssOf } from '@/components/css'
@@ -5238,6 +5238,7 @@ export function adminOf(u: SessionUser | null): boolean {
 
 /**
  * 职位页移民相关卡两个字段弹框要的维度(2026-10-02):只留 EE 类别、新闻、字段出处三张,其余给空表 ——
+ * (同日加通道对照表 pathways:PNP 行主文案要本岗通道的官方原名,几十行)
  * 职位页不需要职位板那一整包,别把城市 / 职业描述整表塞进页面。
  *
  * @param dims 首屏维度全包。
@@ -5253,7 +5254,7 @@ export function jobImmDimsOf(dims: JobDims): JobDims {
     experienceLevels: [],
     pnpOccupations: [],
     pnpDraws: [],
-    pathways: [],
+    pathways: dims.pathways,
     qcCells: [],
     eeCategories: dims.eeCategories,
     eeBroads: [],
@@ -5281,7 +5282,7 @@ export function immRowsOf(x: ImmRowsIn): ImmRow[] {
     rows.push(wage)
   }
   for (const k of IMM_COLS) {
-    const one = immSignalRowOf({ k, job: x.job, cx, cxEn })
+    const one = immSignalRowOf({ k, job: x.job, cx, cxEn, pathways: x.imm.dims.pathways })
     if (one != null) {
       rows.push(one)
     }
@@ -5361,10 +5362,10 @@ function immSignalRowOf(x: ImmSignalIn): ImmRow | null {
   if (cellEn === TEXT_NONE || cellEn === DASH) {
     return null
   }
-  const en = immNameEnOf({ k: x.k, job: x.job, cxEn: x.cxEn, cellEn })
+  const en = immNameEnOf({ k: x.k, job: x.job, cxEn: x.cxEn, cellEn, pathways: x.pathways })
   const local = cellViewOf({ k: x.k, j: x.job, cx: x.cx }).text
   const subs: string[] = []
-  if (local !== en) {
+  if (x.cx.lang !== LANG_EN && local !== en) {
     subs.push(local)
   }
   let col: JobColKey | null = null
@@ -5375,13 +5376,21 @@ function immSignalRowOf(x: ImmSignalIn): ImmRow | null {
 }
 
 /**
- * 信号行的英文主文案:EE 类别用官方英文类别名(ee_categories.name_en,2026-10-02 Frank「可以」加列;库里还没灌就退回职位板英文格),
- * 其余两列就是职位板英文那一格。
+ * 信号行的英文主文案:EE 类别用官方英文类别名(ee_categories.name_en,2026-10-02 Frank「可以」加列;库里还没灌就退回职位板英文格);
+ * PNP 用本岗通道在通道对照表里的官方原名(同日 Frank「这个 也不对啊」:「NB Skilled Worker」是站内短名;与省提名弹框「本岗能走的通道」卡同一个名);
+ * AIP 就是职位板英文那一格。英文界面不出灰字。
  *
  * @param x 列键、本岗、英文格子上下文与职位板英文那一格的字。
  * @returns 主文案。
  */
 function immNameEnOf(x: ImmNameEnIn): string {
+  if (x.k === COL.pnp) {
+    const channel = pnpChannelOf({ job: x.job, pathways: x.pathways })
+    if (channel != null && channel.officialName !== TEXT_NONE) {
+      return channel.officialName
+    }
+    return x.cellEn
+  }
   if (x.k !== COL.ee) {
     return x.cellEn
   }

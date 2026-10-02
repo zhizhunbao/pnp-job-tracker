@@ -24,26 +24,27 @@ const label = (count: number, extra: number) =>
   foldMoreLabelOf({ t: zh, unit: zh('fold.u.reply'), view: foldViewOf({ hidden: replyHiddenOf(count), extra }), busy: false })
 
 describe('资讯评论楼内回复 展开 / 收起', () => {
-  it('金标:20 条全露无钮;21 条收着展开其余 1 条;65 条一路展开到底', () => {
+  // 2026-10-02 Frank「默认显示 20 是不是太多了」→「改成 10」:恒露 20 改 10,「展开」一次仍加 20
+  it('金标:10 条全露无钮;11 条收着展开其余 1 条;65 条一路展开到底', () => {
     expect(replyHiddenOf(0)).toBe(0)
-    expect(replyHiddenOf(20)).toBe(0)
-    expect(replyHiddenOf(21)).toBe(1)
+    expect(replyHiddenOf(10)).toBe(0)
+    expect(replyHiddenOf(11)).toBe(1)
     expect(ids(shownRepliesOf({ replies: thread(2), hidden: 0, extra: 0 }))).toEqual([1, 2])
-    expect(label(20, 0)).toBe('')
-    expect(shownRepliesOf({ replies: thread(21), hidden: 1, extra: 0 })).toHaveLength(20)
-    expect(label(21, 0)).toBe('展开其余 1 条回复 ▾')
+    expect(label(10, 0)).toBe('')
+    expect(shownRepliesOf({ replies: thread(11), hidden: 1, extra: 0 })).toHaveLength(10)
+    expect(label(11, 0)).toBe('展开其余 1 条回复 ▾')
     expect(label(65, 0)).toBe('展开 20 条回复 ▾')
-    expect(shownRepliesOf({ replies: thread(65), hidden: 45, extra: 20 })).toHaveLength(40)
+    expect(shownRepliesOf({ replies: thread(65), hidden: 55, extra: 20 })).toHaveLength(30)
     expect(label(65, 20)).toBe('再展开 20 条回复 ▾')
-    expect(label(65, 40)).toBe('展开其余 5 条回复 ▾')
-    expect(shownRepliesOf({ replies: thread(65), hidden: 45, extra: 45 })).toHaveLength(65)
-    expect(label(65, 45)).toBe('')
+    expect(label(65, 40)).toBe('展开其余 15 条回复 ▾')
+    expect(shownRepliesOf({ replies: thread(65), hidden: 55, extra: 55 })).toHaveLength(65)
+    expect(label(65, 55)).toBe('')
   })
 
-  it('性质:折起来的是超出 20 的那几条;露出来的是时间正序前缀,条数 = 恒露 + 已展开', () => {
+  it('性质:折起来的是超出 10 的那几条;露出来的是时间正序前缀,条数 = 恒露 + 已展开', () => {
     fc.assert(fc.property(fc.integer({ min: 0, max: 300 }), fc.integer({ min: 0, max: 300 }), (count, rawExtra) => {
       const hidden = replyHiddenOf(count)
-      expect(hidden).toBe(Math.max(0, count - 20))
+      expect(hidden).toBe(Math.max(0, count - 10))
       const extra = Math.min(hidden, rawExtra)
       const replies = thread(count)
       const shown = shownRepliesOf({ replies, hidden, extra })

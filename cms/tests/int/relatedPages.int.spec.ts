@@ -43,13 +43,14 @@ describe('相关职位按页取', () => {
   })
 
   // 2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):两组首屏都取 20
-  it('首屏:同公司组绑 [公司, 岗号, 20, 0],同职业组绑 [省, 职业, 岗号, 公司, 城, 20, 0]', async () => {
+  // 2026-10-02 Frank「默认显示 20 是不是太多了」→「改成 10」:首屏 20 改 10,续取一页仍 20
+  it('首屏:同公司组绑 [公司, 岗号, 10, 0],同职业组绑 [省, 职业, 岗号, 公司, 城, 10, 0]', async () => {
     h.query.mockClear()
     const db: Db = { query: h.query }
     await loadRelatedJobs({ db, job })
-    expect(h.query.mock.calls[0]![1]).toEqual(['Acme', 42, 20, 0])
+    expect(h.query.mock.calls[0]![1]).toEqual(['Acme', 42, 10, 0])
     expect(h.query.mock.calls[0]![0]).toMatch(/LIMIT \$3 OFFSET \$4/)
-    expect(h.query.mock.calls[1]![1]).toEqual(['ON', '21232', 42, 'Acme', 'Ottawa', 20, 0])
+    expect(h.query.mock.calls[1]![1]).toEqual(['ON', '21232', 42, 'Acme', 'Ottawa', 10, 0])
   })
 
   it('续取:一页 20 条、从第 offset 条往后;本岗缺公司名 / 职业码不进库', async () => {
