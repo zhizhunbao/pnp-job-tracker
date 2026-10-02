@@ -12,6 +12,7 @@
  * 日期行不进左块:与译名行一样折到标题与窗口钮那一行下面、独占一整行 —— 手机全屏档左块被窗口钮占去一截,两格并排放不下。
  * 2026-09-27 Frank「放到 jd 正文部分如何」→ 看过效果图选 ①:日期改成正文里单独一节(jobs 桶 JdContent 末尾),dates 槽撤。
  * 2026-09-28 并壳(Frank「别并存啊」):版式(左块 + 译名行)并进 modal 桶的 ModalHead,这里只剩「小标写什么」。
+ * 2026-10-01 Frank「这种有点突兀」「这种也突兀」(没正文 / 整理版 / 原帖三档里那一节都不搭)→ 选「回到职位名下面」:dates 槽挂回,排在 ModalHead(左块 + 译名行)之后。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -22,17 +23,20 @@ import type { ActHeadIn } from './types'
 /**
  * 渲染职位描述弹框的页眉左块。
  *
- * @param props 取词函数、岗位名、译名、剩余次数与切换控件。
- * @returns 页眉左块 + 译名行。
+ * @param props 取词函数、岗位名、译名、剩余次数、切换控件与日期行。
+ * @returns 页眉左块 + 译名行 + 日期行。
  */
-export function ActHead({ t, title, sub, freeLeft, ctl }: ActHeadIn) {
+export function ActHead({ t, title, sub, freeLeft, ctl, dates }: ActHeadIn) {
   return (
-    <ModalHead title={title} sub={sub} ctl={ctl}
+    <>
+      <ModalHead title={title} sub={sub} ctl={ctl}
       kicker={(
         <>
           {t('act.descTitle')}
-          {freeLeft != null && <KickerNote text={t('advisor.left', { n: freeLeft })} />}
-        </>
-      )} />
+            {freeLeft != null && <KickerNote text={t('advisor.left', { n: freeLeft })} />}
+          </>
+        )} />
+      {dates}
+    </>
   )
 }

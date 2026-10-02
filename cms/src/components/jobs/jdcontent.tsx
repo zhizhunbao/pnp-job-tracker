@@ -28,6 +28,7 @@
  * 2026-09-17 Frank「自动拨开去掉,但是后台要自动翻译」:对照在后台拉好但不自动出,d.pending 只剩等整理版那一拍。
  * 2026-09-27 Frank「放到 jd 正文部分如何」→ 看过效果图选 ①:正文区末尾挂一节「日期」(JobDates;整理版排在「工作地点」之后,
  * 原帖正文、没正文、额度到头三档同样挂),出不出与弹框尾巴同口径(jdShownOf:正文区有东西了才出,不让日期先于正文孤零零出现)。
+ * 2026-10-01 Frank「这种有点突兀」「这种也突兀」(没正文 / 整理版 / 原帖三档里那一节都不搭)→ 选「回到职位名下面」:这一节撤,日期回职位名下(详情页 Job、弹框 ActHead)。
  * jdWaitingOf 的注释原文照录,留「当初为什么」:
  *   「正文区从头到尾要不要出转圈行:取数在途、整理在途、翻译在途三段合一(2026-09-14 Frank「加载途中为什么会闪一下」:
  *   三段各渲一条转圈,段切换那一瞬旧条卸新条挂就闪;合成一个判定一个元素就不闪)。
@@ -44,13 +45,12 @@ import { cssOf } from '@/components/css'
 import { blockedSrc } from '@/lib/jobs'
 import { JD_DONE, JD_EMPTY, JD_LIMITED, JD_MAX_LEN, TEXT_NONE } from './constants'
 import {
-  fallbackPayOf, jdLocationOf, jdLocationZhOf, jdShownOf, noTextOf, showFormattedOf, transShownOf,
+  fallbackPayOf, jdLocationOf, jdLocationZhOf, noTextOf, showFormattedOf, transShownOf,
 } from './functions'
 import { JdAiNote } from './jdainote'
 import { JdEmpty } from './jdempty'
 import { JdFormattedView } from './jdformattedview'
 import { JdTextView } from './jdtextview'
-import { JobDates } from './jobdates'
 import type { JdContentIn } from './types'
 import css from './jobs.module.css'
 
@@ -91,7 +91,6 @@ export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
           )}
         </>
       )}
-      {jdShownOf(d) && <JobDates job={job} t={d.t} />}
     </>
   )
 }
