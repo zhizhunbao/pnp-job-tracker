@@ -33,7 +33,7 @@ from indexing.constants import (
     ASCII, B64_PAD, BEARER_TPL, DAILY_QUOTA, DAYS_PER_WEEK, DRY_SHOW_N, DST_END_MONTH, DST_END_NTH, DST_END_UTC_HOUR,
     DST_START_MONTH, DST_START_NTH, DST_START_UTC_HOUR, EMPTY_SITEMAP_TPL, ENV_KEY_FILE, ERR_WHY_TPL, FIELD_NONE, FLUSH_N,
     GONE_STATUSES, GRANT_JWT_BEARER, HDR_AUTH, HDR_X_ROBOTS, HTTP_FAIL_TPL, HTTP_FORBIDDEN, HTTP_OK_MAX, HTTP_OK_MIN,
-    HTTP_TIMEOUT_S, HTTP_TOO_MANY, INDEXING_SCOPE, ISO_FMT, JOB_PATH_PREFIX, JOBS_SHARD_PREFIX, JSON_COMPACT_SEPS,
+    HTTP_TIMEOUT_S, HTTP_TOO_MANY, INDEXING_SCOPE, ISO_FMT, JOB_PATH_PREFIX, JSON_COMPACT_SEPS,
     JSON_INDENT, JWT_ALG, JWT_SEP, JWT_TTL_S, JWT_TYP, K_ACCESS_TOKEN, K_ALG, K_AUD, K_CLIENT_EMAIL, K_ERROR, K_ERROR_DESC,
     K_EXP, K_IAT, K_ISS, K_KID, K_MESSAGE, K_PRIVATE_KEY, K_PRIVATE_KEY_ID, K_SCOPE, K_TYP, K_TYPE, KEY_BAD_MSG,
     KEY_NOT_RSA_MSG, KEY_TYPE_SA, LASTMOD_MISSING_WORD, LASTMOD_NONE_TS, META_CONTENT_RE, META_NAME_RE, META_TAG_RE,
@@ -41,8 +41,8 @@ from indexing.constants import (
     OUT_STATE, OWNER_TPL, P_ASSERTION, P_GRANT_TYPE, P_TYPE, P_URL, PAGE_CHECK_MAX, PDT_OFFSET_H, PRINT_429_TPL,
     PRINT_API_FAIL_TPL, PRINT_DONE_TPL, PRINT_PLAN_TPL, PRINT_QUOTA_OUT_TPL, PRINT_RETIRE_TPL, PRINT_SAMPLE_DEL_TPL,
     PRINT_SAMPLE_TPL, PRINT_SENT_TPL, PRINT_UNSURE_TPL, PST_OFFSET_H, PUBLISH_URL, RES_FAILED, RES_SENT, ROBOTS_NAMES,
-    SITE_HOST, SITE_ROOT, SITE_SCHEME, SITEMAP_INDEX_URL, SITEMAP_MIN_URLS, STOP_NET, STOP_OWNER, STOP_QUOTA, SUNDAY,
-    TAG_LASTMOD, TAG_LOC, TAG_SITEMAP, TAG_URL, TEST_VERBOSITY, TEXT_ENCODING, TOKEN_EMPTY_MSG, TOKEN_ERR_TPL,
+    SITE_HOST, SITE_ROOT, SITE_SCHEME, SITEMAP_JOBS_URL, SITEMAP_MIN_URLS, STOP_NET, STOP_OWNER, STOP_QUOTA, SUNDAY,
+    TAG_LASTMOD, TAG_LOC, TAG_URL, TEST_VERBOSITY, TEXT_ENCODING, TOKEN_EMPTY_MSG, TOKEN_ERR_TPL,
     TOKEN_FAIL_TPL, TOKEN_URL, TYPE_DELETED, TYPE_UPDATED, V_DELETE, V_KEEP, V_UNSURE, WHY_HTTP_TPL, WHY_INDEXABLE,
     WHY_NOINDEX_HDR, WHY_NOINDEX_META,
 )
@@ -154,27 +154,25 @@ def email_of(ctx: RoundCtx) -> str:
 
 
 def read_sitemap(client: HttpClientLike) -> SitemapOut:
-    """读线上 sitemap:索引 → 本站职位分册(路径以 JOBS_SHARD_PREFIX 开头,含批 1 新增的 jobs-new.xml)→ 每条 url 的
-    loc + lastmod;同一网址出现在两个分册里只留 lastmod 新的那条(位置按先出现的)。
+    """读线上 sitemap jobs.xml → 每条 url 的 loc + lastmod;同一网址出现两次只留 lastmod 新的那条(位置按先出现的)。
+    2026-10-02 前先读索引再逐个读本站职位分册(jobs-0..N、jobs-new);cms 合成一张 jobs.xml 后直读,shard_locs_of 撤。
 
     自家站,不落 crawl 层:crawl 层存的是「别人的页面原文」,好让解析出错时离线重来;这里读的是本站自己现算的清单,
-    要的就是此刻的真相,留旧版反而会拿过期清单去撤回。任一分册拿不到整轮抛 —— 拿半份 sitemap 算「离开」
+    要的就是此刻的真相,留旧版反而会拿过期清单去撤回。拿不到整轮抛 —— 拿残缺的 sitemap 算「离开」
     会把整片撤掉;一条本站职位网址都没有同样抛(SITEMAP_MIN_URLS 防线)。
     """
-    shards = shard_locs_of(xml_of(XmlGetIn(client=client, url=SITEMAP_INDEX_URL)))
     seen: dict[str, SitemapUrl] = {}
     skipped = 0
-    for loc in shards:
-        for el in xml_of(XmlGetIn(client=client, url=loc)).iter(TAG_URL):
-            row = to_sitemap_url(el)
-            if is_own_job(row.loc) is False:
-                skipped += 1
-                continue
-            merge_url(MergeIn(seen=seen, row=row))
-    out = SitemapOut(rows=list(seen.values()), shards=len(shards), skipped=skipped, missing=0, bad=0)
+    for el in xml_of(XmlGetIn(client=client, url=SITEMAP_JOBS_URL)).iter(TAG_URL):
+        row = to_sitemap_url(el)
+        if is_own_job(row.loc) is False:
+            skipped += 1
+            continue
+        merge_url(MergeIn(seen=seen, row=row))
+    out = SitemapOut(rows=list(seen.values()), shards=1, skipped=skipped, missing=0, bad=0)
     count_lastmod(out)
     if len(out.rows) < SITEMAP_MIN_URLS:
-        raise RuntimeError(EMPTY_SITEMAP_TPL.format(shards=len(shards)))
+        raise RuntimeError(EMPTY_SITEMAP_TPL)
     return out
 
 
@@ -184,17 +182,6 @@ def xml_of(x: XmlGetIn) -> ElementTree.Element:
     if r.is_success is False:
         raise RuntimeError(HTTP_FAIL_TPL.format(status=r.status_code, url=x.url))
     return ElementTree.fromstring(r.content)
-
-
-def shard_locs_of(root: ElementTree.Element) -> list[str]:
-    """索引里本站的职位分册地址(别的主机、非 https、core / companies 分册一律不认)。"""
-    locs: list[str] = []
-    for item in root.iter(TAG_SITEMAP):
-        loc = text_of(item.find(TAG_LOC))
-        parts = urlsplit(loc)
-        if parts.scheme == SITE_SCHEME and parts.hostname == SITE_HOST and parts.path.startswith(JOBS_SHARD_PREFIX):
-            locs.append(loc)
-    return locs
 
 
 def text_of(el: ElementTree.Element | None) -> str:

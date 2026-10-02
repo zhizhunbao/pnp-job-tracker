@@ -76,20 +76,16 @@ SITE_SCHEME = "https"
 SITE_HOST = "offer2pr.com"
 """本站主机名(分册与职位网址都只认它:别的主机既不去读,也不拿去通知 Google)。"""
 
-SITEMAP_INDEX_URL = SITE_ROOT + "/api/sitemaps/index.xml"
-"""sitemap 索引(cms app/api/sitemaps 现算;批 1 起职位分册只列有投递邮箱、在架、正文完整、不重复的岗)。"""
-
-JOBS_SHARD_PREFIX = "/api/sitemaps/jobs-"
-"""职位分册的路径前缀:jobs-0..N.xml 与批 1 新增的 jobs-new.xml 都认(core / companies 分册不认)。"""
+SITEMAP_JOBS_URL = SITE_ROOT + "/api/sitemaps/jobs.xml"
+"""职位站点地图(cms app/api/sitemaps 现算,全站唯一一张;成员 = cms 收录口径 SQL.SEO_JOB_OK)。
+原判(SITEMAP_INDEX_URL = index.xml + JOBS_SHARD_PREFIX = jobs-):先读索引再读 jobs-0..N 与 jobs-new 分册;
+2026-10-02 cms 合成一张 jobs.xml(Frank「合成一个不行吗」「叫 jobs.xml 不行么」),本域改直读它。"""
 
 JOB_PATH_PREFIX = "/jobs/"
 """职位页的路径前缀(Indexing API 只许职位页与直播页用;分册里混进别的页不推,记进「剔」数)。"""
 
 SITEMAP_NS = "{http://www.sitemaps.org/schemas/sitemap/0.9}"
 """sitemap 协议命名空间(ElementTree 的限定名前缀)。"""
-
-TAG_SITEMAP = SITEMAP_NS + "sitemap"
-"""索引里的分册项。"""
 
 TAG_URL = SITEMAP_NS + "url"
 """分册里的网址项。"""
@@ -109,7 +105,7 @@ SITEMAP_MIN_URLS = 1
 HTTP_FAIL_TPL = "http {status}:{url}"
 """读 sitemap 非 2xx 的报错(整轮抛:拿半份 sitemap 算「离开」会把整片撤掉)。"""
 
-EMPTY_SITEMAP_TPL = "sitemap 职位分册 {shards} 个里一条本站职位网址都没有 —— 疑似站点异常,本轮不动状态"
+EMPTY_SITEMAP_TPL = "sitemap jobs.xml 里一条本站职位网址都没有 —— 疑似站点异常,本轮不动状态"
 """SITEMAP_MIN_URLS 防线的报错。"""
 
 # =========================================================================

@@ -30,7 +30,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from indexing.constants import (
     DAILY_QUOTA, ENV_KEY_FILE, FIELD_NONE, GRANT_JWT_BEARER, INDEXING_SCOPE, K_ACCESS_TOKEN, K_ERROR, K_MESSAGE,
-    LASTMOD_NONE_TS, NOTE_NO_KEY, P_ASSERTION, P_GRANT_TYPE, P_TYPE, P_URL, SITE_ROOT, SITEMAP_INDEX_URL, STOP_NET,
+    LASTMOD_NONE_TS, NOTE_NO_KEY, P_ASSERTION, P_GRANT_TYPE, P_TYPE, P_URL, SITE_ROOT, SITEMAP_JOBS_URL, STOP_NET,
     STOP_OWNER, STOP_QUOTA, TOKEN_URL, TYPE_DELETED, TYPE_UPDATED, V_DELETE, V_KEEP, V_UNSURE,
 )
 
@@ -625,15 +625,6 @@ class IndexingDecisionTest(unittest.TestCase):
             rows.append(SitemapUrl(loc=SITE_ROOT + "/jobs/" + str(100 + i), lastmod="", lastmod_ts=float(1000 - i)))
         return rows
 
-    def index_xml(self, locs: list[str]) -> str:
-        """造一份 sitemap 索引 XML。"""
-        parts = ['<?xml version="1.0" encoding="UTF-8"?>',
-                 '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-        for loc in locs:
-            parts.append("<sitemap><loc>" + loc + "</loc></sitemap>")
-        parts.append("</sitemapindex>")
-        return "\n".join(parts)
-
     def urlset_xml(self, pairs: list[tuple[str, str]]) -> str:
         """造一份 sitemap 分册 XML(lastmod 给空串 = 不写这一格)。"""
         parts = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
@@ -915,50 +906,34 @@ class IndexingDecisionTest(unittest.TestCase):
         self.assertEqual(len(fake.posted), 2)
 
     def test_read_sitemap(self) -> None:
-        """sitemap 解析:只读本站 https 职位分册(jobs-0 / jobs-new / jobs-1;core、companies、外站、http 分册不读);
-        只收本站 /jobs/ 网址;跨分册重复只留 lastmod 新的那条、位置按先出现;lastmod 缺 / 坏分别计数。"""
+        """sitemap 解析:直读 jobs.xml 一张(2026-10-02 起,原先先读索引再读分册);只收本站 https /jobs/ 网址;
+        重复网址只留 lastmod 新的那条、位置按先出现;lastmod 缺 / 坏分别计数。"""
         from indexing import functions as fn
-        api = SITE_ROOT + "/api/sitemaps/"
         u = SITE_ROOT + "/jobs/"
-        index = self.index_xml([api + "core.xml", api + "jobs-0.xml", api + "jobs-new.xml", api + "companies-0.xml",
-                                "https://evil.example/api/sitemaps/jobs-9.xml", "http://offer2pr.com/api/sitemaps/jobs-2.xml",
-                                api + "jobs-1.xml"])
-        shard0 = self.urlset_xml([(u + "1", "2026-09-26T05:00:00.000Z"), (u + "2", ""),
-                                  ("https://evil.example/jobs/3", "2026-09-26"), (SITE_ROOT + "/companies/acme", "2026-09-26"),
-                                  (u + "4", "not-a-date")])
-        shard_new = self.urlset_xml([(u + "1", "2026-09-26T06:00:00Z"), (u + "5", "2026-09-25")])
-        shard1 = self.urlset_xml([(u + "6", "2026-09-24T12:00:00+00:00"), (u + "5", "2026-09-01")])
-        fake = FakeClient(routes={SITEMAP_INDEX_URL: resp_of(200, index), api + "jobs-0.xml": resp_of(200, shard0),
-                                  api + "jobs-new.xml": resp_of(200, shard_new), api + "jobs-1.xml": resp_of(200, shard1)},
-                          codes=[])
+        jobs = self.urlset_xml([(u + "1", "2026-09-26T05:00:00.000Z"), (u + "2", ""),
+                                ("https://evil.example/jobs/3", "2026-09-26"), (SITE_ROOT + "/companies/acme", "2026-09-26"),
+                                (u + "4", "not-a-date"), (u + "1", "2026-09-26T06:00:00Z"), (u + "5", "2026-09-25"),
+                                (u + "6", "2026-09-24T12:00:00+00:00"), (u + "5", "2026-09-01")])
+        fake = FakeClient(routes={SITEMAP_JOBS_URL: resp_of(200, jobs)}, codes=[])
         out = fn.read_sitemap(cast(HttpClientLike, fake))
         self.assertEqual(self.locs_of(out.rows), [u + "1", u + "2", u + "4", u + "5", u + "6"])
-        self.assertEqual((out.shards, out.skipped, out.missing, out.bad), (3, 2, 1, 1))
+        self.assertEqual((out.shards, out.skipped, out.missing, out.bad), (1, 2, 1, 1))
         self.assertEqual(out.rows[0].lastmod, "2026-09-26T06:00:00Z")
         self.assertEqual(out.rows[3].lastmod, "2026-09-25")
         self.assertEqual(out.rows[1].lastmod_ts, LASTMOD_NONE_TS)
         self.assertEqual(out.rows[2].lastmod_ts, LASTMOD_NONE_TS)
-        self.assertEqual(fake.gets, [SITEMAP_INDEX_URL, api + "jobs-0.xml", api + "jobs-new.xml", api + "jobs-1.xml"])
+        self.assertEqual(fake.gets, [SITEMAP_JOBS_URL])
 
     def test_read_sitemap_guards(self) -> None:
-        """sitemap 防线:任一职位分册非 2xx → 整轮抛(不拿半份清单算「离开」);分册里一条本站职位网址都没有、
-        索引里一个职位分册都没有 → 整轮抛。"""
+        """sitemap 防线:jobs.xml 非 2xx → 整轮抛(不拿残缺清单算「离开」);里面一条本站职位网址都没有 → 整轮抛。"""
         from indexing import functions as fn
-        api = SITE_ROOT + "/api/sitemaps/"
-        index = self.index_xml([api + "jobs-0.xml", api + "jobs-1.xml"])
-        good = self.urlset_xml([(SITE_ROOT + "/jobs/1", "")])
-        broken = FakeClient(routes={SITEMAP_INDEX_URL: resp_of(200, index), api + "jobs-0.xml": resp_of(200, good),
-                                    api + "jobs-1.xml": resp_of(502, "")}, codes=[])
+        broken = FakeClient(routes={SITEMAP_JOBS_URL: resp_of(503, "")}, codes=[])
         with self.assertRaises(RuntimeError):
             fn.read_sitemap(cast(HttpClientLike, broken))
         foreign = self.urlset_xml([("https://evil.example/jobs/1", "")])
-        empty = FakeClient(routes={SITEMAP_INDEX_URL: resp_of(200, index), api + "jobs-0.xml": resp_of(200, self.urlset_xml([])),
-                                   api + "jobs-1.xml": resp_of(200, foreign)}, codes=[])
+        empty = FakeClient(routes={SITEMAP_JOBS_URL: resp_of(200, foreign)}, codes=[])
         with self.assertRaises(RuntimeError):
             fn.read_sitemap(cast(HttpClientLike, empty))
-        no_shard = FakeClient(routes={SITEMAP_INDEX_URL: resp_of(200, self.index_xml([api + "core.xml"]))}, codes=[])
-        with self.assertRaises(RuntimeError):
-            fn.read_sitemap(cast(HttpClientLike, no_shard))
 
     def test_jwt_and_token(self) -> None:
         """RS256:现造一把 RSA 钥 → jwt_of 的三段可解、头体各格对、签名用公钥验得过(验不过 verify 直接抛);

@@ -1,77 +1,46 @@
 /**
- * seo 域的 HTTP 芯(第十一抽屉):GET /sitemaps/[file] —— 20 张地图一个出口。
+ * seo 域的 HTTP 芯(第十一抽屉):GET /sitemaps/[file] —— 站点地图一个出口。
  * 2026-08-29 归目录批(Frank「能不能只有一个入口/都放到一个目录」):此前核心/分片册
  * 走 Next Metadata 框架文件(app 根 + jobs/companies 三处壳),索引另有一壳 ——
  * 四壳三处两种形;现在全家收进 /sitemaps/ 前缀、app/sitemaps/[file]/route.ts 一个壳,
  * 按件名分发。旧入口与旧核心册在 next.config 301 兜底;分片旧址不兜 —— GSC 实查
  * Google 从未读到过它们(索引 7/21 后未重读),改名零收录损失。
  *
- * 🔴 分片/索引取数的 getDb 裹在兜底里(08-23 裸构建事故的不变量;库抖时 sitemap
- * 请求也不该 500):索引取不到按两侧各 1 片出册(空片无害,绝不 0 片 —— 0 片 =
- * 整个 sitemap 消失),分册取不到回空册。日志留痕不静默。
- * 2026-09-26 /fe SEO 批改判:片数固定(职位 10 片 + 公司 8 片 + 近 7 天新岗册 jobs-new.xml + 核心册 = 20 张),
- * 索引取不到清单就照列满这 20 张、只是不给 lastmod —— 「绝不 0 片」由固定片数天然成立;分册取不到照旧回空册。
- * 2026-09-29 公司 8 片撤出(Frank「撤吧」:缺数据稿批 4 的公司核实标记落地前,公司页不报给 Google),现 12 张;
- * companies-N.xml 走不合形的 404 支。放回的做法见 `docs/design/缺数据不上线与Opus修复-20260928.md` 批 4。
+ * 🔴 取数的 getDb 裹在兜底里(08-23 裸构建事故的不变量;库抖时 sitemap 请求也不该 500)。日志留痕不静默。
+ * 2026-09-26 /fe SEO 批改判:片数固定(职位 10 片 + 公司 8 片 + 近 7 天新岗册 jobs-new.xml + 核心册 = 20 张)。
+ * 2026-09-29 公司 8 片撤出(Frank「撤吧」:缺数据稿批 4 的公司核实标记落地前,公司页不报给 Google),现 12 张。
+ * 2026-10-02 合成一张 jobs.xml(Frank「合成一个不行吗」「叫 jobs.xml 不行么」):index.xml / core.xml / jobs-N.xml /
+ * jobs-new.xml 一律落 404;库查不到又没有旧缓存回 503(原先回 200 空册,Google 记成「已发现 0」)。
  *
  * @author Frank
  * @time 2026-08-23 23:30:00
  */
-import { NOT_FOUND } from '../http'
+import { NOT_FOUND, UNAVAILABLE } from '../http'
 import { getDb } from '../db/server'
 import { log, SEO_LOG } from '../log'
-import {
-  coreSitemapOf, fileOf, indexHeadersOf, indexXmlOf, loadIndexRows,
-  loadJobShardPage, loadJobsNewPage, shardNoOf, urlsetXmlOf,
-} from './functions'
-import { SM_FILE_CORE, SM_FILE_INDEX, SM_FILE_JOBS_NEW, SM_JOBS_FILE_RE } from './constants'
-import type { IndexXmlIn, Sitemap } from './types'
+import { fileOf, loadJobsSitemap, sitemapHeadersOf, urlsetXmlOf } from './functions'
+import { SM_FILE_JOBS } from './constants'
+import type { MaybeSitemap } from './types'
 
 /**
- * GET /sitemaps/[file]:按件名分发 —— index.xml 现查两侧片数吐 sitemapindex
- * (#156 GSC 只认手填的那一个 URL,这里是全站唯一的分片清单来源,robots 只指它);
- * core.xml 吐核心页平铺册(零库依赖);jobs-N.xml / companies-N.xml 吐对应分册
- * (loadXxxShardPage 体内自带库抖兜底,这里只兜 getDb 那一口)。
- * 件名不合形 404;片号越界给空册(无害,索引不会列出越界号)。
- * 2026-09-26:index.xml 改取两侧清单算每片最晚的 lastmod(片数固定,不再计数);新增 jobs-new.xml 近 7 天新岗册,
- * 兜底同分册。
- * 2026-09-29:公司分册撤,index.xml 只取职位一侧清单,companies-N.xml 不再认,落 404。
+ * GET /sitemaps/[file]:只认 jobs.xml —— 吐收录口径全部职位页的 urlset(robots 只指它,GSC 只交它)。
+ * 其余件名 404;库查不到且没有旧缓存回 503(爬虫过会儿重读,不给空册)。
  *
  * @param req 触发请求(读路径末段当件名)。
- * @returns XML 响应(一小时缓存);不认识的件名 404。
+ * @returns XML 响应(一小时缓存);不认识的件名 404;没数据 503。
  */
 export async function sitemapFileRoute(req: Request): Promise<Response> {
-  const file = fileOf(req.url)
-  if (file === SM_FILE_INDEX) {
-    let rows: IndexXmlIn = { jobs: [] }
-    try {
-      rows = await loadIndexRows({ db: await getDb() })
-    } catch (e) {
-      log({ tag: SEO_LOG.tag, text: SEO_LOG.indexFail + String(e) })
-    }
-    return new Response(indexXmlOf(rows), { headers: indexHeadersOf() })
+  if (fileOf(req.url) !== SM_FILE_JOBS) {
+    return new Response(null, { status: NOT_FOUND })
   }
-  if (file === SM_FILE_CORE) {
-    return new Response(urlsetXmlOf(coreSitemapOf()), { headers: indexHeadersOf() })
+  let entries: MaybeSitemap = null
+  try {
+    entries = await loadJobsSitemap({ db: await getDb() })
+  } catch (e) {
+    log({ tag: SEO_LOG.tag, text: SEO_LOG.pageFail + String(e) })
   }
-  if (file === SM_FILE_JOBS_NEW) {
-    let rows: Sitemap = []
-    try {
-      rows = await loadJobsNewPage({ db: await getDb() })
-    } catch (e) {
-      log({ tag: SEO_LOG.tag, text: SEO_LOG.pageFail + String(e) })
-    }
-    return new Response(urlsetXmlOf(rows), { headers: indexHeadersOf() })
+  if (entries == null) {
+    return new Response(null, { status: UNAVAILABLE })
   }
-  const jobNo = shardNoOf({ re: SM_JOBS_FILE_RE, file: file })
-  if (jobNo != null) {
-    let rows: Sitemap = []
-    try {
-      rows = await loadJobShardPage({ db: await getDb(), shard: jobNo })
-    } catch (e) {
-      log({ tag: SEO_LOG.tag, text: SEO_LOG.pageFail + String(e) })
-    }
-    return new Response(urlsetXmlOf(rows), { headers: indexHeadersOf() })
-  }
-  return new Response(null, { status: NOT_FOUND })
+  return new Response(urlsetXmlOf(entries), { headers: sitemapHeadersOf() })
 }

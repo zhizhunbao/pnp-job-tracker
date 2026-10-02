@@ -1,5 +1,5 @@
 /**
- * seo 域的全部可变状态:两侧分片清单的进程内缓存(照 stats 域 CACHE 同手法)。
+ * seo 域的全部可变状态:职位站点地图清单的进程内缓存(照 stats 域 CACHE 同手法)。
  * 摆成一个容器对象 —— 这个域一共多少可变状态,一眼数得清。
  * 2026-09-29 公司分片撤出站点地图,只剩职位一侧。
  *
@@ -14,7 +14,7 @@ import type { SeoCache } from './types'
  */
 export const CACHE: SeoCache = {
   /**
-   * 职位分片清单(收录口径的岗 id + lastmod + 近 7 天旗全量,一小时 TTL;2026-09-26 前是在架岗 id + last_seen)。
+   * 职位清单(收录口径的岗 id + lastmod 全量,一小时 TTL;2026-09-26 前是在架岗 id + last_seen,2026-10-02 前多一格近 7 天旗)。
    */
   jobs: null,
 

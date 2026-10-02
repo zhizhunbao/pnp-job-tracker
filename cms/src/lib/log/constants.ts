@@ -382,7 +382,7 @@ export const DB_LOG = {
 } as const
 
 /**
- * `lib/seo` 写出去的全部字面量(sitemap 分片查库失败的两类留痕)。
+ * `lib/seo` 写出去的全部字面量(职位站点地图查库失败的留痕)。
  */
 export const SEO_LOG = {
   /**
@@ -391,15 +391,12 @@ export const SEO_LOG = {
   tag: 'seo',
 
   /**
-   * 索引取两侧清单失败(照列满全部固定分片,只是不给 lastmod)。
+   * 职位站点地图查库失败(有旧缓存照给旧的;没有回 503,不 500 也不给空册)。
    * 原判(countFail,2026-09-26 片数固定前):分片计数查库失败(回落 1 片 —— 空片无害,0 片 = 整个 sitemap 消失)。
+   * 原判(indexFail,2026-09-26 ~ 10-02):索引取清单失败照列满固定分片;10-02 合成一张 jobs.xml,索引撤。
+   * 原判(pageFail 回空片):单片查库失败回空片 —— 空册被 Google 记成「已发现 0」,10-02 改回 503。
    */
-  indexFail: 'sitemap index rows failed, listing all shards without lastmod: ',
-
-  /**
-   * 单片查库失败(回空片,不 500 —— sitemap 请求不该打挂站点)。
-   */
-  pageFail: 'sitemap shard page failed, returning empty shard: ',
+  pageFail: 'sitemap jobs list failed, serving cached list or 503: ',
 } as const
 
 /**
