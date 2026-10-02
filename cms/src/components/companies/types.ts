@@ -1808,49 +1808,9 @@ export type SetLoadingFn = (v: boolean) => void
 export type SetPanelDataFn = (v: CompanyPanelData | null) => void
 
 /**
- * jobsToggleLabelOf 的入参。
- */
-export type JobsToggleLabelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 折着没露的岗数。
-   */
-  hidden: number
-}
-
-/**
  * 数值态的落格(useState 的 setter,签名由 React 定死)。
  */
 export type SetNumFn = (v: number) => void
-
-/**
- * makeJobsMore 的入参:现在露几条与落格。
- */
-export type JobsMoreIn = {
-  /**
-   * 现在露几条。
-   */
-  n: number
-
-  /**
-   * 落格。
-   */
-  set: SetNumFn
-}
-
-/**
- * makeJobsReset 的入参:落格。
- */
-export type JobsResetIn = {
-  /**
-   * 落格。
-   */
-  set: SetNumFn
-}
 
 /**
  * makeToggle 的入参:现值与落格。

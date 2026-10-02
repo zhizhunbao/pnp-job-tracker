@@ -15,21 +15,22 @@
  * 批量懒翻的 → 职业名兜底(jobtitle 桶 titleSubOf,与职位板手机卡、职位详情页同一个);懒翻只翻库里还没译名的。
  * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:给了 onOpenJob 的每一行都开弹框 —— 已载入的整行直接交,
  * 没载入的由行自己现取(原先只有已载入的能开,其余跳页)。
+ * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:卡底「再展开 N 个 / 收起」两枚自造钮换成 pager 桶 FoldLine
+ * (展开 20 个 → 再展开 20 个 → 展开其余 N 个 → 收起),开合走 useFold(在招岗全量在手,不用按页取)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
-import { useState } from 'react'
 import { lazyTitleOf, titleSubOf, untranslatedOf, useTitleMap } from '@/components/jobtitle'
-import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
+import { FoldLine, useFold } from '@/components/pager'
 import { Updated } from '@/components/time'
 import { JobMiniRow } from './jobminirow'
 import {
-  CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, JOBS_FIRST_N, LANG_EN, PAREN_CLOSE, PAREN_OPEN, PLAIN_BTN_KIND,
+  CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, JOBS_FIRST_N, K_JOBS_UNIT, LANG_EN, PAREN_CLOSE, PAREN_OPEN,
 } from './constants'
 import {
-  jobsMoreLabelOf, jobsShownOf, jobSubOf, makeJobsMore, makeJobsReset, zhShownOf,
+  jobsShownOf, jobSubOf, zhShownOf,
 } from './functions'
 import type { CompanyJobFact, CompanyJobsCardIn } from './types'
 import css from './companies.module.css'
@@ -43,9 +44,8 @@ import css from './companies.module.css'
 export function CompanyJobsCard({
   company, t, lang, updatedAt, onOpenJob, resolveJob, newTab, showTrans,
 }: CompanyJobsCardIn) {
-  const [shownN, setShownN] = useState(JOBS_FIRST_N)
-  const shown = jobsShownOf({ jobs: company.jobs, n: shownN })
-  const hidden = company.jobs.length - shown.length
+  const fold = useFold({ hidden: Math.max(0, company.jobs.length - JOBS_FIRST_N) })
+  const shown = jobsShownOf({ jobs: company.jobs, n: JOBS_FIRST_N + fold.extra })
   const titleMap = useTitleMap({ titles: untranslatedOf({ rows: shown, lang }), lang })
   if (company.jobs.length === 0) {
     return null
@@ -79,18 +79,13 @@ export function CompanyJobsCard({
       </div>
       <div>
         {rows}
-        {hidden > 0 && (
-          <Button kind={PLAIN_BTN_KIND} onClick={makeJobsMore({ n: shownN, set: setShownN })}
-            className={cssOf(css.showAll)}>
-            {jobsMoreLabelOf({ t, hidden })}
-          </Button>
-        )}
-        {shownN > JOBS_FIRST_N && (
-          <Button kind={PLAIN_BTN_KIND} onClick={makeJobsReset({ set: setShownN })}
-            className={cssOf(css.showAll)}>
-            {t('act.collapse')}
-          </Button>
-        )}
+        <FoldLine t={t}
+          unit={t(K_JOBS_UNIT)}
+          hidden={Math.max(0, company.jobs.length - JOBS_FIRST_N)}
+          extra={fold.extra}
+          busy={false}
+          onMore={fold.onMore}
+          onFold={fold.onFold} />
       </div>
     </div>
   )

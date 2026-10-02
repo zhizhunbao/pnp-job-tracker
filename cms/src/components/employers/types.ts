@@ -665,14 +665,15 @@ export type EmployerCellRow = {
   locs: string[]
 
   /**
-   * 在招地点格「展开其余 N 个」钮的钮面(N = 收着的地点数;不超过三处时用不上)。
+   * 在招地点格展开 / 收起钮的取词函数(钮面由 pager 桶 FoldLine 现拼;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」,
+   * 原两枚现成钮面 locsMoreText / locsLessText 撤)。
    */
-  locsMoreText: string
+  locsT: TFn
 
   /**
-   * 在招地点格「收起」钮的钮面。
+   * 在招地点格展开钮的量词(「个」)。
    */
-  locsLessText: string
+  locsUnit: string
 
   /**
    * 区格:区名原样,一行(2026-09-18 Frank「区的字段没有啊」;默认不显,字段面板里勾);空串 = 岗都没带区(渲横杠)。

@@ -51,18 +51,23 @@ export type TagFoldIn = {
   variant: TagVariant
 
   /**
-   * 展开钮的钮面(调用方拼好,如「展开其余 5 个」)。
+   * 界面语取词函数(展开 / 收起钮面由 pager 桶 FoldLine 现拼;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」,原「展开钮 / 收起钮两枚现成钮面」撤)。
    */
-  moreText: string
+  t: TagT
 
   /**
-   * 收起钮的钮面。
+   * 展开钮的量词(调用方取好词,如「个」)。
    */
-  lessText: string
+  unit: string
 }
 
 /**
- * tagsShownOf 的入参:全部标签、默认露几枚与展开态。
+ * 界面语取词函数(与 lib/i18n 的 TFn 同形:键 + 可选插值;本域自抄,types 不许 import)。
+ */
+export type TagT = (key: string, vars?: Record<string, string | number>) => string
+
+/**
+ * tagsShownOf 的入参:全部标签、默认露几枚与已展开几枚。
  */
 export type TagsShownIn = {
   /**
@@ -76,32 +81,8 @@ export type TagsShownIn = {
   first: number
 
   /**
-   * 已展开。
+   * 已展开几枚(收着为 0)。
    */
-  all: boolean
+  extra: number
 }
 
-/**
- * 布尔态的落格(useState 的 setter,签名由 React 定死)。
- */
-export type SetBoolFn = (v: boolean) => void
-
-/**
- * 无参无返的点击手柄。
- */
-export type ClickFn = () => void
-
-/**
- * makeFoldToggle 的入参:现值与落格。
- */
-export type FoldToggleIn = {
-  /**
-   * 当前开合。
-   */
-  on: boolean
-
-  /**
-   * 落格。
-   */
-  set: SetBoolFn
-}

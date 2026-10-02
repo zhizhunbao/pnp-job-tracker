@@ -367,6 +367,11 @@ export const BTN_GHOST = 'ghost'
 export const LOCS_FIRST_N = 3
 
 /**
+ * 在招地点格展开钮的量词词条(「个」;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」)。
+ */
+export const K_LOCS_UNIT = 'fold.u.item'
+
+/**
  * 雇主板搜索框的尺寸档(sm,与职位板 filterrow 的搜索框同档;2026-09-13 Frank「宽度和 jobs 那个保持一致」)。
  */
 export const SEARCH_SIZE = 'sm'

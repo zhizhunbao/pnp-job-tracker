@@ -320,10 +320,10 @@ export const DESC_MIN_LEN = 120
 export const JOBS_FIRST_N = 8
 
 /**
- * 在招职位每点一次「再展开」多露几条(2026-09-20 Frank「这种最好不要一次性展开 449 个」:BMO 457 个在招岗,
- * 原先一点就把其余 449 行全铺出来;改成一批一批露,「收起」回到首屏那 8 条)。
+ * 在招职位卡展开钮的量词词条(「个」;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:卡底钮走 pager 桶 FoldLine,一次展开 20 个 ——
+ * 原「每点一次再展开几条」JOBS_STEP_N(2026-09-20 Frank「这种最好不要一次性展开 449 个」,BMO 457 个在招岗一批 20)由桶的 FOLD_STEP 接管)。
  */
-export const JOBS_STEP_N = 20
+export const K_JOBS_UNIT = 'fold.u.item'
 
 /**
  * 获批职业逐行列出的条数(#286:Top 6 逐行,余量并成一行)。

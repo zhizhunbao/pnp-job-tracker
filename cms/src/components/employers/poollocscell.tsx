@@ -4,6 +4,7 @@
  * (2026-09-19 Frank「是不是需要加一列,在招岗位所在地」「用胶囊框一下」;胶囊走通用 tag 桶)。
  * 2026-09-20 数据层改给全部在招地点:格里默认露三枚、其余展开才出 —— 形态走通用 tag 桶的 TagFold(开合态住它里面;
  * 列渲染器是被当普通函数调的,放不了状态)。
+ * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:TagFold 的开合钮换成 pager 桶 FoldLine,本格递取词函数与量词过去,不再递两枚现成钮面。
  *
  * @author Frank
  * @time 2026-09-19 03:30:00
@@ -28,8 +29,8 @@ export function PoolLocsCell(r: EmployerCellRow) {
       <TagFold items={r.locs}
         first={LOCS_FIRST_N}
         variant={TAG_REGION}
-        moreText={r.locsMoreText}
-        lessText={r.locsLessText} />
+        t={r.locsT}
+        unit={r.locsUnit} />
     </div>
   )
 }

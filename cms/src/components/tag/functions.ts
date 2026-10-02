@@ -5,7 +5,7 @@
  * @time 2026-08-24 04:30:00
  */
 import { cssOf } from '@/components/css'
-import type { ClickFn, FoldToggleIn, TagsShownIn, TagVariant } from './types'
+import type { TagsShownIn, TagVariant } from './types'
 import css from './tag.module.css'
 
 /**
@@ -30,35 +30,12 @@ export function tagClsOf(variant: TagVariant): string {
 }
 
 /**
- * 可折叠的一排标签这一刻渲哪几枚:收着只出前几枚,展开出全部。
+ * 可折叠的一排标签这一刻渲哪几枚:收着只出前几枚,展开出全部(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:改成默认几枚 + 已展开几枚,一次展开 20 枚)。
  *
- * @param x 全部标签、默认露几枚与展开态。
+ * @param x 全部标签、默认露几枚与已展开几枚。
  * @returns 要渲的标签文字。
  */
 export function tagsShownOf(x: TagsShownIn): string[] {
-  if (x.all) {
-    return x.items
-  }
-  return x.items.slice(0, x.first)
+  return x.items.slice(0, x.first + x.extra)
 }
 
-/**
- * 开合钮的点击手柄。
- *
- * @param x 现值与落格。
- * @returns 点击手柄。
- */
-export function makeFoldToggle(x: FoldToggleIn): ClickFn {
-  return function toggleFold(): void {
-    x.set(x.on === false)
-  }
-}
-
-/**
- * 开合钮的类名(加倍类压过 button 基座)。
- *
- * @returns className。
- */
-export function foldBtnClsOf(): string {
-  return cssOf(css.foldBtn)
-}
