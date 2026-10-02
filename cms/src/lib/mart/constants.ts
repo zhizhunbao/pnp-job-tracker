@@ -554,9 +554,13 @@ export const COLS_CITIES = ['name', 'province', 'name_zh', 'name_ko', 'populatio
 export const COLS_DISTRICTS = ['name', 'city', 'province']
 
 /**
- * designated_employers 列。
+ * designated_employers 列(2026-10-02 三弹框统一第 3 步加后六列:招牌 / 门店 / 法人 / 招牌键 / 同招牌家数 / 比对键;
+ * DDL docs/sql/designated-employers-split-20261002.sql 已在生产跑过)。
  */
-export const COLS_DESIGNATED_EMPLOYERS = ['name', 'province', 'location', 'is_tech', 'source', 'nocs', 'url', 'fetched']
+export const COLS_DESIGNATED_EMPLOYERS = [
+  'name', 'province', 'location', 'is_tech', 'source', 'nocs', 'url', 'fetched',
+  'trade', 'store', 'legal', 'brand', 'brand_n', 'match_keys',
+]
 
 /**
  * employer_pool 列。⚠️ **先在生产跑 docs/sql/employer-pool.sql**(建表 + 索引 + 锁表补列),

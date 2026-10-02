@@ -66,7 +66,7 @@ import type {
   AlertHit, AlertHitsIn, AlertHitsOut, ApplyEmailFact, ApplyMailOut, ApplyUrlIn, StoredApplyEmailIn,
   StoredApplyEmailOut, BigDimsIn, BigDimsOut, BroadNoc, BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell,
   CheckedAtOut, CityDim, CompanyByJobIn, CompanyByPoolKeyIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow,
-  CompanyJsonIn, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DesigDim, DesignatedIn, DesignatedOut,
+  CompanyJsonIn, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DesignatedIn, DesignatedOut,
   DistrictDim, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim, EeBroad, EeDisplayIn,
   EeKeyDisplayIn, EeOcc, ExpiredJobIn, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft, JobIdWire,
   MaybeJobId, JdFormattedIn, JdIn, JdOut, JdSsr, JdSsrOut, JdStateOut, JdStateRow, JdTransCellIn, JdTransFact,
@@ -77,6 +77,7 @@ import type {
   MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, NameOption, NewsSlim, NocCat, NocCountsIn, NocCountsOut,
   NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn, OccDim, NocSearchOut, OccCompetitionIn, OccCompetitionOut,
   OccCompetitionRows, OccDiffDbRow, OccDiffFact, OccDiffFacts, OccOpen, OrderByIn, Pathway, PathwayDbRow, MaybeList,
+  AipEmpDbRow, AipEmpFact, AipEmpOut, AipEmpTotalDbRow, LoadAipEmpIn,
   LoadQcChannelsIn, QcCell, QcCellDbRow, QcChannel, QcChannelDbRow, QcChannelList, QcChannelsDbRow, QcChannelsOut,
   PgFailure, PnpDraw, PnpOcc, List,
   PnpOccDim, PnpOccs, PnpOpsOut, PnpOpsRow, PnpReqRow, PnpReqsOut, ProfileJsonCell, ProfileJsonOrNull, ProofOut,
@@ -1004,7 +1005,6 @@ export async function loadSsrDims(db: Db): SsrDimsOut {
     qcCells: qcCells,
     eeCategories: ee,
     eeBroads: eeBroads,
-    designatedEmployers: [],
     nocDescriptions: [],
     occupations: [],
     fieldSources: fieldSrc,
@@ -2570,20 +2570,20 @@ export function dropProvPrefix(input: DropProvPrefixIn): string {
  * 大维度包(/api/jobs/dims 的取数,E10-01 P3):城市/区/AIP 雇主/NOC 描述四张维度表。
  * 上限沿原 payload.find 的 5000/2000(写死在 SQL 里)。
  * 2026-09-23 加第五张:职业维度(「职业」下拉的选项,noc_openings)。
+ * 2026-10-02 三弹框统一第 3 步(Frank「不需要一次查询 1574 家吧」):AIP 雇主那张撤 —— 唯一读者 AIP 弹框改成打开才按省 + 本岗公司现取
+ * (/api/jobs/aip),职位板不再预载四省 3,800 多家。
  *
  * @param input 连接。
  * @returns 四张维度表。
  */
 export async function loadBigDims(input: BigDimsIn): BigDimsOut {
-  const [cities, districts, designatedEmployers, nocDescriptions, occupations] = await Promise.all([
+  const [cities, districts, nocDescriptions, occupations] = await Promise.all([
     queryRows({ db: input.db, sql: SQL.DIMS_CITIES, params: [], map: toCityDim }),
     queryRows({ db: input.db, sql: SQL.DIMS_DISTRICTS, params: [], map: toDistrictDim }),
-    queryRows({ db: input.db, sql: SQL.DIMS_DESIGNATED, params: [], map: toDesigDim }),
     queryRows({ db: input.db, sql: SQL.DIMS_NOC_DESCRIPTIONS, params: [], map: toNocDescDim }),
     queryRows({ db: input.db, sql: SQL.DIMS_OCCUPATIONS, params: [], map: toOccDim }),
   ])
-  return { cities: cities, districts: districts, designatedEmployers: designatedEmployers,
-    nocDescriptions: nocDescriptions, occupations: occupations }
+  return { cities: cities, districts: districts, nocDescriptions: nocDescriptions, occupations: occupations }
 }
 
 /**
@@ -3158,6 +3158,55 @@ export async function loadQcChannels(x: LoadQcChannelsIn): QcChannelsOut {
 }
 
 /**
+ * AIP 弹框指定雇主卡现查(2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」)):按本岗公司的归一名找到本岗雇主,取它那一行与同招牌的几家(SQL.AIP_EMP_ROWS),
+ * 外加本省总家数(卡底链接用)。查挂 → 空列 / 0(卡照出链接,不编行)。
+ *
+ * @param x 连接、省码与本岗公司的归一名。
+ * @returns 总家数、同招牌家数与行。
+ */
+export async function loadAipEmployers(x: LoadAipEmpIn): AipEmpOut {
+  const rows = await queryRowsOrEmpty({ db: x.db, sql: SQL.AIP_EMP_ROWS, params: [x.province, x.key], map: toAipEmp })
+  const totals = await queryRowsOrEmpty({ db: x.db, sql: SQL.AIP_EMP_TOTAL, params: [x.province], map: toAipEmpTotal })
+  let total = 0
+  const t = totals[0]
+  if (t != null) {
+    total = t
+  }
+  let brandN = 0
+  const first = rows[0]
+  if (first != null && first.hit) {
+    brandN = first.brandN
+  }
+  return { total, brandN, rows }
+}
+
+/**
+ * AIP_EMP_ROWS 一行 → 指定雇主卡的一行(换版后还没灌的列当空串)。
+ *
+ * @param r 原始行。
+ * @returns 洗净的行。
+ */
+function toAipEmp(r: AipEmpDbRow): AipEmpFact {
+  return {
+    trade: text(r.trade),
+    store: text(r.store),
+    legal: text(r.legal),
+    brandN: count(r.brand_n),
+    hit: r.hit === true,
+  }
+}
+
+/**
+ * AIP_EMP_TOTAL 一行 → 本省总家数。
+ *
+ * @param r 原始行。
+ * @returns 家数。
+ */
+function toAipEmpTotal(r: AipEmpTotalDbRow): number {
+  return count(r.n)
+}
+
+/**
  * QC_NOC_CHANNELS 一行 → 通道列(jsonb 数组缺了当空列)。
  *
  * @param r 原始行。
@@ -3499,16 +3548,6 @@ export function toCityDim(r: Row): CityDim {
  */
 export function toDistrictDim(r: Row): DistrictDim {
   return { name: text(r.name), city: text(r.city), province: text(r.province) }
-}
-
-/**
- * 一行 AIP 指定雇主维度(SQL.DIMS_DESIGNATED)。
- *
- * @param r 库里的一行。
- * @returns 维度行。
- */
-export function toDesigDim(r: Row): DesigDim {
-  return { name: text(r.name), province: text(r.province), location: text(r.location), isTech: r.is_tech === true }
 }
 
 /**

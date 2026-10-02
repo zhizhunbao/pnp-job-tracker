@@ -2184,6 +2184,54 @@ rcip/fcip,Frank「拆成三个 很少有人有法语」)后一分为二,汇装�
 DESIGNATED_DEDUP_TPL = "  designated 全同去重: {before} -> {after}"
 """全同去重的留痕。"""
 
+K_TRADE = "trade"
+"""指定雇主行:招牌(2026-10-02 三弹框统一第 3 步,Frank「这是不是 拆成人能看懂表格比较好」「可以,做吧」):o/a 后的经营名、
+「法人 - 招牌」「招牌 (法人)」写法里不像法定名的那段;拆不出 = 原名。末尾括号里的地点不进招牌(进门店)。"""
+
+K_STORE = "store"
+"""指定雇主行:门店 —— 招牌末尾括号里的地点(「Kent Building Supplies (Saint John)」),或同省同制度里另一家的招牌是它的开头时
+多出来的词(「Mezza Lebanese Kitchen Cole Harbour」→「Cole Harbour」);认不出 = 空串。"""
+
+K_LEGAL = "legal"
+"""指定雇主行:法人(o/a 前的法定名、括号或短横线写法里带公司后缀 / 编号的那段;拆不出 = 原名)。"""
+
+K_BRAND = "brand"
+"""指定雇主行:招牌键 —— 同省同制度里同一招牌各家共用(最短的那个开头招牌的归一名);弹框按它列同招牌的几家。"""
+
+K_BRAND_N = "brandN"
+"""指定雇主行:同省同制度、同招牌键的法人家数(连锁加盟店的「本省 N 家加盟商是指定雇主」)。"""
+
+K_MATCH_KEYS = "matchKeys"
+"""指定雇主行:比对键 —— 名单这一行几种写法的归一名(names 的 aip_name_forms + norm_name,与 AIP 打标同一把尺子),
+MATCH_KEYS_SEP 连接;弹框拿本岗公司的归一名到这里对,认的就是职位板那格「指定雇主」认的那一行。"""
+
+MATCH_KEYS_SEP = "|"
+"""比对键之间的分隔(归一名里只有小写字母、数字、& 与空格,不会撞)。"""
+
+BRAND_WORD_MIN_LEN = 6
+"""单个词当招牌开头的最短字数:「subway」算,「royal」不算(免得「Royal Star Foods」被认成 Royal 的一家门店)。"""
+
+BRAND_AMP = "&"
+"""带 & 的单个词也算招牌开头(「a&w」)。"""
+
+STORE_TRIM = " ,-–()"
+"""门店两头要削掉的字符(逗号、短横线、括号残片)。"""
+
+LEGAL_TRIM = " ,"
+"""法人 / 招牌两头要削掉的字符。"""
+
+STORE_COMMA = ","
+"""门店里「地名, 街名」的分隔(「Dieppe, Amirault St」只看逗号前那段是不是地名)。"""
+
+IN_DESIG_CITIES = paths.MART / "cities.json"
+"""拆门店用的地名表之一:mart 城市表(上一轮汇装的产出)。"""
+
+IN_DESIG_DISTRICTS = paths.MART / "districts.json"
+"""拆门店用的地名表之二:mart 区表(上一轮汇装的产出)。"""
+
+DESIG_PLACES_MISSING_TPL = "  designated 拆门店:地名表 {path} 不在,门店这一轮一个都不认"
+"""地名表缺失的留痕(表照出,门店全空)。"""
+
 
 # =========================================================================
 # 10. mart:pnp 五表(通道清单 / 抽选事实 / 分值表 / 门槛 / 运营统计)
@@ -3133,6 +3181,9 @@ K_RANK = "rank"
 
 K_RANK_DISPLAY = "rankDisplay"
 """qs 行里展示名次键。"""
+
+TABLE_DESIGNATED = "designated_employers"
+"""指定雇主表名(2026-10-02 单表件 designated_table 用)。"""
 
 TABLE_DLI = "dli"
 """dli 表名(单表增量件 build_dli_table 落盘用;与 to_mart_tables 字典键同字)。"""

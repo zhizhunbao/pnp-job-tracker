@@ -19,5 +19,11 @@ export const DesignatedEmployers: CollectionConfig = {
     { name: 'nocs', type: 'text', admin: { description: '雇主申报的 NOC 码(逗号连接)。仅 NL(官方省站名录)有;空 = 未申报职位(NL)或来源不含此信息(NB/NS)' } },
     { name: 'url', type: 'text', admin: { description: '雇主页出处(NL 官方名录逐家页);判定层引用此表事实时的 evidence' } },
     { name: 'fetched', type: 'text', admin: { description: '本站抓取日(evidence 随行)' } },
+    { name: 'trade', type: 'text', admin: { description: '招牌(o/a 后的经营名等;拆不出 = 原名)。2026-10-02 三弹框统一第 3 步,mart with_designated_split 算,DDL docs/sql/designated-employers-split-20261002.sql' } },
+    { name: 'store', type: 'text', admin: { description: '门店(只认地名;认不出 = 空)。同上' } },
+    { name: 'legal', type: 'text', admin: { description: '法人(o/a 前的法定名等;拆不出 = 原名)。同上' } },
+    { name: 'brand', type: 'text', admin: { description: '招牌键(同省同制度同招牌各家共用的归一名;AIP 弹框按它取同招牌的几家)。同上' } },
+    { name: 'brandN', type: 'number', admin: { description: '同省同制度、同招牌键的法人家数。同上' } },
+    { name: 'matchKeys', type: 'text', admin: { description: '比对键(名单这一行几种写法的归一名,「|」连接;与 AIP 打标同一把尺子)。同上' } },
   ],
 }

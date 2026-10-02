@@ -126,21 +126,6 @@ export const AIP_DROP_RE = /[^a-z0-9& ]/g
 export const AIP_APOS_RE = /['’]/g
 
 /**
- * 名单行里「o/a」后面的经营名(数据层 aip 域打标同时认法定名与 o/a 经营名,etl aip 的 ALIAS_RE;AIP 清单卡高亮按同一口径)。
- */
-export const AIP_OA_TAIL_RE = /\bo\/a\b(?<tail>.+)/i
-
-/**
- * AIP 指定雇主清单卡开合的键(只有一把:展开其余各家;2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」)。
- */
-export const AIP_EMP_OPEN_KEY = 'aipEmpOpen'
-
-/**
- * AIP 清单卡高亮时本岗雇主归一名最短几个字(再短不认,免得一两个字母整词包含对上一片;2026-10-01 改整词包含时立)。
- */
-export const AIP_HIT_MIN_LEN = 3
-
-/**
  * 连续空白(归一时压成单个空格)。
  */
 export const SPACE_RUN_RE = /\s+/g
@@ -1654,6 +1639,48 @@ export const EXCL_KEY_SEP = '|'
  * 弹框打开才按职业码取;后接五位码)。
  */
 export const URL_API_JOBS_QC = '/api/jobs/qc?noc='
+
+/**
+ * AIP 弹框指定雇主卡的接口(2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」)):弹框打开才按省 +
+ * 本岗公司归一名取本岗雇主与同招牌的几家;后接查询串。
+ */
+export const URL_API_JOBS_AIP = '/api/jobs/aip?'
+
+/**
+ * 指定雇主卡接口的省码参数名。
+ */
+export const P_AIP_PROV = 'prov'
+
+/**
+ * 指定雇主卡接口的归一名参数名。
+ */
+export const P_AIP_KEY = 'key'
+
+/**
+ * 指定雇主卡底「本省全部指定雇主」链接(雇主板,指定雇主排序 + AIP 制度 + 本省;后接省码 —— 雇主板入口契约
+ * `/employers?sort=designated&program=AIP`,见 app/(frontend)/employers/page.tsx)。
+ */
+export const URL_EMPLOYERS_AIP_PROV = '/employers?sort=designated&program=AIP&prov='
+
+/**
+ * 指定雇主卡标题词条(「{prov} AIP 指定雇主」)。
+ */
+export const K_AIP_EMP_TITLE = 'aipemp.title'
+
+/**
+ * 指定雇主卡标题旁的本省总家数词条。
+ */
+export const K_AIP_EMP_COUNT = 'aipemp.count'
+
+/**
+ * 指定雇主卡底「同招牌 N 家都是指定雇主」词条(同招牌不止一家才出)。
+ */
+export const K_AIP_EMP_BRAND = 'aipemp.brand'
+
+/**
+ * 指定雇主卡底链接词条(「本省全部指定雇主 ›」)。
+ */
+export const K_AIP_EMP_ALL = 'aipemp.all'
 
 /**
  * 魁省门槛行的两个项目(门槛表 program;魁省不属省提名)。

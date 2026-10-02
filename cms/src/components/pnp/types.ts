@@ -5182,111 +5182,6 @@ export type PnpProvStreamsPanel = {
 }
 
 /**
- * AIP 指定雇主名单的一行(2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」;本域只声明真读的格)。
- */
-export type AipEmp = {
-  /**
-   * 雇主名(官方名单原样,可能带「o/a 经营名」)。
-   */
-  name: string
-
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 所在地;'' = 名单没写。
-   */
-  location: string
-}
-
-/**
- * 一省清单里的一家(算好了能对上的归一名)。
- */
-export type AipEmpEntry = {
-  /**
-   * 雇主名(名单原样)。
-   */
-  name: string
-
-  /**
-   * 所在地;'' = 名单没写。
-   */
-  location: string
-
-  /**
-   * 能对上的归一名(法定名、o/a 经营名)。
-   */
-  keys: string[]
-}
-
-/**
- * aipEmpListOf 的入参。
- */
-export type AipEmpListIn = {
-  /**
-   * 名单(只有 AIP 那份)。
-   */
-  employers: AipEmp[]
-
-  /**
-   * 本岗省码。
-   */
-  province: string
-}
-
-/**
- * aipEmpRowsOf 的入参。
- */
-export type AipEmpRowsIn = {
-  /**
-   * 这一省的清单。
-   */
-  list: AipEmpEntry[]
-
-  /**
-   * 本岗公司名。
-   */
-  company: string
-
-  /**
-   * 展开着没。
-   */
-  open: boolean
-}
-
-/**
- * isAipEmpHitOf 的入参。
- */
-export type AipEmpHitIn = {
-  /**
-   * 名单上这一家的归一名。
-   */
-  keys: string[]
-
-  /**
-   * 本岗雇主的归一名。
-   */
-  me: string
-}
-
-/**
- * aipEmpHiddenOf 的入参。
- */
-export type AipEmpHiddenIn = {
-  /**
-   * 这一省的清单。
-   */
-  list: AipEmpEntry[]
-
-  /**
-   * 本岗公司名。
-   */
-  company: string
-}
-
-/**
  * 清单卡的一行(洗好)。
  */
 export type AipEmpRowSpec = {
@@ -5301,14 +5196,125 @@ export type AipEmpRowSpec = {
   hit: boolean
 
   /**
-   * 雇主名。
+   * 招牌(主文案)。
    */
-  name: string
+  trade: string
 
   /**
-   * 所在地灰字;'' = 不出。
+   * 门店灰字;'' = 不出。
    */
-  location: string
+  store: string
+
+  /**
+   * 法人灰字;'' = 不出(与招牌同字也不出)。
+   */
+  legal: string
+}
+
+/**
+ * /api/jobs/aip 回来的一行(2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」);接口自家的形,lib/jobs
+ * AipEmpFact 照抄真读的格)。
+ */
+export type AipEmpRowJson = {
+  /**
+   * 招牌。
+   */
+  trade: string
+
+  /**
+   * 门店;'' = 认不出。
+   */
+  store: string
+
+  /**
+   * 法人。
+   */
+  legal: string
+
+  /**
+   * 是本岗雇主那一行。
+   */
+  hit: boolean
+}
+
+/**
+ * 指定雇主卡要的全部(/api/jobs/aip 的响应体洗好)。
+ */
+export type AipEmpData = {
+  /**
+   * 本省 AIP 指定雇主总家数。
+   */
+  total: number
+
+  /**
+   * 本岗雇主招牌的同招牌法人家数;0 = 对不上本岗雇主。
+   */
+  brandN: number
+
+  /**
+   * 本岗雇主那一行与同招牌的几家。
+   */
+  rows: AipEmpRowJson[]
+}
+
+/**
+ * /api/jobs/aip 的响应体(取挂了 / 不是 200 给 null)。
+ */
+export type AipEmpJson = {
+  /**
+   * 本省总家数。
+   */
+  total?: number
+
+  /**
+   * 同招牌法人家数。
+   */
+  brandN?: number
+
+  /**
+   * 行。
+   */
+  rows?: AipEmpRowJson[]
+} | null
+
+/**
+ * makeLoadAipEmp 的入参。
+ */
+export type LoadAipEmpIn = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 本岗公司的归一名。
+   */
+  key: string
+
+  /**
+   * 数据到齐的落格。
+   */
+  setData: (d: AipEmpData) => void
+
+  /**
+   * 懒取失败的落格。
+   */
+  setFailed: (v: boolean) => void
+}
+
+/**
+ * aipEmpUrlOf 的入参。
+ */
+export type AipEmpUrlIn = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 本岗公司的归一名。
+   */
+  key: string
 }
 
 /**
@@ -5324,11 +5330,6 @@ export type AipEmpCardIn = {
    * 本岗(读省码与公司名)。
    */
   job: PnpJob
-
-  /**
-   * AIP 指定雇主名单(大西洋四省全量;后台还在取时是空列)。
-   */
-  employers: AipEmp[]
 }
 
 /**
@@ -5344,11 +5345,6 @@ export type AipSectionIn = {
    * 界面语言。
    */
   lang: PnpLang
-
-  /**
-   * AIP 指定雇主名单(2026-10-01 三弹框统一:名单卡挪进这一块,排在结论卡与门槛卡之间)。
-   */
-  employers: AipEmp[]
 }
 
 /**
@@ -5421,14 +5417,9 @@ export type AipEmpRowIn = {
  */
 export type AipEmpCardHookIn = {
   /**
-   * 本岗。
+   * 本岗(读省码与公司名)。
    */
   job: PnpJob
-
-  /**
-   * AIP 指定雇主名单。
-   */
-  employers: AipEmp[]
 }
 
 /**
@@ -5441,29 +5432,34 @@ export type AipEmpCardPanel = {
   matchRef: HitRef
 
   /**
-   * 展开着没。
+   * 能渲了没(懒取到了,或本岗没有公司名不用取)。
    */
-  open: boolean
+  ready: boolean
 
   /**
-   * 末尾开关。
+   * 懒取失败。
    */
-  onToggle: ClickFn
+  failed: boolean
 
   /**
-   * 这一刻要露的行。
+   * 本岗雇主那一行与同招牌的几家(2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」);不再是全省清单)。
    */
   rows: AipEmpRowSpec[]
 
   /**
-   * 折起来的家数。
+   * 同招牌法人家数(> 1 才在卡底写一行)。
    */
-  hidden: number
+  brandN: number
 
   /**
-   * 本省总家数(0 = 不出卡)。
+   * 本省总家数。
    */
   total: number
+
+  /**
+   * 卡底「本省全部指定雇主」链接。
+   */
+  href: string
 }
 
 /**

@@ -1295,6 +1295,78 @@ class PilotEmployerIn:
     """表级取回日。"""
 
 
+@dataclass
+class DesignatedPartsOut:
+    """designated_parts_of() 出参:名单一行拆出的法人、招牌与括号里的地点(2026-10-02)。"""
+
+    legal: str
+    """法人;拆不出 = 原名。"""
+
+    trade: str
+    """招牌;拆不出 = 原名。"""
+
+    place: str
+    """招牌末尾括号里的地点(进门店);没有 = 空串。"""
+
+
+@dataclass
+class StoreOfIn:
+    """store_of() 入参。"""
+
+    trade: str
+    """招牌原文。"""
+
+    words: int
+    """开头要跳过的归一词数(另一家招牌的词数)。"""
+
+    places: set
+    """地名表(归一名)。"""
+
+
+@dataclass
+class DesignatedPartsIn:
+    """designated_parts_of() 入参。"""
+
+    raw: str
+    """名单上的原名。"""
+
+    places: set
+    """地名表(归一名)。"""
+
+
+@dataclass
+class PlaceSplitIn:
+    """place_split() 入参。"""
+
+    parts: DesignatedPartsOut
+    """先拆出的法人 / 招牌。"""
+
+    places: set
+    """地名表(归一名)。"""
+
+
+@dataclass
+class BrandGroupIn:
+    """brand_group() 入参。"""
+
+    members: list
+    """同省同制度的指定雇主行。"""
+
+    places: set
+    """地名表(归一名)。"""
+
+
+@dataclass
+class BrandPrefixIn:
+    """brand_prefix_ok() 入参。"""
+
+    words: tuple
+    """招牌开头的归一词。"""
+
+    places: set
+    """地名表(归一名)。"""
+
+
 # =========================================================================
 # 10. mart:pnp 五表
 # =========================================================================
@@ -5249,3 +5321,79 @@ class FragmentUrlIn:
 
     frag: str
     """片段指令(`:~:text=…`);空串 = 原样回。"""
+
+
+class MartDesignatedSplitTest(unittest.TestCase):
+    """指定雇主拆招牌 / 门店 / 法人自测(2026-10-02 三弹框统一第 3 步,Frank「这是不是 拆成人能看懂表格比较好」「可以,做吧」):
+    手写金标(四省名单真写法)/ 宁可留空的性质(门店只认地名、城市名不当招牌)/ 变异探针(去掉地名表门店全空、
+    单词招牌门槛放宽就把「Royal」吸成一家)。全程不读不写仓内文件(地名表现造)。"""
+
+    PLACES = {"moncton", "saint john", "cole harbour", "antigonish", "new minas", "greenwood", "dieppe", "fredericton"}
+    """现造的地名表(归一名)。"""
+
+    def parts(self, raw: str, places: set) -> tuple:
+        """拆一行,返回 (法人, 招牌, 门店)。"""
+        from mart import functions as fn
+        got = fn.designated_parts_of(DesignatedPartsIn(raw=raw, places=places))
+        return (got.legal, got.trade, got.place)
+
+    def group(self, names: list, places: set) -> list:
+        """一组名单走完整条拆分(同省同制度),返回各行 (招牌, 门店, 法人, 招牌键, 家数)。"""
+        from mart import functions as fn
+        rows = []
+        for n in names:
+            p = fn.designated_parts_of(DesignatedPartsIn(raw=n, places=places))
+            rows.append({"name": n, "legal": p.legal, "trade": p.trade, "store": p.place})
+        fn.brand_group(BrandGroupIn(members=rows, places=places))
+        return [(r["trade"], r["store"], r["legal"], r["brand"], r["brandN"]) for r in rows]
+
+    def test_parts_golden(self) -> None:
+        """金标:o/a、「法人 - 招牌」、「招牌 (法人)」、「法人 (招牌)」、「法人 (地名)」、括号里的「招牌 - 地名」。"""
+        p = self.PLACES
+        self.assertEqual(self.parts("3304320 Nova Scotia Limited o/a Mezza Lebanese Kitchen Cole Harbour", p),
+                         ("3304320 Nova Scotia Limited", "Mezza Lebanese Kitchen Cole Harbour", ""))
+        self.assertEqual(self.parts("Andalos Holdings Limited (Mezza Lebanese Kitchen) o/a Mezza Lebanese Kitchen", p),
+                         ("Andalos Holdings Limited", "Mezza Lebanese Kitchen", ""))
+        self.assertEqual(self.parts("Jack's Pizza - 736075 NB Inc", p), ("736075 NB Inc", "Jack's Pizza", ""))
+        self.assertEqual(self.parts("J.D. Irving, Limited - Harbour Development", p), ("J.D. Irving, Limited", "Harbour Development", ""))
+        self.assertEqual(self.parts("Mama's Restaurant (680214 NB Ltd.)", p), ("680214 NB Ltd.", "Mama's Restaurant", ""))
+        self.assertEqual(self.parts("Batroun Holdings Limited (Mezza Lebanese Kitchen)", p),
+                         ("Batroun Holdings Limited", "Mezza Lebanese Kitchen", ""))
+        self.assertEqual(self.parts("Day & Ross Inc (Moncton)", p), ("Day & Ross Inc", "Day & Ross Inc", "Moncton"))
+        self.assertEqual(self.parts("J.D. Irving, Limited - Kent Building Supplies (Saint John)", p),
+                         ("J.D. Irving, Limited", "Kent Building Supplies", "Saint John"))
+        self.assertEqual(self.parts("Yogi Restaurant and Bar Ltd (Jungle Jim's - Moncton)", p),
+                         ("Yogi Restaurant and Bar Ltd", "Jungle Jim's", "Moncton"))
+        self.assertEqual(self.parts("Diamond Nails", p), ("Diamond Nails", "Diamond Nails", ""))
+
+    def test_brand_and_store(self) -> None:
+        """同招牌开头之后多出来的是地名才当门店(「Chicken」不算);最短开头是招牌键;家数按法人去重。"""
+        got = self.group([
+            "4207591 Nova Scotia Ltd o/a Mary Browns New Minas",
+            "4445465 Nova Scotia Limited o/a Mary Browns Chicken Greenwood",
+            "DC Ventures Inc o/a MARY BROWNS CHICKEN",
+            "MBS Fairview Restaurant Limited o/a Mary Browns",
+        ], self.PLACES)
+        self.assertEqual([g[1] for g in got], ["New Minas", "Greenwood", "", ""])
+        self.assertEqual({g[3] for g in got}, {"mary browns"})
+        self.assertEqual({g[4] for g in got}, {4})
+
+    def test_place_not_brand(self) -> None:
+        """城市名不当招牌键:「Moncton Honda」与「Moncton Truck Stop」各是各的;两家同一法人只算一家。"""
+        got = self.group(["Moncton Honda (Baig Blvd. Motors Inc.)", "Moncton Truck Stop", "Day & Ross Inc (Moncton)",
+                          "Corey Craig Ltd o/a Tim Hortons Dieppe, Paul St", "Corey Craig Ltd o/a Tim Hortons Dieppe, Amirault St",
+                          "Manawa Holdings Inc. o/a Tim Hortons"], self.PLACES)
+        brands = [g[3] for g in got]
+        self.assertEqual(brands[:2], ["moncton honda", "moncton truck stop"])
+        self.assertEqual(brands[3:], ["tim hortons"] * 3)
+        self.assertEqual([g[1] for g in got[3:5]], ["Dieppe, Paul St", "Dieppe, Amirault St"])
+        self.assertEqual(got[3][4], 2)
+
+    def test_probes(self) -> None:
+        """变异探针:没有地名表 → 门店全空(不瞎猜);单词招牌门槛 —— 「Royal」(5 字母)不吸人,「Subway」(6)照认。"""
+        got = self.group(["4207591 Nova Scotia Ltd o/a Mary Browns New Minas", "MBS Fairview Restaurant Limited o/a Mary Browns"],
+                         set())
+        self.assertEqual([g[1] for g in got], ["", ""])
+        got = self.group(["Royal", "Royal Star Foods Ltd.", "Subway (605342 NB Ltee)", "Subway Moncton (709028 NB Inc)"], self.PLACES)
+        self.assertEqual([g[3] for g in got], ["royal", "royal star foods", "subway", "subway"])
+        self.assertEqual(got[3][1], "Moncton")

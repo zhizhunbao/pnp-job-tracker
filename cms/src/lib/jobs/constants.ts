@@ -2132,6 +2132,31 @@ export const REL_OCC_OFFSET_MAX = 5000
 export const P_NOC = 'noc'
 
 /**
+ * 省码参数名(/api/jobs/aip;2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」))。
+ */
+export const P_PROV = 'prov'
+
+/**
+ * 本岗公司归一名参数名(/api/jobs/aip;同上)。
+ */
+export const P_KEY = 'key'
+
+/**
+ * 两位大写省码形状(/api/jobs/aip)。
+ */
+export const PROV_CODE_RE = /^[A-Z]{2}$/
+
+/**
+ * 归一名参数的长度上限(名单里最长的比对键约 200 字符;超了当坏请求)。
+ */
+export const AIP_KEY_MAX_LEN = 300
+
+/**
+ * 错误体:/api/jobs/aip 的 prov / key 缺位或非法。
+ */
+export const E_AIP_PARAMS = 'prov and key required'
+
+/**
  * JD 摘录 IP 日限的默认值(env JD_DAILY 可覆盖;宽松防滥用,不是付费闸 —— #201)。
  */
 export const JD_DAILY_DEFAULT = 150

@@ -480,7 +480,6 @@ export function boardDimsOf(dims: JobDims): JobDims {
     qcCells: [],
     eeCategories: dims.eeCategories,
     eeBroads: dims.eeBroads,
-    designatedEmployers: dims.designatedEmployers,
     nocDescriptions: dims.nocDescriptions,
     occupations: dims.occupations,
     fieldSources: dims.fieldSources,

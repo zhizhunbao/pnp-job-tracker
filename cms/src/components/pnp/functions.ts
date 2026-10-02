@@ -48,8 +48,8 @@ import {
   PICK_NONE, PICK_PGWP, PICK_NO_PGWP,
   AIP_PATHWAY_KEY, AIP_CHANNEL_TEERS, AIP_F, AIP_TIER_PREFIX, AIP_TIER_SEP, AIP_EDU_HEAD, AIP_GRAD_NOTE,
   GATE_EXP_FACTORS, GATE_OP_NONE, GATE_WAGE_FACTORS, LANG_NOC_NOTE_MAX, CHAN_JOB_TAGS, CHAN_TAG_COMPLEMENT, AIP_APOS_RE,
-  AIP_OA_TAIL_RE, CHAN_NOTE_TAGS,
-  AIP_HIT_MIN_LEN, BASIS_ANY_NOC, BASIS_EXP_TEER, BASIS_FIELD, BASIS_ONE_NOC, BASIS_PAID, BASIS_RELATED,
+  CHAN_NOTE_TAGS, P_AIP_KEY, P_AIP_PROV, URL_API_JOBS_AIP, URL_EMPLOYERS_AIP_PROV,
+  BASIS_ANY_NOC, BASIS_EXP_TEER, BASIS_FIELD, BASIS_ONE_NOC, BASIS_PAID, BASIS_RELATED,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   EXCL_KEY_SEP,
   DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
@@ -84,7 +84,7 @@ import type {
   ChannelHitIn, PickSetIn,
   LocalNameIn, PathwayChannelIn, StatusLinesIn,
   BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvGateCardsIn, ProvStreamCardIn, ProvStreamRowsIn,
-  AipEmpEntry, AipEmpHiddenIn, AipEmpHitIn, AipEmpListIn, AipEmpRowSpec, AipEmpRowsIn, ExpScopeIn,
+  AipEmpData, AipEmpJson, AipEmpRowJson, AipEmpRowSpec, AipEmpUrlIn, LoadAipEmpIn, ExpScopeIn,
   TeerBandsIn, TierLineIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
@@ -4219,115 +4219,97 @@ export function normName(name: string): string {
 }
 
 /**
- * 一省的 AIP 指定雇主清单(弹框清单卡用;2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」):只取本岗所在省的(名单已按省、名字排好),
- * 每家先算好能对上的归一名 —— 法定名与「o/a」后的经营名,数据层 aip 域打标同时认这两种(etl aip load_aip_names)。
+ * AIP 弹框指定雇主卡的取数机器(2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」);照 makeLoadQcChannels 的形):
+ * 取挂了落 failed,不重取(下次开框重来)。
  *
- * @param x 名单(只有 AIP 那份)与省码。
- * @returns 这一省的清单行。
+ * @param x 省码、本岗公司归一名与两个落格。
+ * @returns 取数函数(收卸下标记)。
  */
-export function aipEmpListOf(x: AipEmpListIn): AipEmpEntry[] {
-  const out: AipEmpEntry[] = []
-  for (const e of x.employers) {
-    if (e.province === x.province) {
-      out.push({ name: e.name, location: e.location, keys: aipEmpKeysOf(e.name) })
+export function makeLoadAipEmp(x: LoadAipEmpIn): LoadFn {
+  return function loadAipEmp(flag: DeadFlag): void {
+    function read(r: Response): Promise<AipEmpJson> {
+      if (r.ok) {
+        return r.json()
+      }
+      return Promise.resolve(null)
     }
+    function land(j: AipEmpJson): void {
+      if (flag.dead) {
+        return
+      }
+      if (j == null || j.rows == null || j.total == null || j.brandN == null) {
+        x.setFailed(true)
+        return
+      }
+      x.setData({ total: j.total, brandN: j.brandN, rows: j.rows })
+    }
+    function fall(): void {
+      if (flag.dead === false) {
+        x.setFailed(true)
+      }
+    }
+    fetch(aipEmpUrlOf({ province: x.province, key: x.key })).then(read).then(land).catch(fall)
+  }
+}
+
+/**
+ * 指定雇主卡接口的地址(省码 + 本岗公司归一名,查询串编码)。
+ *
+ * @param x 省码与归一名。
+ * @returns 地址。
+ */
+export function aipEmpUrlOf(x: AipEmpUrlIn): string {
+  const q = new URLSearchParams()
+  q.set(P_AIP_PROV, x.province)
+  q.set(P_AIP_KEY, x.key)
+  return URL_API_JOBS_AIP + q.toString()
+}
+
+/**
+ * 喂给指定雇主卡的数据:还没到给空的(那时 ready 为 false、卡不渲)。
+ *
+ * @param d 懒取到的数据;null = 还没到或取挂了。
+ * @returns 数据。
+ */
+export function aipEmpDataOf(d: AipEmpData | null): AipEmpData {
+  if (d == null) {
+    return { total: 0, brandN: 0, rows: [] }
+  }
+  return d
+}
+
+/**
+ * 接口回来的行 → 卡上的行:招牌主文案、门店与法人两行灰字(法人与招牌同字不重复写)。
+ *
+ * @param rows 接口回来的行(本岗雇主排前)。
+ * @returns 展示行。
+ */
+export function aipEmpSpecsOf(rows: AipEmpRowJson[]): AipEmpRowSpec[] {
+  const out: AipEmpRowSpec[] = []
+  for (const r of rows) {
+    let legal = r.legal
+    if (legal === r.trade) {
+      legal = TEXT_NONE
+    }
+    out.push({
+      key: String(out.length) + r.trade + r.store + r.legal,
+      hit: r.hit,
+      trade: r.trade,
+      store: r.store,
+      legal,
+    })
   }
   return out
 }
 
 /**
- * 名单上一家能对上的归一名:法定名一个,带「o/a」的再加经营名一个;归一后是空串的不要。
+ * 指定雇主卡底「本省全部指定雇主」链接:雇主板,按指定雇主排、AIP 制度、本省。
  *
- * @param name 名单上的原名。
- * @returns 归一名。
+ * @param province 省码。
+ * @returns 地址。
  */
-function aipEmpKeysOf(name: string): string[] {
-  const keys: string[] = []
-  const head = normName(name)
-  if (head !== TEXT_NONE) {
-    keys.push(head)
-  }
-  const m = AIP_OA_TAIL_RE.exec(name)
-  if (m != null && m.groups != null && m.groups.tail != null) {
-    const tail = normName(m.groups.tail)
-    if (tail !== TEXT_NONE && keys.includes(tail) === false) {
-      keys.push(tail)
-    }
-  }
-  return keys
-}
-
-/**
- * 名单上这一家算不算本岗雇主:本岗归一名整词出现在这家任一归一名里。名单写法五花八门 —— 「X o/a 品牌」「法定名 - 品牌 分店」
- * 「品牌 地名 (法定名)」,岗位上多半只写品牌,只认相等对不上(线上实测:NB 的 Subway、Kent Building Supplies 都对不上
- * 「Subway Moncton (709028 NB Inc)」「J.D. Irving, Limited - Kent Building Supplies (Head Office)」);品牌连锁会高亮本省各家加盟店。
- * 相等一律算(「CG Group Ltd」归一只剩 cg);整词包含要本岗归一名不短于 AIP_HIT_MIN_LEN。
- *
- * @param x 这一家的归一名与本岗雇主归一名。
- * @returns 对上 = true。
- */
-function isAipEmpHitOf(x: AipEmpHitIn): boolean {
-  if (x.me !== TEXT_NONE && x.keys.includes(x.me)) {
-    return true
-  }
-  if (x.me.length < AIP_HIT_MIN_LEN) {
-    return false
-  }
-  const needle = SPACE + x.me + SPACE
-  for (const k of x.keys) {
-    if ((SPACE + k + SPACE).includes(needle)) {
-      return true
-    }
-  }
-  return false
-}
-
-/**
- * 清单卡这一刻要露的行:本岗雇主那几行在前(高亮),展开才列其余;一行都没对上时露头几行(同职业清单卡 streamRowsOf)。
- *
- * @param x 这一省的清单、本岗公司名与展开态。
- * @returns 展示行。
- */
-export function aipEmpRowsOf(x: AipEmpRowsIn): AipEmpRowSpec[] {
-  const me = normName(x.company)
-  const hits: AipEmpEntry[] = []
-  const others: AipEmpEntry[] = []
-  for (const e of x.list) {
-    if (isAipEmpHitOf({ keys: e.keys, me })) {
-      hits.push(e)
-    } else {
-      others.push(e)
-    }
-  }
-  let picked = hits
-  if (x.open) {
-    picked = hits.concat(others)
-  }
-  if (picked.length === 0) {
-    picked = others.slice(0, ROWS_FALLBACK)
-  }
-  const rows: AipEmpRowSpec[] = []
-  for (const e of picked) {
-    rows.push({ key: e.name + e.location, hit: hits.includes(e), name: e.name, location: e.location })
-  }
-  return rows
-}
-
-/**
- * 折起来的家数(本岗雇主之外的都算)。
- *
- * @param x 这一省的清单与本岗公司名。
- * @returns 家数。
- */
-export function aipEmpHiddenOf(x: AipEmpHiddenIn): number {
-  const me = normName(x.company)
-  let n = 0
-  for (const e of x.list) {
-    if (isAipEmpHitOf({ keys: e.keys, me }) === false) {
-      n += 1
-    }
-  }
-  return n
+export function aipEmpHrefOf(province: string): string {
+  return URL_EMPLOYERS_AIP_PROV + encodeURIComponent(province)
 }
 
 /**

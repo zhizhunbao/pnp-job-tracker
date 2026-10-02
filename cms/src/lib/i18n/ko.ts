@@ -755,6 +755,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'fact.salYrNote': '연봉 = 게시 급여를 주 40시간 × 52주로 환산; 구간이면 중간값',
   'fact.accNote': '경력 수준은 공고 문구(직급/연차)에서 추출; 미기재 시 「—」, 추측하지 않음',
   'aipemp.title': '{prov} AIP 지정 고용주', 'aipemp.count': '{n}곳',
+  // 2026-10-02 三弹框统一第 3 步(Frank「不需要一次查询 1574 家吧」):指定雇主卡只列本岗雇主与同招牌几家,卡底一行同招牌家数、一条跳雇主板的链接
+  'aipemp.brand': '같은 상호 {n}곳 모두 지정 고용주', 'aipemp.all': '이 주의 지정 고용주 전체 ›',
   'fact.lmiaNote': '과거 기록일 뿐, 지금 스폰서 가능 여부와는 다릅니다.', 'fact.lmiaStreams': '스트림별',
   'lmia.route': '이 채용의 LMIA 전망', 'lmia.official': '공식 동결 기준',
   'lmia.high': '고임금: 2024 저임금 동결 영향 없음; LMIA 경로 유효', 'lmia.exempt': '저임금이나 면제 업종(농업/건설/식품/의료/돌봄): 계속 접수',

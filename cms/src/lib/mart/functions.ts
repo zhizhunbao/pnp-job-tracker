@@ -334,6 +334,8 @@ function toDesignatedEmployer(r: MartRow): MartRow {
   return {
     name: cellOf(r.name), province: cellOf(r.province), location: cellOf(r.location), is_tech: cellOf(r.isTech),
     source: cellOf(r.source), nocs: textOf(r.nocs), url: textOf(r.url), fetched: textOf(r.fetched),
+    trade: textOf(r.trade), store: textOf(r.store), legal: textOf(r.legal), brand: textOf(r.brand),
+    brand_n: cellOf(r.brandN), match_keys: textOf(r.matchKeys),
   }
 }
 

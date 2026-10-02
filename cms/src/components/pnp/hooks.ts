@@ -22,18 +22,18 @@ import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { makeT } from '@/lib/i18n'
 import { track } from '@/lib/track'
 import {
-  AIP_EMP_OPEN_KEY, LANG_EN, PICK_NONE, PROV_QC, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD,
+  LANG_EN, PICK_NONE, TEXT_NONE, PROV_QC, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD,
 } from './constants'
 import {
   channelListOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockCardOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
   makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, provGateCardsOf, qcChannelsOf,
-  aipEmpHiddenOf, aipEmpListOf, aipEmpRowsOf, aipSectionOf, channelSplitOf, makePickOf,
+  aipEmpDataOf, aipEmpHrefOf, aipEmpSpecsOf, aipSectionOf, channelSplitOf, makeLoadAipEmp, makePickOf, normName,
 } from './functions'
 import type {
   EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel, DeadFlag, PnpData, PnpDataHookIn, PnpDataPanel,
   PnpModalHookIn, PnpModalPanel, PnpProvStreamsHookIn, PnpProvStreamsPanel, QcChannel, QcChannelsHookIn,
-  QcChannelsPanel, AipEmpCardHookIn, AipEmpCardPanel, AipSectionHookIn, AipSectionPanel, ChannelPickHookIn,
+  QcChannelsPanel, AipEmpCardHookIn, AipEmpCardPanel, AipEmpData, AipSectionHookIn, AipSectionPanel, ChannelPickHookIn,
   ChannelPickPanel,
 } from './types'
 import { CACHE } from './variables'
@@ -260,34 +260,45 @@ export function usePnpProvStreams(x: PnpProvStreamsHookIn): PnpProvStreamsPanel 
 }
 
 /**
- * AIP 指定雇主清单卡整机(2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」):本省清单(名单换了才重算归一名)、开合(默认只露本岗雇主那一行,
- * 末尾开关展开其余各家)与高亮行就近滚进视野(形照省提名清单块 usePnpList)。
+ * AIP 指定雇主清单卡整机(2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」):高亮行就近滚进视野(形照省提名清单块 usePnpList)。
+ * 2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」):不再拿四省整表在浏览器里逐家对名字 —— 弹框打开才按省 +
+ * 本岗公司归一名(normName,与数据层 AIP 打标同一把尺子)
+ * 取本岗雇主那一行与同招牌的几家(makeLoadAipEmp);本岗没有公司名就不取、卡只留链接。取挂了落 failed,不重取(下次开框重来)。
  *
- * @param x 本岗与指定雇主名单。
- * @returns ref 盒、展开态、开关、展示行、折起来的家数与本省总家数。
+ * @param x 本岗。
+ * @returns ref 盒、能不能渲、失败没、展示行、同招牌家数、本省总家数与链接。
  */
 export function useAipEmpCard(x: AipEmpCardHookIn): AipEmpCardPanel {
   const matchRef = useRef<HTMLDivElement | null>(null)
-  const [openKeys, setOpenKeys] = useState<Set<string>>(new Set())
+  const [data, setData] = useState<AipEmpData | null>(null)
+  const [failed, setFailed] = useState(false)
   const province = x.job.province
-  const company = x.job.company
+  const key = normName(x.job.company)
+  const waiting = key !== TEXT_NONE && data == null && failed === false
 
-  const list = useMemo(function listOf() {
-    return aipEmpListOf({ employers: x.employers, province })
-  }, [x.employers, province])
+  useEffect(function loadAipEmp() {
+    const flag: DeadFlag = { dead: false }
+    if (waiting) {
+      makeLoadAipEmp({ province, key, setData, setFailed })(flag)
+    }
+    return function stop(): void {
+      flag.dead = true
+    }
+  }, [waiting, province, key])
 
   useEffect(function scrollToHit() {
     scrollIntoHit({ ref: matchRef })
-  }, [list])
+  }, [data])
 
-  const open = openKeys.has(AIP_EMP_OPEN_KEY)
+  const got = aipEmpDataOf(data)
   return {
     matchRef,
-    open,
-    onToggle: makeToggleOf({ setKeys: setOpenKeys })(AIP_EMP_OPEN_KEY),
-    rows: aipEmpRowsOf({ list, company, open }),
-    hidden: aipEmpHiddenOf({ list, company }),
-    total: list.length,
+    ready: data != null || key === TEXT_NONE,
+    failed,
+    rows: aipEmpSpecsOf(got.rows),
+    brandN: got.brandN,
+    total: got.total,
+    href: aipEmpHrefOf(province),
   }
 }
 

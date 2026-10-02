@@ -51,7 +51,6 @@ export function BoardModals({ b }: BoardPanelIn) {
           plan={b.plan}
           news={b.data.dims.news}
           eeOcc={b.data.dims.eeCategories}
-          desigEmp={b.data.dims.designatedEmployers}
           nocDesc={b.data.dims.nocDescriptions}
           fieldSources={b.data.dims.fieldSources}
           onClose={m.onPopupClose}

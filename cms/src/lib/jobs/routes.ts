@@ -24,14 +24,14 @@ import { checkLimit, getUser, ipOf, isPro, isAdmin,
 } from '../quota/server'
 import {
   AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, COMPANY_SLUG_RE,
-  DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT,
+  AIP_KEY_MAX_LEN, DIMS_CACHE_CONTROL, E_AIP_PARAMS, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT,
   JD_LIMIT_PREFIX, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE, POOL_KEY_RE, P_DIR,
-  P_ID, P_NOC, P_OFFSET, P_PAGE, P_SORT, P_URL, RADIX_DEC, REL_OCC_OFFSET_MAX, SORT_NONE, URL_CUT_RE, NL,
+  P_ID, P_KEY, P_NOC, P_OFFSET, P_PAGE, P_PROV, P_SORT, P_URL, PROV_CODE_RE, RADIX_DEC, REL_OCC_OFFSET_MAX, SORT_NONE, URL_CUT_RE, NL,
   TITLE_IP_DAILY, TITLE_LIMIT_PREFIX, TITLE_MAX_LEN,
 } from './constants'
 import {
   emptySimilar, loadApplyEmail, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug,
-  loadJobsPage, loadOccCompetition, loadQcChannels, loadSimilarEmployers, generateJdFormatted, getPnpOps, getPnpReqs, getSsrDims,
+  loadAipEmployers, loadJobsPage, loadOccCompetition, loadQcChannels, loadSimilarEmployers, generateJdFormatted, getPnpOps, getPnpReqs, getSsrDims,
   hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadJdFormatted, loadJdState, loadJobById,
   loadJobMeta, loadMatchDims, loadRelatedAnchor, loadRelatedJobs, loadRelatedOccPage, normalizeProfile, translateTitles,
   emptyTexts, toJobId, toTitleReq, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
@@ -236,6 +236,32 @@ export async function jobsPnpRoute(_req: Request): Promise<Response> {
     { pnpOccupations: dims.pnpOccupations, pnpDraws: dims.pnpDraws, pnpOps: ops, pnpReqs: reqs, pathways: dims.pathways },
     { headers: { [HDR_CACHE_CONTROL]: DIMS_CACHE_CONTROL } },
   )
+}
+
+/**
+ * GET /api/jobs/aip?prov=NS&key=dc ventures:AIP 弹框指定雇主卡(2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」))—— 本岗雇主那一行与同招牌的几家、
+ * 本省总家数。原先职位板一打开就把四省 3863 家整表拉下来给这张卡,改成弹框打开才按省 + 归一名取这几行。
+ *
+ * @param req 请求(?prov=两位省码&key=本岗公司的归一名)。
+ * @returns { total, brandN, rows };参数缺位或非法 400。
+ */
+export async function jobsAipRoute(req: Request): Promise<Response> {
+  const params = new URL(req.url).searchParams
+  let province = PARAM_NONE
+  const provParam = params.get(P_PROV)
+  if (provParam != null) {
+    province = provParam.trim()
+  }
+  let key = PARAM_NONE
+  const keyParam = params.get(P_KEY)
+  if (keyParam != null) {
+    key = keyParam.trim()
+  }
+  if (PROV_CODE_RE.test(province) === false || key === PARAM_NONE || key.length > AIP_KEY_MAX_LEN) {
+    return Response.json({ error: E_AIP_PARAMS }, { status: BAD_REQUEST })
+  }
+  const out = await loadAipEmployers({ db: await getDb(), province, key })
+  return Response.json(out, { headers: { [HDR_CACHE_CONTROL]: DIMS_CACHE_CONTROL } })
 }
 
 /**

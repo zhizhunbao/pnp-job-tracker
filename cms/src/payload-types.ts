@@ -1547,6 +1547,30 @@ export interface DesignatedEmployer {
    * 本站抓取日(evidence 随行)
    */
   fetched?: string | null;
+  /**
+   * 招牌(o/a 后的经营名等;拆不出 = 原名)。2026-10-02 三弹框统一第 3 步,mart with_designated_split 算,DDL docs/sql/designated-employers-split-20261002.sql
+   */
+  trade?: string | null;
+  /**
+   * 门店(只认地名;认不出 = 空)。同上
+   */
+  store?: string | null;
+  /**
+   * 法人(o/a 前的法定名等;拆不出 = 原名)。同上
+   */
+  legal?: string | null;
+  /**
+   * 招牌键(同省同制度同招牌各家共用的归一名;AIP 弹框按它取同招牌的几家)。同上
+   */
+  brand?: string | null;
+  /**
+   * 同省同制度、同招牌键的法人家数。同上
+   */
+  brandN?: number | null;
+  /**
+   * 比对键(名单这一行几种写法的归一名,「|」连接;与 AIP 打标同一把尺子)。同上
+   */
+  matchKeys?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3501,6 +3525,12 @@ export interface DesignatedEmployersSelect<T extends boolean = true> {
   nocs?: T;
   url?: T;
   fetched?: T;
+  trade?: T;
+  store?: T;
+  legal?: T;
+  brand?: T;
+  brandN?: T;
+  matchKeys?: T;
   updatedAt?: T;
   createdAt?: T;
 }

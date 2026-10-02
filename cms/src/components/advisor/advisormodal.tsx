@@ -57,7 +57,6 @@ export function AdvisorModal({
   plan,
   news,
   eeOcc,
-  desigEmp,
   nocDesc,
   onClose,
   onOpenJob,
@@ -77,7 +76,6 @@ export function AdvisorModal({
     news,
     profileClb: planClbOf({ plan }),
     eeOcc,
-    desigEmp,
     nocDesc,
     showZh: m.showZh,
   }

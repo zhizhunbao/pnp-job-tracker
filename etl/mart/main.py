@@ -20,7 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from mart.functions import (
-    build_city_names, build_dli_table, build_mart, build_mart_rankings, build_mart_stats, build_pathways_table,
+    build_city_names, build_designated_table, build_dli_table, build_mart, build_mart_rankings, build_mart_stats, build_pathways_table,
     build_pnp_draws_table, build_pnp_occ_table, build_pnp_ops_table, build_pnp_req_table,
     clean_job_locations, clean_job_salary, flag_job_pilot, run_tests, score_mart_jobs,
 )
@@ -50,6 +50,7 @@ TOOLS = {
     "pilot_flag": flag_job_pilot,
     "cities": build_city_names,
     "dli_table": build_dli_table,
+    "designated_table": build_designated_table,
     "pathways_table": build_pathways_table,
     "pnp_req_table": build_pnp_req_table,
     "pnp_draws_table": build_pnp_draws_table,
@@ -72,6 +73,8 @@ TOOLS = {
   dli_table   单表增量:只重建 mart/dli.json(2026-09-12 Frank「不要全量 改哪个更新哪个」;
               直通表改动的快路 = 本步 + load --only upload + seed,seed 端按表哈希自动跳没变的。
               手动件,不进任何链)
+  designated_table  单表增量:只重建 mart/designated_employers.json(2026-10-02 三弹框统一第 3 步:指定雇主加招牌 / 门店 / 法人等六格,
+              照 dli_table 的形;手动件,不进任何链。与既有键逐对核过互不含)
   pathways_table  单表增量:只重建 mart/pathways.json(2026-09-30 通道补全批一,照 dli_table 的形;手动件,不进任何链。
               `--only pathways` 只命中它 —— 与既有十个键逐对核过互不含)
   pnp_req_table  单表增量:只重建 mart/pnp_requirements.json(2026-09-30 通道补全批一 1b,照 pathways_table 的形;手动件,不进任何链。

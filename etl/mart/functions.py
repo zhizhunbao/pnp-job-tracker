@@ -48,7 +48,8 @@ import paths
 from crawl.functions import get_cached_page
 from log.functions import err, say
 from richtext.functions import md_head_of
-from names.functions import norm_name, sector_of
+from names.constants import ALIAS_RE, DASH_SPLIT, LEGAL_HINT_RE, PAREN_HEAD, PAREN_INNER, PAREN_TAIL_RE
+from names.functions import aip_name_forms, norm_name, sector_of
 from noc.constants import SLUGS as NOC_BROAD_SLUG
 from noc.functions import broad_of, bucket_broad_of, classify, group_of, noc_of_title, teer_of
 from mart.constants import (
@@ -88,7 +89,8 @@ from mart.constants import (
     GRADE_4, GRADE_5, GRID_CRS, GRID_FSW67, HYPHEN, I18N_BLANK, I18N_CITY_FILE, I18N_NOC_FILE,
     INDEMAND2, INDENT_2, IN_AIP, IN_ATS_COMPANIES, IN_COMPANY_FACTS, IN_DIFFICULTY,
     IN_DLI, IN_DRAW_CHECKLISTS, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG, IN_QS,
-    K_DLI_NAME, K_QS_RANK, K_QS_RANK_DISPLAY, K_RANK, K_RANK_DISPLAY, TABLE_DLI, TABLE_PATHWAYS, TABLE_PNP_REQUIREMENTS,
+    K_DLI_NAME, K_QS_RANK, K_QS_RANK_DISPLAY, K_RANK, K_RANK_DISPLAY, TABLE_DESIGNATED, TABLE_DLI, TABLE_PATHWAYS,
+    TABLE_PNP_REQUIREMENTS,
     IN_ENRICH, IN_EXPIRED, IN_FIELD_SOURCES, IN_PATHWAYS, PATHWAYS_MISSING_TPL, IN_FSA_TABLE, IN_IRCC_ALLOC, IN_IRCC_FLOW, IN_IRCC_PR,
     IN_IRCC_TR, IN_ATS_JD_INDEX, IN_JB_JD_BODIES, IN_JB_JD_INDEX, IN_JOBBANK, IN_MINWAGE, K_MIN_WAGE,
     K_MW_EFFECTIVE, K_MW_FETCHED, K_MW_FROM, K_MW_NEXT, K_MW_PROVINCE, K_MW_RATE, K_MW_ROWS, K_MW_SINCE,
@@ -223,7 +225,7 @@ from mart.constants import (
     OFFER_FORM_FACTOR, OFFER_FORM_FETCHED, OFFER_FORM_LABEL_SEP, OFFER_FORM_LABEL_TPL, OFFER_FORM_OP, OFFER_FORM_SECTION,
     OFFER_FORM_STREAM, OFFER_FORM_SUBJECT, OFFER_FORM_VALUE_SEP, OFFER_QUOTE_SEP, PROV_OFFER_QUOTE,
 )
-from mart.scheme import OfferFormIn
+from mart.scheme import BrandGroupIn, BrandPrefixIn, DesignatedPartsIn, DesignatedPartsOut, OfferFormIn, PlaceSplitIn, StoreOfIn
 from mart.constants import (  # 2026-09-29 魁省职业 → 通道对照表(qc_noc_streams;设计 docs/design/魁省门槛弹框-20260929.md)
     IN_QC_NOC_STREAMS, IN_QC_PEQ_REQ, IN_QC_REQ, K_CHANNELS, K_CODE, K_KIND, K_REGULATED, K_SCOPE_KO, K_SCOPE_ZH, QC_FACTOR_OCC, QC_KEY_PEQ_TFW,
     QC_KEY_PSTQ_TPL, QC_KIND_ALL, QC_KIND_PARTLY, QC_NOC_MISSING_TPL, QC_PEQ_NAME_SEP, QC_PEQ_TFW_PREFIX, QC_PROGRAM_PEQ, QC_PROGRAM_PSTQ,
@@ -233,6 +235,10 @@ from mart.constants import (  # 2026-09-30 魁省抽选合计 / 配额行(Frank�
     DRAW_YTD_SKIP_PROV, K_PLAN_YEAR, K_SELECTIONS, K_VALUE_MAX, PROV_QC, QC_KIND_PLAN, QC_RANGE_TPL,
 )
 from mart.scheme import QcNocRowIn, QcPeqOut
+from mart.constants import (  # 2026-10-02 指定雇主拆招牌 / 门店 / 法人(三弹框统一第 3 步)
+    BRAND_AMP, BRAND_WORD_MIN_LEN, DESIG_PLACES_MISSING_TPL, IN_DESIG_CITIES, IN_DESIG_DISTRICTS, K_BRAND, K_BRAND_N, K_LEGAL,
+    K_MATCH_KEYS, K_STORE, K_TRADE, LEGAL_TRIM, MATCH_KEYS_SEP, STORE_COMMA, STORE_TRIM,
+)
 from mart.scheme import (
     AllocGapIn, AllocLabelIn, AllocProvsIn, DrawYtdIn, DrawYtdOfIn, DrawYtdOut, DrawYtdRowIn, OpsExtraBaseIn, SalaryHitIn,
     StreamYtdIn,
@@ -243,7 +249,7 @@ from mart.constants import BLOCK_LIST, BLOCK_OCC, BLOCK_WAGE, K_LOW_ANNUAL, K_PN
 from mart.constants import (
     REQ_BASIS_LOW, REQ_BASIS_MEDIAN, REQ_COND_RECENT_GRAD, REQ_FACTOR_WAGE, REQ_K_BASIS, REQ_K_COND, REQ_K_FACTOR, REQ_K_TEER,
 )
-from mart.scheme import MartBlockTest, WageBlockIn, WageShortIn
+from mart.scheme import MartBlockTest, MartDesignatedSplitTest, WageBlockIn, WageShortIn
 from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn, SalaryTextIn
 from mart.constants import K_SRC_EMPLOYMENT_HOURS, K_SRC_EMPLOYMENT_TERM, NON_EE_PROV, PROV_OFFER_BLOCKED, TEST_VERBOSITY
 from mart.scheme import EeLabelIn, EmpOfIn, EmpOut, MartOfferTest
@@ -2961,7 +2967,7 @@ def build_designated() -> list:
         for r in pe.get(K_ROWS, []):
             rows.append(to_pilot_employer_row(PilotEmployerIn(
                 row=r, fetched=pe.get(K_FETCHED, ""))))
-    return dedupe_designated(rows)
+    return with_designated_split(dedupe_designated(rows))
 
 
 def dedupe_designated(rows: list) -> list:
@@ -2983,6 +2989,148 @@ def dedupe_designated(rows: list) -> list:
     if len(out) != len(rows):
         say(DESIGNATED_DEDUP_TPL.format(before=len(rows), after=len(out)))
     return out
+
+
+def with_designated_split(rows: list) -> list:
+    """指定雇主行拆出招牌 / 门店 / 法人 / 招牌键 / 同招牌家数 / 比对键(2026-10-02 三弹框统一第 3 步,Frank「这是不是 拆成人能看懂
+    表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」):AIP 弹框按表格列本岗雇主与同招牌的几家,只查这几行。
+    跨源清洗住这里(AIP 三省名单与 NL 官网名录两源同一把尺子)。宁可留空不瞎猜:门店只认地名(括号里的地名、同招牌开头之后多出来的
+    地名),「Mary Brown's Chicken」的「Chicken」不算门店;城市名不当招牌键(「Moncton Honda」与「Moncton Truck Stop」不是一家)。
+    招牌键按同省同制度分组认:一家的招牌是另一家招牌的开头,最短的那个开头是招牌键。原地加格,返回同一份。
+    """
+    places = designated_places()
+    groups: dict = {}
+    for r in rows:
+        parts = designated_parts_of(DesignatedPartsIn(raw=r[K_NAME] or "", places=places))
+        r[K_LEGAL] = parts.legal
+        r[K_TRADE] = parts.trade
+        r[K_STORE] = parts.place
+        r[K_MATCH_KEYS] = match_keys_of(r[K_NAME] or "")
+        groups.setdefault((r.get(K_PROVINCE, ""), r.get(K_SOURCE, "")), []).append(r)
+    for members in groups.values():
+        brand_group(BrandGroupIn(members=members, places=places))
+    return rows
+
+
+def designated_places() -> set:
+    """地名表(归一名):mart 的城市表与区表(上一轮汇装的产出;地名变得慢,读上一份够用)。读不到 = 空集,门店一个都不认、照样出表。"""
+    places: set = set()
+    for path in (IN_DESIG_CITIES, IN_DESIG_DISTRICTS):
+        if path.exists() is False:
+            say(DESIG_PLACES_MISSING_TPL.format(path=path))
+            continue
+        for row in read_rows(path):
+            key = norm_name(row.get(K_NAME) or "")
+            if key != "":
+                places.add(key)
+    return places
+
+
+def brand_group(x: BrandGroupIn) -> None:
+    """一组(同省同制度)里认招牌键、补门店、数同招牌家数;原地加格。"""
+    trades: set = set()
+    for r in x.members:
+        trades.add(tuple(norm_name(r[K_TRADE]).split()))
+    legals: dict = {}
+    for r in x.members:
+        words = tuple(norm_name(r[K_TRADE]).split())
+        heads = []
+        for k in range(1, len(words)):
+            if words[:k] in trades and brand_prefix_ok(BrandPrefixIn(words=words[:k], places=x.places)):
+                heads.append(words[:k])
+        brand = words
+        if heads:
+            brand = heads[0]
+            if r[K_STORE] == "":
+                r[K_STORE] = store_of(StoreOfIn(trade=r[K_TRADE], words=len(heads[-1]), places=x.places))
+        r[K_BRAND] = SPACE.join(brand)
+        legals.setdefault(r[K_BRAND], set()).add(norm_name(r[K_LEGAL]))
+    for r in x.members:
+        r[K_BRAND_N] = len(legals[r[K_BRAND]])
+
+
+def brand_prefix_ok(x: BrandPrefixIn) -> bool:
+    """这个开头够不够格当招牌:是地名的不算(「moncton」);两个词以上都算;单个词要够长(BRAND_WORD_MIN_LEN)或带 &(「a&w」)。"""
+    if len(x.words) == 0 or SPACE.join(x.words) in x.places:
+        return False
+    if len(x.words) >= 2:
+        return True
+    return len(x.words[0]) >= BRAND_WORD_MIN_LEN or BRAND_AMP in x.words[0]
+
+
+def designated_parts_of(x: DesignatedPartsIn) -> DesignatedPartsOut:
+    """名单一行 → 法人 / 招牌 / 门店(地点)。认法:o/a(前法人后招牌)→「 - 」(括号外的、带公司后缀或编号的那边是法人)→
+    末尾括号(括号里像法定名 = 法人;括号外像法定名而括号里是地名 = 那是门店,招牌就是法人名;否则括号里是招牌);
+    都不是 = 法人与招牌都是原名。最后招牌末尾的括号 / 「 - 地名」挪去门店(place_split)。"""
+    name = x.raw.strip()
+    alias = ALIAS_RE.search(name)
+    if alias is not None:
+        legal = paren_head_of(name[:alias.start()])
+        return place_split(PlaceSplitIn(parts=DesignatedPartsOut(legal=legal, trade=alias.group(1), place=""), places=x.places))
+    halves = name.split(DASH_SPLIT)
+    if len(halves) == 2 and halves[0].count(PAREN_OPEN) == halves[0].count(PAREN_CLOSE):
+        if LEGAL_HINT_RE.search(halves[1]):
+            return place_split(PlaceSplitIn(parts=DesignatedPartsOut(legal=halves[1], trade=halves[0], place=""), places=x.places))
+        if LEGAL_HINT_RE.search(halves[0]):
+            return place_split(PlaceSplitIn(parts=DesignatedPartsOut(legal=halves[0], trade=halves[1], place=""), places=x.places))
+    m = PAREN_TAIL_RE.match(name)
+    if m is not None:
+        head = m.group(PAREN_HEAD)
+        inner = m.group(PAREN_INNER)
+        if LEGAL_HINT_RE.search(inner):
+            return place_split(PlaceSplitIn(parts=DesignatedPartsOut(legal=inner, trade=head, place=""), places=x.places))
+        if LEGAL_HINT_RE.search(head) and norm_name(inner) in x.places:
+            return DesignatedPartsOut(legal=head.strip(LEGAL_TRIM), trade=head.strip(LEGAL_TRIM), place=inner.strip())
+        if LEGAL_HINT_RE.search(head):
+            return place_split(PlaceSplitIn(parts=DesignatedPartsOut(legal=head, trade=inner, place=""), places=x.places))
+    return place_split(PlaceSplitIn(parts=DesignatedPartsOut(legal=name, trade=name, place=""), places=x.places))
+
+
+def place_split(x: PlaceSplitIn) -> DesignatedPartsOut:
+    """招牌末尾的地点挪去门店:不像法定名的括号(「Kent Building Supplies (Saint John)」),或「 - 」后面是地名
+    (「Jungle Jim's - Moncton」);两头削逗号空格。"""
+    legal = x.parts.legal.strip(LEGAL_TRIM)
+    trade = x.parts.trade.strip(LEGAL_TRIM)
+    m = PAREN_TAIL_RE.match(trade)
+    if m is not None and LEGAL_HINT_RE.search(m.group(PAREN_INNER)) is None:
+        return DesignatedPartsOut(legal=legal, trade=m.group(PAREN_HEAD).strip(LEGAL_TRIM), place=m.group(PAREN_INNER).strip())
+    halves = trade.rsplit(DASH_SPLIT, 1)
+    if len(halves) == 2 and norm_name(halves[1]) in x.places:
+        return DesignatedPartsOut(legal=legal, trade=halves[0].strip(LEGAL_TRIM), place=halves[1].strip())
+    return DesignatedPartsOut(legal=legal, trade=trade, place=x.parts.place)
+
+
+def paren_head_of(legal: str) -> str:
+    """o/a 前那段末尾挂着招牌括号(「Andalos Holdings Limited (Mezza Lebanese Kitchen)」)时去掉括号;括号里像法定名的不动。"""
+    m = PAREN_TAIL_RE.match(legal.strip())
+    if m is not None and LEGAL_HINT_RE.search(m.group(PAREN_INNER)) is None:
+        return m.group(PAREN_HEAD)
+    return legal
+
+
+def store_of(x: StoreOfIn) -> str:
+    """招牌原文跳过开头 words 个归一词,剩下的原文是地名(或逗号前那段是地名)才当门店,否则空串(「Chicken」「& Taters」不算)。
+    按原文的词逐个归一计数,标点 / 公司后缀归一成空的词不算数。"""
+    tokens = x.trade.split()
+    seen = 0
+    for i, tok in enumerate(tokens):
+        if seen >= x.words:
+            rest = SPACE.join(tokens[i:]).strip(STORE_TRIM)
+            if norm_name(rest.split(STORE_COMMA)[0]) in x.places:
+                return rest
+            return ""
+        seen += len(norm_name(tok).split())
+    return ""
+
+
+def match_keys_of(raw: str) -> str:
+    """名单这一行的比对键:几种写法各自归一,去空去重排序后连接(与 AIP 打标 load_aip_names 同一把尺子)。"""
+    keys: set = set()
+    for form in aip_name_forms(raw):
+        key = norm_name(form)
+        if key != "":
+            keys.add(key)
+    return MATCH_KEYS_SEP.join(sorted(keys))
 
 
 def to_stock_cell(x: StockCellIn) -> dict:
@@ -4628,6 +4776,15 @@ def build_dli_table() -> None:
     没变的表自动跳过。直通表的单表件照此形逐个加(build_xxx + 一行注册),不预铺。"""
     OUT_MART.mkdir(parents=True, exist_ok=True)
     tables = {TABLE_DLI: build_dli()}
+    write_mart_table(TableWriteIn(tables=tables, out_dir=OUT_MART))
+    say_table_counts(SayCountsIn(tables=tables, width=TABLE_NAME_WIDTH))
+
+
+def build_designated_table() -> None:
+    """单表增量:只重建 data/mart/designated_employers.json(2026-10-02 三弹框统一第 3 步 —— 指定雇主加招牌 / 门店 / 法人等六格,
+    照 build_dli_table 的形;之后 load --only upload + seed)。"""
+    OUT_MART.mkdir(parents=True, exist_ok=True)
+    tables = {TABLE_DESIGNATED: build_designated()}
     write_mart_table(TableWriteIn(tables=tables, out_dir=OUT_MART))
     say_table_counts(SayCountsIn(tables=tables, width=TABLE_NAME_WIDTH))
 
@@ -7610,12 +7767,13 @@ def run_tests() -> None:
     同日再加两组:MartMbPoolTest(MB 年报池子历年序列:一年一行新到旧、period 记年报年、asOf 记年末月、2024 那行句尾 [sic])、
     MartAbFederalTest(AB 额外联邦名额单立指标、不并入 issued / 配额)。
     同日 Frank「照改,加这一列」再加一组:MartDrawSelectionTest(pnp_draws 行原样带上 selection 格)。
-    2026-09-30 来源定位 ③-1 再加一组:MartDrawAnchorTest(抽选日期写法、文字片段编码与后缀、挂片段;③-2 起加区间写法与各表候选)。"""
+    2026-09-30 来源定位 ③-1 再加一组:MartDrawAnchorTest(抽选日期写法、文字片段编码与后缀、挂片段;③-2 起加区间写法与各表候选)。
+    2026-10-02 再加一组:MartDesignatedSplitTest(指定雇主拆招牌 / 门店 / 法人:金标、门店只认地名、城市名不当招牌、变异探针)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
                  MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest, MartNbNlOpsTest,
                  MartBcFunnelOpsTest, MartMbPoolTest, MartAbFederalTest,
-                 MartDrawSelectionTest, MartDrawAnchorTest):
+                 MartDrawSelectionTest, MartDrawAnchorTest, MartDesignatedSplitTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

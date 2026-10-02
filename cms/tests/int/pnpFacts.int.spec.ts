@@ -34,7 +34,7 @@ import {
   quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCardOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf, provGateCardsOf,
-  aipEmpHiddenOf, aipEmpListOf, aipEmpRowsOf, normName,
+  aipEmpDataOf, aipEmpHrefOf, aipEmpSpecsOf, aipEmpUrlOf, normName,
 } from '@/components/pnp/functions'
 import type {
   GateCardSpec, PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpOps, PnpPathway, PnpReq, PnpStream,
@@ -212,7 +212,7 @@ describe('服务端压的键与整表现算一致', () => {
       provinces: [{}], cities: [{}], districts: [{}], nocCategories: [{}], sources: [{}], experienceLevels: [{}],
       pnpOccupations: [occ({ province: 'SK' })], pnpDraws: [draw({ province: 'BC' })], pathways: PATHWAYS,
       qcCells: [{ noc: '72106', key: 'pstq-1' }], eeCategories: [{}], eeBroads: [{}],
-      designatedEmployers: [{}], nocDescriptions: [{}], occupations: [{}], fieldSources: [{}], news: [{}],
+      nocDescriptions: [{}], occupations: [{}], fieldSources: [{}], news: [{}],
     } as unknown as JobDims
     const slim = boardDimsOf(full)
     expect(Object.keys(slim).sort()).toEqual(Object.keys(full).sort())
@@ -1474,79 +1474,57 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
 })
 
 // 2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」:AIP 弹框列本省 AIP 指定雇主,本岗雇主高亮置顶。
-// 高亮口径同数据层 aip 域打标:法定名或「o/a」后的经营名,撇号先删(etl names.norm_name)。手写金标 + 真数据性质。
+// 2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」):浏览器不再拿四省整表逐家
+// 对名字 —— 比对挪到数据层(mart with_designated_split 的 matchKeys,与 AIP 打标同一把尺子),弹框按省 + normName(本岗公司) 现取本岗雇主
+// 与同招牌的几家。这里锁三样:展示行的洗法、接口与链接地址、前端 normName 与数据层比对键在真数据上对得上(两边归一口径不岔)。
 describe('AIP 指定雇主清单卡', () => {
-  const emp = (name: string, province = 'NB', location = '') => ({ name, province, location })
-  const all = [
-    emp('ABC Holdings Ltd o/a Tim Horton\'s', 'NB', 'Moncton'),
-    emp('XYZ Inc'),
-    emp('Maritime Foods Limited'),
-    emp('QQQ Ltd', 'NS', 'Halifax'),
-  ]
-  const nb = aipEmpListOf({ employers: all, province: 'NB' })
+  const row = (trade: string, legal: string, hit = false, store = '') => ({ trade, store, legal, hit })
 
-  it('只取本省;经营名与法定名都对得上;撇号先删', () => {
-    expect(nb.map((e) => e.name)).toEqual(['ABC Holdings Ltd o/a Tim Horton\'s', 'XYZ Inc', 'Maritime Foods Limited'])
-    expect(normName('Tim Horton\'s')).toBe('tim hortons')
-    for (const company of ['Tim Hortons', 'TIM HORTON\'S', 'ABC Holdings Inc.']) {
-      const rows = aipEmpRowsOf({ list: nb, company, open: false })
-      expect(rows.map((r) => [r.name, r.hit]), company).toEqual([['ABC Holdings Ltd o/a Tim Horton\'s', true]])
-    }
-  })
-
-  it('默认只露本岗雇主那一行;展开后本岗那家仍排最前、其余照名单顺序;折起来的家数', () => {
-    const open = aipEmpRowsOf({ list: nb, company: 'Maritime Foods', open: true })
-    expect(open.map((r) => [r.name, r.hit])).toEqual([
-      ['Maritime Foods Limited', true], ['ABC Holdings Ltd o/a Tim Horton\'s', false], ['XYZ Inc', false],
+  it('展示行:招牌主文案,门店与法人灰字;法人与招牌同字不重复写;本岗那行的高亮照接口给', () => {
+    const specs = aipEmpSpecsOf([
+      row('Mary Browns Chicken', 'DC Ventures Inc', true),
+      row('Mary Browns', 'Mary Browns'),
+      row('Mary Browns', '4207591 Nova Scotia Ltd', false, 'New Minas'),
     ])
-    expect(aipEmpHiddenOf({ list: nb, company: 'Maritime Foods' })).toBe(2)
-    expect(aipEmpHiddenOf({ list: nb, company: '' })).toBe(3)
+    expect(specs.map((r) => [r.trade, r.store, r.legal, r.hit])).toEqual([
+      ['Mary Browns Chicken', '', 'DC Ventures Inc', true],
+      ['Mary Browns', '', '', false],
+      ['Mary Browns', 'New Minas', '4207591 Nova Scotia Ltd', false],
+    ])
+    expect(new Set(specs.map((r) => r.key)).size).toBe(3)
+    // 同招牌同法人两行(一家法人开几家店)键也不撞
+    expect(new Set(aipEmpSpecsOf([row('A&W', 'X Inc'), row('A&W', 'X Inc')]).map((r) => r.key)).size).toBe(2)
   })
 
-  it('名单写法「法定名 - 品牌 分店」「品牌 地名 (法定名)」:岗位只写品牌也整词对得上;太短的名字不认', () => {
-    const fmt = aipEmpListOf({ employers: [
-      emp('J.D. Irving, Limited - Kent Building Supplies (Head Office)'),
-      emp('FMI National Inc. - Pizza Hut Dieppe'),
-      emp('Subway Moncton (709028 NB Inc)'),
-      emp('Subway (605342 NB Ltée)'),
-      emp('Kent Line Limited'),
-    ], province: 'NB' })
-    const hitsOf = (company: string) => aipEmpRowsOf({ list: fmt, company, open: false }).filter((r) => r.hit).map((r) => r.name)
-    expect(hitsOf('Kent Building Supplies')).toEqual(['J.D. Irving, Limited - Kent Building Supplies (Head Office)'])
-    expect(hitsOf('Pizza Hut')).toEqual(['FMI National Inc. - Pizza Hut Dieppe'])
-    expect(hitsOf('Subway')).toEqual(['Subway Moncton (709028 NB Inc)', 'Subway (605342 NB Ltée)'])
-    // 探针:整词才算 —— 「Kent Building」不会让「Kent Line」也亮;两个字母的名字不认
-    expect(hitsOf('Kent Building')).toEqual(['J.D. Irving, Limited - Kent Building Supplies (Head Office)'])
-    expect(hitsOf('KB')).toEqual([])
+  it('接口地址查询串编码;卡底链接 = 雇主板 AIP + 本省;没到的数据给空', () => {
+    expect(aipEmpUrlOf({ province: 'NS', key: 'mary browns chicken' })).toBe('/api/jobs/aip?prov=NS&key=mary+browns+chicken')
+    expect(aipEmpUrlOf({ province: 'NB', key: 'a&w' })).toBe('/api/jobs/aip?prov=NB&key=a%26w')
+    expect(aipEmpHrefOf('NS')).toBe('/employers?sort=designated&program=AIP&prov=NS')
+    expect(aipEmpDataOf(null)).toEqual({ total: 0, brandN: 0, rows: [] })
   })
 
-  it('一家都对不上(或没有公司名):露头几行、都不高亮(同职业清单卡)', () => {
-    for (const company of ['Nobody Here', '']) {
-      const rows = aipEmpRowsOf({ list: nb, company, open: false })
-      expect(rows.length).toBeGreaterThan(0)
-      expect(rows.every((r) => r.hit === false)).toBe(true)
-    }
-    // 探针:不认经营名的旧尺子(只比法定名)在 Tim Hortons 上对不上 —— 金标分得开新旧两版
-    expect(nb.some((e) => normName(e.name) === normName('Tim Hortons'))).toBe(false)
-  })
-
-  it('data/mart 真数据:四省每家拿自己的名字都高亮到自己', () => {
-    const real = mart<{ name: string, province: string, location: string, source: string }>('designated_employers')
+  it('data/mart 真数据:四省每家拿自己的名字(前端 normName)都落在数据层算好的比对键里', () => {
+    const real = mart<{ name: string, province: string, source: string, matchKeys: string }>('designated_employers')
       .filter((e) => e.source === 'AIP')
     expect(real.length).toBeGreaterThan(3000)
-    const byProv = new Map<string, ReturnType<typeof aipEmpListOf>>()
-    for (const prov of ['NB', 'NS', 'NL', 'PE']) {
-      byProv.set(prov, aipEmpListOf({ employers: real, province: prov }))
-    }
     let checked = 0
     for (const e of real) {
-      if (normName(e.name) === '') {
+      const me = normName(e.name)
+      if (me === '') {
         continue
       }
-      const rows = aipEmpRowsOf({ list: byProv.get(e.province)!, company: e.name, open: false })
-      expect(rows.some((r) => r.hit && r.name === e.name), e.province + ' ' + e.name).toBe(true)
+      expect(e.matchKeys.split('|'), e.province + ' ' + e.name).toContain(me)
       checked += 1
     }
     expect(checked).toBeGreaterThan(3000)
+  })
+
+  it('探针:比对键认经营名 —— 岗位只写 o/a 后的招牌也对得上那一行;只认法定名的旧尺子对不上', () => {
+    const real = mart<{ name: string, matchKeys: string }>('designated_employers')
+    const oa = real.find((e) => / o\/a /i.test(e.name) && e.matchKeys.split('|').length > 1)
+    expect(oa).toBeDefined()
+    const tail = oa!.name.split(/ o\/a /i)[1]!
+    expect(oa!.matchKeys.split('|')).toContain(normName(tail))
+    expect(normName(tail)).not.toBe(normName(oa!.name))
   })
 })

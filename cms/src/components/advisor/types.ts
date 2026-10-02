@@ -15,7 +15,7 @@
  */
 // eslint-disable-next-line local/no-import-in-leaf -- 只 import type,理由见文件头(原样透传的外域整份行)
 import type {
-  ColKey, DesigEmp, EeOcc, FieldGroup, FieldSource, JobRow, NewsSlim, NocDesc, Plan, ProvInfo,
+  ColKey, EeOcc, FieldGroup, FieldSource, JobRow, NewsSlim, NocDesc, Plan, ProvInfo,
 } from '@/lib/jobs'
 
 /**
@@ -207,11 +207,6 @@ export type AdvisorNewsList = NewsSlim[]
 export type AdvisorEeOccs = EeOcc[]
 
 /**
- * AIP 指定雇主名录(外域整表:AIP 事实块与市级卡都按公司名/城市筛它)。
- */
-export type AdvisorDesigEmps = DesigEmp[]
-
-/**
  * NOC 官方职业描述(外域整表,整份喂给 PnpListSection / EeCategorySection / NocDutiesView)。
  */
 export type AdvisorNocDescs = NocDesc[]
@@ -294,10 +289,6 @@ export type AdvisorFacts = {
    */
   eeOcc: AdvisorEeOccs
 
-  /**
-   * AIP 指定雇主名录。
-   */
-  desigEmp: AdvisorDesigEmps
 
   /**
    * NOC 官方职业描述。
@@ -1145,10 +1136,6 @@ export type AdvisorModalIn = {
    */
   eeOcc: AdvisorEeOccs
 
-  /**
-   * AIP 指定雇主名录。
-   */
-  desigEmp: AdvisorDesigEmps
 
   /**
    * NOC 官方职业描述。

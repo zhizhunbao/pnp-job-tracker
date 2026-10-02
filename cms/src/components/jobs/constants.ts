@@ -2745,10 +2745,6 @@ export const EMPTY_DIMS = {
    */
   eeBroads: [],
 
-  /**
-   * 大西洋试点指定雇主。
-   */
-  designatedEmployers: [],
 
   /**
    * NOC 官方职业名与职责。

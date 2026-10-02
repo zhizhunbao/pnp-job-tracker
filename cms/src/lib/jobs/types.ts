@@ -1285,6 +1285,121 @@ export type LoadQcChannelsIn = {
 export type QcChannelsOut = Promise<QcChannelList>
 
 /**
+ * AIP_EMP_ROWS 的原始行(2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」))。
+ */
+export type AipEmpDbRow = {
+  /**
+   * 招牌;NULL = 换版后还没灌这一列。
+   */
+  trade: string | null
+
+  /**
+   * 门店;NULL / '' = 认不出。
+   */
+  store: string | null
+
+  /**
+   * 法人。
+   */
+  legal: string | null
+
+  /**
+   * 同招牌法人家数(numeric,pg 回字符串)。
+   */
+  brand_n: string | number | null
+
+  /**
+   * 是本岗雇主那一行。
+   */
+  hit: boolean | null
+}
+
+/**
+ * 指定雇主卡的一行(toAipEmp 洗净)。
+ */
+export type AipEmpFact = {
+  /**
+   * 招牌。
+   */
+  trade: string
+
+  /**
+   * 门店;'' = 认不出。
+   */
+  store: string
+
+  /**
+   * 法人。
+   */
+  legal: string
+
+  /**
+   * 同招牌法人家数。
+   */
+  brandN: number
+
+  /**
+   * 是本岗雇主那一行。
+   */
+  hit: boolean
+}
+
+/**
+ * AIP_EMP_TOTAL 的原始行。
+ */
+export type AipEmpTotalDbRow = {
+  /**
+   * 本省总家数(count 回字符串)。
+   */
+  n: string | number | null
+}
+
+/**
+ * loadAipEmployers 的入参。
+ */
+export type LoadAipEmpIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 本岗公司的归一名。
+   */
+  key: string
+}
+
+/**
+ * 指定雇主卡要的全部(/api/jobs/aip 的响应体)。
+ */
+export type AipEmpList = {
+  /**
+   * 本省 AIP 指定雇主总家数。
+   */
+  total: number
+
+  /**
+   * 本岗雇主招牌的同招牌法人家数;0 = 对不上本岗雇主。
+   */
+  brandN: number
+
+  /**
+   * 本岗雇主那一行与同招牌的几家(本岗雇主排前)。
+   */
+  rows: AipEmpFact[]
+}
+
+/**
+ * loadAipEmployers 的返回。
+ */
+export type AipEmpOut = Promise<AipEmpList>
+
+/**
  * 联邦 EE 类别清单一行。
  */
 export type EeOcc = {
@@ -1352,31 +1467,6 @@ export type EeBroad = {
    * 本站大类(jobs.broad)。
    */
   broad: string
-}
-
-/**
- * AIP 指定雇主瘦行(维度表)。
- */
-export type DesigEmp = {
-  /**
-   * 雇主名。
-   */
-  name: string
-
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 社区/城市。
-   */
-  location: string
-
-  /**
-   * 科技类标记。
-   */
-  isTech: boolean
 }
 
 /**
@@ -1628,10 +1718,6 @@ export type Dims = {
    */
   eeBroads: EeBroad[]
 
-  /**
-   * AIP 指定雇主(SSR 瘦身:首屏空)。
-   */
-  designatedEmployers: DesigEmp[]
 
   /**
    * NOC 官方描述(SSR 瘦身:首屏空,788KB 大头)。
@@ -4716,31 +4802,6 @@ export type DistrictDim = {
 }
 
 /**
- * AIP 指定雇主维度一行。
- */
-export type DesigDim = {
-  /**
-   * 雇主名。
-   */
-  name: string
-
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 名录上的地点原文。
-   */
-  location: string
-
-  /**
-   * 是否名录标注的科技岗雇主。
-   */
-  isTech: boolean
-}
-
-/**
  * NOC 描述维度一行。
  */
 export type NocDescDim = {
@@ -4809,10 +4870,6 @@ export type BigDims = {
    */
   districts: DistrictDim[]
 
-  /**
-   * AIP 指定雇主维度。
-   */
-  designatedEmployers: DesigDim[]
 
   /**
    * NOC 描述维度。

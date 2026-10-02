@@ -1866,6 +1866,24 @@ export const DIMS_QC_CELLS = `SELECT noc, channels -> 0 ->> 'key' AS "key"
 export const QC_NOC_CHANNELS = `SELECT channels FROM qc_noc_streams WHERE noc = $1`
 
 /**
+ * AIP 弹框指定雇主卡(2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」)):本岗雇主那一行与同招牌的几家 —— 先按本岗公司的归一名对 match_keys 找到本岗雇主的招牌键,
+ * 再取同省同招牌键的各家;本岗雇主排前,其余按招牌 / 门店 / 法人排。$1 = 省码,$2 = 本岗公司的归一名。
+ * 同招牌最多的是 NB 的 Tim Hortons(55 行),LIMIT 80 只是护栏。match_keys / brand 由 mart with_designated_split 算好。
+ */
+export const AIP_EMP_ROWS = `WITH mine AS (
+       SELECT DISTINCT brand FROM designated_employers
+       WHERE source = 'AIP' AND province = $1 AND $2 = ANY(string_to_array(match_keys, '|')))
+     SELECT trade, store, legal, brand_n, $2 = ANY(string_to_array(match_keys, '|')) AS hit
+     FROM designated_employers
+     WHERE source = 'AIP' AND province = $1 AND brand IN (SELECT brand FROM mine)
+     ORDER BY hit DESC, trade, store, legal LIMIT 80`
+
+/**
+ * AIP 弹框指定雇主卡底链接上的本省总家数(同上);$1 = 省码。
+ */
+export const AIP_EMP_TOTAL = `SELECT count(*) AS n FROM designated_employers WHERE source = 'AIP' AND province = $1`
+
+/**
  * 首屏维度表·EE 类别。
  */
 export const DIMS_EE_CATEGORIES = `SELECT category, label, noc, teer, title, url, fetched,
@@ -2631,15 +2649,6 @@ export const DIMS_CITIES = `SELECT name, province FROM cities ORDER BY name LIMI
  * 筛选下拉的区维度。
  */
 export const DIMS_DISTRICTS = `SELECT name, city, province FROM districts ORDER BY name LIMIT 5000`
-
-/**
- * 筛选下拉的 AIP 指定雇主维度。
- * 2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」:AIP 弹框改列本省名单、高亮本岗雇主 —— 只取 AIP 那份
- * (表里还混着 RCIP / FCIP 试点社区名单,读这一维的只有 AIP 弹框),按省、名字排好;原先 LIMIT 5000 不排序,6,751 行每次随机丢
- * 一千多家,撤(AIP 四省约 3,900 行)。
- */
-export const DIMS_DESIGNATED = `SELECT name, province, location, is_tech FROM designated_employers WHERE source = 'AIP'
-     ORDER BY province, name`
 
 /**
  * 筛选下拉/弹窗的 NOC 描述维度(上限同原 payload.find 的 2000)。
