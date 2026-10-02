@@ -1884,6 +1884,18 @@ export const AIP_EMP_ROWS = `WITH mine AS (
 export const AIP_EMP_TOTAL = `SELECT count(*) AS n FROM designated_employers WHERE source = 'AIP' AND province = $1`
 
 /**
+ * AIP 弹框指定雇主卡「展开其他 N 家」的一页(2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」):本省其余各家(不含本岗雇主的招牌),按招牌 / 门店 / 法人排,
+ * 一页 20 家;$1 = 省码,$2 = 本岗公司的归一名,$3 = 跳过几家。
+ */
+export const AIP_EMP_REST = `WITH mine AS (
+       SELECT DISTINCT brand FROM designated_employers
+       WHERE source = 'AIP' AND province = $1 AND $2 = ANY(string_to_array(match_keys, '|')))
+     SELECT trade, store, legal, brand_n, false AS hit
+     FROM designated_employers
+     WHERE source = 'AIP' AND province = $1 AND (brand IS NULL OR brand NOT IN (SELECT brand FROM mine))
+     ORDER BY trade, store, legal OFFSET $3 LIMIT 20`
+
+/**
  * 首屏维度表·EE 类别。
  */
 export const DIMS_EE_CATEGORIES = `SELECT category, label, noc, teer, title, url, fetched,
@@ -1921,11 +1933,19 @@ export const DIMS_FIELD_SOURCES = `SELECT field, kind, publisher, url, title, de
  * length() 会把 8 万行正文全解出来);没过截止日(口径照抄 CLOSE_PAST_DEADLINE:纯日期存成 UTC 零点,
  * 早于多伦多的今天才算过,截止日当天不算)。没邮箱的岗页面照常可访问、可被收,只是不进 sitemap、不出 JobPosting;
  * 职位板不动。当天生产实测 23,944 条(Job Bank 21,797 / Jobillico 1,533 / Jobboom 524 / 其他 90),近 7 天发布 3,768 条。
+ * 2026-10-02 再收窄(Frank「现在只把最全的职位给 google 吧」,拍「官网 + 简介 + 总部」):六格之外再要岗位字段全
+ * (有薪资、有整理版正文、有城市)且雇主公司官网、简介(ai_brief 或 description)、总部城市三样都有 ——
+ * 公司条件走 EXISTS 子查询(片段拼在无别名的 `FROM jobs` 后,用 jobs.company_id 关联)。当天生产只读实测 23,981 → 7,217 条
+ * (只卡岗位字段 23,717;再卡官网 + 简介 9,740)。
  */
 export const SEO_JOB_OK = `COALESCE(status,'open') <> 'closed' AND is_dup IS NOT TRUE
   AND COALESCE(apply_email,'') <> '' AND date_posted IS NOT NULL
   AND octet_length(COALESCE(description,'')) >= 300
-  AND (valid_through IS NULL OR (valid_through AT TIME ZONE 'UTC')::date >= (now() AT TIME ZONE 'America/Toronto')::date)`
+  AND (valid_through IS NULL OR (valid_through AT TIME ZONE 'UTC')::date >= (now() AT TIME ZONE 'America/Toronto')::date)
+  AND (salary_annual IS NOT NULL OR COALESCE(salary_text,'') <> '')
+  AND COALESCE(jd_formatted,'') <> '' AND COALESCE(city,'') <> ''
+  AND EXISTS (SELECT 1 FROM companies co WHERE co.id = jobs.company_id AND COALESCE(co.website,'') <> ''
+    AND (COALESCE(co.ai_brief,'') <> '' OR COALESCE(co.description,'') <> '') AND COALESCE(co.hq_city,'') <> '')`
 
 /**
  * 职位站点地图全量(一次拉齐,进程内切片;2026-09-03 GSC 实查:逐片 OFFSET 现查 10–24 秒、
