@@ -44,7 +44,7 @@ import {
   GATE_UNIT_YEARS, PNP_BLOCK_UNFIT_CODES, PNP_BLOCK_UNFIT_KEY, JOB_NATURE_BLOCKS, CHAN_TAG_HEAD, CHAN_TAG_WARN,
   BASIS_WHERE, BASIS_WHERE_IN_PROV, BASIS_WHERE_ANYWHERE, BASIS_PERMITS, BASIS_PERMIT_SEP, BASIS_NO_IMPLIED, BASIS_PGWP,
   GATE_PERMIT_HEAD,
-  AIP_PATHWAY_KEY, AIP_CHANNEL_TEERS,
+  AIP_PATHWAY_KEY, AIP_CHANNEL_TEERS, AIP_F, AIP_TIER_PREFIX, AIP_TIER_SEP, AIP_EDU_HEAD, AIP_GRAD_NOTE,
   GATE_EXP_FACTORS, GATE_OP_NONE, GATE_WAGE_FACTORS, LANG_NOC_NOTE_MAX, CHAN_JOB_TAGS, CHAN_TAG_COMPLEMENT, AIP_APOS_RE,
   AIP_OA_TAIL_RE, CHAN_NOTE_TAGS,
   AIP_HIT_MIN_LEN, BASIS_ANY_NOC, BASIS_EXP_TEER, BASIS_FIELD, BASIS_ONE_NOC, BASIS_PAID, BASIS_RELATED,
@@ -77,7 +77,7 @@ import type {
   CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
   ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn,
   ChannelListIn, ChannelTag, ChannelTagsIn, EmployerHitIn, ExtraFitsIn, JobDecidedIn, ListedIn,
-  AipSectionOfIn, AipSectionSpec, DrawCtxIn, DrawCtx,
+  AipSectionOfIn, AipSectionSpec, DrawCtxIn, DrawCtx, AipGateCardIn, AipRowOfIn, AipTierHitIn,
   LocalNameIn, PathwayChannelIn, StatusLinesIn,
   BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvGateCardsIn, ProvStreamCardIn, ProvStreamRowsIn,
   AipEmpEntry, AipEmpHiddenIn, AipEmpHitIn, AipEmpListIn, AipEmpRowSpec, AipEmpRowsIn, ExpScopeIn,
@@ -1791,27 +1791,30 @@ function aipLineCardOf(x: DrawCardOfIn): DrawCard | null {
  * 两块原样搬来 —— 通道卡上段末尾的 AIP 那条(aipChannelsOf)与「AIP 抽选」卡(aipCardOf,年份 / 本岗那组 / 卡底合计与省提名弹框同一套
  * 抽选卡入参,drawCtxOf)。原卡顶上「本岗雇主是本省 AIP 指定雇主」那一行(09-30 aipEmployerCardOf)不搬:AIP 弹框的判定行与指定雇主清单卡
  * 已经说了。
+ * 同日 Frank「AIP 也需要一个 门槛卡片吧」「格式需要 和 pnp 的保持一致吗」「可以,做吧」:多一张门槛卡(aipGateCardOf),本岗能走 AIP 才出。
  *
  * @param x 取词函数、界面语言、灰字开关、本岗与几张整表。
- * @returns AIP 那条通道(能走才有)与 AIP 抽选卡(不出给 null)。
+ * @returns AIP 那条通道(能走才有)、AIP 抽选卡与门槛卡(不出给 null)。
  */
 export function aipSectionOf(x: AipSectionOfIn): AipSectionSpec {
   const ctx = drawCtxOf({
     t: x.t, lang: x.lang, job: x.job, draws: x.draws, ops: x.ops, reqs: x.reqs, pathways: x.pathways, qcChannels: [],
   })
-  return {
-    channels: aipChannelsOf({
-      t: x.t,
-      tEn: x.tEn,
-      lang: x.lang,
-      showZh: x.showZh,
-      job: x.job,
-      defaults: pnpDefaultProvsOf(x.pathways),
-      pathways: x.pathways,
-      occ: x.occ,
-    }),
-    card: aipCardOf(ctx.dx),
+  const channels = aipChannelsOf({
+    t: x.t,
+    tEn: x.tEn,
+    lang: x.lang,
+    showZh: x.showZh,
+    job: x.job,
+    defaults: pnpDefaultProvsOf(x.pathways),
+    pathways: x.pathways,
+    occ: x.occ,
+  })
+  let gate: GateCardSpec | null = null
+  if (channels.length > 0) {
+    gate = aipGateCardOf({ t: x.t, job: x.job, reqs: x.reqs })
   }
+  return { channels, card: aipCardOf(ctx.dx), gate }
 }
 
 /**
@@ -1839,6 +1842,222 @@ export function drawCtxOf(x: DrawCtxIn): DrawCtx {
       year: cardYearOf({ quota, province: x.job.province, draws: x.draws }),
     },
   }
+}
+
+/**
+ * AIP 门槛卡(2026-10-01 Frank「AIP 也需要一个 门槛卡片吧」「格式需要 和 pnp 的保持一致吗」「可以,做吧」):与省提名门槛卡同一个组件、
+ * 同一套行名(雇主 offer → 雇主条件 → 语言 → 工作经验 → 学历 → 资金;学历、资金两行同日加进 GATE_ROW)。行取门槛表联邦 AIP 那几行
+ *(IRCC AIP 官方页),按本岗 TEER 只留管得着的那一档;只陈列门槛,不判「你够不够」。本岗 TEER 不在 AIP 收的范围不出卡。
+ *
+ * @param x 取词函数、本岗与门槛表。
+ * @returns 门槛卡;不出给 null。
+ */
+export function aipGateCardOf(x: AipGateCardIn): GateCardSpec | null {
+  const teer = x.job.teer
+  if (teer == null || AIP_CHANNEL_TEERS.includes(teer) === false) {
+    return null
+  }
+  const rows: PnpReq[] = []
+  for (const r of x.reqs) {
+    if (r.province === PROV_FED && r.program === PROGRAM_AIP && aipTierHitOf({ stream: r.stream, teer })) {
+      rows.push(r)
+    }
+  }
+  if (rows.length === 0) {
+    return null
+  }
+  const one: AipRowOfIn = { t: x.t, rows }
+  const out: GateRowSpec[] = []
+  for (const row of [aipOfferRowOf(one), aipEmpRowOf(one), aipLangRowOf(one), aipExpRowOf(one), aipEduRowOf(one),
+    aipFundsRowOf(one)]) {
+    if (row != null) {
+      out.push(row)
+    }
+  }
+  return {
+    title: x.t('pnpgate.title'),
+    sub: TEXT_NONE,
+    tags: [],
+    source: sourceLinkOf({ t: x.t, url: aipGateUrlOf(rows) }),
+    rows: out,
+    empty: TEXT_NONE,
+  }
+}
+
+/**
+ * 这一行门槛管不管得着本岗:流名 '' 各档都适用;分档名(teer-0-3 这类)看本岗 TEER 在不在区间(teer-4 只一档)。
+ *
+ * @param x 流名与本岗 TEER。
+ * @returns 管得着 = true。
+ */
+function aipTierHitOf(x: AipTierHitIn): boolean {
+  if (x.stream === TEXT_NONE) {
+    return true
+  }
+  if (x.stream.startsWith(AIP_TIER_PREFIX) === false) {
+    return false
+  }
+  const ends = x.stream.slice(AIP_TIER_PREFIX.length).split(AIP_TIER_SEP).map(Number)
+  const lo = ends[0]
+  const hi = ends[ends.length - 1]
+  if (lo == null || hi == null) {
+    return false
+  }
+  return x.teer >= lo && x.teer <= hi
+}
+
+/**
+ * 「雇主 offer」行:全职(每周最少小时)、全年不分季节、期限(TEER 0–3 写年数,TEER 4 写长期),一项一行。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;一项都没有给 null。
+ */
+function aipOfferRowOf(x: AipRowOfIn): GateRowSpec | null {
+  const lines: string[] = []
+  const full = rowOfFactor({ rows: x.rows, factor: AIP_F.fullTime })
+  if (full != null && full.value != null) {
+    lines.push(x.t('aipgate.fullTime', { n: String(full.value) }))
+  }
+  if (rowOfFactor({ rows: x.rows, factor: AIP_F.nonSeasonal }) != null) {
+    lines.push(x.t('aipgate.nonSeasonal'))
+  }
+  const term = rowOfFactor({ rows: x.rows, factor: AIP_F.duration })
+  if (term != null && term.value != null) {
+    lines.push(x.t('aipgate.duration', { n: String(term.value) }))
+  } else if (term != null) {
+    lines.push(x.t('aipgate.permanent'))
+  }
+  if (lines.length === 0) {
+    return null
+  }
+  return { key: GATE_ROW.offer, label: x.t('pnpgate.k.offer'), lines, notes: [] }
+}
+
+/**
+ * 「雇主条件」行:须是省指定雇主、不能是本人或配偶控股的公司。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;没有给 null。
+ */
+function aipEmpRowOf(x: AipRowOfIn): GateRowSpec | null {
+  const lines: string[] = []
+  if (rowOfFactor({ rows: x.rows, factor: AIP_F.designated }) != null) {
+    lines.push(x.t('aipgate.designated'))
+  }
+  if (rowOfFactor({ rows: x.rows, factor: AIP_F.ownership }) != null) {
+    lines.push(x.t('aipgate.ownership'))
+  }
+  if (lines.length === 0) {
+    return null
+  }
+  return { key: GATE_ROW.emp, label: x.t('pnpgate.k.emp'), lines, notes: [] }
+}
+
+/**
+ * 「语言」行:本岗那一档的 CLB(写法同省提名门槛卡 pnpgate.lang)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;没有给 null。
+ */
+function aipLangRowOf(x: AipRowOfIn): GateRowSpec | null {
+  const r = rowOfFactor({ rows: x.rows, factor: AIP_F.language })
+  if (r == null || r.value == null) {
+    return null
+  }
+  const lines = [x.t('pnpgate.lang', { n: String(r.value) })]
+  return { key: GATE_ROW.lang, label: x.t('pnpgate.k.lang'), lines, notes: [] }
+}
+
+/**
+ * 「工作经验」行:小时数与跨度、同 TEER 或更高、须带薪;大西洋院校毕业免经验写在末行,免的条件(学制、毕业年限、住满月数)
+ * 挂灰字(2026-10-01 Frank「大西洋四省院校毕业可免 是什么意思」:光写「可免」读不懂,条件要写出来)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;没有给 null。
+ */
+function aipExpRowOf(x: AipRowOfIn): GateRowSpec | null {
+  const hours = rowOfFactor({ rows: x.rows, factor: AIP_F.hours })
+  if (hours == null || hours.value == null) {
+    return null
+  }
+  const lines = [x.t('aipgate.hours', { n: hours.value.toLocaleString(NUM_LOCALE) })]
+  const span = rowOfFactor({ rows: x.rows, factor: AIP_F.period })
+  if (span != null && span.value != null) {
+    lines.push(x.t('aipgate.period', { n: String(span.value) }))
+  }
+  if (rowOfFactor({ rows: x.rows, factor: AIP_F.teerMatch }) != null) {
+    lines.push(x.t('aipgate.teerMatch'))
+  }
+  if (rowOfFactor({ rows: x.rows, factor: AIP_F.paid }) != null) {
+    lines.push(x.t('aipgate.paid'))
+  }
+  const notes: string[] = []
+  if (rowOfFactor({ rows: x.rows, factor: AIP_F.exemptGrad }) != null) {
+    lines.push(x.t('aipgate.exemptGrad'))
+    for (const [factor, key] of Object.entries(AIP_GRAD_NOTE)) {
+      const r = rowOfFactor({ rows: x.rows, factor })
+      if (r != null && r.value != null) {
+        notes.push(x.t(key, { n: String(r.value) }))
+      }
+    }
+  }
+  return { key: GATE_ROW.exp, label: x.t('pnpgate.k.exp'), lines, notes }
+}
+
+/**
+ * 「学历」行:本岗那一档的学历门槛(条文无值,按档写一句,词条 aipgate.edu.<档>);海外学历须做 ECA 另起一行。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;没有给 null。
+ */
+function aipEduRowOf(x: AipRowOfIn): GateRowSpec | null {
+  const r = rowOfFactor({ rows: x.rows, factor: AIP_F.education })
+  if (r == null) {
+    return null
+  }
+  const lines = [x.t(AIP_EDU_HEAD + r.stream)]
+  if (rowOfFactor({ rows: x.rows, factor: AIP_F.eca }) != null) {
+    lines.push(x.t('aipgate.eca'))
+  }
+  return { key: GATE_ROW.edu, label: x.t('pnpgate.k.edu'), lines, notes: [] }
+}
+
+/**
+ * 「资金」行:1 人的最低安家资金(按家庭人数各一行,取最小那行 = 1 人);已在加拿大持工签工作的免,另起一行。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;没有给 null。
+ */
+function aipFundsRowOf(x: AipRowOfIn): GateRowSpec | null {
+  let least: number | null = null
+  for (const r of x.rows) {
+    if (r.factor === AIP_F.funds && r.value != null && (least == null || r.value < least)) {
+      least = r.value
+    }
+  }
+  if (least == null) {
+    return null
+  }
+  const lines = [x.t('aipgate.funds', { n: least.toLocaleString(NUM_LOCALE) })]
+  if (rowOfFactor({ rows: x.rows, factor: AIP_F.fundsWaived }) != null) {
+    lines.push(x.t('aipgate.fundsWaived'))
+  }
+  return { key: GATE_ROW.funds, label: x.t('pnpgate.k.funds'), lines, notes: [] }
+}
+
+/**
+ * 卡右上的来源:挑到的行里第一条带网址的(IRCC AIP 官方页)。
+ *
+ * @param rows 挑好的 AIP 门槛行。
+ * @returns 网址;都没有给 ''。
+ */
+function aipGateUrlOf(rows: PnpReq[]): string {
+  for (const r of rows) {
+    if (r.url !== TEXT_NONE) {
+      return r.url
+    }
+  }
+  return TEXT_NONE
 }
 
 /**

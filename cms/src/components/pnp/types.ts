@@ -3761,6 +3761,61 @@ export type AipSectionSpec = {
    * AIP 抽选卡;null = 不出。
    */
   card: DrawCard | null
+
+  /**
+   * AIP 门槛卡(2026-10-01;本岗能走 AIP 才出);null = 不出。
+   */
+  gate: GateCardSpec | null
+}
+
+/**
+ * aipGateCardOf 的入参(2026-10-01 AIP 门槛卡)。
+ */
+export type AipGateCardIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗(读 TEER)。
+   */
+  job: PnpJob
+
+  /**
+   * 门槛表(整表)。
+   */
+  reqs: PnpReq[]
+}
+
+/**
+ * AIP 门槛卡各行构造器的共同入参。
+ */
+export type AipRowOfIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 挑好的 AIP 门槛行(各档都适用的 + 本岗那一档)。
+   */
+  rows: PnpReq[]
+}
+
+/**
+ * aipTierHitOf 的入参。
+ */
+export type AipTierHitIn = {
+  /**
+   * 门槛行的流名('' 或 `teer-0-3` 这类分档名)。
+   */
+  stream: string
+
+  /**
+   * 本岗 TEER。
+   */
+  teer: number
 }
 
 /**

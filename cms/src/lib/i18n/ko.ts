@@ -594,6 +594,17 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpgate.empYears': '{prov}에서 {n}년 이상 운영', 'pnpgate.empRevenue': '연매출 ≥ ${n}',
   'pnpgate.empStaff': '풀타임 직원 ≥ {n}명',
   'pnpgate.endorse': '지정 커뮤니티 추천서', 'pnpgate.licensing': '직종 면허 또는 등록',
+  // 2026-10-01 AIP 요건 카드(PNP 요건 카드와 같은 행 + 학력, 자금)
+  'pnpgate.k.edu': '학력', 'pnpgate.k.funds': '자금',
+  'aipgate.fullTime': '정규직, 주 {n}시간 이상', 'aipgate.nonSeasonal': '연중 상시 고용',
+  'aipgate.duration': '영주권 취득 후 최소 {n}년', 'aipgate.permanent': '기간 정함 없는 정규 고용',
+  'aipgate.designated': '주정부 AIP 지정 고용주', 'aipgate.ownership': '본인 또는 배우자가 최대주주인 회사 불가',
+  'aipgate.hours': '최근 5년 내 {n}시간', 'aipgate.period': '최소 {n}년에 걸쳐', 'aipgate.teerMatch': '같은 TEER 이상',
+  'aipgate.paid': '유급 근무만, 자영업 제외', 'aipgate.exemptGrad': '대서양 4개 주 학교 졸업자는 면제',
+  'aipgate.gradYears': '최소 {n}년 과정', 'aipgate.gradRecency': '영주권 신청 시 졸업 {n}년 미만',
+  'aipgate.gradResidency': '졸업 전 2년 중 대서양 주에서 {n}개월 거주',
+  'aipgate.edu.teer-0-1': '캐나다 1년제 이상 학력 또는 해외 동등 학력', 'aipgate.edu.teer-2-4': '캐나다 고졸 이상 또는 해외 동등 학력',
+  'aipgate.eca': '해외 학력은 ECA 필요', 'aipgate.funds': '1인 최소 ${n}', 'aipgate.fundsWaived': '캐나다에서 워크퍼밋으로 근무 중이면 면제',
   // 2026-09-30 魁省门槛弹框(Frank 看过效果图第三版「可以」,法语主写 TEF「可以」,格子勾「PSTQ + 通道名」;设计 docs/design/魁省门槛弹框-20260929.md)
   'pnp.qc.kicker': '퀘벡 숙련 노동자 선발(PSTQ) 및 PEQ',
   'pnp.qc.cell.pstq-1': 'PSTQ 고숙련',

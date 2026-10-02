@@ -750,6 +750,146 @@ export const GATE_ROW = {
    * 其他。
    */
   other: 'other',
+
+  /**
+   * 学历(2026-10-01 AIP 门槛卡加的行;Frank「格式需要 和 pnp 的保持一致吗」「可以,做吧」:同一套行名,排工作经验后)。
+   */
+  edu: 'edu',
+
+  /**
+   * 资金(同上,排学历后)。
+   */
+  funds: 'funds',
+}
+
+/**
+ * AIP 门槛卡读的门槛因素(门槛表 factor 原值;2026-10-01 AIP 门槛卡,行来自 IRCC AIP 官方页,数据层 FED / AIP 那 36 行)。
+ */
+export const AIP_F = {
+  /**
+   * 全职(每周最少小时数)。
+   */
+  fullTime: 'offerFullTime',
+
+  /**
+   * 全年不分季节。
+   */
+  nonSeasonal: 'offerNonSeasonal',
+
+  /**
+   * offer 期限(TEER 0–3 有年数;TEER 4 是长期,无值)。
+   */
+  duration: 'offerDuration',
+
+  /**
+   * 须是省指定雇主。
+   */
+  designated: 'offerDesignatedEmployer',
+
+  /**
+   * 不能是本人或配偶控股的公司。
+   */
+  ownership: 'offerOwnershipExclusion',
+
+  /**
+   * 语言(CLB 档,按 TEER 分档)。
+   */
+  language: 'language',
+
+  /**
+   * 工作经验小时数。
+   */
+  hours: 'workHours',
+
+  /**
+   * 工作经验至少跨几年。
+   */
+  period: 'workPeriodMin',
+
+  /**
+   * 经验须同 TEER 或更高。
+   */
+  teerMatch: 'workTeerMatch',
+
+  /**
+   * 经验须带薪。
+   */
+  paid: 'workPaid',
+
+  /**
+   * 大西洋院校毕业免经验。
+   */
+  exemptGrad: 'workExemptGrad',
+
+  /**
+   * 免经验的学历学制最少年数。
+   */
+  gradYears: 'workExemptGradCredentialYears',
+
+  /**
+   * 免经验的学历毕业不满几年。
+   */
+  gradRecency: 'workExemptGradRecency',
+
+  /**
+   * 免经验要在大西洋省住满几个月。
+   */
+  gradResidency: 'workExemptGradResidencyMonths',
+
+  /**
+   * 学历(按 TEER 分档,条文无值)。
+   */
+  education: 'education',
+
+  /**
+   * 海外学历须做 ECA。
+   */
+  eca: 'educationEcaRequired',
+
+  /**
+   * 安家资金(按家庭人数各一行;最小那行就是 1 人)。
+   */
+  funds: 'fundsMinimum',
+
+  /**
+   * 已在加拿大持工签工作的免资金证明。
+   */
+  fundsWaived: 'fundsWaivedIfWorking',
+}
+
+/**
+ * 门槛表里 AIP 按 TEER 分档的流名前缀(`teer-0-3`、`teer-4`;'' = 各档都适用)。
+ */
+export const AIP_TIER_PREFIX = 'teer-'
+
+/**
+ * AIP 分档流名里两个 TEER 之间的分隔。
+ */
+export const AIP_TIER_SEP = '-'
+
+/**
+ * AIP 学历行按档写一句的词条前缀(aipgate.edu.teer-0-1 / aipgate.edu.teer-2-4)。
+ */
+export const AIP_EDU_HEAD = 'aipgate.edu.'
+
+/**
+ * 大西洋院校毕业免经验的三个条件:门槛因素 → 灰字词条(2026-10-01 Frank「大西洋四省院校毕业可免 是什么意思」;按键序出)。
+ */
+export const AIP_GRAD_NOTE = {
+  /**
+   * 学制至少几年。
+   */
+  workExemptGradCredentialYears: 'aipgate.gradYears',
+
+  /**
+   * 申请 PR 时毕业不满几年。
+   */
+  workExemptGradRecency: 'aipgate.gradRecency',
+
+  /**
+   * 毕业前在大西洋省住满几个月。
+   */
+  workExemptGradResidencyMonths: 'aipgate.gradResidency',
 }
 
 /**

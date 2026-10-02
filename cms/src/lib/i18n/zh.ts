@@ -649,6 +649,18 @@ export const jobsZh = {
   'pnpgate.eeProfile': '联邦 EE 档案', 'pnpgate.eeProgram': '符合 CEC、FSW 或 FST', 'pnpgate.crs': 'CRS ≥ {n}',
   'pnpgate.empYears': '在本省经营满 {n} 年', 'pnpgate.empRevenue': '年收入 ≥ ${n}', 'pnpgate.empStaff': '全职员工 ≥ {n} 人',
   'pnpgate.endorse': '指定社区推荐信', 'pnpgate.licensing': '职业所需执照或注册',
+  // 2026-10-01 Frank「AIP 也需要一个 门槛卡片吧」「格式需要 和 pnp 的保持一致吗」「可以,做吧」:AIP 门槛卡(行名同省提名门槛卡,多学历、资金两行);
+  // 「近 5 年」「毕业前 2 年」两个年数官方页只在原句里,没拆成数,照原句写死
+  'pnpgate.k.edu': '学历', 'pnpgate.k.funds': '资金',
+  'aipgate.fullTime': '全职,每周至少 {n} 小时', 'aipgate.nonSeasonal': '全年不分季节',
+  'aipgate.duration': '成为永久居民后至少 {n} 年', 'aipgate.permanent': '长期,无结束日期',
+  'aipgate.designated': '本省 AIP 指定雇主', 'aipgate.ownership': '不能是你或配偶控股的公司',
+  'aipgate.hours': '近 5 年内 {n} 小时', 'aipgate.period': '至少跨 {n} 年', 'aipgate.teerMatch': '同 TEER 或更高',
+  'aipgate.paid': '须是带薪工作,自雇不算', 'aipgate.exemptGrad': '大西洋四省院校毕业的免经验',
+  'aipgate.gradYears': '学制至少 {n} 年', 'aipgate.gradRecency': '申请 PR 时毕业不满 {n} 年',
+  'aipgate.gradResidency': '毕业前 2 年里在大西洋省住满 {n} 个月',
+  'aipgate.edu.teer-0-1': '加拿大一年制大专及以上,或海外同等学历', 'aipgate.edu.teer-2-4': '加拿大高中及以上,或海外同等学历',
+  'aipgate.eca': '海外学历须做 ECA', 'aipgate.funds': '1 人至少 ${n}', 'aipgate.fundsWaived': '已在加拿大持工签工作的免',
   // 2026-09-30 魁省门槛弹框(Frank 看过效果图第三版「可以」,法语主写 TEF「可以」,格子勾「PSTQ + 通道名」;设计 docs/design/魁省门槛弹框-20260929.md)
   'pnp.qc.kicker': '魁北克省技术工人甄选(PSTQ)及 PEQ',
   'pnp.qc.cell.pstq-1': 'PSTQ 高技能',

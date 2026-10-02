@@ -30,7 +30,7 @@ import { describe, expect, it } from 'vitest'
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
 import {
   allGroupsLabelOf, channelListOf, channelsOf, drawCardOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
-  aipCardOf, aipChannelsOf, aipSectionOf, drawCtxOf, cardYearOf, pnpKickerOf, preReformCardOf,
+  aipCardOf, aipChannelsOf, aipGateCardOf, aipSectionOf, drawCtxOf, cardYearOf, pnpKickerOf, preReformCardOf,
   quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf, provGateCardsOf,
@@ -416,7 +416,38 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(sec(on).channels.map((c) => c.key)).toEqual(['aip'])
     expect(sec(job({ province: 'NB', teer: 2, aip: false })).channels).toEqual([])
     expect(sec(job({ province: 'NB', teer: 2, aip: false })).card).toEqual(sec(on).card)
-    expect(sec(job({ province: 'AB', teer: 2, aip: true }))).toEqual({ channels: [], card: null })
+    expect(sec(job({ province: 'AB', teer: 2, aip: true }))).toEqual({ channels: [], card: null, gate: null })
+  })
+
+  // 2026-10-01 Frank「AIP 也需要一个 门槛卡片吧」「可以,做吧」:与省提名门槛卡同形同行名,按本岗 TEER 挑档;金标照 IRCC 原句手推
+  it('AIP 门槛卡:TEER 2 / TEER 4 两档金标(data/mart 真数据);TEER 5 不出;能走 AIP 才挂进 AIP 弹框', () => {
+    const reqs = mart<PnpReq>('pnp_requirements')
+    const rowsOf = (teer: number) => aipGateCardOf({ t: zh, job: job({ province: 'NB', teer }), reqs })?.rows
+      .map((r) => [r.label, r.lines, r.notes])
+    expect(rowsOf(2)).toEqual([
+      ['雇主 offer', ['全职,每周至少 30 小时', '全年不分季节', '成为永久居民后至少 1 年'], []],
+      ['雇主条件', ['本省 AIP 指定雇主', '不能是你或配偶控股的公司'], []],
+      ['语言', ['英语或法语每项 CLB 5'], []],
+      ['工作经验', ['近 5 年内 1,560 小时', '至少跨 1 年', '同 TEER 或更高', '须是带薪工作,自雇不算', '大西洋四省院校毕业的免经验'],
+        ['学制至少 2 年', '申请 PR 时毕业不满 2 年', '毕业前 2 年里在大西洋省住满 16 个月']],
+      ['学历', ['加拿大高中及以上,或海外同等学历', '海外学历须做 ECA'], []],
+      ['资金', ['1 人至少 $3,815', '已在加拿大持工签工作的免'], []],
+    ])
+    const four = rowsOf(4)
+    expect(four?.[0]?.[1]).toContain('长期,无结束日期')
+    expect(four?.[2]?.[1]).toEqual(['英语或法语每项 CLB 4'])
+    expect(rowsOf(1)?.[4]?.[1]?.[0]).toBe('加拿大一年制大专及以上,或海外同等学历')
+    expect(aipGateCardOf({ t: zh, job: job({ province: 'NB', teer: 5 }), reqs })).toBeNull()
+    // 三语都有词条(漏配 = 露出键名)
+    for (const t of [en, ko]) {
+      for (const r of aipGateCardOf({ t, job: job({ province: 'NB', teer: 2 }), reqs })?.rows ?? []) {
+        for (const s of [r.label, ...r.lines, ...r.notes]) expect(s.startsWith('aipgate.') || s.startsWith('pnpgate.'), s).toBe(false)
+      }
+    }
+    const sec = (aip: boolean) => aipSectionOf({ t: zh, tEn: en, lang: 'zh', showZh: true, job: job({ province: 'NB', teer: 2, aip }),
+      occ: [], draws: [], ops: [], reqs, pathways: PATHWAYS })
+    expect(sec(true).gate?.rows.length).toBe(6)
+    expect(sec(false).gate).toBeNull()
   })
 
   it('NS 按月选取人数:日期到月、写「入选」、人数没公布的月不列;不进按轮分组,自成按月一组(计数写「个月」)', () => {
