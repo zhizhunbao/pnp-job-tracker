@@ -98,6 +98,8 @@ from company.constants import (
     URL_DEFAULT_SCHEME, URL_DOMAIN_RE, URL_ROOT_TPL, WD_API_URL, WD_LANGUAGES, WD_PROPS,
     WD_SEARCH_LIMIT, WD_SLEEP_S, WD_TIMEOUT_S, WD_UA, WIKI_CHECKED_MARK, WIKI_SPACE,
     WIKI_UNDERSCORE, WIKI_URL_PREFIX, WS_FOLD_RE, WWW_PREFIX,
+    CURATED_BRIEF_CORE, CURATED_BRIEF_LINE_RE, CURATED_ERR_BRIEF_TPL, CURATED_NOT_STATED, CURATED_WHY_BAD_LINE_TPL,
+    CURATED_WHY_BAD_URL_TPL, CURATED_WHY_NO_CORE_TPL, CURATED_WHY_NO_QUOTE_TPL, CURATED_WHY_NO_SOURCE, CURATED_WHY_NO_TEXT,
     CURATED_ERR_EMPTY_TPL, CURATED_ERR_HQ_TPL, CURATED_ERR_URL_TPL, CURATED_URL_PREFIXES, ENV_PLACES_KEY, ENV_PLACES_SLUGS, PLACES_SLUGS_SEP, PRINT_PLACES_PICKED_TPL, PT_OFFSETS_H, HDR_API_KEY, HDR_FIELD_MASK, IN_PLACES_COMPANIES, IN_PLACES_JOBS, NOTE_NO_KEY,
     OUT_PLACES, PLACES_LANG, PLACES_LIMIT, PLACES_PAGE_SIZE,
     PLACES_QUERY_TPL, PLACES_REFRESH_DAYS, PLACES_REGION, PLACES_SLEEP_S, PLACES_TIMEOUT_S,
@@ -1197,7 +1199,8 @@ def read_curated() -> dict[str, CuratedRecord]:
 
 def write_curated(x: CuratedWriteIn) -> None:
     """人工核定表唯一写门(2026-10-01;本地 Opus 会话核实后调用):过举证闸再写,盖核定时刻。
-    闸:官网与总部至少核定一样;官网要完整网址;核定总部必须带原句与出处页网址(「官方不公布」同款举证令)。不合格抛错,不写。"""
+    闸:官网与总部至少核定一样;官网要完整网址;核定总部必须带原句与出处页网址(「官方不公布」同款举证令)。不合格抛错,不写。
+    2026-10-01 Frank「简介也要核对啊」:简介一并核定、必填,过 curated_brief_flaw_of 的举证闸。"""
     r = x.rec
     if r.website == "" and r.hq_city == "":
         raise ValueError(CURATED_ERR_EMPTY_TPL.format(slug=x.slug))
@@ -1205,6 +1208,9 @@ def write_curated(x: CuratedWriteIn) -> None:
         raise ValueError(CURATED_ERR_URL_TPL.format(slug=x.slug, url=r.website))
     if r.hq_city != "" and (r.hq_quote == "" or not r.hq_source.startswith(CURATED_URL_PREFIXES)):
         raise ValueError(CURATED_ERR_HQ_TPL.format(slug=x.slug))
+    why = curated_brief_flaw_of(r)
+    if why != "":
+        raise ValueError(CURATED_ERR_BRIEF_TPL.format(slug=x.slug, why=why))
     table = read_curated()
     r.curated_at = now_iso()
     table[x.slug] = r
@@ -1212,6 +1218,30 @@ def write_curated(x: CuratedWriteIn) -> None:
     for sl, rec in table.items():
         out[sl] = rec.model_dump()
     paths.write_json(paths.WriteJsonIn(path=OUT_CURATED, payload=out, indent=2))
+
+
+def curated_brief_flaw_of(r: CuratedRecord) -> str:
+    """核定简介的举证闸(2026-10-01 Frank「简介也要核对啊」):简介必填,四个核心节必出,中 / 韩译文必填,
+    出处页至少一条且是完整网址,写了内容的每一节都要有出处原句。返回毛病的说法;合格给空串。"""
+    if r.brief == "" or r.brief_zh == "" or r.brief_ko == "":
+        return CURATED_WHY_NO_TEXT
+    if len(r.brief_sources) == 0:
+        return CURATED_WHY_NO_SOURCE
+    for url in r.brief_sources:
+        if not url.startswith(CURATED_URL_PREFIXES):
+            return CURATED_WHY_BAD_URL_TPL.format(url=url)
+    marks: list[str] = []
+    for line in r.brief.splitlines():
+        m = CURATED_BRIEF_LINE_RE.match(line.strip())
+        if m is None:
+            return CURATED_WHY_BAD_LINE_TPL.format(line=line)
+        marks.append(m.group(1))
+        if m.group(2).strip() != CURATED_NOT_STATED and r.brief_quotes.get(m.group(1), "") == "":
+            return CURATED_WHY_NO_QUOTE_TPL.format(mark=m.group(1))
+    for core in CURATED_BRIEF_CORE:
+        if core not in marks:
+            return CURATED_WHY_NO_CORE_TPL.format(mark=core)
+    return ""
 
 
 def write_enrich_cache(cache: dict[str, EnrichRecord]) -> int:

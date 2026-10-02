@@ -8,8 +8,22 @@
     "hq_quote": "Corporate Office 199 Four Valley Drive. Vaughan, ON L4K 0B8",
     "hq_source": "https://www.recipeunlimited.com/en/contact.html",
     "hq_parent": true,
+    "brief": "[WHAT] One of Canada's leading fast-food restaurant chains, serving flame-grilled burgers for dine-in, takeout and delivery across the country.\n[BASE] Vaughan, ON (parent company Recipe Unlimited Corporation)\n[SIZE] (not stated)\n[FOUNDED] 1959\n[NOTE] Harvey's is a brand of Recipe Unlimited Corporation.",
+    "brief_zh": "[WHAT] 加拿大领先的快餐连锁之一，主打火焰烤制汉堡，全国提供堂食、外带和外送。\n[BASE] 安大略省旺市（母公司 Recipe Unlimited Corporation）\n[SIZE] (not stated)\n[FOUNDED] 1959 年\n[NOTE] Harvey's 是 Recipe Unlimited Corporation 旗下品牌。",
+    "brief_ko": "[WHAT] 캐나다를 대표하는 패스트푸드 체인 중 하나로, 직화 버거를 매장 식사·포장·배달로 전국에서 제공합니다.\n[BASE] 온타리오주 본(모회사 Recipe Unlimited Corporation)\n[SIZE] (not stated)\n[FOUNDED] 1959년\n[NOTE] Harvey's는 Recipe Unlimited Corporation 소속 브랜드입니다.",
+    "brief_sources": [
+      "https://www.harveys.ca/",
+      "https://www.harveys.ca/en/locations/on/nepean/1650-merivale-rd",
+      "https://www.recipeunlimited.com/en/contact.html"
+    ],
+    "brief_quotes": {
+      "WHAT": "Harvey’s is one of Canada’s leading fast-food restaurants, proudly serving flame-grilled burgers topped just the way you like them for over 65 years.",
+      "BASE": "Corporate Office 199 Four Valley Drive. Vaughan, ON L4K 0B8",
+      "FOUNDED": "Harvey's has been a proud Canadian brand since its founding in 1959.",
+      "NOTE": "Registered Trademark of Recipe Unlimited Corporation"
+    },
     "note": "品牌级雇主(Job Bank 名 HARVEY'S,横跨多城);官网取品牌首页,不用 Places 给的 Nepean 门店页;总部取母公司 Recipe Unlimited Corporation(harveys.ca 页面 parentOrganization 写明)。",
-    "curated_at": "2026-10-02T01:44:04.264249Z"
+    "curated_at": "2026-10-02T03:49:21.746466Z"
   },
   "cox-palmer": {
     "name": "Cox & Palmer",
@@ -20,7 +34,21 @@
     "hq_quote": "",
     "hq_source": "",
     "hq_parent": false,
+    "brief": "[WHAT] One of the largest law firms in Atlantic Canada, advising clients on business and personal legal matters.\n[BASE] Atlantic Canada\n[SIZE] 210 lawyers in ten offices\n[FOUNDED] (not stated)\n[OFFICES] Fredericton, NB; Moncton, NB; Saint John, NB; St. John's, NL; Halifax, NS; Alberton, PE; Charlottetown, PE; Montague, PE; Morell, PE; Summerside, PE",
+    "brief_zh": "[WHAT] 加拿大大西洋地区规模最大的律师事务所之一，为客户处理商业和个人法律事务。\n[BASE] 加拿大大西洋地区\n[SIZE] 210 名律师，10 处办公室\n[FOUNDED] (not stated)\n[OFFICES] Fredericton, NB；Moncton, NB；Saint John, NB；St. John's, NL；Halifax, NS；Alberton, PE；Charlottetown, PE；Montague, PE；Morell, PE；Summerside, PE",
+    "brief_ko": "[WHAT] 캐나다 대서양 지역 최대 규모의 로펌 중 하나로, 기업 및 개인 법률 문제를 다룹니다.\n[BASE] 캐나다 대서양 지역\n[SIZE] 변호사 210명, 사무소 10곳\n[FOUNDED] (not stated)\n[OFFICES] Fredericton, NB; Moncton, NB; Saint John, NB; St. John's, NL; Halifax, NS; Alberton, PE; Charlottetown, PE; Montague, PE; Morell, PE; Summerside, PE",
+    "brief_sources": [
+      "https://coxandpalmerlaw.com/",
+      "https://coxandpalmerlaw.com/about-cox-palmer/",
+      "https://coxandpalmerlaw.com/contact/"
+    ],
+    "brief_quotes": {
+      "WHAT": "As one of the largest law firms in Atlantic Canada, we are 210 lawyers strong",
+      "BASE": "We are where you need us, with offices in every province in Atlantic Canada.",
+      "SIZE": "With 210 lawyers and ten offices across Atlantic Canada",
+      "OFFICES": "Moncton, NB Blue Cross Centre Suite 500, 644 Main Street Moncton, NB E1C 1E2"
+    },
     "note": "律所(Saint John / Halifax 等大西洋十处办公室);官网不标总部(「ten offices across Atlantic Canada」),总部不核定;Bing 曾错配 cox.com(Cox Communications)。",
-    "curated_at": "2026-10-02T03:00:10.988521Z"
+    "curated_at": "2026-10-02T03:49:21.724402Z"
   }
 }

@@ -1514,6 +1514,12 @@ IN_CURATED = paths.PROCESSED / "company_curated.json"
 FOUND_CURATED = "curated"
 """官网来路:人工核定(websiteSource;cms 点开探索见它就不再探索这家)。"""
 
+K_CUR_BRIEF_SOURCES = "brief_sources"
+"""人工核定表:简介出处页网址表(2026-10-01 Frank「简介也要核对啊」;英 / 中 / 韩三格与简介记录同键 K_BRIEF*)。"""
+
+K_CUR_AT = "curated_at"
+"""人工核定表:核定时刻(核定简介的产出时刻 aiFetched 用它)。"""
+
 IN_BRIEF = paths.PROCESSED / "company_brief.json"
 """官网正文 → qwen 五节简介(company 域 brief 步产,2026-09-05):进 companies 的 aiBrief 四列。
 mart 有就覆盖库里懒检索版(官网原文比网页搜索可靠);mart 没有的公司列缺键,seed 侧 COALESCE 保旧值。"""

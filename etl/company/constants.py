@@ -718,7 +718,8 @@ IN_ENRICH_ATS = paths.PROCESSED_ATS
 OUT_CURATED = paths.PROCESSED / "company_curated.json"
 """人工核定表(slug → CuratedRecord;2026-10-01 Frank「opus 修的优先级最高」「如果 opus 定了,这个没问题了。就不要再重新探索了」):
 本地 Opus 会话核实过、带出处的官网 / 总部。只经 write_curated 写;mart 汇装时最后生效(压过官网整理 / 维基 / 搜索 / Places),
-本域各条自动排队(places / sites 搜官网 / about / 维基总部)都跳过表里的公司。"""
+本域各条自动排队(places / sites 搜官网 / about / 维基总部)都跳过表里的公司。
+同日 Frank「简介也要核对啊」:简介(连中 / 韩译文、出处、逐节原句)一并核定,mart 同样最后生效。"""
 
 OUT_ENRICH_CACHE = paths.PROCESSED / "company_enrich.json"
 """段5 输出:增量缓存(slug → EnrichRecord);09 汇装直读合并进 companies 行。"""
@@ -998,6 +999,36 @@ CURATED_ERR_URL_TPL = "{slug}: 官网不是完整网址:{url}"
 
 CURATED_ERR_HQ_TPL = "{slug}: 核定总部要带原句与出处页网址"
 """write_curated 拒写:总部缺举证。"""
+
+CURATED_BRIEF_CORE = ("WHAT", "BASE", "SIZE", "FOUNDED")
+"""核定简介必出的四节(2026-10-01 Frank「简介也要核对啊」;cms 认缓存简介靠 [FOUNDED] 标记,缺了当过期重查)。"""
+
+CURATED_BRIEF_LINE_RE = re.compile(r"^\[([A-Z]+)\] (.+)$")
+"""核定简介的一行:「[节名] 内容」。"""
+
+CURATED_NOT_STATED = "(not stated)"
+"""节内容「没写」的固定写法(与五节简介提示词同一个词)。"""
+
+CURATED_ERR_BRIEF_TPL = "{slug}: 核定简介不合格:{why}"
+"""write_curated 拒写:简介缺节 / 缺译文 / 缺出处 / 缺逐节原句。"""
+
+CURATED_WHY_NO_TEXT = "简介与中 / 韩译文都要填"
+"""核定简介毛病:英 / 中 / 韩有一格空着。"""
+
+CURATED_WHY_NO_SOURCE = "缺出处页"
+"""核定简介毛病:一条出处页都没有。"""
+
+CURATED_WHY_BAD_URL_TPL = "出处不是完整网址:{url}"
+"""核定简介毛病:出处不是 http(s) 开头。"""
+
+CURATED_WHY_BAD_LINE_TPL = "这一行不是「[节名] 内容」:{line}"
+"""核定简介毛病:有一行不合节格式。"""
+
+CURATED_WHY_NO_QUOTE_TPL = "[{mark}] 缺出处原句"
+"""核定简介毛病:写了内容的节没有原句。"""
+
+CURATED_WHY_NO_CORE_TPL = "缺 [{mark}] 节"
+"""核定简介毛病:四个核心节缺了一节。"""
 
 ENV_PLACES_SLUGS = "PLACES_SLUGS"
 """点名查的公司 slug 清单(逗号分隔)的环境变量名;设了就只查这几家(仍受当月免费额封顶),空 = 按队列查。

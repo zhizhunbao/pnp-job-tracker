@@ -379,6 +379,22 @@ class CuratedRecord(BaseModel):
     hq_parent: bool = False
     """核定的总部是母公司的(品牌级雇主取母公司总部;与维基 hq_parent 同义,2026-09-22 Frank「显,但注明是母公司」)。"""
 
+    brief: str = ""
+    """核定的英文简介(五节标记一行一节,[WHAT][BASE][SIZE][FOUNDED] 四节必出,没有的写 (not stated);
+    2026-10-01 Frank「简介也要核对啊」:核定 = 官网 / 总部 / 简介整套,简介必填)。"""
+
+    brief_zh: str = ""
+    """简介中文(节标记与 (not stated) 原样;灌库 COALESCE 列清不掉旧译文,只能拿新译文盖,所以必填)。"""
+
+    brief_ko: str = ""
+    """简介韩文(同中文)。"""
+
+    brief_sources: list[str] = Field(default_factory=list)
+    """简介出处页网址(完整网址,至少一条)。"""
+
+    brief_quotes: dict[str, str] = Field(default_factory=dict)
+    """逐节举证:节名(不带方括号,如 WHAT)→ 出处页原句;写了内容的节(不是 (not stated) 的)每节一句。"""
+
     note: str = ""
     """核定说明(为什么这么定,如「品牌级雇主,总部取母公司」)。"""
 

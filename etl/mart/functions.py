@@ -140,7 +140,7 @@ from mart.constants import (
     SAL_TXT_BACK, SAL_TXT_HR_MAX, SAL_TXT_HR_MIN, SAL_TXT_HR_RE, SAL_TXT_HR_TAIL, SAL_TXT_K_MULT, SAL_TXT_K_SUFFIX,
     SAL_TXT_K_TPL, SAL_TXT_NEAR_RE, SAL_TXT_NUM_RE, SAL_TXT_TRIM, SAL_TXT_UNIT_RE, SAL_TXT_UPTO_RE, SAL_TXT_YR_MIN,
     SAL_TXT_YR_TAIL, PRINT_SAL_MINED_TPL,
-    K_AI_SOURCES, K_BRIEF, K_BRIEF_KO, K_BRIEF_ZH, K_SOURCES, PLACES_HIT,
+    K_AI_SOURCES, K_BRIEF, K_BRIEF_KO, K_BRIEF_ZH, K_CUR_AT, K_CUR_BRIEF_SOURCES, K_SOURCES, PLACES_HIT,
     K_WIKI, K_YEAR, K_CL_ITEMS, K_CL_URL, K_ZH, LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY,
     LANG_POINTS_TOTAL, LANG_POINTS_WORD, LANG_TOTAL_WORD, LMIA_HEADER_WORD, LMIA_HIT_TPL,
     LMIA_MIN_COLS, LMIA_SOURCE_NOTE, LMIA_STREAM_SEP, LMIA_STREAM_TOP, LMIA_STREAM_TPL,
@@ -1868,7 +1868,8 @@ def fill_hq(x: CompanyExtraIn) -> None:
 
 def fill_curated(x: CompanyExtraIn) -> None:
     """人工核定的官网 / 总部最后落、盖掉前面所有来路(2026-10-01 Frank「opus 修的优先级最高」);核定表里空着的格不动。
-    官网来路记 curated(cms 点开探索见它就不再探索);核定了总部的整组盖(含母公司标记归位),省码照 fill_hq 盖 region。"""
+    官网来路记 curated(cms 点开探索见它就不再探索);核定了总部的整组盖(含母公司标记归位),省码照 fill_hq 盖 region。
+    核定了简介的(2026-10-01 Frank「简介也要核对啊」)英 / 中 / 韩三格连出处、产出时刻整组盖 —— 灌库那几列 COALESCE 清不掉旧译文,只能拿新译文盖。"""
     cur = x.ctx.curated.get(x.slug)
     if cur is None:
         return
@@ -1876,6 +1877,13 @@ def fill_curated(x: CompanyExtraIn) -> None:
     if site is not None:
         x.extra[K_WEBSITE] = site
         x.extra[K_WEBSITE_SOURCE] = FOUND_CURATED
+    brief = (cur.get(K_BRIEF) or "").strip()
+    if brief != "":
+        x.extra[K_AI_BRIEF] = brief
+        x.extra[K_AI_BRIEF_ZH] = cur.get(K_BRIEF_ZH) or ""
+        x.extra[K_AI_BRIEF_KO] = cur.get(K_BRIEF_KO) or ""
+        x.extra[K_AI_SOURCES] = json.dumps(cur.get(K_CUR_BRIEF_SOURCES) or [], ensure_ascii=False)
+        x.extra[K_AI_FETCHED] = cur.get(K_CUR_AT)
     city = (cur.get(K_SRC_HQ_CITY) or "").strip()
     if city == "":
         return
