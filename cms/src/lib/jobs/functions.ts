@@ -77,7 +77,7 @@ import type {
   MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, NameOption, NewsSlim, NocCat, NocCountsIn, NocCountsOut,
   NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn, OccDim, NocSearchOut, OccCompetitionIn, OccCompetitionOut,
   OccCompetitionRows, OccDiffDbRow, OccDiffFact, OccDiffFacts, OccOpen, OrderByIn, Pathway, PathwayDbRow, MaybeList,
-  AipEmpDbRow, AipEmpFact, AipEmpOut, AipEmpTotalDbRow, LoadAipEmpIn,
+  AipEmpDbRow, AipEmpFact, AipEmpOut, AipEmpTotalDbRow, AipRestOut, LoadAipEmpIn, LoadAipRestIn,
   LoadQcChannelsIn, QcCell, QcCellDbRow, QcChannel, QcChannelDbRow, QcChannelList, QcChannelsDbRow, QcChannelsOut,
   PgFailure, PnpDraw, PnpOcc, List,
   PnpOccDim, PnpOccs, PnpOpsOut, PnpOpsRow, PnpReqRow, PnpReqsOut, ProfileJsonCell, ProfileJsonOrNull, ProofOut,
@@ -3178,6 +3178,17 @@ export async function loadAipEmployers(x: LoadAipEmpIn): AipEmpOut {
     brandN = first.brandN
   }
   return { total, brandN, rows }
+}
+
+/**
+ * AIP 弹框指定雇主卡「展开其他 N 家」的一页现查(2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」):本省其余各家一页 20 家(SQL.AIP_EMP_REST)。
+ * 查挂 → 空列(卡上展开钮照旧,点了没新行)。
+ *
+ * @param x 连接、省码、本岗公司归一名与跳过家数。
+ * @returns 这一页的行。
+ */
+export async function loadAipEmployersRest(x: LoadAipRestIn): AipRestOut {
+  return queryRowsOrEmpty({ db: x.db, sql: SQL.AIP_EMP_REST, params: [x.province, x.key, x.offset], map: toAipEmp })
 }
 
 /**

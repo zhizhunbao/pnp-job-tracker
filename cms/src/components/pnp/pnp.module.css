@@ -2533,3 +2533,78 @@
    */
   color: var(--text2);
 }
+
+/*
+ * 指定雇主表的一行(招牌 / 门店 / 法人三格;2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」)。叠在 .row 上:把 flex 换成三列网格,表头与各行同一套列宽。
+ */
+.row.empRow {
+  /*
+   * 三列网格。
+   */
+  display: grid;
+
+  /*
+   * 招牌最宽、门店最窄、法人居中(门店列放到放得下「Greenwood」);minmax(0, …) 让长名字在格内折行而不撑破卡片。
+   */
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr) minmax(0, 1.1fr);
+
+  /*
+   * 格间距。
+   */
+  gap: 8px;
+
+  /*
+   * 只在词间折行;一个词整格都放不下时才在词中断(375 实拍「Greenwood」被 anywhere 拆成「Greenwoo / d」)。
+   */
+  overflow-wrap: break-word;
+}
+
+/*
+ * 指定雇主表的表头(三格同 .row.empRow 的列宽)。
+ */
+.empHead {
+  /*
+   * 三列网格。
+   */
+  display: grid;
+
+  /*
+   * 同表身列宽。
+   */
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr) minmax(0, 1.1fr);
+
+  /*
+   * 格间距。
+   */
+  gap: 8px;
+
+  /*
+   * 与表身同一套左右内边距。
+   */
+  padding: 4px 10px;
+
+  /*
+   * 表头字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 与表身分隔。
+   */
+  border-bottom: 1px solid var(--border);
+}
+
+/*
+ * 指定雇主表的法人格(灰字)。
+ */
+.empLegal {
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+}

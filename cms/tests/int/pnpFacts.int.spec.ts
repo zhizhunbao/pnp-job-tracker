@@ -34,7 +34,7 @@ import {
   quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCardOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf, provGateCardsOf,
-  aipEmpDataOf, aipEmpHrefOf, aipEmpSpecsOf, aipEmpUrlOf, normName,
+  aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, aipMoreLabelOf, aipRestUrlOf, aipShownRowsOf, normName,
 } from '@/components/pnp/functions'
 import type {
   GateCardSpec, PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpOps, PnpPathway, PnpReq, PnpStream,
@@ -1481,18 +1481,20 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
 // 2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」):浏览器不再拿四省整表逐家
 // 对名字 —— 比对挪到数据层(mart with_designated_split 的 matchKeys,与 AIP 打标同一把尺子),弹框按省 + normName(本岗公司) 现取本岗雇主
 // 与同招牌的几家。这里锁三样:展示行的洗法、接口与链接地址、前端 normName 与数据层比对键在真数据上对得上(两边归一口径不岔)。
+// 同日 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」:回到三列表,卡底跳转换成原地展开 / 收起,一次 20 家。
 describe('AIP 指定雇主清单卡', () => {
+  const zh = makeT('zh')
   const row = (trade: string, legal: string, hit = false, store = '') => ({ trade, store, legal, hit })
 
-  it('展示行:招牌主文案,门店与法人灰字;法人与招牌同字不重复写;本岗那行的高亮照接口给', () => {
+  it('展示行:招牌 / 门店 / 法人三格;门店认不出写长横;本岗那行的高亮照接口给', () => {
     const specs = aipEmpSpecsOf([
       row('Mary Browns Chicken', 'DC Ventures Inc', true),
       row('Mary Browns', 'Mary Browns'),
       row('Mary Browns', '4207591 Nova Scotia Ltd', false, 'New Minas'),
     ])
     expect(specs.map((r) => [r.trade, r.store, r.legal, r.hit])).toEqual([
-      ['Mary Browns Chicken', '', 'DC Ventures Inc', true],
-      ['Mary Browns', '', '', false],
+      ['Mary Browns Chicken', '—', 'DC Ventures Inc', true],
+      ['Mary Browns', '—', 'Mary Browns', false],
       ['Mary Browns', 'New Minas', '4207591 Nova Scotia Ltd', false],
     ])
     expect(new Set(specs.map((r) => r.key)).size).toBe(3)
@@ -1500,11 +1502,27 @@ describe('AIP 指定雇主清单卡', () => {
     expect(new Set(aipEmpSpecsOf([row('A&W', 'X Inc'), row('A&W', 'X Inc')]).map((r) => r.key)).size).toBe(2)
   })
 
-  it('接口地址查询串编码;卡底链接 = 雇主板 AIP + 本省;没到的数据给空', () => {
+  it('接口地址查询串编码(含翻页);没到的数据给空', () => {
     expect(aipEmpUrlOf({ province: 'NS', key: 'mary browns chicken' })).toBe('/api/jobs/aip?prov=NS&key=mary+browns+chicken')
     expect(aipEmpUrlOf({ province: 'NB', key: 'a&w' })).toBe('/api/jobs/aip?prov=NB&key=a%26w')
-    expect(aipEmpHrefOf('NS')).toBe('/employers?sort=designated&program=AIP&prov=NS')
+    expect(aipRestUrlOf({ province: 'NB', key: 'a&w', offset: 20 })).toBe('/api/jobs/aip?prov=NB&key=a%26w&offset=20')
     expect(aipEmpDataOf(null)).toEqual({ total: 0, brandN: 0, rows: [] })
+  })
+
+  it('卡底展开钮:收着写其余总家数;展开后一次 20 家、剩不足 20 写剩几家、取完不出;取数中写加载中;收起只在展开着出', () => {
+    const label = (open: boolean, restTotal: number, loaded: number, busy = false) =>
+      aipMoreLabelOf({ t: zh, open, restTotal, loaded, busy })
+    expect(label(false, 1255, 0)).toBe('展开其他 1255 家 ▾')
+    expect(label(false, 1255, 40)).toBe('展开其他 1255 家 ▾')
+    expect(label(true, 1255, 20)).toBe('再展开 20 家 ▾')
+    expect(label(true, 1255, 1240)).toBe('再展开 15 家 ▾')
+    expect(label(true, 1255, 1255)).toBe('')
+    expect(label(false, 0, 0)).toBe('')
+    expect(label(true, 1255, 20, true)).toBe(zh('act.loadingText'))
+    const top = [row('A', 'X', true)]
+    const rest = [row('B', 'Y'), row('C', 'Z')]
+    expect(aipShownRowsOf({ top, rest, open: false })).toEqual(top)
+    expect(aipShownRowsOf({ top, rest, open: true })).toEqual(top.concat(rest))
   })
 
   it('data/mart 真数据:四省每家拿自己的名字(前端 normName)都落在数据层算好的比对键里', () => {

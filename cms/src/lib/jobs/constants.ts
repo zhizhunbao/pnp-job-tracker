@@ -2157,6 +2157,11 @@ export const AIP_KEY_MAX_LEN = 300
 export const E_AIP_PARAMS = 'prov and key required'
 
 /**
+ * /api/jobs/aip「展开其他 N 家」跳过家数的上限(2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」;一省最多 1,574 家,超了当坏请求)。
+ */
+export const AIP_OFFSET_MAX = 5000
+
+/**
  * JD 摘录 IP 日限的默认值(env JD_DAILY 可覆盖;宽松防滥用,不是付费闸 —— #201)。
  */
 export const JD_DAILY_DEFAULT = 150

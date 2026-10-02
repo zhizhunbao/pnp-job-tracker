@@ -778,7 +778,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'fact.accNote': 'Experience level extracted from the posting wording (title/years); "—" when not stated — never guessed',
   'aipemp.title': 'AIP designated employers in {prov}', 'aipemp.count': '{n} employers',
   // 2026-10-02 三弹框统一第 3 步(Frank「不需要一次查询 1574 家吧」):指定雇主卡只列本岗雇主与同招牌几家,卡底一行同招牌家数、一条跳雇主板的链接
-  'aipemp.brand': '{n} designated employers share this brand', 'aipemp.all': 'All designated employers in the province ›',
+  'aipemp.brand': '{n} designated employers share this brand', 'aipemp.more': 'Show other {n} ▾', 'aipemp.next': 'Show {n} more ▾',
+  'aipemp.colTrade': 'Brand', 'aipemp.colStore': 'Location', 'aipemp.colLegal': 'Legal name',
   'fact.lmiaNote': 'A past record — not a sign they can or will sponsor now.', 'fact.lmiaStreams': 'By stream',
   'lmia.route': 'LMIA outlook for this job', 'lmia.official': 'Official freeze rules',
   'lmia.high': 'High-wage: not affected by the 2024 low-wage freeze; LMIA route open', 'lmia.exempt': 'Low-wage but exempt sector (agriculture/construction/food/healthcare/caregiving): still processed',

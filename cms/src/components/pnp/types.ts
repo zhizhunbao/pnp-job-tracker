@@ -5206,12 +5206,12 @@ export type AipEmpRowSpec = {
   trade: string
 
   /**
-   * 门店灰字;'' = 不出。
+   * 门店;认不出写长横(表格一格不空着)。
    */
   store: string
 
   /**
-   * 法人灰字;'' = 不出(与招牌同字也不出)。
+   * 法人。
    */
   legal: string
 }
@@ -5422,9 +5422,170 @@ export type AipEmpRowIn = {
  */
 export type AipEmpCardHookIn = {
   /**
+   * 取词函数(卡底开关的文案)。
+   */
+  t: TFn
+
+  /**
    * 本岗(读省码与公司名)。
    */
   job: PnpJob
+}
+
+/**
+ * /api/jobs/aip 带 offset 的响应体(「展开其他 N 家」一页;取挂了 / 不是 200 给 null;2026-10-02 Frank「这个怎么改成跳转了啊」
+ * 「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」)。
+ */
+export type AipRestJson = {
+  /**
+   * 这一页的行。
+   */
+  rows?: AipEmpRowJson[]
+} | null
+
+/**
+ * 「展开其他 N 家」一页到了往后接的函数(2026-10-02)。
+ */
+export type AipRowsFn = (rows: AipEmpRowJson[]) => void
+
+/**
+ * 其余各家行状态的写口(React setState 的更新函数形)。
+ */
+export type AipSetRestFn = (f: (prev: AipEmpRowJson[]) => AipEmpRowJson[]) => void
+
+/**
+ * makeLoadAipRest 的入参。
+ */
+export type LoadAipRestIn = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 本岗公司的归一名。
+   */
+  key: string
+
+  /**
+   * 跳过几家(已取到的家数)。
+   */
+  offset: number
+
+  /**
+   * 一页到了往后接。
+   */
+  onRows: AipRowsFn
+
+  /**
+   * 取数中的落格。
+   */
+  setBusy: (v: boolean) => void
+}
+
+/**
+ * aipRestUrlOf 的入参。
+ */
+export type AipRestUrlIn = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 本岗公司的归一名。
+   */
+  key: string
+
+  /**
+   * 跳过几家。
+   */
+  offset: number
+}
+
+/**
+ * makeAipMore 的入参(卡底「展开其他 / 再展开」那只钮)。
+ */
+export type AipMoreIn = {
+  /**
+   * 展开着没。
+   */
+  open: boolean
+
+  /**
+   * 已取到的其余家数。
+   */
+  loaded: number
+
+  /**
+   * 还没取的家数。
+   */
+  remain: number
+
+  /**
+   * 取数中。
+   */
+  busy: boolean
+
+  /**
+   * 展开态写口。
+   */
+  setOpen: (v: boolean) => void
+
+  /**
+   * 取下一页。
+   */
+  load: ClickFn
+}
+
+/**
+ * aipMoreLabelOf 的入参。
+ */
+export type AipMoreLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 展开着没。
+   */
+  open: boolean
+
+  /**
+   * 其余总家数(本省总家数减去本岗雇主与同招牌那几家)。
+   */
+  restTotal: number
+
+  /**
+   * 已取到的其余家数。
+   */
+  loaded: number
+
+  /**
+   * 取数中。
+   */
+  busy: boolean
+}
+
+/**
+ * aipShownRowsOf 的入参。
+ */
+export type AipShownRowsIn = {
+  /**
+   * 本岗雇主与同招牌那几家。
+   */
+  top: AipEmpRowJson[]
+
+  /**
+   * 已取到的其余各家。
+   */
+  rest: AipEmpRowJson[]
+
+  /**
+   * 展开着没。
+   */
+  open: boolean
 }
 
 /**
@@ -5462,9 +5623,24 @@ export type AipEmpCardPanel = {
   total: number
 
   /**
-   * 卡底「本省全部指定雇主」链接。
+   * 卡底「展开其他 N 家 / 再展开 N 家」钮的字;'' = 不出钮(2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」)。
    */
-  href: string
+  moreLabel: string
+
+  /**
+   * 那只钮的手柄。
+   */
+  onMore: ClickFn
+
+  /**
+   * 「收起」钮的字;'' = 不出(收着时)。
+   */
+  foldLabel: string
+
+  /**
+   * 「收起」的手柄。
+   */
+  onFold: ClickFn
 }
 
 /**

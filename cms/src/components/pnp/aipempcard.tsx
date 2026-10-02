@@ -8,7 +8,11 @@
  * 2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」):卡里只列本岗雇主那一行与同招牌的几家(弹框打开才取,useAipEmpCard),
  * 同招牌不止一家时卡底写一行家数;
  * 末尾「展开其他 N 个」改成链接「本省全部指定雇主 ›」跳雇主板(AIP + 本省,分页)。取挂了出失败框,没到出加载行。
- *
+
+ * 同日 Frank「这个加载中 怎么跑中间去了」:取数中 / 取挂了也先出卡框与标题,加载行与失败框住卡里(加载区必占位),不再光秃秃夹在两张卡中间。
+ * 2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」:回到效果图的三列表(招牌 / 门店 / 法人,带表头);卡底跳雇主板的链接撤,
+ * 改原地「展开其他 N 家 ▾」,
+ * 一次取 20 家往后接,展开后可收起。 *
  * @author Frank
  * @time 2026-10-01 14:13:21
  */
@@ -18,8 +22,8 @@ import { Loading } from '@/components/loading'
 import { Notice } from '@/components/notice'
 import { AipEmpRow } from './aipemprow'
 import {
-  BOX_GAP_NONE, K_AIP_EMP_ALL, K_AIP_EMP_BRAND, K_AIP_EMP_COUNT, K_AIP_EMP_TITLE, K_LOAD_FAILED, K_LOADING, NOTICE_ERR,
-  PLAIN_BTN_KIND, PROV_KEY_HEAD,
+  BOX_GAP_NONE, K_AIP_EMP_BRAND, K_AIP_EMP_COLS, K_AIP_EMP_COUNT, K_AIP_EMP_TITLE, K_LOAD_FAILED, K_LOADING, NOTICE_ERR,
+  PLAIN_BTN_KIND, PROV_KEY_HEAD, TEXT_NONE,
 } from './constants'
 import { boxClsOf } from './functions'
 import { useAipEmpCard } from './hooks'
@@ -33,12 +37,27 @@ import css from './pnp.module.css'
  * @returns 卡(本岗雇主与同招牌几家 + 卡底链接);没到出加载行,取挂了出失败框。
  */
 export function AipEmpCard({ t, job }: AipEmpCardIn) {
-  const p = useAipEmpCard({ job })
+  const p = useAipEmpCard({ t, job })
+  const title = t(K_AIP_EMP_TITLE, { prov: t(PROV_KEY_HEAD + job.province) })
   if (p.failed) {
-    return <Notice kind={NOTICE_ERR}>{t(K_LOAD_FAILED)}</Notice>
+    return (
+      <div className={css.card}>
+        <div className={css.cardHead}>{title}</div>
+        <Notice kind={NOTICE_ERR}>{t(K_LOAD_FAILED)}</Notice>
+      </div>
+    )
   }
   if (p.ready === false) {
-    return <Loading text={t(K_LOADING)} />
+    return (
+      <div className={css.card}>
+        <div className={css.cardHead}>{title}</div>
+        <Loading text={t(K_LOADING)} />
+      </div>
+    )
+  }
+  const heads = []
+  for (const k of K_AIP_EMP_COLS) {
+    heads.push(<span key={k}>{t(k)}</span>)
   }
   const rows = []
   for (const r of p.rows) {
@@ -47,12 +66,22 @@ export function AipEmpCard({ t, job }: AipEmpCardIn) {
   return (
     <div className={css.card}>
       <div className={css.cardHead}>
-        {t(K_AIP_EMP_TITLE, { prov: t(PROV_KEY_HEAD + job.province) })}
+        {title}
         <span className={css.count}>{t(K_AIP_EMP_COUNT, { n: p.total })}</span>
       </div>
-      {rows.length > 0 && <div className={boxClsOf({ clip: false, gap: BOX_GAP_NONE })}>{rows}</div>}
+      {rows.length > 0 && (
+        <div className={boxClsOf({ clip: false, gap: BOX_GAP_NONE })}>
+          <div className={css.empHead}>{heads}</div>
+          {rows}
+        </div>
+      )}
       {p.brandN > 1 && <div className={css.drawsFoot}>{t(K_AIP_EMP_BRAND, { n: p.brandN })}</div>}
-      <Button kind={PLAIN_BTN_KIND} className={cssOf(css.foldMore)} href={p.href}>{t(K_AIP_EMP_ALL)}</Button>
+      {p.moreLabel !== TEXT_NONE && (
+        <Button kind={PLAIN_BTN_KIND} className={cssOf(css.foldMore)} onClick={p.onMore}>{p.moreLabel}</Button>
+      )}
+      {p.foldLabel !== TEXT_NONE && (
+        <Button kind={PLAIN_BTN_KIND} className={cssOf(css.foldMore)} onClick={p.onFold}>{p.foldLabel}</Button>
+      )}
     </div>
   )
 }

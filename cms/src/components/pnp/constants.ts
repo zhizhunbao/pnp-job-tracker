@@ -1657,12 +1657,6 @@ export const P_AIP_PROV = 'prov'
 export const P_AIP_KEY = 'key'
 
 /**
- * 指定雇主卡底「本省全部指定雇主」链接(雇主板,指定雇主排序 + AIP 制度 + 本省;后接省码 —— 雇主板入口契约
- * `/employers?sort=designated&program=AIP`,见 app/(frontend)/employers/page.tsx)。
- */
-export const URL_EMPLOYERS_AIP_PROV = '/employers?sort=designated&program=AIP&prov='
-
-/**
  * 指定雇主卡标题词条(「{prov} AIP 指定雇主」)。
  */
 export const K_AIP_EMP_TITLE = 'aipemp.title'
@@ -1678,9 +1672,39 @@ export const K_AIP_EMP_COUNT = 'aipemp.count'
 export const K_AIP_EMP_BRAND = 'aipemp.brand'
 
 /**
- * 指定雇主卡底链接词条(「本省全部指定雇主 ›」)。
+ * 指定雇主卡「展开其他 N 家 ▾」词条(2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」)。
  */
-export const K_AIP_EMP_ALL = 'aipemp.all'
+export const K_AIP_EMP_MORE = 'aipemp.more'
+
+/**
+ * 指定雇主卡展开后还有剩时「再展开 N 家 ▾」词条。
+ */
+export const K_AIP_EMP_NEXT = 'aipemp.next'
+
+/**
+ * 指定雇主卡「收起 ▴」词条(同职业清单卡那一条)。
+ */
+export const K_AIP_EMP_FOLD = 'pnplist.foldOther'
+
+/**
+ * 指定雇主表的表头词条:招牌 / 门店 / 法人(同序)。
+ */
+export const K_AIP_EMP_COLS = ['aipemp.colTrade', 'aipemp.colStore', 'aipemp.colLegal']
+
+/**
+ * 指定雇主卡「展开其他 N 家」一次取几家(与 SQL.AIP_EMP_REST 的 LIMIT 同一个数)。
+ */
+export const AIP_EMP_PAGE = 20
+
+/**
+ * 指定雇主卡接口的跳过家数参数名(「展开其他 N 家」翻页)。
+ */
+export const P_AIP_OFFSET = 'offset'
+
+/**
+ * 门店认不出时表格里那一格写的(长横)。
+ */
+export const AIP_EMP_DASH = '—'
 
 /**
  * 魁省门槛行的两个项目(门槛表 program;魁省不属省提名)。

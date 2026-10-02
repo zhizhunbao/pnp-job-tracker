@@ -5,12 +5,12 @@
  *
  * 2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」):一行写招牌(主文案)、门店与法人两行灰字(法人与招牌同字不写);手机 375
  * 宽三列放不下长法人名,改两行。
- *
+
+ * 2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」:回到三列表的一行(招牌 / 门店 / 法人,同表头三格对齐)。 *
  * @author Frank
  * @time 2026-10-01 14:13:21
  */
-import { TEXT_NONE } from './constants'
-import { makeHitRef, rowClsOf } from './functions'
+import { aipEmpRowClsOf, makeHitRef } from './functions'
 import type { AipEmpRowIn } from './types'
 import css from './pnp.module.css'
 
@@ -22,12 +22,10 @@ import css from './pnp.module.css'
  */
 export function AipEmpRow({ r, matchRef }: AipEmpRowIn) {
   return (
-    <div ref={makeHitRef({ hit: r.hit, ref: matchRef })} className={rowClsOf({ hit: r.hit })}>
-      <span className={css.flex1}>
-        {r.trade}
-        {r.store !== TEXT_NONE && <span className={css.zh}>{r.store}</span>}
-        {r.legal !== TEXT_NONE && <span className={css.zh}>{r.legal}</span>}
-      </span>
+    <div ref={makeHitRef({ hit: r.hit, ref: matchRef })} className={aipEmpRowClsOf({ hit: r.hit })}>
+      <span>{r.trade}</span>
+      <span>{r.store}</span>
+      <span className={css.empLegal}>{r.legal}</span>
     </div>
   )
 }

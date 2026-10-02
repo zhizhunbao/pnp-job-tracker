@@ -1400,6 +1400,36 @@ export type AipEmpList = {
 export type AipEmpOut = Promise<AipEmpList>
 
 /**
+ * loadAipEmployersRest 的入参(2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」)。
+ */
+export type LoadAipRestIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 本岗公司的归一名(排除本岗雇主的招牌用)。
+   */
+  key: string
+
+  /**
+   * 跳过几家。
+   */
+  offset: number
+}
+
+/**
+ * loadAipEmployersRest 的返回(一页其余各家)。
+ */
+export type AipRestOut = Promise<AipEmpFact[]>
+
+/**
  * 联邦 EE 类别清单一行。
  */
 export type EeOcc = {

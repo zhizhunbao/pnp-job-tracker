@@ -28,12 +28,15 @@ import {
   channelListOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockCardOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
   makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, provGateCardsOf, qcChannelsOf,
-  aipEmpDataOf, aipEmpHrefOf, aipEmpSpecsOf, aipSectionOf, channelSplitOf, makeLoadAipEmp, makePickOf, normName,
+  aipEmpDataOf, aipEmpSpecsOf, aipFoldLabelOf, aipMoreLabelOf, aipSectionOf, aipShownRowsOf, channelSplitOf,
+  makeAipFold,
+  makeAipMore, makeAppendRest, makeLoadAipEmp, makeLoadAipRest, makePickOf, normName,
 } from './functions'
 import type {
   EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel, DeadFlag, PnpData, PnpDataHookIn, PnpDataPanel,
   PnpModalHookIn, PnpModalPanel, PnpProvStreamsHookIn, PnpProvStreamsPanel, QcChannel, QcChannelsHookIn,
-  QcChannelsPanel, AipEmpCardHookIn, AipEmpCardPanel, AipEmpData, AipSectionHookIn, AipSectionPanel, ChannelPickHookIn,
+  QcChannelsPanel, AipEmpCardHookIn, AipEmpCardPanel, AipEmpData, AipEmpRowJson, AipSectionHookIn, AipSectionPanel,
+  ChannelPickHookIn,
   ChannelPickPanel,
 } from './types'
 import { CACHE } from './variables'
@@ -265,8 +268,11 @@ export function usePnpProvStreams(x: PnpProvStreamsHookIn): PnpProvStreamsPanel 
  * 本岗公司归一名(normName,与数据层 AIP 打标同一把尺子)
  * 取本岗雇主那一行与同招牌的几家(makeLoadAipEmp);本岗没有公司名就不取、卡只留链接。取挂了落 failed,不重取(下次开框重来)。
  *
- * @param x 本岗。
- * @returns ref 盒、能不能渲、失败没、展示行、同招牌家数、本省总家数与链接。
+ * 2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」:卡底跳雇主板的链接撤,改原地「展开其他 N 家」—— 一次取 20
+ * 家往后接、可收起(收起后再展开不重取)。
+ *
+ * @param x 取词函数与本岗。
+ * @returns ref 盒、能不能渲、失败没、展示行、同招牌家数、本省总家数与卡底两只钮。
  */
 export function useAipEmpCard(x: AipEmpCardHookIn): AipEmpCardPanel {
   const matchRef = useRef<HTMLDivElement | null>(null)
@@ -290,15 +296,24 @@ export function useAipEmpCard(x: AipEmpCardHookIn): AipEmpCardPanel {
     scrollIntoHit({ ref: matchRef })
   }, [data])
 
+  const [rest, setRest] = useState<AipEmpRowJson[]>([])
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
   const got = aipEmpDataOf(data)
+  const restTotal = Math.max(0, got.total - got.rows.length)
+  const label = { t: x.t, open, restTotal, loaded: rest.length, busy }
+  const load = makeLoadAipRest({ province, key, offset: rest.length, onRows: makeAppendRest(setRest), setBusy })
   return {
     matchRef,
     ready: data != null || key === TEXT_NONE,
     failed,
-    rows: aipEmpSpecsOf(got.rows),
+    rows: aipEmpSpecsOf(aipShownRowsOf({ top: got.rows, rest, open })),
     brandN: got.brandN,
     total: got.total,
-    href: aipEmpHrefOf(province),
+    moreLabel: aipMoreLabelOf(label),
+    onMore: makeAipMore({ open, loaded: rest.length, remain: restTotal - rest.length, busy, setOpen, load }),
+    foldLabel: aipFoldLabelOf(label),
+    onFold: makeAipFold(setOpen),
   }
 }
 

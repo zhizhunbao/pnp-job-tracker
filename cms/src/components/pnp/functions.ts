@@ -48,7 +48,8 @@ import {
   PICK_NONE, PICK_PGWP, PICK_NO_PGWP,
   AIP_PATHWAY_KEY, AIP_CHANNEL_TEERS, AIP_F, AIP_TIER_PREFIX, AIP_TIER_SEP, AIP_EDU_HEAD, AIP_GRAD_NOTE,
   GATE_EXP_FACTORS, GATE_OP_NONE, GATE_WAGE_FACTORS, LANG_NOC_NOTE_MAX, CHAN_JOB_TAGS, CHAN_TAG_COMPLEMENT, AIP_APOS_RE,
-  CHAN_NOTE_TAGS, P_AIP_KEY, P_AIP_PROV, URL_API_JOBS_AIP, URL_EMPLOYERS_AIP_PROV,
+  CHAN_NOTE_TAGS, P_AIP_KEY, P_AIP_OFFSET, P_AIP_PROV, URL_API_JOBS_AIP, AIP_EMP_DASH, AIP_EMP_PAGE, K_AIP_EMP_FOLD,
+  K_AIP_EMP_MORE, K_AIP_EMP_NEXT, K_LOADING,
   BASIS_ANY_NOC, BASIS_EXP_TEER, BASIS_FIELD, BASIS_ONE_NOC, BASIS_PAID, BASIS_RELATED,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   EXCL_KEY_SEP,
@@ -84,7 +85,8 @@ import type {
   ChannelHitIn, PickSetIn,
   LocalNameIn, PathwayChannelIn, StatusLinesIn,
   BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvGateCardsIn, ProvStreamCardIn, ProvStreamRowsIn,
-  AipEmpData, AipEmpJson, AipEmpRowJson, AipEmpRowSpec, AipEmpUrlIn, LoadAipEmpIn, ExpScopeIn,
+  AipEmpData, AipEmpJson, AipEmpRowJson, AipEmpRowSpec, AipEmpUrlIn, LoadAipEmpIn, ExpScopeIn, AipMoreIn,
+  AipMoreLabelIn, AipRestJson, AipRestUrlIn, AipShownRowsIn, LoadAipRestIn, AipRowsFn, AipSetRestFn,
   TeerBandsIn, TierLineIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
@@ -2496,15 +2498,13 @@ export function quotaCardOf(x: QuotaCardOfIn): QuotaCardSpec | null {
  * 各列官方截至日一致只写一行「截至 {日期}」;不一致逐列写「{列名}截至 {日期}」(曼省已发提名截至 08 月、已邀请申请截至 09-24,
  * 原先只写最右一列那天,读成提名数也截至 09-24)。没写截至日的列不写;配额总数是全年定数,它那一格的截至日(曼省月度页、
  * 阿省处理页的页面日期)也不写(colAsOfOf)。
- *
- * @param x 取词函数、列名与各列截至日。
  * 2026-10-02 Frank「这个只显示一个 邀请日期吧。统一用 邀请日期」:有「已发邀请」那一列且官方写了截至日,只写一行「截至 {邀请日期}」;
  * 没有这一列的省(萨省、魁省、新斯科舍省)照上面的写法。
+ *
+ * @param x 取词函数、列名、各列截至日与各列认的指标名。
  * @returns 截至行;都没写给空列。
  */
 function asOfLinesOf(x: AsOfLinesIn): string[] {
-  const distinct: string[] = []
-  for (const d of x.dates) {
   for (let i = 0; i < x.cols.length; i += 1) {
     const metrics = x.cols[i]
     const date = x.dates[i]
@@ -2512,6 +2512,8 @@ function asOfLinesOf(x: AsOfLinesIn): string[] {
       return [x.t('pnpquota.asOf', { date })]
     }
   }
+  const distinct: string[] = []
+  for (const d of x.dates) {
     if (d !== TEXT_NONE && distinct.includes(d) === false) {
       distinct.push(d)
     }
@@ -4288,7 +4290,8 @@ export function aipEmpDataOf(d: AipEmpData | null): AipEmpData {
 }
 
 /**
- * 接口回来的行 → 卡上的行:招牌主文案、门店与法人两行灰字(法人与招牌同字不重复写)。
+ * 接口回来的行 → 表格的行(招牌 / 门店 / 法人三列;门店认不出写长横;2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」
+ * 起回到效果图的三列表)。
  *
  * @param rows 接口回来的行(本岗雇主排前)。
  * @returns 展示行。
@@ -4296,29 +4299,159 @@ export function aipEmpDataOf(d: AipEmpData | null): AipEmpData {
 export function aipEmpSpecsOf(rows: AipEmpRowJson[]): AipEmpRowSpec[] {
   const out: AipEmpRowSpec[] = []
   for (const r of rows) {
-    let legal = r.legal
-    if (legal === r.trade) {
-      legal = TEXT_NONE
+    let store = r.store
+    if (store === TEXT_NONE) {
+      store = AIP_EMP_DASH
     }
     out.push({
       key: String(out.length) + r.trade + r.store + r.legal,
       hit: r.hit,
       trade: r.trade,
-      store: r.store,
-      legal,
+      store,
+      legal: r.legal,
     })
   }
   return out
 }
 
 /**
- * 指定雇主卡底「本省全部指定雇主」链接:雇主板,按指定雇主排、AIP 制度、本省。
+ * 表格这一刻要露的行:本岗雇主与同招牌那几家,展开着再接上已取到的其余各家。
  *
- * @param province 省码。
+ * @param x 两段行与展开态。
+ * @returns 接口形的行。
+ */
+export function aipShownRowsOf(x: AipShownRowsIn): AipEmpRowJson[] {
+  if (x.open) {
+    return x.top.concat(x.rest)
+  }
+  return x.top
+}
+
+/**
+ * 「展开其他 N 家 / 再展开 N 家」那只钮的字:收着写其余总家数;展开着还有没取的写下一页几家(一页 AIP_EMP_PAGE 家);
+ * 取数中写加载中;都取完了不出钮。
+ *
+ * @param x 取词函数、展开态、其余总家数、已取家数与取数中。
+ * @returns 钮上的字;'' = 不出钮。
+ */
+export function aipMoreLabelOf(x: AipMoreLabelIn): string {
+  if (x.busy) {
+    return x.t(K_LOADING)
+  }
+  if (x.open === false) {
+    if (x.restTotal > 0) {
+      return x.t(K_AIP_EMP_MORE, { n: x.restTotal })
+    }
+    return TEXT_NONE
+  }
+  const remain = x.restTotal - x.loaded
+  if (remain > 0) {
+    return x.t(K_AIP_EMP_NEXT, { n: Math.min(AIP_EMP_PAGE, remain) })
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 「收起」钮的字:展开着才出。
+ *
+ * @param x 取词函数与展开态(同 aipMoreLabelOf 的入参,只读这两格)。
+ * @returns 钮上的字;'' = 不出钮。
+ */
+export function aipFoldLabelOf(x: AipMoreLabelIn): string {
+  if (x.open) {
+    return x.t(K_AIP_EMP_FOLD)
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 「展开其他 / 再展开」钮的手柄:收着而已取过的直接展开(不重取);否则还有没取的就取下一页并展开;取数中不响应。
+ *
+ * @param x 展开态、已取 / 未取家数、取数中、展开态写口与取下一页。
+ * @returns 点击手柄。
+ */
+export function makeAipMore(x: AipMoreIn): ClickFn {
+  return function more(): void {
+    if (x.busy) {
+      return
+    }
+    if (x.open === false && x.loaded > 0) {
+      x.setOpen(true)
+      return
+    }
+    if (x.remain > 0) {
+      x.setOpen(true)
+      x.load()
+    }
+  }
+}
+
+/**
+ * 「收起」钮的手柄(已取到的行留着,再展开不重取)。
+ *
+ * @param setOpen 展开态写口。
+ * @returns 点击手柄。
+ */
+export function makeAipFold(setOpen: (v: boolean) => void): ClickFn {
+  return function fold(): void {
+    setOpen(false)
+  }
+}
+
+/**
+ * 「展开其他 N 家」一页的取数手柄(照 makeLoadAipEmp 的形;取挂了这一页不接、取数中复位,下次点再取)。
+ *
+ * @param x 省码、归一名、跳过家数、接行与取数中两个写口。
+ * @returns 点击即取的手柄。
+ */
+export function makeLoadAipRest(x: LoadAipRestIn): ClickFn {
+  return function loadAipRest(): void {
+    function read(r: Response): Promise<AipRestJson> {
+      if (r.ok) {
+        return r.json()
+      }
+      return Promise.resolve(null)
+    }
+    function land(j: AipRestJson): void {
+      x.setBusy(false)
+      if (j != null && j.rows != null) {
+        x.onRows(j.rows)
+      }
+    }
+    function fall(): void {
+      x.setBusy(false)
+    }
+    x.setBusy(true)
+    fetch(aipRestUrlOf({ province: x.province, key: x.key, offset: x.offset })).then(read).then(land).catch(fall)
+  }
+}
+
+/**
+ * 「展开其他 N 家」一页的接口地址。
+ *
+ * @param x 省码、归一名与跳过家数。
  * @returns 地址。
  */
-export function aipEmpHrefOf(province: string): string {
-  return URL_EMPLOYERS_AIP_PROV + encodeURIComponent(province)
+export function aipRestUrlOf(x: AipRestUrlIn): string {
+  const q = new URLSearchParams()
+  q.set(P_AIP_PROV, x.province)
+  q.set(P_AIP_KEY, x.key)
+  q.set(P_AIP_OFFSET, String(x.offset))
+  return URL_API_JOBS_AIP + q.toString()
+}
+
+/**
+ * 「展开其他 N 家」一页到了往后接的写口(行状态的更新函数)。
+ *
+ * @param setRest 其余各家的状态写口。
+ * @returns 接行函数。
+ */
+export function makeAppendRest(setRest: AipSetRestFn): AipRowsFn {
+  return function append(rows: AipEmpRowJson[]): void {
+    setRest(function add(prev: AipEmpRowJson[]): AipEmpRowJson[] {
+      return prev.concat(rows)
+    })
+  }
 }
 
 /**
@@ -5066,6 +5199,16 @@ export function rowClsOf(x: HitClsIn): string {
     cls.push(cssOf(css.hit))
   }
   return cls.join(CLS_SEP)
+}
+
+/**
+ * 指定雇主表一行的类名(2026-10-02 回到三列表):清单行的底(命中行高亮)上叠三列网格。
+ *
+ * @param x 是不是本岗雇主那一行。
+ * @returns 类名。
+ */
+export function aipEmpRowClsOf(x: HitClsIn): string {
+  return [rowClsOf(x), cssOf(css.empRow)].join(CLS_SEP)
 }
 
 /**
