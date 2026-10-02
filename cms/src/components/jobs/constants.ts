@@ -1308,8 +1308,9 @@ export const NOWRAP_COLS = new Set<JobColKey>([
 /**
  * 这几列的值是**短语**不是原子值(AIP「Occupation not accepted」、LMIA、资格、匹配),
  * 中文短、英文长 —— 让它们在本列内换行,别再挤隔壁。
+ * 2026-10-01 Frank「这个宽度 是不是不要换行」(截图「指定雇 / 主」):AIP 格同日起只写「指定雇主」(不再有长短语),出本表、照 NOWRAP_COLS 不折行。
  */
-export const WRAP_COLS = new Set<JobColKey>(['aip', 'pilot', 'lmia', 'eligibility'])
+export const WRAP_COLS = new Set<JobColKey>(['pilot', 'lmia', 'eligibility'])
 
 /**
  * 固定左列(发布时间/大分类/公司/职位):只有**真的横滚**时才需要
