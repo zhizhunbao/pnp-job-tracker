@@ -52,7 +52,7 @@ import {
   BASIS_ANY_NOC, BASIS_EXP_TEER, BASIS_FIELD, BASIS_ONE_NOC, BASIS_PAID, BASIS_RELATED,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   EXCL_KEY_SEP,
-  DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
+  DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
   PROGRAM_POOL, QUOTA_MIN_PREFIX, UNIT_APPLICATION, UNIT_SELECTION, YTD_COUNT_KIND, COUNT_INV_ONE_KEY,
   OPS_SCOPE_DRAW_STREAM,
   K_CELL_QC, K_KICKER_QC, QC_BASIS, QC_CELL_HEAD, QC_EDU_HEAD, QC_F, QC_FR_KEY, QC_GENERAL_STREAM, QC_KIND_PARTLY,
@@ -2486,7 +2486,7 @@ export function quotaCardOf(x: QuotaCardOfIn): QuotaCardSpec | null {
     source: sourceLinkOf({ t: x.t, url: first.url }),
     heads,
     rows,
-    asOfLines: asOfLinesOf({ t: x.t, heads, dates }),
+    asOfLines: asOfLinesOf({ t: x.t, heads, dates, cols }),
     year: yearOf(first),
   }
 }
@@ -2498,11 +2498,20 @@ export function quotaCardOf(x: QuotaCardOfIn): QuotaCardSpec | null {
  * 阿省处理页的页面日期)也不写(colAsOfOf)。
  *
  * @param x 取词函数、列名与各列截至日。
+ * 2026-10-02 Frank「这个只显示一个 邀请日期吧。统一用 邀请日期」:有「已发邀请」那一列且官方写了截至日,只写一行「截至 {邀请日期}」;
+ * 没有这一列的省(萨省、魁省、新斯科舍省)照上面的写法。
  * @returns 截至行;都没写给空列。
  */
 function asOfLinesOf(x: AsOfLinesIn): string[] {
   const distinct: string[] = []
   for (const d of x.dates) {
+  for (let i = 0; i < x.cols.length; i += 1) {
+    const metrics = x.cols[i]
+    const date = x.dates[i]
+    if (metrics != null && date != null && metrics.includes(OPS_INV_YTD) && date !== TEXT_NONE) {
+      return [x.t('pnpquota.asOf', { date })]
+    }
+  }
     if (d !== TEXT_NONE && distinct.includes(d) === false) {
       distinct.push(d)
     }

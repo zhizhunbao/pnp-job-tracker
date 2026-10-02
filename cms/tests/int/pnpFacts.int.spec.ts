@@ -612,11 +612,15 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const ops = [m({}), m({ metric: 'nominations_ytd', value: 3777, period: '2026 Jan-Aug' }),
       m({ metric: 'invitations_ytd', value: 6883, asOf: '2026-09-24' })]
     const zhCard = quotaCardOf({ t: zh, province: 'MB', ops, hitStreams: [], quotaKey: '' })
+    // 2026-10-02 Frank「这个只显示一个 邀请日期吧。统一用 邀请日期」:有已发邀请那一列就只写它的截至日
     expect([zhCard?.heads, zhCard?.rows[0]?.cells, zhCard?.asOfLines]).toEqual([
-      ['总数', '已发提名', '已发邀请'], ['8,000', '3,777', '6,883'], ['已发提名截至 2026-08', '已发邀请截至 2026-09-24'],
+      ['总数', '已发提名', '已发邀请'], ['8,000', '3,777', '6,883'], ['截至 2026-09-24'],
     ])
-    expect(quotaCardOf({ t: en, province: 'MB', ops, hitStreams: [], quotaKey: '' })?.asOfLines)
-      .toEqual(['Nominated as of 2026-08', 'Invited to apply as of 2026-09-24'])
+    expect(quotaCardOf({ t: en, province: 'MB', ops, hitStreams: [], quotaKey: '' })?.asOfLines).toEqual(['As of 2026-09-24'])
+    // 没有已发邀请那一列的省:分叉仍逐列写
+    const noInv = [m({}), m({ metric: 'nominations_ytd', value: 3777 }), m({ metric: 'remaining', value: 1, asOf: '2026-09' })]
+    expect(quotaCardOf({ t: zh, province: 'MB', ops: noInv, hitStreams: [], quotaKey: '' })?.asOfLines)
+      .toEqual(['已发提名截至 2026-08', '剩余截至 2026-09'])
     // 同一天就只写一行(总数自己的截至日不参与)
     const same = [m({ asOf: '2026-01' }), m({ metric: 'nominations_ytd', value: 3777 }), m({ metric: 'invitations_ytd', value: 6883 })]
     expect(quotaCardOf({ t: zh, province: 'MB', ops: same, hitStreams: [], quotaKey: '' })?.asOfLines).toEqual(['截至 2026-08'])
