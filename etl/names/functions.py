@@ -13,10 +13,10 @@ company.norm_company_name(Wikidata facts 缓存键,已落盘改不起)各有设�
 """
 from fetch.constants import SPACE_SEP, WS_RE
 from names.constants import (
-    ALIAS_SPLIT_RE, APOSTROPHE_RE, CATEGORY_GOV_ADMIN, CATEGORY_GOV_RULES, CATEGORY_GOV_SECTORS, CATEGORY_NONE,
+    ALIAS_RE, ALIAS_SPLIT_RE, APOSTROPHE_RE, CATEGORY_GOV_ADMIN, CATEGORY_GOV_RULES, CATEGORY_GOV_SECTORS, CATEGORY_NONE,
     CATEGORY_PUBLIC_OTHER, CATEGORY_PUBLIC_RULES, KEEP_RE, SECTOR_CORP_RE, SECTOR_FEDERAL, SECTOR_FEDERAL_RE, SECTOR_GOVERNMENT,
     SECTOR_GOV_RE, SECTOR_INDIGENOUS, SECTOR_INDIGENOUS_RE, SECTOR_MUNICIPAL, SECTOR_MUNI_RE, SECTOR_PUBLIC,
-    SECTOR_PUBLIC_RE, SECTOR_VET_RE, SUFFIX_RE,
+    SECTOR_PUBLIC_RE, SECTOR_VET_RE, SUFFIX_RE, DASH_SPLIT, LEGAL_HINT_RE, PAREN_HEAD, PAREN_INNER, PAREN_TAIL_RE,
 )
 
 
@@ -73,3 +73,25 @@ def category_of(name: str) -> str:
                 return key
         return CATEGORY_GOV_ADMIN
     return CATEGORY_NONE
+
+
+def aip_name_forms(raw: str) -> list:
+    """名录一行的几种写法 → 待归一的名字:原样、o/a 后的经营名、「 - 」两边、去掉末尾括号的那段、括号里像法定名的那段
+    (2026-10-01;括号里是地点的不收,见 LEGAL_HINT_RE)。
+    (函数体 2026-10-02 自 aip 域逐字迁入:mart 汇装指定雇主表拆招牌 / 门店 / 法人要用同一把尺子。)"""
+    forms = [raw]
+    alias = ALIAS_RE.search(raw)
+    if alias:
+        forms.append(alias.group(1))
+    parts = raw.split(DASH_SPLIT)
+    if len(parts) > 1:
+        for part in parts:
+            forms.append(part)
+    for form in list(forms):
+        m = PAREN_TAIL_RE.match(form)
+        if m is None:
+            continue
+        forms.append(m.group(PAREN_HEAD))
+        if LEGAL_HINT_RE.search(m.group(PAREN_INNER)):
+            forms.append(m.group(PAREN_INNER))
+    return forms

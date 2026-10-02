@@ -337,29 +337,6 @@ K_AIP = "aip"
 K_JOBS = "jobs"
 """ATS 岗位文件的行清单键。"""
 
-ALIAS_RE = re.compile(r"\bo/a\b(.+)", re.I)
-"""名录行里的 o/a 别名(别名也单独入集合,两种写法都能匹配到)。
-(SUFFIX_RE / ALIAS_SPLIT_RE / KEEP_RE 三条归一正则 2026-08-31 随 norm_name 迁基建叶
-names 域 —— 洗名尺子收拢批,沿革注释随迁。)"""
-
-DASH_SPLIT = " - "
-"""NB 名录「法定名 - 经营名」写法的分隔(如「J.D. Irving, Limited - Kent Building Supplies (Saint John)」;两边带空格,连字符地名
-Saint-Jean 这种不切)。两边都收(2026-10-01)。"""
-
-PAREN_TAIL_RE = re.compile(r"^(?P<head>.+?)\s*\((?P<inner>[^()]+)\)\s*$")
-"""NB 名录「经营名 (法定名或地点)」写法(如「Subway (605342 NB Ltée)」「Kent Building Supplies (Head Office)」):去掉末尾括号的
-那段收进来(2026-10-01)。"""
-
-PAREN_HEAD = "head"
-"""PAREN_TAIL_RE 的组名:括号前那段。"""
-
-PAREN_INNER = "inner"
-"""PAREN_TAIL_RE 的组名:括号里那段。"""
-
-LEGAL_HINT_RE = re.compile(r"\b(?:inc|ltd|lt[ée]e|limited|corp|corporation|holdings?|enterprises?|company|group)\b|\d", re.I)
-"""括号里那段像法定名(带公司后缀,或编号公司的数字)才单收;括号里是地点(Saint John、Head Office)的不收,免得「saint john」被当成
-雇主名(2026-10-01)。"""
-
 FLAG_IN_LIST_TPL = "IN aip list      : {path}"
 """段4 开工报输入名录(原脚本对齐空格原样保留)。"""
 
