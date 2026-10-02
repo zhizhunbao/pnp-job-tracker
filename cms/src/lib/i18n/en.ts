@@ -81,7 +81,6 @@ export const reportEn: Record<keyof typeof reportZh, string> = {
   'case.blockedLead': 'These gaps cannot be closed by accumulating time',
   'case.openings': '{n} openings in this occupation in this province',
   'case.openingsTrain': '{n} openings in this occupation in this province, {m} flagged as training-provided',
-  'case.showMore': 'Show {n} more',
   'case.blockedTag': 'Closed',
   'case.ops.spots': '{period}: {total} spots, {used} nominated, {left} left',
   'case.ops.alloc': '{period}: {n} spots', 'case.ops.pool': '{n} in the pool', 'case.ops.poolAt': '{n} in the pool at the end of {period}', 'case.ops.poolOn': '{n} in the pool as of {period}',
@@ -549,7 +548,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnp.gen.AB': 'Alberta Opportunity Stream', 'pnp.gen.BC': 'BC Skilled Worker', 'pnp.gen.SK': 'SK Employment Offer',
   'pnp.gen.ON': 'ON Workforce Priority', 'pnp.gen.MB': 'Skilled Worker in Manitoba', 'pnp.gen.NS': 'NS Skilled Worker',
   'pnp.gen.NB': 'NB Skilled Worker', 'pnp.gen.PE': 'PE Workforce', 'pnp.gen.NL': 'NL Skilled Worker', 'cell.pnpIndemand': 'In-demand', 'cell.pnpQc': 'Quebec', 'cell.aipYes': 'Designated', 'cell.lmiaYes': '✓ {n} positions　{q}', 'cell.closed': 'Closed', 'cell.open': 'Open',
-  'pnplist.title': 'PNP occupation list', 'pnplist.source': 'Source', 'pnplist.gta': 'Outside GTA', 'pnplist.loading': 'Loading list…', 'pnplist.showOther': 'Show other {n} ▾', 'pnplist.foldOther': 'Collapse ▴',
+  'pnplist.title': 'PNP occupation list', 'pnplist.source': 'Source', 'pnplist.gta': 'Outside GTA', 'pnplist.loading': 'Loading list…',
   // 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」「展开 20, 再展开 20, 再开其余, 收起」:清单展开 / 收起全站一套(pager 桶 FoldLine);量词由调用方取(fold.u.*)
   'fold.first': 'Show {n} ▾', 'fold.next': 'Show {n} more ▾', 'fold.rest': 'Show the remaining {n} ▾', 'fold.up': 'Collapse ▴',
   'fold.u.item': '', 'fold.u.employer': '', 'fold.u.group': '', 'fold.u.entry': '', 'fold.u.question': '', 'fold.u.reply': '',
@@ -754,7 +753,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'eecmp.higher': '{cat} is {n} points above {cec}', 'eecmp.same': '{cat} matches {cec}',
   'eecmp.rounds': '{n} rounds', 'eecmp.roundsOne': '{n} round', 'eecmp.frenchTip': 'French rounds select on language ability, not occupation',
   'eelist.occTitle': 'Occupations included',
-  'col.actions': 'Actions', 'act.immigValue': 'Immigration value', 'act.descTitle': 'Job description', 'act.site': 'Website', 'co.wiki': 'Wikipedia', 'co.careers': 'Careers', 'act.addr': 'Address', 'act.jobsHere': 'Listings by this company', 'act.showAll': 'Show {n} more ▾', 'act.showMore': 'Show {n} more', 'act.collapse': 'Collapse ▴', 'act.retrans': 'Retranslate', 'unit.perHr': '/hr', 'unit.perYr': '/yr', 'act.showAllBoard': 'See {n} more on the job board', 'act.noText': 'No description text on file for this posting yet — new posts usually arrive within a day; some aggregator sources never provide one.', 'act.loadingText': 'Loading…', 'jd.busy': 'Loading these quickly — give it a moment and try again.',
+  'col.actions': 'Actions', 'act.immigValue': 'Immigration value', 'act.descTitle': 'Job description', 'act.site': 'Website', 'co.wiki': 'Wikipedia', 'co.careers': 'Careers', 'act.addr': 'Address', 'act.jobsHere': 'Listings by this company', 'act.retrans': 'Retranslate', 'unit.perHr': '/hr', 'unit.perYr': '/yr', 'act.showAllBoard': 'See {n} more on the job board', 'act.noText': 'No description text on file for this posting yet — new posts usually arrive within a day; some aggregator sources never provide one.', 'act.loadingText': 'Loading…', 'jd.busy': 'Loading these quickly — give it a moment and try again.',
   'co.hq': 'Headquarters',
   'co.noSite': 'No official website',
   // 2026-10-02 Frank「被 opus 修过的 要打个标记」「可以」:人工核定过的公司,公司卡标题旁一行灰字。
@@ -1091,7 +1090,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'news.cmt.ph': 'Be civil. Comments appear after human review; ads and agent solicitation are removed.',
   'news.cmt.send': 'Post', 'news.cmt.sent': 'Submitted — visible after review', 'news.cmt.err': 'Failed to post — please try again later',
   // F (E8-07): threaded replies + official pinned
-  'news.cmt.reply': 'Reply', 'news.cmt.expand': 'Show {n} replies ▾', 'news.cmt.collapse': 'Hide replies ▴',
+  'news.cmt.reply': 'Reply',
   'news.cmt.official': 'Official', 'news.cmt.pinnedTag': 'Pinned', 'news.cmt.replyPh': 'Reply to this comment…',
   'news.zhOn': 'Show Chinese translation', 'news.zhOff': 'Hide Chinese translation', 'news.aiNote': 'AI translation — refer to the original', 'news.aiScore': 'Importance is AI-assessed impact for job seekers / immigration readers, for browsing only',
   'news.trOn': 'Show translation', 'news.trOff': 'Hide translation', 'news.trBusy': 'Translating… ~15s', 'news.sumBusy': 'Summarizing…', 'news.aiGen': 'AI-generated — refer to the original', 'news.trErr': 'Translation unavailable — try again later',

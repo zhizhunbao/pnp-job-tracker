@@ -99,7 +99,6 @@ export const reportZh = {
   'case.blockedTitle': '目前走不通的路径',
   'case.blockedLead': '这些差距攒时间补不齐',
   'case.openings': '本省该职业在招 {n} 岗', 'case.openingsTrain': '本省该职业在招 {n} 岗,其中 {m} 岗标了带训',
-  'case.showMore': '展开其余 {n} 条',
   'case.blockedTag': '走不通',
   'case.ops.spots': '{period} 名额 {total},已提名 {used},剩 {left}',
   'case.ops.alloc': '{period} 名额 {n}', 'case.ops.pool': '池中 {n} 人', 'case.ops.poolAt': '{period} 年末在池 {n} 人', 'case.ops.poolOn': '{period} 在池 {n} 人',
@@ -595,7 +594,7 @@ export const jobsZh = {
   'pnp.gen.AB': 'AB 机会通道', 'pnp.gen.BC': 'BC 技术工人', 'pnp.gen.SK': 'SK 雇主 offer', 'pnp.gen.ON': 'ON 劳动力优先',
   'pnp.gen.MB': 'MB 技术工人', 'pnp.gen.NS': 'NS 技术工人', 'pnp.gen.NB': 'NB 技术工人', 'pnp.gen.PE': 'PE 劳工通道',
   'pnp.gen.NL': 'NL 技术工人', 'cell.pnpIndemand': '紧缺', 'cell.pnpQc': '魁省', 'cell.aipYes': '指定雇主', 'cell.lmiaYes': '✓ {n} 职位　{q}', 'cell.closed': '已下架', 'cell.open': '在招',
-  'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…', 'pnplist.showOther': '展开其他 {n} 个 ▾', 'pnplist.foldOther': '收起 ▴',
+  'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…',
   // 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」「展开 20, 再展开 20, 再开其余, 收起」:清单展开 / 收起全站一套(pager 桶 FoldLine);量词由调用方取(fold.u.*)
   'fold.first': '展开 {n} {u} ▾', 'fold.next': '再展开 {n} {u} ▾', 'fold.rest': '展开其余 {n} {u} ▾', 'fold.up': '收起 ▴',
   'fold.u.item': '个', 'fold.u.employer': '家', 'fold.u.group': '组', 'fold.u.entry': '条', 'fold.u.question': '题', 'fold.u.reply': '条回复',
@@ -800,7 +799,7 @@ export const jobsZh = {
   'eecmp.rounds': '{n} 轮', 'eecmp.roundsOne': '{n} 轮', 'eecmp.frenchTip': '法语轮次按语言能力抽,与职业无关',
   // #135 历次抽选时间线(展开)
   'eelist.occTitle': '包含职业',
-  'col.actions': '操作', 'act.immigValue': '移民价值', 'act.descTitle': '职位描述', 'act.site': '官网', 'co.wiki': '维基百科', 'co.careers': '招聘页', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.showAll': '展开其余 {n} 个 ▾', 'act.showMore': '再展开 {n} 个', 'act.collapse': '收起 ▴', 'act.retrans': '重译', 'unit.perHr': '/小时', 'unit.perYr': '/年', 'act.showAllBoard': '在职位板查看其余 {n} 个', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…', 'jd.busy': '这条看得有点快,稍等一下再看。',
+  'col.actions': '操作', 'act.immigValue': '移民价值', 'act.descTitle': '职位描述', 'act.site': '官网', 'co.wiki': '维基百科', 'co.careers': '招聘页', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.retrans': '重译', 'unit.perHr': '/小时', 'unit.perYr': '/年', 'act.showAllBoard': '在职位板查看其余 {n} 个', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…', 'jd.busy': '这条看得有点快,稍等一下再看。',
   'co.hq': '总部',
   'co.noSite': '没有官网',
   // 2026-10-02 Frank「被 opus 修过的 要打个标记」「可以」:人工核定过的公司,公司卡标题旁一行灰字。
@@ -1179,7 +1178,7 @@ export const siteZh = {
   'news.cmt.ph': '文明发言;评论经人工审核后显示,广告与中介引流将被移除',
   'news.cmt.send': '发表', 'news.cmt.sent': '已提交,审核通过后显示', 'news.cmt.err': '发表失败,请稍后再试',
   // F 件(E8-07):楼中楼+官方置顶
-  'news.cmt.reply': '回复', 'news.cmt.expand': '展开 {n} 条回复 ▾', 'news.cmt.collapse': '收起回复 ▴',
+  'news.cmt.reply': '回复',
   'news.cmt.official': '官方', 'news.cmt.pinnedTag': '置顶', 'news.cmt.replyPh': '回复这条评论…',
   'news.zhOn': '显示中文对照', 'news.zhOff': '收起中文对照', 'news.aiNote': 'AI 翻译 · 以原文为准', 'news.aiScore': '重要度为 AI 按对求职/移民读者的影响评估,仅供排阅',
   'news.trOn': '显示中文对照', 'news.trOff': '收起中文对照', 'news.trBusy': '翻译中…约 15 秒', 'news.sumBusy': '速读生成中…', 'news.aiGen': 'AI 生成 · 以原文为准', 'news.trErr': '翻译暂不可用,请稍后再试',

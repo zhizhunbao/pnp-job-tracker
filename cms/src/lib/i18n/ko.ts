@@ -80,7 +80,6 @@ export const reportKo: Record<keyof typeof reportZh, string> = {
   'case.blockedTitle': '현재 진행할 수 없는 경로',
   'case.blockedLead': '이 격차는 시간을 쌓아도 메울 수 없음',
   'case.openings': '해당 주 이 직종 공고 {n}건', 'case.openingsTrain': '해당 주 이 직종 공고 {n}건, 이 중 {m}건은 교육 제공',
-  'case.showMore': '나머지 {n}개 보기',
   'case.blockedTag': '불가',
   'case.ops.spots': '{period} 정원 {total}, 지명 {used}, 잔여 {left}',
   'case.ops.alloc': '{period} 정원 {n}', 'case.ops.pool': '풀 {n}명', 'case.ops.poolAt': '{period} 말 기준 풀 {n}명', 'case.ops.poolOn': '{period} 기준 풀 {n}명',
@@ -543,7 +542,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnp.gen.AB': 'AB 오퍼튜니티 스트림', 'pnp.gen.BC': 'BC 숙련 노동자', 'pnp.gen.SK': 'SK 고용 오퍼', 'pnp.gen.ON': 'ON 인력 우선',
   'pnp.gen.MB': 'MB 숙련 노동자', 'pnp.gen.NS': 'NS 숙련 노동자', 'pnp.gen.NB': 'NB 숙련 노동자', 'pnp.gen.PE': 'PE 인력 스트림',
   'pnp.gen.NL': 'NL 숙련 노동자', 'cell.pnpIndemand': '부족직종', 'cell.pnpQc': '퀘벡', 'cell.aipYes': '지정 고용주', 'cell.lmiaYes': '✓ {n} 포지션　{q}', 'cell.closed': '마감', 'cell.open': '채용중',
-  'pnplist.title': 'PNP 직업 목록', 'pnplist.source': '출처', 'pnplist.gta': 'GTA 외', 'pnplist.loading': '목록 불러오는 중…', 'pnplist.showOther': '다른 {n}개 보기 ▾', 'pnplist.foldOther': '접기 ▴',
+  'pnplist.title': 'PNP 직업 목록', 'pnplist.source': '출처', 'pnplist.gta': 'GTA 외', 'pnplist.loading': '목록 불러오는 중…',
   // 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」「展开 20, 再展开 20, 再开其余, 收起」:清单展开 / 收起全站一套(pager 桶 FoldLine);量词由调用方取(fold.u.*)
   'fold.first': '{n}{u} 펼치기 ▾', 'fold.next': '{n}{u} 더 보기 ▾', 'fold.rest': '나머지 {n}{u} 보기 ▾', 'fold.up': '접기 ▴',
   'fold.u.item': '개', 'fold.u.employer': '곳', 'fold.u.group': '개', 'fold.u.entry': '건', 'fold.u.question': '문제', 'fold.u.reply': '개 답글',
@@ -732,7 +731,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'eecmp.higher': '{cat}: {cec}보다 {n}점 높음', 'eecmp.same': '{cat}: {cec}와 동점',
   'eecmp.rounds': '{n}회', 'eecmp.roundsOne': '{n}회', 'eecmp.frenchTip': '프랑스어 추첨은 직업이 아니라 언어 능력으로 선발합니다',
   'eelist.occTitle': '포함 직업',
-  'col.actions': '작업', 'act.immigValue': '이민 가치', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'co.wiki': '위키백과', 'co.careers': '채용 페이지', 'act.addr': '주소', 'act.jobsHere': '이 회사의 공고', 'act.showAll': '나머지 {n}개 펼치기 ▾', 'act.showMore': '{n}개 더 보기', 'act.collapse': '접기 ▴', 'act.retrans': '재번역', 'unit.perHr': '/시간', 'unit.perYr': '/년', 'act.showAllBoard': '채용 보드에서 나머지 {n}개 보기', 'act.noText': '이 공고의 본문이 아직 없습니다 — 신규 공고는 보통 다음 날 등록되며, 일부 소스는 본문을 제공하지 않습니다.', 'act.loadingText': '로딩 중…', 'jd.busy': '조금 빠르게 보고 있어요. 잠시 후 다시 시도해 주세요.',
+  'col.actions': '작업', 'act.immigValue': '이민 가치', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'co.wiki': '위키백과', 'co.careers': '채용 페이지', 'act.addr': '주소', 'act.jobsHere': '이 회사의 공고', 'act.retrans': '재번역', 'unit.perHr': '/시간', 'unit.perYr': '/년', 'act.showAllBoard': '채용 보드에서 나머지 {n}개 보기', 'act.noText': '이 공고의 본문이 아직 없습니다 — 신규 공고는 보통 다음 날 등록되며, 일부 소스는 본문을 제공하지 않습니다.', 'act.loadingText': '로딩 중…', 'jd.busy': '조금 빠르게 보고 있어요. 잠시 후 다시 시도해 주세요.',
   'co.hq': '본사',
   'co.noSite': '공식 웹사이트 없음',
   // 2026-10-02 Frank「被 opus 修过的 要打个标记」「可以」:人工核定过的公司,公司卡标题旁一行灰字。
@@ -1065,7 +1064,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'news.cmt.ph': '예의를 지켜주세요. 댓글은 검토 후 게시되며, 광고 및 중개 유도 내용은 삭제됩니다.',
   'news.cmt.send': '등록', 'news.cmt.sent': '제출됨 · 검토 후 표시됩니다', 'news.cmt.err': '등록 실패 — 잠시 후 다시 시도하세요',
   // F (E8-07): 대댓글 + 공식 고정
-  'news.cmt.reply': '답글', 'news.cmt.expand': '답글 {n}개 보기 ▾', 'news.cmt.collapse': '답글 접기 ▴',
+  'news.cmt.reply': '답글',
   'news.cmt.official': '공식', 'news.cmt.pinnedTag': '고정', 'news.cmt.replyPh': '이 댓글에 답글 달기…',
   'news.zhOn': '중국어 번역 보기', 'news.zhOff': '중국어 번역 숨기기', 'news.aiNote': 'AI 번역 · 원문 기준', 'news.aiScore': '중요도는 구직 및 이민 독자에게 미치는 영향을 AI가 평가한 것으로, 열람 참고용입니다',
   'news.trOn': '번역 보기', 'news.trOff': '번역 숨기기', 'news.trBusy': '번역 중… 약 15초', 'news.sumBusy': '요약 생성 중…', 'news.aiGen': 'AI 생성 · 원문 기준', 'news.trErr': '번역을 사용할 수 없습니다 — 잠시 후 다시 시도하세요',
