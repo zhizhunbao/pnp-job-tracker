@@ -803,6 +803,8 @@ export const jobsZh = {
   'col.actions': '操作', 'act.immigValue': '移民价值', 'act.descTitle': '职位描述', 'act.site': '官网', 'co.wiki': '维基百科', 'co.careers': '招聘页', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.showAll': '展开其余 {n} 个 ▾', 'act.showMore': '再展开 {n} 个', 'act.collapse': '收起 ▴', 'act.retrans': '重译', 'unit.perHr': '/小时', 'unit.perYr': '/年', 'act.showAllBoard': '在职位板查看其余 {n} 个', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…', 'jd.busy': '这条看得有点快,稍等一下再看。',
   'co.hq': '总部',
   'co.noSite': '没有官网',
+  // 2026-10-02 Frank「被 opus 修过的 要打个标记」「可以」:人工核定过的公司,公司卡标题旁一行灰字。
+  'co.curated': '已人工核实',
   // 2026-09-20 公司卡进度行(官网那条工种;状态词只有这五个,设计稿 docs/design/点开优先抓取与纠错-20260920.md)。
   'co.stage.queued': '等待调查', 'co.stage.find': '查找官网', 'co.stage.fetch': '抓取官网', 'co.stage.facts': '整理内容', 'co.stage.trans': '翻译',
   'co.stage.pos': '第 {n} 位',

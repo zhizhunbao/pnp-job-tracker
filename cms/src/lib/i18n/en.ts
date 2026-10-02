@@ -757,6 +757,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'col.actions': 'Actions', 'act.immigValue': 'Immigration value', 'act.descTitle': 'Job description', 'act.site': 'Website', 'co.wiki': 'Wikipedia', 'co.careers': 'Careers', 'act.addr': 'Address', 'act.jobsHere': 'Listings by this company', 'act.showAll': 'Show {n} more ▾', 'act.showMore': 'Show {n} more', 'act.collapse': 'Collapse ▴', 'act.retrans': 'Retranslate', 'unit.perHr': '/hr', 'unit.perYr': '/yr', 'act.showAllBoard': 'See {n} more on the job board', 'act.noText': 'No description text on file for this posting yet — new posts usually arrive within a day; some aggregator sources never provide one.', 'act.loadingText': 'Loading…', 'jd.busy': 'Loading these quickly — give it a moment and try again.',
   'co.hq': 'Headquarters',
   'co.noSite': 'No official website',
+  // 2026-10-02 Frank「被 opus 修过的 要打个标记」「可以」:人工核定过的公司,公司卡标题旁一行灰字。
+  'co.curated': 'Manually verified',
   // 2026-09-20 公司卡进度行(官网那条工种;状态词只有这五个,设计稿 docs/design/点开优先抓取与纠错-20260920.md)。
   'co.stage.queued': 'Waiting', 'co.stage.find': 'Finding site', 'co.stage.fetch': 'Fetching', 'co.stage.facts': 'Organizing', 'co.stage.trans': 'Translating',
   'co.stage.pos': 'no. {n}',

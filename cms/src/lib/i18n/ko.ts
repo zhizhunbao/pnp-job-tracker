@@ -735,6 +735,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'col.actions': '작업', 'act.immigValue': '이민 가치', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'co.wiki': '위키백과', 'co.careers': '채용 페이지', 'act.addr': '주소', 'act.jobsHere': '이 회사의 공고', 'act.showAll': '나머지 {n}개 펼치기 ▾', 'act.showMore': '{n}개 더 보기', 'act.collapse': '접기 ▴', 'act.retrans': '재번역', 'unit.perHr': '/시간', 'unit.perYr': '/년', 'act.showAllBoard': '채용 보드에서 나머지 {n}개 보기', 'act.noText': '이 공고의 본문이 아직 없습니다 — 신규 공고는 보통 다음 날 등록되며, 일부 소스는 본문을 제공하지 않습니다.', 'act.loadingText': '로딩 중…', 'jd.busy': '조금 빠르게 보고 있어요. 잠시 후 다시 시도해 주세요.',
   'co.hq': '본사',
   'co.noSite': '공식 웹사이트 없음',
+  // 2026-10-02 Frank「被 opus 修过的 要打个标记」「可以」:人工核定过的公司,公司卡标题旁一行灰字。
+  'co.curated': '수동 검증됨',
   // 2026-09-20 公司卡进度行(官网那条工种;状态词只有这五个,设计稿 docs/design/点开优先抓取与纠错-20260920.md)。
   'co.stage.queued': '조사 대기', 'co.stage.find': '사이트 찾기', 'co.stage.fetch': '사이트 수집', 'co.stage.facts': '내용 정리', 'co.stage.trans': '번역',
   'co.stage.pos': '{n}번째',

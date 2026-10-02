@@ -57,7 +57,7 @@ import {
 } from './constants'
 import {
   addrShownOf, baseZhOf, cardTitleOf, hasDescOf, hasIdOf, homeProvinceOf, hqMapOf, ignoreDone, isGovCompany,
-  noSiteOf, siteDoneOf, siteHqOf, siteWebsiteOf, wikiTitleOf,
+  isCuratedOf, noSiteOf, siteDoneOf, siteHqOf, siteWebsiteOf, wikiTitleOf,
 } from './functions'
 import { useCompanySite } from './hooks'
 import type { CompanyBasicCardIn } from './types'
@@ -88,7 +88,10 @@ export function CompanyBasicCard({
   }
   return (
     <div className={CARD_MD_CLS}>
-      <div className={CARD_HEAD_CLS}>{cardTitleOf({ t, head })}</div>
+      <div className={CARD_HEAD_CLS}>
+        {cardTitleOf({ t, head })}
+        {isCuratedOf({ company }) && <span className={cssOf(css.curated)}>{t('co.curated')}</span>}
+      </div>
       <div>
         <Row k={t('co.name')}>
           <CompanyNameCell company={company} alias={alias} onOpenCompany={onOpenCompany} />

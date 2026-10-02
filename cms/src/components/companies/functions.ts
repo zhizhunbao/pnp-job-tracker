@@ -32,6 +32,7 @@ import {
   KEY_SAL_TIER_HEAD, KEY_SP_EVIDENCE, KEY_SP_EVIDENCE_AIP, KEY_SP_TIER_AIP, KEY_SP_TIER_HEAD, KEY_STREAM_AGRI,
   KEY_STREAM_GTS, KEY_STREAM_HIGH, KEY_STREAM_LOW, KEY_STREAM_PR, LANG_EN, LANG_KO, LANG_ZH, LOC_JOIN, METHOD_POST,
   CLOCK_PAD, CLOCK_PAD_LEN, CLOCK_SEP,
+  SITE_SRC_CURATED,
   MIME_JSON, NBSP, NOCS_TOP_N, PROV_LOCALE_ONLY, PROV_PAREN_RE, SECS_PER_MIN, SEC_PAIR_STEP, SEP_ENUM, SIGN_PLUS,
   SIM_FIRST_N, STREAM_AGRI_RE,
   STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE,
@@ -222,6 +223,16 @@ export function secZhOf(x: SecZhIn): string {
  */
 export function hasDescOf(x: CompanyOnlyIn): boolean {
   return x.company.description.length >= DESC_MIN_LEN
+}
+
+/**
+ * 是不是人工核定过的公司(2026-10-02 Frank「被 opus 修过的 要打个标记」:官网来路记 curated 的,卡标题旁出「已人工核实」)。
+ *
+ * @param x 公司档案。
+ * @returns 核定过没有。
+ */
+export function isCuratedOf(x: CompanyOnlyIn): boolean {
+  return x.company.websiteSource === SITE_SRC_CURATED
 }
 
 /**

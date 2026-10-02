@@ -556,6 +556,11 @@ export const AI_NOTE_PANEL = 'panel'
 export const SITE_SRC_SEARCHED = 'searched'
 
 /**
+ * 官网 / 总部 / 简介整套是人工逐家核定的(company_curated.json;2026-10-02 Frank「被 opus 修过的 要打个标记」):卡标题旁出「已人工核实」。
+ */
+export const SITE_SRC_CURATED = 'curated'
+
+/**
  * 四维网格里担保维那一行的键(React 列表键;维名本身走文案表)。
  */
 export const DIM_SPONSOR = 'sponsor'
