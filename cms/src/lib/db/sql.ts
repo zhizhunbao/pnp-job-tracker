@@ -697,6 +697,9 @@ export const EMPLOYER_EXPLORE_NAMES = `SELECT key, name FROM employer_explore WH
  * 缺官网或缺总部的公司,点开重探的冷却降到 1 小时 —— 资料全了才守 24 小时;正在办的(queued/find/fetch/facts)照旧不动。
  * 2026-10-01 Frank「如果 opus 定了,这个没问题了。就不要再重新探索了」:官网来路是人工核定(website_source = 'curated')的,
  * 点开直接记 done、不进队(新进队的插入值就是 done;已在队里的见 EXCLUDED.stage = 'done' 一律改 done)。
+ * 2026-10-01 Frank「公司信息 已经准确的就不要在探索了吧」(Cox & Palmer 实撞:律所十处办公室、官网不标总部 → 缺总部走 1 小时重探,
+ * 再点开一次就拿错配官网 cox.com 整理出的 Cox Communications 简介顶掉了原本对的简介):走完一轮(done)且有官网的,点开不再重探 ——
+ * 同一个官网再抓一遍补不出新东西,只会把对的改坏;官网的定期刷新归数据层例行轮。没走完(none)或缺官网的照旧按冷却重探。
  */
 export const EMPLOYER_EXPLORE_OPEN = `INSERT INTO employer_explore (key, name, opened_at, open_count, stage, stage_at)
      SELECT p.key, p.name, now(), 1, CASE WHEN c.website_source = 'curated' THEN 'done' ELSE 'queued' END, now()
@@ -704,6 +707,9 @@ export const EMPLOYER_EXPLORE_OPEN = `INSERT INTO employer_explore (key, name, o
       WHERE lower(c.name) = lower($1) LIMIT 1
      ON CONFLICT (key) DO UPDATE SET opened_at = now(), open_count = employer_explore.open_count + 1,
        stage = CASE WHEN EXCLUDED.stage = 'done' THEN 'done'
+                    WHEN employer_explore.stage = 'done' AND EXISTS (SELECT 1 FROM employer_pool p3 JOIN companies c3 ON c3.slug = p3.slug
+                                     WHERE p3.key = employer_explore.key AND COALESCE(c3.website, '') <> '')
+                    THEN 'done'
                     WHEN employer_explore.stage_at IS NULL OR employer_explore.stage_at < now() - interval '24 hours'
                     OR (employer_explore.stage IN ('done', 'none') AND employer_explore.stage_at < now() - interval '1 hour'
                         AND EXISTS (SELECT 1 FROM employer_pool p2 JOIN companies c2 ON c2.slug = p2.slug
@@ -711,6 +717,9 @@ export const EMPLOYER_EXPLORE_OPEN = `INSERT INTO employer_explore (key, name, o
                                        AND (COALESCE(c2.website, '') = '' OR COALESCE(c2.hq_city, '') = '')))
                     THEN 'queued' ELSE employer_explore.stage END,
        stage_at = CASE WHEN EXCLUDED.stage = 'done' THEN now()
+                    WHEN employer_explore.stage = 'done' AND EXISTS (SELECT 1 FROM employer_pool p3 JOIN companies c3 ON c3.slug = p3.slug
+                                     WHERE p3.key = employer_explore.key AND COALESCE(c3.website, '') <> '')
+                    THEN employer_explore.stage_at
                     WHEN employer_explore.stage_at IS NULL OR employer_explore.stage_at < now() - interval '24 hours'
                     OR (employer_explore.stage IN ('done', 'none') AND employer_explore.stage_at < now() - interval '1 hour'
                         AND EXISTS (SELECT 1 FROM employer_pool p2 JOIN companies c2 ON c2.slug = p2.slug
