@@ -145,6 +145,11 @@ export type ModalHeadIn = {
    * 译名行右端的控件(切换钮这类);没有给 null。
    */
   ctl: React.ReactNode
+
+  /**
+   * 译名行里贴右、排在控件前的信息(职位描述弹框的发布 / 截止日期;2026-10-02);不给 = 没有这一槽。
+   */
+  meta?: React.ReactNode
 }
 
 /**

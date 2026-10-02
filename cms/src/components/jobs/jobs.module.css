@@ -1770,16 +1770,15 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px 16px;
-  margin: 8px 0 4px;
-  font-size: 14px;
+  font-size: 13px;
   color: #111827;
 
   /*
-   * 弹框页眉(flex 折行容器)里:排在窗口钮之后、独占一整行,与译名行同档(order 1,DOM 在它后面所以排它下面);
-   * 详情页的块级流里这两格不起作用 —— 两种宿主同一份样式(同 time 桶 .updated 先例)。
+   * 2026-10-02 Frank「这个放到右边 和 灰字翻译在一行可以吗」「可以,按你说的做」:日期挪进译名行贴右
+   * (详情页 .titleMeta、弹框 modal 桶 .subMeta 管位置),这里只管两格本身;原先独占一行用的 order / flex-basis / 上下外边距撤,
+   * 字号随译名行改 13px。
    */
-  order: 1;
-  flex-basis: 100%;
+  justify-content: flex-end;
 }
 
 /*
@@ -1822,6 +1821,47 @@
   padding-bottom: 10px;
   margin-bottom: 14px;
   border-bottom: 1px solid #e5e7eb;
+
+  /*
+   * 2026-10-02 起按本行宽度切窄档(下面 @container):日期放不下时整块换到下一行。
+   */
+  container-type: inline-size;
+}
+
+/*
+ * 详情页译名行里的日期槽(2026-10-02 Frank「这个放到右边 和 灰字翻译在一行可以吗」「可以,按你说的做」;与弹框 modal 桶 .subMeta 同形):
+ * 宽档贴右、排在「查看原帖」前;空槽不占位。
+ */
+.titleMeta {
+  margin-left: auto;
+}
+
+/*
+ * 有日期槽时「查看原帖」紧跟它(两个 auto 外边距会平分空白,把日期挤到中间)。
+ */
+.titleMeta + .aiCtl {
+  margin-left: 0;
+}
+
+/*
+ * 这一岗一个日期都没有:槽不占位,免得窄档多出一行空白。
+ */
+.titleMeta:empty {
+  display: none;
+}
+
+/*
+ * 窄档(手机宽度放不下译名 + 日期 + 查看原帖):第一行译名左、查看原帖右,日期整块换到下一行、仍贴右。
+ */
+@container (max-width: 440px) {
+  .titleMeta {
+    order: 1;
+    flex-basis: 100%;
+  }
+
+  .titleMeta + .aiCtl {
+    margin-left: auto;
+  }
 }
 
 /*

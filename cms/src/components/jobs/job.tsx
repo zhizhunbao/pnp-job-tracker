@@ -29,6 +29,8 @@
  * 同日晚 Frank「还有这两个是不是要换个位置」:日期行挪到译名行下面(H1 → 译名 → 日期;职位弹框页眉同改)。
  * 2026-09-27 Frank「放到 jd 正文部分如何」→ 看过效果图选 ①:日期改成正文里单独一节(JobBody → JdContent 末尾挂),这里那一行撤。
  * 2026-10-01 Frank「这种有点突兀」「这种也突兀」(没正文 / 整理版 / 原帖三档里那一节都不搭)→ 选「回到职位名下面」:日期行挂回译名行下面。
+ * 2026-10-02 Frank「这个放到右边 和 灰字翻译在一行可以吗」「可以,按你说的做」:日期挪进译名行贴右、排在「查看原帖」前
+ * (.titleMeta);手机宽度放不下时整块换到下一行仍贴右。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -71,9 +73,9 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }
           <h1 className={cssOf(css.title)}>{job.title}</h1>
           <div className={cssOf(css.titleRow)}>
             {d.view.alias !== TEXT_NONE && <div className={cssOf(css.titleAlias)}>{d.view.alias}</div>}
+            <div className={cssOf(css.titleMeta)}><JobDates job={job} t={d.t} /></div>
             <JdOrigLink d={body} />
           </div>
-          <JobDates job={job} t={d.t} />
           <JobBody job={job} lang={d.lang} plan={plan} d={body} />
         </div>
         <CompanyInfoCard jobId={Number(job.id)} lang={d.lang} onOpenCompany={peek.onOpenCompany} />

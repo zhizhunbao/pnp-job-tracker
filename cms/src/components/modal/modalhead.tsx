@@ -8,6 +8,8 @@
  * 右端挂切换控件(ctl 槽),按下不起拖动。
  * 2026-09-28 并壳时立:advisor 的 AdvisorHead(字段 / 公司弹框)与 ActHead(职位描述弹框)两份逐字相同的版式并成这一件,
  * 小标里写什么由各弹框自己给。
+ * 2026-10-02 Frank「这个放到右边 和 灰字翻译在一行可以吗」「可以,按你说的做」:译名行加信息槽(meta),贴右、排在控件前;
+ * 窄档(行宽放不下)信息槽整块换到下一行仍贴右(版式全在 modal.module.css 的 .subMeta)。
  *
  * @author Frank
  * @time 2026-09-28 04:40:00
@@ -20,10 +22,10 @@ import css from './modal.module.css'
 /**
  * 渲染标题栏左块 + 译名行。
  *
- * @param props 小标、大标题、译名与切换控件。
+ * @param props 小标、大标题、译名、切换控件与信息槽。
  * @returns 左块 + 译名行。
  */
-export function ModalHead({ kicker, title, sub, ctl }: ModalHeadIn) {
+export function ModalHead({ kicker, title, sub, ctl, meta }: ModalHeadIn) {
   return (
     <>
       <div className={cssOf(css.headL) + CLS_SEP + cssOf(css.headMain)}>
@@ -32,6 +34,7 @@ export function ModalHead({ kicker, title, sub, ctl }: ModalHeadIn) {
       </div>
       <div className={cssOf(css.subRow)} data-nodrag>
         {sub !== TEXT_NONE && <div className={cssOf(css.sub)}>{sub}</div>}
+        {meta != null && <div className={cssOf(css.subMeta)}>{meta}</div>}
         <span className={cssOf(css.subCtl)}>{ctl}</span>
       </div>
     </>

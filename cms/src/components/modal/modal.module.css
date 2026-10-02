@@ -250,6 +250,11 @@
   flex-wrap: wrap;
   gap: 6px 12px;
   cursor: default;
+
+  /*
+   * 2026-10-02 起按本行宽度切窄档(下面 @container):信息槽放不下时整块换到下一行。
+   */
+  container-type: inline-size;
 }
 
 /*
@@ -259,6 +264,44 @@
   margin-left: auto;
   display: flex;
   align-items: center;
+}
+
+/*
+ * 译名行的信息槽(2026-10-02 Frank「这个放到右边 和 灰字翻译在一行可以吗」「可以,按你说的做」;职位描述弹框挂发布 / 截止日期):
+ * 宽档贴右、排在控件槽前面(控件槽紧跟它,不再各占一半空白);空槽不占位。
+ */
+.subMeta {
+  margin-left: auto;
+}
+
+/*
+ * 有信息槽时控件槽紧跟信息槽(两个 auto 外边距会平分空白,把信息槽挤到中间)。
+ */
+.subMeta + .subCtl {
+  margin-left: 0;
+}
+
+/*
+ * 空信息槽(这一岗一个日期都没有)不占位,免得窄档多出一行空白。
+ */
+.subMeta:empty {
+  display: none;
+}
+
+/*
+ * 窄档(手机宽度放不下译名 + 信息 + 控件):第一行译名左、控件右,信息槽整块换到下一行、仍贴右。
+ */
+@container (max-width: 440px) {
+  .subMeta {
+    order: 1;
+    flex-basis: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .subMeta + .subCtl {
+    margin-left: auto;
+  }
 }
 
 /*
