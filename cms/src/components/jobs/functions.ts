@@ -1810,6 +1810,23 @@ export function jdStripDash(l: string): string {
 }
 
 /**
+ * 整理版一行若只是个裸标签(剥掉「- 」后形如「Preferred:」),给出节内小标题字(不带冒号);否则给空串。
+ * 2026-10-02 Frank「这个应该是一个 title 吧」(Maarut 帖 REQS 节里「- Preferred:」被渲成一条要求):
+ * 口径同原帖轨的裸标签行(JD_BARE_LABEL_RE),版式同它的子节头。
+ *
+ * @param l 一行(整理版原文)。
+ * @returns 小标题字;不是小标题给空串。
+ */
+export function jdSubheadOf(l: string): string {
+  const m = jdStripDash(l).match(JD_BARE_LABEL_RE)
+  if (m == null) {
+    return TEXT_NONE
+  }
+  const [, head] = m
+  return String(head)
+}
+
+/**
  * PAY 节要不要在节首顶一条帖面薪资。Frank 2026-07-31「整理后的怎么薪资没显示」:
  * 模型抄了福利漏了钱数(#123c 只管整节空)—— 一行都不含数字 = 视为缺薪资,
  * 帖面薪资字段照 #123c 口径顶到节首(真数不靠 LLM 抄)。
