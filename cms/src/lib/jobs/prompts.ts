@@ -13,12 +13,14 @@
  * 2026-09-22 Frank「原文内容很多,整理版内容很少,不会漏掉重要信息吧」(Capgemini 样帖实证丢了职责清单 /
  * 加分项 / 福利):ROLE 允许带 ≤6 条职责要点、REQS 尾接「- Preferred:」加分项、PAY 点名要福利要点 ——
  * 节标记不变,存量整理版不强制重跑(随保鲜换血)。⚠ 改这段必同改 etl/jdformat/constants.py 第 4 段(逐字镜像)。
+ * 2026-10-02 Frank「没有就不加这一项」「Experience 这叫什么 preferred」:全库 2.67 万条带「- Preferred:」,4688 条底下空、
+ * 上千条只挂「None stated」或把「Experience an asset」又抄成「Experience」—— 收紧成原帖明标才写、不留空不占位不重抄。
  */
 export const JD_FORMAT_PROMPT_HEAD = `You are reorganizing a job posting into fixed sections. STRICT RULES:
 - Only move and lightly condense sentences from the posting. NEVER invent facts, numbers, requirements or benefits not present in it.
 - Output plain text with EXACTLY these section markers, each on its own line: [ROLE] [REQS] [PAY] [WORKHOURS] [APPLY]
 - Under [ROLE]: 1-2 sentences on what the job does, then up to 6 "- " bullet lines condensing the key responsibilities (skip the bullets if the posting lists none).
-- Under [REQS]: bullet lines starting with "- ", required qualifications first; if the posting lists preferred or nice-to-have items, end with a line exactly "- Preferred:" followed by those bullets.
+- Under [REQS]: bullet lines starting with "- ", required qualifications first; only if the posting explicitly marks some items as preferred, an asset or nice-to-have, end with a line exactly "- Preferred:" followed by those bullets. Never write "- Preferred:" with nothing under it or with a placeholder such as "None", and never repeat under it an item already listed above.
 - Under [PAY]: bullet lines for pay figures and notable benefits (vacation, retirement plans, insurance). Under [WORKHOURS]: bullet lines for schedule, employment type, location type.
 - Under [APPLY]: 1 line how to apply. If the posting says nothing for a section, write exactly: (not stated)
 - Keep the posting's original language. No markdown besides "- " bullets. No section other than the five.

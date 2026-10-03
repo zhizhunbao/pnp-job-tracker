@@ -43,7 +43,8 @@ import {
   HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HOME_GATE_CSS, HOME_GATE_MAYBE, HOME_GATE_OFF, HOME_GATE_ON, HTTP_PAYMENT,
   HTTP_TOO_MANY, JB_MAIL_HOST, JD_ALT_SEP, JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX, JD_BULLET_RE,
   JD_DASH_ITEM_RE, JD_GUESS_BAD_RE, JD_GUESS_MAX_LEN, JD_GUESS_MAX_WORDS, JD_GUESS_MIN_LEN, JD_GUESS_MIN_WORDS,
-  JD_GUESS_NEXT_PARA_LEN, JD_HEAD_MARK, JD_DASH_PREFIX_RE, JD_LONG_LINE_LEN, JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_ESC_RE,
+  JD_GUESS_NEXT_PARA_LEN, JD_HEAD_MARK, JD_DASH_PREFIX_RE, JD_ITEM_TAIL_RE, JD_PREFERRED_HEAD, JD_SUBHEAD_COLON_RE,
+  JD_LONG_LINE_LEN, JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_ESC_RE,
   JD_ESC_TO, JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS, JD_HR_LINE_TO, JD_HR_LINE_TPL, JD_INLINE_LABELS, JD_INLINE_TPL,
   JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE, JD_LOC_PROV_KEY, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC,
   JD_SEC_PAY, JD_SEC_ROLE, JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE,
@@ -87,7 +88,7 @@ import type {
   SavedEntry, SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn,
   ShowRelatedIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, TFn, TextFn, ThWidthIn,
   TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellReasonIn, UserFilterIn, WantsIn, WidthsKeyIn,
-  JobBodyPanel, JobDateCell, JobDatesOfIn,
+  JobBodyPanel, JobDateCell, JobDatesOfIn, JdGroup, JdSubgroupsIn, PushGroupIn, RepeatItemIn, SubheadPairIn,
   CellCtx, ImmCtxIn, ImmMoneyIn, ImmNameEnIn, PopupState, ImmRow, ImmRowsIn, ImmSignalIn, ImmWageIn, OpenImmIn,
 } from './types'
 import { CACHE } from './variables'
@@ -1830,6 +1831,109 @@ export function jdSubheadOf(l: string): string {
 }
 
 /**
+ * 小标题那一行出什么字:有对照译文就出译文(去行尾冒号),没有出原文小标题。
+ * 2026-10-02 Frank「preferred 改成中文」:小标题与节头一样按界面语出,底下不再另挂一行对照。
+ *
+ * @param p 小标题那一行。
+ * @returns 小标题字。
+ */
+export function jdSubheadTextOf(p: JdPair): string {
+  if (p.zh !== TEXT_NONE) {
+    return p.zh.replace(JD_SUBHEAD_COLON_RE, TEXT_NONE)
+  }
+  return jdSubheadOf(p.en)
+}
+
+/**
+ * 一节的行按小标题收拾(2026-10-02 Frank「有就加 没有就不加这一项」「Experience 这叫什么 preferred」):
+ * 小标题底下的条目若与本节前面某条同词起头(「Experience」对「Experience an asset」)= 模型把同一条又抄一遍,丢掉;
+ * 丢完一条不剩的小标题整个不出(占位行 jdPairsOf 已丢,存量 4688 条整理版的「Preferred:」底下本就空)。
+ * 「Preferred」是整理提示词定死的标记,对照位换成界面语词条,对照开关关着也按界面语出。
+ *
+ * @param x 取词函数与这一节的行。
+ * @returns 收拾后的行。
+ */
+export function jdSubgroupsOf(x: JdSubgroupsIn): JdPair[] {
+  const out: JdPair[] = []
+  const seen: string[] = []
+  const group: JdGroup = { head: null, items: [] }
+  for (const p of x.pairs) {
+    if (jdSubheadOf(p.en) !== TEXT_NONE) {
+      pushGroup({ out, group })
+      group.head = subheadPairOf({ t: x.t, p })
+      group.items = []
+      continue
+    }
+    const key = jdItemKeyOf(p.en)
+    if (group.head != null && isRepeatItem({ key, seen })) {
+      continue
+    }
+    seen.push(key)
+    if (group.head == null) {
+      out.push(p)
+    } else {
+      group.items.push(p)
+    }
+  }
+  pushGroup({ out, group })
+  return out
+}
+
+/**
+ * 小标题那一行:提示词定死的「Preferred」对照位换界面语词条,其余原样。
+ *
+ * @param x 取词函数与小标题那一行。
+ * @returns 小标题那一行。
+ */
+function subheadPairOf(x: SubheadPairIn): JdPair {
+  if (jdSubheadOf(x.p.en).toLowerCase() === JD_PREFERRED_HEAD) {
+    return { en: x.p.en, zh: x.t('jd.preferred') }
+  }
+  return x.p
+}
+
+/**
+ * 条目比对用的键:剥「- 」、去行尾标点、转小写。
+ *
+ * @param en 一行原文。
+ * @returns 比对键。
+ */
+function jdItemKeyOf(en: string): string {
+  return jdStripDash(en).replace(JD_ITEM_TAIL_RE, TEXT_NONE).toLowerCase()
+}
+
+/**
+ * 这一条是不是前面某条的重抄:与前面某条相同,或是它开头的整词。
+ *
+ * @param x 这一条的键与前面各条的键。
+ * @returns 是重抄。
+ */
+function isRepeatItem(x: RepeatItemIn): boolean {
+  for (const s of x.seen) {
+    if (s === x.key || s.startsWith(x.key + SPACE)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * 收起手上这一组:有小标题且底下还有条目才落进结果;没有小标题的组条目早已落过。
+ *
+ * @param x 结果与手上这一组。
+ * @returns 无。
+ */
+function pushGroup(x: PushGroupIn): void {
+  if (x.group.head == null || x.group.items.length === 0) {
+    return
+  }
+  x.out.push(x.group.head)
+  for (const p of x.group.items) {
+    x.out.push(p)
+  }
+}
+
+/**
  * PAY 节要不要在节首顶一条帖面薪资。Frank 2026-07-31「整理后的怎么薪资没显示」:
  * 模型抄了福利漏了钱数(#123c 只管整节空)—— 一行都不含数字 = 视为缺薪资,
  * 帖面薪资字段照 #123c 口径顶到节首(真数不靠 LLM 抄)。
@@ -3254,7 +3358,7 @@ export function jdSectionViewsOf(x: JdSectionsIn): JdSectionView[] {
   const paired = x.trans !== TEXT_NONE
   const out: JdSectionView[] = []
   for (const [m, key] of JD_SECS) {
-    let pairs = jdPairsOf({ body: strOf(secs[m]), trans: strOf(tSecs[m]) })
+    let pairs = jdSubgroupsOf({ t: x.t, pairs: jdPairsOf({ body: strOf(secs[m]), trans: strOf(tSecs[m]) }) })
     if (m === JD_SEC_PAY && paired) {
       pairs = payPairsZhOf({ t: x.t, pairs })
     }

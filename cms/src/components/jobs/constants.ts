@@ -2340,6 +2340,21 @@ export const JD_SEC_STEP = 2
 export const JD_DASH_PREFIX_RE = /^-\s*/
 
 /**
+ * 整理提示词定死的加分项标记「- Preferred:」剥成小标题后的小写字(2026-10-02:这一个换界面语词条出)。
+ */
+export const JD_PREFERRED_HEAD = 'preferred'
+
+/**
+ * 比对条目是否重复前剥掉的行尾标点与空白。
+ */
+export const JD_ITEM_TAIL_RE = /[\s.;:,]+$/
+
+/**
+ * 小标题对照译文行尾的冒号(半角 / 全角),出小标题时去掉。
+ */
+export const JD_SUBHEAD_COLON_RE = /\s*[:：]\s*$/
+
+/**
  * PAY 节里「这一行含不含钱数」的判据(Frank 2026-07-31「整理后的怎么薪资没显示」:
  * 模型抄了福利漏了钱数,一行都不含数字 = 视为缺薪资,帖面薪资顶到节首)。
  */

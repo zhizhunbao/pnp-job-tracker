@@ -2263,6 +2263,81 @@ export type JdPair = {
 }
 
 /**
+ * jdSubgroupsOf 的入参。
+ */
+export type JdSubgroupsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这一节的行。
+   */
+  pairs: JdPair[]
+}
+
+/**
+ * jdSubgroupsOf 手上正在收的一组:小标题与它底下的条目。
+ */
+export type JdGroup = {
+  /**
+   * 小标题那一行;null = 还没遇到小标题(这时的条目直接落结果)。
+   */
+  head: JdPair | null
+
+  /**
+   * 小标题底下留下的条目。
+   */
+  items: JdPair[]
+}
+
+/**
+ * subheadPairOf 的入参。
+ */
+export type SubheadPairIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 小标题那一行。
+   */
+  p: JdPair
+}
+
+/**
+ * isRepeatItem 的入参。
+ */
+export type RepeatItemIn = {
+  /**
+   * 这一条的比对键。
+   */
+  key: string
+
+  /**
+   * 本节前面各条的比对键。
+   */
+  seen: string[]
+}
+
+/**
+ * pushGroup 的入参。
+ */
+export type PushGroupIn = {
+  /**
+   * 结果(就地追加)。
+   */
+  out: JdPair[]
+
+  /**
+   * 手上这一组。
+   */
+  group: JdGroup
+}
+
+/**
  * ApplyBar(投递栏)的 props。
  */
 export type ApplyBarIn = {

@@ -822,7 +822,7 @@ export const jobsZh = {
   'eecmp.rounds': '{n} 轮', 'eecmp.roundsOne': '{n} 轮', 'eecmp.frenchTip': '法语轮次按语言能力抽,与职业无关',
   // #135 历次抽选时间线(展开)
   'eelist.occTitle': '包含职业',
-  'col.actions': '操作', 'act.immigValue': '移民价值', 'act.descTitle': '职位描述', 'act.site': '官网', 'co.wiki': '维基百科', 'co.careers': '招聘页', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.retrans': '重译', 'unit.perHr': '/小时', 'unit.perYr': '/年', 'act.showAllBoard': '在职位板查看其余 {n} 个', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…', 'jd.busy': '这条看得有点快,稍等一下再看。',
+  'col.actions': '操作', 'act.immigValue': '移民价值', 'act.descTitle': '职位描述', 'act.site': '官网', 'co.wiki': '维基百科', 'co.careers': '招聘页', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.retrans': '重译', 'unit.perHr': '/小时', 'unit.perYr': '/年', 'act.showAllBoard': '在职位板查看其余 {n} 个', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…', 'jd.busy': '这条看得有点快,稍等一下再看。', 'jd.preferred': '加分项',
   'co.hq': '总部',
   'co.noSite': '没有官网',
   // 2026-10-02 Frank「被 opus 修过的 要打个标记」「可以」:人工核定过的公司,公司卡标题旁一行灰字。

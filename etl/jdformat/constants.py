@@ -131,7 +131,7 @@ PROMPT_HEAD = """You are reorganizing a job posting into fixed sections. STRICT 
 - Only move and lightly condense sentences from the posting. NEVER invent facts, numbers, requirements or benefits not present in it.
 - Output plain text with EXACTLY these section markers, each on its own line: [ROLE] [REQS] [PAY] [WORKHOURS] [APPLY]
 - Under [ROLE]: 1-2 sentences on what the job does, then up to 6 "- " bullet lines condensing the key responsibilities (skip the bullets if the posting lists none).
-- Under [REQS]: bullet lines starting with "- ", required qualifications first; if the posting lists preferred or nice-to-have items, end with a line exactly "- Preferred:" followed by those bullets.
+- Under [REQS]: bullet lines starting with "- ", required qualifications first; only if the posting explicitly marks some items as preferred, an asset or nice-to-have, end with a line exactly "- Preferred:" followed by those bullets. Never write "- Preferred:" with nothing under it or with a placeholder such as "None", and never repeat under it an item already listed above.
 - Under [PAY]: bullet lines for pay figures and notable benefits (vacation, retirement plans, insurance). Under [WORKHOURS]: bullet lines for schedule, employment type, location type.
 - Under [APPLY]: 1 line how to apply. If the posting says nothing for a section, write exactly: (not stated)
 - Keep the posting's original language. No markdown besides "- " bullets. No section other than the five.
@@ -139,7 +139,8 @@ PROMPT_HEAD = """You are reorganizing a job posting into fixed sections. STRICT 
 Posting follows:
 """
 """整理提示词头(正文接在后面)。2026-09-22 Frank「不会漏掉重要信息吧」:ROLE 带 ≤6 条职责要点、
-REQS 尾接「- Preferred:」加分项、PAY 点名要福利要点(与 cms lib/jobs/prompts.ts 逐字镜像,改必同改)。"""
+REQS 尾接「- Preferred:」加分项、PAY 点名要福利要点(与 cms lib/jobs/prompts.ts 逐字镜像,改必同改)。
+2026-10-02 Frank「没有就不加这一项」:Preferred 收紧成原帖明标才写、不留空不占位不重抄(空 / 占位 / 重抄存量上千条)。"""
 
 RETRY_TAIL = """
 (Reminder: copy every number, date and amount exactly as written in the posting, character for character.)"""
