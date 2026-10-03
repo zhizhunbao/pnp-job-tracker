@@ -70,7 +70,7 @@ function hitsOf(j: PnpJob): string[] {
 
 function job(p: Partial<PnpJob>): PnpJob {
   return {
-    id: 1, province: '', noc: '', teer: 1, pnpEligible: true, pnpStream: '', pnpBlock: '', eeCategory: '', company: '',
+    id: 1, province: '', noc: '', teer: 1, pnpEligible: true, pnpStream: '', pnpBlocks: [], eeCategory: '', company: '',
     aip: false,
     salaryAnnual: null, wageMedAnnual: null, lmiaPositions: null, lmiaPositionsSkilled: null, lmiaLastQuarter: '',
     ...p,
@@ -421,11 +421,13 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(sec(on).channels.map((c) => c.key)).toEqual(['aip'])
     expect(sec(job({ province: 'NB', teer: 2, aip: false })).channels).toEqual([])
     expect(sec(job({ province: 'NB', teer: 2, aip: false })).card).toEqual(sec(on).card)
-    expect(sec(job({ province: 'AB', teer: 2, aip: true }))).toEqual({ block: '', channels: [], card: null, gate: null })
+    expect(sec(job({ province: 'AB', teer: 2, aip: true }))).toEqual({ block: [], channels: [], card: null, gate: null })
     // 2026-10-01 三弹框统一:走不了的岗出「本岗不满足的门槛」卡(block),通道不列,门槛卡照出 —— 工作性质卡住写那个性质
-    const part = sec(job({ province: 'NB', teer: 2, aip: true, pnpBlock: 'part' }))
-    expect([part.block, part.channels]).toEqual(['兼职', []])
-    expect(sec(on).block).toBe('')
+    const part = sec(job({ province: 'NB', teer: 2, aip: true, pnpBlocks: ['part'] }))
+    expect([part.block, part.channels]).toEqual([['兼职'], []])
+    expect(sec(on).block).toEqual([])
+    // 2026-10-03 Frank「这个不满足 门槛应该显示多个」:兼职又是定期合同 —— 两个都列,顺序照数据层
+    expect(sec(job({ province: 'NB', teer: 2, aip: true, pnpBlocks: ['part', 'term'] })).block).toEqual(['兼职', '定期合同'])
   })
 
   // 2026-10-01 Frank「AIP 也需要一个 门槛卡片吧」「可以,做吧」:与省提名门槛卡同形同行名,按本岗 TEER 挑档;金标照 IRCC 原句手推
@@ -831,43 +833,55 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
 
   // 2026-09-29 Frank「有些职位不满足门槛 也要弹框 并说明」「就直接说 兼职」「单独开一个 框 说不满足」
   it('本岗不满足:原因码 → 原因词(三语),清单排除不走这条;有原因的格子可点', () => {
-    const words = ['part', 'term', 'seasonal', 'casual', 'wage', 'occ'].map((c) => pnpBlockOf({ job: { pnpBlock: c }, t: zh }))
+    const words = ['part', 'term', 'seasonal', 'casual', 'wage', 'occ'].map((c) => pnpBlockOf({ job: { pnpBlocks: [c] }, t: zh }))
     expect(words).toEqual(['兼职', '定期合同', '季节工', '临时工', '工资低于中位', '职业不收'])
-    expect(pnpBlockOf({ job: { pnpBlock: 'part' }, t: en })).toBe('Part-time')
-    expect(pnpBlockOf({ job: { pnpBlock: 'part' }, t: ko })).toBe('파트타임')
-    for (const c of ['', 'list', 'zzz']) {
-      expect(pnpBlockOf({ job: { pnpBlock: c }, t: zh })).toBe('')
+    expect(pnpBlockOf({ job: { pnpBlocks: ['part'] }, t: en })).toBe('Part-time')
+    expect(pnpBlockOf({ job: { pnpBlocks: ['part'] }, t: ko })).toBe('파트타임')
+    for (const c of [[], ['list'], ['zzz']]) {
+      expect(pnpBlockOf({ job: { pnpBlocks: c }, t: zh })).toBe('')
     }
     // 2026-10-01 三弹框统一:弹框卡(pnpBlockCardOf)多认清单排除 list,写「职业不收」;其余码与 pnpBlockOf 逐个相同,空码与杂码给 ''
     for (const c of ['part', 'term', 'seasonal', 'casual', 'wage', 'occ']) {
-      expect(pnpBlockCardOf({ job: { pnpBlock: c }, t: zh })).toBe(pnpBlockOf({ job: { pnpBlock: c }, t: zh }))
+      expect(pnpBlockCardOf({ job: { pnpBlocks: [c] }, t: zh })).toEqual([pnpBlockOf({ job: { pnpBlocks: [c] }, t: zh })])
     }
-    expect(pnpBlockCardOf({ job: { pnpBlock: 'list' }, t: zh })).toBe('职业不收')
-    expect(pnpBlockCardOf({ job: { pnpBlock: 'list' }, t: en })).toBe(pnpBlockOf({ job: { pnpBlock: 'occ' }, t: en }))
-    for (const c of ['', 'zzz']) {
-      expect(pnpBlockCardOf({ job: { pnpBlock: c }, t: zh })).toBe('')
+    expect(pnpBlockCardOf({ job: { pnpBlocks: ['list'] }, t: zh })).toEqual(['职业不收'])
+    expect(pnpBlockCardOf({ job: { pnpBlocks: ['list'] }, t: en })).toEqual([pnpBlockOf({ job: { pnpBlocks: ['occ'] }, t: en })])
+    for (const c of [[], ['zzz']]) {
+      expect(pnpBlockCardOf({ job: { pnpBlocks: c }, t: zh })).toEqual([])
     }
+    // 2026-10-03 Frank「这个不满足 门槛应该显示多个」(SK 卫生局兼职临时岗只写了「兼职」):卡住几个列几个,顺序照数据层,
+    // 同词只列一次,杂码跳过;格子词仍只一个(第一个认得的码)
+    expect(pnpBlockCardOf({ job: { pnpBlocks: ['part', 'term'] }, t: zh })).toEqual(['兼职', '定期合同'])
+    expect(pnpBlockCardOf({ job: { pnpBlocks: ['part', 'term', 'occ', 'wage'] }, t: zh }))
+      .toEqual(['兼职', '定期合同', '职业不收', '工资低于中位'])
+    expect(pnpBlockCardOf({ job: { pnpBlocks: ['occ', 'list'] }, t: zh })).toEqual(['职业不收'])
+    expect(pnpBlockCardOf({ job: { pnpBlocks: ['zzz', 'seasonal'] }, t: en }))
+      .toEqual([pnpBlockOf({ job: { pnpBlocks: ['seasonal'] }, t: en })])
+    expect(pnpBlockOf({ job: { pnpBlocks: ['list', 'term', 'part'] }, t: zh })).toBe('定期合同')
     // 2026-09-30 Frank「兼职 这种都改成不符合 可以吗」(选「五个都改」):格子与胶囊上工作性质四个与工资那个写「不符合」,职业不收照写;
     // 弹框卡(pnpBlockOf)照旧写具体原因(上面几条不变)
     const codes = ['part', 'term', 'seasonal', 'casual', 'wage', 'occ']
     // 2026-10-01 Frank「职业不收 也改成 不符合」「不符合清单 都改成 不符合」:六个码格子上都写「不符合」,清单排除的格子词同词
-    const cells = codes.map((c) => pnpBlockCellOf({ job: { pnpBlock: c }, t: zh }))
+    const cells = codes.map((c) => pnpBlockCellOf({ job: { pnpBlocks: [c] }, t: zh }))
     expect(cells).toEqual(['不符合', '不符合', '不符合', '不符合', '不符合', '不符合'])
-    expect(pnpBlockCellOf({ job: { pnpBlock: 'wage' }, t: en })).toBe('Not eligible')
-    expect(pnpBlockCellOf({ job: { pnpBlock: 'occ' }, t: en })).toBe('Not eligible')
+    expect(pnpBlockCellOf({ job: { pnpBlocks: ['wage'] }, t: en })).toBe('Not eligible')
+    expect(pnpBlockCellOf({ job: { pnpBlocks: ['occ'] }, t: en })).toBe('Not eligible')
+    expect(pnpBlockCellOf({ job: { pnpBlocks: ['part', 'term'] }, t: zh })).toBe('不符合')
+    expect(pnpBlockCellOf({ job: { pnpBlocks: ['list', 'part'] }, t: zh })).toBe('不符合')
     for (const t of [zh, en, ko]) {
       expect(t('cell.pnpExcl')).toBe(t('pnp.block.unfit'))
     }
-    expect(pnpBlockCellOf({ job: { pnpBlock: 'part' }, t: ko })).toBe('요건 미충족')
-    for (const c of ['', 'list', 'zzz']) {
-      expect(pnpBlockCellOf({ job: { pnpBlock: c }, t: zh })).toBe('')
+    expect(pnpBlockCellOf({ job: { pnpBlocks: ['part'] }, t: ko })).toBe('요건 미충족')
+    for (const c of [[], ['list'], ['zzz']]) {
+      expect(pnpBlockCellOf({ job: { pnpBlocks: c }, t: zh })).toBe('')
     }
-    const blocked = { province: 'ON', noc: '65100', pnpEligible: false, pnpStream: '', pnpBlock: 'part' }
+    const blocked = { province: 'ON', noc: '65100', pnpEligible: false, pnpStream: '', pnpBlocks: ['part'] }
     const index = pnpFactsIndexOf({ occ: [], draws: [], pathways: PATHWAYS, qcCells: [] })
     expect(pnpCellActiveOf({ job: blocked, blocked: { pnp: new Set() }, index })).toBe(true)
-    expect(pnpCellActiveOf({ job: { ...blocked, pnpBlock: '' }, blocked: { pnp: new Set() }, index })).toBe(false)
+    expect(pnpCellActiveOf({ job: { ...blocked, pnpBlocks: [] }, blocked: { pnp: new Set() }, index })).toBe(false)
+    expect(pnpCellActiveOf({ job: { ...blocked, pnpBlocks: ['zzz', 'term'] }, blocked: { pnp: new Set() }, index })).toBe(true)
     // 2026-09-29 七省门槛卡:本岗通道登记了门槛也算有卡 —— 萨省普通岗(无抽选无清单)原先不可点
-    const sk = { province: 'SK', noc: '21231', pnpEligible: true, pnpStream: '', pnpBlock: '' }
+    const sk = { province: 'SK', noc: '21231', pnpEligible: true, pnpStream: '', pnpBlocks: [] }
     const gated = { ...index, gated: ['pnp.gen.SK'] }
     expect(pnpCellActiveOf({ job: sk, blocked: { pnp: new Set() }, index: gated })).toBe(true)
     expect(pnpCellActiveOf({ job: sk, blocked: { pnp: new Set() }, index: { ...index, gated: [] } })).toBe(false)
@@ -875,11 +889,12 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
 
   // 2026-09-29 Frank「sk 省 没显示 门槛卡片啊」「都接上,开工吧」:七省接入前的通用件
   it('门槛卡通用件:走不了的岗按本省省默认通道出;经营年限按月写「个月」;经验近 N 年;积分行', () => {
-    const blocked = job({ province: 'ON', noc: '65100', teer: 5, pnpEligible: false, pnpBlock: 'part' })
+    const blocked = job({ province: 'ON', noc: '65100', teer: 5, pnpEligible: false, pnpBlocks: ['part'] })
     expect(gateChannelOf({ job: blocked, pathways: PATHWAYS })?.isDefault).toBe(true)
     // 2026-10-01 三弹框统一:清单排除(list)也出门槛卡(与「本岗不满足的门槛」卡同一个判据)
-    expect(gateChannelOf({ job: { ...blocked, pnpBlock: 'list' }, pathways: PATHWAYS })?.isDefault).toBe(true)
-    expect(gateChannelOf({ job: { ...blocked, pnpBlock: '' }, pathways: PATHWAYS })).toBeNull()
+    expect(gateChannelOf({ job: { ...blocked, pnpBlocks: ['list'] }, pathways: PATHWAYS })?.isDefault).toBe(true)
+    expect(gateChannelOf({ job: { ...blocked, pnpBlocks: ['part', 'term'] }, pathways: PATHWAYS })?.isDefault).toBe(true)
+    expect(gateChannelOf({ job: { ...blocked, pnpBlocks: [] }, pathways: PATHWAYS })).toBeNull()
     const skReq = (p: Partial<PnpReq>): PnpReq => req({ province: 'SK', stream: 'SK X', url: 'https://www.saskatchewan.ca/x', ...p })
     const skReqs = [
       skReq({ value: 4 }),
@@ -1266,12 +1281,14 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     })
 
     it('工作性质卡住(兼职 / 定期合同 / 季节工 / 临时工)不列其余;职业不收照样按条件列;魁省、没省码不出', () => {
-      for (const pnpBlock of ['part', 'term', 'seasonal', 'casual']) {
-        expect(up(job({ province: 'NL', teer: 2, pnpEligible: false, pnpBlock }))).toEqual([])
+      for (const code of ['part', 'term', 'seasonal', 'casual']) {
+        expect(up(job({ province: 'NL', teer: 2, pnpEligible: false, pnpBlocks: [code] }))).toEqual([])
       }
+      // 2026-10-03 原因码一码一格:工作性质码排在职业码后面也照样挡
+      expect(up(job({ province: 'NL', teer: 2, pnpEligible: false, pnpBlocks: ['occ', 'term'] }))).toEqual([])
       // 2026-09-30 BC 偏远医疗撤出对照表(要在同一卫生局已干满 9 个月、10-07 截止,看岗位的人走不了),例子换成 NS 医生
       expect(keys(up(job({ province: 'NS', noc: '31102', teer: 1, company: 'Nova Scotia Health Authority', pnpEligible: false,
-        pnpBlock: 'occ' })))).toContain('ns-physicians')
+        pnpBlocks: ['occ'] })))).toContain('ns-physicians')
       expect(up(job({ province: 'QC', teer: 1 }))).toEqual([])
       expect(up(job({ province: '', teer: 1 }))).toEqual([])
     })
@@ -1287,10 +1304,11 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       expect(aipUp(job({ province: 'NB', teer: 2, aip: false }))).toEqual([])
       expect(aipUp(job({ province: 'NB', teer: 5, aip: true }))).toEqual([])
       expect(aipUp(job({ province: 'NB', teer: 4, aip: true }))).toEqual(['aip'])
-      for (const pnpBlock of ['part', 'term', 'seasonal', 'casual']) {
-        expect(aipUp(job({ province: 'NB', teer: 2, aip: true, pnpEligible: false, pnpBlock }))).toEqual([])
+      for (const code of ['part', 'term', 'seasonal', 'casual']) {
+        expect(aipUp(job({ province: 'NB', teer: 2, aip: true, pnpEligible: false, pnpBlocks: [code] }))).toEqual([])
       }
-      expect(aipUp(job({ province: 'NB', teer: 2, aip: true, pnpEligible: false, pnpBlock: 'occ' }))).toEqual(['aip'])
+      expect(aipUp(job({ province: 'NB', teer: 2, aip: true, pnpEligible: false, pnpBlocks: ['occ'] }))).toEqual(['aip'])
+      expect(aipUp(job({ province: 'NB', teer: 2, aip: true, pnpEligible: false, pnpBlocks: ['occ', 'part'] }))).toEqual([])
       expect(aipUp(job({ province: 'AB', teer: 2, aip: true }))).toEqual([])
     })
 
@@ -1309,9 +1327,11 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       const byKey = new Map(LIVE.map((p) => [p.key, p]))
       fc.assert(fc.property(
         fc.constantFrom('AB', 'BC', 'SK', 'MB', 'ON', 'NS', 'NB', 'PE', 'NL', 'QC', 'YT', ''), fc.boolean(),
-        fc.constantFrom(0, 1, 2, 3, 4, 5), fc.constantFrom('', 'part', 'term', 'occ', 'wage'), fc.constantFrom('', 'AB 医疗', 'NS 建筑'),
-        (province, pnpEligible, teer, pnpBlock, pnpStream) => {
-          const j = job({ province, pnpEligible, teer, pnpBlock, pnpStream })
+        fc.constantFrom(0, 1, 2, 3, 4, 5),
+        fc.constantFrom<string[]>([], ['part'], ['term'], ['part', 'term'], ['occ'], ['occ', 'part'], ['wage']),
+        fc.constantFrom('', 'AB 医疗', 'NS 建筑'),
+        (province, pnpEligible, teer, pnpBlocks, pnpStream) => {
+          const j = job({ province, pnpEligible, teer, pnpBlocks, pnpStream })
           const own = channelsOf({ t: makeT('zh'), tEn: en, lang: 'zh', showZh: true, job: j, defaults: DEFAULTS, pathways: LIVE })
           const all = up(j)
           expect(all.slice(0, own.length)).toEqual(own)
@@ -1325,7 +1345,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
             expect(p.tags.every((g) => CHAN_JOB_TAGS.includes(g) || CHAN_NOTE_TAGS.includes(g)
               || ownTags.includes(CHAN_TAG_COMPLEMENT[g] ?? '')), c.key).toBe(true)
           }
-          if (['part', 'term'].includes(pnpBlock)) {
+          if (pnpBlocks.some((c) => ['part', 'term'].includes(c))) {
             expect(all.length).toBe(own.length)
           }
         }), { numRuns: 500 })

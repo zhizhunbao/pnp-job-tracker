@@ -1120,6 +1120,12 @@ export const PCT = '%'
 export const COMMA = ','
 
 /**
+ * jobs.pnp_block 里多个原因码之间的分隔符(2026-10-03 Frank「这个不满足 门槛应该显示多个」:数据层把卡住的门槛全记下拼成一串,
+ * 与 etl mart 域 BLOCK_SEP 同一个字;toJobRow 拆成一码一格)。
+ */
+export const PNP_BLOCK_SEP = ','
+
+/**
  * 占位符前缀($N)。
  */
 export const DOLLAR = '$'

@@ -63,7 +63,7 @@ export const Jobs: CollectionConfig = {
     { name: 'pnpEligible', type: 'checkbox', index: true, defaultValue: false, admin: { description: '可走雇主offer省提名(TEER0-3 或紧缺低TEER通道)' } },
     { name: 'pnpStream', type: 'text', admin: { description: '命中省提名具名通道的短标签(如「OINP 紧缺技能」),数据层 08_score 算;泛技能岗为空' } },
     // 2026-09-29 Frank「有些职位不满足门槛 也要弹框 并说明」「就直接说 兼职」:走不了省提名的原因码(docs/sql/jobs-pnp-block-20260929.sql)
-    { name: 'pnpBlock', type: 'text', admin: { description: '走不了省提名的原因码(part/term/seasonal/casual 工作性质、wage 工资、occ 职业、list 清单;空=走得了),数据层算' } },
+    { name: 'pnpBlock', type: 'text', admin: { description: '走不了省提名的原因码(part/term/seasonal/casual 工作性质、wage 工资、occ 职业、list 清单;空=走得了;2026-10-03 起卡住几个记几个,逗号拼),数据层算' } },
     { name: 'eeCategory', type: 'text', index: true, admin: { description: '联邦 Express Entry 类别抽选所属类别(医疗社服/STEM/技工…),数据层 08_score 算;与 PNP 是两条路,独立信号' } },
     { name: 'aip', type: 'checkbox', index: true, defaultValue: false, admin: { description: '雇主在官方 AIP 指定雇主名单(大西洋四省 NL/NB/NS/PE)' } },
     { name: 'pilot', type: 'text', index: true, admin: { description: 'RCIP/FCIP 试点社区命中(RCIP|FCIP|RCIP+FCIP,空=不在)。粗筛信号:试点须雇主先被社区指定,命中≠可走' } },

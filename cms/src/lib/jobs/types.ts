@@ -598,8 +598,9 @@ export type JobRow = {
 
   /**
    * 走不了省提名的原因码(part / term / seasonal / casual / wage / occ / list;'' = 走得了;2026-09-29)。
+   * 2026-10-03 Frank「这个不满足 门槛应该显示多个」:卡住的门槛全列,一码一格;空列 = 走得了。
    */
-  pnpBlock: string
+  pnpBlocks: string[]
 
   /**
    * EE 类别命中。

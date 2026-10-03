@@ -113,8 +113,9 @@ export type PnpJob = {
 
   /**
    * 走不了省提名的原因码(数据层判;'' = 走得了;2026-09-29「本岗不满足的门槛」卡读它)。
+   * 2026-10-03 Frank「这个不满足 门槛应该显示多个」:卡住的门槛全列,一码一格;空列 = 走得了。
    */
-  pnpBlock: string
+  pnpBlocks: string[]
 
   /**
    * EE 类别命中。
@@ -2558,8 +2559,9 @@ export type PnpListPanel = {
 
   /**
    * 走不了省提名的原因词(弹框顶上「本岗不满足的门槛」卡;'' = 走得了;2026-09-29)。
+   * 2026-10-03 起卡住几个列几个;空列 = 走得了。
    */
-  block: string
+  block: string[]
 }
 
 /**
@@ -3740,8 +3742,9 @@ export type PnpBlockCardIn = {
 
   /**
    * 原因词('' = 走得了,卡不出)。
+   * 2026-10-03 Frank「这个不满足 门槛应该显示多个」:卡住几个列几个,一行一个;空列 = 走得了,卡不出。
    */
-  text: string
+  texts: string[]
 }
 
 /**
@@ -3750,8 +3753,9 @@ export type PnpBlockCardIn = {
 export type PnpBlockJob = {
   /**
    * 数据层给的原因码;'' = 走得了。
+   * 2026-10-03 起一码一格(卡住几个列几个);空列 = 走得了。
    */
-  pnpBlock: string
+  pnpBlocks: string[]
 }
 
 /**
@@ -3767,6 +3771,21 @@ export type PnpBlockIn = {
    * 取词函数。
    */
   t: TFn
+}
+
+/**
+ * isBlockIn 的入参(2026-10-03 原因码改一码一格后,「本岗有没有落在这张码表里的原因」一处判)。
+ */
+export type BlockHitIn = {
+  /**
+   * 本岗的原因码清单。
+   */
+  codes: string[]
+
+  /**
+   * 要查的码表。
+   */
+  table: string[]
 }
 
 /**
@@ -3945,8 +3964,9 @@ export type AipSectionOfIn = {
 export type AipSectionSpec = {
   /**
    * 走不了 AIP 的原因词(2026-10-01 三弹框统一,出「本岗不满足的门槛」卡);'' = 走得了。
+   * 2026-10-03 起卡住几个列几个;空列 = 走得了。
    */
-  block: string
+  block: string[]
 
   /**
    * AIP 那条通道(本岗能走才有一条)。
@@ -5918,8 +5938,9 @@ export type PnpCellJob = {
 
   /**
    * 走不了省提名的原因码;'' = 走得了(有原因的格子也可点,弹框讲原因;2026-09-29)。
+   * 2026-10-03 起一码一格(卡住几个列几个);空列 = 走得了。
    */
-  pnpBlock: string
+  pnpBlocks: string[]
 
   /**
    * 数据层判的可提名。

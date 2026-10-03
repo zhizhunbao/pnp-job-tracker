@@ -57,7 +57,7 @@ import {
   TITLE_CTX_STRIP_RE, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE,
   TITLE_MAX_LEN, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS,
   TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, TYPE_PRIORITY, UNCAT, VD, W, WAGE_NEAR_PCT_MIN,
-  JD_TRANS_MARKS_RE, REL_GROUP_CO,
+  JD_TRANS_MARKS_RE, REL_GROUP_CO, PNP_BLOCK_SEP,
 } from './constants'
 import {
   JD_FORMAT_PROMPT_HEAD, JD_FORMAT_RETRY_TAIL, TITLE_IN_CTX_PROMPT, TITLE_LANG_KO, TITLE_LANG_ZH,
@@ -3059,7 +3059,7 @@ export function toJobRow(input: ToJobRowIn): JobRow {
     sponsorGrade: numOrNull(j.sponsor_grade),
     pnpEligible: j.pnp_eligible === true,
     pnpStream: text(j.pnp_stream),
-    pnpBlock: text(j.pnp_block),
+    pnpBlocks: pnpBlocksOf(text(j.pnp_block)),
     eeCategory: text(j.ee_category),
     aip: j.aip === true,
     pilot: text(j.pilot), pilotCommunity: text(j.pilot_community),
@@ -3090,6 +3090,23 @@ export function toJobRow(input: ToJobRowIn): JobRow {
     closedAt: iso(j.closed_at),
     validThrough: iso(j.valid_through),
   }
+}
+
+/**
+ * 库里拼成一串的走不了省提名原因码拆成一码一格(2026-10-03 Frank「这个不满足 门槛应该显示多个」:数据层把卡住的门槛全记下,
+ * 用 PNP_BLOCK_SEP 拼;空串 = 走得了,给空列)。
+ *
+ * @param raw 库里那一格(已过 text 归一)。
+ * @returns 原因码清单,顺序照数据层(工时、雇佣期、职业、工资)。
+ */
+function pnpBlocksOf(raw: string): StrList {
+  const out: StrList = []
+  for (const code of raw.split(PNP_BLOCK_SEP)) {
+    if (code !== '') {
+      out.push(code)
+    }
+  }
+  return out
 }
 
 /**

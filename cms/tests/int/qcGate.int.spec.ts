@@ -86,7 +86,7 @@ const WELDER: QcChannel[] = [
 /** 魁省一岗(只填门槛卡与格子读的格) */
 function jobOf(noc: string, teer: number): PnpJob {
   return {
-    id: 1, province: 'QC', noc, teer, pnpEligible: false, pnpStream: '', pnpBlock: '', eeCategory: '', company: '',
+    id: 1, province: 'QC', noc, teer, pnpEligible: false, pnpStream: '', pnpBlocks: [] as string[], eeCategory: '', company: '',
     aip: false, salaryAnnual: null, wageMedAnnual: null,
   } as PnpJob
 }

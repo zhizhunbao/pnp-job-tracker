@@ -32,7 +32,7 @@ export function AipSection({ job, lang, onOpenCompany }: AipSectionIn) {
     <>
       {p.ready === false && p.failed === false && <Loading text={p.t(K_LOADING)} />}
       {p.failed && <Notice kind={NOTICE_ERR}>{p.t(K_LOAD_FAILED)}</Notice>}
-      {p.ready && <PnpBlockCard t={p.t} text={p.section.block} />}
+      {p.ready && <PnpBlockCard t={p.t} texts={p.section.block} />}
       {p.ready && p.section.channels.length > 0 && <PnpChannelCard t={p.t} channels={p.section.channels} />}
       {p.ready && p.section.gate != null && <PnpGateCard spec={p.section.gate} />}
       <AipEmpCard t={p.t} job={job} lang={lang} onOpenCompany={onOpenCompany} />

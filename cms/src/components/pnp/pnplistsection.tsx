@@ -100,7 +100,7 @@ export function PnpListSection({
   }
   return (
     <>
-      <PnpBlockCard t={p.t} text={p.block} />
+      <PnpBlockCard t={p.t} texts={p.block} />
       {p.channels.length > 0 && <PnpChannelCard t={p.t} channels={p.channels} />}
       {qcChannelSpecs.length > 0 && <PnpChannelCard t={p.t} channels={qcChannelSpecs} />}
       {gate != null && <PnpGateCard spec={gate} />}

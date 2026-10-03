@@ -80,7 +80,7 @@ import type {
   PnpStream, PnpStreamsIn, PnpTone, ProvDrawHistIn, ProvRow, ReasonParams, ReformOfIn, ScrollIntoHitIn, ShownStreamsIn,
   SponsorLinesIn, SponsorShowIn, StreamRowSpec, StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn,
   BasisKeyIn, ExpLineIn, GateCardOfIn, GateCardSpec, GateRowOfIn, GateRowSpec, GateUrlIn, LangPickIn, NocHitIn, PnpReq,
-  ReqAppliesIn, WageLowIn, DrawGroupOpenIn, ZonedLinesIn, PnpBlockIn, PnpLang,
+  ReqAppliesIn, WageLowIn, DrawGroupOpenIn, ZonedLinesIn, PnpBlockIn, BlockHitIn, PnpLang,
   RowOfFactorIn, TeerHitIn, DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn, PnpBlocked,
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
   CardYearIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
@@ -933,7 +933,7 @@ export function aipChannelsOf(x: ChannelListIn): ChannelSpec[] {
   if (x.job.teer == null || AIP_CHANNEL_TEERS.includes(x.job.teer) === false) {
     return []
   }
-  if (JOB_NATURE_BLOCKS.includes(x.job.pnpBlock)) {
+  if (isBlockIn({ codes: x.job.pnpBlocks, table: JOB_NATURE_BLOCKS })) {
     return []
   }
   for (const p of x.pathways) {
@@ -956,7 +956,10 @@ export function aipChannelsOf(x: ChannelListIn): ChannelSpec[] {
  */
 export function extraChannelsOf(x: ChannelListIn): ChannelSpec[] {
   const out: ChannelSpec[] = []
-  if (x.job.province === PROV_QC || x.job.province === TEXT_NONE || JOB_NATURE_BLOCKS.includes(x.job.pnpBlock)) {
+  if (x.job.province === PROV_QC || x.job.province === TEXT_NONE) {
+    return out
+  }
+  if (isBlockIn({ codes: x.job.pnpBlocks, table: JOB_NATURE_BLOCKS })) {
     return out
   }
   const own = pnpChannelOf({ job: x.job, pathways: x.pathways })
@@ -1488,6 +1491,7 @@ export function hitStreamsOf(x: HitStreamsIn): string[] {
  * (2026-09-29 Frank「sk 省 没显示 门槛卡片啊」「都接上,开工吧」)。清单排除与没有原因的岗照旧不出。
  * 2026-10-01 三弹框统一(Frank「统一一下 ee pnp aip 弹框的顺序 和 格式」「可以,做吧」):清单排除(list)也出 —— 原因码表换弹框那张
  * (PNP_BLOCK_CARD_CODES),与「本岗不满足的门槛」卡同一个判据。
+ * 2026-10-03 原因码改一码一格(Frank「这个不满足 门槛应该显示多个」):有一个码落在弹框那张表里就出。
  *
  * @param x 本岗与通道对照整表。
  * @returns 那一行;没有给 null。
@@ -1497,7 +1501,7 @@ export function gateChannelOf(x: PnpChannelOfIn): PnpPathway | null {
   if (own != null) {
     return own
   }
-  if (PNP_BLOCK_CARD_CODES.includes(x.job.pnpBlock) === false) {
+  if (isBlockIn({ codes: x.job.pnpBlocks, table: PNP_BLOCK_CARD_CODES }) === false) {
     return null
   }
   for (const p of x.pathways) {
@@ -1912,7 +1916,7 @@ export function aipSectionOf(x: AipSectionOfIn): AipSectionSpec {
   })
   const block = aipBlockTextOf({ t: x.t, job: x.job, occ: x.occ })
   let channels: ChannelSpec[] = []
-  if (block === TEXT_NONE) {
+  if (block.length === 0) {
     channels = aipChannelsOf({
       t: x.t,
       tEn: x.tEn,
@@ -1925,7 +1929,7 @@ export function aipSectionOf(x: AipSectionOfIn): AipSectionSpec {
     })
   }
   let gate: GateCardSpec | null = null
-  if (channels.length > 0 || block !== TEXT_NONE) {
+  if (channels.length > 0 || block.length > 0) {
     gate = aipGateCardOf({ t: x.t, job: x.job, reqs: x.reqs })
   }
   return { block, channels, card: aipCardOf(ctx.dx), gate }
@@ -1935,18 +1939,23 @@ export function aipSectionOf(x: AipSectionOfIn): AipSectionSpec {
  * AIP 弹框「本岗不满足的门槛」卡的原因词(2026-10-01 三弹框统一):弹框只在雇主是本省指定雇主时打得开,走不了只剩两种 ——
  * 省里点名这个职业的 AIP 背书不受理(aipBlockOf)写「职业不收」;工作性质卡住(兼职 / 定期合同 / 季节工 / 临时工,AIP 要全职、
  * 非季节的 offer)写那个工作性质。词与省提名弹框同一套(pnp.block.*)。
+ * 2026-10-03 Frank「这个不满足 门槛应该显示多个」:卡住几个列几个 —— 工作性质每个卡住的取值一条(兼职、定期合同可同时在),
+ * 职业不收殿后,顺序与省提名弹框那张卡一致(工作性质在前、职业在后)。
  *
  * @param x 取词函数、本岗与职业清单整表。
- * @returns 原因词;走得了给 ''。
+ * @returns 原因词清单;走得了给空列。
  */
-function aipBlockTextOf(x: AipBlockTextIn): string {
+function aipBlockTextOf(x: AipBlockTextIn): string[] {
+  const out: string[] = []
+  for (const code of x.job.pnpBlocks) {
+    if (JOB_NATURE_BLOCKS.includes(code)) {
+      out.push(x.t(PNP_BLOCK_HEAD + code))
+    }
+  }
   if (aipBlockOf(x.job, x.occ) != null) {
-    return x.t(PNP_BLOCK_HEAD + PNP_BLOCK_OCC)
+    out.push(x.t(PNP_BLOCK_HEAD + PNP_BLOCK_OCC))
   }
-  if (JOB_NATURE_BLOCKS.includes(x.job.pnpBlock)) {
-    return x.t(PNP_BLOCK_HEAD + x.job.pnpBlock)
-  }
-  return TEXT_NONE
+  return out
 }
 
 /**
@@ -5563,12 +5572,13 @@ export function pnpNameOf(x: PnpNameIn): string {
  * 职位板格子与手机胶囊上的原因词(2026-09-30 Frank「兼职 这种都改成不符合 可以吗」,选「五个都改」):工作性质四个与工资那个
  * 统一写「不符合」(PNP_BLOCK_UNFIT_CODES;职位板别的列已经写着),其余照 pnpBlockOf 写具体原因。弹框「本岗不满足的门槛」卡不走这里。
  * 2026-10-01 Frank「职业不收 也改成 不符合」:职业不收也写「不符合」(码表加 occ)。
+ * 2026-10-03 原因码改一码一格:有一个码落在「不符合」表里就写「不符合」(格子只写一个词,卡住几个都一样)。
  *
  * @param x 本岗与取词函数。
  * @returns 格子上的词;走得了或码不在显示表里给 ''。
  */
 export function pnpBlockCellOf(x: PnpBlockIn): string {
-  if (PNP_BLOCK_UNFIT_CODES.includes(x.job.pnpBlock)) {
+  if (isBlockIn({ codes: x.job.pnpBlocks, table: PNP_BLOCK_UNFIT_CODES })) {
     return x.t(PNP_BLOCK_UNFIT_KEY)
   }
   return pnpBlockOf(x)
@@ -5579,32 +5589,60 @@ export function pnpBlockCellOf(x: PnpBlockIn): string {
  * 「直接精简 一些原因可以吗」「就直接说 兼职」):职位板格子、手机胶囊与弹框「本岗不满足的门槛」卡同一处取。
  * 清单排除(list)不在显示码里 —— 照旧走 pnpExcludedOf 那条路。
  * 2026-09-30 起职位板格子与手机胶囊改走 pnpBlockCellOf(五个码写「不符合」),这里的具体原因词留给弹框卡与职业不收。
+ * 2026-10-03 原因码改一码一格:这里只给一个词(格子用),取第一个在显示表里的码;弹框卡要全列走 pnpBlockCardOf。
  *
  * @param x 本岗与取词函数。
  * @returns 原因词;走得了或码不在显示表里给 ''。
  */
 export function pnpBlockOf(x: PnpBlockIn): string {
-  if (PNP_BLOCK_CODES.includes(x.job.pnpBlock) === false) {
-    return TEXT_NONE
+  for (const code of x.job.pnpBlocks) {
+    if (PNP_BLOCK_CODES.includes(code)) {
+      return x.t(PNP_BLOCK_HEAD + code)
+    }
   }
-  return x.t(PNP_BLOCK_HEAD + x.job.pnpBlock)
+  return TEXT_NONE
 }
 
 /**
  * 弹框「本岗不满足的门槛」卡上的原因词(2026-10-01 三弹框统一,Frank「统一一下 ee pnp aip 弹框的顺序 和 格式」「可以,做吧」):
  * 比 pnpBlockOf 多认清单排除(list),写「职业不收」—— 线上 NB 不受理清单上的岗点开既没有这张卡也没有门槛卡。格子与胶囊不走这里。
+ * 2026-10-03 Frank「这个不满足 门槛应该显示多个」(配图 SK 卫生局兼职临时岗只写了「兼职」):卡住几个列几个,一行一个,
+ * 顺序照数据层(工时、雇佣期、职业、工资);同一个词只列一次(list 与 occ 都写「职业不收」)。
  *
  * @param x 本岗与取词函数。
- * @returns 原因词;走得了或码不在弹框表里给 ''。
+ * @returns 原因词清单;走得了或码都不在弹框表里给空列。
  */
-export function pnpBlockCardOf(x: PnpBlockIn): string {
-  if (PNP_BLOCK_CARD_CODES.includes(x.job.pnpBlock) === false) {
-    return TEXT_NONE
+export function pnpBlockCardOf(x: PnpBlockIn): string[] {
+  const out: string[] = []
+  for (const code of x.job.pnpBlocks) {
+    if (PNP_BLOCK_CARD_CODES.includes(code)) {
+      let shown = code
+      if (code === PNP_BLOCK_LIST) {
+        shown = PNP_BLOCK_OCC
+      }
+      const word = x.t(PNP_BLOCK_HEAD + shown)
+      if (out.includes(word) === false) {
+        out.push(word)
+      }
+    }
   }
-  if (x.job.pnpBlock === PNP_BLOCK_LIST) {
-    return x.t(PNP_BLOCK_HEAD + PNP_BLOCK_OCC)
+  return out
+}
+
+/**
+ * 本岗原因码里有没有落在这张码表里的(2026-10-03 Frank「这个不满足 门槛应该显示多个」:原因码改一码一格后,
+ * 原先单码查表的几处判据统一走这里 —— 有一个落在表里就算)。
+ *
+ * @param x 本岗原因码清单与码表。
+ * @returns 有一个落在表里给 true。
+ */
+function isBlockIn(x: BlockHitIn): boolean {
+  for (const code of x.codes) {
+    if (x.table.includes(code)) {
+      return true
+    }
   }
-  return x.t(PNP_BLOCK_HEAD + x.job.pnpBlock)
+  return false
 }
 
 /**
@@ -5626,7 +5664,7 @@ export function pnpCellActiveOf(x: PnpCellActiveIn): boolean {
   if (x.job.province === PROV_QC) {
     return x.index.qc[x.job.noc] != null
   }
-  if (PNP_BLOCK_CODES.includes(x.job.pnpBlock)) {
+  if (isBlockIn({ codes: x.job.pnpBlocks, table: PNP_BLOCK_CODES })) {
     return true
   }
   if (x.job.pnpEligible === true) {
