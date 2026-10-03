@@ -294,6 +294,9 @@ from mart.constants import (  # 2026-09-28 缺数据修复批:待修清单(Frank
 from mart.scheme import MartPendingTest, MissingIn, PendingRowIn  # 同上
 from mart.scheme import HeldSplitIn, HeldSplitOut  # 同日晚接闸(Frank「确认,下线吧」)
 from mart.constants import DEDUP_CITY_KEY_TPL  # 同日晚展示去重加城市(Frank 勾「检查,不全的下线」)
+from mart.constants import (  # 2026-10-02 申请步骤批 1(萨省限额行业收件窗口摊进运营统计表)
+    K_INTAKE_FILLED, K_INTAKE_OPENED, K_INTAKE_WINDOWS, METRIC_INTAKE_FILLED, SCOPE_INTAKE, SK_INTAKE_METRICS,
+)
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CareersHostIn, CatI18nIn,
     ChannelTierIn, CityBuildIn, CityRowIn, CityStatsIn, CityStatsRowIn, ClosedDaysIn, ClosedJobIn,
@@ -309,7 +312,7 @@ from mart.scheme import (
     LmiaWindows, LocKeptOut, MartCtx, MbAnnualIn, MbBlockIn, MomIn, MoneyIn,
     MoneyTextIn, MvScoreIn, NewsExcerptIn, NewsRowIn, NewsSlugIn, NlEmployerIn, NocDescIn,
     NocDescRowIn, NocOpeningIn, NocOpeningsIn, NoticeRowIn, NumericRangeOut,
-    OccBaseIn, OccBuildIn, OccNationalIn, OccRowIn, OpsCtx, OpsProvIn, OpsRowIn, OpsRowOut,
+    OccBaseIn, OccBuildIn, OccNationalIn, OccRowIn, OpsCtx, OpsIntakeIn, OpsProvIn, OpsRowIn, OpsRowOut,
     OttawaLocIn, PilotEmployerIn, PilotFlagIn, PilotOccIn, PilotQuotaIn, PilotRowIn, PilotTally,
     PilotVerdictOut, PnpJudgeIn, PnpMergeIn, PnpOccIn, PnpStreamBucketIn, PnpStreamIn, PnpTables,
     ProvFillIn, ProvListIn, ProvinceRowIn, QuarterSumIn, QuotaRowIn, RankJobRowIn, RankNamesIn,
@@ -3631,6 +3634,23 @@ def fill_sk_ops(x: OpsProvIn) -> None:
         add_ops_row(OpsRowIn(ctx=x.ctx, base=x.base, metric=METRIC_PRIORITY_SECTOR, scope=s,
                              kind=SCOPE_SECTOR, label=s, raw=1, unit=UNIT_FLAG, text="",
                              section="", period=None))
+    for w in x.data.get(K_INTAKE_WINDOWS, []):
+        fill_sk_intake_row(OpsIntakeIn(prov=x, window=w))
+
+
+def fill_sk_intake_row(x: OpsIntakeIn) -> None:
+    """SK 收件窗口一行(一个窗口一个行业)→ 名额 / 已用 / 剩余三行 + 满额日期一行(官方写了日期才出)。
+    2026-10-02 申请步骤批 1:弹框「申请步骤」卡的「雇主递职位审批」那一步读它。"""
+    sec = x.window.get(K_SECTOR, "")
+    opened = x.window.get(K_INTAKE_OPENED, "")
+    for m, key, unit in SK_INTAKE_METRICS:
+        add_ops_row(OpsRowIn(ctx=x.prov.ctx, base=x.prov.base, metric=m, scope=sec, kind=SCOPE_INTAKE,
+                             label=sec, raw=x.window.get(key), unit=unit, text="", section="", period=opened))
+    filled = x.window.get(K_INTAKE_FILLED)
+    if filled:
+        add_ops_row(OpsRowIn(ctx=x.prov.ctx, base=x.prov.base, metric=METRIC_INTAKE_FILLED, scope=sec,
+                             kind=SCOPE_INTAKE, label=sec, raw=None, unit=UNIT_TEXT, text=filled, section="",
+                             period=opened))
 
 
 def fill_bc_ops(x: OpsProvIn) -> None:
@@ -4415,9 +4435,12 @@ def to_ops_extra_base(x: OpsExtraBaseIn) -> dict:
 
 
 def to_ops_row(x: OpsRowOut) -> dict:
-    """pnp_ops_stats 表的一行(period 为 None 时不落该键 —— 键在不在都是契约)。"""
+    """pnp_ops_stats 表的一行(period 为 None 时不落该键 —— 键在不在都是契约)。
+    2026-10-02 申请步骤批 1:萨省收件窗口行(SCOPE_INTAKE)也算归一键 —— 行业格带开放时刻括注(「Food Services (1:30 p.m.)」),
+    前端按键认行业,不在展示层洗字。同批配额卡加萨省分行业三行,行业档(SCOPE_SECTOR)同样算键(「Priority Sectors (min. 50 per cent)」
+    →「priority sectors」)。"""
     key = ""
-    if x.kind == SCOPE_STREAM:
+    if x.kind == SCOPE_STREAM or x.kind == SCOPE_INTAKE or x.kind == SCOPE_SECTOR:
         key = stream_key(x.scope)
     row = dict(x.base)
     row.update({"metric": x.metric, "scope": x.scope, "scopeKind": x.kind, "label": x.label,

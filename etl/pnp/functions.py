@@ -445,6 +445,13 @@ from pnp.constants import (  # 2026-09-29 MB 年报池子历年序列 / AB 额�
 )
 from pnp.scheme import AbFederalIn, MbPoolOut, MbPoolPageIn, MbPoolRowIn  # 同上
 from pnp.scheme import MbCarryIn  # 同上(2026-09-29 旧年份缺口沿用上一版)
+from pnp.constants import (  # 2026-10-02 申请步骤批 1(萨省限额行业收件窗口表)
+    K_FILLED, K_INTAKE_WINDOWS, K_LIMIT, K_OPENED, K_REMAINING, K_USED, SKS_FILLED_MAX_DAYS, SKS_FILLED_RE,
+    SKS_INTAKE_DATE_RE, SKS_INTAKE_HEAD_KW, SKS_INTAKE_MIN_ROWS, SKS_INT_CELL_RE, SKS_MONTH_NUM, SKS_PAREN_RE,
+    SKS_ISO_DATE_TPL, SKS_PLURAL_MIN_LEN, SKS_PLURAL_SUFFIX, SKS_PRINT_INTAKE_TPL, SKS_PRINT_NO_INTAKE, SKS_PROBLEM_INTAKE_ROW_TPL, SKS_PROBLEM_INTAKE_TPL,
+    SKS_WORD_RE,
+)
+from pnp.scheme import SkFilledIn, SkIntakeOut  # 同上
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费:取页 / 抽文 / 解析 / 落盘 / 自校的公共件)
@@ -6638,6 +6645,114 @@ def sk_alloc_problems(x: SkAllocCheckIn) -> list:
     return problems
 
 
+def say_sk_intake(intake: SkIntakeOut) -> None:
+    """收件窗口报数:几行、几个开放日、几行认出满额日期;表不在页上照实报一行。"""
+    if not intake.found:
+        say(SKS_PRINT_NO_INTAKE)
+        return
+    opened: set = set()
+    filled = 0
+    for w in intake.windows:
+        opened.add(w[K_OPENED])
+        if w[K_FILLED] is not None:
+            filled += 1
+    say(SKS_PRINT_INTAKE_TPL.format(n=len(intake.windows), w=len(opened), f=filled))
+
+
+def sk_intake_windows(soup: SoupNodeLike) -> SkIntakeOut:
+    """限额行业收件窗口表(表头含 Intake Window)→ 逐窗口逐行业一行;表不在页上照实返回 found=False。
+    2026-10-02 申请步骤批 1(设计 docs/design/申请步骤-20261002.md 第 3.2 节)。"""
+    for tbl in soup.find_all(TAG_TABLE):
+        rows = table_rows_of(tbl)
+        if not rows or SKS_INTAKE_HEAD_KW not in rows[0][0]:
+            continue
+        return sk_intake_of(rows)
+    return SkIntakeOut(windows=[], found=False, problems=[])
+
+
+def sk_intake_of(rows: list) -> SkIntakeOut:
+    """窗口表行矩阵 → 窗口行。窗口首行带开放日(跨行合并,后续行只有行业 + 三个数);名额 / 已用 / 剩余
+    按「第一个数字格起连续三格」定位,不赌列数(注释格有时在行尾、有时空着)。"""
+    windows: list = []
+    problems: list = []
+    notes: list = []
+    opened = ""
+    for r in rows[1:]:
+        notes += sk_filled_notes(TEXT_JOIN_SEP.join(r))
+        i = first_int_cell(r)
+        if i is None or i == 0 or i + 3 > len(r):
+            continue
+        if i >= 2:
+            d = sk_intake_date(r[0])
+            if d is None:
+                problems.append(SKS_PROBLEM_INTAKE_ROW_TPL.format(row=r))
+                continue
+            opened = d
+        if opened == "":
+            problems.append(SKS_PROBLEM_INTAKE_ROW_TPL.format(row=r))
+            continue
+        windows.append({K_OPENED: opened, K_SECTOR: r[i - 1],
+                        K_LIMIT: int(r[i].replace(COMMA, EMPTY_JOIN)),
+                        K_USED: int(r[i + 1].replace(COMMA, EMPTY_JOIN)),
+                        K_REMAINING: int(r[i + 2].replace(COMMA, EMPTY_JOIN)), K_FILLED: None})
+    for w in windows:
+        w[K_FILLED] = sk_filled_of(SkFilledIn(window=w, notes=notes))
+    if len(windows) < SKS_INTAKE_MIN_ROWS:
+        problems.append(SKS_PROBLEM_INTAKE_TPL.format(n=len(windows)))
+    return SkIntakeOut(windows=windows, found=True, problems=problems)
+
+
+def first_int_cell(r: list) -> int | None:
+    """一行里第一个「整格是数字、且后面两格也是数字」的位置(名额 / 已用 / 剩余三连格);没有返回 None。"""
+    for i in range(len(r) - 2):
+        if (SKS_INT_CELL_RE.match(r[i].strip()) and SKS_INT_CELL_RE.match(r[i + 1].strip())
+                and SKS_INT_CELL_RE.match(r[i + 2].strip())):
+            return i
+    return None
+
+
+def sk_intake_date(s: str) -> str | None:
+    """窗口表日期格 →「YYYY-MM-DD」;认不出 None(不猜)。"""
+    m = SKS_INTAKE_DATE_RE.search(s)
+    if not m:
+        return None
+    return SKS_ISO_DATE_TPL.format(y=int(m.group(3)), m=SKS_MONTH_NUM[m.group(1)], d=int(m.group(2)))
+
+
+def sk_filled_notes(text: str) -> list:
+    """一段文字里的满额注释句 → [{K_SECTOR: 归一后的行业名单, K_DATE: ISO}]。"""
+    out: list = []
+    for m in SKS_FILLED_RE.finditer(text):
+        d = sk_intake_date(m.group(2))
+        if d is not None:
+            out.append({K_SECTOR: sk_sector_norm(m.group(1)), K_DATE: d})
+    return out
+
+
+def sk_sector_norm(s: str) -> str:
+    """行业名归一:去开放时刻括注、小写、去标点、长词去复数 s(「Food Services (12:30 p.m.)」→「food service」)。"""
+    words = []
+    for w in SKS_WORD_RE.findall(SKS_PAREN_RE.sub(EMPTY_JOIN, s).lower()):
+        if len(w) >= SKS_PLURAL_MIN_LEN and w.endswith(SKS_PLURAL_SUFFIX):
+            w = w[:-1]
+        words.append(w)
+    return TEXT_JOIN_SEP.join(words)
+
+
+def sk_filled_of(x: SkFilledIn) -> str | None:
+    """给窗口行配满额日期:注释句的行业名单里含本行行业名、日期在开放日当天到 SKS_FILLED_MAX_DAYS 天内,取最早那天;
+    没有返回 None(剩余 0 而官方没写日期的照实留空)。"""
+    name = sk_sector_norm(x.window[K_SECTOR])
+    opened = datetime.fromisoformat(x.window[K_OPENED])
+    best: str | None = None
+    for n in x.notes:
+        days = (datetime.fromisoformat(n[K_DATE]) - opened).days
+        if name in n[K_SECTOR] and 0 <= days <= SKS_FILLED_MAX_DAYS:
+            if best is None or n[K_DATE] < best:
+                best = n[K_DATE]
+    return best
+
+
 def count_valid_weeks(processing: list) -> int:
     """处理时长里有几条真解析到周数。"""
     n = 0
@@ -6679,6 +6794,8 @@ def build_sk_stats() -> None:
         problems.append(SKS_PROBLEM_PRIORITY_TPL.format(n=len(priority)))
     if len(capped) != SKS_CAPPED_ROWS:
         problems.append(SKS_PROBLEM_CAPPED_TPL.format(n=len(capped)))
+    intake = sk_intake_windows(soup)
+    problems += intake.problems
     if problems:
         fail_zh(problems)
     OUT_SK_STATS.parent.mkdir(parents=True, exist_ok=True)
@@ -6687,7 +6804,7 @@ def build_sk_stats() -> None:
         K_SOURCE: SKS_SOURCE, K_URL: SKS_URL, K_NOTE: SKS_NOTE,
         K_QUARTER: proc.quarter, K_FETCHED: today_iso(),
         K_PROCESSING: proc.processing, K_ALLOCATION: alloc.allocation,
-        K_PRIORITY_SECTORS: priority, K_CAPPED_SECTORS: capped,
+        K_PRIORITY_SECTORS: priority, K_CAPPED_SECTORS: capped, K_INTAKE_WINDOWS: intake.windows,
     }, indent=INDENT_2))
     say(SKS_PRINT_DONE_TPL.format(path=OUT_SK_STATS, quarter=proc.quarter, n=len(proc.processing),
                                   # pyrefly: ignore[unsupported-operation] — sk_alloc_problems 在 total 为 None 时已记问题,problems 非空即 fail_zh 退出
@@ -6695,6 +6812,7 @@ def build_sk_stats() -> None:
                                   # pyrefly: ignore[unsupported-operation] — 同上,走到这 total 恒非 None
                                   pct=total[K_NOMINATIONS_YTD] / total[K_ALLOCATION],
                                   priority=len(priority), capped=len(capped)))
+    say_sk_intake(intake)
 
 
 # =========================================================================

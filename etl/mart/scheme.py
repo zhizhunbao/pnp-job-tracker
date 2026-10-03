@@ -1681,6 +1681,17 @@ class OpsProvIn:
     data: dict
     """该省的运营统计表。"""
 
+
+@dataclass
+class OpsIntakeIn:
+    """fill_sk_intake_row() 入参(2026-10-02 申请步骤批 1)。"""
+
+    prov: OpsProvIn
+    """该省的行累加器与底座。"""
+
+    window: dict
+    """收件窗口一行(一个窗口一个行业)。"""
+
 @dataclass
 class SubBaseIn:
     """to_ops_sub_base() 入参:某一节自带出处时的底座覆写。"""

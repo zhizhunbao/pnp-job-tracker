@@ -1272,6 +1272,31 @@ class SkAllocCheckIn:
 
 
 @dataclass
+class SkIntakeOut:
+    """sk_intake_windows() 出参(2026-10-02 申请步骤批 1)。"""
+
+    windows: list
+    """逐窗口逐行业一行(K_OPENED / K_SECTOR / K_LIMIT / K_USED / K_REMAINING / K_FILLED)。"""
+
+    found: bool
+    """页上有没有这张表(没有 = 事实,不是故障)。"""
+
+    problems: list
+    """表在而行认不出的问题。"""
+
+
+@dataclass
+class SkFilledIn:
+    """sk_filled_of() 入参:给一个窗口行配满额日期。"""
+
+    window: dict
+    """窗口行。"""
+
+    notes: list
+    """表内全部满额注释(K_SECTOR = 归一后的行业名单原文,K_DATE = ISO)。"""
+
+
+@dataclass
 class HasGroupIn:
     """has_group() 入参:处理时长里有没有某一组。"""
 

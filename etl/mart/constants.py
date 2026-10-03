@@ -2609,6 +2609,26 @@ K_PRIORITY_SECTORS = "prioritySectors"
 METRIC_PRIORITY_SECTOR = "priority_sector"
 """优先行业的标记行指标名。"""
 
+K_INTAKE_WINDOWS = "intakeWindows"
+"""SK 的限额行业收件窗口块(2026-10-02 申请步骤批 1;pnp 同名键,设计 docs/design/申请步骤-20261002.md 第 3.2 节)。"""
+
+K_INTAKE_OPENED = "opened"
+"""收件窗口行:开放日(ISO),进 period。"""
+
+K_INTAKE_FILLED = "filled"
+"""收件窗口行:满额日期(ISO 或 None)。"""
+
+SK_INTAKE_METRICS = (("intake_limit", "limit", UNIT_SPOTS),
+                     ("intake_used", "used", UNIT_SPOTS),
+                     ("intake_remaining", "remaining", UNIT_SPOTS))
+"""SK 收件窗口的三个(指标名, 源键, 单位):一个窗口一个行业各一行,scope = 行业原名(带开放时刻括注照抄),period = 开放日。"""
+
+METRIC_INTAKE_FILLED = "intake_filled"
+"""收件窗口满额日期的指标名(value 空、value_text = ISO 日期;官方没写日期的不出行,不拿开放日顶)。"""
+
+SCOPE_INTAKE = "intake"
+"""scopeKind:限额行业收件窗口(2026-10-02)。"""
+
 K_SCORE_RANGE = "scoreRange"
 """BC 池分布的分数段。"""
 

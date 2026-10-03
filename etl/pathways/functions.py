@@ -15,7 +15,10 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
+from bs4 import BeautifulSoup
+
 import paths
+from crawl.functions import get_cached_page
 from log.functions import say
 from names.functions import norm_name
 from pathways.constants import (
@@ -30,6 +33,11 @@ from pathways.constants import (
     RULE_BOARD_LABELS, SEQ_START, STATS_GLOB, STATUS_CLOSED, STATUSES, TYPE_COMMUNITY, TYPE_INELIGIBLE,
 )
 from pathways.scheme import CheckIn, EntryIn, PathwaysFile, PnpFacts, RowIn, Tally
+from pathways.constants import (  # 2026-10-02 申请步骤批 1(步骤登记的自校与产出格)
+    BAD_FACT_TPL, BAD_STEP_TPL, BAD_WHO_TPL, DROP_TAGS, EMPTY, FACT_KEYS, HTML_PARSER, K_FACTS, K_QUOTE, K_REF, K_STEP,
+    K_STEPS, K_URL, K_WHO, PAGE_MISSING_TPL, QUOTE_EMPTY_TPL, QUOTE_MISSING_TPL, REF_KEYS, STEP_KEYS, WHO_KEYS, WS_RE,
+)
+from pathways.scheme import FactIn, PageIn, StepIn  # 同上
 
 # =========================================================================
 # 1. 入口:读 pnp 产物 → 自校 → 对得上才写产物
@@ -176,6 +184,7 @@ def problems_of(x: CheckIn) -> list[str]:
     out.extend(board_problems_of(x))
     out.extend(default_problems_of(x.table))
     out.extend(condition_problems_of(x.table))
+    out.extend(step_problems_of(x.table))
     for entry in x.table:
         out.extend(entry_problems_of(EntryIn(entry=entry, facts=x.facts)))
     return out
@@ -269,6 +278,68 @@ def condition_problems_of(table: list) -> list[str]:
     return out
 
 
+def step_problems_of(table: list) -> list[str]:
+    """2026-10-02 申请步骤批 1:步骤词 / 谁做在词表里;事实行要么是认得的引用,要么是认得的事实词且原句在 crawl 缓存那一页里
+    逐字核得上(去掉全部空白再比;官网改一个词就红,不放宽成关键词命中)。没登步骤的通道 = [],不查。"""
+    out: list[str] = []
+    pages: dict = {}
+    for entry in table:
+        i = 0
+        for step in entry.get(K_STEPS, []):
+            i += 1
+            out.extend(one_step_problems_of(StepIn(key=entry[K_KEY], i=i, step=step, pages=pages)))
+    return out
+
+
+def one_step_problems_of(x: StepIn) -> list[str]:
+    """一步的红:步骤词、谁做、逐行事实。"""
+    out: list[str] = []
+    if x.step[K_STEP] not in STEP_KEYS:
+        out.append(BAD_STEP_TPL.format(key=x.key, i=x.i, step=x.step[K_STEP]))
+    if x.step[K_WHO] not in WHO_KEYS:
+        out.append(BAD_WHO_TPL.format(key=x.key, i=x.i, who=x.step[K_WHO]))
+    for fact in x.step[K_FACTS]:
+        out.extend(fact_problems_of(FactIn(step=x, fact=fact)))
+    return out
+
+
+def fact_problems_of(x: FactIn) -> list[str]:
+    """一行事实的红:引用词不认得 / 事实词不认得 / 缺原句 / 出处页没爬到 / 原句核不上。"""
+    s = x.step
+    if K_REF in x.fact:
+        if x.fact[K_REF] in REF_KEYS:
+            return []
+        return [BAD_FACT_TPL.format(key=s.key, i=s.i, fact=x.fact)]
+    name = x.fact.get(K_KEY, EMPTY)
+    if name not in FACT_KEYS:
+        return [BAD_FACT_TPL.format(key=s.key, i=s.i, fact=x.fact)]
+    quote = x.fact.get(K_QUOTE, EMPTY)
+    url = x.fact.get(K_URL, EMPTY)
+    if quote == EMPTY or url == EMPTY:
+        return [QUOTE_EMPTY_TPL.format(key=s.key, i=s.i, fact=name)]
+    page = page_text_of(PageIn(url=url, pages=s.pages))
+    if page is None:
+        return [PAGE_MISSING_TPL.format(key=s.key, i=s.i, fact=name, url=url)]
+    if WS_RE.sub(EMPTY, quote) not in page:
+        return [QUOTE_MISSING_TPL.format(key=s.key, i=s.i, fact=name, url=url)]
+    return []
+
+
+def page_text_of(x: PageIn) -> str | None:
+    """出处页的可见正文去掉全部空白(剥 script / style / noscript);没爬到 None。读 crawl 缓存,不上网;同一页只读一次。"""
+    if x.url in x.pages:
+        return x.pages[x.url]
+    hit = get_cached_page(x.url)
+    text = None
+    if hit.html is not None:
+        soup = BeautifulSoup(hit.html, HTML_PARSER)
+        for tag in soup.find_all(DROP_TAGS):
+            tag.decompose()
+        text = WS_RE.sub(EMPTY, soup.get_text())
+    x.pages[x.url] = text
+    return text
+
+
 def entry_problems_of(x: EntryIn) -> list[str]:
     """一条通道的官方写法逐格对 pnp 现值:抽选组(等开抽的除外)、门槛流、配额行、清单名。"""
     out: list[str] = []
@@ -317,5 +388,5 @@ def to_pathway_row(x: RowIn) -> dict:
         "drawStreams": e["drawStreams"], "reqStreams": e["reqStreams"], "quotaScope": e["quotaScope"],
         "occLabels": e["occLabels"], "status": e["status"], "url": e["url"], "quote": e["quote"], "checked": e["checked"],
         "jobLinked": e.get(K_JOB_LINKED, JOB_LINKED_DEFAULT), "tags": e.get(K_TAGS, []), "teers": e.get(K_TEERS, []),
-        "nocs": e.get(K_NOCS, []), "employers": e.get(K_EMPLOYERS, []),
+        "nocs": e.get(K_NOCS, []), "employers": e.get(K_EMPLOYERS, []), "steps": e.get(K_STEPS, []),
     }

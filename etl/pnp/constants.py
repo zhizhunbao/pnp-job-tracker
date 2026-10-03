@@ -6783,6 +6783,78 @@ SKS_PRINT_DONE_TPL = ("✓ {path}  {quarter} 处理时长 {n} 条;配额 Total "
                       "{alloc:,} 已用 {used:,}({pct:.0%});优先行业 {priority}、受限 {capped}")
 """SK 运营统计收尾报数。"""
 
+K_INTAKE_WINDOWS = "intakeWindows"
+"""表键:限额行业收件窗口(2026-10-02 申请步骤批 1,Frank「每个省 每个通道 EE PNP AIP 都要有吧」;设计
+docs/design/申请步骤-20261002.md 第 3.2 节)。同页「Capped Sectors Intake Windows and Position Limits」表,
+一个窗口一个行业一行:开放日 / 行业原名 / 名额 / 已用 / 剩余 / 满额日期。"""
+
+K_OPENED = "opened"
+"""行键:窗口开放日(ISO)。"""
+
+K_LIMIT = "limit"
+"""行键:窗口名额(Position Limit)。"""
+
+K_USED = "used"
+"""行键:已用(Positions Used)。"""
+
+K_REMAINING = "remaining"
+"""行键:剩余(Remaining Positions to be Accepted)。"""
+
+K_FILLED = "filled"
+"""行键:满额日期(ISO;表下注释句认得出才填,认不出 None —— 剩余 0 而没有日期的照实留空,不拿开放日顶)。"""
+
+SKS_INTAKE_HEAD_KW = "Intake Window"
+"""收件窗口表的表头关键词(第一格「Intake Window Open」)。"""
+
+SKS_INTAKE_DATE_RE = re.compile(r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2}),\s*(\d{4})")
+"""窗口表里的日期:官方缩写不统一(「Jan. 13, 2026」「Sept. 14, 2026」「March 2, 2026」),只认月名前三个字母。"""
+
+SKS_MONTH_NUM = {"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
+                 "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12}
+"""月名前三个字母 → 月份数。"""
+
+SKS_FILLED_RE = re.compile(r"position limit (?:reached )?for\s+(?:the\s+)?(.+?)\s+(?:sectors?\s+)?(?:was reached\s+)?on\s+"
+                           r"((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2},\s*\d{4})", re.I)
+"""满额注释句的两种写法(2026-10-02 页面实见):
+「Intake window position limit reached for Accommodation and Food Service and Retail Trade sectors on Jan. 13, 2026.」
+「The position limit for Trucking was reached on January 20, 2026.」—— 第一组是行业名单原文,第二组是日期。"""
+
+SKS_PAREN_RE = re.compile(r"\(.*?\)")
+"""行业格里的开放时刻括注(「Trucking (8:30 a.m.)」),归一时去掉。"""
+
+SKS_WORD_RE = re.compile(r"[a-z]+")
+"""归一时取词。"""
+
+SKS_INT_CELL_RE = re.compile(r"^\d[\d,]*$")
+"""整格是数字(名额 / 已用 / 剩余三格)。"""
+
+SKS_ISO_DATE_TPL = "{y:04d}-{m:02d}-{d:02d}"
+"""窗口表日期 → ISO 的模板。"""
+
+SKS_PLURAL_SUFFIX = "s"
+"""归一时去掉的复数词尾。"""
+
+SKS_PLURAL_MIN_LEN = 4
+"""归一去复数 s 的最短词长(「Services」「Accommodations」去 s;and / for 这类短词不动)。"""
+
+SKS_FILLED_MAX_DAYS = 40
+"""满额日期离开放日最多几天才认作这个窗口的(官方注释句不分窗口挂在表里,同一行业每两个月一个窗口;实见最晚 7 天)。"""
+
+SKS_INTAKE_MIN_ROWS = 6
+"""收件窗口表至少几行才算解析到(2026-10-02 实见 5 个窗口 15 行;只要表在,少于这个数就是表形变了)。"""
+
+SKS_PROBLEM_INTAKE_TPL = "收件窗口表只解析到 {n} 行(期望 ≥6)"
+"""自校问题:收件窗口行数。"""
+
+SKS_PROBLEM_INTAKE_ROW_TPL = "收件窗口行认不出开放日:{row}"
+"""自校问题:窗口首行的开放日格认不出(列错位)。"""
+
+SKS_PRINT_INTAKE_TPL = "  收件窗口 {n} 行(开放日 {w} 个,满额日期认出 {f} 行)"
+"""收件窗口报数。"""
+
+SKS_PRINT_NO_INTAKE = "  收件窗口表不在页上(本行业年度不设窗口,或官方改版)—— intakeWindows 写空"
+"""收件窗口表缺席时照实报一行,不当解析失败(没有窗口是事实,不是故障)。"""
+
 
 # =========================================================================
 # 25. AB 运营统计(配额用量 + EOI 池内人数 + 抽选史 + 积压游标)

@@ -344,6 +344,142 @@ public K-12 system and have a CLB 5 or higher in French.」没入表:法语 CLB 
 (把法语专项说成英法任一);门槛量尺按省全量挑职业码点名的语言行,还会把 41220 / 41221(TEER 1)的判定从「注册时不要求
 语言成绩」改成 CLB 5 —— 写法待定。公立 K-12 雇主那半句由清单的雇主行业条件管(上一段)。"""
 
+# 2026-10-02 申请步骤批 1(萨省样张;Frank「每个省 每个通道 EE PNP AIP 都要有吧」,设计 docs/design/申请步骤-20261002.md 第 3.1 节):
+# 萨省各通道共用的步骤件。一步一个 dict:step 步骤词 / who 谁做 / none 这一步不需要 / stuck 卡点(只给数据说得出的:官方明写没有排定抽选)/
+# facts 事实行 —— 别的表里已有的事实只写引用(ref:req 门槛行、processing 处理时长、intake 收件窗口、draws 抽选表),
+# 别处没有的才存官方原句(quote + url,自校逐句对 crawl 缓存)。限额行业那行不标 stuck:本岗属于哪个行业不判(公司表没有行业字段),
+# 卡上写成「限额行业:…」条件句。
+SKS_FAQ_URL = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
+               "saskatchewan-immigrant-nominee-program/immigration-faqs")
+"""萨省移民 FAQ 页(EPA 通过后 10 天确认、60 天递申请那句在这页)。"""
+
+SKS_STATS_URL = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
+                 "saskatchewan-immigrant-nominee-program/sinp-processing-statistics")
+"""萨省处理统计页(限额行业只在六个收件窗口递那句、窗口表都在这页)。"""
+
+SKS_ISW_BASE = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
+                "saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/")
+"""萨省国际技术工人类页面前缀。"""
+
+SKS_EXP_BASE = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
+                "saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/")
+"""萨省本省经验类页面前缀。"""
+
+SKS_STEP_REGISTER = {"step": "employerRegister", "who": "employer", "none": False, "stuck": False,
+                     "facts": [{"ref": "req", "factor": "empYears"}]}
+"""雇主登记:经营年限读门槛表 empYears 行(雇主登记页不在 crawl 缓存,原句随门槛行走,这里不另存)。"""
+
+SKS_STEP_EPA_PRIORITY = {"step": "epa", "who": "employer", "none": False, "stuck": False,
+                         "facts": [{"ref": "processing", "scope": "Employer Position Assessments"}]}
+"""雇主递职位审批(三条 Talent Pathway:医疗 / 科技 / 农业都是优先行业,不设收件窗口):审批时长读处理统计。"""
+
+SKS_STEP_EPA_CAPPED = {"step": "epa", "who": "employer", "none": False, "stuck": False,
+                       "facts": [{"ref": "processing", "scope": "Employer Position Assessments"},
+                                 {"key": "cappedEmployees", "vars": {},
+                                  "quote": ("Capped sectors are limited to supporting current employees with valid temporary "
+                                            "residency status"),
+                                  "url": SKS_STATS_URL},
+                                 {"key": "windowCapped", "vars": {"months": 6},
+                                  "quote": ("Employers in capped sectors can only submit applications during one of the six "
+                                            "intake windows in 2026, and if their candidate has 6 months or less remaining on "
+                                            "their work permit."),
+                                  "url": SKS_STATS_URL},
+                                 {"ref": "intake"}]}
+"""雇主递职位审批(雇主 offer / 现有工签 / 学生三条:收限额行业的岗):审批时长 + 限额行业只收现有员工 + 只在收件窗口递且工签剩
+6 个月以内 + 最近窗口表。「只收现有员工」原定进门槛卡身份行(设计 3.4),门槛卡身份行要新编码,同日改挂在这一步(两句原句同页)。"""
+
+SKS_STEP_DIRECT = {"step": "draw", "who": "province", "none": True, "stuck": False,
+                   "facts": [{"key": "directApply", "vars": {},
+                              "quote": "An employment offer provides applicants with the ability to apply directly to the SINP.",
+                              "url": SKS_ISW_BASE + "connecting-family-members-to-saskatchewans-labour-market"}]}
+"""进池与抽选 —— 不需要:持萨省雇主 offer 直接申请(国际技术工人类持 offer 的四条:雇主 offer、医疗、科技、农业)。"""
+
+SKS_STEP_NO_EOI = {"step": "draw", "who": "province", "none": True, "stuck": False,
+                   "facts": [{"key": "eoiOnlyOther", "vars": {},
+                              "quote": ("If you are eligible under the Occupations In-Demand or Express Entry , you will be able "
+                                        "to submit an Expression of Interest (EOI)."),
+                              "url": SKS_ISW_BASE + "international-skilled-worker-eoi-system"}]}
+"""进池与抽选 —— 不需要(本省经验类两条:现有工签、学生):官方写明只有 Occupations In-Demand 与 Express Entry 递 EOI。
+原句里「Express Entry ,」逗号前那个空格是页面链接断开留下的,照抄(自校去掉全部空白再比)。"""
+
+SKS_STEP_CONFIRM = {"step": "confirm", "who": "you", "none": False, "stuck": False,
+                    "facts": [{"key": "confirmSubmit", "vars": {"confirm": 10, "submit": 60},
+                               "quote": ("The candidate has 10 calendar days to review and confirm the EPA details, and 60 "
+                                         "calendar days from the date they were identified on the conditionally approved EPA "
+                                         "to submit their SINP application."),
+                               "url": SKS_FAQ_URL}]}
+"""确认职位、递申请(凡走 EPA 的六条):审批有条件通过后 10 天内确认、60 天内递申请。"""
+
+SKS_STEP_PR = {"step": "pr", "who": "federal", "none": False, "stuck": False, "facts": []}
+"""拿提名,递永居(非 EE 版:向 IRCC 递纸面 / 在线永居申请;联邦处理时长不在省页,先不写)。"""
+
+SKS_STEP_EOI = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                "facts": [{"ref": "req", "factor": "pointsMin"}]}
+"""递 EOI(无 offer 的两条):本省打分表门槛读门槛表 pointsMin 行。"""
+
+SKS_STEP_NO_DRAW_SCHEDULED = {"step": "draw", "who": "province", "none": False, "stuck": True,
+                              "facts": [{"key": "noScheduledDraw", "vars": {},
+                                         "quote": "There are no scheduled EOI draws at this time.",
+                                         "url": SKS_ISW_BASE + "international-skilled-worker-eoi-system"}]}
+"""进池与抽选(无 offer 的两条):官方原话「目前没有排定的抽选」—— 卡点(stuck)。抽选结果 PDF 最后一轮 2024-09-12,
+不进抽选表(弹框只看近 12 个月);要不要另挂一行等 Frank 看样张。"""
+
+SKS_STEP_INVITED = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                    "facts": [{"key": "inviteSubmitDays", "vars": {"n": 60},
+                               "quote": ("You will have 60 days to submit a complete online application to the SINP and "
+                                         "provide documents."),
+                               "url": SKS_ISW_BASE + "international-skilled-worker-eoi-system"}]}
+"""收邀请、递申请(无 offer 的两条):60 天内递。"""
+
+SKS_STEP_EE_PROFILE = {"step": "eeProfile", "who": "you", "none": False, "stuck": False,
+                       "facts": [{"ref": "req", "factor": "eeProfile"}]}
+"""建 EE 档案(萨省快速通道):读门槛表 eeProfile 行。"""
+
+SKS_STEP_PR_EE = {"step": "pr", "who": "federal", "none": False, "stuck": False,
+                  "facts": [{"key": "eeAcceptDays", "vars": {"n": 30},
+                             "quote": "You have 30 days to accept the SINP nomination in the Express Entry system.",
+                             "url": SKS_ISW_BASE + "procedures-and-guidelines"},
+                            {"key": "prSubmitDays", "vars": {"n": 60},
+                             "quote": "You have 60 days to submit this application.",
+                             "url": SKS_ISW_BASE + "procedures-and-guidelines"}]}
+"""拿提名,递永居(萨省快速通道):30 天内在 EE 系统接受提名,IRCC 发邀请后 60 天内递永居。"""
+
+SKS_STEP_WORK = {"step": "work", "who": "you", "none": False, "stuck": False,
+                 "facts": [{"key": "workMonths", "vars": {"n": 6},
+                            "quote": ("Have worked for at least six-months (780 hours) of full-time (30+ hours per week) work "
+                                      "experience in the job with the employer that has supported you with the Employer "
+                                      "Position Assessment, with a valid work permit."),
+                            "url": SKS_EXP_BASE + "applicants-with-existing-work-permit"}]}
+"""在这份工作上干够(现有工签通道):持有效工签在支持你的雇主处全职满 6 个月(780 小时)。"""
+
+
+SKS_STEP_REVIEW_EO = {"step": "review", "who": "province", "none": False, "stuck": False,
+                      "facts": [{"ref": "processing", "scope": "Employment Offer"}]}
+"""省里审批(雇主 offer):处理时长读处理统计「Employment Offer」那一行。"""
+
+SKS_STEP_REVIEW_HEALTH = {"step": "review", "who": "province", "none": False, "stuck": False,
+                          "facts": [{"ref": "processing", "scope": "Health Talent Pathway"}]}
+"""省里审批(医疗):处理时长读处理统计「Health Talent Pathway」那一行。"""
+
+SKS_STEP_REVIEW_TECH = {"step": "review", "who": "province", "none": False, "stuck": False,
+                        "facts": [{"ref": "processing", "scope": "Innovation and Tech Talent Pathway"}]}
+"""省里审批(科技):处理时长读处理统计「Innovation and Tech Talent Pathway」那一行。"""
+
+SKS_STEP_REVIEW_AGRI = {"step": "review", "who": "province", "none": False, "stuck": False,
+                        "facts": [{"ref": "processing", "scope": "Agriculture Talent Pathway"}]}
+"""省里审批(农业):处理时长读处理统计「Agriculture Talent Pathway」那一行。"""
+
+SKS_STEP_REVIEW_EWP = {"step": "review", "who": "province", "none": False, "stuck": False,
+                       "facts": [{"ref": "processing", "scope": "Existing Work Permit"}]}
+"""省里审批(现有工签):处理时长读处理统计「Existing Work Permit」那一行。"""
+
+SKS_STEP_REVIEW_STUDENTS = {"step": "review", "who": "province", "none": False, "stuck": False,
+                            "facts": [{"ref": "processing", "scope": "International Students"}]}
+"""省里审批(学生):处理时长读处理统计「International Students」那一行。"""
+
+SKS_STEP_REVIEW_NONE = {"step": "review", "who": "province", "none": False, "stuck": False, "facts": []}
+"""省里审批(无 offer 的两条):处理统计没有这两类的时长行,不写。"""
+
 # 2026-09-29 七省门槛卡合并:萨省四条通道(EO 与三条定向)、NL 技术工人在 reqStreams 末尾挂上本省雇主门槛所在的「all streams」流 ——
 # 门槛卡雇主行改读本通道登记的流(原读全省;曼省唯一的雇主行属 EDI,不挂),挂在末尾,来源钮仍按登记顺序指向通道自己的页。
 PW_SK_EMPLOYMENT_OFFER = {
@@ -363,6 +499,7 @@ PW_SK_EMPLOYMENT_OFFER = {
     "quote": ("International Skilled Worker: Employment Offer: For high-skilled workers (occupations that typically require "
               "post-secondary education) who are not working in Saskatchewan."),
     "checked": "2026-09-28",
+    "steps": [SKS_STEP_REGISTER, SKS_STEP_EPA_CAPPED, SKS_STEP_DIRECT, SKS_STEP_CONFIRM, SKS_STEP_REVIEW_EO, SKS_STEP_PR],
 }
 """萨省默认通道:持萨省雇主 offer 的高技能岗(排除式,不在 Job Offer 不合格清单上即可)。
 萨省这条不经 EOI 抽选(2026-09-27 bb38b884「持 offer 直接申请、不经 EOI」),没有抽选组;门槛卡没接。
@@ -387,6 +524,8 @@ PW_SK_HEALTH_TALENT = {
             "saskatchewan-immigrant-nominee-program/assess-your-eligibility"),
     "quote": "Health Talent Pathway: For physicians, nurses and other health workers.",
     "checked": "2026-09-28",
+    "steps": [SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM, SKS_STEP_REVIEW_HEALTH,
+              SKS_STEP_PR],
 }
 """萨省医疗人才通道(清单 sk-health.json)。萨省 Talent Pathway 不公布抽选,没有抽选组。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流 —— 本通道非 EE 版那条(语言 CLB 5、近 5 年内 12 个月经验、执照;
@@ -410,6 +549,8 @@ PW_SK_TECH_TALENT = {
             "saskatchewan-immigrant-nominee-program/assess-your-eligibility"),
     "quote": "Innovation and Tech Talent Pathway: For innovation and tech sector workers in 32 high-skilled occupations.",
     "checked": "2026-09-28",
+    "steps": [SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM, SKS_STEP_REVIEW_TECH,
+              SKS_STEP_PR],
 }
 """萨省创新与科技人才通道(清单 sk-tech.json,32 个职业)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流 —— 本通道非 EE 版那条(语言 CLB 5、近 5 年内 12 个月经验、执照;
@@ -433,6 +574,8 @@ PW_SK_AGRICULTURE_TALENT = {
     "quote": ("Agriculture Talent Pathway: For general farm workers, nursery/greenhouse workers and workers in select food and "
               "beverage processing occupations."),
     "checked": "2026-09-28",
+    "steps": [SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM, SKS_STEP_REVIEW_AGRI,
+              SKS_STEP_PR],
 }
 """萨省农业人才通道(清单 sk-agri.json;带星号的码要看得出雇主在农业食品行业才挂,2026-09-27「看得出才改判」)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流 —— 本通道那条(语言 CLB 4、近 3 年内 12 个月经验;在担保雇主处
@@ -453,6 +596,8 @@ PW_SK_EXISTING_WORK_PERMIT = {
     "quote": ("Skilled-Worker with Existing Work Permit: For high-skilled foreign workers (with post-secondary education) with "
               "a valid work permit."),
     "checked": "2026-09-28",
+    "steps": [SKS_STEP_WORK, SKS_STEP_REGISTER, SKS_STEP_EPA_CAPPED, SKS_STEP_NO_EOI, SKS_STEP_CONFIRM,
+              SKS_STEP_REVIEW_EWP, SKS_STEP_PR],
 }
 """萨省现有工签通道:不靠清单,是 mart 的规则判(具名清单都没命中、可提名的 TEER 4-5 与卡车司机岗给它;2026-09-24 九省通道审计,
 Frank 批)。岗位通道名写在 mart 的 SK_EWP_LABEL,不在任何 raw/pnp 清单里 —— 自校靠 RULE_BOARD_LABELS 认它。
@@ -827,6 +972,8 @@ PW_SK_STUDENTS = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "steps": [SKS_STEP_REGISTER, SKS_STEP_EPA_CAPPED, SKS_STEP_NO_EOI, SKS_STEP_CONFIRM, SKS_STEP_REVIEW_STUDENTS,
+              SKS_STEP_PR],
 }
 """Saskatchewan Experience 类的学生子类:本省专上毕业、专业对口的 SK offer(2026 年给优先行业的本省毕业生留 750 个名额)。不抽选。原句末尾页面里嵌了链接,
 抽出的正文句号前多一个空格,quote 截到句号前。
@@ -853,6 +1000,7 @@ PW_SK_OCCUPATION_IN_DEMAND = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "steps": [SKS_STEP_EOI, SKS_STEP_NO_DRAW_SCHEDULED, SKS_STEP_INVITED, SKS_STEP_REVIEW_NONE, SKS_STEP_PR],
 }
 """不要 offer 的 EOI 子类;EOI 页写「There are no scheduled EOI draws at this time.」→ 标「目前没有抽选排期」。不看工作(Frank 
 09-30「不看工作的也收」,通道卡下段)。三合一门槛组的 60 分、CLB 4、近 10 年 1 年经验正是本子类口径,挂上。
@@ -878,6 +1026,8 @@ PW_SK_EXPRESS_ENTRY = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "steps": [SKS_STEP_EE_PROFILE, SKS_STEP_EOI, SKS_STEP_NO_DRAW_SCHEDULED, SKS_STEP_INVITED, SKS_STEP_REVIEW_NONE,
+              SKS_STEP_PR_EE],
 }
 """不要 offer 的 EOI 子类(须在联邦 EE 池);同样没有抽选排期。三合一门槛组的 CLB 4 / 近 10 年 1 年经验不是本子类口径(它按联邦 EE 语言标准),不挂,门槛待批一 
 1b 拆出。quote 截到句号前(同 SK 学生那条的理由)。
@@ -1633,6 +1783,73 @@ BOARD_MISSING_TPL = "{key} 的岗位通道名「{label}」不是 pnp 清单(或 
 
 BOARD_UNMAPPED_TPL = "pnp 清单会给岗位挂「{label}」,对照表里没有这条通道(新清单?)"
 """自校:汇装新出一个通道名、对照表里没有。"""
+
+K_STEPS = "steps"
+"""对照表键:申请步骤(2026-10-02 申请步骤批 1;没登的通道 = [],弹框照旧出抽选卡)。一步的格见下面几个键,设计
+docs/design/申请步骤-20261002.md 第 3.1 节。"""
+
+K_STEP = "step"
+"""步骤键:步骤词(STEP_KEYS 之一)。"""
+
+K_WHO = "who"
+"""步骤键:谁做(WHO_KEYS 之一)。"""
+
+K_FACTS = "facts"
+"""步骤键:事实行清单。"""
+
+K_REF = "ref"
+"""事实行键:引用别的表(REF_KEYS 之一);有它就不存原句。"""
+
+K_QUOTE = "quote"
+"""事实行键:官方原句(静态事实才有;自校逐句对 crawl 缓存)。"""
+
+K_URL = "url"
+"""事实行键:原句出处页。"""
+
+STEP_KEYS = ["employerRegister", "offer", "work", "epa", "eeProfile", "eoi", "draw", "confirm", "apply", "review", "settle",
+             "endorse", "pr"]
+"""步骤词表(三语文案在 cms i18n pnp.step.*):雇主登记 / 拿雇主 offer / 在这份工作上干够 / 雇主递职位审批 / 建 EE 档案 / 递 EOI /
+进池与抽选 / 确认职位、递申请 / 收邀请、递申请 / 省里审批 / 做安置计划 / 雇主递省背书 / 拿提名,递永居。"""
+
+WHO_KEYS = ["you", "employer", "province", "federal"]
+"""谁做的词表。"""
+
+REF_KEYS = ["req", "processing", "intake", "draws"]
+"""引用词表:req = 门槛表一行(带 factor)、processing = 运营统计处理时长(带 scope)、intake = 萨省收件窗口、draws = 抽选表。"""
+
+FACT_KEYS = ["cappedEmployees", "windowCapped", "directApply", "eoiOnlyOther", "confirmSubmit", "noScheduledDraw", "inviteSubmitDays",
+             "eeAcceptDays", "prSubmitDays", "workMonths"]
+"""静态事实词表(三语文案在 cms i18n pnp.stepFact.*,数字从 vars 填)。"""
+
+BAD_STEP_TPL = "{key} 的第 {i} 步「{step}」不在步骤词表里"
+"""自校:步骤词不认得。"""
+
+BAD_WHO_TPL = "{key} 的第 {i} 步谁做「{who}」不在词表里"
+"""自校:谁做不认得。"""
+
+BAD_FACT_TPL = "{key} 的第 {i} 步有一行事实既不是认得的引用、也不是认得的事实词:{fact}"
+"""自校:事实行认不出。"""
+
+QUOTE_EMPTY_TPL = "{key} 的第 {i} 步「{fact}」没挂原句或出处页"
+"""自校:静态事实缺原句。"""
+
+QUOTE_MISSING_TPL = "{key} 的第 {i} 步「{fact}」的原句在 crawl 缓存那一页里找不到(官网改字?):{url}"
+"""自校:原句核不上 —— 官网改一个词就红,须人工重读,不放宽成关键词命中。"""
+
+PAGE_MISSING_TPL = "{key} 的第 {i} 步「{fact}」的出处页不在 crawl 缓存里:{url}"
+"""自校:出处页没爬到(先补 crawl 种子,不现抓)。"""
+
+WS_RE = re.compile(r"\s+")
+"""核原句时去掉全部空白(页面链接断开会在标点前留空格,两边都去掉再比)。"""
+
+HTML_PARSER = "html.parser"
+"""核原句取正文用的解析器(标准库,不加依赖)。"""
+
+DROP_TAGS = ["script", "style", "noscript"]
+"""核原句前剥掉的标签。"""
+
+EMPTY = ""
+"""空串(去空白的替换值、缺格的默认值)。"""
 
 # =========================================================================
 # 5. 产出行(列对齐库表 pathways;camelCase 键,mart 直通,cms 的 lib/mart 映射成 snake_case 列)
