@@ -15,10 +15,11 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
+import pymupdf
 from bs4 import BeautifulSoup
 
 import paths
-from crawl.functions import get_cached_page
+from crawl.functions import get_cached_file, get_cached_page
 from log.functions import say
 from names.functions import norm_name
 from pathways.constants import (
@@ -38,6 +39,7 @@ from pathways.constants import (  # 2026-10-02 申请步骤批 1(步骤登记的
     K_STEPS, K_URL, K_WHO, PAGE_MISSING_TPL, QUOTE_EMPTY_TPL, QUOTE_MISSING_TPL, REF_KEYS, STEP_KEYS, WHO_KEYS, WS_RE,
 )
 from pathways.scheme import FactIn, PageIn, StepIn  # 同上
+from pathways.constants import FILETYPE_PDF  # 2026-10-03 核原句读 file_cache 的 PDF 原件
 
 # =========================================================================
 # 1. 入口:读 pnp 产物 → 自校 → 对得上才写产物
@@ -326,7 +328,9 @@ def fact_problems_of(x: FactIn) -> list[str]:
 
 
 def page_text_of(x: PageIn) -> str | None:
-    """出处页的可见正文去掉全部空白(剥 script / style / noscript);没爬到 None。读 crawl 缓存,不上网;同一页只读一次。"""
+    """出处页的可见正文去掉全部空白(剥 script / style / noscript);没爬到 None。读 crawl 缓存,不上网;同一页只读一次。
+    2026-10-03(Frank「都修一下」):网页缓存没有的再看 file_cache 的原件(官方 PDF,crawl get_cached_file)——
+    卑诗卫生局「不注册、直接递」那句只在指南 PDF 里。"""
     if x.url in x.pages:
         return x.pages[x.url]
     hit = get_cached_page(x.url)
@@ -336,8 +340,21 @@ def page_text_of(x: PageIn) -> str | None:
         for tag in soup.find_all(DROP_TAGS):
             tag.decompose()
         text = WS_RE.sub(EMPTY, soup.get_text())
+    else:
+        data = get_cached_file(x.url)
+        if data is not None:
+            text = WS_RE.sub(EMPTY, pdf_text_of(data))
     x.pages[x.url] = text
     return text
+
+
+def pdf_text_of(data: bytes) -> str:
+    """原件(PDF)逐页取字连起来(核原句前再去全部空白,换行断词不影响)。不是 PDF 的原件当场炸 —— 出处挂错了要人看。"""
+    out: list = []  # get_text() 声明成 str | list | dict 三选一(默认档实际给 str),同 pnp pdf_text 的写法
+    with pymupdf.open(stream=data, filetype=FILETYPE_PDF) as doc:
+        for page in doc:
+            out.append(page.get_text())
+    return EMPTY.join(out)
 
 
 def entry_problems_of(x: EntryIn) -> list[str]:

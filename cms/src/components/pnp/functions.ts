@@ -62,7 +62,7 @@ import {
   QC_TEST_TCF, QC_TEST_TEF, URL_API_JOBS_QC,
   K_STEP_INTAKE_FILLED, K_STEP_INTAKE_FULL, K_STEP_INTAKE_LEFT, K_STEP_INTAKE_LIMIT, K_STEP_INTAKE_USED,
   K_STEP_INTAKE_WINDOW, K_STEP_QUARTER, K_STEP_WEEKS, K_STEP_WEEKS_BARE, K_STEPS_HEAD, STEP_FACT_HEAD, STEP_MD_FROM,
-  STEP_METRIC, STEP_MONTH_LEN, STEP_NAME_HEAD, STEP_QUARTER_RE, STEP_REF, STEP_REQ_ROW, STEP_SECTOR_HEAD,
+  STEP_METRIC, STEP_MONTH_LEN, STEP_NAME_HEAD, STEP_QUARTER_RE, STEP_REF, STEP_SECTOR_HEAD,
   STEP_SECTOR_KEY, STEP_WARN_FACTS, STEP_WHO_HEAD, OPS_SCOPE_SECTOR, QUOTA_SECTOR_HEAD, QUOTA_SECTOR_KEY,
   STEP_PROCESSING_KEY,
 } from './constants'
@@ -81,6 +81,7 @@ import type {
   PnpStream, PnpStreamsIn, PnpTone, ProvDrawHistIn, ProvRow, ReasonParams, ReformOfIn, ScrollIntoHitIn, ShownStreamsIn,
   SponsorLinesIn, SponsorShowIn, StreamRowSpec, StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn,
   BasisKeyIn, ExpLineIn, GateCardOfIn, GateCardSpec, GateRowOfIn, GateRowSpec, GateUrlIn, LangPickIn, NocHitIn, PnpReq,
+  GateOneIn,
   ReqAppliesIn, WageLowIn, DrawGroupOpenIn, ZonedLinesIn, PnpBlockIn, BlockHitIn, PnpLang,
   RowOfFactorIn, TeerHitIn, DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn, PnpBlocked,
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
@@ -97,6 +98,7 @@ import type {
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
   IntakeCell, IntakePutIn, IntakeRowIn, IntakeTableIn, PnpStepOp, PnpStepSet, QuarterTextIn, StepFactIn, StepLineSpec,
+  EmpSplit,
   StepOfIn, StepSetOfIn, StepSpec, StepTableSpec, StepsCardOfIn, StepsCardSpec, SectorCellIn, SectorRowsIn,
   ProcessingTextIn, ProvDrawCardIn, ProvStreamItem, ProvStreamItemsIn,
 } from './types'
@@ -2801,21 +2803,11 @@ export function gateCardOf(x: GateCardOfIn): GateCardSpec | null {
   if (streams.length === 0) {
     return null
   }
-  const mine: PnpReq[] = []
-  const chan: PnpReq[] = []
-  for (const r of x.reqs) {
-    if (r.province !== x.job.province) {
-      continue
-    }
-    mine.push(r)
-    if (streams.includes(r.stream)) {
-      chan.push(r)
-    }
-  }
+  const one = gateOneOf({ t: x.t, job: x.job, reqs: x.reqs, streams })
+  const chan = one.chan
   if (applicantRowsOf(chan) === 0) {
     return null
   }
-  const one: GateRowOfIn = { t: x.t, job: x.job, mine, chan }
   const rows: GateRowSpec[] = []
   for (const row of [statusRowOf(one), offerRowOf(one), empRowOf(one), langRowOf(one), expRowOf(one),
     residenceRowOf(one), wageRowOf(one), pointsRowOf(one), eeRowOf(one), otherRowOf(one)]) {
@@ -2831,6 +2823,28 @@ export function gateCardOf(x: GateCardOfIn): GateCardSpec | null {
     rows,
     empty: TEXT_NONE,
   }
+}
+
+/**
+ * 各行构造器的共同入参:本省的门槛行与其中本通道那几条流的(2026-10-03 自 gateCardOf 拆出 —— 「申请步骤」卡引用门槛行的事实
+ * 用同一把筛子现算,门槛卡不出照样有字)。
+ *
+ * @param x 取词函数、本岗是谁、门槛表与本通道认的流。
+ * @returns 共同入参。
+ */
+function gateOneOf(x: GateOneIn): GateRowOfIn {
+  const mine: PnpReq[] = []
+  const chan: PnpReq[] = []
+  for (const r of x.reqs) {
+    if (r.province !== x.job.province) {
+      continue
+    }
+    mine.push(r)
+    if (x.streams.includes(r.stream)) {
+      chan.push(r)
+    }
+  }
+  return { t: x.t, job: x.job, mine, chan }
 }
 
 /**
@@ -3378,23 +3392,13 @@ function eeRowOf(x: GateRowOfIn): GateRowSpec | null {
  * @returns 这一行;本省没有雇主侧门槛给 null。
  */
 function empRowOf(x: GateRowOfIn): GateRowSpec | null {
-  const emp: PnpReq[] = []
-  const zoned: PnpReq[] = []
-  for (const r of x.chan) {
-    if (r.subject !== GATE_SUBJECT_EMPLOYER || r.value == null) {
-      continue
-    }
-    if (r.appliesArea === TEXT_NONE) {
-      emp.push(r)
-    } else {
-      zoned.push(r)
-    }
-  }
-  const prov = x.t(PROV_KEY_HEAD + x.job.province)
+  const split = empSplitOf(x.chan)
+  const emp = split.emp
+  const zoned = split.zoned
   const parts: string[] = []
-  const years = rowOfFactor({ rows: emp, factor: GATE_F.empYears })
-  if (years != null && years.value != null) {
-    parts.push(x.t(empYearsKeyOf(years), { n: years.value, prov }))
+  const years = empYearsTextOf(x)
+  if (years !== TEXT_NONE) {
+    parts.push(years)
   }
   const revenue = rowOfFactor({ rows: emp, factor: GATE_F.empRevenue })
   if (revenue != null && revenue.value != null) {
@@ -3419,6 +3423,44 @@ function empRowOf(x: GateRowOfIn): GateRowSpec | null {
     lines: parts.map(capFirstOf),
     notes: [],
   }
+}
+
+/**
+ * 本通道门槛行里的雇主侧数值行,分全省一档与按地区分档两组(2026-10-03 自 empRowOf 拆出:「申请步骤」卡的雇主一步只要经营年限那句,
+ * 与门槛卡同一把筛子)。
+ *
+ * @param chan 本通道的门槛行。
+ * @returns 两组行。
+ */
+function empSplitOf(chan: PnpReq[]): EmpSplit {
+  const emp: PnpReq[] = []
+  const zoned: PnpReq[] = []
+  for (const r of chan) {
+    if (r.subject !== GATE_SUBJECT_EMPLOYER || r.value == null) {
+      continue
+    }
+    if (r.appliesArea === TEXT_NONE) {
+      emp.push(r)
+    } else {
+      zoned.push(r)
+    }
+  }
+  return { emp, zoned }
+}
+
+/**
+ * 雇主经营年限那一句(「在本省经营满 24 个月」;门槛卡「雇主条件」行的第一句,步骤卡的雇主一步只出这一句 —— 2026-10-03 Frank「都修一下」,
+ * 原先步骤把年收入、员工数也全列一遍,与上方门槛卡重复)。没有这一行给空串。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 那一句。
+ */
+function empYearsTextOf(x: GateRowOfIn): string {
+  const years = rowOfFactor({ rows: empSplitOf(x.chan).emp, factor: GATE_F.empYears })
+  if (years == null || years.value == null) {
+    return TEXT_NONE
+  }
+  return x.t(empYearsKeyOf(years), { n: years.value, prov: x.t(PROV_KEY_HEAD + x.job.province) })
 }
 
 /**
@@ -3581,7 +3623,15 @@ export function provStreamItemsOf(x: ProvStreamItemsIn): ProvStreamItem[] {
   const out: ProvStreamItem[] = []
   for (const p of ordered) {
     const gate = provStreamCardOf({ t: x.t, lang: x.lang, p, mine })
-    const steps = stepsCardOf({ t: x.t, province: p.province, channel: p, sets: x.sets, stepOps: x.stepOps, gate })
+    const steps = stepsCardOf({
+      t: x.t,
+      province: p.province,
+      channel: p,
+      sets: x.sets,
+      stepOps: x.stepOps,
+      reqs: x.reqs,
+      who: { province: p.province, noc: TEXT_NONE, teer: null },
+    })
     let draws: DrawCard | null = null
     if (steps != null) {
       draws = provDrawCardOf({
@@ -3623,6 +3673,8 @@ function provDrawCardOf(x: ProvDrawCardIn): DrawCard | null {
 /**
  * 一条通道的门槛卡:卡头官方英文原名 + 界面语言直白名灰字 + 条件标签(同通道卡);一行门槛都没收录的写「本站未收录门槛」,
  * 来源退到这条通道自己那一页(门槛行有出处的取门槛行的,同弹框)。
+ * 2026-10-03 申请步骤批 2 收尾:一行没出的(只挂了全省雇主流、申请人侧一行没有 —— 萨省现有工签)来源也退到通道页,
+ * 不指去雇主登记页。
  *
  * @param x 取词函数、界面语言、这条通道与本省全部门槛行。
  * @returns 卡。
@@ -3641,7 +3693,7 @@ function provStreamCardOf(x: ProvStreamCardIn): GateCardSpec {
     empty = x.t('pnpgate.noReqs')
   }
   let url = gateUrlOf({ chan, streams: x.p.reqStreams })
-  if (url === TEXT_NONE) {
+  if (url === TEXT_NONE || rows.length === 0) {
     url = x.p.url
   }
   return {
@@ -6286,8 +6338,10 @@ export function qcChannelsOf(channels: QcChannel[] | null): QcChannel[] {
  * docs/design/申请步骤-20261002.md,效果图 docs/design/申请步骤效果图-20261002.html):本岗通道登了步骤才出,替掉抽选卡(10-01 骨架第 ⑤ 张)。
  * 一步一行:步骤名 + 谁做 + 事实行 —— 引用门槛行的直接取门槛卡算好的那一行(文案只有一份),处理时长与收件窗口读运营统计,其余是
  * 数据层登记的事实词(原句已逐句对过 crawl 缓存)。只陈列官方事实,不判「你能不能拿到」。
+ * 2026-10-03 Frank「都修一下」:引用门槛行的改用门槛卡同一套行构造器现算(gateOneOf 同一把筛子;门槛卡不出照样有字),
+ * 雇主一步只出经营年限那一句。
  *
- * @param x 取词函数、本岗省码、本岗通道、登了步骤的通道、运营统计与门槛卡。
+ * @param x 取词函数、本岗省码、本岗通道、登了步骤的通道、运营统计、门槛表与本岗是谁。
  * @returns 步骤卡;本岗通道没登步骤给 null。
  */
 export function stepsCardOf(x: StepsCardOfIn): StepsCardSpec | null {
@@ -6298,11 +6352,12 @@ export function stepsCardOf(x: StepsCardOfIn): StepsCardSpec | null {
   if (set == null) {
     return null
   }
+  const one = gateOneOf({ t: x.t, job: x.who, reqs: x.reqs, streams: x.channel.reqStreams })
   const steps: StepSpec[] = []
   let n = 0
   for (const step of set.steps) {
     n += 1
-    steps.push(stepOf({ t: x.t, province: x.province, step, n, stepOps: x.stepOps, gate: x.gate }))
+    steps.push(stepOf({ t: x.t, province: x.province, step, n, stepOps: x.stepOps, one }))
   }
   return { title: x.t(K_STEPS_HEAD), source: sourceLinkOf({ t: x.t, url: x.channel.url }), steps }
 }
@@ -6326,7 +6381,7 @@ function stepSetOf(x: StepSetOfIn): PnpStepSet | null {
  * 一步(线格式)→ 卡上的一步:收件窗口引用落成下挂小表,抽选引用记一笔(卡件把抽选表挂进这一步,2026-10-02 申请步骤批 2),
  * 其余事实各出一到几行字。
  *
- * @param x 取词函数、本岗省码、这一步、第几步、运营统计与门槛卡。
+ * @param x 取词函数、本岗省码、这一步、第几步、运营统计与门槛行构造器的入参。
  * @returns 洗好的一步。
  */
 function stepOf(x: StepOfIn): StepSpec {
@@ -6342,7 +6397,7 @@ function stepOf(x: StepOfIn): StepSpec {
       draws = true
       continue
     }
-    for (const line of stepFactLinesOf({ t: x.t, province: x.province, fact, stepOps: x.stepOps, gate: x.gate })) {
+    for (const line of stepFactLinesOf({ t: x.t, province: x.province, fact, stepOps: x.stepOps, one: x.one })) {
       lines.push(line)
     }
   }
@@ -6362,7 +6417,7 @@ function stepOf(x: StepOfIn): StepSpec {
 /**
  * 一行事实 → 卡上的字:门槛行引用、处理时长引用、事实词三种;认不出的引用不出字(宁可少一行)。
  *
- * @param x 取词函数、本岗省码、这一行事实、运营统计与门槛卡。
+ * @param x 取词函数、本岗省码、这一行事实、运营统计与门槛行构造器的入参。
  * @returns 几行字。
  */
 function stepFactLinesOf(x: StepFactIn): StepLineSpec[] {
@@ -6399,23 +6454,32 @@ function varsTextOf(vars: Record<string, number>): Record<string, string> {
 
 /**
  * 引用门槛行的事实:取门槛卡上对应那一行的字(雇主条件 / 积分 / EE),门槛卡没出或没有那一行就不出字。
+ * 2026-10-03 Frank「都修一下」改:门槛卡不出(萨省现有工签)就没字、雇主一步还把年收入员工数整行列一遍 —— 改用门槛卡同一套
+ * 行构造器现算(文案仍只有一份):经营年限只出那一句(empYearsTextOf),积分 / EE 出那一行的字;本通道没登那一行就不出字。
  *
  * @param x 同 stepFactLinesOf。
  * @returns 几行字。
  */
 function stepReqLinesOf(x: StepFactIn): StepLineSpec[] {
+  if (x.fact.factor === GATE_F.empYears) {
+    const years = empYearsTextOf(x.one)
+    if (years === TEXT_NONE) {
+      return []
+    }
+    return [{ text: capFirstOf(years), warn: false }]
+  }
+  let row: GateRowSpec | null = null
+  if (x.fact.factor === GATE_F.pointsMin) {
+    row = pointsRowOf(x.one)
+  } else if (x.fact.factor === GATE_F.eeProfile) {
+    row = eeRowOf(x.one)
+  }
   const out: StepLineSpec[] = []
-  if (x.gate == null || x.fact.factor == null) {
+  if (row == null) {
     return out
   }
-  const rowKey = STEP_REQ_ROW[x.fact.factor]
-  for (const row of x.gate.rows) {
-    if (row.key !== rowKey) {
-      continue
-    }
-    for (const line of row.lines) {
-      out.push({ text: line, warn: false })
-    }
+  for (const line of row.lines) {
+    out.push({ text: line, warn: false })
   }
   return out
 }

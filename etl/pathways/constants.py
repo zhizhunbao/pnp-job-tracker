@@ -290,8 +290,13 @@ PW_AB_TOURISM_HOSPITALITY = {
 # 约八成申请 3 个月)。卫生局流不注册、不抽选,原句只在指南 PDF 7.1(「If you meet the requirements for the Health Authority stream,
 # you can apply directly to the stream; you do not need to submit a registration.」)—— 指南在 crawl 的 file_cache、不在 html
 # 缓存,自校核不上,「进池与抽选 —— 不需要」一步先不登,只登网页核得上的几步;递申请一步照设计 3.1 用无抽选的叫法 confirm。
+# 2026-10-03 Frank「都修一下」:自校改为网页缓存没有的再读 file_cache 的 PDF 原件(crawl get_cached_file),这一步补登
+# (BCS_STEP_DIRECT_HA)。
 BCS_SI_URL = "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
 """卑诗技术移民页(雇主声明表、注册在池 12 个月、邀请后 30 天递申请、处理时长表都在这页;For workers 页同文)。"""
+
+BCS_GUIDE_URL = "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-si-program-guide-pdf"
+"""卑诗技术移民项目指南 PDF(crawl 的 files-www.welcomebc.ca 原件;卫生局流「不用注册、直接递」只写在这份,7.1 节)。"""
 
 BCS_STEP_OFFER = {"step": "offer", "who": "employer", "none": False, "stuck": False,
                   "facts": [{"ref": "req", "factor": "empYears"},
@@ -330,6 +335,14 @@ BCS_STEP_APPLY = {"step": "apply", "who": "you", "none": False, "stuck": False,
                                        "PNP Online User Portal."),
                              "url": BCS_SI_URL}]}
 """收邀请、递申请:邀请发出后 30 天内递齐申请(过期邀请作废、注册移出池)。"""
+
+BCS_STEP_DIRECT_HA = {"step": "draw", "who": "province", "none": True, "stuck": False,
+                      "facts": [{"key": "directApply", "vars": {},
+                                 "quote": ("If you meet the requirements for the Health Authority stream, you can apply "
+                                           "directly to the stream; you do not need to submit a registration."),
+                                 "url": BCS_GUIDE_URL}]}
+"""进池与抽选 —— 不需要(卫生局通道,2026-10-03 补登):持卫生局 offer 直接递,不注册、不进池(指南 7.1)。事实词复用萨省的
+directApply(「不需要:持 offer 直接申请」—— 卫生局流本就要卫生局 offer,同义,不另立词)。"""
 
 BCS_STEP_SUBMIT_HA = {"step": "submit", "who": "you", "none": False, "stuck": False, "facts": []}
 """递申请(卫生局通道:持卫生局 offer 直接递,不注册不抽选;递件期限网页没写,不写)。2026-10-03 lead 合并时由 confirm 改 submit ——
@@ -481,7 +494,7 @@ PW_BC_HEALTH_AUTHORITY = {
     "quote": ("The BC PNP Health Authority stream will continue to nominate qualified healthcare professionals who work in the "
               "public sector directly delivering healthcare services."),
     "checked": "2026-09-28",
-    "steps": [BCS_STEP_OFFER_HA, BCS_STEP_SUBMIT_HA, BCS_STEP_REVIEW, BCS_STEP_PR],
+    "steps": [BCS_STEP_OFFER_HA, BCS_STEP_DIRECT_HA, BCS_STEP_SUBMIT_HA, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗卫生局通道(雇主须是省卫生局,清单 bc-health-authority.json)。抽选卡没有这条通道自己的组,不登记 = 不高亮(与现状一致)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流两条 = 指南 Part 3 通用要求「BC PNP Skills Immigration (all streams)」+
@@ -1081,11 +1094,23 @@ NSS_STEP_PR_GRAD = {"step": "pr", "who": "federal", "none": False, "stuck": Fals
                                "url": NSS_GRAD_URL}]}
 """拿提名,递永居(本省毕业生)。"""
 
+IRCC_EE_APPLY_URL = ("https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/"
+                     "apply-permanent-residence.html")
+"""联邦 EE「Apply for permanent residence」页(crawl 的 fed-ee 种子;邀请有效 60 天写在这页)。"""
+
+EE_PR_SUBMIT_FACT = {"key": "prSubmitDays", "vars": {"n": 60},
+                     "quote": "Your invitation to apply is valid for 60 days only.",
+                     "url": IRCC_EE_APPLY_URL}
+"""收到联邦邀请后 60 天内递永居(2026-10-03 申请步骤批 2 收尾,Frank「都修一下」):联邦规定、各省同一条,省页没写的快速通道
+(新斯科舍两条、新不伦瑞克两条、纽芬兰、爱德华王子岛)引 IRCC 原句;阿省、萨省省页自己写了,照旧引省页。"""
+
 NSS_STEP_PR_EE = {"step": "pr", "who": "federal", "none": False, "stuck": False,
                   "facts": [{"key": "nominationValidMonths", "vars": {"n": 12}, "quote": NSS_NOM_VALID_QUOTE,
-                             "url": NSS_EE_URL}]}
+                             "url": NSS_EE_URL},
+                            EE_PR_SUBMIT_FACT]}
 """拿提名,递永居(快速通道两条):快速通道页写的也是提名后 12 个月内递永居;EE 系统里几天内接受提名、几天内递永居,
-新斯科舍页没写,不拿别省的原句顶。"""
+新斯科舍页没写,不拿别省的原句顶。
+2026-10-03:联邦邀请后 60 天内递永居是联邦规定,改引 IRCC 原句(EE_PR_SUBMIT_FACT);接受提名的天数仍没有出处,不写。"""
 
 PW_SK_EXISTING_WORK_PERMIT = {
     "key": "sk-existing-work-permit", "province": "SK", "program": "PNP",
@@ -1093,7 +1118,7 @@ PW_SK_EXISTING_WORK_PERMIT = {
     "officialName": "Skilled Worker With Existing Work Permit",
     "boardLabel": "SK 现有工签", "isDefault": False,
     "drawStreams": [],
-    "reqStreams": [],
+    "reqStreams": ["SINP — Employer Certificate of Registration (all streams)"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -1116,7 +1141,11 @@ employer that has supported you with the Employer Position Assessment, with a va
 待量尺与引擎按通道读行之后再接(pnp 的 OUT_SK_REQ 注同记)。持 offer 直接申请那条流本来就不挂:那句原句说的是
 International Skilled Worker 类,本通道属 Saskatchewan Experience 类。
 2026-09-30 通道补全批一 1b 复查(立项稿第四节第 3 条「现有工签类一行门槛都没有」):cms 判定卡「个人关」的门槛量尺(tenureResult)
-与「职业关」的 TEER 粗筛(teerScopes)仍按全省读门槛行,上面「待量尺与引擎按通道读行之后再接」的前提没变,本批照旧不接,报 lead。"""
+与「职业关」的 TEER 粗筛(teerScopes)仍按全省读门槛行,上面「待量尺与引擎按通道读行之后再接」的前提没变,本批照旧不接,报 lead。
+2026-10-03 申请步骤批 2 收尾(Frank「都修一下」):挂上全省雇主登记那条流(同萨省其余四条通道)—— 「申请步骤」卡「雇主登记」
+一步读它出「在萨省经营满 24 个月」(原先没字)。只挂雇主侧这一条,申请人侧仍一行不挂:弹框门槛卡照旧不出(cms applicantRowsOf
+数申请人侧 = 0),资讯页门槛卡照旧写「本站未收录门槛」、来源照旧是通道页;判定卡的量尺与 TEER 粗筛按全省读门槛行、不读本格,
+不受影响。"""
 
 PW_MB_SKILLED_WORKER_IN_MANITOBA = {
     "key": "mb-skilled-worker-in-manitoba", "province": "MB", "program": "PNP",
@@ -1499,6 +1528,10 @@ NBS_STEP_PR = {"step": "pr", "who": "federal", "none": False, "stuck": False, "f
 """拿提名,递永居(三个流与私立学院试点):页面只说在提名证书到期前向联邦递永居、证书写明走 EE 还是非 EE,没写有效期与递交期限 ——
 不写,不拿关键工人试点的 6 个月顶。"""
 
+NBS_STEP_PR_EE = {"step": "pr", "who": "federal", "none": False, "stuck": False, "facts": [EE_PR_SUBMIT_FACT]}
+"""拿提名,递永居(快速通道两条:就业、意向;2026-10-03 补):联邦邀请后 60 天内递永居引 IRCC 原句(EE_PR_SUBMIT_FACT);
+提名有效期 NB 页没写,照旧不写。"""
+
 NBS_STEP_PR_CWP = {"step": "pr", "who": "federal", "none": False, "stuck": False,
                    "facts": [{"key": "nominationValidMonths", "vars": {"n": 6},
                               "quote": ("The nomination certificate will be valid for six months from the date of "
@@ -1615,6 +1648,14 @@ NLS_STEP_PR = {"step": "pr", "who": "federal", "none": False, "stuck": False,
                           "url": NLS_FAQ_URL}]}
 """拿提名,递永居(三类同):提名证书有效 6 个月,过期前向联邦递。快速通道版提名后由联邦 EE 发邀请,NL 页面没写在 EE 里接受提名、
 递永居的天数,不拿阿省、萨省的原句顶。"""
+
+NLS_STEP_PR_EE = {"step": "pr", "who": "federal", "none": False, "stuck": False,
+                  "facts": [{"key": "nominationValidMonths", "vars": {"n": 6},
+                             "quote": "Your nomination certificate is valid for 6 months before it expires.",
+                             "url": NLS_FAQ_URL},
+                            EE_PR_SUBMIT_FACT]}
+"""拿提名,递永居(快速通道技术工人;2026-10-03 补):提名证书 6 个月同上,另加联邦邀请后 60 天内递永居(引 IRCC 原句,
+EE_PR_SUBMIT_FACT);接受提名的天数仍没有出处,不写。"""
 
 # 2026-10-03 申请步骤批 2(爱德华王子岛;形同上):PE 五条通道(劳工通道、在需职业、国际毕业生、中级经验、快速通道)的步骤件。
 # 各流页「How do I apply?」同一套:在 PEI EOI 系统建档 → 受邀 → 填申请表、雇主填 PEIW-02 → 审理 → 提名后自己向联邦递永居;
@@ -1750,6 +1791,9 @@ PES_STEP_REVIEW = {"step": "review", "who": "province", "none": False, "stuck": 
 
 PES_STEP_PR = {"step": "pr", "who": "federal", "none": False, "stuck": False, "facts": []}
 """拿提名,递永居(五条同):各流页只写提名后自己向 IRCC 递永居,快速通道页只写在线接受提名、联邦邀请后递永居,都没写期限,不写。"""
+
+PES_STEP_PR_EE = {"step": "pr", "who": "federal", "none": False, "stuck": False, "facts": [EE_PR_SUBMIT_FACT]}
+"""拿提名,递永居(快速通道;2026-10-03 补):联邦邀请后 60 天内递永居引 IRCC 原句(EE_PR_SUBMIT_FACT)。"""
 
 PW_NB_SKILLED_WORKER = {
     "key": "nb-skilled-worker", "province": "NB", "program": "PNP",
@@ -2259,7 +2303,7 @@ PW_NB_EXPRESS_ENTRY_EMPLOYMENT = {
     "nocs": [],
     "employers": [],
     "steps": [NBS_STEP_EE_PROFILE, NBS_STEP_OFFER, NBS_STEP_EOI_EE, NBS_STEP_DRAW, NBS_STEP_APPLY_EE,
-              NBS_STEP_REVIEW, NBS_STEP_PR],
+              NBS_STEP_REVIEW, NBS_STEP_PR_EE],
 }
 """NB Express Entry stream 下的本省就业路径:已在 NB 全职在职(TEER 0–3)+ EE 档案 + 67 分。抽选组「NB Express Entry」原先无人认领(2025–2026 
 共 11 轮)。
@@ -2316,7 +2360,7 @@ PW_NB_EXPRESS_ENTRY_INTEREST = {
     "nocs": [],
     "employers": [],
     "steps": [NBS_STEP_EE_PROFILE_NONE, NBS_STEP_LETTER, NBS_STEP_EOI_EE_LETTER, NBS_STEP_POOL,
-              NBS_STEP_APPLY_EE, NBS_STEP_REVIEW, NBS_STEP_PR],
+              NBS_STEP_APPLY_EE, NBS_STEP_REVIEW, NBS_STEP_PR_EE],
 }
 """NB Express Entry stream 下的兴趣信路径:不要本省 offer,要省方发到 EE 档案的兴趣信。页面在列,2025–2026 抽选页没出现过。"""
 
@@ -2504,7 +2548,7 @@ PW_PE_EXPRESS_ENTRY = {
     "nocs": [],
     "employers": [],
     "steps": [PES_STEP_EE_PROFILE, PES_STEP_OFFER, PES_STEP_EOI_EE, PES_STEP_DRAW, PES_STEP_APPLY_EE, PES_STEP_REVIEW,
-              PES_STEP_PR],
+              PES_STEP_PR_EE],
 }
 """要不要 offer 官方前后矛盾(资格条文不要求,表格段又要雇主填 PEIW-02);优先在本省为合格雇主工作的人 → 看工作,标「需先有 EE 档案」。
 2026-09-30 批一 1b:挂门槛流两条 —— 本流自己的(满足联邦三项目之一、在联邦 EE 池建档;网页原句)与雇主段(网页「Your employer must
@@ -2561,7 +2605,7 @@ PW_NL_EXPRESS_ENTRY_SKILLED_WORKER = {
     "nocs": [],
     "employers": [],
     "steps": [NLS_STEP_EE_PROFILE, NLS_STEP_JVA_EE, NLS_STEP_OFFER, NLS_STEP_EOI, NLS_STEP_DRAW, NLS_STEP_APPLY_EE,
-              NLS_STEP_REVIEW, NLS_STEP_PR],
+              NLS_STEP_REVIEW, NLS_STEP_PR_EE],
 }
 """TEER 0–3 的 NL offer + 联邦 EE 池 + NLPNP 打分 ≥ 67;PGWP 持有人可以走。门槛(67 分那条原句在 nl-req 注里,本类门槛未入表)待批一 1b。
 2026-09-30 批一 1b:门槛入表(etl/pnp NLR_EE_RULES:EE 池、打分表 67 分、资格 / 执照条文三条),挂上本类流与 NL 雇主流。"""
@@ -2877,6 +2921,9 @@ HTML_PARSER = "html.parser"
 
 DROP_TAGS = ["script", "style", "noscript"]
 """核原句前剥掉的标签。"""
+
+FILETYPE_PDF = "pdf"
+"""核原句读 PDF 原件时 pymupdf.open 的 filetype(从内存流开 PDF 必须显式给;2026-10-03)。"""
 
 EMPTY = ""
 """空串(去空白的替换值、缺格的默认值)。"""

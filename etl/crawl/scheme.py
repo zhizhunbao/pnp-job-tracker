@@ -790,3 +790,20 @@ class FileCacheTest(unittest.TestCase):
                 page = json.loads((root / "s1" / MANIFEST_FILE).read_text(encoding=ENC_UTF8))[K_PAGES][0]
                 self.assertEqual(sorted(page), sorted([K_URL, "title", "depth", K_STATUS, K_HTML]))
                 self.assertEqual(fn.get_cached_page("https://x.test/p").html, "<html>p</html>")
+
+    def test_get_file(self) -> None:
+        """原件读门(2026-10-03 立):读回写门最后一次写的字节、尾斜杠两种写法都认;没登的 url、主机没目录的、
+        只有网页行的都给 None。"""
+        from crawl import functions as fn
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with mock.patch.object(fn.paths, "CRAWL", root):
+                u1 = "https://www.example.test/docs/guide-pdf"
+                fn.put_cached_file(CacheFilePutIn(url=u1, data=PDF_MAGIC + b"-1.7 v1"))
+                fn.put_cached_file(CacheFilePutIn(url=u1, data=PDF_MAGIC + b"-1.7 v2"))
+                self.assertEqual(fn.get_cached_file(u1), PDF_MAGIC + b"-1.7 v2")
+                self.assertEqual(fn.get_cached_file(u1 + "/"), PDF_MAGIC + b"-1.7 v2")
+                self.assertIsNone(fn.get_cached_file("https://www.example.test/docs/other-pdf"))
+                self.assertIsNone(fn.get_cached_file("https://nohost.example.test/x"))
+                fn.put_cached_page(CachePutIn(slug="s1", url="https://x.test/p", html="<html>p</html>", title="t"))
+                self.assertIsNone(fn.get_cached_file("https://x.test/p"))

@@ -3,6 +3,9 @@
 //       且本省出得了抽选表;③ 资讯页每项的步骤卡 = stepsCardOf 同一份(门槛卡给引用门槛行的事实供字)。
 // 金标(手写):阿省机会通道审理一步写「已审到 {日期} 收到的申请」;萨省雇主 offer 通道「雇主递职位审批」挂最近一个月的收件窗口表;
 //       阿省科技通道「拿提名,递永居」写 30 天接受提名、60 天递永居(EE 版)。
+//       2026-10-03(Frank「都修一下」):萨省现有工签门槛卡不出,「雇主登记」一步照样写经营年限那一句;
+//       步骤卡全表不列年收入 / 员工数(那两项只在门槛卡);卑诗卫生局「进池与抽选」写不需要(原句在指南 PDF);
+//       爱德华王子岛快速通道「拿提名,递永居」写联邦邀请后 60 天(原句在 IRCC 页)。
 // 探针:事实带 streamKey 时按归一键认通道 —— 原名对不上照样出字;拿掉 streamKey 改按原名,同一行就不出(金标分得开两种认法)。
 import fs from 'fs'
 import path from 'path'
@@ -77,6 +80,26 @@ describe('申请步骤卡', () => {
     const epa = eo?.steps.find((s) => s.name === '雇主递职位审批')
     expect(epa?.table?.corner).toMatch(/^\d{1,2} 月窗口$/)
     expect(epa?.table?.rows.length).toBeGreaterThan(0)
+    const ewp = itemsOf('SK').find((x) => x.key === 'sk-existing-work-permit')
+    const channel = PATHWAYS.find((p) => p.key === 'sk-existing-work-permit')
+    expect([ewp?.gate.rows, ewp?.gate.source?.href]).toEqual([[], channel?.url])
+    expect(ewp?.steps?.steps.find((s) => s.name === '雇主登记')?.lines.map((l) => l.text)).toEqual(['在本省经营满 24 个月'])
+    const ha = itemsOf('BC').find((x) => x.key === 'bc-health-authority')?.steps
+    expect(ha?.steps.find((s) => s.name === '进池与抽选')?.lines.map((l) => l.text)).toEqual(['不需要:持 offer 直接申请'])
+    const pe = itemsOf('PE').find((x) => x.key === 'pe-express-entry')?.steps
+    expect(pe?.steps.at(-1)?.lines.map((l) => l.text)).toEqual(['收到联邦邀请后 60 天内递永居'])
+  })
+
+  it('真表:步骤卡全表不列年收入 / 员工数(雇主那一步只出经营年限那一句)', () => {
+    for (const prov of PROVS) {
+      for (const it of itemsOf(prov)) {
+        for (const step of it.steps?.steps ?? []) {
+          for (const line of step.lines) {
+            expect(line.text).not.toMatch(/^(年收入|全职员工) ≥/)
+          }
+        }
+      }
+    }
   })
 
   it('探针:事实带 streamKey 按归一键认通道,原名对不上照样出字;拿掉 streamKey 按原名就不出', () => {
@@ -86,7 +109,7 @@ describe('申请步骤卡', () => {
     }
     const channel = PATHWAYS.find((p) => p.key === 'ab-accelerated-tech') ?? null
     const card = (fact: PnpStepSet['steps'][number]['facts'][number]) => stepsCardOf({
-      t: makeT('zh'), province: 'AB', channel, stepOps: [op], gate: null,
+      t: makeT('zh'), province: 'AB', channel, stepOps: [op], reqs: [], who: { province: 'AB', noc: '', teer: null },
       sets: [{ key: 'ab-accelerated-tech', steps: [{ step: 'review', who: 'province', none: false, stuck: false, facts: [fact] }] }],
     })
     const byKey = card({ ref: 'processing', metric: 'assessing_up_to_date', streamKey: 'accelerated tech pathway' })

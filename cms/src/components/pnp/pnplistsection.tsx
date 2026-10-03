@@ -82,7 +82,7 @@ export function PnpListSection({
   const reformCard = preReformCardOf(ctx.dx)
   const gate = gateCardOf({ t: p.t, job, reqs, channel: gateChannelOf({ job, pathways }) })
   const stepsCard = stepsCardOf({
-    t: p.t, province: job.province, channel: pnpChannelOf({ job, pathways }), sets: steps, stepOps, gate,
+    t: p.t, province: job.province, channel: pnpChannelOf({ job, pathways }), sets: steps, stepOps, reqs, who: job,
   })
   const qcSpecs = qcGateCardsOf({ t: p.t, lang, job, reqs, channels: qcChannels })
   const qcChannelSpecs = qcChannelSpecsOf(qcSpecs)

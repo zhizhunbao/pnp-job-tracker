@@ -2047,26 +2047,6 @@ export const STEP_REF = {
 }
 
 /**
- * 引用门槛行的事实 → 门槛卡上那一行的行键(直接取门槛卡算好的字,文案只有一份)。
- */
-export const STEP_REQ_ROW: Record<string, string> = {
-  /**
-   * 雇主经营年限 → 「雇主条件」行。
-   */
-  empYears: GATE_ROW.emp,
-
-  /**
-   * 本省打分表最低分 → 「积分」行。
-   */
-  pointsMin: GATE_ROW.points,
-
-  /**
-   * EE 档案 → 「EE」行。
-   */
-  eeProfile: GATE_ROW.ee,
-}
-
-/**
  * 写成橙字的事实词(限额行业那类卡人的条件)。2026-10-03 申请步骤批 2 加 inviteSectors(新不伦瑞克:新邀请目前只限三个行业)、
  * afsPaused(新斯科舍:餐饮住宿行业暂停收件)、salesServiceLow(爱德华王子岛:销售服务类岗位目前可能收不到邀请)。
  */

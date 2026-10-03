@@ -1653,6 +1653,31 @@ export type GateCardOfIn = {
 }
 
 /**
+ * gateOneOf 的入参(2026-10-03:门槛卡与「申请步骤」卡共用一把筛子)。
+ */
+export type GateOneIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗是谁。
+   */
+  job: GateWho
+
+  /**
+   * 门槛表(全国)。
+   */
+  reqs: PnpReq[]
+
+  /**
+   * 本岗通道在门槛表里认的那几条流。
+   */
+  streams: string[]
+}
+
+/**
  * 门槛卡各行构造器的共同入参。
  */
 export type GateRowOfIn = {
@@ -1675,6 +1700,21 @@ export type GateRowOfIn = {
    * 本岗通道那几条流的门槛行。
    */
   chan: PnpReq[]
+}
+
+/**
+ * empSplitOf 的出参:本通道门槛行里的雇主侧数值行,分全省一档与按地区分档两组(2026-10-03 自 empRowOf 拆出,步骤卡共用)。
+ */
+export type EmpSplit = {
+  /**
+   * 不分地区的那几行。
+   */
+  emp: PnpReq[]
+
+  /**
+   * 按地区分档的那几行(大多伦多 / 大温哥华这类)。
+   */
+  zoned: PnpReq[]
 }
 
 /**
@@ -6695,9 +6735,15 @@ export type StepsCardOfIn = {
   stepOps: PnpStepOp[]
 
   /**
-   * 本岗的门槛卡(引用门槛行的事实直接取它算好的那一行);没有给 null。
+   * 门槛表(全国;引用门槛行的事实自己用门槛卡同一套行构造器现算,不看门槛卡出没出 —— 2026-10-03 申请步骤批 2,
+   * Frank「都修一下」:萨省现有工签门槛卡不出,「雇主登记」一步原先没字)。
    */
-  gate: GateCardSpec | null
+  reqs: PnpReq[]
+
+  /**
+   * 本岗是谁(省 / 职业码 / TEER;资讯页不挑档,职业码空、TEER 为 null)。
+   */
+  who: GateWho
 }
 
 /**
@@ -6745,9 +6791,9 @@ export type StepOfIn = {
   stepOps: PnpStepOp[]
 
   /**
-   * 本岗的门槛卡;没有给 null。
+   * 门槛行构造器的共同入参(本岗是谁 + 本省与本通道的门槛行;一张卡算一次)。
    */
-  gate: GateCardSpec | null
+  one: GateRowOfIn
 }
 
 /**
@@ -6775,9 +6821,9 @@ export type StepFactIn = {
   stepOps: PnpStepOp[]
 
   /**
-   * 本岗的门槛卡;没有给 null。
+   * 门槛行构造器的共同入参。
    */
-  gate: GateCardSpec | null
+  one: GateRowOfIn
 }
 
 /**

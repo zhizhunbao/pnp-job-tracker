@@ -29,7 +29,108 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiFee",
+              "vars": {
+                "n": 135
+              },
+              "quote": "Effective April 7, 2026, a $135 fee applies.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your WEOI will remain valid in the pool for 12 months.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteAcceptDays",
+              "vars": {
+                "n": 15
+              },
+              "quote": "You have 15 days to accept this invitation.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            },
+            {
+              "key": "appSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "Once you create an application, you have 30 days to complete, submit, and pay the application fee.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "assessing_up_to_date",
+              "streamKey": "alberta opportunity stream"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Your nomination is only valid for 6 months; you must apply to IRCC before it expires.",
+              "url": "https://www.alberta.ca/aaip-alberta-opportunity-stream-after-you-are-nominated"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "ab-accelerated-tech",
@@ -63,7 +164,128 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "eeProfile",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "eeProfile"
+            }
+          ]
+        },
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiFee",
+              "vars": {
+                "n": 135
+              },
+              "quote": "Effective April 7, 2026, a $135 fee applies.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your WEOI will remain valid in the pool for 12 months.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteAcceptDays",
+              "vars": {
+                "n": 15
+              },
+              "quote": "You have 15 days to accept this invitation.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            },
+            {
+              "key": "appSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "Once you create an application, you have 30 days to complete, submit, and pay the application fee.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "assessing_up_to_date",
+              "streamKey": "accelerated tech pathway"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eeAcceptDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "You have 30 days to accept the nomination in your online IRCC Express Entry profile.",
+              "url": "https://www.alberta.ca/aaip-alberta-express-entry-stream-after-you-are-nominated"
+            },
+            {
+              "key": "prSubmitDays",
+              "vars": {
+                "n": 60
+              },
+              "quote": "You will have 60 days after receiving the Invitation to Apply to submit your application for permanent residence online.",
+              "url": "https://www.alberta.ca/aaip-alberta-express-entry-stream-after-you-are-nominated"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "ab-dedicated-health-care",
@@ -97,7 +319,99 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiFee",
+              "vars": {
+                "n": 135
+              },
+              "quote": "Effective April 7, 2026, a $135 fee applies.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your WEOI will remain valid in the pool for 12 months.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteAcceptDays",
+              "vars": {
+                "n": 15
+              },
+              "quote": "You have 15 days to accept this invitation.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            },
+            {
+              "key": "appSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "Once you create an application, you have 30 days to complete, submit, and pay the application fee.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "assessing_up_to_date",
+              "streamKey": "dedicated health care pathways"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "ab-law-enforcement",
@@ -130,7 +444,128 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "eeProfile",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "eeProfile"
+            }
+          ]
+        },
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiFee",
+              "vars": {
+                "n": 135
+              },
+              "quote": "Effective April 7, 2026, a $135 fee applies.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your WEOI will remain valid in the pool for 12 months.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteAcceptDays",
+              "vars": {
+                "n": 15
+              },
+              "quote": "You have 15 days to accept this invitation.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            },
+            {
+              "key": "appSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "Once you create an application, you have 30 days to complete, submit, and pay the application fee.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "assessing_up_to_date",
+              "streamKey": "law enforcement pathway"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eeAcceptDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "You have 30 days to accept the nomination in your online IRCC Express Entry profile.",
+              "url": "https://www.alberta.ca/aaip-alberta-express-entry-stream-after-you-are-nominated"
+            },
+            {
+              "key": "prSubmitDays",
+              "vars": {
+                "n": 60
+              },
+              "quote": "You will have 60 days after receiving the Invitation to Apply to submit your application for permanent residence online.",
+              "url": "https://www.alberta.ca/aaip-alberta-express-entry-stream-after-you-are-nominated"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "ab-tourism-hospitality",
@@ -163,7 +598,99 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiFee",
+              "vars": {
+                "n": 135
+              },
+              "quote": "Effective April 7, 2026, a $135 fee applies.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your WEOI will remain valid in the pool for 12 months.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteAcceptDays",
+              "vars": {
+                "n": 15
+              },
+              "quote": "You have 15 days to accept this invitation.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            },
+            {
+              "key": "appSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "Once you create an application, you have 30 days to complete, submit, and pay the application fee.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "assessing_up_to_date",
+              "streamKey": "tourism and hospitality stream"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "ab-rural-renewal",
@@ -196,7 +723,122 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "community",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "communityLetter",
+              "vars": {},
+              "quote": "To qualify for selection and receive WEOI points, an endorsement letter from a designated community is required at the time of WEOI submission.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            }
+          ]
+        },
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiFee",
+              "vars": {
+                "n": 135
+              },
+              "quote": "Effective April 7, 2026, a $135 fee applies.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your WEOI will remain valid in the pool for 12 months.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteAcceptDays",
+              "vars": {
+                "n": 15
+              },
+              "quote": "You have 15 days to accept this invitation.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            },
+            {
+              "key": "appSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "Once you create an application, you have 30 days to complete, submit, and pay the application fee.",
+              "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "assessing_up_to_date",
+              "streamKey": "rural renewal stream"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Your nomination is only valid for 6 months; you must apply to IRCC before it expires.",
+              "url": "https://www.alberta.ca/aaip-rural-renewal-stream-after-you-are-nominated"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "bc-skilled-worker",
@@ -227,7 +869,89 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            },
+            {
+              "key": "employerDeclaration",
+              "vars": {},
+              "quote": "Must have the support of your employer before registering and submit a completed Employer Declaration Form",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "register",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your registration will remain active in the pool for up to 12 months, or until you receive an invitation to apply.",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "If you are invited to apply after registering, you will have up to 30 calendar days from the date of invitation to submit a complete application using the BC PNP Online User Portal.",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "processing_months",
+              "scope": "Application"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "bc-health-authority",
@@ -258,7 +982,67 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            },
+            {
+              "key": "employerDeclaration",
+              "vars": {},
+              "quote": "Must have the support of an authorized personnel from your health authority employer before applying and submit a completed Employer Declaration Form",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": true,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "directApply",
+              "vars": {},
+              "quote": "If you meet the requirements for the Health Authority stream, you can apply directly to the stream; you do not need to submit a registration.",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-si-program-guide-pdf"
+            }
+          ]
+        },
+        {
+          "step": "submit",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "processing_months",
+              "scope": "Application"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "bc-healthcare",
@@ -291,7 +1075,89 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            },
+            {
+              "key": "employerDeclaration",
+              "vars": {},
+              "quote": "Must have the support of your employer before registering and submit a completed Employer Declaration Form",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "register",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your registration will remain active in the pool for up to 12 months, or until you receive an invitation to apply.",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "If you are invited to apply after registering, you will have up to 30 calendar days from the date of invitation to submit a complete application using the BC PNP Online User Portal.",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "processing_months",
+              "scope": "Application"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "bc-childcare",
@@ -324,7 +1190,89 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            },
+            {
+              "key": "employerDeclaration",
+              "vars": {},
+              "quote": "Must have the support of your employer before registering and submit a completed Employer Declaration Form",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "register",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your registration will remain active in the pool for up to 12 months, or until you receive an invitation to apply.",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "If you are invited to apply after registering, you will have up to 30 calendar days from the date of invitation to submit a complete application using the BC PNP Online User Portal.",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "processing_months",
+              "scope": "Application"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "bc-veterinary",
@@ -357,7 +1305,89 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            },
+            {
+              "key": "employerDeclaration",
+              "vars": {},
+              "quote": "Must have the support of your employer before registering and submit a completed Employer Declaration Form",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "register",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your registration will remain active in the pool for up to 12 months, or until you receive an invitation to apply.",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "If you are invited to apply after registering, you will have up to 30 calendar days from the date of invitation to submit a complete application using the BC PNP Online User Portal.",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "processing_months",
+              "scope": "Application"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "bc-construction-trades",
@@ -390,7 +1420,89 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            },
+            {
+              "key": "employerDeclaration",
+              "vars": {},
+              "quote": "Must have the support of your employer before registering and submit a completed Employer Declaration Form",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "register",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your registration will remain active in the pool for up to 12 months, or until you receive an invitation to apply.",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "If you are invited to apply after registering, you will have up to 30 calendar days from the date of invitation to submit a complete application using the BC PNP Online User Portal.",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "processing_months",
+              "scope": "Application"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "bc-french-teachers",
@@ -423,7 +1535,89 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            },
+            {
+              "key": "employerDeclaration",
+              "vars": {},
+              "quote": "Must have the support of your employer before registering and submit a completed Employer Declaration Form",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "register",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your registration will remain active in the pool for up to 12 months, or until you receive an invitation to apply.",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "If you are invited to apply after registering, you will have up to 30 calendar days from the date of invitation to submit a complete application using the BC PNP Online User Portal.",
+              "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "processing_months",
+              "scope": "Application"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "sk-employment-offer",
@@ -881,7 +2075,9 @@
       "boardLabel": "SK 现有工签",
       "isDefault": false,
       "drawStreams": [],
-      "reqStreams": [],
+      "reqStreams": [
+        "SINP — Employer Certificate of Registration (all streams)"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -1361,7 +2557,100 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "work",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "workMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Ongoing Manitoba employment means that you possess a valid work permit and a Manitoba company has offered you a full-time, long-term job after you have completed six months or more of continuous full-time employment with that company",
+              "url": "https://immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility"
+            }
+          ]
+        },
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no fee to submit an EOI.",
+              "url": "https://immigratemanitoba.com/resources/faq/eoi"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your profile will be valid for one year from the day you submit it.",
+              "url": "https://immigratemanitoba.com/mpnp/apply/eoi"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "processing_days",
+              "scope": "Skilled Worker in Manitoba"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidDays",
+              "vars": {
+                "n": 180
+              },
+              "quote": "Within 180 days from the date of nomination, make a separate application to the Government of Canada for permanent residence for you and your family.",
+              "url": "https://immigratemanitoba.com/mpnp/apply"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "mb-skilled-worker-overseas",
@@ -1393,7 +2682,77 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no fee to submit an EOI.",
+              "url": "https://immigratemanitoba.com/resources/faq/eoi"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your profile will be valid for one year from the day you submit it.",
+              "url": "https://immigratemanitoba.com/mpnp/apply/eoi"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "processing_days",
+              "scope": "Skilled Worker Overseas"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidDays",
+              "vars": {
+                "n": 180
+              },
+              "quote": "Within 180 days from the date of nomination, make a separate application to the Government of Canada for permanent residence for you and your family.",
+              "url": "https://immigratemanitoba.com/mpnp/apply"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "mb-career-employment",
@@ -1426,7 +2785,89 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no fee to submit an EOI.",
+              "url": "https://immigratemanitoba.com/resources/faq/eoi"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your profile will be valid for one year from the day you submit it.",
+              "url": "https://immigratemanitoba.com/mpnp/apply/eoi"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "key": "movedToSwm",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Candidates with active Expression of Interest (EOI) profiles under the CEP and who have gained at least six months of work experience in Manitoba are invited to transition into the Skilled Worker in Manitoba pathway, where they can be considered in future EOI draws alongside other skilled workers on a priority basis.",
+              "url": "https://immigratemanitoba.com/2026/06/important-update-for-manitoba-provincial-nominee-program-international-education-stream-ies-career-employment-pathway-cep-candidates"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "processing_days",
+              "scope": "International Education"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidDays",
+              "vars": {
+                "n": 180
+              },
+              "quote": "Within 180 days from the date of nomination, make a separate application to the Government of Canada for permanent residence for you and your family.",
+              "url": "https://immigratemanitoba.com/mpnp/apply"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "mb-graduate-internship",
@@ -1459,7 +2900,77 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no fee to submit an EOI.",
+              "url": "https://immigratemanitoba.com/resources/faq/eoi"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your profile will be valid for one year from the day you submit it.",
+              "url": "https://immigratemanitoba.com/mpnp/apply/eoi"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "metric": "processing_days",
+              "scope": "International Education"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidDays",
+              "vars": {
+                "n": 180
+              },
+              "quote": "Within 180 days from the date of nomination, make a separate application to the Government of Canada for permanent residence for you and your family.",
+              "url": "https://immigratemanitoba.com/mpnp/apply"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "on-workforce-priority",
@@ -1489,7 +3000,110 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "employerRegister",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "offerEoiDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "You will have 30 calendar days from the date the job offer was submitted to register your EOI.",
+              "url": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-application-process"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your EOI registration will remain valid for 12 months until you receive an invitation to apply.",
+              "url": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-application-process"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "epa",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteSubmitDays",
+              "vars": {
+                "n": 14
+              },
+              "quote": "Employer application for an approval of an employment position must be submitted within 14 calendar days from the date the invitation to apply was issued.",
+              "url": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-application-process"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteSubmitDays",
+              "vars": {
+                "n": 17
+              },
+              "quote": "Application for a nomination certificate (applicant) must be submitted with the application fee paid within 17 calendar days from the date the invitation to apply was issued to you.",
+              "url": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-application-process"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Your Confirmation of Nomination (nomination certificate) is valid for 6 months from the date of your nomination.",
+              "url": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-application-process"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "on-employer-job-offer-foreign-worker",
@@ -1575,7 +3189,74 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Your EOI registration will remain valid for 12 months until you receive an invitation to apply.",
+              "url": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-application-process"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteSubmitDays",
+              "vars": {
+                "n": 17
+              },
+              "quote": "If you are applying as a self-employed physician, you must submit your application within 17 calendar days of receiving the invitation to apply.",
+              "url": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Your Confirmation of Nomination (nomination certificate) is valid for 6 months from the date of your nomination.",
+              "url": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-application-process"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "ns-skilled-worker",
@@ -1606,7 +3287,113 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            },
+            {
+              "key": "teer45EmployerMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Workers in TEER 4 or 5 of the National Occupational Classification must already have six months’ experience with the employer.",
+              "url": "https://liveinnovascotia.com/skilled-worker"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiIsApplication",
+              "vars": {},
+              "quote": "Candidates (NSNP) and employers (AIP) will continue to submit full applications.",
+              "url": "https://liveinnovascotia.com/eoi-process"
+            },
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no fee to submit an EOI.",
+              "url": "https://liveinnovascotia.com/resources/nsnp-update-application-fees-effective-september-1-2026"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "EOIs not selected within 12 months will expire and be removed from the pool.",
+              "url": "https://liveinnovascotia.com/resources/expression-interest-eoi-validity-period-and-transition-measures"
+            },
+            {
+              "key": "afsPaused",
+              "vars": {},
+              "quote": "As of 12 noon ADT, April 17, 2024, the Nova Scotia Provincial Nominee Program has a significant volume of submissions for candidates in the Accommodation and Food Services sector awaiting a decision and must stop accepting submissions in this sector while processing current inventory.",
+              "url": "https://liveinnovascotia.com/skilled-worker"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiFee",
+              "vars": {
+                "n": 1000
+              },
+              "quote": "$1,000 for the NSNP worker streams (Skilled Worker, Nova Scotia Graduate, Nova Scotia: Express Entry)",
+              "url": "https://liveinnovascotia.com/resources/nsnp-update-application-fees-effective-september-1-2026"
+            },
+            {
+              "key": "selectedPayDays",
+              "vars": {
+                "n": 7
+              },
+              "quote": "If your submission is selected, you will receive a notification with instructions and have 7 calendar days to review your application, upload any updated documents and pay the application fee.",
+              "url": "https://liveinnovascotia.com/nova-scotia-nominee-program"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Within twelve (12) months of receiving your nominee certificate, apply to Immigration, Refugees and Citizenship Canada (IRCC) for your permanent resident visa.",
+              "url": "https://liveinnovascotia.com/skilled-worker"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "ns-construction",
@@ -1639,7 +3426,99 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiIsApplication",
+              "vars": {},
+              "quote": "Candidates (NSNP) and employers (AIP) will continue to submit full applications.",
+              "url": "https://liveinnovascotia.com/eoi-process"
+            },
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no fee to submit an EOI.",
+              "url": "https://liveinnovascotia.com/resources/nsnp-update-application-fees-effective-september-1-2026"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "EOIs not selected within 12 months will expire and be removed from the pool.",
+              "url": "https://liveinnovascotia.com/resources/expression-interest-eoi-validity-period-and-transition-measures"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiFee",
+              "vars": {
+                "n": 1000
+              },
+              "quote": "$1,000 for the NSNP worker streams (Skilled Worker, Nova Scotia Graduate, Nova Scotia: Express Entry)",
+              "url": "https://liveinnovascotia.com/resources/nsnp-update-application-fees-effective-september-1-2026"
+            },
+            {
+              "key": "selectedPayDays",
+              "vars": {
+                "n": 7
+              },
+              "quote": "If your submission is selected, you will receive a notification with instructions and have 7 calendar days to review your application, upload any updated documents and pay the application fee.",
+              "url": "https://liveinnovascotia.com/nova-scotia-nominee-program"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Within twelve (12) months of receiving your nominee certificate, apply to Immigration, Refugees and Citizenship Canada (IRCC) for your permanent resident visa.",
+              "url": "https://liveinnovascotia.com/skilled-worker"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "ns-graduate",
@@ -1673,7 +3552,94 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiIsApplication",
+              "vars": {},
+              "quote": "Candidates (NSNP) and employers (AIP) will continue to submit full applications.",
+              "url": "https://liveinnovascotia.com/eoi-process"
+            },
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no fee to submit an EOI.",
+              "url": "https://liveinnovascotia.com/resources/nsnp-update-application-fees-effective-september-1-2026"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "EOIs not selected within 12 months will expire and be removed from the pool.",
+              "url": "https://liveinnovascotia.com/resources/expression-interest-eoi-validity-period-and-transition-measures"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiFee",
+              "vars": {
+                "n": 1000
+              },
+              "quote": "$1,000 for the NSNP worker streams (Skilled Worker, Nova Scotia Graduate, Nova Scotia: Express Entry)",
+              "url": "https://liveinnovascotia.com/resources/nsnp-update-application-fees-effective-september-1-2026"
+            },
+            {
+              "key": "selectedPayDays",
+              "vars": {
+                "n": 7
+              },
+              "quote": "If your submission is selected, you will receive a notification with instructions and have 7 calendar days to review your application, upload any updated documents and pay the application fee.",
+              "url": "https://liveinnovascotia.com/nova-scotia-nominee-program"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Within twelve (12) months of receiving your nominee certificate, apply to Immigration, Refugees and Citizenship Canada (IRCC) for your permanent resident visa.",
+              "url": "https://liveinnovascotia.com/nova-scotia-graduate"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "ns-physicians",
@@ -1712,7 +3678,94 @@
         "nova scotia health",
         "iwk health"
       ],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiIsApplication",
+              "vars": {},
+              "quote": "Candidates (NSNP) and employers (AIP) will continue to submit full applications.",
+              "url": "https://liveinnovascotia.com/eoi-process"
+            },
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no fee to submit an EOI.",
+              "url": "https://liveinnovascotia.com/resources/nsnp-update-application-fees-effective-september-1-2026"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "EOIs not selected within 12 months will expire and be removed from the pool.",
+              "url": "https://liveinnovascotia.com/resources/expression-interest-eoi-validity-period-and-transition-measures"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiFee",
+              "vars": {
+                "n": 1000
+              },
+              "quote": "$1,000 for the NSNP worker streams (Skilled Worker, Nova Scotia Graduate, Nova Scotia: Express Entry)",
+              "url": "https://liveinnovascotia.com/resources/nsnp-update-application-fees-effective-september-1-2026"
+            },
+            {
+              "key": "selectedPayDays",
+              "vars": {
+                "n": 7
+              },
+              "quote": "If your submission is selected, you will receive a notification with instructions and have 7 calendar days to review your application, upload any updated documents and pay the application fee.",
+              "url": "https://liveinnovascotia.com/nova-scotia-nominee-program"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Within twelve (12) months of receiving your nominee certificate, apply to Immigration, Refugees and Citizenship Canada (IRCC) for your permanent resident visa.",
+              "url": "https://liveinnovascotia.com/skilled-worker"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "ns-express-entry-experience",
@@ -1750,7 +3803,121 @@
       ],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "work",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "localWorkMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "have at least one year of experience working in Nova Scotia in an occupation at TEER 0, 1, 2, or 3 of the National Occupational Classification",
+              "url": "https://liveinnovascotia.com/express-entry"
+            }
+          ]
+        },
+        {
+          "step": "eeProfile",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "eeProfile"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiIsApplication",
+              "vars": {},
+              "quote": "Candidates (NSNP) and employers (AIP) will continue to submit full applications.",
+              "url": "https://liveinnovascotia.com/eoi-process"
+            },
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no fee to submit an EOI.",
+              "url": "https://liveinnovascotia.com/resources/nsnp-update-application-fees-effective-september-1-2026"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "EOIs not selected within 12 months will expire and be removed from the pool.",
+              "url": "https://liveinnovascotia.com/resources/expression-interest-eoi-validity-period-and-transition-measures"
+            },
+            {
+              "key": "afsPaused",
+              "vars": {},
+              "quote": "As of 12 noon ADT, April 17, 2024, the Nova Scotia Provincial Nominee Program has a significant volume of submissions for candidates in the Accommodation and Food Services sector awaiting a decision and must stop accepting submissions in this sector while processing current inventory.",
+              "url": "https://liveinnovascotia.com/express-entry"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiFee",
+              "vars": {
+                "n": 1000
+              },
+              "quote": "$1,000 for the NSNP worker streams (Skilled Worker, Nova Scotia Graduate, Nova Scotia: Express Entry)",
+              "url": "https://liveinnovascotia.com/resources/nsnp-update-application-fees-effective-september-1-2026"
+            },
+            {
+              "key": "selectedPayDays",
+              "vars": {
+                "n": 7
+              },
+              "quote": "If your submission is selected, you will receive a notification with instructions and have 7 calendar days to review your application, upload any updated documents and pay the application fee.",
+              "url": "https://liveinnovascotia.com/nova-scotia-nominee-program"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Within twelve (12) months of receiving your nominee certificate, apply to Immigration, Refugees and Citizenship Canada (IRCC) for your permanent resident visa.",
+              "url": "https://liveinnovascotia.com/express-entry"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "ns-express-entry-physicians",
@@ -1791,7 +3958,121 @@
         "nova scotia health",
         "iwk health"
       ],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "eeProfile",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "eeProfile"
+            }
+          ]
+        },
+        {
+          "step": "interestLetter",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "letterSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "submit your EOI within 30 calendar days of the date on which your Letter of Interest was issued",
+              "url": "https://liveinnovascotia.com/express-entry"
+            },
+            {
+              "key": "eoiIsApplication",
+              "vars": {},
+              "quote": "Candidates (NSNP) and employers (AIP) will continue to submit full applications.",
+              "url": "https://liveinnovascotia.com/eoi-process"
+            },
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no fee to submit an EOI.",
+              "url": "https://liveinnovascotia.com/resources/nsnp-update-application-fees-effective-september-1-2026"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "EOIs not selected within 12 months will expire and be removed from the pool.",
+              "url": "https://liveinnovascotia.com/resources/expression-interest-eoi-validity-period-and-transition-measures"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiFee",
+              "vars": {
+                "n": 1000
+              },
+              "quote": "$1,000 for the NSNP worker streams (Skilled Worker, Nova Scotia Graduate, Nova Scotia: Express Entry)",
+              "url": "https://liveinnovascotia.com/resources/nsnp-update-application-fees-effective-september-1-2026"
+            },
+            {
+              "key": "selectedPayDays",
+              "vars": {
+                "n": 7
+              },
+              "quote": "If your submission is selected, you will receive a notification with instructions and have 7 calendar days to review your application, upload any updated documents and pay the application fee.",
+              "url": "https://liveinnovascotia.com/nova-scotia-nominee-program"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "Within twelve (12) months of receiving your nominee certificate, apply to Immigration, Refugees and Citizenship Canada (IRCC) for your permanent resident visa.",
+              "url": "https://liveinnovascotia.com/express-entry"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "nb-skilled-worker",
@@ -1823,7 +4104,102 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "Submitting an expression of interest is free of charge.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html"
+            },
+            {
+              "key": "eoiValidDays",
+              "vars": {
+                "n": 365
+              },
+              "quote": "They remain valid for 365 days from the date of submission.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            },
+            {
+              "key": "inviteSectors",
+              "vars": {},
+              "quote": "Effective May 4, 2026, and until further notice, all new invitations to apply under the New Brunswick Experience pathway of the New Brunswick Skilled Worker stream will be limited to occupations in the following sectors:",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/important-notices.html"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "appFee",
+              "vars": {
+                "n": 250
+              },
+              "quote": "However, before submitting a complete nomination application, you must pay a non-refundable application fee of $250.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "reviewSeveralMonths",
+              "vars": {},
+              "quote": "Due to a high volume of applications, this may take several months to complete.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+            },
+            {
+              "key": "noTimeGuarantee",
+              "vars": {},
+              "quote": "Immigration New Brunswick is unable to provide processing times for individual applications and cannot guarantee that an application will be evaluated or approved before a work permit expires.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/important-notices.html"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "nb-express-entry-employment",
@@ -1861,7 +4237,112 @@
       ],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "eeProfile",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "eeProfile"
+            }
+          ]
+        },
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "pointsMin"
+            },
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "Submitting an expression of interest is free of charge.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/express-entry-stream.html"
+            },
+            {
+              "key": "eoiValidDays",
+              "vars": {
+                "n": 365
+              },
+              "quote": "They remain valid for 365 days from the date of submission.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "appFee",
+              "vars": {
+                "n": 250
+              },
+              "quote": "However, before submitting a complete nomination application, you must pay a non-refundable application fee of $250.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/express-entry-stream.html"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "reviewSeveralMonths",
+              "vars": {},
+              "quote": "Due to a high volume of applications, this may take several months to complete.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+            },
+            {
+              "key": "noTimeGuarantee",
+              "vars": {},
+              "quote": "Immigration New Brunswick is unable to provide processing times for individual applications and cannot guarantee that an application will be evaluated or approved before a work permit expires.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/important-notices.html"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "nb-francophone-workers",
@@ -1894,7 +4375,104 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "empMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "be working in, or have accepted, a permanent, full-time, and non-seasonal (year-round) position for an eligible employer who has been actively operating in New Brunswick for the past 12 months, providing goods or services",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "pointsMin"
+            },
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "Submitting an expression of interest is free of charge.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"
+            },
+            {
+              "key": "eoiValidDays",
+              "vars": {
+                "n": 365
+              },
+              "quote": "They remain valid for 365 days from the date of submission.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "appFee",
+              "vars": {
+                "n": 250
+              },
+              "quote": "However, before submitting a complete nomination application, you must pay a non-refundable application fee of $250.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "reviewSeveralMonths",
+              "vars": {},
+              "quote": "Due to a high volume of applications, this may take several months to complete.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+            },
+            {
+              "key": "noTimeGuarantee",
+              "vars": {},
+              "quote": "Immigration New Brunswick is unable to provide processing times for individual applications and cannot guarantee that an application will be evaluated or approved before a work permit expires.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/important-notices.html"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "nb-express-entry-interest",
@@ -1923,7 +4501,101 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "eeProfile",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "interestLetter",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "Submitting an expression of interest is free of charge.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/express-entry-stream.html"
+            },
+            {
+              "key": "eoiValidDays",
+              "vars": {
+                "n": 365
+              },
+              "quote": "They remain valid for 365 days from the date of submission.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "key": "poolSelection",
+              "vars": {},
+              "quote": "Immigration New Brunswick reviews submitted expressions of interest and issues invitations to apply only to selected individuals based on provincial labour market needs, available allocation and other priorities determined by the Government of New Brunswick.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "appFee",
+              "vars": {
+                "n": 250
+              },
+              "quote": "However, before submitting a complete nomination application, you must pay a non-refundable application fee of $250.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/express-entry-stream.html"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "reviewSeveralMonths",
+              "vars": {},
+              "quote": "Due to a high volume of applications, this may take several months to complete.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+            },
+            {
+              "key": "noTimeGuarantee",
+              "vars": {},
+              "quote": "Immigration New Brunswick is unable to provide processing times for individual applications and cannot guarantee that an application will be evaluated or approved before a work permit expires.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/important-notices.html"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "nb-francophone-priorities",
@@ -1954,7 +4626,98 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "interestLetter",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "letterOrGrad",
+              "vars": {},
+              "quote": "To be eligible under this pathway, you must meet the definition of one of the two priorities:",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "Submitting an expression of interest is free of charge.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"
+            },
+            {
+              "key": "eoiValidDays",
+              "vars": {
+                "n": 365
+              },
+              "quote": "They remain valid for 365 days from the date of submission.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "appFee",
+              "vars": {
+                "n": 250
+              },
+              "quote": "However, before submitting a complete nomination application, you must pay a non-refundable application fee of $250.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "reviewSeveralMonths",
+              "vars": {},
+              "quote": "Due to a high volume of applications, this may take several months to complete.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+            },
+            {
+              "key": "noTimeGuarantee",
+              "vars": {},
+              "quote": "Immigration New Brunswick is unable to provide processing times for individual applications and cannot guarantee that an application will be evaluated or approved before a work permit expires.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/important-notices.html"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "nb-francophones-remote",
@@ -1983,7 +4746,109 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "work",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "liveMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "have been living in New Brunswick for 12 months",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"
+            },
+            {
+              "key": "remoteNonQc",
+              "vars": {},
+              "quote": "have been working remotely for a Canadian employer located outside of Quebec during this entire period",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "Submitting an expression of interest is free of charge.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"
+            },
+            {
+              "key": "eoiValidDays",
+              "vars": {
+                "n": 365
+              },
+              "quote": "They remain valid for 365 days from the date of submission.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "key": "poolSelection",
+              "vars": {},
+              "quote": "Immigration New Brunswick reviews submitted expressions of interest and issues invitations to apply only to selected individuals based on provincial labour market needs, available allocation and other priorities determined by the Government of New Brunswick.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "appFee",
+              "vars": {
+                "n": 250
+              },
+              "quote": "However, before submitting a complete nomination application, you must pay a non-refundable application fee of $250.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "reviewSeveralMonths",
+              "vars": {},
+              "quote": "Due to a high volume of applications, this may take several months to complete.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+            },
+            {
+              "key": "noTimeGuarantee",
+              "vars": {},
+              "quote": "Immigration New Brunswick is unable to provide processing times for individual applications and cannot guarantee that an application will be evaluated or approved before a work permit expires.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/important-notices.html"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "nb-critical-worker-pilot",
@@ -2018,7 +4883,96 @@
         "imperial manufacturing",
         "mccain foods"
       ],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "employerOnly",
+              "vars": {},
+              "quote": "The New Brunswick Critical Worker Pilot is an employer-driven stream, based on targeted recruitment for skilled workers and therefore candidate applications to the pilot program are made through the participating employer.",
+              "url": "https://www.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-critical-workers-pilot.html"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "key": "poolSelection",
+              "vars": {},
+              "quote": "Candidates will be selected from this pool and invited to apply based on immigration allocations, application volumes, and New Brunswick labour market needs.",
+              "url": "https://www.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-critical-workers-pilot.html"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteSubmitDays",
+              "vars": {
+                "n": 45
+              },
+              "quote": "You are required to submit a complete electronic application within 45 calendar days of being issued an ITA.",
+              "url": "https://www.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-critical-workers-pilot.html"
+            }
+          ]
+        },
+        {
+          "step": "settle",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noTimeGuarantee",
+              "vars": {},
+              "quote": "Immigration New Brunswick is unable to provide processing times for individual applications and cannot guarantee that an application will be evaluated or approved before a work permit expires.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/important-notices.html"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "The nomination certificate will be valid for six months from the date of issuance and is considered valid if you submit a complete application for PR before the expiry date on the nomination certificate.",
+              "url": "https://www.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-critical-workers-pilot.html"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "nb-private-college-pilot",
@@ -2048,7 +5002,107 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "Submitting an expression of interest is free of charge.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/pccg-pilot-program.html"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "key": "poolSelection",
+              "vars": {},
+              "quote": "Immigration New Brunswick reviews them and issues invitations to apply only to selected individuals based on provincial labour market needs, available allocation and other priorities determined by the Government of New Brunswick.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/pccg-pilot-program.html"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "appFee",
+              "vars": {
+                "n": 250
+              },
+              "quote": "However, before submitting a complete nomination application, you must pay a non-refundable application fee of $250.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/pccg-pilot-program.html"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "reviewSeveralMonths",
+              "vars": {},
+              "quote": "Due to a high volume of applications, this may take several months to complete.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/pccg-pilot-program.html"
+            },
+            {
+              "key": "noTimeGuarantee",
+              "vars": {},
+              "quote": "Immigration New Brunswick is unable to provide processing times for individual applications and cannot guarantee that an application will be evaluated or approved before a work permit expires.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/important-notices.html"
+            }
+          ]
+        },
+        {
+          "step": "closedPermit",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "closedPermitDays",
+              "vars": {
+                "n": 90
+              },
+              "quote": "Under this pilot, you must be nominated and apply for a closed work permit with the employer support before the expiry date of your study permit and within 90 days of the program completion date shown on your final transcript.",
+              "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/pccg-pilot-program.html"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "nl-skilled-worker",
@@ -2081,7 +5135,113 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "epa",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noPermitOnly",
+              "vars": {},
+              "quote": "With an employer that has a valid JVA (only required if the applicant does not have a valid work permit or alternate federal authorization to work in the identified position).",
+              "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/skilled-worker"
+            }
+          ]
+        },
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "EOIs expire automatically after 12 months.",
+              "url": "https://www.gov.nl.ca/immigration/expression-of-interest-model-overview"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "If invited, you have 30 days to submit a full NLPNP or AIP application.",
+              "url": "https://www.gov.nl.ca/immigration/expression-of-interest-model-overview"
+            },
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no application fee when applying to the NLPNP.",
+              "url": "https://www.gov.nl.ca/immigration/5-submission-of-nlpnp-application"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noStandardTime",
+              "vars": {},
+              "quote": "OIM does not currently have standard processing times for the NLPNP.",
+              "url": "https://www.gov.nl.ca/immigration/faqs/nl-provincial-nominee-program-candidate-faqs"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Your nomination certificate is valid for 6 months before it expires.",
+              "url": "https://www.gov.nl.ca/immigration/faqs/nl-provincial-nominee-program-candidate-faqs"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "nl-international-graduate",
@@ -2120,7 +5280,99 @@
       ],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "EOIs expire automatically after 12 months.",
+              "url": "https://www.gov.nl.ca/immigration/expression-of-interest-model-overview"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "If invited, you have 30 days to submit a full NLPNP or AIP application.",
+              "url": "https://www.gov.nl.ca/immigration/expression-of-interest-model-overview"
+            },
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no application fee when applying to the NLPNP.",
+              "url": "https://www.gov.nl.ca/immigration/5-submission-of-nlpnp-application"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noStandardTime",
+              "vars": {},
+              "quote": "OIM does not currently have standard processing times for the NLPNP.",
+              "url": "https://www.gov.nl.ca/immigration/faqs/nl-provincial-nominee-program-candidate-faqs"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Your nomination certificate is valid for 6 months before it expires.",
+              "url": "https://www.gov.nl.ca/immigration/faqs/nl-provincial-nominee-program-candidate-faqs"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "nl-express-entry-skilled-worker",
@@ -2158,7 +5410,129 @@
       ],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "eeProfile",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "eeProfile"
+            }
+          ]
+        },
+        {
+          "step": "epa",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noPermitOnly",
+              "vars": {},
+              "quote": "With an employer that has a valid JVA (only required if the applicant does not have a valid work permit or alternate federal authorization to work in the identified position).",
+              "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/express-entry-skilled-worker"
+            }
+          ]
+        },
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 12
+              },
+              "quote": "EOIs expire automatically after 12 months.",
+              "url": "https://www.gov.nl.ca/immigration/expression-of-interest-model-overview"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteSubmitDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "If invited, you have 30 days to submit a full NLPNP or AIP application.",
+              "url": "https://www.gov.nl.ca/immigration/expression-of-interest-model-overview"
+            },
+            {
+              "ref": "req",
+              "factor": "pointsMin"
+            },
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no application fee when applying to the NLPNP.",
+              "url": "https://www.gov.nl.ca/immigration/5-submission-of-nlpnp-application"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noStandardTime",
+              "vars": {},
+              "quote": "OIM does not currently have standard processing times for the NLPNP.",
+              "url": "https://www.gov.nl.ca/immigration/faqs/nl-provincial-nominee-program-candidate-faqs"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "nominationValidMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Your nomination certificate is valid for 6 months before it expires.",
+              "url": "https://www.gov.nl.ca/immigration/faqs/nl-provincial-nominee-program-candidate-faqs"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "pe-workforce",
@@ -2191,7 +5565,103 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "epa",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "abroadOnly",
+              "vars": {},
+              "quote": "The Skilled Worker Stream may be utilized for talent recruitment outside of Canada, if the Prince Edward Island Employer has received authorization from the Office of Immigration prior to issuing a job offer.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/skilled-workers-outside-canada"
+            }
+          ]
+        },
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no fee to create an Expression of Interest profile.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/skilled-workers-in-pei"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Your profile will remain active for a period of six months.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/skilled-workers-in-pei"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            },
+            {
+              "key": "salesServiceLow",
+              "vars": {},
+              "quote": "Individuals working in the sales and service sector may not receive an invitation to apply at this time.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/expression-of-interest-draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "appFee",
+              "vars": {
+                "n": 300
+              },
+              "quote": "If you are selected to apply for nomination by PEI, there is a non-refundable fee of $300 CAD.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/skilled-workers-in-pei"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "pe-occupations-in-demand",
@@ -2225,7 +5695,103 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "epa",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "abroadOnly",
+              "vars": {},
+              "quote": "The Occupations in Demand stream may be utilized for talent recruitment outside of Canada, if the Prince Edward Island Employer has received authorization from the Office of Immigration prior to issuing a job offer.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/occupations-in-demand"
+            }
+          ]
+        },
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no fee to create an Expression of Interest profile.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/occupations-in-demand"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Your profile will remain active for a period of six months.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/occupations-in-demand"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            },
+            {
+              "key": "salesServiceLow",
+              "vars": {},
+              "quote": "Individuals working in the sales and service sector may not receive an invitation to apply at this time.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/expression-of-interest-draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "appFee",
+              "vars": {
+                "n": 300
+              },
+              "quote": "If you are selected to apply for nomination by PEI, there is a non-refundable fee of $300 CAD.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/occupations-in-demand"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "pe-international-graduate",
@@ -2260,7 +5826,89 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no fee to create an Expression of Interest profile.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/international-graduates"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Your profile will remain active for a period of six months.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/international-graduates"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            },
+            {
+              "key": "salesServiceLow",
+              "vars": {},
+              "quote": "Individuals working in the sales and service sector may not receive an invitation to apply at this time.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/expression-of-interest-draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "appFee",
+              "vars": {
+                "n": 300
+              },
+              "quote": "If you are selected to apply for nomination by PEI, there is a non-refundable fee of $300 CAD.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/international-graduates"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "pe-intermediate-experience",
@@ -2295,7 +5943,103 @@
       ],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "epa",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "abroadOnly",
+              "vars": {},
+              "quote": "The Intermediate Experience Stream may be utilized for talent recruitment outside of Canada, if the Prince Edward Island Employer has received authorization from the Office of Immigration prior to issuing a job offer.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/intermediate-experience-stream"
+            }
+          ]
+        },
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no fee to create an Expression of Interest profile.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/intermediate-experience-stream"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Your profile will remain active for a period of six months.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/intermediate-experience-stream"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            },
+            {
+              "key": "salesServiceLow",
+              "vars": {},
+              "quote": "Individuals working in the sales and service sector may not receive an invitation to apply at this time.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/expression-of-interest-draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "appFee",
+              "vars": {
+                "n": 300
+              },
+              "quote": "If you are selected to apply for nomination by PEI, there is a non-refundable fee of $300 CAD.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/intermediate-experience-stream"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "pe-express-entry",
@@ -2328,7 +6072,101 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [
+        {
+          "step": "eeProfile",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "eeProfile"
+            }
+          ]
+        },
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "noFee",
+              "vars": {},
+              "quote": "There is no fee to create an Expression of Interest profile.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/pei-express-entry"
+            },
+            {
+              "key": "eoiValidMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Your profile will remain active for a period of six months.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/pei-express-entry"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "ref": "draws"
+            },
+            {
+              "key": "salesServiceLow",
+              "vars": {},
+              "quote": "Individuals working in the sales and service sector may not receive an invitation to apply at this time.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/expression-of-interest-draws"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "appFee",
+              "vars": {
+                "n": 300
+              },
+              "quote": "If you are selected to apply for nomination by PEI, there is a non-refundable fee of $300 CAD.",
+              "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/pei-express-entry"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "aip",

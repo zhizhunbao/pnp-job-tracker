@@ -537,6 +537,29 @@ def file_suffix_of(x: CacheFilePutIn) -> str:
     return suffix
 
 
+def get_cached_file(url: str) -> bytes | None:
+    """crawl 缓存里这份原件(官方 PDF 等)的字节;没落盘 → None(调用方自决报错还是回退)。
+
+    2026-10-03 立(申请步骤批 2 收尾,Frank「都修一下」):put_cached_file 的读门 —— 通道自校核原句,卑诗卫生局「不注册、
+    直接递」那句只在指南 PDF 里。原件按主机分目录(files-<主机>),只看那一份 manifest 的 K_FILE 行(网页行不认);
+    尾斜杠两种写法都认;同 url 写门只留一行,取到即返回。"""
+    host = urlparse(url).hostname
+    if host is None:
+        return None
+    out_dir = paths.CRAWL / (FILES_SLUG_PREFIX + host)
+    manifest = out_dir / MANIFEST_FILE
+    if manifest.is_file() is False:
+        return None
+    want = url_variants_of(url)
+    for p in json.loads(manifest.read_text(encoding=ENC_UTF8)).get(K_PAGES, []):
+        if p.get(K_URL) not in want or not p.get(K_FILE):
+            continue
+        f = out_dir / FILE_CACHE_DIR / p[K_FILE]
+        if f.exists():
+            return f.read_bytes()
+    return None
+
+
 # =========================================================================
 # 2. 浏览器兜底(Cloudflare/Akamai/Radware 挡 httpx 时的有头持久档)
 # =========================================================================
