@@ -4765,9 +4765,13 @@ class MartOpsExtraTest(unittest.TestCase):
     def test_ytd_four_rules(self) -> None:
         """四条口径:① AB 本年有一轮人数没公布(也没写上限)、BC 有一行日期认不出 → 两省不出(ON 去年那轮 null 不影响今年);
         ② NB 的 AIP 两行不并入省提名那一份,AIP 那一份因那行 null 不出;③ NS 出 selections_ytd、单位 people;④ QC、FED 不出。
-        PE 本年没有抽选 → 不出。2026-09-29 抽选卡重排起 ② ③ 读抽选行的 program / unit 两格,不按省名。"""
+        PE 本年没有抽选 → 不出。2026-09-29 抽选卡重排起 ② ③ 读抽选行的 program / unit 两格,不按省名。
+        2026-10-03:09-30 6bee9e75(魁省抽选卡与配额卡照九省接上)起魁省 PSTQ 进全年合计 —— ④ 改成只有 FED 不出,QC 出 invitations_ytd
+        (Stream 1 一轮 86 份);期望值当时没跟上,这天补。"""
         got = self.ytd()
-        self.assertEqual(set(got), {("ON", ""), ("NB", ""), ("NS", "")})
+        self.assertEqual(set(got), {("ON", ""), ("NB", ""), ("NS", ""), ("QC", "")})
+        qc = got[("QC", "")]
+        self.assertEqual((qc["metric"], qc["value"], qc["unit"]), ("invitations_ytd", 86, "invitations"))
         nb = got[("NB", "")]
         self.assertEqual((nb["metric"], nb["value"], nb["unit"], nb["label"]),
                          ("invitations_ytd", 312, "invitations", "Sum of 2 rounds in 2026"))
@@ -4827,7 +4831,8 @@ class MartOpsExtraTest(unittest.TestCase):
     def test_ytd_stream_rows(self) -> None:
         """抽选组本年合计(2026-09-29 Frank「每一个通道也需要一个总数吧」):一组一行、scopeKind = drawStream、scope = 组名;
         口径同整份 —— 有一轮人数没公布(NB 的 AIP、AB 警务)、日期认不出(BC Care)的组不出,去年的轮次不算;
-        可加的省各组相加 = 整份合计(ON 886 + 277 = 1,163);NS 按月那一组出 selections_ytd。"""
+        可加的省各组相加 = 整份合计(ON 886 + 277 = 1,163);NS 按月那一组出 selections_ytd。
+        2026-10-03:6bee9e75 起魁省 PSTQ 各组也出本年合计(Stream 1 86 份),期望值补上。"""
         got = self.streams_of(self.draw_tables())
         brief = {}
         for k, r in got.items():
@@ -4838,6 +4843,7 @@ class MartOpsExtraTest(unittest.TestCase):
             ("NB", "NB Skilled Worker"): ("invitations_ytd", 197, "invitations"),
             ("NB", "NB Express Entry"): ("invitations_ytd", 115, "invitations"),
             ("NS", "Monthly EOI selections"): ("selections_ytd", 1202, "people"),
+            ("QC", "Stream 1"): ("invitations_ytd", 86, "invitations"),
             ("BC", "Tech"): ("invitations_ytd", 426, "invitations"),
         })
         self.assertEqual(got[("ON", "FW")]["label"], "Sum of 2 rounds in 2026")
