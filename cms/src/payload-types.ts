@@ -1365,6 +1365,10 @@ export interface EeCategory {
    * 类别中文标签(医疗社服/STEM/…)
    */
   label?: string | null;
+  /**
+   * 官方英文类别名(canada.ca 类别表上方标题里抽;2026-10-02 职位页移民相关卡「英文黑字,中文灰字」);DDL docs/sql/ee-name-en-pool-designated-names-20261002.sql
+   */
+  nameEn?: string | null;
   noc?: string | null;
   teer?: number | null;
   title?: string | null;
@@ -1682,6 +1686,18 @@ export interface EmployerPool {
    * 指定资格所在地 string[](「项目|地点」:AIP|NB、RCIP|Sudbury, ON;非指定为空);DDL docs/sql/employer-explore-industry-20260919.sql
    */
   designatedPlaces?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 吃进的指定雇主名单原名 string[](逐字;AIP 弹框名单行按原名回找本行取译名、开公司弹框;etl/employers 归一挂靠);DDL docs/sql/ee-name-en-pool-designated-names-20261002.sql(GIN 索引)
+   */
+  designatedNames?:
     | {
         [k: string]: unknown;
       }
@@ -3400,6 +3416,7 @@ export interface PathwaysSelect<T extends boolean = true> {
   teers?: T;
   nocs?: T;
   employers?: T;
+  steps?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3416,7 +3433,6 @@ export interface QcNocStreamsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
-  steps?: T;
  * via the `definition` "dli_select".
  */
 export interface DliSelect<T extends boolean = true> {
@@ -3443,6 +3459,7 @@ export interface DliSelect<T extends boolean = true> {
 export interface EeCategoriesSelect<T extends boolean = true> {
   category?: T;
   label?: T;
+  nameEn?: T;
   noc?: T;
   teer?: T;
   title?: T;
@@ -3571,6 +3588,7 @@ export interface EmployerPoolSelect<T extends boolean = true> {
   lmiaSkilledTotal?: T;
   lmiaLastQuarter?: T;
   designatedPlaces?: T;
+  designatedNames?: T;
   ees?: T;
   broads?: T;
   district?: T;
