@@ -6795,10 +6795,7 @@ K_LIMIT = "limit"
 """行键:窗口名额(Position Limit)。"""
 
 K_USED = "used"
-"""行键:已用(Positions Used)。"""
-
-K_REMAINING = "remaining"
-"""行键:剩余(Remaining Positions to be Accepted)。"""
+"""行键:已用(Positions Used)。剩余(Remaining Positions to be Accepted)复用本文件上方的 K_REMAINING(同字)。"""
 
 K_FILLED = "filled"
 """行键:满额日期(ISO;表下注释句认得出才填,认不出 None —— 剩余 0 而没有日期的照实留空,不拿开放日顶)。"""
