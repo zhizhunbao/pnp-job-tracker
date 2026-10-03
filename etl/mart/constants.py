@@ -2544,6 +2544,13 @@ K_ASSESSING_UP_TO = "assessingUpTo"
 METRIC_ASSESSING = "assessing_up_to"
 """同上的指标名。"""
 
+METRIC_ASSESSING_DATE = "assessing_up_to_date"
+"""AB 积压游标里认得出的日期(ISO,进 value_text;2026-10-02 申请步骤批 2:省提名弹框「省里审批」一步写「已审到 {日期} 收到的申请」,
+前端不解析英文日期)。原文开头不是「Month D, YYYY」的(Not applicable、Business applications are evaluated upon receipt)不出这一行。"""
+
+ASSESSING_DATE_RE = re.compile(r"^([A-Z][a-z]+ \d{1,2}, \d{4})")
+"""游标原文开头的日期(「June 17, 2026 (currently excludes …)」取前半)。"""
+
 K_EOI_POOL = "eoiPool"
 """EOI 池块。"""
 

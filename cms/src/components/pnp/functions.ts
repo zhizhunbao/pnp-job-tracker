@@ -64,6 +64,7 @@ import {
   K_STEP_INTAKE_WINDOW, K_STEP_QUARTER, K_STEP_WEEKS, K_STEP_WEEKS_BARE, K_STEPS_HEAD, STEP_FACT_HEAD, STEP_MD_FROM,
   STEP_METRIC, STEP_MONTH_LEN, STEP_NAME_HEAD, STEP_QUARTER_RE, STEP_REF, STEP_REQ_ROW, STEP_SECTOR_HEAD,
   STEP_SECTOR_KEY, STEP_WARN_FACTS, STEP_WHO_HEAD, OPS_SCOPE_SECTOR, QUOTA_SECTOR_HEAD, QUOTA_SECTOR_KEY,
+  STEP_PROCESSING_KEY,
 } from './constants'
 import type {
   AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
@@ -89,7 +90,7 @@ import type {
   AipSectionOfIn, AipSectionSpec, AipBlockTextIn, DrawCtxIn, DrawCtx, AipGateCardIn, AipRowOfIn, AipTierHitIn,
   ChannelHitIn, PickSetIn,
   LocalNameIn, PathwayChannelIn, StatusLinesIn,
-  BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvGateCardsIn, ProvStreamCardIn, ProvStreamRowsIn,
+  BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvStreamCardIn, ProvStreamRowsIn,
   AipEmpData, AipEmpJson, AipEmpRowJson, AipEmpRowSpec, AipEmpUrlIn, LoadAipEmpIn, ExpScopeIn,
   AipEmpAliasIn, OpenAipCoIn, EeCatHeadIn, HeadNames, StreamHeadIn,
   TeerBandsIn, TierLineIn,
@@ -97,6 +98,7 @@ import type {
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
   IntakeCell, IntakePutIn, IntakeRowIn, IntakeTableIn, PnpStepOp, PnpStepSet, QuarterTextIn, StepFactIn, StepLineSpec,
   StepOfIn, StepSetOfIn, StepSpec, StepTableSpec, StepsCardOfIn, StepsCardSpec, SectorCellIn, SectorRowsIn,
+  ProcessingTextIn, ProvDrawCardIn, ProvStreamItem, ProvStreamItemsIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './pnp.module.css'
@@ -3552,29 +3554,70 @@ function basisHasOf(x: BasisKeyIn): boolean {
  * 「对啊。门槛要说清楚」;设计 docs/design/通道与门槛-20260930.md):本省现行通道每条一张卡,省默认在前,其余照通道表顺序。
  * 卡与职位弹框「本岗通道的门槛」同一个组件、同一套行构造器;不同的是不挑本岗那档 —— 语言全档列、经验与工资按 TEER 分档列。
  * 只陈列官方门槛,不判「你够不够」。
+ * 2026-10-02 申请步骤批 2(Frank「弹框要和页面保持一致」):由 provGateCardsOf 改名扩格 —— 每条通道一项,门槛卡后面跟与弹框同一张
+ * 「申请步骤」卡(stepsCardOf,引用门槛行取这张门槛卡的行),「进池与抽选」一步挂这条通道的抽选表(provDrawCardOf)。
  *
- * @param x 取词函数、界面语言、省码、通道对照表与门槛表。
- * @returns 卡片;本省没有通道给空列。
+ * @param x 取词函数、界面语言、省码、通道对照表、门槛表、抽选、配额与两份步骤数据。
+ * @returns 各项;本省没有通道给空列。
  */
-export function provGateCardsOf(x: ProvGateCardsIn): GateCardSpec[] {
+export function provStreamItemsOf(x: ProvStreamItemsIn): ProvStreamItem[] {
   const mine: PnpReq[] = []
   for (const r of x.reqs) {
     if (r.province === x.province) {
       mine.push(r)
     }
   }
-  const out: GateCardSpec[] = []
+  const ordered: PnpPathway[] = []
   for (const p of x.pathways) {
     if (p.province === x.province && p.isDefault) {
-      out.push(provStreamCardOf({ t: x.t, lang: x.lang, p, mine }))
+      ordered.push(p)
     }
   }
   for (const p of x.pathways) {
     if (p.province === x.province && p.isDefault === false) {
-      out.push(provStreamCardOf({ t: x.t, lang: x.lang, p, mine }))
+      ordered.push(p)
     }
   }
+  const out: ProvStreamItem[] = []
+  for (const p of ordered) {
+    const gate = provStreamCardOf({ t: x.t, lang: x.lang, p, mine })
+    const steps = stepsCardOf({ t: x.t, province: p.province, channel: p, sets: x.sets, stepOps: x.stepOps, gate })
+    let draws: DrawCard | null = null
+    if (steps != null) {
+      draws = provDrawCardOf({
+        t: x.t, lang: x.lang, p, draws: x.draws, ops: x.ops, reqs: x.reqs, pathways: x.pathways,
+      })
+    }
+    out.push({ key: p.key, gate, steps, draws })
+  }
   return out
+}
+
+/**
+ * 资讯页一条通道的抽选表:照弹框抽选卡同一套算法(drawCardOf),只是「本岗那组」换成这条通道登记的抽选组(hitStreamsOf);
+ * 写哪一年同弹框(配额卡的年份,cardYearOf)。这条通道没登抽选组给 null。
+ *
+ * @param x 取词函数、界面语言、这条通道、抽选、配额、门槛与通道对照表。
+ * @returns 抽选表;没有给 null。
+ */
+function provDrawCardOf(x: ProvDrawCardIn): DrawCard | null {
+  if (x.p.drawStreams.length === 0) {
+    return null
+  }
+  const hitStreams = hitStreamsOf({ channel: x.p, qcChannels: [] })
+  const province = x.p.province
+  const quota = quotaCardOf({ t: x.t, province, ops: x.ops, hitStreams, quotaKey: quotaKeyOf(x.p) })
+  return drawCardOf({
+    t: x.t,
+    lang: x.lang,
+    province,
+    draws: x.draws,
+    hitStreams,
+    genDraw: genDrawOf({ province, pathways: x.pathways }),
+    ops: x.ops,
+    reqs: x.reqs,
+    year: cardYearOf({ quota, province, draws: x.draws }),
+  })
 }
 
 /**
@@ -6280,7 +6323,8 @@ function stepSetOf(x: StepSetOfIn): PnpStepSet | null {
 }
 
 /**
- * 一步(线格式)→ 卡上的一步:收件窗口引用落成下挂小表,其余事实各出一到几行字。
+ * 一步(线格式)→ 卡上的一步:收件窗口引用落成下挂小表,抽选引用记一笔(卡件把抽选表挂进这一步,2026-10-02 申请步骤批 2),
+ * 其余事实各出一到几行字。
  *
  * @param x 取词函数、本岗省码、这一步、第几步、运营统计与门槛卡。
  * @returns 洗好的一步。
@@ -6288,9 +6332,14 @@ function stepSetOf(x: StepSetOfIn): PnpStepSet | null {
 function stepOf(x: StepOfIn): StepSpec {
   const lines: StepLineSpec[] = []
   let table: StepTableSpec | null = null
+  let draws = false
   for (const fact of x.step.facts) {
     if (fact.ref === STEP_REF.intake) {
       table = intakeTableOf({ t: x.t, province: x.province, stepOps: x.stepOps })
+      continue
+    }
+    if (fact.ref === STEP_REF.draws) {
+      draws = true
       continue
     }
     for (const line of stepFactLinesOf({ t: x.t, province: x.province, fact, stepOps: x.stepOps, gate: x.gate })) {
@@ -6306,6 +6355,7 @@ function stepOf(x: StepOfIn): StepSpec {
     stuck: x.step.stuck,
     lines,
     table,
+    draws,
   }
 }
 
@@ -6321,7 +6371,7 @@ function stepFactLinesOf(x: StepFactIn): StepLineSpec[] {
     return stepReqLinesOf(x)
   }
   if (f.ref === STEP_REF.processing) {
-    return stepWeeksLinesOf(x)
+    return stepProcessingLinesOf(x)
   }
   if (f.key == null) {
     return []
@@ -6357,24 +6407,64 @@ function stepReqLinesOf(x: StepFactIn): StepLineSpec[] {
 }
 
 /**
- * 引用处理时长的事实:本省这一类最近一季的周数(「约 3 周(2026 年第 2 季度)」);官方 N/A 或没有这一类不出字。
+ * 引用处理时长的事实:本省这一类的处理时长 —— 萨省按周(「约 3 周(2026 年第 2 季度)」)、卑诗按月(约八成申请)、曼省按天(年度平均)、
+ * 阿省审理游标(「已审到 {日期} 收到的申请」);指标缺席按周(批 1 萨省那几条)。官方 N/A 或没有这一类不出字。
+ * 2026-10-02 申请步骤批 2 由 stepWeeksLinesOf 扩成四种指标;事实带 streamKey 的按归一键认通道(阿省游标),否则按原名。
  *
  * @param x 同 stepFactLinesOf。
  * @returns 几行字。
  */
-function stepWeeksLinesOf(x: StepFactIn): StepLineSpec[] {
+function stepProcessingLinesOf(x: StepFactIn): StepLineSpec[] {
+  let metric = STEP_METRIC.weeks
+  if (x.fact.metric != null) {
+    metric = x.fact.metric
+  }
+  const key = STEP_PROCESSING_KEY[metric]
+  if (key == null) {
+    return []
+  }
   for (const op of x.stepOps) {
-    const hit = op.province === x.province && op.metric === STEP_METRIC.weeks && op.scope === x.fact.scope
-    if (hit === false || op.value == null) {
+    let named = op.scope === x.fact.scope
+    if (x.fact.streamKey != null) {
+      named = op.streamKey === x.fact.streamKey
+    }
+    if (op.province !== x.province || op.metric !== metric || named === false) {
       continue
     }
-    const q = quarterTextOf({ t: x.t, period: op.period })
-    if (q === TEXT_NONE) {
-      return [{ text: x.t(K_STEP_WEEKS_BARE, { n: op.value }), warn: false }]
+    const text = processingTextOf({ t: x.t, op, key })
+    if (text === TEXT_NONE) {
+      return []
     }
-    return [{ text: x.t(K_STEP_WEEKS, { n: op.value, q }), warn: false }]
+    return [{ text, warn: false }]
   }
   return []
+}
+
+/**
+ * 一行处理时长 → 字:审理游标写日期与截至日;周带统计期(认不出统计期写不带期的那句);月 / 天带统计期原文(曼省是年份)。
+ * 该有的数或日期缺了给空串(不出字,不编)。
+ *
+ * @param x 取词函数、那一行与按指标挑好的词条。
+ * @returns 字;没有给空串。
+ */
+function processingTextOf(x: ProcessingTextIn): string {
+  if (x.op.metric === STEP_METRIC.assessing) {
+    if (x.op.valueText === TEXT_NONE) {
+      return TEXT_NONE
+    }
+    return x.t(x.key, { date: x.op.valueText, asOf: x.op.asOf })
+  }
+  if (x.op.value == null) {
+    return TEXT_NONE
+  }
+  if (x.op.metric === STEP_METRIC.weeks) {
+    const q = quarterTextOf({ t: x.t, period: x.op.period })
+    if (q === TEXT_NONE) {
+      return x.t(K_STEP_WEEKS_BARE, { n: x.op.value })
+    }
+    return x.t(K_STEP_WEEKS, { n: x.op.value, q })
+  }
+  return x.t(x.key, { n: x.op.value, y: x.op.period })
 }
 
 /**

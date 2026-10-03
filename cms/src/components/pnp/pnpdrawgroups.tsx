@@ -22,16 +22,13 @@
  * 原日期那一格、日期落最下一行(没合计的组同样排,各组分数照旧对齐);EE 分数线卡不传。
  * 同日 Frank「收起那个按钮是不是不要放在外面」,选「可提名的岗去掉收起」:开关只在折着时出(「查看全省 N 组」),展开后不给收起。
  * 2026-10-02 Frank「一会把所有的这个抽选都展开吧」「这种多个的不用展开」:整张卡只有一组的(NS 按月那种)默认展开,多组的照旧折着(drawGroupOpenOf)。
+ * 2026-10-02 申请步骤批 2:组区(灰字 / 各组 / 开关 / 卡底合计)拆成 DrawGroupsBody,「申请步骤」卡「进池与抽选」一步共用;本件只剩卡框与标题行。
  *
  * @author Frank
  * @time 2026-09-23 23:50:00
  */
-import { Button } from '@/components/button'
-import { cssOf } from '@/components/css'
-import { PLAIN_BTN_KIND } from './constants'
+import { DrawGroupsBody } from './drawgroupsbody'
 import { DrawsHead } from './drawshead'
-import { EeCmpGroupView } from './eecmpgroupview'
-import { allGroupsLabelOf, drawGroupOpenOf } from './functions'
 import type { PnpDrawGroupsIn } from './types'
 import css from './pnp.module.css'
 
@@ -42,40 +39,10 @@ import css from './pnp.module.css'
  * @returns 抽选卡。
  */
 export function PnpDrawGroups({ t, card, open, toggleOf }: PnpDrawGroupsIn) {
-  const lines = []
-  for (const line of card.lines) {
-    lines.push(<div key={line} className={css.drawsBasis}>{line}</div>)
-  }
-  const foot = []
-  for (const line of card.foot) {
-    foot.push(<div key={line} className={css.drawsFoot}>{line}</div>)
-  }
-  const single = card.hits.length + card.others.length === 1
-  const hits = []
-  for (const g of card.hits) {
-    hits.push(<EeCmpGroupView key={g.key} g={g} open={drawGroupOpenOf({ open, key: g.key, single })}
-      onToggle={toggleOf(g.key)} dateBelow />)
-  }
-  const allOpen = open.has(card.allKey)
-  const others = []
-  if (allOpen) {
-    for (const g of card.others) {
-      others.push(<EeCmpGroupView key={g.key} g={g} open={drawGroupOpenOf({ open, key: g.key, single })}
-        onToggle={toggleOf(g.key)} dateBelow />)
-    }
-  }
   return (
     <div className={css.card}>
       <DrawsHead title={card.title} source={card.source} />
-      {lines}
-      {hits}
-      {others}
-      {card.others.length > 0 && allOpen === false && (
-        <Button kind={PLAIN_BTN_KIND} className={cssOf(css.foldMore)} onClick={toggleOf(card.allKey)}>
-          {allGroupsLabelOf({ t, total: card.total, label: card.label })}
-        </Button>
-      )}
-      {foot}
+      <DrawGroupsBody t={t} card={card} open={open} toggleOf={toggleOf} />
     </div>
   )
 }

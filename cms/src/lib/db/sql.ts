@@ -654,11 +654,13 @@ export const PNP_STEPS = `SELECT key, steps FROM pathways
 /**
  * 「申请步骤」卡引用的运营统计(2026-10-02 申请步骤批 1):处理时长(萨省「雇主递职位审批」「省里审批」两步读)与萨省限额行业收件窗口
  * (名额 / 已用 / 剩余 / 满额日期;scope_kind = 'intake',period = 窗口开放日,满额日期在 value_text)。全国几十行,随弹框懒取。
+ * 2026-10-02 申请步骤批 2:再取卑诗按月(processing_months)、曼省按天(processing_days)两种处理时长与阿省审理游标日期(assessing_up_to_date)。
  */
 export const PNP_STEP_OPS = `SELECT province, metric, COALESCE(scope, '') AS scope, COALESCE(stream_key, '') AS stream_key, value,
        COALESCE(value_text, '') AS value_text, COALESCE(period, '') AS period, COALESCE(as_of, '') AS as_of
      FROM pnp_ops_stats
-     WHERE metric IN ('processing_weeks', 'intake_limit', 'intake_used', 'intake_remaining', 'intake_filled')
+     WHERE metric IN ('processing_weeks', 'processing_months', 'processing_days', 'assessing_up_to_date',
+       'intake_limit', 'intake_used', 'intake_remaining', 'intake_filled')
      ORDER BY province, metric, seq`
 
 // =========================================================================

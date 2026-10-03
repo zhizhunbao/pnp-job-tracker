@@ -2099,6 +2099,21 @@ export const STEP_METRIC = {
    * 收件窗口满额日期(value_text 存 ISO)。
    */
   filled: 'intake_filled',
+
+  /**
+   * 处理时长(月;卑诗「约八成申请 N 个月内办完」,2026-10-02 申请步骤批 2)。
+   */
+  months: 'processing_months',
+
+  /**
+   * 处理时长(天;曼省按年统计的平均天数)。
+   */
+  days: 'processing_days',
+
+  /**
+   * 审理游标日期(阿省「已审到哪天收到的申请」,value_text 存 ISO)。
+   */
+  assessing: 'assessing_up_to_date',
 }
 
 /**
@@ -2229,4 +2244,29 @@ export const QUOTA_SECTOR_KEY: Record<string, string> = {
    * 其他行业。
    */
   'other sectors': 'other',
+}
+
+/**
+ * 处理时长指标 → 词条(2026-10-02 申请步骤批 2:周 / 月 / 天 / 审理游标四种;不在表里的指标不出字)。
+ */
+export const STEP_PROCESSING_KEY: Record<string, string> = {
+  /**
+   * 周(萨省季度实测)。
+   */
+  processing_weeks: 'pnpstep.weeks',
+
+  /**
+   * 月(卑诗约八成申请)。
+   */
+  processing_months: 'pnpstep.months',
+
+  /**
+   * 天(曼省年度平均)。
+   */
+  processing_days: 'pnpstep.days',
+
+  /**
+   * 审理游标(阿省)。
+   */
+  assessing_up_to_date: 'pnpstep.assessing',
 }

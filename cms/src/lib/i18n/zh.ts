@@ -623,6 +623,13 @@ export const jobsZh = {
   'pnpstep.f.noScheduledDraw': '官方目前没有排定的抽选', 'pnpstep.f.inviteSubmitDays': '收到邀请后 {n} 天内递',
   'pnpstep.f.eeAcceptDays': '{n} 天内在 EE 系统接受提名', 'pnpstep.f.prSubmitDays': '收到联邦邀请后 {n} 天内递永居',
   'pnpstep.f.workMonths': '持有效工签在这家雇主全职满 {n} 个月',
+  // 2026-10-02 申请步骤批 2(阿省样张):拿社区推荐信一步;EOI 费 / 有效期、邀请接受期、申请递交期、提名有效期、社区推荐信六个事实词
+  'pnpstep.s.community': '拿社区推荐信', 'pnpstep.f.eoiFee': '交 {n} 加元申请费', 'pnpstep.f.eoiValidMonths': '在池里有效 {n} 个月',
+  'pnpstep.f.inviteAcceptDays': '收到邀请后 {n} 天内接受', 'pnpstep.f.appSubmitDays': '建好申请后 {n} 天内递交并付费',
+  'pnpstep.f.nominationValidMonths': '提名有效 {n} 个月,过期前向联邦递永居', 'pnpstep.f.communityLetter': '递 EOI 时就要有指定社区的推荐信',
+  // 2026-10-02 申请步骤批 2:处理时长按月(卑诗约八成申请)/ 按天(曼省年度平均)/ 阿省审理游标
+  'pnpstep.months': '八成申请约 {n} 个月内办完', 'pnpstep.days': '平均约 {n} 天({y} 年)',
+  'pnpstep.assessing': '已审到 {date} 收到的申请(截至 {asOf})',
   'pnpstep.weeks': '约 {n} 周({q})', 'pnpstep.weeksBare': '约 {n} 周', 'pnpstep.quarter': '{y} 年第 {q} 季度',
   'pnpstep.intake.window': '{m} 月窗口', 'pnpstep.intake.limit': '名额', 'pnpstep.intake.used': '已用', 'pnpstep.intake.filled': '满额',
   'pnpstep.intake.left': '余 {n}', 'pnpstep.intake.full': '已满',

@@ -33,7 +33,7 @@ import {
   aipCardOf, aipChannelsOf, aipGateCardOf, aipSectionOf, drawCtxOf, cardYearOf, channelHitOf, channelSplitOf, makePickOf, pnpKickerOf, preReformCardOf,
   quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCardOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
-  pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf, provGateCardsOf,
+  pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf, provStreamItemsOf,
   aipEmpAliasOf, aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, normName, streamRowsOf,
 } from '@/components/pnp/functions'
 import type {
@@ -1354,12 +1354,15 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
 
   // 2026-09-30 通道与门槛批 2(Frank「各省门槛 我觉得 应该放到资讯下面」「盘点各种通道,各种门槛」「对啊。门槛要说清楚」):
   // 资讯页一省一组门槛卡(provGateCardsOf),与弹框门槛卡同一套行构造器,只是不挑本岗那档 —— 语言全档、经验与工资按 TEER 分档。
+  // 2026-10-02 申请步骤批 2:provGateCardsOf 改名扩格成 provStreamItemsOf(每项门槛卡 + 步骤卡 + 抽选表),这里只取门槛卡那一格。
   // 手写金标 = 上面两份夹具(AB 机会通道、ON 劳动力优先通道)照实数手推;探针见各条注。
   const AOS_PATH = pathway({ province: 'AB', key: 'ab-opportunity', isDefault: true, reqStreams: ['AAIP Alberta Opportunity Stream', EMP],
     officialName: 'Alberta Opportunity Stream', plainZh: '阿尔伯塔机会通道', plainKo: '앨버타 기회 스트림',
     url: 'https://www.alberta.ca/aaip-alberta-opportunity-stream' })
   const provCards = (p: { t?: typeof zh, lang?: 'zh' | 'en' | 'ko', province: string, pathways: PnpPathway[], reqs: PnpReq[] }) =>
-    provGateCardsOf({ t: p.t ?? zh, lang: p.lang ?? 'zh', province: p.province, pathways: p.pathways, reqs: p.reqs })
+    provStreamItemsOf({
+      t: p.t ?? zh, lang: p.lang ?? 'zh', province: p.province, pathways: p.pathways, reqs: p.reqs, draws: [], ops: [], sets: [], stepOps: [],
+    }).map((it) => it.gate)
   const rowsOf = (c: GateCardSpec | undefined) => c?.rows.map((r) => [r.label, r.lines, r.notes])
 
   it('资讯页门槛卡·阿省机会通道:语言全档 + 点名职业灰字码、经验照弹框写法;卡头原名 / 直白名 / 来源;弹框卡不带标签与空态', () => {

@@ -580,6 +580,15 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpstep.f.eeAcceptDays': 'Accept the nomination in Express Entry within {n} days',
   'pnpstep.f.prSubmitDays': 'Apply for PR within {n} days of the federal invitation',
   'pnpstep.f.workMonths': '{n} months full-time with this employer on a valid work permit',
+  // 2026-10-02 申请步骤批 2(阿省样张):拿社区推荐信一步;EOI 费 / 有效期、邀请接受期、申请递交期、提名有效期、社区推荐信六个事实词
+  'pnpstep.s.community': 'Get a community endorsement', 'pnpstep.f.eoiFee': '{n} CAD fee',
+  'pnpstep.f.eoiValidMonths': 'Stays in the pool for {n} months', 'pnpstep.f.inviteAcceptDays': 'Accept within {n} days of the invitation',
+  'pnpstep.f.appSubmitDays': 'Submit and pay within {n} days of starting the application',
+  'pnpstep.f.nominationValidMonths': 'The nomination is valid for {n} months; apply to IRCC before it expires',
+  'pnpstep.f.communityLetter': 'A designated community endorsement letter is required when submitting the EOI',
+  // 2026-10-02 申请步骤批 2:处理时长按月(卑诗约八成申请)/ 按天(曼省年度平均)/ 阿省审理游标
+  'pnpstep.months': 'About 80% of applications processed within {n} months', 'pnpstep.days': 'About {n} days on average ({y})',
+  'pnpstep.assessing': 'Now assessing applications received up to {date} (as of {asOf})',
   'pnpstep.weeks': 'About {n} weeks ({q})', 'pnpstep.weeksBare': 'About {n} weeks', 'pnpstep.quarter': 'Q{q} {y}',
   'pnpstep.intake.window': '{ym} window', 'pnpstep.intake.limit': 'Spots', 'pnpstep.intake.used': 'Used', 'pnpstep.intake.filled': 'Full',
   'pnpstep.intake.left': '{n} left', 'pnpstep.intake.full': 'Full',

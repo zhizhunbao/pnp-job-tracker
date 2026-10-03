@@ -571,6 +571,13 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpstep.f.noScheduledDraw': '현재 예정된 추첨 없음', 'pnpstep.f.inviteSubmitDays': '초청 후 {n}일 내 신청',
   'pnpstep.f.eeAcceptDays': '{n}일 내 EE에서 지명 수락', 'pnpstep.f.prSubmitDays': '연방 초청 후 {n}일 내 영주권 신청',
   'pnpstep.f.workMonths': '유효한 취업허가로 해당 고용주에서 {n}개월 풀타임',
+  // 2026-10-02 申请步骤批 2(阿省样张):拿社区推荐信一步;EOI 费 / 有效期、邀请接受期、申请递交期、提名有效期、社区推荐信六个事实词
+  'pnpstep.s.community': '커뮤니티 추천서 받기', 'pnpstep.f.eoiFee': '수수료 {n} 캐나다달러', 'pnpstep.f.eoiValidMonths': '풀에서 {n}개월 유효',
+  'pnpstep.f.inviteAcceptDays': '초청 후 {n}일 내 수락', 'pnpstep.f.appSubmitDays': '신청서 작성 후 {n}일 내 제출 및 결제',
+  'pnpstep.f.nominationValidMonths': '지명은 {n}개월 유효, 만료 전 IRCC에 영주권 신청', 'pnpstep.f.communityLetter': 'EOI 제출 시 지정 커뮤니티 추천서 필요',
+  // 2026-10-02 申请步骤批 2:处理时长按月(卑诗约八成申请)/ 按天(曼省年度平均)/ 阿省审理游标
+  'pnpstep.months': '신청의 약 80%가 {n}개월 내 처리', 'pnpstep.days': '평균 약 {n}일 ({y}년)',
+  'pnpstep.assessing': '{date}까지 접수된 신청 심사 중 ({asOf} 기준)',
   'pnpstep.weeks': '약 {n}주 ({q})', 'pnpstep.weeksBare': '약 {n}주', 'pnpstep.quarter': '{y}년 {q}분기',
   'pnpstep.intake.window': '{m}월 접수', 'pnpstep.intake.limit': '정원', 'pnpstep.intake.used': '사용', 'pnpstep.intake.filled': '마감',
   'pnpstep.intake.left': '{n} 남음', 'pnpstep.intake.full': '마감',

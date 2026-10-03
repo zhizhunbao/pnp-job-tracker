@@ -294,6 +294,7 @@ from mart.constants import (  # 2026-09-28 缺数据修复批:待修清单(Frank
 from mart.scheme import MartPendingTest, MissingIn, PendingRowIn  # 同上
 from mart.scheme import HeldSplitIn, HeldSplitOut  # 同日晚接闸(Frank「确认,下线吧」)
 from mart.constants import DEDUP_CITY_KEY_TPL  # 同日晚展示去重加城市(Frank 勾「检查,不全的下线」)
+from mart.constants import ASSESSING_DATE_RE, METRIC_ASSESSING_DATE  # 2026-10-02 申请步骤批 2(AB 审理游标日期)
 from mart.constants import (  # 2026-10-02 申请步骤批 1(萨省限额行业收件窗口摊进运营统计表)
     K_INTAKE_FILLED, K_INTAKE_OPENED, K_INTAKE_WINDOWS, METRIC_INTAKE_FILLED, SCOPE_INTAKE, SK_INTAKE_METRICS,
 )
@@ -3585,6 +3586,12 @@ def fill_ab_ops(x: OpsProvIn) -> None:
                              scope=s.get(K_STREAM, ""), kind=SCOPE_STREAM,
                              label=s.get(K_STREAM, ""), raw=None, unit=UNIT_TEXT,
                              text=str(s.get(K_ASSESSING_UP_TO) or ""), section="", period=None))
+        iso = assessing_iso_of(str(s.get(K_ASSESSING_UP_TO) or ""))
+        if iso:
+            add_ops_row(OpsRowIn(ctx=x.ctx, base=x.base, metric=METRIC_ASSESSING_DATE,
+                                 scope=s.get(K_STREAM, ""), kind=SCOPE_STREAM,
+                                 label=s.get(K_STREAM, ""), raw=None, unit=UNIT_TEXT,
+                                 text=iso, section="", period=None))
     for e in x.data.get(K_EOI_POOL, []):
         st = e.get(K_STREAM, "")
         total = st.strip().rstrip(COLON).lower() == TOTAL_WORD
@@ -3602,6 +3609,17 @@ def fill_ab_ops(x: OpsProvIn) -> None:
         add_ops_row(OpsRowIn(ctx=x.ctx, base=x.base, metric=METRIC_NOM_ADDITIONAL_FEDERAL,
                              scope=e.get(K_CATEGORY, ""), kind=SCOPE_CATEGORY, label=e.get(K_LABEL, ""),
                              raw=e.get(K_ISSUED), unit=UNIT_NOMINATIONS, text="", section="", period=None))
+
+
+def assessing_iso_of(text: str) -> str:
+    """AB 积压游标原文 → 开头那个日期的 ISO(2026-10-02 申请步骤批 2);开头不是「Month D, YYYY」或认不出给空串(不猜)。"""
+    m = ASSESSING_DATE_RE.match(text.strip())
+    if not m:
+        return ""
+    try:
+        return datetime.strptime(m.group(1), DATE_FMT_LONG).date().isoformat()
+    except ValueError:
+        return ""
 
 
 def fill_sk_ops(x: OpsProvIn) -> None:

@@ -28,7 +28,7 @@ import {
 import {
   channelListOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockCardOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
-  makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, provGateCardsOf, qcChannelsOf,
+  makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, provStreamItemsOf, qcChannelsOf,
   aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, aipSectionOf, channelSplitOf,
   makeLoadAipEmp, makePickOf, normName,
 } from './functions'
@@ -38,6 +38,7 @@ import type {
   QcChannelsPanel, AipEmpCardHookIn, AipEmpCardPanel, AipEmpData, AipEmpRowJson, AipSectionHookIn, AipSectionPanel,
   ChannelPickHookIn,
   ChannelPickPanel,
+  DrawFoldPanel,
 } from './types'
 import { CACHE } from './variables'
 
@@ -259,7 +260,17 @@ export function usePnpProvStreams(x: PnpProvStreamsHookIn): PnpProvStreamsPanel 
     t,
     ready: data.ready,
     failed: data.failed,
-    cards: provGateCardsOf({ t, lang: x.lang, province: x.province, pathways: data.pathways, reqs: data.reqs }),
+    items: provStreamItemsOf({
+      t,
+      lang: x.lang,
+      province: x.province,
+      pathways: data.pathways,
+      reqs: data.reqs,
+      draws: data.draws,
+      ops: data.ops,
+      sets: data.steps,
+      stepOps: data.stepOps,
+    }),
   }
 }
 
@@ -361,4 +372,14 @@ export function useAipSection(x: AipSectionHookIn): AipSectionPanel {
 export function useChannelPick(x: ChannelPickHookIn): ChannelPickPanel {
   const [pick, setPick] = useState<string>(PICK_NONE)
   return { show: channelSplitOf(x.channels), pick, pickOf: makePickOf({ setPick }) }
+}
+
+/**
+ * 一张抽选表的开合(2026-10-02 申请步骤批 2:资讯页每条通道的步骤卡各挂一张抽选表,开合各卡自己管;初值同省提名弹框 drawOpenInitOf)。
+ *
+ * @returns 展开着的组与开合手柄工厂。
+ */
+export function useDrawFold(): DrawFoldPanel {
+  const [open, setOpen] = useState<Set<string>>(drawOpenInitOf())
+  return { open, toggleOf: makeToggleOf({ setKeys: setOpen }) }
 }

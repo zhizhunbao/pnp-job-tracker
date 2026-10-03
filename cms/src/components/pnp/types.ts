@@ -4851,9 +4851,10 @@ export type StatusLinesIn = {
 }
 
 /**
- * provGateCardsOf 的入参(2026-09-30 资讯页「通道与门槛」)。
+ * provStreamItemsOf 的入参(2026-09-30 资讯页「通道与门槛」;2026-10-02 申请步骤批 2 由 provGateCardsOf 改名扩格:多吃抽选、
+ * 配额与两份步骤数据,每条通道门槛卡后面跟同一张「申请步骤」卡)。
  */
-export type ProvGateCardsIn = {
+export type ProvStreamItemsIn = {
   /**
    * 取词函数。
    */
@@ -4878,6 +4879,26 @@ export type ProvGateCardsIn = {
    * 门槛表(全国)。
    */
   reqs: PnpReq[]
+
+  /**
+   * 各省抽选记录(步骤卡「进池与抽选」一步的抽选表)。
+   */
+  draws: PnpDraw[]
+
+  /**
+   * 当年配额行(抽选表写哪一年、组头本年合计)。
+   */
+  ops: PnpOps[]
+
+  /**
+   * 登了步骤的通道。
+   */
+  sets: PnpStepSet[]
+
+  /**
+   * 步骤引用的运营统计。
+   */
+  stepOps: PnpStepOp[]
 }
 
 /**
@@ -5296,9 +5317,9 @@ export type PnpProvStreamsPanel = {
   failed: boolean
 
   /**
-   * 这一省的门槛卡(整表还没到给空列)。
+   * 每条通道一项:门槛卡 + 申请步骤卡 + 抽选表(2026-10-02 申请步骤批 2,Frank「弹框要和页面保持一致」);本省没有通道给空列。
    */
-  cards: GateCardSpec[]
+  items: ProvStreamItem[]
 }
 
 /**
@@ -6419,6 +6440,16 @@ export type PnpStepFactJson = {
   scope?: string
 
   /**
+   * 引用处理时长时的指标名(processing_weeks / processing_months / processing_days / assessing_up_to_date;缺席 = 按周,批 1 萨省那几条)。
+   */
+  metric?: string
+
+  /**
+   * 引用处理时长时按归一键认通道(阿省游标;原名带长括号说明,写死原名官网改一个字就静默不出)—— 有它就不看 scope。
+   */
+  streamKey?: string
+
+  /**
    * 原句型事实的事实词(三语文案在 i18n pnpstep.f.*)。
    */
   key?: string
@@ -6607,6 +6638,11 @@ export type StepSpec = {
    * 下挂的小表;没有给 null。
    */
   table: StepTableSpec | null
+
+  /**
+   * 这一步下挂抽选表(数据里引用了 draws;2026-10-02 申请步骤批 2)。
+   */
+  draws: boolean
 }
 
 /**
@@ -6822,6 +6858,26 @@ export type PnpStepsCardIn = {
    * 洗好的卡。
    */
   spec: StepsCardSpec
+
+  /**
+   * 取词函数(抽选表的折叠钮读)。
+   */
+  t: TFn
+
+  /**
+   * 抽选表(引用 draws 的那一步下挂;2026-10-02 申请步骤批 2);本省没有可说的给 null。
+   */
+  draws: DrawCard | null
+
+  /**
+   * 抽选表展开着的组。
+   */
+  open: Set<string>
+
+  /**
+   * 抽选表组的开合手柄工厂。
+   */
+  toggleOf: ToggleOfFn
 }
 
 /**
@@ -6832,6 +6888,26 @@ export type StepItemIn = {
    * 洗好的一步。
    */
   step: StepSpec
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 抽选表;没有给 null。
+   */
+  draws: DrawCard | null
+
+  /**
+   * 抽选表展开着的组。
+   */
+  open: Set<string>
+
+  /**
+   * 抽选表组的开合手柄工厂。
+   */
+  toggleOf: ToggleOfFn
 }
 
 /**
@@ -6927,4 +7003,124 @@ export type SectorCellIn = {
    * 认哪几个指标名。
    */
   metrics: string[]
+}
+
+/**
+ * 资讯页「通道与门槛」一条通道的一项(2026-10-02 申请步骤批 2,Frank「弹框要和页面保持一致」):门槛卡与弹框同一个,步骤卡与弹框同一个。
+ */
+export type ProvStreamItem = {
+  /**
+   * 列表键(通道编号)。
+   */
+  key: string
+
+  /**
+   * 门槛卡。
+   */
+  gate: GateCardSpec
+
+  /**
+   * 申请步骤卡;这条通道没登步骤给 null。
+   */
+  steps: StepsCardSpec | null
+
+  /**
+   * 「进池与抽选」一步的抽选表(这条通道的组当高亮组);没有给 null。
+   */
+  draws: DrawCard | null
+}
+
+/**
+ * provDrawCardOf 的入参。
+ */
+export type ProvDrawCardIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 这条通道。
+   */
+  p: PnpPathway
+
+  /**
+   * 各省抽选记录。
+   */
+  draws: PnpDraw[]
+
+  /**
+   * 当年配额行。
+   */
+  ops: PnpOps[]
+
+  /**
+   * 门槛表(不经抽选的省读它那一行)。
+   */
+  reqs: PnpReq[]
+
+  /**
+   * 全国通道对照(省默认通道的抽选组)。
+   */
+  pathways: PnpPathway[]
+}
+
+/**
+ * ProvStepsCard 的 props(资讯页一条通道的步骤卡;抽选表的开合各卡自己管)。
+ */
+export type ProvStepsCardIn = {
+  /**
+   * 洗好的步骤卡。
+   */
+  spec: StepsCardSpec
+
+  /**
+   * 抽选表;没有给 null。
+   */
+  draws: DrawCard | null
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * useDrawFold 的出参(一张抽选表的开合)。
+ */
+export type DrawFoldPanel = {
+  /**
+   * 展开着的组。
+   */
+  open: Set<string>
+
+  /**
+   * 组的开合手柄工厂。
+   */
+  toggleOf: ToggleOfFn
+}
+
+/**
+ * processingTextOf 的入参。
+ */
+export type ProcessingTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 那一行运营统计。
+   */
+  op: PnpStepOp
+
+  /**
+   * 词条键(按指标挑好的)。
+   */
+  key: string
 }

@@ -54,6 +54,113 @@ CHECK_ROW_TPL = "  ✗ {msg}"
 DONE_TPL = "✓ 通道对照表 {n} 条写出(省默认 {defaults}、挂岗位通道名 {named}、已关停 {closed})"
 """收口行。"""
 
+# 2026-10-02 申请步骤批 2(阿省样张;Frank「做吧,批 2 开始」,设计 docs/design/申请步骤-20261002.md):阿省六条工人类通道共用的步骤件,
+# 形照萨省 SKS_STEP_*(批 1 样张)。阿省全部工人类通道都走 Worker EOI → 抽选邀请 → 递申请(官方 how-to-apply 页一页写全),
+# 抽选一步引用抽选表(ref:draws,卡点);审理一步引用阿省「已审到哪天收到的申请」游标(ref:processing + metric assessing_up_to_date,
+# 按归一键 streamKey 认通道 —— 科技通道原名带一长串括号说明,写死原名官网改一个字就静默不出)。
+ABS_HOWTO_URL = "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
+"""阿省工人类通道申请流程页(WEOI 费与有效期、邀请 15 天、申请 30 天、乡村振兴推荐信在这页)。"""
+
+ABS_AOS_AFTER_URL = "https://www.alberta.ca/aaip-alberta-opportunity-stream-after-you-are-nominated"
+"""机会通道拿到提名之后那页(提名有效 6 个月)。"""
+
+ABS_RR_AFTER_URL = "https://www.alberta.ca/aaip-rural-renewal-stream-after-you-are-nominated"
+"""乡村振兴通道拿到提名之后那页(提名有效 6 个月,同句)。"""
+
+ABS_EE_AFTER_URL = "https://www.alberta.ca/aaip-alberta-express-entry-stream-after-you-are-nominated"
+"""阿省快速通道拿到提名之后那页(30 天内在 EE 接受提名、联邦邀请后 60 天内递永居)。"""
+
+ABS_STEP_OFFER = {"step": "offer", "who": "employer", "none": False, "stuck": False,
+                  "facts": [{"ref": "req", "factor": "empYears"}]}
+"""拿阿省雇主 offer:雇主条件读门槛卡「雇主条件」行(经营年限 / 年收入 / 员工数,门槛表 empYears 等三行)。"""
+
+ABS_STEP_COMMUNITY = {"step": "community", "who": "you", "none": False, "stuck": False,
+                      "facts": [{"key": "communityLetter", "vars": {},
+                                 "quote": ("To qualify for selection and receive WEOI points, an endorsement letter from a "
+                                           "designated community is required at the time of WEOI submission."),
+                                 "url": ABS_HOWTO_URL}]}
+"""拿社区推荐信(乡村振兴通道):递 WEOI 时就要有指定社区的推荐信。"""
+
+ABS_STEP_EE_PROFILE = {"step": "eeProfile", "who": "you", "none": False, "stuck": False,
+                       "facts": [{"ref": "req", "factor": "eeProfile"}]}
+"""建 EE 档案(科技、警务两条 EE 版):读门槛卡「EE」行。"""
+
+ABS_STEP_EOI = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                "facts": [{"key": "eoiFee", "vars": {"n": 135},
+                           "quote": "Effective April 7, 2026, a $135 fee applies.", "url": ABS_HOWTO_URL},
+                          {"key": "eoiValidMonths", "vars": {"n": 12},
+                           "quote": "Your WEOI will remain valid in the pool for 12 months.", "url": ABS_HOWTO_URL}]}
+"""递 Worker EOI:135 加元,在池里有效 12 个月。"""
+
+ABS_STEP_DRAW = {"step": "draw", "who": "province", "none": False, "stuck": True,
+                 "facts": [{"ref": "draws"}]}
+"""进池与抽选:挂这条通道的抽选表(卡点 —— 要被抽中才能递申请)。"""
+
+ABS_STEP_APPLY = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                  "facts": [{"key": "inviteAcceptDays", "vars": {"n": 15},
+                             "quote": "You have 15 days to accept this invitation.", "url": ABS_HOWTO_URL},
+                            {"key": "appSubmitDays", "vars": {"n": 30},
+                             "quote": ("Once you create an application, you have 30 days to complete, submit, and pay the "
+                                       "application fee."),
+                             "url": ABS_HOWTO_URL}]}
+"""收邀请、递申请:15 天内接受邀请,建好申请后 30 天内递交并付费。"""
+
+ABS_STEP_REVIEW_AOS = {"step": "review", "who": "province", "none": False, "stuck": False,
+                       "facts": [{"ref": "processing", "metric": "assessing_up_to_date",
+                                  "streamKey": "alberta opportunity stream"}]}
+"""省里审批(机会通道):已审到哪天收到的申请。"""
+
+ABS_STEP_REVIEW_TECH = {"step": "review", "who": "province", "none": False, "stuck": False,
+                        "facts": [{"ref": "processing", "metric": "assessing_up_to_date",
+                                   "streamKey": "accelerated tech pathway"}]}
+"""省里审批(科技通道)。"""
+
+ABS_STEP_REVIEW_HEALTH = {"step": "review", "who": "province", "none": False, "stuck": False,
+                          "facts": [{"ref": "processing", "metric": "assessing_up_to_date",
+                                     "streamKey": "dedicated health care pathways"}]}
+"""省里审批(医疗专线,EE 与非 EE 两版合一行)。"""
+
+ABS_STEP_REVIEW_LAW = {"step": "review", "who": "province", "none": False, "stuck": False,
+                       "facts": [{"ref": "processing", "metric": "assessing_up_to_date",
+                                  "streamKey": "law enforcement pathway"}]}
+"""省里审批(警务通道;官方游标写 Not applicable,汇装不出日期行 → 这一步现在不出字,官方哪天写了日期自然出)。"""
+
+ABS_STEP_REVIEW_TOURISM = {"step": "review", "who": "province", "none": False, "stuck": False,
+                           "facts": [{"ref": "processing", "metric": "assessing_up_to_date",
+                                      "streamKey": "tourism and hospitality stream"}]}
+"""省里审批(旅游酒店通道)。"""
+
+ABS_STEP_REVIEW_RURAL = {"step": "review", "who": "province", "none": False, "stuck": False,
+                         "facts": [{"ref": "processing", "metric": "assessing_up_to_date",
+                                    "streamKey": "rural renewal stream"}]}
+"""省里审批(乡村振兴通道)。"""
+
+ABS_NOM_VALID_QUOTE = "Your nomination is only valid for 6 months; you must apply to IRCC before it expires."
+"""非 EE 版提名有效期原句(机会通道、乡村振兴两页同句)。"""
+
+ABS_STEP_PR_AOS = {"step": "pr", "who": "federal", "none": False, "stuck": False,
+                   "facts": [{"key": "nominationValidMonths", "vars": {"n": 6}, "quote": ABS_NOM_VALID_QUOTE,
+                              "url": ABS_AOS_AFTER_URL}]}
+"""拿提名,递永居(机会通道):提名有效 6 个月,过期前向联邦递。"""
+
+ABS_STEP_PR_RURAL = {"step": "pr", "who": "federal", "none": False, "stuck": False,
+                     "facts": [{"key": "nominationValidMonths", "vars": {"n": 6}, "quote": ABS_NOM_VALID_QUOTE,
+                                "url": ABS_RR_AFTER_URL}]}
+"""拿提名,递永居(乡村振兴通道)。"""
+
+ABS_STEP_PR_EE = {"step": "pr", "who": "federal", "none": False, "stuck": False,
+                  "facts": [{"key": "eeAcceptDays", "vars": {"n": 30},
+                             "quote": "You have 30 days to accept the nomination in your online IRCC Express Entry profile.",
+                             "url": ABS_EE_AFTER_URL},
+                            {"key": "prSubmitDays", "vars": {"n": 60},
+                             "quote": ("You will have 60 days after receiving the Invitation to Apply to submit your "
+                                       "application for permanent residence online."),
+                             "url": ABS_EE_AFTER_URL}]}
+"""拿提名,递永居(阿省快速通道:科技、警务):30 天内在 EE 接受提名,联邦邀请后 60 天内递永居。"""
+
+ABS_STEP_PR = {"step": "pr", "who": "federal", "none": False, "stuck": False, "facts": []}
+"""拿提名,递永居(医疗专线 EE / 非 EE 两版合一张卡、旅游酒店没有提名之后那页:不写期限,不拿别的通道的原句顶)。"""
+
 # =========================================================================
 # 2. 通道对照表(一条通道一段;注释挂官方原句出处与判读理由)
 # =========================================================================
@@ -72,6 +179,7 @@ PW_AB_OPPORTUNITY = {
     "quote": ("The Alberta Opportunity Stream is for temporary foreign workers who are already working full-time in Alberta "
               "and have a full-time job offer from an Alberta employer in an eligible occupation."),
     "checked": "2026-09-28",
+    "steps": [ABS_STEP_OFFER, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY, ABS_STEP_REVIEW_AOS, ABS_STEP_PR_AOS],
 }
 """阿省默认通道:可提名但没挂具名清单的阿省岗落这里(排除式,不在 AAIP 不符合清单上即可)。
 抽选组同名(components/pnp GEN_DRAW_STREAM 原注「AB 机会通道(官网 Alberta Opportunity Stream,抽选组同名)」);
@@ -101,6 +209,8 @@ PW_AB_ACCELERATED_TECH = {
     "quote": ("a job offer for an eligible tech occupation from an Alberta employer in an eligible tech industry "
               "under the Accelerated Tech Pathway."),
     "checked": "2026-09-28",
+    "steps": [ABS_STEP_EE_PROFILE, ABS_STEP_OFFER, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY,
+              ABS_STEP_REVIEW_TECH, ABS_STEP_PR_EE],
 }
 """阿省加速科技通道(EE 流的一支,清单 ab-tech.json)。
 门槛流两条 = EE 流最低要求 + 专线本身(components/pnp NAMED_REQ_STREAMS 原注「阿省科技加速专线:EE 流最低要求 + 专线两条」)。
@@ -122,6 +232,7 @@ PW_AB_DEDICATED_HEALTH_CARE = {
     "quote": ("Dedicated Health Care Pathway – Qualified individuals with job offers in eligible health care professions "
               "can apply to be nominated for permanent residence in Alberta."),
     "checked": "2026-09-28",
+    "steps": [ABS_STEP_OFFER, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY, ABS_STEP_REVIEW_HEALTH, ABS_STEP_PR],
 }
 """阿省医护专项(9 类受监管医护职业,清单 ab-health.json)。
 抽选:EE 与非 EE 两版分开抽,两组都算(NAMED_DRAW_STREAMS 原注;另一组 Priority Sectors (Health Care) 是 EE 的医疗行业定向,
@@ -144,6 +255,8 @@ PW_AB_LAW_ENFORCEMENT = {
     "quote": ("a job offer from an Alberta Association of Chiefs of Police member in one of the eligible police services "
               "occupations under the Law Enforcement Pathway."),
     "checked": "2026-09-28",
+    "steps": [ABS_STEP_EE_PROFILE, ABS_STEP_OFFER, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY,
+              ABS_STEP_REVIEW_LAW, ABS_STEP_PR_EE],
 }
 """阿省警务专项(EE 流的一支,清单 ab-law.json,官方列出 3 个职业码)。
 门槛流只有 EE 流最低要求(官方资格页只写了 EE 流的,NAMED_REQ_STREAMS 原注)。配额行 = 官方 Table 7 同名行(QUOTA_STREAM_KEYS 原注)。
@@ -163,6 +276,7 @@ PW_AB_TOURISM_HOSPITALITY = {
     "quote": ("Tourism and Hospitality Stream – Qualified candidates who live and work in Alberta and have a full-time job offer "
               "to continue working with an Alberta tourism and hospitality sector employer."),
     "checked": "2026-09-28",
+    "steps": [ABS_STEP_OFFER, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY, ABS_STEP_REVIEW_TOURISM, ABS_STEP_PR],
 }
 """阿省旅游酒店通道(清单 ab-tourism.json;雇主须属合格旅游酒店行业)。
 门槛流 = 2026-09-27 同批从官方资格页补抓的五条所在的流。配额行与抽选组同名(前端原先靠隐式同名配上)。
@@ -182,6 +296,8 @@ PW_AB_RURAL_RENEWAL = {
     "quote": ("The Rural Renewal Stream empowers rural communities to recruit and retain foreign nationals to live, work and "
               "settle in their communities."),
     "checked": "2026-09-28",
+    "steps": [ABS_STEP_COMMUNITY, ABS_STEP_OFFER, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY,
+              ABS_STEP_REVIEW_RURAL, ABS_STEP_PR_RURAL],
 }
 """阿省乡村振兴(按指定社区判:岗位城市在社区名单、职业不在它的 17 个排除码里,社区表 ab-rural.json;2026-09-24 第三批)。
 配额行与抽选组同名。英文界面现显示官方原名(stream.abRural = Rural Renewal Stream)。"""
@@ -1807,9 +1923,10 @@ K_URL = "url"
 """事实行键:原句出处页。"""
 
 STEP_KEYS = ["employerRegister", "offer", "work", "epa", "eeProfile", "eoi", "draw", "confirm", "apply", "review", "settle",
-             "endorse", "pr"]
+             "endorse", "pr", "community"]
 """步骤词表(三语文案在 cms i18n pnp.step.*):雇主登记 / 拿雇主 offer / 在这份工作上干够 / 雇主递职位审批 / 建 EE 档案 / 递 EOI /
-进池与抽选 / 确认职位、递申请 / 收邀请、递申请 / 省里审批 / 做安置计划 / 雇主递省背书 / 拿提名,递永居。"""
+进池与抽选 / 确认职位、递申请 / 收邀请、递申请 / 省里审批 / 做安置计划 / 雇主递省背书 / 拿提名,递永居 /
+拿社区推荐信(community,2026-10-02 批 2 阿省乡村振兴加)。"""
 
 WHO_KEYS = ["you", "employer", "province", "federal"]
 """谁做的词表。"""
@@ -1817,7 +1934,8 @@ WHO_KEYS = ["you", "employer", "province", "federal"]
 REF_KEYS = ["req", "processing", "intake", "draws"]
 """引用词表:req = 门槛表一行(带 factor)、processing = 运营统计处理时长(带 scope)、intake = 萨省收件窗口、draws = 抽选表。"""
 
-FACT_KEYS = ["cappedEmployees", "windowCapped", "directApply", "eoiOnlyOther", "confirmSubmit", "noScheduledDraw", "inviteSubmitDays",
+FACT_KEYS = ["eoiFee", "eoiValidMonths", "inviteAcceptDays", "appSubmitDays", "nominationValidMonths", "communityLetter",
+             "cappedEmployees", "windowCapped", "directApply", "eoiOnlyOther", "confirmSubmit", "noScheduledDraw", "inviteSubmitDays",
              "eeAcceptDays", "prSubmitDays", "workMonths"]
 """静态事实词表(三语文案在 cms i18n pnp.stepFact.*,数字从 vars 填)。"""
 
