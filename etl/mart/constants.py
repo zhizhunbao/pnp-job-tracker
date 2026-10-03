@@ -1802,6 +1802,10 @@ K_PNP_BLOCK = "pnpBlock"
 空串 = 走得了;列 jobs.pnp_block,docs/sql/jobs-pnp-block-20260929.sql)。工作性质那四个码直接用卡住的工时 / 雇佣期取值
 (part / term / seasonal / casual,与 PROV_OFFER_BLOCKED 同一套词),其余见 BLOCK_*。"""
 
+BLOCK_SEP = ","
+"""原因码之间的分隔符(2026-10-03 Frank「这个不满足 门槛应该显示多个」:卡住的门槛全记,工时、雇佣期、职业、工资依次拼进
+jobs.pnp_block,列不变;前端 lib/jobs 的 PNP_BLOCK_SEP 是同一个字,toJobRow 拆回一码一格)。"""
+
 BLOCK_LIST = "list"
 """原因码:落在本省排除清单(排除式省的排除表 / NB 叠加式不受理);前端照旧走「不符合清单」那条路。"""
 

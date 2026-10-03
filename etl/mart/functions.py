@@ -248,7 +248,7 @@ from mart.scheme import (
     YtdLabelIn,
 )
 from mart.constants import BRANCH_CITY_MIN, BRANCH_DROP_TPL
-from mart.constants import BLOCK_LIST, BLOCK_OCC, BLOCK_WAGE, K_LOW_ANNUAL, K_PNP_BLOCK, TEER_ALL
+from mart.constants import BLOCK_LIST, BLOCK_OCC, BLOCK_SEP, BLOCK_WAGE, K_LOW_ANNUAL, K_PNP_BLOCK, TEER_ALL
 from mart.constants import (
     REQ_BASIS_LOW, REQ_BASIS_MEDIAN, REQ_COND_RECENT_GRAD, REQ_FACTOR_WAGE, REQ_K_BASIS, REQ_K_COND, REQ_K_FACTOR, REQ_K_TEER,
 )
@@ -1001,12 +1001,21 @@ def pnp_block_of(x: PnpJudgeIn) -> str:
     """这岗走不了省提名的原因码(空串 = 走得了;2026-09-29 自 pnp_eligible 逐条搬来,分支与原判相同):
     工作性质卡在该省 offer 门槛(卡住的那个取值 part / term / seasonal / casual)→ 叠加式不受理 / 排除清单(list)→
     职业不在本省收的职业里(occ)。非省提名省(QC / NU)与缺省码给空串 —— 那不是「门槛没过」,格子另有写法,判定由 pnp_eligible 先挡。
-    工资那条在汇装段(with_wage_block):这里手里没有薪资。"""
+    工资那条在汇装段(with_wage_block):这里手里没有薪资。
+    2026-10-03 Frank「这个不满足 门槛应该显示多个」(SK 卫生局兼职临时岗只写了「兼职」):卡住的门槛全记 —— 工时、雇佣期各自卡住
+    各一个码(offer_blocks_of),职业那条(occ_block_of)跟在后面,BLOCK_SEP 拼;可提名判定不变(原因码为空 ⇔ 走得了)。"""
     if not x.prov or x.prov in NON_PNP_PROV:
         return ""
-    offer = offer_block_of(x)
-    if offer:
-        return offer
+    codes = offer_blocks_of(x)
+    occ = occ_block_of(x)
+    if occ:
+        codes.append(occ)
+    return BLOCK_SEP.join(codes)
+
+
+def occ_block_of(x: PnpJudgeIn) -> str:
+    """职业这条门槛的原因码(2026-10-03 自 pnp_block_of 拆出,分支原样):叠加式不受理 / 排除清单(list)→ 职业不在本省收的
+    职业里(occ);过得去给空串。落在按社区名单判的通道里(is_community_hit)算过得去。"""
     tbl = x.tables.by_prov.get(x.prov)
     if is_blocked(x):
         return BLOCK_LIST
@@ -1124,18 +1133,20 @@ def offer_fits(x: PnpJudgeIn) -> bool:
     只卡源写明的值:空串(源没写、整理版也没抽到)放行 —— 没标注 ≠ 兼职;表外的省(QC、NU 不属 PNP,pnp_eligible /
     pnp_stream 先判掉)这里放行。职业 × 省级的判定(prov_list_of)两格给空串,天然不受影响。
     """
-    return offer_block_of(x) == ""
+    return not offer_blocks_of(x)
 
 
-def offer_block_of(x: PnpJudgeIn) -> str:
-    """这岗的工时 / 雇佣期卡在该省 offer 门槛上的那个取值(工时先看:part;再看雇佣期:term / seasonal / casual);过得去给空串。
-    2026-09-29 自 offer_fits 拆出(Frank「就直接说 兼职」:原因码直接用卡住的那个取值),offer_fits = 本函数给空串,口径不变。"""
+def offer_blocks_of(x: PnpJudgeIn) -> list[str]:
+    """这岗的工时 / 雇佣期卡在该省 offer 门槛上的取值(工时在前:part;雇佣期在后:term / seasonal / casual);都过得去给空列。
+    2026-09-29 自 offer_fits 拆出(Frank「就直接说 兼职」:原因码直接用卡住的那个取值),offer_fits = 本函数给空,口径不变。
+    2026-10-03 Frank「这个不满足 门槛应该显示多个」:不再只给第一个 —— 工时与雇佣期都卡住就两个都给(兼职又是定期合同)。"""
     blocked = PROV_OFFER_BLOCKED.get(x.prov, ())
+    out = []
     if x.hours in blocked:
-        return x.hours
+        out.append(x.hours)
     if x.term in blocked:
-        return x.term
-    return ""
+        out.append(x.term)
+    return out
 
 
 def is_community_hit(x: PnpJudgeIn) -> bool:
@@ -2290,10 +2301,19 @@ def wage_short_of(x: WageShortIn) -> bool:
 def with_wage_block(x: WageBlockIn) -> dict:
     """工资不够的可提名岗改判(2026-09-29 Frank「都按你推荐的」):评分行拷一份 —— 可提名改否、通道名清空、原因码记 wage;
     评分段手里没有薪资,工资这条只能在汇装段判,通道档(job_grades)与岗位行都读改判后的这一份,口径一致。
-    本来就走不了的岗不动(原因码留评分段那个,格子只写一个原因);原评分行不改。"""
-    if not x.short or not x.scored.get(K_PNP_ELIGIBLE):
+    本来就走不了的岗不动(原因码留评分段那个,格子只写一个原因);原评分行不改。
+    2026-10-03 Frank「这个不满足 门槛应该显示多个」:本来就走不了的岗工资也不够,工资码补在原因码后面(BLOCK_SEP 拼),可提名与
+    通道名照旧;原因码为空却不可提名的(魁省、NU、没省码 —— 那不是门槛没过)照旧不动。"""
+    if not x.short:
+        return x.scored
+    block = x.scored.get(K_PNP_BLOCK) or ""
+    eligible = bool(x.scored.get(K_PNP_ELIGIBLE))
+    if not eligible and not block:
         return x.scored
     out = dict(x.scored)
+    if not eligible:
+        out[K_PNP_BLOCK] = BLOCK_SEP.join([block, BLOCK_WAGE])
+        return out
     out[K_PNP_ELIGIBLE] = False
     out[K_PNP_STREAM] = ""
     out[K_PNP_BLOCK] = BLOCK_WAGE

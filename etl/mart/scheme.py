@@ -3655,7 +3655,8 @@ class MartBlockTest(unittest.TestCase):
         return MartOfferTest()
 
     def test_block_matches_eligible(self) -> None:
-        """穷举:可提名 ⇔ 省提名省且原因码为空;工作性质卡住时码就是卡住的那个取值;非省提名省原因码一律空。"""
+        """穷举:可提名 ⇔ 省提名省且原因码为空;工作性质卡住时码就是卡住的那个取值;非省提名省原因码一律空。
+        2026-10-03 起卡住几个记几个:工时、雇佣期里卡住的取值依次排在最前,一个不漏,过得去的一个不多。"""
         from mart import functions as fn
         base = self.base()
         for prov in base.provs():
@@ -3668,18 +3669,26 @@ class MartBlockTest(unittest.TestCase):
                         self.assertEqual(fn.pnp_eligible(x), pnp_prov and block == "", (prov, noc, hours, term))
                         if not pnp_prov:
                             self.assertEqual(block, "", (prov, noc))
-                        elif not fn.offer_fits(x):
-                            self.assertIn(block, (hours, term), (prov, noc, hours, term))
+                            continue
+                        nature = [v for v in (hours, term) if v in fn.PROV_OFFER_BLOCKED.get(prov, ())]
+                        codes = [c for c in block.split(fn.BLOCK_SEP) if c]
+                        self.assertEqual(codes[:len(nature)], nature, (prov, noc, hours, term))
+                        self.assertEqual(fn.offer_fits(x), nature == [], (prov, noc, hours, term))
+                        for c in codes[len(nature):]:
+                            self.assertIn(c, (fn.BLOCK_LIST, fn.BLOCK_OCC), (prov, noc, hours, term))
 
     def test_block_golden(self) -> None:
-        """手写金标:工时先于雇佣期;工作性质先于清单;排除清单 list;BC TEER 5 不在清单 occ;全职长期的技术岗空。"""
+        """手写金标:工时先于雇佣期;工作性质先于清单;排除清单 list;BC TEER 5 不在清单 occ;全职长期的技术岗空。
+        2026-10-03 起卡住几个记几个(工时、雇佣期、职业依次拼):ON 兼职季节两个都记、AB 兼职又在排除清单两个都记、
+        SK 兼职定期合同两个都记(配图那批)、AB 不卡定期合同只剩空、BC TEER 5 兼职定期合同三个都记。"""
         from mart import functions as fn
         cases = [
             ("ON", "21231", "part", "permanent", "part"), ("ON", "21231", "full", "term", "term"),
-            ("ON", "21231", "part", "seasonal", "part"), ("ON", "21231", "full", "casual", "casual"),
-            ("AB", "65201", "full", "permanent", "list"), ("AB", "65201", "part", "permanent", "part"),
+            ("ON", "21231", "part", "seasonal", "part,seasonal"), ("ON", "21231", "full", "casual", "casual"),
+            ("AB", "65201", "full", "permanent", "list"), ("AB", "65201", "part", "permanent", "part,list"),
             ("BC", "65100", "full", "permanent", "occ"), ("ON", "21231", "full", "permanent", ""),
-            ("QC", "21231", "part", "", ""),
+            ("QC", "21231", "part", "", ""), ("SK", "21231", "part", "term", "part,term"),
+            ("AB", "21231", "full", "term", ""), ("BC", "65100", "part", "term", "part,term,occ"),
         ]
         for prov, noc, hours, term, want in cases:
             self.assertEqual(fn.pnp_block_of(self.base().judge(prov, noc, hours, term)), want, (prov, noc, hours, term))
@@ -3699,7 +3708,8 @@ class MartBlockTest(unittest.TestCase):
 
     def test_wage_short_and_block(self) -> None:
         """谁都过不了才算不够:TEER 5 低于中位不够、等于中位够;TEER 3 介于低位与中位够(应届生能用)、低于低位不够;
-        缺 TEER / 缺薪资 / 本省没线不判。改判只动可提名岗:可提名 + 不够 → 否、通道名清空、码 wage;原评分行不改。"""
+        缺 TEER / 缺薪资 / 本省没线不判。改判只动可提名岗:可提名 + 不够 → 否、通道名清空、码 wage;原评分行不改。
+        2026-10-03 起本来就走不了的岗工资码补在后面(兼职定期合同 → 再加 wage),原评分行不改;原因码为空的非省提名岗不动。"""
         from mart import functions as fn
         floors = {"ON": {3: "occLow", 5: "occMedian"}}
         wage = {"annual": 50000, "lowAnnual": 35000}
@@ -3712,8 +3722,13 @@ class MartBlockTest(unittest.TestCase):
         out = fn.with_wage_block(WageBlockIn(scored=sc, short=True))
         self.assertEqual((out["pnpEligible"], out["pnpStream"], out["pnpBlock"]), (False, "", "wage"))
         self.assertEqual(sc["pnpEligible"], True)
-        blocked = {"pnpEligible": False, "pnpStream": "", "pnpBlock": "part"}
-        self.assertIs(fn.with_wage_block(WageBlockIn(scored=blocked, short=True)), blocked)
+        blocked = {"pnpEligible": False, "pnpStream": "", "pnpBlock": "part,term"}
+        out = fn.with_wage_block(WageBlockIn(scored=blocked, short=True))
+        self.assertEqual((out["pnpEligible"], out["pnpStream"], out["pnpBlock"]), (False, "", "part,term,wage"))
+        self.assertEqual(blocked["pnpBlock"], "part,term")
+        self.assertIs(fn.with_wage_block(WageBlockIn(scored=blocked, short=False)), blocked)
+        nonpnp = {"pnpEligible": False, "pnpStream": "", "pnpBlock": ""}
+        self.assertIs(fn.with_wage_block(WageBlockIn(scored=nonpnp, short=True)), nonpnp)
         self.assertIs(fn.with_wage_block(WageBlockIn(scored=sc, short=False)), sc)
 
 
