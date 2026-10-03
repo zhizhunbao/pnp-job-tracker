@@ -843,6 +843,250 @@ PW_SK_AGRICULTURE_TALENT = {
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流 —— 本通道那条(语言 CLB 4、近 3 年内 12 个月经验;在担保雇主处
 6 个月的替代路径记 experienceAlt;资格清单没有执照条款)+ 持 offer 直接申请那条。"""
 
+# 2026-10-03 申请步骤批 2(曼省;设计 docs/design/申请步骤-20261002.md):曼省四条通道共用的步骤件,形照萨省 SKS_STEP_*
+# (批 1 样张)与阿省 ABS_STEP_*。四条通道页的「Apply」钮都指向同一页 How to Apply(原句「This process applies to the pathways
+# under the Skilled Worker Stream and the International Education Stream」):递 EOI → 收到 LAA 递完整申请 → 审理 → 提名 →
+# 提名后 180 天内向联邦递永居。抽选一步引用抽选表(ref:draws,卡点);毕业生就业通道(CEP)没登抽选组,改挂 2026-06-11 官方
+# 通告原句。审理一步引用年报平均处理天数(ref:processing + metric processing_days,按 scope 原名认)。收到 LAA 后几天内递、
+# 申请费,这四条的页面都没写(120 天期限与 2,500 加元申请费只写在商业移民类、国际学生创业试点的页上),不写。安置计划
+# (Settlement Plan)是在线申请里的一部分(supporting documents 页「The Settlement Plan is part of MPNP Online」),流程页
+# 不单列,不用 settle 步。
+MBS_APPLY_URL = "https://immigratemanitoba.com/mpnp/apply"
+"""曼省申请流程页(五步流程、提名后 180 天内向联邦递永居在这页)。"""
+
+MBS_EOI_URL = "https://immigratemanitoba.com/mpnp/apply/eoi"
+"""曼省 EOI 页(档案有效一年在这页)。"""
+
+MBS_EOI_FAQ_URL = "https://immigratemanitoba.com/resources/faq/eoi"
+"""曼省 EOI 常见问题页(递 EOI 不收费在这页)。"""
+
+MBS_SWM_URL = "https://immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility"
+"""曼省技术工人通道(SWM)资格页(持有效工签在这家公司连续全职满 6 个月在这页)。"""
+
+MBS_CEP_NEWS_URL = ("https://immigratemanitoba.com/2026/06/important-update-for-manitoba-provincial-nominee-program-"
+                    "international-education-stream-ies-career-employment-pathway-cep-candidates")
+"""曼省 2026-06-11 毕业生就业通道(CEP)通告页(在池 EOI 转技术工人通道抽选在这页)。"""
+
+MBS_STEP_WORK = {"step": "work", "who": "you", "none": False, "stuck": False,
+                 "facts": [{"key": "workMonths", "vars": {"n": 6},
+                            "quote": ("Ongoing Manitoba employment means that you possess a valid work permit and a "
+                                      "Manitoba company has offered you a full-time, long-term job after you have "
+                                      "completed six months or more of continuous full-time employment with that "
+                                      "company"),
+                            "url": MBS_SWM_URL}]}
+"""在这份工作上干够(技术工人通道 SWM):持有效工签在这家公司连续全职满 6 个月。原句截到逗号前 —— 后半句是外省毕业生满
+一年的另一款,在门槛卡(门槛表 SWM 外省毕业生流 12 个月那行)。门槛表也有 6 个月那行(factor experience),步骤引用不认
+experience,照萨省 SKS_STEP_WORK 存原句。"""
+
+MBS_STEP_OFFER = {"step": "offer", "who": "employer", "none": False, "stuck": False, "facts": []}
+"""拿曼省雇主 offer(SWM:工作满 6 个月后的长期全职 offer;CEP:至少一年合同、职业在在需职业表上)。曼省门槛表唯一的
+雇主行属雇主直招 EDI,这两条的门槛流里没有 empYears 行,不写。"""
+
+MBS_STEP_EOI = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                "facts": [{"key": "noFee", "vars": {}, "quote": "There is no fee to submit an EOI.",
+                           "url": MBS_EOI_FAQ_URL},
+                          {"key": "eoiValidMonths", "vars": {"n": 12},
+                           "quote": "Your profile will be valid for one year from the day you submit it.",
+                           "url": MBS_EOI_URL}]}
+"""递 EOI(曼省四条):不收费(事实词 noFee,与新不伦瑞克 EOI 免费同词);在池里有效一年(原句「one year」,按 12 个月填
+eoiValidMonths)。"""
+
+MBS_STEP_DRAW = {"step": "draw", "who": "province", "none": False, "stuck": True,
+                 "facts": [{"ref": "draws"}]}
+"""进池与抽选:挂这条通道的抽选表(卡点 —— 要收到 LAA 才能递申请)。"""
+
+MBS_STEP_DRAWS_MOVED = {"step": "draw", "who": "province", "none": False, "stuck": True,
+                        "facts": [{"key": "movedToSwm", "vars": {"n": 6},
+                                   "quote": ("Candidates with active Expression of Interest (EOI) profiles under the "
+                                             "CEP and who have gained at least six months of work experience in "
+                                             "Manitoba are invited to transition into the Skilled Worker in Manitoba "
+                                             "pathway, where they can be considered in future EOI draws alongside "
+                                             "other skilled workers on a priority basis."),
+                                   "url": MBS_CEP_NEWS_URL}]}
+"""进池与抽选(毕业生就业通道 CEP):官方请本省工作满 6 个月的在池 EOI 转技术工人通道参加抽选 —— 卡点(stuck)。通道表
+标签 drawsStopped(6 月起没再抽选)的出处即这句;CEP 没登抽选组,不挂抽选表。"""
+
+MBS_STEP_APPLY = {"step": "apply", "who": "you", "none": False, "stuck": False, "facts": []}
+"""收邀请(LAA)、递完整申请:官方流程页只写收到 LAA 后递完整申请,没写几天内递,不写。"""
+
+MBS_STEP_REVIEW_SWM = {"step": "review", "who": "province", "none": False, "stuck": False,
+                       "facts": [{"ref": "processing", "metric": "processing_days",
+                                  "scope": "Skilled Worker in Manitoba"}]}
+"""省里审批(技术工人通道 SWM):年报平均处理天数「Skilled Worker in Manitoba」那一行。"""
+
+MBS_STEP_REVIEW_SWO = {"step": "review", "who": "province", "none": False, "stuck": False,
+                       "facts": [{"ref": "processing", "metric": "processing_days",
+                                  "scope": "Skilled Worker Overseas"}]}
+"""省里审批(海外技工通道 SWO):年报平均处理天数「Skilled Worker Overseas」那一行。"""
+
+MBS_STEP_REVIEW_IES = {"step": "review", "who": "province", "none": False, "stuck": False,
+                       "facts": [{"ref": "processing", "metric": "processing_days",
+                                  "scope": "International Education"}]}
+"""省里审批(国际教育类 CEP、GIP 两条):年报平均处理天数「International Education」那一行(年报按大类,不分两条)。"""
+
+MBS_STEP_PR = {"step": "pr", "who": "federal", "none": False, "stuck": False,
+               "facts": [{"key": "nominationValidDays", "vars": {"n": 180},
+                          "quote": ("Within 180 days from the date of nomination, make a separate application to the "
+                                    "Government of Canada for permanent residence for you and your family."),
+                          "url": MBS_APPLY_URL}]}
+"""拿提名,递永居(曼省四条):提名后 180 天内向联邦另递永居申请(原句是天数,不折成月,另立 nominationValidDays)。"""
+
+# 2026-10-03 申请步骤批 2(新斯科舍;设计同上):新斯科舍六条通道共用的步骤件,形同上。EOI 即完整申请(官方 eoi-process
+# 页「Candidates (NSNP) and employers (AIP) will continue to submit full applications. These submissions are treated as
+# EOIs and entered into an EOI pool.」),没有单独「收邀请、递申请」一步;按月从 EOI 池选取(NSNP 各流与 AIP 同一个池,
+# ref:draws,卡点);2026-09-01 起选中后 7 天内更新材料并交 1,000 加元申请费才进审理(省提名总页 How it works);提名后
+# 12 个月内向联邦递永居(三个流页同句)。官方没有处理时长统计,不写。
+NSS_EOI_PROCESS_URL = "https://liveinnovascotia.com/eoi-process"
+"""新斯科舍 EOI 流程页(EOI 即完整申请、按期选取在这页)。"""
+
+NSS_NSNP_URL = "https://liveinnovascotia.com/nova-scotia-nominee-program"
+"""新斯科舍省提名总页(How it works 四段:递 EOI → 抽选 → 选中后 7 天内更新材料并交费 → 审理,在这页)。"""
+
+NSS_FEES_URL = "https://liveinnovascotia.com/resources/nsnp-update-application-fees-effective-september-1-2026"
+"""新斯科舍申请费通告页(递 EOI 不收费、工人类各流 1,000 加元在这页)。"""
+
+NSS_EOI_VALID_URL = ("https://liveinnovascotia.com/resources/"
+                     "expression-interest-eoi-validity-period-and-transition-measures")
+"""新斯科舍 EOI 有效期通告页(2026-05-01 起递的 EOI 12 个月没被选中即过期在这页)。"""
+
+NSS_SW_URL = "https://liveinnovascotia.com/skilled-worker"
+"""新斯科舍 Skilled Worker 流页(技术工人 / 建筑 / 医生三个 tab;TEER 4-5 在本雇主 6 个月、餐饮住宿业暂停收件、
+提名后 12 个月内递永居在这页)。"""
+
+NSS_GRAD_URL = "https://liveinnovascotia.com/nova-scotia-graduate"
+"""新斯科舍本省毕业生流页(提名后 12 个月内递永居在这页)。"""
+
+NSS_EE_URL = "https://liveinnovascotia.com/express-entry"
+"""新斯科舍快速通道页(本省经验 / 医生两个 tab;本省经验满一年、餐饮住宿业暂停收件、兴趣信后 30 天内递、提名后
+12 个月内递永居在这页)。"""
+
+NSS_EOI_APP_QUOTE = "Candidates (NSNP) and employers (AIP) will continue to submit full applications."
+"""EOI 即完整申请的原句(eoi-process 页「Submit your expression of interest:」一条)。"""
+
+NSS_EOI_FREE_QUOTE = "There is no fee to submit an EOI."
+"""递 EOI 不收费的原句(申请费通告页;事实词 noFee,与新不伦瑞克 EOI 免费同词)。"""
+
+NSS_EOI_VALID_QUOTE = "EOIs not selected within 12 months will expire and be removed from the pool."
+"""EOI 有效期原句(有效期通告页;2026-05-01 前递的按过渡安排另有到期日,不写)。"""
+
+NSS_AFS_QUOTE = ("As of 12 noon ADT, April 17, 2024, the Nova Scotia Provincial Nominee Program has a significant "
+                 "volume of submissions for candidates in the Accommodation and Food Services sector awaiting a "
+                 "decision and must stop accepting submissions in this sector while processing current inventory.")
+"""餐饮住宿业暂停收件的原句(Skilled Worker 流页、快速通道页同句;建筑 / 本省毕业生 / 医生不涉及这个行业,不挂)。"""
+
+NSS_NOM_VALID_QUOTE = ("Within twelve (12) months of receiving your nominee certificate, apply to Immigration, "
+                       "Refugees and Citizenship Canada (IRCC) for your permanent resident visa.")
+"""提名后 12 个月内递永居的原句(Skilled Worker、本省毕业生、快速通道三个流页同句)。"""
+
+NSS_STEP_OFFER_SW = {"step": "offer", "who": "employer", "none": False, "stuck": False,
+                     "facts": [{"ref": "req", "factor": "empYears"},
+                               {"key": "teer45EmployerMonths", "vars": {"n": 6},
+                                "quote": ("Workers in TEER 4 or 5 of the National Occupational Classification must "
+                                          "already have six months’ experience with the employer."),
+                                "url": NSS_SW_URL}]}
+"""拿新斯科舍雇主 offer(技术工人):雇主条件读门槛卡「雇主条件」行(门槛表全流 empYears,在本省经营满 2 年)+ TEER 4-5
+须已在这家雇主工作满 6 个月(条件句,本岗 TEER 由卡上自己对;这一款门槛表 09-29 抽过又撤,理由是判定引擎会误读,
+步骤卡只陈列不判定)。原句在页上括号里,months’ 的撇号是 U+2019,照抄。"""
+
+NSS_STEP_OFFER_EMP = {"step": "offer", "who": "employer", "none": False, "stuck": False,
+                      "facts": [{"ref": "req", "factor": "empYears"}]}
+"""拿新斯科舍雇主 offer(建筑):雇主条件读门槛卡「雇主条件」行;建筑 tab 没有 TEER 4-5 在本雇主 6 个月那一款。"""
+
+NSS_STEP_OFFER = {"step": "offer", "who": "employer", "none": False, "stuck": False, "facts": []}
+"""拿 offer(本省毕业生:页上四个职业、与所学对口;医生两条:NS Health / IWK 批准的职位)。这三条的门槛流里没有
+empYears 行,不写。"""
+
+NSS_STEP_WORK = {"step": "work", "who": "you", "none": False, "stuck": False,
+                 "facts": [{"key": "localWorkMonths", "vars": {"n": 12},
+                            "quote": ("have at least one year of experience working in Nova Scotia in an occupation "
+                                      "at TEER 0, 1, 2, or 3 of the National Occupational Classification"),
+                            "url": NSS_EE_URL}]}
+"""在这份工作上干够(快速通道本省经验):在本省 TEER 0-3 职业工作满一年(原句「one year」,按 12 个月填;资格清单里的一条,
+截到分号前)。门槛表也有这一行(factor experience),步骤引用不认 experience,照萨省 SKS_STEP_WORK 存原句。"""
+
+NSS_STEP_EE_PROFILE = {"step": "eeProfile", "who": "you", "none": False, "stuck": False,
+                       "facts": [{"ref": "req", "factor": "eeProfile"}]}
+"""建 EE 档案(快速通道两条):读门槛卡「EE」行。"""
+
+NSS_STEP_LETTER = {"step": "interestLetter", "who": "province", "none": False, "stuck": False, "facts": []}
+"""收到省兴趣信(快速通道医生):资格条件「receive a Letter of Interest from the Nova Scotia Nominee Program within the Express
+Entry system」;官方写省里收到 EE 档案号与 NS Health / IWK 批准职位后就发,不是竞争性抽选 —— 不写事实,也不标卡点。形照新不伦瑞克
+NBS_STEP_LETTER;兴趣信发到联邦 EE 档案里,排在建 EE 档案之后。"""
+
+NSS_STEP_EOI = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                "facts": [{"key": "eoiIsApplication", "vars": {}, "quote": NSS_EOI_APP_QUOTE,
+                           "url": NSS_EOI_PROCESS_URL},
+                          {"key": "noFee", "vars": {}, "quote": NSS_EOI_FREE_QUOTE, "url": NSS_FEES_URL},
+                          {"key": "eoiValidMonths", "vars": {"n": 12}, "quote": NSS_EOI_VALID_QUOTE,
+                           "url": NSS_EOI_VALID_URL}]}
+"""递 EOI(建筑、本省毕业生、医生):EOI 即完整申请,不收费,12 个月没被选中即过期。"""
+
+NSS_STEP_EOI_SW = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                   "facts": [{"key": "eoiIsApplication", "vars": {}, "quote": NSS_EOI_APP_QUOTE,
+                              "url": NSS_EOI_PROCESS_URL},
+                             {"key": "noFee", "vars": {}, "quote": NSS_EOI_FREE_QUOTE, "url": NSS_FEES_URL},
+                             {"key": "eoiValidMonths", "vars": {"n": 12}, "quote": NSS_EOI_VALID_QUOTE,
+                              "url": NSS_EOI_VALID_URL},
+                             {"key": "afsPaused", "vars": {}, "quote": NSS_AFS_QUOTE, "url": NSS_SW_URL}]}
+"""递 EOI(技术工人):同上三行 + 餐饮住宿业暂停收件(本岗属于哪个行业不判,公司表没有行业字段;不标 stuck,卡上是
+条件句,同萨省限额行业那行)。"""
+
+NSS_STEP_EOI_EE = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                   "facts": [{"key": "eoiIsApplication", "vars": {}, "quote": NSS_EOI_APP_QUOTE,
+                              "url": NSS_EOI_PROCESS_URL},
+                             {"key": "noFee", "vars": {}, "quote": NSS_EOI_FREE_QUOTE, "url": NSS_FEES_URL},
+                             {"key": "eoiValidMonths", "vars": {"n": 12}, "quote": NSS_EOI_VALID_QUOTE,
+                              "url": NSS_EOI_VALID_URL},
+                             {"key": "afsPaused", "vars": {}, "quote": NSS_AFS_QUOTE, "url": NSS_EE_URL}]}
+"""递 EOI(快速通道本省经验):同技术工人那步,暂停收件原句挂快速通道页(同句)。"""
+
+NSS_STEP_EOI_LETTER = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                       "facts": [{"key": "letterSubmitDays", "vars": {"n": 30},
+                                  "quote": ("submit your EOI within 30 calendar days of the date on which your "
+                                            "Letter of Interest was issued"),
+                                  "url": NSS_EE_URL},
+                                 {"key": "eoiIsApplication", "vars": {}, "quote": NSS_EOI_APP_QUOTE,
+                                  "url": NSS_EOI_PROCESS_URL},
+                                 {"key": "noFee", "vars": {}, "quote": NSS_EOI_FREE_QUOTE, "url": NSS_FEES_URL},
+                                 {"key": "eoiValidMonths", "vars": {"n": 12}, "quote": NSS_EOI_VALID_QUOTE,
+                                  "url": NSS_EOI_VALID_URL}]}
+"""递 EOI(快速通道医生):收到省兴趣信后 30 天内递(资格清单里的一条,截到分号前)+ 同上三行。"""
+
+NSS_STEP_DRAW = {"step": "draw", "who": "province", "none": False, "stuck": True,
+                 "facts": [{"ref": "draws"}]}
+"""进池与抽选:挂按月选取那一组(六条同池;卡点 —— 要被选中才进审理)。"""
+
+NSS_STEP_REVIEW = {"step": "review", "who": "province", "none": False, "stuck": False,
+                   "facts": [{"key": "eoiFee", "vars": {"n": 1000},
+                              "quote": ("$1,000 for the NSNP worker streams (Skilled Worker, Nova Scotia Graduate, "
+                                        "Nova Scotia: Express Entry)"),
+                              "url": NSS_FEES_URL},
+                             {"key": "selectedPayDays", "vars": {"n": 7},
+                              "quote": ("If your submission is selected, you will receive a notification with "
+                                        "instructions and have 7 calendar days to review your application, upload any "
+                                        "updated documents and pay the application fee."),
+                              "url": NSS_NSNP_URL}]}
+"""省里审批(新斯科舍六条):2026-09-01 起交 1,000 加元申请费;选中后 7 天内更新材料并交费,才进审理(省提名总页 How it works
+「If You Are Selected」一段;申请费通告页另有只讲交费的同义句)。费额复用 eoiFee(三语文案「交 N 加元申请费」同义;键名带 eoi
+是阿省先例,新斯科舍这笔费在选中后交,通告页原句「There is no fee to submit an EOI.」)。官方没有处理时长统计,不写。
+选中后这 7 天是更新已递的申请、不是另递一份,不另立「收邀请、递申请」一步。"""
+
+NSS_STEP_PR_SW = {"step": "pr", "who": "federal", "none": False, "stuck": False,
+                  "facts": [{"key": "nominationValidMonths", "vars": {"n": 12}, "quote": NSS_NOM_VALID_QUOTE,
+                             "url": NSS_SW_URL}]}
+"""拿提名,递永居(Skilled Worker 流:技术工人、建筑、医生):提名后 12 个月内向联邦递永居。"""
+
+NSS_STEP_PR_GRAD = {"step": "pr", "who": "federal", "none": False, "stuck": False,
+                    "facts": [{"key": "nominationValidMonths", "vars": {"n": 12}, "quote": NSS_NOM_VALID_QUOTE,
+                               "url": NSS_GRAD_URL}]}
+"""拿提名,递永居(本省毕业生)。"""
+
+NSS_STEP_PR_EE = {"step": "pr", "who": "federal", "none": False, "stuck": False,
+                  "facts": [{"key": "nominationValidMonths", "vars": {"n": 12}, "quote": NSS_NOM_VALID_QUOTE,
+                             "url": NSS_EE_URL}]}
+"""拿提名,递永居(快速通道两条):快速通道页写的也是提名后 12 个月内递永居;EE 系统里几天内接受提名、几天内递永居,
+新斯科舍页没写,不拿别省的原句顶。"""
+
 PW_SK_EXISTING_WORK_PERMIT = {
     "key": "sk-existing-work-permit", "province": "SK", "program": "PNP",
     "plainZh": "SK 现有工签", "plainEn": "SK Existing Work Permit", "plainKo": "SK 기존 취업허가",
@@ -895,6 +1139,7 @@ PW_MB_SKILLED_WORKER_IN_MANITOBA = {
               "through ongoing employment and sufficient skills, education and training, work experience and official language "
               "proficiency to make an immediate and ongoing contribution to the Manitoba economy and our community at large."),
     "checked": "2026-09-28",
+    "steps": [MBS_STEP_WORK, MBS_STEP_OFFER, MBS_STEP_EOI, MBS_STEP_DRAW, MBS_STEP_APPLY, MBS_STEP_REVIEW_SWM, MBS_STEP_PR],
 }
 """曼省默认通道(SWM,下面三种选取)。抽选组:etl 已把 Skilled Worker in Manitoba 那一层留作组名(2026-09-24 第三批,GEN_DRAW_STREAM 原注)。
 曼省在需职业两张表只作信号、不当通道(2026-09-24 九省通道审计),不挂这里。配额:曼省只按大流(Skilled Worker)公布,
@@ -994,6 +1239,7 @@ PW_NS_SKILLED_WORKER = {
     "quote": ("The Skilled Worker stream helps employers recruit foreign workers and recently graduated international students "
               "whose skills are needed in Nova Scotia."),
     "checked": "2026-09-28",
+    "steps": [NSS_STEP_OFFER_SW, NSS_STEP_EOI_SW, NSS_STEP_DRAW, NSS_STEP_REVIEW, NSS_STEP_PR_SW],
 }
 """新斯科舍默认通道。抽选:官方只按月公布 EOI 池的总选取人数(liveinnovascotia.com/eoi-selection「Nova Scotia selected the following
 number of candidates from the Expression of Interest (EOI) pool」),NSNP 各流与 AIP 同一个池,这一组覆盖本省全部通道;
@@ -1276,6 +1522,7 @@ PW_NS_CONSTRUCTION = {
     "quote": ("Skilled Worker: The Construction Worker sub-criteria are the same eligibility requirements as the former Critical "
               "Construction Worker Pilot."),
     "checked": "2026-09-28",
+    "steps": [NSS_STEP_OFFER_EMP, NSS_STEP_EOI, NSS_STEP_DRAW, NSS_STEP_REVIEW, NSS_STEP_PR_SW],
 }
 """新斯科舍建筑(Skilled Worker 流下的子条件,清单 ns-construction.json,限建筑业雇主)。与通用岗同一组按月选取
 (2026-09-27 九省体检:官方 eoi-process 页 2025-11-28 条 NSNP 各流与 AIP 同一个 EOI 池,NAMED_DRAW_STREAMS 原注)。
@@ -1577,6 +1824,7 @@ PW_MB_SKILLED_WORKER_OVERSEAS = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "steps": [MBS_STEP_EOI, MBS_STEP_DRAW, MBS_STEP_APPLY, MBS_STEP_REVIEW_SWO, MBS_STEP_PR],
 }
 """不要 offer,要与本省有联系(亲友 / 本省旧学历或经历 / 省方直接邀请);2026 年各轮只抽持省方邀请的 → 抽选组挂省方直接邀请那组「Skilled Worker Stream」
 (官方:SWM 或 SWO 里持邀请的档案;SWM 那行认领这组归批二,会动高亮)。不看工作,通道卡下段。
@@ -1603,6 +1851,7 @@ PW_MB_CAREER_EMPLOYMENT = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "steps": [MBS_STEP_OFFER, MBS_STEP_EOI, MBS_STEP_DRAWS_MOVED, MBS_STEP_APPLY, MBS_STEP_REVIEW_IES, MBS_STEP_PR],
 }
 """本省毕业 + offer 职业在在需职业表(IDOL)上且与所学对口。状态存疑:2026-06-11 官方请在池 CEP 档案转 SWM,之后抽选里再没出现,页面还在、没有关闭原句 → Frank 
 09-30「都收,标状态」:status 照页面写 open,标签「6 月起没再抽选」。"""
@@ -1626,6 +1875,7 @@ PW_MB_GRADUATE_INTERNSHIP = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "steps": [MBS_STEP_EOI, MBS_STEP_DRAW, MBS_STEP_APPLY, MBS_STEP_REVIEW_IES, MBS_STEP_PR],
 }
 """本省硕博毕业、做过 Mitacs 实习,不要 offer;2026-07-16 还抽过一轮(78 份)。不看工作,通道卡下段。"""
 
@@ -1673,6 +1923,7 @@ PW_NS_GRADUATE = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "steps": [NSS_STEP_OFFER, NSS_STEP_EOI, NSS_STEP_DRAW, NSS_STEP_REVIEW, NSS_STEP_PR_GRAD],
 }
 """2026-02-18 十流并四流后的独立 stream(旧 International Graduates in Demand 并入),限 4 个职业(站上「NS 毕业生」清单同 4 码)。09-24 
 审计当它是参考信号 —— 官方它就是现行通道(「This stream is currently open to workers in these job categories」)。
@@ -1700,6 +1951,7 @@ PW_NS_PHYSICIANS = {
     "teers": [],
     "nocs": ["31100", "31101", "31102"],
     "employers": ["nova scotia health", "iwk health"],
+    "steps": [NSS_STEP_OFFER, NSS_STEP_EOI, NSS_STEP_DRAW, NSS_STEP_REVIEW, NSS_STEP_PR_SW],
 }
 """Skilled Worker 下的医生子类:只认 NS Health / IWK 两家的 approved opportunity。09-24 审计因判不了雇主身份没做 —— 现按雇主名命中(归一后比对,
 同 AIP 指定雇主)。
@@ -1726,6 +1978,7 @@ PW_NS_EXPRESS_ENTRY_EXPERIENCE = {
     "teers": [0, 1, 2, 3],
     "nocs": [],
     "employers": [],
+    "steps": [NSS_STEP_WORK, NSS_STEP_EE_PROFILE, NSS_STEP_EOI_EE, NSS_STEP_DRAW, NSS_STEP_REVIEW, NSS_STEP_PR_EE],
 }
 """不要 offer,但要本省 TEER 0–3 满 1 年经验 + EE 档案 → 看工作(这岗攒的就是它要的经验),标「需先有 EE 档案」「需本省工作满 1 年」。旧 Nova Scotia 
 Experience: Express Entry 与 Labour Market Priorities 并入。
@@ -1753,6 +2006,7 @@ PW_NS_EXPRESS_ENTRY_PHYSICIANS = {
     "teers": [],
     "nocs": ["31100", "31101", "31102"],
     "employers": ["nova scotia health", "iwk health"],
+    "steps": [NSS_STEP_OFFER, NSS_STEP_EE_PROFILE, NSS_STEP_LETTER, NSS_STEP_EOI_LETTER, NSS_STEP_DRAW, NSS_STEP_REVIEW, NSS_STEP_PR_EE],
 }
 """快速通道下的医生子类:NS Health / IWK 的 approved offer + 省方意向信 + EE 档案(旧 Labour Market Priorities for Physicians)
 。
@@ -2360,7 +2614,7 @@ REF_KEYS = ["req", "processing", "intake", "draws"]
 
 FACT_KEYS = ["eoiFee", "eoiValidMonths", "inviteAcceptDays", "appSubmitDays", "nominationValidMonths", "communityLetter",
              "cappedEmployees", "windowCapped", "directApply", "eoiOnlyOther", "confirmSubmit", "noScheduledDraw", "inviteSubmitDays",
-             "eeAcceptDays", "prSubmitDays", "workMonths", "employerDeclaration", "offerEoiDays", "noFee", "eoiValidDays", "appFee", "reviewSeveralMonths", "noTimeGuarantee", "poolSelection", "inviteSectors", "letterOrGrad", "employerOnly", "empMonths", "closedPermitDays", "liveMonths", "remoteNonQc"]
+             "eeAcceptDays", "prSubmitDays", "workMonths", "employerDeclaration", "offerEoiDays", "noFee", "eoiValidDays", "appFee", "reviewSeveralMonths", "noTimeGuarantee", "poolSelection", "inviteSectors", "letterOrGrad", "employerOnly", "empMonths", "closedPermitDays", "liveMonths", "remoteNonQc", "movedToSwm", "nominationValidDays", "teer45EmployerMonths", "localWorkMonths", "eoiIsApplication", "afsPaused", "letterSubmitDays", "selectedPayDays"]
 """静态事实词表(三语文案在 cms i18n pnp.stepFact.*,数字从 vars 填)。"""
 
 BAD_STEP_TPL = "{key} 的第 {i} 步「{step}」不在步骤词表里"

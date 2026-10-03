@@ -596,6 +596,15 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpstep.f.closedPermitDays': '과정 종료 후 {n}일 내, 학생비자 만료 전에 지명 받고 신청',
   'pnpstep.f.liveMonths': '최근 {n}개월 주내 거주',
   'pnpstep.f.remoteNonQc': '그 기간 내내 퀘벡 외 캐나다 고용주를 위해 원격 근무',
+  // 2026-10-03 申请步骤批 2(曼省 / 新斯科舍):新增步骤词 / 事实词
+  'pnpstep.f.movedToSwm': '주내 {n}개월 근무한 EOI는 MB 숙련 노동자 추첨으로 전환',
+  'pnpstep.f.nominationValidDays': '지명 후 {n}일 내 IRCC에 영주권 신청',
+  'pnpstep.f.eoiIsApplication': 'EOI가 곧 전체 신청서',
+  'pnpstep.f.selectedPayDays': '선정 후 {n}일 내 서류 갱신 및 납부',
+  'pnpstep.f.afsPaused': '숙박 및 음식점 업종: 접수 중단',
+  'pnpstep.f.letterSubmitDays': '주정부 관심 서한 수령 후 {n}일 내 제출',
+  'pnpstep.f.localWorkMonths': '주내 TEER 0-3 직종 {n}개월 근무',
+  'pnpstep.f.teer45EmployerMonths': 'TEER 4-5 직종은 해당 고용주에서 {n}개월 근무 필요',
   // 2026-10-02 申请步骤批 2:处理时长按月(卑诗约八成申请)/ 按天(曼省年度平均)/ 阿省审理游标
   'pnpstep.months': '신청의 약 80%가 {n}개월 내 처리', 'pnpstep.days': '평균 약 {n}일 ({y}년)',
   'pnpstep.assessing': '{date}까지 접수된 신청 심사 중 ({asOf} 기준)',

@@ -607,6 +607,15 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpstep.f.closedPermitDays': 'Get nominated and apply within {n} days of finishing the program, before the study permit expires',
   'pnpstep.f.liveMonths': 'Lived in the province for the last {n} months',
   'pnpstep.f.remoteNonQc': 'Working remotely for a Canadian employer outside Quebec the whole time',
+  // 2026-10-03 申请步骤批 2(曼省 / 新斯科舍):新增步骤词 / 事实词
+  'pnpstep.f.movedToSwm': 'EOIs with {n} months of work in the province move to MB Skilled Worker draws',
+  'pnpstep.f.nominationValidDays': 'Apply to IRCC within {n} days of nomination',
+  'pnpstep.f.eoiIsApplication': 'The EOI is the full application',
+  'pnpstep.f.selectedPayDays': 'Update documents and pay within {n} days of being selected',
+  'pnpstep.f.afsPaused': 'Accommodation and food services: submissions paused',
+  'pnpstep.f.letterSubmitDays': 'Submit within {n} days of the provincial letter of interest',
+  'pnpstep.f.localWorkMonths': '{n} months of work in the province in a TEER 0-3 job',
+  'pnpstep.f.teer45EmployerMonths': 'TEER 4-5 jobs need {n} months with this employer first',
   // 2026-10-02 申请步骤批 2:处理时长按月(卑诗约八成申请)/ 按天(曼省年度平均)/ 阿省审理游标
   'pnpstep.months': 'About 80% of applications processed within {n} months', 'pnpstep.days': 'About {n} days on average ({y})',
   'pnpstep.assessing': 'Now assessing applications received up to {date} (as of {asOf})',

@@ -6380,7 +6380,21 @@ function stepFactLinesOf(x: StepFactIn): StepLineSpec[] {
   if (f.vars != null) {
     vars = f.vars
   }
-  return [{ text: x.t(STEP_FACT_HEAD + f.key, vars), warn: STEP_WARN_FACTS.includes(f.key) }]
+  return [{ text: x.t(STEP_FACT_HEAD + f.key, varsTextOf(vars)), warn: STEP_WARN_FACTS.includes(f.key) }]
+}
+
+/**
+ * 事实词模板里的数加千分位(2026-10-03 申请步骤批 2:新斯科舍申请费 1,000 加元原先显示成「1000」;写法同配额卡 NUM_LOCALE)。
+ *
+ * @param vars 事实词的数。
+ * @returns 同键的字。
+ */
+function varsTextOf(vars: Record<string, number>): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const [k, v] of Object.entries(vars)) {
+    out[k] = v.toLocaleString(NUM_LOCALE)
+  }
+  return out
 }
 
 /**

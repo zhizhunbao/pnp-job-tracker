@@ -648,6 +648,15 @@ export const jobsZh = {
   'pnpstep.f.closedPermitDays': '课程结束 {n} 天内、学签到期前拿到提名并递交',
   'pnpstep.f.liveMonths': '近 {n} 个月住在本省',
   'pnpstep.f.remoteNonQc': '期间一直远程为魁省外的加拿大雇主工作',
+  // 2026-10-03 申请步骤批 2(曼省 / 新斯科舍):新增步骤词 / 事实词
+  'pnpstep.f.movedToSwm': '本省工作满 {n} 个月的 EOI 转 MB 技术工人抽选',
+  'pnpstep.f.nominationValidDays': '提名后 {n} 天内向联邦递永居',
+  'pnpstep.f.eoiIsApplication': 'EOI 即完整申请',
+  'pnpstep.f.selectedPayDays': '被选中后 {n} 天内更新材料并交费',
+  'pnpstep.f.afsPaused': '餐饮住宿行业暂停收件',
+  'pnpstep.f.letterSubmitDays': '收到省兴趣信后 {n} 天内递',
+  'pnpstep.f.localWorkMonths': '在本省 TEER 0-3 职业工作满 {n} 个月',
+  'pnpstep.f.teer45EmployerMonths': 'TEER 4-5 须已在这家雇主工作满 {n} 个月',
   // 2026-10-02 申请步骤批 2:处理时长按月(卑诗约八成申请)/ 按天(曼省年度平均)/ 阿省审理游标
   'pnpstep.months': '八成申请约 {n} 个月内办完', 'pnpstep.days': '平均约 {n} 天({y} 年)',
   'pnpstep.assessing': '已审到 {date} 收到的申请(截至 {asOf})',
