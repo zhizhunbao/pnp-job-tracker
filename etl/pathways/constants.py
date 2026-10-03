@@ -1003,6 +1003,264 @@ GEN_DRAW_STREAM 原注)。NS 紧缺空缺 / 毕业生两张表只作信号、不
 语言两档、近 5 年 12 个月经验、执照、雇主经营 2 年)+ A 类流(高中文凭);流名照抄 ns-req。TEER 4-5 在本雇主 6 个月、工资区间
 两行同日抽过又撤,这批没入表(原句与理由见 pnp OUT_NS_REQ「没抓的」)。"""
 
+# 2026-10-03 申请步骤批 2(新不伦瑞克;Frank「做吧,批 2 开始」,设计 docs/design/申请步骤-20261002.md):NB 八条通道的步骤件,
+# 形照萨省 SKS_STEP_*(批 1 样张)与阿省 ABS_STEP_*。NB 省提名总页一页写全通用流程(递 EOI → 进池 → 收邀请、按邀请信写明的期限
+# 递完整申请 → 完整性检查与审理 → 拿提名后向联邦递永居),三个流页的「Apply」段都指回总页,各自只多写一句 EOI 免费、递完整申请前
+# 交 250 加元申请费;两个试点页各写一套流程。运营统计没有 NB 处理时长 —— 重要通知页明写不提供单个申请的处理时长,原句挂在审批一步。
+# 抽选一步:登了抽选组的四条引用抽选表(ref:draws,卡点);没登的四条(兴趣信、远程法语、两个试点)挂各自页面「按配额与用工需要
+# 选人发邀请」那句原句,同样标卡点。
+NBS_PNP_URL = "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+"""NB 省提名总页(EOI 在池有效 365 天、只给选中的人发邀请、按邀请信期限递完整申请、审理可能要几个月在这页)。"""
+
+NBS_SW_URL = ("https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/"
+              "skilled-worker-stream.html")
+"""技术工人流页(EOI 免费、250 加元申请费)。"""
+
+NBS_EE_URL = ("https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/"
+              "express-entry-stream.html")
+"""快速通道流页(EOI 免费、250 加元申请费,同句)。"""
+
+NBS_SI_URL = ("https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/"
+              "strategic-initiative.html")
+"""法语战略流页(EOI 免费、250 加元申请费同句;法语工人雇主经营 12 个月、法语优先二选一、远程法语住满 12 个月也在这页)。"""
+
+NBS_PCCG_URL = ("https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/"
+                "pccg-pilot-program.html")
+"""私立学院毕业生试点页(EOI、邀请、递申请、审理、提名后申请封闭工签 90 天一页写全)。"""
+
+NBS_CWP_URL = ("https://www.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/"
+               "nb-immigration-program-streams/nb-critical-workers-pilot.html")
+"""关键工人试点页(旧版路径,现行总页仍链到它;七步流程图、邀请后 45 天递、提名有效 6 个月在这页)。"""
+
+NBS_NOTICES_URL = "https://www.gnb.ca/en/topic/family-home-community/immigration/important-notices.html"
+"""NB 重要通知页(不提供处理时长、工作经验路径新邀请只限三个行业在这页)。"""
+
+NBS_EOI_FREE_QUOTE = "Submitting an expression of interest is free of charge."
+"""EOI 免费原句(三个流页与私立学院试点页同句;事实词 noFee,与 PE 建 EOI 档不收费同词)。"""
+
+NBS_EOI_VALID_QUOTE = "They remain valid for 365 days from the date of submission."
+"""EOI 在池里有效 365 天(总页「Invitations to apply」段;三个流页都指回总页)。官方写天数,不折成月 —— 词表另立 eoiValidDays,
+同门槛卡经营年限按官方单位分「年 / 个月 / 个财年」三个词条的先例。"""
+
+NBS_APP_FEE_QUOTE = ("However, before submitting a complete nomination application, you must pay a non-refundable "
+                     "application fee of $250.")
+"""递完整申请前交 250 加元申请费、不退(三个流页与私立学院试点页同句)。"""
+
+
+NBS_MONTHS_QUOTE = "Due to a high volume of applications, this may take several months to complete."
+"""审理可能要几个月(总页与私立学院试点页「Assessment」同句)。"""
+
+NBS_NO_TIMES_QUOTE = ("Immigration New Brunswick is unable to provide processing times for individual applications "
+                      "and cannot guarantee that an application will be evaluated or approved before a work permit "
+                      "expires.")
+"""官方不提供单个申请的处理时长、不保证在工签到期前审完(重要通知页 General 段,对 NB 全部项目;运营统计没有 NB 处理时长,
+这句就是举证)。"""
+
+NBS_STEP_OFFER = {"step": "offer", "who": "employer", "none": False, "stuck": False,
+                  "facts": [{"ref": "req", "factor": "empYears"}]}
+"""拿 NB 雇主 offer(技术工人、快速通道本省就业、私立学院试点):雇主条件读门槛卡「雇主条件」行(三条门槛流都是经营满 24 个月)。"""
+
+NBS_STEP_OFFER_FR = {"step": "offer", "who": "employer", "none": False, "stuck": False,
+                     "facts": [{"key": "empMonths", "vars": {"n": 12},
+                                "quote": ("be working in, or have accepted, a permanent, full-time, and non-seasonal "
+                                          "(year-round) position for an eligible employer who has been actively "
+                                          "operating in New Brunswick for the past 12 months, providing goods or "
+                                          "services"),
+                                "url": NBS_SI_URL}]}
+"""拿 NB 雇主 offer(法语工人):雇主在本省经营满 12 个月。这条没进门槛表(PW_NB_FRANCOPHONE_WORKERS 注:雇主板按省取第一条经营
+年限行,NB 会同时有 24 与 12),这里存原句;原句是资格清单的一条,照抄不带句号。"""
+
+NBS_STEP_OFFER_CWP = {"step": "offer", "who": "employer", "none": False, "stuck": False,
+                      "facts": [{"key": "employerOnly", "vars": {},
+                                 "quote": ("The New Brunswick Critical Worker Pilot is an employer-driven stream, "
+                                           "based on targeted recruitment for skilled workers and therefore candidate "
+                                           "applications to the pilot program are made through the participating "
+                                           "employer."),
+                                 "url": NBS_CWP_URL}]}
+"""拿参与雇主的 offer(关键工人试点,流程图第 1 步「Accept an offer from a participating employer.」):只经参与试点的雇主申请
+(六家雇主名单在通道表 employers 格)。"""
+
+NBS_STEP_EE_PROFILE = {"step": "eeProfile", "who": "you", "none": False, "stuck": False,
+                       "facts": [{"ref": "req", "factor": "eeProfile"}]}
+"""建 EE 档案(快速通道本省就业):读门槛卡「EE」行。"""
+
+NBS_STEP_EE_PROFILE_NONE = {"step": "eeProfile", "who": "you", "none": False, "stuck": False, "facts": []}
+"""建 EE 档案(快速通道兴趣信):这条通道没登门槛流,不引用门槛行;兴趣信发到联邦 EE 档案里,所以排在兴趣信前。"""
+
+NBS_STEP_LETTER = {"step": "interestLetter", "who": "province", "none": False, "stuck": False, "facts": []}
+"""收到省兴趣信(快速通道兴趣信):资格条件「have received a letter of interest in your federal Express Entry profile」。省里
+怎么挑人发兴趣信、多久,页面没写 —— 不写事实,也不标卡点(stuck 只给数据说得出的)。"""
+
+NBS_STEP_LETTER_FR = {"step": "interestLetter", "who": "province", "none": False, "stuck": False,
+                      "facts": [{"key": "letterOrGrad", "vars": {},
+                                 "quote": ("To be eligible under this pathway, you must meet the definition of one of "
+                                           "the two priorities:"),
+                                 "url": NBS_SI_URL}]}
+"""收到省兴趣信(法语优先):与「法语毕业生」那一项(住本省、在蒙克顿大学或 CCNB 全程在省读完一年以上面授课程)二选一,不是人人
+必经,不标卡点。通道表这条的标签写兴趣信那一支(PW_NB_FRANCOPHONE_PRIORITIES 注)。"""
+
+NBS_STEP_WORK_REMOTE = {"step": "work", "who": "you", "none": False, "stuck": False,
+                        "facts": [{"key": "liveMonths", "vars": {"n": 12},
+                                   "quote": "have been living in New Brunswick for 12 months", "url": NBS_SI_URL},
+                                  {"key": "remoteNonQc", "vars": {},
+                                   "quote": ("have been working remotely for a Canadian employer located outside of "
+                                             "Quebec during this entire period"),
+                                   "url": NBS_SI_URL}]}
+"""在这份工作上干够(远程法语):近 12 个月住在本省,期间一直远程为魁省外的加拿大雇主工作(资格清单相邻两条,一条一行,照抄不带
+句号)。这条通道没登门槛流,照萨省现有工签 SKS_STEP_WORK 的先例把定义它的那条门槛写在这一步。"""
+
+NBS_STEP_EOI_SW = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                   "facts": [{"key": "noFee", "vars": {}, "quote": NBS_EOI_FREE_QUOTE, "url": NBS_SW_URL},
+                             {"key": "eoiValidDays", "vars": {"n": 365},
+                              "quote": NBS_EOI_VALID_QUOTE, "url": NBS_PNP_URL}]}
+"""递 EOI(技术工人):免费,在池里有效 365 天。"""
+
+NBS_STEP_EOI_EE = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                   "facts": [{"ref": "req", "factor": "pointsMin"},
+                             {"key": "noFee", "vars": {}, "quote": NBS_EOI_FREE_QUOTE, "url": NBS_EE_URL},
+                             {"key": "eoiValidDays", "vars": {"n": 365},
+                              "quote": NBS_EOI_VALID_QUOTE, "url": NBS_PNP_URL}]}
+"""递 EOI(快速通道本省就业):本省打分表门槛读门槛卡「积分」行(67 分),免费,在池里有效 365 天。"""
+
+NBS_STEP_EOI_EE_LETTER = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                          "facts": [{"key": "noFee", "vars": {}, "quote": NBS_EOI_FREE_QUOTE, "url": NBS_EE_URL},
+                                    {"key": "eoiValidDays", "vars": {"n": 365},
+                                     "quote": NBS_EOI_VALID_QUOTE, "url": NBS_PNP_URL}]}
+"""递 EOI(快速通道兴趣信):免费,在池里有效 365 天;这条通道没登门槛流,67 分那行不引用。"""
+
+NBS_STEP_EOI_FR = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                   "facts": [{"ref": "req", "factor": "pointsMin"},
+                             {"key": "noFee", "vars": {}, "quote": NBS_EOI_FREE_QUOTE, "url": NBS_SI_URL},
+                             {"key": "eoiValidDays", "vars": {"n": 365},
+                              "quote": NBS_EOI_VALID_QUOTE, "url": NBS_PNP_URL}]}
+"""递 EOI(法语工人):本省打分表门槛读门槛卡「积分」行(65 分),免费,在池里有效 365 天。"""
+
+NBS_STEP_EOI_SI = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                   "facts": [{"key": "noFee", "vars": {}, "quote": NBS_EOI_FREE_QUOTE, "url": NBS_SI_URL},
+                             {"key": "eoiValidDays", "vars": {"n": 365},
+                              "quote": NBS_EOI_VALID_QUOTE, "url": NBS_PNP_URL}]}
+"""递 EOI(法语优先、远程法语):免费,在池里有效 365 天;两条没登门槛流,65 分那行不引用。"""
+
+NBS_STEP_EOI_PCCG = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                     "facts": [{"key": "noFee", "vars": {}, "quote": NBS_EOI_FREE_QUOTE, "url": NBS_PCCG_URL}]}
+"""递 EOI(私立学院试点):免费;试点页自己的 EOI 段没写有效期,不拿总页那句顶。"""
+
+NBS_STEP_EOI_CWP = {"step": "eoi", "who": "you", "none": False, "stuck": False, "facts": []}
+"""递 EOI(关键工人试点,流程图第 2 步):试点页没写费用与有效期,不写。"""
+
+NBS_STEP_DRAW_SW = {"step": "draw", "who": "province", "none": False, "stuck": True,
+                    "facts": [{"ref": "draws"},
+                              {"key": "inviteSectors", "vars": {},
+                               "quote": ("Effective May 4, 2026, and until further notice, all new invitations to "
+                                         "apply under the New Brunswick Experience pathway of the New Brunswick "
+                                         "Skilled Worker stream will be limited to occupations in the following "
+                                         "sectors:"),
+                               "url": NBS_NOTICES_URL}]}
+"""进池与抽选(技术工人):挂这条通道的抽选表(卡点)+ 重要通知「工作经验路径的新邀请只限医疗、教育、建筑三个行业」(2026-05-04
+起、另行通知前;三个行业名是原句冒号后的列表,写在词条里)。只管工作经验路径,毕业生路径不限;本岗属于哪个行业不判(公司表没有
+行业字段),卡上写成「NB 工作经验路径…」条件句,同萨省限额行业的写法。"""
+
+NBS_STEP_DRAW = {"step": "draw", "who": "province", "none": False, "stuck": True, "facts": [{"ref": "draws"}]}
+"""进池与抽选(快速通道本省就业、法语工人、法语优先):挂这条通道的抽选表(卡点 —— 要被抽中才能递申请)。"""
+
+NBS_STEP_POOL = {"step": "draw", "who": "province", "none": False, "stuck": True,
+                 "facts": [{"key": "poolSelection", "vars": {},
+                            "quote": ("Immigration New Brunswick reviews submitted expressions of interest and issues "
+                                      "invitations to apply only to selected individuals based on provincial labour "
+                                      "market needs, available allocation and other priorities determined by the "
+                                      "Government of New Brunswick."),
+                            "url": NBS_PNP_URL}]}
+"""进池与抽选(快速通道兴趣信、远程法语):总页原话只给选中的人发邀请、按本省用工需要与配额定 —— 卡点。两条路径 2025–2026 抽选页
+都没出现过,没登抽选组,不挂抽选表。"""
+
+NBS_STEP_POOL_PCCG = {"step": "draw", "who": "province", "none": False, "stuck": True,
+                      "facts": [{"key": "poolSelection", "vars": {},
+                                 "quote": ("Immigration New Brunswick reviews them and issues invitations to apply "
+                                           "only to selected individuals based on provincial labour market needs, "
+                                           "available allocation and other priorities determined by the Government of "
+                                           "New Brunswick."),
+                                 "url": NBS_PCCG_URL}]}
+"""进池与抽选(私立学院试点):试点页同义句(EOI 进 NBPNP 候选池,只给选中的人发邀请)—— 卡点;抽选页上没有这个试点,不挂抽选表。"""
+
+NBS_STEP_POOL_CWP = {"step": "draw", "who": "province", "none": False, "stuck": True,
+                     "facts": [{"key": "poolSelection", "vars": {},
+                                "quote": ("Candidates will be selected from this pool and invited to apply based on "
+                                          "immigration allocations, application volumes, and New Brunswick labour "
+                                          "market needs."),
+                                "url": NBS_CWP_URL}]}
+"""进池与抽选(关键工人试点):按移民配额、申请量与本省用工需要从池里选人发邀请 —— 卡点。邀请由雇主发到你的 INB 账户(试点页原话
+「receive an Invitation to Apply (ITA) from your employer」),选人按的是配额,谁做仍记省里。"""
+
+NBS_STEP_APPLY_SW = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                     "facts": [{"key": "appFee", "vars": {"n": 250}, "quote": NBS_APP_FEE_QUOTE, "url": NBS_SW_URL}]}
+"""收邀请、递申请(技术工人):递完整申请前交 250 加元申请费、不退。"""
+
+NBS_STEP_APPLY_EE = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                     "facts": [{"key": "appFee", "vars": {"n": 250}, "quote": NBS_APP_FEE_QUOTE, "url": NBS_EE_URL}]}
+"""收邀请、递申请(快速通道两条):同上。"""
+
+NBS_STEP_APPLY_SI = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                     "facts": [{"key": "appFee", "vars": {"n": 250}, "quote": NBS_APP_FEE_QUOTE, "url": NBS_SI_URL}]}
+"""收邀请、递申请(法语战略三条):同上。"""
+
+NBS_STEP_APPLY_PCCG = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                       "facts": [{"key": "appFee", "vars": {"n": 250},
+                                  "quote": NBS_APP_FEE_QUOTE, "url": NBS_PCCG_URL}]}
+"""收邀请、递申请(私立学院试点):同上,原句出自试点页。"""
+
+NBS_STEP_APPLY_CWP = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                      "facts": [{"key": "inviteSubmitDays", "vars": {"n": 45},
+                                 "quote": ("You are required to submit a complete electronic application within 45 "
+                                           "calendar days of being issued an ITA."),
+                                 "url": NBS_CWP_URL}]}
+"""收邀请、递申请(关键工人试点,流程图第 3、4 步):收到邀请后 45 天内递完整电子申请;试点页没写申请费,不写。"""
+
+NBS_STEP_SETTLE_CWP = {"step": "settle", "who": "you", "none": False, "stuck": False, "facts": []}
+"""做安置计划(关键工人试点,流程图第 5 步「Settlement plan.」,法文页「Préparer le plan d'établissement.」):页面只有这一行,
+多久、递给谁没写,不写事实。谁做记「你」(法文页动词是「准备」;NB 战略流的安置计划表 PCNB-IS 002 也是申请人随申请上传的表);
+排在递申请之后、省里审批之前(流程图顺序;审批一步流程图没列,按「Wait for a Decision」段放在递永居前)。"""
+
+NBS_STEP_REVIEW = {"step": "review", "who": "province", "none": False, "stuck": False,
+                   "facts": [{"key": "reviewSeveralMonths", "vars": {},
+                              "quote": NBS_MONTHS_QUOTE, "url": NBS_PNP_URL},
+                             {"key": "noTimeGuarantee", "vars": {},
+                              "quote": NBS_NO_TIMES_QUOTE, "url": NBS_NOTICES_URL}]}
+"""省里审批(三个流的六条通道):先查完整性再审理,审理可能要几个月;官方不提供单个申请的处理时长,也不保证在工签到期前审完。"""
+
+NBS_STEP_REVIEW_PCCG = {"step": "review", "who": "province", "none": False, "stuck": False,
+                        "facts": [{"key": "reviewSeveralMonths", "vars": {},
+                                   "quote": NBS_MONTHS_QUOTE, "url": NBS_PCCG_URL},
+                                  {"key": "noTimeGuarantee", "vars": {},
+                                   "quote": NBS_NO_TIMES_QUOTE, "url": NBS_NOTICES_URL}]}
+"""省里审批(私立学院试点):同上,「几个月」那句出自试点页。"""
+
+NBS_STEP_REVIEW_CWP = {"step": "review", "who": "province", "none": False, "stuck": False,
+                       "facts": [{"key": "noTimeGuarantee", "vars": {},
+                                  "quote": NBS_NO_TIMES_QUOTE, "url": NBS_NOTICES_URL}]}
+"""省里审批(关键工人试点,试点页「Wait for a Decision」段):试点页没写多久;通知页 General 段那句对 NB 全部项目,照挂。"""
+
+NBS_STEP_CLOSED_PERMIT = {"step": "closedPermit", "who": "federal", "none": False, "stuck": False,
+                          "facts": [{"key": "closedPermitDays", "vars": {"n": 90},
+                                     "quote": ("Under this pilot, you must be nominated and apply for a closed work "
+                                               "permit with the employer support before the expiry date of your study "
+                                               "permit and within 90 days of the program completion date shown on "
+                                               "your final transcript."),
+                                     "url": NBS_PCCG_URL}]}
+"""申请封闭工签(私立学院试点,提名之后第一件事):课程结束(成绩单上的结业日)90 天内、学签到期前拿到提名并递交。这批学生拿不到
+PGWP,封闭工签是试点规定的必经一步(其他 NB 通道提名后申请工签是可选的,不列)。谁做记联邦(同「拿提名,递永居」:向 IRCC 递)。"""
+
+NBS_STEP_PR = {"step": "pr", "who": "federal", "none": False, "stuck": False, "facts": []}
+"""拿提名,递永居(三个流与私立学院试点):页面只说在提名证书到期前向联邦递永居、证书写明走 EE 还是非 EE,没写有效期与递交期限 ——
+不写,不拿关键工人试点的 6 个月顶。"""
+
+NBS_STEP_PR_CWP = {"step": "pr", "who": "federal", "none": False, "stuck": False,
+                   "facts": [{"key": "nominationValidMonths", "vars": {"n": 6},
+                              "quote": ("The nomination certificate will be valid for six months from the date of "
+                                        "issuance and is considered valid if you submit a complete application for PR "
+                                        "before the expiry date on the nomination certificate."),
+                              "url": NBS_CWP_URL}]}
+"""拿提名,递永居(关键工人试点,流程图第 6、7 步):提名证书自签发起有效 6 个月,到期前递完整永居申请即算有效。"""
+
 PW_NS_CONSTRUCTION = {
     "key": "ns-construction", "province": "NS", "program": "PNP",
     "plainZh": "NS 建筑", "plainEn": "NS Construction", "plainKo": "NS 건설",
@@ -1042,6 +1300,8 @@ PW_NB_SKILLED_WORKER = {
             "skilled-worker-stream.html"),
     "quote": "A pathway for foreign workers with a full-time, non-seasonal job or job offer in New Brunswick.",
     "checked": "2026-09-28",
+    "steps": [NBS_STEP_OFFER, NBS_STEP_EOI_SW, NBS_STEP_DRAW_SW, NBS_STEP_APPLY_SW, NBS_STEP_REVIEW,
+              NBS_STEP_PR],
 }
 """新不伦瑞克默认通道。抽选组:2026-09-23 Frank「所以这个 NB 技术工人点进去应该哪个高亮」立(GEN_DRAW_STREAM 原注);
 NB 抽选页按官方四个 stream 分组(09-23 59a808ec 跟上官网 08-31 改版)。NB 优先职业表只作信号(只认省政府招聘团直接招来的 offer)。
@@ -1518,6 +1778,8 @@ PW_NB_EXPRESS_ENTRY_EMPLOYMENT = {
     "teers": [0, 1, 2, 3],
     "nocs": [],
     "employers": [],
+    "steps": [NBS_STEP_EE_PROFILE, NBS_STEP_OFFER, NBS_STEP_EOI_EE, NBS_STEP_DRAW, NBS_STEP_APPLY_EE,
+              NBS_STEP_REVIEW, NBS_STEP_PR],
 }
 """NB Express Entry stream 下的本省就业路径:已在 NB 全职在职(TEER 0–3)+ EE 档案 + 67 分。抽选组「NB Express Entry」原先无人认领(2025–2026 
 共 11 轮)。
@@ -1545,6 +1807,8 @@ PW_NB_FRANCOPHONE_WORKERS = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "steps": [NBS_STEP_OFFER_FR, NBS_STEP_EOI_FR, NBS_STEP_DRAW, NBS_STEP_APPLY_SI, NBS_STEP_REVIEW,
+              NBS_STEP_PR],
 }
 """Strategic Initiative 下的法语工人路径:本省 offer 或在职 + NCLC 5。抽选组「NB Strategic Initiative」原先无人认领(2026 年 8 
 轮,与法语优先合抽)。
@@ -1571,6 +1835,8 @@ PW_NB_EXPRESS_ENTRY_INTEREST = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "steps": [NBS_STEP_EE_PROFILE_NONE, NBS_STEP_LETTER, NBS_STEP_EOI_EE_LETTER, NBS_STEP_POOL,
+              NBS_STEP_APPLY_EE, NBS_STEP_REVIEW, NBS_STEP_PR],
 }
 """NB Express Entry stream 下的兴趣信路径:不要本省 offer,要省方发到 EE 档案的兴趣信。页面在列,2025–2026 抽选页没出现过。"""
 
@@ -1593,6 +1859,8 @@ PW_NB_FRANCOPHONE_PRIORITIES = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "steps": [NBS_STEP_LETTER_FR, NBS_STEP_EOI_SI, NBS_STEP_DRAW, NBS_STEP_APPLY_SI, NBS_STEP_REVIEW,
+              NBS_STEP_PR],
 }
 """Strategic Initiative 下的法语优先路径:不要 offer;本省法语院校毕业或收到省兴趣信(二选一,标签写兴趣信那一支)。在抽选。"""
 
@@ -1616,6 +1884,8 @@ PW_NB_FRANCOPHONES_REMOTE = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "steps": [NBS_STEP_WORK_REMOTE, NBS_STEP_EOI_SI, NBS_STEP_POOL, NBS_STEP_APPLY_SI, NBS_STEP_REVIEW,
+              NBS_STEP_PR],
 }
 """Strategic Initiative 下的远程法语路径:在 NB 住满 12 个月、给魁省外的加拿大雇主远程工作,不要本省 offer。页面在列,2025–2026 抽选页没出现过。"""
 
@@ -1643,6 +1913,8 @@ PW_NB_CRITICAL_WORKER_PILOT = {
                   "groupe westco",
                   "imperial manufacturing",
                   "mccain foods"],
+    "steps": [NBS_STEP_OFFER_CWP, NBS_STEP_EOI_CWP, NBS_STEP_POOL_CWP, NBS_STEP_APPLY_CWP,
+              NBS_STEP_SETTLE_CWP, NBS_STEP_REVIEW_CWP, NBS_STEP_PR_CWP],
 }
 """五年期试点,只走 6 家参与雇主(Cooke Aquaculture、J.D. Irving、Groupe Savoie、Groupe Westco、Imperial Manufacturing 
 Group、McCain Foods),个人不能直接申请 → 按雇主名命中才列(Frank 09-30「都收,标状态」)。页面走旧版路径,现行总览页仍链到它;该页缓存在但不在 crawl manifest 
@@ -1670,6 +1942,8 @@ PW_NB_PRIVATE_COLLEGE_PILOT = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "steps": [NBS_STEP_OFFER, NBS_STEP_EOI_PCCG, NBS_STEP_POOL_PCCG, NBS_STEP_APPLY_PCCG,
+              NBS_STEP_REVIEW_PCCG, NBS_STEP_CLOSED_PERMIT, NBS_STEP_PR],
 }
 """本省参与项目的私立职业学院读指定专业、拿不到 PGWP 的学生,要对口的全职 offer;有限开放至 2027 年底(Frank 09-30「都收,标状态」)。
 2026-09-30 批一 1b:挂门槛流(pnp nb-req,试点页资格段:CLB 5、本省参与试点的私立学院课程、雇主经营 24 个月)。"""
@@ -2071,11 +2345,12 @@ K_URL = "url"
 """事实行键:原句出处页。"""
 
 STEP_KEYS = ["employerRegister", "offer", "work", "epa", "eeProfile", "eoi", "draw", "confirm", "apply", "review", "settle",
-             "endorse", "pr", "community", "register", "submit"]
+             "endorse", "pr", "community", "register", "submit", "interestLetter", "closedPermit"]
 """步骤词表(三语文案在 cms i18n pnp.step.*):雇主登记 / 拿雇主 offer / 在这份工作上干够 / 雇主递职位审批 / 建 EE 档案 / 递 EOI /
 进池与抽选 / 确认职位、递申请 / 收邀请、递申请 / 省里审批 / 做安置计划 / 雇主递省背书 / 拿提名,递永居 /
 拿社区推荐信(community,2026-10-02 批 2 阿省乡村振兴加)/ 网上注册打分(register,2026-10-03 批 2 卑诗加:卑诗叫 registration,
-注册后按打分进池)/ 递申请(submit,同日卑诗卫生局:持 offer 直接递、不经邀请)。"""
+注册后按打分进池)/ 递申请(submit,同日卑诗卫生局:持 offer 直接递、不经邀请)/ 收到省兴趣信(interestLetter,同日新不伦瑞克)/
+申请封闭工签(closedPermit,同日新不伦瑞克私立学院试点)。"""
 
 WHO_KEYS = ["you", "employer", "province", "federal"]
 """谁做的词表。"""
@@ -2085,7 +2360,7 @@ REF_KEYS = ["req", "processing", "intake", "draws"]
 
 FACT_KEYS = ["eoiFee", "eoiValidMonths", "inviteAcceptDays", "appSubmitDays", "nominationValidMonths", "communityLetter",
              "cappedEmployees", "windowCapped", "directApply", "eoiOnlyOther", "confirmSubmit", "noScheduledDraw", "inviteSubmitDays",
-             "eeAcceptDays", "prSubmitDays", "workMonths", "employerDeclaration", "offerEoiDays"]
+             "eeAcceptDays", "prSubmitDays", "workMonths", "employerDeclaration", "offerEoiDays", "noFee", "eoiValidDays", "appFee", "reviewSeveralMonths", "noTimeGuarantee", "poolSelection", "inviteSectors", "letterOrGrad", "employerOnly", "empMonths", "closedPermitDays", "liveMonths", "remoteNonQc"]
 """静态事实词表(三语文案在 cms i18n pnp.stepFact.*,数字从 vars 填)。"""
 
 BAD_STEP_TPL = "{key} 的第 {i} 步「{step}」不在步骤词表里"

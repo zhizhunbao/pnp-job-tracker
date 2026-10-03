@@ -2067,9 +2067,9 @@ export const STEP_REQ_ROW: Record<string, string> = {
 }
 
 /**
- * 写成橙字的事实词(限额行业那类卡人的条件)。
+ * 写成橙字的事实词(限额行业那类卡人的条件)。2026-10-03 申请步骤批 2 加 inviteSectors(新不伦瑞克:新邀请目前只限三个行业)。
  */
-export const STEP_WARN_FACTS = ['cappedEmployees', 'windowCapped']
+export const STEP_WARN_FACTS = ['cappedEmployees', 'windowCapped', 'inviteSectors']
 
 /**
  * 步骤引用的运营统计指标名(SQL.PNP_STEP_OPS 同字)。
