@@ -3,7 +3,7 @@
  "pid": 17100121,
  "title": "Estimates of the number of non-permanent residents by type, quarterly",
  "freq": "Q",
- "fetched": "2026-09-22",
+ "fetched": "2026-10-02",
  "series": {
   "npr": "Total, non-permanent residents",
   "asylum": "Total, asylum claimants, protected persons and related groups",
@@ -15,1784 +15,1872 @@
  "byGeo": {
   "CA": {
    "2021-07-01": {
-    "npr": 1361855,
-    "workStudy": 164855,
-    "other": 51505,
-    "asylum": 168206,
-    "workOnly": 608581,
-    "studyOnly": 368708
+    "npr": 1326000,
+    "workStudy": 162717,
+    "other": 49301,
+    "asylum": 168239,
+    "workOnly": 586380,
+    "studyOnly": 359363
    },
    "2021-10-01": {
-    "npr": 1442604,
-    "workStudy": 162650,
-    "other": 55490,
-    "asylum": 162493,
-    "workOnly": 635008,
-    "studyOnly": 426963
+    "npr": 1408873,
+    "workStudy": 161045,
+    "other": 53249,
+    "asylum": 162530,
+    "workOnly": 612044,
+    "studyOnly": 420005
    },
    "2022-01-01": {
-    "npr": 1413706,
-    "workStudy": 161101,
-    "other": 53585,
-    "asylum": 161105,
-    "workOnly": 591133,
-    "studyOnly": 446782
+    "npr": 1372025,
+    "workStudy": 159258,
+    "other": 50791,
+    "asylum": 161144,
+    "workOnly": 564755,
+    "studyOnly": 436077
    },
    "2022-04-01": {
-    "npr": 1447790,
-    "workStudy": 169053,
-    "other": 59362,
-    "asylum": 166780,
-    "workOnly": 602403,
-    "studyOnly": 450192
+    "npr": 1397019,
+    "workStudy": 166854,
+    "other": 55862,
+    "asylum": 166816,
+    "workOnly": 569888,
+    "studyOnly": 437599
    },
    "2022-07-01": {
-    "npr": 1586570,
-    "workStudy": 185693,
-    "other": 66091,
-    "asylum": 178573,
-    "workOnly": 681089,
-    "studyOnly": 475124
+    "npr": 1546638,
+    "workStudy": 183370,
+    "other": 63284,
+    "asylum": 178610,
+    "workOnly": 657525,
+    "studyOnly": 463849
    },
    "2022-10-01": {
-    "npr": 1800833,
-    "workStudy": 204895,
-    "other": 74847,
-    "asylum": 194063,
-    "workOnly": 803300,
-    "studyOnly": 523728
+    "npr": 1759870,
+    "workStudy": 202926,
+    "other": 72209,
+    "asylum": 194104,
+    "workOnly": 774597,
+    "studyOnly": 516034
    },
    "2023-01-01": {
-    "npr": 1952417,
-    "workStudy": 219616,
-    "other": 80765,
-    "asylum": 218865,
-    "workOnly": 866970,
-    "studyOnly": 566201
+    "npr": 1893217,
+    "workStudy": 217164,
+    "other": 77096,
+    "asylum": 218905,
+    "workOnly": 826041,
+    "studyOnly": 554011
    },
    "2023-04-01": {
-    "npr": 2052904,
-    "workStudy": 236765,
-    "other": 87031,
-    "asylum": 238951,
-    "workOnly": 934003,
-    "studyOnly": 556154
+    "npr": 1974989,
+    "workStudy": 233733,
+    "other": 82149,
+    "asylum": 238990,
+    "workOnly": 878704,
+    "studyOnly": 541413
    },
    "2023-07-01": {
-    "npr": 2258095,
-    "workStudy": 271434,
-    "other": 96656,
-    "asylum": 257383,
-    "workOnly": 1045810,
-    "studyOnly": 586812
+    "npr": 2196877,
+    "workStudy": 268082,
+    "other": 92771,
+    "asylum": 257424,
+    "workOnly": 1005359,
+    "studyOnly": 573241
    },
    "2023-10-01": {
-    "npr": 2572154,
-    "workStudy": 296263,
-    "other": 110176,
-    "asylum": 288454,
-    "workOnly": 1216177,
-    "studyOnly": 661084
+    "npr": 2505089,
+    "workStudy": 293377,
+    "other": 106007,
+    "asylum": 288490,
+    "workOnly": 1166175,
+    "studyOnly": 651040
    },
    "2024-01-01": {
-    "npr": 2741523,
-    "workStudy": 320838,
-    "other": 126932,
-    "asylum": 328489,
-    "workOnly": 1279429,
-    "studyOnly": 685835
+    "npr": 2649906,
+    "workStudy": 317145,
+    "other": 121421,
+    "asylum": 328511,
+    "workOnly": 1212407,
+    "studyOnly": 670422
    },
    "2024-04-01": {
-    "npr": 2903415,
-    "workStudy": 346938,
-    "other": 145805,
-    "asylum": 363505,
-    "workOnly": 1379319,
-    "studyOnly": 667848
+    "npr": 2785509,
+    "workStudy": 342340,
+    "other": 138612,
+    "asylum": 363527,
+    "workOnly": 1290846,
+    "studyOnly": 650184
    },
    "2024-07-01": {
-    "npr": 3039170,
-    "workStudy": 373792,
-    "other": 151067,
-    "asylum": 398913,
-    "workOnly": 1446261,
-    "studyOnly": 669137
+    "npr": 2900083,
+    "workStudy": 368112,
+    "other": 142819,
+    "asylum": 398918,
+    "workOnly": 1341567,
+    "studyOnly": 648667
    },
    "2024-10-01": {
-    "npr": 3149131,
-    "workStudy": 341162,
-    "other": 155986,
-    "asylum": 429639,
-    "workOnly": 1563402,
-    "studyOnly": 658942
+    "npr": 2984285,
+    "workStudy": 335835,
+    "other": 146613,
+    "asylum": 429641,
+    "workOnly": 1434113,
+    "studyOnly": 638083
    },
    "2025-01-01": {
-    "npr": 3138129,
-    "workStudy": 330060,
-    "other": 152812,
-    "asylum": 459920,
-    "workOnly": 1566527,
-    "studyOnly": 628810
+    "npr": 2952596,
+    "workStudy": 323101,
+    "other": 142525,
+    "asylum": 459896,
+    "workOnly": 1425929,
+    "studyOnly": 601145
    },
    "2025-04-01": {
-    "npr": 3082935,
-    "workStudy": 331112,
-    "other": 149837,
-    "asylum": 479542,
-    "workOnly": 1539319,
-    "studyOnly": 583125
+    "npr": 2925722,
+    "workStudy": 322465,
+    "other": 142420,
+    "asylum": 479515,
+    "workOnly": 1417055,
+    "studyOnly": 564267
    },
    "2025-07-01": {
-    "npr": 3024216,
-    "workStudy": 312040,
-    "other": 143951,
-    "asylum": 497443,
-    "workOnly": 1519682,
-    "studyOnly": 551100
+    "npr": 2934388,
+    "workStudy": 301933,
+    "other": 138550,
+    "asylum": 497266,
+    "workOnly": 1456679,
+    "studyOnly": 539960
    },
    "2025-10-01": {
-    "npr": 2847737,
-    "workStudy": 244424,
-    "other": 136677,
-    "asylum": 504767,
-    "workOnly": 1484451,
-    "studyOnly": 477418
+    "npr": 2942949,
+    "workStudy": 243070,
+    "other": 140253,
+    "asylum": 516833,
+    "workOnly": 1553187,
+    "studyOnly": 489606
    },
    "2026-01-01": {
-    "npr": 2676441,
-    "workStudy": 223265,
-    "other": 127584,
-    "asylum": 518489,
-    "workOnly": 1375566,
-    "studyOnly": 431537
+    "npr": 2863151,
+    "workStudy": 220524,
+    "other": 135694,
+    "asylum": 530155,
+    "workOnly": 1526989,
+    "studyOnly": 449789
    },
    "2026-04-01": {
-    "npr": 2558562,
-    "workStudy": 223571,
-    "other": 119246,
-    "asylum": 525479,
-    "workOnly": 1296046,
-    "studyOnly": 394220
+    "npr": 2798649,
+    "workStudy": 222837,
+    "other": 129991,
+    "asylum": 537105,
+    "workOnly": 1486886,
+    "studyOnly": 421830
+   },
+   "2026-07-01": {
+    "npr": 2779774,
+    "workStudy": 220770,
+    "other": 133533,
+    "asylum": 530090,
+    "workOnly": 1496248,
+    "studyOnly": 399133
    }
   },
   "AB": {
    "2021-07-01": {
-    "npr": 83872,
-    "workStudy": 6225,
-    "other": 3846,
-    "asylum": 6454,
-    "workOnly": 45091,
-    "studyOnly": 22256
+    "npr": 82226,
+    "workStudy": 6176,
+    "other": 3722,
+    "asylum": 6429,
+    "workOnly": 44069,
+    "studyOnly": 21830
    },
    "2021-10-01": {
-    "npr": 87684,
-    "workStudy": 6248,
-    "other": 4013,
-    "asylum": 6109,
-    "workOnly": 45383,
-    "studyOnly": 25931
+    "npr": 85984,
+    "workStudy": 6209,
+    "other": 3877,
+    "asylum": 6082,
+    "workOnly": 44169,
+    "studyOnly": 25647
    },
    "2022-01-01": {
-    "npr": 86006,
-    "workStudy": 5503,
-    "other": 3933,
-    "asylum": 5847,
-    "workOnly": 43523,
-    "studyOnly": 27200
+    "npr": 84066,
+    "workStudy": 5454,
+    "other": 3780,
+    "asylum": 5809,
+    "workOnly": 42294,
+    "studyOnly": 26729
    },
    "2022-04-01": {
-    "npr": 87523,
-    "workStudy": 5657,
-    "other": 4806,
-    "asylum": 5823,
-    "workOnly": 44236,
-    "studyOnly": 27001
+    "npr": 84892,
+    "workStudy": 5595,
+    "other": 4488,
+    "asylum": 5812,
+    "workOnly": 42603,
+    "studyOnly": 26394
    },
    "2022-07-01": {
-    "npr": 97362,
-    "workStudy": 6292,
-    "other": 5708,
-    "asylum": 6104,
-    "workOnly": 51252,
-    "studyOnly": 28006
+    "npr": 96561,
+    "workStudy": 6226,
+    "other": 5473,
+    "asylum": 6086,
+    "workOnly": 51297,
+    "studyOnly": 27479
    },
    "2022-10-01": {
-    "npr": 116133,
-    "workStudy": 7376,
-    "other": 6557,
-    "asylum": 6626,
-    "workOnly": 62775,
-    "studyOnly": 32799
+    "npr": 114991,
+    "workStudy": 7254,
+    "other": 6415,
+    "asylum": 6582,
+    "workOnly": 62319,
+    "studyOnly": 32421
    },
    "2023-01-01": {
-    "npr": 133724,
-    "workStudy": 8067,
-    "other": 7612,
-    "asylum": 7596,
-    "workOnly": 74562,
-    "studyOnly": 35887
+    "npr": 131218,
+    "workStudy": 7996,
+    "other": 7390,
+    "asylum": 7506,
+    "workOnly": 73051,
+    "studyOnly": 35275
    },
    "2023-04-01": {
-    "npr": 150212,
-    "workStudy": 9379,
-    "other": 9027,
-    "asylum": 8286,
-    "workOnly": 87783,
-    "studyOnly": 35737
+    "npr": 146414,
+    "workStudy": 9270,
+    "other": 8706,
+    "asylum": 8211,
+    "workOnly": 85165,
+    "studyOnly": 35062
    },
    "2023-07-01": {
-    "npr": 170364,
-    "workStudy": 11184,
-    "other": 10281,
-    "asylum": 9412,
-    "workOnly": 101887,
-    "studyOnly": 37600
+    "npr": 168167,
+    "workStudy": 11072,
+    "other": 10066,
+    "asylum": 9363,
+    "workOnly": 100729,
+    "studyOnly": 36937
    },
    "2023-10-01": {
-    "npr": 202709,
-    "workStudy": 13837,
-    "other": 11992,
-    "asylum": 11809,
-    "workOnly": 120013,
-    "studyOnly": 45058
+    "npr": 199410,
+    "workStudy": 13679,
+    "other": 11710,
+    "asylum": 11736,
+    "workOnly": 117661,
+    "studyOnly": 44624
    },
    "2024-01-01": {
-    "npr": 226937,
-    "workStudy": 15699,
-    "other": 15497,
-    "asylum": 14492,
-    "workOnly": 132649,
-    "studyOnly": 48600
+    "npr": 220970,
+    "workStudy": 15541,
+    "other": 15061,
+    "asylum": 14384,
+    "workOnly": 128148,
+    "studyOnly": 47836
    },
    "2024-04-01": {
-    "npr": 253813,
-    "workStudy": 17962,
-    "other": 19507,
-    "asylum": 16766,
-    "workOnly": 151110,
-    "studyOnly": 48468
+    "npr": 246540,
+    "workStudy": 17792,
+    "other": 18971,
+    "asylum": 16696,
+    "workOnly": 145504,
+    "studyOnly": 47577
    },
    "2024-07-01": {
-    "npr": 270943,
-    "workStudy": 21158,
-    "other": 20413,
-    "asylum": 19267,
-    "workOnly": 159555,
-    "studyOnly": 50550
+    "npr": 261962,
+    "workStudy": 20897,
+    "other": 19776,
+    "asylum": 19209,
+    "workOnly": 152551,
+    "studyOnly": 49529
    },
    "2024-10-01": {
-    "npr": 288227,
-    "workStudy": 21450,
-    "other": 21023,
-    "asylum": 21963,
-    "workOnly": 171043,
-    "studyOnly": 52748
+    "npr": 275152,
+    "workStudy": 21094,
+    "other": 20162,
+    "asylum": 21902,
+    "workOnly": 160310,
+    "studyOnly": 51684
    },
    "2025-01-01": {
-    "npr": 296949,
-    "workStudy": 21169,
-    "other": 21081,
-    "asylum": 24659,
-    "workOnly": 177466,
-    "studyOnly": 52574
+    "npr": 280771,
+    "workStudy": 20727,
+    "other": 19999,
+    "asylum": 24620,
+    "workOnly": 164253,
+    "studyOnly": 51172
    },
    "2025-04-01": {
-    "npr": 296280,
-    "workStudy": 21738,
-    "other": 21088,
-    "asylum": 26389,
-    "workOnly": 176719,
-    "studyOnly": 50346
+    "npr": 281595,
+    "workStudy": 21121,
+    "other": 20478,
+    "asylum": 26469,
+    "workOnly": 163857,
+    "studyOnly": 49670
    },
    "2025-07-01": {
-    "npr": 292462,
-    "workStudy": 21615,
-    "other": 20228,
-    "asylum": 28328,
-    "workOnly": 173290,
-    "studyOnly": 49001
+    "npr": 287434,
+    "workStudy": 20943,
+    "other": 19804,
+    "asylum": 28420,
+    "workOnly": 168848,
+    "studyOnly": 49419
    },
    "2025-10-01": {
-    "npr": 281857,
-    "workStudy": 18300,
-    "other": 19505,
-    "asylum": 29555,
-    "workOnly": 169145,
-    "studyOnly": 45352
+    "npr": 292366,
+    "workStudy": 18243,
+    "other": 20050,
+    "asylum": 30541,
+    "workOnly": 175990,
+    "studyOnly": 47542
    },
    "2026-01-01": {
-    "npr": 271024,
-    "workStudy": 17077,
-    "other": 18810,
-    "asylum": 31390,
-    "workOnly": 161781,
-    "studyOnly": 41966
+    "npr": 288761,
+    "workStudy": 16861,
+    "other": 19738,
+    "asylum": 32354,
+    "workOnly": 174957,
+    "studyOnly": 44851
    },
    "2026-04-01": {
-    "npr": 261031,
-    "workStudy": 18782,
-    "other": 17783,
-    "asylum": 32677,
-    "workOnly": 153848,
-    "studyOnly": 37941
+    "npr": 281105,
+    "workStudy": 18574,
+    "other": 18785,
+    "asylum": 33643,
+    "workOnly": 168503,
+    "studyOnly": 41600
+   },
+   "2026-07-01": {
+    "npr": 279477,
+    "workStudy": 18265,
+    "other": 19668,
+    "asylum": 33157,
+    "workOnly": 168142,
+    "studyOnly": 40245
    }
   },
   "BC": {
    "2021-07-01": {
-    "npr": 263984,
-    "workStudy": 27145,
-    "other": 10298,
-    "asylum": 8953,
-    "workOnly": 122528,
-    "studyOnly": 95060
+    "npr": 257409,
+    "workStudy": 26554,
+    "other": 9928,
+    "asylum": 8932,
+    "workOnly": 119387,
+    "studyOnly": 92608
    },
    "2021-10-01": {
-    "npr": 276521,
-    "workStudy": 25813,
-    "other": 10689,
-    "asylum": 8714,
-    "workOnly": 121923,
-    "studyOnly": 109382
+    "npr": 270550,
+    "workStudy": 25292,
+    "other": 10347,
+    "asylum": 8672,
+    "workOnly": 118875,
+    "studyOnly": 107364
    },
    "2022-01-01": {
-    "npr": 270511,
-    "workStudy": 24395,
-    "other": 10417,
-    "asylum": 8395,
-    "workOnly": 114601,
-    "studyOnly": 112703
+    "npr": 262105,
+    "workStudy": 23950,
+    "other": 9938,
+    "asylum": 8351,
+    "workOnly": 110012,
+    "studyOnly": 109854
    },
    "2022-04-01": {
-    "npr": 276328,
-    "workStudy": 24928,
-    "other": 11432,
-    "asylum": 8375,
-    "workOnly": 118421,
-    "studyOnly": 113172
+    "npr": 266097,
+    "workStudy": 24648,
+    "other": 10815,
+    "asylum": 8335,
+    "workOnly": 112365,
+    "studyOnly": 109934
    },
    "2022-07-01": {
-    "npr": 299320,
-    "workStudy": 28121,
-    "other": 12386,
-    "asylum": 8786,
-    "workOnly": 131464,
-    "studyOnly": 118563
+    "npr": 290764,
+    "workStudy": 27909,
+    "other": 11884,
+    "asylum": 8756,
+    "workOnly": 126594,
+    "studyOnly": 115621
    },
    "2022-10-01": {
-    "npr": 335696,
-    "workStudy": 30429,
-    "other": 13945,
-    "asylum": 9193,
-    "workOnly": 154736,
-    "studyOnly": 127393
+    "npr": 326911,
+    "workStudy": 30023,
+    "other": 13430,
+    "asylum": 9158,
+    "workOnly": 149097,
+    "studyOnly": 125203
    },
    "2023-01-01": {
-    "npr": 359502,
-    "workStudy": 31801,
-    "other": 14953,
-    "asylum": 10394,
-    "workOnly": 166856,
-    "studyOnly": 135498
+    "npr": 347762,
+    "workStudy": 31383,
+    "other": 14282,
+    "asylum": 10335,
+    "workOnly": 159564,
+    "studyOnly": 132198
    },
    "2023-04-01": {
-    "npr": 372711,
-    "workStudy": 34828,
-    "other": 15737,
-    "asylum": 11309,
-    "workOnly": 177328,
-    "studyOnly": 133509
+    "npr": 357979,
+    "workStudy": 34472,
+    "other": 14878,
+    "asylum": 11277,
+    "workOnly": 167629,
+    "studyOnly": 129723
    },
    "2023-07-01": {
-    "npr": 404070,
-    "workStudy": 39461,
-    "other": 17090,
-    "asylum": 12655,
-    "workOnly": 194382,
-    "studyOnly": 140482
+    "npr": 394408,
+    "workStudy": 39089,
+    "other": 16515,
+    "asylum": 12618,
+    "workOnly": 189216,
+    "studyOnly": 136970
    },
    "2023-10-01": {
-    "npr": 454307,
-    "workStudy": 42325,
-    "other": 19332,
-    "asylum": 14433,
-    "workOnly": 226045,
-    "studyOnly": 152172
+    "npr": 444272,
+    "workStudy": 41935,
+    "other": 18736,
+    "asylum": 14404,
+    "workOnly": 219696,
+    "studyOnly": 149501
    },
    "2024-01-01": {
-    "npr": 474037,
-    "workStudy": 45844,
-    "other": 21329,
-    "asylum": 16530,
-    "workOnly": 233066,
-    "studyOnly": 157268
+    "npr": 460918,
+    "workStudy": 45408,
+    "other": 20564,
+    "asylum": 16496,
+    "workOnly": 225067,
+    "studyOnly": 153383
    },
    "2024-04-01": {
-    "npr": 500056,
-    "workStudy": 52326,
-    "other": 23772,
-    "asylum": 18589,
-    "workOnly": 249936,
-    "studyOnly": 155433
+    "npr": 482765,
+    "workStudy": 51869,
+    "other": 22737,
+    "asylum": 18552,
+    "workOnly": 238489,
+    "studyOnly": 151118
    },
    "2024-07-01": {
-    "npr": 516975,
-    "workStudy": 56637,
-    "other": 24474,
-    "asylum": 20860,
-    "workOnly": 259838,
-    "studyOnly": 155166
+    "npr": 498203,
+    "workStudy": 56064,
+    "other": 23386,
+    "asylum": 20811,
+    "workOnly": 247598,
+    "studyOnly": 150344
    },
    "2024-10-01": {
-    "npr": 532149,
-    "workStudy": 51934,
-    "other": 25137,
-    "asylum": 22928,
-    "workOnly": 275559,
-    "studyOnly": 156591
+    "npr": 511542,
+    "workStudy": 51382,
+    "other": 23988,
+    "asylum": 22841,
+    "workOnly": 261459,
+    "studyOnly": 151872
    },
    "2025-01-01": {
-    "npr": 527064,
-    "workStudy": 49627,
-    "other": 24700,
-    "asylum": 26054,
-    "workOnly": 274364,
-    "studyOnly": 152319
+    "npr": 503000,
+    "workStudy": 48618,
+    "other": 23403,
+    "asylum": 25960,
+    "workOnly": 259395,
+    "studyOnly": 145624
    },
    "2025-04-01": {
-    "npr": 519062,
-    "workStudy": 52073,
-    "other": 24330,
-    "asylum": 28499,
-    "workOnly": 272354,
-    "studyOnly": 141806
+    "npr": 496329,
+    "workStudy": 50555,
+    "other": 23291,
+    "asylum": 28430,
+    "workOnly": 257626,
+    "studyOnly": 136427
    },
    "2025-07-01": {
-    "npr": 504363,
-    "workStudy": 48327,
-    "other": 23363,
-    "asylum": 30961,
-    "workOnly": 267304,
-    "studyOnly": 134408
+    "npr": 497321,
+    "workStudy": 46606,
+    "other": 22870,
+    "asylum": 30879,
+    "workOnly": 266529,
+    "studyOnly": 130437
    },
    "2025-10-01": {
-    "npr": 478121,
-    "workStudy": 40309,
-    "other": 22324,
-    "asylum": 32495,
-    "workOnly": 262876,
-    "studyOnly": 120117
+    "npr": 498780,
+    "workStudy": 40060,
+    "other": 23092,
+    "asylum": 33365,
+    "workOnly": 280524,
+    "studyOnly": 121739
    },
    "2026-01-01": {
-    "npr": 446149,
-    "workStudy": 36483,
-    "other": 20819,
-    "asylum": 34951,
-    "workOnly": 244394,
-    "studyOnly": 109502
+    "npr": 482064,
+    "workStudy": 36082,
+    "other": 22313,
+    "asylum": 35827,
+    "workOnly": 275266,
+    "studyOnly": 112576
    },
    "2026-04-01": {
-    "npr": 427376,
-    "workStudy": 38869,
-    "other": 19561,
-    "asylum": 37087,
-    "workOnly": 231997,
-    "studyOnly": 99862
+    "npr": 471997,
+    "workStudy": 38791,
+    "other": 21499,
+    "asylum": 37947,
+    "workOnly": 268875,
+    "studyOnly": 104885
+   },
+   "2026-07-01": {
+    "npr": 465514,
+    "workStudy": 40602,
+    "other": 21754,
+    "asylum": 37897,
+    "workOnly": 270105,
+    "studyOnly": 95156
    }
   },
   "NL": {
    "2021-07-01": {
-    "npr": 7143,
-    "workStudy": 891,
-    "other": 288,
-    "asylum": 271,
-    "workOnly": 2895,
-    "studyOnly": 2798
+    "npr": 6752,
+    "workStudy": 885,
+    "other": 271,
+    "asylum": 181,
+    "workOnly": 2728,
+    "studyOnly": 2687
    },
    "2021-10-01": {
-    "npr": 8185,
-    "workStudy": 799,
-    "other": 321,
-    "asylum": 235,
-    "workOnly": 3075,
-    "studyOnly": 3755
+    "npr": 7808,
+    "workStudy": 790,
+    "other": 302,
+    "asylum": 162,
+    "workOnly": 2893,
+    "studyOnly": 3661
    },
    "2022-01-01": {
-    "npr": 8104,
-    "workStudy": 774,
-    "other": 333,
-    "asylum": 215,
-    "workOnly": 2839,
-    "studyOnly": 3943
+    "npr": 7589,
+    "workStudy": 764,
+    "other": 311,
+    "asylum": 157,
+    "workOnly": 2544,
+    "studyOnly": 3813
    },
    "2022-04-01": {
-    "npr": 8070,
-    "workStudy": 814,
-    "other": 320,
-    "asylum": 206,
-    "workOnly": 2740,
-    "studyOnly": 3990
+    "npr": 7537,
+    "workStudy": 790,
+    "other": 287,
+    "asylum": 156,
+    "workOnly": 2461,
+    "studyOnly": 3843
    },
    "2022-07-01": {
-    "npr": 9373,
-    "workStudy": 866,
-    "other": 494,
-    "asylum": 222,
-    "workOnly": 3671,
-    "studyOnly": 4120
+    "npr": 8779,
+    "workStudy": 837,
+    "other": 438,
+    "asylum": 137,
+    "workOnly": 3415,
+    "studyOnly": 3952
    },
    "2022-10-01": {
-    "npr": 10733,
-    "workStudy": 855,
-    "other": 518,
-    "asylum": 225,
-    "workOnly": 4324,
-    "studyOnly": 4811
+    "npr": 10146,
+    "workStudy": 826,
+    "other": 476,
+    "asylum": 128,
+    "workOnly": 4021,
+    "studyOnly": 4695
    },
    "2023-01-01": {
-    "npr": 12023,
-    "workStudy": 897,
-    "other": 628,
-    "asylum": 280,
-    "workOnly": 5100,
-    "studyOnly": 5118
+    "npr": 10952,
+    "workStudy": 861,
+    "other": 563,
+    "asylum": 131,
+    "workOnly": 4451,
+    "studyOnly": 4946
    },
    "2023-04-01": {
-    "npr": 12225,
-    "workStudy": 1024,
-    "other": 679,
-    "asylum": 340,
-    "workOnly": 5271,
-    "studyOnly": 4911
+    "npr": 11013,
+    "workStudy": 980,
+    "other": 596,
+    "asylum": 190,
+    "workOnly": 4529,
+    "studyOnly": 4718
    },
    "2023-07-01": {
-    "npr": 13619,
-    "workStudy": 1200,
-    "other": 767,
-    "asylum": 394,
-    "workOnly": 6363,
-    "studyOnly": 4895
+    "npr": 12485,
+    "workStudy": 1153,
+    "other": 695,
+    "asylum": 222,
+    "workOnly": 5724,
+    "studyOnly": 4691
    },
    "2023-10-01": {
-    "npr": 15333,
-    "workStudy": 1360,
-    "other": 861,
-    "asylum": 353,
-    "workOnly": 7218,
-    "studyOnly": 5541
+    "npr": 14247,
+    "workStudy": 1311,
+    "other": 788,
+    "asylum": 198,
+    "workOnly": 6560,
+    "studyOnly": 5390
    },
    "2024-01-01": {
-    "npr": 16169,
-    "workStudy": 1608,
-    "other": 1099,
-    "asylum": 448,
-    "workOnly": 7619,
-    "studyOnly": 5395
+    "npr": 14494,
+    "workStudy": 1552,
+    "other": 983,
+    "asylum": 214,
+    "workOnly": 6546,
+    "studyOnly": 5199
    },
    "2024-04-01": {
-    "npr": 17120,
-    "workStudy": 1831,
-    "other": 1338,
-    "asylum": 505,
-    "workOnly": 8331,
-    "studyOnly": 5115
+    "npr": 15176,
+    "workStudy": 1765,
+    "other": 1199,
+    "asylum": 226,
+    "workOnly": 7099,
+    "studyOnly": 4887
    },
    "2024-07-01": {
-    "npr": 18320,
-    "workStudy": 2078,
-    "other": 1398,
-    "asylum": 533,
-    "workOnly": 9333,
-    "studyOnly": 4978
+    "npr": 16263,
+    "workStudy": 2006,
+    "other": 1256,
+    "asylum": 230,
+    "workOnly": 8050,
+    "studyOnly": 4721
    },
    "2024-10-01": {
-    "npr": 19241,
-    "workStudy": 2023,
-    "other": 1443,
-    "asylum": 562,
-    "workOnly": 10210,
-    "studyOnly": 5003
+    "npr": 16876,
+    "workStudy": 1949,
+    "other": 1282,
+    "asylum": 240,
+    "workOnly": 8625,
+    "studyOnly": 4780
    },
    "2025-01-01": {
-    "npr": 19381,
-    "workStudy": 1871,
-    "other": 1426,
-    "asylum": 566,
-    "workOnly": 10583,
-    "studyOnly": 4935
+    "npr": 16708,
+    "workStudy": 1796,
+    "other": 1249,
+    "asylum": 249,
+    "workOnly": 8798,
+    "studyOnly": 4616
    },
    "2025-04-01": {
-    "npr": 19160,
-    "workStudy": 1896,
-    "other": 1402,
-    "asylum": 733,
-    "workOnly": 10448,
-    "studyOnly": 4681
+    "npr": 16516,
+    "workStudy": 1804,
+    "other": 1261,
+    "asylum": 320,
+    "workOnly": 8707,
+    "studyOnly": 4424
    },
    "2025-07-01": {
-    "npr": 18894,
-    "workStudy": 1918,
-    "other": 1325,
-    "asylum": 751,
-    "workOnly": 10339,
-    "studyOnly": 4561
+    "npr": 17246,
+    "workStudy": 1811,
+    "other": 1217,
+    "asylum": 405,
+    "workOnly": 9424,
+    "studyOnly": 4389
    },
    "2025-10-01": {
-    "npr": 18544,
-    "workStudy": 1604,
-    "other": 1296,
-    "asylum": 733,
-    "workOnly": 10588,
-    "studyOnly": 4323
+    "npr": 18209,
+    "workStudy": 1547,
+    "other": 1266,
+    "asylum": 460,
+    "workOnly": 10582,
+    "studyOnly": 4354
    },
    "2026-01-01": {
-    "npr": 17200,
-    "workStudy": 1425,
-    "other": 1172,
-    "asylum": 796,
-    "workOnly": 9810,
-    "studyOnly": 3997
+    "npr": 17896,
+    "workStudy": 1377,
+    "other": 1211,
+    "asylum": 523,
+    "workOnly": 10668,
+    "studyOnly": 4117
    },
    "2026-04-01": {
-    "npr": 15933,
-    "workStudy": 1510,
-    "other": 1023,
-    "asylum": 841,
-    "workOnly": 8883,
-    "studyOnly": 3676
+    "npr": 16447,
+    "workStudy": 1449,
+    "other": 1063,
+    "asylum": 570,
+    "workOnly": 9528,
+    "studyOnly": 3837
+   },
+   "2026-07-01": {
+    "npr": 16686,
+    "workStudy": 1497,
+    "other": 1114,
+    "asylum": 606,
+    "workOnly": 9829,
+    "studyOnly": 3640
    }
   },
   "PE": {
    "2021-07-01": {
-    "npr": 8673,
-    "workStudy": 499,
-    "other": 248,
-    "asylum": 30,
-    "workOnly": 5070,
-    "studyOnly": 2826
+    "npr": 8281,
+    "workStudy": 488,
+    "other": 232,
+    "asylum": 25,
+    "workOnly": 4820,
+    "studyOnly": 2716
    },
    "2021-10-01": {
-    "npr": 8728,
-    "workStudy": 425,
-    "other": 245,
-    "asylum": 31,
-    "workOnly": 4938,
-    "studyOnly": 3089
+    "npr": 8446,
+    "workStudy": 410,
+    "other": 235,
+    "asylum": 27,
+    "workOnly": 4746,
+    "studyOnly": 3028
    },
    "2022-01-01": {
-    "npr": 8178,
-    "workStudy": 414,
-    "other": 225,
-    "asylum": 25,
-    "workOnly": 4310,
-    "studyOnly": 3204
+    "npr": 7930,
+    "workStudy": 393,
+    "other": 216,
+    "asylum": 22,
+    "workOnly": 4183,
+    "studyOnly": 3116
    },
    "2022-04-01": {
-    "npr": 8261,
-    "workStudy": 462,
-    "other": 244,
-    "asylum": 32,
-    "workOnly": 4294,
-    "studyOnly": 3229
+    "npr": 7953,
+    "workStudy": 451,
+    "other": 230,
+    "asylum": 30,
+    "workOnly": 4119,
+    "studyOnly": 3123
    },
    "2022-07-01": {
-    "npr": 8821,
-    "workStudy": 512,
-    "other": 260,
-    "asylum": 33,
-    "workOnly": 4832,
-    "studyOnly": 3184
+    "npr": 8375,
+    "workStudy": 501,
+    "other": 244,
+    "asylum": 31,
+    "workOnly": 4557,
+    "studyOnly": 3042
    },
    "2022-10-01": {
-    "npr": 9998,
-    "workStudy": 614,
-    "other": 300,
-    "asylum": 32,
-    "workOnly": 5477,
-    "studyOnly": 3575
+    "npr": 9549,
+    "workStudy": 594,
+    "other": 281,
+    "asylum": 29,
+    "workOnly": 5157,
+    "studyOnly": 3488
    },
    "2023-01-01": {
-    "npr": 10430,
-    "workStudy": 633,
-    "other": 314,
-    "asylum": 32,
-    "workOnly": 5687,
-    "studyOnly": 3764
+    "npr": 9828,
+    "workStudy": 600,
+    "other": 288,
+    "asylum": 33,
+    "workOnly": 5263,
+    "studyOnly": 3644
    },
    "2023-04-01": {
-    "npr": 10326,
-    "workStudy": 660,
-    "other": 313,
-    "asylum": 33,
-    "workOnly": 5581,
-    "studyOnly": 3739
+    "npr": 9601,
+    "workStudy": 622,
+    "other": 284,
+    "asylum": 32,
+    "workOnly": 5067,
+    "studyOnly": 3596
    },
    "2023-07-01": {
-    "npr": 11253,
-    "workStudy": 774,
-    "other": 346,
+    "npr": 10403,
+    "workStudy": 738,
+    "other": 313,
     "asylum": 46,
-    "workOnly": 6390,
-    "studyOnly": 3697
+    "workOnly": 5788,
+    "studyOnly": 3518
    },
    "2023-10-01": {
-    "npr": 12777,
-    "workStudy": 823,
-    "other": 391,
-    "asylum": 49,
-    "workOnly": 7335,
-    "studyOnly": 4179
+    "npr": 11914,
+    "workStudy": 800,
+    "other": 359,
+    "asylum": 45,
+    "workOnly": 6663,
+    "studyOnly": 4047
    },
    "2024-01-01": {
-    "npr": 12694,
-    "workStudy": 821,
-    "other": 407,
-    "asylum": 60,
-    "workOnly": 7140,
-    "studyOnly": 4266
+    "npr": 11730,
+    "workStudy": 785,
+    "other": 371,
+    "asylum": 57,
+    "workOnly": 6405,
+    "studyOnly": 4112
    },
    "2024-04-01": {
-    "npr": 12410,
-    "workStudy": 927,
-    "other": 420,
-    "asylum": 66,
-    "workOnly": 6852,
-    "studyOnly": 4145
+    "npr": 11321,
+    "workStudy": 892,
+    "other": 377,
+    "asylum": 61,
+    "workOnly": 6020,
+    "studyOnly": 3971
    },
    "2024-07-01": {
-    "npr": 12429,
-    "workStudy": 1015,
-    "other": 422,
-    "asylum": 77,
-    "workOnly": 7036,
-    "studyOnly": 3879
+    "npr": 11285,
+    "workStudy": 976,
+    "other": 379,
+    "asylum": 69,
+    "workOnly": 6160,
+    "studyOnly": 3701
    },
    "2024-10-01": {
-    "npr": 12870,
-    "workStudy": 816,
-    "other": 441,
-    "asylum": 110,
-    "workOnly": 7448,
-    "studyOnly": 4055
+    "npr": 11775,
+    "workStudy": 777,
+    "other": 398,
+    "asylum": 92,
+    "workOnly": 6616,
+    "studyOnly": 3892
    },
    "2025-01-01": {
-    "npr": 12522,
-    "workStudy": 869,
-    "other": 424,
-    "asylum": 120,
-    "workOnly": 7140,
-    "studyOnly": 3969
+    "npr": 11404,
+    "workStudy": 824,
+    "other": 381,
+    "asylum": 102,
+    "workOnly": 6317,
+    "studyOnly": 3780
    },
    "2025-04-01": {
-    "npr": 11856,
-    "workStudy": 962,
-    "other": 399,
-    "asylum": 129,
-    "workOnly": 6574,
-    "studyOnly": 3792
+    "npr": 11035,
+    "workStudy": 912,
+    "other": 368,
+    "asylum": 112,
+    "workOnly": 6001,
+    "studyOnly": 3642
    },
    "2025-07-01": {
-    "npr": 11863,
-    "workStudy": 968,
-    "other": 396,
-    "asylum": 145,
-    "workOnly": 6693,
-    "studyOnly": 3661
+    "npr": 11324,
+    "workStudy": 900,
+    "other": 370,
+    "asylum": 125,
+    "workOnly": 6367,
+    "studyOnly": 3562
    },
    "2025-10-01": {
-    "npr": 11044,
-    "workStudy": 662,
-    "other": 380,
-    "asylum": 152,
-    "workOnly": 6540,
-    "studyOnly": 3310
+    "npr": 11568,
+    "workStudy": 655,
+    "other": 387,
+    "asylum": 143,
+    "workOnly": 6988,
+    "studyOnly": 3395
    },
    "2026-01-01": {
-    "npr": 10368,
-    "workStudy": 719,
-    "other": 360,
-    "asylum": 157,
-    "workOnly": 5962,
-    "studyOnly": 3170
+    "npr": 11239,
+    "workStudy": 704,
+    "other": 376,
+    "asylum": 153,
+    "workOnly": 6730,
+    "studyOnly": 3276
    },
    "2026-04-01": {
-    "npr": 9589,
-    "workStudy": 878,
-    "other": 320,
-    "asylum": 186,
-    "workOnly": 5222,
-    "studyOnly": 2983
+    "npr": 10731,
+    "workStudy": 843,
+    "other": 352,
+    "asylum": 177,
+    "workOnly": 6234,
+    "studyOnly": 3125
+   },
+   "2026-07-01": {
+    "npr": 11060,
+    "workStudy": 980,
+    "other": 367,
+    "asylum": 191,
+    "workOnly": 6589,
+    "studyOnly": 2933
    }
   },
   "NS": {
    "2021-07-01": {
-    "npr": 30922,
-    "workStudy": 4090,
-    "other": 1423,
-    "asylum": 337,
-    "workOnly": 15410,
-    "studyOnly": 9662
+    "npr": 29840,
+    "workStudy": 4011,
+    "other": 1363,
+    "asylum": 332,
+    "workOnly": 14768,
+    "studyOnly": 9366
    },
    "2021-10-01": {
-    "npr": 32457,
-    "workStudy": 3561,
-    "other": 1506,
-    "asylum": 328,
-    "workOnly": 16194,
-    "studyOnly": 10868
+    "npr": 31503,
+    "workStudy": 3488,
+    "other": 1452,
+    "asylum": 329,
+    "workOnly": 15574,
+    "studyOnly": 10660
    },
    "2022-01-01": {
-    "npr": 30293,
-    "workStudy": 3636,
-    "other": 1382,
-    "asylum": 294,
-    "workOnly": 13581,
-    "studyOnly": 11400
+    "npr": 29197,
+    "workStudy": 3600,
+    "other": 1322,
+    "asylum": 300,
+    "workOnly": 12927,
+    "studyOnly": 11048
    },
    "2022-04-01": {
-    "npr": 30078,
-    "workStudy": 4055,
-    "other": 1420,
-    "asylum": 316,
-    "workOnly": 13103,
-    "studyOnly": 11184
+    "npr": 28761,
+    "workStudy": 3993,
+    "other": 1346,
+    "asylum": 317,
+    "workOnly": 12336,
+    "studyOnly": 10769
    },
    "2022-07-01": {
-    "npr": 32819,
-    "workStudy": 4896,
-    "other": 1619,
-    "asylum": 318,
-    "workOnly": 14761,
-    "studyOnly": 11225
+    "npr": 31848,
+    "workStudy": 4818,
+    "other": 1566,
+    "asylum": 312,
+    "workOnly": 14256,
+    "studyOnly": 10896
    },
    "2022-10-01": {
-    "npr": 37328,
-    "workStudy": 5455,
-    "other": 1855,
-    "asylum": 336,
-    "workOnly": 17328,
-    "studyOnly": 12354
+    "npr": 36421,
+    "workStudy": 5344,
+    "other": 1802,
+    "asylum": 335,
+    "workOnly": 16798,
+    "studyOnly": 12142
    },
    "2023-01-01": {
-    "npr": 39688,
-    "workStudy": 6737,
-    "other": 1966,
-    "asylum": 365,
-    "workOnly": 17457,
-    "studyOnly": 13163
+    "npr": 38285,
+    "workStudy": 6587,
+    "other": 1886,
+    "asylum": 362,
+    "workOnly": 16666,
+    "studyOnly": 12784
    },
    "2023-04-01": {
-    "npr": 41532,
-    "workStudy": 7540,
-    "other": 2119,
-    "asylum": 541,
-    "workOnly": 18487,
-    "studyOnly": 12845
+    "npr": 39561,
+    "workStudy": 7359,
+    "other": 1998,
+    "asylum": 538,
+    "workOnly": 17272,
+    "studyOnly": 12394
    },
    "2023-07-01": {
-    "npr": 46857,
-    "workStudy": 9076,
-    "other": 2375,
-    "asylum": 533,
-    "workOnly": 21865,
-    "studyOnly": 13008
+    "npr": 45293,
+    "workStudy": 8859,
+    "other": 2286,
+    "asylum": 531,
+    "workOnly": 20974,
+    "studyOnly": 12643
    },
    "2023-10-01": {
-    "npr": 53263,
-    "workStudy": 9018,
-    "other": 2715,
-    "asylum": 582,
-    "workOnly": 26470,
-    "studyOnly": 14478
+    "npr": 51603,
+    "workStudy": 8810,
+    "other": 2614,
+    "asylum": 577,
+    "workOnly": 25390,
+    "studyOnly": 14212
    },
    "2024-01-01": {
-    "npr": 54736,
-    "workStudy": 9927,
-    "other": 3037,
-    "asylum": 626,
-    "workOnly": 26630,
-    "studyOnly": 14516
+    "npr": 52532,
+    "workStudy": 9674,
+    "other": 2906,
+    "asylum": 625,
+    "workOnly": 25251,
+    "studyOnly": 14076
    },
    "2024-04-01": {
-    "npr": 56424,
-    "workStudy": 10618,
-    "other": 3370,
-    "asylum": 678,
-    "workOnly": 27778,
-    "studyOnly": 13980
+    "npr": 53577,
+    "workStudy": 10351,
+    "other": 3201,
+    "asylum": 667,
+    "workOnly": 25917,
+    "studyOnly": 13441
    },
    "2024-07-01": {
-    "npr": 58356,
-    "workStudy": 10766,
-    "other": 3467,
-    "asylum": 743,
-    "workOnly": 29747,
-    "studyOnly": 13633
+    "npr": 54897,
+    "workStudy": 10473,
+    "other": 3267,
+    "asylum": 733,
+    "workOnly": 27407,
+    "studyOnly": 13017
    },
    "2024-10-01": {
-    "npr": 60663,
-    "workStudy": 9011,
-    "other": 3602,
-    "asylum": 830,
-    "workOnly": 33584,
-    "studyOnly": 13636
+    "npr": 56725,
+    "workStudy": 8751,
+    "other": 3377,
+    "asylum": 826,
+    "workOnly": 30696,
+    "studyOnly": 13075
    },
    "2025-01-01": {
-    "npr": 59960,
-    "workStudy": 8798,
-    "other": 3512,
-    "asylum": 912,
-    "workOnly": 33256,
-    "studyOnly": 13482
+    "npr": 55320,
+    "workStudy": 8504,
+    "other": 3261,
+    "asylum": 910,
+    "workOnly": 29930,
+    "studyOnly": 12715
    },
    "2025-04-01": {
-    "npr": 59438,
-    "workStudy": 8773,
-    "other": 3480,
-    "asylum": 1006,
-    "workOnly": 33145,
-    "studyOnly": 13034
+    "npr": 55230,
+    "workStudy": 8443,
+    "other": 3279,
+    "asylum": 1002,
+    "workOnly": 30100,
+    "studyOnly": 12406
    },
    "2025-07-01": {
-    "npr": 59197,
-    "workStudy": 8084,
-    "other": 3418,
-    "asylum": 1085,
-    "workOnly": 34208,
-    "studyOnly": 12402
+    "npr": 56058,
+    "workStudy": 7686,
+    "other": 3238,
+    "asylum": 1084,
+    "workOnly": 32043,
+    "studyOnly": 12007
    },
    "2025-10-01": {
-    "npr": 56083,
-    "workStudy": 5396,
-    "other": 3260,
-    "asylum": 1163,
-    "workOnly": 35055,
-    "studyOnly": 11209
+    "npr": 57358,
+    "workStudy": 5312,
+    "other": 3324,
+    "asylum": 1197,
+    "workOnly": 35934,
+    "studyOnly": 11591
    },
    "2026-01-01": {
-    "npr": 53144,
-    "workStudy": 4948,
-    "other": 3093,
-    "asylum": 1285,
-    "workOnly": 33140,
-    "studyOnly": 10678
+    "npr": 56035,
+    "workStudy": 4865,
+    "other": 3239,
+    "asylum": 1317,
+    "workOnly": 35513,
+    "studyOnly": 11101
    },
    "2026-04-01": {
-    "npr": 51479,
-    "workStudy": 5265,
-    "other": 2944,
-    "asylum": 1424,
-    "workOnly": 31732,
-    "studyOnly": 10114
+    "npr": 54390,
+    "workStudy": 5198,
+    "other": 3088,
+    "asylum": 1456,
+    "workOnly": 33840,
+    "studyOnly": 10808
+   },
+   "2026-07-01": {
+    "npr": 55701,
+    "workStudy": 5042,
+    "other": 3229,
+    "asylum": 1484,
+    "workOnly": 35238,
+    "studyOnly": 10708
    }
   },
   "NB": {
    "2021-07-01": {
-    "npr": 14628,
-    "workStudy": 2013,
-    "other": 733,
-    "asylum": 201,
-    "workOnly": 8139,
-    "studyOnly": 3542
+    "npr": 14193,
+    "workStudy": 1999,
+    "other": 704,
+    "asylum": 196,
+    "workOnly": 7859,
+    "studyOnly": 3435
    },
    "2021-10-01": {
-    "npr": 16681,
-    "workStudy": 2086,
-    "other": 819,
+    "npr": 16308,
+    "workStudy": 2082,
+    "other": 794,
     "asylum": 187,
-    "workOnly": 8834,
-    "studyOnly": 4755
+    "workOnly": 8568,
+    "studyOnly": 4677
    },
    "2022-01-01": {
-    "npr": 16552,
-    "workStudy": 2349,
-    "other": 781,
-    "asylum": 186,
-    "workOnly": 7974,
-    "studyOnly": 5262
+    "npr": 16098,
+    "workStudy": 2313,
+    "other": 751,
+    "asylum": 185,
+    "workOnly": 7700,
+    "studyOnly": 5149
    },
    "2022-04-01": {
-    "npr": 16773,
-    "workStudy": 2687,
-    "other": 886,
-    "asylum": 187,
-    "workOnly": 7700,
-    "studyOnly": 5313
+    "npr": 16189,
+    "workStudy": 2623,
+    "other": 852,
+    "asylum": 184,
+    "workOnly": 7361,
+    "studyOnly": 5169
    },
    "2022-07-01": {
-    "npr": 19088,
-    "workStudy": 2892,
-    "other": 1033,
+    "npr": 18363,
+    "workStudy": 2803,
+    "other": 990,
     "asylum": 188,
-    "workOnly": 9763,
-    "studyOnly": 5212
+    "workOnly": 9340,
+    "studyOnly": 5042
    },
    "2022-10-01": {
-    "npr": 23007,
-    "workStudy": 3558,
-    "other": 1232,
-    "asylum": 179,
-    "workOnly": 11495,
-    "studyOnly": 6543
+    "npr": 22218,
+    "workStudy": 3474,
+    "other": 1174,
+    "asylum": 174,
+    "workOnly": 10954,
+    "studyOnly": 6442
    },
    "2023-01-01": {
-    "npr": 23977,
-    "workStudy": 3772,
-    "other": 1266,
-    "asylum": 223,
-    "workOnly": 11574,
-    "studyOnly": 7142
+    "npr": 22964,
+    "workStudy": 3680,
+    "other": 1199,
+    "asylum": 216,
+    "workOnly": 10904,
+    "studyOnly": 6965
    },
    "2023-04-01": {
-    "npr": 25340,
-    "workStudy": 4334,
-    "other": 1344,
-    "asylum": 427,
-    "workOnly": 12286,
-    "studyOnly": 6949
+    "npr": 23972,
+    "workStudy": 4235,
+    "other": 1252,
+    "asylum": 417,
+    "workOnly": 11336,
+    "studyOnly": 6732
    },
    "2023-07-01": {
-    "npr": 28642,
-    "workStudy": 4502,
-    "other": 1561,
-    "asylum": 408,
-    "workOnly": 15022,
-    "studyOnly": 7149
+    "npr": 27034,
+    "workStudy": 4373,
+    "other": 1456,
+    "asylum": 390,
+    "workOnly": 13922,
+    "studyOnly": 6893
    },
    "2023-10-01": {
-    "npr": 34467,
-    "workStudy": 5242,
-    "other": 1859,
-    "asylum": 462,
-    "workOnly": 18102,
-    "studyOnly": 8802
+    "npr": 33022,
+    "workStudy": 5144,
+    "other": 1761,
+    "asylum": 440,
+    "workOnly": 17034,
+    "studyOnly": 8643
    },
    "2024-01-01": {
-    "npr": 36121,
-    "workStudy": 6038,
-    "other": 2131,
-    "asylum": 500,
-    "workOnly": 18644,
-    "studyOnly": 8808
+    "npr": 34410,
+    "workStudy": 5911,
+    "other": 2011,
+    "asylum": 482,
+    "workOnly": 17425,
+    "studyOnly": 8581
    },
    "2024-04-01": {
-    "npr": 36777,
-    "workStudy": 6369,
-    "other": 2338,
-    "asylum": 558,
-    "workOnly": 19088,
-    "studyOnly": 8424
+    "npr": 35016,
+    "workStudy": 6246,
+    "other": 2208,
+    "asylum": 549,
+    "workOnly": 17830,
+    "studyOnly": 8183
    },
    "2024-07-01": {
-    "npr": 38386,
-    "workStudy": 6481,
-    "other": 2436,
-    "asylum": 607,
-    "workOnly": 20614,
-    "studyOnly": 8248
+    "npr": 36532,
+    "workStudy": 6363,
+    "other": 2303,
+    "asylum": 590,
+    "workOnly": 19315,
+    "studyOnly": 7961
    },
    "2024-10-01": {
-    "npr": 41405,
-    "workStudy": 5616,
-    "other": 2625,
-    "asylum": 696,
-    "workOnly": 23368,
-    "studyOnly": 9100
+    "npr": 39090,
+    "workStudy": 5501,
+    "other": 2463,
+    "asylum": 676,
+    "workOnly": 21597,
+    "studyOnly": 8853
    },
    "2025-01-01": {
-    "npr": 41640,
-    "workStudy": 6125,
-    "other": 2577,
-    "asylum": 830,
-    "workOnly": 23294,
-    "studyOnly": 8814
+    "npr": 39176,
+    "workStudy": 5986,
+    "other": 2415,
+    "asylum": 810,
+    "workOnly": 21488,
+    "studyOnly": 8477
    },
    "2025-04-01": {
-    "npr": 40262,
-    "workStudy": 6183,
-    "other": 2481,
-    "asylum": 955,
-    "workOnly": 22302,
-    "studyOnly": 8341
+    "npr": 38518,
+    "workStudy": 6005,
+    "other": 2386,
+    "asylum": 937,
+    "workOnly": 21082,
+    "studyOnly": 8108
    },
    "2025-07-01": {
-    "npr": 40264,
-    "workStudy": 6147,
-    "other": 2392,
-    "asylum": 1099,
-    "workOnly": 22628,
-    "studyOnly": 7998
+    "npr": 39119,
+    "workStudy": 5895,
+    "other": 2331,
+    "asylum": 1078,
+    "workOnly": 21889,
+    "studyOnly": 7926
    },
    "2025-10-01": {
-    "npr": 37656,
-    "workStudy": 4700,
-    "other": 2251,
-    "asylum": 1288,
-    "workOnly": 21666,
-    "studyOnly": 7751
+    "npr": 40610,
+    "workStudy": 4671,
+    "other": 2442,
+    "asylum": 1319,
+    "workOnly": 24015,
+    "studyOnly": 8163
    },
    "2026-01-01": {
-    "npr": 35739,
-    "workStudy": 4986,
-    "other": 2101,
-    "asylum": 1401,
-    "workOnly": 19984,
-    "studyOnly": 7267
+    "npr": 40174,
+    "workStudy": 4898,
+    "other": 2387,
+    "asylum": 1436,
+    "workOnly": 23674,
+    "studyOnly": 7779
    },
    "2026-04-01": {
-    "npr": 33371,
-    "workStudy": 5124,
-    "other": 1901,
-    "asylum": 1532,
-    "workOnly": 17801,
-    "studyOnly": 7013
+    "npr": 38276,
+    "workStudy": 5060,
+    "other": 2217,
+    "asylum": 1563,
+    "workOnly": 21864,
+    "studyOnly": 7572
+   },
+   "2026-07-01": {
+    "npr": 40640,
+    "workStudy": 5205,
+    "other": 2414,
+    "asylum": 1682,
+    "workOnly": 23718,
+    "studyOnly": 7621
    }
   },
   "QC": {
    "2021-07-01": {
-    "npr": 265574,
-    "workStudy": 29072,
-    "other": 12890,
-    "asylum": 60871,
-    "workOnly": 112824,
-    "studyOnly": 49917
+    "npr": 262125,
+    "workStudy": 29166,
+    "other": 12434,
+    "asylum": 62117,
+    "workOnly": 110674,
+    "studyOnly": 47734
    },
    "2021-10-01": {
-    "npr": 280038,
-    "workStudy": 28303,
-    "other": 13690,
-    "asylum": 58911,
-    "workOnly": 118283,
-    "studyOnly": 60851
+    "npr": 277895,
+    "workStudy": 29188,
+    "other": 13309,
+    "asylum": 60009,
+    "workOnly": 116058,
+    "studyOnly": 59331
    },
    "2022-01-01": {
-    "npr": 273190,
-    "workStudy": 27431,
-    "other": 13010,
-    "asylum": 60290,
-    "workOnly": 109238,
-    "studyOnly": 63221
+    "npr": 268349,
+    "workStudy": 28276,
+    "other": 12422,
+    "asylum": 61261,
+    "workOnly": 105514,
+    "studyOnly": 60876
    },
    "2022-04-01": {
-    "npr": 277899,
-    "workStudy": 26899,
-    "other": 13496,
-    "asylum": 65116,
-    "workOnly": 112350,
-    "studyOnly": 60038
+    "npr": 271432,
+    "workStudy": 27839,
+    "other": 12755,
+    "asylum": 65938,
+    "workOnly": 107422,
+    "studyOnly": 57478
    },
    "2022-07-01": {
-    "npr": 302507,
-    "workStudy": 26063,
-    "other": 14962,
-    "asylum": 73680,
-    "workOnly": 128335,
-    "studyOnly": 59467
+    "npr": 297439,
+    "workStudy": 26961,
+    "other": 14358,
+    "asylum": 74578,
+    "workOnly": 124688,
+    "studyOnly": 56854
    },
    "2022-10-01": {
-    "npr": 333586,
-    "workStudy": 28271,
-    "other": 16154,
-    "asylum": 84448,
-    "workOnly": 139779,
-    "studyOnly": 64934
+    "npr": 331986,
+    "workStudy": 30038,
+    "other": 15751,
+    "asylum": 85416,
+    "workOnly": 137431,
+    "studyOnly": 63350
    },
    "2023-01-01": {
-    "npr": 347516,
-    "workStudy": 28909,
-    "other": 15996,
-    "asylum": 98318,
-    "workOnly": 136753,
-    "studyOnly": 67540
+    "npr": 344254,
+    "workStudy": 30279,
+    "other": 15466,
+    "asylum": 99470,
+    "workOnly": 133897,
+    "studyOnly": 65142
    },
    "2023-04-01": {
-    "npr": 366065,
-    "workStudy": 31027,
-    "other": 16856,
-    "asylum": 104924,
-    "workOnly": 147182,
-    "studyOnly": 66076
+    "npr": 360080,
+    "workStudy": 32171,
+    "other": 16099,
+    "asylum": 105923,
+    "workOnly": 142570,
+    "studyOnly": 63317
    },
    "2023-07-01": {
-    "npr": 406878,
-    "workStudy": 33648,
-    "other": 19386,
-    "asylum": 112384,
-    "workOnly": 174826,
-    "studyOnly": 66634
+    "npr": 400986,
+    "workStudy": 34342,
+    "other": 18737,
+    "asylum": 113249,
+    "workOnly": 170922,
+    "studyOnly": 63736
    },
    "2023-10-01": {
-    "npr": 453814,
-    "workStudy": 38863,
-    "other": 21502,
-    "asylum": 124904,
-    "workOnly": 193290,
-    "studyOnly": 75255
+    "npr": 449452,
+    "workStudy": 40362,
+    "other": 20929,
+    "asylum": 125571,
+    "workOnly": 189152,
+    "studyOnly": 73438
    },
    "2024-01-01": {
-    "npr": 477242,
-    "workStudy": 43530,
-    "other": 22652,
-    "asylum": 138781,
-    "workOnly": 195110,
-    "studyOnly": 77169
+    "npr": 469346,
+    "workStudy": 44558,
+    "other": 21863,
+    "asylum": 139386,
+    "workOnly": 189133,
+    "studyOnly": 74406
    },
    "2024-04-01": {
-    "npr": 506303,
-    "workStudy": 46624,
-    "other": 24382,
-    "asylum": 151113,
-    "workOnly": 209695,
-    "studyOnly": 74489
+    "npr": 494649,
+    "workStudy": 47390,
+    "other": 23347,
+    "asylum": 151613,
+    "workOnly": 200877,
+    "studyOnly": 71422
    },
    "2024-07-01": {
-    "npr": 541282,
-    "workStudy": 49446,
-    "other": 26170,
-    "asylum": 162785,
-    "workOnly": 229372,
-    "studyOnly": 73509
+    "npr": 524824,
+    "workStudy": 49894,
+    "other": 24790,
+    "asylum": 163290,
+    "workOnly": 216907,
+    "studyOnly": 69943
    },
    "2024-10-01": {
-    "npr": 568751,
-    "workStudy": 52034,
-    "other": 27440,
-    "asylum": 171088,
-    "workOnly": 242675,
-    "studyOnly": 75514
+    "npr": 553727,
+    "workStudy": 52841,
+    "other": 26139,
+    "asylum": 171644,
+    "workOnly": 230423,
+    "studyOnly": 72680
    },
    "2025-01-01": {
-    "npr": 565452,
-    "workStudy": 54132,
-    "other": 26380,
-    "asylum": 179017,
-    "workOnly": 231732,
-    "studyOnly": 74191
+    "npr": 548543,
+    "workStudy": 54578,
+    "other": 24952,
+    "asylum": 179554,
+    "workOnly": 218619,
+    "studyOnly": 70840
    },
    "2025-04-01": {
-    "npr": 560788,
-    "workStudy": 53414,
-    "other": 25880,
-    "asylum": 183734,
-    "workOnly": 228576,
-    "studyOnly": 69184
+    "npr": 546078,
+    "workStudy": 53536,
+    "other": 24646,
+    "asylum": 184202,
+    "workOnly": 216798,
+    "studyOnly": 66896
    },
    "2025-07-01": {
-    "npr": 562312,
-    "workStudy": 51973,
-    "other": 25675,
-    "asylum": 188257,
-    "workOnly": 229846,
-    "studyOnly": 66561
+    "npr": 553615,
+    "workStudy": 52027,
+    "other": 24852,
+    "asylum": 188609,
+    "workOnly": 223283,
+    "studyOnly": 64844
    },
    "2025-10-01": {
-    "npr": 546323,
-    "workStudy": 47187,
-    "other": 24631,
-    "asylum": 190163,
-    "workOnly": 220885,
-    "studyOnly": 63457
+    "npr": 557358,
+    "workStudy": 48086,
+    "other": 24977,
+    "asylum": 193524,
+    "workOnly": 226130,
+    "studyOnly": 64641
    },
    "2026-01-01": {
-    "npr": 514039,
-    "workStudy": 45699,
-    "other": 22275,
-    "asylum": 191492,
-    "workOnly": 194629,
-    "studyOnly": 59944
+    "npr": 535761,
+    "workStudy": 46079,
+    "other": 23370,
+    "asylum": 194752,
+    "workOnly": 210108,
+    "studyOnly": 61452
    },
    "2026-04-01": {
-    "npr": 492374,
-    "workStudy": 42954,
-    "other": 21170,
-    "asylum": 190300,
-    "workOnly": 182668,
-    "studyOnly": 55282
+    "npr": 527201,
+    "workStudy": 43933,
+    "other": 23046,
+    "asylum": 193528,
+    "workOnly": 207792,
+    "studyOnly": 58902
+   },
+   "2026-07-01": {
+    "npr": 531821,
+    "workStudy": 41001,
+    "other": 24191,
+    "asylum": 190727,
+    "workOnly": 217501,
+    "studyOnly": 58401
    }
   },
   "ON": {
    "2021-07-01": {
-    "npr": 625685,
-    "workStudy": 87722,
-    "other": 19631,
-    "asylum": 89567,
-    "workOnly": 266175,
-    "studyOnly": 162590
+    "npr": 605593,
+    "workStudy": 86300,
+    "other": 18603,
+    "asylum": 88540,
+    "workOnly": 252755,
+    "studyOnly": 159395
    },
    "2021-10-01": {
-    "npr": 668235,
-    "workStudy": 88709,
-    "other": 21933,
-    "asylum": 86583,
-    "workOnly": 284281,
-    "studyOnly": 186729
+    "npr": 648267,
+    "workStudy": 86978,
+    "other": 20772,
+    "asylum": 85691,
+    "workOnly": 270412,
+    "studyOnly": 184414
    },
    "2022-01-01": {
-    "npr": 657067,
-    "workStudy": 89955,
-    "other": 21219,
-    "asylum": 84565,
-    "workOnly": 264228,
-    "studyOnly": 197100
+    "npr": 635206,
+    "workStudy": 88006,
+    "other": 19931,
+    "asylum": 83776,
+    "workOnly": 250252,
+    "studyOnly": 193241
    },
    "2022-04-01": {
-    "npr": 678666,
-    "workStudy": 96853,
-    "other": 24128,
-    "asylum": 85493,
-    "workOnly": 268682,
-    "studyOnly": 203510
+    "npr": 652579,
+    "workStudy": 94394,
+    "other": 22633,
+    "asylum": 84821,
+    "workOnly": 252059,
+    "studyOnly": 198672
    },
    "2022-07-01": {
-    "npr": 746616,
-    "workStudy": 108996,
-    "other": 26536,
-    "asylum": 87989,
-    "workOnly": 301681,
-    "studyOnly": 221414
+    "npr": 725825,
+    "workStudy": 106438,
+    "other": 25397,
+    "asylum": 87275,
+    "workOnly": 289148,
+    "studyOnly": 217567
    },
    "2022-10-01": {
-    "npr": 853546,
-    "workStudy": 121233,
-    "other": 30497,
-    "asylum": 91738,
-    "workOnly": 364430,
-    "studyOnly": 245648
+    "npr": 829416,
+    "workStudy": 118428,
+    "other": 29252,
+    "asylum": 90995,
+    "workOnly": 347676,
+    "studyOnly": 243065
    },
    "2023-01-01": {
-    "npr": 933850,
-    "workStudy": 130836,
-    "other": 33519,
-    "asylum": 100267,
-    "workOnly": 399089,
-    "studyOnly": 270139
+    "npr": 900526,
+    "workStudy": 127959,
+    "other": 31764,
+    "asylum": 99464,
+    "workOnly": 375614,
+    "studyOnly": 265725
    },
    "2023-04-01": {
-    "npr": 978422,
-    "workStudy": 139143,
-    "other": 35802,
-    "asylum": 111663,
-    "workOnly": 426662,
-    "studyOnly": 265152
+    "npr": 935419,
+    "workStudy": 135955,
+    "other": 33505,
+    "asylum": 110973,
+    "workOnly": 395694,
+    "studyOnly": 259292
    },
    "2023-07-01": {
-    "npr": 1071304,
-    "workStudy": 161596,
-    "other": 39174,
-    "asylum": 120011,
-    "workOnly": 466267,
-    "studyOnly": 284256
+    "npr": 1036940,
+    "workStudy": 158614,
+    "other": 37303,
+    "asylum": 119470,
+    "workOnly": 442101,
+    "studyOnly": 279452
    },
    "2023-10-01": {
-    "npr": 1226515,
-    "workStudy": 174101,
-    "other": 45113,
-    "asylum": 134029,
-    "workOnly": 550389,
-    "studyOnly": 322883
+    "npr": 1187163,
+    "workStudy": 170829,
+    "other": 43026,
+    "asylum": 133690,
+    "workOnly": 520544,
+    "studyOnly": 319074
    },
    "2024-01-01": {
-    "npr": 1314268,
-    "workStudy": 184911,
-    "other": 52410,
-    "asylum": 154697,
-    "workOnly": 586628,
-    "studyOnly": 335622
+    "npr": 1263100,
+    "workStudy": 181479,
+    "other": 49727,
+    "asylum": 154536,
+    "workOnly": 547951,
+    "studyOnly": 329407
    },
    "2024-04-01": {
-    "npr": 1381106,
-    "workStudy": 196401,
-    "other": 60312,
-    "asylum": 172253,
-    "workOnly": 627696,
-    "studyOnly": 324444
+    "npr": 1315126,
+    "workStudy": 192431,
+    "other": 56748,
+    "asylum": 172209,
+    "workOnly": 576681,
+    "studyOnly": 317057
    },
    "2024-07-01": {
-    "npr": 1439014,
-    "workStudy": 211706,
-    "other": 61714,
-    "asylum": 190538,
-    "workOnly": 650059,
-    "studyOnly": 324997
+    "npr": 1361351,
+    "workStudy": 207222,
+    "other": 57655,
+    "asylum": 190513,
+    "workOnly": 589717,
+    "studyOnly": 316244
    },
    "2024-10-01": {
-    "npr": 1476059,
-    "workStudy": 184972,
-    "other": 63557,
-    "asylum": 207178,
-    "workOnly": 712793,
-    "studyOnly": 307559
+    "npr": 1380046,
+    "workStudy": 180543,
+    "other": 58707,
+    "asylum": 207174,
+    "workOnly": 636054,
+    "studyOnly": 297568
    },
    "2025-01-01": {
-    "npr": 1462048,
-    "workStudy": 173884,
-    "other": 62162,
-    "asylum": 222635,
-    "workOnly": 719701,
-    "studyOnly": 283666
+    "npr": 1356033,
+    "workStudy": 168817,
+    "other": 56951,
+    "asylum": 222623,
+    "workOnly": 637321,
+    "studyOnly": 270321
    },
    "2025-04-01": {
-    "npr": 1427747,
-    "workStudy": 172221,
-    "other": 60419,
-    "asylum": 232435,
-    "workOnly": 703524,
-    "studyOnly": 259148
+    "npr": 1339915,
+    "workStudy": 166621,
+    "other": 56616,
+    "asylum": 232437,
+    "workOnly": 633670,
+    "studyOnly": 250571
    },
    "2025-07-01": {
-    "npr": 1390350,
-    "workStudy": 159687,
-    "other": 57368,
-    "asylum": 240612,
-    "workOnly": 691857,
-    "studyOnly": 240826
+    "npr": 1331941,
+    "workStudy": 153256,
+    "other": 54373,
+    "asylum": 240517,
+    "workOnly": 648188,
+    "studyOnly": 235607
    },
    "2025-10-01": {
-    "npr": 1283070,
-    "workStudy": 116240,
-    "other": 53916,
-    "asylum": 242646,
-    "workOnly": 676953,
-    "studyOnly": 193315
+    "npr": 1324920,
+    "workStudy": 114523,
+    "other": 55298,
+    "asylum": 249534,
+    "workOnly": 707495,
+    "studyOnly": 198070
    },
    "2026-01-01": {
-    "npr": 1200779,
-    "workStudy": 102025,
-    "other": 50336,
-    "asylum": 249755,
-    "workOnly": 630506,
-    "studyOnly": 168157
+    "npr": 1291155,
+    "workStudy": 99870,
+    "other": 53922,
+    "asylum": 256361,
+    "workOnly": 705413,
+    "studyOnly": 175589
    },
    "2026-04-01": {
-    "npr": 1147978,
-    "workStudy": 99824,
-    "other": 46681,
-    "asylum": 253643,
-    "workOnly": 594921,
-    "studyOnly": 152909
+    "npr": 1264993,
+    "workStudy": 98717,
+    "other": 51453,
+    "asylum": 260267,
+    "workOnly": 690590,
+    "studyOnly": 163966
+   },
+   "2026-07-01": {
+    "npr": 1246301,
+    "workStudy": 97435,
+    "other": 51955,
+    "asylum": 256259,
+    "workOnly": 686382,
+    "studyOnly": 154270
    }
   },
   "MB": {
    "2021-07-01": {
-    "npr": 40148,
-    "workStudy": 4946,
-    "other": 1207,
-    "asylum": 1169,
-    "workOnly": 19813,
-    "studyOnly": 13013
+    "npr": 39079,
+    "workStudy": 4914,
+    "other": 1142,
+    "asylum": 1148,
+    "workOnly": 19138,
+    "studyOnly": 12737
    },
    "2021-10-01": {
-    "npr": 41928,
-    "workStudy": 4751,
-    "other": 1271,
-    "asylum": 1072,
-    "workOnly": 20872,
-    "studyOnly": 13962
+    "npr": 40606,
+    "workStudy": 4702,
+    "other": 1198,
+    "asylum": 1048,
+    "workOnly": 19928,
+    "studyOnly": 13730
    },
    "2022-01-01": {
-    "npr": 41950,
-    "workStudy": 4801,
-    "other": 1268,
-    "asylum": 976,
-    "workOnly": 20363,
-    "studyOnly": 14542
+    "npr": 40244,
+    "workStudy": 4705,
+    "other": 1175,
+    "asylum": 966,
+    "workOnly": 19190,
+    "studyOnly": 14208
    },
    "2022-04-01": {
-    "npr": 42440,
-    "workStudy": 4777,
-    "other": 1518,
-    "asylum": 931,
-    "workOnly": 20590,
-    "studyOnly": 14624
+    "npr": 40573,
+    "workStudy": 4661,
+    "other": 1408,
+    "asylum": 925,
+    "workOnly": 19333,
+    "studyOnly": 14246
    },
    "2022-07-01": {
-    "npr": 46815,
-    "workStudy": 5006,
-    "other": 1811,
-    "asylum": 955,
-    "workOnly": 23509,
-    "studyOnly": 15534
+    "npr": 45581,
+    "workStudy": 4881,
+    "other": 1737,
+    "asylum": 947,
+    "workOnly": 22833,
+    "studyOnly": 15183
    },
    "2022-10-01": {
-    "npr": 53397,
-    "workStudy": 4902,
-    "other": 2349,
-    "asylum": 978,
-    "workOnly": 28757,
-    "studyOnly": 16411
+    "npr": 51677,
+    "workStudy": 4787,
+    "other": 2251,
+    "asylum": 977,
+    "workOnly": 27505,
+    "studyOnly": 16157
    },
    "2023-01-01": {
-    "npr": 60540,
-    "workStudy": 5447,
-    "other": 2872,
-    "asylum": 1068,
-    "workOnly": 33733,
-    "studyOnly": 17420
+    "npr": 57567,
+    "workStudy": 5343,
+    "other": 2705,
+    "asylum": 1064,
+    "workOnly": 31423,
+    "studyOnly": 17032
    },
    "2023-04-01": {
-    "npr": 64397,
-    "workStudy": 6018,
-    "other": 3409,
-    "asylum": 1077,
-    "workOnly": 36785,
-    "studyOnly": 17108
+    "npr": 60943,
+    "workStudy": 5930,
+    "other": 3203,
+    "asylum": 1081,
+    "workOnly": 34033,
+    "studyOnly": 16696
    },
    "2023-07-01": {
-    "npr": 69706,
-    "workStudy": 6736,
-    "other": 3725,
-    "asylum": 1135,
-    "workOnly": 39713,
-    "studyOnly": 18397
+    "npr": 67475,
+    "workStudy": 6663,
+    "other": 3562,
+    "asylum": 1144,
+    "workOnly": 38083,
+    "studyOnly": 18023
    },
    "2023-10-01": {
-    "npr": 76808,
-    "workStudy": 7143,
-    "other": 4095,
-    "asylum": 1355,
-    "workOnly": 44108,
-    "studyOnly": 20107
+    "npr": 73748,
+    "workStudy": 7067,
+    "other": 3896,
+    "asylum": 1366,
+    "workOnly": 41566,
+    "studyOnly": 19853
    },
    "2024-01-01": {
-    "npr": 83136,
-    "workStudy": 8261,
-    "other": 5546,
-    "asylum": 1765,
-    "workOnly": 47113,
-    "studyOnly": 20451
+    "npr": 78644,
+    "workStudy": 8198,
+    "other": 5270,
+    "asylum": 1763,
+    "workOnly": 43304,
+    "studyOnly": 20109
    },
    "2024-04-01": {
-    "npr": 90093,
-    "workStudy": 9028,
-    "other": 7048,
-    "asylum": 2215,
-    "workOnly": 51653,
-    "studyOnly": 20149
+    "npr": 84998,
+    "workStudy": 8981,
+    "other": 6712,
+    "asylum": 2212,
+    "workOnly": 47308,
+    "studyOnly": 19785
    },
    "2024-07-01": {
-    "npr": 91929,
-    "workStudy": 9595,
-    "other": 7125,
-    "asylum": 2617,
-    "workOnly": 52001,
-    "studyOnly": 20591
+    "npr": 86460,
+    "workStudy": 9566,
+    "other": 6776,
+    "asylum": 2605,
+    "workOnly": 47312,
+    "studyOnly": 20201
    },
    "2024-10-01": {
-    "npr": 94767,
-    "workStudy": 8810,
-    "other": 7115,
-    "asylum": 3171,
-    "workOnly": 54975,
-    "studyOnly": 20696
+    "npr": 87967,
+    "workStudy": 8759,
+    "other": 6730,
+    "asylum": 3163,
+    "workOnly": 49006,
+    "studyOnly": 20309
    },
    "2025-01-01": {
-    "npr": 96311,
-    "workStudy": 8857,
-    "other": 6949,
-    "asylum": 3762,
-    "workOnly": 56325,
-    "studyOnly": 20418
+    "npr": 88460,
+    "workStudy": 8803,
+    "other": 6529,
+    "asylum": 3759,
+    "workOnly": 49513,
+    "studyOnly": 19856
    },
    "2025-04-01": {
-    "npr": 93605,
-    "workStudy": 8974,
-    "other": 6847,
-    "asylum": 4152,
-    "workOnly": 54401,
-    "studyOnly": 19231
+    "npr": 87259,
+    "workStudy": 8828,
+    "other": 6649,
+    "asylum": 4147,
+    "workOnly": 48601,
+    "studyOnly": 19034
    },
    "2025-07-01": {
-    "npr": 90597,
-    "workStudy": 8525,
-    "other": 6432,
+    "npr": 87246,
+    "workStudy": 8313,
+    "other": 6194,
     "asylum": 4487,
-    "workOnly": 52606,
-    "studyOnly": 18547
+    "workOnly": 49496,
+    "studyOnly": 18756
    },
    "2025-10-01": {
-    "npr": 84278,
-    "workStudy": 6396,
-    "other": 5943,
-    "asylum": 4694,
-    "workOnly": 50374,
-    "studyOnly": 16871
+    "npr": 87524,
+    "workStudy": 6430,
+    "other": 6044,
+    "asylum": 4869,
+    "workOnly": 52279,
+    "studyOnly": 17902
    },
    "2026-01-01": {
-    "npr": 79225,
-    "workStudy": 6133,
-    "other": 5592,
-    "asylum": 5130,
-    "workOnly": 46645,
-    "studyOnly": 15725
+    "npr": 86029,
+    "workStudy": 6150,
+    "other": 5824,
+    "asylum": 5296,
+    "workOnly": 51584,
+    "studyOnly": 17175
    },
    "2026-04-01": {
-    "npr": 73441,
-    "workStudy": 6262,
-    "other": 5069,
-    "asylum": 5432,
-    "workOnly": 42278,
-    "studyOnly": 14400
+    "npr": 81343,
+    "workStudy": 6285,
+    "other": 5348,
+    "asylum": 5593,
+    "workOnly": 48003,
+    "studyOnly": 16114
+   },
+   "2026-07-01": {
+    "npr": 80432,
+    "workStudy": 6425,
+    "other": 5618,
+    "asylum": 5675,
+    "workOnly": 47099,
+    "studyOnly": 15615
    }
   },
   "SK": {
    "2021-07-01": {
-    "npr": 19500,
-    "workStudy": 2168,
-    "other": 906,
-    "asylum": 310,
-    "workOnly": 9261,
-    "studyOnly": 6855
+    "npr": 18840,
+    "workStudy": 2141,
+    "other": 863,
+    "asylum": 300,
+    "workOnly": 8857,
+    "studyOnly": 6679
    },
    "2021-10-01": {
-    "npr": 20487,
-    "workStudy": 1890,
-    "other": 966,
-    "asylum": 293,
-    "workOnly": 9902,
-    "studyOnly": 7436
+    "npr": 19858,
+    "workStudy": 1841,
+    "other": 924,
+    "asylum": 292,
+    "workOnly": 9513,
+    "studyOnly": 7288
    },
    "2022-01-01": {
-    "npr": 20354,
-    "workStudy": 1792,
-    "other": 981,
-    "asylum": 285,
-    "workOnly": 9316,
-    "studyOnly": 7980
+    "npr": 19738,
+    "workStudy": 1745,
+    "other": 914,
+    "asylum": 282,
+    "workOnly": 8976,
+    "studyOnly": 7821
    },
    "2022-04-01": {
-    "npr": 20359,
-    "workStudy": 1870,
-    "other": 1084,
-    "asylum": 269,
-    "workOnly": 9215,
-    "studyOnly": 7921
+    "npr": 19649,
+    "workStudy": 1810,
+    "other": 1023,
+    "asylum": 266,
+    "workOnly": 8784,
+    "studyOnly": 7766
    },
    "2022-07-01": {
-    "npr": 22303,
-    "workStudy": 1980,
-    "other": 1249,
-    "asylum": 267,
-    "workOnly": 10636,
-    "studyOnly": 8171
+    "npr": 21604,
+    "workStudy": 1922,
+    "other": 1162,
+    "asylum": 266,
+    "workOnly": 10249,
+    "studyOnly": 8005
    },
    "2022-10-01": {
-    "npr": 25661,
-    "workStudy": 2145,
-    "other": 1397,
-    "asylum": 272,
-    "workOnly": 12821,
-    "studyOnly": 9026
+    "npr": 24850,
+    "workStudy": 2102,
+    "other": 1338,
+    "asylum": 271,
+    "workOnly": 12295,
+    "studyOnly": 8844
    },
    "2023-01-01": {
-    "npr": 29183,
-    "workStudy": 2454,
-    "other": 1595,
-    "asylum": 286,
-    "workOnly": 14592,
-    "studyOnly": 10256
+    "npr": 27946,
+    "workStudy": 2413,
+    "other": 1510,
+    "asylum": 285,
+    "workOnly": 13701,
+    "studyOnly": 10037
    },
    "2023-04-01": {
-    "npr": 29772,
-    "workStudy": 2737,
-    "other": 1692,
-    "asylum": 311,
-    "workOnly": 15166,
-    "studyOnly": 9866
+    "npr": 28189,
+    "workStudy": 2666,
+    "other": 1578,
+    "asylum": 308,
+    "workOnly": 14009,
+    "studyOnly": 9628
    },
    "2023-07-01": {
-    "npr": 33119,
-    "workStudy": 3131,
-    "other": 1891,
-    "asylum": 355,
-    "workOnly": 17335,
-    "studyOnly": 10407
+    "npr": 31466,
+    "workStudy": 3046,
+    "other": 1778,
+    "asylum": 343,
+    "workOnly": 16175,
+    "studyOnly": 10124
    },
    "2023-10-01": {
-    "npr": 39486,
-    "workStudy": 3449,
-    "other": 2235,
-    "asylum": 420,
-    "workOnly": 21106,
-    "studyOnly": 12276
+    "npr": 37585,
+    "workStudy": 3336,
+    "other": 2110,
+    "asylum": 410,
+    "workOnly": 19795,
+    "studyOnly": 11934
    },
    "2024-01-01": {
-    "npr": 43320,
-    "workStudy": 4112,
-    "other": 2729,
-    "asylum": 519,
-    "workOnly": 22573,
-    "studyOnly": 13387
+    "npr": 40911,
+    "workStudy": 3953,
+    "other": 2569,
+    "asylum": 508,
+    "workOnly": 20911,
+    "studyOnly": 12970
    },
    "2024-04-01": {
-    "npr": 46254,
-    "workStudy": 4738,
-    "other": 3191,
-    "asylum": 683,
-    "workOnly": 24802,
-    "studyOnly": 12840
+    "npr": 43282,
+    "workStudy": 4510,
+    "other": 2987,
+    "asylum": 669,
+    "workOnly": 22724,
+    "studyOnly": 12392
    },
    "2024-07-01": {
-    "npr": 48289,
-    "workStudy": 4776,
-    "other": 3316,
-    "asylum": 789,
-    "workOnly": 26200,
-    "studyOnly": 13208
+    "npr": 45033,
+    "workStudy": 4519,
+    "other": 3097,
+    "asylum": 778,
+    "workOnly": 23986,
+    "studyOnly": 12653
    },
    "2024-10-01": {
-    "npr": 51536,
-    "workStudy": 4400,
-    "other": 3466,
-    "asylum": 989,
-    "workOnly": 29026,
-    "studyOnly": 13655
+    "npr": 47913,
+    "workStudy": 4142,
+    "other": 3232,
+    "asylum": 959,
+    "workOnly": 26583,
+    "studyOnly": 12997
    },
    "2025-01-01": {
-    "npr": 53171,
-    "workStudy": 4635,
-    "other": 3462,
-    "asylum": 1212,
-    "workOnly": 29835,
-    "studyOnly": 14027
+    "npr": 49537,
+    "workStudy": 4353,
+    "other": 3252,
+    "asylum": 1163,
+    "workOnly": 27429,
+    "studyOnly": 13340
    },
    "2025-04-01": {
-    "npr": 51283,
-    "workStudy": 4776,
-    "other": 3371,
-    "asylum": 1344,
-    "workOnly": 28632,
-    "studyOnly": 13160
+    "npr": 49764,
+    "workStudy": 4541,
+    "other": 3309,
+    "asylum": 1288,
+    "workOnly": 27930,
+    "studyOnly": 12696
    },
    "2025-07-01": {
-    "npr": 50480,
-    "workStudy": 4690,
-    "other": 3219,
-    "asylum": 1524,
-    "workOnly": 28323,
-    "studyOnly": 12724
+    "npr": 49363,
+    "workStudy": 4395,
+    "other": 3166,
+    "asylum": 1463,
+    "workOnly": 27741,
+    "studyOnly": 12598
    },
    "2025-10-01": {
-    "npr": 47503,
-    "workStudy": 3534,
-    "other": 3039,
-    "asylum": 1644,
-    "workOnly": 27924,
-    "studyOnly": 11362
+    "npr": 50369,
+    "workStudy": 3449,
+    "other": 3230,
+    "asylum": 1645,
+    "workOnly": 30215,
+    "studyOnly": 11830
    },
    "2026-01-01": {
-    "npr": 45646,
-    "workStudy": 3680,
-    "other": 2895,
-    "asylum": 1863,
-    "workOnly": 26421,
-    "studyOnly": 10787
+    "npr": 50096,
+    "workStudy": 3551,
+    "other": 3173,
+    "asylum": 1861,
+    "workOnly": 30027,
+    "studyOnly": 11484
    },
    "2026-04-01": {
-    "npr": 43196,
-    "workStudy": 3978,
-    "other": 2686,
-    "asylum": 2039,
-    "workOnly": 24753,
-    "studyOnly": 9740
+    "npr": 48516,
+    "workStudy": 3864,
+    "other": 3013,
+    "asylum": 2037,
+    "workOnly": 28931,
+    "studyOnly": 10671
+   },
+   "2026-07-01": {
+    "npr": 48514,
+    "workStudy": 4181,
+    "other": 3101,
+    "asylum": 2098,
+    "workOnly": 28920,
+    "studyOnly": 10214
    }
   }
  }

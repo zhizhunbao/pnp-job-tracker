@@ -1,6 +1,6 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-09-26",
+  "fetched": "2026-10-02",
   "provinces": {
     "QC": {
       "label": "PSTQ",
@@ -12,322 +12,2871 @@
           "stream": "Stream 1: Highly qualified and specialized skills",
           "note": "Minimum score by invitation profile: 634, 706, 696",
           "score": 634,
-          "invitations": 86
+          "invitations": 86,
+          "exercises": [
+            {
+              "invitations": 37,
+              "invitationsText": "37",
+              "score": 634,
+              "nocs": [
+                "21100",
+                "21110",
+                "31209",
+                "31303",
+                "32109",
+                "32124",
+                "41301",
+                "42201",
+                "42202",
+                "42203"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 8,
+              "invitationsText": "8",
+              "score": 706,
+              "nocs": [
+                "62020",
+                "62200"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 41,
+              "invitationsText": "41",
+              "score": 696,
+              "nocs": [
+                "20010",
+                "21211",
+                "21220",
+                "21321",
+                "22100",
+                "22232",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "22313",
+                "72100",
+                "72102",
+                "72105",
+                "72106",
+                "72203",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72404",
+                "72410",
+                "72422",
+                "72500"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-24",
           "stream": "Stream 2: Intermediate and manual skills",
           "note": "Minimum score by invitation profile: 631, 706, 698, 611",
           "score": 611,
-          "invitations": 316
+          "invitations": 316,
+          "exercises": [
+            {
+              "invitations": 48,
+              "invitationsText": "48",
+              "score": 631,
+              "nocs": [
+                "13112",
+                "33101",
+                "33102",
+                "33103",
+                "43100",
+                "44101"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "From 10 to 15",
+              "score": 706,
+              "nocs": [
+                "63200",
+                "65310"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "Less than 5",
+              "score": 698,
+              "nocs": [
+                "73100",
+                "73101",
+                "73102",
+                "73110",
+                "73111",
+                "73112",
+                "73113",
+                "73300",
+                "75110",
+                "93200",
+                "94106"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 254,
+              "invitationsText": "254",
+              "score": 611,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-24",
           "stream": "Stream 3: Regulated professions",
           "note": "Minimum score by invitation profile: 631, 697, 696, 380",
           "score": 380,
-          "invitations": 110
+          "invitations": 110,
+          "exercises": [
+            {
+              "invitations": 69,
+              "invitationsText": "69",
+              "score": 631,
+              "nocs": [
+                "31100",
+                "31101",
+                "31102",
+                "31103",
+                "31110",
+                "31112",
+                "31120",
+                "31121",
+                "31200",
+                "31202",
+                "31203",
+                "31209",
+                "31300",
+                "31301",
+                "31302",
+                "31303",
+                "32100",
+                "32101",
+                "32102",
+                "32103",
+                "32109",
+                "32111",
+                "32112",
+                "32120",
+                "32121",
+                "32122",
+                "32123",
+                "41220",
+                "41221",
+                "41300",
+                "41301",
+                "42202"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 37,
+              "invitationsText": "37",
+              "score": 697,
+              "nocs": [
+                "21300",
+                "21301",
+                "21310",
+                "21321",
+                "21322",
+                "21331",
+                "21390",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "72102",
+                "72105",
+                "72106",
+                "72200",
+                "72201",
+                "72203",
+                "72300",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72402",
+                "72406",
+                "72422",
+                "72500",
+                "72602",
+                "72603"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "Less than 5",
+              "score": 696,
+              "nocs": [
+                "73100",
+                "73101",
+                "73102",
+                "73110",
+                "73111",
+                "73112",
+                "73113",
+                "75110"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "Less than 5",
+              "score": 380,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-24",
           "stream": "Stream 4: Exceptional talent",
           "note": "",
           "score": null,
-          "invitations": 7
+          "invitations": 7,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "Less than 5",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "Less than 5",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-27",
           "stream": "Stream 1: Highly qualified and specialized skills",
           "note": "Minimum score by invitation profile: 639, 710, 694",
           "score": 639,
-          "invitations": 87
+          "invitations": 87,
+          "exercises": [
+            {
+              "invitations": 26,
+              "invitationsText": "26",
+              "score": 639,
+              "nocs": [
+                "21100",
+                "21110",
+                "31209",
+                "31303",
+                "32109",
+                "32124",
+                "41301",
+                "42201",
+                "42202",
+                "42203"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 11,
+              "invitationsText": "11",
+              "score": 710,
+              "nocs": [
+                "62020",
+                "62200"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 50,
+              "invitationsText": "50",
+              "score": 694,
+              "nocs": [
+                "20010",
+                "21211",
+                "21220",
+                "21321",
+                "22100",
+                "22232",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "22313",
+                "72100",
+                "72102",
+                "72105",
+                "72106",
+                "72203",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72404",
+                "72410",
+                "72422",
+                "72500"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-27",
           "stream": "Stream 2: Intermediate and manual skills",
           "note": "Minimum score by invitation profile: 638, 706, 695, 616",
           "score": 616,
-          "invitations": null
+          "invitations": null,
+          "exercises": [
+            {
+              "invitations": 314,
+              "invitationsText": "314",
+              "score": 638,
+              "nocs": [
+                "13112",
+                "33101",
+                "33102",
+                "33103",
+                "43100",
+                "44101"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "From 10 to 15",
+              "score": 706,
+              "nocs": [
+                "63200",
+                "65310"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "Less than 5",
+              "score": 695,
+              "nocs": [
+                "73100",
+                "73101",
+                "73102",
+                "73110",
+                "73111",
+                "73112",
+                "73113",
+                "73300",
+                "75110",
+                "93200",
+                "94106"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 249,
+              "invitationsText": "249",
+              "score": 616,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-27",
           "stream": "Stream 3: Regulated professions",
           "note": "Minimum score by invitation profile: 639, 694, 393",
           "score": 393,
-          "invitations": 109
+          "invitations": 109,
+          "exercises": [
+            {
+              "invitations": 77,
+              "invitationsText": "77",
+              "score": 639,
+              "nocs": [
+                "31100",
+                "31101",
+                "31102",
+                "31103",
+                "31110",
+                "31112",
+                "31120",
+                "31121",
+                "31200",
+                "31202",
+                "31203",
+                "31209",
+                "31300",
+                "31301",
+                "31302",
+                "31303",
+                "32100",
+                "32101",
+                "32102",
+                "32103",
+                "32109",
+                "32111",
+                "32112",
+                "32120",
+                "32121",
+                "32122",
+                "32123",
+                "41220",
+                "41221",
+                "41300",
+                "41301",
+                "42202"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "From 25 to 30",
+              "score": 694,
+              "nocs": [
+                "21300",
+                "21301",
+                "21310",
+                "21321",
+                "21322",
+                "21331",
+                "21390",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "72102",
+                "72105",
+                "72106",
+                "72200",
+                "72201",
+                "72203",
+                "72300",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72402",
+                "72406",
+                "72422",
+                "72500",
+                "72602",
+                "72603"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "Less than 5",
+              "score": 393,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-27",
           "stream": "Stream 4: Exceptional talent",
           "note": "",
           "score": null,
-          "invitations": 21
+          "invitations": 21,
+          "exercises": [
+            {
+              "invitations": 15,
+              "invitationsText": "15",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 6,
+              "invitationsText": "6",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-30",
           "stream": "Stream 1: Highly qualified and specialized skills",
           "note": "Minimum score by invitation profile: 651, 702, 701",
           "score": 651,
-          "invitations": 105
+          "invitations": 105,
+          "exercises": [
+            {
+              "invitations": 44,
+              "invitationsText": "44",
+              "score": 651,
+              "nocs": [
+                "21100",
+                "21110",
+                "31209",
+                "31303",
+                "32109",
+                "32124",
+                "41301",
+                "42201",
+                "42202",
+                "42203"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 12,
+              "invitationsText": "12",
+              "score": 702,
+              "nocs": [
+                "62020",
+                "62200"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 49,
+              "invitationsText": "49",
+              "score": 701,
+              "nocs": [
+                "20010",
+                "21211",
+                "21220",
+                "21321",
+                "22100",
+                "22232",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "22313",
+                "72100",
+                "72102",
+                "72105",
+                "72106",
+                "72203",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72404",
+                "72410",
+                "72422",
+                "72500"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-30",
           "stream": "Stream 2: Intermediate and manual skills",
           "note": "Minimum score by invitation profile: 656, 702, 621",
           "score": 621,
-          "invitations": 296
+          "invitations": 296,
+          "exercises": [
+            {
+              "invitations": 37,
+              "invitationsText": "37",
+              "score": 656,
+              "nocs": [
+                "13112",
+                "33101",
+                "33102",
+                "33103",
+                "43100",
+                "44101"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 10,
+              "invitationsText": "10",
+              "score": 702,
+              "nocs": [
+                "63200",
+                "65310"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 249,
+              "invitationsText": "249",
+              "score": 621,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-30",
           "stream": "Stream 3: Regulated professions",
           "note": "Minimum score by invitation profile: 649, 700, 376",
           "score": 376,
-          "invitations": 110
+          "invitations": 110,
+          "exercises": [
+            {
+              "invitations": 72,
+              "invitationsText": "72",
+              "score": 649,
+              "nocs": [
+                "31100",
+                "31101",
+                "31102",
+                "31103",
+                "31110",
+                "31112",
+                "31120",
+                "31121",
+                "31200",
+                "31202",
+                "31203",
+                "31209",
+                "31300",
+                "31301",
+                "31302",
+                "31303",
+                "32100",
+                "32101",
+                "32102",
+                "32103",
+                "32109",
+                "32111",
+                "32112",
+                "32120",
+                "32121",
+                "32122",
+                "32123",
+                "41220",
+                "41221",
+                "41300",
+                "41301"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 33,
+              "invitationsText": "33",
+              "score": 700,
+              "nocs": [
+                "21300",
+                "21301",
+                "21310",
+                "21321",
+                "21322",
+                "21331",
+                "21390",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "72102",
+                "72105",
+                "72106",
+                "72200",
+                "72201",
+                "72203",
+                "72300",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72402",
+                "72406",
+                "72422",
+                "72500",
+                "72602",
+                "72603"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 5,
+              "invitationsText": "5",
+              "score": 376,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-30",
           "stream": "Stream 4: Exceptional talent",
           "note": "",
           "score": null,
-          "invitations": 12
+          "invitations": 12,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "Less than 15",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "Less than 5",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-03",
           "stream": "Stream 1: Highly qualified and specialized skills",
           "note": "Minimum score by invitation profile: 628, 726, 656",
           "score": 628,
-          "invitations": 74
+          "invitations": 74,
+          "exercises": [
+            {
+              "invitations": 31,
+              "invitationsText": "31",
+              "score": 628,
+              "nocs": [
+                "32124",
+                "41301",
+                "42201",
+                "42202",
+                "42203"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 5,
+              "invitationsText": "5",
+              "score": 726,
+              "nocs": [
+                "62020",
+                "62200",
+                "72400",
+                "72404",
+                "72422"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 38,
+              "invitationsText": "38",
+              "score": 656,
+              "nocs": [
+                "20010",
+                "21321",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "72100",
+                "72102",
+                "72105",
+                "72106",
+                "72203",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72422",
+                "72500"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-03",
           "stream": "Stream 2: Intermediate and manual skills",
           "note": "Minimum score by invitation profile: 628, 726, 628",
           "score": 628,
-          "invitations": 289
+          "invitations": 289,
+          "exercises": [
+            {
+              "invitations": 35,
+              "invitationsText": "35",
+              "score": 628,
+              "nocs": [
+                "33101",
+                "33102",
+                "33103"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 14,
+              "invitationsText": "14",
+              "score": 726,
+              "nocs": [
+                "54100",
+                "63200",
+                "65200",
+                "65201",
+                "65310"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 240,
+              "invitationsText": "240",
+              "score": 628,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-03",
           "stream": "Stream 3: Regulated professions",
           "note": "Minimum score by invitation profile: 628, 656, 656, 475",
           "score": 475,
-          "invitations": 131
+          "invitations": 131,
+          "exercises": [
+            {
+              "invitations": 84,
+              "invitationsText": "84",
+              "score": 628,
+              "nocs": [
+                "31100",
+                "31101",
+                "31102",
+                "31103",
+                "31112",
+                "31120",
+                "31121",
+                "31200",
+                "31202",
+                "31203",
+                "31300",
+                "31301",
+                "31302",
+                "32100",
+                "32101",
+                "32102",
+                "32103",
+                "32111",
+                "32112",
+                "32120",
+                "32121",
+                "32123",
+                "41220",
+                "41221",
+                "41300",
+                "41301"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 41,
+              "invitationsText": "41",
+              "score": 656,
+              "nocs": [
+                "21300",
+                "21301",
+                "21310",
+                "21321",
+                "21322",
+                "21331",
+                "21390",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "72102",
+                "72105",
+                "72106",
+                "72200",
+                "72203",
+                "72300",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72402",
+                "72406",
+                "72422",
+                "72500"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "Less than 5",
+              "score": 656,
+              "nocs": [
+                "73100",
+                "73101",
+                "73102",
+                "73110",
+                "73111",
+                "73112",
+                "73113",
+                "75110"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "Less than 5",
+              "score": 475,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-03",
           "stream": "Stream 4: Exceptional talent",
           "note": "",
           "score": null,
-          "invitations": 7
+          "invitations": 7,
+          "exercises": [
+            {
+              "invitations": 7,
+              "invitationsText": "7",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-04",
           "stream": "Stream 1: Highly qualified and specialized skills",
           "note": "Minimum score by invitation profile: 677, 666, 692",
           "score": 666,
-          "invitations": 1094
+          "invitations": 1094,
+          "exercises": [
+            {
+              "invitations": 459,
+              "invitationsText": "459",
+              "score": 677,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 239,
+              "invitationsText": "239",
+              "score": null,
+              "nocs": [
+                "31303",
+                "32124",
+                "41301",
+                "42201",
+                "42202",
+                "42203"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 165,
+              "invitationsText": "165",
+              "score": 666,
+              "nocs": [
+                "20010",
+                "21321",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "22313",
+                "62020",
+                "62200",
+                "72100",
+                "72102",
+                "72105",
+                "72106",
+                "72203",
+                "72204",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72404",
+                "72422",
+                "72500"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 231,
+              "invitationsText": "231",
+              "score": 692,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-04",
           "stream": "Stream 2: Intermediate and manual skills",
           "note": "Minimum score by invitation profile: 624, 653, 652",
           "score": 624,
-          "invitations": 756
+          "invitations": 756,
+          "exercises": [
+            {
+              "invitations": 229,
+              "invitationsText": "229",
+              "score": 624,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 256,
+              "invitationsText": "256",
+              "score": null,
+              "nocs": [
+                "33101",
+                "33102",
+                "33103"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 90,
+              "invitationsText": "90",
+              "score": 653,
+              "nocs": [
+                "54100",
+                "63200",
+                "65200",
+                "65201",
+                "65310",
+                "73100",
+                "73101",
+                "73102",
+                "73110",
+                "73111",
+                "73112",
+                "73113",
+                "73400",
+                "75110"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 181,
+              "invitationsText": "181",
+              "score": 652,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-04",
           "stream": "Stream 3: Regulated professions",
           "note": "Minimum score by invitation profile: 562, 556, 580, 637",
           "score": 556,
-          "invitations": 677
+          "invitations": 677,
+          "exercises": [
+            {
+              "invitations": 73,
+              "invitationsText": "73",
+              "score": 562,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 393,
+              "invitationsText": "393",
+              "score": null,
+              "nocs": [
+                "31100",
+                "31101",
+                "31102",
+                "31103",
+                "31110",
+                "31112",
+                "31120",
+                "31121",
+                "31200",
+                "31202",
+                "31203",
+                "31300",
+                "31301",
+                "31302",
+                "31303",
+                "32100",
+                "32101",
+                "32102",
+                "32103",
+                "32104",
+                "32111",
+                "32112",
+                "32120",
+                "32121",
+                "32122",
+                "32123",
+                "41220",
+                "41221",
+                "41300",
+                "41301",
+                "42202"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 118,
+              "invitationsText": "118",
+              "score": 556,
+              "nocs": [
+                "21203",
+                "21300",
+                "21301",
+                "21310",
+                "21320",
+                "21321",
+                "21322",
+                "21390",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "72102",
+                "72105",
+                "72106",
+                "72200",
+                "72201",
+                "72203",
+                "72300",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72402",
+                "72406",
+                "72422",
+                "72500",
+                "72602"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 71,
+              "invitationsText": "71",
+              "score": 580,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 22,
+              "invitationsText": "22",
+              "score": 637,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-04",
           "stream": "Stream 4: Exceptional talent",
           "note": "",
           "score": null,
-          "invitations": 22
+          "invitations": 22,
+          "exercises": [
+            {
+              "invitations": 17,
+              "invitationsText": "17",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 5,
+              "invitationsText": "5",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-30",
           "stream": "Stream 1: Highly qualified and specialized skills",
           "note": "Minimum score by invitation profile: 716, 571, 704",
           "score": 571,
-          "invitations": 983
+          "invitations": 983,
+          "exercises": [
+            {
+              "invitations": 379,
+              "invitationsText": "379",
+              "score": 716,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 354,
+              "invitationsText": "354",
+              "score": 571,
+              "nocs": [
+                "20010",
+                "21321",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "31303",
+                "32124",
+                "41301",
+                "42201",
+                "42202",
+                "42203",
+                "72100",
+                "72102",
+                "72105",
+                "72106",
+                "72203",
+                "72204",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72422",
+                "72500"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 250,
+              "invitationsText": "250",
+              "score": 704,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-30",
           "stream": "Stream 2: Intermediate and manual skills",
           "note": "Minimum score by invitation profile: 660, 494, 660",
           "score": 494,
-          "invitations": 506
+          "invitations": 506,
+          "exercises": [
+            {
+              "invitations": 153,
+              "invitationsText": "153",
+              "score": 660,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 163,
+              "invitationsText": "163",
+              "score": 494,
+              "nocs": [
+                "33101",
+                "33102",
+                "33103",
+                "73100",
+                "73101",
+                "73102",
+                "73110",
+                "73111",
+                "73112",
+                "73113",
+                "73400",
+                "75110"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 190,
+              "invitationsText": "190",
+              "score": 660,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-30",
           "stream": "Stream 3: Regulated professions",
           "note": "Minimum score by invitation profile: 632, 495, 382, 625, 728",
           "score": 382,
-          "invitations": 1058
+          "invitations": 1058,
+          "exercises": [
+            {
+              "invitations": 226,
+              "invitationsText": "226",
+              "score": 632,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 723,
+              "invitationsText": "723",
+              "score": 495,
+              "nocs": [
+                "21203",
+                "21300",
+                "21301",
+                "21310",
+                "21320",
+                "21321",
+                "21322",
+                "21390",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "31103",
+                "31110",
+                "31112",
+                "31120",
+                "31121",
+                "31200",
+                "31202",
+                "31203",
+                "31300",
+                "31301",
+                "31302",
+                "31303",
+                "32100",
+                "32101",
+                "32102",
+                "32103",
+                "32104",
+                "32111",
+                "32112",
+                "32120",
+                "32121",
+                "32122",
+                "32123",
+                "41220",
+                "41221",
+                "41300",
+                "41301",
+                "42202",
+                "72102",
+                "72105",
+                "72106",
+                "72200",
+                "72203",
+                "72300",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72402",
+                "72406",
+                "72422",
+                "72500"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 17,
+              "invitationsText": "17",
+              "score": null,
+              "nocs": [
+                "31100",
+                "31101",
+                "31102"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 10,
+              "invitationsText": "10",
+              "score": 382,
+              "nocs": [
+                "73100",
+                "73101",
+                "73102",
+                "73110",
+                "73111",
+                "73112",
+                "73113",
+                "73400",
+                "73402",
+                "75110"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 70,
+              "invitationsText": "70",
+              "score": 625,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 12,
+              "invitationsText": "12",
+              "score": 728,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-30",
           "stream": "Stream 4: Exceptional talent",
           "note": "",
           "score": null,
-          "invitations": 8
+          "invitations": 8,
+          "exercises": [
+            {
+              "invitations": 2,
+              "invitationsText": "2",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 6,
+              "invitationsText": "6",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-20",
           "stream": "Stream 1: Highly qualified and specialized skills",
           "note": "Minimum score by invitation profile: 718, 588, 709",
           "score": 588,
-          "invitations": 893
+          "invitations": 893,
+          "exercises": [
+            {
+              "invitations": 258,
+              "invitationsText": "258",
+              "score": 718,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 412,
+              "invitationsText": "412",
+              "score": 588,
+              "nocs": [
+                "20010",
+                "21321",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "31303",
+                "32124",
+                "41301",
+                "42201",
+                "42202",
+                "42203",
+                "72100",
+                "72102",
+                "72105",
+                "72106",
+                "72203",
+                "72204",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72422",
+                "72500"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 223,
+              "invitationsText": "223",
+              "score": 709,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-20",
           "stream": "Stream 2: Intermediate and manual skills",
           "note": "Minimum score by invitation profile: 679, 505, 662",
           "score": 505,
-          "invitations": 509
+          "invitations": 509,
+          "exercises": [
+            {
+              "invitations": 109,
+              "invitationsText": "109",
+              "score": 679,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 193,
+              "invitationsText": "193",
+              "score": 505,
+              "nocs": [
+                "33101",
+                "33102",
+                "33103",
+                "73100",
+                "73101",
+                "73102",
+                "73110",
+                "73111",
+                "73112",
+                "73113",
+                "73400",
+                "75110"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 207,
+              "invitationsText": "207",
+              "score": 662,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-20",
           "stream": "Stream 3: Regulated professions",
           "note": "Minimum score by invitation profile: 672, 563, 397, 650, 740",
           "score": 397,
-          "invitations": 1118
+          "invitations": 1118,
+          "exercises": [
+            {
+              "invitations": 151,
+              "invitationsText": "151",
+              "score": 672,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 855,
+              "invitationsText": "855",
+              "score": 563,
+              "nocs": [
+                "21203",
+                "21300",
+                "21301",
+                "21310",
+                "21320",
+                "21321",
+                "21322",
+                "21390",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "31103",
+                "31110",
+                "31112",
+                "31120",
+                "31121",
+                "31200",
+                "31202",
+                "31203",
+                "31300",
+                "31301",
+                "31302",
+                "31303",
+                "32100",
+                "32101",
+                "32102",
+                "32103",
+                "32104",
+                "32111",
+                "32112",
+                "32120",
+                "32121",
+                "32122",
+                "32123",
+                "41220",
+                "41221",
+                "41300",
+                "41301",
+                "42202",
+                "72102",
+                "72105",
+                "72106",
+                "72200",
+                "72203",
+                "72300",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72402",
+                "72406",
+                "72422",
+                "72500"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 17,
+              "invitationsText": "17",
+              "score": null,
+              "nocs": [
+                "31100",
+                "31101",
+                "31102"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 13,
+              "invitationsText": "13",
+              "score": 397,
+              "nocs": [
+                "73100",
+                "73101",
+                "73102",
+                "73110",
+                "73111",
+                "73112",
+                "73113",
+                "73400",
+                "73402",
+                "75110"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 72,
+              "invitationsText": "72",
+              "score": 650,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 10,
+              "invitationsText": "10",
+              "score": 740,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-20",
           "stream": "Stream 4: Exceptional talent",
           "note": "",
           "score": null,
-          "invitations": 2
+          "invitations": 2,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-26",
           "stream": "Stream 1: Highly qualified and specialized skills",
           "note": "Minimum score by invitation profile: 741, 627, 722",
           "score": 627,
-          "invitations": 907
+          "invitations": 907,
+          "exercises": [
+            {
+              "invitations": 254,
+              "invitationsText": "254",
+              "score": 741,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 419,
+              "invitationsText": "419",
+              "score": 627,
+              "nocs": [
+                "20010",
+                "21321",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "31303",
+                "32124",
+                "41301",
+                "42201",
+                "42202",
+                "42203",
+                "72100",
+                "72102",
+                "72105",
+                "72106",
+                "72203",
+                "72204",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72422",
+                "72500"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 234,
+              "invitationsText": "234",
+              "score": 722,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-26",
           "stream": "Stream 2: Intermediate and manual skills",
           "note": "Minimum score by invitation profile: 756, 562, 688",
           "score": 562,
-          "invitations": 495
+          "invitations": 495,
+          "exercises": [
+            {
+              "invitations": 104,
+              "invitationsText": "104",
+              "score": 756,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 194,
+              "invitationsText": "194",
+              "score": 562,
+              "nocs": [
+                "33101",
+                "33102",
+                "33103",
+                "73100",
+                "73101",
+                "73102",
+                "73110",
+                "73111",
+                "73112",
+                "73113",
+                "73400",
+                "75110"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 197,
+              "invitationsText": "197",
+              "score": 688,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-26",
           "stream": "Stream 3: Regulated professions",
           "note": "Minimum score by invitation profile: 730, 632, 452, 693, 774",
           "score": 452,
-          "invitations": 1141
+          "invitations": 1141,
+          "exercises": [
+            {
+              "invitations": 151,
+              "invitationsText": "151",
+              "score": 730,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": 841,
+              "invitationsText": "841",
+              "score": 632,
+              "nocs": [
+                "21203",
+                "21300",
+                "21301",
+                "21310",
+                "21320",
+                "21321",
+                "21322",
+                "21390",
+                "22300",
+                "22301",
+                "22302",
+                "22310",
+                "31103",
+                "31110",
+                "31112",
+                "31120",
+                "31121",
+                "31200",
+                "31202",
+                "31203",
+                "31300",
+                "31301",
+                "31302",
+                "31303",
+                "32100",
+                "32101",
+                "32102",
+                "32103",
+                "32104",
+                "32111",
+                "32112",
+                "32120",
+                "32121",
+                "32122",
+                "32123",
+                "41220",
+                "41221",
+                "41300",
+                "41301",
+                "42202",
+                "72102",
+                "72105",
+                "72106",
+                "72200",
+                "72203",
+                "72300",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72402",
+                "72406",
+                "72422",
+                "72500"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 39,
+              "invitationsText": "39",
+              "score": null,
+              "nocs": [
+                "31100",
+                "31101",
+                "31102"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 30,
+              "invitationsText": "30",
+              "score": 452,
+              "nocs": [
+                "73100",
+                "73101",
+                "73102",
+                "73110",
+                "73111",
+                "73112",
+                "73113",
+                "73400",
+                "73402",
+                "75110"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 70,
+              "invitationsText": "70",
+              "score": 693,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 10,
+              "invitationsText": "10",
+              "score": 774,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-26",
           "stream": "Stream 4: Exceptional talent",
           "note": "",
           "score": null,
-          "invitations": 6
+          "invitations": 6,
+          "exercises": [
+            {
+              "invitations": 3,
+              "invitationsText": "3",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": 3,
+              "invitationsText": "3",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-01-29",
           "stream": "Stream 1: Highly qualified and specialized skills",
           "note": "Minimum score by invitation profile: 782, 674, 737",
           "score": 674,
-          "invitations": 1094
+          "invitations": 1094,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 782,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 674,
+              "nocs": [
+                "20010",
+                "22300",
+                "22301",
+                "22302",
+                "31303",
+                "32124",
+                "41301",
+                "42201",
+                "42202",
+                "72102",
+                "72105",
+                "72106",
+                "72204",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72500"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 737,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-01-29",
           "stream": "Stream 2: Intermediate and manual skills",
           "note": "Minimum score by invitation profile: 800, 609, 657",
           "score": 609,
-          "invitations": 683
+          "invitations": 683,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 800,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 609,
+              "nocs": [
+                "33101",
+                "33102",
+                "33103",
+                "73100",
+                "73101",
+                "73102",
+                "73110",
+                "73111",
+                "73112",
+                "73113",
+                "73400",
+                "75110"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 657,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": true,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-01-29",
           "stream": "Stream 3: Regulated professions",
           "note": "Minimum score by invitation profile: 781, 694, 546, 722, 855",
           "score": 546,
-          "invitations": 750
+          "invitations": 750,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 781,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 694,
+              "nocs": [
+                "21203",
+                "21300",
+                "21310",
+                "21320",
+                "21321",
+                "21322",
+                "21390",
+                "31100",
+                "31101",
+                "31102",
+                "31103",
+                "31110",
+                "31112",
+                "31120",
+                "31121",
+                "31200",
+                "31202",
+                "31203",
+                "31300",
+                "31301",
+                "31302",
+                "31303",
+                "32100",
+                "32101",
+                "32102",
+                "32103",
+                "32104",
+                "32111",
+                "32112",
+                "32120",
+                "32121",
+                "32122",
+                "32123",
+                "32124",
+                "41220",
+                "41221",
+                "41300",
+                "41301",
+                "42202",
+                "72102",
+                "72105",
+                "72106",
+                "72200",
+                "72204",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72402",
+                "72406",
+                "72500"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 546,
+              "nocs": [
+                "73100",
+                "73101",
+                "73102",
+                "73110",
+                "73111",
+                "73112",
+                "73113",
+                "73400",
+                "73402",
+                "75110"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 722,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 855,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2026-01-29",
           "stream": "Stream 4: Exceptional talent",
           "note": "",
           "score": null,
-          "invitations": 20
+          "invitations": 20,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-04",
           "stream": "Stream 1: Highly qualified and specialized skills",
           "note": "Minimum score by invitation profile: 781, 644",
           "score": 644,
-          "invitations": 605
+          "invitations": 605,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 781,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            },
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 644,
+              "nocs": [
+                "22301",
+                "22302",
+                "22310",
+                "72100",
+                "72102",
+                "72106",
+                "72311",
+                "72400",
+                "72422",
+                "92012"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-04",
           "stream": "Stream 2: Intermediate and manual skills",
           "note": "Minimum score by invitation profile: 573, 612",
           "score": 573,
-          "invitations": 604
+          "invitations": 604,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 573,
+              "nocs": [
+                "63201",
+                "63202",
+                "63221",
+                "64200",
+                "65202",
+                "73111",
+                "73401",
+                "94101",
+                "94103",
+                "94105",
+                "94106",
+                "94111",
+                "94112",
+                "94120",
+                "94124",
+                "94130",
+                "94132",
+                "94140",
+                "94141",
+                "94142",
+                "94143",
+                "94204",
+                "94210",
+                "94211",
+                "94212",
+                "94213",
+                "95101",
+                "95103",
+                "95104",
+                "95105",
+                "95106",
+                "95107"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": true,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 612,
+              "nocs": [
+                "33101",
+                "33102",
+                "33103",
+                "73100",
+                "73101",
+                "73102",
+                "73110",
+                "73111",
+                "73112",
+                "73113",
+                "73400",
+                "75110"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-04",
           "stream": "Stream 3: Regulated professions",
           "note": "Minimum score by invitation profile: 717, 535",
           "score": 535,
-          "invitations": 649
+          "invitations": 649,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 717,
+              "nocs": [
+                "21203",
+                "21300",
+                "21310",
+                "21320",
+                "21321",
+                "21322",
+                "21390",
+                "31100",
+                "31101",
+                "31102",
+                "31103",
+                "31110",
+                "31112",
+                "31120",
+                "31121",
+                "31200",
+                "31202",
+                "31203",
+                "31300",
+                "31301",
+                "31302",
+                "31303",
+                "32100",
+                "32101",
+                "32102",
+                "32103",
+                "32104",
+                "32111",
+                "32112",
+                "32120",
+                "32121",
+                "32122",
+                "32123",
+                "41220",
+                "41221",
+                "41300",
+                "41301",
+                "42202",
+                "72102",
+                "72105",
+                "72106",
+                "72200",
+                "72301",
+                "72310",
+                "72320",
+                "72321",
+                "72400",
+                "72401",
+                "72402",
+                "72406",
+                "73100",
+                "73101",
+                "73102",
+                "73110",
+                "73111",
+                "73112",
+                "73113",
+                "73400",
+                "73402",
+                "75110"
+              ],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-04",
           "stream": "Stream 4: Exceptional talent",
           "note": "",
           "score": null,
-          "invitations": 12
+          "invitations": 12,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2025-08-28",
           "stream": "Stream 1: Highly qualified and specialized skills",
           "note": "",
           "score": 760,
-          "invitations": 227
+          "invitations": 227,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 760,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2025-08-28",
           "stream": "Stream 4: Exceptional talent",
           "note": "",
           "score": null,
-          "invitations": 21
+          "invitations": 21,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2025-08-14",
           "stream": "Stream 3: Regulated professions",
           "note": "",
           "score": 766,
-          "invitations": 275
+          "invitations": 275,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 766,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2025-07-31",
           "stream": "Stream 2: Intermediate and manual skills",
           "note": "",
           "score": 661,
-          "invitations": 273
+          "invitations": 273,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 661,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": true,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2025-07-17",
           "stream": "Stream 1: Highly qualified and specialized skills",
           "note": "",
           "score": 768,
-          "invitations": 216
+          "invitations": 216,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": 768,
+              "nocs": [],
+              "inQuebec": true,
+              "outsideMontreal": false,
+              "quebecDiploma": true
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         },
         {
           "date": "2025-07-17",
           "stream": "Stream 4: Exceptional talent",
           "note": "",
           "score": null,
-          "invitations": 22
+          "invitations": 22,
+          "exercises": [
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            },
+            {
+              "invitations": null,
+              "invitationsText": "",
+              "score": null,
+              "nocs": [],
+              "inQuebec": false,
+              "outsideMontreal": false,
+              "quebecDiploma": false
+            }
+          ],
+          "selection": "",
+          "program": "PSTQ",
+          "unit": "invitation"
         }
       ]
     }

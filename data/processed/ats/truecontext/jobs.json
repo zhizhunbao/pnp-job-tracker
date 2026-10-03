@@ -1,28 +1,33 @@
 {
   "ats": "bamboohr",
   "token": "truecontext",
-  "count": 1,
+  "count": 2,
   "jobs": [
+    {
+      "title": "Enterprise Account Executive, EMEA",
+      "location": "",
+      "url": "https://truecontext.bamboohr.com/careers/46",
+      "department": null,
+      "posted": "2026-08-20",
+      "valid_through": "",
+      "address": "",
+      "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false
+    },
     {
       "title": "Technical Analyst",
       "location": "Ottawa, Ontario",
       "url": "https://truecontext.bamboohr.com/careers/47",
       "department": "Ops-Support",
-      "posted": "",
+      "posted": "2026-09-21",
+      "valid_through": "",
       "address": "",
       "salary": "$60,000 - $75,000",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 67500,
-      "salaryText": "$60K–$75K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": true
     }
   ]
 }

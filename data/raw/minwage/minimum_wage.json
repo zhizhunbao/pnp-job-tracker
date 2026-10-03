@@ -1,6 +1,6 @@
 {
  "url": "https://minwage-salairemin.service.canada.ca/en/general.html",
- "fetched": "2026-09-24",
+ "fetched": "2026-10-02",
  "rows": [
   {
    "province": "AB",
@@ -3335,8 +3335,14 @@
   {
    "province": "SK",
    "effectiveDate": "2025-10-01",
-   "expiryDate": "",
+   "expiryDate": "2026-10-01",
    "rate": 15.35
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2026-10-01",
+   "expiryDate": "",
+   "rate": 15.7
   },
   {
    "province": "YT",

@@ -1,6 +1,6 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-09-26",
+  "fetched": "2026-10-02",
   "provinces": {
     "NL": {
       "label": "NLPNP + AIP",
@@ -9,206 +9,543 @@
       "draws": [
         {
           "date": "2026-09-25",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 41",
           "score": null,
-          "invitations": 41
+          "invitations": 41,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-18",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 61, AIP – 01",
           "score": null,
-          "invitations": 62
+          "invitations": 61,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-09-18",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 61, AIP – 01",
+          "score": null,
+          "invitations": 1,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-10",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 36",
           "score": null,
-          "invitations": 36
+          "invitations": 36,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-04",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 97",
           "score": null,
-          "invitations": 97
+          "invitations": 97,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-26",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 94, AIP – 46",
           "score": null,
-          "invitations": 140
+          "invitations": 94,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-08-26",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 94, AIP – 46",
+          "score": null,
+          "invitations": 46,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-18",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 122",
           "score": null,
-          "invitations": 122
+          "invitations": 122,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-10",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 186, AIP – 22",
           "score": null,
-          "invitations": 208
+          "invitations": 186,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-08-10",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 186, AIP – 22",
+          "score": null,
+          "invitations": 22,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-28",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 400, AIP – 45",
           "score": null,
-          "invitations": 445
+          "invitations": 400,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-07-28",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 400, AIP – 45",
+          "score": null,
+          "invitations": 45,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-10",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 17, AIP – 40",
           "score": null,
-          "invitations": 57
+          "invitations": 17,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-07-10",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 17, AIP – 40",
+          "score": null,
+          "invitations": 40,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-10",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 89, AIP – 19",
           "score": null,
-          "invitations": 108
+          "invitations": 89,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-06-10",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 89, AIP – 19",
+          "score": null,
+          "invitations": 19,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-28",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 84, AIP – 19",
           "score": null,
-          "invitations": 103
+          "invitations": 84,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-05-28",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 84, AIP – 19",
+          "score": null,
+          "invitations": 19,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-11",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 168, AIP – 18",
           "score": null,
-          "invitations": 186
+          "invitations": 168,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-05-11",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 168, AIP – 18",
+          "score": null,
+          "invitations": 18,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-01",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 157, AIP – 33",
           "score": null,
-          "invitations": 190
+          "invitations": 157,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-05-01",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 157, AIP – 33",
+          "score": null,
+          "invitations": 33,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-13",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 177, AIP – 33",
           "score": null,
-          "invitations": 210
+          "invitations": 177,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-04-13",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 177, AIP – 33",
+          "score": null,
+          "invitations": 33,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-30",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 209, AIP – 36",
           "score": null,
-          "invitations": 245
+          "invitations": 209,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-03-30",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 209, AIP – 36",
+          "score": null,
+          "invitations": 36,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-06",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 362, AIP – 83",
           "score": null,
-          "invitations": 445
+          "invitations": 362,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-03-06",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 362, AIP – 83",
+          "score": null,
+          "invitations": 83,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2025-11-12",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 220, AIP – 110",
           "score": null,
-          "invitations": 330
+          "invitations": 220,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2025-11-12",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 220, AIP – 110",
+          "score": null,
+          "invitations": 110,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2025-10-22",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 55, AIP – 45",
           "score": null,
-          "invitations": 100
+          "invitations": 55,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2025-10-22",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 55, AIP – 45",
+          "score": null,
+          "invitations": 45,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2025-10-09",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 73, AIP – 52",
           "score": null,
-          "invitations": 125
+          "invitations": 73,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2025-10-09",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 73, AIP – 52",
+          "score": null,
+          "invitations": 52,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2025-09-26",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 107, AIP – 110",
           "score": null,
-          "invitations": 217
+          "invitations": 107,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2025-09-26",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 107, AIP – 110",
+          "score": null,
+          "invitations": 110,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2025-09-12",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 218, AIP – 135",
           "score": null,
-          "invitations": 353
+          "invitations": 218,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2025-09-12",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 218, AIP – 135",
+          "score": null,
+          "invitations": 135,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2025-08-29",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 125, AIP – 77",
           "score": null,
-          "invitations": 202
+          "invitations": 125,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2025-08-29",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 125, AIP – 77",
+          "score": null,
+          "invitations": 77,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2025-08-13",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 180, AIP – 51",
           "score": null,
-          "invitations": 231
+          "invitations": 180,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2025-08-13",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 180, AIP – 51",
+          "score": null,
+          "invitations": 51,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2025-07-29",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 100, AIP – 50",
           "score": null,
-          "invitations": 150
+          "invitations": 100,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2025-07-29",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 100, AIP – 50",
+          "score": null,
+          "invitations": 50,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2025-07-10",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 300, AIP – 59",
           "score": null,
-          "invitations": 359
+          "invitations": 300,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2025-07-10",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 300, AIP – 59",
+          "score": null,
+          "invitations": 59,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-24",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 257, AIP – 63",
           "score": null,
-          "invitations": 320
+          "invitations": 257,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2025-06-24",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 257, AIP – 63",
+          "score": null,
+          "invitations": 63,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2025-05-29",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 351, AIP – 54",
           "score": null,
-          "invitations": 405
+          "invitations": 351,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2025-05-29",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 351, AIP – 54",
+          "score": null,
+          "invitations": 54,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2025-05-08",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 281, AIP – 47",
           "score": null,
-          "invitations": 328
+          "invitations": 281,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2025-05-08",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 281, AIP – 47",
+          "score": null,
+          "invitations": 47,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         },
         {
           "date": "2025-04-03",
-          "stream": "NLPNP + AIP (ITA batch)",
+          "stream": "NLPNP (ITA batch)",
           "note": "NLPNP – 206, AIP – 50",
           "score": null,
-          "invitations": 256
+          "invitations": 206,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2025-04-03",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 206, AIP – 50",
+          "score": null,
+          "invitations": 50,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
         }
       ]
     }

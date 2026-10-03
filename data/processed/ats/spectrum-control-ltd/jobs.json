@@ -8,19 +8,13 @@
       "location": "Kanata, ON",
       "url": "https://spectrumcontrol.wd1.myworkdayjobs.com/SpectrumControl/job/Kanata-ON/Buyer_JR101413",
       "department": "",
-      "posted": "2026-09-15",
+      "posted": "2026-09-28",
+      "valid_through": "2026-10-09",
       "address": "",
       "salary": "",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "Kanata",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false
     }
   ]
 }

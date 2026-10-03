@@ -1,11 +1,12 @@
 {
   "source": "Express Entry category-based selection",
   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
-  "fetched": "2026-09-25",
+  "fetched": "2026-10-02",
   "categories": [
     {
       "key": "healthcare",
       "label": "医疗社服",
+      "nameEn": "Healthcare and social services occupations",
       "occupations": [
         {
           "noc": "31100",
@@ -197,6 +198,7 @@
     {
       "key": "stem",
       "label": "STEM",
+      "nameEn": "Science, Technology, Engineering and Math (STEM) occupations",
       "occupations": [
         {
           "noc": "20011",
@@ -258,6 +260,7 @@
     {
       "key": "trade",
       "label": "技工",
+      "nameEn": "Trade occupations",
       "occupations": [
         {
           "noc": "22303",
@@ -389,6 +392,7 @@
     {
       "key": "education",
       "label": "教育",
+      "nameEn": "Education occupations",
       "occupations": [
         {
           "noc": "41220",
@@ -420,6 +424,7 @@
     {
       "key": "transport",
       "label": "运输",
+      "nameEn": "Transport occupations",
       "occupations": [
         {
           "noc": "22313",
@@ -446,6 +451,7 @@
     {
       "key": "physicians",
       "label": "医生",
+      "nameEn": "Physicians with Canadian work experience",
       "occupations": [
         {
           "noc": "31100",
@@ -467,6 +473,7 @@
     {
       "key": "senior-managers",
       "label": "高管",
+      "nameEn": "Senior managers with Canadian work experience",
       "occupations": [
         {
           "noc": "00012",
@@ -493,6 +500,7 @@
     {
       "key": "researchers",
       "label": "研究",
+      "nameEn": "Researchers with Canadian work experience",
       "occupations": [
         {
           "noc": "41200",
@@ -509,6 +517,7 @@
     {
       "key": "military",
       "label": "军职",
+      "nameEn": "Skilled military recruits",
       "occupations": [
         {
           "noc": "40042",

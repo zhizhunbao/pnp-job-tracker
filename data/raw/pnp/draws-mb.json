@@ -1,6 +1,6 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-09-26",
+  "fetched": "2026-10-02",
   "provinces": {
     "MB": {
       "label": "MPNP Expression of Interest",
@@ -13,7 +13,10 @@
           "checklistKey": "Occupation-specific selections",
           "note": "Draw #280: Occupation-specific selections",
           "score": null,
-          "invitations": 1
+          "invitations": 1,
+          "selection": "occ",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-24",
@@ -21,7 +24,10 @@
           "checklistKey": "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in Broad Occupational Category 2 – Natural an",
           "note": "Draw #280: Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in Broad Occupational Category 2 – Natural an",
           "score": 760,
-          "invitations": 417
+          "invitations": 417,
+          "selection": "top:2",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-24",
@@ -29,14 +35,20 @@
           "checklistKey": "Francophone selection",
           "note": "Draw #280: Francophone selection",
           "score": null,
-          "invitations": 16
+          "invitations": 16,
+          "selection": "franco",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-24",
           "stream": "Skilled Worker Stream",
           "note": "Draw #280",
           "score": null,
-          "invitations": 40
+          "invitations": 40,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-10",
@@ -44,7 +56,10 @@
           "checklistKey": "Occupation-specific selections",
           "note": "Draw #279: Occupation-specific selections",
           "score": null,
-          "invitations": 233
+          "invitations": 233,
+          "selection": "occ",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-10",
@@ -52,7 +67,10 @@
           "checklistKey": "Francophone selection",
           "note": "Draw #279: Francophone selection",
           "score": null,
-          "invitations": 11
+          "invitations": 11,
+          "selection": "franco",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-10",
@@ -60,14 +78,20 @@
           "checklistKey": "Completed post-secondary study in Manitoba",
           "note": "Draw #279: Completed post-secondary study in Manitoba",
           "score": 825,
-          "invitations": 508
+          "invitations": 508,
+          "selection": "grad",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-10",
           "stream": "Skilled Worker Stream",
           "note": "Draw #279",
           "score": null,
-          "invitations": 41
+          "invitations": 41,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-27",
@@ -75,7 +99,10 @@
           "checklistKey": "Occupation-specific selections",
           "note": "Draw #278: Occupation-specific selections",
           "score": null,
-          "invitations": 62
+          "invitations": 62,
+          "selection": "occ",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-27",
@@ -83,7 +110,10 @@
           "checklistKey": "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in major group 72 – Technical trades and tran",
           "note": "Draw #278: Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in major group 72 – Technical trades and tran",
           "score": 731,
-          "invitations": 600
+          "invitations": 600,
+          "selection": "top:72",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-27",
@@ -91,21 +121,30 @@
           "checklistKey": "Francophone selection",
           "note": "Draw #278: Francophone selection",
           "score": null,
-          "invitations": 21
+          "invitations": 21,
+          "selection": "franco",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-27",
           "stream": "Skilled Worker Stream",
           "note": "Draw #278",
           "score": null,
-          "invitations": 58
+          "invitations": 58,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-13",
           "stream": "Skilled Worker Stream",
           "note": "Draw #277",
           "score": null,
-          "invitations": 53
+          "invitations": 53,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-30",
@@ -113,7 +152,10 @@
           "checklistKey": "Occupation-specific selections",
           "note": "Draw #276: Occupation-specific selections",
           "score": null,
-          "invitations": 74
+          "invitations": 74,
+          "selection": "occ",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-30",
@@ -121,7 +163,10 @@
           "checklistKey": "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in broad occupational category 9 – Occupation",
           "note": "Draw #276: Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in broad occupational category 9 – Occupation",
           "score": 632,
-          "invitations": 605
+          "invitations": 605,
+          "selection": "top:9",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-30",
@@ -129,21 +174,30 @@
           "checklistKey": "Francophone selection",
           "note": "Draw #276: Francophone selection",
           "score": null,
-          "invitations": 17
+          "invitations": 17,
+          "selection": "franco",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-30",
           "stream": "Skilled Worker Stream",
           "note": "Draw #276",
           "score": null,
-          "invitations": 70
+          "invitations": 70,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-16",
           "stream": "International Education Stream (IES) – Graduate Internship Pathway (GIP)",
           "note": "Draw #275",
           "score": null,
-          "invitations": 78
+          "invitations": 78,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-16",
@@ -151,7 +205,10 @@
           "checklistKey": "Occupation-specific selection",
           "note": "Draw #275: Occupation-specific selection",
           "score": null,
-          "invitations": 24
+          "invitations": 24,
+          "selection": "occ",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-16",
@@ -159,7 +216,10 @@
           "checklistKey": "Francophone selection",
           "note": "Draw #275: Francophone selection",
           "score": null,
-          "invitations": 84
+          "invitations": 84,
+          "selection": "franco",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-16",
@@ -167,42 +227,60 @@
           "checklistKey": "Completed post-secondary study in Manitoba",
           "note": "Draw #275: Completed post-secondary study in Manitoba",
           "score": 825,
-          "invitations": 1874
+          "invitations": 1874,
+          "selection": "grad",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-16",
           "stream": "Skilled Worker Stream",
           "note": "Draw #275",
           "score": null,
-          "invitations": 86
+          "invitations": 86,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-02",
           "stream": "Skilled Worker Stream",
           "note": "Draw #274",
           "score": null,
-          "invitations": 77
+          "invitations": 77,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-18",
           "stream": "Skilled Worker Stream",
           "note": "Draw #273",
           "score": null,
-          "invitations": 124
+          "invitations": 124,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-04",
           "stream": "Skilled Worker Stream",
           "note": "Draw #272",
           "score": null,
-          "invitations": null
+          "invitations": 104,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-21",
           "stream": "Skilled Worker Stream",
           "note": "Draw #271",
           "score": null,
-          "invitations": 96
+          "invitations": 96,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-07",
@@ -210,14 +288,20 @@
           "checklistKey": "Occupation-specific selection",
           "note": "Draw #270: Occupation-specific selection",
           "score": null,
-          "invitations": 431
+          "invitations": 431,
+          "selection": "occ",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-07",
           "stream": "Skilled Worker Stream",
           "note": "Draw #270",
           "score": null,
-          "invitations": 475
+          "invitations": 475,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-23",
@@ -225,63 +309,90 @@
           "checklistKey": "Occupation-specific selection",
           "note": "Draw #269: Occupation-specific selection",
           "score": null,
-          "invitations": 192
+          "invitations": 192,
+          "selection": "occ",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-23",
           "stream": "Skilled Worker Stream",
           "note": "Draw #269",
           "score": null,
-          "invitations": 116
+          "invitations": 116,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-09",
           "stream": "Skilled Worker Stream",
           "note": "Draw #268",
           "score": null,
-          "invitations": 32
+          "invitations": 32,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-26",
           "stream": "Skilled Worker Stream",
           "note": "Draw #267",
           "score": null,
-          "invitations": 14
+          "invitations": 14,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-12",
           "stream": "Skilled Worker Stream",
           "note": "Draw #266",
           "score": null,
-          "invitations": 46
+          "invitations": 46,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-26",
           "stream": "Skilled Worker Stream",
           "note": "Draw #265",
           "score": null,
-          "invitations": 72
+          "invitations": 72,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-12",
           "stream": "Skilled Worker Stream",
           "note": "Draw #264",
           "score": null,
-          "invitations": 29
+          "invitations": 29,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-01-29",
           "stream": "Skilled Worker Stream",
           "note": "Draw #263",
           "score": null,
-          "invitations": 47
+          "invitations": 47,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-01-15",
           "stream": "Skilled Worker Stream",
           "note": "Draw #262",
           "score": null,
-          "invitations": 55
+          "invitations": 55,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-31",
@@ -289,49 +400,70 @@
           "checklistKey": "Occupation-specific selection",
           "note": "Draw #261: Occupation-specific selection",
           "score": null,
-          "invitations": 353
+          "invitations": 353,
+          "selection": "occ",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-31",
           "stream": "Skilled Worker Stream",
           "note": "Draw #261",
           "score": null,
-          "invitations": 68
+          "invitations": 68,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-18",
           "stream": "Skilled Worker Stream",
           "note": "Draw #260",
           "score": null,
-          "invitations": 63
+          "invitations": 63,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-05",
           "stream": "Skilled Worker Stream",
           "note": "Draw #259",
           "score": null,
-          "invitations": 184
+          "invitations": 184,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-11-20",
           "stream": "Skilled Worker Stream",
           "note": "Draw #258",
           "score": null,
-          "invitations": 35
+          "invitations": 35,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-11-06",
           "stream": "Skilled Worker Stream",
           "note": "Draw #257",
           "score": null,
-          "invitations": 47
+          "invitations": 47,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-10-23",
           "stream": "Skilled Worker Stream",
           "note": "Draw #256",
           "score": null,
-          "invitations": 29
+          "invitations": 29,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-10-09",
@@ -339,91 +471,130 @@
           "checklistKey": "Occupation-specific selection",
           "note": "Draw #255: Occupation-specific selection",
           "score": null,
-          "invitations": 583
+          "invitations": 583,
+          "selection": "occ",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-10-09",
           "stream": "Skilled Worker Stream",
           "note": "Draw #255",
           "score": null,
-          "invitations": 279
+          "invitations": 279,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-09-18",
           "stream": "Skilled Worker Stream",
           "note": "Draw #254",
           "score": null,
-          "invitations": 911
+          "invitations": 911,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-09-04",
           "stream": "International Education Stream",
           "note": "Draw #253",
           "score": null,
-          "invitations": 1866
+          "invitations": 1866,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-09-04",
           "stream": "Citizens of Ukraine Selection",
           "note": "Draw #253",
           "score": null,
-          "invitations": 1466
+          "invitations": 1466,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-09-04",
           "stream": "Skilled Worker Stream",
           "note": "Draw #253",
           "score": 812,
-          "invitations": 15
+          "invitations": 15,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-08-21",
           "stream": "Skilled Worker Stream",
           "note": "Draw #252",
           "score": 612,
-          "invitations": 77
+          "invitations": 77,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-08-07",
           "stream": "Skilled Worker Stream",
           "note": "Draw #251",
           "score": 724,
-          "invitations": 37
+          "invitations": 37,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-07-24",
           "stream": "Skilled Worker Stream",
           "note": "Draw #250",
           "score": 611,
-          "invitations": 19
+          "invitations": 19,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-07-10",
           "stream": "Graduate Internship Pathway (GIP)",
           "note": "Draw #249",
           "score": null,
-          "invitations": 40
+          "invitations": 40,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-07-10",
           "stream": "Skilled Worker Stream",
           "note": "Draw #249",
           "score": 673,
-          "invitations": 27
+          "invitations": 27,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-26",
           "stream": "Close relative in Manitoba selection",
           "note": "Draw #248",
           "score": null,
-          "invitations": 478
+          "invitations": 478,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-26",
           "stream": "Skilled Worker Stream",
           "note": "Draw #248",
           "score": 712,
-          "invitations": 14
+          "invitations": 14,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-12",
@@ -431,7 +602,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #247: Expression of Interest",
           "score": 613,
-          "invitations": 36
+          "invitations": 36,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-05-29",
@@ -439,7 +613,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #246: Expression of Interest",
           "score": 606,
-          "invitations": 30
+          "invitations": 30,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-05-15",
@@ -447,7 +624,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #245: Expression of Interest",
           "score": 626,
-          "invitations": 62
+          "invitations": 62,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-05-01",
@@ -455,7 +635,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #244: Expression of Interest",
           "score": 727,
-          "invitations": 26
+          "invitations": 26,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-04-17",
@@ -463,7 +646,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #243: Expression of Interest",
           "score": 621,
-          "invitations": 27
+          "invitations": 27,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-04-03",
@@ -471,7 +657,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #242: Expression of Interest",
           "score": 721,
-          "invitations": 4
+          "invitations": 4,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-03-21",
@@ -479,7 +668,10 @@
           "checklistKey": "Completed post-secondary study in Manitoba",
           "note": "Draw #241: Completed post-secondary study in Manitoba",
           "score": 844,
-          "invitations": 101
+          "invitations": 101,
+          "selection": "grad",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-03-21",
@@ -487,7 +679,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #241: Expression of Interest",
           "score": 705,
-          "invitations": 7
+          "invitations": 7,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-03-06",
@@ -495,7 +690,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #240: Expression of Interest",
           "score": 861,
-          "invitations": 98
+          "invitations": 98,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-03-06",
@@ -503,7 +701,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #240: Expression of Interest",
           "score": 724,
-          "invitations": 13
+          "invitations": 13,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-02-20",
@@ -511,7 +712,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #239: Expression of Interest",
           "score": null,
-          "invitations": 19
+          "invitations": 19,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-02-20",
@@ -519,14 +723,20 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #239: Expression of Interest",
           "score": 711,
-          "invitations": 22
+          "invitations": 22,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-02-06",
           "stream": "International Education Stream",
           "note": "Draw #238",
           "score": null,
-          "invitations": 59
+          "invitations": 59,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-02-06",
@@ -534,7 +744,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #238: Expression of Interest",
           "score": 612,
-          "invitations": 17
+          "invitations": 17,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-01-23",
@@ -542,7 +755,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #237: Expression of Interest",
           "score": 609,
-          "invitations": 128
+          "invitations": 128,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-01-09",
@@ -550,7 +766,10 @@
           "checklistKey": "Completed post-secondary study in Manitoba",
           "note": "Draw #236: Completed post-secondary study in Manitoba",
           "score": 838,
-          "invitations": 145
+          "invitations": 145,
+          "selection": "grad",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-01-09",
@@ -558,7 +777,10 @@
           "checklistKey": "Region-specific selection (Winkler)",
           "note": "Draw #236: Region-specific selection (Winkler)",
           "score": 615,
-          "invitations": 52
+          "invitations": 52,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-12-27",
@@ -566,7 +788,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #235: Expression of Interest",
           "score": 857,
-          "invitations": 239
+          "invitations": 239,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-12-27",
@@ -574,7 +799,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #235: Expression of Interest",
           "score": null,
-          "invitations": 18
+          "invitations": 18,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-12-27",
@@ -582,14 +810,20 @@
           "checklistKey": "2. Profiles declaring current employment in Manitoba in the unit group listed below were considered.",
           "note": "Draw #235: 2. Profiles declaring current employment in Manitoba in the unit group listed below were considered.",
           "score": 632,
-          "invitations": 19
+          "invitations": 19,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-12-18",
           "stream": "International Education Stream",
           "note": "Draw #234",
           "score": null,
-          "invitations": 297
+          "invitations": 297,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-12-18",
@@ -597,7 +831,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #234: Expression of Interest",
           "score": 630,
-          "invitations": 102
+          "invitations": 102,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-11-22",
@@ -605,7 +842,10 @@
           "checklistKey": "Close relative in Manitoba selection",
           "note": "Draw #233: Close relative in Manitoba selection",
           "score": 840,
-          "invitations": 89
+          "invitations": 89,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-11-22",
@@ -613,7 +853,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #233: Expression of Interest",
           "score": null,
-          "invitations": 165
+          "invitations": 165,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-11-22",
@@ -621,7 +864,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #233: Expression of Interest",
           "score": 617,
-          "invitations": 25
+          "invitations": 25,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-11-08",
@@ -629,7 +875,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #232: Expression of Interest",
           "score": 672,
-          "invitations": 41
+          "invitations": 41,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-11-08",
@@ -637,7 +886,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #232: Expression of Interest",
           "score": null,
-          "invitations": 188
+          "invitations": 188,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-11-08",
@@ -645,7 +897,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #232: Expression of Interest",
           "score": 709,
-          "invitations": 45
+          "invitations": 45,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-10-24",
@@ -653,7 +908,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #231: Expression of Interest",
           "score": 872,
-          "invitations": 50
+          "invitations": 50,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-10-24",
@@ -661,7 +919,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #231: Expression of Interest",
           "score": null,
-          "invitations": 156
+          "invitations": 156,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-10-24",
@@ -669,7 +930,10 @@
           "checklistKey": "Expression of Interest",
           "note": "Draw #231: Expression of Interest",
           "score": 703,
-          "invitations": 47
+          "invitations": 47,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         }
       ]
     }

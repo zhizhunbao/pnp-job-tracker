@@ -1,16 +1,32 @@
 {
   "ats": "successfactors",
   "token": "",
-  "count": 9,
+  "count": 7,
   "jobs": [
+    {
+      "title": "Senior Technical Account Engineer - BAE Systems",
+      "location": "",
+      "url": "https://careers.avaya.com/job/Virtual-Senior-Technical-Account-Engineer-BAE-Systems/1432735433/",
+      "department": "",
+      "posted": "2026-09-01",
+      "valid_through": "",
+      "address": "",
+      "salary": "$116,800 to $157,700",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": true
+    },
     {
       "title": "Senior Manager - Global Revenue Accounting (Pune Site Lead & Partner Management)",
       "location": "Pune, MH",
       "url": "https://careers.avaya.com/job/Pune-Senior-Manager-Global-Revenue-Accounting-%28Pune-Site-Lead-&amp;-Partner-Management%29-MH/1430021233/",
       "department": "",
       "posted": "2026-08-26",
+      "valid_through": "",
       "address": "",
       "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
       "tech": false
     },
     {
@@ -19,19 +35,12 @@
       "url": "https://careers.avaya.com/job/Pune-Software-Sr-Engineering-Manager/1381090833/",
       "department": "",
       "posted": "2026-04-07",
+      "valid_through": "2026-10-06",
       "address": "",
       "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
       "tech": true
-    },
-    {
-      "title": "Technical Support Manager II",
-      "location": "",
-      "url": "https://careers.avaya.com/job/Hyderabad-Technical-Support-Manager-II/1440542033/",
-      "department": "",
-      "posted": "2026-09-23",
-      "address": "",
-      "salary": "",
-      "tech": false
     },
     {
       "title": "Operations Assistant",
@@ -39,18 +48,11 @@
       "url": "https://careers.avaya.com/job/Virtual-Operations-Assistant/1388473033/",
       "department": "",
       "posted": "2026-09-17",
+      "valid_through": "",
       "address": "",
       "salary": "",
-      "tech": false
-    },
-    {
-      "title": "Pricing Analytics Specialist II",
-      "location": "Pune, MH",
-      "url": "https://careers.avaya.com/job/Pune-Pricing-Analytics-Specialist-II-MH/1427353433/",
-      "department": "",
-      "posted": "2026-09-16",
-      "address": "",
-      "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
       "tech": false
     },
     {
@@ -59,8 +61,11 @@
       "url": "https://careers.avaya.com/job/Buenos-Aires-Deal-Specialist-B/1427481533/",
       "department": "",
       "posted": "2026-09-16",
+      "valid_through": "",
       "address": "",
       "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
       "tech": false
     },
     {
@@ -69,28 +74,24 @@
       "url": "https://careers.avaya.com/job/Virtual-CX-Regional-Channel-Sales-Director/1427167433/",
       "department": "",
       "posted": "2026-09-15",
+      "valid_through": "",
       "address": "",
       "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
       "tech": false
     },
     {
       "title": "AI Solutions Demo Specialist / Engineer",
-      "location": "",
-      "url": "https://careers.avaya.com/job/New-York-AI-Solutions-Demo-Specialist-Engineer/1388513033/",
+      "location": "New York, NY",
+      "url": "https://careers.avaya.com/job/New-York-AI-Solutions-Demo-Specialist-Engineer-NY-10001/1388513033/",
       "department": "",
       "posted": "2026-09-09",
+      "valid_through": "",
       "address": "",
-      "salary": "",
-      "tech": true
-    },
-    {
-      "title": "Senior Technical Account Engineer - BAE Systems",
-      "location": "",
-      "url": "https://careers.avaya.com/job/Virtual-Senior-Technical-Account-Engineer-BAE-Systems/1432735433/",
-      "department": "",
-      "posted": "2026-09-01",
-      "address": "",
-      "salary": "",
+      "salary": "$105,00 to $135,000",
+      "employment_hours": "",
+      "employment_term": "",
       "tech": true
     }
   ]

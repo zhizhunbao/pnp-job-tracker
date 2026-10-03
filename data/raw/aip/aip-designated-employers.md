@@ -5,12 +5,12 @@
 
 | 省 | 指定雇主总数 | 科技相关 | 占比 |
 |---|---:|---:|---:|
-| 纽芬兰与拉布拉多（NL） | 650 | 45 | 7% |
+| 纽芬兰与拉布拉多（NL） | 642 | 44 | 7% |
 | 新不伦瑞克（NB） | 1259 | 48 | 4% |
 | 新斯科舍（NS） | 1574 | 66 | 4% |
-| 爱德华王子岛（PE） | 391 | 13 | 3% |
+| 爱德华王子岛（PE） | 395 | 14 | 4% |
 
-## 纽芬兰与拉布拉多（NL） — 科技相关指定雇主（45 家）
+## 纽芬兰与拉布拉多（NL） — 科技相关指定雇主（44 家）
 
 | 雇主 | 地点 |
 |---|---|
@@ -51,7 +51,6 @@
 | Other Ocean Interactive NL Limited o/a Other Ocean | St. John's |
 | PAL Aerospace Ltd. o/a PAL Aerospace/PAL Technical Services | St. John's |
 | PolyUnity Tech Inc. o/a PolyUnity | St. John's |
-| Pragmaclin Research Inc. o/a Pragmaclin Research | St. John's |
 | Sepideh Mehrani a/o Adorify Analytics Inc. | PO Box 1653 Station C |
 | Sift Med Inc. | St. John's |
 | Sushi Shokumin Inc. o/a Sun Sushi | St. John's |

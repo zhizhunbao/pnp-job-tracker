@@ -1,47 +1,46 @@
 {
   "ats": "bamboohr",
   "token": "pleora",
-  "count": 2,
+  "count": 3,
   "jobs": [
     {
       "title": "General Applications ",
       "location": "Kanata, Ontario",
       "url": "https://pleora.bamboohr.com/careers/108",
       "department": "880 - Corporate",
-      "posted": "",
+      "posted": "2026-03-30",
+      "valid_through": "",
       "address": "",
       "salary": "",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "Kanata",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false
     },
     {
       "title": "Software Developer",
       "location": "Kanata, Ontario",
       "url": "https://pleora.bamboohr.com/careers/113",
       "department": "630 - R&D SW",
-      "posted": "",
+      "posted": "2026-08-13",
+      "valid_through": "",
       "address": "",
       "salary": "$80,000 - $120,000",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "Kanata",
-      "salaryAnnual": 100000,
-      "salaryText": "$80K–$120K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": true
+    },
+    {
+      "title": "Senior Buyer/Planner",
+      "location": "Kanata, Ontario",
+      "url": "https://pleora.bamboohr.com/careers/114",
+      "department": "800- Supply Chain &  Manufacturing",
+      "posted": "2026-09-15",
+      "valid_through": "",
+      "address": "",
+      "salary": "$75,000 - $95,000",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false
     }
   ]
 }

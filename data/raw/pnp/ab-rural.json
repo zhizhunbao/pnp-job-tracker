@@ -4,8 +4,8 @@
   "province": "AB",
   "type": "community",
   "url": "https://www.alberta.ca/aaip-rural-renewal-stream-community-designation",
-  "fetched": "2026-09-25",
-  "note": "须由指定社区背书;按岗位所在城市对社区名单,官方 17 个排除职业不算。",
+  "fetched": "2026-10-02",
+  "note": "须由指定社区背书;按岗位所在城市对社区名单,官方 17 个排除职业不算(其中带 * 的几码 = excludedPartial,只 Occupation 栏写的那一小类不算)。",
   "communities": [
     "Acadia No. 34",
     "Acme",
@@ -97,5 +97,10 @@
     "64321",
     "65229",
     "85101"
+  ],
+  "excludedPartial": [
+    "33100",
+    "42200",
+    "60040"
   ]
 }

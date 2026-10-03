@@ -1,0 +1,32 @@
+{
+  "province": "NL",
+  "program": "PNP",
+  "source": "IPGS Annual Report",
+  "url": "https://www.gov.nl.ca/jgrd/files/IPGSAnnualReport2024-2025.pdf",
+  "note": "NL 提名人数 = 省移民厅(IPGS)年报 Report on Performance 一节的原句:官方数的是人(individuals / newcomers,应含随行家属),不是提名证书数 —— 与别省按申请 / 证书计的已发提名不同口径,也不能与配额相比,所以另起清单 nominatedIndividuals、不进 nominationsIssued。年报按财年出,数字是自然年(原句所在段写明「In the 2024 calendar year」「In 2023」);AIP 背书人数同句另列,不并入。当年数要等下一份年报。",
+  "asOf": "",
+  "fetched": "2026-10-02",
+  "processing": [],
+  "allocation": [],
+  "nominationsIssued": [],
+  "nominatedIndividuals": [
+    {
+      "year": 2024,
+      "label": "The AIP endorsed 2,491 individuals for permanent residency, and the PNP nominated 5,065 individuals.",
+      "value": 5065,
+      "unit": "people",
+      "section": "IPGS Annual Report 2024-25: Report on Performance",
+      "url": "https://www.gov.nl.ca/jgrd/files/IPGSAnnualReport2024-2025.pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2023,
+      "label": "The two main immigration pathways offered by IPGS are the Atlantic Immigration Program (AIP), under which 1,628 individuals were endorsed for permanent residency in 2023, and the Newfoundland and Labrador Provincial Nominee Program (NLPNP), under which 4,838 newcomers were nominated for permanent residency in 2023.",
+      "value": 4838,
+      "unit": "people",
+      "section": "IPGS Annual Report 2023-24: Report on Performance",
+      "url": "https://www.assembly.nl.ca/business/electronicdocuments/IPGSAnnualReport2023-2024.pdf",
+      "fetched": "2026-10-02"
+    }
+  ]
+}

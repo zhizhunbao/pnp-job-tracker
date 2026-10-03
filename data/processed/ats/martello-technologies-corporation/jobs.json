@@ -1,45 +1,20 @@
 {
   "ats": "bamboohr",
   "token": "martello",
-  "count": 2,
+  "count": 1,
   "jobs": [
     {
       "title": "VP Product",
       "location": "Kanata, Ontario",
       "url": "https://martello.bamboohr.com/careers/208",
       "department": "PLM",
-      "posted": "",
+      "posted": "2026-07-24",
+      "valid_through": "",
       "address": "",
       "salary": "",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "Kanata",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
-    },
-    {
-      "title": "Software Developer Term",
-      "location": "Kanata, Ontario",
-      "url": "https://martello.bamboohr.com/careers/210",
-      "department": "R&D",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "Kanata",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false
     }
   ]
 }

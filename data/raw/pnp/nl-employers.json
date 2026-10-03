@@ -3,7 +3,7 @@
   "label": "NL 官网指定雇主名录",
   "source": "NLPNP designated employers",
   "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/atlantic-immigration-program/designated-employers",
-  "fetched": "2026-09-16",
+  "fetched": "2026-10-02",
   "employers": [
     {
       "name": "10112755 Canada Inc. o/a Strobel TEK",
@@ -3986,25 +3986,6 @@
       "url": "https://www.gov.nl.ca/immigration/employer/government-of-nl"
     },
     {
-      "name": "Grace Hotel Ltd. o/a Amaguk Hotel",
-      "location": "Hopedale",
-      "nocs": [
-        {
-          "noc": "0632",
-          "title": null
-        },
-        {
-          "noc": "1221",
-          "title": null
-        },
-        {
-          "noc": "6322",
-          "title": null
-        }
-      ],
-      "url": "https://www.gov.nl.ca/immigration/employer/grace-hotel-ltd-o-a-amaguk-hotel"
-    },
-    {
       "name": "Grand Enterprises Limited o/a The Gypsy Tea Room",
       "location": "St. John's",
       "nocs": [
@@ -6343,25 +6324,6 @@
         }
       ],
       "url": "https://www.gov.nl.ca/immigration/employer/old-town-pizzeria-inc"
-    },
-    {
-      "name": "Orange Beans Villa Development & Management Company Ltd.",
-      "location": "St John's",
-      "nocs": [
-        {
-          "noc": "10019",
-          "title": null
-        },
-        {
-          "noc": "10022",
-          "title": null
-        },
-        {
-          "noc": "12200",
-          "title": null
-        }
-      ],
-      "url": "https://www.gov.nl.ca/immigration/employer/orange-beans-villa-development-management-company-ltd"
     },
     {
       "name": "Orcinus Technologies Inc. o/a Orcintech",

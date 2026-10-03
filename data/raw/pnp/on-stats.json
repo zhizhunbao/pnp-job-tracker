@@ -3,15 +3,15 @@
   "program": "PNP",
   "source": "OINP Program Updates(逐年页)+ 官方重定向复核",
   "url": "https://www.ontario.ca/page/oinp-application-processing-times-and-nominations-issued",
-  "note": "OINP 官方专页「Application processing times and nominations issued」已 302 重定向到总览页(官方自己登记的 redirect_id,非抓取失败),全站翻遍也找不到第二处仍在发布**逐stream 审理时长**的页面 —— processing 留空是举证过的「本站未收录」,不是「官方不公布」的猜测(2026 年 OINP 改制为单一 Ontario Workforce Priority stream 后,旧的多 stream 时长表随旧页一起下线)。已发提名数改从每年一页的「OINP Program Updates」年末公告句摘取(部分年份被 Radware 反爬拦截,拿不到就跳过,不补数)。2026 配额 14,119 出自2026-02-06 那条更新,官方原句 quote-anchored。",
+  "note": "OINP 官方专页「Application processing times and nominations issued」已 302 重定向到总览页(官方自己登记的 redirect_id,非抓取失败),全站翻遍也找不到第二处仍在发布**逐stream 审理时长**的页面 —— processing 留空是举证过的「本站未收录」,不是「官方不公布」的猜测(2026 年 OINP 改制为单一 Ontario Workforce Priority stream 后,旧的多 stream 时长表随旧页一起下线)。已发提名数改从每年一页的「OINP Program Updates」年末公告句摘取(部分年份被 Radware 反爬拦截,拿不到就跳过,不补数)。2026 配额 14,119 出自2026-02-06 那条更新,官方原句 quote-anchored。2026-09-29 起:附录覆盖的 2019–2023 年一律用省审计长 2024 年报(OINP 绩效审计)附录 1「Ontario Nominee Allocations and Nominations, by Stream, 2019–2023」的 Actual Nominations 合计行(行内 url 挂该 PDF;逐年页 2019 / 2020 写的 7,350 / 8,050 恰好等于附录的配额上限行,附录合计行是逐通道加总的实发数);附录没覆盖的年份用逐年页。两边对不上时审计长脚注 2 原句:「IRCC allows small variances in the number of annual nominations compared to the allocation. In 2019 and 2020, OINP participated in a federal pilot program that allowed additional nominations to be issued. In 2023, more individuals were nominated due to technical issues in the Ministry’s information system, which have been corrected.」",
   "asOf": "",
-  "fetched": "2026-09-09",
+  "fetched": "2026-10-02",
   "pageRedirect": {
     "requestedUrl": "https://www.ontario.ca/page/oinp-application-processing-times-and-nominations-issued",
     "status": 200,
     "resolvedUrl": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp?redirect_id=page%2Foinp-application-processing-times-and-nominations-issued&redirect_year=2025",
     "isRedirected": true,
-    "checked": "2026-09-09"
+    "checked": "2026-10-02"
   },
   "processing": [],
   "allocation": [
@@ -22,7 +22,7 @@
       "unit": "nominations",
       "section": "2026 Ontario Immigrant Nominee Program Updates",
       "url": "https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-updates",
-      "fetched": "2026-09-09"
+      "fetched": "2026-10-02"
     },
     {
       "year": 2024,
@@ -31,7 +31,7 @@
       "unit": "nominations",
       "section": "2024 Ontario Immigrant Nominee Program Updates",
       "url": "https://www.ontario.ca/page/2024-ontario-immigrant-nominee-program-updates",
-      "fetched": "2026-09-09"
+      "fetched": "2026-10-02"
     },
     {
       "year": 2023,
@@ -40,7 +40,7 @@
       "unit": "nominations",
       "section": "2023 Ontario Immigrant Nominee Program Updates",
       "url": "https://www.ontario.ca/page/2023-ontario-immigrant-nominee-program-updates",
-      "fetched": "2026-09-09"
+      "fetched": "2026-10-02"
     },
     {
       "year": 2022,
@@ -49,7 +49,7 @@
       "unit": "nominations",
       "section": "2022 Ontario Immigrant Nominee Program Updates",
       "url": "https://www.ontario.ca/page/2022-ontario-immigrant-nominee-program-updates",
-      "fetched": "2026-09-09"
+      "fetched": "2026-10-02"
     }
   ],
   "nominationsIssued": [
@@ -60,7 +60,7 @@
       "unit": "nominations",
       "section": "2025 Ontario Immigrant Nominee Program Updates",
       "url": "https://www.ontario.ca/page/2025-ontario-immigrant-nominee-program-updates",
-      "fetched": "2026-09-09"
+      "fetched": "2026-10-02"
     },
     {
       "year": 2024,
@@ -69,34 +69,52 @@
       "unit": "nominations",
       "section": "2024 Ontario Immigrant Nominee Program Updates",
       "url": "https://www.ontario.ca/page/2024-ontario-immigrant-nominee-program-updates",
-      "fetched": "2026-09-09"
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2023,
+      "label": "Appendix 1 shows the actual nominations issued by streams/intake system in each year from 2019 to 2023. Appendix 1: Ontario Nominee Allocations and Nominations, by Stream, 2019–2023 — Actual Nominations, Total, 2023",
+      "value": 16506,
+      "unit": "nominations",
+      "section": "Office of the Auditor General of Ontario, Annual Report 2024: Ontario Immigrant Nominee Program",
+      "url": "https://www.auditor.on.ca/en/content/annualreports/arreports/en24/pa_ONimmigrant_en24.pdf",
+      "fetched": "2026-10-02"
     },
     {
       "year": 2022,
-      "label": "issued a total of 9,750 nominations to successful applicants across all streams in 2022",
+      "label": "Appendix 1 shows the actual nominations issued by streams/intake system in each year from 2019 to 2023. Appendix 1: Ontario Nominee Allocations and Nominations, by Stream, 2019–2023 — Actual Nominations, Total, 2022",
       "value": 9750,
       "unit": "nominations",
-      "section": "2022 Ontario Immigrant Nominee Program Updates",
-      "url": "https://www.ontario.ca/page/2022-ontario-immigrant-nominee-program-updates",
-      "fetched": "2026-09-09"
+      "section": "Office of the Auditor General of Ontario, Annual Report 2024: Ontario Immigrant Nominee Program",
+      "url": "https://www.auditor.on.ca/en/content/annualreports/arreports/en24/pa_ONimmigrant_en24.pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2021,
+      "label": "Appendix 1 shows the actual nominations issued by streams/intake system in each year from 2019 to 2023. Appendix 1: Ontario Nominee Allocations and Nominations, by Stream, 2019–2023 — Actual Nominations, Total, 2021",
+      "value": 9000,
+      "unit": "nominations",
+      "section": "Office of the Auditor General of Ontario, Annual Report 2024: Ontario Immigrant Nominee Program",
+      "url": "https://www.auditor.on.ca/en/content/annualreports/arreports/en24/pa_ONimmigrant_en24.pdf",
+      "fetched": "2026-10-02"
     },
     {
       "year": 2020,
-      "label": "issued a total of 8,050 nominations to successful applicants across all streams in 2020",
-      "value": 8050,
+      "label": "Appendix 1 shows the actual nominations issued by streams/intake system in each year from 2019 to 2023. Appendix 1: Ontario Nominee Allocations and Nominations, by Stream, 2019–2023 — Actual Nominations, Total, 2020",
+      "value": 8054,
       "unit": "nominations",
-      "section": "2020 Ontario Immigrant Nominee Program Updates",
-      "url": "https://www.ontario.ca/page/2020-ontario-immigrant-nominee-program-updates",
-      "fetched": "2026-09-09"
+      "section": "Office of the Auditor General of Ontario, Annual Report 2024: Ontario Immigrant Nominee Program",
+      "url": "https://www.auditor.on.ca/en/content/annualreports/arreports/en24/pa_ONimmigrant_en24.pdf",
+      "fetched": "2026-10-02"
     },
     {
       "year": 2019,
-      "label": "issued a total of 7350 nominations to successful applicants across all streams in 2019",
-      "value": 7350,
+      "label": "Appendix 1 shows the actual nominations issued by streams/intake system in each year from 2019 to 2023. Appendix 1: Ontario Nominee Allocations and Nominations, by Stream, 2019–2023 — Actual Nominations, Total, 2019",
+      "value": 7391,
       "unit": "nominations",
-      "section": "2019 Ontario Immigrant Nominee Program Updates",
-      "url": "https://www.ontario.ca/page/2019-ontario-immigrant-nominee-program-updates",
-      "fetched": "2026-09-09"
+      "section": "Office of the Auditor General of Ontario, Annual Report 2024: Ontario Immigrant Nominee Program",
+      "url": "https://www.auditor.on.ca/en/content/annualreports/arreports/en24/pa_ONimmigrant_en24.pdf",
+      "fetched": "2026-10-02"
     },
     {
       "year": 2018,
@@ -105,7 +123,7 @@
       "unit": "nominations",
       "section": "2018 Ontario Immigrant Nominee Program Updates",
       "url": "https://www.ontario.ca/page/2018-ontario-immigrant-nominee-program-updates",
-      "fetched": "2026-09-09"
+      "fetched": "2026-10-02"
     }
   ]
 }

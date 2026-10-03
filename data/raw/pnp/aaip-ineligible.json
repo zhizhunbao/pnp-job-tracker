@@ -4,178 +4,212 @@
   "province": "AB",
   "type": "ineligible",
   "url": "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility",
-  "fetched": "2026-09-25",
-  "note": "除本表外 TEER0-5 都符合;原带 * 为条件性不符合,粗筛下按不符合处理。",
+  "fetched": "2026-10-02",
+  "note": "除本表外 TEER0-5 都符合;原带 * 的码(行上 partial)同码里只 Occupation 栏写的那一小类不合格,看得出这岗不属那一小类才放行,看不出照不符合。",
   "occupations": [
     {
       "noc": "00010",
       "teer": 0,
-      "name": "Legislators"
+      "name": "Legislators",
+      "partial": false
     },
     {
       "noc": "33100",
       "teer": 3,
-      "name": "Dental laboratory assistants/bench workers"
+      "name": "Dental laboratory assistants/bench workers",
+      "partial": true
     },
     {
       "noc": "40021",
       "teer": 0,
-      "name": "School principals and administrators of elementary and secondary education"
+      "name": "School principals and administrators of elementary and secondary education",
+      "partial": false
     },
     {
       "noc": "40030",
       "teer": 0,
-      "name": "Managers in social, community and correctional services"
+      "name": "Managers in social, community and correctional services",
+      "partial": false
     },
     {
       "noc": "40041",
       "teer": 0,
-      "name": "Fire chiefs and senior firefighting officers"
+      "name": "Fire chiefs and senior firefighting officers",
+      "partial": false
     },
     {
       "noc": "41100",
       "teer": 1,
-      "name": "Judges"
+      "name": "Judges",
+      "partial": false
     },
     {
       "noc": "41220",
       "teer": 1,
-      "name": "Secondary school teachers"
+      "name": "Secondary school teachers",
+      "partial": false
     },
     {
       "noc": "41221",
       "teer": 1,
-      "name": "Elementary school and kindergarten teachers"
+      "name": "Elementary school and kindergarten teachers",
+      "partial": false
     },
     {
       "noc": "42200",
       "teer": 2,
-      "name": "Justices of the peace"
+      "name": "Justices of the peace",
+      "partial": true
     },
     {
       "noc": "42202",
       "teer": 2,
-      "name": "Early childhood educators who do not have certification through Alberta Children's Services – Child Care Staff Certification Office or who have been certified as Level 1 Early Childhood Educator (formerly Child Development Assistant)"
+      "name": "Early childhood educators who do not have certification through Alberta Children's Services – Child Care Staff Certification Office or who have been certified as Level 1 Early Childhood Educator (formerly Child Development Assistant)",
+      "partial": true
     },
     {
       "noc": "43100",
       "teer": 3,
-      "name": "Elementary and secondary school teacher assistants"
+      "name": "Elementary and secondary school teacher assistants",
+      "partial": false
     },
     {
       "noc": "43109",
       "teer": 3,
-      "name": "Other instructors"
+      "name": "Other instructors",
+      "partial": false
     },
     {
       "noc": "44100",
       "teer": 4,
-      "name": "Home child care providers"
+      "name": "Home child care providers",
+      "partial": false
     },
     {
       "noc": "44101",
       "teer": 4,
-      "name": "Home support workers, caregivers and related occupations"
+      "name": "Home support workers, caregivers and related occupations",
+      "partial": false
     },
     {
       "noc": "51111",
       "teer": 1,
-      "name": "Authors and writers (except technical)"
+      "name": "Authors and writers (except technical)",
+      "partial": false
     },
     {
       "noc": "51122",
       "teer": 1,
-      "name": "Musicians and singers"
+      "name": "Musicians and singers",
+      "partial": false
     },
     {
       "noc": "53121",
       "teer": 3,
-      "name": "Actors, comedians and circus performers"
+      "name": "Actors, comedians and circus performers",
+      "partial": false
     },
     {
       "noc": "53122",
       "teer": 3,
-      "name": "Painters, sculptors and other visual artists"
+      "name": "Painters, sculptors and other visual artists",
+      "partial": false
     },
     {
       "noc": "53124",
       "teer": 3,
-      "name": "Artisans and craftspersons"
+      "name": "Artisans and craftspersons",
+      "partial": false
     },
     {
       "noc": "53200",
       "teer": 3,
-      "name": "Athletes"
+      "name": "Athletes",
+      "partial": false
     },
     {
       "noc": "55109",
       "teer": 5,
-      "name": "Other performers"
+      "name": "Other performers",
+      "partial": false
     },
     {
       "noc": "60040",
       "teer": 0,
-      "name": "Escort agency managers, massage parlour managers"
+      "name": "Escort agency managers, massage parlour managers",
+      "partial": true
     },
     {
       "noc": "63101",
       "teer": 3,
-      "name": "Real estate agents and salespersons"
+      "name": "Real estate agents and salespersons",
+      "partial": false
     },
     {
       "noc": "64321",
       "teer": 4,
-      "name": "Casino occupations"
+      "name": "Casino occupations",
+      "partial": false
     },
     {
       "noc": "65109",
       "teer": 5,
-      "name": "Other sales related occupations"
+      "name": "Other sales related occupations",
+      "partial": false
     },
     {
       "noc": "65211",
       "teer": 5,
-      "name": "Operators and attendants in amusement, recreation and sport"
+      "name": "Operators and attendants in amusement, recreation and sport",
+      "partial": false
     },
     {
       "noc": "65229",
       "teer": 5,
-      "name": "Other support occupations in personal services"
+      "name": "Other support occupations in personal services",
+      "partial": false
     },
     {
       "noc": "65329",
       "teer": 5,
-      "name": "Other service support occupations"
+      "name": "Other service support occupations",
+      "partial": false
     },
     {
       "noc": "75200",
       "teer": 5,
-      "name": "Taxi and limousine drivers and chauffeurs"
+      "name": "Taxi and limousine drivers and chauffeurs",
+      "partial": false
     },
     {
       "noc": "85101",
       "teer": 5,
-      "name": "Harvesting labourers"
+      "name": "Harvesting labourers",
+      "partial": false
     },
     {
       "noc": "85102",
       "teer": 5,
-      "name": "Aquaculture and marine harvest labourers"
+      "name": "Aquaculture and marine harvest labourers",
+      "partial": false
     },
     {
       "noc": "85104",
       "teer": 5,
-      "name": "Trappers and hunters"
+      "name": "Trappers and hunters",
+      "partial": false
     },
     {
       "noc": "85110",
       "teer": 5,
-      "name": "Mine labourers"
+      "name": "Mine labourers",
+      "partial": false
     },
     {
       "noc": "85121",
       "teer": 5,
-      "name": "Landscaping and grounds maintenance labourers"
+      "name": "Landscaping and grounds maintenance labourers",
+      "partial": false
     }
   ]
 }

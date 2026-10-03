@@ -3,9 +3,9 @@
   "program": "PNP",
   "source": "Total BC PNP Nominations",
   "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
-  "note": "BC 已发提名数 = 官方年度 Statistical Report PDF 里「Total BC PNP Nominations」表的 Total 行(最新一份报告盖最近四年);报告年中出上一年(2025 版 2026-08-26 发),当年数缺 = 未公布。PDF 原件不进 crawl 层(put_cached_page 只收文本),报告 URL 逐年稳定可复取。",
+  "note": "BC 已发提名数 = 官方年度 Statistical Report PDF 里「Total BC PNP Nominations」表的 Total 行(最新一份报告盖最近四年);报告年中出上一年(2025 版 2026-08-26 发),当年数缺 = 未公布。PDF 原件不进 crawl 层(put_cached_page 只收文本),报告 URL 逐年稳定可复取。2026-09-29 起同一批年报另抽四组 SI 逐年数,每份年报只取它自己那一年:siDecisions 审理决定数(2022 版起)、siItasIssued 全年发出邀请与 siItaApplications 当年邀请转成申请(2020 版起)、siApplicationsReceived 收件数(2021 版止)。收件数停在 2021:2022 年报原句「This year’s report also replaces statistics on applications received with figures for decisions (the number of files processed), as they are a more accurate reflection of program’s operational activities during 2022.」(https://www.welcomebc.ca/immigrate-to-b-c/2022-bc-pnp-statistical-report),此后各年不出收件行、不编数。",
   "asOf": "",
-  "fetched": "2026-09-25",
+  "fetched": "2026-10-02",
   "processing": [],
   "allocation": [],
   "nominationsIssued": [
@@ -16,7 +16,7 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2025: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
-      "fetched": "2026-09-25"
+      "fetched": "2026-10-02"
     },
     {
       "year": 2024,
@@ -25,7 +25,7 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2025: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
-      "fetched": "2026-09-25"
+      "fetched": "2026-10-02"
     },
     {
       "year": 2023,
@@ -34,7 +34,7 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2025: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
-      "fetched": "2026-09-25"
+      "fetched": "2026-10-02"
     },
     {
       "year": 2022,
@@ -43,7 +43,7 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2025: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
-      "fetched": "2026-09-25"
+      "fetched": "2026-10-02"
     },
     {
       "year": 2021,
@@ -52,7 +52,7 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2024: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2024-pdf",
-      "fetched": "2026-09-25"
+      "fetched": "2026-10-02"
     },
     {
       "year": 2020,
@@ -61,16 +61,16 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2023: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2023-pdf",
-      "fetched": "2026-09-25"
+      "fetched": "2026-10-02"
     },
     {
       "year": 2019,
       "label": "Total BC PNP Nominations, 2019",
       "value": 6551,
       "unit": "nominations",
-      "section": "BC PNP Statistical Report 2021: Total BC PNP Nominations",
-      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2021-pdf",
-      "fetched": "2026-09-25"
+      "section": "BC PNP Statistical Report 2022: Total BC PNP Nominations",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/2022-bc-pnp-statistical-report",
+      "fetched": "2026-10-02"
     },
     {
       "year": 2018,
@@ -79,7 +79,7 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2021: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2021-pdf",
-      "fetched": "2026-09-25"
+      "fetched": "2026-10-02"
     },
     {
       "year": 2017,
@@ -88,7 +88,213 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2020: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2020-pdf",
-      "fetched": "2026-09-25"
+      "fetched": "2026-10-02"
+    }
+  ],
+  "siDecisions": [
+    {
+      "year": 2025,
+      "label": "In 2025, the BC PNP made 6,553 decisions on applications to the SI streams",
+      "value": 6553,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2025: Skills Immigration Decisions",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2024,
+      "label": "In 2024, the BC PNP made 8,784 decisions on applications to the SI streams",
+      "value": 8784,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2024: Skills Immigration Decisions",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2024-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2023,
+      "label": "In 2023, the BC PNP made 9,112 decisions on applications to the SI streams",
+      "value": 9112,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2023: Skills Immigration Decisions",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2023-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2022,
+      "label": "In 2022, the BC PNP made 7,868 decisions on applications to the SI streams",
+      "value": 7868,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2022: Skills Immigration Decisions",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/2022-bc-pnp-statistical-report",
+      "fetched": "2026-10-02"
+    }
+  ],
+  "siItasIssued": [
+    {
+      "year": 2025,
+      "label": "2025 ITAs Issued: 978",
+      "value": 978,
+      "unit": "invitations",
+      "section": "BC PNP Statistical Report 2025: The Registration Pool and Invitations to Apply (ITAs)",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2024,
+      "label": "2024 ITAs Issued: 6,006",
+      "value": 6006,
+      "unit": "invitations",
+      "section": "BC PNP Statistical Report 2024: The Registration Pool and Invitations to Apply (ITAs)",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2024-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2023,
+      "label": "2023 ITAs Issued: 10,009",
+      "value": 10009,
+      "unit": "invitations",
+      "section": "BC PNP Statistical Report 2023: The Registration Pool and Invitations to Apply (ITAs)",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2023-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2022,
+      "label": "2022 ITAs Issued: 8,840",
+      "value": 8840,
+      "unit": "invitations",
+      "section": "BC PNP Statistical Report 2022: The Registration Pool and Invitations to Apply (ITAs)",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/2022-bc-pnp-statistical-report",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2021,
+      "label": "2021 ITAs Issued: 11,582",
+      "value": 11582,
+      "unit": "invitations",
+      "section": "BC PNP Statistical Report 2021: The Registration Pool and Invitations to Apply (ITAs)",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2021-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2020,
+      "label": "2020 ITAs Issued: 9386",
+      "value": 9386,
+      "unit": "invitations",
+      "section": "BC PNP Statistical Report 2020: The Registration Pool and Invitations to Apply (ITAs)",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2020-pdf",
+      "fetched": "2026-10-02"
+    }
+  ],
+  "siItaApplications": [
+    {
+      "year": 2025,
+      "label": "2025 ITAs that led to applications: 748",
+      "value": 748,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2025: The Registration Pool and Invitations to Apply (ITAs)",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2024,
+      "label": "2024 ITAs that led to applications: 4,848",
+      "value": 4848,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2024: The Registration Pool and Invitations to Apply (ITAs)",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2024-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2023,
+      "label": "2023 ITAs that led to applications: 7,545",
+      "value": 7545,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2023: The Registration Pool and Invitations to Apply (ITAs)",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2023-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2022,
+      "label": "2022 ITAs that led to applications: 6,245",
+      "value": 6245,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2022: The Registration Pool and Invitations to Apply (ITAs)",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/2022-bc-pnp-statistical-report",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2021,
+      "label": "2021 ITAs that led to applications: 6,768",
+      "value": 6768,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2021: The Registration Pool and Invitations to Apply (ITAs)",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2021-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2020,
+      "label": "2020 ITAs that led to applications: 6988",
+      "value": 6988,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2020: The Registration Pool and Invitations to Apply (ITAs)",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2020-pdf",
+      "fetched": "2026-10-02"
+    }
+  ],
+  "siApplicationsReceived": [
+    {
+      "year": 2021,
+      "label": "In 2021, 7,976 candidates responded to invitations to apply through the SI stream",
+      "value": 7976,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2021: Application Intake",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2021-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2020,
+      "label": "In 2020, 8,148 candidates responded to invitations to apply through the SI stream",
+      "value": 8148,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2020: Application Intake",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2020-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2019,
+      "label": "In 2019, 8,292 candidates responded to invitations to apply to the BC PNP: 8,024 were SI applications",
+      "value": 8024,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2019: Application Intake",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2019-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2018,
+      "label": "In 2018, the BC PNP received 7,507 applications: 7,412 SI applications",
+      "value": 7412,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2018: Application Intake",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2018-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2017,
+      "label": "In 2017, the BC Provincial Nominee Program (BC PNP) received 7,307 applications: 7,201 Skills Immigration (SI) applications",
+      "value": 7201,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2017: Application Intake",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2017-pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2016,
+      "label": "In 2016, the BC Provincial Nominee Program (BC PNP) received 5,363 applications: 5,282 Skills Immigration (SI) applications",
+      "value": 5282,
+      "unit": "applications",
+      "section": "BC PNP Statistical Report 2016: Application Intake",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2016-pdf",
+      "fetched": "2026-10-02"
     }
   ]
 }

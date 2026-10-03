@@ -1,0 +1,40 @@
+{
+  "province": "NB",
+  "program": "PNP",
+  "source": "PETL Annual Report",
+  "url": "https://www.legnb.ca/content/house_business/61/2/tabled_documents/2025-11-20%20Department%20of%20Post-Secondary%20Education,%20Training%20and%20Labour%202024-2025.pdf",
+  "note": "NB 已发提名数 = 省后期教育培训劳工厅(PETL)年报 Immigration Division 一节「Key Performance Indicators」表「Provincial Nominations」的 Provincial Nominee Program (PNP) 行,AIP 那行另列不并入。列头「2024 / 2023 / 2022」是自然年:同一份年报另外 8 张 KPI 表的统计期全写成「2024-2025」两年形,唯独这张写单年;2024 列 PNP 3,000 + AIP 2,500 = 5,500,正是当年的证书总数。表头带星号,全文找不到对应脚注。年报每年秋季提交省议会,当年数要等下一份年报。",
+  "asOf": "",
+  "fetched": "2026-10-02",
+  "processing": [],
+  "allocation": [],
+  "nominationsIssued": [
+    {
+      "year": 2024,
+      "label": "Provincial Nominations, Provincial Nominee Program (PNP), 2024",
+      "value": 3000,
+      "unit": "nominations",
+      "section": "PETL Annual Report 2024-2025: Key Performance Indicators, Provincial Nominations",
+      "url": "https://www.legnb.ca/content/house_business/61/2/tabled_documents/2025-11-20%20Department%20of%20Post-Secondary%20Education,%20Training%20and%20Labour%202024-2025.pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2023,
+      "label": "Provincial Nominations, Provincial Nominee Program (PNP), 2023",
+      "value": 3167,
+      "unit": "nominations",
+      "section": "PETL Annual Report 2024-2025: Key Performance Indicators, Provincial Nominations",
+      "url": "https://www.legnb.ca/content/house_business/61/2/tabled_documents/2025-11-20%20Department%20of%20Post-Secondary%20Education,%20Training%20and%20Labour%202024-2025.pdf",
+      "fetched": "2026-10-02"
+    },
+    {
+      "year": 2022,
+      "label": "Provincial Nominations, Provincial Nominee Program (PNP), 2022",
+      "value": 2584,
+      "unit": "nominations",
+      "section": "PETL Annual Report 2024-2025: Key Performance Indicators, Provincial Nominations",
+      "url": "https://www.legnb.ca/content/house_business/61/2/tabled_documents/2025-11-20%20Department%20of%20Post-Secondary%20Education,%20Training%20and%20Labour%202024-2025.pdf",
+      "fetched": "2026-10-02"
+    }
+  ]
+}

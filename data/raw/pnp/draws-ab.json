@@ -1,6 +1,6 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-09-26",
+  "fetched": "2026-10-02",
   "provinces": {
     "AB": {
       "label": "AAIP",
@@ -12,560 +12,880 @@
           "stream": "Alberta Opportunity Stream",
           "note": "",
           "score": 58,
-          "invitations": 113
+          "invitations": 113,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-22",
           "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
           "note": "",
           "score": 59,
-          "invitations": 100
+          "invitations": 100,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-21",
           "stream": "Alberta Express Entry Stream – Law Enforcement Pathway",
           "note": "",
           "score": 49,
-          "invitations": null
+          "invitations": null,
+          "invitationsBelow": 10,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-18",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Health Care)",
           "note": "",
           "score": 62,
-          "invitations": 100
+          "invitations": 100,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-15",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Agriculture)",
           "note": "",
           "score": 60,
-          "invitations": 18
+          "invitations": 18,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-10",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Manufacturing)",
           "note": "",
           "score": 60,
-          "invitations": 48
+          "invitations": 48,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-09",
           "stream": "Dedicated Health Care Pathway – Express Entry",
           "note": "",
           "score": 60,
-          "invitations": 51
+          "invitations": 51,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-03",
           "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
           "note": "",
           "score": 60,
-          "invitations": 96
+          "invitations": 96,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-01",
           "stream": "Alberta Opportunity Stream",
           "note": "",
           "score": 56,
-          "invitations": 575
+          "invitations": 575,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-19",
           "stream": "Dedicated Health Care Pathway – non-Express Entry",
           "note": "",
           "score": 60,
-          "invitations": 24
+          "invitations": 24,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-14",
           "stream": "Alberta Opportunity Stream",
           "note": "",
           "score": 58,
-          "invitations": 743
+          "invitations": 743,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-12",
           "stream": "Dedicated Health Care Pathway – Express Entry",
           "note": "",
           "score": 60,
-          "invitations": 57
+          "invitations": 57,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-11",
           "stream": "Rural Renewal Stream",
           "note": "",
           "score": 51,
-          "invitations": 127
+          "invitations": 127,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-07",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Agriculture)",
           "note": "",
           "score": 55,
-          "invitations": 38
+          "invitations": 38,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-06",
           "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
           "note": "",
           "score": 60,
-          "invitations": 95
+          "invitations": 95,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-04",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Health Care)",
           "note": "",
           "score": 66,
-          "invitations": 50
+          "invitations": 50,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-21",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Construction)",
           "note": "",
           "score": 65,
-          "invitations": 53
+          "invitations": 53,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-16",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Agriculture)",
           "note": "",
           "score": 56,
-          "invitations": 29
+          "invitations": 29,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-15",
           "stream": "Alberta Opportunity Stream",
           "note": "",
           "score": 53,
-          "invitations": 833
+          "invitations": 833,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-14",
           "stream": "Dedicated Health Care Pathway – non-Express Entry",
           "note": "",
           "score": 52,
-          "invitations": 51
+          "invitations": 51,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-10",
           "stream": "Alberta Express Entry Stream – Law Enforcement Pathway",
           "note": "",
           "score": 52,
-          "invitations": null
+          "invitations": null,
+          "invitationsBelow": 10,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-08",
           "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
           "note": "",
           "score": 55,
-          "invitations": 149
+          "invitations": 149,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-07",
           "stream": "Rural Renewal Stream",
           "note": "",
           "score": 55,
-          "invitations": 42
+          "invitations": 42,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-03",
           "stream": "Dedicated Health Care Pathway – Express Entry",
           "note": "",
           "score": 55,
-          "invitations": 92
+          "invitations": 92,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-29",
           "stream": "Dedicated Health Care Pathway – non-Express Entry",
           "note": "",
           "score": 63,
-          "invitations": 75
+          "invitations": 75,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-24",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Aviation and skilled trade)",
           "note": "",
           "score": 47,
-          "invitations": 35
+          "invitations": 35,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-22",
           "stream": "Dedicated Health Care Pathway – Express Entry",
           "note": "",
           "score": 64,
-          "invitations": 46
+          "invitations": 46,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-19",
           "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
           "note": "",
           "score": 59,
-          "invitations": 100
+          "invitations": 100,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-18",
           "stream": "Tourism and Hospitality Stream",
           "note": "",
           "score": 71,
-          "invitations": 61
+          "invitations": 61,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-17",
           "stream": "Alberta Opportunity Stream",
           "note": "",
           "score": 58,
-          "invitations": 720
+          "invitations": 720,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-15",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Manufacturing)",
           "note": "",
           "score": 50,
-          "invitations": 56
+          "invitations": 56,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-12",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Agriculture)",
           "note": "",
           "score": 52,
-          "invitations": 37
+          "invitations": 37,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-11",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Health Care)",
           "note": "",
           "score": 63,
-          "invitations": 50
+          "invitations": 50,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-10",
           "stream": "Rural Renewal Stream",
           "note": "",
           "score": 51,
-          "invitations": 54
+          "invitations": 54,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-09",
           "stream": "Dedicated Health Care Pathway – non-Express Entry",
           "note": "",
           "score": 45,
-          "invitations": 35
+          "invitations": 35,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-08",
           "stream": "Dedicated Health Care Pathway – Express Entry",
           "note": "",
           "score": 60,
-          "invitations": 49
+          "invitations": 49,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-05",
           "stream": "Alberta Opportunity Stream",
           "note": "",
           "score": 50,
-          "invitations": 462
+          "invitations": 462,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-02",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Manufacturing)",
           "note": "",
           "score": 53,
-          "invitations": 49
+          "invitations": 49,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-29",
           "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
           "note": "",
           "score": 55,
-          "invitations": 200
+          "invitations": 200,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-27",
           "stream": "Alberta Opportunity Stream",
           "note": "",
           "score": 51,
-          "invitations": 993
+          "invitations": 993,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-25",
           "stream": "Rural Renewal Stream",
           "note": "",
           "score": 50,
-          "invitations": 83
+          "invitations": 83,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-22",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Agriculture)",
           "note": "",
           "score": 48,
-          "invitations": 76
+          "invitations": 76,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-21",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Manufacturing)",
           "note": "",
           "score": 56,
-          "invitations": 99
+          "invitations": 99,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-20",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Construction and skilled trade)",
           "note": "",
           "score": 61,
-          "invitations": 50
+          "invitations": 50,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-13",
           "stream": "Dedicated Health Care Pathway – Express Entry",
           "note": "",
           "score": 57,
-          "invitations": 61
+          "invitations": 61,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-07",
           "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
           "note": "",
           "score": 57,
-          "invitations": 146
+          "invitations": 146,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-06",
           "stream": "Alberta Opportunity Stream",
           "note": "",
           "score": 54,
-          "invitations": 832
+          "invitations": 832,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-01",
           "stream": "Rural Renewal Stream",
           "note": "",
           "score": 50,
-          "invitations": 12
+          "invitations": 12,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-27",
           "stream": "Tourism and Hospitality Stream",
           "note": "",
           "score": 71,
-          "invitations": 98
+          "invitations": 98,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-23",
           "stream": "Alberta Express Entry Stream – Law Enforcement Pathway",
           "note": "",
           "score": 58,
-          "invitations": null
+          "invitations": null,
+          "invitationsBelow": 10,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-16",
           "stream": "Dedicated Health Care Pathway – non-Express Entry",
           "note": "",
           "score": 46,
-          "invitations": 37
+          "invitations": 37,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-15",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Health Care)",
           "note": "",
           "score": 55,
-          "invitations": 50
+          "invitations": 50,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-14",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Construction and skilled trade)",
           "note": "",
           "score": 60,
-          "invitations": 50
+          "invitations": 50,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-13",
           "stream": "Dedicated Health Care Pathway – Express Entry",
           "note": "",
           "score": 59,
-          "invitations": 62
+          "invitations": 62,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-10",
           "stream": "Alberta Opportunity Stream",
           "note": "",
           "score": 65,
-          "invitations": 447
+          "invitations": 447,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-09",
           "stream": "Rural Renewal Stream",
           "note": "",
           "score": 50,
-          "invitations": 74
+          "invitations": 74,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-08",
           "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
           "note": "",
           "score": 59,
-          "invitations": 146
+          "invitations": 146,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-27",
           "stream": "Alberta Express Entry Stream – Law Enforcement Pathway",
           "note": "",
           "score": 46,
-          "invitations": null
+          "invitations": null,
+          "invitationsBelow": 10,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-26",
           "stream": "Rural Renewal Stream",
           "note": "",
           "score": 50,
-          "invitations": 60
+          "invitations": 60,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-24",
           "stream": "Dedicated Health Care Pathway – non-Express Entry",
           "note": "",
           "score": 54,
-          "invitations": 102
+          "invitations": 102,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-19",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Construction)",
           "note": "",
           "score": 59,
-          "invitations": 109
+          "invitations": 109,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-17",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Manufacturing)",
           "note": "",
           "score": 50,
-          "invitations": 27
+          "invitations": 27,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-16",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Health Care)",
           "note": "",
           "score": 63,
-          "invitations": 50
+          "invitations": 50,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-13",
           "stream": "Rural Renewal Stream",
           "note": "",
           "score": 51,
-          "invitations": 349
+          "invitations": 349,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-12",
           "stream": "Dedicated Health Care Pathway – non-Express Entry",
           "note": "",
           "score": 47,
-          "invitations": 47
+          "invitations": 47,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-06",
           "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
           "note": "",
           "score": 56,
-          "invitations": 139
+          "invitations": 139,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-05",
           "stream": "Alberta Opportunity Stream",
           "note": "",
           "score": 61,
-          "invitations": 832
+          "invitations": 832,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-26",
           "stream": "Rural Renewal Stream",
           "note": "",
           "score": 55,
-          "invitations": 30
+          "invitations": 30,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-24",
           "stream": "Tourism and Hospitality Stream",
           "note": "",
           "score": 73,
-          "invitations": 68
+          "invitations": 68,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-20",
           "stream": "Alberta Opportunity Stream – Priority Sectors",
           "note": "",
           "score": 56,
-          "invitations": 831
+          "invitations": 831,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-19",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Construction)",
           "note": "",
           "score": 61,
-          "invitations": 50
+          "invitations": 50,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-17",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Agriculture)",
           "note": "",
           "score": 49,
-          "invitations": null
+          "invitations": null,
+          "invitationsBelow": 10,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-12",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Manufacturing)",
           "note": "",
           "score": 50,
-          "invitations": 32
+          "invitations": 32,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-11",
           "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
           "note": "",
           "score": 59,
-          "invitations": 147
+          "invitations": 147,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-10",
           "stream": "Rural Renewal Stream",
           "note": "",
           "score": 54,
-          "invitations": 212
+          "invitations": 212,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-06",
           "stream": "Alberta Express Entry Stream – Law Enforcement Pathway",
           "note": "",
           "score": 50,
-          "invitations": null
+          "invitations": null,
+          "invitationsBelow": 10,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-02",
           "stream": "Alberta Opportunity Stream",
           "note": "",
           "score": 57,
-          "invitations": 915
+          "invitations": 915,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-01-29",
           "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
           "note": "",
           "score": 63,
-          "invitations": 148
+          "invitations": 148,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-01-27",
           "stream": "Dedicated Health Care Pathway – non-Express Entry",
           "note": "",
           "score": 45,
-          "invitations": 43
+          "invitations": 43,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-01-26",
           "stream": "Dedicated Health Care Pathway – Express Entry",
           "note": "",
           "score": 61,
-          "invitations": 63
+          "invitations": 63,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         }
       ]
     }

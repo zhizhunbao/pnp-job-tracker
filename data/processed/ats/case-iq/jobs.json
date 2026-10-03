@@ -1,6 +1,124 @@
 {
   "ats": "bamboohr",
   "token": "caseiq",
-  "count": 0,
-  "jobs": []
+  "count": 9,
+  "jobs": [
+    {
+      "title": "Support Application Developer",
+      "location": "",
+      "url": "https://caseiq.bamboohr.com/careers/336",
+      "department": "Support",
+      "posted": "2026-08-10",
+      "valid_through": "",
+      "address": "",
+      "salary": "60-65k GBP",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": true
+    },
+    {
+      "title": "DevOps Engineer",
+      "location": "",
+      "url": "https://caseiq.bamboohr.com/careers/337",
+      "department": "Platform",
+      "posted": "2026-09-14",
+      "valid_through": "",
+      "address": "",
+      "salary": "110-130k CAD",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": true
+    },
+    {
+      "title": "Enterprise Account Executive",
+      "location": "",
+      "url": "https://caseiq.bamboohr.com/careers/338",
+      "department": "Sales",
+      "posted": "2026-09-15",
+      "valid_through": "",
+      "address": "",
+      "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false
+    },
+    {
+      "title": "GTM Engineer",
+      "location": "",
+      "url": "https://caseiq.bamboohr.com/careers/339",
+      "department": "Operations",
+      "posted": "2026-09-16",
+      "valid_through": "",
+      "address": "",
+      "salary": "90-120k CAD",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": true
+    },
+    {
+      "title": "Senior Software Application Developer",
+      "location": "",
+      "url": "https://caseiq.bamboohr.com/careers/340",
+      "department": "Platform",
+      "posted": "2026-09-22",
+      "valid_through": "",
+      "address": "",
+      "salary": "110-140k CAD",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": true
+    },
+    {
+      "title": "Implementation Lead",
+      "location": "",
+      "url": "https://caseiq.bamboohr.com/careers/341",
+      "department": "Implementation",
+      "posted": "2026-09-22",
+      "valid_through": "",
+      "address": "",
+      "salary": "70-85k USD",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false
+    },
+    {
+      "title": "Senior Software Application Developer",
+      "location": "",
+      "url": "https://caseiq.bamboohr.com/careers/342",
+      "department": "Platform",
+      "posted": "2026-09-22",
+      "valid_through": "",
+      "address": "",
+      "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": true
+    },
+    {
+      "title": "Implementation Lead",
+      "location": "",
+      "url": "https://caseiq.bamboohr.com/careers/343",
+      "department": "Implementation",
+      "posted": "2026-09-22",
+      "valid_through": "",
+      "address": "",
+      "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false
+    },
+    {
+      "title": "Business Development Representative",
+      "location": "",
+      "url": "https://caseiq.bamboohr.com/careers/344",
+      "department": "Business Development",
+      "posted": "2026-10-02",
+      "valid_through": "",
+      "address": "",
+      "salary": "$57.5k + Comissions",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false
+    }
+  ]
 }

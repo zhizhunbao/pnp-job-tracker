@@ -8,19 +8,13 @@
       "location": "Kanata, Ontario",
       "url": "https://intouchinsight.bamboohr.com/careers/134",
       "department": "Sales",
-      "posted": "",
+      "posted": "2026-07-31",
+      "valid_through": "",
       "address": "",
       "salary": "",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "Kanata",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false
     }
   ]
 }

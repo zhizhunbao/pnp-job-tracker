@@ -28,7 +28,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "ab-accelerated-tech",
@@ -61,7 +62,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "ab-dedicated-health-care",
@@ -94,7 +96,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "ab-law-enforcement",
@@ -126,7 +129,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "ab-tourism-hospitality",
@@ -158,7 +162,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "ab-rural-renewal",
@@ -190,7 +195,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "bc-skilled-worker",
@@ -220,7 +226,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "bc-health-authority",
@@ -250,7 +257,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "bc-healthcare",
@@ -282,7 +290,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "bc-childcare",
@@ -314,7 +323,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "bc-veterinary",
@@ -346,7 +356,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "bc-construction-trades",
@@ -378,7 +389,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "bc-french-teachers",
@@ -410,7 +422,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "sk-employment-offer",
@@ -440,7 +453,100 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": [
+        {
+          "step": "employerRegister",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "epa",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "scope": "Employer Position Assessments"
+            },
+            {
+              "key": "cappedEmployees",
+              "vars": {},
+              "quote": "Capped sectors are limited to supporting current employees with valid temporary residency status",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/sinp-processing-statistics"
+            },
+            {
+              "key": "windowCapped",
+              "vars": {
+                "months": 6
+              },
+              "quote": "Employers in capped sectors can only submit applications during one of the six intake windows in 2026, and if their candidate has 6 months or less remaining on their work permit.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/sinp-processing-statistics"
+            },
+            {
+              "ref": "intake"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": true,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "directApply",
+              "vars": {},
+              "quote": "An employment offer provides applicants with the ability to apply directly to the SINP.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/connecting-family-members-to-saskatchewans-labour-market"
+            }
+          ]
+        },
+        {
+          "step": "confirm",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "confirmSubmit",
+              "vars": {
+                "confirm": 10,
+                "submit": 60
+              },
+              "quote": "The candidate has 10 calendar days to review and confirm the EPA details, and 60 calendar days from the date they were identified on the conditionally approved EPA to submit their SINP application.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/immigration-faqs"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "scope": "Employment Offer"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "sk-health-talent",
@@ -471,7 +577,83 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": [
+        {
+          "step": "employerRegister",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "epa",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "scope": "Employer Position Assessments"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": true,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "directApply",
+              "vars": {},
+              "quote": "An employment offer provides applicants with the ability to apply directly to the SINP.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/connecting-family-members-to-saskatchewans-labour-market"
+            }
+          ]
+        },
+        {
+          "step": "confirm",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "confirmSubmit",
+              "vars": {
+                "confirm": 10,
+                "submit": 60
+              },
+              "quote": "The candidate has 10 calendar days to review and confirm the EPA details, and 60 calendar days from the date they were identified on the conditionally approved EPA to submit their SINP application.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/immigration-faqs"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "scope": "Health Talent Pathway"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "sk-tech-talent",
@@ -502,7 +684,83 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": [
+        {
+          "step": "employerRegister",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "epa",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "scope": "Employer Position Assessments"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": true,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "directApply",
+              "vars": {},
+              "quote": "An employment offer provides applicants with the ability to apply directly to the SINP.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/connecting-family-members-to-saskatchewans-labour-market"
+            }
+          ]
+        },
+        {
+          "step": "confirm",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "confirmSubmit",
+              "vars": {
+                "confirm": 10,
+                "submit": 60
+              },
+              "quote": "The candidate has 10 calendar days to review and confirm the EPA details, and 60 calendar days from the date they were identified on the conditionally approved EPA to submit their SINP application.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/immigration-faqs"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "scope": "Innovation and Tech Talent Pathway"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "sk-agriculture-talent",
@@ -533,7 +791,83 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": [
+        {
+          "step": "employerRegister",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "epa",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "scope": "Employer Position Assessments"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": true,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "directApply",
+              "vars": {},
+              "quote": "An employment offer provides applicants with the ability to apply directly to the SINP.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/connecting-family-members-to-saskatchewans-labour-market"
+            }
+          ]
+        },
+        {
+          "step": "confirm",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "confirmSubmit",
+              "vars": {
+                "confirm": 10,
+                "submit": 60
+              },
+              "quote": "The candidate has 10 calendar days to review and confirm the EPA details, and 60 calendar days from the date they were identified on the conditionally approved EPA to submit their SINP application.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/immigration-faqs"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "scope": "Agriculture Talent Pathway"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "sk-existing-work-permit",
@@ -558,7 +892,116 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": [
+        {
+          "step": "work",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "workMonths",
+              "vars": {
+                "n": 6
+              },
+              "quote": "Have worked for at least six-months (780 hours) of full-time (30+ hours per week) work experience in the job with the employer that has supported you with the Employer Position Assessment, with a valid work permit.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/applicants-with-existing-work-permit"
+            }
+          ]
+        },
+        {
+          "step": "employerRegister",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "epa",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "scope": "Employer Position Assessments"
+            },
+            {
+              "key": "cappedEmployees",
+              "vars": {},
+              "quote": "Capped sectors are limited to supporting current employees with valid temporary residency status",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/sinp-processing-statistics"
+            },
+            {
+              "key": "windowCapped",
+              "vars": {
+                "months": 6
+              },
+              "quote": "Employers in capped sectors can only submit applications during one of the six intake windows in 2026, and if their candidate has 6 months or less remaining on their work permit.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/sinp-processing-statistics"
+            },
+            {
+              "ref": "intake"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": true,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiOnlyOther",
+              "vars": {},
+              "quote": "If you are eligible under the Occupations In-Demand or Express Entry , you will be able to submit an Expression of Interest (EOI).",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-eoi-system"
+            }
+          ]
+        },
+        {
+          "step": "confirm",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "confirmSubmit",
+              "vars": {
+                "confirm": 10,
+                "submit": 60
+              },
+              "quote": "The candidate has 10 calendar days to review and confirm the EPA details, and 60 calendar days from the date they were identified on the conditionally approved EPA to submit their SINP application.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/immigration-faqs"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "scope": "Existing Work Permit"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "sk-students",
@@ -588,7 +1031,100 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": [
+        {
+          "step": "employerRegister",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "epa",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "scope": "Employer Position Assessments"
+            },
+            {
+              "key": "cappedEmployees",
+              "vars": {},
+              "quote": "Capped sectors are limited to supporting current employees with valid temporary residency status",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/sinp-processing-statistics"
+            },
+            {
+              "key": "windowCapped",
+              "vars": {
+                "months": 6
+              },
+              "quote": "Employers in capped sectors can only submit applications during one of the six intake windows in 2026, and if their candidate has 6 months or less remaining on their work permit.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/sinp-processing-statistics"
+            },
+            {
+              "ref": "intake"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": true,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eoiOnlyOther",
+              "vars": {},
+              "quote": "If you are eligible under the Occupations In-Demand or Express Entry , you will be able to submit an Expression of Interest (EOI).",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-eoi-system"
+            }
+          ]
+        },
+        {
+          "step": "confirm",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "confirmSubmit",
+              "vars": {
+                "confirm": 10,
+                "submit": 60
+              },
+              "quote": "The candidate has 10 calendar days to review and confirm the EPA details, and 60 calendar days from the date they were identified on the conditionally approved EPA to submit their SINP application.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/immigration-faqs"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "processing",
+              "scope": "International Students"
+            }
+          ]
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "sk-occupation-in-demand",
@@ -617,7 +1153,65 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": [
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "pointsMin"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "key": "noScheduledDraw",
+              "vars": {},
+              "quote": "There are no scheduled EOI draws at this time.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-eoi-system"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteSubmitDays",
+              "vars": {
+                "n": 60
+              },
+              "quote": "You will have 60 days to submit a complete online application to the SINP and provide documents.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-eoi-system"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        }
+      ]
     },
     {
       "key": "sk-express-entry",
@@ -647,7 +1241,94 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": [
+        {
+          "step": "eeProfile",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "eeProfile"
+            }
+          ]
+        },
+        {
+          "step": "eoi",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "pointsMin"
+            }
+          ]
+        },
+        {
+          "step": "draw",
+          "who": "province",
+          "none": false,
+          "stuck": true,
+          "facts": [
+            {
+              "key": "noScheduledDraw",
+              "vars": {},
+              "quote": "There are no scheduled EOI draws at this time.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-eoi-system"
+            }
+          ]
+        },
+        {
+          "step": "apply",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "inviteSubmitDays",
+              "vars": {
+                "n": 60
+              },
+              "quote": "You will have 60 days to submit a complete online application to the SINP and provide documents.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-eoi-system"
+            }
+          ]
+        },
+        {
+          "step": "review",
+          "who": "province",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
+          "step": "pr",
+          "who": "federal",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "key": "eeAcceptDays",
+              "vars": {
+                "n": 30
+              },
+              "quote": "You have 30 days to accept the SINP nomination in the Express Entry system.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/procedures-and-guidelines"
+            },
+            {
+              "key": "prSubmitDays",
+              "vars": {
+                "n": 60
+              },
+              "quote": "You have 60 days to submit this application.",
+              "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/procedures-and-guidelines"
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "mb-skilled-worker-in-manitoba",
@@ -661,8 +1342,7 @@
       "boardLabel": null,
       "isDefault": true,
       "drawStreams": [
-        "Skilled Worker in Manitoba",
-        "Skilled Worker Stream"
+        "Skilled Worker in Manitoba"
       ],
       "reqStreams": [
         "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
@@ -680,7 +1360,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "mb-skilled-worker-overseas",
@@ -711,7 +1392,8 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "mb-career-employment",
@@ -743,7 +1425,8 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "mb-graduate-internship",
@@ -775,7 +1458,8 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "on-workforce-priority",
@@ -804,7 +1488,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "on-employer-job-offer-foreign-worker",
@@ -831,7 +1516,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "on-employer-job-offer-international-student",
@@ -858,7 +1544,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "on-self-employed-physicians",
@@ -887,7 +1574,8 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "ns-skilled-worker",
@@ -917,7 +1605,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "ns-construction",
@@ -949,7 +1638,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "ns-graduate",
@@ -982,7 +1672,8 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "ns-physicians",
@@ -1020,7 +1711,8 @@
       "employers": [
         "nova scotia health",
         "iwk health"
-      ]
+      ],
+      "steps": []
     },
     {
       "key": "ns-express-entry-experience",
@@ -1057,7 +1749,8 @@
         3
       ],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "ns-express-entry-physicians",
@@ -1097,7 +1790,8 @@
       "employers": [
         "nova scotia health",
         "iwk health"
-      ]
+      ],
+      "steps": []
     },
     {
       "key": "nb-skilled-worker",
@@ -1128,7 +1822,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "nb-express-entry-employment",
@@ -1165,7 +1860,8 @@
         3
       ],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "nb-francophone-workers",
@@ -1197,7 +1893,8 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "nb-express-entry-interest",
@@ -1225,7 +1922,8 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "nb-francophone-priorities",
@@ -1255,7 +1953,8 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "nb-francophones-remote",
@@ -1283,7 +1982,8 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "nb-critical-worker-pilot",
@@ -1317,7 +2017,8 @@
         "groupe westco",
         "imperial manufacturing",
         "mccain foods"
-      ]
+      ],
+      "steps": []
     },
     {
       "key": "nb-private-college-pilot",
@@ -1346,7 +2047,8 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "nl-skilled-worker",
@@ -1378,7 +2080,8 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "nl-international-graduate",
@@ -1406,17 +2109,18 @@
       "checked": "2026-09-30",
       "jobLinked": true,
       "tags": [
-        "pgwp"
+        "pgwp",
+        "fieldOfStudy"
       ],
       "teers": [
         0,
         1,
         2,
-        3,
-        4
+        3
       ],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "nl-express-entry-skilled-worker",
@@ -1453,7 +2157,8 @@
         3
       ],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "pe-workforce",
@@ -1485,7 +2190,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "pe-occupations-in-demand",
@@ -1518,7 +2224,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "pe-international-graduate",
@@ -1552,7 +2259,8 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "pe-intermediate-experience",
@@ -1586,7 +2294,8 @@
         4
       ],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "pe-express-entry",
@@ -1618,7 +2327,8 @@
       ],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     },
     {
       "key": "aip",
@@ -1647,7 +2357,8 @@
       "tags": [],
       "teers": [],
       "nocs": [],
-      "employers": []
+      "employers": [],
+      "steps": []
     }
   ]
 }

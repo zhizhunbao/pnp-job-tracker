@@ -1,6 +1,6 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-09-26",
+  "fetched": "2026-10-02",
   "provinces": {
     "NS": {
       "label": "NSNP + AIP",
@@ -12,49 +12,70 @@
           "stream": "Monthly EOI selections",
           "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
           "score": null,
-          "invitations": 671
+          "invitations": 671,
+          "selection": "",
+          "program": "PNP+AIP",
+          "unit": "selection"
         },
         {
           "date": "2026-06",
           "stream": "Monthly EOI selections",
           "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
           "score": null,
-          "invitations": 531
+          "invitations": 531,
+          "selection": "",
+          "program": "PNP+AIP",
+          "unit": "selection"
         },
         {
           "date": "2026-05",
           "stream": "Monthly EOI selections",
           "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
           "score": null,
-          "invitations": 789
+          "invitations": 789,
+          "selection": "",
+          "program": "PNP+AIP",
+          "unit": "selection"
         },
         {
           "date": "2026-04",
           "stream": "Monthly EOI selections",
           "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
           "score": null,
-          "invitations": 161
+          "invitations": 161,
+          "selection": "",
+          "program": "PNP+AIP",
+          "unit": "selection"
         },
         {
           "date": "2026-03",
           "stream": "Monthly EOI selections",
           "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
           "score": null,
-          "invitations": 370
+          "invitations": 370,
+          "selection": "",
+          "program": "PNP+AIP",
+          "unit": "selection"
         },
         {
           "date": "2026-02",
           "stream": "Monthly EOI selections",
           "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
           "score": null,
-          "invitations": 357
+          "invitations": 357,
+          "selection": "",
+          "program": "PNP+AIP",
+          "unit": "selection"
         },
         {
           "date": "2026-01",
           "stream": "Monthly EOI selections",
           "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
           "score": null,
-          "invitations": 363
+          "invitations": 363,
+          "selection": "",
+          "program": "PNP+AIP",
+          "unit": "selection"
         }
       ]
     }

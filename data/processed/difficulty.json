@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-24",
- "trAsOf": "2026-04",
+ "generated": "2026-10-02",
+ "trAsOf": "2026-07",
  "rows": [
   {
    "province": "ON",
@@ -8,15 +8,15 @@
    "factors": [
     {
      "key": "comp",
-     "value": 60.0,
-     "pool": 847654,
-     "poolStudy": 252733,
-     "poolWork": 694745,
+     "value": 66.4,
+     "pool": 938087,
+     "poolStudy": 251705,
+     "poolWork": 783817,
      "quota": 14119,
      "quotaYear": 2026,
      "tier": "tight",
      "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
-     "asOf": "2026-04"
+     "asOf": "2026-07"
     },
     {
      "key": "quotaTrend",
@@ -27,15 +27,15 @@
     },
     {
      "key": "activity",
-     "value": 11,
-     "invitations": 2400,
+     "value": 26,
+     "invitations": 6935,
      "tier": "easy",
      "source": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply",
-     "asOf": "2026-09-24"
+     "asOf": "2026-10-02"
     },
     {
      "key": "scoreLevel",
-     "value": 73,
+     "value": 91,
      "latestScore": 81,
      "scale": "OINP EOI",
      "tier": "tight",
@@ -50,15 +50,15 @@
    "factors": [
     {
      "key": "comp",
-     "value": 59.3,
-     "pool": 370728,
-     "poolStudy": 138731,
-     "poolWork": 270866,
+     "value": 64.9,
+     "pool": 405863,
+     "poolStudy": 135758,
+     "poolWork": 310707,
      "quota": 6254,
      "quotaYear": 2026,
      "tier": "tight",
      "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
-     "asOf": "2026-04"
+     "asOf": "2026-07"
     },
     {
      "key": "quotaTrend",
@@ -69,20 +69,20 @@
     },
     {
      "key": "activity",
-     "value": 24,
-     "invitations": 3029,
+     "value": 40,
+     "invitations": 5146,
      "tier": "easy",
      "source": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
-     "asOf": "2026-09-24"
+     "asOf": "2026-10-02"
     },
     {
      "key": "scoreLevel",
-     "value": 10,
-     "latestScore": 60,
+     "value": 74,
+     "latestScore": 131,
      "scale": "SIRS",
-     "tier": "easy",
+     "tier": "tight",
      "source": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
-     "asOf": "2026-09-17"
+     "asOf": "2026-09-24"
     }
    ]
   },
@@ -92,15 +92,15 @@
    "factors": [
     {
      "key": "comp",
-     "value": 31.9,
-     "pool": 210571,
-     "poolStudy": 56723,
-     "poolWork": 172630,
+     "value": 34.3,
+     "pool": 226652,
+     "poolStudy": 58510,
+     "poolWork": 186407,
      "quota": 6603,
      "quotaYear": 2026,
      "tier": "mid",
      "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
-     "asOf": "2026-04"
+     "asOf": "2026-07"
     },
     {
      "key": "quotaTrend",
@@ -111,15 +111,15 @@
     },
     {
      "key": "activity",
-     "value": 48,
-     "invitations": 7865,
+     "value": 57,
+     "invitations": 8829,
      "tier": "easy",
      "source": "https://www.alberta.ca/aaip-processing-information",
-     "asOf": "2026-09-24"
+     "asOf": "2026-10-02"
     },
     {
      "key": "scoreLevel",
-     "value": 62,
+     "value": 61,
      "latestScore": 58,
      "scale": "WEOI",
      "tier": "mid",
@@ -134,15 +134,15 @@
    "factors": [
     {
      "key": "comp",
-     "value": 8.1,
-     "pool": 38471,
-     "poolStudy": 13718,
-     "poolWork": 28731,
+     "value": 9.1,
+     "pool": 43315,
+     "poolStudy": 14395,
+     "poolWork": 33101,
      "quota": 4761,
      "quotaYear": 2026,
      "tier": "easy",
      "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
-     "asOf": "2026-04"
+     "asOf": "2026-07"
     },
     {
      "key": "quotaTrend",
@@ -159,28 +159,37 @@
    "factors": [
     {
      "key": "comp",
-     "value": 10.1,
-     "pool": 62940,
-     "poolStudy": 20662,
-     "poolWork": 48540,
-     "quota": 6239,
+     "value": 8.6,
+     "pool": 69139,
+     "poolStudy": 22040,
+     "poolWork": 53524,
+     "quota": 8000,
      "quotaYear": 2026,
      "tier": "easy",
      "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
-     "asOf": "2026-04"
+     "asOf": "2026-07"
     },
     {
      "key": "quotaTrend",
-     "value": 0.0,
+     "value": 0.282,
      "tier": "easy",
      "source": "",
      "asOf": "2026"
     },
     {
      "key": "activity",
-     "value": 25,
-     "invitations": 5174,
+     "value": 31,
+     "invitations": 6620,
      "tier": "easy",
+     "source": "https://immigratemanitoba.com/draws/",
+     "asOf": "2026-10-02"
+    },
+    {
+     "key": "scoreLevel",
+     "value": 74,
+     "latestScore": 760,
+     "scale": "MPNP EOI",
+     "tier": "tight",
      "source": "https://immigratemanitoba.com/draws/",
      "asOf": "2026-09-24"
     }
@@ -192,15 +201,15 @@
    "factors": [
     {
      "key": "comp",
-     "value": 20.1,
-     "pool": 47111,
-     "poolStudy": 15379,
-     "poolWork": 36997,
+     "value": 21.8,
+     "pool": 50988,
+     "poolStudy": 15750,
+     "poolWork": 40280,
      "quota": 2344,
      "quotaYear": 2026,
      "tier": "mid",
      "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
-     "asOf": "2026-04"
+     "asOf": "2026-07"
     },
     {
      "key": "quotaTrend",
@@ -208,6 +217,14 @@
      "tier": "tight",
      "source": "",
      "asOf": "2026"
+    },
+    {
+     "key": "activity",
+     "value": 3,
+     "invitations": 1991,
+     "tier": "mid",
+     "source": "https://liveinnovascotia.com/eoi-selection",
+     "asOf": "2026-10-02"
     }
    ]
   },
@@ -217,23 +234,23 @@
    "factors": [
     {
      "key": "comp",
-     "value": 10.0,
-     "pool": 29938,
-     "poolStudy": 12137,
-     "poolWork": 22925,
+     "value": 12.2,
+     "pool": 36544,
+     "poolStudy": 12826,
+     "poolWork": 28923,
      "quota": 3000,
      "quotaYear": 2025,
      "tier": "easy",
      "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
-     "asOf": "2026-04"
+     "asOf": "2026-07"
     },
     {
      "key": "activity",
-     "value": 23,
-     "invitations": 2643,
+     "value": 21,
+     "invitations": 2500,
      "tier": "easy",
      "source": "https://www.gnb.ca/en/topic/family-home-community/immigration/invitation-selection-rounds.html",
-     "asOf": "2026-09-24"
+     "asOf": "2026-10-02"
     }
    ]
   },
@@ -243,23 +260,30 @@
    "factors": [
     {
      "key": "comp",
-     "value": 6.9,
-     "pool": 14069,
-     "poolStudy": 5186,
-     "poolWork": 10393,
-     "quota": 2050,
-     "quotaYear": 2025,
+     "value": 6.3,
+     "pool": 14966,
+     "poolStudy": 5137,
+     "poolWork": 11326,
+     "quota": 2379,
+     "quotaYear": 2026,
      "tier": "easy",
      "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
-     "asOf": "2026-04"
+     "asOf": "2026-07"
+    },
+    {
+     "key": "quotaTrend",
+     "value": 0.16,
+     "tier": "easy",
+     "source": "",
+     "asOf": "2026"
     },
     {
      "key": "activity",
-     "value": 14,
-     "invitations": 2209,
+     "value": 24,
+     "invitations": 2005,
      "tier": "easy",
      "source": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/",
-     "asOf": "2026-09-24"
+     "asOf": "2026-10-02"
     }
    ]
   },
@@ -273,7 +297,7 @@
      "invitations": 993,
      "tier": "mid",
      "source": "https://www.princeedwardisland.ca/en/information/office-of-immigration/expression-of-interest-draws",
-     "asOf": "2026-09-24"
+     "asOf": "2026-10-02"
     }
    ]
   }

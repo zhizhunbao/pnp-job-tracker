@@ -1,0 +1,1329 @@
+{
+  "province": "QC",
+  "source": "Ministère de l'Immigration, de la Francisation et de l'Intégration (quebec.ca)",
+  "url": "https://cdn-contenu.quebec.ca/cdn-contenu/immigration/formulaires/fr/PSTQ/TAB_PSTQ_Correspondance_niveaux_francais.pdf",
+  "version": "2024-11-29",
+  "fetched": "2026-10-02",
+  "tests": [
+    {
+      "test": "TEF et TEFAQ (Québec)",
+      "skill": "Compréhension orale et écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": 100,
+          "scoreMax": 199
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": 200,
+          "scoreMax": 259
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": 260,
+          "scoreMax": 299
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": 300,
+          "scoreMax": 399
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": 400,
+          "scoreMax": 499
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": 500,
+          "scoreMax": 599
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": 600,
+          "scoreMax": 699
+        }
+      ]
+    },
+    {
+      "test": "TEF et TEFAQ (Québec)",
+      "skill": "Expression orale et écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": 100,
+          "scoreMax": 199
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": 200,
+          "scoreMax": 259
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": 260,
+          "scoreMax": 299
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": 300,
+          "scoreMax": 399
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": 400,
+          "scoreMax": 499
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": 500,
+          "scoreMax": 599
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": 600,
+          "scoreMax": 699
+        }
+      ]
+    },
+    {
+      "test": "TEF-Canada (avant le 11 décembre 2023)",
+      "skill": "Compréhension orale et écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": 100,
+          "scoreMax": 199
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": 200,
+          "scoreMax": 259
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": 260,
+          "scoreMax": 299
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": 300,
+          "scoreMax": 399
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": 400,
+          "scoreMax": 499
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": 500,
+          "scoreMax": 599
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": 600,
+          "scoreMax": 699
+        }
+      ]
+    },
+    {
+      "test": "TEF-Canada (avant le 11 décembre 2023)",
+      "skill": "Expression orale et écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": 100,
+          "scoreMax": 199
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": 200,
+          "scoreMax": 259
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": 260,
+          "scoreMax": 299
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": 300,
+          "scoreMax": 399
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": 400,
+          "scoreMax": 499
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": 500,
+          "scoreMax": 599
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": 600,
+          "scoreMax": 699
+        }
+      ]
+    },
+    {
+      "test": "TEF-Canada (à partir du 11 décembre 2023)",
+      "skill": "Compréhension orale et écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": 100,
+          "scoreMax": 199
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": 200,
+          "scoreMax": 259
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": 260,
+          "scoreMax": 299
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": 300,
+          "scoreMax": 399
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": 400,
+          "scoreMax": 499
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": 500,
+          "scoreMax": 599
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": 600,
+          "scoreMax": 699
+        }
+      ]
+    },
+    {
+      "test": "TEF-Canada (à partir du 11 décembre 2023)",
+      "skill": "Expression orale",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": 100,
+          "scoreMax": 199
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": 200,
+          "scoreMax": 259
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": 260,
+          "scoreMax": 299
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": 300,
+          "scoreMax": 399
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": 400,
+          "scoreMax": 499
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": 500,
+          "scoreMax": 599
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": 600,
+          "scoreMax": 699
+        }
+      ]
+    },
+    {
+      "test": "TEF-Canada (à partir du 11 décembre 2023)",
+      "skill": "Expression écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": 100,
+          "scoreMax": 199
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": 200,
+          "scoreMax": 259
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": 260,
+          "scoreMax": 299
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": 300,
+          "scoreMax": 399
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": 400,
+          "scoreMax": 499
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": 500,
+          "scoreMax": 599
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": 600,
+          "scoreMax": 699
+        }
+      ]
+    },
+    {
+      "test": "TCF et TCF-Québec",
+      "skill": "Compréhension orale et écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": 101,
+          "scoreMax": 199
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": 200,
+          "scoreMax": 259
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": 260,
+          "scoreMax": 299
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": 300,
+          "scoreMax": 399
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": 400,
+          "scoreMax": 499
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": 500,
+          "scoreMax": 599
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": 600,
+          "scoreMax": 699
+        }
+      ]
+    },
+    {
+      "test": "TCF et TCF-Québec",
+      "skill": "Expression orale et écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": 1,
+          "scoreMax": 1
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": 2,
+          "scoreMax": 3
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": 4,
+          "scoreMax": 5
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": 6,
+          "scoreMax": 9
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": 10,
+          "scoreMax": 13
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": 14,
+          "scoreMax": 17
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": 18,
+          "scoreMax": 20
+        }
+      ]
+    },
+    {
+      "test": "TCF-Canada",
+      "skill": "Compréhension orale",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": 101,
+          "scoreMax": 199
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": 200,
+          "scoreMax": 259
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": 260,
+          "scoreMax": 299
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": 300,
+          "scoreMax": 399
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": 400,
+          "scoreMax": 499
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": 500,
+          "scoreMax": 599
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": 600,
+          "scoreMax": 699
+        }
+      ]
+    },
+    {
+      "test": "TCF-Canada",
+      "skill": "Compréhension écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": 101,
+          "scoreMax": 199
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": 200,
+          "scoreMax": 259
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": 260,
+          "scoreMax": 299
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": 300,
+          "scoreMax": 399
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": 400,
+          "scoreMax": 499
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": 500,
+          "scoreMax": 599
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": 600,
+          "scoreMax": 699
+        }
+      ]
+    },
+    {
+      "test": "TCF-Canada",
+      "skill": "Expression orale et écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": 1,
+          "scoreMax": 1
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": 2,
+          "scoreMax": 3
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": 4,
+          "scoreMax": 5
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": 6,
+          "scoreMax": 9
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": 10,
+          "scoreMax": 13
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": 14,
+          "scoreMax": 17
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": 18,
+          "scoreMax": 20
+        }
+      ]
+    },
+    {
+      "test": "DELF A1",
+      "skill": "Compréhension et production orales",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": 12.5,
+          "scoreMax": 25
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": null,
+          "scoreMax": null
+        }
+      ]
+    },
+    {
+      "test": "DELF A1",
+      "skill": "Compréhension et production écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": 12.5,
+          "scoreMax": 25
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": null,
+          "scoreMax": null
+        }
+      ]
+    },
+    {
+      "test": "DELF A2",
+      "skill": "Compréhension et production orales",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": 12.5,
+          "scoreMax": 15.5
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": 16,
+          "scoreMax": 25
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": null,
+          "scoreMax": null
+        }
+      ]
+    },
+    {
+      "test": "DELF A2",
+      "skill": "Compréhension et production écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": 12.5,
+          "scoreMax": 15.5
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": 16,
+          "scoreMax": 25
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": null,
+          "scoreMax": null
+        }
+      ]
+    },
+    {
+      "test": "DELF B1",
+      "skill": "Compréhension et production orales",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": 12.5,
+          "scoreMax": 25
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": null,
+          "scoreMax": null
+        }
+      ]
+    },
+    {
+      "test": "DELF B1",
+      "skill": "Compréhension et production écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": 12.5,
+          "scoreMax": 25
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": null,
+          "scoreMax": null
+        }
+      ]
+    },
+    {
+      "test": "DELF B2",
+      "skill": "Compréhension et production orales",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": 12.5,
+          "scoreMax": 25
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": null,
+          "scoreMax": null
+        }
+      ]
+    },
+    {
+      "test": "DELF B2",
+      "skill": "Compréhension et production écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": 12.5,
+          "scoreMax": 25
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": null,
+          "scoreMax": null
+        }
+      ]
+    },
+    {
+      "test": "DALF C1",
+      "skill": "Compréhension et production orales",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": 12.5,
+          "scoreMax": 25
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": null,
+          "scoreMax": null
+        }
+      ]
+    },
+    {
+      "test": "DALF C1",
+      "skill": "Compréhension et production écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": 12.5,
+          "scoreMax": 25
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": null,
+          "scoreMax": null
+        }
+      ]
+    },
+    {
+      "test": "DALF C2",
+      "skill": "Épreuve synthèse orale",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": 25,
+          "scoreMax": 50
+        }
+      ]
+    },
+    {
+      "test": "DALF C2",
+      "skill": "Épreuve synthèse écrite",
+      "bands": [
+        {
+          "levelMin": 1,
+          "levelMax": 2,
+          "cefr": "A1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 3,
+          "levelMax": 3,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 4,
+          "levelMax": 4,
+          "cefr": "A2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 5,
+          "levelMax": 6,
+          "cefr": "B1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 7,
+          "levelMax": 8,
+          "cefr": "B2",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 9,
+          "levelMax": 10,
+          "cefr": "C1",
+          "scoreMin": null,
+          "scoreMax": null
+        },
+        {
+          "levelMin": 11,
+          "levelMax": 12,
+          "cefr": "C2",
+          "scoreMin": 25,
+          "scoreMax": 50
+        }
+      ]
+    }
+  ]
+}

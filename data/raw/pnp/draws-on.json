@@ -1,6 +1,6 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-09-26",
+  "fetched": "2026-10-02",
   "provinces": {
     "ON": {
       "label": "OINP",
@@ -12,1792 +12,2570 @@
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for the Greater Toronto Area ( GTA ). Please refer to the OINP Program Updates page for more information.",
           "score": 57,
-          "invitations": 786
+          "invitations": 786,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-30",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for the Greater Toronto Area ( GTA ). Please refer to the OINP Program Updates page for more information.",
           "score": 81,
-          "invitations": 277
+          "invitations": 277,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-23",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 63,
-          "invitations": 318
+          "invitations": 318,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-23",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Northern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 60,
-          "invitations": 57
+          "invitations": 57,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-23",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Southwestern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 60,
-          "invitations": 194
+          "invitations": 194,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-23",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Central Ontario (excluding GTA). Please refer to the OINP Program Updates page for more information.",
           "score": 60,
-          "invitations": 128
+          "invitations": 128,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-23",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 87,
-          "invitations": 173
+          "invitations": 173,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-23",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Northern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 87,
-          "invitations": 167
+          "invitations": 167,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-23",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Southwestern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 84,
-          "invitations": 173
+          "invitations": 173,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-04-23",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Central Ontario (excluding GTA). Please refer to the OINP Program Updates page for more information.",
+          "score": 84,
+          "invitations": 173,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-23",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 34,
-          "invitations": 48
+          "invitations": 48,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-23",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Northern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 34,
-          "invitations": 79
+          "invitations": 79,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-23",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Southwestern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 34,
-          "invitations": 430
+          "invitations": 430,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-23",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Central Ontario (excluding GTA). Please refer to the OINP Program Updates page for more information.",
           "score": 34,
-          "invitations": 162
+          "invitations": 162,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-22",
           "stream": "Masters Graduate stream",
           "note": "General draw. Please refer to the OINP Program Updates page for more information.",
           "score": 61,
-          "invitations": 674
+          "invitations": 674,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-22",
           "stream": "PhD Graduate stream",
           "note": "General draw. Please refer to the OINP Program Updates page for more information.",
           "score": 56,
-          "invitations": 244
+          "invitations": 244,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-15",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for other priority occupations. Please refer to the OINP Program Updates page for more information.",
           "score": 36,
-          "invitations": 1024
+          "invitations": 1024,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-08",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Physicians. Please refer to the OINP Program Updates page for more information.",
           "score": 43,
-          "invitations": 15
+          "invitations": 15,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-08",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Francophones candidates. Please refer to the OINP Program Updates page for more information.",
           "score": 35,
-          "invitations": 81
+          "invitations": 81,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-08",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 46,
-          "invitations": 9
+          "invitations": 9,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-08",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for healthcare and early childhood education occupations. Please refer to the OINP Program Updates page for more information.",
           "score": 20,
-          "invitations": 512
+          "invitations": 512,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-08",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Francophones candidates. Please refer to the OINP Program Updates page for more information.",
           "score": 63,
-          "invitations": 41
+          "invitations": 41,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-08",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 57,
-          "invitations": 16
+          "invitations": 16,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-08",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for healthcare and early childhood education occupations. Please refer to the OINP Program Updates page for more information.",
           "score": 46,
-          "invitations": 1123
+          "invitations": 1123,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-08",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Francophones candidates. Please refer to the OINP Program Updates page for more information.",
           "score": 25,
-          "invitations": 24
+          "invitations": 24,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-08",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 33,
-          "invitations": 7
+          "invitations": 7,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-01",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Priority Occupations in the Mining Sector. Please refer to the OINP Program Updates page for more information.",
           "score": 56,
-          "invitations": 372
+          "invitations": 372,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-01",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Priority Occupations in the Mining Sector. Please refer to the OINP Program Updates page for more information.",
           "score": 85,
-          "invitations": 355
+          "invitations": 355,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-01",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Priority Occupations in the Mining Sector. Please refer to the OINP Program Updates page for more information.",
           "score": 34,
-          "invitations": 32
+          "invitations": 32,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-25",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 57,
-          "invitations": 64
+          "invitations": 64,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-25",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Northern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 54,
-          "invitations": 28
+          "invitations": 28,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-25",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Southwestern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 53,
-          "invitations": 99
+          "invitations": 99,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-25",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Central Ontario (excluding GTA). Please refer to the OINP Program Updates page for more information.",
           "score": 55,
-          "invitations": 51
+          "invitations": 51,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-25",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for the Greater Toronto Area (GTA). Please refer to the OINP Program Updates page for more information.",
           "score": 61,
-          "invitations": 355
+          "invitations": 355,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-25",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 83,
-          "invitations": 79
+          "invitations": 79,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-25",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Northern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 80,
-          "invitations": 29
+          "invitations": 29,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-25",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Southwestern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 81,
-          "invitations": 152
+          "invitations": 152,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-25",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Central Ontario (excluding GTA). Please refer to the OINP Program Updates page for more information.",
           "score": 82,
-          "invitations": 82
+          "invitations": 82,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-25",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for the Greater Toronto Area (GTA). Please refer to the OINP Program Updates page for more information.",
           "score": 90,
-          "invitations": 76
+          "invitations": 76,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-25",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 34,
-          "invitations": 31
+          "invitations": 31,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-25",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Central Ontario (excluding GTA). Please refer to the OINP Program Updates page for more information.",
           "score": 32,
-          "invitations": 66
+          "invitations": 66,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-18",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Physicians. Please refer to the OINP Program Updates page for more information.",
           "score": 36,
-          "invitations": 97
+          "invitations": 97,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-18",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 47,
-          "invitations": 11
+          "invitations": 11,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-18",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 61,
-          "invitations": 17
+          "invitations": 17,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-18",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 30,
-          "invitations": 11
+          "invitations": 11,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-18",
           "stream": "Masters Graduate stream",
           "note": "Targeted draw. Please refer to the OINP Program Updates page for more information.",
           "score": 30,
-          "invitations": 582
+          "invitations": 582,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-03-18",
           "stream": "PhD Graduate stream",
           "note": "Targeted draw. Please refer to the OINP Program Updates page for more information.",
           "score": 49,
-          "invitations": 525
+          "invitations": 525,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-18",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for skilled trades-related occupations. Please refer to the OINP Program Updates page for more information.",
           "score": 50,
-          "invitations": 951
+          "invitations": 951,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-18",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for skilled trades-related occupations. Please refer to the OINP Program Updates page for more information.",
           "score": 80,
-          "invitations": 453
+          "invitations": 453,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-02",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Physicians. Please refer to the OINP Program Updates page for more information.",
           "score": 33,
-          "invitations": 129
+          "invitations": 129,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-02",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Regional Economic Development through Immigration (REDI). Please refer to the OINP Program Updates page for more information.",
           "score": 44,
-          "invitations": 14
+          "invitations": 14,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-02",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for healthcare and early childhood education occupations. Please refer to the OINP Program Updates page for more information.",
           "score": 36,
-          "invitations": 634
+          "invitations": 634,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-02",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 69,
-          "invitations": 26
+          "invitations": 26,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-02",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for healthcare and early childhood education occupations. Please refer to the OINP Program Updates page for more information.",
           "score": 56,
-          "invitations": 1015
+          "invitations": 1015,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-02",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 34,
-          "invitations": 7
+          "invitations": 7,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-11",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 54,
-          "invitations": 89
+          "invitations": 89,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-11",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Northern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 51,
-          "invitations": 29
+          "invitations": 29,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-11",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Southwestern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 51,
-          "invitations": 103
+          "invitations": 103,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-11",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Central Ontario (excluding GTA ). Please refer to the OINP Program Updates page for more information.",
           "score": 49,
-          "invitations": 84
+          "invitations": 84,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-11",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 77,
-          "invitations": 93
+          "invitations": 93,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-11",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Northern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 77,
-          "invitations": 39
+          "invitations": 39,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-11",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Southwestern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 73,
-          "invitations": 136
+          "invitations": 136,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-11",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Central Ontario (excluding GTA ). Please refer to the OINP Program Updates page for more information.",
           "score": 71,
-          "invitations": 105
+          "invitations": 105,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-11",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 30,
-          "invitations": 123
+          "invitations": 123,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-11",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Central Ontario (excluding GTA ). Please refer to the OINP Program Updates page for more information.",
           "score": 30,
-          "invitations": 115
+          "invitations": 115,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-10",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 45,
-          "invitations": 29
+          "invitations": 29,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-10",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for health occupations and early childhood educators and assistants. Please refer to the OINP Program Updates page for more information.",
           "score": 49,
-          "invitations": 398
+          "invitations": 398,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-10",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 63,
-          "invitations": 33
+          "invitations": 33,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-10",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for health occupations and early childhood educators and assistants. Please refer to the OINP Program Updates page for more information.",
           "score": 73,
-          "invitations": 659
+          "invitations": 659,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-10",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 30,
-          "invitations": 14
+          "invitations": 14,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-10-09",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 51,
-          "invitations": 24
+          "invitations": 24,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-10-09",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for health occupations and early childhood educators and assistants. Please refer to the OINP Program Updates page for more information.",
           "score": 38,
-          "invitations": 671
+          "invitations": 671,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-10-09",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page page for more information.",
           "score": 75,
-          "invitations": 53
+          "invitations": 53,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-10-09",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for health occupations and early childhood educators and assistants. Please refer to the OINP Program Updates page for more information.",
           "score": 56,
-          "invitations": 757
+          "invitations": 757,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-10-09",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 33,
-          "invitations": 13
+          "invitations": 13,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-10-09",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for health occupations. Please refer to the OINP Program Updates page for more information.",
           "score": 31,
-          "invitations": 162
+          "invitations": 162,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-09-03",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for other priority occupations. Please refer to the OINP Program Updates page for more information.",
           "score": 42,
-          "invitations": 1134
+          "invitations": 1134,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-09-03",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for other priority occupations. Please refer to the OINP Program Updates page for more information.",
           "score": 63,
-          "invitations": 759
+          "invitations": 759,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-09-02",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for health occupations and early childhood educators and assistants. Please refer to the OINP Program Updates page for more information.",
           "score": 41,
-          "invitations": 1305
+          "invitations": 1305,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-09-02",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for health occupations and early childhood educators and assistants. Please refer to the OINP Program Updates page for more information.",
           "score": 58,
-          "invitations": 1105
+          "invitations": 1105,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-09-02",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for health occupations. Please refer to the OINP Program Updates page for more information.",
           "score": 33,
-          "invitations": 233
+          "invitations": 233,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-08-28",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for candidates in Northern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 53,
-          "invitations": 94
+          "invitations": 94,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-08-28",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 45,
-          "invitations": 57
+          "invitations": 57,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-08-28",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for candidates in Northern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 66,
-          "invitations": 236
+          "invitations": 236,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-08-28",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 68,
-          "invitations": 56
+          "invitations": 56,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-08-28",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
           "score": 34,
-          "invitations": 25
+          "invitations": 25,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-06",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for additional candidates in Greater Sudbury/Grand Sudbury. Please refer to the OINP Program Update page for more information.",
           "score": 36,
-          "invitations": 32
+          "invitations": 32,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-06",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for additional candidates in Greater Sudbury/Grand Sudbury. Please refer to the OINP Program Update page for more information.",
           "score": 54,
-          "invitations": 34
+          "invitations": 34,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-06",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for additional candidates in Greater Sudbury/Grand Sudbury. Please refer to the OINP Program Update page for more information.",
           "score": 32,
-          "invitations": 6
+          "invitations": 6,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-03",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for candidates in Northern Ontario. Please refer to the OINP Program Update page for more information.",
           "score": 36,
-          "invitations": 391
+          "invitations": 391,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-03",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Update page for more information.",
           "score": null,
-          "invitations": 411
+          "invitations": 411,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-03",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Career development practitioners and career counsellors (except education). Please refer to the OINP Program Update page for more information.",
           "score": null,
-          "invitations": 5
+          "invitations": 5,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-03",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for candidates in Eastern Ontario. Please refer to the OINP Program Update page for more information.",
           "score": 85,
-          "invitations": 334
+          "invitations": 334,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-03",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for candidates in Northern Ontario. Please refer to the OINP Program Update page for more information.",
           "score": 54,
-          "invitations": 493
+          "invitations": 493,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-03",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ) Please refer to the OINP Program Update page for more information.",
           "score": null,
-          "invitations": 363
+          "invitations": 363,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-03",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for health occupations. Please refer to the OINP Program Update page for more information.",
           "score": 68,
-          "invitations": 1350
+          "invitations": 1350,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-03",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for candidates in Northern Ontario. Please refer to the OINP Program Update page for more information.",
           "score": 32,
-          "invitations": 89
+          "invitations": 89,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-03",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ) Please refer to the OINP Program Update page for more information.",
           "score": null,
-          "invitations": 69
+          "invitations": 69,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-06-03",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for health occupations. Please refer to the OINP Program Update page for more information.",
           "score": 34,
-          "invitations": 214
+          "invitations": 214,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-01-15",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates Please refer to IRCC ’s project page for more information",
           "score": null,
-          "invitations": 4
+          "invitations": 4,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-10-08",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 48,
-          "invitations": 885
+          "invitations": 885,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-10-08",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for other priority occupations Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 52,
-          "invitations": 841
+          "invitations": 841,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-10-08",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates Please refer to IRCC ’s project page for more information",
           "score": null,
-          "invitations": 2
+          "invitations": 2,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-09-17",
           "stream": "Masters Graduate stream",
           "note": "General Draw",
           "score": 53,
-          "invitations": 1249
+          "invitations": 1249,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-09-17",
           "stream": "PhD Graduate stream",
           "note": "General Draw",
           "score": 45,
-          "invitations": 194
+          "invitations": 194,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-09-10",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates Please refer to IRCC ’s project page for more information",
           "score": null,
-          "invitations": 15
+          "invitations": 15,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-09-10",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for health professions Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 67,
-          "invitations": 806
+          "invitations": 806,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-09-10",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for skilled trades Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 67,
-          "invitations": 1017
+          "invitations": 1017,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-09-10",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "General Draw",
           "score": 34,
-          "invitations": 649
+          "invitations": 649,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-08-13",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for health occupations Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 50,
-          "invitations": 420
+          "invitations": 420,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-08-13",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for other priority occupations Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 54,
-          "invitations": 958
+          "invitations": 958,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-07-16",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates Please refer to IRCC’s project page for more information",
           "score": null,
-          "invitations": 5
+          "invitations": 5,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-07-16",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for other priority occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 77,
-          "invitations": 839
+          "invitations": 839,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-07-16",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for health occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 81,
-          "invitations": 424
+          "invitations": 424,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-07-16",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "General Draw",
           "score": 35,
-          "invitations": 265
+          "invitations": 265,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-07-16",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for health occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 81,
-          "invitations": 424
+          "invitations": 424,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-07-09",
           "stream": "Masters Graduate stream",
           "note": "General Draw",
           "score": 54,
-          "invitations": 1556
+          "invitations": 1556,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-07-09",
           "stream": "PhD Graduate stream",
           "note": "General Draw",
           "score": 50,
-          "invitations": 110
+          "invitations": 110,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-06-17",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Early childhood educators and assistants candidates",
           "score": 39,
-          "invitations": 106
+          "invitations": 106,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-06-17",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Early childhood educators and assistants candidates",
           "score": 60,
-          "invitations": 84
+          "invitations": 84,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-06-11",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Early childhood educators and assistants candidates",
           "score": 43,
-          "invitations": 124
+          "invitations": 124,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-06-11",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for Early childhood educators and assistants candidates",
           "score": 65,
-          "invitations": 120
+          "invitations": 120,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-04-23",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 53,
-          "invitations": 209
+          "invitations": 209,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-04-23",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates Please refer to IRCC ’s project page for more information",
           "score": null,
-          "invitations": 2
+          "invitations": 2,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-03-19",
           "stream": "Masters Graduate stream",
           "note": "General Draw",
           "score": 52,
-          "invitations": 1370
+          "invitations": 1370,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-03-19",
           "stream": "PhD Graduate stream",
           "note": "General Draw",
           "score": 42,
-          "invitations": 104
+          "invitations": 104,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-03-12",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates Please refer to IRCC ’s project page for more information",
           "score": null,
-          "invitations": 11
+          "invitations": 11,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-03-12",
           "stream": "Employer Job Offer: International Student stream",
           "note": "General Draw",
           "score": 72,
-          "invitations": 1306
+          "invitations": 1306,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-03-12",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 66,
-          "invitations": 649
+          "invitations": 649,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-03-12",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for health and tech occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 72,
-          "invitations": 684
+          "invitations": 684,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-02-08",
           "stream": "Employer Job Offer: International Student stream",
           "note": "General Draw",
           "score": 78,
-          "invitations": 1182
+          "invitations": 1182,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-02-08",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for health and tech occupations Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 73,
-          "invitations": 1252
+          "invitations": 1252,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-01-24",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates Please refer to IRCC ’s project page for more information",
           "score": null,
-          "invitations": 12
+          "invitations": 12,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-01-24",
           "stream": "Masters Graduate stream",
           "note": "General Draw",
           "score": 50,
-          "invitations": 1344
+          "invitations": 1344,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-01-24",
           "stream": "PhD Graduate stream",
           "note": "General Draw",
           "score": 45,
-          "invitations": 125
+          "invitations": 125,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-01-19",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "General Draw",
           "score": 50,
-          "invitations": 1654
+          "invitations": 1654,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-01-09",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 33,
-          "invitations": 630
+          "invitations": 630,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2024-01-09",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for health and tech occupations Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 40,
-          "invitations": 821
+          "invitations": 821,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-12-05",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 34,
-          "invitations": 761
+          "invitations": 761,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-12-05",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for health and tech occupations Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 43,
-          "invitations": 1663
+          "invitations": 1663,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-12-05",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways. Project candidates. Please refer to IRCC ’s project page for more information",
           "score": null,
-          "invitations": 13
+          "invitations": 13,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-12-05",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "General Draw",
           "score": 30,
-          "invitations": 262
+          "invitations": 262,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-10-30",
           "stream": "Masters Graduate stream",
           "note": "General Draw",
           "score": 43,
-          "invitations": 1051
+          "invitations": 1051,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-10-30",
           "stream": "PhD Graduate stream",
           "note": "General Draw",
           "score": 42,
-          "invitations": 66
+          "invitations": 66,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-09-25",
           "stream": "Entrepreneur stream",
           "note": "",
           "score": null,
-          "invitations": 10
+          "invitations": 10,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-09-19",
           "stream": "PhD Graduate stream",
           "note": "General Draw",
           "score": 40,
-          "invitations": 71
+          "invitations": 71,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-08-30",
           "stream": "Masters Graduate stream",
           "note": "General Draw",
           "score": 44,
-          "invitations": 772
+          "invitations": 772,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-08-15",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 30,
-          "invitations": 375
+          "invitations": 375,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-08-15",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for health and tech occupations Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 46,
-          "invitations": 1131
+          "invitations": 1131,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-08-15",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 61,
-          "invitations": 408
+          "invitations": 408,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-08-15",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for tech and health occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 61,
-          "invitations": 445
+          "invitations": 445,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-08-15",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "General Draw",
           "score": 23,
-          "invitations": 256
+          "invitations": 256,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-08-01",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways. Project candidates. Please refer to IRCC ’s project page for more information.",
           "score": null,
-          "invitations": 1
+          "invitations": 1,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-08-01",
           "stream": "Masters Graduate stream",
           "note": "General Draw",
           "score": 48,
-          "invitations": 755
+          "invitations": 755,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-08-01",
           "stream": "PhD Graduate stream",
           "note": "General Draw",
           "score": 39,
-          "invitations": 84
+          "invitations": 84,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-07-28",
           "stream": "Entrepreneur stream",
           "note": "",
           "score": null,
-          "invitations": 11
+          "invitations": 11,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-06-20",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 36,
-          "invitations": 426
+          "invitations": 426,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-06-20",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for health occupations. Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 33,
-          "invitations": 318
+          "invitations": 318,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-06-20",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "General Draw",
           "score": 26,
-          "invitations": 256
+          "invitations": 256,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-06-06",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 57,
-          "invitations": 451
+          "invitations": 451,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-06-06",
           "stream": "Masters Graduate stream",
           "note": "General Draw",
           "score": 46,
-          "invitations": 1175
+          "invitations": 1175,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-06-06",
           "stream": "PhD Graduate stream",
           "note": "General Draw",
           "score": 42,
-          "invitations": 134
+          "invitations": 134,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-05-12",
           "stream": "Entrepreneur stream",
           "note": "",
           "score": null,
-          "invitations": 14
+          "invitations": 14,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-05-09",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 43,
-          "invitations": 400
+          "invitations": 400,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-05-09",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for tech and health occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 62,
-          "invitations": 584
+          "invitations": 584,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-04-11",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "General Draw",
           "score": 30,
-          "invitations": 295
+          "invitations": 295,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-04-04",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways. Project candidates. Please refer to IRCC ’s project page for more information",
           "score": null,
-          "invitations": 6
+          "invitations": 6,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-04-04",
           "stream": "Masters Graduate stream",
           "note": "General Draw",
           "score": 52,
-          "invitations": 752
+          "invitations": 752,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-04-04",
           "stream": "PhD Graduate stream",
           "note": "General Draw",
           "score": 48,
-          "invitations": 131
+          "invitations": 131,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-03-31",
           "stream": "Entrepreneur stream",
           "note": "",
           "score": null,
-          "invitations": 13
+          "invitations": 13,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-03-14",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways. Project candidates. Please refer to IRCC ’s project page for more information",
           "score": null,
-          "invitations": 2
+          "invitations": 2,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-03-14",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for tech and health occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 70,
-          "invitations": 606
+          "invitations": 606,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-03-14",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 74,
-          "invitations": 300
+          "invitations": 300,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-02-10",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for tech and health occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 30,
-          "invitations": 304
+          "invitations": 304,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-02-10",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways. Project candidates. Please refer to IRCC ’s project page for more information",
           "score": null,
-          "invitations": 1
+          "invitations": 1,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-01-31",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for tech and health occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 53,
-          "invitations": 611
+          "invitations": 611,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-01-27",
           "stream": "Entrepreneur stream",
           "note": "",
           "score": null,
-          "invitations": 10
+          "invitations": 10,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-01-25",
           "stream": "Masters Graduate stream",
           "note": "General Draw",
           "score": 44,
-          "invitations": 692
+          "invitations": 692,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-01-24",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways. Project candidates. Please refer to IRCC ’s project page for more information",
           "score": null,
-          "invitations": 2
+          "invitations": 2,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-01-24",
           "stream": "Employer Job Offer: International Student stream",
           "note": "General Draw",
           "score": 82,
-          "invitations": 620
+          "invitations": 620,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-01-10",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 35,
-          "invitations": 402
+          "invitations": 402,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2023-01-10",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
           "score": null,
-          "invitations": 2
+          "invitations": 2,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-12-22",
           "stream": "Entrepreneur stream",
           "note": "",
           "score": null,
-          "invitations": 14
+          "invitations": 14,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-12-21",
           "stream": "Masters Graduate stream",
           "note": "General draw",
           "score": 46,
-          "invitations": 725
+          "invitations": 725,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-10-25",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
           "score": null,
-          "invitations": 1
+          "invitations": 1,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-10-25",
           "stream": "Masters Graduate stream",
           "note": "General draw",
           "score": 35,
-          "invitations": 535
+          "invitations": 535,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-10-25",
           "stream": "PhD Graduate stream",
           "note": "General draw",
           "score": 24,
-          "invitations": 106
+          "invitations": 106,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-09-27",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
           "score": null,
-          "invitations": 3
+          "invitations": 3,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-09-20",
           "stream": "Masters Graduate stream",
           "note": "General draw",
           "score": 33,
-          "invitations": 823
+          "invitations": 823,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-08-30",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
           "score": null,
-          "invitations": 1
+          "invitations": 1,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-08-30",
           "stream": "Masters Graduate stream",
           "note": "General draw",
           "score": 37,
-          "invitations": 680
+          "invitations": 680,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-08-30",
           "stream": "PhD Graduate stream",
           "note": "General draw",
           "score": 26,
-          "invitations": 101
+          "invitations": 101,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-08-17",
           "stream": "Entrepreneur stream",
           "note": "",
           "score": null,
-          "invitations": 30
+          "invitations": 30,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-07-27",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
           "score": null,
-          "invitations": 2
+          "invitations": 2,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-07-15",
           "stream": "Entrepreneur stream",
           "note": "",
           "score": null,
-          "invitations": 33
+          "invitations": 33,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-06-29",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
           "score": null,
-          "invitations": 2
+          "invitations": 2,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-06-29",
           "stream": "Employer Job Offer: International Student stream",
           "note": "General draw",
           "score": 74,
-          "invitations": 424
+          "invitations": 424,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-06-29",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "General draw",
           "score": 24,
-          "invitations": 293
+          "invitations": 293,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-06-01",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 62,
-          "invitations": 217
+          "invitations": 217,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-06-01",
           "stream": "Employer Job Offer: International Student stream",
           "note": "General draw",
           "score": 79,
-          "invitations": 229
+          "invitations": 229,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-06-01",
           "stream": "Masters Graduate stream",
           "note": "General draw",
           "score": 38,
-          "invitations": 491
+          "invitations": 491,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-06-01",
           "stream": "PhD Graduate stream",
           "note": "General draw",
           "score": 28,
-          "invitations": 65
+          "invitations": 65,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-05-04",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "General draw",
           "score": 27,
-          "invitations": 57
+          "invitations": 57,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-03-30",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 23,
-          "invitations": 155
+          "invitations": 155,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-03-30",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for health, manufacturing, agricultural occupations and select trades occupations. Please refer to the OINP Program Update page for a list of targ",
           "score": 21,
-          "invitations": 65
+          "invitations": 65,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-03-30",
           "stream": "Masters Graduate stream",
           "note": "General draw",
           "score": 39,
-          "invitations": 398
+          "invitations": 398,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-03-03",
           "stream": "Entrepreneur stream",
           "note": "",
           "score": null,
-          "invitations": 21
+          "invitations": 21,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-03-01",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "General Draw",
           "score": 39,
-          "invitations": 456
+          "invitations": 456,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-03-01",
           "stream": "Employer Job Offer: International Student stream",
           "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 42,
-          "invitations": 215
+          "invitations": 215,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-03-01",
           "stream": "Employer Job Offer: International Student stream",
           "note": "General draw",
           "score": 72,
-          "invitations": 411
+          "invitations": 411,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-03-01",
           "stream": "Masters Graduate stream",
           "note": "General draw",
           "score": 41,
-          "invitations": 238
+          "invitations": 238,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-02-28",
           "stream": "PhD Graduate stream",
           "note": "General draw",
           "score": 16,
-          "invitations": 173
+          "invitations": 173,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-02-22",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
           "score": null,
-          "invitations": 8
+          "invitations": 8,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-02-09",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 24,
-          "invitations": 476
+          "invitations": 476,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-02-09",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "General Draw",
           "score": 41,
-          "invitations": 166
+          "invitations": 166,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-02-09",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for health, manufacturing, agricultural and select trades occupations. Please refer to the OINP Program Update page for a list of targeted occupat",
           "score": 15,
-          "invitations": 107
+          "invitations": 107,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-01-11",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "General Draw",
           "score": 38,
-          "invitations": 264
+          "invitations": 264,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-01-11",
           "stream": "Employer Job Offer: International Student stream",
           "note": "General draw",
           "score": 59,
-          "invitations": 762
+          "invitations": 762,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2022-01-11",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for health, manufacturing and agricultural occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 11,
-          "invitations": 58
+          "invitations": 58,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-12-07",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "General Draw",
           "score": 37,
-          "invitations": 470
+          "invitations": 470,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-12-07",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
           "score": null,
-          "invitations": 33
+          "invitations": 33,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-12-07",
           "stream": "Employer job offer: International Student stream",
           "note": "General Draw",
           "score": 62,
-          "invitations": 583
+          "invitations": 583,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-12-07",
           "stream": "Employer job offer: International Student stream",
           "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
           "score": null,
-          "invitations": 37
+          "invitations": 37,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-12-07",
           "stream": "Employer job offer: In-Demand Skills stream",
           "note": "Targeted draw for health, manufacturing and agricultural occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": 20,
-          "invitations": 53
+          "invitations": 53,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-12-07",
           "stream": "Employer job offer: In-Demand Skills stream",
           "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
           "score": null,
-          "invitations": 10
+          "invitations": 10,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-10-27",
           "stream": "Entrepreneur stream",
           "note": "",
           "score": null,
-          "invitations": 20
+          "invitations": 20,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-10-20",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC ’s project page for more information",
           "score": null,
-          "invitations": 4
+          "invitations": 4,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-10-20",
           "stream": "Masters Graduate stream",
           "note": "General draw",
           "score": 35,
-          "invitations": 479
+          "invitations": 479,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-10-20",
           "stream": "PhD Graduate stream",
           "note": "General draw",
           "score": 25,
-          "invitations": 63
+          "invitations": 63,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-09-22",
           "stream": "Employer job offer: In-Demand Skills stream",
           "note": "Targeted draw for health, manufacturing and agricultural occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": null,
-          "invitations": 65
+          "invitations": 65,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-09-22",
           "stream": "Employer job offer: In-Demand Skills stream",
           "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
           "score": null,
-          "invitations": 7
+          "invitations": 7,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-09-21",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "General Draw",
           "score": 37,
-          "invitations": 406
+          "invitations": 406,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-09-21",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
           "score": null,
-          "invitations": 36
+          "invitations": 36,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-09-21",
           "stream": "Employer job offer: International Student stream",
           "note": "General Draw",
           "score": 61,
-          "invitations": 523
+          "invitations": 523,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-09-21",
           "stream": "Employer job offer: International Student stream",
           "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
           "score": null,
-          "invitations": 30
+          "invitations": 30,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-09-14",
           "stream": "Masters Graduate stream",
           "note": "General draw",
           "score": 35,
-          "invitations": 627
+          "invitations": 627,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-09-14",
           "stream": "PhD Graduate stream",
           "note": "General draw",
           "score": 16,
-          "invitations": 64
+          "invitations": 64,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-08-26",
           "stream": "Entrepreneur stream",
           "note": "",
           "score": null,
-          "invitations": 20
+          "invitations": 20,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-08-25",
           "stream": "Masters Graduate stream",
           "note": "General draw",
           "score": 37,
-          "invitations": 326
+          "invitations": 326,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-08-18",
           "stream": "Masters Graduate stream",
           "note": "General draw",
           "score": 39,
-          "invitations": 402
+          "invitations": 402,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-08-18",
           "stream": "PhD Graduate stream",
           "note": "General draw",
           "score": 17,
-          "invitations": 77
+          "invitations": 77,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-08-11",
           "stream": "Employer job offer: In-Demand Skills stream",
           "note": "Targeted draw for health, manufacturing and agricultural occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": null,
-          "invitations": 48
+          "invitations": 48,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-08-06",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
           "score": null,
-          "invitations": 1
+          "invitations": 1,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-07-15",
           "stream": "Employer job offer: In-Demand Skills stream",
           "note": "Targeted draw for health, manufacturing and agricultural occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
           "score": null,
-          "invitations": 54
+          "invitations": 54,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-07-15",
           "stream": "Employer job offer: In-Demand Skills stream",
           "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
           "score": null,
-          "invitations": 1
+          "invitations": 1,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-07-13",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
           "score": null,
-          "invitations": 24
+          "invitations": 24,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-07-13",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "General draw",
           "score": 33,
-          "invitations": 1211
+          "invitations": 1211,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-07-13",
           "stream": "Employer job offer: International Student stream",
           "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
           "score": null,
-          "invitations": 19
+          "invitations": 19,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-07-13",
           "stream": "Employer job offer: International Student stream",
           "note": "General draw",
           "score": 62,
-          "invitations": 431
+          "invitations": 431,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-07-07",
           "stream": "Entrepreneur stream",
           "note": "",
           "score": null,
-          "invitations": 21
+          "invitations": 21,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-06-16",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "General draw",
           "score": 38,
-          "invitations": 569
+          "invitations": 569,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-06-16",
           "stream": "Employer job offer: International Student stream",
           "note": "General draw",
           "score": 66,
-          "invitations": 371
+          "invitations": 371,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-05-26",
           "stream": "Employer job offer: International Student stream",
           "note": "General draw",
           "score": 73,
-          "invitations": 147
+          "invitations": 147,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-05-26",
           "stream": "Employer job offer: International Student stream",
           "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
           "score": null,
-          "invitations": 11
+          "invitations": 11,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-05-25",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
           "score": null,
-          "invitations": 64
+          "invitations": 64,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-05-18",
           "stream": "Employer job offer: International Student stream",
           "note": "General draw",
           "score": 77,
-          "invitations": 138
+          "invitations": 138,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2021-05-11",
           "stream": "Employer Job Offer: Foreign Worker stream",
           "note": "Targeted draw in health and skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations",
           "score": 31,
-          "invitations": 81
+          "invitations": 81,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         }
       ],
       "notice": {

@@ -5,15 +5,17 @@
   "type": "indemand",
   "note": "SINP Talent Pathway:除职业在清单内,还需萨省雇主长期全职 offer 且雇主已获 EPA;2026 起住宿餐饮/零售/卡车运输三行业另有配额封顶(15%/5%/5%)。",
   "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/agriculture-talent-pathway",
-  "fetched": "2026-09-25",
+  "fetched": "2026-10-02",
   "occupations": [
     {
       "noc": "14401",
-      "name": "Storekeepers and partspersons"
+      "name": "Storekeepers and partspersons",
+      "employerSector": "skAgriFood"
     },
     {
       "noc": "75101",
-      "name": "Material handlers"
+      "name": "Material handlers",
+      "employerSector": "skAgriFood"
     },
     {
       "noc": "84120",
@@ -33,23 +35,28 @@
     },
     {
       "noc": "94140",
-      "name": "Process control and machine operators, food and beverage processing"
+      "name": "Process control and machine operators, food and beverage processing",
+      "employerSector": "skAgriFood"
     },
     {
       "noc": "94141",
-      "name": "Industrial butchers and meat cutters, poultry preparers and related workers"
+      "name": "Industrial butchers and meat cutters, poultry preparers and related workers",
+      "employerSector": "skAgriFood"
     },
     {
       "noc": "94143",
-      "name": "Testers and graders, food and beverage processing"
+      "name": "Testers and graders, food and beverage processing",
+      "employerSector": "skAgriFood"
     },
     {
       "noc": "94204",
-      "name": "Mechanical assemblers and inspectors"
+      "name": "Mechanical assemblers and inspectors",
+      "employerSector": "skAgriFood"
     },
     {
       "noc": "95106",
-      "name": "Labourers in food and beverage processing"
+      "name": "Labourers in food and beverage processing",
+      "employerSector": "skAgriFood"
     }
   ]
 }

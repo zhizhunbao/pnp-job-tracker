@@ -1,6 +1,6 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-09-26",
+  "fetched": "2026-10-02",
   "provinces": {
     "BC": {
       "label": "BC PNP Skills Immigration",
@@ -12,315 +12,538 @@
           "stream": "Innovate: High Economic Impact",
           "note": "Minimum wage of $52/hour and $105,000/year, and NOC 0, 1, 2, or 3",
           "score": null,
-          "invitations": 426
+          "invitations": 426,
+          "invitationsBelow": null,
+          "selection": "wage:52:105000",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-24",
           "stream": "Innovate: High Economic Impact",
           "note": "Points",
           "score": 131,
-          "invitations": 288
+          "invitations": 288,
+          "invitationsBelow": null,
+          "selection": "points",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-17",
           "stream": "Temporary Rural/Remote Health Support Initiative",
           "note": "Points",
           "score": 60,
-          "invitations": 33
+          "invitations": 33,
+          "invitationsBelow": null,
+          "selection": "points",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-10",
           "stream": "Care: Childcare",
           "note": "Early childhood educators only *",
           "score": 99,
-          "invitations": 182
+          "invitations": 182,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-10",
           "stream": "Care: Health",
           "note": "All priority health care occupations *",
           "score": 76,
-          "invitations": 143
+          "invitations": 143,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-10",
           "stream": "Care: Veterinary Care",
           "note": "All priority veterinary care occupations",
           "score": 90,
-          "invitations": null
+          "invitations": null,
+          "invitationsBelow": 5,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Care: Veterinary Care",
+          "note": "Animal health technologists and veterinary technicians (NOC 32104) with valid professional designation",
+          "score": 90,
+          "invitations": null,
+          "invitationsBelow": 5,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-09-10",
           "stream": "Build: Construction Trades",
           "note": "All priority construction occupations *",
           "score": 94,
-          "invitations": 104
+          "invitations": 104,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-20",
           "stream": "Innovate: High Economic Impact",
           "note": "Minimum wage of $55/hour and $110,000/year, and NOC 0, 1, 2, or 3",
           "score": null,
-          "invitations": 337
+          "invitations": 337,
+          "invitationsBelow": null,
+          "selection": "wage:55:110000",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-20",
           "stream": "Innovate: High Economic Impact",
           "note": "Points",
           "score": 132,
-          "invitations": 265
+          "invitations": 265,
+          "invitationsBelow": null,
+          "selection": "points",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-06",
           "stream": "Care: Childcare",
           "note": "Early childhood educators only *",
           "score": 102,
-          "invitations": 183
+          "invitations": 183,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-06",
           "stream": "Care: Health",
           "note": "All priority health care occupations *",
           "score": 84,
-          "invitations": 124
+          "invitations": 124,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-06",
           "stream": "Care: Education",
           "note": "All priority education occupations *",
           "score": 68,
-          "invitations": null
+          "invitations": null,
+          "invitationsBelow": 5,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-06",
           "stream": "Care: Veterinary Care",
           "note": "All priority veterinary care occupations",
           "score": 72,
-          "invitations": 6
+          "invitations": 6,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-08-06",
+          "stream": "Care: Veterinary Care",
+          "note": "Animal health technologists and veterinary technicians (NOC 32104) with valid professional designation",
+          "score": 72,
+          "invitations": 6,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-08-06",
           "stream": "Build: Construction Trades",
           "note": "All priority construction occupations *",
           "score": 88,
-          "invitations": 187
+          "invitations": 187,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-23",
           "stream": "Temporary Rural/Remote Health Support Initiative",
           "note": "Points",
           "score": 50,
-          "invitations": 60
+          "invitations": 60,
+          "invitationsBelow": null,
+          "selection": "points",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-16",
           "stream": "Innovate: High Economic Impact",
           "note": "Minimum wage of $58/hour and $115,000/year, and NOC 0, 1, 2, or 3",
           "score": null,
-          "invitations": 223
+          "invitations": 223,
+          "invitationsBelow": null,
+          "selection": "wage:58:115000",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-16",
           "stream": "Innovate: High Economic Impact",
           "note": "Points",
           "score": 132,
-          "invitations": 346
+          "invitations": 346,
+          "invitationsBelow": null,
+          "selection": "points",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-09",
           "stream": "Care: Childcare",
           "note": "Early childhood educators only *",
           "score": 108,
-          "invitations": 91
+          "invitations": 91,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-09",
           "stream": "Care: Health",
           "note": "All priority health care occupations *",
           "score": 96,
-          "invitations": 116
+          "invitations": 116,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-09",
           "stream": "Care: Veterinary Care",
           "note": "All priority veterinary care occupations",
           "score": 88,
-          "invitations": null
+          "invitations": null,
+          "invitationsBelow": 5,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-07-09",
+          "stream": "Care: Veterinary Care",
+          "note": "Animal health technologists and veterinary technicians (NOC 32104) with valid professional designation",
+          "score": 88,
+          "invitations": null,
+          "invitationsBelow": 5,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-07-09",
           "stream": "Build: Construction Trades",
           "note": "All priority construction occupations *",
           "score": 97,
-          "invitations": 136
+          "invitations": 136,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-18",
           "stream": "Innovate: High Economic Impact",
           "note": "Minimum wage of $62/hour and $125,000/year, and NOC 0, 1, 2, or 3",
           "score": null,
-          "invitations": 130
+          "invitations": 130,
+          "invitationsBelow": null,
+          "selection": "wage:62:125000",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-18",
           "stream": "Innovate: High Economic Impact",
           "note": "Points",
           "score": 136,
-          "invitations": 149
+          "invitations": 149,
+          "invitationsBelow": null,
+          "selection": "points",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-02",
           "stream": "Care: Childcare",
           "note": "Early childhood educators *",
           "score": 111,
-          "invitations": 91
+          "invitations": 91,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-02",
           "stream": "Care: Health",
           "note": "All priority health care occupations *",
           "score": 100,
-          "invitations": 117
+          "invitations": 117,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-02",
           "stream": "Care: Veterinary Care",
           "note": "All priority veterinary care occupations",
           "score": 92,
-          "invitations": 6
+          "invitations": 6,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-06-02",
+          "stream": "Care: Veterinary Care",
+          "note": "Animal health technologists and veterinary technicians (NOC 32104) with valid professional designation",
+          "score": 92,
+          "invitations": 6,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-06-02",
           "stream": "Build: Construction Trades",
           "note": "All priority construction occupations *",
           "score": 101,
-          "invitations": 128
+          "invitations": 128,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-14",
           "stream": "Innovate: High Economic Impact",
           "note": "Minimum wage of $59/hour and $120,000/year, and NOC 0, 1, 2, or 3",
           "score": null,
-          "invitations": 225
+          "invitations": 225,
+          "invitationsBelow": null,
+          "selection": "wage:59:120000",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-14",
           "stream": "Innovate: High Economic Impact",
           "note": "Points",
           "score": 135,
-          "invitations": 212
+          "invitations": 212,
+          "invitationsBelow": null,
+          "selection": "points",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-06",
           "stream": "Care: Childcare",
           "note": "Early childhood educators only (NOC 42202) *",
           "score": 115,
-          "invitations": 86
+          "invitations": 86,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-06",
           "stream": "Care: Health",
           "note": "All priority health care occupations *",
           "score": 108,
-          "invitations": 117
+          "invitations": 117,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-06",
           "stream": "Care: Veterinary Care",
           "note": "All priority veterinary care occupations",
           "score": 100,
-          "invitations": 9
+          "invitations": 9,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-05-06",
+          "stream": "Care: Veterinary Care",
+          "note": "Animal health technologists and veterinary technicians (NOC 32104) with valid professional designation",
+          "score": 100,
+          "invitations": 9,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-05-06",
           "stream": "Build: Construction Trades",
           "note": "All priority construction occupations (including workers who have apprenticeships registered with SkilledTradesBC) *",
           "score": 108,
-          "invitations": 121
+          "invitations": 121,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-22",
           "stream": "Innovate: High Economic Impact",
           "note": "A minimum wage of $62/hour and $125,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
           "score": null,
-          "invitations": 252
+          "invitations": 252,
+          "selection": "wage:62:125000",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-04-22",
           "stream": "Innovate: High Economic Impact",
           "note": "A minimum score of 138 points",
           "score": 138,
-          "invitations": 232
+          "invitations": 232,
+          "selection": "points",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-11",
           "stream": "Innovate: High Economic Impact",
           "note": "A minimum wage of $62/hour and $125,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
           "score": null,
-          "invitations": 195
+          "invitations": 195,
+          "selection": "wage:62:125000",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-11",
           "stream": "Innovate: High Economic Impact",
           "note": "A minimum score of 135 points",
           "score": 135,
-          "invitations": 265
+          "invitations": 265,
+          "selection": "points",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-04",
           "stream": "Innovate: High Economic Impact",
           "note": "A minimum wage of $70/hour and $145,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
           "score": null,
-          "invitations": 206
+          "invitations": 206,
+          "selection": "wage:70:145000",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2026-02-04",
           "stream": "Innovate: High Economic Impact",
           "note": "A minimum score of 138 points",
           "score": 138,
-          "invitations": 223
+          "invitations": 223,
+          "selection": "points",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-10",
           "stream": "Innovate: High Economic Impact",
           "note": "A minimum wage of $84/hour and $170,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
           "score": null,
-          "invitations": 96
+          "invitations": 96,
+          "selection": "wage:84:170000",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-12-10",
           "stream": "Innovate: High Economic Impact",
           "note": "A minimum score of 138 points",
           "score": 138,
-          "invitations": 314
+          "invitations": 314,
+          "selection": "points",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-10-02",
           "stream": "Innovate: High Economic Impact",
           "note": "A minimum wage of $90/hour and $175,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
           "score": null,
-          "invitations": 114
+          "invitations": 114,
+          "selection": "wage:90:175000",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-10-02",
           "stream": "Innovate: High Economic Impact",
           "note": "A minimum score of 140 points",
           "score": 140,
-          "invitations": 360
+          "invitations": 360,
+          "selection": "points",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-05-08",
           "stream": "Innovate: High Economic Impact",
           "note": "Minimum wage of $105/hour, currently working full-time in B.C. for the supporting employer, and the job offer is NOC TEER 0 or 1",
           "score": null,
-          "invitations": 47
+          "invitations": 47,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
         },
         {
           "date": "2025-05-08",
           "stream": "Innovate: High Economic Impact",
           "note": "A minimum score of 150 points",
           "score": 150,
-          "invitations": 47
+          "invitations": 47,
+          "selection": "points",
+          "program": "PNP",
+          "unit": "invitation"
         }
       ]
     }

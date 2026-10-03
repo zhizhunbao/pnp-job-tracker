@@ -1,28 +1,59 @@
 {
   "ats": "workable",
   "token": "distillersr-inc",
-  "count": 2,
+  "count": 5,
   "jobs": [
+    {
+      "title": "Configuration Specialist",
+      "location": "Kanata, Ontario, Canada",
+      "url": "https://apply.workable.com/j/6832F03C1E",
+      "department": "Operations",
+      "posted": "2026-09-28",
+      "valid_through": "",
+      "address": "",
+      "salary": "$61,000 to $74,000",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false
+    },
     {
       "title": "Enterprise Account Executive",
       "location": "Kanata, Ontario, Canada",
       "url": "https://apply.workable.com/j/1BE822AF71",
       "department": "Sales",
       "posted": "2026-08-18",
+      "valid_through": "",
       "address": "",
       "salary": "$206,000 - $234,000 CAD",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "Kanata",
-      "salaryAnnual": 220000,
-      "salaryText": "$206K–$234K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false
+    },
+    {
+      "title": "Enterprise Account Executive",
+      "location": "Minneapolis, Minnesota, United States",
+      "url": "https://apply.workable.com/j/1BE822AF71",
+      "department": "Sales",
+      "posted": "2026-08-18",
+      "valid_through": "",
+      "address": "",
+      "salary": "$206,000 - $234,000 CAD",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false
+    },
+    {
+      "title": "Senior HR Specialist",
+      "location": "Kanata, Ontario, Canada",
+      "url": "https://apply.workable.com/j/F7698BB71C",
+      "department": "Infrastructure",
+      "posted": "2026-09-28",
+      "valid_through": "",
+      "address": "",
+      "salary": "$70,000-$85,000 annually",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false
     },
     {
       "title": "Solution Engineer",
@@ -30,20 +61,12 @@
       "url": "https://apply.workable.com/j/23CAED5FD8",
       "department": "Operations",
       "posted": "2026-08-21",
+      "valid_through": "",
       "address": "",
       "salary": "$79,000 to $91,000",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "Kanata",
-      "salaryAnnual": 85000,
-      "salaryText": "$79K–$91K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": true
     }
   ]
 }

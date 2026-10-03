@@ -9,8 +9,11 @@
       "url": "https://adtran.wd3.myworkdayjobs.com/ADTRAN/job/Ottawa-ON/Firmware-Engineer-II_R005964",
       "department": "",
       "posted": "2026-09-23",
+      "valid_through": "",
       "address": "",
       "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
       "tech": true
     },
     {
@@ -19,8 +22,11 @@
       "url": "https://adtran.wd3.myworkdayjobs.com/ADTRAN/job/Ottawa-ON/Project-Manager_R005797-1",
       "department": "",
       "posted": "2026-09-15",
+      "valid_through": "",
       "address": "",
       "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
       "tech": false
     },
     {
@@ -29,8 +35,11 @@
       "url": "https://adtran.wd3.myworkdayjobs.com/ADTRAN/job/Ottawa-ON/Senior-Hardware-Engineer_R005796",
       "department": "",
       "posted": "2026-08-24",
+      "valid_through": "",
       "address": "",
       "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
       "tech": true
     }
   ]

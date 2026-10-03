@@ -1,6 +1,6 @@
 {
  "source": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
- "fetched": "2026-09-22",
+ "fetched": "2026-10-02",
  "types": {
   "studyOnly": "Study permit holders only",
   "workOnly": "Work permit holders only",
@@ -8,426 +8,426 @@
  },
  "byProv": {
   "AB": {
-   "2024-07-01": {
-    "workStudy": 21158,
-    "workOnly": 159555,
-    "studyOnly": 50550
-   },
    "2024-10-01": {
-    "workStudy": 21450,
-    "workOnly": 171043,
-    "studyOnly": 52748
+    "workStudy": 21094,
+    "workOnly": 160310,
+    "studyOnly": 51684
    },
    "2025-01-01": {
-    "workStudy": 21169,
-    "workOnly": 177466,
-    "studyOnly": 52574
+    "workStudy": 20727,
+    "workOnly": 164253,
+    "studyOnly": 51172
    },
    "2025-04-01": {
-    "workStudy": 21738,
-    "workOnly": 176719,
-    "studyOnly": 50346
+    "workStudy": 21121,
+    "workOnly": 163857,
+    "studyOnly": 49670
    },
    "2025-07-01": {
-    "workStudy": 21615,
-    "workOnly": 173290,
-    "studyOnly": 49001
+    "workStudy": 20943,
+    "workOnly": 168848,
+    "studyOnly": 49419
    },
    "2025-10-01": {
-    "workStudy": 18300,
-    "workOnly": 169145,
-    "studyOnly": 45352
+    "workStudy": 18243,
+    "workOnly": 175990,
+    "studyOnly": 47542
    },
    "2026-01-01": {
-    "workStudy": 17077,
-    "workOnly": 161781,
-    "studyOnly": 41966
+    "workStudy": 16861,
+    "workOnly": 174957,
+    "studyOnly": 44851
    },
    "2026-04-01": {
-    "workStudy": 18782,
-    "workOnly": 153848,
-    "studyOnly": 37941
+    "workStudy": 18574,
+    "workOnly": 168503,
+    "studyOnly": 41600
+   },
+   "2026-07-01": {
+    "workStudy": 18265,
+    "workOnly": 168142,
+    "studyOnly": 40245
    }
   },
   "BC": {
-   "2024-07-01": {
-    "workStudy": 56637,
-    "workOnly": 259838,
-    "studyOnly": 155166
-   },
    "2024-10-01": {
-    "workStudy": 51934,
-    "workOnly": 275559,
-    "studyOnly": 156591
+    "workStudy": 51382,
+    "workOnly": 261459,
+    "studyOnly": 151872
    },
    "2025-01-01": {
-    "workStudy": 49627,
-    "workOnly": 274364,
-    "studyOnly": 152319
+    "workStudy": 48618,
+    "workOnly": 259395,
+    "studyOnly": 145624
    },
    "2025-04-01": {
-    "workStudy": 52073,
-    "workOnly": 272354,
-    "studyOnly": 141806
+    "workStudy": 50555,
+    "workOnly": 257626,
+    "studyOnly": 136427
    },
    "2025-07-01": {
-    "workStudy": 48327,
-    "workOnly": 267304,
-    "studyOnly": 134408
+    "workStudy": 46606,
+    "workOnly": 266529,
+    "studyOnly": 130437
    },
    "2025-10-01": {
-    "workStudy": 40309,
-    "workOnly": 262876,
-    "studyOnly": 120117
+    "workStudy": 40060,
+    "workOnly": 280524,
+    "studyOnly": 121739
    },
    "2026-01-01": {
-    "workStudy": 36483,
-    "workOnly": 244394,
-    "studyOnly": 109502
+    "workStudy": 36082,
+    "workOnly": 275266,
+    "studyOnly": 112576
    },
    "2026-04-01": {
-    "workStudy": 38869,
-    "workOnly": 231997,
-    "studyOnly": 99862
+    "workStudy": 38791,
+    "workOnly": 268875,
+    "studyOnly": 104885
+   },
+   "2026-07-01": {
+    "workStudy": 40602,
+    "workOnly": 270105,
+    "studyOnly": 95156
    }
   },
   "NL": {
-   "2024-07-01": {
-    "workStudy": 2078,
-    "workOnly": 9333,
-    "studyOnly": 4978
-   },
    "2024-10-01": {
-    "workStudy": 2023,
-    "workOnly": 10210,
-    "studyOnly": 5003
+    "workStudy": 1949,
+    "workOnly": 8625,
+    "studyOnly": 4780
    },
    "2025-01-01": {
-    "workStudy": 1871,
-    "workOnly": 10583,
-    "studyOnly": 4935
+    "workStudy": 1796,
+    "workOnly": 8798,
+    "studyOnly": 4616
    },
    "2025-04-01": {
-    "workStudy": 1896,
-    "workOnly": 10448,
-    "studyOnly": 4681
+    "workStudy": 1804,
+    "workOnly": 8707,
+    "studyOnly": 4424
    },
    "2025-07-01": {
-    "workStudy": 1918,
-    "workOnly": 10339,
-    "studyOnly": 4561
+    "workStudy": 1811,
+    "workOnly": 9424,
+    "studyOnly": 4389
    },
    "2025-10-01": {
-    "workStudy": 1604,
-    "workOnly": 10588,
-    "studyOnly": 4323
+    "workStudy": 1547,
+    "workOnly": 10582,
+    "studyOnly": 4354
    },
    "2026-01-01": {
-    "workStudy": 1425,
-    "workOnly": 9810,
-    "studyOnly": 3997
+    "workStudy": 1377,
+    "workOnly": 10668,
+    "studyOnly": 4117
    },
    "2026-04-01": {
-    "workStudy": 1510,
-    "workOnly": 8883,
-    "studyOnly": 3676
+    "workStudy": 1449,
+    "workOnly": 9528,
+    "studyOnly": 3837
+   },
+   "2026-07-01": {
+    "workStudy": 1497,
+    "workOnly": 9829,
+    "studyOnly": 3640
    }
   },
   "PE": {
-   "2024-07-01": {
-    "workStudy": 1015,
-    "workOnly": 7036,
-    "studyOnly": 3879
-   },
    "2024-10-01": {
-    "workStudy": 816,
-    "workOnly": 7448,
-    "studyOnly": 4055
+    "workStudy": 777,
+    "workOnly": 6616,
+    "studyOnly": 3892
    },
    "2025-01-01": {
-    "workStudy": 869,
-    "workOnly": 7140,
-    "studyOnly": 3969
+    "workStudy": 824,
+    "workOnly": 6317,
+    "studyOnly": 3780
    },
    "2025-04-01": {
-    "workStudy": 962,
-    "workOnly": 6574,
-    "studyOnly": 3792
+    "workStudy": 912,
+    "workOnly": 6001,
+    "studyOnly": 3642
    },
    "2025-07-01": {
-    "workStudy": 968,
-    "workOnly": 6693,
-    "studyOnly": 3661
+    "workStudy": 900,
+    "workOnly": 6367,
+    "studyOnly": 3562
    },
    "2025-10-01": {
-    "workStudy": 662,
-    "workOnly": 6540,
-    "studyOnly": 3310
+    "workStudy": 655,
+    "workOnly": 6988,
+    "studyOnly": 3395
    },
    "2026-01-01": {
-    "workStudy": 719,
-    "workOnly": 5962,
-    "studyOnly": 3170
+    "workStudy": 704,
+    "workOnly": 6730,
+    "studyOnly": 3276
    },
    "2026-04-01": {
-    "workStudy": 878,
-    "workOnly": 5222,
-    "studyOnly": 2983
+    "workStudy": 843,
+    "workOnly": 6234,
+    "studyOnly": 3125
+   },
+   "2026-07-01": {
+    "workStudy": 980,
+    "workOnly": 6589,
+    "studyOnly": 2933
    }
   },
   "NS": {
-   "2024-07-01": {
-    "workStudy": 10766,
-    "workOnly": 29747,
-    "studyOnly": 13633
-   },
    "2024-10-01": {
-    "workStudy": 9011,
-    "workOnly": 33584,
-    "studyOnly": 13636
+    "workStudy": 8751,
+    "workOnly": 30696,
+    "studyOnly": 13075
    },
    "2025-01-01": {
-    "workStudy": 8798,
-    "workOnly": 33256,
-    "studyOnly": 13482
+    "workStudy": 8504,
+    "workOnly": 29930,
+    "studyOnly": 12715
    },
    "2025-04-01": {
-    "workStudy": 8773,
-    "workOnly": 33145,
-    "studyOnly": 13034
+    "workStudy": 8443,
+    "workOnly": 30100,
+    "studyOnly": 12406
    },
    "2025-07-01": {
-    "workStudy": 8084,
-    "workOnly": 34208,
-    "studyOnly": 12402
+    "workStudy": 7686,
+    "workOnly": 32043,
+    "studyOnly": 12007
    },
    "2025-10-01": {
-    "workStudy": 5396,
-    "workOnly": 35055,
-    "studyOnly": 11209
+    "workStudy": 5312,
+    "workOnly": 35934,
+    "studyOnly": 11591
    },
    "2026-01-01": {
-    "workStudy": 4948,
-    "workOnly": 33140,
-    "studyOnly": 10678
+    "workStudy": 4865,
+    "workOnly": 35513,
+    "studyOnly": 11101
    },
    "2026-04-01": {
-    "workStudy": 5265,
-    "workOnly": 31732,
-    "studyOnly": 10114
+    "workStudy": 5198,
+    "workOnly": 33840,
+    "studyOnly": 10808
+   },
+   "2026-07-01": {
+    "workStudy": 5042,
+    "workOnly": 35238,
+    "studyOnly": 10708
    }
   },
   "NB": {
-   "2024-07-01": {
-    "workStudy": 6481,
-    "workOnly": 20614,
-    "studyOnly": 8248
-   },
    "2024-10-01": {
-    "workStudy": 5616,
-    "workOnly": 23368,
-    "studyOnly": 9100
+    "workStudy": 5501,
+    "workOnly": 21597,
+    "studyOnly": 8853
    },
    "2025-01-01": {
-    "workStudy": 6125,
-    "workOnly": 23294,
-    "studyOnly": 8814
+    "workStudy": 5986,
+    "workOnly": 21488,
+    "studyOnly": 8477
    },
    "2025-04-01": {
-    "workStudy": 6183,
-    "workOnly": 22302,
-    "studyOnly": 8341
+    "workStudy": 6005,
+    "workOnly": 21082,
+    "studyOnly": 8108
    },
    "2025-07-01": {
-    "workStudy": 6147,
-    "workOnly": 22628,
-    "studyOnly": 7998
+    "workStudy": 5895,
+    "workOnly": 21889,
+    "studyOnly": 7926
    },
    "2025-10-01": {
-    "workStudy": 4700,
-    "workOnly": 21666,
-    "studyOnly": 7751
+    "workStudy": 4671,
+    "workOnly": 24015,
+    "studyOnly": 8163
    },
    "2026-01-01": {
-    "workStudy": 4986,
-    "workOnly": 19984,
-    "studyOnly": 7267
+    "workStudy": 4898,
+    "workOnly": 23674,
+    "studyOnly": 7779
    },
    "2026-04-01": {
-    "workStudy": 5124,
-    "workOnly": 17801,
-    "studyOnly": 7013
+    "workStudy": 5060,
+    "workOnly": 21864,
+    "studyOnly": 7572
+   },
+   "2026-07-01": {
+    "workStudy": 5205,
+    "workOnly": 23718,
+    "studyOnly": 7621
    }
   },
   "QC": {
-   "2024-07-01": {
-    "workStudy": 49446,
-    "workOnly": 229372,
-    "studyOnly": 73509
-   },
    "2024-10-01": {
-    "workStudy": 52034,
-    "workOnly": 242675,
-    "studyOnly": 75514
+    "workStudy": 52841,
+    "workOnly": 230423,
+    "studyOnly": 72680
    },
    "2025-01-01": {
-    "workStudy": 54132,
-    "workOnly": 231732,
-    "studyOnly": 74191
+    "workStudy": 54578,
+    "workOnly": 218619,
+    "studyOnly": 70840
    },
    "2025-04-01": {
-    "workStudy": 53414,
-    "workOnly": 228576,
-    "studyOnly": 69184
+    "workStudy": 53536,
+    "workOnly": 216798,
+    "studyOnly": 66896
    },
    "2025-07-01": {
-    "workStudy": 51973,
-    "workOnly": 229846,
-    "studyOnly": 66561
+    "workStudy": 52027,
+    "workOnly": 223283,
+    "studyOnly": 64844
    },
    "2025-10-01": {
-    "workStudy": 47187,
-    "workOnly": 220885,
-    "studyOnly": 63457
+    "workStudy": 48086,
+    "workOnly": 226130,
+    "studyOnly": 64641
    },
    "2026-01-01": {
-    "workStudy": 45699,
-    "workOnly": 194629,
-    "studyOnly": 59944
+    "workStudy": 46079,
+    "workOnly": 210108,
+    "studyOnly": 61452
    },
    "2026-04-01": {
-    "workStudy": 42954,
-    "workOnly": 182668,
-    "studyOnly": 55282
+    "workStudy": 43933,
+    "workOnly": 207792,
+    "studyOnly": 58902
+   },
+   "2026-07-01": {
+    "workStudy": 41001,
+    "workOnly": 217501,
+    "studyOnly": 58401
    }
   },
   "ON": {
-   "2024-07-01": {
-    "workStudy": 211706,
-    "workOnly": 650059,
-    "studyOnly": 324997
-   },
    "2024-10-01": {
-    "workStudy": 184972,
-    "workOnly": 712793,
-    "studyOnly": 307559
+    "workStudy": 180543,
+    "workOnly": 636054,
+    "studyOnly": 297568
    },
    "2025-01-01": {
-    "workStudy": 173884,
-    "workOnly": 719701,
-    "studyOnly": 283666
+    "workStudy": 168817,
+    "workOnly": 637321,
+    "studyOnly": 270321
    },
    "2025-04-01": {
-    "workStudy": 172221,
-    "workOnly": 703524,
-    "studyOnly": 259148
+    "workStudy": 166621,
+    "workOnly": 633670,
+    "studyOnly": 250571
    },
    "2025-07-01": {
-    "workStudy": 159687,
-    "workOnly": 691857,
-    "studyOnly": 240826
+    "workStudy": 153256,
+    "workOnly": 648188,
+    "studyOnly": 235607
    },
    "2025-10-01": {
-    "workStudy": 116240,
-    "workOnly": 676953,
-    "studyOnly": 193315
+    "workStudy": 114523,
+    "workOnly": 707495,
+    "studyOnly": 198070
    },
    "2026-01-01": {
-    "workStudy": 102025,
-    "workOnly": 630506,
-    "studyOnly": 168157
+    "workStudy": 99870,
+    "workOnly": 705413,
+    "studyOnly": 175589
    },
    "2026-04-01": {
-    "workStudy": 99824,
-    "workOnly": 594921,
-    "studyOnly": 152909
+    "workStudy": 98717,
+    "workOnly": 690590,
+    "studyOnly": 163966
+   },
+   "2026-07-01": {
+    "workStudy": 97435,
+    "workOnly": 686382,
+    "studyOnly": 154270
    }
   },
   "MB": {
-   "2024-07-01": {
-    "workStudy": 9595,
-    "workOnly": 52001,
-    "studyOnly": 20591
-   },
    "2024-10-01": {
-    "workStudy": 8810,
-    "workOnly": 54975,
-    "studyOnly": 20696
+    "workStudy": 8759,
+    "workOnly": 49006,
+    "studyOnly": 20309
    },
    "2025-01-01": {
-    "workStudy": 8857,
-    "workOnly": 56325,
-    "studyOnly": 20418
+    "workStudy": 8803,
+    "workOnly": 49513,
+    "studyOnly": 19856
    },
    "2025-04-01": {
-    "workStudy": 8974,
-    "workOnly": 54401,
-    "studyOnly": 19231
+    "workStudy": 8828,
+    "workOnly": 48601,
+    "studyOnly": 19034
    },
    "2025-07-01": {
-    "workStudy": 8525,
-    "workOnly": 52606,
-    "studyOnly": 18547
+    "workStudy": 8313,
+    "workOnly": 49496,
+    "studyOnly": 18756
    },
    "2025-10-01": {
-    "workStudy": 6396,
-    "workOnly": 50374,
-    "studyOnly": 16871
+    "workStudy": 6430,
+    "workOnly": 52279,
+    "studyOnly": 17902
    },
    "2026-01-01": {
-    "workStudy": 6133,
-    "workOnly": 46645,
-    "studyOnly": 15725
+    "workStudy": 6150,
+    "workOnly": 51584,
+    "studyOnly": 17175
    },
    "2026-04-01": {
-    "workStudy": 6262,
-    "workOnly": 42278,
-    "studyOnly": 14400
+    "workStudy": 6285,
+    "workOnly": 48003,
+    "studyOnly": 16114
+   },
+   "2026-07-01": {
+    "workStudy": 6425,
+    "workOnly": 47099,
+    "studyOnly": 15615
    }
   },
   "SK": {
-   "2024-07-01": {
-    "workStudy": 4776,
-    "workOnly": 26200,
-    "studyOnly": 13208
-   },
    "2024-10-01": {
-    "workStudy": 4400,
-    "workOnly": 29026,
-    "studyOnly": 13655
+    "workStudy": 4142,
+    "workOnly": 26583,
+    "studyOnly": 12997
    },
    "2025-01-01": {
-    "workStudy": 4635,
-    "workOnly": 29835,
-    "studyOnly": 14027
+    "workStudy": 4353,
+    "workOnly": 27429,
+    "studyOnly": 13340
    },
    "2025-04-01": {
-    "workStudy": 4776,
-    "workOnly": 28632,
-    "studyOnly": 13160
+    "workStudy": 4541,
+    "workOnly": 27930,
+    "studyOnly": 12696
    },
    "2025-07-01": {
-    "workStudy": 4690,
-    "workOnly": 28323,
-    "studyOnly": 12724
+    "workStudy": 4395,
+    "workOnly": 27741,
+    "studyOnly": 12598
    },
    "2025-10-01": {
-    "workStudy": 3534,
-    "workOnly": 27924,
-    "studyOnly": 11362
+    "workStudy": 3449,
+    "workOnly": 30215,
+    "studyOnly": 11830
    },
    "2026-01-01": {
-    "workStudy": 3680,
-    "workOnly": 26421,
-    "studyOnly": 10787
+    "workStudy": 3551,
+    "workOnly": 30027,
+    "studyOnly": 11484
    },
    "2026-04-01": {
-    "workStudy": 3978,
-    "workOnly": 24753,
-    "studyOnly": 9740
+    "workStudy": 3864,
+    "workOnly": 28931,
+    "studyOnly": 10671
+   },
+   "2026-07-01": {
+    "workStudy": 4181,
+    "workOnly": 28920,
+    "studyOnly": 10214
    }
   }
  },
- "latestRefPer": "2026-04-01",
+ "latestRefPer": "2026-07-01",
  "note": "StatCan 17-10-0121-01 分省临时居民**常住估算**(季度参考日快照;每季修订前序,故每轮全量重取)。**与 IRCC 有效许可持有人口径不可混列**(后者不净离境,量级高约四成)。refPer 2026-01-01 ≈ 2025 年末。消费端待拍板:落 raw 不进 mart。"
 }
