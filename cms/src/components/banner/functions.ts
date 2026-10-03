@@ -11,16 +11,13 @@ import css from './banner.module.css'
 /**
  * 两形态外框的类:形态基座 + 配色档,开了窄屏紧凑档再挂 .compact(2026-09-26 /fe 首页;
  * 紧凑档的规则全在窄屏断点里,宽屏挂了也不改一格)。
+ * 2026-10-02 紧凑档撤编(Frank「手机端这个 banner 还是加回来吧」),只剩基座 + 配色档。
  *
- * @param x 形态基座类、模块名与紧凑档开没开。
+ * @param x 形态基座类与模块名。
  * @returns 外框 className。
  */
 export function boxClsOf(x: BoxClsIn): string {
-  const cls = `${x.base} ${moduleClsOf(x.module)}`
-  if (x.compact) {
-    return `${cls} ${cssOf(css.compact)}`
-  }
-  return cls
+  return `${x.base} ${moduleClsOf(x.module)}`
 }
 
 /**

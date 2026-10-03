@@ -73,8 +73,7 @@ export function Jobs(props: JobsIn) {
             <BannerFacts count={subTextOf({ t: b.t, anyFilter: false, total: b.data.total })} />
           )}
           images={BANNER_IMGS.jobs}
-          right={<Updated iso={b.data.updatedAt} t={b.t} narrowShort />}
-          compact />
+          right={<Updated iso={b.data.updatedAt} t={b.t} narrowShort />} />
         <BoardFilters b={b} boxRef={boxRef} />
         <BoardLoading text={b.t('loading')} on={b.data.swapping} gate={b.data.gate} />
         <BoardTable b={b} headRowRef={headRowRef} />

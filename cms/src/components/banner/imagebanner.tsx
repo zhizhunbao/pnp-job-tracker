@@ -8,6 +8,7 @@
  * 图标 + 页名 + 一句副题,副题 ≤18 汉字 / 40 英文字符一行放完(不折行不省略);数字胶囊撤编。
  * 2026-08-24 自 ui/Banner.tsx 拆出(一个 tsx 一个组件;轮播机器在 hooks)。
  * 2026-09-26 /fe 首页:外框随 compact 挂窄屏紧凑档类(图、暗化层、圆点在窄屏收起,见 banner.module.css 末段)。
+ * 2026-10-02 Frank「手机端这个 banner 还是加回来吧」:compact 撤编(唯一消费者职位板撤用),窄屏回到图版。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
@@ -31,7 +32,6 @@ export function ImageBanner({
   title,
   sub,
   right,
-  compact,
   imgs,
   idx,
   reach,
@@ -40,7 +40,7 @@ export function ImageBanner({
   pick,
   fail,
 }: ImageBannerIn) {
-  const boxCls = boxClsOf({ base: cssOf(css.imgBanner), module, compact })
+  const boxCls = boxClsOf({ base: cssOf(css.imgBanner), module })
   const cur = idx % imgs.length
 
   const imgEls = []

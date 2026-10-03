@@ -45,12 +45,6 @@ export type BannerIn = {
    * 筛选行少一件不能点的东西)。槽里的字由本件定成小号白字压影,窄屏放不下时掉到副题下面一行。
    */
   right?: React.ReactNode
-
-  /**
-   * 窄屏紧凑档(可省 = 否;2026-09-26 /fe 首页 Frank 看效果图点头):窄屏(≤640)收成一行 ——
-   * 不出图、暗化层与圆点,标题深色大字、副题灰字靠左,右槽灰字靠右;宽屏照旧。
-   */
-  compact?: boolean
 }
 
 /**
@@ -81,11 +75,6 @@ export type GradientBannerIn = {
    * 右槽(顶到行尾);null = 不出。
    */
   right: React.ReactNode
-
-  /**
-   * 窄屏紧凑档开没开(见 BannerIn 同名格)。
-   */
-  compact: boolean
 }
 
 /**
@@ -116,11 +105,6 @@ export type ImageBannerIn = {
    * 右下角槽位;null = 不出。
    */
   right: React.ReactNode
-
-  /**
-   * 窄屏紧凑档开没开(见 BannerIn 同名格)。
-   */
-  compact: boolean
 
   /**
    * 轮播图组(非空,Banner 选形时已判)。
@@ -221,7 +205,7 @@ export type CarouselOut = {
 }
 
 /**
- * boxClsOf 的入参(两形态外框的类:配色档 + 窄屏紧凑档)。
+ * boxClsOf 的入参(两形态外框的类:配色档)。
  */
 export type BoxClsIn = {
   /**
@@ -233,11 +217,6 @@ export type BoxClsIn = {
    * 模块名(定配色档)。
    */
   module: BannerModule
-
-  /**
-   * 窄屏紧凑档开没开。
-   */
-  compact: boolean
 }
 
 /**
