@@ -586,6 +586,11 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpstep.f.appSubmitDays': 'Submit and pay within {n} days of starting the application',
   'pnpstep.f.nominationValidMonths': 'The nomination is valid for {n} months; apply to IRCC before it expires',
   'pnpstep.f.communityLetter': 'A designated community endorsement letter is required when submitting the EOI',
+  // 2026-10-03 申请步骤批 2(卑诗 / 安省):新增步骤词 / 事实词
+  'pnpstep.s.register': 'Register online and get a score',
+  'pnpstep.s.submit': 'Submit the application',
+  'pnpstep.f.employerDeclaration': 'Your employer signs an Employer Declaration Form first',
+  'pnpstep.f.offerEoiDays': 'Submit the EOI within {n} days of the employer submitting the job offer',
   // 2026-10-02 申请步骤批 2:处理时长按月(卑诗约八成申请)/ 按天(曼省年度平均)/ 阿省审理游标
   'pnpstep.months': 'About 80% of applications processed within {n} months', 'pnpstep.days': 'About {n} days on average ({y})',
   'pnpstep.assessing': 'Now assessing applications received up to {date} (as of {asOf})',

@@ -575,6 +575,11 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpstep.s.community': '커뮤니티 추천서 받기', 'pnpstep.f.eoiFee': '수수료 {n} 캐나다달러', 'pnpstep.f.eoiValidMonths': '풀에서 {n}개월 유효',
   'pnpstep.f.inviteAcceptDays': '초청 후 {n}일 내 수락', 'pnpstep.f.appSubmitDays': '신청서 작성 후 {n}일 내 제출 및 결제',
   'pnpstep.f.nominationValidMonths': '지명은 {n}개월 유효, 만료 전 IRCC에 영주권 신청', 'pnpstep.f.communityLetter': 'EOI 제출 시 지정 커뮤니티 추천서 필요',
+  // 2026-10-03 申请步骤批 2(卑诗 / 安省):新增步骤词 / 事实词
+  'pnpstep.s.register': '온라인 등록 후 점수 받기',
+  'pnpstep.s.submit': '신청서 제출',
+  'pnpstep.f.employerDeclaration': '고용주가 먼저 고용주 선언서에 서명',
+  'pnpstep.f.offerEoiDays': '고용주 오퍼 제출 후 {n}일 내 EOI 제출',
   // 2026-10-02 申请步骤批 2:处理时长按月(卑诗约八成申请)/ 按天(曼省年度平均)/ 阿省审理游标
   'pnpstep.months': '신청의 약 80%가 {n}개월 내 처리', 'pnpstep.days': '평균 약 {n}일 ({y}년)',
   'pnpstep.assessing': '{date}까지 접수된 신청 심사 중 ({asOf} 기준)',

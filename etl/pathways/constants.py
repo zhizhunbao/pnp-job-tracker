@@ -282,6 +282,145 @@ PW_AB_TOURISM_HOSPITALITY = {
 门槛流 = 2026-09-27 同批从官方资格页补抓的五条所在的流。配额行与抽选组同名(前端原先靠隐式同名配上)。
 英文界面现显示官方原名(stream.abTourism = Tourism and Hospitality Stream)。"""
 
+# 2026-10-03 申请步骤批 2(卑诗;Frank「做吧,批 2 开始」,设计 docs/design/申请步骤-20261002.md):卑诗七条通道共用的步骤件,
+# 形照阿省 ABS_STEP_*。技术工人与 Care / Build 五条定向都走 雇主 offer → 网上注册打分 → 抽选邀请 → 递申请(skills-immigration
+# 页 Process 段一页写全六步:Choose your stream / Register online / Wait for an invitation to apply / Submit your BC PNP
+# application / Wait for your nomination decision / Submit your IRCC application);定向五条是同一个注册池里按职业挑人的轮
+# (指南 7.3(a)),步骤与技术工人同一套,抽选一步各挂各的 drawStreams。审理一步引用处理时长(processing_months 的 Application 行,
+# 约八成申请 3 个月)。卫生局流不注册、不抽选,原句只在指南 PDF 7.1(「If you meet the requirements for the Health Authority stream,
+# you can apply directly to the stream; you do not need to submit a registration.」)—— 指南在 crawl 的 file_cache、不在 html
+# 缓存,自校核不上,「进池与抽选 —— 不需要」一步先不登,只登网页核得上的几步;递申请一步照设计 3.1 用无抽选的叫法 confirm。
+BCS_SI_URL = "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"
+"""卑诗技术移民页(雇主声明表、注册在池 12 个月、邀请后 30 天递申请、处理时长表都在这页;For workers 页同文)。"""
+
+BCS_STEP_OFFER = {"step": "offer", "who": "employer", "none": False, "stuck": False,
+                  "facts": [{"ref": "req", "factor": "empYears"},
+                            {"key": "employerDeclaration", "vars": {},
+                             "quote": ("Must have the support of your employer before registering and submit a "
+                                       "completed Employer Declaration Form"),
+                             "url": BCS_SI_URL}]}
+"""拿卑诗雇主 offer(技术工人与五条定向):雇主条件读门槛卡「雇主条件」行(经营年限 / 员工数,门槛表 empYears 等行);注册前要
+雇主签雇主声明表(资格表 Employer support 那一格的技术工人列,格里没有句号,照抄)。"""
+
+BCS_STEP_OFFER_HA = {"step": "offer", "who": "employer", "none": False, "stuck": False,
+                     "facts": [{"ref": "req", "factor": "empYears"},
+                               {"key": "employerDeclaration", "vars": {},
+                                "quote": ("Must have the support of an authorized personnel from your health authority "
+                                          "employer before applying and submit a completed Employer Declaration Form"),
+                                "url": BCS_SI_URL}]}
+"""拿卫生局 offer(卫生局流):递申请前要卫生局授权人员签雇主声明表(同一格的卫生局列)。雇主条件行照挂(门槛流登了 all
+streams;指南 4.2(g) 卫生局流同样要满足 Part 6 雇主条件)。"""
+
+BCS_STEP_REGISTER = {"step": "register", "who": "you", "none": False, "stuck": False,
+                     "facts": [{"key": "eoiValidMonths", "vars": {"n": 12},
+                                "quote": ("Your registration will remain active in the pool for up to 12 months, or "
+                                          "until you receive an invitation to apply."),
+                                "url": BCS_SI_URL}]}
+"""网上注册打分(卑诗叫 registration、不叫 EOI;同页「After registering, you will receive a score based on the information you
+provided.」):在池里最多 12 个月。"""
+
+BCS_STEP_DRAW = {"step": "draw", "who": "province", "none": False, "stuck": True,
+                 "facts": [{"ref": "draws"}]}
+"""进池与抽选:挂这条通道的抽选表(卡点 —— 要被邀请才能递申请;技术工人挂 Innovate 轮,定向五条挂各自的 Care / Build 轮)。"""
+
+BCS_STEP_APPLY = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                  "facts": [{"key": "inviteSubmitDays", "vars": {"n": 30},
+                             "quote": ("If you are invited to apply after registering, you will have up to 30 calendar "
+                                       "days from the date of invitation to submit a complete application using the BC "
+                                       "PNP Online User Portal."),
+                             "url": BCS_SI_URL}]}
+"""收邀请、递申请:邀请发出后 30 天内递齐申请(过期邀请作废、注册移出池)。"""
+
+BCS_STEP_SUBMIT_HA = {"step": "submit", "who": "you", "none": False, "stuck": False, "facts": []}
+"""递申请(卫生局通道:持卫生局 offer 直接递,不注册不抽选;递件期限网页没写,不写)。2026-10-03 lead 合并时由 confirm 改 submit ——
+卫生局没有「确认职位」这一步,借萨省 EPA 的「确认职位、递申请」会读错。"""
+
+BCS_STEP_REVIEW = {"step": "review", "who": "province", "none": False, "stuck": False,
+                   "facts": [{"ref": "processing", "metric": "processing_months", "scope": "Application"}]}
+"""省里审批:处理时长读运营统计 processing_months 的 Application 行(skills-immigration 页处理时长表,约八成申请 3 个月)。"""
+
+BCS_STEP_PR = {"step": "pr", "who": "federal", "none": False, "stuck": False, "facts": []}
+"""拿提名,递永居:网页只写在提名确认信到期前递(「before your Confirmation of Nomination document expires」),没写月数,
+不写。"""
+
+# 2026-10-03 申请步骤批 2(安省):两条现行通道(劳动力优先、自雇医生)共用的步骤件,形照萨省 SKS_STEP_* 与阿省 ABS_STEP_*。
+# 持 offer 的走 雇主登记并递 job offer → 你递 EOI → 抽选邀请 → 雇主递职位审批(14 天)→ 你递申请(17 天)(劳动力优先页
+# Steps to apply with a job offer 三步 + application-process 页 Deadlines 段;页上「you cannot submit your application until
+# your employer submits their application for approval of an employment position」,所以雇主那步排在前);自雇医生不要 offer:
+# EOI → 抽选 → 递申请(17 天)。两条同一组抽选、08-04 开放 EOI 后还没抽过(drawsPending),抽选一步照样挂抽选表、标卡点。
+# 审理一步运营统计里没有安省处理时长行,不写。经快速通道提名是选项(TEER 0-3 与自雇医生),拿提名一步只写非 EE 版的提名证书
+# 有效期,EE 版两句(30 天内接受、60 天内递永居)不混进来。已关停的两条 Employer Job Offer 不登。
+ONS_PROCESS_URL = "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-application-process"
+"""安省申请流程页(offer 递出后 30 天内递 EOI、EOI 有效 12 个月、雇主 14 天与申请人 17 天两个期限、提名证书有效 6 个月都在
+这页)。"""
+
+ONS_ITA_URL = "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply"
+"""安省抽选结果页(自雇医生收到邀请后 17 天内递那句在 Overview 段)。"""
+
+ONS_STEP_REGISTER = {"step": "employerRegister", "who": "employer", "none": False, "stuck": False,
+                     "facts": [{"ref": "req", "factor": "empYears"}]}
+"""雇主登记(在雇主门户登记公司、为你的职位递 job offer;劳动力优先页「Your employer must start the process by registering
+their business and providing information about your position by submitting a job offer in the Employer Portal.」):经营年限
+读门槛表 empYears 行(经营满 3 年等雇主条件)。"""
+
+ONS_STEP_EOI = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                "facts": [{"key": "offerEoiDays", "vars": {"n": 30},
+                           "quote": ("You will have 30 calendar days from the date the job offer was submitted to "
+                                     "register your EOI."),
+                           "url": ONS_PROCESS_URL},
+                          {"key": "eoiValidMonths", "vars": {"n": 12},
+                           "quote": ("Your EOI registration will remain valid for 12 months until you receive an "
+                                     "invitation to apply."),
+                           "url": ONS_PROCESS_URL}]}
+"""递 EOI(劳动力优先):雇主递 job offer 后 30 天内递(过期 offer 作废、雇主要重递),在池里有效 12 个月。"""
+
+ONS_STEP_EOI_PHYSICIAN = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                          "facts": [{"key": "eoiValidMonths", "vars": {"n": 12},
+                                     "quote": ("Your EOI registration will remain valid for 12 months until you "
+                                               "receive an invitation to apply."),
+                                     "url": ONS_PROCESS_URL}]}
+"""递 EOI(自雇医生:先递网上表单、由省里开始注册,同页「please submit a Webform to begin the process of registering an
+EOI」,怎么递不写成事实):在池里有效 12 个月。"""
+
+ONS_STEP_DRAW = {"step": "draw", "who": "province", "none": False, "stuck": True,
+                 "facts": [{"ref": "draws"}]}
+"""进池与抽选:挂抽选表(卡点;两条同一组「Ontario Workforce Priority Stream」,还没抽过,表里那一行写暂无邀请)。"""
+
+ONS_STEP_EPA = {"step": "epa", "who": "employer", "none": False, "stuck": False,
+                "facts": [{"key": "inviteSubmitDays", "vars": {"n": 14},
+                           "quote": ("Employer application for an approval of an employment position must be "
+                                     "submitted within 14 calendar days from the date the invitation to apply was "
+                                     "issued."),
+                           "url": ONS_PROCESS_URL}]}
+"""雇主递职位审批(劳动力优先):邀请发出后 14 天内,雇主先递,你才能递申请。"""
+
+ONS_STEP_APPLY = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                  "facts": [{"key": "inviteSubmitDays", "vars": {"n": 17},
+                             "quote": ("Application for a nomination certificate (applicant) must be submitted with "
+                                       "the application fee paid within 17 calendar days from the date the invitation "
+                                       "to apply was issued to you."),
+                             "url": ONS_PROCESS_URL}]}
+"""收邀请、递申请(劳动力优先):邀请发出后 17 天内递并付费。"""
+
+ONS_STEP_APPLY_PHYSICIAN = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                            "facts": [{"key": "inviteSubmitDays", "vars": {"n": 17},
+                                       "quote": ("If you are applying as a self-employed physician, you must "
+                                                 "submit your application within 17 calendar days of receiving the "
+                                                 "invitation to apply."),
+                                       "url": ONS_ITA_URL}]}
+"""收邀请、递申请(自雇医生):收到邀请后 17 天内递。"""
+
+ONS_STEP_REVIEW = {"step": "review", "who": "province", "none": False, "stuck": False, "facts": []}
+"""省里审批:运营统计里没有安省处理时长行,不写。"""
+
+ONS_STEP_PR = {"step": "pr", "who": "federal", "none": False, "stuck": False,
+               "facts": [{"key": "nominationValidMonths", "vars": {"n": 6},
+                          "quote": ("Your Confirmation of Nomination (nomination certificate) is valid for 6 months "
+                                    "from the date of your nomination."),
+                          "url": ONS_PROCESS_URL}]}
+"""拿提名,递永居(非 EE 版):提名证书自提名日起有效 6 个月,到期前向联邦递(同页下一句「You must apply for permanent
+residence before your nomination certificate expires.」)。"""
+
 PW_AB_RURAL_RENEWAL = {
     "key": "ab-rural-renewal", "province": "AB", "program": "PNP",
     "plainZh": "AB 乡村振兴", "plainEn": "AB Rural Renewal", "plainKo": "AB 농촌 재생",
@@ -316,6 +455,7 @@ PW_BC_SKILLED_WORKER = {
     "quote": ("Through Skills Immigration, workers who meet specific eligibility criteria based on their job offer can choose "
               "to apply to the Skilled Worker or Health Authority stream."),
     "checked": "2026-09-28",
+    "steps": [BCS_STEP_OFFER, BCS_STEP_REGISTER, BCS_STEP_DRAW, BCS_STEP_APPLY, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗默认通道:可提名(只收 TEER 0-3,2026-09-24 九省通道审计)但不在定向清单上的卑诗岗落这里。
 抽选组:BC 现行抽选只剩定向类别轮与 Innovate 这一种不限职业的轮 —— 不在定向清单上的岗只能从这一轮进,门槛是薪资或分数
@@ -341,6 +481,7 @@ PW_BC_HEALTH_AUTHORITY = {
     "quote": ("The BC PNP Health Authority stream will continue to nominate qualified healthcare professionals who work in the "
               "public sector directly delivering healthcare services."),
     "checked": "2026-09-28",
+    "steps": [BCS_STEP_OFFER_HA, BCS_STEP_SUBMIT_HA, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗卫生局通道(雇主须是省卫生局,清单 bc-health-authority.json)。抽选卡没有这条通道自己的组,不登记 = 不高亮(与现状一致)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流两条 = 指南 Part 3 通用要求「BC PNP Skills Immigration (all streams)」+
@@ -362,6 +503,7 @@ PW_BC_HEALTHCARE = {
     "quote": ("British Columbia has a critical need for workers in key sectors of the care economy, particularly in healthcare, "
               "education, childcare, and veterinary care."),
     "checked": "2026-09-28",
+    "steps": [BCS_STEP_OFFER, BCS_STEP_REGISTER, BCS_STEP_DRAW, BCS_STEP_APPLY, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗医疗定向(2026 新政 Care 类的医疗组,清单 bc-health.json)。officialName 照抄邀请页的类别名(BC 的定向是类别轮,不是单独的 stream)。
 英文界面现显示官方原名(stream.bcHealth = Care: Health)。
@@ -387,6 +529,7 @@ PW_BC_CHILDCARE = {
     "quote": ("Certified early childhood educators, French-speaking elementary and secondary school teachers, and veterinarians and "
               "veterinary technologists who are working toward Canadian certification will be prioritized."),
     "checked": "2026-09-28",
+    "steps": [BCS_STEP_OFFER, BCS_STEP_REGISTER, BCS_STEP_DRAW, BCS_STEP_APPLY, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗幼教定向(清单 bc-childcare.json)。英文界面现显示官方原名(stream.bcChildcare = Care: Childcare)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):门槛流同技术工人(判据见 bc-healthcare 段)。官方另写的定向邀请条件
@@ -408,6 +551,7 @@ PW_BC_VETERINARY = {
     "quote": ("Certified early childhood educators, French-speaking elementary and secondary school teachers, and veterinarians and "
               "veterinary technologists who are working toward Canadian certification will be prioritized."),
     "checked": "2026-09-28",
+    "steps": [BCS_STEP_OFFER, BCS_STEP_REGISTER, BCS_STEP_DRAW, BCS_STEP_APPLY, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗兽医定向(清单 bc-vet.json,2 个码)。英文界面现显示官方原名(stream.bcVet = Care: Veterinary Care)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):门槛流同技术工人(判据见 bc-healthcare 段)。官方另写的定向邀请条件(抽选页
@@ -428,6 +572,7 @@ PW_BC_CONSTRUCTION_TRADES = {
     "quote": ("To see which workers may benefit from targeted invitations to apply, see the Build section of the BC PNP's "
               "selection of workers list."),
     "checked": "2026-09-28",
+    "steps": [BCS_STEP_OFFER, BCS_STEP_REGISTER, BCS_STEP_DRAW, BCS_STEP_APPLY, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗建筑技工定向(2026 新政 Build 类,清单 bc-construction.json)。英文界面现显示官方原名(stream.bcConstr = Build: Construction Trades)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):门槛流同技术工人(判据见 bc-healthcare 段;判定引擎 BC-build 早按同一套挑行,
@@ -450,6 +595,7 @@ PW_BC_FRENCH_TEACHERS = {
     "quote": ("Certified early childhood educators, French-speaking elementary and secondary school teachers, and veterinarians and "
               "veterinary technologists who are working toward Canadian certification will be prioritized."),
     "checked": "2026-09-28",
+    "steps": [BCS_STEP_OFFER, BCS_STEP_REGISTER, BCS_STEP_DRAW, BCS_STEP_APPLY, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗法语教师定向(Care 类的教育组只收讲法语的中小学教师,清单 bc-education.json)。清单码带雇主行业条件:看得出雇主是学校
 才挂这条通道名(2026-09-27 Frank 拍板「看得出才改判」),所以 09-28 板上暂时 0 岗 —— 通道照收,名字要在。
@@ -785,6 +931,7 @@ PW_ON_WORKFORCE_PRIORITY = {
               "experience in any National Occupational Classification (NOC) occupation a pathway to apply to permanently live and "
               "work in Ontario."),
     "checked": "2026-09-28",
+    "steps": [ONS_STEP_REGISTER, ONS_STEP_EOI, ONS_STEP_DRAW, ONS_STEP_EPA, ONS_STEP_APPLY, ONS_STEP_REVIEW, ONS_STEP_PR],
 }
 """安省默认通道(2026-06 改制后只剩这一条,生效日按官方原句定为 2026-06-25)。
 2026-09-30 注:旧三条 Employer Job Offer 流是 2026-05-30 关的(各自页面关闭通告原句「closed as of May 30, 2026」),与本条生效日
@@ -1242,6 +1389,7 @@ PW_ON_SELF_EMPLOYED_PHYSICIANS = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "steps": [ONS_STEP_EOI_PHYSICIAN, ONS_STEP_DRAW, ONS_STEP_APPLY_PHYSICIAN, ONS_STEP_REVIEW, ONS_STEP_PR],
 }
 """安省唯一现行 stream 里给自雇医生的那条 pathway(CPSO 会员、有 OHIP 计费号),不要 offer。与 OWP 同一组抽选、同样还没抽过。"""
 
@@ -1923,10 +2071,11 @@ K_URL = "url"
 """事实行键:原句出处页。"""
 
 STEP_KEYS = ["employerRegister", "offer", "work", "epa", "eeProfile", "eoi", "draw", "confirm", "apply", "review", "settle",
-             "endorse", "pr", "community"]
+             "endorse", "pr", "community", "register", "submit"]
 """步骤词表(三语文案在 cms i18n pnp.step.*):雇主登记 / 拿雇主 offer / 在这份工作上干够 / 雇主递职位审批 / 建 EE 档案 / 递 EOI /
 进池与抽选 / 确认职位、递申请 / 收邀请、递申请 / 省里审批 / 做安置计划 / 雇主递省背书 / 拿提名,递永居 /
-拿社区推荐信(community,2026-10-02 批 2 阿省乡村振兴加)。"""
+拿社区推荐信(community,2026-10-02 批 2 阿省乡村振兴加)/ 网上注册打分(register,2026-10-03 批 2 卑诗加:卑诗叫 registration,
+注册后按打分进池)/ 递申请(submit,同日卑诗卫生局:持 offer 直接递、不经邀请)。"""
 
 WHO_KEYS = ["you", "employer", "province", "federal"]
 """谁做的词表。"""
@@ -1936,7 +2085,7 @@ REF_KEYS = ["req", "processing", "intake", "draws"]
 
 FACT_KEYS = ["eoiFee", "eoiValidMonths", "inviteAcceptDays", "appSubmitDays", "nominationValidMonths", "communityLetter",
              "cappedEmployees", "windowCapped", "directApply", "eoiOnlyOther", "confirmSubmit", "noScheduledDraw", "inviteSubmitDays",
-             "eeAcceptDays", "prSubmitDays", "workMonths"]
+             "eeAcceptDays", "prSubmitDays", "workMonths", "employerDeclaration", "offerEoiDays"]
 """静态事实词表(三语文案在 cms i18n pnp.stepFact.*,数字从 vars 填)。"""
 
 BAD_STEP_TPL = "{key} 的第 {i} 步「{step}」不在步骤词表里"

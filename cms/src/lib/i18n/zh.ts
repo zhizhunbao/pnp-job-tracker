@@ -627,6 +627,11 @@ export const jobsZh = {
   'pnpstep.s.community': '拿社区推荐信', 'pnpstep.f.eoiFee': '交 {n} 加元申请费', 'pnpstep.f.eoiValidMonths': '在池里有效 {n} 个月',
   'pnpstep.f.inviteAcceptDays': '收到邀请后 {n} 天内接受', 'pnpstep.f.appSubmitDays': '建好申请后 {n} 天内递交并付费',
   'pnpstep.f.nominationValidMonths': '提名有效 {n} 个月,过期前向联邦递永居', 'pnpstep.f.communityLetter': '递 EOI 时就要有指定社区的推荐信',
+  // 2026-10-03 申请步骤批 2(卑诗 / 安省):新增步骤词 / 事实词
+  'pnpstep.s.register': '网上注册打分',
+  'pnpstep.s.submit': '递申请',
+  'pnpstep.f.employerDeclaration': '雇主要先签雇主声明表',
+  'pnpstep.f.offerEoiDays': '雇主递 offer 后 {n} 天内递 EOI',
   // 2026-10-02 申请步骤批 2:处理时长按月(卑诗约八成申请)/ 按天(曼省年度平均)/ 阿省审理游标
   'pnpstep.months': '八成申请约 {n} 个月内办完', 'pnpstep.days': '平均约 {n} 天({y} 年)',
   'pnpstep.assessing': '已审到 {date} 收到的申请(截至 {asOf})',
