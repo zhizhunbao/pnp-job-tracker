@@ -1995,3 +1995,238 @@ export const QC_FR_KEY = {
  * 站内蓝链的全局类(main.css 的 link;AIP 指定雇主名单里对上雇主池的招牌;2026-10-02)。
  */
 export const LINK_CLS = 'link'
+
+/**
+ * 「申请步骤」卡标题词条(2026-10-02 申请步骤批 1,Frank「每个省 每个通道 EE PNP AIP 都要有吧」;设计 docs/design/申请步骤-20261002.md)。
+ */
+export const K_STEPS_HEAD = 'pnpstep.head'
+
+/**
+ * 步骤名词条前缀(+ 步骤词:employerRegister / epa / draw / confirm / review / pr …;词表住 etl/pathways 的 STEP_KEYS)。
+ */
+export const STEP_NAME_HEAD = 'pnpstep.s.'
+
+/**
+ * 谁做词条前缀(+ you / employer / province / federal)。
+ */
+export const STEP_WHO_HEAD = 'pnpstep.who.'
+
+/**
+ * 原句型事实词条前缀(+ 事实词;词表住 etl/pathways 的 FACT_KEYS)。
+ */
+export const STEP_FACT_HEAD = 'pnpstep.f.'
+
+/**
+ * 收件窗口行业名词条前缀(+ STEP_SECTOR_KEY 的值)。
+ */
+export const STEP_SECTOR_HEAD = 'pnpstep.sector.'
+
+/**
+ * 事实行引用哪张表(etl/pathways 的 REF_KEYS 同字)。
+ */
+export const STEP_REF = {
+  /**
+   * 门槛行(带 factor)。
+   */
+  req: 'req',
+
+  /**
+   * 运营统计的处理时长(带 scope)。
+   */
+  processing: 'processing',
+
+  /**
+   * 萨省限额行业收件窗口。
+   */
+  intake: 'intake',
+
+  /**
+   * 抽选表(批 2 起其余省用)。
+   */
+  draws: 'draws',
+}
+
+/**
+ * 引用门槛行的事实 → 门槛卡上那一行的行键(直接取门槛卡算好的字,文案只有一份)。
+ */
+export const STEP_REQ_ROW: Record<string, string> = {
+  /**
+   * 雇主经营年限 → 「雇主条件」行。
+   */
+  empYears: GATE_ROW.emp,
+
+  /**
+   * 本省打分表最低分 → 「积分」行。
+   */
+  pointsMin: GATE_ROW.points,
+
+  /**
+   * EE 档案 → 「EE」行。
+   */
+  eeProfile: GATE_ROW.ee,
+}
+
+/**
+ * 写成橙字的事实词(限额行业那类卡人的条件)。
+ */
+export const STEP_WARN_FACTS = ['cappedEmployees', 'windowCapped']
+
+/**
+ * 步骤引用的运营统计指标名(SQL.PNP_STEP_OPS 同字)。
+ */
+export const STEP_METRIC = {
+  /**
+   * 处理时长(周)。
+   */
+  weeks: 'processing_weeks',
+
+  /**
+   * 收件窗口名额。
+   */
+  limit: 'intake_limit',
+
+  /**
+   * 收件窗口已用。
+   */
+  used: 'intake_used',
+
+  /**
+   * 收件窗口剩余。
+   */
+  remaining: 'intake_remaining',
+
+  /**
+   * 收件窗口满额日期(value_text 存 ISO)。
+   */
+  filled: 'intake_filled',
+}
+
+/**
+ * 处理时长的统计期写法(2026Q2)。
+ */
+export const STEP_QUARTER_RE = /^(?<y>\d{4})Q(?<q>\d)$/
+
+/**
+ * ISO 日期取到月的长度(2026-09)。
+ */
+export const STEP_MONTH_LEN = 7
+
+/**
+ * 取月份数 / 取「月-日」的起点(2026-09 → 09;2026-09-15 → 09-15)。
+ */
+export const STEP_MD_FROM = 5
+
+/**
+ * 收件窗口行业归一键(数据层 stream_key 去开放时刻括注后的原文)→ 行业名词条键;对不上的照官方原名显示。
+ */
+export const STEP_SECTOR_KEY: Record<string, string> = {
+  /**
+   * 1 / 3 月窗口的写法。
+   */
+  'accommodation and food service': 'afs',
+
+  /**
+   * 5 月窗口的写法。
+   */
+  'accommodation and food services': 'afs',
+
+  /**
+   * 7 月起住宿单列。
+   */
+  'accommodations': 'acc',
+
+  /**
+   * 7 月起餐饮单列。
+   */
+  'food services': 'food',
+
+  /**
+   * 零售(1–7 月写法)。
+   */
+  'retail trade': 'retail',
+
+  /**
+   * 零售(9 月写法)。
+   */
+  'retail': 'retail',
+
+  /**
+   * 货运。
+   */
+  'trucking': 'truck',
+}
+
+/**
+ * 处理时长词条(约 N 周,带统计期)。
+ */
+export const K_STEP_WEEKS = 'pnpstep.weeks'
+
+/**
+ * 处理时长词条(统计期认不出时)。
+ */
+export const K_STEP_WEEKS_BARE = 'pnpstep.weeksBare'
+
+/**
+ * 统计期词条(2026 年第 2 季度)。
+ */
+export const K_STEP_QUARTER = 'pnpstep.quarter'
+
+/**
+ * 收件窗口表左上角词条(9 月窗口)。
+ */
+export const K_STEP_INTAKE_WINDOW = 'pnpstep.intake.window'
+
+/**
+ * 收件窗口表头:名额。
+ */
+export const K_STEP_INTAKE_LIMIT = 'pnpstep.intake.limit'
+
+/**
+ * 收件窗口表头:已用。
+ */
+export const K_STEP_INTAKE_USED = 'pnpstep.intake.used'
+
+/**
+ * 收件窗口表头:满额。
+ */
+export const K_STEP_INTAKE_FILLED = 'pnpstep.intake.filled'
+
+/**
+ * 收件窗口还有余位(余 N)。
+ */
+export const K_STEP_INTAKE_LEFT = 'pnpstep.intake.left'
+
+/**
+ * 收件窗口满了而官方没写日期。
+ */
+export const K_STEP_INTAKE_FULL = 'pnpstep.intake.full'
+
+/**
+ * 配额行的行业档(2026-10-02 申请步骤批 1:萨省按行业分配名额,配额卡加行)。
+ */
+export const OPS_SCOPE_SECTOR = 'sector'
+
+/**
+ * 配额卡行业行名词条前缀(+ QUOTA_SECTOR_KEY 的值)。
+ */
+export const QUOTA_SECTOR_HEAD = 'pnpquota.sector.'
+
+/**
+ * 配额行业档归一键(数据层 stream_key:去括号补充说明、小写)→ 行业行名词条键;对不上的照官方原名显示。
+ */
+export const QUOTA_SECTOR_KEY: Record<string, string> = {
+  /**
+   * 优先行业(医疗、农业、技工、矿业、制造、能源、科技;至少 50%)。
+   */
+  'priority sectors': 'priority',
+
+  /**
+   * 限额行业(货运、住宿、餐饮、零售;至多 25%)。
+   */
+  'trucking, accommodations, food services, and retail trade': 'capped',
+
+  /**
+   * 其他行业。
+   */
+  'other sectors': 'other',
+}

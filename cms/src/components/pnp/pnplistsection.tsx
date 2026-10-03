@@ -52,8 +52,8 @@
  */
 import { K_GATE_TITLE } from './constants'
 import {
-  drawCardOf, drawCtxOf, gateCardOf, gateChannelOf, preReformCardOf,
-  qcChannelSpecsOf, qcGateCardsOf, shownStreamsOf, streamKeyOf,
+  drawCardOf, drawCtxOf, gateCardOf, gateChannelOf, pnpChannelOf, preReformCardOf,
+  qcChannelSpecsOf, qcGateCardsOf, shownStreamsOf, stepsCardOf, streamKeyOf,
 } from './functions'
 import { usePnpList } from './hooks'
 import { PnpBlockCard } from './pnpblockcard'
@@ -62,6 +62,7 @@ import { PnpDrawGroups } from './pnpdrawgroups'
 import { PnpGateCard } from './pnpgatecard'
 import { PnpGateGroupCard } from './pnpgategroupcard'
 import { PnpQuotaCard } from './pnpquotacard'
+import { PnpStepsCard } from './pnpstepscard'
 import { StreamCard } from './streamcard'
 import type { PnpListSectionIn } from './types'
 
@@ -72,7 +73,7 @@ import type { PnpListSectionIn } from './types'
  * @returns 一组卡片(结论 → 门槛 → 职业清单 → 配额 → 抽选)。
  */
 export function PnpListSection({
-  job, lang, occ, draws, ops, reqs, nocDesc = [], showZh = true, pathways, qcChannels,
+  job, lang, occ, draws, ops, reqs, nocDesc = [], showZh = true, pathways, qcChannels, steps, stepOps,
 }: PnpListSectionIn) {
   const p = usePnpList({ job, lang, occ, nocDesc, showZh, pathways })
   const ctx = drawCtxOf({ t: p.t, lang, job, draws, ops, reqs, pathways, qcChannels })
@@ -80,6 +81,9 @@ export function PnpListSection({
   const drawCard = drawCardOf(ctx.dx)
   const reformCard = preReformCardOf(ctx.dx)
   const gate = gateCardOf({ t: p.t, job, reqs, channel: gateChannelOf({ job, pathways }) })
+  const stepsCard = stepsCardOf({
+    t: p.t, province: job.province, channel: pnpChannelOf({ job, pathways }), sets: steps, stepOps, gate,
+  })
   const qcSpecs = qcGateCardsOf({ t: p.t, lang, job, reqs, channels: qcChannels })
   const qcChannelSpecs = qcChannelSpecsOf(qcSpecs)
   const cards = []
@@ -103,7 +107,10 @@ export function PnpListSection({
       <PnpGateGroupCard title={p.t(K_GATE_TITLE)} specs={qcSpecs} />
       {cards}
       {quota != null && <PnpQuotaCard spec={quota} />}
-      {drawCard != null && <PnpDrawGroups t={p.t} card={drawCard} open={p.drawOpen} toggleOf={p.drawToggleOf} />}
+      {stepsCard != null && <PnpStepsCard spec={stepsCard} />}
+      {stepsCard == null && drawCard != null && (
+        <PnpDrawGroups t={p.t} card={drawCard} open={p.drawOpen} toggleOf={p.drawToggleOf} />
+      )}
       {reformCard != null && <PnpDrawGroups t={p.t} card={reformCard} open={p.drawOpen} toggleOf={p.drawToggleOf} />}
     </>
   )

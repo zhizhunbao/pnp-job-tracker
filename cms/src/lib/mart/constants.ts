@@ -667,8 +667,9 @@ export const COLS_PNP_OPS_STATS = ['province', 'program', 'metric', 'scope', 'sc
  * pathways 列(三个清单格是 jsonb)。⚠️ 新表,建表走 docs/sql/pathways-20260928.sql:表还没建时 seed 按 tableExists 跳过;
  * 建了表却漏了 payload_locked_documents_rels.pathways_id 就撞 42703 → 整个 seed 事务回滚(两件在同一个文件里,一起跑)。
  * 2026-09-30 通道补全批一加五列(job_linked + 四个 jsonb 清单格;生产已跑 docs/sql/pathways-conditions-20260930.sql)。
+ * 2026-10-02 申请步骤批 1 加 steps(jsonb;DDL docs/sql/pathways-steps-20261002.sql 须先在生产跑,否则撞 42703 整个 seed 回滚)。
  */
-export const COLS_PATHWAYS = ['key', 'seq', 'province', 'program', 'plain_zh', 'plain_en', 'plain_ko', 'official_name', 'board_label', 'is_default', 'draw_streams', 'req_streams', 'quota_scope', 'quota_key', 'occ_labels', 'status', 'url', 'quote', 'checked', 'job_linked', 'tags', 'teers', 'nocs', 'employers']
+export const COLS_PATHWAYS = ['key', 'seq', 'province', 'program', 'plain_zh', 'plain_en', 'plain_ko', 'official_name', 'board_label', 'is_default', 'draw_streams', 'req_streams', 'quota_scope', 'quota_key', 'occ_labels', 'status', 'url', 'quote', 'checked', 'job_linked', 'tags', 'teers', 'nocs', 'employers', 'steps']
 
 /**
  * qc_noc_streams 列(channels 是 jsonb)。⚠️ 新表,建表走 docs/sql/qc-noc-streams-20260930.sql:表还没建时 seed 按 tableExists 跳过;

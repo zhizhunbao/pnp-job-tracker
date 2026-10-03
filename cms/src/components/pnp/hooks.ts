@@ -186,6 +186,8 @@ export function usePnpData(x: PnpDataHookIn): PnpDataPanel {
     ops: got.ops,
     reqs: got.reqs,
     pathways: got.pathways,
+    steps: got.steps,
+    stepOps: got.stepOps,
   }
 }
 

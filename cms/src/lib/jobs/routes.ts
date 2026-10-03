@@ -32,7 +32,7 @@ import {
 import {
   loadSimilarEmployersPage,
   emptySimilar, loadApplyEmail, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug,
-  loadAipEmployers, loadAipEmployersRest, loadJobsPage, loadOccCompetition, loadQcChannels, loadSimilarEmployers, generateJdFormatted, getPnpOps, getPnpReqs, getSsrDims,
+  loadAipEmployers, loadAipEmployersRest, loadJobsPage, loadOccCompetition, loadQcChannels, loadSimilarEmployers, generateJdFormatted, getPnpOps, getPnpReqs, getPnpStepOps, getPnpSteps, getSsrDims,
   hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadJdFormatted, loadJdState, loadJobById,
   loadJobMeta, loadMatchDims, loadRelatedAnchor, loadRelatedJobs, loadRelatedPage, normalizeProfile, translateTitles,
   emptyTexts, toJobId, toTitleReq, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
@@ -255,16 +255,24 @@ export async function jobsDimsRoute(_req: Request): Promise<Response> {
  * 2026-09-28 通道表批二:再带全国通道对照 pathways(首屏维度里那份,三十来行)—— 弹框认本岗通道对应的抽选组 / 门槛流 / 配额行
  * 都读它,前端五张对照常量退役。
  *
+ * 2026-10-02 申请步骤批 1(Frank「每个省 每个通道 EE PNP AIP 都要有吧」):再带两张 —— 登了步骤的通道 pnpSteps(getPnpSteps)与步骤引用的
+ * 运营统计 pnpStepOps(getPnpStepOps:处理时长 + 萨省收件窗口),都是 10 分钟单件缓存;不进首屏维度。
+ *
  * @param _req 请求(不读参数)。
- * @returns { pnpOccupations, pnpDraws, pnpOps, pnpReqs, pathways } 五张表。
+ * @returns { pnpOccupations, pnpDraws, pnpOps, pnpReqs, pathways, pnpSteps, pnpStepOps } 七张表。
  */
 export async function jobsPnpRoute(_req: Request): Promise<Response> {
   const db = await getDb()
   const dims = await getSsrDims(db)
   const ops = await getPnpOps(db)
   const reqs = await getPnpReqs(db)
+  const steps = await getPnpSteps(db)
+  const stepOps = await getPnpStepOps(db)
   return Response.json(
-    { pnpOccupations: dims.pnpOccupations, pnpDraws: dims.pnpDraws, pnpOps: ops, pnpReqs: reqs, pathways: dims.pathways },
+    {
+      pnpOccupations: dims.pnpOccupations, pnpDraws: dims.pnpDraws, pnpOps: ops, pnpReqs: reqs, pathways: dims.pathways,
+      pnpSteps: steps, pnpStepOps: stepOps,
+    },
     { headers: { [HDR_CACHE_CONTROL]: DIMS_CACHE_CONTROL } },
   )
 }

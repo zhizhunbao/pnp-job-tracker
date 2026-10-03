@@ -557,8 +557,29 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.months': '{n}개월', 'pnpdraws.monthsOne': '{n}개월',
   // 2026-09-27 개편 주(ON) 행: 추첨이 아직 없을 때; 현황 카드의 두 라벨은 카드와 함께 삭제
   'pnpdraws.noInvYet': '아직 초청 없음',
+  // 2026-10-02 申请步骤批 1(Frank「每个省 每个通道 EE PNP AIP 都要有吧」「还是别改小版本了」;设计 docs/design/申请步骤-20261002.md):省提名弹框第 ⑤ 张「申请步骤」卡 —— 步骤名 / 谁做 / 事实词(数据层登记、原句逐句核过)/ 处理时长 / 萨省收件窗口
+  'pnpstep.head': '신청 절차',
+  'pnpstep.s.employerRegister': '고용주 등록', 'pnpstep.s.offer': '고용 오퍼 받기', 'pnpstep.s.work': '해당 직무 근무 기간 채우기',
+  'pnpstep.s.epa': '고용주 직무 승인 신청', 'pnpstep.s.eeProfile': 'EE 프로필 생성', 'pnpstep.s.eoi': 'EOI 제출', 'pnpstep.s.draw': '풀 등록과 추첨',
+  'pnpstep.s.confirm': '직무 확인 후 신청', 'pnpstep.s.apply': '초청 받은 후 신청', 'pnpstep.s.review': '주정부 심사',
+  'pnpstep.s.settle': '정착 계획 작성', 'pnpstep.s.endorse': '고용주 추천 신청', 'pnpstep.s.pr': '지명 후 영주권 신청',
+  'pnpstep.who.you': '본인', 'pnpstep.who.employer': '고용주', 'pnpstep.who.province': '주정부', 'pnpstep.who.federal': '연방',
+  'pnpstep.f.cappedEmployees': '제한 업종(숙박 및 음식점, 소매, 운송): 유효한 신분의 현 직원만',
+  'pnpstep.f.windowCapped': '제한 업종: 접수 기간에만, 취업허가 잔여 {months}개월 이하',
+  'pnpstep.f.directApply': '필요 없음: 오퍼로 바로 신청', 'pnpstep.f.eoiOnlyOther': '필요 없음: 이 유형은 EOI 없음',
+  'pnpstep.f.confirmSubmit': '승인 후 {confirm}일 내 확인, {submit}일 내 신청',
+  'pnpstep.f.noScheduledDraw': '현재 예정된 추첨 없음', 'pnpstep.f.inviteSubmitDays': '초청 후 {n}일 내 신청',
+  'pnpstep.f.eeAcceptDays': '{n}일 내 EE에서 지명 수락', 'pnpstep.f.prSubmitDays': '연방 초청 후 {n}일 내 영주권 신청',
+  'pnpstep.f.workMonths': '유효한 취업허가로 해당 고용주에서 {n}개월 풀타임',
+  'pnpstep.weeks': '약 {n}주 ({q})', 'pnpstep.weeksBare': '약 {n}주', 'pnpstep.quarter': '{y}년 {q}분기',
+  'pnpstep.intake.window': '{m}월 접수', 'pnpstep.intake.limit': '정원', 'pnpstep.intake.used': '사용', 'pnpstep.intake.filled': '마감',
+  'pnpstep.intake.left': '{n} 남음', 'pnpstep.intake.full': '마감',
+  'pnpstep.sector.afs': '숙박 및 음식점', 'pnpstep.sector.acc': '숙박', 'pnpstep.sector.food': '음식점', 'pnpstep.sector.retail': '소매',
+  'pnpstep.sector.truck': '운송',
   // 2026-09-27 배정 카드(별도 박스)와 추첨 카드의 연간 누계 줄
   'pnpquota.title': '{year}년 배정', 'pnpquota.total': '총', 'pnpquota.issued': '지명 완료',
+  // 2026-10-02 申请步骤批 1:配额卡加萨省分行业三行(官方处理统计页的分配表)
+  'pnpquota.sector.priority': '우선 업종', 'pnpquota.sector.capped': '제한 업종', 'pnpquota.sector.other': '기타 업종',
   'pnpquota.remaining': '잔여', 'pnpquota.prov': '주 전체', 'pnpquota.stream': '이 스트림', 'pnpquota.asOf': '{date} 기준',
   // 2026-09-27 추첨 카드의 연간 누계 줄을 배정 카드의 한 열로 이동; pnpdraws.ytdInv / ytdSel 삭제
   // 2026-09-27 NS 선정 수는 EOI 풀 전체(NSNP와 AIP가 같은 풀), 옆의 총수는 NSNP만

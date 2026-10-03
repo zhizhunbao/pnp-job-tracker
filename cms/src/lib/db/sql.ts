@@ -600,6 +600,7 @@ export const PNP_OPS_PROV = `SELECT province, metric, value, as_of, period FROM 
  * 省提名弹框「{年} 年配额」卡与抽选卡「全年已邀请」那一行的原料(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
  * 当年(统计期或截至日以今年开头)的配额 / 已发提名 / 剩余,全省口径加通道级(scope_kind = 'stream',阿省到通道;
  * 萨省的行业档 sector 不取),另带汇装按抽选行加总的全年已邀请 / 已入选(invitations_ytd / selections_ytd,缺一轮不出)。
+ * 2026-10-02 申请步骤批 1:萨省的行业档 sector 也取(配额卡「全省」下面加优先 / 限额 / 其他行业三行;上一句「不取」作废)。
  * 2026-09-29 抽选卡重排:再带下限行 invitations_ytd_min(AB / BC 有轮次官方只写上限)、AIP 申请入选 applications_ytd,
  * 与 AIP 那一份(scope_kind = 'program',「AIP 抽选」卡底读)。
  * 同日 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」:再带各抽选组的本年合计(scope_kind = 'drawStream',scope = 抽选行 stream 原值;组头第三行读),
@@ -611,7 +612,7 @@ export const PNP_OPS_QUOTA = `SELECT province, metric, COALESCE(scope_kind, '') 
      FROM pnp_ops_stats
      WHERE metric IN ('allocation', 'issued', 'nominations_ytd', 'remaining', 'invitations_ytd', 'invitations_ytd_min',
        'selections_ytd', 'applications_ytd')
-       AND COALESCE(scope_kind, '') IN ('', 'stream', 'program', 'drawStream')
+       AND COALESCE(scope_kind, '') IN ('', 'stream', 'program', 'drawStream', 'sector')
        AND (value IS NOT NULL OR (metric = 'allocation' AND COALESCE(value_text, '') <> ''))
        AND (COALESCE(period, '') LIKE to_char(now(), 'YYYY') || '%' OR COALESCE(as_of, '') LIKE to_char(now(), 'YYYY') || '%')
      ORDER BY province, metric, seq`
@@ -640,6 +641,25 @@ export const PNP_GATE_REQS = `SELECT province, stream, subject, factor, op, valu
        OR (factor = 'eoiDraw' AND op = 'none')
        OR (province = 'QC' AND program IN ('PSTQ', 'PEQ'))
      ORDER BY province, stream, seq`
+
+/**
+ * 省提名弹框「申请步骤」卡的步骤(2026-10-02 申请步骤批 1,Frank「每个省 每个通道 EE PNP AIP 都要有吧」;设计 docs/design/申请步骤-20261002.md):
+ * 通道对照表登了步骤的那几条(etl/pathways 人工核定、原句逐句对 crawl 缓存自校)。不进首屏维度(DIMS_PATHWAYS)—— 全部通道铺开后几十 KB,
+ * 只随弹框懒取。steps 列 2026-10-02 加(docs/sql/pathways-steps-20261002.sql):生产还没加列时这条查询挂,取数层回空、弹框照旧出抽选卡。
+ */
+export const PNP_STEPS = `SELECT key, steps FROM pathways
+     WHERE status <> 'closed' AND steps IS NOT NULL AND steps <> '[]'::jsonb
+     ORDER BY seq`
+
+/**
+ * 「申请步骤」卡引用的运营统计(2026-10-02 申请步骤批 1):处理时长(萨省「雇主递职位审批」「省里审批」两步读)与萨省限额行业收件窗口
+ * (名额 / 已用 / 剩余 / 满额日期;scope_kind = 'intake',period = 窗口开放日,满额日期在 value_text)。全国几十行,随弹框懒取。
+ */
+export const PNP_STEP_OPS = `SELECT province, metric, COALESCE(scope, '') AS scope, COALESCE(stream_key, '') AS stream_key, value,
+       COALESCE(value_text, '') AS value_text, COALESCE(period, '') AS period, COALESCE(as_of, '') AS as_of
+     FROM pnp_ops_stats
+     WHERE metric IN ('processing_weeks', 'intake_limit', 'intake_used', 'intake_remaining', 'intake_filled')
+     ORDER BY province, metric, seq`
 
 // =========================================================================
 // 9. 雇主 —— 官方名录 / 在招 / 担保
@@ -1888,12 +1908,17 @@ export const DIMS_PNP_DRAWS = `SELECT province, kind, draw_date AS "drawDate", s
  * 2026-09-30 通道补全批二:多取编号、中韩直白名、看不看工作、条件标签、三种筛法(TEER / 职业码 / 雇主名)与清单名 —— 弹框通道卡
  * 一岗列出全部通道(上段按岗位筛、下段「不要 offer 的通道」按省列)。表 54 行,整表取。
  * 同日资讯页「通道与门槛」:多取出处页(门槛表一行没收录的通道,卡上来源退到它)。
+ * 2026-10-02 申请步骤批 1(Frank「这个是不是弹框也要加,并且加上点击啊」):多取 hasSteps(这条通道登没登申请步骤)—— 格子能不能点
+ * 把「登了步骤」也算有卡(萨省现有工签没登门槛,原先格子与职位页移民相关卡那一行不可点)。步骤本体不进首屏;走 to_jsonb 取,
+ * 生产还没加 steps 列时取到 null 当没有;加了列、seed 还没灌的旧行是 JSON null,先判是不是数组再数,首屏不挂。
  */
 export const DIMS_PATHWAYS = `SELECT key, province, board_label AS "boardLabel", is_default AS "isDefault",
        draw_streams AS "drawStreams", req_streams AS "reqStreams", quota_key AS "quotaKey", official_name AS "officialName",
        plain_zh AS "plainZh", plain_ko AS "plainKo", job_linked AS "jobLinked", tags, teers, nocs, employers,
-       occ_labels AS "occLabels", url
-     FROM pathways WHERE status <> 'closed' ORDER BY seq`
+       occ_labels AS "occLabels", url,
+       CASE WHEN jsonb_typeof(to_jsonb(p) -> 'steps') = 'array'
+         THEN jsonb_array_length(to_jsonb(p) -> 'steps') > 0 ELSE false END AS "hasSteps"
+     FROM pathways p WHERE status <> 'closed' ORDER BY seq`
 
 /**
  * 首屏维度表·魁省职业 → 第一个通道键(2026-09-30 魁省门槛弹框;设计 docs/design/魁省门槛弹框-20260929.md):

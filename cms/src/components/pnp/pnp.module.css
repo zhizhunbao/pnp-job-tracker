@@ -470,6 +470,7 @@
    * 右下角(2026-09-27 Frank「这个截止日期放到右下角呢」;几列日期不一致时逐列一行)。
    * 2026-09-28 Frank「日期和全省放到一样吧」「放到一行吧」:改成表最右一列、放在「全省」那一行,靠右;原先表下另起一行的
    * 4px 上距随之撤掉。手机上这一格窄,「截至」与日期在格内自然折成两行,仍在「全省」那一行。
+   * 2026-10-02 Frank「这个日期怎么跑上来了」(萨省加三行行业):改挂最后一行最右一格(QuotaGrid),多行的卡回到右下角。
    * 2026-09-29 更正:手机上实际折在日期中间,窄屏改为另起一行排到表尾(见下方 640px 断点)。
    */
   text-align: right;
@@ -2631,4 +2632,359 @@
   font-size: 12px;
   font-weight: 400;
   color: var(--text2);
+}
+
+/*
+ * 「申请步骤」卡的步骤列表(2026-10-02 申请步骤批 1;效果图 docs/design/申请步骤效果图-20261002.html):编号竖排,步与步之间一条细竖线。
+ */
+.steps {
+  /*
+   * 去掉列表符号。
+   */
+  list-style: none;
+
+  /*
+   * 去默认外距。
+   */
+  margin: 0;
+
+  /*
+   * 去默认内衬。
+   */
+  padding: 0;
+}
+
+/*
+ * 一步:左列圆点、右列正文。
+ */
+.step {
+  /*
+   * 两列网格。
+   */
+  display: grid;
+
+  /*
+   * 圆点列定宽。
+   */
+  grid-template-columns: 22px 1fr;
+
+  /*
+   * 圆点与正文的间距。
+   */
+  column-gap: 10px;
+
+  /*
+   * 竖线定位基准。
+   */
+  position: relative;
+
+  /*
+   * 步与步的间距(竖线画在这段里)。
+   */
+  padding-bottom: 12px;
+}
+
+/*
+ * 最后一步不留底距。
+ */
+.step:last-child {
+  /*
+   * 零底距。
+   */
+  padding-bottom: 0;
+}
+
+/*
+ * 步与步之间的细竖线(从圆点下沿画到下一步圆点上沿)。
+ */
+.step:not(:last-child)::before {
+  /*
+   * 伪元素占位。
+   */
+  content: "";
+
+  /*
+   * 相对一步定位。
+   */
+  position: absolute;
+
+  /*
+   * 对准圆点中线。
+   */
+  left: 10px;
+
+  /*
+   * 圆点下沿起。
+   */
+  top: 24px;
+
+  /*
+   * 画到这一步底。
+   */
+  bottom: 0;
+
+  /*
+   * 细线。
+   */
+  border-left: 1px solid var(--hairline);
+}
+
+/*
+ * 编号圆点。
+ */
+.stepDot {
+  /*
+   * 定宽。
+   */
+  width: 22px;
+
+  /*
+   * 定高。
+   */
+  height: 22px;
+
+  /*
+   * 正圆。
+   */
+  border-radius: 50%;
+
+  /*
+   * 浅蓝底(同本岗高亮色系)。
+   */
+  background: #e0e7ff;
+
+  /*
+   * 深靛字。
+   */
+  color: #3730a3;
+
+  /*
+   * 小号字。
+   */
+  font-size: 12px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 居中排数字。
+   */
+  display: flex;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 横向居中。
+   */
+  justify-content: center;
+}
+
+/*
+ * 不需要的一步:圆点灰。
+ */
+.stepSkip .stepDot {
+  /*
+   * 浅灰底。
+   */
+  background: #f3f4f6;
+
+  /*
+   * 灰字。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 卡点的一步:圆点橙。
+ */
+.stepStuck .stepDot {
+  /*
+   * 浅琥珀底。
+   */
+  background: #fef3c7;
+
+  /*
+   * 琥珀字。
+   */
+  color: #b45309;
+}
+
+/*
+ * 正文列。
+ */
+.stepBody {
+  /*
+   * 允许窄屏收缩(小表不撑破)。
+   */
+  min-width: 0;
+}
+
+/*
+ * 步骤名一行。
+ */
+.stepName {
+  /*
+   * 正文字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 名字与胶囊同一行。
+   */
+  display: flex;
+
+  /*
+   * 按基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 名字与胶囊的间距。
+   */
+  gap: 6px;
+
+  /*
+   * 放不下就折行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 中文只在标点处折(同门槛卡)。
+   */
+  word-break: keep-all;
+}
+
+/*
+ * 不需要的一步:名字灰、不加粗。
+ */
+.stepSkip .stepName {
+  /*
+   * 灰字。
+   */
+  color: var(--text3);
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+}
+
+/*
+ * 「谁做」小胶囊。
+ */
+.stepWho {
+  /*
+   * 小号字。
+   */
+  font-size: 11px;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 细描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 胶囊圆角。
+   */
+  border-radius: 999px;
+
+  /*
+   * 胶囊内衬。
+   */
+  padding: 0 7px;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 事实行。
+ */
+.stepLine {
+  /*
+   * 小一号。
+   */
+  font-size: 13px;
+
+  /*
+   * 与上一行的间距。
+   */
+  margin-top: 2px;
+
+  /*
+   * 中文只在标点处折,一整段放不下才任意处折。
+   */
+  word-break: keep-all;
+
+  /*
+   * 不溢出。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 不需要的一步:事实行灰。
+ */
+.stepSkip .stepLine {
+  /*
+   * 灰字。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 卡人的条件:橙字。
+ */
+.stepWarn {
+  /*
+   * 警示色(colors 域变量)。
+   */
+  color: var(--warn);
+}
+
+/*
+ * 下挂小表的外框(收件窗口)。
+ */
+.stepTable {
+  /*
+   * 与事实行的间距。
+   */
+  margin-top: 6px;
+
+  /*
+   * 细描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 小圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 内衬。
+   */
+  padding: 6px 8px;
 }

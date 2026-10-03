@@ -609,8 +609,29 @@ export const jobsZh = {
   'pnpdraws.months': '{n} 个月', 'pnpdraws.monthsOne': '{n} 个月',
   // 2026-09-27 Frank 勾「安省改一行组头」:改制省那一行没抽选时写这一句;原现状卡「已发邀请 / 暂无」两条随卡退役
   'pnpdraws.noInvYet': '暂无邀请',
+  // 2026-10-02 申请步骤批 1(Frank「每个省 每个通道 EE PNP AIP 都要有吧」「还是别改小版本了」;设计 docs/design/申请步骤-20261002.md):省提名弹框第 ⑤ 张「申请步骤」卡 —— 步骤名 / 谁做 / 事实词(数据层登记、原句逐句核过)/ 处理时长 / 萨省收件窗口
+  'pnpstep.head': '申请步骤',
+  'pnpstep.s.employerRegister': '雇主登记', 'pnpstep.s.offer': '拿雇主 offer', 'pnpstep.s.work': '在这份工作上干够',
+  'pnpstep.s.epa': '雇主递职位审批', 'pnpstep.s.eeProfile': '建 EE 档案', 'pnpstep.s.eoi': '递 EOI', 'pnpstep.s.draw': '进池与抽选',
+  'pnpstep.s.confirm': '确认职位、递申请', 'pnpstep.s.apply': '收邀请、递申请', 'pnpstep.s.review': '省里审批',
+  'pnpstep.s.settle': '做安置计划', 'pnpstep.s.endorse': '雇主递省背书', 'pnpstep.s.pr': '拿提名,递永居',
+  'pnpstep.who.you': '你', 'pnpstep.who.employer': '雇主', 'pnpstep.who.province': '省里', 'pnpstep.who.federal': '联邦',
+  'pnpstep.f.cappedEmployees': '限额行业(餐饮住宿、零售、货运)只收持有效身份的现有员工',
+  'pnpstep.f.windowCapped': '限额行业只在收件窗口递,且工签剩 {months} 个月以内',
+  'pnpstep.f.directApply': '不需要:持 offer 直接申请', 'pnpstep.f.eoiOnlyOther': '不需要:这一类不递 EOI',
+  'pnpstep.f.confirmSubmit': '审批通过后 {confirm} 天内确认,{submit} 天内递申请',
+  'pnpstep.f.noScheduledDraw': '官方目前没有排定的抽选', 'pnpstep.f.inviteSubmitDays': '收到邀请后 {n} 天内递',
+  'pnpstep.f.eeAcceptDays': '{n} 天内在 EE 系统接受提名', 'pnpstep.f.prSubmitDays': '收到联邦邀请后 {n} 天内递永居',
+  'pnpstep.f.workMonths': '持有效工签在这家雇主全职满 {n} 个月',
+  'pnpstep.weeks': '约 {n} 周({q})', 'pnpstep.weeksBare': '约 {n} 周', 'pnpstep.quarter': '{y} 年第 {q} 季度',
+  'pnpstep.intake.window': '{m} 月窗口', 'pnpstep.intake.limit': '名额', 'pnpstep.intake.used': '已用', 'pnpstep.intake.filled': '满额',
+  'pnpstep.intake.left': '余 {n}', 'pnpstep.intake.full': '已满',
+  'pnpstep.sector.afs': '餐饮住宿', 'pnpstep.sector.acc': '住宿', 'pnpstep.sector.food': '餐饮', 'pnpstep.sector.retail': '零售',
+  'pnpstep.sector.truck': '货运',
   // 2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」,标题照「每个框先设计一个 title」那张表;勾「全年已邀请合计」
   'pnpquota.title': '{year} 年配额', 'pnpquota.total': '总数', 'pnpquota.issued': '已发提名',
+  // 2026-10-02 申请步骤批 1:配额卡加萨省分行业三行(官方处理统计页的分配表)
+  'pnpquota.sector.priority': '优先行业', 'pnpquota.sector.capped': '限额行业', 'pnpquota.sector.other': '其他行业',
   'pnpquota.remaining': '剩余', 'pnpquota.prov': '全省', 'pnpquota.stream': '本岗通道', 'pnpquota.asOf': '截至 {date}',
   // 2026-09-27 Frank「已发和总数放到一个卡片里可以吗」「你帮我弄」:抽选卡标题下那行全年合计并进配额卡当一列,原 pnpdraws.ytdInv / ytdSel 两条随行退役
   // 2026-09-27 九省体检:NS 的已入选是 EOI 池合计(NSNP 与 AIP 同一个池),旁边的总数只算 NSNP,列名注明含 AIP,免得读成超发

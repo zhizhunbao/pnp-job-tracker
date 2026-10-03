@@ -81,7 +81,8 @@ import type {
   AipEmpDbRow, AipEmpFact, AipEmpOut, AipEmpTotalDbRow, AipRestOut, LoadAipEmpIn, LoadAipRestIn,
   LoadQcChannelsIn, QcCell, QcCellDbRow, QcChannel, QcChannelDbRow, QcChannelList, QcChannelsDbRow, QcChannelsOut,
   PgFailure, PnpDraw, PnpOcc, List,
-  PnpOccDim, PnpOccs, PnpOpsOut, PnpOpsRow, PnpReqRow, PnpReqsOut, ProfileJsonCell, ProfileJsonOrNull, ProofOut,
+  PnpOccDim, PnpOccs, PnpOpsOut, PnpOpsRow, PnpReqRow, PnpReqsOut, PnpStepOpsOut, PnpStepOpsRow, PnpStepsDbRow,
+  PnpStepsOut, PnpStepsRow, ProfileJsonCell, ProfileJsonOrNull, ProofOut,
   ProvCount, ProvCounts, ProvListCoverage, ProvOption, QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount,
   RatioMap, RatioOfIn, RelatedIn, RelatedJob, RelatedOut, RelatedAnchorIn, RelatedAnchorOut, RelatedPageIn,
   RelatedPageOut, ReqStreamDisplayIn, ResetJdTransIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
@@ -958,6 +959,58 @@ export async function getPnpReqs(db: Db): PnpReqsOut {
  */
 export async function loadPnpReqs(db: Db): PnpReqsOut {
   return queryRowsOrEmpty({ db: db, sql: SQL.PNP_GATE_REQS, params: [], map: toPnpReqRow })
+}
+
+/**
+ * 「申请步骤」卡的步骤,带 10 分钟单件缓存(2026-10-02 申请步骤批 1;TTL 同门槛行)。
+ *
+ * @param db 数据库连接(池由调用方注进来)。
+ * @returns 登了步骤的通道。
+ */
+export async function getPnpSteps(db: Db): PnpStepsOut {
+  const hit = CACHE.pnpSteps
+  if (hit != null && Date.now() - hit.ts < SSR_DIMS_TTL_MS) {
+    return hit.rows
+  }
+  const rows = await loadPnpSteps(db)
+  CACHE.pnpSteps = { rows: rows, ts: Date.now() }
+  return rows
+}
+
+/**
+ * 「申请步骤」卡的步骤现查(口径见 SQL.PNP_STEPS);查挂回空(生产还没加列时就是这样,弹框照旧出抽选卡)。
+ *
+ * @param db 数据库连接。
+ * @returns 登了步骤的通道。
+ */
+export async function loadPnpSteps(db: Db): PnpStepsOut {
+  return queryRowsOrEmpty({ db: db, sql: SQL.PNP_STEPS, params: [], map: toPnpStepsRow })
+}
+
+/**
+ * 「申请步骤」卡引用的运营统计,带 10 分钟单件缓存(2026-10-02 申请步骤批 1)。
+ *
+ * @param db 数据库连接(池由调用方注进来)。
+ * @returns 处理时长与收件窗口行。
+ */
+export async function getPnpStepOps(db: Db): PnpStepOpsOut {
+  const hit = CACHE.pnpStepOps
+  if (hit != null && Date.now() - hit.ts < SSR_DIMS_TTL_MS) {
+    return hit.rows
+  }
+  const rows = await loadPnpStepOps(db)
+  CACHE.pnpStepOps = { rows: rows, ts: Date.now() }
+  return rows
+}
+
+/**
+ * 「申请步骤」卡引用的运营统计现查(口径见 SQL.PNP_STEP_OPS);查挂回空。
+ *
+ * @param db 数据库连接。
+ * @returns 处理时长与收件窗口行。
+ */
+export async function loadPnpStepOps(db: Db): PnpStepOpsOut {
+  return queryRowsOrEmpty({ db: db, sql: SQL.PNP_STEP_OPS, params: [], map: toPnpStepOpsRow })
 }
 
 /**
@@ -3157,7 +3210,7 @@ function toPathway(r: PathwayDbRow): Pathway {
     drawStreams: toList(r.drawStreams), reqStreams: toList(r.reqStreams), quotaKey: textOrNull(r.quotaKey),
     officialName: text(r.officialName), key: text(r.key), plainZh: text(r.plainZh), plainKo: text(r.plainKo),
     jobLinked: r.jobLinked !== false, tags: toList(r.tags), teers: toList(r.teers), nocs: toList(r.nocs),
-    employers: toList(r.employers), occLabels: toList(r.occLabels), url: text(r.url),
+    employers: toList(r.employers), occLabels: toList(r.occLabels), url: text(r.url), hasSteps: r.hasSteps === true,
   }
 }
 
@@ -3324,6 +3377,29 @@ export function toPnpOpsRow(r: Row): PnpOpsRow {
     province: text(r.province), metric: text(r.metric), scopeKind: text(r.scope_kind), streamKey: text(r.stream_key),
     value: numOrNull(r.value), valueText: text(r.value_text), asOf: text(r.as_of), period: text(r.period), url: text(r.url),
     scope: text(r.scope),
+  }
+}
+
+/**
+ * PNP_STEPS 一行 → 一条通道的步骤(2026-10-02 申请步骤批 1;步骤格缺了当空列,本域不读格)。
+ *
+ * @param r 原始行。
+ * @returns 一条通道的步骤。
+ */
+function toPnpStepsRow(r: PnpStepsDbRow): PnpStepsRow {
+  return { key: text(r.key), steps: toList(r.steps) }
+}
+
+/**
+ * PNP_STEP_OPS 一行 → 步骤运营统计行(2026-10-02 申请步骤批 1;数值保 null)。
+ *
+ * @param r 原始行。
+ * @returns 运营统计行。
+ */
+function toPnpStepOpsRow(r: Row): PnpStepOpsRow {
+  return {
+    province: text(r.province), metric: text(r.metric), scope: text(r.scope), streamKey: text(r.stream_key),
+    value: numOrNull(r.value), valueText: text(r.value_text), period: text(r.period), asOf: text(r.as_of),
   }
 }
 

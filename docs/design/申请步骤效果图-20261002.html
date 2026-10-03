@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>申请步骤</title>
+<style>
+  :root { --bg:#f3f4f6; --card:#fff; --line:#e5e7eb; --ink:#111827; --grey:#6b7280; --soft:#9ca3af; --hl:#dbeafe; --link:#2563eb; --slot:#7c3aed; --warn:#b45309; --ok:#047857; }
+  body { margin:0; background:var(--bg); font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; color:var(--ink); }
+  .intro { max-width:1200px; margin:0 auto; padding:18px 16px 4px; font-size:14px; line-height:1.7; }
+  .intro h1 { font-size:18px; margin:0 0 6px; }
+  .skel { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
+  .skel span { background:#ede9fe; color:var(--slot); border-radius:999px; padding:2px 10px; font-size:13px; }
+  .wrap { display:flex; gap:22px; flex-wrap:wrap; justify-content:center; padding:14px 16px 30px; align-items:flex-start; }
+  .col { width:375px; }
+  .cap { font-size:13px; color:var(--grey); margin:0 0 8px; }
+  .phone { width:375px; background:#fff; border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+  .mhead { padding:12px 16px 10px; border-bottom:1px solid var(--line); }
+  .kicker { font-size:12px; color:var(--grey); }
+  .mtitle { font-size:17px; font-weight:700; margin-top:2px; }
+  .body { padding:12px; display:flex; flex-direction:column; gap:12px; background:#fafafa; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; position:relative; }
+  .slot { position:absolute; right:10px; top:10px; font-size:11px; color:var(--slot); }
+  .hd { display:flex; align-items:baseline; gap:6px; margin:0 0 8px; font-size:15px; font-weight:700; }
+  .src { font-size:12px; color:var(--link); font-weight:400; margin-left:auto; margin-right:44px; }
+  .sub { border:1px solid var(--line); border-radius:10px; padding:8px 12px; }
+  .sub .en { font-size:14px; }
+  .sub .zh { font-size:12px; color:var(--soft); margin-top:1px; }
+  .kv { display:grid; grid-template-columns:72px 1fr; gap:4px 10px; font-size:13px; }
+  .kv .k { color:var(--grey); }
+  .kv .new { color:var(--slot); }
+  .muted { color:var(--soft); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { text-align:left; color:var(--grey); font-weight:500; padding:5px 6px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th.num { text-align:right; }
+  td { padding:6px 6px; border-bottom:1px solid #f1f2f4; vertical-align:top; }
+  td .zh { color:var(--soft); font-size:12px; }
+  td.num { text-align:right; white-space:nowrap; }
+  tr.grp td { font-weight:600; background:#f9fafb; }
+  tr.new td { color:var(--slot); }
+  .foot { font-size:12px; color:var(--grey); margin-top:8px; }
+  .more { text-align:center; color:var(--link); font-size:13px; padding-top:8px; }
+  /* 申请步骤 */
+  .steps { list-style:none; margin:0; padding:0; }
+  .step { display:grid; grid-template-columns:22px 1fr; gap:0 10px; position:relative; padding-bottom:12px; }
+  .step:last-child { padding-bottom:0; }
+  .step::before { content:""; position:absolute; left:10px; top:22px; bottom:0; border-left:1px solid var(--line); }
+  .step:last-child::before { display:none; }
+  .dot { width:22px; height:22px; border-radius:50%; background:#eef2ff; color:#3730a3; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .step.skip .dot { background:#f3f4f6; color:var(--soft); }
+  .step.stuck .dot { background:#fef3c7; color:var(--warn); }
+  .sname { font-size:14px; font-weight:600; display:flex; gap:6px; align-items:baseline; flex-wrap:wrap; }
+  .who { font-size:11px; font-weight:500; color:var(--grey); border:1px solid var(--line); border-radius:999px; padding:0 7px; }
+  .step.skip .sname { color:var(--soft); font-weight:500; }
+  .sline { font-size:13px; color:var(--ink); margin-top:2px; }
+  .sline.g { color:var(--grey); }
+  .sline.w { color:var(--warn); }
+  .step.skip .sline { color:var(--soft); }
+  .inner { margin-top:6px; border:1px solid var(--line); border-radius:8px; padding:2px 6px 4px; }
+  .todo { color:var(--warn); font-size:11px; }
+  .notes { max-width:900px; margin:0 auto 40px; padding:0 16px; font-size:14px; line-height:1.75; }
+  .notes h2 { font-size:16px; margin:18px 0 6px; }
+</style>
+</head>
+<body>
+<div class="intro">
+  <h1>申请步骤卡(EE / 省提名 / AIP 每条通道一份)</h1>
+  10-01 统一骨架不变,只把第 ⑤ 张「抽选」换成「申请步骤」:
+  <div class="skel"><span>① 结论</span><span>② 申请门槛</span><span>③ 名单</span><span>④ 配额</span><span>⑤ 申请步骤</span></div>
+  每一步一行:步骤名 + 谁做(你 / 雇主 / 省里 / 联邦)+ 一行事实(时长、截止、现状)。抽选是其中一步,原抽选表挂在这一步下面。不需要的步骤灰字写「不需要」,九省才比得出来。
+  紫字 = 本次新加的格;橙字「待核」= 效果图里先占位、上线前要补官方原句的格;其余数据全是库里 / 官网缓存的真实值。
+</div>
+
+<div class="wrap">
+
+<!-- 1. 萨省 厨师 -->
+<div class="col">
+<p class="cap">1. 萨省 · line cook(EDO JAPAN,Prince Albert)—— 雇主 offer 通道</p>
+<div class="phone">
+  <div class="mhead"><div class="kicker">萨斯喀彻温省提名(PNP)</div><div class="mtitle">line cook</div></div>
+  <div class="body">
+    <div class="card"><span class="slot">①</span><div class="hd">本岗能走的通道</div>
+      <div class="sub"><div class="en">International Skilled Worker: Employment Offer</div><div class="zh">SK 雇主 offer</div></div></div>
+    <div class="card"><span class="slot">②</span><div class="hd">申请门槛<span class="src">来源 ↗</span></div>
+      <div class="kv">
+        <span class="k new">身份</span><span class="new">限额行业(餐饮住宿、零售、货运):只收现有员工,工签有效且剩 6 个月以内</span>
+        <span class="k">雇主 offer</span><span>全职<br>不收兼职、临时工、季节工、定期合同</span>
+        <span class="k">雇主条件</span><span>在本省经营满 24 个月</span>
+        <span class="k">语言</span><span>英语或法语每项 CLB 4</span>
+        <span class="k">工作经验</span><span>12 个月全职经验(近 10 年内)</span>
+        <span class="k">积分</span><span>本省打分表 ≥ 60 分</span>
+        <span class="k">其他</span><span>职业所需执照或注册</span>
+      </div></div>
+    <div class="card"><span class="slot">④</span><div class="hd">2026 年配额<span class="src">来源 ↗</span></div>
+      <table>
+        <tr><th></th><th class="num">总数</th><th class="num">已发提名</th></tr>
+        <tr><td>全省</td><td class="num">4,761</td><td class="num">2,628</td></tr>
+        <tr class="new"><td>优先行业<div class="zh">医疗、农业、技工、矿业、制造、能源、科技</div></td><td class="num">2,380</td><td class="num">1,466</td></tr>
+        <tr class="new"><td>限额行业<div class="zh">餐饮住宿、零售、货运</div></td><td class="num">1,190</td><td class="num">718</td></tr>
+        <tr class="new"><td>其他行业</td><td class="num">1,191</td><td class="num">444</td></tr>
+      </table>
+      <div class="foot">截至 2026-06</div></div>
+    <div class="card"><span class="slot">⑤</span><div class="hd">申请步骤<span class="src">来源 ↗</span></div>
+      <ol class="steps">
+        <li class="step"><span class="dot">1</span><div><div class="sname">雇主登记<span class="who">雇主</span></div><div class="sline">在本省经营满 24 个月才能登记</div></div></li>
+        <li class="step stuck"><span class="dot">2</span><div><div class="sname">雇主递职位审批<span class="who">雇主</span></div>
+          <div class="sline">审批约 3 周</div>
+          <div class="sline w">限额行业只在收件窗口递,先到先得</div>
+          <div class="inner"><table>
+            <tr><th>9 月窗口</th><th class="num">名额</th><th class="num">已用</th><th>满额</th></tr>
+            <tr><td>餐饮</td><td class="num">175</td><td class="num">175</td><td>09-15</td></tr>
+            <tr><td>住宿</td><td class="num">50</td><td class="num">50</td><td>09-14</td></tr>
+            <tr><td>零售</td><td class="num">175</td><td class="num">129</td><td class="muted">余 46</td></tr>
+            <tr><td>货运</td><td class="num">150</td><td class="num">102</td><td class="muted">余 48</td></tr>
+          </table><div class="foot">下一个窗口 11 月</div><div class="more">展开前 4 个窗口</div></div></div></li>
+        <li class="step skip"><span class="dot">3</span><div><div class="sname">进池与抽选</div><div class="sline">不需要:持 offer 直接申请</div></div></li>
+        <li class="step"><span class="dot">4</span><div><div class="sname">确认职位、递申请<span class="who">你</span></div><div class="sline">审批通过后 10 天内确认,60 天内递申请</div></div></li>
+        <li class="step"><span class="dot">5</span><div><div class="sname">省里审批<span class="who">省里</span></div><div class="sline">约 2 周(2026 年第 2 季度)</div></div></li>
+        <li class="step"><span class="dot">6</span><div><div class="sname">拿提名,递永居<span class="who">联邦</span></div><div class="sline g">向 IRCC 递永居申请 <span class="todo">联邦时长待核</span></div></div></li>
+      </ol></div>
+  </div>
+</div>
+</div>
+
+<!-- 2. 萨省 科技 -->
+<div class="col">
+<p class="cap">2. 萨省 · Web site developer(VicSquare Arcade,Regina)—— 科技通道</p>
+<div class="phone">
+  <div class="mhead"><div class="kicker">萨斯喀彻温省提名(PNP)</div><div class="mtitle">Web site developer</div></div>
+  <div class="body">
+    <div class="card"><span class="slot">①</span><div class="hd">本岗能走的通道</div>
+      <div class="sub"><div class="en">Innovation and Tech Talent Pathway</div><div class="zh">SK 科技</div></div></div>
+    <div class="card"><span class="slot">②</span><div class="hd">申请门槛<span class="src">来源 ↗</span></div>
+      <div class="kv">
+        <span class="k">雇主 offer</span><span>全职<br>不收兼职、临时工、季节工、定期合同</span>
+        <span class="k">雇主条件</span><span>在本省经营满 24 个月</span>
+        <span class="k">语言</span><span>英语或法语每项 CLB 5</span>
+        <span class="k">工作经验</span><span>12 个月全职经验(近 5 年内)<br>须是这个职业的经验<br>或在现雇主全职满 6 个月</span>
+      </div></div>
+    <div class="card"><span class="slot">③</span><div class="hd">SK 科技 32 个职业</div><div class="muted" style="font-size:13px">(同现状,本岗 21234 高亮置顶)</div></div>
+    <div class="card"><span class="slot">④</span><div class="hd">2026 年配额<span class="src">来源 ↗</span></div><div class="muted" style="font-size:13px">(同卡 1)</div></div>
+    <div class="card"><span class="slot">⑤</span><div class="hd">申请步骤<span class="src">来源 ↗</span></div>
+      <ol class="steps">
+        <li class="step"><span class="dot">1</span><div><div class="sname">雇主登记<span class="who">雇主</span></div><div class="sline">在本省经营满 24 个月才能登记</div></div></li>
+        <li class="step"><span class="dot">2</span><div><div class="sname">雇主递职位审批<span class="who">雇主</span></div><div class="sline">审批约 3 周;优先行业随时递</div></div></li>
+        <li class="step skip"><span class="dot">3</span><div><div class="sname">进池与抽选</div><div class="sline">不需要:持 offer 直接申请</div></div></li>
+        <li class="step"><span class="dot">4</span><div><div class="sname">确认职位、递申请<span class="who">你</span></div><div class="sline">审批通过后 10 天内确认,60 天内递申请</div></div></li>
+        <li class="step"><span class="dot">5</span><div><div class="sname">省里审批<span class="who">省里</span></div><div class="sline">约 2 周(2026 年第 2 季度)</div></div></li>
+        <li class="step"><span class="dot">6</span><div><div class="sname">拿提名,递永居<span class="who">联邦</span></div><div class="sline g">向 IRCC 递永居申请 <span class="todo">联邦时长待核</span></div></div></li>
+      </ol></div>
+  </div>
+</div>
+</div>
+
+<!-- 3. 阿省 科技 -->
+<div class="col">
+<p class="cap">3. 阿省 · Web developer(Sanshtech,Calgary)—— Accelerated Tech Pathway</p>
+<div class="phone">
+  <div class="mhead"><div class="kicker">阿尔伯塔省提名(PNP)</div><div class="mtitle">Web developer</div></div>
+  <div class="body">
+    <div class="card"><span class="slot">①</span><div class="hd">本岗能走的通道</div>
+      <div class="sub"><div class="en">Accelerated Tech Pathway</div><div class="zh">AB 科技</div></div></div>
+    <div class="card"><span class="slot">②–④</span><div class="hd">申请门槛 / 名单 / 配额</div><div class="muted" style="font-size:13px">(同现状)</div></div>
+    <div class="card"><span class="slot">⑤</span><div class="hd">申请步骤<span class="src">来源 ↗</span></div>
+      <ol class="steps">
+        <li class="step"><span class="dot">1</span><div><div class="sname">建 EE 档案<span class="who">你</span></div><div class="sline">满足 CEC、FSW、FST 之一,CRS ≥ 300</div></div></li>
+        <li class="step"><span class="dot">2</span><div><div class="sname">拿阿省科技雇主 offer<span class="who">雇主</span></div><div class="sline">职业在 44 个科技职业内,与 EE 主职业一致</div></div></li>
+        <li class="step"><span class="dot">3</span><div><div class="sname">递 EOI<span class="who">你</span></div><div class="sline g"><span class="todo">EOI 有效期待核</span></div></div></li>
+        <li class="step stuck"><span class="dot">4</span><div><div class="sname">抽选<span class="who">省里</span></div>
+          <div class="inner"><table>
+            <tr><th>最近</th><th class="num">分数线</th><th class="num">邀请</th></tr>
+            <tr><td>09-22</td><td class="num">59</td><td class="num">100</td></tr>
+            <tr><td>09-03</td><td class="num">60</td><td class="num">96</td></tr>
+            <tr><td>08-06</td><td class="num">60</td><td class="num">95</td></tr>
+          </table><div class="foot">近 12 个月 11 轮</div></div></div></li>
+        <li class="step"><span class="dot">5</span><div><div class="sname">收邀请、递申请<span class="who">你</span></div><div class="sline g"><span class="todo">递件期限待核</span></div></div></li>
+        <li class="step"><span class="dot">6</span><div><div class="sname">省里审批<span class="who">省里</span></div><div class="sline g"><span class="todo">处理时长待核</span></div></div></li>
+        <li class="step"><span class="dot">7</span><div><div class="sname">拿提名,递永居<span class="who">联邦</span></div><div class="sline">EE 档案加 600 分,等联邦邀请</div></div></li>
+      </ol></div>
+  </div>
+</div>
+</div>
+
+<!-- 4. 安省 -->
+<div class="col">
+<p class="cap">4. 安省 · software developer(Milton)—— Ontario Workforce Priority</p>
+<div class="phone">
+  <div class="mhead"><div class="kicker">安大略省提名(PNP)</div><div class="mtitle">software developer</div></div>
+  <div class="body">
+    <div class="card"><span class="slot">①</span><div class="hd">本岗能走的通道</div>
+      <div class="sub"><div class="en">Ontario Workforce Priority stream</div><div class="zh">ON 劳动力优先</div></div></div>
+    <div class="card"><span class="slot">②–④</span><div class="hd">申请门槛 / 配额</div><div class="muted" style="font-size:13px">(同现状)</div></div>
+    <div class="card"><span class="slot">⑤</span><div class="hd">申请步骤<span class="src">来源 ↗</span></div>
+      <ol class="steps">
+        <li class="step"><span class="dot">1</span><div><div class="sname">拿雇主 offer<span class="who">雇主</span></div><div class="sline">雇主经营满 3 年,收入与员工数达标</div></div></li>
+        <li class="step"><span class="dot">2</span><div><div class="sname">在这份工作上干够<span class="who">你</span></div><div class="sline">近 12 个月连续全职 6 个月(本省应届 3 个月)</div></div></li>
+        <li class="step"><span class="dot">3</span><div><div class="sname">递 EOI<span class="who">你</span></div><div class="sline g"><span class="todo">EOI 规则待核</span></div></div></li>
+        <li class="step stuck"><span class="dot">4</span><div><div class="sname">抽选<span class="who">省里</span></div>
+          <div class="sline w">改制后还没抽过</div>
+          <div class="inner"><table>
+            <tr><th>最近</th><th class="num">邀请</th></tr>
+            <tr><td>08-04</td><td class="num muted">暂无</td></tr>
+          </table><div class="more">改制前的抽选(已关停通道)</div></div></div></li>
+        <li class="step"><span class="dot">5</span><div><div class="sname">收邀请、递申请<span class="who">你</span></div><div class="sline g"><span class="todo">递件期限待核</span></div></div></li>
+        <li class="step"><span class="dot">6</span><div><div class="sname">省里审批<span class="who">省里</span></div><div class="sline g"><span class="todo">处理时长待核</span></div></div></li>
+        <li class="step"><span class="dot">7</span><div><div class="sname">拿提名,递永居<span class="who">联邦</span></div><div class="sline g">向 IRCC 递永居申请</div></div></li>
+      </ol></div>
+  </div>
+</div>
+</div>
+
+<!-- 5. EE -->
+<div class="col">
+<p class="cap">5. EE · CEC 经验类</p>
+<div class="phone">
+  <div class="mhead"><div class="kicker">联邦 EE</div><div class="mtitle">software developer</div></div>
+  <div class="body">
+    <div class="card"><span class="slot">⑤</span><div class="hd">申请步骤<span class="src">来源 ↗</span></div>
+      <ol class="steps">
+        <li class="step"><span class="dot">1</span><div><div class="sname">建 EE 档案<span class="who">你</span></div><div class="sline">满足 CEC:加拿大技术工作经验满 1 年 <span class="todo">原句待挂</span></div></div></li>
+        <li class="step skip"><span class="dot">2</span><div><div class="sname">雇主 offer</div><div class="sline">不需要</div></div></li>
+        <li class="step stuck"><span class="dot">3</span><div><div class="sname">抽选<span class="who">联邦</span></div>
+          <div class="inner"><table>
+            <tr><th>类别</th><th class="num">分数线</th><th>最近</th></tr>
+            <tr><td>CEC 经验类</td><td class="num">518</td><td>09-29</td></tr>
+          </table><div class="foot">近 12 个月 12 轮</div></div></div></li>
+        <li class="step"><span class="dot">4</span><div><div class="sname">收邀请、递永居<span class="who">你</span></div><div class="sline">收到邀请后 60 天内递 <span class="todo">原句待挂</span></div></div></li>
+        <li class="step"><span class="dot">5</span><div><div class="sname">联邦审批<span class="who">联邦</span></div><div class="sline g"><span class="todo">处理时长待核</span></div></div></li>
+      </ol></div>
+  </div>
+</div>
+</div>
+
+<!-- 6. AIP -->
+<div class="col">
+<p class="cap">6. AIP · 新斯科舍指定雇主</p>
+<div class="phone">
+  <div class="mhead"><div class="kicker">AIP 指定雇主</div><div class="mtitle">restaurant assistant manager</div></div>
+  <div class="body">
+    <div class="card"><span class="slot">⑤</span><div class="hd">申请步骤<span class="src">来源 ↗</span></div>
+      <ol class="steps">
+        <li class="step"><span class="dot">1</span><div><div class="sname">拿指定雇主 offer<span class="who">雇主</span></div><div class="sline">雇主须在本省 AIP 指定雇主名单上</div></div></li>
+        <li class="step"><span class="dot">2</span><div><div class="sname">做安置计划<span class="who">你</span></div><div class="sline g">找安置服务机构 <span class="todo">原句待挂</span></div></div></li>
+        <li class="step stuck"><span class="dot">3</span><div><div class="sname">EOI 入选<span class="who">省里</span></div>
+          <div class="inner"><table>
+            <tr><th>月份</th><th class="num">入选</th></tr>
+            <tr><td>2026-07</td><td class="num">671 人</td></tr>
+            <tr><td>2026-06</td><td class="num">531 人</td></tr>
+          </table><div class="foot">NSNP + AIP 同一个池,2026 年 7 轮共 3,242 人</div></div></div></li>
+        <li class="step"><span class="dot">4</span><div><div class="sname">雇主递省背书<span class="who">雇主</span></div><div class="sline g"><span class="todo">时长待核</span></div></div></li>
+        <li class="step"><span class="dot">5</span><div><div class="sname">拿背书,递永居<span class="who">联邦</span></div><div class="sline g">向 IRCC 递永居申请</div></div></li>
+      </ol></div>
+  </div>
+</div>
+</div>
+
+</div>
+
+<div class="notes">
+  <h2>统一规则</h2>
+  <p><b>步骤名用一套词</b>:雇主登记 / 拿雇主 offer / 雇主递职位审批 / 建 EE 档案 / 递 EOI / 进池与抽选 / 收邀请、递申请 / 省里审批 / 拿提名,递永居。各通道从这套词里取,顺序按真实流程。省提名各通道都列「进池与抽选」一步,不需要的写「不需要」—— 九省一眼看出谁要抽、谁卡在抽。</p>
+  <p><b>每步只写三类事实</b>:谁做、多久(处理时长、递件期限)、现在怎样(窗口满额、改制后未抽、最近分数线)。都带官方原句,原句挂在步骤数据上,来源钮跳官方页。官方没写的那格空着,不猜。</p>
+  <p><b>卡住的那一步标橙色圆点</b>(萨省限额行业的窗口、阿省和 EE 的抽选、安省的改制后未抽):用户先看哪一步最难。</p>
+  <p><b>④ 配额卡</b>:萨省多出三行行业(数据层已有,优先行业 / 限额行业 / 其他行业的名额与已发提名);别的省有分通道配额的照阿省现有写法。</p>
+  <p><b>② 门槛卡</b>:萨省补「身份」一行(限额行业只收现有员工),照阿省机会通道样张。本岗属于哪个行业不判(公司表没有行业字段),所以写成「限额行业:…」的条件句。</p>
+  <h2>与 10-01 拍板的出入(要你确认)</h2>
+  <p>10-01 定「不抽选的只写一行『不经抽选』,删掉『持雇主 offer 直接递申请』这类说明句」。这次「进池与抽选」那一步写「不需要:持 offer 直接申请」—— 算步骤里的事实,不是说明段落;你不同意就只留「不需要」三个字。</p>
+  <h2>数据层要补的</h2>
+  <p>新登记表:每条通道的步骤(步骤词、谁做、时长 / 期限、官方原句、出处页),住 etl/pathways 通道表旁边;萨省收件窗口表(Processing Statistics 页,工作日更新)进 pnp 域。橙字「待核」的格都要在这一步补原句,补不到就空着。</p>
+</div>
+</body>
+</html>

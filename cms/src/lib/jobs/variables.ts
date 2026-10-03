@@ -41,6 +41,16 @@ export const CACHE: JobsCache = {
   pnpReqs: null,
 
   /**
+   * 「申请步骤」卡的步骤(2026-10-02 申请步骤批 1):/api/jobs/pnp 随门槛行一起给弹框。同一个 10 分钟 TTL(通道表随 seed 日更);开机是空的。
+   */
+  pnpSteps: null,
+
+  /**
+   * 「申请步骤」卡引用的运营统计(处理时长 + 萨省收件窗口;2026-10-02 申请步骤批 1)。同一个 10 分钟 TTL;开机是空的。
+   */
+  pnpStepOps: null,
+
+  /**
    * WHERE 签名 → 总数微缓存(2026-07-19「排序 3-4 秒」第二刀)。
    */
   counts: new Map(),

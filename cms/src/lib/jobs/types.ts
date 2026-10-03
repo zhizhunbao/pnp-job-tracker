@@ -1011,6 +1011,11 @@ export type PathwayDbRow = {
    * 通道自己那一页(2026-09-30 资讯页「通道与门槛」)。
    */
   url: string | null
+
+  /**
+   * 登没登申请步骤(2026-10-02 申请步骤批 1;生产没加列时为 false)。
+   */
+  hasSteps: boolean | null
 }
 
 /**
@@ -1102,6 +1107,11 @@ export type Pathway = {
    * 通道自己那一页(2026-09-30 资讯页「通道与门槛」:门槛表一行没收录的通道,卡上来源退到它);库里缺了给空串。
    */
   url: string
+
+  /**
+   * 登没登申请步骤(2026-10-02 申请步骤批 1;格子能不能点把它也算有卡)。
+   */
+  hasSteps: boolean
 }
 
 /**
@@ -4349,6 +4359,16 @@ export type JobsCache = {
   pnpReqs: PnpReqsCache | null
 
   /**
+   * 「申请步骤」卡的步骤(10 分钟 TTL,同门槛行;2026-10-02 申请步骤批 1);null = 冷。
+   */
+  pnpSteps: PnpStepsCache | null
+
+  /**
+   * 「申请步骤」卡引用的运营统计(10 分钟 TTL;2026-10-02 申请步骤批 1);null = 冷。
+   */
+  pnpStepOps: PnpStepOpsCache | null
+
+  /**
    * WHERE 签名 → 总数微缓存(30s;300 组防涨)。
    */
   counts: Map<string, CountSlot>
@@ -5421,6 +5441,121 @@ export type PnpReqsCache = {
    * 门槛行。
    */
   rows: PnpReqRow[]
+
+  /**
+   * 拉到的时刻(毫秒)。
+   */
+  ts: number
+}
+
+/**
+ * PNP_STEPS 一行的库原样(2026-10-02 申请步骤批 1;steps 是 jsonb,pg 回数组)。
+ */
+export type PnpStepsDbRow = {
+  /**
+   * 通道编号。
+   */
+  key: string | null
+
+  /**
+   * 步骤(本域不读格,原样转给弹框;形状由 components/pnp 在信任边界收窄)。
+   */
+  steps: MaybeList<object>
+}
+
+/**
+ * 一条通道的步骤(PNP_STEPS 洗净)。
+ */
+export type PnpStepsRow = {
+  /**
+   * 通道编号(= 通道对照行 key)。
+   */
+  key: string
+
+  /**
+   * 步骤(零读格透传)。
+   */
+  steps: object[]
+}
+
+/**
+ * `loadPnpSteps` / `getPnpSteps` 的返回。
+ */
+export type PnpStepsOut = Promise<PnpStepsRow[]>
+
+/**
+ * 步骤缓存的一格。
+ */
+export type PnpStepsCache = {
+  /**
+   * 步骤。
+   */
+  rows: PnpStepsRow[]
+
+  /**
+   * 拉到的时刻(毫秒)。
+   */
+  ts: number
+}
+
+/**
+ * 「申请步骤」卡引用的运营统计一行(PNP_STEP_OPS 洗净;2026-10-02 申请步骤批 1)。
+ */
+export type PnpStepOpsRow = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 指标名(processing_weeks / intake_limit / intake_used / intake_remaining / intake_filled)。
+   */
+  metric: string
+
+  /**
+   * 口径原名(处理时长 = 类别名;收件窗口 = 行业名,带开放时刻括注照抄)。
+   */
+  scope: string
+
+  /**
+   * 口径归一键(收件窗口按它认行业,不在展示层洗字)。
+   */
+  streamKey: string
+
+  /**
+   * 数值;官方 N/A 等为 null(折 0 = 替官方编数)。
+   */
+  value: number | null
+
+  /**
+   * 文字值(满额日期 ISO、处理时长原文)。
+   */
+  valueText: string
+
+  /**
+   * 统计期(处理时长 = 季度 2026Q2;收件窗口 = 开放日)。
+   */
+  period: string
+
+  /**
+   * 截至日。
+   */
+  asOf: string
+}
+
+/**
+ * `loadPnpStepOps` / `getPnpStepOps` 的返回。
+ */
+export type PnpStepOpsOut = Promise<PnpStepOpsRow[]>
+
+/**
+ * 步骤运营统计缓存的一格。
+ */
+export type PnpStepOpsCache = {
+  /**
+   * 运营统计行。
+   */
+  rows: PnpStepOpsRow[]
 
   /**
    * 拉到的时刻(毫秒)。

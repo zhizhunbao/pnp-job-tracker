@@ -563,8 +563,32 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.months': '{n} months', 'pnpdraws.monthsOne': '{n} month',
   // 2026-09-27 reform-province row (ON) with no rounds yet; the status card's two labels retire
   'pnpdraws.noInvYet': 'No invitations yet',
+  // 2026-10-02 申请步骤批 1(Frank「每个省 每个通道 EE PNP AIP 都要有吧」「还是别改小版本了」;设计 docs/design/申请步骤-20261002.md):省提名弹框第 ⑤ 张「申请步骤」卡 —— 步骤名 / 谁做 / 事实词(数据层登记、原句逐句核过)/ 处理时长 / 萨省收件窗口
+  'pnpstep.head': 'Application steps',
+  'pnpstep.s.employerRegister': 'Employer registers', 'pnpstep.s.offer': 'Get a job offer', 'pnpstep.s.work': 'Work in the job long enough',
+  'pnpstep.s.epa': 'Employer applies for position approval', 'pnpstep.s.eeProfile': 'Create an Express Entry profile',
+  'pnpstep.s.eoi': 'Submit an EOI', 'pnpstep.s.draw': 'Pool and draw',
+  'pnpstep.s.confirm': 'Confirm the position and apply', 'pnpstep.s.apply': 'Get invited and apply', 'pnpstep.s.review': 'Province reviews',
+  'pnpstep.s.settle': 'Make a settlement plan', 'pnpstep.s.endorse': 'Employer applies for endorsement',
+  'pnpstep.s.pr': 'Get nominated and apply for PR',
+  'pnpstep.who.you': 'You', 'pnpstep.who.employer': 'Employer', 'pnpstep.who.province': 'Province', 'pnpstep.who.federal': 'Federal',
+  'pnpstep.f.cappedEmployees': 'Capped sectors (accommodation and food services, retail, trucking): current employees with valid status only',
+  'pnpstep.f.windowCapped': 'Capped sectors: intake windows only, with {months} months or less left on the work permit',
+  'pnpstep.f.directApply': 'Not needed: apply directly with a job offer', 'pnpstep.f.eoiOnlyOther': 'Not needed: no EOI for this category',
+  'pnpstep.f.confirmSubmit': 'Confirm within {confirm} days of approval, apply within {submit} days',
+  'pnpstep.f.noScheduledDraw': 'No draws are scheduled at this time', 'pnpstep.f.inviteSubmitDays': 'Apply within {n} days of the invitation',
+  'pnpstep.f.eeAcceptDays': 'Accept the nomination in Express Entry within {n} days',
+  'pnpstep.f.prSubmitDays': 'Apply for PR within {n} days of the federal invitation',
+  'pnpstep.f.workMonths': '{n} months full-time with this employer on a valid work permit',
+  'pnpstep.weeks': 'About {n} weeks ({q})', 'pnpstep.weeksBare': 'About {n} weeks', 'pnpstep.quarter': 'Q{q} {y}',
+  'pnpstep.intake.window': '{ym} window', 'pnpstep.intake.limit': 'Spots', 'pnpstep.intake.used': 'Used', 'pnpstep.intake.filled': 'Full',
+  'pnpstep.intake.left': '{n} left', 'pnpstep.intake.full': 'Full',
+  'pnpstep.sector.afs': 'Accommodation and food', 'pnpstep.sector.acc': 'Accommodation', 'pnpstep.sector.food': 'Food services',
+  'pnpstep.sector.retail': 'Retail', 'pnpstep.sector.truck': 'Trucking',
   // 2026-09-27 allocation card (own box) and the draws card's year-to-date line
   'pnpquota.title': '{year} allocation', 'pnpquota.total': 'Total', 'pnpquota.issued': 'Nominated',
+  // 2026-10-02 申请步骤批 1:配额卡加萨省分行业三行(官方处理统计页的分配表)
+  'pnpquota.sector.priority': 'Priority sectors', 'pnpquota.sector.capped': 'Capped sectors', 'pnpquota.sector.other': 'Other sectors',
   'pnpquota.remaining': 'Remaining', 'pnpquota.prov': 'Province', 'pnpquota.stream': 'This stream',
   'pnpquota.asOf': 'As of {date}',
   // 2026-09-27 the draws card's year-to-date line moves into the allocation card as a column; pnpdraws.ytdInv / ytdSel retire

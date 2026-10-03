@@ -323,6 +323,11 @@ export type PnpPathway = {
    * 通道自己那一页(2026-09-30 资讯页「通道与门槛」:门槛表一行没收录的通道,卡上来源退到它)。
    */
   url: string
+
+  /**
+   * 登没登申请步骤(2026-10-02 申请步骤批 1;格子能不能点把它也算有卡)。
+   */
+  hasSteps: boolean
 }
 
 /**
@@ -2120,6 +2125,16 @@ export type PnpListSectionIn = {
    * 魁省岗这个职业的通道(2026-09-30 魁省门槛弹框;魁省岗每个通道一张门槛卡,其余卡不出)。
    */
   qcChannels: QcChannel[]
+
+  /**
+   * 登了步骤的通道(2026-10-02 申请步骤批 1;本岗通道登了就出「申请步骤」卡,替掉抽选卡)。
+   */
+  steps: PnpStepSet[]
+
+  /**
+   * 步骤引用的运营统计(处理时长 + 萨省收件窗口)。
+   */
+  stepOps: PnpStepOp[]
 }
 
 /**
@@ -5159,6 +5174,16 @@ export type PnpData = {
    * 全国通道对照(2026-09-28 通道表批二;老服务端没给 = 空列)。
    */
   pathways: PnpPathway[]
+
+  /**
+   * 登了步骤的通道(2026-10-02 申请步骤批 1;老服务端没给、或生产还没加列 = 空列,弹框照旧出抽选卡)。
+   */
+  steps: PnpStepSet[]
+
+  /**
+   * 步骤引用的运营统计(处理时长 + 萨省收件窗口;同上)。
+   */
+  stepOps: PnpStepOp[]
 }
 
 /**
@@ -5189,6 +5214,16 @@ export type PnpDataJson = {
    * 全国通道对照(2026-09-28 通道表批二起;换版窗口里老服务端没给)。
    */
   pathways?: PnpPathway[]
+
+  /**
+   * 登了步骤的通道(2026-10-02 申请步骤批 1 起;换版窗口里老服务端没给)。
+   */
+  pnpSteps?: PnpStepSet[]
+
+  /**
+   * 步骤引用的运营统计(同上)。
+   */
+  pnpStepOps?: PnpStepOp[]
 } | null
 
 /**
@@ -5705,6 +5740,16 @@ export type PnpDataPanel = {
    * 全国通道对照(同上)。
    */
   pathways: PnpPathway[]
+
+  /**
+   * 登了步骤的通道(同上;2026-10-02 申请步骤批 1)。
+   */
+  steps: PnpStepSet[]
+
+  /**
+   * 步骤引用的运营统计(同上)。
+   */
+  stepOps: PnpStepOp[]
 }
 
 /**
@@ -6330,4 +6375,535 @@ export type QcOwnRowsIn = {
    * 这张卡的通道。
    */
   chan: QcChannel
+}
+
+/**
+ * 「申请步骤」卡一行事实的线格式(2026-10-02 申请步骤批 1;etl/pathways 登记,原样经库表 pathways.steps 下来):
+ * 引用别的表的写 ref(+ factor / scope),官方原句型的写 key(+ vars / quote / url)—— 两种互斥,缺席 = 这一型没有这格。
+ */
+export type PnpStepFactJson = {
+  /**
+   * 引用哪张表(req 门槛行 / processing 处理时长 / intake 收件窗口 / draws 抽选表)。
+   */
+  ref?: string
+
+  /**
+   * 引用门槛行时的因素名(empYears / pointsMin / eeProfile)。
+   */
+  factor?: string
+
+  /**
+   * 引用处理时长时的类别原名(处理统计页那一行)。
+   */
+  scope?: string
+
+  /**
+   * 原句型事实的事实词(三语文案在 i18n pnpstep.f.*)。
+   */
+  key?: string
+
+  /**
+   * 事实词模板里的数(10 天、60 天、6 个月…)。
+   */
+  vars?: Record<string, number>
+
+  /**
+   * 官方原句(数据层逐句对 crawl 缓存核过;卡上不显示,留作出处)。
+   */
+  quote?: string
+
+  /**
+   * 原句出处页。
+   */
+  url?: string
+}
+
+/**
+ * 「申请步骤」卡一步的线格式(2026-10-02 申请步骤批 1)。
+ */
+export type PnpStepJson = {
+  /**
+   * 步骤词(三语文案在 i18n pnpstep.s.*)。
+   */
+  step: string
+
+  /**
+   * 谁做(you / employer / province / federal)。
+   */
+  who: string
+
+  /**
+   * 这一步不需要(灰字)。
+   */
+  none: boolean
+
+  /**
+   * 卡点(橙点;只给数据说得出的,如官方明写没有排定抽选)。
+   */
+  stuck: boolean
+
+  /**
+   * 事实行。
+   */
+  facts: PnpStepFactJson[]
+}
+
+/**
+ * 一条通道的步骤(/api/jobs/pnp 的 pnpSteps 一行)。
+ */
+export type PnpStepSet = {
+  /**
+   * 通道编号(= 通道对照行 key)。
+   */
+  key: string
+
+  /**
+   * 步骤。
+   */
+  steps: PnpStepJson[]
+}
+
+/**
+ * 步骤引用的运营统计一行(/api/jobs/pnp 的 pnpStepOps 一行;2026-10-02 申请步骤批 1)。
+ */
+export type PnpStepOp = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 指标名(processing_weeks / intake_limit / intake_used / intake_remaining / intake_filled)。
+   */
+  metric: string
+
+  /**
+   * 口径原名(处理时长 = 类别名;收件窗口 = 行业名)。
+   */
+  scope: string
+
+  /**
+   * 口径归一键(收件窗口按它认行业)。
+   */
+  streamKey: string
+
+  /**
+   * 数值;官方 N/A 为 null。
+   */
+  value: number | null
+
+  /**
+   * 文字值(满额日期 ISO)。
+   */
+  valueText: string
+
+  /**
+   * 统计期(处理时长 = 季度 2026Q2;收件窗口 = 开放日)。
+   */
+  period: string
+
+  /**
+   * 截至日。
+   */
+  asOf: string
+}
+
+/**
+ * 「申请步骤」卡一步里的一行字。
+ */
+export type StepLineSpec = {
+  /**
+   * 这一行。
+   */
+  text: string
+
+  /**
+   * 橙字(限额行业那类卡人的条件)。
+   */
+  warn: boolean
+}
+
+/**
+ * 「申请步骤」卡一步下挂的小表(萨省收件窗口;与配额卡同一种小表,走 QuotaGrid)。
+ */
+export type StepTableSpec = {
+  /**
+   * 左上角那一格(「9 月窗口」)。
+   */
+  corner: string
+
+  /**
+   * 表头(名额 / 已用 / 满额)。
+   */
+  heads: string[]
+
+  /**
+   * 各行(一个行业一行)。
+   */
+  rows: QuotaRowSpec[]
+}
+
+/**
+ * 「申请步骤」卡的一步(洗好的)。
+ */
+export type StepSpec = {
+  /**
+   * 列表键。
+   */
+  key: string
+
+  /**
+   * 第几步(从 1 起)。
+   */
+  n: number
+
+  /**
+   * 步骤名。
+   */
+  name: string
+
+  /**
+   * 谁做。
+   */
+  who: string
+
+  /**
+   * 这一步不需要(整步灰字、不出谁做)。
+   */
+  none: boolean
+
+  /**
+   * 卡点(橙点)。
+   */
+  stuck: boolean
+
+  /**
+   * 事实行。
+   */
+  lines: StepLineSpec[]
+
+  /**
+   * 下挂的小表;没有给 null。
+   */
+  table: StepTableSpec | null
+}
+
+/**
+ * 「申请步骤」卡(洗好的)。
+ */
+export type StepsCardSpec = {
+  /**
+   * 卡标题。
+   */
+  title: string
+
+  /**
+   * 标题行右端的来源(本岗通道那一页);没有给 null。
+   */
+  source: SourceLink | null
+
+  /**
+   * 各步。
+   */
+  steps: StepSpec[]
+}
+
+/**
+ * stepsCardOf 的入参。
+ */
+export type StepsCardOfIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗省码。
+   */
+  province: string
+
+  /**
+   * 本岗走的那条通道;没有给 null。
+   */
+  channel: PnpPathway | null
+
+  /**
+   * 登了步骤的通道。
+   */
+  sets: PnpStepSet[]
+
+  /**
+   * 步骤引用的运营统计。
+   */
+  stepOps: PnpStepOp[]
+
+  /**
+   * 本岗的门槛卡(引用门槛行的事实直接取它算好的那一行);没有给 null。
+   */
+  gate: GateCardSpec | null
+}
+
+/**
+ * stepSetOf 的入参。
+ */
+export type StepSetOfIn = {
+  /**
+   * 登了步骤的通道。
+   */
+  sets: PnpStepSet[]
+
+  /**
+   * 通道编号。
+   */
+  key: string
+}
+
+/**
+ * stepOf 的入参。
+ */
+export type StepOfIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗省码。
+   */
+  province: string
+
+  /**
+   * 这一步(线格式)。
+   */
+  step: PnpStepJson
+
+  /**
+   * 第几步。
+   */
+  n: number
+
+  /**
+   * 步骤引用的运营统计。
+   */
+  stepOps: PnpStepOp[]
+
+  /**
+   * 本岗的门槛卡;没有给 null。
+   */
+  gate: GateCardSpec | null
+}
+
+/**
+ * stepFactLinesOf 的入参。
+ */
+export type StepFactIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗省码。
+   */
+  province: string
+
+  /**
+   * 这一行事实。
+   */
+  fact: PnpStepFactJson
+
+  /**
+   * 步骤引用的运营统计。
+   */
+  stepOps: PnpStepOp[]
+
+  /**
+   * 本岗的门槛卡;没有给 null。
+   */
+  gate: GateCardSpec | null
+}
+
+/**
+ * intakeTableOf 的入参。
+ */
+export type IntakeTableIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗省码。
+   */
+  province: string
+
+  /**
+   * 步骤引用的运营统计。
+   */
+  stepOps: PnpStepOp[]
+}
+
+/**
+ * 收件窗口一个行业的四个数(intakeTableOf 内部攒行用)。
+ */
+export type IntakeCell = {
+  /**
+   * 行业原名。
+   */
+  scope: string
+
+  /**
+   * 行业归一键。
+   */
+  streamKey: string
+
+  /**
+   * 名额。
+   */
+  limit: number | null
+
+  /**
+   * 已用。
+   */
+  used: number | null
+
+  /**
+   * 剩余。
+   */
+  remaining: number | null
+
+  /**
+   * 满额日期 ISO;官方没写为空串。
+   */
+  filled: string
+}
+
+/**
+ * intakeRowOf 的入参。
+ */
+export type IntakeRowIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这个行业的四个数。
+   */
+  cell: IntakeCell
+}
+
+/**
+ * PnpStepsCard 的 props。
+ */
+export type PnpStepsCardIn = {
+  /**
+   * 洗好的卡。
+   */
+  spec: StepsCardSpec
+}
+
+/**
+ * StepItem 的 props。
+ */
+export type StepItemIn = {
+  /**
+   * 洗好的一步。
+   */
+  step: StepSpec
+}
+
+/**
+ * QuotaGrid 的 props(配额卡与「申请步骤」卡的收件窗口共用这一种小表;2026-10-02 申请步骤批 1 自 PnpQuotaCard 拆出)。
+ */
+export type QuotaGridIn = {
+  /**
+   * 左上角那一格;配额卡为空串。
+   */
+  corner: string
+
+  /**
+   * 表头。
+   */
+  heads: string[]
+
+  /**
+   * 各行。
+   */
+  rows: QuotaRowSpec[]
+
+  /**
+   * 第一行最右一格的截至日期(各列不一致逐列一行);没有给空列。
+   */
+  asOf: string[]
+}
+
+/**
+ * intakePut 的入参。
+ */
+export type IntakePutIn = {
+  /**
+   * 攒行用的表(行业 + 开放日 → 四个数)。
+   */
+  cells: Map<string, IntakeCell>
+
+  /**
+   * 一行运营统计。
+   */
+  op: PnpStepOp
+}
+
+/**
+ * quarterTextOf 的入参。
+ */
+export type QuarterTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 统计期(2026Q2)。
+   */
+  period: string
+}
+
+/**
+ * sectorRowsOf 的入参(2026-10-02 申请步骤批 1)。
+ */
+export type SectorRowsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这一省的配额行。
+   */
+  rows: PnpOps[]
+
+  /**
+   * 列(每列认的指标名)。
+   */
+  cols: string[][]
+}
+
+/**
+ * sectorCellOf 的入参(2026-10-02 申请步骤批 1)。
+ */
+export type SectorCellIn = {
+  /**
+   * 这一省的配额行。
+   */
+  rows: PnpOps[]
+
+  /**
+   * 行业官方原名。
+   */
+  scope: string
+
+  /**
+   * 认哪几个指标名。
+   */
+  metrics: string[]
 }

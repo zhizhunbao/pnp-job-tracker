@@ -35,5 +35,6 @@ export const Pathways: CollectionConfig = {
     { name: 'teers', type: 'json', admin: { description: '本岗 TEER 在内才列通道卡上段 number[];空 = 不限' } },
     { name: 'nocs', type: 'json', admin: { description: '本岗职业码在内才列通道卡上段 string[];空 = 不限' } },
     { name: 'employers', type: 'json', admin: { description: '雇主名(归一后小写)命中才列通道卡上段 string[];空 = 不限' } },
+    { name: 'steps', type: 'json', admin: { description: '申请步骤 object[](步骤词 / 谁做 / 不需要 / 卡点 / 事实行;etl/pathways 人工核定,2026-10-02 申请步骤批 1);DDL docs/sql/pathways-steps-20261002.sql' } },
   ],
 }

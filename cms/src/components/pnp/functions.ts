@@ -60,6 +60,10 @@ import {
   K_CELL_QC, K_KICKER_QC, QC_BASIS, QC_CELL_HEAD, QC_EDU_HEAD, QC_F, QC_FR_KEY, QC_GENERAL_STREAM, QC_KIND_PARTLY,
   QC_KIND_SCOPE, QC_NAME_HEAD, QC_PROGRAM_PSTQ, QC_PROGRAMS, QC_ROW, QC_SUBJECT_SPOUSE, QC_TEER_DASH, QC_TEER_LIST_SEP,
   QC_TEST_TCF, QC_TEST_TEF, URL_API_JOBS_QC,
+  K_STEP_INTAKE_FILLED, K_STEP_INTAKE_FULL, K_STEP_INTAKE_LEFT, K_STEP_INTAKE_LIMIT, K_STEP_INTAKE_USED,
+  K_STEP_INTAKE_WINDOW, K_STEP_QUARTER, K_STEP_WEEKS, K_STEP_WEEKS_BARE, K_STEPS_HEAD, STEP_FACT_HEAD, STEP_MD_FROM,
+  STEP_METRIC, STEP_MONTH_LEN, STEP_NAME_HEAD, STEP_QUARTER_RE, STEP_REF, STEP_REQ_ROW, STEP_SECTOR_HEAD,
+  STEP_SECTOR_KEY, STEP_WARN_FACTS, STEP_WHO_HEAD, OPS_SCOPE_SECTOR, QUOTA_SECTOR_HEAD, QUOTA_SECTOR_KEY,
 } from './constants'
 import type {
   AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
@@ -91,6 +95,8 @@ import type {
   TeerBandsIn, TierLineIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
+  IntakeCell, IntakePutIn, IntakeRowIn, IntakeTableIn, PnpStepOp, PnpStepSet, QuarterTextIn, StepFactIn, StepLineSpec,
+  StepOfIn, StepSetOfIn, StepSpec, StepTableSpec, StepsCardOfIn, StepsCardSpec, SectorCellIn, SectorRowsIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './pnp.module.css'
@@ -487,13 +493,16 @@ export function pnpDefaultProvsOf(pathways: PnpPathway[]): string[] {
  * 登记了门槛的通道键(通道对照表 reqStreams 非空的行;键形同 pnpChannelKeyOf —— 具名通道用岗位通道名,省默认通道用
  * `pnp.gen.` + 省码)。2026-09-29 七省门槛卡:格子「能不能点」把门槛卡算进去用。
  *
+ * 2026-10-02 申请步骤批 1(Frank「这个是不是弹框也要加,并且加上点击啊」):登了申请步骤的通道也算(弹框必出步骤卡)——
+ * 萨省现有工签没登门槛,原先格子与职位页移民相关卡那一行不可点。
+ *
  * @param pathways 通道对照整表。
  * @returns 通道键。
  */
 function gatedKeysOf(pathways: PnpPathway[]): string[] {
   const out: string[] = []
   for (const p of pathways) {
-    if (p.reqStreams.length === 0) {
+    if (p.reqStreams.length === 0 && p.hasSteps !== true) {
       continue
     }
     if (p.boardLabel != null) {
@@ -2513,6 +2522,9 @@ export function quotaCardOf(x: QuotaCardOfIn): QuotaCardSpec | null {
   if (streamKey !== TEXT_NONE) {
     rows.push(quotaRowOf({ rows: mine, streamKey, cols, label: x.t('pnpquota.stream') }))
   }
+  for (const row of sectorRowsOf({ t: x.t, rows: mine, cols })) {
+    rows.push(row)
+  }
   return {
     title: x.t('pnpquota.title', { year: yearOf(first) }),
     source: sourceLinkOf({ t: x.t, url: first.url }),
@@ -2648,6 +2660,59 @@ function quotaStreamKeyOf(x: QuotaStreamIn): string {
     }
   }
   return TEXT_NONE
+}
+
+/**
+ * 配额卡的分行业几行(2026-10-02 申请步骤批 1:萨省按行业分配名额 —— 优先行业 / 限额行业 / 其他行业,官方处理统计页的表;
+ * 数据层早就在库,原先 SQL 不取):行业档出现的先后即行序,按官方原名分行(归一键要等汇装重跑才有,按键分会把三行挤成一行);
+ * 行名按归一键认得的译出、认不得照官方原名;列同全省那一行,缺项写长横。
+ *
+ * @param x 取词函数、这一省的配额行与列。
+ * @returns 各行;这一省没有行业档给空列。
+ */
+function sectorRowsOf(x: SectorRowsIn): QuotaRowSpec[] {
+  const names: string[] = []
+  const keys: string[] = []
+  for (const r of x.rows) {
+    if (r.scopeKind === OPS_SCOPE_SECTOR && names.includes(r.scope) === false) {
+      names.push(r.scope)
+      keys.push(r.streamKey)
+    }
+  }
+  const out: QuotaRowSpec[] = []
+  for (let i = 0; i < names.length; i += 1) {
+    const name = names[i]
+    const key = keys[i]
+    if (name == null || key == null) {
+      continue
+    }
+    const cells: string[] = []
+    for (const metrics of x.cols) {
+      cells.push(sectorCellOf({ rows: x.rows, scope: name, metrics }))
+    }
+    let label = name
+    const known = QUOTA_SECTOR_KEY[key]
+    if (known != null) {
+      label = x.t(QUOTA_SECTOR_HEAD + known)
+    }
+    out.push({ key: OPS_SCOPE_SECTOR + KEY_SEP + name, label, cells })
+  }
+  return out
+}
+
+/**
+ * 分行业那一行的一格:行业档、官方原名相等、指标名在认的那几个里;没有写长横。
+ *
+ * @param x 这一省的配额行、行业原名与指标名。
+ * @returns 格里的字。
+ */
+function sectorCellOf(x: SectorCellIn): string {
+  for (const r of x.rows) {
+    if (r.scopeKind === OPS_SCOPE_SECTOR && r.scope === x.scope && x.metrics.includes(r.metric)) {
+      return quotaCellOf(r)
+    }
+  }
+  return DASH
 }
 
 /**
@@ -5390,7 +5455,15 @@ function toPnpData(j: PnpDataJson): PnpData | null {
   if (j.pathways != null) {
     pathways = j.pathways
   }
-  return { occ: j.pnpOccupations, draws: j.pnpDraws, ops, reqs, pathways }
+  let steps: PnpStepSet[] = []
+  if (j.pnpSteps != null) {
+    steps = j.pnpSteps
+  }
+  let stepOps: PnpStepOp[] = []
+  if (j.pnpStepOps != null) {
+    stepOps = j.pnpStepOps
+  }
+  return { occ: j.pnpOccupations, draws: j.pnpDraws, ops, reqs, pathways, steps, stepOps }
 }
 
 /**
@@ -5401,7 +5474,7 @@ function toPnpData(j: PnpDataJson): PnpData | null {
  */
 export function pnpDataOf(data: PnpData | null): PnpData {
   if (data == null) {
-    return { occ: [], draws: [], ops: [], reqs: [], pathways: [] }
+    return { occ: [], draws: [], ops: [], reqs: [], pathways: [], steps: [], stepOps: [] }
   }
   return data
 }
@@ -6125,4 +6198,278 @@ export function qcChannelsOf(channels: QcChannel[] | null): QcChannel[] {
     return []
   }
   return channels
+}
+
+/**
+ * 「申请步骤」卡(2026-10-02 申请步骤批 1,Frank「每个省 每个通道 EE PNP AIP 都要有吧」「还是别改小版本了」;设计
+ * docs/design/申请步骤-20261002.md,效果图 docs/design/申请步骤效果图-20261002.html):本岗通道登了步骤才出,替掉抽选卡(10-01 骨架第 ⑤ 张)。
+ * 一步一行:步骤名 + 谁做 + 事实行 —— 引用门槛行的直接取门槛卡算好的那一行(文案只有一份),处理时长与收件窗口读运营统计,其余是
+ * 数据层登记的事实词(原句已逐句对过 crawl 缓存)。只陈列官方事实,不判「你能不能拿到」。
+ *
+ * @param x 取词函数、本岗省码、本岗通道、登了步骤的通道、运营统计与门槛卡。
+ * @returns 步骤卡;本岗通道没登步骤给 null。
+ */
+export function stepsCardOf(x: StepsCardOfIn): StepsCardSpec | null {
+  if (x.channel == null) {
+    return null
+  }
+  const set = stepSetOf({ sets: x.sets, key: x.channel.key })
+  if (set == null) {
+    return null
+  }
+  const steps: StepSpec[] = []
+  let n = 0
+  for (const step of set.steps) {
+    n += 1
+    steps.push(stepOf({ t: x.t, province: x.province, step, n, stepOps: x.stepOps, gate: x.gate }))
+  }
+  return { title: x.t(K_STEPS_HEAD), source: sourceLinkOf({ t: x.t, url: x.channel.url }), steps }
+}
+
+/**
+ * 按通道编号找它登的步骤。
+ *
+ * @param x 登了步骤的通道与通道编号。
+ * @returns 那一条;没登或登了空列给 null。
+ */
+function stepSetOf(x: StepSetOfIn): PnpStepSet | null {
+  for (const s of x.sets) {
+    if (s.key === x.key && s.steps.length > 0) {
+      return s
+    }
+  }
+  return null
+}
+
+/**
+ * 一步(线格式)→ 卡上的一步:收件窗口引用落成下挂小表,其余事实各出一到几行字。
+ *
+ * @param x 取词函数、本岗省码、这一步、第几步、运营统计与门槛卡。
+ * @returns 洗好的一步。
+ */
+function stepOf(x: StepOfIn): StepSpec {
+  const lines: StepLineSpec[] = []
+  let table: StepTableSpec | null = null
+  for (const fact of x.step.facts) {
+    if (fact.ref === STEP_REF.intake) {
+      table = intakeTableOf({ t: x.t, province: x.province, stepOps: x.stepOps })
+      continue
+    }
+    for (const line of stepFactLinesOf({ t: x.t, province: x.province, fact, stepOps: x.stepOps, gate: x.gate })) {
+      lines.push(line)
+    }
+  }
+  return {
+    key: x.step.step + KEY_SEP + String(x.n),
+    n: x.n,
+    name: x.t(STEP_NAME_HEAD + x.step.step),
+    who: x.t(STEP_WHO_HEAD + x.step.who),
+    none: x.step.none,
+    stuck: x.step.stuck,
+    lines,
+    table,
+  }
+}
+
+/**
+ * 一行事实 → 卡上的字:门槛行引用、处理时长引用、事实词三种;认不出的引用不出字(宁可少一行)。
+ *
+ * @param x 取词函数、本岗省码、这一行事实、运营统计与门槛卡。
+ * @returns 几行字。
+ */
+function stepFactLinesOf(x: StepFactIn): StepLineSpec[] {
+  const f = x.fact
+  if (f.ref === STEP_REF.req) {
+    return stepReqLinesOf(x)
+  }
+  if (f.ref === STEP_REF.processing) {
+    return stepWeeksLinesOf(x)
+  }
+  if (f.key == null) {
+    return []
+  }
+  let vars: Record<string, number> = {}
+  if (f.vars != null) {
+    vars = f.vars
+  }
+  return [{ text: x.t(STEP_FACT_HEAD + f.key, vars), warn: STEP_WARN_FACTS.includes(f.key) }]
+}
+
+/**
+ * 引用门槛行的事实:取门槛卡上对应那一行的字(雇主条件 / 积分 / EE),门槛卡没出或没有那一行就不出字。
+ *
+ * @param x 同 stepFactLinesOf。
+ * @returns 几行字。
+ */
+function stepReqLinesOf(x: StepFactIn): StepLineSpec[] {
+  const out: StepLineSpec[] = []
+  if (x.gate == null || x.fact.factor == null) {
+    return out
+  }
+  const rowKey = STEP_REQ_ROW[x.fact.factor]
+  for (const row of x.gate.rows) {
+    if (row.key !== rowKey) {
+      continue
+    }
+    for (const line of row.lines) {
+      out.push({ text: line, warn: false })
+    }
+  }
+  return out
+}
+
+/**
+ * 引用处理时长的事实:本省这一类最近一季的周数(「约 3 周(2026 年第 2 季度)」);官方 N/A 或没有这一类不出字。
+ *
+ * @param x 同 stepFactLinesOf。
+ * @returns 几行字。
+ */
+function stepWeeksLinesOf(x: StepFactIn): StepLineSpec[] {
+  for (const op of x.stepOps) {
+    const hit = op.province === x.province && op.metric === STEP_METRIC.weeks && op.scope === x.fact.scope
+    if (hit === false || op.value == null) {
+      continue
+    }
+    const q = quarterTextOf({ t: x.t, period: op.period })
+    if (q === TEXT_NONE) {
+      return [{ text: x.t(K_STEP_WEEKS_BARE, { n: op.value }), warn: false }]
+    }
+    return [{ text: x.t(K_STEP_WEEKS, { n: op.value, q }), warn: false }]
+  }
+  return []
+}
+
+/**
+ * 统计期 2026Q2 → 「2026 年第 2 季度」;认不出给空串。
+ *
+ * @param x 取词函数与统计期。
+ * @returns 统计期文字。
+ */
+function quarterTextOf(x: QuarterTextIn): string {
+  const m = STEP_QUARTER_RE.exec(x.period)
+  if (m == null || m.groups == null) {
+    return TEXT_NONE
+  }
+  const y = m.groups.y
+  const q = m.groups.q
+  if (y == null || q == null) {
+    return TEXT_NONE
+  }
+  return x.t(K_STEP_QUARTER, { y, q })
+}
+
+/**
+ * 萨省收件窗口小表:只列最近开放的那个月(同月几个开放日并一张表),一个行业一行(名额 / 已用 / 满额日期或余位)。
+ *
+ * @param x 取词函数、本岗省码与运营统计。
+ * @returns 小表;本省没有窗口给 null。
+ */
+function intakeTableOf(x: IntakeTableIn): StepTableSpec | null {
+  let month = TEXT_NONE
+  for (const op of x.stepOps) {
+    const m = op.period.slice(0, STEP_MONTH_LEN)
+    if (op.province === x.province && op.metric === STEP_METRIC.limit && m > month) {
+      month = m
+    }
+  }
+  if (month === TEXT_NONE) {
+    return null
+  }
+  const cells = new Map<string, IntakeCell>()
+  for (const op of x.stepOps) {
+    if (op.province === x.province && op.period.slice(0, STEP_MONTH_LEN) === month) {
+      intakePut({ cells, op })
+    }
+  }
+  const rows = []
+  for (const cell of cells.values()) {
+    rows.push(intakeRowOf({ t: x.t, cell }))
+  }
+  return {
+    corner: x.t(K_STEP_INTAKE_WINDOW, { m: Number(month.slice(STEP_MD_FROM)), ym: month }),
+    heads: [x.t(K_STEP_INTAKE_LIMIT), x.t(K_STEP_INTAKE_USED), x.t(K_STEP_INTAKE_FILLED)],
+    rows,
+  }
+}
+
+/**
+ * 一行收件窗口运营统计攒进它那个行业(行业原名 + 开放日)的四个数。
+ *
+ * @param x 攒行用的表与这一行。
+ */
+function intakePut(x: IntakePutIn): void {
+  const k = x.op.scope + KEY_SEP + x.op.period
+  let cell = x.cells.get(k)
+  if (cell == null) {
+    cell = { scope: x.op.scope, streamKey: x.op.streamKey, limit: null, used: null, remaining: null, filled: TEXT_NONE }
+    x.cells.set(k, cell)
+  }
+  if (x.op.metric === STEP_METRIC.limit) {
+    cell.limit = x.op.value
+  } else if (x.op.metric === STEP_METRIC.used) {
+    cell.used = x.op.value
+  } else if (x.op.metric === STEP_METRIC.remaining) {
+    cell.remaining = x.op.value
+  } else if (x.op.metric === STEP_METRIC.filled) {
+    cell.filled = x.op.valueText
+  }
+}
+
+/**
+ * 收件窗口一个行业 → 小表一行:行业名(认得的译出,认不得照官方原名)、名额、已用、满额日期(月-日);没满写余位,
+ * 满了而官方没写日期写「已满」。
+ *
+ * @param x 取词函数与这个行业的四个数。
+ * @returns 一行。
+ */
+function intakeRowOf(x: IntakeRowIn): QuotaRowSpec {
+  const c = x.cell
+  let last = TEXT_NONE
+  if (c.filled !== TEXT_NONE) {
+    last = c.filled.slice(STEP_MD_FROM)
+  } else if (c.remaining != null && c.remaining > 0) {
+    last = x.t(K_STEP_INTAKE_LEFT, { n: c.remaining })
+  } else if (c.remaining === 0) {
+    last = x.t(K_STEP_INTAKE_FULL)
+  }
+  let label = c.scope
+  const sector = STEP_SECTOR_KEY[c.streamKey]
+  if (sector != null) {
+    label = x.t(STEP_SECTOR_HEAD + sector)
+  }
+  return {
+    key: c.scope + KEY_SEP + c.streamKey,
+    label,
+    cells: [String(numTextOf(c.limit)), String(numTextOf(c.used)), last],
+  }
+}
+
+/**
+ * 「申请步骤」卡一步的外框类:不需要的整步灰、卡点的圆点橙。
+ *
+ * @param step 洗好的一步。
+ * @returns className。
+ */
+export function stepClsOf(step: StepSpec): string {
+  let cls = cssOf(css.step)
+  if (step.none) {
+    cls = cls + SPACE + cssOf(css.stepSkip)
+  }
+  if (step.stuck) {
+    cls = cls + SPACE + cssOf(css.stepStuck)
+  }
+  return cls
+}
+
+/**
+ * 「申请步骤」卡一行事实的类:卡人的条件橙字。
+ *
+ * @param line 这一行。
+ * @returns className。
+ */
+export function stepLineClsOf(line: StepLineSpec): string {
+  if (line.warn) {
+    return cssOf(css.stepLine) + SPACE + cssOf(css.stepWarn)
+  }
+  return cssOf(css.stepLine)
 }

@@ -1252,6 +1252,18 @@ export interface Pathway {
     | number
     | boolean
     | null;
+  /**
+   * 申请步骤 object[](步骤词 / 谁做 / 不需要 / 卡点 / 事实行;etl/pathways 人工核定,2026-10-02 申请步骤批 1);DDL docs/sql/pathways-steps-20261002.sql
+   */
+  steps?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3404,6 +3416,7 @@ export interface QcNocStreamsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+  steps?: T;
  * via the `definition` "dli_select".
  */
 export interface DliSelect<T extends boolean = true> {

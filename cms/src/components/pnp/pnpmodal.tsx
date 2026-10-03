@@ -43,7 +43,7 @@ export function PnpModal({ job, lang, title, field, nocDesc, onClose }: PnpModal
       {p.data.ready && p.qc.ready && (
         <PnpListSection job={job} lang={lang} occ={p.data.occ} draws={p.data.draws} ops={p.data.ops}
           reqs={p.data.reqs} nocDesc={nocDesc} showZh={lang !== LANG_EN} pathways={p.data.pathways}
-          qcChannels={p.qc.channels} />
+          qcChannels={p.qc.channels} steps={p.data.steps} stepOps={p.data.stepOps} />
       )}
     </Modal>
   )
