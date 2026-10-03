@@ -3889,12 +3889,14 @@ def fill_ns_ops(x: OpsProvIn) -> None:
 
 def warn_stream_key_clash(rows: list) -> None:
     """撞车检测:**同一个 (province, metric) 内**两个不同的官方通道名压出同一个 key = 归一切过头了
-    (跨 metric 同键正是要的效果,不算撞)。撞了就报出来 —— 静默合并两条通道比漏配更毒。"""
+    (跨 metric 同键正是要的效果,不算撞)。撞了就报出来 —— 静默合并两条通道比漏配更毒。
+    2026-10-02 申请步骤批 1:分组再带统计期 —— 萨省收件窗口同一行业每个窗口一行(「Food Services (12:30 p.m.)」7 月、
+    「Food Services (1:30 p.m.)」9 月),期不同不算撞;通道行同省同指标本来同期,原判据不变。"""
     seen: dict = {}
     for r in rows:
         if not r.get(K_STREAM_KEY):
             continue
-        k = (r[K_PROVINCE], r[K_METRIC], r[K_STREAM_KEY])
+        k = (r[K_PROVINCE], r[K_METRIC], r.get(K_PERIOD, ""), r[K_STREAM_KEY])
         if seen.setdefault(k, r[K_SCOPE]) != r[K_SCOPE]:
             say(STREAM_CLASH_TPL.format(province=r[K_PROVINCE], metric=r[K_METRIC],
                                         first=seen[k], second=r[K_SCOPE],
