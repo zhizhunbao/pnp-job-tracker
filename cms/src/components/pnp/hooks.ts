@@ -375,11 +375,13 @@ export function useChannelPick(x: ChannelPickHookIn): ChannelPickPanel {
 }
 
 /**
- * 一张抽选表的开合(2026-10-02 申请步骤批 2:资讯页每条通道的步骤卡各挂一张抽选表,开合各卡自己管;初值同省提名弹框 drawOpenInitOf)。
+ * 一张抽选表的开合(2026-10-02 申请步骤批 2:资讯页每条通道的步骤卡各挂一张抽选表,开合各卡自己管)。
+ * 2026-10-03 线上实拍:初值原照弹框 drawOpenInitOf(其余组默认展开),阿省 6 张卡每张都把全省 8 组摊一遍、整页一万四千多像素 ——
+ * 资讯页改从空集起:只摊本通道那几组,其余组收进「查看全省 N 组」(弹框一岗一张卡,照旧默认展开;整张只有一组的照旧展开)。
  *
  * @returns 展开着的组与开合手柄工厂。
  */
 export function useDrawFold(): DrawFoldPanel {
-  const [open, setOpen] = useState<Set<string>>(drawOpenInitOf())
+  const [open, setOpen] = useState<Set<string>>(new Set())
   return { open, toggleOf: makeToggleOf({ setKeys: setOpen }) }
 }
