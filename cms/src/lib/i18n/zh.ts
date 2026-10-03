@@ -657,6 +657,11 @@ export const jobsZh = {
   'pnpstep.f.letterSubmitDays': '收到省兴趣信后 {n} 天内递',
   'pnpstep.f.localWorkMonths': '在本省 TEER 0-3 职业工作满 {n} 个月',
   'pnpstep.f.teer45EmployerMonths': 'TEER 4-5 须已在这家雇主工作满 {n} 个月',
+  // 2026-10-03 申请步骤批 2(纽芬兰 / 爱德华王子岛):新增步骤词 / 事实词
+  'pnpstep.f.noPermitOnly': '没有这份工作的有效工签时才需要',
+  'pnpstep.f.abroadOnly': '从加拿大境外招聘时才需要',
+  'pnpstep.f.noStandardTime': '官方目前没有标准处理时长',
+  'pnpstep.f.salesServiceLow': '销售服务类岗位目前可能收不到邀请',
   // 2026-10-02 申请步骤批 2:处理时长按月(卑诗约八成申请)/ 按天(曼省年度平均)/ 阿省审理游标
   'pnpstep.months': '八成申请约 {n} 个月内办完', 'pnpstep.days': '平均约 {n} 天({y} 年)',
   'pnpstep.assessing': '已审到 {date} 收到的申请(截至 {asOf})',

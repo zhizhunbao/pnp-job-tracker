@@ -616,6 +616,11 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpstep.f.letterSubmitDays': 'Submit within {n} days of the provincial letter of interest',
   'pnpstep.f.localWorkMonths': '{n} months of work in the province in a TEER 0-3 job',
   'pnpstep.f.teer45EmployerMonths': 'TEER 4-5 jobs need {n} months with this employer first',
+  // 2026-10-03 申请步骤批 2(纽芬兰 / 爱德华王子岛):新增步骤词 / 事实词
+  'pnpstep.f.noPermitOnly': 'Only needed if you have no valid work permit for this job',
+  'pnpstep.f.abroadOnly': 'Only needed when hiring from outside Canada',
+  'pnpstep.f.noStandardTime': 'No standard processing times at this time',
+  'pnpstep.f.salesServiceLow': 'Sales and service workers may not be invited at this time',
   // 2026-10-02 申请步骤批 2:处理时长按月(卑诗约八成申请)/ 按天(曼省年度平均)/ 阿省审理游标
   'pnpstep.months': 'About 80% of applications processed within {n} months', 'pnpstep.days': 'About {n} days on average ({y})',
   'pnpstep.assessing': 'Now assessing applications received up to {date} (as of {asOf})',

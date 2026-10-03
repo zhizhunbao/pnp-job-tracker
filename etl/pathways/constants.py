@@ -1531,6 +1531,226 @@ officialName 取官方原句里的子条件名(Construction Worker sub-criteria)
 category:高中文凭或建筑业培训)。指南 B 段的语言两档与经验和全流同值(ns-req 每轮逐项对校,对不上报自校问题)。
 A 类的「TEER 4-5 在本雇主 6 个月」B 段不要求 —— 这批没入表;以后加回全流时,卡片出并列经验行得排除建筑通道。"""
 
+# 2026-10-03 申请步骤批 2(纽芬兰;形照萨省 SKS_STEP_* / 阿省 ABS_STEP_*,设计 docs/design/申请步骤-20261002.md):NL 三条通道
+# (技术工人、国际毕业生、快速通道技术工人)共用的步骤件。三类申请人页「General Steps」同一套:递 EOI → 省里分批发邀请 →
+# 收到邀请后递申请 → 审理 → 结果(EOI 总览页同写);抽选一步引用抽选表(ref:draws,卡点;NLPNP 各类同一组批次)。
+# NL 运营统计没有处理时长,审批一步写候选人 FAQ 原话「目前没有标准处理时长」。
+NLS_EOI_URL = "https://www.gov.nl.ca/immigration/expression-of-interest-model-overview"
+"""NL EOI 模式总览页(EOI 12 个月过期、分批发邀请、受邀后 30 天递申请在这页)。"""
+
+NLS_FAQ_URL = "https://www.gov.nl.ca/immigration/faqs/nl-provincial-nominee-program-candidate-faqs"
+"""NL 省提名候选人 FAQ 页(没有标准处理时长、提名证书有效 6 个月在这页)。"""
+
+NLS_SUBMIT_URL = "https://www.gov.nl.ca/immigration/5-submission-of-nlpnp-application"
+"""NL 省提名政策手册「5. Submission of NLPNP Application」页(不收申请费那句;三类手册目录的第 5 节都链到这一页)。"""
+
+NLS_APPLICANTS_BASE = ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/"
+                       "provincial-nominee-program/applicants/")
+"""NL 省提名申请人页前缀。"""
+
+NLS_JVA_QUOTE = ("With an employer that has a valid JVA (only required if the applicant does not have a valid "
+                 "work permit or alternate federal authorization to work in the identified position).")
+"""雇主职位空缺评估(JVA)原句(技术工人、快速通道技术工人两页同句;国际毕业生页没有这一句)。"""
+
+NLS_STEP_JVA_SW = {"step": "epa", "who": "employer", "none": False, "stuck": False,
+                   "facts": [{"key": "noPermitOnly", "vars": {}, "quote": NLS_JVA_QUOTE,
+                              "url": NLS_APPLICANTS_BASE + "skilled-worker"}]}
+"""雇主递职位审批(技术工人):雇主过职位空缺评估(JVA),你没有这份工作的有效工签时才需要。排在拿 offer、递 EOI 前面:JVA 获批后
+雇主才能用 NLPNP 雇佣 offer 表出 offer(JVA 政策 7.3),要占 JVA 名额的人递 EOI 须填雇主给的邀请码(EOI FAQ 第 7 问)。
+JVA 有效期政策 7.3 写两年、9.0 与 JVA FAQ 写一年,官方前后不一,不写。"""
+
+NLS_STEP_JVA_EE = {"step": "epa", "who": "employer", "none": False, "stuck": False,
+                   "facts": [{"key": "noPermitOnly", "vars": {}, "quote": NLS_JVA_QUOTE,
+                              "url": NLS_APPLICANTS_BASE + "express-entry-skilled-worker"}]}
+"""雇主递职位审批(快速通道技术工人):同技术工人那步,出处换本类申请人页(资格政策第 4 节写作 JVA、LMIA、持这份工作的有效工签
+三者有一)。国际毕业生持 PGWP,申请人页与资格政策页都没有 JVA 这一句,不登这一步。"""
+
+NLS_STEP_EE_PROFILE = {"step": "eeProfile", "who": "you", "none": False, "stuck": False,
+                       "facts": [{"ref": "req", "factor": "eeProfile"}]}
+"""建 EE 档案(快速通道技术工人):读门槛卡「EE」行(须先进联邦 EE 池)。"""
+
+NLS_STEP_OFFER = {"step": "offer", "who": "employer", "none": False, "stuck": False,
+                  "facts": [{"ref": "req", "factor": "empYears"}]}
+"""拿 NL 雇主 offer:雇主条件读门槛卡「雇主条件」行(门槛流 NLPNP (employer criteria, all streams):经营满 2 年、本地全职员工)。
+排在递 EOI 前面:EOI 里没填 offer 的不会被考虑发邀请(EOI FAQ 第 5 问)。"""
+
+NLS_STEP_EOI = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                "facts": [{"key": "eoiValidMonths", "vars": {"n": 12},
+                           "quote": "EOIs expire automatically after 12 months.", "url": NLS_EOI_URL}]}
+"""递 EOI:在池里有效 12 个月(过期要重递)。"""
+
+NLS_STEP_DRAW = {"step": "draw", "who": "province", "none": False, "stuck": True,
+                 "facts": [{"ref": "draws"}]}
+"""进池与抽选:挂这条通道的抽选表(卡点 —— 要被选中才能递申请;官方分批发邀请,按公布的优先条件挑,EOI FAQ 写明不是随机抽)。"""
+
+NLS_ITA_QUOTE = "If invited, you have 30 days to submit a full NLPNP or AIP application."
+"""受邀后递申请期限原句(EOI 总览页)。"""
+
+NLS_NO_FEE_QUOTE = "There is no application fee when applying to the NLPNP."
+"""不收申请费原句(政策手册第 5 节)。"""
+
+NLS_STEP_APPLY = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                  "facts": [{"key": "inviteSubmitDays", "vars": {"n": 30}, "quote": NLS_ITA_QUOTE, "url": NLS_EOI_URL},
+                            {"key": "noFee", "vars": {}, "quote": NLS_NO_FEE_QUOTE, "url": NLS_SUBMIT_URL}]}
+"""收邀请、递申请(技术工人、国际毕业生):30 天内递,不收申请费。30 天是官方注明的年底临时缩短(各页星号注「temporarily reduced
+from 60 to 30 days」),改回 60 天时这句核不上、自校当轮就红。"""
+
+NLS_STEP_APPLY_EE = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                     "facts": [{"key": "inviteSubmitDays", "vars": {"n": 30}, "quote": NLS_ITA_QUOTE,
+                                "url": NLS_EOI_URL},
+                               {"ref": "req", "factor": "pointsMin"},
+                               {"key": "noFee", "vars": {}, "quote": NLS_NO_FEE_QUOTE, "url": NLS_SUBMIT_URL}]}
+"""收邀请、递申请(快速通道技术工人):同上,另读门槛卡「积分」行(NLPNP 打分表 ≥ 67 分)。打分是本类的申请资格,NL 的 EOI 按优先
+条件挑、不按分排,所以挂在递申请这一步(萨省 EOI 按分排才挂在递 EOI)。"""
+
+NLS_STEP_REVIEW = {"step": "review", "who": "province", "none": False, "stuck": False,
+                   "facts": [{"key": "noStandardTime", "vars": {},
+                              "quote": "OIM does not currently have standard processing times for the NLPNP.",
+                              "url": NLS_FAQ_URL}]}
+"""省里审批:官方原话「目前没有标准处理时长」(运营统计也没有 NL 的时长行)。"""
+
+NLS_STEP_PR = {"step": "pr", "who": "federal", "none": False, "stuck": False,
+               "facts": [{"key": "nominationValidMonths", "vars": {"n": 6},
+                          "quote": "Your nomination certificate is valid for 6 months before it expires.",
+                          "url": NLS_FAQ_URL}]}
+"""拿提名,递永居(三类同):提名证书有效 6 个月,过期前向联邦递。快速通道版提名后由联邦 EE 发邀请,NL 页面没写在 EE 里接受提名、
+递永居的天数,不拿阿省、萨省的原句顶。"""
+
+# 2026-10-03 申请步骤批 2(爱德华王子岛;形同上):PE 五条通道(劳工通道、在需职业、国际毕业生、中级经验、快速通道)的步骤件。
+# 各流页「How do I apply?」同一套:在 PEI EOI 系统建档 → 受邀 → 填申请表、雇主填 PEIW-02 → 审理 → 提名后自己向联邦递永居;
+# EOI 池按月抽选(邀请日程页列全年 12 个日期),抽选一步引用抽选表(ref:draws,卡点;Workforce 各流与 PEI EE 同一组
+# 「Labour & Express Entry」)。EOI 免费、档案有效 6 个月、300 加元申请费三句各流页同句,各通道取自己那页(同阿省提名有效期两页
+# 同句的做法)。PE 运营统计没有处理时长,各页也没写递申请期限、提名有效期,这几格空着。官网有防爬,原句全取自 crawl 缓存。
+PES_BASE = "https://www.princeedwardisland.ca/en/information/office-of-immigration/"
+"""PE 移民局页面前缀。"""
+
+PES_WF_URL = PES_BASE + "skilled-workers-in-pei"
+"""Skilled Worker 流页(劳工通道取这页:EOI 免费、档案有效 6 个月、300 加元申请费)。"""
+
+PES_OID_URL = PES_BASE + "occupations-in-demand"
+"""在需职业流页(境外招聘先拿授权;EOI 免费、档案有效期、申请费三句同句)。"""
+
+PES_IG_URL = PES_BASE + "international-graduates"
+"""国际毕业生流页(EOI 免费、档案有效期、申请费三句同句)。"""
+
+PES_IE_URL = PES_BASE + "intermediate-experience-stream"
+"""中级经验流页(境外招聘先拿授权;EOI 免费、档案有效期、申请费三句同句)。"""
+
+PES_EE_URL = PES_BASE + "pei-express-entry"
+"""PEI 快速通道页(EOI 免费、档案有效期、申请费三句同句;在线接受提名、联邦邀请后递永居也在这页,没写天数)。"""
+
+PES_NO_FEE_QUOTE = "There is no fee to create an Expression of Interest profile."
+"""EOI 免费原句(各流页同句)。"""
+
+PES_PROFILE_QUOTE = "Your profile will remain active for a period of six months."
+"""EOI 档案有效 6 个月原句(各流页同句;邀请日程页另写「EOI profiles remain valid in the system for 6 months」)。"""
+
+PES_APP_FEE_QUOTE = "If you are selected to apply for nomination by PEI, there is a non-refundable fee of $300 CAD."
+"""申请费原句(各流页同句)。"""
+
+PES_STEP_ABROAD_WF = {"step": "epa", "who": "employer", "none": False, "stuck": False,
+                      "facts": [{"key": "abroadOnly", "vars": {},
+                                 "quote": ("The Skilled Worker Stream may be utilized for talent recruitment "
+                                           "outside of Canada, if the Prince Edward Island Employer has "
+                                           "received authorization from the Office of Immigration prior to "
+                                           "issuing a job offer."),
+                                 "url": PES_BASE + "skilled-workers-outside-canada"}]}
+"""雇主递职位审批(劳工通道的 Skilled Worker 流):从加拿大境外招聘时,雇主出 offer 前先拿省移民局授权(同页另一句「your employer
+must receive authorization from our office prior to submitting an expression of interest profile」)。人在本省的不经这一步;
+Critical Worker、国际毕业生两流页没有这一句。"""
+
+PES_STEP_ABROAD_OID = {"step": "epa", "who": "employer", "none": False, "stuck": False,
+                       "facts": [{"key": "abroadOnly", "vars": {},
+                                  "quote": ("The Occupations in Demand stream may be utilized for talent recruitment "
+                                            "outside of Canada, if the Prince Edward Island Employer has "
+                                            "received authorization from the Office of Immigration prior to "
+                                            "issuing a job offer."),
+                                  "url": PES_OID_URL}]}
+"""雇主递职位审批(在需职业):同上,出处换本流页(官方写明逐案审)。"""
+
+PES_STEP_ABROAD_IE = {"step": "epa", "who": "employer", "none": False, "stuck": False,
+                      "facts": [{"key": "abroadOnly", "vars": {},
+                                 "quote": ("The Intermediate Experience Stream may be utilized for talent recruitment "
+                                           "outside of Canada, if the Prince Edward Island Employer has "
+                                           "received authorization from the Office of Immigration prior to "
+                                           "issuing a job offer."),
+                                 "url": PES_IE_URL}]}
+"""雇主递职位审批(中级经验):同上,出处换本流页(同页注:只批给本省指定的优先行业)。"""
+
+PES_STEP_EE_PROFILE = {"step": "eeProfile", "who": "you", "none": False, "stuck": False,
+                       "facts": [{"ref": "req", "factor": "eeProfile"}]}
+"""建 EE 档案(PE 快速通道):读门槛卡「EE」行。"""
+
+PES_STEP_OFFER = {"step": "offer", "who": "employer", "none": False, "stuck": False,
+                  "facts": [{"ref": "req", "factor": "empYears"}]}
+"""拿 PE 雇主 offer:雇主条件读门槛卡「雇主条件」行(门槛流 PEI PNP Workforce — Employer Requirements (all streams):本省连续
+经营满 2 年)。快速通道资格条文不要求 offer、表格段又要雇主填 PEIW-02(通道段注「官方前后矛盾」),照该段挂雇主门槛流的判法登这一步。"""
+
+PES_STEP_EOI_WF = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                   "facts": [{"key": "noFee", "vars": {}, "quote": PES_NO_FEE_QUOTE, "url": PES_WF_URL},
+                             {"key": "eoiValidMonths", "vars": {"n": 6}, "quote": PES_PROFILE_QUOTE,
+                              "url": PES_WF_URL}]}
+"""在 PEI EOI 系统建档(劳工通道):不收费,档案有效 6 个月。"""
+
+PES_STEP_EOI_OID = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                    "facts": [{"key": "noFee", "vars": {}, "quote": PES_NO_FEE_QUOTE, "url": PES_OID_URL},
+                              {"key": "eoiValidMonths", "vars": {"n": 6}, "quote": PES_PROFILE_QUOTE,
+                               "url": PES_OID_URL}]}
+"""在 PEI EOI 系统建档(在需职业):同上,出处换本流页。"""
+
+PES_STEP_EOI_IG = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                   "facts": [{"key": "noFee", "vars": {}, "quote": PES_NO_FEE_QUOTE, "url": PES_IG_URL},
+                             {"key": "eoiValidMonths", "vars": {"n": 6}, "quote": PES_PROFILE_QUOTE,
+                              "url": PES_IG_URL}]}
+"""在 PEI EOI 系统建档(国际毕业生):同上,出处换本流页。"""
+
+PES_STEP_EOI_IE = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                   "facts": [{"key": "noFee", "vars": {}, "quote": PES_NO_FEE_QUOTE, "url": PES_IE_URL},
+                             {"key": "eoiValidMonths", "vars": {"n": 6}, "quote": PES_PROFILE_QUOTE,
+                              "url": PES_IE_URL}]}
+"""在 PEI EOI 系统建档(中级经验):同上,出处换本流页。"""
+
+PES_STEP_EOI_EE = {"step": "eoi", "who": "you", "none": False, "stuck": False,
+                   "facts": [{"key": "noFee", "vars": {}, "quote": PES_NO_FEE_QUOTE, "url": PES_EE_URL},
+                             {"key": "eoiValidMonths", "vars": {"n": 6}, "quote": PES_PROFILE_QUOTE,
+                              "url": PES_EE_URL}]}
+"""在 PEI EOI 系统建档(PE 快速通道):同上,出处换本页(省里这套 EOI,与联邦 EE 档案是两回事)。"""
+
+PES_STEP_DRAW = {"step": "draw", "who": "province", "none": False, "stuck": True,
+                 "facts": [{"ref": "draws"},
+                           {"key": "salesServiceLow", "vars": {},
+                            "quote": ("Individuals working in the sales and service sector may not receive an "
+                                      "invitation to apply at this time."),
+                            "url": PES_BASE + "expression-of-interest-draws"}]}
+"""进池与抽选:挂抽选表(卡点 —— 按月抽选,受邀才能递申请)+ 官方原话「销售服务类目前可能收不到邀请」(各流页与抽选页同句,
+取抽选页)。卡上写成条件句,不按本岗职业判(同萨省限额行业的写法)。"""
+
+PES_STEP_APPLY_WF = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                     "facts": [{"key": "appFee", "vars": {"n": 300}, "quote": PES_APP_FEE_QUOTE, "url": PES_WF_URL}]}
+"""收邀请、递申请(劳工通道):受邀后递申请交 300 加元、不退;受邀后几天内递,各页没写,不写。"""
+
+PES_STEP_APPLY_OID = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                      "facts": [{"key": "appFee", "vars": {"n": 300}, "quote": PES_APP_FEE_QUOTE, "url": PES_OID_URL}]}
+"""收邀请、递申请(在需职业):同上,出处换本流页。"""
+
+PES_STEP_APPLY_IG = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                     "facts": [{"key": "appFee", "vars": {"n": 300}, "quote": PES_APP_FEE_QUOTE, "url": PES_IG_URL}]}
+"""收邀请、递申请(国际毕业生):同上,出处换本流页。"""
+
+PES_STEP_APPLY_IE = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                     "facts": [{"key": "appFee", "vars": {"n": 300}, "quote": PES_APP_FEE_QUOTE, "url": PES_IE_URL}]}
+"""收邀请、递申请(中级经验):同上,出处换本流页。"""
+
+PES_STEP_APPLY_EE = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                     "facts": [{"key": "appFee", "vars": {"n": 300}, "quote": PES_APP_FEE_QUOTE, "url": PES_EE_URL}]}
+"""收邀请、递申请(PE 快速通道):同上,出处换本页。"""
+
+PES_STEP_REVIEW = {"step": "review", "who": "province", "none": False, "stuck": False, "facts": []}
+"""省里审批:运营统计没有 PE 的时长行,各页也没写时长数,不写。"""
+
+PES_STEP_PR = {"step": "pr", "who": "federal", "none": False, "stuck": False, "facts": []}
+"""拿提名,递永居(五条同):各流页只写提名后自己向 IRCC 递永居,快速通道页只写在线接受提名、联邦邀请后递永居,都没写期限,不写。"""
+
 PW_NB_SKILLED_WORKER = {
     "key": "nb-skilled-worker", "province": "NB", "program": "PNP",
     "plainZh": "NB 技术工人", "plainEn": "NB Skilled Worker", "plainKo": "NB 숙련 노동자",
@@ -1571,6 +1791,8 @@ PW_NL_SKILLED_WORKER = {
               "immigrants who have skills that are beneficial to the Newfoundland and Labrador labour market."),
     "checked": "2026-09-28",
     "tags": ["noPgwp"],
+    "steps": [NLS_STEP_JVA_SW, NLS_STEP_OFFER, NLS_STEP_EOI, NLS_STEP_DRAW, NLS_STEP_APPLY, NLS_STEP_REVIEW,
+              NLS_STEP_PR],
 }
 """纽芬兰与拉布拉多默认通道。抽选:NL 抽选卡只有一组、该组覆盖本省全部通道(NLPNP 各类与 AIP 同一 EOI 池、同一组批次;
 2026-09-24 九省通道审计改判,GEN_DRAW_STREAM 原注)。
@@ -1600,6 +1822,8 @@ PW_PE_WORKFORCE = {
     "quote": ("The Workforce Category is an employer-driven category, designed to help you fill permanent labour shortages and "
               "skill gaps in your business by supporting foreign nationals for permanent residency."),
     "checked": "2026-09-28",
+    "steps": [PES_STEP_ABROAD_WF, PES_STEP_OFFER, PES_STEP_EOI_WF, PES_STEP_DRAW, PES_STEP_APPLY_WF, PES_STEP_REVIEW,
+              PES_STEP_PR],
 }
 """爱德华王子岛默认通道(Workforce 类:Skilled Worker / Critical Worker / International Graduate / Occupations in Demand 各流)。
 抽选:PE 抽选卡只有一组「Labour & Express Entry」= Workforce 各流 + PEI EE(2026-09-24 九省通道审计改判,GEN_DRAW_STREAM 原注)。
@@ -1625,6 +1849,8 @@ PW_PE_OCCUPATIONS_IN_DEMAND = {
     "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/occupations-in-demand",
     "quote": "Occupations in Demand Stream under the PEI PNP Workforce Category",
     "checked": "2026-09-28",
+    "steps": [PES_STEP_ABROAD_OID, PES_STEP_OFFER, PES_STEP_EOI_OID, PES_STEP_DRAW, PES_STEP_APPLY_OID, PES_STEP_REVIEW,
+              PES_STEP_PR],
 }
 """爱德华王子岛在需职业(Workforce 类的一条流,清单 pe-oid.json)。与 Workforce 各流同一组抽选(2026-09-24 九省通道审计登记,
 NAMED_DRAW_STREAMS 原注)。quote 是官方页的副标题(这条流属于 Workforce 类的原话)。
@@ -2224,6 +2450,7 @@ PW_PE_INTERNATIONAL_GRADUATE = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "steps": [PES_STEP_OFFER, PES_STEP_EOI_IG, PES_STEP_DRAW, PES_STEP_APPLY_IG, PES_STEP_REVIEW, PES_STEP_PR],
 }
 """Workforce 类的国际毕业生流:本省公立院校毕业 + PGWP + PEI offer。共用门槛组的语言行写「全体 Workforce 流都要考 CLB 4」,对本流 TEER 0–3 
 不对(官方由雇主在 PEIW-02 上确认),批一 1b 改对之前不挂。
@@ -2249,6 +2476,8 @@ PW_PE_INTERMEDIATE_EXPERIENCE = {
     "teers": [4],
     "nocs": [],
     "employers": [],
+    "steps": [PES_STEP_ABROAD_IE, PES_STEP_OFFER, PES_STEP_EOI_IE, PES_STEP_DRAW, PES_STEP_APPLY_IE, PES_STEP_REVIEW,
+              PES_STEP_PR],
 }
 """Workforce 类的中级经验流:TEER 4 的 PEI offer + 持 LMIA 工签在加满 6 个月、与现职相关。
 2026-09-30 批一 1b:挂门槛流两条 —— 本流自己的(高中、CLB 4)与雇主段。经验两条(LMIA 工签期间 6 个月、近 5 年 2 年经验或相关学历)
@@ -2274,6 +2503,8 @@ PW_PE_EXPRESS_ENTRY = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "steps": [PES_STEP_EE_PROFILE, PES_STEP_OFFER, PES_STEP_EOI_EE, PES_STEP_DRAW, PES_STEP_APPLY_EE, PES_STEP_REVIEW,
+              PES_STEP_PR],
 }
 """要不要 offer 官方前后矛盾(资格条文不要求,表格段又要雇主填 PEIW-02);优先在本省为合格雇主工作的人 → 看工作,标「需先有 EE 档案」。
 2026-09-30 批一 1b:挂门槛流两条 —— 本流自己的(满足联邦三项目之一、在联邦 EE 池建档;网页原句)与雇主段(网页「Your employer must
@@ -2299,6 +2530,7 @@ PW_NL_INTERNATIONAL_GRADUATE = {
     "teers": [0, 1, 2, 3],
     "nocs": [],
     "employers": [],
+    "steps": [NLS_STEP_OFFER, NLS_STEP_EOI, NLS_STEP_DRAW, NLS_STEP_APPLY, NLS_STEP_REVIEW, NLS_STEP_PR],
 }
 """NL 持 PGWP 的人只能走本类或 EE 类(技术工人类明文「Cannot hold a Post-Graduation Work Permit.」)—— Frank「nl 之前不说有个毕业生通道吗?」
 立的这一批就从它起。TEER 0–3,TEER 4 限在需职业;外省院校毕业的须先在 NL 工作满 1 年(门槛行漏了这一条,批一 1b 改)。ITA 批次不分类别,与技术工人同一组。
@@ -2328,6 +2560,8 @@ PW_NL_EXPRESS_ENTRY_SKILLED_WORKER = {
     "teers": [0, 1, 2, 3],
     "nocs": [],
     "employers": [],
+    "steps": [NLS_STEP_EE_PROFILE, NLS_STEP_JVA_EE, NLS_STEP_OFFER, NLS_STEP_EOI, NLS_STEP_DRAW, NLS_STEP_APPLY_EE,
+              NLS_STEP_REVIEW, NLS_STEP_PR],
 }
 """TEER 0–3 的 NL offer + 联邦 EE 池 + NLPNP 打分 ≥ 67;PGWP 持有人可以走。门槛(67 分那条原句在 nl-req 注里,本类门槛未入表)待批一 1b。
 2026-09-30 批一 1b:门槛入表(etl/pnp NLR_EE_RULES:EE 池、打分表 67 分、资格 / 执照条文三条),挂上本类流与 NL 雇主流。"""
@@ -2614,7 +2848,7 @@ REF_KEYS = ["req", "processing", "intake", "draws"]
 
 FACT_KEYS = ["eoiFee", "eoiValidMonths", "inviteAcceptDays", "appSubmitDays", "nominationValidMonths", "communityLetter",
              "cappedEmployees", "windowCapped", "directApply", "eoiOnlyOther", "confirmSubmit", "noScheduledDraw", "inviteSubmitDays",
-             "eeAcceptDays", "prSubmitDays", "workMonths", "employerDeclaration", "offerEoiDays", "noFee", "eoiValidDays", "appFee", "reviewSeveralMonths", "noTimeGuarantee", "poolSelection", "inviteSectors", "letterOrGrad", "employerOnly", "empMonths", "closedPermitDays", "liveMonths", "remoteNonQc", "movedToSwm", "nominationValidDays", "teer45EmployerMonths", "localWorkMonths", "eoiIsApplication", "afsPaused", "letterSubmitDays", "selectedPayDays"]
+             "eeAcceptDays", "prSubmitDays", "workMonths", "employerDeclaration", "offerEoiDays", "noFee", "eoiValidDays", "appFee", "reviewSeveralMonths", "noTimeGuarantee", "poolSelection", "inviteSectors", "letterOrGrad", "employerOnly", "empMonths", "closedPermitDays", "liveMonths", "remoteNonQc", "movedToSwm", "nominationValidDays", "teer45EmployerMonths", "localWorkMonths", "eoiIsApplication", "afsPaused", "letterSubmitDays", "selectedPayDays", "noPermitOnly", "abroadOnly", "noStandardTime", "salesServiceLow"]
 """静态事实词表(三语文案在 cms i18n pnp.stepFact.*,数字从 vars 填)。"""
 
 BAD_STEP_TPL = "{key} 的第 {i} 步「{step}」不在步骤词表里"

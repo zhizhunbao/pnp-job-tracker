@@ -605,6 +605,11 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpstep.f.letterSubmitDays': '주정부 관심 서한 수령 후 {n}일 내 제출',
   'pnpstep.f.localWorkMonths': '주내 TEER 0-3 직종 {n}개월 근무',
   'pnpstep.f.teer45EmployerMonths': 'TEER 4-5 직종은 해당 고용주에서 {n}개월 근무 필요',
+  // 2026-10-03 申请步骤批 2(纽芬兰 / 爱德华王子岛):新增步骤词 / 事实词
+  'pnpstep.f.noPermitOnly': '해당 직무의 유효한 취업허가가 없을 때만 필요',
+  'pnpstep.f.abroadOnly': '캐나다 밖에서 채용할 때만 필요',
+  'pnpstep.f.noStandardTime': '현재 표준 처리 기간 없음',
+  'pnpstep.f.salesServiceLow': '판매 및 서비스직은 현재 초청받지 못할 수 있음',
   // 2026-10-02 申请步骤批 2:处理时长按月(卑诗约八成申请)/ 按天(曼省年度平均)/ 阿省审理游标
   'pnpstep.months': '신청의 약 80%가 {n}개월 내 처리', 'pnpstep.days': '평균 약 {n}일 ({y}년)',
   'pnpstep.assessing': '{date}까지 접수된 신청 심사 중 ({asOf} 기준)',
