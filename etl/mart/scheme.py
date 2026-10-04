@@ -4898,13 +4898,15 @@ class MartPendingTest(unittest.TestCase):
 
     金标:一条齐全的 Job Bank 岗不进清单;六格逐格缺一格各报那一格;职业码是 qwen 判的算缺(标题规则 / 源带码的不算缺);
     工时 / 雇佣期只看原帖带的(岗位行里 qwen 补上的值不算);薪资空但原帖明写「待议」的不算缺;六格全缺按六格顺序报。
-    待修行:已有格里不出现 qwen 的码,原帖正文与明写不公布的格原样带上,标题与雇主名还原转义符。只喂字典,不读仓内文件。"""
+    待修行:已有格里不出现 qwen 的码,原帖正文与明写不公布的格原样带上,标题与雇主名还原转义符。只喂字典,不读仓内文件。
+    2026-10-03 「全」加投递邮箱与正文两格(Frank「没有邮箱也算不全」「这种也属于数据不全」):齐全行带邮箱,逐格缺一格多两条,
+    全缺按八格顺序报;保险丝 0.45 → 0.80。"""
 
     full = {"externalId": "jb:1", "origin": "jobbank", "noc": "65201", "employmentHours": "full",
             "employmentTerm": "permanent", "salaryText": "$18.00 hourly", "province": "ON", "city": "Ottawa",
             "title": "Cook &amp; Helper", "applyUrl": "https://example.test/1", "datePosted": "2026-09-28",
-            "description": "We are hiring a full-time permanent cook."}
-    """一条六格齐全的岗位行(标题带转义符,验还原)。"""
+            "description": "We are hiring a full-time permanent cook.", "applyEmail": "jobs@example.test"}
+    """一条八格齐全的岗位行(标题带转义符,验还原)。"""
 
     def row_without(self, key: str) -> dict:
         """齐全行去掉一格。"""
@@ -4934,6 +4936,11 @@ class MartPendingTest(unittest.TestCase):
         self.assertEqual(self.missing(self.row_without("salaryText"), "source", "full", "permanent", {}), ["salary"])
         self.assertEqual(self.missing(self.row_without("province"), "source", "full", "permanent", {}), ["province"])
         self.assertEqual(self.missing(self.row_without("city"), "source", "full", "permanent", {}), ["city"])
+        self.assertEqual(self.missing(self.row_without("applyEmail"), "source", "full", "permanent", {}), ["email"])
+        self.assertEqual(self.missing(self.row_without("description"), "source", "full", "permanent", {}), ["body"])
+        blank = dict(self.full)
+        blank["description"] = "  \n "
+        self.assertEqual(self.missing(blank, "source", "full", "permanent", {}), ["body"])
 
     def test_stated_salary_still_missing(self) -> None:
         """薪资空、原帖明写「待议」也算缺(2026-10-02 Frank「不提薪资的岗位,没有诚意」);明写的是别的格,薪资照样算缺。"""
@@ -4942,9 +4949,10 @@ class MartPendingTest(unittest.TestCase):
         self.assertEqual(self.missing(row, "source", "full", "permanent", {"hours": "x"}), ["salary"])
 
     def test_all_missing_order(self) -> None:
-        """六格全缺按六格顺序报。"""
+        """八格全缺按八格顺序报。"""
         row = {"externalId": "x:1"}
-        self.assertEqual(self.missing(row, "", "", "", {}), ["noc", "hours", "term", "salary", "province", "city"])
+        self.assertEqual(self.missing(row, "", "", "", {}),
+                         ["noc", "hours", "term", "salary", "province", "city", "email", "body"])
 
     def test_pending_row(self) -> None:
         """待修行:qwen 的码不进已有格、工时 / 雇佣期取原帖值、正文与明写格原样带、标题与雇主名还原转义符。"""
@@ -4954,7 +4962,10 @@ class MartPendingTest(unittest.TestCase):
         out = fn.to_pending_row(PendingRowIn(row=row, missing=["noc", "term"], noc_from="model", emp=emp,
                                              stated={"salary": "À discuter"}, employer="A &amp; B Inc."))
         self.assertEqual(out["missing"], ["noc", "term"])
-        self.assertEqual(out["have"], {"hours": "full", "province": "ON", "city": "Ottawa"})
+        self.assertEqual(out["have"], {"hours": "full", "province": "ON", "city": "Ottawa", "email": "jobs@example.test"})
+        no_mail = fn.to_pending_row(PendingRowIn(row=self.row_without("applyEmail"), missing=["email"], noc_from="source",
+                                                 emp=EmpOut(hours="full", term="permanent"), stated={}, employer=""))
+        self.assertNotIn("email", no_mail["have"])
         self.assertEqual(out["stated_none"], {"salary": "À discuter"})
         self.assertEqual((out["title"], out["employer"]), ("Cook & Helper", "A & B Inc."))
         self.assertEqual(out["text"], self.full["description"])
@@ -4981,13 +4992,14 @@ class MartPendingTest(unittest.TestCase):
         self.assertEqual([r["externalId"] for r in out.held], ["b", "b2", "x1", "x2", "x3", "z2"])
 
     def test_held_guard(self) -> None:
-        """保险丝:扣下超过在招的 45% 抛错停轮(判「全」出错时不清空职位板);正好一半以下放行。"""
+        """保险丝:扣下超过在招的 80% 抛错停轮(判「全」出错时不清空职位板);四分之三放行(2026-10-03 起 0.80,原 0.45)。"""
         from mart import functions as fn
         jobs = [{"externalId": "a"}, {"externalId": "b"}, {"externalId": "c"}, {"externalId": "d"}]
+        all4 = [{"ext": "a"}, {"ext": "b"}, {"ext": "c"}, {"ext": "d"}]
         with self.assertRaises(RuntimeError):
-            fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[{"ext": "a"}, {"ext": "b"}], dup_of={}))
-        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[{"ext": "a"}], dup_of={}))
-        self.assertEqual(len(out.kept), 3)
+            fn.held_split_of(HeldSplitIn(jobs=jobs, pending=all4, dup_of={}))
+        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=all4[:3], dup_of={}))
+        self.assertEqual(len(out.kept), 1)
 
 
 class MartNsOpsTest(unittest.TestCase):

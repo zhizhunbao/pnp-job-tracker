@@ -286,7 +286,8 @@ from mart.constants import (
 from mart.constants import APPLY_CONFIDENTIAL_RE, APPLY_VERB_BEFORE, APPLY_VERB_NEAR_RE
 from mart.scheme import ApplyTally, HowtoRecIn
 from mart.constants import (  # 2026-09-28 缺数据修复批:待修清单(Frank「先做拆分」)
-    FIELD_CITY, FIELD_HOURS, FIELD_NOC, FIELD_PROVINCE, FIELD_SALARY, FIELD_TERM, K_NOC_FROM, K_P_DATE, K_P_EMPLOYER,
+    FIELD_BODY, FIELD_CITY, FIELD_EMAIL, FIELD_HOURS, FIELD_NOC, FIELD_PROVINCE, FIELD_SALARY, FIELD_TERM, K_NOC_FROM,
+    K_P_DATE, K_P_EMPLOYER,
     K_P_EXT, K_P_HAVE, K_P_MISSING, K_P_ORIGIN, K_P_STATED, K_P_TEXT, K_P_TITLE, K_P_URL, K_PENDING_JOBS, K_STATED_NONE,
     NOC_FROM_MODEL, NOC_FROM_RULE, NOC_FROM_SOURCE, OUT_PENDING_JOBS, PENDING_DONE_TPL,
     HELD_DONE_TPL, HELD_GUARD_TPL, HELD_MAX_RATIO,
@@ -5436,7 +5437,9 @@ def missing_fields_of(x: MissingIn) -> list:
     """一条岗缺哪几格(按六格顺序;全了给空清单):职业码空或是 qwen 判的、工时 / 雇佣期原帖没带、
     薪资空、省空、城市空。
     2026-10-02 改判(Frank「下架」「不提薪资的岗位,没有诚意」):原帖明写不公布薪资(Jobillico「À discuter」待议)
-    原先不算缺,现在照样算缺、整条扣下(当天在架约 2,599 条);stated 仍随待修行带给修的人看。"""
+    原先不算缺,现在照样算缺、整条扣下(当天在架约 2,599 条);stated 仍随待修行带给修的人看。
+    2026-10-03 加两格(Frank「没有邮箱也算不全」「这种也属于数据不全」,见 FIELD_EMAIL / FIELD_BODY):投递邮箱空、
+    原帖正文空也算缺 —— 本步排在 fill_jd_bodies / fill_apply_emails 之后,两格已是本轮能拿到的全部。"""
     out: list = []
     if (x.row.get(K_NOC) or "") == "" or x.noc_from == NOC_FROM_MODEL:
         out.append(FIELD_NOC)
@@ -5450,6 +5453,10 @@ def missing_fields_of(x: MissingIn) -> list:
         out.append(FIELD_PROVINCE)
     if (x.row.get(K_CITY) or "") == "":
         out.append(FIELD_CITY)
+    if (x.row.get(K_APPLY_EMAIL) or "") == "":
+        out.append(FIELD_EMAIL)
+    if (x.row.get(K_DESCRIPTION) or "").strip() == "":
+        out.append(FIELD_BODY)
     return out
 
 
@@ -5480,6 +5487,8 @@ def have_fields_of(x: PendingRowIn) -> dict:
         have[FIELD_PROVINCE] = x.row.get(K_PROVINCE)
     if FIELD_CITY not in x.missing:
         have[FIELD_CITY] = x.row.get(K_CITY)
+    if FIELD_EMAIL not in x.missing and (x.row.get(K_APPLY_EMAIL) or "") != "":
+        have[FIELD_EMAIL] = x.row.get(K_APPLY_EMAIL)
     return have
 
 
