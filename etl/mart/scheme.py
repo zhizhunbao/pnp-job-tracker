@@ -825,6 +825,11 @@ class MartCtx:
     dup_of: dict
     """被展示去重跳过的 externalId → 同组代表 externalId(2026-10-02:代表没上线时它们一起进扣下名单)。"""
 
+    dup_src: dict
+    """被展示去重跳过的 externalId → 判它有没有投递邮箱的原料 {posting_id, url, description}(2026-10-04 Frank「重复的
+    没邮箱的肯定删掉啊」:同组以「同公司 + 同职位名 + 同城市」归组,连锁店同城几家门店会被归成一组、各有各的邮箱,
+    所以不能整组扣,只扣自己没邮箱的副本,见 dup_no_mail_of)。"""
+
 
 @dataclass
 class SiteCheckIn:
@@ -2291,6 +2296,9 @@ class HeldSplitIn:
 
     dup_of: dict
     """被展示去重跳过的 externalId → 同组代表 externalId(MartCtx.dup_of;2026-10-02)。"""
+
+    dup_no_mail: set
+    """同组副本里自己拿不到投递邮箱的 externalId(dup_no_mail_of 算的;2026-10-04)。代表在线也扣下。"""
 
 
 @dataclass
@@ -4975,10 +4983,10 @@ class MartPendingTest(unittest.TestCase):
         from mart import functions as fn
         jobs = [{"externalId": "a"}, {"externalId": "b"}, {"externalId": "c"}, {"externalId": "d"}, {"externalId": "e"}]
         pending = [{"ext": "d"}, {"ext": "b"}, {"ext": "b"}]
-        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=pending, dup_of={}))
+        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=pending, dup_of={}, dup_no_mail=set()))
         self.assertEqual(out.kept, [{"externalId": "a"}, {"externalId": "c"}, {"externalId": "e"}])
         self.assertEqual(out.held, [{"externalId": "b"}, {"externalId": "d"}])
-        empty = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[], dup_of={}))
+        empty = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[], dup_of={}, dup_no_mail=set()))
         self.assertEqual((empty.kept, empty.held), (jobs, []))
 
     def test_held_dups(self) -> None:
@@ -4987,9 +4995,19 @@ class MartPendingTest(unittest.TestCase):
         from mart import functions as fn
         jobs = [{"externalId": "a"}, {"externalId": "b"}, {"externalId": "c"}, {"externalId": "d"}, {"externalId": "e"}]
         dup_of = {"b2": "b", "a2": "a", "z2": "z", "c": "b", "x1": "b", "x2": "b", "x3": "b"}
-        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[{"ext": "b"}], dup_of=dup_of))
+        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[{"ext": "b"}], dup_of=dup_of, dup_no_mail=set()))
         self.assertEqual(out.kept, [{"externalId": "a"}, {"externalId": "c"}, {"externalId": "d"}, {"externalId": "e"}])
         self.assertEqual([r["externalId"] for r in out.held], ["b", "b2", "x1", "x2", "x3", "z2"])
+
+    def test_held_dup_no_mail(self) -> None:
+        """同组副本没邮箱的扣下(2026-10-04 Frank「重复的没邮箱的肯定删掉啊」):代表在线时,副本自己没邮箱的扣、有邮箱的留;
+        代表不在线的照旧整组扣;副本自己也是上线行的不扣。"""
+        from mart import functions as fn
+        jobs = [{"externalId": "a"}, {"externalId": "c"}]
+        dup_of = {"a1": "a", "a2": "a", "b1": "b", "c": "a"}
+        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[], dup_of=dup_of, dup_no_mail={"a1", "c"}))
+        self.assertEqual(out.kept, jobs)
+        self.assertEqual([r["externalId"] for r in out.held], ["a1", "b1"])
 
     def test_held_guard(self) -> None:
         """保险丝:扣下超过在招的 80% 抛错停轮(判「全」出错时不清空职位板);四分之三放行(2026-10-03 起 0.80,原 0.45)。"""
@@ -4997,8 +5015,8 @@ class MartPendingTest(unittest.TestCase):
         jobs = [{"externalId": "a"}, {"externalId": "b"}, {"externalId": "c"}, {"externalId": "d"}]
         all4 = [{"ext": "a"}, {"ext": "b"}, {"ext": "c"}, {"ext": "d"}]
         with self.assertRaises(RuntimeError):
-            fn.held_split_of(HeldSplitIn(jobs=jobs, pending=all4, dup_of={}))
-        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=all4[:3], dup_of={}))
+            fn.held_split_of(HeldSplitIn(jobs=jobs, pending=all4, dup_of={}, dup_no_mail=set()))
+        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=all4[:3], dup_of={}, dup_no_mail=set()))
         self.assertEqual(len(out.kept), 1)
 
 

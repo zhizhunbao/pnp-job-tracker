@@ -3590,6 +3590,9 @@ HELD_MAX_RATIO = 0.80
 HELD_GUARD_TPL = "扣下 {held} / {total} 条(占 {pct:.1%}),超过保险丝 {cap:.0%},当判「全」出错,整轮停下不落盘"
 """保险丝熔断时抛出的话。"""
 
+DUP_NO_MAIL_TPL = "  同组副本没投递邮箱 {n} / {total} 条(代表在线也扣下)"
+"""同组副本判邮箱的留痕(2026-10-04 Frank「重复的没邮箱的肯定删掉啊」)。"""
+
 HELD_DONE_TPL = "  扣下不全岗 {held} 条(占 {pct:.1%}),jobs.json 只装齐全的 {kept} 条;已在架的由 seed 照 held_jobs 关掉"
 """扣下留痕。"""
 

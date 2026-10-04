@@ -290,7 +290,7 @@ from mart.constants import (  # 2026-09-28 缺数据修复批:待修清单(Frank
     K_P_DATE, K_P_EMPLOYER,
     K_P_EXT, K_P_HAVE, K_P_MISSING, K_P_ORIGIN, K_P_STATED, K_P_TEXT, K_P_TITLE, K_P_URL, K_PENDING_JOBS, K_STATED_NONE,
     NOC_FROM_MODEL, NOC_FROM_RULE, NOC_FROM_SOURCE, OUT_PENDING_JOBS, PENDING_DONE_TPL,
-    HELD_DONE_TPL, HELD_GUARD_TPL, HELD_MAX_RATIO,
+    DUP_NO_MAIL_TPL, HELD_DONE_TPL, HELD_GUARD_TPL, HELD_MAX_RATIO,
 )
 from mart.scheme import MartPendingTest, MissingIn, PendingRowIn  # 同上
 from mart.scheme import HeldSplitIn, HeldSplitOut  # 同日晚接闸(Frank「确认,下线吧」)
@@ -2404,6 +2404,7 @@ def collect_ats_rows(ctx: MartCtx) -> None:
                                              city=norm_title(j.get(K_CITY, "")))
             if show in ctx.seen:
                 ctx.dup_of[ext] = ctx.show_rep[show]
+                ctx.dup_src[ext] = dup_src_of(j)
                 continue
             ctx.seen.add(show)
             ctx.show_rep[show] = ext
@@ -2435,6 +2436,7 @@ def collect_jobbank_rows(ctx: MartCtx) -> None:
                                          city=norm_title(j.get(K_CITY, "")))
         if show in ctx.seen:
             ctx.dup_of[ext] = ctx.show_rep[show]
+            ctx.dup_src[ext] = dup_src_of(j)
             continue
         ctx.seen.add(show)
         ctx.show_rep[show] = ext
@@ -2469,6 +2471,7 @@ def collect_board_rows(ctx: MartCtx) -> None:
                                              city=norm_title(j.get(K_CITY, "")))
             if show in ctx.seen:
                 ctx.dup_of[ext] = ctx.show_rep[show]
+                ctx.dup_src[ext] = dup_src_of(j)
                 continue
             ctx.seen.add(show)
             ctx.show_rep[show] = ext
@@ -5303,7 +5306,7 @@ def new_mart_ctx() -> MartCtx:
                    pilot_occ_sets=load_pilot_occ_sets(), expired=load_expired_ids(),
                    salary_guards=guards, companies={}, jobs=[], seen=set(),
                    seen_ext=set(), seen_ids=set(), dropped_expired=0, late_salary=0, emp_src={}, stated_none={},
-                   show_rep={}, dup_of={})
+                   show_rep={}, dup_of={}, dup_src={})
 
 
 def say_mart_tallies(ctx: MartCtx) -> None:
@@ -5350,7 +5353,8 @@ def to_mart_tables() -> dict:
     fill_apply_emails(ctx)
     say_mart_tallies(ctx)
     pending = pending_jobs_of(ctx)
-    split = held_split_of(HeldSplitIn(jobs=ctx.jobs, pending=pending, dup_of=ctx.dup_of))
+    split = held_split_of(HeldSplitIn(jobs=ctx.jobs, pending=pending, dup_of=ctx.dup_of,
+                                      dup_no_mail=dup_no_mail_of(ctx)))
     ctx.jobs = split.kept
     noc_i18n = load_i18n(I18N_NOC_FILE)
     city_i18n = load_i18n(I18N_CITY_FILE)
@@ -5497,13 +5501,42 @@ def pending_order_of(row: dict) -> str:
     return row.get(K_P_DATE) or ""
 
 
+def dup_src_of(job: dict) -> dict:
+    """被展示去重跳过的源行 → 判投递邮箱要用的三格(Job Bank 帖号、链接、正文;没有的格给空串)。"""
+    return {K_POSTING_ID: job.get(K_POSTING_ID) or "", K_URL: job.get(K_URL) or "",
+            K_DESCRIPTION: job.get(K_DESCRIPTION) or ""}
+
+
+def dup_no_mail_of(ctx: MartCtx) -> set:
+    """同组副本里自己拿不到投递邮箱的 externalId(2026-10-04 Frank「重复的没邮箱的肯定删掉啊」)。
+    口径与 fill_apply_emails 同一把尺子:Job Bank 帖先读 howto 投递区,其次正文里投递语境的邮箱;正文先用源行自带的
+    (板帖有),没有再按链接从 JD 索引取(Job Bank / ATS)。"""
+    howto = load_howto_table()
+    src = load_jd_sources()
+    out: set = set()
+    for ext, row in ctx.dup_src.items():
+        mail = howto_mail_of(howto.get(row.get(K_POSTING_ID) or "") or {})
+        if mail == "":
+            mail = text_mail_of(row.get(K_DESCRIPTION) or "")
+        if mail == "" and (row.get(K_URL) or "") != "":
+            raw = jd_raw_of(JdRawIn(src=src, url=row.get(K_URL) or ""))
+            if raw is not None:
+                mail = text_mail_of(clean_jd(raw))
+        if mail == "":
+            out.add(ext)
+    say(DUP_NO_MAIL_TPL.format(n=len(out), total=len(ctx.dup_src)))
+    return out
+
+
 def held_split_of(x: HeldSplitIn) -> HeldSplitOut:
     """接闸(2026-09-28 Frank「只要数据不全的都不上」「确认,下线吧」):待修清单里的岗扣下 —— 不进 jobs.json,
     出一行 {externalId} 进扣下名单交 seed 关掉在架的;其余照旧上线。扣下超过在招的 HELD_MAX_RATIO,
     当判「全」出错,抛错停轮(不落盘不上传,线上保持上一版)。
     2026-10-02 补漏(Frank「这个没有薪资的岗位怎么漏进来的」,Maarut 两条):展示去重只让每组代表进汇装判「全」,
     同组跳过的帖本轮见过、灌库不关,代表一扣下它们就以旧数据顶上职位板(当天在架 3,131 条没经过检查、761 条在显示)。
-    现在代表没上线(被扣或没进汇装)的,同组跳过的帖一起进扣下名单;保险丝照旧只数代表。"""
+    现在代表没上线(被扣或没进汇装)的,同组跳过的帖一起进扣下名单;保险丝照旧只数代表。
+    2026-10-04 Frank「重复的没邮箱的肯定删掉啊」:代表在线时,副本自己拿不到投递邮箱(dup_no_mail)的也扣下;
+    副本有邮箱的照旧留着(连锁店同城几家门店会被归成一组,各有各的邮箱,不能整组扣)。"""
     held_ext: set = set()
     for p in x.pending:
         held_ext.add(p[K_P_EXT])
@@ -5520,7 +5553,9 @@ def held_split_of(x: HeldSplitIn) -> HeldSplitOut:
             kept_ext.add(ext)
     held_all: set = set(held_ext)
     for ext, rep in x.dup_of.items():
-        if rep not in kept_ext and ext not in kept_ext:
+        if ext in kept_ext:
+            continue
+        if rep not in kept_ext or ext in x.dup_no_mail:
             held_all.add(ext)
     held: list = []
     for ext in sorted(held_all):
