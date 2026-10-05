@@ -1621,22 +1621,6 @@
 }
 
 /*
- * 已下架岗(2026-08-03):主钮还写「前往投递」等于继续把人往死链上送 —— 降级成灰色的
- * 「查看官方页」。不直接禁掉:closed 有一部分来自「本次未见+30天」的推断(非逐帖实测),
- * 留个口子让用户自己核。
- */
-.btnClosed {
-  background: #f3f4f6;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 9px 18px;
-  font-size: 13.5px;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-/*
  * 投递主钮。
  */
 .btnApply {

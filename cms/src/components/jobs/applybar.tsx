@@ -12,19 +12,22 @@
  * 「注册后帮你预填投递邮件,记录投递进度」那句 hero 不再传。
  * 2026-09-27 手机职位页水合报 React #418:占位与 fixed 原先跟着 JS 判的窄屏出(首帧读 matchMedia,服务端首帧没有窗口),
  * 两边一棵树对不上。改成整页恒渲占位、恒挂 fixed 那一档的类,窄不窄交给 CSS 断点(见 jobs.module.css 投递栏段);手机上的最终长相不变。
+ * 2026-10-05 Frank「已经下架了,就不要在有按钮点击了吧」:已下架岗整栏不出,灰色「看官网」钮撤,栏里只剩投递钮。
+ * 原判(2026-08-03,随 `.btnClosed` 类一起撤,原文照录):「已下架岗:主钮还写「前往投递」等于继续把人往死链上送 ——
+ * 降级成灰色的「查看官方页」。不直接禁掉:closed 有一部分来自「本次未见+30天」的推断(非逐帖实测),留个口子让用户自己核。」
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { AuthModal } from '@/components/auth'
-import { Button, LinkButton } from '@/components/button'
+import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Modal } from '@/components/modal'
 import { OnboardingWizard } from '@/components/profile'
 import { ResumeMatchModal } from '@/components/resume'
 import {
   APPLY_AUTH, APPLY_EMAIL, APPLY_INTENT, AUTH_LOGIN, BTN_GHOST, MODAL_SM, MODAL_Z_STACKED, STATUS_CLOSED,
-  TARGET_BLANK, TEXT_NONE, URL_JOB,
+  TEXT_NONE, URL_JOB,
 } from './constants'
 import { applyLabelOf, barClsOf } from './functions'
 import { ApplyEmail } from './applyemail'
@@ -36,27 +39,20 @@ import css from './jobs.module.css'
  * 渲染投递栏。
  *
  * @param props 本岗、投递邮箱、查完没、取词函数、分层态与在不在整页里。
- * @returns 投递栏 + 它的三层浮层;这一岗没有投递链接就整条不渲。
+ * @returns 投递栏 + 它的三层浮层;这一岗没有投递链接或已下架就整条不渲。
  */
 export function ApplyBar({ job, email, emailDone, t, plan, onPage }: ApplyBarIn) {
   const a = useApplyBar({ job, email, emailDone, t, plan, onPage })
-  if (job.applyUrl === TEXT_NONE) {
+  if (job.applyUrl === TEXT_NONE || job.status === STATUS_CLOSED) {
     return null
   }
   return (
     <>
       {onPage && <div className={cssOf(css.barPad)} />}
       <div className={barClsOf(onPage)}>
-        {job.status === STATUS_CLOSED && (
-          <LinkButton href={job.applyUrl} target={TARGET_BLANK} className={cssOf(css.btnClosed)}>
-            {t('act.seeOfficial')}
-          </LinkButton>
-        )}
-        {job.status !== STATUS_CLOSED && (
-          <Button kind={BTN_GHOST} onClick={a.onApply} className={cssOf(css.btnApply)}>
-            {applyLabelOf({ t, email, emailDone })}
-          </Button>
-        )}
+        <Button kind={BTN_GHOST} onClick={a.onApply} className={cssOf(css.btnApply)}>
+          {applyLabelOf({ t, email, emailDone })}
+        </Button>
       </div>
       {a.matchJd !== null && a.matchJd !== TEXT_NONE && (
         <ResumeMatchModal jobId={job.id} jd={a.matchJd} loggedIn={plan.loggedIn || a.authed}
