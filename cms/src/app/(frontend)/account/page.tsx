@@ -35,6 +35,10 @@
  * 我的求职 sjobs 三节;简历存档 ResumeArchive 原样挪进「我的简历」节;Stripe 回跳 `?ok=1`
  * 的成功提示原住概览节顶上,抽成 PayOkNotice 挂在右列内容最上面(三节都出)。
  * 旧深链 `?sec=overview|profile|saved|buy` 不在节表里,落回默认节。
+ * 2026-10-04 Frank「升级 Pro 这个删了,放到 我的 模块里,加一个我的订阅」:末尾加回一节「我的订阅」(sub),
+ * 账户下拉的「升级 Pro」挪进来 —— 当前套餐 + 升级 / 续买,钮打开全站同一个定价框。
+ * 2026-10-05 Frank「先做我的简历吧」:「我的简历」节的简历文字存档 ResumeArchive 退役,换成原件卡片 ResumeFile
+ * (上传 / 预览 / 替换 / 下载 / 删除 + PDF 首页缩略图;自己拉元信息,不再吃 me.profile 的两格)。
  *
  * @author Frank
  * @time 2026-07-02 00:00:00
@@ -42,16 +46,18 @@
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import {
+  AccountBanner,
   AccountColumns,
   AccountNav,
   AccountRedirect,
   PayOkNotice,
-  RA_KEY_HEAD,
-  ResumeArchive,
+  ResumeFile,
   SavedJobsList,
+  Subscription,
   SEC_FAVS,
   SEC_RESUME,
   SEC_SJOBS,
+  SEC_SUB,
   SHELL_BOTTOM,
   SHELL_TOP,
   useAccountPage,
@@ -70,15 +76,15 @@ export default function AccountPage() {
       <Header />
 
       <Shell top={SHELL_TOP} bottom={SHELL_BOTTOM}>
+        <AccountBanner t={a.t} />
         {a.checked && a.me != null && (
-          <AccountColumns narrow={a.narrow}
-            nav={<AccountNav sec={a.sec} narrow={a.narrow} t={a.t} onPick={a.onPick} onLogout={a.onLogout} />}>
+          <AccountColumns
+            nav={<AccountNav sec={a.sec} t={a.t} onPick={a.onPick} />}>
             {a.payOk && <PayOkNotice t={a.t} />}
-            {a.sec === SEC_RESUME && (
-              <ResumeArchive key={RA_KEY_HEAD + String(a.me.id)} t={a.t} userId={a.me.id} text={a.me.profile?.resumeText} savedAt={a.me.profile?.resumeSavedAt} />
-            )}
+            {a.sec === SEC_RESUME && <ResumeFile t={a.t} />}
             {a.sec === SEC_FAVS && <SavedJobsList t={a.t} variant={SEC_FAVS} />}
             {a.sec === SEC_SJOBS && <SavedJobsList t={a.t} userId={a.me.id} weeklyOptOut={!!(a.me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
+            {a.sec === SEC_SUB && <Subscription t={a.t} until={a.me.proUntil} />}
           </AccountColumns>
         )}
         {a.checked && a.me == null && <AccountRedirect />}

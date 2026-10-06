@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的模块 v2 网页</title>
+<!-- 我的模块 v2 网页端效果图(2026-10-05,Frank「有点粗糙」「网页端呢」后重画)。
+     用法:?lang=zh|en&s=apps|thread|favs|profile|plan;一屏一张 1440 宽。登录态、往来、简历、购买记录为占位。 -->
+<style>
+  :root { --primary:#2563eb; --primary-deep:#1e40af; --ok:#15803d; --warn:#b45309; --danger:#dc2626;
+    --text:#111827; --text2:#6b7280; --text3:#9ca3af; --border:#e5e7eb; --hair:#f3f4f6; --hover:#eff6ff; --bg:#f9fafb; --card:#fff; }
+  * { box-sizing:border-box; }
+  html { background:var(--bg); }
+  body { margin:0; font-family:system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; font-size:14px; line-height:1.6; color:#1f2937; width:1440px; }
+  a { color:var(--primary); text-decoration:none; }
+  svg.i { width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+
+  /* 顶栏(照线上) */
+  .hd { height:48px; background:#fff; border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 82px; }
+  .logo { display:flex; align-items:center; gap:8px; font-weight:700; font-size:18px; color:var(--text); }
+  .logo b { color:#e11d48; font-size:18px; }
+  .tagline { font-size:13px; color:var(--text3); margin-left:8px; }
+  .nav { margin-left:auto; display:flex; align-items:center; gap:16px; font-size:14px; color:#4b5563; }
+  .nav span { display:flex; align-items:center; gap:4px; }
+  .nav .on { color:var(--primary); font-weight:600; }
+  .lang { display:flex; border:1px solid var(--border); border-radius:6px; overflow:hidden; margin-left:6px; }
+  .lang span { padding:2px 10px; color:var(--text2); font-size:13px; }
+  .lang .on { background:var(--primary); color:#fff; font-weight:400; }
+  .ava { width:30px; height:30px; border-radius:50%; background:var(--primary); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:14px; flex:none; }
+
+  .main { padding:18px 82px 40px; }
+  /* banner(照职位板) */
+  .banner { height:130px; border-radius:14px; position:relative; overflow:hidden; color:#fff;
+    background: linear-gradient(90deg, rgba(30,58,138,.92) 0%, rgba(37,99,235,.62) 55%, rgba(30,64,175,.85) 100%), url('../../cms/public/img/banners/account-1.jpg') center 40%/cover; }
+  .banner .t { position:absolute; left:22px; top:38px; font-size:22px; font-weight:700; display:flex; align-items:center; gap:8px; }
+  .banner .t svg { width:22px; height:22px; stroke:#fff; }
+  .banner .cnt { position:absolute; left:22px; bottom:14px; font-size:13px; opacity:.95; }
+  .banner .dots { position:absolute; right:16px; top:10px; display:flex; gap:5px; }
+  .banner .dots i { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.5); }
+  .banner .dots i:first-child { background:#fff; }
+
+  /* 侧栏 + 内容 */
+  .cols { display:grid; grid-template-columns:232px 1fr; gap:20px; margin-top:18px; align-items:start; }
+  .side { background:#fff; border:1px solid var(--border); border-radius:12px; padding:8px; display:flex; flex-direction:column; }
+  .side .it { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px; font-size:14px; color:#374151; }
+  .side .it svg { color:var(--text3); }
+  .side .it .n { margin-left:auto; font-size:12px; color:var(--text3); }
+  .side .it.on { background:var(--hover); color:var(--primary); font-weight:600; }
+  .side .it.on svg, .side .it.on .n { color:var(--primary); }
+  .side .pro { margin-left:auto; font-size:11px; font-weight:700; color:#92400e; background:#fef3c7; border-radius:999px; padding:0 7px; }
+  .side .me { border-top:1px solid var(--hair); margin-top:8px; padding:12px 12px 6px; display:flex; gap:10px; align-items:center; }
+  .side .me .nm { font-size:14px; font-weight:600; color:var(--text); line-height:1.3; }
+  .side .me .em { font-size:12px; color:var(--text3); line-height:1.3; }
+
+  .panel { background:#fff; border:1px solid var(--border); border-radius:12px; padding:18px 20px 20px; min-height:560px; position:relative; }
+  .ph { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .ph h2 { margin:0; font-size:18px; color:var(--text); }
+  .ph .sub { font-size:13px; color:var(--text3); }
+  .ph .r { margin-left:auto; display:flex; gap:8px; align-items:center; }
+  .upd { font-size:12px; color:var(--text3); }
+
+  /* 表(照职位板 JobsTable) */
+  .tbl { border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th { text-align:left; font-weight:600; color:#374151; padding:10px 10px; background:var(--bg); border-bottom:1px solid var(--border); white-space:nowrap; }
+  th.sort { color:var(--primary); }
+  th .ar { font-size:10px; color:var(--text3); margin-left:2px; }
+  th.sort .ar { color:var(--primary); }
+  td { padding:11px 10px; border-bottom:1px solid var(--hair); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  td .z { display:block; font-size:12px; color:var(--text3); line-height:1.4; }
+  td.lk { color:var(--primary); }
+  td.dim { color:var(--text2); white-space:nowrap; }
+  tr.hot td { background:#f6fbf7; }
+  tr.hot td:first-child { box-shadow: inset 3px 0 0 var(--ok); }
+  tr.off td { color:var(--text3); }
+  tr.off td.lk { color:#93a5c9; }
+  .last { font-size:13px; color:var(--text2); max-width:300px; }
+  .last .who { display:flex; align-items:center; gap:4px; font-size:12px; color:var(--text3); }
+  .last .tx { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+  .last.new .tx { color:var(--text); }
+  .tag { display:inline-flex; align-items:center; gap:4px; font-size:12px; padding:1px 9px; border-radius:999px; font-weight:600; white-space:nowrap; }
+  .tag.ok { background:#dcfce7; color:var(--ok); }
+  .tag.sent { background:#dbeafe; color:var(--primary-deep); }
+  .tag.gray { background:var(--hair); color:var(--text2); border:1px solid var(--border); }
+  .tag.amber { background:#fef3c7; color:#92400e; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:32px; padding:0 14px; border-radius:8px; font-size:14px; font-weight:600; border:1px solid var(--border); background:#fff; color:#374151; white-space:nowrap; }
+  .btn.pri { background:var(--primary); border-color:var(--primary); color:#fff; }
+  .btn.sm { height:28px; padding:0 10px; font-size:13px; font-weight:500; }
+  .btn.lg { height:40px; padding:0 18px; font-size:15px; }
+  .chk { width:18px; height:18px; border-radius:5px; border:1.5px solid #cbd5e1; background:#fff; display:inline-block; vertical-align:middle; }
+  .chk.on { background:var(--primary); border-color:var(--primary); position:relative; }
+  .chk.on::after { content:""; position:absolute; left:5px; top:1px; width:5px; height:10px; border:solid #fff; border-width:0 2px 2px 0; transform:rotate(45deg); }
+  .pos { color:var(--ok); font-weight:600; }
+  .neg { color:#c2410c; font-weight:600; }
+  .pay { font-weight:600; color:var(--text); }
+
+  /* 底栏 */
+  .bar { position:sticky; bottom:0; margin-top:14px; display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid #bfdbfe; background:#f5f9ff; border-radius:10px; }
+  .bar .sel { font-size:14px; color:var(--text); font-weight:600; }
+  .bar .clr { font-size:13px; color:var(--text2); }
+  .bar .r { margin-left:auto; display:flex; gap:10px; align-items:center; }
+
+  /* 卡 */
+  .card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
+  .ch { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .ch h3 { margin:0; font-size:15px; color:var(--text); }
+  .ch .r { margin-left:auto; display:flex; gap:8px; }
+  .kv { display:grid; grid-template-columns:104px 1fr; row-gap:0; font-size:14px; }
+  .kv > span { padding:9px 0; border-top:1px solid var(--hair); }
+  .kv > span:nth-child(-n+2) { border-top:none; }
+  .kv .k { color:var(--text2); }
+  .kv .g { display:block; font-size:12px; color:var(--text3); line-height:1.3; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .stack { display:flex; flex-direction:column; gap:16px; }
+
+  /* 文档缩略 */
+  .doc { display:flex; gap:16px; }
+  .a4 { width:150px; height:194px; flex:none; background:#fff; border:1px solid var(--border); border-radius:6px; box-shadow:0 2px 8px rgba(15,23,42,.08); padding:14px 12px; overflow:hidden; }
+  .a4 .nm { font-size:9px; font-weight:700; text-align:center; color:var(--text); }
+  .a4 .ct { font-size:5px; text-align:center; color:var(--text3); margin-bottom:6px; }
+  .a4 .sh { font-size:5.5px; font-weight:700; color:var(--text); border-bottom:1px solid #e5e7eb; margin:5px 0 3px; }
+  .a4 i { display:block; height:3px; background:#e5e7eb; border-radius:2px; margin:3px 0; }
+  .a4.letter { font-size:6px; line-height:1.5; color:#374151; padding:16px 14px; }
+  .a4 .sl { background:#ede9fe; color:#6d28d9; border-radius:2px; padding:0 1px; }
+  .dmeta .fn { font-size:15px; color:var(--primary); font-weight:600; word-break:break-all; display:flex; align-items:center; gap:6px; }
+  .dmeta .sm { font-size:13px; color:var(--text2); margin-top:4px; }
+  .dmeta .acts { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+  .lt { font-size:13px; color:#374151; line-height:1.6; }
+  .lt .sl { background:#ede9fe; color:#6d28d9; border-radius:4px; padding:0 4px; }
+
+  /* 订阅 */
+  .planbig { display:flex; align-items:center; gap:10px; font-size:26px; font-weight:800; color:var(--text); }
+  .planbig .star { color:#f59e0b; }
+  .prog { height:8px; border-radius:999px; background:var(--hair); overflow:hidden; margin:14px 0 6px; }
+  .prog i { display:block; height:100%; width:72%; background:var(--primary); border-radius:999px; }
+  .pk { border:1px solid var(--border); border-radius:12px; padding:14px 16px; display:flex; align-items:center; gap:14px; }
+  .pk + .pk { margin-top:10px; }
+  .pk .p { font-size:22px; font-weight:800; color:var(--text); min-width:96px; }
+  .pk .d { font-size:14px; color:var(--text); font-weight:600; }
+  .pk .s { font-size:12px; color:var(--text3); }
+  .pk .btn { margin-left:auto; }
+  .pk.best { border-color:#93c5fd; background:#f8fbff; }
+
+  /* 弹框(照线上职位弹框白卡) */
+  .shade { position:fixed; inset:0; background:rgba(17,24,39,.45); display:flex; justify-content:center; align-items:flex-start; padding-top:64px; }
+  .modal { width:820px; background:#fff; border-radius:14px; box-shadow:0 24px 60px rgba(0,0,0,.28); padding:18px 22px 0; max-height:880px; display:flex; flex-direction:column; }
+  .mh { display:flex; align-items:flex-start; gap:12px; }
+  .mh h1 { margin:0; font-size:22px; color:var(--text); line-height:1.3; }
+  .mh .z { font-size:13px; color:var(--text3); }
+  .mh .co { font-size:14px; margin-top:4px; display:flex; gap:14px; }
+  .mh .co span { color:var(--text2); }
+  .xb { margin-left:auto; height:32px; padding:0 12px; border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; font-size:13px; color:#374151; }
+  .stabs { display:flex; gap:22px; border-bottom:1px solid var(--border); margin-top:14px; }
+  .stabs span { padding:9px 0; font-size:14px; color:var(--text2); border-bottom:2px solid transparent; display:flex; gap:6px; align-items:center; }
+  .stabs span.on { color:var(--primary); border-color:var(--primary); font-weight:600; }
+  .stabs .n { font-size:12px; background:var(--hair); color:var(--text2); border-radius:999px; padding:0 7px; font-weight:500; }
+  .thread { padding:14px 0; display:flex; flex-direction:column; gap:12px; overflow:hidden; }
+  .msg { border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+  .msg.in { border-color:#bbf7d0; background:#fbfefc; }
+  .msg .top { display:flex; align-items:center; gap:10px; }
+  .msg .who { font-weight:600; color:var(--text); font-size:14px; }
+  .msg .addr { font-size:12px; color:var(--text3); }
+  .msg .when { margin-left:auto; font-size:12px; color:var(--text3); }
+  .msg .sbj { font-size:14px; color:var(--text); margin-top:6px; font-weight:500; }
+  .msg .body { font-size:14px; color:#374151; margin-top:6px; white-space:pre-line; }
+  .msg .att { display:flex; gap:8px; margin-top:10px; }
+  .chipf { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:8px; padding:4px 10px; font-size:13px; color:#374151; background:#fff; }
+  .chipf b { font-size:10px; color:var(--danger); }
+  .av2 { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex:none; }
+  .av2.me { background:var(--primary); color:#fff; }
+  .av2.em { background:#dcfce7; color:var(--ok); }
+  .mf { border-top:1px solid var(--border); padding:12px 0 16px; display:flex; align-items:center; gap:10px; }
+  .mf .hint { font-size:13px; color:var(--text2); display:flex; align-items:center; gap:6px; }
+  .mf .r { margin-left:auto; display:flex; gap:10px; }
+  .muted { color:var(--text2); }
+
+  /* 第二轮细节(对照 AIApply):公司首字母块、职位格两行、面板轻阴影 */
+  .panel, .side, .card { box-shadow:0 1px 2px rgba(15,23,42,.04), 0 4px 16px rgba(15,23,42,.04); }
+  .jobcell { display:flex; gap:12px; align-items:flex-start; }
+  .logo2 { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; flex:none; }
+  .jobcell .tt { color:var(--primary); font-size:15px; line-height:1.35; }
+  .jobcell .co { color:#374151; font-size:13px; margin-top:2px; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+  .chip { font-size:12px; border-radius:999px; padding:1px 10px; border:1px solid var(--border); background:var(--bg); color:#374151; display:inline-flex; gap:4px; align-items:center; }
+  .chip.teer { background:#f3f4f6; }
+  .chip.prio { background:#fef9c3; border-color:#fde68a; color:#854d0e; }
+  .chip.sal { background:#f0fdf4; border-color:#bbf7d0; color:var(--ok); font-weight:600; }
+  td.nw { white-space:nowrap; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const Q = new URLSearchParams(location.search)
+const LANG = Q.get('lang') || 'zh'
+const S = Q.get('s') || 'apps'
+const ZH = LANG === 'zh'
+document.documentElement.lang = LANG
+
+/* 图标(线框,照站上 lucide 风) */
+const IC = {
+  pulse: '<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
+  jobs: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6"/>',
+  users: '<circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21 20c0-2.6-1.4-4.4-3.5-5.1"/>',
+  news: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',
+  send: '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>',
+  star: '<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/>',
+  file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+  card: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/>',
+  in: '<path d="M4 12h12M10 6l-6 6 6 6"/><path d="M20 4v16"/>',
+  out: '<path d="M20 12H8M14 6l6 6-6 6"/><path d="M4 4v16"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  ext: '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  dl: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+  bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+}
+const ic = k => `<svg class="i" viewBox="0 0 24 24">${IC[k]}</svg>`
+
+const T = ZH ? {
+  tagline: '每日更新、全加拿大全职业、移民价值视角', nav: ['就业把脉', '职位', '雇主', '资讯', '我的'],
+  my: '我的', sent4: '已投 4 封',
+  side: ['我的求职', '我的收藏', '我的资料', '我的订阅'], name: '张三',
+  upd: '更新时间 2026-10-05 18:14',
+  appsSub: '4 封', thDate: '投递日期', thJob: '职位', thCo: '公司', thCity: '城市', thSt: '状态', thLast: '最近往来', thOp: '操作',
+  replied: '雇主已回复', applied: '已投递', bounced: '退信', closed: '已下架', open: '查看往来',
+  youSent: '你发出', empSent: '雇主回复', bounceTx: '邮箱失效,信被退回',
+  msgs: '往来', files: '投出的材料', viewJob: '查看职位', backBtn: '返回',
+  replyHint: '雇主的回信同时转发到 zhang.san@gmail.com,直接在邮箱里回复即可',
+  you: '你', fromLbl: '发件人', toLbl: '收件人', att: '附件',
+  favSub: '5 个', thPost: '发布日期', thOcc: '职业', thPay: '薪资', thVs: 'vs 中位',
+  picked: '已选 2 个', clear: '清空', bulk: '批量投递 2 个',
+  mail: '邮件提醒', weekly: '每周收藏摘要', weeklyS: '每周一发一封:收藏的岗位有没有下架、同类有没有新岗',
+  searches: '存的搜索', thQuery: '搜索条件', thNew: '本周新岗', del: '删除',
+  resume: '简历', uploaded: '上传于 2026-10-03', pages: '1 页', open2: '打开', replace: '替换', remove: '删除',
+  letter: '求职信模板', edit: '编辑', usedBy: '投递时自动换成本岗的职位名和公司名',
+  slotT: '职位名', slotC: '公司名',
+  info: '投递信息', infoK: ['英文姓名', '工作身份', '最快上岗', '工作年限'], infoV: ['San Zhang', '毕业工签(PGWP)', '两周内', '3 年'],
+  cond: '我的条件', condK: ['目标', '专业', '想做的工作', '所在省'], condV: ['拿 PR', '计算机与信息', '软件开发人员', '安大略省'],
+  change: '修改',
+  plan: '当前套餐', valid: '有效至 2026-12-31', left: '还剩 87 天', buy: '续买', buyS: '买了从到期日往后顺延',
+  d30: '30 天', d90: '90 天', per: '约 CA$4.33 / 30 天', buyBtn: '购买',
+  hist: '购买记录', thBuyDate: '日期', thPlan: '套餐', thAmt: '金额', thMethod: '付款方式', thRcpt: '收据', rcpt: '查看',
+  wechat: '微信支付', card: 'Visa 尾号 4242',
+} : {
+  tagline: 'Daily updates, every job in Canada, through an immigration lens', nav: ['Job pulse', 'Jobs', 'Employers', 'News', 'My jobs'],
+  my: 'My jobs', sent4: '4 applications sent',
+  side: ['Applications', 'Saved jobs', 'Profile', 'Plan'], name: 'San Zhang',
+  upd: 'Updated 2026-10-05 18:14',
+  appsSub: '4', thDate: 'Applied', thJob: 'Job', thCo: 'Company', thCity: 'City', thSt: 'Status', thLast: 'Last message', thOp: '',
+  replied: 'Replied', applied: 'Applied', bounced: 'Bounced', closed: 'Closed', open: 'Messages',
+  youSent: 'You sent', empSent: 'Employer replied', bounceTx: 'Address no longer works; email bounced',
+  msgs: 'Messages', files: 'Sent files', viewJob: 'View job', backBtn: 'Close',
+  replyHint: 'Replies are also forwarded to zhang.san@gmail.com. Reply from your inbox.',
+  you: 'You', fromLbl: 'From', toLbl: 'To', att: 'Attachments',
+  favSub: '5', thPost: 'Posted', thOcc: 'Occupation', thPay: 'Pay', thVs: 'vs median',
+  picked: '2 selected', clear: 'Clear', bulk: 'Apply to 2 jobs',
+  mail: 'Email alerts', weekly: 'Weekly saved-jobs digest', weeklyS: 'Every Monday: which saved jobs closed and what is new nearby',
+  searches: 'Saved searches', thQuery: 'Search', thNew: 'New this week', del: 'Delete',
+  resume: 'Resume', uploaded: 'Uploaded 2026-10-03', pages: '1 page', open2: 'Open', replace: 'Replace', remove: 'Delete',
+  letter: 'Cover letter template', edit: 'Edit', usedBy: 'Job title and company are filled in for each job',
+  slotT: 'Job title', slotC: 'Company',
+  info: 'Application info', infoK: ['Name', 'Work status', 'Can start', 'Experience'], infoV: ['San Zhang', 'Post-graduation work permit', 'Within 2 weeks', '3 years'],
+  cond: 'Job preferences', condK: ['Goal', 'Field of study', 'Target job', 'Province'], condV: ['Permanent residence', 'Computer and information sciences', 'Software developer', 'Ontario'],
+  change: 'Change',
+  plan: 'Current plan', valid: 'Valid until Dec 31, 2026', left: '87 days left', buy: 'Extend', buyS: 'Added on top of your current end date',
+  d30: '30 days', d90: '90 days', per: 'About CA$4.33 per 30 days', buyBtn: 'Buy',
+  hist: 'Purchases', thBuyDate: 'Date', thPlan: 'Plan', thAmt: 'Amount', thMethod: 'Paid with', thRcpt: 'Receipt', rcpt: 'View',
+  wechat: 'WeChat Pay', card: 'Visa ending 4242',
+}
+
+const APPS = [
+  { d: '2026-10-01', t: 'customer service representative - call centre', z: '客户服务代表 - 呼叫中心', c: 'i3 Solutions Inc.', city: 'Toronto, ON', st: 'replied',
+    last: { k: 'in', when: '2026-10-03', tx: 'Hi San, thanks for applying. Are you available for a 15-minute phone call this Thursday or Friday?' } },
+  { d: '2026-10-04', t: 'retail sales associate', z: '零售销售助理', c: 'Fast Time Watch & Jewellery Repair Inc.', city: 'Hamilton, ON', st: 'applied',
+    last: { k: 'out', when: '2026-10-04', tx: 'Application: Retail Sales Associate' } },
+  { d: '2026-10-02', t: 'food services manager', z: '餐饮服务经理', c: 'Pie Wood Fired Pizza Joint', city: 'Barrie, ON', st: 'applied',
+    last: { k: 'out', when: '2026-10-02', tx: 'Application: Food Services Manager' } },
+  { d: '2026-09-30', t: 'wire and harness assembler', z: '电子装配工', c: 'Kevtron Industries Limited', city: 'Kitchener, ON', st: 'bounced',
+    last: { k: 'bounce', when: '2026-09-30', tx: T.bounceTx } },
+]
+const FAVS = [
+  { d: '2026-10-05', occ: ['家庭护理员', 'Home support worker'], c: 'Heart of Harbour Homecare', t: 'personal support worker - home support', city: 'Victoria Harbour', pay: '$19–$23/hr', vs: '-5%', st: 'on' },
+  { d: '2026-10-05', occ: ['行政官员', 'Administrative officer'], c: 'Anurag Homes Team', t: 'office manager', city: 'Kitchener', pay: '$80K/yr', vs: '+31%', st: 'on' },
+  { d: '2026-10-05', occ: ['建筑技术员', 'Architectural technologist'], c: 'Zedd Architecture Inc', t: 'architectural technologist', city: 'London', pay: '$65K–$85K/yr', vs: '+25%', st: 'off' },
+  { d: '2026-10-04', occ: ['零售店员', 'Retail salesperson'], c: 'Fast Time Watch & Jewellery Repair Inc.', t: 'retail sales associate', city: 'Hamilton', pay: '$18/hr', vs: '+3%', st: 'applied' },
+  { d: '2026-09-21', occ: ['家庭儿童保育员', 'Home child care provider'], c: 'Eden Goldberg', t: 'nanny', city: 'Toronto', pay: '$21/hr', vs: '+10%', st: 'closed' },
+]
+const tagOf = st => ({ replied: `<span class="tag ok">${T.replied}</span>`, applied: `<span class="tag sent">${T.applied}</span>`,
+  bounced: `<span class="tag gray">${T.bounced}</span>`, closed: `<span class="tag gray">${T.closed}</span>` })[st]
+
+function header() {
+  const icons = ['pulse', 'jobs', 'users', 'news', 'user']
+  return `<div class="hd"><div class="logo"><b>✿</b>Offer2PR</div><span class="tagline">${T.tagline}</span>
+    <div class="nav">${T.nav.map((x, k) => `<span class="${k === 4 ? 'on' : ''}">${ic(icons[k])}${x}</span>`).join('')}
+      <div class="lang"><span class="${ZH ? 'on' : ''}">中</span><span class="${ZH ? '' : 'on'}">EN</span><span>한</span></div><div class="ava">Z</div></div></div>`
+}
+function banner() {
+  return `<div class="banner"><div class="dots"><i></i><i></i><i></i></div><div class="t">${ic('user')}${T.my}</div><div class="cnt">${T.sent4}</div></div>`
+}
+function side(i) {
+  const icons = ['send', 'star', 'file', 'card']
+  const tail = ['<span class="n">4</span>', '<span class="n">5</span>', '', '<span class="pro">PRO</span>']
+  return `<div class="side">${T.side.map((x, k) => `<div class="it${k === i ? ' on' : ''}">${ic(icons[k])}${x}${tail[k]}</div>`).join('')}
+    <div class="me"><div class="ava">Z</div><div><div class="nm">${T.name}</div><div class="em">zhang.san@gmail.com</div></div></div></div>`
+}
+function page(i, panel, over) {
+  return header() + `<div class="main">${banner()}<div class="cols">${side(i)}<div class="panel">${panel}</div></div></div>` + (over || '')
+}
+
+function lastCell(l) {
+  if (l.k === 'bounce') {
+    return `<div class="last"><span class="who">${ic('in')}${l.when}</span><span class="tx">${l.tx}</span></div>`
+  }
+  const who = l.k === 'in' ? T.empSent : T.youSent
+  return `<div class="last${l.k === 'in' ? ' new' : ''}"><span class="who">${ic(l.k === 'in' ? 'in' : 'out')}${who} ${l.when}</span><span class="tx">${l.tx}</span></div>`
+}
+const LOGO_BG = [['#dbeafe', '#1d4ed8'], ['#fce7f3', '#be185d'], ['#fef3c7', '#b45309'], ['#dcfce7', '#15803d'], ['#ede9fe', '#6d28d9']]
+function logoOf(name, k) {
+  const c = LOGO_BG[k % LOGO_BG.length]
+  return `<div class="logo2" style="background:${c[0]};color:${c[1]}">${name.charAt(0).toUpperCase()}</div>`
+}
+function appsPanel() {
+  const rows = APPS.map((a, k) => `<tr class="${a.st === 'replied' ? 'hot' : ''}">
+      <td style="width:34%"><div class="jobcell">${logoOf(a.c, k)}<div><div class="tt">${a.t}</div>${ZH ? `<span class="z">${a.z}</span>` : ''}<div class="co">${a.c}</div></div></div></td>
+      <td class="lk nw">${a.city}</td><td class="dim">${a.d}</td>
+      <td class="nw">${tagOf(a.st)}</td><td style="width:28%">${lastCell(a.last)}</td>
+      <td class="nw"><span class="btn sm">${T.open}</span></td></tr>`).join('')
+  return `<div class="ph"><h2>${T.side[0]}</h2><span class="sub">${T.appsSub}</span><div class="r"><span class="upd">${T.upd}</span></div></div>
+    <div class="tbl"><table><tr><th>${T.thJob}</th><th>${T.thCity}</th><th class="sort">${T.thDate}<span class="ar">▼</span></th><th>${T.thSt}</th><th>${T.thLast}</th><th>${T.thOp}</th></tr>${rows}</table></div>`
+}
+function threadModal() {
+  const a = APPS[0]
+  return `<div class="shade"><div class="modal">
+    <div class="mh"><div><h1>${a.t}</h1>${ZH ? `<div class="z">${a.z}</div>` : ''}
+      <div class="co"><a>${a.c}</a><a>${a.city}</a><span>${T.thDate} ${a.d}</span></div>
+      <div class="chips"><span class="chip sal">$20/hr</span><span class="chip teer">TEER 4</span><span class="chip prio">${ZH ? 'ON 劳动力优先' : 'ON in-demand'}</span></div></div>
+      <div style="margin-left:auto;display:flex;gap:10px;align-items:center">${tagOf('replied')}<span class="xb" style="margin-left:0">${T.backBtn}</span></div></div>
+    <div class="stabs"><span class="on">${T.msgs}<span class="n">2</span></span><span>${T.files}<span class="n">2</span></span></div>
+    <div class="thread">
+      <div class="msg in"><div class="top"><div class="av2 em">P</div><div><div class="who">Priya Nair</div><div class="addr">priya.nair@i3solutions.ca</div></div><div class="when">2026-10-03 15:40</div></div>
+        <div class="sbj">Re: Application: Customer Service Representative - Call Centre</div>
+        <div class="body">Hi San,
+
+Thanks for applying. Your experience at the front desk is a good fit for our inbound team. Are you available for a 15-minute phone call this Thursday or Friday afternoon?
+
+Best,
+Priya
+HR, i3 Solutions</div></div>
+      <div class="msg"><div class="top"><div class="av2 me">Z</div><div><div class="who">${T.you}</div><div class="addr">San Zhang via Offer2PR</div></div><div class="when">2026-10-01 10:12</div></div>
+        <div class="sbj">Application: Customer Service Representative - Call Centre</div>
+        <div class="att"><span class="chipf"><b>PDF</b>Zhang_San_Resume.pdf</span><span class="chipf"><b>PDF</b>Cover_Letter_i3_Solutions.pdf</span></div></div>
+    </div>
+    <div class="mf"><span class="hint">${ic('mail')}${T.replyHint}</span><div class="r"><span class="btn">${ic('ext')}${T.viewJob}</span></div></div>
+  </div></div>`
+}
+function favsPanel() {
+  const rows = FAVS.map(f => {
+    let mark = `<span class="chk${f.st === 'on' ? ' on' : ''}"></span>`
+    if (f.st === 'applied' || f.st === 'closed') { mark = tagOf(f.st) }
+    const off = f.st === 'closed' ? 'off' : ''
+    const vs = f.vs.startsWith('-') ? 'neg' : 'pos'
+    return `<tr class="${off}"><td style="width:92px">${mark}</td><td class="dim">${f.d}</td><td class="lk">${ZH ? f.occ[0] : f.occ[1]}</td><td class="lk">${f.c}</td>
+      <td class="lk">${f.t}</td><td class="lk">${f.city}</td><td class="pay">${f.pay}</td><td class="${vs}">${f.vs}</td></tr>`
+  }).join('')
+  return `<div class="ph"><h2>${T.side[1]}</h2><span class="sub">${T.favSub}</span><div class="r"><span class="upd">${T.upd}</span></div></div>
+    <div class="tbl"><table><tr><th><span class="chk"></span></th><th class="sort">${T.thPost}<span class="ar">▼</span></th><th>${T.thOcc}</th><th>${T.thCo}</th><th>${T.thJob}</th><th>${T.thCity}</th><th>${T.thPay}</th><th>${T.thVs}</th></tr>${rows}</table></div>
+    <div class="bar"><span class="sel">${T.picked}</span><span class="clr">${T.clear}</span><div class="r"><span class="btn pri lg">${ic('send')}${T.bulk}</span></div></div>
+    <div class="card" style="margin-top:18px"><div class="ch">${ic('bell')}<h3>${T.mail}</h3></div>
+      <div style="display:flex;align-items:center;gap:12px;padding:4px 0 14px;border-bottom:1px solid var(--hair)">
+        <div><div style="font-weight:600;color:var(--text)">${T.weekly}</div></div>
+        <span style="margin-left:auto;width:40px;height:22px;border-radius:999px;background:var(--primary);position:relative;display:inline-block"><i style="position:absolute;right:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff"></i></span></div>
+      <div style="font-weight:600;color:var(--text);margin:12px 0 8px">${T.searches}</div>
+      <div class="tbl"><table><tr><th>${T.thQuery}</th><th>${T.thNew}</th><th></th></tr>
+        <tr><td class="lk">Software developer, Ontario</td><td>12</td><td style="text-align:right"><span class="btn sm">${T.del}</span></td></tr>
+        <tr><td class="lk">Cook, Toronto</td><td>31</td><td style="text-align:right"><span class="btn sm">${T.del}</span></td></tr></table></div></div>`
+}
+function resumeA4() {
+  return `<div class="a4"><div class="nm">SAN ZHANG</div><div class="ct">Toronto, ON  zhang.san@gmail.com</div>
+    <div class="sh">SUMMARY</div><i></i><i style="width:86%"></i><div class="sh">EXPERIENCE</div><i></i><i style="width:92%"></i><i style="width:70%"></i><i></i><i style="width:80%"></i>
+    <div class="sh">EDUCATION</div><i style="width:75%"></i><i style="width:60%"></i><div class="sh">SKILLS</div><i style="width:88%"></i></div>`
+}
+function letterA4() {
+  return `<div class="a4 letter">Dear Hiring Manager,<br><br>I am writing to apply for the <span class="sl">${T.slotT}</span> position at <span class="sl">${T.slotC}</span>. With three years of customer service experience…<br><br><i></i><i style="width:90%"></i><i style="width:80%"></i><i></i><i style="width:70%"></i><br>Sincerely,<br>San Zhang</div>`
+}
+function kv(keys, vals, provIdx) {
+  return `<div class="kv">${keys.map((k, n) => {
+    let v = vals[n]
+    if (n === provIdx && ZH) { v = `${v}<span class="g">ON</span>` }
+    return `<span class="k">${k}</span><span>${v}</span>`
+  }).join('')}</div>`
+}
+function profilePanel() {
+  return `<div class="ph"><h2>${T.side[2]}</h2></div><div class="grid">
+    <div class="stack">
+      <div class="card"><div class="ch">${ic('file')}<h3>${T.resume}</h3></div><div class="doc">${resumeA4()}
+        <div class="dmeta"><div class="fn">Zhang_San_Resume.pdf</div><div class="sm">${T.uploaded}</div><div class="sm">${T.pages}  148 KB</div>
+          <div class="acts"><span class="btn sm">${ic('ext')}${T.open2}</span><span class="btn sm">${T.replace}</span><span class="btn sm">${T.remove}</span></div></div></div></div>
+      <div class="card"><div class="ch">${ic('mail')}<h3>${T.letter}</h3><div class="r"><span class="btn sm">${T.edit}</span></div></div><div class="doc">${letterA4()}
+        <div class="dmeta"><div class="acts" style="margin-top:0"><span class="btn sm">${ic('dl')}PDF</span></div></div></div></div>
+    </div>
+    <div class="stack">
+      <div class="card"><div class="ch">${ic('send')}<h3>${T.info}</h3><div class="r"><span class="btn sm">${T.change}</span></div></div>${kv(T.infoK, T.infoV, -1)}</div>
+      <div class="card"><div class="ch">${ic('user')}<h3>${T.cond}</h3><div class="r"><span class="btn sm">${T.change}</span></div></div>${kv(T.condK, T.condV, 3)}</div>
+    </div></div>`
+}
+function planPanel() {
+  return `<div class="ph"><h2>${T.side[3]}</h2></div><div class="grid">
+    <div class="card"><div class="ch"><h3>${T.plan}</h3></div><div class="planbig"><span class="star">★</span>Pro</div>
+      <div class="muted" style="margin-top:4px">${T.valid}</div><div class="prog"><i></i></div><div class="muted" style="font-size:13px">${T.left}</div></div>
+    <div class="card"><div class="ch"><h3>${T.buy}</h3></div>
+      <div class="pk"><div class="p">CA$5</div><div><div class="d">${T.d30}</div></div><span class="btn">${T.buyBtn}</span></div>
+      <div class="pk best"><div class="p">CA$13</div><div><div class="d">${T.d90}</div></div><span class="btn pri">${T.buyBtn}</span></div></div>
+  </div>
+  <div class="card" style="margin-top:16px"><div class="ch"><h3>${T.hist}</h3></div>
+    <div class="tbl"><table><tr><th>${T.thBuyDate}</th><th>${T.thPlan}</th><th>${T.thAmt}</th><th>${T.thMethod}</th><th>${T.thRcpt}</th></tr>
+      <tr><td class="dim">2026-10-05</td><td>${T.d90}</td><td>CA$13.00</td><td>${T.card}</td><td><a>${T.rcpt}</a></td></tr>
+      <tr><td class="dim">2026-09-04</td><td>${T.d30}</td><td>CA$5.00</td><td>${T.wechat}</td><td><a>${T.rcpt}</a></td></tr></table></div></div>`
+}
+
+const VIEWS = {
+  apps: () => page(0, appsPanel()),
+  thread: () => page(0, appsPanel(), threadModal()),
+  favs: () => page(1, favsPanel()),
+  profile: () => page(2, profilePanel()),
+  plan: () => page(3, planPanel()),
+}
+document.getElementById('app').innerHTML = VIEWS[S]()
+</script>
+</body>
+</html>

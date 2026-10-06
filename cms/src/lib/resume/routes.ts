@@ -6,6 +6,12 @@
  * 跨边界断言:formData 的 `get(FIELD_FILE)`、`await req.json() as MatchBody`、
  * `parseLlmJson(raw) as ExtractData`、`user.profile as MatchUsesProfile` ——
  * 都是先按声明形状收下,逐格判后才用。
+ * 2026-10-05 改判(Frank「先做我的简历吧」,设计稿 docs/design/我的模块v2-20261005.md「定稿」):
+ * 「我的简历」由用户主动上传的原件**入库**(user_resumes,一人一份,可随时删),只给本人看、
+ * 只用于本人发起的投递;上面「原件不落盘不入库」从此只管 /api/resume、extract、match 三条解析路。
+ * 新增 /api/resume/file(GET 取原件、PUT 上传或替换、DELETE 删)与 /api/resume/file/meta(元信息)。
+ * 2026-10-06 一人多份(最多 5 份、一份默认;Frank「这个可以上传多份简历吧」):file 四个方法都按 `?id=` 指明哪一份
+ * (PUT 不带 id = 新加,PATCH = 设默认),元信息口换成清单口 /api/resume/files。
  *
  * @author Frank
  * @time 2026-08-23 10:30:00
@@ -14,7 +20,8 @@ import { headers } from 'next/headers'
 import { getDb } from '../db/server'
 import { isLlmError } from '../error'
 import {
-  BAD_GATEWAY, BAD_REQUEST, GATEWAY_TIMEOUT, TOO_LARGE, TOO_MANY, UNAUTHORIZED, UNPROCESSABLE,
+  BAD_GATEWAY, BAD_REQUEST, CONFLICT, GATEWAY_TIMEOUT, HDR_CACHE_CONTROL, HDR_CONTENT_DISPOSITION, HDR_CONTENT_TYPE, NOT_FOUND,
+  TOO_LARGE, TOO_MANY, UNAUTHORIZED, UNPROCESSABLE,
 } from '../http'
 import { jobDescription, loadApplyUrlById } from '../jobs/server'
 import { completeText } from '../llm'
@@ -23,12 +30,16 @@ import { log, RESUME_LOG } from '../log'
 import { patchProfile } from '../profile/server'
 import type { ProfilePatch } from '../profile/server'
 import { FREE_DAILY_TRIES } from '../quota'
-import { freeGate, getUser, getUserOrNull, isPro } from '../quota/server'
+import { checkLimit, freeGate, getUser, getUserOrNull, ipOf, isPro } from '../quota/server'
 import {
   BLANKS2, BLANKS3_RE, BODY_TEXT_NONE, CLB_MAX, CLB_MIN, CODE_TIMEOUT, CODE_TOO_LONG, CR_DROP, CR_RE, DAILY_FREE, DATE_LEN, DETAIL_CAP, ERR_LOG_CAP, EXTRACT_CHARS_MAX, EXTRACT_OUT_MAX, EXTRACT_TEXT_MIN, EXTRACT_TOKENS_MAX, E_AUTH, E_BUSY, E_LIMIT, E_LLM, E_LOGIN, E_NOFILE, E_NO_JD, E_PARSE, E_SCAN, E_SIZE, E_TOO_LONG, E_TOO_SHORT, FIELD_FILE, JD_DB_NONE, JD_LEN_MIN, LANG_FALLBACK_EN, LLM_TEXT_NONE, LOG_DASH, MATCH_PROVIDER, MATCH_TEMPERATURE, MATCH_TOKENS_FREE, MATCH_TOKENS_PRO, META_VIA_LEGACY, MIN_RESUME, ONE_SPACE, RESUME_MAX_BYTES, RESUME_SAVE_CAP, REWRITE_CAP, ROLE_SYSTEM, ROLE_USER, SPACES_RE, TEST_MAIL_SUFFIX, TITLES_N_MAX, TITLE_Q_LEN_MAX, TITLE_Q_LEN_MIN, USES_CELL_NONE, USES_SEP, WS_ALL_RE,
+  B64, CACHE_PRIVATE, E_FULL, E_NO_ID, E_NOT_FOUND, E_TYPE, RESUME_FILES_MAX, HDR_NOSNIFF, MAGIC_ENC, MAGIC_LEN, NOSNIFF, P_DOWNLOAD, RF_IP_DAILY,
+  RF_IP_PREFIX, RF_USER_DAILY, RF_USER_PREFIX,
 } from './constants'
 import {
-  extractText, gateMatch, ieltsToClb, matchPrompt, nocCandidatesOf, normalizeRows, parseLlmJson,
+  deleteResumeFile, dispositionOf, extractText, fileMimeOf, fileNameOf, gateMatch, ieltsToClb, loadResumeBlob,
+  loadResumeCount, loadResumeList, matchPrompt, nocCandidatesOf, normalizeRows, parseLlmJson, resumeIdOf, saveResumeFile,
+  setDefaultResume,
 } from './functions'
 import { EXTRACT_SYSTEM } from './prompts'
 import type { ExtractData, MatchBody, MatchUsesProfile, MaybeNum } from './types'
@@ -167,6 +178,152 @@ export async function resumeExtractRoute(req: Request): Promise<Response> {
   }
   log({ tag: RESUME_LOG.tag, text: RESUME_LOG.extractOk + user.id + RESUME_LOG.fileB + file.size + RESUME_LOG.bSuffix + RESUME_LOG.textCh + text.length + RESUME_LOG.chSuffix })
   return Response.json({ text: text.slice(0, EXTRACT_OUT_MAX) })
+}
+
+/**
+ * DELETE /api/resume/file?id=:删本人某一份(没有也回成功);删的是默认那份,最新的一份补成默认。
+ * 一份都不剩时,简历对照存档的文字(profile.resumeText)一起删 —— 文字存档原住账户页「简历存档」,
+ * 2026-10-05 那块界面随「我的简历」改版退役;隐私条款承诺「可随时删除」,删除口从此只有「我的简历」。
+ *
+ * @param req 请求(id 在查询参数)。
+ * @returns { ok };未登录 401、没带 id 400。
+ */
+export async function resumeFileDeleteRoute(req: Request): Promise<Response> {
+  const user = await getUserOrNull(await headers())
+  if (user == null) {
+    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  const id = resumeIdOf(req.url)
+  if (id == null) {
+    return Response.json({ error: E_NO_ID }, { status: BAD_REQUEST })
+  }
+  const db = await getDb()
+  await deleteResumeFile({ db, userId: user.id, id })
+  if (await loadResumeCount({ db, userId: user.id }) === 0) {
+    await patchProfile({ userId: user.id, patch: { resumeText: null, resumeSavedAt: null } })
+  }
+  log({ tag: RESUME_LOG.tag, text: RESUME_LOG.fileDeleted + user.id })
+  return Response.json({ ok: true })
+}
+
+/**
+ * GET /api/resume/file?id=:本人某一份的原件(预览弹框与下载)。带 `dl` 按下载给,不带在浏览器里直接打开。
+ * 只给本人、哪一层都不许缓存,加防嗅探头(审查 #17)。
+ *
+ * @param req 请求(id 在查询参数)。
+ * @returns 原件字节;未登录 401、没带 id 400、没有或不是本人的 404。
+ */
+export async function resumeFileGetRoute(req: Request): Promise<Response> {
+  const user = await getUserOrNull(await headers())
+  if (user == null) {
+    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  const id = resumeIdOf(req.url)
+  if (id == null) {
+    return Response.json({ error: E_NO_ID }, { status: BAD_REQUEST })
+  }
+  const blob = await loadResumeBlob({ db: await getDb(), userId: user.id, id })
+  if (blob == null) {
+    return Response.json({ error: E_NOT_FOUND }, { status: NOT_FOUND })
+  }
+  const download = new URL(req.url).searchParams.has(P_DOWNLOAD)
+  return new Response(blob.bytes, {
+    headers: {
+      [HDR_CONTENT_TYPE]: blob.mime,
+      [HDR_CONTENT_DISPOSITION]: dispositionOf({ fileName: blob.fileName, download }),
+      [HDR_CACHE_CONTROL]: CACHE_PRIVATE,
+      [HDR_NOSNIFF]: NOSNIFF,
+    },
+  })
+}
+
+/**
+ * PATCH /api/resume/file?id=:把本人某一份设为默认(其余取消)。
+ *
+ * @param req 请求(id 在查询参数)。
+ * @returns { ok };未登录 401、没带 id 400、不是本人的 404。
+ */
+export async function resumeFilePatchRoute(req: Request): Promise<Response> {
+  const user = await getUserOrNull(await headers())
+  if (user == null) {
+    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  const id = resumeIdOf(req.url)
+  if (id == null) {
+    return Response.json({ error: E_NO_ID }, { status: BAD_REQUEST })
+  }
+  if (await setDefaultResume({ db: await getDb(), userId: user.id, id }) === false) {
+    return Response.json({ error: E_NOT_FOUND }, { status: NOT_FOUND })
+  }
+  return Response.json({ ok: true })
+}
+
+/**
+ * PUT /api/resume/file[?id=]:不带 id 新加一份(到 5 份回 409),带 id 原地替换那一份。
+ * 类型按文件头判,不信扩展名;扫描件也收(审查 #17:不挡投递),所以这里不抽文字。
+ * 限流两道:每人每天、每 IP 每天(防脚本反复覆盖刷库)。
+ *
+ * @param req 请求(multipart,file 字段;替换时 id 在查询参数)。
+ * @returns { meta };未登录 401、超限 429、没文件 400、不是 PDF / .docx 400、超大 413、满 5 份 409、替换的不是本人的 404。
+ */
+export async function resumeFilePutRoute(req: Request): Promise<Response> {
+  const user = await getUserOrNull(await headers())
+  if (user == null) {
+    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  if (checkLimit([[RF_USER_PREFIX + String(user.id), RF_USER_DAILY], [RF_IP_PREFIX + ipOf(req), RF_IP_DAILY]]) === false) {
+    return Response.json({ error: E_LIMIT }, { status: TOO_MANY })
+  }
+  let file: File | null = null
+  try {
+    const got = (await req.formData()).get(FIELD_FILE)
+    if (got instanceof File) {
+      file = got
+    }
+  } catch {
+    file = null
+  }
+  if (file == null || file.size === 0) {
+    return Response.json({ error: E_NOFILE }, { status: BAD_REQUEST })
+  }
+  if (file.size > RESUME_MAX_BYTES) {
+    return Response.json({ error: E_SIZE }, { status: TOO_LARGE })
+  }
+  const buf = Buffer.from(await file.arrayBuffer())
+  const mime = fileMimeOf({ name: file.name, head: buf.subarray(0, MAGIC_LEN).toString(MAGIC_ENC) })
+  if (mime == null) {
+    log({ tag: RESUME_LOG.tag, text: RESUME_LOG.fileRejected + user.id + RESUME_LOG.fileB + buf.byteLength + RESUME_LOG.bSuffix })
+    return Response.json({ error: E_TYPE }, { status: BAD_REQUEST })
+  }
+  const db = await getDb()
+  const replaceId = resumeIdOf(req.url)
+  if (replaceId == null && await loadResumeCount({ db, userId: user.id }) >= RESUME_FILES_MAX) {
+    return Response.json({ error: E_FULL }, { status: CONFLICT })
+  }
+  const meta = await saveResumeFile({
+    db, userId: user.id, replaceId, b64: buf.toString(B64), fileName: fileNameOf({ name: file.name, mime }), mime,
+    sizeBytes: buf.byteLength,
+  })
+  if (meta == null) {
+    return Response.json({ error: E_NOT_FOUND }, { status: NOT_FOUND })
+  }
+  log({ tag: RESUME_LOG.tag, text: RESUME_LOG.fileSaved + user.id + RESUME_LOG.mimeFrag + mime + RESUME_LOG.fileB + buf.byteLength + RESUME_LOG.bSuffix })
+  return Response.json({ meta })
+}
+
+/**
+ * GET /api/resume/files:本人的简历清单(「我的简历」卡片:id、是否默认、文件名、类型、大小、上传时刻;默认那份在最前)。
+ *
+ * @param _req 请求。
+ * @returns { items };未登录 401。
+ */
+export async function resumeFilesRoute(_req: Request): Promise<Response> {
+  const user = await getUserOrNull(await headers())
+  if (user == null) {
+    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  const items = await loadResumeList({ db: await getDb(), userId: user.id })
+  return Response.json({ items }, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
 }
 
 /**

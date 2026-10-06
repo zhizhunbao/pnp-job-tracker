@@ -30,3 +30,10 @@ jobs-1(多伦多夜景)/ stats-3(佩姬湾灯塔);出处同上。要换专属图
 - employers-2 ← File:Bankers Hall Calgary. (13440087335).jpg(CC0,Bernard Spragg. NZ from Christchurch, Ne)
 - employers-3 ← File:Coal Harbour, Vancouver (470065) (9441357251).jpg(CC BY 2.0,Robert Linsdell from St. Andrews, Canada)
 home 组改用 stats-1/2/3(/stats 路由退役后空着的三张),不新增下载;news 三张旧复用图路径退役。
+
+2026-10-05 「我的」页(Frank「我的 也需要 banner 吧」「可以,下吧」;省份图库 8 张都已被别的板块用掉 → 新下载,
+题材取还没上过横幅的大西洋三省):同法 Special:FilePath 取图(回的是 1920px 缩略),统一裁 1280×300;
+license 与作者照 Commons extmetadata 抄录。
+- account-1 ← File:Jellybean Row Houses of St. John's, Newfoundland.jpg(CC BY 2.0,miketnorton;圣约翰斯彩色排屋,裁 y 560–1010)
+- account-2 ← File:Cavendish Coast, Prince Edward Island (471112) (9447889529).jpg(CC BY 2.0,Robert Linsdell from St. Andrews, Canada;卡文迪什红岩海岸,裁 y 300–750)
+- account-3 ← File:Hopewell Rocks1.jpg(CC BY-SA 4.0,СССР;霍普韦尔岩,裁 y 430–880)

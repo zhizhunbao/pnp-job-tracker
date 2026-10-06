@@ -17,12 +17,14 @@ import type { LangCode, LegalDoc, LegalPage } from './types'
  * 三篇生效日期改 2026-09-28。
  * 同日 Frank「不需要这么细节,简化就行。这部分可能会改」:对话记录、AI 处理、AI 生成内容三条改泛称(站内问答、大模型服务、
  * 部分内容由模型生成),不写功能细节与服务商名。
+ * 2026-10-05「我的简历」存原件(Frank「先做我的简历吧」):隐私篇「简历」一条改写 —— 原件存进账户、只给本人看、只用于本人发起的投递、
+ * 可随时替换或删除,删除时原件与存档文本一并删;隐私篇生效日期改 2026-10-05(条款、免责两篇不动)。
  */
 export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
   privacy: {
     zh: {
       title: '隐私政策',
-      updated: '生效日期:2026-09-28',
+      updated: '生效日期:2026-10-05',
       sections: [
         {
           h: '1. 我们收集什么',
@@ -30,7 +32,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
             '账户信息:邮箱地址与密码(密码以加密哈希存储,我们无法看到原文)。',
             '移民档案(可选、全部自报):NOC 码、语言 CLB、CRS 分、目标省、PGWP 剩余月数。仅用于计算「与我的匹配」等个人化功能,只存在你的账户里,可随时修改或清空。',
             'Pro 状态:到期日与 Stripe 客户标识(用于对账)。',
-            '简历(默认不存):上传的 PDF、DOCX 原件只在内存里解析,解析完即弃,不落盘也不入库。只有你在简历对照弹框里勾选存档,简历文本才会存进你的账户(上限 20,000 字符),账户页可随时查看与清除。',
+            '简历:你在「我的简历」上传的原件(PDF、DOCX)存进你的账户,只给你本人查看,只用于你自己发起的投递,可随时替换或删除。在其他地方上传的简历文件只在内存里解析,解析完即弃,不落盘也不入库;只有你主动选择存档时,简历文本才会存进你的账户(上限 20,000 字符)。在「我的简历」删除简历时,原件与存档的文本一并删除。',
             '技术数据:为防滥用,API 按 IP 与账户做进程内当日计数(不落库、每日清零);简历对照的当日次数存在你的账户档案里(只有日期与次数),跨日归零。浏览器 localStorage/Cookie 存语言、列偏好与登录会话。',
             '访问统计:使用 umami(无 Cookie 的匿名统计)记录页面浏览与转化漏斗事件(注册、打开升级/定价弹窗、发起购买),不含个人身份,不跨站追踪。'
           + '同样的漏斗事件我们也在自己的数据库里按天计数(只有「哪天、哪个事件、多少次」,不含 IP、设备信息、账户或会话标识)。',
@@ -78,7 +80,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
     },
     en: {
       title: 'Privacy Policy',
-      updated: 'Effective date: 2026-09-28',
+      updated: 'Effective date: 2026-10-05',
       sections: [
         {
           h: '1. What we collect',
@@ -86,7 +88,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
             'Account: email address and password (stored as a cryptographic hash — we cannot see the original).',
             'Immigration profile (optional, entirely self-reported): NOC codes, language CLB, CRS score, target provinces, PGWP months left. Used only for personalised features such as "Match for me"; stored only on your account; editable or clearable anytime.',
             'Pro status: expiry date and Stripe customer identifier (for reconciliation).',
-            'Resume (not stored by default): uploaded PDF and DOCX files are parsed in memory and discarded immediately — never written to disk or to our database. Your resume text is stored on your account (up to 20,000 characters) only if you tick the save box in the resume match dialog; you can view or clear it anytime on the account page.',
+            'Resume: the file you upload under My jobs > Resume (PDF or DOCX) is stored on your account, visible only to you, and used only for applications you choose to send. You can replace or delete it anytime. Resume files uploaded anywhere else are parsed in memory and discarded immediately, never written to disk or to our database; your resume text is stored on your account (up to 20,000 characters) only if you choose to save it. Deleting your resume under My jobs > Resume removes both the file and any saved text.',
             'Technical data: to prevent abuse, APIs keep in-process daily counters per IP and per account (not persisted, reset daily); the resume match daily count is stored on your account profile (date and count only) and resets each day. Browser localStorage/cookies store language, column preferences and the login session.',
             'Analytics: we use umami (cookie-less, anonymous) to record page views and conversion-funnel events (sign-up, opening the upgrade/pricing dialogs, checkout initiation); no personal identity, no cross-site tracking.'
           + ' The same funnel events are also counted per day in our own database — only "which day, which event, how many times", with no IP, device, account or session identifier.',
@@ -134,7 +136,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
     },
     ko: {
       title: '개인정보 처리방침',
-      updated: '시행일: 2026-09-28',
+      updated: '시행일: 2026-10-05',
       sections: [
         {
           h: '1. 수집 항목',
@@ -142,7 +144,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
             '계정: 이메일 주소와 비밀번호(암호화 해시로 저장되며 원문은 볼 수 없습니다).',
             '이민 프로필(선택, 전부 자가 보고): NOC 코드, 언어 CLB, CRS 점수, 목표 주, PGWP 잔여 개월. "나와의 매칭" 등 개인화 기능에만 사용되며 내 계정에만 저장, 언제든 수정·삭제 가능합니다.',
             'Pro 상태: 만료일과 Stripe 고객 식별자(대사용).',
-            '이력서(기본값은 저장 안 함): 업로드한 PDF·DOCX 원본은 메모리에서만 분석한 뒤 즉시 폐기하며 디스크나 데이터베이스에 저장하지 않습니다. 이력서 대조 창에서 저장 항목을 선택한 경우에만 이력서 텍스트가 계정에 저장되며(최대 20,000자), 계정 페이지에서 언제든 확인·삭제할 수 있습니다.',
+            '이력서: 「내 이력서」에 업로드한 원본(PDF, DOCX)은 계정에 저장되며 본인만 볼 수 있고, 본인이 직접 보내는 지원에만 사용됩니다. 언제든 교체하거나 삭제할 수 있습니다. 그 밖의 곳에서 업로드한 이력서 파일은 메모리에서만 분석한 뒤 즉시 폐기하며 디스크나 데이터베이스에 저장하지 않습니다. 직접 저장을 선택한 경우에만 이력서 텍스트가 계정에 저장됩니다(최대 20,000자). 「내 이력서」에서 이력서를 삭제하면 원본과 저장된 텍스트가 함께 삭제됩니다.',
             '기술 데이터: 남용 방지를 위해 API는 IP·계정별 당일 카운터를 프로세스 내에서만 유지(저장 안 함, 매일 초기화)하며, 이력서 대조의 당일 횟수는 계정 프로필에 저장합니다(날짜와 횟수만, 매일 초기화). 브라우저 localStorage/쿠키에 언어·열 설정·로그인 세션을 저장합니다.',
             '방문 통계: umami(쿠키 없는 익명 통계)로 페이지 조회와 전환 퍼널 이벤트(가입, 업그레이드/요금제 창 열기, 결제 시작)를 기록합니다. 개인 식별 정보 없음, 사이트 간 추적 없음.'
           + ' 동일한 퍼널 이벤트는 자체 데이터베이스에도 일자별 횟수로만 집계합니다(날짜·이벤트·횟수만, IP·기기·계정·세션 식별자 없음).',

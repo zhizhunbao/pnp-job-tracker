@@ -6,300 +6,40 @@
  */
 
 /*
- * sidebar + 内容区的两列容器(2026-07-16 Frank「我的账户需要一个 sidebar」拍板,
- * 此前是四卡分离):左 = 节导航 + 退出登录,右 = 选中节的卡。
- * 读宽史:2026-07-31 拍过 860 窄读列(窄读列放壳内);2026-08-29 Frank「宽度不对」
- * 拍板放宽 —— 收藏/求职是列表不是读文,860 里内容只剩 ~600,且与全站 1320 不齐;
- * 撤 860 帽,吃满 Shell 轨(侧栏 220 不动,内容 flex:1 弹性)。
- * 左右安全边(手机贴边难点)同批交给 Shell 的 1.25rem 正文轨内衬,本类不再自带
- * `padding: 0 1rem`:两处都留会叠成 40.5px(1rem = 18px + 1.25rem = 22.5px)。
- * 交出去之后手机上正文与顶栏/页脚的左右边缘对齐 —— 此前本页正文比它们各宽 4.5px。
+ * 整张白卡(2026-10-05 Frank「tab 不应该是横着的么」:侧栏 + 内容两列合成一张卡,页签条横排贴卡顶)。
+ * 原 .columns / .side / .main / .navBtn 及其窄屏修饰共十类随侧栏退役删除;白卡壳本身由全局 CARD_CLS 给,
+ * 这里只把内衬清掉,交给页签条与内容区各自留。
  */
-.columns {
+.sheet {
   /*
-   * 吃满 Shell 正文轨(读宽上限 2026-08-29 撤,见块头注释)。
+   * 内衬清零(页签条底线要贴到卡的左右两边)。
    */
-  width: 100%;
+  padding: 0;
 
   /*
-   * 左右 auto 居中。上下留白 2026-08-28 大头交给外面的 Shell(top=40 / bottom=40):
-   * 原来的 2.5rem 在 18px 的 rem 基准下是 45px,档位表里没有 45,所以这里留 5px 补差
-   * —— 40 + 5 = 45,成品间距与旧页逐像素相等。两处都留满会叠成 90px。
+   * 页签条底线切进圆角。
    */
-  margin: 5px auto;
-
-  /*
-   * 两列并排。
-   */
-  display: flex;
-
-  /*
-   * 桌面态横排(窄屏由 .columnsNarrow 改纵排)。
-   */
-  flex-direction: row;
-
-  /*
-   * 两列间距。
-   */
-  gap: 16px;
-
-  /*
-   * 两卡各自高度自适应,顶端对齐 —— 不让短卡被拉成和长卡一样高。
-   */
-  align-items: flex-start;
-
-  /*
-   * 内衬算进宽度,不然 padding 会把 860 撑破。
-   * (2026-08-28:左右内衬移交 Shell 之后本格暂时无内衬可算,留着以防这里再加。)
-   */
-  box-sizing: border-box;
-
-  /*
-   * 吃掉顶栏与页脚之间的剩余高度,但不被压缩 —— 页脚才压得住屏底。
-   * (2026-08-28:本件改住 Shell 里之后这一格不再生效 —— Shell 是块级容器,
-   * 撑满改由 Frame 的纵向列 + 页脚自己的 margin-top:auto 管,渲染不变。)
-   */
-  flex: 1 0 auto;
+  overflow: hidden;
 }
 
 /*
- * 窄屏(手机)分叉:两列改上下叠。
+ * 页签条那一行:左右内衬与内容区对齐,上边留一点。
  */
-.columnsNarrow {
+.sheetTabs {
   /*
-   * sidebar 变顶部一条,内容卡在它下面。
+   * 上 4、左右 20。
    */
-  flex-direction: column;
+  padding: 4px 20px 0;
 }
 
 /*
- * 左列 sidebar 卡(与全局 .card 壳叠用:白底描边圆角归 .card,密度与排布归这里)。
+ * 选中那一节的内容区。
  */
-.side {
+.sheetBody {
   /*
-   * 卡内衬(比正文卡紧一档 —— 装的是一列小钮)。
+   * 四周内衬。
    */
-  padding: 0.7rem;
-
-  /*
-   * 桌面态固定宽(窄屏由 .sideNarrow 改成满宽)。
-   */
-  width: 190px;
-
-  /*
-   * 不许被右列挤窄。
-   */
-  flex-shrink: 0;
-
-  /*
-   * 节钮按列排。
-   */
-  display: flex;
-
-  /*
-   * 桌面态纵排(窄屏由 .sideNarrow 改横排)。
-   */
-  flex-direction: column;
-
-  /*
-   * 钮与钮的间距(贴得紧才像一组)。
-   */
-  gap: 2px;
-
-  /*
-   * 窄屏横排时一行放不下就换行,不横滚。
-   */
-  flex-wrap: wrap;
-
-  /*
-   * 内衬算进宽度,190 是含内衬的外观宽。
-   */
-  box-sizing: border-box;
-}
-
-/*
- * 窄屏分叉:sidebar 变顶部横排条。
- */
-.sideNarrow {
-  /*
-   * 顶部条吃满整宽。
-   */
-  width: 100%;
-
-  /*
-   * 节钮横着排成一条。
-   */
-  flex-direction: row;
-}
-
-/*
- * 右列内容卡(同样与全局 .card 壳叠用)。
- */
-.main {
-  /*
-   * 吃掉 sidebar 之外的全部宽度。
-   */
-  flex: 1;
-
-  /*
-   * flex 子项默认 min-width:auto 会被长内容撑破;归零才让内部的省略号生效。
-   */
-  min-width: 0;
-
-  /*
-   * 内衬算进宽度。
-   */
-  box-sizing: border-box;
-
-  /*
-   * 卡内衬(2026-09-23 Frank 实拍「这个模块基本上是完全没法用」:全局 .card 壳不带内衬,各节自带的那层
-   * 08-29 换装时没了,标题、胶囊、输入框、按钮全贴着卡边)。收在卡上一处,三节同吃。
-   */
-  padding: 16px 20px;
-}
-
-/*
- * 窄屏分叉:内容卡吃满整宽(桌面态**不设** width,由 flex:1 分配 —— 所以这一格
- * 只能是修饰类,写进 .main 会把桌面态的分配盖掉)。
- */
-.mainNarrow {
-  /*
-   * 满宽。
-   */
-  width: 100%;
-}
-
-/*
- * 节导航钮(概览/移民档案/收藏/邮件提醒/已存筛选/升级 Pro):未选中态。
- * 类名写两遍抬权重:2026-08-26 起本钮经 Button(kind ghost)渲染("<button 这种不允许直接使用"),
- * 要稳赢 button 域 .btn/.ghost 的同权重声明且不赌打包顺序(先例 .logoutBtn)。
- */
-.navBtn.navBtn {
-  /*
-   * 文字左对齐 —— 一列钮的左边缘要齐。
-   */
-  text-align: left;
-
-  /*
-   * 上下 8、左右 12 内衬。
-   */
-  padding: 8px 12px;
-
-  /*
-   * 侧栏字号(比正文小半档)。
-   */
-  font-size: 13.5px;
-
-  /*
-   * 无描边(靠底色区分选中)。
-   */
-  border: none;
-
-  /*
-   * 圆角。
-   */
-  border-radius: 8px;
-
-  /*
-   * 可点手型。
-   */
-  cursor: pointer;
-
-  /*
-   * 节名不折行。
-   */
-  white-space: nowrap;
-
-  /*
-   * 未选中无底。
-   */
-  background: transparent;
-
-  /*
-   * 未选中灰字。
-   */
-  color: #374151;
-
-  /*
-   * 未选中常规字重。
-   */
-  font-weight: 400;
-}
-
-/*
- * 节导航钮的选中态(淡靛底 + 品牌蓝字 + 半粗)。写在 .navBtn 之后,同权重后者胜。
- * 类名写两遍抬权重:2026-08-26 起本钮经 Button(kind ghost)渲染("<button 这种不允许直接使用"),
- * 要稳赢 button 域 .btn/.ghost 的同权重声明且不赌打包顺序(先例 .logoutBtn)。
- */
-.navBtnActive.navBtnActive {
-  /*
-   * 选中淡靛底。
-   */
-  background: #eef2ff;
-
-  /*
-   * 选中品牌蓝字。
-   */
-  color: #1d4ed8;
-
-  /*
-   * 选中半粗。
-   */
-  font-weight: 600;
-}
-
-/*
- * 节钮与退出登录之间的分隔线(只在桌面纵排时渲染 —— 窄屏横排里一条横线会把
- * 那一行切断,所以窄屏根本不渲这个节点)。
- */
-.navDivider {
-  /*
-   * 一条最浅的灰线。
-   */
-  border-top: 1px solid #f3f4f6;
-
-  /*
-   * 上下各留 6px。
-   */
-  margin: 6px 0;
-}
-
-/*
- * 退出登录钮(组件统一 P2 #113:退出登录 = ghost 灰,危险性弱的操作走 B 映射)。
- * ⚠️ 类名写两遍是**故意**的:它要盖住 button 域 .btn/.ghost 里的同名属性
- * (内衬、字号、字重、字色),而跨文件的单类同权重靠先后顺序决定胜负、顺序又由
- * 打包器定 —— 重复一次把权重抬到 (0,2,0),结果与原先的内联样式一致且不依赖顺序。
- */
-.logoutBtn.logoutBtn {
-  /*
-   * 与上面的节钮左边缘对齐。
-   */
-  text-align: left;
-
-  /*
-   * 与节钮同内衬(盖掉 .ghost 的零内衬)。
-   */
-  padding: 8px 12px;
-
-  /*
-   * 与节钮同字号。
-   */
-  font-size: 13.5px;
-
-  /*
-   * 常规字重(盖掉 .btn 的 600)—— 退出不该比节名更抢眼。
-   */
-  font-weight: 400;
-
-  /*
-   * 更弱一档的灰(盖掉 .ghost 的品牌蓝)。
-   */
-  color: #9ca3af;
-
-  /*
-   * 不折行。
-   */
-  white-space: nowrap;
+  padding: 18px 20px 22px;
 }
 
 /*
@@ -357,6 +97,56 @@
    * 与标题贴 4px。
    */
   margin-top: 4px;
+}
+
+/*
+ * 「我的订阅」节的套餐行(2026-10-04 加回;值照 09-23 撤掉的概览节套餐行 .plan)。
+ */
+.subPlan {
+  /*
+   * 与节标题拉开。
+   */
+  margin-top: 10px;
+
+  /*
+   * 正文字号。
+   */
+  font-size: 14px;
+}
+
+/*
+ * Pro 档:琥珀 + 半粗(付费态的全站配色;值照撤掉的 .planPro)。
+ */
+.subPro {
+  /*
+   * 琥珀深字。
+   */
+  color: #b45309;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 免费档:次要灰,不强调(免费不是错误,只是没升级;值照撤掉的 .planFree)。
+ */
+.subFree {
+  /*
+   * 次要灰。
+   */
+  color: #6b7280;
+}
+
+/*
+ * 「升级 Pro / 续买」那颗钮的一行。
+ */
+.subActs {
+  /*
+   * 与套餐行拉开。
+   */
+  margin-top: 12px;
 }
 
 /*
@@ -628,242 +418,614 @@
 }
 
 /*
- * 简历存档的元信息一行(时间字数 + 操作钮组)。
+ * ── 以下 2026-10-05「我的简历」换装(Frank「先做我的简历吧」):简历文字存档的 .ra* 九个类随 ResumeArchive 退役删除,
+ *    换成原件卡片与上传区的 .rf* 类(设计稿 docs/design/我的模块v2-20261005.md「定稿」我的简历)。──
  */
-.raMetaRow {
+
+/*
+ * 隐藏的文件框(浏览器自带的长相统一不了,由「选择文件 / 替换文件」钮替用户去点)。
+ */
+.rfInput {
   /*
-   * 两块并排。
+   * 不占位、不显示。
+   */
+  display: none;
+}
+
+/*
+ * 元信息拉回来之前的占位块:高度与卡片相当,拉回来后不整块跳。
+ */
+.rfSkel {
+  /*
+   * 与卡片同高。
+   */
+  height: 220px;
+
+  /*
+   * 最浅一档灰底。
+   */
+  background: #f3f4f6;
+
+  /*
+   * 同卡片圆角。
+   */
+  border-radius: 12px;
+}
+
+/*
+ * 第一次来的上传区:虚线框、居中。
+ */
+.rfDrop {
+  /*
+   * 虚线描边(拖放区的通行长相)。
+   */
+  border: 2px dashed #cbd5e1;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 14px;
+
+  /*
+   * 浅灰底。
+   */
+  background: #f8fafc;
+
+  /*
+   * 内容居中。
+   */
+  text-align: center;
+
+  /*
+   * 上下留足,手机上也好点中。
+   */
+  padding: 36px 16px;
+
+  /*
+   * 拖放高亮的变化放慢一点。
+   */
+  transition: border-color 0.15s, background 0.15s;
+}
+
+/*
+ * 文件悬在上传区上方:描边变主蓝、底色变浅蓝。
+ */
+.rfDrop.rfDropOn {
+  /*
+   * 主蓝描边(colors 域变量)。
+   */
+  border-color: var(--primary);
+
+  /*
+   * 浅蓝底(colors 域变量)。
+   */
+  background: var(--hover-bg);
+}
+
+/*
+ * 上传区顶上的圆形图标底。
+ */
+.rfDropIcon {
+  /*
+   * 圆的宽。
+   */
+  width: 48px;
+
+  /*
+   * 圆的高。
+   */
+  height: 48px;
+
+  /*
+   * 正圆。
+   */
+  border-radius: 50%;
+
+  /*
+   * 浅蓝底(colors 域变量)。
+   */
+  background: var(--hover-bg);
+
+  /*
+   * 主蓝图标(colors 域变量)。
+   */
+  color: var(--primary);
+
+  /*
+   * 图标居中。
+   */
+  display: inline-flex;
+
+  /*
+   * 横向居中。
+   */
+  justify-content: center;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+}
+
+/*
+ * 上传区标题「上传简历」。
+ */
+.rfDropTitle {
+  /*
+   * 比正文大一档。
+   */
+  font-size: 16px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 深字(colors 域变量)。
+   */
+  color: var(--text);
+
+  /*
+   * 与图标拉开。
+   */
+  margin-top: 10px;
+}
+
+/*
+ * 上传区的类型与大小一行。
+ */
+.rfDropSub {
+  /*
+   * 小一档。
+   */
+  font-size: 13px;
+
+  /*
+   * 次要灰(colors 域变量)。
+   */
+  color: var(--text2);
+
+  /*
+   * 与标题贴近。
+   */
+  margin-top: 2px;
+}
+
+/*
+ * 「选择文件」与「拖到这里也可以」一行。
+ */
+.rfDropActs {
+  /*
+   * 并排。
    */
   display: flex;
 
   /*
-   * 竖直居中。
+   * 居中。
+   */
+  justify-content: center;
+
+  /*
+   * 竖向居中。
    */
   align-items: center;
 
   /*
-   * 块间距。
-   */
-  gap: 10px;
-
-  /*
-   * 窄屏放不下时钮组整体换行。
+   * 窄屏放不下就折到下一行。
    */
   flex-wrap: wrap;
 
   /*
-   * 与标题贴 4px。
+   * 钮与提示之间的距离。
    */
-  margin-top: 4px;
+  gap: 12px;
+
+  /*
+   * 与上一行拉开。
+   */
+  margin-top: 16px;
 }
 
 /*
- * 元信息文字(存档时间 + 字符数)。
+ * 「选择文件」钮:比默认宽一点,手机上好点中。
  */
-.raMeta {
+.rfDropBtn.rfDropBtn {
   /*
-   * 吃掉钮组之外的宽度。
+   * 最小宽度。
    */
-  flex: 1;
+  min-width: 140px;
+}
+
+/*
+ * 「拖到这里也可以」提示。
+ */
+.rfDropHint {
+  /*
+   * 小一档。
+   */
+  font-size: 13px;
 
   /*
-   * 窄过这个宽就把钮组挤去下一行。
-   */
-  min-width: 150px;
-
-  /*
-   * 元信息字号。
-   */
-  font-size: 12.5px;
-
-  /*
-   * 次要文字色(colors 域变量)。
+   * 次要灰(colors 域变量)。
    */
   color: var(--text2);
 }
 
 /*
- * 简历存档的空态行。
+ * 有原件时的卡片:左缩略图、右信息。
  */
-.raEmpty {
+.rfCard {
   /*
-   * 空态字号。
-   */
-  font-size: 12.5px;
-
-  /*
-   * 三级文字色(colors 域变量)。
-   */
-  color: var(--text3);
-
-  /*
-   * 与标题留 6px。
-   */
-  margin-top: 6px;
-}
-
-/*
- * 简历操作钮组(展开 + 清除/确认/取消)。
- */
-.raCtl {
-  /*
-   * 钮横排。
+   * 左右并排。
    */
   display: flex;
 
   /*
-   * 竖直居中。
+   * 顶对齐。
+   */
+  align-items: flex-start;
+
+  /*
+   * 缩略图与信息之间的距离。
+   */
+  gap: 20px;
+
+  /*
+   * 与节标题拉开。
+   */
+  margin-top: 12px;
+}
+
+/*
+ * 缩略图那张纸:A4 / Letter 竖版比例,白底细边轻阴影;画好之前就是一张白纸占位。
+ */
+.rfPaper {
+  /*
+   * 电脑上的纸宽。
+   */
+  width: 180px;
+
+  /*
+   * 竖版纸张比例(612 × 792,Letter)。
+   */
+  aspect-ratio: 612 / 792;
+
+  /*
+   * 不被右边挤窄。
+   */
+  flex: none;
+
+  /*
+   * 白纸。
+   */
+  background: #fff;
+
+  /*
+   * 细边(colors 域变量)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 小圆角。
+   */
+  border-radius: 6px;
+
+  /*
+   * 轻阴影,像一张纸。
+   */
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+
+  /*
+   * 画布与 DOCX 字样都居中摆。
+   */
+  display: flex;
+
+  /*
+   * 横向居中。
+   */
+  justify-content: center;
+
+  /*
+   * 竖向居中。
    */
   align-items: center;
 
   /*
-   * 钮间距。
+   * 画布切到圆角里。
    */
-  gap: 10px;
-
-  /*
-   * 不许被元信息压缩(整组换行,不拆散)。
-   */
-  flex-shrink: 0;
+  overflow: hidden;
 }
 
 /*
- * 简历操作钮的公共底(文字钮:无框无底 + #219 触控最小高)。
- * 类名写两遍抬权重:本钮经 Button(kind ghost)渲染(先例 .logoutBtn)。
+ * PDF 首页画布:铺满整张纸(画布像素在脚本里按显示宽度 × 设备像素比定)。
  */
-.raBtn.raBtn {
+.rfCanvas {
   /*
-   * 无描边。
+   * 铺满纸宽。
    */
-  border: none;
+  width: 100%;
 
   /*
-   * 无底。
+   * 高度随比例。
    */
-  background: none;
+  height: auto;
 
   /*
-   * 上下 4、左右 2 内衬。
+   * 不留行内空隙。
    */
-  padding: 4px 2px;
-
-  /*
-   * 文字钮字号。
-   */
-  font-size: 12.5px;
-
-  /*
-   * 可点手型。
-   */
-  cursor: pointer;
-
-  /*
-   * 钮面不折行。
-   */
-  white-space: nowrap;
-
-  /*
-   * 触控最小高(#219)。
-   */
-  min-height: 32px;
-
-  /*
-   * 常规字重(确认清除那枚由修饰类加粗)。
-   */
-  font-weight: 400;
+  display: block;
 }
 
 /*
- * 展开/收起钮:主色。
- * 类名写两遍抬权重:同上(先例 .logoutBtn)。
+ * Word 占位纸上的「DOCX」字样。
  */
-.raView.raView {
+.rfBadge {
   /*
-   * 主行动色(colors 域变量)。
+   * 小一档。
+   */
+  font-size: 13px;
+
+  /*
+   * 粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 主蓝(colors 域变量)。
    */
   color: var(--primary);
+
+  /*
+   * 浅蓝底(colors 域变量)。
+   */
+  background: var(--hover-bg);
+
+  /*
+   * 小胶囊内衬。
+   */
+  padding: 2px 10px;
+
+  /*
+   * 胶囊圆角。
+   */
+  border-radius: 999px;
 }
 
 /*
- * 「确认清除」钮:危险红 + 半粗(不可逆操作要重)。
- * 类名写两遍抬权重:同上(先例 .logoutBtn)。
+ * 卡片右边的信息栏。
  */
-.raSure.raSure {
+.rfInfo {
+  /*
+   * 吃满剩下的宽。
+   */
+  flex: 1;
+
+  /*
+   * 允许文件名在窄栏里折行。
+   */
+  min-width: 0;
+}
+
+/*
+ * 文件名。
+ */
+.rfName {
+  /*
+   * 比正文大一档。
+   */
+  font-size: 16px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 深字(colors 域变量)。
+   */
+  color: var(--text);
+
+  /*
+   * 长文件名照样完整显示,在任意处折行(名字不截断)。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 上传日期、大小各一行。
+ */
+.rfMeta {
+  /*
+   * 小一档。
+   */
+  font-size: 13px;
+
+  /*
+   * 次要灰(colors 域变量)。
+   */
+  color: var(--text2);
+
+  /*
+   * 行间贴近。
+   */
+  margin-top: 2px;
+}
+
+/*
+ * 操作钮一排。
+ */
+.rfActs {
+  /*
+   * 并排。
+   */
+  display: flex;
+
+  /*
+   * 窄屏折行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 钮距。
+   */
+  gap: 8px;
+
+  /*
+   * 与信息拉开。
+   */
+  margin-top: 14px;
+}
+
+/*
+ * 报错一行(上传或删除失败)。
+ */
+.rfErr {
+  /*
+   * 小一档。
+   */
+  font-size: 13px;
+
   /*
    * 危险红(colors 域变量)。
    */
   color: var(--danger);
 
   /*
+   * 与上一块拉开。
+   */
+  margin-top: 10px;
+}
+
+/*
+ * 卡片清单(2026-10-06 一人多份):一份一张,上下排,卡片之间一条细线。
+ */
+.rfList {
+  /*
+   * 竖排。
+   */
+  display: flex;
+
+  /*
+   * 竖排。
+   */
+  flex-direction: column;
+
+  /*
+   * 卡片之间的距离(细线压在中间)。
+   */
+  gap: 18px;
+}
+
+/*
+ * 清单里第二张起的卡片:上面一条细线隔开。
+ */
+.rfList > .rfCard + .rfCard {
+  /*
+   * 细线(colors 域变量)。
+   */
+  border-top: 1px solid var(--hairline);
+
+  /*
+   * 线与卡片内容之间。
+   */
+  padding-top: 18px;
+}
+
+/*
+ * 「默认」胶囊那一行。
+ */
+.rfTagLine {
+  /*
+   * 与文件名贴近。
+   */
+  margin: 4px 0 2px;
+}
+
+/*
+ * 「添加简历」+ 份数那一行。
+ */
+.rfAdd {
+  /*
+   * 并排。
+   */
+  display: flex;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 钮与份数之间。
+   */
+  gap: 12px;
+
+  /*
+   * 与卡片清单拉开。
+   */
+  margin-top: 18px;
+
+  /*
+   * 上面一条细线(与卡片之间的分隔同款)。
+   */
+  border-top: 1px solid var(--hairline);
+
+  /*
+   * 线与钮之间。
+   */
+  padding-top: 14px;
+}
+
+/*
+ * 预览弹框标题(文件名)。
+ */
+.rfPvTitle {
+  /*
+   * 比正文大一档。
+   */
+  font-size: 16px;
+
+  /*
    * 半粗。
    */
   font-weight: 600;
-}
 
-/*
- * 「取消」与「清除」钮:三级灰(轻操作)。
- * 类名写两遍抬权重:同上(先例 .logoutBtn)。
- */
-.raPlain.raPlain {
   /*
-   * 三级文字色(colors 域变量)。
+   * 深字(colors 域变量)。
    */
-  color: var(--text3);
-}
-
-/*
- * 简历正文的就地展开块(只读)。
- */
-.raText {
-  /*
-   * 与元信息行留 8px。
-   */
-  margin-top: 8px;
+  color: var(--text);
 
   /*
-   * 展开上限,再长滚动。
-   */
-  max-height: 260px;
-
-  /*
-   * 纵向滚。
-   */
-  overflow-y: auto;
-
-  /*
-   * 保留简历原有换行。
-   */
-  white-space: pre-wrap;
-
-  /*
-   * 长词也断行,不横滚(break-word 关键字已废弃,现代等价写法)。
+   * 长文件名照样完整显示(名字不截断)。
    */
   overflow-wrap: anywhere;
 
   /*
-   * 正文字号。
+   * 与页拉开;右边给弹框的关闭钮让位。
    */
-  font-size: 12.5px;
+  margin: 0 40px 12px 0;
+}
+
+/*
+ * 预览的舞台:高度定死成「弹框里放得下」的值(电脑弹框上限 85vh,扣掉内衬、标题、翻页条),
+ * 开框即最终大小,加载与画好不跳;页居中摆在里面,灰底衬出纸边。
+ */
+.rfStage {
+  /*
+   * 占位纸与页叠在同一个位置。
+   */
+  position: relative;
 
   /*
-   * 简历行距(读长文的密度)。
+   * 电脑:85vh 减内衬 44、标题 52、翻页条 44、余量 20。
    */
-  line-height: 1.7;
+  height: calc(85vh - 160px);
 
   /*
-   * 正文灰。
+   * 灰底(colors 域变量)。
    */
-  color: #374151;
-
-  /*
-   * 底色(colors 域变量)。
-   */
-  background: var(--bg);
-
-  /*
-   * 描边(colors 域变量)。
-   */
-  border: 1px solid var(--border);
+  background: var(--hairline);
 
   /*
    * 圆角。
@@ -871,7 +1033,233 @@
   border-radius: 8px;
 
   /*
-   * 内衬。
+   * 灰底四周留一圈。
    */
-  padding: 8px 10px;
+  padding: 12px;
+}
+
+/*
+ * 放页的容器:铺满舞台内框,页居中。
+ */
+.rfPages {
+  /*
+   * 铺满舞台内框的高(pdf.js 按它的宽高算缩放)。
+   */
+  height: 100%;
+
+  /*
+   * 页居中。
+   */
+  display: flex;
+
+  /*
+   * 横向居中。
+   */
+  justify-content: center;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+}
+
+/*
+ * 预览里的一页:像素按「放得下的整页 × 设备像素比」画,显示尺寸用上限收回到容器里(不出滚动条)。
+ */
+.rfPage {
+  /*
+   * 不超过容器宽。
+   */
+  max-width: 100%;
+
+  /*
+   * 不超过容器高。
+   */
+  max-height: 100%;
+
+  /*
+   * 宽随比例。
+   */
+  width: auto;
+
+  /*
+   * 高随比例。
+   */
+  height: auto;
+
+  /*
+   * 不留行内空隙。
+   */
+  display: block;
+
+  /*
+   * 白纸。
+   */
+  background: #fff;
+
+  /*
+   * 轻阴影,像一张纸。
+   */
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.1);
+}
+
+/*
+ * 没轮到的页藏起来(上面 .rfPage 的 display: block 会盖掉浏览器对 hidden 属性的默认隐藏,这里补回)。
+ */
+.rfPage[hidden] {
+  /*
+   * 不显示、不占位。
+   */
+  display: none;
+}
+
+/*
+ * 画完前 / 画不了时的占位纸:与页同一个位置、同一个竖版比例,中间放转圈或一句话。
+ */
+.rfPaperPh {
+  /*
+   * 叠在舞台中央。
+   */
+  position: absolute;
+
+  /*
+   * 上边与内框齐。
+   */
+  top: 12px;
+
+  /*
+   * 下边与内框齐。
+   */
+  bottom: 12px;
+
+  /*
+   * 横向居中。
+   */
+  left: 50%;
+
+  /*
+   * 横向居中。
+   */
+  transform: translateX(-50%);
+
+  /*
+   * Letter 竖版比例(612 × 792),高度吃满内框、宽随比例。
+   */
+  aspect-ratio: 612 / 792;
+
+  /*
+   * 窄屏时不超出舞台。
+   */
+  max-width: calc(100% - 24px);
+
+  /*
+   * 白纸。
+   */
+  background: #fff;
+
+  /*
+   * 轻阴影,像一张纸。
+   */
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.1);
+
+  /*
+   * 内容居中。
+   */
+  display: flex;
+
+  /*
+   * 横向居中。
+   */
+  justify-content: center;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 一句话时的字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 次要灰(colors 域变量)。
+   */
+  color: var(--text2);
+
+  /*
+   * 一句话时左右留白。
+   */
+  padding: 0 16px;
+
+  /*
+   * 一句话时居中。
+   */
+  text-align: center;
+}
+
+/*
+ * 翻页条那一行(只有一页时 pager 桶自己不出钮,这里也只占一行高,舞台高度不跟着变)。
+ */
+.rfPager {
+  /*
+   * 固定一行高。
+   */
+  min-height: 36px;
+
+  /*
+   * 与舞台拉开。
+   */
+  margin-top: 8px;
+
+  /*
+   * 翻页条居中。
+   */
+  display: flex;
+
+  /*
+   * 横向居中。
+   */
+  justify-content: center;
+}
+
+/*
+ * 手机(弹框整屏,同 modal 桶 NARROW_BP 640):舞台高度按整屏算。
+ */
+@media (max-width: 640px) {
+  /*
+   * 手机舞台。
+   */
+  .rfStage {
+    /*
+     * 整屏减内衬、标题、翻页条与余量;手机屏窄,页按宽度缩,舞台再按页的竖版比例收紧,
+     * 免得上下各空一大块灰(内框宽 = 屏宽 - 弹框内衬 48 - 舞台内衬 24;Letter 高宽比 792 / 612)。
+     */
+    height: min(calc(100dvh - 170px), calc((100vw - 72px) * 792 / 612 + 24px));
+  }
+}
+
+/*
+ * 手机(≤ 520px):纸缩到 112px,信息栏照样排在右边。
+ */
+@media (max-width: 520px) {
+  /*
+   * 手机上的纸宽。
+   */
+  .rfPaper {
+    /*
+     * 窄一些,给右边留出钮的位置。
+     */
+    width: 112px;
+  }
+
+  /*
+   * 手机上卡片的间距收紧。
+   */
+  .rfCard {
+    /*
+     * 缩略图与信息之间。
+     */
+    gap: 14px;
+  }
 }

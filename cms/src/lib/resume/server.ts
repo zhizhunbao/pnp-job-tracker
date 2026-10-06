@@ -6,4 +6,7 @@
  * @time 2026-08-23 10:30:00
  */
 
-export { resumeExtractRoute, resumeMatchRoute, resumeRoute } from './routes'
+export {
+  resumeExtractRoute, resumeFileDeleteRoute, resumeFileGetRoute, resumeFilePatchRoute, resumeFilePutRoute, resumeFilesRoute,
+  resumeMatchRoute, resumeRoute,
+} from './routes'

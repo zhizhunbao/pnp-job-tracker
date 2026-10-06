@@ -9,6 +9,8 @@
  * 这里只剩 useState、具名 effect 壳与工厂装配。
  * 2026-09-23 账户页撤到三节(Frank「只保留一个 我的简历 我的收藏 我的求职」):昵称编辑与购买
  * 两组状态随概览、购买两节删除;已存筛选节撤掉,它的整机 useSavedSearches 一并删除。
+ * 2026-10-05「我的简历」换装:简历文字存档整机 useResumeArchive 退役,新立 useResumeFile(原件上传 / 删除)
+ * 与 useResumeThumb(pdf.js 画首页缩略图)。
  *
  * @author Frank
  * @time 2026-08-26 21:55:00
@@ -16,14 +18,17 @@
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useIsNarrow } from '@/components/modal'
-import { SEC_DEFAULT } from './constants'
+import { RF_ERR_NONE, SEC_DEFAULT } from './constants'
 import {
-  makeLoadSavedJobs, makeLogout, makeRefresh, makeResumeClear,
-  okFlagOf, resumeAtSeedOf, resumeCurSeedOf, secLinkOf,
+  makeAdd, makeAskOf, makeDefaultOf, makeDeleteOf, makeDragLeave, makeDragOver, makeFileDrop, makeFilePick,
+  makeLoadSavedJobs, makePickerOf, makePreviewClose, makePreviewOf, makeRefresh, makeSureClear, makeResumeListLoad,
+  makeResumeUpload, okFlagOf,
+  renderPdfPages, renderPdfThumb, secLinkOf, showPdfPage,
 } from './functions'
 import type {
-  AccountPanel, Me, ResumeHookIn, ResumePanel, SavedJobFact, SavedJobsHookIn, SavedJobsPanel,
-  Sec,
+  AccountPanel, MaybeResumeMeta, Me, ResumeFilePanel, ResumeMetas, ResumePagesPanel, ResumeThumbHookIn,
+  ResumeThumbPanel, SavedJobFact,
+  SavedJobsHookIn, SavedJobsPanel, Sec, SubscriptionPanel,
 } from './types'
 
 /**
@@ -57,8 +62,6 @@ export function useAccountPage(): AccountPanel {
     }
   }, [])
 
-  const refresh = makeRefresh({ setMe, setChecked })
-
   useEffect(function firstLoad() {
     makeRefresh({ setMe, setChecked })()
   }, [])
@@ -73,7 +76,6 @@ export function useAccountPage(): AccountPanel {
     checked,
     payOk,
     onPick: setSec,
-    onLogout: makeLogout({ refresh }),
   }
 }
 
@@ -96,25 +98,109 @@ export function useSavedJobs(x: SavedJobsHookIn): SavedJobsPanel {
 }
 
 /**
- * 简历存档整机(E11-08 §2):正文与时刻的初值来自父页已拉到的档案(本件不自己拉),
- * 展开与二次确认两格纯 UI 态;清除走工厂(先本地移除再跟投)。
+ * 「我的订阅」节整机(2026-10-04):只有定价框开合一格;定价框本身(选档、下单、登录态)归 pricing 桶。
  *
- * @param x 登录人 id 与档案两格。
- * @returns 简历存档的面板。
+ * @returns 定价框开合与它的 setter。
  */
-export function useResumeArchive(x: ResumeHookIn): ResumePanel {
-  const [cur, setCur] = useState<string>(resumeCurSeedOf(x))
-  const [at, setAt] = useState<string>(resumeAtSeedOf(x))
+export function useSubscription(): SubscriptionPanel {
   const [open, setOpen] = useState(false)
-  const [sure, setSure] = useState(false)
+  return { open, setOpen }
+}
 
+/**
+ * 「我的简历」整机(2026-10-05;10-06 改一人多份):挂载拉一次清单;新加(选文件 / 拖进来)、替换某一份、
+ * 删某一份(就地二次确认)、设默认、开关预览弹框、拖放高亮与报错都在这一台 —— 所有份共用一个隐藏文件框,
+ * 点「替换文件」先记下替换哪一份再打开它。
+ *
+ * @returns 「我的简历」的面板。
+ */
+export function useResumeFile(): ResumeFilePanel {
+  const [checked, setChecked] = useState(false)
+  const [items, setItems] = useState<ResumeMetas>([])
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState<string>(RF_ERR_NONE)
+  const [sure, setSure] = useState<number | null>(null)
+  const [dragOn, setDragOn] = useState(false)
+  const [preview, setPreview] = useState<MaybeResumeMeta>(null)
+  const [replaceId, setReplaceId] = useState<number | null>(null)
+  const [input, setInput] = useState<HTMLInputElement | null>(null)
+
+  const reload = makeResumeListLoad({ setItems, setChecked })
+  useEffect(function firstLoad() {
+    makeResumeListLoad({ setItems, setChecked })()
+  }, [])
+
+  const upload = makeResumeUpload({ replaceId, reload, setBusy, setErr })
+  const act = { reload, setSure, setErr }
   return {
-    cur,
-    at,
-    open,
+    checked,
+    items,
+    busy,
+    err,
     sure,
-    setOpen,
-    setSure,
-    onClear: makeResumeClear({ userId: x.userId, setCur, setAt, setOpen, setSure }),
+    dragOn,
+    preview,
+    onInputMount: setInput,
+    onAdd: makeAdd({ input, setReplaceId }),
+    onPick: makeFilePick({ upload }),
+    onDragOver: makeDragOver({ upload, setDragOn }),
+    onDragLeave: makeDragLeave({ upload, setDragOn }),
+    onDrop: makeFileDrop({ upload, setDragOn }),
+    replaceOf: makePickerOf({ input, setReplaceId }),
+    askOf: makeAskOf({ setSure, setErr }),
+    onCancel: makeSureClear({ setSure, setErr }),
+    deleteOf: makeDeleteOf(act),
+    defaultOf: makeDefaultOf(act),
+    previewOf: makePreviewOf({ setPreview }),
+    onPreviewClose: makePreviewClose({ setPreview }),
   }
+}
+
+/**
+ * 预览弹框整机:容器挂上就把原件逐页画进去(只露第一页);翻页时只换露哪一页,不重画。
+ *
+ * @param x 原件地址。
+ * @returns 容器回调、画完 / 画不了、页数与翻页。
+ */
+export function useResumePages(x: ResumeThumbHookIn): ResumePagesPanel {
+  const [box, setBox] = useState<HTMLDivElement | null>(null)
+  const [ready, setReady] = useState(false)
+  const [failed, setFailed] = useState(false)
+  const [count, setCount] = useState(0)
+  const [index, setIndex] = useState(0)
+
+  useEffect(function drawPages() {
+    if (box == null || x.src === RF_ERR_NONE) {
+      return
+    }
+    void renderPdfPages({ box, src: x.src, setReady, setFailed, setCount })
+  }, [box, x.src])
+
+  useEffect(function turnPage() {
+    if (box != null && ready) {
+      showPdfPage({ box, index })
+    }
+  }, [box, ready, index])
+
+  return { onBoxMount: setBox, ready, failed, count, index, onPage: setIndex }
+}
+
+/**
+ * 缩略图整机:画布挂上且有地址时画一次;地址变了(换了文件)重画。
+ *
+ * @param x 原件地址(空串 = 不画)。
+ * @returns 画布回调与「画好了」。
+ */
+export function useResumeThumb(x: ResumeThumbHookIn): ResumeThumbPanel {
+  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
+  const [ready, setReady] = useState(false)
+
+  useEffect(function drawThumb() {
+    if (canvas == null || x.src === RF_ERR_NONE) {
+      return
+    }
+    void renderPdfThumb({ canvas, src: x.src, setReady })
+  }, [canvas, x.src])
+
+  return { onCanvasMount: setCanvas, ready }
 }

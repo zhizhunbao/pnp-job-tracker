@@ -23,17 +23,23 @@
  * 已保存的筛选、升级 Pro 四节 —— AccountOverview(连同域内小件 AccountNickname / AccountPlanLine)、
  * AccountBuyPanel、SavedSearchList 删文件,出桶名单去掉它们与四个撤掉的节标识;新出 SEC_RESUME
  * (我的简历节)与 PayOkNotice(支付回跳提示,原住概览节顶上,抽出来挂右列最上面)。
+ * 2026-10-04 加回一节「我的订阅」(Frank「升级 Pro 这个删了,放到 我的 模块里,加一个我的订阅」):桶门加 Subscription 与 SEC_SUB。
+ * 2026-10-05 Frank「我的 也需要 banner 吧」:桶门加 AccountBanner(模块页头)。
+ * 2026-10-05 Frank「先做我的简历吧」:简历文字存档件 ResumeArchive 退役(连同 RA_KEY_HEAD),桶门换出 ResumeFile
+ * (原件上传 / 预览 / 替换 / 下载 / 删除 + PDF 首页缩略图)。
  *
  * @author Claude
  * @time 2026-08-26 19:28:00
  */
+export { AccountBanner } from './accountbanner'
 export { AccountColumns } from './accountcolumns'
 export { AccountNav } from './accountnav'
 export { AccountRedirect } from './accountredirect'
 export {
-  RA_KEY_HEAD, SEC_FAVS, SEC_RESUME, SEC_SJOBS, SHELL_BOTTOM, SHELL_TOP,
+  SEC_FAVS, SEC_RESUME, SEC_SJOBS, SEC_SUB, SHELL_BOTTOM, SHELL_TOP,
 } from './constants'
 export { useAccountPage } from './hooks'
 export { PayOkNotice } from './payoknotice'
-export { ResumeArchive } from './resumearchive'
+export { ResumeFile } from './resumefile'
 export { SavedJobsList } from './savedjobslist'
+export { Subscription } from './subscription'

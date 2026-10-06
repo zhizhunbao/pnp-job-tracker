@@ -34,8 +34,9 @@ export const CARD_CLS = 'card'
  * 自带的 `margin: 2.5rem` 交给正文轨 —— 那是 45px(main.css 把 rem 基准冻结在 18px),
  * 而 Shell 的档位表里没有 45,取最近的 40 档,余下的 5px 留在 .columns 的 margin 上,
  * 成品间距仍与旧页逐像素相等(不为一个页面往全站档位表里加档)。
+ * 2026-10-05 页头加了 banner(Frank「我的 也需要 banner 吧」):上内衬改 16,与资讯这类带 banner 的列表页同档。
  */
-export const SHELL_TOP = 40
+export const SHELL_TOP = 16
 
 /**
  * 正文轨(Shell)的下内衬档(px)。同上内衬:原 `margin-bottom: 2.5rem` = 45px
@@ -69,11 +70,224 @@ export const SEC_FAVS = 'favs'
 export const SEC_SJOBS = 'sjobs'
 
 /**
- * 简历存档件 React key 的键头(拼上用户号 = 这个人的那一份存档)。
- * 它与档案表单的 key 必须**不同**:两件并排住在档案节里,key 撞上会被 React 当成同一个位置,
- * 换号时留着上一个人的内部状态(存档是隐私内容,残留 = 串号)。
+ * 我的订阅节的节标识(2026-10-04 Frank「升级 Pro 这个删了,放到 我的 模块里,加一个我的订阅」:
+ * 账户下拉的「升级 Pro」挪进来,当前套餐 + 升级 / 续买一颗钮,钮打开全站同一个定价框)。
  */
-export const RA_KEY_HEAD = 'ra'
+export const SEC_SUB = 'sub'
+
+/**
+ * 「我的」页 banner 的模块名(2026-10-05 Frank「我的 也需要 banner 吧」:照全站模块页头「图标 + 页名 + 一句副题」;
+ * 配色复用主品牌蓝,没有专属图组 = 渐变带 —— 横幅图库每组都已有板块在用,新图要另下载)。
+ * 同日 Frank「可以,下吧」:新下三张专属图,图组由 banner 桶的 BANNER_IMGS.account 给。
+ */
+export const ACCT_BANNER_MODULE = 'account'
+
+/**
+ * 「我的」页 banner 的页名词条(与页头导航「我的」同一条,页名与入口同字)。
+ */
+export const ACCT_BANNER_TITLE_KEY = 'nav.mine'
+
+/**
+ * 「我的」页 banner 的副题词条。
+ */
+export const ACCT_BANNER_SUB_KEY = 'acct.bnSub'
+
+/**
+ * 「我的订阅」节 Pro 档的标(本域自抄,与 components/auth 的 PRO_LABEL 同字:产品名不翻)。
+ */
+export const PRO_LABEL = 'Pro'
+
+/**
+ * 「我的订阅」节免费档那颗「升级 Pro」的钮档(这一节唯一的主行动,蓝底)。
+ */
+export const UPGRADE_BTN_KIND = 'primary'
+
+/**
+ * 「我的订阅」节 Pro 档那颗「续买」的钮档(已付费,续买不抢眼:白底描边)。
+ */
+export const RENEW_BTN_KIND = 'secondary'
+
+/**
+ * 「我的简历」取清单的接口(2026-10-06 一人多份;id、是否默认、文件名、类型、大小、上传时刻,不带原件)。
+ */
+export const URL_RESUME_FILES = '/api/resume/files'
+
+/**
+ * 「我的简历」原件接口:GET 取原件、PUT 新加或替换、DELETE 删、PATCH 设默认;哪一份由 `?id=` 指明(PUT 不带 = 新加)。
+ */
+export const URL_RESUME_FILE = '/api/resume/file'
+
+/**
+ * 指明哪一份简历的查询参数头(拼在原件接口后)。
+ */
+export const Q_ID_HEAD = '?id='
+
+/**
+ * 下载参数(拼在 id 之后,服务端按附件给)。
+ */
+export const Q_DL_TAIL = '&dl=1'
+
+/**
+ * 缩略图 / 预览取原件时拼的版本参数头:替换了文件地址就变,浏览器与 pdf.js 都不会拿到上一份。
+ */
+export const Q_VER_MID = '&v='
+
+/**
+ * 每人最多几份简历(与 lib/resume 的 RESUME_FILES_MAX 是同一个数,各域各抄一份;Frank 10-06 选 5 份)。
+ */
+export const RESUME_FILES_MAX = 5
+
+/**
+ * 份数「2 / 5」的分隔。
+ */
+export const COUNT_SEP = ' / '
+
+/**
+ * 「默认」胶囊的档(tag 桶 ok 档:绿底)。
+ */
+export const DEFAULT_TAG = 'ok'
+
+/**
+ * 预览弹框的尺寸档(modal 桶 lg:电脑上看得清一页 Letter,手机铺满整屏)。
+ */
+export const PREVIEW_SIZE = 'lg'
+
+/**
+ * 上传用的请求方法(替换 = 覆盖,天然幂等,所以是 PUT 不是 POST)。
+ */
+export const METHOD_PUT = 'PUT'
+
+/**
+ * 上传表单里文件那一格的字段名(与 lib/resume 的 FIELD_FILE 是同一份线格式,各域各抄一份)。
+ */
+export const FIELD_FILE = 'file'
+
+/**
+ * 隐藏文件框的 type。
+ */
+export const RESUME_INPUT_TYPE = 'file'
+
+/**
+ * 文件框只让选 PDF 与 .docx(扩展名加 MIME 两种写法都给,审查 #14:手机文件选择器有的只认 MIME)。
+ */
+export const RESUME_ACCEPT = '.pdf,.docx,application/pdf,'
+  + 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+
+/**
+ * 上传前在浏览器里先挡一道的大小上限(5 MB;服务端还会再判一次,这道只为不白传)。
+ */
+export const RESUME_MAX_BYTES = 5 * 1024 * 1024
+
+/**
+ * PDF 的 MIME(决定画缩略图还是画 Word 占位)。
+ */
+export const MIME_PDF = 'application/pdf'
+
+/**
+ * Word 占位页上的类型字样(文件类型代号,不翻译)。
+ */
+export const DOCX_BADGE = 'DOCX'
+
+/**
+ * 下载钮的 target:本页。带了 target 才走裸 <a>(LinkButton 的规矩)—— 不带就走 next/link,
+ * 它会预取这条原件地址、点下去还先试客户端切页,白白多拉一次原件。
+ */
+export const TARGET_SELF = '_self'
+
+/**
+ * 一 KB 的字节数。
+ */
+export const BYTES_KB = 1024
+
+/**
+ * 一 MB 的字节数。
+ */
+export const BYTES_MB = 1024 * 1024
+
+/**
+ * 大小的单位字样:KB(带前导空格,接在数字后)。
+ */
+export const UNIT_KB = ' KB'
+
+/**
+ * 大小的单位字样:MB。
+ */
+export const UNIT_MB = ' MB'
+
+/**
+ * MB 保留的小数位。
+ */
+export const MB_DIGITS = 1
+
+/**
+ * 「我的简历」报错为空串 = **没有错**(不出那一行红字)。
+ */
+export const RF_ERR_NONE = ''
+
+/**
+ * 服务端错误码 → 报错文案键;表里没有的(网络断、500)一律落「上传失败,稍后再试」。
+ */
+export const RF_ERR_KEY: Record<string, string> = {
+  /**
+   * 不是 PDF / .docx(服务端按文件头判)。
+   */
+  type: 'rf.err.type',
+
+  /**
+   * 超过 5 MB。
+   */
+  size: 'rf.err.size',
+
+  /**
+   * 今天上传次数用完。
+   */
+  limit: 'rf.err.limit',
+
+  /**
+   * 已经 5 份了(2026-10-06 一人多份)。
+   */
+  full: 'rf.err.full',
+}
+
+/**
+ * 表里查不到的报错落点。
+ */
+export const RF_ERR_FALLBACK = 'rf.err.net'
+
+/**
+ * 浏览器端先挡的两种错(不发请求,直接给对应文案):文件太大。
+ */
+export const RF_ERR_SIZE = 'size'
+
+/**
+ * 「选择文件 / 替换文件」钮档:第一次来是主行动(蓝底),替换时退成描边。
+ */
+export const RF_PICK_KIND = 'primary'
+
+/**
+ * 卡片上几颗操作钮的钮档(预览 / 替换 / 下载 / 删除:白底描边)。
+ */
+export const RF_ACT_KIND = 'secondary'
+
+/**
+ * 「确认删除」的钮档(删了不可逆,红色)。
+ */
+export const RF_DANGER_KIND = 'danger'
+
+/**
+ * 预览弹框里一页一张画布的标签名。
+ */
+export const CANVAS_TAG = 'canvas'
+
+/**
+ * 缩略图画第几页(第一页就够认出是哪份)。
+ */
+export const THUMB_PAGE = 1
+
+/**
+ * 量 PDF 原始宽度用的缩放(1 = 原尺寸,再按画布宽度算真缩放)。
+ */
+export const THUMB_BASE_SCALE = 1
 
 /**
  * 节导航表:键 = 节标识(同 URL 深链 `?sec=` 的取值),labelKey = 该节标题的 i18n 键。
@@ -84,19 +298,16 @@ export const RA_KEY_HEAD = 'ra'
  * 移民档案节「基本上是完全没法用」)—— 撤概览 overview、移民档案 profile、已保存的筛选 saved、
  * 升级 Pro buy 四节,只剩三节;我的简历 resume 是新节,顶在最上面并当默认落点。它照样复用标题键:
  * rm.arch.title 只有简历存档件在用,三语值直接改成「我的简历」,不另起侧栏键。
+ * 2026-10-05 简历存档件退役(换成原件卡片 ResumeFile),rm.arch.title 照旧当这一节的侧栏与节标题。
  * 旧深链 `?sec=` 带着撤掉的四个值进来,不在这张表里 → 落回默认节(见 functions 的 secLinkOf)。
+ * 2026-10-04 Frank「升级 Pro 这个删了,放到 我的 模块里,加一个我的订阅」:末尾加回一节 我的订阅 sub(深链 `?sec=sub`)。
  */
 export const SEC_TABS = [
   { sec: 'resume', labelKey: 'rm.arch.title' },
   { sec: 'favs', labelKey: 'fav.title' },
   { sec: 'sjobs', labelKey: 'sj.title' },
+  { sec: 'sub', labelKey: 'sub.title' },
 ] as const
-
-/**
- * 退出登录钮的变体(组件统一 P2 #113:退出登录 = ghost 灰,危险性弱的操作走 B 映射 ——
- * 它不是危险操作,重新登录就回来了,所以不用 danger 红)。
- */
-export const LOGOUT_BTN_KIND = 'ghost'
 
 /**
  * 定制样式钮的统一底座(2026-08-26 Frank「<button 这种不允许直接使用」——
@@ -104,6 +315,11 @@ export const LOGOUT_BTN_KIND = 'ghost'
  * Button 只出统一的语义与可达性(disabled/aria)。
  */
 export const PLAIN_BTN_KIND = 'ghost'
+
+/**
+ * 页签条的 id 前缀(拼成 aria id;同页只有这一条,起个本域的名字免得和别处撞)。
+ */
+export const ACCT_TAB_ID = 'acct-tab'
 
 /**
  * 支付成功提示的色档(notice 四色里的绿:成功)。Stripe 回跳带 `?ok=1` 时出这一条 ——
@@ -147,10 +363,6 @@ export const QP_SEC = 'sec'
  */
 export const URL_ME = '/api/users/me'
 
-/**
- * 登出接口(POST;清的是服务端会话,本地答案内存另由 resetAnswersMemory 清)。
- */
-export const URL_LOGOUT = '/api/users/logout'
 
 /**
  * 改用户资料的接口前缀(PATCH `/api/users/:id`,本人可改;昵称保存走这里)。
@@ -161,11 +373,6 @@ export const URL_USER_HEAD = '/api/users/'
  * fetch 的凭据档:同源带 cookie(账户页所有请求都要认人)。
  */
 export const CRED_INCLUDE = 'include'
-
-/**
- * POST 方法字(登出与发起购买)。
- */
-export const METHOD_POST = 'POST'
 
 /**
  * PATCH 方法字(改昵称)。

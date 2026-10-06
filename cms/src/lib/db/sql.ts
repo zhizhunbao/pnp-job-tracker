@@ -2900,3 +2900,59 @@ export const GUIDE_LMIA_EMPLOYERS = `SELECT c.name, c.lmia_positions, c.lmia_pos
      GROUP BY c.id, c.name, c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter
      ORDER BY COALESCE(c.lmia_positions_skilled, 0) DESC, open_jobs DESC, c.name ASC
      LIMIT $3`
+
+// =========================================================================
+// 30. 简历原件(「我的简历」;2026-10-05 立,设计稿 docs/design/我的模块v2-20261005.md「定稿」;
+//     2026-10-06 改一人多份,最多 5 份、一份默认,表 docs/sql/user-resumes-multi-20261006.sql)
+// =========================================================================
+
+/**
+ * 本人的简历清单(不带原件):默认那份在最前,其余按上传时刻新到旧。$1=用户 id。
+ */
+export const RESUME_FILE_LIST = `SELECT id, file_name, mime, size_bytes, uploaded_at, is_default
+     FROM user_resumes WHERE user_id = $1 ORDER BY is_default DESC, uploaded_at DESC`
+
+/**
+ * 本人有几份简历(上传前判是否到 5 份上限)。$1=用户 id。
+ */
+export const RESUME_FILE_COUNT = `SELECT count(*)::int AS n FROM user_resumes WHERE user_id = $1`
+
+/**
+ * 本人某一份简历的原件(base64)与吐字节要的头信息。$1=用户 id,$2=简历 id。不是本人的 = 0 行。
+ */
+export const RESUME_FILE_GET = `SELECT file_b64, file_name, mime FROM user_resumes WHERE user_id = $1 AND id = $2`
+
+/**
+ * 新加一份。这个人还一份都没有时,新这份就是默认。$1=用户 id,$2=base64,$3=文件名,$4=MIME,$5=字节数,
+ * $6=上传时刻(ISO 串;由调用方给,接口交回卡片的时刻与库里同一个值)。回新行的 id 与是否默认。
+ */
+export const RESUME_FILE_INSERT = `INSERT INTO user_resumes (user_id, file_b64, file_name, mime, size_bytes, uploaded_at, is_default)
+     VALUES ($1, $2, $3, $4, $5, $6::timestamptz, NOT EXISTS (SELECT 1 FROM user_resumes WHERE user_id = $1))
+     RETURNING id, is_default`
+
+/**
+ * 替换本人某一份(原地覆盖,默认与否不变)。$1=用户 id,$2=简历 id,$3=base64,$4=文件名,$5=MIME,$6=字节数,
+ * $7=上传时刻。不是本人的 = 0 行。
+ */
+export const RESUME_FILE_REPLACE = `UPDATE user_resumes SET file_b64 = $3, file_name = $4, mime = $5, size_bytes = $6,
+       uploaded_at = $7::timestamptz, updated_at = now()
+     WHERE user_id = $1 AND id = $2 RETURNING id, is_default`
+
+/**
+ * 删本人某一份。$1=用户 id,$2=简历 id。
+ */
+export const RESUME_FILE_DELETE = `DELETE FROM user_resumes WHERE user_id = $1 AND id = $2`
+
+/**
+ * 删掉的是默认那份时补位:这个人没有默认了,就把最新的一份设为默认(一份都不剩则什么都不做)。$1=用户 id。
+ */
+export const RESUME_FILE_PROMOTE = `UPDATE user_resumes SET is_default = true
+     WHERE id = (SELECT id FROM user_resumes WHERE user_id = $1 ORDER BY uploaded_at DESC LIMIT 1)
+       AND NOT EXISTS (SELECT 1 FROM user_resumes WHERE user_id = $1 AND is_default)`
+
+/**
+ * 把本人某一份设为默认,其余全部取消默认(一条语句,不会出现两份默认)。$1=用户 id,$2=简历 id。
+ * 那一份不是本人的 = 0 行(别人的默认不动)。
+ */
+export const RESUME_FILE_SET_DEFAULT = `UPDATE user_resumes SET is_default = (id = $2)
+     WHERE user_id = $1 AND EXISTS (SELECT 1 FROM user_resumes WHERE user_id = $1 AND id = $2)`

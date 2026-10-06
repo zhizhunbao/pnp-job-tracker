@@ -367,3 +367,333 @@ export type NocTitleDbRow = {
  * 可缺位的 IELTS 四项（简历没写是 null）。
  */
 export type MaybeIelts = IeltsCells | null
+
+/**
+ * 简历原件元信息的库行(user_resumes 不带原件那几格;pg 原样交回,先按可空收)。
+ */
+export type ResumeFileDbRow = {
+  /**
+   * 简历 id(serial)。
+   */
+  id: number | string | null
+
+  /**
+   * 是不是默认那份。
+   */
+  is_default: boolean | null
+
+  /**
+   * 上传时的原文件名。
+   */
+  file_name: string | null
+
+  /**
+   * MIME(PDF 或 .docx)。
+   */
+  mime: string | null
+
+  /**
+   * 字节数(int4,pg 给 number;按库行惯例连字符串一起收)。
+   */
+  size_bytes: number | string | null
+
+  /**
+   * 上传时刻(timestamptz,pg 给 Date)。
+   */
+  uploaded_at: TimeCell
+}
+
+/**
+ * 库回的时刻格(timestamptz:pg 给 Date,测试桩可能给串)。
+ */
+export type TimeCell = Date | string | null
+
+/**
+ * 简历原件元信息(洗净;也是上传 / 查元信息两个接口的线格式)。
+ */
+export type ResumeFileMeta = {
+  /**
+   * 简历 id(取原件、替换、删除、设默认时指明是哪一份)。
+   */
+  id: number
+
+  /**
+   * 是不是默认那份(投递时默认附它)。
+   */
+  isDefault: boolean
+
+  /**
+   * 上传时的原文件名(只给本人看)。
+   */
+  fileName: string
+
+  /**
+   * MIME。
+   */
+  mime: string
+
+  /**
+   * 字节数。
+   */
+  sizeBytes: number
+
+  /**
+   * 上传时刻(ISO 串)。
+   */
+  uploadedAt: string
+}
+
+/**
+ * 本人的简历清单(默认那份在最前)。
+ */
+export type ResumeFileMetas = ResumeFileMeta[]
+
+/**
+ * 简历原件的库行(带 base64 正文)。
+ */
+export type ResumeBlobDbRow = {
+  /**
+   * 原件 base64。
+   */
+  file_b64: string | null
+
+  /**
+   * 原文件名。
+   */
+  file_name: string | null
+
+  /**
+   * MIME。
+   */
+  mime: string | null
+}
+
+/**
+ * 简历原件(洗净:base64 已解回字节)。
+ */
+export type ResumeBlob = {
+  /**
+   * 原文件名。
+   */
+  fileName: string
+
+  /**
+   * MIME。
+   */
+  mime: string
+
+  /**
+   * 原件字节。
+   */
+  bytes: Uint8Array
+}
+
+/**
+ * 原件或没有。
+ */
+export type MaybeResumeBlob = ResumeBlob | null
+
+/**
+ * 用户 id(payload 给的是 number 或 string,原样带进 SQL 参数)。
+ */
+export type UserId = string | number
+
+/**
+ * 按人取 / 删简历(`loadResumeMeta` / `loadResumeBlob` / `deleteResumeFile`)的入参。
+ */
+export type ResumeUserIn = {
+  /**
+   * 数据库连接(调用方注入,本域不自己连库)。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: UserId
+}
+
+/**
+ * 取清单的返回。
+ */
+export type ResumeListOut = Promise<ResumeFileMetas>
+
+/**
+ * 按人数份数的返回。
+ */
+export type ResumeCountOut = Promise<number>
+
+/**
+ * 计数库行。
+ */
+export type CountDbRow = {
+  /**
+   * 份数。
+   */
+  n: number | string | null
+}
+
+/**
+ * 写入后的回行(新 id 与是否默认)。
+ */
+export type ResumeIdDbRow = {
+  /**
+   * 简历 id。
+   */
+  id: number | string | null
+
+  /**
+   * 是不是默认那份。
+   */
+  is_default: boolean | null
+}
+
+/**
+ * 写入后的回行(洗净)。
+ */
+export type ResumeIdFact = {
+  /**
+   * 简历 id。
+   */
+  id: number
+
+  /**
+   * 是不是默认那份。
+   */
+  isDefault: boolean
+}
+
+/**
+ * 按人按份取 / 删 / 设默认(`loadResumeBlob` / `deleteResumeFile` / `setDefaultResume`)的入参。
+ */
+export type ResumeOneIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: UserId
+
+  /**
+   * 简历 id。
+   */
+  id: number
+}
+
+/**
+ * 设默认的返回:那一份是不是本人的(不是 = 什么都没改)。
+ */
+export type ResumeSetDefaultOut = Promise<boolean>
+
+/**
+ * 取原件的返回。
+ */
+export type ResumeBlobOut = Promise<MaybeResumeBlob>
+
+/**
+ * 新加或替换一份(`saveResumeFile`)的入参。
+ */
+export type ResumeSaveIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 替换哪一份(null = 新加一份)。
+   */
+  replaceId: number | null
+
+  /**
+   * 用户 id。
+   */
+  userId: UserId
+
+  /**
+   * 原件 base64。
+   */
+  b64: string
+
+  /**
+   * 文件名(已截到入库上限)。
+   */
+  fileName: string
+
+  /**
+   * MIME(已按文件头判过)。
+   */
+  mime: string
+
+  /**
+   * 字节数。
+   */
+  sizeBytes: number
+}
+
+/**
+ * 存简历的返回:写好的元信息;替换的那一份不是本人的给 null。
+ */
+export type ResumeSaveOut = Promise<ResumeFileMeta | null>
+
+/**
+ * 删简历的返回。
+ */
+export type ResumeDeleteOut = Promise<void>
+
+/**
+ * 判文件类型(`fileMimeOf`)的入参。
+ */
+export type FileMimeIn = {
+  /**
+   * 上传时的文件名(取扩展名)。
+   */
+  name: string
+
+  /**
+   * 文件头(前几个字节按 latin1 读成的串)。
+   */
+  head: string
+}
+
+/**
+ * MIME 或「不收」。
+ */
+export type MaybeMime = string | null
+
+/**
+ * 拼处置头(`dispositionOf`)的入参。
+ */
+export type DispositionIn = {
+  /**
+   * 文件名。
+   */
+  fileName: string
+
+  /**
+   * 是否按下载给(否则浏览器里直接打开)。
+   */
+  download: boolean
+}
+
+/**
+ * 补文件名(`fileNameOf`)的入参。
+ */
+export type FileNameIn = {
+  /**
+   * 浏览器交来的文件名(可能是空串)。
+   */
+  name: string
+
+  /**
+   * 已判出的 MIME。
+   */
+  mime: string
+}
+
+/**
+ * 简历 id 或没有(查询参数没带、或不是正整数)。
+ */
+export type MaybeResumeId = number | null

@@ -8,8 +8,11 @@
 
 /**
  * 模块名(定 banner 的配色档;home 复用 jobs 档 —— 主品牌蓝不发明新色)。
+ * 2026-10-05 加 account(Frank「我的 也需要 banner 吧」):同样复用 jobs 档,没有专属图组,走渐变带。
+ * 同日「可以,下吧」:新下三张专属图(BANNER_IMGS.account),走图版。
  */
-export type BannerModule = 'home' | 'jobs' | 'pathways' | 'rank' | 'stats' | 'news' | 'employers' | 'library'
+export type BannerModule =
+  | 'home' | 'jobs' | 'pathways' | 'rank' | 'stats' | 'news' | 'employers' | 'library' | 'account'
 
 /**
  * Banner 的 props(两形态一组件:images 传了且没挂 = 图版,否则渐变带兜底)。

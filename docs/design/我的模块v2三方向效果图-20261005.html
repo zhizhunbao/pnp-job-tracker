@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的模块三方向</title>
+<!-- 我的模块 v2 三方向(2026-10-05,Frank「简历上传啊,预览,编辑,与 jd 对比,按岗位生成等等。还有 订阅 页面太素」)。
+     用法:?d=A|B|C&s=1|2|3|m;1 = 简历主屏,2 = 关键第二屏,3 = 订阅,m = 手机两屏。外框沿用简版(banner + 白卡 + 横页签)。
+     简历、岗位、用量、价格档为占位;Pro 权益数字未拍板。 -->
+<style>
+  :root { --primary:#2563eb; --primary-deep:#1e40af; --ok:#15803d; --okbg:#dcfce7; --miss:#b91c1c; --missbg:#fee2e2; --warn:#92400e; --warnbg:#fef3c7;
+    --text:#111827; --text2:#6b7280; --text3:#9ca3af; --border:#e5e7eb; --hair:#f3f4f6; --bg:#f9fafb; --hover:#eff6ff; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; background:var(--bg); }
+  body { font-family:system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; font-size:14px; line-height:1.6; color:#1f2937; }
+  a { color:var(--primary); text-decoration:none; }
+
+  .hd { height:48px; background:#fff; border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 82px; }
+  .logo { display:flex; align-items:center; gap:7px; font-weight:700; font-size:18px; color:var(--text); }
+  .logo b { color:#e11d48; }
+  .tagline { font-size:13px; color:var(--text3); margin-left:8px; }
+  .nav { margin-left:auto; display:flex; align-items:center; gap:18px; color:#4b5563; }
+  .nav .on { color:var(--primary); font-weight:600; }
+  .lang { display:flex; border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+  .lang span { padding:1px 10px; color:var(--text2); font-size:13px; }
+  .lang .on { background:var(--primary); color:#fff; }
+  .ava { width:30px; height:30px; border-radius:50%; background:var(--primary); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; flex:none; }
+  .main { padding:18px 82px 48px; }
+  .banner { height:130px; border-radius:14px; position:relative; overflow:hidden; color:#fff;
+    background: linear-gradient(90deg, rgba(30,58,138,.92), rgba(37,99,235,.6) 55%, rgba(30,64,175,.85)), url('../../cms/public/img/banners/account-1.jpg') center 40%/cover; }
+  .banner .t { position:absolute; left:22px; top:38px; font-size:22px; font-weight:700; }
+  .banner .cnt { position:absolute; left:22px; bottom:14px; font-size:13px; }
+  .sheet { background:#fff; border:1px solid var(--border); border-radius:12px; margin-top:18px; }
+  .tabs { display:flex; gap:28px; padding:0 24px; border-bottom:1px solid var(--border); }
+  .tabs span { padding:14px 0 12px; font-size:15px; color:var(--text2); border-bottom:2px solid transparent; }
+  .tabs .on { color:var(--text); font-weight:600; border-color:var(--primary); }
+  .body { padding:20px 24px 24px; }
+
+  h3 { margin:0; font-size:16px; color:var(--text); }
+  .row { display:flex; align-items:center; gap:10px; }
+  .sp { margin-left:auto; }
+  .muted { color:var(--text2); }
+  .small { font-size:13px; }
+  .tiny { font-size:12px; color:var(--text3); }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:34px; padding:0 14px; border-radius:8px; font-size:14px; font-weight:600; border:1px solid var(--border); background:#fff; color:#374151; white-space:nowrap; }
+  .btn.pri { background:var(--primary); border-color:var(--primary); color:#fff; }
+  .btn.sm { height:28px; padding:0 10px; font-size:13px; font-weight:500; }
+  .btn.lg { height:42px; padding:0 20px; font-size:15px; }
+  .lnk { color:var(--primary); font-size:14px; white-space:nowrap; }
+  .pill { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600; border-radius:999px; padding:1px 9px; white-space:nowrap; }
+  .pill.base { background:var(--hover); color:var(--primary-deep); }
+  .pill.ok { background:var(--okbg); color:var(--ok); }
+  .pill.miss { background:var(--missbg); color:var(--miss); }
+  .pill.warn { background:var(--warnbg); color:var(--warn); }
+  .pill.gray { background:var(--hair); color:var(--text2); }
+  .card { border:1px solid var(--border); border-radius:12px; background:#fff; padding:16px; }
+  .grid3 { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; }
+  .divider { border-top:1px solid var(--hair); margin:22px 0; }
+
+  /* 纸面(简历 / 信):原尺寸 612×792 排版,外层按比例缩 */
+  .paperwrap { position:relative; overflow:hidden; border:1px solid var(--border); border-radius:6px; background:#fff; box-shadow:0 2px 10px rgba(15,23,42,.08); flex:none; }
+  .paper { width:612px; height:792px; padding:40px 46px; transform-origin:0 0; position:absolute; left:0; top:0; font-family: Georgia, "Times New Roman", serif; color:#1f2937; font-size:11.5px; line-height:1.45; }
+  .paper .nm { font-size:24px; font-weight:700; text-align:center; letter-spacing:1px; }
+  .paper .ct { text-align:center; color:#4b5563; font-size:11px; margin-bottom:10px; }
+  .paper .sh { font-size:12px; font-weight:700; letter-spacing:1px; border-bottom:1px solid #9ca3af; margin:12px 0 5px; }
+  .paper .job { display:flex; justify-content:space-between; font-weight:700; margin-top:6px; }
+  .paper .org { font-style:italic; color:#374151; }
+  .paper ul { margin:3px 0 0 16px; padding:0; }
+  .paper li { margin:1px 0; }
+  .paper .hl { background:#dcfce7; }
+  .paper .nw { background:#fef3c7; }
+  .paper.letter { font-size:12.5px; line-height:1.6; padding:56px 60px; }
+
+  /* 对照清单 */
+  .req { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--hair); }
+  .req:last-child { border-bottom:none; }
+  .mk { width:20px; height:20px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; margin-top:1px; }
+  .mk.ok { background:var(--okbg); color:var(--ok); }
+  .mk.miss { background:var(--missbg); color:var(--miss); }
+  .mk.ask { background:var(--warnbg); color:var(--warn); }
+  .req .t { color:var(--text); }
+  .req .ev { font-size:13px; color:var(--text2); margin-top:2px; }
+  .req .tip { font-size:13px; color:#374151; margin-top:4px; background:var(--bg); border-radius:6px; padding:6px 10px; }
+  .slot { color:var(--primary); font-weight:600; }
+
+  /* 编辑器 */
+  .ed { display:grid; grid-template-columns:420px 1fr; gap:24px; }
+  .acc { border:1px solid var(--border); border-radius:10px; margin-bottom:10px; }
+  .acc .h { display:flex; align-items:center; padding:10px 14px; font-weight:600; color:var(--text); }
+  .acc .h .sp { color:var(--text3); font-weight:400; font-size:13px; }
+  .acc .b { padding:0 14px 14px; }
+  .fld { border:1px solid var(--border); border-radius:8px; padding:8px 10px; font-size:13px; color:#374151; background:#fff; margin-top:6px; }
+  .fld.lab { border:none; padding:0; margin-top:8px; color:var(--text2); font-size:12px; }
+  .chipset { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .chip { font-size:12px; border:1px solid var(--border); border-radius:999px; padding:1px 10px; color:#374151; background:var(--bg); }
+  .chip.add { border-style:dashed; color:var(--primary); background:#fff; }
+  .topbar { display:flex; align-items:center; gap:12px; padding-bottom:16px; border-bottom:1px solid var(--border); margin-bottom:18px; }
+  .sel { border:1px solid var(--border); border-radius:8px; height:34px; display:flex; align-items:center; padding:0 12px; gap:8px; font-size:14px; color:var(--text); }
+  .sel::after { content:"▾"; color:var(--text3); margin-left:6px; }
+
+  /* 订阅 */
+  .meter { height:8px; background:var(--hair); border-radius:999px; overflow:hidden; margin-top:6px; }
+  .meter i { display:block; height:100%; background:var(--primary); border-radius:999px; }
+  .stat { font-size:28px; font-weight:800; color:var(--text); line-height:1.2; }
+  .plancard { border-radius:14px; padding:20px 22px; color:#fff; background:linear-gradient(120deg, #1e3a8a, #2563eb 60%, #3b82f6); }
+  .plancard .big { font-size:30px; font-weight:800; }
+  .pk { border:1px solid var(--border); border-radius:12px; padding:16px 18px; position:relative; }
+  .pk.best { border:2px solid var(--primary); }
+  .pk .price { font-size:28px; font-weight:800; color:var(--text); }
+  .pk .flag { position:absolute; top:-11px; right:14px; background:var(--primary); color:#fff; font-size:12px; font-weight:600; border-radius:999px; padding:1px 10px; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-weight:500; font-size:13px; color:var(--text3); padding:10px 12px 8px; border-bottom:1px solid var(--border); }
+  td { padding:12px; border-bottom:1px solid var(--hair); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  th:first-child, td:first-child { padding-left:0; }
+  .cmp td, .cmp th { text-align:center; }
+  .cmp td:first-child, .cmp th:first-child { text-align:left; }
+  .cmp .on { background:#f5f9ff; }
+  .yes { color:var(--ok); font-weight:700; }
+  .no { color:var(--text3); }
+
+  /* 手机 */
+  .board { padding:20px 24px 28px; background:#eef0f3; }
+  .board h1 { font-size:18px; margin:0 0 14px; }
+  .phones { display:flex; gap:22px; align-items:flex-start; }
+  .cap { font-size:13px; color:#374151; margin-top:8px; }
+  .phone { width:375px; height:812px; background:var(--bg); border:1px solid var(--border); border-radius:18px; overflow:hidden; position:relative; }
+  .phone .hd { padding:0 16px; height:60px; gap:12px; }
+  .burger { width:40px; height:40px; border:1px solid var(--border); border-radius:10px; display:flex; align-items:center; justify-content:center; }
+  .phone .ava { margin-left:auto; }
+  .phone .main { padding:14px 16px 0; }
+  .phone .banner { height:76px; }
+  .phone .banner .t { top:12px; left:16px; font-size:19px; }
+  .phone .banner .cnt { left:16px; bottom:8px; }
+  .phone .sheet { margin-top:12px; }
+  .phone .tabs { padding:0 14px; gap:0; justify-content:space-between; }
+  .phone .tabs span { font-size:14px; }
+  .phone .body { padding:14px; }
+  .mbar { position:absolute; left:0; right:0; bottom:0; background:#fff; border-top:1px solid var(--border); padding:10px 16px 14px; display:flex; gap:10px; }
+  .mbar .btn { flex:1; height:42px; font-size:15px; }
+  .phone.page { background:#fff; }
+  .ptop { display:flex; align-items:center; padding:14px 16px; border-bottom:1px solid var(--border); gap:10px; }
+  .ptop h2 { margin:0; font-size:17px; color:var(--text); line-height:1.3; }
+
+  /* 我的求职:进度表(Frank「像站内信」后改:主角是岗位走到哪一步,往来降成岗位页最后一签) */
+  .steps { display:flex; align-items:center; gap:0; }
+  .steps .dot { width:10px; height:10px; border-radius:50%; background:#d1d5db; flex:none; }
+  .steps .dot.on { background:var(--primary); }
+  .steps .dot.ok { background:var(--ok); }
+  .steps .dot.bad { background:#9ca3af; }
+  .steps .bar { width:44px; height:2px; background:#e5e7eb; }
+  .steps .bar.on { background:var(--primary); }
+  .steplbl { display:flex; gap:0; font-size:12px; color:var(--text3); margin-top:4px; }
+  .steplbl span { width:54px; }
+  .steplbl span.cur { color:var(--text); font-weight:600; }
+  .mat { font-size:13px; line-height:1.5; }
+  .mat a { font-size:13px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const Q = new URLSearchParams(location.search)
+const DIR = Q.get('d') || 'A'
+const S = Q.get('s') || '1'
+
+/* ---------- 纸面 ---------- */
+function resumeHtml(mode) {
+  /* mode: base 底稿;tailored 本岗版(绿=按岗调整,黄=新出现的事实待确认);match 对照时把命中的行标绿 */
+  const t = mode === 'tailored'
+  const m = mode === 'match'
+  const g = on => (on ? ' class="hl"' : '')
+  const summary = t
+    ? '<span class="hl">Customer service professional with 4+ years of front-line experience in high-volume hotel and telecom settings,</span> fluent in English and Mandarin. <span class="hl">Calm on the phone, quick with CRM notes, and focused on first-contact resolution.</span>'
+    : 'Customer-focused professional with experience in hotel front desk and telecom customer service. Fluent in English and Mandarin.'
+  return `<div class="nm">SAN ZHANG</div>
+    <div class="ct">Toronto, ON  |  (416) 555-0182  |  zhang.san@gmail.com</div>
+    <div class="sh">SUMMARY</div><div>${summary}</div>
+    <div class="sh">EXPERIENCE</div>
+    <div class="job"><span>Front Desk Associate</span><span>2023 – Present</span></div>
+    <div class="org">Hilton Toronto Downtown, Toronto, ON</div>
+    <ul>
+      <li${g(m)}>${t ? '<span class="hl">Resolve guest issues by phone and in person, keeping notes in Opera PMS for every case</span>' : 'Check guests in and out and answer questions at the front desk'}</li>
+      <li${g(m)}>${t ? 'Answer <span class="nw">60+ calls per shift</span> on the reservations line during peak season' : 'Answer phone calls and take reservations'}</li>
+      <li>Handle cash and card payments; balance the drawer at end of shift</li>
+    </ul>
+    <div class="job"><span>Customer Service Representative</span><span>2019 – 2022</span></div>
+    <div class="org">China Mobile, Shanghai, China</div>
+    <ul>
+      <li${g(m)}>${t ? '<span class="hl">Handled inbound billing and plan inquiries in a 200-seat call centre</span>' : 'Handled customer inquiries about bills and plans'}</li>
+      <li>Trained 5 new team members on the ticketing system</li>
+      <li${g(m)}>Kept a 95% customer satisfaction score for two years</li>
+    </ul>
+    <div class="sh">EDUCATION</div>
+    <div class="job"><span>Diploma, Hospitality Management</span><span>2023</span></div>
+    <div class="org">Centennial College, Toronto, ON</div>
+    <div class="sh">SKILLS</div>
+    <div${g(m)}>${t ? '<span class="hl">Inbound call handling, CRM notes (Opera PMS, ticketing),</span> payments and POS, English and Mandarin, Microsoft Excel' : 'Customer service, POS, Microsoft Excel, English, Mandarin'}</div>`
+}
+function letterHtml() {
+  return `<div>San Zhang<br>Toronto, ON<br>zhang.san@gmail.com</div><br>
+    <div>October 5, 2026</div><br>
+    <div>Dear Hiring Manager,</div><br>
+    <div>I am writing to apply for the <b>Customer Service Representative - Call Centre</b> position at <b>i3 Solutions Inc.</b></div><br>
+    <div>For the past three years I have answered guests at the Hilton Toronto Downtown front desk and on its reservations line, and before that I handled billing questions in a 200-seat call centre in Shanghai. I keep notes for every case and aim to solve each call the first time.</div><br>
+    <div>I would welcome the chance to bring that experience to your team.</div><br>
+    <div>Sincerely,<br>San Zhang</div>`
+}
+function paper(kind, w, mode) {
+  const k = w / 612
+  const h = Math.round(792 * k)
+  const inner = kind === 'letter' ? letterHtml() : resumeHtml(mode || 'base')
+  return `<div class="paperwrap" style="width:${w}px;height:${h}px"><div class="paper${kind === 'letter' ? ' letter' : ''}" style="transform:scale(${k})">${inner}</div></div>`
+}
+
+/* ---------- 外框 ---------- */
+const TABS = ['我的求职', '我的收藏', '我的简历', '我的订阅']
+function header() {
+  return `<div class="hd"><div class="logo"><b>✿</b>Offer2PR</div><span class="tagline">每日更新、全加拿大全职业、移民价值视角</span>
+    <div class="nav"><span>就业把脉</span><span>职位</span><span>雇主</span><span>资讯</span><span class="on">我的</span>
+    <div class="lang"><span class="on">中</span><span>EN</span><span>한</span></div><div class="ava">Z</div></div></div>`
+}
+function sheet(i, body, tabs) {
+  const ts = tabs || TABS
+  return `<div class="sheet"><div class="tabs">${ts.map((x, k) => `<span class="${k === i ? 'on' : ''}">${x}</span>`).join('')}</div><div class="body">${body}</div></div>`
+}
+function page(i, body) {
+  return header() + `<div class="main"><div class="banner"><div class="t">我的</div><div class="cnt">已投 4 封</div></div>${sheet(i, body)}</div>`
+}
+function subpage(title, sub, body) {
+  return header() + `<div class="main"><div class="sheet" style="margin-top:0"><div class="body">
+    <div class="row" style="margin-bottom:14px"><div><div class="tiny">${sub}</div><h3 style="font-size:22px">${title}</h3></div><span class="btn sp">返回</span></div>${body}</div></div></div>`
+}
+const JOB = { t: 'customer service representative - call centre', z: '客户服务代表 - 呼叫中心', c: 'i3 Solutions Inc.', city: 'Toronto, ON' }
+const REQS = [
+  { k: 'ok', t: '1 年以上客服经验', ev: 'Front Desk Associate 2023 至今;China Mobile 客服 2019–2022' },
+  { k: 'ok', t: '高中或以上学历', ev: 'Centennial College 酒店管理文凭 2023' },
+  { k: 'ok', t: '电话沟通能力', ev: '「Answer phone calls and take reservations」' },
+  { k: 'ok', t: '会用 CRM 或工单系统', ev: '「Trained 5 new team members on the ticketing system」' },
+  { k: 'miss', t: '呼叫中心经验', ev: '简历里有 China Mobile 客服,但没写是呼叫中心', tip: '如果那份工作是在呼叫中心接线,可以写成「Handled inbound calls in a <span class="slot">X</span>-seat call centre」' },
+  { k: 'miss', t: '会法语优先', ev: '简历里没有法语', tip: '没有就不写;这是加分项,不是硬性要求' },
+  { k: 'ask', t: '能上晚班和周末', ev: '简历不写这个,投递时由你回答' },
+]
+function reqList(n, tips) {
+  return REQS.slice(0, n).map(r => `<div class="req"><span class="mk ${r.k}">${r.k === 'ok' ? '✓' : r.k === 'miss' ? '✗' : '?'}</span><div><div class="t">${r.t}</div><div class="ev">${r.ev}</div>${tips && r.tip ? `<div class="tip">${r.tip}</div>` : ''}</div></div>`).join('')
+}
+
+/* ---------- 方向 A:简历工作台(文档为中心,照 AIApply 的 Resumes 页) ---------- */
+const VERS = [
+  { t: 'customer service representative - call centre', c: 'i3 Solutions Inc.', ok: 6, all: 7, d: '2026-10-03', used: true },
+  { t: 'retail sales associate', c: 'Fast Time Watch & Jewellery Repair Inc.', ok: 5, all: 6, d: '2026-10-04', used: true },
+  { t: 'office manager', c: 'Anurag Homes Team', ok: 3, all: 8, d: '2026-10-05', used: false },
+]
+function A1() {
+  const vers = VERS.map(v => `<div class="card" style="display:flex;gap:14px">${paper('resume', 92, 'tailored')}
+      <div style="min-width:0"><div style="color:var(--primary);font-weight:600;line-height:1.35">${v.t}</div><div class="small muted">${v.c}</div>
+        <div class="row" style="margin-top:8px;gap:6px"><span class="pill ${v.ok / v.all > 0.7 ? 'ok' : 'warn'}">符合 ${v.ok} / ${v.all}</span>${v.used ? '<span class="pill gray">已投递</span>' : ''}</div>
+        <div class="tiny" style="margin-top:6px">生成于 ${v.d}</div>
+        <div class="row" style="margin-top:8px;gap:14px"><a class="lnk">编辑</a><a class="lnk">下载</a>${v.used ? '' : '<a class="lnk">用它投递</a>'}</div></div></div>`).join('')
+  const body = `
+    <div class="row"><h3>底稿</h3><span class="tiny">按岗生成都从这一份出发</span></div>
+    <div style="display:flex;gap:24px;margin-top:14px;align-items:flex-start">${paper('resume', 230)}
+      <div style="flex:1">
+        <div class="row"><span style="font-size:17px;font-weight:600;color:var(--text)">Zhang_San_Resume.pdf</span><span class="pill base">底稿</span></div>
+        <div class="small muted">上传于 2026-10-03  ·  1 页</div>
+        <div class="row" style="margin-top:14px;gap:8px"><span class="btn">预览</span><span class="btn">在线编辑</span><span class="btn">替换文件</span><span class="btn">下载 PDF</span></div>
+        <div class="card" style="margin-top:18px;background:var(--bg)">
+          <div class="row"><b style="color:var(--text)">为一个岗位生成</b><span class="tiny">从收藏或投递里挑岗,也能粘贴 JD</span></div>
+          <div class="row" style="margin-top:10px"><div class="sel" style="flex:1">office manager  Anurag Homes Team</div><span class="btn pri">生成本岗简历</span></div>
+        </div>
+      </div></div>
+    <div class="divider"></div>
+    <div class="row"><h3>按岗位生成的版本</h3><span class="tiny">3 份</span></div>
+    <div class="grid3" style="margin-top:14px">${vers}</div>
+    <div class="divider"></div>
+    <div class="row"><h3>求职信</h3><span class="tiny">模板 1 份,按岗生成 2 封</span><a class="lnk sp">编辑模板</a></div>
+    <div class="grid3" style="margin-top:14px">
+      <div class="card" style="display:flex;gap:14px">${paper('letter', 92)}<div><div style="font-weight:600;color:var(--text)">模板</div><div class="small muted">职位名、公司名投递时自动填</div><div class="row" style="margin-top:8px;gap:14px"><a class="lnk">编辑</a></div></div></div>
+      <div class="card" style="display:flex;gap:14px">${paper('letter', 92)}<div><div style="color:var(--primary);font-weight:600;line-height:1.35">customer service representative - call centre</div><div class="small muted">i3 Solutions Inc.</div><div class="row" style="margin-top:8px;gap:14px"><a class="lnk">编辑</a><a class="lnk">下载</a></div></div></div>
+      <div class="card" style="display:flex;gap:14px">${paper('letter', 92)}<div><div style="color:var(--primary);font-weight:600;line-height:1.35">retail sales associate</div><div class="small muted">Fast Time Watch & Jewellery Repair Inc.</div><div class="row" style="margin-top:8px;gap:14px"><a class="lnk">编辑</a><a class="lnk">下载</a></div></div></div>
+    </div>
+    <div class="divider"></div>
+    ${infoBlock()}`
+  return page(2, body)
+}
+function infoBlock() {
+  return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+    <div><div class="row"><h3>投递信息</h3><a class="lnk sp">修改</a></div>${kv(['英文姓名', '工作身份', '最快上岗', '工作年限'], ['San Zhang', '毕业工签(PGWP)', '两周内', '4 年'])}</div>
+    <div><div class="row"><h3>我的条件</h3><a class="lnk sp">修改</a></div>${kv(['目标', '专业', '想做的工作', '所在省'], ['拿 PR', '酒店管理', '客服代表', '安大略省 <span class="tiny">ON</span>'])}</div></div>`
+}
+function kv(ks, vs) {
+  return `<div style="display:grid;grid-template-columns:110px 1fr;row-gap:6px;margin-top:10px">${ks.map((k, n) => `<span class="muted">${k}</span><span>${vs[n]}</span>`).join('')}</div>`
+}
+function A2() {
+  const body = `<div class="topbar"><span class="pill base">本岗版本</span><span class="muted">对照岗位</span><div class="sel">customer service representative - call centre  i3 Solutions Inc.</div>
+      <span class="pill ok">符合 6 / 7</span><span class="pill warn">1 处新内容待你确认</span><div class="row sp"><span class="btn">撤销</span><span class="btn">下载 PDF</span><span class="btn pri">保存</span></div></div>
+    <div class="ed"><div>
+      <div class="acc"><div class="h">联系方式<span class="sp">San Zhang  Toronto, ON</span></div></div>
+      <div class="acc"><div class="h">总结<span class="sp">已按本岗调整</span></div><div class="b"><div class="fld" style="background:#f0fdf4">Customer service professional with 4+ years of front-line experience in high-volume hotel and telecom settings, fluent in English and Mandarin. Calm on the phone, quick with CRM notes, and focused on first-contact resolution.</div>
+        <div class="row" style="margin-top:8px;gap:8px"><span class="btn sm">改回底稿</span><span class="btn sm">再精简一点</span><span class="btn sm">更正式</span></div></div></div>
+      <div class="acc"><div class="h">工作经历<span class="sp">2 段</span></div><div class="b">
+        <div class="fld lab">Front Desk Associate  Hilton Toronto Downtown  2023 – Present</div>
+        <div class="fld" style="background:#f0fdf4">Resolve guest issues by phone and in person, keeping notes in Opera PMS for every case</div>
+        <div class="fld" style="background:#fffbeb;border-color:#fde68a">Answer <b>60+ calls per shift</b> on the reservations line during peak season
+          <div class="row" style="margin-top:6px;font-size:12px;color:var(--warn)">底稿里没有「60+」这个数字<span class="sp row" style="gap:10px"><a class="lnk" style="font-size:12px">我确实做到</a><a class="lnk" style="font-size:12px">改成我的数</a><a class="lnk" style="font-size:12px;color:var(--text2)">删掉</a></span></div></div>
+        <div class="fld">Handle cash and card payments; balance the drawer at end of shift</div>
+        <div class="fld lab" style="margin-top:12px">Customer Service Representative  China Mobile  2019 – 2022</div>
+        <div class="fld" style="background:#f0fdf4">Handled inbound billing and plan inquiries in a 200-seat call centre</div></div></div>
+      <div class="acc"><div class="h">教育<span class="sp">1 段</span></div></div>
+      <div class="acc"><div class="h">技能<span class="sp">5 项</span></div><div class="b"><div class="chipset"><span class="chip">Inbound call handling</span><span class="chip">CRM notes</span><span class="chip">Payments and POS</span><span class="chip">English</span><span class="chip">Mandarin</span><span class="chip add">+ 添加</span></div></div></div>
+    </div>
+    <div style="display:flex;justify-content:center;background:var(--bg);border-radius:12px;padding:20px">${paper('resume', 560, 'tailored')}</div></div>`
+  return subpage('编辑简历', '我的简历  /  本岗版本', body)
+}
+function A3() {
+  const body = `<div style="display:grid;grid-template-columns:1.1fr 1fr;gap:20px">
+      <div class="plancard"><div class="row"><span style="opacity:.85">当前套餐</span><span class="sp" style="opacity:.85">有效至 2026-12-31</span></div>
+        <div class="big" style="margin-top:6px">Pro</div><div style="opacity:.9">还剩 87 天</div>
+        <div style="height:8px;background:rgba(255,255,255,.25);border-radius:999px;margin-top:12px"><i style="display:block;height:100%;width:72%;background:#fff;border-radius:999px"></i></div></div>
+      <div class="card"><h3>这一期用了多少</h3>
+        <div style="margin-top:12px"><div class="row small"><span>站内投递</span><span class="sp muted">12 封  每天上限 20</span></div><div class="meter"><i style="width:18%"></i></div></div>
+        <div style="margin-top:12px"><div class="row small"><span>按岗生成简历</span><span class="sp muted">8 / 30 份</span></div><div class="meter"><i style="width:27%"></i></div></div>
+        <div style="margin-top:12px"><div class="row small"><span>按岗生成求职信</span><span class="sp muted">2 / 30 封</span></div><div class="meter"><i style="width:7%"></i></div></div>
+        <div style="margin-top:12px"><div class="row small"><span>与岗位对比</span><span class="sp muted">不限</span></div></div></div></div>
+    <div class="divider"></div>
+    <div class="row"><h3>续买</h3><span class="tiny">从 2026-12-31 往后顺延</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px;max-width:760px">
+      <div class="pk"><div class="muted">30 天</div><div class="price">CA$5</div><div class="small muted">投递、生成、对比全部可用</div><span class="btn" style="margin-top:12px;width:100%">购买</span></div>
+      <div class="pk best"><span class="flag">最常买</span><div class="muted">90 天</div><div class="price">CA$13</div><div class="small muted">投递、生成、对比全部可用</div><span class="btn pri" style="margin-top:12px;width:100%">购买</span></div></div>
+    <div class="divider"></div>
+    <h3>购买记录</h3>
+    <table style="margin-top:6px"><tr><th>日期</th><th>套餐</th><th>金额</th><th>付款方式</th><th>收据</th></tr>
+      <tr><td>2026-10-05</td><td>90 天</td><td>CA$13.00</td><td>Visa 尾号 4242</td><td><a>查看</a></td></tr>
+      <tr><td>2026-09-04</td><td>30 天</td><td>CA$5.00</td><td>微信支付</td><td><a>查看</a></td></tr></table>`
+  return page(3, body)
+}
+
+/* ---------- 方向 B:以岗位为中心(一岗一个工作台) ---------- */
+function B1() {
+  const body = `<div class="row" style="margin-bottom:6px"><span class="pill ok">雇主已回复</span><span class="muted small">i3 Solutions Inc.  Toronto, ON  $20/hr</span></div>
+    <div class="tabs" style="padding:0;margin:0 0 18px"><span class="on">对比</span><span>本岗简历</span><span>求职信</span><span>往来</span></div>
+    <div style="display:grid;grid-template-columns:1fr 470px;gap:28px">
+      <div><div class="row"><h3>岗位要求</h3><span class="pill ok">符合 4</span><span class="pill miss">缺 2</span><span class="pill warn">要你答 1</span></div>
+        <div style="margin-top:6px">${reqList(7, true)}</div></div>
+      <div><div class="row"><h3>你的简历</h3><span class="tiny">绿色 = 对上了要求</span><a class="lnk sp">换一份</a></div>
+        <div style="margin-top:12px;display:flex;justify-content:center;background:var(--bg);border-radius:12px;padding:16px">${paper('resume', 420, 'match')}</div></div></div>
+    <div class="row" style="border-top:1px solid var(--border);margin-top:20px;padding-top:16px"><span class="muted">按要求改写总结、经历和技能,新出现的事实逐条请你确认</span><div class="row sp"><span class="btn lg">下一步:求职信</span><span class="btn pri lg">按本岗生成简历</span></div></div>`
+  return subpage(JOB.t, '我的求职  /  客户服务代表 - 呼叫中心', body)
+}
+function B2() {
+  const rows = [
+    ['customer service representative - call centre', 'i3 Solutions Inc.', '4 / 7', 'ok', '本岗版', '已生成', '雇主已回复', 'ok'],
+    ['retail sales associate', 'Fast Time Watch & Jewellery Repair Inc.', '5 / 6', 'ok', '本岗版', '模板', '已投递', 'gray'],
+    ['food services manager', 'Pie Wood Fired Pizza Joint', '3 / 8', 'warn', '底稿', '模板', '已投递', 'gray'],
+    ['office manager', 'Anurag Homes Team', '3 / 8', 'warn', '—', '—', '收藏', 'gray'],
+  ].map(r => `<tr><td><div style="color:var(--primary)">${r[0]}</div><div class="tiny">${r[1]}</div></td><td><span class="pill ${r[3]}">符合 ${r[2]}</span></td><td>${r[4]}</td><td>${r[5]}</td><td><span class="pill ${r[7]}">${r[6]}</span></td><td><a class="lnk">打开</a></td></tr>`).join('')
+  const body = `<div style="display:grid;grid-template-columns:260px 1fr;gap:28px;align-items:start">
+      <div>${paper('resume', 260)}<div style="margin-top:10px;font-weight:600;color:var(--text)">Zhang_San_Resume.pdf</div><div class="tiny">底稿  上传于 2026-10-03</div>
+        <div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap"><span class="btn sm">预览</span><span class="btn sm">在线编辑</span><span class="btn sm">替换</span></div></div>
+      <div><div class="row"><h3>每个岗位用哪份材料</h3><span class="tiny">点「打开」进这一岗的工作台:对比、生成、投递</span></div>
+        <table style="margin-top:6px"><tr><th>岗位</th><th>对比</th><th>简历</th><th>求职信</th><th>状态</th><th></th></tr>${rows}</table>
+        <div class="divider"></div>${infoBlock()}</div></div>`
+  return page(2, body)
+}
+function B3() {
+  const body = `<div class="row" style="background:var(--hover);border-radius:12px;padding:16px 18px"><div><div class="tiny">当前套餐</div><div style="font-size:22px;font-weight:800;color:var(--text)">Pro  <span style="font-size:14px;font-weight:500;color:var(--text2)">有效至 2026-12-31,还剩 87 天</span></div></div><div class="row sp"><span class="btn">30 天 CA$5</span><span class="btn pri">90 天 CA$13</span></div></div>
+    <h3 style="margin-top:24px">免费和 Pro 能做什么</h3>
+    <table class="cmp" style="margin-top:6px"><tr><th style="width:40%"></th><th>免费</th><th class="on" style="color:var(--primary);font-weight:700">Pro(你在用)</th></tr>
+      <tr><td>浏览全部职位、雇主、移民数据</td><td class="yes">✓</td><td class="on yes">✓</td></tr>
+      <tr><td>与岗位对比:符合 / 缺哪几条</td><td class="yes">✓</td><td class="on yes">✓</td></tr>
+      <tr><td>缺项的改法</td><td class="no">—</td><td class="on yes">✓</td></tr>
+      <tr><td>站内投递(代发邮件、回信转发)</td><td>一共 3 封</td><td class="on">每天 20 封</td></tr>
+      <tr><td>按岗生成简历</td><td class="no">—</td><td class="on">每期 30 份</td></tr>
+      <tr><td>按岗生成求职信</td><td class="no">—</td><td class="on">每期 30 封</td></tr>
+      <tr><td>批量投递收藏</td><td class="no">—</td><td class="on yes">✓</td></tr></table>
+    <div class="divider"></div>
+    <h3>购买记录</h3>
+    <table style="margin-top:6px"><tr><th>日期</th><th>套餐</th><th>金额</th><th>付款方式</th><th>收据</th></tr>
+      <tr><td>2026-10-05</td><td>90 天</td><td>CA$13.00</td><td>Visa 尾号 4242</td><td><a>查看</a></td></tr>
+      <tr><td>2026-09-04</td><td>30 天</td><td>CA$5.00</td><td>微信支付</td><td><a>查看</a></td></tr></table>`
+  return page(3, body)
+}
+
+/* ---------- 方向 C:一份简历 + 检查器(对比在前,生成看改前改后) ---------- */
+function C1() {
+  const body = `<div style="display:grid;grid-template-columns:360px 1fr;gap:32px;align-items:start">
+      <div>${paper('resume', 360)}
+        <div class="row" style="margin-top:12px"><div><div style="font-weight:600;color:var(--text)">Zhang_San_Resume.pdf</div><div class="tiny">上传于 2026-10-03  1 页</div></div></div>
+        <div class="row" style="margin-top:10px;gap:8px"><span class="btn sm">全屏预览</span><span class="btn sm">在线编辑</span><span class="btn sm">替换</span><span class="btn sm">下载</span></div></div>
+      <div>
+        <div class="card" style="border-color:#bfdbfe;background:#f8fbff">
+          <div class="row"><h3>对照一个岗位</h3></div>
+          <div class="row" style="margin-top:10px"><div class="sel" style="flex:1">customer service representative - call centre  i3 Solutions Inc.</div><span class="btn">粘贴 JD</span></div>
+          <div class="tiny" style="margin-top:6px">从你的收藏和投递里挑,也可以粘贴任何一段招聘要求</div></div>
+        <div class="row" style="margin-top:18px"><h3>对照结果</h3><span class="pill ok">符合 4</span><span class="pill miss">缺 2</span><span class="pill warn">要你答 1</span></div>
+        <div style="margin-top:4px">${reqList(7, true)}</div>
+        <div class="row" style="margin-top:14px;gap:10px"><span class="btn pri lg">按这一岗生成简历</span><span class="btn lg">生成求职信</span></div>
+      </div></div>
+    <div class="divider"></div>${infoBlock()}`
+  return page(2, body)
+}
+function C2() {
+  const line = (a, b, cls) => `<tr><td style="width:50%;color:var(--text2);vertical-align:top;padding-right:16px">${a}</td><td style="vertical-align:top;${cls === 'nw' ? 'background:#fffbeb' : cls === 'hl' ? 'background:#f0fdf4' : ''}">${b}</td></tr>`
+  const body = `<div class="row"><span class="pill ok">改了 5 处</span><span class="pill warn">1 处新内容要你确认</span><span class="tiny">没确认的不会进简历</span><div class="row sp"><span class="btn">下载 PDF</span><span class="btn pri">存为本岗版本</span></div></div>
+    <table style="margin-top:12px"><tr><th>底稿原文</th><th>本岗版</th></tr>
+      ${line('Customer-focused professional with experience in hotel front desk and telecom customer service. Fluent in English and Mandarin.', 'Customer service professional with 4+ years of front-line experience in high-volume hotel and telecom settings, fluent in English and Mandarin. Calm on the phone, quick with CRM notes, and focused on first-contact resolution.', 'hl')}
+      ${line('Check guests in and out and answer questions at the front desk', 'Resolve guest issues by phone and in person, keeping notes in Opera PMS for every case', 'hl')}
+      ${line('Answer phone calls and take reservations', `Answer <b>60+ calls per shift</b> on the reservations line during peak season
+        <div class="row" style="margin-top:8px;gap:8px;font-size:13px"><span style="color:var(--warn)">底稿里没有「60+」</span><span class="btn sm">我确实做到</span><span class="btn sm">改成我的数</span><span class="btn sm">不要这句</span></div>`, 'nw')}
+      ${line('Handled customer inquiries about bills and plans', 'Handled inbound billing and plan inquiries in a 200-seat call centre', 'hl')}
+      ${line('Customer service, POS, Microsoft Excel, English, Mandarin', 'Inbound call handling, CRM notes (Opera PMS, ticketing), payments and POS, English and Mandarin, Microsoft Excel', 'hl')}
+      ${line('Trained 5 new team members on the ticketing system', 'Trained 5 new team members on the ticketing system', '')}</table>`
+  return subpage('本岗版简历:改了哪些', '我的简历  /  customer service representative - call centre', body)
+}
+function C3() {
+  const body = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+      <div class="plancard" style="grid-column:span 1"><div style="opacity:.85">当前套餐</div><div class="big">Pro</div><div style="opacity:.9">有效至 2026-12-31</div><div style="opacity:.9">还剩 87 天</div></div>
+      <div class="card"><div class="muted">这一期你投了</div><div class="stat">12 封</div><div class="small muted">雇主回了 2 封</div></div>
+      <div class="card"><div class="muted">按岗生成</div><div class="stat">8 份简历</div><div class="small muted">2 封求职信</div></div></div>
+    <div class="divider"></div>
+    <div class="row"><h3>续买</h3><span class="tiny">从到期日往后顺延</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
+      <div class="pk"><div class="row"><div><div class="muted">30 天</div><div class="price">CA$5</div></div><span class="btn sp">购买</span></div></div>
+      <div class="pk best"><span class="flag">最常买</span><div class="row"><div><div class="muted">90 天</div><div class="price">CA$13</div></div><span class="btn pri sp">购买</span></div></div></div>
+    <div class="small muted" style="margin-top:10px">卡、微信支付、支付宝都可以;一次性付款,不自动续费</div>
+    <div class="divider"></div>
+    <h3>购买记录</h3>
+    <table style="margin-top:6px"><tr><th>日期</th><th>套餐</th><th>金额</th><th>付款方式</th><th>收据</th></tr>
+      <tr><td>2026-10-05</td><td>90 天</td><td>CA$13.00</td><td>Visa 尾号 4242</td><td><a>查看</a></td></tr>
+      <tr><td>2026-09-04</td><td>30 天</td><td>CA$5.00</td><td>微信支付</td><td><a>查看</a></td></tr></table>`
+  return page(3, body)
+}
+
+/* ---------- 手机 ---------- */
+const MT = ['求职', '收藏', '简历', '订阅']
+function mHeader() { return `<div class="hd"><div class="burger">☰</div><div class="logo"><b>✿</b>Offer2PR</div><div class="ava">Z</div></div>` }
+function mTab(body, bar) {
+  return `<div class="phone">${mHeader()}<div class="main"><div class="banner"><div class="t">我的</div><div class="cnt">已投 4 封</div></div>${sheet(2, body, MT)}</div>${bar || ''}</div>`
+}
+function mPage(title, sub, body, bar) {
+  return `<div class="phone page"><div class="ptop"><div style="min-width:0"><div class="tiny">${sub}</div><h2>${title}</h2></div><span class="btn sm sp">返回</span></div><div style="padding:14px 16px">${body}</div>${bar || ''}</div>`
+}
+function mBoard(title, a, b, ca, cb) {
+  return `<div class="board"><h1>${title}</h1><div class="phones"><div>${a}<div class="cap">${ca}</div></div><div>${b}<div class="cap">${cb}</div></div></div></div>`
+}
+function AM() {
+  const a = mTab(`<div style="display:flex;gap:12px">${paper('resume', 110)}<div><div class="row" style="gap:6px"><b style="color:var(--text);font-size:14px">Zhang_San_Resume.pdf</b></div><span class="pill base">底稿</span><div class="tiny" style="margin-top:4px">上传于 2026-10-03</div><div class="row" style="gap:12px;margin-top:6px"><a class="lnk">编辑</a><a class="lnk">替换</a></div></div></div>
+    <div class="row" style="margin-top:16px"><b style="color:var(--text)">按岗位的版本</b><span class="tiny">3 份</span></div>
+    ${VERS.slice(0, 3).map(v => `<div style="padding:10px 0;border-bottom:1px solid var(--hair)"><div style="color:var(--primary);line-height:1.35">${v.t}</div><div class="tiny">${v.c}</div><div class="row" style="margin-top:4px;gap:6px"><span class="pill ${v.ok / v.all > 0.7 ? 'ok' : 'warn'}">符合 ${v.ok} / ${v.all}</span>${v.used ? '<span class="pill gray">已投递</span>' : ''}</div></div>`).join('')}`,
+    `<div class="mbar"><span class="btn pri">为一个岗位生成</span></div>`)
+  const b = mPage('编辑简历', '本岗版本', `<div class="row" style="gap:6px;flex-wrap:wrap"><span class="pill ok">符合 6 / 7</span><span class="pill warn">1 处待确认</span></div>
+    <div style="display:flex;justify-content:center;background:var(--bg);border-radius:10px;padding:10px;margin-top:10px">${paper('resume', 320, 'tailored')}</div>
+    <div class="fld" style="background:#fffbeb;border-color:#fde68a;margin-top:10px">Answer <b>60+ calls per shift</b>…<div style="font-size:12px;color:var(--warn);margin-top:4px">底稿里没有「60+」</div><div class="row" style="gap:12px;margin-top:4px"><a class="lnk" style="font-size:13px">我确实做到</a><a class="lnk" style="font-size:13px">改成我的数</a></div></div>`,
+    `<div class="mbar"><span class="btn">分节编辑</span><span class="btn pri">保存</span></div>`)
+  return mBoard('方向 A 简历工作台(手机)', a, b, '我的简历:底稿 + 按岗位的版本', '编辑:A4 预览,新内容逐条确认')
+}
+function BM() {
+  const a = mPage(JOB.t, '我的求职', `<div class="row" style="gap:6px;flex-wrap:wrap"><span class="pill ok">雇主已回复</span><span class="tiny">i3 Solutions Inc.</span></div>
+    <div class="tabs" style="padding:0;margin:10px 0 4px;gap:18px"><span class="on">对比</span><span>本岗简历</span><span>求职信</span><span>往来</span></div>
+    <div class="row" style="margin-top:8px;gap:6px"><span class="pill ok">符合 4</span><span class="pill miss">缺 2</span><span class="pill warn">要你答 1</span></div>${reqList(5, true)}`,
+    `<div class="mbar"><span class="btn pri">按本岗生成简历</span></div>`)
+  const b = mTab(`<div style="display:flex;gap:12px">${paper('resume', 110)}<div><b style="color:var(--text)">Zhang_San_Resume.pdf</b><div class="tiny">底稿  上传于 2026-10-03</div><div class="row" style="gap:12px;margin-top:6px"><a class="lnk">预览</a><a class="lnk">编辑</a><a class="lnk">替换</a></div></div></div>
+    <div class="row" style="margin-top:16px"><b style="color:var(--text)">每个岗位用哪份</b></div>
+    ${[['customer service representative - call centre', '本岗版', '4 / 7', 'ok'], ['retail sales associate', '本岗版', '5 / 6', 'ok'], ['food services manager', '底稿', '3 / 8', 'warn']].map(r => `<div style="padding:10px 0;border-bottom:1px solid var(--hair)"><div style="color:var(--primary);line-height:1.35">${r[0]}</div><div class="row" style="gap:6px;margin-top:4px"><span class="pill ${r[3]}">符合 ${r[2]}</span><span class="pill gray">${r[1]}</span></div></div>`).join('')}`)
+  return mBoard('方向 B 以岗位为中心(手机)', a, b, '一岗一个工作台:对比 → 生成 → 投递', '我的简历:底稿 + 每岗用哪份')
+}
+function CM() {
+  const a = mTab(`<div style="display:flex;gap:12px">${paper('resume', 110)}<div><b style="color:var(--text)">Zhang_San_Resume.pdf</b><div class="tiny">上传于 2026-10-03</div><div class="row" style="gap:12px;margin-top:6px"><a class="lnk">预览</a><a class="lnk">编辑</a><a class="lnk">替换</a></div></div></div>
+    <div class="card" style="margin-top:14px;border-color:#bfdbfe;background:#f8fbff;padding:12px"><b style="color:var(--text)">对照一个岗位</b><div class="sel" style="margin-top:8px;font-size:13px">customer service representative…</div></div>
+    <div class="row" style="margin-top:12px;gap:6px"><span class="pill ok">符合 4</span><span class="pill miss">缺 2</span><span class="pill warn">要你答 1</span></div>${reqList(3, false)}`,
+    `<div class="mbar"><span class="btn pri">按这一岗生成简历</span></div>`)
+  const b = mPage('改了哪些', '本岗版简历', `<div class="row" style="gap:6px"><span class="pill ok">改了 5 处</span><span class="pill warn">1 处待确认</span></div>
+    ${[['Answer phone calls and take reservations', 'Answer <b>60+ calls per shift</b> on the reservations line during peak season', true], ['Handled customer inquiries about bills and plans', 'Handled inbound billing and plan inquiries in a 200-seat call centre', false], ['Customer service, POS, Microsoft Excel, English, Mandarin', 'Inbound call handling, CRM notes, payments and POS, English and Mandarin, Microsoft Excel', false]].map(r => `<div style="padding:12px 0;border-bottom:1px solid var(--hair)"><div class="small" style="color:var(--text3);text-decoration:line-through">${r[0]}</div><div style="margin-top:4px;padding:6px 8px;border-radius:6px;background:${r[2] ? '#fffbeb' : '#f0fdf4'}">${r[1]}</div>${r[2] ? '<div class="row" style="gap:12px;margin-top:6px;font-size:13px"><span style="color:var(--warn)">底稿里没有「60+」</span><a class="lnk" style="font-size:13px">我确实做到</a><a class="lnk" style="font-size:13px">改</a></div>' : ''}</div>`).join('')}`,
+    `<div class="mbar"><span class="btn">下载 PDF</span><span class="btn pri">存为本岗版本</span></div>`)
+  return mBoard('方向 C 一份简历 + 检查器(手机)', a, b, '我的简历:原件 + 对照一个岗位', '生成后:改前改后逐条看')
+}
+
+
+/* ---------- 三方向共用:我的求职 = 进度表 ---------- */
+const TRACK = [
+  { t: 'customer service representative - call centre', z: '客户服务代表 - 呼叫中心', c: 'i3 Solutions Inc.', d: '2026-10-01', step: 3, end: 'ok', cv: '本岗版', cl: '本岗', fit: '6 / 7', fk: 'ok', next: '雇主回信已转到你的邮箱' },
+  { t: 'retail sales associate', z: '零售销售助理', c: 'Fast Time Watch & Jewellery Repair Inc.', d: '2026-10-04', step: 2, end: '', cv: '本岗版', cl: '模板', fit: '5 / 6', fk: 'ok', next: '' },
+  { t: 'food services manager', z: '餐饮服务经理', c: 'Pie Wood Fired Pizza Joint', d: '2026-10-02', step: 2, end: '', cv: '底稿', cl: '模板', fit: '3 / 8', fk: 'warn', next: '' },
+  { t: 'wire and harness assembler', z: '电子装配工', c: 'Kevtron Industries Limited', d: '2026-09-30', step: 1, end: 'bad', cv: '底稿', cl: '模板', fit: '—', fk: 'gray', next: '雇主邮箱失效,这一岗已下架' },
+]
+const STEP_LBL = ['已发出', '已送达', '雇主回复']
+function stepper(r) {
+  let h = ''
+  for (let i = 1; i <= 3; i++) {
+    let cls = ''
+    if (i <= r.step) { cls = 'on' }
+    if (i === 3 && r.end === 'ok') { cls = 'ok' }
+    if (i === 2 && r.end === 'bad') { cls = 'bad' }
+    if (i > 1) { h += `<span class="bar${i <= r.step ? ' on' : ''}"></span>` }
+    h += `<span class="dot ${cls}"></span>`
+  }
+  const lbl = STEP_LBL.map((x, k) => {
+    let name = x
+    if (k === 1 && r.end === 'bad') { name = '退信' }
+    return `<span class="${k + 1 === r.step || (k === 1 && r.end === 'bad') ? 'cur' : ''}">${name}</span>`
+  }).join('')
+  return `<div class="steps">${h}</div><div class="steplbl">${lbl}</div>`
+}
+function T0() {
+  const rows = TRACK.map(r => `<tr>
+      <td style="width:30%"><div style="color:var(--primary);font-size:15px;line-height:1.35">${r.t}</div><div class="tiny">${r.z}</div><div class="small" style="color:#374151">${r.c}</div></td>
+      <td class="muted" style="white-space:nowrap">${r.d}</td>
+      <td>${stepper(r)}${r.next ? `<div class="small" style="margin-top:6px;color:${r.end === 'ok' ? 'var(--ok)' : 'var(--text2)'}">${r.next}</div>` : ''}</td>
+      <td class="mat"><div>简历 <a>${r.cv}</a></div><div>求职信 <a>${r.cl}</a></div></td>
+      <td><span class="pill ${r.fk}">符合 ${r.fit}</span></td>
+      <td style="text-align:right"><a class="lnk">打开</a></td></tr>`).join('')
+  const body = `<table><tr><th>岗位</th><th>投递日期</th><th>进度</th><th>用的材料</th><th>对比</th><th></th></tr>${rows}</table>
+    <div class="tiny" style="margin-top:14px">点「打开」进这一岗:对比、本岗简历、求职信、往来</div>`
+  return page(0, body)
+}
+function T0M() {
+  const cards = TRACK.slice(0, 3).map(r => `<div style="padding:12px 0;border-bottom:1px solid var(--hair)">
+      <div style="color:var(--primary);line-height:1.35">${r.t}</div><div class="tiny">${r.c}</div>
+      <div style="margin-top:8px">${stepper(r)}</div>
+      ${r.next ? `<div class="small" style="margin-top:4px;color:var(--ok)">${r.next}</div>` : ''}
+      <div class="row small" style="margin-top:6px;gap:8px;color:var(--text2)"><span>${r.d}</span><span>简历 ${r.cv}</span><span class="pill ${r.fk} sp">符合 ${r.fit}</span></div></div>`).join('')
+  const phone = `<div class="phone">${mHeader()}<div class="main"><div class="banner"><div class="t">我的</div><div class="cnt">已投 4 封</div></div>${sheet(0, cards, MT)}</div></div>`
+  return `<div class="board"><h1>我的求职 进度表(手机)</h1><div class="phones"><div>${phone}<div class="cap">一岗一行:走到哪一步、用的哪份、对比结果</div></div></div></div>`
+}
+const V = { A: { 1: A1, 2: A2, 3: A3, m: AM }, B: { 1: B2, 2: B1, 3: B3, m: BM }, C: { 1: C1, 2: C2, 3: C3, m: CM } }
+document.getElementById('app').innerHTML = S === '0' ? T0() : S === '0m' ? T0M() : V[DIR][S]()
+if (S !== 'm' && S !== '0m') { document.body.style.width = '1440px' }
+</script>
+</body>
+</html>

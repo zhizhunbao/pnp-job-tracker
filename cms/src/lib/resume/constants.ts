@@ -438,3 +438,148 @@ export const USES_CELL_NONE = ''
  * (tooLong/busy/llm),不靠这个空串表达 —— 空串只在「还没开始」那一瞬存在。
  */
 export const LLM_TEXT_NONE = ''
+
+/**
+ * 简历原件 MIME:PDF(2026-10-05「我的简历」存原件;表 user_resumes 的 CHECK 只认这两种)。
+ */
+export const MIME_PDF = 'application/pdf'
+
+/**
+ * 简历原件 MIME:Word(.docx)。老式 .doc 不收 —— 解析器读不了,雇主那边也越来越少能开。
+ */
+export const MIME_DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+
+/**
+ * PDF 文件头(前 5 个字节)。只看扩展名会放进改了后缀的任意文件,所以按文件头判(审查 #17)。
+ */
+export const PDF_MAGIC = '%PDF-'
+
+/**
+ * .docx 文件头:它是 zip 包,前 4 个字节恒为 PK\x03\x04。
+ */
+export const DOCX_MAGIC = 'PK\u0003\u0004'
+
+/**
+ * 判文件头时读进来的字节数(两种文件头里最长的那个)。
+ */
+export const MAGIC_LEN = 5
+
+/**
+ * 读文件头的编码:latin1 一个字节对一个字符,文件头里的控制字符原样保住。
+ */
+export const MAGIC_ENC = 'latin1'
+
+/**
+ * 原件存库的编码(pte_audio.b64 先例;投递时 Resend 附件本来就要 base64,不用再转)。
+ */
+export const B64 = 'base64'
+
+/**
+ * 文件名入库上限(user_resumes.file_name 是 varchar(200),超了截断,不拒收)。
+ */
+export const FILE_NAME_MAX = 200
+
+/**
+ * 浏览器交来的文件名为空串 = **没给名字**(拖进来的剪贴板内容、部分安卓文件选择器)。
+ */
+export const FILE_NAME_NONE = ''
+
+/**
+ * 时刻格缺席时的落点:空串 = **库里没记时刻**(user_resumes.uploaded_at 有 NOT NULL,实际只在测试桩里出现)。
+ */
+export const TIME_NONE = ''
+
+/**
+ * 文件名缺席时的落点(浏览器没给名字):按 MIME 补一个,下载时才有扩展名。
+ */
+export const FILE_NAME_PDF = 'resume.pdf'
+
+/**
+ * 同上,Word 版。
+ */
+export const FILE_NAME_DOCX = 'resume.docx'
+
+/**
+ * 上传限流计数键前缀(按人):防脚本反复覆盖原件刷库。
+ */
+export const RF_USER_PREFIX = 'rf:'
+
+/**
+ * 每人每天上传上限。正常人一天换不了几次简历,20 次只拦脚本。
+ */
+export const RF_USER_DAILY = 20
+
+/**
+ * 上传限流计数键前缀(按 IP):一个 IP 批量注册小号刷库时兜底。
+ */
+export const RF_IP_PREFIX = 'rfip:'
+
+/**
+ * 每个 IP 每天上传上限。
+ */
+export const RF_IP_DAILY = 100
+
+/**
+ * 错误码:文件类型不对(不是 PDF / .docx,或文件头对不上)。
+ */
+export const E_TYPE = 'type'
+
+/**
+ * 错误码:找不到这一份(还没传过,或那一份不是本人的)。
+ */
+export const E_NOT_FOUND = 'notFound'
+
+/**
+ * 错误码:已经 5 份了,再加先删一份(2026-10-06 一人多份)。
+ */
+export const E_FULL = 'full'
+
+/**
+ * 错误码:没带简历 id 或 id 不是正整数(取 / 删 / 设默认都要指明是哪一份)。
+ */
+export const E_NO_ID = 'noId'
+
+/**
+ * 每人最多几份简历(Frank 10-06 选「支持,最多 5 份」)。
+ */
+export const RESUME_FILES_MAX = 5
+
+/**
+ * 指明是哪一份简历的查询参数(取原件、替换、删除、设默认都用它;上传不带 = 新加一份)。
+ */
+export const P_ID = 'id'
+
+/**
+ * 取原件响应的缓存头:只给本人,哪一层都不许存(简历是隐私)。
+ */
+export const CACHE_PRIVATE = 'private, no-store'
+
+/**
+ * 防嗅探头名(审查 #17:浏览器别拿原件当 HTML 猜着执行)。
+ */
+export const HDR_NOSNIFF = 'X-Content-Type-Options'
+
+/**
+ * 防嗅探头值。
+ */
+export const NOSNIFF = 'nosniff'
+
+/**
+ * 取原件的查询参数:带上就按下载给,不带就在浏览器里直接打开(预览)。
+ */
+export const P_DOWNLOAD = 'dl'
+
+/**
+ * 取原件的处置方式:浏览器里打开。
+ */
+export const DISP_INLINE = 'inline'
+
+/**
+ * 取原件的处置方式:下载。
+ */
+export const DISP_ATTACH = 'attachment'
+
+/**
+ * 处置头里文件名那一段的开头(RFC 5987:非 ASCII 文件名要百分号编码)。
+ */
+export const DISP_NAME_HEAD = "; filename*=UTF-8''"

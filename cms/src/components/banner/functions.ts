@@ -24,6 +24,7 @@ export function boxClsOf(x: BoxClsIn): string {
  * 模块 → 配色档类(查表,键完整性由 Record<BannerModule, string> 管)。
  * home 复用 jobs 档:主品牌蓝,与 jobs 同档不发明新色(L1-01 landing 拍板)——
  * 映射收在这一处,css 里不用抄第二份渐变值。
+ * 2026-10-05 account(「我的」页)同样复用 jobs 档。
  *
  * @param module 模块名。
  * @returns 配色档 className。
@@ -38,6 +39,7 @@ export function moduleClsOf(module: BannerModule): string {
     news: cssOf(css.news),
     employers: cssOf(css.employers),
     library: cssOf(css.library),
+    account: cssOf(css.jobs),
   }
   return moduleCls[module]
 }

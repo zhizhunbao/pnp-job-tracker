@@ -54,6 +54,11 @@ export const UNPROCESSABLE = 422
 export const NOT_FOUND = 404
 
 /**
+ * 409:与现状冲突(「我的简历」已满 5 份还要新加这类;2026-10-06)。
+ */
+export const CONFLICT = 409
+
+/**
  * 429:匿名限流。
  */
 export const TOO_MANY = 429

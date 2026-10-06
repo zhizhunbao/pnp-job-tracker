@@ -57,6 +57,12 @@ export const BANNER_IMGS = {
    * 卡尔加里 Bankers Hall/温哥华天际线)。
    */
   employers: ['/img/banners/employers-1.jpg', '/img/banners/employers-2.jpg', '/img/banners/employers-3.jpg'],
+
+  /**
+   * 「我的」页(2026-10-05 Frank「我的 也需要 banner 吧」「可以,下吧」;新下载,题材取还没上过横幅的大西洋三省:
+   * 圣约翰斯彩色排屋 / 爱德华王子岛卡文迪什红岩海岸 / 新不伦瑞克霍普韦尔岩;出处与许可见 SOURCES.md)。
+   */
+  account: ['/img/banners/account-1.jpg', '/img/banners/account-2.jpg', '/img/banners/account-3.jpg'],
 } as const
 
 /**

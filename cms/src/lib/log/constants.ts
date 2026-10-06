@@ -543,6 +543,26 @@ export const RESUME_LOG = {
    * save 开关段。
    */
   saveFrag: ' save=',
+
+  /**
+   * 「我的简历」存下原件一行的开头(2026-10-05),后面接用户 id、MIME 与字节数;只记长度不记内容。
+   */
+  fileSaved: 'file saved user=',
+
+  /**
+   * 原件类型段。
+   */
+  mimeFrag: ' mime=',
+
+  /**
+   * 「我的简历」拒收一行的开头(文件头对不上 PDF / .docx),后面接用户 id 与字节数。
+   */
+  fileRejected: 'file rejected user=',
+
+  /**
+   * 「我的简历」删掉原件一行的开头,后面接用户 id。
+   */
+  fileDeleted: 'file deleted user=',
 } as const
 
 /**

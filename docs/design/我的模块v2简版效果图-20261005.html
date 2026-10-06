@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的模块 v2 简版</title>
+<!-- 我的模块 v2 简版效果图(2026-10-05,Frank「banner 保留。我看着 有点乱」后重画)。
+     规矩:一页一个白卡;页签横排在白卡顶;一种列表(细线分行);强调色只有主蓝 + 「雇主已回复」一处绿。
+     用法:?lang=zh|en&dev=d|m&s=apps|thread|favs|profile|plan;登录态、往来、简历为占位。 -->
+<style>
+  :root { --primary:#2563eb; --ok:#15803d; --text:#111827; --text2:#6b7280; --text3:#9ca3af; --border:#e5e7eb; --hair:#f3f4f6; --bg:#f9fafb; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; background:var(--bg); }
+  body { font-family:system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; font-size:14px; line-height:1.6; color:#1f2937; }
+  a { color:var(--primary); text-decoration:none; }
+
+  /* 顶栏 */
+  .hd { height:48px; background:#fff; border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 82px; }
+  .logo { display:flex; align-items:center; gap:7px; font-weight:700; font-size:18px; color:var(--text); }
+  .logo b { color:#e11d48; }
+  .tagline { font-size:13px; color:var(--text3); margin-left:8px; }
+  .nav { margin-left:auto; display:flex; align-items:center; gap:18px; color:#4b5563; }
+  .nav .on { color:var(--primary); font-weight:600; }
+  .lang { display:flex; border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+  .lang span { padding:1px 10px; color:var(--text2); font-size:13px; }
+  .lang .on { background:var(--primary); color:#fff; }
+  .ava { width:30px; height:30px; border-radius:50%; background:var(--primary); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; flex:none; }
+
+  .main { padding:18px 82px 48px; }
+  .banner { height:130px; border-radius:14px; position:relative; overflow:hidden; color:#fff;
+    background: linear-gradient(90deg, rgba(30,58,138,.92), rgba(37,99,235,.6) 55%, rgba(30,64,175,.85)), url('../../cms/public/img/banners/account-1.jpg') center 40%/cover; }
+  .banner .t { position:absolute; left:22px; top:38px; font-size:22px; font-weight:700; }
+  .banner .cnt { position:absolute; left:22px; bottom:14px; font-size:13px; }
+
+  /* 白卡 + 页签 */
+  .sheet { background:#fff; border:1px solid var(--border); border-radius:12px; margin-top:18px; }
+  .tabs { display:flex; gap:28px; padding:0 24px; border-bottom:1px solid var(--border); }
+  .tabs span { padding:14px 0 12px; font-size:15px; color:var(--text2); border-bottom:2px solid transparent; }
+  .tabs .on { color:var(--text); font-weight:600; border-color:var(--primary); }
+  .body { padding:8px 24px 24px; min-height:420px; }
+
+  /* 列表(表) */
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-weight:500; font-size:13px; color:var(--text3); padding:14px 12px 8px; border-bottom:1px solid var(--border); }
+  td { padding:14px 12px; border-bottom:1px solid var(--hair); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  th:first-child, td:first-child { padding-left:0; }
+  th:last-child, td:last-child { padding-right:0; }
+  .tt { color:var(--primary); font-size:15px; }
+  .zh { color:var(--text3); font-size:12px; line-height:1.4; }
+  .dim { color:var(--text2); white-space:nowrap; }
+  .st { white-space:nowrap; color:var(--text2); }
+  .st.ok { color:var(--ok); font-weight:600; }
+  .st.ok::before { content:""; display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--ok); margin-right:6px; vertical-align:1px; }
+  .r { text-align:right; }
+  .off td, .off .tt { color:var(--text3); }
+
+  .chk { width:18px; height:18px; border-radius:5px; border:1.5px solid #cbd5e1; display:inline-block; vertical-align:-3px; position:relative; }
+  .chk.on { background:var(--primary); border-color:var(--primary); }
+  .chk.on::after { content:""; position:absolute; left:5px; top:1px; width:5px; height:10px; border:solid #fff; border-width:0 2px 2px 0; transform:rotate(45deg); }
+
+  .btn { display:inline-flex; align-items:center; justify-content:center; height:34px; padding:0 16px; border-radius:8px; font-size:14px; font-weight:600; border:1px solid var(--border); background:#fff; color:#374151; white-space:nowrap; }
+  .btn.pri { background:var(--primary); border-color:var(--primary); color:#fff; }
+  .foot { display:flex; align-items:center; justify-content:flex-end; gap:14px; padding-top:16px; border-top:1px solid var(--border); margin-top:4px; }
+  .foot .n { color:var(--text2); }
+
+  /* 设置式分段:左标题右内容 */
+  .sec { display:grid; grid-template-columns:200px 1fr auto; gap:24px; padding:22px 0; border-bottom:1px solid var(--hair); }
+  .sec:last-child { border-bottom:none; }
+  .sec h3 { margin:0; font-size:15px; color:var(--text); font-weight:600; }
+  .kv { display:grid; grid-template-columns:120px 1fr; row-gap:8px; }
+  .kv .k { color:var(--text2); }
+  .kv .g { color:var(--text3); font-size:12px; margin-left:6px; }
+  .file { color:var(--primary); font-weight:500; }
+  .sub2 { color:var(--text3); font-size:13px; }
+  .quote { color:#374151; border-left:3px solid var(--border); padding-left:12px; }
+  .slot { color:var(--primary); }
+  .lnk { color:var(--primary); font-size:14px; white-space:nowrap; }
+  .lnk + .lnk { margin-left:16px; }
+  .toggle { display:flex; align-items:center; gap:12px; }
+  .sw { width:38px; height:22px; border-radius:999px; background:var(--primary); position:relative; flex:none; }
+  .sw::after { content:""; position:absolute; right:3px; top:3px; width:16px; height:16px; border-radius:50%; background:#fff; }
+  .rows div { display:flex; justify-content:space-between; padding:6px 0; }
+  .big { font-size:22px; font-weight:700; color:var(--text); }
+
+  /* 弹框 */
+  .shade { position:fixed; inset:0; background:rgba(17,24,39,.45); display:flex; justify-content:center; align-items:flex-start; padding-top:72px; }
+  .modal { width:720px; background:#fff; border-radius:14px; box-shadow:0 24px 60px rgba(0,0,0,.25); }
+  .mh { display:flex; align-items:flex-start; padding:20px 24px 0; gap:12px; }
+  .mh h2 { margin:0; font-size:20px; color:var(--text); line-height:1.35; }
+  .mh .meta { color:var(--text2); margin-top:4px; }
+  .x { margin-left:auto; height:32px; padding:0 12px; border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; font-size:13px; color:#374151; flex:none; }
+  .modal .tabs { padding:0 24px; margin-top:12px; gap:24px; }
+  .modal .tabs span { font-size:14px; padding:10px 0 9px; }
+  .mb { padding:4px 24px; }
+  .msg { padding:16px 0; border-bottom:1px solid var(--hair); }
+  .msg:last-child { border-bottom:none; }
+  .msg .top { display:flex; gap:10px; align-items:baseline; }
+  .msg .who { font-weight:600; color:var(--text); }
+  .msg .when { margin-left:auto; color:var(--text3); font-size:13px; }
+  .msg .sbj { color:var(--text2); font-size:13px; margin-top:2px; }
+  .msg .txt { margin-top:10px; color:#374151; white-space:pre-line; }
+  .msg .att { margin-top:8px; }
+  .mf { display:flex; justify-content:flex-end; padding:14px 24px 20px; border-top:1px solid var(--border); }
+
+  /* 手机 */
+  .board { padding:20px 24px 28px; background:#eef0f3; }
+  .board h1 { font-size:18px; margin:0 0 14px; }
+  .phones { display:flex; gap:20px; align-items:flex-start; }
+  .cap { font-size:13px; color:#374151; margin-top:8px; }
+  .phone { width:375px; height:812px; background:var(--bg); border:1px solid var(--border); border-radius:18px; overflow:hidden; position:relative; }
+  .phone .hd { padding:0 16px; height:60px; gap:12px; }
+  .burger { width:40px; height:40px; border:1px solid var(--border); border-radius:10px; display:flex; align-items:center; justify-content:center; }
+  .phone .ava { margin-left:auto; }
+  .phone .main { padding:16px 16px 0; }
+  .phone .banner { height:84px; }
+  .phone .banner .t { top:16px; left:18px; font-size:20px; }
+  .phone .banner .cnt { left:18px; bottom:10px; }
+  .phone .sheet { margin-top:14px; }
+  .phone .tabs { padding:0 16px; gap:0; justify-content:space-between; }
+  .phone .tabs span { font-size:14px; }
+  .phone .body { padding:0 16px 8px; min-height:0; }
+  .mrow { padding:14px 0; border-bottom:1px solid var(--hair); position:relative; }
+  .mrow:last-child { border-bottom:none; }
+  .mrow .tt { padding-right:30px; }
+  .mrow .line2 { display:flex; justify-content:space-between; margin-top:4px; font-size:13px; color:var(--text2); }
+  .mrow .chk { position:absolute; right:0; top:16px; }
+  .mrow .st { font-size:13px; }
+  .msec { padding:16px 0; border-bottom:1px solid var(--hair); }
+  .msec:last-child { border-bottom:none; }
+  .msec .hh { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+  .msec h3 { margin:0; font-size:15px; color:var(--text); }
+  .msec .kv { grid-template-columns:96px 1fr; row-gap:6px; }
+  .mbar { position:absolute; left:0; right:0; bottom:0; background:#fff; border-top:1px solid var(--border); padding:10px 16px 14px; display:flex; align-items:center; gap:12px; }
+  .mbar .btn { flex:1; height:42px; font-size:15px; }
+  .phone.full { background:#fff; }
+  .phone.full .mh { padding:16px 16px 0; }
+  .phone.full .modal-tabs { padding:0 16px; }
+  .phone.full .mb { padding:0 16px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const Q = new URLSearchParams(location.search)
+const ZH = (Q.get('lang') || 'zh') === 'zh'
+const DEV = Q.get('dev') || 'd'
+const S = Q.get('s') || 'apps'
+document.documentElement.lang = ZH ? 'zh' : 'en'
+
+const T = ZH ? {
+  tagline: '每日更新、全加拿大全职业、移民价值视角', nav: ['就业把脉', '职位', '雇主', '资讯', '我的'],
+  my: '我的', cnt: '已投 4 封', tabs: ['我的求职', '我的收藏', '我的资料', '我的订阅'], mtabs: ['求职', '收藏', '资料', '订阅'],
+  job: '职位', co: '公司', city: '城市', date: '投递日期', st: '状态', posted: '发布日期', pay: '薪资',
+  replied: '雇主已回复', applied: '已投递', bounced: '退信', closed: '已下架',
+  msgs: '往来', files: '投出的材料', close: '返回', viewJob: '查看职位', you: '你',
+  picked: '已选 2 个', bulk: '批量投递',
+  resume: '简历', uploaded: '上传于 2026-10-03', replace: '替换', del: '删除', open: '打开',
+  letter: '求职信模板', edit: '编辑', slotT: '职位名', slotC: '公司名',
+  info: '投递信息', infoK: ['英文姓名', '工作身份', '最快上岗', '工作年限'], infoV: ['San Zhang', '毕业工签(PGWP)', '两周内', '3 年'],
+  cond: '我的条件', condK: ['目标', '专业', '想做的工作', '所在省'], condV: ['拿 PR', '计算机与信息', '软件开发人员', '安大略省'],
+  change: '修改', mail: '邮件提醒', weekly: '每周收藏摘要', searches: '存的搜索',
+  plan: '当前套餐', valid: '有效至 2026-12-31', extend: '续买', hist: '购买记录', d90: '90 天', d30: '30 天',
+  capsD: ['我的求职', '点一行:往来', '我的收藏', '我的资料', '我的订阅'],
+  boardM: '我的模块 v2 简版(手机 375,中文)',
+} : {
+  tagline: 'Daily updates, every job in Canada, through an immigration lens', nav: ['Job pulse', 'Jobs', 'Employers', 'News', 'My jobs'],
+  my: 'My jobs', cnt: '4 applications sent', tabs: ['Applications', 'Saved', 'Profile', 'Plan'], mtabs: ['Applications', 'Saved', 'Profile', 'Plan'],
+  job: 'Job', co: 'Company', city: 'City', date: 'Applied', st: 'Status', posted: 'Posted', pay: 'Pay',
+  replied: 'Replied', applied: 'Applied', bounced: 'Bounced', closed: 'Closed',
+  msgs: 'Messages', files: 'Sent files', close: 'Close', viewJob: 'View job', you: 'You',
+  picked: '2 selected', bulk: 'Apply to selected',
+  resume: 'Resume', uploaded: 'Uploaded 2026-10-03', replace: 'Replace', del: 'Delete', open: 'Open',
+  letter: 'Cover letter template', edit: 'Edit', slotT: 'Job title', slotC: 'Company',
+  info: 'Application info', infoK: ['Name', 'Work status', 'Can start', 'Experience'], infoV: ['San Zhang', 'Post-graduation work permit', 'Within 2 weeks', '3 years'],
+  cond: 'Job preferences', condK: ['Goal', 'Field of study', 'Target job', 'Province'], condV: ['Permanent residence', 'Computer and information sciences', 'Software developer', 'Ontario'],
+  change: 'Change', mail: 'Email alerts', weekly: 'Weekly saved-jobs digest', searches: 'Saved searches',
+  plan: 'Current plan', valid: 'Valid until Dec 31, 2026', extend: 'Extend', hist: 'Purchases', d90: '90 days', d30: '30 days',
+  boardM: 'My module v2, simplified (mobile 375, English)',
+}
+
+const APPS = [
+  { t: 'customer service representative - call centre', z: '客户服务代表 - 呼叫中心', c: 'i3 Solutions Inc.', city: 'Toronto, ON', d: '2026-10-01', st: 'replied' },
+  { t: 'retail sales associate', z: '零售销售助理', c: 'Fast Time Watch & Jewellery Repair Inc.', city: 'Hamilton, ON', d: '2026-10-04', st: 'applied' },
+  { t: 'food services manager', z: '餐饮服务经理', c: 'Pie Wood Fired Pizza Joint', city: 'Barrie, ON', d: '2026-10-02', st: 'applied' },
+  { t: 'wire and harness assembler', z: '电子装配工', c: 'Kevtron Industries Limited', city: 'Kitchener, ON', d: '2026-09-30', st: 'bounced' },
+]
+const FAVS = [
+  { t: 'personal support worker - home support', z: '家庭支持工作者', c: 'Heart of Harbour Homecare', city: 'Victoria Harbour, ON', pay: '$19–$23/hr', d: '2026-10-05', st: 'on' },
+  { t: 'office manager', z: '办公室经理', c: 'Anurag Homes Team', city: 'Kitchener, ON', pay: '$80K/yr', d: '2026-10-05', st: 'on' },
+  { t: 'architectural technologist', z: '建筑技术员', c: 'Zedd Architecture Inc', city: 'London, ON', pay: '$65K–$85K/yr', d: '2026-10-05', st: 'off' },
+  { t: 'retail sales associate', z: '零售销售助理', c: 'Fast Time Watch & Jewellery Repair Inc.', city: 'Hamilton, ON', pay: '$18/hr', d: '2026-10-04', st: 'applied' },
+  { t: 'nanny', z: '保姆', c: 'Eden Goldberg', city: 'Toronto, ON', pay: '$21/hr', d: '2026-09-21', st: 'closed' },
+]
+const zhOf = z => ZH ? `<div class="zh">${z}</div>` : ''
+const stOf = st => `<span class="st${st === 'replied' ? ' ok' : ''}">${T[st]}</span>`
+function favMark(f) {
+  if (f.st === 'applied' || f.st === 'closed') { return `<span class="st">${T[f.st]}</span>` }
+  return `<span class="chk${f.st === 'on' ? ' on' : ''}"></span>`
+}
+
+/* ---------- 网页 ---------- */
+function header() {
+  return `<div class="hd"><div class="logo"><b>✿</b>Offer2PR</div><span class="tagline">${T.tagline}</span>
+    <div class="nav">${T.nav.map((x, k) => `<span class="${k === 4 ? 'on' : ''}">${x}</span>`).join('')}
+    <div class="lang"><span class="${ZH ? 'on' : ''}">中</span><span class="${ZH ? '' : 'on'}">EN</span><span>한</span></div><div class="ava">Z</div></div></div>`
+}
+function sheet(i, body, labels) {
+  const ts = labels || T.tabs
+  return `<div class="sheet"><div class="tabs">${ts.map((x, k) => `<span class="${k === i ? 'on' : ''}">${x}</span>`).join('')}</div><div class="body">${body}</div></div>`
+}
+function deskPage(i, body, over) {
+  return header() + `<div class="main"><div class="banner"><div class="t">${T.my}</div><div class="cnt">${T.cnt}</div></div>${sheet(i, body)}</div>` + (over || '')
+}
+function appsD() {
+  const rows = APPS.map(a => `<tr><td><div class="tt">${a.t}</div>${zhOf(a.z)}</td><td>${a.c}</td><td class="dim">${a.city}</td><td class="dim">${a.d}</td><td class="r">${stOf(a.st)}</td></tr>`).join('')
+  return `<table><tr><th style="width:38%">${T.job}</th><th>${T.co}</th><th>${T.city}</th><th>${T.date}</th><th class="r">${T.st}</th></tr>${rows}</table>`
+}
+function threadInner() {
+  const a = APPS[0]
+  return `<div class="mh"><div><h2>${a.t}</h2>${zhOf(a.z)}<div class="meta">${a.c}</div></div><span class="x">${T.close}</span></div>
+    <div class="tabs modal-tabs"><span class="on">${T.msgs}</span><span>${T.files}</span></div>
+    <div class="mb">
+      <div class="msg"><div class="top"><span class="who">Priya Nair</span><span class="st ok">${T.replied}</span><span class="when">2026-10-03 15:40</span></div>
+        <div class="sbj">Re: Application: Customer Service Representative - Call Centre</div>
+        <div class="txt">Hi San,
+
+Thanks for applying. Your front desk experience is a good fit for our inbound team. Are you available for a 15-minute phone call this Thursday or Friday afternoon?
+
+Best,
+Priya</div></div>
+      <div class="msg"><div class="top"><span class="who">${T.you}</span><span class="when">2026-10-01 10:12</span></div>
+        <div class="sbj">Application: Customer Service Representative - Call Centre</div>
+        <div class="att"><a>Zhang_San_Resume.pdf</a><br><a>Cover_Letter_i3_Solutions.pdf</a></div></div>
+    </div>`
+}
+function threadD() {
+  return `<div class="shade"><div class="modal">${threadInner()}<div class="mf"><span class="btn">${T.viewJob}</span></div></div></div>`
+}
+function favsD() {
+  const rows = FAVS.map(f => `<tr class="${f.st === 'closed' ? 'off' : ''}"><td style="width:72px">${favMark(f)}</td><td><div class="tt">${f.t}</div>${zhOf(f.z)}</td><td>${f.c}</td><td class="dim">${f.city}</td><td class="dim">${f.pay}</td><td class="dim r">${f.d}</td></tr>`).join('')
+  return `<table><tr><th></th><th style="width:34%">${T.job}</th><th>${T.co}</th><th>${T.city}</th><th>${T.pay}</th><th class="r">${T.posted}</th></tr>${rows}</table>
+    <div class="foot"><span class="n">${T.picked}</span><span class="btn pri">${T.bulk}</span></div>`
+}
+function kv(keys, vals, prov) {
+  return `<div class="kv">${keys.map((k, n) => {
+    let v = vals[n]
+    if (n === prov && ZH) { v += '<span class="g">ON</span>' }
+    return `<span class="k">${k}</span><span>${v}</span>`
+  }).join('')}</div>`
+}
+function letterText() { return `Dear Hiring Manager,<br>I am writing to apply for the <span class="slot">${T.slotT}</span> position at <span class="slot">${T.slotC}</span>. With three years of customer service experience…` }
+function profileD() {
+  return `
+    <div class="sec"><h3>${T.resume}</h3><div><div class="file">Zhang_San_Resume.pdf</div><div class="sub2">${T.uploaded}</div></div><div><a class="lnk">${T.open}</a><a class="lnk">${T.replace}</a><a class="lnk">${T.del}</a></div></div>
+    <div class="sec"><h3>${T.letter}</h3><div class="quote">${letterText()}</div><div><a class="lnk">${T.edit}</a></div></div>
+    <div class="sec"><h3>${T.info}</h3>${kv(T.infoK, T.infoV, -1)}<div><a class="lnk">${T.change}</a></div></div>
+    <div class="sec"><h3>${T.cond}</h3>${kv(T.condK, T.condV, 3)}<div><a class="lnk">${T.change}</a></div></div>
+    <div class="sec"><h3>${T.mail}</h3><div><div class="toggle"><span class="sw"></span>${T.weekly}</div>
+      <div class="sub2" style="margin:14px 0 4px">${T.searches}</div><div class="rows"><div><a>Software developer, Ontario</a><a class="lnk">${T.del}</a></div><div><a>Cook, Toronto</a><a class="lnk">${T.del}</a></div></div></div><div></div></div>`
+}
+function planD() {
+  return `
+    <div class="sec"><h3>${T.plan}</h3><div><div class="big">Pro</div><div class="sub2">${T.valid}</div></div><div><span class="btn pri">${T.extend}</span></div></div>
+    <div class="sec"><h3>${T.hist}</h3><div class="rows"><div><span>2026-10-05  ${T.d90}</span><span>CA$13.00</span></div><div><span>2026-09-04  ${T.d30}</span><span>CA$5.00</span></div></div><div></div></div>`
+}
+
+/* ---------- 手机 ---------- */
+function mHeader() { return `<div class="hd"><div class="burger">☰</div><div class="logo"><b>✿</b>Offer2PR</div><div class="ava">Z</div></div>` }
+function mPage(i, body, bar) {
+  return `<div class="phone">${mHeader()}<div class="main"><div class="banner"><div class="t">${T.my}</div><div class="cnt">${T.cnt}</div></div>${sheet(i, body, T.mtabs)}</div>${bar || ''}</div>`
+}
+function appsM() {
+  return APPS.map(a => `<div class="mrow"><div class="tt">${a.t}</div>${zhOf(a.z)}<div class="line2"><span>${a.c}</span></div><div class="line2"><span>${a.d}</span>${stOf(a.st)}</div></div>`).join('')
+}
+function favsM() {
+  return FAVS.slice(0, 4).map(f => `<div class="mrow"><div class="tt">${f.t}</div>${zhOf(f.z)}<div class="line2"><span>${f.c}</span></div><div class="line2"><span>${f.city}</span><span>${f.pay}</span></div>${f.st === 'applied' ? `<span class="st" style="position:absolute;right:0;top:14px;font-size:13px">${T.applied}</span>` : `<span class="chk${f.st === 'on' ? ' on' : ''}"></span>`}</div>`).join('')
+}
+function profileM() {
+  return `<div class="msec"><div class="hh"><h3>${T.resume}</h3><a class="lnk">${T.replace}</a></div><div class="file">Zhang_San_Resume.pdf</div><div class="sub2">${T.uploaded}</div></div>
+    <div class="msec"><div class="hh"><h3>${T.letter}</h3><a class="lnk">${T.edit}</a></div><div class="quote" style="font-size:13px">${letterText()}</div></div>
+    <div class="msec"><div class="hh"><h3>${T.info}</h3><a class="lnk">${T.change}</a></div>${kv(T.infoK, T.infoV, -1)}</div>
+    <div class="msec"><div class="hh"><h3>${T.cond}</h3><a class="lnk">${T.change}</a></div>${kv(T.condK, T.condV, 3)}</div>`
+}
+function planM() {
+  return `<div class="msec"><div class="hh"><h3>${T.plan}</h3></div><div class="big">Pro</div><div class="sub2">${T.valid}</div><div style="margin-top:12px"><span class="btn pri" style="width:100%">${T.extend}</span></div></div>
+    <div class="msec"><div class="hh"><h3>${T.hist}</h3></div><div class="rows"><div><span>2026-10-05  ${T.d90}</span><span>CA$13.00</span></div><div><span>2026-09-04  ${T.d30}</span><span>CA$5.00</span></div></div></div>`
+}
+function threadM() {
+  return `<div class="phone full">${threadInner()}<div class="mbar"><span class="btn">${T.viewJob}</span></div></div>`
+}
+function mobileBoard() {
+  const caps = T.capsD || ['Applications', 'Tap a row: messages', 'Saved', 'Profile', 'Plan']
+  const ph = [mPage(0, appsM()), threadM(),
+    mPage(1, favsM(), `<div class="mbar"><span class="n" style="color:var(--text2)">${T.picked}</span><span class="btn pri">${T.bulk}</span></div>`),
+    mPage(2, profileM()), mPage(3, planM())]
+  return `<div class="board"><h1>${T.boardM}</h1><div class="phones">${ph.map((x, k) => `<div>${x}<div class="cap">${k + 1}. ${caps[k]}</div></div>`).join('')}</div></div>`
+}
+
+const D = { apps: () => deskPage(0, appsD()), thread: () => deskPage(0, appsD(), threadD()), favs: () => deskPage(1, favsD()),
+  profile: () => deskPage(2, profileD()), plan: () => deskPage(3, planD()) }
+document.getElementById('app').innerHTML = DEV === 'm' ? mobileBoard() : D[S]()
+if (DEV === 'd') { document.body.style.width = '1440px' }
+</script>
+</body>
+</html>

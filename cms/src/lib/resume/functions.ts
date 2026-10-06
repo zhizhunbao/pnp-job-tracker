@@ -3,24 +3,29 @@
  * AI 进两头不进中间:JD/简历的自由文本理解交给 LLM(completeText),
  * 免费/付费怎么裁、JSON 怎么收口、prompt 怎么组装,全在这里(可单测,不碰网络)。
  * 不落盘不入库(E11-07 首用,G3 上传复用)。
+ * 2026-10-05 加「我的简历」原件存取(user_resumes,设计稿 docs/design/我的模块v2-20261005.md「定稿」):
+ * 原件入库只走 routes 的 file 三芯(本人主动上传、可随时删);上面三条解析路照旧不落库。
  *
  * @author Frank
  * @time 2026-08-22 16:00:00
  */
 
-import { queryRows, SQL, text } from '../db'
+import { count, firstOf, queryRows, SQL, text } from '../db'
 import { fill } from '../template'
 import { log, RESUME_LOG } from '../log'
 import {
   CLAMP, ERR_SLICE, ERR_UNSUPPORTED, EXT_DOCX, EXT_PDF, EXT_SEP, FREE_ROWS, IELTS_CLB, NOC_CAND_MAX, ROLE_SYSTEM,
   ROLE_USER, BRACE_CLOSE, BRACE_OPEN, NOTE_MAX, REQ_MAX, RGBA_BYTES, ROWS_MAX, ROWS_MIN, ERR_NONE, REWRITE_NONE,
-  TITLE_PENDING,
+  TITLE_PENDING, B64, DISP_ATTACH, DISP_INLINE, DISP_NAME_HEAD, DOCX_MAGIC, FILE_NAME_DOCX, FILE_NAME_MAX, FILE_NAME_PDF,
+  FILE_NAME_NONE, MIME_DOCX, MIME_PDF, P_ID, PDF_MAGIC, TIME_NONE,
 } from './constants'
 import { MATCH_REWRITE, MATCH_SYSTEM, MATCH_USER, OUT_LANG, OUT_LANG_DEFAULT } from './prompts'
 import type {
   CaughtError, ExtractIn, ExtractOut, GateMatchIn, Gated, MatchMessages, MatchPromptIn, MatchRows,
   MaybeIelts, MaybeNum, NocCandidate, NocCandidatesIn, NocCandidatesOut, JsonObj, MaybeMatchRows, NocSimDbRow,
-  NocTitleDbRow, NocTitleRow, ParsedJson,
+  NocTitleDbRow, NocTitleRow, ParsedJson, DispositionIn, FileMimeIn, FileNameIn, MaybeMime, ResumeBlob, ResumeBlobDbRow,
+  ResumeBlobOut, ResumeDeleteOut, ResumeFileDbRow, ResumeFileMeta, ResumeListOut, ResumeSaveIn, ResumeSaveOut, ResumeUserIn,
+  CountDbRow, MaybeResumeId, ResumeCountOut, ResumeIdDbRow, ResumeIdFact, ResumeOneIn, ResumeSetDefaultOut, TimeCell,
 } from './types'
 
 /**
@@ -398,4 +403,210 @@ export function toNocCodeCell(r: NocSimDbRow): string {
  */
 export function toNocTitleRow(r: NocTitleDbRow): NocTitleRow {
   return { noc: text(r.noc), title: text(r.title) }
+}
+
+/**
+ * 简历元信息库行 → 元信息。
+ *
+ * @param r 库行。
+ * @returns 元信息。
+ */
+export function toResumeFileMeta(r: ResumeFileDbRow): ResumeFileMeta {
+  return {
+    id: count(r.id), isDefault: r.is_default === true, fileName: text(r.file_name), mime: text(r.mime),
+    sizeBytes: count(r.size_bytes), uploadedAt: isoOf(r.uploaded_at),
+  }
+}
+
+/**
+ * 时刻格 → ISO 串(pg 的 timestamptz 交回 Date;老驱动或测试桩可能给串;空折空串)。
+ *
+ * @param x 库回的时刻格。
+ * @returns ISO 串。
+ */
+function isoOf(x: TimeCell): string {
+  if (x == null) {
+    return TIME_NONE
+  }
+  if (x instanceof Date) {
+    return x.toISOString()
+  }
+  return x
+}
+
+/**
+ * 简历原件库行 → 原件(base64 解回字节)。
+ *
+ * @param r 库行。
+ * @returns 原件。
+ */
+export function toResumeBlob(r: ResumeBlobDbRow): ResumeBlob {
+  return { fileName: text(r.file_name), mime: text(r.mime), bytes: new Uint8Array(Buffer.from(text(r.file_b64), B64)) }
+}
+
+/**
+ * 计数库行 → 份数。
+ *
+ * @param r 库行。
+ * @returns 份数。
+ */
+export function toCount(r: CountDbRow): number {
+  return count(r.n)
+}
+
+/**
+ * 写入回行 → id 与是否默认。
+ *
+ * @param r 库行。
+ * @returns 洗净的回行。
+ */
+export function toResumeId(r: ResumeIdDbRow): ResumeIdFact {
+  return { id: count(r.id), isDefault: r.is_default === true }
+}
+
+/**
+ * 本人的简历清单(默认那份在最前);没传过给空清单。
+ *
+ * @param x 数据库连接与用户 id。
+ * @returns 清单。
+ */
+export async function loadResumeList(x: ResumeUserIn): ResumeListOut {
+  return queryRows({ db: x.db, sql: SQL.RESUME_FILE_LIST, params: [x.userId], map: toResumeFileMeta })
+}
+
+/**
+ * 本人有几份简历。
+ *
+ * @param x 数据库连接与用户 id。
+ * @returns 份数。
+ */
+export async function loadResumeCount(x: ResumeUserIn): ResumeCountOut {
+  const row = firstOf(await queryRows({ db: x.db, sql: SQL.RESUME_FILE_COUNT, params: [x.userId], map: toCount }))
+  if (row == null) {
+    return 0
+  }
+  return row
+}
+
+/**
+ * 本人某一份的原件;没有(或不是本人的)给 null。
+ *
+ * @param x 连接、用户 id 与简历 id。
+ * @returns 原件或 null。
+ */
+export async function loadResumeBlob(x: ResumeOneIn): ResumeBlobOut {
+  return firstOf(await queryRows({ db: x.db, sql: SQL.RESUME_FILE_GET, params: [x.userId, x.id], map: toResumeBlob }))
+}
+
+/**
+ * 新加一份(这个人第一份自动成默认),或原地替换某一份(默认与否不变)。上传时刻在这里取一次。
+ *
+ * @param x 连接、用户 id、替换哪一份与已判过类型的原件。
+ * @returns 写好的元信息;替换的那一份不是本人的给 null。
+ */
+export async function saveResumeFile(x: ResumeSaveIn): ResumeSaveOut {
+  const uploadedAt = new Date().toISOString()
+  let rows: ResumeIdFact[] = []
+  if (x.replaceId == null) {
+    rows = await queryRows({
+      db: x.db, sql: SQL.RESUME_FILE_INSERT, params: [x.userId, x.b64, x.fileName, x.mime, x.sizeBytes, uploadedAt],
+      map: toResumeId,
+    })
+  } else {
+    rows = await queryRows({
+      db: x.db, sql: SQL.RESUME_FILE_REPLACE,
+      params: [x.userId, x.replaceId, x.b64, x.fileName, x.mime, x.sizeBytes, uploadedAt], map: toResumeId,
+    })
+  }
+  const row = firstOf(rows)
+  if (row == null) {
+    return null
+  }
+  return { id: row.id, isDefault: row.isDefault, fileName: x.fileName, mime: x.mime, sizeBytes: x.sizeBytes, uploadedAt }
+}
+
+/**
+ * 删本人某一份(没有也不报错);删的是默认那份就把最新的一份补成默认。
+ *
+ * @param x 连接、用户 id 与简历 id。
+ * @returns 无。
+ */
+export async function deleteResumeFile(x: ResumeOneIn): ResumeDeleteOut {
+  await x.db.query(SQL.RESUME_FILE_DELETE, [x.userId, x.id])
+  await x.db.query(SQL.RESUME_FILE_PROMOTE, [x.userId])
+}
+
+/**
+ * 把本人某一份设为默认(其余取消)。
+ *
+ * @param x 连接、用户 id 与简历 id。
+ * @returns 那一份是本人的、改成了 true;不是本人的 false(什么都没改)。
+ */
+export async function setDefaultResume(x: ResumeOneIn): ResumeSetDefaultOut {
+  const r = await x.db.query(SQL.RESUME_FILE_SET_DEFAULT, [x.userId, x.id])
+  return r.rowCount != null && r.rowCount > 0
+}
+
+/**
+ * 查询参数里的简历 id:正整数才认,其余(缺席、乱填)给 null。
+ *
+ * @param url 请求地址。
+ * @returns 简历 id 或 null。
+ */
+export function resumeIdOf(url: string): MaybeResumeId {
+  const n = Number(new URL(url).searchParams.get(P_ID))
+  if (Number.isInteger(n) && n > 0) {
+    return n
+  }
+  return null
+}
+
+/**
+ * 按文件头判简历类型(审查 #17:只看扩展名会放进改了后缀的任意文件)。
+ * PDF 认文件头就够;.docx 是 zip 包,zip 文件头还得配 .docx 扩展名(xlsx、普通 zip 文件头一样)。
+ *
+ * @param x 文件名与文件头。
+ * @returns MIME;不收给 null。
+ */
+export function fileMimeOf(x: FileMimeIn): MaybeMime {
+  if (x.head.startsWith(PDF_MAGIC)) {
+    return MIME_PDF
+  }
+  const name = x.name.trim()
+  const ext = name.slice(name.lastIndexOf(EXT_SEP) + 1).toLowerCase()
+  if (x.head.startsWith(DOCX_MAGIC) && ext === EXT_DOCX) {
+    return MIME_DOCX
+  }
+  return null
+}
+
+/**
+ * 入库的文件名:去首尾空白、截到入库上限;浏览器没给名字就按类型补一个(下载时才有扩展名)。
+ *
+ * @param x 浏览器交来的文件名与 MIME。
+ * @returns 文件名。
+ */
+export function fileNameOf(x: FileNameIn): string {
+  const name = x.name.trim().slice(0, FILE_NAME_MAX)
+  if (name !== FILE_NAME_NONE) {
+    return name
+  }
+  if (x.mime === MIME_PDF) {
+    return FILE_NAME_PDF
+  }
+  return FILE_NAME_DOCX
+}
+
+/**
+ * 取原件响应的处置头:打开或下载 + 百分号编码的文件名(中文名照样对)。
+ *
+ * @param x 文件名与是否下载。
+ * @returns Content-Disposition 头值。
+ */
+export function dispositionOf(x: DispositionIn): string {
+  let kind = DISP_INLINE
+  if (x.download) {
+    kind = DISP_ATTACH
+  }
+  return kind + DISP_NAME_HEAD + encodeURIComponent(x.fileName)
 }

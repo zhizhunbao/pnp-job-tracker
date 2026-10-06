@@ -954,8 +954,14 @@ export const jobsZh = {
   'rm.tooLong': '内容太长,删掉一些再试', 'rm.busy': '模型服务忙,稍等几秒重试',
   // 简历存档(E11-08):弹框勾选 + 账户页档案节
   'rm.arch.save': '存进档案,下次直接用', 'rm.arch.used': '用的是你 {d} 存的简历', 'rm.arch.done': '已存进档案',
-  'rm.arch.title': '我的简历', 'rm.arch.meta': '{d} 存入,{n} 字', 'rm.arch.empty': '对照职位时可以存下来,下次直接用',
-  'rm.arch.view': '查看', 'rm.arch.hide': '收起', 'rm.arch.clear': '清除', 'rm.arch.sure': '确认清除', 'rm.arch.cancel': '取消',
+  'rm.arch.title': '我的简历',
+  'rf.upTitle': '上传简历', 'rf.upSub': 'PDF 或 Word,5 MB 以内', 'rf.upBtn': '选择文件', 'rf.upDrag': '拖到这里也可以',
+  'rf.uploaded': '上传于 {d}', 'rf.preview': '预览', 'rf.replace': '替换文件', 'rf.download': '下载', 'rf.delete': '删除',
+  'rf.sure': '确认删除', 'rf.cancel': '取消',
+  'rf.default': '默认', 'rf.setDefault': '设为默认', 'rf.add': '添加简历', 'rf.full': '最多 5 份', 'rf.loading': '加载中', 'rf.pvFail': '这份预览不了,下载后查看',
+  'rf.err.full': '最多 5 份,先删掉一份再加',
+  'rf.err.type': '只收 PDF 或 Word(.docx)文件', 'rf.err.size': '文件超过 5 MB',
+  'rf.err.limit': '今天上传次数用完了,明天再试', 'rf.err.net': '没成功,稍后再试',
   // cw.* = 全站右下角对话挂件的**壳**(ChatLauncher);面板标题复用 chat.title,不另开一份
   'cw.open': 'WhatsApp', 'cw.minimize': '最小化', 'cw.close': '关闭', 'cw.hint': '想看什么?问一句',
   'cw.max': '全屏', 'cw.restore': '退出全屏',  // 桌面面板大小(手机恒全屏,不出这个钮)
@@ -1093,8 +1099,9 @@ export const siteZh = {
   'acct.toReg': '免费注册', 'acct.toLogin': '已有账号?',   // 2026-09-14 Frank「改成免费注册」「把登录两个字删了」
   'acct.err.cred': '邮箱或密码不正确', 'acct.err.exists': '该邮箱已注册,请直接登录', 'acct.err.weakPw': '密码不够强:至少 8 位', 'acct.err.generic': '操作失败,请稍后再试', 'acct.err.oauth': 'Google 登录没成功,请重试或用邮箱登录',
   'acct.pw.short': '太短:至少 8 位', 'acct.pw.weak': '弱', 'acct.pw.medium': '中', 'acct.pw.strong': '强', 'acct.pw.hint': '建议混合大小写、数字或符号',
-  'acct.plan.free': '免费版', 'acct.plan.pro': '有效期至 {d}',
+  'acct.plan.free': '免费版', 'sub.title': '我的订阅', 'sub.renew': '续买', 'acct.plan.pro': '有效期至 {d}',
   'acct.logout': '退出登录',
+  'acct.bnSub': '简历、收藏与订阅',
   'acct.nick': '昵称', 'acct.nickSave': '保存', 'acct.nickPh': '取个昵称',
   'acct.forgot': '忘记密码?', 'acct.forgotSend': '发送重置邮件', 'acct.forgotSent': '如果该邮箱已注册,重置邮件已发出——请查收(链接 1 小时内有效)。',
   'acct.resetTitle': '设置新密码', 'acct.resetBtn': '设置新密码并登录', 'acct.resetBad': '链接无效或已过期,请返回登录重新发起找回。', 'acct.backLogin': '返回登录',
