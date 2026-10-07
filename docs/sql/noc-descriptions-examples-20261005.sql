@@ -1,0 +1,27 @@
+-- noc_descriptions 加一列 examples(2026-10-05 访客第 3 题职业搜索:打「cloud」出「没有找到匹配职业」)。
+-- 病根:职业搜索(cms lib/db/sql.ts NOC_BY_TITLE_LIKE)只比官方职业名 title / 中文名 title_zh,官方名里没有 cloud 这个词;
+-- StatCan NOC 2021 V1.0 Elements(https://www.statcan.gc.ca/en/subjects/standard/noc/2021/indexV1/noc-2021-v1.0-elements.csv,
+-- 仓里缓存 data/raw/noc/noc-elements.csv)的 All examples 里有:21231 cloud engineer / cloud architect / cloud administrator、
+-- 21232 cloud developer、20012 cloud engineering manager、21222 cloud service management specialist。
+-- 惯例(db-push-minefield):加列一律手写 SQL 先行,别让 DB_PUSH 猜;只新增、不改旧数据;IF NOT EXISTS,重跑无害。
+--
+-- examples:这个 NOC 的官方示例职称(英文原文,去前后空格、不分大小写去重、不分大小写排序,换行拼接;没有给空串)。
+--    数据层 etl/noc descriptions 步挂到 raw/noc/descriptions.json(516 个组共 27,935 条),mart 汇装拼成本列。
+--    搜索:名字命中的排前面,只命中示例职称的排后面,同档短名优先;上限 8 → 12。候选报文不带本列。
+-- 列型照 Payload 建列惯例(textarea → varchar,同表 duties / requirements 两列一样)。
+--
+-- 🔴 跑法(生产,顺序不能倒):
+--   ① 跑本文件(只加列;现在就能跑 —— 线上旧代码不 SELECT 这一列,加了没影响)。
+--      ⚠ 必须在 cms 新代码上线之前:新代码的 seed 列清单带 examples、搜索 SQL 读 d.examples,列不在 = seed 撞 42703 整事务回滚、
+--      职业搜索 500。
+--   ② cms 推上线,等 /api/version 换版。
+--   ③ 换版之后再清哈希:DELETE FROM seed_state WHERE name = 'noc_descriptions';
+--      (加列窗口期防偷记:etl 新代码一落地,ops_build 每小时的链就会把带 examples 的 noc_descriptions.json 传上去,
+--       线上旧代码 seed 按旧列清单灌(examples 丢掉),却把新文件的哈希记进 seed_state → 新代码上线后每轮 -2 静默跳过,
+--       examples 永远空。所以清哈希必须在换版之后,见 seed-hash-poisoning-on-column-add。)
+--   ④ 整套重传 mart + seed(换版会清空服务器上已传的 mart;只传这一张会撞「jobs shard missing」整批回滚)。
+--   ⑤ 抽查:SELECT count(*) FROM noc_descriptions WHERE examples IS NOT NULL AND examples <> '';   -- 期望 = 表行数
+--          SELECT noc, title FROM noc_descriptions WHERE examples ILIKE '%cloud engineer%';       -- 期望含 21231
+--          curl 'https://offer2pr.com/api/quiz?q=cloud'                                            -- 候选里有 21231
+
+ALTER TABLE noc_descriptions ADD COLUMN IF NOT EXISTS examples varchar;
