@@ -25,6 +25,11 @@ exit 1 → 链尾 city 从 09-22 起一轮没跑,city_macro 停在 09-22。上�
 (UNITS:statcan = npr_share → tr_prov → cubes → city、statcan_naics = naics),一单元一容器一 ping,
 容器跑 `--only <单元名>`。SCHEDULED 不再是调度真相,只剩手动全跑;调度声明从 META 改为 __init__ 的 METAS(一单元一条)。
     python etl/statcan/main.py --only statcan   # 跑一个单元(容器就是这么跑的)
+2026-10-04 加 CIP 2021 专业表(访客四题第 2 题;代码住 statcan/cip 子域,理由见其 __init__):cip2021 进 statcan_naics 单元,
+cip_i18n / cip_programs / test_cip 只进 TOOLS 手动点名。
+    python etl/statcan/main.py --only cip_i18n      # 中韩名(本地 qwen,可断点续跑)
+    python etl/statcan/main.py --only cip_programs  # 汇装件 → processed/statcan/cip_programs.json(不写 mart)
+2026-10-04 收口:生产 DDL 已跑,mart 汇装每轮读这份 processed 产出 data/mart/cip_programs.json;本步自己仍只写 processed。
 """
 import sys
 from itertools import chain
@@ -35,18 +40,22 @@ from log.functions import say
 from door.functions import run_steps
 from statcan.functions import (scrape_statcan_city, scrape_statcan_cubes, scrape_statcan_naics, scrape_statcan_npr,
                                scrape_statcan_tr_prov)
+from statcan.cip.functions import build_statcan_cip_programs, run_cip_tests, scrape_statcan_cip, translate_statcan_cip
 
 UNITS = {
     "statcan": [("npr_share", scrape_statcan_npr), ("tr_prov", scrape_statcan_tr_prov),
                 ("cubes", scrape_statcan_cubes), ("city", scrape_statcan_city)],
-    "statcan_naics": [("naics", scrape_statcan_naics)],
+    "statcan_naics": [("naics", scrape_statcan_naics), ("cip2021", scrape_statcan_cip)],
 }
 """调度单元(调度真相,2026-09-26 晚立;Frank「其中一个失败,其余照跑?那我怎么知道这个失败」→ 选「拆 + 每个单元配 ping」
 「一单元一容器」,pnp 同批同形)。一单元 = 一个容器(SOURCE = 单元名)= 一个 healthchecks 检查项;
 容器跑 `python etl/statcan/main.py --only <单元>`,单元内按序跑、**一步失败即中止**(door 叶),哪个单元坏了哪个 ping 红。
 声明(role / interval / ping)在 __init__ 的 METAS。
 切法:npr_share / tr_prov / cubes / city 四步是按期发布的宏观 / 城市刻度,一单元;naics 是分类标准类目表
-(五年一修,2026-09-26 才进链),另成一单元 —— 换版时它自校失败只红它自己的 ping,不连带宏观表。"""
+(五年一修,2026-09-26 才进链),另成一单元 —— 换版时它自校失败只红它自己的 ping,不连带宏观表。
+2026-10-04 cip2021(CIP 2021 专业分类表,同是 StatCan 分类标准、五年一修、一发 CSV GET)排进 statcan_naics 单元 naics 之后:
+它落 raw/statcan/cip2021.json,在本域保鲜通配 raw/statcan/*.json(2 天)里,不进链就会两天后把保鲜检查项拉红(naics 当初进链同因);
+不新开单元 / 容器(派工令「不注册新的定时役 / 容器」)。只写 raw + crawl 缓存,不碰 mart、不灌库。"""
 
 SCHEDULED = list(chain.from_iterable(UNITS.values()))
 """默认链(不带参数跑 = 各单元的步按 UNITS 顺序拼成一串;一步失败即中止)。
@@ -70,12 +79,24 @@ TOOLS = {
     "cubes": scrape_statcan_cubes,
     "city": scrape_statcan_city,
     "naics": scrape_statcan_naics,
+    "cip2021": scrape_statcan_cip,
+    "cip_i18n": translate_statcan_cip,
+    "cip_programs": build_statcan_cip_programs,
+    "test_cip": run_cip_tests,
 }
 """全部可 --only 点名的步。前四步与默认链同一份;naics(2026-09-18 雇主分类批二:NAICS 类目表 → raw/statcan/naics.json)
 只在这里 —— 分类标准五年一修(2022 v1.0,下一版 2027),不值得每轮重抓,换版时手动点名。
 2026-09-26 改判进默认链(Frank 定保鲜标准「我现在职位是小时更新。其他最次也是日更」):naics.json 在 raw/statcan/*.json
 保鲜通配里,不进链就只能靠人手点名续期(停在 09-18);一天一发 CSV GET,量可忽略。换版时自校会拦(条数 / 译名表对不上
-即抛、保留旧表),比手动点名更早发现。"""
+即抛、保留旧表),比手动点名更早发现。
+2026-10-04 加 CIP 2021 四步(代码住 statcan/cip 子域):
+  cip2021       官方结构表 → raw/statcan/cip2021.json(同时在 statcan_naics 单元里日抓)
+  cip_i18n      英文专业名 → 中 / 韩名(本地 qwen 分批译,可断点续跑;手动件,不进任何链)
+  cip_programs  汇装件 → processed/statcan/cip_programs.json(🔴 不写 mart,DDL 跑完再接汇装;手动件)
+  test_cip      子域自测(解析金标 / 真表金标 / 专业 → 大类对照表 / 译名闸与上架名定稿)
+2026-10-04 收口:上面 cip_programs 那行「DDL 跑完再接汇装」已兑现 —— 生产 DDL 已跑,mart 汇装已接(源文件缺失时整表不出、不清空)。
+⚠ --only 是子串匹配:`--only cip` 按序命中这四步(抓表 → 译名 → 汇装件 → 自测),译名一步要跑一两个小时;
+单点请写全名。四个新键与五个既有键逐对核过互不含(city 不含 cip)。"""
 
 
 def main() -> int:

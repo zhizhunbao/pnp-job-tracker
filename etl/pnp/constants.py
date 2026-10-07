@@ -3377,6 +3377,31 @@ ONR_PROBLEM_EXP_LICENCE = "工作经验(替代路径:持执照)没解析到"
 ONR_PROBLEM_EXP_DRIVERS = "工作经验(卡车 / 公交司机例外)没解析到"
 """自校问题:司机例外(解析不到时应届与执照两行少挂排除,会把这两条路说宽)。"""
 
+ONR_PHYSICIAN_STREAM = "Ontario Workforce Priority stream — self-employed physicians"
+"""安省唯一现行 stream 里给自雇医生那条路径自己的门槛流(2026-10-04 Frank「通道 还有 本站未收录 是不是应该收录」→「你直接补 不行么」:
+资讯「通道」页 PW_ON_SELF_EMPLOYED_PHYSICIANS 原先「本站未收录门槛」)。官方原句「If you meet these requirements, you do not need to meet
+the other applicant requirements listed on this page and the employer requirements do not apply.」—— 所以只挂本流,不挂 ONR_STREAM
+(那边的语言 / 经验 / 雇主几行对医生不适用)。名字含 Workforce Priority,cms ON 路径判定(/workforce priority/i)会读进本流,
+但判定引擎(gauge / ruling)不读 licensing 一类,判定不变。"""
+
+ONR_SECTION_PHYSICIAN = "Steps to apply as a self-employed physician"
+"""自雇医生两项门槛的出处节名(通道页「Steps to apply as a self-employed physician」段)。"""
+
+ONR_PHYSICIAN_RULES = (
+    (re.compile(r"you hold a certificate in one of the following classes and are a member in good standing with the College of "
+                r"Physicians and Surgeons of Ontario"), "credential=cpso",
+     "College of Physicians and Surgeons of Ontario (CPSO) certificate of registration (independent practice, academic "
+     "practice or provisional), member in good standing", "自雇医生的 CPSO 执业证书条文没解析到"),
+    (re.compile(r"meaning you have an Ontario Health Insurance Plan \(OHIP\) billing number"), "credential=ohip",
+     "Ontario Health Insurance Plan (OHIP) billing number", "自雇医生的 OHIP 计费号条文没解析到"),
+)
+"""自雇医生的两项门槛(rule_rows 五元组;2026-10-04):持 CPSO 三类执业证书之一且资格良好、有 OHIP 计费号 —— 都记 licensing
+(门槛卡「其他」行出「职业所需执照或注册」;判定引擎不读这一类)。OHIP 那句前半截「in accordance with the Health Insurance Act, 1990」
+带法规链接,压空白后逗号前会多一格,原句只锚后半截。持研究生教育执照(postgraduate education licence)的不能走本路径,只在原句里。
+同日 Frank「全称 缩写 中文灰字都要吧」:四元组改成(原句、口径包、label、自校问题)—— 口径包记 credential=cpso / credential=ohip,
+cms 门槛卡按它一项一行出「英文全称(缩写)」黑字 + 界面语言译名灰字,不再并成一句通用的「职业所需执照或注册」;label 补上 CPSO 缩写
+(学会官方简称,本页原句只写全称)。"""
+
 ONR_PROBLEM_EMP_YEARS = "雇主经营年限没解析到"
 """自校问题:雇主经营年限(ON 档措辞)。"""
 
@@ -5859,6 +5884,27 @@ NBR_SI_RES_LABEL_TPL = ("Lived in New Brunswick for at least {n} months (not req
 
 NBR_PROBLEM_SI_RES = "法语工人路径的居住时长(have been living in New Brunswick for at least N months …)没解析到"
 """自校问题:法语工人居住(2026-09-30)。"""
+
+NBR_SI_REMOTE_STREAM = "New Brunswick Strategic Initiative — Francophones Working Remotely in New Brunswick pathway"
+"""远程法语路径自己的几行(2026-10-04 Frank「通道 还有 本站未收录 是不是应该收录」→「你直接补 不行么」:资讯「通道」页这条通道原先
+「本站未收录门槛」,三条路径共同的 NBR_SI_STREAM 早在表里,只是没挂上)。🔴 名字不含「New Brunswick Skilled Worker」(同 NBR_EE_STREAM 注)。"""
+
+NBR_SEG_SI_REMOTE_RE = re.compile(r"Francophones Working Remotely in New Brunswick To be eligible under this pathway, you must: "
+                                  r"(.+?) Read the")
+"""战略倡议页远程法语路径段(2026-10-04;写法同 NBR_SEG_SI_WORKERS_RE)。"""
+
+NBR_SECTION_SI_REMOTE = "Strategic Initiative page — Francophones Working Remotely in New Brunswick"
+"""远程法语路径几行的出处节名(2026-10-04)。"""
+
+NBR_SI_REMOTE_RULES = (
+    (re.compile(r"have been living in New Brunswick for (\d+) months"), FACTOR_RESIDENCE, UNIT_MONTHS,
+     "Lived in New Brunswick for {n} months", "远程法语路径的居住时长(have been living in New Brunswick for N months)没解析到"),
+)
+"""远程法语路径的数值行(rule_rows 五元组;2026-10-04):「have been living in New Brunswick for 12 months」→ residence 12 个月
+(官方写阿拉伯数字;门槛卡出「在本省住满 12 个月」)。判定引擎:gauge 不读 residence,ruling 的居住缺口只读按通道名挑出的行
+(NB 技术工人 /new brunswick skilled worker/i),本流进不去。
+**不收的**:「have been working remotely for a Canadian employer located outside of Quebec during this entire period」—— 门槛卡没有
+这一类行,通道对照表已给本通道挂「远程工作」标签;法语 NCLC 5 不收(理由同 NBR_SI_RULES)。"""
 
 NBR_PCCG_RULES = (
     (re.compile(r"have a level (\d+) in all four language skills according to the Canadian Language Benchmarks \(CLB\)"),

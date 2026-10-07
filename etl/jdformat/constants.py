@@ -198,6 +198,17 @@ MARK_LINE_REPL = "\n\\1"
 FIELD_NONE = ""
 """模型没吐出这一格(就业性质 / 工时)时的空值:抽不到就留空,不替它填一个「全职」。"""
 
+PII_EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+"""邮箱(镜像 cms lib/jobs/constants.ts 的 EMAIL_RE;改那边必同改这边)。
+2026-10-04 付费闭环 B1 收口立:整理版 [APPLY] 节原样带着雇主邮箱进库,未登录访客从职位页拿得到 ——
+邮箱只给登录用户点投递时查(/api/jobs/applyhow),整理版写盘前抹掉(cms 懒生成那条路 generateJdFormatted 早就抹)。"""
+
+PII_PHONE_RE = re.compile(r"(\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}(\s*(ext|x|poste)\.?\s*\d+)?", re.I)
+"""北美电话(含分机;镜像 cms PHONE_RE,同上)。"""
+
+PII_MASK = "[see original posting]"
+"""脱敏占位(镜像 cms PII_MASK:占位跟原帖语言走,统一中性英文标记)。"""
+
 # =========================================================================
 # 6. 报数文案与失败由头
 # =========================================================================
@@ -248,3 +259,6 @@ PRINT_ROW_TPL = "  {status} {ext} src={src_len} out={out_len} {note}"
 
 PRINT_DONE_TPL = "✓ format: ok {ok} fail {fail},累计 ok {total} / 记录 {n} → {out}"
 """收工报数。"""
+
+PRINT_SCRUB_TPL = "format: 存量整理版抹掉邮箱 / 电话 {n} 条(2026-10-04 起写盘前统一抹,存量每轮复洗,幂等)"
+"""存量复洗报数(只在真洗到时打一行)。"""

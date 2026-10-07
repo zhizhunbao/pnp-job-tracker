@@ -5,6 +5,7 @@ jdformat 域函数 —— 全部行为住这(照 company 全溶样张,方言律�
 genexp / lambda)/ **内嵌禁令** / **一参令**(多入参收 scheme 的 XxxIn dataclass)。
 第 3、4 段是 cms lib/jobs/functions.ts 的镜像(draft_of ⇔ jdDraftOf,validate_note_of ⇔ validateJdFormatted,
 mark_lines_of ⇔ jdMarkLinesOf):改那边必同改这边。
+2026-10-04 加 scrub_pii_of ⇔ scrubPii(整理版写盘前抹雇主邮箱 / 电话;存量缓存每轮由 scrub_cache 复洗)。
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch)。
 """
 import json
@@ -22,8 +23,8 @@ from jdformat.constants import (
     LLM_TEMPERATURE, LLM_TIMEOUT_S, MARK_HEAD, MARK_INLINE_RE, MARK_LINE_REPL, MARK_TAIL, NOTE_DIGITS, NOTE_EMPTY,
     NET_ERRORS, NOTE_BLANK, NOTE_HTTP_TPL, NOTE_LEN, NOTE_MARKS, NOTE_NO_LLM, NOTE_NO_MART, OPEN_STATUSES, OUT_FORMATTED,
     OUT_MAX_BASE, OUT_MAX_RATIO, OUT_MIN_LEN, P_MODEL, P_NUM_PREDICT, P_OPTIONS, P_PROMPT, P_RESPONSE,
-    P_STREAM, P_TEMPERATURE, P_THINK, PATH_OLLAMA_GENERATE, PRINT_ABORT_TPL, PRINT_DONE_TPL, PRINT_ROW_TPL,
-    PRINT_TARGETS_TPL,
+    P_STREAM, P_TEMPERATURE, P_THINK, PATH_OLLAMA_GENERATE, PII_EMAIL_RE, PII_MASK, PII_PHONE_RE, PRINT_ABORT_TPL,
+    PRINT_DONE_TPL, PRINT_ROW_TPL, PRINT_SCRUB_TPL, PRINT_TARGETS_TPL,
     PROMPT_HEAD, RETRY_FAILED_DAYS, RETRY_TAIL, SECTION_MARKS, ST_FAIL, ST_OK, STRIP_REPL, TAIL_STRIP_RE, TERM_RE,
     TERM_VALUES, TEXT_ENCODING, THINK_RE, URL_TAIL_SLASH,
 )
@@ -41,6 +42,8 @@ def build_formatted() -> None:
 
     没盒子地址直接退;mart 还没产出直接退;单条失败只记 status 不炸整轮;每 FLUSH_N 条落一次盘(中途被杀不丢)。
     盒子连不上 / 超时(NET_ERRORS)不是这条帖的错:不记失败、整轮中止(2026-09-15 盒子掉线实撞)。
+    2026-10-04 付费闭环 B1 收口:读回缓存后先复洗存量整理版里的雇主邮箱 / 电话(scrub_cache,幂等),
+    本轮末尾照常整表落盘 —— 下一轮汇装灌库后,库里整理版不再带联系方式(邮箱只给登录用户点投递时查)。
     """
     cfg = llm_config()
     if cfg.base == "":
@@ -52,6 +55,9 @@ def build_formatted() -> None:
         return
     cache = read_cache()
     demote_blank(cache)
+    scrubbed = scrub_cache(cache)
+    if scrubbed > 0:
+        say(PRINT_SCRUB_TPL.format(n=scrubbed))
     pruned = prune_cache(PruneIn(cache=cache, jobs=jobs))
     todo = pick_todo(PickIn(jobs=jobs, cache=cache, limit=int(FORMAT_LIMIT)))
     say(PRINT_TARGETS_TPL.format(jobs=len(jobs), done=count_ok(cache), pruned=pruned, todo=len(todo),
@@ -156,6 +162,21 @@ def demote_blank(cache: dict[str, FormatRecord]) -> int:
     return n
 
 
+def scrub_cache(cache: dict[str, FormatRecord]) -> int:
+    """存量 ok 记录的整理版过一遍 scrub_pii_of(2026-10-04 付费闭环 B1 收口):立规之前做成的整理版 [APPLY] 节
+    原样带着雇主邮箱 / 电话(在架岗约八百条),原地改写;已经干净的不动(幂等,每轮跑一次几乎零成本)。
+    返回改写条数。"""
+    n = 0
+    for rec in cache.values():
+        if rec.status != ST_OK:
+            continue
+        clean = scrub_pii_of(rec.formatted)
+        if clean != rec.formatted:
+            rec.formatted = clean
+            n += 1
+    return n
+
+
 def pick_todo(x: PickIn) -> list[str]:
     """还没做成 ok 的岗(失败冷却 RETRY_FAILED_DAYS),按发布时间新→旧,凑够 limit 即止。"""
     pairs: list[tuple[str, str]] = []
@@ -208,7 +229,7 @@ def format_one(x: FormatOneIn) -> FormatRecord:
         note = validate_note_of(ValidateIn(out=draft.out, src=x.src))
         if note == FIELD_NONE:
             rec.status = ST_OK
-            rec.formatted = mark_lines_of(draft.out)
+            rec.formatted = mark_lines_of(scrub_pii_of(draft.out))
             rec.term = term_ok_of(draft.term)
             rec.hrs = hrs_ok_of(draft.hrs)
             rec.note = FIELD_NONE
@@ -278,6 +299,11 @@ def hrs_ok_of(hrs: str) -> str:
     if hrs in HOURS_VALUES:
         return hrs
     return FIELD_NONE
+
+
+def scrub_pii_of(text: str) -> str:
+    """抹掉邮箱与北美电话,换成中性占位(镜像 cms scrubPii:先邮箱后电话,同一把正则同一个占位)。"""
+    return PII_PHONE_RE.sub(PII_MASK, PII_EMAIL_RE.sub(PII_MASK, text))
 
 
 # =========================================================================

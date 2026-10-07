@@ -410,6 +410,10 @@ from pnp.constants import (  # 2026-09-30 通道补全批一 1b(NB:快速通道�
     NBR_SI_EXP_LABEL_TPL, NBR_SI_EXP_RE, NBR_SI_RES_LABEL_TPL, NBR_SI_RES_RE, NBR_SI_RULES, NBR_SI_STREAM, NBR_SI_URL,
     NBR_SI_WORKERS_RULES, NBR_SI_WORKERS_STREAM,
 )
+from pnp.constants import (  # 2026-10-04 资讯「通道」页本站未收录门槛补全(NB 远程法语居住 / ON 自雇医生两项执照)
+    NBR_SECTION_SI_REMOTE, NBR_SEG_SI_REMOTE_RE, NBR_SI_REMOTE_RULES, NBR_SI_REMOTE_STREAM,
+    ONR_PHYSICIAN_RULES, ONR_PHYSICIAN_STREAM, ONR_SECTION_PHYSICIAN,
+)
 from pnp.scheme import NbExpIn  # 同上(NB 英文数词经验行的入参)
 from pnp.constants import (  # 2026-09-30 通道补全批一 1b(PE:语言分档 / 国际毕业生 / 中级经验 / 快速通道)
     PER_EE_RULES, PER_EE_STREAM, PER_EE_URL, PER_IE_END, PER_IE_LANG_ROWS, PER_IE_PAGE_URL, PER_IE_RULES, PER_IE_START,
@@ -3666,8 +3670,30 @@ def on_closed_reqs() -> ReqsOut:
     return ReqsOut(rows=rows, problems=problems)
 
 
+def on_physician_reqs(stream_txt: str) -> ReqsOut:
+    """自雇医生路径的两项门槛(2026-10-04 Frank「你直接补 不行么」:资讯「通道」页这条通道原先「本站未收录门槛」):
+    CPSO 执业证书、OHIP 计费号(ONR_PHYSICIAN_RULES),落 ONR_PHYSICIAN_STREAM。正文先压空白(OHIP 那句带法规链接)。
+    同日 Frank「全称 缩写 中文灰字都要吧」:每行带口径包 credential=…(cms 门槛卡按它出全称 + 灰字),rule_rows 不带口径包,改逐条取。
+
+    @param stream_txt 通道页正文。
+    @returns 行与自校问题。
+    """
+    txt = fold_ws(stream_txt)
+    rows: list = []
+    problems: list = []
+    for rule_re, basis, label, problem in ONR_PHYSICIAN_RULES:
+        m = rule_re.search(txt)
+        if not m:
+            problems.append(problem)
+            continue
+        rows.append(to_on_req(ReqIn(stream=ONR_PHYSICIAN_STREAM, factor=FACTOR_LICENSING, op=OP_RULE, value_text=m.group(0),
+                                    basis=basis, section=ONR_SECTION_PHYSICIAN, label=label, url=ON_WORKFORCE_URL)))
+    return ReqsOut(rows=rows, problems=problems)
+
+
 def build_on_req() -> None:
-    """ON 门槛入口:通道页(申请人侧)+ 雇主指南页(雇主侧)两页各抓一遍 + 三条已关闭 EJO 流的关闭通告。"""
+    """ON 门槛入口:通道页(申请人侧)+ 雇主指南页(雇主侧)两页各抓一遍 + 三条已关闭 EJO 流的关闭通告。
+    2026-10-04 末尾再接自雇医生路径两项门槛(on_physician_reqs;排在最后,既有各行序号不动)。"""
     stream_txt = page_text(PageTextIn(url=ON_WORKFORCE_URL, timeout_s=ONR_TIMEOUT_S,
                                       drop_junk=False, main_only=True))
     emp_txt = page_text(PageTextIn(url=ONR_EMPLOYER_URL, timeout_s=ONR_TIMEOUT_S,
@@ -3676,7 +3702,7 @@ def build_on_req() -> None:
     problems: list = []
     for part in (on_language_reqs(stream_txt), on_wage_reqs(emp_txt),
                  on_experience_reqs(stream_txt), on_experience_alt_reqs(stream_txt), on_employer_reqs(emp_txt),
-                 on_closed_reqs()):
+                 on_closed_reqs(), on_physician_reqs(stream_txt)):
         reqs += part.rows
         problems += part.problems
     problems += on_tier_problems(reqs)
@@ -5808,6 +5834,9 @@ def build_nb_req() -> None:
     channels = nb_new_channel_reqs()
     reqs += channels.rows
     problems += channels.problems
+    remote = nb_si_remote_reqs()
+    reqs += remote.rows
+    problems += remote.problems
     if problems:
         fail_zh(problems)
     version = sorted(guides.versions)[-1]
@@ -5839,6 +5868,24 @@ def nb_new_channel_reqs() -> ReqsOut:
         rows += part.rows
         problems += part.problems
     return ReqsOut(rows=rows, problems=problems)
+
+
+def nb_si_remote_reqs() -> ReqsOut:
+    """战略倡议远程法语路径自己的门槛(2026-10-04 Frank「你直接补 不行么」:资讯「通道」页这条通道原先「本站未收录门槛」):
+    路径段 → 在本省住满 12 个月(rule_rows,NBR_SI_REMOTE_RULES),落 NBR_SI_REMOTE_STREAM;读缓存优先(同 nb_new_channel_reqs)。
+    排在本表最后:各行序号按文件内次序编,接在末尾既有各行的序号不动。段没切出来报自校问题。
+
+    @returns 行与自校问题。
+    """
+    txt = nb_page_txt(NBR_SI_URL)
+    seg = NBR_SEG_SI_REMOTE_RE.search(txt)
+    if not seg:
+        return ReqsOut(rows=[], problems=[NBR_PROBLEM_SEG_TPL.format(name=NBR_SECTION_SI_REMOTE)])
+    part = rule_rows(RuleRowsIn(to_row=to_nb_req, txt=seg.group(1), stream=NBR_SI_REMOTE_STREAM, url=NBR_SI_URL,
+                                section=NBR_SECTION_SI_REMOTE, rules=NBR_SI_REMOTE_RULES))
+    for r in part.rows:
+        r[K_PAGE_URL] = r[K_URL]
+    return part
 
 
 def nb_ee_reqs(txt: str) -> ReqsOut:

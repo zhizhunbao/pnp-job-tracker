@@ -1,13 +1,16 @@
 """
 jdformat 域行形状(照 company 三件套样张:边界行形状 = pydantic BaseModel,域内接线形状 = dataclass,
 库类型用 Protocol 只声明真用的格;import 两个洞:标准库 / pydantic + 本域 constants)。
+2026-10-04 加自测用例(unittest 是「不用 class」的外部库例外,先例 statcan.cip.scheme / gcjobs.scheme;
+被测的 jdformat.functions 在用例体内现取 —— functions 反过来 import 本文件,顶部 import 会成环)。
 """
+import unittest
 from dataclasses import dataclass
 from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict
 
-from jdformat.constants import ST_FAIL
+from jdformat.constants import PII_MASK, ST_FAIL, ST_OK
 
 MODEL_CFG = ConfigDict(extra="ignore", populate_by_name=True, use_attribute_docstrings=True)
 """边界模型统一配置:多余键忽略、按字段名构造照常、逐格裸字符串 docstring 直接成为字段 description。"""
@@ -154,3 +157,55 @@ class ValidateIn:
 
     src: str
     """岗位原文全文。"""
+
+
+class JdformatScrubTest(unittest.TestCase):
+    """整理版抹联系方式(2026-10-04 付费闭环 B1 收口):写盘前抹、存量复洗,镜像 cms scrubPii。"""
+
+    def test_scrub_golden(self) -> None:
+        """金标:生产实撞的那条 [APPLY] 节(岗 79059478),邮箱与电话都换成占位,其余字不动。"""
+        from jdformat.functions import scrub_pii_of
+        src = "[APPLY]\nContact Dave Landry at 902-345-2229 or davidlandry@hotmail.ca"
+        want = "[APPLY]\nContact Dave Landry at " + PII_MASK + " or " + PII_MASK
+        self.assertEqual(scrub_pii_of(src), want)
+
+    def test_scrub_shapes(self) -> None:
+        """性质:常见邮箱 / 电话写法全抹(带国家码、括号区号、点分、分机);抹完再抹不变(幂等)。"""
+        from jdformat.functions import scrub_pii_of
+        samples = [
+            "Email jobs@acme-foods.ca today",
+            "Call +1 (416) 555-0199 ext. 23",
+            "Phone 1-800-555-0100 or 613.555.0142",
+            "Send to hr.team+ottawa@example.co.uk",
+            "Tél. 514 555 0123 poste 4",
+        ]
+        for one in samples:
+            once = scrub_pii_of(one)
+            self.assertNotIn("@", once)
+            self.assertIn(PII_MASK, once)
+            self.assertEqual(scrub_pii_of(once), once)
+
+    def test_scrub_keeps_other_numbers(self) -> None:
+        """反例:薪资、工时、NOC 码、邮编、日期这类数字不是联系方式,一个字不动(数字防幻觉校验也靠它们)。"""
+        from jdformat.functions import scrub_pii_of
+        samples = [
+            "[PAY]\n$25.00 to $30.00 hourly (to be negotiated)",
+            "[WORKHOURS]\n40 hours per week, 2026-10-04 start",
+            "NOC 63200, TEER 3, K2K 3G4",
+            "Salary 52,000 - 61,000 per year",
+        ]
+        for one in samples:
+            self.assertEqual(scrub_pii_of(one), one)
+
+    def test_scrub_cache(self) -> None:
+        """存量复洗:ok 记录里带联系方式的改写并计数,干净的与 fail 的不动;再洗一遍计 0。"""
+        from jdformat.functions import scrub_cache
+        dirty = FormatRecord(status=ST_OK, formatted="[APPLY]\nEmail a@b.ca")
+        clean = FormatRecord(status=ST_OK, formatted="[APPLY]\nApply online")
+        failed = FormatRecord(status=ST_FAIL, formatted="")
+        cache = {"jb:1": dirty, "jb:2": clean, "jb:3": failed}
+        self.assertEqual(scrub_cache(cache), 1)
+        self.assertEqual(cache["jb:1"].formatted, "[APPLY]\nEmail " + PII_MASK)
+        self.assertEqual(cache["jb:2"].formatted, "[APPLY]\nApply online")
+        self.assertEqual(cache["jb:3"].status, ST_FAIL)
+        self.assertEqual(scrub_cache(cache), 0)

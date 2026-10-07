@@ -9,10 +9,17 @@ noc 域形状(照 pnp/company 样张;2026-08-31 并域批C)。
 溶成段6/7(build_city_names 曾同批溶成段8,2026-08-31 迁 mart 域段20,占位横幅随迁摘除),
 本段起的形状全是新增。`import re` 是标准库(叶子律允许):
 段7 的三语规格表带编译好的正则,ShortSpec 要给它一个真类型,裸 object 让检查器判不动。
+2026-10-05 加 §11 自测 NocExamplesTest(示例职称批):unittest 用例集 ——「不用 class」的外部库例外,先例 door.scheme /
+mart.scheme,跑法 `python etl/noc/main.py --only test`;被测的 noc.functions 与 noc.constants 在用例体内现取
+(functions 反过来 import 本文件,顶部 import 会成环)。itertools / json / unittest 都是标准库。
 """
+import itertools
+import json
 import re
+import unittest
 from dataclasses import dataclass
 from typing import Protocol
+from unittest import mock
 
 # =========================================================================
 # 1. 分类库(NOC → TEER/大类/中类/小类)
@@ -494,3 +501,105 @@ class TitleTodoOut:
 
     fail: int
     """二分到单条仍译不出的条数(不进缓存,调用方下轮重试)。"""
+
+
+# =========================================================================
+# 11. 自测(用例住 scheme;2026-10-05 示例职称批立)
+# =========================================================================
+
+
+class NocExamplesTest(unittest.TestCase):
+    """官方示例职称自测(2026-10-05 访客第 3 题职业搜索打「cloud」出「没有找到匹配职业」同批):
+    ① examples_of 穷举小输入断言性质(不分大小写去重、排序、幂等、不造词)+ 手写金标;
+    ② build_descriptions 在现造的小 CSV 上只收 5 位单位组的 All examples、没有示例的 NOC 给空清单 + 变异探针
+    (下载件与写盘件换成替身,不读不写仓内文件);
+    ③ 真产物:raw/noc/descriptions.json 挂上 ≥ 27,000 条、每个 NOC 都有 examples 格、21231 含 cloud engineer;
+    mart/noc_descriptions.json 每行都有 examples 文本格、21231 那行含 cloud engineer(要先跑 descriptions 与 mart 两步)。"""
+
+    def mini_csv(self) -> str:
+        """现造的 Elements CSV:21231 两条大小写不同的同名示例 + 一条带前后空格的 + 一条 Illustrative(不收)+ 一条职责;
+        4 位小类的 All examples(不收);99999 只有职责、没有示例。"""
+        return "\n".join([
+            "Level,Code - NOC 2021 V1.0,Class title,Element Type Label English,Element Description English",
+            "5,21231,Software engineers and designers,All examples,cloud engineer",
+            "5,21231,Software engineers and designers,All examples,Cloud Engineer",
+            "5,21231,Software engineers and designers,All examples,  backend engineer  ",
+            "5,21231,Software engineers and designers,Illustrative example(s),site reliability engineer",
+            "5,21231,Software engineers and designers,Main duties,Design software.",
+            "4,2123,Computer and information systems professionals,All examples,not a unit group",
+            "5,99999,Fake unit group,Main duties,Do things.",
+        ]) + "\n"
+
+    def built(self) -> dict:
+        """在 mini_csv 上跑一遍 build_descriptions,截下写盘那份 → byNoc 表(不落盘;收口报行也截下,免得打出真产物路径误导)。"""
+        from noc import functions as fn
+        with mock.patch.object(fn, "fetch_elements_csv", return_value=self.mini_csv()), \
+                mock.patch.object(fn.paths, "write_text") as wt, mock.patch.object(fn, "say"):
+            fn.build_descriptions()
+        return json.loads(wt.call_args.args[0].text)["byNoc"]
+
+    def test_examples_of_property(self) -> None:
+        """穷举池子里长度 0~3 的全部序列:出参按 casefold 有序、两两 casefold 不等、casefold 集合与入参相同、每条都来自入参、
+        再过一遍不变(幂等)。"""
+        from noc import functions as fn
+        pool = ["b", "A", "a", "c engineer", "C Engineer"]
+        for n in range(0, 4):
+            for seq in itertools.product(pool, repeat=n):
+                got = fn.examples_of(list(seq))
+                folds = [t.casefold() for t in got]
+                self.assertEqual(folds, sorted(folds), seq)
+                self.assertEqual(len(folds), len(set(folds)), seq)
+                self.assertEqual(set(folds), {t.casefold() for t in seq}, seq)
+                for t in got:
+                    self.assertIn(t, seq)
+                self.assertEqual(fn.examples_of(got), got, seq)
+
+    def test_examples_of_golden(self) -> None:
+        """手写金标:同名不同大小写留首见那条;排序不分大小写(DevOps 排在 cloud 后面)。"""
+        from noc import functions as fn
+        got = fn.examples_of(["cloud engineer", "DevOps engineer", "Cloud Engineer", "backend engineer"])
+        self.assertEqual(got, ["backend engineer", "cloud engineer", "DevOps engineer"])
+        self.assertEqual(fn.examples_of([]), [])
+
+    def test_build_attaches_examples(self) -> None:
+        """小 CSV 金标:21231 只收两条 All examples(去重、去空格、排好序),Illustrative 与 4 位小类不收;99999 没有示例给空清单;
+        职责照旧。"""
+        by_noc = self.built()
+        self.assertEqual(sorted(by_noc), ["21231", "99999"])
+        self.assertEqual(by_noc["21231"]["examples"], ["backend engineer", "cloud engineer"])
+        self.assertEqual(by_noc["21231"]["duties"], ["Design software."])
+        self.assertEqual(by_noc["99999"]["examples"], [])
+
+    def test_build_mutation_probe(self) -> None:
+        """变异探针:从 WANT_ELEMENTS 摘掉 All examples(= 没接这一刀),小 CSV 上 21231 就一条示例都没有 —— 证明上一条金标
+        真是被这张表驱动的;退出 patch 后表原样恢复。"""
+        from noc import constants as c
+        with mock.patch.dict(c.WANT_ELEMENTS):
+            del c.WANT_ELEMENTS["All examples"]
+            self.assertEqual(self.built()["21231"]["examples"], [])
+        self.assertEqual(c.WANT_ELEMENTS["All examples"], "examples")
+        self.assertEqual(self.built()["21231"]["examples"], ["backend engineer", "cloud engineer"])
+
+    def test_descriptions_file(self) -> None:
+        """真产物 raw/noc/descriptions.json:每个 NOC 都有 examples 清单,合计 ≥ 27,000 条,21231 含 cloud engineer、
+        21232 含 cloud developer。"""
+        from noc import constants as c
+        by_noc = json.loads(c.OUT_DESC.read_text(encoding=c.ENC_UTF8))["byNoc"]
+        total = 0
+        for noc, rec in by_noc.items():
+            self.assertIsInstance(rec.get("examples"), list, noc)
+            total += len(rec["examples"])
+        self.assertGreaterEqual(total, 27000)
+        self.assertIn("cloud engineer", by_noc["21231"]["examples"])
+        self.assertIn("cloud developer", by_noc["21232"]["examples"])
+
+    def test_mart_file(self) -> None:
+        """真产物 mart/noc_descriptions.json:每行都有 examples 文本格(换行拼接,没有给空串),21231 那行拆开含 cloud engineer。"""
+        from noc import constants as c
+        rows = json.loads(c.IN_DESCR.read_text(encoding=c.ENC_UTF8))
+        self.assertGreater(len(rows), 0)
+        by_noc = {}
+        for row in rows:
+            self.assertIsInstance(row.get("examples"), str, row.get("noc"))
+            by_noc[row["noc"]] = row
+        self.assertIn("cloud engineer", by_noc["21231"]["examples"].split("\n"))

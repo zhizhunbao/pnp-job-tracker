@@ -195,6 +195,15 @@ PROCESSED_INDEXING = PROCESSED / "indexing"
 """indexing 域产物(2026-09-26 立域,Google Indexing API 主动通知):state.json = 已通知过的网址(类型 + 时刻)、
 已撤回 / 已退役的网址、按太平洋时区日记的当日已用额度;每轮读回来接着算,不灌库。"""
 
+PROCESSED_STATCAN = PROCESSED / "statcan"
+"""statcan/cip 子域产物(2026-10-04 访客四题第 2 题):cip_i18n.json = CIP 专业中 / 韩译名缓存(本地 qwen,带版本号),
+cip_programs.json = 专业表汇装件(DDL 跑完后再接 mart 汇装;在那之前不进 data/mart,免得被 build 役上传灌库)。
+不进桶(照 PROCESSED_PTE / PROCESSED_HWCR 先例,消费者 `from paths.constants import` 直取):桶 __init__ 加出口名,
+常驻容器的守护循环每轮重扫 META 时会拿新桶向内存里的旧 constants 要新名字 → ImportError,得重启全部容器才消。
+2026-10-04 收口:生产 DDL 已跑、已在 payload.config 注册、已接汇装(mart 的 build_cip_programs 读本目录的
+cip_programs.json,data/mart/cip_programs.json 每轮产出)。同日桶里误加的出口名已撤回(14:23 build 容器实撞上面那条
+ImportError),mart 改 `from paths.constants import` 直取。"""
+
 MART = DATA / "mart"
 """load 层:09 产出的最终表(seed 灌库;R3 下 load 域 upload 上传)。"""
 

@@ -2157,7 +2157,7 @@ PW_ON_SELF_EMPLOYED_PHYSICIANS = {
     "isDefault": False,
     "drawStreams": ["Ontario Workforce Priority Stream"],
     "drawsPending": True,
-    "reqStreams": [],
+    "reqStreams": ["Ontario Workforce Priority stream — self-employed physicians"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -2171,7 +2171,9 @@ PW_ON_SELF_EMPLOYED_PHYSICIANS = {
     "employers": [],
     "steps": [ONS_STEP_EOI_PHYSICIAN, ONS_STEP_DRAW, ONS_STEP_APPLY_PHYSICIAN, ONS_STEP_REVIEW, ONS_STEP_PR],
 }
-"""安省唯一现行 stream 里给自雇医生的那条 pathway(CPSO 会员、有 OHIP 计费号),不要 offer。与 OWP 同一组抽选、同样还没抽过。"""
+"""安省唯一现行 stream 里给自雇医生的那条 pathway(CPSO 会员、有 OHIP 计费号),不要 offer。与 OWP 同一组抽选、同样还没抽过。
+2026-10-04 Frank「你直接补 不行么」(资讯「通道」页本站未收录门槛):挂门槛流一条(pnp on-req 的自雇医生流:CPSO 执业证书、OHIP 计费号)。
+官方原句满足这两项就不用满足页上其他申请人门槛、雇主门槛也不适用,所以不挂 OWP 主流。"""
 
 PW_NS_GRADUATE = {
     "key": "ns-graduate", "province": "NS", "program": "PNP",
@@ -2347,7 +2349,7 @@ PW_NB_EXPRESS_ENTRY_INTEREST = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": [],
-    "reqStreams": [],
+    "reqStreams": ["New Brunswick Express Entry stream (Employment in New Brunswick / New Brunswick Interest)"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -2362,7 +2364,9 @@ PW_NB_EXPRESS_ENTRY_INTEREST = {
     "steps": [NBS_STEP_EE_PROFILE_NONE, NBS_STEP_LETTER, NBS_STEP_EOI_EE_LETTER, NBS_STEP_POOL,
               NBS_STEP_APPLY_EE, NBS_STEP_REVIEW, NBS_STEP_PR_EE],
 }
-"""NB Express Entry stream 下的兴趣信路径:不要本省 offer,要省方发到 EE 档案的兴趣信。页面在列,2025–2026 抽选页没出现过。"""
+"""NB Express Entry stream 下的兴趣信路径:不要本省 offer,要省方发到 EE 档案的兴趣信。页面在列,2025–2026 抽选页没出现过。
+2026-10-04 Frank「你直接补 不行么」:挂快速通道两条路径共同的门槛流(EE 池、CLB 7、近 10 年 1 年经验、打分表 67 分;09-30 就在表里,
+当时没挂)。本路径自己的两条(兴趣信、联邦资金证明)门槛卡没有这类行,兴趣信由标签说。"""
 
 PW_NB_FRANCOPHONE_PRIORITIES = {
     "key": "nb-francophone-priorities", "province": "NB", "program": "PNP",
@@ -2371,7 +2375,8 @@ PW_NB_FRANCOPHONE_PRIORITIES = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": ["NB Strategic Initiative"],
-    "reqStreams": [],
+    "reqStreams": [("New Brunswick Strategic Initiative (Francophone Workers / Francophone Priorities / "
+                    "Francophones Working Remotely)")],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -2386,7 +2391,9 @@ PW_NB_FRANCOPHONE_PRIORITIES = {
     "steps": [NBS_STEP_LETTER_FR, NBS_STEP_EOI_SI, NBS_STEP_DRAW, NBS_STEP_APPLY_SI, NBS_STEP_REVIEW,
               NBS_STEP_PR],
 }
-"""Strategic Initiative 下的法语优先路径:不要 offer;本省法语院校毕业或收到省兴趣信(二选一,标签写兴趣信那一支)。在抽选。"""
+"""Strategic Initiative 下的法语优先路径:不要 offer;本省法语院校毕业或收到省兴趣信(二选一,标签写兴趣信那一支)。在抽选。
+2026-10-04 Frank「你直接补 不行么」:挂战略倡议三条路径共同的门槛流(近 5 年 1 年经验、本省院校毕业免经验、打分表 65 分)。本路径自己的
+是二选一(法语院校毕业 / 兴趣信),拆不成单行门槛,不入表。"""
 
 PW_NB_FRANCOPHONES_REMOTE = {
     "key": "nb-francophones-remote", "province": "NB", "program": "PNP",
@@ -2395,7 +2402,9 @@ PW_NB_FRANCOPHONES_REMOTE = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": [],
-    "reqStreams": [],
+    "reqStreams": ["New Brunswick Strategic Initiative — Francophones Working Remotely in New Brunswick pathway",
+                   ("New Brunswick Strategic Initiative (Francophone Workers / Francophone Priorities / "
+                    "Francophones Working Remotely)")],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -2411,7 +2420,9 @@ PW_NB_FRANCOPHONES_REMOTE = {
     "steps": [NBS_STEP_WORK_REMOTE, NBS_STEP_EOI_SI, NBS_STEP_POOL, NBS_STEP_APPLY_SI, NBS_STEP_REVIEW,
               NBS_STEP_PR],
 }
-"""Strategic Initiative 下的远程法语路径:在 NB 住满 12 个月、给魁省外的加拿大雇主远程工作,不要本省 offer。页面在列,2025–2026 抽选页没出现过。"""
+"""Strategic Initiative 下的远程法语路径:在 NB 住满 12 个月、给魁省外的加拿大雇主远程工作,不要本省 offer。页面在列,2025–2026 抽选页没出现过。
+2026-10-04 Frank「你直接补 不行么」:挂门槛流两条(pnp nb-req)—— 本路径自己的(在本省住满 12 个月)在前,三条路径共同的在后;
+远程工作那一条门槛卡没有这类行,由标签说。"""
 
 PW_NB_CRITICAL_WORKER_PILOT = {
     "key": "nb-critical-worker-pilot", "province": "NB", "program": "PNP",
@@ -2444,7 +2455,10 @@ PW_NB_CRITICAL_WORKER_PILOT = {
 Group、McCain Foods),个人不能直接申请 → 按雇主名命中才列(Frank 09-30「都收,标状态」)。页面走旧版路径,现行总览页仍链到它;该页缓存在但不在 crawl manifest 
 里。
 2026-09-30 批一 1b:门槛不收 —— 该页(现已在 crawl 清单 nb-imm 里)只有流程、参与雇主与「The program does not accept direct
-applications from interested candidates.」,资格条文写在「New Brunswick Critical Worker Pilot Guide」PDF 里,指南不在 crawl 缓存,不猜。"""
+applications from interested candidates.」,资格条文写在「New Brunswick Critical Worker Pilot Guide」PDF 里,指南不在 crawl 缓存,不猜。
+2026-10-04 Frank「你直接补 不行么」(资讯「通道」页本站未收录门槛)时复查:英文指南 /content/dam/gnb/Corporate/Promo/Immigration/
+guide-to-nb-critical-worker-pilot.pdf 与法文页的 guide-du-projet-pilote-sur-les-travailleurs-critiques-nb.pdf 两个链接都 404,
+官方现在查不到资格条文 → 门槛卡照旧「本站未收录门槛」(不写「官方不公布」);官网换上新链接再补。"""
 
 PW_NB_PRIVATE_COLLEGE_PILOT = {
     "key": "nb-private-college-pilot", "province": "NB", "program": "PNP",

@@ -23,6 +23,8 @@ mart.constants 在用例体内现取(functions 反过来 import 本文件,顶部
 同日 Frank 拍板「看得出才改判」再加 MartEmployerSectorTest(雇主行业三态 + 五条改判规则;现造 raw/pnp 小表落系统临时目录走真装载器,
 真表金标只读仓里 raw/pnp)。同日 Frank 选「只上纯属改对的」:其中 NS 建筑、AB 科技两条改为现状金标,实际改判的是四条。
 同日 Frank「照改,加这一列」再加 MartDrawSelectionTest(pnp_draws 行原样带上 selection 格;抽选文件在系统临时目录现造)。
+2026-10-04 收口再加 MartCipProgramsTest(专业表源文件缺席整张不进汇装字典、留痕带 ✗;源文件在系统临时目录现造)。
+2026-10-05 再加 MartNocDescExamplesTest(noc_descriptions 行带官方示例职称;行在用例里现造)。
 """
 import json
 import re
@@ -5515,3 +5517,63 @@ class MartDesignatedSplitTest(unittest.TestCase):
         got = self.group(["Royal", "Royal Star Foods Ltd.", "Subway (605342 NB Ltee)", "Subway Moncton (709028 NB Inc)"], self.PLACES)
         self.assertEqual([g[3] for g in got], ["royal", "royal star foods", "subway", "subway"])
         self.assertEqual(got[3][1], "Moncton")
+
+
+class MartCipProgramsTest(unittest.TestCase):
+    """专业表进汇装字典自测(2026-10-04 收口):源文件缺席 → cip_programs 整张不放(不落 [] 让 seed 当「真清空」抹生产表),
+    字典里原有的表一张不动,留痕一行、以 ✗ 开头(调度层升 ERROR);源文件在 → 行清单原样放进来、不留痕。
+    变异探针:缺席时改回放空清单 / 留痕去掉 ✗ → 第一条红;在时不放或改了行 → 第二条红。源文件在系统临时目录现造,不读仓内文件。"""
+
+    def test_missing_source_leaves_table_out(self) -> None:
+        """源文件不在:字典里没有 cip_programs,原有的键一个不少、顺序不变;留痕一行、以 ✗ 开头。"""
+        from mart import constants as c
+        from mart import functions as fn
+        tables: dict = {"jobs": [], "dli": []}
+        with tempfile.TemporaryDirectory() as tmp:
+            gone = Path(tmp) / "cip_programs.json"
+            with mock.patch.object(fn, "IN_CIP_PROGRAMS", gone), mock.patch.object(fn, "say") as said:
+                fn.build_cip_programs(tables)
+        self.assertNotIn(c.TABLE_CIP_PROGRAMS, tables)
+        self.assertEqual(list(tables), ["jobs", "dli"])
+        self.assertEqual(said.call_count, 1)
+        self.assertTrue(said.call_args.args[0].startswith("✗"))
+
+    def test_present_source_passes_rows_through(self) -> None:
+        """源文件在:行清单原样放进 cip_programs(一格不改),不留痕。"""
+        from mart import constants as c
+        from mart import functions as fn
+        rows = [{"code": "52.0301", "titleEn": "Accounting", "titleZh": "会计", "titleKo": "회계학", "series": "52",
+                 "grouping": "03", "broads": ["财会金融"], "popular": 2}]
+        tables: dict = {}
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / "cip_programs.json"
+            src.write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
+            with mock.patch.object(fn, "IN_CIP_PROGRAMS", src), mock.patch.object(fn, "say") as said:
+                fn.build_cip_programs(tables)
+        self.assertEqual(tables, {c.TABLE_CIP_PROGRAMS: rows})
+        said.assert_not_called()
+
+
+class MartNocDescExamplesTest(unittest.TestCase):
+    """noc_descriptions 行带官方示例职称自测(2026-10-05 访客第 3 题职业搜索打「cloud」搜不到同批):noc 域条目里的
+    examples 清单原样换行拼接进 examples 格;旧版条目没有这格 / 清单是空的 → 空串(不是 None,cms 那边是文本列);
+    其余十格一格不少。行在用例里现造,不读仓内文件。"""
+
+    def row(self, entry: dict) -> dict:
+        """用一份条目造一行(译名给空:本组只看 examples 与职责格)。"""
+        from mart import functions as fn
+        return fn.to_noc_description_row(NocDescRowIn(noc="21231", entry=entry, fetched="2026-10-05", i18n={}))
+
+    def test_examples_joined(self) -> None:
+        """金标:两条示例按原序换行拼接;职责格照旧;行键 = 原十格 + examples。"""
+        got = self.row({"title": "Software engineers and designers", "duties": ["Design software."], "requirements": [],
+                        "examples": ["backend engineer", "cloud engineer"]})
+        self.assertEqual(got["examples"], "backend engineer\ncloud engineer")
+        self.assertEqual(got["duties"], "Design software.")
+        self.assertEqual(set(got), {"noc", "title", "titleZhShort", "titleKoShort", "titleEnShort", "titleZh", "titleKo",
+                                    "duties", "requirements", "examples", "fetched"})
+
+    def test_examples_missing_is_empty_string(self) -> None:
+        """旧版条目(没有 examples 格)与空清单都给空串。"""
+        self.assertEqual(self.row({"title": "x", "duties": [], "requirements": []})["examples"], "")
+        self.assertEqual(self.row({"title": "x", "duties": [], "requirements": [], "examples": []})["examples"], "")

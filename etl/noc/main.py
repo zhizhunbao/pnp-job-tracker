@@ -18,6 +18,8 @@ noc 域唯一入口(一域一门;2026-08-31 批C 全溶,门直调函数 —— �
     python etl/noc/main.py --only audit --all                  # 体检 + 全量逐条打印
     python etl/noc/main.py --only titles [--limit N]           # NOC 职业名中/韩译名
     python etl/noc/main.py --only short [--lang zh,ko,en]      # NOC 职业名三语窄位短名
+    python etl/noc/main.py --only majors                       # 专业(CIP 2021)→ 本站大类对照表体检(2026-10-04)
+    python etl/noc/main.py --only test                         # 自测:官方示例职称(2026-10-05)
 """
 import sys
 from pathlib import Path
@@ -26,8 +28,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import say
 from door.functions import run_steps
 from noc.functions import (
-    audit_noc_classes, build_descriptions, build_structure,
-    shorten_noc_titles, translate_noc_titles,
+    audit_majors, audit_noc_classes, build_descriptions, build_structure,
+    run_tests, shorten_noc_titles, translate_noc_titles,
 )
 
 SCHEDULED = []
@@ -42,13 +44,20 @@ TOOLS = {
     "audit": audit_noc_classes,
     "titles": translate_noc_titles,
     "short": shorten_noc_titles,
+    "majors": audit_majors,
+    "test": run_tests,
 }
 """全部可 --only 点名的步(本域只有手动件):
   structure     官方层级三级表 + 三语人话名(qwen 逐条翻,FIX/UI_FIX 手写档;撞车只报不改)
   descriptions  516 个 5 位 NOC 的官方名 + 主要职责 + 任职要求(职位弹框数据源)
+                2026-10-05 再挂官方示例职称 examples(All examples 27,935 条;职业搜索按示例职称也能搜到)
   audit         逐职业体检本站分类 vs 官方组(2026-08-31 批D 从 ops 拆入;只读,产 TSV)
   titles        NOC 官方职业名 → 中/韩译名(本地 qwen 逐条翻,不过校验留空;原 clean/04f)
   short         NOC 职业名 → 中/韩/英窄位短名,补进同一张 i18n 表(原 clean/04g_short_noc_titles)
+  majors        专业 → 本站大类对照表(MAJOR_SERIES_BROADS)体检:值域 ⊂ BROADS、raw/statcan/cip2021.json 全部 class 都落得到、
+                没有死键(2026-10-04 访客四题第 2 题立;只读,与五个既有键逐对核过互不含)
+  test          自测 NocExamplesTest(2026-10-05 示例职称批立):examples_of 性质 / 金标、小 CSV 金标 + 变异探针、
+                两份真产物(descriptions.json / mart noc_descriptions.json)都带 examples;与六个既有键逐对核过互不含
 titles/short 两件 2026-08-31 批H2 从 clean/ 归户、批I3 溶成 functions 段6/7,产出被 09 汇装读
 (noc_titles_i18n.json),不进定时链 —— 官方参考集翻一次永久复用,重跑=手动点名。
 (cities 件曾同批归户,2026-08-31 Frank 拍板迁 mart 域 —— 城市译名不是 NOC 的东西。)

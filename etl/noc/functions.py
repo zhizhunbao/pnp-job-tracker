@@ -21,6 +21,7 @@ import json
 import os
 import re
 import sys
+import unittest
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import cast
@@ -51,7 +52,7 @@ from noc.constants import (
     COL_CODE_DESC, COL_CODE_PREFIX, COL_EDESC, COL_ETYPE, COL_LEVEL, COL_TITLE, COLLISION_CODE_TPL,
     COLLISION_LANGS, COLLISION_OK_TPL, COLLISION_ROW_TPL, COLLISION_SEP, COLLISION_SHOW_MAX,
     COLLISION_WARN_TPL, COLON, COVER_BAD_TPL, COVER_OK_TPL, DESC_CACHE_TPL, DESC_DL_TPL,
-    DESC_DONE_TPL, DESC_SOURCE,
+    DESC_DONE_TPL, DESC_EXAMPLES_TPL, DESC_SOURCE, K_EXAMPLES, TEST_VERBOSITY,
     DESC_TIMEOUT_S, DESC_URL, DOWNLOAD_TPL, DUTIES_LEAD_SUFFIX, EMPTY_MARK, ENC_UTF8,
     ENC_UTF8_SIG, ERRORS_REPLACE, FILL_KEYS, FINE_NO, FINE_SHOW_LEN, FINE_YES, FIX, GEN_URL_TPL,
     GROUP_NONE, HAND_NO, HAND_YES, HANGUL_RE, HIT_HEAD_TPL, HIT_MORE_TPL, HIT_ROW_TPL, HIT_SHOW_MAX,
@@ -74,11 +75,14 @@ from noc.constants import (
     UI_BANNED, UI_FIX, UI_KEY_BY_LANG, UI_KEY_DEFAULT,
     UI_MAX_LEN, UI_PROMPT_TPL, UNCLASSIFIED, UNIT_LEVEL, WANT_ELEMENTS, WANT_LEVELS, ZH_MAX_LEN,
     ZH_SHOW_LEN, ZH_WIDE_LEN,
+    IN_CIP, K_CIP_CODE, K_CIP_ROWS, MAJOR_BAD_BROAD_TPL, MAJOR_DEAD_KEY_TPL, MAJOR_EMPTY_TPL, MAJOR_FAIL_TPL,
+    MAJOR_IN_TPL, MAJOR_OK_TPL, MAJOR_SERIES_BROADS, MAJOR_SERIES_LEN, MAJOR_SUBSERIES_LEN, MAJOR_TALLY_TPL,
+    MAJOR_UNMAPPED_TPL,
 )
 from noc.scheme import (
     AskCountOut, AskShortIn, AskTitleIn, AuditRow, AuditSeedIn, BroadI18nIn, ChatIn, CheckIn,
     DescSeedIn, DupReportIn, ElementRow, FillIn, FineIn, HttpJsonClientLike, LabelIn, LevelSeedIn, MidIn,
-    OllamaIn,
+    NocExamplesTest, OllamaIn,
     ParseIn, ShortLangIn, ShortOkIn, ShortSpec, ShortSrcIn, ShortTodo, SmellHit, TitleBatchIn, TitleOkIn,
     TitlesTodoIn, TitleTodoOut, TranslateIn, TranslateTodoIn,
 )
@@ -517,7 +521,8 @@ def write_structure(levels: dict) -> None:
 
 
 def build_descriptions() -> None:
-    """官方 Elements CSV → descriptions.json(516 个 NOC 的官方名+职责+要求;入口,门直调)。"""
+    """官方 Elements CSV → descriptions.json(516 个 NOC 的官方名+职责+要求;入口,门直调)。
+    2026-10-05 每个 NOC 再挂官方示例职称(All examples,examples_of 去重排序),职业搜索按它也能搜到。"""
     reader = csv.DictReader(io.StringIO(fetch_elements_csv()))
     out: dict = {}
     for r in reader:
@@ -531,6 +536,10 @@ def build_descriptions() -> None:
         key = WANT_ELEMENTS.get(row.etype)
         if key and row.desc and not row.desc.lower().rstrip(COLON).endswith(DUTIES_LEAD_SUFFIX):
             rec[key].append(row.desc)
+    n_examples = 0
+    for rec in out.values():
+        rec[K_EXAMPLES] = examples_of(rec[K_EXAMPLES])
+        n_examples += len(rec[K_EXAMPLES])
     OUT_DESC.parent.mkdir(parents=True, exist_ok=True)
     doc = {K_SOURCE: DESC_SOURCE, K_URL: DESC_URL,
            K_FETCHED: datetime.date.today().isoformat(), K_BY_NOC: out}
@@ -541,7 +550,30 @@ def build_descriptions() -> None:
         if v[K_DUTIES]:
             wd += 1
     say(DESC_DONE_TPL.format(path=OUT_DESC, n=len(out), wd=wd))
+    say(DESC_EXAMPLES_TPL.format(n=n_examples, nocs=examples_nocs_of(out)))
     report_desc_probe(out)
+
+
+def examples_of(titles: list) -> list:
+    """一个 NOC 的官方示例职称 → 不分大小写去重(留首见写法)、不分大小写排序的清单(2026-10-05;入参已 strip 过)。"""
+    seen: set = set()
+    kept: list = []
+    for title in titles:
+        fold = title.casefold()
+        if fold in seen:
+            continue
+        seen.add(fold)
+        kept.append(title)
+    return sorted(kept, key=str.casefold)
+
+
+def examples_nocs_of(out: dict) -> int:
+    """挂上了示例职称的 NOC 个数(收口报行用)。"""
+    n = 0
+    for rec in out.values():
+        if rec[K_EXAMPLES]:
+            n += 1
+    return n
 
 
 def to_element_row(r: dict) -> ElementRow:
@@ -602,8 +634,8 @@ def fetch_elements_csv() -> str:
 
 
 def to_desc_rec(x: DescSeedIn) -> dict:
-    """一个 5 位 NOC 的空条目(职责/要求随行填充)。"""
-    return {"noc": x.noc, "title": x.title, "duties": [], "requirements": []}
+    """一个 5 位 NOC 的空条目(职责/要求随行填充)。2026-10-05 加 examples 空清单(官方示例职称,同样随行填充)。"""
+    return {"noc": x.noc, "title": x.title, "duties": [], "requirements": [], "examples": []}
 
 
 # =========================================================================
@@ -1395,3 +1427,81 @@ def translate_titles(x: TitleBatchIn) -> list:
             return []
         out.append(name)
     return out
+
+
+# =========================================================================
+# 10. 专业 → 本站大类(CIP 2021 class → BROADS;访客四题第 2 题选专业 → 第 3 题列职业)
+# =========================================================================
+
+
+def audit_majors() -> None:
+    """majors 步:专业 → 大类对照表体检(只读,手动件;2026-10-04 立)。
+
+    IN : raw/statcan/cip2021.json(statcan/cip 子域的产物)+ 本域 MAJOR_SERIES_BROADS
+    OUT: 控制台(每个大类落了几个专业 + 问题逐行);有问题抛错,门记本步失败。
+    """
+    say(MAJOR_IN_TPL.format(path=IN_CIP))
+    codes: list = []
+    for row in json.loads(IN_CIP.read_text(encoding=ENC_UTF8))[K_CIP_ROWS]:
+        codes.append(row[K_CIP_CODE])
+    tally: Counter = Counter()
+    for code in codes:
+        for broad in major_broads_of(code):
+            tally[broad] += 1
+    for broad in BROADS:
+        say(MAJOR_TALLY_TPL.format(broad=broad, n=tally[broad]))
+    problems = major_broads_problems(codes)
+    for line in problems:
+        say(line)
+    if len(problems) > 0:
+        raise RuntimeError(MAJOR_FAIL_TPL.format(n=len(problems)))
+    say(MAJOR_OK_TPL.format(keys=len(MAJOR_SERIES_BROADS), n=len(codes)))
+
+
+def major_broads_problems(codes: list) -> list:
+    """对照表体检(statcan/cip 汇装件自校与本域 majors 步共用这一把尺子):值不在 BROADS / 空清单、有专业落不到大类、
+    表里的键在官方 class 码里一个都配不上(死键,多半是码写错)—— 各出一行;全过给空清单。"""
+    problems: list = []
+    for key, broads in MAJOR_SERIES_BROADS.items():
+        if len(broads) == 0:
+            problems.append(MAJOR_EMPTY_TPL.format(key=key))
+        for broad in broads:
+            if broad not in BROADS:
+                problems.append(MAJOR_BAD_BROAD_TPL.format(key=key, broad=broad))
+    used: set = set()
+    for code in codes:
+        if len(major_broads_of(code)) == 0:
+            problems.append(MAJOR_UNMAPPED_TPL.format(code=code))
+        for key in major_keys_of(code):
+            used.add(key)
+    for key in MAJOR_SERIES_BROADS:
+        if key not in used:
+            problems.append(MAJOR_DEAD_KEY_TPL.format(key=key))
+    return problems
+
+
+def major_broads_of(code: str) -> list:
+    """CIP class 码 → 本站大类清单:最细的键先命中(class → subseries → series);查无给空清单(不硬塞)。"""
+    for key in major_keys_of(code):
+        hit = MAJOR_SERIES_BROADS.get(key)
+        if hit is not None:
+            return list(hit)
+    return []
+
+
+def major_keys_of(code: str) -> tuple:
+    """查表顺序:class 码本身 → subseries(前 5 位,52.09)→ series(前 2 位,52)。"""
+    return (code, code[:MAJOR_SUBSERIES_LEN], code[:MAJOR_SERIES_LEN])
+
+
+# =========================================================================
+# 11. 自测(用例住 scheme;2026-10-05 示例职称批立)
+# =========================================================================
+
+
+def run_tests() -> None:
+    """本域手动件 `--only test`:跑示例职称自测(用例集住 scheme 的 NocExamplesTest,先例 door / indexing / mart);
+    有失败 sys.exit(1) 穿门。"""
+    suite = unittest.TestLoader().loadTestsFromTestCase(NocExamplesTest)
+    if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
+        sys.exit(1)

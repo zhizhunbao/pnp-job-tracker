@@ -88,7 +88,8 @@ from mart.constants import (
     FSA_DISTRICT, FSA_PREFIX_LEN, GLOB_JSON, GRADE_1, GRADE_2, GRADE_3,
     GRADE_4, GRADE_5, GRID_CRS, GRID_FSW67, HYPHEN, I18N_BLANK, I18N_CITY_FILE, I18N_NOC_FILE,
     INDEMAND2, INDENT_2, IN_AIP, IN_ATS_COMPANIES, IN_COMPANY_FACTS, IN_DIFFICULTY,
-    IN_DLI, IN_DRAW_CHECKLISTS, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG, IN_QS,
+    CIP_MISSING_TPL, IN_CIP_PROGRAMS, IN_DLI, IN_DRAW_CHECKLISTS, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS,
+    IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG, IN_QS, TABLE_CIP_PROGRAMS,
     K_DLI_NAME, K_QS_RANK, K_QS_RANK_DISPLAY, K_RANK, K_RANK_DISPLAY, TABLE_DESIGNATED, TABLE_DLI, TABLE_PATHWAYS,
     TABLE_EE_CATEGORIES,
     TABLE_PNP_REQUIREMENTS,
@@ -252,7 +253,9 @@ from mart.constants import BLOCK_LIST, BLOCK_OCC, BLOCK_SEP, BLOCK_WAGE, K_LOW_A
 from mart.constants import (
     REQ_BASIS_LOW, REQ_BASIS_MEDIAN, REQ_COND_RECENT_GRAD, REQ_FACTOR_WAGE, REQ_K_BASIS, REQ_K_COND, REQ_K_FACTOR, REQ_K_TEER,
 )
-from mart.scheme import MartBlockTest, MartDesignatedSplitTest, WageBlockIn, WageShortIn
+from mart.scheme import (
+    MartBlockTest, MartCipProgramsTest, MartDesignatedSplitTest, MartNocDescExamplesTest, WageBlockIn, WageShortIn,
+)
 from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn, SalaryTextIn
 from mart.constants import K_SRC_EMPLOYMENT_HOURS, K_SRC_EMPLOYMENT_TERM, NON_EE_PROV, PROV_OFFER_BLOCKED, TEST_VERBOSITY
 from mart.scheme import EeLabelIn, EmpOfIn, EmpOut, MartOfferTest
@@ -4864,6 +4867,19 @@ def load_qs_ranks() -> dict:
     return out
 
 
+def build_cip_programs(tables: dict) -> None:
+    """CIP 2021 专业表(2026-10-04 访客四题第 2 题「你学的是什么专业」):statcan/cip 子域已算好全部格(中韩名、
+    本站大类、热门名次),汇装层原样直通;源文件缺席给空清单并留痕(不编造)。
+    2026-10-04 收口:缺席不再给空清单 —— 空清单照样落盘上传,seed 把上传的 [] 当「真清空」,生产表整张抹掉。
+    改成往 to_mart_tables 的字典里放:源文件在才放这一张;缺席整张不放(不落盘,data/mart 里上一轮的
+    cip_programs.json 原样留着照旧上传,seed 见哈希没变跳过),留痕带 ✗ 升 ERROR。
+    不 raise:那会停掉整轮 mart,职位板跟着停更。"""
+    if not IN_CIP_PROGRAMS.exists():
+        say(CIP_MISSING_TPL.format(path=IN_CIP_PROGRAMS))
+        return
+    tables[TABLE_CIP_PROGRAMS] = read_rows(IN_CIP_PROGRAMS)
+
+
 def build_dli() -> list:
     """PGWP 可申 DLI 子集(E12-03):上游已过滤去重,这里直通并带上着陆页 url+抓取日期(逐行出处);
     2026-09-12 Frank「再加上 qs 排名」:按校名 join QS 榜挂 qsRank/qsRankDisplay(榜外留空)。"""
@@ -5240,6 +5256,8 @@ def to_noc_description_row(x: NocDescRowIn) -> dict:
 
     窄位(图表横轴/chip/报告 H1)用的短名(04g 产,2026-08-02 起三语);没有就留空,前端回退
     完整译名 —— 官方英文 title 一个字不动,短名是**另一列**。
+    2026-10-05 加 examples:官方示例职称(noc 域 descriptions 步已去重排好)换行拼接,没有给空串;职业搜索按它也能搜到
+    (访客第 3 题打「cloud」原本搜不到 21231)。
     """
     return {"noc": x.noc, "title": x.entry.get("title", ""),
             "titleZhShort": x.i18n.get("zhShort", ""), "titleKoShort": x.i18n.get("koShort", ""),
@@ -5247,6 +5265,7 @@ def to_noc_description_row(x: NocDescRowIn) -> dict:
             "titleZh": x.i18n.get("zh", ""), "titleKo": x.i18n.get("ko", ""),
             "duties": NL.join(x.entry.get("duties", [])),
             "requirements": NL.join(x.entry.get("requirements", [])),
+            "examples": NL.join(x.entry.get("examples", [])),
             "fetched": x.fetched}
 
 
@@ -5341,6 +5360,7 @@ def to_mart_tables() -> dict:
     processed/repair/,不进 data/mart/;本批闸不接,jobs 照旧装全部岗。
     同日晚接闸(Frank「确认,下线吧」):待修清单里的岗在派生维度 / 统计表之前就从 ctx.jobs 拿掉,jobs 只装齐全的;
     多一张对账表 held_jobs(扣下名单),seed 照它关掉在架的。seen_ids 不动。
+    2026-10-04 收口:cip_programs 不写进字面量,由 build_cip_programs 在源文件在时补进来(缺席整张不出,不落 [] 抹生产表)。
     """
     ctx = new_mart_ctx()
     collect_ats_rows(ctx)
@@ -5361,7 +5381,7 @@ def to_mart_tables() -> dict:
     ee_draws = load_ee_draws()
     descriptions = build_noc_descriptions(NocDescIn(jobs=ctx.jobs, i18n=noc_i18n))
     universe = load_noc_universe()
-    return {
+    tables = {
         "companies": list(ctx.companies.values()), "jobs": ctx.jobs,
         "pending_jobs": pending, "held_jobs": split.held,
         "closed_jobs": build_closed_jobs(), "seen_ids": sorted(ctx.seen_ids),
@@ -5398,6 +5418,8 @@ def to_mart_tables() -> dict:
         "news": build_news(),
         "macro_series": build_macro_series(),
     }
+    build_cip_programs(tables)
+    return tables
 
 
 def write_open_ids(seen_ids: list) -> None:
@@ -7939,12 +7961,15 @@ def run_tests() -> None:
     MartAbFederalTest(AB 额外联邦名额单立指标、不并入 issued / 配额)。
     同日 Frank「照改,加这一列」再加一组:MartDrawSelectionTest(pnp_draws 行原样带上 selection 格)。
     2026-09-30 来源定位 ③-1 再加一组:MartDrawAnchorTest(抽选日期写法、文字片段编码与后缀、挂片段;③-2 起加区间写法与各表候选)。
-    2026-10-02 再加一组:MartDesignatedSplitTest(指定雇主拆招牌 / 门店 / 法人:金标、门店只认地名、城市名不当招牌、变异探针)。"""
+    2026-10-02 再加一组:MartDesignatedSplitTest(指定雇主拆招牌 / 门店 / 法人:金标、门店只认地名、城市名不当招牌、变异探针)。
+    2026-10-04 再加一组:MartCipProgramsTest(专业表源文件缺席整张不进汇装字典、留痕带 ✗;在就原样放进来)。
+    2026-10-05 再加一组:MartNocDescExamplesTest(noc_descriptions 行带官方示例职称:换行拼接、没有给空串)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
                  MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest, MartNbNlOpsTest,
                  MartBcFunnelOpsTest, MartMbPoolTest, MartAbFederalTest,
-                 MartDrawSelectionTest, MartDrawAnchorTest, MartDesignatedSplitTest):
+                 MartDrawSelectionTest, MartDrawAnchorTest, MartDesignatedSplitTest, MartCipProgramsTest,
+                 MartNocDescExamplesTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

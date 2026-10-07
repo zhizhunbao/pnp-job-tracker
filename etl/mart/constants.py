@@ -5,6 +5,7 @@ JSON 边界键词族 K_*;照 pnp 三件套样张,段横幅三行框 + N. 编号,
 判据(照 cms 宪法同款):常量只装 JSON 装得下的(标量/字符串表/正则/配置 dict)+ IN/OUT 路径。
 特批 import 三个:`re`(正则字面量)、`paths`(IN/OUT 路径唯一真相)、`datetime.date`
 (COVERAGE_COMPLETE 是一个日历事实,写成三元组再到 functions 里拼反而把常量拆成两处)。
+2026-10-04 收口:`from paths.constants import PROCESSED_STATCAN` 仍算 `paths` 这一条(不进桶的出口名直取,照 pte / hwcr / statcan.cip 先例)。
 注释方言(2026-08-30):每个常量用**赋值后的裸字符串 docstring**,行内 # 退役,
 决策记录连人带日期原样折进所属常量的 docstring —— 一条不删。
 零字符串令:functions 里除 `to_*` 行构造器内的 JSON 键、空串、语法位外,一切字面量住这;
@@ -14,6 +15,7 @@ import re
 from datetime import date
 
 import paths
+from paths.constants import PROCESSED_STATCAN
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费:读盘 / 归一 / 落盘 / 报数的公共件 + 通用 K_* 键词族)
@@ -3193,6 +3195,23 @@ NEWS_SLUG_N_TPL = "{date}-{title}-{n}"
 
 IN_DLI = paths.DLI / "dli.json"
 """PGWP 可申 DLI 子集(dli 域 build_ircc_dli_pgwp 产,E12-03;已过滤去重,汇装层直通)。"""
+
+IN_CIP_PROGRAMS = PROCESSED_STATCAN / "cip_programs.json"
+"""CIP 2021 专业表(statcan/cip 子域 cip_programs 步产:2,119 个 class + 中韩名 + 本站大类 + 热门名次;汇装层直通)。
+2026-10-04 访客四题第 2 题;生产 DDL docs/sql/cip-programs-20261004.sql 已跑(同日),此后才接进汇装 —— 之前接了会被
+build 役整目录上传、在没有表的生产上白传。
+2026-10-04 收口:路径改走 `from paths.constants import PROCESSED_STATCAN`(不进桶)—— 进桶那版让常驻容器每轮重扫
+META 时拿新桶向内存里的旧 constants 要新名字,ImportError(同日 14:23 build 容器实撞)。"""
+
+CIP_MISSING_TPL = ("✗ 专业表源文件不在:{path} —— 先跑 python etl/statcan/main.py --only cip_programs"
+                   "(本轮 cip_programs 表不出,data/mart 里上一轮的文件原样留着)")
+"""专业表源文件缺席的留痕。
+2026-10-04 收口:加 ✗ 前缀(调度层升 ERROR 级,照 PATHWAYS_MISSING_TPL);缺席不再出空清单 —— 空清单照样落盘上传,
+seed 把上传的 [] 当「真清空」抹掉生产表;改成这张表整张不进汇装字典(见 functions 的 build_cip_programs)。"""
+
+TABLE_CIP_PROGRAMS = "cip_programs"
+"""cip_programs 表名(源文件在才由 build_cip_programs 放进 to_mart_tables 的字典;与字典其余键一样 = 落盘文件名 = DB 表名;
+2026-10-04 收口立)。"""
 
 IN_QS = paths.QS / "qs.json"
 """QS 世界大学排名·加拿大子集(qs 域产;2026-09-12 Frank「再加上 qs 排名」——

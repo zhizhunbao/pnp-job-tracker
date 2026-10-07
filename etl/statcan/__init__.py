@@ -42,4 +42,6 @@ METAS = [
 """本域两役(2026-09-26 晚拆,见文件头):
   statcan        npr_share → tr_prov → cubes → city:两张老表 + 四张宏观表 + 城市刻度(步骤见 main.UNITS)
   statcan_naics  naics:NAICS 类目表 → raw/statcan/naics.json(分类标准五年一修;换版时自校拦,只红本役)
+                 2026-10-04 起 naics 之后再跑 cip2021:CIP 2021 专业分类表 → raw/statcan/cip2021.json(同是五年一修的分类标准;
+                 代码住 statcan/cip 子域;役与容器不新增,本条声明一字不动)
 间隔一律 86400(照原单役 META)。"""
