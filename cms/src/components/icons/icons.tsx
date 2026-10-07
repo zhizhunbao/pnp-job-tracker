@@ -13,7 +13,7 @@ import {
   ArrowUp, ChartColumn, ChartLine, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, ClipboardList,
   Compass, GripVertical, Lock, Mail, Map as LMap, MapPin, Maximize, Medal, Menu, MessageCircle, Mic, Minimize,
   Minus, MoveUpRight, Newspaper, Paperclip, Pause, Play, Rocket, RotateCcw, Save, Scale, Search, Settings, Square, Star,
-  Table, Target, ThumbsDown, ThumbsUp, TriangleAlert, User, Users, Volume2, X,
+  Plus, Table, Target, ThumbsDown, ThumbsUp, TriangleAlert, User, Users, Volume2, X,
 } from 'lucide-react'
 
 import { makeIcon } from './functions'
@@ -149,6 +149,11 @@ export const IconMinimize = makeIcon(Minimize)
  * 挂件最小化(收成一条)。
  */
 export const IconMinus = makeIcon(Minus)
+
+/**
+ * 放大(「我的简历」预览弹框的缩放钮;2026-10-06)。
+ */
+export const IconPlus = makeIcon(Plus)
 
 /**
  * 移民动态(E12-06)。

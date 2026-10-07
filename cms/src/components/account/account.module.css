@@ -1036,6 +1036,41 @@
    * 灰底四周留一圈。
    */
   padding: 12px;
+
+  /*
+   * 放大后超出舞台的部分裁掉(拖动看局部,不出滚动条;2026-10-06 缩放)。
+   */
+  overflow: hidden;
+
+  /*
+   * 手指在舞台上捏合 / 拖动只给我们的手势,不让浏览器整页缩放或滚动。
+   */
+  touch-action: none;
+
+  /*
+   * 拖动时不选中文字。
+   */
+  user-select: none;
+}
+
+/*
+ * 放大后舞台换抓手光标(可拖动)。
+ */
+.rfStage.rfStageZoomed {
+  /*
+   * 抓手。
+   */
+  cursor: grab;
+}
+
+/*
+ * 按住拖动时攥紧的抓手。
+ */
+.rfStage.rfStageZoomed:active {
+  /*
+   * 攥紧。
+   */
+  cursor: grabbing;
 }
 
 /*
@@ -1208,6 +1243,16 @@
   min-height: 36px;
 
   /*
+   * 翻页钮组与缩放钮组之间的空(2026-10-06 缩放)。
+   */
+  gap: 16px;
+
+  /*
+   * 两组竖向居中。
+   */
+  align-items: center;
+
+  /*
    * 与舞台拉开。
    */
   margin-top: 8px;
@@ -1221,6 +1266,112 @@
    * 横向居中。
    */
   justify-content: center;
+}
+
+/*
+ * 可点的缩略图(PDF 卡片左边那张纸就是预览钮;2026-10-06 Frank「去掉 preview 按钮 直接点图呢」)。
+ * 双类压过 button 桶 ghost 档的内衬、边框与底色,钮里只剩那张纸。
+ */
+.rfThumbBtn.rfThumbBtn {
+  /*
+   * 不留内衬。
+   */
+  padding: 0;
+
+  /*
+   * 不要钮边框。
+   */
+  border: none;
+
+  /*
+   * 不要钮底色。
+   */
+  background: none;
+
+  /*
+   * 放大镜光标:点了是看大图。
+   */
+  cursor: zoom-in;
+
+  /*
+   * 撑成纸的大小。
+   */
+  display: block;
+
+  /*
+   * 不收缩(卡片横排时纸宽不被挤)。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 悬停时纸边加深,提示可点。
+ */
+.rfThumbBtn.rfThumbBtn:hover .rfPaper {
+  /*
+   * 主色描边(colors 域变量)。
+   */
+  border-color: var(--primary);
+}
+
+/*
+ * 预览的缩放钮组「− 百分比 +」(2026-10-06)。
+ */
+.rfZoom {
+  /*
+   * 三颗钮横排。
+   */
+  display: inline-flex;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 钮间距(同 pager 桶翻页钮)。
+   */
+  gap: 8px;
+}
+
+/*
+ * 「− / +」钮:收成翻页钮那么小(双类压过 button 桶的钮档尺寸)。
+ */
+.rfZoomBtn.rfZoomBtn {
+  /*
+   * 紧凑内衬。
+   */
+  padding: 2px 10px;
+
+  /*
+   * 行高同翻页钮。
+   */
+  min-height: 0;
+}
+
+/*
+ * 百分比钮:数字等宽,倍数变化时钮不跳宽。
+ */
+.rfZoomPct.rfZoomPct {
+  /*
+   * 紧凑内衬。
+   */
+  padding: 2px 8px;
+
+  /*
+   * 行高同翻页钮。
+   */
+  min-height: 0;
+
+  /*
+   * 放得下「300%」。
+   */
+  min-width: 56px;
+
+  /*
+   * 数字等宽。
+   */
+  font-variant-numeric: tabular-nums;
 }
 
 /*

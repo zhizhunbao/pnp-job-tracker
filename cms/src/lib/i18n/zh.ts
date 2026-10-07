@@ -959,6 +959,7 @@ export const jobsZh = {
   'rf.uploaded': '上传于 {d}', 'rf.preview': '预览', 'rf.replace': '替换文件', 'rf.download': '下载', 'rf.delete': '删除',
   'rf.sure': '确认删除', 'rf.cancel': '取消',
   'rf.default': '默认', 'rf.setDefault': '设为默认', 'rf.add': '添加简历', 'rf.full': '最多 5 份', 'rf.loading': '加载中', 'rf.pvFail': '这份预览不了,下载后查看',
+  'rf.zoomIn': '放大', 'rf.zoomOut': '缩小', 'rf.zoomReset': '恢复整页',
   'rf.err.full': '最多 5 份,先删掉一份再加',
   'rf.err.type': '只收 PDF 或 Word(.docx)文件', 'rf.err.size': '文件超过 5 MB',
   'rf.err.limit': '今天上传次数用完了,明天再试', 'rf.err.net': '没成功,稍后再试',

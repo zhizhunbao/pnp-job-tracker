@@ -879,6 +879,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'rf.uploaded': '{d} 업로드', 'rf.preview': '미리보기', 'rf.replace': '파일 교체', 'rf.download': '다운로드', 'rf.delete': '삭제',
   'rf.sure': '삭제 확인', 'rf.cancel': '취소',
   'rf.default': '기본', 'rf.setDefault': '기본으로 설정', 'rf.add': '이력서 추가', 'rf.full': '최대 5개', 'rf.loading': '불러오는 중', 'rf.pvFail': '미리 볼 수 없습니다. 다운로드해서 확인하세요.',
+  'rf.zoomIn': '확대', 'rf.zoomOut': '축소', 'rf.zoomReset': '페이지 맞춤',
   'rf.err.full': '이력서는 최대 5개입니다. 하나를 먼저 삭제하세요.',
   'rf.err.type': 'PDF 또는 Word(.docx) 파일만 올릴 수 있습니다', 'rf.err.size': '파일이 5MB를 넘습니다',
   'rf.err.limit': '오늘 업로드 횟수를 모두 사용했습니다. 내일 다시 시도하세요.', 'rf.err.net': '처리하지 못했습니다. 잠시 후 다시 시도하세요.',

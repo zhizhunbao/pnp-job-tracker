@@ -2,7 +2,7 @@
 // 性质:① 清单没回来只出占位,不闪上传区;② 一份都没有 → 上传区(标题、类型大小、选择文件、拖放提示);
 //       ③ 有几份出几张卡:默认那份挂「默认」、没有「设为默认」;别的有「设为默认」;下载链接带各自 id 且不走预取;
 //          Word 出 DOCX 占位、没有预览钮;卡片下面「添加简历」+「n / 5」,满 5 份钮换成「最多 5 份」;
-//       ④ 点「预览」开本页弹框(标题是文件名),关掉就没了;
+//       ④ 点缩略图(读屏名「预览」;10-06 预览钮撤,图即钮)开本页弹框(标题是文件名),关掉就没了;
 //       ⑤ 删除两步:点「删除」只亮那一份的确认,取消回原样;确认后服务端删成功才重拉,失败原样留着并报错;
 //          「设为默认」发 PATCH 带那一份的 id,成功后重拉;
 //       ⑥ 上传失败按错误码出文案(type、full);超 5 MB 不发请求直接报;「替换文件」发 PUT 带那一份的 id。
@@ -59,7 +59,7 @@ async function mount() {
 }
 
 function labels(el: HTMLElement) {
-  return Array.from(el.querySelectorAll('button, a')).map((b) => b.textContent)
+  return Array.from(el.querySelectorAll('button, a')).map((b) => b.getAttribute('aria-label') ?? b.textContent)
 }
 
 function cardOf(el: HTMLElement, name: string) {
@@ -68,7 +68,7 @@ function cardOf(el: HTMLElement, name: string) {
 }
 
 async function click(root: HTMLElement, label: string) {
-  const b = Array.from(root.querySelectorAll('button')).find((x) => x.textContent === label)
+  const b = Array.from(root.querySelectorAll('button')).find((x) => (x.getAttribute('aria-label') ?? x.textContent) === label)
   expect(b, label).toBeTruthy()
   await act(async () => {
     b?.click()

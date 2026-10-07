@@ -18,16 +18,18 @@
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useIsNarrow } from '@/components/modal'
-import { RF_ERR_NONE, SEC_DEFAULT } from './constants'
+import { RF_ERR_NONE, SEC_DEFAULT, ZOOM_HOME, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from './constants'
 import {
   makeAdd, makeAskOf, makeDefaultOf, makeDeleteOf, makeDragLeave, makeDragOver, makeFileDrop, makeFilePick,
   makeLoadSavedJobs, makePickerOf, makePreviewClose, makePreviewOf, makeRefresh, makeSureClear, makeResumeListLoad,
   makeResumeUpload, okFlagOf,
   renderPdfPages, renderPdfThumb, secLinkOf, showPdfPage,
+  applyViewTo, makeDocDrop, makeGripDown, makeGripMove, makeGripUp, makePageTurn, makeWheelBind, makeZoomHome,
+  makeZoomRedraw, makeZoomStep, zoomPctOf,
 } from './functions'
 import type {
   AccountPanel, MaybeResumeMeta, Me, ResumeFilePanel, ResumeMetas, ResumePagesPanel, ResumeThumbHookIn,
-  ResumeThumbPanel, SavedJobFact,
+  ResumeThumbPanel, SavedJobFact, MaybePdfDoc, MaybeZoomGrip, ZoomView,
   SavedJobsHookIn, SavedJobsPanel, Sec, SubscriptionPanel,
 } from './types'
 
@@ -158,23 +160,36 @@ export function useResumeFile(): ResumeFilePanel {
 
 /**
  * 预览弹框整机:容器挂上就把原件逐页画进去(只露第一页);翻页时只换露哪一页,不重画。
+ * 2026-10-06 加缩放(Frank「这个可以鼠标滚动放大缩小吧」):视图(倍数 + 平移)套在放页容器上;
+ * 滚轮原生挂在舞台上,拖动 / 捏合走舞台的指针事件;倍数停下后按新倍数重画当前页;翻页回整页;文档随弹框销毁。
  *
  * @param x 原件地址。
- * @returns 容器回调、画完 / 画不了、页数与翻页。
+ * @returns 容器 / 舞台回调、画完 / 画不了、页数与翻页、缩放状态与手柄。
  */
 export function useResumePages(x: ResumeThumbHookIn): ResumePagesPanel {
   const [box, setBox] = useState<HTMLDivElement | null>(null)
+  const [stage, setStage] = useState<HTMLDivElement | null>(null)
+  const [doc, setDoc] = useState<MaybePdfDoc>(null)
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
   const [count, setCount] = useState(0)
   const [index, setIndex] = useState(0)
+  const [view, setView] = useState<ZoomView>(ZOOM_HOME)
+  const [grip, setGrip] = useState<MaybeZoomGrip>(null)
 
   useEffect(function drawPages() {
     if (box == null || x.src === RF_ERR_NONE) {
       return
     }
-    void renderPdfPages({ box, src: x.src, setReady, setFailed, setCount })
+    void renderPdfPages({ box, src: x.src, setReady, setFailed, setCount, setDoc })
   }, [box, x.src])
+
+  useEffect(function holdDoc() {
+    if (doc == null) {
+      return
+    }
+    return makeDocDrop(doc)
+  }, [doc])
 
   useEffect(function turnPage() {
     if (box != null && ready) {
@@ -182,7 +197,46 @@ export function useResumePages(x: ResumeThumbHookIn): ResumePagesPanel {
     }
   }, [box, ready, index])
 
-  return { onBoxMount: setBox, ready, failed, count, index, onPage: setIndex }
+  useEffect(function wheelZoom() {
+    if (stage == null) {
+      return
+    }
+    return makeWheelBind({ stage, setView })
+  }, [stage])
+
+  useEffect(function showView() {
+    if (box != null) {
+      applyViewTo({ box, view })
+    }
+  }, [box, view])
+
+  useEffect(function sharpen() {
+    if (doc == null || box == null || ready === false) {
+      return
+    }
+    return makeZoomRedraw({ doc, box, index, zoom: view.zoom })
+  }, [doc, box, ready, index, view.zoom])
+
+  const grips = { view, grip, setView, setGrip }
+  return {
+    onBoxMount: setBox,
+    onStageMount: setStage,
+    ready,
+    failed,
+    count,
+    index,
+    onPage: makePageTurn({ setIndex, setView }),
+    zoomed: view.zoom > ZOOM_MIN,
+    pct: zoomPctOf(view),
+    canIn: view.zoom < ZOOM_MAX,
+    canOut: view.zoom > ZOOM_MIN,
+    onZoomIn: makeZoomStep({ stage, setView, factor: ZOOM_STEP }),
+    onZoomOut: makeZoomStep({ stage, setView, factor: 1 / ZOOM_STEP }),
+    onZoomReset: makeZoomHome({ setView }),
+    onGripDown: makeGripDown(grips),
+    onGripMove: makeGripMove(grips),
+    onGripUp: makeGripUp(grips),
+  }
 }
 
 /**

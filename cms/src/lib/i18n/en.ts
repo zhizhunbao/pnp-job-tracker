@@ -906,6 +906,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'rf.uploaded': 'Uploaded {d}', 'rf.preview': 'Preview', 'rf.replace': 'Replace file', 'rf.download': 'Download', 'rf.delete': 'Delete',
   'rf.sure': 'Confirm delete', 'rf.cancel': 'Cancel',
   'rf.default': 'Default', 'rf.setDefault': 'Set as default', 'rf.add': 'Add resume', 'rf.full': 'Up to 5 resumes', 'rf.loading': 'Loading', 'rf.pvFail': 'Can’t preview this file. Download it to view.',
+  'rf.zoomIn': 'Zoom in', 'rf.zoomOut': 'Zoom out', 'rf.zoomReset': 'Fit page',
   'rf.err.full': 'You can keep up to 5 resumes. Delete one first.',
   'rf.err.type': 'Only PDF or Word (.docx) files', 'rf.err.size': 'File is larger than 5 MB',
   'rf.err.limit': 'Upload limit reached for today. Try again tomorrow.', 'rf.err.net': 'That didn’t work. Try again later.',

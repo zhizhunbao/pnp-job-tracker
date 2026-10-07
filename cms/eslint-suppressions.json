@@ -102,6 +102,11 @@
       "count": 2
     }
   },
+  "src/components/account/functions.ts": {
+    "max-lines": {
+      "count": 1
+    }
+  },
   "src/components/advisor/functions.ts": {
     "max-lines": {
       "count": 1
