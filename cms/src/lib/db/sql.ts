@@ -386,6 +386,14 @@ export const BROAD_NOCS = `SELECT noc, title, title_zh, title_zh_short, title_ko
        FROM noc_openings ORDER BY open DESC, noc LIMIT $1`
 
 /**
+ * 访客四题第 3 题:某专业对应的几个本站大类下,noc_openings 物化表按在架量取前 N(2026-10-04;
+ * 列与 BROAD_NOCS 同形,行映射共用 toTopNoc;broad 列有索引)。$1=大类数组,$2=行数。
+ */
+export const MAJOR_NOCS = `SELECT noc, title, title_zh, title_zh_short, title_ko_short, title_en_short, broad,
+            open::int open, eligible::int eligible, median_salary
+       FROM noc_openings WHERE broad = ANY($1::text[]) ORDER BY open DESC, noc LIMIT $2`
+
+/**
  * medianCol:要中位薪资时传那一列的表达式,不要时传空串(省一次昂贵的 percentile_cont)
  *
  * @param medianCol 中位薪资列的表达式;不要时空串。
@@ -415,12 +423,14 @@ export const NOC_SEARCH_FALLBACK = `SELECT j.noc, COALESCE(d.title, '') title, C
 
 /**
  * 职业名模糊搜(中英同查),短名优先
+ * 2026-10-05 访客第 3 题打「cloud」出「没有找到匹配职业」:官方名里没有这个词。再搜官方示例职称 examples 一格
+ * (21231 cloud engineer / 21232 cloud developer),名字命中的排前面、只命中示例职称的排后面,同档短名优先;上限 8 → 12。
  */
 export const NOC_BY_TITLE_LIKE = `SELECT d.noc, COALESCE(d.title,'') title, COALESCE(d.title_zh,'') title_zh, COALESCE(d.title_zh_short,'') title_zh_short,
             COALESCE(d.title_ko_short,'') title_ko_short, COALESCE(d.title_en_short,'') title_en_short
      FROM noc_descriptions d
-     WHERE d.title ILIKE $1 OR d.title_zh ILIKE $1
-     ORDER BY length(COALESCE(d.title,'')) LIMIT 8`
+     WHERE d.title ILIKE $1 OR d.title_zh ILIKE $1 OR d.examples ILIKE $1
+     ORDER BY CASE WHEN d.title ILIKE $1 OR d.title_zh ILIKE $1 THEN 0 ELSE 1 END, length(COALESCE(d.title,'')), d.noc LIMIT 12`
 
 // =========================================================================
 // 6. 站级数字 —— 总量 / 证明数 / 新鲜度 / 邮件提醒
@@ -487,6 +497,14 @@ export const QUIZ_FACTS_BY_PROV = `SELECT j.province, count(*)::int n, count(*) 
 export const QUIZ_FACTS_STREAMS = `SELECT j.pnp_stream stream, count(*)::int n
        FROM jobs j WHERE j.status = 'open' AND j.noc = $1 AND j.pnp_stream IS NOT NULL AND j.pnp_stream <> ''
        GROUP BY j.pnp_stream ORDER BY count(*) DESC LIMIT 4`
+
+/**
+ * 访客四题第 2 题·CIP 2021 专业整表(2,119 行,进程内缓存后在内存里筛;2026-10-04)。
+ * 表由 docs/sql/cip-programs-20261004.sql 手写建,没建时这条撞 42P01 —— 调用方走 queryRowsOrEmpty 留痕回空。
+ * 2026-10-05 加 title_en_short 与 places 两列(专业题照掌上高考做;DDL docs/sql/cip-programs-places-20261005.sql 已在生产跑过)。
+ */
+export const MAJORS_ALL = `SELECT code, title_en, title_zh, title_ko, series, grouping, broads, popular, title_en_short, places
+       FROM cip_programs ORDER BY code`
 
 // =========================================================================
 // 8. 统计 / 难度 / 职业报告
@@ -1249,11 +1267,6 @@ export const PNP_DRAWS_ALL = `SELECT province, kind, draw_date, stream, score, s
  */
 export const EE_CATEGORIES_LATEST = `SELECT DISTINCT ON (category) category, label, draw_crs, draw_date, draw_size, url FROM ee_categories
                 WHERE draw_date IS NOT NULL AND draw_date <> '' ORDER BY category`
-
-/**
- * 最近 90 条新闻(时间线的政策背景注入)。
- */
-export const NEWS_RECENT = `SELECT region, title, date, slug, importance, url FROM news ORDER BY date DESC LIMIT 90`
 
 // 🔴 **口径写在 WHERE 里**:省提名匹配只吃 `program='PNP'` 的清单行 —— AIP 背书是另一条路,
 //    混进来会让「命中/被排除」判在错的项目上(同 lib/jobs/queries.ts 的 pnpOnly,那条注释 2026 年就写下了)。
@@ -2956,3 +2969,34 @@ export const RESUME_FILE_PROMOTE = `UPDATE user_resumes SET is_default = true
  */
 export const RESUME_FILE_SET_DEFAULT = `UPDATE user_resumes SET is_default = (id = $2)
      WHERE user_id = $1 AND EXISTS (SELECT 1 FROM user_resumes WHERE user_id = $1 AND id = $2)`
+
+// =========================================================================
+// 31. 我的岗位(「我的」页两张岗位表;2026-10-06 立,Frank「先做我的求职」「也重新改一下」;
+//     B2 站内投递上线后我的求职改读 applications 表,docs/sql/apply-b2-20261005.sql)
+// =========================================================================
+
+/**
+ * 两张表共用的列与连表:收藏表 + 职位表(城市、薪资、发布日期、在不在架)+ 城市表(人工核定的市译名,同职位板)
+ * + 公司表(slug:点公司名开公司弹框;同 JOB_FROM 的连法)。
+ */
+const MYJOBS_FROM = `s.id, s.job_id, s.title, s.company, s.status, s.created_at, s.updated_at,
+       j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province,
+       j.salary_text, j.salary_annual, j.date_posted, j.status::text AS job_status, c.slug AS company_slug
+     FROM saved_jobs s LEFT JOIN jobs j ON j.id = s.job_id
+     LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
+     LEFT JOIN companies c ON c.id = j.company_id`
+
+/**
+ * 本人投过的岗(我的求职):收藏表里进度是已投 / 面试中 / offer 的行,最近投的在前。
+ * $1=用户 id,$2=条数上限。saved_jobs.user_id 有索引。
+ */
+export const MYJOBS_APPLIED = `SELECT ${MYJOBS_FROM}
+     WHERE s.user_id = $1 AND s.status IN ('applied', 'interview', 'offer')
+     ORDER BY s.updated_at DESC LIMIT $2`
+
+/**
+ * 本人收藏的岗(我的收藏):全部收藏行(投过的也在),最近收藏的在前。$1=用户 id,$2=条数上限。
+ */
+export const MYJOBS_SAVED = `SELECT ${MYJOBS_FROM}
+     WHERE s.user_id = $1
+     ORDER BY s.created_at DESC LIMIT $2`

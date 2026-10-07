@@ -55,6 +55,11 @@ export const FRAME_SEL = '[data-frame]'
 export const SIZE_DEFAULT = 'md'
 
 /**
+ * 换屏键缺席时的值(没给 fitKey 的弹框 = 内容从不换屏,拉过的高一直留着)。2026-10-05 立。
+ */
+export const FIT_NONE = ''
+
+/**
  * 关闭钮的 aria-label(上线以来就是英文死值;要不要走 i18n 待 Frank 拍,先归位常量)。
  */
 export const CLOSE_ARIA = 'close'

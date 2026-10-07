@@ -11,16 +11,16 @@
  * 不然会和登出上面那条叠成两道线。
  * 2026-09-23「我的匹配」整拆(Frank「我觉得 我的匹配 功能也可以去掉。让用户自己筛 职位 直接 收藏」):
  * 「求职」组的「匹配」一项撤,收藏本就在组里,剩 我的简历、我的收藏、我的求职。
+ * 2026-10-04 Frank「这个部分都删掉。在 我的 模块已经存在了」:顶栏已有「我的」(付费闭环批 B1),账户页三节就是这三项 ——
+ * 「求职」组(组标题 + 我的简历 / 我的收藏 / 我的求职)整组撤;下拉只剩身份头(点进账户页)、升级(免费档)与登出。
+ * 同日 Frank「升级 Pro 这个删了,放到 我的 模块里,加一个我的订阅」:「升级 Pro」一项连同它上面那条分隔线撤,
+ * 升级与续买挪进账户页新节「我的订阅」;下拉只剩身份头与登出。
  *
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
-import { IconClipboard, IconPaperclip, IconStar } from '@/components/icons'
 import { Button, LinkButton } from '@/components/button'
-import {
-  ARIA_MENU, PATH_ACCOUNT, PATH_ACCOUNT_FAVS, PATH_ACCOUNT_RESUME, PATH_ACCOUNT_SJOBS,
-  PLAIN_BTN_KIND, PRO_LABEL,
-} from './constants'
+import { ARIA_MENU, PATH_ACCOUNT, PLAIN_BTN_KIND, PRO_LABEL } from './constants'
 import { logout } from './functions'
 import type { AccountMenuPopIn } from './types'
 import css from './auth.module.css'
@@ -33,7 +33,7 @@ import css from './auth.module.css'
  * @param props 身份与回调(见 AccountMenuPopIn 逐格注释)。
  * @returns 弹层。
  */
-export function AccountMenuPop({ t, email, shortName, isPro, proUntil, onUpgrade }: AccountMenuPopIn) {
+export function AccountMenuPop({ t, email, shortName, isPro, proUntil }: AccountMenuPopIn) {
   return (
     <div role={ARIA_MENU} className={css.menuPop}>
       <LinkButton href={PATH_ACCOUNT} className={css.menuHead}>
@@ -47,20 +47,6 @@ export function AccountMenuPop({ t, email, shortName, isPro, proUntil, onUpgrade
         <div className={css.menuMail}>{email}</div>
         {isPro && proUntil !== '' && <div className={css.menuUntil}>{t('acct.plan.pro', { d: proUntil })}</div>}
       </LinkButton>
-      <div className={css.menuSect}>{t('menu.sect.job')}</div>
-      <LinkButton href={PATH_ACCOUNT_RESUME} className={css.menuItem}>
-        <IconPaperclip /> {t('rm.arch.title')}
-      </LinkButton>
-      <LinkButton href={PATH_ACCOUNT_FAVS} className={css.menuItem}><IconStar /> {t('fav.title')}</LinkButton>
-      <LinkButton href={PATH_ACCOUNT_SJOBS} className={css.menuItem}><IconClipboard /> {t('sj.title')}</LinkButton>
-      {onUpgrade != null && (
-        <>
-          <div className={css.menuHr} />
-          <Button kind={PLAIN_BTN_KIND} onClick={onUpgrade} className={`${css.menuItem} ${css.menuItemPro}`}>
-            <IconStar /> {t('up.cta2')}
-          </Button>
-        </>
-      )}
       <div className={`${css.menuHr} ${css.menuHrTight}`} />
       <Button kind={PLAIN_BTN_KIND}
         onClick={logout}

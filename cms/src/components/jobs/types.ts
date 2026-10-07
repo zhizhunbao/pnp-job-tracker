@@ -630,11 +630,6 @@ export type AccountAreaPanel = {
   resetTok: string
 
   /**
-   * 定价弹窗开着没。
-   */
-  pricing: boolean
-
-  /**
    * 开登录框。
    */
   onLogin: ClickFn
@@ -653,16 +648,6 @@ export type AccountAreaPanel = {
    * 登录成功:洗掉地址栏参数并整页刷新(让 SSR 分层态生效)。
    */
   onAuthDone: ClickFn
-
-  /**
-   * 开定价弹窗。
-   */
-  onPricing: ClickFn
-
-  /**
-   * 关定价弹窗。
-   */
-  onPricingClose: ClickFn
 }
 
 /**
@@ -783,6 +768,12 @@ export type BoardFiltersPanel = {
    * 筛选各格的读写口。
    */
   fState: FilterState
+
+  /**
+   * 省下拉的换值口(2026-10-04 收口:过闸的是「记下所选省 + 换省 + 清市 / 区」这一整套 —— 访客开向导、
+   * cookie 也不记,免得刷新一下按上次所选预选本省、绕过筛选闸)。
+   */
+  onProv: TextFn
 
   /**
    * 联动下拉选项。
@@ -992,6 +983,31 @@ export type BoardModalsPanel = {
    * 匿名注册成功后:把本地答案落成档案再回原处。
    */
   onUpsellDone: () => Promise<void>
+
+  /**
+   * 匿名点收藏时要收的那一岗(开着访客向导);null = 没开(2026-10-03 付费闭环批 A1)。
+   */
+  saveGate: JobFact | null
+
+  /**
+   * 关掉收藏那一路的访客向导(那次收藏作罢)。
+   */
+  onSaveGateClose: ClickFn
+
+  /**
+   * 访客动筛选时开着的那一路访客向导(2026-10-04 收口审查:关掉进站向导后动筛选 / 搜索要再弹)。
+   */
+  filterGate: boolean
+
+  /**
+   * 关掉筛选那一路的访客向导(那一下筛选作罢,板子不动)。
+   */
+  onFilterGateClose: ClickFn
+
+  /**
+   * 筛选那一路的访客向导注册完:收起向导、软刷拿到登录态(那一下筛选不补,登录后自己再点)。
+   */
+  onFilterGateDone: ClickFn
 }
 
 /**
@@ -1064,9 +1080,14 @@ export type JobsBoardPanel = {
   onDesc: (j: JobFact) => void
 
   /**
-   * 开升级弹框(Pro 锁标点击)。
+   * 开升级弹框(Pro 锁标点击)。2026-10-03 付费闭环批 A1 起只管锁格,匿名点收藏改走访客向导。
    */
   onUpsellLock: ClickFn
+
+  /**
+   * 收藏那一路的访客向导注册完:补上那次收藏,再软刷拿到登录态(2026-10-03 付费闭环批 A1)。
+   */
+  onSaveGateDone: ClickFn
 
   /**
    * 官方具名排除清单。
@@ -1589,6 +1610,11 @@ export type JobIn = {
   job: JobFact
 
   /**
+   * 库里已存的整理版译文(页面门 SSR 取,见 JobBodyHookIn 同名格;null = 库里没有)。2026-10-06 立。
+   */
+  jdTrans: JdTransSsr | null
+
+  /**
    * 分层态。
    */
   plan: JobPlan
@@ -1964,6 +1990,12 @@ export type JobBodyHookIn = {
   job: JobFact
 
   /**
+   * 库里已存的整理版译文(整页版由页面门 SSR 取;2026-10-06 Frank「登录之后……先出这个条数数字,之后才是刷出文字」:
+   * 中 / 韩界面首屏就铺库里的译文,不再等页面活过来再要一次)。缺席 = 弹框(没有 SSR,照旧懒取);null = 页面门查过、库里没有。
+   */
+  jdTrans?: JdTransSsr | null
+
+  /**
    * 界面语言。
    */
   lang: Lang
@@ -2123,13 +2155,11 @@ export type JobBodyPanel = {
 
   /**
    * 投递邮箱('' = 外跳原帖)。
+   * 2026-10-04 起只是正文里正则抽到的(「怎么投」节用;投递栏的邮箱改成登录用户点了才查,不经这里)。
+   * 同日收口:括号里的「外跳原帖」只指「怎么投」节整节缺时退回原帖链接(jdSecModeOf 的 applyLink 档),
+   * 不是投递栏外跳 —— 投递栏外跳 B1(2026-10-03)已撤。
    */
   applyEmail: string
-
-  /**
-   * 投递方式查完了没(OAuth 回跳续投要等它,别把邮箱岗投成外跳)。
-   */
-  applyDone: boolean
 }
 
 /**
@@ -2347,16 +2377,6 @@ export type ApplyBarIn = {
   job: JobFact
 
   /**
-   * 投递邮箱('' = 外跳原帖)。
-   */
-  email: string
-
-  /**
-   * 投递方式查完了没。
-   */
-  emailDone: boolean
-
-  /**
    * 取词函数。
    */
   t: TFn
@@ -2374,8 +2394,9 @@ export type ApplyBarIn = {
 
 /**
  * 投递流程的三段:闲置 → 注册闸 → 求职意向。
+ * 2026-10-04 收口审查:点了投递没拿到邮箱不再无声作罢,多三段 —— 重新登录(401)/ 今天次数用完(429)/ 没拿到(其余)。
  */
-export type ApplyStage = 'idle' | 'auth' | 'intent' | 'email'
+export type ApplyStage = 'idle' | 'auth' | 'intent' | 'email' | 'login' | 'limit' | 'err'
 
 /**
  * ApplyBar 状态机交回的面板。
@@ -2385,6 +2406,11 @@ export type ApplyBarPanel = {
    * 当前段。
    */
   stage: ApplyStage
+
+  /**
+   * 点投递时现查来的投递邮箱(2026-10-04 起只给登录用户、点了才查);'' = 还没查到。
+   */
+  email: string
 
   /**
    * 简历对照要用的 JD 正文;null = 未开,'' = 拿不到全文。
@@ -2405,6 +2431,11 @@ export type ApplyBarPanel = {
    * 点投递(按注册闸/建档闸分流)。
    */
   onApply: ClickFn
+
+  /**
+   * 投递在途(现查邮箱、记「已投」;2026-10-04 收口审查加):钮挂 busy,禁用 + 转圈,在途时再点不再发。
+   */
+  busy: boolean
 
   /**
    * 流程内已登录(不整页 reload,SSR plan 下次导航自然更新)。
@@ -2435,6 +2466,11 @@ export type ApplyBarPanel = {
    * 关邮件投递框(2026-09-14)。
    */
   onEmailClose: ClickFn
+
+  /**
+   * 关「今天次数用完了」「投递失败」那一行提示框(2026-10-04 收口审查)。
+   */
+  onNoteClose: ClickFn
 
   /**
    * 邮件投递框里「复制邮箱」按过没(按过钮面换「已复制」)。
@@ -2845,6 +2881,11 @@ export type NocLabelIn = {
    * 界面语言(决定用顿号还是逗号连接)。
    */
   lang: string
+
+  /**
+   * 取词函数(职业多于 NOC_LABEL_LIST_MAX 个时收成「首个 + 其余几个」;2026-10-06 立)。
+   */
+  t: TFn
 }
 
 /**
@@ -3451,6 +3492,11 @@ export type BoardFiltersHookIn = {
    * 存筛选触上限时的去处。
    */
   onLimit: ClickFn
+
+  /**
+   * 访客动筛选 / 搜索时的去处:开筛选那一路的访客向导(2026-10-04 收口审查)。
+   */
+  onGate: ClickFn
 }
 
 /**
@@ -3458,9 +3504,14 @@ export type BoardFiltersHookIn = {
  */
 export type BoardFiltersHookOut = {
   /**
-   * 交给视图的筛选面板。
+   * 交给视图的筛选面板(2026-10-04 起面板里的筛选表是过闸的那份:访客动筛选开向导、不写值)。
    */
   panel: BoardFiltersPanel
+
+  /**
+   * 原筛选表(2026-10-04 收口审查):板内自己的写口用它 —— 水合预选本省、地址栏 / 快照回放,不过访客闸。
+   */
+  rawFState: FilterState
 
   /**
    * 关键词(搜索框受控值)。
@@ -4109,6 +4160,57 @@ export type ApplyHowJson = {
 }
 
 /**
+ * loadApplyEmail 的出参(2026-10-04 收口审查:原先只交回邮箱串,会话过期、次数用完、网络断与查完没有混成一个空串,
+ * 投递钮点了没反应;带上状态码,launch 按它分流)。
+ */
+export type ApplyMailOut = {
+  /**
+   * 投递邮箱;'' = 没拿到。
+   */
+  email: string
+
+  /**
+   * 回包状态码;APPLY_STATUS_NET(0)= 没拿到响应。
+   */
+  status: number
+}
+
+/**
+ * showApplyMiss 的入参(2026-10-04 收口审查)。
+ */
+export type ApplyMissIn = {
+  /**
+   * 查邮箱回包的状态码(见 ApplyMailOut)。
+   */
+  status: number
+
+  /**
+   * 本岗(401 那一路要落投递意图)。
+   */
+  job: JobFact
+
+  /**
+   * 投递流程的段写口。
+   */
+  setStage: (s: ApplyStage) => void
+}
+
+/**
+ * makeCopyEmail 的入参(2026-10-04 自 useApplyBar 体内提出)。
+ */
+export type CopyEmailIn = {
+  /**
+   * 要复制的投递邮箱。
+   */
+  email: string
+
+  /**
+   * 「复制过没」的写口(钮面换「已复制」)。
+   */
+  setCopied: (b: boolean) => void
+}
+
+/**
  * useSavedJobs 的入参。
  */
 export type SavedHookIn = {
@@ -4118,9 +4220,19 @@ export type SavedHookIn = {
   plan: JobPlan
 
   /**
-   * 匿名点收藏时的去处(开注册框)。
+   * 匿名点收藏时的去处(2026-10-03 付费闭环批 A1 起开访客向导,带上要收的那一岗,注册完补收)。
    */
-  onAnon: ClickFn
+  onAnon: (j: JobFact) => void
+
+  /**
+   * 开着的收藏访客向导要收的那一岗;null = 没开。
+   */
+  gate: JobFact | null
+
+  /**
+   * 收起收藏那一路的访客向导。
+   */
+  onGateClose: ClickFn
 }
 
 /**
@@ -4156,6 +4268,16 @@ export type ModalsHookOut = {
    * 开升级/登录弹框。
    */
   setUpsell: (u: UpsellKind) => void
+
+  /**
+   * 开 / 关收藏那一路的访客向导(给要收的那一岗;null = 关)。
+   */
+  setSaveGate: (j: JobFact | null) => void
+
+  /**
+   * 开筛选那一路的访客向导(2026-10-04 收口审查;交给筛选面板过闸的写口)。
+   */
+  openFilterGate: ClickFn
 }
 
 /**
@@ -4354,6 +4476,57 @@ export type SlotIn = {
 }
 
 /**
+ * makeGatedFilters 的入参(2026-10-04 收口审查:访客关掉进站向导后动筛选要再弹向导)。
+ * 2026-10-04 收口:makeGatedProvChange(过闸的换省手柄)同用这一份。
+ */
+export type GatedFiltersIn = {
+  /**
+   * 原筛选表(板内自己的写口照旧写它)。
+   */
+  fState: FilterState
+
+  /**
+   * 分层态里登录了没(SSR 那份;软刷回来才变)。
+   */
+  loggedIn: boolean
+
+  /**
+   * 这个页面里刚在访客向导里登录过没(软刷还没回来时分层态仍是匿名,同收藏那一路的判法)。
+   */
+  signedIn: () => boolean
+
+  /**
+   * 开筛选那一路的访客向导。
+   */
+  onGate: ClickFn
+}
+
+/**
+ * makeGatedSet 的入参。
+ */
+export type GatedSetIn = {
+  /**
+   * 原写口(登录了才真写)。
+   */
+  set: TextFn
+
+  /**
+   * 分层态里登录了没。
+   */
+  loggedIn: boolean
+
+  /**
+   * 这个页面里刚在访客向导里登录过没。
+   */
+  signedIn: () => boolean
+
+  /**
+   * 开筛选那一路的访客向导。
+   */
+  onGate: ClickFn
+}
+
+/**
  * allocOf 的入参。
  */
 export type AllocOfIn = {
@@ -4401,6 +4574,11 @@ export type SavedPanel = {
    * 收/取消收藏一岗。
    */
   onSave: (j: JobFact) => void
+
+  /**
+   * 收藏那一路的访客向导注册完:补收那一岗(不再判登录 —— 那一刻分层态还没刷过来),再软刷。
+   */
+  onGateDone: ClickFn
 }
 
 /**
@@ -4634,6 +4812,21 @@ export type JdFormatPanel = {
 }
 
 /**
+ * 页面门 SSR 取到的整理版译文两格(lib/jobs 的 JdTransFact 同形,本域自抄;空串 = 这一语没有或版本过期)。2026-10-06 立。
+ */
+export type JdTransSsr = {
+  /**
+   * 中文。
+   */
+  zh: string
+
+  /**
+   * 韩文。
+   */
+  ko: string
+}
+
+/**
  * useJdTrans 的入参。
  * 2026-09-17 hold 格撤(Frank「自动拨开去掉,但是后台要自动翻译」):开关默认关且不自动拨开,正文区不再为「只查库」那一拍留白。
  */
@@ -4658,6 +4851,26 @@ export type JdTransHookIn = {
    * 2026-09-17 改成只在后台拉、不自动拨开)。
    */
   fmtReady: boolean
+
+  /**
+   * 这一语库里已存的译文(页面门 SSR;null = 没有 —— 弹框或库里没存,照旧后台拉)。2026-10-06 立。
+   */
+  initial: string | null
+}
+
+/**
+ * ssrTransOf 的入参(2026-10-06 立)。
+ */
+export type SsrTransIn = {
+  /**
+   * 页面门取到的两格;缺席 / null = 没有。
+   */
+  ssr: JdTransSsr | null | undefined
+
+  /**
+   * 界面语言。
+   */
+  lang: Lang
 }
 
 /**
@@ -4678,36 +4891,6 @@ export type JdTransPanel = {
    * 取数态。
    */
   transStatus: TransStatus
-}
-
-/**
- * 投递方式交回的两样。
- */
-export type ApplyHowPanel = {
-  /**
-   * 懒查来的投递邮箱;'' = 没抽到。
-   */
-  email: string
-
-  /**
-   * 出结果了没(成败都算)。
-   */
-  done: boolean
-}
-
-/**
- * applyEmailPick 的入参。
- */
-export type ApplyEmailPickIn = {
-  /**
-   * 懒查来的邮箱。
-   */
-  jb: string
-
-  /**
-   * JD 正文(正则兜底从它抽)。
-   */
-  text: string
 }
 
 /**
@@ -4870,11 +5053,6 @@ export type ApplyResumeIn = {
   plan: JobPlan
 
   /**
-   * 投递方式查完没。
-   */
-  emailDone: boolean
-
-  /**
    * 投递段的写口。
    */
   setStage: (s: ApplyStage) => void
@@ -4883,21 +5061,6 @@ export type ApplyResumeIn = {
    * 投递动作。
    */
   launch: () => Promise<void>
-}
-
-/**
- * openApply 的入参。
- */
-export type OpenApplyIn = {
-  /**
-   * 本岗。
-   */
-  job: JobFact
-
-  /**
-   * 投递邮箱;'' = 外跳原帖。
-   */
-  email: string
 }
 
 /**
@@ -5294,26 +5457,6 @@ export type TransShownIn = {
    * 译文;null = 还没拉。
    */
   trans: string | null
-}
-
-/**
- * applyLabelOf 的入参。
- */
-export type ApplyLabelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 投递邮箱;'' = 外跳原帖。
-   */
-  email: string
-
-  /**
-   * 投递方式查完没。
-   */
-  emailDone: boolean
 }
 
 /**
@@ -6743,4 +6886,114 @@ export type JobImmRowIn = {
    * 打开某一列的弹框。
    */
   open: ImmOpenFn
+}
+
+/**
+ * 收藏落库真读的那一岗三格(postSavedJob 的入参;整行 JobFact 结构上也对得上 —— Google 回跳补收时手里只有落地的这三格)。
+ */
+export type SaveJobFact = {
+  /**
+   * 岗位号。
+   */
+  id: string | number
+
+  /**
+   * 标题。
+   */
+  title: string
+
+  /**
+   * 公司名。
+   */
+  company: string
+}
+
+/**
+ * 收藏意图的本地存储原文解析出来的形状(归一前:本地存储谁都能改,四格都可能缺或类型不对)。
+ */
+export type SaveIntentJson = {
+  /**
+   * 岗位号。
+   */
+  id?: string | number
+
+  /**
+   * 标题。
+   */
+  title?: string
+
+  /**
+   * 公司名。
+   */
+  company?: string
+
+  /**
+   * 落地那一刻(毫秒时间戳)。
+   */
+  at?: number
+} | null
+
+/**
+ * toSaveIntent 的入参。
+ */
+export type SaveIntentIn = {
+  /**
+   * 本地存储原文;null = 没落过。
+   */
+  raw: string | null
+
+  /**
+   * 此刻(毫秒时间戳)。
+   */
+  now: number
+}
+
+/**
+ * loadSavedResuming 的入参。
+ */
+export type SavedLoadIn = {
+  /**
+   * 收藏映射落格。
+   */
+  setSaved: (m: Record<string, SavedEntry>) => void
+}
+
+/**
+ * makeSaveGateDone 的入参(2026-10-03 付费闭环批 A1)。
+ */
+export type SaveGateDoneIn = {
+  /**
+   * 要补收的那一岗;null = 没有(只软刷)。
+   */
+  job: JobFact | null
+
+  /**
+   * 直接收一岗。
+   */
+  saveNow: (j: JobFact) => Promise<void>
+
+  /**
+   * 收起访客向导。
+   */
+  close: ClickFn
+
+  /**
+   * 软刷(服务端组件重渲,页面拿到登录态)。
+   */
+  refresh: () => void
+}
+
+/**
+ * makeFilterGateDone 的入参(2026-10-04 收口审查)。
+ */
+export type FilterGateDoneIn = {
+  /**
+   * 收起访客向导。
+   */
+  close: ClickFn
+
+  /**
+   * 软刷(服务端组件重渲,页面拿到登录态)。
+   */
+  refresh: () => void
 }

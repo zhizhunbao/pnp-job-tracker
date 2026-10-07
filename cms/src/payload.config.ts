@@ -21,6 +21,7 @@ import { PnpScoreFactors } from './collections/PnpScoreFactors'
 import { PnpOpsStats } from './collections/PnpOpsStats'
 import { Pathways } from './collections/Pathways'
 import { QcNocStreams } from './collections/QcNocStreams'
+import { CipPrograms } from './collections/CipPrograms'
 import { StatsDaily } from './collections/StatsDaily'
 import { StatsOccupation } from './collections/StatsOccupation'
 import { StatsCity } from './collections/StatsCity'
@@ -63,7 +64,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Companies, Jobs, PnpOccupations, PnpDraws, PnpScoreFactors, PnpRequirements, PnpOpsStats, Pathways, QcNocStreams, Dli, EeCategories, EePointsGrid, NocDescriptions, NocOpenings, PolicyDocs, DesignatedEmployers, EmployerPool, EmployerPoolBuckets, PilotCommunities, PilotOccupations, PilotQuota, MacroSeries, PteTypes, PteQuestions, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats, StatsDaily, StatsOccupation, StatsCity, SavedSearches, SavedJobs, News, Comments, ChatLogs, Asks],
+  collections: [Users, Media, Companies, Jobs, PnpOccupations, PnpDraws, PnpScoreFactors, PnpRequirements, PnpOpsStats, Pathways, QcNocStreams, CipPrograms, Dli, EeCategories, EePointsGrid, NocDescriptions, NocOpenings, PolicyDocs, DesignatedEmployers, EmployerPool, EmployerPoolBuckets, PilotCommunities, PilotOccupations, PilotQuota, MacroSeries, PteTypes, PteQuestions, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats, StatsDaily, StatsOccupation, StatsCity, SavedSearches, SavedJobs, News, Comments, ChatLogs, Asks],
   editor: lexicalEditor(),
   // E3-07:邮件适配器=包一层现成 lib/mailer(Resend HTTP 直调,零新依赖);目前只有 forgot-password 走这里。
   // RESEND_API_KEY 未设 → sendMail 返回 false 不发信(dry-run 语义,与 alerts 一致)。

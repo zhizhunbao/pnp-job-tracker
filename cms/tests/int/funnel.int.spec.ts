@@ -69,13 +69,15 @@ describe('漏斗事件白名单', () => {
     // 2026-09-26(/fe Frank 撤两条死链):report-open / lock-seen 与对话三步(chat-open / chat-answer /
     // chat-feedback)触发点都已不在,撤出;链改按名写死(LEGACY_STEPS / DECISION_STEPS),
     // 这里的顺序从此只管看板行序,不再有下标切片靠它。同日尾部追加转化四计数(只计数不成链)。
+    // 2026-10-03 付费闭环批 A1:尾部再追加访客向导两计数与未登录点投递(只计数不成链)。
     expect([...FUNNEL_STEPS]).toEqual(['jd-open', 'pricing-open', 'pay-click',
       'modal-pnp', 'pnp-employer-click', 'se-view-jobs',
       'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done',
       'pulse-card', 'pulse-occ', 'pulse-cta',
       'emp-search', 'emp-filter', 'emp-row', 'emp-page',
       'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open',
-      'apply', 'signup', 'checkout', 'weekly-optin'])
+      'apply', 'signup', 'checkout', 'weekly-optin',
+      'gate-open', 'gate-step', 'apply-click'])
   })
 
   it('链按名写死,每一步都在白名单里;转化四计数不进任何链(2026-09-26)', () => {
@@ -84,14 +86,27 @@ describe('漏斗事件白名单', () => {
     }
     expect([...LEGACY_STEPS]).toEqual(['pricing-open', 'pay-click'])
     expect([...DECISION_STEPS]).toEqual(['dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done'])
-    for (const step of ['jd-open', 'apply', 'signup', 'checkout', 'weekly-optin']) {
+    for (const step of ['jd-open', 'apply', 'signup', 'checkout', 'weekly-optin', 'gate-open', 'gate-step', 'apply-click']) {
       expect([...LEGACY_STEPS, ...DECISION_STEPS], step).not.toContain(step)
     }
   })
 
+  // 2026-10-03 付费闭环批 A1:访客向导两事件 + 未登录点投递。kind 记低基数枚举(由头 / 哪一步),原样进分组。
+  it('访客向导两事件与未登录点投递归位,kind 原样进分组', () => {
+    for (const kind of ['job', 'apply', 'save']) {
+      expect(toFunnelHit({ name: 'gate-open', prop: kind })).toEqual({ event: 'gate-open', prop: kind })
+    }
+    for (const kind of ['goal', 'major', 'job', 'prov', 'reg']) {
+      expect(toFunnelHit({ name: 'gate-step', prop: kind })).toEqual({ event: 'gate-step', prop: kind })
+    }
+    expect(toFunnelHit({ name: 'apply-click', prop: null })).toEqual({ event: 'apply-click', prop: '' })
+    // apply 与 apply-click 是两件事:前者是真投出去,后者是未登录点了钮
+    expect(toFunnelHit({ name: 'apply-click', prop: null })?.event).not.toBe('apply')
+  })
+
   it('转化四事件归位,prop 只收低基数枚举(投递方式 / 档位 / 开关);邮箱这类自由文本不进分组', () => {
+    // 2026-10-03 付费闭环批 B1:外链投递撤,投递方式只剩 email(web 档不再产生)
     expect(toFunnelHit({ name: 'apply', prop: 'email' })).toEqual({ event: 'apply', prop: 'email' })
-    expect(toFunnelHit({ name: 'apply', prop: 'web' })).toEqual({ event: 'apply', prop: 'web' })
     expect(toFunnelHit({ name: 'signup', prop: null })).toEqual({ event: 'signup', prop: '' })
     expect(toFunnelHit({ name: 'checkout', prop: '30' })).toEqual({ event: 'checkout', prop: '30' })
     expect(toFunnelHit({ name: 'weekly-optin', prop: 'true' })).toEqual({ event: 'weekly-optin', prop: 'true' })

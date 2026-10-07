@@ -47,7 +47,7 @@ export function PnpGateGroupCard({ title, specs }: PnpGateGroupCardIn) {
   }
   return (
     <div className={css.card}>
-      <DrawsHead title={title} source={null} />
+      <DrawsHead title={title} source={null} jump={null} />
       {parts}
     </div>
   )

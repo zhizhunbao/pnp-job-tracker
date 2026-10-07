@@ -3,13 +3,15 @@
  * auth 域的首字母头像(E11-01):有 src 走图;无则名/邮箱首字母 + 由字符串稳定
  * hash 出的色块(同一人恒定色)。v1 不做上传,src 仅来自 OAuth 带回的头像 URL。
  * 2026-08-24 组件域形制化。
+ * 2026-10-05 Frank 截图 Google 登录后右上角头像裂图:取图不带来源地址(AVATAR_REFERRER),图仍挂了就退回首字母色块(useImgFail)。
  *
  * style 白名单:直径是调用方传的数字、底色是名字 hash 出来的 —— 都是运行时数据。
  *
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
-import { ARIA_TRUE, AVATAR_FONT_RATIO, AVATAR_SIZE_DEFAULT, INITIAL_FALLBACK } from './constants'
+import { ARIA_TRUE, AVATAR_FONT_RATIO, AVATAR_REFERRER, AVATAR_SIZE_DEFAULT, INITIAL_FALLBACK } from './constants'
+import { useImgFail } from './hooks'
 import { stableColor } from './functions'
 import type { AvatarIn } from './types'
 import css from './auth.module.css'
@@ -21,6 +23,7 @@ import css from './auth.module.css'
  * @returns 头像。
  */
 export function Avatar({ src, name, email, size = AVATAR_SIZE_DEFAULT }: AvatarIn) {
+  const img = useImgFail()
   let base = INITIAL_FALLBACK
   if (name != null && name !== '') {
     base = name
@@ -32,10 +35,11 @@ export function Avatar({ src, name, email, size = AVATAR_SIZE_DEFAULT }: AvatarI
   if (label !== '') {
     initial = label.charAt(0).toUpperCase()
   }
-  if (src != null && src !== '') {
+  if (src != null && src !== '' && img.failed === false) {
     return (
       // eslint-disable-next-line @next/next/no-img-element -- OAuth 外源头像不进 next/image 管线(域名不可控)
-      <img src={src} alt="" width={size} height={size} className={css.avatarImg} />
+      <img src={src} alt="" width={size} height={size} className={css.avatarImg} referrerPolicy={AVATAR_REFERRER}
+        onError={img.onError} />
     )
   }
   return (

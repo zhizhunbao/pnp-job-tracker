@@ -8,15 +8,17 @@
  * 2026-08-28 换装批自 OnboardingWizard.tsx(旧形迁入存量)整体重写:内联样式落
  * profile.module.css、逐步题面拆成各步件、记忆键与手柄进抽屉;对外的组件名与
  * OB_SEEN_KEY 一个字没动 —— 职位板、投递流、问卷三处消费者照旧。
+ * 2026-10-03 付费闭环批 A1:步数行 + 进度条原样提成 OnboardingHead(访客向导共用同一副头)。
  *
  * @author Frank
  * @time 2026-08-28 17:30:00
  */
 import { Modal } from '@/components/modal'
 import { OB_MODAL_SIZE } from './constants'
-import { obBarStyleOf, obQuestionKeyOf, obValueTextOf } from './functions'
+import { obQuestionKeyOf, obValueTextOf } from './functions'
 import { useOnboardingWizard } from './hooks'
 import { OnboardingFoot } from './onboardingfoot'
+import { OnboardingHead } from './onboardinghead'
 import { OnboardingSteps } from './onboardingsteps'
 import type { OnboardingWizardIn } from './types'
 import css from './profile.module.css'
@@ -35,13 +37,7 @@ export function OnboardingWizard({ t, initial, onClose, onFinished, z }: Onboard
   const p = useOnboardingWizard({ initial, onFinished: finished })
   return (
     <Modal onClose={onClose} size={OB_MODAL_SIZE} z={z}>
-      <div className={css.obStepRow}>
-        <span>{t('ob.step', { i: p.step + 1, n: p.total })}</span>
-      </div>
-      <div className={css.obBar}>
-        {/* eslint-disable-next-line react/forbid-dom-props -- 运行时数据:走到第几步算出来的百分比,类是有限枚举装不下 */}
-        <div className={css.obBarFill} style={obBarStyleOf({ step: p.step, total: p.total })} />
-      </div>
+      <OnboardingHead step={p.step} total={p.total} t={t} />
       <div className={css.obValue}>{obValueTextOf({ apply: p.apply, t })}</div>
       <div className={css.obQuestion}>{t(obQuestionKeyOf({ step: p.cur }))}</div>
       <OnboardingSteps p={p} t={t} />

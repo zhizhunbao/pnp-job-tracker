@@ -688,3 +688,174 @@
    */
   cursor: pointer;
 }
+
+/*
+ * FoldCard / ListCard 的密度(2026-10-05 访客第 2 题照掌上高考立;叠在全局 .card 白卡壳上):
+ * 只给左右内衬与卡间距,头行与行各自撑高。
+ */
+.fold {
+  /*
+   * 左右 12px 内衬(上下由头行 / 行自己撑)。
+   */
+  padding: 0 12px;
+
+  /*
+   * 卡与卡的间距。
+   */
+  margin-bottom: 8px;
+
+  /*
+   * 圆角收小一档(灰底上一列卡,照掌上高考约 8px)。
+   */
+  border-radius: 8px;
+}
+
+/*
+ * 最后一张卡不留下边距(面板底不多出一截)。
+ */
+.fold:last-child {
+  /*
+   * 不留下边距。
+   */
+  margin-bottom: 0;
+}
+
+/*
+ * FoldCard 头行:名字 + 个数胶囊 + 箭头一行竖直居中。双写类名压过 button 桶 ghost 底的样式。
+ */
+.foldHead.foldHead {
+  /*
+   * 三样横排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中(名字折行时胶囊与箭头也居中)。
+   */
+  align-items: center;
+
+  /*
+   * 三样之间的间距。
+   */
+  gap: 8px;
+
+  /*
+   * 撑满卡宽。
+   */
+  width: 100%;
+
+  /*
+   * 最低 44px(手指点得到)。
+   */
+  min-height: 44px;
+
+  /*
+   * 上下 10px。
+   */
+  padding: 10px 0;
+
+  /*
+   * 无描边。
+   */
+  border: 0;
+
+  /*
+   * 方角(卡自己有圆角)。
+   */
+  border-radius: 0;
+
+  /*
+   * 透明底(露出白卡)。
+   */
+  background: none;
+
+  /*
+   * 名字字号。
+   */
+  font-size: 15px;
+
+  /*
+   * 常规字重(照掌上高考:只变色不加粗)。
+   */
+  font-weight: 400;
+
+  /*
+   * 行高。
+   */
+  line-height: 1.4;
+
+  /*
+   * 主色名字。
+   */
+  color: var(--primary);
+
+  /*
+   * 左对齐。
+   */
+  text-align: start;
+
+  /*
+   * 长名折行(button 桶底座 :where(.btn) 默认不折行,这里改回;2026-10-05 本地实走英文「Management science」被截实撞)。
+   */
+  white-space: normal;
+}
+
+/*
+ * 头行名字:吃满剩下的宽,长名折行(不截断)。
+ */
+.foldName {
+  /*
+   * 吃满剩下的宽。
+   */
+  flex: 1;
+
+  /*
+   * 允许被压窄(才会折行而不是撑破)。
+   */
+  min-width: 0;
+}
+
+/*
+ * 头行箭头:灰,收起朝下。
+ */
+.foldChev {
+  /*
+   * 不被压缩。
+   */
+  flex: none;
+
+  /*
+   * 图标居中。
+   */
+  display: inline-flex;
+
+  /*
+   * 灰(真值在 main.css 的 :root)。
+   */
+  color: var(--text3);
+
+  /*
+   * 转向带一点过渡。
+   */
+  transition: transform 0.15s;
+}
+
+/*
+ * 展开态箭头:朝上。
+ */
+.foldChevOpen {
+  /*
+   * 转半圈。
+   */
+  transform: rotate(180deg);
+}
+
+/*
+ * FoldCard 展开后的内容块:和头行之间一条细线(行与行之间的线归 chip 桶 ChipLine)。
+ */
+.foldBody {
+  /*
+   * 和头行之间的细线。
+   */
+  border-top: 1px solid var(--hairline);
+}

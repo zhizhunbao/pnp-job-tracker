@@ -12,6 +12,7 @@ import { LangProvider } from '@/components/i18n'
 import { SessionProvider } from '@/components/auth'
 import { JsonLd } from '@/components/jsonld'
 import { OG_H, OG_SITE_ALT, OG_W } from '@/components/og'
+import { GateSync } from '@/components/gate'
 import { SITE_JSON_LD } from '@/components/shell'
 import { headers } from 'next/headers'
 import { ssrLang } from '@/lib/i18n/server'
@@ -78,6 +79,12 @@ export const metadata = {
    * 2026-08-29 从布尔升格成身份种子(有票据才认人,匿名零开销):二级页头像原先要等
    * /api/users/me,切页先画占位点再换字母(Frank「来回闪」实拍),SSR 首帧直接带字母。
  *
+ * 2026-10-03 付费闭环批 A1:SessionProvider 里、`<main>` 之前挂一个无界面的 GateSync(访客向导草稿补交):
+ * Google 整页登录回跳到哪一页都补交得上;排在 `<main>` 前,它的挂载 effect 先于页面里的
+ * 「首访引导自动弹」那一台跑,记下「弹过了」后职位板不会紧接着再弹六步建档。
+ * 2026-10-04 进站即弹:同一个 GateSync 顺带弹进站向导(未登录一进来就弹,例外表在 lib/guest),挂载点不变。
+ * 同日访客四题改版:GateSync 随访客向导自 profile 桶迁入 gate 桶,改从 gate 桶取,挂载点不变。
+ *
  * @param props children = 各路由的页面。
  * @returns 整份文档。
  */
@@ -98,6 +105,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       <body>
         <LangProvider initial={lang}>
           <SessionProvider initial={session}>
+            <GateSync />
             <main>{children}</main>
           </SessionProvider>
         </LangProvider>

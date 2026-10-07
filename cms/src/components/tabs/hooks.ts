@@ -38,7 +38,7 @@ export function useTabKeys(x: TabKeysHookIn): TabKeysHookOut {
   }
 
   function onKey(e: React.KeyboardEvent) {
-    const handle = makeTabKeys({ items: x.items, value: x.value, onChange: x.onChange, focusOf })
+    const handle = makeTabKeys({ items: x.items, value: x.value, onChange: x.onChange, focusOf, vertical: x.vertical })
     handle(e)
   }
 

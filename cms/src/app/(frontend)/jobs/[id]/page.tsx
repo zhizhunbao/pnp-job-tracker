@@ -43,7 +43,7 @@ import { dbOf } from '@/lib/db/server'
 import { hasProfile, normalizeProfile, type ProfileJson } from '@/lib/jobs'
 import {
   checkedAt, getPnpReqs, getSsrDims, jobPostingJsonOf, jobsIdMetaRoute, loadCompanyByJobId, loadJdSsrById, loadJobById,
-  loadRelatedJobs,
+  loadJdTrans, loadRelatedJobs,
 } from '@/lib/jobs/server'
 import { getUser, isPro } from '@/lib/quota/server'
 import type { NocCategoryDoc, NocDescDoc, RelatedJobs, SessionUser } from '@/components/jobs'
@@ -124,6 +124,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   })
 
   const jd = await loadJdSsrById({ db, id })
+  const jdTrans = await loadJdTrans({ db, id })
   const company = await loadCompanyByJobId({ db, jobId: id })
   const ssrDims = await getSsrDims(db)
   const pnpReqs = await getPnpReqs(db)
@@ -135,7 +136,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         <Header loggedIn={user != null} />
         <Job job={job} plan={plan}
           dims={{ nocDesc: toNocDescList(nocDescDocs), nocCategories: toCatLabelList(nocCategoryDocs) }}
-          related={related} updatedAt={updatedAt} jdText={jd.text} jdFormatted={jd.formatted} company={company}
+          related={related} updatedAt={updatedAt} jdText={jd.text} jdFormatted={jd.formatted} jdTrans={jdTrans} company={company}
           imm={{ pnp: boardPnpOf(ssrDims), dims: jobImmDimsOf(ssrDims), wageLow: wageLowAppliesOf({ job, reqs: pnpReqs }) }} />
         <Footer />
       </Frame>

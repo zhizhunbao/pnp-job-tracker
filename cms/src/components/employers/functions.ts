@@ -8,6 +8,7 @@
  * 算好挂到展示行上**(先例:callbacks 节 RankedBlock 的 cost),单元格组件退成顶层哑组件。
  * 依赖方向:本文件 → 各单元格组件(单向;它们只认 constants/types/css 与通用组件域,不回引本文件
  * —— 否则 import/no-cycle 当场红)。
+ * 2026-10-04 收口审查:筛选手柄外多一层访客闸(makeGatedPick),弹框层多筛选访客向导的开关与注册完两只手柄。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -92,7 +93,8 @@ import type {
   CompareCellRowIn, CompareCellRowsIn, CompareDemoRow, CompareDim, CompareDimsIn, CompareMatchParts, CompareNamesIn,
   CompareProvParts, CompareRow, DiffVariant, DimValueIn,
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
-  EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
+  EmpSortState, EntryToggleIn, FilterGateDoneIn, FilterGateFlagIn, FilterPickIn, FiltersIn, FoldToggleIn, GatedPickIn,
+  HeadSortFn,
   ColKeysIn, CookieJarLike, EeTextIn,
   CategoryOptsIn, PickedIn,
   AliasesJson, AliasPatch, AliasPollKeysIn, LoadAliasPatchIn, PatchedAliasIn,
@@ -755,7 +757,7 @@ export function pickWordsOf(x: PickWordsIn): EmpPickWords {
  * @returns 类名。
  */
 function actBtnClsOf(): string {
-  return btnClsOf({ kind: MINI_BTN_KIND, sm: false, lg: false, active: false, busy: false, className: null })
+  return btnClsOf({ kind: MINI_BTN_KIND, sm: false, lg: false, xl: false, active: false, busy: false, className: null })
 }
 
 /**
@@ -2218,6 +2220,26 @@ export function makeLmiaPick(x: EntryToggleIn): PickFn {
 }
 
 /**
+ * 造过访客闸的筛选手柄(2026-10-04 收口审查,设计稿 10-04「关掉后…开职位弹框、筛选、投递、收藏一律再弹」;
+ * 照职位板 makeGatedSet 的形):访客(分层态未登录、本页也没在访客向导里登录过)动筛选 / 搜索时不调原手柄(不落格、
+ * 不记埋点)、改开筛选那一路的访客向导;登录了照调。判在调的那一刻做(向导里注册完、软刷没回来时这一下就该放行)。
+ * 板内自己的写口(首屏预选本省、搜索防抖落词、清除筛选)不经它,照旧直写。
+ *
+ * @param x 原手柄与访客闸。
+ * @returns 过闸的手柄。
+ */
+export function makeGatedPick(x: GatedPickIn): PickFn {
+  function gatedPick(v: string): void {
+    if (x.gate.loggedIn === false && x.gate.signedIn() === false) {
+      x.gate.onGate()
+      return
+    }
+    x.pick(v)
+  }
+  return gatedPick
+}
+
+/**
  * 造开合「更多筛选」抽屉的手柄。
  *
  * @param x 抽屉现态与落格。
@@ -2468,6 +2490,35 @@ export function makePushCoLayer(stack: PeekStackRef): OpenCompanyFn {
     stack.push({ kind: LAYER_CO, co: peek })
   }
   return pushCoLayer
+}
+
+/**
+ * 造筛选那一路访客向导的开 / 关手柄(2026-10-04 收口审查):开的那只交给过闸的筛选 / 搜索手柄,
+ * 关的那只给 × / Esc / 点遮罩 —— 关掉那一下筛选作罢、值不动(手柄过闸时就没落格)。
+ *
+ * @param x 向导开合的落格与落成开还是关。
+ * @returns 开 / 关手柄。
+ */
+export function makeFilterGateFlag(x: FilterGateFlagIn): ClickFn {
+  function setFilterGate(): void {
+    x.setOpen(x.open)
+  }
+  return setFilterGate
+}
+
+/**
+ * 筛选那一路的访客向导注册完之后(2026-10-04 收口审查;照职位板 makeFilterGateDone):收起向导、软刷让页面拿到登录态。
+ * 那一下筛选不替他补 —— 向导一路走完他未必还想要那一格,登录后筛选框随手可点。
+ *
+ * @param x 收起与软刷。
+ * @returns 注册完的回调。
+ */
+export function makeFilterGateDone(x: FilterGateDoneIn): ClickFn {
+  function doneFilterGate(): void {
+    x.close()
+    x.refresh()
+  }
+  return doneFilterGate
 }
 
 /**

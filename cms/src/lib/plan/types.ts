@@ -989,12 +989,12 @@ export type TlEvent = {
   prov: string
 
   /**
-   * 抽选 / 省通告 / 政策公告(news)。
+   * 抽选 / 省通告(2026-10-03 政策公告那一路撤出时间线,改在「最新公告」页签看)。
    */
-  kind: 'draw' | 'notice' | 'policy'
+  kind: 'draw' | 'notice'
 
   /**
-   * draw=流名;policy=新闻标题。
+   * draw=流名。
    */
   title: string
 
@@ -1014,14 +1014,9 @@ export type TlEvent = {
   invitations: number | null
 
   /**
-   * notice/policy 摘要。
+   * notice 摘要。
    */
   note: string
-
-  /**
-   * policy:AI 重要度 1-5;null = 未评。
-   */
-  importance: number | null
 
   /**
    * 外链(官方来源)或 ''。
@@ -1029,12 +1024,7 @@ export type TlEvent = {
   url: string
 
   /**
-   * policy:站内 /news/[slug]。
-   */
-  slug: string
-
-  /**
-   * 抽选的人数口径(pnp_draws.unit:invitation / selection / application;新闻给 '';2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」)。
+   * 抽选的人数口径(pnp_draws.unit:invitation / selection / application;2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」)。
    */
   unit: string
 }

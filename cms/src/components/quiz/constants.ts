@@ -3,6 +3,8 @@
  * 三问落档与职业查询的接口地址与报文词、进度文案表,以及版式与阈值档。
  * 2026-08-28 换装批自 QuizUI.tsx / OccPicker.tsx / ProvincePicker.tsx / EntryQuiz.tsx
  * 的散值收拢挂注释(值一个不改)。
+ * 2026-10-05 访客第 3 题改成与第 2 题同一副左右两栏(Frank「也改成左右 两部分吗?」「改啊」):多大号档两栏的几样
+ * (左栏「推荐」的键、两栏 id 前缀、已选一行的标签档、× 读屏名与加载中两条词条键);大号胶囊搜索在途的占位颗数随那一屏撤。
  *
  * @author Frank
  * @time 2026-08-28 04:10:00
@@ -273,6 +275,18 @@ export const URL_QUIZ_COUNTS = '/api/quiz?counts='
 export const URL_QUIZ_TOP = '/api/quiz?top=24'
 
 /**
+ * 按专业取在招最多的职业的地址头(拼上编码后的 CIP class 码,再拼 URL_QUIZ_MAJOR_N;2026-10-04 A2,访客第 3 题):
+ * 接口是 lib/quiz 的 ?major= 分支(专业 → 本站大类 → 在招最多的职业),行形与 ?top= 同。选职业控件给了专业码就走它,
+ * 没给照旧 URL_QUIZ_TOP。
+ */
+export const URL_QUIZ_MAJOR = '/api/quiz?major='
+
+/**
+ * 按专业取职业的条数尾巴(与热门榜同 24 格 —— 占位骨架的格子数不变,清单到了原位替换)。
+ */
+export const URL_QUIZ_MAJOR_N = '&n=24'
+
+/**
  * 按大分类取职业清单的地址头(拼上编码后的分类 slug;接口硬顶 60 条,不分页)。
  */
 export const URL_QUIZ_BROAD = '/api/quiz?broad='
@@ -482,6 +496,51 @@ export const MARK_CLOSE = '×'
  * 搜索在途时结果计数行上的省略号。
  */
 export const MARK_ELLIPSIS = '…'
+
+/**
+ * 大号档(访客第 3 题)左栏第一项「推荐」的键(2026-10-05 Frank「也改成左右 两部分吗?」「改啊」:访客第 3 题改成与第 2 题
+ * 同一副左右两栏)。分类状态里热门那一屏记空串,左栏的键要进 aria id、不能是空串,于是另起一个;大类的键是中文大类名,撞不上。
+ * (原在此处的 OCC_LG_HIT_SKEL_N —— 大号档搜索在途先占几颗胶囊位 —— 同日随大号胶囊那一屏撤:在途改摆 loading 桶那一行,
+ * 与第 2 题专业搜索同一条规矩。)
+ */
+export const OCC_CAT_REC = 'rec'
+
+/**
+ * 大号档两栏的 id 前缀(tabs 桶 RailTabs 的页签与面板 id 由它起头;2026-10-05「改啊」)。
+ */
+export const OCC_RAIL_ID = 'occ-rail'
+
+/**
+ * 大号档已选一行的标签档(tag 桶 Tag 的 pick 已选档,与第 2 题已选专业同一枚;本域自抄,域之间不互取常量;2026-10-05「改啊」)。
+ */
+export const TAG_V_PICK = 'pick'
+
+/**
+ * 大号档已选一行 × 摘除钮的读屏名词条(「移除 {name}」,第 2 题已选专业、首访向导已选职业同一条;2026-10-05「改啊」)。
+ */
+export const OCC_DEL_KEY = 'ob.tagDel'
+
+/**
+ * 大号档已选一行行首灰字小标的词条(「已选 {n} 个」;与常规档底部汇总同一条,职业没有上限)。
+ * 2026-10-05 Frank「这部分要不要加一个 已选 的标识」立。
+ */
+export const OCC_PICKED_KEY = 'occ.selected'
+
+/**
+ * 大号档大类那一屏首行「全选」的词条(2026-10-05 Frank「有可能这个大类下 我想全选」;「推荐」那一屏跨大类混排,不出)。
+ * 同日 Frank「推荐也要加全选」:「推荐」那一屏也出。
+ */
+export const OCC_ALL_KEY = 'occ.all'
+
+/**
+ * 大号档已选一行 × 的读屏名在名字还没拉回来时填进 {name} 的泛称词条(「移除 职业」;代码不裸奔,不报五位码;2026-10-05 收口)。
+ */
+export const OCC_WORD_KEY = 'occ.word'
+
+/**
+ * 大号档右边那块与单列命中在途时那一行的字(loading 桶 Loading;与第 2 题同一条「加载中…」;2026-10-05「改啊」)。
+ */
+export const OCC_LOADING_KEY = 'act.loadingText'
 
 /**
  * 表单内的辅助钮明确不提交。

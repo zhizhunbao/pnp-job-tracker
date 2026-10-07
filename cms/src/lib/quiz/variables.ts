@@ -84,6 +84,11 @@ export const CACHE: QuizCache = {
   broadBy: new Map(),
 
   /**
+   * 专业职业清单:码 | 条数 → 缓存格。
+   */
+  majorBy: new Map(),
+
+  /**
    * 装配好的题库(getFields 首次调用时填)。
    */
   fields: null,

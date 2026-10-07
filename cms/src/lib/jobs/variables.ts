@@ -81,16 +81,6 @@ export const CACHE: JobsCache = {
   jdFailed: new Map(),
 
   /**
-   * 投递邮箱正缓存。
-   */
-  applyMail: new Map(),
-
-  /**
-   * 投递抓取失败负缓存。
-   */
-  applyFail: new Map(),
-
-  /**
    * jdformat 五节整理的同岗单飞。
    */
   jdFormatInflight: new Map(),

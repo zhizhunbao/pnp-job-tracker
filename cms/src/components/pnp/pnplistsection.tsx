@@ -108,7 +108,7 @@ export function PnpListSection({
       {cards}
       {quota != null && <PnpQuotaCard spec={quota} />}
       {stepsCard != null && (
-        <PnpStepsCard spec={stepsCard} t={p.t} draws={drawCard} open={p.drawOpen} toggleOf={p.drawToggleOf} />
+        <PnpStepsCard spec={stepsCard} t={p.t} draws={drawCard} open={p.drawOpen} toggleOf={p.drawToggleOf} mark />
       )}
       {stepsCard == null && drawCard != null && (
         <PnpDrawGroups t={p.t} card={drawCard} open={p.drawOpen} toggleOf={p.drawToggleOf} />

@@ -2218,13 +2218,28 @@ export const JD_LIMIT_PREFIX = 'jd:'
 
 /**
  * 投递方式懒查 IP 日限的默认值(env APPLYHOW_DAILY 可覆盖)。
+ * 2026-10-04 改判:只给登录用户,改成每个用户每天的上限,默认 60 → 200(Frank「照这样改」)。
  */
-export const AH_DAILY_DEFAULT = 60
+export const AH_DAILY_DEFAULT = 200
 
 /**
  * 投递方式限额键前缀。
+ * 2026-10-04 起键 = 前缀 + 用户号(原先 + IP)。
  */
 export const AH_LIMIT_PREFIX = 'ah:'
+
+/**
+ * 投递方式每 IP 限额键前缀(键 = 前缀 + IP;与每用户那一位的 'ah:' 分开,同一个计数桶表里不撞键)。
+ * 2026-10-04 收口审查:每用户那一位换掉了原先的每 IP 位,可注册不设门槛、不限频,同一 IP 轮换新号就能绕开日限 ——
+ * 每 IP 这一位补回来与每用户那一位同一次 checkLimit 判(任一位满就挡)。
+ */
+export const AH_IP_LIMIT_PREFIX = 'ahip:'
+
+/**
+ * 投递方式每 IP 每天的上限(env 不覆盖)。
+ * 2026-10-04 收口审查定 1000 = 每用户日限 200 的 5 倍:直播间观众多走运营商 NAT 共用出口 IP,压太紧会误伤真人。
+ */
+export const AH_IP_DAILY = 1000
 
 /**
  * 五位职业码形状。
@@ -2245,175 +2260,6 @@ export const DIMS_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3
  * 只认 Job Bank 职位页(白名单防 SSRF;其他来源的邮箱走前端对 jobtext 的正则)。
  */
 export const JB_POSTING_RE = /^https:\/\/www\.jobbank\.gc\.ca\/jobsearch\/jobposting\/\d+([/?#]|$)/
-
-/**
- * 缓存键规范化:掐掉 query 与锚。
- */
-export const URL_CUT_RE = /[?#]/
-
-/**
- * 投递方式抓取失败负缓存的时长(到期重试;有没有邮箱未知才进这里)。
- */
-export const APPLY_NEG_TTL_MS = 600000
-
-/**
- * 邮箱正缓存条数上限(满了整清;空串=确认无邮箱也缓存)。
- */
-export const APPLY_CACHE_MAX = 5000
-
-/**
- * 失败负缓存条数上限。
- */
-export const APPLY_FAIL_MAX = 500
-
-/**
- * 从 partial 响应里只看 How to apply 块附近这么多字符。
- */
-export const APPLY_SLICE_LEN = 4000
-
-/**
- * 对外抓取的单跳超时(ms)。
- */
-export const APPLY_TIMEOUT_MS = 8000
-
-/**
- * Accept:任意(JSF partial 响应)。
- */
-export const ACCEPT_ANY = '*/*'
-
-/**
- * Job Bank 站源(partial 提交的 action 拼在它后面)。
- */
-export const JB_ORIGIN = 'https://www.jobbank.gc.ca'
-
-/**
- * 投递表单与 action 抽取(JSF 页面结构)。
- *
- * 捕获组 `action`:表单 action 路径(实体编码态,拼到 JB_ORIGIN 后面前先还原 &amp;)。
- */
-export const SEEKER_ACTION_RE = /<form id="seekeractivity"[^>]*action="(?<action>[^"]+)"/
-
-/**
- * 表单里岗位 id 的抽取。
- *
- * 捕获组 `jid`:岗位 id(纯数字,partial 提交时填进 jsjobid 与 jobid 两格)。
- */
-export const SEEKER_JOBID_RE = /id="seekeractivity:jobid"[^>]*value="(?<jid>\d+)"/
-
-/**
- * action 里的 HTML 实体还原(&amp; → &)。
- */
-export const AMP_ENT_RE = /&amp;/g
-
-/**
- * 还原后的连接符。
- */
-export const AMP = '&'
-
-/**
- * Set-Cookie 里值段的切分符。
- */
-export const COOKIE_CUT = ';'
-
-/**
- * 多条 cookie 回带时的连接符。
- */
-export const COOKIE_JOIN = '; '
-
-/**
- * JSF partial 提交的固定字段(动态的 jsJobId / seekeractivity:jobid 由函数补)。
- */
-export const JSF_FORM_BASE: Record<string, string> = {
-  /**
-   * partial 提交标记。
-   */
-  'jakarta.faces.partial.ajax': 'true',
-
-  /**
-   * 提交源组件。
-   */
-  'jakarta.faces.source': 'seekeractivity',
-
-  /**
-   * 参与执行的组件。
-   */
-  'jakarta.faces.partial.execute': 'seekeractivity:jobid',
-
-  /**
-   * 要求整页重渲(邮箱块才会出现在响应里)。
-   */
-  'jakarta.faces.partial.render': '@all',
-
-  /**
-   * 行为事件名。
-   */
-  'jakarta.faces.behavior.event': 'action',
-
-  /**
-   * 按的是「立即申请」。
-   */
-  action: 'applynowbutton',
-
-  /**
-   * JSF 表单提交标记。
-   */
-  seekeractivity_SUBMIT: '1',
-
-  /**
-   * 无状态视图(不用回带 ViewState)。
-   */
-  'jakarta.faces.ViewState': 'stateless',
-}
-
-/**
- * partial 提交里岗位 id 的两个动态键之一(顶层)。
- */
-export const JSF_KEY_JSJOBID = 'jsJobId'
-
-/**
- * partial 提交里岗位 id 的两个动态键之二(组件域)。
- */
-export const JSF_KEY_JOBID = 'seekeractivity:jobid'
-
-/**
- * JSF partial 请求头名。
- */
-export const FACES_REQUEST_HDR = 'Faces-Request'
-
-/**
- * JSF partial 请求头值。
- */
-export const FACES_REQUEST_VAL = 'partial/ajax'
-
-/**
- * 表单提交的 Content-Type。
- */
-export const FORM_CONTENT_TYPE = 'application/x-www-form-urlencoded; charset=UTF-8'
-
-/**
- * 邮箱抽取。
- */
-export const MAIL_RE = /[\w.+-]+@[\w-]+\.[\w.-]+/g
-
-/**
- * 邮箱域名切分符。
- */
-export const MAIL_AT = '@'
-
-/**
- * 域名含它 = Job Bank 自己的地址,跳过。
- */
-export const MAIL_SKIP_WORD = 'jobbank'
-
-/**
- * 域名以它们结尾 = 政府地址,跳过。
- */
-export const MAIL_SKIP_SUFFIXES: string[] = ['gc.ca', 'canada.ca']
-
-/**
- * How to apply 块定位(只在它附近找邮箱,别把页脚客服邮箱当投递邮箱)。
- */
-export const HOW_APPLY_RE = /how to apply/i
 
 /**
  * JD 整理版必须齐全的五节标记（校验用；口径主人是 prompts 的 JD_FORMAT_PROMPT_HEAD）。
@@ -2651,12 +2497,6 @@ export const TITLE_NONE = ''
  * 前端只需要知道「这次没有邮箱可显示」,是哪一种已经写在状态码与日志里。
  */
 export const MAIL_NONE = ''
-
-/**
- * 邮箱切不出域名段(字符串里没有 at 符号的后半截)。
- * 域名只用来对黑名单后缀做排除,取不到就等于不排除 —— 空串保证那几条 endsWith 全不命中。
- */
-export const MAIL_DOMAIN_NONE = ''
 
 /**
  * 官方通道名不出译注:界面本来就是英文(译注是给中文、韩文界面加的小注),

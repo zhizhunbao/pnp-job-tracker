@@ -754,6 +754,12 @@ export const NOC_DESC_NONE = []
 export const LAYER_CO = 'company'
 
 /**
+ * 访客向导的由头:未登录动雇主板的筛选 / 搜索(gate 桶 GateWizard 的 intent,与它同值同义,本域自抄;
+ * 2026-10-04 收口审查,设计稿 10-04「关掉后…筛选…一律再弹」,照职位板同名常量)。
+ */
+export const GATE_INTENT_FILTER = 'filter'
+
+/**
  * 雇主板操作列的宽(两只 mini 钮并排;2026-09-19「看公司」换成「官网」,仍是两只,宽不动)。
  */
 export const W_POOL_ACT = 14

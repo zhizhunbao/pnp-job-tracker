@@ -36,6 +36,8 @@
  * normName 撤出桶门(唯一外部消费者 advisor 的按名字完全相等命中行随之删,域内照用)。
  * 同日 Frank「PNP 弹框 里面的 AIP 部分 提出来,放到 AIP 弹框」:桶门加一名 AipSection(AIP 弹框的通道卡与 AIP 抽选卡,自省提名弹框搬来)。
  * 同日三弹框统一:AIP 弹框整块收进 AipSection(判定卡撤、清单卡挪进来),桶门撤 AipEmpCard、aipBlockOf、aipVerdictOf 三名(外部已无消费者)。
+ * 2026-10-03 资讯页签四分(Frank「申请步骤应该是另一个选项卡吧」):桶门加一名 PnpProvSteps —— 一省全部现行通道的申请步骤卡,
+ * 与弹框同一张步骤卡、同一份懒取整表;PnpProvStreams 随之只出门槛卡。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
@@ -46,6 +48,7 @@ export { MeansForMe } from './meansforme'
 export { PnpListSection } from './pnplistsection'
 export { PnpModal } from './pnpmodal'
 export { PnpProvStreams } from './pnpprovstreams'
+export { PnpProvSteps } from './pnpprovsteps'
 export { SponsorLeadCard } from './sponsorleadcard'
 export { STREAM_REFORM } from './constants'
 export { VerdictPill } from './verdictpill'

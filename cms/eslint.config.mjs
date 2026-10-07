@@ -21,11 +21,16 @@ const BARRELS = ['agent', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', '
   'funnel', 'location', 'noc', 'rankings', 'mail', 'lmia', 'track', 'profile', 'auth', 'stripe',
   // 2026-08-23 log/error 自单文件升目录(Frank「log 和 error 呢」),既有 '../log' import 经桶续命。
   'log', 'error', 'news', 'mart', 'seo', 'alerts',
+  // 2026-10-06 立 myjobs(我的岗位:「我的求职」「我的收藏」两张表的 /api/myjobs/applied、/api/myjobs/saved;
+  // B2 站内投递上线后我的求职改读 applications)。
+  'myjobs',
   // 2026-09-05 批二立 guide 替 consult;批三 consult 目录已删,它那行一起撤。
   // 2026-09-28 advisor 域删(Frank「接口也删了吧」:/api/advisor 前端零调用方),它那一名与下面 server 门三条一起撤。
   'guide',
   // 2026-10-01 立 bots(挡非搜索类爬虫,index 给页面门,边缘运行时)与 traffic(出站流量记账,只有 server 门给启动钩子)。
-  'bots', 'traffic']
+  'bots', 'traffic',
+  // 2026-10-04 立 majors(CIP 2021 专业表:访客四题第 2 题取数,/api/majors;index 给行形状与纯筛法,server 给取数与路由芯)。
+  'majors']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 // jobs / points / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
 // 理由见 lib/jobs/index.ts 顶上那段:混着 payload 依赖的桶会把连接池打进浏览器包)。
@@ -53,12 +58,14 @@ const ALLOW = [
   '!**/lib/alerts/server', '!./alerts/server', '!../alerts/server',
   '!**/lib/funnel/server', '!./funnel/server', '!../funnel/server',
   '!**/lib/resume/server', '!./resume/server', '!../resume/server',
+  '!**/lib/myjobs/server', '!./myjobs/server', '!../myjobs/server',
   '!**/lib/news/server', '!./news/server', '!../news/server',
   '!**/lib/noc/server', '!./noc/server', '!../noc/server',
   '!**/lib/mart/server', '!./mart/server', '!../mart/server',
   '!**/lib/seo/server', '!./seo/server', '!../seo/server',
   '!**/lib/guide/server', '!./guide/server', '!../guide/server',
   '!**/lib/traffic/server', '!./traffic/server', '!../traffic/server',
+  '!**/lib/majors/server', '!./majors/server', '!../majors/server',
 ]
 const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])
 const barrelOnly = (group) => ({
@@ -2788,7 +2795,8 @@ const eslintConfig = [
   },
   {
     // ── 组件域闸 B:常量表形制(Frank「json 也格式化,换行 对齐」):逐键一行 ──
-    files: ['src/components/{footer,modal,title,shell,tag,chip,row,pager,colors,button,notice,grid,tabs,card,banner,auth,i18n,header,table,icons,time,input,search,select,companies,employers}/constants.ts'],
+    // 2026-10-05 加 majors(专业选择器自 gate 桶拆出立域,新桶生而合规)。
+    files: ['src/components/{footer,modal,title,shell,tag,chip,row,pager,colors,button,notice,grid,tabs,card,banner,auth,i18n,header,table,icons,time,input,search,select,companies,employers,majors}/constants.ts'],
     plugins: { '@stylistic': stylistic },
     rules: {
       '@stylistic/object-curly-newline': ['error', { ObjectExpression: { multiline: true, minProperties: 3 } }],

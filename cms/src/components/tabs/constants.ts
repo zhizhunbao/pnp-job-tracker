@@ -22,6 +22,21 @@ export const KEY_RIGHT = 'ArrowRight'
 export const KEY_LEFT = 'ArrowLeft'
 
 /**
+ * 键盘导航:下箭头键的平台键名(竖排左栏 RailTabs 用;2026-10-05 立)。
+ */
+export const KEY_DOWN = 'ArrowDown'
+
+/**
+ * 键盘导航:上箭头键的平台键名(竖排左栏 RailTabs 用;2026-10-05 立)。
+ */
+export const KEY_UP = 'ArrowUp'
+
+/**
+ * 竖排页签条的 aria-orientation 值(WAI-ARIA 定死的词;读屏据此告诉用户用上下键切换)。
+ */
+export const ORIENT_VERTICAL = 'vertical'
+
+/**
  * 键盘导航:Home 键的平台键名(跳第一个页签)。
  */
 export const KEY_HOME = 'Home'

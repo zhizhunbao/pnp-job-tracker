@@ -28,11 +28,12 @@ import css from './auth.module.css'
  * (React 可选属性),那几段 if 干的是**把 undefined 收成 null** ——
  * 宪法「语言接缝在拿到的那一行当场收」说的正是它。
  * 2026-08-25 折叠空转判空时误判过一次,tsc 当场拦下(TS2322),记在这免得再折。
+ * 2026-10-03 付费闭环批 A1 加 keepPage(访客向导注册屏):同上,`boolean | undefined` 当场收成 boolean。
  *
  * @param props 完成回调与入口参数(见 AuthFormIn 逐格注释)。
  * @returns 表单。
  */
-export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }: AuthFormIn) {
+export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero, keepPage }: AuthFormIn) {
   let init: AuthMode = MODE_LOGIN
   if (initialMode != null) {
     init = initialMode
@@ -49,7 +50,11 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
   if (hero != null) {
     heroIn = hero
   }
-  const f = useAuthForm({ t, onDone, init, resetToken: token, returnTo: rt })
+  let keep = false
+  if (keepPage === true) {
+    keep = true
+  }
+  const f = useAuthForm({ t, onDone, init, resetToken: token, returnTo: rt, keepPage: keep })
 
   return (
     <div>

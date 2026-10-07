@@ -1810,6 +1810,17 @@ export type ActModalPanel = {
   freeLeft: number | null
 
   /**
+   * 这一层先弹访客向导(2026-10-03 付费闭环批 A1:未登录、站内看过的不同职位够 3 个);注册完就落 false,弹框照常出。
+   * 2026-10-04 起未登录就弹,不再数。
+   */
+  gate: boolean
+
+  /**
+   * 访客向导里注册成功后的回调:收起向导、亮出这一岗,并软刷让页面拿到登录态。
+   */
+  onGateDone: () => void
+
+  /**
    * 剩余次数落格。
    */
   onFreeLeft: (n: number) => void
@@ -2048,4 +2059,19 @@ export type PeekKeyIn = {
    * 它在栈里的位置(从下往上数,0 起)。
    */
   at: number
+}
+
+/**
+ * useActModal 的入参(2026-10-03 付费闭环批 A1 起要这一岗与分层态:记浏览、判起弹)。
+ */
+export type ActModalHookIn = {
+  /**
+   * 这一岗。
+   */
+  job: AdvisorJob
+
+  /**
+   * 分层态(只读登录了没)。
+   */
+  plan: AdvisorPlan
 }

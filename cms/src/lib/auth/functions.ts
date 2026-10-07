@@ -16,7 +16,7 @@ import {
   BEARER_PREFIX, CALLBACK_PATH, CONSENT_STATIC, COOKIE_PREFIX_DEFAULT, COOKIE_RE_HEAD, COOKIE_RE_TAIL, EMAIL_NONE,
   FLOW_COOKIE_TAIL, FORM_MIME, GOOGLE_AUTH_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_TOKEN_URL,
   GOOGLE_USERINFO_URL, GRANT_AUTH_CODE, HEX_BYTE_LEN, HEX_PAD, HEX_RADIX, HEX_SEP, HTTPONLY_TAIL, HTTPS_PREFIX,
-  KV_EQ, K_FAIL, K_OK, LI_PAIR, LOG_CONSENT, LOG_EMAIL, LOG_ENV_MISSING, LOG_LOGIN, LOG_NO_CODE, LOG_STATE,
+  KV_EQ, K_FAIL, K_OK, LI_PAIR, LOG_CONSENT, LOG_EMAIL, LOG_ENV_MISSING, LOG_LOGIN, LOG_NO_CODE, LOG_OK_NEW, LOG_OK_RETURNING, LOG_STATE,
   LOG_TOKEN, METHOD_POST, NAME_LEN_MAX, PARAM_CLIENT_ID, PARAM_REDIRECT, PARAM_STATE, PASSWORD_BYTE_LEN,
   PROVIDER_GOOGLE, RETURN_RE, ROOT_PATH, SECOND_MS, SECURE_TAIL, SECURE_TAIL_NONE,
   SESSION_COOKIE_TAIL, SITE, SSR_TOKEN_COOKIE, TOKEN_EXPIRATION_DEFAULT_S, TOKEN_NAME_TAIL, USERS
@@ -159,6 +159,7 @@ function toHex(b: number): string {
  * 登录回调的整条判定链：参数闸 → state 防 CSRF → 换 token → userinfo 红线 →
  * 关联/创建并签会话 → 校验回跳路径。每一步失败都在这里留痕（AUTH_LOG），
  * 路由只按 kind 拼响应 —— HTTP 芯里不再有判定（闸 routes-shape 的由来）。
+ * 2026-10-05 Frank「加 auth 吧」:成功也留一行(新号 / 老号,不记邮箱),dev 窗口里每次登录成败都看得见。
  *
  * @param input 路由取好的五样原料。
  * @returns 成败联合产物。
@@ -200,6 +201,11 @@ export async function googleCallback(input: GoogleCallbackIn): CallbackOut {
     }
     log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_LOGIN + why })
     return { kind: K_FAIL }
+  }
+  if (session.created) {
+    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.ok + LOG_OK_NEW })
+  } else {
+    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.ok + LOG_OK_RETURNING })
   }
   return { kind: K_OK, session: session, rt: safeReturnPath(input.rtRaw) }
 }

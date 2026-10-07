@@ -7,6 +7,8 @@
  * 同一个头像两种行为(Frank 实拍),收敛成一个组件。
  * Pro 钮不进 header(#65,Frank:「没有意义」)—— 升级入口 = 横幅 / 升级卡 / 用户菜单 / 定价页,
  * 四处都在。
+ * 2026-10-04 Frank「升级 Pro 这个删了,放到 我的 模块里,加一个我的订阅」:用户菜单那一处撤(挪进账户页「我的订阅」),
+ * 本区定价框连同 pricing 桶的引用一并撤。
  * 2026-08-28 换装批自 Jobs.tsx 提出成文件。
  *
  * @author Frank
@@ -15,7 +17,6 @@
 import { AccountMenu, AuthModal } from '@/components/auth'
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { PricingModal } from '@/components/pricing'
 import { BTN_GHOST, BTN_PRIMARY } from './constants'
 import { someOf } from './functions'
 import { useAccountArea } from './hooks'
@@ -37,8 +38,7 @@ export function AccountArea({ t, plan }: AccountAreaIn) {
           displayName={a.displayName}
           avatar={a.avatar}
           isPro={plan.isPro}
-          proUntil={a.proUntil}
-          onPricing={a.onPricing} />
+          proUntil={a.proUntil} />
       )}
       {plan.loggedIn === false && (
         <>
@@ -49,9 +49,6 @@ export function AccountArea({ t, plan }: AccountAreaIn) {
       {a.auth !== false && (
         <AuthModal t={t} mode={a.auth} resetToken={someOf(a.resetTok)} onClose={a.onAuthClose}
           onDone={a.onAuthDone} />
-      )}
-      {a.pricing && (
-        <PricingModal t={t} loggedIn={plan.loggedIn} pro={plan.isPro} onClose={a.onPricingClose} />
       )}
     </span>
   )

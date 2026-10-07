@@ -4,6 +4,8 @@
  * 与 Tag 的分界:Chip 是可点的筛选,Tag 说「这是什么状态」不可点。
  * 2026-08-24 自 ui/Chip.tsx 按组件域形制迁入(样式迁 module.css,
  * chipStyle 留 functions 当过渡导出)。
+ * 2026-10-04 选中态挂 aria-pressed(访客四题改版收口:读屏报得出选没选;<a> 形态不挂,见 Button)。
+ * 2026-10-05 props 的大号档 lg 撤(再没有 <Chip lg> 的消费者,见 types.ts 的 ChipIn 头注);给 chipClsOf 照旧递 lg: false。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
@@ -26,7 +28,8 @@ export function Chip({ active = false, hot = false, onClick, href, title, classN
   }
   return (
     <Button kind={PLAIN_BTN_KIND}
-      className={chipClsOf({ active, hot, extra })}
+      className={chipClsOf({ active, hot, lg: false, extra })}
+      pressed={active}
       onClick={onClick}
       href={href}
       title={title}>{children}</Button>

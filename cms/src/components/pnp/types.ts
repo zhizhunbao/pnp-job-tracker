@@ -1604,6 +1604,11 @@ export type GateCardSpec = {
    * 一行门槛都没有时卡上那句(资讯页「本站未收录门槛」,2026-09-30);'' = 有行(弹框两种门槛卡恒为 '')。
    */
   empty: string
+
+  /**
+   * 标题行的互跳钮:资讯页「通道」页签去「申请步骤」页签同一省、同一条通道的卡(2026-10-04);这条通道没登步骤、弹框里给 null 不出。
+   */
+  jump: SourceLink | null
 }
 
 /**
@@ -2366,6 +2371,12 @@ export type EeCmpGroupIn = {
    * 组头排法:省提名抽选卡传 true(合计在原日期格、日期落最下一行;2026-09-30 Frank 选「互换」),EE 分数线卡传 false。
    */
   dateBelow: boolean
+
+  /**
+   * 命中的组(g.hit)标不标浅蓝底:弹框与 EE 卡传 true;资讯页「申请步骤」页签的步骤卡传 false
+   * (2026-10-04 Frank 勾「去掉」:卡标题已经是这条通道,收起时只露本通道那一组,蓝底什么也没标)。
+   */
+  mark: boolean
 }
 
 /**
@@ -3772,6 +3783,36 @@ export type PnpDrawGroupsIn = {
 }
 
 /**
+ * DrawGroupsBody(抽选表的组区)的 props(2026-10-04 自 PnpDrawGroupsIn 分出:多一格 mark,抽选卡恒传 true)。
+ */
+export type DrawGroupsBodyIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这张抽选表。
+   */
+  card: DrawCard
+
+  /**
+   * 展开着的组(通道名;「查看全省 N 组」那个开关的键是卡上的 allKey)。
+   */
+  open: Set<string>
+
+  /**
+   * 组的开合手柄工厂。
+   */
+  toggleOf: ToggleOfFn
+
+  /**
+   * 本岗(本通道)那组标不标浅蓝底(口径见 EeCmpGroupIn.mark)。
+   */
+  mark: boolean
+}
+
+/**
  * PnpBlockCard(本岗不满足的门槛)的 props。
  */
 export type PnpBlockCardIn = {
@@ -3926,6 +3967,11 @@ export type DrawsHeadIn = {
    * 官方来源;null = 不出。
    */
   source: SourceLink | null
+
+  /**
+   * 站内互跳钮(资讯页门槛卡 ↔ 步骤卡,排在来源钮左边;2026-10-04);null = 不出。
+   */
+  jump: SourceLink | null
 }
 
 /**
@@ -4964,6 +5010,11 @@ export type ProvStreamCardIn = {
    * 本省全部门槛行(offer 形态是全省一份)。
    */
   mine: PnpReq[]
+
+  /**
+   * 标题行的互跳钮(去「申请步骤」页签);这条通道没登步骤给 null。
+   */
+  jump: SourceLink | null
 }
 
 /**
@@ -5311,6 +5362,21 @@ export type PnpDataJson = {
  * PnpProvStreams 的 props(2026-09-30 资讯页「通道与门槛」)。
  */
 export type PnpProvStreamsIn = {
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 省码。
+   */
+  province: string
+}
+
+/**
+ * PnpProvSteps 的 props(2026-10-03 资讯页「申请步骤」页签)。
+ */
+export type PnpProvStepsIn = {
   /**
    * 界面语言。
    */
@@ -6690,9 +6756,14 @@ export type StepSpec = {
  */
 export type StepsCardSpec = {
   /**
-   * 卡标题。
+   * 卡标题(弹框写「申请步骤」;资讯页「申请步骤」页签写这条通道的官方英文原名)。
    */
   title: string
+
+  /**
+   * 标题下一行灰字(资讯页「申请步骤」页签写这条通道的界面语言名,同门槛卡;弹框给空串不出)。
+   */
+  sub: string
 
   /**
    * 标题行右端的来源(本岗通道那一页);没有给 null。
@@ -6703,6 +6774,11 @@ export type StepsCardSpec = {
    * 各步。
    */
   steps: StepSpec[]
+
+  /**
+   * 标题行的互跳钮:资讯页「申请步骤」页签回「通道」页签同一省、同一条通道的门槛卡(2026-10-04);弹框给 null 不出。
+   */
+  jump: SourceLink | null
 }
 
 /**
@@ -6924,6 +7000,11 @@ export type PnpStepsCardIn = {
    * 抽选表组的开合手柄工厂。
    */
   toggleOf: ToggleOfFn
+
+  /**
+   * 抽选表里本岗(本通道)那组标不标浅蓝底:弹框传 true,资讯页「申请步骤」页签传 false(口径见 EeCmpGroupIn.mark)。
+   */
+  mark: boolean
 }
 
 /**
@@ -6954,6 +7035,11 @@ export type StepItemIn = {
    * 抽选表组的开合手柄工厂。
    */
   toggleOf: ToggleOfFn
+
+  /**
+   * 抽选表里本岗(本通道)那组标不标浅蓝底(同 PnpStepsCardIn.mark)。
+   */
+  mark: boolean
 }
 
 /**
@@ -7053,6 +7139,7 @@ export type SectorCellIn = {
 
 /**
  * 资讯页「通道与门槛」一条通道的一项(2026-10-02 申请步骤批 2,Frank「弹框要和页面保持一致」):门槛卡与弹框同一个,步骤卡与弹框同一个。
+ * 2026-10-03 资讯页签四分:门槛卡给「通道」页签(PnpProvStreams),步骤卡与抽选表给「申请步骤」页签(PnpProvSteps)。
  */
 export type ProvStreamItem = {
   /**
@@ -7114,6 +7201,46 @@ export type ProvDrawCardIn = {
    * 全国通道对照(省默认通道的抽选组)。
    */
   pathways: PnpPathway[]
+}
+
+/**
+ * jumpOf 的入参(2026-10-04 资讯页门槛卡 ↔ 步骤卡互跳)。
+ */
+export type JumpOfIn = {
+  /**
+   * 钮上的字(不带记号,记号由 jumpOf 补)。
+   */
+  text: string
+
+  /**
+   * 去哪个页签(站内路径)。
+   */
+  base: string
+
+  /**
+   * 带过去的省码。
+   */
+  province: string
+
+  /**
+   * 落地滚到哪条通道的卡(通道编号)。
+   */
+  key: string
+}
+
+/**
+ * applyHashJump 的入参(资讯页落地滚到锚点卡)。
+ */
+export type HashJumpIn = {
+  /**
+   * 整表到了没有。
+   */
+  ready: boolean
+
+  /**
+   * 本省渲出了几张卡(0 = 省还没选上或本省没有卡,先不滚)。
+   */
+  count: number
 }
 
 /**

@@ -11,8 +11,8 @@
 import { cssOf } from '@/components/css'
 import {
   CENTER_DIV, CLS_SEP, DRAG_IGNORE_SEL, EDGE_E, EDGE_N, EDGE_NE, EDGE_NW, EDGE_S, EDGE_SE, EDGE_SW, EDGE_W,
-  EV_POINTERMOVE, EV_POINTERUP, FRAME_SEL, POS_FIXED, POS_MIN, POS_X0, POS_Y0, RESIZE_MIN_H, RESIZE_MIN_W, TEXT_NONE,
-  VIEWPORT_GAP, WIN_MIN_H, WIN_MIN_W,
+  EV_POINTERMOVE, EV_POINTERUP, FIT_NONE, FRAME_SEL, POS_FIXED, POS_MIN, POS_X0, POS_Y0, RESIZE_MIN_H, RESIZE_MIN_W,
+  TEXT_NONE, VIEWPORT_GAP, WIN_MIN_H, WIN_MIN_W,
 } from './constants'
 import type {
   BarClsIn, BodyClsIn, BoxNowIn, CenterIn, ClsIn, ClsOut, DownPickIn, DragStartIn, FrameBox, FrameIn, FrameInitIn,
@@ -46,6 +46,7 @@ export function stopClick(e: React.MouseEvent) {
 /**
  * 遮罩与白卡的类名预算:窗口形(带标题栏,窄屏全屏)→ 普通弹框的窄屏(sm 档留衬、其余全屏贴边)→
  * 居中态(三档宽 + 加高档 + 可拖给手势光标),pad=false 再叠免内衬。
+ * card 档(2026-10-03 付费闭环批 A1):宽屏借 md 的 560、窄屏借 sm 的居中卡片,不另起 css。
  *
  * @param x 形态开关。
  * @returns 两条拼好的 className。
@@ -63,18 +64,21 @@ export function clsOf(x: ClsIn): ClsOut {
     md: cssOf(css.narrowFull),
     lg: cssOf(css.narrowFull),
     fit: cssOf(css.narrowSm),
+    card: cssOf(css.narrowSm),
   }
   const narrowOverlay: Record<ModalSize, string> = {
     sm: cssOf(css.overlayNarrowSm),
     md: cssOf(css.overlayNarrowFull),
     lg: cssOf(css.overlayNarrowFull),
     fit: cssOf(css.overlayNarrowSm),
+    card: cssOf(css.overlayNarrowSm),
   }
   const sizeCls: Record<ModalSize, string> = {
     sm: cssOf(css.sm),
     md: cssOf(css.md),
     lg: cssOf(css.lg),
     fit: cssOf(css.fit),
+    card: cssOf(css.md),
   }
   const card = [css.card, css.flow]
   const overlay = [css.overlay]
@@ -95,6 +99,34 @@ export function clsOf(x: ClsIn): ClsOut {
     card.push(css.noPad)
   }
   return { card: card.join(CLS_SEP), overlay: overlay.join(CLS_SEP) }
+}
+
+/**
+ * 换屏键(缺席折成 FIT_NONE;2026-10-05 立,见 useFrame)。
+ *
+ * @param x 白卡机器的入参。
+ * @returns 换屏键。
+ */
+export function fitKeyOf(x: FrameIn): string {
+  if (x.fitKey == null) {
+    return FIT_NONE
+  }
+  return x.fitKey
+}
+
+/**
+ * 换了一屏内容时白卡的位置尺寸:拉出来的高撤掉(回到随内容高,上限照类里的),位置与宽不动;
+ * 没拉过高的原样交回(2026-10-05 Frank「这个也是很多空白」「都有这个问题」:访客向导在第 2 题拉高,
+ * 第 1 / 4 题与注册屏内容矮,按钮下面空一大截)。
+ *
+ * @param box 此刻钉住的位置尺寸;null = 没动过。
+ * @returns 撤掉高之后的位置尺寸。
+ */
+export function heightDroppedOf(box: FrameBox | null): FrameBox | null {
+  if (box == null || box.h == null) {
+    return box
+  }
+  return { x: box.x, y: box.y, w: box.w, h: null }
 }
 
 /**

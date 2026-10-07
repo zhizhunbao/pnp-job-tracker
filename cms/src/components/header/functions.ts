@@ -5,11 +5,13 @@
  * @time 2026-08-24 08:00:00
  */
 import {
-  ACCT_IN, ACCT_OUT, AUTH_CLOSED, AUTH_LOGIN, AUTH_REGISTER, EMAIL_UNKNOWN, PATH_ACTIVE, PATH_SEP,
+  ACCT_IN, ACCT_OUT, AUTH_CLOSED, AUTH_LOGIN, AUTH_REGISTER, EMAIL_UNKNOWN, PATH_ACTIVE, PATH_SEP, SEED_KEY_NONE,
+  SEED_KEY_SEP,
 } from './constants'
 import type {
   ActiveKey,
-  AccountLiteHandlesIn, AccountLiteHandlesOut, AcctState, AcctUser, ClickFn, DrawerHandlesIn, DrawerHandlesOut,
+  AccountLiteHandlesIn, AccountLiteHandlesOut, AcctSeedKeyIn, AcctState, AcctUser, ClickFn, DrawerHandlesIn,
+  DrawerHandlesOut,
  LangPickIn, MeJson, WithOnIn,
   SsrSeed,
 } from './types'
@@ -77,6 +79,26 @@ export function seedUser(s: SsrSeed): AcctUser {
 }
 
 /**
+ * 账户态的种子键:宿主登录态 + 会话种子(有没有票据、邮箱)拼成一串。键变了 = 软刷带回了新的登录态,账户区要重算。
+ * 2026-10-03 付费闭环批 B1 收口:流程内注册(访客向导、投递)只软刷不整页刷,账户态原先只在挂载时算一次,
+ * 详情页等二级页注册完右上角还是「登录 / 注册」,而顶栏「我的」已经按新登录态出来了 —— 两处对不上。
+ *
+ * @param x 宿主登录态与会话种子两格。
+ * @returns 种子键。
+ */
+export function acctSeedKeyOf(x: AcctSeedKeyIn): string {
+  let host = SEED_KEY_NONE
+  if (x.loggedIn != null) {
+    host = String(x.loggedIn)
+  }
+  let seed = SEED_KEY_NONE
+  if (x.seedIn != null) {
+    seed = String(x.seedIn)
+  }
+  return host + SEED_KEY_SEP + seed + SEED_KEY_SEP + x.seedEmail
+}
+
+/**
  * Pro 判定:到期日在此刻之后。
  *
  * @param proUntil 到期日(ISO 串);null/空 = 免费号。
@@ -136,12 +158,15 @@ function pickAuthModal(m: typeof import('@/components/auth')) {
 }
 
 /**
- * 造二级页账户区的六枚手柄(2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」,
+ * 造二级页账户区的手柄(2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」,
  * 自 AccountLite 体内迁出)。登录框与定价框两台开合机同属账户区这一处状态,
- * 一个工厂发齐 —— 拆成六个工厂只会把「谁在写哪一格」摊到六处。
+ * 一个工厂发齐 —— 拆成几个工厂只会把「谁在写哪一格」摊到几处。
+ * 2026-10-04 账户下拉的「升级 Pro」撤,本区定价框随之撤,开定价 / 关定价两枚手柄与定价开合 setter 撤,剩四枚。
+ * 2026-10-06 Frank「登录之后,会先刷整个页面,然后出这个条数数字,之后才是刷出文字」:登录成功不再整页刷新(window.location.reload),
+ * 关掉登录框后走路由的原地刷新(服务端组件带新会话重渲,页头账户区按会话种子换成已登录;Google 登录要整页跳去 Google,绕不开)。
  *
- * @param x 写认证框态与定价框开合的两枚 setter。
- * @returns 开登录 / 开注册 / 关认证 / 刷新 / 开定价 / 关定价 六枚具名手柄。
+ * @param x 写认证框态的 setter 与原地刷新。
+ * @returns 开登录 / 开注册 / 关认证 / 刷新 四枚具名手柄。
  */
 export function makeAccountLiteHandles(x: AccountLiteHandlesIn): AccountLiteHandlesOut {
   function openLogin() {
@@ -157,18 +182,11 @@ export function makeAccountLiteHandles(x: AccountLiteHandlesIn): AccountLiteHand
   }
 
   function reload() {
-    window.location.reload()
+    x.setAuth(AUTH_CLOSED)
+    x.refresh()
   }
 
-  function openPricing() {
-    x.setPricing(true)
-  }
-
-  function closePricing() {
-    x.setPricing(false)
-  }
-
-  return { openLogin, openRegister, closeAuth, reload, openPricing, closePricing }
+  return { openLogin, openRegister, closeAuth, reload }
 }
 
 /**

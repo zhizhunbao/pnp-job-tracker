@@ -15,11 +15,23 @@
  * 2026-09-23 Frank 撤账户页的移民档案节(截图说「基本上是完全没法用」,原话「只保留一个 我的简历
  * 我的收藏 我的求职 其他的能删都删了」):档案表单 ProfileForm 及其子件 StatusRow / BucketRow /
  * ProvRow / NocPicker / NocTags 删文件,出桶名单去掉 ProfileForm;首访向导不受影响。
+ * 2026-10-03 付费闭环批 A1:访客向导 GateWizard 住进来(同一套档案题的访客版,复用首访向导的头、钮组与职业步),
+ * 外加无界面的草稿补交件 GateSync(全站骨架挂一次);浏览记录与草稿存取归 lib/guest。
+ * 2026-10-04 进站即弹:GateSync 顺带弹进站向导(全站骨架只挂它一处,每页都跑得到)。
+ * 同日审查:isPopularNoc 出桶 —— 热门表的主人给判定,plan 删掉自己那份逐字相同的拷贝改从这里取。
+ * 2026-10-04 访客四题改版:访客向导 GateWizard 与 GateSync 迁去 gate 桶(注册前的访客门自成一域;本桶只管登录用户的建档向导),
+ * 出桶名单去掉这两名;gate 的职业题借本桶的已选标签件 OnboardingTags 与选 / 摘两枚手柄(makeNocPick / makeNocDrop),
+ * 注册后与补交时记「首访引导弹过了」借 obMarkSeen(与首访向导走完时同一枚手柄)—— 这四名随之出桶,不在 gate 另抄一份。
+ * 同日收口:单选手柄 makeOptPick 同样出桶(gate 的目标卡、专业胶囊、省格子借它,删掉 gate 自家逐字同义的 makeOptTap)。
+ * 同日 A2:gate 的职业题改用 quiz 桶选职业控件(大号档),不再借 makeNocPick / makeNocDrop,两名收回桶内;
+ * OnboardingTags 改由 quiz 的选职业控件借(大号档的已选标签),照旧出桶。
+ * 2026-10-05 访客第 3 题改左右两栏(Frank「也改成左右 两部分吗?」「改啊」):quiz 选职业控件的已选一行改用 tag 桶 TagRow 自己摆,
+ * 不再借 OnboardingTags —— 桶外再没有消费者,出桶名单去掉它(首访向导的职业步在桶内照用)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
 export { CLB_OPTS, CRS_OPTS, OB_SEEN_KEY, PGWP_OPTS, POPULAR_NOCS } from './constants'
-export { clbActive, crsActive, pgwpActive } from './functions'
+export { clbActive, crsActive, isPopularNoc, makeOptPick, obMarkSeen, pgwpActive } from './functions'
 export { OnboardingWizard } from './onboardingwizard'
 export type { Opt, ProfileValue } from './types'

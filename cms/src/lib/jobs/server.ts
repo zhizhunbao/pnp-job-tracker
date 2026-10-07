@@ -12,11 +12,12 @@ export {
   buildJobsWhere, checkedAt, companyJsonOf, loadAlertHits, loadBroadNocs, loadCompanyByJobId, loadCompanyBySlug,
   loadJobById, loadJobRows, loadJobsPage, loadNocOpenCounts, loadQuizFacts,
   loadOccCompetition, loadRelatedJobs, loadSimilarEmployers, loadSsrDims, loadTopNocs,
-  getTopNocs, getSsrDims, loadTotalAndProof, jobDescription, jobPostingJsonOf, loadJdSsrById, getPnpReqs,
+  getTopNocs, getSsrDims, loadTotalAndProof, jobDescription, jobPostingJsonOf, loadJdSsrById, loadJdTrans, getPnpReqs,
 } from './functions'
 export {
   loadMatchDims, pnpOnly, scrubPii, searchNocByTitle, splitQ,
 } from './functions'
+export { loadMajorNocs } from './functions'
 export { toEeCat, toPnpOcc } from './functions'
 export type { AlertHit, CompanyDetail, JobsFilters, RelatedJob, SimilarEmployer, SsrDims, TopNoc } from './types'
 

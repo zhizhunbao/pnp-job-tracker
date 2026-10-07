@@ -26,7 +26,7 @@ import css from './tabs.module.css'
  * @returns 选项卡条。
  */
 export function Tabs({ items, value, onChange, ariaLabel, idPrefix = ID_PREFIX_DEFAULT }: TabsIn) {
-  const keys = useTabKeys({ items, value, onChange })
+  const keys = useTabKeys({ items, value, onChange, vertical: false })
   const btns = []
   for (const it of items) {
     const on = it.key === value

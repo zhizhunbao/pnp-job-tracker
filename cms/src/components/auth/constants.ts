@@ -435,17 +435,6 @@ export const NOTICE_OK = 'ok'
 export const MODAL_SIZE_SM = 'sm'
 
 /**
- * 界面语言在 localStorage 里的键(与 lib/i18n 同源读法 —— 注册时把语言随档存下,
- * 邮件才能按本人语言发)。
- */
-export const LOCALE_KEY = 'jobs.lang'
-
-/**
- * 读不到语言时的兜底(中文流量为主)。
- */
-export const LOCALE_DEFAULT = 'zh'
-
-/**
  * Google 回跳失败的 URL 参数名(?oauth=fail 落回登录框给可见提示)。
  */
 export const OAUTH_PARAM = 'oauth'
@@ -490,21 +479,6 @@ export const HASH_BASE = 31
  * 账户页路径(账户菜单的条目去处,下同 —— 打错是静默 404,所以全部起名)。
  */
 export const PATH_ACCOUNT = '/account'
-
-/**
- * 账户页·简历节。
- */
-export const PATH_ACCOUNT_RESUME = '/account?sec=resume'
-
-/**
- * 账户页·收藏节。
- */
-export const PATH_ACCOUNT_FAVS = '/account?sec=favs'
-
-/**
- * 账户页·存查节。
- */
-export const PATH_ACCOUNT_SJOBS = '/account?sec=sjobs'
 
 /**
  * Google 整页 OAuth 的入口。
@@ -553,6 +527,14 @@ export const ARIA_MENU = 'menu'
  * ARIA 属性在 HTML 里收的是字符串('true' / 'false'),不是布尔。
  */
 export const ARIA_TRUE = 'true'
+
+/**
+ * OAuth 外源头像不带来源地址去取(2026-10-05 Frank 截图:Google 登录后右上角头像裂图 ——
+ * Google 头像服务器对带着别站来源地址的请求常回拒,不带就给图)。
+ * 同日实测(Playwright,localhost 页面里放 id 140 的头像):默认来源策略 → Chrome 报 net::ERR_BLOCKED_BY_ORB(带来源时
+ * Google 回的不是图,ORB 拦掉);no-referrer → 200、96×96 正常载入。服务端直取两种都 200(没有 ORB),所以只在浏览器里坏。
+ */
+export const AVATAR_REFERRER = 'no-referrer'
 
 /**
  * 昵称与邮箱都缺席时的展示兜底(em dash 占位)。

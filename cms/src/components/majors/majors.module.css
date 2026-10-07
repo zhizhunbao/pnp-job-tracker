@@ -1,0 +1,92 @@
+/*
+ * majors 组件域(专业选择器)的私有样式:只放布局 —— 选择器竖排、已选一行、左栏两栏与右边那块的内衬、在搜时的单列结果。
+ * 行、卡、页签、标签的长相一律来自通用桶(chip ChipLine / card FoldCard、ListCard / tabs RailTabs / tag Tag),本文件不写。
+ * 2026-10-05 自 gate.module.css 迁入(访客第 2 题的选择器自成一域):.majorPanes / .majorPanes:lang(en) / .majorPanel /
+ * .majorHits 与电脑段里它们那几条原样带过来(注释照抄,值一个不改);gate 的 .majors 竖排拆成两半 —— 宿主那一格
+ * (在向导竖排里吃满多出来的高、下面紧接粘底钮区)留在 gate,三块之间的距离挪来本文件的 .picker。
+ * 两栏与结果单列的负外距 = 宿主白卡的左右内衬(手机 16、电脑 24),定高里的 300 是宿主顶行、题面、搜索框与粘底钮区的高 ——
+ * 选择器眼下只有访客向导一个宿主,这两样照它的尺寸写死。
+ * 同日改多选:多一行已选标签(.picked),它在的时候两栏 / 结果单列让出同样的高(.picker:has(.picked) 那一段)。
+ * 同日 Frank「放到搜索框下面吧」:已选一行摆在搜索框下面(搜索框与两栏 / 结果单列之间),让高的算法不变。
+ * 同日访客第 3 题要改成同一副左右两栏,先把两样通用形态收进通用桶(注释原样带过去,值一个不改):
+ * 已选一行 .picked / .picked > span → tag 桶 TagRow(tag.module.css 的 .tagRow);两栏外层与结果单列的定高区
+ * .majorPanes / .majorHits / .picker:has(.picked) 与电脑段里它们的外距、内衬 → pane 桶 Pane(pane.module.css)。
+ * 本文件只剩竖排 .picker、左栏宽 --rail-w(从 .majorPanes 挪到 .picker 上,往下继承给 RailTabs)与右边那块的内衬 .majorPanel;
+ * 上面「两栏与结果单列的负外距……照它的尺寸写死」那句说的数现住 pane.module.css(那边头注照抄了这一句)。
+ * 同日第 3 题动手(「也改成左右 两部分吗?」「改啊」):右边那块的内衬 .majorPanel(与它在电脑段的放宽一档)收进 tabs 桶 RailTabs 的面板,
+ * 本文件只剩竖排 .picker 与左栏宽 --rail-w;上一句「与右边那块的内衬 .majorPanel」作废。
+ * 同日竖排本身(.picker 的竖排、块间距、吃满多出来的高、许比内容矮四格)收进 pane 桶 PaneStack(pane.module.css 的 .stack;
+ * 第 3 题 quiz.module.css 的 .rail 逐格相同,两份并一份,块间距与 Pane 的让高住同一个文件):本文件只剩左栏宽 --rail-w
+ * (.picker 由 MajorPicker 当 railCls 递给 PaneStack 叠在竖排上);同日多一档韩文左栏宽(.picker:lang(ko))。
+ */
+
+/*
+ * 选择器竖排(搜索框、已选一行、两栏或结果单列自上而下;2026-10-05「放到搜索框下面吧」前已选一行在搜索框上面)。
+ * 2026-10-05 自 gate 的 .majors 拆来(竖排、三块间距、吃满多出来的高三格;宿主那一格照旧叫 .majors)。
+ * 2026-10-05 竖排、块间距、吃满多出来的高、许比内容矮四格迁去 pane 桶(pane.module.css 的 .stack;段头注与逐格注释原样带过去,
+ * 值一个不改):本块只剩左栏宽,叠在 PaneStack 的竖排上往下继承给 RailTabs。宿主那一格同日改叫 gate.module.css 的 .picker。
+ */
+.picker {
+  /*
+   * 左栏宽:中文大类名最长四个字(14px 约 56px)+ 内衬。
+   * 2026-10-05 自 .majorPanes 挪来(两栏外层换成 pane 桶 Pane,左栏宽是本题的事,挂在竖排上往下继承给 tabs 桶 RailTabs)。
+   */
+  --rail-w: 80px;
+}
+
+/*
+ * 已选一行(.picked / .picked > span)2026-10-05 迁去 tag 桶(TagRow,tag.module.css 的 .tagRow / .tagRow > span;
+ * 段头注与逐格注释原样带过去,值一个不改)。
+ * 两栏外层(.majorPanes)2026-10-05 迁去 pane 桶(Pane,pane.module.css 的 .pane;段头注与逐格注释原样带过去,值一个不改);
+ * 它那一格左栏宽 --rail-w 留在本文件,挂到上面的 .picker 上。
+ */
+
+/*
+ * 英文界面左栏宽:大类名一个词,最长「Engineering」约 74px + 内衬。
+ * 2026-10-05 自 gate.module.css 迁入。
+ * 同日两栏外层换成 pane 桶 Pane,选择器从 .majorPanes:lang(en) 改挂 .picker:lang(en)(往下继承给 RailTabs,值不改)。
+ */
+.picker:lang(en) {
+  /*
+   * 左栏宽。
+   */
+  --rail-w: 96px;
+}
+
+/*
+ * 韩文界面左栏宽(2026-10-05 立):专业大类名最长「예술미디어」五个字(14px 约 70px)要一行放下 —— 80px 时只剩 60px 字宽,
+ * 它被拆在字中间(「예술미디 / 어」);tabs 桶 RailTabs 同日给韩文页签挂了只在空格处折(word-break: keep-all),
+ * 不再拆字,宽度由本档给够。按它取宽(同第 3 题 quiz.module.css 的 .rail:lang(ko))。
+ */
+.picker:lang(ko) {
+  /*
+   * 左栏宽。
+   */
+  --rail-w: 96px;
+}
+
+/*
+ * 左栏右边那块的内衬(.majorPanel;白卡浮在灰底上,照掌上高考;2026-10-05 自 gate.module.css 迁入)
+ * 2026-10-05 迁去 tabs 桶 RailTabs 的面板(tabs.module.css 的 .railPanel;访客第 3 题 Frank「也改成左右 两部分吗?」「改啊」,
+ * 两题同一副两栏、同一圈内衬,收进通用件一处出;逐格注释原样带过去,值一个不改)。majorcards.tsx 不再包这一层。
+ */
+
+/*
+ * 在搜时的单列结果(.majorHits)与有已选一行时的让高(.picker:has(.picked) .majorPanes / .majorHits)
+ * 2026-10-05 迁去 pane 桶(Pane 的 list 格 = 结果单列独有的内衬 / 区内滚,belowTags 格 = 让高;
+ * pane.module.css 的 .pane / .list / .belowTags,段头注与逐格注释原样带过去,值一个不改)。
+ * 电脑段里这两块的外距(白卡内衬 24)与结果单列的内衬(电脑内衬 24)同日一并迁去 pane.module.css 的电脑段。
+ */
+
+@media (width >= 641px) {
+  .picker,
+  .picker:lang(en),
+  .picker:lang(ko) {
+    /*
+     * 电脑弹框宽 560:左栏宽一点,中英都一行。
+     * 2026-10-05 选择器从 .majorPanes / .majorPanes:lang(en) 改挂 .picker / .picker:lang(en)(两栏外层换成 pane 桶 Pane)。
+     * 2026-10-05 多挂 .picker:lang(ko)(韩文手机档 96px 的选择器比 .picker 权重高,不点名就压过这里的电脑值)。
+     */
+    --rail-w: 150px;
+  }
+}

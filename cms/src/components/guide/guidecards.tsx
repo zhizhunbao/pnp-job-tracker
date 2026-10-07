@@ -33,7 +33,7 @@ export function GuideCards({ p, turn, i }: GuideCardsIn) {
       <div className={css.cbOpts}>
         <LinkButton href={r.url}
           className={btnClsOf({
-            kind: PLAIN_BTN_KIND, sm: false, lg: false, active: false, busy: false, className: recCls,
+            kind: PLAIN_BTN_KIND, sm: false, lg: false, xl: false, active: false, busy: false, className: recCls,
           })}
           onClick={makeNavClick({ p, i })}>
           <span className={css.cbOptTag}>{p.t('chat.opt.rec')}</span>

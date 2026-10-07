@@ -1,6 +1,9 @@
 /**
  * chip 域的死值(全部是 chipStyle 过渡导出的镜像值 —— 与 chip.module.css 的类逐格相等,
  * 消费页类化、chipStyle 退役时本文件一起删)。
+ * 2026-10-04 访客四题改版:另加选择格的形态名 TILE_CARD(不是镜像值,chipStyle 退役时它留下)。
+ * 同日 A2:另加大号胶囊占位的宽度档数 SKEL_KINDS(同样不是镜像值)。
+ * 同日 A2 收口:SKEL_KINDS 撤 —— 档数改由 functions 的 chipSkelClsOf 取六档类名数组的长度(一个数两处写是两份真相)。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
@@ -103,3 +106,13 @@ export const CLS_SEP = ' '
  * Button 只出统一的语义与可达性(disabled/aria)。
  */
 export const PLAIN_BTN_KIND = 'ghost'
+
+/**
+ * 选择格的大卡形名(ChipTileIn.shape 的取值;其余 = 格子形)。
+ */
+export const TILE_CARD = 'card'
+
+/**
+ * markPartsOf 的「没有这一截」(空串;没命中时 hit / post 都是它)。2026-10-05 ChipLine 立。
+ */
+export const MARK_NONE = ''

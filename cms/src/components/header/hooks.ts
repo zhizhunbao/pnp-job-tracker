@@ -9,10 +9,10 @@ import { useEffect, useState } from 'react'
 
 import { useSsrSession } from '@/components/auth'
 import {
-  ACCT_IN, ACCT_LOADING, ACCT_OUT, API_ME, CRED_INCLUDE, OVERFLOW_LOCK, PUSH_RESET_MS,
+  ACCT_IN, ACCT_LOADING, ACCT_OUT, API_ME, CRED_INCLUDE, EMAIL_UNKNOWN, OVERFLOW_LOCK, PUSH_RESET_MS,
   PUSH_TRANSITION, PUSH_X, SEL_MAIN, STYLE_RESET,
 } from './constants'
-import { emptyUser, meToAcct, seedUser } from './functions'
+import { acctSeedKeyOf, emptyUser, meToAcct, seedUser } from './functions'
 import type { AcctHookIn, AcctPhase, AcctState, MeJson } from './types'
 
 /**
@@ -24,6 +24,7 @@ import type { AcctHookIn, AcctPhase, AcctState, MeJson } from './types'
  * 只能等 /api/users/me,那一下账户区从 32px 撑到 84px,导航整排被拽 52px;localStorage
  * 记上次结果治不了 —— 浏览器先照 SSR 的 HTML 画一帧)。优先级:宿主 prop(/jobs 有
  * 真身份)> 服务端票据(SessionProvider)> loading(不在 Provider 下的存量路径)。
+ * 2026-10-03 付费闭环批 B1 收口:宿主登录态 / 会话种子一变(流程内注册后软刷带回新种子)就按 init 重算,见 acctSeedKeyOf。
  *
  * @param x 宿主已知的登录态与账户区。
  * @returns 账户状态。
@@ -51,6 +52,18 @@ export function useAcct(x: AcctHookIn): AcctState {
   }
 
   const [acct, setAcct] = useState<AcctState>(init)
+  let seedIn: boolean | null = null
+  let seedEmail = EMAIL_UNKNOWN
+  if (ssr != null) {
+    seedIn = ssr.in
+    seedEmail = ssr.email
+  }
+  const seedKey = acctSeedKeyOf({ loggedIn: x.loggedIn, seedIn, seedEmail })
+  const [prevSeedKey, setPrevSeedKey] = useState(seedKey)
+  if (prevSeedKey !== seedKey) {
+    setPrevSeedKey(seedKey)
+    setAcct(init())
+  }
 
   useEffect(function fetchMe() {
     if (x.loggedIn != null || x.hasAccountArea) {

@@ -18,6 +18,8 @@
  * 并进来成「窗口形」(win 规格:标题栏钉住、正文单独滚、可拖可拉、记住尺寸),全站弹框只剩这一个壳;
  * 机器合成一台 useFrame(拖动 / 拉伸 / 记忆),拖动不再走 transform —— 拖过、拉过之后白卡钉在视口坐标上,
  * style 白名单里的「拖拽 transform」随之换成「钉住的位置与尺寸」;关闭钮与窗口钮一律 ModalBtn,把手一律 ResizeHandles。
+ * 2026-10-05 Frank「左边那个按钮 和 右边的 关闭 按钮不对称啊」:普通弹框多一个左上角返回钮位(back,ModalBack),
+ * 与右上角关闭钮同一颗 ModalBtn、左右镜像;访客向导的返回钮从向导顶行收进来。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
@@ -26,6 +28,7 @@ import { SIZE_DEFAULT, Z_MODAL } from './constants'
 import { bodyClsOf, clsOf, frameOf, stopClick } from './functions'
 import { useEscClose, useFrame, useOverlayClose } from './hooks'
 import { ModalActs } from './modalacts'
+import { ModalBack } from './modalback'
 import { ModalBar } from './modalbar'
 import { ResizeHandles } from './resizehandles'
 import type { ModalIn } from './types'
@@ -33,6 +36,7 @@ import type { ModalIn } from './types'
 /**
  * 弹框壳。普通弹框:sm=390, md=560, lg=760,支持按住白卡拖动(draggable)、edgeResize = 四边四角拖拽缩放
  * (2026-09-04 pte 字典弹框先例);窗口形(win):标题栏 + 窗口钮排 + 单独滚动的正文,可拖可拉、记住尺寸。
+ * 普通弹框给了 back 就在左上角出返回钮(2026-10-05);给了 fitKey,键一变拉出来的高就撤掉(同日)。
  * 右上角全屏 / 还原钮 2026-09-23 撤。
  *
  * @param props 关闭回调与形态开关。
@@ -47,13 +51,15 @@ export function Modal({
   draggable = true,
   edgeResize = false,
   actions,
+  back,
+  fitKey,
   win,
   frame,
   children,
 }: ModalIn) {
   const ov = useOverlayClose(onClose)
   useEscClose(onClose)
-  const own = useFrame({ win, draggable, edgeResize })
+  const own = useFrame({ win, draggable, edgeResize, fitKey })
   const f = frameOf({ ext: frame, own })
   const narrow = f.narrow
   const cls = clsOf({ narrow, size, draggable, pad, tall, win: win != null })
@@ -71,6 +77,7 @@ export function Modal({
           <ModalBar head={win.head} actions={actions} onClose={onClose} onDown={f.onBarDown} narrow={narrow} />
         )}
         {win != null && <div className={bodyClsOf({ jd: win.jd })}>{children}</div>}
+        {win == null && back != null && <ModalBack aria={back.aria} onClick={back.onClick} />}
         {win == null && <ModalActs actions={actions} onClose={onClose} bar={false} />}
         {win == null && children}
         {f.resizable && <ResizeHandles startOf={f.startOf} />}

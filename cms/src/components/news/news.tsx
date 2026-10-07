@@ -16,6 +16,7 @@
  * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:
  * 列表区上方那一行地区筛选药丸的行尾挂 Updated(time 桶),更新时刻由页面门 SSR 取好递进来。
  * 2026-09-30 通道与门槛批 2:二级导航加第三个页签「通道与门槛」(/streams)。
+ * 2026-10-03 资讯页签四分:二级导航改四个短名页签 —— 最新公告 | 抽选 | 通道 | 申请步骤(/steps)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -24,7 +25,9 @@ import { BANNER_IMGS, Banner } from '@/components/banner'
 import { IconNews } from '@/components/icons'
 import { Shell } from '@/components/shell'
 import { SectionTabs } from '@/components/tabs'
-import { BANNER_MODULE, SHELL_TOP_LIST, TABS_TONE, TEXT_NONE, URL_NEWS, URL_STREAMS, URL_TIMELINE } from './constants'
+import {
+  BANNER_MODULE, SHELL_TOP_LIST, TABS_TONE, TEXT_NONE, URL_NEWS, URL_STEPS, URL_STREAMS, URL_TIMELINE,
+} from './constants'
 import { dayGroupsOf, presentRegionsOf, shownItemsOf } from './functions'
 import { FeaturedGrid } from './featuredgrid'
 import { useNewsFilter } from './hooks'
@@ -57,8 +60,9 @@ export function News({ items, hero, cmtCounts, updatedAt }: NewsIn) {
       <SectionTabs tone={TABS_TONE}
         tabs={[
           { href: URL_NEWS, label: f.t('tl.tabNews'), active: true },
-          { href: URL_TIMELINE, label: f.t('tl.title') },
+          { href: URL_TIMELINE, label: f.t('tl.tabDraws') },
           { href: URL_STREAMS, label: f.t('tl.tabStreams') },
+          { href: URL_STEPS, label: f.t('tl.tabSteps') },
         ]} />
       <NewsChips t={f.t}
         regions={presentRegionsOf({ items })}

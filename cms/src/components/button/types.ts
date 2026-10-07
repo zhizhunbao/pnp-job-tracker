@@ -49,6 +49,12 @@ export type ButtonIn = {
   lg?: boolean
 
   /**
+   * 整宽主行动档(2026-10-04 访客四题改版首例:向导粘底的「下一步」;高 48、圆角 12、字 16 粗体;
+   * 与 sm / lg 互斥,同传时按 sm → lg → xl 的先后取一档)。宽度不归本档,整不整宽由调用方的布局类给。
+   */
+  xl?: boolean
+
+  /**
    * 禁用(禁用时 href 形态也退回 <button>)。
    */
   disabled?: boolean
@@ -183,6 +189,11 @@ export type BtnClsIn = {
    * 大一号档。
    */
   lg: boolean
+
+  /**
+   * 整宽主行动档。
+   */
+  xl: boolean
 
   /**
    * 当前态(页签/分段/下拉触发器亮起来那一档)。

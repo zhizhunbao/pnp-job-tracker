@@ -9,8 +9,10 @@
 
 /**
  * 三档宽的档名。
+ * 2026-10-03 付费闭环批 A1 扩一档 card:电脑中号 560 居中、手机居中卡片(sm 的窄屏形,背后的页面看得见)——
+ * 访客向导四屏一个框,手机上不许整屏盖住职位板(md 在窄屏是整屏贴边)。
  */
-export type ModalSize = 'sm' | 'md' | 'lg' | 'fit'
+export type ModalSize = 'sm' | 'md' | 'lg' | 'fit' | 'card'
 
 /**
  * 窗口形的尺寸规格:记忆键 + 没有记忆时的宽高。
@@ -100,6 +102,18 @@ export type ModalIn = {
    * 额外的窗口按钮(与关闭钮同排;用本域的 ModalBtn,几颗钮一样大才叫一排)。
    */
   actions?: React.ReactNode
+
+  /**
+   * 换屏键:变了 = 弹框里换了一屏内容(如访客向导换了一题),拉出来的高撤掉回到随内容高,位置与宽不动。
+   * 缺席 = 内容从不换屏(拉过的高一直留着)。2026-10-05 Frank「这个也是很多空白」立。
+   */
+  fitKey?: string
+
+  /**
+   * 左上角的返回钮(与右上角的关闭钮同款、左右对称;只在普通弹框出,窗口形不出)。
+   * 缺席 = 这个弹框没有返回这回事;null = 有返回位、此刻不出(如访客向导的第 1 题)。2026-10-05 立。
+   */
+  back?: ModalBackIn | null
 
   /**
    * 内容。
@@ -248,6 +262,21 @@ export type ModalActsIn = {
 }
 
 /**
+ * 左上角返回钮的 props(普通弹框;2026-10-05 访客向导的返回钮收进壳,与右上角关闭钮镜像)。
+ */
+export type ModalBackIn = {
+  /**
+   * 读屏名(调用方按界面语给)。
+   */
+  aria: string
+
+  /**
+   * 点了退回上一屏。
+   */
+  onClick: () => void
+}
+
+/**
  * useOverlayClose 交回的两枚手柄(挂到 overlay 元素上)。
  */
 export type OverlayHandlers = {
@@ -340,6 +369,11 @@ export type FrameIn = {
    * 普通弹框开没开拉伸。
    */
   edgeResize: boolean
+
+  /**
+   * 换屏键(弹框 props 原样递进来):变了 = 内容换了一屏,拉出来的高撤掉回到随内容。缺席 = 内容从不换屏。2026-10-05 立。
+   */
+  fitKey?: string
 }
 
 /**

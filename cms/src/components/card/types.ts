@@ -235,3 +235,48 @@ export type JobCardIn = {
    */
   footer?: React.ReactNode
 }
+
+/**
+ * FoldCard 的 props(可展开的白卡;2026-10-05 访客第 2 题照掌上高考立:一个专业类一张)。
+ */
+export type FoldCardIn = {
+  /**
+   * 头行的名字(主色)。
+   */
+  title: string
+
+  /**
+   * 头行右边的个数胶囊文字(调用方按界面语言拼好,如「6个专业」)。
+   */
+  count: string
+
+  /**
+   * 展开着没有。
+   */
+  open: boolean
+
+  /**
+   * 点头行(展开 / 收起由调用方记)。
+   */
+  onToggle: () => void
+
+  /**
+   * 内容块的 id(头行钮的 aria-controls 指它;同页多张各给各的)。
+   */
+  bodyId: string
+
+  /**
+   * 展开后的内容(和名字左对齐,不缩进)。
+   */
+  children: React.ReactNode
+}
+
+/**
+ * ListCard 的 props(装一列行的白卡,无头行;2026-10-05 同批立)。
+ */
+export type ListCardIn = {
+  /**
+   * 卡里的内容(一列行)。
+   */
+  children: React.ReactNode
+}

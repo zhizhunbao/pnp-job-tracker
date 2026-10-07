@@ -78,6 +78,7 @@ export interface Config {
     'pnp-ops-stats': PnpOpsStat;
     pathways: Pathway;
     'qc-noc-streams': QcNocStream;
+    'cip-programs': CipProgram;
     dli: Dli;
     'ee-categories': EeCategory;
     'ee-points-grid': EePointsGrid;
@@ -129,6 +130,7 @@ export interface Config {
     'pnp-ops-stats': PnpOpsStatsSelect<false> | PnpOpsStatsSelect<true>;
     pathways: PathwaysSelect<false> | PathwaysSelect<true>;
     'qc-noc-streams': QcNocStreamsSelect<false> | QcNocStreamsSelect<true>;
+    'cip-programs': CipProgramsSelect<false> | CipProgramsSelect<true>;
     dli: DliSelect<false> | DliSelect<true>;
     'ee-categories': EeCategoriesSelect<false> | EeCategoriesSelect<true>;
     'ee-points-grid': EePointsGridSelect<false> | EePointsGridSelect<true>;
@@ -667,7 +669,7 @@ export interface Job {
    */
   pnpStream?: string | null;
   /**
-   * 走不了省提名的原因码(part/term/seasonal/casual 工作性质、wage 工资、occ 职业、list 清单;空=走得了),数据层算
+   * 走不了省提名的原因码(part/term/seasonal/casual 工作性质、wage 工资、occ 职业、list 清单;空=走得了;2026-10-03 起卡住几个记几个,逗号拼),数据层算
    */
   pnpBlock?: string | null;
   /**
@@ -1298,6 +1300,71 @@ export interface QcNocStream {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cip-programs".
+ */
+export interface CipProgram {
+  id: number;
+  /**
+   * CIP 2021 class 码(52.0203)
+   */
+  code?: string | null;
+  /**
+   * 官方英文类名
+   */
+  titleEn?: string | null;
+  /**
+   * 中文名(本地模型译;空 = 没译成)
+   */
+  titleZh?: string | null;
+  /**
+   * 韩文名(同上)
+   */
+  titleKo?: string | null;
+  /**
+   * 两位 series 码(52)
+   */
+  series?: string | null;
+  /**
+   * 两位 primary grouping 码(05)
+   */
+  grouping?: string | null;
+  /**
+   * 本站职业大类清单(etl/noc MAJOR_SERIES_BROADS 推)
+   */
+  broads?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 热门名次(1 起);不在热门清单 = 空
+   */
+  popular?: number | null;
+  /**
+   * 英文显示名(热门与专业类手写、其余按规则清洗);空 = 照用 titleEn
+   */
+  titleEnShort?: string | null;
+  /**
+   * 选择器里挂在哪(大类 / 专业类 / 排序数 / 是否单列;etl/statcan/cip 算好);[] = 不进选择器
+   */
+  places?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "dli".
  */
 export interface Dli {
@@ -1493,6 +1560,10 @@ export interface NocDescription {
    * 任职要求(换行分隔)
    */
   requirements?: string | null;
+  /**
+   * 官方示例职称(All examples,换行分隔;职业搜索也搜这一格)
+   */
+  examples?: string | null;
   fetched?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -2902,6 +2973,10 @@ export interface PayloadLockedDocument {
         value: number | QcNocStream;
       } | null)
     | ({
+        relationTo: 'cip-programs';
+        value: number | CipProgram;
+      } | null)
+    | ({
         relationTo: 'dli';
         value: number | Dli;
       } | null)
@@ -3433,6 +3508,24 @@ export interface QcNocStreamsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cip-programs_select".
+ */
+export interface CipProgramsSelect<T extends boolean = true> {
+  code?: T;
+  titleEn?: T;
+  titleZh?: T;
+  titleKo?: T;
+  series?: T;
+  grouping?: T;
+  broads?: T;
+  popular?: T;
+  titleEnShort?: T;
+  places?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "dli_select".
  */
 export interface DliSelect<T extends boolean = true> {
@@ -3507,6 +3600,7 @@ export interface NocDescriptionsSelect<T extends boolean = true> {
   titleEnShort?: T;
   duties?: T;
   requirements?: T;
+  examples?: T;
   fetched?: T;
   updatedAt?: T;
   createdAt?: T;

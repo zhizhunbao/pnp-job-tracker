@@ -12,7 +12,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { EV_CHANGE, EV_KEYDOWN, KEY_ESC, MQ_MAX_WIDTH_HEAD, MQ_MAX_WIDTH_TAIL, NARROW_BP } from './constants'
 import {
-  downOf, frameInitOf, frameStyleOf, isTopEsc, joinEsc, leaveEsc, makeDragStart, makeResizeStart, memoOf, minSizeOf,
+  downOf, fitKeyOf, frameInitOf, frameStyleOf, heightDroppedOf, isTopEsc, joinEsc, leaveEsc, makeDragStart,
+  makeResizeStart, memoOf, minSizeOf,
 } from './functions'
 import type { FrameBox, FrameIn, FrameOut, LayerStackOut, OverlayHandlers, PointerHandlerFn, ResizeEdge } from './types'
 
@@ -128,6 +129,8 @@ export function useLayerStack<L>(): LayerStackOut<L> {
  * 拖动只挂一块手柄:窗口形挂标题栏(正文要能选字),普通弹框挂整张白卡(按钮、输入件这类豁免)。
  * 2026-09-21 Frank「会出现 先一个小框，然后在放大」:首帧就按记忆算(frameInitOf),不在挂载后再跳。
  * 2026-09-23 Frank「这个带全屏的都去掉吧」:全屏钮撤,全屏态只剩窄屏强制那一种。
+ * 2026-10-05 Frank「这个也是很多空白」:多收一个换屏键(fitKey)—— 键一变(访客向导换了一题),拉出来的高撤掉回到随内容,
+ * 位置与宽不动;在渲染里比对上一次的键(React 文档「props 变了调整 state」的写法),不另起 effect,不多闪一帧。
  *
  * 外层也可以自己起一台交给 Modal(frame):职位描述弹框重新翻译后整块重挂内容,位置尺寸跟着外层走不丢
  * (原浮层壳的 useFloatPanel 就是外层起的,同一个理由)。
@@ -140,6 +143,12 @@ export function useFrame(x: FrameIn): FrameOut {
   const [box, setBox] = useState<FrameBox | null>(function initBox(): FrameBox | null {
     return frameInitOf({ win: x.win })
   })
+  const fitKey = fitKeyOf(x)
+  const [fit, setFit] = useState(fitKey)
+  if (fit !== fitKey) {
+    setFit(fitKey)
+    setBox(heightDroppedOf(box))
+  }
   const win = x.win != null
   const live = narrow === false
   const canDrag = live && (win || x.draggable)

@@ -651,3 +651,66 @@
    */
   width: 164px;
 }
+
+/*
+ * 大号档(访客第 3 题)的竖排(OccRail):搜索框、已选一行、两栏或单列命中自上而下(2026-10-05 Frank「也改成左右 两部分吗?」
+ * 「改啊」:与第 2 题专业选择器同一副左右两栏,竖排照 majors.module.css 的 .picker)。块间距 14px 是 pane 桶 Pane 让高
+ * (belowTags = TagRow 的 24 + 这一道 14 = 38)算进去的那一道,两边一起改;定高里的 300 同样照访客向导白卡写死(见 pane.module.css 头注)。
+ * 原在此处的 .lgText / .lgHint(大号胶囊里名字 + 重名小注的文字块与小注灰字)同日随大号胶囊 OccLgPill 撤:行改用 chip 桶 ChipLine
+ * (名字一块、放不下自己换行),重名小注不带过来(理由见 occlines.tsx 头注)。
+ * 2026-10-05 同日竖排本身(竖排、块间距 14px、吃满多出来的高、许比内容矮四格,与第 2 题 majors.module.css 的 .picker 逐格相同)
+ * 收进 pane 桶 PaneStack(pane.module.css 的 .stack;段头注说竖排那半段与逐格注释原样带过去,值一个不改):块间距与 Pane 让高
+ * 同住一个文件,上面「两边一起改」作废;本块只剩左栏宽 --rail-w(OccRail 把 .rail 当 railCls 递给 PaneStack 叠在竖排上),
+ * 下面 .rail .noResult 照旧按它找。「重名小注不带过来」同日作废:chip 桶 ChipLine 多了灰字小注一格,重名小注接回(见 occlines.tsx 头注)。
+ */
+.rail {
+  /*
+   * 左栏宽(往下继承给 tabs 桶 RailTabs):中文大类名最长四个字(14px 约 56px)+ 内衬,与第 2 题同宽。
+   */
+  --rail-w: 80px;
+}
+
+/*
+ * 英文界面左栏宽:职业大类英文名比专业大类长(「Transport & logistics」「Agriculture & mining」),两个词以上的折成两行
+ * (RailTabs 一项 52px 等高、装得下两行);单个词最长「Manufacturing」要一行放下,按它取宽。
+ */
+.rail:lang(en) {
+  /*
+   * 左栏宽。
+   */
+  --rail-w: 120px;
+}
+
+/*
+ * 韩文界面左栏宽:大类名多是两个词(「고위 경영진」「운송 물류」),在空格处折成两行;单个词最长「엔지니어링」五个字要一行放下
+ * (80px 时它被拆在字中间),按它取宽。
+ * 2026-10-05 收口:tabs 桶给韩文页签挂了只在空格处折(.railTab.railTab:lang(ko) 的 keep-all),80px 时「엔지니어링」不再被拆、
+ * 改成伸出页签右边,这一档照旧要(96px 下 24 个大类实测都一行放下)。
+ */
+.rail:lang(ko) {
+  /*
+   * 左栏宽。
+   */
+  --rail-w: 96px;
+}
+
+/*
+ * 一条都没搜到时那个虚线框(全局 .noResult 原样)在单列命中里与上沿细线拉开一点(单列区左右内衬已有,上面贴着线)。
+ */
+.rail .noResult {
+  /*
+   * 与上沿细线的间距。
+   */
+  margin-top: 12px;
+}
+
+@media (width >= 641px) {
+  .rail,
+  .rail:lang(en),
+  .rail:lang(ko) {
+    /*
+     * 电脑弹框宽 560:左栏放宽,中英大类名都一行。
+     */
+    --rail-w: 170px;
+  }
+}

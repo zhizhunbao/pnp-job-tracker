@@ -177,9 +177,9 @@ export const DEST_DESC: Record<string, string> = {
   rankings: 'daily and weekly rankings of jobs',
 
   /**
-   * 时间线。
+   * 时间线(2026-10-03 政策公告撤出时间线,只剩省与 EE 两路抽选)。
    */
-  timeline: 'the timeline of draws and policy changes',
+  timeline: 'the timeline of provincial and Express Entry draws',
 
   /**
    * 资料库。

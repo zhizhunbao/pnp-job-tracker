@@ -15,9 +15,17 @@
  * 的死值进 constants.ts 由 OccStyle 注、内联样式迁 quiz.module.css、排版按一件一文件拆成
  * 九件,本件只剩「装机 + 要不要套弹层」。
  *
+ * 2026-10-04 A2(访客第 3 题「你想做什么工作?」复用本控件,不另写):多收两格 —— majorCode(热门那一屏换成该专业
+ * 对应大类下在招最多的职业,/api/quiz?major=)与 lg(大号档:chip 桶大号胶囊、已选标签在上、钮区归宿主)。
+ * 两格都不给时与改前逐字同行为(职位板、详情页、决策页三处消费者一个未碰)。
+ * 2026-10-05 Frank「也改成左右 两部分吗?」「改啊」:大号档改成与第 2 题专业选择器同一副左右两栏(OccRail;搜索框 → 已选一行 →
+ * 左栏「推荐」+ 全站大类、右边一列职业行 / 在搜时单列命中),上面「chip 桶大号胶囊、已选标签在上」作废;钮区照旧归宿主。
+ * 整机(取数、归组、点选)一格未动,常规档照旧。
+ *
  * @author Frank
  * @time 2026-08-28 04:10:00
  */
+import { TEXT_NONE } from './constants'
 import { OccBody } from './occbody'
 import { OccModal } from './occmodal'
 import { useOccPicker } from './hooks'
@@ -26,14 +34,14 @@ import type { OccPickerIn } from './types'
 /**
  * 渲染选职业控件。
  *
- * @param props 取词函数、界面语言码、进来时已选的码、服务端热门榜、四个形态档与四个出口。
+ * @param props 取词函数、界面语言码、进来时已选的码、服务端热门榜、五个形态档、四个出口与专业码。
  * @returns 铺在答题卡里时直接给正文;否则套一层弹层。
  */
 export function OccPicker({
   t, lang, initial, onDone, onChange, onClose, inline, doneLabel, hideDone, initialTop,
-  finishLabel, onFinish,
+  finishLabel, onFinish, majorCode = TEXT_NONE, lg = false,
 }: OccPickerIn) {
-  const d = useOccPicker({ t, lang, initial, initialTop, onChange, onDone })
+  const d = useOccPicker({ t, lang, initial, initialTop, onChange, onDone, majorCode })
   const body = (
     <OccBody t={t}
       lang={lang}
@@ -43,7 +51,8 @@ export function OccPicker({
       doneLabel={doneLabel}
       finishLabel={finishLabel}
       onClose={onClose}
-      onFinish={onFinish} />
+      onFinish={onFinish}
+      lg={lg} />
   )
   if (inline === true) {
     return body

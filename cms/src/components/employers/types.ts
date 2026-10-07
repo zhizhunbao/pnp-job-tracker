@@ -2131,6 +2131,7 @@ export type EmployersPanel = {
 /**
  * useEmpPeek 交回的弹框层(2026-09-19):点雇主名开公司弹框,框里点在招职位再叠开职位描述弹框。
  * 2026-09-27 并进弹框栈:原先「开着哪家」「那一岗」两格与关框 / 点公司名几个手柄并进 stack,各层的开关由渲染件 PeekStack 接手。
+ * 2026-10-04 收口审查:弹框层多一路筛选的访客向导(访客关掉进站向导后动筛选 / 搜索再弹;设计稿 10-04,照职位板弹框层的形)。
  */
 export type EmpPeekPanel = {
   /**
@@ -2147,6 +2148,56 @@ export type EmpPeekPanel = {
    * 点雇主名:叠开公司弹框(2026-09-27 起框里点相似雇主不再走这一格 —— 同框换一家由弹框栈的渲染件接手)。
    */
   onOpenCompany: OpenCompanyFn
+
+  /**
+   * 筛选那一路的访客向导开着没(2026-10-04 收口审查)。
+   */
+  filterGate: boolean
+
+  /**
+   * 开筛选那一路的访客向导(交给过闸的筛选 / 搜索手柄)。
+   */
+  openFilterGate: ClickFn
+
+  /**
+   * × / Esc / 点遮罩关掉向导:收起,那一下筛选作罢、值不动。
+   */
+  onFilterGateClose: ClickFn
+
+  /**
+   * 向导里注册完:收起 + 软刷(页面拿到登录态)。
+   */
+  onFilterGateDone: ClickFn
+}
+
+/**
+ * makeFilterGateFlag 的入参(2026-10-04 收口审查)。
+ */
+export type FilterGateFlagIn = {
+  /**
+   * 向导开合的落格。
+   */
+  setOpen: (v: boolean) => void
+
+  /**
+   * 这只手柄落成开还是关。
+   */
+  open: boolean
+}
+
+/**
+ * makeFilterGateDone 的入参(2026-10-04 收口审查;照职位板同名形状,本域自抄)。
+ */
+export type FilterGateDoneIn = {
+  /**
+   * 收起访客向导。
+   */
+  close: ClickFn
+
+  /**
+   * 软刷(服务端组件重渲,页面拿到登录态)。
+   */
+  refresh: () => void
 }
 
 /**
@@ -2541,6 +2592,41 @@ export type EntryToggleIn = {
 }
 
 /**
+ * 筛选的访客闸(2026-10-04 收口审查,设计稿 10-04「关掉后…筛选…一律再弹」):登录态两样与开向导的口。
+ */
+export type PickGate = {
+  /**
+   * 分层态里登录了没(SSR 那份;软刷回来才变)。
+   */
+  loggedIn: boolean
+
+  /**
+   * 这个页面里刚在访客向导里登录过没(软刷还没回来时分层态仍是匿名,同职位板那一路的判法)。
+   */
+  signedIn: () => boolean
+
+  /**
+   * 开筛选那一路的访客向导。
+   */
+  onGate: ClickFn
+}
+
+/**
+ * makeGatedPick 的入参(照职位板 makeGatedSet 的形)。
+ */
+export type GatedPickIn = {
+  /**
+   * 原手柄(登录了才真调)。
+   */
+  pick: PickFn
+
+  /**
+   * 访客闸。
+   */
+  gate: PickGate
+}
+
+/**
  * makeFoldToggle 的入参。
  */
 export type FoldToggleIn = {
@@ -2729,6 +2815,7 @@ export type EmpJob = JobRow
 
 /**
  * 分层态(外域形状,逐行特批):页面门算好、原样喂给职位描述弹框,本域一格不读。
+ * 2026-10-04 收口审查:本域自此读它一格 loggedIn(筛选的访客闸 PickGate 要),其余照旧整份透传。
  */
 export type EmpPlan = Plan
 

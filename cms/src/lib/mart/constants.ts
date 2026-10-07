@@ -359,6 +359,11 @@ export const TBL_PATHWAYS = 'pathways'
 export const TBL_QC_NOC_STREAMS = 'qc_noc_streams'
 
 /**
+ * CIP 2021 专业表(2026-10-04 访客四题第 2 题;一行 = 一个 class,etl/statcan/cip 子域产)。
+ */
+export const TBL_CIP_PROGRAMS = 'cip_programs'
+
+/**
  * 联邦 EE 类别表。
  */
 export const TBL_EE_CATEGORIES = 'ee_categories'
@@ -678,6 +683,17 @@ export const COLS_PATHWAYS = ['key', 'seq', 'province', 'program', 'plain_zh', '
 export const COLS_QC_NOC_STREAMS = ['noc', 'name', 'channels']
 
 /**
+ * cip_programs 列(broads 是 jsonb)。⚠️ 新表,建表走 docs/sql/cip-programs-20261004.sql:表还没建时 seed 按 tableExists 跳过,
+ * mart 里还没有这个文件时按「未上传」跳过(2026-10-04 本批故意没接汇装,DDL 跑完再接);两件 DDL 在同一个文件里,一起跑。
+ * 2026-10-04 收口:生产 DDL 已跑、已在 payload.config 注册、已接汇装(data/mart/cip_programs.json 每轮产出,seed 按表哈希灌)。
+ * 2026-10-05 加 title_en_short(英文显示名,空串 = 照用 title_en)与 places(jsonb:这个专业在选择器里挂在哪个大类 / 专业类、
+ * 排第几;专业题照掌上高考做,Frank「可以,做吧」);DDL docs/sql/cip-programs-places-20261005.sql 已在生产跑过。
+ */
+export const COLS_CIP_PROGRAMS = [
+  'code', 'title_en', 'title_zh', 'title_ko', 'series', 'grouping', 'broads', 'popular', 'title_en_short', 'places',
+]
+
+/**
  * ee_categories 列。
  * 2026-10-02 加 name_en(官方英文类别名;Frank「可以」;DDL docs/sql/ee-name-en-pool-designated-names-20261002.sql 已在生产跑过)。
  */
@@ -694,8 +710,10 @@ export const COLS_EE_POINTS_GRID = ['grid', 'section', 'section_label', 'kind', 
 
 /**
  * noc_descriptions 列。
+ * 2026-10-05 加 examples(官方示例职称,换行拼接;职业搜索也搜这一格)。⚠️ 先在生产跑 docs/sql/noc-descriptions-examples-20261005.sql,
+ * 否则 seed 撞 42703 整事务回滚。
  */
-export const COLS_NOC_DESCRIPTIONS = ['noc', 'title', 'title_zh', 'title_zh_short', 'title_ko', 'title_ko_short', 'title_en_short', 'duties', 'requirements', 'fetched']
+export const COLS_NOC_DESCRIPTIONS = ['noc', 'title', 'title_zh', 'title_zh_short', 'title_ko', 'title_ko_short', 'title_en_short', 'duties', 'requirements', 'examples', 'fetched']
 
 /**
  * dli 列。

@@ -50,6 +50,12 @@ describe('申请步骤卡', () => {
             continue
           }
           expect(it.steps?.steps.length).toBe(set.steps.length)
+          // 2026-10-03 资讯页签四分:「申请步骤」页签上步骤卡前面没有门槛卡报通道名 —— 卡标题 = 通道官方原名、灰字 = 界面语言名(同门槛卡那一对)
+          expect([it.steps?.title, it.steps?.sub]).toEqual([it.gate.title, it.gate.sub])
+          expect(it.steps?.title).not.toBe(makeT(lang)('pnpstep.head'))
+          // 2026-10-04 互跳钮:门槛卡 →「申请步骤」页签、步骤卡 →「通道」页签,都带省码与通道编号(落地页预选省份、滚到同一条通道)
+          expect(it.gate.jump?.href).toBe(`/steps?prov=${prov}#${it.key}`)
+          expect(it.steps?.jump?.href).toBe(`/streams?prov=${prov}#${it.key}`)
           it.steps?.steps.forEach((step, i) => {
             expect(step.name).not.toMatch(/^pnpstep\./)
             for (const line of step.lines) {
@@ -114,6 +120,8 @@ describe('申请步骤卡', () => {
     })
     const byKey = card({ ref: 'processing', metric: 'assessing_up_to_date', streamKey: 'accelerated tech pathway' })
     expect(byKey?.steps[0]?.lines.map((l) => l.text)).toEqual(['已审到 2026-06-23 收到的申请(截至 2026-09-23)'])
+    // 弹框那张照旧写「申请步骤」、不出灰字(2026-10-03 资讯页签四分只改页签上那张)
+    expect([byKey?.title, byKey?.sub, byKey?.jump]).toEqual(['申请步骤', '', null])
     const byScope = card({ ref: 'processing', metric: 'assessing_up_to_date', scope: 'Accelerated Tech Pathway' })
     expect(byScope?.steps[0]?.lines).toEqual([])
   })

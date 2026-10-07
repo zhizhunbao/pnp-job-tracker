@@ -5,6 +5,8 @@
  * 两种行为;收敛成一个组件,抄一份就等着两边菜单条目慢慢走散)。
  * 组件只管**按钮 + 开合**;弹层在 accountmenupop,登录/定价弹框仍归各自调用方。
  * 2026-08-24 组件域形制化(样式迁 module.css,点外面/Esc 两条关法进 hooks)。
+ * 2026-10-04 Frank「升级 Pro 这个删了,放到 我的 模块里」:下拉里的「升级 Pro」撤,调用方递定价框的 onPricing 随之撤
+ * (升级与续买挪进账户页「我的订阅」节)。
  *
  * @author Frank
  * @time 2026-08-24 01:30:00
@@ -29,14 +31,10 @@ import css from './auth.module.css'
  * @param props 身份与回调(见 AccountMenuIn 逐格注释)。
  * @returns 头像钮 + 下拉菜单。
  */
-export function AccountMenu({ t, email, displayName, avatar, isPro, proUntil, onPricing }: AccountMenuIn) {
+export function AccountMenu({ t, email, displayName, avatar, isPro, proUntil }: AccountMenuIn) {
   const [menu, setMenu] = useState(false)
   const menuRef = useRef<HTMLSpanElement>(null)
-  let onPricingIn: (() => void) | null = null
-  if (onPricing != null) {
-    onPricingIn = onPricing
-  }
-  const handles = makeAccountMenuHandles({ open: menu, setOpen: setMenu, onPricing: onPricingIn })
+  const handles = makeAccountMenuHandles({ open: menu, setOpen: setMenu })
   useClickOutside({ ref: menuRef, open: menu, close: handles.closeMenu })
   useEscClose(handles.closeMenu)
 
@@ -63,10 +61,6 @@ export function AccountMenu({ t, email, displayName, avatar, isPro, proUntil, on
   if (proUntil != null) {
     proUntilIn = proUntil
   }
-  let onUpgrade: (() => void) | null = null
-  if (isPro === false && onPricing != null) {
-    onUpgrade = handles.clickUpgrade
-  }
 
   return (
     <span ref={menuRef} className={css.menuWrap}>
@@ -83,8 +77,7 @@ export function AccountMenu({ t, email, displayName, avatar, isPro, proUntil, on
           email={email}
           shortName={shortName}
           isPro={isPro}
-          proUntil={proUntilIn}
-          onUpgrade={onUpgrade} />
+          proUntil={proUntilIn} />
       )}
     </span>
   )

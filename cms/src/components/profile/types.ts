@@ -5,6 +5,10 @@
  * jobs/OnboardingWizard 的同构重复已经存在)。形状本域自己声明,不从别的域取。
  * 2026-09-23 账户页撤移民档案节、档案表单及其子件删文件,只给它们用的表单件 props、
  * 职业搜索兜底与表单整机的形状随之删除;向导还在用的档案值、点选项、区间归属照留。
+ * 2026-10-04 访客四题改版:访客向导的形状(由头、步序、草稿、整机面板、各手柄入参、查名响应)整段迁去 gate 桶;
+ * 职业步 props 的「访客模式」开关(ObNocsIn.guest)随之撤 —— 访客向导不再借职业步,首访向导恒出简历识别那一块。
+ * 同日收口:A1 为两台整机共用而起的几样随之撤回 —— 职业步 props(ObNocsIn,撤开关后与 NocStepIn 同形)、钮组的收窄面板
+ * (ObFootPanel / ObFootIn)与「跳过」手柄 onSkip(首访向导里恒等于下一步)、单选行的泛型(只剩区间档)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -18,6 +22,15 @@
 export type TFn = (key: string, vars?: Record<string, string | number>) => string
 
 /**
+ * 点选项代表的值的取值范围:区间档是数(null = 「不确定」档)、访客向导的专业码与省码是串
+ * (2026-10-03 付费闭环批 A1 审查:单选胶囊行只留 OnboardingBuckets 一个实现,值的类型由表定)。
+ * 2026-10-04 访客向导迁 gate 桶换装(选项改走 chip 桶的选择格与大号胶囊),串值那一支眼下没有消费者,形状照留。
+ * 同日收口:gate 改借本域的 makeOptPick(删掉自家逐字同义的 makeOptTap,「点了报值」只留一份),串值一支又有了消费者
+ * (专业码、省码;目标档是数);只剩 makeOptPick 与它的入参用这个范围 —— Opt 与 OnboardingBuckets 的泛型撤回,那一行只剩区间档。
+ */
+export type OptValue = number | string | null
+
+/**
  * 大白话点选项:一枚 chip 的 i18n 键与它代表的结构化值(E11-05 ①,§3.4 术语翻译)。
  * 2026-08-27 自 profileOptions.ts 迁入(该文件不在组件域抽屉名单里,值表并回
  * constants、归属函数并回 functions、形状归这里)。
@@ -29,7 +42,7 @@ export type Opt = {
   key: string
 
   /**
-   * 点选后存进档案的结构化值;null = 「不确定」档,存空。
+   * 点选后存进档案的结构化值;区间档的 null = 「不确定」档,存空。
    */
   value: number | null
 }
@@ -178,18 +191,18 @@ export type StatusPickIn = {
 }
 
 /**
- * makeOptPick 的入参(区间单选行里一枚 chip)。
+ * makeOptPick 的入参(单选行里一枚 chip)。
  */
-export type OptPickIn = {
+export type OptPickIn<V extends OptValue> = {
   /**
    * 这枚 chip 代表的值。
    */
-  value: number | null
+  value: V
 
   /**
    * 点了往哪报。
    */
-  onPick: (v: number | null) => void
+  onPick: (v: V) => void
 }
 
 /**
@@ -566,6 +579,8 @@ export type NocLabelIn = {
 
   /**
    * 取词函数(热门表的大白话标签)。
+   * (原在下面的 callerFirst —— 候选名先于热门表,2026-10-04 收口为 quiz 选职业控件借本件当已选标签立 —— 2026-10-05 撤:
+   * 访客第 3 题改左右两栏(「也改成左右 两部分吗?」「改啊」),控件不再借 OnboardingTags。)
    */
   t: TFn
 }
@@ -1071,7 +1086,8 @@ export type OnboardingStepIn = {
 }
 
 /**
- * OnboardingBuckets 的 props(英语 / 快速通道分 / 工签三步共用的区间单选行)。
+ * OnboardingBuckets 的 props(英语 / 快速通道分 / 工签三步共用的区间单选行;访客向导的目标、专业、所在省三步也用它)。
+ * 2026-10-04 访客向导迁 gate 桶、选项改走 chip 桶的选择格与大号胶囊,不再用这一行;泛型随之撤回,只剩区间档。
  */
 export type OnboardingBucketsIn = {
   /**
@@ -1145,6 +1161,74 @@ export type ResumeHintIn = {
    * 识别到几个职业方向。
    */
   count: number
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * 职业名的来路那一块真读的一格(首访向导的 ResumePanel 结构上就有它)。
+ */
+export type NocNamesPanel = {
+  /**
+   * 码 → 名的候选(首访向导:简历识别出的;访客向导:刚看过的职位查回来的)。
+   */
+  candidates: NocCandidate[]
+}
+
+/**
+ * 职业步(OnboardingNocs / OnboardingTags / ResumeNocs)真读的那几格 —— 首访向导与访客向导两台整机都给得出。
+ * 2026-10-03 付费闭环批 A1 自 OnboardingPanel 收窄出来:访客向导复用职业步,但没有那一整台建档机器。
+ */
+export type NocStepPanel = {
+  /**
+   * 已选职业码清单。
+   */
+  nocs: string[]
+
+  /**
+   * 拨已选职业码清单。
+   */
+  setNocs: SetNocsFn
+
+  /**
+   * 职业名的来路(已选标签取名、简历候选 chips 都读它)。
+   */
+  resume: NocNamesPanel
+}
+
+/**
+ * 职业步小件(OnboardingTags / ResumeNocs)共用的 props。
+ */
+export type NocStepIn = {
+  /**
+   * 职业步真读的那几格。
+   */
+  p: NocStepPanel
+
+  /**
+   * 取词函数。
+   * (原在下面的 shown —— 这一屏胶囊里摆着的码,2026-10-04 A2 为 quiz 选职业控件大号档借本件当已选标签立 —— 与 isChipNoc 的入参
+   * ChipNocIn 2026-10-05 撤:访客第 3 题改左右两栏(「也改成左右 两部分吗?」「改啊」),控件不再借本件;OnboardingTags 回到按热门表判。)
+   */
+  t: TFn
+}
+
+/**
+ * OnboardingHead 的 props(步数行 + 进度条)。
+ */
+export type ObHeadIn = {
+  /**
+   * 走到第几步(从 0 数)。
+   */
+  step: number
+
+  /**
+   * 一共几步。
+   */
+  total: number
 
   /**
    * 取词函数。

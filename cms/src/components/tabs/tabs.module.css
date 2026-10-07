@@ -299,3 +299,287 @@
    */
   cursor: default;
 }
+
+/*
+ * 竖排左栏两栏(RailTabs,2026-10-05 访客第 2 题照掌上高考立):左栏一列、右边面板,各自上下滚;
+ * 高度由外层定(本块撑满外层,外层给定高)。
+ */
+.rail {
+  /*
+   * 左右两栏横排。
+   */
+  display: flex;
+
+  /*
+   * 两栏一样高(撑满外层)。
+   */
+  align-items: stretch;
+
+  /*
+   * 撑满外层给的高。
+   */
+  height: 100%;
+
+  /*
+   * 两栏同一片浅灰底(右边的白卡浮在上面,照掌上高考)。
+   */
+  background: var(--hairline);
+}
+
+/*
+ * 左栏:一列页签,自己上下滚。宽由外层的 --rail-w 定(跟语言走),没给 88px。
+ */
+.railList {
+  /*
+   * 不被右边挤窄。
+   */
+  flex: none;
+
+  /*
+   * 宽(外层定;中文四个字约 56px + 内衬)。
+   */
+  width: var(--rail-w, 88px);
+
+  /*
+   * 页签竖排。
+   */
+  display: flex;
+
+  /*
+   * 竖排。
+   */
+  flex-direction: column;
+
+  /*
+   * 页签多了自己滚。
+   */
+  overflow-y: auto;
+
+  /*
+   * 滚到头不带着弹框一起滚。
+   */
+  overscroll-behavior: contain;
+
+  /*
+   * 藏滚动条(手机上是浮层滚动条,电脑上细条见文件末尾)。
+   */
+  scrollbar-width: none;
+}
+
+/*
+ * 左栏一项(非当前):52px 等高、一行,深字。双写类名压过 button 桶 ghost 底的样式。
+ */
+.railTab.railTab {
+  /*
+   * 给左侧竖条定位。
+   */
+  position: relative;
+
+  /*
+   * 不被压缩(项多时左栏滚,项不缩)。
+   */
+  flex: none;
+
+  /*
+   * 文字竖直居中。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 撑满左栏宽。
+   */
+  width: 100%;
+
+  /*
+   * 等高 52px(照掌上高考;也够手指点)。
+   */
+  min-height: 52px;
+
+  /*
+   * 左 12 右 8 内衬。
+   */
+  padding: 0 8px 0 12px;
+
+  /*
+   * 无描边。
+   */
+  border: 0;
+
+  /*
+   * 方角(整列连成一片)。
+   */
+  border-radius: 0;
+
+  /*
+   * 透明底(露出左栏的浅灰)。
+   */
+  background: none;
+
+  /*
+   * 正文字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 常规字重(当前项也不加粗,切换不跳)。
+   */
+  font-weight: 400;
+
+  /*
+   * 行高。
+   */
+  line-height: 1.35;
+
+  /*
+   * 深字(浅灰底上对比度够 AA)。
+   */
+  color: var(--text);
+
+  /*
+   * 左对齐。
+   */
+  text-align: start;
+
+  /*
+   * 一行(大类名由数据层定得够短)。
+   * 2026-10-05 访客第 3 题也用这副两栏(Frank「也改成左右 两部分吗?」「改啊」):职业大类的英文名长(「Transport & logistics」),
+   * 改成放得下照旧一行、放不下在词间折到第二行(52px 等高装得下两行,项不变高);第 2 题的专业大类名都放得下一行,长相不变。
+   * 单个词不拆(折不开的由调用方的 --rail-w 给够宽)。
+   * 2026-10-05 收口:英文本来就只在空格处折;韩文默认任意两个音节之间都能折,「单个词不拆」靠下面 .railTab.railTab:lang(ko) 那条才成立。
+   */
+  white-space: normal;
+}
+
+/*
+ * 韩文页签只在空格处折(2026-10-05 收口立:韩文默认在任意两个音节之间都能折,第 2 题的专业大类「예술미디어」在 80px 左栏里
+ * 被拆成「예술미디 / 어」;中文本就逐字折、大类名四个字以内放得下,不套 —— 同 chip 桶 .tileLabel:lang(ko))。
+ * 一个词本身比左栏还宽时不折,由调用方的 --rail-w 给够宽(第 2 题 majors.module.css、第 3 题 quiz.module.css 各有 :lang(ko) 一档)。
+ */
+.railTab.railTab:lang(ko) {
+  /*
+   * 只在空格处折。
+   */
+  word-break: keep-all;
+}
+
+/*
+ * 左栏当前项:浅主色底 + 主色字(竖条见 ::before)。
+ */
+.railOn.railOn {
+  /*
+   * 浅主色底(真值在 main.css 的 :root)。
+   */
+  background: var(--hover-bg);
+
+  /*
+   * 主色字。
+   */
+  color: var(--primary);
+}
+
+/*
+ * 左栏当前项左侧的主色竖条。
+ */
+.railOn.railOn::before {
+  /*
+   * 伪元素要有内容才渲染(空串)。
+   */
+  content: '';
+
+  /*
+   * 贴左边、上下撑满。
+   */
+  position: absolute;
+
+  /*
+   * 贴左。
+   */
+  left: 0;
+
+  /*
+   * 贴顶。
+   */
+  top: 0;
+
+  /*
+   * 贴底。
+   */
+  bottom: 0;
+
+  /*
+   * 3px 宽。
+   */
+  width: 3px;
+
+  /*
+   * 主色。
+   */
+  background: var(--primary);
+}
+
+/*
+ * 右侧面板:吃满剩下的宽,自己上下滚。
+ * 2026-10-05 多一格内衬(访客第 3 题也用这副两栏,Frank「也改成左右 两部分吗?」「改啊」):白卡浮在浅灰底上那一圈留白原住
+ * 第 2 题的 majors 桶(majors.module.css 的 .majorPanel,包在面板里的一层 div),两题同一副长相,收进本件一处出;值一个不改。
+ */
+.railPanel {
+  /*
+   * 吃满剩下的宽。
+   */
+  flex: 1;
+
+  /*
+   * 允许被压窄(长名在里面折行,不撑破两栏)。
+   */
+  min-width: 0;
+
+  /*
+   * 白卡浮在灰底上的留白:上下 8、右 12、左 8(照掌上高考;电脑见文件末尾)。
+   * 2026-10-05 自 majors.module.css 的 .majorPanel 迁入(原注「左栏右边那块的内衬(白卡浮在灰底上,照掌上高考)」「上下 8、右 12、左 8」)。
+   */
+  padding: 8px 12px 8px 8px;
+
+  /*
+   * 自己上下滚。
+   */
+  overflow-y: auto;
+
+  /*
+   * 滚到头不带着弹框一起滚。
+   */
+  overscroll-behavior: contain;
+
+  /*
+   * 藏滚动条(同左栏)。
+   */
+  scrollbar-width: none;
+}
+
+/*
+ * 电脑宽:两栏露细滚动条(鼠标用户要看得出能滚)。
+ * 2026-10-05 Frank「而且不用出来三个竖条吧」:Windows 的 Chrome 上细条仍带上下箭头,两栏两条加白卡一条并排三条竖条;
+ * 电脑上也藏(滚轮照滚,列表到底被切开本身就看得出还有)。
+ */
+@media (width >= 641px) {
+  .railList,
+  .railPanel {
+    /*
+     * 细滚动条。
+     * 2026-10-05 改藏(见上)。
+     */
+    scrollbar-width: none;
+  }
+
+  .railPanel {
+    /*
+     * 电脑内衬放宽一档。
+     * 2026-10-05 自 majors.module.css 电脑段的 .majorPanel 迁入(原注同句,值不改)。
+     */
+    padding: 12px 16px 12px 12px;
+  }
+}

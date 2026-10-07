@@ -1,13 +1,15 @@
 // 答案门面与字段库(统一题库,docs/design/统一题库与付费面-20260731.md)。
 // 锁死三件事:① 老答案迁得过来(丢了=让用户重答,红线);② 目标省两种表示始终同步
 // (只写一边 → 另一个入口会重新问一遍,那正是这次收敛掉的病);③ 档位→引擎输入的换算与重构前逐字一致。
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { afterEach, describe, it, expect, beforeEach, vi } from 'vitest'
 import { DECISIONS, getFields, KNOWN_NO_FREE_LEAD, answeredBasics, batchLeadsFree, fieldsOf, pullAndMerge, readAnswers, readScoreAnswers, resetAnswersMemory, toEngineAnswers, writeAnswers, type Answers } from '@/lib/quiz'
+// 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
+import { finishAuth, quizDestinationOf } from '@/components/auth/functions'
 
 const OLD_QUIZ = 'jobs_quiz_v1'
 const OLD_PR = 'plan_pr_v1'
 const base = (p: Partial<Answers> = {}): Answers =>
-  ({ status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0, eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, goalBand: 0, canadaEduBand: 0, permitBand: 0, resProv: '', fieldMatchBand: 0, eduProv: '', eduYearsBand: 0, frenchBand: 0, studyMonthsBand: 0, studyLevelBand: 0, bandsV2: true, ...p })
+  ({ status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0, eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, goalBand: 0, canadaEduBand: 0, permitBand: 0, resProv: '', fieldMatchBand: 0, eduProv: '', eduYearsBand: 0, frenchBand: 0, studyMonthsBand: 0, studyLevelBand: 0, majors: [], bandsV2: true, ...p })
 
 beforeEach(() => { localStorage.clear(); resetAnswersMemory() })
 
@@ -168,6 +170,48 @@ describe('题级显隐(fieldsOf 过滤)', () => {
 
 // 服务端答案档同步(答案入库绑账号 2026-08-15):合并规则=新者胜。fetch 用素对象桩
 // (jsdom 不保证有 Response),只摸 status/ok/json 三样 —— 与 lib/quiz/answers 的用面一致。
+describe('答过基础题没有(answeredBasics)', () => {
+  // 2026-10-03 付费闭环批 A1:访客向导只问目标 / 专业 / 职业 / 现居省 —— 只答了其中不带处境与目标省的那几格也算答过,
+  // 否则新注册的人服务端空档时 pullAndMerge 不推,四道题白答。
+  it('金标:空卷没答;只答目标 / 现居省 / 专业任一格也算答过;原四格照旧', () => {
+    expect(answeredBasics(base())).toBe(false)
+    expect(answeredBasics(base({ goalBand: 1 }))).toBe(true)
+    expect(answeredBasics(base({ goalBand: 2 }))).toBe(true)
+    expect(answeredBasics(base({ resProv: 'ON' }))).toBe(true)
+    expect(answeredBasics(base({ majors: ['52.0301'] }))).toBe(true)
+    expect(answeredBasics(base({ majors: [] }))).toBe(false)
+    expect(answeredBasics(base({ status: 'working' }))).toBe(true)
+    expect(answeredBasics(base({ nocs: ['21232'] }))).toBe(true)
+    expect(answeredBasics(base({ provs: ['ON'] }))).toBe(true)
+    expect(answeredBasics(base({ done: true }))).toBe(true)
+    expect(answeredBasics(base({ eduBand: 3, clbBand: 5 }))).toBe(false)
+  })
+})
+
+describe('认证收尾 finishAuth', () => {
+  const res = (status: number, body: unknown) => ({ status, ok: status >= 200 && status < 300, json: async () => body })
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn(async () => res(401, {})))
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)   // jsdom 不实现整页跳转,会报一行 not implemented
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+  })
+
+  it('注册默认照旧进补题问卷(整页跳走、不调 onDone);keepPage(访客向导注册屏)留在原页调 onDone;登录一律留原页', async () => {
+    const done = vi.fn()
+    expect(quizDestinationOf({ returnTo: null })).not.toBeNull()   // 空卷:默认那一路确实要跳
+    await finishAuth({ mode: 'register', keepPage: false, returnTo: null, onDone: done })
+    expect(done).not.toHaveBeenCalled()
+    await finishAuth({ mode: 'register', keepPage: true, returnTo: null, onDone: done })
+    expect(done).toHaveBeenCalledTimes(1)
+    await finishAuth({ mode: 'login', keepPage: false, returnTo: null, onDone: done })
+    await finishAuth({ mode: 'login', keepPage: true, returnTo: null, onDone: done })
+    expect(done).toHaveBeenCalledTimes(3)
+  })
+})
+
 describe('服务端答案档同步', () => {
   const iso = (offsetMs: number) => new Date(Date.now() + offsetMs).toISOString()
   const res = (status: number, body: unknown) => ({ status, ok: status >= 200 && status < 300, json: async () => body })

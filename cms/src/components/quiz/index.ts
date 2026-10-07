@@ -9,10 +9,14 @@
  * 🔴 桶不带 `'use client'`:各件自己标,类型与函数两侧都能取。
  * 对应 lib 域:lib/quiz。
  *
+ * 2026-10-05 Frank「点过来的时候 有一个闪 的过程」:桶门多导出 useOccPicker 与 OccRail —— 访客向导开屏就挂上选职业机器
+ * (照第 2 题 useMajorPicker 的先例),第 3 题只摆 OccRail,推荐清单与已选名字在第 2 题时就取好。
+ *
  * @author Claude
  * @time 2026-08-26 19:28:00
  */
 export { OccPicker } from './occpicker'
+export { OccRail } from './occrail'
 export { ProvincePicker } from './provincepicker'
 export { QuizChecks } from './quizchecks'
 export { QuizChoices } from './quizchoices'
@@ -21,4 +25,5 @@ export { QuizStyle } from './quizstyle'
 export { QuizSub } from './quizsub'
 export { QuizTitle } from './quiztitle'
 export { pickL, quizToProfile, readQuiz, shortOcc } from './functions'
+export { useOccPicker } from './hooks'
 export type { L } from './types'

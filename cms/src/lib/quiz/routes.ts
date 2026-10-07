@@ -15,13 +15,17 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getDb } from '../db/server'
 import { BAD_REQUEST, TOO_LARGE, UNAUTHORIZED } from '../http'
-import { loadBroadNocs, loadNocOpenCounts, loadQuizFacts, loadTopNocs, searchNocByTitle } from '../jobs/server'
-import { getTopNocsCached, loadAnswers, makeFactsStore, saveAnswers, swallowFactsError } from './functions'
+import { loadBroadNocs, loadMajorNocs, loadNocOpenCounts, loadQuizFacts, loadTopNocs, searchNocByTitle } from '../jobs/server'
+import { getMajorBroads } from '../majors/server'
+import {
+  getMajorNocsCached, getTopNocsCached, loadAnswers, majorCodesOf, majorNOf, makeFactsStore, saveAnswers,
+  swallowFactsError,
+} from './functions'
 import { getUserOrNull } from '../quota/server'
 import {
   ANSWERS_LEN_MAX, BROAD_CACHE_MAX, BROAD_LEN_MAX, BROAD_LIMIT, COUNTS_CACHE_MAX, COUNTS_N_MAX, COUNTS_SEP,
-  E_AUTH, E_BAD, E_PARAM, E_TOO_BIG, FACTS_CACHE_MAX, PARAM_NONE, P_BROAD, P_COUNTS, P_NOC, P_Q, P_TOP, Q_LEN_MAX,
-  TOP_N_DEFAULT, TTL,
+  E_AUTH, E_BAD, E_PARAM, E_TOO_BIG, FACTS_CACHE_MAX, MAJOR_LEN_MAX, PARAM_NONE, P_BROAD, P_COUNTS, P_MAJOR, P_N, P_NOC,
+  P_Q, P_TOP, Q_LEN_MAX, TOP_N_DEFAULT, TTL,
 } from './constants'
 import { CACHE } from './variables'
 import type {
@@ -30,8 +34,11 @@ import type {
 
 /**
  * GET /api/quiz:入口三问的只读分发器(付费漏斗重设计-20260726)。匿名可用 ——
- * 结果本就免费,注册闸在结果之后。五条分支按参数分发:
+ * 结果本就免费,注册闸在结果之后。六条分支按参数分发:
  * ?q=厨师 → 职业搜索(NOC 候选);?broad=技工 → 点中大类后取该类清单(TTL 缓存);
+ * ?major=52.0203&n=24 → 访客四题第 3 题:该专业对应大类下在招最多的职业(10 分钟 TTL,空结果不缓存;2026-10-04);
+ * (2026-10-05 访客第 2 题改多选:?major= 收逗号连的至多 3 个码,majorCodesOf 逐个验形、去重、夹紧,取并集大类;
+ * 参数在但一个都不合形照旧回空清单,不落到别的分支。)
  * ?top=N → 按在招量排的热门职业(SWR,4 万岗 GROUP BY 实测 3.6s 必须缓存);
  * ?counts=a,b → 这些 NOC 的在招/可提名数(第 2 题热门按钮挂真数,TTL 缓存);
  * ?noc=63200 → 免费事实卡(SWR:命中含过期先回,过期删格后台刷;零在招回 null 是正常态)。
@@ -39,7 +46,7 @@ import type {
  * @param req 请求。
  * @returns 各分支的 json;主参数全缺 400。
  */
-// eslint-disable-next-line local/function-length -- 五分支分发器:每支 4~10 行各自完结、互不共享中间量;拆出去每支都得带 db + 缓存格两个参(违 one-parameter)或再造五个 In 型,读的人反而要翻
+// eslint-disable-next-line local/function-length -- 六分支分发器(2026-10-04 加 major 一支):每支 4~10 行各自完结、互不共享中间量;拆出去每支都得带 db + 缓存格两个参(违 one-parameter)或再造五个 In 型,读的人反而要翻
 export async function quizRoute(req: Request): Promise<Response> {
   const sp = new URL(req.url).searchParams
   const db = await getDb()
@@ -67,6 +74,17 @@ export async function quizRoute(req: Request): Promise<Response> {
     }
     CACHE.broadBy.set(broad, { at: Date.now(), rows: rows })
     return Response.json({ top: rows })
+  }
+  let major = PARAM_NONE
+  const majorParam = sp.get(P_MAJOR)
+  if (majorParam != null) {
+    major = majorParam.trim().slice(0, MAJOR_LEN_MAX)
+  }
+  if (major !== '') {
+    const top = await getMajorNocsCached({
+      db: db, codes: majorCodesOf(major), n: majorNOf(sp.get(P_N)), broadsOf: getMajorBroads, load: loadMajorNocs,
+    })
+    return Response.json({ top: top })
   }
   const topParam = sp.get(P_TOP)
   if (topParam != null && topParam !== '') {

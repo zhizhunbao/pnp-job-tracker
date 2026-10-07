@@ -12,7 +12,7 @@ import {
   API_FORGOT, API_LOGIN, API_LOGOUT, API_RESET, API_USERS, AVATAR_PALETTE, BODY_NONE, CREDENTIALS_INCLUDE,
   EVENT_SIGNUP, FLOW_DONE, FLOW_ERR, FLOW_SENT, HASH_BASE, HTTP_BAD_REQUEST, HTTP_POST, KEY_ERR_CRED, KEY_ERR_EXISTS,
   KEY_ERR_GENERIC, KEY_ERR_RESET_BAD, KEY_ERR_WEAK_PW, KEY_SUBMIT_FORGOT, KEY_SUBMIT_LOGIN, KEY_SUBMIT_REG,
-  KEY_SUBMIT_RESET, LOCALE_DEFAULT, LOCALE_KEY, MIME_JSON, MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET,
+  KEY_SUBMIT_RESET, MIME_JSON, MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET,
   PATH_GOOGLE_AUTH,
   AVATAR_COLOR_NONE, PATH_ROOT, PW_CLASSES_MEDIUM, PW_CLASSES_STRONG, PW_CLASS_RES, PW_LONG_LEN, PW_LV_MEDIUM,
   PW_LV_STRONG, PW_LV_WEAK,
@@ -21,7 +21,7 @@ import {
 } from './constants'
 import type {
   AccountMenuHandlesIn, AccountMenuHandlesOut, AuthFlowIn, AuthFlowOut, AuthFooterHandlesIn, AuthFooterHandlesOut,
-  FinishAuthIn, PwLevel, QuizDestIn, RegisterErrIn,
+  FinishAuthIn, ImgFailIn, PwLevel, QuizDestIn, RegisterErrIn,
 } from './types'
 import { HDR_CONTENT_TYPE } from '@/lib/http'
 
@@ -70,23 +70,6 @@ export function stableColor(s: string): string {
 }
 
 /**
- * 读界面语言(localStorage 的 jobs.lang,与 lib/i18n 同源;读不到给 zh)。
- *
- * @returns 语言码。
- */
-export function localeOf(): string {
-  try {
-    const v = localStorage.getItem(LOCALE_KEY)
-    if (v != null && v !== '') {
-      return v
-    }
-    return LOCALE_DEFAULT
-  } catch {
-    return LOCALE_DEFAULT
-  }
-}
-
-/**
  * 登录/注册后要不要先补统一基础问卷:已有完整本地答案的用户不重复打扰(给 null),
  * 否则给 /plan/pr 的问卷地址。/plan/pr 自己就是问卷宿主:保留 job 参数原地展开;
  * 其它页面用 next 在答完后回跳。
@@ -130,6 +113,7 @@ export function quizDestinationOf(x: QuizDestIn): string | null {
  * 拍板「在哪个页面就保留在哪个页面」—— 老用户登录被整页拽去 /plan/pr?quiz=1 是打扰,
  * 注册闸的地基只管新身份)。
  * afterLogin=true:登录刚成功,迹象 cookie(#311 匿名不发请求的闸)还没置位,这一调必须绕闸发出。
+ * 2026-10-03 付费闭环批 A1:调用方传 keepPage(访客向导的注册屏)时注册也不进补题漏斗,直接调 onDone。
  *
  * @param x 回跳路径与完成回调。
  * @returns 无(可能整页跳转)。
@@ -138,7 +122,7 @@ export async function finishAuth(x: FinishAuthIn) {
   await pullAndMerge(true).catch(function ignore() {
     return null
   })
-  if (x.mode === MODE_REGISTER) {
+  if (x.mode === MODE_REGISTER && x.keepPage === false) {
     const destination = quizDestinationOf({ returnTo: x.returnTo })
     if (destination != null) {
       window.location.assign(destination)
@@ -302,12 +286,13 @@ export async function logout() {
 }
 
 /**
- * 造账户下拉的三枚手柄(2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」,
- * 自 AccountMenu 体内迁出)。同一台开合状态机,一个工厂发齐 —— 拆成三个工厂
- * 只会把「谁在写这一格态」摊到三处。
+ * 造账户下拉的手柄(2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」,
+ * 自 AccountMenu 体内迁出)。同一台开合状态机,一个工厂发齐 —— 拆成几个工厂
+ * 只会把「谁在写这一格态」摊到几处。
+ * 2026-10-04 下拉的「升级 Pro」撤(挪进账户页「我的订阅」),升级手柄 clickUpgrade 随之撤,剩关 / 翻面两枚。
  *
- * @param x 当前开合、写开合的 setter 与升级回调。
- * @returns 关 / 翻面 / 升级三枚具名手柄。
+ * @param x 当前开合与写开合的 setter。
+ * @returns 关 / 翻面两枚具名手柄。
  */
 export function makeAccountMenuHandles(x: AccountMenuHandlesIn): AccountMenuHandlesOut {
   function closeMenu() {
@@ -318,14 +303,7 @@ export function makeAccountMenuHandles(x: AccountMenuHandlesIn): AccountMenuHand
     x.setOpen(x.open === false)
   }
 
-  function clickUpgrade() {
-    x.setOpen(false)
-    if (x.onPricing != null) {
-      x.onPricing()
-    }
-  }
-
-  return { closeMenu, toggleMenu, clickUpgrade }
+  return { closeMenu, toggleMenu }
 }
 
 /**
@@ -352,4 +330,16 @@ export function makeAuthFooterHandles(x: AuthFooterHandlesIn): AuthFooterHandles
   }
 
   return { toLogin, toggle, toForgot }
+}
+
+/**
+ * 造头像图的 onError 手柄:图挂了记一笔,头像退回首字母色块(2026-10-05 Frank 截图右上角裂图)。
+ *
+ * @param x 「图挂了」的 setter。
+ * @returns onError 手柄。
+ */
+export function makeImgFail(x: ImgFailIn): () => void {
+  return function imgFailed(): void {
+    x.setFailed(true)
+  }
 }

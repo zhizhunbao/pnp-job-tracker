@@ -3735,6 +3735,31 @@ export type BroadNocsIn = {
 export type BroadNocsOut = Promise<BroadNoc[]>
 
 /**
+ * `loadMajorNocs` 的入参(访客四题第 3 题:某专业对应的几个大类下在招最多的职业;2026-10-04)。
+ */
+export type MajorNocsIn = {
+  /**
+   * 数据库连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 大类名清单(专业表 cip_programs.broads;调用方已判非空)。
+   */
+  broads: string[]
+
+  /**
+   * 取前几(1..80 夹紧,同 loadBroadNocs)。
+   */
+  limit: number
+}
+
+/**
+ * `loadMajorNocs` 的返回(与热门职业同形,行映射共用 toTopNoc)。
+ */
+export type MajorNocsOut = Promise<TopNoc[]>
+
+/**
  * 职业名搜索一行。
  */
 export type NocHit = {
@@ -3786,6 +3811,7 @@ export type NocSearchIn = {
 
 /**
  * `searchNocByTitle` 的返回(≤8 条)。
+ * 2026-10-05 起 ≤12 条(示例职称也参与匹配,名字命中的在前)。
  */
 export type NocSearchOut = Promise<NocHit[]>
 
@@ -4421,16 +4447,6 @@ export type JobsCache = {
   jdFailed: Map<string, number>
 
   /**
-   * 投递邮箱正缓存:规范化 url → 邮箱(空串 = 确认无邮箱,同样缓存)。
-   */
-  applyMail: Map<string, string>
-
-  /**
-   * 投递抓取失败负缓存:规范化 url → 失败时刻(到期重试)。
-   */
-  applyFail: Map<string, number>
-
-  /**
    * jdformat 同岗并发去重：apply_url → 在途生成（后到者等同一个 Promise；
    * 与 jdInflight 分开 —— 那格是 JD 原文懒抓的单飞，这格是五节整理的单飞）。
    */
@@ -5032,11 +5048,6 @@ export type BigDimsIn = {
  * `loadBigDims` 的返回。
  */
 export type BigDimsOut = Promise<BigDims>
-
-/**
- * `loadApplyEmail` 的返回:邮箱;空串 = 确认无;null = 抓取失败(有没有未知,负缓存到期重试)。
- */
-export type ApplyMailOut = Promise<string | null>
 
 /**
  * loadStoredApplyEmail 的入参(2026-09-23 站内投递批 1)。

@@ -17,22 +17,26 @@ import { quizToProfile, readQuiz } from '@/components/quiz'
 import { makeT } from '@/lib/i18n'
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
 import { mapQuery, mapsUrl } from '@/lib/location'
+import { JOBS_LOG, log } from '@/lib/log'
+import { isGateSignedIn, markSeenJob } from '@/lib/guest'
 import { registerCatLabels } from '@/lib/noc'
 import { ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
-  APPLY_AUTH, APPLY_EMAIL, APPLY_IDLE, APPLY_INTENT, APPLY_RESUME_KEY, APPLY_RESUME_SEP, APPLY_RESUME_TTL_MS,
+  APPLY_AUTH, APPLY_EMAIL, APPLY_ERR, APPLY_IDLE, APPLY_INTENT, APPLY_LIMIT, APPLY_LOGIN, APPLY_RESUME_KEY,
+  APPLY_RESUME_SEP, APPLY_RESUME_TTL_MS, APPLY_STATUS_NET, HTTP_UNAUTHORIZED,
   AUTH_LOGIN, AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA, CREDENTIALS_INCLUDE,
   DIR_DESC, DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK,
   HOME_GATE_OFF,
   FILTER_Q, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
   HOLD_MAX_MS, HTTP_NOT_FOUND, HTTP_TOO_MANY, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ENTER,
   LANG_EN, LIMIT_RE, METHOD_DELETE,
-  METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, QS_HEAD, Q_URL_SETTLE_MS, SAVED_STATUS_APPLIED, SAVED_STATUS_WISH,
-  SAVE_ERR, SAVE_LIMIT, SAVE_OK, SLASH, SORT_DEFAULT, TARGET_BLANK, TEXT_NONE,
+  METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, P_OAUTH,
+  QS_HEAD, Q_URL_SETTLE_MS, SAVED_STATUS_APPLIED, SAVED_STATUS_WISH,
+  SAVE_ERR, SAVE_LIMIT, SAVE_OK, SAVE_RESUME_KEY, SAVE_RESUME_TTL_MS, SLASH, SORT_DEFAULT, TARGET_BLANK, TEXT_NONE,
   TEXT_STATUS, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
-  TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MODE_EMAIL, TRACK_MODE_WEB,
-  TRACK_SAVE_JOB, TRACK_SAVE_SEARCH, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UPSELL_LOCK, UPSELL_SS,
+  TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MODE_EMAIL,
+  TRACK_APPLY_CLICK, TRACK_SAVE_JOB, TRACK_SAVE_SEARCH, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UPSELL_LOCK, UPSELL_SS,
   URL_API_APPLY_HOW, URL_API_APPLY_HOW_ID, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE,
   URL_API_JOB_RELATED,
   URL_API_JOBS, URL_API_JOBS_DIMS,
@@ -43,35 +47,38 @@ import {
 } from './constants'
 import {
   allocateColWidths, anyFilterOf, applyEmailOf, applyFiltersTo, applyHomeProvince, authFromUrl, blockedSetsOf,
+  dropUrlParam,
   homeGateAfterOf, homeGateInitOf, hydratingClientOf, hydratingServerOf, subscribeNever,
   clearFiltersIn, colsKeyOf, colWidthSeedValue, curFiltersOf, dataKeyOf, defaultColsOf,
   fetchJobText, filterOptsOf, filterSig, foldActiveNarrowOf, foldActiveOf, frozenKeysOf, homeProvPickOf, initialColsOf,
   initialFiltersOf, userFilterOf,
-  jobDetailViewOf, jobsQueryOf, keysOf, lastOf, makeColWidth, makeOccName, makePopupToCo,
+  jobDetailViewOf, jobsQueryOf, keysOf, lastOf, makeColWidth, makeGatedFilters, makeGatedProvChange, makeOccName,
+  makePopupToCo,
   makePushCoLayer, makePushJobLayer, markObSeen,
   measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
   saveFiltersOf, seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf,
   toRelatedJobs, chipNocOf, occGroupsOf, occSlotOf, tableWrapOf,
   widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
-  jobDatesOf,
+  jobDatesOf, ssrTransOf,
 } from './functions'
 import type {
-  AccountAreaPanel, Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyEmailPickIn, ApplyHowJson,
-  ApplyHowPanel, ApplyResumeIn, ApplyStage, AuthDoneIn, BlockedKeys, BoardColsHookIn, BoardColsOut, BoardColsPanel,
+  AccountAreaPanel, Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyHowJson, ApplyMailOut, ApplyMissIn,
+  ApplyResumeIn, ApplyStage, AuthDoneIn, BlockedKeys, BoardColsHookIn, BoardColsOut, BoardColsPanel,
   BoardDataHookIn, BoardDataOut, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoardPnpFacts, BoxRef,
   ClickFn, ColMeasure,
   ColsToggleIn, ColWidthSeed, ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson,
   FieldRouterIn, FilterState, FmtLoad, FmtLoadIn, FmtWhy, FontsDoc, FrozenHookIn, FrozenPanel, HeadRowRef, HomeGate,
-  HydrateIn,
+  FilterGateDoneIn, HydrateIn, CopyEmailIn,
   JobPeekPanel,
   IntentProfileIn,
   JdFormatHookIn, JdFormatPanel, JdStatus, JdTextHookIn, JdTextPanel, JdTransHookIn, JdTransPanel, JobBodyHookIn,
   JobBodyPanel, JobColKey, JobDetailPanel, JobDims, JobFact, JobFilters, JobIn, JobPlan, JobsBoardOut, JobsBoardPanel,
   JobsIn, JobsPageJson,
   MatchProfileFact, MeJson, ModalsHookIn, ModalsHookOut, NeedIntentIn,
-  OpenApplyIn, OpenMatchIn, OutsideCloseIn, PeekLayer, PopupState, ProfileJsonFact, ProofCount, QKeyEvent, QKeyFn,
+  OpenMatchIn, OutsideCloseIn, PeekLayer, PopupState, ProfileJsonFact, ProofCount, QKeyEvent, QKeyFn,
   RelatedJobs,
-  RelatedJson, RelatedOfHookIn, SavedAddIn, SavedEditIn,
+  RelatedJson, RelatedOfHookIn, SaveGateDoneIn, SaveIntentIn, SaveIntentJson, SaveJobFact, SavedAddIn, SavedEditIn,
+  SavedLoadIn,
   SavedEntry, SavedHookIn, SavedListJson, SavedPanel, SavedPostJson, SaveSearchIn, SeedCookieIn, SortState,
   TableWidthIn, TransJson, TranslateIn, TransStatus, UnseenRowsIn, UpsellKind, UrlSettleIn, WrapWidthIn,
   JobDateCell, JobDatesIn,
@@ -331,7 +338,11 @@ function useSeedCookie(x: SeedCookieIn): void {
  * #84:身份四件以 SSR plan 为初值(刷新零闪);fetch 兜底只在 SSR 没给时跑(老调用方兼容)——
  * SSR 已给身份则不再拉,那正是拉回前的紫「?」闪烁根因。
  * 地址栏参数(?login=1 / ?signup=1 / ?reset=<token>)开框后立刻洗掉,见 authFromUrl。
+ * 2026-10-03 付费闭环批 A1 本地测试(Frank「已经登录 为什么还显示没有登录成功」):已登录时地址栏的开框参数只洗不开,
+ * 连 ?oauth=fail 一起洗 —— 同一次 Google 登录两条回调一成一败时,成功的会话已种上,失败那条把人带回 ?login=1&oauth=fail。
  * 登录成功整页刷新让 SSR 分层态(匹配列等)生效。
+ * 2026-10-04 Frank「升级 Pro 这个删了,放到 我的 模块里」:账户下拉的「升级 Pro」撤,本区定价框(唯一开口就是那一项)
+ * 的开合态与两只手柄随之撤。
  *
  * @param plan 分层态。
  * @returns 账户区面板。
@@ -343,7 +354,6 @@ export function useAccountArea(plan: JobPlan): AccountAreaPanel {
   const [avatar, setAvatar] = useState(plan.avatar)
   const [auth, setAuth] = useState<AccountAreaPanel['auth']>(false)
   const [resetTok, setResetTok] = useState(TEXT_NONE)
-  const [pricing, setPricing] = useState(false)
   useEffect(function loadIdentity() {
     if (plan.loggedIn === false || plan.email != null) {
       return
@@ -360,11 +370,16 @@ export function useAccountArea(plan: JobPlan): AccountAreaPanel {
   }, [plan.loggedIn, plan.email])
   useEffect(function openFromUrl() {
     const opened = authFromUrl()
+    if (opened.mode !== false && plan.loggedIn) {
+      dropUrlParam(P_OAUTH)
+      return
+    }
     if (opened.mode !== false) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- 服务端首帧读不到地址栏,先按不开框画;活过来才能读参数、洗参数
       setResetTok(opened.token)
       setAuth(opened.mode)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只在挂载时读一次 URL,依赖列表空是本意
   }, [])
   return {
     email,
@@ -373,7 +388,6 @@ export function useAccountArea(plan: JobPlan): AccountAreaPanel {
     proUntil,
     auth,
     resetTok,
-    pricing,
     onLogin: function openLogin(): void {
       setAuth(AUTH_LOGIN)
     },
@@ -384,39 +398,34 @@ export function useAccountArea(plan: JobPlan): AccountAreaPanel {
       setAuth(false)
     },
     onAuthDone: reloadBoard,
-    onPricing: function openPricing(): void {
-      setPricing(true)
-    },
-    onPricingClose: function closePricing(): void {
-      setPricing(false)
-    },
   }
 }
 
 /**
  * 我的求职(E9-01):已收藏映射 岗位号 → 收藏行;匿名点收藏 → 注册框(转化钩子)。
+ * 2026-10-03 付费闭环批 A1:匿名点收藏改开访客向导(带上那一岗),注册完由 saveNow 补收 ——
+ * 那一刻分层态还是匿名(软刷没回来),不能再走 onSave 的登录判。
+ * 同日审查后补:开向导那一刻把那一岗落成收藏意图(Google 整页登录回跳后,拉清单前先补收;× 关掉即撤);
+ * 向导里刚登录过的(软刷没回来)直接收,不再弹一次向导;落库 / 拉清单挂了经 lib/log 留痕。
  *
  * @param x 分层态与匿名时的去处。
  * @returns 收藏映射与开关。
  */
 function useSavedJobs(x: SavedHookIn): SavedPanel {
   const [saved, setSaved] = useState<Record<string, SavedEntry>>({})
+  const router = useRouter()
   const loggedIn = x.plan.loggedIn
   const onAnon = x.onAnon
   useEffect(function loadSaved() {
     if (loggedIn === false) {
       return
     }
-    fetch(URL_API_SAVED_JOBS_LIST, { credentials: CREDENTIALS_INCLUDE })
-      .then(readSavedList)
-      .then(function onSavedList(d: SavedListJson | null) {
-        setSaved(savedMapOf(d))
-      })
-      .catch(swallow)
+    loadSavedResuming({ setSaved }).catch(logSavedFailed)
   }, [loggedIn])
   function onSave(j: JobFact): void {
-    if (loggedIn === false) {
-      onAnon()
+    if (loggedIn === false && isGateSignedIn() === false) {
+      markSaveIntent(j)
+      onAnon(j)
       return
     }
     const key = String(j.id)
@@ -428,23 +437,128 @@ function useSavedJobs(x: SavedHookIn): SavedPanel {
       }).catch(swallow)
       return
     }
-    track(TRACK_SAVE_JOB)
-    postSavedJob(j).then(function onSavedOne(id: string | number | null) {
-      if (id != null) {
-        setSaved(added({ saved, key, id }))
-      }
-    }).catch(swallow)
+    saveNow(j).catch(logSavedFailed)
   }
-  return { saved, onSave }
+  async function saveNow(j: JobFact): Promise<void> {
+    track(TRACK_SAVE_JOB)
+    const id = await postSavedJob(j)
+    if (id != null) {
+      setSaved(added({ saved, key: String(j.id), id }))
+    }
+  }
+  return {
+    saved,
+    onSave,
+    onGateDone: makeSaveGateDone({ job: x.gate, saveNow, close: x.onGateClose, refresh: router.refresh }),
+  }
 }
 
 /**
- * 新建一条收藏(心愿单档)。
+ * 拉收藏清单进映射;收藏那一路的访客向导走 Google 整页登录回跳回来、还留着没过期的收藏意图,先补收再拉
+ * (先落库再拉,拉回来的清单里才有这一条)。2026-10-03 付费闭环批 A1 审查补:原先 Google 那条路回跳后那次收藏丢了。
+ *
+ * @param x 收藏映射落格。
+ * @returns 无(结果落在映射上)。
+ */
+async function loadSavedResuming(x: SavedLoadIn): Promise<void> {
+  const pending = takeSaveIntent()
+  if (pending != null) {
+    track(TRACK_SAVE_JOB)
+    await postSavedJob(pending)
+  }
+  const res = await fetch(URL_API_SAVED_JOBS_LIST, { credentials: CREDENTIALS_INCLUDE })
+  x.setSaved(savedMapOf(await readSavedList(res)))
+}
+
+/**
+ * 收藏落库 / 拉清单挂了:留一行,页面照常往下走(补收那一路之后照样软刷)。
+ *
+ * @param e 抛出来的错。
+ * @returns 无。
+ */
+function logSavedFailed(e: Error): void {
+  log({ tag: JOBS_LOG.tag, text: JOBS_LOG.savedFailed + String(e) })
+}
+
+/**
+ * 记下收藏意图(收藏那一路的访客向导开出来那一刻;Google 整页登录跳走前落地,回跳后凭它补收)。
+ * 存那一岗落库要的三格与时间戳;写抛了留痕。
+ *
+ * @param j 要收的那一岗。
+ * @returns 无。
+ */
+function markSaveIntent(j: JobFact): void {
+  try {
+    const row = { id: j.id, title: j.title, company: j.company, at: Date.now() }
+    localStorage.setItem(SAVE_RESUME_KEY, JSON.stringify(row))
+  } catch (e) {
+    log({ tag: JOBS_LOG.tag, text: JOBS_LOG.saveIntent + String(e) })
+  }
+}
+
+/**
+ * 撤收藏意图(× 关掉收藏那一路的向导、或向导里当场注册完由页内接手时)。撤抛了留痕。
+ *
+ * @returns 无。
+ */
+function clearSaveIntent(): void {
+  try {
+    localStorage.removeItem(SAVE_RESUME_KEY)
+  } catch (e) {
+    log({ tag: JOBS_LOG.tag, text: JOBS_LOG.saveIntent + String(e) })
+  }
+}
+
+/**
+ * 取收藏意图(读完即撤):还在有效期内交回那一岗的三格,否则 null;读抛了(含原文不是 json)留痕按没有算。
+ *
+ * @returns 要补收的那一岗;没有 = null。
+ */
+function takeSaveIntent(): SaveJobFact | null {
+  try {
+    const raw = localStorage.getItem(SAVE_RESUME_KEY)
+    localStorage.removeItem(SAVE_RESUME_KEY)
+    return toSaveIntent({ raw, now: Date.now() })
+  } catch (e) {
+    log({ tag: JOBS_LOG.tag, text: JOBS_LOG.saveIntent + String(e) })
+    return null
+  }
+}
+
+/**
+ * 收藏意图原文 → 那一岗的三格(行构造器):不是对象、三格或时间戳类型不对、落在将来、过了 SAVE_RESUME_TTL_MS
+ * 都给 null。原文不是 json 时 JSON.parse 会抛,由调用方的 catch 收。
+ *
+ * @param x 原文与此刻。
+ * @returns 那一岗的三格;作废 = null。
+ */
+function toSaveIntent(x: SaveIntentIn): SaveJobFact | null {
+  if (x.raw == null || x.raw === '') {
+    return null
+  }
+  const d: SaveIntentJson = JSON.parse(x.raw)
+  if (d == null || typeof d !== 'object') {
+    return null
+  }
+  if (typeof d.id !== 'string' && typeof d.id !== 'number') {
+    return null
+  }
+  if (typeof d.title !== 'string' || typeof d.company !== 'string' || typeof d.at !== 'number') {
+    return null
+  }
+  if (d.at > x.now || x.now - d.at > SAVE_RESUME_TTL_MS) {
+    return null
+  }
+  return { id: d.id, title: d.title, company: d.company }
+}
+
+/**
+ * 新建一条收藏(心愿单档)。只读那一岗的号、标题、公司三格(Google 回跳补收时手里只有落地的这三格)。
  *
  * @param j 这一岗。
  * @returns 新建出来的行号;失败给 null。
  */
-async function postSavedJob(j: JobFact): Promise<string | number | null> {
+async function postSavedJob(j: SaveJobFact): Promise<string | number | null> {
   const res = await fetch(URL_API_SAVED_JOBS, {
     method: METHOD_POST,
     credentials: CREDENTIALS_INCLUDE,
@@ -557,12 +671,18 @@ function useFilterSlots(initialFilters: JobFilters): FilterState {
  * 2026-08-16 Frank「保存此筛选没有必要吧」→ 留:它是「简化操作才收费」那条定价原则的落点。
  * 2026-09-26 /fe 首页 Frank 看效果图点头:记下进板时预选的省(写口交给水合那一步),面板多两格 ——
  * 用户自己设没设过筛选(窄屏「清除筛选」看它)、窄屏折叠区徽标计数(EE 类别在手机上收进了折叠区)。
+ * 2026-10-04 收口审查(设计稿 10-04「关掉后…筛选…一律再弹」):面板里的筛选表与搜索框写口换成过闸的那份(makeGatedFilters)——
+ * 访客动筛选 / 搜索开访客向导、值不动;登录用户一点不变。原表另交出去给板内自己写(水合预选本省、地址栏 / 快照回放);
+ * 清除(全部 / 职业)只会放宽条件,照旧写原表。
+ * 2026-10-04 收口:省下拉的换值口单出一格 onProv —— 「记下所选省 + 换省 + 清市 / 区」整套包一层过闸(makeGatedProvChange);
+ * 原先省下拉拿过闸的表调 makeProvChange,cookie 在闸前照记,访客关掉向导、刷新就落到所选省。
  *
- * @param x 初始筛选、维度表、界面语言、取词函数、分层态与触上限时的去处。
+ * @param x 初始筛选、维度表、界面语言、取词函数、分层态、触上限时与访客动筛选时的去处。
  * @returns 筛选面板与内部要用的几样。
  */
 function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
   const fState = useFilterSlots(x.initialFilters)
+  const gated = makeGatedFilters({ fState, loggedIn: x.plan.loggedIn, signedIn: isGateSignedIn, onGate: x.onGate })
   const [fold, setFold] = useState(false)
   const [homeProv, setHomeProv] = useState(TEXT_NONE)
   const q = slotOf({ fState, k: FK.q })
@@ -580,7 +700,7 @@ function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
     return occGroupsOf(dims)
   }, [dims])
   const anyFilter = anyFilterOf({ fState })
-  const nocLabel = nocLabelOf({ fNoc: chipNocOf({ fState, groups }), nameOf, lang: x.lang })
+  const nocLabel = nocLabelOf({ fNoc: chipNocOf({ fState, groups }), nameOf, lang: x.lang, t: x.t })
   const t = x.t
   const onLimit = x.onLimit
   const lang = x.lang
@@ -603,7 +723,8 @@ function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
   }
   return {
     panel: {
-      fState,
+      fState: gated,
+      onProv: makeGatedProvChange({ fState, loggedIn: x.plan.loggedIn, signedIn: isGateSignedIn, onGate: x.onGate }),
       opts,
       anyFilter,
       userFilter: userFilterOf({ fState, homeProv }),
@@ -625,8 +746,9 @@ function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
       },
       onSaveSearch,
     },
+    rawFState: fState,
     q,
-    setQ: setterOf({ fState, k: FK.q }),
+    setQ: setterOf({ fState: gated, k: FK.q }),
     cur: curFiltersOf({ fState, q: dq }),
     snap: curFiltersOf({ fState, q }),
     setHomeProv,
@@ -1030,6 +1152,8 @@ function dimsOf(props: JobsIn): JobDims {
  * 一层层叠、只关最上面一层,栈自己管 Esc;这里的 Esc 只剩「栈空了再关字段弹框」—— 原先 closeBoth 一按全关。
  * 2026-09-28 并壳(Frank「别并存啊」):字段弹框也套 modal 桶的 Modal 了,Esc 由 Modal 按打开先后排号接(最上面那个关),
  * 这里那份「栈空了再关字段弹框」的 Esc 随之撤 —— 栈里有层时最上面的是栈顶,栈空了最上面的就是字段弹框,排号天然如此。
+ * 2026-10-04 收口审查:收藏那一路旁边多一路筛选的访客向导(访客关掉进站向导后动筛选 / 搜索再弹;设计稿 10-04),
+ * 开口交给筛选面板过闸的写口;× 关掉那一下筛选作罢,注册完收起 + 软刷(同收藏那一路,只是没有要补的那一下)。
  *
  * @param x 分层态。
  * @returns 弹框层面板与三个开口。
@@ -1039,6 +1163,9 @@ function useBoardModals(x: ModalsHookIn): ModalsHookOut {
   const stack = useLayerStack<PeekLayer>()
   const [wizard, setWizard] = useState(false)
   const [upsell, setUpsell] = useState<UpsellKind>(false)
+  const [saveGate, setSaveGate] = useState<JobFact | null>(null)
+  const [filterGate, setFilterGate] = useState(false)
+  const router = useRouter()
   const loggedIn = x.plan.loggedIn
   const profileOk = x.plan.profileOk
   useEffect(function autoOpenWizard() {
@@ -1050,6 +1177,9 @@ function useBoardModals(x: ModalsHookIn): ModalsHookOut {
   }, [loggedIn, profileOk])
   function closePopup(): void {
     setPopup(null)
+  }
+  function closeFilterGate(): void {
+    setFilterGate(false)
   }
   return {
     panel: {
@@ -1067,10 +1197,55 @@ function useBoardModals(x: ModalsHookIn): ModalsHookOut {
         setUpsell(false)
       },
       onUpsellDone: upsellDone,
+      saveGate,
+      onSaveGateClose: function closeSaveGate(): void {
+        clearSaveIntent()
+        setSaveGate(null)
+      },
+      filterGate,
+      onFilterGateClose: closeFilterGate,
+      onFilterGateDone: makeFilterGateDone({ close: closeFilterGate, refresh: router.refresh }),
     },
     setPopup,
     onOpenJob: makePushJobLayer(stack),
     setUpsell,
+    setSaveGate,
+    openFilterGate: function openFilterGate(): void {
+      setFilterGate(true)
+    },
+  }
+}
+
+/**
+ * 收藏那一路的访客向导注册完之后(2026-10-03 付费闭环批 A1):收起向导(顺手撤收藏意图,页内接手)、
+ * 补上那次收藏(此刻已登录,直接落库),落完再软刷让页面拿到登录态 —— 先落库再软刷,软刷后重拉的收藏清单里才有这一条。
+ * 同日审查:补收挂了留痕,且不论成败都软刷(人已经注册了,页面不许停在匿名态)。
+ *
+ * @param x 那一岗、补收、收起与软刷。
+ * @returns 注册完的回调。
+ */
+function makeSaveGateDone(x: SaveGateDoneIn): () => void {
+  return function doneSaveGate(): void {
+    x.close()
+    if (x.job == null) {
+      x.refresh()
+      return
+    }
+    x.saveNow(x.job).catch(logSavedFailed).finally(x.refresh)
+  }
+}
+
+/**
+ * 筛选那一路的访客向导注册完之后(2026-10-04 收口审查;照 makeSaveGateDone,没有要补的那一下):收起向导、软刷让页面拿到登录态。
+ * 那一下筛选不替他补 —— 向导一路走完他未必还想要那一格,登录后筛选框随手可点。
+ *
+ * @param x 收起与软刷。
+ * @returns 注册完的回调。
+ */
+function makeFilterGateDone(x: FilterGateDoneIn): () => void {
+  return function doneFilterGate(): void {
+    x.close()
+    x.refresh()
   }
 }
 
@@ -1154,18 +1329,18 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     t,
     plan,
     onLimit: onUpsellSs,
+    onGate: modals.openFilterGate,
   })
   const [data, setGate] = useBoardData({ props, dims, cur: filters.cur, sort })
   const [cols, boxRef, headRowRef] = useBoardCols({
-    initialCols: props.initialCols,
-    initialColW: colwSeedOf(props),
-    lang,
-    rows: data.rows,
+    initialCols: props.initialCols, initialColW: colwSeedOf(props), lang, rows: data.rows,
   })
   useCatLabels(data.dims)
-  useBoardHydrate({ fState: filters.panel.fState, props, setGate, setHomeProv: filters.setHomeProv })
+  useBoardHydrate({ fState: filters.rawFState, props, setGate, setHomeProv: filters.setHomeProv })
   const onQCommit = useBoardUrlSync(filters.snap)
-  const saved = useSavedJobs({ plan, onAnon: onUpsellLock })
+  const saved = useSavedJobs({
+    plan, onAnon: modals.setSaveGate, gate: modals.panel.saveGate, onGateClose: modals.panel.onSaveGateClose,
+  })
   const blocked = useBlockedKeys(props.pnpFacts)
   const hydrating = useHydrating()
   const panel: JobsBoardPanel = {
@@ -1185,6 +1360,7 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     onField: makeFieldRouter({ setPopup: modals.setPopup }),
     onDesc: modals.onOpenJob,
     onUpsellLock,
+    onSaveGateDone: saved.onGateDone,
     blocked,
     cellCtx: {
       t,
@@ -1581,15 +1757,30 @@ function readRelated(r: Response): Promise<RelatedJson | null> {
 
 /**
  * 2xx 才解投递方式。
+ * 2026-10-03 付费闭环批 B1 收口:非 2xx(含每 IP 日限 429)与回包解不出都经 applyHowFailed 留痕 ——
+ * 外链投递撤了以后,查失败 = 在架岗投递栏不出,不能再无声。
  *
  * @param r 响应。
  * @returns 投递方式;非 2xx 或失败给 null。
  */
 function readApplyHow(r: Response): Promise<ApplyHowJson | null> {
   if (r.ok === false) {
-    return Promise.resolve(null)
+    return Promise.resolve(applyHowFailed(String(r.status)))
   }
-  return r.json().catch(nullOf)
+  return r.json().catch(function badApplyHowJson(e: Error): null {
+    return applyHowFailed(String(e))
+  })
+}
+
+/**
+ * 投递邮箱懒查挂了(非 2xx / 网络断 / 回包解不出):留一行,按没查到算。
+ *
+ * @param why 状态码或错误。
+ * @returns null(没查到)。
+ */
+function applyHowFailed(why: string): null {
+  log({ tag: JOBS_LOG.tag, text: JOBS_LOG.applyHowFailed + why })
+  return null
 }
 
 /**
@@ -1664,8 +1855,8 @@ export function useJobBody(x: JobBodyHookIn): JobBodyPanel {
     lang: x.lang,
     resetKey: fmt.resetKey,
     fmtReady: fmt.fmt != null && showOrig === false,
+    initial: ssrTransOf({ ssr: x.jdTrans, lang: x.lang }),
   })
-  const apply = useApplyHow(x.job)
   const [prevResetKey, setPrevResetKey] = useState(fmt.resetKey)
   if (prevResetKey !== fmt.resetKey) {
     setPrevResetKey(fmt.resetKey)
@@ -1686,23 +1877,8 @@ export function useJobBody(x: JobBodyHookIn): JobBodyPanel {
     trans: trans.trans,
     transStatus: trans.transStatus,
     pending: fmt.pending,
-    applyEmail: applyEmailPick({ jb: apply.email, text: jd.text }),
-    applyDone: apply.done,
+    applyEmail: applyEmailOf(jd.text),
   }
-}
-
-/**
- * 投递邮箱:Job Bank 岗懒查来的优先,其次从正文正则兜底。「怎么投」节与投递栏共用同一份结果。
- * 2026-09-27 起懒查对所有来源都问库里存好的邮箱(按岗位号,见 useApplyHow),x.jb 不再只是 Job Bank 的。
- *
- * @param x 懒查来的邮箱与正文。
- * @returns 邮箱;都没有给空串。
- */
-function applyEmailPick(x: ApplyEmailPickIn): string {
-  if (x.jb !== TEXT_NONE) {
-    return x.jb
-  }
-  return applyEmailOf(x.text)
 }
 
 /**
@@ -1924,14 +2100,22 @@ function fmtOrNull(tx: string): string | null {
  * (transStatus 交回前按开关遮罩,见 transStatusShownOf);拨开时后台那一次还没回就接着等它,不再另起一次。
  * 2026-09-19 Frank「中文和韩语场景都自动整理自动翻译吧,这两个都删掉吧」「开关都撤了,就自动翻译」**改判** 09-16 / 09-17 两版:
  * 「中文对照」开关撤 —— 中 / 韩界面对照恒显(译文到了就铺在整理版下面),英文界面恒不显;showTrans 不再是状态,onToggle 与开关遮罩随之撤。
+ * 2026-10-06 Frank「登录之后,会先刷整个页面,然后出这个条数数字,之后才是刷出文字」:整页版的页面门 SSR 带来库里已存的译文(initial),
+ * 首屏就铺,不发请求;换了界面语言按那一语的 SSR 值重铺(渲染期比对)。弹框与库里没存的照旧后台拉。
  *
  * @param x 本岗、界面语言与换岗信号。
  * @returns 对照态与开关。
  */
 function useJdTrans(x: JdTransHookIn): JdTransPanel {
   const showTrans = x.lang !== LANG_EN
-  const [trans, setTrans] = useState<string | null>(null)
+  const [trans, setTrans] = useState<string | null>(x.initial)
   const [transStatus, setTransStatus] = useState<TransStatus>(TRANS_IDLE)
+  const initial = x.initial
+  const [prevLang, setPrevLang] = useState(x.lang)
+  if (prevLang !== x.lang) {
+    setPrevLang(x.lang)
+    setTrans(x.initial)
+  }
   const jobId = x.job.id
   const lang = x.lang
   const auto = x.fmtReady && lang !== LANG_EN
@@ -1939,11 +2123,11 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
   const [prevResetKey, setPrevResetKey] = useState(x.resetKey)
   if (prevResetKey !== x.resetKey) {
     setPrevResetKey(x.resetKey)
-    setTrans(null)
+    setTrans(x.initial)
     setTransStatus(TRANS_IDLE)
   }
   useEffect(function autoTrans() {
-    if (auto === false) {
+    if (auto === false || initial != null) {
       return
     }
     const ctrl = new AbortController()
@@ -1971,7 +2155,7 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
     return function stopTrans() {
       ctrl.abort()
     }
-  }, [auto, jobId, lang, resetKey])
+  }, [auto, jobId, lang, resetKey, initial])
   return { showTrans, trans, transStatus }
 }
 
@@ -1999,47 +2183,6 @@ async function postTranslate(x: TranslateIn): Promise<string> {
 }
 
 /**
- * 投递邮箱(E9-04,dd24-#110 从投递栏上提):JB 岗藏在「Show how to apply」的 JSF 后面 →
- * 懒查 /api/jobs/applyhow;非 JB 岗正文常直接带邮箱,由正则兜底(见 applyEmailPick)。
- * 2026-09-27 Frank「CareerBeacon 渠道的职位 全是前往投递」:库里存着 CareerBeacon 等来源抽好的邮箱(492 条 CareerBeacon),
- * 这里原先只对 JB 链接发问、别的来源当场收工,存好的邮箱从没用上。改成每岗都问(带岗位号,服务端按岗位号取;
- * JB 存的没有才现抓),正则兜底照旧。
- * done 出结果(成败都算):OAuth 回跳续投要等它,别把邮箱岗投成外跳。
- *
- * @param job 本岗。
- * @returns 邮箱与查完没。
- */
-function useApplyHow(job: JobFact): ApplyHowPanel {
-  const [email, setEmail] = useState(TEXT_NONE)
-  const [done, setDone] = useState(false)
-  const url = strOf(job.applyUrl)
-  const id = String(job.id)
-  useEffect(function loadApplyHow() {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 懒查邮箱前的起手式:换岗先清上一岗的(09-27 起非 JB 岗也问,不再当场收工)
-    setEmail(TEXT_NONE)
-    setDone(false)
-    const ctrl = new AbortController()
-    fetch(URL_API_APPLY_HOW + encodeURIComponent(url) + URL_API_APPLY_HOW_ID + id, { signal: ctrl.signal })
-      .then(readApplyHow)
-      .then(function onHow(d: ApplyHowJson | null) {
-        if (d != null && d.email != null) {
-          setEmail(d.email)
-        }
-      })
-      .catch(swallow)
-      .finally(function endHow() {
-        if (ctrl.signal.aborted === false) {
-          setDone(true)
-        }
-      })
-    return function stopHow() {
-      ctrl.abort()
-    }
-  }, [url, id])
-  return { email, done }
-}
-
-/**
  * 投递栏(E9-04,B11 2026-07-24 拍板:详情底部常驻;注册闸设在投递 = 全站意愿最强瞬间)。
  * 邮箱岗 → mailto 预填;无邮箱 → 外跳原帖。未登录 → 注册框 → 求职意向(复用引导表单,
  * 不新造表单;跳过/关闭都继续投递,投递必须丝滑)。首版 = 替他备好一切他自己发,不代发。
@@ -2049,8 +2192,25 @@ function useApplyHow(job: JobFact): ApplyHowPanel {
  * 2026-09-27 手机职位页水合报 React #418(本机器首帧用 useIsNarrow 读 matchMedia 判窄屏,服务端首帧没有窗口):
  * 窄屏那一档改由 CSS 断点切(整页恒渲占位、恒挂 fixed 那一档的类,见 applybar 头注),本机器不再判窄屏、不再交 fixedBar。
  * dd24-#108:先落库再唤邮件 —— mailto 触发的导航态会掐死在途 fetch,「已投」记录曾竞态丢失。
+ * 2026-10-03 付费闭环批 A1:未登录点投递先打一个 apply-click(先前这一下不计数),再弹访客向导(四道题 + 注册,
+ * 投递栏里接 makeAuthDone 照旧往下投);Google 整页登录仍靠落地的投递意图由 useApplyResume 续投。
+ * 2026-10-03 付费闭环批 B1:外链投递撤(站上在架岗都有投递邮箱)—— launch 没邮箱不再外跳原帖、不记投递,
+ * 投递事件 mode 只剩 email;查完仍没邮箱由投递栏不出钮。
+ * 同日收口审查:邮箱还在查时点投递(手机从 Google 落地后马上点)原先什么都不发生 —— 改记「在等」,
+ * 查完由 useApplyPending 接着投;查完仍没有就作罢(投递栏随之整栏不出)。
+ * 2026-10-04 改判(Frank「照这样改」):邮箱只给登录用户、点了才查 —— launch 自己现查(loadApplyEmail),查到才记投递、
+ * 弹邮件投递框;查不到留痕作罢(钮留着,这一下不外跳)。上一条的「在等」随之撤(useApplyPending 删),
+ * 邮箱由本台持有(不再从外面递进来)。
+ * 同日收口审查三处:① 未登录判定补认「这个页面里刚在访客向导里登录过」(isGateSignedIn,同收藏那一路)——
+ * 开职位弹框先弹向导、注册完软刷还没回来时点投递,原先会再弹一次投递向导;② launch 加在途闸:Job Bank 现抓要几秒,
+ * 连点原先重复查邮箱(吃每人日限)、「已投」可能双插、apply 埋点虚高 —— 在途时钮挂 busy(禁用 + 转圈,点不动),
+ * launch 自己也认 busy(在途时再进来一律忽略);③ × 关掉投递向导时撤落地的投递意图(同收藏那一路的 closeSaveGate)——
+ * 原先关掉后 10 分钟内从别处登录再回到本岗,useApplyResume 会替他记「已投」并弹邮件框。
+ * 2026-10-04 二轮收口审查:点了投递没拿到邮箱不再无声作罢(钮转一圈什么都不发生)—— 按回包状态码分流(showApplyMiss):
+ * 401(页面还当已登录、会话已过期)记投递意图、弹登录框,登录完照注册闸那一路接着投;429 弹一行「今天次数用完了」;
+ * 其余(网络断、别的非 2xx、查完没有)弹一行「投递失败」。上文「查不到留痕作罢」改读作「留痕并提示」。
  *
- * @param x 本岗、投递邮箱、查完没、取词函数、分层态与在不在整页里。
+ * @param x 本岗、取词函数、分层态与在不在整页里。
  * @returns 投递栏面板。
  */
 export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
@@ -2059,23 +2219,32 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
   const [authed, setAuthed] = useState(false)
   const [freshProfile, setFreshProfile] = useState<MatchProfileFact | null>(null)
   const [copied, setCopied] = useState(false)
+  const [email, setEmail] = useState(TEXT_NONE)
+  const [busy, setBusy] = useState(false)
   const router = useRouter()
   const job = x.job
-  const email = x.email
   const plan = x.plan
   async function launch(): Promise<void> {
-    clearApplyIntent()
-    trackApply(email)
-    await recordApplied(job)
-    if (email !== TEXT_NONE) {
-      setCopied(false)
-      setStage(APPLY_EMAIL)
+    if (busy) {
       return
     }
-    openApply({ job, email })
+    setBusy(true)
+    clearApplyIntent()
+    const got = await loadApplyEmail(job)
+    if (got.email !== TEXT_NONE) {
+      setEmail(got.email)
+      trackApply()
+      await recordApplied(job)
+      setCopied(false)
+      setStage(APPLY_EMAIL)
+    } else {
+      showApplyMiss({ status: got.status, job, setStage })
+    }
+    setBusy(false)
   }
   function onApply(): void {
-    if (plan.loggedIn === false && authed === false) {
+    if (plan.loggedIn === false && authed === false && isGateSignedIn() === false) {
+      track(TRACK_APPLY_CLICK)
       markApplyIntent(job)
       setStage(APPLY_AUTH)
       return
@@ -2086,17 +2255,20 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
     }
     launch()
   }
-  useApplyResume({ job, plan, emailDone: x.emailDone, setStage, launch })
+  useApplyResume({ job, plan, setStage, launch })
   return {
     stage,
+    email,
     matchJd,
     onMatch: makeOpenMatch({ job, setMatchJd }),
     onMatchClose: function closeMatch(): void {
       setMatchJd(null)
     },
     onApply,
+    busy,
     authed,
     onAuthClose: function closeAuth(): void {
+      clearApplyIntent()
       setStage(APPLY_IDLE)
     },
     onAuthDone: makeAuthDone({ setAuthed, setFreshProfile, setStage, launch, refresh: router.refresh }),
@@ -2108,15 +2280,75 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
     onEmailClose: function closeEmail(): void {
       setStage(APPLY_IDLE)
     },
-    copied,
-    onCopyEmail: function copyEmail(): void {
-      navigator.clipboard.writeText(email).then(function markCopied(): void {
-        setCopied(true)
-      }).catch(function copyFailed(): void {
-        setCopied(false)
-      })
+    onNoteClose: function closeNote(): void {
+      setStage(APPLY_IDLE)
     },
+    copied,
+    onCopyEmail: makeCopyEmail({ email, setCopied }),
   }
+}
+
+/**
+ * 投递邮箱(E9-04,dd24-#110 从投递栏上提):JB 岗藏在「Show how to apply」的 JSF 后面 →
+ * 懒查 /api/jobs/applyhow;非 JB 岗正文常直接带邮箱,由正则兜底(见 applyEmailPick)。
+ * 2026-09-27 Frank「CareerBeacon 渠道的职位 全是前往投递」:库里存着 CareerBeacon 等来源抽好的邮箱(492 条 CareerBeacon),
+ * 这里原先只对 JB 链接发问、别的来源当场收工,存好的邮箱从没用上。改成每岗都问(带岗位号,服务端按岗位号取;
+ * JB 存的没有才现抓),正则兜底照旧。
+ * done 出结果(成败都算):OAuth 回跳续投要等它,别把邮箱岗投成外跳。
+ * 2026-10-03 付费闭环批 B1 收口:网络断原先走 swallow 无声吞掉,改经 applyHowFailed 留痕(换岗 / 卸载的中止不算失败)。
+ * 2026-10-04 改判(Frank「照这样改」):邮箱只给登录用户、点了才查 —— 打开职位 / 正文到手时不再查(原 useApplyHow 一台撤),
+ * 改成登录用户点投递(launch)时现查一次;查挂了(含未登录 401、每人日限 429)与查完没有都留痕交回空串。
+ * 「怎么投」节不再拿查来的邮箱,只用正文里正则抽到的(见 useJobBody)。
+ * 同日收口审查:上文「由正则兜底(见 applyEmailPick)」「正则兜底照旧」「OAuth 回跳续投要等它」三句作废 ——
+ * applyEmailPick 随 useApplyHow 撤,投递不再拿正文邮箱兜底(查不到就作罢),续投由 launch 自己查、不再等。
+ * 挪到 useApplyBar 之后(报纸式排序:被调的排在首个调用者后面)。
+ * 2026-10-04 二轮收口审查:交回邮箱 + 回包状态码(没拿到响应记 APPLY_STATUS_NET)—— 原先只交回空串,
+ * 会话过期、次数用完、网络断与查完没有分不开,launch 没法分流提示;留痕照旧。
+ *
+ * @param job 本岗。
+ * @returns 投递邮箱(没有给空串)与回包状态码。
+ */
+async function loadApplyEmail(job: JobFact): Promise<ApplyMailOut> {
+  let d: ApplyHowJson | null = null
+  let status = APPLY_STATUS_NET
+  try {
+    const res = await fetch(URL_API_APPLY_HOW + encodeURIComponent(strOf(job.applyUrl)) + URL_API_APPLY_HOW_ID
+      + String(job.id))
+    status = res.status
+    d = await readApplyHow(res)
+  } catch (e) {
+    applyHowFailed(String(e))
+    return { email: TEXT_NONE, status }
+  }
+  if (d == null) {
+    return { email: TEXT_NONE, status }
+  }
+  if (d.email == null || d.email === TEXT_NONE) {
+    log({ tag: JOBS_LOG.tag, text: JOBS_LOG.applyHowNone + String(job.id) })
+    return { email: TEXT_NONE, status }
+  }
+  return { email: d.email, status }
+}
+
+/**
+ * 点了投递没拿到邮箱时落哪一段(2026-10-04 二轮收口审查,原先无声作罢):401 = 页面还当已登录、会话已过期 ——
+ * 记投递意图(Google 整页登录回跳后由 useApplyResume 续投)、弹登录框;429 = 今天查邮箱的次数用完了;
+ * 其余(网络断、别的非 2xx、回包解不出、查完没有)= 投递失败。留痕在 loadApplyEmail / readApplyHow 里已经落过。
+ *
+ * @param x 回包状态码、本岗与段写口。
+ * @returns 无。
+ */
+function showApplyMiss(x: ApplyMissIn): void {
+  if (x.status === HTTP_UNAUTHORIZED) {
+    markApplyIntent(x.job)
+    x.setStage(APPLY_LOGIN)
+    return
+  }
+  if (x.status === HTTP_TOO_MANY) {
+    x.setStage(APPLY_LIMIT)
+    return
+  }
+  x.setStage(APPLY_ERR)
 }
 
 /**
@@ -2156,14 +2388,24 @@ function makeOpenMatch(x: OpenMatchIn): () => Promise<void> {
  * initial 覆盖已有档案(跳过 = 存空档)→ 有档案直接投,没档案才进向导;拉不到按无档案走,不卡投递。
  * 2026-09-22 Frank「登录了没有刷新 header」:流程内登录不整页刷(会丢投递流程),改软刷(router.refresh)——
  * 服务端组件重渲、layout 的会话种子更新,页顶 header 变成已登录,弹框等客户端状态原地保留。
+ * 2026-10-03 付费闭环批 A1 审查:第一步先撤落地的投递意图 —— 流程内登录由本回调接着投,意图留着的话
+ * 软刷带回登录态后 useApplyResume 会再投一次(访客向导记了「引导弹过」后它直接 launch,同一岗投两次)。
+ * 同日 lead 收口:刚在访客向导里答完四题注册的,不再弹六步意向表,直接投 —— 与 Google 回跳那条路
+ * (useApplyResume 认「引导弹过」直接投)一致;四题已经问过,第一封投递前再塞六题是重复的摩擦。
  *
  * @param x 三个写口、投递动作与软刷。
  * @returns 注册成功回调。
  */
 function makeAuthDone(x: AuthDoneIn): () => Promise<void> {
   return async function onAuthDone(): Promise<void> {
+    clearApplyIntent()
     x.refresh()
     x.setAuthed(true)
+    if (isGateSignedIn()) {
+      x.setStage(APPLY_IDLE)
+      x.launch()
+      return
+    }
     const p = await loadFreshProfile()
     if (p != null && hasProfile(p)) {
       x.setStage(APPLY_IDLE)
@@ -2222,21 +2464,38 @@ function intentProfileOf(x: IntentProfileIn): MatchProfileFact | null {
 }
 
 /**
+ * 邮件投递框里「复制邮箱」的手柄:复制成了钮面换「已复制」,没成(剪贴板被拒)维持原样。
+ * 2026-10-04 二轮收口审查自 useApplyBar 体内提出(那一台加了没拿到邮箱的分流,超了函数行数闸),行为一字不改。
+ *
+ * @param x 要复制的邮箱与「复制过没」的写口。
+ * @returns 点击手柄。
+ */
+function makeCopyEmail(x: CopyEmailIn): ClickFn {
+  return function copyEmail(): void {
+    navigator.clipboard.writeText(x.email).then(function markCopied(): void {
+      x.setCopied(true)
+    }).catch(function copyFailed(): void {
+      x.setCopied(false)
+    })
+  }
+}
+
+/**
  * OAuth 回跳续投:登录态 + 落地意图是本岗 + 10 分钟内 → 接着走意向表单/直接投,
  * 不让用户再点一次。Google 登录 = 整页 OAuth 跳转,组件状态全丢,所以投递意图要落地。
+ * 2026-10-04 邮箱改成 launch 自己现查,不再等「投递方式查完」,登录态一到就续。
  *
- * @param x 本岗、分层态、投递方式查完没、段写口与投递动作。
+ * @param x 本岗、分层态、段写口与投递动作。
  * @returns 无。
  */
 function useApplyResume(x: ApplyResumeIn): void {
   const job = x.job
   const loggedIn = x.plan.loggedIn
   const profileOk = x.plan.profileOk
-  const emailDone = x.emailDone
   const setStage = x.setStage
   const launch = x.launch
   useEffect(function resumeApply() {
-    if (loggedIn === false || emailDone === false) {
+    if (loggedIn === false) {
       return
     }
     if (applyIntentIsFresh(job) === false) {
@@ -2248,8 +2507,8 @@ function useApplyResume(x: ApplyResumeIn): void {
       return
     }
     launch()
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只在「登录态 + 投递方式查完」这一刻跑一次
-  }, [loggedIn, emailDone])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只在登录态到手这一刻跑一次
+  }, [loggedIn])
 }
 
 /**
@@ -2305,25 +2564,12 @@ function clearApplyIntent(): void {
  * E9-04 投递事件(走环境注入的统计对象,没注入就不发)。
  * 2026-09-26 /fe Frank:改走统一上报门 lib/track(umami + 第一方漏斗)—— 原先只直调 umami,
  * 被拦截器挡掉就没了;投递方式记成第一方的低基数分组,邮箱本身永不上报。
+ * 2026-10-03 付费闭环批 B1:外链投递撤,mode 只剩 email(applyModeOf 与 web 档撤;库里 web 历史行不动)。
  *
- * @param email 投递邮箱;'' = 外跳原帖。
  * @returns 无。
  */
-function trackApply(email: string): void {
-  track(TRACK_APPLY, { [TRACK_KEY_MODE]: applyModeOf(email) })
-}
-
-/**
- * 这一次是邮件投还是外跳。
- *
- * @param email 投递邮箱;'' = 外跳原帖。
- * @returns 方式名。
- */
-function applyModeOf(email: string): string {
-  if (email === TEXT_NONE) {
-    return TRACK_MODE_WEB
-  }
-  return TRACK_MODE_EMAIL
+function trackApply(): void {
+  track(TRACK_APPLY, { [TRACK_KEY_MODE]: TRACK_MODE_EMAIL })
 }
 
 /**
@@ -2377,21 +2623,6 @@ async function findSavedRow(job: JobFact): Promise<string | number | null> {
 }
 
 /**
- * 唤起投递:有邮箱走 mailto 预填,没有就外跳原帖。
- *
- * @param x 本岗与投递邮箱。
- * @returns 无。
- */
-function openApply(x: OpenApplyIn): void {
-  if (x.email !== TEXT_NONE) {
-    return
-  }
-  if (x.job.applyUrl !== TEXT_NONE) {
-    window.open(x.job.applyUrl, TARGET_BLANK, WINDOW_FEATURES)
-  }
-}
-
-/**
  * 职位详情页的整台。
  * 漏斗第 1 步(主线 M2 收口 2026-08-02):这个页面一直没有第一方浏览埋点 —— 于是库里只有
  * 第 3 步「锁区曝光」有数,分母是空的,M3 的两种分叉(锁的东西不值钱 / 根本没人看见)
@@ -2403,6 +2634,8 @@ function openApply(x: OpenApplyIn): void {
  *
  * 2026-09-23 标题下那条灰字改成标题译名(Frank「统一成标题译名」「应该优先使用详情下的翻译 更准吧」):这一岗库里存好的直接出,
  * 没有就按岗懒翻一次(与职位弹框同一台 useTitleTrans;歧义标题带正文翻、只写回这一岗)。
+ * 2026-10-03 付费闭环批 A1:整页打开记一笔浏览(访客向导的计数),但整页永远不弹向导、不盖正文 ——
+ * Google 招聘规则:不登录也要能看职位详情。
  *
  * @param x 本岗、分层态、页面维度与相似职位。
  * @returns 详情页面板。
@@ -2416,6 +2649,9 @@ export function useJobDetail(x: JobIn): JobDetailPanel {
   useEffect(function trackOpen() {
     track(TRACK_JD_OPEN, { [TRACK_KEY_KIND]: TRACK_KIND_PAGE })
   }, [])
+  useEffect(function markSeen() {
+    markSeenJob({ id: x.job.id, noc: x.job.noc })
+  }, [x.job.id, x.job.noc])
   useMemo(function registerDetailLabels() {
     registerCatLabels(cats)
   }, [cats])

@@ -132,6 +132,24 @@ export const TZ_PROVINCE: Record<string, string> = {
 }
 
 /**
+ * 加拿大境内、但不在 TZ_PROVINCE 里的那些时区名(分不出省,或是领地):不预选省,但也不算境外。
+ * 2026-10-03 付费闭环批 A1 立(访客向导「现在在哪个省」题:时区对不上省、又不在这张表里,才预选「加拿大境外」)。
+ * 取自 IANA 时区库 CA 段(zone.tab)的全集减去 TZ_PROVINCE 的键,已并作别名的旧名一并列上。
+ */
+export const TZ_CANADA_OTHER: readonly string[] = [
+  'America/Halifax', 'America/Glace_Bay', 'America/Moncton', 'America/Goose_Bay', 'America/Blanc-Sablon',
+  'America/Nipigon', 'America/Thunder_Bay', 'America/Iqaluit', 'America/Pangnirtung', 'America/Atikokan',
+  'America/Rainy_River', 'America/Resolute', 'America/Rankin_Inlet', 'America/Swift_Current',
+  'America/Cambridge_Bay', 'America/Yellowknife', 'America/Inuvik', 'America/Creston', 'America/Dawson_Creek',
+  'America/Fort_Nelson', 'America/Whitehorse', 'America/Dawson',
+]
+
+/**
+ * 加拿大旧式时区名的前缀(Canada/Eastern、Canada/Atlantic 这一族,老系统还会报)。
+ */
+export const TZ_CANADA_HEAD = 'Canada/'
+
+/**
  * 东部时区名:命中它时再看浏览器语言,法语当魁省。
  */
 export const TZ_EASTERN = 'America/Toronto'

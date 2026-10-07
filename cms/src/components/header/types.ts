@@ -134,6 +134,26 @@ export type MeJson = {
 }
 
 /**
+ * acctSeedKeyOf 的入参:宿主登录态与服务端会话种子(只读判登录要的两格)。
+ */
+export type AcctSeedKeyIn = {
+  /**
+   * 宿主已知登录态;null = 宿主不知道。
+   */
+  loggedIn: boolean | null
+
+  /**
+   * 会话种子有没有票据;没有种子 null。
+   */
+  seedIn: boolean | null
+
+  /**
+   * 会话种子里的邮箱;没有种子为空串。
+   */
+  seedEmail: string
+}
+
+/**
  * useAcct 的入参。
  */
 export type AcctHookIn = {
@@ -205,6 +225,11 @@ export type HeaderNavIn = {
    * 高亮键;null = 首页态。
    */
   active: ActiveKey | null
+
+  /**
+   * 已登录(2026-10-03 付费闭环批 B1:登录才出「我的」;身份未知那一拍不出,免首帧闪)。
+   */
+  loggedIn: boolean
 }
 
 /**
@@ -250,6 +275,11 @@ export type MobileDrawerIn = {
    * 换语言。
    */
   setLang: (l: Lang) => void
+
+  /**
+   * 已登录(同 HeaderNavIn.loggedIn:登录才出「我的」)。
+   */
+  loggedIn: boolean
 }
 
 
@@ -284,14 +314,15 @@ export type AccountLiteHandlesIn = {
   setAuth: (v: AuthOpen) => void
 
   /**
-   * 写定价框开合的 setter。
+   * 登录成功后的原地刷新(Next 路由的 refresh:服务端组件带着新会话重渲,不整页刷新;2026-10-06 Frank「登录之后,会先刷整个页面」)。
    */
-  setPricing: (v: boolean) => void
+  refresh: () => void
 }
 
 /**
- * makeAccountLiteHandles 交回的六枚手柄(登录框与定价框两台开合机,
+ * makeAccountLiteHandles 交回的手柄(登录框与定价框两台开合机,
  * 同属账户区这一处状态,一个工厂发齐 —— 拆成六个工厂只会把「谁在写哪一格」摊到六处)。
+ * 2026-10-04 账户下拉的「升级 Pro」撤,定价框两枚手柄随之撤,剩四枚。
  */
 export type AccountLiteHandlesOut = {
   /**
@@ -313,16 +344,6 @@ export type AccountLiteHandlesOut = {
    * 认证完成:整页刷新(刷新后按真实 cookie 态渲染)。
    */
   reload: ClickFn
-
-  /**
-   * 开定价框(账户下拉的「升级 Pro」)。
-   */
-  openPricing: ClickFn
-
-  /**
-   * 关定价框。
-   */
-  closePricing: ClickFn
 }
 
 /**

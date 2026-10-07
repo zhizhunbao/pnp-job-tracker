@@ -56,7 +56,8 @@ import {
   MEASURE_ROWS, NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R, PCT_DECIMALS, PCT_MULTIPLIER, PREF_KEY, PROV_PICK_COOKIE,
   PROV_PICK_MAX_AGE_S, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP, P_SORT, QS_HEAD,
   RE_FLAG_G, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE, SAVED_STATUS_WISH, SEC_MODE, SEP_EN,
-  SEP_ZH, SIGN_DOLLAR, SIGN_PCT, SIGN_PLUS, SIG_EQ, SIG_SEP, SORT_MARK_ASC, SORT_MARK_DESC, SORT_MARK_IDLE, SPACE,
+  NOC_LABEL_LIST_MAX, NOC_MORE_KEY, SEP_ZH, SIGN_DOLLAR, SIGN_PCT, SIGN_PLUS, SIG_EQ, SIG_SEP, SORT_MARK_ASC,
+  SORT_MARK_DESC, SORT_MARK_IDLE, SPACE,
   SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CLOSED,
   TABLE_SEL,
   TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX, TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TONE, TRACK_FROM_CLOSED,
@@ -68,14 +69,15 @@ import {
   IMM_COLS, LANG_EN, DISPOSITION_MAP, GROUP_PNP,
 } from './constants'
 import type {
-  AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
+  AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, SsrTransIn,
   AuthFromUrlOut, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, BoardPnpFacts, CardTitlesIn,
   CardsClsIn, HomeGate, LoadTipIn, PnpChipIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone,
   CellView, CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn,
   CityOptsIn, ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColSpec, CompanyPeek, ColWant,
   ColWidthFnIn, ColWidthSeed, CookieIn, CopyLabelIn, CrumbSeg, CurFiltersIn, DataKeyIn, DescOpenIn, DistOptsIn,
   FallbackHrefIn, FallbackTextIn, FallbackValueIn, FetchJobTextIn, FieldOpenIn, FillIn, FilterCountIn, FilterOpts,
-  FilterOptsIn, FilterState, FilterValueIn, FixedNoteIn, FoldBtnClsIn, FoldNClsIn, FrozenStyleIn, HeadCellAtIn,
+  FilterOptsIn, FilterState, FilterValueIn, FixedNoteIn, FoldBtnClsIn, FoldNClsIn, FrozenStyleIn, GatedFiltersIn,
+  GatedSetIn, HeadCellAtIn,
   HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdCityLocalIn, JdLineView, JdLineViewIn, JdLinesIn,
   JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn, JdSecHeadIn, JdSecModeIn, JdSectionMode,
   JdSectionView, JdSectionsIn, JobColKey, JobDetailIn, JobDetailView, JobDims, JobFact, JobFilters, JobPlan, JobPlanIn,
@@ -1295,6 +1297,7 @@ function pushSponsorChip(a: ChipPushIn): void {
  * 职业(NOC)多值的显示名:走维度表里的译名(与卡片上那条灰注同一个出口),
  * 查不到就显码本身;代码不裸奔,值仍是精确的 NOC 码。
  * 2026-09-23 同一个职业的几个码(「软件开发」三码)名字一样,只出一次。
+ * 2026-10-06 多于 NOC_LABEL_LIST_MAX 个名字时收成「首个等 N 个」(访客第 3 题全选一整类后,14 个名字连成一枚标签横贯整行)。
  *
  * @param x NOC 多值、译名取值函数、界面语言。
  * @returns 顿号/逗号连接的人话名;没选职业时给空串。
@@ -1316,6 +1319,9 @@ export function nocLabelOf(x: NocLabelIn): string {
   }
   if (names.length === 0) {
     return TEXT_NONE
+  }
+  if (names.length > NOC_LABEL_LIST_MAX) {
+    return x.t(NOC_MORE_KEY, { first: names.slice(0, 1).join(TEXT_NONE), n: names.length, rest: names.length - 1 })
   }
   if (x.lang === LANG_ZH) {
     return names.join(SEP_ZH)
@@ -3105,6 +3111,22 @@ export function authFromUrl(): AuthFromUrlOut {
 }
 
 /**
+ * 从地址栏摘掉一个查询参数(不留历史)。
+ * 2026-10-03 付费闭环批 A1 本地测试:已登录还带着 `?oauth=fail` 落回(同一次登录两条回调一成一败)时用。
+ *
+ * @param name 参数名。
+ * @returns 无。
+ */
+export function dropUrlParam(name: string): void {
+  const sp = new URLSearchParams(window.location.search)
+  if (sp.has(name) === false) {
+    return
+  }
+  sp.delete(name)
+  replaceQuery(sp)
+}
+
+/**
  * 把洗过的参数写回地址栏(不留历史,刷新即终态)。
  *
  * @param sp 洗过的查询参数。
@@ -3755,18 +3777,19 @@ export function transShownOf(x: TransShownIn): string {
 /**
  * 投递主钮的钮面文案。投递方式在途时用中性「投递」占位 —— 别先显「前往投递」再闪成
  * 「邮件投递」(Frank 问「为什么有的是前往有的是邮箱」,闪变加剧困惑)。
+ * 2026-10-03 付费闭环批 B1:外链投递撤(站上在架岗都有投递邮箱,mart 判「全」加了邮箱格),
+ * 钮面固定「投递」;原 applyLabelOf 三态(在途「投递」/「邮件投递」/「前往投递」)撤,上面那句留作当初为什么。
+ * 本函数改判整条投递栏出不出:在架岗邮箱到手或还在查就出(在途照旧出钮 —— 邮箱随懒查到手,钮面不变、不闪),
+ * 查完仍没有就整栏不出(连占位一起,不在屏底留一条空栏);已下架岗照旧看有没有原帖链接(「看官网」)。
+ * 2026-10-04 改判(Frank「照这样改」):邮箱改成登录用户点投递时才查,开页不查 —— 在架岗一律出(站上在架岗都有邮箱,
+ * 数据层已保证,提交 f31b26dd);已下架岗照旧。
+ * 2026-10-05 改判(Frank「已经下架了,就不要在有按钮点击了吧」):已下架岗整栏不出,灰色「看官网」钮撤(08-03 原判理由照录在 applybar.tsx 文件头)。
  *
- * @param x 取词函数、投递邮箱与查完没。
- * @returns 钮面文案。
+ * @param job 本岗。
+ * @returns 出 = true。
  */
-export function applyLabelOf(x: ApplyLabelIn): string {
-  if (x.email !== TEXT_NONE) {
-    return x.t('apply.email')
-  }
-  if (x.emailDone) {
-    return x.t('apply.web')
-  }
-  return x.t('apply.plain')
+export function applyBarShownOf(job: JobFact): boolean {
+  return job.status !== STATUS_CLOSED
 }
 
 /**
@@ -4722,6 +4745,51 @@ export function makeSlotChange(x: SlotIn): TextFn {
 }
 
 /**
+ * 造给筛选界面的那份筛选表(2026-10-04 收口审查,设计稿 10-04「关掉后…开职位弹框、筛选、投递、收藏一律再弹」):
+ * 值照抄原表;写口换成过闸的 —— 访客(分层态未登录、本页也没在访客向导里登录过,同收藏那一路的判法)动筛选 / 搜索时
+ * 不写值、改开筛选那一路的访客向导。板内自己的写口(水合预选本省、地址栏 / 快照回放、清除)不经这份,照旧写原表。
+ *
+ * @param x 原表、登录态两样与开向导的口。
+ * @returns 写口过闸的筛选表。
+ */
+export function makeGatedFilters(x: GatedFiltersIn): FilterState {
+  const out: FilterState = {}
+  for (const [k, slot] of Object.entries(x.fState)) {
+    const set = makeGatedSet({ set: slot.set, loggedIn: x.loggedIn, signedIn: x.signedIn, onGate: x.onGate })
+    out[k] = { v: slot.v, set }
+  }
+  return out
+}
+
+/**
+ * 造过闸的换省手柄(2026-10-04 收口:省下拉那一整套 —— 记下所选省 + 换省 + 清市 / 区 —— 整个过闸,
+ * 访客开向导、cookie 也不记;原先只拦住三格写值,cookie 在闸前照记,访客关掉向导刷新一下就落到所选省)。
+ *
+ * @param x 原表、登录态两样与开向导的口。
+ * @returns 过闸的换省手柄。
+ */
+export function makeGatedProvChange(x: GatedFiltersIn): TextFn {
+  return makeGatedSet({ set: makeProvChange(x.fState), loggedIn: x.loggedIn, signedIn: x.signedIn, onGate: x.onGate })
+}
+
+/**
+ * 造一格过闸的写口:登录了(或本页刚在访客向导里登录过)才真写,访客开向导、值不动。
+ * 判在写的那一刻做(向导里注册完、软刷没回来时这一格就该放行)。
+ *
+ * @param x 原写口、登录态两样与开向导的口。
+ * @returns 过闸的写口。
+ */
+export function makeGatedSet(x: GatedSetIn): TextFn {
+  return function gatedSet(v: string): void {
+    if (x.loggedIn === false && x.signedIn() === false) {
+      x.onGate()
+      return
+    }
+    x.set(v)
+  }
+}
+
+/**
  * 首屏按设备时区预选本省(2026-09-14 Frank「需不需要基于用户的 IP 优先显示用户所在区域」→ 不用 IP,用时区 →「可以」):
  * 只在 URL 没带省、用户也没亲手动过省(cookie)时做;时区对不上加拿大(国内用户)就维持全国;
  * 东部时区看浏览器语言,法语当魁省其余当安省;海洋三省分不出不预选。列表照发布时间排,只是预选一格。
@@ -4908,6 +4976,8 @@ function markProvPicked(v: string): void {
 
 /**
  * 造省下拉的换值手柄:换省要把市与区一起清掉(它们是省的联动下级,留着就成了对不上的条件)。
+ * 2026-10-04 收口:职位板上这一整套由 makeGatedProvChange 整个包一层过闸(面板的 onProv),这里收原表 ——
+ * 原先省下拉拿过闸那份表调它,闸只拦住了三格写值,记 cookie 在闸前照记,访客刷新一下就按「上次所选」落到那一省。
  *
  * @param fState 筛选各格。
  * @returns 换值手柄。
@@ -5533,4 +5603,24 @@ export function immGroupOf(col: JobColKey | null): PopupState['group'] | null {
     return null
   }
   return d
+}
+
+/**
+ * 页面门 SSR 带来的整理版译文里,这一语那一格(2026-10-06 立:中 / 韩界面首屏就铺,不等页面活过来再要)。
+ *
+ * @param x 页面门取到的两格与界面语言。
+ * @returns 这一语的译文;英文界面、没取(弹框)、库里没有或版本过期 = null。
+ */
+export function ssrTransOf(x: SsrTransIn): string | null {
+  if (x.ssr == null || x.lang === LANG_EN) {
+    return null
+  }
+  let got = x.ssr.zh
+  if (x.lang === LANG_KO) {
+    got = x.ssr.ko
+  }
+  if (got === TEXT_NONE) {
+    return null
+  }
+  return got
 }

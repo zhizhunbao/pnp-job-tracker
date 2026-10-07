@@ -525,7 +525,11 @@ export const jobsZh = {
   'ee.agriculture': '农业食品', 'ee.cec': 'CEC 经验类', 'ee.french': '法语', 'ee.pnpLinked': '省提名', 'ee.general': '不限类别', 'ee.fsw': '联邦技术', 'ee.fst': '联邦技工',
   'act.seeOfficial': 'View official posting',   // 2026-09-14 Frank「这种统一使用英文」:官方原帖链接三语同用英文
   // E9-04 投递栏(+dd24-#109 语境文案)
-  'apply.email': '邮件投递', 'apply.mailTo': '收件邮箱', 'apply.openMail': '打开邮件', 'apply.copyMail': '复制邮箱', 'apply.web': '前往投递', 'apply.plain': '投递', 'apply.copy': '复制要点', 'apply.copied': '已复制',
+  // 2026-10-03 付费闭环批 B1:外链投递撤,钮面固定 apply.plain;apply.email / apply.web 两键三语删
+  // 2026-10-06 Frank「这个还是改成叫 邮箱投递」:钮面三语改「邮箱投递 / Apply by email / 이메일로 지원」
+  'apply.mailTo': '收件邮箱', 'apply.openMail': '打开邮件', 'apply.copyMail': '复制邮箱', 'apply.plain': '邮箱投递', 'apply.copy': '复制要点', 'apply.copied': '已复制',
+  // 2026-10-04 付费闭环 B1 收口:登录用户点投递、查邮箱没成(每人日限 / 查挂了 / 没邮箱)时的一行状态
+  'apply.limit': '今天的查询次数用完了', 'apply.err': '投递失败,稍后再试',
   'apply.authHero': '注册后帮你预填投递邮件,记录投递进度',
   'ob.valueApply': '顺手选几下,以后有相似的岗自动进你邮箱', 'ob.finishApply': '保存,继续投递',
   // E8-07 职位详情页
@@ -587,6 +591,7 @@ export const jobsZh = {
   'all.ee': '全部类别', 'all.status': '全部状态', 'all.origin': '全部渠道',
   'filter.num': '薪资/评分', 'filter.score': '评分', 'filter.more': '更多筛选',
   'filter.picked': '已选',
+  'filter.nocMore': '{first}等 {n} 个',
   'all.score': '全部评分', 'sc.high': '高(≥75)', 'sc.mid': '中(50–74)', 'sc.low': '低(<50)',
   'fields': '字段 ({n})', 'fields.main': '主要', 'fields.all': '全选', 'fields.invert': '反选', 'fields.fixed': ' (固定)', 'cols.hidden': '{n} 列宽度不够已隐藏',
   'th.tip': '点击表头排序',
@@ -718,6 +723,9 @@ export const jobsZh = {
   'pnpgate.eeProfile': '联邦 EE 档案', 'pnpgate.eeProgram': '符合 CEC、FSW 或 FST', 'pnpgate.crs': 'CRS ≥ {n}',
   'pnpgate.empYears': '在本省经营满 {n} 年', 'pnpgate.empRevenue': '年收入 ≥ ${n}', 'pnpgate.empStaff': '全职员工 ≥ {n} 人',
   'pnpgate.endorse': '指定社区推荐信', 'pnpgate.licensing': '职业所需执照或注册',
+  // 2026-10-04 Frank「全称 缩写 中文灰字都要吧」:证照一项一行 —— 行名(界面语言)+ 值(英文全称含缩写,取英文词条)+ 灰字(中韩译名;英文界面同字不出)
+  'pnpgate.k.cred.cpso': '执业证书', 'pnpgate.k.cred.ohip': '医保计费号',
+  'pnpgate.cred.cpso': '安大略省内外科医师学会执业证书', 'pnpgate.cred.ohip': '安大略省医疗保险计划计费号',
   // 2026-10-01 Frank「AIP 也需要一个 门槛卡片吧」「格式需要 和 pnp 的保持一致吗」「可以,做吧」:AIP 门槛卡(行名同省提名门槛卡,多学历、资金两行);
   // 「近 5 年」「毕业前 2 年」两个年数官方页只在原句里,没拆成数,照原句写死
   'pnpgate.k.edu': '学历', 'pnpgate.k.funds': '资金',
@@ -876,10 +884,14 @@ export const jobsZh = {
   // 我们实测到的只是 403 拒绝访问。只陈述自己观察到的事实:取不到 + 去哪看(职位描述版权多属雇主而非平台,别乱扣)
   'act.noTextBlocked': '这条帖子的正文在原站({src}),该站拒绝本站自动读取。下面的链接直达原帖。',
   // 我的求职(E9-01 最小求职看板,免费)
-  'sj.title': '我的求职', 'sj.note': '收藏职位、跟踪投递进度;只存在你的账户里。', 'sj.empty': '还没有收藏的职位——在职位板点「☆ 收藏」。',
+  'sj.title': '我的求职', 'sj.empty': '还没有收藏的职位——在职位板点「☆ 收藏」。',
   'sj.st.wish': '想投', 'sj.st.applied': '已投', 'sj.st.interview': '面试中', 'sj.st.offer': '拿到 offer',
   'sj.save': '☆ 收藏', 'sj.saved': '★ 已收藏', 'sj.view': '在职位板查看', 'sj.del': '移除', 'sj.weekly': '每周邮件摘要(收藏岗动态,可随时退订)',
-  'fav.title': '我的收藏', 'fav.note': '收藏过的职位都在这里;要跟踪投递进度去「我的求职」。',
+  'fav.title': '我的收藏',
+  // 2026-10-06 「我的求职」「我的收藏」改成 myjobs 桶的两张表;sj.note、fav.note 随旧清单撤
+  'mj.appliedAt': '投递日期', 'mj.open': '打开', 'mj.unsave': '取消收藏', 'mj.closed': '已下架',
+  'mj.live': '在架', 'mj.col.stage': '投递状态', 'mj.col.listing': '职位状态',
+  'mj.emptyApplied': '还没有投递记录。在职位页点「邮箱投递」后,这里会记下来。', 'mj.fail': '没加载出来,刷新页面再试。',
   // 大分类(数据值→显示)。单一来源 = etl/noc_buckets.py 的 BROADS + I18N,改那边要同步这里。 2026-09-14 Frank「管理层改成管理,生活服务改成生活,社会服务改成社会」:只改中文显示名,键与 en/ko 不动。
   'broad.管理层': '管理', 'broad.商务': '商务', 'broad.行政': '行政', 'broad.文员': '文员', 'broad.金融': '金融',
   'broad.会计': '会计', 'broad.法律': '法律', 'broad.IT': '科技', 'broad.工程': '工程', 'broad.科学': '科学',
@@ -1026,7 +1038,15 @@ export const jobsZh = {
   'up.perk.sync': '练过跨设备同步',
   'ob.step': '第 {i} 步 · 共 {n} 步', 'ob.value': '填完立刻看到与每个岗位的匹配度',
   'ob.skip': '跳过这步', 'ob.back': '上一步', 'ob.next': '下一步', 'ob.finish': '看我的匹配',
-  'ob.nocHint': '没有?可跳过,稍后在账户里搜索更多职业',
+  // 2026-10-04 付费闭环 A1 收口:已选职业标签 × 钮的读屏名({name} = 职业名)
+  'ob.tagDel': '移除 {name}',
+  // 2026-10-03 付费闭环批 A1 访客向导:题面三句(「想做什么工作」借 prof.noc)、境外胶囊、专业 12 档(统计局 CIP 2021 大类 01–11 + 其他)
+  // 2026-10-04 A2:专业题改成热门具体专业 + 搜索(名字来自 cip_programs 三语列),专业 12 档 gate.m.01–12 三语删;加搜索框占位 gate.majorPh
+  'gate.q.goal': '你现在的目标是?', 'gate.q.major': '你学的是什么专业?', 'gate.q.prov': '你现在在哪个省?', 'gate.abroad': '加拿大境外',
+  'gate.majorPh': '搜索专业',
+  // 2026-10-05 访客第 2 题照掌上高考:左栏第一项、左栏读屏名、专业类头行个数
+  'gate.hot': '热门', 'gate.majorCats': '专业分类', 'gate.majorN': '{n}个专业',
+  'gate.majorPicked': '已选 {n}/{max}',
   // E11-07 简历上传解析
   'ob.resume.btn': '上传简历,自动填', 'ob.resume.hint': 'PDF/DOCX,10 秒识别职业方向(不保存原件)',
   'ob.resume.busy': '解析中…约 10 秒', 'ob.resume.done': '已识别 {n} 个职业方向,后面几步已预填',
@@ -1092,7 +1112,7 @@ export const siteZh = {
   'clear': '清除筛选',
   'empty': '无匹配职位', 'allShown': '已全部显示 {total} 个', 'loadMore': '显示更多(还有 {n} 条)',
   'chart.back': '返回', 'chart.drillHint': '点条形可下钻', 'chart.other': '其他', 'chart.loading': '加载中…', 'nav.account': '账户', 'nav.acctTab': '我的账户',
-  'menu.sect.job': '求职', 'menu.sect.manage': '管理',
+  'menu.sect.manage': '管理',
   // 账户(E3-02)
   'nav.login': '登录', 'nav.register': '注册', 'acct.title': '账户',
   'acct.email': '邮箱', 'acct.password': '密码',
@@ -1217,24 +1237,28 @@ export const siteZh = {
   'dir.occ.note': '清单命中是粗筛信号,不是资格认定。',
   'dir.occ.colStream': '通道', 'dir.occ.colNoc': 'NOC', 'dir.occ.colName': '职业', 'dir.occ.fetched': '抓取 {d}', 'dir.occ.src': '官方清单',
   // C6-01 政策时间线
-  'tl.title': '抽选与政策时间线', 'tl.sub': '省抽选与联邦 EE 抽选时间线',
-  'tl.cadence': '抽选节奏', 'tl.events': '事件流', 'tl.fed': '联邦', 'tl.imp': '重要',
+  // 2026-10-03 资讯页签四分:政策公告撤出时间线,页头标题改「抽选时间线」;重要徽标与类型筛三词随之撤
+  'tl.title': '抽选时间线', 'tl.sub': '省抽选与联邦 EE 抽选时间线',
+  'tl.cadence': '抽选节奏', 'tl.events': '事件流', 'tl.fed': '联邦',
   'tl.last': '最近 {d}', 'tl.daysSince': '距今 {n} 天', 'tl.avgGap': '近 {m} 期平均间隔 ~{n} 天',
-  'tl.kindAll': '全部类型', 'tl.kindDraw': '抽选', 'tl.kindPolicy': '政策公告', 'tl.notice': '通告',
+  'tl.notice': '通告',
   'tl.min': '最低分 {n}', 'tl.notCrs': ',非 CRS', 'tl.inv': '邀请 {n} 人', 'tl.src': '官方来源',
   'tl.entry': '抽选与政策时间线', 'tl.empty': '没有匹配的事件', 'tl.hist': '历次抽选',
   'loading': '更新中…',
   'origin.hireac': 'HireAC', 'origin.gcjobs': 'GC Jobs',
   'origin.jobillico': 'Jobillico', 'origin.jobboom': 'Jobboom', 'origin.careerbeacon': 'CareerBeacon',
-  'nav.library': '资料库', 'nav.employers': '雇主', 'nav.jobs': '职位', 'nav.pte': 'PTE 刷题', 'tl.tabNews': '最新公告', 'tl.tabStreams': '通道与门槛',
+  'nav.library': '资料库', 'nav.employers': '雇主', 'nav.jobs': '职位', 'nav.mine': '我的', 'nav.pte': 'PTE 刷题', 'tl.tabNews': '最新公告', 'tl.tabStreams': '通道',
+  // 2026-10-03 资讯页签四分:四个短名页签 最新公告 | 抽选 | 通道 | 申请步骤(375px 英文四个放得下);页头标题各页另用自己的词条
+  'tl.tabDraws': '抽选', 'tl.tabSteps': '申请步骤',
   'rank.bnSub': '按移民价值评分排序', 'rank.bnRows': '{n} 本榜岗位',
   // #54 登录改版(careerbeacon 骨架)
-  'acct.hero.login': '欢迎回来', 'acct.hero.reg': '免费注册,看每份工作对你的匹配度',
+  'acct.hero.login': '欢迎回来', 'acct.hero.reg': '注册',
   'acct.google': '使用 Google 继续', 'acct.orEmail': '或用邮箱',
   // 移民动态(E12-06):官方新闻转载——姿势四件套(©/非官方声明/原文链/日期);只摆事实不解读
   'news.entry': '移民动态',
   'news.title': '移民政策动态', 'news.bnSub': '联邦与各省移民公告',
   'streams.title': '各省通道与门槛', 'streams.bnSub': '各省现行通道与官方门槛',
+  'steps.title': '各省申请步骤', 'steps.bnSub': '各省现行通道的官方申请步骤',
   'news.sub': '联邦 IRCC 与 7 省官方发布聚合 · 每 12 小时刷新 · 只收官方源',
   'news.federal': '联邦 IRCC',
   'news.qcNote': '魁省走自己的移民体系(非 PNP)',
@@ -1390,6 +1414,13 @@ export const consultZh = {
 export const quizZh = {
   'occ.az.all': '全部', 'occ.cat.hot': '热门', 'occ.max': '可选择多个职业',
   'occ.selected': '已选 {n} 个', 'occ.resultN': '找到 {n} 个职业', 'occ.noResult': '没有找到匹配职业,换个关键词试试',
+  'occ.all': '全选',
+  // 2026-10-04 付费闭环 A2 收口:访客向导第 3 题(选职业大号档)的短占位,职位板那句举例占位 quiz.q2ph 在弹框里放不下
+  'occ.ph': '搜索职业',
+  // 2026-10-05 访客第 3 题改左右两栏(Frank「也改成左右 两部分吗?」「改啊」):左栏第一项,装按专业取的那一屏职业
+  'occ.cat.rec': '推荐',
+  // 2026-10-05 访客第 3 题已选一行收口:× 的读屏名「移除 {name}」在名字还没拉回来时填的泛称(代码不裸奔,不报五位码)
+  'occ.word': '职业',
   // 档案表单(E5-00)
   'prof.title': '移民档案',
   'prof.hint': '档案用于逐岗计算「与我的匹配」;全部自报、只存在你的账户里,随时可改。',
@@ -1400,7 +1431,6 @@ export const quizZh = {
   'prof.st.jobhunting': '在加拿大找工作',
   'prof.st.pr': '已 PR / 只找工作',
   'prof.noc': '你想做什么工作?',
-  'prof.jobPopular': '热门职业(点一下就选好):',
   'prof.nocAdd': '加入这条', 'prof.nocSearch': '没有?输入职业名搜一下…',
   'prof.job.software': '软件开发', 'prof.job.accountant': '会计', 'prof.job.nurse': '护士', 'prof.job.psw': '护理员 / PSW',
   'prof.job.cook': '厨师', 'prof.job.truck': '卡车司机', 'prof.job.electrician': '电工', 'prof.job.welder': '焊工',

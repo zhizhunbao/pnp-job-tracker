@@ -76,6 +76,11 @@ export const PATH_NEWS = '/news'
 export const PATH_TIMELINE = '/timeline'
 
 /**
+ * 我的(账户页;2026-10-03 付费闭环批 B1 挂上顶栏,登录才出)。
+ */
+export const PATH_ACCOUNT = '/account'
+
+/**
  * 高亮键:就业把脉。
  */
 export const A_START = 'start'
@@ -116,6 +121,11 @@ export const A_EMPLOYERS = 'employers'
 export const A_NEWS = 'news'
 
 /**
+ * 高亮键:我的(账户页)。
+ */
+export const A_ACCOUNT = 'account'
+
+/**
  * 资料库下拉的高亮键(职业清单 / 官方资源 / 常见案例三页共用;2026-08-29 立,
  * 此前清单页借用 employers 高亮是历史遗留)。
  */
@@ -146,6 +156,7 @@ export const PATH_SEP = '/'
  * 根路径 '/' 就是职位板(offer2pr.com 不带 /jobs 后缀的拍板)。
  * 2026-09-15 校内板 /coop 撤(Frank「撤吧 校内版 只是一个渠道而已」):09-13 加的一级导航项与高亮键 coop 删,
  * 旧链接由 middleware 301 到 /?org=hireac;同日 301 也撤(Frank「coop 这个链接没必要存在了吧」),/coop 直接 404。
+ * 2026-10-03 资讯页签四分:资讯第四个页签「申请步骤」/steps 同高亮 news。
  */
 export const PATH_ACTIVE = [
   ['/pte', 'pte'],
@@ -160,6 +171,7 @@ export const PATH_ACTIVE = [
   ['/news', 'news'],
   ['/timeline', 'news'],
   ['/streams', 'news'],
+  ['/steps', 'news'],
   ['/account', 'account'],
   ['/jobs', 'jobs'],
   ['/', 'jobs'],
@@ -174,6 +186,16 @@ export const ACCT_LOADING = 'loading'
  * 账户区三态:未登录。
  */
 export const ACCT_OUT = 'out'
+
+/**
+ * 账户态种子键的分隔符。
+ */
+export const SEED_KEY_SEP = '|'
+
+/**
+ * 账户态种子键里「宿主不知道 / 没有种子」那一格的占位。
+ */
+export const SEED_KEY_NONE = '?'
 
 /**
  * 账户区三态:已登录(email 可能还没到,见 AccountLite 的占位圆)。

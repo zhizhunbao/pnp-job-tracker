@@ -138,6 +138,22 @@ export const STEP_LABEL: Record<string, string> = {
    * 账户页周报开关(kind = true 订阅 / false 退订)。
    */
   'weekly-optin': '转化 · 周报开关',
+
+  /**
+   * 访客向导弹出(2026-10-03 付费闭环批 A1;kind = 由头 job 点开第 3 个职位 / apply 未登录点投递 / save 未登录点收藏)。
+   * 2026-10-04 kind 加 entry(进站即弹);job 改成未登录点开职位弹框就算。
+   */
+  'gate-open': '访客向导 · 弹出',
+
+  /**
+   * 访客向导离开某一步(kind = goal / major / job / prov;到了注册屏记 reg)。
+   */
+  'gate-step': '访客向导 · 离开一步',
+
+  /**
+   * 未登录点了投递钮(先前直接弹登录框、不计数;与「转化 · 投递」是两件事)。
+   */
+  'apply-click': '转化 · 未登录点投递',
 }
 
 /**

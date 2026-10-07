@@ -8,14 +8,17 @@
  * 2026-08-24 自 Header 拆出(一个 tsx 一个组件)。
  * PricingModal 2026-08-28 随定价件成域落户 components/pricing,这里走它的桶 ——
  * 那条过渡边(原先点 components/jobs 的文件、绕开桶以免 header 与 jobs 成环)自此收掉。
+ * 2026-10-04 Frank「升级 Pro 这个删了,放到 我的 模块里,加一个我的订阅」:账户下拉的「升级 Pro」撤,本区的定价框
+ * (唯一开口就是那一项)连同开合态与 pricing 桶的引用一并撤;升级与续买挪进账户页「我的订阅」节。
+ * 2026-10-06 Frank「登录之后,会先刷整个页面」:登录成功改走路由原地刷新(useRouter().refresh),不再整页刷新。
  *
  * @author Frank
  * @time 2026-08-24 08:00:00
  */
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
 
-import { PricingModal } from '@/components/pricing'
 import { AccountMenu } from '@/components/auth'
 import { Button } from '@/components/button'
 import { ACCT_IN, ACCT_LOADING, ARIA_TRUE, AUTH_CLOSED, KIND_LOGIN, KIND_REGISTER } from './constants'
@@ -36,8 +39,8 @@ const AuthModal = dynamic(loadAuthModal, { ssr: false })
  */
 export function AccountLite({ t, acct }: AccountLiteIn) {
   const [auth, setAuth] = useState<AuthOpen>(AUTH_CLOSED)
-  const [pricing, setPricing] = useState(false)
-  const handles = makeAccountLiteHandles({ setAuth, setPricing })
+  const router = useRouter()
+  const handles = makeAccountLiteHandles({ setAuth, refresh: router.refresh })
 
   if (acct.state === ACCT_LOADING) {
     return <span className={css.acctSlot} />
@@ -47,15 +50,11 @@ export function AccountLite({ t, acct }: AccountLiteIn) {
   }
   if (acct.state === ACCT_IN) {
     return (
-      <>
-        <AccountMenu t={t}
-          email={acct.u.email}
-          displayName={acct.u.displayName}
-          avatar={acct.u.avatar}
-          isPro={acct.u.pro}
-          onPricing={handles.openPricing} />
-        {pricing && <PricingModal t={t} loggedIn pro={acct.u.pro} onClose={handles.closePricing} />}
-      </>
+      <AccountMenu t={t}
+        email={acct.u.email}
+        displayName={acct.u.displayName}
+        avatar={acct.u.avatar}
+        isPro={acct.u.pro} />
     )
   }
   return (

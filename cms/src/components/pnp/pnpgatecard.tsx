@@ -34,7 +34,7 @@ export function PnpGateCard({ spec }: PnpGateCardIn) {
   }
   return (
     <div className={css.card}>
-      <DrawsHead title={spec.title} source={spec.source} />
+      <DrawsHead title={spec.title} source={spec.source} jump={spec.jump} />
       {spec.sub !== TEXT_NONE && <div className={css.drawsBasis}>{spec.sub}</div>}
       {tags.length > 0 && <div className={css.gateTags}>{tags}</div>}
       {spec.empty !== TEXT_NONE && <span className={css.gateNote}>{spec.empty}</span>}

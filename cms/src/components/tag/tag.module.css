@@ -2,6 +2,9 @@
  * tag 域的私有样式(2026-08-24 自 ui/Tag.tsx 内联迁类;2026-09-13 Frank「胶囊样式不能全站统一一下吗」
  * 「都按把脉页的来」:基座与配色整套换成把脉页 start.module.css 的 .pill / .pillProv / .pillFed / .pillEasy /
  * .pillMid / .pillTight / .chipGray 的值,把脉页那份随之退役 —— 全站展示胶囊只此一个出口)。
+ * 2026-10-05 多 × 摘除钮两块(.tagDel / .tagDel::after,自 profile.module.css 原样迁入,见文件末尾)。
+ * 同日多已选一行两块(.tagRow / .tagRow > span,TagRow 用;自 majors.module.css 的 .picked / .picked > span 原样迁入,
+ * 注释照抄、值一个不改,见文件末尾)。
  */
 
 /*
@@ -174,3 +177,200 @@
   border: 1px solid #e5e7eb;
 }
 
+
+/*
+ * 已选变体(2026-10-04 访客四题改版收口):浅主色底 + 主色字 —— 回显「你选了哪几个」,与选中的选择格、大号胶囊同一套颜色。
+ */
+.pick {
+  /*
+   * 浅主色底(真值在 main.css 的 :root)。
+   */
+  background: var(--hover-bg);
+
+  /*
+   * 主色字(真值在 main.css 的 :root)。
+   */
+  color: var(--primary);
+
+  /*
+   * 浅蓝描边(与其余变体一样带一圈同色系的边)。
+   */
+  border: 1px solid #bfdbfe;
+}
+
+/*
+ * 标签上的 × 摘除钮。
+ * 类名写两遍抬权重:本钮经 Button(kind ghost)渲染,要稳赢 button 域
+ * .btn/.ghost 的同权重声明且不赌打包顺序(先例 .logoutBtn)。
+ * 2026-10-05 自 profile.module.css 原样迁入(Tag 的 del 格:带删钮的标签收进本桶,首访向导 / 访客第 3 题的已选职业、
+ * 访客第 2 题的已选专业同一颗 ×)。
+ */
+.tagDel.tagDel {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 亮靛(比标签字轻一点,示意可点)。
+   */
+  color: #6366f1;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 与职业名留 4px。
+   */
+  margin-left: 4px;
+
+  /*
+   * 内衬归零(标签本身已有内衬)。
+   */
+  padding: 0;
+
+  /*
+   * 与标签同字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 给放大的点按区定位(2026-10-04 收口,见下面 .tagDel.tagDel::after)。
+   */
+  position: relative;
+}
+
+/*
+ * × 摘除钮的点按区(2026-10-04 收口:钮只有约 10×16,手机上点不中;访客第 3 题也借这一枚,胶囊外的已选码只有它能摘)。
+ * 看得见的大小不变,只用一层透明伪元素往四周扩出去,点按区约 34×32。
+ */
+.tagDel.tagDel::after {
+  /*
+   * 伪元素要有内容才渲染(空串,读屏不念)。
+   */
+  content: '';
+
+  /*
+   * 叠在钮上、不占位(相对钮自己定位)。
+   */
+  position: absolute;
+
+  /*
+   * 上下各扩 8px;右扩 14px(标签右内衬 + 描边 9px,再进标签间距 5px,碰不到下一枚);
+   * 左扩 10px(只压到职业名末尾几像素,不往名字里多伸)。
+   */
+  inset: -8px -14px -8px -10px;
+}
+
+/*
+ * 已选一行(2026-10-05 多选立):定高一行到底,放不下横着滚(名字不截断、不折行);滚动条藏起来 ——
+ * 横向滚动条会占掉一截高,这一行的高就不定了(手机是浮在上面的、电脑经典滚动条占 8~15px),两栏让出的高跟着对不上。
+ * 手机横滑、触控板横扫、Tab 到某颗 × 都能滚到看不见的那一枚;最多 3 枚。
+ * 2026-10-05 自 majors.module.css 的 .picked 原样迁入(TagRow;访客第 3 题要同一行,收进通用桶)。
+ * 「最多 3 枚」是第 2 题已选专业的上限,照抄;本块不靠枚数,多了照样横着滚。
+ */
+.tagRow {
+  /*
+   * 标签横排。
+   */
+  display: flex;
+
+  /*
+   * 标签竖直居中在定高里。
+   */
+  align-items: center;
+
+  /*
+   * 标签间距(同第 3 题已选职业那一行 .obTagRow)。
+   * 2026-10-05 起第 3 题的已选职业那一行就是本块(quiz 桶 OccTags 改用 TagRow);.obTagRow 只剩首访向导职业步(profile 桶
+   * OnboardingTags)在用,间距照旧同为 6px。上一句「第 3 题已选职业那一行」作废。
+   */
+  gap: 6px;
+
+  /*
+   * 定高(一枚标签的高 24,见 .picker:has(.picked) 那一段的让高算式)。
+   * 盒子本身 40 = 24 + 上下各 8 的内衬,再用上下各 -8 的外距把占位收回 24 —— × 的点按区(tag 桶 .tagDel::after 上下各扩 8px)
+   * 在这个横滚区里会被裁到盒子边上,内衬给它留出地方,手机上 × 照旧好点(实测原先裁成 24 高)。
+   * 2026-10-05 迁入本桶后,让高算式住 pane 桶 pane.module.css 的 .belowTags(原 majors.module.css 的 .picker:has(.picked) 那一段)。
+   */
+  height: 40px;
+
+  /*
+   * 上下 8:给 × 的点按区留地方(见上一格);右 14:滚到最右时最后一颗 × 的点按区(右扩 14px)不被裁。
+   */
+  padding: 8px 14px 8px 0;
+
+  /*
+   * 上下各收回 8,版面上只占一枚标签的 24(与搜索框、两栏之间照旧是竖排的 14px 间距)。
+   */
+  margin: -8px 0;
+
+  /*
+   * 不被竖排压扁。
+   */
+  flex: none;
+
+  /*
+   * 放不下横着滚。
+   */
+  overflow-x: auto;
+
+  /*
+   * 竖向不滚(定高里只有一行)。
+   */
+  overflow-y: hidden;
+
+  /*
+   * 藏起横向滚动条(理由见本段头注)。
+   */
+  scrollbar-width: none;
+
+  /*
+   * 滚到头不带着弹框后面的页面一起滚。
+   */
+  overscroll-behavior: contain;
+}
+
+/*
+ * 已选一行行首的灰字小标(「已选 2/3」「已选 5 个」;2026-10-05 Frank「这部分要不要加一个 已选 的标识」)。
+ * 跟着标签一起横滚(最常见的是专业那一行,最多 3 枚,滚不动);不另起一行,白卡高度不变。
+ */
+.tagRowLabel {
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 次级灰(白底上约 4.8:1,同 chip 桶 .lineSub)。
+   */
+  color: var(--text2);
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 与第一枚标签多隔 2px(标签间距 6 之外,小标与标签是两类东西)。
+   */
+  margin-right: 2px;
+}
+
+/*
+ * 已选一行里的一枚标签:不被压窄(放不下就整行横着滚,名字永不截断)。
+ * 2026-10-05 自 majors.module.css 的 .picked > span 原样迁入。
+ */
+.tagRow > span {
+  /*
+   * 不伸不缩。
+   */
+  flex: none;
+}

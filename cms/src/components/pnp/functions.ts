@@ -23,6 +23,7 @@ import { track } from '@/lib/track'
 import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS, DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE,
   DRAWS_ALL_KEY, DRAWS_FORM_STATUS, HOST_RE, LANG_EN, LANG_ZH, LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
+  JUMP_ARROW, K_GATE_TITLE, P_PROV, SCROLL_START, URL_HASH_HEAD, URL_KV_SEP, URL_QUERY_HEAD, URL_STEPS, URL_STREAMS,
   MONTHS_KEYS,
   NUM_LOCALE, OPS_ALLOCATION, OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, ROUNDS_KEYS, YEAR_LEN,
   SEL_CAT_HEAD, SEL_CODE_RE, SEL_KEYS, SEL_PATH, SEL_PATH_HEAD, SEL_PATH_SEP, SEL_POINTS, SEL_TOP, SEL_WAGE, TAG_V_GRAY,
@@ -37,7 +38,8 @@ import {
   RULE_TEER, RULE_WAGE, SALARY_DIV, SALARY_HEAD, SALARY_TAIL, SCROLL_BLOCK, SPACE, SPACE_RUN_RE, SRC_PNP, STREAM_REFORM,
   TEER_HEAD, TEER_SHORT_HEAD, TEXT_NONE, TIP_MARK, TONE_FAIL, TONE_NA, TONE_PASS, TONE_WARN, TYPE_INELIGIBLE,
   TYPE_PRIORITY,
-  UNKNOWN_MARK, URL_JOBS_Q_HEAD, BASIS_KV, BASIS_LICENCE, BASIS_OCC_LOW, BASIS_OCC_MEDIAN, BASIS_SAME_NOC, BASIS_SEP,
+  UNKNOWN_MARK, URL_JOBS_Q_HEAD, BASIS_CRED, BASIS_KV, BASIS_LICENCE, K_CRED_HEAD, K_CRED_ROW_HEAD,
+  BASIS_OCC_LOW, BASIS_OCC_MEDIAN, BASIS_SAME_NOC, BASIS_SEP,
   BASIS_TENURE,
   BASIS_VALUE_CODE, BASIS_WINDOW, BASIS_WINDOW_YEARS, GATE_AREA_HEAD, GATE_COND_GRAD, GATE_COND_LOCAL,
   GATE_COND_OTHER_PROV, BASIS_PROV_GRADUATE, BASIS_FISCAL, GATE_EMP_FISCAL_KEY,
@@ -101,6 +103,7 @@ import type {
   EmpSplit,
   StepOfIn, StepSetOfIn, StepSpec, StepTableSpec, StepsCardOfIn, StepsCardSpec, SectorCellIn, SectorRowsIn,
   ProcessingTextIn, ProvDrawCardIn, ProvStreamItem, ProvStreamItemsIn,
+  HashJumpIn, JumpOfIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './pnp.module.css'
@@ -2026,6 +2029,7 @@ export function aipGateCardOf(x: AipGateCardIn): GateCardSpec | null {
     source: sourceLinkOf({ t: x.t, url: aipGateUrlOf(rows) }),
     rows: out,
     empty: TEXT_NONE,
+    jump: null,
   }
 }
 
@@ -2822,6 +2826,7 @@ export function gateCardOf(x: GateCardOfIn): GateCardSpec | null {
     source: sourceLinkOf({ t: x.t, url: gateUrlOf({ chan, streams }) }),
     rows,
     empty: TEXT_NONE,
+    jump: null,
   }
 }
 
@@ -3506,6 +3511,7 @@ function zonedLinesOf(x: ZonedLinesIn): string[] {
 
 /**
  * 「其他」行:指定社区推荐信、职业执照或注册(乡村振兴、医护专项这类流才有)。
+ * 2026-10-04 Frank「全称 缩写 中文灰字都要吧」:口径包带 credential=… 的执照行改由 credRowsOf 一项一行出全称,不再并进这句通用说法。
  *
  * @param x 各行构造器的共同入参。
  * @returns 这一行;都没有给 null。
@@ -3516,8 +3522,13 @@ function otherRowOf(x: GateRowOfIn): GateRowSpec | null {
   if (endorse != null) {
     parts.push(x.t('pnpgate.endorse'))
   }
-  const licensing = rowOfFactor({ rows: x.chan, factor: GATE_F.licensing })
-  if (licensing != null) {
+  let plain = false
+  for (const r of x.chan) {
+    if (isPlainLicensing(r)) {
+      plain = true
+    }
+  }
+  if (plain) {
     parts.push(x.t('pnpgate.licensing'))
   }
   if (parts.length === 0) {
@@ -3598,6 +3609,10 @@ function basisHasOf(x: BasisKeyIn): boolean {
  * 只陈列官方门槛,不判「你够不够」。
  * 2026-10-02 申请步骤批 2(Frank「弹框要和页面保持一致」):由 provGateCardsOf 改名扩格 —— 每条通道一项,门槛卡后面跟与弹框同一张
  * 「申请步骤」卡(stepsCardOf,引用门槛行取这张门槛卡的行),「进池与抽选」一步挂这条通道的抽选表(provDrawCardOf)。
+ * 2026-10-03 资讯页签四分(Frank「申请步骤应该是另一个选项卡吧」):门槛卡与步骤卡分去两个页签,步骤卡前面不再有门槛卡报通道名,
+ * 卡标题换成这条通道的官方英文原名、灰字界面语言名(与门槛卡同一对,gate.title / gate.sub);弹框那张照旧写「申请步骤」。
+ * 2026-10-04 Frank「通道和申请步骤 之前 互相 是不是应该有个按钮能切来切去」→ 勾「卡上加钮 + 页签带省份」:两张卡标题行各挂一颗互跳钮
+ * (jumpOf;门槛卡 →「申请步骤」页签,登了步骤才挂;步骤卡 →「通道」页签),带上省码与通道编号,落地页滚到同一条通道的卡。
  *
  * @param x 取词函数、界面语言、省码、通道对照表、门槛表、抽选、配额与两份步骤数据。
  * @returns 各项;本省没有通道给空列。
@@ -3622,8 +3637,7 @@ export function provStreamItemsOf(x: ProvStreamItemsIn): ProvStreamItem[] {
   }
   const out: ProvStreamItem[] = []
   for (const p of ordered) {
-    const gate = provStreamCardOf({ t: x.t, lang: x.lang, p, mine })
-    const steps = stepsCardOf({
+    const raw = stepsCardOf({
       t: x.t,
       province: p.province,
       channel: p,
@@ -3632,8 +3646,21 @@ export function provStreamItemsOf(x: ProvStreamItemsIn): ProvStreamItem[] {
       reqs: x.reqs,
       who: { province: p.province, noc: TEXT_NONE, teer: null },
     })
+    let toSteps: SourceLink | null = null
+    if (raw != null) {
+      toSteps = jumpOf({ text: x.t(K_STEPS_HEAD), base: URL_STEPS, province: p.province, key: p.key })
+    }
+    const gate = provStreamCardOf({ t: x.t, lang: x.lang, p, mine, jump: toSteps })
+    let steps: StepsCardSpec | null = null
     let draws: DrawCard | null = null
-    if (steps != null) {
+    if (raw != null) {
+      steps = {
+        title: gate.title,
+        sub: gate.sub,
+        source: raw.source,
+        steps: raw.steps,
+        jump: jumpOf({ text: x.t(K_GATE_TITLE), base: URL_STREAMS, province: p.province, key: p.key }),
+      }
       draws = provDrawCardOf({
         t: x.t, lang: x.lang, p, draws: x.draws, ops: x.ops, reqs: x.reqs, pathways: x.pathways,
       })
@@ -3641,6 +3668,19 @@ export function provStreamItemsOf(x: ProvStreamItemsIn): ProvStreamItem[] {
     out.push({ key: p.key, gate, steps, draws })
   }
   return out
+}
+
+/**
+ * 资讯页门槛卡 ↔ 步骤卡的互跳钮(2026-10-04):去另一个页签,带上省码(落地页按它预选省份)与通道编号(锚点,落地页滚到同一条通道的卡)。
+ *
+ * @param x 钮上的字、去处页签、省码与通道编号。
+ * @returns 互跳钮(字带 → 记号)。
+ */
+function jumpOf(x: JumpOfIn): SourceLink {
+  return {
+    text: x.text + JUMP_ARROW,
+    href: x.base + URL_QUERY_HEAD + P_PROV + URL_KV_SEP + x.province + URL_HASH_HEAD + x.key,
+  }
 }
 
 /**
@@ -3703,6 +3743,7 @@ function provStreamCardOf(x: ProvStreamCardIn): GateCardSpec {
     source: sourceLinkOf({ t: x.t, url }),
     rows,
     empty,
+    jump: x.jump,
   }
 }
 
@@ -3724,13 +3765,66 @@ function provStreamRowsOf(x: ProvStreamRowsIn): GateRowSpec[] {
   }
   for (const row of [statusRowOf(x.one), offer, empRowOf(x.one), langAllRowOf(x.one),
     bandRowOf({ one: x.one, factors: GATE_EXP_FACTORS, build: expRowOf }), residenceRowOf(x.one),
-    bandRowOf({ one: x.one, factors: GATE_WAGE_FACTORS, build: wageRowOf }), pointsRowOf(x.one), eeRowOf(x.one),
-    otherRowOf(x.one)]) {
+    bandRowOf({ one: x.one, factors: GATE_WAGE_FACTORS, build: wageRowOf }), pointsRowOf(x.one), eeRowOf(x.one)]) {
     if (row != null) {
       rows.push(row)
     }
   }
+  for (const row of credRowsOf(x.one)) {
+    rows.push(row)
+  }
+  const other = otherRowOf(x.one)
+  if (other != null) {
+    rows.push(other)
+  }
   return rows
+}
+
+/**
+ * 证照行(2026-10-04 Frank「全称 缩写 中文灰字都要吧」;先用在安省自雇医生的 CPSO 执业证书、OHIP 计费号):口径包带
+ * credential=… 的执照行一项一行 —— 行名写这类证照(界面语言),值写英文全称(含缩写;取英文词条,哪种界面都一样),灰字写界面语言
+ * 译名(英文界面与值同字,不出)。排在「其他」行之前。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 证照行;这条通道没有带标记的执照行给空列。
+ */
+function credRowsOf(x: GateRowOfIn): GateRowSpec[] {
+  const tEn = makeT(LANG_EN)
+  const out: GateRowSpec[] = []
+  for (const r of x.chan) {
+    const cred = credOf(r)
+    if (r.factor !== GATE_F.licensing || cred === TEXT_NONE) {
+      continue
+    }
+    const full = tEn(K_CRED_HEAD + cred)
+    const local = x.t(K_CRED_HEAD + cred)
+    const notes: string[] = []
+    if (local !== full) {
+      notes.push(local)
+    }
+    out.push({ key: GATE_ROW.cred + KEY_SEP + cred, label: x.t(K_CRED_ROW_HEAD + cred), lines: [full], notes })
+  }
+  return out
+}
+
+/**
+ * 门槛行口径包里的证照标记(credential=cpso 这类);没有给 ''。
+ *
+ * @param r 门槛行。
+ * @returns 证照标记。
+ */
+function credOf(r: PnpReq): string {
+  return basisValueOf({ basis: r.basis, key: BASIS_CRED })
+}
+
+/**
+ * 这一行是不是不带证照标记的执照行(「其他」行那句通用的「职业所需执照或注册」只算这种)。
+ *
+ * @param r 门槛行。
+ * @returns 是不是。
+ */
+function isPlainLicensing(r: PnpReq): boolean {
+  return r.factor === GATE_F.licensing && credOf(r) === TEXT_NONE
 }
 
 /**
@@ -5449,6 +5543,29 @@ export function scrollIntoHit(x: ScrollIntoHitIn): void {
 }
 
 /**
+ * 资讯页落地时滚到地址锚点那条通道的卡(2026-10-04 门槛卡 ↔ 步骤卡互跳):整表到了、本省的卡渲出来之后才滚。
+ * 没带锚点(切省胶囊会把地址换成不带锚点的)或锚点对不上就不动 —— 省份已落好,往下翻一样看得到,不值得为一次滚动抛错
+ * (同 timeline 的 scrollToEvents)。
+ *
+ * @param x 整表到了没有、本省渲出了几张卡。
+ * @returns 无。
+ */
+export function applyHashJump(x: HashJumpIn): void {
+  if (x.ready === false || x.count === 0) {
+    return
+  }
+  const id = window.location.hash.slice(URL_HASH_HEAD.length)
+  if (id === TEXT_NONE) {
+    return
+  }
+  const el = document.getElementById(id)
+  if (el == null) {
+    return
+  }
+  el.scrollIntoView({ block: SCROLL_START })
+}
+
+/**
  * 本省抽选卡开合的初值:可提名的岗默认展开全省各组;不可提名(不符合清单)的岗没有「本岗那一组」,默认折叠,
  * 只露「查看全省 N 组」(2026-09-28 Frank「如果是不符合清单的。本省抽选默认折叠」)。
  * 2026-09-29 抽选卡重排:「改制前的抽选」卡同本省抽选卡一个规矩;「AIP 抽选」卡一律展开 —— AIP 与省提名是两条路,本岗不可提名
@@ -5878,6 +5995,7 @@ function qcCardOf(x: QcCardOfIn): GateCardSpec | null {
     source: sourceLinkOf({ t: x.t, url: qcUrlOf(one) }),
     rows: out,
     empty: TEXT_NONE,
+    jump: null,
   }
 }
 
@@ -6359,7 +6477,13 @@ export function stepsCardOf(x: StepsCardOfIn): StepsCardSpec | null {
     n += 1
     steps.push(stepOf({ t: x.t, province: x.province, step, n, stepOps: x.stepOps, one }))
   }
-  return { title: x.t(K_STEPS_HEAD), source: sourceLinkOf({ t: x.t, url: x.channel.url }), steps }
+  return {
+    title: x.t(K_STEPS_HEAD),
+    sub: TEXT_NONE,
+    source: sourceLinkOf({ t: x.t, url: x.channel.url }),
+    steps,
+    jump: null,
+  }
 }
 
 /**

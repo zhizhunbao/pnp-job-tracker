@@ -33,6 +33,9 @@
  * 更多筛选(折叠区那一份见 foldfilters.tsx,徽标另数一枚),桌面照旧在本行;「清除筛选」手机上只在用户自己设了筛选时出
  * (进板时预选的本省不算),桌面照旧有筛选就出。
  *
+ * 2026-10-04 收口:省下拉改接面板的 onProv(记下所选省 + 换省 + 清市 / 区整套过访客闸)—— 原先拿过闸的表现造
+ * makeProvChange,闸只拦住写值,记 cookie 照记,访客刷新就绕过了筛选闸。
+ *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
@@ -43,7 +46,7 @@ import { Select } from '@/components/select'
 import { BTN_GHOST, BTN_SECONDARY, FK, SELECT_LG, SELECT_SM } from './constants'
 import {
   clearClsOf, foldBtnClsOf, foldCaretOf, foldNClsOf, foldNNarrowClsOf, makeBroadChange, makeCatLabel, makeEeChange,
-  makeEeLabel, makeProvChange, makeProvLabel, makeSlotChange, slotOf,
+  makeEeLabel, makeProvLabel, makeSlotChange, slotOf,
 } from './functions'
 import { ColFields } from './colfields'
 import type { BoardBoxIn } from './types'
@@ -63,7 +66,7 @@ export function FilterRow({ b, boxRef }: BoardBoxIn) {
         <Search value={b.q} onChange={b.onQ} placeholder={b.t('search.placeholder')} size={SELECT_SM} />
       </span>
       <Select value={slotOf({ fState: f.fState, k: FK.prov })}
-        onChange={makeProvChange(f.fState)}
+        onChange={f.onProv}
         opts={f.opts.prov}
         all={b.t('all.prov')}
         labelOf={makeProvLabel(b.t)}

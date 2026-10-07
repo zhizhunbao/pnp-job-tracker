@@ -2,6 +2,8 @@
  * timeline 域(政策时间线页)的死值:版式档、二级导航与站内地址、事件的三种类型、
  * 筛选的三个未选态、节奏卡与事件行上的记号。
  * 2026-08-28 换装批自 Timeline.tsx 的散值收拢挂注释(值一个不改)。
+ * 2026-10-03 资讯页签四分(页签改叫「抽选」):政策公告撤出时间线、类型筛撤,事件类型只剩省通告要认(KIND_NOTICE);
+ * 抽选 / 政策两种类型、站内动态地址头、重要徽标两格随之撤,圆点不再分两档(拼类名的分隔符撤)。
  *
  * @author Frank
  * @time 2026-08-28 12:43:06
@@ -31,19 +33,19 @@ export const TABS_TONE = 'teal'
 export const URL_NEWS = '/news'
 
 /**
- * 二级 tab 条里「时间线」的去处(= 当前页,渲成不可点的当前页签)。
+ * 二级 tab 条里「时间线」的去处(= 当前页,渲成不可点的当前页签;2026-10-03 页签改叫「抽选」)。
  */
 export const URL_TIMELINE = '/timeline'
 
 /**
- * 二级 tab 条里「通道与门槛」的去处(2026-09-30 通道与门槛批 2:资讯第三个页签)。
+ * 二级 tab 条里「通道与门槛」的去处(2026-09-30 通道与门槛批 2:资讯第三个页签;2026-10-03 页签改叫「通道」)。
  */
 export const URL_STREAMS = '/streams'
 
 /**
- * 站内动态详情页的地址头(拼上 slug —— 政策公告那一类在站内有自己的详情页)。
+ * 二级 tab 条里「申请步骤」的去处(2026-10-03 资讯页签四分:申请步骤从「通道」页拆出,资讯第四个页签)。
  */
-export const URL_NEWS_HEAD = '/news/'
+export const URL_STEPS = '/steps'
 
 /**
  * 事件流那一段的锚点 id:节奏卡点一下要把页面滚到这里,取元素时用的是同一个词
@@ -68,17 +70,6 @@ export const TEXT_NONE = ''
  * 「全部」,所以联邦这一档要有自己的词。
  */
 export const PROV_FED = 'FED'
-
-/**
- * 事件类型:抽选。省通告(notice)在筛选里归这一组 —— 通告说的也是抽选那回事,
- * 分成两个筛选档只会让用户猜哪个装着什么。
- */
-export const KIND_DRAW = 'draw'
-
-/**
- * 事件类型:政策公告(站内有 /news 详情页的那一类)。
- */
-export const KIND_POLICY = 'policy'
 
 /**
  * 事件类型:省通告(标题一律走 i18n 的固定说法,真正的内容在 note 里)。
@@ -118,11 +109,6 @@ export const SCALE_NOTE_OPEN = ' ('
 export const SCALE_NOTE_CLOSE = ')'
 
 /**
- * 挂红「重要」徽标的最低 AI 重要度(与 /news 列表同一条线:只给满分挂)。
- */
-export const IMP_MIN = 5
-
-/**
  * 省/地区标的变体档(标签说「这是哪个省」,不可点)。
  */
 export const TAG_REGION = 'region'
@@ -131,11 +117,6 @@ export const TAG_REGION = 'region'
  * 联邦标的变体档。
  */
 export const TAG_FEDERAL = 'federal'
-
-/**
- * 重要徽标的变体档。
- */
-export const TAG_IMP = 'imp'
 
 /**
  * 节奏卡的钮底座(2026-08-26 Frank「<button 这种不允许直接使用」—— 整卡可点的东西
@@ -163,22 +144,18 @@ export const META_SEP = ' · '
 export const CHIP_CLEAR = ' ✕'
 
 /**
- * 拼 className 时各类之间的分隔符(HTML 的 class 属性按空白切词)。
- */
-export const CLS_SEP = ' '
-
-/**
  * 这页的 SEO 头(时间线是全站唯一一处把省抽选、联邦 EE 抽选与官方政策公告排在一条轴上的页面,
  * 描述里把这三路与「历史统计、不预测」的口径一并说清)。
  * 住这里而不是页面门里:门里不留死值常量,页面门只 `export const metadata = TIMELINE_META`
  * 一行转发(2026-08-29 Frank「框架导出的内容也一律来自桶」,形照 start 的 START_META;
  * 原先那个 generateMetadata 无参、返回死值,改成常量形)。
+ * 2026-10-03 资讯页签四分:政策公告撤出本页,标题与摘要里「policy updates / 官方政策公告」那一路随之删,只说两路抽选。
  */
 export const TIMELINE_META = {
   /**
    * 浏览器标签与搜索结果标题。
    */
-  title: 'Canada immigration timeline — PNP & Express Entry draws, policy updates | Offer2PR',
+  title: 'Canada PNP and Express Entry draw timeline | Offer2PR',
 
   /**
    * 搜索结果摘要(英文优先 —— 88% 流量来自 Google;中文一句压在后面)。
@@ -186,8 +163,8 @@ export const TIMELINE_META = {
    * 不预测下一次抽选 —— 删了这半句就等于默许读者拿它当预测看。
    */
   description:
-    'One timeline of provincial nominee draws (BC/AB/MB, with provincial scales), federal Express Entry'
-    + ' category draws, and official policy announcements across Canada — with draw cadence stats'
+    'One timeline of provincial nominee draws (BC/AB/MB, with provincial scales) and federal Express Entry'
+    + ' category draws across Canada — with draw cadence stats'
     + ' (days since last draw, average interval). Historical facts with sources, no predictions.'
-    + ' 加拿大移民时间线:省抽选+联邦 EE 抽选+官方政策公告,含抽选节奏统计。',
+    + ' 加拿大移民抽选时间线:省抽选+联邦 EE 抽选,含抽选节奏统计。',
 }

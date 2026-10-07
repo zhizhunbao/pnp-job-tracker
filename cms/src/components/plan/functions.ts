@@ -7,6 +7,7 @@
  * lib/points 下发,本文件只把它们的结论洗成能渲的字(「本页不算一个数」)。
  * 2026-08-27 建档时只装答题器的取值判定;2026-08-28 换装批把 Decision.tsx 的
  * 组件体与模块级散件全数收进来。
+ * 2026-10-03 付费闭环批 A1 审查:isPopularNoc 改从 profile 桶取(热门表的主人给判定,两份逐字相同的拷贝并成一份)。
  *
  * @author Frank
  * @time 2026-08-27 04:30:00
@@ -24,7 +25,7 @@ import { officialLabel } from '@/lib/official'
 import { track } from '@/lib/track'
 import { ymd } from '@/lib/time'
 import { pickL, quizToProfile, type L } from '@/components/quiz'
-import { POPULAR_NOCS } from '@/components/profile'
+import { isPopularNoc, POPULAR_NOCS } from '@/components/profile'
 import { cssOf } from '@/components/css'
 import { overlayCls } from '@/components/modal'
 import { CompProvCell } from './compprovcell'
@@ -3775,21 +3776,6 @@ export function missingNocsOf(x: TitlesIn): string[] {
     }
   }
   return out
-}
-
-/**
- * 这个码在不在常用职业表里(在的话名字同步就有,不用问)。
- *
- * @param code 5 位职业码。
- * @returns 在不在。
- */
-export function isPopularNoc(code: string): boolean {
-  for (const item of POPULAR_NOCS) {
-    if (item.noc === code) {
-      return true
-    }
-  }
-  return false
 }
 
 /**

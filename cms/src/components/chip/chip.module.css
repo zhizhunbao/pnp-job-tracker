@@ -91,3 +91,759 @@
    */
   color: #b91c1c;
 }
+
+/*
+ * 大号档(2026-10-04 访客四题改版):高 40、字 15,灰底无描边 —— 与选择格同一套配色。
+ */
+.lg {
+  /*
+   * 横排居中(高度固定,字垂直居中)。
+   */
+  display: inline-flex;
+
+  /*
+   * 字垂直居中。
+   */
+  align-items: center;
+
+  /*
+   * 固定高度(手机好点)。
+   * 2026-10-04 A2 改最低高度:访客第 2 题换成 CIP 具体专业名、第 3 题换成按专业取的在招职业名,英文名常过 40 字,
+   * 单行定高会把胶囊撑出弹框;名字不截断(走查 #296 同理),放不下就换行、胶囊变高。一行时仍是 40。
+   */
+  min-height: 40px;
+
+  /*
+   * 左右留白;上下 8px 只在换行时撑开(一行时由最低高度定高、字垂直居中)。
+   */
+  padding: 8px 16px;
+
+  /*
+   * 不超过容器宽(长名在这里折行,不横向撑出)。
+   */
+  max-width: 100%;
+
+  /*
+   * 长名可换行(压过 .chip 基座的永不折行)。
+   */
+  white-space: normal;
+
+  /*
+   * 折成两行时靠左排(居中排的两行长短不齐,读着跳)。
+   */
+  text-align: start;
+
+  /*
+   * 折行时的行距。
+   */
+  line-height: 1.3;
+
+  /*
+   * 字号放大。
+   */
+  font-size: 15px;
+
+  /*
+   * 中等字重。
+   */
+  font-weight: 500;
+
+  /*
+   * 无描边(透明占位,选中时换主色不跳动)。
+   */
+  border: 1.5px solid transparent;
+
+  /*
+   * 灰底(真值在 main.css 的 :root)。
+   */
+  background: var(--hairline);
+
+  /*
+   * 正文色。
+   */
+  color: var(--text);
+}
+
+/*
+ * 大号档选中:浅主色底 + 主色描边 + 主色字,前面挂勾。
+ */
+.lgOn {
+  /*
+   * 浅主色底。
+   */
+  background: var(--hover-bg);
+
+  /*
+   * 主色描边。
+   */
+  border-color: var(--primary);
+
+  /*
+   * 主色字。
+   */
+  color: var(--primary);
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 大号档选中的勾(记号,不是文案)。
+ */
+.lgOn::before {
+  /*
+   * 勾号。
+   */
+  content: '✓';
+
+  /*
+   * 同一个勾号带空替代文字(2026-10-04 收口):伪元素的字会算进按钮的可访问名,读屏念成「勾 Accounting」,
+   * 与 aria-pressed 的「已按下」重复、名字还随选中变;`/ ''` 让读屏不念它。不认这种写法的浏览器(老 Safari)
+   * 丢掉这一行、留上一行的勾 —— 上一行是退路,别删。
+   */
+  content: '✓' / '';
+
+  /*
+   * 勾与字的间距。
+   */
+  margin-right: 4px;
+}
+
+/*
+ * 选择格基座(2026-10-04 访客四题改版首例):灰底圆角块,图标在上、字在下;选中挂 .tileOn。
+ */
+.tile {
+  /*
+   * 给右上角的勾定位。
+   */
+  position: relative;
+
+  /*
+   * 竖排:图标在上、字在下。
+   */
+  display: flex;
+
+  /*
+   * 竖排。
+   */
+  flex-direction: column;
+
+  /*
+   * 左对齐。
+   */
+  align-items: flex-start;
+
+  /*
+   * 图标与字的间距。
+   */
+  gap: 8px;
+
+  /*
+   * 撑满网格的一格。
+   */
+  width: 100%;
+
+  /*
+   * 最小高度(同一行的格子一样高)。
+   */
+  min-height: 78px;
+
+  /*
+   * 内边距。
+   */
+  padding: 14px 12px;
+
+  /*
+   * 右侧给选中勾留位(2026-10-04 收口:勾贴右上角,距右 8 + 宽 20 = 28,字的右边界正好落在勾的左缘)。
+   * 每格常驻留位、不只在选中时加 —— 选中才加会让字一点就重排,格子跳动(同上面透明描边占位的道理);
+   * 英文长省名第一行原来会被勾盖住。不再多留:勾是圆的、最左点只有一个,375 手机两列格子再多留 4px,
+   * 「Newfoundland」一词(约 109px)就放不下、被拆成「Newfoundlan / d」。
+   */
+  padding-right: 28px;
+
+  /*
+   * 内边距算进宽度。
+   */
+  box-sizing: border-box;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 12px;
+
+  /*
+   * 透明描边占位(选中换主色不跳动)。
+   */
+  border: 1.5px solid transparent;
+
+  /*
+   * 灰底。
+   */
+  background: var(--hairline);
+
+  /*
+   * 正文色。
+   */
+  color: var(--text);
+
+  /*
+   * 字号。
+   */
+  font-size: 14.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 行高(长名折两行时不挤)。
+   */
+  line-height: 1.3;
+
+  /*
+   * 长名折行(2026-10-04 收口:压过 button 桶基座 `:where(.btn)` 的不折行 —— 本格走 Button 渲染,
+   * 原先「Newfoundland and Labrador」「프린스에드워드아일랜드주」一行到底,375 与 1440 都撑出格子、弹框横向能滚;
+   * 名字不截断,放不下就换行)。
+   */
+  white-space: normal;
+
+  /*
+   * 左对齐(按钮默认居中)。
+   */
+  text-align: left;
+
+  /*
+   * 可点。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 大卡形:图标在左、字更大,整宽一行(二选一这类题)。
+ */
+.card {
+  /*
+   * 横排。
+   */
+  flex-direction: row;
+
+  /*
+   * 垂直居中。
+   */
+  align-items: center;
+
+  /*
+   * 图标与字的间距。
+   */
+  gap: 14px;
+
+  /*
+   * 大卡高度。
+   */
+  min-height: 72px;
+
+  /*
+   * 左右留白。
+   */
+  padding: 0 16px;
+
+  /*
+   * 右侧仍给选中勾留位(2026-10-04 收口:上一行的左右留白盖掉了基座 .tile 的勾位,这里补回,值同 .tile)。
+   * 2026-10-05 勾改竖直居中、距右 16:留位 = 16 + 勾宽 20 + 与字的间距 12 = 48。
+   */
+  padding-right: 48px;
+
+  /*
+   * 圆角稍大。
+   */
+  border-radius: 14px;
+
+  /*
+   * 字号放大。
+   */
+  font-size: 18px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 选中:浅主色底 + 主色描边 + 主色字。
+ */
+.tileOn {
+  /*
+   * 浅主色底。
+   */
+  background: var(--hover-bg);
+
+  /*
+   * 主色描边。
+   */
+  border-color: var(--primary);
+
+  /*
+   * 主色字。
+   */
+  color: var(--primary);
+}
+
+/*
+ * 图标位(字号定图标大小)。
+ */
+.tileIcon {
+  /*
+   * 图标独占一块。
+   */
+  display: inline-flex;
+
+  /*
+   * 居中。
+   */
+  align-items: center;
+
+  /*
+   * 居中。
+   */
+  justify-content: center;
+
+  /*
+   * 图标大小(图标按 1em 画)。
+   */
+  font-size: 22px;
+}
+
+/*
+ * 大卡形的图标位:白底圆角方块,主色图标。
+ */
+.card .tileIcon {
+  /*
+   * 方块宽。
+   */
+  width: 44px;
+
+  /*
+   * 方块高。
+   */
+  height: 44px;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 12px;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 主色图标。
+   */
+  color: var(--primary);
+
+  /*
+   * 图标稍大。
+   */
+  font-size: 26px;
+
+  /*
+   * 不被挤窄。
+   */
+  flex: none;
+}
+
+/*
+ * 文字列:主文字 + 灰字小注。
+ */
+.tileBody {
+  /*
+   * 竖排。
+   */
+  display: flex;
+
+  /*
+   * 竖排。
+   */
+  flex-direction: column;
+
+  /*
+   * 两行间距。
+   */
+  gap: 2px;
+
+  /*
+   * 允许在弹性布局里收窄(长名折行而不是撑破)。
+   */
+  min-width: 0;
+}
+
+/*
+ * 主文字(长名折行,不截断)。
+ */
+.tileLabel {
+  /*
+   * 长英文词也能折(名字不截断)。
+   * 2026-10-04 收口:退成最后一道保险 —— 先按下面两条在词边界折、两行匀开,一个词本身比一行还宽才在词中间折,
+   * 宁可折也不撑破格子。
+   */
+  overflow-wrap: anywhere;
+
+  /*
+   * 折两行时两行匀开(2026-10-04 收口:格子右侧给勾留了 28px 之后,中文「纽芬兰与拉布拉多」在 375 手机上折成
+   * 「纽芬兰与拉布拉 / 多」,第二行只剩一个字;匀开后是「纽芬兰与 / 拉布拉多」,英文「Newfoundland / and Labrador」。
+   * 一行放得下的名字不受影响)。
+   */
+  text-wrap: balance;
+}
+
+/*
+ * 韩文主文字按词折(2026-10-04 收口:韩文默认在任意两个音节之间都能折,「뉴펀들랜드 래브라도주」折成
+ * 「뉴펀들랜드 래브라 / 도주」;界面语言挂在 html 的 lang 上,只对韩文生效 —— 中文本就逐字折,不能套)。
+ */
+.tileLabel:lang(ko) {
+  /*
+   * 只在空格处折(2026-10-04 收口):「뉴펀들랜드 / 래브라도주」;一个词本身比一行还宽(「프린스에드워드아일랜드주」)
+   * 仍由上面的 overflow-wrap 兜底在词中间折,不撑破格子。
+   */
+  word-break: keep-all;
+}
+
+/*
+ * 灰字小注(省码之类的代码)。
+ */
+.tileSub {
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+
+  /*
+   * 灰字(真值在 main.css 的 :root)。
+   * 2026-10-04 收口:改字面量 #4b5563 —— 12px 细字的 --text2 落在格子灰底 --hairline 上只有 4.40:1,不到 4.5:1;
+   * main.css 的 :root 在 --text2 与正文 --text 之间没有一档,用正文色又会把小注与主文字拉平,
+   * 取全站已在用的 #4b5563(tag / jobs / companies 桶都有),对 --hairline 约 6.9:1。
+   */
+  color: #4b5563;
+}
+
+/*
+ * 选中时小注跟着变主色。
+ */
+.tileOn .tileSub {
+  /*
+   * 主色。
+   */
+  color: var(--primary);
+}
+
+/*
+ * 右上角的勾:主色实心圆、白勾。
+ */
+.tileCheck {
+  /*
+   * 贴右上角。
+   */
+  position: absolute;
+
+  /*
+   * 距顶。
+   */
+  top: 8px;
+
+  /*
+   * 距右。
+   */
+  right: 8px;
+
+  /*
+   * 圆宽。
+   */
+  width: 20px;
+
+  /*
+   * 圆高。
+   */
+  height: 20px;
+
+  /*
+   * 正圆。
+   */
+  border-radius: 50%;
+
+  /*
+   * 主色底。
+   */
+  background: var(--primary);
+
+  /*
+   * 白勾。
+   */
+  color: #ffffff;
+
+  /*
+   * 勾居中。
+   */
+  display: inline-flex;
+
+  /*
+   * 勾居中。
+   */
+  align-items: center;
+
+  /*
+   * 勾居中。
+   */
+  justify-content: center;
+
+  /*
+   * 勾的大小。
+   */
+  font-size: 13px;
+}
+
+/*
+ * 横排的两形(大卡、占满整行的格子)勾改在右侧竖直居中(2026-10-05 Frank「这个应该居中吧」:横排卡里图标与字都竖直居中,
+ * 只有勾贴在右上角,一高一低)。图标在上的格子形不动,勾照旧贴右上角(Airbnb 房型格同此)。
+ * 同日 Frank「加拿大境外怎么是长条的」:占满整行的格子形(.wide)整个删,横排只剩大卡一形。
+ */
+.card .tileCheck {
+  /*
+   * 竖直居中(以卡心为准)。
+   */
+  top: 50%;
+
+  /*
+   * 自身往回挪一半高。
+   */
+  transform: translateY(-50%);
+
+  /*
+   * 距右与大卡左边留白同为 16(左右对称)。
+   */
+  right: 16px;
+}
+
+/*
+ * 大号胶囊一排(.lgRow,ChipRow)与大号胶囊的加载占位(.lgSkel + 六档宽 .skel0~.skel5,ChipSkel)2026-10-05 撤:
+ * 两件只给访客第 3 题选职业控件的大号胶囊那一屏用(第 2 题同日已换成一行选项 ChipLine),第 3 题改成与第 2 题同一副左右两栏
+ * (Frank「也改成左右 两部分吗?」「改啊」),行改 ChipLine、在途改 loading 桶那一行,两件连同样式随之删。
+ * 原段头注要点:大号胶囊排横排折行、间距 10px(原 gate 桶 .pills 与 quiz 桶 .pillsLg 并来);占位与 .lg 一行时同高同圆角同底色、
+ * 宽度六档循环、格子数从头到尾不变(照 quiz 桶选职业控件 occPillSkeleton + skelTop* 的骨架做法,那份照旧在常规档用着)。
+ */
+
+/*
+ * 一行选项 ChipLine(2026-10-05 访客第 2 题照掌上高考立):整行可点,文字左、勾右;行与行之间一条细线。
+ * 双写类名压过 button 桶 ghost 底的样式。
+ */
+.line.line {
+  /*
+   * 文字与勾横排。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 文字左、勾右。
+   */
+  justify-content: space-between;
+
+  /*
+   * 文字与勾的间距。
+   */
+  gap: 10px;
+
+  /*
+   * 撑满卡宽。
+   */
+  width: 100%;
+
+  /*
+   * 最低 48px(手指点得到)。
+   */
+  min-height: 48px;
+
+  /*
+   * 上下 12px。
+   */
+  padding: 12px 0;
+
+  /*
+   * 无描边(行间细线见下一条)。
+   */
+  border: 0;
+
+  /*
+   * 方角。
+   */
+  border-radius: 0;
+
+  /*
+   * 透明底。
+   */
+  background: none;
+
+  /*
+   * 正文字号。
+   */
+  font-size: 15px;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+
+  /*
+   * 行高(长名折行时)。
+   */
+  line-height: 1.4;
+
+  /*
+   * 深字。
+   */
+  color: var(--text);
+
+  /*
+   * 左对齐。
+   */
+  text-align: start;
+
+  /*
+   * 长名折行(不截断)。
+   */
+  white-space: normal;
+}
+
+/*
+ * 行与行之间的细线(第一行不画:和上面的头行 / 卡边之间的线归装它的卡)。
+ */
+.line.line + .line.line {
+  /*
+   * 细线。
+   */
+  border-top: 1px solid var(--hairline);
+}
+
+/*
+ * 选中行:主色字、半粗。
+ */
+.lineOn.lineOn {
+  /*
+   * 主色字。
+   */
+  color: var(--primary);
+
+  /*
+   * 半粗。
+   */
+  font-weight: 500;
+}
+
+/*
+ * 点不动的行(2026-10-05 访客第 2 题多选:选满 3 个时没选的行):灰字;光标由 button 桶的 :disabled 还原。
+ */
+.lineOff.lineOff {
+  /*
+   * 最弱一档灰(不可用的控件不受对比度下限约束;真值在 main.css 的 :root)。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 文字:吃满剩下的宽,长名折行。
+ */
+.lineText {
+  /*
+   * 吃满剩下的宽。
+   */
+  flex: 1;
+
+  /*
+   * 允许被压窄(才会折行而不是撑破)。
+   */
+  min-width: 0;
+
+  /*
+   * 长单词也能断(英文长名不撑破)。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 检索词命中的那一截:主色。
+ */
+.lineMark {
+  /*
+   * 主色。
+   */
+  color: var(--primary);
+}
+
+/*
+ * 文字下面一行灰字小注(ChipLine 的 sub 格;2026-10-05 立:访客第 3 题右边那块与单列命中里,两个职业显示名相同时挂官方英文名区分,
+ * 同常规档职业胶囊的重名小注;用途同 ChipTile 的 .tileSub)。
+ */
+.lineSub {
+  /*
+   * 自成一行(摆在名字下面)。
+   */
+  display: block;
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 常规字重(选中行的名字半粗,小注不跟着粗)。
+   */
+  font-weight: 400;
+
+  /*
+   * 灰字(白卡上约 4.8:1;真值在 main.css 的 :root)。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 选中行的小注跟着变主色(同 .tileOn .tileSub)。
+ */
+.lineOn.lineOn .lineSub {
+  /*
+   * 主色。
+   */
+  color: var(--primary);
+}
+
+/*
+ * 选中行右侧的勾。
+ */
+.lineCheck {
+  /*
+   * 不被压缩。
+   */
+  flex: none;
+
+  /*
+   * 图标居中。
+   */
+  display: inline-flex;
+
+  /*
+   * 主色。
+   */
+  color: var(--primary);
+}

@@ -6,6 +6,7 @@
  * 2026-09-23 Frank「这个我觉得都列全了,分开列,然后带展开,收缩」立。
  * 同日「运输这个只有一个 没法展开」:一轮也是钮(展开看轮次名与邀请数);只有一轮都没有才是 div。
  * 2026-09-30 Frank 选「互换」:组头排法由外面递(dateBelow)—— 省提名抽选卡传 true(合计在原日期格、日期落最下一行),EE 卡传 false。
+ * 2026-10-04 命中组的浅蓝底由外面递开关(mark):资讯页「申请步骤」页签的步骤卡不标(Frank 勾「去掉」),弹框与 EE 卡照旧标。
  *
  * @author Frank
  * @time 2026-09-23 23:10:00
@@ -24,7 +25,7 @@ import css from './pnp.module.css'
  * @param props 这一组、展开态、开合手柄与组头排法。
  * @returns 组头 + 展开后的全部轮次。
  */
-export function EeCmpGroupView({ g, open, onToggle, dateBelow }: EeCmpGroupIn) {
+export function EeCmpGroupView({ g, open, onToggle, dateBelow, mark }: EeCmpGroupIn) {
   const rows = []
   for (const r of g.rows) {
     rows.push(<DrawRow key={r.key} r={r} />)
@@ -33,13 +34,13 @@ export function EeCmpGroupView({ g, open, onToggle, dateBelow }: EeCmpGroupIn) {
     <div className={css.cmpGroup}>
       {g.expandable && (
         <Button kind={PLAIN_BTN_KIND}
-          className={cmpHeadClsOf({ dim: g.dim, hit: g.hit, button: true, dateBelow })}
+          className={cmpHeadClsOf({ dim: g.dim, hit: g.hit && mark, button: true, dateBelow })}
           onClick={onToggle} title={g.tip}>
           <EeCmpHead g={g} open={open} />
         </Button>
       )}
       {g.expandable === false && (
-        <div className={cmpHeadClsOf({ dim: g.dim, hit: g.hit, button: false, dateBelow })}
+        <div className={cmpHeadClsOf({ dim: g.dim, hit: g.hit && mark, button: false, dateBelow })}
           title={g.tip}>
           <EeCmpHead g={g} open={open} />
         </div>

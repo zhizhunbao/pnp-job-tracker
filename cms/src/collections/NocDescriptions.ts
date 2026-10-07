@@ -18,6 +18,9 @@ export const NocDescriptions: CollectionConfig = {
     { name: 'titleEnShort', type: 'text', admin: { description: '英文短名(窄位用,空则回退官方名 title)' } },
     { name: 'duties', type: 'textarea', admin: { description: '主要职责(换行分隔)' } },
     { name: 'requirements', type: 'textarea', admin: { description: '任职要求(换行分隔)' } },
+    // 2026-10-05 访客第 3 题职业搜索打「cloud」搜不到:官方名里没有这个词,示例职称里有(21231 cloud engineer);
+    // 生产列由 docs/sql/noc-descriptions-examples-20261005.sql 手写加(examples varchar),别靠 DB_PUSH 推
+    { name: 'examples', type: 'textarea', admin: { description: '官方示例职称(All examples,换行分隔;职业搜索也搜这一格)' } },
     { name: 'fetched', type: 'text' },
   ],
 }

@@ -1,14 +1,18 @@
 /**
  * chip 域的纯函数(零 JSX 零 hook)。
+ * 2026-10-05 大号胶囊占位的类名 chipSkelClsOf 随 ChipSkel 撤(访客第 3 题改左右两栏,Frank「也改成左右 两部分吗?」「改啊」;
+ * 原注要点:基座 + 六档宽之一按第几颗循环取,模数取类名数组的长度,不另立死值)。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { cssOf } from '@/components/css'
 import {
   CHIP_BG_OFF, CHIP_BG_ON, CHIP_BORDER_HOT, CHIP_BORDER_OFF, CHIP_BORDER_ON, CHIP_C_HOT, CHIP_C_OFF, CHIP_C_ON,
   CHIP_CURSOR, CHIP_FONT_SIZE, CHIP_PADDING, CHIP_RADIUS, CHIP_WHITE_SPACE, CLS_SEP, FONT_WEIGHT_OFF, FONT_WEIGHT_ON,
+  MARK_NONE,
 } from './constants'
-import type { ChipClsIn } from './types'
+import type { ChipClsIn, LineClsIn, MarkParts, MarkPartsIn, TileClsIn } from './types'
 import css from './chip.module.css'
 
 /**
@@ -19,7 +23,12 @@ import css from './chip.module.css'
  */
 export function chipClsOf(x: ChipClsIn): string {
   const out = [css.chip]
-  if (x.active) {
+  if (x.lg) {
+    out.push(css.lg)
+  }
+  if (x.lg && x.active) {
+    out.push(css.lgOn)
+  } else if (x.active) {
     out.push(css.active)
   } else if (x.hot) {
     out.push(css.hot)
@@ -65,4 +74,59 @@ export function chipStyle(active: boolean, hot = false): React.CSSProperties {
     cursor: CHIP_CURSOR,
     whiteSpace: CHIP_WHITE_SPACE,
   }
+}
+
+/**
+ * 选择格的类名:基座 + 形态 + 跨列 + 选中。
+ * 2026-10-04 付费闭环访客四题改版首例(照抄智联选身份大卡、Airbnb 房型图标格;调研截图见设计稿)。
+ * 2026-10-05 跨列(占满整行)那一档删(Frank「加拿大境外怎么是长条的」,唯一的用户改回普通格子)。
+ *
+ * @param x 选中、大卡形两个开关。
+ * @returns 类名串。
+ */
+export function tileClsOf(x: TileClsIn): string {
+  const out = [css.tile]
+  if (x.card) {
+    out.push(css.card)
+  }
+  if (x.active) {
+    out.push(css.tileOn)
+  }
+  return out.join(CLS_SEP)
+}
+
+/**
+ * 一行选项的类名:基座 + 选中叠主色(2026-10-05 ChipLine 立)。
+ * 同日多一档点不动(叠灰字;选中优先 —— 选中的行不会点不动,两个都真时只叠选中)。
+ *
+ * @param x 选中没有、点不动没有。
+ * @returns 类名串。
+ */
+export function lineClsOf(x: LineClsIn): string {
+  if (x.active) {
+    return cssOf(css.line) + CLS_SEP + cssOf(css.lineOn)
+  }
+  if (x.off) {
+    return cssOf(css.line) + CLS_SEP + cssOf(css.lineOff)
+  }
+  return cssOf(css.line)
+}
+
+/**
+ * 把一行文字切成命中前 / 命中 / 命中后三截(不分大小写找检索词第一处;空检索词或找不到 = 整行在 pre)。
+ * 只做显示:搜索命中是服务端按八档比的(可能命中的是另一门语言的名字或官方长名),这里找不到就不标,不另判命中。
+ *
+ * @param x 整行文字与检索词。
+ * @returns 三截。
+ */
+export function markPartsOf(x: MarkPartsIn): MarkParts {
+  const mark = x.mark.trim()
+  if (mark === MARK_NONE) {
+    return { pre: x.label, hit: MARK_NONE, post: MARK_NONE }
+  }
+  const at = x.label.toLowerCase().indexOf(mark.toLowerCase())
+  if (at < 0) {
+    return { pre: x.label, hit: MARK_NONE, post: MARK_NONE }
+  }
+  return { pre: x.label.slice(0, at), hit: x.label.slice(at, at + mark.length), post: x.label.slice(at + mark.length) }
 }

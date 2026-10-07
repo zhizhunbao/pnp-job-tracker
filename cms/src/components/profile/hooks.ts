@@ -5,6 +5,12 @@
  * account 的 useAccountPage:体内只剩 useState、具名 effect 壳与工厂装配)。
  * 2026-09-23 账户页撤移民档案节(Frank「只保留一个 我的简历 我的收藏 我的求职」),档案表单
  * ProfileForm 删文件,它的整机 useProfileForm 随之删除;本抽屉只剩首访向导与简历预填两台。
+ * 2026-10-03 付费闭环批 A1 添两台:访客向导整机 useGateWizard 与草稿补交钩子 useGateSync。
+ * 同日审查后:补交钩子只认交接戳(向导走到注册屏落、× 撤),别的登录一律不碰答案档。
+ * 2026-10-04 添一台:进站向导整机 useEntryGate(全站骨架上的 GateSync 起;Frank「进来就要求用户登录注册」→「照这样改」)。
+ * 2026-10-04 访客四题改版:访客那三台(useGateWizard / useGateSync / useEntryGate)连同进站向导的两个回调工厂迁去 gate 桶;
+ * 本抽屉回到首访向导与简历预填两台。
+ * 同日收口:钮组共用时添的 onSkip(恒等于下一步)随之撤,下一步手柄回到就地装配。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00

@@ -23,16 +23,19 @@
  * 点相似雇主同框换一家(同日「这种里面的链接都改成弹框显示」)。
  * 2026-09-27 两个弹框并进弹框栈(advisor 的 PeekStack,与职位板 / 公司页 / 职位页同一件):一层层叠,× 与 Esc 都只关最上面一层
  * (此前本板直渲两框,Esc 一层都关不掉,见 hooks 的 useEmpPeek)。
+ * 2026-10-04 收口审查(设计稿 10-04「关掉后…筛选…一律再弹」):弹框栈旁边多挂一路筛选的访客向导(gate 桶 GateWizard)——
+ * 访客关掉进站向导后动筛选 / 搜索再弹,照职位板弹框层(boardmodals)那一路的形挂。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
 import { PeekStack } from '@/components/advisor'
 import { Banner, BANNER_IMGS } from '@/components/banner'
+import { GateWizard } from '@/components/gate'
 import { IconUsers } from '@/components/icons'
 import { Shell } from '@/components/shell'
 import { Updated } from '@/components/time'
-import { BANNER_MODULE, NOC_DESC_NONE, SHELL_BOTTOM_PX, SHELL_TOP_PX } from './constants'
+import { BANNER_MODULE, GATE_INTENT_FILTER, NOC_DESC_NONE, SHELL_BOTTOM_PX, SHELL_TOP_PX } from './constants'
 import { EmployerBoard } from './employerboard'
 import { EmployerFilterBar } from './employerfilterbar'
 import { noteTextOf } from './functions'
@@ -63,6 +66,12 @@ export function Employers({ initial, initialFilters, updatedAt, initialCols, pla
         </div>
       </Shell>
       <PeekStack stack={p.peek.stack} lang={p.lang} plan={p.peek.plan} nocDesc={NOC_DESC_NONE} />
+      {p.peek.filterGate && (
+        <GateWizard t={p.t}
+          intent={GATE_INTENT_FILTER}
+          onClose={p.peek.onFilterGateClose}
+          onDone={p.peek.onFilterGateDone} />
+      )}
     </div>
   )
 }

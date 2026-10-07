@@ -26,6 +26,7 @@
  * 同日 Frank「上来不要显示空的框」:正文还在取时装正文的卡里什么都没画,整卡藏着(.jdCard 的 :empty),正文到了才出。
  * 同日 Frank「然后页面在一部分一部分渲染出来」:尾巴(公司卡 + 相关职位卡)先挂着取数、藏着不露,正文区有东西了才一起露出来
  * (jdShownOf,与 JdContent 同口径)—— 原先相关职位卡比正文先到,正文来了又把它顶下去。
+ * 2026-10-04 投递邮箱改成登录用户点投递时才查(投递栏自己查),这里不再递邮箱与查完没。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -58,8 +59,7 @@ export function JobBody({ job, lang, plan, inModal = false, d, tail = null }: Jo
       {inModal && <div className={`${CARD_MD_CLS} ${cssOf(css.jdCard)}`}>{content}</div>}
       {tail != null && <div hidden={jdShownOf(d) === false}>{tail}</div>}
       {d.status === JD_DONE && (
-        <ApplyBar job={job} email={d.applyEmail} emailDone={d.applyDone} t={d.t} plan={plan}
-          onPage={inModal === false} />
+        <ApplyBar job={job} t={d.t} plan={plan} onPage={inModal === false} />
       )}
     </>
   )

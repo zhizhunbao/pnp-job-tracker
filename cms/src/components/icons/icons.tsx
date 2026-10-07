@@ -10,9 +10,9 @@
  * @time 2026-08-24 04:30:00
  */
 import {
-  ArrowUp, ChartColumn, ChartLine, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, ClipboardList,
-  Compass, GripVertical, Lock, Mail, Map as LMap, MapPin, Maximize, Medal, Menu, MessageCircle, Mic, Minimize,
-  Minus, MoveUpRight, Newspaper, Paperclip, Pause, Play, Rocket, RotateCcw, Save, Scale, Search, Settings, Square, Star,
+  ArrowUp, Briefcase, ChartColumn, ChartLine, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, ClipboardList,
+  Compass, Globe, GripVertical, IdCard, Lock, Mail, Map as LMap, MapPin, Maximize, Medal, Menu, MessageCircle, Mic,
+  Minimize, Minus, MoveUpRight, Newspaper, Pause, Play, Rocket, RotateCcw, Save, Scale, Search, Settings, Square, Star,
   Plus, Table, Target, ThumbsDown, ThumbsUp, TriangleAlert, User, Users, Volume2, X,
 } from 'lucide-react'
 
@@ -161,11 +161,6 @@ export const IconPlus = makeIcon(Plus)
 export const IconNews = makeIcon(Newspaper)
 
 /**
- * 附件/简历上传。
- */
-export const IconPaperclip = makeIcon(Paperclip)
-
-/**
  * 对话重置(2026-08-06 Frank「重置两个字别扭」→ 图标化)。
  */
 export const IconRefresh = makeIcon(RotateCcw)
@@ -249,3 +244,18 @@ export const IconTable = makeIcon(Table)
  * 趋势态(序列表工具条右边那枚:表体换成多折线指数图)。
  */
 export const IconTrend = makeIcon(ChartLine)
+
+/**
+ * 找工作(访客四题「目标」大卡;2026-10-04)。
+ */
+export const IconBriefcase = makeIcon(Briefcase)
+
+/**
+ * 拿 PR(访客四题「目标」大卡,证件;2026-10-04)。
+ */
+export const IconIdCard = makeIcon(IdCard)
+
+/**
+ * 加拿大境外(访客四题「所在省」那一格;2026-10-04)。
+ */
+export const IconGlobe = makeIcon(Globe)

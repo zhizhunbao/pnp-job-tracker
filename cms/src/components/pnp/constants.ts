@@ -767,6 +767,11 @@ export const GATE_ROW = {
   other: 'other',
 
   /**
+   * 证照(行键头;一项一行,键 = 本头 + 分隔 + 证照标记;2026-10-04 Frank「全称 缩写 中文灰字都要吧」)。
+   */
+  cred: 'cred',
+
+  /**
    * 学历(2026-10-01 AIP 门槛卡加的行;Frank「格式需要 和 pnp 的保持一致吗」「可以,做吧」:同一套行名,排工作经验后)。
    */
   edu: 'edu',
@@ -1007,6 +1012,22 @@ export const BASIS_SEP = ';'
  * 口径包里键与值之间的等号。
  */
 export const BASIS_KV = '='
+
+/**
+ * 口径包里的证照标记键(`credential=cpso` / `credential=ohip`;etl/pnp 的 ONR_PHYSICIAN_RULES 打;2026-10-04 Frank「全称 缩写 中文灰字都要吧」:
+ * 门槛卡按它一项一行出英文全称 + 界面语言灰字)。
+ */
+export const BASIS_CRED = 'credential'
+
+/**
+ * 证照全称词条头(拼上证照标记;英文词条 = 官方英文全称含缩写,作值的黑字;中韩词条 = 灰字译名)。
+ */
+export const K_CRED_HEAD = 'pnpgate.cred.'
+
+/**
+ * 证照行名词条头(拼上证照标记;界面语言的「这类证照」)。
+ */
+export const K_CRED_ROW_HEAD = 'pnpgate.k.cred.'
 
 /**
  * 口径包的窗口期键(近 N 个月内)。
@@ -1305,6 +1326,42 @@ export const TARGET_BLANK = '_blank'
 export const LINK_ARROW = ' ↗'
 
 /**
+ * 站内互跳的记号(→ = 本页签切到另一个页签,区别于来源钮的 ↗ 新开页;2026-10-04 资讯页门槛卡 ↔ 步骤卡互跳,
+ * Frank「通道和申请步骤 之前 互相 是不是应该有个按钮能切来切去」→ 勾「卡上加钮 + 页签带省份」)。
+ */
+export const JUMP_ARROW = ' →'
+
+/**
+ * 资讯「申请步骤」页签的地址(门槛卡互跳钮的去处;本域自抄,与 components/streams 的 URL_STEPS 同字)。
+ */
+export const URL_STEPS = '/steps'
+
+/**
+ * 资讯「通道」页签的地址(步骤卡互跳钮的去处;与 components/streams 的 URL_STREAMS 同字)。
+ */
+export const URL_STREAMS = '/streams'
+
+/**
+ * 互跳地址带省份的查询参数(落地页按它预选省份;与 components/streams 的 P_PROV 同字)。
+ */
+export const P_PROV = 'prov'
+
+/**
+ * 互跳地址的查询串开头。
+ */
+export const URL_QUERY_HEAD = '?'
+
+/**
+ * 互跳地址查询参数的键值分隔。
+ */
+export const URL_KV_SEP = '='
+
+/**
+ * 互跳地址的锚点开头(锚点 = 通道编号,落地页按它滚到同一条通道的卡)。
+ */
+export const URL_HASH_HEAD = '#'
+
+/**
  * 雇主线点击的埋点名。
  */
 export const EV_EMPLOYER_CLICK = 'pnp-employer-click'
@@ -1318,6 +1375,11 @@ export const SRC_PNP = 'pnp'
  * 高亮行滚进视野的档位:就近滚,尽量不动整个弹框。
  */
 export const SCROLL_BLOCK = 'nearest'
+
+/**
+ * 互跳落地滚到锚点卡的档位:卡顶对齐视口上沿(卡很长,就近滚会只露半截;2026-10-04)。
+ */
+export const SCROLL_START = 'start'
 
 /**
  * 定制样式钮的统一底座(2026-08-26 Frank「<button 这种不允许直接使用」——

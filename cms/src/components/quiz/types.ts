@@ -5,6 +5,8 @@
  * 各抄一份 —— 结构相同即兼容,走样当场 tsc 红。
  * 2026-08-28 换装批自 EntryQuiz.tsx(本文件的前身,git mv 保历史)与三个 tsx 的
  * 内联 props 收拢而来。
+ * 2026-10-05 访客第 3 题改左右两栏(Frank「也改成左右 两部分吗?」「改啊」):多大号档两栏的几样(OccRailIn / OccLinesIn /
+ * 左栏项与切换手柄 / railBusyOf 入参),借 profile 桶已选标签件的几样与大号胶囊、胶囊排的 props 撤(见各处原位的指路注)。
  *
  * @author Frank
  * @time 2026-08-28 04:10:00
@@ -422,6 +424,65 @@ export type CatalogMap = Record<string, Top[]>
 export type DupMap = Map<string, number>
 
 /**
+ * NOC 码 → 所在职业的组键(2026-10-05 立):职业 = 中文短名相同的一组码,键就是中文短名(数据层 etl/noc 的 OCC_MERGE
+ * 把 21230 / 21231 / 21232 写成同一个「软件开发」;职位板与查询层按同一列归组)。值为空串 = 查过、库里没压出短名
+ * (这个码自成一组,不再回查)。
+ */
+export type KeyMap = Record<string, string>
+
+/**
+ * 这一屏摆出来的一个职业 = 组键相同的那几行(2026-10-05 Frank「这个职位 怎么还有 小字 英文呢」:同组的三个码原先
+ * 一码一颗胶囊、三颗同名再各挂官方英文名区分,改成一颗)。
+ */
+export type OccItem<T extends Cand> = {
+  /**
+   * 组键(见 KeyMap;没有短名的码,键是码自己)。
+   */
+  key: string
+
+  /**
+   * 代表行 = 组里排最前的那一行(热门 / 分类那一屏按在招量排过 = 在招最多的码,与职位板代表码同一口径):
+   * 显示名、重名小注、五位码小注都取它。
+   */
+  head: T
+
+  /**
+   * 组里的全部行(代表行在首)。
+   */
+  rows: T[]
+}
+
+/**
+ * 已选的一个职业 = 已选码里组键相同的那几个码(2026-10-05 立;底部汇总、大号档标签与「已选 N 个」都按它数,同组只算一个)。
+ */
+export type OccGroup = {
+  /**
+   * 组键(见 KeyMap)。
+   */
+  key: string
+
+  /**
+   * 代表码 = 组里最先选上的码(汇总胶囊、标签按它取名)。
+   */
+  head: string
+
+  /**
+   * 组里已选的全部码(代表码在首)。
+   */
+  nocs: string[]
+}
+
+/**
+ * 组键表的 updater。
+ */
+export type KeysUpdateFn = (m: KeyMap) => KeyMap
+
+/**
+ * 组键表的落格(收 updater)。
+ */
+export type SetKeysFn = (f: KeysUpdateFn) => void
+
+/**
  * 无参无返的点击手柄。
  */
 export type ClickFn = () => void
@@ -836,6 +897,21 @@ export type OccPickerIn = {
    * 旁路收卷。
    */
   onFinish?: () => void
+
+  /**
+   * 专业的 CIP 2021 class 码(52.0203;2026-10-04 A2,访客第 3 题):给了就把热门那一屏换成该专业对应大类下
+   * 在招最多的职业(/api/quiz?major=),没给(或空串)照旧取全站热门榜(?top=24)。
+   */
+  majorCode?: string
+
+  /**
+   * 大号档(2026-10-04 A2,访客第 3 题):胶囊换 chip 桶的大号胶囊、已选标签挪到最上面(借 profile 桶 OnboardingTags,
+   * 只回显这一屏胶囊外的码)、不出分类导航 / 底部汇总 / 动作条(钮区归宿主)。搜索、多选照旧。
+   * 2026-10-05 Frank「也改成左右 两部分吗?」「改啊」:改成与第 2 题专业选择器同一副左右两栏(OccRail)—— 搜索框 → 已选一行
+   * (全部已选职业,tag 桶 TagRow)→ 没在搜时左栏「推荐」+ 全站大类、右边一列职业行,在搜时单列命中;上面「大号胶囊」
+   * 「已选标签挪到最上面」「只回显这一屏胶囊外的码」三处作废。不出分类导航 / 底部汇总 / 动作条、搜索与多选照旧。
+   */
+  lg?: boolean
 }
 
 /**
@@ -939,17 +1015,18 @@ export type OccResultsIn = {
   searching: boolean
 
   /**
-   * 命中的候选。
+   * 命中的职业(2026-10-05 起同组的几个候选合成一个,计数行按它数)。
    */
-  cands: Cand[]
+  hits: OccItem<Cand>[]
 
   /**
-   * 已选的 NOC 码(判胶囊亮不亮)。
+   * 已选的职业(判胶囊亮不亮:同组任一个码选着就亮;2026-10-05 自已选码改)。
    */
-  nocs: string[]
+  picked: OccGroup[]
 
   /**
    * 逐候选的点击手柄工厂(选中即清空搜索框)。
+   * (原在下面的 lg 格 —— 大号档命中换 chip 桶大号胶囊 —— 2026-10-05 撤:大号档改走 OccRail 的单列命中,本件只剩常规档。)
    */
   pickOf: PickOfFn
 }
@@ -1014,14 +1091,14 @@ export type OccListIn = {
   topLoaded: boolean
 
   /**
-   * 这一屏要摆的职业。
+   * 这一屏要摆的职业(2026-10-05 起同组的几个码合成一个)。
    */
-  list: Top[]
+  list: OccItem<Top>[]
 
   /**
-   * 已选的 NOC 码(判胶囊亮不亮)。
+   * 已选的职业(判胶囊亮不亮:同组任一个码选着就亮;2026-10-05 自已选码改)。
    */
-  nocs: string[]
+  picked: OccGroup[]
 
   /**
    * 显示名 → 出现次数(判要不要挂官方名区分)。
@@ -1030,6 +1107,7 @@ export type OccListIn = {
 
   /**
    * 逐职业的点击手柄工厂。
+   * (原在下面的 lg 格 —— 大号档胶囊换 chip 桶大号胶囊、骨架换大号占位 —— 2026-10-05 撤:大号档改走 OccRail 的两栏,本件只剩常规档。)
    */
   pickOf: PickOfFn
 }
@@ -1044,9 +1122,9 @@ export type OccSelectedIn = {
   t: TFn
 
   /**
-   * 已选的 NOC 码。
+   * 已选的职业(同组的几个码一颗胶囊、算一个;2026-10-05 自已选码改)。
    */
-  nocs: string[]
+  picked: OccGroup[]
 
   /**
    * NOC 码 → 显示名(名字还没拉到就出占位条)。
@@ -1074,9 +1152,9 @@ export type OccActionsIn = {
   inline?: boolean
 
   /**
-   * 已选的 NOC 码。
+   * 已选的职业(钮上「已选 N 个」按它数,同组只算一个;2026-10-05 自已选码改)。
    */
-  nocs: string[]
+  picked: OccGroup[]
 
   /**
    * 「下一题」钮上的字;不传就用默认那句。
@@ -1162,6 +1240,11 @@ export type OccBodyIn = {
    * 旁路收卷。
    */
   onFinish?: () => void
+
+  /**
+   * 大号档(见 OccPickerIn.lg;2026-10-05 起给真就整个交给 OccRail 摆)。
+   */
+  lg: boolean
 }
 
 /**
@@ -1197,6 +1280,11 @@ export type OccPickerHookIn = {
    * 点「下一题」交出当前选择。
    */
   onDone: (nocs: string[]) => void
+
+  /**
+   * 专业的 CIP class 码;空串 = 没给(热门那一屏取全站热门榜)。
+   */
+  majorCode: string
 }
 
 /**
@@ -1204,9 +1292,9 @@ export type OccPickerHookIn = {
  */
 export type OccPanel = {
   /**
-   * 已选的 NOC 码。
+   * 已选的职业(已选码按组键收拢:同组的几个码算一个;2026-10-05 自已选码改 —— 码本身照旧整份回传给宿主)。
    */
-  nocs: string[]
+  picked: OccGroup[]
 
   /**
    * NOC 码 → 显示名。
@@ -1219,9 +1307,15 @@ export type OccPanel = {
   q: string
 
   /**
-   * 搜索命中的候选。
+   * 在搜(搜索框去空白后够 QUERY_MIN 个字:正文换成命中那一屏;2026-10-05 立 —— 原常规档 OccBody 与大号档 OccRail 各写一遍,
+   * 判定收回整机一处,同 majors 桶整机的 searchOn;搜索在途工作者按同一个判定发不发请求)。
    */
-  cands: Cand[]
+  searchOn: boolean
+
+  /**
+   * 搜索命中的职业(同组的几个候选合成一个;2026-10-05 自命中候选改)。
+   */
+  hits: OccItem<Cand>[]
 
   /**
    * 搜索在途中。
@@ -1240,8 +1334,9 @@ export type OccPanel = {
 
   /**
    * 这一屏要摆的职业(热门按在招量降序取前 24,分类页由接口排好)。
+   * 2026-10-05:同组的几个码合成一个职业,在招数加总后照它重排(见 occListOf)。
    */
-  list: Top[]
+  list: OccItem<Top>[]
 
   /**
    * 分类清单在途中。
@@ -1252,6 +1347,13 @@ export type OccPanel = {
    * 真实热门榜到没到。
    */
   topLoaded: boolean
+
+  /**
+   * 按专业取的热门还在路上(给了专业码、榜没到):胶囊整排是占位,大号档的已选标签这一拍不渲。2026-10-04 A2 收口。
+   * 2026-10-05 大号档改左右两栏(「也改成左右 两部分吗?」「改啊」):停在「推荐」时右边那块摆「加载中」;已选一行改成全部已选都摆,
+   * 不再这一拍不渲(先前不渲是因为「胶囊外才挂」要等这一屏到了才判得出,全部都摆就没有这一跳)。
+   */
+  hold: boolean
 
   /**
    * 显示名 → 出现次数。
@@ -1282,6 +1384,24 @@ export type OccPanel = {
    * 手机端分类下拉的改值手柄。
    */
   onCatSelect: SelectChangeFn
+
+  /**
+   * 大号档左栏的切换手柄(点「推荐」回热门那一屏、点大类记它的 slug;2026-10-05「改啊」)。
+   * (原在下面的 setNocs —— 整份拨已选码 —— 与 named —— 名字表摊成「码 + 名」—— 同日撤:两格只给借来的 profile 桶已选标签件用,
+   * 已选一行改由本桶 OccTags 自己摆,× 走 pickOf。)
+   */
+  onRail: RailPickFn
+
+  /**
+   * 右边这一屏的职业是不是全选着(大号档大类那一屏首行「全选」的勾;空清单 = false)。
+   * 2026-10-05 Frank「有可能这个大类下 我想全选」立。
+   */
+  allOn: boolean
+
+  /**
+   * 点「全选」:这一屏没全选着 = 把没选的整组都选上;全选着 = 这一屏的职业全部撤掉。2026-10-05 立。
+   */
+  onAll: ClickFn
 
   /**
    * 点「下一题」。
@@ -1375,14 +1495,89 @@ export type SearchIn = {
  */
 export type PickItemIn = {
   /**
-   * NOC 五位码。
+   * 这个职业的组键(见 KeyMap;2026-10-05 起一颗胶囊是一个职业,不再是一个码)。
    */
-  noc: string
+  key: string
+
+  /**
+   * 这颗胶囊代表的全部 NOC 五位码(点中 = 整组选上;原单码 noc 格 2026-10-05 改成整组)。
+   */
+  nocs: string[]
 
   /**
    * 这颗胶囊上现在写着的名字(点中时顺手记进 titles,省一次回查)。
    */
   name: string
+}
+
+/**
+ * makeAllPick 的入参(2026-10-05「全选」立)。
+ */
+export type AllPickIn = {
+  /**
+   * 点选手柄的共用入参(已选码、组键、四个 setter 与回传)。
+   */
+  p: PickOfIn
+
+  /**
+   * 这一屏的职业。
+   */
+  items: OccItem<Top>[]
+
+  /**
+   * 界面语言码(选上时顺手记名字用)。
+   */
+  lang: string
+}
+
+/**
+ * isAllOn 的入参(2026-10-05「全选」立)。
+ */
+export type AllOnIn = {
+  /**
+   * 这一屏的职业。
+   */
+  items: OccItem<Top>[]
+
+  /**
+   * 已选的职业。
+   */
+  picked: OccGroup[]
+}
+
+/**
+ * useTopFor 的入参(2026-10-05 专业码一变撤回「真榜到了」时立)。
+ */
+export type TopForIn = {
+  /**
+   * 现在的专业码(逗号连的清单;空串 = 没给)。
+   */
+  majorCode: string
+
+  /**
+   * 「真榜到了」的 setter。
+   */
+  setTopLoaded: SetFlagFn
+}
+
+/**
+ * useOccSearch 的入参(2026-10-05 自 useOccPicker 拆出,函数行数闸)。
+ */
+export type OccSearchHookIn = {
+  /**
+   * 搜索词。
+   */
+  q: string
+
+  /**
+   * 候选的 setter。
+   */
+  setCands: SetCandsFn
+
+  /**
+   * 「搜索在途」的 setter。
+   */
+  setSearching: SetFlagFn
 }
 
 /**
@@ -1395,6 +1590,11 @@ export type PickOfIn = {
   nocs: string[]
 
   /**
+   * 码 → 组键(此刻知道的全部:各份清单里带短名的行 + 点选 / 逐码查询记下的;判「已选里哪几个码是这个职业」)。
+   */
+  keys: KeyMap
+
+  /**
    * 已选码 setter。
    */
   setNocs: (v: string[]) => void
@@ -1403,6 +1603,11 @@ export type PickOfIn = {
    * 显示名表 setter(收 updater)。
    */
   setTitles: (f: (m: TitleMap) => TitleMap) => void
+
+  /**
+   * 组键表 setter(收 updater;点选时把整组的码记成同一个键,搜索结果清掉以后还认得出)。
+   */
+  setKeys: SetKeysFn
 
   /**
    * 选择变化的回传;调用方没给就缺席。
@@ -1425,9 +1630,9 @@ export type PickOfIn = {
  */
 export type TitlePutIn = {
   /**
-   * 要记名字的 NOC 码。
+   * 要记名字的 NOC 码(一个职业的整组码记同一个名字;2026-10-05 自单码 noc 改)。
    */
-  noc: string
+  nocs: string[]
 
   /**
    * 要记的名字。
@@ -1631,8 +1836,9 @@ export type PtsTextIn = {
 export type DupHintIn = {
   /**
    * 这一行职业。
+   * 2026-10-05 Top 放宽成 Cand(只读官方名与码两格;大号档的命中行是候选,也要挂重名小注)。
    */
-  row: Top
+  row: Cand
 
   /**
    * 它此刻的显示名。
@@ -1677,10 +1883,32 @@ export type CatLabelIn = {
 
 /**
  * 已选胶囊上的名字的入参。
+ * 2026-10-05:isTitleMiss(名字表缺不缺这个码)同形同读,借这一个。
  */
 export type ChipNameIn = {
   /**
    * NOC 五位码。
+   */
+  noc: string
+
+  /**
+   * NOC 码 → 显示名。
+   */
+  titles: TitleMap
+}
+
+/**
+ * tagDelNameOf(大号档已选一行里一颗标签 × 的读屏名里的那个名字)的入参(2026-10-05 自 ChipNameIn 分出:名字没到时报泛称,
+ * 要取词函数现取那个词)。
+ */
+export type TagDelNameIn = {
+  /**
+   * 取词函数(名字没到时的泛称现取)。
+   */
+  t: TFn
+
+  /**
+   * 代表码(这一颗标签所在那一组最先选上的码)。
    */
   noc: string
 
@@ -1723,6 +1951,106 @@ export type OccListOfIn = {
    * 兜底/热门那一份。
    */
   base: Top[]
+
+  /**
+   * 码 → 组键(同组的几行合成一个职业;2026-10-05)。
+   */
+  keys: KeyMap
+}
+
+/**
+ * occItemsOf 的入参(2026-10-05)。
+ */
+export type OccItemsIn<T extends Cand> = {
+  /**
+   * 一份清单的行(热门 / 分类 / 搜索命中;排在前面的当代表行)。
+   */
+  rows: T[]
+
+  /**
+   * 码 → 组键(行自己带短名时以行为准,没带的查这张表)。
+   */
+  keys: KeyMap
+}
+
+/**
+ * occKeyOf 的入参(2026-10-05)。
+ */
+export type OccKeyIn = {
+  /**
+   * NOC 五位码。
+   */
+  noc: string
+
+  /**
+   * 码 → 组键。
+   */
+  keys: KeyMap
+}
+
+/**
+ * occKeysOf 的入参(2026-10-05):控件手里的几份清单与点选 / 逐码查询记下的组键。
+ */
+export type OccKeysIn = {
+  /**
+   * 点选 / 逐码查询记下的组键(useOccPicker 的那一格状态)。
+   */
+  keys: KeyMap
+
+  /**
+   * 热门榜。
+   */
+  top: Top[]
+
+  /**
+   * 已查过的分类清单。
+   */
+  catalog: CatalogMap
+
+  /**
+   * 搜索命中的候选。
+   */
+  cands: Cand[]
+}
+
+/**
+ * pickedOf 的入参(2026-10-05)。
+ */
+export type PickedIn = {
+  /**
+   * 已选的 NOC 码。
+   */
+  nocs: string[]
+
+  /**
+   * 码 → 组键。
+   */
+  keys: KeyMap
+}
+
+/**
+ * itemOnOf 的入参(2026-10-05)。
+ */
+export type ItemOnIn = {
+  /**
+   * 这颗胶囊的组键。
+   */
+  key: string
+
+  /**
+   * 已选的职业。
+   */
+  picked: OccGroup[]
+}
+
+/**
+ * makeKeysMerge 的入参(2026-10-05)。
+ */
+export type KeysMergeIn = {
+  /**
+   * 要并进去的组键。
+   */
+  patch: KeyMap
 }
 
 /**
@@ -1738,6 +2066,11 @@ export type OccBaseIn = {
    * 已有的热门榜;空列就整份退回内置常用清单。
    */
   top: Top[]
+
+  /**
+   * 按专业取的清单还在路上(这时不拿内置常用清单顶,整排用骨架占位,到了原位替换;2026-10-04 A2)。
+   */
+  hold: boolean
 }
 
 /**
@@ -1745,9 +2078,10 @@ export type OccBaseIn = {
  */
 export type DupCountIn = {
   /**
-   * 这一屏要摆的职业。
+   * 这一屏要摆的职业(2026-10-05 起同组几个码已合成一个,按职业数)。
+   * 2026-10-05 OccItem<Top> 放宽成 OccItem<Cand>(只按显示名数;大号档一列行 OccLines 对命中那一列也数)。
    */
-  list: Top[]
+  list: OccItem<Cand>[]
 
   /**
    * 界面语言码。
@@ -2035,6 +2369,11 @@ export type BootstrapIn = {
    * 界面语言码。
    */
   lang: string
+
+  /**
+   * 专业的 CIP class 码;空串 = 取全站热门榜。
+   */
+  majorCode: string
 }
 
 /**
@@ -2105,6 +2444,27 @@ export type TopFetchIn = {
    * 界面语言码。
    */
   lang: string
+
+  /**
+   * 取榜的地址(全站热门榜或按专业取;topUrlOf 给)。
+   */
+  url: string
+
+  /**
+   * 取回来的榜整份换上(按专业取 = true),不并进手上那份。2026-10-05 访客向导开屏就挂选职业机器时立:手上先有全站热门,
+   * 并进去会把按专业那份挤到后面(Frank 实走第 3 题仍是厨师打头)。
+   */
+  swap: boolean
+}
+
+/**
+ * makeTopSwap 的入参(2026-10-05 立)。
+ */
+export type TopSwapIn = {
+  /**
+   * 取回来的榜行。
+   */
+  rows: Top[]
 }
 
 /**
@@ -2292,6 +2652,11 @@ export type TitlesFillIn = {
   titles: TitleMap
 
   /**
+   * 此刻知道的组键(2026-10-05:缺组键的码也查一次 —— 名字从内置常用清单来的码手里没有短名,不查就合不了组)。
+   */
+  keys: KeyMap
+
+  /**
    * 界面语言码。
    */
   lang: string
@@ -2300,6 +2665,11 @@ export type TitlesFillIn = {
    * 名字表落格。
    */
   setTitles: SetTitlesFn
+
+  /**
+   * 组键表落格(2026-10-05)。
+   */
+  setKeys: SetKeysFn
 }
 
 /**
@@ -2345,4 +2715,165 @@ export type TitleHit = {
    * 显示名。
    */
   name: string
+
+  /**
+   * 组键(中文短名);查不到或库里没压出短名给空串(2026-10-05)。
+   */
+  key: string
+}
+
+/**
+ * topSeedOf 的入参(2026-10-04 A2)。
+ */
+export type TopSeedIn = {
+  /**
+   * 取词函数(内置常用清单的名字现取)。
+   */
+  t: TFn
+
+  /**
+   * 服务端送下来的热门榜;没送就缺席。
+   */
+  initialTop?: Top[]
+
+  /**
+   * 专业的 CIP class 码;空串 = 没给。
+   */
+  majorCode: string
+}
+
+/**
+ * topUrlOf 的入参(2026-10-04 A2)。
+ */
+export type TopUrlIn = {
+  /**
+   * 专业的 CIP class 码;空串 = 取全站热门榜。
+   */
+  majorCode: string
+}
+
+/**
+ * 大号档左栏的切换手柄(tabs 桶 RailTabs 的 onChange 形,参数是目标项的键;2026-10-05 Frank「也改成左右 两部分吗?」「改啊」)。
+ * (原在此处的 NocsMergeFn / NocsSetFn / NocsSetIn / NocName / OccNamesIn / OccShownIn —— 大号档借 profile 桶
+ * OnboardingTags 当已选标签时要的落格、名字与「这一屏摆着哪些码」—— 与 OccLgPillIn / OccPillsIn 同日随大号胶囊那一屏撤:
+ * 已选一行改由本桶 OccTags 用 tag 桶 TagRow + Tag 自己摆,全部已选职业都摆、× 走与胶囊同一只 pickOf 整组撤掉。)
+ */
+export type RailPickFn = (key: string) => void
+
+/**
+ * 大号档左栏的一项(键 + 文字;形状照 tabs 桶 TabItem 真读的两格自抄,types 不许 import;2026-10-05「改啊」)。
+ */
+export type OccRailItem = {
+  /**
+   * 项的键:「推荐」是 OCC_CAT_REC,大类是它的中文大类名(与分类状态里记的 slug 同一个)。
+   */
+  key: string
+
+  /**
+   * 项上的字(界面语言)。
+   */
+  label: string
+}
+
+/**
+ * occRailItemsOf 的入参(2026-10-05「改啊」)。
+ */
+export type OccRailItemsIn = {
+  /**
+   * 取词函数(「推荐」与各大类的名字现取)。
+   */
+  t: TFn
+
+  /**
+   * 全部大类(broadCats 给的那份,顺序即左栏顺序)。
+   */
+  cats: string[]
+}
+
+/**
+ * railBusyOf 的入参:右边那块此刻要不要摆「加载中」(2026-10-05「改啊」)。
+ */
+export type RailBusyIn = {
+  /**
+   * 当前分类 slug;空串 = 推荐(热门那一屏)。
+   */
+  cat: string
+
+  /**
+   * 点了大类、它的目录还在路上。
+   */
+  catLoading: boolean
+
+  /**
+   * 按专业取的推荐还在路上(给了专业码、榜没到)。
+   */
+  hold: boolean
+}
+
+/**
+ * OccRail(大号档正文:搜索框 → 已选一行 → 两栏或单列命中)与它的两块 OccTags(已选一行)、OccCards(右边那块)共用的 props
+ * (2026-10-05「改啊」;OccTags 原先那份 OccTagsIn 多一格 searchMode,改成全部已选都摆以后不读了,并进本形)。
+ * 2026-10-05 同日收口:OccTags 改回自己的 OccTagsIn(本形的界面语言码它不读;types 只声明真读的格),本形只剩 OccRail 与 OccCards 用。
+ */
+export type OccRailIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言码(行上的职业名按它挑;OccTags 不读 —— 名字取整机的名字表)。
+   * (2026-10-05 起 OccTags 不收本形,上面括号里那半句只是来由。)
+   */
+  lang: string
+
+  /**
+   * 选职业整机(状态与手柄)。
+   */
+  d: OccPanel
+}
+
+/**
+ * OccTags(大号档已选一行)的 props(2026-10-05 收口:自 OccRailIn 分出,只有它真读的两格)。
+ */
+export type OccTagsIn = {
+  /**
+   * 取词函数(× 的读屏名「移除 {名字}」与名字没到时的泛称)。
+   */
+  t: TFn
+
+  /**
+   * 选职业整机(读已选职业、名字表与点选手柄工厂)。
+   */
+  d: OccPanel
+}
+
+/**
+ * OccLines(一列职业行:右边那块的白卡里、在搜时的单列命中)的 props(2026-10-05「改啊」)。
+ */
+export type OccLinesIn = {
+  /**
+   * 这一列的职业(同组的几个码一行;推荐 / 大类那一屏是 OccItem<Top>,命中是 OccItem<Cand>,都按候选行读)。
+   */
+  items: OccItem<Cand>[]
+
+  /**
+   * 要标主色的检索词(空串 = 不标)。
+   */
+  mark: string
+
+  /**
+   * 已选的职业(判行亮不亮:同组任一个码选着就亮)。
+   */
+  picked: OccGroup[]
+
+  /**
+   * 界面语言码(行上的职业名按它挑)。
+   */
+  lang: string
+
+  /**
+   * 逐职业的点选手柄工厂(推荐 / 大类那一屏是 pickOf,命中是选完即清空搜索框的 candPickOf)。
+   */
+  pickOf: PickOfFn
 }

@@ -96,6 +96,13 @@
 .narrowSm {
   width: 100%;
   max-height: 92vh;
+
+  /*
+   * 2026-10-04 收口:按动态视口封顶。iOS Safari 的 vh 按工具栏收起时的大视口算,而遮罩(fixed inset 0)跟着
+   * 可见区走,工具栏露出时 92vh 的卡上下都出遮罩、× 与粘底钮被切;改取 92vh 与「动态视口扣掉遮罩上下各 14px
+   * 内衬(.overlayNarrowSm)」的小者。上一行 92vh 是不认 dvh 的浏览器的退路,别删。sm / fit / card 三档窄屏同此。
+   */
+  max-height: min(92vh, calc(100dvh - 28px));
   padding: 20px 16px 16px;
 }
 
@@ -119,9 +126,11 @@
 
 /*
  * 可拖态的手势光标。
+ * 2026-10-05 Frank「拖动 显示 小手 还是 显示 十字」:改十字(move)—— 整张白卡都是小手时,与选项钮的点按手形分不清
+ * 「这里是拖还是点」;窗口形标题栏(.bar)本来就是十字,全站拖动光标并成一种。类名照旧。
  */
 .grab {
-  cursor: grab;
+  cursor: move;
 }
 
 /*
@@ -154,6 +163,37 @@
   align-items: center;
   gap: 6px;
   z-index: 20;
+}
+
+/*
+ * 普通弹框左上角的返回钮位(2026-10-05 Frank「左边那个按钮 和 右边的 关闭 按钮不对称啊」:访客向导的返回钮原是
+ * 向导自己画的 ghost 钮,与 × 长得不一样、高低差 2px;改由壳在左上角出,与右上角的 .acts 镜像 —— 同距顶、同距边、同一颗 ModalBtn)。
+ */
+.lead {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  z-index: 20;
+}
+
+/*
+ * 返回钮的点按区:钮只有 30×30,手机上不好点;一层透明伪元素以钮心为中心扩到 44×44,看得见的大小不变
+ * (原访客向导 .back::after 那一份随钮搬来;左上角只有这一颗钮,扩出去的不压着别的钮)。
+ */
+.lead .iconBtn {
+  position: relative;
+}
+
+.lead .iconBtn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
 }
 
 /*

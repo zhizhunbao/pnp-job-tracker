@@ -78,6 +78,11 @@ export type TabKeysIn = {
    * 按 key 找页签元素(焦点要跟着切换走);找不到给 null。
    */
   focusOf: (key: string) => HTMLButtonElement | null
+
+  /**
+   * 竖排(上下键切换;横排是左右键)。2026-10-05 立。
+   */
+  vertical: boolean
 }
 
 /**
@@ -185,6 +190,46 @@ export type TabKeysHookIn = {
    * 切换回调。
    */
   onChange: (key: string) => void
+
+  /**
+   * 竖排(上下键切换;横排是左右键)。2026-10-05 竖排左栏 RailTabs 立时加。
+   */
+  vertical: boolean
+}
+
+/**
+ * RailTabs 的 props(竖排左栏 + 右侧一块面板;2026-10-05 访客第 2 题照掌上高考立)。
+ */
+export type RailTabsIn = {
+  /**
+   * 左栏各项(键 + 文字;badge 不用)。
+   */
+  items: TabItem[]
+
+  /**
+   * 当前选中的 key。
+   */
+  value: string
+
+  /**
+   * 切换回调(参数是目标 key)。
+   */
+  onChange: (key: string) => void
+
+  /**
+   * 左栏的无障碍名(读屏报「xx,第 2 项,共 17 项」)。
+   */
+  ariaLabel: string
+
+  /**
+   * 页签与面板 id 的前缀(同页多组时各给各的)。
+   */
+  idPrefix: string
+
+  /**
+   * 右侧面板里的内容(当前那一项的)。
+   */
+  children: React.ReactNode
 }
 
 /**

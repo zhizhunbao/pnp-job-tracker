@@ -312,6 +312,16 @@ export const LOG_EMAIL = 'email missing/unverified'
 export const LOG_LOGIN = 'login failed: '
 
 /**
+ * 成功留痕话术:当场建的新号(2026-10-05 Frank「加 auth 吧」)。
+ */
+export const LOG_OK_NEW = 'new account'
+
+/**
+ * 成功留痕话术:已有账号再登录(同上)。
+ */
+export const LOG_OK_RETURNING = 'returning account'
+
+/**
  * 登录回调产物的 kind：失败。
  */
 export const K_FAIL = 'fail'

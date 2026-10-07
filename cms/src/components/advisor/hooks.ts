@@ -5,11 +5,14 @@
  * 体内不留注释 —— 带口径的步骤在 ./functions 的对应函数上(注释即它们的 JSDoc)。
  * 2026-08-28 拆域批随 JdAdvisorSection 自 components/jobs/Jd.tsx 迁入;
  * 同日换装批把 Advisor.tsx 的六台机器(原先摊在组件体里)收进本抽屉。
+ * 2026-10-03 付费闭环批 A1:职位描述弹框整台(useActModal)接访客向导的收口 —— 记浏览、判起弹、注册后亮出这一岗。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { gateDueFor, markSeenJob } from '@/lib/guest'
 import { track } from '@/lib/track'
 import {
   GROUP_COMPANY, LANG_EN, TEXT_NONE, TRACK_KIND_MODAL, TRACK_MODAL_HEAD, TRACK_MODAL_JD, TRACK_P_FIELD, TRACK_P_KIND,
@@ -19,8 +22,8 @@ import {
   makeLoadCompanyJobs, makeLoadJobText, makeLoadNocTrans,
 } from './functions'
 import type {
-  ActModalPanel, AdvisorJob, AdvisorModalHookIn, AdvisorModalPanel, CompanyModalPanel, DeadFlag, JobTextIn,
-  JobTextPanel, NocTrans, NocTransIn, NocTransPanel, TransStatus,
+  ActModalHookIn, ActModalPanel, AdvisorJob, AdvisorModalHookIn, AdvisorModalPanel, CompanyModalPanel, DeadFlag,
+  JobTextIn, JobTextPanel, NocTrans, NocTransIn, NocTransPanel, TransStatus,
 } from './types'
 
 /**
@@ -143,22 +146,44 @@ export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
  * 职位描述弹框的整台:额度可见化(第 5 轮 #16:JobBody 回传 X-Free-Left,
  * 免费用户看得见剩几次,402 不再是惊吓)+ 打开埋点(#129,kind 分开弹框与整页;
  * 它同时是漏斗第 1 步)。
+ * 2026-10-03 付费闭环批 A1:全站职位弹框都经这一台(职位板 / 职位整页 / 公司页 / 雇主板四处的弹框栈,
+ * 三份入栈手柄最后都画到这里),访客向导的收口就设在这 —— 开框那一拍先记一笔浏览、再判要不要先弹向导
+ * (未登录、站内看过的不同职位算上这一岗够 3 个)。浏览记在判之前,向导「想做什么工作」那一步才预选得到
+ * 刚点的这一岗;每层弹框按岗位号作 key,换岗即重挂,一层只记一次。向导盖着时不打开框埋点,注册完亮出这一岗才打。
+ * 2026-10-04 改判(Frank「进来就要求用户登录注册」→「照这样改」):不再数第 3 个,未登录开职位弹框一律先弹向导;
+ * 浏览照记(向导职业那一步的预选)。
  *
- * @returns 剩余次数与它的落格。
+ * @param x 这一岗与分层态。
+ * @returns 剩余次数与它的落格、要不要先弹向导与注册后的回调。
  */
-export function useActModal(): ActModalPanel {
+export function useActModal(x: ActModalHookIn): ActModalPanel {
   const [freeLeft, setFreeLeft] = useState<number | null>(null)
   const [gen, setGen] = useState(0)
+  const job = x.job
+  const loggedIn = x.plan.loggedIn
+  const [gate, setGate] = useState(function initGate(): boolean {
+    markSeenJob({ id: job.id, noc: job.noc })
+    return gateDueFor({ loggedIn })
+  })
+  const router = useRouter()
 
   function onRetranslated(): void {
     setGen(gen + 1)
   }
 
-  useEffect(function trackOpen() {
-    track(TRACK_MODAL_JD, { [TRACK_P_KIND]: TRACK_KIND_MODAL })
-  }, [])
+  function onGateDone(): void {
+    setGate(false)
+    router.refresh()
+  }
 
-  return { freeLeft, onFreeLeft: setFreeLeft, gen, onRetranslated }
+  useEffect(function trackOpen() {
+    if (gate) {
+      return
+    }
+    track(TRACK_MODAL_JD, { [TRACK_P_KIND]: TRACK_KIND_MODAL })
+  }, [gate])
+
+  return { freeLeft, onFreeLeft: setFreeLeft, gen, onRetranslated, gate, onGateDone }
 }
 
 /**

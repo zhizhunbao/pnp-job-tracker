@@ -10,6 +10,9 @@
  * matchButton prop 是历史槽位(「我的匹配」已降为板内视图,入口并进职位高亮),
  * 调用方还在传 —— 撤编随消费页形制化批,这里收下不渲。
  * 2026-09-23「我的匹配」整拆,唯一调用方 JobsHeader 不再传,槽位随之从 HeaderIn 撤掉。
+ * 2026-10-03 付费闭环批 B1:导航排与抽屉挂「我的」—— 只在账户三态的已登录那一态出(身份未知那一拍不出,免首帧闪)。
+ * 同日收口审查:宿主递了登录态(职位板 plan.loggedIn、详情页等服务端判的)就跟宿主走 —— 账户三态只在挂载时算一次,
+ * 流程内注册完软刷后宿主的登录态会更新、三态不会,板上头像已变「我的」却不出;宿主没递才看三态。
  *
  * @author Frank
  * @time 2026-08-24 08:00:00
@@ -21,7 +24,7 @@ import { IconMenu } from '@/components/icons'
 import { Button, LinkButton } from '@/components/button'
 
 import { useLang } from '@/components/i18n'
-import { BRAND_MARK, PATH_HOME, PLAIN_BTN_KIND } from './constants'
+import { ACCT_IN, BRAND_MARK, PATH_HOME, PLAIN_BTN_KIND } from './constants'
 import { AccountLite } from './accountlite'
 import { HeaderNav } from './headernav'
 import { LangSwitch } from './langswitch'
@@ -53,6 +56,10 @@ export function Header({ sticky = false, accountArea, loggedIn }: HeaderIn) {
     hasArea = true
   }
   const acct = useAcct({ loggedIn: logged, hasAccountArea: hasArea })
+  let mine = acct.state === ACCT_IN
+  if (logged != null) {
+    mine = logged
+  }
   const [drawer, setDrawer] = useState(false)
   const handles = makeDrawerHandles({ setOpen: setDrawer })
   let headCls = css.header
@@ -75,7 +82,7 @@ export function Header({ sticky = false, accountArea, loggedIn }: HeaderIn) {
           <span className={css.tagline}>{t('tagline')}</span>
         </div>
         <div className={css.right}>
-          <HeaderNav t={t} active={activeIn} />
+          <HeaderNav t={t} active={activeIn} loggedIn={mine} />
           <span className={css.divider} />
           <div className={css.acct}>
             <LangSwitch lang={lang} setLang={setLang} />
@@ -83,7 +90,8 @@ export function Header({ sticky = false, accountArea, loggedIn }: HeaderIn) {
           </div>
         </div>
       </div>
-      {drawer && <MobileDrawer t={t} active={activeIn} onClose={handles.closeDrawer} lang={lang} setLang={setLang} />}
+      {drawer && <MobileDrawer t={t} active={activeIn} onClose={handles.closeDrawer} lang={lang} setLang={setLang}
+        loggedIn={mine} />}
     </header>
   )
 }

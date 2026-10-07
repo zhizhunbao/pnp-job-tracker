@@ -7,11 +7,15 @@
  * 2026-09-13 雇主板批二:口径 / 社区 / 职业 / 抽屉四格状态退役,换成 行业组 / 开关 / 表头排序。
  * 体内不留任何函数体与带口径的注释 —— 步骤全在 ./functions 的工厂里(注释即它们的
  * JSDoc),这里只剩 useState、具名 effect 壳与工厂装配(样板 account/hooks.ts)。
+ * 2026-10-04 收口审查(设计稿 10-04「关掉后…筛选…一律再弹」):交给筛选区的筛选 / 搜索手柄一律过访客闸(makeGatedPick)——
+ * 访客动筛选开访客向导、值不动;首屏预选本省、搜索防抖落词、清除仍走原落格。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
+import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import { isGateSignedIn } from '@/lib/guest'
 import { useLang } from '@/components/i18n'
 import { useLayerStack } from '@/components/modal'
 import { useColPick } from '@/components/table'
@@ -21,20 +25,21 @@ import {
 import {
   boardUrlOf, colKeysOf, employerColsOf, forceKeysOf, loadBoard, makeClear, makeEe, makeEntryPick, makeFoldToggle,
   addrQsOf, aliasPollKeysOf, applyHomeProv, foldCountOf, loadAliasPatch, makeCategory, reportSeen,
-  makeCity, makeDistrict,
+  makeCity, makeDistrict, makeFilterGateDone, makeFilterGateFlag, makeGatedPick,
   makeLmiaPick, makeMore, makeProv, makePushCoLayer,
   makeQCommit, makeSector, makeSort,
   qsOf, sortStateOf,
 } from './functions'
 import type {
-  AliasPatch, AliasPollIn, EmployersIn, EmployersPanel, EmpPeekPanel, MoreIn, PeekLayer, PoolFilters, PoolPage,
-  QCommitIn,
+  AliasPatch, AliasPollIn, EmployersIn, EmployersPanel, EmpPeekPanel, MoreIn, PeekLayer, PickGate, PoolFilters,
+  PoolPage, QCommitIn,
 } from './types'
 
 /**
  * 雇主板整机:筛选态、搜索框防抖、筛选进 URL(replaceState —— 换筛选不该在历史里
  * 堆一串条目,也不该整页重载)与换页懒取。一台机器不拆 —— 这些状态互相咬合
  * (换筛选要回第一页、要重打 API、要改地址栏),拆开就得互相穿参数。
+ * 2026-10-04 收口审查:面板里的筛选 / 搜索手柄换成过闸的那份(访客动了开弹框层的访客向导、值不动;登录用户一点不变)。
  *
  * @param x SSR 首帧的第一页与初始筛选。
  * @returns 视图要的整块面板:状态 + 手柄。
@@ -47,6 +52,7 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
   const [qDraft, setQDraft] = useState(x.initialFilters.q)
   const [fold, setFold] = useState(foldCountOf({ f: x.initialFilters }) > 0)
   const peek = useEmpPeek(x)
+  const gate: PickGate = { loggedIn: x.plan.loggedIn, signedIn: isGateSignedIn, onGate: peek.openFilterGate }
   const first = useRef(true)
   const held = useRef<PoolPage | null>(null)
   const sent = useRef(new Set<string>())
@@ -92,15 +98,15 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     updatedAt: x.updatedAt,
     peek,
     sort: sortStateOf({ f }),
-    onQDraft: setQDraft,
-    onProv: makeProv({ f, setF }),
-    onSector: makeSector({ f, setF }),
-    onCity: makeCity({ f, setF }),
-    onDistrict: makeDistrict({ f, setF }),
-    onEe: makeEe({ f, setF }),
-    onCategory: makeCategory({ f, setF }),
-    onEntry: makeEntryPick({ f, setF }),
-    onLmia: makeLmiaPick({ f, setF }),
+    onQDraft: makeGatedPick({ pick: setQDraft, gate }),
+    onProv: makeGatedPick({ pick: makeProv({ f, setF }), gate }),
+    onSector: makeGatedPick({ pick: makeSector({ f, setF }), gate }),
+    onCity: makeGatedPick({ pick: makeCity({ f, setF }), gate }),
+    onDistrict: makeGatedPick({ pick: makeDistrict({ f, setF }), gate }),
+    onEe: makeGatedPick({ pick: makeEe({ f, setF }), gate }),
+    onCategory: makeGatedPick({ pick: makeCategory({ f, setF }), gate }),
+    onEntry: makeGatedPick({ pick: makeEntryPick({ f, setF }), gate }),
+    onLmia: makeGatedPick({ pick: makeLmiaPick({ f, setF }), gate }),
     cols: employerColsOf({ t, shown: colKeysOf({ cols: pick.cols }) }),
     pick: pick.view,
     pickRef: pick.boxRef,
@@ -177,13 +183,26 @@ function useQDebounce(x: QCommitIn): void {
  * Esc 只在 modal 域 useLayerStack 里绑,浮层壳不管,本板两格 useState 直渲两框就没人接 Esc):改起 useLayerStack,
  * 渲染交 advisor 的 PeekStack,× 与 Esc 都只关最上面一层,点遮罩照旧关最上面一层。上一条的两根线与「本板没并进弹框栈」随之作废 ——
  * 职位描述弹框里点公司名 / 相关职位都往上叠一层(与职位板 / 公司页 / 职位页三处一致);公司框里点相似雇主同框换一家的口径不变。
+ * 2026-10-04 收口审查(设计稿 10-04「关掉后…筛选…一律再弹」;照职位板弹框层 useBoardModals 的形):多挂一路筛选的访客向导 ——
+ * 开口交给过闸的筛选 / 搜索手柄;× 关掉那一下筛选作罢,注册完收起 + 软刷(没有要补的那一下)。
  *
  * @param x 页面 props(只读分层态)。
  * @returns 弹框层面板。
  */
 function useEmpPeek(x: EmployersIn): EmpPeekPanel {
   const stack = useLayerStack<PeekLayer>()
-  return { plan: x.plan, stack, onOpenCompany: makePushCoLayer(stack) }
+  const [filterGate, setFilterGate] = useState(false)
+  const router = useRouter()
+  const closeFilterGate = makeFilterGateFlag({ setOpen: setFilterGate, open: false })
+  return {
+    plan: x.plan,
+    stack,
+    onOpenCompany: makePushCoLayer(stack),
+    filterGate,
+    openFilterGate: makeFilterGateFlag({ setOpen: setFilterGate, open: true }),
+    onFilterGateClose: closeFilterGate,
+    onFilterGateDone: makeFilterGateDone({ close: closeFilterGate, refresh: router.refresh }),
+  }
 }
 
 /**

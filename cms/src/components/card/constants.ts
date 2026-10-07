@@ -44,3 +44,9 @@ export const CELL_CLS_NONE = ''
  * Button 只出统一的语义与可达性(disabled/aria)。
  */
 export const PLAIN_BTN_KIND = 'ghost'
+
+/**
+ * FoldCard 头行个数胶囊的 tag 桶配色档(浅主色底 + 主色字;与 tag 桶 TagVariant 'pick' 同值同义,本域自抄)。
+ * 2026-10-05 FoldCard 立。
+ */
+export const TAG_V_PICK = 'pick'

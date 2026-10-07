@@ -62,6 +62,12 @@ export type AuthFormIn = {
    * 只换 register 态大标题,登录态照旧。
    */
   hero?: string
+
+  /**
+   * 注册成功后留在原页、不跳补题问卷(可省 = 照旧跳)。2026-10-03 付费闭环批 A1:访客向导里的注册屏
+   * 四道题已经答过,注册完要回到刚才那个职位 / 接着投递 / 完成收藏,不许被整页拽去 /plan/pr?quiz=1。
+   */
+  keepPage?: boolean
 }
 
 /**
@@ -163,6 +169,11 @@ export type FinishAuthIn = {
    * 2026-08-29 Frank「不应该在哪个页面就保留在哪个页面吗」拍板)。
    */
   mode: AuthMode
+
+  /**
+   * 调用方要求注册后也留在原页(访客向导的注册屏);true = 不进补题漏斗。
+   */
+  keepPage: boolean
 
   /**
    * 回跳路径;null = 当前页。
@@ -379,6 +390,11 @@ export type AuthFormHookIn = {
    * 回跳路径;null = 当前页。
    */
   returnTo: string | null
+
+  /**
+   * 注册后留在原页、不跳补题问卷。
+   */
+  keepPage: boolean
 }
 
 /**
@@ -496,6 +512,31 @@ export type SessionProviderIn = {
 /**
  * Avatar 的 props。
  */
+export type ImgFailOut = {
+  /**
+   * 图挂了没有(挂了就退回首字母色块,永不摆裂图;2026-10-05 立)。
+   */
+  failed: boolean
+
+  /**
+   * 交给 img 的 onError。
+   */
+  onError: () => void
+}
+
+/**
+ * makeImgFail 的入参。
+ */
+export type ImgFailIn = {
+  /**
+   * 「图挂了」的 setter。
+   */
+  setFailed: (v: boolean) => void
+}
+
+/**
+ * Avatar 的 props。
+ */
 export type AvatarIn = {
   /**
    * OAuth 带回的头像 URL;无则走首字母色块。
@@ -546,11 +587,6 @@ export type AccountMenuPopIn = {
    * Pro 到期日(YYYY-MM-DD);'' = 免费号或未知。
    */
   proUntil: string
-
-  /**
-   * 「升级 Pro」点击;null = 不显这一条。
-   */
-  onUpgrade: (() => void) | null
 }
 
 /**
@@ -586,11 +622,6 @@ export type AccountMenuIn = {
    * Pro 到期日(YYYY-MM-DD),免费号不传。
    */
   proUntil?: string
-
-  /**
-   * 「升级 Pro」点击:调用方开自己的定价框。不传 = 不显这一条。
-   */
-  onPricing?: () => void
 }
 
 /**
@@ -613,15 +644,10 @@ export type AccountMenuHandlesIn = {
    * 写开合的 setter。
    */
   setOpen: (v: boolean) => void
-
-  /**
-   * 「升级 Pro」点击;null = 调用方没给,手柄只收下拉不再往下传。
-   */
-  onPricing: AuthActionFn | null
 }
 
 /**
- * makeAccountMenuHandles 交回的三枚手柄(同一台开合状态机,一个工厂发齐)。
+ * makeAccountMenuHandles 交回的手柄(同一台开合状态机,一个工厂发齐;2026-10-04 升级手柄撤,剩两枚)。
  */
 export type AccountMenuHandlesOut = {
   /**
@@ -633,11 +659,6 @@ export type AccountMenuHandlesOut = {
    * 头像钮:开合翻面。
    */
   toggleMenu: AuthActionFn
-
-  /**
-   * 「升级 Pro」:先收下拉,再交给调用方开自己的定价框。
-   */
-  clickUpgrade: AuthActionFn
 }
 
 /**

@@ -40,7 +40,7 @@ export function SponsorLeadCard({ job, t, src }: SponsorLeadCardIn) {
         <div className={css.splActs}>
           <LinkButton href={sponsorHrefOf(job)}
             target={TARGET_BLANK}
-            className={chipClsOf({ active: false, hot: false, extra: null })}
+            className={chipClsOf({ active: false, hot: false, lg: false, extra: null })}
             onClick={makeSponsorClick(src)}>
             {t('spl.coJobs')}{LINK_ARROW}
           </LinkButton>

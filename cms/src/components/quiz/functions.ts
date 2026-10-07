@@ -4,6 +4,16 @@
  * 零 JSX 零 hook —— 排版归各件的 tsx,状态归 hooks.ts,死值归 constants.ts。
  * 2026-08-26 Frank 立「tsx 组件体内不许声明内嵌函数」时先迁进来一个 makeSearch;
  * 2026-08-28 换装批把 EntryQuiz.tsx 的答案层与三个 tsx 的组件体一起收进来。
+ * 2026-10-04 A2(访客第 3 题复用选职业控件):热门那一屏可按专业取(topUrlOf)、取的路上不拿内置清单顶(occBaseOf 的 hold),
+ * 大号档借 profile 桶已选标签件要的三样(makeNocsSet / occNamesOf / occShownOf)。
+ * 2026-10-05(Frank「这个职位 怎么还有 小字 英文呢」):一颗胶囊 = 一个职业 = 中文短名相同的一组码(数据层 etl/noc 的
+ * OCC_MERGE 把 21230 / 21231 / 21232 写成同一个「软件开发」;职位板 components/jobs 的 occGroupsOf、查询层 lib/jobs 的
+ * nocGroup 展开读的是同一列)。归组只读数据层算好的短名、不另立判定;职位板那份收的是职位板整包维度表、且 jobs 桶反过来
+ * 借本桶(互借即成环),所以本桶照同一列自读(occKeysOf / occItemsOf / pickedOf)。点选整组选上、整组撤掉,汇总与计数同组算一个。
+ * 2026-10-05 访客第 3 题改成与第 2 题同一副左右两栏(Frank「也改成左右 两部分吗?」「改啊」):多左栏几样(occRailItemsOf /
+ * makeRailPick / railKeyOf / railBusyOf)与已选一行 × 的读屏名(tagDelNameOf);上面 A2 那句「借 profile 桶已选标签件要的三样」
+ * 连同只供它们用的 occHeadsOf / expandHeadsOf 撤 —— 已选一行改由本桶 OccTags 用 tag 桶 TagRow + Tag 摆,全部已选都摆
+ * (不再按「这一屏摆着」挑),× 走与胶囊同一只 pickOf(整组撤掉,原 makeNocsSet 把代表码展开回整组那一步随之不要)。
  *
  * @author Frank
  * @time 2026-08-26 15:28:17
@@ -18,24 +28,29 @@ import {
   ABORT_NAME, ALPHA_A, CLS_BAR, CLS_HINT, CLS_ITEM, CLS_ITEM_ON, CLS_LIST, CLS_OCC_CAT_TAB,
   CLS_OCC_CAT_TAB_ON, CLS_OCC_PILL, CLS_OCC_PILL_ON, CLS_OCC_PILL_SKELETON, CLS_SEP, CRED_INCLUDE,
   DUP_MIN, HDR_CONTENT_TYPE, KEY_BROAD_HEAD, LEN_ZERO, LOCALE_NUM, METHOD_PATCH, MIME_JSON,
-  OCC_AND_RE, OCC_COMMA_RE, OCC_TAIL_RE, PERCENT_MAX, PERCENT_SIGN, PROGRESS, PTS_ZERO, QUERY_MIN,
+  OCC_AND_RE, OCC_CAT_REC, OCC_COMMA_RE, OCC_TAIL_RE, OCC_WORD_KEY, PERCENT_MAX, PERCENT_SIGN, PROGRESS, PTS_ZERO,
+  QUERY_MIN,
   SEARCH_DEBOUNCE_MS, SEEN_ONE, SEP_COMMA, SIGN_PLUS, SKEL_KINDS, SLOT_DONE, SLOT_TOTAL, TEXT_NONE,
-  TOP_N, TOTAL_MIN, URL_ME, URL_QUIZ_BROAD, URL_QUIZ_COUNTS, URL_QUIZ_NOC, URL_QUIZ_Q, URL_QUIZ_TOP,
-  URL_USERS_HEAD,
+  TOP_N, TOTAL_MIN, URL_ME, URL_QUIZ_BROAD, URL_QUIZ_COUNTS, URL_QUIZ_MAJOR, URL_QUIZ_MAJOR_N, URL_QUIZ_NOC,
+  URL_QUIZ_Q, URL_QUIZ_TOP, URL_USERS_HEAD,
 } from './constants'
 import type {
-  AlphaIn, ApplyPickIn, BarStyleIn, BootstrapIn, Cand, CandsJson, CatLabelIn, CatPickIn,
+  AllOnIn, AllPickIn, AlphaIn, ApplyPickIn, BarStyleIn, BootstrapIn, Cand, CandsJson, CatLabelIn, CatPickIn,
   CatPickOfFn, CatalogFetchIn, CatalogLoadIn, CatalogMap, CatalogPutIn, CatalogUpdateFn,
   CheckChangeFn, CheckToggleIn, ChipNameIn, ChoicePickIn, ClickFn, CountsFetchIn, CountsJson,
   CountsMergeIn, DeadFlag, DupCountIn, DupHintIn, DupMap, EngineValue, FactsJson, FirstListIn,
-  FirstTextIn, ForeignMonthsIn, InitialTitlesIn, KeepBoolIn, KeepNumIn, KnownTitlesIn, L, MeJson,
-  MeUser, MouseStopFn, OccBaseIn, OccLabelIn, OccListOfIn, OccNextIn, OccSegIn, OnClsIn, OneTitleIn,
+  FirstTextIn, ForeignMonthsIn, InitialTitlesIn, ItemOnIn, KeepBoolIn, KeepNumIn, KeyMap, KeysMergeIn, KeysUpdateFn,
+  KnownTitlesIn, L, MeJson,
+  MeUser, MouseStopFn, OccBaseIn, OccGroup, OccItem, OccItemsIn,
+  OccKeyIn, OccKeysIn, OccLabelIn, OccListOfIn,
+  OccNextIn, OccRailItem, OccRailItemsIn, OccSegIn, OnClsIn, OneTitleIn, PickedIn,
   OpenTextIn, PickItemIn, PickOfFn, PickOfIn, PopularRowsIn, ProfileJson, ProfilePatch, ProfilePatchIn,
   ProfileSaved, ProgressTextIn, ProvAnyIn, ProvDoneIn, ProvPickIn, ProvPickOfFn, ProvStateIn,
-  PtsTextIn, PutProfileIn, QuizAnswers, QuizAnswersRead, QuizLang, RadioChangeFn, SearchFireIn,
+  PtsTextIn, PutProfileIn, QuizAnswers, QuizAnswersRead, QuizLang, RadioChangeFn, RailBusyIn, RailPickFn, SearchFireIn,
   SearchFn, SearchIn, SearchRunIn, SearchStopIn, SelectChangeFn, SkelClsIn, SkelFillIn, StartFn,
-  StopFn, TimerHolderIn, TitleHit, TitleMap, TitlePutIn, TitleUpdateFn, TitlesFetchIn,
-  TitlesFillIn, TitlesMergeIn, Top, TopFetchIn, TopGivenIn, TopJson, TopMergeIn, TopUpdateFn,
+  StopFn, TagDelNameIn, TimerHolderIn, TitleHit, TitleMap, TitlePutIn, TitleUpdateFn, TitlesFetchIn,
+  TitlesFillIn, TitlesMergeIn, Top, TopFetchIn, TopGivenIn, TopJson, TopMergeIn, TopSeedIn, TopSwapIn, TopUpdateFn,
+  TopUrlIn,
 } from './types'
 import css from './quiz.module.css'
 
@@ -385,7 +400,7 @@ export function nextClsOf(x: OnClsIn): string {
  * @returns 类名。
  */
 export function provPillClsOf(x: OnClsIn): string {
-  return chipClsOf({ active: x.on, hot: false, extra: null })
+  return chipClsOf({ active: x.on, hot: false, lg: false, extra: null })
 }
 
 /**
@@ -494,11 +509,16 @@ export function occLabelOf(x: OccLabelIn): string {
 /**
  * 兜底热门清单:热门榜空了就整份退回内置常用清单
  * (首屏先用它,不让冷启动的全表 GROUP BY 把题目冻成骨架 8 秒)。
+ * 2026-10-04 A2:按专业取的清单还在路上(hold)时给空列 —— 内置清单与专业对不上,先摆再换就是一次重排,
+ * 交给骨架占满格子;到了原位替换,取回来是空的再退回内置清单。
  *
- * @param x 取词函数与已有的热门榜。
+ * @param x 取词函数、已有的热门榜与「按专业取的还在路上」。
  * @returns 这一屏的原料。
  */
 export function occBaseOf(x: OccBaseIn): Top[] {
+  if (x.hold) {
+    return []
+  }
   if (x.top.length > LEN_ZERO) {
     return x.top
   }
@@ -550,6 +570,25 @@ export function topGivenOf(x: TopGivenIn): boolean {
 }
 
 /**
+ * 热门榜的初值:服务端送了就用它(一次成型);给了专业码就先空着(内置清单与专业对不上,先摆再换就是一次重排,
+ * 交给骨架占满格子等按专业取的那份;2026-10-04 A2);其余先摆内置常用清单。
+ * 2026-10-04 A2 自 useOccPicker 的初值函数体下沉(整机行数闸)。
+ *
+ * @param x 取词函数、服务端送下来的热门榜与专业码。
+ * @returns 热门榜初值。
+ */
+export function topSeedOf(x: TopSeedIn): Top[] {
+  const given = x.initialTop
+  if (given != null && given.length > LEN_ZERO) {
+    return given
+  }
+  if (x.majorCode !== TEXT_NONE) {
+    return []
+  }
+  return popularRowsOf({ t: x.t })
+}
+
+/**
  * 内置常用清单的码表(拼进 counts 小查询)。
  *
  * @returns 逗号连接的 NOC 码。
@@ -580,20 +619,22 @@ export function broadCats(): string[] {
  * (「查看更多」已撤)。热门那一屏**按在招量降序**(2026-08-12 Frank:「cooks 应该排在
  * 第一啊」)—— 胶囊上就写着在招数,顺序不跟着它走,读者会以为这个序另有含义。
  * 分类页的行由接口按量排好,不再动。
+ * 2026-10-05:行按组键合成职业(同组几个码一颗胶囊),合成后按组里加总的在招数再排一次(见 openItemsOf);
+ * 热门那一屏先合成再取前 24 个职业 —— 先取 24 行再合成,组员被切在线外就整组选不全。
  *
- * @param x 当前分类、该分类的清单与兜底原料。
- * @returns 这一屏的职业行。
+ * @param x 当前分类、该分类的清单、兜底原料与组键表。
+ * @returns 这一屏的职业。
  */
-export function occListOf(x: OccListOfIn): Top[] {
+export function occListOf(x: OccListOfIn): OccItem<Top>[] {
   if (x.cat !== TEXT_NONE) {
     if (x.catRows == null) {
       return []
     }
-    return x.catRows
+    return openItemsOf({ rows: x.catRows, keys: x.keys })
   }
   const sorted = x.base.slice()
   sorted.sort(byOpenDesc)
-  return sorted.slice(0, TOP_N)
+  return openItemsOf({ rows: sorted, keys: x.keys }).slice(0, TOP_N)
 }
 
 /**
@@ -609,17 +650,188 @@ function byOpenDesc(a: Top, b: Top): number {
 }
 
 /**
+ * 一份清单合成职业,再按组里加总的在招数降序排(2026-10-05):合成的那一个挂的是几个码之和,不重排它就顶着更大的数
+ * 排在中间 —— 胶囊上写着数,顺序不跟着它走,读者会以为这个序另有含义(同上 2026-08-12)。排序稳定:没合成的职业照原序。
+ *
+ * @param x 已按在招量排好的行与组键表。
+ * @returns 职业(在招数从多到少)。
+ */
+function openItemsOf(x: OccItemsIn<Top>): OccItem<Top>[] {
+  const items = occItemsOf(x)
+  items.sort(byItemOpenDesc)
+  return items
+}
+
+/**
+ * 职业在招量(组里加总)降序的比较器。
+ *
+ * @param a 一个职业。
+ * @param b 另一个职业。
+ * @returns 排序权。
+ */
+// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死(宪法钦定的豁免形态)
+function byItemOpenDesc(a: OccItem<Top>, b: OccItem<Top>): number {
+  return itemOpenOf(b) - itemOpenOf(a)
+}
+
+/**
+ * 一份清单按组键合成职业(2026-10-05):组键相同的行并成一个,排在前面的那行当代表(清单已按在招量排过 = 在招最多的码,
+ * 与职位板 occGroupsOf 取代表码同一口径);组键各不相同的行原样一行一个,顺序不动。
+ *
+ * @param x 一份清单的行与组键表。
+ * @returns 职业。
+ */
+export function occItemsOf<T extends Cand>(x: OccItemsIn<T>): OccItem<T>[] {
+  const out: OccItem<T>[] = []
+  const byKey = new Map<string, OccItem<T>>()
+  for (const row of x.rows) {
+    let key = rowKeyOf(row)
+    if (key === TEXT_NONE) {
+      key = occKeyOf({ noc: row.noc, keys: x.keys })
+    }
+    const had = byKey.get(key)
+    if (had != null) {
+      had.rows.push(row)
+      continue
+    }
+    const item: OccItem<T> = { key, head: row, rows: [row] }
+    byKey.set(key, item)
+    out.push(item)
+  }
+  return out
+}
+
+/**
+ * 一行职业自己带的组键 = 中文短名。哪几个码算一个职业由数据层定:etl/noc 的三张裁决表把有意合成的码写成同一个短名
+ * (OCC_MERGE,撞车报告对这些组不报、其余全表互不重名);本函数只读那一列,不另立判定(2026-10-05)。
+ *
+ * @param row 一行职业。
+ * @returns 中文短名;库里没压出短名给空串(这一行不参与归组,与职位板、查询层同口径)。
+ */
+function rowKeyOf(row: Cand): string {
+  if (row.titleZhShort == null) {
+    return TEXT_NONE
+  }
+  return row.titleZhShort
+}
+
+/**
+ * 一个码此刻的组键(2026-10-05)。
+ *
+ * @param x NOC 码与组键表。
+ * @returns 组键;表里没有或记的是空串(没有短名)就是码自己 —— 自成一组。
+ */
+function occKeyOf(x: OccKeyIn): string {
+  const key = x.keys[x.noc]
+  if (key == null || key === TEXT_NONE) {
+    return x.noc
+  }
+  return key
+}
+
+/**
+ * 控件此刻知道的全部组键(2026-10-05):点选 / 逐码查询记下的那一格状态,再叠上热门榜、已查过的分类清单、
+ * 搜索命中里带短名的行(行比记下的新,以行为准)。
+ *
+ * @param x 记下的组键与三份清单。
+ * @returns 码 → 组键。
+ */
+export function occKeysOf(x: OccKeysIn): KeyMap {
+  const out: KeyMap = Object.assign({}, x.keys)
+  const lists: Cand[][] = [x.top, x.cands]
+  for (const rows of Object.values(x.catalog)) {
+    lists.push(rows)
+  }
+  for (const rows of lists) {
+    for (const r of rows) {
+      const key = rowKeyOf(r)
+      if (key !== TEXT_NONE) {
+        out[r.noc] = key
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * 一个职业里的全部码(点它 = 这几个码一起选上 / 撤掉;2026-10-05)。
+ *
+ * @param x 一个职业。
+ * @returns NOC 码(代表码在首)。
+ */
+export function itemNocsOf(x: OccItem<Cand>): string[] {
+  const out: string[] = []
+  for (const r of x.rows) {
+    out.push(r.noc)
+  }
+  return out
+}
+
+/**
+ * 一个职业的在招数 = 组里各码之和(一个岗只挂一个码,加总不重算;职位板按这个职业筛出来的就是这些岗;2026-10-05)。
+ *
+ * @param x 一个职业。
+ * @returns 在招数。
+ */
+export function itemOpenOf(x: OccItem<Top>): number {
+  let n = 0
+  for (const r of x.rows) {
+    n += r.open
+  }
+  return n
+}
+
+/**
+ * 一颗职业胶囊亮不亮:已选里有这个职业的码就亮(同组任一个码选着都算;2026-10-05)。
+ *
+ * @param x 胶囊的组键与已选职业。
+ * @returns 亮 = true。
+ */
+export function itemOnOf(x: ItemOnIn): boolean {
+  for (const g of x.picked) {
+    if (g.key === x.key) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * 已选码按组键收拢成职业(按选中先后;2026-10-05):底部汇总、大号档标签、「已选 N 个」都按它数,同组几个码算一个。
+ *
+ * @param x 已选码与组键表。
+ * @returns 已选职业。
+ */
+export function pickedOf(x: PickedIn): OccGroup[] {
+  const out: OccGroup[] = []
+  const byKey = new Map<string, OccGroup>()
+  for (const n of x.nocs) {
+    const key = occKeyOf({ noc: n, keys: x.keys })
+    const had = byKey.get(key)
+    if (had != null) {
+      had.nocs.push(n)
+      continue
+    }
+    const g: OccGroup = { key, head: n, nocs: [n] }
+    byKey.set(key, g)
+    out.push(g)
+  }
+  return out
+}
+
+/**
  * 显示名 → 出现次数。库里会出现同名不同码(中文都叫「厨师」= 63200 Cooks 与
  * 62200 Chefs)—— 重名时挂英文官方名区分,不重名的什么都不挂(甩个 5 位码只添噪音,
  * 2026-07-27 拍板)。
+ * 2026-10-05:按职业数(同组几个码已合成一颗,只算一次)—— 有意合成的那一组不再挂小注;没人拍过板的同名照旧挂。
  *
  * @param x 这一屏的职业与界面语言码。
  * @returns 计数表。
  */
 export function dupCountOf(x: DupCountIn): DupMap {
   const out: DupMap = new Map()
-  for (const row of x.list) {
-    const l = occLabelOf({ row, lang: x.lang })
+  for (const item of x.list) {
+    const l = occLabelOf({ row: item.head, lang: x.lang })
     let n = 0
     const had = out.get(l)
     if (had != null) {
@@ -662,6 +874,22 @@ export function openTextOf(x: OpenTextIn): string {
 }
 
 /**
+ * 大号档左栏的各项:第一项「推荐」(热门那一屏 —— 给了专业码是按专业取的那份,没给是全站热门),其后是全站大类,
+ * 名字与常规档的分类页签同一把(catLabelOf)。2026-10-05 立(Frank「也改成左右 两部分吗?」「改啊」:访客第 3 题改成
+ * 与第 2 题同一副左右两栏;常规档的「热门」页签照旧叫 occ.cat.hot,大号档那一屏装的是给这几个专业挑的,另叫「推荐」)。
+ *
+ * @param x 取词函数与全部大类。
+ * @returns 左栏各项(推荐在首)。
+ */
+export function occRailItemsOf(x: OccRailItemsIn): OccRailItem[] {
+  const out: OccRailItem[] = [{ key: OCC_CAT_REC, label: x.t('occ.cat.rec') }]
+  for (const slug of x.cats) {
+    out.push({ key: slug, label: catLabelOf({ t: x.t, slug }) })
+  }
+  return out
+}
+
+/**
  * 分类页签/下拉项上的字(空 slug = 热门那一档)。
  *
  * @param x 取词函数与分类 slug。
@@ -672,6 +900,24 @@ export function catLabelOf(x: CatLabelIn): string {
     return x.t('occ.cat.hot')
   }
   return x.t(KEY_BROAD_HEAD + x.slug)
+}
+
+/**
+ * 大号档已选一行里一颗标签 × 的读屏名(「移除 {名字}」)里的那个名字:名字到了 = 标签上看得见的那个(chipNameOf);
+ * 还没拉回来(标签上摆着占位条)就先报码 —— 只在这一拍,名字一到就换。2026-10-05 立(「也改成左右 两部分吗?」「改啊」:
+ * 已选一行改由本桶自己摆)。
+ * 2026-10-05 同日收口:还没拉回来时不再报码(读屏念「Remove 21232」= 代码当主文案,代码不裸奔),报泛称「职业」(OCC_WORD_KEY),
+ * 名字一到照旧换成名字;入参多收取词函数(TagDelNameIn)。上面「就先报码」作废。
+ *
+ * @param x 取词函数、代表码与名字表。
+ * @returns 名字;还没拉到给泛称。
+ */
+export function tagDelNameOf(x: TagDelNameIn): string {
+  const name = chipNameOf({ noc: x.noc, titles: x.titles })
+  if (name === TEXT_NONE) {
+    return x.t(OCC_WORD_KEY)
+  }
+  return name
 }
 
 /**
@@ -802,23 +1048,112 @@ export function makeCandPickOf(x: PickOfIn): PickOfFn {
  * (2026-08-02 走查在 console 抓到:Cannot update a component `PlanPrView` while
  * rendering a different component `OccPicker`)。事件处理器里 nocs 就是最新值,
  * 不需要 updater 形式。
+ * 2026-10-05:被点的是一个职业(一组码)—— 已选里有这个职业的码(同组任一个)就整组撤掉,没有就整组选上;
+ * 名字与组键整组记下(搜索结果清掉以后,汇总与标签照样认得出这几个码是一个职业)。键就是码自己的(库里没压出短名)不记:
+ * 记了它就再也不回查(同 chipPickNameOf 不许把空串写进名字表)。
  *
  * @param x 手柄工厂的入参与被点的那个职业。
  * @returns 无。
  */
 function applyPick(x: ApplyPickIn): void {
-  x.p.setTitles(makeTitlePut({ noc: x.i.noc, name: x.i.name }))
+  x.p.setTitles(makeTitlePut({ nocs: x.i.nocs, name: x.i.name }))
+  const keys: KeyMap = {}
+  for (const n of x.i.nocs) {
+    if (n !== x.i.key) {
+      keys[n] = x.i.key
+    }
+  }
+  x.p.setKeys(makeKeysMerge({ patch: keys }))
   const next: string[] = []
   let had = false
   for (const n of x.p.nocs) {
-    if (n === x.i.noc) {
+    if (x.i.nocs.includes(n) || occKeyOf({ noc: n, keys: x.p.keys }) === x.i.key) {
       had = true
     } else {
       next.push(n)
     }
   }
   if (had === false) {
-    next.push(x.i.noc)
+    for (const n of x.i.nocs) {
+      next.push(n)
+    }
+  }
+  x.p.setNocs(next)
+  if (x.p.onChange != null) {
+    x.p.onChange(next)
+  }
+}
+
+/**
+ * 这一屏的职业是不是全选着(每一个职业都在已选里;空清单不算全选)。2026-10-05 Frank「有可能这个大类下 我想全选」立。
+ *
+ * @param x 这一屏的职业与已选职业。
+ * @returns 全选着 = true。
+ */
+export function isAllOn(x: AllOnIn): boolean {
+  if (x.items.length === LEN_ZERO) {
+    return false
+  }
+  for (const item of x.items) {
+    if (itemOnOf({ key: item.key, picked: x.picked }) === false) {
+      return false
+    }
+  }
+  return true
+}
+
+/**
+ * 造「全选」的点击手柄(大号档大类那一屏首行;2026-10-05 立):没全选着 = 没选的职业整组选上(名字与组键照 applyPick 记下);
+ * 全选着 = 这一屏的职业整组全部撤掉。别的屏已选的职业一个不动。
+ *
+ * @param x 点选手柄的共用入参、这一屏的职业与界面语言码。
+ * @returns 点击手柄。
+ */
+export function makeAllPick(x: AllPickIn): ClickFn {
+  return function pickAll(): void {
+    applyAll(x)
+  }
+}
+
+/**
+ * 「全选」的真身(同 applyPick:onChange 在 updater 外面调)。
+ *
+ * @param x 点选手柄的共用入参、这一屏的职业与界面语言码。
+ * @returns 无。
+ */
+function applyAll(x: AllPickIn): void {
+  const picked = pickedOf({ nocs: x.p.nocs, keys: x.p.keys })
+  const allOn = isAllOn({ items: x.items, picked })
+  const keysHere: string[] = []
+  const keys: KeyMap = {}
+  for (const item of x.items) {
+    keysHere.push(item.key)
+    if (allOn === false && itemOnOf({ key: item.key, picked }) === false) {
+      x.p.setTitles(makeTitlePut({ nocs: itemNocsOf(item), name: occLabelOf({ row: item.head, lang: x.lang }) }))
+    }
+    for (const n of itemNocsOf(item)) {
+      if (n !== item.key) {
+        keys[n] = item.key
+      }
+    }
+  }
+  x.p.setKeys(makeKeysMerge({ patch: keys }))
+  const next: string[] = []
+  for (const n of x.p.nocs) {
+    if (allOn === false || keysHere.includes(occKeyOf({ noc: n, keys: x.p.keys })) === false) {
+      next.push(n)
+    }
+  }
+  if (allOn === false) {
+    for (const item of x.items) {
+      if (itemOnOf({ key: item.key, picked }) === false) {
+        for (const n of itemNocsOf(item)) {
+          if (next.includes(n) === false) {
+            next.push(n)
+          }
+        }
+      }
+    }
   }
   x.p.setNocs(next)
   if (x.p.onChange != null) {
@@ -828,6 +1163,7 @@ function applyPick(x: ApplyPickIn): void {
 
 /**
  * 造一枚「把这个职业的名字记进表里」的 updater。
+ * 2026-10-05:一个职业的整组码记同一个名字(只记代表码的话,逐码查询会为其余组员白跑一趟)。
  *
  * @param x NOC 码与名字。
  * @returns 交给 setTitles 的 updater。
@@ -835,7 +1171,9 @@ function applyPick(x: ApplyPickIn): void {
 export function makeTitlePut(x: TitlePutIn): TitleUpdateFn {
   return function putTitle(m: TitleMap): TitleMap {
     const patch: TitleMap = {}
-    patch[x.noc] = x.name
+    for (const n of x.nocs) {
+      patch[n] = x.name
+    }
     return Object.assign({}, m, patch)
   }
 }
@@ -848,6 +1186,18 @@ export function makeTitlePut(x: TitlePutIn): TitleUpdateFn {
  */
 function makeTitlesMerge(x: TitlesMergeIn): TitleUpdateFn {
   return function mergeTitles(m: TitleMap): TitleMap {
+    return Object.assign({}, m, x.patch)
+  }
+}
+
+/**
+ * 造一枚「把这一批组键并进表里」的 updater(2026-10-05)。
+ *
+ * @param x 要并进去的组键。
+ * @returns 交给 setKeys 的 updater。
+ */
+function makeKeysMerge(x: KeysMergeIn): KeysUpdateFn {
+  return function mergeKeys(m: KeyMap): KeyMap {
     return Object.assign({}, m, x.patch)
   }
 }
@@ -879,6 +1229,52 @@ export function makeCatSelect(x: CatPickIn): SelectChangeFn {
 }
 
 /**
+ * 造大号档左栏的切换手柄(签名由 tabs 桶 RailTabs 的 onChange 定):点「推荐」回到热门那一屏(分类状态记空串,
+ * 与常规档点「热门」页签同一个值),点大类记它的 slug —— 目录照旧由整机的 loadCatalog 按需取、取过的不再取。
+ * 2026-10-05 立(「也改成左右 两部分吗?」「改啊」)。
+ *
+ * @param x 当前分类 setter。
+ * @returns 挂到 RailTabs onChange 上的手柄。
+ */
+export function makeRailPick(x: CatPickIn): RailPickFn {
+  return function pickRail(key: string): void {
+    if (key === OCC_CAT_REC) {
+      x.setCat(TEXT_NONE)
+      return
+    }
+    x.setCat(key)
+  }
+}
+
+/**
+ * 当前分类落在左栏的哪一项(分类状态里热门那一屏记空串,左栏上它是「推荐」那一项;2026-10-05「改啊」)。
+ *
+ * @param cat 当前分类 slug;空串 = 热门那一屏。
+ * @returns 左栏项的键。
+ */
+export function railKeyOf(cat: string): string {
+  if (cat === TEXT_NONE) {
+    return OCC_CAT_REC
+  }
+  return cat
+}
+
+/**
+ * 大号档右边那块此刻该不该摆「加载中」:点了大类、它的目录还在路上;或停在「推荐」、按专业取的那份还在路上
+ * (那一拍清单是空的,不摆内置清单顶 —— 见 occBaseOf 的 hold)。没给专业码时推荐先摆内置常用清单,不算在路上。
+ * 2026-10-05 立(「也改成左右 两部分吗?」「改啊」;常规档同一拍摆的是整排骨架)。
+ *
+ * @param x 当前分类、目录在途与按专业取的在途。
+ * @returns 该摆 = true。
+ */
+export function railBusyOf(x: RailBusyIn): boolean {
+  if (x.catLoading) {
+    return true
+  }
+  return x.cat === TEXT_NONE && x.hold
+}
+
+/**
  * 造一枚「点在弹层里不算点遮罩」的拦截手柄(签名由 DOM 的 click 事件定死)。
  *
  * @returns 挂到弹层本体 onClick 上的手柄。
@@ -905,8 +1301,9 @@ export function makeOccNext(x: OccNextIn): ClickFn {
  * 造首屏取数的启动器。首屏立即用内置常用清单;并行补两份事实:
  * ① 小查询只给这 14 个兜底职业补在招数,让数字尽快出现;
  * ② 完整 top=24 后台跑完后替换成真实热门榜。两者都不阻塞控件,也不再 400ms 就掐断。
+ * 2026-10-04 A2:给了专业码就只取 ② 且换成按专业取(topUrlOf)—— 首屏不摆内置清单,① 那份在招数没处可并。
  *
- * @param x 三个 setter、已选码与界面语言码。
+ * @param x 三个 setter、已选码、界面语言码与专业码。
  * @returns 启动器(调用它开跑,返回的收尾器交给 effect)。
  */
 export function makeBootstrap(x: BootstrapIn): StartFn {
@@ -914,7 +1311,9 @@ export function makeBootstrap(x: BootstrapIn): StartFn {
     const flag: DeadFlag = { dead: false }
     const topCtl = new AbortController()
     const countsCtl = new AbortController()
-    void fetchCounts({ flag, signal: countsCtl.signal, setTop: x.setTop })
+    if (x.majorCode === TEXT_NONE) {
+      void fetchCounts({ flag, signal: countsCtl.signal, setTop: x.setTop })
+    }
     void fetchTop({
       flag,
       signal: topCtl.signal,
@@ -923,6 +1322,8 @@ export function makeBootstrap(x: BootstrapIn): StartFn {
       setTitles: x.setTitles,
       nocs: x.nocs,
       lang: x.lang,
+      url: topUrlOf({ majorCode: x.majorCode }),
+      swap: x.majorCode !== TEXT_NONE,
     })
     return function stopBootstrap(): void {
       flag.dead = true
@@ -930,6 +1331,20 @@ export function makeBootstrap(x: BootstrapIn): StartFn {
       countsCtl.abort()
     }
   }
+}
+
+/**
+ * 热门那一屏从哪取:给了专业码 = 该专业对应大类下在招最多的 24 个职业(/api/quiz?major=),
+ * 没给 = 全站热门榜(URL_QUIZ_TOP,与服务端预热同键)。2026-10-04 A2 立。
+ *
+ * @param x 专业码。
+ * @returns 取榜地址。
+ */
+export function topUrlOf(x: TopUrlIn): string {
+  if (x.majorCode === TEXT_NONE) {
+    return URL_QUIZ_TOP
+  }
+  return URL_QUIZ_MAJOR + encodeURIComponent(x.majorCode) + URL_QUIZ_MAJOR_N
 }
 
 /**
@@ -974,7 +1389,7 @@ function makeCountsMerge(x: CountsMergeIn): TopUpdateFn {
 }
 
 /**
- * 取真实热门榜(top=24)。24 与服务端启动预热、缓存键完全一致 —— 先前改成 200 会绕过预热,
+ * 取真实热门榜(top=24;2026-10-04 A2 起地址由调用方给,按专业取同走这一条)。24 与服务端启动预热、缓存键完全一致 —— 先前改成 200 会绕过预热,
  * 冷启动重新 GROUP BY 全表,实测把职业题首屏从几十毫秒拖到 2.8 秒。
  * 回到这一步时存档只有 NOC 码,顺手从同一份数据补名字,避免已选胶囊在慢连接下多空白一拍;
  * 冷门职业仍由逐码查询兜底。
@@ -986,13 +1401,17 @@ function makeCountsMerge(x: CountsMergeIn): TopUpdateFn {
  */
 async function fetchTop(x: TopFetchIn): Promise<void> {
   try {
-    const res = await fetch(URL_QUIZ_TOP, { signal: x.signal })
+    const res = await fetch(x.url, { signal: x.signal })
     const d: TopJson = await res.json()
     if (x.flag.dead) {
       return
     }
     const rows = topRowsOf(d)
-    x.setTop(makeTopMerge({ rows }))
+    if (x.swap) {
+      x.setTop(makeTopSwap({ rows }))
+    } else {
+      x.setTop(makeTopMerge({ rows }))
+    }
     x.setTopLoaded(true)
     const known = knownTitlesOf({ rows, nocs: x.nocs, lang: x.lang })
     if (Object.keys(known).length > LEN_ZERO) {
@@ -1059,6 +1478,20 @@ function makeTopMerge(x: TopMergeIn): TopUpdateFn {
       }
     }
     return kept
+  }
+}
+
+/**
+ * 造一枚「取回来的榜整份换上」的 updater(按专业取的那一路;2026-10-05 访客向导开屏就挂选职业机器时立)。
+ * 上面 makeTopMerge 保顺序是给「首屏内置清单 → 真实热门榜」用的;按专业取的那一路首屏不摆内置清单(A2),
+ * 换了专业手上那份是别的专业(或全站热门)的榜,并进去会把这一份挤到后面,所以整份换。空榜也照换(不留别的专业的榜)。
+ *
+ * @param x 取回来的榜行。
+ * @returns 交给 setTop 的 updater。
+ */
+function makeTopSwap(x: TopSwapIn): TopUpdateFn {
+  return function swapTop(): Top[] {
+    return x.rows
   }
 }
 
@@ -1130,6 +1563,7 @@ function makeCatalogPut(x: CatalogPutIn): CatalogUpdateFn {
 
 /**
  * 造搜索的启动器(≥2 字、防抖 180ms;不到 2 字就地清空,不发请求)。
+ * 2026-10-05 够不够字改由 isOccQuery 判(与整机交出的 searchOn 同一个判定:正文换成命中那一屏 ⇔ 发这次搜索)。
  *
  * @param x 搜索词、计时器句柄与两个 setter。
  * @returns 启动器。
@@ -1139,7 +1573,7 @@ export function makeSearchRun(x: SearchRunIn): StartFn {
     clearTimer({ timer: x.timer })
     const ctl = new AbortController()
     const query = x.q.trim()
-    if (query.length < QUERY_MIN) {
+    if (isOccQuery(query) === false) {
       x.setCands([])
       x.setSearching(false)
       return makeSearchStop({ timer: x.timer, ctl })
@@ -1158,6 +1592,17 @@ export function makeSearchRun(x: SearchRunIn): StartFn {
     )
     return makeSearchStop({ timer: x.timer, ctl })
   }
+}
+
+/**
+ * 这个搜索词够不够起搜(去掉首尾空白后至少 QUERY_MIN 个字)。2026-10-05 立:原先常规档 OccBody、大号档 OccRail 与本文件的
+ * 搜索启动器各写一遍,收成一处 —— 整机据它交 searchOn(正文换不换成命中那一屏),启动器据它发不发请求。
+ *
+ * @param q 搜索框现值(没去空白的也行)。
+ * @returns 够了 = 真。
+ */
+export function isOccQuery(q: string): boolean {
+  return q.trim().length >= QUERY_MIN
 }
 
 /**
@@ -1239,8 +1684,9 @@ function candRowsOf(d: CandsJson): Cand[] {
 
 /**
  * 造「补齐已选职业名字」的启动器。
+ * 2026-10-05:连组键一起补(缺名字或缺组键的码都查一次;见 fetchTitles)。
  *
- * @param x 已选码、已有名字表、界面语言码与名字表 setter。
+ * @param x 已选码、已有名字表与组键、界面语言码与两个 setter。
  * @returns 启动器。
  */
 export function makeTitlesFill(x: TitlesFillIn): StartFn {
@@ -1255,6 +1701,8 @@ export function makeTitlesFill(x: TitlesFillIn): StartFn {
 
 /**
  * 逐码把缺的名字拉回来。
+ * 2026-10-05:缺组键的码也查(名字从内置常用清单来的码 —— 21232 就是 —— 手里没有短名,不查就和同组的码合不成一个);
+ * 名字只补原来缺的(内置清单那句不被覆盖,免得胶囊上的字换一下),组键查到几个记几个,查不到记空串(不再回查)。
  *
  * @param x 启动器的入参与存活标记。
  * @returns 无。
@@ -1262,8 +1710,7 @@ export function makeTitlesFill(x: TitlesFillIn): StartFn {
 async function fetchTitles(x: TitlesFetchIn): Promise<void> {
   const miss: string[] = []
   for (const n of x.fill.nocs) {
-    const had = x.fill.titles[n]
-    if (had == null || had === TEXT_NONE) {
+    if (isTitleMiss({ noc: n, titles: x.fill.titles }) || x.fill.keys[n] == null) {
       miss.push(n)
     }
   }
@@ -1279,33 +1726,52 @@ async function fetchTitles(x: TitlesFetchIn): Promise<void> {
     return
   }
   const patch: TitleMap = {}
+  const keys: KeyMap = {}
   for (const hit of rows) {
-    patch[hit.noc] = hit.name
+    if (isTitleMiss({ noc: hit.noc, titles: x.fill.titles })) {
+      patch[hit.noc] = hit.name
+    }
+    keys[hit.noc] = hit.key
   }
   x.fill.setTitles(makeTitlesMerge({ patch }))
+  x.fill.setKeys(makeKeysMerge({ patch: keys }))
+}
+
+/**
+ * 名字表里缺不缺这个码的名字(2026-10-05 自 fetchTitles 提出:挑要查的码与补名字两处同一把尺)。
+ *
+ * @param x NOC 码与名字表。
+ * @returns 没有或是空串 = true。
+ */
+function isTitleMiss(x: ChipNameIn): boolean {
+  const had = x.titles[x.noc]
+  return had == null || had === TEXT_NONE
 }
 
 /**
  * 查一个 NOC 码的显示名。
+ * 2026-10-05:顺带交回组键(事实卡名字面里的中文短名)。
  *
  * @param x NOC 码与界面语言码。
- * @returns 码与名字;查不到就拿码当名字(空胶囊比裸码更糟 —— 至少码还认得出是同一行)。
+ * @returns 码与名字;查不到就拿码当名字(空胶囊比裸码更糟 —— 至少码还认得出是同一行)。组键查不到给空串(自成一组)。
  */
 async function fetchOneTitle(x: OneTitleIn): Promise<TitleHit> {
   try {
     const res = await fetch(URL_QUIZ_NOC + encodeURIComponent(x.noc))
     const d: FactsJson = await res.json()
     let row: Cand | null = null
+    let key = TEXT_NONE
     if (d.facts != null) {
       row = d.facts
+      key = rowKeyOf(d.facts)
     }
     const name = pickName({ row, lang: x.lang })
     if (name === TEXT_NONE) {
-      return { noc: x.noc, name: x.noc }
+      return { noc: x.noc, name: x.noc, key }
     }
-    return { noc: x.noc, name }
+    return { noc: x.noc, name, key }
   } catch {
-    return { noc: x.noc, name: x.noc }
+    return { noc: x.noc, name: x.noc, key: TEXT_NONE }
   }
 }
 

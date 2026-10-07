@@ -72,6 +72,21 @@ export type ProvChipsIn = {
 }
 
 /**
+ * provHrefOf 的入参(2026-10-04 页签带省份)。
+ */
+export type ProvHrefIn = {
+  /**
+   * 页签地址(站内路径)。
+   */
+  base: string
+
+  /**
+   * 当前省码;'' = 还没选。
+   */
+  prov: string
+}
+
+/**
  * makeProvPickOf 与 applyStartProv 的入参。
  */
 export type ProvPickIn = {

@@ -38,14 +38,17 @@ import {
   PUSH_RETRY_MAX, RETRY_BASE_MS, RETRY_FACTOR,
   SCORE_ANSWERS_KEY, SCORE_EMPTY, STAGE_BASIC, STATE_HIDDEN, STATUS_NONE, STATUS_OVERSEAS,
   STATUS_UNSURE, STR_NONE, STUDY_LEVEL, STUDY_MONTHS, SYNC_DEBOUNCE_MS, TIER_FREE,
-  TOTAL_EXP, TOTAL_V2_MAP, TTL, UNSURE_BAND, URL_ANSWERS
+  TOTAL_EXP, TOTAL_V2_MAP, TTL, UNSURE_BAND, URL_ANSWERS, MAJOR_CACHE_MAX, MAJOR_KEY_SEP, MAJOR_N_MAX, TOP_N_DEFAULT,
+  MAJOR_CODE_RE, MAJOR_PICK_MAX, MAJOR_SEP,
 } from './constants'
 import { CACHE } from './variables'
 import type {
-  Answers, AnswersDoc, AnswersOut, AnswersPatch, BandValue, DropFn, EngineAnswers, EngineValue, FactsStoreFn,
-  FieldBehavior, FieldMap, FieldNames, FirstStoreFn, LoadAnswersIn, MaybeAnswers, MaybeProvList, MaybeRawDoc,
+  Answers, AnswersDoc, AnswersOut, AnswersPatch, BandValue, BlankPatchIn, DropFn, EngineAnswers, EngineValue,
+  FactsStoreFn, FieldBehavior, FieldMap, FieldNames, FirstStoreFn, LoadAnswersIn, MaybeAnswers, MaybeProvList,
+  MaybeRawDoc, MergedOut,
   NameFilter, ProvList, PulledOut, PushedOut, RawAnswersSource, RawCell, RawDoc, RawField, RawScoreSource, RawText,
-  SaveAnswersIn, SaveAnswersOut, ScoreAnswers, Stage, StoreFn, Tier, TopCachedIn, TopOut, TopRows, UnflagFn
+  SaveAnswersIn, SaveAnswersOut, ScoreAnswers, Stage, StoreFn, Tier, TopCachedIn, TopOut, TopRows, UnflagFn,
+  MajorNocsCachedIn, MajorNocsOut, MajorCodes, MajorBroadsUnionIn, MajorBroadsUnionOut,
 } from './types'
 import { HDR_CONTENT_TYPE, UNAUTHORIZED } from '../http'
 
@@ -61,6 +64,75 @@ export function resetAnswersMemory(): void {
   CACHE.dirty = false
   CACHE.retryN = 0
   CACHE.hydrated = false
+}
+
+/**
+ * 把几格基础题并进服务端档并当场推上去(2026-10-03 付费闭环批 A1:访客向导注册成功那一刻)。
+ * 先拉服务端档(新注册的人是空档,登录老号就是他已有的整份),再只填 patch 里**服务端还空着的**那几格
+ * (同日审查改判:向导注册屏能切登录,老账号已答的处境 / 省 / 职业不许被几道访客题盖掉;新号整份是空的,
+ * 等于全写)—— 整档 PUT 之前其余字段原样带回(#107 同类保险丝:不许拿几格新答案抹掉整份旧档);
+ * 不等防抖,直接推一次。没拉到档、推的时候会话没了(401)、推没成,一律交回 false 由调用方留着草稿下次再来。
+ *
+ * @param patch 要填的那几格。
+ * @returns 并进去且推上去了 true。
+ */
+export async function mergeBasics(patch: AnswersPatch): MergedOut {
+  await pullAndMerge(true)
+  if (CACHE.hydrated === false || CACHE.loggedIn !== true) {
+    return false
+  }
+  writeAnswers(blankPatchOf({ cur: readAnswers(), patch }))
+  if (CACHE.syncTimer != null) {
+    clearTimeout(CACHE.syncTimer)
+    CACHE.syncTimer = null
+  }
+  await pushToServer()
+  return isSynced()
+}
+
+/**
+ * 刚才那一推成了没有:会话还在、且没有没推上去的改动(pushToServer 的结果落在 CACHE 上,不另交回值;
+ * 401 会把 dirty 清掉、同时把登录态记成 false,所以两格都要看 —— 只看 dirty 会把「会话没了」当成推成)。
+ *
+ * @returns 推成了 true。
+ */
+function isSynced(): boolean {
+  return CACHE.loggedIn === true && CACHE.dirty === false
+}
+
+/**
+ * patch 里只留现档还空着的格(mergeBasics 的「只填空格」)。目标档 / 专业 / 职业各看各的;
+ * 处境与现居省是一件事的两格,绑在一起判:答了境外(patch 带处境)只在现档处境与现居省都空时写;
+ * 答了省(只带现居省)只在现居省空、且现档不是「在境外」时写 —— 不许拼出「人在境外、住在安省」。
+ * 2026-10-05 访客第 2 题改多选:专业一格改成码清单 majors,现档一个专业都没有才填。
+ *
+ * @param x 现档与要填的格。
+ * @returns 真要写的格。
+ */
+export function blankPatchOf(x: BlankPatchIn): AnswersPatch {
+  const a = x.cur
+  const p = x.patch
+  const out: AnswersPatch = {}
+  if (p.goalBand != null && a.goalBand === 0) {
+    out.goalBand = p.goalBand
+  }
+  if (p.majors != null && a.majors.length === 0) {
+    out.majors = p.majors
+  }
+  if (p.nocs != null && a.nocs.length === 0) {
+    out.nocs = p.nocs
+  }
+  if (p.status != null) {
+    if (a.status === '' && a.resProv === '') {
+      out.status = p.status
+      out.resProv = STR_NONE
+    }
+    return out
+  }
+  if (p.resProv != null && a.resProv === '' && a.status !== STATUS_OVERSEAS) {
+    out.resProv = p.resProv
+  }
+  return out
 }
 
 /**
@@ -520,11 +592,17 @@ export async function pullAndMerge(afterLogin: boolean = false): PulledOut {
 
 /**
  * 答过三问没有(职位板判断弹不弹、拿 PR 判断要不要拉起选职业)。
+ * 2026-10-03 付费闭环批 A1:访客向导只问目标、专业、职业、现居省四道 —— 只答了目标 / 现居省 / 专业的
+ * 也算答过(服务端空档时照样推上去,不许因为没碰处境与目标省就当没答)。
+ * 2026-10-05 专业改多选:选了至少一个专业算答过。
  *
  * @param a 全卷。
  * @returns 答过 true。
  */
 export function answeredBasics(a: Answers): boolean {
+  if (a.goalBand > 0 || a.resProv !== '' || a.majors.length > 0) {
+    return true
+  }
   return Boolean(a.done || a.status || a.nocs.length || a.provs.length)
 }
 
@@ -1219,6 +1297,7 @@ export function normalize(cur: RawAnswersSource): Answers {
     fieldMatchBand: num(raw.fieldMatchBand), eduProv: str(raw.eduProv), eduYearsBand: num(raw.eduYearsBand),
     frenchBand: frenchBand, frenchV2: true,
     studyMonthsBand: num(raw.studyMonthsBand), studyLevelBand: num(raw.studyLevelBand),
+    majors: arr(raw.majors),
   }
   if (raw.done === true) {
     out.done = true
@@ -1435,4 +1514,98 @@ function makeDrop(n: number): DropFn {
   return function drop(): void {
     CACHE.topPending.delete(n)
   }
+}
+
+// =========================================================================
+// 专业分支(访客四题第 3 题:选了专业 → 该专业对应大类下在招最多的职业;2026-10-04)
+// =========================================================================
+
+/**
+ * ?n= 的取值 → 专业分支清单条数:缺席 / 非数 / 非正给默认 24,上限 MAJOR_N_MAX。
+ *
+ * @param raw 查询参数原值(缺席是 null)。
+ * @returns 条数。
+ */
+export function majorNOf(raw: RawText): number {
+  if (raw == null || raw.trim() === '') {
+    return TOP_N_DEFAULT
+  }
+  const n = Math.floor(Number(raw))
+  if (Number.isFinite(n) === false || n <= 0) {
+    return TOP_N_DEFAULT
+  }
+  return Math.min(n, MAJOR_N_MAX)
+}
+
+/**
+ * ?major= 的取值 → 专业码清单(2026-10-05 访客第 2 题改多选):逗号切开,逐个去首尾空白、验 CIP class 码形(MAJOR_CODE_RE),
+ * 去重,至多 MAJOR_PICK_MAX 个(多出来的丢掉);一个都不合形给空列(路由照旧回空清单,不落到别的分支)。
+ *
+ * @param raw 查询参数原值(缺席是 null;路由已按 MAJOR_LEN_MAX 截过)。
+ * @returns 专业码清单(参数里的先后序)。
+ */
+export function majorCodesOf(raw: RawText): MajorCodes {
+  const out: MajorCodes = []
+  if (raw == null) {
+    return out
+  }
+  for (const piece of raw.split(MAJOR_SEP)) {
+    const c = piece.trim()
+    if (MAJOR_CODE_RE.test(c) && out.includes(c) === false && out.length < MAJOR_PICK_MAX) {
+      out.push(c)
+    }
+  }
+  return out
+}
+
+/**
+ * 某专业对应的本站大类下 noc_openings 在招最多的职业(10 分钟 TTL;空结果不进缓存)。
+ * 大类由注入的 broadsOf 给(majors 域 getMajorBroads:数据层 etl/noc MAJOR_SERIES_BROADS 推好存在 cip_programs.broads),
+ * 查无此专业 / 专业表没建 = 没有大类 → 直接空清单,不打职业查询。取数函数由路由注进来(functions 不借 server 门,
+ * 同 getTopNocsCached 的批②注入化)。
+ * 2026-10-05 访客第 2 题改多选:收至多 3 个专业码,大类取它们的并集(majorBroadsOf),一次查并集下在招最多的职业;
+ * 缓存键 = 排好序的码逗号连 | 条数(同一组专业不分先后同一格);并集为空(都查无此码)照旧直接空清单。
+ *
+ * @param input 连接、专业码清单、条数与两个注入的取数函数。
+ * @returns 职业清单(在架量从多到少)。
+ */
+export async function getMajorNocsCached(input: MajorNocsCachedIn): MajorNocsOut {
+  const codes = input.codes.slice().sort()
+  const key = codes.join(MAJOR_SEP) + MAJOR_KEY_SEP + String(input.n)
+  const hit = CACHE.majorBy.get(key)
+  if (hit != null && Date.now() - hit.at < TTL) {
+    return hit.rows
+  }
+  const broads = await majorBroadsOf({ db: input.db, codes, broadsOf: input.broadsOf })
+  if (broads.length === 0) {
+    return []
+  }
+  const rows = await input.load({ db: input.db, broads: broads, limit: input.n })
+  if (rows.length > 0) {
+    if (CACHE.majorBy.size >= MAJOR_CACHE_MAX) {
+      CACHE.majorBy.clear()
+    }
+    CACHE.majorBy.set(key, { at: Date.now(), rows: rows })
+  }
+  return rows
+}
+
+/**
+ * 几个专业的本站大类并集(2026-10-05 访客第 2 题改多选):逐码问注入的 broadsOf(majors 域 getMajorBroads,整表进程内缓存,
+ * 逐个问不多打库),去重;先到先排(码序在先、各码自己的大类序在后)—— 职业查询是 broad = ANY(...),序不影响结果。
+ *
+ * @param x 连接、排好序的专业码清单与注入的取数。
+ * @returns 大类并集;都查无此码 = 空列。
+ */
+async function majorBroadsOf(x: MajorBroadsUnionIn): MajorBroadsUnionOut {
+  const out: string[] = []
+  for (const code of x.codes) {
+    const broads = await x.broadsOf({ db: x.db, code: code })
+    for (const b of broads) {
+      if (out.includes(b) === false) {
+        out.push(b)
+      }
+    }
+  }
+  return out
 }

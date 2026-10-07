@@ -8,6 +8,8 @@
  * style 白名单:styleOverride 是调用方的几何微调过渡口(几十处消费页在传宽度/边距),
  * 消费页形制化批逐个收进各页的类后撤。
  *
+ * 2026-10-04 加 xl 档(整宽主行动:高 48、圆角 12、字 16 粗体;访客四题改版首例,向导粘底的「下一步」)。
+ *
  * 2026-09-23 在途态(busy)收进这里:登录钮提交中原先把 loading 桶的加载行塞进钮里(蓝小字压浅蓝底、挤在左边,
  * Frank「这个登录按钮太难看了」),钮里转圈从此只有这一个出口。
  *
@@ -30,6 +32,7 @@ export function Button({
   kind = KIND_DEFAULT,
   sm = false,
   lg = false,
+  xl = false,
   disabled = false,
   busy,
   onClick,
@@ -60,7 +63,7 @@ export function Button({
   }
   const inFlight = busy === true
   const off = disabled || inFlight
-  const cls = btnClsOf({ kind, sm, lg, active, busy: inFlight, className: extraCls })
+  const cls = btnClsOf({ kind, sm, lg, xl, active, busy: inFlight, className: extraCls })
   if (href != null && href !== '' && off === false) {
     return (
       <LinkButton href={href} replace={replace} target={target} title={title} className={cls} style={style}>

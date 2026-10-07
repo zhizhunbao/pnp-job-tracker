@@ -5,6 +5,7 @@
  * (宪法 08-25「types 自声明」):只声明这一页真读的那几格,结构相同即兼容,
  * 下层多一格不必跟着改,真读不到会当场 tsc 红。
  * 整页外框不在这里:那层容器 2026-08-27 已收拢成 shell 域的通用件 Frame,本域不留克隆。
+ * 2026-10-03 资讯页签四分(页签改叫「抽选」):政策公告那一路撤出时间线,事件剩抽选 / 省通告两路;类型筛与政策公告那一半的形状随之撤。
  *
  * @author Frank
  * @time 2026-08-28 12:43:06
@@ -22,7 +23,7 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
 export type ClickFn = () => void
 
 /**
- * 时间线上的一件事(三路混排:省抽选 / 省通告 / 政策公告)。
+ * 时间线上的一件事(两路混排:省抽选 / 省通告;政策公告 2026-10-03 撤出)。
  */
 export type EventRow = {
   /**
@@ -36,12 +37,12 @@ export type EventRow = {
   prov: string
 
   /**
-   * 这件事是哪一路:抽选 / 省通告 / 政策公告。
+   * 这件事是哪一路:抽选 / 省通告。
    */
-  kind: 'draw' | 'notice' | 'policy'
+  kind: 'draw' | 'notice'
 
   /**
-   * 抽选给流名,政策公告给新闻标题;省通告的标题走 i18n 的固定说法,不读这一格。
+   * 抽选给流名;省通告的标题走 i18n 的固定说法,不读这一格。
    */
   title: string
 
@@ -64,16 +65,6 @@ export type EventRow = {
    * 省通告的正文摘要(通告那一路真正的内容在这里)。
    */
   note: string
-
-  /**
-   * 政策公告的 AI 重要度 1-5;null = 没评过。
-   */
-  importance: number | null
-
-  /**
-   * 政策公告在站内的 slug(拼成 /news/[slug] 的详情页地址)。
-   */
-  slug: string
 
   /**
    * 抽选的人数口径(selection = 从 EOI 池选中的人,写「人入选」;新闻给 '';2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」)。
@@ -151,7 +142,7 @@ export type EeCadenceRow = {
  */
 export type TimelineIn = {
   /**
-   * 三路混排好的事件流(新在前)。
+   * 混排好的事件流(抽选 / 省通告两路,新在前)。
    */
   events: EventRow[]
 
@@ -186,11 +177,6 @@ export type TimelinePanel = {
   prov: string
 
   /**
-   * 当前类型筛:'' = 全部,draw = 抽选(含省通告),policy = 政策公告。
-   */
-  kind: string
-
-  /**
    * 当前流筛:'' = 不按流筛;非空 = 节奏卡带进来的流名。
    */
   stream: string
@@ -199,21 +185,6 @@ export type TimelinePanel = {
    * 造省筛手柄的工厂(给它省码,换一只切到那个省的手柄)。
    */
   provPickOf: (code: string) => ClickFn
-
-  /**
-   * 「全部类型」的手柄。
-   */
-  onKindAll: ClickFn
-
-  /**
-   * 「抽选」的手柄(唯一不清流筛的一只,理由见 makeKindDraw)。
-   */
-  onKindDraw: ClickFn
-
-  /**
-   * 「政策」的手柄。
-   */
-  onKindPolicy: ClickFn
 
   /**
    * 撤掉流筛的手柄(流筛药丸上那枚记号)。
@@ -321,20 +292,9 @@ export type FilterChipsIn = {
   provs: string[]
 
   /**
-   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
-   * 药丸行就是时间轴正上方那一行,更新时间挂在它的右端。
-   */
-  updatedAt: string
-
-  /**
    * 当前省筛。
    */
   prov: string
-
-  /**
-   * 当前类型筛。
-   */
-  kind: string
 
   /**
    * 当前流筛。
@@ -345,21 +305,6 @@ export type FilterChipsIn = {
    * 造省筛手柄的工厂。
    */
   provPickOf: (code: string) => ClickFn
-
-  /**
-   * 「全部类型」的手柄。
-   */
-  onKindAll: ClickFn
-
-  /**
-   * 「抽选」的手柄。
-   */
-  onKindDraw: ClickFn
-
-  /**
-   * 「政策」的手柄。
-   */
-  onKindPolicy: ClickFn
 
   /**
    * 撤掉流筛的手柄。
@@ -398,21 +343,6 @@ export type EventCardIn = {
 }
 
 /**
- * PolicyLine(政策公告那一行)的 props。
- */
-export type PolicyLineIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 这一条事件。
-   */
-  row: EventRow
-}
-
-/**
  * DrawLine(抽选那一行)的 props。
  */
 export type DrawLineIn = {
@@ -438,7 +368,7 @@ export type EventsIn = {
 }
 
 /**
- * shownOf 的入参:整条事件流与三个筛选的现值。
+ * shownOf 的入参:整条事件流与两个筛选(省筛 / 流筛)的现值。
  */
 export type ShownOfIn = {
   /**
@@ -450,11 +380,6 @@ export type ShownOfIn = {
    * 当前省筛。
    */
   prov: string
-
-  /**
-   * 当前类型筛。
-   */
-  kind: string
 
   /**
    * 当前流筛。
@@ -475,21 +400,6 @@ export type ProvMatchIn = {
    * 当前省筛。
    */
   prov: string
-}
-
-/**
- * isKindMatch 的入参:一条事件的类型与当前类型筛。
- */
-export type KindMatchIn = {
-  /**
-   * 这条事件的类型。
-   */
-  rowKind: string
-
-  /**
-   * 当前类型筛。
-   */
-  kind: string
 }
 
 /**
@@ -538,26 +448,6 @@ export type DaysClsIn = {
 }
 
 /**
- * isPolicy / dotClsOf 的入参:一条事件的类型。
- */
-export type KindIn = {
-  /**
-   * 这条事件的类型。
-   */
-  kind: string
-}
-
-/**
- * isImportant 的入参:AI 重要度。
- */
-export type ImportanceIn = {
-  /**
-   * AI 重要度 1-5;null = 没评过。
-   */
-  importance: number | null
-}
-
-/**
  * eventTitleOf 的入参:取词函数与一条事件的类型、标题。
  */
 export type EventTitleIn = {
@@ -603,16 +493,6 @@ export type InvTextIn = {
 }
 
 /**
- * newsHrefOf 的入参:站内 slug。
- */
-export type SlugIn = {
-  /**
-   * 政策公告在站内的 slug。
-   */
-  slug: string
-}
-
-/**
  * makeProvPickOf 的入参:省筛与流筛的落格。
  */
 export type ProvPickIn = {
@@ -628,36 +508,6 @@ export type ProvPickIn = {
 }
 
 /**
- * makeKindPick 的入参:类型筛与流筛的落格,以及这只手柄切到哪一档。
- */
-export type KindPickIn = {
-  /**
-   * 类型筛落格。
-   */
-  setKind: (v: string) => void
-
-  /**
-   * 流筛落格(切类型时要顺手清掉)。
-   */
-  setStream: (v: string) => void
-
-  /**
-   * 这只手柄切到的类型档。
-   */
-  kind: string
-}
-
-/**
- * makeKindDraw 的入参:类型筛的落格。
- */
-export type KindDrawIn = {
-  /**
-   * 类型筛落格。
-   */
-  setKind: (v: string) => void
-}
-
-/**
  * makeStreamClear 的入参:流筛的落格。
  */
 export type StreamClearIn = {
@@ -668,18 +518,13 @@ export type StreamClearIn = {
 }
 
 /**
- * makeDrillOf 的入参:三个筛选的落格(节奏卡一点要同时落三格)。
+ * makeDrillOf 的入参:省筛与流筛的落格(节奏卡一点要同时落两格)。
  */
 export type DrillOfIn = {
   /**
    * 省筛落格。
    */
   setProv: (v: string) => void
-
-  /**
-   * 类型筛落格。
-   */
-  setKind: (v: string) => void
 
   /**
    * 流筛落格。

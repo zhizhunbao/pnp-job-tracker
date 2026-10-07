@@ -9,7 +9,7 @@
 import {
   ALL_PROVS, COUNTRY_CANADA, F_CITY, F_COUNTRY, F_DISTRICT, F_PROVINCE, LOC_NONE, MAPS_URL, NOTE_L, NOTE_R,
   HOME_GATE_CSS_SLOT, HOME_GATE_JS, HOME_GATE_ZONES_SLOT,
-  LANG_FR_HEAD, PROV_KEY, PROV_NAMES, PROV_QC, SEP_COMMA, TZ_EASTERN, TZ_PROVINCE,
+  LANG_FR_HEAD, PROV_KEY, PROV_NAMES, PROV_QC, SEP_COMMA, TZ_CANADA_HEAD, TZ_CANADA_OTHER, TZ_EASTERN, TZ_PROVINCE,
 } from './constants'
 import type { CleanProvsIn, HqLineIn, LocJob, MapQueryIn, ParsedLoc, ProvList, ProvNameIn } from './types'
 
@@ -164,6 +164,35 @@ export function homeProvinceOf(): string {
     return PROV_QC
   }
   return prov
+}
+
+/**
+ * 设备时区名(浏览器报的 IANA 名)。2026-10-03 付费闭环批 A1 立:访客向导拿它判「加拿大境外」——
+ * 省怎么预选仍归 homeProvinceOf,这里只交时区名本身。
+ *
+ * @returns 时区名;浏览器没报给空串。
+ */
+export function deviceTzOf(): string {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+  if (typeof tz !== 'string') {
+    return LOC_NONE
+  }
+  return tz
+}
+
+/**
+ * 这个时区名在不在加拿大境内(对得上省的、分不出省的、领地、旧式 Canada/ 名都算)。
+ * 2026-10-03 付费闭环批 A1 立:访客向导只在「不在境内」时才预选「加拿大境外」,
+ * 大西洋时区这类分不出省的不预选,也不许当成境外。
+ *
+ * @param tz 时区名;空串 = 不知道,不算境内。
+ * @returns 在境内 true。
+ */
+export function isCanadaTz(tz: string): boolean {
+  if (TZ_PROVINCE[tz] != null || TZ_CANADA_OTHER.includes(tz)) {
+    return true
+  }
+  return tz.startsWith(TZ_CANADA_HEAD)
 }
 
 /**

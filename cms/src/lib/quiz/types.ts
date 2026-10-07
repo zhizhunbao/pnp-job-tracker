@@ -518,6 +518,16 @@ export type Answers = {
    * 课程层级档。
    */
   studyLevelBand: number
+
+  /**
+   * 专业大类(2026-10-03 付费闭环批 A1,访客向导第 ② 题):统计局 CIP 2021 大类码 '01'…'11',
+   * '12' = 其他;空串 = 没答。只存不判 —— 不进 FIELD_SPECS,引擎不读它。
+   * 2026-10-04 A2(Frank「改」):改存具体专业的 CIP 2021 class 码(如 '52.0203';第 ② 题换成热门具体专业 + 搜索全部 CIP 专业,
+   * 专业 → 本站大类的对照在 cip_programs.broads)。A1 未上线,线上没有大类码的旧值,不迁移;仍只存不判。
+   * 2026-10-05 访客第 ② 题改多选(至多 3 个):格名 major → majors,存 class 码清单;空列 = 没答。单值那版(10-04)cms 没推过,
+   * 线上没有 major 串的旧档,不迁移 —— 档里万一有,读取时那一格不认(normalize 只读 majors)。仍只存不判。
+   */
+  majors: string[]
 }
 
 /**
@@ -661,6 +671,26 @@ export type PushedOut = Promise<void>
  * `pullAndMerge` 的返回(true = 内存被服务端档换过,调用方需重建 state)。
  */
 export type PulledOut = Promise<boolean>
+
+/**
+ * `mergeBasics` 的返回(true = 并进去且推上服务端了;false = 没拉到档或没推成,调用方留着草稿下次再来)。
+ */
+export type MergedOut = Promise<boolean>
+
+/**
+ * `blankPatchOf` 的入参(现档与要填的格)。
+ */
+export type BlankPatchIn = {
+  /**
+   * 现档(刚从服务端拉回的那份)。
+   */
+  cur: Answers
+
+  /**
+   * 要填的格(缺席 = 不碰)。
+   */
+  patch: AnswersPatch
+}
 
 /**
  * 字段名的过滤函数形状(filter 用)。
@@ -836,6 +866,11 @@ export type QuizCache = {
   broadBy: Map<string, BroadSlot>
 
   /**
+   * 专业职业清单:码 | 条数 → 缓存格(访客四题第 3 题;10 分钟 TTL,空结果不进缓存)。
+   */
+  majorBy: Map<string, MajorSlot>
+
+  /**
    * 装配好的题库(数据半 FIELD_SPECS + 行为半接回来);getFields 首次调用时填。
    * 装一次就够 —— 它是纯数据加固定函数引用,进程内不会变。
    */
@@ -886,6 +921,132 @@ export type BroadSlot = {
    */
   rows: BroadNoc[]
 }
+
+/**
+ * 专业分支缓存一格(码 | 条数 → 清单;2026-10-04 访客四题第 3 题)。
+ */
+export type MajorSlot = {
+  /**
+   * 落格时刻(ms)。
+   */
+  at: number
+
+  /**
+   * 该专业对应大类下在招最多的职业。
+   */
+  rows: TopNoc[]
+}
+
+/**
+ * 注入的「专业 → 本站大类」取数收的参(与 majors 域 getMajorBroads 同形)。
+ */
+export type MajorBroadsLoadIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+
+  /**
+   * CIP class 码。
+   */
+  code: string
+}
+
+/**
+ * 「专业 → 本站大类」取数函数的形状(majors 域的 getMajorBroads 由路由注进来,functions 不借 server 门)。
+ */
+export type MajorBroadsFn = (input: MajorBroadsLoadIn) => Promise<string[]>
+
+/**
+ * 注入的「大类 → 在招最多的职业」取数收的参(与 jobs 的 loadMajorNocs 同形)。
+ */
+export type MajorNocsLoadIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+
+  /**
+   * 大类清单(调用方已判非空)。
+   */
+  broads: string[]
+
+  /**
+   * 清单条数。
+   */
+  limit: number
+}
+
+/**
+ * 「大类 → 在招最多的职业」取数函数的形状(jobs 的 loadMajorNocs 由路由注进来)。
+ */
+export type MajorNocsLoaderFn = (input: MajorNocsLoadIn) => Promise<TopNoc[]>
+
+/**
+ * `getMajorNocsCached` 的入参。
+ */
+export type MajorNocsCachedIn = {
+  /**
+   * 能查的连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * CIP class 码清单(majorCodesOf 已验形、去重、夹到至多 3 个;空列 = 参数里一个都不合形)。
+   * 2026-10-05 访客第 2 题改多选:原是一个码 code,大类取这几个码的本站大类并集。
+   */
+  codes: MajorCodes
+
+  /**
+   * 清单条数(majorNOf 已夹紧)。
+   */
+  n: number
+
+  /**
+   * 注入的「专业 → 本站大类」取数。
+   */
+  broadsOf: MajorBroadsFn
+
+  /**
+   * 注入的「大类 → 在招最多的职业」取数。
+   */
+  load: MajorNocsLoaderFn
+}
+
+/**
+ * `getMajorNocsCached` 的返回。
+ */
+export type MajorNocsOut = Promise<TopNoc[]>
+
+/**
+ * 专业码清单(?major= 洗出来的 CIP class 码,至多 MAJOR_PICK_MAX 个;2026-10-05 访客第 2 题改多选时立)。
+ */
+export type MajorCodes = string[]
+
+/**
+ * `majorBroadsOf`(几个专业的本站大类并集)的入参(2026-10-05 立)。
+ */
+export type MajorBroadsUnionIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+
+  /**
+   * 专业码清单(调用方已排好序)。
+   */
+  codes: MajorCodes
+
+  /**
+   * 注入的「专业 → 本站大类」取数。
+   */
+  broadsOf: MajorBroadsFn
+}
+
+/**
+ * `majorBroadsOf` 的返回(大类并集,去重,按码序与各码内的序先到先排)。
+ */
+export type MajorBroadsUnionOut = Promise<string[]>
 
 /**
  * 事实卡后台刷成功的落格函数形状。

@@ -15,6 +15,7 @@ import css from './button.module.css'
  * (2026-08-24 拍板,调用点迁移批未做,类未写),急切构造会让首个按钮渲染就撞上
  * 规划位的缺类;按需取则只校验真用到的那一格,用到缺类仍当场炸(cssOf 的口径)。
  * sm/lg 都传按 sm 算。
+ * 2026-10-04 加 xl 档(整宽主行动;访客四题改版首例):三档同传时按 sm → lg → xl 的先后取一档。
  * 基座只给**行动钮**:控件钮的形状由自己那一档定死,套上基座反而要一条条盖回去。
  * 2026-09-23 加在途档:busy 叠在变体之后(primary 在途不退浅蓝,见 button.module.css)。
  *
@@ -29,6 +30,8 @@ export function btnClsOf(x: BtnClsIn): string {
       cls.push(cssOf(css.sm))
     } else if (x.lg) {
       cls.push(cssOf(css.lg))
+    } else if (x.xl) {
+      cls.push(cssOf(css.xl))
     }
   } else {
     cls.push(cssOf(css.ctl))

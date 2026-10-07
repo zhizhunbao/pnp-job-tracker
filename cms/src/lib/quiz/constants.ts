@@ -155,7 +155,7 @@ export const EMPTY: Answers = {
   clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0,
   eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, goalBand: 0, canadaEduBand: 0,
   permitBand: 0, resProv: '', fieldMatchBand: 0, eduProv: '', eduYearsBand: 0, frenchBand: 0,
-  studyMonthsBand: 0, studyLevelBand: 0, bandsV2: true,
+  studyMonthsBand: 0, studyLevelBand: 0, majors: [], bandsV2: true,
 }
 
 /**
@@ -345,6 +345,56 @@ export const P_TOP = 'top'
  * /api/quiz 的批量计数参数名(?counts=21232,63200)。
  */
 export const P_COUNTS = 'counts'
+
+/**
+ * /api/quiz 的专业参数名(?major=52.0203 → 访客四题第 3 题:该专业对应大类下在招最多的职业;2026-10-04)。
+ * 2026-10-05 访客第 2 题改多选:收逗号连的至多 MAJOR_PICK_MAX 个码(?major=52.0203,11.0701),取它们本站大类的并集。
+ */
+export const P_MAJOR = 'major'
+
+/**
+ * ?major= 多个专业码之间的分隔符(2026-10-05;与职位板 noc 参数的多值约定同),缓存键里排好序的码也用它连。
+ */
+export const MAJOR_SEP = ','
+
+/**
+ * CIP 2021 class 码的形状(两位 series + 点 + 四位,如 '52.0203';2026-10-05 ?major= 改收清单时立,逐个验形,不合形的丢掉)。
+ * 与 lib/guest 的 MAJOR_RE 同形同义,跨域不互取常量,各家一份。
+ */
+export const MAJOR_CODE_RE = /^\d{2}\.\d{4}$/
+
+/**
+ * ?major= 最多收几个专业码(2026-10-05 访客第 2 题改多选,至多 3 个;多出来的丢掉)。
+ * 与 components/majors、lib/guest 的同名上限同数同义,跨域各家一份。
+ */
+export const MAJOR_PICK_MAX = 3
+
+/**
+ * /api/quiz 专业分支的条数参数名(?n=24)。
+ */
+export const P_N = 'n'
+
+/**
+ * 专业码长度上限(CIP class 码 '52.0203' 七个字符,留点余量)。
+ * 2026-10-05 访客第 2 题改多选:?major= 收逗号连的至多 3 个码,上限改按整串算 —— 3 × 7 + 2 个逗号 = 23,留余量到 64
+ * (截断只防乱砸;码形与个数由 majorCodesOf 判)。
+ */
+export const MAJOR_LEN_MAX = 64
+
+/**
+ * 专业分支一次最多取几条(jobs 的 loadMajorNocs 另有 80 的硬夹紧;这里先收到 60,与大类清单同量)。
+ */
+export const MAJOR_N_MAX = 60
+
+/**
+ * 专业分支缓存键数上限(2,119 个专业 × 常用条数;满了整清)。
+ */
+export const MAJOR_CACHE_MAX = 400
+
+/**
+ * 专业分支缓存键的分隔符(码 | 条数)。
+ */
+export const MAJOR_KEY_SEP = '|'
 
 /**
  * 搜索词长度上限(职业名没这么长,超出 = 乱砸)。

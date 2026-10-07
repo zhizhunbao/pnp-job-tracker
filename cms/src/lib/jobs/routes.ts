@@ -14,7 +14,7 @@ import { headers } from 'next/headers'
 import { getDb } from '../db/server'
 import {
   BAD_GATEWAY, BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, MIME_TEXT, NO_CONTENT, NOT_FOUND, TOO_MANY,
-  UNAVAILABLE, FORBIDDEN,
+  UNAVAILABLE, FORBIDDEN, UNAUTHORIZED,
 } from '../http'
 import {
   E_BAD_REQUEST, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, friendLlmReady, TRANS_KEY_SEP, TRANS_LANGS,
@@ -23,20 +23,20 @@ import {
 import { checkLimit, getUser, ipOf, isPro, isAdmin,
 } from '../quota/server'
 import {
-  AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, COMPANY_SLUG_RE,
+  AH_DAILY_DEFAULT, AH_IP_DAILY, AH_IP_LIMIT_PREFIX, AH_LIMIT_PREFIX, COMPANY_SLUG_RE,
   AIP_KEY_MAX_LEN, AIP_OFFSET_MAX, DIMS_CACHE_CONTROL, E_AIP_PARAMS, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT,
   JD_LIMIT_PREFIX, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE, POOL_KEY_RE, P_DIR,
-  P_GROUP, P_ID, P_KEY, P_NOC, P_OFFSET, P_PAGE, P_PROV, P_SORT, P_URL, PROV_CODE_RE, RADIX_DEC, REL_GROUP_CO, REL_GROUP_OCC, REL_OCC_OFFSET_MAX, SORT_NONE, URL_CUT_RE, NL,
+  P_GROUP, P_ID, P_KEY, P_NOC, P_OFFSET, P_PAGE, P_PROV, P_SORT, P_URL, PROV_CODE_RE, RADIX_DEC, REL_GROUP_CO, REL_GROUP_OCC, REL_OCC_OFFSET_MAX, SORT_NONE, NL,
   TITLE_IP_DAILY, TITLE_LIMIT_PREFIX, TITLE_MAX_LEN, E_SIMILAR_PARAMS, SIMILAR_OFFSET_MAX,
 } from './constants'
 import {
   loadSimilarEmployersPage,
-  emptySimilar, loadApplyEmail, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug,
+  emptySimilar, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug,
   loadAipEmployers, loadAipEmployersRest, loadJobsPage, loadOccCompetition, loadQcChannels, loadSimilarEmployers, generateJdFormatted, getPnpOps, getPnpReqs, getPnpStepOps, getPnpSteps, getSsrDims,
   hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadJdFormatted, loadJdState, loadJobById,
   loadJobMeta, loadMatchDims, loadRelatedAnchor, loadRelatedJobs, loadRelatedPage, normalizeProfile, translateTitles,
   emptyTexts, toJobId, toTitleReq, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
-  saveTitleTrans, resetJdTrans, translateJdFormatted, translateTitleInContext, emptyTitle, isAmbiguousTitle,
+  saveTitleTrans, resetJdTrans, translateJdFormatted, translateTitleInContext, emptyTitle, isAmbiguousTitle, scrubPii,
 } from './functions'
 import { CACHE } from './variables'
 import type {
@@ -365,17 +365,29 @@ export async function jobsCompetitionRoute(req: Request): Promise<Response> {
  * 仍不要求登录(投递栏开页就来问,决定出邮箱钮还是外跳钮);批 2 改成服务端代发后,邮箱不再下发前端,这里再收紧。
  * 2026-09-27 Frank「CareerBeacon 渠道的职位 全是前往投递」:库里存好的邮箱对所有来源都问(带 &id= 按岗位号取,不按链接,
  * 防共用门户链接串岗);只有 Job Bank 职位页存的没有,才走现抓。上面「其他来源不进这里」作废;限额照旧先判。
+ * 2026-10-04 改判(Frank「照这样改」):邮箱只给登录用户 —— 未登录 401,前端改成登录用户点投递时才来问;
+ * 限额从每 IP 改成每个登录用户(键 = 前缀 + 用户号,默认 AH_DAILY_DEFAULT,env APPLYHOW_DAILY 可覆盖)。读库优先、
+ * Job Bank 现抓照旧。上面「仍不要求登录」作废。
+ * 同日 Frank「现查那条直接删掉吧。之后我线下用 opus 补」:Job Bank 现抓与正负两级缓存撤,只读库(没邮箱的岗本来就
+ * 不上线,见 mart「全」第七格);上面「没有再现抓」「现抓照旧」作废。
+ * 2026-10-04 收口审查:每 IP 那一位补回来,与每用户那一位同一次 checkLimit 判(任一位满就挡)—— 注册不设门槛,
+ * 只按用户计的话同一 IP 轮换新号就能绕开;IP 上限 AH_IP_DAILY 放宽到每用户的 5 倍(直播观众共用运营商出口)。
+ * 上面「限额从每 IP 改成每个登录用户」改读作「每用户 + 每 IP 两位都判」。
  *
  * @param req 请求(?url=职位页链接 &id=岗位号)。
- * @returns { email }(空串 = 无/失败);超限 429。
+ * @returns { email }(空串 = 无/失败);未登录 401;超限 429。
  */
 export async function jobsApplyhowRoute(req: Request): Promise<Response> {
+  const user = await getUser(req.headers)
+  if (user == null) {
+    return Response.json({ email: MAIL_NONE }, { status: UNAUTHORIZED })
+  }
   let ahDaily = AH_DAILY_DEFAULT
   const ahEnv = Number(process.env.APPLYHOW_DAILY)
   if (Number.isFinite(ahEnv) && ahEnv > 0) {
     ahDaily = ahEnv
   }
-  if (checkLimit([[AH_LIMIT_PREFIX + ipOf(req), ahDaily]]) === false) {
+  if (checkLimit([[AH_LIMIT_PREFIX + String(user.id), ahDaily], [AH_IP_LIMIT_PREFIX + ipOf(req), AH_IP_DAILY]]) === false) {
     return Response.json({ email: MAIL_NONE }, { status: TOO_MANY })
   }
   let raw = PARAM_NONE
@@ -389,38 +401,7 @@ export async function jobsApplyhowRoute(req: Request): Promise<Response> {
     return Response.json({ email: MAIL_NONE })
   }
   const stored = await loadStoredApplyEmail({ db: await getDb(), url: raw, id: id })
-  if (stored !== MAIL_NONE) {
-    return Response.json({ email: stored })
-  }
-  if (isJb === false) {
-    return Response.json({ email: MAIL_NONE })
-  }
-  const keyHead = raw.split(URL_CUT_RE)[0]
-  let key = PARAM_NONE
-  if (keyHead != null) {
-    key = keyHead
-  }
-  const hit = CACHE.applyMail.get(key)
-  if (hit != null) {
-    return Response.json({ email: hit })
-  }
-  const neg = CACHE.applyFail.get(key)
-  if (neg != null && Date.now() - neg < APPLY_NEG_TTL_MS) {
-    return Response.json({ email: MAIL_NONE })
-  }
-  const email = await loadApplyEmail(key)
-  if (email == null) {
-    CACHE.applyFail.set(key, Date.now())
-    if (CACHE.applyFail.size > APPLY_FAIL_MAX) {
-      CACHE.applyFail.clear()
-    }
-    return Response.json({ email: MAIL_NONE })
-  }
-  CACHE.applyMail.set(key, email)
-  if (CACHE.applyMail.size > APPLY_CACHE_MAX) {
-    CACHE.applyMail.clear()
-  }
-  return Response.json({ email })
+  return Response.json({ email: stored })
 }
 
 /**
@@ -436,6 +417,9 @@ export async function jobsApplyhowRoute(req: Request): Promise<Response> {
  *
  * 2026-09-16 Frank「点开的时候，如果有整理版，直接显示整理版，不要有跳跃」：body 带 storedOnly 只查库，
  * 没存回 404 不生成（前端先铺原帖再另起一次不带 storedOnly 的生成）。
+ *
+ * 2026-10-04 收口审查:库里那份整理版原样回(不要登录、不限额),[APPLY] 节里雇主的邮箱 / 电话按岗位号挨个就能拉走 ——
+ * 命中库那一路出口补 scrubPii(ETL 整理队列写库时没脱敏;现生成那一路 generateJdFormatted 存前已脱敏)。
  *
  * @param req 请求（body 是 { url, id, storedOnly? }；2026-09-20 起按岗位号找行，见 SQL.JD_TRANS_BY_ID）。
  * @returns 整理版纯文本；掉线 204、缺参 400、只查库没存 404。
@@ -469,7 +453,7 @@ export async function jobsJdformatRoute(req: Request): Promise<Response> {
     return new Response(null, { status: NO_CONTENT })
   }
   if (state.formatted != null) {
-    return new Response(state.formatted, { headers: { [HDR_CONTENT_TYPE]: MIME_TEXT } })
+    return new Response(scrubPii(state.formatted), { headers: { [HDR_CONTENT_TYPE]: MIME_TEXT } })
   }
   if (storedOnly) {
     return new Response(null, { status: NOT_FOUND })
@@ -516,6 +500,8 @@ export async function jobsJdformatRoute(req: Request): Promise<Response> {
  * @returns { ok, text, cached };状态码同 co-translate,只查库没存 404。
  * 2026-09-22 Frank「不翻译」(dev 没配翻译网关,库里已有的译文也被 translateReady 挡成 503):
  * 网关闸挪到读库之后 —— 存好的译文不需要网关,只有真要现翻才问网关在不在。
+ * 2026-10-04 收口审查:库里的整理版没脱敏(ETL 整理队列写库时没过),译文是照它翻的,[APPLY] 节的雇主邮箱 / 电话跟着进了译文 ——
+ * 库里存的译文出口(进进程缓存前)补 scrubPii,现翻喂给模型的整理版先脱敏(新落库的译文本身就干净)。
  */
 export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
   let id: MaybeJobId = null
@@ -542,7 +528,7 @@ export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
   const db = await getDb()
   const stored = await loadJdTrans({ db: db, id: id })
   if (stored != null) {
-    const cell = jdTransCellOf({ fact: stored, lang: lang })
+    const cell = scrubPii(jdTransCellOf({ fact: stored, lang: lang }))
     if (cell !== PARAM_NONE) {
       CACHE.jdTransBy.set(ck, cell)
       return Response.json({ ok: true, text: cell, cached: true })
@@ -565,7 +551,7 @@ export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
   let mine = false
   if (task == null) {
     mine = true
-    task = translateJdFormatted({ db: db, id: id, lang: lang, formatted: fmt, key: ck })
+    task = translateJdFormatted({ db: db, id: id, lang: lang, formatted: scrubPii(fmt), key: ck })
     CACHE.jdTransInflight.set(ck, task)
   }
   try {

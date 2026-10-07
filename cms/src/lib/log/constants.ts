@@ -729,6 +729,29 @@ export const JOBS_LOG = {
    */
   jdWriteFailed: 'jd cache write failed, serving text anyway: ',
 
+  /**
+   * 职位板收藏落库或拉收藏清单挂了(2026-10-03 付费闭环批 A1,组件桶 jobs:访客向导注册后补收那一岗、
+   * Google 回跳后续收也走这里;页面照常往下走),后面接错误。
+   */
+  savedFailed: 'saved jobs request failed: ',
+
+  /**
+   * 收藏意图(Google 回跳补收那一岗)读写 / 撤抛了(本地存储被禁或原文坏了):那次收藏补不上,后面接错误。
+   */
+  saveIntent: 'save intent storage failed: ',
+
+  /**
+   * 投递邮箱懒查挂了(2026-10-03 付费闭环批 B1 收口,组件桶 jobs:非 2xx 含每 IP 日限 429、网络断、回包解不出;
+   * 外链投递撤了以后这一挂 = 在架岗投递栏不出),后面接状态码或错误。
+   * 2026-10-04 改判:邮箱改成登录用户点投递时才查,查挂了投递栏照旧在、这一下不投(未登录 401 也落这里)。
+   */
+  applyHowFailed: 'apply email lookup failed, click ignored: ',
+
+  /**
+   * 登录用户点投递、邮箱查回来是空的(2026-10-04 改判,组件桶 jobs):不弹邮件投递框、不外跳,后面接岗位号。
+   */
+  applyHowNone: 'apply email lookup found none, click ignored: id=',
+
 } as const
 
 /**
@@ -791,6 +814,11 @@ export const AUTH_LOG = {
    * 登录链任一步失败(统一 302 回首页带 oauth=fail,这里留失败原因)。
    */
   failed: 'fail: ',
+
+  /**
+   * 登录成功(2026-10-05 Frank「加 auth 吧」:成功也留一行,每次登录成败在 dev 窗口里都看得见;只记新号 / 老号,不记邮箱)。
+   */
+  ok: 'ok: ',
 } as const
 
 /**
@@ -924,4 +952,75 @@ export const TRACK_LOG = {
    * 网址开关写 / 删自排除键抛了:这台设备的开关没拨成,后面接错误。
    */
   switchFailed: 'notrack switch failed: ',
+} as const
+
+/**
+ * 访客域(lib/guest,2026-10-03 付费闭环批 A1)的日志字面量。
+ * 浏览记录与向导草稿都存在浏览器本地,读写抛了(无痕模式 / 站点数据被禁 / 配额满)照常往下走,
+ * 但要在浏览器控制台留一行 —— 不留痕就分不清「没人点到第 3 个」与「记录根本没写进去」。
+ */
+export const GUEST_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'guest',
+
+  /**
+   * 读浏览记录抛了:这次按零条算,后面接错误。
+   */
+  seenRead: 'seen jobs read failed, counting as none: ',
+
+  /**
+   * 写浏览记录抛了:这一条没记上,后面接错误。
+   */
+  seenWrite: 'seen jobs write failed: ',
+
+  /**
+   * 读向导草稿抛了:这次按没有草稿开,后面接错误。
+   */
+  draftRead: 'gate draft read failed, starting blank: ',
+
+  /**
+   * 写 / 清向导草稿抛了:草稿没存上(或没清掉),后面接错误。
+   */
+  draftWrite: 'gate draft write failed: ',
+
+  /**
+   * 注册后把草稿并进服务端答案没成:草稿与交接戳都放回去,这个标签页 10 分钟内再进站再并,后面接这一份草稿的由头。
+   */
+  draftSync: 'gate draft not merged, kept for retry: intent=',
+
+  /**
+   * 读 / 写 / 撤交接戳抛了(会话存储被禁):Google 回跳后这一份草稿交不上去,后面接错误。
+   */
+  handoff: 'gate handoff stamp failed: ',
+
+  /**
+   * 读 / 写「本页弹过进站向导」抛了(会话存储被禁;2026-10-04 进站即弹):这一页照弹,后面接错误。
+   */
+  entry: 'entry gate mark failed, showing anyway: ',
+
+  /**
+   * 访客向导专业题取专业没成(2026-10-04 A2,组件桶 gate:热门清单、搜索、按码回显选中的那个、注册后按码取大类回职位板):
+   * 热门 / 搜索按空清单出、回显与大类按没有算,后面接错误。
+   * (同日 A2 撤原 nocName 一条:职业题改用 quiz 桶选职业控件,它自己补名字,gate 的预选职业查名随之删。)
+   */
+  majors: 'gate majors fetch failed, showing none: ',
+} as const
+
+/**
+ * 专业域(lib/majors,2026-10-05 专业题照掌上高考做)的日志字面量。
+ * places 格是数据层写的选择器挂点,不成样子时整格落空(这个专业不进任何大类),但必须留痕 ——
+ * 「这个专业本来就不进选择器」和「数据层写坏了」在日志里要分得开。
+ */
+export const MAJORS_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'majors',
+
+  /**
+   * 一行专业的 places 格不成样子(不是数组 / 有一项缺格错型),整格落空不进选择器,后面接 class 码。
+   */
+  placesMalformed: 'places 格不成样子,整格落空:',
 } as const

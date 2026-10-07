@@ -26,7 +26,7 @@ import {
   LANG_EN, PICK_NONE, TEXT_NONE, PROV_QC, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD,
 } from './constants'
 import {
-  channelListOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockCardOf,
+  applyHashJump, channelListOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockCardOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
   makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, provStreamItemsOf, qcChannelsOf,
   aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, aipSectionOf, channelSplitOf,
@@ -249,6 +249,7 @@ export function usePnpModal(x: PnpModalHookIn): PnpModalPanel {
 /**
  * 资讯页「通道与门槛」整机(2026-09-30 通道与门槛批 2):整表懒取同省提名弹框(usePnpData;取到一次进 CACHE,两处谁先开谁取,
  * 另一处当场就有),一省的门槛卡随省与界面语言现算(一省十张以内,不记忆)。
+ * 2026-10-04 门槛卡 ↔ 步骤卡互跳:整表到了、本省的卡渲出来之后,地址带 #通道编号 就滚到那张(applyHashJump;「通道」「申请步骤」两页同用这一台)。
  *
  * @param x 界面语言与省码。
  * @returns 取词函数、能不能渲、失败没与卡片。
@@ -256,22 +257,23 @@ export function usePnpModal(x: PnpModalHookIn): PnpModalPanel {
 export function usePnpProvStreams(x: PnpProvStreamsHookIn): PnpProvStreamsPanel {
   const t = makeT(x.lang)
   const data = usePnpData({ enabled: true })
-  return {
+  const items = provStreamItemsOf({
     t,
-    ready: data.ready,
-    failed: data.failed,
-    items: provStreamItemsOf({
-      t,
-      lang: x.lang,
-      province: x.province,
-      pathways: data.pathways,
-      reqs: data.reqs,
-      draws: data.draws,
-      ops: data.ops,
-      sets: data.steps,
-      stepOps: data.stepOps,
-    }),
-  }
+    lang: x.lang,
+    province: x.province,
+    pathways: data.pathways,
+    reqs: data.reqs,
+    draws: data.draws,
+    ops: data.ops,
+    sets: data.steps,
+    stepOps: data.stepOps,
+  })
+
+  useEffect(function jumpToHash() {
+    applyHashJump({ ready: data.ready, count: items.length })
+  }, [data.ready, items.length])
+
+  return { t, ready: data.ready, failed: data.failed, items }
 }
 
 /**

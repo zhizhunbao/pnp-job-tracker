@@ -81,14 +81,19 @@ export const URL_NEWS_HEAD = '/news/'
 export const URL_NEWS = '/news'
 
 /**
- * 时间线页的地址(二级导航的另一格)。
+ * 时间线页的地址(二级导航的另一格;2026-10-03 页签改叫「抽选」)。
  */
 export const URL_TIMELINE = '/timeline'
 
 /**
- * 二级 tab 条里「通道与门槛」的去处(2026-09-30 通道与门槛批 2:资讯第三个页签)。
+ * 二级 tab 条里「通道与门槛」的去处(2026-09-30 通道与门槛批 2:资讯第三个页签;2026-10-03 页签改叫「通道」)。
  */
 export const URL_STREAMS = '/streams'
+
+/**
+ * 二级 tab 条里「申请步骤」的去处(2026-10-03 资讯页签四分:申请步骤从「通道」页拆出,资讯第四个页签)。
+ */
+export const URL_STEPS = '/steps'
 
 /**
  * 未登录时评论区那条引导的去处(首页带 `login=1` 自动弹登录框 ——

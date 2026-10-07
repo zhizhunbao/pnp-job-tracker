@@ -26,7 +26,7 @@ import css from './pnp.module.css'
 export function PnpQuotaCard({ spec }: PnpQuotaCardIn) {
   return (
     <div className={css.card}>
-      <DrawsHead title={spec.title} source={spec.source} />
+      <DrawsHead title={spec.title} source={spec.source} jump={null} />
       <QuotaGrid corner={TEXT_NONE} heads={spec.heads} rows={spec.rows} asOf={spec.asOfLines} />
     </div>
   )

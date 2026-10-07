@@ -12,6 +12,10 @@
  * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:
  * 两个数据区各挂一枚 —— 节奏格在它的标题下单起一行,事件列表挂进筛选药丸行的右端。
  * 2026-09-30 通道与门槛批 2:二级导航加第三个页签「通道与门槛」(/streams)。
+ * 2026-10-03 资讯页签四分(Frank「这个是不是拆成两个 tab」「申请步骤应该是另一个选项卡吧」→ 提案「可以,做吧」):
+ * 二级导航改四个短名页签 —— 最新公告 | 抽选(本页)| 通道 | 申请步骤(/steps);政策公告撤出本页(与「最新公告」同一张表),
+ * 类型筛随之撤,页头标题改「抽选时间线」。
+ * 2026-10-04 Frank「这个只需要一个 更新时间」:两枚更新时间是同一个时刻,只留节奏格标题下那一枚,筛选药丸行端那枚撤。
  *
  * @author Frank
  * @time 2026-08-28 12:43:06
@@ -22,7 +26,9 @@ import { Shell } from '@/components/shell'
 import { SectionTabs } from '@/components/tabs'
 import { Updated } from '@/components/time'
 import { Title } from '@/components/title'
-import { BANNER_MODULE, EVENTS_ANCHOR_ID, SHELL_TOP, TABS_TONE, URL_NEWS, URL_STREAMS, URL_TIMELINE } from './constants'
+import {
+  BANNER_MODULE, EVENTS_ANCHOR_ID, SHELL_TOP, TABS_TONE, URL_NEWS, URL_STEPS, URL_STREAMS, URL_TIMELINE,
+} from './constants'
 import { CadenceGrid } from './cadencegrid'
 import { EventList } from './eventlist'
 import { FilterChips } from './filterchips'
@@ -39,7 +45,7 @@ import css from './timeline.module.css'
  */
 export function Timeline({ events, cadence, eeCadence, updatedAt }: TimelineIn) {
   const p = useTimeline()
-  const shown = shownOf({ events, prov: p.prov, kind: p.kind, stream: p.stream })
+  const shown = shownOf({ events, prov: p.prov, stream: p.stream })
   return (
     <Shell top={SHELL_TOP}>
       <Banner module={BANNER_MODULE}
@@ -50,8 +56,9 @@ export function Timeline({ events, cadence, eeCadence, updatedAt }: TimelineIn) 
       <SectionTabs tone={TABS_TONE}
         tabs={[
           { href: URL_NEWS, label: p.t('tl.tabNews') },
-          { href: URL_TIMELINE, label: p.t('tl.title'), active: true },
+          { href: URL_TIMELINE, label: p.t('tl.tabDraws'), active: true },
           { href: URL_STREAMS, label: p.t('tl.tabStreams') },
+          { href: URL_STEPS, label: p.t('tl.tabSteps') },
         ]} />
       <Title>{p.t('tl.cadence')}</Title>
       <Updated iso={updatedAt} t={p.t} />
@@ -59,14 +66,9 @@ export function Timeline({ events, cadence, eeCadence, updatedAt }: TimelineIn) 
       <div id={EVENTS_ANCHOR_ID} className={css.anchor}><Title>{p.t('tl.events')}</Title></div>
       <FilterChips t={p.t}
         provs={provsOf({ events })}
-        updatedAt={updatedAt}
         prov={p.prov}
-        kind={p.kind}
         stream={p.stream}
         provPickOf={p.provPickOf}
-        onKindAll={p.onKindAll}
-        onKindDraw={p.onKindDraw}
-        onKindPolicy={p.onKindPolicy}
         onStreamClear={p.onStreamClear} />
       <EventList t={p.t} events={shown} />
     </Shell>

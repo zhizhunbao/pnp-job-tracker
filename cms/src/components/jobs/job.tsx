@@ -60,9 +60,9 @@ import css from './jobs.module.css'
  * @param props 本岗、分层态、页面维度、相似职位与数据更新时刻。
  * @returns 正文轨里的窄读列。
  */
-export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted, company, imm }: JobIn) {
-  const d = useJobDetail({ job, plan, dims, related, updatedAt, jdText, jdFormatted, company, imm })
-  const body = useJobBody({ job, lang: d.lang, plan, inModal: false, jdText, jdFormatted })
+export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted, jdTrans, company, imm }: JobIn) {
+  const d = useJobDetail({ job, plan, dims, related, updatedAt, jdText, jdFormatted, jdTrans, company, imm })
+  const body = useJobBody({ job, lang: d.lang, plan, inModal: false, jdText, jdFormatted, jdTrans })
   const peek = useJobPeek()
   return (
     <Shell top={DETAIL_SHELL_TOP}>

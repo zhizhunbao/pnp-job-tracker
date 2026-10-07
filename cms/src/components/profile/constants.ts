@@ -3,6 +3,9 @@
  * 2026-08-27 Frank 拍板自 account 域拆出;POPULAR_NOCS 等表另有 jobs/quiz/plan/chat
  * 四个域经桶在借。跨域不互相取常量 —— 与 account 同名同义的几枚(TEXT_NONE 等)
  * 是本域自己的一份,各家各管(notice 域先例)。
+ * 2026-10-04 访客四题改版:访客向导那一段(2026-10-03 付费闭环批 A1 接在尾巴上的步序、题面、目标 / 专业 / 所在省点选表、
+ * 埋点名、查名接口)整段迁去 gate 桶(注册前的访客门自成一域;本域只留登录用户的建档向导)。
+ * 2026-10-05 × 摘除钮的字符 DEL_MARK 迁去 tag 桶(带删钮的标签收进 Tag 的 del 格,注释原样带过去)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -46,12 +49,6 @@ export const URL_USER_HEAD = '/api/users/'
  * ghost 底最素,视觉全由本域的加倍类定形。与 account 域同名同义,各家一份。
  */
 export const PLAIN_BTN_KIND = 'ghost'
-
-/**
- * 摘除已选职业 × 钮的字符(图标是内容不是样式,归常量不进 css)。
- * 与 account 域同名同义,各家一份。
- */
-export const DEL_MARK = '×'
 
 /**
  * 分型 chip 表(E11-04):slug 单一来源在 lib/jobs/match.ts,这里只列 UI 顺序
@@ -393,5 +390,7 @@ export const OB_MODAL_SIZE = 'md'
 
 /**
  * 档案职业标签走通用 tag 桶的 region 档(2026-09-13 胶囊统一第二批;本域 .tagPill 退役,删钮 .tagDel 照留)。
+ * 2026-10-04 访客四题改版收口:改走 tag 桶新加的 pick 已选档(浅主色,照效果图;region 绿的语义是省 / 地区),
+ * 首访向导与访客门的职业题同一枚标签、同一个颜色。
  */
-export const TAG_V_REGION = 'region'
+export const TAG_V_PICK = 'pick'

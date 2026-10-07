@@ -39,6 +39,7 @@ import {
   COLS_EMPLOYER_POOL, COLS_EMPLOYER_POOL_BUCKETS, COLS_EXPERIENCE_LEVELS, COLS_FIELD_SOURCES, COLS_JOBS, COLS_JOBS_COALESCE, COLS_JOBS_FIXED, COLS_NEWS,
   COLS_MACRO_SERIES, COLS_NEWS_CACHE, COLS_NOC_CATEGORIES, COLS_NOC_DESCRIPTIONS, COLS_NOC_OPENINGS, COLS_PILOT_COMMUNITIES,
   COLS_PILOT_OCCUPATIONS, COLS_PILOT_QUOTA, COLS_PNP_DRAWS, COLS_PTE_AUDIO, COLS_PTE_DICT, COLS_PTE_QUESTIONS, COLS_PTE_SENTENCES, COLS_PTE_TYPES, COLS_PNP_OCCUPATIONS, COLS_PNP_OPS_STATS, COLS_PATHWAYS, COLS_QC_NOC_STREAMS,
+  COLS_CIP_PROGRAMS, TBL_CIP_PROGRAMS,
   COLS_PNP_REQUIREMENTS, COLS_PNP_SCORE_FACTORS, COLS_PROVINCES, COLS_RANKINGS, COLS_ROW_TS, COLS_SOURCES,
   COLS_STATS, COLS_STATS_CITY, COLS_STATS_DAILY, COLS_STATS_OCCUPATION, COUNT_NO_TABLE, COUNT_NO_UPLOAD,
   CITY_NEW7_DAYS, COUNT_CITY_REFRESH, COUNT_PAST_DEADLINE, COUNT_POOL_REFRESH, COUNT_UNSEEN_ATS, COUNT_UNSEEN_BOARD,
@@ -603,6 +604,22 @@ function toQcNocStream(r: MartRow): MartRow {
 }
 
 /**
+ * cip_programs 行(2026-10-04 访客四题第 2 题;broads 整格序列化成 JSON 串进 jsonb 列,没译成的语言格保 NULL)。
+ * 2026-10-05 加 title_en_short(英文显示名,原样进库,空串 = 照用 title_en)与 places(同 broads 整格序列化进 jsonb;
+ * 不进选择器的专业是 [],照样写 '[]';mart 里没这格的旧文件写 NULL)。
+ *
+ * @param r mart 行。
+ * @returns 库行。
+ */
+function toCipProgram(r: MartRow): MartRow {
+  return {
+    code: cellOf(r.code), title_en: cellOf(r.titleEn), title_zh: cellOf(r.titleZh), title_ko: cellOf(r.titleKo),
+    series: cellOf(r.series), grouping: cellOf(r.grouping), broads: jsonTextOf(r.broads), popular: cellOf(r.popular),
+    title_en_short: cellOf(r.titleEnShort), places: jsonTextOf(r.places),
+  }
+}
+
+/**
  * ee_categories 行。
  *
  * @param r mart 行。
@@ -634,6 +651,7 @@ function toEePointsGrid(r: MartRow): MartRow {
 
 /**
  * noc_descriptions 行。
+ * 2026-10-05 加 examples(官方示例职称,原样进库;旧 mart 文件没有这格 = null)。
  *
  * @param r mart 行。
  * @returns 库行。
@@ -642,7 +660,7 @@ function toNocDescription(r: MartRow): MartRow {
   return {
     noc: cellOf(r.noc), title: cellOf(r.title), title_zh: cellOf(r.titleZh), title_zh_short: cellOf(r.titleZhShort),
     title_ko: cellOf(r.titleKo), title_ko_short: cellOf(r.titleKoShort), title_en_short: cellOf(r.titleEnShort),
-    duties: cellOf(r.duties), requirements: cellOf(r.requirements), fetched: cellOf(r.fetched),
+    duties: cellOf(r.duties), requirements: cellOf(r.requirements), examples: cellOf(r.examples), fetched: cellOf(r.fetched),
   }
 }
 
@@ -980,6 +998,7 @@ export function dimSpecs(): DimSpecs {
     { table: TBL_PNP_OPS_STATS, cols: COLS_PNP_OPS_STATS, toRow: toPnpOpsStat },
     { table: TBL_PATHWAYS, cols: COLS_PATHWAYS, toRow: toPathway },
     { table: TBL_QC_NOC_STREAMS, cols: COLS_QC_NOC_STREAMS, toRow: toQcNocStream },
+    { table: TBL_CIP_PROGRAMS, cols: COLS_CIP_PROGRAMS, toRow: toCipProgram },
     { table: TBL_EE_CATEGORIES, cols: COLS_EE_CATEGORIES, toRow: toEeCategory },
     { table: TBL_EE_POINTS_GRID, cols: COLS_EE_POINTS_GRID, toRow: toEePointsGrid },
     { table: TBL_NOC_DESCRIPTIONS, cols: COLS_NOC_DESCRIPTIONS, toRow: toNocDescription },

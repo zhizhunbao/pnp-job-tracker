@@ -564,25 +564,23 @@ function comparisonsOf(input: ComparisonsIn): PlanComparisons {
  * 2026-09-26 lead 定(Frank 批的「补完整」范围):节奏只收日期齐到日(`YYYY-MM-DD`)的抽选 —— NS 按月公布选取人数、
  * 日期只到月(`2026-07`),拿它算「距今 N 天 / 平均间隔」会被当成当月 1 号,多算最多一个月、还误上「拖长了」;
  * 这种行照旧进事件流(日期原样到月),只是不进节奏统计。
+ * 2026-10-03 资讯页签四分(Frank「这个是不是拆成两个 tab」→ 提案「可以,做吧」):时间线页签改叫「抽选」,
+ * 政策公告那一路(news 表最近 90 条)撤出事件流 —— 与「最新公告」页签读的是同一张表,政策公告只在那里看;事件流只剩抽选与省通告。
  *
  * @param db 数据库连接(池由调用方注进来)。
  * @returns 事件流、省级节奏与联邦 EE 距今。
  */
-// eslint-disable-next-line local/function-length -- 三路事件源合并与两套节奏统计共享同一批行
+// eslint-disable-next-line local/function-length -- 事件流与两套节奏统计共享同一批行
 export async function fetchTimeline(db: Db): TimelineOut {
-  const [draws, ee, news] = await Promise.all([
+  const [draws, ee] = await Promise.all([
     queryRows({ db: db, sql: SQL.PNP_DRAWS_ALL, params: [], map: passRow }),
     queryRows({ db: db, sql: SQL.EE_CATEGORIES_LATEST, params: [], map: passRow }),
-    queryRows({ db: db, sql: SQL.NEWS_RECENT, params: [], map: passRow }),
   ])
   const today = new Date().toISOString().slice(0, DATE10_LEN)
 
   const events: TlEvent[] = []
   for (const r of draws) {
     events.push(toDrawEvent(r))
-  }
-  for (const r of news) {
-    events.push(toNewsEvent(r))
   }
   events.sort(byDateDesc)
 
@@ -726,25 +724,7 @@ export function toDrawEvent(r: Row): TlEvent {
     date: day(r.draw_date), prov: prov, kind: kind,
     title: title, score: numOrNull(r.score), scale: text(r.scale),
     invitations: numOrNull(r.invitations), note: text(r.note),
-    importance: null, url: text(r.url), slug: '', unit: text(r.unit),
-  }
-}
-
-/**
- * `NEWS_RECENT` 一行 → 时间线事件(FEDERAL/CA 两种写法都归 '' 联邦)。
- *
- * @param r 原始行。
- * @returns 事件。
- */
-export function toNewsEvent(r: Row): TlEvent {
-  let region = text(r.region).toUpperCase()
-  if (region === 'FEDERAL' || region === 'CA') {
-    region = ''
-  }
-  return {
-    date: day(r.date), prov: region, kind: 'policy',
-    title: text(r.title), score: null, scale: '', invitations: null, note: '',
-    importance: numOrNull(r.importance), url: '', slug: text(r.slug), unit: '',
+    url: text(r.url), unit: text(r.unit),
   }
 }
 

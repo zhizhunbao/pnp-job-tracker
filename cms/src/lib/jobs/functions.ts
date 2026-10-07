@@ -11,7 +11,7 @@
 import { FRIEND_INPUT_MAX, friendChat, translateLinesAligned, TRANS_KEY_SEP, TRANSLATE_ROUTE_TIMEOUT_MS, translateSectioned,
   translationOk, TRANS_LANGS,
 } from '../llm'
-import { HDR_ACCEPT, HDR_CONTENT_TYPE, HDR_COOKIE, HDR_REFERER, HDR_USER_AGENT, METHOD_POST } from '../http'
+import { HDR_USER_AGENT } from '../http'
 import {
   queryRows, queryRowsOrEmpty, SQL, count, firstOf, firstOr, jsonOrNull, numOrNull, text, textOrNull, TRANS_V, vtext,
 } from '../db'
@@ -23,23 +23,23 @@ import { fill } from '../template'
 import { fmtLocal, ymd } from '../time'
 import {
   DESIGNATED_PLACE_GAP, DESIGNATED_PLACE_SEP,
-  ACCEPT_ANY, ACCEPT_HTML, ALERT_WHERE_START, AMP, AMP_ENT_RE, APPLY_SLICE_LEN, APPLY_TIMEOUT_MS, BLOCKED_SRC,
+  ACCEPT_HTML, ALERT_WHERE_START, BLOCKED_SRC,
   BLOCKED_SRC_NONE, BROAD_NOCS_MAX, CAT_LEVEL, CELL_NONE, CNT_SEP, COLON_END_RE, COL_PROVINCE, COMMA,
-  COMPANY_SLUG_COND, COMP_KEY, COOKIE_CUT, COOKIE_JOIN, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES,
+  COMPANY_SLUG_COND, COMP_KEY, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES,
   DATE_LEN, DIGIT_PICK_RE, DIMS_TTL_MS, DIR_ASC, DIR_DESC, DOLLAR, DRAW_STREAM_L10N, EE_KEY_L10N, EE_L10N, EE_SPLIT,
-  EMAIL_RE, ENT_PAIRS, FACES_REQUEST_HDR, FACES_REQUEST_VAL, FK, FORM_CONTENT_TYPE, FV, HAS_DIGIT_RE, HAS_SUFFIX,
-  HOURS_FULL, HOURS_PART, HOW_APPLY_RE, HREF_ENT_PAIRS, HTML_NONE, ISO_NONE, JB_APPLY_ANCHOR, JB_DESC_RE,
-  JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_LINK_NONE, JB_ORIGIN, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE,
+  EMAIL_RE, ENT_PAIRS, FK, FV, HAS_DIGIT_RE, HAS_SUFFIX,
+  HOURS_FULL, HOURS_PART, HREF_ENT_PAIRS, HTML_NONE, ISO_NONE, JB_APPLY_ANCHOR, JB_DESC_RE,
+  JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_LINK_NONE, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE,
   JD_BAD_HOST_172_RE, JD_BAD_HOST_RE, JD_BLOCK_BREAK_RE, JD_BUDGET_MARGIN, JD_DASH_PREFIX_RE, JD_DIGITS_RE,
   JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_GEN_TIMEOUT_MS, JD_GEN_TRIES, JD_HEAD_JUNK_RE,
   JD_HEAD_MAX_LINES, JD_HEAD_SHRINK_MAX, JD_HTML_CAP, JD_LINE_MIN, JD_EMPTY_STRIP_RE, JD_MARK_INLINE_RE,
   JD_MARK_LINE_REPL, JD_MAX_LEN, JD_MIN_LEN, JD_NEG_TTL_MS, JD_NONE, JD_NONE_LOOSE_MAX, JD_NONE_LOOSE_RE, JD_NONE_RE,
   JD_NONE_TEXT, JD_ORPHAN_LEN, JD_OUT_MAX_BASE, JD_OUT_MAX_RATIO, JD_OUT_MIN_LEN, JD_PARA_LEN, JD_PROTO_RE,
   JD_SECTION_MARKS, JD_SEO_MAX, JD_STRIP_BLOCK_RE, JD_TAG_RE, JD_TAIL_STRIP_RE, JD_UA,
-  JOB_PATH, JSF_FORM_BASE, JSF_KEY_JOBID, JSF_KEY_JSJOBID, LANG_EN, LANG_KO, LANG_KO_CODE, LD_CONTEXT, LD_COUNTRY,
+  JOB_PATH, LANG_EN, LANG_KO, LANG_KO_CODE, LD_CONTEXT, LD_COUNTRY,
   LD_CURRENCY, LD_FULL_TIME, LD_ID_NAME, LD_JOB_POSTING, LD_KEY_CONTEXT, LD_KEY_TYPE, LD_LT_ESC, LD_LT_RE, LD_MONETARY,
   LD_ORGANIZATION, LD_PART_TIME, LD_PLACE, LD_POSTAL, LD_PROPERTY_VALUE, LD_QUANTITATIVE, LD_TEMPORARY, LD_UNIT_YEAR, LEVEL_RANK,
-  LINE_SPACES_RE, LMIA_SOURCE, LV, MAIL_AT, MAIL_DOMAIN_NONE, MAIL_NONE, MAIL_RE, MAIL_SKIP_SUFFIXES, MAIL_SKIP_WORD,
+  LINE_SPACES_RE, LMIA_SOURCE, LV, MAIL_NONE,
   MAIN_LIST_COVERAGE, MARK_HEAD, MARK_TAIL, MED_SELECT, META_AT, META_BAR, META_DOT, META_IN, META_NOT_FOUND,
   META_SOME_EMPLOYER, META_SPACE, META_TAIL, NL, NOC_JOIN_SLASH, NOC_LEN, NOC_MINOR_LEN, NOC_NONE, NOC_RE,
   NOC_SEARCH_MIN, NOC_SUBMAJOR_LEN, NORM_DASH, NORM_DASH_RE, NORM_WS_RE, NO_LIST_PROVINCES, OCC_TITLE_NONE,
@@ -49,7 +49,7 @@ import {
   PHONE_RE, PII_MASK, PREV_LINE_NONE, PROGRAM_PNP, PROOF_TTL_MS, PROV_CODE, PROV_CODE_NONE, PROV_MAX_WORDS,
   APPLIES_OFFER,
   PROV_MIN_WORDS, PROV_PREFIX_TRIM_RE, PRO_SORTS, PTS, Q_MAX_TERMS, Q_SHORT_LEN, REDIRECT_FOLLOW, REQ_STREAM_L10N,
-  RK, RULE, SCORE_HIGH, SCORE_MID, SEARCH_COLS, SEEKER_ACTION_RE, SEEKER_JOBID_RE, SEO_DASH, SEO_LOC_SEP,
+  RK, RULE, SCORE_HIGH, SCORE_MID, SEARCH_COLS, SEO_DASH, SEO_LOC_SEP,
   SEO_PAREN_L, SEO_PAREN_R, SEP_KEY, SITE_ENV, SITE_FALLBACK, SITE_NAME, SITE_TAIL_RE, SORT_COLUMNS,
   SORT_NONE, SPACE, SPACES_RE, SQL_SEG_NONE, SRC_DASH, SRC_JOB_BANK, SSR_DIMS_TTL_MS, STAMP_NONE, STATUS_CLOSED_WORD,
   STREAM_L10N, STREAM_NOTE_NONE, STRIP_REPL, T45_COND_PROVS, T45_NL, TEER_GENERAL_MAX, TEER_LOW_MIN, TERM_PERMANENT,
@@ -64,8 +64,8 @@ import {
 } from './prompts'
 import { CACHE } from './variables'
 import type {
-  AlertHit, AlertHitsIn, AlertHitsOut, ApplyEmailFact, ApplyMailOut, ApplyUrlIn, StoredApplyEmailIn,
-  StoredApplyEmailOut, BigDimsIn, BigDimsOut, BroadNoc, BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell,
+  AlertHit, AlertHitsIn, AlertHitsOut, ApplyEmailFact, ApplyUrlIn, StoredApplyEmailIn,
+  StoredApplyEmailOut, BigDimsIn, BigDimsOut, BroadNoc, BroadNocsIn, BroadNocsOut, MajorNocsIn, MajorNocsOut, BuildWhereIn, CaughtError, Cell,
   CheckedAtOut, CityDim, CompanyByJobIn, CompanyByPoolKeyIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow,
   CompanyJsonIn, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DesignatedIn, DesignatedOut,
   DistrictDim, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim, EeBroad, EeDisplayIn,
@@ -1934,7 +1934,20 @@ export async function loadBroadNocs(input: BroadNocsIn): BroadNocsOut {
 }
 
 /**
+ * 按专业浏览(访客四题第 3 题,2026-10-04):专业对应的几个本站大类下,noc_openings 物化表按在架量取前 N ——
+ * 读物化表不现算(站级聚合禁每请求现算),行映射与热门职业共用 toTopNoc。
+ *
+ * @param input 连接、大类清单与取几。
+ * @returns 职业行(在架量从多到少)。
+ */
+export async function loadMajorNocs(input: MajorNocsIn): MajorNocsOut {
+  const n = Math.min(Math.max(input.limit, 1), BROAD_NOCS_MAX)
+  return queryRows({ db: input.db, sql: SQL.MAJOR_NOCS, params: [input.broads, n], map: toTopNoc })
+}
+
+/**
  * 职业搜索:按中/英职业名模糊找 NOC(noc_descriptions 维度表,≤8 条)。
+ * 2026-10-05 也搜官方示例职称(examples 一格;名字命中的排前面),上限改 ≤12 条;排序全在 SQL,这里原样透传。
  *
  * @param input 连接与检索词。
  * @returns 命中行;词太短空数组。
@@ -1960,9 +1973,11 @@ export async function searchNocByTitle(input: NocSearchIn): NocSearchOut {
  * Googlebot 抓到的仍是转圈 —— 整理版落在 jobs.jd_formatted,库里有就一并直出。
  * 2026-09-26 同一行带出收录旗 seoOk(/fe SEO):JobPosting 出不出与 sitemap 职位册同一段 SQL(SEO_JOB_OK)判,
  * TS 不再写一遍;查无此岗 false。
+ * 2026-10-04 收口审查:整理版原样直出,[APPLY] 节里雇主的邮箱 / 电话随 RSC 载荷发给匿名访客与爬虫
+ * (ETL 整理队列写库时没脱敏;页面上那一节虽不画,原文照样在载荷里)—— 整理版与原文同一个出口一样过 scrubPii。
  *
  * @param input 连接与职位号。
- * @returns 脱敏原文、整理版与收录旗;库里没有的格给空串 / null。
+ * @returns 脱敏原文、脱敏整理版与收录旗;库里没有的格给空串 / null。
  */
 export async function loadJdSsrById(input: JdByIdIn): JdSsrOut {
   const rows = await queryRows({ db: input.db, sql: SQL.JD_BY_JOB_ID, params: [input.id], map: toJdSsrRow })
@@ -1970,7 +1985,11 @@ export async function loadJdSsrById(input: JdByIdIn): JdSsrOut {
   if (first == null) {
     return { text: JD_NONE, formatted: null, seoOk: false }
   }
-  return { text: scrubPii(first.text), formatted: first.formatted, seoOk: first.seoOk }
+  let formatted: MaybeStr = null
+  if (first.formatted != null) {
+    formatted = scrubPii(first.formatted)
+  }
+  return { text: scrubPii(first.text), formatted, seoOk: first.seoOk }
 }
 
 /**
@@ -2702,115 +2721,6 @@ export async function loadStoredApplyEmail(x: StoredApplyEmailIn): StoredApplyEm
 export function toApplyEmailFact(r: Row): ApplyEmailFact {
   return { email: text(r.apply_email) }
 }
-/**
- * Job Bank 投递邮箱现抓(E9-04 B11):初始 HTML 和 ETL 存的 description 里都没有 ——
- * 邮箱藏在「Show how to apply」的 JSF 局部提交后面。两跳:GET 取 seekeractivity 表单 →
- * 复刻 JSF partial POST(render=@all)→ 从 How to apply 块附近抽邮箱。
- * 白名单与限额在路由;本函数只管抓。
- *
- * @param postingUrl 规范化后的 Job Bank 职位页 url。
- * @returns 邮箱;空串 = 确认无(页面在但没表单/没邮箱);null = 抓取失败(负缓存到期重试)。
- */
-export async function loadApplyEmail(postingUrl: string): ApplyMailOut {
-  const first = await fetch(postingUrl, {
-    headers: { [HDR_USER_AGENT]: JD_UA, [HDR_ACCEPT]: ACCEPT_HTML },
-    redirect: REDIRECT_FOLLOW, signal: AbortSignal.timeout(APPLY_TIMEOUT_MS),
-  }).catch(nullFetch)
-  if (first == null || first.ok === false) {
-    return null
-  }
-  const cookieParts: string[] = []
-  for (const c of first.headers.getSetCookie()) {
-    const head = c.split(COOKIE_CUT)[0]
-    if (head != null) {
-      cookieParts.push(head)
-    }
-  }
-  const cookies = cookieParts.join(COOKIE_JOIN)
-  const html = await first.text()
-  const actionM = SEEKER_ACTION_RE.exec(html)
-  const jidM = SEEKER_JOBID_RE.exec(html)
-  if (actionM == null || jidM == null) {
-    return MAIL_NONE
-  }
-  const jidG = jidM.groups
-  const actionG = actionM.groups
-  if (jidG == null || actionG == null) {
-    return MAIL_NONE
-  }
-  const jid = jidG.jid
-  const action = actionG.action
-  if (jid == null || action == null) {
-    return MAIL_NONE
-  }
-  const form = new URLSearchParams(JSF_FORM_BASE)
-  form.set(JSF_KEY_JSJOBID, jid)
-  form.set(JSF_KEY_JOBID, jid)
-  const h: Record<string, string> = {
-    [HDR_USER_AGENT]: JD_UA, [HDR_ACCEPT]: ACCEPT_ANY, [HDR_REFERER]: postingUrl,
-    [HDR_CONTENT_TYPE]: FORM_CONTENT_TYPE, [FACES_REQUEST_HDR]: FACES_REQUEST_VAL,
-  }
-  if (cookies !== '') {
-    h[HDR_COOKIE] = cookies
-  }
-  const second = await fetch(JB_ORIGIN + action.replace(AMP_ENT_RE, AMP), {
-    method: METHOD_POST, headers: h, body: form.toString(), signal: AbortSignal.timeout(APPLY_TIMEOUT_MS),
-  }).catch(nullFetch)
-  if (second == null || second.ok === false) {
-    return null
-  }
-  const out = await second.text()
-  const i = out.search(HOW_APPLY_RE)
-  if (i >= 0) {
-    return pickMail(out.slice(i, i + APPLY_SLICE_LEN))
-  }
-  return pickMail(out)
-}
-
-/**
- * 抓取单跳失败的兜底(catch 传具名函数;失败语义交回 null 由缓存层负缓存)。
- *
- * @param _e 捕到的错(超时/网络层)。
- * @returns null。
- */
-function nullFetch(_e: Error): null {
-  return null
-}
-
-/**
- * 文本里挑第一枚**雇主侧**邮箱:Job Bank 自家与政府域的地址不算(那是客服不是投递)。
- *
- * @param s 待扫文本。
- * @returns 邮箱;没有是空串。
- */
-function pickMail(s: string): string {
-  const matches = s.match(MAIL_RE)
-  if (matches == null) {
-    return MAIL_NONE
-  }
-  for (const m of matches) {
-    const [, domain] = m.split(MAIL_AT)
-    let d = MAIL_DOMAIN_NONE
-    if (domain != null) {
-      d = domain.toLowerCase()
-    }
-    if (d === '' || d.includes(MAIL_SKIP_WORD)) {
-      continue
-    }
-    let skip = false
-    for (const suf of MAIL_SKIP_SUFFIXES) {
-      if (d.endsWith(suf)) {
-        skip = true
-      }
-    }
-    if (skip) {
-      continue
-    }
-    return m
-  }
-  return MAIL_NONE
-}
-
 /**
  * 相似雇主查挂时的空表兜底(catch 传具名函数;弹框主体照常给,不 500)。
  *

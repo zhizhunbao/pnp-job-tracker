@@ -22,8 +22,10 @@
  * (LEGACY_STEPS / DECISION_STEPS),这里的顺序只管看板行序。
  * 同日尾部追加四个转化计数(apply 投递 / signup 注册成功 / checkout 发起付款 / weekly-optin 周报开关),
  * 只计数不成链,理由见 ALIAS 末段。
+ * 2026-10-03 付费闭环批 A1:尾部再追加访客向导两计数(gate-open 弹出 / gate-step 离开某一步)与未登录点投递
+ * (apply-click),同样只计数不成链。
  */
-export const FUNNEL_STEPS = ['jd-open', 'pricing-open', 'pay-click', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done', 'pulse-card', 'pulse-occ', 'pulse-cta', 'emp-search', 'emp-filter', 'emp-row', 'emp-page', 'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open', 'apply', 'signup', 'checkout', 'weekly-optin'] as const
+export const FUNNEL_STEPS = ['jd-open', 'pricing-open', 'pay-click', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done', 'pulse-card', 'pulse-occ', 'pulse-cta', 'emp-search', 'emp-filter', 'emp-row', 'emp-page', 'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open', 'apply', 'signup', 'checkout', 'weekly-optin', 'gate-open', 'gate-step', 'apply-click'] as const
 
 /**
  * 漏斗步骤名(从白名单数组派生 —— 类型与它派生自的数组同居,派生即护栏:加一步只改数组)。
@@ -69,6 +71,12 @@ export type FunnelStep = (typeof FUNNEL_STEPS)[number]
  * 2026-09-26 /fe Frank 改判:注册改记渠道(email|google)—— Google 首次建号原先不计,注册数偏低。
  * 邮箱注册在前端经 lib/track 打(mode 格);Google 建号只有服务端知道,由会话域回调路由直接落表
  * (不进 Umami)。上面「注册不分组」作废,留作当初为什么。
+ * 2026-10-03 付费闭环批 A1:访客向导(点开第 3 个职位 / 未登录点投递、收藏时弹的四道点选题 + 注册)两事件入册 ——
+ * gate-open 弹出(kind 记由头 job|apply|save)、gate-step 离开某一步(kind 记哪一步 goal|major|job|prov,
+ * 到了注册屏记 reg);外加 apply-click(未登录点投递,先前直接弹登录框这一下不计数,投递 0 说明不了没人想投)。
+ * 只计数不成链,prop 全是低基数枚举。
+ * 2026-10-03 付费闭环批 B1:外链投递撤,apply 的方式只剩 email(库里 web 历史行不动)。
+ * 2026-10-04 进站即弹:gate-open 的 kind 加 entry(过 PROP_OK 的低基数值,不改白名单)。
  */
 export const ALIAS: Record<string, FunnelStep> = {
   'modal-jd': 'jd-open',
@@ -98,6 +106,9 @@ export const ALIAS: Record<string, FunnelStep> = {
   'signup': 'signup',
   'checkout': 'checkout',
   'weekly-optin': 'weekly-optin',
+  'gate-open': 'gate-open',
+  'gate-step': 'gate-step',
+  'apply-click': 'apply-click',
 }
 
 /**

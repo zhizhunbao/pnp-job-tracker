@@ -608,6 +608,12 @@ export const TRACK_MODAL_HEAD = 'modal-'
 export const TRACK_MODAL_JD = 'modal-jd'
 
 /**
+ * 访客向导的由头:点开职位弹框(2026-10-03 付费闭环批 A1;profile 桶 GateWizard 的 intent,与它同值同义,各家一份)。
+ * 2026-10-04 起未登录点开就弹(不再数第 3 个)。
+ */
+export const GATE_INTENT_JOB = 'job'
+
+/**
  * 埋点:分类弹框点了中文对照(#129)。
  */
 export const TRACK_CAT_TRANSLATE = 'cat-translate'

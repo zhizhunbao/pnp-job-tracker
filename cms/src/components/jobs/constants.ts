@@ -586,6 +586,17 @@ export const BOARD_FILTERS_KEY = 'boardFilters'
 export const APPLY_RESUME_KEY = 'apply_resume_v1'
 
 /**
+ * 收藏那一路的访客向导留下的收藏意图键(2026-10-03 付费闭环批 A1 审查补):值是那一岗落库要的三格 + 时间戳的 json。
+ * Google 整页登录跳走前落地,回跳到职位板拉清单前先补收;× 关掉向导、或向导里当场注册完由页内接手时撤掉。
+ */
+export const SAVE_RESUME_KEY = 'save_resume_v1'
+
+/**
+ * 收藏意图的有效期(10 分钟,与续投意图同口径):过了就不再替他收,免得莫名其妙多一条收藏。
+ */
+export const SAVE_RESUME_TTL_MS = 600000
+
+/**
  * 列集 cookie 的存活秒数(一年)。
  */
 export const COLS_MAX_AGE_S = 31536000
@@ -843,6 +854,11 @@ export const HTTP_PAYMENT = 402
  * 429:匿名 IP 池用完 / 宽松防滥用闸偶发(说人话,不谎报成缺数据 —— #134)。
  */
 export const HTTP_TOO_MANY = 429
+
+/**
+ * 401:会话没了(查投递邮箱时页面还当已登录、会话已过期 —— 2026-10-04 收口审查,改弹登录框)。
+ */
+export const HTTP_UNAUTHORIZED = 401
 
 /**
  * 200:整理版拿到了。
@@ -1129,6 +1145,11 @@ export const P_LOGIN = 'login'
  * 自动开注册框(二级页头「注册」直达)。
  */
 export const P_SIGNUP = 'signup'
+
+/**
+ * Google 回跳失败标记(服务端失败 302 带 `?login=1&oauth=fail`)。已登录时由职位板直接洗掉,不开框。
+ */
+export const P_OAUTH = 'oauth'
 
 /**
  * 重置密码邮件链接落地(E3-07:token 收进 state 再洗参)。
@@ -2039,6 +2060,27 @@ export const TRACK_JD_MATCH_OPEN = 'jd-match-open'
 export const TRACK_APPLY = 'apply'
 
 /**
+ * 未登录点了投递钮(2026-10-03 付费闭环批 A1):先前这一下直接弹登录框、不计数,投递 0 说明不了没人想投;
+ * 与 TRACK_APPLY(真投出去)是两件事,不复用。进第一方漏斗白名单(只计数不成链)。
+ */
+export const TRACK_APPLY_CLICK = 'apply-click'
+
+/**
+ * 访客向导的由头:未登录点投递(profile 桶 GateWizard 的 intent,与它同值同义,各家一份)。
+ */
+export const GATE_INTENT_APPLY = 'apply'
+
+/**
+ * 访客向导的由头:未登录点收藏(同上)。
+ */
+export const GATE_INTENT_SAVE = 'save'
+
+/**
+ * 访客向导的由头:未登录动职位板的筛选 / 搜索(同上;2026-10-04 收口审查,设计稿 10-04「关掉后…筛选…一律再弹」)。
+ */
+export const GATE_INTENT_FILTER = 'filter'
+
+/**
  * 投递方式的参数名。
  */
 export const TRACK_KEY_MODE = 'mode'
@@ -2047,11 +2089,6 @@ export const TRACK_KEY_MODE = 'mode'
  * 邮件投递。
  */
 export const TRACK_MODE_EMAIL = 'email'
-
-/**
- * 外跳原帖投递。
- */
-export const TRACK_MODE_WEB = 'web'
 
 /**
  * JD 正文渲染的截断长度(再长也没人读完,且会把弹框拖慢)。
@@ -2551,6 +2588,17 @@ export const LANG_KO = 'ko'
 export const SEP_ZH = '、'
 
 /**
+ * 职业筛选标签最多逐个列几个名字;再多就收成「首个等 N 个」(2026-10-06 Frank 截图:访客第 3 题全选一整类后回职位板,
+ * 14 个职业名用顿号连成一枚标签横贯整行)。
+ */
+export const NOC_LABEL_LIST_MAX = 2
+
+/**
+ * 职业筛选标签收起时的词条键(「{first}等 {n} 个」)。
+ */
+export const NOC_MORE_KEY = 'filter.nocMore'
+
+/**
  * 西文的多值连接符。
  */
 export const SEP_EN = ', '
@@ -2886,6 +2934,27 @@ export const APPLY_INTENT = 'intent'
  * 改弹一框给邮箱,可打开邮件也可复制)。
  */
 export const APPLY_EMAIL = 'email'
+
+/**
+ * 投递流程:重新登录(2026-10-04 收口审查:页面还当已登录、会话其实过期了,查邮箱回 401 —— 原先钮转一圈什么都不发生,
+ * 改记投递意图、弹登录框,登录完照注册闸那一路接着投)。
+ */
+export const APPLY_LOGIN = 'login'
+
+/**
+ * 投递流程:今天查邮箱的次数用完了(查邮箱回 429;2026-10-04 收口审查,原先无声作罢)。
+ */
+export const APPLY_LIMIT = 'limit'
+
+/**
+ * 投递流程:没拿到邮箱(网络断、别的非 2xx、回包解不出、查完没有;2026-10-04 收口审查,原先无声作罢)。
+ */
+export const APPLY_ERR = 'err'
+
+/**
+ * 查投递邮箱没拿到响应(网络断)时记的状态码 —— 真状态码不会是 0,与 401 / 429 分得开。
+ */
+export const APPLY_STATUS_NET = 0
 
 /**
  * 整理版一节的渲染档:「怎么投」整节缺又有邮箱 / 整节缺只出官方短链 / 有内容且逐行链官方 /

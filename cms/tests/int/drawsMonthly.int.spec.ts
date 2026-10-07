@@ -63,7 +63,7 @@ describe('② NS 的人数写「入选」,别的省照旧「邀请」', () => {
   it('时间线事件', () => {
     const row: EventRow = {
       date: '2026-07', prov: 'NS', kind: 'draw', title: 'NSNP + AIP', score: null, scale: '', invitations: 671, note: '',
-      importance: null, slug: '', unit: 'selection',
+      unit: 'selection',
     }
     expect(invTextOf({ t: zh, row })).toBe('671 人入选')
     expect(invTextOf({ t: en, row })).toBe('671 selected')

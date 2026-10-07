@@ -9,6 +9,7 @@
  * 「下一题位置不统一」的病根就是各写各的(Frank「保证所有答题页面一致」)。
  * 按钮文案也恒定:选了几个写在左边灰字里,不塞进按钮 —— 文案变宽 = 按钮跟着挪。
  * 2026-08-28 换装批自 OccPicker.tsx 提出成件。
+ * 2026-10-05:「已选 N 个」按职业数(同组几个码算一个)。
  *
  * @author Frank
  * @time 2026-08-28 04:10:00
@@ -23,11 +24,11 @@ import css from './quiz.module.css'
 /**
  * 渲染控件底部的动作条。
  *
- * @param props 取词函数、形态档、已选码、两颗钮的字与两个出口。
+ * @param props 取词函数、形态档、已选职业、两颗钮的字与两个出口。
  * @returns 铺在答题卡里给答题壳那条动作条;弹层形态给一颗通栏钮(一个都没选时不给)。
  */
-export function OccActions({ t, inline, nocs, doneLabel, finishLabel, onNext, onFinish }: OccActionsIn) {
-  const none = nocs.length === LEN_ZERO
+export function OccActions({ t, inline, picked, doneLabel, finishLabel, onNext, onFinish }: OccActionsIn) {
+  const none = picked.length === LEN_ZERO
   if (inline === true) {
     let nextLabel = t('plan.next')
     if (doneLabel != null && doneLabel !== TEXT_NONE) {
@@ -56,7 +57,7 @@ export function OccActions({ t, inline, nocs, doneLabel, finishLabel, onNext, on
   }
   return (
     <Button kind={PRIMARY_BTN_KIND} onClick={onNext} className={cssOf(css.wideBtn)}>
-      {t('quiz.nextN', { n: nocs.length })}
+      {t('quiz.nextN', { n: picked.length })}
     </Button>
   )
 }

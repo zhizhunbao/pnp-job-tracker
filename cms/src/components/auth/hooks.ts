@@ -4,17 +4,21 @@
  * 2026-09-14 Frank「这个我点的直接注册并登录,怎么还让我注册」:注册撞上已注册邮箱不再报错让人换框,
  * 拿同一份邮箱密码直接试登录;密码不对才报「邮箱或密码不正确」。
  *
+ * 2026-10-07 注册时记的语言改取当前界面语言(useLang):原 localeOf 读 localStorage 'jobs.lang',
+ * 界面语言早改存 cookie、没人再写那个键,邮箱注册的人一律被记成 zh(英文用户收中文周报)。
+ *
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
 import { createContext, useContext, useEffect, useState } from 'react'
+import { useLang } from '@/components/i18n'
 import {
   ERR_NONE, EV_MOUSEDOWN, FIELD_EMPTY, FLOW_ERR, FLOW_SENT, HISTORY_TITLE_UNUSED, KEY_ERR_CRED, KEY_ERR_EXISTS,
   MODE_BACK_TO, MODE_LOGIN, MODE_REGISTER, OAUTH_FAIL,
   OAUTH_PARAM, QS_NONE, QS_PREFIX,
 } from './constants'
-import { finishAuth, googleHrefOf, localeOf, runAuthFlow } from './functions'
-import type { SessionSeed, AuthFormHookIn, AuthFormHookOut, AuthMode, ClickOutsideIn } from './types'
+import { finishAuth, googleHrefOf, makeImgFail, runAuthFlow } from './functions'
+import type { SessionSeed, AuthFormHookIn, AuthFormHookOut, AuthMode, ClickOutsideIn, ImgFailOut } from './types'
 
 /**
  * 首帧登录态上下文(照 LangProvider 先例,治 SSR 先猜后纠的抖动:二级页 SSR 恒渲
@@ -84,6 +88,7 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(ERR_NONE)
   const [sent, setSent] = useState(false)
+  const [lang] = useLang()
   useOauthFail(oauthFailed)
 
   function oauthFailed() {
@@ -119,19 +124,19 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
     setBusy(true)
     setErr(ERR_NONE)
     try {
-      const out = await runAuthFlow({ mode, email, pw, resetToken: x.resetToken, locale: localeOf() })
+      const out = await runAuthFlow({ mode, email, pw, resetToken: x.resetToken, locale: lang })
       if (out.kind === FLOW_SENT) {
         setSent(true)
         return
       }
       if (out.kind === FLOW_ERR && out.errKey === KEY_ERR_EXISTS && mode === MODE_REGISTER) {
-        const login = await runAuthFlow({ mode: MODE_LOGIN, email, pw, resetToken: x.resetToken, locale: localeOf() })
+        const login = await runAuthFlow({ mode: MODE_LOGIN, email, pw, resetToken: x.resetToken, locale: lang })
         if (login.kind === FLOW_ERR) {
           setErr(x.t(KEY_ERR_CRED))
           return
         }
         setPw(FIELD_EMPTY)
-        await finishAuth({ mode: MODE_LOGIN, returnTo: x.returnTo, onDone: x.onDone })
+        await finishAuth({ mode: MODE_LOGIN, keepPage: x.keepPage, returnTo: x.returnTo, onDone: x.onDone })
         return
       }
       if (out.kind === FLOW_ERR) {
@@ -141,7 +146,7 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
         return
       }
       setPw(FIELD_EMPTY)
-      await finishAuth({ mode, returnTo: x.returnTo, onDone: x.onDone })
+      await finishAuth({ mode, keepPage: x.keepPage, returnTo: x.returnTo, onDone: x.onDone })
     } catch {
       setErr(x.t('acct.err.generic'))
     } finally {
@@ -177,4 +182,14 @@ export function useClickOutside(x: ClickOutsideIn) {
     }
     return off
   }, [x.open, x.ref, x.close, x])
+}
+
+/**
+ * 头像图挂没挂(OAuth 外源头像加载失败时退回首字母色块;2026-10-05 立)。
+ *
+ * @returns 挂了没有与 onError 手柄。
+ */
+export function useImgFail(): ImgFailOut {
+  const [failed, setFailed] = useState(false)
+  return { failed, onError: makeImgFail({ setFailed }) }
 }

@@ -27,7 +27,8 @@ export function EeCmpCard({ t, cmp, open, toggleOf }: EeCmpCardIn) {
       g={g}
       open={open.has(g.key)}
       onToggle={toggleOf(g.key)}
-      dateBelow={false} />)
+      dateBelow={false}
+      mark />)
   }
   const lines = []
   for (const l of cmp.lines) {

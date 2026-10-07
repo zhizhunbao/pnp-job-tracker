@@ -13,14 +13,20 @@
  * 宿主(弹框栈 PeekStack)多注两个回调 —— 点公司名、点相关职位都往栈上叠一层。
  * 2026-09-23 标题译名 hook 搬去 jobtitle 桶(职位详情页也要用);这一岗库里已存标题译名就直接出、不打接口(Frank「统一成标题译名」「应该优先使用详情下的翻译 更准吧」)。
  * 2026-09-28 并壳(Frank「别并存啊」):外层起的机器从 useFloatPanel 换成 modal 桶的 useFrame(同一个理由:内层整块重挂时位置尺寸不丢)。
+ * 2026-10-03 付费闭环批 A1:未登录点开第 3 个不同的职位时,这一层先出访客向导(profile 桶 GateWizard)——
+ * 关掉向导 = 关掉这一层;注册完收起向导、亮出这一岗。Google 整页登录回跳到这一岗的职位整页。
+ * 2026-10-04 改判:不再数第 3 个,未登录开职位弹框一律先出向导。
+ * 同日访客四题改版:GateWizard 自 profile 桶迁入 gate 桶,改从 gate 桶取(契约不变)。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
-import { JD_PANEL_H, JD_PANEL_W, JD_PREF } from './constants'
+import { GATE_INTENT_JOB, JD_PANEL_H, JD_PANEL_W, JD_PREF, URL_JOB_HEAD } from './constants'
 import { ActJd } from './actjd'
 import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { useFrame } from '@/components/modal'
+import { GateWizard } from '@/components/gate'
+import { makeT } from '@/lib/i18n'
 import { useActModal } from './hooks'
 import type { ActModalIn } from './types'
 
@@ -28,14 +34,21 @@ import type { ActModalIn } from './types'
  * 渲染职位描述弹框。
  *
  * @param props 这一岗、界面语言、分层态、描述表、关闭回调与点公司名 / 相关职位的两个回调。
- * @returns 浮层。
+ * @returns 浮层;该先弹访客向导时是向导。
  */
 export function ActModal({ job, lang, plan, onClose, onOpenJob, onOpenCompany }: ActModalIn) {
-  const a = useActModal()
+  const a = useActModal({ job, plan })
   const frame = useFrame({ win: { memo: JD_PREF, w: JD_PANEL_W, h: JD_PANEL_H }, draggable: true, edgeResize: false })
   const sub = useTitleTrans({
     title: job.title, id: job.id, lang, cached: storedTitleOf({ row: job, lang }), gen: a.gen,
   })
+  if (a.gate) {
+    return (
+      <GateWizard t={makeT(lang)} intent={GATE_INTENT_JOB} returnTo={URL_JOB_HEAD + String(job.id)}
+        onClose={onClose}
+        onDone={a.onGateDone} />
+    )
+  }
   return (
     <ActJd key={a.gen} job={job} lang={lang} plan={plan} onClose={onClose} frame={frame} sub={sub} a={a}
       onOpenJob={onOpenJob}

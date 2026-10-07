@@ -10,6 +10,7 @@
  * 挪到抽屉顶上一行(品牌与关闭钮之下、导航之上),复用顶栏同一个 LangSwitch。
  * 2026-09-23 Frank「这几个模块先隐藏掉」:导航先不挂「拿 PR 评估」「PTE 刷题」「资料库」三项(路由照旧在,直链照旧能开);
  * 与桌面导航排同步(见 headernav.tsx 文件头)。
+ * 2026-10-03 付费闭环批 B1:末尾挂「我的」(/account),登录才出,与桌面导航排同步。
  *
  * @author Frank
  * @time 2026-08-24 08:00:00
@@ -21,8 +22,8 @@ import { IconX } from '@/components/icons'
 import { Button, LinkButton } from '@/components/button'
 
 import {
-  A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_RANK, A_START, A_STATS, BRAND_MARK,
-  PATH_EMPLOYERS, PATH_HOME, PATH_NEWS,
+  A_ACCOUNT, A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_RANK, A_START, A_STATS, BRAND_MARK,
+  PATH_ACCOUNT, PATH_EMPLOYERS, PATH_HOME, PATH_NEWS,
   PATH_START, PLAIN_BTN_KIND,
 } from './constants'
 import { stopClick, withOn } from './functions'
@@ -34,10 +35,10 @@ import css from './header.module.css'
 /**
  * 侧滑抽屉。
  *
- * @param props 翻译函数/高亮键/关闭回调。
+ * @param props 翻译函数/高亮键/关闭回调/登录没。
  * @returns portal 到 body 的抽屉。
  */
-export function MobileDrawer({ t, active, onClose, lang, setLang }: MobileDrawerIn) {
+export function MobileDrawer({ t, active, onClose, lang, setLang, loggedIn }: MobileDrawerIn) {
   useMainPush()
 
   const onStart = active === A_START || active === A_STATS || active === A_RANK
@@ -70,6 +71,12 @@ export function MobileDrawer({ t, active, onClose, lang, setLang }: MobileDrawer
           <LinkButton href={PATH_NEWS} className={withOn({ base: cssOf(css.drawerItem), on: onNews })}>
             {t('nav.info')}
           </LinkButton>
+          {loggedIn && (
+            <LinkButton href={PATH_ACCOUNT}
+              className={withOn({ base: cssOf(css.drawerItem), on: active === A_ACCOUNT })}>
+              {t('nav.mine')}
+            </LinkButton>
+          )}
         </nav>
       </div>
     </div>,

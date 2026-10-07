@@ -5,26 +5,34 @@
  * 2026-09-23 账户页撤移民档案节、档案表单删文件:只有表单在用的职业搜索兜底
  * (makeAddTyped / toNocOpts / makeLoadNocOpts / nocHitsOf / nocTitleOf / makeNocAdd / makeNocAdder)
  * 与保存钮面 profileSaveLabelOf 随之删除;makeSaveProfile 与 profileSeedOf 首访向导还在用,留着。
+ * 2026-10-03 付费闭环批 A1:尾段接访客向导的手柄(步序、题面、下一步 / 跳过、四道题的上报口、注册后交接、
+ * 预选职业查名);浏览记录与草稿的存取不在这里,归 lib/guest(本文件逼近 1000 行闸,也本该归那边)。
+ * 2026-10-04 访客四题改版:那段访客向导手柄(连同查名的行构造器 toNocName)整段迁去 gate 桶,本文件回到 1000 行闸线下;
+ * isPopularNoc 是热门表主人给的判定,留在这里(plan、gate 经桶借);makeNocPick / makeNocDrop / obMarkSeen 随之出桶给 gate 借。
+ * 同日收口:makeOptPick 也出桶给 gate 借(gate 删掉自家逐字同义的 makeOptTap)。
+ * 同日 A2:访客第 3 题改用 quiz 桶选职业控件(大号档),gate 不再借 makeNocPick / makeNocDrop(两枚收回桶内);
+ * 已选标签改由选职业控件借 OnboardingTags,它的胶囊不再是热门表 —— 标签「这一屏胶囊里有就不回显」的判定收成 isChipNoc。
+ * 2026-10-05 访客第 3 题改成与第 2 题同一副左右两栏(Frank「也改成左右 两部分吗?」「改啊」):选职业控件的已选一行改用 tag 桶
+ * TagRow 自己摆、不再借 OnboardingTags,只为它开的两样撤 —— isChipNoc(OnboardingTags 回到只按热门表判,直接用 isPopularNoc)
+ * 与 obNocLabelOf 的「候选名先于热门表」(callerFirst)。OnboardingTags 照旧给首访向导的职业步用。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
 import {
-  CLB_BANDS, CLB_TOP, CRED_INCLUDE, CRS_BANDS, CRS_TOP, HDR_CONTENT_TYPE, HTTP_LIMIT,
-  HTTP_UNREADABLE, METHOD_PATCH, METHOD_POST, MIME_JSON, OB_BRANCHES, OB_PERCENT_MAX, OB_PERCENT_SIGN,
-  OB_QUESTION_STATUS, OB_QUESTIONS, OB_SEEN_KEY, OB_SEEN_MARK, OB_STEP_STATUS, PGWP_BANDS, PGWP_TOP, POPULAR_NOCS,
-  RESUME_BUSY, RESUME_DONE, RESUME_FAIL, RESUME_FIELD, RESUME_INPUT_RESET, RESUME_LIMIT, RESUME_PREFILL_MAX,
-  RESUME_SCAN, SAVED_ERR, SAVED_OK, TEXT_NONE, URL_HOME, URL_MATCH_VIEW, URL_ME, URL_RESUME,
-  URL_USER_HEAD,
+  CLB_BANDS, CLB_TOP, CRED_INCLUDE, CRS_BANDS, CRS_TOP, HDR_CONTENT_TYPE, HTTP_LIMIT, HTTP_UNREADABLE, METHOD_PATCH,
+  METHOD_POST, MIME_JSON, OB_BRANCHES, OB_PERCENT_MAX, OB_PERCENT_SIGN, OB_QUESTION_STATUS, OB_QUESTIONS, OB_SEEN_KEY,
+  OB_SEEN_MARK, OB_STEP_STATUS, PGWP_BANDS, PGWP_TOP, POPULAR_NOCS, RESUME_BUSY, RESUME_DONE, RESUME_FAIL,
+  RESUME_FIELD, RESUME_INPUT_RESET, RESUME_LIMIT, RESUME_PREFILL_MAX, RESUME_SCAN, SAVED_ERR, SAVED_OK, TEXT_NONE,
+  URL_HOME, URL_MATCH_VIEW, URL_ME, URL_RESUME, URL_USER_HEAD,
 } from './constants'
 import type {
-  BandValueIn, CrsModeIn, FileInputEvent, FileOpenIn, LoadUserIdIn, MeRespJson,
-  NocDropIn, NocLabelIn, NocPickIn, NocsMergeFn,
-  NocsMergeIn, ObApplyIn, ObBarIn, ObCurrentStepIn, ObDirtyIn, ObFinishFn, ObFinishIn, ObNextLabelIn,
-  ObQuestionIn, ObResumeHintIn, ObStep, ObStepsIn, ObTargetIn, OptPickIn, ProfileSeed, ProfileSeedIn, ProvToggleIn,
-  ResumeFailIn, ResumePickFn, ResumePickIn, ResumePrefill, ResumeRespJson, ResumeState, ResumeUploadFn,
-  ResumeUploadMakeIn, SaveProfileIn, StatusPickIn, StepBackIn, StepNextIn,
+  BandValueIn, CrsModeIn, FileInputEvent, FileOpenIn, LoadUserIdIn, MeRespJson, NocDropIn, NocLabelIn,
+  NocPickIn, NocsMergeFn, NocsMergeIn, ObApplyIn, ObBarIn, ObCurrentStepIn, ObDirtyIn, ObFinishFn, ObFinishIn,
+  ObNextLabelIn, ObQuestionIn, ObResumeHintIn, ObStep, ObStepsIn, ObTargetIn, OptPickIn, OptValue, ProfileSeed,
+  ProfileSeedIn, ProvToggleIn, ResumeFailIn, ResumePickFn, ResumePickIn, ResumePrefill, ResumeRespJson, ResumeState,
+  ResumeUploadFn, ResumeUploadMakeIn, SaveProfileIn, StatusPickIn, StepBackIn, StepNextIn,
 } from './types'
 
 /**
@@ -62,12 +70,14 @@ export function makeStatusPick(x: StatusPickIn): () => void {
 }
 
 /**
- * 造一枚区间档 chip 的点击手柄:点了把这档的值报出去(点 null 值档 = 清空该字段)。
+ * 造一枚单选 chip 的点击手柄:点了把这档的值报出去(区间档点 null 值档 = 清空该字段;
+ * 访客向导的专业 / 所在省报串值,同一个手柄)。
+ * 2026-10-04 收口:gate 桶的目标大卡(报档位数)、专业胶囊与省格子(报码)经桶借这一枚,不在 gate 另抄。
  *
  * @param x 这枚代表的值与上报口。
  * @returns 点选手柄。
  */
-export function makeOptPick(x: OptPickIn): () => void {
+export function makeOptPick<V extends OptValue>(x: OptPickIn<V>): () => void {
   return function pickOpt(): void {
     x.onPick(x.value)
   }
@@ -569,6 +579,9 @@ export function makeNocPick(x: NocPickIn): () => void {
  * 已选职业码 → 显示什么(§3.4 藏码):热门表的大白话标签优先,其次是简历识别出的
  * 官方英文类名,都没有才显示码本身。向导里没有职业维度全集(那是档案表单才拉的),
  * 所以这里的取名路子与表单的 nocTitleOf 不同。
+ * 2026-10-04 收口:callerFirst 时候选名先于热门表(quiz 选职业控件借本件当已选标签,标签要和刚点的胶囊同名)。
+ * 2026-10-05 callerFirst 撤(访客第 3 题「也改成左右 两部分吗?」「改啊」:选职业控件不再借 OnboardingTags,标签名由它自己按行上的名字摆;
+ * 上一句作废),回到热门表优先。
  *
  * @param x 码、这次的简历候选与取词函数。
  * @returns 显示名。
@@ -579,12 +592,27 @@ export function obNocLabelOf(x: NocLabelIn): string {
       return x.t(p.key)
     }
   }
+  const fallback = candidateTitleOf(x)
+  if (fallback !== TEXT_NONE) {
+    return fallback
+  }
+  return x.code
+}
+
+/**
+ * 候选里这个码的官方名(2026-10-04 自 obNocLabelOf 提出,先看候选与后看候选两处共用)。
+ * 2026-10-05「先看候选」那一处随 callerFirst 撤,只剩后看候选一处在用。
+ *
+ * @param x 码与候选(其余格不读)。
+ * @returns 名字;候选里没有或名字空给空串。
+ */
+function candidateTitleOf(x: NocLabelIn): string {
   for (const c of x.candidates) {
     if (c.noc === x.code && c.title !== '') {
       return c.title
     }
   }
-  return x.code
+  return TEXT_NONE
 }
 
 /**
@@ -722,4 +750,19 @@ export function obTargetOf(x: ObTargetIn): string {
  */
 export function dropSaveState(): void {
   return
+}
+
+/**
+ * 这个码在不在热门表里(在就有大白话名,不必查)。热门表的主人给的判定,plan 桶经桶借用(不再各写一份)。
+ *
+ * @param code 职业码。
+ * @returns 在 = true。
+ */
+export function isPopularNoc(code: string): boolean {
+  for (const p of POPULAR_NOCS) {
+    if (p.noc === code) {
+      return true
+    }
+  }
+  return false
 }
