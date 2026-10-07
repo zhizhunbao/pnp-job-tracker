@@ -41,5 +41,5 @@ export {
 export { useAccountPage } from './hooks'
 export { PayOkNotice } from './payoknotice'
 export { ResumeFile } from './resumefile'
-export { SavedJobsList } from './savedjobslist'
 export { Subscription } from './subscription'
+export { WeeklyOptin } from './weeklyoptin'

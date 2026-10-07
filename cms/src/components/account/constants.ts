@@ -505,76 +505,9 @@ export const HDR_CONTENT_TYPE = 'Content-Type'
 export const MIME_JSON = 'application/json'
 
 /**
- * 收藏岗清单的拉取地址(E9-01;access 本人,按更新时间新前旧后)。
- */
-export const URL_SAVED_JOBS_LIST = '/api/saved-jobs?limit=200&depth=0&sort=-updatedAt'
-
-/**
- * 单条收藏的接口前缀(PATCH 改看板状态 / DELETE 移除,拼上记录 id)。
- */
-export const URL_SAVED_JOB_HEAD = '/api/saved-jobs/'
-
-/**
  * DELETE 方法字(移除收藏 / 删已存筛选)。
  */
 export const METHOD_DELETE = 'DELETE'
-
-/**
- * 收藏行「查看」链接的前缀:回职位板按职位名搜(拼上 encodeURIComponent 后的职位名)。
- */
-export const Q_SEARCH_HEAD = '/?q='
-
-/**
- * 看板状态下拉的档表(E9-01:想投/已投/面试中/offer)。key = 档名的 i18n 键
- * (sj.st.*)。2026-08-27 自 SavedJobsList.tsx 的 STATUSES 迁入,键从拼串改整键落表。
- */
-export const SJ_STATUS_TABS = [
-  { st: 'wish', key: 'sj.st.wish' },
-  { st: 'applied', key: 'sj.st.applied' },
-  { st: 'interview', key: 'sj.st.interview' },
-  { st: 'offer', key: 'sj.st.offer' },
-] as const
-
-/**
- * 看板状态的默认档(没标过 = 想投;与旧渲染 `status || 'wish'` 同口径)。
- */
-export const SJ_STATUS_DEFAULT = 'wish'
-
-/**
- * 收藏节看板视图的标题键(sjTitleKeysOf 按 variant 二选一)。
- */
-export const SJ_TITLE_KEY = 'sj.title'
-
-/**
- * 收藏节看板视图的灰字小注键。
- */
-export const SJ_NOTE_KEY = 'sj.note'
-
-/**
- * 收藏节纯收藏视图(#62A variant='favs')的标题键。
- */
-export const FAV_TITLE_KEY = 'fav.title'
-
-/**
- * 收藏节纯收藏视图的灰字小注键。
- */
-export const FAV_NOTE_KEY = 'fav.note'
-
-/**
- * 职位名快照缺席时的占位横杠(不是数据,是「这格没有」的显示记号)。
- */
-export const TITLE_NONE_MARK = '—'
-
-/**
- * 收藏行里公司名与「查看」链接之间的全角空格(拉开一个汉字位,不用「·」——
- * 全站禁点号杂糅)。
- */
-export const SJ_SEP = '　'
-
-/**
- * 移除收藏 × 钮的字符(同 NICK_EDIT_MARK 的理由:图标是内容不是样式)。
- */
-export const DEL_MARK = '×'
 
 /**
  * 周报开关的统计事件名(E5-07 §3.4 漏斗第 3 步:周报是留存钩的主力,

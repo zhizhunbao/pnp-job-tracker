@@ -2847,6 +2847,51 @@ export type CitySectionIn = {
 
 
 /**
+ * `cityLabelOf` 的入参(城市显示两格的原料)。
+ */
+export type CityLabelIn = {
+  /**
+   * 英文原名(没有 = 空串)。
+   */
+  city: string
+
+  /**
+   * 中文译名(人工核定;没有 = 空串)。
+   */
+  cityZh: string
+
+  /**
+   * 韩文译名(人工核定;没有 = 空串)。
+   */
+  cityKo: string
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
+}
+
+/**
+ * 城市显示两格(CityNameCell 照它摆)。
+ */
+export type CityLabel = {
+  /**
+   * 主文案。
+   */
+  name: string
+
+  /**
+   * 灰注。
+   */
+  note: string
+}
+
+/**
  * `cityNameOf` 的入参。
  */
 export type CityNameIn = {

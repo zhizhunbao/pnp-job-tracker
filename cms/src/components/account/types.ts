@@ -9,6 +9,8 @@
  * @author Frank
  * @time 2026-08-26 15:28:17
  */
+// eslint-disable-next-line local/no-import-in-leaf -- 分层态原样透传给公司弹框,本域一格不读(先例 employers/types.ts)
+import type { Plan } from '@/lib/jobs'
 
 /**
  * 界面语取词函数(与 lib/i18n 的 TFn 同形:键 + 可选插值 —— 宪法 08-25「types 自声明」,
@@ -253,7 +255,17 @@ export type AccountPanel = {
    * 切节。
    */
   onPick: (s: Sec) => void
+
+  /**
+   * 分层态(2026-10-06:「我的求职」「我的收藏」点公司名开公司弹框要它;口径同各页面门的 toJobPlan)。
+   */
+  plan: AcctPlan
 }
+
+/**
+ * 分层态(外域形状,逐行特批):本桶按 me 拼好、原样递给公司弹框,本域一格不读。
+ */
+export type AcctPlan = Plan
 
 /**
  * makeRefresh 的入参(登录态查询要拨的两格 state)。
@@ -274,192 +286,6 @@ export type RefreshIn = {
  * 重查登录态的手柄。
  */
 export type RefreshFn = () => Promise<void>
-
-/**
- * 求职看板的状态档(E9-01:想投/已投/面试中/offer)。
- */
-export type SjStatus = 'wish' | 'applied' | 'interview' | 'offer'
-
-/**
- * 收藏岗一条(toSavedJob 洗净后):快照字段,岗位下架后仍可读。
- */
-export type SavedJobFact = {
-  /**
-   * 收藏记录 id(拼 PATCH/DELETE 地址;Payload 可能给数字,洗成串)。
-   */
-  id: string
-
-  /**
-   * 职位名快照;没有 = 空串(渲染层显示占位横杠)。
-   */
-  title: string
-
-  /**
-   * 公司名快照;没有 = 空串。
-   */
-  company: string
-
-  /**
-   * 求职看板状态;库里存了不认识的值按 wish 读(与旧渲染 `status || 'wish'` 同口径)。
-   */
-  status: SjStatus
-}
-
-/**
- * saved-jobs 列表接口的响应体(归一前)。
- */
-export type SavedJobsRespJson = {
-  /**
-   * 收藏行清单;缺席/空按零条读。
-   */
-  docs?: {
-    /**
-     * 收藏记录 id。
-     */
-    id: number | string
-
-    /**
-     * 职位名快照;可能缺。
-     */
-    title?: string | null
-
-    /**
-     * 公司名快照;可能缺。
-     */
-    company?: string | null
-
-    /**
-     * 看板状态;可能缺或存了旧值。
-     */
-    status?: string | null
-  }[] | null
-} | null
-
-/**
- * SavedJobsList 的 props(页面门在传,契约 2026-08-27 换装批原样保留)。
- */
-export type SavedJobsListIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 登录人 id(周报开关 PATCH 用;favs 视图不传)。
-   */
-  userId?: number | string
-
-  /**
-   * 周报退订现状(E9-02b;favs 视图不传)。
-   */
-  weeklyOptOut?: boolean
-
-  /**
-   * favs = 「我的收藏」纯列表视图(#62A:无状态下拉/周报开关)。
-   */
-  variant?: 'favs'
-}
-
-/**
- * useSavedJobs 的入参。
- */
-export type SavedJobsHookIn = {
-  /**
-   * 周报退订现状;没传按未退订读。
-   */
-  weeklyOptOut: boolean | null
-}
-
-/**
- * 收藏岗清单的面板(useSavedJobs 出)。
- */
-export type SavedJobsPanel = {
-  /**
-   * 洗净的收藏行;null = 还在拉。
-   */
-  items: SavedJobFact[] | null
-
-  /**
-   * 收藏行落格(行内改状态/移除用)。
-   */
-  setItems: (v: SavedJobFact[] | null) => void
-
-  /**
-   * 周报退订现状(显示语义取反:勾 = 订阅)。
-   */
-  optOut: boolean
-
-  /**
-   * 周报退订落格。
-   */
-  setOptOut: (v: boolean) => void
-}
-
-/**
- * makeLoadSavedJobs 的入参。
- */
-export type LoadSavedJobsIn = {
-  /**
-   * 收藏行落格(网络挂了落空清单,与旧口径一致)。
-   */
-  setItems: (v: SavedJobFact[] | null) => void
-}
-
-/**
- * makeJobStatusChange 的入参(一行的状态下拉)。
- */
-export type JobStatusChangeIn = {
-  /**
-   * 这一行的收藏记录 id。
-   */
-  id: string
-
-  /**
-   * 现清单(重建这一行,别的行原样)。
-   */
-  items: SavedJobFact[]
-
-  /**
-   * 清单落格(先本地改再发请求,失败不回滚 —— 与旧口径一致)。
-   */
-  setItems: (v: SavedJobFact[] | null) => void
-}
-
-/**
- * 状态下拉的 change 手柄(按本域自己声明形状的规矩只读 target.value 一格;
- * 实参是 React.ChangeEvent,结构上兜得住)。
- */
-export type JobStatusChangeFn = (e: {
-  /**
-   * 事件源(下拉本体)。
-   */
-  target: {
-    /**
-     * 选中的档值(SJ_STATUS_TABS 的键之一;不认识的值按默认档兜)。
-     */
-    value: string
-  }
-}) => void
-
-/**
- * makeJobRemove 的入参(一行的移除 ×)。
- */
-export type JobRemoveIn = {
-  /**
-   * 这一行的收藏记录 id。
-   */
-  id: string
-
-  /**
-   * 现清单。
-   */
-  items: SavedJobFact[]
-
-  /**
-   * 清单落格(先本地移除再发请求)。
-   */
-  setItems: (v: SavedJobFact[] | null) => void
-}
 
 /**
  * makeWeeklyToggle 的入参(周报开关:E9-02b)。
@@ -493,36 +319,6 @@ export type WeeklyToggleFn = (e: {
 }) => void
 
 /**
- * SavedJobRow 的 props(收藏清单里的一行)。
- */
-export type SavedJobRowIn = {
-  /**
-   * 这一行(洗净)。
-   */
-  row: SavedJobFact
-
-  /**
-   * favs 视图 = 纯列表(不出状态下拉)。
-   */
-  favs: boolean
-
-  /**
-   * 现清单(行内手柄要重建它)。
-   */
-  items: SavedJobFact[]
-
-  /**
-   * 清单落格。
-   */
-  setItems: (v: SavedJobFact[] | null) => void
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
-/**
  * WeeklyOptin 的 props(周报开关那一行)。
  */
 export type WeeklyOptinIn = {
@@ -532,14 +328,9 @@ export type WeeklyOptinIn = {
   userId: number | string
 
   /**
-   * 退订现状。
+   * 库里的退订现状(开关的初值;之后由 useWeeklyOptin 自管)。
    */
-  optOut: boolean
-
-  /**
-   * 退订落格。
-   */
-  setOptOut: (v: boolean) => void
+  weeklyOptOut: boolean
 
   /**
    * 取词函数。
@@ -548,38 +339,28 @@ export type WeeklyOptinIn = {
 }
 
 /**
- * jobSearchHrefOf 的入参(收藏行的「查看」= 回职位板按职位名搜)。
+ * useWeeklyOptin 的入参。
  */
-export type SearchHrefIn = {
+export type WeeklyHookIn = {
   /**
-   * 职位名快照。
+   * 库里的退订现状。
    */
-  title: string
+  weeklyOptOut: boolean
 }
 
 /**
- * sjTitleKeysOf 的入参(收藏节两套抬头:收藏视图 fav.*,看板视图 sj.*)。
+ * 周报开关的退订态(useWeeklyOptin 出)。
  */
-export type SjTitleKeysIn = {
+export type WeeklyPanel = {
   /**
-   * 是不是 favs 纯列表视图。
+   * 退订现状(显示语义取反:勾 = 订阅)。
    */
-  favs: boolean
-}
-
-/**
- * 收藏节抬头的两把 i18n 键(标题 + 灰字小注)。
- */
-export type SjTitleKeys = {
-  /**
-   * 标题键。
-   */
-  title: string
+  optOut: boolean
 
   /**
-   * 小注键。
+   * 退订落格。
    */
-  note: string
+  setOptOut: (v: boolean) => void
 }
 
 /**

@@ -39,10 +39,13 @@
  * 账户下拉的「升级 Pro」挪进来 —— 当前套餐 + 升级 / 续买,钮打开全站同一个定价框。
  * 2026-10-05 Frank「先做我的简历吧」:「我的简历」节的简历文字存档 ResumeArchive 退役,换成原件卡片 ResumeFile
  * (上传 / 预览 / 替换 / 下载 / 删除 + PDF 首页缩略图;自己拉元信息,不再吃 me.profile 的两格)。
+ * 2026-10-06 Frank「先做我的求职」「也重新改一下」:「我的求职」「我的收藏」两节换成 myjobs 桶的两张表
+ * (AppliedList / SavedList,通用 Table、手机职位卡);周报开关 WeeklyOptin 随定稿拼在收藏表下面,原 SavedJobsList 撤。
  *
  * @author Frank
  * @time 2026-07-02 00:00:00
  */
+import { AppliedList, SavedList } from '@/components/myjobs'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import {
@@ -52,7 +55,6 @@ import {
   AccountRedirect,
   PayOkNotice,
   ResumeFile,
-  SavedJobsList,
   Subscription,
   SEC_FAVS,
   SEC_RESUME,
@@ -61,6 +63,7 @@ import {
   SHELL_BOTTOM,
   SHELL_TOP,
   useAccountPage,
+  WeeklyOptin,
 } from '@/components/account'
 import { Frame, Shell } from '@/components/shell'
 
@@ -82,8 +85,9 @@ export default function AccountPage() {
             nav={<AccountNav sec={a.sec} t={a.t} onPick={a.onPick} />}>
             {a.payOk && <PayOkNotice t={a.t} />}
             {a.sec === SEC_RESUME && <ResumeFile t={a.t} />}
-            {a.sec === SEC_FAVS && <SavedJobsList t={a.t} variant={SEC_FAVS} />}
-            {a.sec === SEC_SJOBS && <SavedJobsList t={a.t} userId={a.me.id} weeklyOptOut={!!(a.me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
+            {a.sec === SEC_FAVS && <SavedList t={a.t} plan={a.plan} />}
+            {a.sec === SEC_FAVS && <WeeklyOptin t={a.t} userId={a.me.id} weeklyOptOut={!!(a.me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
+            {a.sec === SEC_SJOBS && <AppliedList t={a.t} plan={a.plan} />}
             {a.sec === SEC_SUB && <Subscription t={a.t} until={a.me.proUntil} />}
           </AccountColumns>
         )}

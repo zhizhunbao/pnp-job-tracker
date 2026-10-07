@@ -104,6 +104,7 @@ import { DliSchoolCell } from './dlischoolcell'
 import type { CityRow } from '@/lib/stats'
 import { CACHE } from './variables'
 import type {
+  CityLabel, CityLabelIn,
   BandClsIn, CleanupFn,
   ClickFn,
   HomeCoreIn, HomeStats, HomeStatsCore, HomeStatsOfIn, HotPillsIn, LabelFn,
@@ -2193,10 +2194,7 @@ export function makeCityTrack(kind: string): ClickFn {
  * @returns 灰注。
  */
 function cityNoteOf(x: CityNameIn): string {
-  if (cityNameOf(x) === x.r.city) {
-    return x.r.province
-  }
-  return x.r.city + SPACE_SEP + x.r.province
+  return cityLabelOf(cityLabelInOf(x)).note
 }
 
 /**
@@ -3103,13 +3101,39 @@ export function dliRowKeyOf(r: CityDliRow): string {
  * @returns 城市名。
  */
 function cityNameOf(x: CityNameIn): string {
-  if (x.lang === LANG_ZH && x.r.cityZh !== TEXT_NONE) {
-    return x.r.cityZh
+  return cityLabelOf(cityLabelInOf(x)).name
+}
+
+/**
+ * 城市统计行 → cityLabelOf 的入参。
+ *
+ * @param x 城市行与语言。
+ * @returns 入参。
+ */
+function cityLabelInOf(x: CityNameIn): CityLabelIn {
+  return { city: x.r.city, cityZh: x.r.cityZh, cityKo: x.r.cityKo, province: x.r.province, lang: x.lang }
+}
+
+/**
+ * 城市显示两格(站规 09-11「城市中文都用这种格式吧」):主文案 = 界面语言有译名用译名(48 个主要城市有)、否则英文原名;
+ * 灰注 = 主文案是译名时「英文名 省码」,主文案就是英文时只剩省码。CityNameCell 照它摆。
+ * 2026-10-06「我的求职」「我的收藏」两张表成了第二个用处,本桶 cityNameOf / cityNoteOf 收拢到这里并出桶。
+ *
+ * @param x 英文名、两种译名、省码与界面语言。
+ * @returns 主文案与灰注。
+ */
+export function cityLabelOf(x: CityLabelIn): CityLabel {
+  let name = x.city
+  if (x.lang === LANG_ZH && x.cityZh !== TEXT_NONE) {
+    name = x.cityZh
   }
-  if (x.lang === LANG_KO && x.r.cityKo !== TEXT_NONE) {
-    return x.r.cityKo
+  if (x.lang === LANG_KO && x.cityKo !== TEXT_NONE) {
+    name = x.cityKo
   }
-  return x.r.city
+  if (name === x.city) {
+    return { name, note: x.province }
+  }
+  return { name, note: x.city + SPACE_SEP + x.province }
 }
 
 /**

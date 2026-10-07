@@ -1,0 +1,258 @@
+/*
+ * 「我的」页两张岗位表(myjobs 组件桶,2026-10-06)。表的壳、表头、竖线归 table 桶,卡片归 card 桶,这里只管格里的东西。
+ */
+
+/*
+ * 空态 / 拉失败的一句话。
+ */
+.note {
+  /*
+   * 次要灰(colors 域变量)。
+   */
+  color: var(--text2);
+
+  /*
+   * 字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 上下留白。
+   */
+  padding: 12px 0;
+}
+
+/*
+ * 职位名(链接或纯文字)。
+ */
+.title {
+  /*
+   * 主色(同站内链接)。
+   */
+  color: var(--primary);
+
+  /*
+   * 不要下划线。
+   */
+  text-decoration: none;
+}
+
+/*
+ * 可点的公司名(钮的形压成链接字:主色、无框无底、左对齐可折行;双类压过 button 桶 ghost 档)。
+ */
+.coLink.coLink {
+  /*
+   * 主色(同职位板公司名)。
+   */
+  color: var(--primary);
+
+  /*
+   * 不要钮边框。
+   */
+  border: none;
+
+  /*
+   * 不要钮底色。
+   */
+  background: none;
+
+  /*
+   * 不留内衬。
+   */
+  padding: 0;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+
+  /*
+   * 字号随表格。
+   */
+  font-size: inherit;
+
+  /*
+   * 左对齐。
+   */
+  text-align: left;
+
+  /*
+   * 长名可折行。
+   */
+  white-space: normal;
+
+  /*
+   * 可点。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 薪资(钱绿色,同职位卡 .pay)。
+ */
+.pay {
+  /*
+   * 钱绿色。
+   */
+  color: #15803d;
+}
+
+/*
+ * 「职位已下架」。
+ */
+.closed {
+  /*
+   * 警示橙(与职位板「下架」同色系)。
+   */
+  color: #b45309;
+
+  /*
+   * 小一号。
+   */
+  font-size: 12px;
+}
+
+/*
+ * 手机卡胶囊排里的进度字样(已投)。
+ */
+.chip {
+  /*
+   * 与「职位已下架」拉开。
+   */
+  margin-right: 8px;
+
+  /*
+   * 小一号。
+   */
+  font-size: 12px;
+
+  /*
+   * 正文色(colors 域变量)。
+   */
+  color: var(--text);
+}
+
+/*
+ * 操作格里的钮排。
+ */
+.acts {
+  /*
+   * 横排。
+   */
+  display: inline-flex;
+
+  /*
+   * 钮间距。
+   */
+  gap: 6px;
+}
+
+/*
+ * 操作小框钮「打开」「取消收藏」(同职位板「☆ 收藏」的形;双类压过 button 桶 ghost 档)。
+ */
+.act.act {
+  /*
+   * 行内块。
+   */
+  display: inline-block;
+
+  /*
+   * 细边框。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 圆角。
+   */
+  border-radius: 6px;
+
+  /*
+   * 白底。
+   */
+  background: #fff;
+
+  /*
+   * 紧凑内衬。
+   */
+  padding: 2px 10px;
+
+  /*
+   * 字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+
+  /*
+   * 正文色。
+   */
+  color: var(--text);
+
+  /*
+   * 不要下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 宽屏的表:默认藏(移动优先),≥ 641 出(切法照雇主板)。
+ */
+.table {
+  /*
+   * 窄屏藏。
+   */
+  display: none;
+}
+
+/*
+ * 手机卡片流:默认出,≥ 641 藏。
+ */
+.cards {
+  /*
+   * 卡片纵向排。
+   */
+  display: flex;
+
+  /*
+   * 纵向。
+   */
+  flex-direction: column;
+
+  /*
+   * 卡片之间。
+   */
+  gap: 8px;
+}
+
+/*
+ * 宽屏:出表、藏卡。
+ */
+@media (width >= 641px) {
+  /*
+   * 出表。
+   */
+  .table {
+    /*
+     * 出。
+     */
+    display: block;
+  }
+
+  /*
+   * 藏卡。
+   */
+  .cards {
+    /*
+     * 藏。
+     */
+    display: none;
+  }
+}

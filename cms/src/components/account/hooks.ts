@@ -21,16 +21,16 @@ import { useIsNarrow } from '@/components/modal'
 import { RF_ERR_NONE, SEC_DEFAULT, ZOOM_HOME, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from './constants'
 import {
   makeAdd, makeAskOf, makeDefaultOf, makeDeleteOf, makeDragLeave, makeDragOver, makeFileDrop, makeFilePick,
-  makeLoadSavedJobs, makePickerOf, makePreviewClose, makePreviewOf, makeRefresh, makeSureClear, makeResumeListLoad,
+  makePickerOf, makePreviewClose, makePreviewOf, makeRefresh, makeSureClear, makeResumeListLoad,
   makeResumeUpload, okFlagOf,
-  renderPdfPages, renderPdfThumb, secLinkOf, showPdfPage,
+  planOf, renderPdfPages, renderPdfThumb, secLinkOf, showPdfPage,
   applyViewTo, makeDocDrop, makeGripDown, makeGripMove, makeGripUp, makePageTurn, makeWheelBind, makeZoomHome,
   makeZoomRedraw, makeZoomStep, zoomPctOf,
 } from './functions'
 import type {
   AccountPanel, MaybeResumeMeta, Me, ResumeFilePanel, ResumeMetas, ResumePagesPanel, ResumeThumbHookIn,
-  ResumeThumbPanel, SavedJobFact, MaybePdfDoc, MaybeZoomGrip, ZoomView,
-  SavedJobsHookIn, SavedJobsPanel, Sec, SubscriptionPanel,
+  ResumeThumbPanel, MaybePdfDoc, MaybeZoomGrip, ZoomView,
+  Sec, SubscriptionPanel, WeeklyHookIn, WeeklyPanel,
 } from './types'
 
 /**
@@ -78,25 +78,20 @@ export function useAccountPage(): AccountPanel {
     checked,
     payOk,
     onPick: setSec,
+    plan: planOf(me),
   }
 }
 
 /**
- * 收藏岗清单整机(E9-01):挂载拉一次清单,行内改状态/移除靠面板递出的清单与落格;
- * 周报退订态(E9-02b)显示语义取反在渲染层做。
+ * 周报开关的退订态(E9-02b):初值取库里的现状,勾选时先本地拨、再 PATCH 跟投(makeWeeklyToggle)。
+ * 2026-10-06 自原收藏清单整机 useSavedJobs 拆出(收藏清单改成 myjobs 桶的表,开关单独拼在下面)。
  *
- * @param x 周报退订现状(favs 视图给 null)。
- * @returns 收藏清单的面板。
+ * @param x 库里的退订现状。
+ * @returns 退订态与落格。
  */
-export function useSavedJobs(x: SavedJobsHookIn): SavedJobsPanel {
-  const [items, setItems] = useState<SavedJobFact[] | null>(null)
-  const [optOut, setOptOut] = useState<boolean>(x.weeklyOptOut === true)
-
-  useEffect(function firstLoad() {
-    makeLoadSavedJobs({ setItems })()
-  }, [])
-
-  return { items, setItems, optOut, setOptOut }
+export function useWeeklyOptin(x: WeeklyHookIn): WeeklyPanel {
+  const [optOut, setOptOut] = useState<boolean>(x.weeklyOptOut)
+  return { optOut, setOptOut }
 }
 
 /**

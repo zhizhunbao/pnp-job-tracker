@@ -9,17 +9,19 @@
  * @time 2026-08-26 15:28:17
  */
 import { cssOf } from '@/components/css'
+import { toJobPlan } from '@/components/jobs'
+import { hasProfile, normalizeProfile } from '@/lib/jobs'
 import { track } from '@/lib/track'
 import {
-  CARD_CLS, CLS_SEP, CRED_INCLUDE, EV_WEEKLY, FAV_NOTE_KEY, FAV_TITLE_KEY,
-  HDR_CONTENT_TYPE, METHOD_DELETE, METHOD_PATCH, MIME_JSON, Q_SEARCH_HEAD, QP_OK,
+  CARD_CLS, CLS_SEP, CRED_INCLUDE, EV_WEEKLY,
+  HDR_CONTENT_TYPE, METHOD_DELETE, METHOD_PATCH, MIME_JSON, QP_OK,
   BYTES_KB, BYTES_MB, FIELD_FILE, MB_DIGITS, METHOD_PUT, RESUME_MAX_BYTES, RF_ERR_FALLBACK, RF_ERR_KEY, RF_ERR_NONE,
   RF_ERR_SIZE, THUMB_BASE_SCALE, THUMB_PAGE, UNIT_KB, UNIT_MB, URL_RESUME_FILE, URL_RESUME_FILES,
   MIME_PDF as MIME_PDF_TYPE, Q_DL_TAIL, Q_ID_HEAD, Q_VER_MID, RESUME_FILES_MAX, COUNT_SEP, CANVAS_TAG,
   CENTER_DIV, EV_WHEEL, PCT_SIGN, PX, TF_HEAD, TF_MID, TF_SCALE, TF_TAIL, WHEEL_OPTS, ZOOM_HOME, ZOOM_MAX, ZOOM_MIN,
   ZOOM_PCT, ZOOM_PINCH_K, ZOOM_PX_MAX, ZOOM_SETTLE_MS, ZOOM_WHEEL_K,
-  QP_OK_ON, QP_SEC, SEC_LABEL_CUT_RE, SEC_TABS, SJ_NOTE_KEY, SJ_STATUS_DEFAULT, SJ_STATUS_TABS, SJ_TITLE_KEY,
-  TEXT_NONE, URL_ME, URL_SAVED_JOB_HEAD, URL_SAVED_JOBS_LIST,
+  QP_OK_ON, QP_SEC, SEC_LABEL_CUT_RE, SEC_TABS,
+  TEXT_NONE, URL_ME,
   URL_USER_HEAD,
 } from './constants'
 import type {
@@ -28,12 +30,12 @@ import type {
   ResumeRespJson, ResumeUploadFn, ResumeUploadIn, ShowPageIn,
   ApplyViewIn, DivPointerEvent, GripIn, GripViewIn, PageTurnIn, PdfDoc, PdfZoomDrawIn, PtPairIn, WheelBindIn,
   ZoomAtIn, ZoomBox, ZoomClampIn, ZoomHomeIn, ZoomPt, ZoomStepIn, ZoomView, ZoomXY,
-  FlagSetIn, ProOfIn,
-  JobRemoveIn, JobStatusChangeFn, JobStatusChangeIn, LoadSavedJobsIn, Me, MeRespJson,
+  AcctPlan, FlagSetIn, ProOfIn,
+  Me, MeRespJson,
   NavLabelIn, SecChangeFn, SecChangeIn, SecItemsIn, SecTabItem,
-  RefreshFn, RefreshIn, SavedJobFact, SavedJobsRespJson,
-  SearchHrefIn, Sec, SjStatus, SjTitleKeys,
-  SjTitleKeysIn, WeeklyToggleFn, WeeklyToggleIn,
+  RefreshFn, RefreshIn,
+  Sec,
+  WeeklyToggleFn, WeeklyToggleIn,
 } from './types'
 import css from './account.module.css'
 
@@ -160,131 +162,6 @@ export function ignoreWriteErr(): void {
 }
 
 /**
- * 收藏节抬头的两把 i18n 键:favs 纯列表视图用 fav.*,求职看板视图用 sj.*(#62A)。
- *
- * @param x 是不是 favs 视图。
- * @returns 标题键与小注键。
- */
-export function sjTitleKeysOf(x: SjTitleKeysIn): SjTitleKeys {
-  if (x.favs) {
-    return { title: FAV_TITLE_KEY, note: FAV_NOTE_KEY }
-  }
-  return { title: SJ_TITLE_KEY, note: SJ_NOTE_KEY }
-}
-
-/**
- * saved-jobs 响应 → 收藏行清单(行构造器):id 洗成串,快照缺格归一成空串,
- * 看板状态不认识的值按 wish 读(与旧渲染 `status || 'wish'` 同口径)。
- *
- * @param d 接口响应体(归一前)。
- * @returns 洗净的收藏行。
- */
-export function toSavedJobs(d: SavedJobsRespJson): SavedJobFact[] {
-  const out: SavedJobFact[] = []
-  if (d == null || d.docs == null) {
-    return out
-  }
-  for (const row of d.docs) {
-    let title = ''
-    if (row.title != null) {
-      title = row.title
-    }
-    let company = ''
-    if (row.company != null) {
-      company = row.company
-    }
-    let st: SjStatus = SJ_STATUS_DEFAULT
-    for (const tab of SJ_STATUS_TABS) {
-      if (tab.st === row.status) {
-        st = tab.st
-      }
-    }
-    out.push({ id: String(row.id), title, company, status: st })
-  }
-  return out
-}
-
-/**
- * 造一枚拉收藏岗清单的手柄(E9-01),挂载时调一次。网络挂了落空清单
- * (与旧 `.catch(setItems([]))` 同口径 —— null 是「还在拉」,空数组才是「没有」)。
- *
- * @param x 清单落格。
- * @returns 拉取手柄。
- */
-export function makeLoadSavedJobs(x: LoadSavedJobsIn): () => Promise<void> {
-  return async function loadSavedJobs(): Promise<void> {
-    try {
-      const r = await fetch(URL_SAVED_JOBS_LIST, { credentials: CRED_INCLUDE })
-      const d = await r.json() as SavedJobsRespJson
-      x.setItems(toSavedJobs(d))
-    } catch {
-      x.setItems([])
-    }
-  }
-}
-
-/**
- * 造一枚收藏行状态下拉的 change 手柄(E9-01):先本地重建这一行,再 PATCH 跟投
- * (失败静默,口径见 ignoreWriteErr)。
- *
- * @param x 这一行的 id、现清单与落格。
- * @returns 下拉 change 手柄。
- */
-export function makeJobStatusChange(x: JobStatusChangeIn): JobStatusChangeFn {
-  return async function changeJobStatus(e): Promise<void> {
-    let st: SjStatus = SJ_STATUS_DEFAULT
-    for (const tab of SJ_STATUS_TABS) {
-      if (tab.st === e.target.value) {
-        st = tab.st
-      }
-    }
-    const next: SavedJobFact[] = []
-    for (const row of x.items) {
-      if (row.id === x.id) {
-        next.push({ id: row.id, title: row.title, company: row.company, status: st })
-      } else {
-        next.push(row)
-      }
-    }
-    x.setItems(next)
-    try {
-      await fetch(URL_SAVED_JOB_HEAD + x.id, {
-        method: METHOD_PATCH,
-        credentials: CRED_INCLUDE,
-        headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-        body: JSON.stringify({ status: st }),
-      })
-    } catch {
-      ignoreWriteErr()
-    }
-  }
-}
-
-/**
- * 造一枚移除收藏的手柄(× 钮):先本地移除,再 DELETE 跟投(失败静默,
- * 口径见 ignoreWriteErr)。
- *
- * @param x 这一行的 id、现清单与落格。
- * @returns 点一下移除的手柄。
- */
-export function makeJobRemove(x: JobRemoveIn): () => Promise<void> {
-  return async function removeJob(): Promise<void> {
-    const next: SavedJobFact[] = []
-    for (const row of x.items) {
-      if (row.id !== x.id) {
-        next.push(row)
-      }
-    }
-    x.setItems(next)
-    try {
-      await fetch(URL_SAVED_JOB_HEAD + x.id, { method: METHOD_DELETE, credentials: CRED_INCLUDE })
-    } catch {
-      ignoreWriteErr()
-    }
-  }
-}
-
-/**
  * 造一枚周报开关的 change 手柄(E9-02b):显示语义取反(勾 = 订阅,存的是退订),
  * 先拨本地,发 umami 的订阅/退订事件(统计对象由环境注入,没有就不发、发挂了不挡),
  * 再 PATCH 跟投(失败静默)。
@@ -313,16 +190,6 @@ export function makeWeeklyToggle(x: WeeklyToggleIn): WeeklyToggleFn {
 }
 
 /**
- * 收藏行「查看」链接的去处:回职位板按职位名搜。
- *
- * @param x 职位名快照。
- * @returns 拼好的 href。
- */
-export function jobSearchHrefOf(x: SearchHrefIn): string {
-  return Q_SEARCH_HEAD + encodeURIComponent(x.title)
-}
-
-/**
  * 造一枚「把一个布尔格拨成定值」的通用小手柄:简历的展开/收起、二次确认的亮/熄
  * 都是它 —— 四枚钮各造一个工厂只会得到四份同文。
  *
@@ -347,6 +214,31 @@ export function proOf(x: ProOfIn): boolean {
     return false
   }
   return new Date(x.until) > new Date()
+}
+
+/**
+ * 账户页的分层态(2026-10-06:「我的求职」「我的收藏」点公司名开公司弹框要它)。账户页是纯客户端页,没有页面门
+ * 在服务端算好的那份,这里按 /api/users/me 的结果拼:档案用 lib/jobs 的 normalizeProfile / hasProfile、Pro 用 proOf
+ * (与服务端 isPro 同口径),交职位桶的 toJobPlan 装配 —— 与各页面门同一套口径;没登录给访客态。
+ *
+ * @param me 登录人(没登录 = null)。
+ * @returns 分层态。
+ */
+export function planOf(me: Me): AcctPlan {
+  if (me == null) {
+    const none = normalizeProfile(null)
+    return toJobPlan({ user: null, pro: false, profile: none, profileOk: false })
+  }
+  let raw = null
+  if (me.profile != null) {
+    raw = me.profile
+  }
+  let until = null
+  if (me.proUntil != null) {
+    until = me.proUntil
+  }
+  const profile = normalizeProfile(raw)
+  return toJobPlan({ user: me, pro: proOf({ until }), profile, profileOk: hasProfile(profile) })
 }
 
 /**

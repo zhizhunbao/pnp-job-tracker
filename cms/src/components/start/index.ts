@@ -22,5 +22,6 @@ export {
   emptyText,
   homeCoreOf, homeStatsOf, nullProof, putHomeCache,
 } from './functions'
+export { cityLabelOf } from './functions'
 export { DRAWS_LIMIT, START_META } from './constants'
 export type { HomeStats } from './types'
