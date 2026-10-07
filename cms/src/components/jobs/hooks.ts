@@ -98,6 +98,8 @@ if (typeof window !== 'undefined') {
  * 换列集 → 手动宽作废(新列在固定布局里会塌成 0)。
  * 2026-09-23 拖列整功能撤(Frank「拖动功能去掉吧」,线上拖了没反应):触发点三、手动宽与
  * resizeColWidths 一并删,只剩前两条触发。
+ * 2026-10-06 Frank「我把 EE 取消掉,在加回来 就这样了」:换列后每列拿到右边那列的宽 —— 同步列名单的 effect
+ * 是普通 effect,晚于下面的 layout 量宽,量宽拿旧名单按位置对新表头,错开一位。同步改 layout effect、排在量宽前面。
  *
  * @param headRowRef 表头锚点(单独一格收,理由见 types.ts 的 `HeadRowRef`)。
  * @param x 列集、数据指纹、格内边距与 cookie 种子。
@@ -110,7 +112,7 @@ export function useColWidths(headRowRef: HeadRowRef, x: ColWidthsIn): ColWidthsP
   const doneKey = useRef(TEXT_NONE)
   const keysKey = x.keys.join(COMMA)
   const keysRef = useRef(x.keys)
-  useEffect(function syncLiveRefs() {
+  useIsoLayoutEffect(function syncLiveRefs() {
     keysRef.current = x.keys
   })
   const pad = x.pad
