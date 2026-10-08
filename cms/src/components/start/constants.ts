@@ -1540,31 +1540,9 @@ export const MACRO_BAD_UP_KEYS = ['comp', 'unemp']
 export const MACRO_FLOW_KEYS = ['studyNew', 'prAll', 'prPnp', 'eeInvites', 'issued']
 
 /**
- * 不出「推荐」列的指标:只有全国一行,没得比(Frank 2026-09-09「每个统计维度表都有一个推荐,这样就可以最终综合打分了」——
- * 其余每张表都按最新值给十省排名出推荐,综合打分后面在这些列上做)。
- * 2026-09-10 Frank「你这个推荐不是乱写的吗」改成只在比值表上出(见 REC_KEYS):计数表「盘子大 = 推荐」站不住
- * (临时居民多是竞争大),这张跳过表退役。
+ * 推荐列(REC_KEYS / REC_LOWER_BETTER / REC_HALF / COL_REC,2026-09-09 立、09-10 收成比值表两档)
+ * 2026-10-08 Frank「就业把脉页面,带推荐的列都删掉」整体退役;代码与拍板记录在 git 历史。
  */
-export const REC_SKIP_KEYS = ['pnpTarget', 'eeInvites']
-
-/**
- * 出「推荐」列的指标(2026-09-10 拍板):本身就是判断的比值表 —— 竞争比、失业率、临时居民占比,都越低越好;
- * 计数表(配额、人口、PR、学签…)不出。
- */
-export const REC_KEYS = ['comp', 'unemp', 'nprShare']
-
-/**
- * 「越低越好」的指标:竞争比、失业率、临时居民占比、配额用尽率;不在表里的都按越高越好(配额、已发、依赖度、
- * 人口、GDP、PR 获批 —— 盘子大 / 名额多 / 靠省提名多的省对申请人有利)。
- */
-export const REC_LOWER_BETTER = ['comp', 'unemp', 'nprShare', 'useRate']
-
-/**
- * 推荐列的档:排名前这么多省「推荐」、末这么多省「不推荐」,中间「一般」。
- * 2026-09-10 Frank「把一般删了,只有推荐和不推荐」:改成对半 —— 名次在前一半「推荐」,其余「不推荐」
- * (参评省数为奇数时中位那省算前一半);REC_TOP_N 退役,分界见 REC_HALF。
- */
-export const REC_HALF = 0.5
 
 /**
  * 指标表的地区行序:全国 + 九省。魁北克撤出(Frank 2026-09-09「魁北克如果是专项的话,可以把其他 table 的魁北克行去掉」:
@@ -1572,11 +1550,6 @@ export const REC_HALF = 0.5
  * 2026-09-30 Frank「把脉页也加上魁省吧」:放回,位置同 MACRO_GEO_ORDER(在招量第二);省提名那几行照 MACRO_NA_ROWS 写不适用。
  */
 export const IND_GEO_ORDER = ['CA', 'ON', 'QC', 'BC', 'AB', 'SK', 'NS', 'MB', 'NB', 'NL', 'PE']
-
-/**
- * 指标表的推荐列键。
- */
-export const COL_REC = 'rec'
 
 /**
  * 同比列名里年份取后两位(「同比 25/24」)。

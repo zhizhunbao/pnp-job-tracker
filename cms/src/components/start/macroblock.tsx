@@ -45,7 +45,6 @@ export function MacroBlock({ t, geo, updatedAt, gap }: MacroBlockIn) {
               yoyLabel: geo.yoyLabel,
               keyLabel: geo.keyLabel,
               yearNotes: geo.yearNotes,
-              recLabel: geo.recLabel,
             })}
             rowKey={macroRowKeyOf}
             series={macroSeriesOf({ t, geo })} />

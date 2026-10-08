@@ -4343,15 +4343,6 @@ export type MacroRow = {
    */
   yoyCls: string
 
-  /**
-   * 推荐列文案(竞争表:推荐 / 可选 / 拥挤);别的表与没数的行空串。
-   */
-  rec: string
-
-  /**
-   * 推荐列胶囊类(借竞争度三色);空串 = 不显。
-   */
-  recCls: string
 }
 
 /**
@@ -4399,11 +4390,6 @@ export type MacroGeo = {
    * 各省截止不一致的列给空串,灰注留在格里。Frank 2026-09-09「至 4 月这种放到标题上如何」)。
    */
   yearNotes: Record<string, string>
-
-  /**
-   * 推荐列名;空串 = 不出这列。
-   */
-  recLabel: string
 
   /**
    * 标题下的公式行(只有竞争表);空串不显。
@@ -5049,29 +5035,9 @@ export type YoyYearIn = {
 }
 
 /**
- * `recRowsOf` 的入参。
+ * `formulaOf` 的入参。
  */
-export type RecRowsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 地区行(已带最新格)。
-   */
-  rows: MacroRow[]
-
-  /**
-   * 指标键(只有竞争表出推荐)。
-   */
-  key: string
-}
-
-/**
- * `recLabelOf` 的入参。
- */
-export type RecLabelIn = {
+export type FormulaIn = {
   /**
    * 取词函数。
    */
@@ -5081,76 +5047,6 @@ export type RecLabelIn = {
    * 指标键。
    */
   key: string
-}
-
-/**
- * `withRec` 的入参。
- */
-export type WithRecIn = {
-  /**
-   * 原行。
-   */
-  row: MacroRow
-
-  /**
-   * 推荐格。
-   */
-  rec: RecOut
-}
-
-/**
- * `recRankOf` 的入参。
- */
-export type RecRankOfIn = {
-  /**
-   * 这一行。
-   */
-  row: MacroRow
-
-  /**
-   * 参评的省行(都有最新值)。
-   */
-  rows: MacroRow[]
-
-  /**
-   * 越低越好。
-   */
-  lower: boolean
-}
-
-/**
- * `recOfRank` 的入参。
- */
-export type RecRankIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 该行在有数行里按最新值升序的名次(0 起)。
-   */
-  rank: number
-
-  /**
-   * 有数的行数。
-   */
-  n: number
-}
-
-/**
- * `recOfRank` 的出参。
- */
-export type RecOut = {
-  /**
-   * 文案。
-   */
-  text: string
-
-  /**
-   * 胶囊类。
-   */
-  cls: string
 }
 
 /**
@@ -5347,11 +5243,6 @@ export type MacroColsIn = {
    * 年 → 列头共用灰注(空串 = 灰注留在格里)。
    */
   yearNotes: Record<string, string>
-
-  /**
-   * 推荐列名;空串不出这列。
-   */
-  recLabel: string
 }
 
 /**

@@ -12,7 +12,6 @@
 import { TEXT_NONE } from './constants'
 import { cardPairsOf, nonSubRowsOf } from './functions'
 import { MacroLatestCell } from './macrolatestcell'
-import { MacroRecCell } from './macroreccell'
 import { MacroYoyCell } from './macroyoycell'
 import type { IndCardsIn } from './types'
 import css from './start.module.css'
@@ -42,7 +41,6 @@ export function IndCards(x: IndCardsIn) {
         <div className={css.provCardBody}>
           <div>{MacroLatestCell(r)}</div>
           <div>{MacroYoyCell(r)}</div>
-          {r.rec !== TEXT_NONE && <div>{MacroRecCell(r)}</div>}
         </div>
         {pairs.length > 0 && <div className={css.indYears}>{cells}</div>}
       </div>,
