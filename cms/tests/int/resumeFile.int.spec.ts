@@ -229,12 +229,12 @@ describe('④ 限流两位', () => {
 })
 
 describe('⑤ 多份', () => {
-  it('第一份自动默认;满 5 份再加 409;替换原地覆盖、默认不变', async () => {
+  it('第一份自动默认;满了(RESUME_FILES_MAX,10-07 起 20 份)再加 409;替换原地覆盖、默认不变', async () => {
     login(7)
     for (let i = 1; i <= RESUME_FILES_MAX; i++) {
       expect((await put(PDF, `cv${i}.pdf`)).status).toBe(200)
     }
-    const full = await put(PDF, 'cv6.pdf')
+    const full = await put(PDF, 'cv-extra.pdf')
     expect(full.status).toBe(409)
     expect(await full.json()).toEqual({ error: 'full' })
     let items = await list()

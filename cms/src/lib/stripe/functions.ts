@@ -9,8 +9,9 @@
  */
 
 import Stripe from 'stripe'
+import { BACK_RE, CANCEL_PATH, OK_TAIL, SUCCESS_PATH } from './constants'
 import { CACHE } from './variables'
-import type { MaybeStripe } from './types'
+import type { MaybeCheckoutBody, MaybeStripe, ReturnPaths } from './types'
 
 /**
  * 拿 Stripe 客户端;env 没配 key 是 null(调用方 503)。key 只进服务端 env,
@@ -27,4 +28,18 @@ export function getStripe(): MaybeStripe {
     CACHE.client = new Stripe(key)
   }
   return CACHE.client
+}
+
+/**
+ * 付完 / 取消各回哪条路径(2026-10-07 批 C):请求体带了合规的站内回跳地址(白名单 BACK_RE)就回那儿、
+ * 付成补 ok=1;没带或不合规一律回账户页 —— 不做开放跳转。
+ *
+ * @param body 下单请求体;读不出是 null。
+ * @returns 两条回跳路径。
+ */
+export function returnPathsOf(body: MaybeCheckoutBody): ReturnPaths {
+  if (body == null || typeof body.back !== 'string' || BACK_RE.test(body.back) === false) {
+    return { ok: SUCCESS_PATH, cancel: CANCEL_PATH }
+  }
+  return { ok: body.back + OK_TAIL, cancel: body.back }
 }

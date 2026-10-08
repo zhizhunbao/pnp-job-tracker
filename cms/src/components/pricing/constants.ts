@@ -95,12 +95,6 @@ export const PER_GAP = ' '
 export const WIDE_GAP = '　'
 
 /**
- * 已是 Pro 时免费卡底那格占位写的破折号 —— 免费档对他已经没有动作可给,
- * 但格子不能塌(三张卡的钮要在同一条线上)。
- */
-export const CTA_BLANK_MARK = '—'
-
-/**
  * 「对比」文字钮尾巴上那个右箭头:它说的是「点了还有下文」(开定价弹窗),
  * 与钮本身的文案是两件事,所以单独一格。
  */
@@ -163,9 +157,18 @@ export const PER_30_DIV = 3
 export const PLAN_DEFAULT = '90'
 
 /**
- * 升级弹框权益清单的 i18n 键(只写已经有的功能;模考 / AI 评分做出来再加)。
+ * Pro 权益清单,每条 [标题词条, 说明词条](2026-10-07 Frank「这些功能要重新盘点,重新写一下」,按代码里真锁在 Pro 后面的重盘):
+ * AI 写信(lib/apply 本批,免费试用 3 个职位)、简历对照全条 + 改写建议(lib/resume gateMatch)、每天盯梢邮件(lib/alerts,
+ * 免费档只有周报)、通道报告付费行(lib/ruling TIER_OF.paid)、担保雇主 CSV 导出(lib/employers export,浏览免费)。
+ * 定价卡与升级框同读这一份;加减一条只改这里与三语词条。
  */
-export const UP_PERK_KEYS = ['up.perk.quota', 'up.perk.sync']
+export const PRO_PERKS: [string, string][] = [
+  ['price.perk.letter', 'price.perk.letter.d'],
+  ['price.perk.match', 'price.perk.match.d'],
+  ['price.perk.alert', 'price.perk.alert.d'],
+  ['price.perk.path', 'price.perk.path.d'],
+  ['price.perk.export', 'price.perk.export.d'],
+]
 
 /**
  * 30 天档的天数(每天单价 = 档价 ÷ 它)。
@@ -265,8 +268,3 @@ export const NOTICE_KIND_ERR = 'err'
  * 之后,自定义配色的钮一律经 Button 的 ghost 档 + 本域加倍类,样张 account 的 PLAIN_BTN_KIND)。
  */
 export const PLAIN_BTN_KIND = 'ghost'
-
-/**
- * 白底描边钮的变体(免费卡未登录时的「免费注册」)。
- */
-export const BTN_SECONDARY = 'secondary'

@@ -3,6 +3,7 @@
  * pricing 域的 Pro 30 天卡(试水档)。内容与 90 天档一模一样,只是期限短、每天贵 ——
  * 所以清单只写一句「与 90 天档相同」,不把三条卖点再抄一遍。
  * 2026-08-28 换装批自 PricingModal.tsx 的第三张卡提出成文件。
+ * 2026-10-07 权益清单挪到两卡下面共用一份,这一句「与 90 天档相同」随之撤,卡里只剩价格与购买钮。
  *
  * @author Frank
  * @time 2026-08-28 16:40:00
@@ -12,7 +13,6 @@ import { IconStar } from '@/components/icons'
 import { ICON_GAP, PLAN_30, PLAIN_BTN_KIND, WIDE_GAP } from './constants'
 import { buyClsOf, cardClsOf, makePlanPick, perLabel30Of } from './functions'
 import { PriceAmount } from './priceamount'
-import { PriceFeature } from './pricefeature'
 import type { PricingPro30In } from './types'
 import { PRICE } from './variables'
 import css from './pricing.module.css'
@@ -28,9 +28,6 @@ export function PricingPro30({ t, busy, onBuy }: PricingPro30In) {
     <div className={cardClsOf({ hot: false })}>
       <div className={css.headPro}><IconStar />{ICON_GAP}{t('price.pro')}{ICON_GAP}{PLAN_30}</div>
       <PriceAmount amount={PRICE.p30} per={perLabel30Of({ t, perDay: PRICE.perDay30 })} />
-      <ul className={css.list}>
-        <PriceFeature dim>{t('price.same30')}</PriceFeature>
-      </ul>
       <Button kind={PLAIN_BTN_KIND}
         onClick={makePlanPick({ plan: PLAN_30, onBuy })}
         disabled={busy}

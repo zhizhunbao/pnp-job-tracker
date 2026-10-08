@@ -24,13 +24,14 @@
  * 同日二轮收口审查:点了投递没拿到邮箱不再无声 —— 会话过期(401)弹登录框(auth 桶 AuthModal 登录档,登录完照注册闸那一路接着投),
  * 次数用完(429)与其余失败各弹一行提示(照简历对照「拿不到全文」那一框的形:小号 Modal + 一行字),都叠在职位弹框之上。
  * 2026-10-05 Frank「已经下架了,就不要在有按钮点击了吧」:已下架岗整栏不出,灰色「看官网」钮撤,栏里只剩投递钮。
+ * 2026-10-07 B2 站内投递:投递钮改跳投递页 /apply/<id>(见 useApplyBar),邮件投递框 ApplyEmail、会话过期的登录框、
+ * 「次数用完」「投递失败」两行提示框随 mailto 一路撤。
  * 原判(2026-08-03,随 `.btnClosed` 类一起撤,原文照录):「已下架岗:主钮还写「前往投递」等于继续把人往死链上送 ——
  * 降级成灰色的「查看官方页」。不直接禁掉:closed 有一部分来自「本次未见+30天」的推断(非逐帖实测),留个口子让用户自己核。」
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { AuthModal } from '@/components/auth'
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { GateWizard } from '@/components/gate'
@@ -38,11 +39,9 @@ import { Modal } from '@/components/modal'
 import { OnboardingWizard } from '@/components/profile'
 import { ResumeMatchModal } from '@/components/resume'
 import {
-  APPLY_AUTH, APPLY_EMAIL, APPLY_ERR, APPLY_INTENT, APPLY_LIMIT, APPLY_LOGIN, AUTH_LOGIN, BTN_GHOST, GATE_INTENT_APPLY,
-  MODAL_SM, MODAL_Z_STACKED, TEXT_NONE, URL_JOB,
+  APPLY_AUTH, APPLY_INTENT, BTN_GHOST, GATE_INTENT_APPLY, MODAL_SM, MODAL_Z_STACKED, TEXT_NONE, URL_JOB,
 } from './constants'
 import { applyBarShownOf, barClsOf } from './functions'
-import { ApplyEmail } from './applyemail'
 import { useApplyBar } from './hooks'
 import type { ApplyBarIn } from './types'
 import css from './jobs.module.css'
@@ -78,23 +77,6 @@ export function ApplyBar({ job, t, plan, onPage }: ApplyBarIn) {
       {a.stage === APPLY_AUTH && (
         <GateWizard t={t} intent={GATE_INTENT_APPLY} z={MODAL_Z_STACKED}
           returnTo={URL_JOB + String(job.id)} onClose={a.onAuthClose} onDone={a.onAuthDone} />
-      )}
-      {a.stage === APPLY_EMAIL && (
-        <ApplyEmail email={a.email} job={job} t={t} copied={a.copied} onCopy={a.onCopyEmail} onClose={a.onEmailClose} />
-      )}
-      {a.stage === APPLY_LOGIN && (
-        <AuthModal t={t} mode={AUTH_LOGIN} z={MODAL_Z_STACKED}
-          returnTo={URL_JOB + String(job.id)} onClose={a.onAuthClose} onDone={a.onAuthDone} />
-      )}
-      {a.stage === APPLY_LIMIT && (
-        <Modal onClose={a.onNoteClose} size={MODAL_SM} z={MODAL_Z_STACKED}>
-          <div className={cssOf(css.applyNote)}>{t('apply.limit')}</div>
-        </Modal>
-      )}
-      {a.stage === APPLY_ERR && (
-        <Modal onClose={a.onNoteClose} size={MODAL_SM} z={MODAL_Z_STACKED}>
-          <div className={cssOf(css.applyNote)}>{t('apply.err')}</div>
-        </Modal>
       )}
       {a.stage === APPLY_INTENT && (
         <OnboardingWizard t={t} initial={a.intentProfile} z={MODAL_Z_STACKED}

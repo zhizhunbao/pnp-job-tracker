@@ -18,30 +18,30 @@ import { makeT } from '@/lib/i18n'
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
 import { mapQuery, mapsUrl } from '@/lib/location'
 import { JOBS_LOG, log } from '@/lib/log'
-import { isGateSignedIn, markSeenJob } from '@/lib/guest'
+import { isGateSignedIn } from '@/lib/guest'
 import { registerCatLabels } from '@/lib/noc'
 import { ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
-  APPLY_AUTH, APPLY_EMAIL, APPLY_ERR, APPLY_IDLE, APPLY_INTENT, APPLY_LIMIT, APPLY_LOGIN, APPLY_RESUME_KEY,
-  APPLY_RESUME_SEP, APPLY_RESUME_TTL_MS, APPLY_STATUS_NET, HTTP_UNAUTHORIZED,
-  AUTH_LOGIN, AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA, CREDENTIALS_INCLUDE,
+  APPLY_AUTH, APPLY_IDLE, APPLY_INTENT, APPLY_RESUME_KEY,
+  APPLY_RESUME_SEP, APPLY_RESUME_TTL_MS, AUTH_LOGIN, AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA,
+  CREDENTIALS_INCLUDE,
   DIR_DESC, DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK,
   HOME_GATE_OFF,
   FILTER_Q, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
   HOLD_MAX_MS, HTTP_NOT_FOUND, HTTP_TOO_MANY, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ENTER,
   LANG_EN, LIMIT_RE, METHOD_DELETE,
-  METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, P_OAUTH,
-  QS_HEAD, Q_URL_SETTLE_MS, SAVED_STATUS_APPLIED, SAVED_STATUS_WISH,
+  METHOD_POST, MIME_JSON, P_BACK, P_OAUTH,
+  QS_HEAD, Q_URL_SETTLE_MS, SAVED_STATUS_WISH,
   SAVE_ERR, SAVE_LIMIT, SAVE_OK, SAVE_RESUME_KEY, SAVE_RESUME_TTL_MS, SLASH, SORT_DEFAULT, TARGET_BLANK, TEXT_NONE,
   TEXT_STATUS, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
   TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MODE_EMAIL,
   TRACK_APPLY_CLICK, TRACK_SAVE_JOB, TRACK_SAVE_SEARCH, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UPSELL_LOCK, UPSELL_SS,
-  URL_API_APPLY_HOW, URL_API_APPLY_HOW_ID, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE,
+  URL_APPLY, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE,
   URL_API_JOB_RELATED,
   URL_API_JOBS, URL_API_JOBS_DIMS,
   URL_API_SAVED_JOBS,
-  URL_API_SAVED_JOBS_LIST, URL_API_SAVED_JOB_BY_JOB, URL_API_SAVED_JOB_BY_JOB_TAIL, URL_API_SAVED_SEARCHES,
+  URL_API_SAVED_JOBS_LIST, URL_API_SAVED_SEARCHES,
   URL_API_USERS_ME, URL_BOARD, URL_TO_FILTER, VAL_ON, WIDTH_FULL,
   TITLE_TRANS_GEN, WINDOW_FEATURES,
 } from './constants'
@@ -62,14 +62,13 @@ import {
   jobDatesOf, ssrTransOf,
 } from './functions'
 import type {
-  AccountAreaPanel, Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyHowJson, ApplyMailOut, ApplyMissIn,
-  ApplyResumeIn, ApplyStage, AuthDoneIn, BlockedKeys, BoardColsHookIn, BoardColsOut, BoardColsPanel,
+  AccountAreaPanel, Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyResumeIn, ApplyStage, AuthDoneIn,
+  BlockedKeys, BoardColsHookIn, BoardColsOut, BoardColsPanel,
   BoardDataHookIn, BoardDataOut, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoardPnpFacts, BoxRef,
   ClickFn, ColMeasure,
   ColsToggleIn, ColWidthSeed, ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson,
   FieldRouterIn, FilterState, FmtLoad, FmtLoadIn, FmtWhy, FontsDoc, FrozenHookIn, FrozenPanel, HeadRowRef, HomeGate,
-  FilterGateDoneIn, HydrateIn, CopyEmailIn,
-  JobPeekPanel,
+  FilterGateDoneIn, HydrateIn, JobPeekPanel,
   IntentProfileIn,
   JdFormatHookIn, JdFormatPanel, JdStatus, JdTextHookIn, JdTextPanel, JdTransHookIn, JdTransPanel, JobBodyHookIn,
   JobBodyPanel, JobColKey, JobDetailPanel, JobDims, JobFact, JobFilters, JobIn, JobPlan, JobsBoardOut, JobsBoardPanel,
@@ -1756,34 +1755,6 @@ function readRelated(r: Response): Promise<RelatedJson | null> {
 }
 
 /**
- * 2xx 才解投递方式。
- * 2026-10-03 付费闭环批 B1 收口:非 2xx(含每 IP 日限 429)与回包解不出都经 applyHowFailed 留痕 ——
- * 外链投递撤了以后,查失败 = 在架岗投递栏不出,不能再无声。
- *
- * @param r 响应。
- * @returns 投递方式;非 2xx 或失败给 null。
- */
-function readApplyHow(r: Response): Promise<ApplyHowJson | null> {
-  if (r.ok === false) {
-    return Promise.resolve(applyHowFailed(String(r.status)))
-  }
-  return r.json().catch(function badApplyHowJson(e: Error): null {
-    return applyHowFailed(String(e))
-  })
-}
-
-/**
- * 投递邮箱懒查挂了(非 2xx / 网络断 / 回包解不出):留一行,按没查到算。
- *
- * @param why 状态码或错误。
- * @returns null(没查到)。
- */
-function applyHowFailed(why: string): null {
-  log({ tag: JOBS_LOG.tag, text: JOBS_LOG.applyHowFailed + why })
-  return null
-}
-
-/**
  * 出错时给 null(catch 的落点)。
  *
  * @returns null。
@@ -2209,6 +2180,10 @@ async function postTranslate(x: TranslateIn): Promise<string> {
  * 2026-10-04 二轮收口审查:点了投递没拿到邮箱不再无声作罢(钮转一圈什么都不发生)—— 按回包状态码分流(showApplyMiss):
  * 401(页面还当已登录、会话已过期)记投递意图、弹登录框,登录完照注册闸那一路接着投;429 弹一行「今天次数用完了」;
  * 其余(网络断、别的非 2xx、查完没有)弹一行「投递失败」。上文「查不到留痕作罢」改读作「留痕并提示」。
+ * 2026-10-07 B2 站内投递(设计稿 docs/design/投递页-B2-实施方案-20261005.md「10-05 拍板」:投递钮切到 /apply/<id>,mailto 整条删):
+ * launch 不再现查邮箱、不弹邮件投递框、不记「已投」,记一下投递埋点就跳投递页(会话过期由投递页的门送回职位页)。
+ * 上文现查邮箱、邮件框、记「已投」、401 / 429 / 失败分流诸条,连同 loadApplyEmail / showApplyMiss / recordApplied /
+ * makeCopyEmail 与登录 / 次数 / 失败三个浮层一并撤,只是历史。
  *
  * @param x 本岗、取词函数、分层态与在不在整页里。
  * @returns 投递栏面板。
@@ -2218,8 +2193,6 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
   const [matchJd, setMatchJd] = useState<string | null>(null)
   const [authed, setAuthed] = useState(false)
   const [freshProfile, setFreshProfile] = useState<MatchProfileFact | null>(null)
-  const [copied, setCopied] = useState(false)
-  const [email, setEmail] = useState(TEXT_NONE)
   const [busy, setBusy] = useState(false)
   const router = useRouter()
   const job = x.job
@@ -2230,17 +2203,8 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
     }
     setBusy(true)
     clearApplyIntent()
-    const got = await loadApplyEmail(job)
-    if (got.email !== TEXT_NONE) {
-      setEmail(got.email)
-      trackApply()
-      await recordApplied(job)
-      setCopied(false)
-      setStage(APPLY_EMAIL)
-    } else {
-      showApplyMiss({ status: got.status, job, setStage })
-    }
-    setBusy(false)
+    trackApply()
+    router.push(URL_APPLY + String(job.id))
   }
   function onApply(): void {
     if (plan.loggedIn === false && authed === false && isGateSignedIn() === false) {
@@ -2258,7 +2222,6 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
   useApplyResume({ job, plan, setStage, launch })
   return {
     stage,
-    email,
     matchJd,
     onMatch: makeOpenMatch({ job, setMatchJd }),
     onMatchClose: function closeMatch(): void {
@@ -2277,78 +2240,7 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
       setStage(APPLY_IDLE)
       launch()
     },
-    onEmailClose: function closeEmail(): void {
-      setStage(APPLY_IDLE)
-    },
-    onNoteClose: function closeNote(): void {
-      setStage(APPLY_IDLE)
-    },
-    copied,
-    onCopyEmail: makeCopyEmail({ email, setCopied }),
   }
-}
-
-/**
- * 投递邮箱(E9-04,dd24-#110 从投递栏上提):JB 岗藏在「Show how to apply」的 JSF 后面 →
- * 懒查 /api/jobs/applyhow;非 JB 岗正文常直接带邮箱,由正则兜底(见 applyEmailPick)。
- * 2026-09-27 Frank「CareerBeacon 渠道的职位 全是前往投递」:库里存着 CareerBeacon 等来源抽好的邮箱(492 条 CareerBeacon),
- * 这里原先只对 JB 链接发问、别的来源当场收工,存好的邮箱从没用上。改成每岗都问(带岗位号,服务端按岗位号取;
- * JB 存的没有才现抓),正则兜底照旧。
- * done 出结果(成败都算):OAuth 回跳续投要等它,别把邮箱岗投成外跳。
- * 2026-10-03 付费闭环批 B1 收口:网络断原先走 swallow 无声吞掉,改经 applyHowFailed 留痕(换岗 / 卸载的中止不算失败)。
- * 2026-10-04 改判(Frank「照这样改」):邮箱只给登录用户、点了才查 —— 打开职位 / 正文到手时不再查(原 useApplyHow 一台撤),
- * 改成登录用户点投递(launch)时现查一次;查挂了(含未登录 401、每人日限 429)与查完没有都留痕交回空串。
- * 「怎么投」节不再拿查来的邮箱,只用正文里正则抽到的(见 useJobBody)。
- * 同日收口审查:上文「由正则兜底(见 applyEmailPick)」「正则兜底照旧」「OAuth 回跳续投要等它」三句作废 ——
- * applyEmailPick 随 useApplyHow 撤,投递不再拿正文邮箱兜底(查不到就作罢),续投由 launch 自己查、不再等。
- * 挪到 useApplyBar 之后(报纸式排序:被调的排在首个调用者后面)。
- * 2026-10-04 二轮收口审查:交回邮箱 + 回包状态码(没拿到响应记 APPLY_STATUS_NET)—— 原先只交回空串,
- * 会话过期、次数用完、网络断与查完没有分不开,launch 没法分流提示;留痕照旧。
- *
- * @param job 本岗。
- * @returns 投递邮箱(没有给空串)与回包状态码。
- */
-async function loadApplyEmail(job: JobFact): Promise<ApplyMailOut> {
-  let d: ApplyHowJson | null = null
-  let status = APPLY_STATUS_NET
-  try {
-    const res = await fetch(URL_API_APPLY_HOW + encodeURIComponent(strOf(job.applyUrl)) + URL_API_APPLY_HOW_ID
-      + String(job.id))
-    status = res.status
-    d = await readApplyHow(res)
-  } catch (e) {
-    applyHowFailed(String(e))
-    return { email: TEXT_NONE, status }
-  }
-  if (d == null) {
-    return { email: TEXT_NONE, status }
-  }
-  if (d.email == null || d.email === TEXT_NONE) {
-    log({ tag: JOBS_LOG.tag, text: JOBS_LOG.applyHowNone + String(job.id) })
-    return { email: TEXT_NONE, status }
-  }
-  return { email: d.email, status }
-}
-
-/**
- * 点了投递没拿到邮箱时落哪一段(2026-10-04 二轮收口审查,原先无声作罢):401 = 页面还当已登录、会话已过期 ——
- * 记投递意图(Google 整页登录回跳后由 useApplyResume 续投)、弹登录框;429 = 今天查邮箱的次数用完了;
- * 其余(网络断、别的非 2xx、回包解不出、查完没有)= 投递失败。留痕在 loadApplyEmail / readApplyHow 里已经落过。
- *
- * @param x 回包状态码、本岗与段写口。
- * @returns 无。
- */
-function showApplyMiss(x: ApplyMissIn): void {
-  if (x.status === HTTP_UNAUTHORIZED) {
-    markApplyIntent(x.job)
-    x.setStage(APPLY_LOGIN)
-    return
-  }
-  if (x.status === HTTP_TOO_MANY) {
-    x.setStage(APPLY_LIMIT)
-    return
-  }
-  x.setStage(APPLY_ERR)
 }
 
 /**
@@ -2464,23 +2356,6 @@ function intentProfileOf(x: IntentProfileIn): MatchProfileFact | null {
 }
 
 /**
- * 邮件投递框里「复制邮箱」的手柄:复制成了钮面换「已复制」,没成(剪贴板被拒)维持原样。
- * 2026-10-04 二轮收口审查自 useApplyBar 体内提出(那一台加了没拿到邮箱的分流,超了函数行数闸),行为一字不改。
- *
- * @param x 要复制的邮箱与「复制过没」的写口。
- * @returns 点击手柄。
- */
-function makeCopyEmail(x: CopyEmailIn): ClickFn {
-  return function copyEmail(): void {
-    navigator.clipboard.writeText(x.email).then(function markCopied(): void {
-      x.setCopied(true)
-    }).catch(function copyFailed(): void {
-      x.setCopied(false)
-    })
-  }
-}
-
-/**
  * OAuth 回跳续投:登录态 + 落地意图是本岗 + 10 分钟内 → 接着走意向表单/直接投,
  * 不让用户再点一次。Google 登录 = 整页 OAuth 跳转,组件状态全丢,所以投递意图要落地。
  * 2026-10-04 邮箱改成 launch 自己现查,不再等「投递方式查完」,登录态一到就续。
@@ -2573,56 +2448,6 @@ function trackApply(): void {
 }
 
 /**
- * 已投递记录:已有收藏行 → 状态改 applied,没有 → 新建;失败不打扰投递。
- *
- * @param job 本岗。
- * @returns 无。
- */
-async function recordApplied(job: JobFact): Promise<void> {
-  const cur = await findSavedRow(job)
-  if (cur != null) {
-    await fetch(URL_API_SAVED_JOBS + SLASH + String(cur), {
-      method: METHOD_PATCH,
-      credentials: CREDENTIALS_INCLUDE,
-      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ status: SAVED_STATUS_APPLIED }),
-    }).catch(nullOf)
-    return
-  }
-  await fetch(URL_API_SAVED_JOBS, {
-    method: METHOD_POST,
-    credentials: CREDENTIALS_INCLUDE,
-    headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-    body: JSON.stringify({
-      job: job.id, title: job.title, company: job.company, status: SAVED_STATUS_APPLIED,
-    }),
-  }).catch(nullOf)
-}
-
-/**
- * 本岗已有的收藏行号。
- *
- * @param job 本岗。
- * @returns 行号;没有给 null。
- */
-async function findSavedRow(job: JobFact): Promise<string | number | null> {
-  const url = URL_API_SAVED_JOB_BY_JOB + String(job.id) + URL_API_SAVED_JOB_BY_JOB_TAIL
-  const res = await fetch(url, { credentials: CREDENTIALS_INCLUDE }).catch(nullOf)
-  if (res == null) {
-    return null
-  }
-  const d: SavedListJson | null = await res.json().catch(nullOf)
-  if (d == null || d.docs == null) {
-    return null
-  }
-  const first = d.docs[0]
-  if (first == null || first.id == null) {
-    return null
-  }
-  return first.id
-}
-
-/**
  * 职位详情页的整台。
  * 漏斗第 1 步(主线 M2 收口 2026-08-02):这个页面一直没有第一方浏览埋点 —— 于是库里只有
  * 第 3 步「锁区曝光」有数,分母是空的,M3 的两种分叉(锁的东西不值钱 / 根本没人看见)
@@ -2649,9 +2474,6 @@ export function useJobDetail(x: JobIn): JobDetailPanel {
   useEffect(function trackOpen() {
     track(TRACK_JD_OPEN, { [TRACK_KEY_KIND]: TRACK_KIND_PAGE })
   }, [])
-  useEffect(function markSeen() {
-    markSeenJob({ id: x.job.id, noc: x.job.noc })
-  }, [x.job.id, x.job.noc])
   useMemo(function registerDetailLabels() {
     registerCatLabels(cats)
   }, [cats])

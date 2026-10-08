@@ -50,10 +50,8 @@ import {
   JD_SEC_PAY, JD_SEC_ROLE, JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE,
   JD_SUB_HEADS, JD_TOP_HEADS, JD_TPL_SLOT, JD_DONE, JD_EMPTY, JD_LIMITED, KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP,
   K_LOCK_TIP, K_ORIGIN, K_PROV, K_SPONSOR_GRADE, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_KO,
-  LANG_ZH, LAYER_CO, LAYER_JOB, LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MAILTO,
-  MAILTO_BODY, MAILTO_SUBJECT, MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN,
-  MAIL_BODY_QUOTE, MAIL_CRLF, MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD,
-  MEASURE_ROWS, NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R, PCT_DECIMALS, PCT_MULTIPLIER, PREF_KEY, PROV_PICK_COOKIE,
+  LANG_ZH, LAYER_CO, LAYER_JOB, LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MEASURE_ROWS,
+  NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R, PCT_DECIMALS, PCT_MULTIPLIER, PREF_KEY, PROV_PICK_COOKIE,
   PROV_PICK_MAX_AGE_S, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP, P_SORT, QS_HEAD,
   RE_FLAG_G, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE, SAVED_STATUS_WISH, SEC_MODE, SEP_EN,
   NOC_LABEL_LIST_MAX, NOC_MORE_KEY, SEP_ZH, SIGN_DOLLAR, SIGN_PCT, SIGN_PLUS, SIG_EQ, SIG_SEP, SORT_MARK_ASC,
@@ -74,14 +72,14 @@ import type {
   CardsClsIn, HomeGate, LoadTipIn, PnpChipIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone,
   CellView, CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn,
   CityOptsIn, ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColSpec, CompanyPeek, ColWant,
-  ColWidthFnIn, ColWidthSeed, CookieIn, CopyLabelIn, CrumbSeg, CurFiltersIn, DataKeyIn, DescOpenIn, DistOptsIn,
+  ColWidthFnIn, ColWidthSeed, CookieIn, CrumbSeg, CurFiltersIn, DataKeyIn, DescOpenIn, DistOptsIn,
   FallbackHrefIn, FallbackTextIn, FallbackValueIn, FetchJobTextIn, FieldOpenIn, FillIn, FilterCountIn, FilterOpts,
   FilterOptsIn, FilterState, FilterValueIn, FixedNoteIn, FoldBtnClsIn, FoldNClsIn, FrozenStyleIn, GatedFiltersIn,
   GatedSetIn, HeadCellAtIn,
   HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdCityLocalIn, JdLineView, JdLineViewIn, JdLinesIn,
   JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn, JdSecHeadIn, JdSecModeIn, JdSectionMode,
   JdSectionView, JdSectionsIn, JobColKey, JobDetailIn, JobDetailView, JobDims, JobFact, JobFilters, JobPlan, JobPlanIn,
-  JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn, MailBodyIn, MailtoIn, MapHrefIn, MatchProfileFact, MeasureIn,
+  JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn, MapHrefIn, MatchProfileFact, MeasureIn,
   MeasureOut, MeasurePassIn, MeasureWordIn, MoreLabelIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, OrigLinkLabelIn,
   NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, OccCellIn, OccNameIn,
   OccOptsIn, OccSlotIn, PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PeekStackRef, PickedShownIn,
@@ -2039,56 +2037,6 @@ export function applyEmailOf(text: string): string {
 }
 
 /**
- * 投递邮件的 mailto 链接:替他把主题与正文都备好,他自己按发送 ——
- * 首版**不代发**(邮箱授权/简历存储/发信信誉全后置)。
- *
- * @param x 收件邮箱与本岗。
- * @returns mailto 链接。
- */
-export function mailtoOf(x: MailtoIn): string {
-  const title = x.job.title
-  const company = x.job.company
-  let at = TEXT_NONE
-  if (company !== TEXT_NONE) {
-    at = MAIL_SUBJECT_AT + company
-  }
-  const subject = MAIL_SUBJECT_HEAD + title + at
-  const body = mailBodyOf({ job: x.job, title, company })
-  return MAILTO + x.email + MAILTO_SUBJECT + encodeURIComponent(subject) + MAILTO_BODY + encodeURIComponent(body)
-}
-
-/**
- * 投递邮件正文。
- *
- * @param x 本岗与已取好的岗名、公司名。
- * @returns 正文。
- */
-function mailBodyOf(x: MailBodyIn): string {
-  const loc = []
-  for (const p of [x.job.city, x.job.province]) {
-    if (p !== TEXT_NONE) {
-      loc.push(p)
-    }
-  }
-  let at = TEXT_NONE
-  if (x.company !== TEXT_NONE) {
-    at = MAIL_BODY_AT + x.company
-  }
-  let inLoc = TEXT_NONE
-  if (loc.length > 0) {
-    inLoc = MAIL_BODY_IN + loc.join(LOC_SEP)
-  }
-  const lines = [
-    MAIL_HELLO, MAIL_BLANK,
-    MAIL_BODY_HEAD + x.title + MAIL_BODY_QUOTE + at + inLoc + MAIL_BODY_DOT,
-    MAIL_POSTING + x.job.applyUrl, MAIL_BLANK,
-    MAIL_ATTACH, MAIL_BLANK,
-    MAIL_REGARDS,
-  ]
-  return lines.join(MAIL_CRLF)
-}
-
-/**
  * 面包屑的职业分类路径段。沿革:原是「省 › 大 › 中 › 小」,同名相邻跳过、不铺重复;2026-09-23 职业分类改两级,
  * 改成「省 › 大类 › 职业」—— 职业段显示人话短名,点了回板上按这个职业码筛(`?noc=`,与问卷 / 规划页深链同一个参数)。
  *
@@ -3790,19 +3738,6 @@ export function transShownOf(x: TransShownIn): string {
  */
 export function applyBarShownOf(job: JobFact): boolean {
   return job.status !== STATUS_CLOSED
-}
-
-/**
- * 邮件投递框「复制邮箱」的钮面:按过换「已复制」(点击要有反馈,2026-09-14)。
- *
- * @param x 取词函数与按过没。
- * @returns 钮面文案。
- */
-export function copyLabelOf(x: CopyLabelIn): string {
-  if (x.copied) {
-    return x.t('apply.copied')
-  }
-  return x.t('apply.copyMail')
 }
 
 

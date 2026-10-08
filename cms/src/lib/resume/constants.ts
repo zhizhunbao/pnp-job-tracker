@@ -506,8 +506,9 @@ export const RF_USER_PREFIX = 'rf:'
 
 /**
  * 每人每天上传上限。正常人一天换不了几次简历,20 次只拦脚本。
+ * 2026-10-07 简历上限提到 20 份(Frank「我觉得可能超过 5 个简历」):一天传满 20 份再替换几份要过得去,放到 50 次。
  */
-export const RF_USER_DAILY = 20
+export const RF_USER_DAILY = 50
 
 /**
  * 上传限流计数键前缀(按 IP):一个 IP 批量注册小号刷库时兜底。
@@ -541,8 +542,9 @@ export const E_NO_ID = 'noId'
 
 /**
  * 每人最多几份简历(Frank 10-06 选「支持,最多 5 份」)。
+ * 2026-10-07 Frank「我觉得可能超过 5 个简历」(投递按岗选简历后,一人多份更常见):上限提到 20 份。
  */
-export const RESUME_FILES_MAX = 5
+export const RESUME_FILES_MAX = 20
 
 /**
  * 指明是哪一份简历的查询参数(取原件、替换、删除、设默认都用它;上传不带 = 新加一份)。

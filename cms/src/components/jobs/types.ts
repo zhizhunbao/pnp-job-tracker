@@ -2396,7 +2396,7 @@ export type ApplyBarIn = {
  * 投递流程的三段:闲置 → 注册闸 → 求职意向。
  * 2026-10-04 收口审查:点了投递没拿到邮箱不再无声作罢,多三段 —— 重新登录(401)/ 今天次数用完(429)/ 没拿到(其余)。
  */
-export type ApplyStage = 'idle' | 'auth' | 'intent' | 'email' | 'login' | 'limit' | 'err'
+export type ApplyStage = 'idle' | 'auth' | 'intent'
 
 /**
  * ApplyBar 状态机交回的面板。
@@ -2406,11 +2406,6 @@ export type ApplyBarPanel = {
    * 当前段。
    */
   stage: ApplyStage
-
-  /**
-   * 点投递时现查来的投递邮箱(2026-10-04 起只给登录用户、点了才查);'' = 还没查到。
-   */
-  email: string
 
   /**
    * 简历对照要用的 JD 正文;null = 未开,'' = 拿不到全文。
@@ -2434,6 +2429,7 @@ export type ApplyBarPanel = {
 
   /**
    * 投递在途(现查邮箱、记「已投」;2026-10-04 收口审查加):钮挂 busy,禁用 + 转圈,在途时再点不再发。
+   * 2026-10-07 起在途 = 正在跳投递页。
    */
   busy: boolean
 
@@ -2462,25 +2458,6 @@ export type ApplyBarPanel = {
    */
   onIntentDone: ClickFn
 
-  /**
-   * 关邮件投递框(2026-09-14)。
-   */
-  onEmailClose: ClickFn
-
-  /**
-   * 关「今天次数用完了」「投递失败」那一行提示框(2026-10-04 收口审查)。
-   */
-  onNoteClose: ClickFn
-
-  /**
-   * 邮件投递框里「复制邮箱」按过没(按过钮面换「已复制」)。
-   */
-  copied: boolean
-
-  /**
-   * 复制邮箱到剪贴板。
-   */
-  onCopyEmail: ClickFn
 }
 
 /**
@@ -3061,41 +3038,6 @@ export type JdPayIn = {
    * 帖面薪资;'' = 没有。
    */
   fallbackPay: string
-}
-
-/**
- * mailtoOf 的入参。
- */
-export type MailtoIn = {
-  /**
-   * 收件邮箱。
-   */
-  email: string
-
-  /**
-   * 本岗。
-   */
-  job: JobFact
-}
-
-/**
- * mailBodyOf 的入参。
- */
-export type MailBodyIn = {
-  /**
-   * 本岗。
-   */
-  job: JobFact
-
-  /**
-   * 岗名。
-   */
-  title: string
-
-  /**
-   * 公司名;'' = 没有。
-   */
-  company: string
 }
 
 /**
@@ -4147,67 +4089,6 @@ export type TransJson = {
    * 同结构译文(行位保真)。
    */
   text?: string | null
-}
-
-/**
- * 投递方式接口的响应形状。
- */
-export type ApplyHowJson = {
-  /**
-   * 投递邮箱;缺席 = 没抽到。
-   */
-  email?: string | null
-}
-
-/**
- * loadApplyEmail 的出参(2026-10-04 收口审查:原先只交回邮箱串,会话过期、次数用完、网络断与查完没有混成一个空串,
- * 投递钮点了没反应;带上状态码,launch 按它分流)。
- */
-export type ApplyMailOut = {
-  /**
-   * 投递邮箱;'' = 没拿到。
-   */
-  email: string
-
-  /**
-   * 回包状态码;APPLY_STATUS_NET(0)= 没拿到响应。
-   */
-  status: number
-}
-
-/**
- * showApplyMiss 的入参(2026-10-04 收口审查)。
- */
-export type ApplyMissIn = {
-  /**
-   * 查邮箱回包的状态码(见 ApplyMailOut)。
-   */
-  status: number
-
-  /**
-   * 本岗(401 那一路要落投递意图)。
-   */
-  job: JobFact
-
-  /**
-   * 投递流程的段写口。
-   */
-  setStage: (s: ApplyStage) => void
-}
-
-/**
- * makeCopyEmail 的入参(2026-10-04 自 useApplyBar 体内提出)。
- */
-export type CopyEmailIn = {
-  /**
-   * 要复制的投递邮箱。
-   */
-  email: string
-
-  /**
-   * 「复制过没」的写口(钮面换「已复制」)。
-   */
-  setCopied: (b: boolean) => void
 }
 
 /**
@@ -6386,21 +6267,6 @@ export type ApplyEmailIn = {
    * 关框。
    */
   onClose: ClickFn
-}
-
-/**
- * copyLabelOf 的入参。
- */
-export type CopyLabelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 按过「复制邮箱」没。
-   */
-  copied: boolean
 }
 
 /**

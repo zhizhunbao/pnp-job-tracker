@@ -24,8 +24,10 @@
  * 只计数不成链,理由见 ALIAS 末段。
  * 2026-10-03 付费闭环批 A1:尾部再追加访客向导两计数(gate-open 弹出 / gate-step 离开某一步)与未登录点投递
  * (apply-click),同样只计数不成链。
+ * 2026-10-07 批 B2 / C:尾部再追加 apply-sent(站内投递真发出去了)。apply 记的是职位页点「邮箱投递」那一下
+ * (mailto 时代点了就算投出去;站内投递后它只是进了投递区),发没发出去只有 apply-sent 说得准;同样只计数不成链。
  */
-export const FUNNEL_STEPS = ['jd-open', 'pricing-open', 'pay-click', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done', 'pulse-card', 'pulse-occ', 'pulse-cta', 'emp-search', 'emp-filter', 'emp-row', 'emp-page', 'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open', 'apply', 'signup', 'checkout', 'weekly-optin', 'gate-open', 'gate-step', 'apply-click'] as const
+export const FUNNEL_STEPS = ['jd-open', 'pricing-open', 'pay-click', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done', 'pulse-card', 'pulse-occ', 'pulse-cta', 'emp-search', 'emp-filter', 'emp-row', 'emp-page', 'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open', 'apply', 'signup', 'checkout', 'weekly-optin', 'gate-open', 'gate-step', 'apply-click', 'apply-sent'] as const
 
 /**
  * 漏斗步骤名(从白名单数组派生 —— 类型与它派生自的数组同居,派生即护栏:加一步只改数组)。

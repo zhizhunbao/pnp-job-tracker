@@ -11,7 +11,7 @@
  */
 
 import { PAYMENT_REQUIRED, TOO_MANY } from '../http'
-import { text } from '../db'
+import { count, firstOf, queryRows, SQL, text } from '../db'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { DENY_IP, DENY_USER,
@@ -19,7 +19,10 @@ import { DENY_IP, DENY_USER,
   TEXT_RATE_LIMITED, TEXT_UPGRADE, ROLE_ADMIN,
 } from './constants'
 import { CACHE } from './variables'
-import type { MaybeDenyBody, FreeGated, FreeGateIn, MaybeRawUser, MaybeStr, MaybeUser, QuotaPairs, ReqHeaders, ReqLike, UserOut } from './types'
+import type {
+  MaybeDenyBody, FreeGated, FreeGateIn, MaybeLeft, MaybeRawUser, MaybeStr, MaybeUser, QuotaPairs, ReqHeaders, ReqLike, Trial,
+  TrialDbRow, TrialGateIn, TrialIn, TrialOut, TrialWriteOut, UserOut,
+} from './types'
 
 /**
  * 同 getUser，但鉴权层抛错当未登录（查挂不该把业务端点打成 500；
@@ -201,6 +204,69 @@ function ipOfHeaders(headers: ReqHeaders): string {
   return first
 }
 
+/**
+ * 某人某项 AI 功能的试用用量(2026-10-07 批 C:免费档 AI 按 JD 写信一辈子 LETTER_TRIAL_MAX 个职位,同一个职位重写不另算)。
+ *
+ * @param x 连接、用户、功能名与用在哪一个。
+ * @returns 用过几个、这一个用过没有。
+ */
+export async function loadTrial(x: TrialIn): TrialOut {
+  const row = firstOf(await queryRows({ db: x.db, sql: SQL.TRIAL_USED, params: [x.userId, x.feature, x.refId], map: toTrial }))
+  if (row == null) {
+    return { used: 0, here: false }
+  }
+  return row
+}
+
+/**
+ * 记一笔试用(同一个只记一次;模型写成了才记,写不成给的兜底模板信不扣)。
+ *
+ * @param x 连接、用户、功能名与用在哪一个。
+ * @returns 无。
+ */
+export async function markTrial(x: TrialIn): TrialWriteOut {
+  await x.db.query(SQL.TRIAL_MARK, [x.userId, x.feature, x.refId])
+}
+
+/**
+ * 这一次放不放行:Pro、这一个已经用过、或还有余量。
+ *
+ * @param x 用户、用量与上限。
+ * @returns 放行。
+ */
+export function isTrialOpen(x: TrialGateIn): boolean {
+  if (isPro(x.user) || x.trial.here) {
+    return true
+  }
+  return x.trial.used < x.max
+}
+
+/**
+ * 还剩几个:Pro 不限给 null;免费档 = 上限减用过的,不低于 0。
+ *
+ * @param x 用户、用量与上限。
+ * @returns 剩几个;Pro 给 null。
+ */
+export function trialLeftOf(x: TrialGateIn): MaybeLeft {
+  if (isPro(x.user)) {
+    return null
+  }
+  return Math.max(0, x.max - x.trial.used)
+}
+
+/**
+ * 记完这一笔之后的用量(这一个原先没用过就多一个)。
+ *
+ * @param t 记之前的用量。
+ * @returns 记之后的用量。
+ */
+export function trialAfterOf(t: Trial): Trial {
+  if (t.here) {
+    return t
+  }
+  return { used: t.used + 1, here: true }
+}
+
 // =========================================================================
 // 行构造器(rows 抽屉 2026-08-23 撤编后的固定尾段;体内只许词汇表 + 纯拼装)
 // =========================================================================
@@ -254,4 +320,14 @@ function strOrNullOf(v: MaybeStr): MaybeStr {
     return null
   }
   return v
+}
+
+/**
+ * 试用账聚合行 → 用量。
+ *
+ * @param r 库行。
+ * @returns 用量。
+ */
+export function toTrial(r: TrialDbRow): Trial {
+  return { used: count(r.used), here: r.here === true }
 }

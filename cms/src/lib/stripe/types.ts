@@ -49,6 +49,31 @@ export type CheckoutBody = {
    * 时长包键；不在 PLANS 目录里就 400。
    */
   plan: string | null
+
+  /**
+   * 付完回哪儿(站内「我的」页某处,如投递区那一岗;2026-10-07 批 C);缺席 = 账户页。线格式:不带即缺席。
+   */
+  back?: string
+}
+
+/**
+ * 读得出或读不出(null)的下单请求体。
+ */
+export type MaybeCheckoutBody = CheckoutBody | null
+
+/**
+ * 付完 / 取消各回哪条路径。
+ */
+export type ReturnPaths = {
+  /**
+   * 付成回跳(带 ok=1)。
+   */
+  ok: string
+
+  /**
+   * 取消回跳。
+   */
+  cancel: string
 }
 
 /**
@@ -104,4 +129,14 @@ export type CreateSessionIn = {
    * 时长包天数（进 metadata）。
    */
   days: number
+
+  /**
+   * 付成回跳路径。
+   */
+  okPath: string
+
+  /**
+   * 取消回跳路径。
+   */
+  cancelPath: string
 }

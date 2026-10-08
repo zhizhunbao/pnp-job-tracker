@@ -39,7 +39,7 @@ import {
   JOB_PATH, LANG_EN, LANG_KO, LANG_KO_CODE, LD_CONTEXT, LD_COUNTRY,
   LD_CURRENCY, LD_FULL_TIME, LD_ID_NAME, LD_JOB_POSTING, LD_KEY_CONTEXT, LD_KEY_TYPE, LD_LT_ESC, LD_LT_RE, LD_MONETARY,
   LD_ORGANIZATION, LD_PART_TIME, LD_PLACE, LD_POSTAL, LD_PROPERTY_VALUE, LD_QUANTITATIVE, LD_TEMPORARY, LD_UNIT_YEAR, LEVEL_RANK,
-  LINE_SPACES_RE, LMIA_SOURCE, LV, MAIL_NONE,
+  LINE_SPACES_RE, LMIA_SOURCE, LV,
   MAIN_LIST_COVERAGE, MARK_HEAD, MARK_TAIL, MED_SELECT, META_AT, META_BAR, META_DOT, META_IN, META_NOT_FOUND,
   META_SOME_EMPLOYER, META_SPACE, META_TAIL, NL, NOC_JOIN_SLASH, NOC_LEN, NOC_MINOR_LEN, NOC_NONE, NOC_RE,
   NOC_SEARCH_MIN, NOC_SUBMAJOR_LEN, NORM_DASH, NORM_DASH_RE, NORM_WS_RE, NO_LIST_PROVINCES, OCC_TITLE_NONE,
@@ -64,8 +64,7 @@ import {
 } from './prompts'
 import { CACHE } from './variables'
 import type {
-  AlertHit, AlertHitsIn, AlertHitsOut, ApplyEmailFact, ApplyUrlIn, StoredApplyEmailIn,
-  StoredApplyEmailOut, BigDimsIn, BigDimsOut, BroadNoc, BroadNocsIn, BroadNocsOut, MajorNocsIn, MajorNocsOut, BuildWhereIn, CaughtError, Cell,
+  AlertHit, AlertHitsIn, AlertHitsOut, ApplyUrlIn, BigDimsIn, BigDimsOut, BroadNoc, BroadNocsIn, BroadNocsOut, MajorNocsIn, MajorNocsOut, BuildWhereIn, CaughtError, Cell,
   CheckedAtOut, CityDim, CompanyByJobIn, CompanyByPoolKeyIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow,
   CompanyJsonIn, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DesignatedIn, DesignatedOut,
   DistrictDim, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim, EeBroad, EeDisplayIn,
@@ -2688,39 +2687,6 @@ export async function loadBigDims(input: BigDimsIn): BigDimsOut {
   return { cities: cities, districts: districts, nocDescriptions: nocDescriptions, occupations: occupations }
 }
 
-/**
- * 库里存好的雇主投递邮箱(2026-09-23 站内投递批 1):投递栏先问它,没有再现取 Job Bank(loadApplyEmail)。
- * 写入方是 ETL:mart 投递邮箱段(Job Bank 直发读 howto 役的投递区,其他来源从正文抽)。
- * 2026-09-27 Frank「CareerBeacon 渠道的职位 全是前往投递」:带了岗位号就按岗位号取(APPLY_EMAIL_BY_ID;所有来源都问),
- * 没带(老前端)才按链接取。
- *
- * @param x 连接、原帖链接与岗位号。
- * @returns 邮箱;库里没有给空串。
- */
-export async function loadStoredApplyEmail(x: StoredApplyEmailIn): StoredApplyEmailOut {
-  let sql = SQL.APPLY_EMAIL_BY_URL
-  let params: Array<string | number> = [x.url]
-  if (x.id != null) {
-    sql = SQL.APPLY_EMAIL_BY_ID
-    params = [x.id]
-  }
-  const rows = await queryRows({ db: x.db, sql: sql, params: params, map: toApplyEmailFact })
-  const first = firstOf(rows)
-  if (first == null) {
-    return MAIL_NONE
-  }
-  return first.email
-}
-
-/**
- * APPLY_EMAIL_BY_URL 一行 → 邮箱。
- *
- * @param r 原始行。
- * @returns 洗净的一行。
- */
-export function toApplyEmailFact(r: Row): ApplyEmailFact {
-  return { email: text(r.apply_email) }
-}
 /**
  * 相似雇主查挂时的空表兜底(catch 传具名函数;弹框主体照常给,不 500)。
  *

@@ -124,3 +124,14 @@ export const TEXT_RATE_LIMITED = 'rate limited'
  * 管理员角色值(Users 集合的 role 字段;后台与「重译」这类站主工具按它放行,2026-09-14)。
  */
 export const ROLE_ADMIN = 'admin'
+
+/**
+ * AI 按职位写求职信的免费试用:每人一辈子几个职位(2026-10-07 收费改判:免费档用自己的简历和信手动投,
+ * AI 按 JD 写信试用这么多个职位,第 4 个起弹升级框;同一个职位重写不另算)。不走 env:客户端文案也读它。
+ */
+export const LETTER_TRIAL_MAX = 3
+
+/**
+ * 试用账里「按 JD 写求职信」这一项的功能名(ai_trials.feature;以后按岗改简历记同表、另起一个名)。
+ */
+export const TRIAL_LETTER = 'letter'

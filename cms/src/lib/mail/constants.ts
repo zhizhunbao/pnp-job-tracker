@@ -18,6 +18,26 @@ export const MAIL_ENABLED = Boolean(process.env.RESEND_API_KEY)
 export const FROM = process.env.RESEND_FROM || 'Offer2PR <onboarding@resend.dev>'
 
 /**
+ * Resend 的幂等头名(同一个键 24 小时内重放只发一封;2026-10-07 代投批)。
+ */
+export const HDR_IDEMPOTENCY = 'Idempotency-Key'
+
+/**
+ * 没配发信密钥时 postMail 交回的失败原因(调用方据此出「发信未配置」,不当成发出去了)。
+ */
+export const WHY_DISABLED = 'disabled'
+
+/**
+ * 网络 / 运行期异常时 postMail 交回的失败原因前缀。
+ */
+export const WHY_THROWN = 'thrown: '
+
+/**
+ * Resend 回包里取不到 id 时的空串。
+ */
+export const ID_NONE = ''
+
+/**
  * 退订 token 的 HMAC 输入前缀。
  */
 export const UNSUB_PREFIX = 'unsub:'

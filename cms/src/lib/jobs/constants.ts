@@ -2217,31 +2217,6 @@ export const JD_DAILY_DEFAULT = 150
 export const JD_LIMIT_PREFIX = 'jd:'
 
 /**
- * 投递方式懒查 IP 日限的默认值(env APPLYHOW_DAILY 可覆盖)。
- * 2026-10-04 改判:只给登录用户,改成每个用户每天的上限,默认 60 → 200(Frank「照这样改」)。
- */
-export const AH_DAILY_DEFAULT = 200
-
-/**
- * 投递方式限额键前缀。
- * 2026-10-04 起键 = 前缀 + 用户号(原先 + IP)。
- */
-export const AH_LIMIT_PREFIX = 'ah:'
-
-/**
- * 投递方式每 IP 限额键前缀(键 = 前缀 + IP;与每用户那一位的 'ah:' 分开,同一个计数桶表里不撞键)。
- * 2026-10-04 收口审查:每用户那一位换掉了原先的每 IP 位,可注册不设门槛、不限频,同一 IP 轮换新号就能绕开日限 ——
- * 每 IP 这一位补回来与每用户那一位同一次 checkLimit 判(任一位满就挡)。
- */
-export const AH_IP_LIMIT_PREFIX = 'ahip:'
-
-/**
- * 投递方式每 IP 每天的上限(env 不覆盖)。
- * 2026-10-04 收口审查定 1000 = 每用户日限 200 的 5 倍:直播间观众多走运营商 NAT 共用出口 IP,压太紧会误伤真人。
- */
-export const AH_IP_DAILY = 1000
-
-/**
  * 五位职业码形状。
  */
 export const NOC5_RE = /^\d{5}$/
@@ -2255,11 +2230,6 @@ export const E_NOC_REQUIRED = 'noc required'
  * 大维度包的浏览器缓存头(1.4MB 包,ETL 小时级才动,与用户无关 —— 5 分钟 + SWR)。
  */
 export const DIMS_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3600'
-
-/**
- * 只认 Job Bank 职位页(白名单防 SSRF;其他来源的邮箱走前端对 jobtext 的正则)。
- */
-export const JB_POSTING_RE = /^https:\/\/www\.jobbank\.gc\.ca\/jobsearch\/jobposting\/\d+([/?#]|$)/
 
 /**
  * JD 整理版必须齐全的五节标记（校验用；口径主人是 prompts 的 JD_FORMAT_PROMPT_HEAD）。
@@ -2486,17 +2456,6 @@ export const JB_LINK_NONE = ''
  * 于是不必为「还没有候选」另写一条分支。
  */
 export const TITLE_NONE = ''
-
-/**
- * 没有投递邮箱可给。域内分两层:
- * 抓取那层(loadApplyEmail)空串是**确认无** —— 页面在、表单也翻到了,就是没写邮箱
- * (Job Bank 不少岗只给站内投递);那层的抓取失败另有 null。
- * 🔴 两者严格分开:空串会被正缓存记下不再打原站,null 才进负缓存等重试;
- * 混起来要么白打原站,要么把「这次没抓到」永久钉成「这岗没有」。
- * 路由那层再把「超限、不在白名单、负缓存未过期、抓取失败」一并压成同一个空串 ——
- * 前端只需要知道「这次没有邮箱可显示」,是哪一种已经写在状态码与日志里。
- */
-export const MAIL_NONE = ''
 
 /**
  * 官方通道名不出译注:界面本来就是英文(译注是给中文、韩文界面加的小注),

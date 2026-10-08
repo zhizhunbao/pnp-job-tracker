@@ -1,0 +1,261 @@
+/*
+ * 投递页(2026-10-07 B2)。骨架照职位详情页:860 读宽、白卡、卡内右上角返回钮、H1 右侧给返回钮留位。
+ * 同日独立页撤、搬进「我的」页投递一节:外框(读宽、白卡、返回钮、H1)随之撤,「我的」页自有外框。
+ */
+
+/*
+ * 本岗那张职位卡与下面步数行之间的空。
+ */
+.job {
+  margin-bottom: 12px;
+}
+
+/*
+ * 一步的小标题(简历 / 求职信 / 预览)。
+ */
+.h2 {
+  margin: 14px 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/*
+ * 英文姓名一行:标签在上、输入框在下。
+ */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: #374151;
+}
+
+/*
+ * 英文姓名输入框。
+ */
+.input {
+  width: 100%;
+  max-width: 360px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+/*
+ * 求职信多行框(手机 16px 字号防 iOS 聚焦放大)。
+ */
+.letter {
+  width: 100%;
+  min-height: 320px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1.5;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+/*
+ * 坏字一行 / 错误一行(红)。
+ */
+.bad {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+/*
+ * 预览一步:信的正文(照原样换行)。
+ */
+.body {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+/*
+ * 预览一步:附件两行。
+ */
+.files {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #374151;
+}
+
+/*
+ * 附件行:标签灰、文件名黑,一行一条。
+ */
+.fileRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+/*
+ * 附件标签(灰)。
+ */
+.fileLabel {
+  color: var(--text2);
+}
+
+/*
+ * 底部钮组:靠右,与上面的内容隔一条线。
+ */
+.foot {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/*
+ * 钮组上方的错误一行(靠右)。
+ */
+.err {
+  margin-top: 10px;
+  text-align: right;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+/*
+ * 投递区的一句话(投不了的原因 / 取不到;同「我的」页其余几节的空态)。
+ */
+.note {
+  color: var(--text2);
+  font-size: 13px;
+  padding: 12px 0;
+}
+
+/*
+ * 第 1 步:几份简历一列,一份一行。
+ */
+.picks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/*
+ * 一份简历一行:单选框、文件名、默认小标、上传日期;窄屏折行。
+ */
+.pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/*
+ * 文件名(长名字可断)。
+ */
+.pickName {
+  color: var(--text);
+  word-break: break-all;
+}
+
+/*
+ * 默认那份的小标(浅绿底,同「我的简历」的默认标)。
+ */
+.pickTag {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 11px;
+}
+
+/*
+ * 灰色小注(上传日期、文件要求、写信进度)。
+ */
+.pickNote {
+  color: var(--text2);
+  font-size: 12px;
+}
+
+/*
+ * 「添加简历」一行。
+ */
+.addRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/*
+ * 隐藏的文件框(由「添加简历」钮代点)。
+ */
+.hidden {
+  display: none;
+}
+
+/*
+ * 第 2 步标题行:左标题、右「按职位重写」。
+ */
+.h2Row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/*
+ * 写信时占住信框的位置(不跳)。
+ */
+.writing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 320px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+
+/*
+ * 求职信标题行右边那一组:试用余量 + 「按职位重写」(2026-10-07 批 C)。
+ */
+.h2Acts {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/*
+ * 「AI 试用还剩 N 次」小字。
+ */
+.trialLeft {
+  font-size: 12.5px;
+  color: var(--text2);
+}
+
+/*
+ * 试用用完的黄条:与信框拉开。
+ */
+.locked {
+  margin-bottom: 8px;
+}

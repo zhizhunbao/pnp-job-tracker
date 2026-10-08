@@ -684,16 +684,6 @@ export const URL_API_SAVED_JOBS = '/api/saved-jobs'
 export const URL_API_SAVED_JOBS_LIST = '/api/saved-jobs?limit=200&depth=0'
 
 /**
- * 按岗位号查这一岗的收藏行(投递时改状态用)。
- */
-export const URL_API_SAVED_JOB_BY_JOB = '/api/saved-jobs?where[job][equals]='
-
-/**
- * 上一条查询串的尾巴(只要一条、不展开关联)。
- */
-export const URL_API_SAVED_JOB_BY_JOB_TAIL = '&limit=1&depth=0'
-
-/**
  * 已保存筛选(E5-03)。
  */
 export const URL_API_SAVED_SEARCHES = '/api/saved-searches'
@@ -806,6 +796,12 @@ export const URL_LEVEL_AMP = '&'
 export const URL_JOB = '/jobs/'
 
 /**
+ * 站内投递页前缀(2026-10-07 B2:投递钮跳这里,后接职位 id)。
+ * 同日投递并进「我的求职」(Frank「合成一个」):改跳「我的」页我的求职那一节(深链 sec=sjobs&job=)。
+ */
+export const URL_APPLY = '/account?sec=sjobs&job='
+
+/**
  * 按公司名搜的职位板(手机卡公司名的真 href,#315:左键仍开弹框,中键/爬虫拿到真链接)。
  */
 export const URL_JOBS_QUERY = '/jobs?q='
@@ -819,11 +815,6 @@ export const METHOD_POST = 'POST'
  * DELETE。
  */
 export const METHOD_DELETE = 'DELETE'
-
-/**
- * PATCH。
- */
-export const METHOD_PATCH = 'PATCH'
 
 /**
  * 请求体类型头名。
@@ -854,11 +845,6 @@ export const HTTP_PAYMENT = 402
  * 429:匿名 IP 池用完 / 宽松防滥用闸偶发(说人话,不谎报成缺数据 —— #134)。
  */
 export const HTTP_TOO_MANY = 429
-
-/**
- * 401:会话没了(查投递邮箱时页面还当已登录、会话已过期 —— 2026-10-04 收口审查,改弹登录框)。
- */
-export const HTTP_UNAUTHORIZED = 401
 
 /**
  * 200:整理版拿到了。
@@ -1969,11 +1955,6 @@ export const SORT_DEFAULT: JobColKey = 'datePosted'
 export const SAVED_STATUS_WISH = 'wish'
 
 /**
- * 投递后的收藏状态。
- */
-export const SAVED_STATUS_APPLIED = 'applied'
-
-/**
  * 岗位已下架。
  */
 export const STATUS_CLOSED = 'closed'
@@ -2443,86 +2424,6 @@ export const CANADA_MAIL_SUFFIX = 'canada.ca'
 export const WWW_PREFIX_RE = /^www\./
 
 /**
- * mailto 协议头。
- */
-export const MAILTO = 'mailto:'
-
-/**
- * mailto 的主题参数。
- */
-export const MAILTO_SUBJECT = '?subject='
-
-/**
- * mailto 的正文参数。
- */
-export const MAILTO_BODY = '&body='
-
-/**
- * 投递邮件的主题模板起手(后接职位名)。
- */
-export const MAIL_SUBJECT_HEAD = 'Application for '
-
-/**
- * 主题里公司名前的连接。
- */
-export const MAIL_SUBJECT_AT = ' - '
-
-/**
- * 邮件正文的换行(邮件客户端认 CRLF)。
- */
-export const MAIL_CRLF = '\r\n'
-
-/**
- * 邮件正文首行。
- */
-export const MAIL_HELLO = 'Hello,'
-
-/**
- * 正文第二段起手。
- */
-export const MAIL_BODY_HEAD = 'I would like to apply for the position of "'
-
-/**
- * 职位名之后的引号。
- */
-export const MAIL_BODY_QUOTE = '"'
-
-/**
- * 公司名前的介词。
- */
-export const MAIL_BODY_AT = ' at '
-
-/**
- * 城市省份前的介词。
- */
-export const MAIL_BODY_IN = ' in '
-
-/**
- * 第二段句号。
- */
-export const MAIL_BODY_DOT = '.'
-
-/**
- * 原帖链接那一行的标签。
- */
-export const MAIL_POSTING = 'Job posting: '
-
-/**
- * 附简历那一句。
- */
-export const MAIL_ATTACH = 'Please find my resume attached.'
-
-/**
- * 落款。
- */
-export const MAIL_REGARDS = 'Best regards,'
-
-/**
- * 空行(邮件正文分段)。
- */
-export const MAIL_BLANK = ''
-
-/**
  * 地点两段之间的分隔(城市, 省)。
  */
 export const LOC_SEP = ', '
@@ -2928,33 +2829,6 @@ export const APPLY_AUTH = 'auth'
  * 投递流程:求职意向表单。
  */
 export const APPLY_INTENT = 'intent'
-
-/**
- * 投递流程:邮件投递框(2026-09-14 Frank「这个需要弹个页面出来吧」:原先直接跳 mailto,没装邮件客户端的机器点了没反应;
- * 改弹一框给邮箱,可打开邮件也可复制)。
- */
-export const APPLY_EMAIL = 'email'
-
-/**
- * 投递流程:重新登录(2026-10-04 收口审查:页面还当已登录、会话其实过期了,查邮箱回 401 —— 原先钮转一圈什么都不发生,
- * 改记投递意图、弹登录框,登录完照注册闸那一路接着投)。
- */
-export const APPLY_LOGIN = 'login'
-
-/**
- * 投递流程:今天查邮箱的次数用完了(查邮箱回 429;2026-10-04 收口审查,原先无声作罢)。
- */
-export const APPLY_LIMIT = 'limit'
-
-/**
- * 投递流程:没拿到邮箱(网络断、别的非 2xx、回包解不出、查完没有;2026-10-04 收口审查,原先无声作罢)。
- */
-export const APPLY_ERR = 'err'
-
-/**
- * 查投递邮箱没拿到响应(网络断)时记的状态码 —— 真状态码不会是 0,与 401 / 429 分得开。
- */
-export const APPLY_STATUS_NET = 0
 
 /**
  * 整理版一节的渲染档:「怎么投」整节缺又有邮箱 / 整节缺只出官方短链 / 有内容且逐行链官方 /

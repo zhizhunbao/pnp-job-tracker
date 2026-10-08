@@ -273,6 +273,11 @@ export type CheckoutUrlOfIn = {
    * 买的是哪一档。
    */
   plan: PricePlan
+
+  /**
+   * 付完回哪儿(服务端按白名单收;空串 = 回账户页)。
+   */
+  back: string
 }
 
 /**
@@ -348,6 +353,11 @@ export type UpgradeBuyIn = {
    * 失败话术的落格;空串 = 没有错。
    */
   setErr: (v: string) => void
+
+  /**
+   * 付完回哪儿;空串 = 回账户页。
+   */
+  back: string
 }
 
 /**
@@ -381,16 +391,6 @@ export type UpBuyClsIn = {
 }
 
 /**
- * featureClsOf 的入参:清单一行是不是弱化档。
- */
-export type FeatureClsIn = {
-  /**
-   * 弱化档(承接句用灰字,不与卖点抢眼)。
-   */
-  dim: boolean
-}
-
-/**
  * cardClsOf 的入参:价卡是不是主推档。
  */
 export type CardClsIn = {
@@ -398,16 +398,6 @@ export type CardClsIn = {
    * 主推档(90 天卡:琥珀描边 + 省 N% 徽标;主推靠版式不靠营销词)。
    */
   hot: boolean
-}
-
-/**
- * ctaSlotClsOf 的入参:免费卡底那格占位是哪一种。
- */
-export type CtaSlotClsIn = {
-  /**
-   * 是不是「当前方案」那一种(另一种是已 Pro 时的破折号占位)。
-   */
-  current: boolean
 }
 
 /**
@@ -452,56 +442,6 @@ export type PricingCardIn = {
 
   /**
    * 未登录点付费时的出口:开注册弹框。
-   */
-  onRegister: ClickFn
-}
-
-/**
- * PricingFree(免费卡)的 props。
- */
-export type PricingFreeIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 登录没登录。
-   */
-  loggedIn: boolean
-
-  /**
-   * 是不是 Pro。
-   */
-  pro: boolean
-
-  /**
-   * 未登录时的出口:开注册弹框。
-   */
-  onRegister: ClickFn
-}
-
-/**
- * PricingFreeCta(免费卡底部的 CTA 三态)的 props。
- */
-export type PricingFreeCtaIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 登录没登录。
-   */
-  loggedIn: boolean
-
-  /**
-   * 是不是 Pro。
-   */
-  pro: boolean
-
-  /**
-   * 未登录时的出口:开注册弹框。
    */
   onRegister: ClickFn
 }
@@ -559,21 +499,6 @@ export type PriceAmountIn = {
    * 灰字那半:计价口径与每天单价;空串 = 只出大字。
    */
   per: string
-}
-
-/**
- * PriceFeature(清单一行:对勾 + 一句话)的 props。
- */
-export type PriceFeatureIn = {
-  /**
-   * 弱化档(承接句用灰字);可省 = 正常档。
-   */
-  dim?: boolean
-
-  /**
-   * 这一行说的事。
-   */
-  children: React.ReactNode
 }
 
 /**
@@ -670,6 +595,11 @@ export type UpgradeModalHookIn = {
    * 取词函数(失败话术要它)。
    */
   t: TFn
+
+  /**
+   * 付完回哪儿;空串 = 回账户页。
+   */
+  back: string
 }
 
 /**
@@ -705,6 +635,11 @@ export type UpgradeModalIn = {
    * 为什么弹这一下(如收藏搜索是 Pro 功能);可省 = 不出这一行。
    */
   reason?: string
+
+  /**
+   * 付完回哪儿(站内「我的」页某处,如投递区 `/account?sec=sjobs&job=…`;2026-10-07 批 C);可省 = 回账户页。
+   */
+  back?: string
 }
 
 /**

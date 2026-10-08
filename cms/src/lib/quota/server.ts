@@ -8,5 +8,8 @@
  * @time 2026-08-22 18:00:00
  */
 
-export { checkLimit, denyBodyOf, freeGate, getUser, getUserOrNull, ipOf, isAdmin, isPro, usedToday } from './functions'
+export {
+  checkLimit, denyBodyOf, freeGate, getUser, getUserOrNull, ipOf, isAdmin, isPro, isTrialOpen, loadTrial, markTrial, trialAfterOf,
+  trialLeftOf, usedToday,
+} from './functions'
 export type { MaybeUser, SessionUser } from './types'

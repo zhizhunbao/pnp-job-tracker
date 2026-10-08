@@ -25,6 +25,8 @@
 //       匿名开页先撤交接戳(陈戳不留给之后的页头登录),草稿照留。
 //       探针:useGateSync 登录态退回只看 in → 「票据在认不出」那条红;runGateSync 不等结果就 obMarkSeen → 「没交成不记」红;
 //       去掉 dropStaleHandoff → 「匿名开页撤陈戳」红。
+// 2026-10-07 浏览记录整条删(向导不再按看过的岗预选职业,Frank「为什么我选的是 AI 和 cloud,然后做的工作是上面的」→「你弄吧」):
+//       ② 撤;① 的「浏览记录多少条都不影响」与职位弹框收口的「浏览照记」两句随之撤。
 import fc from 'fast-check'
 import { act, createElement, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -33,7 +35,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
 import {
   gateDueFor, gatePatchOf, gateProvSeedOf, guessProv, isEntryGateExempt, isGateIntent, isHandoffFresh, markGateHandoff,
-  markGateSignedIn, markSeenJob, readGateDraft, readSeenJobs, seenNocsOf, seenWithOf, syncGateDraft, takeEntryGate,
+  markGateSignedIn, readGateDraft, syncGateDraft, takeEntryGate,
   takeGateHandoff, toGateDraft, writeGateDraft,
 } from '@/lib/guest/functions'
 import { CACHE as GUEST } from '@/lib/guest/variables'
@@ -43,7 +45,7 @@ import { blankPatchOf, normalize } from '@/lib/quiz/functions'
 import { SessionProvider } from '@/components/auth'
 import { useEntryGate, useGateSync } from '@/components/gate/hooks'
 import { useActModal } from '@/components/advisor/hooks'
-import type { GateDraft, SeenJob } from '@/lib/guest/types'
+import type { GateDraft } from '@/lib/guest/types'
 import type { AdvisorJob, AdvisorPlan } from '@/components/advisor/types'
 
 const PATH = vi.hoisted(() => ({ current: '/' }))
@@ -53,15 +55,10 @@ vi.mock('next/navigation', () => ({
   usePathname: () => PATH.current,
 }))
 
-const SEEN_KEY = 'o2p_seen_jobs_v1'
 const DRAFT_KEY = 'o2p_gate_v2'
 const HANDOFF_KEY = 'o2p_gate_handoff_v1'
 const ENTRY_KEY = 'o2p_gate_entry_v1'
 const OB_SEEN_KEY = 'jobs_onboarding_v1'
-
-function job(id: string, noc: string | null = null): SeenJob {
-  return { id, noc }
-}
 
 function device(tz: string, lang: string) {
   vi.spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions')
@@ -130,14 +127,9 @@ afterEach(() => {
 })
 
 describe('起弹判定 gateDueFor(2026-10-04 起不数第几个)', () => {
-  it('金标:未登录就弹;登录不弹;浏览记录多少条都不影响', () => {
+  it('金标:未登录就弹;登录不弹', () => {
     expect(gateDueFor({ loggedIn: false })).toBe(true)
     expect(gateDueFor({ loggedIn: true })).toBe(false)
-    for (let i = 1; i <= 25; i += 1) {
-      markSeenJob({ id: i, noc: '' })
-      expect(gateDueFor({ loggedIn: false }), `看过 ${i} 个`).toBe(true)
-      expect(gateDueFor({ loggedIn: true }), `登录看过 ${i} 个`).toBe(false)
-    }
   })
 })
 
@@ -214,42 +206,11 @@ describe('进站即弹(2026-10-04)', () => {
   })
 })
 
-describe('浏览记录', () => {
-  it('新的在前、同号去重、最多 20 条', () => {
-    fc.assert(fc.property(fc.array(fc.integer({ min: 1, max: 40 }), { maxLength: 60 }), (ids) => {
-      let list: SeenJob[] = []
-      for (const id of ids) {
-        list = seenWithOf({ list, job: job(String(id)) })
-      }
-      expect(list.length).toBeLessThanOrEqual(20)
-      expect(new Set(list.map((s) => s.id)).size).toBe(list.length)
-      if (ids.length > 0) {
-        expect(list[0]?.id).toBe(String(ids[ids.length - 1]))
-      }
-    }))
-  })
-
-  it('预选职业:不同的非空码、新的在前、最多 3 个', () => {
-    const seen = [job('1', '63200'), job('2', null), job('3', '63200'), job('4', '65201'), job('5', '72106'), job('6', '13110')]
-    expect(seenNocsOf({ seen })).toEqual(['63200', '65201', '72106'])
-    expect(seenNocsOf({ seen: [job('1'), job('2')] })).toEqual([])
-  })
-
-  it('向导里刚登录过(软刷没回来、分层态还是匿名):不再起弹', () => {
+describe('向导里刚登录过', () => {
+  it('软刷没回来、分层态还是匿名:不再起弹', () => {
     expect(gateDueFor({ loggedIn: false })).toBe(true)
     markGateSignedIn()
     expect(gateDueFor({ loggedIn: false })).toBe(false)
-  })
-
-  it('落本地存储:新的在前、空码记 null;坏原文按零条算', () => {
-    markSeenJob({ id: 101, noc: '63200' })
-    markSeenJob({ id: 102, noc: '' })
-    expect(readSeenJobs()).toEqual([job('102', null), job('101', '63200')])
-    vi.spyOn(console, 'log').mockImplementation(() => undefined)
-    localStorage.setItem(SEEN_KEY, '{oops')
-    expect(readSeenJobs()).toEqual([])
-    localStorage.setItem(SEEN_KEY, JSON.stringify([{ id: 5 }, { noc: '63200' }, 'x', { id: '6', noc: 7 }, { id: 8, noc: 'abcde' }]))
-    expect(readSeenJobs()).toEqual([job('5', null), job('6', null), job('8', null)])
   })
 })
 
@@ -638,7 +599,7 @@ describe('职位弹框收口 useActModal(三份入栈手柄都经 PeekStack 画�
     return { loggedIn } as unknown as AdvisorPlan
   }
 
-  it('匿名:开哪一个都先弹向导(2026-10-04 起不数);登录永远不弹;浏览照记', () => {
+  it('匿名:开哪一个都先弹向导(2026-10-04 起不数);登录永远不弹', () => {
     vi.stubGlobal('fetch', vi.fn(async () => reply(200, {})))
     const open = (id: number, loggedIn = false) =>
       runHook(() => useActModal({ job: adv(id, '21300'), plan: plan(loggedIn) })).current?.gate
@@ -646,7 +607,6 @@ describe('职位弹框收口 useActModal(三份入栈手柄都经 PeekStack 画�
     expect(open(2)).toBe(true)
     expect(open(9, true)).toBe(false)
     expect(open(3)).toBe(true)
-    expect(readSeenJobs().map((s) => s.id)).toEqual(['3', '9', '2', '1'])
   })
 
   it('向导里刚登录过(软刷没回来):开弹框不再弹', () => {

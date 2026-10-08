@@ -4,6 +4,8 @@
  * **版式**(排在前、琥珀描边、省 N% 徽标),不写「推荐」这类营销词。
  * 徽标上的百分数与每天单价都随 env 的展示价动态算(变量 PRICE),改价零代码。
  * 2026-08-28 换装批自 PricingModal.tsx 的第二张卡提出成文件。
+ * 2026-10-07 Frank「这些功能要重新盘点,重新写一下」:清单改读 PRO_PERKS(按代码里真锁在 Pro 后面的重盘),
+ * 「免费版全部功能,另加」一行随免费卡撤。同日清单再挪到两卡下面共用一份(PricingCard),卡里只剩价格与购买钮。
  *
  * @author Frank
  * @time 2026-08-28 16:40:00
@@ -13,8 +15,6 @@ import { IconStar } from '@/components/icons'
 import { ICON_GAP, PLAN_90, PLAIN_BTN_KIND, WIDE_GAP } from './constants'
 import { buyClsOf, cardClsOf, makePlanPick, perLabel90Of } from './functions'
 import { PriceAmount } from './priceamount'
-import { PriceFeature } from './pricefeature'
-import { PriceSell } from './pricesell'
 import type { PricingPro90In } from './types'
 import { PRICE } from './variables'
 import css from './pricing.module.css'
@@ -31,12 +31,6 @@ export function PricingPro90({ t, busy, onBuy }: PricingPro90In) {
       <span className={css.badge}>{t('price.save', { p: PRICE.savePct })}</span>
       <div className={css.headPro}><IconStar />{ICON_GAP}{t('price.pro')}{ICON_GAP}{PLAN_90}</div>
       <PriceAmount amount={PRICE.p90} per={perLabel90Of({ t, perDay: PRICE.perDay90 })} />
-      <ul className={css.list}>
-        <PriceFeature dim>{t('price.plusFree')}</PriceFeature>
-        <PriceSell head={t('price.pA')} detail={t('price.pA.d')} />
-        <PriceSell head={t('price.pB')} detail={t('price.pB.d')} />
-        <PriceSell head={t('price.pC')} detail={t('price.pC.d')} />
-      </ul>
       <Button kind={PLAIN_BTN_KIND}
         onClick={makePlanPick({ plan: PLAN_90, onBuy })}
         disabled={busy}

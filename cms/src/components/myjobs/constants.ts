@@ -40,6 +40,7 @@ export const METHOD_DELETE = 'DELETE'
 
 /**
  * 投递进度的字样:键 = 收藏表 status,labelKey = 词条(与原收藏看板同一套词;只读显示)。
+ * 2026-10-07 B2:我的求职改读投递表,加 sent(已投递)与 bounced(退信)两档。
  */
 export const STAGES = [
   {
@@ -53,6 +54,14 @@ export const STAGES = [
   {
     st: 'offer',
     labelKey: 'sj.st.offer',
+  },
+  {
+    st: 'sent',
+    labelKey: 'ap.applied',
+  },
+  {
+    st: 'bounced',
+    labelKey: 'mj.bounced',
   },
 ] as const
 
@@ -107,6 +116,36 @@ export const COL_LISTING = 'listing'
 export const COL_ACT = 'act'
 
 /**
+ * 列键:简历附件(我的求职;2026-10-07 Frank「我的简历 我的 cover letter 是不是要跟着已投职位走」)。
+ */
+export const COL_RESUME = 'resume'
+
+/**
+ * 列键:求职信附件(我的求职)。
+ */
+export const COL_COVER = 'cover'
+
+/**
+ * 附件接口头(后接投递行 id 与种类;只给本人、只给发出去了的)。
+ */
+export const URL_FILE_HEAD = '/api/apply/file?id='
+
+/**
+ * 附件种类尾:发出去的那份简历。
+ */
+export const FILE_RESUME_TAIL = '&kind=resume'
+
+/**
+ * 附件种类尾:那封求职信(PDF)。
+ */
+export const FILE_COVER_TAIL = '&kind=cover'
+
+/**
+ * 附件在新标签页打开。
+ */
+export const TARGET_BLANK = '_blank'
+
+/**
  * 空串(没有链接 / 没有字样)。
  */
 export const TEXT_NONE = ''
@@ -127,14 +166,14 @@ export const ACT_KIND = 'ghost'
 export const LAYER_CO = 'company'
 
 /**
+ * 弹框栈的层种类:职位描述弹框(2026-10-07 Frank「这两个应该弹框啊」:职位名点了叠开,不跳页)。
+ */
+export const LAYER_JOB = 'job'
+
+/**
  * 公司弹框里职位描述用的职业说明表(本页不带,给空表;同雇主板)。
  */
 export const NOC_DESC_NONE = []
-
-/**
- * 城市落职位板按城市筛的地址头(同把脉页城市段)。
- */
-export const CITY_HREF_HEAD = '/?city='
 
 /**
  * 表窄于这个宽度时横滚(平板竖屏不把列挤成竖排;手机走卡片)。

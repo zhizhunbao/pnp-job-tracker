@@ -17,34 +17,17 @@ import { GUEST_LOG, log } from '../log'
 import { mergeBasics } from '../quiz'
 import {
   DRAFT_KEY, ENTRY_EXEMPT_PARAMS, ENTRY_EXEMPT_ROOTS, ENTRY_EXEMPT_UNDER, ENTRY_SHOWN_KEY, GOAL_BANDS, HANDOFF_KEY,
-  HANDOFF_TTL_MS, INTENT_JOB, INTENTS, MAJOR_PICK_MAX, MAJOR_RE, NOC_PICK_MAX, NOC_RE, PATH_SEP, PROV_CODES, SEEN_KEY,
-  SEEN_MAX, STATUS_OVERSEAS, TEXT_NONE,
+  HANDOFF_TTL_MS, INTENT_JOB, INTENTS, MAJOR_PICK_MAX, MAJOR_RE, NOC_RE, PATH_SEP, PROV_CODES, STATUS_OVERSEAS, TEXT_NONE,
 } from './constants'
 import { CACHE } from './variables'
 import type {
   EntryExemptIn, EntryGateIn, GateDraft, GateForIn, GateIntent, GatePatch, GateSeedIn, HandoffFreshIn, MaybeGateDraft,
-  NocList, ProvSeed, ProvSeedIn, RawCell, RawDoc, RawText, SeenJob, SeenList, SeenMarkIn, SeenNocsIn, SeenWithIn,
-  SyncOut,
+  ProvSeed, ProvSeedIn, RawCell, RawDoc, RawText, SyncOut,
 } from './types'
 
 // =========================================================================
-// 1. 浏览记录
+// 1. 起弹判定(2026-10-07 浏览记录整条删,本段只剩 gateDueFor)
 // =========================================================================
-
-/**
- * 记下「站内打开了这一岗」(职位弹框与职位整页两个收口都调):排到最前、同号去重、只留 SEEN_MAX 条。
- *
- * @param x 这一岗的号与码。
- * @returns 无。
- */
-export function markSeenJob(x: SeenMarkIn): void {
-  const next = seenWithOf({ list: readSeenJobs(), job: seenOf(x) })
-  try {
-    localStorage.setItem(SEEN_KEY, JSON.stringify(next))
-  } catch (e) {
-    log({ tag: GUEST_LOG.tag, text: GUEST_LOG.seenWrite + String(e) })
-  }
-}
 
 /**
  * 这次打开职位弹框要不要先弹访客向导:读浏览记录、把这一岗算进去,再交给 isGateDue 判。
@@ -59,105 +42,6 @@ export function gateDueFor(x: GateForIn): boolean {
   return x.loggedIn === false && isGateSignedIn() === false
 }
 
-/**
- * 读浏览记录;读不到(没记过 / 存储被禁 / 原文坏了)按零条算并留痕。
- *
- * @returns 浏览记录。
- */
-export function readSeenJobs(): SeenList {
-  try {
-    return toSeenJobs(localStorage.getItem(SEEN_KEY))
-  } catch (e) {
-    log({ tag: GUEST_LOG.tag, text: GUEST_LOG.seenRead + String(e) })
-    return []
-  }
-}
-
-/**
- * 浏览记录原文 → 记录(行构造器):缺号的条目丢掉,码不是五位数字串的一律记 null(本地存储谁都能改,
- * 坏码不许流进向导预选与答案档)。原文不是 json 时 JSON.parse 会抛,由调用方的 catch 收。
- *
- * @param raw 本地存储原文;null = 没记过。
- * @returns 洗净的记录。
- */
-export function toSeenJobs(raw: RawText): SeenList {
-  const out: SeenList = []
-  if (raw == null || raw === '') {
-    return out
-  }
-  const doc: RawCell = JSON.parse(raw)
-  if (Array.isArray(doc) === false) {
-    return out
-  }
-  for (const one of doc as RawCell[]) {
-    if (one == null || typeof one !== 'object' || Array.isArray(one)) {
-      continue
-    }
-    const row = one as RawDoc
-    if (typeof row.id !== 'string' && typeof row.id !== 'number') {
-      continue
-    }
-    let noc: string | null = null
-    if (typeof row.noc === 'string' && NOC_RE.test(row.noc)) {
-      noc = row.noc
-    }
-    out.push({ id: String(row.id), noc })
-  }
-  return out
-}
-
-/**
- * 调用方交来的一岗 → 记录里的一条(号统一成字符串,空码记 null)。
- *
- * @param x 这一岗的号与码。
- * @returns 记录里的一条。
- */
-export function seenOf(x: SeenMarkIn): SeenJob {
-  let noc: string | null = null
-  if (x.noc !== '') {
-    noc = x.noc
-  }
-  return { id: String(x.id), noc }
-}
-
-/**
- * 把这一岗排到记录最前:旧记录里同号的那条去掉,总数截到 SEEN_MAX。
- *
- * @param x 旧记录与这一岗。
- * @returns 新记录。
- */
-export function seenWithOf(x: SeenWithIn): SeenList {
-  const out: SeenList = [x.job]
-  for (const one of x.list) {
-    if (out.length >= SEEN_MAX) {
-      break
-    }
-    if (one.id !== x.job.id) {
-      out.push(one)
-    }
-  }
-  return out
-}
-
-/**
- * 记录里刚看过的职业码(新的在前、去重、跳过没码的),最多 NOC_PICK_MAX 个 —— 向导职业那一步的预选。
- *
- * @param x 浏览记录。
- * @returns 职业码。
- */
-export function seenNocsOf(x: SeenNocsIn): NocList {
-  const out: NocList = []
-  for (const one of x.seen) {
-    if (out.length >= NOC_PICK_MAX) {
-      break
-    }
-    if (one.noc != null && out.includes(one.noc) === false) {
-      out.push(one.noc)
-    }
-  }
-  return out
-}
-
 // =========================================================================
 // 2. 访客向导草稿
 // =========================================================================
@@ -165,6 +49,8 @@ export function seenNocsOf(x: SeenNocsIn): NocList {
 /**
  * 向导开屏时的各格初值:有草稿就照草稿(再次打开接着答);没有就按浏览记录预选职业、
  * 按设备时区预选所在省,其余留空。
+ * 2026-10-07 Frank「为什么我选的是 AI 和 cloud,然后做的工作是上面的」→「你弄吧」:按浏览记录预选职业撤
+ * (专业是必答,第 3 题照专业推荐;预选的是看过的岗,和专业对不上),浏览记录随之整条删,职业一格开屏留空。
  *
  * @param x 这次的由头(没有草稿时记进新开的那份)。
  * @returns 各格初值(形状同草稿)。
@@ -178,7 +64,7 @@ export function readGateSeed(x: GateSeedIn): GateDraft {
   return {
     goal: 0,
     majors: [],
-    nocs: seenNocsOf({ seen: readSeenJobs() }),
+    nocs: [],
     prov: where.prov,
     abroad: where.abroad,
     intent: x.intent,

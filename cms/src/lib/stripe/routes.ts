@@ -16,11 +16,11 @@ import { BAD_REQUEST, SERVER_ERROR, UNAUTHORIZED, UNAVAILABLE } from '../http'
 import { log, STRIPE_LOG } from '../log'
 import { getUser } from '../quota/server'
 import {
-  CANCEL_PATH, COLLECTION_USERS, E_BAD_SIG, E_INTERNAL, E_LOGIN, E_NOT_CONFIGURED, E_PRICE,
+  COLLECTION_USERS, E_BAD_SIG, E_INTERNAL, E_LOGIN, E_NOT_CONFIGURED, E_PRICE,
   E_UNKNOWN_PLAN, HANDLED_EVENTS, MODE_PAYMENT, PAID, PLANS, PM_ALIPAY, PM_CARD, PM_WECHAT, RADIX_DEC, SIG_HEADER,
-  ENV_ON, LOG_MSG_NONE, REQ_FIELD_NONE, SUCCESS_PATH, WECHAT_CLIENT_WEB,
+  ENV_ON, LOG_MSG_NONE, REQ_FIELD_NONE, WECHAT_CLIENT_WEB,
 } from './constants'
-import { getStripe } from './functions'
+import { getStripe, returnPathsOf } from './functions'
 import type { CheckoutBody, CreateSessionIn, PayMethod, StripeCheckoutSession, WebhookUserDoc } from './types'
 
 /**
@@ -68,9 +68,13 @@ export async function stripeCheckoutRoute(req: Request): Promise<Response> {
   if (process.env.STRIPE_WECHAT_PAY === ENV_ON) {
     pmTypes.push(PM_WECHAT)
   }
+  const paths = returnPathsOf(body)
   let session: Stripe.Checkout.Session
   try {
-    session = await createSession({ stripe, types: pmTypes, price, site, userId: String(user.id), email: user.email, days: plan.days })
+    session = await createSession({
+      stripe, types: pmTypes, price, site, userId: String(user.id), email: user.email, days: plan.days, okPath: paths.ok,
+      cancelPath: paths.cancel,
+    })
   } catch (e) {
     if (pmTypes.length <= 1) {
       throw e
@@ -80,7 +84,10 @@ export async function stripeCheckoutRoute(req: Request): Promise<Response> {
       msg = e.message
     }
     log({ tag: STRIPE_LOG.tag, text: STRIPE_LOG.fallbackCard + msg })
-    session = await createSession({ stripe, types: [PM_CARD], price, site, userId: String(user.id), email: user.email, days: plan.days })
+    session = await createSession({
+      stripe, types: [PM_CARD], price, site, userId: String(user.id), email: user.email, days: plan.days, okPath: paths.ok,
+      cancelPath: paths.cancel,
+    })
   }
   return Response.json({ url: session.url })
 }
@@ -185,8 +192,8 @@ function createSession(input: CreateSessionIn): Promise<Stripe.Checkout.Session>
     mode: MODE_PAYMENT,
     line_items: [{ price: input.price, quantity: 1 }],
     payment_method_types: input.types,
-    success_url: input.site + SUCCESS_PATH,
-    cancel_url: input.site + CANCEL_PATH,
+    success_url: input.site + input.okPath,
+    cancel_url: input.site + input.cancelPath,
     client_reference_id: input.userId,
     customer_email: input.email,
     metadata: { days: String(input.days) },

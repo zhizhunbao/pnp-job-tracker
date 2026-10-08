@@ -120,16 +120,16 @@ describe('「我的简历」一节', () => {
     expect(labels(b)).toContain('rf.setDefault')
     expect(labels(b)).not.toContain('rf.preview')
     expect(el.textContent).toContain('rf.add')
-    expect(el.textContent).toContain('3 / 5')
+    expect(el.textContent).toContain('3 / 20')
   })
 
-  it('③ 满 5 份:添加钮换成「最多 5 份」', async () => {
-    const five = [1, 2, 3, 4, 5].map((i) => ({ ...PDF_C, id: i, fileName: `cv${i}.pdf`, isDefault: i === 1 }))
+  it('③ 满 20 份(2026-10-07 由 5 份提到 20 份):添加钮换成「最多 20 份」', async () => {
+    const five = Array.from({ length: 20 }, (_, k) => ({ ...PDF_C, id: k + 1, fileName: `cv${k + 1}.pdf`, isDefault: k === 0 }))
     server({ 'GET /api/resume/files': { status: 200, body: { items: five } } })
     const el = await mount()
     expect(labels(el)).not.toContain('rf.add')
     expect(el.textContent).toContain('rf.full')
-    expect(el.textContent).toContain('5 / 5')
+    expect(el.textContent).toContain('20 / 20')
   })
 
   it('④ 预览开本页弹框,关掉就没了', async () => {

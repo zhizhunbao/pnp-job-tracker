@@ -97,7 +97,7 @@ export function useUpgradeModal(x: UpgradeModalHookIn): UpgradeModalPanel {
     trackUpgradeOpen()
   }, [])
 
-  const onBuy = makeUpgradeBuy({ t: x.t, setBusy, setErr })
+  const onBuy = makeUpgradeBuy({ t: x.t, setBusy, setErr, back: x.back })
 
   function pickOf(p: PricePlan): () => void {
     return makePlanSelect({ plan: p, set: setPlan })

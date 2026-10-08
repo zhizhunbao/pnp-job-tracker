@@ -5,8 +5,10 @@
 //       ⑤ 投递状态只读:投过的写「已投」、没投过画横杠;职位状态单独一列:在架 / 已下架;没有可点的进度格;
 //       ⑥ 职位删了:没有链接、没有「打开」;
 //       ⑦ 我的收藏有「取消收藏」:先本地删、发 DELETE /api/saved-jobs/<id>;服务端没删成就退回;我的求职没有这颗钮;
-//       ⑧ 照职位板:公司表里有的公司名是钮、点了叠开公司弹框(标题是公司名),没有的是纯文字;城市链职位板 /?city=;
+//       ⑧ 照职位板:公司表里有的公司名是钮、点了叠开公司弹框(标题是公司名),没有的是纯文字;城市只出名字不链职位板
+//          (10-07 Frank「这个点击跳转去掉」);
 //          点表头排序(薪资按折算年薪,不按字面)。
+// 2026-10-07 我的求职多两列附件(简历 / 求职信,开 /api/apply/file 的快照与 PDF),我的收藏不出。
 // 探针:makeUnsave 失败不退回 → ⑦「失败退回」红;listingTextOf 不认下架 → ④ 职位状态红;
 //       cityLabelOf 不认中文界面 → ④ 城市红;makeLoadMyJobs 失败不拨 failed → ③ 红。
 import { act, createElement } from 'react'
@@ -100,7 +102,7 @@ describe('我的求职', () => {
     server({ 'GET /api/myjobs/applied': { status: 200, body: { items: [A, B] } } })
     const el = await mount(AppliedList)
     const a = rowOf(el, 'light duty cleaner')
-    const [title, company, city, date, stage, listing, act] = cellsOf(a)
+    const [title, company, city, date, stage, listing, resume, cover, act] = cellsOf(a)
     expect(title).toBe('light duty cleaner')
     expect(Array.from(a.querySelectorAll('a')).find((x) => x.textContent === 'light duty cleaner')?.getAttribute('href')).toBe('/jobs/101')
     expect(company).toBe('Clean Co')
@@ -108,6 +110,10 @@ describe('我的求职', () => {
     expect(date).toBe('2026-10-05')
     expect(stage).toBe('sj.st.applied')
     expect(listing).toBe('mj.live')
+    expect(resume).toBe('mj.view')
+    expect(cover).toBe('mj.view')
+    const files = Array.from(a.querySelectorAll('a')).filter((x) => x.textContent === 'mj.view').map((x) => x.getAttribute('href'))
+    expect(files).toEqual(['/api/apply/file?id=7&kind=resume', '/api/apply/file?id=7&kind=cover'])
     expect(act).toBe('mj.open')
     expect(Array.from(a.querySelectorAll('button')).map((x) => x.textContent)).toEqual(['Clean Co'])
     const b = rowOf(el, 'Pie Wood')
@@ -116,8 +122,8 @@ describe('我的求职', () => {
     expect(cb[2]).toBe('SteinbachMB')
     expect(cb[4]).toBe('sj.st.applied')
     expect(cb[5]).toBe('mj.closed')
-    expect(cb[6]).toBe('')
-    expect(Array.from(b.querySelectorAll('a')).map((x) => x.textContent)).toEqual(['Steinbach'])
+    expect(cb[8]).toBe('')
+    expect(Array.from(b.querySelectorAll('a')).map((x) => x.textContent)).toEqual(['mj.view', 'mj.view'])
   })
 })
 
@@ -186,11 +192,12 @@ describe('照职位板:公司弹框、城市链接、排序', () => {
     expect(document.body.textContent?.split('Clean Co').length).toBeGreaterThan(3)
   })
 
-  it('⑧ 城市链职位板按城市筛', async () => {
+  it('⑧ 城市只出名字,不链职位板', async () => {
     server({ 'GET /api/myjobs/saved': { status: 200, body: { items: [A] } } })
     const el = await mount(SavedList)
-    const city = Array.from(rowOf(el, 'light duty cleaner').querySelectorAll('a')).find((x) => x.textContent === '温尼伯')
-    expect(city?.getAttribute('href')).toBe('/?city=Winnipeg')
+    const row = rowOf(el, 'light duty cleaner')
+    expect(row.textContent).toContain('温尼伯')
+    expect(Array.from(row.querySelectorAll('a')).some((x) => x.textContent === '温尼伯')).toBe(false)
   })
 
   it('⑧ 点薪资表头按折算年薪排', async () => {

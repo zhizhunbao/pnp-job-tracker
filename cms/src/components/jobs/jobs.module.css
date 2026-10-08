@@ -1644,43 +1644,6 @@
 }
 
 /*
- * 点了投递没拿到邮箱时的一行提示(今天次数用完了 / 投递失败;2026-10-04 收口审查):照抄 .noJd 的形,
- * 那一格是简历对照专用的,不借。
- */
-.applyNote {
-  font-size: 13.5px;
-  color: #6b7280;
-  padding-top: 8px;
-}
-
-/*
- * 邮件投递框(2026-09-14 Frank「这个需要弹个页面出来吧」):一行标签、一行邮箱、一排两钮。
- */
-.mailBox {
-  padding-top: 4px;
-}
-
-.mailLabel {
-  font-size: 12.5px;
-  color: #6b7280;
-}
-
-.mailAddr {
-  margin-top: 4px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #111827;
-  word-break: break-all;
-}
-
-.mailActs {
-  display: flex;
-  gap: 8px;
-  margin-top: 14px;
-  flex-wrap: wrap;
-}
-
-/*
  * ── 18. 职位详情整页 ─────────────────────────────────────────────────────
  */
 

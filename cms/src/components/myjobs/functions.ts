@@ -5,17 +5,22 @@
  * @author Frank
  * @time 2026-10-06 23:20:00
  */
+import { makeOpenJob } from '@/components/companies'
 import { cityLabelOf } from '@/components/start'
 import { ymd } from '@/lib/time'
 import { ActCell } from './actcell'
 import { CityCell } from './citycell'
 import { CompanyCell } from './companycell'
+import { CoverFileCell } from './coverfilecell'
 import { ListingCell } from './listingcell'
+import { ResumeFileCell } from './resumefilecell'
 import {
-  CITY_HREF_HEAD, COL_ACT, COL_CITY, COL_COMPANY, COL_DATE, COL_LISTING, COL_SALARY, COL_STAGE, COL_TITLE, CRED_INCLUDE,
+  COL_ACT, COL_CITY, COL_COMPANY, COL_DATE, COL_LISTING, COL_SALARY, COL_STAGE, COL_TITLE, CRED_INCLUDE,
   JOB_HREF_HEAD,
   LAYER_CO,
   DASH, KIND_APPLIED, METHOD_DELETE, STAGES, TEXT_NONE, URL_SAVED_JOB_HEAD,
+  COL_COVER, COL_RESUME, FILE_COVER_TAIL, FILE_RESUME_TAIL, URL_FILE_HEAD,
+  LAYER_JOB,
 } from './constants'
 import { SalaryCell } from './salarycell'
 import { StatusCell } from './statuscell'
@@ -23,6 +28,8 @@ import { TitleCell } from './titlecell'
 import type {
   CellRowIn, CellRowsIn, CoPeek, LoadMyJobsIn, MyJobCellRow, MyJobCol, MyJobItem, MyJobsRespJson, OpenCompanyFn,
   PeekStackRef, TFn, UnsaveIn,
+  FileHrefIn,
+  MyJobsJob, OpenJobFn, PeekClickFn,
 } from './types'
 
 /**
@@ -220,6 +227,40 @@ export function makePushCo(stack: PeekStackRef): OpenCompanyFn {
 }
 
 /**
+ * 造「开职位描述弹框」:往弹框栈上叠一层职位层(2026-10-07 Frank「这两个应该弹框啊」)。
+ *
+ * @param stack 弹框栈。
+ * @returns 开职位弹框的手柄。
+ */
+export function makePushJob(stack: PeekStackRef): OpenJobFn {
+  return function pushJob(job: MyJobsJob): void {
+    stack.push({ kind: LAYER_JOB, job })
+  }
+}
+
+/**
+ * 职位名的点击手柄:职位还在就交给公司桶的 makeOpenJob(按岗位号现取一行、叠开 JD 弹框;取不到照链接去详情页)。
+ *
+ * @param x 这一行与开弹框的手柄。
+ * @returns 点击手柄;职位删了给不拦的空口(那时职位格不出链接)。
+ */
+function titleOpenOf(x: CellRowIn): PeekClickFn {
+  if (x.item.jobId == null) {
+    return ignoreTitleClick
+  }
+  return makeOpenJob({ id: x.item.jobId, row: null, onOpenJob: x.onOpenJob })
+}
+
+/**
+ * 职位删了时职位格的点击口(职位格那时是纯文字,不会被点到;照城市格 ignoreCityClick 的形)。
+ *
+ * @returns 无。
+ */
+export function ignoreTitleClick(): void {
+  return
+}
+
+/**
  * 造「点这一行的公司名」:开这一家的公司弹框。
  *
  * @param x 这一行与开弹框的手柄。
@@ -245,19 +286,6 @@ export function companyOpenOf(x: CellRowIn): (() => void) | null {
 }
 
 /**
- * 城市落职位板按城市筛的地址(同把脉页城市段)。
- *
- * @param city 城市英文名。
- * @returns 地址;没有城市给空串。
- */
-export function cityHrefOf(city: string): string {
-  if (city === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  return CITY_HREF_HEAD + encodeURIComponent(city)
-}
-
-/**
  * 一行展示行。
  *
  * @param x 哪张表、这一行、整张清单、界面语、取词函数与落格。
@@ -270,12 +298,12 @@ export function cellRowOf(x: CellRowIn): MyJobCellRow {
   const iso = dateIsoOf(x)
   return {
     key: String(x.item.id),
+    onTitle: titleOpenOf(x),
     href: jobHrefOf(x.item.jobId),
     title: x.item.title,
     company: x.item.company,
     cityName: city.name,
     cityNote: city.note,
-    cityHref: cityHrefOf(x.item.city),
     onCompany: companyOpenOf(x),
     salaryAnnual: x.item.salaryAnnual,
     onCity: ignoreCityClick,
@@ -290,7 +318,25 @@ export function cellRowOf(x: CellRowIn): MyJobCellRow {
     openText: x.t('mj.open'),
     unsaveText: unsaveTextOf(x),
     onUnsave: unsaveOf(x),
+    resumeHref: fileHrefOf({ x, tail: FILE_RESUME_TAIL }),
+    coverHref: fileHrefOf({ x, tail: FILE_COVER_TAIL }),
+    viewText: x.t('mj.view'),
+    resumeText: x.t('mj.col.resume'),
+    coverText: x.t('mj.col.cover'),
   }
+}
+
+/**
+ * 附件地址:我的求职那张表的行(行 id = 投递行 id)给 /api/apply/file 的地址;我的收藏给空串。
+ *
+ * @param y 这一行与种类尾。
+ * @returns 地址或空串。
+ */
+function fileHrefOf(y: FileHrefIn): string {
+  if (y.x.kind !== KIND_APPLIED) {
+    return TEXT_NONE
+  }
+  return URL_FILE_HEAD + y.x.item.id + y.tail
 }
 
 /**
@@ -303,7 +349,14 @@ export function myJobCellRowsOf(x: CellRowsIn): MyJobCellRow[] {
   const out: MyJobCellRow[] = []
   for (const item of x.items) {
     out.push(cellRowOf({
-      kind: x.kind, item, items: x.items, lang: x.lang, t: x.t, setItems: x.setItems, onOpenCompany: x.onOpenCompany,
+      kind: x.kind,
+      item,
+      items: x.items,
+      lang: x.lang,
+      t: x.t,
+      setItems: x.setItems,
+      onOpenCompany: x.onOpenCompany,
+      onOpenJob: x.onOpenJob,
     }))
   }
   return out
@@ -435,6 +488,8 @@ export function appliedColsOf(t: TFn): MyJobCol[] {
     { key: COL_DATE, label: t('mj.appliedAt'), render: dateOf, sort: dateSortOf, nowrap: true },
     { key: COL_STAGE, label: t('mj.col.stage'), render: StatusCell, sort: stageSortOf, nowrap: true },
     { key: COL_LISTING, label: t('mj.col.listing'), render: ListingCell, sort: listingSortOf, nowrap: true },
+    { key: COL_RESUME, label: t('mj.col.resume'), render: ResumeFileCell, nowrap: true },
+    { key: COL_COVER, label: t('mj.col.cover'), render: CoverFileCell, nowrap: true },
     { key: COL_ACT, label: t('col.actions'), render: ActCell, nowrap: true },
   ]
 }

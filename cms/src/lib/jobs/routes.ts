@@ -14,7 +14,7 @@ import { headers } from 'next/headers'
 import { getDb } from '../db/server'
 import {
   BAD_GATEWAY, BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, MIME_TEXT, NO_CONTENT, NOT_FOUND, TOO_MANY,
-  UNAVAILABLE, FORBIDDEN, UNAUTHORIZED,
+  UNAVAILABLE, FORBIDDEN,
 } from '../http'
 import {
   E_BAD_REQUEST, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, friendLlmReady, TRANS_KEY_SEP, TRANS_LANGS,
@@ -23,15 +23,15 @@ import {
 import { checkLimit, getUser, ipOf, isPro, isAdmin,
 } from '../quota/server'
 import {
-  AH_DAILY_DEFAULT, AH_IP_DAILY, AH_IP_LIMIT_PREFIX, AH_LIMIT_PREFIX, COMPANY_SLUG_RE,
-  AIP_KEY_MAX_LEN, AIP_OFFSET_MAX, DIMS_CACHE_CONTROL, E_AIP_PARAMS, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT,
-  JD_LIMIT_PREFIX, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE, POOL_KEY_RE, P_DIR,
+  COMPANY_SLUG_RE,
+  AIP_KEY_MAX_LEN, AIP_OFFSET_MAX, DIMS_CACHE_CONTROL, E_AIP_PARAMS, E_NOC_REQUIRED, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT,
+  JD_LIMIT_PREFIX, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, NOC5_RE, PAGE_N_MAX, PARAM_NONE, POOL_KEY_RE, P_DIR,
   P_GROUP, P_ID, P_KEY, P_NOC, P_OFFSET, P_PAGE, P_PROV, P_SORT, P_URL, PROV_CODE_RE, RADIX_DEC, REL_GROUP_CO, REL_GROUP_OCC, REL_OCC_OFFSET_MAX, SORT_NONE, NL,
   TITLE_IP_DAILY, TITLE_LIMIT_PREFIX, TITLE_MAX_LEN, E_SIMILAR_PARAMS, SIMILAR_OFFSET_MAX,
 } from './constants'
 import {
   loadSimilarEmployersPage,
-  emptySimilar, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug,
+  emptySimilar, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug,
   loadAipEmployers, loadAipEmployersRest, loadJobsPage, loadOccCompetition, loadQcChannels, loadSimilarEmployers, generateJdFormatted, getPnpOps, getPnpReqs, getPnpStepOps, getPnpSteps, getSsrDims,
   hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadJdFormatted, loadJdState, loadJobById,
   loadJobMeta, loadMatchDims, loadRelatedAnchor, loadRelatedJobs, loadRelatedPage, normalizeProfile, translateTitles,
@@ -354,54 +354,6 @@ export async function jobsCompetitionRoute(req: Request): Promise<Response> {
   }
   const rows = await loadOccCompetition({ db: await getDb(), nocs: [noc] })
   return Response.json({ noc, rows })
-}
-
-/**
- * GET /api/jobs/applyhow?url=:投递邮箱懒查(E9-04 B11)。Job Bank 把投递邮箱藏在
- * 「Show how to apply」的 JSF 局部提交后面 —— 打开投递栏时现抓(loadApplyEmail),
- * 进程内正/负两级缓存,零批量预抓(lazy-first)。只认 jobbank.gc.ca 职位页(白名单防
- * SSRF);其他来源(ATS 原站)邮箱走前端对 jobtext 的正则,不进这里。
- * 2026-09-23 站内投递批 1:先读库里存好的(ETL howto 役 + mart 投递邮箱段写的 jobs.apply_email),没有再现抓。
- * 仍不要求登录(投递栏开页就来问,决定出邮箱钮还是外跳钮);批 2 改成服务端代发后,邮箱不再下发前端,这里再收紧。
- * 2026-09-27 Frank「CareerBeacon 渠道的职位 全是前往投递」:库里存好的邮箱对所有来源都问(带 &id= 按岗位号取,不按链接,
- * 防共用门户链接串岗);只有 Job Bank 职位页存的没有,才走现抓。上面「其他来源不进这里」作废;限额照旧先判。
- * 2026-10-04 改判(Frank「照这样改」):邮箱只给登录用户 —— 未登录 401,前端改成登录用户点投递时才来问;
- * 限额从每 IP 改成每个登录用户(键 = 前缀 + 用户号,默认 AH_DAILY_DEFAULT,env APPLYHOW_DAILY 可覆盖)。读库优先、
- * Job Bank 现抓照旧。上面「仍不要求登录」作废。
- * 同日 Frank「现查那条直接删掉吧。之后我线下用 opus 补」:Job Bank 现抓与正负两级缓存撤,只读库(没邮箱的岗本来就
- * 不上线,见 mart「全」第七格);上面「没有再现抓」「现抓照旧」作废。
- * 2026-10-04 收口审查:每 IP 那一位补回来,与每用户那一位同一次 checkLimit 判(任一位满就挡)—— 注册不设门槛,
- * 只按用户计的话同一 IP 轮换新号就能绕开;IP 上限 AH_IP_DAILY 放宽到每用户的 5 倍(直播观众共用运营商出口)。
- * 上面「限额从每 IP 改成每个登录用户」改读作「每用户 + 每 IP 两位都判」。
- *
- * @param req 请求(?url=职位页链接 &id=岗位号)。
- * @returns { email }(空串 = 无/失败);未登录 401;超限 429。
- */
-export async function jobsApplyhowRoute(req: Request): Promise<Response> {
-  const user = await getUser(req.headers)
-  if (user == null) {
-    return Response.json({ email: MAIL_NONE }, { status: UNAUTHORIZED })
-  }
-  let ahDaily = AH_DAILY_DEFAULT
-  const ahEnv = Number(process.env.APPLYHOW_DAILY)
-  if (Number.isFinite(ahEnv) && ahEnv > 0) {
-    ahDaily = ahEnv
-  }
-  if (checkLimit([[AH_LIMIT_PREFIX + String(user.id), ahDaily], [AH_IP_LIMIT_PREFIX + ipOf(req), AH_IP_DAILY]]) === false) {
-    return Response.json({ email: MAIL_NONE }, { status: TOO_MANY })
-  }
-  let raw = PARAM_NONE
-  const urlParam = new URL(req.url).searchParams.get(P_URL)
-  if (urlParam != null) {
-    raw = urlParam.trim()
-  }
-  const id = toJobId(new URL(req.url).searchParams.get(P_ID))
-  const isJb = JB_POSTING_RE.test(raw)
-  if (id == null && isJb === false) {
-    return Response.json({ email: MAIL_NONE })
-  }
-  const stored = await loadStoredApplyEmail({ db: await getDb(), url: raw, id: id })
-  return Response.json({ email: stored })
 }
 
 /**

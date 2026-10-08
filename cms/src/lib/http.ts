@@ -59,6 +59,11 @@ export const NOT_FOUND = 404
 export const CONFLICT = 409
 
 /**
+ * 410 Gone(2026-10-07 站内投递:岗已下架、库里没投递邮箱、雇主邮箱退过信 —— 这一岗投不了了)。
+ */
+export const GONE = 410
+
+/**
  * 429:匿名限流。
  */
 export const TOO_MANY = 429

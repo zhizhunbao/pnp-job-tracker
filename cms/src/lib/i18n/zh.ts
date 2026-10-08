@@ -527,9 +527,8 @@ export const jobsZh = {
   // E9-04 投递栏(+dd24-#109 语境文案)
   // 2026-10-03 付费闭环批 B1:外链投递撤,钮面固定 apply.plain;apply.email / apply.web 两键三语删
   // 2026-10-06 Frank「这个还是改成叫 邮箱投递」:钮面三语改「邮箱投递 / Apply by email / 이메일로 지원」
-  'apply.mailTo': '收件邮箱', 'apply.openMail': '打开邮件', 'apply.copyMail': '复制邮箱', 'apply.plain': '邮箱投递', 'apply.copy': '复制要点', 'apply.copied': '已复制',
-  // 2026-10-04 付费闭环 B1 收口:登录用户点投递、查邮箱没成(每人日限 / 查挂了 / 没邮箱)时的一行状态
-  'apply.limit': '今天的查询次数用完了', 'apply.err': '投递失败,稍后再试',
+  'apply.plain': '邮箱投递', 'apply.copy': '复制要点',   // 2026-10-04 付费闭环 B1 收口:登录用户点投递、查邮箱没成(每人日限 / 查挂了 / 没邮箱)时的一行状态
+  // 2026-10-07 B2 站内投递:投递钮改跳 /apply/<id>,邮件投递框与查邮箱的提示撤 —— apply.mailTo / openMail / copyMail / copied、apply.limit / err 三语删
   'apply.authHero': '注册后帮你预填投递邮件,记录投递进度',
   'ob.valueApply': '顺手选几下,以后有相似的岗自动进你邮箱', 'ob.finishApply': '保存,继续投递',
   // E8-07 职位详情页
@@ -891,7 +890,25 @@ export const jobsZh = {
   // 2026-10-06 「我的求职」「我的收藏」改成 myjobs 桶的两张表;sj.note、fav.note 随旧清单撤
   'mj.appliedAt': '投递日期', 'mj.open': '打开', 'mj.unsave': '取消收藏', 'mj.closed': '已下架',
   'mj.live': '在架', 'mj.col.stage': '投递状态', 'mj.col.listing': '职位状态',
+  'mj.bounced': '退信',
+  'mj.col.resume': '简历', 'mj.col.cover': '求职信', 'mj.view': '查看',
   'mj.emptyApplied': '还没有投递记录。在职位页点「邮箱投递」后,这里会记下来。', 'mj.fail': '没加载出来,刷新页面再试。',
+  // 2026-10-07 站内投递页 /apply/<id>(B2:简历 → 求职信 → 预览 → 已投递;错误码与 lib/apply 接口一一对应)
+  'ap.rewrite': '按职位重写',
+  'ap.trialLeft': 'AI 试用还剩 {n} 次',
+  'ap.trialOut': 'AI 按职位写信的 {n} 次试用已用完,这封是通用模板,可以直接改',
+  'ap.trialReason': 'AI 按职位写信的免费试用已用完',
+  'ap.writing': '正在按这个职位的要求写求职信,大约半分钟',
+  'ap.e.template': '没按职位写成,先放了一封通用的;可以点「按职位重写」再试',
+  'ap.e.write': '求职信没写成,点「按职位重写」再试',
+  'ap.e.upload': '上传没成功,PDF 或 Word,5 MB 以内',
+  'ap.applied': '已投递', 'ap.resume': '简历', 'ap.name': '英文姓名(与简历一致)', 'ap.letter': '求职信',
+  'ap.preview': '预览', 'ap.next': '下一步', 'ap.back': '上一步', 'ap.send': '发送', 'ap.pdf': '查看 PDF',
+  'ap.badChars': '这些字写不进 PDF:', 'ap.sending': '发送中', 'ap.e.name': '英文姓名只能用英文字母、空格、点、撇号和连字符,2 到 60 个字',
+  'ap.e.resume': '先上传一份简历', 'ap.e.chars': '信里有写不进 PDF 的字', 'ap.e.long': '求职信太长了,最多 4000 个字',
+  'ap.e.sent': '这个职位已经投过了', 'ap.e.draft': '先写好求职信', 'ap.e.sameEmail': '30 天内已经给这个雇主投过别的职位',
+  'ap.e.bounced': '这个雇主的邮箱退过信,投不了', 'ap.e.closed': '职位已下架', 'ap.e.noEmail': '这个职位没有投递邮箱',
+  'ap.e.limit': '今天投得太多了,明天再来', 'ap.e.busy': '今天的发信名额用完了,明天再来', 'ap.e.mailOff': '发信服务没有开启', 'ap.e.mail': '没发出去,稍后再试',
   // 大分类(数据值→显示)。单一来源 = etl/noc_buckets.py 的 BROADS + I18N,改那边要同步这里。 2026-09-14 Frank「管理层改成管理,生活服务改成生活,社会服务改成社会」:只改中文显示名,键与 en/ko 不动。
   'broad.管理层': '管理', 'broad.商务': '商务', 'broad.行政': '行政', 'broad.文员': '文员', 'broad.金融': '金融',
   'broad.会计': '会计', 'broad.法律': '法律', 'broad.IT': '科技', 'broad.工程': '工程', 'broad.科学': '科学',
@@ -970,7 +987,7 @@ export const jobsZh = {
   'rf.upTitle': '上传简历', 'rf.upSub': 'PDF 或 Word,5 MB 以内', 'rf.upBtn': '选择文件', 'rf.upDrag': '拖到这里也可以',
   'rf.uploaded': '上传于 {d}', 'rf.preview': '预览', 'rf.replace': '替换文件', 'rf.download': '下载', 'rf.delete': '删除',
   'rf.sure': '确认删除', 'rf.cancel': '取消',
-  'rf.default': '默认', 'rf.setDefault': '设为默认', 'rf.add': '添加简历', 'rf.full': '最多 5 份', 'rf.loading': '加载中', 'rf.pvFail': '这份预览不了,下载后查看',
+  'rf.default': '默认', 'rf.setDefault': '设为默认', 'rf.add': '添加简历', 'rf.full': '最多 20 份', 'rf.loading': '加载中', 'rf.pvFail': '这份预览不了,下载后查看',
   'rf.zoomIn': '放大', 'rf.zoomOut': '缩小', 'rf.zoomReset': '恢复整页',
   'rf.err.full': '最多 5 份,先删掉一份再加',
   'rf.err.type': '只收 PDF 或 Word(.docx)文件', 'rf.err.size': '文件超过 5 MB',
@@ -1034,8 +1051,7 @@ export const jobsZh = {
   'up.proShort': 'Pro 解锁',   // #130 锁位短注:打码占位数旁四字,长解释文案退役
   'up.lockTip.wageMedHr': '同职业官方时薪中位数,Pro 解锁', 'up.lockTip.wageMedYr': '同职业官方年薪中位数,Pro 解锁', 'up.lockTip.vsMedian': '此岗薪资与官方中位的差距(±%),Pro 解锁',
   'up.compare': '看完整功能对比',
-  'up.noRenew': '到期不会自动续费', 'up.per30': '{v} / 30 天', 'up.pay': '确认支付 {v}', 'up.perk.quota': '无限刷题',
-  'up.perk.sync': '练过跨设备同步',
+  'up.noRenew': '到期不会自动续费', 'up.per30': '{v} / 30 天', 'up.pay': '确认支付 {v}',
   'ob.step': '第 {i} 步 · 共 {n} 步', 'ob.value': '填完立刻看到与每个岗位的匹配度',
   'ob.skip': '跳过这步', 'ob.back': '上一步', 'ob.next': '下一步', 'ob.finish': '看我的匹配',
   // 2026-10-04 付费闭环 A1 收口:已选职业标签 × 钮的读屏名({name} = 职业名)
@@ -1281,26 +1297,22 @@ export const siteZh = {
   'news.trOn': '显示中文对照', 'news.trOff': '收起中文对照', 'news.trBusy': '翻译中…约 15 秒', 'news.sumBusy': '速读生成中…', 'news.aiGen': 'AI 生成 · 以原文为准', 'news.trErr': '翻译暂不可用,请稍后再试',
   // 定价页 + 横幅(E5-01)
   'price.title': '定价', 'price.sub': '一次性时长包,无自动续费',
-  'price.free': '免费', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',
+  'price.pro': 'Pro',
   'price.per30': '30 天', 'price.per90': '90 天',
-  'price.f1': '职位列表、筛选、搜索(每日更新)', 'price.f2': 'PNP、EE 类别、AIP 标记', 'price.f3': '「与我的匹配」+ 依据链',
-  'price.f5': 'JD 结构化摘录', 'price.f6': '工资中位对比(vs 中位、中位列)',
+  'price.f2': 'PNP、EE 类别、AIP 标记',
+  'price.f6': '工资中位对比(vs 中位、中位列)',
   'price.f8': '保存筛选 5 个位(免费 2 个)', 'price.f9': '地区统计跨省对比',
   'price.no': '—', 'price.unlimited': '不限', 'price.firstN': '每日前 {n} 岗', 'price.dayN': '每日 {n} 次', 'price.fairN': '每日 {n} 次(公平使用)',
   // #64 三卡版(f2 拆三行=一行只说一件事)
-  'price.f2a': 'PNP 省提名标记', 'price.f2b': 'EE 类别标记', 'price.f2c': 'AIP 大西洋雇主标记',
-  'price.plusFree': '免费版全部功能,另加:', 'price.same90': '与 30 天版功能完全相同,时长 90 天',
-  'price.same30': '与 90 天版功能完全相同,时长 30 天',
+  'price.same90': '与 30 天版功能完全相同,时长 90 天',
+  'price.incl': 'Pro 包含',
   // E5-07 收费面按「事实免费、结论收费」重写:免费列摆事实,Pro 三条摆结论(标题=一句结论,小字=具体给什么)
-  'price.fLists': '官方职业清单、省与联邦抽选记录',
-  'price.fMedian': '中位薪资与 vs 中位对比',
-  'price.fScoreTable': '省提名官方分值表与自评打分(BC、SK)',
-  'price.fWeekly': '每周摘要邮件(你的职业本周新增岗)',
-  'price.pA': '担保雇主名单', 'price.pA.d': '哪些公司发过能走省提名的岗,带 ESDC LMIA 记录',
-  'price.pB': '我的通道报告', 'price.pC': '岗位盯梢',
-  'price.pB.d': '离门槛差多少分、先补哪一项最值钱',
-  'price.pC.d': '你的职业有新岗就到邮箱',
-  'price.save': '更划算,省 {p}%', 'price.perDay': '≈ {v}/天', 'price.cur': '当前方案', 'price.regFree': '免费注册',
+  // 2026-10-07 Frank「这些功能要重新盘点,重新写一下」:Pro 权益按代码里真锁的重盘成五条(price.perk.*);免费卡连同清单撤
+  'price.perk.letter': 'AI 按职位写求职信', 'price.perk.letter.d': '照职位描述和你的简历写,不限次', 'price.perk.match': '简历对照',
+  'price.perk.match.d': '逐条列出缺项,附改写建议', 'price.perk.alert': '岗位盯梢', 'price.perk.alert.d': '按你的条件匹配新岗,每天发到邮箱',
+  'price.perk.path': '我的通道报告', 'price.perk.path.d': '离门槛差多少分、先补哪一项最值钱', 'price.perk.export': '导出担保雇主名单',
+  'price.perk.export.d': '按筛选导出 CSV,带 ESDC LMIA 记录',
+  'price.save': '更划算,省 {p}%', 'price.perDay': '≈ {v}/天',
   'price.cta.reg': '注册后购买', 'price.cta.buy30': '购买 30 天', 'price.cta.buy90': '购买 90 天', 'price.cta.acct': '已是 Pro · 去账户页',
   // B1 在招担保雇主:弹框雇主线入口(凭证行有据才出,负断言不上台面)
   // B2 在招担保雇主页(se.*;凭证措辞与 B1 弹框 spl.* 同源)

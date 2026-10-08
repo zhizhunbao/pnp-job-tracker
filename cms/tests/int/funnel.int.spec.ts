@@ -70,6 +70,7 @@ describe('漏斗事件白名单', () => {
     // chat-feedback)触发点都已不在,撤出;链改按名写死(LEGACY_STEPS / DECISION_STEPS),
     // 这里的顺序从此只管看板行序,不再有下标切片靠它。同日尾部追加转化四计数(只计数不成链)。
     // 2026-10-03 付费闭环批 A1:尾部再追加访客向导两计数与未登录点投递(只计数不成链)。
+    // 2026-10-07 批 B2 / C:尾部再追加 apply-sent(站内投递真发出去了;只计数不成链)。
     expect([...FUNNEL_STEPS]).toEqual(['jd-open', 'pricing-open', 'pay-click',
       'modal-pnp', 'pnp-employer-click', 'se-view-jobs',
       'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done',
@@ -77,7 +78,7 @@ describe('漏斗事件白名单', () => {
       'emp-search', 'emp-filter', 'emp-row', 'emp-page',
       'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open',
       'apply', 'signup', 'checkout', 'weekly-optin',
-      'gate-open', 'gate-step', 'apply-click'])
+      'gate-open', 'gate-step', 'apply-click', 'apply-sent'])
   })
 
   it('链按名写死,每一步都在白名单里;转化四计数不进任何链(2026-09-26)', () => {
@@ -86,7 +87,8 @@ describe('漏斗事件白名单', () => {
     }
     expect([...LEGACY_STEPS]).toEqual(['pricing-open', 'pay-click'])
     expect([...DECISION_STEPS]).toEqual(['dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done'])
-    for (const step of ['jd-open', 'apply', 'signup', 'checkout', 'weekly-optin', 'gate-open', 'gate-step', 'apply-click']) {
+    for (const step of ['jd-open', 'apply', 'signup', 'checkout', 'weekly-optin', 'gate-open', 'gate-step', 'apply-click',
+      'apply-sent']) {
       expect([...LEGACY_STEPS, ...DECISION_STEPS], step).not.toContain(step)
     }
   })

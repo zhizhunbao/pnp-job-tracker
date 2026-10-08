@@ -41,10 +41,14 @@
  * (上传 / 预览 / 替换 / 下载 / 删除 + PDF 首页缩略图;自己拉元信息,不再吃 me.profile 的两格)。
  * 2026-10-06 Frank「先做我的求职」「也重新改一下」:「我的求职」「我的收藏」两节换成 myjobs 桶的两张表
  * (AppliedList / SavedList,通用 Table、手机职位卡);周报开关 WeeklyOptin 随定稿拼在收藏表下面,原 SavedJobsList 撤。
+ * 2026-10-07 Frank「投递不应该跳到我的投递页面吗」→「合成一个」:投递并进「我的求职」—— 职位页「邮箱投递」跳
+ * `?sec=sjobs&job=<职位号>`,投递区(apply 桶 ApplySection)摆在投递记录表上方;发出后表按 appliedGen 重挂、重新取一次。
+ * 原独立投递页 /apply/<id> 撤。
  *
  * @author Frank
  * @time 2026-07-02 00:00:00
  */
+import { ApplySection } from '@/components/apply'
 import { AppliedList, SavedList } from '@/components/myjobs'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
@@ -87,7 +91,8 @@ export default function AccountPage() {
             {a.sec === SEC_RESUME && <ResumeFile t={a.t} />}
             {a.sec === SEC_FAVS && <SavedList t={a.t} plan={a.plan} />}
             {a.sec === SEC_FAVS && <WeeklyOptin t={a.t} userId={a.me.id} weeklyOptOut={!!(a.me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
-            {a.sec === SEC_SJOBS && <AppliedList t={a.t} plan={a.plan} />}
+            {a.sec === SEC_SJOBS && <ApplySection onSent={a.onApplied} />}
+            {a.sec === SEC_SJOBS && <AppliedList key={a.appliedGen} t={a.t} plan={a.plan} />}
             {a.sec === SEC_SUB && <Subscription t={a.t} until={a.me.proUntil} />}
           </AccountColumns>
         )}

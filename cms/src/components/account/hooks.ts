@@ -21,7 +21,7 @@ import { useIsNarrow } from '@/components/modal'
 import { RF_ERR_NONE, SEC_DEFAULT, ZOOM_HOME, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from './constants'
 import {
   makeAdd, makeAskOf, makeDefaultOf, makeDeleteOf, makeDragLeave, makeDragOver, makeFileDrop, makeFilePick,
-  makePickerOf, makePreviewClose, makePreviewOf, makeRefresh, makeSureClear, makeResumeListLoad,
+  makePickerOf, makePreviewClose, makePreviewOf, makeGenBump, makeRefresh, makeSureClear, makeResumeListLoad,
   makeResumeUpload, okFlagOf,
   planOf, renderPdfPages, renderPdfThumb, secLinkOf, showPdfPage,
   applyViewTo, makeDocDrop, makeGripDown, makeGripMove, makeGripUp, makePageTurn, makeWheelBind, makeZoomHome,
@@ -50,6 +50,7 @@ export function useAccountPage(): AccountPanel {
   const [me, setMe] = useState<Me>(null)
   const [checked, setChecked] = useState(false)
   const [payOk, setPayOk] = useState(false)
+  const [appliedGen, setAppliedGen] = useState(0)
 
   useEffect(function readPayOk() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 故意分两步:地址栏参数只有浏览器里读得到,服务端画首帧时没有,活过来后再补
@@ -79,6 +80,8 @@ export function useAccountPage(): AccountPanel {
     payOk,
     onPick: setSec,
     plan: planOf(me),
+    appliedGen,
+    onApplied: makeGenBump(setAppliedGen),
   }
 }
 

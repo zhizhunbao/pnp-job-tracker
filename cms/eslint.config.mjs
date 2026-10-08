@@ -30,7 +30,9 @@ const BARRELS = ['agent', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', '
   // 2026-10-01 立 bots(挡非搜索类爬虫,index 给页面门,边缘运行时)与 traffic(出站流量记账,只有 server 门给启动钩子)。
   'bots', 'traffic',
   // 2026-10-04 立 majors(CIP 2021 专业表:访客四题第 2 题取数,/api/majors;index 给行形状与纯筛法,server 给取数与路由芯)。
-  'majors']
+  'majors',
+  // 2026-10-07 立 apply(站内投递 / 代投:/api/apply/draft、cover、send、inbound;index 给求职信填空与字符判定,server 给芯)。
+  'apply']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 // jobs / points / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
 // 理由见 lib/jobs/index.ts 顶上那段:混着 payload 依赖的桶会把连接池打进浏览器包)。
@@ -66,6 +68,7 @@ const ALLOW = [
   '!**/lib/guide/server', '!./guide/server', '!../guide/server',
   '!**/lib/traffic/server', '!./traffic/server', '!../traffic/server',
   '!**/lib/majors/server', '!./majors/server', '!../majors/server',
+  '!**/lib/apply/server', '!./apply/server', '!../apply/server',
 ]
 const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])
 const barrelOnly = (group) => ({

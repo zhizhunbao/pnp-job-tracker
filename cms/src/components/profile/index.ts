@@ -27,11 +27,13 @@
  * OnboardingTags 改由 quiz 的选职业控件借(大号档的已选标签),照旧出桶。
  * 2026-10-05 访客第 3 题改左右两栏(Frank「也改成左右 两部分吗?」「改啊」):quiz 选职业控件的已选一行改用 tag 桶 TagRow 自己摆,
  * 不再借 OnboardingTags —— 桶外再没有消费者,出桶名单去掉它(首访向导的职业步在桶内照用)。
+ * 2026-10-07 站内投递页(components/apply)借用首访向导的步数行 + 进度条,桶门加 OnboardingHead(不复制第二份)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
 export { CLB_OPTS, CRS_OPTS, OB_SEEN_KEY, PGWP_OPTS, POPULAR_NOCS } from './constants'
 export { clbActive, crsActive, isPopularNoc, makeOptPick, obMarkSeen, pgwpActive } from './functions'
+export { OnboardingHead } from './onboardinghead'
 export { OnboardingWizard } from './onboardingwizard'
 export type { Opt, ProfileValue } from './types'

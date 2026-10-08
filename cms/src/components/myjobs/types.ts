@@ -175,6 +175,11 @@ export type MyJobsPanel = {
    * 开公司弹框(叠一层)。
    */
   onOpenCompany: OpenCompanyFn
+
+  /**
+   * 开职位描述弹框(叠一层;2026-10-07)。
+   */
+  onOpenJob: OpenJobFn
 }
 
 /**
@@ -207,6 +212,11 @@ export type MyJobCellRow = {
   key: string
 
   /**
+   * 点职位名的手柄:普通左键叠开职位描述弹框(职位删了时职位格不出链接,这一格给不拦的空口)。
+   */
+  onTitle: PeekClickFn
+
+  /**
    * 职位页链接;空串 = 职位已删、不出链接。
    */
   href: string
@@ -230,11 +240,6 @@ export type MyJobCellRow = {
    * 城市灰注(「英文名 省码」或只有省码)。
    */
   cityNote: string
-
-  /**
-   * 城市落职位板按城市筛的地址;空串 = 没有城市、不出链接。
-   */
-  cityHref: string
 
   /**
    * 点公司名:开公司弹框;null = 公司表没这家,公司名不可点。
@@ -305,6 +310,31 @@ export type MyJobCellRow = {
    * 取消收藏的手柄(我的求职那张表给 null)。
    */
   onUnsave: (() => void) | null
+
+  /**
+   * 发出去的那份简历的地址(我的求职;我的收藏给空串)。
+   */
+  resumeHref: string
+
+  /**
+   * 那封求职信 PDF 的地址(我的求职;我的收藏给空串)。
+   */
+  coverHref: string
+
+  /**
+   * 附件链接的字(「查看」)。
+   */
+  viewText: string
+
+  /**
+   * 「简历」「求职信」两个字(手机卡片上附件那一行用)。
+   */
+  resumeText: string
+
+  /**
+   * 「求职信」的字。
+   */
+  coverText: string
 }
 
 /**
@@ -370,6 +400,11 @@ export type CellRowsIn = {
    * 开公司弹框(公司格的手柄要用)。
    */
   onOpenCompany: OpenCompanyFn
+
+  /**
+   * 开职位描述弹框(职位格的手柄要用;2026-10-07)。
+   */
+  onOpenJob: OpenJobFn
 }
 
 /**
@@ -410,6 +445,11 @@ export type CellRowIn = {
    * 开公司弹框(公司格的手柄要用)。
    */
   onOpenCompany: OpenCompanyFn
+
+  /**
+   * 开职位描述弹框(职位格的手柄要用;2026-10-07)。
+   */
+  onOpenJob: OpenJobFn
 }
 
 /**
@@ -475,6 +515,11 @@ export type CardTitle = {
    * 去处;缺席 = 纯文字。
    */
   href?: string
+
+  /**
+   * 点标题的手柄(2026-10-07:普通左键叠开职位描述弹框);缺席 = 照链接跳。
+   */
+  onClick?: (e: React.MouseEvent) => void
 }
 
 /**
@@ -511,6 +556,16 @@ export type CoPeek = {
  * 开公司弹框。
  */
 export type OpenCompanyFn = (co: CoPeek) => void
+
+/**
+ * 开职位描述弹框(收整行;公司桶的 makeOpenJob 按岗位号现取一行再交回来)。
+ */
+export type OpenJobFn = (job: MyJobsJob) => void
+
+/**
+ * 链接的点击手柄(普通左键拦下开弹框,Ctrl / ⌘ 点照旧开新标签)。
+ */
+export type PeekClickFn = (e: React.MouseEvent) => void
 
 /**
  * 弹框栈的职位层(公司弹框里点在招职位叠开;与 advisor 域的同名形状同形,本域自抄)。
@@ -581,3 +636,19 @@ export type MyJobsJob = JobRow
  * 分层态(外域形状,逐行特批):页面门递来、原样喂给公司弹框,本域一格不读。
  */
 export type MyJobsPlan = Plan
+
+/**
+ * `fileHrefOf` 的入参。
+ */
+export type FileHrefIn = {
+  /**
+   * 这一行的造行入参(哪张表、这一行)。
+   */
+  x: CellRowIn
+
+  /**
+   * 附件种类尾。
+   */
+  tail: string
+}
+

@@ -22,7 +22,7 @@ export { toEeCat, toPnpOcc } from './functions'
 export type { AlertHit, CompanyDetail, JobsFilters, RelatedJob, SimilarEmployer, SsrDims, TopNoc } from './types'
 
 export {
-  jobsIdMetaRoute, jobsJdformatRoute, jobsJdTranslateRoute, jobsApplyhowRoute, jobsCompanyRoute, jobsCompetitionRoute, jobsDimsRoute,
+  jobsIdMetaRoute, jobsJdformatRoute, jobsJdTranslateRoute, jobsCompanyRoute, jobsCompetitionRoute, jobsDimsRoute,
   jobsAipRoute, jobsPnpRoute, jobsQcRoute, jobsRelatedRoute, jobsRelatedPageRoute, jobsRetranslateRoute, jobsRoute, jobsRowRoute, jobsSimilarRoute, jobsTextRoute,
   jobsTitleRoute,
 } from './routes'

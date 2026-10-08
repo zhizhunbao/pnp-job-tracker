@@ -18,7 +18,7 @@ import {
   URL_SHOT_ZH, WIDE_GAP,
 } from './constants'
 import type {
-  BuyClsIn, BuyFn, CardClsIn, CheckoutRespJson, CheckoutUrlOfIn, ClickFn, CtaSlotClsIn, FeatureClsIn,
+  BuyClsIn, BuyFn, CardClsIn, CheckoutRespJson, CheckoutUrlOfIn, ClickFn,
   FlagSetIn, FromKindOfIn, Per30In, PerDayOfIn, PerLabelIn, PickedPriceIn, PlanPickIn,
   PlanSelectIn, Price, PriceAmountOfIn, PriceCaps, PriceCurrencyOfIn, PricePlan, PriceTexts, PricingBuyIn,
   PricingShotOfIn, SavePctOfIn, TrackCheckoutIn, TrackPayClickIn, UpBuyClsIn, UpCardClsIn, UpgradeBuyIn,
@@ -227,7 +227,7 @@ export function makePricingBuy(x: PricingBuyIn): BuyFn {
     }
     x.setBusy(true)
     trackCheckout({ plan })
-    const url = await checkoutUrlOf({ plan })
+    const url = await checkoutUrlOf({ plan, back: TEXT_NONE })
     if (url === TEXT_NONE) {
       x.setBusy(false)
       return
@@ -248,7 +248,7 @@ export function makeUpgradeBuy(x: UpgradeBuyIn): BuyFn {
     x.setBusy(true)
     x.setErr(TEXT_NONE)
     trackCheckout({ plan })
-    const url = await checkoutUrlOf({ plan })
+    const url = await checkoutUrlOf({ plan, back: x.back })
     if (url === TEXT_NONE) {
       x.setErr(x.t('acct.err.generic'))
       x.setBusy(false)
@@ -271,7 +271,7 @@ export async function checkoutUrlOf(x: CheckoutUrlOfIn): Promise<string> {
       method: METHOD_POST,
       credentials: CRED_INCLUDE,
       headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ plan: x.plan }),
+      body: JSON.stringify({ plan: x.plan, back: x.back }),
     })
     const d = await r.json() as CheckoutRespJson
     if (r.ok === false || d.url == null) {
@@ -355,19 +355,6 @@ export function perLabel90Of(x: PerLabelIn): string {
 }
 
 /**
- * 免费卡底那格占位的类名预算:基座 + 两种占位各自的深浅。
- *
- * @param x 是不是「当前方案」那一种。
- * @returns 拼好的 className。
- */
-export function ctaSlotClsOf(x: CtaSlotClsIn): string {
-  if (x.current) {
-    return [cssOf(css.cta), cssOf(css.ctaCurrent)].join(CLS_SEP)
-  }
-  return [cssOf(css.cta), cssOf(css.ctaBlank)].join(CLS_SEP)
-}
-
-/**
  * 价卡购买钮的类名预算:基座 + 档位配色(查表,键完整性由 Record<PricePlan, string> 管着)
  * + 忙态压暗。钮经 Button 的 ghost 档渲染,所以这几个类在 css 里都写两遍抬权重。
  *
@@ -435,19 +422,6 @@ export function upBuyClsOf(x: UpBuyClsIn): string {
     cls.push(cssOf(css.busy))
   }
   return cls.join(CLS_SEP)
-}
-
-/**
- * 清单一行的类名预算:正常档深字,弱化档灰字。
- *
- * @param x 是不是弱化档。
- * @returns 拼好的 className。
- */
-export function featureClsOf(x: FeatureClsIn): string {
-  if (x.dim) {
-    return [cssOf(css.item), cssOf(css.itemDim)].join(CLS_SEP)
-  }
-  return cssOf(css.item)
 }
 
 /**

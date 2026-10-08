@@ -9,7 +9,7 @@
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useLayerStack } from '@/components/modal'
-import { makeLoadMyJobs, makePushCo } from './functions'
+import { makeLoadMyJobs, makePushCo, makePushJob } from './functions'
 import type { MyJobItem, MyJobsHookIn, MyJobsPanel, PeekLayer } from './types'
 
 /**
@@ -28,5 +28,5 @@ export function useMyJobs(x: MyJobsHookIn): MyJobsPanel {
     void makeLoadMyJobs({ url: x.url, setItems, setFailed })()
   }, [x.url])
 
-  return { items, setItems, failed, lang, stack, onOpenCompany: makePushCo(stack) }
+  return { items, setItems, failed, lang, stack, onOpenCompany: makePushCo(stack), onOpenJob: makePushJob(stack) }
 }

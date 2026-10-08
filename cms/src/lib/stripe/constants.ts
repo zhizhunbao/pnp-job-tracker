@@ -58,6 +58,17 @@ export const SUCCESS_PATH = '/account?ok=1'
 export const CANCEL_PATH = '/account'
 
 /**
+ * 站内回跳地址的白名单(2026-10-07 批 C:投递区升级时带 `/account?sec=sjobs&job=…`,付完回到那一岗;
+ * 只认「我的」页带查询参数的地址,别的一律回账户页 —— 不做开放跳转)。
+ */
+export const BACK_RE = /^\/account\?[A-Za-z0-9=&_-]+$/
+
+/**
+ * 带回跳地址时,成功页尾巴上补的付成标记(账户页认 `ok=1` 出付款成功条)。
+ */
+export const OK_TAIL = '&ok=1'
+
+/**
  * webhook 认的两个事件（alipay/wechat 属异步支付，completed 时可能还 unpaid →
  * 到账走 async_payment_succeeded，同一处理器）。
  */

@@ -4,6 +4,7 @@
  * @author Frank
  * @time 2026-08-22 18:00:00
  */
+import type { Db } from '../db'
 
 /**
  * 请求头的本地名(库类型先起本地名,签名里不出现外部类型)。
@@ -230,3 +231,93 @@ export type FreeGated = {
    */
   headers: HeaderMap
 }
+
+/**
+ * 试用账聚合行(count 已转 int;bool_or 外面套了 coalesce,不会是 null)。
+ */
+export type TrialDbRow = {
+  /**
+   * 这一项用过几个。
+   */
+  used: number
+
+  /**
+   * 这一个用过没有。
+   */
+  here: boolean
+}
+
+/**
+ * 某人某项 AI 功能的试用用量(2026-10-07 批 C)。
+ */
+export type Trial = {
+  /**
+   * 这一项用过几个(同一个只算一次)。
+   */
+  used: number
+
+  /**
+   * 这一个(本岗)用过没有;用过的再用不扣。
+   */
+  here: boolean
+}
+
+/**
+ * 查 / 记试用账的入参。
+ */
+export type TrialIn = {
+  /**
+   * 数据库连接(调用方注入)。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: string | number
+
+  /**
+   * 功能名(TRIAL_LETTER)。
+   */
+  feature: string
+
+  /**
+   * 用在哪一个(职位 id)。
+   */
+  refId: number
+}
+
+/**
+ * 查试用账的返回。
+ */
+export type TrialOut = Promise<Trial>
+
+/**
+ * 记试用账的返回。
+ */
+export type TrialWriteOut = Promise<void>
+
+/**
+ * 判试用闸的入参:谁、用量、上限。
+ */
+export type TrialGateIn = {
+  /**
+   * 会话用户(Pro 不限)。
+   */
+  user: MaybeUser
+
+  /**
+   * 用量。
+   */
+  trial: Trial
+
+  /**
+   * 一辈子几个(LETTER_TRIAL_MAX)。
+   */
+  max: number
+}
+
+/**
+ * 还剩几个试用;Pro 不限 = null。
+ */
+export type MaybeLeft = number | null

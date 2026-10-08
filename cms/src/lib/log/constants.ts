@@ -739,19 +739,6 @@ export const JOBS_LOG = {
    * 收藏意图(Google 回跳补收那一岗)读写 / 撤抛了(本地存储被禁或原文坏了):那次收藏补不上,后面接错误。
    */
   saveIntent: 'save intent storage failed: ',
-
-  /**
-   * 投递邮箱懒查挂了(2026-10-03 付费闭环批 B1 收口,组件桶 jobs:非 2xx 含每 IP 日限 429、网络断、回包解不出;
-   * 外链投递撤了以后这一挂 = 在架岗投递栏不出),后面接状态码或错误。
-   * 2026-10-04 改判:邮箱改成登录用户点投递时才查,查挂了投递栏照旧在、这一下不投(未登录 401 也落这里)。
-   */
-  applyHowFailed: 'apply email lookup failed, click ignored: ',
-
-  /**
-   * 登录用户点投递、邮箱查回来是空的(2026-10-04 改判,组件桶 jobs):不弹邮件投递框、不外跳,后面接岗位号。
-   */
-  applyHowNone: 'apply email lookup found none, click ignored: id=',
-
 } as const
 
 /**
@@ -772,6 +759,66 @@ export const MAIL_LOG = {
    * 状态码与响应体之间的分隔。
    */
   sep: ' ',
+} as const
+
+/**
+ * 站内投递(代投)域的日志字面量(2026-10-07 立)。只记用户 id、投递行 id 与原因,不记雇主邮箱与信的内容。
+ */
+export const APPLY_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'apply',
+
+  /**
+   * 发出去了(后接用户 id 与投递行 id)。
+   */
+  sent: 'sent user=',
+
+  /**
+   * 没发出去、退回草稿(后接用户 id、投递行 id 与原因)。
+   */
+  failed: 'send failed, back to draft user=',
+
+  /**
+   * 投递行 id 段。
+   */
+  appFrag: ' app=',
+
+  /**
+   * 原因段。
+   */
+  whyFrag: ' why=',
+
+  /**
+   * 退信回调验签不过。
+   */
+  badSig: 'webhook signature rejected',
+
+  /**
+   * 退信回调没配密钥。
+   */
+  noSecret: 'webhook secret not set',
+
+  /**
+   * 退信记进名单(后接种类)。
+   */
+  bounced: 'bounce recorded kind=',
+
+  /**
+   * 回调对不上投递行或只留痕的事件(后接事件名)。
+   */
+  ignored: 'webhook event ignored type=',
+
+  /**
+   * 写求职信没调模型(简历抽不出字或没有 JD),退回模板信(后接用户 id 与职位 id)。
+   */
+  letterSkipped: 'letter skipped, template used user=',
+
+  /**
+   * 写求职信调模型挂了,退回模板信(后接用户 id 与原因)。
+   */
+  letterFailed: 'letter model failed, template used user=',
 } as const
 
 /**
@@ -964,16 +1011,6 @@ export const GUEST_LOG = {
    * 这个域每一行日志的来源标签。
    */
   tag: 'guest',
-
-  /**
-   * 读浏览记录抛了:这次按零条算,后面接错误。
-   */
-  seenRead: 'seen jobs read failed, counting as none: ',
-
-  /**
-   * 写浏览记录抛了:这一条没记上,后面接错误。
-   */
-  seenWrite: 'seen jobs write failed: ',
 
   /**
    * 读向导草稿抛了:这次按没有草稿开,后面接错误。

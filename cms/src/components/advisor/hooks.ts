@@ -6,13 +6,14 @@
  * 2026-08-28 拆域批随 JdAdvisorSection 自 components/jobs/Jd.tsx 迁入;
  * 同日换装批把 Advisor.tsx 的六台机器(原先摊在组件体里)收进本抽屉。
  * 2026-10-03 付费闭环批 A1:职位描述弹框整台(useActModal)接访客向导的收口 —— 记浏览、判起弹、注册后亮出这一岗。
+ * 2026-10-07 浏览记录整条删(向导不再按它预选职业),「记浏览」一环撤。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { gateDueFor, markSeenJob } from '@/lib/guest'
+import { gateDueFor } from '@/lib/guest'
 import { track } from '@/lib/track'
 import {
   GROUP_COMPANY, LANG_EN, TEXT_NONE, TRACK_KIND_MODAL, TRACK_MODAL_HEAD, TRACK_MODAL_JD, TRACK_P_FIELD, TRACK_P_KIND,
@@ -159,10 +160,8 @@ export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
 export function useActModal(x: ActModalHookIn): ActModalPanel {
   const [freeLeft, setFreeLeft] = useState<number | null>(null)
   const [gen, setGen] = useState(0)
-  const job = x.job
   const loggedIn = x.plan.loggedIn
   const [gate, setGate] = useState(function initGate(): boolean {
-    markSeenJob({ id: job.id, noc: job.noc })
     return gateDueFor({ loggedIn })
   })
   const router = useRouter()

@@ -12,26 +12,6 @@
 // =========================================================================
 
 /**
- * 站内打开过的一个职位(浏览记录的一条)。
- */
-export type SeenJob = {
-  /**
-   * 岗位号(统一成字符串比:库里是数,地址栏里是串)。
-   */
-  id: string
-
-  /**
-   * 这一岗的 NOC 五位码;这一岗没码 = null(记录了「没有」,不是没记)。
-   */
-  noc: string | null
-}
-
-/**
- * 浏览记录(新的在前,按岗位号去重,最多 SEEN_MAX 条)。
- */
-export type SeenList = SeenJob[]
-
-/**
  * 本地存储读出来的原文;键不在 = null。
  */
 export type RawText = string | null
@@ -47,22 +27,6 @@ export type RawCell = string | number | boolean | null | RawCell[] | { [k: strin
 export type RawDoc = { [k: string]: RawCell }
 
 /**
- * markSeenJob / gateDueFor 共用的那一岗:调用方从整行里取的两格,原样交过来。
- * 2026-10-04 起 gateDueFor 不再收它(门槛撤,只看登录态),只剩 markSeenJob 一家在用。
- */
-export type SeenMarkIn = {
-  /**
-   * 岗位号。
-   */
-  id: string | number
-
-  /**
-   * NOC 五位码;空串 = 这一岗没码。
-   */
-  noc: string
-}
-
-/**
  * gateDueFor 的入参:登录态(2026-10-04 门槛撤了,这一岗的号与码不再参与判定,只剩这一格)。
  */
 export type GateForIn = {
@@ -70,31 +34,6 @@ export type GateForIn = {
    * 登录了没(登录用户永远不弹)。
    */
   loggedIn: boolean
-}
-
-/**
- * seenWithOf 的入参:旧记录与这次打开的一岗。
- */
-export type SeenWithIn = {
-  /**
-   * 旧记录。
-   */
-  list: SeenList
-
-  /**
-   * 这次打开的一岗(排到最前,旧记录里同号的那条去掉)。
-   */
-  job: SeenJob
-}
-
-/**
- * seenNocsOf 的入参。
- */
-export type SeenNocsIn = {
-  /**
-   * 浏览记录。
-   */
-  seen: SeenList
 }
 
 /**

@@ -20,7 +20,9 @@ import css from './myjobs.module.css'
 export function TitleCell(r: MyJobCellRow) {
   return (
     <div>
-      {r.href !== TEXT_NONE && <LinkButton href={r.href} className={css.title}>{r.title}</LinkButton>}
+      {r.href !== TEXT_NONE && (
+        <LinkButton href={r.href} onClick={r.onTitle} className={css.title}>{r.title}</LinkButton>
+      )}
       {r.href === TEXT_NONE && <div className={css.title}>{r.title}</div>}
     </div>
   )

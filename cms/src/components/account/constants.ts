@@ -134,8 +134,9 @@ export const Q_VER_MID = '&v='
 
 /**
  * 每人最多几份简历(与 lib/resume 的 RESUME_FILES_MAX 是同一个数,各域各抄一份;Frank 10-06 选 5 份)。
+ * 2026-10-07 Frank「我觉得可能超过 5 个简历」(投递按岗选简历):提到 20 份,两处同改。
  */
-export const RESUME_FILES_MAX = 5
+export const RESUME_FILES_MAX = 20
 
 /**
  * 份数「2 / 5」的分隔。

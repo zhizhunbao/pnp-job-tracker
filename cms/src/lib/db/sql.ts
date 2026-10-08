@@ -184,19 +184,6 @@ export const COMPANY_IDS_BY_NAME = `SELECT id FROM companies WHERE name ILIKE $1
 export const JOB_BY_ID = `SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE j.id = $1 LIMIT 1`
 
 /**
- * 库里存好的雇主投递邮箱(2026-09-23 站内投递批 1):按原帖链接取(apply_url 有索引)。$1=原帖链接。
- * apply_email 不进 JOB_COLUMNS —— 列表与详情接口一律不带,只有投递栏 /api/jobs/applyhow 这一个出口。
- */
-export const APPLY_EMAIL_BY_URL = `SELECT apply_email FROM jobs WHERE apply_url = $1 AND apply_email IS NOT NULL LIMIT 1`
-
-/**
- * 库里存好的雇主投递邮箱,按岗位号取(2026-09-27 Frank「CareerBeacon 渠道的职位 全是前往投递」:非 Job Bank 来源存好的邮箱
- * 原先一个都没问过)。按岗位号不按链接 —— 多条岗共用一个门户链接(HireAC)时按链接会串岗,同 JD 链 09-20 改按岗位号。$1=岗位号。
- * 出口规矩同上一条:只有 /api/jobs/applyhow。
- */
-export const APPLY_EMAIL_BY_ID = `SELECT apply_email FROM jobs WHERE id = $1 AND apply_email IS NOT NULL LIMIT 1`
-
-/**
  * 相关职位·同公司在招 12 条。$1=公司名,$2=排除的当前岗 id。
  * 2026-09-21 剔重复帖(同公司同标题同城、MARK_DUPS 标了 is_dup 的):GrowCo 温室经理的同公司组里同一条 labourer 出了两遍;
  * 同职业那组本来就剔,公司弹框的在招职位(COMPANY_OPEN_JOBS)也剔。
@@ -2989,10 +2976,20 @@ const MYJOBS_FROM = `s.id, s.job_id, s.title, s.company, s.status, s.created_at,
 /**
  * 本人投过的岗(我的求职):收藏表里进度是已投 / 面试中 / offer 的行,最近投的在前。
  * $1=用户 id,$2=条数上限。saved_jobs.user_id 有索引。
+ * 2026-10-07 B2 站内投递上线(设计稿「10-05 拍板」第 3 题):改读投递表 applications —— 只列真发出去的
+ * (sent / replied / bounced;草稿与正在发的不列),按发出时刻倒序;列名对齐上面那份,线格式不变
+ * (投递日期 = 发出时刻,职位名 / 公司名用投递时的快照)。mailto 年代收藏表上记的「已投」不再列进来(那只是打开过邮箱框)。
+ * applications_user_sent_idx 管这条。
  */
-export const MYJOBS_APPLIED = `SELECT ${MYJOBS_FROM}
-     WHERE s.user_id = $1 AND s.status IN ('applied', 'interview', 'offer')
-     ORDER BY s.updated_at DESC LIMIT $2`
+export const MYJOBS_APPLIED = `SELECT a.id, a.job_id, a.job_title AS title, a.company, a.status, a.created_at,
+       a.sent_at AS updated_at,
+       j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province,
+       j.salary_text, j.salary_annual, j.date_posted, j.status::text AS job_status, c.slug AS company_slug
+     FROM applications a LEFT JOIN jobs j ON j.id = a.job_id
+     LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
+     LEFT JOIN companies c ON c.id = j.company_id
+     WHERE a.user_id = $1 AND a.status IN ('sent', 'replied', 'bounced')
+     ORDER BY a.sent_at DESC NULLS LAST LIMIT $2`
 
 /**
  * 本人收藏的岗(我的收藏):全部收藏行(投过的也在),最近收藏的在前。$1=用户 id,$2=条数上限。
@@ -3000,3 +2997,146 @@ export const MYJOBS_APPLIED = `SELECT ${MYJOBS_FROM}
 export const MYJOBS_SAVED = `SELECT ${MYJOBS_FROM}
      WHERE s.user_id = $1
      ORDER BY s.created_at DESC LIMIT $2`
+
+// =========================================================================
+// 32. 站内投递(代投;2026-10-07 立,设计稿 docs/design/投递页-B2-实施方案-20261005.md 末节「10-05 拍板」;
+//     表 docs/sql/apply-b2-20261005.sql:applications / apply_prefs / bounced_emails)
+// =========================================================================
+
+/**
+ * 投递页的本岗:职位名、公司名(公司表,同职位板)、城市、省、在不在架、投递邮箱(只在服务端用,不下发)。
+ * $1=职位 id。信是英文,职位名只取英文原名。
+ */
+export const APPLY_JOB = `SELECT j.id, j.title, c.name AS company_name, j.city, j.province,
+       j.status::text AS job_status, j.apply_email
+     FROM jobs j LEFT JOIN companies c ON c.id = j.company_id WHERE j.id = $1`
+
+/**
+ * 本人的简历清单(投递第 1 步选用哪一份;默认那份在最前)。$1=用户 id。
+ */
+export const APPLY_RESUMES = `SELECT id, file_name, mime, uploaded_at, is_default
+     FROM user_resumes WHERE user_id = $1 ORDER BY is_default DESC, uploaded_at DESC`
+
+/**
+ * 本人某一份简历的原件(发信附件用)。$1=用户 id,$2=简历 id。不是本人的 = 0 行。
+ */
+export const APPLY_RESUME_BLOB = `SELECT id, file_b64, file_name, mime, uploaded_at FROM user_resumes WHERE user_id = $1 AND id = $2`
+
+/**
+ * 本人的投递偏好(英文署名、求职信模板)。$1=用户 id。没有 = 0 行。
+ */
+export const APPLY_PREFS_GET = `SELECT sender_name, cover_template FROM apply_prefs WHERE user_id = $1`
+
+/**
+ * 写投递偏好(没有就建;传 NULL 的格保留原值)。$1=用户 id,$2=英文署名,$3=求职信模板。
+ */
+export const APPLY_PREFS_PUT = `INSERT INTO apply_prefs (user_id, sender_name, cover_template) VALUES ($1, $2, $3)
+     ON CONFLICT (user_id) DO UPDATE SET
+       sender_name = COALESCE(EXCLUDED.sender_name, apply_prefs.sender_name),
+       cover_template = COALESCE(EXCLUDED.cover_template, apply_prefs.cover_template),
+       updated_at = now()`
+
+/**
+ * 本人这一岗的投递行(草稿或已发)。$1=用户 id,$2=职位 id。没有 = 0 行。
+ * 2026-10-07 起草稿里的信是这一岗按 JD 写的那一封(「我的模板」撤),回到这一岗直接接着用。
+ */
+export const APPLY_ROW = `SELECT id, status, cover_text, resume_id, sent_at FROM applications WHERE user_id = $1 AND job_id = $2`
+
+/**
+ * 存草稿:没有就建一行 draft;已有且还是 draft 就改信与简历;已经在发 / 发过的不动(返回 0 行)。
+ * 停在 sending 超过 10 分钟的(进程在发信半路死掉)当草稿收回(设计稿 §3 第 6 步)。
+ * $1=用户 id,$2=职位 id,$3=职位名快照,$4=公司名快照,$5=信,$6=简历 id(可空)。
+ */
+export const APPLY_DRAFT_PUT = `INSERT INTO applications (user_id, job_id, job_title, company, status, cover_text, resume_id)
+     VALUES ($1, $2, $3, $4, 'draft', $5, $6)
+     ON CONFLICT (user_id, job_id) DO UPDATE SET cover_text = EXCLUDED.cover_text, resume_id = EXCLUDED.resume_id,
+       status = 'draft', updated_at = now()
+     WHERE applications.status = 'draft'
+       OR (applications.status = 'sending' AND applications.updated_at < now() - interval '10 minutes')
+     RETURNING id, status`
+
+/**
+ * 认领发送:只有 draft 才能变 sending(连点 / 并发只有一个认领得到),同时落下这一封的快照。
+ * 停在 sending 超过 10 分钟的也能重新认领(设计稿 §3 第 6 步)。
+ * $1=用户 id,$2=职位 id,$3=雇主邮箱,$4=回复地址,$5=标题,$6=正文,$7=简历附件名,$8=简历上传时刻,
+ * $9=求职信附件名,$10=幂等键,$11=简历原件 base64,$12=简历 MIME。认领不到 = 0 行。
+ * 2026-10-07 简历原件随投递快照(docs/sql/apply-resume-snapshot-20261007.sql):之后替换 / 删掉那份简历,这一条照样打得开。
+ */
+export const APPLY_CLAIM = `UPDATE applications SET status = 'sending', employer_email = $3, reply_to = $4, subject = $5,
+       body_text = $6, resume_file = $7, resume_uploaded_at = $8::timestamptz, cover_file = $9, idem_key = $10,
+       resume_b64 = $11, resume_mime = $12, updated_at = now()
+     WHERE user_id = $1 AND job_id = $2
+       AND (status = 'draft' OR (status = 'sending' AND updated_at < now() - interval '10 minutes'))
+     RETURNING id`
+
+/**
+ * 发出去了:记 Resend id 与发出时刻。$1=投递行 id,$2=Resend 邮件 id。
+ */
+export const APPLY_SENT = `UPDATE applications SET status = 'sent', resend_id = NULLIF($2, ''), sent_at = now(), updated_at = now()
+     WHERE id = $1`
+
+/**
+ * 没发出去:退回 draft(可以再点发送)。$1=投递行 id。
+ */
+export const APPLY_UNCLAIM = `UPDATE applications SET status = 'draft', updated_at = now() WHERE id = $1 AND status = 'sending'`
+
+/**
+ * 本人近 24 小时发出(含正在发)几封(每人日限)。$1=用户 id。
+ */
+export const APPLY_USER_DAY = `SELECT count(*)::int AS n FROM applications
+     WHERE user_id = $1 AND status IN ('sending', 'sent', 'replied', 'bounced') AND updated_at > now() - interval '24 hours'`
+
+/**
+ * 全站近 24 小时发出几封(Resend 免费档每天 100 封,与提醒信、找回密码共用)。
+ */
+export const APPLY_SITE_DAY = `SELECT count(*)::int AS n FROM applications WHERE sent_at > now() - interval '24 hours'`
+
+/**
+ * 同一用户近 N 天给同一个雇主邮箱投过别的岗没有(mart 同组副本 / 跨来源重发是不同岗位号)。
+ * $1=用户 id,$2=雇主邮箱,$3=本岗 id,$4=天数。
+ */
+export const APPLY_SAME_EMAIL = `SELECT 1 AS hit FROM applications
+     WHERE user_id = $1 AND lower(employer_email) = lower($2) AND job_id IS DISTINCT FROM $3
+       AND status IN ('sending', 'sent', 'replied') AND updated_at > now() - ($4::int * interval '1 day')
+     LIMIT 1`
+
+/**
+ * 雇主邮箱在不在退信名单里(发送前拦)。$1=邮箱。
+ */
+export const APPLY_BOUNCED_HIT = `SELECT 1 AS hit FROM bounced_emails WHERE email = lower($1) LIMIT 1`
+
+/**
+ * 「我的求职」一行的两个附件(发出去的那份简历快照、那封求职信全文与附件名)。只给本人、只给发出去了的。
+ * $1=用户 id,$2=投递行 id。不是本人的 / 还没发 = 0 行。
+ */
+export const APPLY_FILE = `SELECT resume_b64, resume_mime, resume_file, cover_text, cover_file FROM applications
+     WHERE user_id = $1 AND id = $2 AND status IN ('sent', 'replied', 'bounced')`
+
+/**
+ * 退信回调:按 Resend 邮件 id 把那一封标成退信,交回雇主邮箱。$1=Resend 邮件 id。
+ */
+export const APPLY_BOUNCE_MARK = `UPDATE applications SET status = 'bounced', updated_at = now()
+     WHERE resend_id = $1 RETURNING employer_email`
+
+/**
+ * 退信回调:记进退信名单(已有就累计次数、更新时刻)。$1=邮箱,$2=种类(bounced / suppressed)。
+ */
+export const APPLY_BOUNCE_LIST = `INSERT INTO bounced_emails (email, kind) VALUES (lower($1), $2)
+     ON CONFLICT (email) DO UPDATE SET hits = bounced_emails.hits + 1, last_at = now()`
+
+// =========================================================================
+// 33. AI 功能试用账(批 C 收费闸;2026-10-07 立,表 docs/sql/ai-trials-20261007.sql:ai_trials;
+//     读写方只有 lib/quota 的 loadTrial / markTrial)
+// =========================================================================
+
+/**
+ * 某人某项 AI 功能的试用用量:用过几个、这一个用过没有。$1=用户 id,$2=功能名,$3=用在哪一个(职位 id)。
+ */
+export const TRIAL_USED = `SELECT count(*)::int AS used, coalesce(bool_or(ref_id = $3), false) AS here
+     FROM ai_trials WHERE user_id = $1 AND feature = $2`
+
+/**
+ * 记一笔试用(同一个只记一次)。$1=用户 id,$2=功能名,$3=用在哪一个。
+ */
+export const TRIAL_MARK = `INSERT INTO ai_trials (user_id, feature, ref_id) VALUES ($1, $2, $3)
+     ON CONFLICT (user_id, feature, ref_id) DO NOTHING`

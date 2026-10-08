@@ -9,6 +9,6 @@
  */
 
 export {
-  clearGateHandoff, gateDueFor, isGateSignedIn, markGateHandoff, markGateSignedIn, markSeenJob, readGateDraft,
+  clearGateHandoff, gateDueFor, isGateSignedIn, markGateHandoff, markGateSignedIn, readGateDraft,
   readGateSeed, syncGateDraft, takeEntryGate, takeGateHandoff, writeGateDraft,
 } from './functions'

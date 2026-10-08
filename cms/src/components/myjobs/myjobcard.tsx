@@ -6,9 +6,9 @@
  * @author Frank
  * @time 2026-10-06 23:20:00
  */
-import { Button } from '@/components/button'
+import { Button, LinkButton } from '@/components/button'
 import { JobCard } from '@/components/card'
-import { ACT_KIND, TEXT_NONE } from './constants'
+import { ACT_KIND, TARGET_BLANK, TEXT_NONE } from './constants'
 import { slotOf } from './functions'
 import type { CardCompany, CardTitle, MyJobCardIn } from './types'
 import css from './myjobs.module.css'
@@ -22,7 +22,7 @@ import css from './myjobs.module.css'
 export function MyJobCard({ r }: MyJobCardIn) {
   let title: CardTitle = { text: r.title }
   if (r.href !== TEXT_NONE) {
-    title = { text: r.title, href: r.href }
+    title = { text: r.title, href: r.href, onClick: r.onTitle }
   }
   let chips = null
   if (r.statusText !== TEXT_NONE || r.closedText !== TEXT_NONE) {
@@ -37,6 +37,15 @@ export function MyJobCard({ r }: MyJobCardIn) {
   if (r.onUnsave != null) {
     action = <Button kind={ACT_KIND} className={css.act} onClick={r.onUnsave}>{r.unsaveText}</Button>
   }
+  let footer = null
+  if (r.resumeHref !== TEXT_NONE) {
+    footer = (
+      <div className={css.files}>
+        <LinkButton href={r.resumeHref} target={TARGET_BLANK}>{r.resumeText}</LinkButton>
+        <LinkButton href={r.coverHref} target={TARGET_BLANK}>{r.coverText}</LinkButton>
+      </div>
+    )
+  }
   let company: CardCompany = { text: r.company }
   if (r.onCompany != null) {
     company = { text: r.company, onClick: r.onCompany }
@@ -48,6 +57,7 @@ export function MyJobCard({ r }: MyJobCardIn) {
       location={slotOf(r.cityName)}
       date={slotOf(r.date)}
       chips={chips}
-      action={action} />
+      action={action}
+      footer={footer} />
   )
 }

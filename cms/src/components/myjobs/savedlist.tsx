@@ -29,7 +29,13 @@ export function SavedList({ t, plan }: MyJobsListIn) {
     return <div className={css.note}>{t('mj.fail')}</div>
   }
   const rows = myJobCellRowsOf({
-    kind: KIND_SAVED, items: p.items, lang: p.lang, t, setItems: p.setItems, onOpenCompany: p.onOpenCompany,
+    kind: KIND_SAVED,
+    items: p.items,
+    lang: p.lang,
+    t,
+    setItems: p.setItems,
+    onOpenCompany: p.onOpenCompany,
+    onOpenJob: p.onOpenJob,
   })
   return (
     <>

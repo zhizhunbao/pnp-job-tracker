@@ -257,6 +257,16 @@ export type AccountPanel = {
   onPick: (s: Sec) => void
 
   /**
+   * 投递记录表的重挂计数(发出一封加一,表按它当 key 重挂)。
+   */
+  appliedGen: number
+
+  /**
+   * 投递区发出去了(计数加一)。
+   */
+  onApplied: () => void
+
+  /**
    * 分层态(2026-10-06:「我的求职」「我的收藏」点公司名开公司弹框要它;口径同各页面门的 toJobPlan)。
    */
   plan: AcctPlan
@@ -1501,3 +1511,9 @@ export type PdfDoc = import('pdfjs-dist').PDFDocumentProxy
  * 文档(没打开 = null)。
  */
 export type MaybePdfDoc = PdfDoc | null
+
+/**
+ * 收步进函数的计数格 setter(React 的 setState 形;makeGenBump 用)。
+ */
+export type GenSetFn = (step: (n: number) => number) => void
+

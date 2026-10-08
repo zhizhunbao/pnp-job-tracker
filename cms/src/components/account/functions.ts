@@ -25,6 +25,7 @@ import {
   URL_USER_HEAD,
 } from './constants'
 import type {
+  GenSetFn,
   AskOfIn, DivDragEvent, FileDropIn, FilePickIn, IdHandlerFn, InputChangeEvent, PdfPagesIn, PdfThumbIn, PdfjsOut,
   PickerIn, PreviewOfIn, ResumeActIn, ResumeActSendIn, ResumeListLoadIn, ResumeMeta, ResumeMetas, ResumeReloadFn,
   ResumeRespJson, ResumeUploadFn, ResumeUploadIn, ShowPageIn,
@@ -122,6 +123,28 @@ export function secLinkOf(): Sec | null {
     }
   }
   return null
+}
+
+/**
+ * 造「投递记录表重挂」的手柄(2026-10-07 投递并进「我的求职」:发出后计数加一,表按它当 key 重挂、重新取一次)。
+ *
+ * @param set 计数格的 setter(收步进函数)。
+ * @returns 手柄。
+ */
+export function makeGenBump(set: GenSetFn): () => void {
+  return function bumpGen(): void {
+    set(genNextOf)
+  }
+}
+
+/**
+ * 计数加一。
+ *
+ * @param n 原数。
+ * @returns 原数加一。
+ */
+function genNextOf(n: number): number {
+  return n + 1
 }
 
 /**
