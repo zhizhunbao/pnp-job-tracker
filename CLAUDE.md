@@ -63,7 +63,7 @@ etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + N
 
 ```
 pnp-job-tracker/
-├── etl/                       # 数据层(Python):27 域全五件套 —— 抓岗 jobbank/ats,汇装 mart(跨源清洗+评分+27 表),调度 sched,闸 gate
+├── etl/                       # 数据层(Python):40 余域全五件套(2026-10-08 数:45 个目录含基建叶) —— 抓岗 jobbank/ats,汇装 mart(跨源清洗+评分+27 表),调度 sched,闸 gate
 │   ├── <域>/                  #   一域一役:__init__ META/METAS 声明 role/interval,main 门;auto_update 自动发现(2026-08-31 批F:sources/ 役册退役)
 │   ├── pnp/ crawl/ news/      #   省 PNP 事实构建;官方站 URL 探索(政策雷达);官方新闻
 │   └── noc/ names/ paths/ log/ fetch/ crawl/  #   基建叶六片(职业分类法/公司名归一/路径+锁/日志/抓取件/官方站缓存),形制闸 INFRA 名单即此
@@ -226,7 +226,7 @@ pnp-job-tracker/
 cd cms && npm run dev                    # localhost:3000(读写生产!测试号 @test.local);本机只准一个 dev 实例,验完即关
 # 改 collection 字段:显式 DB_PUSH=1 单次推(删列/改类型手写 SQL,提示删列必答 N);改 Jobs 字段后重启 dev 再重灌
 # seed 必带 token(直连生产,reset=1 会清库慎用):curl -H "x-seed-token: $SEED_TOKEN" localhost:3000/api/seed
-# 无人值守全栈(仓库根):docker compose up -d --build(批N 一域一容器 15 ETL 容器;本地 postgres/cms 闲置件 08-31 拍板删除,dev 直连生产库、seed 直打 offer2pr.com)
+# 无人值守全栈(仓库根):docker compose up -d --build(批N 一域一容器,2026-10-08 已 61 个容器;本地 postgres/cms 闲置件 08-31 拍板删除,dev 直连生产库、seed 直打 offer2pr.com)
 # 完整 ETL:python etl/sched/main.py --only now(2026-08-31 批K 调度器域化;编号主管线已全数入域,mart 域=跨源清洗+汇装)
 ```
 
