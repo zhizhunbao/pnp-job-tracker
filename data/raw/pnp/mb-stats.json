@@ -5,7 +5,7 @@
   "url": "https://immigratemanitoba.com/resources/data/monthly-data-2026",
   "note": "MPNP 官方运营统计:年度配额与年初至今提名/拒/LAA/收件(月度数据页)、在审与待审库存(逐月,取最新月)、逐通道平均处理天数与「6 个月」服务承诺(年报 §9)、EOI 池在册人数(年报 §10,**全省唯一的池子人数**,年度快照口径,与 AB 的实时池不可混用)。单位照官方原单位(天/月),不换算。⚠️ 2026-08-04 更正:此前站内写着「MB 官方不发运营统计」是错的 —— 那是爬取种子只圈了 /mpnp/、漏了 /resources/data/ 造成的误判。",
   "asOf": "",
-  "fetched": "2026-10-02",
+  "fetched": "2026-10-08",
   "monthly": {
     "nominationsYtd": {
       "section": "Nominations and approvals",
@@ -102,7 +102,7 @@
     "through": "2026-08",
     "throughMonth": "August",
     "url": "https://immigratemanitoba.com/resources/data/monthly-data-2026",
-    "fetched": "2026-10-02",
+    "fetched": "2026-10-08",
     "year": 2026,
     "section": "MPNP Monthly Data 2026",
     "allocation": {
@@ -113,7 +113,7 @@
   },
   "annual": {
     "url": "https://immigratemanitoba.com/resources/data/annual-report-2024",
-    "fetched": "2026-10-02",
+    "fetched": "2026-10-08",
     "year": 2024,
     "section": "MPNP Annual Report 2024 — 9. Processing Times",
     "commitmentMonths": 6,
@@ -153,7 +153,7 @@
       "value": 26678,
       "section": "MPNP Annual Report 2024 — 10. Expression of Interest Pool",
       "url": "https://immigratemanitoba.com/resources/data/annual-report-2024",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2023,
@@ -162,7 +162,7 @@
       "value": 20392,
       "section": "MPNP Annual Report 2023 — 10. Expression of Interest Pool",
       "url": "https://immigratemanitoba.com/resources/data/annual-report-2023",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2022,
@@ -171,7 +171,7 @@
       "value": 15375,
       "section": "MPNP Annual Report 2022 — 10. Expression of Interest Pool",
       "url": "https://immigratemanitoba.com/resources/data/annual-report-2022",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2021,
@@ -180,7 +180,7 @@
       "value": 23395,
       "section": "MPNP Annual Report 2021 — 10. Expression of Interest Pool",
       "url": "https://immigratemanitoba.com/resources/data/annual-report-2021",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2020,
@@ -189,7 +189,7 @@
       "value": 21859,
       "section": "MPNP Annual Report 2020 — 9. Expression of Interest Pool",
       "url": "https://immigratemanitoba.com/resources/data/annual-report-2020",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2019,
@@ -198,7 +198,7 @@
       "value": 25814,
       "section": "MPNP Annual Report 2019 — 9. Expression of Interest Pool",
       "url": "https://immigratemanitoba.com/resources/data/annual-report-2019",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2018,
@@ -207,7 +207,7 @@
       "value": 19468,
       "section": "MPNP Annual Report 2018 — 9. Expression of Interest Pool",
       "url": "https://immigratemanitoba.com/resources/data/annual-report-2018",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2017,
@@ -216,7 +216,7 @@
       "value": 15957,
       "section": "MPNP Annual Report 2017 — 9. Expression of Interest Pool",
       "url": "https://immigratemanitoba.com/resources/data/annual-report-2017",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     }
   ]
 }

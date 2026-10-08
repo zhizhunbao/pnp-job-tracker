@@ -5,7 +5,7 @@
   "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html",
   "pageUrl": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html",
   "guideEffective": "2026-06",
-  "fetched": "2026-10-02",
+  "fetched": "2026-10-08",
   "requirements": [
     {
       "stream": "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
@@ -597,6 +597,25 @@
       "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/pccg-pilot-program.html",
       "factor": "empYears",
       "pageUrl": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/pccg-pilot-program.html"
+    },
+    {
+      "stream": "New Brunswick Strategic Initiative — Francophones Working Remotely in New Brunswick pathway",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 12,
+      "valueText": "have been living in New Brunswick for 12 months",
+      "unit": "months",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Lived in New Brunswick for 12 months",
+      "section": "Strategic Initiative page — Francophones Working Remotely in New Brunswick",
+      "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html",
+      "factor": "residence",
+      "pageUrl": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"
     }
   ]
 }

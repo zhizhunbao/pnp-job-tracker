@@ -1,620 +1,4 @@
 {
- "2464865": {
-  "title": "Administrative Assistant",
-  "closing": "2026-10-02",
-  "org": "Defence Construction Canada",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$51,566 to $67,035"
- },
- "2449286": {
-  "title": "Administrative Officer, Regional Director General",
-  "closing": "2026-10-02",
-  "org": "Canadian Security Intelligence Service",
-  "location": "Various Locations",
-  "language": "Various language requirements and/or profiles",
-  "salary": "$68,552 to $83,389"
- },
- "2464255": {
-  "title": "Bilingual Senior Administrator - Securitization",
-  "closing": "2026-10-02",
-  "org": "Canada Mortgage and Housing Corporation",
-  "location": "Various Locations",
-  "language": "Bilingual - imperative",
-  "salary": "$54,665 to $68,332"
- },
- "2461597": {
-  "title": "Coordinator, Facility Management",
-  "closing": "2026-10-02",
-  "org": "Defence Construction Canada",
-  "location": "Cold Lake (Alberta)",
-  "language": "English essential",
-  "salary": "$69,578 to $90,451"
- },
- "2463417": {
-  "title": "Head, Foreign Language Services, Level 09",
-  "closing": "2026-10-02",
-  "org": "Canadian Security Intelligence Service",
-  "location": "Various Locations",
-  "language": "Bilingual - imperative",
-  "salary": "$112,746 to $137,226"
- },
- "2464886": {
-  "title": "Learning Operations Assistant",
-  "closing": "2026-10-02",
-  "org": "Defence Construction Canada",
-  "location": "Winnipeg (Manitoba)",
-  "language": "Bilingual - non-imperative",
-  "salary": "$59,891 to $77,856"
- },
- "2455089": {
-  "title": "Manager, Assertion of Jurisdiction",
-  "closing": "2026-10-02",
-  "org": "Indian Oil and Gas Canada",
-  "location": "Tsuut'ina, Calgary, Alberta",
-  "language": "English essential",
-  "salary": "$117,563 to $147,198"
- },
- "2457395": {
-  "title": "Manager, Engineering",
-  "closing": "2026-10-02",
-  "org": "Transport Canada     - Civil Aviation, Aircraft Certification",
-  "location": "Ottawa (Ontario), Ville St-Laurent (Québec)",
-  "language": "Various language requirements and/or profiles",
-  "salary": "$134,962 to $157,770"
- },
- "2463852": {
-  "title": "Manager, Evaluation",
-  "closing": "2026-10-02",
-  "org": "Natural Sciences and Engineering Research Council of Canada",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$114,832 to $143,530"
- },
- "2449405": {
-  "title": "MSc - Tracing Magmatic Fluids and Metal Transport in Intrusions of the Midcontinent Rift",
-  "closing": "2026-10-02",
-  "org": "Natural Resources Canada     - Geoscience & Earth Monitoring Sector - Geological Survey of Canada - GSC-Central",
-  "location": "Ottawa (Ontario)",
-  "language": "English essential",
-  "salary": "Scholarship of approximately $25,500/year divided into 3 equal installments each year."
- },
- "2446182": {
-  "title": "Nurse Practitioner (NU-CHN-04 - Nurse Practitioner)",
-  "closing": "2026-10-02",
-  "org": "Indigenous Services Canada",
-  "location": "Various Locations",
-  "language": "Various language requirements and/or profiles",
-  "salary": "$120,156 to $136,540"
- },
- "2464037": {
-  "title": "Park Interpreter",
-  "closing": "2026-10-02",
-  "org": "National Capital Commission",
-  "location": "Gatineau (Québec)",
-  "language": "Bilingual - imperative",
-  "salary": "$47,907 to $61,820"
- },
- "2463978": {
-  "title": "Passport and Visa Officer",
-  "closing": "2026-10-02",
-  "org": "Canadian Security Intelligence Service",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$87,459 to $106,386"
- },
- "2463661": {
-  "title": "Quality Assurance Manager (#25806)",
-  "closing": "2026-10-02",
-  "org": "National Research Council Canada",
-  "location": "Ottawa (Ontario)",
-  "language": "English essential",
-  "salary": "$83,985 to $139,608"
- },
- "2463011": {
-  "title": "Research Assistant – Research Affiliate Program",
-  "closing": "2026-10-02",
-  "org": "Environment and Climate Change Canada     - Science and Technology Branch",
-  "location": "Ottawa (Ontario)",
-  "language": "English essential",
-  "salary": "$25.17 to $38.38 per hour (Rates of pay are determined at the initial appointment or reappointment stage and are based on the student's current academic level. https://www.canada.ca/en/treasury-board-secretariat/services/pay/rates-pay/student-rates-pay/student-rates-pay-2024.html))"
- },
- "2462161": {
-  "title": "Research Technician - Plant Pathology",
-  "closing": "2026-10-02",
-  "org": "Agriculture and Agri-Food Canada     - Science and Technology Branch",
-  "location": "Summerland (British Columbia)",
-  "language": "English essential",
-  "salary": "$78,909 to $99,200 (Salary under review)"
- },
- "2465083": {
-  "title": "Student Research Assistant",
-  "closing": "2026-10-02",
-  "org": "Environment and Climate Change Canada     - Science and Technology Branch",
-  "location": "Ottawa (Ontario), Gatineau (Québec)",
-  "language": "English or French essential",
-  "salary": "$25.17 to $38.38 per hour (varies per education and experience)"
- },
- "2459333": {
-  "title": "Telecommunications or Network Administrators and Analysts (Various levels)",
-  "closing": "2026-10-02",
-  "org": "Communications Security Establishment Canada",
-  "location": "Ottawa (Ontario)",
-  "language": "Various language requirements and/or profiles",
-  "salary": "$103,114 to $139,841"
- },
- "2454105": {
-  "title": "UPDATED - 3 Streams - Anticipatory Maintenance Worker II",
-  "closing": "2026-10-02",
-  "org": "Parks Canada     - Lake Louise, Yoho & Kootenay Field Unit - Asset Management",
-  "location": "Radium Hot Springs, BC or Field, BC or Lake Louise, AB depending on the position being filled",
-  "language": "English essential",
-  "salary": "$27.30 to $29.69 per hour ((under review))"
- },
- "2443580": {
-  "title": "General Maintenance Worker | Healing Lodges in the Prairie Region",
-  "closing": "2026-10-03",
-  "org": "Correctional Service of Canada",
-  "location": "Maskwacis (Alberta), Duck Lake (Saskatchewan), Maple Creek (Saskatchewan)",
-  "language": "English essential",
-  "salary": "💲▻ From $31.24 to $33.95 per hour, in addition to annual allowances such as a $2,140 Correctional Service Specific Duty Allowance (CSSDA) and an Inmate Training Differential."
- },
- "2426192": {
-  "title": "General Maintenance Worker, consider a career with the Correctional Service of Canada–Prairies",
-  "closing": "2026-10-03",
-  "org": "Correctional Service Canada",
-  "location": "Edmonton (Alberta), Grande Cache (Alberta), Innisfail (Alberta), Drumheller (Alberta), Stony Mountain (Manitoba), Winnipeg (Manitoba), Prince Albert (Saskatchewan), Saskatoon (Saskatchewan)",
-  "language": "English essential",
-  "salary": "💲▻ From $31.24 to $33.95 per hour, in addition to annual allowances such as a $2,140 Correctional Service Specific Duty Allowance (CSSDA) and an Inmate Training Differential."
- },
- "2464250": {
-  "title": "Aerospace Experiences Program Developer",
-  "closing": "2026-10-04",
-  "org": "Canada Science and Technology Museum",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$68,005 to $82,713"
- },
- "2464903": {
-  "title": "Aerospace Experiences Project Coordinator",
-  "closing": "2026-10-04",
-  "org": "Canada Science and Technology Museum",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$73,427 to $89,358"
- },
- "2459780": {
-  "title": "BANQUET SERVER",
-  "closing": "2026-10-04",
-  "org": "National Arts Centre Corporation",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$19.24 per hour"
- },
- "2459788": {
-  "title": "CHEF DE PARTIE",
-  "closing": "2026-10-04",
-  "org": "National Arts Centre Corporation",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - non-imperative",
-  "salary": "$30.06 per hour"
- },
- "2468223": {
-  "title": "Coordinator, Contract Services",
-  "closing": "2026-10-04",
-  "org": "Defence Construction Canada",
-  "location": "North Bay (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$80,886 to $105,152"
- },
- "2463877": {
-  "title": "Digital Product Strategist",
-  "closing": "2026-10-04",
-  "org": "House of Commons (Employees)",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$107,314 to $135,788"
- },
- "2461934": {
-  "title": "Fitness and Sports Instructor",
-  "closing": "2026-10-04",
-  "org": "Canadian Forces Non-Public Funds",
-  "location": "Esquimalt (British Columbia)",
-  "language": "English essential",
-  "salary": "$21.92 to $31.88 per hour"
- },
- "2465580": {
-  "title": "Fitness and Sports Instructor",
-  "closing": "2026-10-04",
-  "org": "Canadian Forces Non-Public Funds",
-  "location": "Esquimalt (British Columbia)",
-  "language": "English essential",
-  "salary": "$21.92 to $31.88 per hour"
- },
- "2463426": {
-  "title": "Head, Intelligence Analyst",
-  "closing": "2026-10-04",
-  "org": "Canadian Security Intelligence Service",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$112,746 to $137,226"
- },
- "2466025": {
-  "title": "Home and Electronics Associate",
-  "closing": "2026-10-04",
-  "org": "Canadian Forces Non-Public Funds",
-  "location": "Victoria (British Columbia)",
-  "language": "English essential",
-  "salary": "$20.12 to $21.93 per hour"
- },
- "2459273": {
-  "title": "HOST/HOSTESS, 1 ELGIN",
-  "closing": "2026-10-04",
-  "org": "National Arts Centre Corporation",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$22.08 to $22.09 per hour"
- },
- "2463360": {
-  "title": "Human and Organizational Factors Specialist",
-  "closing": "2026-10-04",
-  "org": "Canadian Nuclear Safety Commission",
-  "location": "Ottawa (Ontario)",
-  "language": "English essential",
-  "salary": "$90,396 to $125,510"
- },
- "2463628": {
-  "title": "Project and Technical Services Officer - Anticipatory",
-  "closing": "2026-10-04",
-  "org": "National Capital Commission",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$77,281 to $102,535"
- },
- "2466030": {
-  "title": "Sales Associate",
-  "closing": "2026-10-04",
-  "org": "Canadian Forces Non-Public Funds",
-  "location": "Victoria (British Columbia)",
-  "language": "English essential",
-  "salary": "$19.92 to $21.71 per hour"
- },
- "2464872": {
-  "title": "Site Manager",
-  "closing": "2026-10-04",
-  "org": "Defence Construction Canada",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$126,865 to $164,924"
- },
- "2459400": {
-  "title": "Associate Director, Security Services and Facilities Management",
-  "closing": "2026-10-05",
-  "org": "Federal Economic Development Agency for Northern Ontario",
-  "location": "Sudbury (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$107,193 to $115,642"
- },
- "2462823": {
-  "title": "Bilingual Senior Specialist, Multi-Unit Underwriting (ACLP)",
-  "closing": "2026-10-05",
-  "org": "Canada Mortgage and Housing Corporation",
-  "location": "Various Locations",
-  "language": "Bilingual - imperative",
-  "salary": "$104,180 to $130,225"
- },
- "2458835": {
-  "title": "Built Heritage Advisor",
-  "closing": "2026-10-05",
-  "org": "Parks Canada     - Indigenous Stewardship and Cultural Heritage Directorate",
-  "location": "Calgary (Alberta), Vancouver (British Columbia), Winnipeg (Manitoba), Halifax (Nova Scotia), Cornwall (Ontario), Montréal Island (Québec), Gatineau (Québec), Québec (Québec)",
-  "language": "Bilingual - imperative",
-  "salary": "$106,321 to $123,739 (salary under review)"
- },
- "2464450": {
-  "title": "Business Officers and Senior Business Officers",
-  "closing": "2026-10-05",
-  "org": "Prairies Economic Development Canada",
-  "location": "Calgary (Alberta), Edmonton (Alberta), Fort McMurray (Alberta), Grande Prairie (Alberta), Lethbridge (Alberta), Thompson (Manitoba), Brandon (Manitoba), Winnipeg (Manitoba), Prince Albert (Saskatchewan), Regina (Saskatchewan), Saskatoon (Saskatchewan)",
-  "language": "English essential",
-  "salary": "CO-01 Salary Range = $69,552 to $91,493 per year; CO-02 Salary Range = $89,966 to $128,102 per year"
- },
- "2430252": {
-  "title": "Class 1 & Class 3 Snow Plow Operator (INVENTORY)",
-  "closing": "2026-10-05",
-  "org": "Parks Canada     - Highway Operations Unit",
-  "location": "Lake Louise-Yoho Operating Area (Lake Louise, AB), Banff-Kootenay Operating Area (Banff, AB and Radium Hot Springs, BC), Mount Revelstoke and Glacier Operating Area (Rogers Pass, BC), Jasper Operating Area",
-  "language": "English essential",
-  "salary": "$28.82 to $32.38 per hour (salary under review)"
- },
- "2464103": {
-  "title": "Compensation Advisor - Development Opportunity (#26088)",
-  "closing": "2026-10-05",
-  "org": "National Research Council Canada",
-  "location": "Various Locations",
-  "language": "Bilingual - imperative",
-  "salary": "$68,047 to $85,298"
- },
- "2449714": {
-  "title": "Compliance Officer, Real Property Operations, EG-05",
-  "closing": "2026-10-05",
-  "org": "National Defence",
-  "location": "North Bay (Ontario)",
-  "language": "English essential",
-  "salary": "$78,909 to $99,200"
- },
- "2463224": {
-  "title": "COMSEC Operations Professional",
-  "closing": "2026-10-05",
-  "org": "Communications Security Establishment Canada",
-  "location": "Ottawa (Ontario)",
-  "language": "Various language requirements and/or profiles",
-  "salary": "$103,114 to $119,613"
- },
- "2466301": {
-  "title": "IT Analyst Infrastructure Operations",
-  "closing": "2026-10-05",
-  "org": "Royal Canadian Mounted Police",
-  "location": "St. John's (Newfoundland and Labrador)",
-  "language": "English essential",
-  "salary": "$85,854 to $105,080"
- },
- "2450912": {
-  "title": "Join our Team. Apply in Minutes. Opportunities across Canada.",
-  "closing": "2026-10-05",
-  "org": "Employment and Social Development Canada",
-  "location": "Various Locations",
-  "language": "Various language requirements and/or profiles",
-  "salary": "$61,786 to $69,106 ((under review))"
- },
- "2466582": {
-  "title": "Manager, IT Operations and Security",
-  "closing": "2026-10-05",
-  "org": "Canadian Museum for Human Rights",
-  "location": "Winnipeg (Manitoba)",
-  "language": "Bilingual - imperative",
-  "salary": "$103,722 to $128,126"
- },
- "2466330": {
-  "title": "Member, Refugee Protection Division or Member, Immigration Division - Anticipatory",
-  "closing": "2026-10-05",
-  "org": "Immigration and Refugee Board of Canada",
-  "location": "Various Locations",
-  "language": "Various language requirements and/or profiles",
-  "salary": "$112,834 to $129,017"
- },
- "2448717": {
-  "title": "Naval Materiel State Assurance Analyst",
-  "closing": "2026-10-05",
-  "org": "National Defence     - Royal Canadian Navy",
-  "location": "Esquimalt (British Columbia)",
-  "language": "English essential",
-  "salary": "$86,801 to $109,119"
- },
- "2465765": {
-  "title": "Program Support, Administrative Assistant",
-  "closing": "2026-10-05",
-  "org": "Indigenous Services Canada     - Regional Delivery Sector - Manitoba Region",
-  "location": "Winnipeg (Manitoba)",
-  "language": "English essential",
-  "salary": "$57,217 to $61,761"
- },
- "2462532": {
-  "title": "Program Support Officer",
-  "closing": "2026-10-05",
-  "org": "Canadian Northern Economic Development Agency",
-  "location": "Iqaluit (Nunavut)",
-  "language": "English essential",
-  "salary": "$80,612 to $87,108"
- },
- "2457423": {
-  "title": "Project Engineer (Naval Architect/Stability Engineer or Hull Structure/System Engineer)",
-  "closing": "2026-10-05",
-  "org": "National Defence     - Royal Canadian Navy",
-  "location": "Esquimalt (British Columbia)",
-  "language": "English essential",
-  "salary": "$100,684 to $122,337"
- },
- "2464986": {
-  "title": "Regional Contribution Agreement Officer (#25936)",
-  "closing": "2026-10-05",
-  "org": "National Research Council Canada",
-  "location": "Boucherville (Québec)",
-  "language": "Bilingual - imperative",
-  "salary": "$68,047 to $80,289"
- },
- "2465709": {
-  "title": "Senior Program Manager, Program Management Office",
-  "closing": "2026-10-05",
-  "org": "Royal Canadian Mint",
-  "location": "Winnipeg (Manitoba)",
-  "language": "English essential",
-  "salary": "$94,720"
- },
- "2464991": {
-  "title": "Senior Project Manager (#24799)",
-  "closing": "2026-10-05",
-  "org": "National Research Council Canada",
-  "location": "Ottawa (Ontario)",
-  "language": "English essential",
-  "salary": "$83,985 to $168,192"
- },
- "2463216": {
-  "title": "Storesperson",
-  "closing": "2026-10-05",
-  "org": "Royal Canadian Mounted Police     - Stores Unit",
-  "location": "Edmonton (Alberta), Winnipeg (Manitoba), Regina (Saskatchewan)",
-  "language": "English essential",
-  "salary": "$27.46 to $29.85 per hour (Per hour, collective agreement under negotiation)"
- },
- "2468219": {
-  "title": "Technical Specialist, Program Management",
-  "closing": "2026-10-05",
-  "org": "Defence Construction Canada",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - non-imperative",
-  "salary": "$93,938 to $122,116"
- },
- "2463286": {
-  "title": "Various Engineering Positions – Real Property Operations",
-  "closing": "2026-10-05",
-  "org": "National Defence     - Assistant Deputy Minister (Infrastructure & Environment)",
-  "location": "Calgary (Alberta), Edmonton (Alberta), Cold Lake (Alberta), Wainwright (Alberta), Suffield (Alberta), Shilo (Manitoba), Winnipeg (Manitoba), Dundurn (Saskatchewan), Moose Jaw (Saskatchewan)",
-  "language": "English essential",
-  "salary": "EN-ENG-04: $117,820 to $137,411 / EN-ENG-05: $134,962 to $157,770"
- },
- "2465501": {
-  "title": "Advisor, Content Marketing",
-  "closing": "2026-10-06",
-  "org": "Royal Canadian Mint",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$79,600 to $99,500"
- },
- "2465496": {
-  "title": "Advisor, Employee Communications",
-  "closing": "2026-10-06",
-  "org": "Royal Canadian Mint",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$79,600 to $99,500"
- },
- "2465583": {
-  "title": "Exhibitions Manager",
-  "closing": "2026-10-06",
-  "org": "National Gallery of Canada",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$78,286 to $92,066"
- },
- "2462762": {
-  "title": "Manager, Strategic Communications",
-  "closing": "2026-10-06",
-  "org": "Federal Economic Development Agency for Northern Ontario",
-  "location": "Sudbury (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$107,193 to $115,642"
- },
- "2462754": {
-  "title": "Research Officer (Fire Safety Science and Tech) (#25650)",
-  "closing": "2026-10-06",
-  "org": "National Research Council Canada",
-  "location": "Ottawa (Ontario)",
-  "language": "English essential",
-  "salary": "$57,220 to $161,754"
- },
- "2462745": {
-  "title": "Senior AI Developer (#22284)",
-  "closing": "2026-10-06",
-  "org": "National Research Council Canada",
-  "location": "Ottawa (Ontario)",
-  "language": "English essential",
-  "salary": "$103,911 to $130,061"
- },
- "2464916": {
-  "title": "Senior Specialist, Compliance and Risk Governance",
-  "closing": "2026-10-06",
-  "org": "Canada Mortgage and Housing Corporation",
-  "location": "Ottawa (Ontario)",
-  "language": "English essential",
-  "salary": "$104,180 to $130,225"
- },
- "2453554": {
-  "title": "Cataloguing Team Leader",
-  "closing": "2026-10-07",
-  "org": "Public Services and Procurement Canada     - RGPB-Receiver General and Pension Branch - Government Information Services Sector",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$94,999 to $107,202"
- },
- "2468224": {
-  "title": "Coordinator, Construction Services",
-  "closing": "2026-10-07",
-  "org": "Defence Construction Canada",
-  "location": "Borden (Ontario)",
-  "language": "English essential",
-  "salary": "$69,578 to $90,451"
- },
- "2468231": {
-  "title": "Coordinator, Construction Services",
-  "closing": "2026-10-07",
-  "org": "Defence Construction Canada",
-  "location": "Borden (Ontario)",
-  "language": "English essential",
-  "salary": "$80,886 to $105,152"
- },
- "2464410": {
-  "title": "Division Operations Support Analyst",
-  "closing": "2026-10-07",
-  "org": "Royal Canadian Mounted Police",
-  "location": "Edmonton (Alberta)",
-  "language": "English essential",
-  "salary": "$96,235 to $104,044"
- },
- "2457515": {
-  "title": "Entry Level Tailor",
-  "closing": "2026-10-07",
-  "org": "Royal Canadian Mounted Police     - Tailor Shop, Depot Division",
-  "location": "Regina, Saskatchewan",
-  "language": "English essential",
-  "salary": "$26.12 to $28.39 per hour (Collective agreement under negotiation)"
- },
- "2453420": {
-  "title": "Heavy Equipment Mechanic / Truck & Transport Mechanic",
-  "closing": "2026-10-07",
-  "org": "Parks Canada     - Highway Operations Unit",
-  "location": "Lake Louise-Yoho Operating Area (Lake Louise, AB)",
-  "language": "English essential",
-  "salary": "$37.85 to $41.12 per hour (salary under review)"
- },
- "2463585": {
-  "title": "Property and Events Manager",
-  "closing": "2026-10-07",
-  "org": "National Capital Commission",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$94,550 to $127,698"
- },
- "2463598": {
-  "title": "Property Maintenance Coordinator",
-  "closing": "2026-10-07",
-  "org": "National Capital Commission",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$56,716 to $71,778"
- },
- "2468228": {
-  "title": "Regional Service Line Leader, Project and Program Management",
-  "closing": "2026-10-07",
-  "org": "Defence Construction Canada",
-  "location": "Edmonton (Alberta)",
-  "language": "English essential",
-  "salary": "$137,013 to $178,118"
- },
- "2466059": {
-  "title": "Senior Manager, Product Management",
-  "closing": "2026-10-07",
-  "org": "Royal Canadian Mint",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$112,720 to $140,900"
- },
- "2466037": {
-  "title": "Talent Acquisition Specialist",
-  "closing": "2026-10-07",
-  "org": "Canada Council for the Arts",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$89,716 to $105,590"
- },
- "2460514": {
-  "title": "Working Level Labourer",
-  "closing": "2026-10-07",
-  "org": "Agriculture and Agri-Food Canada     - Science and Technology Branch",
-  "location": "Normandin (Québec)",
-  "language": "French essential",
-  "salary": "$29.20 to $31.73 per hour (Salary under review)"
- },
  "2467352": {
   "title": "Assistant Deputy Minister - Fuels Sector, Natural Resources Canada",
   "closing": "2026-10-08",
@@ -655,6 +39,14 @@
   "language": "English essential",
   "salary": "$68,849 to $74,180"
  },
+ "2467840": {
+  "title": "Hearings Technical Support Officer",
+  "closing": "2026-10-08",
+  "org": "Administrative Tribunals Support Service of Canada     - Registry Services Branch",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - imperative",
+  "salary": "$68,849 to $74,180"
+ },
  "2466274": {
   "title": "Manager, Technology Sustainment",
   "closing": "2026-10-08",
@@ -671,13 +63,13 @@
   "language": "Bilingual - imperative",
   "salary": "$202,700 to $253,300"
  },
- "2438402": {
-  "title": "Occupational Therapist - Inventory",
+ "2468815": {
+  "title": "Member, Refugee Protection Division or Member, Immigration Division - Anticipatory",
   "closing": "2026-10-08",
-  "org": "Correctional Service Canada     - Health Services",
-  "location": "Renous (New Brunswick), Dorchester (New Brunswick), Springhill (Nova Scotia)",
+  "org": "Immigration and Refugee Board of Canada",
+  "location": "Various Locations",
   "language": "Various language requirements and/or profiles",
-  "salary": "$100,973 to $120,292 (Plus applicable allowances, including a Correctional Service Specific Duty Allowance of $2,140 per year and a commuting allowance may apply. The allowances are subject to change, modification or revocation, with notice.)"
+  "salary": "$112,834 to $129,017"
  },
  "2466450": {
   "title": "Policy Advisor on Construction Codes (#25562)",
@@ -710,14 +102,6 @@
   "location": "Ottawa (Ontario)",
   "language": "Bilingual - imperative",
   "salary": "$90,396 to $125,510"
- },
- "2461910": {
-  "title": "Simulator Trainer/Instructor",
-  "closing": "2026-10-08",
-  "org": "Department of National Defence",
-  "location": "Comox (British Columbia)",
-  "language": "English essential",
-  "salary": "$84,174 to $95,705"
  },
  "2463704": {
   "title": "Technical and Policy Advisor on Construction Codes (#25629)",
@@ -776,7 +160,7 @@
   "salary": "$135,086 to $156,341"
  },
  "2462824": {
-  "title": "Digital Evidence Specialist",
+  "title": "Digital Forensics Examiner",
   "closing": "2026-10-09",
   "org": "Royal Canadian Mounted Police",
   "location": "Ottawa (Ontario)",
@@ -807,14 +191,6 @@
   "language": "Various language requirements and/or profiles",
   "salary": "$87,459 to $120,917"
  },
- "2456536": {
-  "title": "Intercept Support Specialist",
-  "closing": "2026-10-09",
-  "org": "Royal Canadian Mounted Police     - Technical Operations",
-  "location": "Ottawa (Ontario)",
-  "language": "English essential",
-  "salary": "$100,684 to $122,337"
- },
  "2466427": {
   "title": "Manager, Evaluation",
   "closing": "2026-10-09",
@@ -822,6 +198,14 @@
   "location": "Ottawa (Ontario)",
   "language": "Bilingual - imperative",
   "salary": "$114,832 to $143,530"
+ },
+ "2467999": {
+  "title": "Registry Officer and Liaison Officer",
+  "closing": "2026-10-09",
+  "org": "Administrative Tribunals Support Service of Canada",
+  "location": "Vancouver (British Columbia), Toronto (Ontario), Ottawa (Ontario), Montréal Island (Québec)",
+  "language": "Various language requirements and/or profiles",
+  "salary": "$68,849 to $74,180"
  },
  "2461257": {
   "title": "Research Engineer Test Pilot (Fixed Wing) (#25975)",
@@ -927,14 +311,6 @@
   "language": "Bilingual - imperative",
   "salary": "$80,886 to $105,152"
  },
- "2463462": {
-  "title": "Corporate Policy Senior Advisor",
-  "closing": "2026-10-11",
-  "org": "Parliamentary Protective Service     - Planning Sector - Corporate Policy",
-  "location": "Ottawa (Ontario)",
-  "language": "Bilingual - imperative",
-  "salary": "$96,886 to $127,494 ((under review) Annual salary is based on a 35-hour work week.)"
- },
  "2465416": {
   "title": "Detachment Services Assistant",
   "closing": "2026-10-11",
@@ -999,6 +375,14 @@
   "language": "Bilingual - imperative",
   "salary": "$112,490 to $140,650"
  },
+ "2468571": {
+  "title": "Advisor, Open-Source Intelligence Monitoring",
+  "closing": "2026-10-12",
+  "org": "Senate (Employees)",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - imperative",
+  "salary": "$86,650 to $109,635"
+ },
  "2466441": {
   "title": "Assistant Director, Endpoint Management",
   "closing": "2026-10-12",
@@ -1022,6 +406,38 @@
   "location": "Ottawa (Ontario)",
   "language": "Bilingual - non-imperative",
   "salary": "$94,193 to $110,816"
+ },
+ "2468908": {
+  "title": "Bilingual Team Leader, Cash Management",
+  "closing": "2026-10-12",
+  "org": "Canada Mortgage and Housing Corporation",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - imperative",
+  "salary": "$86,816 to $108,520"
+ },
+ "2469223": {
+  "title": "Coordinator, Construction Services",
+  "closing": "2026-10-12",
+  "org": "Defence Construction Canada",
+  "location": "Québec (Québec)",
+  "language": "Bilingual - non-imperative",
+  "salary": "$80,886 to $105,152"
+ },
+ "2469217": {
+  "title": "Coordinator, Construction Services (Major Capital Infrastructure)",
+  "closing": "2026-10-12",
+  "org": "Defence Construction Canada",
+  "location": "Comox (British Columbia)",
+  "language": "English essential",
+  "salary": "$80,886 to $105,152"
+ },
+ "2463462": {
+  "title": "Corporate Policy Senior Advisor",
+  "closing": "2026-10-12",
+  "org": "Parliamentary Protective Service     - Planning Sector - Corporate Policy",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - imperative",
+  "salary": "$96,886 to $127,494 ((under review) Annual salary is based on a 35-hour work week.)"
  },
  "2450838": {
   "title": "Deckhand / Public Safety Diver Trainee",
@@ -1055,6 +471,14 @@
   "language": "Bilingual - imperative",
   "salary": "$71,757 to $82,047"
  },
+ "2468577": {
+  "title": "Senior Advisor, Investigations and Risk Management",
+  "closing": "2026-10-12",
+  "org": "Senate (Employees)",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - imperative",
+  "salary": "$98,819 to $125,038"
+ },
  "2466775": {
   "title": "Statistical Officer",
   "closing": "2026-10-12",
@@ -1070,6 +494,22 @@
   "location": "Ottawa (Ontario)",
   "language": "Bilingual - imperative",
   "salary": "$109,219 to $141,984"
+ },
+ "2469203": {
+  "title": "Administrative Assistant",
+  "closing": "2026-10-13",
+  "org": "Defence Construction Canada",
+  "location": "Borden (Ontario)",
+  "language": "English essential",
+  "salary": "$51,566 to $67,035"
+ },
+ "2468306": {
+  "title": "Administrative Assistant **Amendment to process intent**",
+  "closing": "2026-10-13",
+  "org": "Canadian Food Inspection Agency     - Operations",
+  "location": "Montréal Island (Québec), Québec (Québec), Saint-Hyacinthe (Québec)",
+  "language": "Various language requirements and/or profiles",
+  "salary": "$57,678 to $62,249"
  },
  "2468441": {
   "title": "AU-05 Various Positions in International Tax/Transfer Pricing/Tax treaty",
@@ -1087,14 +527,6 @@
   "language": "English essential",
   "salary": "$73,798 to $79,511 (plus Isolated Post Allowances (Northern Allowance) which ranges from $14,221 to $55,282 annually based on location of residence and if the employee has dependents or is occupying crown housing.)"
  },
- "2443116": {
-  "title": "CRA is actively hiring experienced AU03 Income Tax Auditors for multiple opportunities in the Atlantic Region",
-  "closing": "2026-10-13",
-  "org": "Canada Revenue Agency",
-  "location": "Various Locations",
-  "language": "English or French essential",
-  "salary": "$99,864 to $122,817"
- },
  "2465223": {
   "title": "Detachment Services Assistant",
   "closing": "2026-10-13",
@@ -1110,6 +542,14 @@
   "location": "Sudbury (Ontario)",
   "language": "Bilingual - imperative",
   "salary": "$66,982 to $93,965"
+ },
+ "2469582": {
+  "title": "GRADUATE STUDENT POSITION ON URBAN AIR QUALITY RESEARCH",
+  "closing": "2026-10-13",
+  "org": "Environment and Climate Change Canada     - Science and Technology Branch",
+  "location": "Toronto (Ontario), Montréal Island (Québec)",
+  "language": "English essential",
+  "salary": "$29.64 to $38.38 per hour"
  },
  "2457493": {
   "title": "Industrial Relations Officer/Alternative Dispute Resolution Officer or Specialist",
@@ -1183,6 +623,22 @@
   "language": "English essential",
   "salary": "$83,985 to $139,608"
  },
+ "2459570": {
+  "title": "Supervisor, Circulation",
+  "closing": "2026-10-13",
+  "org": "Library and Archives Canada     - Government Record Branch",
+  "location": "Winnipeg (Manitoba)",
+  "language": "English essential",
+  "salary": "$77,690 to $87,907"
+ },
+ "2468482": {
+  "title": "Analyst, Screening Clearances",
+  "closing": "2026-10-14",
+  "org": "Bank of Canada",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - imperative",
+  "salary": "$66,179 to $77,858"
+ },
  "2465643": {
   "title": "Bioinformatics Support Specialist (#25821)",
   "closing": "2026-10-14",
@@ -1190,6 +646,14 @@
   "location": "Halifax (Nova Scotia)",
   "language": "English essential",
   "salary": "$86,503 to $108,068"
+ },
+ "2469267": {
+  "title": "Communications Advisor « Anticipatory Staffing »",
+  "closing": "2026-10-14",
+  "org": "Royal Canadian Mounted Police",
+  "location": "Airdrie (Alberta), Edmonton (Alberta)",
+  "language": "Various language requirements and/or profiles",
+  "salary": "$96,235 to $104,044"
  },
  "2464867": {
   "title": "Coordinator, Construction Services",
@@ -1199,6 +663,14 @@
   "language": "English essential",
   "salary": "$80,886 to $105,152"
  },
+ "2457515": {
+  "title": "Entry Level Tailor",
+  "closing": "2026-10-14",
+  "org": "Royal Canadian Mounted Police     - Tailor Shop, Depot Division",
+  "location": "Regina, Saskatchewan",
+  "language": "English essential",
+  "salary": "$26.12 to $28.39 per hour (Collective agreement under negotiation)"
+ },
  "2468417": {
   "title": "Machinist/Mechanic",
   "closing": "2026-10-14",
@@ -1206,6 +678,14 @@
   "location": "Winnipeg (Manitoba)",
   "language": "English essential",
   "salary": "$45.98 per hour"
+ },
+ "2468592": {
+  "title": "Media Relations Specialist",
+  "closing": "2026-10-14",
+  "org": "Canadian Museum for Human Rights",
+  "location": "Winnipeg (Manitoba)",
+  "language": "Bilingual - non-imperative",
+  "salary": "$86,077 to $106,331"
  },
  "2462308": {
   "title": "PhD - Tracing Controls on Gold Fertility in Archean Greenstone Belts",
@@ -1303,6 +783,22 @@
   "language": "Bilingual - non-imperative",
   "salary": "$94,193 to $110,816"
  },
+ "2462163": {
+  "title": "Physical Security Consultant",
+  "closing": "2026-10-15",
+  "org": "Royal Canadian Mounted Police     - Departmental Security",
+  "location": "Ottawa (Ontario)",
+  "language": "Various language requirements and/or profiles",
+  "salary": "$84,174 to $95,704"
+ },
+ "2468494": {
+  "title": "Specialist, Quality Assurance",
+  "closing": "2026-10-15",
+  "org": "Canada Mortgage and Housing Corporation",
+  "location": "Various Locations",
+  "language": "English essential",
+  "salary": "$86,816 to $108,520"
+ },
  "2370722": {
   "title": "Advisor, Inuit Indigenous Relations - Inventory",
   "closing": "2026-10-16",
@@ -1310,6 +806,14 @@
   "location": "Jobs located in various communities across Nunavut: Iqaluit, Cambridge Bay, Rankin Inlet, Naujaat, Resolute Bay (and other locations in Nunavut).",
   "language": "English essential",
   "salary": "$80,612 to $87,108 ((+ Isolated Post Allowances + Vacation Travel Assistance))"
+ },
+ "2453554": {
+  "title": "Cataloguing Team Leader",
+  "closing": "2026-10-16",
+  "org": "Public Services and Procurement Canada     - RGPB-Receiver General and Pension Branch - Government Information Services Sector",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - imperative",
+  "salary": "$94,999 to $107,202"
  },
  "2457233": {
   "title": "Conservation & Protection Supervisor",
@@ -1351,6 +855,14 @@
   "language": "English essential",
   "salary": "$25.17 to $31.69 per hour (Varies as per the level of education and experience.)"
  },
+ "2456536": {
+  "title": "Intercept Support Specialist",
+  "closing": "2026-10-16",
+  "org": "Royal Canadian Mounted Police     - Technical Operations",
+  "location": "Ottawa (Ontario)",
+  "language": "English essential",
+  "salary": "$100,684 to $122,337"
+ },
  "2454062": {
   "title": "Research assistant (MSc or PhD) - Plant virus epidemiology",
   "closing": "2026-10-16",
@@ -1374,6 +886,30 @@
   "location": "Ottawa (Ontario)",
   "language": "English essential",
   "salary": "$77,422 to $107,500"
+ },
+ "2469209": {
+  "title": "Team Leader, Contract Services",
+  "closing": "2026-10-16",
+  "org": "Defence Construction Canada",
+  "location": "Comox (British Columbia)",
+  "language": "English essential",
+  "salary": "$93,938 to $122,116"
+ },
+ "2469207": {
+  "title": "Technical Specialist, Geographic Information System (GIS)",
+  "closing": "2026-10-16",
+  "org": "Defence Construction Canada",
+  "location": "Halifax (Nova Scotia)",
+  "language": "English essential",
+  "salary": "$80,886 to $105,152"
+ },
+ "2469224": {
+  "title": "Administrative Assistant",
+  "closing": "2026-10-17",
+  "org": "Defence Construction Canada",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - imperative",
+  "salary": "$59,891 to $77,856"
  },
  "2416073": {
   "title": "Ship Repair Trade Inventory",
@@ -1406,6 +942,14 @@
   "location": "Ottawa (Ontario)",
   "language": "English or French essential",
   "salary": "$111,051 to $130,649"
+ },
+ "2468909": {
+  "title": "Director, Facilities Services",
+  "closing": "2026-10-18",
+  "org": "Bank of Canada",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - non-imperative",
+  "salary": "$177,681 to $209,037"
  },
  "2467030": {
   "title": "Economist, Canadian Economic Analysis Department Rotation Program",
@@ -1463,6 +1007,38 @@
   "language": "English essential",
   "salary": "$61,980 to $74,408 (salary under review)"
  },
+ "2468901": {
+  "title": "Administrative Assistant (#25738)",
+  "closing": "2026-10-19",
+  "org": "National Research Council Canada",
+  "location": "Ottawa (Ontario)",
+  "language": "Various language requirements and/or profiles",
+  "salary": "$49,665 to $65,854"
+ },
+ "2468670": {
+  "title": "Bilingual Senior Specialist, IT Portfolio and Performance Management",
+  "closing": "2026-10-19",
+  "org": "Canada Mortgage and Housing Corporation",
+  "location": "Various Locations",
+  "language": "Bilingual - imperative",
+  "salary": "$104,180 to $130,225"
+ },
+ "2469312": {
+  "title": "Chief of Residential Housing Projects and Maintenance (Yellowknife)",
+  "closing": "2026-10-19",
+  "org": "National Defence     - Canadian Forces Housing Agency",
+  "location": "Yellowknife (Northwest Territories)",
+  "language": "English essential",
+  "salary": "$78,909 to $99,200 (In addition to your base salary, you will receive an Isolated Post Allowance: approximately $12,384 - $27,390 per year (rates vary).)"
+ },
+ "2430252": {
+  "title": "Class 1 & Class 3 Snow Plow Operator (INVENTORY)",
+  "closing": "2026-10-19",
+  "org": "Parks Canada     - Highway Operations Unit",
+  "location": "Lake Louise-Yoho Operating Area (Lake Louise, AB), Banff-Kootenay Operating Area (Banff, AB and Radium Hot Springs, BC), Mount Revelstoke and Glacier Operating Area (Rogers Pass, BC), Jasper Operating Area",
+  "language": "English essential",
+  "salary": "$28.82 to $32.38 per hour (salary under review)"
+ },
  "2464175": {
   "title": "Computer Based Systems Educator (PRIME & Intellibook)",
   "closing": "2026-10-19",
@@ -1470,6 +1046,14 @@
   "location": "Chilliwack (British Columbia)",
   "language": "English essential",
   "salary": "$73,798 to $79,511"
+ },
+ "2468862": {
+  "title": "Data Science Engineer (#26119)",
+  "closing": "2026-10-19",
+  "org": "National Research Council Canada",
+  "location": "Ottawa (Ontario)",
+  "language": "English or French essential",
+  "salary": "$103,911 to $130,061"
  },
  "2467972": {
   "title": "Data Scientist (#26120)",
@@ -1479,6 +1063,30 @@
   "language": "English or French essential",
   "salary": "$119,688 to $168,192"
  },
+ "2464032": {
+  "title": "General Labourer",
+  "closing": "2026-10-19",
+  "org": "Royal Canadian Mounted Police     - Maintenance Services",
+  "location": "Regina (Saskatchewan)",
+  "language": "English essential",
+  "salary": "$25.31 to $27.49 per hour (per hour, collective agreement under negotiation)"
+ },
+ "2464652": {
+  "title": "Housing Projects and Maintenance Technician (Yellowknife)",
+  "closing": "2026-10-19",
+  "org": "National Defence     - Canadian Forces Housing Agency",
+  "location": "Yellowknife (Northwest Territories)",
+  "language": "English essential",
+  "salary": "$71,741 to $90,184 (In addition to your base salary, you will receive an Isolated Post Allowance: approximately $12,384 - $27,390 per year (rates vary).)"
+ },
+ "2468902": {
+  "title": "Legal Counsel, DPSA",
+  "closing": "2026-10-19",
+  "org": "Canadian Commercial Corporation",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - imperative",
+  "salary": "$100,589 to $115,428"
+ },
  "2452703": {
   "title": "Patent Examiner",
   "closing": "2026-10-19",
@@ -1487,6 +1095,54 @@
   "language": "English essential",
   "salary": "$87,347 to $107,392"
  },
+ "2468673": {
+  "title": "Senior Analyst, Financial Reporting",
+  "closing": "2026-10-19",
+  "org": "Canada Mortgage and Housing Corporation",
+  "location": "Various Locations",
+  "language": "English essential",
+  "salary": "$73,555 to $91,944"
+ },
+ "2468107": {
+  "title": "Senior Director, Alternative Dispute Resolution Services",
+  "closing": "2026-10-19",
+  "org": "Administrative Tribunals Support Service of Canada     - Alternative Dispute Resolution Services Branch",
+  "location": "Vancouver (British Columbia), Toronto (Ontario), Ottawa (Ontario), Montréal - Other locations (Québec)",
+  "language": "Bilingual - imperative",
+  "salary": "$154,178 to $181,365"
+ },
+ "2468692": {
+  "title": "Senior Project Manager (#24799)",
+  "closing": "2026-10-19",
+  "org": "National Research Council Canada",
+  "location": "Ottawa (Ontario)",
+  "language": "English essential",
+  "salary": "$83,985 to $168,192"
+ },
+ "2468623": {
+  "title": "Specialist/Technical Specialist (Instrumentation and Control)",
+  "closing": "2026-10-19",
+  "org": "Canadian Nuclear Safety Commission",
+  "location": "Ottawa (Ontario)",
+  "language": "English essential",
+  "salary": "$90,396 to $151,215"
+ },
+ "2468614": {
+  "title": "Technical Specialist",
+  "closing": "2026-10-19",
+  "org": "Canadian Nuclear Safety Commission",
+  "location": "Ottawa (Ontario)",
+  "language": "English essential",
+  "salary": "$108,911 to $151,215"
+ },
+ "2463909": {
+  "title": "Various Positions – Engineering and Scientific Support",
+  "closing": "2026-10-19",
+  "org": "National Defence     - Assistant Deputy Minister (Infrastructure & Environment)",
+  "location": "Calgary (Alberta), Edmonton (Alberta), Cold Lake (Alberta), Wainwright (Alberta), Suffield (Alberta), Shilo (Manitoba), Winnipeg (Manitoba), Dundurn (Saskatchewan), Moose Jaw (Saskatchewan)",
+  "language": "English essential",
+  "salary": "EG-04: $71,741 to $90,184 / EG-05: $78,909 to $99,200 / EG-06: $86,801 to $109,119"
+ },
  "2467780": {
   "title": "Advisory Practice Specialist - Insurance",
   "closing": "2026-10-20",
@@ -1494,6 +1150,14 @@
   "location": "Ottawa (Ontario)",
   "language": "Bilingual - non-imperative",
   "salary": "$97,420 to $114,660"
+ },
+ "2465056": {
+  "title": "Anticipatory - DETACHMENT SERVICES ASSISTANT / ADMINISTRATIVE SUPPORT CLERK",
+  "closing": "2026-10-20",
+  "org": "Royal Canadian Mounted Police     - \"E\" Division - Island District- Various Locations",
+  "location": "Salt Spring Island (British Columbia), Duncan (British Columbia), Nanaimo (British Columbia), Port McNeill (British Columbia), Sayward (British Columbia), Shawnigan Lake (British Columbia), Victoria (British Columbia)",
+  "language": "English essential",
+  "salary": "$62,533 to $67,699"
  },
  "2460418": {
   "title": "Bilingual Specialist, Corporate Governance (Ottawa)",
@@ -1510,6 +1174,14 @@
   "location": "Shilo (Manitoba)",
   "language": "Bilingual - non-imperative",
   "salary": "$85,980 to $101,190"
+ },
+ "2470069": {
+  "title": "Executive Assistant, Offices of the VP, Human Resources and the VP, Legal & Corporate Affairs",
+  "closing": "2026-10-20",
+  "org": "Royal Canadian Mint",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - imperative",
+  "salary": "$67,120"
  },
  "2467851": {
   "title": "Food Service Attendant Positions (Casual), Saskatoon (Saskatchewan)",
@@ -1535,6 +1207,22 @@
   "language": "Bilingual - imperative",
   "salary": "$122,572 to $170,302"
  },
+ "2469230": {
+  "title": "Program Officer, DMC",
+  "closing": "2026-10-20",
+  "org": "Canadian Museum of History",
+  "location": "Gatineau (Québec)",
+  "language": "Bilingual - non-imperative",
+  "salary": "$79,134 to $97,933"
+ },
+ "2468478": {
+  "title": "Senior Editor",
+  "closing": "2026-10-20",
+  "org": "Bank of Canada",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - imperative",
+  "salary": "$111,051 to $130,649"
+ },
  "2466424": {
   "title": "Senior Surveyor, Yukon Region",
   "closing": "2026-10-20",
@@ -1543,13 +1231,45 @@
   "language": "English essential",
   "salary": "$110,456 to $134,115 (This position is entitled to an additional allowance per the Isolated Posts and Government Housing Directive. Vacation Travel Assistance may also be provided. For more information, please consult the information link at the end of this advertisement.)"
  },
- "2425111": {
-  "title": "Nurse Practitioner",
+ "2468824": {
+  "title": "Team Leader, Finance",
+  "closing": "2026-10-20",
+  "org": "Canadian Nuclear Safety Commission",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - imperative",
+  "salary": "$108,911 to $151,215"
+ },
+ "2463918": {
+  "title": "Client Services Agent - ANTICIPATORY",
   "closing": "2026-10-21",
-  "org": "Correctional Service Canada",
-  "location": "Edmonton (Alberta), Grande Cache (Alberta), Innisfail (Alberta), Maskwacis (Alberta), Drumheller (Alberta), Saskatoon (Saskatchewan)",
+  "org": "Royal Canadian Mounted Police     - Canadian Firearms Program",
+  "location": "Miramichi (New Brunswick)",
+  "language": "Bilingual - imperative",
+  "salary": "$61,786 to $69,106"
+ },
+ "2467619": {
+  "title": "Housing Projects and Maintenance Technician (North Bay)",
+  "closing": "2026-10-21",
+  "org": "National Defence     - Canadian Forces Housing Agency",
+  "location": "North Bay (Ontario)",
   "language": "English essential",
-  "salary": "$120,156 to $136,540"
+  "salary": "$71,741 to $90,184"
+ },
+ "2468662": {
+  "title": "Plant Virology Graduate Student",
+  "closing": "2026-10-21",
+  "org": "Agriculture and Agri-Food Canada     - Science and Technology Branch",
+  "location": "London (Ontario)",
+  "language": "English essential",
+  "salary": "$25.17 to $38.38 per hour (Master: $25.17 to $31.69; Doctorate: $29.64 to $38.38 – Varies as per the level of education and experience.)"
+ },
+ "2469289": {
+  "title": "Resource Management Officer (Inspector)",
+  "closing": "2026-10-21",
+  "org": "Crown-Indigenous Relations and Northern Affairs Canada     - Northern Affairs Canada",
+  "location": "Yellowknife (Northwest Territories)",
+  "language": "English essential",
+  "salary": "$86,801 to $109,119 ((In addition, there are allowances ranging from $17,995 to $26,105))"
  },
  "2462989": {
   "title": "Seasonal Primary Inspector",
@@ -1558,6 +1278,14 @@
   "location": "Kelowna (British Columbia), Oliver (British Columbia), Parksville (British Columbia), Victoria (British Columbia), Abbotsford (British Columbia), Burnaby (British Columbia), Surrey (British Columbia)",
   "language": "English essential",
   "salary": "$53,548 to $67,753 (Salary under review)"
+ },
+ "2470064": {
+  "title": "Senior Advisor, International Relations (#26126)",
+  "closing": "2026-10-21",
+  "org": "National Research Council Canada",
+  "location": "Ottawa (Ontario)",
+  "language": "English essential",
+  "salary": "$64,739 to $183,010"
  },
  "2460848": {
   "title": "Senior Specialist, Analytics",
@@ -1582,6 +1310,38 @@
   "location": "Ottawa (Ontario)",
   "language": "Various language requirements and/or profiles",
   "salary": "$107,193 to $115,642"
+ },
+ "2470235": {
+  "title": "Senior Contract Manager",
+  "closing": "2026-10-22",
+  "org": "Canadian Commercial Corporation",
+  "location": "Ottawa (Ontario)",
+  "language": "English essential",
+  "salary": "$100,589 to $115,428"
+ },
+ "2470174": {
+  "title": "Senior Manager, Privacy and Access to Information",
+  "closing": "2026-10-22",
+  "org": "Royal Canadian Mint",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - imperative",
+  "salary": "$112,720"
+ },
+ "2461910": {
+  "title": "Simulator Trainer/Instructor",
+  "closing": "2026-10-22",
+  "org": "Department of National Defence",
+  "location": "Comox (British Columbia)",
+  "language": "English essential",
+  "salary": "$84,174 to $95,705"
+ },
+ "2468906": {
+  "title": "Assistant Corporate Secretary",
+  "closing": "2026-10-23",
+  "org": "Canadian Commercial Corporation",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - non-imperative",
+  "salary": "$100,589 to $134,487"
  },
  "2466827": {
   "title": "BANQUET CAPTAIN",
@@ -1615,6 +1375,22 @@
   "language": "English essential",
   "salary": "$62,393 to $77,991"
  },
+ "2469491": {
+  "title": "Opportunities for MG-SPS-01 to MG-SPS-03 Team Leader positions -– Your career awaits in Sudbury, Ontario!",
+  "closing": "2026-10-23",
+  "org": "Canada Revenue Agency",
+  "location": "Sudbury (Ontario)",
+  "language": "Various language requirements and/or profiles",
+  "salary": "$73,410 to $94,641"
+ },
+ "2467943": {
+  "title": "Senior Business Officer",
+  "closing": "2026-10-23",
+  "org": "Pacific Economic Development Canada",
+  "location": "Prince George (British Columbia), Prince Rupert (British Columbia), Fort St. John (British Columbia)",
+  "language": "Various language requirements and/or profiles",
+  "salary": "$89,966 to $128,102"
+ },
  "2468414": {
   "title": "Assistant, Exhibition Design",
   "closing": "2026-10-25",
@@ -1647,6 +1423,22 @@
   "language": "Bilingual - imperative",
   "salary": "$104,180 to $130,225"
  },
+ "2469189": {
+  "title": "Developer",
+  "closing": "2026-10-25",
+  "org": "Bank of Canada",
+  "location": "Various Locations",
+  "language": "English or French essential",
+  "salary": "$82,586 to $97,160"
+ },
+ "2470248": {
+  "title": "Developer/Senior Developer - Payments and Tokenization",
+  "closing": "2026-10-25",
+  "org": "Bank of Canada",
+  "location": "Toronto (Ontario)",
+  "language": "English or French essential",
+  "salary": "$94,193 to $100,816"
+ },
  "2467928": {
   "title": "Property Manager",
   "closing": "2026-10-25",
@@ -1663,6 +1455,22 @@
   "language": "English essential",
   "salary": "$86,816 to $108,520"
  },
+ "2470230": {
+  "title": "Senior Risk Analyst",
+  "closing": "2026-10-26",
+  "org": "Canadian Commercial Corporation",
+  "location": "Ottawa (Ontario)",
+  "language": "English essential",
+  "salary": "$100,589 to $115,428"
+ },
+ "2465543": {
+  "title": "Anticipatory - Detachment Services Supervisor",
+  "closing": "2026-10-27",
+  "org": "Royal Canadian Mounted Police     - Southeast District",
+  "location": "Creston (British Columbia), Elkford (British Columbia), Invermere (British Columbia), Nakusp (British Columbia), Trail (British Columbia), Armstrong (British Columbia), Golden (British Columbia), Kamloops (British Columbia), Kelowna (British Columbia), Revelstoke (British Columbia), Vernon (British Columbia), Osoyoos (British Columbia), Penticton (British Columbia), Princeton (British Columbia)",
+  "language": "English essential",
+  "salary": "$68,849 to $74,180"
+ },
  "2440411": {
   "title": "Parole Officer",
   "closing": "2026-10-27",
@@ -1670,6 +1478,22 @@
   "location": "Chicoutimi (Quebec), Cowansville (Quebec), Donnacona (Quebec), Drummondville(Quebec), Gatineau (Quebec), Granby (Quebec), Joliette (Quebec), La Macaza (Quebec), Laval (Quebec), Laval / North Shore / Laurentians - Other locations - Blainville (Quebec), Longueuil (Quebec), Montréal Island (Quebec), Port-Cartier(Quebec), Quebec (Quebec), Rimouski (Quebec), Rouyn-Noranda (Quebec), Sainte-Anne-des-Plaines (Quebec), Sherbrooke (Quebec), Trois-Rivières (Quebec)",
   "language": "Various language requirements and/or profiles",
   "salary": "$78,017 to $103,279 (plus an annual Correctional Service Specific Duty Allowance of $2,140 and an annual allowance of $3,000)"
+ },
+ "2469465": {
+  "title": "Visitor Services Attendant II",
+  "closing": "2026-10-27",
+  "org": "Parks Canada     - Lake Louise, Yoho & Kootenay Field Unit",
+  "location": "Field, BC, Radium Hot Springs, BC or Lake Louise, AB.",
+  "language": "Various language requirements and/or profiles",
+  "salary": "$27.47 to $29.85 per hour ((under review))"
+ },
+ "2453420": {
+  "title": "Heavy Equipment Mechanic / Truck & Transport Mechanic",
+  "closing": "2026-10-28",
+  "org": "Parks Canada     - Highway Operations Unit",
+  "location": "Lake Louise-Yoho Operating Area (Lake Louise, AB)",
+  "language": "English essential",
+  "salary": "$37.85 to $41.12 per hour (salary under review)"
  },
  "2430818": {
   "title": "Surveys Coordinator",
@@ -1863,6 +1687,14 @@
   "language": "English essential",
   "salary": "$17.35 to $28.28 per hour"
  },
+ "2469199": {
+  "title": "Library Technician",
+  "closing": "2026-11-02",
+  "org": "Canadian Security Intelligence Service",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - non-imperative",
+  "salary": "$77,427 to $94,177"
+ },
  "2467554": {
   "title": "Regional Protective Services Officer",
   "closing": "2026-11-02",
@@ -1878,6 +1710,14 @@
   "location": "Borden (Ontario)",
   "language": "English essential",
   "salary": "$66,559 to $75,472"
+ },
+ "2467208": {
+  "title": "Project Officer",
+  "closing": "2026-11-03",
+  "org": "Royal Canadian Mounted Police     - Corporate Management and Comptrollership",
+  "location": "Ottawa (Ontario)",
+  "language": "English essential",
+  "salary": "$78,909 to $99,200"
  },
  "2462870": {
   "title": "Advanced Policy Analyst Program Indigenous Inventory",
@@ -1911,13 +1751,21 @@
   "language": "English essential",
   "salary": "$100,973 to $120,292 (Plus applicable allowances, including a Correctional Service Specific Duty Allowance of $2,140 per year and a commuting allowance may apply. The allowances are subject to change, modification or revocation, with notice.)"
  },
- "2468034": {
-  "title": "2027-2029 Advanced Policy Analyst Program (APAP)",
+ "2470060": {
+  "title": "Research Associate - Astrophotonic Instrumentation (#26053)",
+  "closing": "2026-11-04",
+  "org": "National Research Council Canada",
+  "location": "Victoria (British Columbia)",
+  "language": "English essential",
+  "salary": "$83,985 to $116,641"
+ },
+ "2468869": {
+  "title": "2027–2029 Advanced Policy Analyst Program (APAP)",
   "closing": "2026-11-04",
   "org": "Department of Finance Canada",
-  "location": "National Capital Region - Other locations (Ontario)",
+  "location": "Ottawa (Ontario)",
   "language": "English or French essential",
-  "salary": "$77,690 to $87,907"
+  "salary": "$77,690 to $115,404"
  },
  "2461713": {
   "title": "Human Resources Advisor",
@@ -1926,6 +1774,14 @@
   "location": "Various Locations",
   "language": "Various language requirements and/or profiles",
   "salary": "$87,459 to $106,386"
+ },
+ "2469066": {
+  "title": "Cabinetmaker",
+  "closing": "2026-11-08",
+  "org": "House of Commons (Employees)",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - imperative",
+  "salary": "$70,404 to $89,083"
  },
  "2461193": {
   "title": "The Jonquière Tax Centre is looking for temporary employees at groups and levels SP-01 (starting at $24.05/hour) and SP-02 (starting at $27.58/hour), so join us for tax filing season in a dynamic and rewarding work environment!",
@@ -2055,6 +1911,14 @@
   "language": "English essential",
   "salary": "$34.22 to $37.20 per hour"
  },
+ "2469350": {
+  "title": "Economic / Financial Analyst - UNIVERSITY / POST-UNIVERSITY RECRUITMENT",
+  "closing": "2026-11-30",
+  "org": "Parliamentary Budget Office",
+  "location": "Ottawa (Ontario)",
+  "language": "Various language requirements and/or profiles",
+  "salary": "$75,825 to $119,718"
+ },
  "2434859": {
   "title": "Foreign Language Intelligence Analyst (Chinese)",
   "closing": "2026-11-30",
@@ -2103,6 +1967,14 @@
   "language": "English essential",
   "salary": "💲▻ From $26.12 to $28.39 per hour, in addition to annual allowances such as a $2,140 Correctional Service Specific Duty Allowance (CSSDA) and an Inmate Training Differential."
  },
+ "2468208": {
+  "title": "Food Service Attendant – Employment Opportunity in Saskatoon",
+  "closing": "2026-12-08",
+  "org": "Correctional Service Canada",
+  "location": "Saskatoon (Saskatchewan)",
+  "language": "English essential",
+  "salary": "💲▻ From $26.12 to $28.39 per hour, in addition to annual allowances such as a $2,140 Correctional Service Specific Duty Allowance (CSSDA) and an Inmate Training Differential."
+ },
  "2425145": {
   "title": "Food Service Attendant, consider a career with the Correctional Service of Canada – Quebec",
   "closing": "2026-12-08",
@@ -2118,6 +1990,14 @@
   "location": "Renous (New Brunswick), Dorchester (New Brunswick), Springhill (Nova Scotia), Truro (Nova Scotia)",
   "language": "Various language requirements and/or profiles",
   "salary": "💲▻ From $22.32 to $28.39 per hour, in addition to annual allowances such as a $2,140 Correctional Service Specific Duty Allowance (CSSDA) and an Inmate Training Differential."
+ },
+ "2438402": {
+  "title": "Occupational Therapist - Inventory",
+  "closing": "2026-12-08",
+  "org": "Correctional Service Canada     - Health Services",
+  "location": "Renous (New Brunswick), Dorchester (New Brunswick), Springhill (Nova Scotia)",
+  "language": "Various language requirements and/or profiles",
+  "salary": "$100,973 to $120,292 (Plus applicable allowances, including a Correctional Service Specific Duty Allowance of $2,140 per year and a commuting allowance may apply. The allowances are subject to change, modification or revocation, with notice.)"
  },
  "2262602": {
   "title": "Facility Cleaner/Janitor (Visitor Facilities Attendant)",
@@ -2223,14 +2103,6 @@
   "language": "English essential",
   "salary": "$22.33 to $24.30 per hour (Salary under review)"
  },
- "2372631": {
-  "title": "Civil Aviation Safety Inspector, Flight Operations Inventory - Anticipatory",
-  "closing": "2026-12-16",
-  "org": "Transport Canada     - Civil Aviation",
-  "location": "Prince George (British Columbia), Kelowna (British Columbia), Victoria (British Columbia), Abbotsford (British Columbia), Surrey (British Columbia), Vancouver (British Columbia)",
-  "language": "English essential",
-  "salary": "$126,320 to $148,160 ((Aviation))"
- },
  "2263437": {
   "title": "Teacher (Ongoing Inventory)",
   "closing": "2026-12-16",
@@ -2271,6 +2143,14 @@
   "language": "English essential",
   "salary": "$37.64 to $40.92 per hour"
  },
+ "2425111": {
+  "title": "Nurse Practitioner",
+  "closing": "2026-12-21",
+  "org": "Correctional Service Canada",
+  "location": "Edmonton (Alberta), Grande Cache (Alberta), Innisfail (Alberta), Maskwacis (Alberta), Drumheller (Alberta), Saskatoon (Saskatchewan)",
+  "language": "English essential",
+  "salary": "$120,156 to $136,540"
+ },
  "2388380": {
   "title": "Co-op Students - Various Positions",
   "closing": "2026-12-29",
@@ -2294,6 +2174,22 @@
   "location": "Ottawa (Ontario)",
   "language": "English or French essential",
   "salary": "$38,751 to $64,902"
+ },
+ "2469661": {
+  "title": "Administrative Assistant",
+  "closing": "2026-12-31",
+  "org": "Canadian Security Intelligence Service",
+  "location": "Various Locations",
+  "language": "Various language requirements and/or profiles",
+  "salary": "$52,392 to $63,716"
+ },
+ "2469660": {
+  "title": "Administrative Officer, Regional Director General",
+  "closing": "2026-12-31",
+  "org": "Canadian Security Intelligence Service",
+  "location": "Various Locations",
+  "language": "English essential",
+  "salary": "$68,552 to $83,389"
  },
  "2425700": {
   "title": "Air Cushion Vehicle (ACV) Engineer",
@@ -2526,6 +2422,14 @@
   "location": "Various Locations",
   "language": "English essential",
   "salary": "$53,898 to $67,757"
+ },
+ "2469255": {
+  "title": "Tax Auditors & Business Equity Valuators – CRA Atlantic Region (Amended)",
+  "closing": "2027-01-13",
+  "org": "Canada Revenue Agency",
+  "location": "Various Locations",
+  "language": "English or French essential",
+  "salary": "$99,864 to $122,817"
  },
  "2443752": {
   "title": "Chief, Flight Test",
@@ -3167,6 +3071,30 @@
   "language": "Various language requirements and/or profiles",
   "salary": "$128,846 to $151,123"
  },
+ "2467246": {
+  "title": "Anticipatory - Firearms Agent - Inventory",
+  "closing": "2027-10-05",
+  "org": "Royal Canadian Mounted Police     - Canadian Firearms Program - Firearms Regulatory Services",
+  "location": "Prince George (British Columbia), Kamloops (British Columbia), Summerland (British Columbia), Victoria (British Columbia), Surrey (British Columbia)",
+  "language": "English essential",
+  "salary": "$61,786 to $69,106"
+ },
+ "2465919": {
+  "title": "Inventory - Junior Emergency Response Advisor (Developmental)",
+  "closing": "2027-10-06",
+  "org": "Transport Canada     - Multimodal Security and Emergency Management",
+  "location": "Ottawa (Ontario)",
+  "language": "Bilingual - imperative",
+  "salary": "$74,292 to $101,162"
+ },
+ "2467276": {
+  "title": "Non-Insured Health Benefits Analyst - Casual Inventory",
+  "closing": "2027-10-07",
+  "org": "Indigenous Services Canada     - Regional Delivery Sector, Ontario Region",
+  "location": "Toronto (Ontario), Ottawa (Ontario), Sioux Lookout (Ontario), Thunder Bay (Ontario)",
+  "language": "English essential",
+  "salary": "$62,533 to $67,699"
+ },
  "2365393": {
   "title": "Join the Military Spouse Employment Inventory!",
   "closing": "2027-10-09",
@@ -3278,6 +3206,14 @@
   "location": "Saint-Jean-sur-Richelieu (Québec)",
   "language": "Bilingual - imperative",
   "salary": "$63,936 to $165,100 (The level of the position: Assistant Professor (UT02), Associate Professor (UT03) and Professor (UT04) is determined by the qualifications/accomplishments of the successful candidate as determined by a committee.)"
+ },
+ "2468402": {
+  "title": "Medical Adjudicator",
+  "closing": "2028-10-06",
+  "org": "Employment and Social Development Canada     - Western Canada and Territories Region / Canada Pension Plan - Disability",
+  "location": "Various locations in the Western Canada and Territories (W-T) Region. The W-T Region includes:",
+  "language": "Various language requirements and/or profiles",
+  "salary": "$94,258 to $106,643"
  },
  "2233988": {
   "title": "Postdoctoral Research Program of the Government of Canada",

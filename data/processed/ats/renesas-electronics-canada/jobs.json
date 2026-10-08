@@ -1,6 +1,31 @@
 {
   "ats": "smartrecruiters",
   "token": "RenesasElectronics",
-  "count": 0,
-  "jobs": []
+  "count": 1,
+  "jobs": [
+    {
+      "title": "Engineer (Physical AI)",
+      "location": "Ottawa",
+      "url": "https://jobs.smartrecruiters.com/RenesasElectronics/744000153612249",
+      "department": "",
+      "posted": "2026-10-05",
+      "valid_through": "",
+      "address": "",
+      "salary": "$65,500 - $82,000",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 73750,
+      "salaryText": "$66K–$82K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    }
+  ]
 }

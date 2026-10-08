@@ -5,7 +5,7 @@
   "url": "https://www.ontario.ca/page/ontario-workforce-priority-stream",
   "pageUrl": "https://www.ontario.ca/page/oinp-employer-job-offer-streams-employer-guide",
   "guideEffective": "",
-  "fetched": "2026-10-02",
+  "fetched": "2026-10-08",
   "requirements": [
     {
       "stream": "Ontario Workforce Priority stream",
@@ -386,6 +386,44 @@
       "section": "Stream closed",
       "url": "https://www.ontario.ca/page/oinp-employer-job-offer-demand-skills-stream",
       "factor": "streamClosed"
+    },
+    {
+      "stream": "Ontario Workforce Priority stream — self-employed physicians",
+      "subject": "applicant",
+      "op": "rule",
+      "value": null,
+      "valueText": "you hold a certificate in one of the following classes and are a member in good standing with the College of Physicians and Surgeons of Ontario",
+      "unit": "",
+      "appliesTeer": "",
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "appliesCondition": "",
+      "familySize": null,
+      "basis": "credential=cpso",
+      "label": "College of Physicians and Surgeons of Ontario (CPSO) certificate of registration (independent practice, academic practice or provisional), member in good standing",
+      "section": "Steps to apply as a self-employed physician",
+      "url": "https://www.ontario.ca/page/ontario-workforce-priority-stream",
+      "factor": "licensing"
+    },
+    {
+      "stream": "Ontario Workforce Priority stream — self-employed physicians",
+      "subject": "applicant",
+      "op": "rule",
+      "value": null,
+      "valueText": "meaning you have an Ontario Health Insurance Plan (OHIP) billing number",
+      "unit": "",
+      "appliesTeer": "",
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "appliesCondition": "",
+      "familySize": null,
+      "basis": "credential=ohip",
+      "label": "Ontario Health Insurance Plan (OHIP) billing number",
+      "section": "Steps to apply as a self-employed physician",
+      "url": "https://www.ontario.ca/page/ontario-workforce-priority-stream",
+      "factor": "licensing"
     }
   ]
 }

@@ -5,7 +5,7 @@
   "url": "https://www.gov.nl.ca/jgrd/files/IPGSAnnualReport2024-2025.pdf",
   "note": "NL 提名人数 = 省移民厅(IPGS)年报 Report on Performance 一节的原句:官方数的是人(individuals / newcomers,应含随行家属),不是提名证书数 —— 与别省按申请 / 证书计的已发提名不同口径,也不能与配额相比,所以另起清单 nominatedIndividuals、不进 nominationsIssued。年报按财年出,数字是自然年(原句所在段写明「In the 2024 calendar year」「In 2023」);AIP 背书人数同句另列,不并入。当年数要等下一份年报。",
   "asOf": "",
-  "fetched": "2026-10-02",
+  "fetched": "2026-10-08",
   "processing": [],
   "allocation": [],
   "nominationsIssued": [],
@@ -17,7 +17,7 @@
       "unit": "people",
       "section": "IPGS Annual Report 2024-25: Report on Performance",
       "url": "https://www.gov.nl.ca/jgrd/files/IPGSAnnualReport2024-2025.pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2023,
@@ -26,7 +26,7 @@
       "unit": "people",
       "section": "IPGS Annual Report 2023-24: Report on Performance",
       "url": "https://www.assembly.nl.ca/business/electronicdocuments/IPGSAnnualReport2023-2024.pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     }
   ]
 }

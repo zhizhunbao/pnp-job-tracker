@@ -5,7 +5,7 @@
   "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
   "note": "BC 已发提名数 = 官方年度 Statistical Report PDF 里「Total BC PNP Nominations」表的 Total 行(最新一份报告盖最近四年);报告年中出上一年(2025 版 2026-08-26 发),当年数缺 = 未公布。PDF 原件不进 crawl 层(put_cached_page 只收文本),报告 URL 逐年稳定可复取。2026-09-29 起同一批年报另抽四组 SI 逐年数,每份年报只取它自己那一年:siDecisions 审理决定数(2022 版起)、siItasIssued 全年发出邀请与 siItaApplications 当年邀请转成申请(2020 版起)、siApplicationsReceived 收件数(2021 版止)。收件数停在 2021:2022 年报原句「This year’s report also replaces statistics on applications received with figures for decisions (the number of files processed), as they are a more accurate reflection of program’s operational activities during 2022.」(https://www.welcomebc.ca/immigrate-to-b-c/2022-bc-pnp-statistical-report),此后各年不出收件行、不编数。",
   "asOf": "",
-  "fetched": "2026-10-02",
+  "fetched": "2026-10-08",
   "processing": [],
   "allocation": [],
   "nominationsIssued": [
@@ -16,7 +16,7 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2025: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2024,
@@ -25,7 +25,7 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2025: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2023,
@@ -34,7 +34,7 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2025: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2022,
@@ -43,7 +43,7 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2025: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2021,
@@ -52,7 +52,7 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2024: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2024-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2020,
@@ -61,7 +61,7 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2023: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2023-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2019,
@@ -70,7 +70,7 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2022: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/2022-bc-pnp-statistical-report",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2018,
@@ -79,7 +79,7 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2021: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2021-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2017,
@@ -88,7 +88,7 @@
       "unit": "nominations",
       "section": "BC PNP Statistical Report 2020: Total BC PNP Nominations",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2020-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     }
   ],
   "siDecisions": [
@@ -99,7 +99,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2025: Skills Immigration Decisions",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2024,
@@ -108,7 +108,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2024: Skills Immigration Decisions",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2024-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2023,
@@ -117,7 +117,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2023: Skills Immigration Decisions",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2023-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2022,
@@ -126,7 +126,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2022: Skills Immigration Decisions",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/2022-bc-pnp-statistical-report",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     }
   ],
   "siItasIssued": [
@@ -137,7 +137,7 @@
       "unit": "invitations",
       "section": "BC PNP Statistical Report 2025: The Registration Pool and Invitations to Apply (ITAs)",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2024,
@@ -146,7 +146,7 @@
       "unit": "invitations",
       "section": "BC PNP Statistical Report 2024: The Registration Pool and Invitations to Apply (ITAs)",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2024-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2023,
@@ -155,7 +155,7 @@
       "unit": "invitations",
       "section": "BC PNP Statistical Report 2023: The Registration Pool and Invitations to Apply (ITAs)",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2023-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2022,
@@ -164,7 +164,7 @@
       "unit": "invitations",
       "section": "BC PNP Statistical Report 2022: The Registration Pool and Invitations to Apply (ITAs)",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/2022-bc-pnp-statistical-report",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2021,
@@ -173,7 +173,7 @@
       "unit": "invitations",
       "section": "BC PNP Statistical Report 2021: The Registration Pool and Invitations to Apply (ITAs)",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2021-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2020,
@@ -182,7 +182,7 @@
       "unit": "invitations",
       "section": "BC PNP Statistical Report 2020: The Registration Pool and Invitations to Apply (ITAs)",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2020-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     }
   ],
   "siItaApplications": [
@@ -193,7 +193,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2025: The Registration Pool and Invitations to Apply (ITAs)",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2024,
@@ -202,7 +202,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2024: The Registration Pool and Invitations to Apply (ITAs)",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2024-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2023,
@@ -211,7 +211,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2023: The Registration Pool and Invitations to Apply (ITAs)",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2023-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2022,
@@ -220,7 +220,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2022: The Registration Pool and Invitations to Apply (ITAs)",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/2022-bc-pnp-statistical-report",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2021,
@@ -229,7 +229,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2021: The Registration Pool and Invitations to Apply (ITAs)",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2021-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2020,
@@ -238,7 +238,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2020: The Registration Pool and Invitations to Apply (ITAs)",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2020-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     }
   ],
   "siApplicationsReceived": [
@@ -249,7 +249,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2021: Application Intake",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2021-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2020,
@@ -258,7 +258,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2020: Application Intake",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2020-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2019,
@@ -267,7 +267,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2019: Application Intake",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2019-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2018,
@@ -276,7 +276,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2018: Application Intake",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2018-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2017,
@@ -285,7 +285,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2017: Application Intake",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2017-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2016,
@@ -294,7 +294,7 @@
       "unit": "applications",
       "section": "BC PNP Statistical Report 2016: Application Intake",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2016-pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     }
   ]
 }

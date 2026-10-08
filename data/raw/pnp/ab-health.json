@@ -4,7 +4,7 @@
   "province": "AB",
   "type": "indemand",
   "url": "https://www.alberta.ca/dedicated-health-care-pathway",
-  "fetched": "2026-10-02",
+  "fetched": "2026-10-08",
   "note": "官网列 9 类受监管医护职业、不给职业码;本表按 NOC 2021 对码,须持阿省对应监管机构的执业许可。",
   "occupations": [
     {

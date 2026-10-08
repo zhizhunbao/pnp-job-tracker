@@ -7,7 +7,7 @@
   "url": "https://www.ontario.ca/page/ontario-workforce-priority-stream",
   "pageUrl": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp",
   "guideEffective": "",
-  "fetched": "2026-10-02",
+  "fetched": "2026-10-08",
   "groupMax": {},
   "factors": {
     "teerCat": {
@@ -118,7 +118,11 @@
       "group": "employment",
       "rows": [
         {
-          "label": "$70k or more earnings in a year",
+          "label": "$ 80k or more earnings in a year",
+          "points": 10
+        },
+        {
+          "label": "$70k to $79,999",
           "points": 8
         },
         {
@@ -135,7 +139,7 @@
         }
       ],
       "bonus": [],
-      "max": 8
+      "max": 10
     },
     "status": {
       "group": "employment",

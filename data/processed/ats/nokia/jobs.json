@@ -1,7 +1,7 @@
 {
   "ats": "oraclecloud",
   "token": "",
-  "count": 23,
+  "count": 22,
   "jobs": [
     {
       "title": "Early Careers Talent Acquisition Student",
@@ -14,33 +14,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Staff Optical Firmware Integration Engineer",
-      "location": "Ottawa, Ontario",
-      "url": "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/40855",
-      "department": "Integration, Verification & Testing",
-      "posted": "2026-09-28",
-      "valid_through": "",
-      "address": "600 March Road, Ottawa, K2K 2E6",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Sr Optical Firmware Integration Engineer",
-      "location": "Ottawa, Ontario",
-      "url": "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/40125",
-      "department": "Integration, Verification & Testing",
-      "posted": "2026-09-23",
-      "valid_through": "",
-      "address": "600 March Road, Ottawa, K2K 2E6",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Staff Optical Firmware Integration Engineer",
@@ -53,7 +36,38 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    },
+    {
+      "title": "Staff Optical Firmware Integration Engineer",
+      "location": "Ottawa, Ontario",
+      "url": "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/40855",
+      "department": "Integration, Verification & Testing",
+      "posted": "2026-09-28",
+      "valid_through": "",
+      "address": "600 March Road, Ottawa, K2K 2E6",
+      "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Customer Support Engineer",
@@ -66,7 +80,38 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    },
+    {
+      "title": "Sr Optical Firmware Integration Engineer",
+      "location": "Ottawa, Ontario",
+      "url": "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/40125",
+      "department": "Integration, Verification & Testing",
+      "posted": "2026-09-23",
+      "valid_through": "",
+      "address": "600 March Road, Ottawa, K2K 2E6",
+      "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Optical Firmware System Integration Engineer",
@@ -79,7 +124,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Firmware Integration and Test Engineer",
@@ -92,7 +146,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Staff DSP ASIC Design Engineer",
@@ -105,7 +168,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "IT Network Software/AI Development - Co-op/Intern",
@@ -118,7 +190,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Automation Engineer Co-op/Intern",
@@ -131,7 +212,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Automation Engineer Co-op/Intern",
@@ -144,20 +234,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Learning Technical Editor Co-op/Intern",
-      "location": "Ottawa, Ontario",
-      "url": "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/39271",
-      "department": "Trainee",
-      "posted": "2026-09-21",
-      "valid_through": "",
-      "address": "600 March Road, Ottawa, K2K 2T6",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Operations Analytics Co-op/Intern",
@@ -170,7 +256,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Optical Test Coop/Intern",
@@ -183,7 +278,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Incubation Developer Student",
@@ -196,7 +300,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "DSP Firmware Engineering Co-op/Intern",
@@ -209,7 +322,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "IP Routing App Engineer Co-op/Intern",
@@ -222,7 +344,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Optical Test Automation Co-op/Intern",
@@ -235,7 +366,38 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    },
+    {
+      "title": "Learning Technical Editor Co-op/Intern",
+      "location": "Ottawa, Ontario",
+      "url": "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/39271",
+      "department": "Trainee",
+      "posted": "2026-09-21",
+      "valid_through": "",
+      "address": "600 March Road, Ottawa, K2K 2T6",
+      "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Customer Applications Eng Co-op/Intern",
@@ -248,7 +410,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Customer Technical Support Co-op/Intern",
@@ -261,7 +432,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Data Science Co-op/Intern",
@@ -274,20 +454,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Optical Network Mgmt Support Intern",
-      "location": "Ottawa, Ontario",
-      "url": "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/39314",
-      "department": "Trainee",
-      "posted": "2026-09-11",
-      "valid_through": "",
-      "address": "600 March Road, Ottawa, K2K 2E6",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Hardware Developer Eng Co-op/Intern",
@@ -300,7 +476,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

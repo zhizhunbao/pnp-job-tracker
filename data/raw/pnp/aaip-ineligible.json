@@ -4,7 +4,7 @@
   "province": "AB",
   "type": "ineligible",
   "url": "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility",
-  "fetched": "2026-10-02",
+  "fetched": "2026-10-08",
   "note": "除本表外 TEER0-5 都符合;原带 * 的码(行上 partial)同码里只 Occupation 栏写的那一小类不合格,看得出这岗不属那一小类才放行,看不出照不符合。",
   "occupations": [
     {

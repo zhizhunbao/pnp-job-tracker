@@ -1,7 +1,7 @@
 {
   "ats": "myworkdayjobs",
   "token": "",
-  "count": 2,
+  "count": 1,
   "jobs": [
     {
       "title": "Finance Business Partner (Hybrid)",
@@ -14,20 +14,18 @@
       "salary": "$84,000.00 - $99,000.00",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Senior Mechanical Designer",
-      "location": "Ottawa",
-      "url": "https://mitel.wd3.myworkdayjobs.com/mitelcareers/job/Ottawa/Senior-Mechanical-Designer_R012840",
-      "department": "",
-      "posted": "2026-08-04",
-      "valid_through": "",
-      "address": "",
-      "salary": "$80",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 91500,
+      "salaryText": "$84K–$99K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

@@ -14,7 +14,18 @@
       "salary": "$132,500 - $182,500 per year",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 157500,
+      "salaryText": "$132K–$182K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Intern, Software Development - Hybrid in Ottawa",
@@ -27,7 +38,18 @@
       "salary": "$23 - $28 per hour",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 53040,
+      "salaryText": "$23–$28/hr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": " Intern – Software Development  - 8 months - Hybrid Ottawa",
@@ -40,7 +62,18 @@
       "salary": "$23.00 - $28.00 per hour",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 53040,
+      "salaryText": "$23–$28/hr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

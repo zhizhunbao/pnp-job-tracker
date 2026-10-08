@@ -5,7 +5,7 @@
   "url": "https://cdn-contenu.quebec.ca/cdn-contenu/adm/min/immigration/publications-adm/plan-immigration/PL_immigration_2026_MIFI.pdf",
   "note": "魁省年度移民计划表 3(甄选数,即发出的魁省甄选证书 CSQ)与表 4(入境数,即成为永久居民的人数)的「技术工人」行。官方口径:含 PEQ、PRTQ 与永久移民试点项目,PSTQ 单独的数没有公布。计划数是区间(最少 / 最多),预测数是当年未完时的估计。",
   "asOf": "",
-  "fetched": "2026-10-02",
+  "fetched": "2026-10-08",
   "planYear": 2026,
   "selections": [
     {
@@ -17,7 +17,7 @@
       "label": "Tableau 3 - Le nombre de personnes résidentes permanentes sélectionnées par le Québec, Travailleurs qualifiés, 2023 (actual)",
       "section": "Tableau 3 - Le nombre de personnes résidentes permanentes sélectionnées par le Québec",
       "url": "https://cdn-contenu.quebec.ca/cdn-contenu/adm/min/immigration/publications-adm/plan-immigration/PL_immigration_2026_MIFI.pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2024,
@@ -28,7 +28,7 @@
       "label": "Tableau 3 - Le nombre de personnes résidentes permanentes sélectionnées par le Québec, Travailleurs qualifiés, 2024 (actual)",
       "section": "Tableau 3 - Le nombre de personnes résidentes permanentes sélectionnées par le Québec",
       "url": "https://cdn-contenu.quebec.ca/cdn-contenu/adm/min/immigration/publications-adm/plan-immigration/PL_immigration_2026_MIFI.pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2025,
@@ -39,7 +39,7 @@
       "label": "Tableau 3 - Le nombre de personnes résidentes permanentes sélectionnées par le Québec, Travailleurs qualifiés, 2025 (forecast)",
       "section": "Tableau 3 - Le nombre de personnes résidentes permanentes sélectionnées par le Québec",
       "url": "https://cdn-contenu.quebec.ca/cdn-contenu/adm/min/immigration/publications-adm/plan-immigration/PL_immigration_2026_MIFI.pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2026,
@@ -50,7 +50,7 @@
       "label": "Tableau 3 - Le nombre de personnes résidentes permanentes sélectionnées par le Québec, Travailleurs qualifiés, 2026 (plan)",
       "section": "Tableau 3 - Le nombre de personnes résidentes permanentes sélectionnées par le Québec",
       "url": "https://cdn-contenu.quebec.ca/cdn-contenu/adm/min/immigration/publications-adm/plan-immigration/PL_immigration_2026_MIFI.pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     }
   ],
   "admissions": [
@@ -63,7 +63,7 @@
       "label": "Tableau 4 - Le nombre personnes immigrantes admises, Travailleurs qualifiés, 2023 (actual)",
       "section": "Tableau 4 - Le nombre personnes immigrantes admises",
       "url": "https://cdn-contenu.quebec.ca/cdn-contenu/adm/min/immigration/publications-adm/plan-immigration/PL_immigration_2026_MIFI.pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2024,
@@ -74,7 +74,7 @@
       "label": "Tableau 4 - Le nombre personnes immigrantes admises, Travailleurs qualifiés, 2024 (actual)",
       "section": "Tableau 4 - Le nombre personnes immigrantes admises",
       "url": "https://cdn-contenu.quebec.ca/cdn-contenu/adm/min/immigration/publications-adm/plan-immigration/PL_immigration_2026_MIFI.pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2025,
@@ -85,7 +85,7 @@
       "label": "Tableau 4 - Le nombre personnes immigrantes admises, Travailleurs qualifiés, 2025 (plan)",
       "section": "Tableau 4 - Le nombre personnes immigrantes admises",
       "url": "https://cdn-contenu.quebec.ca/cdn-contenu/adm/min/immigration/publications-adm/plan-immigration/PL_immigration_2026_MIFI.pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2025,
@@ -96,7 +96,7 @@
       "label": "Tableau 4 - Le nombre personnes immigrantes admises, Travailleurs qualifiés, 2025 (forecast)",
       "section": "Tableau 4 - Le nombre personnes immigrantes admises",
       "url": "https://cdn-contenu.quebec.ca/cdn-contenu/adm/min/immigration/publications-adm/plan-immigration/PL_immigration_2026_MIFI.pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     },
     {
       "year": 2026,
@@ -107,7 +107,7 @@
       "label": "Tableau 4 - Le nombre personnes immigrantes admises, Travailleurs qualifiés, 2026 (plan)",
       "section": "Tableau 4 - Le nombre personnes immigrantes admises",
       "url": "https://cdn-contenu.quebec.ca/cdn-contenu/adm/min/immigration/publications-adm/plan-immigration/PL_immigration_2026_MIFI.pdf",
-      "fetched": "2026-10-02"
+      "fetched": "2026-10-08"
     }
   ]
 }

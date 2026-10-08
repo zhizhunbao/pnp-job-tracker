@@ -287,7 +287,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-29T19:08:54.373193Z"
+    "at": "2026-10-06T19:10:18.855096Z"
   },
   "luxottica": {
     "name": "Luxottica",
@@ -327,7 +327,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-29T19:20:40.716306Z"
+    "at": "2026-10-06T19:21:41.998847Z"
   },
   "services-de-gestion-quantum-lt-e": {
     "name": "Services de Gestion Quantum Ltée",
@@ -367,7 +367,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-29T19:25:12.704916Z"
+    "at": "2026-10-06T19:25:58.546940Z"
   },
   "kpmg-canada": {
     "name": "KPMG Canada",
@@ -527,7 +527,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-29T19:44:58.037838Z"
+    "at": "2026-10-06T19:45:15.734992Z"
   },
   "cuisine-id-ale": {
     "name": "Cuisine Idéale",
@@ -780,14 +780,14 @@
     "at": "2026-09-23T00:18:41.809123Z"
   },
   "a-j-hanna-construction-ltd": {
-    "name": "A&J Hanna Construction Ltd.",
-    "status": "miss",
-    "hq_address": "",
-    "hq_city": "",
-    "hq_province": "",
-    "hq_quote": "",
-    "hq_source": "",
-    "at": "2026-09-23T00:19:18.281702Z"
+    "name": "A & J Hanna Construction Ltd.",
+    "status": "ok",
+    "hq_address": "49 Blizzard Street",
+    "hq_city": "Fredericton",
+    "hq_province": "NB",
+    "hq_quote": "49 Blizzard Street, Fredericton, NB E3B 8K3",
+    "hq_source": "https://www.nbhomebuilders.ca/listing/a-j-hanna-construction-ltd/",
+    "at": "2026-10-07T02:46:56.952021Z"
   },
   "the-pioneer-co-operative-association-limited": {
     "name": "The Pioneer Co-Operative Association Limited",
@@ -847,7 +847,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T00:35:15.492789Z"
+    "at": "2026-10-07T00:36:33.153643Z"
   },
   "oti-food-products-ltd": {
     "name": "OTI Food Products LTD",
@@ -961,13 +961,13 @@
   },
   "cooke-aquaculture-inc": {
     "name": "Cooke Aquaculture Inc.",
-    "status": "miss",
-    "hq_address": "",
-    "hq_city": "",
-    "hq_province": "",
-    "hq_quote": "",
-    "hq_source": "",
-    "at": "2026-09-30T01:04:37.290712Z"
+    "status": "ok",
+    "hq_address": "40 Wellington Row",
+    "hq_city": "Saint John",
+    "hq_province": "NB",
+    "hq_quote": "Headquarters Address 40 Wellington Row Saint John New Brunswick E2L 3H3 Canada",
+    "hq_source": "https://opencorpdata.com/lei/549300KPTPKKFVKB0065",
+    "at": "2026-10-07T01:05:56.508643Z"
   },
   "ontario-teachers-pension-plan-board": {
     "name": "Ontario Teachers' Pension Plan Board",
@@ -1017,7 +1017,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T01:18:16.017365Z"
+    "at": "2026-10-07T01:20:11.286884Z"
   },
   "kinark-child-and-family-services": {
     "name": "Kinark Child and Family Services",
@@ -1077,7 +1077,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T01:25:26.388705Z"
+    "at": "2026-10-07T01:26:55.598081Z"
   },
   "nitek-laser-inc": {
     "name": "NITEK LASER INC.",
@@ -1167,7 +1167,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T01:37:32.402807Z"
+    "at": "2026-10-07T01:37:49.304691Z"
   },
   "the-cambie-bar-grill-ltd": {
     "name": "The Cambie Bar & Grill LTD",
@@ -1341,13 +1341,13 @@
   },
   "huttopia-sutton": {
     "name": "Huttopia Sutton",
-    "status": "miss",
-    "hq_address": "",
-    "hq_city": "",
-    "hq_province": "",
-    "hq_quote": "",
-    "hq_source": "",
-    "at": "2026-09-30T02:18:00.172660Z"
+    "status": "ok",
+    "hq_address": "297 Rue Maple",
+    "hq_city": "Sutton",
+    "hq_province": "QC",
+    "hq_quote": "Address 297 Rue Maple Sutton, Québec J0E2K0",
+    "hq_source": "https://terrespubliquesquebec.com/campings/quebec/cantons-de-lest/camping-huttopia-sutton-sutton?lang=en",
+    "at": "2026-10-07T02:19:03.986721Z"
   },
   "brightpath-kids-canada": {
     "name": "BrightPath Kids Canada",
@@ -1417,7 +1417,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-23T02:38:28.838974Z"
+    "at": "2026-10-07T01:33:47.142436Z"
   },
   "montesanto-bakery": {
     "name": "Montesanto Bakery",
@@ -1497,7 +1497,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T02:50:10.051310Z"
+    "at": "2026-10-07T02:51:40.701876Z"
   },
   "qhub": {
     "name": "QHUB",
@@ -1697,7 +1697,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T03:21:47.752085Z"
+    "at": "2026-10-07T03:23:27.990434Z"
   },
   "reliance-comfort-limited-partnership-o-a-reliance-home-comfo": {
     "name": "Reliance Comfort Limited Partnership o/a Reliance Home Comfort",
@@ -1717,7 +1717,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T03:28:01.663628Z"
+    "at": "2026-10-07T03:29:15.064542Z"
   },
   "attitudeliving": {
     "name": "ATTITUDEliving",
@@ -1807,7 +1807,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T03:39:34.758973Z"
+    "at": "2026-10-07T03:40:37.436801Z"
   },
   "dcd-landscaping-inc": {
     "name": "DCD Landscaping Inc.",
@@ -2017,7 +2017,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T04:11:47.095094Z"
+    "at": "2026-10-07T04:12:21.642848Z"
   },
   "greco-pizza": {
     "name": "GRECO PIZZA",
@@ -2137,7 +2137,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T04:29:18.932518Z"
+    "at": "2026-10-07T04:31:04.642125Z"
   },
   "dairy-queen-grill-chill": {
     "name": "Dairy Queen Grill & Chill",
@@ -2247,7 +2247,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T04:46:28.049983Z"
+    "at": "2026-10-07T04:48:48.886007Z"
   },
   "welldone-mechanical-services": {
     "name": "Welldone Mechanical Services",
@@ -2267,7 +2267,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T04:52:32.009356Z"
+    "at": "2026-10-07T04:53:19.077348Z"
   },
   "well-health-diagnostic-centres": {
     "name": "WELL Health Diagnostic Centres",
@@ -2277,7 +2277,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T04:52:45.634910Z"
+    "at": "2026-10-07T04:53:55.576161Z"
   },
   "accenture-infrastructure-capital-projects-inc": {
     "name": "Accenture Infrastructure & Capital Projects Inc.",
@@ -2467,7 +2467,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T05:22:00.873278Z"
+    "at": "2026-10-07T05:22:24.407099Z"
   },
   "top-plus-employment-inc": {
     "name": "TOP PLUS EMPLOYMENT INC",
@@ -2547,7 +2547,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T05:32:16.543857Z"
+    "at": "2026-10-07T05:34:31.318331Z"
   },
   "united-1-imports": {
     "name": "United 1 Imports",
@@ -2727,7 +2727,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T05:57:09.047084Z"
+    "at": "2026-10-07T05:58:25.110547Z"
   },
   "canadian-forces-morale-and-welfare-services": {
     "name": "Canadian Forces Morale and Welfare Services",
@@ -2757,7 +2757,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T06:00:15.662814Z"
+    "at": "2026-10-07T06:01:52.457179Z"
   },
   "imp-aerospace-and-defence": {
     "name": "IMP Aerospace and Defence",
@@ -2797,7 +2797,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T06:02:42.205844Z"
+    "at": "2026-10-07T06:05:01.449497Z"
   },
   "paramed-home-health-care": {
     "name": "ParaMed Home Health Care",
@@ -2827,7 +2827,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T06:06:42.132051Z"
+    "at": "2026-10-07T06:09:10.917058Z"
   },
   "topaz-transport-inc": {
     "name": "Topaz Transport inc",
@@ -2867,7 +2867,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T06:09:49.048108Z"
+    "at": "2026-10-07T06:12:38.663556Z"
   },
   "waterloo-regional-health-network": {
     "name": "Waterloo Regional Health Network",
@@ -3001,13 +3001,13 @@
   },
   "sodexo-canada-ltd": {
     "name": "Sodexo Canada Ltd",
-    "status": "miss",
-    "hq_address": "",
-    "hq_city": "",
-    "hq_province": "",
-    "hq_quote": "",
-    "hq_source": "",
-    "at": "2026-09-30T06:21:50.834973Z"
+    "status": "ok",
+    "hq_address": "100 King St W, #68th Floor",
+    "hq_city": "Toronto",
+    "hq_province": "ON",
+    "hq_quote": "Sodexo Canada Ltd · 100 King St W, #68th Floor, Toronto, ON M5X 2A1",
+    "hq_source": "https://opengovca.com/toronto-business/B71-5370686",
+    "at": "2026-10-07T06:23:00.613754Z"
   },
   "almag-aluminum": {
     "name": "Almag Aluminum",
@@ -3047,7 +3047,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T06:24:43.980897Z"
+    "at": "2026-10-07T06:26:33.984350Z"
   },
   "urban-turf-landscape-solutions": {
     "name": "Urban Turf Landscape Solutions",
@@ -3171,13 +3171,13 @@
   },
   "srs-technologies-inc": {
     "name": "SRS TECHNOLOGIES INC",
-    "status": "miss",
+    "status": "ok",
     "hq_address": "",
-    "hq_city": "",
-    "hq_province": "",
-    "hq_quote": "",
-    "hq_source": "",
-    "at": "2026-09-30T06:39:09.785778Z"
+    "hq_city": "Brampton",
+    "hq_province": "ON",
+    "hq_quote": "SRS TECHNOLOGIES INC B Brampton , Ontario Positive LMIAs 18 Negative LMIAs 1 Approval Rate 94.74% LMIA History July 1, 2021 – July 1, 2025",
+    "hq_source": "https://lmiagrader.com/employer/srs-technologies-inc/",
+    "at": "2026-10-07T06:41:35.316947Z"
   },
   "yo-ai-labs": {
     "name": "YO AI Labs",
@@ -3237,7 +3237,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T06:44:44.946172Z"
+    "at": "2026-10-07T06:44:59.823445Z"
   },
   "osmows-ottawa": {
     "name": "Osmow's Ottawa",
@@ -3247,7 +3247,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T06:45:18.996228Z"
+    "at": "2026-10-07T06:47:05.552480Z"
   },
   "sushisama-ottawa": {
     "name": "SushiSama Ottawa",
@@ -3267,7 +3267,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T06:48:24.375188Z"
+    "at": "2026-10-07T06:49:36.901427Z"
   },
   "courtyard-marriott-kingston": {
     "name": "Courtyard Marriott Kingston",
@@ -3281,13 +3281,13 @@
   },
   "fairfield-by-marriott-inn-suites-bradford": {
     "name": "Fairfield by Marriott Inn & Suites Bradford",
-    "status": "miss",
-    "hq_address": "",
-    "hq_city": "",
+    "status": "ok",
+    "hq_address": "136 Stirling Cres",
+    "hq_city": "Bradford",
     "hq_province": "",
-    "hq_quote": "",
-    "hq_source": "",
-    "at": "2026-09-30T06:51:18.315090Z"
+    "hq_quote": "Fairfield by Marriott Inn & Suites Bradford 136 Stirling Cres, L3Z 4L5 Bradford, Canada",
+    "hq_source": "https://www.booking.com/hotel/ca/fairfield-by-marriott-inn-suites-bradford.html?msockid=0afa28d74e1167fe16833f3c4fda66d5",
+    "at": "2026-10-07T06:52:30.764687Z"
   },
   "sapporo-sushi-ottawa": {
     "name": "Sapporo Sushi Ottawa",
@@ -3337,7 +3337,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-23T06:52:38.537057Z"
+    "at": "2026-10-06T17:48:05.594343Z"
   },
   "montanas": {
     "name": "Montana's",
@@ -3457,7 +3457,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T07:06:37.900382Z"
+    "at": "2026-10-07T07:06:54.038403Z"
   },
   "englobe-corp": {
     "name": "Englobe Corp.",
@@ -3470,14 +3470,14 @@
     "at": "2026-09-23T07:07:26.728140Z"
   },
   "family-pizza": {
-    "name": "Family Pizza",
+    "name": "FAMILY PIZZA",
     "status": "miss",
     "hq_address": "",
     "hq_city": "",
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T07:08:38.932695Z"
+    "at": "2026-10-07T07:08:51.175852Z"
   },
   "houston-pizza": {
     "name": "Houston Pizza",
@@ -3517,7 +3517,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T07:14:36.270023Z"
+    "at": "2026-10-07T07:16:01.060835Z"
   },
   "royal-paan": {
     "name": "Royal Paan",
@@ -3537,7 +3537,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T07:14:50.917638Z"
+    "at": "2026-10-07T07:16:14.600516Z"
   },
   "house-of-bras-etc": {
     "name": "House of Bras...etc",
@@ -3597,7 +3597,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T18:01:35.038225Z"
+    "at": "2026-10-07T18:02:11.246420Z"
   },
   "lighthouse-medical-imaging": {
     "name": "Lighthouse Medical Imaging",
@@ -3607,7 +3607,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-10-01T01:06:24.389668Z"
+    "at": "2026-10-08T01:14:58.825854Z"
   },
   "voyago": {
     "name": "Voyago",
@@ -3927,7 +3927,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-29T03:09:08.539385Z"
+    "at": "2026-10-06T03:10:12.083533Z"
   },
   "h-m-group": {
     "name": "H&M Group",
@@ -3961,23 +3961,23 @@
   },
   "red-swan-pizza": {
     "name": "Red Swan Pizza",
-    "status": "miss",
-    "hq_address": "",
-    "hq_city": "",
-    "hq_province": "",
-    "hq_quote": "",
-    "hq_source": "",
-    "at": "2026-09-29T03:13:32.501695Z"
+    "status": "ok",
+    "hq_address": "200-6860 Century Ave",
+    "hq_city": "Mississauga",
+    "hq_province": "ON",
+    "hq_quote": "200-6860 Century Ave, Mississauga, ON, L5N2V8",
+    "hq_source": "https://www.mapquest.com/ca/ontario/red-swan-pizza-738574294",
+    "at": "2026-10-06T03:15:21.251879Z"
   },
   "groupe-ace": {
     "name": "Groupe ACE",
-    "status": "miss",
-    "hq_address": "",
-    "hq_city": "",
-    "hq_province": "",
-    "hq_quote": "",
-    "hq_source": "",
-    "at": "2026-09-29T04:04:57.265405Z"
+    "status": "ok",
+    "hq_address": "11840 av. Brunet",
+    "hq_city": "Montréal",
+    "hq_province": "QC",
+    "hq_quote": "Home Address / Adresse du domicile 11840 av. Brunet, Montréal, Quebec H1G 5G4",
+    "hq_source": "https://opengovca.com/quebec-business/3371699888",
+    "at": "2026-10-06T04:06:39.460910Z"
   },
   "ameublement-branchaud-inc": {
     "name": "AMEUBLEMENT BRANCHAUD INC.",
@@ -4017,7 +4017,7 @@
     "hq_province": "",
     "hq_quote": "",
     "hq_source": "",
-    "at": "2026-09-30T17:02:48.979760Z"
+    "at": "2026-10-07T17:03:06.462727Z"
   },
   "devrew-merchandising": {
     "name": "Devrew Merchandising",
@@ -5078,5 +5078,335 @@
     "hq_quote": "Hong Fa Restaurant 462 Prince St , Sydney , NS B1P 5L5",
     "hq_source": "https://www.yellowpages.ca/bus/Nova-Scotia/Sydney/Hong-Fa-Restaurant/786536.html",
     "at": "2026-10-03T00:39:46.049266Z"
+  },
+  "mcis-language-solutions": {
+    "name": "MCIS Language Solutions",
+    "status": "ok",
+    "hq_address": "789 Don Mills Road – Suite 1010",
+    "hq_city": "North York",
+    "hq_province": "ON",
+    "hq_quote": "789 Don Mills Road – Suite 1010 North York, ON M3C 1T5 Canada",
+    "hq_source": "https://www.mcislanguages.com/contact-us/",
+    "at": "2026-10-03T18:04:46.151820Z"
+  },
+  "hmg-careers": {
+    "name": "HMG Careers",
+    "status": "miss",
+    "hq_address": "",
+    "hq_city": "",
+    "hq_province": "",
+    "hq_quote": "",
+    "hq_source": "",
+    "at": "2026-10-03T18:04:46.152146Z"
+  },
+  "kurves-brow-bar": {
+    "name": "Kurves Brow Bar",
+    "status": "ok",
+    "hq_address": "2121 Carling Ave",
+    "hq_city": "Ottawa",
+    "hq_province": "ON",
+    "hq_quote": "Kurves Brow Bar - 2121 Carling Ave, Ottawa, ON",
+    "hq_source": "https://www.yellowpages.ca/bus/Ontario/Ottawa/Kurves-Brow-Bar/101352247.html",
+    "at": "2026-10-03T18:39:25.457092Z"
+  },
+  "wellings-of-picton": {
+    "name": "Wellings of Picton",
+    "status": "ok",
+    "hq_address": "15 WELLINGS DR",
+    "hq_city": "PICTON",
+    "hq_province": "ON",
+    "hq_quote": "Address: 15 WELLINGS DR PICTON ON K0K 2T0",
+    "hq_source": "https://www.wellingsofpicton.com/contact-us/",
+    "at": "2026-10-04T02:22:34.662246Z"
+  },
+  "sunshine-communications-inc": {
+    "name": "Sunshine Communications Inc.",
+    "status": "ok",
+    "hq_address": "P.O. Box 3509",
+    "hq_city": "Apollo Beach",
+    "hq_province": "FL",
+    "hq_quote": "Headquarters ​P.O. Box 3509, Apollo Beach, FL 33572",
+    "hq_source": "https://www.sunshinecom.com/office-locations.html",
+    "at": "2026-10-04T02:54:09.912888Z"
+  },
+  "il-gatto-e-la-volpe-ristorante": {
+    "name": "il gatto e la volpe ristorante",
+    "status": "miss",
+    "hq_address": "",
+    "hq_city": "",
+    "hq_province": "",
+    "hq_quote": "",
+    "hq_source": "",
+    "at": "2026-10-04T02:57:32.914788Z"
+  },
+  "arbys-restaurant": {
+    "name": "Arby's Restaurant",
+    "status": "ok",
+    "hq_address": "1155 Perimeter Center West, 12th Fl",
+    "hq_city": "Atlanta",
+    "hq_province": "GA",
+    "hq_quote": "1155 Perimeter Center West, 12th Fl Atlanta, GA 30338",
+    "hq_source": "https://www.corporateoffice.com/Arbys-Restaurant-Group-Inc.html",
+    "at": "2026-10-04T03:10:40.806094Z"
+  },
+  "arthur-foods": {
+    "name": "Arthur Foods",
+    "status": "miss",
+    "hq_address": "",
+    "hq_city": "",
+    "hq_province": "",
+    "hq_quote": "",
+    "hq_source": "",
+    "at": "2026-10-04T12:37:27.879340Z"
+  },
+  "bloom-salon": {
+    "name": "Bloom Salon",
+    "status": "miss",
+    "hq_address": "",
+    "hq_city": "",
+    "hq_province": "",
+    "hq_quote": "",
+    "hq_source": "",
+    "at": "2026-10-04T18:43:29.400196Z"
+  },
+  "groupe-pousse-vert": {
+    "name": "Groupe Pousse-Vert",
+    "status": "ok",
+    "hq_address": "409b Rue Témiscouata",
+    "hq_city": "Rivière-du-Loup",
+    "hq_province": "QC",
+    "hq_quote": "Coordonnées 409b Rue Témiscouata Rivière-du-Loup Québec G5R 6B3",
+    "hq_source": "https://agriconseils.qc.ca/repertoire-des-conseillers/groupe-pousse-vert/",
+    "at": "2026-10-04T21:03:25.864488Z"
+  },
+  "shoppers-drug-mart": {
+    "name": "Shoppers Drug Mart",
+    "status": "ok",
+    "hq_address": "243 Consumers Rd, North York",
+    "hq_city": "Toronto",
+    "hq_province": "ON",
+    "hq_quote": "Shoppers Drug Mart is headquartered in Toronto, 243 Consumers Rd, North York, Canada, and has 1 office location.",
+    "hq_source": "https://craft.co/shoppers-drug-mart/locations",
+    "at": "2026-10-04T21:13:24.258490Z"
+  },
+  "agnico-eagle-mines-limited": {
+    "name": "Agnico Eagle Mines Limited",
+    "status": "ok",
+    "hq_address": "145 King Street East, Suite 400",
+    "hq_city": "Toronto",
+    "hq_province": "ON",
+    "hq_quote": "Agnico Eagle Mines Limited, 145 King Street East, Suite 400, Toronto, ON M5C 2Y7.",
+    "hq_source": "https://postpal.ca/where-to-mail/agnico-eagle-head-office-address",
+    "at": "2026-10-04T21:13:56.852120Z"
+  },
+  "nor-lab-ltd": {
+    "name": "Nor-Lab Ltd",
+    "status": "ok",
+    "hq_address": "8 London St",
+    "hq_city": "Happy Valley-Goose Bay",
+    "hq_province": "NL",
+    "hq_quote": "Nor-Lab Ltd is located at 8 London St in Happy Valley-Goose Bay, Newfoundland and Labrador A0P 1E0.",
+    "hq_source": "https://canada.chamberofcommerce.com/business-directory/newfoundland-labrador/happy-valley-goose-bay/wholesaler/628328-nor-lab-ltd",
+    "at": "2026-10-05T04:01:56.806206Z"
+  },
+  "pronto-pizza": {
+    "name": "Pronto Pizza",
+    "status": "miss",
+    "hq_address": "",
+    "hq_city": "",
+    "hq_province": "",
+    "hq_quote": "",
+    "hq_source": "",
+    "at": "2026-10-05T09:44:23.625949Z"
+  },
+  "park-place-seniors-living": {
+    "name": "Park Place Seniors Living",
+    "status": "ok",
+    "hq_address": "1656 W 75th Ave",
+    "hq_city": "Vancouver",
+    "hq_province": "",
+    "hq_quote": "Park Place Seniors Living is headquartered in Vancouver, 1656 W 75th Ave, Canada, and has 1 office location.",
+    "hq_source": "https://craft.co/park-place-seniors-living/locations",
+    "at": "2026-10-05T15:52:00.101110Z"
+  },
+  "island-home-hardware": {
+    "name": "Island Home Hardware",
+    "status": "ok",
+    "hq_address": "1161 Rte 776",
+    "hq_city": "Grand Manan",
+    "hq_province": "NB",
+    "hq_quote": "Headquarters 1161 Rte 776, Grand Manan, New Brunswick E5G 4E9, ca",
+    "hq_source": "https://prospeo.io/c/island-home-hardware-building-centre",
+    "at": "2026-10-05T18:12:11.424364Z"
+  },
+  "the-captains-boil": {
+    "name": "The Captain's Boil",
+    "status": "ok",
+    "hq_address": "476 Yonge St",
+    "hq_city": "Toronto",
+    "hq_province": "ON",
+    "hq_quote": "Headquarters 476 Yonge St, Toronto, Ontario M5G 1G7, CA",
+    "hq_source": "https://prospeo.io/c/the-captain-s-boil",
+    "at": "2026-10-05T19:20:24.487025Z"
+  },
+  "fast-time-watch-jewellery-repair-inc": {
+    "name": "Fast Time Watch & Jewellery Repair Inc.",
+    "status": "miss",
+    "hq_address": "",
+    "hq_city": "",
+    "hq_province": "",
+    "hq_quote": "",
+    "hq_source": "",
+    "at": "2026-10-06T00:41:14.602955Z"
+  },
+  "mary-browns": {
+    "name": "Mary Browns",
+    "status": "ok",
+    "hq_address": "100 Renfrew Dr",
+    "hq_city": "Markham",
+    "hq_province": "ON",
+    "hq_quote": "Mary Brown's Administration Office - NO RESTAURANT is located at 100 Renfrew Dr in Markham, Ontario L3R 9R6.",
+    "hq_source": "https://canada.chamberofcommerce.com/business-directory/ontario/markham/corporate-office/1385958-mary-brown-s-administration-office-no-restaurant",
+    "at": "2026-10-06T01:08:27.895364Z"
+  },
+  "osmows": {
+    "name": "Osmow's",
+    "status": "ok",
+    "hq_address": "5598A McAdam Rd",
+    "hq_city": "Mississauga",
+    "hq_province": "ON",
+    "hq_quote": "Osmow's Head Office is located at 5598A McAdam Rd in Mississauga, Ontario L4Z 1P1.",
+    "hq_source": "https://canada.chamberofcommerce.com/business-directory/ontario/mississauga/corporate-office/1372974-osmow-s-head-office",
+    "at": "2026-10-06T01:08:42.998074Z"
+  },
+  "wendys-restaurant": {
+    "name": "Wendy's Restaurant",
+    "status": "ok",
+    "hq_address": "181 Bay Street, Suite 2500",
+    "hq_city": "Toronto",
+    "hq_province": "ON",
+    "hq_quote": "The registered office location is at 181 Bay Street, Suite 2500, Toronto, ON M5J 2T7 .",
+    "hq_source": "https://opengovca.com/corporation/2937522",
+    "at": "2026-10-06T01:09:07.005313Z"
+  },
+  "home-sweet-home": {
+    "name": "Home sweet home",
+    "status": "ok",
+    "hq_address": "55 Commerce Valley Dr W",
+    "hq_city": "Thornhill",
+    "hq_province": "ON",
+    "hq_quote": "55 Commerce Valley Dr W Thornhill ON L3T 7V9",
+    "hq_source": "https://home-sweethome.ca/contact/",
+    "at": "2026-10-06T01:09:27.243414Z"
+  },
+  "maxi": {
+    "name": "Maxi",
+    "status": "ok",
+    "hq_address": "688 Rue du Parc",
+    "hq_city": "Saint-Lin - Laurentides",
+    "hq_province": "",
+    "hq_quote": "Maxi is headquartered in Saint-Lin - Laurentides, 688 Rue du Parc, Canada, and has 1 office location.",
+    "hq_source": "https://craft.co/maxi/locations",
+    "at": "2026-10-06T01:09:49.931024Z"
+  },
+  "private-home": {
+    "name": "Private Home",
+    "status": "miss",
+    "hq_address": "",
+    "hq_city": "",
+    "hq_province": "",
+    "hq_quote": "",
+    "hq_source": "",
+    "at": "2026-10-06T01:11:34.257773Z"
+  },
+  "pur-rh-inc": {
+    "name": "PUR RH inc.",
+    "status": "ok",
+    "hq_address": "45 ch. de la Traversée",
+    "hq_city": "Potton",
+    "hq_province": "QC",
+    "hq_quote": "Home Address / Adresse du domicile 45 ch. de la Traversée, Potton, Quebec J0E 1X0",
+    "hq_source": "https://opengovca.com/quebec-business/1180920838",
+    "at": "2026-10-06T01:13:15.107806Z"
+  },
+  "rocky-mountain-equipment": {
+    "name": "Rocky Mountain Equipment",
+    "status": "ok",
+    "hq_address": "3345 8 St SE",
+    "hq_city": "Calgary",
+    "hq_province": "AB",
+    "hq_quote": "Review Business address: 3345 8 St SE , Calgary AB , T2G 3A4",
+    "hq_source": "https://www.profilecanada.com/companydetail.cfm?company=3012654_Rocky_Mountain_Equipment_Corporate_Office_Calgary_AB",
+    "at": "2026-10-06T01:14:40.378378Z"
+  },
+  "stacked-pancake-breakfast-house": {
+    "name": "STACKED PANCAKE & BREAKFAST HOUSE",
+    "status": "miss",
+    "hq_address": "",
+    "hq_city": "",
+    "hq_province": "",
+    "hq_quote": "",
+    "hq_source": "",
+    "at": "2026-10-07T02:45:12.957893Z"
+  },
+  "croisi-res-aml-inc": {
+    "name": "Croisières AML inc.",
+    "status": "miss",
+    "hq_address": "",
+    "hq_city": "",
+    "hq_province": "",
+    "hq_quote": "",
+    "hq_source": "",
+    "at": "2026-10-07T03:49:17.804143Z"
+  },
+  "glk-gold": {
+    "name": "GLK Gold",
+    "status": "ok",
+    "hq_address": "95 Saint-Jean-Baptiste St. South Princeville, QC G6L 5A3 (next to the Caisse populaire)",
+    "hq_city": "Princeville",
+    "hq_province": "QC",
+    "hq_quote": "95 Saint-Jean-Baptiste St. South Princeville, QC G6L 5A3 (next to the Caisse populaire)",
+    "hq_source": "https://www.glkgold.ca/en/contact-us/",
+    "at": "2026-10-07T03:51:06.697191Z"
+  },
+  "black-fin-sushi": {
+    "name": "Black Fin Sushi",
+    "status": "ok",
+    "hq_address": "1199 Bay Ave",
+    "hq_city": "Trail",
+    "hq_province": "BC",
+    "hq_quote": "Black Fin Sushi 1199 Bay Ave , Trail , BC V1R 4A4",
+    "hq_source": "https://www.yellowpages.ca/search/si/1/Black-Fin-Sushi/Trail%2BBC",
+    "at": "2026-10-07T15:56:13.630589Z"
+  },
+  "canadian-tire-store": {
+    "name": "Canadian Tire Store",
+    "status": "miss",
+    "hq_address": "",
+    "hq_city": "",
+    "hq_province": "",
+    "hq_quote": "",
+    "hq_source": "",
+    "at": "2026-10-08T01:48:17.267083Z"
+  },
+  "stewarts-village-mart": {
+    "name": "Stewart's Village Mart",
+    "status": "ok",
+    "hq_address": "274 Route 175",
+    "hq_city": "Pennfield",
+    "hq_province": "NB",
+    "hq_quote": "Stewart's Village Mart is located at 274 Route 175 in Pennfield, New Brunswick E5H 0B4.",
+    "hq_source": "https://canada.chamberofcommerce.com/business-directory/new-brunswick/pennfield/grocery-store/556748-stewart-s-village-mart",
+    "at": "2026-10-08T10:10:32.890862Z"
+  },
+  "willowbrae-academy-timberlea": {
+    "name": "Willowbrae Academy Timberlea",
+    "status": "ok",
+    "hq_address": "1714 St Margaret's Bay Road",
+    "hq_city": "Halifax",
+    "hq_province": "NS",
+    "hq_quote": "Willowbrae Academy Timberlea, 1714 St Margaret's Bay Road, Halifax, NS (2026)",
+    "hq_source": "https://www.findglocal.com/CA/Halifax/373781872775169/Willowbrae-Academy-Timberlea",
+    "at": "2026-10-08T11:27:39.289231Z"
   }
 }

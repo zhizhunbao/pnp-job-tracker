@@ -1,6 +1,6 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-10-02",
+  "fetched": "2026-10-08",
   "provinces": {
     "ON": {
       "label": "OINP",
@@ -2579,8 +2579,8 @@
         }
       ],
       "notice": {
-        "date": "2026-08-04",
-        "note": "portal now open to Ontario Workforce Priority Stream expressions of interest"
+        "date": "2026-10-07",
+        "note": "update to the Canadian work experience earnings history scoring factor for Ontario Workforce Priority Stream expressions of interest"
       }
     }
   }

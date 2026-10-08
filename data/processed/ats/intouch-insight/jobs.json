@@ -4,17 +4,28 @@
   "count": 1,
   "jobs": [
     {
-      "title": "Sales Manager",
+      "title": "Software Developer",
       "location": "Kanata, Ontario",
-      "url": "https://intouchinsight.bamboohr.com/careers/134",
-      "department": "Sales",
-      "posted": "2026-07-31",
+      "url": "https://intouchinsight.bamboohr.com/careers/142",
+      "department": "Engineering",
+      "posted": "2026-10-07",
       "valid_through": "",
       "address": "",
-      "salary": "",
+      "salary": "$90,000 – $120,000 CAD",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "salaryAnnual": 105000,
+      "salaryText": "$90K–$120K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

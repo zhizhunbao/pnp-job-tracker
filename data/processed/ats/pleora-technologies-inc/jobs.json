@@ -1,7 +1,7 @@
 {
   "ats": "bamboohr",
   "token": "pleora",
-  "count": 3,
+  "count": 4,
   "jobs": [
     {
       "title": "General Applications ",
@@ -14,7 +14,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Software Developer",
@@ -27,7 +36,18 @@
       "salary": "$80,000 - $120,000",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "salaryAnnual": 100000,
+      "salaryText": "$80K–$120K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Buyer/Planner",
@@ -40,7 +60,42 @@
       "salary": "$75,000 - $95,000",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "salaryAnnual": 85000,
+      "salaryText": "$75K–$95K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    },
+    {
+      "title": "Manager, Product Management",
+      "location": "Kanata, Ontario",
+      "url": "https://pleora.bamboohr.com/careers/115",
+      "department": "760 - Product Management",
+      "posted": "2026-10-08",
+      "valid_through": "",
+      "address": "",
+      "salary": "$130,000 - $160,000",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "salaryAnnual": 145000,
+      "salaryText": "$130K–$160K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

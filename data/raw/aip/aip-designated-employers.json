@@ -1,12 +1,6 @@
 [
   {
     "province": "NL",
-    "employer": "10112755 Canada Inc. o/a Strobel TEK",
-    "location": "St. John's",
-    "tech": true
-  },
-  {
-    "province": "NL",
     "employer": "10113 Newfoundland Ltd. o/a Mary Brown’s",
     "location": "Clarenville",
     "tech": false
@@ -733,12 +727,6 @@
   },
   {
     "province": "NL",
-    "employer": "Breton Bay Holding o/a Tim Horton’s",
-    "location": "Conception Bay South",
-    "tech": false
-  },
-  {
-    "province": "NL",
     "employer": "Briarside Addendum o/a Animal House Grooming",
     "location": "Corner Brook",
     "tech": false
@@ -903,12 +891,6 @@
     "province": "NL",
     "employer": "Central Health Integrated Health Authority o/a Central Health",
     "location": "Grand Falls - Windsor",
-    "tech": false
-  },
-  {
-    "province": "NL",
-    "employer": "CG Aberdeen Holdings o/a Harvey’s",
-    "location": "St. John's",
     "tech": false
   },
   {
@@ -1189,12 +1171,6 @@
   },
   {
     "province": "NL",
-    "employer": "Day & Ross Inc.",
-    "location": "Corner Brook, Mount Pearl",
-    "tech": false
-  },
-  {
-    "province": "NL",
     "employer": "DBC Marine Safety Systems Ltd",
     "location": "Mount Pearl",
     "tech": true
@@ -1387,12 +1363,6 @@
   },
   {
     "province": "NL",
-    "employer": "East to West Holdings Inc. o/a Wendy’s Topsail Road",
-    "location": "St John's",
-    "tech": false
-  },
-  {
-    "province": "NL",
     "employer": "EcoBloc Inc.",
     "location": "St. John's",
     "tech": true
@@ -1485,12 +1455,6 @@
     "province": "NL",
     "employer": "Exploits Valley Animal Hospital Limited",
     "location": "Grand Falls-Windsor",
-    "tech": false
-  },
-  {
-    "province": "NL",
-    "employer": "Fahey Building Ltd. o/a The Labrador Inn",
-    "location": "Happy Valley-Goose Bay",
     "tech": false
   },
   {
@@ -2845,6 +2809,12 @@
   },
   {
     "province": "NL",
+    "employer": "Peoples Food Inc. o/a People’s Pizza",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
     "employer": "Persepolis Persian Restaurant Ltd.",
     "location": "St. John's",
     "tech": false
@@ -2853,6 +2823,12 @@
     "province": "NL",
     "employer": "Pet Central Limited",
     "location": "Gander",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Peters & Young Cold Storage Ltd. o/a Rapid Power Sports",
+    "location": "Little Rapids",
     "tech": false
   },
   {
@@ -2932,6 +2908,12 @@
     "employer": "Portugal Cove – St. Philip’s Minor Soccer Association o/a PCSPSA",
     "location": "Portugal Cove - St. Philip's",
     "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Pragmaclin Research Inc. o/a Pragmaclin Research",
+    "location": "St. John's",
+    "tech": true
   },
   {
     "province": "NL",
@@ -3127,6 +3109,12 @@
   },
   {
     "province": "NL",
+    "employer": "Ruby Manor Ltd. o/a Ruby Manor Retirement Home",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
     "employer": "Ryan’s Ambulance Service Ltd.",
     "location": "Clarenville",
     "tech": false
@@ -3253,6 +3241,12 @@
   },
   {
     "province": "NL",
+    "employer": "South Park Driving School o/a South Park Driver Training",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
     "employer": "Southlands Food Inc. o/a Dairy Queen",
     "location": "St. John's",
     "tech": false
@@ -3271,6 +3265,12 @@
   },
   {
     "province": "NL",
+    "employer": "SpiceX International Inc. o/a SpiceX",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
     "employer": "Springdale Retirement Living Inc. o/a Providential Living",
     "location": "Springdale",
     "tech": false
@@ -3285,6 +3285,12 @@
     "province": "NL",
     "employer": "Stanley’s Trucking Ltd.",
     "location": "Clarenville",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Startastic Ventures Inc",
+    "location": "Mount Pearl",
     "tech": false
   },
   {
@@ -3585,6 +3591,12 @@
     "province": "NL",
     "employer": "Tremblett’s Ambulance Service Ltd.",
     "location": "Bell Island",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Trinity Hospitality Services Inc. o/a Swiss Chalet",
+    "location": "St. John's, Gander",
     "tech": false
   },
   {

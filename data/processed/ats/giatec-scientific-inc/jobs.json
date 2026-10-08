@@ -1,7 +1,7 @@
 {
   "ats": "bamboohr",
   "token": "giatecscientific",
-  "count": 8,
+  "count": 7,
   "jobs": [
     {
       "title": "Talent Community @ Giatec",
@@ -14,7 +14,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Student Talent Community @ Giatec",
@@ -27,7 +36,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Lead Support Engineer, Bedrock ",
@@ -40,20 +58,18 @@
       "salary": "$125,000 to $155,000",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Inventory & Logistics Specialist ",
-      "location": "Ottawa, Ontario",
-      "url": "https://giatecscientific.bamboohr.com/careers/302",
-      "department": "Finance & Operations",
-      "posted": "2026-09-02",
-      "valid_through": "",
-      "address": "",
-      "salary": "$50,000 to $70,000",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 140000,
+      "salaryText": "$125K–$155K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Manager, Sales",
@@ -66,7 +82,18 @@
       "salary": "$110,000- $160,000",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 135000,
+      "salaryText": "$110K–$160K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Manager, Business Development",
@@ -79,7 +106,18 @@
       "salary": "$110,000-$160,000",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 135000,
+      "salaryText": "$110K–$160K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Customer Success and Solutions Specialist, Hardware Operations",
@@ -92,7 +130,18 @@
       "salary": "$55,000-$95,000",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 75000,
+      "salaryText": "$55K–$95K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Enterprise Account Executive ",
@@ -105,7 +154,18 @@
       "salary": "$120,000 - 170,000",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 145000,
+      "salaryText": "$120K–$170K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

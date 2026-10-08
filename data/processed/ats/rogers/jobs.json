@@ -1,7 +1,7 @@
 {
   "ats": "successfactors",
   "token": "",
-  "count": 8,
+  "count": 3,
   "jobs": [
     {
       "title": "Sales Associate",
@@ -14,33 +14,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Sr Broadcast Technician",
-      "location": "Ottawa, ON",
-      "url": "https://jobs.rogers.com/job/Ottawa-Sr-Broadcast-Technician-ON/1423197800/",
-      "department": "",
-      "posted": "2026-08-25",
-      "valid_through": "",
-      "address": "475 Richmond Rd",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Sales Associate",
-      "location": "Ottawa, ON",
-      "url": "https://jobs.rogers.com/job/Ottawa-Sales-Associate-ON/1404036300/",
-      "department": "",
-      "posted": "2026-08-26",
-      "valid_through": "",
-      "address": "1200 St-Laurent Boulevard (5224), Ottawa, ON Travel Requirements: Up to 100",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Sales Associate",
@@ -53,33 +36,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "SMB Enablement Go to Market",
-      "location": "Vancouver, BC",
-      "url": "https://jobs.rogers.com/job/Ottawa-SMB-Enablement-Go-to-Market-ON/1420585000/",
-      "department": "",
-      "posted": "2026-09-16",
-      "valid_through": "",
-      "address": "1810 St. Laurent Blvd",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Manager, SMB Sales",
-      "location": "Montreal, QC",
-      "url": "https://jobs.rogers.com/job/Ottawa-Manager%2C-SMB-Sales-ON/1421691400/",
-      "department": "",
-      "posted": "2026-09-18",
-      "valid_through": "",
-      "address": "333 Bloor Street East(364), Toronto, ON Travel Requirements: Up to",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Point of Sale Sales Specialist",
@@ -92,20 +58,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "SMB Wireless Cross-Sell Manager",
-      "location": "Toronto, ON",
-      "url": "https://jobs.rogers.com/job/Moncton-SMB-Wireless-Cross-Sell-Manager-NB/1433622700/",
-      "department": "",
-      "posted": "2026-09-24",
-      "valid_through": "",
-      "address": "333 Bloor Street East(376), Toronto, ON Travel Requirements: Up to",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Richmond",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

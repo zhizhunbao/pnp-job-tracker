@@ -1,7 +1,7 @@
 {
   "ats": "lever",
   "token": "telesat",
-  "count": 54,
+  "count": 41,
   "jobs": [
     {
       "title": "Advanced Product and Solutions Lead",
@@ -14,7 +14,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Analyst, IT Governance, Risk, and Compliance",
@@ -27,7 +36,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Antenna and UT System Engineer",
@@ -40,7 +58,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Bilingual Technical Recruiter (French & English) 12 month contract",
@@ -53,33 +80,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Business Development Director, South Korea",
-      "location": "Seoul South",
-      "url": "https://jobs.lever.co/telesat/489ce6c0-b061-4d8e-bee3-d761ad507366",
-      "department": "Sales (South Korea)",
-      "posted": "2026-07-21",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Client Services Executive, EMEA",
-      "location": "London, England",
-      "url": "https://jobs.lever.co/telesat/64035d85-9adc-4814-89ab-3840ec47b729",
-      "department": "Products and Customer Solutions",
-      "posted": "2026-07-30",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Communications Systems Engineer",
@@ -92,72 +102,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Contrôleur de satellites LEO / LEO Satellite Controller",
-      "location": "Gatineau, Quebec",
-      "url": "https://jobs.lever.co/telesat/cc497919-c062-4b76-9286-efbd861546a7",
-      "department": "LEO Satellite Operations",
-      "posted": "2026-07-20",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Customer Solutions Engineer - EMEA",
-      "location": "EMEA (REMOTE)",
-      "url": "https://jobs.lever.co/telesat/1a1b0b78-67ec-4a20-b2d5-37014ac7a53e",
-      "department": "Global Customer Solutions",
-      "posted": "2026-03-22",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Customer Solutions Engineer - LATAM",
-      "location": "Bethesda, MD",
-      "url": "https://jobs.lever.co/telesat/76941578-8b0b-497f-bbc6-4cb5ae7cd518",
-      "department": "Global Customer Solutions",
-      "posted": "2026-03-18",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Customer Solutions Engineer (Australia)",
-      "location": "Melbourne or Sydney",
-      "url": "https://jobs.lever.co/telesat/2a256d12-712a-4e2a-92a8-1ad93c7007a2",
-      "department": "Global Customer Solutions",
-      "posted": "2026-03-22",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Data Management Specialist",
-      "location": "Ottawa, Ontario",
-      "url": "https://jobs.lever.co/telesat/ea942b0b-f692-4db8-b4f0-0e620d7a2558",
-      "department": "Mission Assurance Office",
-      "posted": "2026-09-02",
-      "valid_through": "",
-      "address": "",
-      "salary": "$40,000 - $80,000 CAD",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Director of IT Infrastructure and Operations",
@@ -170,7 +124,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Document Control Coordinator",
@@ -183,7 +146,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Embedded Software Architect, User Terminals",
@@ -196,33 +168,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Facilities Technician / Technicien(ne) des installations",
-      "location": "Gatineau, Quebec",
-      "url": "https://jobs.lever.co/telesat/9622b02b-7b51-4421-8403-7b02f25b71f5",
-      "department": "Facilities Support",
-      "posted": "2026-09-04",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Ingénieur(e) principal(e) en essais / Senior Test Engineer",
-      "location": "Gatineau, Quebec",
-      "url": "https://jobs.lever.co/telesat/da866ce9-02e9-4330-8572-3fe4ba6cf2b7",
-      "department": "System Integration and Test",
-      "posted": "2026-08-04",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Integration Specialist",
@@ -235,7 +190,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "LEO Flight Dynamics Analyst",
@@ -248,7 +212,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "LEO Flight Dynamics Specialist",
@@ -261,7 +234,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Manager, Release Management and QA",
@@ -274,7 +256,38 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    },
+    {
+      "title": "Manager, Revenue and Receivables",
+      "location": "Ottawa, Ontario",
+      "url": "https://jobs.lever.co/telesat/bbaf286f-9f4a-4c4f-b4ec-920ed44bd1f6",
+      "department": "Revenue and Receivables",
+      "posted": "2026-09-15",
+      "valid_through": "",
+      "address": "",
+      "salary": "",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Netcracker Senior Application Specialist",
@@ -287,20 +300,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Network Technologist/Technologue Opérations Réseau",
-      "location": "Gatineau, Quebec",
-      "url": "https://jobs.lever.co/telesat/fc90dcd7-d5b1-4804-8fc4-13c396250de3",
-      "department": "LEO NOC",
-      "posted": "2026-05-12",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Project Coordinator - PLM Implementation",
@@ -313,7 +322,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Satellite Controller",
@@ -326,7 +344,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Satellite Operations Engineer (GEO)",
@@ -339,7 +366,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Security System Architect",
@@ -352,7 +388,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Defence Solutions Engineering Specialist",
@@ -365,7 +410,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Director, Canada Defence — Client & Program (ESCPP)",
@@ -378,7 +432,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Engineering Delivery Lead",
@@ -391,7 +454,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior LEO Flight Dynamics Analyst",
@@ -404,7 +476,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior LEO Flight Dynamics Specialist",
@@ -417,7 +498,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior LEO Satellite Operations Engineer",
@@ -430,7 +520,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Manager, Embedded Software",
@@ -443,7 +542,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Manager, Financial Planning & Analysis",
@@ -456,7 +564,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Manager, GEO Spacecraft Operations Engineering",
@@ -469,7 +586,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Manager, Program Management Office",
@@ -482,7 +608,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Network Management Software Developer",
@@ -495,7 +630,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior SOC Training Coordinator",
@@ -508,7 +652,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Specialist UT Systems Engineer",
@@ -521,10 +674,19 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
-      "title": "Senior Systems Engineer (LS91)",
+      "title": "Senior Systems Engineer",
       "location": "Ottawa, Ontario",
       "url": "https://jobs.lever.co/telesat/08cf625b-cb84-4b54-899c-26dd79c450d7",
       "department": "LEO System Engineering",
@@ -534,20 +696,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Senior Technologist, LEO NOC",
-      "location": "Gatineau, Quebec",
-      "url": "https://jobs.lever.co/telesat/fb66d02d-6edd-4afb-b15a-451eeea08113",
-      "department": "LEO NOC",
-      "posted": "2026-06-10",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Trainer, Instructional Design & Training",
@@ -560,7 +718,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior User Terminal System Engineer",
@@ -573,33 +740,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Spécialiste en ingénierie RF et en essais / RF and Test Engineering Specialist",
-      "location": "Gatineau, Quebec",
-      "url": "https://jobs.lever.co/telesat/da1cad8e-fe91-4875-add4-d3961eb83b26",
-      "department": "System Integration and Test",
-      "posted": "2026-07-31",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Spécialiste principal en ingénierie des essais/Senior Test Engineering Specialist (LS705)",
-      "location": "Gatineau, Quebec",
-      "url": "https://jobs.lever.co/telesat/92199264-e90b-40d3-bb4e-43cc1439d693",
-      "department": "System Integration and Test",
-      "posted": "2026-02-23",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "System Verification Engineering Specialist- Space",
@@ -612,20 +762,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "TCC Technologist",
-      "location": "Hanover, Ontario",
-      "url": "https://jobs.lever.co/telesat/24e91919-4345-4922-bfe1-2fa02dd9685f",
-      "department": "Technical Control Centre (TCC)",
-      "posted": "2026-08-31",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Technical Program Integration Lead",
@@ -638,7 +784,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Technical Writer, User Terminal (UT) Engineering",
@@ -651,7 +806,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "User Terminal Product Manager",
@@ -664,7 +828,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "User Terminal Program Manager, Mil-Ka",
@@ -677,7 +850,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "User Terminal System Engineering Specialist",
@@ -690,7 +872,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Website and Social Media Manager",
@@ -703,7 +894,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "ats": "myworkdayjobs",
   "token": "",
-  "count": 6,
+  "count": 3,
   "jobs": [
     {
       "title": "Senior Product Engineer, Lifecycle Engineering",
@@ -14,7 +14,18 @@
       "salary": "$95,000-$122,000 CAD",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 108500,
+      "salaryText": "$95K–$122K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Analog Design Intern",
@@ -27,7 +38,18 @@
       "salary": "$26 - $28.5",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 56680,
+      "salaryText": "$26–$28/hr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Digital IC Design Engineering Intern",
@@ -40,46 +62,18 @@
       "salary": "$26 - $28.5 CAD",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Firmware Design Intern",
-      "location": "CAN - Ottawa, ON",
-      "url": "https://semtech.wd1.myworkdayjobs.com/SemtechCareers/job/CAN---Ottawa-ON/Firmware-Design-Intern_REQ3617",
-      "department": "",
-      "posted": "2026-09-24",
-      "valid_through": "",
-      "address": "",
-      "salary": "$26 - $28.5 CAD",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "IC Packaging Design Intern",
-      "location": "CAN - Ottawa, ON",
-      "url": "https://semtech.wd1.myworkdayjobs.com/SemtechCareers/job/CAN---Ottawa-ON/IC-Packaging-Design-Intern_REQ3619",
-      "department": "",
-      "posted": "2026-09-24",
-      "valid_through": "",
-      "address": "",
-      "salary": "$26 - $28.5 CAD",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Validation Engineering Intern",
-      "location": "CAN - Ottawa, ON",
-      "url": "https://semtech.wd1.myworkdayjobs.com/SemtechCareers/job/CAN---Ottawa-ON/Validation-Engineering-Intern_REQ3618",
-      "department": "",
-      "posted": "2026-09-24",
-      "valid_through": "",
-      "address": "",
-      "salary": "$26 - $28.5 CAD",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 56680,
+      "salaryText": "$26–$28/hr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

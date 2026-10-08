@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-02",
+ "generated": "2026-10-07",
  "trAsOf": "2026-07",
  "rows": [
   {
@@ -27,11 +27,11 @@
     },
     {
      "key": "activity",
-     "value": 26,
-     "invitations": 6935,
+     "value": 17,
+     "invitations": 5107,
      "tier": "easy",
      "source": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply",
-     "asOf": "2026-10-02"
+     "asOf": "2026-10-07"
     },
     {
      "key": "scoreLevel",
@@ -73,7 +73,7 @@
      "invitations": 5146,
      "tier": "easy",
      "source": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
-     "asOf": "2026-10-02"
+     "asOf": "2026-10-07"
     },
     {
      "key": "scoreLevel",
@@ -111,11 +111,11 @@
     },
     {
      "key": "activity",
-     "value": 57,
-     "invitations": 8829,
+     "value": 55,
+     "invitations": 8609,
      "tier": "easy",
      "source": "https://www.alberta.ca/aaip-processing-information",
-     "asOf": "2026-10-02"
+     "asOf": "2026-10-07"
     },
     {
      "key": "scoreLevel",
@@ -178,11 +178,11 @@
     },
     {
      "key": "activity",
-     "value": 31,
-     "invitations": 6620,
+     "value": 30,
+     "invitations": 6588,
      "tier": "easy",
      "source": "https://immigratemanitoba.com/draws/",
-     "asOf": "2026-10-02"
+     "asOf": "2026-10-07"
     },
     {
      "key": "scoreLevel",
@@ -224,7 +224,7 @@
      "invitations": 1991,
      "tier": "mid",
      "source": "https://liveinnovascotia.com/eoi-selection",
-     "asOf": "2026-10-02"
+     "asOf": "2026-10-07"
     }
    ]
   },
@@ -250,7 +250,7 @@
      "invitations": 2500,
      "tier": "easy",
      "source": "https://www.gnb.ca/en/topic/family-home-community/immigration/invitation-selection-rounds.html",
-     "asOf": "2026-10-02"
+     "asOf": "2026-10-07"
     }
    ]
   },
@@ -283,7 +283,7 @@
      "invitations": 2005,
      "tier": "easy",
      "source": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/",
-     "asOf": "2026-10-02"
+     "asOf": "2026-10-07"
     }
    ]
   },
@@ -297,7 +297,7 @@
      "invitations": 993,
      "tier": "mid",
      "source": "https://www.princeedwardisland.ca/en/information/office-of-immigration/expression-of-interest-draws",
-     "asOf": "2026-10-02"
+     "asOf": "2026-10-07"
     }
    ]
   }

@@ -3175,7 +3175,9 @@
       "drawStreams": [
         "Ontario Workforce Priority Stream"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "Ontario Workforce Priority stream — self-employed physicians"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -3914,6 +3916,14 @@
               },
               "quote": "Within twelve (12) months of receiving your nominee certificate, apply to Immigration, Refugees and Citizenship Canada (IRCC) for your permanent resident visa.",
               "url": "https://liveinnovascotia.com/express-entry"
+            },
+            {
+              "key": "prSubmitDays",
+              "vars": {
+                "n": 60
+              },
+              "quote": "Your invitation to apply is valid for 60 days only.",
+              "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/apply-permanent-residence.html"
             }
           ]
         }
@@ -4069,6 +4079,14 @@
               },
               "quote": "Within twelve (12) months of receiving your nominee certificate, apply to Immigration, Refugees and Citizenship Canada (IRCC) for your permanent resident visa.",
               "url": "https://liveinnovascotia.com/express-entry"
+            },
+            {
+              "key": "prSubmitDays",
+              "vars": {
+                "n": 60
+              },
+              "quote": "Your invitation to apply is valid for 60 days only.",
+              "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/apply-permanent-residence.html"
             }
           ]
         }
@@ -4340,7 +4358,16 @@
           "who": "federal",
           "none": false,
           "stuck": false,
-          "facts": []
+          "facts": [
+            {
+              "key": "prSubmitDays",
+              "vars": {
+                "n": 60
+              },
+              "quote": "Your invitation to apply is valid for 60 days only.",
+              "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/apply-permanent-residence.html"
+            }
+          ]
         }
       ]
     },
@@ -4486,7 +4513,9 @@
       "boardLabel": null,
       "isDefault": false,
       "drawStreams": [],
-      "reqStreams": [],
+      "reqStreams": [
+        "New Brunswick Express Entry stream (Employment in New Brunswick / New Brunswick Interest)"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -4593,7 +4622,16 @@
           "who": "federal",
           "none": false,
           "stuck": false,
-          "facts": []
+          "facts": [
+            {
+              "key": "prSubmitDays",
+              "vars": {
+                "n": 60
+              },
+              "quote": "Your invitation to apply is valid for 60 days only.",
+              "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/apply-permanent-residence.html"
+            }
+          ]
         }
       ]
     },
@@ -4611,7 +4649,9 @@
       "drawStreams": [
         "NB Strategic Initiative"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "New Brunswick Strategic Initiative (Francophone Workers / Francophone Priorities / Francophones Working Remotely)"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -4731,7 +4771,10 @@
       "boardLabel": null,
       "isDefault": false,
       "drawStreams": [],
-      "reqStreams": [],
+      "reqStreams": [
+        "New Brunswick Strategic Initiative — Francophones Working Remotely in New Brunswick pathway",
+        "New Brunswick Strategic Initiative (Francophone Workers / Francophone Priorities / Francophones Working Remotely)"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -5529,6 +5572,14 @@
               },
               "quote": "Your nomination certificate is valid for 6 months before it expires.",
               "url": "https://www.gov.nl.ca/immigration/faqs/nl-provincial-nominee-program-candidate-faqs"
+            },
+            {
+              "key": "prSubmitDays",
+              "vars": {
+                "n": 60
+              },
+              "quote": "Your invitation to apply is valid for 60 days only.",
+              "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/apply-permanent-residence.html"
             }
           ]
         }
@@ -6164,7 +6215,16 @@
           "who": "federal",
           "none": false,
           "stuck": false,
-          "facts": []
+          "facts": [
+            {
+              "key": "prSubmitDays",
+              "vars": {
+                "n": 60
+              },
+              "quote": "Your invitation to apply is valid for 60 days only.",
+              "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/apply-permanent-residence.html"
+            }
+          ]
         }
       ]
     },

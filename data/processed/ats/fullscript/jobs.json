@@ -1,7 +1,7 @@
 {
   "ats": "lever",
   "token": "fullscript",
-  "count": 15,
+  "count": 10,
   "jobs": [
     {
       "title": "Accounting Manager, P2P Operations",
@@ -14,20 +14,18 @@
       "salary": "$100,000",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Customer Support Specialist -(Kelowna, BC)",
-      "location": "Kelowna, BC",
-      "url": "https://jobs.lever.co/fullscript/485de90c-2182-4929-90d3-b959742b3583",
-      "department": "Customer Support",
-      "posted": "2026-09-09",
-      "valid_through": "",
-      "address": "",
-      "salary": "$40,000 - $50,000 CAD annually",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 100000,
+      "salaryText": "$100K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Customer Support Specialist (Calgary, AB)",
@@ -40,7 +38,18 @@
       "salary": "$44,000 - $50,000 CAD annually",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 47000,
+      "salaryText": "$44K–$50K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Customer Support Specialist (Ottawa, ON)",
@@ -53,7 +62,18 @@
       "salary": "$44,000 - $50,000 CAD annually",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 47000,
+      "salaryText": "$44K–$50K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Director of Engineering, Developer Infrastructure",
@@ -66,7 +86,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Engineering Manager, Patient Experience",
@@ -79,7 +108,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Governance, Risk & Compliance (GRC) Manager",
@@ -92,20 +130,18 @@
       "salary": "$140,000",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Lead Data Scientist — Growth & Experimentation",
-      "location": "Toronto, ON",
-      "url": "https://jobs.lever.co/fullscript/580fdc9a-9565-4a20-a9d6-a552c606fcaa",
-      "department": "Data & Analytics",
-      "posted": "2026-07-17",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 140000,
+      "salaryText": "$140K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Backend Developer - Identity and Access Management (IAM)",
@@ -118,7 +154,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Developer, Fullstack - Warehouse Management Systems (WMS)",
@@ -131,33 +176,42 @@
       "salary": "$125,000",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 125000,
+      "salaryText": "$125K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
-      "title": "Senior Machine Learning Engineer",
+      "title": "Software Developer (Co-op Opportunities)",
       "location": "Ottawa, ON",
-      "url": "https://jobs.lever.co/fullscript/fbd252ba-c7c9-4be8-8f97-ac07acd4355a",
-      "department": "Machine Learning",
-      "posted": "2026-09-10",
+      "url": "https://jobs.lever.co/fullscript/f2682bc2-454c-4bcd-b71c-639236d09a8e",
+      "department": "Engineering",
+      "posted": "2026-07-22",
       "valid_through": "",
       "address": "",
-      "salary": "$140,000 to $160,000 CAD",
+      "salary": "$30/hour",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Senior Warehouse Operations Manager",
-      "location": "Ashland, VA",
-      "url": "https://jobs.lever.co/fullscript/6226ec40-1c0c-4e3e-8cdf-25466f2a4ba3",
-      "department": "Virginia Warehouse",
-      "posted": "2026-09-04",
-      "valid_through": "",
-      "address": "",
-      "salary": "$100,000 to $125,000 USD",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 62400,
+      "salaryText": "$30/hr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Staff, Security Engineer",
@@ -170,33 +224,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Warehouse Associate (Ashland, VA)",
-      "location": "Ashland, VA",
-      "url": "https://jobs.lever.co/fullscript/c3e724cf-97f8-4276-8c25-eb0c56d2b3ab",
-      "department": "Virginia Warehouse",
-      "posted": "2026-09-01",
-      "valid_through": "",
-      "address": "",
-      "salary": "$20.25/hour",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Warehouse Associate (Chandler, AZ)",
-      "location": "Phoenix, AZ",
-      "url": "https://jobs.lever.co/fullscript/691ad77c-edd4-4fe6-8ac4-45b9581d895d",
-      "department": "Arizona Warehouse",
-      "posted": "2026-09-01",
-      "valid_through": "",
-      "address": "",
-      "salary": "$20.25 USD per hour",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

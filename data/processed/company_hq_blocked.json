@@ -52,12 +52,12 @@
     "slug": "aline-greeting-cards",
     "name": "Aline Greeting Cards",
     "status": "pending",
-    "hits": 2,
+    "hits": 3,
     "first_at": "2026-09-23T03:38:56.403109Z",
-    "last_at": "2026-09-30T03:40:10.517110Z",
+    "last_at": "2026-10-07T03:41:03.130177Z",
     "done_at": "",
     "note": "",
-    "at": "2026-09-30T03:40:10.517110Z"
+    "at": "2026-10-07T03:41:03.130177Z"
   },
   "https://www.dnb.com/business-directory/company-profiles/supersonic-transport-ltd.b14b0604c7fbf29f331356d0dc1e19f5": {
     "url": "https://www.dnb.com/business-directory/company-profiles/supersonic-transport-ltd.b14b0604c7fbf29f331356d0dc1e19f5",
@@ -100,12 +100,12 @@
     "slug": "subway-restaurant",
     "name": "Subway Restaurant",
     "status": "pending",
-    "hits": 4,
+    "hits": 7,
     "first_at": "2026-09-23T04:28:33.539139Z",
-    "last_at": "2026-09-30T05:22:25.085646Z",
+    "last_at": "2026-10-07T05:35:31.405689Z",
     "done_at": "",
     "note": "",
-    "at": "2026-09-30T05:22:25.085646Z"
+    "at": "2026-10-07T05:35:31.405689Z"
   },
   "https://www.dnb.com/business-directory/company-profiles/subway.9e8806114cc9550e3c3b292f9382850d": {
     "url": "https://www.dnb.com/business-directory/company-profiles/subway.9e8806114cc9550e3c3b292f9382850d",
@@ -376,12 +376,12 @@
     "slug": "gfl-environmental-services-inc",
     "name": "GFL Environmental Services inc",
     "status": "pending",
-    "hits": 2,
+    "hits": 3,
     "first_at": "2026-09-23T07:14:55.227536Z",
-    "last_at": "2026-09-30T07:15:14.753274Z",
+    "last_at": "2026-10-07T07:16:37.791191Z",
     "done_at": "",
     "note": "",
-    "at": "2026-09-30T07:15:14.753274Z"
+    "at": "2026-10-07T07:16:37.791191Z"
   },
   "https://contactout.com/company/crt-construction-inc-143851": {
     "url": "https://contactout.com/company/crt-construction-inc-143851",
@@ -436,12 +436,12 @@
     "slug": "mary-browns-chicken",
     "name": "Mary Browns Chicken",
     "status": "pending",
-    "hits": 1,
+    "hits": 2,
     "first_at": "2026-09-29T03:09:57.617682Z",
-    "last_at": "2026-09-29T03:09:57.617682Z",
+    "last_at": "2026-10-06T03:10:42.130889Z",
     "done_at": "",
     "note": "",
-    "at": "2026-09-29T03:09:57.617682Z"
+    "at": "2026-10-06T03:10:42.130889Z"
   },
   "https://contactout.com/company/Red-Swan-Pizza-4997": {
     "url": "https://contactout.com/company/Red-Swan-Pizza-4997",
@@ -568,12 +568,12 @@
     "slug": "subway-sandwiches",
     "name": "Subway Sandwiches",
     "status": "pending",
-    "hits": 1,
+    "hits": 2,
     "first_at": "2026-09-30T05:22:37.461369Z",
-    "last_at": "2026-09-30T05:22:37.461369Z",
+    "last_at": "2026-10-07T04:31:54.771658Z",
     "done_at": "",
     "note": "",
-    "at": "2026-09-30T05:22:37.461369Z"
+    "at": "2026-10-07T04:31:54.771658Z"
   },
   "https://contactout.com/company/gemtec-consulting-engineers-scientists-limited-6591065": {
     "url": "https://contactout.com/company/gemtec-consulting-engineers-scientists-limited-6591065",
@@ -826,5 +826,125 @@
     "done_at": "",
     "note": "",
     "at": "2026-10-03T00:25:27.719651Z"
+  },
+  "https://contactout.com/company/The-Captains-Boil-78549": {
+    "url": "https://contactout.com/company/The-Captains-Boil-78549",
+    "slug": "the-captains-boil",
+    "name": "The Captain's Boil",
+    "status": "pending",
+    "hits": 1,
+    "first_at": "2026-10-05T19:20:02.517712Z",
+    "last_at": "2026-10-05T19:20:02.517712Z",
+    "done_at": "",
+    "note": "",
+    "at": "2026-10-05T19:20:02.517712Z"
+  },
+  "https://contactout.com/company/rocky-mountain-equipment-4694940": {
+    "url": "https://contactout.com/company/rocky-mountain-equipment-4694940",
+    "slug": "rocky-mountain-equipment",
+    "name": "Rocky Mountain Equipment",
+    "status": "pending",
+    "hits": 1,
+    "first_at": "2026-10-06T01:13:51.757327Z",
+    "last_at": "2026-10-06T01:13:51.757327Z",
+    "done_at": "",
+    "note": "",
+    "at": "2026-10-06T01:13:51.757327Z"
+  },
+  "https://www.dnb.com/business-directory/company-profiles.evergreen_chiropractic_langley_inc.7fc56461a80308dcd0060523cb06a3a3.html": {
+    "url": "https://www.dnb.com/business-directory/company-profiles.evergreen_chiropractic_langley_inc.7fc56461a80308dcd0060523cb06a3a3.html",
+    "slug": "evergreen-chiropractic-langley-inc",
+    "name": "Evergreen Chiropractic Langley Inc.",
+    "status": "pending",
+    "hits": 1,
+    "first_at": "2026-10-07T01:20:36.605131Z",
+    "last_at": "2026-10-07T01:20:36.605131Z",
+    "done_at": "",
+    "note": "",
+    "at": "2026-10-07T01:20:36.605131Z"
+  },
+  "https://www.canadacompanyregistry.com/companies/huttopia-canada-inc/": {
+    "url": "https://www.canadacompanyregistry.com/companies/huttopia-canada-inc/",
+    "slug": "huttopia-sutton",
+    "name": "Huttopia Sutton",
+    "status": "pending",
+    "hits": 1,
+    "first_at": "2026-10-07T02:18:46.245450Z",
+    "last_at": "2026-10-07T02:18:46.245450Z",
+    "done_at": "",
+    "note": "",
+    "at": "2026-10-07T02:18:46.245450Z"
+  },
+  "https://contactout.com/company/stacked-pancake-amp-breakfast-house-1269": {
+    "url": "https://contactout.com/company/stacked-pancake-amp-breakfast-house-1269",
+    "slug": "stacked-pancake-breakfast-house",
+    "name": "STACKED PANCAKE & BREAKFAST HOUSE",
+    "status": "pending",
+    "hits": 1,
+    "first_at": "2026-10-07T02:45:36.054181Z",
+    "last_at": "2026-10-07T02:45:36.054181Z",
+    "done_at": "",
+    "note": "",
+    "at": "2026-10-07T02:45:36.054181Z"
+  },
+  "https://www.cylex-canada.ca/company/stacked-pancake---breakfast-house-24167782.html": {
+    "url": "https://www.cylex-canada.ca/company/stacked-pancake---breakfast-house-24167782.html",
+    "slug": "stacked-pancake-breakfast-house",
+    "name": "STACKED PANCAKE & BREAKFAST HOUSE",
+    "status": "pending",
+    "hits": 1,
+    "first_at": "2026-10-07T02:46:05.338379Z",
+    "last_at": "2026-10-07T02:46:05.338379Z",
+    "done_at": "",
+    "note": "",
+    "at": "2026-10-07T02:46:05.338379Z"
+  },
+  "https://www.dnb.com/business-directory/company-profiles.croisi%C3%A8res_aml_inc.30e1776a3e6b624f98c13ce108856e57.html": {
+    "url": "https://www.dnb.com/business-directory/company-profiles.croisi%C3%A8res_aml_inc.30e1776a3e6b624f98c13ce108856e57.html",
+    "slug": "croisi-res-aml-inc",
+    "name": "Croisières AML inc.",
+    "status": "pending",
+    "hits": 1,
+    "first_at": "2026-10-07T03:49:44.067905Z",
+    "last_at": "2026-10-07T03:49:44.067905Z",
+    "done_at": "",
+    "note": "",
+    "at": "2026-10-07T03:49:44.067905Z"
+  },
+  "https://www.dnb.com/business-directory/company-profiles.subway_sandwiches__salads.40cdd8a99b92f200e0264a0b11b382c6.html": {
+    "url": "https://www.dnb.com/business-directory/company-profiles.subway_sandwiches__salads.40cdd8a99b92f200e0264a0b11b382c6.html",
+    "slug": "subway-sandwiches-salads",
+    "name": "Subway Sandwiches & Salads",
+    "status": "pending",
+    "hits": 1,
+    "first_at": "2026-10-07T05:35:00.553927Z",
+    "last_at": "2026-10-07T05:35:00.553927Z",
+    "done_at": "",
+    "note": "",
+    "at": "2026-10-07T05:35:00.553927Z"
+  },
+  "https://contactout.com/company/Osmows-51487": {
+    "url": "https://contactout.com/company/Osmows-51487",
+    "slug": "osmows-ottawa",
+    "name": "Osmow's Ottawa",
+    "status": "pending",
+    "hits": 1,
+    "first_at": "2026-10-07T06:47:41.020528Z",
+    "last_at": "2026-10-07T06:47:41.020528Z",
+    "done_at": "",
+    "note": "",
+    "at": "2026-10-07T06:47:41.020528Z"
+  },
+  "https://www.zmenu.com/black-fin-sushi-trail-bc-online-menu/": {
+    "url": "https://www.zmenu.com/black-fin-sushi-trail-bc-online-menu/",
+    "slug": "black-fin-sushi",
+    "name": "Black Fin Sushi",
+    "status": "pending",
+    "hits": 1,
+    "first_at": "2026-10-07T15:55:51.485597Z",
+    "last_at": "2026-10-07T15:55:51.485597Z",
+    "done_at": "",
+    "note": "",
+    "at": "2026-10-07T15:55:51.485597Z"
   }
 }

@@ -1,7 +1,7 @@
 {
   "ats": "bamboohr",
   "token": "ranovus",
-  "count": 12,
+  "count": 9,
   "jobs": [
     {
       "title": "Silicon Photonics Designer and Tester Engineer",
@@ -14,7 +14,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Product Line Manager",
@@ -27,33 +36,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Internship Germany",
-      "location": "Nürnberg",
-      "url": "https://ranovus.bamboohr.com/careers/55",
-      "department": "Mixed Signal IC & ASIC Integration",
-      "posted": "2025-12-16",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
-    },
-    {
-      "title": "Analog ASIC Design Engineer  ",
-      "location": "Nürnberg",
-      "url": "https://ranovus.bamboohr.com/careers/59",
-      "department": "Mixed Signal IC & ASIC Integration",
-      "posted": "2026-01-13",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Silicon Photonics Layout Designer ",
@@ -66,7 +58,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Optical Technician",
@@ -79,7 +80,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Application Engineer / Senior Field Application Engineer",
@@ -92,20 +102,18 @@
       "salary": "135000",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
-    },
-    {
-      "title": "Internship Germany",
-      "location": "Nürnberg",
-      "url": "https://ranovus.bamboohr.com/careers/73",
-      "department": "Office of CTO",
-      "posted": "2026-07-02",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 135000,
+      "salaryText": "$135K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Optical Engineer ",
@@ -118,7 +126,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Principal Advanced Optical Packaging Engineer",
@@ -131,7 +148,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "System Architect Verification Engineer",
@@ -144,7 +170,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Finance Manager & Analyst ",
@@ -157,7 +192,16 @@
       "salary": "",
       "employment_hours": "",
       "employment_term": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

@@ -3,7 +3,7 @@
   "label": "NL 官网指定雇主名录",
   "source": "NLPNP designated employers",
   "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/atlantic-immigration-program/designated-employers",
-  "fetched": "2026-10-02",
+  "fetched": "2026-10-08",
   "employers": [
     {
       "name": "10112755 Canada Inc. o/a Strobel TEK",
@@ -3986,6 +3986,25 @@
       "url": "https://www.gov.nl.ca/immigration/employer/government-of-nl"
     },
     {
+      "name": "Grace Hotel Ltd. o/a Amaguk Hotel",
+      "location": "Hopedale",
+      "nocs": [
+        {
+          "noc": "0632",
+          "title": null
+        },
+        {
+          "noc": "1221",
+          "title": null
+        },
+        {
+          "noc": "6322",
+          "title": null
+        }
+      ],
+      "url": "https://www.gov.nl.ca/immigration/employer/grace-hotel-ltd-o-a-amaguk-hotel"
+    },
+    {
       "name": "Grand Enterprises Limited o/a The Gypsy Tea Room",
       "location": "St. John's",
       "nocs": [
@@ -5790,17 +5809,6 @@
       "url": "https://www.gov.nl.ca/immigration/employer/mup-restaurant-inc-o-a-dairy-queen"
     },
     {
-      "name": "Murphy’s Convenience Inc. o/a Ultramar",
-      "location": "St John's",
-      "nocs": [
-        {
-          "noc": "62010",
-          "title": null
-        }
-      ],
-      "url": "https://www.gov.nl.ca/immigration/employer/murphys-convenience-inc-o-a-ultramar"
-    },
-    {
       "name": "Murray Premises Hotel Inc.",
       "location": "St. John's",
       "nocs": [
@@ -6283,21 +6291,6 @@
       "url": "https://www.gov.nl.ca/immigration/employer/northern-grocery-inc"
     },
     {
-      "name": "Northland Properties Corporation o/a Denny’s Restaurant",
-      "location": "St. John's",
-      "nocs": [
-        {
-          "noc": "63200",
-          "title": null
-        },
-        {
-          "noc": "62020",
-          "title": null
-        }
-      ],
-      "url": "https://www.gov.nl.ca/immigration/employer/northland-properties-corporation-o-a-dennys-restaurant"
-    },
-    {
       "name": "Oceanic Releaf Inc.",
       "location": "Burin",
       "nocs": [
@@ -6324,6 +6317,25 @@
         }
       ],
       "url": "https://www.gov.nl.ca/immigration/employer/old-town-pizzeria-inc"
+    },
+    {
+      "name": "Orange Beans Villa Development & Management Company Ltd.",
+      "location": "St John's",
+      "nocs": [
+        {
+          "noc": "10019",
+          "title": null
+        },
+        {
+          "noc": "10022",
+          "title": null
+        },
+        {
+          "noc": "12200",
+          "title": null
+        }
+      ],
+      "url": "https://www.gov.nl.ca/immigration/employer/orange-beans-villa-development-management-company-ltd"
     },
     {
       "name": "Orcinus Technologies Inc. o/a Orcintech",
@@ -6382,21 +6394,6 @@
       "url": "https://www.gov.nl.ca/immigration/employer/p-s-you-design-ltd-o-a-western-phone-and-tablet-repair"
     },
     {
-      "name": "PAL Aerospace Ltd. o/a PAL Aerospace/PAL Technical Services",
-      "location": "St. John's",
-      "nocs": [
-        {
-          "noc": "72404",
-          "title": null
-        },
-        {
-          "noc": "21390",
-          "title": null
-        }
-      ],
-      "url": "https://www.gov.nl.ca/immigration/employer/pal-aerospace-ltd-o-a-pal-aerospace-pal-technical-services"
-    },
-    {
       "name": "PAL Airlines Ltd. o/a PAL Airlines",
       "location": "St. John's",
       "nocs": [
@@ -6447,17 +6444,6 @@
         }
       ],
       "url": "https://www.gov.nl.ca/immigration/employer/peninsula-donuts-inc-a-o-tim-hortons"
-    },
-    {
-      "name": "Peninsula Optical Services Limited",
-      "location": "Marystown",
-      "nocs": [
-        {
-          "noc": "33109",
-          "title": null
-        }
-      ],
-      "url": "https://www.gov.nl.ca/immigration/employer/peninsula-optical-services-limited"
     },
     {
       "name": "Peoples Food Inc. o/a People’s Pizza",
@@ -7127,40 +7113,6 @@
       "url": "https://www.gov.nl.ca/immigration/employer/rowsells-petroleum-limited"
     },
     {
-      "name": "Royal Wood Design Ltd.",
-      "location": "Mount Pearl",
-      "nocs": [
-        {
-          "noc": "10022",
-          "title": null
-        },
-        {
-          "noc": "13100",
-          "title": null
-        },
-        {
-          "noc": "64101",
-          "title": null
-        },
-        {
-          "noc": "94129",
-          "title": null
-        }
-      ],
-      "url": "https://www.gov.nl.ca/immigration/employer/royal-wood-design-ltd"
-    },
-    {
-      "name": "RTS Janitorial Maintenance Inc.",
-      "location": "Mount Pearl",
-      "nocs": [
-        {
-          "noc": "6315",
-          "title": null
-        }
-      ],
-      "url": "https://www.gov.nl.ca/immigration/employer/rts-janitorial-maintenance-inc"
-    },
-    {
       "name": "Ruby Manor Ltd. o/a Ruby Manor Retirement Home",
       "location": "St. John's",
       "nocs": [
@@ -7213,17 +7165,6 @@
       "url": "https://www.gov.nl.ca/immigration/employer/sm-park-limited-o-a-historic-hotel-corner-brook"
     },
     {
-      "name": "Saltwater Subway Inc. o/a Subway",
-      "location": "Conception Bay South",
-      "nocs": [
-        {
-          "noc": "62020",
-          "title": null
-        }
-      ],
-      "url": "https://www.gov.nl.ca/immigration/employer/saltwater-subway-inc-o-a-subway"
-    },
-    {
       "name": "Samy’s Restaurant Ltd.",
       "location": "Baie Verte",
       "nocs": [
@@ -7259,17 +7200,6 @@
         }
       ],
       "url": "https://www.gov.nl.ca/immigration/employer/scotia-recycling-limited-nl-scotia-recycling-limited"
-    },
-    {
-      "name": "SDC Enterprises Ltd. o/a Smoke’s Poutinerie",
-      "location": "St. John's",
-      "nocs": [
-        {
-          "noc": "62020",
-          "title": null
-        }
-      ],
-      "url": "https://www.gov.nl.ca/immigration/employer/sdc-enterprises-ltd-o-a-smokes-poutinerie"
     },
     {
       "name": "Seabreeze Subway Inc.",

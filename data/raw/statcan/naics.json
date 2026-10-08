@@ -3,7 +3,7 @@
   "https://www.statcan.gc.ca/en/statistical-programs/document/naics-scian-2022-structure-v1-eng.csv"
  ],
  "version": "NAICS Canada 2022 v1.0",
- "fetched": "2026-10-02",
+ "fetched": "2026-10-07",
  "rows": [
   {
    "code": "11",

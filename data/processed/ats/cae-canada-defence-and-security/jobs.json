@@ -1,0 +1,31 @@
+{
+  "ats": "myworkdayjobs",
+  "token": "",
+  "count": 1,
+  "jobs": [
+    {
+      "title": "Cyber Implementation Specialist",
+      "location": "Ottawa",
+      "url": "https://cae.wd3.myworkdayjobs.com/career/job/Ottawa/Cyber-Implementation-Specialist_123311",
+      "department": "",
+      "posted": "2026-10-05",
+      "valid_through": "",
+      "address": "",
+      "salary": "$91,000 - $136,400 CAD",
+      "employment_hours": "",
+      "employment_term": "",
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 113700,
+      "salaryText": "$91K–$136K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    }
+  ]
+}

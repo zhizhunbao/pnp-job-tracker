@@ -1,20 +1,6 @@
 {
   "ats": "bamboohr",
   "token": "martello",
-  "count": 1,
-  "jobs": [
-    {
-      "title": "VP Product",
-      "location": "Kanata, Ontario",
-      "url": "https://martello.bamboohr.com/careers/208",
-      "department": "PLM",
-      "posted": "2026-07-24",
-      "valid_through": "",
-      "address": "",
-      "salary": "",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": false
-    }
-  ]
+  "count": 0,
+  "jobs": []
 }
