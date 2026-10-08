@@ -266,8 +266,9 @@ button:not(:disabled):hover {
 /* 站内行内动作钮(职位板一路用下来的那枚药丸钮;08-10 Frank 点名把脉页并过来) */
 .pill { border: 1px solid var(--border); border-radius: 999px; padding: 5px 13px; font-size: 12.5px; background: var(--card); color: #374151; cursor: pointer; font-weight: 600; }
 
-/* 站内蓝链(无下划线) */
-.link { color: var(--primary); text-decoration: none; }
+/* 站内蓝链(无下划线)。cursor 2026-10-08 Frank「鼠标放上去没有变成小手」:挂在 span 上的三处(职位页移民卡行、
+   AIP 指定雇主名、公司名格)都有 onClick 却没手型,<a> 天生有、span 要显式给;蓝字 = 可点,手型与行为同一判据 */
+.link { color: var(--primary); text-decoration: none; cursor: pointer; }
 
 /* #276:桌面态基准值(原内联样式搬出,数值不变)——SponsorBoard 筛选控件 height、
    Sec 折叠箭头 padding/margin,手机断点覆写见下方 640px 媒体块,桌面走这里的默认值。
