@@ -44,11 +44,17 @@
  * 2026-10-07 Frank「投递不应该跳到我的投递页面吗」→「合成一个」:投递并进「我的求职」—— 职位页「邮箱投递」跳
  * `?sec=sjobs&job=<职位号>`,投递区(apply 桶 ApplySection)摆在投递记录表上方;发出后表按 appliedGen 重挂、重新取一次。
  * 原独立投递页 /apply/<id> 撤。
+ * 2026-10-08 照 AIApply 重设计(docs/design/我的模块-照AIApply-20261007.md):页签换序、默认落「我的求职」;banner 副题「已投 N 封」;
+ * 发出后表上方出成功条 SentNotice;「我的简历」下面多一段「求职信」CoverLetters;「我的订阅」换成方案卡 / Pro 包含 / 付款记录。
+ * 2026-10-08 Frank「找一个最好的直接抄」(AIApply 的 Auto Apply):「我的求职」最上面加「今日待投」QueueReview(智能投递队列的审核区)。
+ * 2026-10-08 小白走查:带 job= 来的(职位页点了「邮箱投递」)先给他投那一岗 —— 投递区在上、「今日待投」等发出去再出;
+ * 否则两块都在要简历和英文姓名,他不知道填哪个。
  *
  * @author Frank
  * @time 2026-07-02 00:00:00
  */
 import { ApplySection } from '@/components/apply'
+import { QueueReview } from '@/components/queue'
 import { AppliedList, SavedList } from '@/components/myjobs'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
@@ -57,8 +63,10 @@ import {
   AccountColumns,
   AccountNav,
   AccountRedirect,
+  CoverLetters,
   PayOkNotice,
   ResumeFile,
+  SentNotice,
   Subscription,
   SEC_FAVS,
   SEC_RESUME,
@@ -83,15 +91,18 @@ export default function AccountPage() {
       <Header />
 
       <Shell top={SHELL_TOP} bottom={SHELL_BOTTOM}>
-        <AccountBanner t={a.t} />
+        <AccountBanner t={a.t} sent={a.sent} />
         {a.checked && a.me != null && (
           <AccountColumns
             nav={<AccountNav sec={a.sec} t={a.t} onPick={a.onPick} />}>
             {a.payOk && <PayOkNotice t={a.t} />}
+            {a.sec === SEC_SJOBS && a.sentTo != null && <SentNotice t={a.t} company={a.sentTo} />}
             {a.sec === SEC_RESUME && <ResumeFile t={a.t} />}
+            {a.sec === SEC_RESUME && <CoverLetters t={a.t} />}
             {a.sec === SEC_FAVS && <SavedList t={a.t} plan={a.plan} />}
             {a.sec === SEC_FAVS && <WeeklyOptin t={a.t} userId={a.me.id} weeklyOptOut={!!(a.me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
             {a.sec === SEC_SJOBS && <ApplySection onSent={a.onApplied} />}
+            {a.sec === SEC_SJOBS && a.applying === false && <QueueReview t={a.t} plan={a.plan} onSent={a.onApplied} />}
             {a.sec === SEC_SJOBS && <AppliedList key={a.appliedGen} t={a.t} plan={a.plan} />}
             {a.sec === SEC_SUB && <Subscription t={a.t} until={a.me.proUntil} />}
           </AccountColumns>

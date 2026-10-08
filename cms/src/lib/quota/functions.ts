@@ -21,6 +21,7 @@ import { DENY_IP, DENY_USER,
 import { CACHE } from './variables'
 import type {
   MaybeDenyBody, FreeGated, FreeGateIn, MaybeLeft, MaybeRawUser, MaybeStr, MaybeUser, QuotaPairs, ReqHeaders, ReqLike, Trial,
+  TrialOpenIn,
   TrialDbRow, TrialGateIn, TrialIn, TrialOut, TrialWriteOut, UserOut,
 } from './types'
 
@@ -235,7 +236,17 @@ export async function markTrial(x: TrialIn): TrialWriteOut {
  * @returns 放行。
  */
 export function isTrialOpen(x: TrialGateIn): boolean {
-  if (isPro(x.user) || x.trial.here) {
+  return trialOpenOf({ pro: isPro(x.user), trial: x.trial, max: x.max })
+}
+
+/**
+ * 同上,只收「是不是 Pro」一个布尔(2026-10-08 智能投递役里没有会话用户,只有库里的到期日判出来的 pro)。
+ *
+ * @param x 是不是 Pro、用量与上限。
+ * @returns 放行。
+ */
+export function trialOpenOf(x: TrialOpenIn): boolean {
+  if (x.pro || x.trial.here) {
     return true
   }
   return x.trial.used < x.max
@@ -305,6 +316,7 @@ export function toSessionUser(u: MaybeRawUser): MaybeUser {
     displayName: strOrNullOf(u.displayName),
     avatar: strOrNullOf(u.avatar),
     profile: u.profile,
+    stripeCustomerId: strOrNullOf(u.stripeCustomerId),
   }
 }
 

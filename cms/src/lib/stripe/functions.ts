@@ -9,9 +9,13 @@
  */
 
 import Stripe from 'stripe'
-import { BACK_RE, CANCEL_PATH, OK_TAIL, SUCCESS_PATH } from './constants'
+import {
+  BACK_RE, CANCEL_PATH, CENTS, OK_TAIL, PAYMENTS_EXPAND, PAYMENTS_LIMIT, PAYMENTS_PAID, RADIX_DEC, S_TO_MS, SUCCESS_PATH,
+} from './constants'
 import { CACHE } from './variables'
-import type { MaybeCheckoutBody, MaybeStripe, ReturnPaths } from './types'
+import type {
+  MaybeCheckoutBody, MaybeStripe, PaymentRow, PaymentsIn, PaymentsOut, ReturnPaths, StripeCheckoutSession,
+} from './types'
 
 /**
  * 拿 Stripe 客户端;env 没配 key 是 null(调用方 503)。key 只进服务端 env,
@@ -42,4 +46,76 @@ export function returnPathsOf(body: MaybeCheckoutBody): ReturnPaths {
     return { ok: SUCCESS_PATH, cancel: CANCEL_PATH }
   }
   return { ok: body.back + OK_TAIL, cancel: body.back }
+}
+
+/**
+ * 本人的付款记录(「我的订阅」页签;2026-10-08):按客户 id 拉 Checkout 会话,只留付清了的,最近的在前;不落库。
+ *
+ * @param x 客户端与客户 id。
+ * @returns 一笔一行;没买过给空清单。
+ */
+export async function loadPayments(x: PaymentsIn): PaymentsOut {
+  const list = await x.stripe.checkout.sessions.list({
+    customer: x.customerId, limit: PAYMENTS_LIMIT, expand: PAYMENTS_EXPAND,
+  })
+  const out: PaymentRow[] = []
+  for (const session of list.data) {
+    if (session.payment_status === PAYMENTS_PAID) {
+      out.push(toPaymentRow(session))
+    }
+  }
+  return out
+}
+
+/**
+ * Checkout 会话 → 一笔付款(天数读 metadata.days,与 webhook 同一真相;收据在支付意图的最近一笔扣款上)。
+ *
+ * @param session 会话(已展开到扣款)。
+ * @returns 一笔付款。
+ */
+export function toPaymentRow(session: StripeCheckoutSession): PaymentRow {
+  let days = 0
+  if (session.metadata != null && session.metadata.days != null) {
+    const n = parseInt(session.metadata.days, RADIX_DEC)
+    if (Number.isFinite(n)) {
+      days = n
+    }
+  }
+  let amount = 0
+  if (session.amount_total != null) {
+    amount = session.amount_total / CENTS
+  }
+  let currency = ''
+  if (session.currency != null) {
+    currency = session.currency
+  }
+  return {
+    id: session.id,
+    paidAt: new Date(session.created * S_TO_MS).toISOString(),
+    days,
+    amount,
+    currency,
+    receiptUrl: receiptUrlOf(session),
+  }
+}
+
+/**
+ * 会话上的收据地址:支付意图与扣款都展开成对象才取得到;任一层还是 id 串或空,给空串。
+ *
+ * @param session 会话。
+ * @returns 收据地址或空串。
+ */
+function receiptUrlOf(session: StripeCheckoutSession): string {
+  const intent = session.payment_intent
+  if (intent == null || typeof intent === 'string') {
+    return ''
+  }
+  const charge = intent.latest_charge
+  if (charge == null || typeof charge === 'string') {
+    return ''
+  }
+  if (charge.receipt_url == null) {
+    return ''
+  }
+  return charge.receipt_url
 }

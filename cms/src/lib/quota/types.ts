@@ -92,6 +92,11 @@ export type SessionUser = {
    * 档案 jsonb(答题/匹配那套;本域不读内容,只透传给 jobs 的 normalizeProfile)。
    */
   profile: ProfileObj | null
+
+  /**
+   * Stripe 客户 id(没买过是 null;「我的订阅」付款记录按它懒查 Stripe,2026-10-08)。
+   */
+  stripeCustomerId: string | null
 }
 
 /**
@@ -148,6 +153,11 @@ export type RawUser = {
    * 档案 jsonb。
    */
   profile: ProfileObj | null
+
+  /**
+   * Stripe 客户 id(webhook 第一次收款时记;没买过是 NULL;2026-10-08「我的订阅」付款记录按它查 Stripe)。
+   */
+  stripeCustomerId: string | null
 }
 
 /**
@@ -299,6 +309,26 @@ export type TrialWriteOut = Promise<void>
 
 /**
  * 判试用闸的入参:谁、用量、上限。
+ */
+export type TrialOpenIn = {
+  /**
+   * 是不是 Pro(到期日在此刻之后)。
+   */
+  pro: boolean
+
+  /**
+   * 用量。
+   */
+  trial: Trial
+
+  /**
+   * 上限。
+   */
+  max: number
+}
+
+/**
+ * 试用闸(isTrialOpen / trialLeftOf)的入参:用户、用量与上限。
  */
 export type TrialGateIn = {
   /**

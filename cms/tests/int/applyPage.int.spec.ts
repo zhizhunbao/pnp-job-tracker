@@ -1,7 +1,7 @@
 // 站内投递区(2026-10-07 B2;components/apply,jsdom 挂件验 —— dev 直连生产库不登录)。
 // 同日改判:独立页 /apply/<id> 撤,投递并进「我的求职」(Frank「合成一个」)—— 投递区 ApplySection 摆在投递记录表上方,
 // 地址栏 /account?sec=sjobs&job=<id> 带职位才出。
-// 性质:① 地址栏没带职位 → 投递区不出(一个请求都不发);这一岗已发出 → 不出;下架 / 没投递邮箱 → 只摆原因一行;
+// 性质:① 地址栏没带职位 → 投递区不出(一个请求都不发);这一岗已发出 → 摆一行「已于 <日期> 投递」(2026-10-08;原先整块不出);下架 / 没投递邮箱 → 只摆原因一行;
 //       选好简历又有署名(投过别的岗)直接落预览;
 //       ② 第 1 步:英文姓名不合规本地就拦(不发草稿);一份简历都没有拦;合规 + 有简历 → 存草稿(带姓名、填好的信与位置、
 //          默认那份简历)→ 求职信;
@@ -96,12 +96,14 @@ afterEach(() => {
 })
 
 describe('投递区出不出', () => {
-  it('① 没带职位不出、不发请求;已发出不出;下架 / 没邮箱只摆原因;投过别的岗直接落预览', async () => {
+  it('① 没带职位不出、不发请求;已发出摆「已于某日投递」(2026-10-08,原先不出);下架 / 没邮箱只摆原因;投过别的岗直接落预览', async () => {
     const calls = server({})
     expect((await mount('?sec=sjobs')).textContent).toBe('')
     expect(calls).toEqual([])
     server({ [START]: { status: 200, body: start({ status: 'sent', senderName: 'Zhang San', resumes: [RES], resumeId: 7 }) } })
-    expect((await mount('?sec=sjobs&job=42')).textContent).toBe('')
+    expect((await mount('?sec=sjobs&job=42')).textContent).toBe('这个职位已经投过了')
+    server({ [START]: { status: 200, body: start({ status: 'sent', sentAt: '2026-10-06T10:00:00.000Z' }) } })
+    expect((await mount('?sec=sjobs&job=42')).textContent).toBe('这个职位已于 2026-10-06 投递')
     server({ [START]: { status: 200, body: start({ job: { ...JOB, closed: true } }) } })
     expect((await mount('?sec=sjobs&job=42')).textContent).toBe('职位已下架')
     server({ [START]: { status: 200, body: start({ job: { ...JOB, hasEmail: false } }) } })

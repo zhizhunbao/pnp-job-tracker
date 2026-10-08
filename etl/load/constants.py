@@ -32,6 +32,13 @@ OLD_SEED_SUFFIX = "/seed"
 ALERTS_PATH = "/api/alerts/run"
 """邮件提醒端点(E5-03:seed 成功后触发匹配版 alerts,同 token 鉴权)。"""
 
+QUEUE_PATH = "/api/queue/run"
+"""智能投递端点(2026-10-08 照 AIApply 的 Auto Apply:seed 成功、alerts 之后触发,同 token 鉴权;
+挂在 build 役后面的举证:同一节奏(新岗入库后)、同一 token、同一依赖(seed 成功才有新岗),不值一个新单元)。"""
+
+QUEUE_TIMEOUT_S = 600
+"""智能投递一轮的超时(每人最多 5 封信、每封请一次模型,几十人就要几分钟)。"""
+
 K_OK = "ok"
 """端点响应体的成功键(2xx 且 ok:true 才算成功 —— 502 返回 HTML,只看状态码会记假成功)。"""
 

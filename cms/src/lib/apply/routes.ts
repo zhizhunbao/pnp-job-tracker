@@ -29,7 +29,7 @@ import {
   DRAFT_LIMIT_DAILY, DRAFT_LIMIT_PREFIX, E_AUTH, E_BODY, E_BOUNCED, E_BUSY, E_CHARS, E_CLOSED, E_DRAFT, E_JOB, E_LIMIT,
   E_LONG, E_MAIL, E_MAIL_OFF, E_NAME, E_TRIAL, E_NO_EMAIL, E_RESUME, E_SAME_EMAIL, E_SENT, E_SIG, HDR_NOSNIFF, HDR_SVIX_ID,
   HDR_SVIX_SIG, HDR_SVIX_TS, MIME_PDF, MS_PER_S, NOSNIFF, P_JOB, SEND_IP_DAILY, SEND_IP_PREFIX, SEND_LIMIT_DAILY,
-  SEND_LIMIT_PREFIX, SITE_DAY_MAX, ST_DRAFT, ST_SENDING, TEXT_NONE, USER_DAY_MAX, WEBHOOK_SECRET,
+  SEND_LIMIT_PREFIX, SITE_DAY_MAX, ST_DRAFT, ST_QUEUED, ST_SENDING, TEXT_NONE, USER_DAY_MAX, WEBHOOK_SECRET,
   COVER_DEFAULT, KIND_COVER, LETTER_LIMIT_DAILY, LETTER_LIMIT_PREFIX, LETTER_MIN_LEN, LETTER_PROVIDER_ENV,
   LETTER_TEMPERATURE, LETTER_TOKENS_MAX, P_ID, P_KIND,
 } from './constants'
@@ -39,6 +39,7 @@ import {
   loadSiteDayCount, loadUserDayCount, mailHtmlOf, mailSubjectOf, mailTextOf, markApplyBounced, markApplySent,
   pdfBadCharsOf, recipientOf, resumeFileOf, saveApplyDraft, saveApplyPrefs, senderFromOf, toDraftBody, toSendJobId, unclaimApply, webhookEmailIdOf,
   letterCleanOf, letterMessagesOf, letterProviderOf, loadApplyFile, toLetterBody,
+  loadApplyLetters,
 } from './functions'
 import type { DraftBodyJson, LetterBodyJson, SendBodyJson, WebhookJson } from './types'
 
@@ -209,6 +210,22 @@ export async function applyFileRoute(req: Request): Promise<Response> {
 }
 
 /**
+ * GET /api/apply/letters:本人写过的求职信清单(「我的简历」页签的「求职信」段;2026-10-08 照 AIApply 的 My Cover Letters)。
+ * 只给本人、不缓存;信的正文不下发。
+ *
+ * @param _req 请求。
+ * @returns { items };未登录 401。
+ */
+export async function applyLettersRoute(_req: Request): Promise<Response> {
+  const user = await getUserOrNull(await headers())
+  if (user == null) {
+    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  const items = await loadApplyLetters({ db: await getDb(), userId: user.id })
+  return Response.json({ items }, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
+}
+
+/**
  * POST /api/apply/inbound:Resend 回调(svix 签名)。永久退信与投诉 / 被抑制:那一封标退信、雇主邮箱进退信名单
  * (发送前拦,审查 #3);临时退信与别的事件只留痕。对不上投递行(提醒信的退信)回 200 不重试。
  *
@@ -370,7 +387,7 @@ export async function applySendRoute(req: Request): Promise<Response> {
   if (row == null) {
     return Response.json({ error: E_DRAFT }, { status: CONFLICT })
   }
-  if (row.status !== ST_DRAFT && row.status !== ST_SENDING) {
+  if (row.status !== ST_DRAFT && row.status !== ST_QUEUED && row.status !== ST_SENDING) {
     return Response.json({ error: E_SENT }, { status: CONFLICT })
   }
   const prefs = await loadApplyPrefs({ db, userId: user.id })

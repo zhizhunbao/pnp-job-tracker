@@ -4894,9 +4894,9 @@ export type AuthDoneIn = {
   setStage: (s: ApplyStage) => void
 
   /**
-   * 投递动作。
+   * 去投递区(整页跳,带回新会话种子;2026-10-08 小白走查:软刷与软跳抢跑,落到「我的」页顶栏还是「登录 注册」)。
    */
-  launch: () => Promise<void>
+  go: () => void
 
   /**
    * 软刷(router.refresh):流程内登录后让 header 变已登录、又不丢投递流程(2026-09-22)。

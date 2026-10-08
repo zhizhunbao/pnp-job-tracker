@@ -122,14 +122,37 @@ export async function finishAuth(x: FinishAuthIn) {
   await pullAndMerge(true).catch(function ignore() {
     return null
   })
+  const next = nextPathOf()
+  let returnTo = x.returnTo
+  if (next != null) {
+    returnTo = next
+  }
   if (x.mode === MODE_REGISTER && x.keepPage === false) {
-    const destination = quizDestinationOf({ returnTo: x.returnTo })
+    const destination = quizDestinationOf({ returnTo })
     if (destination != null) {
       window.location.assign(destination)
       return
     }
   }
+  if (next != null) {
+    window.location.assign(next)
+    return
+  }
   x.onDone()
+}
+
+/**
+ * 地址栏里带的「登录后回哪儿」(`?next=`;2026-10-08 照 AIApply 重设计故事 3:没登录点了「我的」页深链,登录后回那条)。
+ * 只认站内相对路径(开放重定向同一道闸 SAFE_PATH_RE)。
+ *
+ * @returns 站内路径;没带或不合形给 null。
+ */
+export function nextPathOf(): string | null {
+  const next = new URLSearchParams(window.location.search).get(P_NEXT)
+  if (next == null || next === '' || SAFE_PATH_RE.test(next) === false) {
+    return null
+  }
+  return next
 }
 
 /**

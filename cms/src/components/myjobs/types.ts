@@ -1,5 +1,6 @@
 /**
- * 「我的」页两张岗位表(myjobs 组件桶)的形状:线格式 → 展示行 → 列。
+ * 「我的」页两张岗位清单(myjobs 组件桶)的形状:线格式 → 展示行 → 清单。
+ * 2026-10-08 进度板:列构造撤,展示行直接喂横卡。
  *
  * @author Frank
  * @time 2026-10-06 23:20:00
@@ -18,7 +19,7 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
 export type Lang = 'zh' | 'en' | 'ko'
 
 /**
- * 哪张表:我的求职 / 我的收藏。
+ * 哪张清单:我的求职 / 我的收藏。
  */
 export type ListKind = 'applied' | 'saved'
 
@@ -27,7 +28,7 @@ export type ListKind = 'applied' | 'saved'
  */
 export type MyJobItem = {
   /**
-   * 收藏记录 id(取消收藏时 DELETE 它)。
+   * 收藏记录 id(取消收藏时 DELETE 它);我的求职 = 投递行 id。
    */
   id: number
 
@@ -72,7 +73,7 @@ export type MyJobItem = {
   salary: string
 
   /**
-   * 折算年薪(薪资列排序用;没有 = null)。
+   * 折算年薪(没有 = null)。
    */
   salaryAnnual: number | null
 
@@ -92,7 +93,7 @@ export type MyJobItem = {
   stage: string
 
   /**
-   * 最近一次改进度的时刻(ISO;已投的行 = 投递那一刻)。
+   * 最近一次改动的时刻(ISO;发出去的行 = 发出那一刻,草稿 / 待投 = 最近改动)。
    */
   updatedAt: string
 
@@ -100,6 +101,11 @@ export type MyJobItem = {
    * 职位已下架。
    */
   closed: boolean
+
+  /**
+   * 库里有投递邮箱(我的收藏:出「投递」钮的前提;2026-10-08)。
+   */
+  hasEmail: boolean
 }
 
 /**
@@ -118,7 +124,7 @@ export type MyJobsRespJson = {
 export type SetItemsFn = (v: MyJobItem[]) => void
 
 /**
- * 两张表(AppliedList / SavedList)的 props。
+ * 两张清单(AppliedList / SavedList)的 props。
  */
 export type MyJobsListIn = {
   /**
@@ -143,7 +149,7 @@ export type MyJobsHookIn = {
 }
 
 /**
- * 一张表整机的面板(useMyJobs 出)。
+ * 一张清单整机的面板(useMyJobs 出)。
  */
 export type MyJobsPanel = {
   /**
@@ -165,6 +171,16 @@ export type MyJobsPanel = {
    * 界面语(决定灰注出哪种译名、城市出哪种名)。
    */
   lang: Lang
+
+  /**
+   * 阶段筛选(all = 不筛;我的求职顶上那排胶囊)。
+   */
+  stage: string
+
+  /**
+   * 改阶段筛选。
+   */
+  setStage: (s: string) => void
 
   /**
    * 弹框栈(公司弹框一层层叠;modal 域 useLayerStack 起的)。
@@ -203,13 +219,28 @@ export type LoadMyJobsIn = {
 }
 
 /**
- * 一行展示行(洗好的字、链接与手柄;单元格与卡片只管摆)。
+ * 一行展示行(洗好的字、链接与手柄;横卡只管摆)。
  */
 export type MyJobCellRow = {
   /**
-   * 行身份(收藏记录 id)。
+   * 行身份(收藏记录 / 投递行 id)。
    */
   key: string
+
+  /**
+   * 原始投递进度(阶段筛选按它;只收藏没投 = 空串)。
+   */
+  stage: string
+
+  /**
+   * 公司首字母(没公司名 = ?)。
+   */
+  avatar: string
+
+  /**
+   * 首字母块的配色类名(c0 ~ c6)。
+   */
+  avatarCls: string
 
   /**
    * 点职位名的手柄:普通左键叠开职位描述弹框(职位删了时职位格不出链接,这一格给不拦的空口)。
@@ -232,6 +263,11 @@ export type MyJobCellRow = {
   company: string
 
   /**
+   * 点公司名:开公司弹框;null = 公司表没这家,公司名不可点。
+   */
+  onCompany: (() => void) | null
+
+  /**
    * 城市主文案(界面语言有译名用译名)。
    */
   cityName: string
@@ -242,57 +278,32 @@ export type MyJobCellRow = {
   cityNote: string
 
   /**
-   * 点公司名:开公司弹框;null = 公司表没这家,公司名不可点。
-   */
-  onCompany: (() => void) | null
-
-  /**
-   * 折算年薪(薪资列排序用)。
-   */
-  salaryAnnual: number | null
-
-  /**
-   * 城市格的点击(这两张表里城市不链去职位板,给一个什么都不做的口;随行带来,哑单元格不 import functions)。
-   */
-  onCity: () => void
-
-  /**
-   * 薪资(没有 = 空串)。
+   * 薪资(没有 = 空串;只收藏那张清单出)。
    */
   salary: string
 
   /**
-   * 日期(年-月-日;我的求职 = 投递日期,我的收藏 = 发布日期;没有 = 空串)。
+   * 日期一行(「投递于 日期」「最近改于 日期」「发布于 日期」;没有 = 空串)。
    */
-  date: string
+  dateText: string
 
   /**
-   * 日期的排序值(ISO)。
-   */
-  sortAt: string
-
-  /**
-   * 投递进度字样(只收藏没投 = 空串;手机卡胶囊排用)。
+   * 投递状态胶囊的字(只收藏没投 = 空串)。
    */
   statusText: string
 
   /**
-   * 投递状态格的字(没投过 = 横杠)。
+   * 投递状态胶囊的档(tag 桶;没投 = 空串)。
    */
-  stageCell: string
+  statusTag: StatusTag
 
   /**
-   * 职位状态格的字(在架 / 已下架)。
-   */
-  listingText: string
-
-  /**
-   * 职位已下架(职位状态格染橙)。
+   * 职位已下架。
    */
   closed: boolean
 
   /**
-   * 「职位已下架」字样;在架 = 空串。
+   * 「已下架」字样;在架 = 空串。
    */
   closedText: string
 
@@ -302,32 +313,27 @@ export type MyJobCellRow = {
   openText: string
 
   /**
-   * 「取消收藏」的字(我的求职那张表不出这颗钮,给空串)。
+   * 「取消收藏」的字(我的求职那张清单不出这颗钮,给空串)。
    */
   unsaveText: string
 
   /**
-   * 取消收藏的手柄(我的求职那张表给 null)。
+   * 取消收藏的手柄(我的求职那张清单给 null)。
    */
   onUnsave: (() => void) | null
 
   /**
-   * 发出去的那份简历的地址(我的求职;我的收藏给空串)。
+   * 发出去的那份简历的地址(我的求职;草稿、我的收藏给空串)。
    */
   resumeHref: string
 
   /**
-   * 那封求职信 PDF 的地址(我的求职;我的收藏给空串)。
+   * 那封求职信 PDF 的地址(同上)。
    */
   coverHref: string
 
   /**
-   * 附件链接的字(「查看」)。
-   */
-  viewText: string
-
-  /**
-   * 「简历」「求职信」两个字(手机卡片上附件那一行用)。
+   * 「简历」「求职信」两个字(附件链接)。
    */
   resumeText: string
 
@@ -335,36 +341,26 @@ export type MyJobCellRow = {
    * 「求职信」的字。
    */
   coverText: string
-}
-
-/**
- * 一列(交给 table 桶;只声明本桶用到的格)。
- */
-export type MyJobCol = {
-  /**
-   * 列身份。
-   */
-  key: string
 
   /**
-   * 表头文案。
+   * 草稿 / 待投「继续」的去处(投递区);其余 = 空串(2026-10-08)。
    */
-  label: string
+  continueHref: string
 
   /**
-   * 单元格渲染。
+   * 「继续」的字。
    */
-  render: (r: MyJobCellRow) => React.ReactNode
+  continueText: string
 
   /**
-   * 排序取值器;缺席 = 这列不排序。
+   * 收藏行「投递」的去处(投递区);投不了 = 空串(2026-10-08)。
    */
-  sort?: (r: MyJobCellRow) => string | number | null
+  applyHref: string
 
   /**
-   * 单元格不换行。
+   * 「投递」的字。
    */
-  nowrap?: boolean
+  applyText: string
 }
 
 /**
@@ -372,7 +368,7 @@ export type MyJobCol = {
  */
 export type CellRowsIn = {
   /**
-   * 哪张表。
+   * 哪张清单。
    */
   kind: ListKind
 
@@ -412,7 +408,7 @@ export type CellRowsIn = {
  */
 export type CellRowIn = {
   /**
-   * 哪张表。
+   * 哪张清单。
    */
   kind: ListKind
 
@@ -473,14 +469,9 @@ export type UnsaveIn = {
 }
 
 /**
- * 表 + 手机卡片(MyJobsView)的 props。
+ * 横卡清单(JobList)的 props。
  */
-export type MyJobsViewIn = {
-  /**
-   * 列组。
-   */
-  cols: MyJobCol[]
-
+export type JobListIn = {
   /**
    * 展示行。
    */
@@ -493,9 +484,9 @@ export type MyJobsViewIn = {
 }
 
 /**
- * 一张手机卡(MyJobCard)的 props。
+ * 一张横卡(JobRow)的 props。
  */
-export type MyJobCardIn = {
+export type JobRowIn = {
   /**
    * 这一行的展示行。
    */
@@ -503,42 +494,122 @@ export type MyJobCardIn = {
 }
 
 /**
- * 职位卡的标题格(交给 card 桶的 JobCard;只声明用到的格)。
+ * 阶段胶囊排(StageBar)的 props。
  */
-export type CardTitle = {
+export type StageBarIn = {
   /**
-   * 标题文字。
+   * 胶囊(字 + 计数 + 选中没有 + 点了切到哪一档)。
    */
-  text: string
+  pills: StagePill[]
 
   /**
-   * 去处;缺席 = 纯文字。
+   * 切档。
    */
-  href?: string
-
-  /**
-   * 点标题的手柄(2026-10-07:普通左键叠开职位描述弹框);缺席 = 照链接跳。
-   */
-  onClick?: (e: React.MouseEvent) => void
+  onPick: (key: string) => void
 }
 
 /**
- * 职位卡的公司格(交给 card 桶的 JobCard;只声明用到的格)。
+ * 一枚阶段胶囊。
  */
-export type CardCompany = {
+export type StagePill = {
   /**
-   * 公司名。
+   * 筛哪一类(all = 不筛)。
    */
-  text: string
+  key: string
 
   /**
-   * 点了开公司弹框;缺席 = 不可点。
+   * 字。
    */
-  onClick?: () => void
+  label: string
+
+  /**
+   * 这一类有几岗。
+   */
+  count: number
+
+  /**
+   * 选中了没有。
+   */
+  on: boolean
 }
 
 /**
- * 开着的公司弹框是哪一家(形同雇主板 EmpModal)。
+ * 一枚阶段胶囊钮(StagePillButton)的 props。
+ */
+export type StagePillIn = {
+  /**
+   * 这一枚。
+   */
+  pill: StagePill
+
+  /**
+   * 切档。
+   */
+  onPick: (key: string) => void
+}
+
+/**
+ * `makePillClick` 的入参。
+ */
+export type PillClickIn = {
+  /**
+   * 这一枚的档键。
+   */
+  key: string
+
+  /**
+   * 切档。
+   */
+  onPick: (key: string) => void
+}
+
+/**
+ * `stagePillsOf` 的入参。
+ */
+export type StagePillsIn = {
+  /**
+   * 清单(全部,不筛)。
+   */
+  items: MyJobItem[]
+
+  /**
+   * 当前筛哪一类。
+   */
+  stage: string
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * `byStageOf`(按阶段筛清单)的入参。
+ */
+export type ByStageIn = {
+  /**
+   * 清单。
+   */
+  items: MyJobItem[]
+
+  /**
+   * 筛哪一类(all = 不筛)。
+   */
+  stage: string
+}
+
+/**
+ * `makePick`(阶段胶囊点了切档)的入参。
+ */
+export type PickIn = {
+  /**
+   * 切档落格。
+   */
+  setStage: (s: string) => void
+}
+
+/**
+ * 公司弹框是哪一家(形同雇主板 EmpModal)。
  */
 export type CoPeek = {
   /**
@@ -642,7 +713,7 @@ export type MyJobsPlan = Plan
  */
 export type FileHrefIn = {
   /**
-   * 这一行的造行入参(哪张表、这一行)。
+   * 这一行的造行入参(哪张清单、这一行)。
    */
   x: CellRowIn
 
@@ -652,3 +723,62 @@ export type FileHrefIn = {
   tail: string
 }
 
+/**
+ * 投递状态的一档(STAGES 的一行)。
+ */
+export type StageDef = {
+  /**
+   * 状态值。
+   */
+  st: string
+
+  /**
+   * 词条。
+   */
+  labelKey: string
+
+  /**
+   * 胶囊档。
+   */
+  tag: StatusTag
+}
+
+/**
+ * 投递状态胶囊能用的档(tag 桶的四档;空串 = 没胶囊)。
+ */
+export type StatusTag = 'info' | 'ok' | 'bad' | 'gray' | ''
+
+/**
+ * `dateLineOf` 的入参。
+ */
+export type DateLineIn = {
+  /**
+   * 造行入参(取词函数在里面)。
+   */
+  x: CellRowIn
+
+  /**
+   * 词条键。
+   */
+  key: string
+
+  /**
+   * ISO 时刻(没有 = 空串)。
+   */
+  iso: string
+}
+
+/**
+ * `avaClsOf` 的入参。
+ */
+export type AvaClsIn = {
+  /**
+   * 配色类名(c0 ~ c6)。
+   */
+  cls: string
+}
+
+/**
+ * 没有这一档。
+ */
+export type MaybeStageDef = StageDef | null

@@ -1925,6 +1925,11 @@
       "count": 4
     }
   },
+  "src/lib/apply/functions.ts": {
+    "max-lines": {
+      "count": 1
+    }
+  },
   "src/lib/employers/constants.ts": {
     "local/doc-every-export": {
       "count": 1

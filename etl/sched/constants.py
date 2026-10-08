@@ -201,6 +201,12 @@ ALERTS_OK_TPL = "✓ alerts {status}: {body}"
 ALERTS_FAIL_TPL = "✗ alerts {status}: {body} —— 不影响本轮"
 """邮件提醒触发失败行(失败不影响本轮,下轮补)。"""
 
+QUEUE_OK_TPL = "✓ queue {status}: {body}"
+"""智能投递触发成功行(2026-10-08;seed 成功、alerts 之后触发,同一 token 鉴权)。"""
+
+QUEUE_FAIL_TPL = "✗ queue {status}: {body} —— 不影响本轮"
+"""智能投递触发失败行(失败不影响本轮,下轮补)。"""
+
 ENV_PING_TPL = "HEALTHCHECK_PING_{role}"
 """监控心跳环境键(E7-01):本轮全部成功且本单元持 ping 权 → ping healthchecks.io
 (env 缺省不 ping)。批2 拆多单元后 ping 权收紧:每角色只授一只(META["ping"]=True),

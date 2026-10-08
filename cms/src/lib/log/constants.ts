@@ -791,6 +791,16 @@ export const APPLY_LOG = {
   whyFrag: ' why=',
 
   /**
+   * 智能投递:一个人这一轮挂了(其余照跑)。
+   */
+  queueFailed: 'queue failed user=',
+
+  /**
+   * 智能投递:一轮跑完(后接计数 json)。
+   */
+  queueRan: 'queue ran ',
+
+  /**
    * 退信回调验签不过。
    */
   badSig: 'webhook signature rejected',

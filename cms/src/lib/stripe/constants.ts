@@ -155,6 +155,36 @@ export const REQ_FIELD_NONE = ''
 export const RADIX_DEC = 10
 
 /**
+ * 付款记录响应的缓存头:只给本人,哪一层都不许存(2026-10-08)。
+ */
+export const CACHE_PRIVATE = 'private, no-store'
+
+/**
+ * 付款记录一次最多拉几笔(「我的订阅」页签;2026-10-08 懒查 Stripe,不落库)。一次性包一年最多十几笔,20 够用。
+ */
+export const PAYMENTS_LIMIT = 20
+
+/**
+ * 拉 Checkout 会话时顺带展开到收据:会话 → 支付意图 → 最近一笔扣款(receipt_url 在扣款上)。
+ */
+export const PAYMENTS_EXPAND = ['data.payment_intent.latest_charge']
+
+/**
+ * 只列付清了的会话(未付 / 取消的不出)。
+ */
+export const PAYMENTS_PAID = 'paid'
+
+/**
+ * Stripe 的时刻是秒,换成毫秒。
+ */
+export const S_TO_MS = 1000
+
+/**
+ * 金额以最小货币单位计(分);换成元。
+ */
+export const CENTS = 100
+
+/**
  * 捕到的东西不是 Error(没有 message 可读)时,留痕正文那一格。
  * 日志于是只剩前缀,至少还看得出是哪一步挂的;
  * 不为了凑一句话去 String(e) —— 那印出来的可能是「object Object」,比空还难查。

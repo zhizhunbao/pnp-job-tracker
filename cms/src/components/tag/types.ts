@@ -11,7 +11,7 @@
  * 2026-10-04 加第八种 pick 已选(浅主色;访客四题改版收口:向导里回显已选职业的标签原借 region 绿,语义是省 / 地区,
  * 效果图是浅主色 —— 与选中的选择格、大号胶囊同一套颜色)。
  */
-export type TagVariant = 'region' | 'federal' | 'imp' | 'warn' | 'ok' | 'pro' | 'gray' | 'pick'
+export type TagVariant = 'region' | 'federal' | 'imp' | 'warn' | 'ok' | 'pro' | 'gray' | 'pick' | 'info' | 'bad'
 
 /**
  * Tag 的 props。

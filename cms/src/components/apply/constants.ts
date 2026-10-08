@@ -91,6 +91,16 @@ export const FAIL_KEY = 'mj.fail'
 export const CLOSED_KEY = 'ap.e.closed'
 
 /**
+ * 这一岗已于某日投递的词条(2026-10-08:从职位页点进已投过的岗,投递区摆这一行,不再空白)。
+ */
+export const SENT_ON_KEY = 'ap.sentOn'
+
+/**
+ * 正在发、还没有发出时刻时摆的那一行(同接口的「已经投过了」)。
+ */
+export const SENT_KEY = 'ap.e.sent'
+
+/**
  * 没投过而库里没有投递邮箱的词条。
  */
 export const NO_EMAIL_KEY = 'ap.e.noEmail'

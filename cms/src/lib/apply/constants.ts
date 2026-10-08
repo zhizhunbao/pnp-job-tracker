@@ -777,3 +777,28 @@ export const P_KIND = 'kind'
  */
 export const KIND_COVER = 'cover'
 
+/**
+ * 求职信清单一次最多列多少封(「我的简历」页签的「求职信」段;2026-10-08;同「我的」页两张表的上限)。
+ */
+export const LETTERS_LIMIT = 200
+
+/**
+ * 投递状态:在智能投递队列里,信已写好,等用户点「投出」(2026-10-08 照 AIApply 的 Preparing to apply)。
+ */
+export const ST_QUEUED = 'queued'
+
+/**
+ * 投递状态:用户在队列里跳过了(以后不再进队列;照 AIApply 的 Declined)。
+ */
+export const ST_DECLINED = 'declined'
+
+
+
+
+
+
+
+
+
+
+

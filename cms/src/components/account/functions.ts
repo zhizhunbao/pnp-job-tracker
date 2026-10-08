@@ -11,6 +11,7 @@
 import { cssOf } from '@/components/css'
 import { toJobPlan } from '@/components/jobs'
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
+import { DAY_MS, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   CARD_CLS, CLS_SEP, CRED_INCLUDE, EV_WEEKLY,
@@ -20,13 +21,14 @@ import {
   MIME_PDF as MIME_PDF_TYPE, Q_DL_TAIL, Q_ID_HEAD, Q_VER_MID, RESUME_FILES_MAX, COUNT_SEP, CANVAS_TAG,
   CENTER_DIV, EV_WHEEL, PCT_SIGN, PX, TF_HEAD, TF_MID, TF_SCALE, TF_TAIL, WHEEL_OPTS, ZOOM_HOME, ZOOM_MAX, ZOOM_MIN,
   ZOOM_PCT, ZOOM_PINCH_K, ZOOM_PX_MAX, ZOOM_SETTLE_MS, ZOOM_WHEEL_K,
-  QP_OK_ON, QP_SEC, SEC_LABEL_CUT_RE, SEC_TABS,
+  QP_JOB, QP_OK_ON, QP_SEC, SEC_LABEL_CUT_RE, SEC_TABS,
   TEXT_NONE, URL_ME,
   URL_USER_HEAD,
+  AMOUNT_DIGITS, CUR_GAP, CUR_SIGN, LETTER_FILE_TAIL, LOGIN_URL, NEXT_SEP, PAY_COL_ACT, PAY_COL_AMOUNT, PAY_COL_DATE,
+  PAY_COL_ITEM, ST_DRAFT, URL_APPLY_HEAD, URL_LETTERS, URL_LETTER_FILE_HEAD, URL_PAYMENTS, URL_SENT_COUNT,
 } from './constants'
 import type {
-  GenSetFn,
-  AskOfIn, DivDragEvent, FileDropIn, FilePickIn, IdHandlerFn, InputChangeEvent, PdfPagesIn, PdfThumbIn, PdfjsOut,
+  AskOfIn, DivDragEvent, FileDropIn, FilePickIn, IdHandlerFn, InputChangeEvent, PdfPagesIn, PdfjsOut,
   PickerIn, PreviewOfIn, ResumeActIn, ResumeActSendIn, ResumeListLoadIn, ResumeMeta, ResumeMetas, ResumeReloadFn,
   ResumeRespJson, ResumeUploadFn, ResumeUploadIn, ShowPageIn,
   ApplyViewIn, DivPointerEvent, GripIn, GripViewIn, PageTurnIn, PdfDoc, PdfZoomDrawIn, PtPairIn, WheelBindIn,
@@ -37,7 +39,10 @@ import type {
   RefreshFn, RefreshIn,
   Sec,
   WeeklyToggleFn, WeeklyToggleIn,
+  AppliedSentOut, CountRespJson, LetterMeta, LetterMetas, LettersLoadIn, LettersRespJson, OnAppliedIn, PayCellRow,
+  PayCellRowsIn, PayCol, PaymentRow, PaymentRows, PaymentsLoadIn, PaymentsRespJson, SentCountLoadIn, TFn,
 } from './types'
+import { PayReceiptCell } from './payreceiptcell'
 import css from './account.module.css'
 
 /**
@@ -126,18 +131,6 @@ export function secLinkOf(): Sec | null {
 }
 
 /**
- * 造「投递记录表重挂」的手柄(2026-10-07 投递并进「我的求职」:发出后计数加一,表按它当 key 重挂、重新取一次)。
- *
- * @param set 计数格的 setter(收步进函数)。
- * @returns 手柄。
- */
-export function makeGenBump(set: GenSetFn): () => void {
-  return function bumpGen(): void {
-    set(genNextOf)
-  }
-}
-
-/**
  * 计数加一。
  *
  * @param n 原数。
@@ -145,6 +138,73 @@ export function makeGenBump(set: GenSetFn): () => void {
  */
 function genNextOf(n: number): number {
   return n + 1
+}
+
+/**
+ * 地址栏里带没带「要投的那一岗」(2026-10-08 小白走查:带着来的,先给他投那一岗,「今日待投」清单别在上面抢)。
+ *
+ * @returns 带了 true。
+ */
+export function isJobLink(): boolean {
+  const j = new URLSearchParams(window.location.search).get(QP_JOB)
+  return j != null && j !== TEXT_NONE
+}
+
+/**
+ * 造「投递区发出去了」的手柄(2026-10-08 故事 6):表重挂、成功条写上公司名、重拉已投几封。
+ *
+ * @param x 三个落格。
+ * @returns 手柄。
+ */
+export function makeOnApplied(x: OnAppliedIn): (y: AppliedSentOut) => void {
+  return function onApplied(y: AppliedSentOut): void {
+    x.setGen(genNextOf)
+    x.setSentTo(y.company)
+    void x.reloadSent()
+  }
+}
+
+/**
+ * 造「拉已投几封」(banner 副题;2026-10-08):失败按 0 读(副题不出,不冒充数字)。
+ *
+ * @param x 封数落格。
+ * @returns 拉的函数。
+ */
+export function makeSentCountLoad(x: SentCountLoadIn): () => Promise<void> {
+  return async function loadSentCount(): Promise<void> {
+    try {
+      const r = await fetch(URL_SENT_COUNT, { credentials: CRED_INCLUDE })
+      if (r.ok === false) {
+        x.setSent(0)
+        return
+      }
+      x.setSent(sentOf(await r.json() as CountRespJson))
+    } catch {
+      x.setSent(0)
+    }
+  }
+}
+
+/**
+ * 回包 → 封数(缺席按 0)。
+ *
+ * @param d 回包。
+ * @returns 封数。
+ */
+export function sentOf(d: CountRespJson): number {
+  if (d.sent == null) {
+    return 0
+  }
+  return d.sent
+}
+
+/**
+ * 未登录跳登录的去处:首页登录框 + 「登录后回哪儿」= 现在这条深链(2026-10-08 故事 3)。
+ *
+ * @returns 登录地址。
+ */
+export function loginLinkOf(): string {
+  return LOGIN_URL + NEXT_SEP + encodeURIComponent(window.location.pathname + window.location.search)
 }
 
 /**
@@ -623,30 +683,6 @@ export async function loadPdfjs(): PdfjsOut {
   return pdfjs
 }
 
-/**
- * 用 pdf.js 把原件第一页画进画布(按画布显示宽度 × 设备像素比,高清屏不糊)。
- * 画不出来(加密、损坏)就留着白纸占位 —— 文件本身没问题,预览与下载照常可用。
- *
- * @param x 画布、地址与「画好了」落格。
- * @returns 画完(或放弃)时 resolve。
- */
-export async function renderPdfThumb(x: PdfThumbIn): Promise<void> {
-  try {
-    const pdfjs = await loadPdfjs()
-    const task = pdfjs.getDocument({ url: x.src })
-    const doc = await task.promise
-    const page = await doc.getPage(THUMB_PAGE)
-    const base = page.getViewport({ scale: THUMB_BASE_SCALE })
-    const viewport = page.getViewport({ scale: (x.canvas.clientWidth / base.width) * window.devicePixelRatio })
-    x.canvas.width = Math.floor(viewport.width)
-    x.canvas.height = Math.floor(viewport.height)
-    await page.render({ canvas: x.canvas, viewport }).promise
-    await task.destroy()
-    x.setReady(true)
-  } catch {
-    ignoreWriteErr()
-  }
-}
 
 /**
  * 预览弹框:把原件逐页画进容器。每页按「容器里放得下的整页」缩放(宽、高取小者,不出滚动条;
@@ -1074,4 +1110,225 @@ export function dropClsOf(on: boolean): string {
     return cssOf(css.rfDrop) + CLS_SEP + cssOf(css.rfDropOn)
   }
   return cssOf(css.rfDrop)
+}
+
+/**
+ * 造「拉求职信清单」(「我的简历」页签的「求职信」段):失败按空清单读(那一段不出)。
+ *
+ * @param x 两个落格。
+ * @returns 拉的函数。
+ */
+export function makeLettersLoad(x: LettersLoadIn): () => Promise<void> {
+  return async function loadLetters(): Promise<void> {
+    try {
+      const r = await fetch(URL_LETTERS, { credentials: CRED_INCLUDE })
+      if (r.ok === false) {
+        x.setItems([])
+        return
+      }
+      x.setItems(toLetterMetas(await r.json() as LettersRespJson))
+    } catch {
+      x.setItems([])
+    } finally {
+      x.setChecked(true)
+    }
+  }
+}
+
+/**
+ * 回包 → 求职信清单(缺席按空)。
+ *
+ * @param d 回包。
+ * @returns 清单。
+ */
+export function toLetterMetas(d: LettersRespJson): LetterMetas {
+  if (d.items == null) {
+    return []
+  }
+  return d.items
+}
+
+/**
+ * 这一封是草稿吗。
+ *
+ * @param m 这一封。
+ * @returns 是草稿。
+ */
+export function isLetterDraft(m: LetterMeta): boolean {
+  return m.status === ST_DRAFT
+}
+
+/**
+ * 草稿「继续」的去处(投递区);职位删了给空串(没法继续)。
+ *
+ * @param m 这一封。
+ * @returns 地址或空串。
+ */
+export function letterContinueHrefOf(m: LetterMeta): string {
+  if (m.jobId == null) {
+    return TEXT_NONE
+  }
+  return URL_APPLY_HEAD + String(m.jobId)
+}
+
+/**
+ * 发出去的那封信的 PDF 地址。
+ *
+ * @param m 这一封。
+ * @returns 地址。
+ */
+export function letterFileHrefOf(m: LetterMeta): string {
+  return URL_LETTER_FILE_HEAD + String(m.id) + LETTER_FILE_TAIL
+}
+
+/**
+ * 造「拉付款记录」(「我的订阅」页签;懒查 Stripe):失败按空清单读(那一段不出)。
+ *
+ * @param x 清单落格。
+ * @returns 拉的函数。
+ */
+export function makePaymentsLoad(x: PaymentsLoadIn): () => Promise<void> {
+  return async function loadPayments(): Promise<void> {
+    try {
+      const r = await fetch(URL_PAYMENTS, { credentials: CRED_INCLUDE })
+      if (r.ok === false) {
+        x.setItems([])
+        return
+      }
+      x.setItems(toPaymentRows(await r.json() as PaymentsRespJson))
+    } catch {
+      x.setItems([])
+    }
+  }
+}
+
+/**
+ * 回包 → 付款记录(缺席按空)。
+ *
+ * @param d 回包。
+ * @returns 清单。
+ */
+export function toPaymentRows(d: PaymentsRespJson): PaymentRows {
+  if (d.items == null) {
+    return []
+  }
+  return d.items
+}
+
+/**
+ * 方案卡的类:白卡壳 + 本域的卡形;Pro 态再叠金色描边。
+ *
+ * @param pro 是 Pro。
+ * @returns className。
+ */
+export function subCardClsOf(pro: boolean): string {
+  const parts = [CARD_CLS, cssOf(css.subCard)]
+  if (pro) {
+    parts.push(cssOf(css.subCardPro))
+  }
+  return parts.join(CLS_SEP)
+}
+
+/**
+ * 到期日还剩几天(向上取整;已过期给 0)。
+ *
+ * @param until 到期日(ISO)。
+ * @returns 天数。
+ */
+export function daysLeftOf(until: string): number {
+  const ms = new Date(until).getTime() - Date.now()
+  if (ms <= 0) {
+    return 0
+  }
+  return Math.ceil(ms / DAY_MS)
+}
+
+/**
+ * 一笔付款的金额字:货币前缀 + 两位小数(表里没有的货币码用大写码)。
+ *
+ * @param r 这一笔。
+ * @returns 金额字。
+ */
+export function amountTextOf(r: PaymentRow): string {
+  const sign = CUR_SIGN[r.currency]
+  if (sign == null) {
+    return r.currency.toUpperCase() + CUR_GAP + r.amount.toFixed(AMOUNT_DIGITS)
+  }
+  return sign + r.amount.toFixed(AMOUNT_DIGITS)
+}
+
+/**
+ * 付款记录 → 展示行。
+ *
+ * @param x 清单与取词函数。
+ * @returns 展示行。
+ */
+export function payCellRowsOf(x: PayCellRowsIn): PayCellRow[] {
+  const out: PayCellRow[] = []
+  for (const r of x.items) {
+    out.push({
+      key: r.id,
+      date: ymd(r.paidAt),
+      item: x.t('sub.proDays', { n: r.days }),
+      amount: amountTextOf(r),
+      receiptUrl: r.receiptUrl,
+      receiptText: x.t('sub.receipt'),
+    })
+  }
+  return out
+}
+
+/**
+ * 付款记录表的四列:日期 / 内容 / 金额 / 操作。
+ *
+ * @param t 取词函数。
+ * @returns 列组。
+ */
+export function payColsOf(t: TFn): PayCol[] {
+  return [
+    { key: PAY_COL_DATE, label: t('sub.col.date'), render: payDateOf, nowrap: true },
+    { key: PAY_COL_ITEM, label: t('sub.col.item'), render: payItemOf, nowrap: true },
+    { key: PAY_COL_AMOUNT, label: t('sub.col.amount'), render: payAmountOf, nowrap: true },
+    { key: PAY_COL_ACT, label: t('col.actions'), render: PayReceiptCell, nowrap: true },
+  ]
+}
+
+/**
+ * 日期格。
+ *
+ * @param r 展示行。
+ * @returns 年-月-日。
+ */
+export function payDateOf(r: PayCellRow): string {
+  return r.date
+}
+
+/**
+ * 内容格。
+ *
+ * @param r 展示行。
+ * @returns 「Pro 90 天」。
+ */
+export function payItemOf(r: PayCellRow): string {
+  return r.item
+}
+
+/**
+ * 金额格。
+ *
+ * @param r 展示行。
+ * @returns 金额字。
+ */
+export function payAmountOf(r: PayCellRow): string {
+  return r.amount
+}
+
+/**
+ * 付款记录的行身份。
+ *
+ * @param r 展示行。
+ * @returns 会话 id。
+ */
+export function payKeyOf(r: PayCellRow): string {
+  return r.key
 }

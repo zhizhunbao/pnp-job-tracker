@@ -89,6 +89,21 @@ export type MyJobDbRow = {
    * 职位状态(open / closed / campus;职位删了是 NULL)。
    */
   job_status: string | null
+
+  /**
+   * 库里有投递邮箱(我的收藏:能不能直接投;我的求职那条 SQL 给 false;2026-10-08)。
+   */
+  has_email: boolean | null
+}
+
+/**
+ * 计数库行(已投几封)。
+ */
+export type CountDbRow = {
+  /**
+   * 条数。
+   */
+  n: number | string | null
 }
 
 /**
@@ -179,6 +194,11 @@ export type MyJobRow = {
    * 职位已下架。
    */
   closed: boolean
+
+  /**
+   * 库里有投递邮箱(我的收藏表上出「投递」钮的前提;2026-10-08)。
+   */
+  hasEmail: boolean
 }
 
 /**
@@ -205,3 +225,8 @@ export type MyJobsIn = {
  * 取清单的返回。
  */
 export type MyJobsOut = Promise<MyJobRow[]>
+
+/**
+ * 取计数的返回。
+ */
+export type CountOut = Promise<number>

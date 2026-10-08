@@ -1,6 +1,7 @@
 /**
  * 支付域的 HTTP 芯(第十一抽屉):/api/stripe/checkout(发起时长包 Checkout)与
- * /api/stripe/webhook(proUntil 的唯一写入方;URL 冻结 —— Stripe 后台配置指着它)。
+ * /api/stripe/webhook(proUntil 的唯一写入方;URL 冻结 —— Stripe 后台配置指着它)、/api/stripe/payments(2026-10-08
+ * 「我的订阅」付款记录,按用户的 stripeCustomerId 懒查 Stripe,不落库)。
  * 两处跨边界断言:stripeCheckoutRoute 的 `await req.json() as CheckoutBody`(网络 body
  * 先按声明形状收下再验);stripeWebhookRoute 的 `event.data.object as
  * StripeCheckoutSession`(事件形状由 Stripe 定,验签通过后按 HANDLED_EVENTS 收窄)。
@@ -12,15 +13,16 @@ import { getPayload } from 'payload'
 import { DAY_MS } from '@/lib/time'
 import config from '@/payload.config'
 import type Stripe from 'stripe'
-import { BAD_REQUEST, SERVER_ERROR, UNAUTHORIZED, UNAVAILABLE } from '../http'
+import { BAD_REQUEST, HDR_CACHE_CONTROL, SERVER_ERROR, UNAUTHORIZED, UNAVAILABLE } from '../http'
 import { log, STRIPE_LOG } from '../log'
 import { getUser } from '../quota/server'
 import {
   COLLECTION_USERS, E_BAD_SIG, E_INTERNAL, E_LOGIN, E_NOT_CONFIGURED, E_PRICE,
   E_UNKNOWN_PLAN, HANDLED_EVENTS, MODE_PAYMENT, PAID, PLANS, PM_ALIPAY, PM_CARD, PM_WECHAT, RADIX_DEC, SIG_HEADER,
   ENV_ON, LOG_MSG_NONE, REQ_FIELD_NONE, WECHAT_CLIENT_WEB,
+  CACHE_PRIVATE,
 } from './constants'
-import { getStripe, returnPathsOf } from './functions'
+import { getStripe, loadPayments, returnPathsOf } from './functions'
 import type { CheckoutBody, CreateSessionIn, PayMethod, StripeCheckoutSession, WebhookUserDoc } from './types'
 
 /**
@@ -90,6 +92,28 @@ export async function stripeCheckoutRoute(req: Request): Promise<Response> {
     })
   }
   return Response.json({ url: session.url })
+}
+
+/**
+ * GET /api/stripe/payments:本人的付款记录(「我的订阅」页签;2026-10-08)。没买过(没有客户 id)给空清单。
+ *
+ * @param req 请求。
+ * @returns { items };未配置 503、未登录 401。
+ */
+export async function stripePaymentsRoute(req: Request): Promise<Response> {
+  const stripe = getStripe()
+  if (stripe == null) {
+    return Response.json({ error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
+  }
+  const user = await getUser(req.headers)
+  if (user == null) {
+    return Response.json({ error: E_LOGIN }, { status: UNAUTHORIZED })
+  }
+  if (user.stripeCustomerId == null) {
+    return Response.json({ items: [] }, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
+  }
+  const items = await loadPayments({ stripe, customerId: user.stripeCustomerId })
+  return Response.json({ items }, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
 }
 
 /**

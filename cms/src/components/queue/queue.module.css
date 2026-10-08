@@ -1,0 +1,468 @@
+/*
+ * queue 组件桶(「今日待投」)的样式:白卡里一张岗位卡 + 信预览 + 钮组。
+ */
+
+/*
+ * 外框:与下面的投递区 / 投递记录表拉开。
+ */
+.wrap {
+  margin-bottom: 16px;
+}
+
+/*
+ * 标题行:左标题、右开关。
+ */
+.head {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+/*
+ * 标题。
+ */
+.title {
+  font-size: 15px;
+
+  font-weight: 700;
+
+  color: var(--text);
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+/*
+ * 标题旁的条数(黑底小胶囊)。
+ */
+.count {
+  font-size: 12px;
+
+  font-weight: 600;
+
+  color: #fff;
+
+  background: var(--text);
+
+  border-radius: 999px;
+
+  padding: 1px 8px;
+}
+
+/*
+ * 引导一行(先选想做的工作 / 先上传简历 / 今天没有新岗)。
+ */
+.hint {
+  margin-top: 10px;
+
+  font-size: 13px;
+
+  color: var(--text2);
+}
+
+/*
+ * 岗位卡。
+ */
+.job {
+  margin-top: 14px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 12px;
+
+  padding: 14px 16px;
+}
+
+/*
+ * 职位名一行(名字 + 已下架标)。
+ */
+.jobTitle {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  flex-wrap: wrap;
+
+  font-size: 15px;
+
+  font-weight: 600;
+}
+
+/*
+ * 公司名。
+ */
+.jobCo {
+  margin-top: 2px;
+
+  font-size: 13.5px;
+
+  color: var(--text);
+}
+
+/*
+ * 城市 + 薪资一行(两格分开摆,不用符号杂糅)。
+ */
+.jobMeta {
+  margin-top: 2px;
+
+  display: flex;
+
+  gap: 14px;
+
+  font-size: 12.5px;
+
+  color: var(--text2);
+}
+
+/*
+ * 薪资(绿,同职位卡)。
+ */
+.pay {
+  color: var(--ok);
+
+  font-weight: 600;
+}
+
+/*
+ * 信的预览:保留换行,灰底。
+ */
+.letter {
+  margin-top: 12px;
+
+  white-space: pre-wrap;
+
+  font-size: 13.5px;
+
+  line-height: 1.55;
+
+  color: var(--text);
+
+  background: var(--bg);
+
+  border-radius: 8px;
+
+  padding: 10px 12px;
+}
+
+/*
+ * 「展开 / 收起」一行。
+ */
+.expand {
+  margin-top: 4px;
+}
+
+/*
+ * 错误一行(右对齐,红)。
+ */
+.err {
+  margin-top: 10px;
+
+  text-align: right;
+
+  font-size: 13px;
+
+  color: var(--danger);
+}
+
+/*
+ * 底部钮组:左「改信」,右「跳过 / 投出 / 全部投出」。
+ */
+.foot {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-top: 12px;
+}
+
+/*
+ * 左边(「改信」一行放得下,不折)。
+ */
+.left {
+  display: inline-flex;
+
+  align-items: center;
+
+  white-space: nowrap;
+}
+
+/*
+ * 右边钮组。
+ */
+.right {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  flex-wrap: wrap;
+
+  justify-content: flex-end;
+}
+
+/*
+ * 「展开 / 收起」(蓝字文字钮,双类压过 button 桶的钮形)。
+ */
+.linkBtn.linkBtn {
+  padding: 0;
+
+  font-size: 13px;
+
+  font-weight: 400;
+
+  color: var(--primary);
+
+  border: none;
+
+  background: none;
+
+  cursor: pointer;
+}
+
+/*
+ * 卡上的职位名链接(链接色、不下划线,同职位板)。
+ */
+.jobLink {
+  color: var(--primary);
+
+  text-decoration: none;
+}
+
+/*
+ * 设置清单(没开或条件没齐时代替岗位卡)。
+ */
+.setup {
+  margin-top: 12px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 12px;
+
+  padding: 6px 16px;
+}
+
+/*
+ * 隐藏的文件框(由「上传」钮代点)。
+ */
+.file {
+  display: none;
+}
+
+/*
+ * 清单一行:勾 / 圈、项名、补的入口。
+ */
+.step {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 10px 0;
+
+  border-bottom: 1px solid var(--hairline);
+
+  font-size: 14px;
+}
+
+/*
+ * 最后一行不画线。
+ */
+.step:last-of-type {
+  border-bottom: 0;
+}
+
+/*
+ * 齐了的勾(绿圆底)。
+ */
+.stepDone {
+  width: 22px;
+
+  height: 22px;
+
+  border-radius: 50%;
+
+  background: #ecfdf5;
+
+  color: var(--ok);
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex: none;
+}
+
+/*
+ * 齐了的勾里的图标大小。
+ */
+.stepDone svg {
+  width: 13px;
+
+  height: 13px;
+}
+
+/*
+ * 缺的空圈。
+ */
+.stepTodo {
+  width: 22px;
+
+  height: 22px;
+
+  border-radius: 50%;
+
+  border: 2px solid var(--border);
+
+  flex: none;
+}
+
+/*
+ * 项名,占满中间。
+ */
+.stepLabel {
+  flex: 1;
+}
+
+/*
+ * 补的入口(右边)。
+ */
+.stepAct {
+  display: inline-flex;
+
+  align-items: center;
+}
+
+/*
+ * 「去选」链接(链接色)。
+ */
+.stepLink {
+  color: var(--primary);
+
+  font-size: 13px;
+}
+
+/*
+ * 英文姓名一行:输入框 + 保存。
+ */
+.nameRow {
+  display: inline-flex;
+
+  gap: 8px;
+
+  align-items: center;
+}
+
+/*
+ * 英文姓名输入框。
+ */
+.nameInput {
+  width: 180px;
+
+  padding: 5px 10px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 8px;
+
+  font-size: 13px;
+
+  font-family: inherit;
+}
+
+/*
+ * 「开启智能投递」一行(居中)。
+ */
+.enable {
+  padding: 14px 0 8px;
+
+  text-align: center;
+}
+
+/*
+ * 改信弹框标题。
+ */
+.editTitle {
+  font-size: 15px;
+
+  font-weight: 700;
+
+  margin-bottom: 10px;
+}
+
+/*
+ * 改信多行框(同投递区的信框)。
+ */
+.editArea {
+  width: 100%;
+
+  min-height: 320px;
+
+  padding: 10px 12px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 8px;
+
+  font-size: 15px;
+
+  line-height: 1.5;
+
+  font-family: inherit;
+
+  resize: vertical;
+
+  box-sizing: border-box;
+}
+
+/*
+ * 改信弹框底部钮组(靠右)。
+ */
+.editFoot {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 8px;
+
+  margin-top: 12px;
+}
+
+@media (width <= 640px) {
+  /*
+   * 手机上英文姓名那一行换到下面整行。
+   */
+  .step {
+    flex-wrap: wrap;
+  }
+
+  /*
+   * 输入框占满。
+   */
+  .nameInput {
+    width: 150px;
+  }
+
+  /*
+   * 手机上改信框撑到大半屏(弹框已是伪全屏,下面别空着)。
+   */
+  .editArea {
+    min-height: 60vh;
+  }
+}

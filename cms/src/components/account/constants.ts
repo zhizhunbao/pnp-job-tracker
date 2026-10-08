@@ -88,9 +88,153 @@ export const ACCT_BANNER_MODULE = 'account'
 export const ACCT_BANNER_TITLE_KEY = 'nav.mine'
 
 /**
- * 「我的」页 banner 的副题词条。
+ * 「我的」页 banner 的副题词条:「已投 N 封」(2026-10-08 照 AIApply 重设计故事 2:原「简历、收藏与订阅」和页签重复,
+ * 文案四闸该删;别的页 banner 副题是计数)。一封没投过不出副题。
  */
-export const ACCT_BANNER_SUB_KEY = 'acct.bnSub'
+export const ACCT_BANNER_SUB_KEY = 'acct.bnSent'
+
+/**
+ * 已投几封的接口(2026-10-08;banner 副题)。
+ */
+export const URL_SENT_COUNT = '/api/myjobs/count'
+
+/**
+ * 发出后成功条的词条(「已发给 <公司>」;2026-10-08 故事 6)。
+ */
+export const SENT_NOTICE_KEY = 'mj.sentTo'
+
+/**
+ * 成功条的色档(notice 四色里的绿:成功)。
+ */
+export const SENT_NOTICE_KIND = 'ok'
+
+/**
+ * 还没有发出(成功条不出)。
+ */
+export const SENT_NONE = ''
+
+/**
+ * 未登录跳登录时带的「登录后回哪儿」参数(拼在 LOGIN_URL 后;2026-10-08 故事 3)。
+ */
+export const NEXT_SEP = '&next='
+
+/**
+ * 求职信清单接口(「我的简历」页签的「求职信」段;2026-10-08 照 AIApply 的 My Cover Letters)。
+ */
+export const URL_LETTERS = '/api/apply/letters'
+
+/**
+ * 草稿「继续」的去处头(后接职位 id):「我的求职」上方的投递区。
+ */
+export const URL_APPLY_HEAD = '/account?sec=sjobs&job='
+
+/**
+ * 发出去的那封信的 PDF 地址头(后接投递行 id;同「我的求职」的求职信格)。
+ */
+export const URL_LETTER_FILE_HEAD = '/api/apply/file?id='
+
+/**
+ * 求职信 PDF 地址的种类尾。
+ */
+export const LETTER_FILE_TAIL = '&kind=cover'
+
+/**
+ * 草稿的投递状态值(与 lib/apply 的 ST_DRAFT 同字,各域各抄一份)。
+ */
+export const ST_DRAFT = 'draft'
+
+/**
+ * 求职信卡上「草稿」胶囊的档(tag 桶 gray)。
+ */
+export const LETTER_DRAFT_TAG = 'gray'
+
+/**
+ * 求职信卡上「已投递」胶囊的档(tag 桶 ok:绿)。
+ */
+export const LETTER_SENT_TAG = 'ok'
+
+/**
+ * 求职信 PDF 新标签页打开。
+ */
+export const TARGET_BLANK = '_blank'
+
+/**
+ * 「Pro 包含」五条(2026-10-08「我的订阅」页签;与定价框 PRO_PERKS 同一套词条,各域各抄一份;只出名字不出说明句 ——
+ * Frank 10-07「不需要解释性文字」)。
+ */
+export const PERK_KEYS = [
+  'price.perk.letter', 'price.perk.match', 'price.perk.alert', 'price.perk.path', 'price.perk.export',
+]
+
+/**
+ * 付款记录接口(按本人的 Stripe 客户 id 懒查,不落库;2026-10-08)。
+ */
+export const URL_PAYMENTS = '/api/stripe/payments'
+
+/**
+ * 方案卡上「还剩 N 天」胶囊的档(tag 桶 ok:绿)。
+ */
+export const LEFT_TAG = 'ok'
+
+/**
+ * 付款记录表:日期列键。
+ */
+export const PAY_COL_DATE = 'date'
+
+/**
+ * 付款记录表:内容列键。
+ */
+export const PAY_COL_ITEM = 'item'
+
+/**
+ * 付款记录表:金额列键。
+ */
+export const PAY_COL_AMOUNT = 'amount'
+
+/**
+ * 付款记录表:操作列键(收据)。
+ */
+export const PAY_COL_ACT = 'act'
+
+/**
+ * 金额保留的小数位。
+ */
+export const AMOUNT_DIGITS = 2
+
+/**
+ * 货币码 → 显示前缀(Stripe 给小写码;表里没有的用大写码加空格)。
+ */
+export const CUR_SIGN: Record<string, string> = {
+  /**
+   * 加元。
+   */
+  cad: 'CA$',
+
+  /**
+   * 美元。
+   */
+  usd: 'US$',
+}
+
+/**
+ * 表里没有的货币码,码与数之间的空格。
+ */
+export const CUR_GAP = ' '
+
+/**
+ * 「收据」钮的钮档(白底描边)。
+ */
+export const RECEIPT_BTN_KIND = 'secondary'
+
+/**
+ * 没有收据时操作格的横杠(同职位板空格)。
+ */
+export const DASH = '—'
+
+/**
+ * 「添加简历」钮的钮档(2026-10-08 挪到顶行右边,成了这一节的主行动:蓝底)。
+ */
+export const RF_ADD_KIND = 'primary'
 
 /**
  * 「我的订阅」节 Pro 档的标(本域自抄,与 components/auth 的 PRO_LABEL 同字:产品名不翻)。
@@ -417,11 +561,12 @@ export const RF_ZOOM_KIND = 'secondary'
  * 2026-10-05 简历存档件退役(换成原件卡片 ResumeFile),rm.arch.title 照旧当这一节的侧栏与节标题。
  * 旧深链 `?sec=` 带着撤掉的四个值进来,不在这张表里 → 落回默认节(见 functions 的 secLinkOf)。
  * 2026-10-04 Frank「升级 Pro 这个删了,放到 我的 模块里,加一个我的订阅」:末尾加回一节 我的订阅 sub(深链 `?sec=sub`)。
+ * 2026-10-08 照 AIApply 重设计(10-05 定稿第 1 条,V1 搬家):顺序换成 我的求职 / 我的收藏 / 我的简历 / 我的订阅;深链键不改。
  */
 export const SEC_TABS = [
-  { sec: 'resume', labelKey: 'rm.arch.title' },
-  { sec: 'favs', labelKey: 'fav.title' },
   { sec: 'sjobs', labelKey: 'sj.title' },
+  { sec: 'favs', labelKey: 'fav.title' },
+  { sec: 'resume', labelKey: 'rm.arch.title' },
   { sec: 'sub', labelKey: 'sub.title' },
 ] as const
 
@@ -456,8 +601,9 @@ export const LOGIN_URL = '/?login=1'
  * 两格同值但不是同一件事,所以留两个名字、只留一份字面量。
  * 2026-09-23 概览节撤了(Frank「只保留一个 我的简历 我的收藏 我的求职」),默认落点改成
  * 「我的简历」,值改引 SEC_RESUME —— 两个名字、一份字面量的理由照旧。
+ * 2026-10-08 照 AIApply 重设计(10-05 定稿第 1 条):默认落点改「我的求职」,值改引 SEC_SJOBS。
  */
-export const SEC_DEFAULT = SEC_RESUME
+export const SEC_DEFAULT = SEC_SJOBS
 
 /**
  * Stripe 回跳成功标记的查询参数名(`/account?ok=1`,由 checkout 的 success_url 带回)。
@@ -473,6 +619,11 @@ export const QP_OK_ON = '1'
  * 账户下拉深链的查询参数名(E11-02:`?sec=` 直落对应节,取值域 = SEC_TABS 的键)。
  */
 export const QP_SEC = 'sec'
+
+/**
+ * 地址栏里的「要投的那一岗」参数(/account?sec=sjobs&job=<id>;投递区读它起流程,本页只拿它判「正在投一岗」)。
+ */
+export const QP_JOB = 'job'
 
 /**
  * 当前登录人接口(Payload 的 me 端点;带 cookie 才认得出人)。

@@ -100,46 +100,6 @@
 }
 
 /*
- * 「我的订阅」节的套餐行(2026-10-04 加回;值照 09-23 撤掉的概览节套餐行 .plan)。
- */
-.subPlan {
-  /*
-   * 与节标题拉开。
-   */
-  margin-top: 10px;
-
-  /*
-   * 正文字号。
-   */
-  font-size: 14px;
-}
-
-/*
- * Pro 档:琥珀 + 半粗(付费态的全站配色;值照撤掉的 .planPro)。
- */
-.subPro {
-  /*
-   * 琥珀深字。
-   */
-  color: #b45309;
-
-  /*
-   * 半粗。
-   */
-  font-weight: 600;
-}
-
-/*
- * 免费档:次要灰,不强调(免费不是错误,只是没升级;值照撤掉的 .planFree)。
- */
-.subFree {
-  /*
-   * 次要灰。
-   */
-  color: #6b7280;
-}
-
-/*
  * 「升级 Pro / 续买」那颗钮的一行。
  */
 .subActs {
@@ -435,144 +395,43 @@
 }
 
 /*
- * 有原件时的卡片:左缩略图、右信息。
+ * 一份简历一张卡(2026-10-08 照 AIApply 的 My Resumes:没有缩略图,文件名 + 标 + 日期 + 两颗钮;求职信卡 lettercard 同用这一套)。
  */
 .rfCard {
   /*
-   * 左右并排。
+   * 竖排。
    */
   display: flex;
 
   /*
-   * 顶对齐。
+   * 竖排。
    */
-  align-items: flex-start;
+  flex-direction: column;
 
   /*
    * 缩略图与信息之间的距离。
    */
-  gap: 20px;
+  gap: 12px;
 
   /*
-   * 与节标题拉开。
-   */
-  margin-top: 12px;
-}
-
-/*
- * 缩略图那张纸:A4 / Letter 竖版比例,白底细边轻阴影;画好之前就是一张白纸占位。
- */
-.rfPaper {
-  /*
-   * 电脑上的纸宽。
-   */
-  width: 180px;
-
-  /*
-   * 竖版纸张比例(612 × 792,Letter)。
-   */
-  aspect-ratio: 612 / 792;
-
-  /*
-   * 不被右边挤窄。
-   */
-  flex: none;
-
-  /*
-   * 白纸。
-   */
-  background: #fff;
-
-  /*
-   * 细边(colors 域变量)。
+   * 细边框(卡在网格里,靠边框分开,不再靠细线)。
    */
   border: 1px solid var(--border);
 
   /*
-   * 小圆角。
+   * 圆角。
    */
-  border-radius: 6px;
+  border-radius: 10px;
 
   /*
-   * 轻阴影,像一张纸。
+   * 内衬。
    */
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
-
-  /*
-   * 画布与 DOCX 字样都居中摆。
-   */
-  display: flex;
-
-  /*
-   * 横向居中。
-   */
-  justify-content: center;
-
-  /*
-   * 竖向居中。
-   */
-  align-items: center;
-
-  /*
-   * 画布切到圆角里。
-   */
-  overflow: hidden;
+  padding: 14px;
 }
 
-/*
- * PDF 首页画布:铺满整张纸(画布像素在脚本里按显示宽度 × 设备像素比定)。
- */
-.rfCanvas {
-  /*
-   * 铺满纸宽。
-   */
-  width: 100%;
 
-  /*
-   * 高度随比例。
-   */
-  height: auto;
 
-  /*
-   * 不留行内空隙。
-   */
-  display: block;
-}
 
-/*
- * Word 占位纸上的「DOCX」字样。
- */
-.rfBadge {
-  /*
-   * 小一档。
-   */
-  font-size: 13px;
-
-  /*
-   * 粗。
-   */
-  font-weight: 700;
-
-  /*
-   * 主蓝(colors 域变量)。
-   */
-  color: var(--primary);
-
-  /*
-   * 浅蓝底(colors 域变量)。
-   */
-  background: var(--hover-bg);
-
-  /*
-   * 小胶囊内衬。
-   */
-  padding: 2px 10px;
-
-  /*
-   * 胶囊圆角。
-   */
-  border-radius: 999px;
-}
 
 /*
  * 卡片右边的信息栏。
@@ -680,38 +539,23 @@
 }
 
 /*
- * 卡片清单(2026-10-06 一人多份):一份一张,上下排,卡片之间一条细线。
+ * 卡片清单(2026-10-06 一人多份;2026-10-08 照 AIApply 改成网格):一份一张,电脑一行三张,手机一列。
  */
 .rfList {
   /*
-   * 竖排。
+   * 网格。
    */
-  display: flex;
+  display: grid;
 
   /*
-   * 竖排。
+   * 一列至少 300px,放得下几张放几张(1250 宽放三张,375 放一张)。
    */
-  flex-direction: column;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 
   /*
-   * 卡片之间的距离(细线压在中间)。
+   * 卡片之间的距离。
    */
-  gap: 18px;
-}
-
-/*
- * 清单里第二张起的卡片:上面一条细线隔开。
- */
-.rfList > .rfCard + .rfCard {
-  /*
-   * 细线(colors 域变量)。
-   */
-  border-top: 1px solid var(--hairline);
-
-  /*
-   * 线与卡片内容之间。
-   */
-  padding-top: 18px;
+  gap: 16px;
 }
 
 /*
@@ -725,9 +569,56 @@
 }
 
 /*
- * 「添加简历」+ 份数那一行。
+ * 「简历 3 / 20」+ 「添加简历」那一行(2026-10-08 挪到卡片上方:份数靠左,钮靠右)。
  */
-.rfAdd {
+.rfHead {
+  /*
+   * 并排。
+   */
+  display: flex;
+
+  /*
+   * 两端。
+   */
+  justify-content: space-between;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 与卡片清单拉开。
+   */
+  margin-bottom: 14px;
+}
+
+/*
+ * 「求职信」「Pro 包含」「付款记录」这类分段:与上一块拉开,标题下面留一点。
+ */
+.subSection {
+  /*
+   * 与上一块拉开。
+   */
+  margin-top: 26px;
+}
+
+.subSection > .secTitle {
+  /*
+   * 标题与正文之间。
+   */
+  margin-bottom: 12px;
+
+  /*
+   * 分段标题稍大(与定价页「Pro 包含」同档)。
+   */
+  font-size: 15px;
+}
+
+/*
+ * 方案卡(2026-10-08 照 AIApply 的 Billing 卡):左图标、中文字、右钮,窄了换行。
+ */
+.subCard {
   /*
    * 并排。
    */
@@ -739,24 +630,244 @@
   align-items: center;
 
   /*
-   * 钮与份数之间。
+   * 三块之间。
    */
-  gap: 12px;
+  gap: 16px;
 
   /*
-   * 与卡片清单拉开。
+   * 窄了钮换到下一行。
    */
-  margin-top: 18px;
+  flex-wrap: wrap;
 
   /*
-   * 上面一条细线(与卡片之间的分隔同款)。
+   * 内衬。
    */
-  border-top: 1px solid var(--hairline);
+  padding: 18px 20px;
+}
+
+/*
+ * Pro 态的方案卡:金色描边、淡黄底。
+ */
+.subCardPro {
+  /*
+   * 金色描边。
+   */
+  border-color: #f2c94c;
 
   /*
-   * 线与钮之间。
+   * 淡黄底。
    */
-  padding-top: 14px;
+  background: #fffbeb;
+}
+
+/*
+ * 方案卡左边的星标框。
+ */
+.subIcon {
+  /*
+   * 方框。
+   */
+  width: 48px;
+
+  /*
+   * 方框。
+   */
+  height: 48px;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 10px;
+
+  /*
+   * 淡橙底。
+   */
+  background: #fdecc8;
+
+  /*
+   * 星标居中。
+   */
+  display: flex;
+
+  /*
+   * 星标居中。
+   */
+  align-items: center;
+
+  /*
+   * 星标居中。
+   */
+  justify-content: center;
+
+  /*
+   * 星标色(与原 .subPro 同色)。
+   */
+  color: #b45309;
+
+  /*
+   * 不被挤。
+   */
+  flex: none;
+}
+
+/*
+ * 方案卡中间的文字块。
+ */
+.subBody {
+  /*
+   * 占满中间。
+   */
+  flex: 1;
+
+  /*
+   * 窄了也不把钮挤出去。
+   */
+  min-width: 200px;
+}
+
+/*
+ * 方案名那一行(「Pro」+ 「还剩 N 天」)。
+ */
+.subNameRow {
+  /*
+   * 并排。
+   */
+  display: flex;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 名字与胶囊之间。
+   */
+  gap: 10px;
+}
+
+/*
+ * 方案名。
+ */
+.subName {
+  /*
+   * 大字。
+   */
+  font-size: 20px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 正文色。
+   */
+  color: var(--text);
+}
+
+/*
+ * 「有效期至」一行。
+ */
+.subUntil {
+  /*
+   * 与名字拉开。
+   */
+  margin-top: 4px;
+}
+
+/*
+ * 「Pro 包含」的五条:网格,一行放得下几条放几条。
+ */
+.subPerks {
+  /*
+   * 网格。
+   */
+  display: grid;
+
+  /*
+   * 一列至少 240px。
+   */
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+
+  /*
+   * 条与条之间。
+   */
+  gap: 12px 28px;
+
+  /*
+   * 白卡壳(与 main.css 的 .card 同形,这里只是一个段落框)。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 圆角。
+   */
+  border-radius: 10px;
+
+  /*
+   * 内衬。
+   */
+  padding: 16px 20px;
+}
+
+/*
+ * 一条权益:对勾 + 名字。
+ */
+.subPerk {
+  /*
+   * 并排。
+   */
+  display: flex;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 对勾与名字之间。
+   */
+  gap: 8px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 对勾(绿)。
+ */
+.subCheck {
+  /*
+   * 绿。
+   */
+  color: var(--ok);
+
+  /*
+   * 对勾大小。
+   */
+  display: inline-flex;
+}
+
+/*
+ * 两档价格一行(Pro 态在五条下面)。
+ */
+.subPrice {
+  /*
+   * 灰字。
+   */
+  color: var(--text2);
+
+  /*
+   * 小字。
+   */
+  font-size: 13px;
+
+  /*
+   * 与五条拉开。
+   */
+  margin-top: 10px;
 }
 
 /*
@@ -1050,51 +1161,7 @@
   justify-content: center;
 }
 
-/*
- * 可点的缩略图(PDF 卡片左边那张纸就是预览钮;2026-10-06 Frank「去掉 preview 按钮 直接点图呢」)。
- * 双类压过 button 桶 ghost 档的内衬、边框与底色,钮里只剩那张纸。
- */
-.rfThumbBtn.rfThumbBtn {
-  /*
-   * 不留内衬。
-   */
-  padding: 0;
 
-  /*
-   * 不要钮边框。
-   */
-  border: none;
-
-  /*
-   * 不要钮底色。
-   */
-  background: none;
-
-  /*
-   * 放大镜光标:点了是看大图。
-   */
-  cursor: zoom-in;
-
-  /*
-   * 撑成纸的大小。
-   */
-  display: block;
-
-  /*
-   * 不收缩(卡片横排时纸宽不被挤)。
-   */
-  flex-shrink: 0;
-}
-
-/*
- * 悬停时纸边加深,提示可点。
- */
-.rfThumbBtn.rfThumbBtn:hover .rfPaper {
-  /*
-   * 主色描边(colors 域变量)。
-   */
-  border-color: var(--primary);
-}
 
 /*
  * 预览的缩放钮组「− 百分比 +」(2026-10-06)。
@@ -1177,22 +1244,60 @@
  */
 @media (max-width: 520px) {
   /*
-   * 手机上的纸宽。
+   * 手机上方案卡的钮撑满一行(2026-10-08)。
    */
-  .rfPaper {
+  .subActs {
     /*
-     * 窄一些,给右边留出钮的位置。
+     * 撑满。
      */
-    width: 112px;
+    width: 100%;
   }
+}
 
-  /*
-   * 手机上卡片的间距收紧。
-   */
-  .rfCard {
-    /*
-     * 缩略图与信息之间。
-     */
-    gap: 14px;
-  }
+
+
+
+/*
+ * 简历卡中间那行文字钮(设为默认 / 替换文件 / 删除;2026-10-08 照 AIApply 卡形)。
+ */
+.rfLinks {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 14px;
+
+  margin-top: 10px;
+
+  align-items: center;
+}
+
+/*
+ * 文字钮(蓝字无底,双类压过 button 桶的 ghost 形)。
+ */
+.rfLink.rfLink {
+  padding: 0;
+
+  font-size: 13px;
+
+  font-weight: 400;
+
+  color: var(--primary);
+
+  border: none;
+
+  background: none;
+
+  cursor: pointer;
+}
+
+/*
+ * 预览弹框里一页一张画布(pdf.js 画;铺满纸宽、高随比例、不留行内空隙)。
+ */
+.rfCanvas {
+  width: 100%;
+
+  height: auto;
+
+  display: block;
 }

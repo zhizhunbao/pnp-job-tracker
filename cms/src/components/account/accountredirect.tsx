@@ -5,12 +5,13 @@
  * 跳回首页并带 `?login=1` 自动弹框,本站没有独立登录页。
  * 2026-08-26 自 app/(frontend)/account/page.tsx 的 RedirectToLogin 迁出
  * (页面「纯拼装门」改造批:默认导出之外的 JSX 一律下沉成组件),行为原样。
+ * 2026-10-08 照 AIApply 重设计故事 3:带上 `next=` 现在这条深链,登录后回原处(auth 桶 finishAuth 认它)。
  *
  * @author Frank
  * @time 2026-08-26 20:30:20
  */
 import { useEffect } from 'react'
-import { LOGIN_URL } from './constants'
+import { loginLinkOf } from './functions'
 
 /**
  * 未登录跳转。
@@ -19,7 +20,7 @@ import { LOGIN_URL } from './constants'
  */
 export function AccountRedirect() {
   useEffect(function toLogin() {
-    window.location.replace(LOGIN_URL)
+    window.location.replace(loginLinkOf())
   }, [])
   return null
 }

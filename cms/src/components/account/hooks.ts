@@ -21,16 +21,18 @@ import { useIsNarrow } from '@/components/modal'
 import { RF_ERR_NONE, SEC_DEFAULT, ZOOM_HOME, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from './constants'
 import {
   makeAdd, makeAskOf, makeDefaultOf, makeDeleteOf, makeDragLeave, makeDragOver, makeFileDrop, makeFilePick,
-  makePickerOf, makePreviewClose, makePreviewOf, makeGenBump, makeRefresh, makeSureClear, makeResumeListLoad,
-  makeResumeUpload, okFlagOf,
-  planOf, renderPdfPages, renderPdfThumb, secLinkOf, showPdfPage,
+  makePickerOf, makePreviewClose, makePreviewOf, makeRefresh, makeSureClear, makeResumeListLoad,
+  isJobLink, makeResumeUpload, okFlagOf,
+  makeLettersLoad, makeOnApplied, makePaymentsLoad, makeSentCountLoad,
+  planOf, renderPdfPages, secLinkOf, showPdfPage,
   applyViewTo, makeDocDrop, makeGripDown, makeGripMove, makeGripUp, makePageTurn, makeWheelBind, makeZoomHome,
   makeZoomRedraw, makeZoomStep, zoomPctOf,
 } from './functions'
 import type {
   AccountPanel, MaybeResumeMeta, Me, ResumeFilePanel, ResumeMetas, ResumePagesPanel, ResumeThumbHookIn,
-  ResumeThumbPanel, MaybePdfDoc, MaybeZoomGrip, ZoomView,
+  MaybePdfDoc, MaybeZoomGrip, ZoomView,
   Sec, SubscriptionPanel, WeeklyHookIn, WeeklyPanel,
+  CoverLettersPanel, LetterMetas, PaymentRows,
 } from './types'
 
 /**
@@ -51,6 +53,15 @@ export function useAccountPage(): AccountPanel {
   const [checked, setChecked] = useState(false)
   const [payOk, setPayOk] = useState(false)
   const [appliedGen, setAppliedGen] = useState(0)
+  const [sent, setSent] = useState(0)
+  const [sentTo, setSentTo] = useState<string | null>(null)
+  const [jobLink, setJobLink] = useState(false)
+  const reloadSent = makeSentCountLoad({ setSent })
+
+  useEffect(function readJobLink() {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 故意分两步:地址栏参数只有浏览器里读得到,服务端画首帧时没有,活过来后再补
+    setJobLink(isJobLink())
+  }, [])
 
   useEffect(function readPayOk() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 故意分两步:地址栏参数只有浏览器里读得到,服务端画首帧时没有,活过来后再补
@@ -67,6 +78,7 @@ export function useAccountPage(): AccountPanel {
 
   useEffect(function firstLoad() {
     makeRefresh({ setMe, setChecked })()
+    void makeSentCountLoad({ setSent })()
   }, [])
 
   return {
@@ -81,8 +93,25 @@ export function useAccountPage(): AccountPanel {
     onPick: setSec,
     plan: planOf(me),
     appliedGen,
-    onApplied: makeGenBump(setAppliedGen),
+    onApplied: makeOnApplied({ setGen: setAppliedGen, setSentTo, reloadSent }),
+    sent,
+    sentTo,
+    applying: jobLink && sentTo == null,
   }
+}
+
+/**
+ * 「求职信」段整机(2026-10-08):挂上拉一次清单。
+ *
+ * @returns 清单与「拉回来了」。
+ */
+export function useCoverLetters(): CoverLettersPanel {
+  const [checked, setChecked] = useState(false)
+  const [items, setItems] = useState<LetterMetas>([])
+  useEffect(function firstLoad() {
+    void makeLettersLoad({ setItems, setChecked })()
+  }, [])
+  return { checked, items }
 }
 
 /**
@@ -98,13 +127,18 @@ export function useWeeklyOptin(x: WeeklyHookIn): WeeklyPanel {
 }
 
 /**
- * 「我的订阅」节整机(2026-10-04):只有定价框开合一格;定价框本身(选档、下单、登录态)归 pricing 桶。
+ * 「我的订阅」节整机(2026-10-04):定价框开合一格;定价框本身(选档、下单、登录态)归 pricing 桶。
+ * 2026-10-08 加付款记录:挂上拉一次(服务端按本人的 Stripe 客户 id 懒查,没买过给空)。
  *
- * @returns 定价框开合与它的 setter。
+ * @returns 定价框开合与它的 setter、付款记录。
  */
 export function useSubscription(): SubscriptionPanel {
   const [open, setOpen] = useState(false)
-  return { open, setOpen }
+  const [payments, setPayments] = useState<PaymentRows>([])
+  useEffect(function firstLoad() {
+    void makePaymentsLoad({ setItems: setPayments })()
+  }, [])
+  return { open, setOpen, payments }
 }
 
 /**
@@ -237,22 +271,3 @@ export function useResumePages(x: ResumeThumbHookIn): ResumePagesPanel {
   }
 }
 
-/**
- * 缩略图整机:画布挂上且有地址时画一次;地址变了(换了文件)重画。
- *
- * @param x 原件地址(空串 = 不画)。
- * @returns 画布回调与「画好了」。
- */
-export function useResumeThumb(x: ResumeThumbHookIn): ResumeThumbPanel {
-  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
-  const [ready, setReady] = useState(false)
-
-  useEffect(function drawThumb() {
-    if (canvas == null || x.src === RF_ERR_NONE) {
-      return
-    }
-    void renderPdfThumb({ canvas, src: x.src, setReady })
-  }, [canvas, x.src])
-
-  return { onCanvasMount: setCanvas, ready }
-}

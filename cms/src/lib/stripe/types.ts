@@ -92,6 +92,61 @@ export type WebhookUserDoc = {
 }
 
 /**
+ * `loadPayments` 的入参。
+ */
+export type PaymentsIn = {
+  /**
+   * Stripe 客户端。
+   */
+  stripe: StripeClient
+
+  /**
+   * Stripe 客户 id(用户表 stripeCustomerId)。
+   */
+  customerId: string
+}
+
+/**
+ * 一笔付款(「我的订阅」付款记录的线格式;2026-10-08)。
+ */
+export type PaymentRow = {
+  /**
+   * Checkout 会话 id(行身份)。
+   */
+  id: string
+
+  /**
+   * 付款时刻(ISO)。
+   */
+  paidAt: string
+
+  /**
+   * 买的天数(metadata.days;认不出给 0)。
+   */
+  days: number
+
+  /**
+   * 实付金额(元,含税)。
+   */
+  amount: number
+
+  /**
+   * 货币码(小写,Stripe 原样;如 cad)。
+   */
+  currency: string
+
+  /**
+   * Stripe 收据地址(没有给空串)。
+   */
+  receiptUrl: string
+}
+
+/**
+ * `loadPayments` 的返回。
+ */
+export type PaymentsOut = Promise<PaymentRow[]>
+
+/**
  * `createSession` 的入参（主尝试与退卡兜底两处共用）。
  */
 export type CreateSessionIn = {

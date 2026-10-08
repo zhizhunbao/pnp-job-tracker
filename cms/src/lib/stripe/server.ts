@@ -6,5 +6,5 @@
  */
 
 export { getStripe } from './functions'
-export { stripeCheckoutRoute, stripeWebhookRoute } from './routes'
+export { stripeCheckoutRoute, stripePaymentsRoute, stripeWebhookRoute } from './routes'
 export type { StripeClient } from './types'

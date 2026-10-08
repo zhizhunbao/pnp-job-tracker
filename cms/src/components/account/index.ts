@@ -27,6 +27,8 @@
  * 2026-10-05 Frank「我的 也需要 banner 吧」:桶门加 AccountBanner(模块页头)。
  * 2026-10-05 Frank「先做我的简历吧」:简历文字存档件 ResumeArchive 退役(连同 RA_KEY_HEAD),桶门换出 ResumeFile
  * (原件上传 / 预览 / 替换 / 下载 / 删除 + PDF 首页缩略图)。
+ * 2026-10-08 照 AIApply 重设计(docs/design/我的模块-照AIApply-20261007.md):桶门加 SentNotice(发出后的成功条)与
+ * CoverLetters(「我的简历」页签下的「求职信」段)。
  *
  * @author Claude
  * @time 2026-08-26 19:28:00
@@ -35,11 +37,13 @@ export { AccountBanner } from './accountbanner'
 export { AccountColumns } from './accountcolumns'
 export { AccountNav } from './accountnav'
 export { AccountRedirect } from './accountredirect'
+export { CoverLetters } from './coverletters'
 export {
   SEC_FAVS, SEC_RESUME, SEC_SJOBS, SEC_SUB, SHELL_BOTTOM, SHELL_TOP,
 } from './constants'
 export { useAccountPage } from './hooks'
 export { PayOkNotice } from './payoknotice'
 export { ResumeFile } from './resumefile'
+export { SentNotice } from './sentnotice'
 export { Subscription } from './subscription'
 export { WeeklyOptin } from './weeklyoptin'

@@ -4,9 +4,9 @@
  * @author Frank
  * @time 2026-10-06 23:00:00
  */
-import { count, numOrNull, queryRows, SQL, text } from '../db'
+import { count, firstOf, numOrNull, queryRows, SQL, text } from '../db'
 import { JOB_CLOSED, MYJOBS_LIMIT, TIME_NONE } from './constants'
-import type { MyJobDbRow, MyJobRow, MyJobsIn, MyJobsOut, TimeCell } from './types'
+import type { CountDbRow, CountOut, MyJobDbRow, MyJobRow, MyJobsIn, MyJobsOut, TimeCell } from './types'
 
 /**
  * 库行 → 一行(职位删了就没有职位 id)。
@@ -32,7 +32,18 @@ export function toMyJobRow(r: MyJobDbRow): MyJobRow {
     savedAt: isoOf(r.created_at),
     updatedAt: isoOf(r.updated_at),
     closed: r.job_status === JOB_CLOSED,
+    hasEmail: r.has_email === true,
   }
+}
+
+/**
+ * 计数库行 → 数(空折 0)。
+ *
+ * @param r 库行。
+ * @returns 数。
+ */
+export function toCount(r: CountDbRow): number {
+  return count(r.n)
 }
 
 /**
@@ -59,6 +70,20 @@ function isoOf(x: TimeCell): string {
  */
 export async function loadApplied(x: MyJobsIn): MyJobsOut {
   return queryRows({ db: x.db, sql: SQL.MYJOBS_APPLIED, params: [x.userId, MYJOBS_LIMIT], map: toMyJobRow })
+}
+
+/**
+ * 本人真发出去了几封(「我的」页 banner 副题;2026-10-08)。
+ *
+ * @param x 数据库连接与用户 id。
+ * @returns 封数;没投过给 0。
+ */
+export async function loadSentCount(x: MyJobsIn): CountOut {
+  const first = firstOf(await queryRows({ db: x.db, sql: SQL.MYJOBS_SENT_COUNT, params: [x.userId], map: toCount }))
+  if (first == null) {
+    return 0
+  }
+  return first
 }
 
 /**

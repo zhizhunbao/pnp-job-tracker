@@ -6,4 +6,4 @@
  * @time 2026-10-06 23:00:00
  */
 
-export { myjobsAppliedRoute, myjobsSavedRoute } from './routes'
+export { myjobsAppliedRoute, myjobsCountRoute, myjobsSavedRoute } from './routes'

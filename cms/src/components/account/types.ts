@@ -147,6 +147,76 @@ export type AccountBannerIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 已投几封(副题「已投 N 封」;0 不出副题;2026-10-08)。
+   */
+  sent: number
+}
+
+/**
+ * 发出后成功条(SentNotice)的 props(2026-10-08)。
+ */
+export type SentNoticeIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 发给了哪家。
+   */
+  company: string
+}
+
+/**
+ * 投递区发出去了交回来的那一份(与 apply 桶的 ApplySentOut 同形,本桶自声明)。
+ */
+export type AppliedSentOut = {
+  /**
+   * 发给了哪家(公司名)。
+   */
+  company: string
+}
+
+/**
+ * 已投几封接口的回包。
+ */
+export type CountRespJson = {
+  /**
+   * 封数;缺席按 0 读。
+   */
+  sent?: number
+}
+
+/**
+ * `makeSentCountLoad` 的入参。
+ */
+export type SentCountLoadIn = {
+  /**
+   * 封数落格。
+   */
+  setSent: (n: number) => void
+}
+
+/**
+ * `makeOnApplied` 的入参。
+ */
+export type OnAppliedIn = {
+  /**
+   * 投递记录表重挂的计数 setter。
+   */
+  setGen: GenSetFn
+
+  /**
+   * 成功条落格(发给了哪家)。
+   */
+  setSentTo: (co: string) => void
+
+  /**
+   * 重拉已投几封。
+   */
+  reloadSent: () => Promise<void>
 }
 
 /**
@@ -262,9 +332,24 @@ export type AccountPanel = {
   appliedGen: number
 
   /**
-   * 投递区发出去了(计数加一)。
+   * 投递区发出去了(计数加一、出成功条、重拉已投几封;2026-10-08)。
    */
-  onApplied: () => void
+  onApplied: (x: AppliedSentOut) => void
+
+  /**
+   * 已投几封(banner 副题;2026-10-08)。
+   */
+  sent: number
+
+  /**
+   * 刚发给了哪家(成功条;null = 不出;2026-10-08)。
+   */
+  sentTo: string | null
+
+  /**
+   * 正在投地址栏带来的那一岗(带了 job= 且还没发出去):这时「今日待投」不出,先把那一岗投完。
+   */
+  applying: boolean
 
   /**
    * 分层态(2026-10-06:「我的求职」「我的收藏」点公司名开公司弹框要它;口径同各页面门的 toJobPlan)。
@@ -389,9 +474,14 @@ export type SubscriptionIn = {
 }
 
 /**
- * useSubscription 交回的面板(定价框开合一格)。
+ * useSubscription 交回的面板(定价框开合一格、付款记录)。
  */
 export type SubscriptionPanel = {
+  /**
+   * 付款记录(拉回来前 = 空清单;没买过也是空清单,那一段不出)。
+   */
+  payments: PaymentRows
+
   /**
    * 定价框开着没有。
    */
@@ -401,6 +491,301 @@ export type SubscriptionPanel = {
    * 写定价框开合。
    */
   setOpen: (v: boolean) => void
+}
+
+/**
+ * 方案卡(SubPlan)的 props(2026-10-08)。
+ */
+export type SubPlanIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 是 Pro。
+   */
+  pro: boolean
+
+  /**
+   * 到期日(ISO;免费态给空串)。
+   */
+  until: string
+
+  /**
+   * 开定价框。
+   */
+  onOpen: () => void
+}
+
+/**
+ * 「Pro 包含」(SubPerks)的 props。
+ */
+export type SubPerksIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 是 Pro(Pro 态五条下面多一行两档价格;免费态价格在方案卡上)。
+   */
+  pro: boolean
+}
+
+/**
+ * 付款记录表(SubPayments)的 props。
+ */
+export type SubPaymentsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 付款记录。
+   */
+  items: PaymentRows
+}
+
+/**
+ * 一笔付款(/api/stripe/payments 的线格式;只声明真读的格)。
+ */
+export type PaymentRow = {
+  /**
+   * Checkout 会话 id(行身份)。
+   */
+  id: string
+
+  /**
+   * 付款时刻(ISO)。
+   */
+  paidAt: string
+
+  /**
+   * 买的天数。
+   */
+  days: number
+
+  /**
+   * 实付金额(元)。
+   */
+  amount: number
+
+  /**
+   * 货币码(小写)。
+   */
+  currency: string
+
+  /**
+   * Stripe 收据地址(没有 = 空串)。
+   */
+  receiptUrl: string
+}
+
+/**
+ * 付款记录清单。
+ */
+export type PaymentRows = PaymentRow[]
+
+/**
+ * 付款记录接口的回包。
+ */
+export type PaymentsRespJson = {
+  /**
+   * 清单;缺席按零条读。
+   */
+  items?: PaymentRow[]
+}
+
+/**
+ * `makePaymentsLoad` 的入参。
+ */
+export type PaymentsLoadIn = {
+  /**
+   * 清单落格。
+   */
+  setItems: (v: PaymentRows) => void
+}
+
+/**
+ * 付款记录的展示行(洗好的字;单元格只管摆)。
+ */
+export type PayCellRow = {
+  /**
+   * 行身份。
+   */
+  key: string
+
+  /**
+   * 日期(年-月-日)。
+   */
+  date: string
+
+  /**
+   * 内容(「Pro 90 天」)。
+   */
+  item: string
+
+  /**
+   * 金额(「CA$14.69」)。
+   */
+  amount: string
+
+  /**
+   * 收据地址(空串 = 不出钮)。
+   */
+  receiptUrl: string
+
+  /**
+   * 「收据」的字。
+   */
+  receiptText: string
+}
+
+/**
+ * `payCellRowsOf` 的入参。
+ */
+export type PayCellRowsIn = {
+  /**
+   * 清单。
+   */
+  items: PaymentRows
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * 付款记录表的一列(交给 table 桶;只声明本桶用到的格)。
+ */
+export type PayCol = {
+  /**
+   * 列身份。
+   */
+  key: string
+
+  /**
+   * 表头文案。
+   */
+  label: string
+
+  /**
+   * 单元格渲染。
+   */
+  render: (r: PayCellRow) => React.ReactNode
+
+  /**
+   * 单元格不换行。
+   */
+  nowrap?: boolean
+}
+
+/**
+ * 一封求职信(/api/apply/letters 的线格式;只声明真读的格;2026-10-08)。
+ */
+export type LetterMeta = {
+  /**
+   * 投递行 id(打开 PDF 按它)。
+   */
+  id: number
+
+  /**
+   * 职位 id;null = 职位已删(草稿没法「继续」)。
+   */
+  jobId: number | null
+
+  /**
+   * 职位名。
+   */
+  title: string
+
+  /**
+   * 公司名。
+   */
+  company: string
+
+  /**
+   * 投递状态(draft / sent / replied / bounced)。
+   */
+  status: string
+
+  /**
+   * 写于(ISO)。
+   */
+  wroteAt: string
+}
+
+/**
+ * 求职信清单。
+ */
+export type LetterMetas = LetterMeta[]
+
+/**
+ * 求职信清单接口的回包。
+ */
+export type LettersRespJson = {
+  /**
+   * 清单;缺席按零条读。
+   */
+  items?: LetterMeta[]
+}
+
+/**
+ * 「求职信」段(CoverLetters)的 props。
+ */
+export type CoverLettersIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * 「求职信」段整机的面板。
+ */
+export type CoverLettersPanel = {
+  /**
+   * 清单拉回来了吗。
+   */
+  checked: boolean
+
+  /**
+   * 清单。
+   */
+  items: LetterMetas
+}
+
+/**
+ * `makeLettersLoad` 的入参。
+ */
+export type LettersLoadIn = {
+  /**
+   * 清单落格。
+   */
+  setItems: (v: LetterMetas) => void
+
+  /**
+   * 「拉回来了」落格。
+   */
+  setChecked: (v: boolean) => void
+}
+
+/**
+ * 一张求职信卡(LetterCard)的 props。
+ */
+export type LetterCardIn = {
+  /**
+   * 这一封。
+   */
+  m: LetterMeta
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
 }
 
 /**
@@ -654,40 +1039,8 @@ export type ResumeCardIn = {
   t: TFn
 }
 
-/**
- * ResumeThumb 的 props。
- */
-export type ResumeThumbIn = {
-  /**
-   * 元信息(按 MIME 决定画 PDF 首页还是 Word 占位;上传时刻拼进地址当版本)。
-   */
-  meta: ResumeMeta
-}
 
-/**
- * 缩略图整机的面板(useResumeThumb 出)。
- */
-export type ResumeThumbPanel = {
-  /**
-   * 画布挂上 / 卸下时的回调。
-   */
-  onCanvasMount: (el: HTMLCanvasElement | null) => void
 
-  /**
-   * 画好了吗(画好之前只露白纸占位)。
-   */
-  ready: boolean
-}
-
-/**
- * useResumeThumb 的入参。
- */
-export type ResumeThumbHookIn = {
-  /**
-   * 原件地址(带版本参数;空串 = 不画,Word 走占位)。
-   */
-  src: string
-}
 
 /**
  * 一次上传(makeResumeUpload 造出的函数)。
@@ -832,6 +1185,16 @@ export type ResumePreviewIn = {
    * 取词函数。
    */
   t: TFn
+}
+
+/**
+ * 预览弹框整机的入参:原件地址(2026-10-08 缩略图撤后只剩预览一个消费者,名字照旧)。
+ */
+export type ResumeThumbHookIn = {
+  /**
+   * 原件地址(空串 = 不画)。
+   */
+  src: string
 }
 
 /**
@@ -1389,25 +1752,6 @@ export type FileDropIn = {
   setDragOn: (v: boolean) => void
 }
 
-/**
- * 画 PDF 首页(renderPdfThumb)的入参。
- */
-export type PdfThumbIn = {
-  /**
-   * 画布(按它的显示宽度乘设备像素比画,高清屏不糊)。
-   */
-  canvas: HTMLCanvasElement
-
-  /**
-   * 原件地址。
-   */
-  src: string
-
-  /**
-   * 画好时拨「画好了」。
-   */
-  setReady: (v: boolean) => void
-}
 
 /**
  * ResumeInput 的 props(回调逐格收)。
@@ -1513,7 +1857,7 @@ export type PdfDoc = import('pdfjs-dist').PDFDocumentProxy
 export type MaybePdfDoc = PdfDoc | null
 
 /**
- * 收步进函数的计数格 setter(React 的 setState 形;makeGenBump 用)。
+ * 收步进函数的计数格 setter(React 的 setState 形;makeOnApplied 用,2026-10-08 起)。
  */
 export type GenSetFn = (step: (n: number) => number) => void
 

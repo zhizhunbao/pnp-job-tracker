@@ -10,6 +10,6 @@
 
 export {
   checkLimit, denyBodyOf, freeGate, getUser, getUserOrNull, ipOf, isAdmin, isPro, isTrialOpen, loadTrial, markTrial, trialAfterOf,
-  trialLeftOf, usedToday,
+  trialLeftOf, trialOpenOf, usedToday,
 } from './functions'
 export type { MaybeUser, SessionUser } from './types'

@@ -252,6 +252,21 @@ export type AiOpenIn = {
 }
 
 /**
+ * 发出去了交给外面的那一份(「我的」页拿它出成功条;2026-10-08)。
+ */
+export type ApplySentOut = {
+  /**
+   * 发给了哪家(公司名)。
+   */
+  company: string
+}
+
+/**
+ * 发出去了的回调。
+ */
+export type SentFn = (x: ApplySentOut) => void
+
+/**
  * ApplyFlow(四步本体)的 props;useApply 同收这一份。
  */
 export type ApplyPageIn = {
@@ -263,7 +278,7 @@ export type ApplyPageIn = {
   /**
    * 发出去了(投递区收起、投递记录表刷新)。
    */
-  onSent: () => void
+  onSent: SentFn
 }
 
 /**
@@ -271,9 +286,9 @@ export type ApplyPageIn = {
  */
 export type ApplySectionIn = {
   /**
-   * 发出去了(由「我的」页拿去刷新投递记录表)。
+   * 发出去了(由「我的」页拿去刷新投递记录表、出成功条)。
    */
-  onSent: () => void
+  onSent: SentFn
 }
 
 /**
@@ -286,9 +301,9 @@ export type SentIn = {
   setSent: SetFn<boolean>
 
   /**
-   * 外面的回调(刷新表)。
+   * 外面的回调(刷新表、出成功条)。
    */
-  onSent: () => void
+  onSent: SentFn
 }
 
 /**
@@ -673,7 +688,7 @@ export type ApplyCells = {
   /**
    * 发出去了的回调。
    */
-  onSent: () => void
+  onSent: SentFn
 
   /**
    * 试用那几格(2026-10-07 批 C)。

@@ -21,6 +21,7 @@ import type {
   AiOpenIn, ApplyCells, ApplyResumeView, ApplyStartView, CanNextIn, DraftIn, ErrJson, ErrOut, LetterJson, LoadStartIn,
   LocationIn, PageHideIn, PickIn, PickOfFn, ResumeFilesJson, ResumeNameIn, SentIn, SetFn, StartStepIn, UploadedTextIn,
   TrialWriteIn, UploadIn, UploadJson,
+  ApplySentOut, SentFn,
 } from './types'
 
 /**
@@ -585,7 +586,7 @@ async function send(c: ApplyCells): Promise<void> {
   }
   track(TRACK_APPLY_SENT)
   c.setStep(STEP_DONE)
-  c.onSent()
+  c.onSent({ company: c.job.company })
 }
 
 /**
@@ -594,11 +595,11 @@ async function send(c: ApplyCells): Promise<void> {
  * @param x 收起落格与外面的回调。
  * @returns 回调。
  */
-export function makeSent(x: SentIn): () => void {
-  return function onSent(): void {
+export function makeSent(x: SentIn): SentFn {
+  return function onSent(y: ApplySentOut): void {
     x.setSent(true)
     window.history.replaceState(null, TEXT_NONE, URL_SJOBS)
-    x.onSent()
+    x.onSent(y)
   }
 }
 

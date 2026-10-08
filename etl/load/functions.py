@@ -32,7 +32,7 @@ from paths import JOBBANK_STORE_LOCK, jobbank_store_lock
 from load.constants import (BUILD_CHAIN_CMDS, BUILD_CMD_SEP, BUILD_FAIL_TPL, BUILD_LOCK_DONE,
                             BUILD_LOCK_OK, BUILD_LOCK_WAIT_TPL, BUILD_STEP_TPL)
 from load.scheme import BuildChainIn
-from load.constants import (ALERTS_PATH, ALERTS_TIMEOUT_S, API_SEED_SUFFIX, ARG_QUIET, BACKUPS_DIR,
+from load.constants import (ALERTS_PATH, ALERTS_TIMEOUT_S, API_SEED_SUFFIX, ARG_QUIET, BACKUPS_DIR, QUEUE_PATH, QUEUE_TIMEOUT_S,
                             BACKUP_DONE_TPL, BACKUP_FAIL_TPL, BACKUP_OUT_TPL, BACKUP_PRUNE_TPL,
                             BACKUP_SKIP_MSG, COMMIT_ROW_TPL, CT_GZIP, DAY_S, DEFAULT_SEED_URL,
                             DEPLOY_BEHIND_TPL, DEPLOY_NO_LIVE_TPL, DEPLOY_NO_REMOTE_MSG,
@@ -98,6 +98,23 @@ def trigger_alerts() -> CallOut:
     url = alerts_url_of(os.environ.get(ENV_SEED_URL, DEFAULT_SEED_URL))
     try:
         r = httpx.get(url, timeout=ALERTS_TIMEOUT_S, headers=seed_headers())
+    except Exception as e:  # noqa: BLE001 — 网络错转数据
+        return CallOut(ok=False, status=0, body=ERR_BODY_TPL.format(name=type(e).__name__, detail=e))
+    return CallOut(ok=r.is_success, status=r.status_code, body=r.text[:200])
+
+
+def queue_url_of(seed_url: str) -> str:
+    """从 seed 端点反推智能投递端点(同 alerts_url_of 的两种尾巴)。"""
+    if seed_url.endswith(API_SEED_SUFFIX):
+        return seed_url[: -len(API_SEED_SUFFIX)] + QUEUE_PATH
+    return seed_url.rsplit(OLD_SEED_SUFFIX, 1)[0] + QUEUE_PATH
+
+
+def trigger_queue() -> CallOut:
+    """触发智能投递一轮(2026-10-08;seed 成功、alerts 之后调;失败不影响本轮)。"""
+    url = queue_url_of(os.environ.get(ENV_SEED_URL, DEFAULT_SEED_URL))
+    try:
+        r = httpx.get(url, timeout=QUEUE_TIMEOUT_S, headers=seed_headers())
     except Exception as e:  # noqa: BLE001 — 网络错转数据
         return CallOut(ok=False, status=0, body=ERR_BODY_TPL.format(name=type(e).__name__, detail=e))
     return CallOut(ok=r.is_success, status=r.status_code, body=r.text[:200])

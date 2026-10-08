@@ -1,7 +1,7 @@
 // 「我的简历」一节的界面状态(2026-10-05;10-06 一人多份 + 本页预览弹框;dev 直连生产库不登录,登录后的界面用 jsdom 挂件验)。
 // 性质:① 清单没回来只出占位,不闪上传区;② 一份都没有 → 上传区(标题、类型大小、选择文件、拖放提示);
 //       ③ 有几份出几张卡:默认那份挂「默认」、没有「设为默认」;别的有「设为默认」;下载链接带各自 id 且不走预取;
-//          Word 出 DOCX 占位、没有预览钮;卡片下面「添加简历」+「n / 5」,满 5 份钮换成「最多 5 份」;
+//          Word 没有预览钮(2026-10-08 照 AIApply 卡形,缩略图与 DOCX 占位撤);顶行「简历 n / 20」+「添加简历」,满了钮换成「最多 20 份」;
 //       ④ 点缩略图(读屏名「预览」;10-06 预览钮撤,图即钮)开本页弹框(标题是文件名),关掉就没了;
 //       ⑤ 删除两步:点「删除」只亮那一份的确认,取消回原样;确认后服务端删成功才重拉,失败原样留着并报错;
 //          「设为默认」发 PATCH 带那一份的 id,成功后重拉;
@@ -116,7 +116,7 @@ describe('「我的简历」一节', () => {
     expect(dl?.getAttribute('href')).toBe('/api/resume/file?id=11&dl=1')
     expect(dl?.getAttribute('target')).toBe('_self')
     const b = cardOf(el, 'cv.docx')
-    expect(b.textContent).toContain('DOCX')
+    expect(b.textContent).toContain('cv.docx')
     expect(labels(b)).toContain('rf.setDefault')
     expect(labels(b)).not.toContain('rf.preview')
     expect(el.textContent).toContain('rf.add')

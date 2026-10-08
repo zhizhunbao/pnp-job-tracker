@@ -671,6 +671,11 @@ export type ApplyPrefsDbRow = {
    * 求职信模板。
    */
   cover_template: string | null
+
+  /**
+   * 「智能投递」开关(2026-10-08;老行是 false)。
+   */
+  auto_queue: boolean | null
 }
 
 /**
@@ -686,6 +691,11 @@ export type ApplyPrefs = {
    * 求职信模板。
    */
   template: string
+
+  /**
+   * 「智能投递」开着没有(2026-10-08)。
+   */
+  autoQueue: boolean
 }
 
 /**
@@ -1608,3 +1618,97 @@ export type ApplyFileIn = {
  */
 export type ApplyFileOut = Promise<MaybeApplyFile>
 
+/**
+ * 求职信清单的库行(投递表里有信的行;2026-10-08)。
+ */
+export type ApplyLetterDbRow = {
+  /**
+   * 投递行 id(打开 PDF 按它)。
+   */
+  id: number | string | null
+
+  /**
+   * 职位 id(职位删了是 NULL;草稿「继续」要它)。
+   */
+  job_id: number | string | null
+
+  /**
+   * 职位名快照。
+   */
+  job_title: string | null
+
+  /**
+   * 公司名快照。
+   */
+  company: string | null
+
+  /**
+   * 投递状态(draft / sent / replied / bounced)。
+   */
+  status: string | null
+
+  /**
+   * 最近改动时刻(草稿的「写于」)。
+   */
+  updated_at: TimeCell
+
+  /**
+   * 发出时刻(发出去的「写于」;草稿是 NULL)。
+   */
+  sent_at: TimeCell
+}
+
+/**
+ * 一封求职信(洗净;也是 /api/apply/letters 的线格式)。
+ */
+export type ApplyLetterFact = {
+  /**
+   * 投递行 id。
+   */
+  id: number
+
+  /**
+   * 职位 id;null = 职位已删。
+   */
+  jobId: number | null
+
+  /**
+   * 职位名。
+   */
+  title: string
+
+  /**
+   * 公司名。
+   */
+  company: string
+
+  /**
+   * 投递状态。
+   */
+  status: string
+
+  /**
+   * 写于(ISO;发出去的 = 发出时刻,草稿 = 最近改动时刻)。
+   */
+  wroteAt: string
+}
+
+/**
+ * `loadApplyLetters` 的入参。
+ */
+export type ApplyLettersIn = {
+  /**
+   * 连接。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: UserId
+}
+
+/**
+ * `loadApplyLetters` 的返回。
+ */
+export type ApplyLettersOut = Promise<ApplyLetterFact[]>

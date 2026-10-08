@@ -2206,6 +2206,10 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
     trackApply()
     router.push(URL_APPLY + String(job.id))
   }
+  function goApply(): void {
+    trackApply()
+    window.location.assign(URL_APPLY + String(job.id))
+  }
   function onApply(): void {
     if (plan.loggedIn === false && authed === false && isGateSignedIn() === false) {
       track(TRACK_APPLY_CLICK)
@@ -2234,7 +2238,7 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
       clearApplyIntent()
       setStage(APPLY_IDLE)
     },
-    onAuthDone: makeAuthDone({ setAuthed, setFreshProfile, setStage, launch, refresh: router.refresh }),
+    onAuthDone: makeAuthDone({ setAuthed, setFreshProfile, setStage, go: goApply, refresh: router.refresh }),
     intentProfile: intentProfileOf({ fresh: freshProfile, plan }),
     onIntentDone: function finishIntent(): void {
       setStage(APPLY_IDLE)
@@ -2284,26 +2288,29 @@ function makeOpenMatch(x: OpenMatchIn): () => Promise<void> {
  * 软刷带回登录态后 useApplyResume 会再投一次(访客向导记了「引导弹过」后它直接 launch,同一岗投两次)。
  * 同日 lead 收口:刚在访客向导里答完四题注册的,不再弹六步意向表,直接投 —— 与 Google 回跳那条路
  * (useApplyResume 认「引导弹过」直接投)一致;四题已经问过,第一封投递前再塞六题是重复的摩擦。
+ * 2026-10-08 小白走查:直接投的两条路改整页跳去投递区(go)—— 软刷(router.refresh)和软跳(router.push)抢跑,
+ * 落到「我的」页时 layout 的会话种子还是匿名,顶栏仍是「登录 注册」,小白以为没注册上;整页跳一次就对了。
+ * 要进六步意向表的那条路仍留在本页,软刷照旧。
  *
- * @param x 三个写口、投递动作与软刷。
+ * @param x 三个写口、去投递区与软刷。
  * @returns 注册成功回调。
  */
 function makeAuthDone(x: AuthDoneIn): () => Promise<void> {
   return async function onAuthDone(): Promise<void> {
     clearApplyIntent()
-    x.refresh()
     x.setAuthed(true)
     if (isGateSignedIn()) {
       x.setStage(APPLY_IDLE)
-      x.launch()
+      x.go()
       return
     }
     const p = await loadFreshProfile()
     if (p != null && hasProfile(p)) {
       x.setStage(APPLY_IDLE)
-      x.launch()
+      x.go()
       return
     }
+    x.refresh()
     if (p != null) {
       x.setFreshProfile(p)
     }

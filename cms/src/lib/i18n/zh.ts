@@ -883,7 +883,7 @@ export const jobsZh = {
   // 我们实测到的只是 403 拒绝访问。只陈述自己观察到的事实:取不到 + 去哪看(职位描述版权多属雇主而非平台,别乱扣)
   'act.noTextBlocked': '这条帖子的正文在原站({src}),该站拒绝本站自动读取。下面的链接直达原帖。',
   // 我的求职(E9-01 最小求职看板,免费)
-  'sj.title': '我的求职', 'sj.empty': '还没有收藏的职位——在职位板点「☆ 收藏」。',
+  'sj.title': '我的求职', 'sj.empty': '还没有收藏',
   'sj.st.wish': '想投', 'sj.st.applied': '已投', 'sj.st.interview': '面试中', 'sj.st.offer': '拿到 offer',
   'sj.save': '☆ 收藏', 'sj.saved': '★ 已收藏', 'sj.view': '在职位板查看', 'sj.del': '移除', 'sj.weekly': '每周邮件摘要(收藏岗动态,可随时退订)',
   'fav.title': '我的收藏',
@@ -892,7 +892,17 @@ export const jobsZh = {
   'mj.live': '在架', 'mj.col.stage': '投递状态', 'mj.col.listing': '职位状态',
   'mj.bounced': '退信',
   'mj.col.resume': '简历', 'mj.col.cover': '求职信', 'mj.view': '查看',
-  'mj.emptyApplied': '还没有投递记录。在职位页点「邮箱投递」后,这里会记下来。', 'mj.fail': '没加载出来,刷新页面再试。',
+  'mj.emptyApplied': '还没有投递', 'mj.fail': '没加载出来,刷新页面再试。',
+  // 2026-10-08 照 AIApply 重设计:草稿入表、继续、收藏行投递、空态引导、成功条、求职信段
+  'mj.draft': '草稿', 'mj.queued': '待投', 'mj.replied': '雇主回复', 'mj.all': '全部', 'mj.savedCount': '{n} 个收藏',
+  'mj.appliedOn': '投递于 {d}', 'mj.editedOn': '最近改于 {d}', 'mj.postedOn': '发布于 {d}', 'mj.cont': '继续', 'mj.apply': '投递', 'mj.toBoard': '去职位板', 'mj.sentTo': '已发给 {co}',
+  'ap.sentOn': '这个职位已于 {d} 投递',
+  'rl.title': '求职信', 'rl.wrote': '写于 {d}',
+  // 2026-10-08 智能投递「今日待投」(照 AIApply 的 Quick Review)
+  'qu.title': '今日待投', 'qu.auto': '智能投递', 'qu.send': '投出', 'qu.skip': '跳过', 'qu.edit': '改信', 'qu.sendAll': '全部投出 {n}',
+  'qu.none': '今天没有新岗', 'qu.finding': '正在找新岗、写信,大约一分钟', 'qu.stepResume': '简历', 'qu.stepNocs': '想做的工作', 'qu.stepName': '英文姓名', 'qu.upload': '上传',
+  'qu.pick': '去选', 'qu.save': '保存', 'qu.enable': '开启智能投递',
+  'qu.more': '展开', 'qu.less': '收起', 'qu.allReason': '一键全部投出是 Pro 功能',
   // 2026-10-07 站内投递页 /apply/<id>(B2:简历 → 求职信 → 预览 → 已投递;错误码与 lib/apply 接口一一对应)
   'ap.rewrite': '按职位重写',
   'ap.trialLeft': 'AI 试用还剩 {n} 次',
@@ -903,7 +913,7 @@ export const jobsZh = {
   'ap.e.write': '求职信没写成,点「按职位重写」再试',
   'ap.e.upload': '上传没成功,PDF 或 Word,5 MB 以内',
   'ap.applied': '已投递', 'ap.resume': '简历', 'ap.name': '英文姓名(与简历一致)', 'ap.letter': '求职信',
-  'ap.preview': '预览', 'ap.next': '下一步', 'ap.back': '上一步', 'ap.send': '发送', 'ap.pdf': '查看 PDF',
+  'ap.to': '收件人', 'ap.preview': '预览', 'ap.next': '下一步', 'ap.back': '上一步', 'ap.send': '发送', 'ap.pdf': '查看 PDF',
   'ap.badChars': '这些字写不进 PDF:', 'ap.sending': '发送中', 'ap.e.name': '英文姓名只能用英文字母、空格、点、撇号和连字符,2 到 60 个字',
   'ap.e.resume': '先上传一份简历', 'ap.e.chars': '信里有写不进 PDF 的字', 'ap.e.long': '求职信太长了,最多 4000 个字',
   'ap.e.sent': '这个职位已经投过了', 'ap.e.draft': '先写好求职信', 'ap.e.sameEmail': '30 天内已经给这个雇主投过别的职位',
@@ -989,6 +999,7 @@ export const jobsZh = {
   'rf.sure': '确认删除', 'rf.cancel': '取消',
   'rf.default': '默认', 'rf.setDefault': '设为默认', 'rf.add': '添加简历', 'rf.full': '最多 20 份', 'rf.loading': '加载中', 'rf.pvFail': '这份预览不了,下载后查看',
   'rf.zoomIn': '放大', 'rf.zoomOut': '缩小', 'rf.zoomReset': '恢复整页',
+  'rf.count': '简历 {c}',
   'rf.err.full': '最多 5 份,先删掉一份再加',
   'rf.err.type': '只收 PDF 或 Word(.docx)文件', 'rf.err.size': '文件超过 5 MB',
   'rf.err.limit': '今天上传次数用完了,明天再试', 'rf.err.net': '没成功,稍后再试',
@@ -1137,8 +1148,11 @@ export const siteZh = {
   'acct.err.cred': '邮箱或密码不正确', 'acct.err.exists': '该邮箱已注册,请直接登录', 'acct.err.weakPw': '密码不够强:至少 8 位', 'acct.err.generic': '操作失败,请稍后再试', 'acct.err.oauth': 'Google 登录没成功,请重试或用邮箱登录',
   'acct.pw.short': '太短:至少 8 位', 'acct.pw.weak': '弱', 'acct.pw.medium': '中', 'acct.pw.strong': '强', 'acct.pw.hint': '建议混合大小写、数字或符号',
   'acct.plan.free': '免费版', 'sub.title': '我的订阅', 'sub.renew': '续买', 'acct.plan.pro': '有效期至 {d}',
+  // 2026-10-08 「我的订阅」照 AIApply 的 Billing:方案卡、付款记录
+  'sub.left': '还剩 {n} 天', 'sub.price': '30 天 {a},90 天 {b}', 'sub.pay': '付款记录',
+  'sub.col.date': '日期', 'sub.col.item': '内容', 'sub.col.amount': '金额', 'sub.receipt': '收据', 'sub.proDays': 'Pro {n} 天',
   'acct.logout': '退出登录',
-  'acct.bnSub': '简历、收藏与订阅',
+  'acct.bnSent': '已投 {n} 封',
   'acct.nick': '昵称', 'acct.nickSave': '保存', 'acct.nickPh': '取个昵称',
   'acct.forgot': '忘记密码?', 'acct.forgotSend': '发送重置邮件', 'acct.forgotSent': '如果该邮箱已注册,重置邮件已发出——请查收(链接 1 小时内有效)。',
   'acct.resetTitle': '设置新密码', 'acct.resetBtn': '设置新密码并登录', 'acct.resetBad': '链接无效或已过期,请返回登录重新发起找回。', 'acct.backLogin': '返回登录',

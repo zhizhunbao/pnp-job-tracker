@@ -7,5 +7,6 @@
  */
 
 export {
-  applyCoverRoute, applyDraftRoute, applyFileRoute, applyInboundRoute, applyLetterRoute, applySendRoute, applyStartRoute,
+  applyCoverRoute, applyDraftRoute, applyFileRoute, applyInboundRoute, applyLetterRoute, applyLettersRoute, applySendRoute,
+  applyStartRoute,
 } from './routes'
