@@ -1,21 +1,27 @@
 /**
  * queue 组件桶(「今日待投」)的函数:拉队列、拨开关、投出、跳过、全部投出、信预览。
+ * 2026-10-08 Frank 看「我的」:跳过、全部投出、信预览(展开 / 收起)撤;加翻页(上一个 / 下一个)与投出前逐项检查。
  *
  * @author Frank
  * @time 2026-10-08 15:00:00
  */
+import { checkRowsOf } from '@/components/apply'
 import { makeOpenJob } from '@/components/companies'
 import { cityLabelOf } from '@/components/start'
+import { coverFileOf } from '@/lib/apply'
+import { ALL_PROVS, provName } from '@/lib/location'
+import { mergeBasics } from '@/lib/quiz'
 import {
-  CRED_INCLUDE, ERR_CODES, ERR_FALLBACK, ERR_KEY_FULL, ERR_KEY_HEAD, ERR_KEY_UPLOAD, ERR_NONE, FIELD_AUTO, FIELD_FILE,
-  FIELD_NAME, FIND_MAX_MS, HDR_CONTENT_TYPE, HTTP_CONFLICT, LAYER_JOB, LOAD_FAIL, LOAD_OK, METHOD_PATCH, METHOD_POST,
-  METHOD_PUT, MIME_JSON, NEWLINE, PREVIEW_LINES, TEXT_NONE, URL_COVER, URL_DECLINE, URL_PREFS, URL_QUEUE,
+  CRED_INCLUDE, ERR_CODES, ERR_FALLBACK, ERR_KEY_FULL, ERR_KEY_HEAD, ERR_KEY_PROV, ERR_KEY_UPLOAD, ERR_NONE,
+  FIELD_AUTO, FIELD_FILE, FIELD_NAME, FIND_MAX_MS, HDR_CONTENT_TYPE, HTTP_CONFLICT, LAYER_JOB, LOAD_FAIL, LOAD_OK,
+  METHOD_PATCH, METHOD_POST, METHOD_PUT, MIME_JSON, TEXT_NONE, URL_COVER, URL_PREFS, URL_QUEUE,
   URL_RESUME_FILE, URL_SEND,
 } from './constants'
 import type {
   AreaChangeEvent, CellsIn, DropIn, EditOpenIn, EnableIn, ErrJson, ErrOut, FindingIn, FlipIn, InputChangeEvent, LoadIn,
-  LocationIn, NameSaveIn, OpenJobFn, PeekClickFn, PeekStackRef, PostIn, PreviewIn, QueueItem, QueueJob, QueueRespJson,
-  QueueState, SendOneIn, TitleOpenIn, UploadFileIn, UploadIn, UploadJson, WithAutoIn, WithCoverIn,
+  LocationIn, NameSaveIn, OpenJobFn, PeekClickFn, PeekStackRef, PostIn, ProvSaveIn, QueueItem, QueueJob, QueueRespJson,
+  QueueState, SendOneIn, TitleOpenIn, UploadFileIn, UploadIn, UploadJson, WithAutoIn, WithCoverIn, ChecksIn, PosIn,
+  PageIn, QueueCells, QueueCheckRow, TFn,
 } from './types'
 
 /**
@@ -33,13 +39,37 @@ export function toQueueState(d: QueueRespJson): QueueState {
   if (typeof d.lastQueueAt === 'string') {
     lastQueueAt = d.lastQueueAt
   }
+  let senderName = TEXT_NONE
+  if (typeof d.senderName === 'string') {
+    senderName = d.senderName
+  }
   return {
     auto: d.auto === true,
     hasNocs: d.hasNocs === true,
     hasName: d.hasName === true,
     hasResume: d.hasResume === true,
+    hasProv: d.hasProv === true,
     items,
     lastQueueAt,
+    senderName,
+  }
+}
+
+/**
+ * 还没拉到时的队列状态(全空、全关)。
+ *
+ * @returns 队列状态。
+ */
+export function emptyQueueOf(): QueueState {
+  return {
+    auto: false,
+    hasNocs: false,
+    hasName: false,
+    hasResume: false,
+    hasProv: false,
+    items: [],
+    lastQueueAt: TEXT_NONE,
+    senderName: TEXT_NONE,
   }
 }
 
@@ -106,8 +136,10 @@ function withAuto(x: WithAutoIn): QueueState {
     hasNocs: x.state.hasNocs,
     hasName: x.state.hasName,
     hasResume: x.state.hasResume,
+    hasProv: x.state.hasProv,
     items: x.state.items,
     lastQueueAt: x.state.lastQueueAt,
+    senderName: x.state.senderName,
   }
 }
 
@@ -129,8 +161,10 @@ export function dropItems(x: DropIn): void {
     hasNocs: x.cells.state.hasNocs,
     hasName: x.cells.state.hasName,
     hasResume: x.cells.state.hasResume,
+    hasProv: x.cells.state.hasProv,
     items: rest,
     lastQueueAt: x.cells.state.lastQueueAt,
+    senderName: x.cells.state.senderName,
   })
 }
 
@@ -194,6 +228,66 @@ export function errKeyOf(code: string | undefined): string {
 }
 
 /**
+ * 当前翻到的那一岗(2026-10-08 加翻页:投出 / 改信都对它,不再固定队列第一条)。
+ *
+ * @param cells 整机的可变格。
+ * @returns 那一岗;空队列给 null。
+ */
+export function currentOf(cells: QueueCells): QueueItem | null {
+  const item = cells.state.items[cells.pos]
+  if (item == null) {
+    return null
+  }
+  return item
+}
+
+/**
+ * 记着的位置夹进队列长度(投出一条后队列变短,停在原位 = 自动落到下一条;落到末尾外就退一格)。
+ *
+ * @param x 记着的位置与条数。
+ * @returns 0 ~ 条数 - 1;空队列给 0。
+ */
+export function posOf(x: PosIn): number {
+  if (x.pos >= x.n) {
+    return Math.max(0, x.n - 1)
+  }
+  return Math.max(0, x.pos)
+}
+
+/**
+ * 造「翻到第几条」(通用 Pager 的回调):换位置、逐项检查清空(勾是对上一封信打的)。
+ *
+ * @param x 两个落格。
+ * @returns 翻页回调。
+ */
+export function makePage(x: PageIn): (to: number) => void {
+  return function page(to: number): void {
+    x.setTicks([])
+    x.setPos(to)
+  }
+}
+
+/**
+ * 当前这一岗的逐项检查四行(照 apply 桶;职位已删发不了,给空清单)。
+ *
+ * @param x 这一岗与英文署名。
+ * @returns 四行。
+ */
+export function checksOf(x: ChecksIn): QueueCheckRow[] {
+  if (x.item == null || x.item.jobId == null) {
+    return []
+  }
+  return checkRowsOf({
+    company: x.item.company,
+    resumeName: x.item.resumeName,
+    resumeId: x.item.resumeId,
+    coverFile: coverFileOf(x.item.company),
+    jobId: x.item.jobId,
+    sender: x.sender,
+  })
+}
+
+/**
  * 造「投出当前这一岗」。
  *
  * @param x 整机的可变格。
@@ -201,7 +295,7 @@ export function errKeyOf(code: string | undefined): string {
  */
 export function makeSend(x: CellsIn): () => Promise<void> {
   return async function send(): Promise<void> {
-    const item = x.cells.state.items[0]
+    const item = currentOf(x.cells)
     if (item == null) {
       return
     }
@@ -210,59 +304,9 @@ export function makeSend(x: CellsIn): () => Promise<void> {
     const err = await sendOne({ cells: x.cells, item })
     if (err === ERR_NONE) {
       dropItems({ cells: x.cells, ids: [item.id] })
+      x.cells.setTicks([])
     }
     x.cells.setErr(err)
-    x.cells.setBusy(false)
-  }
-}
-
-/**
- * 造「跳过当前这一岗」:POST /api/queue/decline;成功去掉这一行。
- *
- * @param x 整机的可变格。
- * @returns 点击手柄。
- */
-export function makeSkip(x: CellsIn): () => Promise<void> {
-  return async function skip(): Promise<void> {
-    const item = x.cells.state.items[0]
-    if (item == null || item.jobId == null) {
-      return
-    }
-    x.cells.setErr(ERR_NONE)
-    x.cells.setBusy(true)
-    const err = await postJson({ url: URL_DECLINE, body: { jobId: item.jobId } })
-    if (err === ERR_NONE) {
-      dropItems({ cells: x.cells, ids: [item.id] })
-    }
-    x.cells.setErr(err)
-    x.cells.setBusy(false)
-  }
-}
-
-/**
- * 造「全部投出」:免费档开升级框;Pro 逐岗发,碰到错就停(错的那一岗留在队列最前,错因摆出来)。
- *
- * @param x 整机的可变格。
- * @returns 点击手柄。
- */
-export function makeSendAll(x: CellsIn): () => Promise<void> {
-  return async function sendAll(): Promise<void> {
-    if (x.cells.pro === false) {
-      x.cells.setUpsell(true)
-      return
-    }
-    x.cells.setErr(ERR_NONE)
-    x.cells.setBusy(true)
-    const sent: number[] = []
-    for (const item of x.cells.state.items) {
-      const err = await sendOne({ cells: x.cells, item })
-      if (err !== ERR_NONE) {
-        x.cells.setErr(err)
-        break
-      }
-      sent.push(item.id)
-    }
-    dropItems({ cells: x.cells, ids: sent })
     x.cells.setBusy(false)
   }
 }
@@ -277,29 +321,6 @@ export function makeFlip(x: FlipIn): () => void {
   return function flip(): void {
     x.set(x.v === false)
   }
-}
-
-/**
- * 信预览:收起只露前几行,展开给全文。
- *
- * @param x 全文与展开了没有。
- * @returns 要显示的文字。
- */
-export function previewOf(x: PreviewIn): string {
-  if (x.expanded) {
-    return x.cover
-  }
-  return x.cover.split(NEWLINE).slice(0, PREVIEW_LINES).join(NEWLINE)
-}
-
-/**
- * 信是不是比预览长(短信不出「展开」)。
- *
- * @param cover 全文。
- * @returns 比预览长。
- */
-export function isLongOf(cover: string): boolean {
-  return cover.split(NEWLINE).length > PREVIEW_LINES
 }
 
 /**
@@ -324,7 +345,65 @@ export function locationOf(x: LocationIn): string {
  * @returns 齐了。
  */
 export function isReadyOf(st: QueueState): boolean {
-  return st.hasResume && st.hasNocs && st.hasName
+  return st.hasResume && st.hasNocs && st.hasProv && st.hasName
+}
+
+/**
+ * 所在省下拉的选项(十省码,顺序照 lib/location)。
+ *
+ * @returns 省码清单。
+ */
+export function provOptsOf(): string[] {
+  return Array.from(ALL_PROVS)
+}
+
+/**
+ * 造所在省下拉的取名函数(界面语言全名)。
+ *
+ * @param t 取词函数。
+ * @returns 省码 → 省名。
+ */
+export function makeProvLabel(t: TFn): (v: string) => string {
+  return function provLabel(v: string): string {
+    return provName({ t, code: v, localeOnly: true })
+  }
+}
+
+/**
+ * 造「改所在省」(下拉)。
+ *
+ * @param set 落格。
+ * @returns 改动手柄。
+ */
+export function makeProvChange(set: (v: string) => void): (v: string) => void {
+  return function onProv(v: string): void {
+    set(v)
+  }
+}
+
+/**
+ * 造「存所在省」:并进四题答案档并推上服务端(走 lib/quiz 的 mergeBasics,与访客向导注册那一刻同一条路);
+ * 没选、或没推成(会话没了 / 现档记着「人在境外」不收省)摆出词条;成了重拉状态。
+ *
+ * @param x 整机的可变格与重拉。
+ * @returns 点击手柄。
+ */
+export function makeProvSave(x: ProvSaveIn): () => Promise<void> {
+  return async function saveProv(): Promise<void> {
+    x.cells.setErr(ERR_NONE)
+    if (x.cells.prov === TEXT_NONE) {
+      x.cells.setErr(ERR_KEY_PROV)
+      return
+    }
+    x.cells.setBusy(true)
+    const ok = await mergeBasics({ resProv: x.cells.prov })
+    if (ok) {
+      await x.reload()
+    } else {
+      x.cells.setErr(ERR_KEY_PROV)
+    }
+    x.cells.setBusy(false)
+  }
 }
 
 /**
@@ -449,12 +528,14 @@ export function makeEnable(x: EnableIn): () => Promise<void> {
 
 /**
  * 开启后这一轮还在跑没有:点过开启、还没有岗、上一轮时刻没变(变了 = 跑完了,哪怕一岗没挑到)、没超时。
+ * 2026-10-08 实测改判:去掉「还没有岗」—— 一轮是逐岗写信逐岗进队的,第一岗一出现就停轮询,后面几岗要手动刷新才看得到;
+ * 开启前队列里本来就有岗时更是一开就停。只认「上一轮时刻变了」或超时。
  *
  * @param x 记号、队列状态与现在。
  * @returns 还在跑。
  */
 export function isFinding(x: FindingIn): boolean {
-  if (x.find == null || x.state.auto === false || x.state.items.length > 0) {
+  if (x.find == null || x.state.auto === false) {
     return false
   }
   if (x.state.lastQueueAt !== x.find.since) {
@@ -471,7 +552,7 @@ export function isFinding(x: FindingIn): boolean {
  */
 export function makeEditOpen(x: EditOpenIn): () => void {
   return function openEdit(): void {
-    const item = x.cells.state.items[0]
+    const item = currentOf(x.cells)
     if (item == null) {
       return
     }
@@ -500,7 +581,7 @@ export function makeEditChange(set: (v: string) => void): (e: AreaChangeEvent) =
  */
 export function makeEditSave(x: CellsIn): () => Promise<void> {
   return async function saveEdit(): Promise<void> {
-    const item = x.cells.state.items[0]
+    const item = currentOf(x.cells)
     if (item == null || item.jobId == null) {
       return
     }
@@ -511,6 +592,7 @@ export function makeEditSave(x: CellsIn): () => Promise<void> {
     if (err === ERR_NONE) {
       x.cells.setState(withCover({ state: x.cells.state, id: item.id, cover: x.cells.editText }))
       x.cells.setEditing(false)
+      x.cells.setTicks([])
     }
     x.cells.setErr(err)
     x.cells.setBusy(false)
@@ -540,6 +622,7 @@ function withCover(x: WithCoverIn): QueueState {
         province: it.province,
         salary: it.salary,
         closed: it.closed,
+        resumeName: it.resumeName,
       })
     } else {
       items.push(it)
@@ -550,8 +633,10 @@ function withCover(x: WithCoverIn): QueueState {
     hasNocs: x.state.hasNocs,
     hasName: x.state.hasName,
     hasResume: x.state.hasResume,
+    hasProv: x.state.hasProv,
     items,
     lastQueueAt: x.state.lastQueueAt,
+    senderName: x.state.senderName,
   }
 }
 

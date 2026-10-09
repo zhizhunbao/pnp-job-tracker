@@ -5,6 +5,8 @@
 //       ④ 有岗 → 第一岗一张卡(职位名链职位页、公司、信预览);「投出」POST /api/apply/send 带 jobId,成功后那一岗没了、外面收到公司名;
 //          「跳过」POST /api/queue/decline,成功后那一岗没了;发信回 429 limit → 错因一行、岗还在;
 //       ⑤ 「全部投出」:免费档开升级框、不发请求;Pro 逐岗发;
+//       2026-10-08 Frank 看「我的」改判:跳过、全部投出、展开 / 收起撤 —— ④ 改为「信全文 + 逐项检查四行(收件人 / 简历可打开 /
+//          求职信 PDF / 署名),没勾满投出不发,勾满才发;发完勾清空」;⑤ 改为翻页(通用 Pager「‹ n / N ›」),翻页勾清空、投出发的是翻到的那一岗。
 //       ⑥ 「改信」就地弹框:多行框里是这一岗的信,「保存」PATCH /api/queue/cover { jobId, cover },成功后卡上预览换成新信、岗还在。
 // 探针:sendOne 不调 onSent → ④「外面收到」红;makeSendAll 去掉 pro 闸 → ⑤ 免费档红;makeLoad 失败不落 fail → ① 红;
 //       isReadyOf 少判一样 → ② 「开启」钮提前出来红;makeEditSave 不 withCover → ⑥ 预览没换红。
@@ -21,9 +23,12 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/account',
 }))
 
-const A = { id: 31, jobId: 101, title: 'office manager', company: 'Anurag Homes Team', cover: 'Dear Hiring Manager,\n\nI apply.\n\nBest,\nZhang', resumeId: 7, city: 'Kitchener', cityZh: '基奇纳', cityKo: '', province: 'ON', salary: '$80K/yr', closed: false }
+const mergeBasics = vi.fn(async (_patch: object) => true)
+vi.mock('@/lib/quiz', async (orig) => ({ ...(await orig<object>()), mergeBasics: (patch: object) => mergeBasics(patch) }))
+
+const A = { id: 31, jobId: 101, title: 'office manager', company: 'Anurag Homes Team', cover: 'Dear Hiring Manager,\n\nI apply.\n\nBest,\nZhang', resumeId: 7, city: 'Kitchener', cityZh: '基奇纳', cityKo: '', province: 'ON', salary: '$80K/yr', closed: false, resumeName: 'Zhang_CV.pdf' }
 const B = { ...A, id: 32, jobId: 102, title: 'cook', company: 'Pie Wood' }
-const FULL = { auto: true, hasNocs: true, hasName: true, hasResume: true }
+const FULL = { auto: true, hasNocs: true, hasName: true, hasResume: true, hasProv: true, senderName: 'Zhang Wei' }
 
 type Reply = { status: number, body: object }
 
@@ -66,6 +71,27 @@ function btn(el: HTMLElement, text: string) {
   return Array.from(el.querySelectorAll('button')).find((b) => b.textContent === text)
 }
 
+function btns(el: HTMLElement, text: string) {
+  return Array.from(el.querySelectorAll('button')).filter((b) => b.textContent === text)
+}
+
+async function clickLast(el: HTMLElement, text: string) {
+  await act(async () => {
+    btns(el, text).at(-1)?.click()
+  })
+  await flush()
+}
+
+async function pick(el: HTMLElement, sel: string, value: string) {
+  const box = el.querySelector(sel) as HTMLSelectElement
+  const set = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set
+  await act(async () => {
+    set?.call(box, value)
+    box.dispatchEvent(new Event('change', { bubbles: true }))
+  })
+  await flush()
+}
+
 async function type(el: HTMLElement, sel: string, value: string) {
   const box = el.querySelector(sel) as HTMLInputElement | HTMLTextAreaElement
   const proto = box instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype
@@ -74,6 +100,19 @@ async function type(el: HTMLElement, sel: string, value: string) {
     set?.call(box, value)
     box.dispatchEvent(new Event('input', { bubbles: true }))
   })
+  await flush()
+}
+
+function aria(el: HTMLElement, label: string) {
+  return el.querySelector(`button[aria-label="${label}"]`) as HTMLButtonElement | null
+}
+
+async function tickAll(el: HTMLElement) {
+  for (const box of Array.from(el.querySelectorAll('input[type=checkbox]')) as HTMLInputElement[]) {
+    await act(async () => {
+      box.click()
+    })
+  }
   await flush()
 }
 
@@ -104,9 +143,9 @@ describe('① 出不出', () => {
 })
 
 describe('② 设置清单', () => {
-  it('关着、三样都缺 → 三行各有入口、没有开启钮;填英文姓名保存 PATCH senderName', async () => {
+  it('关着、四样都缺 → 四行各有入口、没有开启钮;填英文姓名保存 PATCH senderName', async () => {
     const calls = server({
-      'GET /api/queue': { status: 200, body: { auto: false, hasNocs: false, hasName: false, hasResume: false, items: [] } },
+      'GET /api/queue': { status: 200, body: { auto: false, hasNocs: false, hasName: false, hasResume: false, hasProv: false, items: [] } },
       'PATCH /api/queue/prefs': { status: 200, body: { ok: true, senderName: 'Zhang San' } },
     })
     const el = await mount(false)
@@ -114,17 +153,36 @@ describe('② 设置清单', () => {
     expect(el.textContent).not.toContain('qu.auto')
     expect(btn(el, 'qu.upload')).toBeDefined()
     expect(Array.from(el.querySelectorAll('a')).find((a) => a.textContent === 'qu.pick')?.getAttribute('href')).toBe('/plan/pr?quiz=1&next=%2Faccount%3Fsec%3Dsjobs')
-    expect(btn(el, 'qu.save')).toBeDefined()
+    expect(el.querySelector('select')).not.toBeNull()
+    expect(btns(el, 'qu.save')).toHaveLength(2)
     expect(btn(el, 'qu.enable')).toBeUndefined()
     await type(el, 'input[type="text"], input:not([type])', 'Zhang San')
-    await click(el, 'qu.save')
+    await clickLast(el, 'qu.save')
     expect(calls.find((c) => c.key === 'PATCH /api/queue/prefs')?.body).toBe('{"senderName":"Zhang San"}')
+  })
+
+  it('所在省:选回空再存 → 词条、不推;选 BC 保存 → mergeBasics({resProv:BC}) 后重拉,行打勾(2026-10-08 第三轮小白走查:投错省)', async () => {
+    let got = { auto: false, hasNocs: true, hasName: true, hasResume: true, hasProv: false, items: [] }
+    vi.stubGlobal('fetch', vi.fn(async () => ({ status: 200, ok: true, json: async () => got })))
+    mergeBasics.mockClear()
+    const el = await mount(false)
+    expect(btn(el, 'qu.enable')).toBeUndefined()
+    await pick(el, 'select', '')
+    await click(el, 'qu.save')
+    expect(mergeBasics).not.toHaveBeenCalled()
+    expect(el.textContent).toContain('qu.provFail')
+    await pick(el, 'select', 'BC')
+    got = { ...got, hasProv: true }
+    await click(el, 'qu.save')
+    expect(mergeBasics).toHaveBeenCalledWith({ resProv: 'BC' })
+    expect(el.textContent).not.toContain('qu.provFail')
+    expect(btn(el, 'qu.enable')).toBeDefined()
   })
 
   it('三样齐、没开 → 只剩开启钮;点了 PATCH autoQueue:true,进队列态、转圈找岗;5 秒后重拉,有岗了出卡', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     const routes: Record<string, Reply | 'hang'> = {
-      'GET /api/queue': { status: 200, body: { auto: false, hasNocs: true, hasName: true, hasResume: true, items: [], lastQueueAt: '' } },
+      'GET /api/queue': { status: 200, body: { auto: false, hasNocs: true, hasName: true, hasResume: true, hasProv: true, items: [], lastQueueAt: '' } },
       'PATCH /api/queue/prefs': { status: 200, body: { ok: true, autoQueue: true } },
     }
     const calls = server(routes)
@@ -147,10 +205,34 @@ describe('② 设置清单', () => {
     vi.useRealTimers()
   })
 
+  it('开启时队列里已有岗:这一轮没跑完(lastQueueAt 没变)接着轮询,跑完后新进的岗不用刷新就出来(2026-10-08 实测)', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const routes: Record<string, Reply | 'hang'> = {
+      'GET /api/queue': { status: 200, body: { ...FULL, auto: false, items: [A], lastQueueAt: '2026-10-07T12:00:00Z' } },
+      'PATCH /api/queue/prefs': { status: 200, body: { ok: true, autoQueue: true } },
+    }
+    server(routes)
+    const el = await mount(false)
+    await click(el, 'qu.enable')
+    routes['GET /api/queue'] = { status: 200, body: { ...FULL, items: [A], lastQueueAt: '2026-10-07T12:00:00Z' } }
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5200)
+    })
+    await flush()
+    expect(el.textContent).toContain('office manager')
+    routes['GET /api/queue'] = { status: 200, body: { ...FULL, items: [A, B], lastQueueAt: '2026-10-08T12:00:00Z' } }
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5200)
+    })
+    await flush()
+    expect(el.textContent).toContain('1 / 2')
+    vi.useRealTimers()
+  })
+
   it('开启后这一轮跑完没挑到岗(lastQueueAt 变了、队列空)→ 今天没有新岗,不再转圈', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     const routes: Record<string, Reply | 'hang'> = {
-      'GET /api/queue': { status: 200, body: { auto: false, hasNocs: true, hasName: true, hasResume: true, items: [], lastQueueAt: '' } },
+      'GET /api/queue': { status: 200, body: { auto: false, hasNocs: true, hasName: true, hasResume: true, hasProv: true, items: [], lastQueueAt: '' } },
       'PATCH /api/queue/prefs': { status: 200, body: { ok: true, autoQueue: true } },
     }
     server(routes)
@@ -168,7 +250,7 @@ describe('② 设置清单', () => {
   })
 
   it('开着但缺一样 → 还是清单(只那一行有入口),不出岗', async () => {
-    server({ 'GET /api/queue': { status: 200, body: { auto: true, hasNocs: false, hasName: true, hasResume: true, items: [A] } } })
+    server({ 'GET /api/queue': { status: 200, body: { auto: true, hasNocs: false, hasName: true, hasResume: true, hasProv: true, items: [A] } } })
     const el = await mount(false)
     expect(btn(el, 'qu.upload')).toBeUndefined()
     expect(el.textContent).toContain('qu.pick')
@@ -184,28 +266,38 @@ describe('③ 空队列', () => {
   })
 })
 
-describe('④ 一岗一卡:投出 / 跳过 / 失败', () => {
-  it('卡、投出、跳过', async () => {
+describe('④ 一岗一卡:信全文 + 逐项检查 / 投出 / 失败', () => {
+  it('四行检查;没勾满投出不发,勾满才发;发完下一岗、勾清空', async () => {
     const sent: string[] = []
     const calls = server({
       'GET /api/queue': { status: 200, body: { ...FULL, items: [A, B] } },
       'POST /api/apply/send': { status: 200, body: { ok: true, id: 31 } },
-      'POST /api/queue/decline': { status: 200, body: { ok: true } },
     })
     const el = await mount(false, (x: { company: string }) => { sent.push(x.company) })
     expect(Array.from(el.querySelectorAll('a')).find((a) => a.textContent === 'office manager')?.getAttribute('href')).toBe('/jobs/101')
     expect(el.textContent).toContain('Anurag Homes Team')
-    expect(el.textContent).toContain('Dear Hiring Manager,')
-    expect(el.textContent).toContain('qu.sendAll{"n":2}')
+    expect(el.textContent).toContain('Best,')
+    expect(el.textContent).not.toContain('qu.sendAll')
+    expect(el.textContent).not.toContain('qu.skip')
+    for (const k of ['ap.to', 'ap.resume', 'ap.letter', 'ap.sign']) {
+      expect(el.textContent).toContain(k)
+    }
+    expect(el.textContent).toContain('Zhang_CV.pdf')
+    expect(el.textContent).toContain('Zhang Wei')
+    const hrefs = Array.from(el.querySelectorAll('a')).map((a) => a.getAttribute('href'))
+    expect(hrefs).toContain('/api/resume/file?id=7')
+    expect(hrefs).toContain('/api/apply/cover?job=101')
+    expect(el.querySelectorAll('input[type=checkbox]')).toHaveLength(4)
+    await click(el, 'qu.send')
+    expect(calls.filter((c) => c.key === 'POST /api/apply/send')).toHaveLength(0)
+    await tickAll(el)
     await click(el, 'qu.send')
     expect(calls.find((c) => c.key === 'POST /api/apply/send')?.body).toBe('{"jobId":101}')
     expect(sent).toEqual(['Anurag Homes Team'])
     expect(el.textContent).not.toContain('office manager')
     expect(el.textContent).toContain('cook')
-    expect(el.textContent).not.toContain('qu.sendAll')
-    await click(el, 'qu.skip')
-    expect(calls.find((c) => c.key === 'POST /api/queue/decline')?.body).toBe('{"jobId":102}')
-    expect(el.textContent).not.toContain('cook')
+    const boxes = Array.from(el.querySelectorAll('input[type=checkbox]')) as HTMLInputElement[]
+    expect(boxes.some((b) => b.checked)).toBe(false)
   })
 
   it('发信失败:错因一行、岗还在', async () => {
@@ -214,32 +306,40 @@ describe('④ 一岗一卡:投出 / 跳过 / 失败', () => {
       'POST /api/apply/send': { status: 429, body: { error: 'limit' } },
     })
     const el = await mount(false)
+    await tickAll(el)
     await click(el, 'qu.send')
     expect(el.textContent).toContain('ap.e.limit')
     expect(el.textContent).toContain('office manager')
   })
 })
 
-describe('⑤ 全部投出', () => {
-  it('免费档开升级框、不发;Pro 逐岗发', async () => {
+describe('⑤ 翻页', () => {
+  it('一岗不出翻页;两岗出 ‹ 1 / 2 ›,› 翻到第二岗、勾清空,投出发的是翻到的那一岗', async () => {
+    server({ 'GET /api/queue': { status: 200, body: { ...FULL, items: [A] } } })
+    expect((await mount(false)).textContent).not.toContain('1 / 1')
+    document.body.innerHTML = ''
     const calls = server({
       'GET /api/queue': { status: 200, body: { ...FULL, items: [A, B] } },
       'POST /api/apply/send': { status: 200, body: { ok: true } },
     })
     const el = await mount(false)
-    await click(el, 'qu.sendAll{"n":2}')
-    expect(calls.filter((c) => c.key === 'POST /api/apply/send')).toHaveLength(0)
-    expect(el.textContent).toContain('qu.allReason')
-    document.body.innerHTML = ''
-    const calls2 = server({
-      'GET /api/queue': { status: 200, body: { ...FULL, items: [A, B] } },
-      'POST /api/apply/send': { status: 200, body: { ok: true } },
+    expect(el.textContent).toContain('1 / 2')
+    expect(aria(el, '‹')?.disabled).toBe(true)
+    await tickAll(el)
+    await act(async () => {
+      aria(el, '›')?.click()
     })
-    const el2 = await mount(true)
-    await click(el2, 'qu.sendAll{"n":2}')
-    expect(calls2.filter((c) => c.key === 'POST /api/apply/send').map((c) => c.body)).toEqual(['{"jobId":101}', '{"jobId":102}'])
-    expect(el2.textContent).not.toContain('office manager')
-    expect(el2.textContent).not.toContain('cook')
+    await flush()
+    expect(el.textContent).toContain('2 / 2')
+    expect(el.textContent).toContain('cook')
+    expect(aria(el, '›')?.disabled).toBe(true)
+    const boxes = Array.from(el.querySelectorAll('input[type=checkbox]')) as HTMLInputElement[]
+    expect(boxes.some((b) => b.checked)).toBe(false)
+    await tickAll(el)
+    await click(el, 'qu.send')
+    expect(calls.find((c) => c.key === 'POST /api/apply/send')?.body).toBe('{"jobId":102}')
+    expect(el.textContent).toContain('office manager')
+    expect(el.textContent).not.toContain('/ 2')
   })
 })
 

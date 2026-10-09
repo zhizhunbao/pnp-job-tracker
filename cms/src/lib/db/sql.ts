@@ -3168,15 +3168,20 @@ export const QUEUE_USER_ONE = `SELECT p.user_id, p.sender_name, p.last_queue_at,
 /**
  * 智能投递的候选岗:在架、有投递邮箱、职业在想做的工作里、这之后新上的;没投过(任何状态都算)、雇主邮箱没退过信、
  * 30 天内没给同一个雇主邮箱投过别的岗;所在省优先,再按评分。$1=用户 id,$2=NOC 码数组,$3=起始时刻,$4=所在省码,$5=条数上限。
+ * 2026-10-08 小白走查改判:$2 改成职业单元组前缀数组(NOC 前 4 位),按「前缀 ~ 前缀 + 9」范围匹配,
+ * 与 RELATED_SAME_OCC 同口径(医疗行政助理只认 13112 全国 19 岗、1311 组安大略 45 家);生产实测单人 ~250ms(批量役可接受)。
+ * 2026-10-08 第三轮小白走查改判:所在省从「优先排序」改成「只取本省」—— 原先本省不够 5 岗就拿外省补,安大略的人收到
+ * 3 条魁北克 + 1 条卡尔加里(Frank「先做投错省」);没答省的人上游不跑(routes 与 isReadyOf 同闸),$4 不会是空串。
  */
 export const QUEUE_CANDIDATES = `SELECT j.id, j.title, c.name AS company_name, j.city, j.province
      FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
-     WHERE j.status = 'open' AND COALESCE(j.apply_email, '') <> '' AND j.noc = ANY($2) AND j.first_seen > $3
+     WHERE j.status = 'open' AND COALESCE(j.apply_email, '') <> '' AND j.first_seen > $3 AND j.province = $4
+       AND EXISTS (SELECT 1 FROM unnest($2::text[]) AS p(pre) WHERE j.noc >= p.pre AND j.noc <= p.pre || '9')
        AND NOT EXISTS (SELECT 1 FROM applications a WHERE a.user_id = $1 AND a.job_id = j.id)
        AND NOT EXISTS (SELECT 1 FROM bounced_emails b WHERE b.email = lower(j.apply_email))
        AND NOT EXISTS (SELECT 1 FROM applications a2 WHERE a2.user_id = $1 AND lower(a2.employer_email) = lower(j.apply_email)
                        AND a2.status IN ('sending', 'sent', 'replied') AND a2.updated_at > now() - interval '30 days')
-     ORDER BY (j.province = $4) DESC, j.score DESC NULLS LAST, j.first_seen DESC LIMIT $5`
+     ORDER BY j.score DESC NULLS LAST, j.first_seen DESC LIMIT $5`
 
 /**
  * 进队列:一行 queued,信已写好;这一岗已有行(任何状态)就不动。$1=用户 id,$2=职位 id,$3=职位名快照,$4=公司名快照,$5=信,$6=简历 id。
@@ -3186,18 +3191,15 @@ export const QUEUE_PUT = `INSERT INTO applications (user_id, job_id, job_title, 
 
 /**
  * 本人的队列(「今日待投」):信、简历 id、岗的城市 / 薪资 / 在不在架;最近进队的在前。$1=用户 id,$2=条数上限。applications_user_status_idx 管。
+ * 2026-10-08 小白走查(投出前逐项检查):带上附的那份简历的文件名(简历删了是 NULL)。
  */
 export const QUEUE_LIST = `SELECT a.id, a.job_id, a.job_title, a.company, a.cover_text, a.resume_id, a.created_at,
-       j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province, j.salary_text, j.status::text AS job_status
+       j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province, j.salary_text, j.status::text AS job_status,
+       ur.file_name AS resume_name
      FROM applications a LEFT JOIN jobs j ON j.id = a.job_id
      LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
+     LEFT JOIN user_resumes ur ON ur.id = a.resume_id AND ur.user_id = a.user_id
      WHERE a.user_id = $1 AND a.status = 'queued' ORDER BY a.created_at DESC LIMIT $2`
-
-/**
- * 跳过:队列里的那一行标 declined(以后不再进队列)。$1=用户 id,$2=职位 id。不在队列 = 0 行。
- */
-export const QUEUE_DECLINE = `UPDATE applications SET status = 'declined', updated_at = now()
-     WHERE user_id = $1 AND job_id = $2 AND status = 'queued' RETURNING id`
 
 /**
  * 拨「智能投递」开关(没偏好行就建)。$1=用户 id,$2=开关。

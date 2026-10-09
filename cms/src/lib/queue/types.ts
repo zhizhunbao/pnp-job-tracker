@@ -147,26 +147,6 @@ export type UserIn = {
 }
 
 /**
- * 连接 + 用户 id + 职位 id。
- */
-export type UserJobIn = {
-  /**
-   * 连接。
-   */
-  db: Db
-
-  /**
-   * 用户 id。
-   */
-  userId: UserId
-
-  /**
-   * 职位 id。
-   */
-  jobId: number
-}
-
-/**
  * `jdOf` 的入参:连接、职位 id 与注入的服务端件。
  */
 export type JdOfIn = {
@@ -564,6 +544,11 @@ export type QueueRowDbRow = {
    * 职位状态(open / closed;职位删了是 NULL)。
    */
   job_status: string | null
+
+  /**
+   * 附的那份简历的文件名(简历删了是 NULL)。
+   */
+  resume_name: string | null
 }
 
 /**
@@ -634,6 +619,11 @@ export type QueueRowFact = {
    * 职位已下架(发不了,卡上标出来)。
    */
   closed: boolean
+
+  /**
+   * 附的那份简历的文件名(简历删了 = 空串)。
+   */
+  resumeName: string
 }
 
 /**
@@ -666,9 +656,19 @@ export type QueueView = {
   hasResume: boolean
 
   /**
+   * 答过「所在省」没有(2026-10-08 第三轮小白走查:候选只取本省,没答省不跑;界面在设置清单里就地选)。
+   */
+  hasProv: boolean
+
+  /**
    * 队列。
    */
   items: QueueRowFact[]
+
+  /**
+   * 英文署名(投出前逐项检查的「署名」一行;没有 = 空串)。
+   */
+  senderName: string
 }
 
 /**
@@ -687,14 +687,9 @@ export type AnswersDbRow = {
 export type NocsOut = Promise<NocCodes>
 
 /**
- * 跳过接口的请求体(只读 jobId 一格)。
+ * `loadUserProv` 的返回:所在省码;没答给空串。
  */
-export type DeclineBodyJson = {
-  /**
-   * 职位 id(网络体,先按宽收)。
-   */
-  jobId?: number | string | boolean | null
-}
+export type ProvOut = Promise<string>
 
 /**
  * 偏好接口的请求体:开关或英文署名,二选一(网络体,先按宽收)。

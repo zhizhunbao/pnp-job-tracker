@@ -9,12 +9,12 @@
  */
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
-import { coverFileOf, pdfBadCharsOf } from '@/lib/apply'
+import { pdfBadCharsOf } from '@/lib/apply'
 import { ERR_NONE, EV_PAGEHIDE, LOAD_BUSY, TEXT_NONE } from './constants'
 import {
-  canNextOf, coverHrefOf, isAiOpenOf, jobIdOf, loadStart, makeAdd, makeBack, makeFile, makeLetterChange,
-  makeNameChange, makeNext, makePickOf, makeQuietSave, makeRewrite, makeUpsellClose, makeUpsellOpen, nextKeyOf,
-  resumeNameOf, startStepOf, stepIndexOf, upsellBackOf,
+  applyChecksOf, canNextOf, isAiOpenOf, jobIdOf, loadStart, makeAdd, makeBack, makeFile, makeLetterChange,
+  makeNameChange, makeNext, makePickOf, makeQuietSave, makeRewrite, makeTickOf, makeUpsellClose, makeUpsellOpen,
+  nextKeyOf, startStepOf, stepIndexOf, upsellBackOf,
 } from './functions'
 import type {
   ApplyCells, ApplyPageIn, ApplyPanel, ApplyResumeView, ApplyStartPanel, ApplyStartView, TrialHook,
@@ -42,6 +42,7 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
   const [writing, setWriting] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [input, setInput] = useState<HTMLInputElement | null>(null)
+  const [ticks, setTicks] = useState<string[]>([])
   const tr = useTrial(s)
   const cells: ApplyCells = {
     job: s.job,
@@ -62,6 +63,7 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
     setUploading,
     onSent: x.onSent,
     trial: tr.cells,
+    setTicks,
   }
   const quietSave = makeQuietSave({ cells })
   useSaveOnHide(quietSave)
@@ -79,13 +81,13 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
     writing,
     uploading,
     badChars,
-    resumeName: resumeNameOf({ resumes, resumeId }),
-    coverHref: coverHrefOf(s.job.id),
-    coverFile: coverFileOf(s.job.company),
+    checkRows: applyChecksOf({ job: s.job, resumes, resumeId, name }),
+    ticks,
+    onTick: makeTickOf({ ticks, set: setTicks }),
     err,
     busy,
     nextKey: nextKeyOf(step),
-    canNext: canNextOf({ step, badChars, letter, writing, uploading }),
+    canNext: canNextOf({ step, badChars, letter, writing, uploading, ticks }),
     onName: makeNameChange(setName),
     pickOf: makePickOf({ setResumeId, setErr }),
     onInputMount: setInput,

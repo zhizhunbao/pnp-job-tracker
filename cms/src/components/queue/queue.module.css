@@ -154,13 +154,6 @@
 }
 
 /*
- * 「展开 / 收起」一行。
- */
-.expand {
-  margin-top: 4px;
-}
-
-/*
  * 错误一行(右对齐,红)。
  */
 .err {
@@ -183,24 +176,29 @@
 
   justify-content: space-between;
 
-  gap: 12px;
+  flex-wrap: wrap;
+
+  gap: 8px 12px;
 
   margin-top: 12px;
 }
 
 /*
- * 左边(「改信」一行放得下,不折)。
+ * 左边(「改信」一行放得下,不折)。2026-10-08 起放翻页(通用 Pager)。
  */
 .left {
   display: inline-flex;
 
   align-items: center;
 
+  gap: 4px;
+
   white-space: nowrap;
 }
 
 /*
  * 右边钮组。
+ * 2026-10-08:组内不折(手机英文「Edit letter / Send」被挤成上下两行,实撞),放不下整组换到下一行靠右。
  */
 .right {
   display: inline-flex;
@@ -209,29 +207,37 @@
 
   gap: 8px;
 
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 
   justify-content: flex-end;
+
+  margin-left: auto;
 }
 
 /*
- * 「展开 / 收起」(蓝字文字钮,双类压过 button 桶的钮形)。
+ * 手机(2026-10-08 Frank「看着不乱吗」):底部有意排两层 —— 上层翻页居中,下层「改信 / 投出」各占一半;
+ * 一行硬塞时 44px 翻页方块与钮高矮不一、放不下就随机掉行。
  */
-.linkBtn.linkBtn {
-  padding: 0;
+@media (width <= 640px) {
+  .foot {
+    flex-direction: column;
 
-  font-size: 13px;
+    align-items: stretch;
+  }
 
-  font-weight: 400;
+  .left {
+    justify-content: center;
+  }
 
-  color: var(--primary);
+  .right {
+    margin-left: 0;
+  }
 
-  border: none;
-
-  background: none;
-
-  cursor: pointer;
+  .right > * {
+    flex: 1;
+  }
 }
+
 
 /*
  * 卡上的职位名链接(链接色、不下划线,同职位板)。
@@ -338,6 +344,12 @@
  */
 .stepLabel {
   flex: 1;
+
+  /*
+   * 项名不折字(2026-10-08 第三轮小白走查加「所在省」行实测:省下拉按最长省名量宽,手机上把「所在省」挤成竖排三字);
+   * 放不下让右边的入口整行换到下面(手机 .step 已 flex-wrap),与英文姓名那一行同形。
+   */
+  white-space: nowrap;
 }
 
 /*

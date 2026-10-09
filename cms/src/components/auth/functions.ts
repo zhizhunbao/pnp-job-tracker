@@ -6,7 +6,7 @@
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
-import { fieldsOf, missingFields, pullAndMerge, readAnswers } from '@/lib/quiz'
+import { pullAndMerge } from '@/lib/quiz'
 import { track } from '@/lib/track'
 import {
   API_FORGOT, API_LOGIN, API_LOGOUT, API_RESET, API_USERS, AVATAR_PALETTE, BODY_NONE, CREDENTIALS_INCLUDE,
@@ -14,9 +14,9 @@ import {
   KEY_ERR_GENERIC, KEY_ERR_RESET_BAD, KEY_ERR_WEAK_PW, KEY_SUBMIT_FORGOT, KEY_SUBMIT_LOGIN, KEY_SUBMIT_REG,
   KEY_SUBMIT_RESET, MIME_JSON, MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET,
   PATH_GOOGLE_AUTH,
-  AVATAR_COLOR_NONE, PATH_ROOT, PW_CLASSES_MEDIUM, PW_CLASSES_STRONG, PW_CLASS_RES, PW_LONG_LEN, PW_LV_MEDIUM,
+  AVATAR_COLOR_NONE, PW_CLASSES_MEDIUM, PW_CLASSES_STRONG, PW_CLASS_RES, PW_LONG_LEN, PW_LV_MEDIUM,
   PW_LV_STRONG, PW_LV_WEAK,
-  PW_MIN_LEN, P_JOB, P_NEXT, P_QUIZ, QS_RETURN_TO, QUIZ_DECISION_PR, QUIZ_ON, QUIZ_PATH, QUIZ_STAGE_BASIC,
+  PW_MIN_LEN, P_NEXT, QS_RETURN_TO,
   REGISTER_EXISTS_RE, REGISTER_WEAK_PW_RE, SAFE_PATH_RE, SIGNUP_VIA_EMAIL, TOKEN_NONE,
 } from './constants'
 import type {
@@ -70,50 +70,17 @@ export function stableColor(s: string): string {
 }
 
 /**
- * 登录/注册后要不要先补统一基础问卷:已有完整本地答案的用户不重复打扰(给 null),
- * 否则给 /plan/pr 的问卷地址。/plan/pr 自己就是问卷宿主:保留 job 参数原地展开;
- * 其它页面用 next 在答完后回跳。
- *
- * @param x 调用方指定的回跳路径。
- * @returns 问卷地址,或 null(不用补)。
- */
-export function quizDestinationOf(x: QuizDestIn): string | null {
-  const a = readAnswers()
-  if (a.nocs.length > 0 && missingFields(fieldsOf(QUIZ_DECISION_PR, QUIZ_STAGE_BASIC, 0, a), a).length === 0) {
-    return null
-  }
-  let raw = window.location.pathname + window.location.search
-  if (x.returnTo != null && x.returnTo !== '') {
-    raw = x.returnTo
-  }
-  let safe = PATH_ROOT
-  if (SAFE_PATH_RE.test(raw)) {
-    safe = raw
-  }
-  const from = new URL(safe, window.location.origin)
-  const out = new URL(QUIZ_PATH, window.location.origin)
-  out.searchParams.set(P_QUIZ, QUIZ_ON)
-  if (from.pathname === QUIZ_PATH) {
-    const job = from.searchParams.get(P_JOB)
-    if (job != null && job !== '') {
-      out.searchParams.set(P_JOB, job)
-    }
-  } else {
-    out.searchParams.set(P_NEXT, from.pathname + from.search + from.hash)
-  }
-  return out.pathname + out.search
-}
-
-/**
  * 认证成功后的收尾:先拉服务端答案档与本地合并(新者胜;服务端无档则把浏览器旧答案
  * 送上去 —— dp.authGate「注册后答案自动存档」兑现处;失败不拦登录 ——
  * 网络失败:答案仍在浏览器,下次改动重试)。必须等它:
- * 下面读的就是合并后的答案。然后**只有注册**才查问卷缺口进补题漏斗;
- * 登录/重置一律留在原页调 onDone(2026-08-29 Frank 实拍「每次登录都弹这个框」,
- * 拍板「在哪个页面就保留在哪个页面」—— 老用户登录被整页拽去 /plan/pr?quiz=1 是打扰,
- * 注册闸的地基只管新身份)。
+ * 下面读的就是合并后的答案。然后一律留在原页调 onDone,带了 `?next=` 就回那条
+ * (2026-08-29 Frank 实拍「每次登录都弹这个框」,拍板「在哪个页面就保留在哪个页面」——
+ * 老用户登录被整页拽去 /plan/pr?quiz=1 是打扰;当时只放过登录/重置,注册仍进补题漏斗)。
  * afterLogin=true:登录刚成功,迹象 cookie(#311 匿名不发请求的闸)还没置位,这一调必须绕闸发出。
  * 2026-10-03 付费闭环批 A1:调用方传 keepPage(访客向导的注册屏)时注册也不进补题漏斗,直接调 onDone。
+ * 2026-10-08 第三轮小白走查(Frank「新注册不应该跳 plan pr」):注册的补题漏斗整个退役,注册与登录同路;
+ * 问卷缺口由 /plan/pr 答题入口自己兜底。quizDestinationOf 与它的七个常量随之退役(见 git 历史);
+ * keepPage 自此两路同形,留作访客向导的接线不再分支。
  *
  * @param x 回跳路径与完成回调。
  * @returns 无(可能整页跳转)。
@@ -123,17 +90,6 @@ export async function finishAuth(x: FinishAuthIn) {
     return null
   })
   const next = nextPathOf()
-  let returnTo = x.returnTo
-  if (next != null) {
-    returnTo = next
-  }
-  if (x.mode === MODE_REGISTER && x.keepPage === false) {
-    const destination = quizDestinationOf({ returnTo })
-    if (destination != null) {
-      window.location.assign(destination)
-      return
-    }
-  }
   if (next != null) {
     window.location.assign(next)
     return

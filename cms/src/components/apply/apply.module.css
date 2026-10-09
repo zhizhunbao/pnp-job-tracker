@@ -112,6 +112,74 @@
 }
 
 /*
+ * 逐项检查(2026-10-08):一列勾选行,与上面的信隔一条线。
+ */
+.checks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/*
+ * 逐项检查一行:三列网格 —— 勾 | 灰字项名(定宽)| 值 + 打开看(长了在本格里折行,不掉到勾下面);整行可点勾。
+ * 项名列 88px 同站上 Row(英文「Cover letter」「Signed as」64px 折两行,实撞)。
+ * 2026-10-08 Frank「看着不乱吗」改两层:上层「勾 | 灰字项名 | 打开看(靠右)」,下层值从项名那一列起占满整行
+ * (三列版手机上值只剩一窄条:文件名断在词中间、「View PDF」折两行、四行高矮不一)。
+ */
+.check {
+  display: grid;
+  grid-template-columns: auto max-content 1fr;
+  grid-template-areas:
+    "box label link"
+    ". value value";
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 2px;
+  cursor: pointer;
+}
+
+/*
+ * 勾(上层最左)。
+ */
+.checkBox {
+  grid-area: box;
+  margin: 0;
+}
+
+/*
+ * 逐项检查项名(灰小字,上层)。
+ */
+.checkLabel {
+  grid-area: label;
+  font-size: 12px;
+  color: var(--text2);
+}
+
+/*
+ * 「打开 / 查看 PDF」(上层紧跟项名,一行不折;靠右放在桌面宽卡上离文件名太远,实撞)。
+ */
+.checkLink {
+  grid-area: link;
+  justify-self: start;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/*
+ * 逐项检查的值(下层,占满整行;只在下划线后折,见 BREAK_AFTER_RE;一整段仍放不下才硬断)。
+ */
+.checkValue {
+  grid-area: value;
+  min-width: 0;
+  font-size: 14px;
+  overflow-wrap: break-word;
+  color: var(--text);
+}
+
+/*
  * 底部钮组:靠右,与上面的内容隔一条线。
  */
 .foot {

@@ -8,6 +8,7 @@
 //       ③ 第 2 步:信里有写不进 PDF 的字 → 列出坏字、「预览」灰;改回来恢复;
 //       ④ 第 3 步:页面上铺信的正文、两行附件;发送回 503 mailOff → 钮上一行原因、不收;发送成功 → 投递区收起、
 //          通知外面刷新表、地址栏洗掉职位号。
+//          2026-10-08 改:两行附件换成逐项检查四行(收件人 / 简历 / 求职信 / 署名),四项没勾满「发送」灰;退回上一步勾清空。
 // 探针:ApplySection 不认已发出 → ①红;nextFromResume 去掉姓名闸 → ②第一条红;canNextOf 不看坏字 → ③红;
 //       send 成功不调 onSent → ④最后一条红。
 // 2026-10-07 批 C(AI 写信每人一辈子试用 3 个职位):
@@ -75,6 +76,15 @@ const START = 'GET /api/apply/start?job=42'
 
 function btn(el: HTMLElement, text: string) {
   return Array.from(el.querySelectorAll('button, a')).find((b) => b.textContent === text) as HTMLButtonElement
+}
+
+async function tickAll(el: HTMLElement) {
+  for (const box of Array.from(el.querySelectorAll('input[type=checkbox]')) as HTMLInputElement[]) {
+    await act(async () => {
+      box.click()
+    })
+  }
+  await flush()
 }
 
 async function click(el: HTMLElement, text: string) {
@@ -183,6 +193,15 @@ describe('第 2、3 步', () => {
     await click(el, '预览')
     expect(el.textContent).toContain('Thanks')
     expect(el.textContent).toContain('zhang.pdf')
+    expect(el.textContent).toContain('Zhang San')
+    expect(el.querySelectorAll('input[type=checkbox]')).toHaveLength(4)
+    expect(btn(el, '发送').disabled).toBe(true)
+    await tickAll(el)
+    expect(btn(el, '发送').disabled).toBe(false)
+    await click(el, '上一步')
+    await click(el, '预览')
+    expect(btn(el, '发送').disabled).toBe(true)
+    await tickAll(el)
     await click(el, '发送')
     expect(el.textContent).toContain('发信服务没有开启')
     expect(onSent).not.toHaveBeenCalled()

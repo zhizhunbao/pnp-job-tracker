@@ -3,6 +3,7 @@
  * 「今日待投」(2026-10-08 照 AIApply 的 Quick Review;摆在「我的求职」最上面):标题 + 条数 + 「智能投递」开关(开着才出);
  * 没开或三样条件没齐 → 设置清单就地补(上传简历 / 去选想做的工作 / 填英文姓名),全齐一颗「开启智能投递」;
  * 开着:队列第一岗一张卡 + 改信(弹框)/ 跳过 / 投出,多于一岗「全部投出」(Pro;免费档开升级框);职位名叠开职位描述弹框。
+ * 2026-10-08 Frank 看「我的」:跳过、全部投出、升级框撤;一次一岗翻页看,信全文 + 逐项检查,四项全勾才能投出。
  * 刚开启那一轮还在跑:转圈「正在找新岗、写信」(轮询);跑完没岗才是「今天没有新岗」。
  * 取不到不出(不冒充空队列)。
  *
@@ -12,8 +13,7 @@
 import { PeekStack } from '@/components/advisor'
 import { Card } from '@/components/card'
 import { Loading } from '@/components/loading'
-import { UpgradeModal } from '@/components/pricing'
-import { ERR_NONE, LOAD_OK, NOC_DESC_NONE, UPGRADE_REASON_KEY, URL_BACK } from './constants'
+import { ERR_NONE, LOAD_OK, NOC_DESC_NONE } from './constants'
 import { useQueueReview } from './hooks'
 import { QueueCard } from './queuecard'
 import { QueueEdit } from './queueedit'
@@ -47,7 +47,6 @@ export function QueueReview({ t, plan, onSent }: QueueReviewIn) {
         {setup && p.err !== ERR_NONE && <div className={css.err}>{t(p.err)}</div>}
       </Card>
       {p.editing && <QueueEdit p={p} t={t} />}
-      {p.upsell && <UpgradeModal t={t} onClose={p.onUpsellClose} reason={t(UPGRADE_REASON_KEY)} back={URL_BACK} />}
       <PeekStack stack={p.stack} lang={p.lang} plan={p.plan} nocDesc={NOC_DESC_NONE} />
     </div>
   )

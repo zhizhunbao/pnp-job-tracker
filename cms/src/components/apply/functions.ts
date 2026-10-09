@@ -7,7 +7,7 @@
  * @author Frank
  * @time 2026-10-07 03:00:00
  */
-import { COVER_MAX, isSenderName } from '@/lib/apply'
+import { COVER_MAX, coverFileOf, isSenderName } from '@/lib/apply'
 import { track } from '@/lib/track'
 import {
   CLOSED_KEY, CRED_INCLUDE, DATE_LEN, ERR_CODES, ERR_FALLBACK, ERR_KEY_FULL, ERR_KEY_HEAD, ERR_KEY_NAME,
@@ -15,13 +15,14 @@ import {
   HTTP_CONFLICT, LOAD_FAIL, LOAD_NONE, LOAD_OK, METHOD_POST, METHOD_PUT, MIME_JSON, NEXT_KEY, NO_EMAIL_KEY, P_JOB,
   SENT_STATUSES, STEP_DONE, STEP_LETTER, STEP_ORDER, STEP_PREVIEW, STEP_RESUME, TEXT_NONE, TRACK_APPLY_SENT,
   UPLOADED_KEY, URL_BACK_HEAD, URL_COVER_HEAD, URL_DRAFT, URL_LETTER, URL_RESUME_FILE, URL_RESUME_FILES, URL_SEND,
-  URL_SJOBS, URL_START_HEAD,
+  URL_SJOBS, URL_START_HEAD, BREAK_AFTER_RE, CHECK_KEYS, CHECK_LETTER, CHECK_RESUME, CHECK_SIGN, CHECK_TO, PDF_KEY,
+  Q_ID_HEAD, VIEW_KEY,
 } from './constants'
 import type {
   AiOpenIn, ApplyCells, ApplyResumeView, ApplyStartView, CanNextIn, DraftIn, ErrJson, ErrOut, LetterJson, LoadStartIn,
   LocationIn, PageHideIn, PickIn, PickOfFn, ResumeFilesJson, ResumeNameIn, SentIn, SetFn, StartStepIn, UploadedTextIn,
   TrialWriteIn, UploadIn, UploadJson,
-  ApplySentOut, SentFn,
+  ApplySentOut, SentFn, ApplyChecksIn, CheckRow, CheckRowsIn, TickIn, TickOfFn,
 } from './types'
 
 /**
@@ -176,19 +177,116 @@ export function nextKeyOf(step: string): string {
 
 /**
  * 主钮能不能点:第 1 步上传中不能;第 2 步在写信、信空、有坏字或超长不能;其余能。
+ * 2026-10-08:第 3 步逐项检查四项没勾全不能。
  *
- * @param x 当前步、坏字、信与两个在途标。
+ * @param x 当前步、坏字、信、两个在途标与已勾的项。
  * @returns 能点 true。
  */
 export function canNextOf(x: CanNextIn): boolean {
   if (x.step === STEP_RESUME) {
     return x.uploading === false
   }
+  if (x.step === STEP_PREVIEW) {
+    return isCheckedAll(x.ticks)
+  }
   if (x.step !== STEP_LETTER) {
     return true
   }
   const filled = x.letter.trim() !== TEXT_NONE
   return x.writing === false && filled && x.badChars.length === 0 && x.letter.length <= COVER_MAX
+}
+
+/**
+ * 逐项检查四项是不是都勾了(2026-10-08:发出前逐项打勾)。
+ *
+ * @param ticks 已勾的项。
+ * @returns 都勾了。
+ */
+export function isCheckedAll(ticks: string[]): boolean {
+  for (const key of CHECK_KEYS) {
+    if (ticks.includes(key) === false) {
+      return false
+    }
+  }
+  return true
+}
+
+/**
+ * 逐项检查的四行:收件人(雇主名;邮箱不出服务端)、简历(文件名 + 打开)、求职信(附件名 + 查看 PDF)、署名。
+ *
+ * @param x 这一封投递的四样。
+ * @returns 四行。
+ */
+export function checkRowsOf(x: CheckRowsIn): CheckRow[] {
+  return [
+    { key: CHECK_TO, value: x.company, href: TEXT_NONE, linkKey: TEXT_NONE },
+    { key: CHECK_RESUME, value: x.resumeName, href: resumeHrefOf(x.resumeId), linkKey: VIEW_KEY },
+    { key: CHECK_LETTER, value: x.coverFile, href: coverHrefOf(x.jobId), linkKey: PDF_KEY },
+    { key: CHECK_SIGN, value: x.sender, href: TEXT_NONE, linkKey: TEXT_NONE },
+  ]
+}
+
+/**
+ * 投递区这一封的逐项检查四行(本岗、选用的简历、求职信附件名、署名)。
+ *
+ * @param x 本岗、简历清单、选用的简历 id 与英文姓名。
+ * @returns 四行。
+ */
+export function applyChecksOf(x: ApplyChecksIn): CheckRow[] {
+  return checkRowsOf({
+    company: x.job.company,
+    resumeName: resumeNameOf({ resumes: x.resumes, resumeId: x.resumeId }),
+    resumeId: x.resumeId,
+    coverFile: coverFileOf(x.job.company),
+    jobId: x.job.id,
+    sender: x.name.trim(),
+  })
+}
+
+/**
+ * 逐项检查的值切成可折行的几段(下划线之后可断;每段后面接一个 wbr)。
+ *
+ * @param value 值。
+ * @returns 几段。
+ */
+export function breakPartsOf(value: string): string[] {
+  return value.split(BREAK_AFTER_RE)
+}
+
+/**
+ * 某一份简历原件的地址(浏览器里直接打开;没简历给空串)。
+ *
+ * @param id 简历 id。
+ * @returns 地址。
+ */
+export function resumeHrefOf(id: number | null): string {
+  if (id == null) {
+    return TEXT_NONE
+  }
+  return URL_RESUME_FILE + Q_ID_HEAD + String(id)
+}
+
+/**
+ * 造「按项勾 / 取消」:勾了的再点取消,没勾的点了勾上。
+ *
+ * @param x 已勾的项与落格。
+ * @returns 按项造手柄的函数。
+ */
+export function makeTickOf(x: TickIn): TickOfFn {
+  return function tickOf(key: string): () => void {
+    return function tick(): void {
+      const next: string[] = []
+      for (const k of x.ticks) {
+        if (k !== key) {
+          next.push(k)
+        }
+      }
+      if (next.length === x.ticks.length) {
+        next.push(key)
+      }
+      x.set(next)
+    }
+  }
 }
 
 /**
@@ -614,6 +712,7 @@ export function makeBack(c: ApplyCells): () => void {
     const prev = STEP_ORDER[stepIndexOf(c.step) - 1]
     if (prev != null) {
       c.setErr(ERR_NONE)
+      c.setTicks([])
       c.setStep(prev)
     }
   }

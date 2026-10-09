@@ -366,19 +366,19 @@ export type ApplyPanel = {
   badChars: string[]
 
   /**
-   * 选用那一份的文件名(预览一步列附件;还没选 = 空串)。
+   * 预览一步的逐项检查四行(收件人、简历、求职信、署名)。
    */
-  resumeName: string
+  checkRows: CheckRow[]
 
   /**
-   * 求职信 PDF 的地址(本人预览)。
+   * 已勾的项(词条键)。
    */
-  coverHref: string
+  ticks: string[]
 
   /**
-   * 求职信附件名。
+   * 勾 / 取消某一项的手柄(按项造)。
    */
-  coverFile: string
+  onTick: TickOfFn
 
   /**
    * 错误 / 提示词条键(没有 = 空串)。
@@ -694,6 +694,11 @@ export type ApplyCells = {
    * 试用那几格(2026-10-07 批 C)。
    */
   trial: TrialCells
+
+  /**
+   * 改已勾的项(退回上一步清空)。
+   */
+  setTicks: SetFn<string[]>
 }
 
 /**
@@ -739,6 +744,11 @@ export type CanNextIn = {
    * 正在上传。
    */
   uploading: boolean
+
+  /**
+   * 已勾的项(预览一步四项全勾才放行)。
+   */
+  ticks: string[]
 }
 
 /**
@@ -901,3 +911,132 @@ export type ApplyFileInputIn = {
   onPick: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
+/**
+ * 逐项检查的一行(2026-10-08:发出前逐项打勾)。
+ */
+export type CheckRow = {
+  /**
+   * 项名词条键(也是勾选记号)。
+   */
+  key: string
+
+  /**
+   * 这一项的值(公司名 / 文件名 / 署名)。
+   */
+  value: string
+
+  /**
+   * 打开看的地址(没有 = 空串)。
+   */
+  href: string
+
+  /**
+   * 打开看那颗钮的词条键(没有 = 空串)。
+   */
+  linkKey: string
+}
+
+/**
+ * `checkRowsOf` 的入参。
+ */
+export type CheckRowsIn = {
+  /**
+   * 收件公司。
+   */
+  company: string
+
+  /**
+   * 附的简历文件名。
+   */
+  resumeName: string
+
+  /**
+   * 附的简历 id(没有 = null,不出打开钮)。
+   */
+  resumeId: number | null
+
+  /**
+   * 求职信附件名。
+   */
+  coverFile: string
+
+  /**
+   * 职位 id(求职信 PDF 按它取)。
+   */
+  jobId: number
+
+  /**
+   * 英文署名。
+   */
+  sender: string
+}
+
+/**
+ * 按项造勾选手柄的函数。
+ */
+export type TickOfFn = (key: string) => () => void
+
+/**
+ * `makeTickOf` 的入参。
+ */
+export type TickIn = {
+  /**
+   * 已勾的项。
+   */
+  ticks: string[]
+
+  /**
+   * 落格。
+   */
+  set: SetFn<string[]>
+}
+
+/**
+ * ApplyCheck 的 props。
+ */
+export type ApplyCheckIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 四行。
+   */
+  rows: CheckRow[]
+
+  /**
+   * 已勾的项。
+   */
+  ticks: string[]
+
+  /**
+   * 按项造勾选手柄。
+   */
+  onTick: TickOfFn
+}
+
+/**
+ * `applyChecksOf` 的入参。
+ */
+export type ApplyChecksIn = {
+  /**
+   * 本岗。
+   */
+  job: ApplyJobView
+
+  /**
+   * 简历清单。
+   */
+  resumes: ApplyResumeView[]
+
+  /**
+   * 选用的简历 id(还没选 = null)。
+   */
+  resumeId: number | null
+
+  /**
+   * 英文姓名(文本框里的,未去空白)。
+   */
+  name: string
+}

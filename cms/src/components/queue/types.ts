@@ -90,6 +90,11 @@ export type QueueItem = {
    * 职位已下架。
    */
   closed: boolean
+
+  /**
+   * 附的那份简历的文件名(那份已删 = 空串)。
+   */
+  resumeName: string
 }
 
 /**
@@ -117,6 +122,11 @@ export type QueueRespJson = {
   hasResume?: boolean
 
   /**
+   * 答没答所在省;缺席按没答读(2026-10-08 第三轮小白走查:候选只取本省)。
+   */
+  hasProv?: boolean
+
+  /**
    * 队列;缺席按零条读。
    */
   items?: QueueItem[]
@@ -125,6 +135,11 @@ export type QueueRespJson = {
    * 上一轮跑完的时刻(ISO;从没跑过 = 空 / 缺席)。
    */
   lastQueueAt?: string | null
+
+  /**
+   * 英文署名;缺席 / 空按没有读。
+   */
+  senderName?: string | null
 }
 
 /**
@@ -152,6 +167,11 @@ export type QueueState = {
   hasResume: boolean
 
   /**
+   * 答过所在省。
+   */
+  hasProv: boolean
+
+  /**
    * 队列(第一条就是当前这一岗)。
    */
   items: QueueItem[]
@@ -160,6 +180,11 @@ export type QueueState = {
    * 上一轮跑完的时刻(ISO;从没跑过 = 空串)。开启后拿它变没变判「这一轮跑完了」。
    */
   lastQueueAt: string
+
+  /**
+   * 英文署名(逐项检查的「署名」一行;没有 = 空串)。
+   */
+  senderName: string
 }
 
 /**
@@ -287,14 +312,14 @@ export type QueueCells = {
   setErr: SetFn<string>
 
   /**
-   * 改升级框开合。
+   * 当前翻到第几条(已夹在队列长度内)。
    */
-  setUpsell: SetFn<boolean>
+  pos: number
 
   /**
-   * 是 Pro。
+   * 改逐项检查已勾的项(发出 / 改信 / 翻页后清空)。
    */
-  pro: boolean
+  setTicks: SetFn<string[]>
 
   /**
    * 发出去了的回调。
@@ -305,6 +330,11 @@ export type QueueCells = {
    * 设置清单里的英文姓名(文本框里的)。
    */
   name: string
+
+  /**
+   * 设置清单里选中的所在省码(下拉里的;按时区预选)。
+   */
+  prov: string
 
   /**
    * 改「正在上传」。
@@ -448,6 +478,21 @@ export type NameSaveIn = {
 }
 
 /**
+ * `makeProvSave`(存所在省)的入参。
+ */
+export type ProvSaveIn = {
+  /**
+   * 整机的可变格。
+   */
+  cells: QueueCells
+
+  /**
+   * 重拉队列状态(存完让「所在省 ✓」亮起)。
+   */
+  reload: () => Promise<void>
+}
+
+/**
  * `makeUpload` 的入参。
  */
 export type UploadIn = {
@@ -567,7 +612,7 @@ export type QueuePanel = {
   load: string
 
   /**
-   * 三样条件都齐了(简历、想做的工作、英文姓名)。
+   * 四样条件都齐了(简历、想做的工作、所在省、英文姓名)。
    */
   ready: boolean
 
@@ -575,6 +620,21 @@ export type QueuePanel = {
    * 设置清单里的英文姓名(文本框里的)。
    */
   name: string
+
+  /**
+   * 设置清单里选中的所在省码(下拉里的;按时区预选)。
+   */
+  prov: string
+
+  /**
+   * 改所在省下拉。
+   */
+  onProv: (v: string) => void
+
+  /**
+   * 存所在省(写进四题答案档,存完让「所在省 ✓」亮起)。
+   */
+  onProvSave: () => void
 
   /**
    * 正在上传简历。
@@ -662,9 +722,34 @@ export type QueuePanel = {
   state: QueueState
 
   /**
-   * 当前这一岗(队列第一条;空队列 = null)。
+   * 当前这一岗(翻到的那一条;空队列 = null)。
    */
   item: QueueItem | null
+
+  /**
+   * 当前翻到第几条(从 0 起)。
+   */
+  pos: number
+
+  /**
+   * 逐项检查四行(当前这一岗;职位已删 = 空清单)。
+   */
+  checkRows: QueueCheckRow[]
+
+  /**
+   * 逐项检查已勾的项。
+   */
+  ticks: string[]
+
+  /**
+   * 按项造勾选手柄。
+   */
+  onTick: (key: string) => () => void
+
+  /**
+   * 翻到第几条(通用 Pager 的回调,0 起)。
+   */
+  onPage: (to: number) => void
 
   /**
    * 界面语(城市译名按它)。
@@ -682,16 +767,6 @@ export type QueuePanel = {
   err: string
 
   /**
-   * 信全文展开了没有。
-   */
-  expanded: boolean
-
-  /**
-   * 升级框开着没有。
-   */
-  upsell: boolean
-
-  /**
    * 开启后这一轮还在跑(轮询中;有岗了 / 跑完了 / 超时就不是了)。
    */
   finding: boolean
@@ -706,25 +781,6 @@ export type QueuePanel = {
    */
   onSend: () => void
 
-  /**
-   * 跳过当前这一岗。
-   */
-  onSkip: () => void
-
-  /**
-   * 全部投出(免费档开升级框)。
-   */
-  onSendAll: () => void
-
-  /**
-   * 展开 / 收起信。
-   */
-  onExpand: () => void
-
-  /**
-   * 关升级框。
-   */
-  onUpsellClose: () => void
 }
 
 /**
@@ -968,18 +1024,73 @@ export type QueueFootIn = {
 }
 
 /**
- * `previewOf` 的入参。
+ * `makePage` 的入参。
  */
-export type PreviewIn = {
+export type PageIn = {
   /**
-   * 信全文。
+   * 翻页落格。
    */
-  cover: string
+  setPos: SetFn<number>
 
   /**
-   * 展开了没有。
+   * 逐项检查落格(翻页清空)。
    */
-  expanded: boolean
+  setTicks: SetFn<string[]>
+}
+
+/**
+ * `posOf` 的入参。
+ */
+export type PosIn = {
+  /**
+   * 记着的位置。
+   */
+  pos: number
+
+  /**
+   * 队列条数。
+   */
+  n: number
+}
+
+/**
+ * `checksOf` 的入参。
+ */
+export type ChecksIn = {
+  /**
+   * 当前这一岗(空队列 = null)。
+   */
+  item: QueueItem | null
+
+  /**
+   * 英文署名。
+   */
+  sender: string
+}
+
+/**
+ * 逐项检查的一行(与 apply 桶 CheckRow 同形,本桶自抄)。
+ */
+export type QueueCheckRow = {
+  /**
+   * 项名词条键(也是勾选记号)。
+   */
+  key: string
+
+  /**
+   * 这一项的值。
+   */
+  value: string
+
+  /**
+   * 打开看的地址(没有 = 空串)。
+   */
+  href: string
+
+  /**
+   * 打开看那颗钮的词条键(没有 = 空串)。
+   */
+  linkKey: string
 }
 
 /**

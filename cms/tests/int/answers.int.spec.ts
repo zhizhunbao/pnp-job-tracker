@@ -4,7 +4,7 @@
 import { afterEach, describe, it, expect, beforeEach, vi } from 'vitest'
 import { DECISIONS, getFields, KNOWN_NO_FREE_LEAD, answeredBasics, batchLeadsFree, fieldsOf, pullAndMerge, readAnswers, readScoreAnswers, resetAnswersMemory, toEngineAnswers, writeAnswers, type Answers } from '@/lib/quiz'
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
-import { finishAuth, quizDestinationOf } from '@/components/auth/functions'
+import { finishAuth } from '@/components/auth/functions'
 
 const OLD_QUIZ = 'jobs_quiz_v1'
 const OLD_PR = 'plan_pr_v1'
@@ -199,16 +199,25 @@ describe('认证收尾 finishAuth', () => {
     vi.unstubAllGlobals()
   })
 
-  it('注册默认照旧进补题问卷(整页跳走、不调 onDone);keepPage(访客向导注册屏)留在原页调 onDone;登录一律留原页', async () => {
+  it('注册与登录一律留在原页调 onDone,不再跳补题问卷(2026-10-08 Frank「新注册不应该跳 plan pr」);keepPage 两路同形', async () => {
     const done = vi.fn()
-    expect(quizDestinationOf({ returnTo: null })).not.toBeNull()   // 空卷:默认那一路确实要跳
     await finishAuth({ mode: 'register', keepPage: false, returnTo: null, onDone: done })
-    expect(done).not.toHaveBeenCalled()
-    await finishAuth({ mode: 'register', keepPage: true, returnTo: null, onDone: done })
     expect(done).toHaveBeenCalledTimes(1)
+    await finishAuth({ mode: 'register', keepPage: true, returnTo: null, onDone: done })
+    expect(done).toHaveBeenCalledTimes(2)
     await finishAuth({ mode: 'login', keepPage: false, returnTo: null, onDone: done })
     await finishAuth({ mode: 'login', keepPage: true, returnTo: null, onDone: done })
-    expect(done).toHaveBeenCalledTimes(3)
+    expect(done).toHaveBeenCalledTimes(4)
+  })
+
+  it('带 ?next= 的注册回那条(深链),不回问卷', async () => {
+    const done = vi.fn()
+    window.history.replaceState(null, '', '/?next=%2Faccount%3Fsec%3Dsjobs')
+    const assign = vi.fn()
+    vi.stubGlobal('location', { ...window.location, assign, search: '?next=%2Faccount%3Fsec%3Dsjobs', pathname: '/', origin: 'http://localhost' })
+    await finishAuth({ mode: 'register', keepPage: false, returnTo: null, onDone: done })
+    expect(assign).toHaveBeenCalledWith('/account?sec=sjobs')
+    expect(done).not.toHaveBeenCalled()
   })
 })
 

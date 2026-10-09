@@ -111,38 +111,10 @@ export const TOKEN_NONE = ''
 export const BODY_NONE = ''
 
 /**
- * 统一基础问卷的宿主路径(/plan/pr 自己就是问卷宿主)。
+ * 退役记录(2026-10-08 第三轮小白走查,Frank「新注册不应该跳 plan pr」):注册后的补题漏斗撤了,
+ * QUIZ_PATH / QUIZ_DECISION_PR / QUIZ_STAGE_BASIC / P_QUIZ / QUIZ_ON / P_JOB / PATH_ROOT 七个常量随 quizDestinationOf 一起退役,
+ * 原文与当初的理由在 git 历史里。
  */
-export const QUIZ_PATH = '/plan/pr'
-
-/**
- * 统一题库里「拿枫叶卡」这个决定的 id:登录/注册后要不要先补问卷,判的就是这个
- * 决定的基础题答全了没有。别的决定各有自己的题面,这一处只认 pr。
- */
-export const QUIZ_DECISION_PR = 'pr'
-
-/**
- * 题库的阶段之「基础」:只有基础题缺了才拦人,探索题(explore)是用户自己愿意
- * 往下答的部分,缺了不打扰(登录后连着弹两屏问卷,人就走了)。
- */
-export const QUIZ_STAGE_BASIC = 'basic'
-
-/**
- * 问卷模式的查询参数名:/plan/pr 带上它才直接展开问卷,不带就是普通的决定页。
- */
-export const P_QUIZ = 'quiz'
-
-/**
- * 问卷模式的开关值。URL 参数只有字符串,所以「开」写成 '1' 而不是 true;
- * 「关」的写法是根本不带这个参数,没有 '0'。
- */
-export const QUIZ_ON = '1'
-
-/**
- * 职位 id 的查询参数名:从 /plan/pr?job=… 进来的人答完还要回到那个岗位上,
- * 跳问卷时把它原样带过去。
- */
-export const P_JOB = 'job'
 
 /**
  * 答完问卷后的回跳参数名:从别的页面(职位板等)进来的人按它回原处。
@@ -155,12 +127,6 @@ export const P_NEXT = 'next'
  * 手拼字符串(后面直接接 encodeURIComponent 的结果),没走 URLSearchParams。
  */
 export const QS_RETURN_TO = '?returnTo='
-
-/**
- * 回跳路径的兜底:站点根。调用方给的 returnTo 只要不是站内绝对路径就换成它 ——
- * 宁可把人送回首页,也不能拿一个外站地址当回跳(开放重定向)。
- */
-export const PATH_ROOT = '/'
 
 /**
  * 站内绝对路径的判据:以一个斜杠开头,且下一个字符不是斜杠。

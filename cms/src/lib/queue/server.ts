@@ -6,5 +6,5 @@
  * @time 2026-10-08 14:00:00
  */
 
-export { queueCoverRoute, queueDeclineRoute, queuePrefsRoute, queueRoute, queueRunRoute } from './routes'
+export { queueCoverRoute, queuePrefsRoute, queueRoute, queueRunRoute } from './routes'
 export type { QueueRowFact, QueueView } from './types'

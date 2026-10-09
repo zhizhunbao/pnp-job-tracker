@@ -222,7 +222,7 @@ export type ClickOutsideIn = {
 }
 
 /**
- * quizDestinationOf 的入参。
+ * googleHrefOf 的入参(2026-10-08 之前 quizDestinationOf 同形共用,该函数随注册补题漏斗退役)。
  */
 export type QuizDestIn = {
   /**

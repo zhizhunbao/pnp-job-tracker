@@ -6,4 +6,6 @@
  * @time 2026-10-07 03:00:00
  */
 
+export { ApplyCheck } from './applycheck'
 export { ApplySection } from './applysection'
+export { checkRowsOf, isCheckedAll, makeTickOf } from './functions'

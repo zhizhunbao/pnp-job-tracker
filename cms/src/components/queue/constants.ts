@@ -18,11 +18,6 @@ export const URL_QUEUE = '/api/queue'
 export const URL_PREFS = '/api/queue/prefs'
 
 /**
- * 跳过接口(POST { jobId })。
- */
-export const URL_DECLINE = '/api/queue/decline'
-
-/**
  * 代发接口(POST { jobId };队列里的行也能直接发)。
  */
 export const URL_SEND = '/api/apply/send'
@@ -113,14 +108,20 @@ export const ERR_KEY_UPLOAD = 'ap.e.upload'
 export const ERR_KEY_FULL = 'rf.full'
 
 /**
+ * 所在省没存上的词条(2026-10-08 第三轮小白走查:设置清单加「所在省」一行,写进四题答案档;
+ * 现档记着「人在境外」时答案档不收省,或会话没了,都落这一条)。
+ */
+export const ERR_KEY_PROV = 'qu.provFail'
+
+/**
+ * 所在省下拉的尺寸档(与清单里的小钮同高)。
+ */
+export const PROV_SELECT_SIZE = 'sm' as const
+
+/**
  * 没简历时引去「我的简历」。
  */
 export const URL_RESUME = '/account?sec=resume'
-
-/**
- * 升级框付完回哪儿。
- */
-export const URL_BACK = '/account?sec=sjobs'
 
 /**
  * 请求带 cookie(登录态)。
@@ -206,16 +207,6 @@ export const FIND_MAX_MS = 180000
 export const TEXT_NONE = ''
 
 /**
- * 信预览先露几行(照 AIApply 的 Quick Review 只露要点;「展开」看全文)。
- */
-export const PREVIEW_LINES = 6
-
-/**
- * 信的换行。
- */
-export const NEWLINE = '\n'
-
-/**
  * 「投出」「全部投出」的钮档(主行动,蓝底)。
  */
 export const BTN_PRIMARY = 'primary'
@@ -225,15 +216,6 @@ export const BTN_PRIMARY = 'primary'
  */
 export const BTN_SECONDARY = 'secondary'
 
-/**
- * 「展开 / 收起」的钮档(ghost 最素,样子由本桶的 .linkBtn 定:button 桶的 linkText 档没有样式类)。
- */
-export const BTN_LINK = 'ghost'
-
-/**
- * 升级框里「为什么弹」那一行的词条键(「全部投出」是 Pro 功能)。
- */
-export const UPGRADE_REASON_KEY = 'qu.allReason'
 
 /**
  * 「已下架」胶囊的档(tag 桶 warn)。

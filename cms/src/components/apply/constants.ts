@@ -387,3 +387,54 @@ export const URL_BACK_HEAD = '/account?sec=sjobs&job='
  * 投递真发出去那一下的埋点名(第一方漏斗白名单 apply-sent;只计数,不带岗位号、公司名)。
  */
 export const TRACK_APPLY_SENT = 'apply-sent'
+
+/**
+ * 逐项检查:收件人一项(词条键即项名;2026-10-08 Frank「再投递之前 有让用户一项一项检查吗」—— 发给真雇主收不回,
+ * 发出前四项逐一打勾才放行,手动投递第 3 步与「今日待投」同一个组件)。
+ */
+export const CHECK_TO = 'ap.to'
+
+/**
+ * 逐项检查:简历一项。
+ */
+export const CHECK_RESUME = 'ap.resume'
+
+/**
+ * 逐项检查:求职信一项。
+ */
+export const CHECK_LETTER = 'ap.letter'
+
+/**
+ * 逐项检查:署名一项。
+ */
+export const CHECK_SIGN = 'ap.sign'
+
+/**
+ * 逐项检查的全部项(四项都勾了才放行)。
+ */
+export const CHECK_KEYS = [CHECK_TO, CHECK_RESUME, CHECK_LETTER, CHECK_SIGN]
+
+/**
+ * 逐项检查里「打开简历」的词条键。
+ */
+export const VIEW_KEY = 'ap.view'
+
+/**
+ * 逐项检查里「查看 PDF」的词条键。
+ */
+export const PDF_KEY = 'ap.pdf'
+
+/**
+ * 简历原件地址的查询头(后接简历 id;同「我的简历」)。
+ */
+export const Q_ID_HEAD = '?id='
+
+/**
+ * 勾选框的 input 类型。
+ */
+export const INPUT_CHECKBOX = 'checkbox'
+
+/**
+ * 逐项检查的值在哪儿允许折行:下划线之后(文件名 Cover_Letter_Markham_NS_Dental.pdf 只在 _ 后断,不断在词中间)。
+ */
+export const BREAK_AFTER_RE = /(?<=_)/

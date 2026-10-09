@@ -16,16 +16,16 @@ import { APPLY_LOG, log } from '../log'
 import { LETTER_TRIAL_MAX, TRIAL_LETTER } from '../quota'
 import { extractText } from '../resume'
 import {
-  ANS_BASIC, ANS_NOCS, ANS_PROV, B64, JOB_CLOSED, QUEUE_LIST_MAX, QUEUE_LOOKBACK_MS, QUEUE_PER_USER, QUEUE_USERS_MAX,
-  TEXT_NONE,
+  ANS_BASIC, ANS_NOCS, ANS_PROV, B64, JOB_CLOSED, NOC_GROUP_LEN, QUEUE_LIST_MAX, QUEUE_PER_USER, QUEUE_SINCE_ALL,
+  QUEUE_USERS_MAX, TEXT_NONE,
 } from './constants'
 import type {
   AnswersDbRow, AnswersJson, AutoSaveIn, CandidateDbRow, CandidateFact, CandidatesIn, CandidatesOut, CoverSaveIn, DbIn,
   DoneOut, IdDbRow,
-  JdOfIn, LetterTextIn, LetterTextOut, MaybeAnswers, MaybeQueueUserOut, MaybeTextOut, NocCodes, NocsOut, QueueForUserIn,
+  JdOfIn, LetterTextIn, LetterTextOut, MaybeAnswers, MaybeQueueUserOut, MaybeTextOut, NocCodes, NocsOut, ProvOut, QueueForUserIn,
   QueueForUserOut,
   QueueInsertIn, QueueJobIn, QueueJobOut, QueueListOut, QueueRowDbRow, QueueRowFact, QueueUserDbRow, QueueUserFact,
-  QueueUsersOut, ResumeTextIn, TextOut, TimeCell, UserIn, UserJobIn, WriteOut,
+  QueueUsersOut, ResumeTextIn, TextOut, TimeCell, UserIn, WriteOut,
 } from './types'
 
 /**
@@ -56,19 +56,28 @@ export async function loadQueueUser(x: UserIn): MaybeQueueUserOut {
  */
 export function toQueueUser(r: QueueUserDbRow): QueueUserFact {
   const answers = jsonOrNull<AnswersJson>(r.answers)
-  let prov = TEXT_NONE
-  if (answers != null && answers[ANS_BASIC] != null && answers[ANS_BASIC][ANS_PROV] != null) {
-    prov = answers[ANS_BASIC][ANS_PROV]
-  }
   const until = isoOf(r.pro_until)
   let pro = false
   if (until !== TEXT_NONE) {
     pro = new Date(until).getTime() > Date.now()
   }
   return {
-    userId: count(r.user_id), senderName: text(r.sender_name), lastQueueAt: isoOf(r.last_queue_at), nocs: nocsOf(answers), prov,
-    pro, resumeId: numOrNull(r.resume_id),
+    userId: count(r.user_id), senderName: text(r.sender_name), lastQueueAt: isoOf(r.last_queue_at), nocs: nocsOf(answers),
+    prov: provOf(answers), pro, resumeId: numOrNull(r.resume_id),
   }
+}
+
+/**
+ * 四题答案 → 所在省码(没答给空串;2026-10-08 第三轮小白走查从 toQueueUser 抽出,「今日待投」判条件也要它)。
+ *
+ * @param answers 四题答案(可空)。
+ * @returns 省码。
+ */
+export function provOf(answers: MaybeAnswers): string {
+  if (answers == null || answers[ANS_BASIC] == null || answers[ANS_BASIC][ANS_PROV] == null) {
+    return TEXT_NONE
+  }
+  return answers[ANS_BASIC][ANS_PROV]
 }
 
 /**
@@ -130,6 +139,7 @@ export async function queueForUser(x: QueueForUserIn): QueueForUserOut {
 
 /**
  * 这一轮从哪一刻起看新岗:上次跑过的时刻;没跑过往回看 36 小时。
+ * 2026-10-08 改判:没跑过不设时间窗(在架的全算),见 QUEUE_SINCE_ALL。
  *
  * @param user 这个人。
  * @returns ISO 时刻。
@@ -138,7 +148,20 @@ export function sinceOf(user: QueueUserFact): string {
   if (user.lastQueueAt !== TEXT_NONE) {
     return user.lastQueueAt
   }
-  return new Date(Date.now() - QUEUE_LOOKBACK_MS).toISOString()
+  return QUEUE_SINCE_ALL
+}
+
+/**
+ * 当作第一次跑的这个人(拨开开关那一刻用:不管以前跑没跑过,都从在架的全部里挑)。
+ *
+ * @param user 这个人。
+ * @returns 同一个人,上次跑的时刻清空。
+ */
+export function firstRunOf(user: QueueUserFact): QueueUserFact {
+  return {
+    userId: user.userId, senderName: user.senderName, lastQueueAt: TEXT_NONE, nocs: user.nocs, prov: user.prov, pro: user.pro,
+    resumeId: user.resumeId,
+  }
 }
 
 /**
@@ -225,15 +248,33 @@ export async function letterTextOf(x: LetterTextIn): LetterTextOut {
 
 /**
  * 这个人的候选岗(在架、有投递邮箱、职业在想做的工作里、这之后新上的、没投过、雇主没退过信)。
+ * 2026-10-08:「职业在想做的工作里」放宽到同一职业单元组(NOC 前 4 位),与职位页「同省同职业」同口径。
  *
  * @param x 连接、这个人与起始时刻。
  * @returns 候选岗;没有给空清单。
  */
 export async function loadCandidates(x: CandidatesIn): CandidatesOut {
   return queryRows({
-    db: x.db, sql: SQL.QUEUE_CANDIDATES, params: [x.user.userId, x.user.nocs, x.since, x.user.prov, QUEUE_PER_USER],
-    map: toCandidate,
+    db: x.db, sql: SQL.QUEUE_CANDIDATES,
+    params: [x.user.userId, nocGroupsOf(x.user.nocs), x.since, x.user.prov, QUEUE_PER_USER], map: toCandidate,
   })
+}
+
+/**
+ * 想做的工作 → 职业单元组前缀(NOC 前 4 位,去重)。
+ *
+ * @param nocs NOC 码。
+ * @returns 前缀清单。
+ */
+export function nocGroupsOf(nocs: NocCodes): NocCodes {
+  const out: NocCodes = []
+  for (const noc of nocs) {
+    const group = noc.slice(0, NOC_GROUP_LEN)
+    if (group.length === NOC_GROUP_LEN && out.includes(group) === false) {
+      out.push(group)
+    }
+  }
+  return out
 }
 
 /**
@@ -300,6 +341,7 @@ export function toQueueRow(r: QueueRowDbRow): QueueRowFact {
     id: count(r.id), jobId: numOrNull(r.job_id), title: text(r.job_title), company: text(r.company), cover: text(r.cover_text),
     resumeId: numOrNull(r.resume_id), queuedAt: isoOf(r.created_at), city: text(r.city), cityZh: text(r.city_zh),
     cityKo: text(r.city_ko), province: text(r.province), salary: text(r.salary_text), closed: r.job_status === JOB_CLOSED,
+    resumeName: text(r.resume_name),
   }
 }
 
@@ -328,14 +370,27 @@ export function toNocs(r: AnswersDbRow): NocCodes {
 }
 
 /**
- * 跳过队列里的一岗(标 declined,以后不再进队列)。
+ * 本人答过的「所在省」(四题答案;「今日待投」判条件齐不齐)。
  *
- * @param x 连接、用户 id 与职位 id。
- * @returns 跳过了 true;不在队列 false。
+ * @param x 连接与用户 id。
+ * @returns 省码;没答给空串。
  */
-export async function declineQueued(x: UserJobIn): DoneOut {
-  const rows = await queryRows({ db: x.db, sql: SQL.QUEUE_DECLINE, params: [x.userId, x.jobId], map: toId })
-  return rows.length > 0
+export async function loadUserProv(x: UserIn): ProvOut {
+  const row = firstOf(await queryRows({ db: x.db, sql: SQL.QUEUE_USER_ANSWERS, params: [x.userId], map: toProv }))
+  if (row == null) {
+    return TEXT_NONE
+  }
+  return row
+}
+
+/**
+ * 答案库行 → 所在省码。
+ *
+ * @param r 库行。
+ * @returns 省码。
+ */
+export function toProv(r: AnswersDbRow): string {
+  return provOf(jsonOrNull<AnswersJson>(r.answers))
 }
 
 /**
