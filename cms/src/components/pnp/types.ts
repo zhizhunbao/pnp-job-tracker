@@ -6536,7 +6536,7 @@ export type PnpStepFactJson = {
   ref?: string
 
   /**
-   * 引用门槛行时的因素名(empYears / pointsMin / eeProfile)。
+   * 引用门槛行时的因素名(empYears / pointsMin / eeProfile / experience)。
    */
   factor?: string
 

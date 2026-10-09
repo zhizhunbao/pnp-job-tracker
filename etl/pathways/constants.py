@@ -74,6 +74,13 @@ ABS_STEP_OFFER = {"step": "offer", "who": "employer", "none": False, "stuck": Fa
                   "facts": [{"ref": "req", "factor": "empYears"}]}
 """拿阿省雇主 offer:雇主条件读门槛卡「雇主条件」行(经营年限 / 年收入 / 员工数,门槛表 empYears 等三行)。"""
 
+ABS_STEP_WORK = {"step": "work", "who": "you", "none": False, "stuck": False,
+                 "facts": [{"ref": "req", "factor": "experience"}]}
+"""在这份工作上干够(旅游酒店通道):读门槛卡「工作经验」行(门槛表 experience:在现雇主连续全职满 6 个月 / 780 小时)。
+2026-10-08 Frank「这个很多不是需要工作满 1 年 或者 3 个月 或者半年 才能投递么」「其他省也检查一下」:凡门槛是
+「在这份工作 / 这家雇主干够 N 个月」(employerTenure)的通道都挂这一步,排第一步(照萨省 SKS_STEP_WORK、曼省
+MBS_STEP_WORK 的位置);申请前的既往经验(近 N 年内满 M 个月)不是流程里的一步,留在门槛卡。"""
+
 ABS_STEP_COMMUNITY = {"step": "community", "who": "you", "none": False, "stuck": False,
                       "facts": [{"key": "communityLetter", "vars": {},
                                  "quote": ("To qualify for selection and receive WEOI points, an endorsement letter from a "
@@ -276,7 +283,8 @@ PW_AB_TOURISM_HOSPITALITY = {
     "quote": ("Tourism and Hospitality Stream – Qualified candidates who live and work in Alberta and have a full-time job offer "
               "to continue working with an Alberta tourism and hospitality sector employer."),
     "checked": "2026-09-28",
-    "steps": [ABS_STEP_OFFER, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY, ABS_STEP_REVIEW_TOURISM, ABS_STEP_PR],
+    "steps": [ABS_STEP_WORK, ABS_STEP_OFFER, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY, ABS_STEP_REVIEW_TOURISM,
+              ABS_STEP_PR],
 }
 """阿省旅游酒店通道(清单 ab-tourism.json;雇主须属合格旅游酒店行业)。
 门槛流 = 2026-09-27 同批从官方资格页补抓的五条所在的流。配额行与抽选组同名(前端原先靠隐式同名配上)。
@@ -375,6 +383,14 @@ ONS_STEP_REGISTER = {"step": "employerRegister", "who": "employer", "none": Fals
 """雇主登记(在雇主门户登记公司、为你的职位递 job offer;劳动力优先页「Your employer must start the process by registering
 their business and providing information about your position by submitting a job offer in the Employer Portal.」):经营年限
 读门槛表 empYears 行(经营满 3 年等雇主条件)。"""
+
+ONS_STEP_WORK = {"step": "work", "who": "you", "none": False, "stuck": False,
+                 "facts": [{"ref": "req", "factor": "experience"}]}
+"""在这份工作上干够(劳动力优先):读门槛卡「工作经验」行,按本岗 TEER 挑档(TEER 0-3 在这个岗位连续全职满 6 个月、
+安省应届毕业生 3 个月,或同职业累计满 2 年、或持该职业执照;TEER 4-5 累计满 9 个月;门槛表 on-req 五行)。递 EOI 时就得
+满足 —— 通道页原句「Remember that you must also make sure you meet all stream criteria at the time you register your
+expression of interest.」。2026-10-08 Frank「这个很多不是需要工作满 1 年 或者 3 个月 或者半年 才能投递么」:原先只有
+雇主登记 → 递 EOI,读起来像拿到 offer 马上能递。"""
 
 ONS_STEP_EOI = {"step": "eoi", "who": "you", "none": False, "stuck": False,
                 "facts": [{"key": "offerEoiDays", "vars": {"n": 30},
@@ -1205,7 +1221,8 @@ PW_ON_WORKFORCE_PRIORITY = {
               "experience in any National Occupational Classification (NOC) occupation a pathway to apply to permanently live and "
               "work in Ontario."),
     "checked": "2026-09-28",
-    "steps": [ONS_STEP_REGISTER, ONS_STEP_EOI, ONS_STEP_DRAW, ONS_STEP_EPA, ONS_STEP_APPLY, ONS_STEP_REVIEW, ONS_STEP_PR],
+    "steps": [ONS_STEP_WORK, ONS_STEP_REGISTER, ONS_STEP_EOI, ONS_STEP_DRAW, ONS_STEP_EPA, ONS_STEP_APPLY, ONS_STEP_REVIEW,
+              ONS_STEP_PR],
 }
 """安省默认通道(2026-06 改制后只剩这一条,生效日按官方原句定为 2026-06-25)。
 2026-09-30 注:旧三条 Employer Job Offer 流是 2026-05-30 关的(各自页面关闭通告原句「closed as of May 30, 2026」),与本条生效日
@@ -1334,6 +1351,11 @@ NBS_NO_TIMES_QUOTE = ("Immigration New Brunswick is unable to provide processing
 NBS_STEP_OFFER = {"step": "offer", "who": "employer", "none": False, "stuck": False,
                   "facts": [{"ref": "req", "factor": "empYears"}]}
 """拿 NB 雇主 offer(技术工人、快速通道本省就业、私立学院试点):雇主条件读门槛卡「雇主条件」行(三条门槛流都是经营满 24 个月)。"""
+
+NBS_STEP_WORK = {"step": "work", "who": "you", "none": False, "stuck": False,
+                 "facts": [{"ref": "req", "factor": "experience"}]}
+"""在这份工作上干够(技术工人 Experience 路径):读门槛卡「工作经验」行(在担保雇主处全职满 6 个月;Graduates 路径本省院校
+毕业不要求经验,门槛卡经验替代行「或本省院校毕业」一起出)。2026-10-08 Frank「其他省也检查一下」随安省同批挂上。"""
 
 NBS_STEP_OFFER_FR = {"step": "offer", "who": "employer", "none": False, "stuck": False,
                      "facts": [{"key": "empMonths", "vars": {"n": 12},
@@ -1811,7 +1833,7 @@ PW_NB_SKILLED_WORKER = {
             "skilled-worker-stream.html"),
     "quote": "A pathway for foreign workers with a full-time, non-seasonal job or job offer in New Brunswick.",
     "checked": "2026-09-28",
-    "steps": [NBS_STEP_OFFER, NBS_STEP_EOI_SW, NBS_STEP_DRAW_SW, NBS_STEP_APPLY_SW, NBS_STEP_REVIEW,
+    "steps": [NBS_STEP_WORK, NBS_STEP_OFFER, NBS_STEP_EOI_SW, NBS_STEP_DRAW_SW, NBS_STEP_APPLY_SW, NBS_STEP_REVIEW,
               NBS_STEP_PR],
 }
 """新不伦瑞克默认通道。抽选组:2026-09-23 Frank「所以这个 NB 技术工人点进去应该哪个高亮」立(GEN_DRAW_STREAM 原注);

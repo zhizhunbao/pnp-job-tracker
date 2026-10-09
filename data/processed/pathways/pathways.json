@@ -600,6 +600,18 @@
       "employers": [],
       "steps": [
         {
+          "step": "work",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "experience"
+            }
+          ]
+        },
+        {
           "step": "offer",
           "who": "employer",
           "none": false,
@@ -3002,6 +3014,18 @@
       "employers": [],
       "steps": [
         {
+          "step": "work",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "experience"
+            }
+          ]
+        },
+        {
           "step": "employerRegister",
           "who": "employer",
           "none": false,
@@ -4123,6 +4147,18 @@
       "nocs": [],
       "employers": [],
       "steps": [
+        {
+          "step": "work",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "experience"
+            }
+          ]
+        },
         {
           "step": "offer",
           "who": "employer",

@@ -6580,6 +6580,8 @@ function varsTextOf(vars: Record<string, number>): Record<string, string> {
  * 引用门槛行的事实:取门槛卡上对应那一行的字(雇主条件 / 积分 / EE),门槛卡没出或没有那一行就不出字。
  * 2026-10-03 Frank「都修一下」改:门槛卡不出(萨省现有工签)就没字、雇主一步还把年收入员工数整行列一遍 —— 改用门槛卡同一套
  * 行构造器现算(文案仍只有一份):经营年限只出那一句(empYearsTextOf),积分 / EE 出那一行的字;本通道没登那一行就不出字。
+ * 2026-10-08 Frank「这个很多不是需要工作满 1 年 或者 3 个月 或者半年 才能投递么」「其他省也检查一下」:加「工作经验」行
+ *(experience,expRowOf 同一把尺子:按本岗 TEER 挑档、替代路径「或……」一起出),给「在这份工作上干够」一步用。
  *
  * @param x 同 stepFactLinesOf。
  * @returns 几行字。
@@ -6597,6 +6599,8 @@ function stepReqLinesOf(x: StepFactIn): StepLineSpec[] {
     row = pointsRowOf(x.one)
   } else if (x.fact.factor === GATE_F.eeProfile) {
     row = eeRowOf(x.one)
+  } else if (x.fact.factor === GATE_F.experience) {
+    row = expRowOf(x.one)
   }
   const out: StepLineSpec[] = []
   if (row == null) {
