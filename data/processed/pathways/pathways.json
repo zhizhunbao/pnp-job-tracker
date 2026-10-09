@@ -1786,6 +1786,18 @@
       "employers": [],
       "steps": [
         {
+          "step": "work",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "experience"
+            }
+          ]
+        },
+        {
           "step": "employerRegister",
           "who": "employer",
           "none": false,
@@ -1893,6 +1905,18 @@
       "employers": [],
       "steps": [
         {
+          "step": "work",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "experience"
+            }
+          ]
+        },
+        {
           "step": "employerRegister",
           "who": "employer",
           "none": false,
@@ -1999,6 +2023,18 @@
       "nocs": [],
       "employers": [],
       "steps": [
+        {
+          "step": "work",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "experience"
+            }
+          ]
+        },
         {
           "step": "employerRegister",
           "who": "employer",
@@ -2241,6 +2277,18 @@
       "nocs": [],
       "employers": [],
       "steps": [
+        {
+          "step": "workLocal",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "experience"
+            }
+          ]
+        },
         {
           "step": "employerRegister",
           "who": "employer",
@@ -3831,7 +3879,7 @@
       "employers": [],
       "steps": [
         {
-          "step": "work",
+          "step": "workLocal",
           "who": "you",
           "none": false,
           "stuck": false,
@@ -4827,7 +4875,7 @@
       "employers": [],
       "steps": [
         {
-          "step": "work",
+          "step": "workLocal",
           "who": "you",
           "none": false,
           "stuck": false,
@@ -5360,6 +5408,18 @@
       "nocs": [],
       "employers": [],
       "steps": [
+        {
+          "step": "workLocal",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "experience"
+            }
+          ]
+        },
         {
           "step": "offer",
           "who": "employer",

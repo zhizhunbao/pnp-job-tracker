@@ -3134,7 +3134,7 @@ function expRowOf(x: GateRowOfIn): GateRowSpec | null {
     }
   }
   if (main == null || main.value == null) {
-    return null
+    return expGradOnlyRowOf(x)
   }
   const prov = x.t(PROV_KEY_HEAD + x.job.province)
   const lines = [expLineOf({ t: x.t, r: main, n: main.value })]
@@ -3156,6 +3156,32 @@ function expRowOf(x: GateRowOfIn): GateRowSpec | null {
   for (const line of expAltLinesOf(x)) {
     lines.push(line)
   }
+  return { key: GATE_ROW.exp, label: x.t('pnpgate.k.exp'), lines, notes: [] }
+}
+
+/**
+ * 通用经验行没有月数时的「工作经验」行(2026-10-08 Frank「弄明白」批,NL 国际毕业生通道):本省院校毕业不要求经验、外省公立院校
+ * 毕业的须先在本省满 N 个月(门槛表主行无下限 + grad-other-province 行)。只有外省那一行有数才出;原先主行无值整行不出,
+ * 门槛卡与步骤卡都看不到这条差别。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;没有外省毕业那一档给 null。
+ */
+function expGradOnlyRowOf(x: GateRowOfIn): GateRowSpec | null {
+  let otherProv: PnpReq | null = null
+  for (const r of x.chan) {
+    if (r.factor !== GATE_F.experience || r.unit !== GATE_UNIT_MONTHS || r.value == null) {
+      continue
+    }
+    if (r.appliesCondition === GATE_COND_OTHER_PROV && reqAppliesOf({ r, job: x.job }) && otherProv == null) {
+      otherProv = r
+    }
+  }
+  if (otherProv == null || otherProv.value == null) {
+    return null
+  }
+  const prov = x.t(PROV_KEY_HEAD + x.job.province)
+  const lines = [x.t('pnpgate.expProvGradNone', { prov }), x.t('pnpgate.expGradOther', { n: otherProv.value, prov })]
   return { key: GATE_ROW.exp, label: x.t('pnpgate.k.exp'), lines, notes: [] }
 }
 
@@ -6600,7 +6626,7 @@ function stepReqLinesOf(x: StepFactIn): StepLineSpec[] {
   } else if (x.fact.factor === GATE_F.eeProfile) {
     row = eeRowOf(x.one)
   } else if (x.fact.factor === GATE_F.experience) {
-    row = expRowOf(x.one)
+    row = stepExpRowOf(x.one)
   }
   const out: StepLineSpec[] = []
   if (row == null) {
@@ -6610,6 +6636,67 @@ function stepReqLinesOf(x: StepFactIn): StepLineSpec[] {
     out.push({ text: line, warn: false })
   }
   return out
+}
+
+/**
+ * 「在这份工作上干够」一步的经验行:门槛卡的经验行按官方写法主行在前(既往经验)、「或在现雇主满 N 个月」是替代行;
+ * 但在步骤里「干够」才是这一步要做的事,既往经验是免做的条件 —— 萨省医疗 / 科技 / 农业三条定向通道(2026-10-08 Frank
+ *「弄明白 我们要是弄不明白 用户更不明白了」)。替代行里有同雇主在职档的,改成「在现雇主全职满 N 个月」+「或已有 …(既往经验)」
+ * + 主行的口径小注;没有这种替代行的通道照门槛卡那一行(安省 / NB / 阿省旅游酒店主行本来就是同雇主在职)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;本岗通道没有经验门槛给 null。
+ */
+function stepExpRowOf(x: GateRowOfIn): GateRowSpec | null {
+  const tenure = tenureAltRowOf(x)
+  if (tenure == null || tenure.value == null) {
+    return expRowOf(x)
+  }
+  const lines = [x.t('pnpgate.expTenure', { n: tenure.value })]
+  const main = expMainRowOf(x)
+  if (main != null && main.value != null) {
+    lines.push(x.t('pnpstep.f.orPrior', { x: expLineOf({ t: x.t, r: main, n: main.value }) }))
+    for (const line of expScopeLinesOf({ t: x.t, r: main, prov: x.t(PROV_KEY_HEAD + x.job.province) })) {
+      lines.push(line)
+    }
+  }
+  return { key: GATE_ROW.exp, label: x.t('pnpgate.k.exp'), lines, notes: [] }
+}
+
+/**
+ * 替代行里「在现雇主满 N 个月」那一条(门槛表 experienceAlt + employerTenure,按月计,管本岗)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 那一行;没有给 null。
+ */
+function tenureAltRowOf(x: GateRowOfIn): PnpReq | null {
+  for (const r of x.chan) {
+    if (r.factor !== GATE_F.experienceAlt || r.unit !== GATE_UNIT_MONTHS || r.value == null) {
+      continue
+    }
+    if (basisHasOf({ basis: r.basis, key: BASIS_TENURE }) && reqAppliesOf({ r, job: x.job })) {
+      return r
+    }
+  }
+  return null
+}
+
+/**
+ * 通用经验主行(门槛表 experience、不带条件、按月计、管本岗;与 expRowOf 挑主行同一把筛子)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 那一行;没有给 null。
+ */
+function expMainRowOf(x: GateRowOfIn): PnpReq | null {
+  for (const r of x.chan) {
+    if (r.factor !== GATE_F.experience || r.unit !== GATE_UNIT_MONTHS || r.value == null) {
+      continue
+    }
+    if (r.appliesCondition === TEXT_NONE && reqAppliesOf({ r, job: x.job })) {
+      return r
+    }
+  }
+  return null
 }
 
 /**

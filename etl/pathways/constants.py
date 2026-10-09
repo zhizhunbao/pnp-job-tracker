@@ -743,6 +743,18 @@ SKS_STEP_WORK = {"step": "work", "who": "you", "none": False, "stuck": False,
                             "url": SKS_EXP_BASE + "applicants-with-existing-work-permit"}]}
 """在这份工作上干够(现有工签通道):持有效工签在支持你的雇主处全职满 6 个月(780 小时)。"""
 
+SKS_STEP_WORK_REQ = {"step": "work", "who": "you", "none": False, "stuck": False,
+                     "facts": [{"ref": "req", "factor": "experience"}]}
+"""在这份工作上干够(医疗 / 科技 / 农业三条定向通道):读门槛卡「工作经验」行 —— 官方是二选一:在担保雇主处全职满 6 个月
+(780 小时;门槛表 experienceAlt employerTenure),或已有同职业 1 年全职经验(近 3 / 5 年内;门槛表 experience 主行)。
+没有既往经验的人拿到 offer 后得先干够 6 个月才能递,所以是一步;前端 stepExpRowOf 把「干够」写第一行、既往经验写「或已有…」。
+2026-10-08 Frank「弄明白 我们要是弄不明白 用户更不明白了」。"""
+
+SKS_STEP_WORK_LOCAL = {"step": "workLocal", "who": "you", "none": False, "stuck": False,
+                       "facts": [{"ref": "req", "factor": "experience"}]}
+"""在本省干够(国际学生通道):读门槛卡「工作经验」行(门槛表 experience:在本省 6 个月 / 780 小时与所学专业相关的有薪工作)。
+不是「这份工作」,是毕业后在本省攒的工作,步骤词用 workLocal(2026-10-08 新词;NS 快速通道本省经验、NB 远程法语同日改用)。"""
+
 
 SKS_STEP_REVIEW_EO = {"step": "review", "who": "province", "none": False, "stuck": False,
                       "facts": [{"ref": "processing", "scope": "Employment Offer"}]}
@@ -815,8 +827,8 @@ PW_SK_HEALTH_TALENT = {
             "saskatchewan-immigrant-nominee-program/assess-your-eligibility"),
     "quote": "Health Talent Pathway: For physicians, nurses and other health workers.",
     "checked": "2026-09-28",
-    "steps": [SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM, SKS_STEP_REVIEW_HEALTH,
-              SKS_STEP_PR],
+    "steps": [SKS_STEP_WORK_REQ, SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM,
+              SKS_STEP_REVIEW_HEALTH, SKS_STEP_PR],
 }
 """萨省医疗人才通道(清单 sk-health.json)。萨省 Talent Pathway 不公布抽选,没有抽选组。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流 —— 本通道非 EE 版那条(语言 CLB 5、近 5 年内 12 个月经验、执照;
@@ -840,8 +852,8 @@ PW_SK_TECH_TALENT = {
             "saskatchewan-immigrant-nominee-program/assess-your-eligibility"),
     "quote": "Innovation and Tech Talent Pathway: For innovation and tech sector workers in 32 high-skilled occupations.",
     "checked": "2026-09-28",
-    "steps": [SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM, SKS_STEP_REVIEW_TECH,
-              SKS_STEP_PR],
+    "steps": [SKS_STEP_WORK_REQ, SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM,
+              SKS_STEP_REVIEW_TECH, SKS_STEP_PR],
 }
 """萨省创新与科技人才通道(清单 sk-tech.json,32 个职业)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流 —— 本通道非 EE 版那条(语言 CLB 5、近 5 年内 12 个月经验、执照;
@@ -865,8 +877,8 @@ PW_SK_AGRICULTURE_TALENT = {
     "quote": ("Agriculture Talent Pathway: For general farm workers, nursery/greenhouse workers and workers in select food and "
               "beverage processing occupations."),
     "checked": "2026-09-28",
-    "steps": [SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM, SKS_STEP_REVIEW_AGRI,
-              SKS_STEP_PR],
+    "steps": [SKS_STEP_WORK_REQ, SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM,
+              SKS_STEP_REVIEW_AGRI, SKS_STEP_PR],
 }
 """萨省农业人才通道(清单 sk-agri.json;带星号的码要看得出雇主在农业食品行业才挂,2026-09-27「看得出才改判」)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流 —— 本通道那条(语言 CLB 4、近 3 年内 12 个月经验;在担保雇主处
@@ -1025,12 +1037,12 @@ NSS_STEP_OFFER = {"step": "offer", "who": "employer", "none": False, "stuck": Fa
 """拿 offer(本省毕业生:页上四个职业、与所学对口;医生两条:NS Health / IWK 批准的职位)。这三条的门槛流里没有
 empYears 行,不写。"""
 
-NSS_STEP_WORK = {"step": "work", "who": "you", "none": False, "stuck": False,
+NSS_STEP_WORK = {"step": "workLocal", "who": "you", "none": False, "stuck": False,
                  "facts": [{"key": "localWorkMonths", "vars": {"n": 12},
                             "quote": ("have at least one year of experience working in Nova Scotia in an occupation "
                                       "at TEER 0, 1, 2, or 3 of the National Occupational Classification"),
                             "url": NSS_EE_URL}]}
-"""在这份工作上干够(快速通道本省经验):在本省 TEER 0-3 职业工作满一年(原句「one year」,按 12 个月填;资格清单里的一条,
+"""在本省干够(快速通道本省经验;2026-10-08 步骤词 work → workLocal,本省经验不是「这份工作」):在本省 TEER 0-3 职业工作满一年(原句「one year」,按 12 个月填;资格清单里的一条,
 截到分号前)。门槛表也有这一行(factor experience),步骤引用不认 experience,照萨省 SKS_STEP_WORK 存原句。"""
 
 NSS_STEP_EE_PROFILE = {"step": "eeProfile", "who": "you", "none": False, "stuck": False,
@@ -1396,14 +1408,14 @@ NBS_STEP_LETTER_FR = {"step": "interestLetter", "who": "province", "none": False
 """收到省兴趣信(法语优先):与「法语毕业生」那一项(住本省、在蒙克顿大学或 CCNB 全程在省读完一年以上面授课程)二选一,不是人人
 必经,不标卡点。通道表这条的标签写兴趣信那一支(PW_NB_FRANCOPHONE_PRIORITIES 注)。"""
 
-NBS_STEP_WORK_REMOTE = {"step": "work", "who": "you", "none": False, "stuck": False,
+NBS_STEP_WORK_REMOTE = {"step": "workLocal", "who": "you", "none": False, "stuck": False,
                         "facts": [{"key": "liveMonths", "vars": {"n": 12},
                                    "quote": "have been living in New Brunswick for 12 months", "url": NBS_SI_URL},
                                   {"key": "remoteNonQc", "vars": {},
                                    "quote": ("have been working remotely for a Canadian employer located outside of "
                                              "Quebec during this entire period"),
                                    "url": NBS_SI_URL}]}
-"""在这份工作上干够(远程法语):近 12 个月住在本省,期间一直远程为魁省外的加拿大雇主工作(资格清单相邻两条,一条一行,照抄不带
+"""在本省干够(远程法语;2026-10-08 步骤词 work → workLocal):近 12 个月住在本省,期间一直远程为魁省外的加拿大雇主工作(资格清单相邻两条,一条一行,照抄不带
 句号)。这条通道没登门槛流,照萨省现有工签 SKS_STEP_WORK 的先例把定义它的那条门槛写在这一步。"""
 
 NBS_STEP_EOI_SW = {"step": "eoi", "who": "you", "none": False, "stuck": False,
@@ -1623,6 +1635,12 @@ NLS_STEP_JVA_EE = {"step": "epa", "who": "employer", "none": False, "stuck": Fal
 NLS_STEP_EE_PROFILE = {"step": "eeProfile", "who": "you", "none": False, "stuck": False,
                        "facts": [{"ref": "req", "factor": "eeProfile"}]}
 """建 EE 档案(快速通道技术工人):读门槛卡「EE」行(须先进联邦 EE 池)。"""
+
+NLS_STEP_WORK_LOCAL = {"step": "workLocal", "who": "you", "none": False, "stuck": False,
+                       "facts": [{"ref": "req", "factor": "experience"}]}
+"""在本省干够(国际毕业生通道):读门槛卡「工作经验」行 —— 本省院校毕业不要求经验,外省公立院校毕业的须先在本省工作满 1 年
+(门槛表 experience:主行无下限 + grad-other-province 12 个月;前端 expRowOf 主行无值时改出「本省毕业不要求 / 外省毕业须满 N 个月」)。
+2026-10-08 Frank「弄明白」批随萨省同挂。"""
 
 NLS_STEP_OFFER = {"step": "offer", "who": "employer", "none": False, "stuck": False,
                   "facts": [{"ref": "req", "factor": "empYears"}]}
@@ -2034,8 +2052,8 @@ PW_SK_STUDENTS = {
     "teers": [],
     "nocs": [],
     "employers": [],
-    "steps": [SKS_STEP_REGISTER, SKS_STEP_EPA_CAPPED, SKS_STEP_NO_EOI, SKS_STEP_CONFIRM, SKS_STEP_REVIEW_STUDENTS,
-              SKS_STEP_PR],
+    "steps": [SKS_STEP_WORK_LOCAL, SKS_STEP_REGISTER, SKS_STEP_EPA_CAPPED, SKS_STEP_NO_EOI, SKS_STEP_CONFIRM,
+              SKS_STEP_REVIEW_STUDENTS, SKS_STEP_PR],
 }
 """Saskatchewan Experience 类的学生子类:本省专上毕业、专业对口的 SK offer(2026 年给优先行业的本省毕业生留 750 个名额)。不抽选。原句末尾页面里嵌了链接,
 抽出的正文句号前多一个空格,quote 截到句号前。
@@ -2610,7 +2628,8 @@ PW_NL_INTERNATIONAL_GRADUATE = {
     "teers": [0, 1, 2, 3],
     "nocs": [],
     "employers": [],
-    "steps": [NLS_STEP_OFFER, NLS_STEP_EOI, NLS_STEP_DRAW, NLS_STEP_APPLY, NLS_STEP_REVIEW, NLS_STEP_PR],
+    "steps": [NLS_STEP_WORK_LOCAL, NLS_STEP_OFFER, NLS_STEP_EOI, NLS_STEP_DRAW, NLS_STEP_APPLY, NLS_STEP_REVIEW,
+              NLS_STEP_PR],
 }
 """NL 持 PGWP 的人只能走本类或 EE 类(技术工人类明文「Cannot hold a Post-Graduation Work Permit.」)—— Frank「nl 之前不说有个毕业生通道吗?」
 立的这一批就从它起。TEER 0–3,TEER 4 限在需职业;外省院校毕业的须先在 NL 工作满 1 年(门槛行漏了这一条,批一 1b 改)。ITA 批次不分类别,与技术工人同一组。
@@ -2912,9 +2931,9 @@ K_QUOTE = "quote"
 K_URL = "url"
 """事实行键:原句出处页。"""
 
-STEP_KEYS = ["employerRegister", "offer", "work", "epa", "eeProfile", "eoi", "draw", "confirm", "apply", "review", "settle",
+STEP_KEYS = ["employerRegister", "offer", "work", "workLocal", "epa", "eeProfile", "eoi", "draw", "confirm", "apply", "review", "settle",
              "endorse", "pr", "community", "register", "submit", "interestLetter", "closedPermit"]
-"""步骤词表(三语文案在 cms i18n pnp.step.*):雇主登记 / 拿雇主 offer / 在这份工作上干够 / 雇主递职位审批 / 建 EE 档案 / 递 EOI /
+"""步骤词表(三语文案在 cms i18n pnp.step.*):雇主登记 / 拿雇主 offer / 在这份工作上干够 / 在本省干够(2026-10-08) / 雇主递职位审批 / 建 EE 档案 / 递 EOI /
 进池与抽选 / 确认职位、递申请 / 收邀请、递申请 / 省里审批 / 做安置计划 / 雇主递省背书 / 拿提名,递永居 /
 拿社区推荐信(community,2026-10-02 批 2 阿省乡村振兴加)/ 网上注册打分(register,2026-10-03 批 2 卑诗加:卑诗叫 registration,
 注册后按打分进池)/ 递申请(submit,同日卑诗卫生局:持 offer 直接递、不经邀请)/ 收到省兴趣信(interestLetter,同日新不伦瑞克)/
