@@ -147,6 +147,11 @@ export const ENV_ON = '1'
 export const REQ_FIELD_NONE = ''
 
 /**
+ * 付款记录里没有收据地址时那一格的值(支付意图 / 扣款还是 id 串或空、或 Stripe 没给收据地址;前端见空串不出「收据」链)。
+ */
+export const RECEIPT_NONE = ''
+
+/**
  * 十进制基数:`parseInt(session.metadata.days, RADIX_DEC)` 的第二个参数。
  * 🔴 不省、也不换成 `Number()` —— metadata 是 Stripe 那头带回来的**外部串**,不保证纯数字:
  * 省掉基数会让 `'0x10'` 这种被当十六进制读成 16;换 `Number()` 则把带尾巴的

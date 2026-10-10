@@ -10,7 +10,8 @@
 
 import Stripe from 'stripe'
 import {
-  BACK_RE, CANCEL_PATH, CENTS, OK_TAIL, PAYMENTS_EXPAND, PAYMENTS_LIMIT, PAYMENTS_PAID, RADIX_DEC, S_TO_MS, SUCCESS_PATH,
+  BACK_RE, CANCEL_PATH, CENTS, OK_TAIL, PAYMENTS_EXPAND, PAYMENTS_LIMIT, PAYMENTS_PAID, RADIX_DEC, RECEIPT_NONE, S_TO_MS,
+  SUCCESS_PATH,
 } from './constants'
 import { CACHE } from './variables'
 import type {
@@ -108,14 +109,14 @@ export function toPaymentRow(session: StripeCheckoutSession): PaymentRow {
 function receiptUrlOf(session: StripeCheckoutSession): string {
   const intent = session.payment_intent
   if (intent == null || typeof intent === 'string') {
-    return ''
+    return RECEIPT_NONE
   }
   const charge = intent.latest_charge
   if (charge == null || typeof charge === 'string') {
-    return ''
+    return RECEIPT_NONE
   }
   if (charge.receipt_url == null) {
-    return ''
+    return RECEIPT_NONE
   }
   return charge.receipt_url
 }
