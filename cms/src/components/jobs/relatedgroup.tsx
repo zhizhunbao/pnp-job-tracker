@@ -14,6 +14,7 @@
  * 「再展开 N 个」按页向接口续取;展开 / 收起状态收进 useRelatedPages(同公司组照旧一次露完已取的行)。
  * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:两组都按页取(首屏只带露出来的几条,同公司组也接接口),组底两枚钮换成 pager 桶 FoldLine
  * (展开 20 个 → 再展开 20 个 → 展开其余 N 个 → 收起),取页机走 usePagedFold;useRelatedPages 那一套撤。
+ * 2026-10-09 N6b 批:行里岗名 N6 起由 name 桶 JobName 自开弹框,点一行的回调 onOpenJob 撤。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -28,10 +29,10 @@ import css from './jobs.module.css'
 /**
  * 渲染相似职位的一组。
  *
- * @param props 组小标题、总数、首屏这几行、取一页的接口地址、取词函数、界面语言与点一行的去处。
+ * @param props 组小标题、总数、首屏这几行、取一页的接口地址、取词函数与界面语言。
  * @returns 小标题 + 若干行 + 展开 / 收起钮。
  */
-export function RelatedGroup({ label, total, rows, url, t, lang, onOpenJob }: RelatedGroupIn) {
+export function RelatedGroup({ label, total, rows, url, t, lang }: RelatedGroupIn) {
   const paged = usePagedFold<RelatedJobFact>({ top: rows, total, url, skip: rows.length })
   return (
     <div>
@@ -39,7 +40,7 @@ export function RelatedGroup({ label, total, rows, url, t, lang, onOpenJob }: Re
         {label}
         {total > 0 && <span> {PAREN_L}{total}{PAREN_R}</span>}
       </div>
-      <JobMiniList rows={paged.rows} lang={lang} onOpenJob={onOpenJob} />
+      <JobMiniList rows={paged.rows} lang={lang} />
       <FoldLine t={t}
         unit={t(K_REL_UNIT)}
         hidden={paged.hidden}

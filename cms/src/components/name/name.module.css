@@ -1,0 +1,34 @@
+/*
+ * 名字两行(2026-10-09 N 批;模板 = companies 桶 JobMiniRow 的 .jobLink / .jobSub)。
+ */
+
+/*
+ * 外框:英文一行、译名一行,左对齐竖排。
+ */
+.name {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+/*
+ * 不可点的英文:正文黑(可点的走全局蓝链 .link)。
+ */
+.en {
+  color: var(--text);
+}
+
+/*
+ * 界面语译名:灰字小一号(模板 .jobSub 的灰与间距)。
+ */
+.sub {
+  margin-top: 1px;
+  font-size: 0.88em;
+  color: #9ca3af;
+
+  /*
+   * 灰字一律常规字重(放进加粗的卡头、小标题里不跟着变粗;2026-10-09 N6 把脉页省卡实撞)。
+   */
+  font-weight: 400;
+}

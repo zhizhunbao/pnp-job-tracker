@@ -14,8 +14,9 @@
 
 import { queryRows, queryRowsOrEmpty, SQL, count, jsonOrNull, numOrNull, text, textOrNull } from '../db'
 import type { Db } from '../db'
+import { PROV_NAMES } from '../location'
 import {
-  CITY_DLI_LIMIT, CITY_IND_TOP, OCC_COL_NONE, OCC_COL_PREFIX,
+  CITY_DLI_LIMIT, CITY_IND_TOP, CITY_PROV_LIMIT, OCC_COL_NONE, OCC_COL_PREFIX,
   OCC_EXTRA_COLUMNS, PG_UNDEFINED_COLUMN,
   PG_UNDEFINED_TABLE, PG_CODE_NONE, STAT_SOURCE_FIELDS, MAX_FINE_ROWS, EMPTY_TOP_CITIES, MID_ALL,
 } from './constants'
@@ -26,7 +27,8 @@ import type {
   CityIndustryRow, CityIndustryRows, CityRowsOut, CityStatsIn, DliCitiesOut, MaybeProvMinWage, MaybeProvMinWageJson, ProvMinWageNext, ProvVolJson, DliSchoolRow,
   EmptyList,
   FineCountsIn, FineRowsOut,
-  MaybeStr, OccRowsOut, PgFailure, PilotCommRow, PilotCommsOut, ProvExtraMap, ProvExtraOut, RawRowsOut, SrcRowsOut,
+  MaybeStr, OccRowsOut, PgFailure, PilotCommRow, PilotCommsOut, ProvCitiesIn, ProvCitiesOut, ProvCityRow, ProvExtraMap,
+  ProvExtraOut, RawRowsOut, SrcRowsOut,
   StatsIn, StatsOut, StrList, StrListOut,
   CityRow, FineRow, MaybeProvVol, MaybeProvVolJson, MaybeProvVolNum, MaybeProvVolNumJson, MaybeStatDiff, OccRow, Row,
   SrcRow, StatDbRow, StatDifficulty, StatProvDiffDbRow, StatProvDiffFact, StatProvInfoDbRow, StatProvInfoFact,
@@ -169,6 +171,31 @@ export async function loadCityStats(input: CityStatsIn): CityRowsOut {
     }
     throw e
   }
+}
+
+/**
+ * 省码认不认得(/api/stats/cities 的参数闸;2026-10-09「我的档案」批)。白名单是 lib/location 的 PROV_NAMES
+ * (13 个省 / 地区,全站口径),不用本域的 PROVS —— 那是统计页收录的 10 省,所在地答案三个地区也能选。
+ *
+ * @param prov 请求带的省码(已去首尾空白)。
+ * @returns 认得 true;空串 / 小写 / 不认识 false。
+ */
+export function isProvCode(prov: string): boolean {
+  return Object.hasOwn(PROV_NAMES, prov)
+}
+
+/**
+ * 一个省的城市清单(/api/stats/cities 的取数;2026-10-09「我的档案」批:所在地答案的可选城市下拉)。
+ * 读城市快照(口径同 loadCityStats),在招多的在前,至多 CITY_PROV_LIMIT 行;查不动回空、留痕(queryRowsOrEmpty),
+ * 不把下拉拖成 500 —— 路由据零行不进缓存。
+ *
+ * @param input 连接与省码(已验过)。
+ * @returns 城市清单。
+ */
+export async function loadProvCities(input: ProvCitiesIn): ProvCitiesOut {
+  return queryRowsOrEmpty({
+    db: input.db, sql: SQL.STATS_CITIES_BY_PROV, params: [input.prov, CITY_PROV_LIMIT], map: toProvCityRow,
+  })
 }
 
 /**
@@ -439,6 +466,17 @@ export function toCityRow(r: Row): CityRow {
     aipWageLowHourly: numOrNull(r.aip_wage_low_hourly), aipWageMedHourly: numOrNull(r.aip_wage_med_hourly),
     population: numOrNull(r.population), unempRate: numOrNull(r.unemp_rate),
   }
+}
+
+/**
+ * 一行省内城市清单(SQL.STATS_CITIES_BY_PROV)→ `ProvCityRow`(2026-10-09「我的档案」批)。
+ * 在招数是本站自己数的(快照 count),没有「官方未公布」一说,空折 0。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
+ */
+function toProvCityRow(r: Row): ProvCityRow {
+  return { name: text(r.city), zh: text(r.name_zh), ko: text(r.name_ko), jobs: count(r.open_jobs) }
 }
 
 /**

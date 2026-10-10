@@ -17,10 +17,11 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-export { overlayCls } from './functions'
-export { useEscClose, useFrame, useIsNarrow, useLayerStack, useOverlayClose } from './hooks'
+export { overlayCls, peekJobById } from './functions'
+export { useEscClose, useFrame, useIsNarrow, useLayerStack, useOverlayClose, usePeekBus, usePeekInbox } from './hooks'
 export { KickerNote } from './kickernote'
 export { Modal } from './modal'
 export { ModalBtn } from './modalbtn'
 export { ModalHead } from './modalhead'
-export type { FrameOut, LayerStackOut, ModalIn, ModalWin, OverlayHandlers } from './types'
+export { PeekContext } from './peekcontext'
+export type { FrameOut, LayerStackOut, ModalIn, ModalWin, OverlayHandlers, PeekCtxMsg, PeekMsg } from './types'

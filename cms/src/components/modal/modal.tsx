@@ -20,13 +20,14 @@
  * style 白名单里的「拖拽 transform」随之换成「钉住的位置与尺寸」;关闭钮与窗口钮一律 ModalBtn,把手一律 ResizeHandles。
  * 2026-10-05 Frank「左边那个按钮 和 右边的 关闭 按钮不对称啊」:普通弹框多一个左上角返回钮位(back,ModalBack),
  * 与右上角关闭钮同一颗 ModalBtn、左右镜像;访客向导的返回钮从向导顶行收进来。
+ * 2026-10-09 N 批:没给 z 的弹框不再一律 50,按打开先后往上叠(useStackZ)—— 投递框、职位框、公司框都挂全站骨架,后开的在上。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-import { SIZE_DEFAULT, Z_MODAL } from './constants'
+import { SIZE_DEFAULT } from './constants'
 import { bodyClsOf, clsOf, frameOf, stopClick } from './functions'
-import { useEscClose, useFrame, useOverlayClose } from './hooks'
+import { useEscClose, useFrame, useOverlayClose, useStackZ } from './hooks'
 import { ModalActs } from './modalacts'
 import { ModalBack } from './modalback'
 import { ModalBar } from './modalbar'
@@ -45,7 +46,7 @@ import type { ModalIn } from './types'
 export function Modal({
   onClose,
   size = SIZE_DEFAULT,
-  z = Z_MODAL,
+  z,
   pad = true,
   tall = false,
   draggable = true,
@@ -57,6 +58,7 @@ export function Modal({
   frame,
   children,
 }: ModalIn) {
+  const zi = useStackZ({ z })
   const ov = useOverlayClose(onClose)
   useEscClose(onClose)
   const own = useFrame({ win, draggable, edgeResize, fitKey })
@@ -66,7 +68,7 @@ export function Modal({
 
   return (
     // eslint-disable-next-line react/forbid-dom-props -- 层级是调用方传的运行时数据(有 z+10 算术叠层)
-    <div onMouseDown={ov.onMouseDown} onClick={ov.onClick} className={cls.overlay} style={{ zIndex: z }}>
+    <div onMouseDown={ov.onMouseDown} onClick={ov.onClick} className={cls.overlay} style={{ zIndex: zi }}>
       <div onClick={stopClick}
         data-frame
         onPointerDown={f.onCardDown}

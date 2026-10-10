@@ -49,11 +49,13 @@
  * 2026-10-08 Frank「找一个最好的直接抄」(AIApply 的 Auto Apply):「我的求职」最上面加「今日待投」QueueReview(智能投递队列的审核区)。
  * 2026-10-08 小白走查:带 job= 来的(职位页点了「邮箱投递」)先给他投那一岗 —— 投递区在上、「今日待投」等发出去再出;
  * 否则两块都在要简历和英文姓名,他不知道填哪个。
+ * 2026-10-09 A 批投递搬进弹框(docs/design/投递向导-照Azure-20261008.md):页内投递区 ApplySection 撤 —— 投递框挂在全站骨架上,
+ * 任何一页带 `?apply=<职位号>` 就弹;本页摆一个无界面的 ApplySentSync,收到「发出去了」就刷新投递表、出成功条;「今日待投」不再让位。
  *
  * @author Frank
  * @time 2026-07-02 00:00:00
  */
-import { ApplySection } from '@/components/apply'
+import { ApplySentSync } from '@/components/apply'
 import { QueueReview } from '@/components/queue'
 import { AppliedList, SavedList } from '@/components/myjobs'
 import { Header } from '@/components/header'
@@ -65,10 +67,12 @@ import {
   AccountRedirect,
   CoverLetters,
   PayOkNotice,
+  Profile,
   ResumeFile,
   SentNotice,
   Subscription,
   SEC_FAVS,
+  SEC_PROFILE,
   SEC_RESUME,
   SEC_SJOBS,
   SEC_SUB,
@@ -101,13 +105,14 @@ export default function AccountPage() {
             {a.sec === SEC_RESUME && <CoverLetters t={a.t} />}
             {a.sec === SEC_FAVS && <SavedList t={a.t} plan={a.plan} />}
             {a.sec === SEC_FAVS && <WeeklyOptin t={a.t} userId={a.me.id} weeklyOptOut={!!(a.me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
-            {a.sec === SEC_SJOBS && <ApplySection onSent={a.onApplied} />}
-            {a.sec === SEC_SJOBS && a.applying === false && <QueueReview t={a.t} plan={a.plan} onSent={a.onApplied} />}
+            {a.sec === SEC_SJOBS && <QueueReview t={a.t} plan={a.plan} onSent={a.onApplied} />}
             {a.sec === SEC_SJOBS && <AppliedList key={a.appliedGen} t={a.t} plan={a.plan} />}
+            {a.sec === SEC_PROFILE && <Profile t={a.t} />}
             {a.sec === SEC_SUB && <Subscription t={a.t} until={a.me.proUntil} />}
           </AccountColumns>
         )}
         {a.checked && a.me == null && <AccountRedirect />}
+        <ApplySentSync onSent={a.onApplied} />
       </Shell>
 
       <Footer />

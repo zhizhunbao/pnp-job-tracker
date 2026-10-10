@@ -1,12 +1,14 @@
 'use client'
 /**
  * ④ 第一步:零经验的人先要的是「谁肯带」—— 各省标了带训的在招岗数两列表。
+ * 2026-10-09 N 批(Frank「职位名、公司名、地点同形」「城市 和 省份 点击 跳 google 地图」):省名格换 name 桶 ProvName ——
+ * 英文全名蓝链在上(点了新标签开 Google 地图)、界面语省名灰字在下。
  *
  * @author Frank
  * @time 2026-08-27 01:30:00
  */
+import { ProvName } from '@/components/name'
 import { CELL_NUM_TAIL, CELL_PROV_TAIL } from './constants'
-import { provNameOf } from './functions'
 import { CaseLead } from './caselead'
 import type { CaseFirstStepIn } from './types'
 import css from './cases.module.css'
@@ -24,7 +26,7 @@ export function CaseFirstStep({ answer, t }: CaseFirstStepIn) {
   const cells = []
   for (const x of answer.trainable) {
     cells.push(
-      <span key={x.province + CELL_PROV_TAIL} className={css.gridProv}>{provNameOf({ t, code: x.province })}</span>,
+      <span key={x.province + CELL_PROV_TAIL} className={css.gridProv}><ProvName code={x.province} /></span>,
     )
     cells.push(<span key={x.province + CELL_NUM_TAIL} className={css.gridNum}>{x.n}</span>)
   }

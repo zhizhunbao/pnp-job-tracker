@@ -186,9 +186,15 @@ export type JobCardIn = {
   onCardClick?: (e: React.MouseEvent) => void
 
   /**
-   * 职位名:蓝字 14.5 不加粗(蓝色已说明可点,再加粗是同一件事说两遍)。
+   * 职位名:蓝字 14.5 不加粗(蓝色已说明可点,再加粗是同一件事说两遍)。与 head 二选一(给 head 就不给它)。
    */
-  title: CardLink
+  title?: CardLink
+
+  /**
+   * 标题位整件(2026-10-09 N6 批:名字两行 —— 英文在上、界面语译名灰字在下 —— 由调用方用 name 桶渲染好放进来;
+   * 卡只给字号与位置,不另写一份名字两行,通用形态单一出口)。与 title 二选一。
+   */
+  head?: React.ReactNode
 
   /**
    * NOC 官方职业名译名 —— 岗名看不懂时靠这条。

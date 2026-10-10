@@ -9,6 +9,12 @@
 //       ⑧ 照职位板:公司表里有的公司名是钮、点了叠开公司弹框(标题是公司名),没有的是纯文字;
 //       ⑨ 草稿行:日期「最近改于」、没附件、操作「继续」去投递区;收藏有邮箱在架没投过的行「打开」换「投递」;
 //       ⑩ 阶段胶囊:全部 / 草稿 / 待投 / 已投递 / 雇主回复 / 退信 各带计数,点一枚只看那一档。
+// 2026-10-09 A 批投递搬进弹框:⑨ 草稿「继续」、收藏「投递」改读作「就地弹投递框」—— 点了地址栏带上 `?apply=<职位号>`(本站推的一笔),
+//       不整页跳;收藏行「投递」从链接改成钮。探针:makeContinue 改回 location.assign → ⑨ 红;makeApplyOpen 不开框 → 收藏那条红。
+// 2026-10-09 N 批:⑧ 改读作「点公司名往弹框总线上推一层公司层」(公司框由全站宿主 PeekHost 画,本页不画)。
+// 2026-10-09 N6 批(名字全站一种形:英文在上、界面语译名灰字在下,省市分开):④ 职位名、公司名、城市、省份改走 name 桶 ——
+//       城市 = 英文名 Google 地图链 + 译名灰字,省份另起一份(英文全名地图链 + 省名灰字),原「中文主文案 + 灰注 英文名 省码」撤;
+//       ⑧ 改读作「有公司页的公司名是链(/companies/<slug>),普通左键往弹框总线上推一层公司层;没有的是黑字」(原是钮)。
 // 探针:makeUnsave 失败不退回 → ⑦「失败退回」红;closedTextOf 不认下架 → ⑤ 红;byStageOf 不筛 → ⑩ 红;makeLoadMyJobs 失败不拨 failed → ③ 红。
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -50,6 +56,9 @@ async function flush() {
 }
 
 const t = (k: string, v?: Record<string, string | number>) => (v == null ? k : k + JSON.stringify(v))
+
+// 城市 / 省份名的 Google 地图链(2026-10-09 N6 批:name 桶 CityName / ProvName,查询串走 lib/location)
+const MAP = (q: string) => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q)
 
 async function mount(comp: typeof AppliedList) {
   const el = document.createElement('div')
@@ -120,19 +129,23 @@ describe('我的求职', () => {
     const a = rowOf(el, 'light duty cleaner')
     expect(a.textContent?.startsWith('C')).toBe(true)
     expect(links(a)).toEqual([
-      ['light duty cleaner', '/jobs/101'], ['mj.col.resume', '/api/apply/file?id=7&kind=resume'],
+      ['light duty cleaner', '/jobs/101'], ['Clean Co', '/companies/clean-co'],
+      ['Winnipeg', MAP('Winnipeg, Manitoba, Canada')], ['Manitoba', MAP('Manitoba, Canada')],
+      ['mj.col.resume', '/api/apply/file?id=7&kind=resume'],
       ['mj.col.cover', '/api/apply/file?id=7&kind=cover'], ['mj.open', '/jobs/101'],
     ])
-    expect(a.textContent).toContain('Clean Co')
-    expect(a.textContent).toContain('温尼伯')
-    expect(a.textContent).toContain('Winnipeg MB')
+    expect(a.textContent).toContain('温尼伯')   // 城市译名灰字(默认中文界面)
+    expect(a.textContent).not.toContain('Winnipeg MB')   // 原「英文名 省码」灰注撤(N6 批省市分开)
     expect(a.textContent).toContain('mj.appliedOn{"d":"2026-10-05"}')
     expect(a.textContent).toContain('ap.applied')
     expect(a.textContent).not.toContain('mj.closed')
     expect(a.textContent).not.toContain('$18/hr')
     const b = rowOf(el, 'Cook')
-    expect(links(b)).toEqual([['mj.col.resume', '/api/apply/file?id=8&kind=resume'], ['mj.col.cover', '/api/apply/file?id=8&kind=cover']])
-    expect(b.textContent).toContain('Steinbach')
+    expect(links(b)).toEqual([
+      ['Steinbach', MAP('Steinbach, Manitoba, Canada')], ['Manitoba', MAP('Manitoba, Canada')],
+      ['mj.col.resume', '/api/apply/file?id=8&kind=resume'], ['mj.col.cover', '/api/apply/file?id=8&kind=cover'],
+    ])
+    expect(b.textContent).toContain('Cook')   // 职位删了:职位名黑字、不成链
     expect(b.textContent).toContain('mj.closed')
     expect(b.textContent).not.toContain('mj.open')
   })
@@ -143,7 +156,12 @@ describe('我的求职', () => {
     const d = rowOf(el, 'office manager')
     expect(d.textContent).toContain('mj.draft')
     expect(d.textContent).toContain('mj.editedOn{"d":"2026-10-07"}')
-    expect(links(d)).toEqual([['office manager', '/jobs/105'], ['mj.cont', '/account?sec=sjobs&job=105']])
+    expect(links(d)).toEqual([
+      ['office manager', '/jobs/105'], ['Kitchener', MAP('Kitchener, Ontario, Canada')], ['Ontario', MAP('Ontario, Canada')],
+    ])
+    window.history.replaceState(null, '', '/account?sec=sjobs')
+    await click(d, 'mj.cont')   // 2026-10-09 A 批:就地弹投递框(地址栏带上 apply,不整页跳)
+    expect(new URLSearchParams(window.location.search).get('apply')).toBe('105')
   })
 
   it('⑩ 阶段胶囊带计数,点一枚只看那一档', async () => {
@@ -153,6 +171,7 @@ describe('我的求职', () => {
     expect(buttons(el).slice(0, 6)).toEqual(['mj.all3', 'mj.draft1', 'mj.queued0', 'ap.applied1', 'mj.replied0', 'mj.bounced1'])
     await click(el, 'mj.draft1')
     expect(rowOf(el, 'office manager')).not.toBeNull()
+    expect(rowOf(el, 'office manager').textContent).not.toContain('mj.draft')   // 筛到单一状态,行上不再重复挂胶囊(Frank 10-08)
     expect(rowOf(el, 'light duty cleaner')).toBeNull()
     expect(rowOf(el, 'bounced one')).toBeNull()
     await click(el, 'mj.all3')
@@ -174,13 +193,21 @@ describe('我的收藏', () => {
     expect(e.textContent).toContain('$18–$21/hr')
     expect(e.textContent).toContain('mj.postedOn{"d":"2026-09-30"}')
     expect(e.textContent).not.toContain('ap.applied')
-    expect(links(e)).toEqual([['truck washer', '/jobs/103'], ['mj.apply', '/account?sec=sjobs&job=103']])
-    expect(buttons(e)).toEqual(['mj.unsave'])
+    expect(links(e)).toEqual([
+      ['truck washer', '/jobs/103'], ['Winnipeg', MAP('Winnipeg, Manitoba, Canada')], ['Manitoba', MAP('Manitoba, Canada')],
+    ])
+    expect(buttons(e)).toEqual(['mj.apply', 'mj.unsave'])
+    window.history.replaceState(null, '', '/account?sec=favs')
+    await click(e, 'mj.apply')   // 2026-10-09 A 批:就地弹投递框
+    expect(new URLSearchParams(window.location.search).get('apply')).toBe('103')
     const a = rowOf(el, 'light duty cleaner')
     expect(a.textContent).toContain('sj.st.applied')
-    expect(links(a)).toEqual([['light duty cleaner', '/jobs/101'], ['mj.open', '/jobs/101']])
+    expect(links(a)).toEqual([
+      ['light duty cleaner', '/jobs/101'], ['Clean Co', '/companies/clean-co'],
+      ['Winnipeg', MAP('Winnipeg, Manitoba, Canada')], ['Manitoba', MAP('Manitoba, Canada')], ['mj.open', '/jobs/101'],
+    ])
     const b = rowOf(el, 'Cook')
-    expect(links(b)).toEqual([])
+    expect(links(b)).toEqual([['Steinbach', MAP('Steinbach, Manitoba, Canada')], ['Manitoba', MAP('Manitoba, Canada')]])
     expect(buttons(b)).toEqual(['mj.unsave'])
   })
 
@@ -212,15 +239,28 @@ describe('我的收藏', () => {
     expect(rowOf(el, 'truck washer')).not.toBeNull()
   })
 
-  it('⑧ 有公司页的公司名是钮,点了叠开公司弹框;没有的是纯文字', async () => {
+  it('⑧ 有公司页的公司名是链,点了叠开公司弹框;没有的是黑字', async () => {
     server({
       'GET /api/myjobs/saved': { status: 200, body: { items: [A, C] } },
       'GET /api/companies/clean-co': 'hang',
     })
     const el = await mount(SavedList)
-    expect(buttons(rowOf(el, 'light duty cleaner'))).toEqual(['Clean Co', 'mj.unsave'])
-    expect(buttons(rowOf(el, 'truck washer'))).toEqual(['mj.unsave'])
-    await click(el, 'Clean Co')
-    expect(document.body.textContent?.split('Clean Co').length).toBeGreaterThan(2)
+    // 2026-10-09 N6 批:公司名换 name 桶 CompanyName —— 有公司页的是 /companies/<slug> 链(Ctrl 点新标签开整页),原先是钮
+    expect(links(rowOf(el, 'light duty cleaner'))).toContainEqual(['Clean Co', '/companies/clean-co'])
+    expect(buttons(rowOf(el, 'light duty cleaner'))).toEqual(['mj.unsave'])
+    expect(rowOf(el, 'truck washer').textContent).toContain('Wash Ltd')
+    expect(links(rowOf(el, 'truck washer')).map((x) => x[0])).not.toContain('Wash Ltd')
+    // 2026-10-09 N 批:公司框改由全站骨架上的 PeekHost 画,本页只往弹框总线上推一层 —— 断言推出去的那一层
+    const pushed: object[] = []
+    function onPeek(e: Event) {
+      pushed.push((e as CustomEvent<{ layer: object }>).detail.layer)
+    }
+    window.addEventListener('offer2pr:peek', onPeek)
+    await act(async () => {
+      Array.from(el.querySelectorAll('a')).find((x) => x.textContent === 'Clean Co')?.click()
+    })
+    await flush()
+    window.removeEventListener('offer2pr:peek', onPeek)
+    expect(pushed).toEqual([{ kind: 'company', co: { slug: 'clean-co', name: 'Clean Co' } }])
   })
 })

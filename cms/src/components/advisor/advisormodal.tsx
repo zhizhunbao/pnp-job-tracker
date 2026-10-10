@@ -22,6 +22,7 @@
  * 同日 Frank「AI 顾问卡删了吧」:移民组那张 AI 长文卡(总开关 07-25 起一直关着)连同长文机器删掉。
  * 同日省提名弹框自立(Frank「pnp 弹框自己管自己」):省提名组不再经本框(职位板直开 pnp 桶的 PnpModal);
  * 整表懒取随之迁进 pnp 桶(usePnpData),本框别的组照旧读清单 / 抽选两表,配额 / 门槛两表不再进取数包。
+ * 2026-10-09 N6b 批:公司组里的名字 N6 起由 name 桶自开弹框,点在榜岗 / 点相似雇主两个回调与同公司在榜岗清单撤。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -45,7 +46,7 @@ import { WinActs } from './winacts'
 /**
  * 渲染字段顾问弹框。
  *
- * @param props 分组、入口格、这一岗、标题、语言、分层态、五张维度表与两个回调(省提名两表本框自己懒取)。
+ * @param props 分组、入口格、这一岗、标题、语言、分层态、五张维度表与关闭回调(省提名两表本框自己懒取)。
  * @returns 浮层。
  */
 export function AdvisorModal({
@@ -59,11 +60,9 @@ export function AdvisorModal({
   eeOcc,
   nocDesc,
   onClose,
-  onOpenJob,
-  onOpenCompany,
 }: AdvisorModalIn) {
   const t = makeT(lang)
-  const m = useAdvisorModal({ group, field, job, lang })
+  const m = useAdvisorModal({ group, field, lang })
   const pnp = usePnpData({ enabled: PNP_DATA_GROUPS.has(group) })
   const trans = useTitleTrans({
     title: transTitleOf({ group, job }), id: job.id, lang, cached: storedTitleOf({ row: job, lang }), gen: m.gen,
@@ -99,9 +98,6 @@ export function AdvisorModal({
       )}
       {pnp.ready && (
         <AdvisorBody group={group} field={field}
-          companyJobs={m.companyJobs}
-          onOpenJob={onOpenJob}
-          onOpenCompany={onOpenCompany}
           onCompanyAlias={m.onCompanyAlias}
           onCompanyTransBusy={m.onTransBusy}
           gen={m.gen}

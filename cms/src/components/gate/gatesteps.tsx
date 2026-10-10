@@ -9,13 +9,16 @@
  * 下面紧接粘底钮区)。
  * 2026-10-05 收口:那一层的类 .majors 与职业题的 .jobs 逐格相同,并成 .picker(gate.module.css;职业题 GateJobs 同挂它)。
  *
+ * 2026-10-09「我的档案」批:编辑模式末尾多一屏英文姓名(GateName)。
+ *
  * @author Frank
  * @time 2026-10-04 02:10:00
  */
 import { cssOf } from '@/components/css'
-import { GATE_STEP_GOAL, GATE_STEP_JOB, GATE_STEP_MAJOR } from './constants'
+import { GATE_STEP_GOAL, GATE_STEP_JOB, GATE_STEP_MAJOR, GATE_STEP_NAME } from './constants'
 import { GateGoal } from './gategoal'
 import { GateJobs } from './gatejobs'
+import { GateName } from './gatename'
 import { GateProvs } from './gateprovs'
 import type { GateStepsIn } from './types'
 import css from './gate.module.css'
@@ -35,6 +38,9 @@ export function GateSteps({ g, t, children, jobs }: GateStepsIn) {
   }
   if (g.cur === GATE_STEP_JOB) {
     return <GateJobs>{jobs}</GateJobs>
+  }
+  if (g.cur === GATE_STEP_NAME) {
+    return <GateName g={g} t={t} />
   }
   return <GateProvs g={g} t={t} />
 }

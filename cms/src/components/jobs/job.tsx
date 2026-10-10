@@ -33,18 +33,21 @@
  * (.titleMeta);手机宽度放不下时整块换到下一行仍贴右。
  * 2026-10-02 Frank「可以」(Google 收录):公司信息卡吃页面门 SSR 取好的公司详情(company 原样透传,本域一格不读),卡直出进 HTML。
  * 同日 Frank 看效果图点头:JD 白卡与公司信息卡之间加移民相关卡(JobImmCard:薪资 + EE / PNP / AIP,点开职位板同一个弹框),事实由页面门 SSR 递来。
+ * 2026-10-09 N 批(Frank「一个全站宿主,并掉各页那 5 套」):本页不再自己画 PeekStack,改摆 modal 桶的报件 PeekContext
+ * (报本页的分层态与职业名表),弹框由全站骨架上的 PeekHost 画。
+ * 2026-10-09 N6b 批:相关职位 / 公司信息卡 / 移民相关卡里的名字 N6 起由 name 桶自开弹框,本页递下去的两只手柄(useJobPeek)随之撤。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { PeekStack } from '@/components/advisor'
+import { PeekContext } from '@/components/modal'
 import { BackButton } from '@/components/button'
 import { CompanyInfoCard } from '@/components/companies'
 import { cssOf } from '@/components/css'
 import { Shell } from '@/components/shell'
 import { CARD_MD_CLS, DETAIL_SHELL_TOP, TEXT_NONE, URL_BOARD_BACK } from './constants'
 import { relatedFromOf, relatedNoneFromOf, showRelatedOf } from './functions'
-import { useJobBody, useJobDetail, useJobPeek } from './hooks'
+import { useJobBody, useJobDetail } from './hooks'
 import { JdOrigLink } from './jdoriglink'
 import { JobBody } from './jobbody'
 import { JobCrumbs } from './jobcrumbs'
@@ -63,7 +66,6 @@ import css from './jobs.module.css'
 export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted, jdTrans, company, imm }: JobIn) {
   const d = useJobDetail({ job, plan, dims, related, updatedAt, jdText, jdFormatted, jdTrans, company, imm })
   const body = useJobBody({ job, lang: d.lang, plan, inModal: false, jdText, jdFormatted, jdTrans })
-  const peek = useJobPeek()
   return (
     <Shell top={DETAIL_SHELL_TOP}>
       <div className={cssOf(css.detail)}>
@@ -81,10 +83,8 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted, 
           </div>
           <JobBody job={job} lang={d.lang} plan={plan} d={body} />
         </div>
-        <JobImmCard job={job} imm={imm} lang={d.lang} plan={plan} nocDesc={dims.nocDesc}
-          onOpenCompany={peek.onOpenCompany} />
-        <CompanyInfoCard jobId={Number(job.id)} lang={d.lang} onOpenCompany={peek.onOpenCompany}
-          seed={company} />
+        <JobImmCard job={job} imm={imm} lang={d.lang} plan={plan} nocDesc={dims.nocDesc} />
+        <CompanyInfoCard jobId={Number(job.id)} lang={d.lang} seed={company} />
         {showRelatedOf({ related, fallbackHref: d.view.fallbackHref }) && (
           <JobRelated head={d.t('detail.related')}
             t={d.t}
@@ -97,11 +97,10 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted, 
             fallbackText={d.view.fallbackText}
             from={relatedFromOf(job.status)}
             fromNone={relatedNoneFromOf(job.status)}
-            lang={d.lang}
-            onOpenJob={peek.onOpenJob} />
+            lang={d.lang} />
         )}
       </div>
-      <PeekStack stack={peek.stack} lang={d.lang} plan={plan} nocDesc={dims.nocDesc} />
+      <PeekContext plan={plan} nocDesc={dims.nocDesc} />
     </Shell>
   )
 }

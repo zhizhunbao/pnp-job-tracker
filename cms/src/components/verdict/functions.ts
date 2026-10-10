@@ -57,7 +57,7 @@ export function tOf(x: TOfIn): TFn {
  * @param x 取词函数与省码。
  * @returns 省显示名。
  */
-export function provDispOf(x: ProvDispIn): string {
+function provDispOf(x: ProvDispIn): string {
   const key = KEY_PROV_HEAD + x.code
   const full = x.t(key)
   if (full === key) {
@@ -835,6 +835,8 @@ function nocAliasOf(x: TitleTileIn): string {
  * 「职位名」事实格的两行。#326:zh/ko 界面主文案 = NOC 职业名对应语言(帖面标题无逐帖译文,
  * 官方职业名库里现成),帖面英文原名降灰注;en 界面与无译名照旧原名做主文案。
  * 译名与原名只差大小写时不摆两行 —— 同一句话说两遍。
+ * 2026-10-09 N 批(Frank「名字一律英文在上、译名灰字在下」):两行对调 —— 帖面英文原名做主文案,
+ * 界面语 NOC 职业名降灰注(走 name 桶的名字两行;/plan/pr 上不可点,黑字);只差大小写照旧不摆两行。
  *
  * @param x 界面语言、判定结果与帖面职位名。
  * @returns 主文案与灰注。
@@ -847,7 +849,7 @@ export function titleTileOf(x: TitleTileIn): TitleTile {
   if (alias.toLowerCase() === x.title.toLowerCase()) {
     return { value: x.title, sub: TEXT_NONE }
   }
-  return { value: alias, sub: x.title }
+  return { value: x.title, sub: alias }
 }
 
 /**

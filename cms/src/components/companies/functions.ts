@@ -13,6 +13,10 @@
  * 「这句是不是『没有』」的收口(`-` / `N/A` / 未提供 那一族)走 lib/jobs 的 `isJdNone`。
  * 2026-08-28 Frank 拍板把它从 components/jobs/Jd.tsx 迁进 lib/jobs:那是**数据口径**不是视图 ——
  * 公司简介与 JD 正文两边都在读它,留在视图层就等于给口径开了个岔。**行为不许复制**。
+ * 2026-10-09 N6b 批(N6 把点职位名 / 公司名收进 name 桶的弹框总线后清上游死接线):makeOpenJob(2026-09-19 Frank
+ * 「这种里面的链接都改成弹框显示…现在点击是跳页面,要想看其他的还得点回来」:行仍是真链接,普通左键拦下叠开 JD 弹框,
+ * 没载入整行的按岗位号现取 `/api/jobs/row`、取不到照链接去详情页;10-07 放给「我的」页与投递队列)、makeResolveJob、
+ * 公司页弹框栈的两只手柄 makePushJobLayer / makePushCoLayer 一并退役 —— 现在由 name 桶 JobName / CompanyName 自开弹框。
  *
  * @author Frank
  * @time 2026-08-27 02:10:00
@@ -38,32 +42,31 @@ import {
   STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE,
   TRACK_KIND_COMPANY, TRACK_SIMILAR, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO,
   URL_CO_TRANSLATE,
-  URL_JOB_HEAD, URL_JOBS_COMPANY, URL_JOBS_SIMILAR,
-  URL_JOBS_ROW_HEAD, URL_PLAN_PR_HEAD, URL_PROV_HEAD, WIKI_PATH_SEP, WIKI_WORD_JOIN,
+  URL_JOBS_COMPANY, URL_JOBS_SIMILAR,
+  URL_PLAN_PR_HEAD, URL_PROV_HEAD, WIKI_PATH_SEP, WIKI_WORD_JOIN,
   WIKI_WORD_SEP, YEAR_ONLY_RE,
   SITE_POLL_MS, SITE_POLLS_MAX, SITE_QUEUED_POLLS_MAX, STAGE_DONE, STAGE_FACTS, STAGE_FETCH, STAGE_FIND, STAGE_LABEL,
   STAGE_NONE, STAGE_OFF, STAGE_ORDER,
   STAGE_QUEUED, STAGE_TRANS, STAGES_ACTIVE, STEP_DONE, STEP_NOW, STEP_WAIT, URL_CO_OPEN, URL_CO_STAGE,
-  LAYER_CO, LAYER_JOB, SUB_HOLD,
+  SUB_HOLD,
   ADDR_COUNTRY, ADDR_TOKEN_SEP_RE, PLACE_SEG_SEP,
 } from './constants'
 import { cssOf } from '@/components/css'
 import { lazyTitleOf, titleSubOf } from '@/components/jobtitle'
 import type {
   ActiveTextIn, AiNoteClsIn, AliasJson, AliasOfIn, BaseZhIn, BriefJson, BriefSecsIn, CanTransIn, ChColorIn,
-  CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyDetail, CompanyJobFact, CompanyJobRow, CompanyOnlyIn,
+  CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyDetail, CompanyJobRow, CompanyOnlyIn,
   CompanyPanelData, CompanySeed, CompanyStream,
   DeadFlag, DisplayNameIn, FameTextIn, FetchCoTransIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn, IsGovIn,
-  JobNocNameIn, JobRowJson, JobsShownIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn,
-  LoadBriefIn, LoadDescTransIn, LoadFn, LoadPanelIn, LoadTransIn, NocRowsIn, OpenCompanyIn, OpenJobIn,
+  JobNocNameIn, JobsShownIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn,
+  LoadBriefIn, LoadDescTransIn, LoadFn, LoadPanelIn, LoadTransIn, NocRowsIn,
   PanelBody, PanelBodyIn,
-  PanelJson, PanelSlugIn, PeekClickFn,
-  PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn, SecKeyIn, SecTextIn, SecZhIn,
+  PanelJson, PanelSlugIn,
+  PillClsIn, ProvFullOfIn, ProvHrefOfIn, SalaryTextIn, SecKeyIn, SecTextIn, SecZhIn,
   SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, ToggleIn, TransJson, TvOpenIn,
   ZhLineClsIn, ZhShownIn,
   OpenSiteIn, QueuedTextIn, ShownStageIn, SimilarEmployer, SitePanel, SitePanelIn, SiteShownIn,
   SiteStageJson, SiteStep, SiteStepsIn,
-  CompanyPeek, OpenCompanyFn, OpenJobFn, PeekStackRef,
   CardTitleIn, MiniSubIn,
   ReloadFn, SiteDoneIn,
   AddrShownIn, NoSiteIn,
@@ -994,23 +997,6 @@ export function simAnchorOf(similar: SimilarEmployer[]): string {
 }
 
 /**
- * 相似雇主行右侧的主市灰字(2026-09-22 Frank「公司所在城市,是不是也加一下灰字」):
- * 紧凑格「市, 省码」;市没记就不出。
- *
- * @param e 这一家。
- * @returns 「市, 省码」;'' = 不出。
- */
-export function simCityOf(e: SimilarEmployer): string {
-  if (e.city === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  if (e.province === TEXT_NONE) {
-    return e.city
-  }
-  return e.city + LOC_JOIN + e.province
-}
-
-/**
  * 迷你职位行右侧薪资格的字(2026-09-22 Frank「即使没显示出来薪资,也要占位吧。地点怎么跑上去了」):
  * 没薪资给不折行空格占住行高,城市恒在第二行。
  *
@@ -1025,60 +1011,6 @@ export function payShownOf(salaryText: string): string {
 }
 
 /**
- * 点迷你职位行的手柄:叠开 JD 弹框(把整行交回上层)。
- * 2026-09-19 Frank「这种里面的链接都改成弹框显示…现在点击是跳页面,要想看其他的还得点回来」:行仍是真链接
- * (爬虫与新标签开页照旧),普通左键拦下开弹框;整行没载入的现取一次,取不到就照链接去详情页。
- *
- * @param x 岗位号、已载入的整行与上层回调。
- * @returns 链接的 onClick。
- */
-export function makeOpenJob(x: OpenJobIn): PeekClickFn {
-  return function openJob(e: React.MouseEvent): void {
-    if (isPlainClick(e) === false) {
-      return
-    }
-    e.preventDefault()
-    if (x.row != null) {
-      x.onOpenJob(x.row)
-      return
-    }
-    function read(r: Response): Promise<JobRowJson> {
-      if (r.ok) {
-        return r.json()
-      }
-      return Promise.resolve(null)
-    }
-    function fall(): void {
-      window.location.assign(URL_JOB_HEAD + String(x.id))
-    }
-    function land(row: JobRowJson): void {
-      if (row == null) {
-        fall()
-        return
-      }
-      x.onOpenJob(row)
-    }
-    fetch(URL_JOBS_ROW_HEAD + String(x.id)).then(read).then(land).catch(fall)
-  }
-}
-
-/**
- * 点相似雇主的手柄:开公司弹框(已在公司弹框里 = 同框换一家);拦法同 makeOpenJob。
- *
- * @param x 这一家与上层回调。
- * @returns 链接的 onClick。
- */
-export function makeOpenCompany(x: OpenCompanyIn): PeekClickFn {
-  return function openCompany(e: React.MouseEvent): void {
-    if (isPlainClick(e) === false) {
-      return
-    }
-    e.preventDefault()
-    x.onOpenCompany(x.peek)
-  }
-}
-
-/**
  * 埋点:点了相似雇主卡里的一家(2026-09-21 Frank「给相似雇主卡加个点击埋点」)。挂在卡的行区外层,
  * 普通点开弹框、Ctrl / ⌘ 点开新标签都记一次(中键不触发 click,不记;挂法照相似职位卡的 trackRelated)。
  *
@@ -1086,33 +1018,6 @@ export function makeOpenCompany(x: OpenCompanyIn): PeekClickFn {
  */
 export function trackSimilar(): void {
   track(TRACK_SIMILAR)
-}
-
-/**
- * 是不是「普通左键」:按着 Ctrl / ⌘ / Shift / Alt、或非左键的一律放行给链接(新标签开页的习惯不破)。
- *
- * @param e 点击事件。
- * @returns 是普通左键。
- */
-function isPlainClick(e: React.MouseEvent): boolean {
-  return e.button === 0 && e.metaKey === false && e.ctrlKey === false && e.shiftKey === false && e.altKey === false
-}
-
-/**
- * 按岗位号把已载入的整行喂回来(JD 弹框要整份 JobRow;没载入这一行时给 null)。
- *
- * @param x 已载入的职位行。
- * @returns 回查函数。
- */
-export function makeResolveJob(x: ResolveJobIn): ResolveJobFn {
-  return function resolveJob(id: number): CompanyJobFact | null {
-    for (const row of x.jobs) {
-      if (Number(row.id) === id) {
-        return row
-      }
-    }
-    return null
-  }
 }
 
 /**
@@ -1863,30 +1768,6 @@ export function gradeColorOf(g: number | null | undefined): string {
     return GRADE_C_2
   }
   return GRADE_C_NONE
-}
-
-/**
- * 弹框栈上「叠开一条职位」的手柄(2026-09-21 公司页:在招职位点一行往上叠)。
- *
- * @param stack 弹框栈。
- * @returns 手柄。
- */
-export function makePushJobLayer(stack: PeekStackRef): OpenJobFn {
-  return function pushJobLayer(j: CompanyJobFact): void {
-    stack.push({ kind: LAYER_JOB, job: j })
-  }
-}
-
-/**
- * 弹框栈上「叠开一家公司」的手柄(公司页:相似雇主点一家往上叠)。
- *
- * @param stack 弹框栈。
- * @returns 手柄。
- */
-export function makePushCoLayer(stack: PeekStackRef): OpenCompanyFn {
-  return function pushCoLayer(peek: CompanyPeek): void {
-    stack.push({ kind: LAYER_CO, co: peek })
-  }
 }
 
 /**

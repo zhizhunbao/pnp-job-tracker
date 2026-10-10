@@ -493,6 +493,19 @@ export const QUIZ_FACTS_STREAMS = `SELECT j.pnp_stream stream, count(*)::int n
 export const MAJORS_ALL = `SELECT code, title_en, title_zh, title_ko, series, grouping, broads, popular, title_en_short, places
        FROM cip_programs ORDER BY code`
 
+/**
+ * 一批专业码的三语名(2026-10-09「我的档案」批:档案卡上把答过的专业码翻成名字;译名缺折空串)。$1=CIP 码数组。
+ */
+export const MAJORS_BY_CODES = `SELECT code, title_en, COALESCE(title_zh,'') title_zh, COALESCE(title_ko,'') title_ko
+       FROM cip_programs WHERE code = ANY($1)`
+
+/**
+ * 单个城市的中韩译名(2026-10-09「我的档案」批:所在地答案加了可选的城市 resCity,档案卡上出译名灰字;
+ * 译名表外的小地方折空串)。$1=城市英文名(同 cities.name),$2=两位省码。
+ */
+export const CITY_NAMES_ONE = `SELECT COALESCE(name_zh,'') name_zh, COALESCE(name_ko,'') name_ko
+       FROM cities WHERE name = $1 AND province = $2 LIMIT 1`
+
 // =========================================================================
 // 8. 统计 / 难度 / 职业报告
 // =========================================================================
@@ -1433,6 +1446,15 @@ export const CITY_STATS = `SELECT s.city, s.province, c.name_zh, c.name_ko, s.op
               s.aip_jobs, s.aip_wage_low_hourly, s.aip_wage_med_hourly, c.population, c.unemp_rate
        FROM stats_city s LEFT JOIN cities c ON c.name = s.city AND c.province = s.province
        ORDER BY s.open_jobs DESC NULLS LAST LIMIT $1`
+
+/**
+ * 一个省的城市清单(带中韩译名与在招岗数;2026-10-09「我的档案」批:所在地答案的可选城市下拉,/api/stats/cities)。
+ * 读的是同一份城市快照(口径见 CITY_STATS),按省走 stats_city_prov_idx;译名表外的小地方折空串。
+ * $1=两位省码,$2=行数。
+ */
+export const STATS_CITIES_BY_PROV = `SELECT s.city, COALESCE(c.name_zh,'') name_zh, COALESCE(c.name_ko,'') name_ko, s.open_jobs
+       FROM stats_city s LEFT JOIN cities c ON c.name = s.city AND c.province = s.province
+       WHERE s.province = $1 ORDER BY s.open_jobs DESC NULLS LAST LIMIT $2`
 
 /**
  * 清空城市快照(REFRESH_CITY_STATS 的前半;seed 事务内两句连发,失败整体回滚不留空表)。
@@ -3016,10 +3038,17 @@ export const MYJOBS_SAVED = `SELECT ${MYJOBS_FROM}
 /**
  * 投递页的本岗:职位名、公司名(公司表,同职位板)、城市、省、在不在架、投递邮箱(只在服务端用,不下发)。
  * $1=职位 id。信是英文,职位名只取英文原名。
+ * 2026-10-09 投递弹框换 section 形(Frank「这个地方英文,中文灰字 没有啊」):职位名、公司、城市的中韩译名一并带上
+ * (职位名译文带版本号,过期当没有;城市译名照 QUEUE_LIST 按城市 + 省连 cities),只给界面看,信照旧只用英文原名。
+ * 同日 N 批:再带公司 slug(投递框里点公司名开公司框)。
  */
 export const APPLY_JOB = `SELECT j.id, j.title, c.name AS company_name, j.city, j.province,
-       j.status::text AS job_status, j.apply_email
-     FROM jobs j LEFT JOIN companies c ON c.id = j.company_id WHERE j.id = $1`
+       j.status::text AS job_status, j.apply_email,
+       j.title_zh, j.title_ko, j.trans_v AS job_trans_v, c.alias_zh, c.alias_ko, ci.name_zh AS city_zh, ci.name_ko AS city_ko,
+       c.slug AS company_slug
+     FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
+     LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
+     WHERE j.id = $1`
 
 /**
  * 本人的简历清单(投递第 1 步选用哪一份;默认那份在最前)。$1=用户 id。
@@ -3055,12 +3084,14 @@ export const APPLY_ROW = `SELECT id, status, cover_text, resume_id, sent_at FROM
 /**
  * 存草稿:没有就建一行 draft;已有且还是 draft 就改信与简历;已经在发 / 发过的不动(返回 0 行)。
  * 停在 sending 超过 10 分钟的(进程在发信半路死掉)当草稿收回(设计稿 §3 第 6 步)。
+ * 2026-10-09 A 批投递搬进弹框:待投(queued)行存草稿只改信与简历、照旧是待投 —— 原先一律改成 draft,
+ * 打开待投那一岗再关掉它就掉出「今日待投」(10-08 实撞,队列 10 → 9)。
  * $1=用户 id,$2=职位 id,$3=职位名快照,$4=公司名快照,$5=信,$6=简历 id(可空)。
  */
 export const APPLY_DRAFT_PUT = `INSERT INTO applications (user_id, job_id, job_title, company, status, cover_text, resume_id)
      VALUES ($1, $2, $3, $4, 'draft', $5, $6)
      ON CONFLICT (user_id, job_id) DO UPDATE SET cover_text = EXCLUDED.cover_text, resume_id = EXCLUDED.resume_id,
-       status = 'draft', updated_at = now()
+       status = CASE WHEN applications.status = 'queued' THEN 'queued' ELSE 'draft' END, updated_at = now()
      WHERE applications.status IN ('draft', 'queued')
        OR (applications.status = 'sending' AND applications.updated_at < now() - interval '10 minutes')
      RETURNING id, status`
@@ -3172,16 +3203,22 @@ export const QUEUE_USER_ONE = `SELECT p.user_id, p.sender_name, p.last_queue_at,
  * 与 RELATED_SAME_OCC 同口径(医疗行政助理只认 13112 全国 19 岗、1311 组安大略 45 家);生产实测单人 ~250ms(批量役可接受)。
  * 2026-10-08 第三轮小白走查改判:所在省从「优先排序」改成「只取本省」—— 原先本省不够 5 岗就拿外省补,安大略的人收到
  * 3 条魁北克 + 1 条卡尔加里(Frank「先做投错省」);没答省的人上游不跑(routes 与 isReadyOf 同闸),$4 不会是空串。
+ * 2026-10-09「我的档案」批:先找工作的人(goalBand = 2)答了所在城市,同都会区(CMA)的岗排前面 —— $6=所在城市英文名
+ * (空串 = 不按城市排);同城算同区,两边任一没有 CMA 时只认同城;WHERE 不动(仍只取本省),只改排序的头一键。
  */
 export const QUEUE_CANDIDATES = `SELECT j.id, j.title, c.name AS company_name, j.city, j.province
      FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
+     LEFT JOIN cities jc ON jc.name = j.city AND jc.province = j.province
      WHERE j.status = 'open' AND COALESCE(j.apply_email, '') <> '' AND j.first_seen > $3 AND j.province = $4
        AND EXISTS (SELECT 1 FROM unnest($2::text[]) AS p(pre) WHERE j.noc >= p.pre AND j.noc <= p.pre || '9')
        AND NOT EXISTS (SELECT 1 FROM applications a WHERE a.user_id = $1 AND a.job_id = j.id)
        AND NOT EXISTS (SELECT 1 FROM bounced_emails b WHERE b.email = lower(j.apply_email))
        AND NOT EXISTS (SELECT 1 FROM applications a2 WHERE a2.user_id = $1 AND lower(a2.employer_email) = lower(j.apply_email)
                        AND a2.status IN ('sending', 'sent', 'replied') AND a2.updated_at > now() - interval '30 days')
-     ORDER BY j.score DESC NULLS LAST, j.first_seen DESC LIMIT $5`
+     ORDER BY CASE WHEN $6::text = '' THEN 1 WHEN j.city = $6::text THEN 0
+                   WHEN jc.cma IS NOT NULL AND jc.cma = (SELECT uc.cma FROM cities uc WHERE uc.name = $6::text AND uc.province = $4 LIMIT 1) THEN 0
+                   ELSE 1 END,
+              j.score DESC NULLS LAST, j.first_seen DESC LIMIT $5`
 
 /**
  * 进队列:一行 queued,信已写好;这一岗已有行(任何状态)就不动。$1=用户 id,$2=职位 id,$3=职位名快照,$4=公司名快照,$5=信,$6=简历 id。
@@ -3217,6 +3254,14 @@ export const QUEUE_MARK = `UPDATE apply_prefs SET last_queue_at = now() WHERE us
  */
 export const QUEUE_COVER_PUT = `UPDATE applications SET cover_text = $3, updated_at = now()
      WHERE user_id = $1 AND job_id = $2 AND status = 'queued' RETURNING id`
+
+/**
+ * 就地换队列里那一岗附的简历(2026-10-08 Frank「这两个应该都是可以弹框,并且可以替换吧」):还在队列里、且那份简历是本人的才换。
+ * $1=用户 id,$2=职位 id,$3=简历 id。不在队列 / 不是本人的简历 = 0 行。
+ */
+export const QUEUE_RESUME_PUT = `UPDATE applications SET resume_id = $3, updated_at = now()
+     WHERE user_id = $1 AND job_id = $2 AND status = 'queued'
+       AND EXISTS (SELECT 1 FROM user_resumes r WHERE r.id = $3 AND r.user_id = $1) RETURNING id`
 
 /**
  * 本人的四题答案(「今日待投」判答没答「想做的工作」)。$1=用户 id。

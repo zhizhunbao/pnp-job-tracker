@@ -4,6 +4,7 @@
  * JD 正文身体、投递栏。体内不留注释 —— 带口径的步骤全在 ./functions 的具名函数里
  * (注释即它们的 JSDoc),这里只剩 useState、具名 effect 壳与装配
  * (形制同 news 的 useNewsDetail 与 account 的 useAccountPage)。
+ * 2026-10-09 N 批:弹框栈改用 modal 桶的代理栈 usePeekBus(只发消息),唯一的栈在全站骨架上的 PeekHost。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -12,10 +13,9 @@ import { useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState
 import { useRouter } from 'next/navigation'
 import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { useLang } from '@/components/i18n'
-import { useLayerStack } from '@/components/modal'
+import { usePeekBus } from '@/components/modal'
 import { quizToProfile, readQuiz } from '@/components/quiz'
 import { makeT } from '@/lib/i18n'
-import { hasProfile, normalizeProfile } from '@/lib/jobs'
 import { mapQuery, mapsUrl } from '@/lib/location'
 import { JOBS_LOG, log } from '@/lib/log'
 import { isGateSignedIn } from '@/lib/guest'
@@ -23,10 +23,10 @@ import { registerCatLabels } from '@/lib/noc'
 import { ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
-  APPLY_AUTH, APPLY_IDLE, APPLY_INTENT, APPLY_RESUME_KEY,
+  APPLY_AUTH, APPLY_IDLE, APPLY_RESUME_KEY,
   APPLY_RESUME_SEP, APPLY_RESUME_TTL_MS, AUTH_LOGIN, AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA,
   CREDENTIALS_INCLUDE,
-  DIR_DESC, DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK,
+  DIR_DESC, DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_APPLY_OPEN, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK,
   HOME_GATE_OFF,
   FILTER_Q, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
   HOLD_MAX_MS, HTTP_NOT_FOUND, HTTP_TOO_MANY, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ENTER,
@@ -37,7 +37,7 @@ import {
   TEXT_STATUS, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
   TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MODE_EMAIL,
   TRACK_APPLY_CLICK, TRACK_SAVE_JOB, TRACK_SAVE_SEARCH, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UPSELL_LOCK, UPSELL_SS,
-  URL_APPLY, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE,
+  URL_API_JD_FORMAT, URL_API_JD_TRANSLATE,
   URL_API_JOB_RELATED,
   URL_API_JOBS, URL_API_JOBS_DIMS,
   URL_API_SAVED_JOBS,
@@ -53,28 +53,27 @@ import {
   fetchJobText, filterOptsOf, filterSig, foldActiveNarrowOf, foldActiveOf, frozenKeysOf, homeProvPickOf, initialColsOf,
   initialFiltersOf, userFilterOf,
   jobDetailViewOf, jobsQueryOf, keysOf, lastOf, makeColWidth, makeGatedFilters, makeGatedProvChange, makeOccName,
-  makePopupToCo,
-  makePushCoLayer, makePushJobLayer, markObSeen,
-  measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
+  makePushJobLayer,
+  measureColWidths, nextSortOf, nocLabelOf, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
   saveFiltersOf, seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf,
   toRelatedJobs, chipNocOf, occGroupsOf, occSlotOf, tableWrapOf,
   widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
   jobDatesOf, ssrTransOf,
 } from './functions'
 import type {
-  AccountAreaPanel, Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyResumeIn, ApplyStage, AuthDoneIn,
+  AccountAreaPanel, Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyOpenDetail, ApplyResumeIn,
+  ApplyStage, AuthDoneIn,
   BlockedKeys, BoardColsHookIn, BoardColsOut, BoardColsPanel,
   BoardDataHookIn, BoardDataOut, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoardPnpFacts, BoxRef,
   ClickFn, ColMeasure,
   ColsToggleIn, ColWidthSeed, ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson,
   FieldRouterIn, FilterState, FmtLoad, FmtLoadIn, FmtWhy, FontsDoc, FrozenHookIn, FrozenPanel, HeadRowRef, HomeGate,
-  FilterGateDoneIn, HydrateIn, JobPeekPanel,
-  IntentProfileIn,
+  FilterGateDoneIn, HydrateIn,
   JdFormatHookIn, JdFormatPanel, JdStatus, JdTextHookIn, JdTextPanel, JdTransHookIn, JdTransPanel, JobBodyHookIn,
   JobBodyPanel, JobColKey, JobDetailPanel, JobDims, JobFact, JobFilters, JobIn, JobPlan, JobsBoardOut, JobsBoardPanel,
   JobsIn, JobsPageJson,
-  MatchProfileFact, MeJson, ModalsHookIn, ModalsHookOut, NeedIntentIn,
-  OpenMatchIn, OutsideCloseIn, PeekLayer, PopupState, ProfileJsonFact, ProofCount, QKeyEvent, QKeyFn,
+  MeJson, ModalsHookOut,
+  OpenMatchIn, OutsideCloseIn, PeekLayer, PopupState, ProofCount, QKeyEvent, QKeyFn,
   RelatedJobs,
   RelatedJson, RelatedOfHookIn, SaveGateDoneIn, SaveIntentIn, SaveIntentJson, SaveJobFact, SavedAddIn, SavedEditIn,
   SavedLoadIn,
@@ -1145,6 +1144,8 @@ function dimsOf(props: JobsIn): JobDims {
  * 不参与内容分支)、职位描述弹框(C1 走查拍板 2026-07-07:删两套公司弹窗,ActModal 只剩 JD 快看)、
  * 首访引导、升级/登录弹框。
  * E11-05②:首访自动弹引导(登录且无档案且没弹过);关/完成置 OB_SEEN 不再自动弹。
+ * 2026-10-09「我的档案」批撤掉首访引导(Frank「现在回答问题有两部分,而且样式还不一样」→ 只留访客四题一套;
+ * 答过的题在「我的 → 我的档案」看与改):自动弹那段、开关两格与「弹过了」记号一并删。
  * 三问弹框已退役(2026-07-31 Frank「不需要弹框答题了,统一一下答题功能」):答题只剩 /plan/* 的
  * 答题器,职位板只读答案做回显与筛选;自动弹窗(#237 的排队逻辑)随之删掉。Esc 关弹框。
  * 2026-09-21 Frank「点公司就弹公司的框?然后还能点回来」:职位描述弹框与公司弹框并进弹框栈(modal 域 useLayerStack),
@@ -1153,27 +1154,20 @@ function dimsOf(props: JobsIn): JobDims {
  * 这里那份「栈空了再关字段弹框」的 Esc 随之撤 —— 栈里有层时最上面的是栈顶,栈空了最上面的就是字段弹框,排号天然如此。
  * 2026-10-04 收口审查:收藏那一路旁边多一路筛选的访客向导(访客关掉进站向导后动筛选 / 搜索再弹;设计稿 10-04),
  * 开口交给筛选面板过闸的写口;× 关掉那一下筛选作罢,注册完收起 + 软刷(同收藏那一路,只是没有要补的那一下)。
+ * 2026-10-09 N 批:栈收到全站宿主(peek 桶 PeekHost),这里的 stack 只是发消息的代理;面板里那一格「弹框栈」退役
+ * (原注照录:「弹框栈(2026-09-21 Frank「点公司就弹公司的框?然后还能点回来」):职位描述弹框与公司弹框一层层叠,
+ * 关哪层都只关最上面那层;原先的「职位描述弹框那一岗」「公司弹框那一家」两格并进这里。」)。
+ * 同日「我的档案」批撤首访引导:入参分层态只给它判「登录了、没档案」,随之撤。
  *
- * @param x 分层态。
  * @returns 弹框层面板与三个开口。
  */
-function useBoardModals(x: ModalsHookIn): ModalsHookOut {
+function useBoardModals(): ModalsHookOut {
   const [popup, setPopup] = useState<PopupState | null>(null)
-  const stack = useLayerStack<PeekLayer>()
-  const [wizard, setWizard] = useState(false)
+  const stack = usePeekBus<PeekLayer>()
   const [upsell, setUpsell] = useState<UpsellKind>(false)
   const [saveGate, setSaveGate] = useState<JobFact | null>(null)
   const [filterGate, setFilterGate] = useState(false)
   const router = useRouter()
-  const loggedIn = x.plan.loggedIn
-  const profileOk = x.plan.profileOk
-  useEffect(function autoOpenWizard() {
-    if (loggedIn === false || profileOk || obSeen()) {
-      return
-    }
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 服务端首帧读不到 localStorage,先按不开引导画;活过来再看弹过没
-    setWizard(true)
-  }, [loggedIn, profileOk])
   function closePopup(): void {
     setPopup(null)
   }
@@ -1183,15 +1177,8 @@ function useBoardModals(x: ModalsHookIn): ModalsHookOut {
   return {
     panel: {
       popup,
-      wizard,
       upsell,
       onPopupClose: closePopup,
-      stack,
-      onPeekCo: makePopupToCo({ setPopup, stack }),
-      onWizardClose: function closeWizard(): void {
-        markObSeen()
-        setWizard(false)
-      },
       onUpsellClose: function closeUpsell(): void {
         setUpsell(false)
       },
@@ -1312,7 +1299,7 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
   const [lang, , t] = useLang()
   const plan = planOf(props)
   const [sort, setSort] = useState<SortState>({ key: SORT_DEFAULT, dir: DIR_DESC })
-  const modals = useBoardModals({ plan })
+  const modals = useBoardModals()
   const setUpsell = modals.setUpsell
   function onUpsellLock(): void {
     setUpsell(UPSELL_LOCK)
@@ -2184,6 +2171,9 @@ async function postTranslate(x: TranslateIn): Promise<string> {
  * launch 不再现查邮箱、不弹邮件投递框、不记「已投」,记一下投递埋点就跳投递页(会话过期由投递页的门送回职位页)。
  * 上文现查邮箱、邮件框、记「已投」、401 / 429 / 失败分流诸条,连同 loadApplyEmail / showApplyMiss / recordApplied /
  * makeCopyEmail 与登录 / 次数 / 失败三个浮层一并撤,只是历史。
+ * 2026-10-09 A 批投递搬进弹框(docs/design/投递向导-照Azure-20261008.md 故事 1、2):launch 不再跳页,广播「要投这一岗」由全站骨架上的
+ * 投递框宿主弹框;未登录只弹注册 / 登录框(访客四题撤),已登录不再先过六步意向表(needIntent / 意向表单一段撤);
+ * 跳页时代的在途闸 busy 随之撤(弹框是同步的)。
  *
  * @param x 本岗、取词函数、分层态与在不在整页里。
  * @returns 投递栏面板。
@@ -2192,23 +2182,13 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
   const [stage, setStage] = useState<ApplyStage>(APPLY_IDLE)
   const [matchJd, setMatchJd] = useState<string | null>(null)
   const [authed, setAuthed] = useState(false)
-  const [freshProfile, setFreshProfile] = useState<MatchProfileFact | null>(null)
-  const [busy, setBusy] = useState(false)
   const router = useRouter()
   const job = x.job
   const plan = x.plan
-  async function launch(): Promise<void> {
-    if (busy) {
-      return
-    }
-    setBusy(true)
+  function launch(): void {
     clearApplyIntent()
     trackApply()
-    router.push(URL_APPLY + String(job.id))
-  }
-  function goApply(): void {
-    trackApply()
-    window.location.assign(URL_APPLY + String(job.id))
+    askApply(Number(job.id))
   }
   function onApply(): void {
     if (plan.loggedIn === false && authed === false && isGateSignedIn() === false) {
@@ -2217,13 +2197,9 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
       setStage(APPLY_AUTH)
       return
     }
-    if (needIntent({ plan, authed })) {
-      setStage(APPLY_INTENT)
-      return
-    }
     launch()
   }
-  useApplyResume({ job, plan, setStage, launch })
+  useApplyResume({ job, plan, launch })
   return {
     stage,
     matchJd,
@@ -2232,32 +2208,13 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
       setMatchJd(null)
     },
     onApply,
-    busy,
     authed,
     onAuthClose: function closeAuth(): void {
       clearApplyIntent()
       setStage(APPLY_IDLE)
     },
-    onAuthDone: makeAuthDone({ setAuthed, setFreshProfile, setStage, go: goApply, refresh: router.refresh }),
-    intentProfile: intentProfileOf({ fresh: freshProfile, plan }),
-    onIntentDone: function finishIntent(): void {
-      setStage(APPLY_IDLE)
-      launch()
-    },
+    onAuthDone: makeAuthDone({ setAuthed, setStage, launch, refresh: router.refresh }),
   }
-}
-
-/**
- * 要不要先过求职意向表单:没建档就要,除非引导已经弹过、或者刚在流程里注册完(onDone 已走过)。
- *
- * @param x 分层态与流程内登录态。
- * @returns 要 = true。
- */
-function needIntent(x: NeedIntentIn): boolean {
-  if (x.plan.profileOk || x.authed) {
-    return false
-  }
-  return obSeen() === false
 }
 
 /**
@@ -2291,90 +2248,36 @@ function makeOpenMatch(x: OpenMatchIn): () => Promise<void> {
  * 2026-10-08 小白走查:直接投的两条路改整页跳去投递区(go)—— 软刷(router.refresh)和软跳(router.push)抢跑,
  * 落到「我的」页时 layout 的会话种子还是匿名,顶栏仍是「登录 注册」,小白以为没注册上;整页跳一次就对了。
  * 要进六步意向表的那条路仍留在本页,软刷照旧。
+ * 2026-10-09 A 批投递搬进弹框:不再跳页,软刷顶栏后直接弹投递框(两者不抢跑);六步意向表那条路与拉档案的分流
+ * (loadFreshProfile / profileJsonOf / intentProfileOf)一并撤 —— 投一条岗不先答问卷(设计稿故事 2)。
+ * 同日 Frank 本地实测:先软刷再开框,顶栏仍是「登录 注册」—— 开框往历史里推的那一笔被 Next 当成更新的导航,把在途的软刷冲掉了
+ * (与 10-08 软刷 / 软跳抢跑同一个坑);改成先开框、软刷殿后,软刷是最后一个动作就不会被冲掉。
  *
- * @param x 三个写口、去投递区与软刷。
+ * @param x 两个写口、弹投递框与软刷。
  * @returns 注册成功回调。
  */
-function makeAuthDone(x: AuthDoneIn): () => Promise<void> {
-  return async function onAuthDone(): Promise<void> {
+function makeAuthDone(x: AuthDoneIn): () => void {
+  return function onAuthDone(): void {
     clearApplyIntent()
     x.setAuthed(true)
-    if (isGateSignedIn()) {
-      x.setStage(APPLY_IDLE)
-      x.go()
-      return
-    }
-    const p = await loadFreshProfile()
-    if (p != null && hasProfile(p)) {
-      x.setStage(APPLY_IDLE)
-      x.go()
-      return
-    }
+    x.setStage(APPLY_IDLE)
+    x.launch()
     x.refresh()
-    if (p != null) {
-      x.setFreshProfile(p)
-    }
-    x.setStage(APPLY_INTENT)
   }
-}
-
-/**
- * 流程内登录后拉到的真实档案。
- *
- * @returns 档案;拉不到给 null。
- */
-async function loadFreshProfile(): Promise<MatchProfileFact | null> {
-  const res = await fetch(URL_API_USERS_ME, { credentials: CREDENTIALS_INCLUDE }).catch(nullOf)
-  if (res == null) {
-    return null
-  }
-  const d: MeJson | null = await res.json().catch(nullOf)
-  if (d == null) {
-    return null
-  }
-  return normalizeProfile(profileJsonOf(d) as Parameters<typeof normalizeProfile>[0])
-}
-
-/**
- * 响应里的档案 JSON(缺席给 null)。跨域形状接缝:lib/jobs 的 ProfileJson 是它自己声明的
- * 扁平格,本域只当它是一份不透明的东西原样透传 —— 断言只住这一处。
- *
- * @param d 身份响应。
- * @returns 档案 JSON。
- */
-function profileJsonOf(d: MeJson): ProfileJsonFact | null {
-  if (d.user == null || d.user.profile == null) {
-    return null
-  }
-  return d.user.profile
-}
-
-/**
- * 求职意向表单的初始档案:流程内拉到的优先,否则用 SSR 那份。
- *
- * @param x 流程内档案与分层态。
- * @returns 初始档案。
- */
-function intentProfileOf(x: IntentProfileIn): MatchProfileFact | null {
-  if (x.fresh != null) {
-    return x.fresh
-  }
-  return x.plan.profile
 }
 
 /**
  * OAuth 回跳续投:登录态 + 落地意图是本岗 + 10 分钟内 → 接着走意向表单/直接投,
  * 不让用户再点一次。Google 登录 = 整页 OAuth 跳转,组件状态全丢,所以投递意图要落地。
  * 2026-10-04 邮箱改成 launch 自己现查,不再等「投递方式查完」,登录态一到就续。
+ * 2026-10-09 A 批:续投一律直接弹投递框,不再分「先进意向表单」。
  *
- * @param x 本岗、分层态、段写口与投递动作。
+ * @param x 本岗、分层态与投递动作。
  * @returns 无。
  */
 function useApplyResume(x: ApplyResumeIn): void {
   const job = x.job
   const loggedIn = x.plan.loggedIn
-  const profileOk = x.plan.profileOk
-  const setStage = x.setStage
   const launch = x.launch
   useEffect(function resumeApply() {
     if (loggedIn === false) {
@@ -2384,10 +2287,6 @@ function useApplyResume(x: ApplyResumeIn): void {
       return
     }
     clearApplyIntent()
-    if (profileOk === false && obSeen() === false) {
-      setStage(APPLY_INTENT)
-      return
-    }
     launch()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 只在登录态到手这一刻跑一次
   }, [loggedIn])
@@ -2440,6 +2339,17 @@ function clearApplyIntent(): void {
   } catch {
     return
   }
+}
+
+/**
+ * 广播「要投这一岗」(2026-10-09 A 批投递搬进弹框):全站骨架上的投递框宿主收到就弹框。
+ *
+ * @param jobId 职位 id。
+ * @returns 无。
+ */
+function askApply(jobId: number): void {
+  const detail: ApplyOpenDetail = { jobId }
+  window.dispatchEvent(new CustomEvent<ApplyOpenDetail>(EV_APPLY_OPEN, { detail }))
 }
 
 /**
@@ -2501,18 +2411,6 @@ export function useJobDetail(x: JobIn): JobDetailPanel {
 export function useJobDates(x: JobDatesIn): JobDateCell[] {
   const [now] = useState(Date.now)
   return jobDatesOf({ job: x.job, t: x.t, now })
-}
-
-/**
- * 详情页上叠开的职位描述弹框(2026-09-19:下架岗的相似职位点了不跳走)。Esc 关。
- * 2026-09-21 改成弹框栈(Frank「点公司就弹公司的框?然后还能点回来」):相关职位卡点一行、公司信息卡点公司名都往上叠,
- * 只关最上面一层;Esc 由栈自己管(也只关最上面一层)。
- *
- * @returns 弹框栈与点相关职位 / 点公司名两个手柄。
- */
-export function useJobPeek(): JobPeekPanel {
-  const stack = useLayerStack<PeekLayer>()
-  return { stack, onOpenJob: makePushJobLayer(stack), onOpenCompany: makePushCoLayer(stack) }
 }
 
 /**

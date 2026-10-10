@@ -344,11 +344,6 @@ export const ABORT_NAME = 'AbortError'
 export const SEP_COMMA = ','
 
 /**
- * 建档向导「已经问过」的记忆键的值(答完三问就写它,别再弹建档向导)。
- */
-export const SEEN_ONE = '1'
-
-/**
  * 「没有」的空文本(没答、名字还没拉到、不重名时那一格的返回值)。
  * 与 companies/account 等域同名同义,各家一份(跨域不互相取常量)。
  */

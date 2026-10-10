@@ -947,29 +947,6 @@ export type BoardModalsPanel = {
   onPopupClose: ClickFn
 
   /**
-   * 弹框栈(2026-09-21 Frank「点公司就弹公司的框?然后还能点回来」):职位描述弹框与公司弹框一层层叠,
-   * 关哪层都只关最上面那层;原先的「职位描述弹框那一岗」「公司弹框那一家」两格并进这里。
-   */
-  stack: PeekStackRef
-
-  /**
-   * 字段弹框里点相似雇主:关字段弹框、公司弹框叠上。
-   * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:公司组里点相似雇主不再新开页 —— 字段弹框让位给公司弹框;
-   * 框里再点相似雇主同框换一家(2026-09-21 起这一步由弹框栈的渲染件接手)。
-   */
-  onPeekCo: (peek: CompanyPeek) => void
-
-  /**
-   * 首访引导开着没。
-   */
-  wizard: boolean
-
-  /**
-   * 关首访引导(置「弹过了」)。
-   */
-  onWizardClose: ClickFn
-
-  /**
    * 升级/登录弹框的由头;false = 没开。
    */
   upsell: UpsellKind
@@ -1472,37 +1449,28 @@ export type BoardChipIn = {
 
 /**
  * CardLocation(卡片上的市/省两段链接)的 props。
+ * 2026-10-09 N6 批:两段换 name 桶的 CityName / ProvName(地图链接由它们自己拼),原地图链接两格与市 / 省两个点击手柄撤。
  */
 export type CardLocationIn = {
   /**
-   * 市名。
+   * 市名(英文)。
    */
   city: string
 
   /**
    * 省码;'' = 只出市。
    */
-  prov: string
+  province: string
 
   /**
-   * 市名的地图链接。
+   * 市名中文译名;'' = 没有。
    */
-  cityHref: string
+  zh: string
 
   /**
-   * 省的地图链接。
+   * 市名韩文译名;'' = 没有。
    */
-  provHref: string
-
-  /**
-   * 点市名开地点弹框(拦住本段的默认外链与整卡的跳转)。
-   */
-  onCity: (e: React.MouseEvent) => void
-
-  /**
-   * 点省码开地点弹框。
-   */
-  onProv: (e: React.MouseEvent) => void
+  ko: string
 }
 
 /**
@@ -1766,31 +1734,6 @@ export type JobRelatedIn = {
    * 兜底链的埋点来源格。
    */
   fromNone: string
-
-  /**
-   * 点一行:页上叠开职位描述弹框(2026-09-19 Frank「这种里面的链接都改成弹框显示」)。
-   */
-  onOpenJob: (j: JobFact) => void
-}
-
-/**
- * useJobPeek 的出参:详情页上叠开的弹框(2026-09-19 职位描述弹框;2026-09-21 改成弹框栈,公司信息卡点公司名也往上叠)。
- */
-export type JobPeekPanel = {
-  /**
-   * 弹框栈。
-   */
-  stack: PeekStackRef
-
-  /**
-   * 点相关职位的一行:叠开职位描述弹框。
-   */
-  onOpenJob: (j: JobFact) => void
-
-  /**
-   * 点公司信息卡的公司名:叠开公司弹框。
-   */
-  onOpenCompany: (peek: CompanyPeek) => void
 }
 
 /**
@@ -1857,11 +1800,6 @@ export type RelatedGroupIn = {
    * 界面语言(行下灰字 = 这门语言的职位名译名,2026-09-21;英文界面不出)。
    */
   lang: Lang
-
-  /**
-   * 点一行:页上叠开职位描述弹框(整行由行自己现取)。
-   */
-  onOpenJob: (j: JobFact) => void
 }
 
 /**
@@ -2395,8 +2333,9 @@ export type ApplyBarIn = {
 /**
  * 投递流程的三段:闲置 → 注册闸 → 求职意向。
  * 2026-10-04 收口审查:点了投递没拿到邮箱不再无声作罢,多三段 —— 重新登录(401)/ 今天次数用完(429)/ 没拿到(其余)。
+ * 2026-10-09 A 批投递搬进弹框:求职意向一段撤(投一条岗不再先答六步意向表,设计稿故事 2),只剩闲置与注册闸。
  */
-export type ApplyStage = 'idle' | 'auth' | 'intent'
+export type ApplyStage = 'idle' | 'auth'
 
 /**
  * ApplyBar 状态机交回的面板。
@@ -2428,12 +2367,6 @@ export type ApplyBarPanel = {
   onApply: ClickFn
 
   /**
-   * 投递在途(现查邮箱、记「已投」;2026-10-04 收口审查加):钮挂 busy,禁用 + 转圈,在途时再点不再发。
-   * 2026-10-07 起在途 = 正在跳投递页。
-   */
-  busy: boolean
-
-  /**
    * 流程内已登录(不整页 reload,SSR plan 下次导航自然更新)。
    */
   authed: boolean
@@ -2445,19 +2378,19 @@ export type ApplyBarPanel = {
 
   /**
    * 注册成功:有档案直接投,没档案才进向导。
+   * 2026-10-09 A 批:不再分档案 —— 软刷顶栏、直接弹投递框;意向表单的初始档案与关 / 完成意向表单两格随之撤。
    */
-  onAuthDone: () => Promise<void>
+  onAuthDone: ClickFn
+}
 
+/**
+ * 「要投这一岗」事件带的那一份(2026-10-09 A 批;投递框宿主收,形状与 apply 桶的 ApplyOpenDetail 一致,各域自声明)。
+ */
+export type ApplyOpenDetail = {
   /**
-   * 求职意向表单的初始档案。
+   * 职位 id。
    */
-  intentProfile: MatchProfile | null
-
-  /**
-   * 关/完成意向表单:都继续投递(投递必须丝滑)。
-   */
-  onIntentDone: ClickFn
-
+  jobId: number
 }
 
 /**
@@ -4117,16 +4050,6 @@ export type SavedHookIn = {
 }
 
 /**
- * useBoardModals 的入参。
- */
-export type ModalsHookIn = {
-  /**
-   * 分层态。
-   */
-  plan: JobPlan
-}
-
-/**
  * 弹框层状态机交回的东西(面板 + 三个开口)。
  */
 export type ModalsHookOut = {
@@ -4845,21 +4768,6 @@ export type FmtLoad = {
 }
 
 /**
- * needIntent 的入参。
- */
-export type NeedIntentIn = {
-  /**
-   * 分层态。
-   */
-  plan: JobPlan
-
-  /**
-   * 流程内刚注册完(onDone 已走过 intent)。
-   */
-  authed: boolean
-}
-
-/**
  * makeOpenMatch 的入参。
  */
 export type OpenMatchIn = {
@@ -4884,39 +4792,19 @@ export type AuthDoneIn = {
   setAuthed: (v: boolean) => void
 
   /**
-   * 流程内档案的写口。
-   */
-  setFreshProfile: (p: MatchProfileFact | null) => void
-
-  /**
    * 投递段的写口。
    */
   setStage: (s: ApplyStage) => void
 
   /**
-   * 去投递区(整页跳,带回新会话种子;2026-10-08 小白走查:软刷与软跳抢跑,落到「我的」页顶栏还是「登录 注册」)。
+   * 弹投递框(2026-10-09 A 批;原「去投递区」整页跳 go 撤 —— 不再跳页,软刷与弹框不抢跑)。
    */
-  go: () => void
+  launch: () => void
 
   /**
    * 软刷(router.refresh):流程内登录后让 header 变已登录、又不丢投递流程(2026-09-22)。
    */
   refresh: () => void
-}
-
-/**
- * intentProfileOf 的入参。
- */
-export type IntentProfileIn = {
-  /**
-   * 流程内拉到的档案;null = 没拉到。
-   */
-  fresh: MatchProfileFact | null
-
-  /**
-   * 分层态(SSR 那份档案)。
-   */
-  plan: JobPlan
 }
 
 /**
@@ -4934,14 +4822,9 @@ export type ApplyResumeIn = {
   plan: JobPlan
 
   /**
-   * 投递段的写口。
+   * 投递动作(弹投递框)。
    */
-  setStage: (s: ApplyStage) => void
-
-  /**
-   * 投递动作。
-   */
-  launch: () => Promise<void>
+  launch: () => void
 }
 
 /**
@@ -5683,6 +5566,7 @@ export type MoreLabelIn = {
 
 /**
  * 手机卡一张的展示行。
+ * 2026-10-09 N6 批:市 / 省的地图链接与显示值四格撤(卡上地点换 name 桶 CityName / ProvName,链接与显示由它们自己算)。
  */
 export type BoardCardView = {
   /**
@@ -5714,26 +5598,6 @@ export type BoardCardView = {
    * 省码;'' = 只出市。
    */
   prov: string
-
-  /**
-   * 市名的地图链接。
-   */
-  cityHref: string
-
-  /**
-   * 省的地图链接。
-   */
-  provHref: string
-
-  /**
-   * 市名的显示值(弹框大标题也用它)。
-   */
-  cityText: string
-
-  /**
-   * 省的显示值。
-   */
-  provText: string
 
   /**
    * 通道胶囊排;空 = 整排不出。
@@ -6345,21 +6209,6 @@ export type PeekStackRef = {
 }
 
 /**
- * 「字段弹框里点相似雇主」手柄工厂的入参。
- */
-export type PopupToCoIn = {
-  /**
-   * 字段弹框的写口(先关它)。
-   */
-  setPopup: (p: PopupState | null) => void
-
-  /**
-   * 弹框栈。
-   */
-  stack: PeekStackRef
-}
-
-/**
  * JobModalCards(职位描述弹框正文下面的两张卡,2026-09-21)的 props。
  */
 export type JobModalCardsIn = {
@@ -6372,16 +6221,6 @@ export type JobModalCardsIn = {
    * 界面语言。
    */
   lang: Lang
-
-  /**
-   * 点相关职位的一行:往弹框栈上叠开那一岗。
-   */
-  onOpenJob: (j: JobFact) => void
-
-  /**
-   * 点公司信息卡的公司名:往弹框栈上叠开公司弹框。
-   */
-  onOpenCompany: (peek: CompanyPeek) => void
 }
 
 /**
@@ -6732,11 +6571,6 @@ export type JobImmCardIn = {
    * 本岗职业的官方描述(弹框里职业名要它)。
    */
   nocDesc: NocDesc[]
-
-  /**
-   * 弹框里点公司名(AIP 指定雇主名单的招牌):往弹框栈上叠开公司弹框。
-   */
-  onOpenCompany: (peek: CompanyPeek) => void
 }
 
 /**

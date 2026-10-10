@@ -18,17 +18,22 @@
  * 2026-10-03 付费闭环批 A1:匿名点收藏不再走升级 / 登录弹框,改弹访客向导(profile 桶 GateWizard,注册完补收那一岗);
  * 升级 / 登录弹框的由头只剩 Pro 锁格与保存筛选满额。
  * 2026-10-04 访客四题改版:GateWizard 自 profile 桶迁入 gate 桶,改从 gate 桶取(契约不变)。
+ * 2026-10-09「我的档案」批:首访引导(profile 桶 OnboardingWizard)撤,这里不再挂它。
  * 同日收口审查:收藏那一路旁边多挂一路筛选的访客向导(访客关掉进站向导后动筛选 / 搜索再弹;设计稿 10-04),照收藏那一路的形挂。
+ * 2026-10-09 N 批(Frank「一个全站宿主,并掉各页那 5 套」):本页不再自己画 PeekStack,改摆 modal 桶的报件 PeekContext
+ * (报本页的分层态与职业名表),弹框由全站骨架上的 PeekHost 画。
+ * 2026-10-09 N6b 批:字段弹框里的名字(公司组在招职位 / 相似雇主、AIP 名单招牌)N6 起由 name 桶自开弹框,递给字段弹框的两个回调撤;
+ * 09-19「字段弹框让位给公司弹框」那只手柄(onPeekCo)随之退役 —— 现在点相似雇主是公司弹框叠在字段弹框上面。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { AdvisorModal, PeekStack } from '@/components/advisor'
+import { AdvisorModal } from '@/components/advisor'
+import { PeekContext } from '@/components/modal'
 import { AuthModal } from '@/components/auth'
 import { GateWizard } from '@/components/gate'
 import { PnpModal } from '@/components/pnp'
 import { UpgradeModal } from '@/components/pricing'
-import { OnboardingWizard } from '@/components/profile'
 import { AUTH_REGISTER, GATE_INTENT_FILTER, GATE_INTENT_SAVE, GROUP_PNP } from './constants'
 import { upsellReasonOf } from './functions'
 import type { BoardPanelIn } from './types'
@@ -58,12 +63,9 @@ export function BoardModals({ b }: BoardPanelIn) {
           eeOcc={b.data.dims.eeCategories}
           nocDesc={b.data.dims.nocDescriptions}
           fieldSources={b.data.dims.fieldSources}
-          onClose={m.onPopupClose}
-          onOpenJob={b.onDesc}
-          onOpenCompany={m.onPeekCo} />
+          onClose={m.onPopupClose} />
       )}
-      <PeekStack stack={m.stack} lang={b.lang} plan={b.plan} nocDesc={b.data.dims.nocDescriptions} />
-      {m.wizard && <OnboardingWizard t={b.t} initial={b.plan.profile} onClose={m.onWizardClose} />}
+      <PeekContext plan={b.plan} nocDesc={b.data.dims.nocDescriptions} />
       {m.upsell !== false && b.plan.loggedIn && (
         <UpgradeModal t={b.t} onClose={m.onUpsellClose}
           reason={upsellReasonOf({ t: b.t, upsell: m.upsell })} />

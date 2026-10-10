@@ -6,11 +6,13 @@
  * 2026-10-08 Frank 看「我的」:跳过、全部投出、升级框撤;一次一岗翻页看,信全文 + 逐项检查,四项全勾才能投出。
  * 刚开启那一轮还在跑:转圈「正在找新岗、写信」(轮询);跑完没岗才是「今天没有新岗」。
  * 取不到不出(不冒充空队列)。
+ * 2026-10-09 N 批(Frank「一个全站宿主,并掉各页那 5 套」):本页不再自己画 PeekStack,改摆 modal 桶的报件 PeekContext
+ * (报本页的分层态与职业名表),弹框由全站骨架上的 PeekHost 画。
  *
  * @author Frank
  * @time 2026-10-08 15:00:00
  */
-import { PeekStack } from '@/components/advisor'
+import { PeekContext } from '@/components/modal'
 import { Card } from '@/components/card'
 import { Loading } from '@/components/loading'
 import { ERR_NONE, LOAD_OK, NOC_DESC_NONE } from './constants'
@@ -47,7 +49,7 @@ export function QueueReview({ t, plan, onSent }: QueueReviewIn) {
         {setup && p.err !== ERR_NONE && <div className={css.err}>{t(p.err)}</div>}
       </Card>
       {p.editing && <QueueEdit p={p} t={t} />}
-      <PeekStack stack={p.stack} lang={p.lang} plan={p.plan} nocDesc={NOC_DESC_NONE} />
+      <PeekContext plan={p.plan} nocDesc={NOC_DESC_NONE} />
     </div>
   )
 }

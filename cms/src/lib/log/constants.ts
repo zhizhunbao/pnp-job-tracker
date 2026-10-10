@@ -845,6 +845,11 @@ export const PROFILE_LOG = {
    * 恒 undefined 那颗雷,不能再重演)。
    */
   dropKey: 'patch key not in collection, dropped: ',
+
+  /**
+   * 「我的」页「我的档案」取档案没成(2026-10-09「我的档案」批):这一节摆一行「没取到,刷新再试」,后面接错误。
+   */
+  viewLoad: 'profile view fetch failed: ',
 } as const
 
 /**
@@ -1053,6 +1058,16 @@ export const GUEST_LOG = {
    * (同日 A2 撤原 nocName 一条:职业题改用 quiz 桶选职业控件,它自己补名字,gate 的预选职业查名随之删。)
    */
   majors: 'gate majors fetch failed, showing none: ',
+
+  /**
+   * 访客向导 / 档案编辑「所在地」那一屏按省取城市没成(2026-10-09「我的档案」批):城市区按空清单出(城市选填,不挡下一步),后面接错误。
+   */
+  cities: 'gate cities fetch failed, showing none: ',
+
+  /**
+   * 档案编辑保存没成(2026-10-09「我的档案」批):答案档没推上去 / 署名没存上,框不关、摆一行「没存上」,后面接哪一半与错误。
+   */
+  editSave: 'profile edit save failed: ',
 } as const
 
 /**

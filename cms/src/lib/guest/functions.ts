@@ -16,7 +16,7 @@ import { deviceTzOf, homeProvinceOf, isCanadaTz } from '../location'
 import { GUEST_LOG, log } from '../log'
 import { mergeBasics } from '../quiz'
 import {
-  DRAFT_KEY, ENTRY_EXEMPT_PARAMS, ENTRY_EXEMPT_ROOTS, ENTRY_EXEMPT_UNDER, ENTRY_SHOWN_KEY, GOAL_BANDS, HANDOFF_KEY,
+  CITY_LEN_MAX, DRAFT_KEY, ENTRY_EXEMPT_PARAMS, ENTRY_EXEMPT_ROOTS, ENTRY_EXEMPT_UNDER, ENTRY_SHOWN_KEY, GOAL_BANDS, HANDOFF_KEY,
   HANDOFF_TTL_MS, INTENT_JOB, INTENTS, MAJOR_PICK_MAX, MAJOR_RE, NOC_RE, PATH_SEP, PROV_CODES, STATUS_OVERSEAS, TEXT_NONE,
 } from './constants'
 import { CACHE } from './variables'
@@ -66,6 +66,7 @@ export function readGateSeed(x: GateSeedIn): GateDraft {
     majors: [],
     nocs: [],
     prov: where.prov,
+    city: TEXT_NONE,
     abroad: where.abroad,
     intent: x.intent,
   }
@@ -104,7 +105,7 @@ export function toGateDraft(raw: RawText): MaybeGateDraft {
   }
   const row = doc as RawDoc
   const out: GateDraft = {
-    goal: 0, majors: [], nocs: [], prov: TEXT_NONE, abroad: row.abroad === true, intent: INTENT_JOB,
+    goal: 0, majors: [], nocs: [], prov: TEXT_NONE, city: TEXT_NONE, abroad: row.abroad === true, intent: INTENT_JOB,
   }
   if (typeof row.goal === 'number' && GOAL_BANDS.includes(row.goal)) {
     out.goal = row.goal
@@ -126,6 +127,9 @@ export function toGateDraft(raw: RawText): MaybeGateDraft {
   }
   if (out.abroad === false && typeof row.prov === 'string' && PROV_CODES.includes(row.prov)) {
     out.prov = row.prov
+  }
+  if (out.prov !== TEXT_NONE && typeof row.city === 'string' && row.city.length <= CITY_LEN_MAX) {
+    out.city = row.city
   }
   if (typeof row.intent === 'string' && isGateIntent(row.intent)) {
     out.intent = row.intent
@@ -174,6 +178,7 @@ export function clearGateDraft(): void {
  * 草稿 → 并进答案档的那几格:没答的格缺席(不动旧答案);答了境外写处境 overseas、现居省清空;
  * 答了省只写现居省(处境不动 —— 人在境内是什么处境,这四道题没问)。
  * 2026-10-05 专业改多选:选了专业写码清单 majors(没选缺席)。
+ * 2026-10-09「我的档案」批:答了省连城市一起写(没选城市写空串 —— 城市挂在省下面,换了省旧城市就不作数)。
  *
  * @param d 草稿。
  * @returns 要改的那几格。
@@ -196,6 +201,7 @@ export function gatePatchOf(d: GateDraft): GatePatch {
   }
   if (d.prov !== '') {
     out.resProv = d.prov
+    out.resCity = d.city
   }
   return out
 }

@@ -638,6 +638,7 @@ export type UpgradeModalIn = {
 
   /**
    * 付完回哪儿(站内「我的」页某处,如投递区 `/account?sec=sjobs&job=…`;2026-10-07 批 C);可省 = 回账户页。
+   * 2026-10-09 A 批投递搬进弹框:投递那一处改成 `/account?sec=sjobs&apply=…`(回来弹投递框)。
    */
   back?: string
 }

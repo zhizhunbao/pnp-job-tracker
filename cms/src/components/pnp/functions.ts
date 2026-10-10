@@ -22,7 +22,7 @@ import { DAY_MS } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS, DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE,
-  DRAWS_ALL_KEY, DRAWS_FORM_STATUS, HOST_RE, LANG_EN, LANG_ZH, LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
+  DRAWS_ALL_KEY, DRAWS_FORM_STATUS, HOST_RE, LANG_EN, LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
   JUMP_ARROW, K_GATE_TITLE, P_PROV, SCROLL_START, URL_HASH_HEAD, URL_KV_SEP, URL_QUERY_HEAD, URL_STEPS, URL_STREAMS,
   MONTHS_KEYS,
   NUM_LOCALE, OPS_ALLOCATION, OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, ROUNDS_KEYS, YEAR_LEN,
@@ -95,7 +95,7 @@ import type {
   LocalNameIn, PathwayChannelIn, StatusLinesIn,
   BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvStreamCardIn, ProvStreamRowsIn,
   AipEmpData, AipEmpJson, AipEmpRowJson, AipEmpRowSpec, AipEmpUrlIn, LoadAipEmpIn, ExpScopeIn,
-  AipEmpAliasIn, OpenAipCoIn, EeCatHeadIn, HeadNames, StreamHeadIn,
+  EeCatHeadIn, HeadNames, StreamHeadIn,
   TeerBandsIn, TierLineIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
@@ -4653,34 +4653,6 @@ export function aipEmpSpecsOf(rows: AipEmpRowJson[]): AipEmpRowSpec[] {
     })
   }
   return out
-}
-
-/**
- * 名单一行招牌下的灰字译名(2026-10-02 Frank「这个也要加灰字 和 点击吧」:英文黑字、界面语言译名灰字);英文界面不出。
- *
- * @param x 这一行与界面语言。
- * @returns 译名;没有给空串。
- */
-export function aipEmpAliasOf(x: AipEmpAliasIn): string {
-  if (x.lang === LANG_EN) {
-    return TEXT_NONE
-  }
-  if (x.lang === LANG_ZH) {
-    return x.r.aliasZh
-  }
-  return x.r.aliasKo
-}
-
-/**
- * 名单一行点招牌:叠开公司弹框(雇主池键当 slug 递,`/api/jobs/company` 两种都认)。
- *
- * @param x 宿主回调与这一行。
- * @returns 点击回调。
- */
-export function makeOpenAipCo(x: OpenAipCoIn): () => void {
-  return function openAipCo(): void {
-    x.onOpenCompany({ slug: x.r.poolKey, name: x.r.trade })
-  }
 }
 
 /**

@@ -13,6 +13,16 @@
 export const URL_QUEUE = '/api/queue'
 
 /**
+ * 地址栏「翻到哪一岗」的参数名(我的求职清单待投行「继续」带来;2026-10-08)。
+ */
+export const P_QUEUED = 'queued'
+
+/**
+ * 「还没翻过页」的位置记号:按地址栏参数定位,定位不到落第一条。
+ */
+export const POS_UNSET = -1
+
+/**
  * 开关接口(PATCH { autoQueue })。
  */
 export const URL_PREFS = '/api/queue/prefs'
@@ -23,11 +33,6 @@ export const URL_PREFS = '/api/queue/prefs'
 export const URL_SEND = '/api/apply/send'
 
 /**
- * 职位页地址头(卡上职位名链去)。
- */
-export const URL_JOB_HEAD = '/jobs/'
-
-/**
  * 没答「想做的工作」时引去答题的地址(答完按 next 回「我的求职」;问卷域认 next)。
  */
 export const URL_QUIZ = '/plan/pr?quiz=1&next=%2Faccount%3Fsec%3Dsjobs'
@@ -36,6 +41,11 @@ export const URL_QUIZ = '/plan/pr?quiz=1&next=%2Faccount%3Fsec%3Dsjobs'
  * 改信接口(PATCH { jobId, cover })。
  */
 export const URL_COVER = '/api/queue/cover'
+
+/**
+ * 换队列里那一岗附的简历的接口(2026-10-08)。
+ */
+export const URL_QUEUE_RESUME = '/api/queue/resume'
 
 /**
  * 偏好接口里英文署名那一格。
@@ -81,11 +91,6 @@ export const NAME_MAX_LEN = 60
  * 英文姓名框的浏览器自动填充类别。
  */
 export const AUTOCOMPLETE_NAME = 'name'
-
-/**
- * 弹框栈的层种类:职位描述弹框(职位名点了叠开,不跳页;同 myjobs 桶)。
- */
-export const LAYER_JOB = 'job'
 
 /**
  * 职位描述弹框用的职业说明表(本页不带,给空表;同 myjobs 桶)。

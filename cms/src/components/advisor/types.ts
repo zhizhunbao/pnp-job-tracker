@@ -222,11 +222,6 @@ export type AdvisorFieldSources = FieldSource[]
 export type AdvisorProvInfo = ProvInfo
 
 /**
- * 点一行在榜岗的回调(职位板把「换成看这一岗」的动作注进来)。
- */
-export type OpenJobFn = (j: AdvisorJob) => void
-
-/**
  * 「把这一家公司打开」要带的两格(2026-09-19;与 companies 域的 CompanyPeek 同形,本域自抄)。
  */
 export type CompanyPeek = {
@@ -240,11 +235,6 @@ export type CompanyPeek = {
    */
   name: string
 }
-
-/**
- * 点相似雇主的回调(2026-09-19 Frank「这种里面的链接都改成弹框显示」:宿主把「开 / 换公司弹框」注进来)。
- */
-export type OpenCompanyFn = (peek: CompanyPeek) => void
 
 /**
  * 顾问事实的取数包:铺一组事实要用到的那一岗与随之交过来的维度表。
@@ -303,21 +293,17 @@ export type AdvisorFacts = {
 
 /**
  * 只按取数包渲的事实件的 props。
+ * 2026-10-09 N6 批:「AIP 指定雇主名单里点招牌」一格(10-02 加)撤 —— 招牌换 name 桶 CompanyName,经弹框总线自开公司弹框。
  */
 export type AdvisorFactsIn = {
   /**
    * 取数包。
    */
   f: AdvisorFacts
-
-  /**
-   * AIP 指定雇主名单里点招牌:叠开公司弹框;没给 = 招牌不可点(2026-10-02)。
-   */
-  onOpenCompany?: OpenCompanyFn
 }
 
 /**
- * 按字段分叉的事实件的 props。
+ * 按字段分叉的事实件的 props(2026-10-09 N6 批:点招牌那一格撤,同 AdvisorFactsIn)。
  */
 export type FieldFactsIn = {
   /**
@@ -329,15 +315,10 @@ export type FieldFactsIn = {
    * 取数包。
    */
   f: AdvisorFacts
-
-  /**
-   * AIP 指定雇主名单里点招牌:叠开公司弹框;没给 = 招牌不可点(2026-10-02)。
-   */
-  onOpenCompany?: OpenCompanyFn
 }
 
 /**
- * 分组事实的 props。
+ * 分组事实的 props(2026-10-09 N6 批:点招牌那一格撤,同 AdvisorFactsIn)。
  */
 export type GroupFactsIn = {
   /**
@@ -349,11 +330,6 @@ export type GroupFactsIn = {
    * 取数包。
    */
   f: AdvisorFacts
-
-  /**
-   * AIP 指定雇主名单里点招牌:叠开公司弹框;没给 = 招牌不可点(2026-10-02)。
-   */
-  onOpenCompany?: OpenCompanyFn
 }
 
 /**
@@ -829,21 +805,6 @@ export type CityFact = {
 }
 
 /**
- * 取消标记:取数发出后组件可能已经拆卸,落格前先看它一眼。
- */
-export type DeadFlag = {
-  /**
-   * 拆卸了没有。
-   */
-  dead: boolean
-}
-
-/**
- * effect 里调用的取数函数(带取消标记)。
- */
-export type LoadFn = (flag: DeadFlag) => void
-
-/**
  * 刷新钮的点击。
  */
 export type RefreshFn = () => void
@@ -972,16 +933,6 @@ export type ActJdIn = {
    * 外层弹框面板(剩余次数、重译代数与回调)。
    */
   a: ActModalPanel
-
-  /**
-   * 点正文下面相关职位卡里的一行:宿主往弹框栈上叠开那一岗(2026-09-21)。
-   */
-  onOpenJob: OpenJobFn
-
-  /**
-   * 点正文下面公司信息卡里的公司名:宿主往弹框栈上叠开公司弹框(2026-09-21)。
-   */
-  onOpenCompany: OpenCompanyFn
 }
 
 /**
@@ -997,21 +948,6 @@ export type AdvisorGroupBodyIn = {
    * 点进来的那一格。
    */
   field: string
-
-  /**
-   * 同公司在榜岗(公司组用;E10-01 P3 现拉,不再靠父级全量列表)。
-   */
-  companyJobs: AdvisorJob[]
-
-  /**
-   * 点一行在榜岗(公司组的在招职位列表要它);可省 —— 调用方没给就不给点。
-   */
-  onOpenJob?: OpenJobFn
-
-  /**
-   * 点公司组里的相似雇主(2026-09-19);可省 = 纯链接。
-   */
-  onOpenCompany?: OpenCompanyFn
 
   /**
    * 取数包。
@@ -1050,11 +986,6 @@ export type AdvisorModalHookIn = {
   field: string
 
   /**
-   * 这一岗。
-   */
-  job: AdvisorJob
-
-  /**
    * 界面语言。
    */
   lang: AdvisorLang
@@ -1068,11 +999,6 @@ export type AdvisorModalPanel = {
    * 清单译名开着没有。
    */
   showZh: boolean
-
-  /**
-   * 同公司在榜岗。
-   */
-  companyJobs: AdvisorJob[]
 
   /**
    * 公司弹框页眉副题 = 公司中 / 韩别名(CompanyPanel 取到档案后回传;'' = 没有,2026-09-14)。
@@ -1166,16 +1092,6 @@ export type AdvisorModalIn = {
    * 关闭回调。
    */
   onClose: () => void
-
-  /**
-   * 点一行在榜岗(公司组的在招职位列表要它);可省。
-   */
-  onOpenJob?: OpenJobFn
-
-  /**
-   * 点公司组里的相似雇主(2026-09-19);可省 = 纯链接。
-   */
-  onOpenCompany?: OpenCompanyFn
 }
 
 /**
@@ -1206,16 +1122,6 @@ export type ActModalIn = {
    * 关闭回调。
    */
   onClose: () => void
-
-  /**
-   * 点正文下面相关职位卡里的一行:宿主往弹框栈上叠开那一岗(2026-09-21)。
-   */
-  onOpenJob: OpenJobFn
-
-  /**
-   * 点正文下面公司信息卡里的公司名:宿主往弹框栈上叠开公司弹框(2026-09-21)。
-   */
-  onOpenCompany: OpenCompanyFn
 }
 
 /**
@@ -1521,21 +1427,6 @@ export type GapClsIn = {
 }
 
 /**
- * makeLoadCompanyJobs 的入参。
- */
-export type LoadCompanyJobsIn = {
-  /**
-   * 公司名。
-   */
-  company: string
-
-  /**
-   * 落格。
-   */
-  setJobs: (rows: AdvisorJob[]) => void
-}
-
-/**
  * makeLoadJobText 的入参。
  */
 export type LoadJobTextIn = {
@@ -1614,16 +1505,6 @@ export type PrefPatch = {
    */
   h: number | null
 }
-
-/**
- * 同公司在榜岗接口回来的原始形状(归一前;整体可能是 null)。
- */
-export type CompanyJobsJson = {
-  /**
-   * 在榜岗;缺席 = 一个都没有。
-   */
-  rows?: AdvisorJob[]
-} | null
 
 /**
  * 直判药丸的色档(本域自抄一份三字面量 —— 与 pnp 域的 VerdictPill 同形)。
@@ -1916,16 +1797,6 @@ export type CompanyModalIn = {
   lang: AdvisorLang
 
   /**
-   * 点在招职位:宿主叠开职位描述弹框(2026-09-19)。
-   */
-  onOpenJob: OpenJobFn
-
-  /**
-   * 点相似雇主:宿主把本框换成那一家(同框换内容,不往上叠)。
-   */
-  onOpenCompany: OpenCompanyFn
-
-  /**
    * 关弹框。
    */
   onClose: () => void
@@ -1944,11 +1815,6 @@ export type CompanyModalPanel = {
    * 现场翻译在途(开关显「翻译中…」)。
    */
   transBusy: boolean
-
-  /**
-   * 已载入的职位行(雇主板上没有,恒空;CompanyPanel 的 jobs 要一个稳定引用)。
-   */
-  jobs: AdvisorJob[]
 
   /**
    * 别名回传落格。
@@ -1998,22 +1864,13 @@ export type PeekLayer = PeekJobLayer | PeekCoLayer
 
 /**
  * 弹框栈(宿主起的 modal 域 useLayerStack;形状本域自抄):各层从下到上与三个手柄。
+ * 2026-10-09 N6b 批:叠层 / 换顶两只手柄本域不再调(PeekStack 不往弹框里注回调),只抄真读的两格:各层与关顶层。
  */
 export type PeekStackRef = {
   /**
    * 从下到上的各层。
    */
   layers: PeekLayer[]
-
-  /**
-   * 叠上一层。
-   */
-  push: (layer: PeekLayer) => void
-
-  /**
-   * 换掉最上面一层。
-   */
-  swapTop: (layer: PeekLayer) => void
 
   /**
    * 关掉最上面一层。

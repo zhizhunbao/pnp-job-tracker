@@ -21,6 +21,8 @@
  * 2026-09-14 Frank「加」:管理员在弹框顶部有一颗「重译」胶囊 —— 清这家公司的译文版本后整页刷新。
  * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:点相似雇主经 onOpenCompany 交回上层(同框换一家);
  * 「新开页」不再由有没有 onOpenJob 推出来,弹框里恒新开(按着 Ctrl 点出去别把弹框关掉)。
+ * 2026-10-09 N6b 批:点在招职位 / 相似雇主 N6 起由 name 桶自开弹框(相似雇主改叠一层,不再同框换),上面这条的两只回调、
+ * 「恒新开」与按岗位号回查整行的已载入职位(jobs / makeResolveJob)一并撤。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -30,7 +32,7 @@ import { SponsorLeadCard } from '@/components/pnp'
 import { makeT } from '@/lib/i18n'
 import { CompanyBody } from './companybody'
 import { LEAD_SRC_COMPANY, TEXT_NONE } from './constants'
-import { aliasOf, makeResolveJob } from './functions'
+import { aliasOf } from './functions'
 import { useCompanyAlias, useCompanyPanel } from './hooks'
 import type { CompanyPanelIn } from './types'
 
@@ -41,11 +43,11 @@ import type { CompanyPanelIn } from './types'
  * 2026-09-18 Frank「雇主弹框…可以和 job 的公司弹框保持一致吗」:雇主板点雇主名开的也是这一件 —— 那里没有职位,
  * job 给 null、按 slug 取,底部的雇主线索卡(要一条职位)不出,其余一字不差。
  *
- * @param props 当前职位、已载入职位、语言、点职位回调、别名回传与中文对照开合(逐格注释见 CompanyPanelIn)。
+ * @param props 当前职位、slug、语言、别名回传与中文对照开合(逐格注释见 CompanyPanelIn)。
  * @returns 钮条 + AI 速读 + 公司身体 + 雇主线卡。
  */
 export function CompanyPanel({
-  job, slug, jobs, lang, onOpenJob, onOpenCompany, onAlias, showTrans, onTransBusy,
+  job, slug, lang, onAlias, showTrans, onTransBusy,
 }: CompanyPanelIn) {
   const t = makeT(lang)
   const p = useCompanyPanel({ job, slug, lang })
@@ -69,11 +71,7 @@ export function CompanyPanel({
         updatedAt={TEXT_NONE}
         showTrans={showTrans}
         onTransBusy={onTransBusy}
-        onSiteDone={p.reload}
-        onOpenJob={onOpenJob}
-        onOpenCompany={onOpenCompany}
-        newTab
-        resolveJob={makeResolveJob({ jobs })} />
+        onSiteDone={p.reload} />
     )
   }
   return (

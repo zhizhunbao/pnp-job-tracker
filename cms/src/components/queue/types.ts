@@ -1,21 +1,17 @@
 /**
  * queue 组件桶(「今日待投」)的形状:线格式 → 面板 → 各件 props。
+ * 2026-10-09 N6 批:卡上职位名换 name 桶 JobName,弹框栈各层形状与点职位名的手柄退役;下面特批行说的「职位整行」随之不再有,只剩分层态透传。
  *
  * @author Frank
  * @time 2026-10-08 15:00:00
  */
 // eslint-disable-next-line local/no-import-in-leaf -- 分层态与职位整行原样透传给升级框 / 职位描述弹框,本域只读 isPro 一格(先例 myjobs/types.ts)
-import type { JobRow, Plan } from '@/lib/jobs'
+import type { Plan } from '@/lib/jobs'
 
 /**
  * 界面语取词函数(与 lib/i18n 的 TFn 同形;形状本桶自己声明)。
  */
 export type TFn = (key: string, vars?: Record<string, string | number>) => string
-
-/**
- * 界面语。
- */
-export type Lang = 'zh' | 'en' | 'ko'
 
 /**
  * 分层态(外域形状,逐行特批):页面门递来,本域只读 isPro。
@@ -137,9 +133,34 @@ export type QueueRespJson = {
   lastQueueAt?: string | null
 
   /**
+   * 本人的简历清单(换简历下拉);缺席按空清单读。
+   */
+  resumes?: QueueResumeJson[]
+
+  /**
    * 英文署名;缺席 / 空按没有读。
    */
   senderName?: string | null
+}
+
+/**
+ * 回包里的一份简历(线格式,先按宽收)。
+ */
+export type QueueResumeJson = {
+  /**
+   * 简历 id。
+   */
+  id?: number | string | null
+
+  /**
+   * 文件名。
+   */
+  name?: string | null
+
+  /**
+   * MIME。
+   */
+  mime?: string | null
 }
 
 /**
@@ -182,9 +203,49 @@ export type QueueState = {
   lastQueueAt: string
 
   /**
+   * 本人的简历清单(逐项检查的换简历下拉)。
+   */
+  resumes: QueueResumeItem[]
+
+  /**
    * 英文署名(逐项检查的「署名」一行;没有 = 空串)。
    */
   senderName: string
+}
+
+/**
+ * 简历清单里的一份(洗净)。
+ */
+export type QueueResumeItem = {
+  /**
+   * 简历 id。
+   */
+  id: number
+
+  /**
+   * 文件名。
+   */
+  name: string
+
+  /**
+   * MIME(PDF 才站内弹框预览)。
+   */
+  mime: string
+}
+
+/**
+ * `resumeMimeOf`(找附的那份简历的 MIME)的入参。
+ */
+export type ResumeMimeIn = {
+  /**
+   * 本人的简历清单。
+   */
+  resumes: QueueResumeItem[]
+
+  /**
+   * 附的简历 id(没有 = null)。
+   */
+  resumeId: number | null
 }
 
 /**
@@ -317,11 +378,6 @@ export type QueueCells = {
   pos: number
 
   /**
-   * 改逐项检查已勾的项(发出 / 改信 / 翻页后清空)。
-   */
-  setTicks: SetFn<string[]>
-
-  /**
    * 发出去了的回调。
    */
   onSent: (x: QueueSentOut) => void
@@ -361,96 +417,6 @@ export type QueueCells = {
    */
   setFind: SetFn<FindMark | null>
 }
-
-/**
- * 弹框栈的职位层(与 myjobs 桶同形,本桶自抄)。
- */
-export type PeekJobLayer = {
-  /**
-   * 层的种类。
-   */
-  kind: 'job'
-
-  /**
-   * 这一岗(整行;外域形状,本桶一格不读)。
-   */
-  job: QueueJob
-}
-
-/**
- * 弹框栈的公司层(职位描述弹框里点公司名叠开;本桶不主动叠,形状要与 advisor 的栈同形,自抄)。
- */
-export type PeekCoLayer = {
-  /**
-   * 层的种类。
-   */
-  kind: 'company'
-
-  /**
-   * 这一家。
-   */
-  co: CoPeek
-}
-
-/**
- * 公司弹框要的那一家(slug 与名)。
- */
-export type CoPeek = {
-  /**
-   * 公司页 slug(弹框按它取数)。
-   */
-  slug: string
-
-  /**
-   * 公司名(弹框页眉标题)。
-   */
-  name: string
-}
-
-/**
- * 弹框栈的一层。
- */
-export type PeekLayer = PeekJobLayer | PeekCoLayer
-
-/**
- * 弹框栈(modal 域 useLayerStack 的出参;形状本桶自抄)。
- */
-export type PeekStackRef = {
-  /**
-   * 从下到上的各层。
-   */
-  layers: PeekLayer[]
-
-  /**
-   * 叠上一层。
-   */
-  push: (layer: PeekLayer) => void
-
-  /**
-   * 换掉最上面一层。
-   */
-  swapTop: (layer: PeekLayer) => void
-
-  /**
-   * 关掉最上面一层。
-   */
-  pop: () => void
-}
-
-/**
- * 职位板整行(外域形状,逐行特批):公司桶现取回来、原样喂给职位描述弹框,本桶一格不读。
- */
-export type QueueJob = JobRow
-
-/**
- * 开职位描述弹框(收整行)。
- */
-export type OpenJobFn = (job: QueueJob) => void
-
-/**
- * 链接的点击手柄(普通左键拦下开弹框,Ctrl / ⌘ 点照旧开新标签)。
- */
-export type PeekClickFn = (e: React.MouseEvent) => void
 
 /**
  * 文本框改动事件。
@@ -652,19 +618,9 @@ export type QueuePanel = {
   editText: string
 
   /**
-   * 弹框栈(职位描述弹框)。
-   */
-  stack: PeekStackRef
-
-  /**
    * 分层态(职位描述弹框要它)。
    */
   plan: QueuePlan
-
-  /**
-   * 点当前这一岗的职位名(叠开职位描述弹框)。
-   */
-  onTitle: PeekClickFn
 
   /**
    * 改英文姓名。
@@ -732,29 +688,14 @@ export type QueuePanel = {
   pos: number
 
   /**
-   * 逐项检查四行(当前这一岗;职位已删 = 空清单)。
+   * 逐项检查面板(当前这一岗;职位已删 = 四行空清单)。
    */
-  checkRows: QueueCheckRow[]
-
-  /**
-   * 逐项检查已勾的项。
-   */
-  ticks: string[]
-
-  /**
-   * 按项造勾选手柄。
-   */
-  onTick: (key: string) => () => void
+  check: QueueCheckPanel
 
   /**
    * 翻到第几条(通用 Pager 的回调,0 起)。
    */
   onPage: (to: number) => void
-
-  /**
-   * 界面语(城市译名按它)。
-   */
-  lang: Lang
 
   /**
    * 在途(发 / 跳过 / 拨开关)。
@@ -924,21 +865,6 @@ export type WithCoverIn = {
 }
 
 /**
- * `titleOpenOf` 的入参。
- */
-export type TitleOpenIn = {
-  /**
-   * 当前这一岗(空队列 = null)。
-   */
-  item: QueueItem | null
-
-  /**
-   * 开职位描述弹框。
-   */
-  onOpenJob: OpenJobFn
-}
-
-/**
  * `uploadResume` 的入参。
  */
 export type UploadFileIn = {
@@ -1032,10 +958,6 @@ export type PageIn = {
    */
   setPos: SetFn<number>
 
-  /**
-   * 逐项检查落格(翻页清空)。
-   */
-  setTicks: SetFn<string[]>
 }
 
 /**
@@ -1066,6 +988,11 @@ export type ChecksIn = {
    * 英文署名。
    */
   sender: string
+
+  /**
+   * 本人的简历清单(找附的那份的 MIME,判能不能弹框预览)。
+   */
+  resumes: QueueResumeItem[]
 }
 
 /**
@@ -1083,6 +1010,11 @@ export type QueueCheckRow = {
   value: string
 
   /**
+   * 能不能站内弹框预览(PDF 才能)。
+   */
+  previewable: boolean
+
+  /**
    * 打开看的地址(没有 = 空串)。
    */
   href: string
@@ -1094,16 +1026,146 @@ export type QueueCheckRow = {
 }
 
 /**
- * `locationOf` 的入参。
+ * 逐项检查面板(与 apply 的 CheckPanel 同形,本域自声明;ApplyCheck 按结构认)。
  */
-export type LocationIn = {
+export type QueueCheckPanel = {
   /**
-   * 这一岗。
+   * 四行(值与 PDF 地址;邮件形按键取)。
    */
-  item: QueueItem
+  rows: QueueCheckRow[]
 
   /**
-   * 界面语。
+   * 邮件主题。
    */
-  lang: Lang
+  subject: string
+
+  /**
+   * 邮件正文(信全文)。
+   */
+  body: string
+
+  /**
+   * 正在弹框预览的那一份;null = 没开。
+   */
+  preview: QueueCheckPreview | null
+
+  /**
+   * 按行造「打开预览」手柄。
+   */
+  openOf: (row: QueueCheckRow) => () => void
+
+  /**
+   * 关预览弹框。
+   */
+  onPreviewClose: () => void
+
+  /**
+   * 换简历下拉的选项(简历 id 串;少于两份为空)。
+   */
+  resumeOpts: string[]
+
+  /**
+   * 下拉当前值(附的简历 id 串;没有 = 空串)。
+   */
+  resumeValue: string
+
+  /**
+   * 下拉取名(id 串 → 文件名)。
+   */
+  resumeLabel: (v: string) => string
+
+  /**
+   * 换简历(PATCH 队列行后重拉)。
+   */
+  onResume: (v: string) => void
+
+  /**
+   * 「改信」= 开改信弹框。
+   */
+  onLetter: () => void
+}
+
+/**
+ * 弹框预览的那一份。
+ */
+export type QueueCheckPreview = {
+  /**
+   * PDF 地址。
+   */
+  src: string
+
+  /**
+   * 标题(文件名)。
+   */
+  title: string
+}
+
+/**
+ * `useCheckPreview`(apply 桶门)交回的三格(本域自抄形)。
+ */
+export type QueuePreviewHook = {
+  /**
+   * 正在预览的那一份;null = 没开。
+   */
+  preview: QueueCheckPreview | null
+
+  /**
+   * 按行造「打开预览」手柄。
+   */
+  openOf: (row: QueueCheckRow) => () => void
+
+  /**
+   * 关弹框。
+   */
+  onPreviewClose: () => void
+}
+
+/**
+ * `queueCheckOf`(装逐项检查面板)的入参。
+ */
+export type QueueCheckIn = {
+  /**
+   * 当前这一岗(没有 = null)。
+   */
+  item: QueueItem | null
+
+  /**
+   * 预览三格。
+   */
+  pv: QueuePreviewHook
+
+  /**
+   * 队列状态(简历清单与署名)。
+   */
+  state: QueueState
+
+  /**
+   * 整机的可变格(换简历要 PATCH 当前这一岗)。
+   */
+  cells: QueueCells
+
+  /**
+   * 重拉队列状态(换完让行上的文件名换新)。
+   */
+  reload: () => Promise<void>
+
+  /**
+   * 开改信弹框。
+   */
+  onEdit: () => void
+}
+
+/**
+ * `makeResumeChange`(下拉换简历)的入参。
+ */
+export type ResumeChangeIn = {
+  /**
+   * 整机的可变格。
+   */
+  cells: QueueCells
+
+  /**
+   * 重拉队列状态。
+   */
+  reload: () => Promise<void>
 }

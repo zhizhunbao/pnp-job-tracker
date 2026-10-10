@@ -16,14 +16,14 @@ import { APPLY_LOG, log } from '../log'
 import { LETTER_TRIAL_MAX, TRIAL_LETTER } from '../quota'
 import { extractText } from '../resume'
 import {
-  ANS_BASIC, ANS_NOCS, ANS_PROV, B64, JOB_CLOSED, NOC_GROUP_LEN, QUEUE_LIST_MAX, QUEUE_PER_USER, QUEUE_SINCE_ALL,
-  QUEUE_USERS_MAX, TEXT_NONE,
+  ANS_BASIC, ANS_CITY, ANS_GOAL, ANS_NOCS, ANS_PROV, B64, GOAL_JOB_BAND, JOB_CLOSED, NOC_GROUP_LEN, QUEUE_LIST_MAX,
+  QUEUE_PER_USER, QUEUE_SINCE_ALL, QUEUE_USERS_MAX, TEXT_NONE,
 } from './constants'
 import type {
   AnswersDbRow, AnswersJson, AutoSaveIn, CandidateDbRow, CandidateFact, CandidatesIn, CandidatesOut, CoverSaveIn, DbIn,
   DoneOut, IdDbRow,
   JdOfIn, LetterTextIn, LetterTextOut, MaybeAnswers, MaybeQueueUserOut, MaybeTextOut, NocCodes, NocsOut, ProvOut, QueueForUserIn,
-  QueueForUserOut,
+  QueueForUserOut, QueueResumeFact, QueueResumeFacts, QueueResumeSrcs, ResumeSaveIn,
   QueueInsertIn, QueueJobIn, QueueJobOut, QueueListOut, QueueRowDbRow, QueueRowFact, QueueUserDbRow, QueueUserFact,
   QueueUsersOut, ResumeTextIn, TextOut, TimeCell, UserIn, WriteOut,
 } from './types'
@@ -50,6 +50,7 @@ export async function loadQueueUser(x: UserIn): MaybeQueueUserOut {
 
 /**
  * 库行 → 要跑的人(四题答案 jsonb 里取想做的工作与所在省;Pro = 到期日在此刻之后)。
+ * 2026-10-09「我的档案」批:再取按哪个城市排岗(cityOf:先找工作且选了城市才有)。
  *
  * @param r 库行。
  * @returns 要跑的人。
@@ -63,7 +64,7 @@ export function toQueueUser(r: QueueUserDbRow): QueueUserFact {
   }
   return {
     userId: count(r.user_id), senderName: text(r.sender_name), lastQueueAt: isoOf(r.last_queue_at), nocs: nocsOf(answers),
-    prov: provOf(answers), pro, resumeId: numOrNull(r.resume_id),
+    prov: provOf(answers), city: cityOf(answers), pro, resumeId: numOrNull(r.resume_id),
   }
 }
 
@@ -78,6 +79,24 @@ export function provOf(answers: MaybeAnswers): string {
     return TEXT_NONE
   }
   return answers[ANS_BASIC][ANS_PROV]
+}
+
+/**
+ * 四题答案 → 按哪个城市的都会区排岗(2026-10-09「我的档案」批:只有先找工作的人(goalBand = 2)选了所在城市才按它排;
+ * 拿 PR 的、没答目标的、没选城市的都给空串 = 不按城市排,照旧全省按评分)。
+ *
+ * @param answers 四题答案(可空)。
+ * @returns 城市英文名;不按城市排给空串。
+ */
+function cityOf(answers: MaybeAnswers): string {
+  if (answers == null || answers[ANS_BASIC] == null) {
+    return TEXT_NONE
+  }
+  const basic = answers[ANS_BASIC]
+  if (basic[ANS_GOAL] !== GOAL_JOB_BAND || basic[ANS_CITY] == null) {
+    return TEXT_NONE
+  }
+  return basic[ANS_CITY]
 }
 
 /**
@@ -159,8 +178,8 @@ export function sinceOf(user: QueueUserFact): string {
  */
 export function firstRunOf(user: QueueUserFact): QueueUserFact {
   return {
-    userId: user.userId, senderName: user.senderName, lastQueueAt: TEXT_NONE, nocs: user.nocs, prov: user.prov, pro: user.pro,
-    resumeId: user.resumeId,
+    userId: user.userId, senderName: user.senderName, lastQueueAt: TEXT_NONE, nocs: user.nocs, prov: user.prov, city: user.city,
+    pro: user.pro, resumeId: user.resumeId,
   }
 }
 
@@ -249,6 +268,7 @@ export async function letterTextOf(x: LetterTextIn): LetterTextOut {
 /**
  * 这个人的候选岗(在架、有投递邮箱、职业在想做的工作里、这之后新上的、没投过、雇主没退过信)。
  * 2026-10-08:「职业在想做的工作里」放宽到同一职业单元组(NOC 前 4 位),与职位页「同省同职业」同口径。
+ * 2026-10-09「我的档案」批:带上按哪个城市排岗($6;空串 = 不按城市排),同都会区的岗排前面。
  *
  * @param x 连接、这个人与起始时刻。
  * @returns 候选岗;没有给空清单。
@@ -256,7 +276,7 @@ export async function letterTextOf(x: LetterTextIn): LetterTextOut {
 export async function loadCandidates(x: CandidatesIn): CandidatesOut {
   return queryRows({
     db: x.db, sql: SQL.QUEUE_CANDIDATES,
-    params: [x.user.userId, nocGroupsOf(x.user.nocs), x.since, x.user.prov, QUEUE_PER_USER], map: toCandidate,
+    params: [x.user.userId, nocGroupsOf(x.user.nocs), x.since, x.user.prov, QUEUE_PER_USER, x.user.city], map: toCandidate,
   })
 }
 
@@ -402,6 +422,33 @@ export function toProv(r: AnswersDbRow): string {
 export async function saveQueuedCover(x: CoverSaveIn): DoneOut {
   const rows = await queryRows({ db: x.db, sql: SQL.QUEUE_COVER_PUT, params: [x.userId, x.jobId, x.cover], map: toId })
   return rows.length > 0
+}
+
+/**
+ * 就地换队列里那一岗附的简历(还在队列里、简历是本人的才换;2026-10-08)。
+ *
+ * @param x 连接、用户 id、职位 id 与简历 id。
+ * @returns 换了 true;不在队列 / 不是本人的简历 false。
+ */
+export async function saveQueuedResume(x: ResumeSaveIn): DoneOut {
+  const rows = await queryRows({
+    db: x.db, sql: SQL.QUEUE_RESUME_PUT, params: [x.userId, x.jobId, x.resumeId], map: toId,
+  })
+  return rows.length > 0
+}
+
+/**
+ * 简历清单 → 回包里的简历项(id、文件名、MIME)。
+ *
+ * @param resumes apply 域的简历清单。
+ * @returns 简历项。
+ */
+export function resumeItemsOf(resumes: QueueResumeSrcs): QueueResumeFacts {
+  const out: QueueResumeFact[] = []
+  for (const r of resumes) {
+    out.push({ id: r.id, name: r.fileName, mime: r.mime })
+  }
+  return out
 }
 
 /**

@@ -19,10 +19,10 @@ import {
   CACHE_PRIVATE, E_AUTH, E_BODY, E_CHARS, E_LONG, E_NAME, E_QUEUE, FIELD_AUTO, HDR_SEED_TOKEN, TEXT_NONE,
 } from './constants'
 import {
-  firstRunOf, loadQueueList, loadQueueUser, loadQueueUsers, loadUserNocs, loadUserProv, queueForUser, saveAutoQueue,
-  saveQueuedCover,
+  firstRunOf, loadQueueList, loadQueueUser, loadQueueUsers, loadUserNocs, loadUserProv, queueForUser, resumeItemsOf,
+  saveAutoQueue, saveQueuedCover, saveQueuedResume,
 } from './functions'
-import type { AutoBodyJson, CoverBodyJson, MaybeId, QueueSvc, RunCounts } from './types'
+import type { AutoBodyJson, CoverBodyJson, MaybeId, QueueSvc, ResumeBodyJson, RunCounts } from './types'
 
 /**
  * GET /api/queue/run:跑一轮(开了开关、填了署名、答了想做的工作、答了所在省、有简历的人,每人最多 5 岗);一个人挂了不影响别人。
@@ -81,7 +81,7 @@ export async function queueRoute(_req: Request): Promise<Response> {
   }
   return Response.json({
     auto: prefs.autoQueue, hasNocs: nocs.length > 0, hasName: isSenderName(prefs.senderName), hasResume: resumes.length > 0,
-    hasProv: prov !== TEXT_NONE, items, lastQueueAt, senderName: prefs.senderName,
+    hasProv: prov !== TEXT_NONE, items, resumes: resumeItemsOf(resumes), lastQueueAt, senderName: prefs.senderName,
   }, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
 }
 
@@ -168,6 +168,35 @@ export async function queueCoverRoute(req: Request): Promise<Response> {
     return Response.json({ error: E_CHARS, chars }, { status: UNPROCESSABLE })
   }
   const done = await saveQueuedCover({ db: await getDb(), userId: user.id, jobId, cover })
+  if (done === false) {
+    return Response.json({ error: E_QUEUE }, { status: NOT_FOUND })
+  }
+  return Response.json({ ok: true })
+}
+
+/**
+ * PATCH /api/queue/resume {jobId, resumeId}:就地换队列里那一岗附的简历(2026-10-08 Frank「这两个应该都是可以弹框,并且可以替换吧」)。
+ *
+ * @param req 请求。
+ * @returns { ok };未登录 401、体不合形 400、不在队列 / 不是本人的简历 404。
+ */
+export async function queueResumeRoute(req: Request): Promise<Response> {
+  const user = await getUserOrNull(await headers())
+  if (user == null) {
+    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  let raw: ResumeBodyJson = {}
+  try {
+    raw = await req.json() as ResumeBodyJson
+  } catch {
+    return Response.json({ error: E_BODY }, { status: BAD_REQUEST })
+  }
+  const jobId: MaybeId = Number(raw.jobId)
+  const resumeId: MaybeId = Number(raw.resumeId)
+  if (Number.isInteger(jobId) === false || jobId <= 0 || Number.isInteger(resumeId) === false || resumeId <= 0) {
+    return Response.json({ error: E_BODY }, { status: BAD_REQUEST })
+  }
+  const done = await saveQueuedResume({ db: await getDb(), userId: user.id, jobId, resumeId })
   if (done === false) {
     return Response.json({ error: E_QUEUE }, { status: NOT_FOUND })
   }

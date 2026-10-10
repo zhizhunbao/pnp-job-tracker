@@ -5,11 +5,14 @@
  * 2026-09-11 Frank「中位时薪,最低时薪 最高时薪」中位年薪行换时薪三行;
  * 2026-09-12 Frank「加一个中位年薪」:中位年薪行复位排末;
  * 2026-09-12 Frank「这两列 删了」再撤最高时薪与看岗位:省级最高=典型岗官方带上端的中位,读成极值误导;近 30 天只按省查岗位仅占 5%,最高时薪行随表撤)。
+ * 2026-10-09 N 批(Frank「名字一律英文在上、译名灰字在下」「城市 和 省份 点击 跳 google 地图」):卡头省名由界面语短名一行
+ * 改 name 桶的 ProvName —— 英文省名在上(点了新标签开 Google 地图)、界面语省名灰字在下;外框借指标卡的 .indName
+ * (加粗、长名折行不截),原 .provCardName 带省略号会把英文长省名截断(名字不截断)。
  *
  * @author Frank
  * @time 2026-09-06 22:00:00
  */
-import { TEXT_NONE } from './constants'
+import { ProvName } from '@/components/name'
 import { KvRow } from './kvrow'
 import type { JobsCardIn } from './types'
 import css from './start.module.css'
@@ -24,8 +27,7 @@ export function JobsCard({ row, t }: JobsCardIn) {
   return (
     <div className={css.card}>
       <div className={css.provCardHead}>
-        <span className={css.provCardName}>{row.name}</span>
-        {row.localeName !== TEXT_NONE && <span className={css.note}>{row.localeName}</span>}
+        <span className={css.indName}><ProvName code={row.code} /></span>
       </div>
       <div className={css.provCardBody}>
         <KvRow k={t('stats.openJobs')} v={<strong>{row.openText}</strong>} />

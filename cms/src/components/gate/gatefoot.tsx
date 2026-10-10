@@ -8,12 +8,14 @@
  * 同日 Frank「跳过这步 去掉」:「跳过这步」撤;主钮改成这一题答了才可点(没答灰着点不动,判定见 functions 的 gateNextOffOf)——
  * 上面那句「没选也照常可点」作废,否则主钮自己就是一个看不见的跳过。目标题(两张大卡点了就走)整块钮区不出。
  *
+ * 2026-10-09「我的档案」批:主钮的字读整机(编辑模式最后一题是「保存」);保存没成时钮上方摆一行「没存上」。
+ *
  * @author Frank
  * @time 2026-10-04 02:10:00
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { GATE_STEP_GOAL } from './constants'
+import { GATE_STEP_GOAL, TEXT_NONE } from './constants'
 import type { GatePartIn } from './types'
 import css from './gate.module.css'
 
@@ -29,7 +31,8 @@ export function GateFoot({ g, t }: GatePartIn) {
   }
   return (
     <div className={cssOf(css.foot)}>
-      <Button xl onClick={g.onNext} disabled={g.nextOff} className={cssOf(css.next)}>{t('ob.next')}</Button>
+      {g.edit.failKey !== TEXT_NONE && <div className={cssOf(css.fail)}>{t(g.edit.failKey)}</div>}
+      <Button xl onClick={g.onNext} disabled={g.nextOff} className={cssOf(css.next)}>{t(g.edit.nextKey)}</Button>
     </div>
   )
 }

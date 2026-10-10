@@ -84,11 +84,6 @@ export const DLI_PAGE_SIZE = 10
 export const KEY_IND_HEAD = 'pulse.ind.'
 
 /**
- * H1 灰注里「英文名 省码」的空格连接符。
- */
-export const SPACE_SEP = ' '
-
-/**
  * 界面语言字面量:中文(三字面量各域自抄)。
  */
 export const LANG_ZH = 'zh'

@@ -7,6 +7,7 @@
  * 同日换装批把 Advisor.tsx 的六台机器(原先摊在组件体里)收进本抽屉。
  * 2026-10-03 付费闭环批 A1:职位描述弹框整台(useActModal)接访客向导的收口 —— 记浏览、判起弹、注册后亮出这一岗。
  * 2026-10-07 浏览记录整条删(向导不再按它预选职业),「记浏览」一环撤。
+ * 2026-10-09 N6b 批:顾问弹框整台的「同公司在榜岗」现拉与不带职位公司弹框的空清单撤(只喂公司弹框按岗位号回查整行,N6 起职位框由总线按号现取)。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -16,14 +17,14 @@ import { useRouter } from 'next/navigation'
 import { gateDueFor } from '@/lib/guest'
 import { track } from '@/lib/track'
 import {
-  GROUP_COMPANY, LANG_EN, TEXT_NONE, TRACK_KIND_MODAL, TRACK_MODAL_HEAD, TRACK_MODAL_JD, TRACK_P_FIELD, TRACK_P_KIND,
+  LANG_EN, TEXT_NONE, TRACK_KIND_MODAL, TRACK_MODAL_HEAD, TRACK_MODAL_JD, TRACK_P_FIELD, TRACK_P_KIND,
   TRANS_IDLE,
 } from './constants'
 import {
-  makeLoadCompanyJobs, makeLoadJobText, makeLoadNocTrans,
+  makeLoadJobText, makeLoadNocTrans,
 } from './functions'
 import type {
-  ActModalHookIn, ActModalPanel, AdvisorJob, AdvisorModalHookIn, AdvisorModalPanel, CompanyModalPanel, DeadFlag,
+  ActModalHookIn, ActModalPanel, AdvisorModalHookIn, AdvisorModalPanel, CompanyModalPanel,
   JobTextIn, JobTextPanel, NocTrans, NocTransIn, NocTransPanel, TransStatus,
 } from './types'
 
@@ -93,47 +94,30 @@ export function useNocTrans(x: NocTransIn): NocTransPanel {
  * 2026-09-17 同日 Frank「自动拨开去掉,但是后台要自动翻译」:译文改由公司域在后台预翻(不看这个开关),开关只管显不显;
  * transBusy 也只在开关拨开而译文未到时才回报(companybody 遮罩)。
  * 2026-09-19 Frank「开关都撤了,就自动翻译」:「中文对照」开关撤,中 / 韩界面对照恒显、英文界面恒不显(showZh 由界面语言直接定)。
+ * 2026-10-09 N6b 批:「同公司在榜岗」那一路撤(见文件头)。
  *
- * @param x 分组、入口格、这一岗与界面语言。
+ * @param x 分组、入口格与界面语言。
  * @returns 弹框整台面板。
  */
 export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
   const showZh = x.lang !== LANG_EN
-  const [companyJobsState, setCompanyJobs] = useState<AdvisorJob[]>([])
   const [companyAlias, setCompanyAlias] = useState(TEXT_NONE)
   const [transBusy, setTransBusy] = useState(false)
   const [gen, setGen] = useState(0)
-  const isCompanyGroup = x.group === GROUP_COMPANY
   const group = x.group
   const field = x.field
-  const company = x.job.company
 
   useEffect(function trackOpen() {
     track(TRACK_MODAL_HEAD + group, { [TRACK_P_FIELD]: field })
   }, [group, field])
-
-  useEffect(function loadCompanyJobs() {
-    const flag: DeadFlag = { dead: false }
-    if (isCompanyGroup && company !== TEXT_NONE) {
-      makeLoadCompanyJobs({ company, setJobs: setCompanyJobs })(flag)
-    }
-    return function stop(): void {
-      flag.dead = true
-    }
-  }, [isCompanyGroup, company])
 
   function onRetranslated(): void {
     setCompanyAlias(TEXT_NONE)
     setGen(gen + 1)
   }
 
-  let companyJobs = companyJobsState
-  if (isCompanyGroup === false || company === TEXT_NONE) {
-    companyJobs = []
-  }
   return {
     showZh,
-    companyJobs,
     companyAlias,
     onCompanyAlias: setCompanyAlias,
     transBusy,
@@ -189,11 +173,10 @@ export function useActModal(x: ActModalHookIn): ActModalPanel {
  * 不带职位的公司弹框的状态:别名、翻译在途两格(中文对照开关 2026-09-19 撤,对照由界面语言直接定)
  * (2026-09-18;AdvisorModal 那台 useAdvisorModal 从一条职位出发,长文机器与同公司在榜岗这里都用不上)。
  *
- * @returns 三格状态与三个落格。
+ * @returns 两格状态与两个落格。
  */
 export function useCompanyModal(): CompanyModalPanel {
   const [alias, setAlias] = useState(TEXT_NONE)
   const [transBusy, setTransBusy] = useState(false)
-  const [jobs] = useState<AdvisorJob[]>([])
-  return { alias, transBusy, jobs, onAlias: setAlias, onTransBusy: setTransBusy }
+  return { alias, transBusy, onAlias: setAlias, onTransBusy: setTransBusy }
 }

@@ -8,7 +8,7 @@
  * @author Frank
  * @time 2026-10-07 03:00:00
  */
-import { ApplyCheck } from './applycheck'
+import { ApplyMail } from './applymail'
 import type { ApplyStepIn } from './types'
 import css from './apply.module.css'
 
@@ -22,8 +22,7 @@ export function ApplyPreview({ p }: ApplyStepIn) {
   return (
     <>
       <div className={css.h2}>{p.t('ap.preview')}</div>
-      <div className={css.body}>{p.letter}</div>
-      <ApplyCheck t={p.t} rows={p.checkRows} ticks={p.ticks} onTick={p.onTick} />
+      <ApplyMail t={p.t} p={p.check} />
     </>
   )
 }

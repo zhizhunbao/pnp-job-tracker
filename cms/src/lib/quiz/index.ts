@@ -18,5 +18,5 @@ export { ANSWERS_KEY, CLB, DECISIONS, EMPTY, KNOWN_NO_FREE_LEAD, NCLC } from './
 export { getFields, toEngineAnswers } from './functions'
 export {
   answeredBasics, batchLeadsFree, clearAnswers, fieldsOf, mergeBasics, missingFields, pullAndMerge,
-  readAnswers, readScoreAnswers, resetAnswersMemory, writeAnswers, writeScoreAnswers,
+  readAnswers, readScoreAnswers, resetAnswersMemory, saveBasics, writeAnswers, writeScoreAnswers,
 } from './functions'

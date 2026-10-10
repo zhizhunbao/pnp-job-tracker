@@ -15,11 +15,19 @@
 //       ⑤ 免费档:标题行出「AI 试用还剩 N 次」,写成后照回包的余量改;Pro(余量 null)不出余量;
 //          用完(写信回 402 trial):信框里是回包带的通用模板,出黄条与升级钮,不出余量;点「按职位重写」不再请求、开升级框。
 // 探针:makeRewrite 去掉试用闸 → ⑤「用完」那条红(会多一次写信请求);trialAfterWrite 不认 402 → 黄条不出,同条红。
+// 2026-10-09 A 批投递搬进弹框(docs/design/投递向导-照Azure-20261008.md):投递区搬进全站骨架上的投递框,取数挪到框外壳
+//       (useApplyStart 收职位 id),ApplySection 只按取数结果摆正文 —— 探针件照框外壳那样拼(applyIdOf 读地址栏 → useApplyStart →
+//       ApplySection),① 的「没带职位」= 地址栏没 `?apply=` 也没旧深链。④ 改读作「发送成功不再收起:切到已投递一步,
+//       摆『已发给 <公司>』,并广播 offer2pr:apply-sent 一次;地址栏由关框收拾,投递区不碰」。
+//       探针:send 成功不调 onSent(不广播)→ ④最后一条红;发出后不切已投递一步 → 成功条那条红。
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { ApplySection } from '@/components/apply'
+import { ApplySection } from '@/components/apply/applysection'
+import { applyIdOf, closeApply, noteOpened, openApply, readApplyId } from '@/components/apply/functions'
+import { CACHE } from '@/components/apply/variables'
+import { useApplyStart } from '@/components/apply/hooks'
 import type { ApplyStartView } from '@/components/apply/types'
 
 vi.mock('next/navigation', () => ({
@@ -28,7 +36,10 @@ vi.mock('next/navigation', () => ({
 }))
 
 const TPL = 'Dear Hiring Manager,\n\nI apply for {{title}} at {{company}}.\n\nSincerely,\n{{name}}'
-const JOB = { id: 42, title: 'Cook', company: 'Pie Wood', city: 'Steinbach', province: 'MB', closed: false, hasEmail: true }
+const JOB = {
+  id: 42, title: 'Cook', company: 'Pie Wood', city: 'Steinbach', province: 'MB', closed: false, hasEmail: true,
+  titleZh: '厨师', titleKo: '요리사', companyZh: '', companyKo: '', cityZh: '斯坦巴克', cityKo: '', companySlug: 'pie-wood',
+}
 const LETTER = 'Dear Hiring Manager,\n\nI apply for Cook at Pie Wood.\n\nSincerely,\nZhang San'
 const RES = { id: 7, fileName: 'zhang.pdf', mime: 'application/pdf', uploadedAt: '2026-10-06T00:00:00.000Z', isDefault: true }
 
@@ -60,31 +71,40 @@ async function flush() {
   }
 }
 
-async function mount(search: string, onSent = () => undefined) {
+// 照投递框外壳拼的探针件:取数(按职位 id)→ 投递区正文
+function Section({ jobId }: { jobId: number }) {
+  return createElement(ApplySection, { s: useApplyStart(jobId) })
+}
+
+async function mount(search: string) {
   ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
   window.history.replaceState(null, '', '/account' + search)
   const el = document.createElement('div')
   document.body.appendChild(el)
+  const jobId = applyIdOf({ search: window.location.search, path: window.location.pathname })
   await act(async () => {
-    createRoot(el).render(createElement(ApplySection, { onSent }))
+    if (jobId != null) {
+      createRoot(el).render(createElement(Section, { jobId }))
+    }
   })
   await flush()
   return el
+}
+
+// 听「投递发出去了」广播,记下每次带的公司名
+function listenSent() {
+  const cos: string[] = []
+  function onSent(e: Event) {
+    cos.push((e as CustomEvent<{ company: string }>).detail.company)
+  }
+  window.addEventListener('offer2pr:apply-sent', onSent)
+  return { cos, off: () => window.removeEventListener('offer2pr:apply-sent', onSent) }
 }
 
 const START = 'GET /api/apply/start?job=42'
 
 function btn(el: HTMLElement, text: string) {
   return Array.from(el.querySelectorAll('button, a')).find((b) => b.textContent === text) as HTMLButtonElement
-}
-
-async function tickAll(el: HTMLElement) {
-  for (const box of Array.from(el.querySelectorAll('input[type=checkbox]')) as HTMLInputElement[]) {
-    await act(async () => {
-      box.click()
-    })
-  }
-  await flush()
 }
 
 async function click(el: HTMLElement, text: string) {
@@ -121,6 +141,12 @@ describe('投递区出不出', () => {
     server({ [START]: { status: 200, body: start({ senderName: 'Zhang San', resumes: [RES], resumeId: 7, cover: LETTER }) } })
     const pv = await mount('?sec=sjobs&job=42')
     expect(pv.textContent).toContain('I apply for Cook at Pie Wood.')
+    // 2026-10-09 section 形:「职位信息」分区四行,英文在上、中文灰字在下;没译名的公司只出英文;市和省分开
+    expect(pv.textContent).toContain('职位信息')
+    expect(pv.textContent).toContain('Cook厨师')
+    expect(pv.textContent).toContain('Pie Wood')
+    expect(pv.textContent).toContain('Steinbach斯坦巴克')
+    expect(pv.textContent).toContain('Manitoba曼尼托巴省')
     expect(pv.textContent).toContain('Cover_Letter_Pie_Wood.pdf')
   })
 })
@@ -175,14 +201,14 @@ describe('第 1 步 → 第 2 步', () => {
 })
 
 describe('第 2、3 步', () => {
-  it('③ 坏字列出、预览钮灰;④ 预览铺正文,发信 503 显示原因不收,成功收起并通知外面、洗掉地址栏职位号', async () => {
+  it('③ 坏字列出、预览钮灰;④ 预览铺正文,发信 503 显示原因不收,成功切到已投递一步摆成功条、广播一次', async () => {
     server({
       [START]: { status: 200, body: start({ senderName: 'Zhang San', resumes: [RES], resumeId: 7, cover: LETTER }) },
       'PUT /api/apply/draft': { status: 200, body: { ok: true } },
       'POST /api/apply/send': { status: 503, body: { error: 'mailOff' } },
     })
-    const onSent = vi.fn()
-    const el = await mount('?sec=sjobs&job=42', onSent)
+    const sent = listenSent()
+    const el = await mount('?sec=sjobs&apply=42')
     await click(el, '上一步')
     const ta = el.querySelector('textarea') as HTMLTextAreaElement
     await act(async () => typeInto(ta, ta.value + ' 谢谢'))
@@ -194,22 +220,21 @@ describe('第 2、3 步', () => {
     expect(el.textContent).toContain('Thanks')
     expect(el.textContent).toContain('zhang.pdf')
     expect(el.textContent).toContain('Zhang San')
-    expect(el.querySelectorAll('input[type=checkbox]')).toHaveLength(4)
-    expect(btn(el, '发送').disabled).toBe(true)
-    await tickAll(el)
+    expect(el.querySelectorAll('input[type=checkbox]')).toHaveLength(0)   // 邮件形,勾撤
+    expect(el.textContent).toContain('主题')
     expect(btn(el, '发送').disabled).toBe(false)
     await click(el, '上一步')
     await click(el, '预览')
-    expect(btn(el, '发送').disabled).toBe(true)
-    await tickAll(el)
     await click(el, '发送')
     expect(el.textContent).toContain('发信服务没有开启')
-    expect(onSent).not.toHaveBeenCalled()
+    expect(sent.cos).toEqual([])
     server({ 'POST /api/apply/send': { status: 200, body: { ok: true, id: 1 } } })
     await click(el, '发送')
-    expect(onSent).toHaveBeenCalledTimes(1)
-    expect(el.textContent).toBe('')
-    expect(window.location.search).toBe('?sec=sjobs')
+    expect(sent.cos).toEqual(['Pie Wood'])
+    expect(el.textContent).toContain('已发给 Pie Wood')
+    expect(btn(el, '发送')).toBeUndefined()
+    expect(window.location.search).toBe('?sec=sjobs&apply=42')
+    sent.off()
   })
 })
 
@@ -256,5 +281,49 @@ describe('⑤ AI 写信试用闸(2026-10-07 批 C)', () => {
     await click(el, '按职位重写')
     expect(calls.filter((c) => c === 'POST /api/apply/letter').length).toBe(before)
     expect(document.body.textContent).toContain('AI 按职位写信的免费试用已用完')
+  })
+})
+
+describe('投递框的地址栏(2026-10-09 A 批)', () => {
+  it('applyIdOf:?apply= 任一页都认;旧深链 ?job= 只在 /account 认;非正整数不认', () => {
+    expect(applyIdOf({ search: '?apply=42', path: '/jobs/7' })).toBe(42)
+    expect(applyIdOf({ search: '?sec=sjobs&job=42', path: '/account' })).toBe(42)
+    expect(applyIdOf({ search: '?job=42', path: '/jobs/7' })).toBeNull()
+    for (const bad of ['?apply=abc', '?apply=0', '?apply=-3', '?apply=1.5', '?apply=', '']) {
+      expect(applyIdOf({ search: bad, path: '/jobs/7' })).toBeNull()
+    }
+  })
+
+  it('开框推一笔历史、同一岗不重推;关框退回去;深链进来的框关掉只洗参数(旧 job 一并洗)不退', () => {
+    window.history.replaceState(null, '', '/jobs/7?q=cook')
+    CACHE.pushed = false
+    const back = vi.spyOn(window.history, 'back').mockImplementation(() => undefined)
+    const len = window.history.length
+    openApply(42)
+    expect(window.location.search).toBe('?q=cook&apply=42')
+    expect(window.history.length).toBe(len + 1)
+    openApply(42)
+    expect(window.history.length).toBe(len + 1)
+    closeApply()
+    expect(back).toHaveBeenCalledTimes(1)
+    expect(CACHE.pushed).toBe(false)
+    window.history.replaceState(null, '', '/account?sec=sjobs&job=42')
+    closeApply()
+    expect(back).toHaveBeenCalledTimes(1)
+    expect(window.location.search).toBe('?sec=sjobs')
+    back.mockRestore()
+  })
+
+  it('noteOpened:宿主活着时框从无到有才记账;刚挂上就带着(深链)不记;地址栏没了框就清账', () => {
+    CACHE.pushed = false
+    noteOpened({ first: true, prev: null, id: 42 })
+    expect(CACHE.pushed).toBe(false)
+    noteOpened({ first: false, prev: 42, id: 43 })
+    expect(CACHE.pushed).toBe(false)
+    noteOpened({ first: false, prev: null, id: 42 })
+    expect(CACHE.pushed).toBe(true)
+    window.history.replaceState(null, '', '/jobs/7')
+    expect(readApplyId()).toBeNull()
+    expect(CACHE.pushed).toBe(false)
   })
 })

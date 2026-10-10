@@ -5595,7 +5595,7 @@ export type AipEmpUrlIn = {
 }
 
 /**
- * AipEmpCard 的 props。
+ * AipEmpCard 的 props(2026-10-09 N6 批:界面语言与点招牌的去处两格撤,招牌归 name 桶 CompanyName 自取自点)。
  */
 export type AipEmpCardIn = {
   /**
@@ -5607,20 +5607,11 @@ export type AipEmpCardIn = {
    * 本岗(读省码与公司名)。
    */
   job: PnpJob
-
-  /**
-   * 界面语言(灰字译名挑哪一语)。
-   */
-  lang: PnpLang
-
-  /**
-   * 点招牌:叠开公司弹框;没给 = 招牌不可点。
-   */
-  onOpenCompany?: PnpOpenCompanyFn
 }
 
 /**
  * AipSection(AIP 弹框里的通道卡与抽选卡)的 props。
+ * 2026-10-09 N6 批:「指定雇主名单里点招牌的去处」一格(10-02 加)撤,招牌归 name 桶 CompanyName 经弹框总线自开。
  */
 export type AipSectionIn = {
   /**
@@ -5632,11 +5623,6 @@ export type AipSectionIn = {
    * 界面语言。
    */
   lang: PnpLang
-
-  /**
-   * 指定雇主名单里点招牌:叠开公司弹框;没给 = 招牌不可点(2026-10-02)。
-   */
-  onOpenCompany?: PnpOpenCompanyFn
 }
 
 /**
@@ -5690,7 +5676,8 @@ export type AipSectionPanel = {
 }
 
 /**
- * AipEmpRow 的 props。
+ * AipEmpRow 的 props(2026-10-09 N6 批:界面语言与点招牌的去处两格撤 —— 招牌换 name 桶 CompanyName,
+ * 译名挑语种与点了叠开公司弹框都归它;随之撤的还有叠层那一家、叠层回调与两个派生的入参四个形状)。
  */
 export type AipEmpRowIn = {
   /**
@@ -5702,66 +5689,6 @@ export type AipEmpRowIn = {
    * 命中行的 ref 盒(非命中行不登记)。
    */
   matchRef: HitRef
-
-  /**
-   * 界面语言(灰字译名挑哪一语)。
-   */
-  lang: PnpLang
-
-  /**
-   * 点招牌:叠开公司弹框;没给 = 招牌不可点。
-   */
-  onOpenCompany?: PnpOpenCompanyFn
-}
-
-/**
- * 叠开公司弹框时递的那一家(advisor / companies 的 CompanyPeek 同形,本域自声明)。
- */
-export type PnpCompanyPeek = {
-  /**
-   * 公司页 slug 或雇主池键。
-   */
-  slug: string
-
-  /**
-   * 公司名。
-   */
-  name: string
-}
-
-/**
- * 叠开公司弹框的回调(宿主给)。
- */
-export type PnpOpenCompanyFn = (peek: PnpCompanyPeek) => void
-
-/**
- * makeOpenAipCo 的入参。
- */
-export type OpenAipCoIn = {
-  /**
-   * 叠开公司弹框的回调。
-   */
-  onOpenCompany: PnpOpenCompanyFn
-
-  /**
-   * 这一行。
-   */
-  r: AipEmpRowSpec
-}
-
-/**
- * aipEmpAliasOf 的入参。
- */
-export type AipEmpAliasIn = {
-  /**
-   * 这一行。
-   */
-  r: AipEmpRowSpec
-
-  /**
-   * 界面语言。
-   */
-  lang: PnpLang
 }
 
 /**

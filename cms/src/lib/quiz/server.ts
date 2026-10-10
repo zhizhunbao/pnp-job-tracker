@@ -14,4 +14,4 @@
 
 export { getTopNocsCached } from './functions'
 export { getMajorNocsCached, majorNOf } from './functions'
-export { quizAnswersGetRoute, quizAnswersPutRoute, quizRoute } from './routes'
+export { quizAnswersGetRoute, quizAnswersPutRoute, quizProfileRoute, quizRoute } from './routes'

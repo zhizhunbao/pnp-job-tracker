@@ -19,6 +19,8 @@
  * 2026-09-17 Frank「自动拨开去掉,但是后台要自动翻译」:译文一开框就在后台拉好存着(不看开关),开关默认关、只管显不显;
  * hold 留白与 hidden 随之撤,「翻译中…」只在开关拨开而译文未到时回报(后台在译不打扰关着的开关)。
  * 2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」:相似卡改按页取,卡挂 React key = 锚(框里换一家时已取的页与展开态一并重置)。
+ * 2026-10-09 N6b 批:在招职位 / 相似雇主两卡的点击接线(onOpenJob / resolveJob / onOpenCompany / newTab)撤 —— N6 起名字由 name 桶自开弹框;
+ * 基本信息卡公司名那格递显式开关 linked(本骨架恒 false:公司页与公司弹框里公司名是纯文字)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -35,7 +37,7 @@ import css from './companies.module.css'
 /**
  * 公司身体(详情页与弹框同源)。
  *
- * @param props 公司档案、相似雇主、更新时刻与五个开关/回调(逐格注释见 CompanyBodyIn)。
+ * @param props 公司档案、相似雇主、更新时刻与四个开关/回调(逐格注释见 CompanyBodyIn)。
  * @returns 卡组。
  */
 export function CompanyBody({
@@ -45,10 +47,6 @@ export function CompanyBody({
   lang,
   updatedAt,
   showTrans = false,
-  onOpenJob,
-  resolveJob,
-  onOpenCompany,
-  newTab = false,
   afterSponsor = null,
   onTransBusy,
   onSiteDone = ignoreDone,
@@ -75,18 +73,15 @@ export function CompanyBody({
         showTrans={showTrans}
         trans={tr.trans}
         onBusy={setAiTransBusy}
+        linked={false}
         onSiteDone={onSiteDone} />
       {afterSponsor}
       <CompanyJobsCard company={company}
         t={t}
         lang={lang}
         updatedAt={updatedAt}
-        onOpenJob={onOpenJob}
-        resolveJob={resolveJob}
-        newTab={newTab}
         showTrans={showTrans} />
-      <CompanySimilarCard key={simAnchorOf(similar)} similar={similar} t={t} lang={lang} onOpenCompany={onOpenCompany}
-        newTab={newTab}
+      <CompanySimilarCard key={simAnchorOf(similar)} similar={similar} t={t} lang={lang}
         showTrans={showTrans} />
     </div>
   )

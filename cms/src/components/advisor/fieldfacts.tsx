@@ -20,6 +20,7 @@
  * (两件合成一件:外层原先只是包着一条注释的纯转发)。
  * 2026-09-28 省提名弹框自立(Frank「pnp 弹框自己管自己」):省提名那一格的分支撤 —— 职位板直开 pnp 桶的 PnpModal。
  * 同日 Frank「地点弹框 删了吧」:地点那几格(国 / 省 / 市 / 区 / 地址)的分支撤 —— 分组表里早就没有哪一组铺它们了。
+ * 2026-10-09 N6 批:AIP 名单的招牌换 name 桶 CompanyName(经弹框总线自开公司弹框),「点招牌的去处」一格不再经本件往 AipFacts 递。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -47,7 +48,7 @@ import type { FieldFactsIn } from './types'
  * @param props 点开的是哪一格与取数包。
  * @returns 那一块事实;这一格还没接内容时给 null(不留空壳)。
  */
-export function FieldFacts({ field, f, onOpenCompany }: FieldFactsIn) {
+export function FieldFacts({ field, f }: FieldFactsIn) {
   if (field === FIELD_EE) {
     return (
       <EeCategorySection job={f.job} lang={f.lang} cats={f.eeOcc} draws={f.pnpDraws}
@@ -58,7 +59,7 @@ export function FieldFacts({ field, f, onOpenCompany }: FieldFactsIn) {
     return <TitleFacts job={f.job} lang={f.lang} />
   }
   if (field === FIELD_AIP) {
-    return <AipFacts f={f} onOpenCompany={onOpenCompany} />
+    return <AipFacts f={f} />
   }
   if (field === FIELD_PILOT) {
     return <PilotFacts f={f} />

@@ -86,6 +86,11 @@ export type GateDraft = {
   prov: string
 
   /**
+   * 现在在哪个城市(2026-10-09「我的档案」批:选完省下面出城市,选填):英文城市名;空串 = 没选,或者没答省 / 答的是境外。
+   */
+  city: string
+
+  /**
    * 答的是「加拿大境外」。
    */
   abroad: boolean
@@ -135,6 +140,11 @@ export type GatePatch = {
    * 现居省码(境外时写空串)。
    */
   resProv?: string
+
+  /**
+   * 现居城市英文名(2026-10-09;跟着现居省写,没选是空串)。
+   */
+  resCity?: string
 
   /**
    * 处境码(只有答了境外才写 overseas)。

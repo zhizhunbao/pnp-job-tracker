@@ -1051,15 +1051,7 @@
 }
 
 /*
- * 卡上市/省两段链接。
- */
-.cardLink {
-  color: #2563eb;
-  text-decoration: none;
-}
-
-/*
- * 市与省之间的逗号。
+ * 市与省之间的逗号(2026-10-09 N6 批:两段换 name 桶 CityName / ProvName,原两段链接类 .cardLink 随之撤)。
  */
 .cardSep {
   color: #9ca3af;

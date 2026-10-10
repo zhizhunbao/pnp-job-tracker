@@ -11,7 +11,7 @@ import {
   COL_WAGE, COL_WAGE_H,
   CURRENCY_MARK, DASH_MARK, FACT_CHANNEL, FACT_NEW7, FACT_OPEN, FACT_POP, FACT_UNEMP, FACT_WAGE, HOURLY_DIGITS,
   KEY_IND_HEAD, LANG_KO, LANG_ZH, NUM_LOCALE,
-  PCT_MARK, SPACE_SEP,
+  PCT_MARK,
   TEXT_NONE, URL_HOME_CITY_HEAD,
 } from './constants'
 import { SchoolNameCell } from './schoolnamecell'
@@ -24,16 +24,18 @@ import type { Col } from '@/components/table'
 /**
  * H1 双行:界面语言译名主文案 + 「英文名 省码」灰注(照城市显示约定;
  * 主文案已是英文时灰注只剩省码,免得同词说两遍)。
+ * 2026-10-09 N 批(Frank「名字一律英文在上、译名灰字在下」「省市 分开」):改照公司页 H1 形 —— 英文城市名主文案、
+ * 界面语译名灰注(英文界面或没译名不出灰注,免得同词说两遍);省码不再拼进灰注,省份另起概览行(name 桶 ProvName)。
  *
  * @param x 城市基面与界面语言。
  * @returns 主文案与灰注。
  */
 export function cityTitleOf(x: CityTitleIn): CityTitleOut {
-  const main = localNameOf({ city: x.city.city, zh: x.city.cityZh, ko: x.city.cityKo, lang: x.lang })
-  if (main === x.city.city) {
-    return { main, note: x.city.province }
+  const local = localNameOf({ city: x.city.city, zh: x.city.cityZh, ko: x.city.cityKo, lang: x.lang })
+  if (local === x.city.city) {
+    return { main: x.city.city, note: TEXT_NONE }
   }
-  return { main, note: x.city.city + SPACE_SEP + x.city.province }
+  return { main: x.city.city, note: local }
 }
 
 /**

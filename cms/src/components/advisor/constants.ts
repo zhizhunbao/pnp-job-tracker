@@ -73,18 +73,6 @@ export const URL_API_JOBS_RETRANSLATE = '/api/jobs/retranslate'
 export const URL_API_EMPLOYERS_RETRANSLATE = '/api/employers/retranslate'
 
 /**
- * 公司在榜岗清单的接口头:走职位板的全文搜索参数 q(2026-09-14 Frank「这个为什么只有第一个改成弹框了」:
- * 原写 `?company=`,接口没这个参数、整条被当无筛选,回来的是全站最新一页,只有恰好在那一页的岗才能解析成弹框,
- * 其余落成整页跳转)。
- */
-export const URL_API_JOBS_COMPANY = '/api/jobs?q='
-
-/**
- * 同公司在榜岗只取第一页(弹框里是「还有哪些岗」的一瞥,不做分页)。
- */
-export const URL_PAGE_FIRST = '&page=0'
-
-/**
  * 正文要读省提名清单 / 抽选整表的分组(2026-09-26 起两表懒取:这几组开框先等两表到齐再渲正文,别的组照旧当场出)。
  * 移民组(依据链读清单)、省提名组(清单卡 + 本省抽选卡)、EE 组(分数线卡读联邦轮次)、AIP 组(不受理清单)、
  * 地点组(省份卡读本省抽选)—— 与各组正文真读 pnpOcc / pnpDraws 的那几件逐一对过;
@@ -118,11 +106,6 @@ export const URL_JOB_HEAD = '/jobs/'
  * 雇主池键的前缀:公司弹框的 slug 以它开头 = 这家没有公司页(只在指定名单 / LMIA 里出现过,雇主板上点得开),不出箭头钮。
  */
 export const POOL_KEY_HEAD = 'n:'
-
-/**
- * 带上登录 cookie 取数(同公司在榜岗按登录态给字段)。
- */
-export const CREDENTIALS_INCLUDE = 'include'
 
 /**
  * 新开页目标(弹框里点出去的链接一律新标签页 —— 别把弹框关掉)。

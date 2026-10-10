@@ -177,8 +177,14 @@ export const KIND_SAVED = 'saved'
 
 /**
  * 投递区的地址头(后接职位 id):草稿「继续」、收藏行「投递」都去「我的求职」上方的投递区。
+ * 2026-10-09 A 批投递搬进弹框:两处改为就地弹投递框(openApply),这里只剩「有没有去处」的判据与深链形状(`?apply=`)。
  */
-export const URL_APPLY_HEAD = '/account?sec=sjobs&job='
+export const URL_APPLY_HEAD = '/account?sec=sjobs&apply='
+
+/**
+ * 待投行「继续」的去处:「今日待投」卡翻到那一岗(2026-10-08 Frank「点继续应该触发什么」;进投递区会把待投行存成草稿,实撞)。
+ */
+export const URL_QUEUED_HEAD = '/account?sec=sjobs&queued='
 
 /**
  * 空态「去职位板」的去处。
@@ -244,16 +250,6 @@ export const AVATAR_NONE = '?'
  * 阶段胶囊的钮档(ghost 最素,样子由本桶的类定)。
  */
 export const PLAIN_KIND = 'ghost'
-
-/**
- * 公司弹框层的种类(advisor 的 PeekStack 按它分职位层 / 公司层)。
- */
-export const LAYER_CO = 'company'
-
-/**
- * 弹框栈的层种类:职位描述弹框(2026-10-07 Frank「这两个应该弹框啊」:职位名点了叠开,不跳页)。
- */
-export const LAYER_JOB = 'job'
 
 /**
  * 公司弹框里职位描述用的职业说明表(本页不带,给空表;同雇主板)。

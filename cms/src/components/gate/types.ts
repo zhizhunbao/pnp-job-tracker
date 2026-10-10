@@ -35,7 +35,7 @@ export type GateIntent = 'job' | 'apply' | 'save' | 'entry' | 'filter'
 /**
  * 访客向导走到哪一屏:四道题 + 注册屏。
  */
-export type GateStep = 'goal' | 'major' | 'job' | 'prov' | 'reg'
+export type GateStep = 'goal' | 'major' | 'job' | 'prov' | 'name' | 'reg'
 
 /**
  * 访客向导草稿(亲手构造后交 lib/guest 存与交接,全格照抄它的 GateDraft)。
@@ -62,6 +62,11 @@ export type GateDraft = {
    * 现在在哪个省;空串 = 没答或答了境外。
    */
   prov: string
+
+  /**
+   * 现在在哪个城市(2026-10-09「我的档案」批,选填):英文城市名;空串 = 没选。
+   */
+  city: string
 
   /**
    * 答的是「加拿大境外」。
@@ -194,6 +199,21 @@ export type GatePanel = {
    * 点所在省格子。
    */
   onProv: (v: string) => void
+
+  /**
+   * 城市区(2026-10-09「我的档案」批:选完省下面出城市,选填)。
+   */
+  cities: CityPanel
+
+  /**
+   * 编辑模式才用得上的几格(英文姓名那一题、主钮的字、保存态;访客向导给定值)。
+   */
+  edit: EditBits
+
+  /**
+   * 一共几题(顶行进度条的分母:访客向导 4,编辑模式 5)。
+   */
+  total: number
 
   /**
    * 下一步(打离开这一步的点;走过第四步进注册屏)。
@@ -346,6 +366,11 @@ export type GateStepOfIn = {
    * 走到第几步。
    */
   step: number
+
+  /**
+   * 这一套题的步序(访客向导 GATE_STEPS,编辑模式 GATE_EDIT_STEPS)。
+   */
+  steps: readonly GateStep[]
 }
 
 /**
@@ -433,6 +458,11 @@ export type GateBackIn = {
  */
 export type GateNextOffIn = {
   /**
+   * 英文姓名填了但不合规(只编辑模式那一题看它)。
+   */
+  nameBad: boolean
+
+  /**
    * 当前这一屏。
    */
   cur: GateStep
@@ -506,6 +536,11 @@ export type ProvPickIn = {
    * 「动过了」落格。
    */
   setTouched: (v: boolean) => void
+
+  /**
+   * 城市落格(2026-10-09:换省 / 选境外时清掉旧城市 —— 城市挂在省下面)。
+   */
+  setCity: CityClearFn
 }
 
 /**
@@ -724,3 +759,444 @@ export type EntryDoneIn = {
   refresh: () => void
 }
 
+
+/**
+ * 城市区的面板(整机的 cities 格)。
+ */
+export type CityPanel = {
+  /**
+   * 选中的城市英文名;空串 = 没选。
+   */
+  city: string
+
+  /**
+   * 点一个城市(再点同一个 = 取消)。
+   */
+  onCity: (v: string) => void
+
+  /**
+   * 搜索框的词。
+   */
+  q: string
+
+  /**
+   * 改搜索词。
+   */
+  onQ: (v: string) => void
+
+  /**
+   * 这一刻摆哪些城市(没搜 = 本省热门,搜了 = 命中的);省没选 / 选了境外 = 空列。
+   */
+  opts: CityOpt[]
+}
+
+/**
+ * useCityPick 的入参。
+ */
+export type CityPickHookIn = {
+  /**
+   * 选中的省码;空串 = 没选。
+   */
+  prov: string
+
+  /**
+   * 界面语。
+   */
+  lang: string
+
+  /**
+   * 起始城市(编辑模式从档案来;访客向导从草稿来)。
+   */
+  seed: string
+}
+
+/**
+ * useCityPick 交回:面板 + 城市落格(换省时清城市要用)。
+ */
+export type CityPickOut = {
+  /**
+   * 城市区面板。
+   */
+  panel: CityPanel
+
+  /**
+   * 城市落格。
+   */
+  setCity: CityClearFn
+}
+
+/**
+ * 编辑模式才用得上的几格(整机的 edit 格)。
+ */
+export type EditBits = {
+  /**
+   * 英文姓名;访客向导恒空串。
+   */
+  name: string
+
+  /**
+   * 改英文姓名。
+   */
+  onName: (v: string) => void
+
+  /**
+   * 英文姓名填了但不合规(只许英文字母、空格、点、撇号、连字符,2~60 字)。
+   */
+  nameBad: boolean
+
+  /**
+   * 钮区主钮的词条键(访客向导恒「下一步」;编辑模式最后一题是「保存」)。
+   */
+  nextKey: string
+
+  /**
+   * 正在保存(主钮禁用)。
+   */
+  saving: boolean
+
+  /**
+   * 保存失败那一行的词条键;空串 = 没失败。
+   */
+  failKey: string
+}
+
+/**
+ * 城市区里的一个城市:英文名(存进答案)+ 胶囊上的字(界面语译名,没有译名用英文)。
+ */
+export type CityOpt = {
+  /**
+   * 英文城市名(与 cities.name 同写法)。
+   */
+  name: string
+
+  /**
+   * 胶囊上的字。
+   */
+  label: string
+}
+
+/**
+ * 按省取城市接口的一行(线格式;stats 域 /api/stats/cities)。
+ */
+export type CityJson = {
+  /**
+   * 英文城市名。
+   */
+  name: string
+
+  /**
+   * 中文译名;没有 = 空串。
+   */
+  zh: string
+
+  /**
+   * 韩文译名;没有 = 空串。
+   */
+  ko: string
+
+  /**
+   * 在招岗数。
+   */
+  jobs: number
+}
+
+/**
+ * 按省取城市接口的响应(线格式)。
+ */
+export type CitiesJson = {
+  /**
+   * 本省城市,在招多的在前。
+   */
+  cities: CityJson[]
+}
+
+/**
+ * 取回来的一省城市(连省码一起记)。
+ */
+export type CitiesGot = {
+  /**
+   * 这一份是哪个省的;空串 = 还没取过。
+   */
+  prov: string
+
+  /**
+   * 这一省的城市。
+   */
+  rows: CityJson[]
+}
+
+/**
+ * useProvCities 的入参。
+ */
+export type ProvCitiesIn = {
+  /**
+   * 选中的省码;空串 = 没选(不取)。
+   */
+  prov: string
+
+  /**
+   * 搜索词。
+   */
+  q: string
+
+  /**
+   * 界面语(胶囊上用哪种译名)。
+   */
+  lang: string
+}
+
+/**
+ * loadProvCities 的入参。
+ */
+export type LoadCitiesIn = {
+  /**
+   * 省码。
+   */
+  prov: string
+
+  /**
+   * 取回来落格(连省码一起记,换了省那一下不摆上一个省的城市)。
+   */
+  setAll: (v: CitiesGot) => void
+
+  /**
+   * 存活标记(省换了 / 卸载了就不落格)。
+   */
+  flag: DeadFlag
+}
+
+/**
+ * 异步取数的存活标记。
+ */
+export type DeadFlag = {
+  /**
+   * 已作废。
+   */
+  dead: boolean
+}
+
+/**
+ * cityOptsOf 的入参。
+ */
+export type CityOptsIn = {
+  /**
+   * 本省全部城市。
+   */
+  all: CityJson[]
+
+  /**
+   * 搜索词。
+   */
+  q: string
+
+  /**
+   * 界面语。
+   */
+  lang: string
+}
+
+/**
+ * cityLabelOf 的入参。
+ */
+export type CityLabelIn = {
+  /**
+   * 那一行城市。
+   */
+  c: CityJson
+
+  /**
+   * 界面语。
+   */
+  lang: string
+}
+
+/**
+ * makeCityPick 的入参。
+ */
+export type CityPickIn = {
+  /**
+   * 现选的城市。
+   */
+  city: string
+
+  /**
+   * 城市落格。
+   */
+  setCity: (v: string) => void
+}
+
+/**
+ * makeProvPick 换省时顺手清城市的那一格(ProvPickIn 加的;2026-10-09)。
+ */
+export type CityClearFn = (v: string) => void
+
+
+/**
+ * 编辑模式的起始答案(档案页取好的那一份;访客向导的草稿不参与)。
+ */
+export type GateEditSeed = {
+  /**
+   * 目标档(1 = 拿 PR、2 = 先找工作);0 = 没答。
+   */
+  goal: number
+
+  /**
+   * 专业码清单。
+   */
+  majors: string[]
+
+  /**
+   * 职业码清单。
+   */
+  nocs: string[]
+
+  /**
+   * 现居省码;空串 = 没答或在境外。
+   */
+  prov: string
+
+  /**
+   * 答的是「加拿大境外」。
+   */
+  abroad: boolean
+
+  /**
+   * 现居城市英文名;空串 = 没选。
+   */
+  city: string
+
+  /**
+   * 英文姓名;空串 = 没填。
+   */
+  name: string
+}
+
+/**
+ * GateEdit 的 props。
+ */
+export type GateEditIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 起始答案。
+   */
+  seed: GateEditSeed
+
+  /**
+   * 关框(没保存)。
+   */
+  onClose: () => void
+
+  /**
+   * 保存成功(调用方关框并重取档案)。
+   */
+  onSaved: () => void
+}
+
+/**
+ * useGateEdit 的入参(GateEditIn 去掉 seed 以外原样)。
+ */
+export type GateEditHookIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 起始答案。
+   */
+  seed: GateEditSeed
+
+  /**
+   * 关框。
+   */
+  onClose: () => void
+
+  /**
+   * 保存成功。
+   */
+  onSaved: () => void
+}
+
+/**
+ * makeEditNext 的入参。
+ */
+export type EditNextIn = {
+  /**
+   * 走到第几步。
+   */
+  step: number
+
+  /**
+   * 步数落格。
+   */
+  setStep: (v: number) => void
+
+  /**
+   * 最后一题点了 = 保存。
+   */
+  save: () => void
+}
+
+/**
+ * makeEditSave 的入参:这一份答案、落格与保存成功的回调。
+ */
+export type EditSaveIn = {
+  /**
+   * 要存的答案。
+   */
+  a: GateEditSeed
+
+  /**
+   * 正在保存落格。
+   */
+  setSaving: (v: boolean) => void
+
+  /**
+   * 失败那一行的词条键落格。
+   */
+  setFail: (v: string) => void
+
+  /**
+   * 保存成功。
+   */
+  onSaved: () => void
+}
+
+/**
+ * 编辑模式写进答案档的那几格(形同 lib/quiz AnswersPatch 的子集,本域自声明)。
+ */
+export type EditPatch = {
+  /**
+   * 目标档。
+   */
+  goalBand: number
+
+  /**
+   * 专业码清单。
+   */
+  majors: string[]
+
+  /**
+   * 职业码清单。
+   */
+  nocs: string[]
+
+  /**
+   * 现居省码(境外写空串)。
+   */
+  resProv: string
+
+  /**
+   * 现居城市英文名。
+   */
+  resCity: string
+
+  /**
+   * 处境(只有答了境外才写 overseas)。
+   */
+  status?: string
+}

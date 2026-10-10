@@ -14,6 +14,10 @@
 // 2026-10-07 B2 站内投递(投递钮切到 /apply/<id>,mailto 整条删):接口 applyhow 连同 ①② 撤;⑤ 改读作「点投递只跳投递页一次,
 //       不查邮箱、不记「已投」、不弹邮件框」;会话过期 / 次数用完 / 查无邮箱三条提示随之撤(由投递页的门与接口各自回)。
 //       探针:launch 里留一次取邮箱 → 「一次 applyhow 都不请求」红;去掉在途闸 → 「连点只跳一次」红。
+// 2026-10-09 A 批投递搬进弹框(docs/design/投递向导-照Azure-20261008.md):⑤ 改读作「点投递不跳页,广播『要投这一岗』
+//       (offer2pr:apply-open,带职位 id),由全站骨架上的投递框宿主弹框」;在途闸随跳页撤(连点只是同一框,宿主不重复推历史);
+//       匿名点投递弹注册框(stage = auth),注册完软刷并直接广播(不再分档案进六步意向表)。
+//       探针:launch 改回 router.push → 「不跳页」两条红;makeAuthDone 不调 launch → 「注册完直接弹框」红。
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -55,6 +59,16 @@ function plan(loggedIn: boolean): JobPlan {
 
 function reply(status: number, body: object) {
   return { status, ok: status >= 200 && status < 300, json: async () => body }
+}
+
+// 听「要投这一岗」广播,记下每次带的职位 id
+function listenOpen() {
+  const ids: number[] = []
+  function onOpen(e: Event) {
+    ids.push((e as CustomEvent<{ jobId: number }>).detail.jobId)
+  }
+  window.addEventListener('offer2pr:apply-open', onOpen)
+  return { ids, off: () => window.removeEventListener('offer2pr:apply-open', onOpen) }
 }
 
 // 挂一个只跑 hook 的探针件(同 guestGate 的 createRoot 形,不为测试加依赖)
@@ -136,32 +150,49 @@ describe('投递栏出不出 applyBarShownOf', () => {
   })
 })
 
-describe('投递栏整机 useApplyBar(点投递跳投递页)', () => {
-  it('匿名点投递弹访客向导、不跳;向导里刚登录过(软刷没回来)再点不弹,直接跳 /apply/42', () => {
+describe('投递栏整机 useApplyBar(点投递弹投递框)', () => {
+  it('匿名点投递弹注册框、不广播;向导里刚登录过(软刷没回来)再点不弹框,直接广播要投 42,不跳页', () => {
     const calls = server(async () => reply(200, { email: 'hr@acme.ca' }))
+    const open = listenOpen()
     const anon = runBar(job(), plan(false))
     act(() => anon.current?.onApply())
     expect(anon.current?.stage).toBe('auth')
-    expect(h.push).not.toHaveBeenCalled()
+    expect(open.ids).toEqual([])
     markGateSignedIn()
     const fresh = runBar(job(), plan(false))
     act(() => fresh.current?.onApply())
-    expect(h.push).toHaveBeenCalledWith('/account?sec=sjobs&job=42')
+    expect(open.ids).toEqual([42])
+    expect(h.push).not.toHaveBeenCalled()
     expect(calls.applyhow).toBe(0)
     expect(calls.saved).toBe(0)
+    open.off()
   })
 
-  it('登录用户点投递:只跳一次投递页,一次 applyhow 都不请求、不记「已投」;连点三下只跳一次,在途 busy', () => {
+  it('登录用户点投递:每点一下广播一次要投 42(同一岗由宿主只开一个框),不跳页、不请求 applyhow、不记「已投」', () => {
     const calls = server(async () => reply(200, { email: 'hr@acme.ca' }))
+    const open = listenOpen()
     const bar = runBar(job(), plan(true))
     act(() => bar.current?.onApply())
     act(() => bar.current?.onApply())
     act(() => bar.current?.onApply())
-    expect(h.push).toHaveBeenCalledTimes(1)
-    expect(h.push).toHaveBeenCalledWith('/account?sec=sjobs&job=42')
-    expect(bar.current?.busy).toBe(true)
+    expect(open.ids).toEqual([42, 42, 42])
+    expect(h.push).not.toHaveBeenCalled()
     expect(calls.applyhow).toBe(0)
     expect(calls.saved).toBe(0)
+    open.off()
+  })
+
+  it('注册框里注册完:回到闲置段、撤投递意图、直接广播要投 42(不再进意向表)', () => {
+    server(async () => reply(200, { email: 'hr@acme.ca' }))
+    const open = listenOpen()
+    const bar = runBar(job(), plan(false))
+    act(() => bar.current?.onApply())
+    expect(localStorage.getItem(INTENT_KEY)).not.toBeNull()
+    act(() => bar.current?.onAuthDone())
+    expect(bar.current?.stage).toBe('idle')
+    expect(localStorage.getItem(INTENT_KEY)).toBeNull()
+    expect(open.ids).toEqual([42])
+    open.off()
   })
 
   it('× 关掉投递向导:撤落地的投递意图(之后别处登录再回本岗不会替他续投)', () => {

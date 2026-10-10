@@ -18,21 +18,23 @@
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useIsNarrow } from '@/components/modal'
-import { RF_ERR_NONE, SEC_DEFAULT, ZOOM_HOME, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from './constants'
+import { PF_LOAD_BUSY, RF_ERR_NONE, SEC_DEFAULT, ZOOM_HOME, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from './constants'
 import {
   makeAdd, makeAskOf, makeDefaultOf, makeDeleteOf, makeDragLeave, makeDragOver, makeFileDrop, makeFilePick,
   makePickerOf, makePreviewClose, makePreviewOf, makeRefresh, makeSureClear, makeResumeListLoad,
-  isJobLink, makeResumeUpload, okFlagOf,
+  makeResumeUpload, okFlagOf,
   makeLettersLoad, makeOnApplied, makePaymentsLoad, makeSentCountLoad,
   planOf, renderPdfPages, secLinkOf, showPdfPage,
   applyViewTo, makeDocDrop, makeGripDown, makeGripMove, makeGripUp, makePageTurn, makeWheelBind, makeZoomHome,
   makeZoomRedraw, makeZoomStep, zoomPctOf,
+  loadProfile, makeFlagSet, makeProfileSaved,
 } from './functions'
 import type {
   AccountPanel, MaybeResumeMeta, Me, ResumeFilePanel, ResumeMetas, ResumePagesPanel, ResumeThumbHookIn,
   MaybePdfDoc, MaybeZoomGrip, ZoomView,
   Sec, SubscriptionPanel, WeeklyHookIn, WeeklyPanel,
   CoverLettersPanel, LetterMetas, PaymentRows,
+  PfFoldPanel, PfView, ProfilePanel,
 } from './types'
 
 /**
@@ -41,6 +43,8 @@ import type {
  * 存昵称要刷新、购买读 t 出话术),拆开就得互相穿参数。
  * 2026-09-23 概览、购买两节撤掉后,昵称编辑与购买在途两组状态随件删除;回跳标记 payOk 留着 ——
  * 支付成功提示改由页面门在右列最上面挂 PayOkNotice(三节都出)。
+ * 2026-10-09 A 批投递搬进弹框:「正在投地址栏带来的那一岗」那一格(jobLink → applying,连同 isJobLink、QP_JOB)随页内投递区退役 ——
+ * 投递搬进全站骨架上的投递框,「今日待投」不再为它让位;发出后的刷新改由页面门里的 ApplySentSync 调 onApplied。
  *
  * @returns 门(page.tsx)要的整块面板:状态 + 手柄。
  */
@@ -55,13 +59,7 @@ export function useAccountPage(): AccountPanel {
   const [appliedGen, setAppliedGen] = useState(0)
   const [sent, setSent] = useState(0)
   const [sentTo, setSentTo] = useState<string | null>(null)
-  const [jobLink, setJobLink] = useState(false)
   const reloadSent = makeSentCountLoad({ setSent })
-
-  useEffect(function readJobLink() {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 故意分两步:地址栏参数只有浏览器里读得到,服务端画首帧时没有,活过来后再补
-    setJobLink(isJobLink())
-  }, [])
 
   useEffect(function readPayOk() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 故意分两步:地址栏参数只有浏览器里读得到,服务端画首帧时没有,活过来后再补
@@ -96,7 +94,6 @@ export function useAccountPage(): AccountPanel {
     onApplied: makeOnApplied({ setGen: setAppliedGen, setSentTo, reloadSent }),
     sent,
     sentTo,
-    applying: jobLink && sentTo == null,
   }
 }
 
@@ -271,3 +268,37 @@ export function useResumePages(x: ResumeThumbHookIn): ResumePagesPanel {
   }
 }
 
+/**
+ * 我的档案整机(2026-10-09「我的档案」批):挂上取一次档案;「修改」开访客向导同款的编辑弹框,保存成功关框并换一代重取。
+ *
+ * @returns 我的档案的面板。
+ */
+export function useProfile(): ProfilePanel {
+  const [lang] = useLang()
+  const [view, setView] = useState<PfView | null>(null)
+  const [load, setLoad] = useState(PF_LOAD_BUSY)
+  const [editing, setEditing] = useState(false)
+  const [gen, setGen] = useState(0)
+  useEffect(function loadOnGen() {
+    void loadProfile({ setView, setLoad })
+  }, [gen])
+  return {
+    lang,
+    load,
+    view,
+    editing,
+    onEdit: makeFlagSet({ set: setEditing, v: true }),
+    onClose: makeFlagSet({ set: setEditing, v: false }),
+    onSaved: makeProfileSaved({ setEditing, setGen, gen }),
+  }
+}
+
+/**
+ * 一格名字的折叠态(2026-10-09:多于 PF_FOLD_N 个先折起来,点「还有 N 个」展开;展开了不再收)。
+ *
+ * @returns 折叠态。
+ */
+export function usePfFold(): PfFoldPanel {
+  const [open, setOpen] = useState(false)
+  return { open, onOpen: makeFlagSet({ set: setOpen, v: true }) }
+}

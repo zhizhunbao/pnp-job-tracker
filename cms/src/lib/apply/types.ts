@@ -446,6 +446,46 @@ export type ApplyJobDbRow = {
    * 投递邮箱(没有是 NULL)。
    */
   apply_email: string | null
+
+  /**
+   * 职位名中文译名(2026-10-09;没译 / 过期由版本号判)。
+   */
+  title_zh: string | null
+
+  /**
+   * 职位名韩文译名。
+   */
+  title_ko: string | null
+
+  /**
+   * 职位名译文的版本号(等于当前 TRANS_V 才算数)。
+   */
+  job_trans_v: number | string | null
+
+  /**
+   * 公司中文译名。
+   */
+  alias_zh: string | null
+
+  /**
+   * 公司韩文译名。
+   */
+  alias_ko: string | null
+
+  /**
+   * 城市中文译名。
+   */
+  city_zh: string | null
+
+  /**
+   * 城市韩文译名。
+   */
+  city_ko: string | null
+
+  /**
+   * 公司页 slug(公司表;没有 = NULL;2026-10-09 N 批点公司名开公司框)。
+   */
+  company_slug: string | null
 }
 
 /**
@@ -486,6 +526,41 @@ export type ApplyJobFact = {
    * 雇主投递邮箱(没有 = 空串)。
    */
   email: string
+
+  /**
+   * 职位名中文译名(没有 / 过期 = 空串;2026-10-09 投递弹框换 section 形)。
+   */
+  titleZh: string
+
+  /**
+   * 职位名韩文译名(没有 / 过期 = 空串)。
+   */
+  titleKo: string
+
+  /**
+   * 公司中文译名(没有 = 空串)。
+   */
+  companyZh: string
+
+  /**
+   * 公司韩文译名(没有 = 空串)。
+   */
+  companyKo: string
+
+  /**
+   * 城市中文译名(没有 = 空串)。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名(没有 = 空串)。
+   */
+  cityKo: string
+
+  /**
+   * 公司页 slug(没有 = 空串;点公司名开公司框用)。
+   */
+  companySlug: string
 }
 
 /**
@@ -531,6 +606,41 @@ export type ApplyJobRow = {
    * 库里有投递邮箱(没有就投不了)。
    */
   hasEmail: boolean
+
+  /**
+   * 职位名中文译名(没有 / 过期 = 空串;2026-10-09 投递弹框换 section 形)。
+   */
+  titleZh: string
+
+  /**
+   * 职位名韩文译名(没有 / 过期 = 空串)。
+   */
+  titleKo: string
+
+  /**
+   * 公司中文译名(没有 = 空串)。
+   */
+  companyZh: string
+
+  /**
+   * 公司韩文译名(没有 = 空串)。
+   */
+  companyKo: string
+
+  /**
+   * 城市中文译名(没有 = 空串)。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名(没有 = 空串)。
+   */
+  cityKo: string
+
+  /**
+   * 公司页 slug(没有 = 空串;点公司名开公司框用)。
+   */
+  companySlug: string
 }
 
 /**

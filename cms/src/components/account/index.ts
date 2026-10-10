@@ -29,6 +29,7 @@
  * (原件上传 / 预览 / 替换 / 下载 / 删除 + PDF 首页缩略图)。
  * 2026-10-08 照 AIApply 重设计(docs/design/我的模块-照AIApply-20261007.md):桶门加 SentNotice(发出后的成功条)与
  * CoverLetters(「我的简历」页签下的「求职信」段)。
+ * 2026-10-09「我的档案」批:桶门加 Profile(「我的档案」一节)与 SEC_PROFILE。
  *
  * @author Claude
  * @time 2026-08-26 19:28:00
@@ -39,11 +40,13 @@ export { AccountNav } from './accountnav'
 export { AccountRedirect } from './accountredirect'
 export { CoverLetters } from './coverletters'
 export {
-  SEC_FAVS, SEC_RESUME, SEC_SJOBS, SEC_SUB, SHELL_BOTTOM, SHELL_TOP,
+  SEC_FAVS, SEC_PROFILE, SEC_RESUME, SEC_SJOBS, SEC_SUB, SHELL_BOTTOM, SHELL_TOP,
 } from './constants'
 export { useAccountPage } from './hooks'
 export { PayOkNotice } from './payoknotice'
+export { Profile } from './profile'
 export { ResumeFile } from './resumefile'
+export { ResumePreview } from './resumepreview'
 export { SentNotice } from './sentnotice'
 export { Subscription } from './subscription'
 export { WeeklyOptin } from './weeklyoptin'

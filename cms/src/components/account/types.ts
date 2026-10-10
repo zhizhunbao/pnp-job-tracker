@@ -24,7 +24,7 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
  * (2026-08-26 自 page.tsx 迁入)。
  * 2026-09-23 撤概览、移民档案、已保存的筛选、升级 Pro 四节后只剩三个值(新立的 resume = 我的简历)。
  */
-export type Sec = 'resume' | 'favs' | 'sjobs' | 'sub'
+export type Sec = 'resume' | 'favs' | 'sjobs' | 'profile' | 'sub'
 
 /**
  * 用户档案 + 简历存档两键。profile 上的简历存档两键(E11-08)只在本页读显示、
@@ -345,11 +345,6 @@ export type AccountPanel = {
    * 刚发给了哪家(成功条;null = 不出;2026-10-08)。
    */
   sentTo: string | null
-
-  /**
-   * 正在投地址栏带来的那一岗(带了 job= 且还没发出去):这时「今日待投」不出,先把那一岗投完。
-   */
-  applying: boolean
 
   /**
    * 分层态(2026-10-06:「我的求职」「我的收藏」点公司名开公司弹框要它;口径同各页面门的 toJobPlan)。
@@ -1172,9 +1167,14 @@ export type ResumeAddIn = {
  */
 export type ResumePreviewIn = {
   /**
-   * 预览哪一份。
+   * 原件地址(PDF;2026-10-08 改收地址与标题,投递区逐项检查的简历 / 求职信 PDF 也用这一个弹框)。
    */
-  meta: ResumeMeta
+  src: string
+
+  /**
+   * 弹框标题(文件名)。
+   */
+  title: string
 
   /**
    * 关弹框。
@@ -1861,3 +1861,298 @@ export type MaybePdfDoc = PdfDoc | null
  */
 export type GenSetFn = (step: (n: number) => number) => void
 
+
+/**
+ * 界面语三字面量(各域自抄)。
+ */
+export type Lang = 'zh' | 'en' | 'ko'
+
+/**
+ * 一个名字的三语(形同 quiz 域 ProfileName,本域自声明)。
+ */
+export type PfName = {
+  /**
+   * 码;城市给空串。
+   */
+  code: string
+
+  /**
+   * 英文名。
+   */
+  en: string
+
+  /**
+   * 中文译名;没有 = 空串。
+   */
+  zh: string
+
+  /**
+   * 韩文译名;没有 = 空串。
+   */
+  ko: string
+}
+
+/**
+ * 档案(形同 quiz 域 QuizProfile;/api/quiz/profile 的 profile 格)。
+ */
+export type PfView = {
+  /**
+   * 目标档;0 = 没答。
+   */
+  goal: number
+
+  /**
+   * 专业。
+   */
+  majors: PfName[]
+
+  /**
+   * 想做的工作。
+   */
+  nocs: PfName[]
+
+  /**
+   * 现居省码;空串 = 没答或在境外。
+   */
+  prov: string
+
+  /**
+   * 在境外。
+   */
+  abroad: boolean
+
+  /**
+   * 现居城市;没选四格空串。
+   */
+  city: PfName
+
+  /**
+   * 英文姓名;没填空串。
+   */
+  name: string
+}
+
+/**
+ * /api/quiz/profile 的响应(线格式)。
+ */
+export type PfJson = {
+  /**
+   * 档案;未登录时缺席。
+   */
+  profile?: PfView
+}
+
+/**
+ * Profile(我的档案节)的 props。
+ */
+export type ProfileIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * 我的档案整机交回的面板。
+ */
+export type ProfilePanel = {
+  /**
+   * 界面语(灰字取哪种译名)。
+   */
+  lang: Lang
+
+  /**
+   * 取数状态(busy / ok / fail)。
+   */
+  load: string
+
+  /**
+   * 档案;没到 = null。
+   */
+  view: PfView | null
+
+  /**
+   * 修改弹框开着。
+   */
+  editing: boolean
+
+  /**
+   * 开修改弹框。
+   */
+  onEdit: () => void
+
+  /**
+   * 关修改弹框(没保存)。
+   */
+  onClose: () => void
+
+  /**
+   * 保存成功:关框、重取档案。
+   */
+  onSaved: () => void
+}
+
+/**
+ * loadProfile 的入参。
+ */
+export type PfLoadIn = {
+  /**
+   * 档案落格。
+   */
+  setView: (v: PfView | null) => void
+
+  /**
+   * 取数状态落格。
+   */
+  setLoad: (v: string) => void
+}
+
+/**
+ * makeProfileSaved 的入参。
+ */
+export type PfSavedIn = {
+  /**
+   * 关框。
+   */
+  setEditing: (v: boolean) => void
+
+  /**
+   * 重取的代数落格。
+   */
+  setGen: (v: number) => void
+
+  /**
+   * 当前代数。
+   */
+  gen: number
+}
+
+/**
+ * ProfileNames(一格里一串名字)的 props。
+ */
+export type PfNamesIn = {
+  /**
+   * 名字。
+   */
+  names: PfName[]
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 取词函数(「还有 N 个」)。
+   */
+  t: TFn
+}
+
+/**
+ * ProfileWhere(所在地那一格)的 props。
+ */
+export type PfWhereIn = {
+  /**
+   * 档案。
+   */
+  v: PfView
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * ProfileRows(卡里五行)的 props。
+ */
+export type PfRowsIn = {
+  /**
+   * 档案。
+   */
+  v: PfView
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * 档案编辑的起始答案(形同 gate 桶 GateEditSeed,本域亲手构造喂它,全格照抄)。
+ */
+export type PfSeed = {
+  /**
+   * 目标档。
+   */
+  goal: number
+
+  /**
+   * 专业码。
+   */
+  majors: string[]
+
+  /**
+   * 职业码。
+   */
+  nocs: string[]
+
+  /**
+   * 现居省码。
+   */
+  prov: string
+
+  /**
+   * 在境外。
+   */
+  abroad: boolean
+
+  /**
+   * 现居城市英文名。
+   */
+  city: string
+
+  /**
+   * 英文姓名。
+   */
+  name: string
+}
+
+/**
+ * 一串名字。
+ */
+export type PfNames = PfName[]
+
+/**
+ * pfShownOf 的入参。
+ */
+export type PfShownIn = {
+  /**
+   * 全部名字。
+   */
+  names: PfNames
+
+  /**
+   * 展开了。
+   */
+  open: boolean
+}
+
+/**
+ * 一格名字的折叠态(usePfFold 交回)。
+ */
+export type PfFoldPanel = {
+  /**
+   * 展开了。
+   */
+  open: boolean
+
+  /**
+   * 展开。
+   */
+  onOpen: () => void
+}

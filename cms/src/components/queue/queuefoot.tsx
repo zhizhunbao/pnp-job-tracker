@@ -9,10 +9,9 @@
  * @author Frank
  * @time 2026-10-08 15:00:00
  */
-import { isCheckedAll } from '@/components/apply'
 import { Button } from '@/components/button'
 import { Pager } from '@/components/pager'
-import { BTN_PRIMARY, BTN_SECONDARY, ERR_NONE } from './constants'
+import { BTN_PRIMARY, ERR_NONE } from './constants'
 import type { QueueFootIn } from './types'
 import css from './queue.module.css'
 
@@ -33,12 +32,9 @@ export function QueueFoot({ p, item, t }: QueueFootIn) {
           </span>
         )}
         <span className={css.right}>
-          {item.jobId != null && (
-            <Button kind={BTN_SECONDARY} onClick={p.onEdit} disabled={p.busy}>{t('qu.edit')}</Button>
-          )}
           <Button kind={BTN_PRIMARY}
             onClick={p.onSend}
-            disabled={p.busy || item.closed || item.jobId == null || isCheckedAll(p.ticks) === false}
+            disabled={p.busy || item.closed || item.jobId == null}
             busy={p.busy}>
             {t('qu.send')}
           </Button>

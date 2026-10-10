@@ -56,6 +56,21 @@ export const ANS_NOCS = 'nocs'
 export const ANS_PROV = 'resProv'
 
 /**
+ * 基础段里「所在城市」那一格(城市英文名,同 cities.name;空串 = 没选。2026-10-09「我的档案」批:所在地答案加的可选城市)。
+ */
+export const ANS_CITY = 'resCity'
+
+/**
+ * 基础段里「目标」那一格(档位数:1 = 拿 PR、2 = 先找工作;与 lib/quiz 的 FIELD_SPECS.goalBand 同值同义,各域各抄一份)。
+ */
+export const ANS_GOAL = 'goalBand'
+
+/**
+ * 目标档「先找工作」的值(2026-10-09「我的档案」批:只有这一档按所在城市的都会区排岗,拿 PR 的照旧全省按评分)。
+ */
+export const GOAL_JOB_BAND = 2
+
+/**
  * 开关接口的请求体字段。
  */
 export const FIELD_AUTO = 'autoQueue'

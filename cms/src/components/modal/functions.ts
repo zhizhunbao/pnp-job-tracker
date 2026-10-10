@@ -12,12 +12,14 @@ import { cssOf } from '@/components/css'
 import {
   CENTER_DIV, CLS_SEP, DRAG_IGNORE_SEL, EDGE_E, EDGE_N, EDGE_NE, EDGE_NW, EDGE_S, EDGE_SE, EDGE_SW, EDGE_W,
   EV_POINTERMOVE, EV_POINTERUP, FIT_NONE, FRAME_SEL, POS_FIXED, POS_MIN, POS_X0, POS_Y0, RESIZE_MIN_H, RESIZE_MIN_W,
-  TEXT_NONE, VIEWPORT_GAP, WIN_MIN_H, WIN_MIN_W,
+  TEXT_NONE, VIEWPORT_GAP, WIN_MIN_H, WIN_MIN_W, EV_PEEK, EV_PEEK_CTX, PEEK_JOB_ID, Z_MODAL, Z_STEP,
 } from './constants'
 import type {
   BarClsIn, BodyClsIn, BoxNowIn, CenterIn, ClsIn, ClsOut, DownPickIn, DragStartIn, FrameBox, FrameIn, FrameInitIn,
   FrameOut, FramePickIn, FrameStyleIn, MinSize, MinSizeIn, ModalSize, PointerHandlerFn, PrefFact, PrefJson, ResizedIn,
   ResizeStartIn, SavePrefIn, SizedBox,
+  PeekCtxMsg, PeekMsg,
+  ZOfIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './modal.module.css'
@@ -560,4 +562,76 @@ export function leaveEsc(id: number): void {
  */
 export function isTopEsc(id: number): boolean {
   return CACHE.escOrder[CACHE.escOrder.length - 1] === id
+}
+
+/**
+ * 往弹框总线上发一条栈操作(2026-10-09 N 批:全站只有骨架上那一个职位框 / 公司框栈,各页只发消息)。
+ *
+ * @param msg 栈操作。
+ * @returns 无。
+ */
+export function sendPeek(msg: PeekMsg): void {
+  window.dispatchEvent(new CustomEvent<PeekMsg>(EV_PEEK, { detail: msg }))
+}
+
+/**
+ * 按职位号叠开职位框(手上没有整行的地方用:投递框、名字组件;宿主现取一行,取不到去职位页)。
+ *
+ * @param jobId 职位号。
+ * @returns 无。
+ */
+export function peekJobById(jobId: number): void {
+  sendPeek({ op: PEEK_JOB_ID, layer: null, jobId })
+}
+
+/**
+ * 总线事件里那一条栈操作。DOM 的监听签名只给 Event,detail 由 sendPeek 一处发出,断言只住这一处。
+ *
+ * @param e 事件。
+ * @returns 栈操作。
+ */
+export function peekMsgOf(e: Event): PeekMsg {
+  return (e as CustomEvent<PeekMsg>).detail
+}
+
+/**
+ * 把本页的分层态与职业名表报给宿主(ctx = null 即撤回自己那份)。
+ *
+ * @param msg 报件编号与上下文。
+ * @returns 无。
+ */
+export function sendPeekCtx(msg: PeekCtxMsg): void {
+  window.dispatchEvent(new CustomEvent<PeekCtxMsg>(EV_PEEK_CTX, { detail: msg }))
+}
+
+/**
+ * 上下文事件里那一份。断言只住这一处(同 peekMsgOf)。
+ *
+ * @param e 事件。
+ * @returns 报件编号与上下文。
+ */
+export function peekCtxOf(e: Event): PeekCtxMsg {
+  return (e as CustomEvent<PeekCtxMsg>).detail
+}
+
+/**
+ * 此刻开着几个弹框(Esc 排号里的人数;一个弹框挂上前读它 = 它底下有几个)。
+ *
+ * @returns 开着的弹框数。
+ */
+export function openCountOf(): number {
+  return CACHE.escOrder.length
+}
+
+/**
+ * 弹框的层级:调用方指定了就用指定的;没指定按打开先后往上叠(底下每开着一个高 Z_STEP)。
+ *
+ * @param x 指定的层级与底下开着几个。
+ * @returns 层级。
+ */
+export function zOf(x: ZOfIn): number {
+  if (x.z != null) {
+    return x.z
+  }
+  return Z_MODAL + x.open * Z_STEP
 }

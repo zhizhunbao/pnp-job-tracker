@@ -576,25 +576,29 @@ export type EmployerCellRow = {
   name: string
 
   /**
-   * 手机卡标题链的落点:有公司页进公司页,没有就落职位板按名搜(表里雇主名不用它);
-   * 既无公司页也无在招 = 空串,卡不成链、整卡点击不导航(2026-09-13 晚 /fe 雇主页)。
-   */
-  href: string
-
-  /**
-   * 落点的悬停提示(手机卡标题链)。
-   */
-  hrefTitle: string
-
-  /**
    * 行业灰注;空串 = 无源不出。
    */
   industry: string
 
   /**
-   * 手机卡的地点行(市 + 省码紧凑格;没市回落省名;都没有空串)。
+   * 手机卡的主市英文名(name 桶 CityName 主文案;2026-10-09 N6 批「省市分开」,原「市, 省码」拼一格的 where 撤);空串 = 池里没记,不出。
    */
-  where: string
+  city: string
+
+  /**
+   * 手机卡的主省码(name 桶 ProvName,与市分开各一份);空串 = 池里没记,不出。
+   */
+  province: string
+
+  /**
+   * 主市的人工核定中文译名(CityName 灰字);空串 = 译名表外。
+   */
+  cityZh: string
+
+  /**
+   * 主市的人工核定韩文译名;空串 = 译名表外。
+   */
+  cityKo: string
 
   /**
    * 官网;空串 = 没有。
@@ -751,12 +755,14 @@ export type EmployerCellRow = {
 
   /**
    * 点雇主名的埋点手柄(emp-row;表格那一列的链接与手机卡标题链共用同一枚)。
+   * 2026-10-09 N6 批起手机卡标题改挂 onName / onPeek(开公司弹框、自带埋点),这一枚只剩操作列的钮用。
    */
   onView: ClickFn
 
   /**
    * 整卡点击手柄(手机卡的触控靶:卡本身 ≥70px,标题链只有 23px 高)。
    * 点在卡内链接上时它早退,那一次由链接自己的 onView 记,不重复计数。
+   * 2026-10-09 N6 批:整卡点了开公司弹框(同点雇主名),不再整页跳;卡内链接(名字、城市、省份)照旧早退。
    */
   onCard: CardClickFn
 }
@@ -765,32 +771,6 @@ export type EmployerCellRow = {
  * 无参无返的手柄形状(埋点、抽屉开合、清空筛选都是这一形)。
  */
 export type ClickFn = () => void
-
-/**
- * 手机卡标题的可点文本(与 card 桶 CardLink 结构相同即兼容;本域自抄真用的四格):
- * 只给 text = 纯文本(既无公司页也无在招的雇主),其余三格一起给 = 链接。
- */
-export type CardTitle = {
-  /**
-   * 标题文字。
-   */
-  text: string
-
-  /**
-   * 去处;缺席 = 纯文本。
-   */
-  href?: string
-
-  /**
-   * 悬停提示。
-   */
-  title?: string
-
-  /**
-   * 点击埋点。
-   */
-  onClick?: ClickFn
-}
 
 /**
  * 担保雇主的一行**展示行**。
@@ -935,6 +915,16 @@ export type CompareCellRow = {
    * 别名灰注;空串 = 没有。
    */
   alias: string
+
+  /**
+   * 中文别名(手机卡雇主名 CompanyName 的灰字按界面语挑;2026-10-09 N6 批);空串 = 没有。
+   */
+  aliasZh: string
+
+  /**
+   * 韩文别名(同上);空串 = 没有。
+   */
+  aliasKo: string
 
   /**
    * 行业大类标签。
@@ -1644,21 +1634,6 @@ export type SponsorKindIn = {
 }
 
 /**
- * provNameOf 的入参。
- */
-export type ProvNameIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 省码。
-   */
-  code: string
-}
-
-/**
  * 职业码 → 显示名(下拉的 labelOf 与洗行共用同一份口径)。
  */
 export type NocNameFn = (noc: string) => string
@@ -1826,21 +1801,6 @@ export type ClearIn = {
    * 搜索草稿落格(输入框里的字也要一起清)。
    */
   setQDraft: (v: string) => void
-}
-
-/**
- * makeCardClick 的入参。
- */
-export type CardClickIn = {
-  /**
-   * 这一行的落点(整卡点击去哪)。
-   */
-  href: string
-
-  /**
-   * 埋点分组值(行业组键 / search)。
-   */
-  kind: string
 }
 
 /**

@@ -2,11 +2,15 @@
 /**
  * 域内小件:雇主手机卡(通用件 Card / CardKV / CardAction):标题 + 一格一事实的键值行 + 操作行,
  * 键值随身份档换(与桌面表同一列集)。
+ * 2026-10-09 N 批(Frank「名字一律英文在上、译名灰字在下」「把脉页也改一下 但是把脉页不弹框」):卡标题的公司名
+ * 换 name 桶的 Name —— 英文名在上、界面语别名灰字在下(原标题下单起一行 .note 的别名并进来);把脉页不弹框,
+ * 名字是黑字不可点,看公司 / 看岗位照旧走操作行的钮。
  *
  * @author Frank
  * @time 2026-09-04 22:10:00
  */
 import { Card, CardAction, CardKV } from '@/components/card'
+import { Name } from '@/components/name'
 import { tagClsOf } from '@/components/tag'
 import { TABLE_PILOT, TAG_V_GRAY, TEXT_NONE } from './constants'
 import { EmpActCell } from './empactcell'
@@ -39,12 +43,11 @@ export function EmpCard({ t, row, kind }: EmpCardIn) {
   return (
     <Card>
       <div className={css.empCardTitle}>
-        {row.name}
+        <Name en={row.name} sub={row.alias} />
         {row.chainText !== TEXT_NONE && (
           <span className={tagClsOf(TAG_V_GRAY)} title={row.chainTip}>{row.chainText}</span>
         )}
       </div>
-      {row.alias !== TEXT_NONE && <div className={css.note}>{row.alias}</div>}
       <CardKV items={kv} />
       <CardAction>{EmpActCell(row)}</CardAction>
     </Card>

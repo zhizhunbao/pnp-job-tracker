@@ -1220,11 +1220,6 @@ export const TYPE_PRIORITY = 'priority'
 export const TEER_SKILLED_MAX = 3
 
 /**
- * 中文界面的语言码(英文流名的中文灰注只在它下面出)。
- */
-export const LANG_ZH = 'zh'
-
-/**
  * 英文的语言码(「本岗能走的通道」主文案一律英文官方名,界面语言译名作灰字;同职位板 PNP 格)。
  * 2026-09-28 起那张卡主文案改界面语言直白名、灰字改官方原名,只在非英文界面出灰字(判的就是它)。
  */
@@ -2052,11 +2047,6 @@ export const QC_FR_KEY = {
    */
   write: 'qcgate.fr.write',
 }
-
-/**
- * 站内蓝链的全局类(main.css 的 link;AIP 指定雇主名单里对上雇主池的招牌;2026-10-02)。
- */
-export const LINK_CLS = 'link'
 
 /**
  * 「申请步骤」卡标题词条(2026-10-02 申请步骤批 1,Frank「每个省 每个通道 EE PNP AIP 都要有吧」;设计 docs/design/申请步骤-20261002.md)。

@@ -7,25 +7,26 @@
  * ./functions 的 make* 工厂里(hooks 抽屉的形制照样张 account/hooks.ts)。
  *
  * 取数一律带取消标记:弹框换公司/换职位很频繁,拆卸后再落格就是往已卸载的组件上写。
+ * 2026-10-09 N 批:弹框栈改用 modal 桶的代理栈 usePeekBus(只发消息),唯一的栈在全站骨架上的 PeekHost。
+ * 2026-10-09 N6b 批:公司页那台 useCompanyPeek 随上游接线撤(在招职位 / 相似雇主的名字 N6 起由 name 桶自开弹框),本抽屉不再碰弹框栈。
  *
  * @author Frank
  * @time 2026-08-28 16:26:43
  */
 import { useEffect, useRef, useState } from 'react'
-import { useLayerStack } from '@/components/modal'
 import { usePagedFold } from '@/components/pager'
 import { LANG_EN, MS_PER_SEC, TEXT_NONE, TICK_MS,
 } from './constants'
 import {
   ignoreFlag, isSiteActive, makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel,
-  makeLoadTrans, makeOpenSite, makePushCoLayer, makePushJobLayer, nextRevOf, seedPanelOf,
+  makeLoadTrans, makeOpenSite, nextRevOf, seedPanelOf,
   simAnchorOf, simPageUrlOf, simTotalOf,
 } from './functions'
 import type {
   CompanyAiHookIn, CompanyAiPanel, CompanyAliasHookIn, CompanyAliasPanel, CompanyBriefFact,
-  CompanyOfJobHookIn, CompanyPanelData, CompanyPanelHookIn, CompanyPanelState, CompanyPeekPanel,
+  CompanyOfJobHookIn, CompanyPanelData, CompanyPanelHookIn, CompanyPanelState,
   CompanyTransHookIn,
-  CompanySiteHookIn, CompanyTransPanel, DeadFlag, DescTransHookIn, PeekLayer, SitePanel,
+  CompanySiteHookIn, CompanyTransPanel, DeadFlag, DescTransHookIn, SitePanel,
   SimCardHookIn, SimCardPanel, SimilarEmployer,
 } from './types'
 
@@ -346,20 +347,6 @@ export function useCompanyDescTrans(x: DescTransHookIn): string {
     return TEXT_NONE
   }
   return trans
-}
-
-/**
- * 公司页上叠开的两个弹框(2026-09-19 Frank「这种里面的链接都改成弹框显示…要想看其他的还得点回来」):
- * 点在招职位 = 职位描述弹框;点相似雇主 = 公司弹框,框里再点相似雇主就同框换一家(不往上叠、不记历史)。Esc 全关(同职位板)。
- *
- * 2026-09-21 改成弹框栈(Frank「点公司就弹公司的框?然后还能点回来」):点在招职位 / 相似雇主都往上叠,只关最上面一层;
- * 上面「Esc 全关」随之作废 —— Esc 由栈自己管,也只关最上面一层。框里点相似雇主同框换一家的口径不变(渲染件 PeekStack 接手)。
- *
- * @returns 弹框栈与两个手柄。
- */
-export function useCompanyPeek(): CompanyPeekPanel {
-  const stack = useLayerStack<PeekLayer>()
-  return { stack, onOpenJob: makePushJobLayer(stack), onOpenCompany: makePushCoLayer(stack) }
 }
 
 /**

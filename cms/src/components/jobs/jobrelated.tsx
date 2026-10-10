@@ -13,6 +13,7 @@
  * 展开态在 RelatedGroup 里。
  * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:两组都按页取,递取一页的接口地址(relPageUrlOf)代替首屏条数 / 续取岗号;组挂 React key = 地址,
  * 弹框里叠开另一条岗时已取的页与展开态整个重置。
+ * 2026-10-09 N6b 批:行里岗名 N6 起由 name 桶 JobName 自开弹框,点一行的回调 onOpenJob 撤。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -34,7 +35,6 @@ import css from './jobs.module.css'
  */
 export function JobRelated({
   head, t, updatedAt, sameCoLabel, sameOccLabel, related, jobId, fallbackHref, fallbackText, from, fromNone, lang,
-  onOpenJob,
 }: JobRelatedIn) {
   return (
     <div className={CARD_MD_CLS}>
@@ -46,7 +46,7 @@ export function JobRelated({
         <div onClick={trackRelated(from)}>
           <RelatedGroup key={relPageUrlOf({ jobId, group: REL_GROUP_CO })}
             label={sameCoLabel} total={related.sameCompanyTotal} rows={related.sameCompany}
-            url={relPageUrlOf({ jobId, group: REL_GROUP_CO })} t={t} lang={lang} onOpenJob={onOpenJob} />
+            url={relPageUrlOf({ jobId, group: REL_GROUP_CO })} t={t} lang={lang} />
         </div>
       )}
       {related.sameCompany.length > 0 && related.sameOcc.length > 0 && <div className={cssOf(css.relSep)} />}
@@ -54,7 +54,7 @@ export function JobRelated({
         <div onClick={trackRelated(from)}>
           <RelatedGroup key={relPageUrlOf({ jobId, group: REL_GROUP_OCC })}
             label={sameOccLabel} total={related.sameOccTotal} rows={related.sameOcc}
-            url={relPageUrlOf({ jobId, group: REL_GROUP_OCC })} t={t} lang={lang} onOpenJob={onOpenJob} />
+            url={relPageUrlOf({ jobId, group: REL_GROUP_OCC })} t={t} lang={lang} />
         </div>
       )}
       {showFallbackOf({ related, fallbackHref }) && (

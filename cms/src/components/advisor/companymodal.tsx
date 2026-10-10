@@ -9,6 +9,7 @@
  * 宿主(公司页 / 职位板)注两个回调:点在招职位叠开职位描述弹框、点相似雇主同框换一家。
  * CompanyPanel 点**文件**不走 companies 桶:那只桶里的公司页正文反过来要本件,走桶就成环。
  * 2026-09-28 并壳(Frank「别并存啊」):壳换成 modal 桶的 Modal(窗口形);窗口钮走本域 WinActs。
+ * 2026-10-09 N6b 批:框里的名字 N6 起由 name 桶自开弹框(相似雇主改叠一层,不再同框换一家),宿主注的两个回调与恒空的已载入职位撤。
  *
  * @author Frank
  * @time 2026-09-18 20:00:00
@@ -26,10 +27,10 @@ import { WinActs } from './winacts'
 /**
  * 渲染公司弹框(不带职位)。
  *
- * @param props 公司页 slug、公司名、界面语言、点职位 / 点相似雇主两个回调与关弹框的回调。
+ * @param props 公司页 slug、公司名、界面语言与关弹框的回调。
  * @returns 浮层。
  */
-export function CompanyModal({ slug, name, lang, onOpenJob, onOpenCompany, onClose }: CompanyModalIn) {
+export function CompanyModal({ slug, name, lang, onClose }: CompanyModalIn) {
   const t = makeT(lang)
   const m = useCompanyModal()
   const head = (
@@ -42,8 +43,7 @@ export function CompanyModal({ slug, name, lang, onOpenJob, onOpenCompany, onClo
     <Modal onClose={onClose}
       win={{ head, memo: ADV_PREF, w: ADV_PANEL_W, h: ADV_PANEL_H, jd: false }}
       actions={<WinActs t={t} onRefresh={null} pageHref={companyPageOf(slug)} />}>
-      <CompanyPanel job={null} slug={slug} jobs={m.jobs} lang={lang} onOpenJob={onOpenJob}
-        onOpenCompany={onOpenCompany}
+      <CompanyPanel job={null} slug={slug} lang={lang}
         onAlias={m.onAlias} showTrans={lang !== LANG_EN} onTransBusy={m.onTransBusy} />
     </Modal>
   )

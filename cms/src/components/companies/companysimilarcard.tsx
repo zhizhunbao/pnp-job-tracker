@@ -11,6 +11,7 @@
  * 2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」「全站统一 都改成 展开 20 和 收起。全部统一」:卡头写的是同类总数,
  * 取数却封顶 20 家 —— 改服务器分页(useSimilarCard,照 AIP 指定雇主卡):首屏照旧几家,卡底两只钮换成 pager 桶 FoldLine
  * (展开 20 家 → 再展开 20 家 → 展开其余 N 家 → 收起),一页 20 家往后接直到总数;上面「展开其余 N 个 ▾ / 收起 ▴」自造开关撤。
+ * 2026-10-09 N6b 批:行里公司名 N6 起由 name 桶自开弹框,递给行的 onOpenCompany / newTab 两格撤。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -25,10 +26,10 @@ import type { CompanySimilarCardIn } from './types'
 /**
  * 相似雇主卡。
  *
- * @param props 相似雇主、取词函数与新开页(逐格注释见 CompanySimilarCardIn)。
+ * @param props 相似雇主、取词函数、界面语言与中文对照开关(逐格注释见 CompanySimilarCardIn)。
  * @returns 一张卡;一家都没有时整卡不渲。
  */
-export function CompanySimilarCard({ similar, t, lang, onOpenCompany, newTab, showTrans }: CompanySimilarCardIn) {
+export function CompanySimilarCard({ similar, t, lang, showTrans }: CompanySimilarCardIn) {
   const p = useSimilarCard({ similar })
   if (similar.length === 0) {
     return null
@@ -36,8 +37,7 @@ export function CompanySimilarCard({ similar, t, lang, onOpenCompany, newTab, sh
   const rows = []
   for (const employer of p.rows) {
     rows.push(
-      <CompanySimilarRow key={employer.slug} employer={employer} t={t} lang={lang} onOpenCompany={onOpenCompany}
-        newTab={newTab}
+      <CompanySimilarRow key={employer.slug} employer={employer} t={t} lang={lang}
         showTrans={showTrans} />,
     )
   }

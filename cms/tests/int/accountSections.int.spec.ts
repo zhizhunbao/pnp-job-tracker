@@ -83,7 +83,7 @@ describe('① 求职信段', () => {
     const el = await mount(CoverLetters, {})
     expect(el.textContent).toContain('rl.title')
     expect(el.textContent).toContain('office manager')
-    expect(hrefs(el, 'mj.cont')).toEqual(['/account?sec=sjobs&job=101'])
+    expect(hrefs(el, 'mj.cont')).toEqual(['/account?sec=resume&apply=101'])   // 2026-10-09 A 批:就地弹投递框
     expect(hrefs(el, 'mj.open')).toEqual(['/api/apply/file?id=30&kind=cover'])
     expect(el.textContent).toContain('mj.draft')
     expect(el.textContent).toContain('ap.applied')

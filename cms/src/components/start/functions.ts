@@ -628,6 +628,18 @@ export function provFullOf(code: string): string {
   return code
 }
 
+/**
+ * 是不是省码(省名表里有这一码)。2026-10-09 N 批 Frank「名字一律英文在上、译名灰字在下」:手机省卡、
+ * 门槛弹框的省名改名字两行,只给真省出 —— 全国(CA)、联邦抽选标签(EE)、PR 小表的指标行键都不是省,照旧一行字
+ * (省名词条没有这些码,硬套两行会把词条键名当译名漏出来)。
+ *
+ * @param code 地区码 / 行键 / 抽选标签。
+ * @returns 是省码 = true。
+ */
+export function isProvCode(code: string): boolean {
+  return PROV_NAME[code] != null
+}
+
 
 /**
  * 按 NOC 筛过的职位板地址(每行可溯源)。
@@ -4596,6 +4608,7 @@ function fedEeGeoOf(x: AllocTargetRowIn): MacroGeo | null {
     code: FED_EE_CODE,
     anchor: ID_IND_HEAD + FED_EE_CODE,
     name: x.t(KEY_MACRO_HEAD + FED_EE_CODE),
+    prov: TEXT_NONE,
     years,
     rows,
     yoyLabel: yoyLabelOf({ t: x.t, year }),
@@ -4642,6 +4655,7 @@ function prRegionGeoOf(x: PrRegionGeoIn): MacroGeo | null {
     code: MK_PR_ALL + SUB_ID_SEP + x.code,
     anchor: prAnchorOf(x.code),
     name: prGeoNameOf({ code: x.code, t: x.t }),
+    prov: prTitleProvOf(x.code),
     years,
     rows,
     yoyLabel: yoyLabelOf({ t: x.t, year }),
@@ -4827,6 +4841,20 @@ function prGeoNameOf(x: PrGeoNameIn): string {
 }
 
 /**
+ * PR 小表标题的省码(2026-10-09 N 批 Frank「名字一律英文在上、译名灰字在下」:省表标题改出英文省名在上、
+ * 界面语省名灰字在下,块件按这一格出名字两行);全国那张标题是「获批」不是省名,给空串照旧一行字。
+ *
+ * @param code 地区码。
+ * @returns 省码;全国给空串。
+ */
+function prTitleProvOf(code: string): string {
+  if (code === GEO_CA) {
+    return TEXT_NONE
+  }
+  return code
+}
+
+/**
  * PR 小表的一行:省块形底行照抄,配上同比格(行名就是指标名,不换)。
  *
  * @param x 底行与同比年。
@@ -4896,6 +4924,7 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
     code: x.key,
     anchor: ID_IND_HEAD + x.key,
     name: x.t(KEY_MACRO_HEAD + x.key),
+    prov: TEXT_NONE,
     years,
     rows: plain,
     yoyLabel: yoyLabelOf({ t: x.t, year }),

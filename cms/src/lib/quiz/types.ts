@@ -478,6 +478,12 @@ export type Answers = {
   resProv: string
 
   /**
+   * 现居城市(2026-10-09「我的档案」批,Frank「所在地 需不需要 选城市」→「可以」):英文城市名,与 cities.name 同写法;
+   * 空串 = 没选(选填,跳过照旧按全省推)。挂在 resProv 之下 —— 换省时由写入方一并清掉,不单独成立。只存不判,引擎不读。
+   */
+  resCity: string
+
+  /**
    * 专业对口档(2026-08-15 拆闸;只对「有加拿大学历」的人显示)。
    */
   fieldMatchBand: number
@@ -1180,3 +1186,332 @@ export type FieldBehavior = {
  * 装配好的题库(字段名 → 完整定义)。
  */
 export type FieldMap = Record<string, FieldDef>
+
+// =========================================================================
+// N. 我的档案(2026-10-09「我的档案」批:/api/quiz/profile)
+// =========================================================================
+
+/**
+ * 码清单(专业码 / 职业码)。
+ */
+export type CodeList = string[]
+
+/**
+ * 码清单或没有(jsonb 里那一格缺 / 错型 = null)。
+ */
+export type MaybeCodeList = string[] | null
+
+/**
+ * loadQuizProfile 的返回。
+ */
+export type QuizProfileOut = Promise<QuizProfile>
+
+/**
+ * 一串名字。
+ */
+export type ProfileNames = ProfileName[]
+
+/**
+ * 按码取名字的返回。
+ */
+export type ProfileNamesOut = Promise<ProfileNames>
+
+/**
+ * 取城市译名的返回。
+ */
+export type CityNamesOut = Promise<ProfileName>
+
+/**
+ * 一个名字的三语(专业 / 职业 / 城市;档案页照名字规范摆英文在上、界面语译名灰字在下)。
+ */
+export type ProfileName = {
+  /**
+   * 码(专业 CIP class 码 / NOC 五位码);城市没有码,给空串。
+   */
+  code: string
+
+  /**
+   * 英文名;库里查不到用码顶上。
+   */
+  en: string
+
+  /**
+   * 中文译名;没有 = 空串。
+   */
+  zh: string
+
+  /**
+   * 韩文译名;没有 = 空串。
+   */
+  ko: string
+}
+
+/**
+ * 档案页那一张「求职」卡要的全部(答案档五格 + 名字 + 投递署名)。
+ */
+export type QuizProfile = {
+  /**
+   * 目标档(1 = 拿 PR、2 = 先找工作);0 = 没答。
+   */
+  goal: number
+
+  /**
+   * 专业(按答的先后序)。
+   */
+  majors: ProfileName[]
+
+  /**
+   * 想做的工作(按答的先后序)。
+   */
+  nocs: ProfileName[]
+
+  /**
+   * 现居省码;空串 = 没答或在境外。
+   */
+  prov: string
+
+  /**
+   * 答的是「加拿大境外」。
+   */
+  abroad: boolean
+
+  /**
+   * 现居城市;没选 = 四格空串。
+   */
+  city: ProfileName
+
+  /**
+   * 投递署名(英文姓名);没填 = 空串。
+   */
+  name: string
+}
+
+/**
+ * 档案页读的答案档基础段(洗净后;to* 出)。
+ */
+export type ProfileBasicFact = {
+  /**
+   * 目标档;没答 0。
+   */
+  goal: number
+
+  /**
+   * 专业码清单。
+   */
+  majors: string[]
+
+  /**
+   * 职业码清单。
+   */
+  nocs: string[]
+
+  /**
+   * 现居省码。
+   */
+  prov: string
+
+  /**
+   * 在境外。
+   */
+  abroad: boolean
+
+  /**
+   * 现居城市英文名。
+   */
+  city: string
+}
+
+/**
+ * 答案档那一格的库行(pg 原始;jsonb 可能已解析成对象,也可能是串)。
+ */
+export type ProfileAnswersDbRow = {
+  /**
+   * users.answers。
+   */
+  answers: string | ProfileAnswersJson | null
+}
+
+/**
+ * 答案档(线格式 / jsonb 原样;只声明档案页读的格)。
+ */
+export type ProfileAnswersJson = {
+  /**
+   * 基础段。
+   */
+  basic?: ProfileBasicJson | null
+}
+
+/**
+ * 答案档基础段里档案页读的格(老答案可能缺任何一格)。
+ */
+export type ProfileBasicJson = {
+  /**
+   * 目标档。
+   */
+  goalBand?: number | null
+
+  /**
+   * 专业码清单。
+   */
+  majors?: string[] | null
+
+  /**
+   * 职业码清单。
+   */
+  nocs?: string[] | null
+
+  /**
+   * 现居省码。
+   */
+  resProv?: string | null
+
+  /**
+   * 现居城市英文名。
+   */
+  resCity?: string | null
+
+  /**
+   * 处境(overseas = 在境外)。
+   */
+  status?: string | null
+}
+
+/**
+ * 专业名的库行(cip_programs)。
+ */
+export type MajorNameDbRow = {
+  /**
+   * CIP class 码。
+   */
+  code: string
+
+  /**
+   * 英文名。
+   */
+  title_en: string | null
+
+  /**
+   * 中文名。
+   */
+  title_zh: string | null
+
+  /**
+   * 韩文名。
+   */
+  title_ko: string | null
+}
+
+/**
+ * 职业名的库行(noc_descriptions)。
+ */
+export type NocNameDbRow = {
+  /**
+   * NOC 五位码。
+   */
+  noc: string
+
+  /**
+   * 官方英文职业名。
+   */
+  title: string | null
+
+  /**
+   * 中文职业名。
+   */
+  title_zh: string | null
+
+  /**
+   * 韩文职业名。
+   */
+  title_ko: string | null
+}
+
+/**
+ * 城市译名的库行(cities)。
+ */
+export type CityNamesDbRow = {
+  /**
+   * 中文译名。
+   */
+  name_zh: string | null
+
+  /**
+   * 韩文译名。
+   */
+  name_ko: string | null
+}
+
+/**
+ * 投递署名的库行(apply_prefs;只读这一格)。
+ */
+export type SenderDbRow = {
+  /**
+   * 英文姓名。
+   */
+  sender_name: string | null
+}
+
+/**
+ * loadQuizProfile 的入参。
+ */
+export type ProfileLoadIn = {
+  /**
+   * 连接(路由注进来)。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: number
+}
+
+/**
+ * 按码取名字(专业 / 职业)的入参。
+ */
+export type NamesByCodesIn = {
+  /**
+   * 连接。
+   */
+  db: Db
+
+  /**
+   * 码清单(按答的先后序)。
+   */
+  codes: string[]
+}
+
+/**
+ * 取城市译名的入参。
+ */
+export type CityNamesIn = {
+  /**
+   * 连接。
+   */
+  db: Db
+
+  /**
+   * 英文城市名。
+   */
+  city: string
+
+  /**
+   * 省码。
+   */
+  prov: string
+}
+
+/**
+ * orderNamesOf 的入参:按答的先后序排名字,查不到的用码顶上。
+ */
+export type OrderNamesIn = {
+  /**
+   * 码清单(答的先后序)。
+   */
+  codes: string[]
+
+  /**
+   * 查回来的名字。
+   */
+  rows: ProfileName[]
+}

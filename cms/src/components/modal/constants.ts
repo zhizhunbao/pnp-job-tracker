@@ -36,6 +36,12 @@ export const KEY_ESC = 'Escape'
 export const Z_MODAL = 50
 
 /**
+ * 没指定层级的弹框按打开先后往上叠,每多一个开着的弹框高这么多(2026-10-09 N 批:投递框、职位框、公司框都挂在全站骨架上,
+ * 谁叠在谁上面由打开先后定 —— 投递框里点公司,公司框在上;职位框里点投递,投递框在上)。
+ */
+export const Z_STEP = 2
+
+/**
  * 拖拽豁免目标(闭包选择器):按在这些交互件上不算抓 header ——
  * 否则点按钮/选字/选 occ 药丸都会把整框拖走。
  * 2026-09-28 并壳:加 `[data-nodrag]` —— 标题栏里的窗口钮排与译名行整块不起拖动
@@ -210,3 +216,39 @@ export const EV_POINTERMOVE = 'pointermove'
  * 窗口级指针事件名:松开。
  */
 export const EV_POINTERUP = 'pointerup'
+
+/**
+ * 弹框总线:各页往全站弹框宿主发「栈操作」的站内事件名(2026-10-09 N 批,Frank「一个全站宿主,并掉各页那 5 套」:
+ * 职位框 / 公司框的栈只有挂在全站骨架上的那一个,各页只发消息不持栈)。
+ */
+export const EV_PEEK = 'offer2pr:peek'
+
+/**
+ * 弹框总线:各页把本页的分层态与职业名表报给宿主的站内事件名(卸载时报 null 撤回)。
+ */
+export const EV_PEEK_CTX = 'offer2pr:peek-ctx'
+
+/**
+ * 栈操作:叠上一层。
+ */
+export const PEEK_PUSH = 'push'
+
+/**
+ * 栈操作:换掉最上面一层。
+ */
+export const PEEK_SWAP = 'swap'
+
+/**
+ * 栈操作:关掉最上面一层。
+ */
+export const PEEK_POP = 'pop'
+
+/**
+ * 栈操作:按职位号叠开职位框(手上没有整行的地方用,宿主现取一行)。
+ */
+export const PEEK_JOB_ID = 'jobId'
+
+/**
+ * 栈操作:全关。
+ */
+export const PEEK_CLEAR = 'clear'

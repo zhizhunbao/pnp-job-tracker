@@ -16,7 +16,6 @@ import { Loading } from '@/components/loading'
 import { Modal } from '@/components/modal'
 import { Pager } from '@/components/pager'
 import { PREVIEW_SIZE } from './constants'
-import { thumbSrcOf } from './functions'
 import { useResumePages } from './hooks'
 import { ResumePages } from './resumepages'
 import { ResumeStage } from './resumestage'
@@ -30,11 +29,11 @@ import css from './account.module.css'
  * @param props 预览哪一份、关弹框与取词函数。
  * @returns 弹框。
  */
-export function ResumePreview({ meta, onClose, t }: ResumePreviewIn) {
-  const pg = useResumePages({ src: thumbSrcOf(meta) })
+export function ResumePreview({ src, title, onClose, t }: ResumePreviewIn) {
+  const pg = useResumePages({ src })
   return (
     <Modal onClose={onClose} size={PREVIEW_SIZE}>
-      <div className={css.rfPvTitle}>{meta.fileName}</div>
+      <div className={css.rfPvTitle}>{title}</div>
       <ResumeStage onMount={pg.onStageMount}
         zoomed={pg.zoomed}
         onPointerDown={pg.onGripDown}

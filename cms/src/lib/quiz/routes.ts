@@ -18,8 +18,8 @@ import { BAD_REQUEST, TOO_LARGE, UNAUTHORIZED } from '../http'
 import { loadBroadNocs, loadMajorNocs, loadNocOpenCounts, loadQuizFacts, loadTopNocs, searchNocByTitle } from '../jobs/server'
 import { getMajorBroads } from '../majors/server'
 import {
-  getMajorNocsCached, getTopNocsCached, loadAnswers, majorCodesOf, majorNOf, makeFactsStore, saveAnswers,
-  swallowFactsError,
+  getMajorNocsCached, getTopNocsCached, loadAnswers, loadQuizProfile, majorCodesOf, majorNOf, makeFactsStore,
+  saveAnswers, swallowFactsError,
 } from './functions'
 import { getUserOrNull } from '../quota/server'
 import {
@@ -138,6 +138,22 @@ export async function quizRoute(req: Request): Promise<Response> {
     CACHE.factsBy.set(noc, { at: Date.now(), facts: facts })
   }
   return Response.json({ facts: facts })
+}
+
+/**
+ * GET /api/quiz/profile:「我的」页「我的档案」一节取数(2026-10-09「我的档案」批):本人答案档五格 + 三语名字 + 投递署名。
+ * 只回本人,身份从 cookie 取,不收参数。
+ *
+ * @param _req 请求(不读参数)。
+ * @returns { profile };未登录 401。
+ */
+export async function quizProfileRoute(_req: Request): Promise<Response> {
+  const user = await getUserOrNull(await headers())
+  if (user == null) {
+    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  const profile = await loadQuizProfile({ db: await getDb(), userId: Number(user.id) })
+  return Response.json({ profile })
 }
 
 /**

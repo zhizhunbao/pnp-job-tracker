@@ -9,6 +9,8 @@
  * 依赖方向:本文件 → 各单元格组件(单向;它们只认 constants/types/css 与通用组件域,不回引本文件
  * —— 否则 import/no-cycle 当场红)。
  * 2026-10-04 收口审查:筛选手柄外多一层访客闸(makeGatedPick),弹框层多筛选访客向导的开关与注册完两只手柄。
+ * 2026-10-09 N6 批:雇主板手机卡地点改交原值给 name 桶 CityName / ProvName(市和省各一份,原「市, 省码」拼一格的
+ * empWhereTextOf 与它独用的 provNameOf 撤),卡上点名字 / 整卡改开公司弹框;对照手机卡雇主名换 CompanyName(洗行多带两门译名)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -89,7 +91,7 @@ import { SkilledCell } from './skilledcell'
 import { SponsorNameCell } from './sponsornamecell'
 import type {
   EmptyTextIn, ShownPlace, ShownPlaceIn,
-  AliasIn, BoardUrlIn, CardClickFn, CardClickIn, CellFn, ClearIn, ClickFn, CompareCellRow,
+  AliasIn, BoardUrlIn, CardClickFn, CellFn, ClearIn, ClickFn, CompareCellRow,
   CompareCellRowIn, CompareCellRowsIn, CompareDemoRow, CompareDim, CompareDimsIn, CompareMatchParts, CompareNamesIn,
   CompareProvParts, CompareRow, DiffVariant, DimValueIn,
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
@@ -103,7 +105,7 @@ import type {
   PoolWidthIn,
   ListClsIn, LoadBoardIn, MoneyIn, MoreBtnClsIn, MoreIn, MorePageIn,
   NocNameFn, NoteTextIn, OnLabelIn,
-  PickFn, PoolDir, PoolFilters, PoolPage, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
+  PickFn, PoolDir, PoolFilters, PoolPage, PoolSort, RowWordsIn, SponsorCellRow,
   SponsorCellRowIn, SponsorCellRowsIn, SponsorColsIn, SponsorColsWordsIn, SponsorEmployerRow, SponsorKindIn,
   PricingSetIn, QCommitIn, RowViewIn, SortPickIn, VerdictFact, VerdictFactIn,
   VerdictToneIn,
@@ -115,21 +117,6 @@ import { W1Cell } from './w1cell'
 import { W2Cell } from './w2cell'
 import { W4Cell } from './w4cell'
 import css from './employers.module.css'
-
-/**
- * 省名:字典里有就用人话名,没有原样显示省码 —— 字典缺词不该把省码吞掉。
- *
- * @param x 取词函数与省码。
- * @returns 省名或省码。
- */
-export function provNameOf(x: ProvNameIn): string {
-  const key = PROV_KEY_HEAD + x.code
-  const v = x.t(key)
-  if (v === TEXT_NONE || v === key) {
-    return x.code
-  }
-  return v
-}
 
 /**
  * 雇主别名:按界面语言取中文/韩文官方标签(英文界面不出别名 —— 名字本身就是英文)。
@@ -218,10 +205,6 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     companyHref = URL_COMPANY_HEAD + r.slug
     slug = r.slug
   }
-  let href = companyHref
-  if (href === TEXT_NONE) {
-    href = jobsHref
-  }
   let industry = TEXT_NONE
   if (r.industry != null) {
     industry = r.industry
@@ -233,10 +216,11 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
   return {
     key: r.key + KEY_SEP + r.group,
     name: r.name,
-    href,
-    hrefTitle: x.t('pulse.act.company'),
     industry,
-    where: empWhereTextOf({ t: x.t, r }),
+    city: r.city,
+    province: r.province,
+    cityZh: r.cityZh,
+    cityKo: r.cityKo,
     lmiaText: positiveTextOf(r.lmiaSkilled),
     sectorText: x.t(KEY_SECTOR_HEAD + sectorKeyOf(r.sector)),
     categoryText: categoryTextOf({ t: x.t, r }),
@@ -265,7 +249,7 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     siteHref: r.website,
     onName: makeNameClick({ slug, poolKey: r.key, name: r.name, kind, onOpen: x.onOpen }),
     onPeek: makeNamePeek({ slug, poolKey: r.key, name: r.name, kind, onOpen: x.onOpen }),
-    onCard: makeCardClick({ href, kind }),
+    onCard: makeCardClick({ slug, poolKey: r.key, name: r.name, kind, onOpen: x.onOpen }),
   }
 }
 
@@ -283,25 +267,6 @@ function kindOf(x: FiltersIn): string {
     return x.f.group
   }
   return EV_KIND_NONE
-}
-
-/**
- * 手机卡地点行:市 + 省码(紧凑格,站规「省份紧凑格用两位省码」);没市回落省全名;都没有空串。
- *
- * @param x 取词函数与这一行。
- * @returns 地点行。
- */
-function empWhereTextOf(x: RowWordsIn): string {
-  if (x.r.city !== TEXT_NONE && x.r.province !== TEXT_NONE) {
-    return x.r.city + WHERE_SEP + x.r.province
-  }
-  if (x.r.city !== TEXT_NONE) {
-    return x.r.city
-  }
-  if (x.r.province !== TEXT_NONE) {
-    return provNameOf({ t: x.t, code: x.r.province })
-  }
-  return TEXT_NONE
 }
 
 /**
@@ -1239,6 +1204,8 @@ export function toCompareCellRow(x: CompareCellRowIn): CompareCellRow {
     name: x.r.name,
     website: x.r.website,
     alias: aliasOf({ lang: x.lang, aliasZh: x.r.aliasZh, aliasKo: x.r.aliasKo }),
+    aliasZh: x.r.aliasZh,
+    aliasKo: x.r.aliasKo,
     industry: { label: industryLabelOf(x), variant: TAG_REGION },
     skilled: { text: maybePositiveTextOf(x.r.lmiaPositionsSkilled), cls: cssOf(css.ok) },
     lmia: { text: compareLmiaTextOf(x.r), cls: TEXT_NONE },
@@ -2406,21 +2373,24 @@ export function makeMore(x: MoreIn): ClickFn {
 /**
  * 造整卡点击手柄:手机上整张卡都可点(卡本身 ≥70px,卡内标题链只有 23px 高),
  * 但点在卡内链接上时交给 `<a>` 自己走,不重复导航。
+ * 2026-10-09 N6 批(Frank「所有的点击操作都触发弹框 如果没有特别强调的话」):整卡点了不再整页跳公司页 / 职位板按名搜,
+ * 改开与点雇主名同一个公司弹框(有公司页按 slug,没有按雇主池键 —— 同表格雇主列);卡内名字、城市、省份的链接照旧各走各的。
  *
- * @param x 这一行的落点与埋点分组值。
+ * @param x 这一行的 slug、池键、雇主名、埋点分组值与开框落格。
  * @returns 卡的 onCardClick。
  */
-export function makeCardClick(x: CardClickIn): CardClickFn {
+export function makeCardClick(x: NameClickIn): CardClickFn {
   function onCardClick(e: React.MouseEvent): void {
     const el = e.target
     if (el instanceof HTMLElement && el.closest(LINK_SELECTOR) != null) {
       return
     }
-    if (x.href === TEXT_NONE) {
-      return
-    }
     track(EV_ROW, { [EV_PROP_KEY]: x.kind })
-    window.location.href = x.href
+    let slug = x.slug
+    if (slug === TEXT_NONE) {
+      slug = x.poolKey
+    }
+    x.onOpen({ slug, name: x.name })
   }
   return onCardClick
 }
@@ -2463,14 +2433,20 @@ export function makeNameClick(x: NameClickIn): CardClickFn {
 
 /**
  * 造「点没有公司页的雇主名」的手柄(那一格是钮):记一笔 emp-row、开公司弹框,弹框按雇主池键取数。
+ * 2026-10-09 N6 批:手机卡标题换 name 桶的名字两行后,有公司页的名字也走这一枚(name 桶自己判修饰键,只在普通左键时调它)
+ * —— 有 slug 按 slug 开(同 makeCardClick),没有才用池键。
  *
- * @param x 雇主池键、雇主名、埋点分组值与开框落格。
+ * @param x 公司页 slug、雇主池键、雇主名、埋点分组值与开框落格。
  * @returns 钮的 onClick。
  */
 export function makeNamePeek(x: NameClickIn): ClickFn {
   function onPeek(): void {
     track(EV_ROW, { [EV_PROP_KEY]: x.kind })
-    x.onOpen({ slug: x.poolKey, name: x.name })
+    let slug = x.slug
+    if (slug === TEXT_NONE) {
+      slug = x.poolKey
+    }
+    x.onOpen({ slug, name: x.name })
   }
   return onPeek
 }

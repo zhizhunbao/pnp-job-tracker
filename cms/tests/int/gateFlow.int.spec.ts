@@ -8,6 +8,8 @@
 //       ④ 换了题焦点挪到题面(id + tabIndex -1);开屏不挪(焦点不抢、背后页面不滚);返回也挪。
 // 探针:去掉 dropHandoffOnLeave → ①红;dropGateHandoff 不看 isGateSignedIn → ②「交没成卸掉不撤」红;
 //       focusGateQuestion 恒 return → ④「点目标大卡后焦点在题面」红;开屏也挪 → ④「开屏不挪」红。
+// 2026-10-09「我的档案」批:首访引导向导退役,「记引导弹过」(本地存储 jobs_onboarding_v1)那一记从 gate 撤 ——
+//       ② ③ 里对它的断言删(③ 原先拿它等补交那一跑交成,交成的证据改由随后的戳 / 草稿 / 地址栏断言给)。
 import { act, createElement, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -30,7 +32,6 @@ vi.mock('next/navigation', () => ({
 }))
 
 const HANDOFF_KEY = 'o2p_gate_handoff_v1'
-const OB_SEEN_KEY = 'jobs_onboarding_v1'
 
 const t = ((key: string) => key) as TFn
 
@@ -127,7 +128,7 @@ describe('交接戳随向导的走法(收口审查)', () => {
     expect(sessionStorage.getItem(HANDOFF_KEY)).toBeNull()
   })
 
-  it('② 邮箱注册当场交成了:戳与草稿撤掉、答案档推上去、记引导弹过、回职位板筛;随后卸掉不再动', async () => {
+  it('② 邮箱注册当场交成了:戳与草稿撤掉、答案档推上去、回职位板筛;随后卸掉不再动', async () => {
     const puts = server()
     const onDone = vi.fn()
     const w = mountHook(() => useGateWizard({ intent: 'entry', onDone, onClose: () => undefined, t: (k: string) => k }))
@@ -138,7 +139,6 @@ describe('交接戳随向导的走法(收口审查)', () => {
     w.unmount()
     expect(sessionStorage.getItem(HANDOFF_KEY)).toBeNull()
     expect(readGateDraft()).toBeNull()
-    expect(localStorage.getItem(OB_SEEN_KEY)).not.toBeNull()
     expect(JSON.parse(puts[0] ?? '{}').basic.goalBand).toBe(2)
   })
 
@@ -164,7 +164,6 @@ describe('交接戳随向导的走法(收口审查)', () => {
     window.history.replaceState(null, '', '/?q=cook')
     mountHook(() => useGateSync(), seed(true))
     await vi.waitFor(() => expect(puts.length).toBe(1))
-    await vi.waitFor(() => expect(localStorage.getItem(OB_SEEN_KEY)).not.toBeNull())
     expect(sessionStorage.getItem(HANDOFF_KEY)).toBeNull()
     expect(readGateDraft()).toBeNull()
     expect(JSON.parse(puts[0] ?? '{}').basic.resProv).toBe('NS')

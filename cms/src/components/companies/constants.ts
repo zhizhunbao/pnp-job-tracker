@@ -436,24 +436,9 @@ export const URL_JOBS_COMPANY = '/api/jobs/company'
 export const URL_JOBS_SIMILAR = '/api/jobs/similar?'
 
 /**
- * 职位详情页地址头(拼岗位号)。
- */
-export const URL_JOB_HEAD = '/jobs/'
-
-/**
  * 职位描述弹框的 NOC 描述表占位(弹框契约上的透传格,公司页没有这张表;弹框自己不读它)。
  */
 export const NOC_DESC_NONE = []
-
-/**
- * 按岗位号取板上一行的接口前缀(后面直接接岗位号;2026-09-19 点迷你职位行现取整行)。
- */
-export const URL_JOBS_ROW_HEAD = '/api/jobs/row?id='
-
-/**
- * 公司详情页地址头(拼 slug)。
- */
-export const URL_COMPANY_HEAD = '/companies/'
 
 /**
  * 职位板按公司名搜索的地址头(拼编码后的公司名 —— 载入上限之外的在招岗回退到这里)。
@@ -944,16 +929,6 @@ export const SITE_POLLS_MAX = 20
  * 一直停在排队中最多问几次(= 2 分钟;工人不在线 —— Frank 合盖出门 —— 不干等)。
  */
 export const SITE_QUEUED_POLLS_MAX = 8
-
-/**
- * 弹框栈的职位层(2026-09-21;PeekJobLayer.kind 的字面量,与 advisor 域同名同值,本域自抄)。
- */
-export const LAYER_JOB = 'job'
-
-/**
- * 弹框栈的公司层(PeekCoLayer.kind 的字面量)。
- */
-export const LAYER_CO = 'company'
 
 /**
  * 一组职位行灰字那一行的占位(2026-09-21):中 / 韩界面译名还没到 / 没有时出一个不换行空格,行高照留,懒翻到了只换字不跳。

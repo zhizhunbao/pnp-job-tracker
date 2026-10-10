@@ -3,11 +3,13 @@
  * 「我的求职」一节(2026-10-06 Frank「先做我的求职」):投递记录。还在拉时不渲;拉失败出「刷新再试」,不冒充「还没有投递」。
  * 2026-10-08 进度板:顶上一排阶段胶囊带计数(全部 / 草稿 / 待投 / 已投递 / 雇主回复 / 退信,点了只看那一档),
  * 下面一岗一张横卡;空态一行「还没有投递」+ 「去职位板」。
+ * 2026-10-09 N 批(Frank「一个全站宿主,并掉各页那 5 套」):本页不再自己画 PeekStack,改摆 modal 桶的报件 PeekContext
+ * (报本页的分层态与职业名表),弹框由全站骨架上的 PeekHost 画。
  *
  * @author Frank
  * @time 2026-10-06 23:20:00
  */
-import { PeekStack } from '@/components/advisor'
+import { PeekContext } from '@/components/modal'
 import { Button } from '@/components/button'
 import { KIND_APPLIED, NOC_DESC_NONE, PRIMARY_KIND, URL_APPLIED, URL_BOARD } from './constants'
 import { byStageOf, makePick, myJobCellRowsOf, stagePillsOf } from './functions'
@@ -33,12 +35,10 @@ export function AppliedList({ t, plan }: MyJobsListIn) {
   }
   const rows = myJobCellRowsOf({
     kind: KIND_APPLIED,
+    filter: p.stage,
     items: byStageOf({ items: p.items, stage: p.stage }),
-    lang: p.lang,
     t,
     setItems: p.setItems,
-    onOpenCompany: p.onOpenCompany,
-    onOpenJob: p.onOpenJob,
   })
   const empty = (
     <div className={css.empty}>
@@ -53,7 +53,7 @@ export function AppliedList({ t, plan }: MyJobsListIn) {
           onPick={makePick({ setStage: p.setStage })} />
       )}
       <JobList rows={rows} empty={empty} />
-      <PeekStack stack={p.stack} lang={p.lang} plan={plan} nocDesc={NOC_DESC_NONE} />
+      <PeekContext plan={plan} nocDesc={NOC_DESC_NONE} />
     </>
   )
 }

@@ -9,6 +9,7 @@
  * JSDoc),这里只剩 useState、具名 effect 壳与工厂装配(样板 account/hooks.ts)。
  * 2026-10-04 收口审查(设计稿 10-04「关掉后…筛选…一律再弹」):交给筛选区的筛选 / 搜索手柄一律过访客闸(makeGatedPick)——
  * 访客动筛选开访客向导、值不动;首屏预选本省、搜索防抖落词、清除仍走原落格。
+ * 2026-10-09 N 批:弹框栈改用 modal 桶的代理栈 usePeekBus(只发消息),唯一的栈在全站骨架上的 PeekHost。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -17,7 +18,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { isGateSignedIn } from '@/lib/guest'
 import { useLang } from '@/components/i18n'
-import { useLayerStack } from '@/components/modal'
+import { usePeekBus } from '@/components/modal'
 import { useColPick } from '@/components/table'
 import {
   ALIAS_KEYS_SEP, ALIAS_POLL_MS, ALIAS_POLL_ROUNDS_MAX, COLS_STORE_KEY, Q_DEBOUNCE_MS, TEXT_NONE,
@@ -190,7 +191,7 @@ function useQDebounce(x: QCommitIn): void {
  * @returns 弹框层面板。
  */
 function useEmpPeek(x: EmployersIn): EmpPeekPanel {
-  const stack = useLayerStack<PeekLayer>()
+  const stack = usePeekBus<PeekLayer>()
   const [filterGate, setFilterGate] = useState(false)
   const router = useRouter()
   const closeFilterGate = makeFilterGateFlag({ setOpen: setFilterGate, open: false })

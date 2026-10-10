@@ -4,11 +4,9 @@
  */
 
 /*
- * 本岗那张职位卡与下面步数行之间的空。
+ * (2026-10-09 投递弹框换 section 形时本桶起的名字两行 .nameEn / .nameSub 同日随 N 批退役,改用全站 name 桶;
+ * 更早的「本岗职位卡与步数行之间的空」.job 随 JobCard 撤。)
  */
-.job {
-  margin-bottom: 12px;
-}
 
 /*
  * 一步的小标题(简历 / 求职信 / 预览)。
@@ -112,71 +110,117 @@
 }
 
 /*
- * 逐项检查(2026-10-08):一列勾选行,与上面的信隔一条线。
+ * 邮件形预览(2026-10-08 Frank「这个不能改成类似于邮件那种吗」):一张带边框的「信」—— 收件人 / 主题两行、正文、附件一行;
+ * 原四行勾选清单撤(.checks / .check* 退役,见 git 历史)。
  */
-.checks {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.mail {
   margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
 }
 
 /*
- * 逐项检查一行:三列网格 —— 勾 | 灰字项名(定宽)| 值 + 打开看(长了在本格里折行,不掉到勾下面);整行可点勾。
- * 项名列 88px 同站上 Row(英文「Cover letter」「Signed as」64px 折两行,实撞)。
- * 2026-10-08 Frank「看着不乱吗」改两层:上层「勾 | 灰字项名 | 打开看(靠右)」,下层值从项名那一列起占满整行
- * (三列版手机上值只剩一窄条:文件名断在词中间、「View PDF」折两行、四行高矮不一)。
+ * 头部一行(收件人 / 主题 / 附件):灰字项名定宽,值占满。
  */
-.check {
-  display: grid;
-  grid-template-columns: auto max-content 1fr;
-  grid-template-areas:
-    "box label link"
-    ". value value";
-  align-items: center;
-  column-gap: 8px;
-  row-gap: 2px;
-  cursor: pointer;
+.mailRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 14px;
+}
+
+.mailRow:last-child {
+  border-bottom: 0;
 }
 
 /*
- * 勾(上层最左)。
+ * 项名(灰小字,定宽对齐;英文「Attachments」最长,64px 放得下)。
  */
-.checkBox {
-  grid-area: box;
-  margin: 0;
-}
-
-/*
- * 逐项检查项名(灰小字,上层)。
- */
-.checkLabel {
-  grid-area: label;
+.mailLabel {
+  flex: none;
+  width: 64px;
   font-size: 12px;
   color: var(--text2);
 }
 
 /*
- * 「打开 / 查看 PDF」(上层紧跟项名,一行不折;靠右放在桌面宽卡上离文件名太远,实撞)。
+ * 值(收件人 / 主题;长了折行)。
  */
-.checkLink {
-  grid-area: link;
-  justify-self: start;
-  font-size: 13px;
-  white-space: nowrap;
+.mailValue {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text);
 }
 
 /*
- * 逐项检查的值(下层,占满整行;只在下划线后折,见 BREAK_AFTER_RE;一整段仍放不下才硬断)。
+ * 正文区:信全文,下方靠右一颗「改信」(绝对定位压在第一行上,375 实撞,改成正文后一行)。
  */
-.checkValue {
-  grid-area: value;
-  min-width: 0;
+.mailBodyWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+/*
+ * 正文(保留换行)。
+ */
+.mailBody {
+  white-space: pre-wrap;
   font-size: 14px;
-  overflow-wrap: break-word;
+  line-height: 1.55;
   color: var(--text);
+}
+
+/*
+ * 「改信」靠右。
+ */
+.mailEdit {
+  align-self: flex-end;
+}
+
+/*
+ * 附件一行:两枚回形针胶囊 + 换简历下拉,放不下换行。
+ */
+.mailAttach {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/*
+ * 附件胶囊(文件名可点:PDF 弹框预览 / .docx 新开标签页)。
+ */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 2px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.chip::before {
+  content: "📎";
+  margin-right: 4px;
+}
+
+/*
+ * 胶囊里的文件名钮:长文件名在胶囊里折行,别撑出卡边(375 实撞);只在下划线后折(wbr,见 breakPartsOf),一整段放不下才硬断。
+ */
+.chip button {
+  min-width: 0;
+  white-space: normal;
+  text-align: left;
+  overflow-wrap: anywhere;
 }
 
 /*

@@ -6,6 +6,7 @@
  * 薪资一行 + EE / PNP / AIP 三行,三行的值与可点判据照职位板这三列(immRowsOf),点开职位板同一个弹框
  * (省提名 = pnp 桶 PnpModal,EE / AIP = advisor 桶 AdvisorModal,同 BoardModals 的分流)。
  * 事实由页面门服务端取好递进来,卡直出进 HTML,爬虫看得到。一行都没有整卡不出。
+ * 2026-10-09 N6b 批:字段弹框里 AIP 名单招牌与公司组的名字 N6 起由 name 桶自开弹框,点公司名的回调撤。
  *
  * @author Frank
  * @time 2026-10-02 15:30:00
@@ -22,10 +23,10 @@ import type { JobImmCardIn } from './types'
 /**
  * 渲染移民相关卡。
  *
- * @param props 本岗、服务端事实、界面语言、分层态、本岗职业描述与点公司名的去处(逐格注释见 JobImmCardIn)。
+ * @param props 本岗、服务端事实、界面语言、分层态与本岗职业描述(逐格注释见 JobImmCardIn)。
  * @returns 一张白卡;一行都没有不渲。
  */
-export function JobImmCard({ job, imm, lang, plan, nocDesc, onOpenCompany }: JobImmCardIn) {
+export function JobImmCard({ job, imm, lang, plan, nocDesc }: JobImmCardIn) {
   const t = makeT(lang)
   const rows = immRowsOf({ job, imm, lang, plan })
   const pop = useImmPopup()
@@ -54,7 +55,6 @@ export function JobImmCard({ job, imm, lang, plan, nocDesc, onOpenCompany }: Job
           eeOcc={imm.dims.eeCategories}
           nocDesc={nocDesc}
           fieldSources={imm.dims.fieldSources}
-          onOpenCompany={onOpenCompany}
           onClose={pop.close} />
       )}
     </div>

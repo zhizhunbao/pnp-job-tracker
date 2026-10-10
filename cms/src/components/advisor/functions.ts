@@ -10,6 +10,10 @@
  * 给「哪一行是建议问题」「429 算不算没正文」各开一个岔;走 jobs 桶会成环
  * (jobs 的职位板反过来要本桶的两个弹框),所以点文件,与本域既有的过渡边同一处置。
  * 2026-09-28 AI 顾问卡删(Frank「AI 顾问卡删了吧」):用 extractSug 的长文打字机随之删,只剩 fetchJobText 这一条。
+ * 2026-10-09 N6b 批(N6 把点职位名 / 公司名收进 name 桶的弹框总线后清上游死接线):弹框栈三只手柄 makePushJob / makePushCo /
+ * makeSwapCo 撤(PeekStack 不再往弹框里注回调,相似雇主也改叠一层、不再同框换);同公司在榜岗的取数 makeLoadCompanyJobs 撤 ——
+ * 它只喂公司弹框按岗位号回查整行(2026-09-14 Frank「这个为什么只有第一个改成弹框了」:原写 `?company=`,接口没这个参数、
+ * 整条被当无筛选,改走全文搜索 q),N6 起职位框由总线按号现取,这份清单没人读了。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -23,23 +27,23 @@ import { daysSince } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   ACC_UNKNOWN, BAND_KEY_HIGH, BAND_KEY_LOW, BAND_KEY_MED, CARET_DOWN, CARET_RIGHT, CAT_NONE, CLS_DEPTH_BROAD,
-  CLS_DEPTH_NONE, CLS_SEP, CREDENTIALS_INCLUDE, DASH, FIELD_ACCESSIBILITY, FIELD_BROAD, FIELD_COMPANY, FIELD_NOC,
+  CLS_DEPTH_NONE, CLS_SEP, DASH, FIELD_ACCESSIBILITY, FIELD_BROAD, FIELD_COMPANY, FIELD_NOC,
   FIELD_NOC_CODE, FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN, FIELD_WAGE_MED_HR, GROUP_COMPANY,
   K_GROUP_HEAD, GROUP_SECTIONS, HDR_CONTENT_TYPE, HUNDRED, JOB_TEXT_LIMITED, K_ACC_HEAD, K_BROAD_HEAD,
   K_COL_HEAD, K_ELIG_HEAD, K_ORIGIN_HEAD, K_TEER_HEAD, LAYER_CO, LAYER_JOB, LEVEL_PROVINCE, METHOD_POST,
   MIME_JSON, MONEY_HEAD, NEWLINE, PAREN_CLOSE, PAREN_OPEN, PEEK_KEY_SEP, PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES,
   POOL_KEY_HEAD, ROW_KEY_BROAD, ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_OCC, ROW_KEY_TEER, STATUS_CLOSED, STATUS_OPEN,
   TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL, TONE_NA, TONE_OK, TONE_WARN, TRACK_CAT_TRANSLATE,
-  TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_COMPANY, URL_API_JOBS_RETRANSLATE,
-  URL_API_NOC_TRANSLATE, URL_COMPANY_HEAD, URL_PAGE_FIRST, WAGE_HIGH, WAGE_LOW,
+  TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_RETRANSLATE,
+  URL_API_NOC_TRANSLATE, URL_COMPANY_HEAD, WAGE_HIGH, WAGE_LOW,
 } from './constants'
 import type {
-  AdvisorJob, AdvisorJobIn, AdvisorNocDesc, AdvisorPillFact, CardHeadIn, CatTextIn,
-  CompanyJobsJson, CompanyPeek, CompanyRefreshIn, DaysUpIn, DeadFlag,
+  AdvisorJobIn, AdvisorNocDesc, AdvisorPillFact, CardHeadIn, CatTextIn,
+  CompanyRefreshIn, DaysUpIn,
   EsdcRowFact, FactsReadyIn, FieldFactsIn, FieldPageIn, FirstTextIn, GapClsIn, KickerIn, GroupFactsIn, HeadSubIn,
-  IdRowFact, IdRowsIn, OccNameOfIn, JobRefreshIn, LmiaFeasibleFact, LmiaFeasibleIn, LoadCompanyJobsIn, LoadFn,
+  IdRowFact, IdRowsIn, OccNameOfIn, JobRefreshIn, LmiaFeasibleFact, LmiaFeasibleIn,
   LoadJobTextIn, LoadNocTransIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, TransTitleIn, OnClsIn,
-  OpenCompanyFn, OpenJobFn, OriginTextIn, PairLabelIn, PeekKeyIn, PeekStackRef, PilotPillIn, PlanClbIn, RefreshFn,
+  OriginTextIn, PairLabelIn, PeekKeyIn, PilotPillIn, PlanClbIn, RefreshFn,
   TFnJobIn, ToggleIn, TransPillIn, ZhItemsIn, ZhLabelIn,
 } from './types'
 import css from './advisor.module.css'
@@ -512,39 +516,6 @@ export function excerptHeadClsOf(x: GapClsIn): string {
 }
 
 /**
- * 同公司在榜岗的取数(E10-01 P3:blob 没了 → 打开公司弹框时按公司名现拉,
- * 不再靠父级全量列表)。带登录 cookie:按登录态给字段。
- *
- * @param x 公司名与落格。
- * @returns effect 里调用的取数函数(带取消标记)。
- */
-export function makeLoadCompanyJobs(x: LoadCompanyJobsIn): LoadFn {
-  return function loadCompanyJobs(flag: DeadFlag): void {
-    function read(r: Response): Promise<CompanyJobsJson> {
-      if (r.ok) {
-        return r.json()
-      }
-      return Promise.resolve(null)
-    }
-    function land(j: CompanyJobsJson): void {
-      if (flag.dead || j == null) {
-        return
-      }
-      let rows: AdvisorJob[] = []
-      if (j.rows != null) {
-        rows = j.rows
-      }
-      x.setJobs(rows)
-    }
-    function fall(): void {
-      return
-    }
-    const url = URL_API_JOBS_COMPANY + encodeURIComponent(x.company) + URL_PAGE_FIRST
-    fetch(url, { credentials: CREDENTIALS_INCLUDE }).then(read).then(land).catch(fall)
-  }
-}
-
-/**
  * 详情页 JD 正文的取数(取数与三态口径在 components/jobs 的 fetchJobText 一处,
  * 这里只管落格)。#201:429 = JD 宽松防滥用闸偶发 —— JD 已免费,不是付费墙,
  * 所以单独落一个「忙」的态,不谎报成「本站暂未收录正文」。
@@ -626,19 +597,6 @@ export function pilotPillOf(x: PilotPillIn): AdvisorPillFact {
     return { tone: TONE_OK, text: x.t('ch.pilot.on') }
   }
   return { tone: TONE_NA, text: x.t('ch.pilot.na') }
-}
-
-/**
- * 试点社区那一行的标签:有社区名用社区名,没有退回市名。
- *
- * @param x 这一岗。
- * @returns 标签。
- */
-export function pilotAreaOf(x: AdvisorJobIn): string {
-  if (x.job.pilotCommunity !== TEXT_NONE) {
-    return x.job.pilotCommunity
-  }
-  return x.job.city
 }
 
 /**
@@ -983,43 +941,6 @@ export function companyRefreshOf(x: CompanyRefreshIn): RefreshFn | null {
       headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
       body: JSON.stringify({ name: x.job.company }),
     }).then(x.onDone).catch(x.onDone)
-  }
-}
-
-/**
- * 弹框栈上「叠开一条职位」的手柄(2026-09-21):职位描述弹框里点相关职位、公司弹框里点在招职位都往上叠。
- *
- * @param stack 宿主起的弹框栈。
- * @returns 手柄。
- */
-export function makePushJob(stack: PeekStackRef): OpenJobFn {
-  return function pushJob(j: AdvisorJob): void {
-    stack.push({ kind: LAYER_JOB, job: j })
-  }
-}
-
-/**
- * 弹框栈上「叠开一家公司」的手柄:职位描述弹框里点公司信息卡的公司名,公司弹框叠在职位上面。
- *
- * @param stack 宿主起的弹框栈。
- * @returns 手柄。
- */
-export function makePushCo(stack: PeekStackRef): OpenCompanyFn {
-  return function pushCo(co: CompanyPeek): void {
-    stack.push({ kind: LAYER_CO, co })
-  }
-}
-
-/**
- * 弹框栈上「同框换一家公司」的手柄:公司弹框里点相似雇主(2026-09-19 口径:不往上叠、不记历史)——
- * 只有最上面那层点得到,换最上面一层就是换它自己。
- *
- * @param stack 宿主起的弹框栈。
- * @returns 手柄。
- */
-export function makeSwapCo(stack: PeekStackRef): OpenCompanyFn {
-  return function swapCo(co: CompanyPeek): void {
-    stack.swapTop({ kind: LAYER_CO, co })
   }
 }
 

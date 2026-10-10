@@ -69,7 +69,7 @@ const HOT: MajorRow[] = [
 const MAJOR_SETS: string[][] = [[], ['52.0201'], ['11.0701', '52.0201'], ['14.0901', '52.0201']]
 
 function draft(p: Partial<GateDraft> = {}): GateDraft {
-  return { goal: 0, majors: [], nocs: [], prov: '', abroad: false, intent: 'entry', ...p }
+  return { goal: 0, majors: [], nocs: [], prov: '', city: '', abroad: false, intent: 'entry', ...p }
 }
 
 function reply(body: object) {

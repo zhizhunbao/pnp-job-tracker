@@ -125,8 +125,10 @@ export const URL_LETTERS = '/api/apply/letters'
 
 /**
  * 草稿「继续」的去处头(后接职位 id):「我的求职」上方的投递区。
+ * 2026-10-09 A 批投递搬进弹框:就在「我的简历」节原地弹投递框(`?apply=` 是全站骨架上投递框宿主认的参数;
+ * 本桶不从 apply 桶取开框函数 —— apply 桶取本桶的成功条与简历预览,反过来取就成环)。
  */
-export const URL_APPLY_HEAD = '/account?sec=sjobs&job='
+export const URL_APPLY_HEAD = '/account?sec=resume&apply='
 
 /**
  * 发出去的那封信的 PDF 地址头(后接投递行 id;同「我的求职」的求职信格)。
@@ -562,11 +564,13 @@ export const RF_ZOOM_KIND = 'secondary'
  * 旧深链 `?sec=` 带着撤掉的四个值进来,不在这张表里 → 落回默认节(见 functions 的 secLinkOf)。
  * 2026-10-04 Frank「升级 Pro 这个删了,放到 我的 模块里,加一个我的订阅」:末尾加回一节 我的订阅 sub(深链 `?sec=sub`)。
  * 2026-10-08 照 AIApply 重设计(10-05 定稿第 1 条,V1 搬家):顺序换成 我的求职 / 我的收藏 / 我的简历 / 我的订阅;深链键不改。
+ * 2026-10-09「我的档案」批(Frank「用户需要知道自己之前回答的问题」):我的简历后面加一节 我的档案 profile(深链 `?sec=profile`)。
  */
 export const SEC_TABS = [
   { sec: 'sjobs', labelKey: 'sj.title' },
   { sec: 'favs', labelKey: 'fav.title' },
   { sec: 'resume', labelKey: 'rm.arch.title' },
+  { sec: 'profile', labelKey: 'pf.title' },
   { sec: 'sub', labelKey: 'sub.title' },
 ] as const
 
@@ -620,10 +624,6 @@ export const QP_OK_ON = '1'
  */
 export const QP_SEC = 'sec'
 
-/**
- * 地址栏里的「要投的那一岗」参数(/account?sec=sjobs&job=<id>;投递区读它起流程,本页只拿它判「正在投一岗」)。
- */
-export const QP_JOB = 'job'
 
 /**
  * 当前登录人接口(Payload 的 me 端点;带 cookie 才认得出人)。
@@ -673,3 +673,129 @@ export const EV_WEEKLY = 'weekly-optin'
  * 周报开关勾选框的 input 类型字(DOM 定值;平台串起名挂注释)。
  */
 export const CHECKBOX_TYPE = 'checkbox'
+
+
+/**
+ * 我的档案节的节标识(同 URL 深链 `?sec=` 的取值)。
+ */
+export const SEC_PROFILE = 'profile'
+
+/**
+ * 白卡分区的全局类名(main.css 第 9 段;与投递框「职位信息」、公司弹框「基本信息」同一张卡,apply / companies 同值,各域自抄)。
+ */
+export const CARD_MD_CLS = 'cardMd'
+
+/**
+ * 分区小标题的全局类名(main.css 第 9 段;同上)。
+ */
+export const CARD_HEAD_CLS = 'mcardHead'
+
+/**
+ * 档案取数接口(quiz 域:答案档五格 + 三语名字 + 投递署名)。
+ */
+export const URL_PROFILE = '/api/quiz/profile'
+
+/**
+ * 一格多个名字时先摆几个(2026-10-09 Frank「可以」:想做的工作选了十几个把卡撑得一屏放不下)。
+ */
+export const PF_FOLD_N = 5
+
+/**
+ * 折起来时那一行「还有 N 个」的词条键。
+ */
+export const PF_MORE_KEY = 'pf.more'
+
+/**
+ * 档案卡卡头(「求职」)的词条键。
+ */
+export const PF_CARD_KEY = 'pf.card'
+
+/**
+ * 卡头右上「修改」的词条键。
+ */
+export const PF_EDIT_KEY = 'pf.edit'
+
+/**
+ * 没答那一格的词条键。
+ */
+export const PF_NONE_KEY = 'pf.none'
+
+/**
+ * 取不到的词条键。
+ */
+export const PF_FAIL_KEY = 'pf.loadFail'
+
+/**
+ * 档案卡五行的标签键(照 Azure Essentials 用短名词,不用整句问题)。
+ */
+export const PF_ROW_KEYS = {
+  /**
+   * 目标。
+   */
+  goal: 'pf.goal',
+
+  /**
+   * 专业。
+   */
+  majors: 'pf.majors',
+
+  /**
+   * 想做的工作。
+   */
+  jobs: 'pf.jobs',
+
+  /**
+   * 所在地(城市、省份两个名字并排)。
+   */
+  where: 'pf.where',
+
+  /**
+   * 英文姓名(投递署名)。
+   */
+  name: 'pf.name',
+}
+
+/**
+ * 目标档:拿 PR(与 gate 的 GOAL_PR 同值,各域自抄)。
+ */
+export const PF_GOAL_PR = 1
+
+/**
+ * 目标档:先找工作。
+ */
+export const PF_GOAL_JOBS = 2
+
+/**
+ * 「拿 PR」的词条键(与访客向导那张大卡同一句)。
+ */
+export const PF_GOAL_PR_KEY = 'home.g.pr'
+
+/**
+ * 「找工作」的词条键。
+ */
+export const PF_GOAL_JOBS_KEY = 'home.g.jobs'
+
+/**
+ * 「加拿大境外」的词条键(与访客向导那一格同一句)。
+ */
+export const PF_ABROAD_KEY = 'gate.abroad'
+
+/**
+ * 档案接口回了 200 却没带 profile 那一格时抛的错名(留痕用)。
+ */
+export const PF_ERR_EMPTY = 'no profile'
+
+/**
+ * 档案取数状态:在取。
+ */
+export const PF_LOAD_BUSY = 'busy'
+
+/**
+ * 档案取数状态:到了。
+ */
+export const PF_LOAD_OK = 'ok'
+
+/**
+ * 档案取数状态:取不到。
+ */
+export const PF_LOAD_FAIL = 'fail'

@@ -11,6 +11,7 @@
 import { cssOf } from '@/components/css'
 import { toJobPlan } from '@/components/jobs'
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
+import { log, PROFILE_LOG } from '@/lib/log'
 import { DAY_MS, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
@@ -21,11 +22,13 @@ import {
   MIME_PDF as MIME_PDF_TYPE, Q_DL_TAIL, Q_ID_HEAD, Q_VER_MID, RESUME_FILES_MAX, COUNT_SEP, CANVAS_TAG,
   CENTER_DIV, EV_WHEEL, PCT_SIGN, PX, TF_HEAD, TF_MID, TF_SCALE, TF_TAIL, WHEEL_OPTS, ZOOM_HOME, ZOOM_MAX, ZOOM_MIN,
   ZOOM_PCT, ZOOM_PINCH_K, ZOOM_PX_MAX, ZOOM_SETTLE_MS, ZOOM_WHEEL_K,
-  QP_JOB, QP_OK_ON, QP_SEC, SEC_LABEL_CUT_RE, SEC_TABS,
+  QP_OK_ON, QP_SEC, SEC_LABEL_CUT_RE, SEC_TABS,
   TEXT_NONE, URL_ME,
   URL_USER_HEAD,
   AMOUNT_DIGITS, CUR_GAP, CUR_SIGN, LETTER_FILE_TAIL, LOGIN_URL, NEXT_SEP, PAY_COL_ACT, PAY_COL_AMOUNT, PAY_COL_DATE,
   PAY_COL_ITEM, ST_DRAFT, URL_APPLY_HEAD, URL_LETTERS, URL_LETTER_FILE_HEAD, URL_PAYMENTS, URL_SENT_COUNT,
+  PF_ERR_EMPTY, PF_FOLD_N, PF_GOAL_JOBS, PF_GOAL_JOBS_KEY, PF_GOAL_PR, PF_GOAL_PR_KEY, PF_LOAD_FAIL, PF_LOAD_OK,
+  URL_PROFILE,
 } from './constants'
 import type {
   AskOfIn, DivDragEvent, FileDropIn, FilePickIn, IdHandlerFn, InputChangeEvent, PdfPagesIn, PdfjsOut,
@@ -41,6 +44,7 @@ import type {
   WeeklyToggleFn, WeeklyToggleIn,
   AppliedSentOut, CountRespJson, LetterMeta, LetterMetas, LettersLoadIn, LettersRespJson, OnAppliedIn, PayCellRow,
   PayCellRowsIn, PayCol, PaymentRow, PaymentRows, PaymentsLoadIn, PaymentsRespJson, SentCountLoadIn, TFn,
+  PfJson, PfLoadIn, PfNames, PfSavedIn, PfSeed, PfShownIn, PfView,
 } from './types'
 import { PayReceiptCell } from './payreceiptcell'
 import css from './account.module.css'
@@ -138,16 +142,6 @@ export function secLinkOf(): Sec | null {
  */
 function genNextOf(n: number): number {
   return n + 1
-}
-
-/**
- * 地址栏里带没带「要投的那一岗」(2026-10-08 小白走查:带着来的,先给他投那一岗,「今日待投」清单别在上面抢)。
- *
- * @returns 带了 true。
- */
-export function isJobLink(): boolean {
-  const j = new URLSearchParams(window.location.search).get(QP_JOB)
-  return j != null && j !== TEXT_NONE
 }
 
 /**
@@ -1331,4 +1325,89 @@ export function payAmountOf(r: PayCellRow): string {
  */
 export function payKeyOf(r: PayCellRow): string {
   return r.key
+}
+
+
+/**
+ * 取档案(quiz 域;答案档五格 + 三语名字 + 投递署名)。取挂了留痕、落「取不到」。
+ *
+ * @param x 两个落格。
+ * @returns 无。
+ */
+export async function loadProfile(x: PfLoadIn): Promise<void> {
+  try {
+    const r = await fetch(URL_PROFILE, { credentials: CRED_INCLUDE })
+    if (r.ok === false) {
+      throw new Error(String(r.status))
+    }
+    const body = await r.json() as PfJson
+    if (body.profile == null) {
+      throw new Error(PF_ERR_EMPTY)
+    }
+    x.setView(body.profile)
+    x.setLoad(PF_LOAD_OK)
+  } catch (e) {
+    log({ tag: PROFILE_LOG.tag, text: PROFILE_LOG.viewLoad + String(e) })
+    x.setLoad(PF_LOAD_FAIL)
+  }
+}
+
+/**
+ * 档案 → 修改弹框的起始答案(码清单取名字里的码)。
+ *
+ * @param v 档案。
+ * @returns 起始答案。
+ */
+export function profileSeedOf(v: PfView): PfSeed {
+  const majors: string[] = []
+  for (const m of v.majors) {
+    majors.push(m.code)
+  }
+  const nocs: string[] = []
+  for (const n of v.nocs) {
+    nocs.push(n.code)
+  }
+  return { goal: v.goal, majors, nocs, prov: v.prov, abroad: v.abroad, city: v.city.en, name: v.name }
+}
+
+/**
+ * 目标那一格的词条键;没答给空串。
+ *
+ * @param goal 目标档。
+ * @returns 词条键。
+ */
+export function pfGoalKeyOf(goal: number): string {
+  if (goal === PF_GOAL_PR) {
+    return PF_GOAL_PR_KEY
+  }
+  if (goal === PF_GOAL_JOBS) {
+    return PF_GOAL_JOBS_KEY
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 造「保存成功」:关框、换一代重取档案(卡上当场换新)。
+ *
+ * @param x 关框落格与代数。
+ * @returns 回调。
+ */
+export function makeProfileSaved(x: PfSavedIn): () => void {
+  return function profileSaved(): void {
+    x.setEditing(false)
+    x.setGen(x.gen + 1)
+  }
+}
+
+/**
+ * 一格名字这一刻摆哪些:展开了全摆;没展开只摆前 PF_FOLD_N 个(2026-10-09 Frank「可以」)。
+ *
+ * @param x 全部名字与展开态。
+ * @returns 要摆的名字。
+ */
+export function pfShownOf(x: PfShownIn): PfNames {
+  if (x.open || x.names.length <= PF_FOLD_N) {
+    return x.names
+  }
+  return x.names.slice(0, PF_FOLD_N)
 }

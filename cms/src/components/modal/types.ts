@@ -779,4 +779,109 @@ export type LayerStackOut<L> = {
    * 关掉最上面一层(× 与 Esc 都走它)。
    */
   pop: () => void
+
+  /**
+   * 全关(2026-10-09 N 批:全站宿主挂在骨架上,换页时开着的职位框 / 公司框一并关掉,不跟到新页)。
+   */
+  clear: () => void
+}
+
+/**
+ * 弹框总线的栈操作(2026-10-09 N 批)。
+ */
+export type PeekOp = 'push' | 'swap' | 'pop' | 'jobId' | 'clear'
+
+/**
+ * 弹框总线上的一条消息。层的形状由宿主与渲染件(advisor 的 PeekStack)定,本桶只透传。
+ */
+export type PeekMsg = {
+  /**
+   * 栈操作。
+   */
+  op: PeekOp
+
+  /**
+   * 叠上 / 换上的那一层(pop 与 jobId 没有 = null)。
+   */
+  layer: object | null
+
+  /**
+   * 按职位号开职位框时的职位号(其余操作 = null)。
+   */
+  jobId: number | null
+}
+
+/**
+ * 一页报给宿主的上下文:分层态与职业名表(形状由 advisor 定,本桶只透传)。
+ */
+export type PeekCtx = {
+  /**
+   * 本页的分层态。
+   */
+  plan: object
+
+  /**
+   * 本页的职业名表。
+   */
+  nocDesc: object
+}
+
+/**
+ * 上下文消息:哪一个报件报的(同一页可能挂着几张表各报一份,撤回只撤自己那份)与它报的上下文(卸载时 = null,撤回)。
+ */
+export type PeekCtxMsg = {
+  /**
+   * 报件的编号(useId)。
+   */
+  id: string
+
+  /**
+   * 报的上下文;撤回 = null。
+   */
+  ctx: PeekCtx | null
+}
+
+/**
+ * PeekContext(报件)的 props。
+ */
+export type PeekContextIn = PeekCtx
+
+/**
+ * `usePeekInbox` 的入参:宿主收两种消息的手柄。
+ */
+export type PeekInboxIn = {
+  /**
+   * 收到一条栈操作。
+   */
+  onMsg: (msg: PeekMsg) => void
+
+  /**
+   * 收到一份上下文(或撤回)。
+   */
+  onCtx: (msg: PeekCtxMsg) => void
+}
+
+/**
+ * `useStackZ` 的入参:调用方给的层级(弹框 props 原样递进来,归一前的形状;没给 = 按打开先后排)。
+ */
+export type StackZIn = {
+  /**
+   * 调用方指定的层级。
+   */
+  z?: number
+}
+
+/**
+ * `zOf` 的入参。
+ */
+export type ZOfIn = {
+  /**
+   * 调用方指定的层级(没给 = null)。
+   */
+  z: number | null
+
+  /**
+   * 这一个打开时底下已经开着几个弹框。
+   */
+  open: number
 }

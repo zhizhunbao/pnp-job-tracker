@@ -228,11 +228,13 @@ export type RankCompanyCellRow = {
   /**
    * 公司官网(卡片上公司名的去处);空串 = 没收录官网,卡上渲纯文字。
    * #199(Frank「多余的跳转都删掉」):**表格里**的公司名外链已撤,只剩卡片这一处。
+   * 2026-10-09 N 批:留着 —— 榜单行没有公司 slug 开不了公司框,外站链接照旧新开标签页(规范「点击默认弹框」的外链例外)。
    */
   officialUrl: string
 
   /**
    * 省名(卡片上那行小灰字);空串 = 跨省雇主,整行不渲。
+   * 2026-10-09 N 批起卡上走 name 桶 ProvName(英文全名蓝链去 Google 地图 + 界面语省名灰字),这一格只交两位省码。
    */
   province: string
 
@@ -396,6 +398,7 @@ export type RankJobCellRow = {
 
   /**
    * 地点(城市与省,缺哪一段就少哪一段);空串 = 两段都没有。
+   * 2026-10-09 N 批起只给表格那一格用;手机卡的市、省分开各一个名字(Frank「省市 分开」),读下面 city / province 两格。
    */
   where: string
 
@@ -403,6 +406,16 @@ export type RankJobCellRow = {
    * 地点的排序键(按城市);null = 没记城市。
    */
   citySort: string | null
+
+  /**
+   * 城市英文原名(手机卡地点行的城市名,点了新标签开 Google 地图);空串 = 没记城市。
+   */
+  city: string
+
+  /**
+   * 两位省码(手机卡地点行的省名,点了新标签开 Google 地图);空串 = 没记省。
+   */
+  province: string
 
   /**
    * 薪资文本(表格);缺数时是横杠。
@@ -481,6 +494,7 @@ export type RankCardLink = {
 
 /**
  * 职位卡各插槽已经算好的值(缺席 = 那一格不渲 —— card 域的插槽契约就是「不传就不出」)。
+ * 2026-10-09 N 批:地点插槽撤出这里 —— 市、省各一个名字件(name 桶 CityName / ProvName),在卡件里拼。
  */
 export type RankJobCardParts = {
   /**
@@ -497,11 +511,6 @@ export type RankJobCardParts = {
    * 薪资(右列);不给 = 帖面没写薪资。
    */
   salary?: string
-
-  /**
-   * 地点(左列);不给 = 两段都没有。
-   */
-  location?: string
 
   /**
    * 发布日期(右列);不给 = 库里没记。

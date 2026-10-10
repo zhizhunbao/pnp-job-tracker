@@ -14,11 +14,13 @@
  * makeRailPick / railKeyOf / railBusyOf)与已选一行 × 的读屏名(tagDelNameOf);上面 A2 那句「借 profile 桶已选标签件要的三样」
  * 连同只供它们用的 occHeadsOf / expandHeadsOf 撤 —— 已选一行改由本桶 OccTags 用 tag 桶 TagRow + Tag 摆,全部已选都摆
  * (不再按「这一屏摆着」挑),× 走与胶囊同一只 pickOf(整组撤掉,原 makeNocsSet 把代表码展开回整组那一步随之不要)。
+ * 2026-10-09「我的档案」批:首访引导向导退役,quizToProfile 落档后不再记「已经问过、别再弹建档向导」
+ * (markOnboardingSeen 与它写的 profile 桶记忆键 OB_SEEN_KEY 一并删)。
  *
  * @author Frank
  * @time 2026-08-26 15:28:17
  */
-import { OB_SEEN_KEY, POPULAR_NOCS } from '@/components/profile'
+import { POPULAR_NOCS } from '@/components/profile'
 import { chipClsOf } from '@/components/chip'
 import { cssOf } from '@/components/css'
 import { pickName } from '@/lib/noc'
@@ -30,7 +32,7 @@ import {
   DUP_MIN, HDR_CONTENT_TYPE, KEY_BROAD_HEAD, LEN_ZERO, LOCALE_NUM, METHOD_PATCH, MIME_JSON,
   OCC_AND_RE, OCC_CAT_REC, OCC_COMMA_RE, OCC_TAIL_RE, OCC_WORD_KEY, PERCENT_MAX, PERCENT_SIGN, PROGRESS, PTS_ZERO,
   QUERY_MIN,
-  SEARCH_DEBOUNCE_MS, SEEN_ONE, SEP_COMMA, SIGN_PLUS, SKEL_KINDS, SLOT_DONE, SLOT_TOTAL, TEXT_NONE,
+  SEARCH_DEBOUNCE_MS, SEP_COMMA, SIGN_PLUS, SKEL_KINDS, SLOT_DONE, SLOT_TOTAL, TEXT_NONE,
   TOP_N, TOTAL_MIN, URL_ME, URL_QUIZ_BROAD, URL_QUIZ_COUNTS, URL_QUIZ_MAJOR, URL_QUIZ_MAJOR_N, URL_QUIZ_NOC,
   URL_QUIZ_Q, URL_QUIZ_TOP, URL_USERS_HEAD,
 } from './constants'
@@ -107,7 +109,6 @@ export async function quizToProfile(a: QuizAnswers): Promise<void> {
       old = user.profile
     }
     await putProfile({ uid, profile: profilePatchOf({ a, old }) })
-    markOnboardingSeen()
   } catch {
     return
   }
@@ -172,20 +173,6 @@ function profilePatchOf(x: ProfilePatchIn): ProfileSaved {
     profileUpdatedAt: new Date().toISOString(),
   }
   return Object.assign({}, x.old, patch)
-}
-
-/**
- * 答完三题就记一笔「已经问过」,别再弹建档向导。
- *
- * @returns 无。存不进去(隐私模式/配额满)照旧往下走:向导多弹一次不是错误,
- *          为它拦住注册流程才是。
- */
-function markOnboardingSeen(): void {
-  try {
-    localStorage.setItem(OB_SEEN_KEY, SEEN_ONE)
-  } catch {
-    return
-  }
 }
 
 /**

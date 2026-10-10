@@ -24,12 +24,15 @@
  * 两个弹框点 advisor 的**文件**不走桶:那只桶的完整弹框反过来要本桶的 CompanyPanel,走桶就成环。
  * 2026-09-21 Frank「都修」:官网那条活办完、卡叫整卡重取时,本页用 router.refresh —— 公司数据是服务端给的,重取 = 服务端重跑一遍。
  * 2026-09-21 两个弹框并进弹框栈(advisor 的 PeekStack,同样点文件):职位 → 公司 → 另一条职位一层层叠,只关最上面一层。
+ * 2026-10-09 N 批(Frank「一个全站宿主,并掉各页那 5 套」):本页不再自己画 PeekStack,改摆 modal 桶的报件 PeekContext
+ * (报本页的分层态与职业名表),弹框由全站骨架上的 PeekHost 画。
+ * 2026-10-09 N6b 批:在招职位 / 相似雇主的名字 N6 起由 name 桶自开弹框,本页递给正文的两只手柄(useCompanyPeek)随之撤。
  *
  * @author Frank
  * @time 2026-08-27 02:10:00
  */
 import { useRouter } from 'next/navigation'
-import { PeekStack } from '@/components/advisor/peekstack'
+import { PeekContext } from '@/components/modal'
 import { BackButton, LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { useLang } from '@/components/i18n'
@@ -42,7 +45,7 @@ import {
   URL_EMPLOYERS_PROV,
 } from './constants'
 import { aliasOf, cityOf, provFullOf } from './functions'
-import { useCompanyAlias, useCompanyPeek } from './hooks'
+import { useCompanyAlias } from './hooks'
 import type { CompanyIn } from './types'
 import css from './companies.module.css'
 
@@ -54,7 +57,6 @@ import css from './companies.module.css'
  */
 export function Company({ company, similar = [], updatedAt, plan }: CompanyIn) {
   const [lang, , t] = useLang()
-  const peek = useCompanyPeek()
   const router = useRouter()
   const aliasPanel = useCompanyAlias({
     name: company.name, lang, cached: aliasOf({ lang, aliasZh: company.aliasZh, aliasKo: company.aliasKo }),
@@ -106,12 +108,10 @@ export function Company({ company, similar = [], updatedAt, plan }: CompanyIn) {
         </div>
         <CompanyBody company={company} similar={similar} t={t} lang={lang} updatedAt={updatedAt}
           showTrans={lang !== LANG_EN}
-          onOpenJob={peek.onOpenJob}
-          onOpenCompany={peek.onOpenCompany}
           onSiteDone={router.refresh} />
         {company.jobs.length === 0 && <Notice kind={NOTICE_KIND_INFO}>{t('co.notFound')}</Notice>}
       </div>
-      <PeekStack stack={peek.stack} lang={lang} plan={plan} nocDesc={NOC_DESC_NONE} />
+      <PeekContext plan={plan} nocDesc={NOC_DESC_NONE} />
     </Shell>
   )
 }

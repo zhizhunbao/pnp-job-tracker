@@ -6,6 +6,7 @@
  * 同日收口:「加拿大境外」照效果图图标在左、单行高(chip 桶的 wide 改横排,本域不写选项样式);点选手柄借 profile 桶的 makeOptPick。
  * 2026-10-05 Frank「加拿大境外怎么是长条的」:不再占满整行,改成与省同款的格子接在爱德华王子岛后面(图标在上);
  * chip 桶的 wide 随之没有用处、删。
+ * 2026-10-09「我的档案」批(Frank「所在地 需不需要 选城市」→「可以」):选了省,格子下面出城市区(GateCities,选填);选境外不出。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
@@ -15,6 +16,7 @@ import { cssOf } from '@/components/css'
 import { IconGlobe } from '@/components/icons'
 import { makeOptPick } from '@/components/profile'
 import { GATE_ABROAD_KEY, GATE_PROV_OPTS, PROV_ABROAD } from './constants'
+import { GateCities } from './gatecities'
 import type { GatePartIn } from './types'
 import css from './gate.module.css'
 
@@ -37,13 +39,16 @@ export function GateProvs({ g, t }: GatePartIn) {
     )
   }
   return (
-    <div className={cssOf(css.grid)}>
-      {tiles}
-      <ChipTile icon={<IconGlobe />}
-        active={g.provActive === PROV_ABROAD}
-        onClick={makeOptPick({ value: PROV_ABROAD, onPick: g.onProv })}>
-        {t(GATE_ABROAD_KEY)}
-      </ChipTile>
-    </div>
+    <>
+      <div className={cssOf(css.grid)}>
+        {tiles}
+        <ChipTile icon={<IconGlobe />}
+          active={g.provActive === PROV_ABROAD}
+          onClick={makeOptPick({ value: PROV_ABROAD, onPick: g.onProv })}>
+          {t(GATE_ABROAD_KEY)}
+        </ChipTile>
+      </div>
+      <GateCities g={g} t={t} />
+    </>
   )
 }

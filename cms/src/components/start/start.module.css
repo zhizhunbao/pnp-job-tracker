@@ -1528,33 +1528,6 @@
 }
 
 /*
- * 省卡上的省名。
- */
-.provCardName {
-  /*
-   * 加粗。
-   */
-  font-weight: 700;
-
-  /*
-   * 省名字号。
-   */
-  font-size: 14.5px;
-
-  /*
-   * 一行放不下就省略号(卡宽固定,省名是固定词表)。
-   */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  /*
-   * 允许被压窄。
-   */
-  min-width: 0;
-}
-
-/*
  * 省卡上的省码灰注。
  */
 .provCardCode {

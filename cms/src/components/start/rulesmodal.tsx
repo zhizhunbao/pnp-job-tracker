@@ -5,16 +5,19 @@
  * 同日早些的四层版(限定职业 / 通道资格 / 资料库)撤)。清单随行带来,不取数;没写清单的行不出钮,
  * 万一带进来的是 null(列没上)出「本站未收录」。壳走 modal 桶,标题走 title 桶。
  * 2026-09-26 lead 定:人数前的标随行带(invLabel)—— 选取口径的省(NS)写「入选」,其余照旧「邀请」。
+ * 2026-10-09 N 批(Frank「名字一律英文在上、译名灰字在下」「把脉页也改一下 但是把脉页不弹框」):标题下的省名
+ * 由界面语全名一行改 name 桶的 Name —— 英文省名在上、界面语省名灰字在下(副标题不是链接);联邦抽选(EE)不是省,照旧一行。
  *
  * @author Frank
  * @time 2026-09-13 18:00:00
  */
 import { LinkButton } from '@/components/button'
 import { Modal } from '@/components/modal'
+import { Name, provNameOf } from '@/components/name'
 import { Tag } from '@/components/tag'
 import { ModalTitle } from '@/components/title'
 import { NEW_TAB, RULES_MODAL_SIZE, TEXT_NONE } from './constants'
-import { checklistTextOf, provLabelOf } from './functions'
+import { checklistTextOf, isProvCode, provLabelOf } from './functions'
 import type { RulesModalIn } from './types'
 import css from './start.module.css'
 
@@ -25,6 +28,7 @@ import css from './start.module.css'
  * @returns 弹框。
  */
 export function RulesModal({ t, lang, row, onClose }: RulesModalIn) {
+  const prov = provNameOf({ code: row.prog, lang, t })
   const items = []
   if (row.checklist != null) {
     for (let i = 0; i < row.checklist.items.length; i += 1) {
@@ -37,7 +41,8 @@ export function RulesModal({ t, lang, row, onClose }: RulesModalIn) {
   return (
     <Modal onClose={onClose} size={RULES_MODAL_SIZE} tall>
       <ModalTitle title={row.main} />
-      <p className={css.rulesSub}>{provLabelOf({ t, code: row.prog })}</p>
+      {isProvCode(row.prog) && <p className={css.rulesSub}><Name en={prov.en} sub={prov.sub} /></p>}
+      {isProvCode(row.prog) === false && <p className={css.rulesSub}>{provLabelOf({ t, code: row.prog })}</p>}
       <h4 className={css.rulesHead}>{t('pulse.rules.round')}</h4>
       <div className={css.drawMeta}>
         <Tag>{row.prog}</Tag>

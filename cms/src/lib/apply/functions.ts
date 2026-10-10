@@ -7,7 +7,7 @@
  * @author Frank
  * @time 2026-10-07 01:30:00
  */
-import { count, firstOf, numOrNull, queryRows, SQL, text } from '../db'
+import { count, firstOf, numOrNull, queryRows, SQL, text, vtext } from '../db'
 import type { Db } from '../db'
 import {
   APPLY_FROM_ADDR, B64, BOUNCE_PERMANENT, COMBINING_RE, COVER_DEFAULT, COVER_FILE_FALLBACK, COVER_FILE_HEAD, CRLF_RE,
@@ -573,6 +573,9 @@ export function toApplyJob(r: ApplyJobDbRow): ApplyJobFact {
   return {
     id: count(r.id), title: text(r.title), company: text(r.company_name), city: text(r.city),
     province: text(r.province), closed: r.job_status === JOB_CLOSED, email: text(r.apply_email).trim(),
+    titleZh: vtext({ v: r.job_trans_v, cell: r.title_zh }), titleKo: vtext({ v: r.job_trans_v, cell: r.title_ko }),
+    companyZh: text(r.alias_zh), companyKo: text(r.alias_ko), cityZh: text(r.city_zh), cityKo: text(r.city_ko),
+    companySlug: text(r.company_slug),
   }
 }
 
@@ -585,7 +588,8 @@ export function toApplyJob(r: ApplyJobDbRow): ApplyJobFact {
 export function applyJobRowOf(j: ApplyJobFact): ApplyJobRow {
   return {
     id: j.id, title: j.title, company: j.company, city: j.city, province: j.province, closed: j.closed,
-    hasEmail: j.email !== TEXT_NONE,
+    hasEmail: j.email !== TEXT_NONE, titleZh: j.titleZh, titleKo: j.titleKo, companyZh: j.companyZh,
+    companyKo: j.companyKo, cityZh: j.cityZh, cityKo: j.cityKo, companySlug: j.companySlug,
   }
 }
 

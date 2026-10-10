@@ -218,15 +218,6 @@
 }
 
 /*
- * 职位名(链接色、不下划线)。
- */
-.title {
-  color: var(--primary);
-
-  text-decoration: none;
-}
-
-/*
  * 公司一行。
  */
 .co {
@@ -235,29 +226,6 @@
   font-size: 13px;
 
   color: var(--text);
-}
-
-/*
- * 公司名钮(双类压过 button 桶的钮形:像一段可点的字)。
- */
-.coLink.coLink {
-  padding: 0;
-
-  font-size: inherit;
-
-  font-weight: 400;
-
-  text-align: left;
-
-  white-space: normal;
-
-  color: var(--primary);
-
-  border: none;
-
-  background: none;
-
-  cursor: pointer;
 }
 
 /*
@@ -281,20 +249,18 @@
 
 /*
  * 城市一行(灰)。
+ * 2026-10-09 N6 批:市和省各一份 name 桶两行名(英文在上、译名灰字在下),左右并排隔开;原「英文名 省码」灰注类撤。
  */
 .sub {
   margin-top: 2px;
 
+  display: flex;
+
+  gap: 12px;
+
   font-size: 12.5px;
 
   color: var(--text2);
-}
-
-/*
- * 城市灰注(「英文名 省码」),与主文案隔一格。
- */
-.cityNote {
-  margin-left: 6px;
 }
 
 /*

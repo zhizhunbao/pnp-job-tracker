@@ -10,6 +10,8 @@
  * 精确到秒。**此处必须带标签**:一张卡上两个日期并排,值自己说不清谁是谁 —— #166
  * 「值自证就删标签」的那条例外。
  * 2026-08-28 换装批自 Jobs.tsx 重写落位。
+ * 2026-10-09 N6 批(Frank「职位名、公司名、地点同形,省市分开」):地点改市、省两个名字(CardLocation 内换 name 桶 CityName / ProvName,
+ * 点了去 Google 地图);公司名照旧英文一行、点了开职位板字段弹框 —— 职位板库行不带公司译名,两行形等数据补上再换。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -48,12 +50,7 @@ export function BoardCard({ b, job, titleMap }: BoardCardIn) {
       }}
       salary={someOf(v.salary)}
       location={v.city !== TEXT_NONE && (
-        <CardLocation city={v.cityText}
-          prov={v.prov}
-          cityHref={v.cityHref}
-          provHref={v.provHref}
-          onCity={makeCardFieldClick({ onField: b.onField, job, k: COL.city, title: v.cityText })}
-          onProv={makeCardFieldClick({ onField: b.onField, job, k: COL.province, title: v.provText })} />
+        <CardLocation city={v.city} province={v.prov} zh={job.cityZh} ko={job.cityKo} />
       )}
       date={<DateAge iso={job.datePosted} aging={v.aging} ageText={v.ageText} />}
       action={

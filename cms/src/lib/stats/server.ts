@@ -12,4 +12,6 @@ export {
   loadFineCounts, loadOccStats, loadProvExtra, loadStats,
   loadStatSources,
 } from './functions'
-export { statsCityRoute, statsDataRoute, statsFineRoute, statsMacroRoute, statsMarketRoute } from './routes'
+export {
+  statsCitiesRoute, statsCityRoute, statsDataRoute, statsFineRoute, statsMacroRoute, statsMarketRoute,
+} from './routes'

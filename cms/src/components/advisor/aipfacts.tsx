@@ -13,7 +13,8 @@
  * 判定卡(直判胶囊 + 省里点名行)撤 —— 能走由通道卡说,走不了由「本岗不满足的门槛」卡说;清单卡挪进 AipSection,整块按
  * 结论 → 门槛 → 名单 → 抽选 排(与省提名、EE 弹框同一骨架)。
 
- * 2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」):指定雇主清单卡自己按省 + 本岗公司懒取,不再从职位板维度包接四省整表。 *
+ * 2026-10-02 三弹框统一第 3 步(Frank「这是不是 拆成人能看懂表格比较好」「不需要一次查询 1574 家吧」「可以,做吧」):指定雇主清单卡自己按省 + 本岗公司懒取,不再从职位板维度包接四省整表。
+ * 2026-10-09 N6 批:名单里的招牌换 name 桶 CompanyName(经弹框总线叠开公司弹框),「名单里点招牌的去处」不再往下递。 *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
@@ -23,9 +24,9 @@ import type { AdvisorFactsIn } from './types'
 /**
  * 渲染 AIP 事实块。
  *
- * @param props 取数包与名单里点招牌的去处(2026-10-02)。
+ * @param props 取数包(2026-10-02 加的「名单里点招牌的去处」10-09 撤)。
  * @returns AIP 弹框整块(结论卡、门槛卡、本省 AIP 指定雇主清单卡与抽选卡)。
  */
-export function AipFacts({ f, onOpenCompany }: AdvisorFactsIn) {
-  return <AipSection job={f.job} lang={f.lang} onOpenCompany={onOpenCompany} />
+export function AipFacts({ f }: AdvisorFactsIn) {
+  return <AipSection job={f.job} lang={f.lang} />
 }

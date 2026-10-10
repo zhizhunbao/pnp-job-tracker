@@ -1,6 +1,7 @@
 /**
  * 统计域的 HTTP 芯(第十一抽屉):/api/stats/data、/api/stats/fine、/api/stats/market。
  * 顶层只有 handler(闸 routes-shape);取数与缓存判断在 functions/variables。
+ * 2026-10-09「我的档案」批加 /api/stats/cities(一个省的城市清单,所在地答案的可选城市下拉)。
  *
  * @author Frank
  * @time 2026-08-23 03:30:00
@@ -12,14 +13,14 @@ import { normalizeProfile } from '../jobs'
 import type { ProfileJson } from '../jobs'
 import { getUser, isPro } from '../quota/server'
 import {
-  CITY_ALL_LIMIT, CITY_CACHE_CONTROL, CITY_LIMIT, CITY_TTL_MS,
+  CITY_ALL_LIMIT, CITY_CACHE_CONTROL, CITY_LIMIT, CITY_PROV_CACHE_CONTROL, CITY_PROV_TTL_MS, CITY_TTL_MS, E_PROV,
   MACRO_CACHE_CONTROL, MACRO_TTL_MS, MARKET_CACHE_CONTROL, MARKET_TTL_MS, PARAM_LEN_MAX, PARAM_NONE,
   P_BROAD, P_MID, P_PROV,
 } from './constants'
 import {
-  emptyChannels, emptyRows, loadBroadLabels, loadChannelNocs, loadCityIndustry, loadCityPilots, loadCityStats,
+  emptyChannels, emptyRows, isProvCode, loadBroadLabels, loadChannelNocs, loadCityIndustry, loadCityPilots, loadCityStats,
   loadDliCities, loadFineCounts, loadMacroRows, loadOccStats,
-  loadPnpOpsRows, loadStats, loadStatSources,
+  loadPnpOpsRows, loadProvCities, loadStats, loadStatSources,
 } from './functions'
 import { CACHE } from './variables'
 
@@ -120,6 +121,35 @@ export async function statsMacroRoute(_req: Request): Promise<Response> {
     CACHE.macroStats = { v: { macro, ops }, ts: Date.now() }
   }
   return Response.json(CACHE.macroStats.v, { headers: { [HDR_CACHE_CONTROL]: MACRO_CACHE_CONTROL } })
+}
+
+/**
+ * GET /api/stats/cities?prov=ON:一个省的城市清单(2026-10-09「我的档案」批:所在地答案的可选城市下拉)——
+ * 城市英文名 + 中韩译名 + 在招岗数,在招多的在前,至多 CITY_PROV_LIMIT 行。省码只认 lib/location 的 13 个
+ * 省 / 地区码,缺 / 不认识 400。照 city 的形:进程内按省 10 分钟缓存 + 浏览器侧 SWR 头;零行(查挂了已留痕)
+ * 不进缓存,下一个请求重查。
+ *
+ * @param req 请求。
+ * @returns { cities }(带 SWR 缓存头);省码不合 400 { error }。
+ */
+export async function statsCitiesRoute(req: Request): Promise<Response> {
+  let prov = PARAM_NONE
+  const provParam = new URL(req.url).searchParams.get(P_PROV)
+  if (provParam != null) {
+    prov = provParam.trim()
+  }
+  if (isProvCode(prov) === false) {
+    return Response.json({ error: E_PROV }, { status: BAD_REQUEST })
+  }
+  let slot = CACHE.provCities.get(prov)
+  if (slot == null || Date.now() - slot.ts >= CITY_PROV_TTL_MS) {
+    const cities = await loadProvCities({ db: await getDb(), prov: prov })
+    slot = { v: cities, ts: Date.now() }
+    if (cities.length > 0) {
+      CACHE.provCities.set(prov, slot)
+    }
+  }
+  return Response.json({ cities: slot.v }, { headers: { [HDR_CACHE_CONTROL]: CITY_PROV_CACHE_CONTROL } })
 }
 
 /**

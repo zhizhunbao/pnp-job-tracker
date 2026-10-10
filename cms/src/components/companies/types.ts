@@ -12,6 +12,8 @@
  * 唯一留下的特批是 `JobRow` / `Plan`:它们**不是本域的事实**,是弹框从职位板手里接过、
  * 原样喂给外域引擎(jobs/Jd 的 JdAdvisorSection、pnp 的 SponsorLeadCard、
  * 上层的 onOpenJob 回调)的整份行 —— 重抄一份当天就会脱节。
+ * 2026-10-09 N6b 批:点职位名 / 公司名一律走 name 桶的弹框总线,「上层的 onOpenJob 回调」那一路连同点相似雇主、
+ * 按岗位号回查已载入整行(ResolveJobFn)与公司页弹框栈的形状(PeekStackRef 一族)随上游接线一并清掉;JobRow 仍原样喂 SponsorLeadCard。
  *
  * @author Frank
  * @time 2026-08-27 02:10:00
@@ -50,41 +52,6 @@ export type CompanyJobFact = JobRow
  * 付费态(外域形状,见文件头特批):AI 速读的额度闸按它走。
  */
 export type CompanyPlan = Plan
-
-/**
- * 「把这一行职位打开」的回调:弹框内点在招职位 = 叠开 JD 弹框;页面不传 = 纯链接。
- */
-export type OpenJobFn = (job: CompanyJobFact) => void
-
-/**
- * 「把这一家公司打开」要带的两格(2026-09-19:相似雇主点了开公司弹框,不跳页)。
- */
-export type CompanyPeek = {
-  /**
-   * 公司页 slug(弹框按它取数)。
-   */
-  slug: string
-
-  /**
-   * 公司名(弹框页眉;数据到手前就能显示)。
-   */
-  name: string
-}
-
-/**
- * 「把这一家公司打开」的回调:点相似雇主 = 开公司弹框(已在公司弹框里 = 同框换一家);不传 = 纯链接。
- */
-export type OpenCompanyFn = (peek: CompanyPeek) => void
-
-/**
- * 链接的点击手柄(普通左键拦下开弹框;带修饰键 / 非左键放行,链接照常走)。
- */
-export type PeekClickFn = (e: React.MouseEvent) => void
-
-/**
- * 按岗位号把已载入的整行喂回来(JD 弹框要整份 JobRow);没载入这一行时给 null。
- */
-export type ResolveJobFn = (id: number) => CompanyJobFact | null
 
 /**
  * 公司担保档·担保维的依据值。
@@ -725,26 +692,6 @@ export type CompanyBodyIn = {
   showTrans?: boolean
 
   /**
-   * 点在招职位的去处;可省 = 纯链接跳详情页。
-   */
-  onOpenJob?: OpenJobFn
-
-  /**
-   * 把已载入的整行喂回来;可省 = 弹框外的调用方没有这份行。
-   */
-  resolveJob?: ResolveJobFn
-
-  /**
-   * 点相似雇主的去处(2026-09-19);可省 = 纯链接跳公司页。
-   */
-  onOpenCompany?: OpenCompanyFn
-
-  /**
-   * 链接新开页(弹框里按着 Ctrl 点出去别把弹框关掉);可省 = 同标签页。
-   */
-  newTab?: boolean
-
-  /**
    * 担保卡后面的插槽(#287 批D:公司弹框挂判定卡入口;页面无 job 语境不传)。
    */
   afterSponsor?: React.ReactNode
@@ -801,14 +748,12 @@ export type CompanyBasicCardIn = {
   head?: string
 
   /**
-   * 公司名那格下面的别名(中 / 韩界面,只读库里存好的);可省 = 不出(公司弹框的别名在页眉副题)。
+   * 公司名成不成链接:true = name 桶 CompanyName 两行蓝链(点了经弹框总线叠开公司弹框;职位页 / 职位弹框里的公司信息卡);
+   * false = 纯文字(公司弹框与公司页,别名在页眉副题)。
+   * 2026-10-09 N6b 批:原「点公司名的去处」回调(N6 起只当开关读、函数不再调)换成这一格显式开关;
+   * 原「公司名那格下面的别名」一格 N6 已撤(CompanyName 自己读档案里的中 / 韩名)。
    */
-  alias?: string
-
-  /**
-   * 点公司名的去处:开公司弹框(名字成公司页真链接,普通左键拦下开框);可省 = 公司名是纯文字。
-   */
-  onOpenCompany?: OpenCompanyFn
+  linked: boolean
 
   /**
    * 官网那条活办完时叫宿主整卡重取(2026-09-21 Frank「都修」:工人拿官网版换掉旧简介、补上官网 / 总部 / 中文名,
@@ -827,14 +772,10 @@ export type CompanyNameCellIn = {
   company: CompanyDetail
 
   /**
-   * 名字下面的别名;可省 = 不出。
+   * 公司名成不成链接:true = name 桶 CompanyName 两行蓝链(点了走弹框总线);false = 纯文字。
+   * 2026-10-09 N6b 批:原「点公司名的去处」回调(N6 起只当开关读、函数不再调;「别名」一格 N6 已撤)换成这一格显式开关。
    */
-  alias?: string
-
-  /**
-   * 点公司名的去处;可省 = 公司名是纯文字。
-   */
-  onOpenCompany?: OpenCompanyFn
+  linked: boolean
 }
 
 /**
@@ -877,6 +818,11 @@ export type MiniJobFact = {
   city: string
 
   /**
+   * 城市所在省码(2026-10-09 N6 批:行里城市换 name 桶 CityName,地图查询带上省)。
+   */
+  province: string
+
+  /**
    * 职位名中文译名;'' = 库里还没有。
    */
   titleZh: string
@@ -900,11 +846,6 @@ export type JobMiniListIn = {
    * 界面语言(英文界面不出灰字)。
    */
   lang: CompaniesLang
-
-  /**
-   * 点一行:宿主叠开职位描述弹框(整行由行自己现取)。
-   */
-  onOpenJob: OpenJobFn
 }
 
 /**
@@ -940,11 +881,6 @@ export type CompanyInfoCardIn = {
    * 界面语言。
    */
   lang: CompaniesLang
-
-  /**
-   * 点公司名:开公司弹框。
-   */
-  onOpenCompany: OpenCompanyFn
 
   /**
    * 页面门服务端取好的公司详情(2026-10-02 职位页公司卡直出:卡进首屏 HTML,爬虫看得到);
@@ -1371,21 +1307,6 @@ export type CompanyJobsCardIn = {
   updatedAt: string
 
   /**
-   * 点职位的去处;可省 = 纯链接。
-   */
-  onOpenJob?: OpenJobFn
-
-  /**
-   * 把已载入的整行喂回来;可省 = 没有。
-   */
-  resolveJob?: ResolveJobFn
-
-  /**
-   * 链接新开页(弹框里点出去别把弹框关掉)。
-   */
-  newTab: boolean
-
-  /**
    * 中文对照开着(2026-09-16 Frank「在招职位 和 相似雇主 下面的也算中文翻译」:名下的对照行跟开关走)。
    */
   showTrans: boolean
@@ -1421,21 +1342,19 @@ export type JobMiniRowIn = {
   city?: string
 
   /**
-   * 点开这一行(叠开职位描述弹框);可省 = 调用方压根不做这件事,纯链接跳详情页。
-   * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:原 `onOpen`(只有已载入整行才给手柄)换成这一对 ——
-   * 行还是真链接,普通左键拦下开弹框;没载入整行的点了现取(`/api/jobs/row`)。
+   * 城市所在省码(2026-10-09 N6 批:城市换 name 桶 CityName,地图查询带上省、同名城市不串省);可省 = 不带。
    */
-  onOpenJob?: OpenJobFn
+  province?: string
 
   /**
-   * 已载入的整行;可省 / null = 没有,点了现取。
+   * 城市中文译名(2026-10-09 N6 批,CityName 的灰字);可省 = 没有。
    */
-  row?: CompanyJobFact | null
+  cityZh?: string
 
   /**
-   * 链接新开页;可省 = 同标签页。
+   * 城市韩文译名(2026-10-09 N6 批);可省 = 没有。
    */
-  newTab?: boolean
+  cityKo?: string
 }
 
 /**
@@ -1508,16 +1427,6 @@ export type CompanySimilarCardIn = {
   t: TFn
 
   /**
-   * 点一家的去处(2026-09-19);可省 = 纯链接。
-   */
-  onOpenCompany?: OpenCompanyFn
-
-  /**
-   * 链接新开页。
-   */
-  newTab: boolean
-
-  /**
    * 中文对照开着(2026-09-16 Frank「在招职位 和 相似雇主 下面的也算中文翻译」:名下的对照行跟开关走)。
    */
   showTrans: boolean
@@ -1543,16 +1452,6 @@ export type CompanySimilarRowIn = {
   t: TFn
 
   /**
-   * 点这一家的去处(2026-09-19);可省 = 纯链接。
-   */
-  onOpenCompany?: OpenCompanyFn
-
-  /**
-   * 链接新开页。
-   */
-  newTab: boolean
-
-  /**
    * 中文对照开着(2026-09-16 Frank「在招职位 和 相似雇主 下面的也算中文翻译」:名下的对照行跟开关走)。
    */
   showTrans: boolean
@@ -1574,24 +1473,9 @@ export type CompanyPanelIn = {
   slug: string
 
   /**
-   * 已载入的职位行(点在招职位时按岗位号回查整行)。
-   */
-  jobs: CompanyJobFact[]
-
-  /**
    * 界面语言。
    */
   lang: CompaniesLang
-
-  /**
-   * 点在招职位的去处;可省 = 纯链接。
-   */
-  onOpenJob?: OpenJobFn
-
-  /**
-   * 点相似雇主的去处(2026-09-19);可省 = 纯链接。
-   */
-  onOpenCompany?: OpenCompanyFn
 
   /**
    * 档案到手后把中 / 韩别名交给页眉副题(2026-09-14 Frank「参考一下职位描述的弹框 css」)。
@@ -1842,56 +1726,6 @@ export type ToggleIn = {
    * 落格。
    */
   set: SetBoolFn
-}
-
-/**
- * makeOpenJob 的入参:这一行与上层回调。
- */
-export type OpenJobIn = {
-  /**
-   * 岗位号(没载入整行时按它现取;取不到就照链接去详情页)。
-   */
-  id: number
-
-  /**
-   * 这一行(已载入的整份);null = 没载入。
-   */
-  row: CompanyJobFact | null
-
-  /**
-   * 上层回调。
-   */
-  onOpenJob: OpenJobFn
-}
-
-/**
- * makeOpenCompany 的入参:这一家与上层回调。
- */
-export type OpenCompanyIn = {
-  /**
-   * 这一家的 slug 与名。
-   */
-  peek: CompanyPeek
-
-  /**
-   * 上层回调。
-   */
-  onOpenCompany: OpenCompanyFn
-}
-
-/**
- * /api/jobs/row 的响应体:板上一行;非 200 记 null。
- */
-export type JobRowJson = CompanyJobFact | null
-
-/**
- * makeResolveJob 的入参:已载入的职位行。
- */
-export type ResolveJobIn = {
-  /**
-   * 已载入的职位行。
-   */
-  jobs: CompanyJobFact[]
 }
 
 /**
@@ -2183,37 +2017,6 @@ export type CompanyIntroIn = {
    * 队里排在这家前面的家数(2026-09-22;可省 = 0)。
    */
   ahead?: number
-}
-
-/**
- * CompanyLink(本域链接)的 props:弹框里点出去要新开页,页面上同标签页 ——
- * 这一条分叉在三处出现(在招职位、去职位板、相似雇主),收成一件。
- */
-export type CompanyLinkIn = {
-  /**
-   * 去处。
-   */
-  href: string
-
-  /**
-   * 新开页。
-   */
-  newTab: boolean
-
-  /**
-   * 点击手柄(2026-09-19 拦普通左键开弹框);可省 = 纯链接。
-   */
-  onClick?: PeekClickFn
-
-  /**
-   * 类名。
-   */
-  className: string
-
-  /**
-   * 链接内容。
-   */
-  children: React.ReactNode
 }
 
 /**
@@ -2515,86 +2318,6 @@ export type LoadAliasIn = {
    * 请求收尾(成败都算)时报 true —— 页面靠它决定「全翻完了」再显示(2026-09-14)。
    */
   onSettled: (done: boolean) => void
-}
-
-/**
- * useCompanyPeek 的出参:公司页上叠开的两个弹框(2026-09-19)。
- */
-export type CompanyPeekPanel = {
-  /**
-   * 弹框栈(2026-09-21:职位描述弹框与公司弹框一层层叠,只关最上面一层;原先的「那一岗」「那一家」两格并进这里)。
-   */
-  stack: PeekStackRef
-
-  /**
-   * 点在招职位:叠开职位描述弹框。
-   */
-  onOpenJob: OpenJobFn
-
-  /**
-   * 点相似雇主:叠开公司弹框(框里再点相似雇主同框换一家,由弹框栈的渲染件接手)。
-   */
-  onOpenCompany: OpenCompanyFn
-}
-
-/**
- * 弹框栈的职位层(2026-09-21;与 advisor 域的同名形状同形,本域自抄)。
- */
-export type PeekJobLayer = {
-  /**
-   * 层的种类。
-   */
-  kind: 'job'
-
-  /**
-   * 这一岗(整行)。
-   */
-  job: CompanyJobFact
-}
-
-/**
- * 弹框栈的公司层。
- */
-export type PeekCoLayer = {
-  /**
-   * 层的种类。
-   */
-  kind: 'company'
-
-  /**
-   * 这一家。
-   */
-  co: CompanyPeek
-}
-
-/**
- * 弹框栈的一层。
- */
-export type PeekLayer = PeekJobLayer | PeekCoLayer
-
-/**
- * 弹框栈(modal 域 useLayerStack 的出参;形状本域自抄):各层从下到上与三个手柄。
- */
-export type PeekStackRef = {
-  /**
-   * 从下到上的各层。
-   */
-  layers: PeekLayer[]
-
-  /**
-   * 叠上一层。
-   */
-  push: (layer: PeekLayer) => void
-
-  /**
-   * 换掉最上面一层。
-   */
-  swapTop: (layer: PeekLayer) => void
-
-  /**
-   * 关掉最上面一层。
-   */
-  pop: () => void
 }
 
 /**

@@ -1,22 +1,18 @@
 /**
  * 「我的」页两张岗位清单(myjobs 组件桶)的形状:线格式 → 展示行 → 清单。
  * 2026-10-08 进度板:列构造撤,展示行直接喂横卡。
+ * 2026-10-09 N6 批:职位名 / 公司名换 name 桶现成件,弹框栈各层形状与开框手柄退役;下面特批行说的「整份行」随之不再有,只剩分层态透传。
  *
  * @author Frank
  * @time 2026-10-06 23:20:00
  */
 // eslint-disable-next-line local/no-import-in-leaf -- 原样透传给公司弹框的整份行与分层态,本域一格不读(先例 employers/types.ts)
-import type { JobRow, Plan } from '@/lib/jobs'
+import type { Plan } from '@/lib/jobs'
 
 /**
  * 界面语取词函数(与 lib/i18n 的 TFn 同形;形状本桶自己声明)。
  */
 export type TFn = (key: string, vars?: Record<string, string | number>) => string
-
-/**
- * 界面语。
- */
-export type Lang = 'zh' | 'en' | 'ko'
 
 /**
  * 哪张清单:我的求职 / 我的收藏。
@@ -168,11 +164,6 @@ export type MyJobsPanel = {
   failed: boolean
 
   /**
-   * 界面语(决定灰注出哪种译名、城市出哪种名)。
-   */
-  lang: Lang
-
-  /**
    * 阶段筛选(all = 不筛;我的求职顶上那排胶囊)。
    */
   stage: string
@@ -181,21 +172,6 @@ export type MyJobsPanel = {
    * 改阶段筛选。
    */
   setStage: (s: string) => void
-
-  /**
-   * 弹框栈(公司弹框一层层叠;modal 域 useLayerStack 起的)。
-   */
-  stack: PeekStackRef
-
-  /**
-   * 开公司弹框(叠一层)。
-   */
-  onOpenCompany: OpenCompanyFn
-
-  /**
-   * 开职位描述弹框(叠一层;2026-10-07)。
-   */
-  onOpenJob: OpenJobFn
 }
 
 /**
@@ -243,9 +219,9 @@ export type MyJobCellRow = {
   avatarCls: string
 
   /**
-   * 点职位名的手柄:普通左键叠开职位描述弹框(职位删了时职位格不出链接,这一格给不拦的空口)。
+   * 职位 id(职位名点了按它叠开职位框;2026-10-09 N6 批换 name 桶 JobName);null = 职位已删,职位名黑字不可点。
    */
-  onTitle: PeekClickFn
+  jobId: number | null
 
   /**
    * 职位页链接;空串 = 职位已删、不出链接。
@@ -263,19 +239,29 @@ export type MyJobCellRow = {
   company: string
 
   /**
-   * 点公司名:开公司弹框;null = 公司表没这家,公司名不可点。
+   * 公司页 slug(公司名点了开公司弹框;2026-10-09 N6 批换 name 桶 CompanyName);空串 = 公司表没这家,公司名黑字不可点。
    */
-  onCompany: (() => void) | null
+  companySlug: string
 
   /**
-   * 城市主文案(界面语言有译名用译名)。
+   * 城市英文名(name 桶 CityName 主文案;空串 = 没有,不出)。
    */
-  cityName: string
+  city: string
 
   /**
-   * 城市灰注(「英文名 省码」或只有省码)。
+   * 城市中文译名(CityName 灰字;空串 = 译名表外)。
    */
-  cityNote: string
+  cityZh: string
+
+  /**
+   * 城市韩文译名(同上)。
+   */
+  cityKo: string
+
+  /**
+   * 两位省码(name 桶 ProvName,与城市分开各一份;空串 = 没有,不出)。
+   */
+  province: string
 
   /**
    * 薪资(没有 = 空串;只收藏那张清单出)。
@@ -348,6 +334,12 @@ export type MyJobCellRow = {
   continueHref: string
 
   /**
+   * 点「继续」:整页跳到投递区(2026-10-08 Frank「点继续应该触发什么」—— 同页软跳转只改地址栏不装流程,实撞)。
+   * 2026-10-09 A 批:草稿行改为就地弹投递框;待投行照旧整页跳到「今日待投」。
+   */
+  onContinue: () => void
+
+  /**
    * 「继续」的字。
    */
   continueText: string
@@ -356,6 +348,11 @@ export type MyJobCellRow = {
    * 收藏行「投递」的去处(投递区);投不了 = 空串(2026-10-08)。
    */
   applyHref: string
+
+  /**
+   * 点收藏行「投递」:就地弹投递框(2026-10-09 A 批)。
+   */
+  onApply: () => void
 
   /**
    * 「投递」的字。
@@ -373,14 +370,15 @@ export type CellRowsIn = {
   kind: ListKind
 
   /**
+   * 当前状态筛选(全部 / 草稿 / 待投…;收藏清单恒「全部」)。筛到单一状态时行上不再重复挂状态胶囊
+   * (2026-10-08 Frank「这已经是待投了,为什么还要右边加个待投标签」)。
+   */
+  filter: string
+
+  /**
    * 清单。
    */
   items: MyJobItem[]
-
-  /**
-   * 界面语。
-   */
-  lang: Lang
 
   /**
    * 取词函数。
@@ -391,16 +389,6 @@ export type CellRowsIn = {
    * 改清单(取消收藏要用)。
    */
   setItems: SetItemsFn
-
-  /**
-   * 开公司弹框(公司格的手柄要用)。
-   */
-  onOpenCompany: OpenCompanyFn
-
-  /**
-   * 开职位描述弹框(职位格的手柄要用;2026-10-07)。
-   */
-  onOpenJob: OpenJobFn
 }
 
 /**
@@ -413,6 +401,11 @@ export type CellRowIn = {
   kind: ListKind
 
   /**
+   * 当前状态筛选(同 CellRowsIn.filter)。
+   */
+  filter: string
+
+  /**
    * 这一行。
    */
   item: MyJobItem
@@ -423,11 +416,6 @@ export type CellRowIn = {
   items: MyJobItem[]
 
   /**
-   * 界面语。
-   */
-  lang: Lang
-
-  /**
    * 取词函数。
    */
   t: TFn
@@ -436,16 +424,6 @@ export type CellRowIn = {
    * 改清单。
    */
   setItems: SetItemsFn
-
-  /**
-   * 开公司弹框(公司格的手柄要用)。
-   */
-  onOpenCompany: OpenCompanyFn
-
-  /**
-   * 开职位描述弹框(职位格的手柄要用;2026-10-07)。
-   */
-  onOpenJob: OpenJobFn
 }
 
 /**
@@ -607,101 +585,6 @@ export type PickIn = {
    */
   setStage: (s: string) => void
 }
-
-/**
- * 公司弹框是哪一家(形同雇主板 EmpModal)。
- */
-export type CoPeek = {
-  /**
-   * 公司页 slug(弹框按它取数)。
-   */
-  slug: string
-
-  /**
-   * 公司名(弹框页眉标题)。
-   */
-  name: string
-}
-
-/**
- * 开公司弹框。
- */
-export type OpenCompanyFn = (co: CoPeek) => void
-
-/**
- * 开职位描述弹框(收整行;公司桶的 makeOpenJob 按岗位号现取一行再交回来)。
- */
-export type OpenJobFn = (job: MyJobsJob) => void
-
-/**
- * 链接的点击手柄(普通左键拦下开弹框,Ctrl / ⌘ 点照旧开新标签)。
- */
-export type PeekClickFn = (e: React.MouseEvent) => void
-
-/**
- * 弹框栈的职位层(公司弹框里点在招职位叠开;与 advisor 域的同名形状同形,本域自抄)。
- */
-export type PeekJobLayer = {
-  /**
-   * 层的种类。
-   */
-  kind: 'job'
-
-  /**
-   * 这一岗(整行)。
-   */
-  job: MyJobsJob
-}
-
-/**
- * 弹框栈的公司层。
- */
-export type PeekCoLayer = {
-  /**
-   * 层的种类。
-   */
-  kind: 'company'
-
-  /**
-   * 这一家。
-   */
-  co: CoPeek
-}
-
-/**
- * 弹框栈的一层。
- */
-export type PeekLayer = PeekJobLayer | PeekCoLayer
-
-/**
- * 弹框栈(modal 域 useLayerStack 的出参;形状本域自抄):各层从下到上与三个手柄。
- */
-export type PeekStackRef = {
-  /**
-   * 从下到上的各层。
-   */
-  layers: PeekLayer[]
-
-  /**
-   * 叠上一层。
-   */
-  push: (layer: PeekLayer) => void
-
-  /**
-   * 换掉最上面一层。
-   */
-  swapTop: (layer: PeekLayer) => void
-
-  /**
-   * 关掉最上面一层。
-   */
-  pop: () => void
-}
-
-/**
- * 职位板整行(外域形状,逐行特批):公司弹框现取回来、原样喂给职位描述弹框,本域一格不读。
- */
-export type MyJobsJob = JobRow
 
 /**
  * 分层态(外域形状,逐行特批):页面门递来、原样喂给公司弹框,本域一格不读。

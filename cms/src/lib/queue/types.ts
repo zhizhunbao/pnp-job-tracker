@@ -39,6 +39,16 @@ export type AnswersBasicJson = {
    * 所在省(省码)。
    */
   resProv?: string | null
+
+  /**
+   * 所在城市(城市英文名;空串 = 没选。2026-10-09「我的档案」批加的可选格,老答案压根没有这一键)。
+   */
+  resCity?: string | null
+
+  /**
+   * 目标档位(1 = 拿 PR、2 = 先找工作;0 = 没答;老答案可能没有这一键)。
+   */
+  goalBand?: number | null
 }
 
 /**
@@ -109,6 +119,11 @@ export type QueueUserFact = {
    * 所在省码(空串 = 没答,不按省排)。
    */
   prov: string
+
+  /**
+   * 按哪个城市的都会区排岗(城市英文名;2026-10-09「我的档案」批:先找工作且选了城市才有,否则空串 = 不按城市排)。
+   */
+  city: string
 
   /**
    * 是 Pro(AI 信不限)。
@@ -666,10 +681,65 @@ export type QueueView = {
   items: QueueRowFact[]
 
   /**
+   * 本人的简历清单(逐项检查的简历行换简历用;2026-10-08)。
+   */
+  resumes: QueueResumeFact[]
+
+  /**
    * 英文署名(投出前逐项检查的「署名」一行;没有 = 空串)。
    */
   senderName: string
 }
+
+/**
+ * 简历清单里的一份(换简历下拉用)。
+ */
+export type QueueResumeFact = {
+  /**
+   * 简历 id。
+   */
+  id: number
+
+  /**
+   * 文件名。
+   */
+  name: string
+
+  /**
+   * MIME(PDF 才站内弹框预览)。
+   */
+  mime: string
+}
+
+/**
+ * 简历清单(回包里的)。
+ */
+export type QueueResumeFacts = QueueResumeFact[]
+
+/**
+ * apply 域交来的一份简历(只读这三格;形状本域自抄)。
+ */
+export type QueueResumeSrc = {
+  /**
+   * 简历 id。
+   */
+  id: number
+
+  /**
+   * 文件名。
+   */
+  fileName: string
+
+  /**
+   * MIME。
+   */
+  mime: string
+}
+
+/**
+ * apply 域交来的简历清单。
+ */
+export type QueueResumeSrcs = QueueResumeSrc[]
 
 /**
  * 本人四题答案的库行(SQL.QUEUE_USER_ANSWERS)。
@@ -744,6 +814,46 @@ export type CoverSaveIn = {
    * 信。
    */
   cover: string
+}
+
+/**
+ * 换简历接口的请求体(网络体,先按宽收)。
+ */
+export type ResumeBodyJson = {
+  /**
+   * 职位 id。
+   */
+  jobId?: number | string | boolean | null
+
+  /**
+   * 简历 id。
+   */
+  resumeId?: number | string | boolean | null
+}
+
+/**
+ * `saveQueuedResume` 的入参。
+ */
+export type ResumeSaveIn = {
+  /**
+   * 连接。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: UserId
+
+  /**
+   * 职位 id。
+   */
+  jobId: number
+
+  /**
+   * 简历 id(必须是本人的,SQL 里校)。
+   */
+  resumeId: number
 }
 
 /**

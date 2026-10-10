@@ -1301,3 +1301,177 @@
 
   display: block;
 }
+
+/*
+ * 我的档案(2026-10-09「我的档案」批):卡头 —— 卡名在左、「修改」在右。
+ */
+.pfHead {
+  /*
+   * 两端排开。
+   */
+  display: flex;
+
+  /*
+   * 卡名在左、修改在右。
+   */
+  justify-content: space-between;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+}
+
+/*
+ * 卡头右上「✎ 修改」:蓝字、图标在左,不像按钮那样带底(照 Azure 卡的 Edit)。
+ */
+.pfEdit {
+  /*
+   * 图标与字排一行。
+   */
+  display: inline-flex;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 图标与字的间距。
+   */
+  gap: 4px;
+
+  /*
+   * 链接蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 正文字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 常规偏粗。
+   */
+  font-weight: 500;
+}
+
+/*
+ * 五行:手机一列;电脑两列(照 Azure Essentials)。
+ */
+.pfRows {
+  /*
+   * 网格。
+   */
+  display: grid;
+
+  /*
+   * 手机一列。
+   */
+  grid-template-columns: minmax(0, 1fr);
+
+  /*
+   * 列间距。
+   */
+  column-gap: 48px;
+
+  /*
+   * 两列时顶端对齐(多个名字的那一格更高)。
+   */
+  align-items: start;
+}
+
+@media (min-width: 768px) {
+  .pfRows {
+    /*
+     * 电脑两列。
+     */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/*
+ * 一格多个名字:竖排。
+ */
+.pfNames {
+  /*
+   * 竖排。
+   */
+  display: flex;
+
+  /*
+   * 一个名字一组。
+   */
+  flex-direction: column;
+
+  /*
+   * 组间距。
+   */
+  gap: 6px;
+}
+
+/*
+ * 所在地:城市、省份两个名字并排。
+ */
+.pfPlace {
+  /*
+   * 横排。
+   */
+  display: flex;
+
+  /*
+   * 两个名字的间距。
+   */
+  gap: 20px;
+}
+
+/*
+ * 没答的那一格:浅灰。
+ */
+.pfNone {
+  /*
+   * 浅灰。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 取不到那一行。
+ */
+.pfNote {
+  /*
+   * 次级文字色。
+   */
+  color: var(--text2);
+
+  /*
+   * 正文字号。
+   */
+  font-size: 14px;
+}
+
+/*
+ * 一格名字折起来时那一行「还有 N 个」:蓝字、靠左,不像按钮那样带底。
+ */
+.pfMore {
+  /*
+   * 链接蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 正文字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 靠左(竖排里不撑满整行)。
+   */
+  align-self: flex-start;
+
+  /*
+   * 没有按钮内边距,和名字左边对齐。
+   */
+  padding: 0;
+}

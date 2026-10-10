@@ -7,6 +7,8 @@
  * jdadvisorsection 一个文件,不成环;jobs 那几条则必须点文件(职位板反过来要本桶两个弹框)。
  * 2026-08-28 换装批自 Advisor.tsx 的 AdvisorModal 正文分叉提出成件。
  * 2026-09-28 Frank「地点弹框 删了吧」:地点组(五卡两列的 LocationPanel)整支删 —— 09-14 起省 / 市 / 区三格就不再开它了。
+ * 2026-10-09 N6 批:其余组的事实件不再收点公司的去处(AIP 名单招牌换 name 桶 CompanyName 自开),onOpenCompany 只递公司面板。
+ * 2026-10-09 N6b 批:公司面板里的名字也由 name 桶自开,onOpenJob / onOpenCompany 与同公司在榜岗(companyJobs)三格撤。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -20,21 +22,20 @@ import type { AdvisorGroupBodyIn } from './types'
 /**
  * 渲染弹框正文。
  *
- * @param props 分组、入口格、在榜岗、点岗回调与取数包(2026-09-14 AI 速读退役,分层态不再下传)。
+ * @param props 分组、入口格、公司面板两个回传口、重译代数与取数包(2026-09-14 AI 速读退役,分层态不再下传)。
  * @returns 这一组的正文。
  */
 export function AdvisorBody({
-  group, field, companyJobs, onOpenJob, onOpenCompany, onCompanyAlias, onCompanyTransBusy, gen, f,
+  group, field, onCompanyAlias, onCompanyTransBusy, gen, f,
 }: AdvisorGroupBodyIn) {
   if (group === GROUP_CATEGORY) {
     return <CategoryPanel job={f.job} lang={f.lang} nocDesc={f.nocDesc} srcField={field} />
   }
   if (group === GROUP_COMPANY) {
     return (
-      <CompanyPanel key={gen} job={f.job} slug={TEXT_NONE} jobs={companyJobs} lang={f.lang} onOpenJob={onOpenJob}
-        onOpenCompany={onOpenCompany}
+      <CompanyPanel key={gen} job={f.job} slug={TEXT_NONE} lang={f.lang}
         onAlias={onCompanyAlias} showTrans={f.showZh} onTransBusy={onCompanyTransBusy} />
     )
   }
-  return <GroupFacts group={group} f={f} onOpenCompany={onOpenCompany} />
+  return <GroupFacts group={group} f={f} />
 }

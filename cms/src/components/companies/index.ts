@@ -16,6 +16,7 @@
  * 对应 lib 域:lib/jobs(loadCompanyBySlug 一族;公司弹框走 /api/jobs/company)。
  * 2026-09-21 多一件公司信息卡(CompanyInfoCard):职位详情页与职位描述弹框正文下面那张(公司弹框的基本信息卡换三处)。
  * 2026-10-07 放出 makeOpenJob(「我的」页两张表的职位名点了叠开 JD 弹框,Frank「这两个应该弹框啊」;同一个手柄只此一份)。
+ * 2026-10-09 N6b 批:makeOpenJob 退役(「我的」页与投递队列 N6 换 name 桶 JobName,点职位名经弹框总线自开),桶里这一行撤。
  *
  * @author Frank
  * @time 2026-08-27 02:10:00
@@ -25,4 +26,3 @@ export { CompanyBody } from './companybody'
 export { CompanyInfoCard } from './companyinfocard'
 export { CompanyPanel } from './companypanel'
 export { JobMiniRow } from './jobminirow'
-export { makeOpenJob } from './functions'

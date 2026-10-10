@@ -25,11 +25,13 @@
  * (此前本板直渲两框,Esc 一层都关不掉,见 hooks 的 useEmpPeek)。
  * 2026-10-04 收口审查(设计稿 10-04「关掉后…筛选…一律再弹」):弹框栈旁边多挂一路筛选的访客向导(gate 桶 GateWizard)——
  * 访客关掉进站向导后动筛选 / 搜索再弹,照职位板弹框层(boardmodals)那一路的形挂。
+ * 2026-10-09 N 批(Frank「一个全站宿主,并掉各页那 5 套」):本页不再自己画 PeekStack,改摆 modal 桶的报件 PeekContext
+ * (报本页的分层态与职业名表),弹框由全站骨架上的 PeekHost 画。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
-import { PeekStack } from '@/components/advisor'
+import { PeekContext } from '@/components/modal'
 import { Banner, BANNER_IMGS } from '@/components/banner'
 import { GateWizard } from '@/components/gate'
 import { IconUsers } from '@/components/icons'
@@ -65,7 +67,7 @@ export function Employers({ initial, initialFilters, updatedAt, initialCols, pla
           <EmployerBoard p={p} />
         </div>
       </Shell>
-      <PeekStack stack={p.peek.stack} lang={p.lang} plan={p.peek.plan} nocDesc={NOC_DESC_NONE} />
+      <PeekContext plan={p.peek.plan} nocDesc={NOC_DESC_NONE} />
       {p.peek.filterGate && (
         <GateWizard t={p.t}
           intent={GATE_INTENT_FILTER}

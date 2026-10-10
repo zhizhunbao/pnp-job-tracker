@@ -62,6 +62,11 @@ export const MAJOR_RE = /^\d{2}\.\d{4}$/
 export const MAJOR_PICK_MAX = 3
 
 /**
+ * 草稿里城市名的长度上限(2026-10-09「我的档案」批;最长的加拿大城镇名四十来个字,留余量;超了读回时按没选)。
+ */
+export const CITY_LEN_MAX = 80
+
+/**
  * 所在省那一题的十个省码(向导不问领地)。草稿读回时按它验。
  */
 export const PROV_CODES = ['ON', 'QC', 'BC', 'AB', 'SK', 'MB', 'NS', 'NB', 'NL', 'PE']

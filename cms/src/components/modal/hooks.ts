@@ -9,13 +9,20 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { EV_CHANGE, EV_KEYDOWN, KEY_ESC, MQ_MAX_WIDTH_HEAD, MQ_MAX_WIDTH_TAIL, NARROW_BP } from './constants'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import {
+  EV_CHANGE, EV_KEYDOWN, EV_PEEK, EV_PEEK_CTX, KEY_ESC, MQ_MAX_WIDTH_HEAD, MQ_MAX_WIDTH_TAIL, NARROW_BP, PEEK_CLEAR,
+  PEEK_POP, PEEK_PUSH, PEEK_SWAP,
+} from './constants'
 import {
   downOf, fitKeyOf, frameInitOf, frameStyleOf, heightDroppedOf, isTopEsc, joinEsc, leaveEsc, makeDragStart,
   makeResizeStart, memoOf, minSizeOf,
+  openCountOf, peekCtxOf, peekMsgOf, sendPeek, sendPeekCtx, zOf,
 } from './functions'
-import type { FrameBox, FrameIn, FrameOut, LayerStackOut, OverlayHandlers, PointerHandlerFn, ResizeEdge } from './types'
+import type {
+  FrameBox, FrameIn, FrameOut, LayerStackOut, OverlayHandlers, PeekCtx, PeekInboxIn, PointerHandlerFn, ResizeEdge,
+  StackZIn,
+} from './types'
 
 /**
  * 窄屏判定(E8-03,单一来源):≤640px 弹窗一律全屏。
@@ -119,7 +126,10 @@ export function useLayerStack<L>(): LayerStackOut<L> {
       return prev.slice(0, -1)
     })
   }, [])
-  return { layers, push, swapTop, pop }
+  const clear = useCallback(function clearLayers(): void {
+    setLayers([])
+  }, [])
+  return { layers, push, swapTop, pop, clear }
 }
 
 /**
@@ -169,4 +179,90 @@ export function useFrame(x: FrameIn): FrameOut {
     startOf,
     resizable: canSize,
   }
+}
+
+/**
+ * 弹框总线的代理栈(2026-10-09 N 批,Frank「一个全站宿主,并掉各页那 5 套」):形同 useLayerStack,各页推栈的手柄原样接它;
+ * 但它不持状态 —— push / swapTop / pop 只往总线上发消息,由全站骨架上的宿主(advisor 的 PeekHost)持唯一一个栈。
+ * layers 恒空(各页从不读栈,只有宿主的渲染件读)。
+ *
+ * @returns 代理栈。
+ */
+export function usePeekBus<L extends object>(): LayerStackOut<L> {
+  const push = useCallback(function pushLayer(layer: L): void {
+    sendPeek({ op: PEEK_PUSH, layer, jobId: null })
+  }, [])
+  const swapTop = useCallback(function swapTopLayer(layer: L): void {
+    sendPeek({ op: PEEK_SWAP, layer, jobId: null })
+  }, [])
+  const pop = useCallback(function popLayer(): void {
+    sendPeek({ op: PEEK_POP, layer: null, jobId: null })
+  }, [])
+  const clear = useCallback(function clearLayers(): void {
+    sendPeek({ op: PEEK_CLEAR, layer: null, jobId: null })
+  }, [])
+  return { layers: [], push, swapTop, pop, clear }
+}
+
+/**
+ * 把本页的分层态与职业名表报给全站宿主(挂上 / 一变就报,卸载撤回)——
+ * 原先各页自己画 PeekStack 时直接递这两样,宿主上收后由这里补上。
+ *
+ * @param x 本页的分层态与职业名表。
+ * @returns 无。
+ */
+export function usePeekContext(x: PeekCtx): void {
+  const id = useId()
+  const plan = x.plan
+  const nocDesc = x.nocDesc
+  useEffect(function report() {
+    sendPeekCtx({ id, ctx: { plan, nocDesc } })
+    function retract() {
+      sendPeekCtx({ id, ctx: null })
+    }
+    return retract
+  }, [id, plan, nocDesc])
+}
+
+/**
+ * 宿主的收件箱:挂上就听弹框总线的两种消息(栈操作、上下文),卸载撤听;手柄换了就换挂。
+ *
+ * @param x 两种消息的手柄。
+ * @returns 无。
+ */
+export function usePeekInbox(x: PeekInboxIn): void {
+  const onMsg = x.onMsg
+  const onCtx = x.onCtx
+  useEffect(function listen() {
+    function msg(e: Event) {
+      onMsg(peekMsgOf(e))
+    }
+    function ctx(e: Event) {
+      onCtx(peekCtxOf(e))
+    }
+    window.addEventListener(EV_PEEK, msg)
+    window.addEventListener(EV_PEEK_CTX, ctx)
+    function off() {
+      window.removeEventListener(EV_PEEK, msg)
+      window.removeEventListener(EV_PEEK_CTX, ctx)
+    }
+    return off
+  }, [onMsg, onCtx])
+}
+
+/**
+ * 弹框的层级(2026-10-09 N 批):调用方指定了就照指定;没指定在挂上那一刻按底下开着几个定下来,之后不变 ——
+ * 后打开的叠在先打开的上面(投递框、职位框、公司框都挂在全站骨架上,DOM 先后不再等于打开先后)。
+ *
+ * @param x 调用方给的层级。
+ * @returns 层级。
+ */
+export function useStackZ(x: StackZIn): number {
+  const [auto] = useState(function initZ(): number {
+    return zOf({ z: null, open: openCountOf() })
+  })
+  if (x.z != null) {
+    return zOf({ z: x.z, open: 0 })
+  }
+  return auto
 }

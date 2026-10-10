@@ -22,17 +22,25 @@
  * @time 2026-10-04 02:10:00
  */
 import { fetchMajor } from '@/components/majors'
-import { obMarkSeen } from '@/components/profile'
+import { quizToProfile } from '@/components/quiz'
+import { isSenderName } from '@/lib/apply'
 import { clearGateHandoff, isGateSignedIn, markGateHandoff, markGateSignedIn, syncGateDraft } from '@/lib/guest'
+import { GUEST_LOG, log } from '@/lib/log'
+import { readAnswers, saveBasics } from '@/lib/quiz'
 import { track } from '@/lib/track'
 import {
-  BOARD_HEAD, BOARD_INTENTS, BOARD_PATH, BROAD_DROP_PARAMS, GATE_FRAME_SEL, GATE_QUESTIONS, GATE_QUESTION_GOAL,
-  GATE_STEPS, GATE_STEP_JOB, GATE_STEP_MAJOR, GATE_STEP_PROV, GATE_STEP_REG, MAJOR_SEP, NOC_DROP_PARAMS, NOC_SEP,
-  PROV_ABROAD, PROV_DROP_PARAMS, P_BROAD, P_NOC, P_PROV, TEXT_NONE, TRACK_GATE_STEP,
+  BOARD_HEAD, BOARD_INTENTS, BOARD_PATH, BROAD_DROP_PARAMS, CITIES_BAD, CITY_HIT_MAX, CITY_HOT_N, CRED_INCLUDE,
+  EDIT_ERR_ANSWERS, EDIT_ERR_NAME, GATE_EDIT_STEPS,
+  GATE_FRAME_SEL, GATE_QUESTIONS, GATE_QUESTION_GOAL, GATE_STEPS, GATE_STEP_JOB, GATE_STEP_MAJOR, GATE_STEP_NAME,
+  GATE_STEP_PROV, GATE_STEP_REG, HDR_CONTENT_TYPE, LANG_KO, LANG_ZH, MAJOR_SEP, METHOD_PATCH, MIME_JSON,
+  NEXT_KEY, NOC_DROP_PARAMS, NOC_SEP, PROV_ABROAD, PROV_DROP_PARAMS, P_BROAD, P_NOC, P_PROV, SAVE_FAIL_KEY, SAVE_KEY,
+  STATUS_OVERSEAS,
+  TEXT_NONE, TRACK_GATE_STEP, URL_CITIES_HEAD, URL_PREFS,
 } from './constants'
 import type {
-  BoardGoIn, BoardUrlIn, EntryCloseIn, EntryDoneIn, GateBackIn, GateCloseIn, GateDoneIn, GateIntent, GateNextIn,
-  GateNextOffIn, GateProvActiveIn, GateQuestionIn, GateStep, GateStepOfIn, GateSyncRunIn, GoalPickIn, MajorsPickIn,
+  BoardGoIn, BoardUrlIn, CitiesJson, CityLabelIn, CityOpt, CityOptsIn, CityPickIn, EditNextIn, EditPatch, EditSaveIn,
+  EntryCloseIn, EntryDoneIn, GateBackIn, GateCloseIn, GateDoneIn, GateEditSeed, GateIntent, GateNextIn, GateNextOffIn,
+  GateProvActiveIn, GateQuestionIn, GateStep, GateStepOfIn, GateSyncRunIn, GoalPickIn, LoadCitiesIn, MajorsPickIn,
   MaybeBoardMajor, NocsMergeFn, ParamsDropIn, ProvPickIn, QuestionFocusIn, SetNocsFn, TouchedNocsIn,
 } from './types'
 
@@ -43,7 +51,7 @@ import type {
  * @returns 这一屏。
  */
 export function gateStepOf(x: GateStepOfIn): GateStep {
-  const s = GATE_STEPS[x.step]
+  const s = x.steps[x.step]
   if (s == null) {
     return GATE_STEP_REG
   }
@@ -135,6 +143,9 @@ export function makeGateBack(x: GateBackIn): () => void {
  * @returns 灰 = true。
  */
 export function gateNextOffOf(x: GateNextOffIn): boolean {
+  if (x.cur === GATE_STEP_NAME) {
+    return x.nameBad
+  }
   if (x.cur === GATE_STEP_MAJOR) {
     return x.majors.length === 0
   }
@@ -197,6 +208,7 @@ export function occMajorOf(codes: string[]): string {
 export function makeProvPick(x: ProvPickIn): (v: string) => void {
   return function pickProv(v: string): void {
     x.setTouched(true)
+    x.setCity(TEXT_NONE)
     if (v === PROV_ABROAD) {
       x.setProv(TEXT_NONE)
       x.setAbroad(true)
@@ -272,13 +284,13 @@ export function dropGateHandoff(): void {
  * syncGateDraft 一上来就清本地草稿,筛选只认内存这份。同日收口:由头只剩进站(点开职位撤,理由见 constants 的 BOARD_INTENTS)。
  * 同日收口审查:「这个页面里刚登录过」那一记同时让随后卸掉向导时不撤交接戳(见 dropGateHandoff);回职位板带上这一页
  * 现在的查询串(在现有地址上改,见 gateBoardUrlOf)。
+ * 2026-10-09「我的档案」批:首访引导向导退役,开头那一记「首访引导弹过了」(obMarkSeen)随之撤 —— 没有六步那套可弹了。
  *
  * @param x 这一刻的草稿、交还口、这一页的路径与换地址栏。
  * @returns 注册成功回调。
  */
 export function makeGateDone(x: GateDoneIn): () => void {
   return function gateDone(): void {
-    obMarkSeen()
     markGateSignedIn()
     void syncGateDraft(x.draft)
     x.onDone()
@@ -292,6 +304,7 @@ export function makeGateDone(x: GateDoneIn): () => void {
  * 被记成弹过、地址栏被改。回职位板一页只试一次:第一跑就记上「试过」,第一跑没交成(草稿与戳放回去),
  * 后面换页补交成了也不换 —— 那时用户多半已自己动过筛选,再换就冲掉(同 useGateSync 头注「地址栏一页只换一次」);
  * 这一页刚在向导里登录过(邮箱注册当场已换过)的也不换。
+ * 2026-10-09「我的档案」批:首访引导向导退役,「交成了才记首访引导弹过了」那一记(obMarkSeen)撤;交成了才回职位板照旧。
  *
  * @param x 草稿、路径、查询串、换地址栏与「这一页试过」记号。
  * @returns 无(结果在答案档、本地存储与地址栏上)。
@@ -303,7 +316,6 @@ export async function runGateSync(x: GateSyncRunIn): Promise<void> {
   if (ok === false) {
     return
   }
-  obMarkSeen()
   if (first === false || isGateSignedIn()) {
     return
   }
@@ -439,3 +451,218 @@ export function makeEntryDone(x: EntryDoneIn): () => void {
   }
 }
 
+
+/**
+ * 城市区这一刻摆哪些城市:没搜摆本省在招最多的前 CITY_HOT_N 个;搜了按英文名与界面语译名找(不分大小写),至多 CITY_HIT_MAX 个。
+ *
+ * @param x 本省全部城市、搜索词与界面语。
+ * @returns 要摆的城市。
+ */
+export function cityOptsOf(x: CityOptsIn): CityOpt[] {
+  const q = x.q.trim().toLowerCase()
+  const out: CityOpt[] = []
+  for (const c of x.all) {
+    const label = cityLabelOf({ c, lang: x.lang })
+    if (q === TEXT_NONE && out.length >= CITY_HOT_N) {
+      break
+    }
+    if (q !== TEXT_NONE && out.length >= CITY_HIT_MAX) {
+      break
+    }
+    if (q === TEXT_NONE || c.name.toLowerCase().includes(q) || label.toLowerCase().includes(q)) {
+      out.push({ name: c.name, label })
+    }
+  }
+  return out
+}
+
+/**
+ * 胶囊上的字:界面语有译名用译名,没有用英文名(胶囊按 10-08 例外保留短名,不出两行)。
+ *
+ * @param x 那一行城市与界面语。
+ * @returns 胶囊上的字。
+ */
+function cityLabelOf(x: CityLabelIn): string {
+  if (x.lang === LANG_ZH && x.c.zh !== TEXT_NONE) {
+    return x.c.zh
+  }
+  if (x.lang === LANG_KO && x.c.ko !== TEXT_NONE) {
+    return x.c.ko
+  }
+  return x.c.name
+}
+
+/**
+ * 按省取城市(stats 域;在招多的在前)。取挂了留痕、按空清单落 —— 城市选填,不挡下一步。回来的不是清单(形状不对)同取挂了。
+ *
+ * @param x 省码、落格与存活标记。
+ * @returns 无。
+ */
+export async function loadProvCities(x: LoadCitiesIn): Promise<void> {
+  try {
+    const r = await fetch(URL_CITIES_HEAD + encodeURIComponent(x.prov))
+    if (r.ok === false) {
+      throw new Error(String(r.status))
+    }
+    const body = await r.json() as CitiesJson
+    if (Array.isArray(body.cities) === false) {
+      throw new Error(CITIES_BAD)
+    }
+    if (x.flag.dead === false) {
+      x.setAll({ prov: x.prov, rows: body.cities })
+    }
+  } catch (e) {
+    log({ tag: GUEST_LOG.tag, text: GUEST_LOG.cities + String(e) })
+    if (x.flag.dead === false) {
+      x.setAll({ prov: x.prov, rows: [] })
+    }
+  }
+}
+
+/**
+ * 造「点一个城市」:点没选的 = 选它;再点选中的那个 = 取消(城市选填)。
+ *
+ * @param x 现选的城市与落格。
+ * @returns 点击手柄。
+ */
+export function makeCityPick(x: CityPickIn): (v: string) => void {
+  return function pickCity(v: string): void {
+    if (v === x.city) {
+      x.setCity(TEXT_NONE)
+      return
+    }
+    x.setCity(v)
+  }
+}
+
+
+/**
+ * 英文姓名填了但不合规(与投递流同一条规矩,lib/apply isSenderName);没填不算不合规(选填,留着以后投递时再填)。
+ *
+ * @param name 输入框里的字。
+ * @returns 不合规 true。
+ */
+export function nameBadOf(name: string): boolean {
+  const n = name.trim()
+  return n !== TEXT_NONE && isSenderName(n) === false
+}
+
+/**
+ * 编辑模式钮区主钮的词条键:最后一题是「保存」,其余「下一步」。
+ *
+ * @param step 走到第几步。
+ * @returns 词条键。
+ */
+export function editNextKeyOf(step: number): string {
+  if (step + 1 >= GATE_EDIT_STEPS.length) {
+    return SAVE_KEY
+  }
+  return NEXT_KEY
+}
+
+/**
+ * 造编辑模式的「下一题」:没到最后一题往后走;最后一题 = 保存(不打交接戳、不进注册屏,与访客向导分开)。
+ *
+ * @param x 步数、落格与保存。
+ * @returns 点击手柄。
+ */
+export function makeEditNext(x: EditNextIn): () => void {
+  return function editNext(): void {
+    if (x.step + 1 >= GATE_EDIT_STEPS.length) {
+      x.save()
+      return
+    }
+    x.setStep(x.step + 1)
+  }
+}
+
+/**
+ * 造编辑模式的「保存」:答案档那几格整格覆盖、立刻推(lib/quiz saveBasics);署名填了就存进投递资料;
+ * 再把职业与省同步进旧档案(users.profile —— 职位板匹配度、职位框匹配卡等十几处还读它,首访引导退役后只剩这一处在写)。
+ * 任一半没成:框不关、摆一行「没存上」,留痕。
+ *
+ * @param x 这一份答案、两个落格与保存成功的回调。
+ * @returns 点击手柄。
+ */
+export function makeEditSave(x: EditSaveIn): () => void {
+  return function editSave(): void {
+    x.setSaving(true)
+    x.setFail(TEXT_NONE)
+    void runEditSave(x)
+  }
+}
+
+/**
+ * 保存的本体(makeEditSave 起它;拆出来是因为点击手柄不收异步)。
+ *
+ * @param x 同 makeEditSave。
+ * @returns 无。
+ */
+async function runEditSave(x: EditSaveIn): Promise<void> {
+  try {
+    const ok = await saveBasics(editPatchOf(x.a))
+    if (ok === false) {
+      throw new Error(EDIT_ERR_ANSWERS)
+    }
+    if (x.a.name !== TEXT_NONE) {
+      await saveEditName(x.a.name)
+    }
+    await quizToProfile({ status: readAnswers().status, nocs: x.a.nocs, provs: editProvsOf(x.a) })
+    x.setSaving(false)
+    x.onSaved()
+  } catch (e) {
+    log({ tag: GUEST_LOG.tag, text: GUEST_LOG.editSave + String(e) })
+    x.setSaving(false)
+    x.setFail(SAVE_FAIL_KEY)
+  }
+}
+
+/**
+ * 编辑模式写进答案档的那几格:答了境外写处境 overseas、省市清空;否则写省与城市(处境不动)。
+ *
+ * @param a 这一份答案。
+ * @returns 要覆盖的格。
+ */
+function editPatchOf(a: GateEditSeed): EditPatch {
+  if (a.abroad) {
+    return {
+      goalBand: a.goal, majors: a.majors, nocs: a.nocs, resProv: TEXT_NONE, resCity: TEXT_NONE, status: STATUS_OVERSEAS,
+    }
+  }
+  return { goalBand: a.goal, majors: a.majors, nocs: a.nocs, resProv: a.prov, resCity: a.city }
+}
+
+/**
+ * 同步进旧档案的目标省:答案档里答过目标省(PR 那套题)就用它;没答过用现居省;在境外给空列(旧档案原样留)。
+ *
+ * @param a 这一份答案。
+ * @returns 目标省码清单。
+ */
+function editProvsOf(a: GateEditSeed): string[] {
+  const provs = readAnswers().provs
+  if (provs.length > 0) {
+    return provs
+  }
+  if (a.prov === TEXT_NONE) {
+    return []
+  }
+  return [a.prov]
+}
+
+/**
+ * 存投递署名(queue 域 PATCH,与今日待投设置清单同一个口;不合规服务端回 422)。
+ *
+ * @param name 英文姓名。
+ * @returns 无;没存上抛错。
+ */
+async function saveEditName(name: string): Promise<void> {
+  const r = await fetch(URL_PREFS, {
+    method: METHOD_PATCH,
+    credentials: CRED_INCLUDE,
+    headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+    body: JSON.stringify({ senderName: name }),
+  })
+  if (r.ok === false) {
+    throw new Error(EDIT_ERR_NAME + String(r.status))
+  }
+}

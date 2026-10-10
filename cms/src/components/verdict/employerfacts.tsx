@@ -7,17 +7,23 @@
  * 同批删掉的「全部可行通道」不回来 —— 带岗态它 = 刷回本页去掉岗位,
  * 顶栏「PR 评估」本来就是这个入口。
  * 2026-08-28 换装批自 TripleVerdictModal.tsx 的同名卡片提出成件。
+ * 2026-10-09 N 批(Frank「名字一律英文在上、译名灰字在下」「省市 分开」「城市 和 省份 点击 跳 google 地图」):
+ * 雇主 / 城市 / 省三块换名字瓦片 NameTile —— 雇主走 name 桶 Name(黑字不可点:本岗只带公司名,没有公司页 slug,
+ * 也没带公司译名,灰字暂空)、城市走 CityName(带的城市没有译名,灰字暂空)、省走 ProvName(英文省名在上、
+ * 界面语省名灰字在下),城市与省点了新标签开 Google 地图;库里没记城市的照旧横杠事实瓦片。
  *
  * @author Frank
  * @time 2026-08-28 17:55:00
  */
 import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
+import { CityName, Name, ProvName } from '@/components/name'
 import { TEXT_NONE, TRACK_NEXT_EMPLOYER } from './constants'
 import { FactTile } from './facttile'
+import { NameTile } from './nametile'
 import { VerdictCard } from './verdictcard'
 import { VerdictRows } from './verdictrows'
-import { cityTextOf, companyJobsHrefOf, empRowsOf, makeTrackClick, provDispOf } from './functions'
+import { cityTextOf, companyJobsHrefOf, empRowsOf, makeTrackClick } from './functions'
 import type { EmployerFactsIn } from './types'
 import css from './verdict.module.css'
 
@@ -38,9 +44,16 @@ export function EmployerFacts({ t, lang, job, wire }: EmployerFactsIn) {
         </LinkButton>
       }>
       <div className={css.answers}>
-        <FactTile label={t('tv.f.employer')} value={job.company} sub={TEXT_NONE} />
-        <FactTile label={t('tv.f.city')} value={cityTextOf({ city: job.city })} sub={TEXT_NONE} />
-        <FactTile label={t('tv.f.prov')} value={provDispOf({ t, code: job.province })} sub={TEXT_NONE} />
+        <NameTile label={t('tv.f.employer')}><Name en={job.company} sub={TEXT_NONE} /></NameTile>
+        {job.city === TEXT_NONE && (
+          <FactTile label={t('tv.f.city')} value={cityTextOf({ city: job.city })} sub={TEXT_NONE} />
+        )}
+        {job.city !== TEXT_NONE && (
+          <NameTile label={t('tv.f.city')}>
+            <CityName city={job.city} province={job.province} zh={TEXT_NONE} ko={TEXT_NONE} />
+          </NameTile>
+        )}
+        <NameTile label={t('tv.f.prov')}><ProvName code={job.province} /></NameTile>
         <VerdictRows t={t} lang={lang} rows={empRowsOf({ wire })} />
       </div>
     </VerdictCard>

@@ -7,23 +7,28 @@
  * @author Frank
  * @time 2026-10-07 03:00:00
  */
-import { COVER_MAX, coverFileOf, isSenderName } from '@/lib/apply'
+import { COVER_MAX, coverFileOf, isSenderName, mailSubjectOf } from '@/lib/apply'
 import { track } from '@/lib/track'
 import {
   CLOSED_KEY, CRED_INCLUDE, DATE_LEN, ERR_CODES, ERR_FALLBACK, ERR_KEY_FULL, ERR_KEY_HEAD, ERR_KEY_NAME,
   ERR_KEY_RESUME, ERR_KEY_TEMPLATE, ERR_KEY_UPLOAD, ERR_KEY_WRITE, ERR_NONE, E_TRIAL, FIELD_FILE, HDR_CONTENT_TYPE,
-  HTTP_CONFLICT, LOAD_FAIL, LOAD_NONE, LOAD_OK, METHOD_POST, METHOD_PUT, MIME_JSON, NEXT_KEY, NO_EMAIL_KEY, P_JOB,
-  SENT_STATUSES, STEP_DONE, STEP_LETTER, STEP_ORDER, STEP_PREVIEW, STEP_RESUME, TEXT_NONE, TRACK_APPLY_SENT,
+  HTTP_CONFLICT, HTTP_UNAUTH, LOAD_AUTH, LOAD_BUSY, LOAD_FAIL, LOAD_NONE, LOAD_OK, METHOD_POST, METHOD_PUT, MIME_JSON,
+  NEXT_KEY, NO_EMAIL_KEY, P_JOB,
+  MIME_PDF, PICK_MIN, SENT_STATUSES, STEP_DONE, STEP_LETTER, STEP_ORDER, STEP_PREVIEW, STEP_RESUME, TEXT_NONE,
+  TRACK_APPLY_SENT,
   UPLOADED_KEY, URL_BACK_HEAD, URL_COVER_HEAD, URL_DRAFT, URL_LETTER, URL_RESUME_FILE, URL_RESUME_FILES, URL_SEND,
-  URL_SJOBS, URL_START_HEAD, BREAK_AFTER_RE, CHECK_KEYS, CHECK_LETTER, CHECK_RESUME, CHECK_SIGN, CHECK_TO, PDF_KEY,
-  Q_ID_HEAD, VIEW_KEY,
+  URL_START_HEAD, BREAK_AFTER_RE, CHECK_LETTER, CHECK_RESUME, CHECK_SIGN, CHECK_TO, PDF_KEY,
+  Q_ID_HEAD, VIEW_KEY, EV_APPLY_NAV, EV_APPLY_SENT, PATH_ACCOUNT, P_APPLY,
 } from './constants'
 import type {
   AiOpenIn, ApplyCells, ApplyResumeView, ApplyStartView, CanNextIn, DraftIn, ErrJson, ErrOut, LetterJson, LoadStartIn,
-  LocationIn, PageHideIn, PickIn, PickOfFn, ResumeFilesJson, ResumeNameIn, SentIn, SetFn, StartStepIn, UploadedTextIn,
+  PageHideIn, PickIn, PickOfFn, ResumeFilesJson, ResumeNameIn, SetFn, StartStepIn, UploadedTextIn,
   TrialWriteIn, UploadIn, UploadJson,
-  ApplySentOut, SentFn, ApplyChecksIn, CheckRow, CheckRowsIn, TickIn, TickOfFn,
+  ApplySentOut, ApplyChecksIn, CheckRow, CheckRowsIn, MaybeCheckPreview, OpenOfFn, MaybeCheckRow,
+  ResumePickItem, ApplyCheckPanelIn, CheckPanel, RowOfIn, ApplyIdIn, ApplyOpenDetail, OpenedIn,
+  ApplyTitled, AuthRetryIn,
 } from './types'
+import { CACHE } from './variables'
 
 /**
  * 这一岗投不投得了:没投过(或只有草稿)而岗已下架、库里没有投递邮箱 → 给原因的词条(投递区只摆这一行)。
@@ -45,17 +50,155 @@ export function blockKeyOf(s: ApplyStartView): string {
 }
 
 /**
- * 地址栏里的职位 id(/account?sec=sjobs&job=<id>;正整数才认)。
+ * 地址栏里要弹投递框的职位 id:`?apply=<id>`;旧深链 `/account?sec=sjobs&job=<id>` 也认(2026-10-09 A 批投递搬进弹框,
+ * 邮件与收藏夹里存的旧地址照样弹框)。正整数才认。
  *
- * @param search 地址栏查询串。
- * @returns 职位 id;没带 / 不合形给 null。
+ * @param x 查询串与路径。
+ * @returns 职位 id;没带给 null。
  */
-export function jobIdOf(search: string): number | null {
-  const n = Number(new URLSearchParams(search).get(P_JOB))
-  if (Number.isInteger(n) && n > 0) {
+export function applyIdOf(x: ApplyIdIn): number | null {
+  const q = new URLSearchParams(x.search)
+  const id = positiveIdOf(q.get(P_APPLY))
+  if (id != null || x.path !== PATH_ACCOUNT) {
+    return id
+  }
+  return positiveIdOf(q.get(P_JOB))
+}
+
+/**
+ * 参数值是正整数就给数,否则 null。
+ *
+ * @param raw 参数原文(没带 = null)。
+ * @returns 正整数或 null。
+ */
+function positiveIdOf(raw: string | null): number | null {
+  const n = Number(raw)
+  if (raw != null && Number.isInteger(n) && n > 0) {
     return n
   }
   return null
+}
+
+/**
+ * 读当前地址栏要弹的职位 id;框已经没了(手机返回键退掉了本站推的那一笔)就把历史记账清掉,
+ * 免得之后关一个深链进来的框时误退出本站。
+ *
+ * @returns 职位 id;没带给 null。
+ */
+export function readApplyId(): number | null {
+  const id = applyIdOf({ search: window.location.search, path: window.location.pathname })
+  if (id == null) {
+    CACHE.pushed = false
+  }
+  return id
+}
+
+/**
+ * 宿主活着时框从无到有 = 有人往历史里推了一笔(本站 openApply,或站内链接的软导航)—— 记账,关框时退回去;
+ * 宿主刚挂上就带着参数 = 深链进来,不记(关框只洗参数,退了就离开本站)。
+ *
+ * @param x 是不是刚挂上、上一次读到的与这一次读到的职位 id。
+ * @returns 无。
+ */
+export function noteOpened(x: OpenedIn): void {
+  if (x.first === false && x.prev == null && x.id != null) {
+    CACHE.pushed = true
+  }
+}
+
+/**
+ * 弹投递框(2026-10-09 A 批,设计稿故事 1):地址栏加 `?apply=<id>` 并往历史里推一笔 —— 手机返回键先关框,不离页;
+ * 不走页面导航,通知宿主重读地址栏。同一岗已经开着就只通知,不重复推。
+ *
+ * @param jobId 职位 id。
+ * @returns 无。
+ */
+export function openApply(jobId: number): void {
+  const url = new URL(window.location.href)
+  if (url.searchParams.get(P_APPLY) !== String(jobId)) {
+    url.searchParams.set(P_APPLY, String(jobId))
+    window.history.pushState(null, TEXT_NONE, url.pathname + url.search + url.hash)
+    CACHE.pushed = true
+  }
+  window.dispatchEvent(new Event(EV_APPLY_NAV))
+}
+
+/**
+ * 关投递框:本站推的那一笔就退回去(与手机返回键同一条路);深链进来的只把参数洗掉,不退(退了就离开本站)。
+ *
+ * @returns 无。
+ */
+export function closeApply(): void {
+  if (CACHE.pushed) {
+    CACHE.pushed = false
+    window.history.back()
+    return
+  }
+  const url = new URL(window.location.href)
+  url.searchParams.delete(P_APPLY)
+  if (url.pathname === PATH_ACCOUNT) {
+    url.searchParams.delete(P_JOB)
+  }
+  window.history.replaceState(null, TEXT_NONE, url.pathname + url.search + url.hash)
+  window.dispatchEvent(new Event(EV_APPLY_NAV))
+}
+
+/**
+ * 起始态里那一份职位名(交给 jobtitle 桶算灰字);没到给三格空串(jobtitle 见空标题不现翻)。
+ *
+ * @param start 起始态(没到 = null)。
+ * @returns 职位名与库里存好的两种译名。
+ */
+export function titledOf(start: ApplyStartView | null): ApplyTitled {
+  if (start == null) {
+    return { title: TEXT_NONE, titleZh: TEXT_NONE, titleKo: TEXT_NONE }
+  }
+  return { title: start.job.title, titleZh: start.job.titleZh, titleKo: start.job.titleKo }
+}
+
+/**
+ * 投递框标题栏的大标题:取到起始态就是岗名,没到先空着(标题栏只剩灰色小标,不闪错字)。
+ *
+ * @param start 起始态(没到 = null)。
+ * @returns 岗名或空串。
+ */
+export function modalTitleOf(start: ApplyStartView | null): string {
+  if (start == null) {
+    return TEXT_NONE
+  }
+  return start.job.title
+}
+
+/**
+ * 收到职位桶广播的「要投这一岗」就开框。DOM 的监听签名只给 Event,自定义事件的 detail 由职位桶一处发出,
+ * 断言只住这一处。
+ *
+ * @param e 事件。
+ * @returns 无。
+ */
+export function openFromEvent(e: Event): void {
+  openApply((e as CustomEvent<ApplyOpenDetail>).detail.jobId)
+}
+
+/**
+ * 「投递发出去了」事件里带的那一份。DOM 的监听签名只给 Event,自定义事件的 detail 由 announceSent 一处发出,
+ * 断言只住这一处。
+ *
+ * @param e 事件。
+ * @returns 发给了哪家。
+ */
+export function sentOfEvent(e: Event): ApplySentOut {
+  return (e as CustomEvent<ApplySentOut>).detail
+}
+
+/**
+ * 广播「投递发出去了」(投递框挂在全站骨架上,「我的」页听它刷新投递表、写成功条)。
+ *
+ * @param y 发给了哪家。
+ * @returns 无。
+ */
+export function announceSent(y: ApplySentOut): void {
+  window.dispatchEvent(new CustomEvent<ApplySentOut>(EV_APPLY_SENT, { detail: y }))
 }
 
 /**
@@ -71,6 +214,10 @@ export async function loadStart(x: LoadStartIn): Promise<void> {
   }
   try {
     const r = await fetch(URL_START_HEAD + x.jobId, { credentials: CRED_INCLUDE })
+    if (r.status === HTTP_UNAUTH) {
+      x.setLoad(LOAD_AUTH)
+      return
+    }
     if (r.ok === false) {
       x.setLoad(LOAD_FAIL)
       return
@@ -79,6 +226,20 @@ export async function loadStart(x: LoadStartIn): Promise<void> {
     x.setLoad(LOAD_OK)
   } catch {
     x.setLoad(LOAD_FAIL)
+  }
+}
+
+/**
+ * 造「登录完了」:取数状态回到在取、换一代重取起始态,并软刷顶栏(登录 / 注册换成头像)。
+ *
+ * @param x 当前代数、两个落格与软刷。
+ * @returns 登录完成回调。
+ */
+export function makeAuthRetry(x: AuthRetryIn): () => void {
+  return function authRetry(): void {
+    x.setLoad(LOAD_BUSY)
+    x.setGen(x.gen + 1)
+    x.refresh()
   }
 }
 
@@ -177,38 +338,20 @@ export function nextKeyOf(step: string): string {
 
 /**
  * 主钮能不能点:第 1 步上传中不能;第 2 步在写信、信空、有坏字或超长不能;其余能。
- * 2026-10-08:第 3 步逐项检查四项没勾全不能。
+ * 2026-10-08 曾加「第 3 步四项没勾全不能」,同日 Frank「这个不能改成类似于邮件那种吗」:第 3 步改邮件形,勾撤,能点。
  *
- * @param x 当前步、坏字、信、两个在途标与已勾的项。
+ * @param x 当前步、坏字、信与两个在途标。
  * @returns 能点 true。
  */
 export function canNextOf(x: CanNextIn): boolean {
   if (x.step === STEP_RESUME) {
     return x.uploading === false
   }
-  if (x.step === STEP_PREVIEW) {
-    return isCheckedAll(x.ticks)
-  }
   if (x.step !== STEP_LETTER) {
     return true
   }
   const filled = x.letter.trim() !== TEXT_NONE
   return x.writing === false && filled && x.badChars.length === 0 && x.letter.length <= COVER_MAX
-}
-
-/**
- * 逐项检查四项是不是都勾了(2026-10-08:发出前逐项打勾)。
- *
- * @param ticks 已勾的项。
- * @returns 都勾了。
- */
-export function isCheckedAll(ticks: string[]): boolean {
-  for (const key of CHECK_KEYS) {
-    if (ticks.includes(key) === false) {
-      return false
-    }
-  }
-  return true
 }
 
 /**
@@ -219,10 +362,16 @@ export function isCheckedAll(ticks: string[]): boolean {
  */
 export function checkRowsOf(x: CheckRowsIn): CheckRow[] {
   return [
-    { key: CHECK_TO, value: x.company, href: TEXT_NONE, linkKey: TEXT_NONE },
-    { key: CHECK_RESUME, value: x.resumeName, href: resumeHrefOf(x.resumeId), linkKey: VIEW_KEY },
-    { key: CHECK_LETTER, value: x.coverFile, href: coverHrefOf(x.jobId), linkKey: PDF_KEY },
-    { key: CHECK_SIGN, value: x.sender, href: TEXT_NONE, linkKey: TEXT_NONE },
+    { key: CHECK_TO, value: x.company, href: TEXT_NONE, linkKey: TEXT_NONE, previewable: false },
+    {
+      key: CHECK_RESUME,
+      value: x.resumeName,
+      href: resumeHrefOf(x.resumeId),
+      linkKey: VIEW_KEY,
+      previewable: x.resumeMime === MIME_PDF,
+    },
+    { key: CHECK_LETTER, value: x.coverFile, href: coverHrefOf(x.jobId), linkKey: PDF_KEY, previewable: true },
+    { key: CHECK_SIGN, value: x.sender, href: TEXT_NONE, linkKey: TEXT_NONE, previewable: false },
   ]
 }
 
@@ -237,6 +386,7 @@ export function applyChecksOf(x: ApplyChecksIn): CheckRow[] {
     company: x.job.company,
     resumeName: resumeNameOf({ resumes: x.resumes, resumeId: x.resumeId }),
     resumeId: x.resumeId,
+    resumeMime: resumeMimeOf({ resumes: x.resumes, resumeId: x.resumeId }),
     coverFile: coverFileOf(x.job.company),
     jobId: x.job.id,
     sender: x.name.trim(),
@@ -267,29 +417,6 @@ export function resumeHrefOf(id: number | null): string {
 }
 
 /**
- * 造「按项勾 / 取消」:勾了的再点取消,没勾的点了勾上。
- *
- * @param x 已勾的项与落格。
- * @returns 按项造手柄的函数。
- */
-export function makeTickOf(x: TickIn): TickOfFn {
-  return function tickOf(key: string): () => void {
-    return function tick(): void {
-      const next: string[] = []
-      for (const k of x.ticks) {
-        if (k !== key) {
-          next.push(k)
-        }
-      }
-      if (next.length === x.ticks.length) {
-        next.push(key)
-      }
-      x.set(next)
-    }
-  }
-}
-
-/**
  * 选用那一份的文件名。
  *
  * @param x 简历清单与选用的 id。
@@ -305,13 +432,159 @@ export function resumeNameOf(x: ResumeNameIn): string {
 }
 
 /**
- * 职位卡的地点(城市, 省码;缺哪段略哪段)。
+ * 选中那份简历的 MIME(没选 / 找不到给空串;逐项检查按它判能不能弹框预览)。
  *
- * @param x 城市、省码与分隔。
- * @returns 地点;都没有给空串。
+ * @param x 简历清单与选中的 id。
+ * @returns MIME。
  */
-export function locationOf(x: LocationIn): string {
-  return [x.city, x.province].filter(Boolean).join(x.sep)
+export function resumeMimeOf(x: ResumeNameIn): string {
+  for (const r of x.resumes) {
+    if (r.id === x.resumeId) {
+      return r.mime
+    }
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 简历清单 → 换简历下拉的项(id + 文件名)。
+ *
+ * @param resumes 简历清单。
+ * @returns 下拉的项。
+ */
+export function pickItemsOf(resumes: ApplyResumeView[]): ResumePickItem[] {
+  const out: ResumePickItem[] = []
+  for (const r of resumes) {
+    out.push({ id: r.id, name: r.fileName })
+  }
+  return out
+}
+
+/**
+ * 换简历下拉的选项值(id 串;不足两份给空清单 —— 只有一份没得换,不出下拉)。
+ *
+ * @param items 下拉的项。
+ * @returns id 串。
+ */
+export function pickOptsOf(items: ResumePickItem[]): string[] {
+  if (items.length < PICK_MIN) {
+    return []
+  }
+  const out: string[] = []
+  for (const it of items) {
+    out.push(String(it.id))
+  }
+  return out
+}
+
+/**
+ * 下拉当前值(选中的简历 id 串;没选 = 空串)。
+ *
+ * @param id 选中的简历 id。
+ * @returns id 串。
+ */
+export function resumeValueOf(id: number | null): string {
+  if (id == null) {
+    return TEXT_NONE
+  }
+  return String(id)
+}
+
+/**
+ * 造换简历下拉的取名函数(id 串 → 文件名;认不出给原串)。
+ *
+ * @param items 下拉的项。
+ * @returns 取名函数。
+ */
+export function makeResumeLabel(items: ResumePickItem[]): (v: string) => string {
+  return function resumeLabel(v: string): string {
+    for (const it of items) {
+      if (String(it.id) === v) {
+        return it.name
+      }
+    }
+    return v
+  }
+}
+
+/**
+ * 造「下拉换简历」(投递区:只改选中的 id,草稿随下一次失焦 / 发送带上)。
+ *
+ * @param x 落格。
+ * @returns 下拉改动手柄(收 id 串)。
+ */
+export function makeResumeSelect(x: PickIn): (v: string) => void {
+  return function selectResume(v: string): void {
+    const id = Number(v)
+    if (Number.isInteger(id) && id > 0) {
+      x.setResumeId(id)
+      x.setErr(ERR_NONE)
+    }
+  }
+}
+
+/**
+ * 装投递区第 3 步的邮件形预览面板(收件人 / 主题 / 正文 / 附件;弹框预览、换简历、改信 = 回第 2 步)。
+ *
+ * @param x 本岗、简历、信、预览三格与落格。
+ * @returns 面板。
+ */
+export function applyCheckOf(x: ApplyCheckPanelIn): CheckPanel {
+  const picks = pickItemsOf(x.resumes)
+  return {
+    rows: applyChecksOf({ job: x.job, resumes: x.resumes, resumeId: x.resumeId, name: x.name }),
+    subject: mailSubjectOf({ title: x.job.title, city: x.job.city, province: x.job.province, name: x.name }),
+    body: x.letter,
+    preview: x.pv.preview,
+    openOf: x.pv.openOf,
+    onPreviewClose: x.pv.onPreviewClose,
+    resumeOpts: pickOptsOf(picks),
+    resumeValue: resumeValueOf(x.resumeId),
+    resumeLabel: makeResumeLabel(picks),
+    onResume: makeResumeSelect({ setResumeId: x.setResumeId, setErr: x.setErr }),
+    onLetter: makeBack(x.cells),
+  }
+}
+
+/**
+ * 四行里按键取一行(邮件形按收件人 / 简历 / 求职信 / 署名各取各的;没有 = null)。
+ *
+ * @param x 四行与键。
+ * @returns 那一行。
+ */
+export function rowOf(x: RowOfIn): MaybeCheckRow {
+  for (const r of x.rows) {
+    if (r.key === x.key) {
+      return r
+    }
+  }
+  return null
+}
+
+/**
+ * 造「按行打开弹框预览」:行上的地址当 PDF 地址、值(文件名)当标题。
+ *
+ * @param set 落格。
+ * @returns 按行造点击手柄。
+ */
+export function makeOpenOf(set: SetFn<MaybeCheckPreview>): OpenOfFn {
+  return function openOf(row: CheckRow): () => void {
+    return function open(): void {
+      set({ src: row.href, title: row.value })
+    }
+  }
+}
+
+/**
+ * 造「关预览弹框」。
+ *
+ * @param set 落格。
+ * @returns 点击手柄。
+ */
+export function makePreviewClose(set: SetFn<MaybeCheckPreview>): () => void {
+  return function closePreview(): void {
+    set(null)
+  }
 }
 
 /**
@@ -688,20 +961,6 @@ async function send(c: ApplyCells): Promise<void> {
 }
 
 /**
- * 造「发出去了」的回调:投递区收起、地址栏洗掉职位 id(刷新不再出投递区)、通知外面刷新投递记录表。
- *
- * @param x 收起落格与外面的回调。
- * @returns 回调。
- */
-export function makeSent(x: SentIn): SentFn {
-  return function onSent(y: ApplySentOut): void {
-    x.setSent(true)
-    window.history.replaceState(null, TEXT_NONE, URL_SJOBS)
-    x.onSent(y)
-  }
-}
-
-/**
  * 造「上一步」手柄(清掉错误)。
  *
  * @param c 整机的可变格。
@@ -712,7 +971,6 @@ export function makeBack(c: ApplyCells): () => void {
     const prev = STEP_ORDER[stepIndexOf(c.step) - 1]
     if (prev != null) {
       c.setErr(ERR_NONE)
-      c.setTicks([])
       c.setStep(prev)
     }
   }

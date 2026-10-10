@@ -205,6 +205,27 @@ export const CITY_TTL_MS = 10 * 60_000
 export const CITY_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3600'
 
 /**
+ * /api/stats/cities 一个省最多回几座城市(2026-10-09「我的档案」批:所在地答案的可选城市下拉;
+ * 最大的安大略在快照里也就几百座,300 = 下拉翻得完的量,在招多的在前、尾巴是零星小镇)。
+ */
+export const CITY_PROV_LIMIT = 300
+
+/**
+ * /api/stats/cities 进程内缓存 TTL(按省一格;快照随 seed 才变,照 city 的 10 分钟)。
+ */
+export const CITY_PROV_TTL_MS = 10 * 60_000
+
+/**
+ * /api/stats/cities 的浏览器侧缓存头(与 city 同口径)。
+ */
+export const CITY_PROV_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3600'
+
+/**
+ * /api/stats/cities 的错误体:省码缺 / 不认识(只认 lib/location 的 13 个省 / 地区码)。
+ */
+export const E_PROV = 'prov'
+
+/**
  * 下钻参数没带时的初值(`?prov` `?broad` `?mid` 三处共用)。
  * 与「带了但是空」落成同一个值:三参缺一律 400 ——
  * 少一个维度查出来的就不是这张下钻表,宁可不给也不给半张。

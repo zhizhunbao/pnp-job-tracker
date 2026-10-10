@@ -1,22 +1,23 @@
 /**
  * 「我的」页两张岗位清单(myjobs 组件桶)的函数:拉清单、取消收藏、洗展示行、阶段胶囊、按阶段筛。
  * 2026-10-08 进度板:列构造段撤(表换横卡),展示行多了首字母块、日期一行、状态胶囊档。
+ * 2026-10-09 N6 批:职位名 / 公司名 / 城市 / 省份换 name 桶现成件,点名字开弹框的手柄与城市拼一格撤,展示行改交原值。
  *
  * @author Frank
  * @time 2026-10-06 23:20:00
  */
-import { makeOpenJob } from '@/components/companies'
+import { openApply } from '@/components/apply'
 import { cssOf } from '@/components/css'
-import { cityLabelOf } from '@/components/start'
 import { ymd } from '@/lib/time'
 import {
   AVATAR_CLS_HEAD, AVATAR_COLORS, AVATAR_NONE, CLS_SEP, CRED_INCLUDE, FILE_COVER_TAIL, FILE_RESUME_TAIL, JOB_HREF_HEAD,
-  KEY_APPLIED_ON, KEY_EDITED_ON, KEY_POSTED_ON, KIND_APPLIED, KIND_SAVED, LAYER_CO, LAYER_JOB, METHOD_DELETE, STAGES,
-  STAGE_ALL, STAGE_FILTERS, ST_DRAFT, ST_QUEUED, TAG_NONE, TEXT_NONE, URL_APPLY_HEAD, URL_FILE_HEAD, URL_SAVED_JOB_HEAD,
+  KEY_APPLIED_ON, KEY_EDITED_ON, KEY_POSTED_ON, KIND_APPLIED, KIND_SAVED, METHOD_DELETE, STAGES,
+  STAGE_ALL, STAGE_FILTERS, ST_DRAFT, ST_QUEUED, TAG_NONE, TEXT_NONE, URL_APPLY_HEAD, URL_FILE_HEAD, URL_QUEUED_HEAD,
+  URL_SAVED_JOB_HEAD,
 } from './constants'
 import type {
-  AvaClsIn, ByStageIn, CellRowIn, CellRowsIn, CoPeek, DateLineIn, FileHrefIn, LoadMyJobsIn, MaybeStageDef, MyJobCellRow,
-  MyJobItem, MyJobsJob, MyJobsRespJson, OpenCompanyFn, OpenJobFn, PeekClickFn, PeekStackRef, PickIn, PillClickIn,
+  AvaClsIn, ByStageIn, CellRowIn, CellRowsIn, DateLineIn, FileHrefIn, LoadMyJobsIn, MaybeStageDef, MyJobCellRow,
+  MyJobItem, MyJobsRespJson, PickIn, PillClickIn,
   StagePill, StagePillsIn, StatusTag, UnsaveIn,
 } from './types'
 import css from './myjobs.module.css'
@@ -133,7 +134,7 @@ export function statusTextOf(x: CellRowIn): string {
  */
 export function statusTagOf(x: CellRowIn): StatusTag {
   const def = stageDefOf(x.item.stage)
-  if (def == null) {
+  if (def == null || x.filter !== STAGE_ALL) {
     return TAG_NONE
   }
   return def.tag
@@ -208,77 +209,6 @@ export function unsaveTextOf(x: CellRowIn): string {
 }
 
 /**
- * 造「开公司弹框」:往弹框栈上叠一层公司层(同雇主板 makePushCoLayer)。
- *
- * @param stack 弹框栈。
- * @returns 开公司弹框的手柄。
- */
-export function makePushCo(stack: PeekStackRef): OpenCompanyFn {
-  return function pushCo(co: CoPeek): void {
-    stack.push({ kind: LAYER_CO, co })
-  }
-}
-
-/**
- * 造「开职位描述弹框」:往弹框栈上叠一层职位层(2026-10-07 Frank「这两个应该弹框啊」)。
- *
- * @param stack 弹框栈。
- * @returns 开职位弹框的手柄。
- */
-export function makePushJob(stack: PeekStackRef): OpenJobFn {
-  return function pushJob(job: MyJobsJob): void {
-    stack.push({ kind: LAYER_JOB, job })
-  }
-}
-
-/**
- * 职位名的点击手柄:职位还在就交给公司桶的 makeOpenJob(按岗位号现取一行、叠开 JD 弹框;取不到照链接去详情页)。
- *
- * @param x 这一行与开弹框的手柄。
- * @returns 点击手柄;职位删了给不拦的空口(那时职位格不出链接)。
- */
-function titleOpenOf(x: CellRowIn): PeekClickFn {
-  if (x.item.jobId == null) {
-    return ignoreTitleClick
-  }
-  return makeOpenJob({ id: x.item.jobId, row: null, onOpenJob: x.onOpenJob })
-}
-
-/**
- * 职位删了时职位格的点击口(职位格那时是纯文字,不会被点到)。
- *
- * @returns 无。
- */
-export function ignoreTitleClick(): void {
-  return
-}
-
-/**
- * 造「点这一行的公司名」:开这一家的公司弹框。
- *
- * @param x 这一行与开弹框的手柄。
- * @returns 点击手柄。
- */
-export function makeCompanyOpen(x: CellRowIn): () => void {
-  return function openCompany(): void {
-    x.onOpenCompany({ slug: x.item.companySlug, name: x.item.company })
-  }
-}
-
-/**
- * 公司格的手柄:公司表里有这一家才可点。
- *
- * @param x 这一行与开弹框的手柄。
- * @returns 手柄;没有公司页给 null。
- */
-export function companyOpenOf(x: CellRowIn): (() => void) | null {
-  if (x.item.companySlug === TEXT_NONE) {
-    return null
-  }
-  return makeCompanyOpen(x)
-}
-
-/**
  * 公司首字母(大写;没公司名给问号)。
  *
  * @param company 公司名。
@@ -308,25 +238,24 @@ export function avatarClsOf(company: string): string {
 /**
  * 一行展示行。
  *
- * @param x 哪张清单、这一行、整张清单、界面语、取词函数与落格。
+ * @param x 哪张清单、这一行、整张清单、取词函数与落格。
  * @returns 展示行。
  */
 export function cellRowOf(x: CellRowIn): MyJobCellRow {
-  const city = cityLabelOf({
-    city: x.item.city, cityZh: x.item.cityZh, cityKo: x.item.cityKo, province: x.item.province, lang: x.lang,
-  })
   return {
     key: String(x.item.id),
     stage: x.item.stage,
     avatar: avatarOf(x.item.company),
     avatarCls: avatarClsOf(x.item.company),
-    onTitle: titleOpenOf(x),
+    jobId: x.item.jobId,
     href: jobHrefOf(x.item.jobId),
     title: x.item.title,
     company: x.item.company,
-    onCompany: companyOpenOf(x),
-    cityName: city.name,
-    cityNote: city.note,
+    companySlug: x.item.companySlug,
+    city: x.item.city,
+    cityZh: x.item.cityZh,
+    cityKo: x.item.cityKo,
+    province: x.item.province,
     salary: salaryOf(x),
     dateText: dateTextOf(x),
     statusText: statusTextOf(x),
@@ -341,8 +270,10 @@ export function cellRowOf(x: CellRowIn): MyJobCellRow {
     resumeText: x.t('mj.col.resume'),
     coverText: x.t('mj.col.cover'),
     continueHref: continueHrefOf(x),
+    onContinue: makeContinue(x),
     continueText: x.t('mj.cont'),
     applyHref: applyHrefOf(x),
+    onApply: makeApplyOpen(x),
     applyText: x.t('mj.apply'),
   }
 }
@@ -383,10 +314,48 @@ export function continueHrefOf(x: CellRowIn): string {
   if (x.kind !== KIND_APPLIED || x.item.jobId == null) {
     return TEXT_NONE
   }
-  if (x.item.stage !== ST_DRAFT && x.item.stage !== ST_QUEUED) {
+  if (x.item.stage === ST_QUEUED) {
+    return URL_QUEUED_HEAD + x.item.jobId
+  }
+  if (x.item.stage !== ST_DRAFT) {
     return TEXT_NONE
   }
   return URL_APPLY_HEAD + x.item.jobId
+}
+
+/**
+ * 造「点继续」:整页跳到投递区(同页软跳转只改地址栏、不装投递流程,2026-10-08 实撞;空地址不动)。
+ * 2026-10-09 A 批投递搬进弹框:草稿行就地弹投递框(不再整页跳);待投行照旧整页跳到「今日待投」卡那一张。
+ *
+ * @param x 哪张清单与这一行。
+ * @returns 点击手柄。
+ */
+export function makeContinue(x: CellRowIn): () => void {
+  return function cont(): void {
+    const href = continueHrefOf(x)
+    if (href === TEXT_NONE || x.item.jobId == null) {
+      return
+    }
+    if (x.item.stage === ST_DRAFT) {
+      openApply(x.item.jobId)
+      return
+    }
+    window.location.assign(href)
+  }
+}
+
+/**
+ * 造收藏行「投递」:就地弹投递框(2026-10-09 A 批;原先是去「我的求职」投递区的链接)。
+ *
+ * @param x 哪张清单与这一行。
+ * @returns 点击手柄。
+ */
+export function makeApplyOpen(x: CellRowIn): () => void {
+  return function applyOpen(): void {
+    if (applyHrefOf(x) !== TEXT_NONE && x.item.jobId != null) {
+      openApply(x.item.jobId)
+    }
+  }
 }
 
 /**
@@ -408,7 +377,7 @@ export function applyHrefOf(x: CellRowIn): string {
 /**
  * 整张清单的展示行。
  *
- * @param x 哪张清单、清单、界面语、取词函数与落格。
+ * @param x 哪张清单、清单、取词函数与落格。
  * @returns 展示行。
  */
 export function myJobCellRowsOf(x: CellRowsIn): MyJobCellRow[] {
@@ -416,13 +385,11 @@ export function myJobCellRowsOf(x: CellRowsIn): MyJobCellRow[] {
   for (const item of x.items) {
     out.push(cellRowOf({
       kind: x.kind,
+      filter: x.filter,
       item,
       items: x.items,
-      lang: x.lang,
       t: x.t,
       setItems: x.setItems,
-      onOpenCompany: x.onOpenCompany,
-      onOpenJob: x.onOpenJob,
     }))
   }
   return out

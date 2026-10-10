@@ -7,6 +7,8 @@
  * 组件只管版式不管数据与交互:可点的一律由调用方给 href/onClick,
  * 胶囊排/右上钮/页脚都是插槽。
  * 2026-08-24 自 ui/Card.tsx 拆出(内嵌 Row/TextButton 提成域内小件,展开与 ?? 清零)。
+ * 2026-10-09 N6 批(Frank「职位名、公司名、地点同形」):标题位加 head 插槽 —— 名字两行(英文在上、译名灰字在下)由调用方
+ * 用 name 桶渲染好放进来,卡只给字号与位置;原 title 文字链照旧可用,两者二选一。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
@@ -27,6 +29,7 @@ export function JobCard({
   href,
   onCardClick,
   title,
+  head,
   note,
   company,
   companyBadge,
@@ -37,8 +40,11 @@ export function JobCard({
   action,
   footer,
 }: JobCardIn) {
-  let titleLink: CardLink = title
-  if (title.href == null && href != null) {
+  let titleLink: CardLink | null = null
+  if (title != null) {
+    titleLink = title
+  }
+  if (title != null && title.href == null && href != null) {
     titleLink = {
       text: title.text,
       href,
@@ -73,7 +79,8 @@ export function JobCard({
   return (
     <div data-tap-card onClick={onCardClick} className={css.jcard}>
       <div className={css.top}>
-        <TextButton v={titleLink} className={cssOf(css.title)} />
+        {head != null && <span className={css.title}>{head}</span>}
+        {titleLink != null && <TextButton v={titleLink} className={cssOf(css.title)} />}
         {action != null && <span className={css.actSlot}>{action}</span>}
       </div>
       {note != null && <div className={css.note}>{note}</div>}

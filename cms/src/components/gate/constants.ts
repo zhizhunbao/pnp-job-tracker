@@ -67,6 +67,16 @@ export const GATE_STEP_REG = 'reg'
 export const GATE_STEPS = ['goal', 'major', 'job', 'prov'] as const
 
 /**
+ * 编辑模式那一题:英文姓名(2026-10-09「我的档案」批:档案页「修改」走同一套题,末尾多问一句投递署名;访客向导不问)。
+ */
+export const GATE_STEP_NAME = 'name'
+
+/**
+ * 编辑模式的步序:访客四题 + 英文姓名(下标即步数;最后一题的主钮是「保存」)。
+ */
+export const GATE_EDIT_STEPS = ['goal', 'major', 'job', 'prov', 'name'] as const
+
+/**
  * 访客向导第一问的题面键。单独起名是因为它同时是取题面时的兜底(同 profile 的 OB_QUESTION_STATUS 的理由)。
  */
 export const GATE_QUESTION_GOAL = 'gate.q.goal'
@@ -79,6 +89,7 @@ export const GATE_QUESTIONS = [
   { step: 'major', key: 'gate.q.major' },
   { step: 'job', key: 'prof.noc' },
   { step: 'prov', key: 'gate.q.prov' },
+  { step: 'name', key: 'gate.q.name' },
 ] as const
 
 /**
@@ -253,4 +264,114 @@ export const BOARD_INTENTS = ['entry']
  * 返回钮读屏名的词条键(2026-10-05 返回钮收进弹框壳,读屏名由整机交给壳;词条沿用首访向导那一条)。
  */
 export const GATE_BACK_KEY = 'ob.back'
+
+/**
+ * 钮区主钮的词条键:下一步(访客向导每一题、编辑模式前四题)。
+ */
+export const NEXT_KEY = 'ob.next'
+
+/**
+ * 钮区主钮的词条键:保存(编辑模式最后一题)。
+ */
+export const SAVE_KEY = 'gate.save'
+
+/**
+ * 编辑模式保存失败那一行的词条键。
+ */
+export const SAVE_FAIL_KEY = 'gate.saveFail'
+
+/**
+ * 城市区小标题的词条键。
+ */
+export const GATE_CITY_KEY = 'gate.city'
+
+/**
+ * 城市搜索框占位的词条键。
+ */
+export const GATE_CITY_PH_KEY = 'gate.cityPh'
+
+/**
+ * 英文姓名格占位的词条键(写一个例子,照投递流的姓名格)。
+ */
+export const GATE_NAME_PH = 'Li Wei'
+
+/**
+ * 英文姓名那一题的题面键(输入框的读屏名也用它)。
+ */
+export const GATE_NAME_Q_KEY = 'gate.q.name'
+
+/**
+ * 英文姓名不合规那一行的词条键(与投递流同一句)。
+ */
+export const GATE_NAME_BAD_KEY = 'ap.e.name'
+
+/**
+ * 按省取城市接口(stats 域;后接省码)。
+ */
+export const URL_CITIES_HEAD = '/api/stats/cities?prov='
+
+/**
+ * 投递署名接口(queue 域 PATCH {senderName};与今日待投设置清单同一个口)。
+ */
+export const URL_PREFS = '/api/queue/prefs'
+
+/**
+ * 城市区没搜时摆几个热门城市。
+ */
+export const CITY_HOT_N = 12
+
+/**
+ * 城市区搜了最多摆几个命中。
+ */
+export const CITY_HIT_MAX = 24
+
+/**
+ * 界面语:中文。
+ */
+export const LANG_ZH = 'zh'
+
+/**
+ * 界面语:韩文。
+ */
+export const LANG_KO = 'ko'
+
+/**
+ * 处境:在境外(答案档 status;与 lib/guest 的 STATUS_OVERSEAS 同值,各域自抄)。
+ */
+export const STATUS_OVERSEAS = 'overseas'
+
+/**
+ * 按省取城市回来的不是清单时抛的错名(留痕用)。
+ */
+export const CITIES_BAD = 'cities not a list'
+
+/**
+ * 档案编辑保存失败的错名:答案档没推上去。
+ */
+export const EDIT_ERR_ANSWERS = 'answers'
+
+/**
+ * 档案编辑保存失败的错名头:署名没存上(后接状态码)。
+ */
+export const EDIT_ERR_NAME = 'name '
+
+/**
+ * 改署名的方法。
+ */
+export const METHOD_PATCH = 'PATCH'
+
+/**
+ * 请求头:内容类型。
+ */
+export const HDR_CONTENT_TYPE = 'Content-Type'
+
+/**
+ * JSON 的内容类型。
+ */
+export const MIME_JSON = 'application/json'
+
+/**
+ * 带 cookie 发请求。
+ */
+export const CRED_INCLUDE = 'include'
 

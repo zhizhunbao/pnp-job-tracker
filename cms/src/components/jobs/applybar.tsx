@@ -26,6 +26,9 @@
  * 2026-10-05 Frank「已经下架了,就不要在有按钮点击了吧」:已下架岗整栏不出,灰色「看官网」钮撤,栏里只剩投递钮。
  * 2026-10-07 B2 站内投递:投递钮改跳投递页 /apply/<id>(见 useApplyBar),邮件投递框 ApplyEmail、会话过期的登录框、
  * 「次数用完」「投递失败」两行提示框随 mailto 一路撤。
+ * 2026-10-09 A 批投递搬进弹框(docs/design/投递向导-照Azure-20261008.md 故事 1、2):投递钮不再跳页,弹全站骨架上的投递框;
+ * 匿名点投递不再弹访客向导(四道题),只弹登录框的注册档(auth 桶 AuthModal,框内照旧能切登录),登录完直接弹投递框;
+ * 六步意向表(profile 桶 OnboardingWizard)那一段撤;钮的 busy 随跳页一起撤(弹框是同步的)。
  * 原判(2026-08-03,随 `.btnClosed` 类一起撤,原文照录):「已下架岗:主钮还写「前往投递」等于继续把人往死链上送 ——
  * 降级成灰色的「查看官方页」。不直接禁掉:closed 有一部分来自「本次未见+30天」的推断(非逐帖实测),留个口子让用户自己核。」
  *
@@ -34,12 +37,11 @@
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { GateWizard } from '@/components/gate'
+import { AuthModal } from '@/components/auth'
 import { Modal } from '@/components/modal'
-import { OnboardingWizard } from '@/components/profile'
 import { ResumeMatchModal } from '@/components/resume'
 import {
-  APPLY_AUTH, APPLY_INTENT, BTN_GHOST, GATE_INTENT_APPLY, MODAL_SM, MODAL_Z_STACKED, TEXT_NONE, URL_JOB,
+  APPLY_AUTH, AUTH_REGISTER, BTN_GHOST, MODAL_SM, MODAL_Z_STACKED, TEXT_NONE, URL_JOB,
 } from './constants'
 import { applyBarShownOf, barClsOf } from './functions'
 import { useApplyBar } from './hooks'
@@ -61,7 +63,7 @@ export function ApplyBar({ job, t, plan, onPage }: ApplyBarIn) {
     <>
       {onPage && <div className={cssOf(css.barPad)} />}
       <div className={barClsOf(onPage)}>
-        <Button kind={BTN_GHOST} onClick={a.onApply} busy={a.busy} className={cssOf(css.btnApply)}>
+        <Button kind={BTN_GHOST} onClick={a.onApply} className={cssOf(css.btnApply)}>
           {t('apply.plain')}
         </Button>
       </div>
@@ -75,12 +77,8 @@ export function ApplyBar({ job, t, plan, onPage }: ApplyBarIn) {
         </Modal>
       )}
       {a.stage === APPLY_AUTH && (
-        <GateWizard t={t} intent={GATE_INTENT_APPLY} z={MODAL_Z_STACKED}
+        <AuthModal t={t} mode={AUTH_REGISTER} z={MODAL_Z_STACKED}
           returnTo={URL_JOB + String(job.id)} onClose={a.onAuthClose} onDone={a.onAuthDone} />
-      )}
-      {a.stage === APPLY_INTENT && (
-        <OnboardingWizard t={t} initial={a.intentProfile} z={MODAL_Z_STACKED}
-          onClose={a.onIntentDone} onFinished={a.onIntentDone} />
       )}
     </>
   )

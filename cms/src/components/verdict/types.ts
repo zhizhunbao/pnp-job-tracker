@@ -601,6 +601,22 @@ export type FactTileIn = {
 }
 
 /**
+ * NameTile(域内小件:名字瓦片)的 props。瓦片外壳与灰标签同 FactTile,值位放 name 桶的名字两行
+ * (2026-10-09 N 批,Frank「名字一律英文在上、译名灰字在下」)。
+ */
+export type NameTileIn = {
+  /**
+   * 灰标签。
+   */
+  label: string
+
+  /**
+   * 名字两行(name 桶的 Name / CityName / ProvName)。
+   */
+  children: React.ReactNode
+}
+
+/**
  * JobFacts(域内小件:「本职位」卡)的 props。
  */
 export type JobFactsIn = {

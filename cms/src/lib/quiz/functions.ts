@@ -41,6 +41,7 @@ import {
   TOTAL_EXP, TOTAL_V2_MAP, TTL, UNSURE_BAND, URL_ANSWERS, MAJOR_CACHE_MAX, MAJOR_KEY_SEP, MAJOR_N_MAX, TOP_N_DEFAULT,
   MAJOR_CODE_RE, MAJOR_PICK_MAX, MAJOR_SEP,
 } from './constants'
+import { firstOf, jsonOrNull, queryRows, SQL, text } from '../db'
 import { CACHE } from './variables'
 import type {
   Answers, AnswersDoc, AnswersOut, AnswersPatch, BandValue, BlankPatchIn, DropFn, EngineAnswers, EngineValue,
@@ -49,6 +50,9 @@ import type {
   NameFilter, ProvList, PulledOut, PushedOut, RawAnswersSource, RawCell, RawDoc, RawField, RawScoreSource, RawText,
   SaveAnswersIn, SaveAnswersOut, ScoreAnswers, Stage, StoreFn, Tier, TopCachedIn, TopOut, TopRows, UnflagFn,
   MajorNocsCachedIn, MajorNocsOut, MajorCodes, MajorBroadsUnionIn, MajorBroadsUnionOut,
+  CityNamesDbRow, CityNamesIn, CityNamesOut, CodeList, MajorNameDbRow, MaybeCodeList, NamesByCodesIn, NocNameDbRow, OrderNamesIn, ProfileAnswersDbRow,
+  ProfileAnswersJson, ProfileBasicFact, ProfileBasicJson, ProfileLoadIn, ProfileName, ProfileNames, ProfileNamesOut,
+  QuizProfileOut, SenderDbRow,
 } from './types'
 import { HDR_CONTENT_TYPE, UNAUTHORIZED } from '../http'
 
@@ -91,6 +95,27 @@ export async function mergeBasics(patch: AnswersPatch): MergedOut {
 }
 
 /**
+ * 改答案(2026-10-09「我的档案」批:档案页「修改」走完那几题点保存):先拉服务端那份并进来,再把 patch 整格覆盖上去、立刻推。
+ * 与 mergeBasics 的分别只在「覆盖」还是「只填空格」—— 改答案就是要盖掉旧的。
+ *
+ * @param patch 要改的那几格。
+ * @returns 改了且推上去了 true;没登录 / 推挂了 false。
+ */
+export async function saveBasics(patch: AnswersPatch): MergedOut {
+  await pullAndMerge(true)
+  if (CACHE.hydrated === false || CACHE.loggedIn !== true) {
+    return false
+  }
+  writeAnswers(patch)
+  if (CACHE.syncTimer != null) {
+    clearTimeout(CACHE.syncTimer)
+    CACHE.syncTimer = null
+  }
+  await pushToServer()
+  return isSynced()
+}
+
+/**
  * 刚才那一推成了没有:会话还在、且没有没推上去的改动(pushToServer 的结果落在 CACHE 上,不另交回值;
  * 401 会把 dirty 清掉、同时把登录态记成 false,所以两格都要看 —— 只看 dirty 会把「会话没了」当成推成)。
  *
@@ -105,6 +130,7 @@ function isSynced(): boolean {
  * 处境与现居省是一件事的两格,绑在一起判:答了境外(patch 带处境)只在现档处境与现居省都空时写;
  * 答了省(只带现居省)只在现居省空、且现档不是「在境外」时写 —— 不许拼出「人在境外、住在安省」。
  * 2026-10-05 访客第 2 题改多选:专业一格改成码清单 majors,现档一个专业都没有才填。
+ * 2026-10-09「我的档案」批:现居城市跟着现居省走 —— 省这次真写进去了,城市一并写;省没写(现档已有省)城市也不写,免得省市对不上。
  *
  * @param x 现档与要填的格。
  * @returns 真要写的格。
@@ -131,6 +157,9 @@ export function blankPatchOf(x: BlankPatchIn): AnswersPatch {
   }
   if (p.resProv != null && a.resProv === '' && a.status !== STATUS_OVERSEAS) {
     out.resProv = p.resProv
+    if (p.resCity != null) {
+      out.resCity = p.resCity
+    }
   }
   return out
 }
@@ -1293,7 +1322,7 @@ export function normalize(cur: RawAnswersSource): Answers {
     eduBand: num(raw.eduBand), ageBand: num(raw.ageBand),
     totalExpBand: totalExpBand,
     offerBand: num(raw.offerBand), goalBand: num(raw.goalBand), canadaEduBand: num(raw.canadaEduBand),
-    permitBand: num(raw.permitBand), resProv: str(raw.resProv),
+    permitBand: num(raw.permitBand), resProv: str(raw.resProv), resCity: str(raw.resCity),
     fieldMatchBand: num(raw.fieldMatchBand), eduProv: str(raw.eduProv), eduYearsBand: num(raw.eduYearsBand),
     frenchBand: frenchBand, frenchV2: true,
     studyMonthsBand: num(raw.studyMonthsBand), studyLevelBand: num(raw.studyLevelBand),
@@ -1608,4 +1637,196 @@ async function majorBroadsOf(x: MajorBroadsUnionIn): MajorBroadsUnionOut {
     }
   }
   return out
+}
+
+// =========================================================================
+// N. 我的档案(2026-10-09「我的档案」批:/api/quiz/profile,服务端取数;方案 A 收 db)
+// =========================================================================
+
+/**
+ * 档案页那张「求职」卡要的全部:本人答案档的五格(目标、专业、想做的工作、所在地)按码查回三语名字,再带上投递署名。
+ * 名字照名字规范给全三语,前端按界面语挑灰字。
+ *
+ * @param x 连接与用户 id。
+ * @returns 档案。
+ */
+export async function loadQuizProfile(x: ProfileLoadIn): QuizProfileOut {
+  const got = firstOf(await queryRows({ db: x.db, sql: SQL.QUEUE_USER_ANSWERS, params: [x.userId], map: toProfileBasic }))
+  let b: ProfileBasicFact = { goal: 0, majors: [], nocs: [], prov: STR_NONE, abroad: false, city: STR_NONE }
+  if (got != null) {
+    b = got
+  }
+  const [majors, nocs, city, sender] = await Promise.all([
+    loadMajorNames({ db: x.db, codes: b.majors }),
+    loadNocNames({ db: x.db, codes: b.nocs }),
+    loadCityNames({ db: x.db, city: b.city, prov: b.prov }),
+    queryRows({ db: x.db, sql: SQL.APPLY_PREFS_GET, params: [x.userId], map: toSenderName }),
+  ])
+  let name = STR_NONE
+  const first = firstOf(sender)
+  if (first != null) {
+    name = first
+  }
+  return { goal: b.goal, majors, nocs, prov: b.prov, abroad: b.abroad, city, name }
+}
+
+/**
+ * 按码取专业名(cip_programs),按答的先后序。
+ *
+ * @param x 连接与码清单。
+ * @returns 名字清单;没答给空列。
+ */
+async function loadMajorNames(x: NamesByCodesIn): ProfileNamesOut {
+  if (x.codes.length === 0) {
+    return []
+  }
+  const rows = await queryRows({ db: x.db, sql: SQL.MAJORS_BY_CODES, params: [x.codes], map: toMajorName })
+  return orderNamesOf({ codes: x.codes, rows })
+}
+
+/**
+ * 按码取职业名(noc_descriptions),按答的先后序。
+ *
+ * @param x 连接与码清单。
+ * @returns 名字清单;没答给空列。
+ */
+async function loadNocNames(x: NamesByCodesIn): ProfileNamesOut {
+  if (x.codes.length === 0) {
+    return []
+  }
+  const rows = await queryRows({ db: x.db, sql: SQL.NOC_TITLES_BY_CODES, params: [x.codes], map: toNocName })
+  return orderNamesOf({ codes: x.codes, rows })
+}
+
+/**
+ * 取城市译名(cities);没选城市给四格空串,译名表里没有的只出英文。
+ *
+ * @param x 连接、城市英文名与省码。
+ * @returns 城市的三语。
+ */
+async function loadCityNames(x: CityNamesIn): CityNamesOut {
+  if (x.city === STR_NONE) {
+    return { code: STR_NONE, en: STR_NONE, zh: STR_NONE, ko: STR_NONE }
+  }
+  const rows = await queryRows({ db: x.db, sql: SQL.CITY_NAMES_ONE, params: [x.city, x.prov], map: toCityNames })
+  const got = firstOf(rows)
+  if (got == null) {
+    return { code: STR_NONE, en: x.city, zh: STR_NONE, ko: STR_NONE }
+  }
+  return { code: STR_NONE, en: x.city, zh: got.zh, ko: got.ko }
+}
+
+/**
+ * 名字按答的先后序排;库里查不到的码用码本身当英文名(不吞掉 —— 答过的总要看得见)。
+ *
+ * @param x 码清单与查回来的名字。
+ * @returns 排好的名字。
+ */
+function orderNamesOf(x: OrderNamesIn): ProfileNames {
+  const out: ProfileNames = []
+  for (const code of x.codes) {
+    let hit: ProfileName = { code, en: code, zh: STR_NONE, ko: STR_NONE }
+    for (const r of x.rows) {
+      if (r.code === code) {
+        hit = r
+      }
+    }
+    out.push(hit)
+  }
+  return out
+}
+
+/**
+ * 库行 → 答案档五格(jsonb 可能是串;格缺 / 错型一律按没答;在境外时省市不算)。
+ *
+ * @param r 库行。
+ * @returns 五格。
+ */
+export function toProfileBasic(r: ProfileAnswersDbRow): ProfileBasicFact {
+  const doc = jsonOrNull<ProfileAnswersJson>(r.answers)
+  let b: ProfileBasicJson = {}
+  if (doc != null && doc.basic != null) {
+    b = doc.basic
+  }
+  const abroad = b.status === STATUS_OVERSEAS
+  let prov = STR_NONE
+  let city = STR_NONE
+  if (abroad === false && typeof b.resProv === 'string') {
+    prov = b.resProv
+  }
+  if (prov !== STR_NONE && typeof b.resCity === 'string') {
+    city = b.resCity
+  }
+  let goal = 0
+  if (typeof b.goalBand === 'number') {
+    goal = b.goalBand
+  }
+  let majors: MaybeCodeList = null
+  if (Array.isArray(b.majors)) {
+    majors = b.majors
+  }
+  let nocs: MaybeCodeList = null
+  if (Array.isArray(b.nocs)) {
+    nocs = b.nocs
+  }
+  return { goal, majors: textListOf(majors), nocs: textListOf(nocs), prov, abroad, city }
+}
+
+/**
+ * jsonb 里的码清单 → 字符串清单(不是数组给空列,非字符串项丢掉)。
+ *
+ * @param v 原格。
+ * @returns 码清单。
+ */
+function textListOf(v: MaybeCodeList): CodeList {
+  const out: CodeList = []
+  if (v == null) {
+    return out
+  }
+  for (const c of v) {
+    if (typeof c === 'string' && c !== STR_NONE) {
+      out.push(c)
+    }
+  }
+  return out
+}
+
+/**
+ * 库行 → 专业的三语名字。
+ *
+ * @param r 库行。
+ * @returns 名字。
+ */
+export function toMajorName(r: MajorNameDbRow): ProfileName {
+  return { code: text(r.code), en: text(r.title_en), zh: text(r.title_zh), ko: text(r.title_ko) }
+}
+
+/**
+ * 库行 → 职业的三语名字。
+ *
+ * @param r 库行。
+ * @returns 名字。
+ */
+export function toNocName(r: NocNameDbRow): ProfileName {
+  return { code: text(r.noc), en: text(r.title), zh: text(r.title_zh), ko: text(r.title_ko) }
+}
+
+/**
+ * 库行 → 城市译名(英文名由调用方补)。
+ *
+ * @param r 库行。
+ * @returns 中韩译名(code / en 两格留空)。
+ */
+export function toCityNames(r: CityNamesDbRow): ProfileName {
+  return { code: STR_NONE, en: STR_NONE, zh: text(r.name_zh), ko: text(r.name_ko) }
+}
+
+/**
+ * 库行 → 投递署名。
+ *
+ * @param r 库行。
+ * @returns 英文姓名;没填空串。
+ */
+export function toSenderName(r: SenderDbRow): string {
+  return text(r.sender_name)
 }

@@ -3,10 +3,14 @@
  * 域内小件:省份段的一张指标表块(2026-09-09 起一指标一表,行 = 全国 + 九省;原「一地区一块」形随省块视图撤)——
  * 子标题 + 桌面按年表(通用表格序列能力:表 / 趋势、近 5 年 / 近 10 年)+ 手机卡(站规「电脑表格手机卡片」)。
  * Frank 2026-09-06 拍板省份段 = 宏观统计(含联邦),设计稿 docs/design/把脉页省份段-20260906.md。
+ * 2026-10-09 N 批(Frank「名字一律英文在上、译名灰字在下」「把脉页也改一下 但是把脉页不弹框」):每省一张的 PR 小表
+ * 标题由界面语省名一行改 name 桶的名字两行 —— 英文省名在上、界面语省名灰字在下;标题不是链接,不跳地图。
  *
  * @author Frank
  * @time 2026-09-06 22:00:00
  */
+import { useLang } from '@/components/i18n'
+import { Name, provNameOf } from '@/components/name'
 import { Table } from '@/components/table'
 import { Updated } from '@/components/time'
 import { TEXT_NONE } from './constants'
@@ -29,12 +33,17 @@ import css from './start.module.css'
  * @returns 带锚点的块。
  */
 export function MacroBlock({ t, geo, updatedAt, gap }: MacroBlockIn) {
+  const [lang] = useLang()
   const f = useFold()
   const rows = foldRowsOf({ rows: geo.rows, open: f.open, flip: f.flip })
+  const prov = provNameOf({ code: geo.prov, lang, t })
   return (
     <div id={geo.anchor} className={css.subAnchor}>
       <div className={macroWrapClsOf({ gap })}>
-      <Sec title={geo.name} right={<Updated iso={updatedAt} t={t} />} sub>
+      <Sec title={<>
+        {geo.prov === TEXT_NONE && geo.name}
+        {geo.prov !== TEXT_NONE && <Name en={prov.en} sub={prov.sub} />}
+      </>} right={<Updated iso={updatedAt} t={t} />} sub>
         {geo.formula !== TEXT_NONE && <p className={css.formula}>{geo.formula}</p>}
         <div className={css.table}>
           <Table<MacroRow>

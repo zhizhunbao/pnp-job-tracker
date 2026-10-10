@@ -27,4 +27,10 @@ export const CACHE: StatsCache = {
    * /api/stats/city 的城市段五份缓存(2026-09-11 城市段重设计批;10 分钟 TTL)。
    */
   cityStats: null,
+
+  /**
+   * /api/stats/cities 按省的城市清单缓存(2026-10-09「我的档案」批;按省一格,10 分钟 TTL;
+   * 零行 / 查挂了不进来,下一个请求重查)。开机是空的。
+   */
+  provCities: new Map(),
 }

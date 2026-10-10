@@ -9,6 +9,7 @@
  * @time 2026-10-06 12:18:31
  */
 import { RF_ERR_NONE } from './constants'
+import { thumbSrcOf } from './functions'
 import { useResumeFile } from './hooks'
 import { ResumeAdd } from './resumeadd'
 import { ResumeCards } from './resumecards'
@@ -34,7 +35,9 @@ export function ResumeFile({ t }: ResumeFileIn) {
       {p.checked && p.items.length > 0 && <ResumeAdd p={p} t={t} />}
       {p.checked && p.items.length > 0 && <ResumeCards p={p} t={t} />}
       {p.err !== RF_ERR_NONE && <div className={css.rfErr}>{t(p.err)}</div>}
-      {p.preview != null && <ResumePreview meta={p.preview} onClose={p.onPreviewClose} t={t} />}
+      {p.preview != null && (
+        <ResumePreview src={thumbSrcOf(p.preview)} title={p.preview.fileName} onClose={p.onPreviewClose} t={t} />
+      )}
     </div>
   )
 }

@@ -796,10 +796,11 @@ export const URL_LEVEL_AMP = '&'
 export const URL_JOB = '/jobs/'
 
 /**
- * 站内投递页前缀(2026-10-07 B2:投递钮跳这里,后接职位 id)。
- * 同日投递并进「我的求职」(Frank「合成一个」):改跳「我的」页我的求职那一节(深链 sec=sjobs&job=)。
+ * 站内「要投这一岗」事件名(2026-10-09 A 批投递搬进弹框:投递钮不再跳页,广播这一下,全站骨架上的投递框宿主收到就弹框)。
+ * 原投递页前缀 URL_APPLY(2026-10-07 B2 起跳 /apply/<id>,同日改跳「我的」页 `?sec=sjobs&job=`)随之退役。
+ * 不直接取 apply 桶的 openApply:apply 桶取 account 桶,account 桶取本桶,直接取就成环。值与 apply 的 EV_APPLY_OPEN 相同,各域自抄。
  */
-export const URL_APPLY = '/account?sec=sjobs&job='
+export const EV_APPLY_OPEN = 'offer2pr:apply-open'
 
 /**
  * 按公司名搜的职位板(手机卡公司名的真 href,#315:左键仍开弹框,中键/爬虫拿到真链接)。
@@ -2047,12 +2048,8 @@ export const TRACK_APPLY = 'apply'
 export const TRACK_APPLY_CLICK = 'apply-click'
 
 /**
- * 访客向导的由头:未登录点投递(profile 桶 GateWizard 的 intent,与它同值同义,各家一份)。
- */
-export const GATE_INTENT_APPLY = 'apply'
-
-/**
- * 访客向导的由头:未登录点收藏(同上)。
+ * 访客向导的由头:未登录点收藏(profile 桶 GateWizard 的 intent,与它同值同义,各家一份)。
+ * 2026-10-09 A 批:「未登录点投递」那一由头 GATE_INTENT_APPLY 退役 —— 投递只弹注册 / 登录框,不再走访客向导。
  */
 export const GATE_INTENT_SAVE = 'save'
 
@@ -2822,13 +2819,10 @@ export const APPLY_IDLE = 'idle'
 
 /**
  * 投递流程:注册闸。
+ * 2026-10-09 A 批:原第三段「求职意向表单」APPLY_INTENT 退役(投一条岗不再先答六步意向表)。
  */
 export const APPLY_AUTH = 'auth'
 
-/**
- * 投递流程:求职意向表单。
- */
-export const APPLY_INTENT = 'intent'
 
 /**
  * 整理版一节的渲染档:「怎么投」整节缺又有邮箱 / 整节缺只出官方短链 / 有内容且逐行链官方 /
@@ -3074,11 +3068,6 @@ export const HOLD_MAX_MS = 800
  * 弹框栈的职位层(2026-09-21;PeekJobLayer.kind 的字面量,与 advisor 域同名同值,本域自抄)。
  */
 export const LAYER_JOB = 'job'
-
-/**
- * 弹框栈的公司层(PeekCoLayer.kind 的字面量)。
- */
-export const LAYER_CO = 'company'
 
 /**
  * 卡标题行的全局类(main.css 的 mcardHead;职位页移民相关卡,与公司信息卡同一个卡头;2026-10-02)。

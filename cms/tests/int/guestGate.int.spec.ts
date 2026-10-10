@@ -27,6 +27,9 @@
 //       去掉 dropStaleHandoff → 「匿名开页撤陈戳」红。
 // 2026-10-07 浏览记录整条删(向导不再按看过的岗预选职业,Frank「为什么我选的是 AI 和 cloud,然后做的工作是上面的」→「你弄吧」):
 //       ② 撤;① 的「浏览记录多少条都不影响」与职位弹框收口的「浏览照记」两句随之撤。
+// 2026-10-09「我的档案」批:首访引导向导退役,「记引导弹过」(本地存储 jobs_onboarding_v1)那一记从补交钩子撤 ——
+//       上面「交成了才记引导弹过」与探针「runGateSync 不等结果就 obMarkSeen → 没交成不记红」随之作废,对它的断言删;
+//       「交成了才回职位板、没交成不换地址栏、一页只试一次」照验。
 import fc from 'fast-check'
 import { act, createElement, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -58,7 +61,6 @@ vi.mock('next/navigation', () => ({
 const DRAFT_KEY = 'o2p_gate_v2'
 const HANDOFF_KEY = 'o2p_gate_handoff_v1'
 const ENTRY_KEY = 'o2p_gate_entry_v1'
-const OB_SEEN_KEY = 'jobs_onboarding_v1'
 
 function device(tz: string, lang: string) {
   vi.spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions')
@@ -71,7 +73,7 @@ function reply(status: number, body: object) {
 }
 
 function draft(p: Partial<GateDraft> = {}): GateDraft {
-  return { goal: 0, majors: [], nocs: [], prov: '', abroad: false, intent: 'job', ...p }
+  return { goal: 0, majors: [], nocs: [], prov: '', city: '', abroad: false, intent: 'job', ...p }
 }
 
 function serverWith(basic: object | null) {
@@ -259,7 +261,8 @@ describe('草稿并进答案档', () => {
   it('金标:没答的格缺席;境外写处境 overseas 且现居省清空;答了省只写现居省', () => {
     expect(gatePatchOf(draft())).toEqual({})
     expect(gatePatchOf(draft({ goal: 1, majors: ['11.0701'], nocs: ['21232'], prov: 'ON' })))
-      .toEqual({ goalBand: 1, majors: ['11.0701'], nocs: ['21232'], resProv: 'ON' })
+      .toEqual({ goalBand: 1, majors: ['11.0701'], nocs: ['21232'], resProv: 'ON', resCity: '' })
+    expect(gatePatchOf(draft({ prov: 'ON', city: 'Mississauga' }))).toEqual({ resProv: 'ON', resCity: 'Mississauga' })
     expect(gatePatchOf(draft({ majors: ['52.0301', '11.0701'] }))).toEqual({ majors: ['52.0301', '11.0701'] })
     expect(gatePatchOf(draft({ majors: [] }))).not.toHaveProperty('majors')
     expect(gatePatchOf(draft({ goal: 2, abroad: true, prov: 'ON' })))
@@ -338,6 +341,7 @@ describe('草稿并进答案档', () => {
       majors: fc.constantFrom<string[]>([], ['52.0201'], ['52.0201', '11.0701']),
       nocs: fc.constantFrom<string[]>([], ['21300']),
       prov: fc.constantFrom('', 'ON'),
+      city: fc.constantFrom('', 'Toronto'),
       abroad: fc.boolean(),
       intent: fc.constant('job' as const),
     })
@@ -369,20 +373,26 @@ describe('草稿并进答案档', () => {
 
   it('草稿原文读回:每格验类型,由头认不出按点开职位,不是对象给 null', () => {
     expect(toGateDraft(JSON.stringify({ goal: 2, majors: ['52.0203'], nocs: ['63200', 7, ''], prov: 'QC', abroad: false, intent: 'save' })))
-      .toEqual({ goal: 2, majors: ['52.0203'], nocs: ['63200'], prov: 'QC', abroad: false, intent: 'save' })
+      .toEqual({ goal: 2, majors: ['52.0203'], nocs: ['63200'], prov: 'QC', city: '', abroad: false, intent: 'save' })
     expect(toGateDraft(JSON.stringify({ goal: 'x', abroad: true, intent: 'hack' })))
-      .toEqual({ goal: 0, majors: [], nocs: [], prov: '', abroad: true, intent: 'job' })
+      .toEqual({ goal: 0, majors: [], nocs: [], prov: '', city: '', abroad: true, intent: 'job' })
     expect(toGateDraft(JSON.stringify([1, 2]))).toBeNull()
     expect(toGateDraft(null)).toBeNull()
   })
 
   it('草稿原文读回验值域(本地存储是信任边界):值域外的按没答,境外不留省,职业码去重', () => {
     expect(toGateDraft(JSON.stringify({ goal: 3, majors: ['13'], nocs: ['abcde', '1234', '21300', '21300'], prov: 'TERR' })))
-      .toEqual({ goal: 0, majors: [], nocs: ['21300'], prov: '', abroad: false, intent: 'job' })
+      .toEqual({ goal: 0, majors: [], nocs: ['21300'], prov: '', city: '', abroad: false, intent: 'job' })
     expect(toGateDraft(JSON.stringify({ goal: 1, majors: ['11.0701'], prov: 'ON', abroad: true, intent: 'apply' })))
-      .toEqual({ goal: 1, majors: ['11.0701'], nocs: [], prov: '', abroad: true, intent: 'apply' })
+      .toEqual({ goal: 1, majors: ['11.0701'], nocs: [], prov: '', city: '', abroad: true, intent: 'apply' })
     expect(toGateDraft(JSON.stringify({ goal: 1.5, majors: 7, prov: 'on' })))
-      .toEqual({ goal: 0, majors: [], nocs: [], prov: '', abroad: false, intent: 'job' })
+      .toEqual({ goal: 0, majors: [], nocs: [], prov: '', city: '', abroad: false, intent: 'job' })
+    // 2026-10-09「我的档案」批:城市挂在省下面 —— 有省才留;没省 / 境外 / 不是串 / 超长都按没选
+    expect(toGateDraft(JSON.stringify({ prov: 'ON', city: 'Mississauga' }))?.city).toBe('Mississauga')
+    expect(toGateDraft(JSON.stringify({ city: 'Toronto' }))?.city).toBe('')
+    expect(toGateDraft(JSON.stringify({ prov: 'ON', city: 'Toronto', abroad: true }))?.city).toBe('')
+    expect(toGateDraft(JSON.stringify({ prov: 'ON', city: 7 }))?.city).toBe('')
+    expect(toGateDraft(JSON.stringify({ prov: 'ON', city: 'x'.repeat(81) }))?.city).toBe('')
     for (const v of ['job', 'apply', 'save', 'entry']) {
       expect(isGateIntent(v)).toBe(true)
     }
@@ -480,7 +490,7 @@ describe('补交钩子 useGateSync(全站骨架挂的那一个)', () => {
     }
   }
 
-  it('已登录 + 有戳 + 有草稿:并进答案档、撤草稿、记引导弹过', async () => {
+  it('已登录 + 有戳 + 有草稿:并进答案档、撤草稿', async () => {
     const srv = serverWith(null)
     writeGateDraft(draft({ goal: 2, majors: ['51.3801'], nocs: ['31301'], prov: 'NS', intent: 'job' }))
     markGateHandoff()
@@ -489,7 +499,6 @@ describe('补交钩子 useGateSync(全站骨架挂的那一个)', () => {
     expect(sent(srv.puts).basic.majors).toEqual(['51.3801'])
     expect(sent(srv.puts).basic.resProv).toBe('NS')
     expect(localStorage.getItem(DRAFT_KEY)).toBeNull()
-    await vi.waitFor(() => expect(localStorage.getItem(OB_SEEN_KEY)).not.toBeNull())
   })
 
   it('已登录 + 有草稿但没戳(页头登录 / 关掉向导之后 / 别的标签页):不碰答案档,草稿留着只给预填', async () => {
@@ -500,7 +509,6 @@ describe('补交钩子 useGateSync(全站骨架挂的那一个)', () => {
     expect(srv.gets.length).toBe(0)
     expect(srv.puts.length).toBe(0)
     expect(readGateDraft()).not.toBeNull()
-    expect(localStorage.getItem(OB_SEEN_KEY)).toBeNull()
   })
 
   it('Google 回跳(2026-10-04 A2):人在职位板、由头是进站 → 补交完按答案换地址栏;点开职位 / 投递 / 收藏、别的页不换', async () => {
@@ -526,7 +534,7 @@ describe('补交钩子 useGateSync(全站骨架挂的那一个)', () => {
     }
   })
 
-  it('补交没成、戳放回去后换页再交:没交成不记引导弹过、不换地址栏;后来交成了也不换(地址栏一页只试一次)', async () => {
+  it('补交没成、戳放回去后换页再交:没交成不换地址栏;后来交成了也不换(地址栏一页只试一次)', async () => {
     vi.spyOn(console, 'log').mockImplementation(() => undefined)
     vi.stubGlobal('fetch', vi.fn(async () => reply(401, {})))
     writeGateDraft(draft({ nocs: ['31301'], prov: 'NS', intent: 'entry' }))
@@ -541,7 +549,6 @@ describe('补交钩子 useGateSync(全站骨架挂的那一个)', () => {
     await vi.waitFor(() => expect(sessionStorage.getItem(HANDOFF_KEY)).not.toBeNull())
     await vi.waitFor(() => expect(readGateDraft()).not.toBeNull())
     expect(ROUTER.replace).not.toHaveBeenCalled()
-    expect(localStorage.getItem(OB_SEEN_KEY)).toBeNull()
     resetAnswersMemory()
     const srv = serverWith(null)
     PATH.current = '/employers'
@@ -549,20 +556,18 @@ describe('补交钩子 useGateSync(全站骨架挂的那一个)', () => {
     PATH.current = '/'
     act(() => root.render(tree()))
     await vi.waitFor(() => expect(srv.puts.length).toBe(1))
-    await vi.waitFor(() => expect(localStorage.getItem(OB_SEEN_KEY)).not.toBeNull())
     await new Promise((r) => setTimeout(r, 20))
     expect(ROUTER.replace).not.toHaveBeenCalled()
     act(() => root.unmount())
   })
 
-  it('票据在但认不出人(会话种子 in 且邮箱空,收口审查):按匿名 —— 不补交、不记引导弹过、不换地址栏;陈戳撤掉,草稿留着', async () => {
+  it('票据在但认不出人(会话种子 in 且邮箱空,收口审查):按匿名 —— 不补交、不换地址栏;陈戳撤掉,草稿留着', async () => {
     const srv = serverWith(null)
     writeGateDraft(draft({ nocs: ['31301'], prov: 'NS', intent: 'entry' }))
     markGateHandoff()
     runHook(() => useGateSync(), seed(true, ''))
     await new Promise((r) => setTimeout(r, 20))
     expect(srv.gets.length + srv.puts.length).toBe(0)
-    expect(localStorage.getItem(OB_SEEN_KEY)).toBeNull()
     expect(ROUTER.replace).not.toHaveBeenCalled()
     expect(sessionStorage.getItem(HANDOFF_KEY)).toBeNull()
     expect(readGateDraft()).not.toBeNull()

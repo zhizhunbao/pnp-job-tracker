@@ -54,6 +54,41 @@ export type ApplyJobView = {
    * 库里有投递邮箱。
    */
   hasEmail: boolean
+
+  /**
+   * 职位名中文译名(没有 / 过期 = 空串;2026-10-09 投递弹框换 section 形,英文在上、译名灰字在下)。
+   */
+  titleZh: string
+
+  /**
+   * 职位名韩文译名(没有 / 过期 = 空串)。
+   */
+  titleKo: string
+
+  /**
+   * 公司中文译名(没有 = 空串)。
+   */
+  companyZh: string
+
+  /**
+   * 公司韩文译名(没有 = 空串)。
+   */
+  companyKo: string
+
+  /**
+   * 城市中文译名(没有 = 空串)。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名(没有 = 空串)。
+   */
+  cityKo: string
+
+  /**
+   * 公司页 slug(没有 = 空串;2026-10-09 N 批点公司名开公司框)。
+   */
+  companySlug: string
 }
 
 /**
@@ -276,34 +311,111 @@ export type ApplyPageIn = {
   start: ApplyStartView
 
   /**
+   * 职位名底下那行灰字(取数面板算好的,见 ApplyStartPanel.titleSub)。
+   */
+  titleSub: string
+
+  /**
    * 发出去了(投递区收起、投递记录表刷新)。
+   * 2026-10-09 A 批:投递框切到已投递一步,并广播给「我的」页刷新投递表、出成功条。
    */
   onSent: SentFn
 }
 
 /**
- * ApplySection 的 props。
+ * ApplySection 的 props(2026-10-09 A 批:取数挪到投递框外壳,标题栏要用岗名;本件只按取数结果摆正文)。
+ * 原 `makeSent` 的入参 SentIn 随「发出后收起投递区」退役。
  */
 export type ApplySectionIn = {
   /**
-   * 发出去了(由「我的」页拿去刷新投递记录表、出成功条)。
+   * 投递区取数面板。
+   */
+  s: ApplyStartPanel
+}
+
+/**
+ * `applyIdOf` 的入参:地址栏的查询串与路径。
+ */
+export type ApplyIdIn = {
+  /**
+   * 查询串(`?apply=…` 或旧深链 `?sec=sjobs&job=…`)。
+   */
+  search: string
+
+  /**
+   * 路径(旧深链只在「我的」页认)。
+   */
+  path: string
+}
+
+/**
+ * ApplySentSync 的 props。
+ */
+export type ApplySentSyncIn = {
+  /**
+   * 收到「发出去了」后的回调(「我的」页刷新投递表、写成功条)。
    */
   onSent: SentFn
 }
 
 /**
- * `makeSent` 的入参。
+ * 「要投这一岗」事件带的那一份(职位桶广播,宿主收)。
  */
-export type SentIn = {
+export type ApplyOpenDetail = {
   /**
-   * 「发出去了」落格(投递区收起)。
+   * 职位 id。
    */
-  setSent: SetFn<boolean>
+  jobId: number
+}
+
+/**
+ * `noteOpened` 的入参。
+ */
+export type OpenedIn = {
+  /**
+   * 宿主是不是刚挂上(第一次读地址栏)。
+   */
+  first: boolean
 
   /**
-   * 外面的回调(刷新表、出成功条)。
+   * 上一次读到的职位 id(没有 = null)。
    */
-  onSent: SentFn
+  prev: number | null
+
+  /**
+   * 这一次读到的职位 id(没有 = null)。
+   */
+  id: number | null
+}
+
+/**
+ * 投递框宿主面板(`useApplyHost` 交出)。
+ */
+export type ApplyHostPanel = {
+  /**
+   * 要投的职位 id(地址栏没带 = null,不弹框)。
+   */
+  jobId: number | null
+
+  /**
+   * 关框。
+   */
+  onClose: () => void
+}
+
+/**
+ * ApplyModal 的 props。
+ */
+export type ApplyModalIn = {
+  /**
+   * 要投的职位 id。
+   */
+  jobId: number
+
+  /**
+   * 关框。
+   */
+  onClose: () => void
 }
 
 /**
@@ -364,21 +476,6 @@ export type ApplyPanel = {
    * 信里写不进 PDF 的字。
    */
   badChars: string[]
-
-  /**
-   * 预览一步的逐项检查四行(收件人、简历、求职信、署名)。
-   */
-  checkRows: CheckRow[]
-
-  /**
-   * 已勾的项(词条键)。
-   */
-  ticks: string[]
-
-  /**
-   * 勾 / 取消某一项的手柄(按项造)。
-   */
-  onTick: TickOfFn
 
   /**
    * 错误 / 提示词条键(没有 = 空串)。
@@ -454,6 +551,11 @@ export type ApplyPanel = {
    * 上一步。
    */
   onBack: () => void
+
+  /**
+   * 第 3 步的逐项检查面板。
+   */
+  check: CheckPanel
 }
 
 /**
@@ -474,6 +576,36 @@ export type ApplyJobIn = {
    * 本岗。
    */
   job: ApplyJobView
+
+  /**
+   * 职位名底下那行灰字。
+   */
+  titleSub: string
+}
+
+/**
+ * 界面语三字面量(各域自抄)。
+ */
+export type Lang = 'zh' | 'en' | 'ko'
+
+/**
+ * 交给 jobtitle 桶的那一份职位名(职位名与库里存好的两种译名;起始态没到 = 三格空串)。形同 jobtitle 的 TitledFact,本域自声明。
+ */
+export type ApplyTitled = {
+  /**
+   * 职位名。
+   */
+  title: string
+
+  /**
+   * 库里存好的中文译名;'' = 没有。
+   */
+  titleZh: string
+
+  /**
+   * 库里存好的韩文译名;'' = 没有。
+   */
+  titleKo: string
 }
 
 /**
@@ -695,10 +827,6 @@ export type ApplyCells = {
    */
   trial: TrialCells
 
-  /**
-   * 改已勾的项(退回上一步清空)。
-   */
-  setTicks: SetFn<string[]>
 }
 
 /**
@@ -745,10 +873,6 @@ export type CanNextIn = {
    */
   uploading: boolean
 
-  /**
-   * 已勾的项(预览一步四项全勾才放行)。
-   */
-  ticks: string[]
 }
 
 /**
@@ -762,26 +886,6 @@ export type PageHideIn = {
 }
 
 /**
- * `locationOf` 的入参。
- */
-export type LocationIn = {
-  /**
-   * 城市。
-   */
-  city: string
-
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 分隔。
-   */
-  sep: string
-}
-
-/**
  * 投递区的取数面板(useApplyStart 交出)。
  */
 export type ApplyStartPanel = {
@@ -791,7 +895,18 @@ export type ApplyStartPanel = {
   t: TFn
 
   /**
-   * 取数状态(none / busy / fail / ok)。
+   * 界面语(标题栏译名行按它取中文或韩文;英文界面不出)。
+   */
+  lang: Lang
+
+  /**
+   * 职位名底下那行灰字(jobtitle 桶全站口径:库里存好的 → 当场按岗现翻的;英文界面 / 都没有 = 空串)。
+   * 标题栏与「职位信息」那一行共用这一份,只翻一次。
+   */
+  titleSub: string
+
+  /**
+   * 取数状态(none / busy / fail / ok / auth)。
    */
   load: string
 
@@ -799,6 +914,36 @@ export type ApplyStartPanel = {
    * 起始态(没到 = null)。
    */
   start: ApplyStartView | null
+
+  /**
+   * 没登录时叠的登录框登录完了:重取起始态并软刷顶栏。
+   */
+  onAuthDone: () => void
+}
+
+/**
+ * `makeAuthRetry` 的入参。
+ */
+export type AuthRetryIn = {
+  /**
+   * 当前代数(取数副作用按它重跑)。
+   */
+  gen: number
+
+  /**
+   * 代数落格。
+   */
+  setGen: SetFn<number>
+
+  /**
+   * 取数状态落格。
+   */
+  setLoad: SetFn<string>
+
+  /**
+   * 软刷(Next 路由的 refresh;顶栏按新会话重画)。
+   */
+  refresh: () => void
 }
 
 /**
@@ -934,6 +1079,11 @@ export type CheckRow = {
    * 打开看那颗钮的词条键(没有 = 空串)。
    */
   linkKey: string
+
+  /**
+   * 能不能站内弹框预览(PDF 才能;.docx 简历仍新开标签页)。
+   */
+  previewable: boolean
 }
 
 /**
@@ -956,6 +1106,11 @@ export type CheckRowsIn = {
   resumeId: number | null
 
   /**
+   * 附的简历 MIME(PDF 才弹框预览;没简历给空串)。
+   */
+  resumeMime: string
+
+  /**
    * 求职信附件名。
    */
   coverFile: string
@@ -972,27 +1127,17 @@ export type CheckRowsIn = {
 }
 
 /**
- * 按项造勾选手柄的函数。
+ * ApplyChip(附件胶囊里的文件名)的 props。
  */
-export type TickOfFn = (key: string) => () => void
-
-/**
- * `makeTickOf` 的入参。
- */
-export type TickIn = {
+export type ApplyChipIn = {
   /**
-   * 已勾的项。
+   * 文件名。
    */
-  ticks: string[]
-
-  /**
-   * 落格。
-   */
-  set: SetFn<string[]>
+  name: string
 }
 
 /**
- * ApplyCheck 的 props。
+ * ApplyMail(邮件形预览)的 props。
  */
 export type ApplyCheckIn = {
   /**
@@ -1001,19 +1146,200 @@ export type ApplyCheckIn = {
   t: TFn
 
   /**
+   * 逐项检查面板(投递区与今日待投各自装一份)。
+   */
+  p: CheckPanel
+}
+
+/**
+ * 逐项检查面板:四行 + 勾 + 弹框预览 + 换简历 + 改信(2026-10-08 Frank「这两个应该都是可以弹框,并且可以替换吧」)。
+ * 今日待投那边按同形自声明(queue 的 QueueCheckPanel),ApplyCheck 只认这个形。
+ */
+export type CheckPanel = {
+  /**
+   * 四行(收件人 / 简历 / 求职信 / 署名的值与 PDF 地址;邮件形按键取)。
+   */
+  rows: CheckRow[]
+
+  /**
+   * 邮件主题(与真发出去的同一个模板)。
+   */
+  subject: string
+
+  /**
+   * 邮件正文(信全文)。
+   */
+  body: string
+
+  /**
+   * 正在弹框预览的那一份;null = 没开。
+   */
+  preview: MaybeCheckPreview
+
+  /**
+   * 按行造「打开预览」手柄。
+   */
+  openOf: OpenOfFn
+
+  /**
+   * 关预览弹框。
+   */
+  onPreviewClose: () => void
+
+  /**
+   * 换简历下拉的选项(简历 id 串;少于两份不出下拉)。
+   */
+  resumeOpts: string[]
+
+  /**
+   * 下拉当前值(选中的简历 id 串;没选 = 空串)。
+   */
+  resumeValue: string
+
+  /**
+   * 下拉取名(id 串 → 文件名)。
+   */
+  resumeLabel: (v: string) => string
+
+  /**
+   * 换简历(下拉选中的 id 串)。
+   */
+  onResume: (v: string) => void
+
+  /**
+   * 「改信」(投递区回第 2 步;今日待投开改信弹框)。
+   */
+  onLetter: () => void
+}
+
+/**
+ * 四行里的一行,或没有。
+ */
+export type MaybeCheckRow = CheckRow | null
+
+/**
+ * `rowOf`(按键取一行)的入参。
+ */
+export type RowOfIn = {
+  /**
    * 四行。
    */
   rows: CheckRow[]
 
   /**
-   * 已勾的项。
+   * 要哪一行(项名词条键)。
    */
-  ticks: string[]
+  key: string
+}
+
+/**
+ * 弹框预览的那一份。
+ */
+export type CheckPreview = {
+  /**
+   * PDF 地址。
+   */
+  src: string
 
   /**
-   * 按项造勾选手柄。
+   * 标题(文件名)。
    */
-  onTick: TickOfFn
+  title: string
+}
+
+/**
+ * 弹框预览的那一份,或没开。
+ */
+export type MaybeCheckPreview = CheckPreview | null
+
+/**
+ * 按行造「打开预览」手柄的函数。
+ */
+export type OpenOfFn = (row: CheckRow) => () => void
+
+/**
+ * `useCheckPreview` 交回的三格。
+ */
+export type CheckPreviewHook = {
+  /**
+   * 正在预览的那一份;null = 没开。
+   */
+  preview: MaybeCheckPreview
+
+  /**
+   * 按行造「打开预览」手柄。
+   */
+  openOf: OpenOfFn
+
+  /**
+   * 关弹框。
+   */
+  onPreviewClose: () => void
+}
+
+/**
+ * `applyCheckOf`(装第 3 步逐项检查面板)的入参。
+ */
+export type ApplyCheckPanelIn = {
+  /**
+   * 本岗。
+   */
+  job: ApplyJobView
+
+  /**
+   * 简历清单。
+   */
+  resumes: ApplyResumeView[]
+
+  /**
+   * 选中的简历 id。
+   */
+  resumeId: number | null
+
+  /**
+   * 英文姓名。
+   */
+  name: string
+
+  /**
+   * 信全文(邮件正文)。
+   */
+  letter: string
+
+  /**
+   * 预览三格。
+   */
+  pv: CheckPreviewHook
+
+  /**
+   * 改选中的简历 id。
+   */
+  setResumeId: SetFn<number | null>
+
+  /**
+   * 改错误词条键。
+   */
+  setErr: SetFn<string>
+
+  /**
+   * 整机的可变格(「改信」= 回第 2 步)。
+   */
+  cells: ApplyCells
+}
+
+/**
+ * 换简历下拉的一项。
+ */
+export type ResumePickItem = {
+  /**
+   * 简历 id。
+   */
+  id: number
+
+  /**
+   * 文件名。
+   */
+  name: string
 }
 
 /**

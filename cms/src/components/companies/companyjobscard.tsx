@@ -18,7 +18,10 @@
  * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:卡底「再展开 N 个 / 收起」两枚自造钮换成 pager 桶 FoldLine
  * (展开 20 个 → 再展开 20 个 → 展开其余 N 个 → 收起),开合走 useFold(在招岗全量在手,不用按页取)。
 
- * 2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):首屏 8 条改 20 条(pager 桶 FOLD_FIRST)。 *
+ * 2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):首屏 8 条改 20 条(pager 桶 FOLD_FIRST)。
+ * 2026-10-09 N6 批:行里岗名换 name 桶 JobName、城市换 CityName(多递省码与两种市名译名);职位框改由总线按号现取,
+ * 递给行的 onOpenJob / row / newTab 行内已不读,上游接线另批清。 *
+ * 2026-10-09 N6b 批:上游接线清了 —— 本卡的 onOpenJob / resolveJob / newTab 三格撤,行只收展示格。
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
@@ -33,17 +36,17 @@ import {
 import {
   jobsShownOf, jobSubOf, zhShownOf,
 } from './functions'
-import type { CompanyJobFact, CompanyJobsCardIn } from './types'
+import type { CompanyJobsCardIn } from './types'
 import css from './companies.module.css'
 
 /**
  * 在招职位卡。
  *
- * @param props 公司档案、取词函数、界面语言、更新时刻与两个回调(逐格注释见 CompanyJobsCardIn)。
+ * @param props 公司档案、取词函数、界面语言、更新时刻与中文对照开关(逐格注释见 CompanyJobsCardIn)。
  * @returns 一张卡;一个在招岗都没有时整卡不渲。
  */
 export function CompanyJobsCard({
-  company, t, lang, updatedAt, onOpenJob, resolveJob, newTab, showTrans,
+  company, t, lang, updatedAt, showTrans,
 }: CompanyJobsCardIn) {
   const fold = useFold({ hidden: Math.max(0, company.jobs.length - FOLD_FIRST) })
   const shown = jobsShownOf({ jobs: company.jobs, n: FOLD_FIRST + fold.extra })
@@ -53,10 +56,6 @@ export function CompanyJobsCard({
   }
   const rows = []
   for (const job of shown) {
-    let row: CompanyJobFact | null = null
-    if (resolveJob != null) {
-      row = resolveJob(job.id)
-    }
     const sub = titleSubOf({
       row: job, lang, lazy: lazyTitleOf({ map: titleMap, title: job.title }), noc: jobSubOf({ job, lang }),
     })
@@ -67,9 +66,9 @@ export function CompanyJobsCard({
         sub={zhShownOf({ show: showTrans || lang === LANG_EN, text: sub })}
         salaryText={job.salaryText}
         city={job.city}
-        onOpenJob={onOpenJob}
-        row={row}
-        newTab={newTab} />,
+        province={job.province}
+        cityZh={job.cityZh}
+        cityKo={job.cityKo} />,
     )
   }
   return (

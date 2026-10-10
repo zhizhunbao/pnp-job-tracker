@@ -1,27 +1,27 @@
 /**
  * queue 组件桶(「今日待投」)的函数:拉队列、拨开关、投出、跳过、全部投出、信预览。
  * 2026-10-08 Frank 看「我的」:跳过、全部投出、信预览(展开 / 收起)撤;加翻页(上一个 / 下一个)与投出前逐项检查。
+ * 2026-10-09 N6 批:卡上职位名 / 城市换 name 桶现成件,点职位名的手柄(titleOpenOf / makePushJob)与城市拼字(locationOf)撤。
  *
  * @author Frank
  * @time 2026-10-08 15:00:00
  */
-import { checkRowsOf } from '@/components/apply'
-import { makeOpenJob } from '@/components/companies'
-import { cityLabelOf } from '@/components/start'
-import { coverFileOf } from '@/lib/apply'
+import { checkRowsOf, makeResumeLabel, pickOptsOf, resumeValueOf } from '@/components/apply'
+import { coverFileOf, mailSubjectOf } from '@/lib/apply'
 import { ALL_PROVS, provName } from '@/lib/location'
 import { mergeBasics } from '@/lib/quiz'
 import {
   CRED_INCLUDE, ERR_CODES, ERR_FALLBACK, ERR_KEY_FULL, ERR_KEY_HEAD, ERR_KEY_PROV, ERR_KEY_UPLOAD, ERR_NONE,
-  FIELD_AUTO, FIELD_FILE, FIELD_NAME, FIND_MAX_MS, HDR_CONTENT_TYPE, HTTP_CONFLICT, LAYER_JOB, LOAD_FAIL, LOAD_OK,
-  METHOD_PATCH, METHOD_POST, METHOD_PUT, MIME_JSON, TEXT_NONE, URL_COVER, URL_PREFS, URL_QUEUE,
+  FIELD_AUTO, FIELD_FILE, FIELD_NAME, FIND_MAX_MS, HDR_CONTENT_TYPE, HTTP_CONFLICT, LOAD_FAIL, LOAD_OK,
+  METHOD_PATCH, METHOD_POST, METHOD_PUT, MIME_JSON, TEXT_NONE, URL_COVER, URL_PREFS, URL_QUEUE, URL_QUEUE_RESUME,
   URL_RESUME_FILE, URL_SEND,
 } from './constants'
 import type {
   AreaChangeEvent, CellsIn, DropIn, EditOpenIn, EnableIn, ErrJson, ErrOut, FindingIn, FlipIn, InputChangeEvent, LoadIn,
-  LocationIn, NameSaveIn, OpenJobFn, PeekClickFn, PeekStackRef, PostIn, ProvSaveIn, QueueItem, QueueJob, QueueRespJson,
-  QueueState, SendOneIn, TitleOpenIn, UploadFileIn, UploadIn, UploadJson, WithAutoIn, WithCoverIn, ChecksIn, PosIn,
-  PageIn, QueueCells, QueueCheckRow, TFn,
+  NameSaveIn, PostIn, ProvSaveIn, QueueItem, QueueRespJson,
+  QueueState, SendOneIn, UploadFileIn, UploadIn, UploadJson, WithAutoIn, WithCoverIn, ChecksIn, PosIn,
+  PageIn, QueueCells, QueueCheckRow, TFn, QueueCheckIn, QueueCheckPanel, QueueResumeItem, QueueResumeJson,
+  ResumeChangeIn, ResumeMimeIn,
 } from './types'
 
 /**
@@ -50,9 +50,34 @@ export function toQueueState(d: QueueRespJson): QueueState {
     hasResume: d.hasResume === true,
     hasProv: d.hasProv === true,
     items,
+    resumes: toResumeItems(d.resumes),
     lastQueueAt,
     senderName,
   }
+}
+
+/**
+ * 回包里的简历清单 → 洗净的项(缺席 / 格子脏的跳过)。
+ *
+ * @param raw 回包里的清单(可缺席)。
+ * @returns 洗净的项。
+ */
+export function toResumeItems(raw: QueueResumeJson[] | null | undefined): QueueResumeItem[] {
+  const out: QueueResumeItem[] = []
+  if (raw == null) {
+    return out
+  }
+  for (const r of raw) {
+    const id = Number(r.id)
+    if (Number.isInteger(id) && id > 0 && typeof r.name === 'string') {
+      let mime = TEXT_NONE
+      if (typeof r.mime === 'string') {
+        mime = r.mime
+      }
+      out.push({ id, name: r.name, mime })
+    }
+  }
+  return out
 }
 
 /**
@@ -68,6 +93,7 @@ export function emptyQueueOf(): QueueState {
     hasResume: false,
     hasProv: false,
     items: [],
+    resumes: [],
     lastQueueAt: TEXT_NONE,
     senderName: TEXT_NONE,
   }
@@ -138,6 +164,7 @@ function withAuto(x: WithAutoIn): QueueState {
     hasResume: x.state.hasResume,
     hasProv: x.state.hasProv,
     items: x.state.items,
+    resumes: x.state.resumes,
     lastQueueAt: x.state.lastQueueAt,
     senderName: x.state.senderName,
   }
@@ -163,6 +190,7 @@ export function dropItems(x: DropIn): void {
     hasResume: x.cells.state.hasResume,
     hasProv: x.cells.state.hasProv,
     items: rest,
+    resumes: x.cells.state.resumes,
     lastQueueAt: x.cells.state.lastQueueAt,
     senderName: x.cells.state.senderName,
   })
@@ -255,14 +283,13 @@ export function posOf(x: PosIn): number {
 }
 
 /**
- * 造「翻到第几条」(通用 Pager 的回调):换位置、逐项检查清空(勾是对上一封信打的)。
+ * 造「翻到第几条」(通用 Pager 的回调)。
  *
- * @param x 两个落格。
+ * @param x 落格。
  * @returns 翻页回调。
  */
 export function makePage(x: PageIn): (to: number) => void {
   return function page(to: number): void {
-    x.setTicks([])
     x.setPos(to)
   }
 }
@@ -281,10 +308,85 @@ export function checksOf(x: ChecksIn): QueueCheckRow[] {
     company: x.item.company,
     resumeName: x.item.resumeName,
     resumeId: x.item.resumeId,
+    resumeMime: resumeMimeOf({ resumes: x.resumes, resumeId: x.item.resumeId }),
     coverFile: coverFileOf(x.item.company),
     jobId: x.item.jobId,
     sender: x.sender,
   })
+}
+
+/**
+ * 附的那份简历的 MIME(清单里找;没有给空串)。
+ *
+ * @param x 简历清单与附的简历 id。
+ * @returns MIME。
+ */
+export function resumeMimeOf(x: ResumeMimeIn): string {
+  for (const r of x.resumes) {
+    if (r.id === x.resumeId) {
+      return r.mime
+    }
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 装邮件形预览面板(2026-10-08 Frank「这两个应该都是可以弹框,并且可以替换吧」「这个不能改成类似于邮件那种吗」):
+ * 四行、主题、正文、弹框预览、换简历、改信。
+ *
+ * @param x 当前这一岗、预览三格、状态、可变格、重拉与开改信。
+ * @returns 面板。
+ */
+export function queueCheckOf(x: QueueCheckIn): QueueCheckPanel {
+  let resumeId: number | null = null
+  let subject = TEXT_NONE
+  let body = TEXT_NONE
+  if (x.item != null) {
+    resumeId = x.item.resumeId
+    subject = mailSubjectOf({
+      title: x.item.title, city: x.item.city, province: x.item.province, name: x.state.senderName,
+    })
+    body = x.item.cover
+  }
+  return {
+    rows: checksOf({ item: x.item, sender: x.state.senderName, resumes: x.state.resumes }),
+    subject,
+    body,
+    preview: x.pv.preview,
+    openOf: x.pv.openOf,
+    onPreviewClose: x.pv.onPreviewClose,
+    resumeOpts: pickOptsOf(x.state.resumes),
+    resumeValue: resumeValueOf(resumeId),
+    resumeLabel: makeResumeLabel(x.state.resumes),
+    onResume: makeResumeChange({ cells: x.cells, reload: x.reload }),
+    onLetter: x.onEdit,
+  }
+}
+
+/**
+ * 造「下拉换简历」:PATCH /api/queue/resume {jobId, resumeId} 后重拉(行上的文件名换新、勾清空)。
+ *
+ * @param x 整机的可变格与重拉。
+ * @returns 下拉改动手柄(收 id 串)。
+ */
+export function makeResumeChange(x: ResumeChangeIn): (v: string) => void {
+  return function changeResume(v: string): void {
+    const item = currentOf(x.cells)
+    const resumeId = Number(v)
+    if (item == null || item.jobId == null || Number.isInteger(resumeId) === false || resumeId <= 0) {
+      return
+    }
+    x.cells.setErr(ERR_NONE)
+    x.cells.setBusy(true)
+    postJson({ url: URL_QUEUE_RESUME, method: METHOD_PATCH, body: { jobId: item.jobId, resumeId } })
+      .then(async function done(err: string): Promise<void> {
+        x.cells.setErr(err)
+        if (err === ERR_NONE) {
+          await x.reload()
+        }
+        x.cells.setBusy(false)
+      })
+  }
 }
 
 /**
@@ -304,7 +406,6 @@ export function makeSend(x: CellsIn): () => Promise<void> {
     const err = await sendOne({ cells: x.cells, item })
     if (err === ERR_NONE) {
       dropItems({ cells: x.cells, ids: [item.id] })
-      x.cells.setTicks([])
     }
     x.cells.setErr(err)
     x.cells.setBusy(false)
@@ -321,21 +422,6 @@ export function makeFlip(x: FlipIn): () => void {
   return function flip(): void {
     x.set(x.v === false)
   }
-}
-
-/**
- * 卡上的城市字(界面语言有译名用译名 + 灰注同站规;这里只取主文案与灰注拼一行)。
- *
- * @param x 这一岗与界面语。
- * @returns 城市主文案;没有城市给空串。
- */
-export function locationOf(x: LocationIn): string {
-  if (x.item.city === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  return cityLabelOf({
-    city: x.item.city, cityZh: x.item.cityZh, cityKo: x.item.cityKo, province: x.item.province, lang: x.lang,
-  }).name
 }
 
 /**
@@ -592,7 +678,6 @@ export function makeEditSave(x: CellsIn): () => Promise<void> {
     if (err === ERR_NONE) {
       x.cells.setState(withCover({ state: x.cells.state, id: item.id, cover: x.cells.editText }))
       x.cells.setEditing(false)
-      x.cells.setTicks([])
     }
     x.cells.setErr(err)
     x.cells.setBusy(false)
@@ -635,41 +720,8 @@ function withCover(x: WithCoverIn): QueueState {
     hasResume: x.state.hasResume,
     hasProv: x.state.hasProv,
     items,
+    resumes: x.state.resumes,
     lastQueueAt: x.state.lastQueueAt,
     senderName: x.state.senderName,
   }
-}
-
-/**
- * 造「叠开职位描述弹框」:往弹框栈上叠一层职位层(同 myjobs 桶)。
- *
- * @param stack 弹框栈。
- * @returns 开职位弹框的手柄。
- */
-export function makePushJob(stack: PeekStackRef): OpenJobFn {
-  return function pushJob(job: QueueJob): void {
-    stack.push({ kind: LAYER_JOB, job })
-  }
-}
-
-/**
- * 当前这一岗职位名的点击手柄:职位还在交给公司桶的 makeOpenJob(按岗位号现取一行、叠开 JD 弹框);没有岗给不拦的空口。
- *
- * @param x 当前这一岗与开弹框的手柄。
- * @returns 点击手柄。
- */
-export function titleOpenOf(x: TitleOpenIn): PeekClickFn {
-  if (x.item == null || x.item.jobId == null) {
-    return ignoreClick
-  }
-  return makeOpenJob({ id: x.item.jobId, row: null, onOpenJob: x.onOpenJob })
-}
-
-/**
- * 不拦的空口(没有岗时职位名是纯文字,点不到)。
- *
- * @returns 无。
- */
-export function ignoreClick(): void {
-  return
 }

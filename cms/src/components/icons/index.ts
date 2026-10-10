@@ -37,6 +37,7 @@ export {
   IconMenu,
   IconMinimize,
   IconMinus,
+  IconPencil,
   IconPlus,
   IconNews,
   IconRefresh,

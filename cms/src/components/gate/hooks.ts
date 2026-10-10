@@ -22,13 +22,18 @@ import {
   clearGateHandoff, readGateDraft, readGateSeed, takeEntryGate, takeGateHandoff, writeGateDraft,
 } from '@/lib/guest'
 import { track } from '@/lib/track'
-import { GATE_BACK_KEY, GATE_STEP_REG, TEXT_NONE, TRACK_GATE_OPEN } from './constants'
 import {
-  dropGateHandoff, focusGateQuestion, gateNextOffOf, gateProvActiveOf, gateStepOf, makeEntryClose, makeEntryDone,
-  makeGateBack, makeGateClose, makeGateDone, makeGateNext, makeGoalPick, makeMajorsPick, makeProvPick, makeTouchedNocs,
-  runGateSync,
+  GATE_BACK_KEY, GATE_EDIT_STEPS, GATE_STEPS, GATE_STEP_REG, NEXT_KEY, TEXT_NONE, TRACK_GATE_OPEN,
+} from './constants'
+import {
+  cityOptsOf, dropGateHandoff, editNextKeyOf, focusGateQuestion, gateNextOffOf, gateProvActiveOf, gateStepOf,
+  loadProvCities, makeCityPick, makeEditNext, makeEditSave, makeEntryClose, makeEntryDone, makeGateBack, makeGateClose,
+  makeGateDone, makeGateNext, makeGoalPick, makeMajorsPick, makeProvPick, makeTouchedNocs, nameBadOf, runGateSync,
 } from './functions'
-import type { EntryGatePanel, GateBack, GateDraft, GateHookIn, GatePanel } from './types'
+import type {
+  CitiesGot, CityOpt, CityPickHookIn, CityPickOut, DeadFlag, EntryGatePanel, GateBack, GateDraft, GateEditHookIn,
+  GateHookIn, GatePanel, ProvCitiesIn,
+} from './types'
 
 /**
  * 访客向导整机(2026-10-03 付费闭环批 A1):四道题的答案 + 走到第几步 + 「动过了」+ 专业题机器。
@@ -59,6 +64,9 @@ export function useGateWizard(x: GateHookIn): GatePanel {
   const [majors, setMajors] = useState<string[]>(seed.majors)
   const [nocs, setNocs] = useState<string[]>(seed.nocs)
   const [prov, setProv] = useState(seed.prov)
+  const c = useCityPick({ prov, lang, seed: seed.city })
+  const city = c.panel.city
+  const [name, setName] = useState(TEXT_NONE)
   const [abroad, setAbroad] = useState(seed.abroad)
   const [touched, setTouched] = useState(false)
   const qid = useId()
@@ -78,11 +86,11 @@ export function useGateWizard(x: GateHookIn): GatePanel {
 
   useEffect(function saveGateDraft() {
     if (touched) {
-      writeGateDraft({ goal, majors, nocs, prov, abroad, intent })
+      writeGateDraft({ goal, majors, nocs, prov, city, abroad, intent })
     }
-  }, [touched, goal, majors, nocs, prov, abroad, intent])
+  }, [touched, goal, majors, nocs, prov, city, abroad, intent])
 
-  const cur = gateStepOf({ step })
+  const cur = gateStepOf({ step, steps: GATE_STEPS })
   const next = makeGateNext({ step, cur, setStep, setTouched })
   const provActive = gateProvActiveOf({ prov, abroad })
   const onBack = makeGateBack({ step, setStep })
@@ -102,13 +110,16 @@ export function useGateWizard(x: GateHookIn): GatePanel {
     nocs,
     setNocs: makeTouchedNocs({ setNocs, setTouched }),
     provActive,
-    onProv: makeProvPick({ setProv, setAbroad, setTouched }),
+    onProv: makeProvPick({ setProv, setAbroad, setTouched, setCity: c.setCity }),
+    cities: c.panel,
+    edit: { name, onName: setName, nameBad: false, nextKey: NEXT_KEY, saving: false, failKey: TEXT_NONE },
+    total: GATE_STEPS.length,
     onNext: next,
-    nextOff: gateNextOffOf({ cur, majors, nocs, provActive }),
+    nextOff: gateNextOffOf({ cur, majors, nocs, provActive, nameBad: false }),
     onBack,
     back,
     onRegistered: makeGateDone({
-      draft: { goal, majors, nocs, prov, abroad, intent }, onDone: x.onDone, path, replace: router.replace,
+      draft: { goal, majors, nocs, prov, city, abroad, intent }, onDone: x.onDone, path, replace: router.replace,
     }),
     onClose: makeGateClose({ onClose: x.onClose }),
   }
@@ -191,5 +202,112 @@ export function useEntryGate(): EntryGatePanel {
     t,
     onClose: makeEntryClose({ setOpenAt }),
     onDone: makeEntryDone({ setOpenAt, refresh: router.refresh }),
+  }
+}
+
+/**
+ * 城市区的那几格(2026-10-09「我的档案」批:访客向导与编辑模式共用):选中的城市、搜索词、要摆的城市。
+ *
+ * @param x 省码、界面语与起始城市。
+ * @returns 城市区面板与城市落格。
+ */
+export function useCityPick(x: CityPickHookIn): CityPickOut {
+  const [city, setCity] = useState(x.seed)
+  const [q, setQ] = useState(TEXT_NONE)
+  const opts = useProvCities({ prov: x.prov, q, lang: x.lang })
+  return { panel: { city, onCity: makeCityPick({ city, setCity }), q, onQ: setQ, opts }, setCity }
+}
+
+/**
+ * 一个省的城市(2026-10-09「我的档案」批:「所在地」那一屏选完省下面出城市):省换了就取那一省(stats 域,在招多的在前),
+ * 再按搜索词挑这一刻要摆的。省没选 / 选了境外 / 那一省还没取回来 = 空列(城市区不出)。
+ *
+ * @param x 省码、搜索词与界面语。
+ * @returns 要摆的城市。
+ */
+export function useProvCities(x: ProvCitiesIn): CityOpt[] {
+  const [got, setGot] = useState<CitiesGot>({ prov: TEXT_NONE, rows: [] })
+  const prov = x.prov
+  useEffect(function loadCities() {
+    const flag: DeadFlag = { dead: false }
+    if (prov !== TEXT_NONE) {
+      void loadProvCities({ prov, setAll: setGot, flag })
+    }
+    return function stopCities(): void {
+      flag.dead = true
+    }
+  }, [prov])
+  if (prov === TEXT_NONE || got.prov !== prov) {
+    return []
+  }
+  return cityOptsOf({ all: got.rows, q: x.q, lang: x.lang })
+}
+
+/**
+ * 编辑模式的整机(2026-10-09「我的档案」批,Frank「答题还是之前弹框的那种干净」):档案页「修改」走访客向导同一套题、同一副样子,
+ * 但从档案里的答案起头、末尾多问英文姓名、最后一题点「保存」—— 不写访客草稿、不打交接戳、不进注册屏、不记 gate-open
+ * (那几样是访客注册漏斗的事,编辑的人早已登录)。
+ *
+ * @param x 取词函数、起始答案、关框与保存成功。
+ * @returns 与访客向导同形的整机面板(顶行、各题、钮区原样读它)。
+ */
+export function useGateEdit(x: GateEditHookIn): GatePanel {
+  const [lang] = useLang()
+  const s = x.seed
+  const [step, setStep] = useState(0)
+  const [goal, setGoal] = useState(s.goal)
+  const [majors, setMajors] = useState<string[]>(s.majors)
+  const [nocs, setNocs] = useState<string[]>(s.nocs)
+  const [prov, setProv] = useState(s.prov)
+  const [abroad, setAbroad] = useState(s.abroad)
+  const c = useCityPick({ prov, lang, seed: s.city })
+  const [name, setName] = useState(s.name)
+  const [saving, setSaving] = useState(false)
+  const [failKey, setFail] = useState(TEXT_NONE)
+  const [, setTouched] = useState(false)
+  const qid = useId()
+  const lastStep = useRef(0)
+
+  useEffect(function focusQuestionOnStep() {
+    focusGateQuestion({ id: qid, step, last: lastStep })
+  }, [qid, step])
+
+  const cur = gateStepOf({ step, steps: GATE_EDIT_STEPS })
+  const provActive = gateProvActiveOf({ prov, abroad })
+  const nameBad = nameBadOf(name)
+  const save = makeEditSave({
+    a: { goal, majors, nocs, prov, abroad, city: c.panel.city, name: name.trim() },
+    setSaving,
+    setFail,
+    onSaved: x.onSaved,
+  })
+  const next = makeEditNext({ step, setStep, save })
+  const onBack = makeGateBack({ step, setStep })
+  let back: GateBack = null
+  if (step > 0) {
+    back = { aria: x.t(GATE_BACK_KEY), onClick: onBack }
+  }
+  return {
+    step,
+    cur,
+    qid,
+    goal,
+    onGoal: makeGoalPick({ setGoal, setTouched, next }),
+    majors,
+    onMajors: makeMajorsPick({ setMajors, setTouched }),
+    lang,
+    nocs,
+    setNocs: makeTouchedNocs({ setNocs, setTouched }),
+    provActive,
+    onProv: makeProvPick({ setProv, setAbroad, setTouched, setCity: c.setCity }),
+    cities: c.panel,
+    edit: { name, onName: setName, nameBad, nextKey: editNextKeyOf(step), saving, failKey },
+    total: GATE_EDIT_STEPS.length,
+    onNext: next,
+    nextOff: gateNextOffOf({ cur, majors, nocs, provActive, nameBad }) || saving,
+    onBack,
+    back,
+    onRegistered: x.onSaved,
+    onClose: x.onClose,
   }
 }

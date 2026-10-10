@@ -110,13 +110,16 @@
 
 /*
  * 城市 + 薪资一行(两格分开摆,不用符号杂糅)。
+ * 2026-10-09 N6 批:城市、省份各成两行名字后 375 宽放不下 —— 放不下整块换行(不许把省名灰字挤成一字一行),顶端对齐。
  */
 .jobMeta {
   margin-top: 2px;
 
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
 
-  gap: 14px;
+  gap: 4px 14px;
 
   font-size: 12.5px;
 
@@ -130,6 +133,7 @@
   color: var(--ok);
 
   font-weight: 600;
+  white-space: nowrap;
 }
 
 /*
@@ -238,15 +242,6 @@
   }
 }
 
-
-/*
- * 卡上的职位名链接(链接色、不下划线,同职位板)。
- */
-.jobLink {
-  color: var(--primary);
-
-  text-decoration: none;
-}
 
 /*
  * 设置清单(没开或条件没齐时代替岗位卡)。

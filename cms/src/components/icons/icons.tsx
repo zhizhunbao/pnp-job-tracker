@@ -12,8 +12,8 @@
 import {
   ArrowUp, Briefcase, ChartColumn, ChartLine, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, ClipboardList,
   Compass, Globe, GripVertical, IdCard, Lock, Mail, Map as LMap, MapPin, Maximize, Medal, Menu, MessageCircle, Mic,
-  Minimize, Minus, MoveUpRight, Newspaper, Pause, Play, Rocket, RotateCcw, Save, Scale, Search, Settings, Square, Star,
-  Plus, Table, Target, ThumbsDown, ThumbsUp, TriangleAlert, User, Users, Volume2, X,
+  Minimize, Minus, MoveUpRight, Newspaper, Pause, Pencil, Play, Rocket, RotateCcw, Save, Scale, Search, Settings,
+  Square, Star, Plus, Table, Target, ThumbsDown, ThumbsUp, TriangleAlert, User, Users, Volume2, X,
 } from 'lucide-react'
 
 import { makeIcon } from './functions'
@@ -259,3 +259,8 @@ export const IconIdCard = makeIcon(IdCard)
  * 加拿大境外(访客四题「所在省」那一格;2026-10-04)。
  */
 export const IconGlobe = makeIcon(Globe)
+
+/**
+ * 修改(「我的档案」卡头右上那颗「修改」;2026-10-09,照 Azure 卡的 Edit)。
+ */
+export const IconPencil = makeIcon(Pencil)

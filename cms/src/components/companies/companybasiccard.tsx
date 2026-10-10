@@ -41,6 +41,9 @@
  * 同日 Frank「相同 也 都显示」:上面「地址行和总部重复时不出」那刀作废 —— 总部与地址同一处也两行都出,判重链删除。
  * 同日 Frank「这个公司没有官网,要显示没有官网」(JBLR 实拍):官网空且队列真找过没找到(stage = none)时官网行明说
  * 「没有官网」(灰字);还没找过 / 在队里的照旧不出行。
+ * 2026-10-09 N6 批(Frank「职位名、公司名、地点同形」):职位页 / 职位弹框里那一支的公司名换 name 桶 CompanyName(CompanyNameCell 内),
+ * 别名由它按界面语自取,原「别名」一格撤;上面 09-21「公司名可成链接…并在下面出库里存好的别名」的形不变。
+ * 2026-10-09 N6b 批:公司名成不成链接改由显式开关 linked 定(原点公司名回调 N6 起只当开关读),上游的回调接线清掉。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -71,7 +74,7 @@ import css from './companies.module.css'
  * @returns 一张卡;身份与简介都没有时整卡不渲。
  */
 export function CompanyBasicCard({
-  company, t, lang, showTrans, trans, onBusy, head = TEXT_NONE, alias, onOpenCompany, onSiteDone = ignoreDone,
+  company, t, lang, showTrans, trans, onBusy, head = TEXT_NONE, linked, onSiteDone = ignoreDone,
 }: CompanyBasicCardIn) {
   const hasDesc = hasDescOf({ company })
   const briefCached = hasDesc === false && company.aiBrief !== TEXT_NONE
@@ -94,7 +97,7 @@ export function CompanyBasicCard({
       </div>
       <div>
         <Row k={t('co.name')}>
-          <CompanyNameCell company={company} alias={alias} onOpenCompany={onOpenCompany} />
+          <CompanyNameCell company={company} linked={linked} />
         </Row>
         {isGovCompany({ name: company.name }) && <Row k={t('co.sector')}>{t('co.gov')}</Row>}
         {website !== TEXT_NONE && (

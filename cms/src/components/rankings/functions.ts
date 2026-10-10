@@ -510,6 +510,8 @@ export function toRankJobCellRow(x: JobCellRowIn): RankJobCellRow {
     companySort: x.r.company.toLowerCase(),
     where: parts.join(LOC_SEP),
     citySort: emptyToNullOf(x.r.city),
+    city: x.r.city,
+    province: x.r.province,
     salaryText,
     cardSalary: x.r.salaryText,
     salarySort: x.r.salaryAnnual,
@@ -715,6 +717,8 @@ function jobDateSortOf(r: RankJobCellRow): string | null {
  * 职位卡各插槽的值。缺席 = 那一格不渲(card 域的插槽契约就是「不传就不出」)——
  * 2026-08-11(Frank「都改成一套」)榜单职位卡改吃全站唯一那张 JobCard,
  * 槽位映射:#排名 → action(标题行右上),移民价值分 → footer(带标签)。
+ * 2026-10-09 N 批(Frank「省市 分开」):地点不再拼成「市, 省」一格,市、省各一个名字件,在卡件 RankJobCard 里拼。
+ * 职位名照旧直链官方原帖(规范:外站链接照旧新开标签页;榜单行没有职位号,开不了职位框)。
  *
  * @param r 这一行展示行。
  * @returns 职位卡各插槽的值。
@@ -731,9 +735,6 @@ export function toRankJobCard(r: RankJobCellRow): RankJobCardParts {
   }
   if (r.cardSalary !== TEXT_NONE) {
     parts.salary = r.cardSalary
-  }
-  if (r.where !== TEXT_NONE) {
-    parts.location = r.where
   }
   if (r.dateText !== TEXT_NONE) {
     parts.date = r.dateText

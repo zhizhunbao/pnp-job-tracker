@@ -3,23 +3,23 @@
  * queue 组件桶(「今日待投」)的状态机器:挂上拉一次队列;投出 / 跳过 / 全部投出 / 开关 / 展开 / 升级框;
  * 2026-10-08 UX 批加:设置清单(英文姓名、上传简历、开启)、改信弹框、职位描述弹框栈;小白走查后加:开启后每 5 秒轮询一次等这一轮跑完。
  * 同日 Frank 看「我的」:跳过、全部投出、展开 / 收起、升级框撤;加翻页(记着的位置夹进队列长度)与投出前逐项检查(勾四项才放行)。
+ * 2026-10-09 N 批:弹框栈改用 modal 桶的代理栈 usePeekBus(只发消息),唯一的栈在全站骨架上的 PeekHost。
+ * 同日 N6 批:卡上职位名换 name 桶的 JobName(件自己往弹框总线上推层),本机不再持栈、不再递界面语。
  *
  * @author Frank
  * @time 2026-10-08 15:00:00
  */
 import { useEffect, useState } from 'react'
-import { makeTickOf } from '@/components/apply'
-import { useLang } from '@/components/i18n'
-import { useLayerStack } from '@/components/modal'
+import { useCheckPreview } from '@/components/apply'
 import { homeProvinceOf } from '@/lib/location'
 import { ERR_NONE, LOAD_BUSY, POLL_MS, TEXT_NONE } from './constants'
 import {
-  checksOf, currentOf, emptyQueueOf, isFinding, isReadyOf, makeAdd, makeEditChange, makeEditOpen, makeEditSave,
-  makeEnable, makeFlip, makeLoad, makeNameChange, makeNameSave, makePage, makeProvChange, makeProvSave, makePushJob,
-  makeSend, makeToggle, makeUpload, posOf, titleOpenOf,
+  currentOf, emptyQueueOf, isFinding, isReadyOf, makeAdd, makeEditChange, makeEditOpen, makeEditSave,
+  makeEnable, makeFlip, makeLoad, makeNameChange, makeNameSave, makePage, makeProvChange, makeProvSave,
+  makeSend, makeToggle, makeUpload, posOf, queueCheckOf,
 } from './functions'
 import type {
-  FindMark, PeekLayer, QueueCells, QueueFindingIn, QueueFindingOut, QueuePanel, QueueReviewIn, QueueState,
+  FindMark, QueueCells, QueueFindingIn, QueueFindingOut, QueuePanel, QueueReviewIn, QueueState,
 } from './types'
 
 /**
@@ -29,7 +29,6 @@ import type {
  * @returns 面板。
  */
 export function useQueueReview(x: QueueReviewIn): QueuePanel {
-  const [lang] = useLang()
   const [load, setLoad] = useState(LOAD_BUSY)
   const [state, setState] = useState<QueueState>(emptyQueueOf())
   const [busy, setBusy] = useState(false)
@@ -41,9 +40,8 @@ export function useQueueReview(x: QueueReviewIn): QueuePanel {
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState(TEXT_NONE)
   const [keptPos, setPos] = useState(0)
-  const [ticks, setTicks] = useState<string[]>([])
-  const stack = useLayerStack<PeekLayer>()
   const reload = makeLoad({ setLoad, setState })
+  const pv = useCheckPreview()
   const { finding, setFind } = useQueueFinding({ state, setLoad, setState })
   const pos = posOf({ pos: keptPos, n: state.items.length })
   const cells: QueueCells = {
@@ -52,7 +50,6 @@ export function useQueueReview(x: QueueReviewIn): QueuePanel {
     setBusy,
     setErr,
     pos,
-    setTicks,
     onSent: x.onSent,
     name,
     prov,
@@ -63,16 +60,14 @@ export function useQueueReview(x: QueueReviewIn): QueuePanel {
     setFind,
   }
   const item = currentOf(cells)
+  const onEdit = makeEditOpen({ cells, setEditText })
   return {
     load,
     state,
     item,
     pos,
-    checkRows: checksOf({ item, sender: state.senderName }),
-    ticks,
-    onTick: makeTickOf({ ticks, set: setTicks }),
-    onPage: makePage({ setPos, setTicks }),
-    lang,
+    check: queueCheckOf({ item, pv, state, cells, reload, onEdit }),
+    onPage: makePage({ setPos }),
     busy,
     err,
     finding,
@@ -82,9 +77,7 @@ export function useQueueReview(x: QueueReviewIn): QueuePanel {
     uploading,
     editing,
     editText,
-    stack,
     plan: x.plan,
-    onTitle: titleOpenOf({ item, onOpenJob: makePushJob(stack) }),
     onName: makeNameChange(setName),
     onNameSave: makeNameSave({ cells, reload }),
     onProv: makeProvChange(setProv),
@@ -93,7 +86,7 @@ export function useQueueReview(x: QueueReviewIn): QueuePanel {
     onAdd: makeAdd({ cells }),
     onFile: makeUpload({ cells, reload }),
     onEnable: makeEnable({ cells }),
-    onEdit: makeEditOpen({ cells, setEditText }),
+    onEdit,
     onEditText: makeEditChange(setEditText),
     onEditSave: makeEditSave({ cells }),
     onEditClose: makeFlip({ v: editing, set: setEditing }),

@@ -10,6 +10,7 @@
  * 2026-10-01 Frank「这种有点突兀」「这种也突兀」(没正文 / 整理版 / 原帖三档里那一节都不搭)→ 选「回到职位名下面」:页眉 dates 槽挂回(jobs 桶 JobDates,点文件同上理由)。
  * 2026-09-28 并壳(Frank「别并存啊」):壳换成 modal 桶的 Modal(窗口形,JD 正文档);白卡机器由外层 ActModal 起、原样递进来
  * (本域的形状里它是不透明格,交回 Modal 时断言回 modal 桶的 FrameOut),重新翻译整块重挂时位置尺寸不丢。
+ * 2026-10-09 N6b 批:正文下面两张卡里的名字 N6 起由 name 桶自开弹框,点公司名 / 相关职位两个回调撤。
  *
  * @author Frank
  * @time 2026-09-16 21:30:00
@@ -31,10 +32,10 @@ import { WinActs } from './winacts'
 /**
  * 渲染职位描述弹框的内层。
  *
- * @param props 这一岗、界面语言、分层态、关闭回调、浮层机器、标题译名、外层面板与点公司名 / 相关职位的两个回调。
+ * @param props 这一岗、界面语言、分层态、关闭回调、浮层机器、标题译名与外层面板。
  * @returns 浮层。
  */
-export function ActJd({ job, lang, plan, onClose, frame, sub, a, onOpenJob, onOpenCompany }: ActJdIn) {
+export function ActJd({ job, lang, plan, onClose, frame, sub, a }: ActJdIn) {
   const t = makeT(lang)
   const d = useJobBody({
     job, lang, plan, inModal: true, onFreeLeft: a.onFreeLeft, jdText: TEXT_NONE, jdFormatted: null,
@@ -54,7 +55,7 @@ export function ActJd({ job, lang, plan, onClose, frame, sub, a, onOpenJob, onOp
           pageHref={URL_JOB_HEAD + String(job.id)} />
       )}>
       <JobBody job={job} lang={lang} plan={plan} inModal d={d}
-        tail={<JobModalCards job={job} lang={lang} onOpenJob={onOpenJob} onOpenCompany={onOpenCompany} />} />
+        tail={<JobModalCards job={job} lang={lang} />} />
     </Modal>
   )
 }

@@ -911,8 +911,10 @@ export const jobsZh = {
   'ap.e.template': '没按职位写成,先放了一封通用的;可以点「按职位重写」再试',
   'ap.e.write': '求职信没写成,点「按职位重写」再试',
   'ap.e.upload': '上传没成功,PDF 或 Word,5 MB 以内',
+  'ap.secJob': '职位信息', 'ap.rowTitle': '职位', 'ap.rowCompany': '公司', 'ap.rowCity': '城市', 'ap.rowProv': '省份',
+  'ap.kicker': '投递',
   'ap.applied': '已投递', 'ap.resume': '简历', 'ap.name': '英文姓名(与简历一致)', 'ap.letter': '求职信',
-  'ap.to': '收件人', 'ap.preview': '预览', 'ap.next': '下一步', 'ap.back': '上一步', 'ap.send': '发送', 'ap.pdf': '查看 PDF', 'ap.sign': '署名', 'ap.view': '打开',
+  'ap.to': '收件人', 'ap.subject': '主题', 'ap.attach': '附件', 'ap.preview': '预览', 'ap.next': '下一步', 'ap.back': '上一步', 'ap.send': '发送', 'ap.pdf': '查看 PDF', 'ap.sign': '署名', 'ap.view': '打开', 'ap.edit': '改信',
   'ap.badChars': '这些字写不进 PDF:', 'ap.sending': '发送中', 'ap.e.name': '英文姓名只能用英文字母、空格、点、撇号和连字符,2 到 60 个字',
   'ap.e.resume': '先上传一份简历', 'ap.e.chars': '信里有写不进 PDF 的字', 'ap.e.long': '求职信太长了,最多 4000 个字',
   'ap.e.sent': '这个职位已经投过了', 'ap.e.draft': '先写好求职信', 'ap.e.sameEmail': '30 天内已经给这个雇主投过别的职位',
@@ -1068,11 +1070,13 @@ export const jobsZh = {
   'ob.tagDel': '移除 {name}',
   // 2026-10-03 付费闭环批 A1 访客向导:题面三句(「想做什么工作」借 prof.noc)、境外胶囊、专业 12 档(统计局 CIP 2021 大类 01–11 + 其他)
   // 2026-10-04 A2:专业题改成热门具体专业 + 搜索(名字来自 cip_programs 三语列),专业 12 档 gate.m.01–12 三语删;加搜索框占位 gate.majorPh
-  'gate.q.goal': '你现在的目标是?', 'gate.q.major': '你学的是什么专业?', 'gate.q.prov': '你现在在哪个省?', 'gate.abroad': '加拿大境外',
+  'gate.q.goal': '你现在的目标是?', 'gate.q.major': '你学的是什么专业?', 'gate.q.prov': '你现在在哪?', 'gate.abroad': '加拿大境外',
   'gate.majorPh': '搜索专业',
   // 2026-10-05 访客第 2 题照掌上高考:左栏第一项、左栏读屏名、专业类头行个数
   'gate.hot': '热门', 'gate.majorCats': '专业分类', 'gate.majorN': '{n}个专业',
   'gate.majorPicked': '已选 {n}/{max}',
+  'gate.city': '城市', 'gate.cityPh': '搜索城市', 'gate.save': '保存', 'gate.saveFail': '没存上,再试一次',
+  'gate.q.name': '英文姓名(与简历一致)',
   // E11-07 简历上传解析
   'ob.resume.btn': '上传简历,自动填', 'ob.resume.hint': 'PDF/DOCX,10 秒识别职业方向(不保存原件)',
   'ob.resume.busy': '解析中…约 10 秒', 'ob.resume.done': '已识别 {n} 个职业方向,后面几步已预填',
@@ -1146,6 +1150,8 @@ export const siteZh = {
   'acct.toReg': '免费注册', 'acct.toLogin': '已有账号?',   // 2026-09-14 Frank「改成免费注册」「把登录两个字删了」
   'acct.err.cred': '邮箱或密码不正确', 'acct.err.exists': '该邮箱已注册,请直接登录', 'acct.err.weakPw': '密码不够强:至少 8 位', 'acct.err.generic': '操作失败,请稍后再试', 'acct.err.oauth': 'Google 登录没成功,请重试或用邮箱登录',
   'acct.pw.short': '太短:至少 8 位', 'acct.pw.weak': '弱', 'acct.pw.medium': '中', 'acct.pw.strong': '强', 'acct.pw.hint': '建议混合大小写、数字或符号',
+  'pf.title': '我的档案', 'pf.card': '求职', 'pf.edit': '修改', 'pf.none': '还没答', 'pf.loadFail': '没取到,刷新再试',
+  'pf.more': '还有 {n} 个', 'pf.goal': '目标', 'pf.majors': '专业', 'pf.jobs': '想做的工作', 'pf.where': '所在地', 'pf.name': '英文姓名',
   'acct.plan.free': '免费版', 'sub.title': '我的订阅', 'sub.renew': '续买', 'acct.plan.pro': '有效期至 {d}',
   // 2026-10-08 「我的订阅」照 AIApply 的 Billing:方案卡、付款记录
   'sub.left': '还剩 {n} 天', 'sub.price': '30 天 {a},90 天 {b}', 'sub.pay': '付款记录',

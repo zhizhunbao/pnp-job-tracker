@@ -25,7 +25,6 @@ import {
 } from '@/components/pnp'
 import { cssOf } from '@/components/css'
 import { lazyTitleOf, titleSubOf, untranslatedOf } from '@/components/jobtitle'
-import { OB_SEEN_KEY } from '@/components/profile'
 import { BROAD_SLUGS } from '@/lib/stats'
 import { eeDisplay, isDirect, isExpiredJob, isJdNone, sourceLabel } from '@/lib/jobs'
 import { PROV_NAMES, homeGateJsOf, homeProvinceOf, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
@@ -50,7 +49,7 @@ import {
   JD_SEC_PAY, JD_SEC_ROLE, JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE,
   JD_SUB_HEADS, JD_TOP_HEADS, JD_TPL_SLOT, JD_DONE, JD_EMPTY, JD_LIMITED, KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP,
   K_LOCK_TIP, K_ORIGIN, K_PROV, K_SPONSOR_GRADE, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_KO,
-  LANG_ZH, LAYER_CO, LAYER_JOB, LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MEASURE_ROWS,
+  LANG_ZH, LAYER_JOB, LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MEASURE_ROWS,
   NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R, PCT_DECIMALS, PCT_MULTIPLIER, PREF_KEY, PROV_PICK_COOKIE,
   PROV_PICK_MAX_AGE_S, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP, P_SORT, QS_HEAD,
   RE_FLAG_G, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE, SAVED_STATUS_WISH, SEC_MODE, SEP_EN,
@@ -71,7 +70,7 @@ import type {
   AuthFromUrlOut, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, BoardPnpFacts, CardTitlesIn,
   CardsClsIn, HomeGate, LoadTipIn, PnpChipIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone,
   CellView, CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn,
-  CityOptsIn, ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColSpec, CompanyPeek, ColWant,
+  CityOptsIn, ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColSpec, ColWant,
   ColWidthFnIn, ColWidthSeed, CookieIn, CrumbSeg, CurFiltersIn, DataKeyIn, DescOpenIn, DistOptsIn,
   FallbackHrefIn, FallbackTextIn, FallbackValueIn, FetchJobTextIn, FieldOpenIn, FillIn, FilterCountIn, FilterOpts,
   FilterOptsIn, FilterState, FilterValueIn, FixedNoteIn, FoldBtnClsIn, FoldNClsIn, FrozenStyleIn, GatedFiltersIn,
@@ -83,7 +82,7 @@ import type {
   MeasureOut, MeasurePassIn, MeasureWordIn, MoreLabelIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, OrigLinkLabelIn,
   NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, OccCellIn, OccNameIn,
   OccOptsIn, OccSlotIn, PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PeekStackRef, PickedShownIn,
-  PlanProfileIn, PopupToCoIn, PrefixLabelIn, ProvFullIn, ProvWordIn, RankOfIn, RelJsonTotalIn, RelPageUrlIn,
+  PlanProfileIn, PrefixLabelIn, ProvFullIn, ProvWordIn, RankOfIn, RelJsonTotalIn, RelPageUrlIn,
   RelatedJobFact, RelatedJobJson, RelatedJobs, RelatedJson, RoundIn, SaveLabelIn, SaveToggleIn,
   SavedEntry, SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn,
   ShowRelatedIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, TFn, TextFn, ThWidthIn,
@@ -3090,32 +3089,6 @@ export function replaceQuery(sp: URLSearchParams): void {
 }
 
 /**
- * 首访引导弹过了没(E11-05②:关/完成就置这一格,不再自动弹)。
- *
- * @returns 弹过了 = true。
- */
-export function obSeen(): boolean {
-  try {
-    return localStorage.getItem(OB_SEEN_KEY) != null
-  } catch {
-    return false
-  }
-}
-
-/**
- * 记下「首访引导弹过了」。
- *
- * @returns 无。
- */
-export function markObSeen(): void {
-  try {
-    localStorage.setItem(OB_SEEN_KEY, VAL_ON)
-  } catch {
-    return
-  }
-}
-
-/**
  * localStorage 里的列集偏好(cookie 之外的那一份兜底)。
  *
  * @returns 合法列键;没有或解析失败给空数组。
@@ -3997,31 +3970,6 @@ export function makePushJobLayer(stack: PeekStackRef): (j: JobFact) => void {
 }
 
 /**
- * 弹框栈上「叠开一家公司」的手柄(详情页公司信息卡点公司名)。
- *
- * @param stack 弹框栈。
- * @returns 手柄。
- */
-export function makePushCoLayer(stack: PeekStackRef): (peek: CompanyPeek) => void {
-  return function pushCoLayer(peek: CompanyPeek): void {
-    stack.push({ kind: LAYER_CO, co: peek })
-  }
-}
-
-/**
- * 字段弹框里点相似雇主:字段弹框让位,公司弹框叠上(2026-09-19 口径;2026-09-21 起进弹框栈)。
- *
- * @param x 字段弹框的写口与弹框栈。
- * @returns 手柄。
- */
-export function makePopupToCo(x: PopupToCoIn): (peek: CompanyPeek) => void {
-  return function popupToCo(peek: CompanyPeek): void {
-    x.setPopup(null)
-    x.stack.push({ kind: LAYER_CO, co: peek })
-  }
-}
-
-/**
  * 兜底链出不出:同公司与同职业都零在招时,卡里原本什么都不剩 —— 下架页又成死路。
  *
  * @param x 相似职位与兜底链。
@@ -4516,6 +4464,7 @@ export function isAltRow(i: number): boolean {
  * 更不能靠这条兜底复活。2026-08-05 拍板。
  * 2026-09-23 Frank「统一成标题译名」「应该优先使用详情下的翻译 更准吧」:职位名下那条改成标题译名 ——
  * 这一岗库里存好的(详情页 / 弹框按岗翻的,多词标题批量翻的)→ 这一页批量懒翻的(x.titleMap)→ 都没有才退回职业名(titleSubOf)。
+ * 2026-10-09 N6 批:地点两段换 name 桶的 CityName / ProvName,市 / 省的地图链接与显示值不再在这里算。
  *
  * @param x 整台状态机与这一行。
  * @returns 一张卡的展示行。
@@ -4540,10 +4489,6 @@ export function boardCardViewOf(x: BoardCardIn): BoardCardView {
     salary: x.job.salaryText,
     city: L.city,
     prov: x.job.province,
-    cityHref: mapsUrl(mapQuery({ field: COL.city, job: x.job })),
-    provHref: mapsUrl(mapQuery({ field: COL.province, job: x.job })),
-    cityText: L.city,
-    provText: L.prov,
     chips: chipSpecsOf({
       j: x.job,
       t: x.b.t,

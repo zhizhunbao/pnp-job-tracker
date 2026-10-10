@@ -17,6 +17,7 @@
  * 关掉向导 = 关掉这一层;注册完收起向导、亮出这一岗。Google 整页登录回跳到这一岗的职位整页。
  * 2026-10-04 改判:不再数第 3 个,未登录开职位弹框一律先出向导。
  * 同日访客四题改版:GateWizard 自 profile 桶迁入 gate 桶,改从 gate 桶取(契约不变)。
+ * 2026-10-09 N6b 批:正文下面两张卡里的名字 N6 起由 name 桶自开弹框,宿主注的点公司名 / 点相关职位两个回调撤。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -33,10 +34,10 @@ import type { ActModalIn } from './types'
 /**
  * 渲染职位描述弹框。
  *
- * @param props 这一岗、界面语言、分层态、描述表、关闭回调与点公司名 / 相关职位的两个回调。
+ * @param props 这一岗、界面语言、分层态、描述表与关闭回调。
  * @returns 浮层;该先弹访客向导时是向导。
  */
-export function ActModal({ job, lang, plan, onClose, onOpenJob, onOpenCompany }: ActModalIn) {
+export function ActModal({ job, lang, plan, onClose }: ActModalIn) {
   const a = useActModal({ job, plan })
   const frame = useFrame({ win: { memo: JD_PREF, w: JD_PANEL_W, h: JD_PANEL_H }, draggable: true, edgeResize: false })
   const sub = useTitleTrans({
@@ -50,8 +51,6 @@ export function ActModal({ job, lang, plan, onClose, onOpenJob, onOpenCompany }:
     )
   }
   return (
-    <ActJd key={a.gen} job={job} lang={lang} plan={plan} onClose={onClose} frame={frame} sub={sub} a={a}
-      onOpenJob={onOpenJob}
-      onOpenCompany={onOpenCompany} />
+    <ActJd key={a.gen} job={job} lang={lang} plan={plan} onClose={onClose} frame={frame} sub={sub} a={a} />
   )
 }

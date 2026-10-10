@@ -9,14 +9,18 @@
  * 卡头右上角那条链接是原先浮在卡片之间的裸「下一步」动作条收进来的
  * (2026-08-13 Frank「这两个是什么东西」)。
  * 2026-08-28 换装批自 TripleVerdictModal.tsx 的同名卡片提出成件。
+ * 2026-10-09 N 批(Frank「名字一律英文在上、译名灰字在下」):职位名瓦片换名字瓦片 NameTile + name 桶的 Name ——
+ * 帖面英文原名在上、界面语 NOC 职业名灰字在下(原先反着摆);/plan/pr 不叠职位框,名字黑字不可点(卡头右上的链接照旧)。
  *
  * @author Frank
  * @time 2026-08-28 17:55:00
  */
 import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
+import { Name } from '@/components/name'
 import { TEXT_NONE, TRACK_OPEN_JOB } from './constants'
 import { FactTile } from './facttile'
+import { NameTile } from './nametile'
 import { VerdictCard } from './verdictcard'
 import { VerdictRows } from './verdictrows'
 import {
@@ -43,7 +47,7 @@ export function JobFacts({ t, lang, job, wire }: JobFactsIn) {
         </LinkButton>
       }>
       <div className={answersTopClsOf()}>
-        <FactTile label={t('tv.f.title')} value={title.value} sub={title.sub} />
+        <NameTile label={t('tv.f.title')}><Name en={title.value} sub={title.sub} /></NameTile>
         <FactTile label={t('tv.f.noc')} value={nocTextOf({ wire })} sub={TEXT_NONE} />
         <FactTile label={t('tv.f.teer')} value={teerTextOf({ wire })} sub={TEXT_NONE} />
         <VerdictRows t={t} lang={lang} rows={occRowsOf({ wire })} />

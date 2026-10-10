@@ -13,7 +13,9 @@
  * 2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」:回到效果图的三列表(招牌 / 门店 / 法人,带表头);卡底跳雇主板的链接撤,
  * 改原地「展开其他 N 家 ▾」,
  * 一次取 20 家往后接,展开后可收起。
- * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:卡底两只钮换成 pager 桶 FoldLine(展开 20 家 → 再展开 20 家 → 展开其余 N 家 → 收起),全站一套。 *
+ * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:卡底两只钮换成 pager 桶 FoldLine(展开 20 家 → 再展开 20 家 → 展开其余 N 家 → 收起),全站一套。
+ * 2026-10-09 N6 批:名单行的招牌换 name 桶 CompanyName(点了经弹框总线叠开公司弹框、译名按界面语自取),
+ * 10-02 加的「界面语言」「点招牌的去处」两格随之不再往行里递、从本卡撤。 *
  * @author Frank
  * @time 2026-10-01 14:13:21
  */
@@ -33,10 +35,10 @@ import css from './pnp.module.css'
 /**
  * 渲染 AIP 指定雇主清单卡。
  *
- * @param props 取词函数、本岗、界面语言与点招牌的去处(2026-10-02 加后两格)。
+ * @param props 取词函数与本岗(2026-10-02 加的界面语言、点招牌的去处两格 10-09 撤)。
  * @returns 卡(本岗雇主与同招牌几家 + 卡底链接);没到出加载行,取挂了出失败框。
  */
-export function AipEmpCard({ t, job, lang, onOpenCompany }: AipEmpCardIn) {
+export function AipEmpCard({ t, job }: AipEmpCardIn) {
   const p = useAipEmpCard({ t, job })
   const title = t(K_AIP_EMP_TITLE, { prov: t(PROV_KEY_HEAD + job.province) })
   if (p.failed) {
@@ -61,7 +63,7 @@ export function AipEmpCard({ t, job, lang, onOpenCompany }: AipEmpCardIn) {
   }
   const rows = []
   for (const r of p.rows) {
-    rows.push(<AipEmpRow key={r.key} r={r} matchRef={p.matchRef} lang={lang} onOpenCompany={onOpenCompany} />)
+    rows.push(<AipEmpRow key={r.key} r={r} matchRef={p.matchRef} />)
   }
   return (
     <div className={css.card}>

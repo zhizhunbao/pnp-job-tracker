@@ -34,7 +34,7 @@ import {
   quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCardOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf, provStreamItemsOf,
-  aipEmpAliasOf, aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, normName, streamRowsOf,
+  aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, normName, streamRowsOf,
 } from '@/components/pnp/functions'
 import type {
   GateCardSpec, PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpOps, PnpPathway, PnpReq, PnpStream,
@@ -42,6 +42,7 @@ import type {
 import { CHAN_JOB_TAGS, CHAN_NOTE_TAGS, CHAN_TAG_COMPLEMENT } from '@/components/pnp/constants'
 import { blockedSetsOf, boardDimsOf, boardPnpOf } from '@/components/jobs/functions'
 import type { JobDims } from '@/components/jobs/types'
+import { subOf } from '@/components/name/functions'
 import { pageUrlOf } from '@/components/pager/functions'
 import { makeT } from '@/lib/i18n'
 import { isOfferList } from '@/lib/jobs'
@@ -1529,15 +1530,16 @@ describe('AIP 指定雇主清单卡', () => {
   })
 
   // 2026-10-02 Frank「这个也要加灰字 和 点击吧」:招牌下的灰字译名按界面语言挑,英文界面不出
+  // 2026-10-09 N6 批:招牌换 name 桶 CompanyName,挑语种归 name 桶 subOf(本桶 aipEmpAliasOf 退役);展示行把两种译名原样交过去
   it('灰字译名:中文界面出中文、韩文界面出韩文、英文界面不出', () => {
     const specs = aipEmpSpecsOf([
       { trade: 'Mary Browns', store: '', legal: 'X', hit: false, poolKey: 'mary-browns', aliasZh: '玛丽布朗', aliasKo: '메리 브라운스' },
     ])
     expect(specs.length).toBe(1)
     for (const r of specs) {
-      expect(aipEmpAliasOf({ r, lang: 'zh' })).toBe('玛丽布朗')
-      expect(aipEmpAliasOf({ r, lang: 'ko' })).toBe('메리 브라운스')
-      expect(aipEmpAliasOf({ r, lang: 'en' })).toBe('')
+      expect(subOf({ lang: 'zh', zh: r.aliasZh, ko: r.aliasKo })).toBe('玛丽布朗')
+      expect(subOf({ lang: 'ko', zh: r.aliasZh, ko: r.aliasKo })).toBe('메리 브라운스')
+      expect(subOf({ lang: 'en', zh: r.aliasZh, ko: r.aliasKo })).toBe('')
       expect(r.poolKey).toBe('mary-browns')
     }
   })

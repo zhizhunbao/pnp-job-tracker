@@ -10,11 +10,13 @@
  * 同日 Frank「这三个放一行吗?」:题面搬进顶行(自 GateWizard 挪来,id 与 tabIndex -1 照旧 —— 换题挪焦点落在它上面),
  * 在左上返回钮与右上 × 之间居中;进度条零宽,读屏先报第几步再念题。
  *
+ * 2026-10-09「我的档案」批:一共几题读整机(访客向导 4、编辑模式 5),不再写死四道。
+ *
  * @author Frank
  * @time 2026-10-04 02:10:00
  */
 import { cssOf } from '@/components/css'
-import { GATE_STEPS, ROLE_PROGRESS } from './constants'
+import { ROLE_PROGRESS } from './constants'
 import { gateQuestionKeyOf } from './functions'
 import type { GatePartIn } from './types'
 import css from './gate.module.css'
@@ -31,9 +33,9 @@ export function GateHead({ g, t }: GatePartIn) {
       <div className={cssOf(css.bar)}
         role={ROLE_PROGRESS}
         aria-valuemin={1}
-        aria-valuemax={GATE_STEPS.length}
+        aria-valuemax={g.total}
         aria-valuenow={g.step + 1}
-        aria-label={t('ob.step', { i: g.step + 1, n: GATE_STEPS.length })} />
+        aria-label={t('ob.step', { i: g.step + 1, n: g.total })} />
       <div id={g.qid} tabIndex={-1} className={cssOf(css.question)}>{t(gateQuestionKeyOf({ step: g.cur }))}</div>
     </div>
   )

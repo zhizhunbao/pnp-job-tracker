@@ -12,6 +12,8 @@
  * 按岗位号取数,与公司弹框同一个接口;没取到(没挂公司 / 接口挂了)整卡不出。
  * 2026-10-02 Frank「可以」(Google 收录:职位页公司卡是开页后才取,robots 挡 `/api/`,爬虫看不到):
  * 职位详情页由页面门服务端取好递进来(seed),卡直出进 HTML;职位描述弹框照旧开卡现取。
+ * 2026-10-09 N6 批:公司名换 name 桶 CompanyName(别名按界面语自取),本卡不再算别名往下递。
+ * 2026-10-09 N6b 批:点公司名的回调撤(N6 起只当开关读),本卡恒递 linked —— 公司名一律是 CompanyName 两行蓝链。
  *
  * @author Frank
  * @time 2026-09-21 16:30:00
@@ -19,7 +21,7 @@
 import { makeT } from '@/lib/i18n'
 import { CompanyBasicCard } from './companybasiccard'
 import { LANG_EN, TEXT_NONE } from './constants'
-import { aliasOf, hasDescOf, ignoreFlag } from './functions'
+import { hasDescOf, ignoreFlag } from './functions'
 import { useCompanyOfJob, useCompanyTrans } from './hooks'
 import type { CompanyInfoCardIn } from './types'
 import css from './companies.module.css'
@@ -27,10 +29,10 @@ import css from './companies.module.css'
 /**
  * 渲染公司信息卡。
  *
- * @param props 岗位号、界面语言、点公司名的去处与服务端种子(逐格注释见 CompanyInfoCardIn)。
+ * @param props 岗位号、界面语言与服务端种子(逐格注释见 CompanyInfoCardIn)。
  * @returns 一张卡;没取到公司时不渲。
  */
-export function CompanyInfoCard({ jobId, lang, onOpenCompany, seed }: CompanyInfoCardIn) {
+export function CompanyInfoCard({ jobId, lang, seed }: CompanyInfoCardIn) {
   const t = makeT(lang)
   const p = useCompanyOfJob({ jobId, seed })
   let name = TEXT_NONE
@@ -57,8 +59,7 @@ export function CompanyInfoCard({ jobId, lang, onOpenCompany, seed }: CompanyInf
         trans={tr.trans}
         onBusy={ignoreFlag}
         head={t('co.info')}
-        alias={aliasOf({ lang, aliasZh: company.aliasZh, aliasKo: company.aliasKo })}
-        onOpenCompany={onOpenCompany}
+        linked
         onSiteDone={p.reload} />
     </div>
   )

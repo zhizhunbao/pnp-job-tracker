@@ -3364,9 +3364,9 @@ export type RulesModalIn = {
   t: TFn
 
   /**
-   * 界面语言(清单按它取一语)。
+   * 界面语言(清单按它取一语;2026-10-09 N 批收窄成三字面量 —— 副标题省名两行走 name 桶,它只认三语)。
    */
-  lang: string
+  lang: StartLang
 
   /**
    * 开着的这一期。
@@ -3645,9 +3645,9 @@ export type DrawsSectionIn = {
   tEn: TFn
 
   /**
-   * 界面语言。
+   * 界面语言(2026-10-09 N 批收窄成三字面量:往下递给门槛弹框取省名两行,name 桶只认三语)。
    */
-  lang: string
+  lang: StartLang
 
   /**
    * 数据更新时刻(ISO;'' 不渲)。
@@ -4363,6 +4363,12 @@ export type MacroGeo = {
    * 显示名(全国取词;省用通行短名)。
    */
   name: string
+
+  /**
+   * 标题是哪一省的两位省码(每省一张的 PR 小表;2026-10-09 N 批 Frank「名字一律英文在上、译名灰字在下」:
+   * 这种表的标题出英文省名在上、界面语省名灰字在下);全国表、指标表、联邦 EE 表空串,标题照旧取 name 一行字。
+   */
+  prov: string
 
   /**
    * 年份列(升序,含进行年)。

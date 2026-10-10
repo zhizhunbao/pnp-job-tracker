@@ -107,15 +107,6 @@ function aria(el: HTMLElement, label: string) {
   return el.querySelector(`button[aria-label="${label}"]`) as HTMLButtonElement | null
 }
 
-async function tickAll(el: HTMLElement) {
-  for (const box of Array.from(el.querySelectorAll('input[type=checkbox]')) as HTMLInputElement[]) {
-    await act(async () => {
-      box.click()
-    })
-  }
-  await flush()
-}
-
 async function click(el: HTMLElement, text: string) {
   await act(async () => {
     btn(el, text)?.click()
@@ -267,7 +258,7 @@ describe('③ 空队列', () => {
 })
 
 describe('④ 一岗一卡:信全文 + 逐项检查 / 投出 / 失败', () => {
-  it('四行检查;没勾满投出不发,勾满才发;发完下一岗、勾清空', async () => {
+  it('邮件形:收件人 / 主题 / 附件;投出发当前这一岗,发完下一岗', async () => {
     const sent: string[] = []
     const calls = server({
       'GET /api/queue': { status: 200, body: { ...FULL, items: [A, B] } },
@@ -279,25 +270,22 @@ describe('④ 一岗一卡:信全文 + 逐项检查 / 投出 / 失败', () => {
     expect(el.textContent).toContain('Best,')
     expect(el.textContent).not.toContain('qu.sendAll')
     expect(el.textContent).not.toContain('qu.skip')
-    for (const k of ['ap.to', 'ap.resume', 'ap.letter', 'ap.sign']) {
+    for (const k of ['ap.to', 'ap.subject', 'ap.attach']) {
       expect(el.textContent).toContain(k)
     }
     expect(el.textContent).toContain('Zhang_CV.pdf')
     expect(el.textContent).toContain('Zhang Wei')
-    const hrefs = Array.from(el.querySelectorAll('a')).map((a) => a.getAttribute('href'))
-    expect(hrefs).toContain('/api/resume/file?id=7')
-    expect(hrefs).toContain('/api/apply/cover?job=101')
-    expect(el.querySelectorAll('input[type=checkbox]')).toHaveLength(4)
-    await click(el, 'qu.send')
-    expect(calls.filter((c) => c.key === 'POST /api/apply/send')).toHaveLength(0)
-    await tickAll(el)
+    expect(el.textContent).toContain('ap.subject')
+    expect(el.textContent).toContain('Application for office manager')   // 主题与真发的同一模板
+    expect(btn(el, 'Cover_Letter_Anurag_Homes_Team.pdf')).toBeDefined()   // 求职信附件:站内弹框预览钮
+    expect(btn(el, 'ap.edit')).toBeDefined()  // 改信在正文右上
+    expect(el.querySelector('select')).toBeNull()   // 只有一份简历没得换,不出下拉
+    expect(el.querySelectorAll('input[type=checkbox]')).toHaveLength(0)   // 邮件形,勾撤
     await click(el, 'qu.send')
     expect(calls.find((c) => c.key === 'POST /api/apply/send')?.body).toBe('{"jobId":101}')
     expect(sent).toEqual(['Anurag Homes Team'])
     expect(el.textContent).not.toContain('office manager')
     expect(el.textContent).toContain('cook')
-    const boxes = Array.from(el.querySelectorAll('input[type=checkbox]')) as HTMLInputElement[]
-    expect(boxes.some((b) => b.checked)).toBe(false)
   })
 
   it('发信失败:错因一行、岗还在', async () => {
@@ -306,7 +294,6 @@ describe('④ 一岗一卡:信全文 + 逐项检查 / 投出 / 失败', () => {
       'POST /api/apply/send': { status: 429, body: { error: 'limit' } },
     })
     const el = await mount(false)
-    await tickAll(el)
     await click(el, 'qu.send')
     expect(el.textContent).toContain('ap.e.limit')
     expect(el.textContent).toContain('office manager')
@@ -314,7 +301,7 @@ describe('④ 一岗一卡:信全文 + 逐项检查 / 投出 / 失败', () => {
 })
 
 describe('⑤ 翻页', () => {
-  it('一岗不出翻页;两岗出 ‹ 1 / 2 ›,› 翻到第二岗、勾清空,投出发的是翻到的那一岗', async () => {
+  it('一岗不出翻页;两岗出 ‹ 1 / 2 ›,› 翻到第二岗,投出发的是翻到的那一岗', async () => {
     server({ 'GET /api/queue': { status: 200, body: { ...FULL, items: [A] } } })
     expect((await mount(false)).textContent).not.toContain('1 / 1')
     document.body.innerHTML = ''
@@ -325,7 +312,6 @@ describe('⑤ 翻页', () => {
     const el = await mount(false)
     expect(el.textContent).toContain('1 / 2')
     expect(aria(el, '‹')?.disabled).toBe(true)
-    await tickAll(el)
     await act(async () => {
       aria(el, '›')?.click()
     })
@@ -333,9 +319,6 @@ describe('⑤ 翻页', () => {
     expect(el.textContent).toContain('2 / 2')
     expect(el.textContent).toContain('cook')
     expect(aria(el, '›')?.disabled).toBe(true)
-    const boxes = Array.from(el.querySelectorAll('input[type=checkbox]')) as HTMLInputElement[]
-    expect(boxes.some((b) => b.checked)).toBe(false)
-    await tickAll(el)
     await click(el, 'qu.send')
     expect(calls.find((c) => c.key === 'POST /api/apply/send')?.body).toBe('{"jobId":102}')
     expect(el.textContent).toContain('office manager')
@@ -351,7 +334,7 @@ describe('⑥ 改信', () => {
     })
     const el = await mount(false)
     expect(el.querySelector('textarea')).toBeNull()
-    await click(el, 'qu.edit')
+    await click(el, 'ap.edit')
     expect(el.querySelector('textarea')?.value).toBe(A.cover)
     await type(el, 'textarea', 'Dear Ms Lee,\n\nNew letter.')
     await click(el, 'qu.save')
@@ -359,5 +342,23 @@ describe('⑥ 改信', () => {
     expect(el.querySelector('textarea')).toBeNull()
     expect(el.textContent).toContain('Dear Ms Lee,')
     expect(el.textContent).toContain('office manager')
+  })
+})
+
+describe('⑦ 换简历(2026-10-08 Frank「这两个应该都是可以弹框,并且可以替换吧」)', () => {
+  it('两份以上出下拉;选另一份 PATCH /api/queue/resume {jobId, resumeId},回来重拉、勾清空', async () => {
+    const two = [{ id: 7, name: 'Zhang_CV.pdf', mime: 'application/pdf' }, { id: 8, name: 'Zhang_CV_EN.pdf', mime: 'application/pdf' }]
+    const calls = server({
+      'GET /api/queue': { status: 200, body: { ...FULL, items: [A], resumes: two } },
+      'PATCH /api/queue/resume': { status: 200, body: { ok: true } },
+    })
+    const el = await mount(false)
+    const sel = el.querySelector('select') as HTMLSelectElement
+    expect(sel).not.toBeNull()
+    expect(sel.value).toBe('7')
+    expect(btn(el, 'Zhang_CV.pdf')).toBeDefined()   // PDF 简历附件:站内弹框预览钮
+    await pick(el, 'select', '8')
+    expect(calls.find((c) => c.key === 'PATCH /api/queue/resume')?.body).toBe('{"jobId":101,"resumeId":8}')
+    expect(calls.filter((c) => c.key === 'GET /api/queue').length).toBeGreaterThan(1)
   })
 })

@@ -388,3 +388,88 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/*
+ * 「所在地」那一屏的城市区(2026-10-09「我的档案」批):接在省格子下面。
+ */
+.cities {
+  /*
+   * 与省格子隔开。
+   */
+  margin-top: 20px;
+}
+
+/*
+ * 城市区小标题。
+ */
+.cityHead {
+  /*
+   * 比题面小一档。
+   */
+  font-size: 16px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 与搜索框的间距。
+   */
+  margin-bottom: 10px;
+}
+
+/*
+ * 城市胶囊排。
+ */
+.cityChips {
+  /*
+   * 横排折行。
+   */
+  display: flex;
+
+  /*
+   * 折行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 胶囊间距。
+   */
+  gap: 8px;
+
+  /*
+   * 与搜索框的间距。
+   */
+  margin-top: 12px;
+}
+
+/*
+ * 英文姓名那一屏的输入区。
+ */
+.nameBox {
+  /*
+   * 与题面的间距。
+   */
+  margin-top: 4px;
+}
+
+/*
+ * 一行失败 / 不合规原因(红字小号)。
+ */
+.fail {
+  /*
+   * 危险色。
+   */
+  color: var(--danger);
+
+  /*
+   * 小号字。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 与上面的间距。
+   */
+  margin-top: 6px;
+}

@@ -899,6 +899,56 @@ export type CityStatsIn = {
 export type CityRowsOut = Promise<CityRows>
 
 /**
+ * 一个省的城市清单一行(SQL.STATS_CITIES_BY_PROV;/api/stats/cities 的回包行,2026-10-09「我的档案」批)。
+ */
+export type ProvCityRow = {
+  /**
+   * 城市英文名(同 cities.name,所在地答案 resCity 存的就是它)。
+   */
+  name: string
+
+  /**
+   * 城市中文名(译名表外的小地方空串)。
+   */
+  zh: string
+
+  /**
+   * 城市韩文名(同上)。
+   */
+  ko: string
+
+  /**
+   * 在招岗数。
+   */
+  jobs: number
+}
+
+/**
+ * 一个省的城市清单。
+ */
+export type ProvCityRows = ProvCityRow[]
+
+/**
+ * `loadProvCities` 的入参。
+ */
+export type ProvCitiesIn = {
+  /**
+   * 数据库连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 两位省码(调用方已验过)。
+   */
+  prov: string
+}
+
+/**
+ * `loadProvCities` 的返回。
+ */
+export type ProvCitiesOut = Promise<ProvCityRows>
+
+/**
  * 城市 × 行业组在招一行(SQL.CITY_INDUSTRY;城市段行业小表。2026-09-11 起 by_broad 按
  * 八行业组聚合,broad 格装组键;换版到下轮重算之间的旧快照仍是 17 大类键,读取层兜底)。
  */
@@ -1424,6 +1474,21 @@ export type CityStatsSlot = {
 }
 
 /**
+ * /api/stats/cities 一个省的城市清单缓存的一格(按省一格;2026-10-09「我的档案」批)。
+ */
+export type ProvCitiesSlot = {
+  /**
+   * 这个省的城市清单。
+   */
+  v: ProvCityRows
+
+  /**
+   * 写入时刻(ms)。
+   */
+  ts: number
+}
+
+/**
  * 统计域全部可变状态的形状(住 variables.ts 的 CACHE)。
  */
 export type StatsCache = {
@@ -1441,6 +1506,11 @@ export type StatsCache = {
    * city 五份(城市段);没拉过/过期由 TTL 判。
    */
   cityStats: CityStatsSlot | null
+
+  /**
+   * cities 按省的城市清单(键 = 两位省码);没拉过的省不在表里,过期由 TTL 判。
+   */
+  provCities: Map<string, ProvCitiesSlot>
 }
 
 /**

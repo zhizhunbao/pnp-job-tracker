@@ -19,11 +19,6 @@ export const SHELL_TOP = 16
 export const BANNER_MODULE = 'library'
 
 /**
- * 省码标签的变体档(region = 省/地区那一套配色)。
- */
-export const TAG_VARIANT_REGION = 'region'
-
-/**
  * 省名文案键的前缀(拼上两位省码 = i18n 里那条省名;三语表在 lib/i18n)。
  */
 export const PROV_KEY_HEAD = 'pr.'
