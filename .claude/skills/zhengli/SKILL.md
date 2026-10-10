@@ -13,6 +13,7 @@ description: 整理非代码文件。用户说「/zhengli」「整理一下 docs
 
 - **docs/design/**:每份稿的日期与主题;哪些被同主题的后稿替代、哪些讲的功能已经撤了、哪些是调研稿且结论已经进了后稿;效果图 html 被哪份稿引用。
 - **docs/design/img/**:每张图被谁引用 —— 扫 docs、STATUS.md、CLAUDE.md、.claude、cms/src、etl 里的 .md / .html / .ts / .tsx / .py(跳过 node_modules、data、.next、img 自己),文件名没出现在任何一处 = 没人引用。用 Python 一次读进内存比对(`git ls-files` + `os.walk`),别 grep 全仓逐张跑,375 张跑了五分钟超时。
+  🔴 **稿里引用图常用通配**(`img/AIApply-*.png`、`img/投递向导-照Azure-<手机|电脑>-<…>-20261008.png`、`{Pro,免费}`):按文件名精确比对会把这些全判成没人引用(10-08 实撞:两轮误删 92 张,从历史补回)。判法改成**前缀匹配**:从稿里抽 `img/` 后面到第一个 `*`、`<`、`{` 之前的那段当前缀,图名以它开头 = 在用。只看 `git ls-files` 跟踪的图,别的会话未提交的子目录不碰。路径带中文时 `git ls-tree` / `ls-files` 一律加 `-z` + `-c core.quotepath=false`(否则路径被引号包起来,正则一条都对不上,`xargs` 拿到空列表会让 `git checkout` 变成切分支)。
 - **STATUS.md**:§1「当前状态」的日期离今天多久;主线表的格有没有已经迈过的;§4 路标说的目录现状对不对;链到的稿还在不在。
 - **CLAUDE.md**:只查**事实数字和路径**(域数、容器数、样张路径还在不在),规则本身一条不动。
 - **.claude/**:worklog / 临时索引 / patch;`git worktree list` 有没有遗留树;skills 目录里没在用的脚本。
