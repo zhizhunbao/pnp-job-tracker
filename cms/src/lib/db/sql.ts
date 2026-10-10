@@ -1816,15 +1816,16 @@ export const JD_STATE_BY_ID = `SELECT id, jd_formatted FROM jobs WHERE id = $1 L
 
 /**
  * 新闻列表页 60 条(2026-09-30 带上中 / 韩速读:列表卡也显示 AI 速读)。
+ * 2026-10-10 三条新闻查询都带上中文标题 title_zh(ETL 本地 qwen 批量译):手机列表卡在英文标题下出中文灰字(Frank「手机端只显示标题翻译」)。
  */
-export const NEWS_LIST = `SELECT region, title, date, slug, og_image AS "ogImage", excerpt,
+export const NEWS_LIST = `SELECT region, title, title_zh AS "titleZh", date, slug, og_image AS "ogImage", excerpt,
                    importance, importance_note AS "importanceNote", summary_zh AS "summaryZh", summary_ko AS "summaryKo"
             FROM news ORDER BY date DESC, id ASC LIMIT 60`
 
 /**
  * 要闻区:带重要度与三语摘要的前 7(2026-09-30 由 5 调 7:右列 4 → 6 条填满大卡高度)。
  */
-export const NEWS_LIST_REGION = `SELECT region, title, date, slug, og_image AS "ogImage", excerpt,
+export const NEWS_LIST_REGION = `SELECT region, title, title_zh AS "titleZh", date, slug, og_image AS "ogImage", excerpt,
                    importance, importance_note AS "importanceNote", summary_zh AS "summaryZh", summary_ko AS "summaryKo"
             FROM news WHERE importance IS NOT NULL ORDER BY importance DESC, date DESC LIMIT 7`
 
@@ -1839,7 +1840,7 @@ export const NEWS_COMMENT_COUNTS = `SELECT news_slug AS slug, count(*)::int AS n
  * @param a1 按界面语言选的摘要列名。
  * @returns 新闻详情 SELECT 语句。
  */
-export const newsBySlug = (a1: string) => `SELECT region, title, date, slug, url, og_image AS "ogImage", body_en AS "bodyEn", body_zh AS "bodyZh", body_ko AS "bodyKo",
+export const newsBySlug = (a1: string) => `SELECT region, title, title_zh AS "titleZh", date, slug, url, og_image AS "ogImage", body_en AS "bodyEn", body_zh AS "bodyZh", body_ko AS "bodyKo",
             summary_zh AS "summaryZh", summary_ko AS "summaryKo", ${a1} AS "summaryEn",
             importance, importance_note AS "importanceNote", citation, fetched, '' AS excerpt
      FROM news WHERE slug = $1 LIMIT 1`

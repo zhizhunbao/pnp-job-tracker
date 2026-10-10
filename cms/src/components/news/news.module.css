@@ -1124,6 +1124,7 @@
 
 /*
  * 大卡摘要(2 行截断)。
+ * 2026-10-10 Frank 实拍头条大卡速读被截:电脑端截断撤,速读全文铺开;手机端整段不出(见响应式段)。
  */
 .bigSum {
   /*
@@ -1140,18 +1141,6 @@
    * 行距放松(它是要读的)。
    */
   line-height: 1.7;
-
-  /*
-   * 多行截断三件套。
-   */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-
-  /*
-   * 溢出裁掉。
-   */
-  overflow: hidden;
 }
 
 /*
@@ -1302,6 +1291,38 @@
    * 近黑。
    */
   color: var(--text);
+
+  /*
+   * 多行截断三件套。
+   */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  /*
+   * 溢出裁掉。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 右列小卡标题下的中文灰字(电脑、手机都出;Frank 2026-10-10「这部分也加呢」)。
+ */
+.sideTitleNote {
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 浅灰(译名一律灰字小注)。
+   */
+  color: var(--text3);
+
+  /*
+   * 行距。
+   */
+  line-height: 1.5;
 
   /*
    * 多行截断三件套。
@@ -1525,8 +1546,9 @@
 
   /*
    * 行定高。
+   * 2026-10-10 改最矮 128、内容多了往下撑(Frank「电脑端显示」AI 速读全文,手机端加中文标题一行)。
    */
-  height: 128px;
+  min-height: 128px;
 
   /*
    * 内衬算进定高。
@@ -1566,8 +1588,9 @@
 
   /*
    * 吃满行定高(脚才钉得住底)。
+   * 2026-10-10 行高改 min-height 后百分比高度失效,改为交叉轴拉满。
    */
-  height: 100%;
+  align-self: stretch;
 }
 
 /*
@@ -1649,6 +1672,7 @@
 
 /*
  * 一条的摘要(1 行截断)。
+ * 2026-10-10 Frank「电脑端显示」:单行截断撤,速读全文铺开;手机端整段不出(见响应式段)。
  */
 .rowExcerpt {
   /*
@@ -1665,18 +1689,31 @@
    * 行距。
    */
   line-height: 1.6;
+}
+
+/*
+ * 标题下的中文灰字(列表卡与头条大卡共用;只在手机端出,电脑端有速读全文就不再重复)。
+ */
+.titleNote {
+  /*
+   * 电脑端不出。
+   */
+  display: none;
 
   /*
-   * 单行截断三件套。
+   * 小注字号。
    */
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
+  font-size: 12.5px;
 
   /*
-   * 溢出裁掉。
+   * 浅灰(译名一律灰字小注)。
    */
-  overflow: hidden;
+  color: var(--text3);
+
+  /*
+   * 行距。
+   */
+  line-height: 1.5;
 }
 
 /*
@@ -2953,6 +2990,37 @@
 }
 
 @media (width <= 640px) {
+  /*
+   * 手机列表卡不出摘要(全文太长,一屏只剩两三条),改出标题的中文灰字(Frank 2026-10-10)。
+   */
+  .rowExcerpt {
+    display: none;
+  }
+
+  /*
+   * 头条大卡同列表卡:手机不出摘要,改出标题中文灰字(Frank 2026-10-10)。
+   */
+  .bigSum {
+    display: none;
+  }
+
+  /*
+   * 标题中文灰字两行截断。
+   */
+  .titleNote {
+    /*
+     * 多行截断三件套。
+     */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+
+    /*
+     * 溢出裁掉。
+     */
+    overflow: hidden;
+  }
+
   /*
    * 热区撑到 40 后点与点会挤在一起,间距归零由热区自己撑开。
    */

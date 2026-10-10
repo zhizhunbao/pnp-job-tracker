@@ -52,6 +52,11 @@ export type NewsCard = {
   title: string
 
   /**
+   * 中文标题(数据层本地模型批量译);没译成是 null。
+   */
+  titleZh: string | null
+
+  /**
    * 官方发布日期(`YYYY-MM-DD`)。
    */
   date: string

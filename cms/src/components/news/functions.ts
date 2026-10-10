@@ -523,6 +523,22 @@ export function heroSummaryOf(x: HeroSummaryOfIn): string {
 }
 
 /**
+ * 列表卡、头条大卡与右列小卡标题下那行中文灰字:只有中文界面出,韩文界面暂不出(还没有韩文标题,Frank 2026-10-10「韩文先不加」)。
+ *
+ * @param x 界面语言与这一条。
+ * @returns 中文标题;不出时给空串。
+ */
+export function rowTitleNoteOf(x: HeroSummaryOfIn): string {
+  if (x.lang !== LANG_ZH) {
+    return TEXT_NONE
+  }
+  if (x.hero.titleZh == null) {
+    return TEXT_NONE
+  }
+  return x.hero.titleZh
+}
+
+/**
  * 当前这一张头条(序号对条数取模;一条都没有时给 null)。
  *
  * @param x 全部头条与当前序号。
@@ -1306,6 +1322,7 @@ function toNewsCard(x: NewsCardRowIn): NewsCard {
   return {
     region: x.row.region,
     title: x.row.title,
+    titleZh: x.row.titleZh,
     date: x.row.date,
     slug: x.row.slug,
     ogImage: x.row.ogImage,
@@ -1328,6 +1345,7 @@ function toNewsHero(x: NewsHeroRowIn): NewsHero {
   return {
     region: x.row.region,
     title: x.row.title,
+    titleZh: x.row.titleZh,
     date: x.row.date,
     slug: x.row.slug,
     ogImage: x.row.ogImage,
