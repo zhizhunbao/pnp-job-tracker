@@ -1510,7 +1510,7 @@ export const quizZh = {
  * 只会让「这一段在哪」变成一次全站 grep。
  */
 export const legalZh = {
-  'foot.disclaimer': '数据仅供参考,全部来源于官网,不构成移民和法律建议',
+  'foot.disclaimer': '数据仅供参考,不构成移民和法律建议',
   // 免责声明(E4-01)
   'foot.disclaimerLink': '免责声明', 'foot.privacy': '隐私政策', 'foot.terms': '服务条款', 'foot.about': '关于',
   'legal.title': '免责声明',

@@ -5,13 +5,13 @@
  * 下面一岗一张横卡;空态一行「还没有投递」+ 「去职位板」。
  * 2026-10-09 N 批(Frank「一个全站宿主,并掉各页那 5 套」):本页不再自己画 PeekStack,改摆 modal 桶的报件 PeekContext
  * (报本页的分层态与职业名表),弹框由全站骨架上的 PeekHost 画。
+ * 2026-10-09 Frank 测「我的求职」:「去职位板 删掉吧」—— 空态只留一行「还没有投递」(顶栏「职位」就是去职位板)。
  *
  * @author Frank
  * @time 2026-10-06 23:20:00
  */
 import { PeekContext } from '@/components/modal'
-import { Button } from '@/components/button'
-import { KIND_APPLIED, NOC_DESC_NONE, PRIMARY_KIND, URL_APPLIED, URL_BOARD } from './constants'
+import { KIND_APPLIED, NOC_DESC_NONE, URL_APPLIED } from './constants'
 import { byStageOf, makePick, myJobCellRowsOf, stagePillsOf } from './functions'
 import { useMyJobs } from './hooks'
 import { JobList } from './joblist'
@@ -43,7 +43,6 @@ export function AppliedList({ t, plan }: MyJobsListIn) {
   const empty = (
     <div className={css.empty}>
       <div className={css.note}>{t('mj.emptyApplied')}</div>
-      <Button kind={PRIMARY_KIND} sm href={URL_BOARD}>{t('mj.toBoard')}</Button>
     </div>
   )
   return (

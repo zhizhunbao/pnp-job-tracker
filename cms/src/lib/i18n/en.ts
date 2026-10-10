@@ -1398,7 +1398,7 @@ export const quizEn: Record<keyof typeof quizZh, string> = {
  * legalEn: 词表块(与 zh.ts 同名块逐键对齐)。
  */
 export const legalEn: Record<keyof typeof legalZh, string> = {
-  'foot.disclaimer': 'Data is for reference only, all from official sources; not immigration or legal advice',
+  'foot.disclaimer': 'Data is for reference only; not immigration or legal advice',
   // 免责声明(E4-01)
   'foot.disclaimerLink': 'Disclaimer', 'foot.privacy': 'Privacy', 'foot.terms': 'Terms', 'foot.about': 'About',
   'legal.title': 'Disclaimer',

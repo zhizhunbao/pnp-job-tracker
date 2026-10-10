@@ -1359,7 +1359,7 @@ export const quizKo: Record<keyof typeof quizZh, string> = {
  * legalKo: 词表块(与 zh.ts 同名块逐键对齐)。
  */
 export const legalKo: Record<keyof typeof legalZh, string> = {
-  'foot.disclaimer': '데이터는 참고용이며 모두 공식 출처입니다. 이민·법률 자문이 아닙니다',
+  'foot.disclaimer': '데이터는 참고용이며 이민·법률 자문이 아닙니다',
   // 免责声明(E4-01)
   'foot.disclaimerLink': '면책 조항', 'foot.privacy': '개인정보 처리방침', 'foot.terms': '이용약관', 'foot.about': '소개',
   'legal.title': '면책 조항',
