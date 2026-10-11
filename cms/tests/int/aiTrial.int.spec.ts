@@ -7,6 +7,9 @@
 //       ③ 下单回跳只认「我的」页带参数的站内地址;外站、协议相对、别的路径、带怪字符、没带,一律回账户页。
 // 探针:isTrialOpen 去掉 here 放行 → ① 与 ②「本岗用过」红;写成之前就 markTrial → ②「模型挂了不记账」红;
 //       BACK_RE 放宽成 ^\/ → ③ 红。
+// 2026-10-10 投递框三步(Frank「用户只要一点击,就弹收费。用户自己弄 不收费」):写信路由的试用撤,② 改验 Pro 闸 —— 免费档一律 402 pro、
+//       不调模型不记账;Pro 照写、回包带 JD(对照框「职位要求」栏)。① 的三判仍是智能投递(lib/queue)在用。
+// 探针:applyLetterRoute 去掉 isPro 判 → ②第一条红。
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { SQL } from '@/lib/db'
@@ -74,7 +77,7 @@ function user(p: { pro: boolean }): SessionUser {
   return (p.pro ? PRO : FREE) as unknown as SessionUser
 }
 
-async function write(): Promise<{ status: number, body: { text?: string, ai?: boolean, left?: number | null, error?: string } }> {
+async function write(): Promise<{ status: number, body: { text?: string, ai?: boolean, jd?: string, error?: string } }> {
   const { applyLetterRoute } = await import('@/lib/apply/routes')
   const r = await applyLetterRoute(new Request('http://x/api/apply/letter', {
     method: 'POST', body: JSON.stringify({ jobId: 42, resumeId: 7, senderName: 'Zhang San' }),
@@ -113,61 +116,39 @@ describe('① 试用三判', () => {
   })
 })
 
-describe('② 写信路由的试用闸', () => {
-  it('免费档用满、本岗没用过 → 402 带兜底模板信,不调模型、不记账', async () => {
+describe('② 写信路由的 Pro 闸(2026-10-10 投递框三步:试用撤,不是 Pro 一律 402)', () => {
+  it('免费档(不论用量)→ 402 pro,不调模型、不记账', async () => {
     h.user.current = FREE
-    h.trial.used = 3
-    h.trial.here = false
-    const r = await write()
-    expect(r.status).toBe(402)
-    expect(r.body.error).toBe('trial')
-    expect(r.body.left).toBe(0)
-    expect(r.body.text).toContain('Pie Wood')
-    expect(r.body.text).toContain('Zhang San')
+    for (const used of [0, 3]) {
+      h.trial.used = used
+      h.trial.here = false
+      const r = await write()
+      expect(r.status).toBe(402)
+      expect(r.body.error).toBe('pro')
+      expect(r.body.text).toBeUndefined()
+    }
     expect(h.complete).not.toHaveBeenCalled()
     expect(h.marks).toEqual([])
   })
 
-  it('本岗用过 → 照写(同岗重写不另算),回包余量不变', async () => {
-    h.user.current = FREE
-    h.trial.used = 3
-    h.trial.here = true
-    const r = await write()
-    expect(r.status).toBe(200)
-    expect(r.body.ai).toBe(true)
-    expect(r.body.left).toBe(0)
-  })
-
-  it('没用满 → 写成才记一笔(用户、功能名、职位),回包余量减一', async () => {
-    h.user.current = FREE
-    h.trial.used = 1
-    h.trial.here = false
-    const r = await write()
-    expect(r.status).toBe(200)
-    expect(r.body.ai).toBe(true)
-    expect(r.body.left).toBe(1)
-    expect(h.marks).toEqual([[5, 'letter', 42]])
-  })
-
-  it('模型挂了 → 给兜底模板信,不记账、余量不变', async () => {
-    h.user.current = FREE
-    h.trial.used = 0
-    h.trial.here = false
-    h.complete.mockRejectedValue(new Error('down'))
-    const r = await write()
-    expect(r.status).toBe(200)
-    expect(r.body.ai).toBe(false)
-    expect(r.body.left).toBe(3)
-    expect(h.marks).toEqual([])
-  })
-
-  it('Pro → 照写,回包余量 null', async () => {
+  it('Pro → 照写,回包带这一岗的 JD,不再记试用账', async () => {
     h.user.current = PRO
     h.trial.used = 9
     h.trial.here = false
     const r = await write()
     expect(r.status).toBe(200)
-    expect(r.body.left).toBe(null)
+    expect(r.body.ai).toBe(true)
+    expect(r.body.jd).toContain('We need a cook')
+    expect(h.marks).toEqual([])
+  })
+
+  it('Pro 模型挂了 → ai = false(前端出「没写成」),不记账', async () => {
+    h.user.current = PRO
+    h.complete.mockRejectedValue(new Error('down'))
+    const r = await write()
+    expect(r.status).toBe(200)
+    expect(r.body.ai).toBe(false)
+    expect(h.marks).toEqual([])
   })
 })
 

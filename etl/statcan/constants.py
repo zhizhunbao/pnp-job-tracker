@@ -451,7 +451,7 @@ CUBES = (
                           "Data type": "Seasonally adjusted"}},
      "probe": {"key": "unemp", "min": 0}},
 )
-"""四张表的取数清单(契约 docs/design/把脉页省份段-契约-20260906.md §1 的机读版)。
+"""四张表的取数清单(契约 docs/design/就业把脉/把脉页省份段-契约-20260906.md §1 的机读版)。
 一行一表:pid=8 位表号,freq=期频,latestN=取最近几期,series=输出键 → {维度名: 成员名}
 (**Geography 维不写**,由 geo 清单笛卡尔展开;单维表的 series 值是空表 = 该表只有一条序列),
 probe=量级自校。维度名与成员名**逐字**取自 getCubeMetadata,改名即改版 —— 解析不到当场报错

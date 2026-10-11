@@ -111,10 +111,13 @@ describe('代发', () => {
     expect(resumeFileOf({ name: 'Zoë Smith', mime: 'application/pdf' })).toBe('Zoe_Smith_Resume.pdf')
     expect(coverFileOf('Pie Wood Ltd.')).toBe('Cover_Letter_Pie_Wood_Ltd.pdf')
     expect(coverFileOf('饺子馆')).toBe('Cover_Letter.pdf')
-    const body = mailTextOf({ title: 'Cook', city: 'Steinbach', province: 'MB', name: 'Zhang San' })
+    const body = mailTextOf({ title: 'Cook', city: 'Steinbach', province: 'MB', name: 'Zhang San', cover: true })
     expect(body).toContain('apply for your "Cook" position in Steinbach, MB. Please find')
-    expect(mailTextOf({ title: 'Cook', city: '', province: '', name: 'Z Q' })).toContain('"Cook" position. Please')
+    expect(mailTextOf({ title: 'Cook', city: '', province: '', name: 'Z Q', cover: true })).toContain('"Cook" position. Please')
     expect(body).toContain('Best regards,\nZhang San')
+    // 2026-10-10 投递框三步:「不附求职信」只发简历,正文与来源说明都不提求职信
+    expect(body).toContain('cover letter')
+    expect(mailTextOf({ title: 'Cook', city: '', province: '', name: 'Z Q', cover: false })).not.toContain('cover letter')
   })
 })
 

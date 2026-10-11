@@ -7,7 +7,7 @@ check_shape.py(形制十规 + 基线管理)、report_ruff.py(写法债报告)、
 test_jobbank_lock.py(锁自查,用例集住 scheme 的库垫片)。溶完**用新门自查**:
 `python etl/gate/main.py --only shape`。
 
-Ruff 管不住的形制,这里当闸(判据见 docs/design/etl分域-20260829.md §4/§5):
+Ruff 管不住的形制,这里当闸(判据见 docs/design/数据层/etl分域-20260829.md §4/§5):
   ① 域间禁 import:域内文件只许引基础设施叶子(paths/log/fetch/noc/crawl)
      与本域邻居,不许引别的域 —— 零基线,违规即红(域层之上的 gate/sched 放行,
      判据见 constants.ABOVE);

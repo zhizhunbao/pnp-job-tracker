@@ -14,7 +14,7 @@ import {
   DOT, EV_BOUNCED, EV_COMPLAINED, EV_SUPPRESSED, EXT_DOCX, EXT_PDF, FILE_SAFE_RE, FILE_SLUG_MAX, FONT_SIZE, FROM_GT,
   FROM_LT, FROM_UNSAFE_RE, FROM_VIA, HASH_SEP, HEX, HMAC_NAME, HTML_BR, HTML_ESC, HTML_ESC_RE, IDEM_HASH_LEN,
   IDEM_HEAD, IDEM_SEP, JOB_CLOSED, KEY_RAW, KEY_USAGE_VERIFY, KIND_BOUNCED, KIND_SUPPRESSED, LEADING, LOC_SEP,
-  MAIL_ATTACH, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN, MAIL_BODY_QUOTE, MAIL_FOOT, MAIL_HELLO,
+  MAIL_ATTACH, MAIL_ATTACH_RESUME, MAIL_FOOT_RESUME, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN, MAIL_BODY_QUOTE, MAIL_FOOT, MAIL_HELLO,
   MAIL_REGARDS, MARGIN, MIME_DOCX, NAME_RE, NEWLINE, NFKD, NON_ASCII_RE, PAGE_H, PAGE_W, PH_NAME, PH_TITLE,
   PLACEHOLDERS, RESUME_FILE_FALLBACK, RESUME_FILE_TAIL, SAME_EMAIL_DAYS, SHA_256, SPACE, SPAN_COMPANY, SPAN_NAME,
   SPAN_TITLE, SUBJECT_TPL, SVIX_SECRET_HEAD, SVIX_TOLERANCE_S, SVIX_V1, TAB_RE, TEST_BOUNCE_MARK, TEST_BOUNCE_TO,
@@ -32,7 +32,7 @@ import type {
   ApplyResumesOut, ApplyRowDbRow, ApplyRowFact, ApplyRowOut, ApplySentIn, ApplyStartIn, ApplyStartOut, ApplyUserIn, ApplyUserJobIn,
   ApplyWriteOut, BounceDbRow, BounceKind, CountDbRow, CoverFillIn, CoverLinesIn, CoverPdfIn, CoverPdfOut,
   CountList, DraftBodyJson, HardBreakIn, HitDbRow, IdDbRow,
-  IdemKeyIn, IdemKeyOut, MailPartsIn, MaybeDraftBody, MaybeId, MaybePlaceholderHit, MeasureFn, MeasureMakeIn,
+  IdemKeyIn, IdemKeyOut, MailPartsIn, MailTextIn, MaybeDraftBody, MaybeId, MaybePlaceholderHit, MeasureFn, MeasureMakeIn,
   NextPlaceholderIn, PdfFont, RecipientIn, ResumeFileIn, ResumePickIn, SameEmailIn, SendBodyJson, SpanValueIn,
   SvixIn, SvixOut, TextList, TimeCell, WebhookJson, WordLinesIn,
   ApplyFileDbRow, ApplyFileFact, ApplyFileIn, ApplyFileOut, LetterBodyJson, LetterMessages, LetterPromptIn,
@@ -169,11 +169,12 @@ export function mailSubjectOf(x: MailPartsIn): string {
 
 /**
  * 投递信正文(纯文本;2026-10-07 自 components/jobs 的 mailto 正文搬来,改成附简历与求职信、英文署名落款)。
+ * 2026-10-10 投递框三步:「不附求职信」只发简历,附件那一句与来源说明换不提求职信的一版。
  *
- * @param x 本岗与署名。
+ * @param x 本岗、署名与附不附求职信。
  * @returns 正文(含来源说明)。
  */
-export function mailTextOf(x: MailPartsIn): string {
+export function mailTextOf(x: MailTextIn): string {
   const loc = [x.city, x.province].filter(Boolean)
   let inLoc = TEXT_NONE
   if (loc.length > 0) {
@@ -181,10 +182,36 @@ export function mailTextOf(x: MailPartsIn): string {
   }
   const lines = [
     MAIL_HELLO, TEXT_NONE,
-    MAIL_BODY_HEAD + x.title + MAIL_BODY_QUOTE + inLoc + MAIL_BODY_DOT + SPACE + MAIL_ATTACH, TEXT_NONE,
+    MAIL_BODY_HEAD + x.title + MAIL_BODY_QUOTE + inLoc + MAIL_BODY_DOT + SPACE + mailAttachOf(x.cover), TEXT_NONE,
     MAIL_REGARDS, x.name,
   ]
-  return lines.join(NEWLINE) + MAIL_FOOT
+  return lines.join(NEWLINE) + mailFootOf(x.cover)
+}
+
+/**
+ * 正文里附件那一句(附不附求职信两版)。
+ *
+ * @param cover 附求职信。
+ * @returns 那一句。
+ */
+function mailAttachOf(cover: boolean): string {
+  if (cover) {
+    return MAIL_ATTACH
+  }
+  return MAIL_ATTACH_RESUME
+}
+
+/**
+ * 正文末尾的来源说明(附不附求职信两版)。
+ *
+ * @param cover 附求职信。
+ * @returns 来源说明。
+ */
+function mailFootOf(cover: boolean): string {
+  if (cover) {
+    return MAIL_FOOT
+  }
+  return MAIL_FOOT_RESUME
 }
 
 /**
@@ -549,7 +576,7 @@ export async function loadApplyStart(x: ApplyStartIn): ApplyStartOut {
   }
   return {
     job: applyJobRowOf(job), resumes, senderName: prefs.senderName, template: prefs.template, status, cover,
-    resumeId: resumePickOf({ saved, resumes }), sentAt, trialLeft: x.trialLeft, trialHere: x.trialHere,
+    resumeId: resumePickOf({ saved, resumes }), sentAt, pro: x.pro, replyTo: x.replyTo,
   }
 }
 

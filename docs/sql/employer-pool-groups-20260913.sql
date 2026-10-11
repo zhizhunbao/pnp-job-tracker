@@ -1,4 +1,4 @@
--- 雇主池桶表改切八行业组(2026-09-13 Frank「八组 开批一」;设计稿 docs/design/雇主板重构-20260829.md 校正记录)。
+-- 雇主池桶表改切八行业组(2026-09-13 Frank「八组 开批一」;设计稿 docs/design/雇主/雇主板重构-20260829.md 校正记录)。
 -- 桶键由本站 27 大类(列 broad,中文大类名)改为 8 行业组键(列 ind_group:health/stem/trades/food/
 -- transport/manufacturing/business/education;other = 未分类岗桶;'' = 指定雇主无线索通用桶),
 -- 键表单一来源 etl/noc/constants.py GROUP_KEYS / BROAD_GROUP(与把脉页 IND_KEYS 同一份分组)。

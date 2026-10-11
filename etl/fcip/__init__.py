@@ -4,7 +4,7 @@ fcip 域:法语社区移民试点(Francophone Community Immigration Pilot)——
 
 沿革:2026-08-31 批E 从 pilot 拆出(Frank 拍板「拆成三个 很少有人有法语」——
 法语是**极少数用户**的信号,单拎出来让 RCIP 那条主流路径干净;落地细则见
-docs/design/etl分域-20260829.md §7 拍板点 8)。本域的社区名单有 6 行,
+docs/design/数据层/etl分域-20260829.md §7 拍板点 8)。本域的社区名单有 6 行,
 但**只抽取纯法语四社区**(Kelowna, BC / Acadian Peninsula, NB / St. Pierre Jolys, MB /
 Superior East Region, ON);另两行 Sudbury, ON 与 Timmins, ON 是**双身份社区**,
 IRCC 名单页两节都列它俩,抽取器住 rcip 域只抽一次(拍板点 8-②),本域不重复抽取。

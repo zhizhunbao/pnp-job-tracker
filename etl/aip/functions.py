@@ -1,6 +1,6 @@
 """
 aip 域函数 —— 全部行为住这(照 company/noc/pnp 全溶样张,方言律全集见
-docs/design/etl分域-20260829.md §4)。
+docs/design/数据层/etl分域-20260829.md §4)。
 
 2026-08-31 批E 从 pilot 域拆出(Frank「拆成三个 很少有人有法语」):原 pilot/functions.py
 的 employers 段与 aip_rules 段整段搬来,**函数体、函数名、每条 docstring 逐字未改**;

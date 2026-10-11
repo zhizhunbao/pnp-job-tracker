@@ -1,28 +1,25 @@
 // 站内投递区(2026-10-07 B2;components/apply,jsdom 挂件验 —— dev 直连生产库不登录)。
 // 同日改判:独立页 /apply/<id> 撤,投递并进「我的求职」(Frank「合成一个」)—— 投递区 ApplySection 摆在投递记录表上方,
 // 地址栏 /account?sec=sjobs&job=<id> 带职位才出。
-// 性质:① 地址栏没带职位 → 投递区不出(一个请求都不发);这一岗已发出 → 摆一行「已于 <日期> 投递」(2026-10-08;原先整块不出);下架 / 没投递邮箱 → 只摆原因一行;
-//       选好简历又有署名(投过别的岗)直接落预览;
-//       ② 第 1 步:英文姓名不合规本地就拦(不发草稿);一份简历都没有拦;合规 + 有简历 → 存草稿(带姓名、填好的信与位置、
-//          默认那份简历)→ 求职信;
-//       ③ 第 2 步:信里有写不进 PDF 的字 → 列出坏字、「预览」灰;改回来恢复;
-//       ④ 第 3 步:页面上铺信的正文、两行附件;发送回 503 mailOff → 钮上一行原因、不收;发送成功 → 投递区收起、
-//          通知外面刷新表、地址栏洗掉职位号。
-//          2026-10-08 改:两行附件换成逐项检查四行(收件人 / 简历 / 求职信 / 署名),四项没勾满「发送」灰;退回上一步勾清空。
-// 探针:ApplySection 不认已发出 → ①红;nextFromResume 去掉姓名闸 → ②第一条红;canNextOf 不看坏字 → ③红;
-//       send 成功不调 onSent → ④最后一条红。
-// 2026-10-07 批 C(AI 写信每人一辈子试用 3 个职位):
-//       ⑤ 免费档:标题行出「AI 试用还剩 N 次」,写成后照回包的余量改;Pro(余量 null)不出余量;
-//          用完(写信回 402 trial):信框里是回包带的通用模板,出黄条与升级钮,不出余量;点「按职位重写」不再请求、开升级框。
-// 探针:makeRewrite 去掉试用闸 → ⑤「用完」那条红(会多一次写信请求);trialAfterWrite 不认 402 → 黄条不出,同条红。
-// 2026-10-09 A 批投递搬进弹框(docs/design/投递向导-照Azure-20261008.md):投递区搬进全站骨架上的投递框,取数挪到框外壳
+// 2026-10-09 A 批投递搬进弹框(docs/design/我的/我的求职-20261009.md):投递区搬进全站骨架上的投递框,取数挪到框外壳
 //       (useApplyStart 收职位 id),ApplySection 只按取数结果摆正文 —— 探针件照框外壳那样拼(applyIdOf 读地址栏 → useApplyStart →
-//       ApplySection),① 的「没带职位」= 地址栏没 `?apply=` 也没旧深链。④ 改读作「发送成功不再收起:切到已投递一步,
-//       摆『已发给 <公司>』,并广播 offer2pr:apply-sent 一次;地址栏由关框收拾,投递区不碰」。
-//       探针:send 成功不调 onSent(不广播)→ ④最后一条红;发出后不切已投递一步 → 成功条那条红。
+//       ApplySection),① 的「没带职位」= 地址栏没 `?apply=` 也没旧深链。
+// 2026-10-10 投递框三步(设计稿 16d;docs/design/我的/我的求职-20261009.md 1.4 / 2.4)改写本文件:原 ② 姓名本地拦 / 进第 2 步自动写信、
+//       ⑤ AI 写信试用闸两组随功能撤(姓名挪到「确认」页且档案里有就不问;试用撤,按职位改写只给 Pro)。现性质:
+//       ① 没带职位不出、不发请求;已发出摆「已于某日投递」;下架 / 没投递邮箱只摆原因;没发出的一律落「简历」页(有草稿也是),
+//          「职位信息」分区不再出;三个页签 简历 / 求职信 / 确认;
+//       ② 简历页:没简历拦在第 1 步;有简历进求职信,不调写信接口;
+//       ③ 求职信页:没草稿默认「不附求职信」,有草稿默认选草稿;上传求职信走抽字接口成新的一项并选中;
+//          (同日 Frank「两处都改吧」:写过的信不再列,原「写过的信列出来」一条改断言「只有不附一项、不请求信清单」)
+//          坏字列出、下一步灰;
+//       ④ 按职位改写:免费号不请求、弹升级框;Pro 调写信接口、三栏对照框(原来的 / 职位要求 / 改写后),「用这一版」成一项并选中;
+//       ⑤ 确认页:档案里有英文姓名只读,没有出输入框、不合规拦、合规随草稿存回再发;邮件预览是短正文不是求职信全文,不附时不提求职信;
+//          发信 503 原因一行不收,成功切已投递一步摆成功条、广播一次。
+// 探针:startStepOf 草稿直落确认 → ①红;goStep 不判简历 → ②红;firstPickOf 无草稿选草稿 → ③第一条红;
+//       makeLetterRewrite 去掉 Pro 判 → ④第一条红(多一次写信请求);send 不核 askName → ⑤姓名那条红;mailOf 不看附不附 → ⑤正文那条红。
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ApplySection } from '@/components/apply/applysection'
 import { applyIdOf, closeApply, noteOpened, openApply, readApplyId } from '@/components/apply/functions'
@@ -41,12 +38,14 @@ const JOB = {
   titleZh: '厨师', titleKo: '요리사', companyZh: '', companyKo: '', cityZh: '斯坦巴克', cityKo: '', companySlug: 'pie-wood',
 }
 const LETTER = 'Dear Hiring Manager,\n\nI apply for Cook at Pie Wood.\n\nSincerely,\nZhang San'
-const RES = { id: 7, fileName: 'zhang.pdf', mime: 'application/pdf', uploadedAt: '2026-10-06T00:00:00.000Z', isDefault: true }
+const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+// jsdom 里画不了 PDF:简历一律给 Word,预览只出一句话
+const RES = { id: 7, fileName: 'zhang.docx', mime: DOCX, uploadedAt: '2026-10-06T00:00:00.000Z', isDefault: true }
 
 function start(p: Partial<ApplyStartView> = {}): ApplyStartView {
   return {
-    job: JOB, resumes: [], senderName: '', template: TPL, status: '', cover: '', resumeId: null, sentAt: '', trialLeft: 3,
-    trialHere: false, ...p,
+    job: JOB, resumes: [RES], senderName: 'Zhang San', template: TPL, status: '', cover: '', resumeId: 7, sentAt: '',
+    pro: false, replyTo: 'zhang@test.local', ...p,
   }
 }
 
@@ -114,23 +113,46 @@ async function click(el: HTMLElement, text: string) {
   await flush()
 }
 
+// 单选一行:按那一行的文字找单选框
+function radio(el: HTMLElement, text: string) {
+  const row = Array.from(el.querySelectorAll('label')).find((l) => (l.textContent ?? '').includes(text))!
+  return row.querySelector('input[type=radio]') as HTMLInputElement
+}
+
 function typeInto(node: HTMLInputElement | HTMLTextAreaElement, value: string) {
   const proto = node instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype
   Object.getOwnPropertyDescriptor(proto, 'value')!.set!.call(node, value)
   node.dispatchEvent(new Event('input', { bubbles: true }))
 }
 
+function bodyOf(init: RequestInit | undefined) {
+  return JSON.parse(String(init?.body))
+}
+
+function callsTo(url: string): [string, RequestInit][] {
+  const mock = (fetch as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls
+  return mock.filter((c) => String(c[0]) === url)
+}
+
+beforeEach(() => {
+  // jsdom 没有 matchMedia(modal 桶判窄屏要它):按宽屏答,不挂监听
+  vi.stubGlobal('matchMedia', () => ({
+    matches: false, addEventListener: () => undefined, removeEventListener: () => undefined,
+    addListener: () => undefined, removeListener: () => undefined,
+  }))
+})
+
 afterEach(() => {
   vi.unstubAllGlobals()
   document.body.innerHTML = ''
 })
 
-describe('投递区出不出', () => {
-  it('① 没带职位不出、不发请求;已发出摆「已于某日投递」(2026-10-08,原先不出);下架 / 没邮箱只摆原因;投过别的岗直接落预览', async () => {
+describe('① 投递区出不出、落哪一步', () => {
+  it('没带职位不出;已发出 / 下架 / 没邮箱只摆一行;没发出的一律落「简历」页(有草稿也是),三个页签,不再出「职位信息」', async () => {
     const calls = server({})
     expect((await mount('?sec=sjobs')).textContent).toBe('')
     expect(calls).toEqual([])
-    server({ [START]: { status: 200, body: start({ status: 'sent', senderName: 'Zhang San', resumes: [RES], resumeId: 7 }) } })
+    server({ [START]: { status: 200, body: start({ status: 'sent' }) } })
     expect((await mount('?sec=sjobs&job=42')).textContent).toBe('这个职位已经投过了')
     server({ [START]: { status: 200, body: start({ status: 'sent', sentAt: '2026-10-06T10:00:00.000Z' }) } })
     expect((await mount('?sec=sjobs&job=42')).textContent).toBe('这个职位已于 2026-10-06 投递')
@@ -138,149 +160,164 @@ describe('投递区出不出', () => {
     expect((await mount('?sec=sjobs&job=42')).textContent).toBe('职位已下架')
     server({ [START]: { status: 200, body: start({ job: { ...JOB, hasEmail: false } }) } })
     expect((await mount('?sec=sjobs&job=42')).textContent).toBe('这个职位没有投递邮箱')
-    server({ [START]: { status: 200, body: start({ senderName: 'Zhang San', resumes: [RES], resumeId: 7, cover: LETTER }) } })
-    const pv = await mount('?sec=sjobs&job=42')
-    expect(pv.textContent).toContain('I apply for Cook at Pie Wood.')
-    // 2026-10-09 section 形:「职位信息」分区四行,英文在上、中文灰字在下;没译名的公司只出英文;市和省分开
-    expect(pv.textContent).toContain('职位信息')
-    expect(pv.textContent).toContain('Cook厨师')
-    expect(pv.textContent).toContain('Pie Wood')
-    expect(pv.textContent).toContain('Steinbach斯坦巴克')
-    expect(pv.textContent).toContain('Manitoba曼尼托巴省')
-    expect(pv.textContent).toContain('Cover_Letter_Pie_Wood.pdf')
+    server({ [START]: { status: 200, body: start({ cover: LETTER }) } })
+    const el = await mount('?sec=sjobs&apply=42')
+    const tabs = Array.from(el.querySelectorAll('[role=tab]')).map((t) => t.textContent)
+    expect(tabs).toEqual(['简历', '求职信', '确认'])
+    expect(el.querySelector('[role=tab][aria-selected=true]')!.textContent).toBe('简历')
+    expect(el.textContent).toContain('zhang.docx')
+    expect(el.textContent).not.toContain('职位信息')
+    expect(el.textContent).not.toContain('英文姓名')
+    expect(btn(el, '按职位改写')).toBeTruthy()
+    expect(btn(el, '上传新简历')).toBeTruthy()
   })
 })
 
-describe('第 1 步 → 第 2 步', () => {
-  it('② 姓名不合规本地拦;没选简历拦;选了简历 → 进求职信、按 JD 写一封(带职位、简历、署名)、写好存草稿', async () => {
-    const calls = server({
-      [START]: { status: 200, body: start() },
-    })
-    const el = await mount('?sec=sjobs&job=42')
-    const name = el.querySelector('input[autocomplete="name"]') as HTMLInputElement
-    await act(async () => typeInto(name, '张三'))
-    await click(el, '下一步')
-    expect(el.textContent).toContain('英文姓名只能用')
-    await act(async () => typeInto(name, 'Zhang San'))
+describe('② 简历页', () => {
+  it('没简历拦在第 1 步;有简历进求职信,不调写信接口;没到过的页签点了不走', async () => {
+    server({ [START]: { status: 200, body: start({ resumes: [], resumeId: null }) } })
+    const el = await mount('?apply=42')
     await click(el, '下一步')
     expect(el.textContent).toContain('先上传一份简历')
-    expect(calls.some((c) => c === 'POST /api/apply/letter')).toBe(false)
     document.body.innerHTML = ''
-    server({
-      [START]: { status: 200, body: start({ resumes: [RES, { ...RES, id: 8, fileName: 'cook.pdf', isDefault: false }], resumeId: 7 }) },
-      'POST /api/apply/letter': { status: 200, body: { text: LETTER, ai: true } },
-      'PUT /api/apply/draft': { status: 200, body: { ok: true } },
-    })
-    const el2 = await mount('?sec=sjobs&job=42')
-    expect(el2.textContent).toContain('zhang.pdf')
-    expect(el2.textContent).toContain('cook.pdf')
-    const radios = el2.querySelectorAll('input[type=radio]')
-    await act(async () => (radios[1] as HTMLInputElement).click())
-    await act(async () => typeInto(el2.querySelector('input[autocomplete="name"]') as HTMLInputElement, 'Zhang San'))
+    const calls = server({ [START]: { status: 200, body: start() } })
+    const el2 = await mount('?apply=42')
+    await click(el2, '确认')
+    expect(el2.querySelector('[role=tab][aria-selected=true]')!.textContent).toBe('简历')
     await click(el2, '下一步')
-    const ta = el2.querySelector('textarea') as HTMLTextAreaElement
-    expect(ta.value).toBe(LETTER)
-    const mock = (fetch as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls
-    const post = mock.find((c) => String(c[0]) === '/api/apply/letter')!
-    expect(JSON.parse(String(post[1].body))).toEqual({ jobId: 42, resumeId: 8, senderName: 'Zhang San' })
-    const put = mock.find((c) => c[1]?.method === 'PUT')!
-    expect(JSON.parse(String(put[1].body))).toMatchObject({ jobId: 42, senderName: 'Zhang San', resumeId: 8, cover: ta.value })
-  })
-
-  it('模型没写成(ai = false):给通用信并提示可以重写', async () => {
-    server({
-      [START]: { status: 200, body: start({ resumes: [RES], resumeId: 7, senderName: 'Zhang San' }) },
-      'POST /api/apply/letter': { status: 200, body: { text: LETTER, ai: false } },
-      'PUT /api/apply/draft': { status: 200, body: { ok: true } },
-    })
-    const el = await mount('?sec=sjobs&job=42')
-    await click(el, '下一步')
-    expect(el.textContent).toContain('没按职位写成')
-    expect(btn(el, '按职位重写')).toBeTruthy()
+    expect(el2.querySelector('[role=tab][aria-selected=true]')!.textContent).toBe('求职信')
+    expect(calls.some((c) => c === 'POST /api/apply/letter')).toBe(false)
+    await click(el2, '简历')
+    expect(el2.querySelector('[role=tab][aria-selected=true]')!.textContent).toBe('简历')
   })
 })
 
-describe('第 2、3 步', () => {
-  it('③ 坏字列出、预览钮灰;④ 预览铺正文,发信 503 显示原因不收,成功切到已投递一步摆成功条、广播一次', async () => {
+describe('③ 求职信页', () => {
+  it('没草稿默认「不附求职信」,只有这一项;不列写过的信(不请求信清单);有草稿选中出正文与「修改」,坏字列出、下一步灰', async () => {
+    const calls = server({ [START]: { status: 200, body: start() } })
+    const el = await mount('?apply=42')
+    await click(el, '下一步')
+    expect(radio(el, '不附求职信').checked).toBe(true)
+    expect(el.textContent).toContain('只发简历')
+    expect(el.querySelectorAll('input[name=apply-letter]')).toHaveLength(1)
+    expect(calls).not.toContain('GET /api/apply/letters')
+    document.body.innerHTML = ''
+    server({ [START]: { status: 200, body: start({ cover: LETTER }) } })
+    const el2 = await mount('?apply=42')
+    await click(el2, '下一步')
+    expect(el2.textContent).toContain('I apply for Cook at Pie Wood.')
+    await click(el2, '修改')
+    const ta = el2.querySelector('textarea') as HTMLTextAreaElement
+    expect(ta.value).toBe(LETTER)
+    await act(async () => typeInto(ta, LETTER + ' 谢谢'))
+    expect(el2.textContent).toContain('这些字写不进 PDF: 谢')
+    expect(btn(el2, '下一步').disabled).toBe(true)
+  })
+
+  it('有草稿默认选草稿;上传求职信走抽字接口,成新的一项并选中', async () => {
+    const calls = server({
+      [START]: { status: 200, body: start({ cover: LETTER }) },
+      'POST /api/resume/extract': { status: 200, body: { text: 'Dear Uploaded' } },
+    })
+    const el = await mount('?apply=42')
+    await click(el, '下一步')
+    expect(radio(el, '这个职位的草稿').checked).toBe(true)
+    expect(el.textContent).toContain('I apply for Cook at Pie Wood.')
+    const input = el.querySelectorAll('input[type=file]')[0] as HTMLInputElement
+    const file = new File(['x'], 'my_letter.pdf', { type: 'application/pdf' })
+    Object.defineProperty(input, 'files', { value: [file], configurable: true })
+    await act(async () => input.dispatchEvent(new Event('change', { bubbles: true })))
+    await flush()
+    expect(calls).toContain('POST /api/resume/extract')
+    expect(radio(el, 'my_letter.pdf').checked).toBe(true)
+    expect(el.textContent).toContain('Dear Uploaded')
+  })
+})
+
+describe('④ 按职位改写', () => {
+  it('免费号:不请求写信接口,弹升级框', async () => {
+    const calls = server({ [START]: { status: 200, body: start() } })
+    const el = await mount('?apply=42')
+    await click(el, '下一步')
+    await click(el, '按职位改写')
+    expect(calls.some((c) => c === 'POST /api/apply/letter')).toBe(false)
+    expect(document.body.textContent).toContain('按职位改写是 Pro 功能')
+  })
+
+  it('Pro:调写信接口,三栏对照框;「用这一版」成一项并选中', async () => {
     server({
-      [START]: { status: 200, body: start({ senderName: 'Zhang San', resumes: [RES], resumeId: 7, cover: LETTER }) },
+      [START]: { status: 200, body: start({ pro: true }) },
+      'POST /api/apply/letter': { status: 200, body: { text: 'Dear Tailored', ai: true, jd: 'Need a cook' } },
+    })
+    const el = await mount('?apply=42')
+    await click(el, '下一步')
+    await click(el, '按职位改写')
+    expect(bodyOf(callsTo('/api/apply/letter')[0]![1])).toEqual({ jobId: 42, resumeId: 7, senderName: 'Zhang San' })
+    const page = document.body
+    expect(page.textContent).toContain('原来的')
+    expect(page.textContent).toContain('Need a cook')
+    expect(page.textContent).toContain('Dear Tailored')
+    await click(page, '用这一版')
+    expect(radio(el, '按职位改写').checked).toBe(true)
+    expect(el.textContent).toContain('Dear Tailored')
+  })
+})
+
+describe('⑤ 确认页与投出', () => {
+  it('档案里有英文姓名只读;邮件预览是短正文,不附时不提求职信;发信 503 一行原因,成功切已投递并广播一次', async () => {
+    server({
+      [START]: { status: 200, body: start() },
       'PUT /api/apply/draft': { status: 200, body: { ok: true } },
       'POST /api/apply/send': { status: 503, body: { error: 'mailOff' } },
     })
     const sent = listenSent()
     const el = await mount('?sec=sjobs&apply=42')
-    await click(el, '上一步')
-    const ta = el.querySelector('textarea') as HTMLTextAreaElement
-    await act(async () => typeInto(ta, ta.value + ' 谢谢'))
-    expect(el.textContent).toContain('这些字写不进 PDF: 谢')
-    expect(btn(el, '预览').disabled).toBe(true)
-    await act(async () => typeInto(ta, ta.value.replace(' 谢谢', ' Thanks')))
-    expect(btn(el, '预览').disabled).toBe(false)
-    await click(el, '预览')
-    expect(el.textContent).toContain('Thanks')
-    expect(el.textContent).toContain('zhang.pdf')
+    await click(el, '下一步')
+    await click(el, '下一步')
+    expect(el.querySelector('[role=tab][aria-selected=true]')!.textContent).toBe('确认')
+    expect(bodyOf(callsTo('/api/apply/draft')[0]![1])).toEqual({ jobId: 42, senderName: 'Zhang San', cover: '', resumeId: 7 })
+    expect(el.querySelector('input[autocomplete="name"]')).toBeNull()
     expect(el.textContent).toContain('Zhang San')
-    expect(el.querySelectorAll('input[type=checkbox]')).toHaveLength(0)   // 邮件形,勾撤
-    expect(el.textContent).toContain('主题')
-    expect(btn(el, '发送').disabled).toBe(false)
-    await click(el, '上一步')
-    await click(el, '预览')
-    await click(el, '发送')
+    expect(el.textContent).toContain('zhang@test.local')
+    expect(el.textContent).toContain('不附求职信')
+    expect(el.textContent).toContain('Application for Cook - Zhang San')
+    expect(el.textContent).toContain('Please find my resume attached.')
+    expect(el.textContent).not.toContain('cover letter')
+    expect(el.querySelectorAll('input[type=checkbox]')).toHaveLength(0)
+    await click(el, '投出')
     expect(el.textContent).toContain('发信服务没有开启')
     expect(sent.cos).toEqual([])
     server({ 'POST /api/apply/send': { status: 200, body: { ok: true, id: 1 } } })
-    await click(el, '发送')
+    await click(el, '投出')
     expect(sent.cos).toEqual(['Pie Wood'])
     expect(el.textContent).toContain('已发给 Pie Wood')
-    expect(btn(el, '发送')).toBeUndefined()
+    expect(btn(el, '投出')).toBeUndefined()
     expect(window.location.search).toBe('?sec=sjobs&apply=42')
     sent.off()
   })
-})
 
-describe('⑤ AI 写信试用闸(2026-10-07 批 C)', () => {
-  it('免费档:标题行出余量,写成后照回包减一;Pro 不出余量', async () => {
+  it('档案里没有英文姓名:确认页出输入框,不合规拦;合规随草稿存回再发;附了信正文提求职信', async () => {
     server({
-      [START]: { status: 200, body: start({ resumes: [RES], resumeId: 7, senderName: 'Zhang San', trialLeft: 3 }) },
-      'POST /api/apply/letter': { status: 200, body: { text: LETTER, ai: true, left: 2 } },
+      [START]: { status: 200, body: start({ senderName: '', cover: LETTER }) },
       'PUT /api/apply/draft': { status: 200, body: { ok: true } },
+      'POST /api/apply/send': { status: 200, body: { ok: true, id: 1 } },
     })
-    const el = await mount('?sec=sjobs&job=42')
+    const el = await mount('?apply=42')
     await click(el, '下一步')
-    expect(el.textContent).toContain('AI 试用还剩 2 次')
-    document.body.innerHTML = ''
-    server({
-      [START]: { status: 200, body: start({ resumes: [RES], resumeId: 7, senderName: 'Zhang San', trialLeft: null }) },
-      'POST /api/apply/letter': { status: 200, body: { text: LETTER, ai: true, left: null } },
-      'PUT /api/apply/draft': { status: 200, body: { ok: true } },
-    })
-    const pro = await mount('?sec=sjobs&job=42')
-    await click(pro, '下一步')
-    expect((pro.querySelector('textarea') as HTMLTextAreaElement).value).toBe(LETTER)
-    expect(pro.textContent).not.toContain('AI 试用还剩')
-  })
-
-  it('用完:信框里是通用模板,出黄条与升级钮;点「按职位重写」不再请求、开升级框', async () => {
-    const calls = server({
-      [START]: { status: 200, body: start({ resumes: [RES], resumeId: 7, senderName: 'Zhang San', trialLeft: 0 }) },
-      'POST /api/apply/letter': { status: 402, body: { error: 'trial', text: LETTER, left: 0 } },
-      'PUT /api/apply/draft': { status: 200, body: { ok: true } },
-    })
-    const el = await mount('?sec=sjobs&job=42')
     await click(el, '下一步')
-    expect((el.querySelector('textarea') as HTMLTextAreaElement).value).toBe(LETTER)
-    expect(el.textContent).toContain('3 次试用已用完')
-    expect(el.textContent).not.toContain('AI 试用还剩')
-    expect(btn(el, '升级 Pro')).toBeTruthy()
-    const before = calls.filter((c) => c === 'POST /api/apply/letter').length
-    // jsdom 没有 matchMedia(modal 桶判窄屏要它):按宽屏答,不挂监听
-    vi.stubGlobal('matchMedia', () => ({
-      matches: false, addEventListener: () => undefined, removeEventListener: () => undefined,
-      addListener: () => undefined, removeListener: () => undefined,
-    }))
-    await click(el, '按职位重写')
-    expect(calls.filter((c) => c === 'POST /api/apply/letter').length).toBe(before)
-    expect(document.body.textContent).toContain('AI 按职位写信的免费试用已用完')
+    expect(bodyOf(callsTo('/api/apply/draft')[0]![1]).senderName).toBe('')
+    expect(el.textContent).toContain('Cover_Letter_Pie_Wood.pdf')
+    expect(el.textContent).toContain('resume and cover letter attached')
+    const name = el.querySelector('input[autocomplete="name"]') as HTMLInputElement
+    await act(async () => typeInto(name, '张三'))
+    await click(el, '投出')
+    expect(el.textContent).toContain('英文姓名只能用')
+    expect(callsTo('/api/apply/send')).toHaveLength(0)
+    await act(async () => typeInto(name, 'Zhang San'))
+    await click(el, '投出')
+    const drafts = callsTo('/api/apply/draft')
+    expect(bodyOf(drafts[drafts.length - 1]![1])).toMatchObject({ senderName: 'Zhang San', cover: LETTER })
+    expect(callsTo('/api/apply/send')).toHaveLength(1)
   })
 })
 

@@ -3,31 +3,36 @@
  * 存草稿 / 代发,与各钮的手柄工厂。
  * 2026-10-07 二改(Frank「得根据 jd 写啊」「我的简历 我的 cover letter 是不是要跟着已投职位走」→ 四条都做):
  * 「我的模板」与填入位置撤,信每岗由模型按 JD 写一封(写不成服务端给兜底模板信);第 1 步按岗点选简历、能就地添加。
+ * 2026-10-10 投递框三步(设计稿 投递向导-照Azure 16d):页签、求职信单选 + 预览、试用撤(改写只给 Pro)、第 3 步改「确认」;
+ * 第 3 步邮件形面板 applyCheckOf 一族、试用与自动写信一族退役(今日待投仍用 ApplyMail 与 checkRowsOf)。
+ * 同日 Frank「大于 1000 就 拆 子桶」:求职信页一族(信的单选项、上传抽字、按职位改写)搬进子桶 ./letter。
  *
  * @author Frank
  * @time 2026-10-07 03:00:00
  */
-import { COVER_MAX, coverFileOf, isSenderName, mailSubjectOf } from '@/lib/apply'
+import { COVER_MAX, coverFileOf, isSenderName, mailSubjectOf, mailTextOf } from '@/lib/apply'
 import { track } from '@/lib/track'
 import {
   CLOSED_KEY, CRED_INCLUDE, DATE_LEN, ERR_CODES, ERR_FALLBACK, ERR_KEY_FULL, ERR_KEY_HEAD, ERR_KEY_NAME,
-  ERR_KEY_RESUME, ERR_KEY_TEMPLATE, ERR_KEY_UPLOAD, ERR_KEY_WRITE, ERR_NONE, E_TRIAL, FIELD_FILE, HDR_CONTENT_TYPE,
+  ERR_KEY_RESUME, ERR_KEY_UPLOAD, ERR_NONE, FIELD_FILE, HDR_CONTENT_TYPE,
   HTTP_CONFLICT, HTTP_UNAUTH, LOAD_AUTH, LOAD_BUSY, LOAD_FAIL, LOAD_NONE, LOAD_OK, METHOD_POST, METHOD_PUT, MIME_JSON,
   NEXT_KEY, NO_EMAIL_KEY, P_JOB,
-  MIME_PDF, PICK_MIN, SENT_STATUSES, STEP_DONE, STEP_LETTER, STEP_ORDER, STEP_PREVIEW, STEP_RESUME, TEXT_NONE,
+  MIME_PDF, PICK_MIN, SENT_STATUSES, STEP_CONFIRM, STEP_DONE, STEP_LETTER, STEP_ORDER, STEP_RESUME, TEXT_NONE,
   TRACK_APPLY_SENT,
-  UPLOADED_KEY, URL_BACK_HEAD, URL_COVER_HEAD, URL_DRAFT, URL_LETTER, URL_RESUME_FILE, URL_RESUME_FILES, URL_SEND,
+  UPLOADED_KEY, URL_BACK_HEAD, URL_COVER_HEAD, URL_DRAFT, URL_RESUME_FILE, URL_RESUME_FILES, URL_SEND,
   URL_START_HEAD, BREAK_AFTER_RE, CHECK_LETTER, CHECK_RESUME, CHECK_SIGN, CHECK_TO, PDF_KEY,
   Q_ID_HEAD, VIEW_KEY, EV_APPLY_NAV, EV_APPLY_SENT, PATH_ACCOUNT, P_APPLY,
 } from './constants'
 import type {
-  AiOpenIn, ApplyCells, ApplyResumeView, ApplyStartView, CanNextIn, DraftIn, ErrJson, ErrOut, LetterJson, LoadStartIn,
-  PageHideIn, PickIn, PickOfFn, ResumeFilesJson, ResumeNameIn, SetFn, StartStepIn, UploadedTextIn,
-  TrialWriteIn, UploadIn, UploadJson,
-  ApplySentOut, ApplyChecksIn, CheckRow, CheckRowsIn, MaybeCheckPreview, OpenOfFn, MaybeCheckRow,
-  ResumePickItem, ApplyCheckPanelIn, CheckPanel, RowOfIn, ApplyIdIn, ApplyOpenDetail, OpenedIn,
+  ApplyCells, ApplyResumeView, ApplyStartView, CanNextIn, DraftIn, DraftOfIn, ErrJson, ErrOut, FileMakeIn,
+  GoStepIn, LoadStartIn, MailIn, MailView,
+  PageHideIn, PickIn, PickOfFn, ResumeFilesJson, ResumeNameIn, SetFn, SetToIn,
+  UploadedTextIn, UploadIn, UploadJson,
+  ApplySentOut, CheckRow, CheckRowsIn, MaybeCheckPreview, OpenOfFn, MaybeCheckRow,
+  ResumePickItem, RowOfIn, ApplyIdIn, ApplyOpenDetail, OpenedIn,
   ApplyTitled, AuthRetryIn,
 } from './types'
+import { uploadLetter } from './letter'
 import { CACHE } from './variables'
 
 /**
@@ -245,16 +250,14 @@ export function makeAuthRetry(x: AuthRetryIn): () => void {
 
 /**
  * 起始步:已发出 → 已投递;草稿里已有这一岗的信、选好了简历、英文名合规 → 直接预览;其余从第 1 步起。
+ * 2026-10-10 投递框三步(Frank「点投递,应该是先 上传简历吧」):没发出的一律落「简历」页。
  *
- * @param x 投递状态、草稿里的信、选用的简历与英文署名。
+ * @param status 这一岗的投递状态。
  * @returns 步骤。
  */
-export function startStepOf(x: StartStepIn): string {
-  if (SENT_STATUSES.includes(x.status)) {
+export function startStepOf(status: string): string {
+  if (SENT_STATUSES.includes(status)) {
     return STEP_DONE
-  }
-  if (x.cover !== TEXT_NONE && x.resumeId != null && isSenderName(x.name)) {
-    return STEP_PREVIEW
   }
   return STEP_RESUME
 }
@@ -271,18 +274,6 @@ export function stepIndexOf(step: string): number {
     return STEP_ORDER.length
   }
   return i
-}
-
-/**
- * 造改信的手柄。
- *
- * @param setLetter 落格。
- * @returns 文本框 onChange。
- */
-export function makeLetterChange(setLetter: SetFn<string>): (e: React.ChangeEvent<HTMLTextAreaElement>) => void {
-  return function onLetter(e: React.ChangeEvent<HTMLTextAreaElement>): void {
-    setLetter(e.target.value)
-  }
 }
 
 /**
@@ -339,6 +330,7 @@ export function nextKeyOf(step: string): string {
 /**
  * 主钮能不能点:第 1 步上传中不能;第 2 步在写信、信空、有坏字或超长不能;其余能。
  * 2026-10-08 曾加「第 3 步四项没勾全不能」,同日 Frank「这个不能改成类似于邮件那种吗」:第 3 步改邮件形,勾撤,能点。
+ * 2026-10-10 投递框三步:信可以是空串(不附求职信);第 2 步改成「上传求职信在途」不能。
  *
  * @param x 当前步、坏字、信与两个在途标。
  * @returns 能点 true。
@@ -350,8 +342,7 @@ export function canNextOf(x: CanNextIn): boolean {
   if (x.step !== STEP_LETTER) {
     return true
   }
-  const filled = x.letter.trim() !== TEXT_NONE
-  return x.writing === false && filled && x.badChars.length === 0 && x.letter.length <= COVER_MAX
+  return x.letterBusy === false && x.badChars.length === 0 && x.letter.length <= COVER_MAX
 }
 
 /**
@@ -373,24 +364,6 @@ export function checkRowsOf(x: CheckRowsIn): CheckRow[] {
     { key: CHECK_LETTER, value: x.coverFile, href: coverHrefOf(x.jobId), linkKey: PDF_KEY, previewable: true },
     { key: CHECK_SIGN, value: x.sender, href: TEXT_NONE, linkKey: TEXT_NONE, previewable: false },
   ]
-}
-
-/**
- * 投递区这一封的逐项检查四行(本岗、选用的简历、求职信附件名、署名)。
- *
- * @param x 本岗、简历清单、选用的简历 id 与英文姓名。
- * @returns 四行。
- */
-export function applyChecksOf(x: ApplyChecksIn): CheckRow[] {
-  return checkRowsOf({
-    company: x.job.company,
-    resumeName: resumeNameOf({ resumes: x.resumes, resumeId: x.resumeId }),
-    resumeId: x.resumeId,
-    resumeMime: resumeMimeOf({ resumes: x.resumes, resumeId: x.resumeId }),
-    coverFile: coverFileOf(x.job.company),
-    jobId: x.job.id,
-    sender: x.name.trim(),
-  })
 }
 
 /**
@@ -447,20 +420,6 @@ export function resumeMimeOf(x: ResumeNameIn): string {
 }
 
 /**
- * 简历清单 → 换简历下拉的项(id + 文件名)。
- *
- * @param resumes 简历清单。
- * @returns 下拉的项。
- */
-export function pickItemsOf(resumes: ApplyResumeView[]): ResumePickItem[] {
-  const out: ResumePickItem[] = []
-  for (const r of resumes) {
-    out.push({ id: r.id, name: r.fileName })
-  }
-  return out
-}
-
-/**
  * 换简历下拉的选项值(id 串;不足两份给空清单 —— 只有一份没得换,不出下拉)。
  *
  * @param items 下拉的项。
@@ -504,45 +463,6 @@ export function makeResumeLabel(items: ResumePickItem[]): (v: string) => string 
       }
     }
     return v
-  }
-}
-
-/**
- * 造「下拉换简历」(投递区:只改选中的 id,草稿随下一次失焦 / 发送带上)。
- *
- * @param x 落格。
- * @returns 下拉改动手柄(收 id 串)。
- */
-export function makeResumeSelect(x: PickIn): (v: string) => void {
-  return function selectResume(v: string): void {
-    const id = Number(v)
-    if (Number.isInteger(id) && id > 0) {
-      x.setResumeId(id)
-      x.setErr(ERR_NONE)
-    }
-  }
-}
-
-/**
- * 装投递区第 3 步的邮件形预览面板(收件人 / 主题 / 正文 / 附件;弹框预览、换简历、改信 = 回第 2 步)。
- *
- * @param x 本岗、简历、信、预览三格与落格。
- * @returns 面板。
- */
-export function applyCheckOf(x: ApplyCheckPanelIn): CheckPanel {
-  const picks = pickItemsOf(x.resumes)
-  return {
-    rows: applyChecksOf({ job: x.job, resumes: x.resumes, resumeId: x.resumeId, name: x.name }),
-    subject: mailSubjectOf({ title: x.job.title, city: x.job.city, province: x.job.province, name: x.name }),
-    body: x.letter,
-    preview: x.pv.preview,
-    openOf: x.pv.openOf,
-    onPreviewClose: x.pv.onPreviewClose,
-    resumeOpts: pickOptsOf(picks),
-    resumeValue: resumeValueOf(x.resumeId),
-    resumeLabel: makeResumeLabel(picks),
-    onResume: makeResumeSelect({ setResumeId: x.setResumeId, setErr: x.setErr }),
-    onLetter: makeBack(x.cells),
   }
 }
 
@@ -598,19 +518,6 @@ export function coverHrefOf(jobId: number): string {
 }
 
 /**
- * 这一次能不能用 AI 按 JD 写信(Pro、本岗已经用过、或还有试用余量;2026-10-07 批 C)。服务端同样判,这里只决定钮与提示。
- *
- * @param x 剩几个与本岗用过没有。
- * @returns 能用。
- */
-export function isAiOpenOf(x: AiOpenIn): boolean {
-  if (x.left == null || x.here) {
-    return true
-  }
-  return x.left > 0
-}
-
-/**
  * 付完回到本岗投递区的地址。
  *
  * @param jobId 职位 id。
@@ -621,31 +528,21 @@ export function upsellBackOf(jobId: number): string {
 }
 
 /**
- * 造「开升级框」手柄。
+ * 造「关升级框」手柄。
+ * 2026-10-10 投递框三步:改成通用的「点了把某一格设成某值」(关升级框、开就地改信、关对照框共用)。
  *
- * @param setUpsell 升级框开关的落格。
+ * @param x 落格与要设的值。
  * @returns 点击手柄。
  */
-export function makeUpsellOpen(setUpsell: SetFn<boolean>): () => void {
-  return function openUpsell(): void {
-    setUpsell(true)
+export function makeSetTo<T>(x: SetToIn<T>): () => void {
+  return function setTo(): void {
+    x.set(x.v)
   }
 }
 
 /**
- * 造「关升级框」手柄。
- *
- * @param setUpsell 升级框开关的落格。
- * @returns 关闭手柄。
- */
-export function makeUpsellClose(setUpsell: SetFn<boolean>): () => void {
-  return function closeUpsell(): void {
-    setUpsell(false)
-  }
-}
-
-/**
- * 造主钮手柄:第 1 步 → 核姓名与简历、进求职信(这封信不是按这份简历写的就现写);第 2 步 → 存草稿、进预览;第 3 步 → 发信。
+ * 造主钮手柄:第 1 步 → 进求职信;第 2 步 → 存草稿、进确认;第 3 步 → 投出。
+ * 2026-10-10 投递框三步:进求职信不再自动写信、不再核英文姓名(档案里没有才在「确认」页问)。
  *
  * @param c 整机的可变格。
  * @returns 点击手柄。
@@ -653,162 +550,136 @@ export function makeUpsellClose(setUpsell: SetFn<boolean>): () => void {
 export function makeNext(c: ApplyCells): () => void {
   return function onNext(): void {
     if (c.step === STEP_RESUME) {
-      void nextFromResume(c)
+      goStep({ cells: c, step: STEP_LETTER })
     } else if (c.step === STEP_LETTER) {
-      void saveThenStep({ cells: c })
-    } else if (c.step === STEP_PREVIEW) {
+      goStep({ cells: c, step: STEP_CONFIRM })
+    } else if (c.step === STEP_CONFIRM) {
       void send(c)
     }
   }
 }
 
 /**
- * 第 1 步往下:英文姓名合规、选好了简历,才进求职信;信还没写过或是按别的简历写的,就按这一份现写。
- * 2026-10-07 批 C:试用用完时换简历不重写(那时信框里是模板或用户自己的信,与简历无关,重写会冲掉用户改过的字)。
+ * 造页签手柄:到过的那几步才走(往回直接切,往前照主钮的核验)。
  *
  * @param c 整机的可变格。
+ * @returns 页签 onChange。
+ */
+export function makeTab(c: ApplyCells): (key: string) => void {
+  return function onTab(key: string): void {
+    if (stepIndexOf(key) <= c.reached) {
+      goStep({ cells: c, step: key })
+    }
+  }
+}
+
+/**
+ * 去某一步:往回直接切;往前要选好简历,进确认先存草稿(服务端核坏字与长度)。
+ *
+ * @param x 整机的可变格与目标步。
  * @returns 无。
  */
-async function nextFromResume(c: ApplyCells): Promise<void> {
-  if (isSenderName(c.name.trim()) === false) {
-    c.setErr(ERR_KEY_NAME)
+function goStep(x: GoStepIn): void {
+  const c = x.cells
+  if (stepIndexOf(x.step) <= stepIndexOf(c.step)) {
+    c.setErr(ERR_NONE)
+    c.setStep(x.step)
     return
   }
   if (c.resumeId == null) {
     c.setErr(ERR_KEY_RESUME)
     return
   }
-  c.setErr(ERR_NONE)
-  c.setStep(STEP_LETTER)
-  if (c.letter.trim() === TEXT_NONE) {
-    await writeLetter({ cells: c })
+  if (x.step === STEP_LETTER) {
+    c.setErr(ERR_NONE)
+    reach(x)
     return
   }
-  if (c.letterFor !== c.resumeId && isAiOpenOf({ left: c.trial.left, here: c.trial.here })) {
-    await writeLetter({ cells: c })
-  }
+  void saveThenStep({ cells: c })
 }
 
 /**
- * 造「按职位重写」手柄(试用用完时改成开升级框;2026-10-07 批 C)。
+ * 切到某一步并记下到过的最远一步。
  *
- * @param c 整机的可变格。
- * @returns 点击手柄。
- */
-export function makeRewrite(c: ApplyCells): () => void {
-  return function onRewrite(): void {
-    if (isAiOpenOf({ left: c.trial.left, here: c.trial.here }) === false) {
-      c.trial.setUpsell(true)
-      return
-    }
-    void writeLetter({ cells: c })
-  }
-}
-
-/**
- * 按这一岗的 JD 与选用的简历写一封信(服务端调模型;写不成给兜底模板信并提示),写好存草稿。
- *
- * @param x 整机的可变格。
+ * @param x 整机的可变格与目标步。
  * @returns 无。
  */
-async function writeLetter(x: PageHideIn): Promise<void> {
-  const c = x.cells
-  if (c.resumeId == null) {
-    return
-  }
-  c.setWriting(true)
-  c.setErr(ERR_NONE)
-  let got: LetterJson = {}
-  try {
-    const r = await fetch(URL_LETTER, {
-      method: METHOD_POST,
-      credentials: CRED_INCLUDE,
-      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ jobId: c.job.id, resumeId: c.resumeId, senderName: c.name.trim() }),
-    })
-    got = await r.json() as LetterJson
-  } catch {
-    got = {}
-  }
-  c.setWriting(false)
-  if (typeof got.text !== 'string') {
-    c.setErr(writeErrOf(got))
-    return
-  }
-  c.setLetter(got.text)
-  c.setLetterFor(c.resumeId)
-  trialAfterWrite({ cells: c, got })
-  if (got.ai === false) {
-    c.setErr(ERR_KEY_TEMPLATE)
-  }
-  void saveDraft({ jobId: c.job.id, name: c.name.trim(), letter: got.text, resumeId: c.resumeId, keepalive: false })
+function reach(x: GoStepIn): void {
+  x.cells.setStep(x.step)
+  x.cells.setReached(Math.max(x.cells.reached, stepIndexOf(x.step)))
 }
 
 /**
- * 写完记下试用余量:试用用完(402)→ 余量 0、本岗没用过(信框里那封是回包带的模板);模型写成 → 本岗记为用过、余量照回包。
+ * 「确认」页的邮件预览(收件人、主题、短正文 —— 与真发出去的同一套模板)与求职信附件名。
  *
- * @param x 整机的可变格与写信回包。
- * @returns 无。
+ * @param x 本岗、英文姓名与信。
+ * @returns 邮件预览。
  */
-function trialAfterWrite(x: TrialWriteIn): void {
-  if (x.got.error === E_TRIAL) {
-    x.cells.trial.setLeft(0)
-    x.cells.trial.setHere(false)
-    return
+export function mailOf(x: MailIn): MailView {
+  const cover = x.letter.trim() !== TEXT_NONE
+  const parts = { title: x.job.title, city: x.job.city, province: x.job.province, name: x.name.trim() }
+  let coverName = TEXT_NONE
+  if (cover) {
+    coverName = coverFileOf(x.job.company)
   }
-  if (x.got.ai === true) {
-    x.cells.trial.setHere(true)
+  return {
+    to: x.job.company,
+    subject: mailSubjectOf(parts),
+    body: mailTextOf({ title: parts.title, city: parts.city, province: parts.province, name: parts.name, cover }),
+    cover: coverName,
   }
-  if (typeof x.got.left === 'number') {
-    x.cells.trial.setLeft(x.got.left)
-  }
-}
-
-/**
- * 写信接口的失败 → 词条键(署名 / 简历 / 限额照接口的码,其余一律「没写成」)。
- *
- * @param got 回包。
- * @returns 词条键。
- */
-function writeErrOf(got: LetterJson): string {
-  if (typeof got.error === 'string' && ERR_CODES.includes(got.error)) {
-    return ERR_KEY_HEAD + got.error
-  }
-  return ERR_KEY_WRITE
 }
 
 /**
  * 造「添加简历」手柄:点隐藏的文件框。
+ * 2026-10-10 投递框三步:收文件框本身,「上传新简历」「上传求职信」共用。
  *
- * @param c 整机的可变格。
+ * @param input 隐藏的文件框(还没挂上 = null)。
  * @returns 点击手柄。
  */
-export function makeAdd(c: ApplyCells): () => void {
+export function makeAdd(input: HTMLInputElement | null): () => void {
   return function onAdd(): void {
-    if (c.input != null) {
-      c.input.click()
+    if (input != null) {
+      input.click()
     }
   }
 }
 
 /**
  * 造文件框的 onChange:传到「我的简历」(同一个接口),传完重拉清单、选中新那份;满了 / 失败给提示。
+ * 2026-10-10 投递框三步:传法由调用方给(简历 upload、求职信 uploadLetter 共用这一个)。
  *
- * @param c 整机的可变格。
+ * @param x 整机的可变格与传法(要不要求职信那一种)。
  * @returns 文件框 onChange。
  */
-export function makeFile(c: ApplyCells): (e: React.ChangeEvent<HTMLInputElement>) => void {
+export function makeFile(x: FileMakeIn): (e: React.ChangeEvent<HTMLInputElement>) => void {
   return function onFile(e: React.ChangeEvent<HTMLInputElement>): void {
-    const files = e.target.files
-    if (files == null) {
-      return
-    }
-    const f = files[0]
-    e.target.value = TEXT_NONE
-    if (f != null) {
-      void upload({ cells: c, file: f })
+    const f = fileOf(e)
+    if (f != null && x.letter) {
+      void uploadLetter({ cells: x.cells, file: f })
+    } else if (f != null) {
+      void upload({ cells: x.cells, file: f })
     }
   }
+}
+
+/**
+ * 文件框里选好的那一个(取完清空,同一个文件再选还会触发)。
+ *
+ * @param e 文件框 onChange 事件。
+ * @returns 文件;没选给 null。
+ */
+function fileOf(e: React.ChangeEvent<HTMLInputElement>): File | null {
+  const files = e.target.files
+  if (files == null) {
+    return null
+  }
+  const f = files[0]
+  e.target.value = TEXT_NONE
+  if (f == null) {
+    return null
+  }
+  return f
 }
 
 /**
@@ -916,36 +787,59 @@ async function saveThenStep(x: PageHideIn): Promise<void> {
   const c = x.cells
   c.setBusy(true)
   c.setErr(ERR_NONE)
-  const err = await saveDraft({
-    jobId: c.job.id, name: c.name.trim(), letter: c.letter, resumeId: c.resumeId, keepalive: false,
-  })
+  const err = await saveDraft(draftOf({ cells: c, keepalive: false }))
   c.setBusy(false)
   if (err !== ERR_NONE) {
     c.setErr(err)
     return
   }
-  c.setStep(STEP_PREVIEW)
+  reach({ cells: c, step: STEP_CONFIRM })
+}
+
+/**
+ * 这一封的草稿素材(英文姓名不合规就先不带 —— 档案里没有、「确认」页还没填完)。
+ *
+ * @param x 整机的可变格与是否离页时发。
+ * @returns 草稿素材。
+ */
+function draftOf(x: DraftOfIn): DraftIn {
+  const c = x.cells
+  let name = TEXT_NONE
+  if (isSenderName(c.name.trim())) {
+    name = c.name.trim()
+  }
+  return { jobId: c.job.id, name, letter: c.letter, resumeId: c.resumeId, keepalive: x.keepalive }
 }
 
 /**
  * 发信:成功落「已投递」并通知外面;失败把原因摆在钮上方(没配发信 = 本地 dev 的 503,不算发出)。
+ * 2026-10-10 投递框三步:档案里没有英文姓名的,先核「确认」页现填的、随草稿存回档案(draft 接口顺带写 apply_prefs),再发。
  *
  * @param c 整机的可变格。
  * @returns 无。
  */
 async function send(c: ApplyCells): Promise<void> {
+  if (c.askName && isSenderName(c.name.trim()) === false) {
+    c.setErr(ERR_KEY_NAME)
+    return
+  }
   c.setBusy(true)
   c.setErr(ERR_NONE)
   let err = ERR_NONE
+  if (c.askName) {
+    err = await saveDraft(draftOf({ cells: c, keepalive: false }))
+  }
   try {
-    const r = await fetch(URL_SEND, {
-      method: METHOD_POST,
-      credentials: CRED_INCLUDE,
-      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ jobId: c.job.id }),
-    })
-    if (r.ok === false) {
-      err = errKeyOf(await r.json() as ErrJson)
+    if (err === ERR_NONE) {
+      const r = await fetch(URL_SEND, {
+        method: METHOD_POST,
+        credentials: CRED_INCLUDE,
+        headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+        body: JSON.stringify({ jobId: c.job.id }),
+      })
+      if (r.ok === false) {
+        err = errKeyOf(await r.json() as ErrJson)
+      }
     }
   } catch {
     err = ERR_FALLBACK
@@ -978,6 +872,7 @@ export function makeBack(c: ApplyCells): () => void {
 
 /**
  * 造「失焦 / 离页存草稿」手柄(审查 #8):只在第 2、3 步、信不空、姓名合规且选好了简历时存;失败把原因摆出来。
+ * 2026-10-10 投递框三步:信可以空(不附)、姓名不合规先不带,选好了简历就存。
  *
  * @param x 整机的可变格。
  * @returns 手柄。
@@ -985,11 +880,9 @@ export function makeBack(c: ApplyCells): () => void {
 export function makeQuietSave(x: PageHideIn): () => void {
   return function quietSave(): void {
     const c = x.cells
-    const midway = c.step === STEP_LETTER || c.step === STEP_PREVIEW
-    if (midway && c.letter.trim() !== TEXT_NONE && c.resumeId != null && isSenderName(c.name.trim())) {
-      void saveDraft({
-        jobId: c.job.id, name: c.name.trim(), letter: c.letter, resumeId: c.resumeId, keepalive: true,
-      }).then(c.setErr)
+    const midway = c.step === STEP_LETTER || c.step === STEP_CONFIRM
+    if (midway && c.resumeId != null) {
+      void saveDraft(draftOf({ cells: c, keepalive: true })).then(c.setErr)
     }
   }
 }

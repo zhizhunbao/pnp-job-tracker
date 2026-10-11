@@ -102,6 +102,11 @@ export type MyJobItem = {
    * 库里有投递邮箱(我的收藏:出「投递」钮的前提;2026-10-08)。
    */
   hasEmail: boolean
+
+  /**
+   * 发出时附了求职信(我的求职:出「求职信」链接的前提;2026-10-10 Frank「两处都改吧」)。
+   */
+  hasCover: boolean
 }
 
 /**

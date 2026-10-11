@@ -1,4 +1,4 @@
--- 宏观时间序列长表(把脉页省份段,契约 docs/design/把脉页省份段-契约-20260906.md §2):
+-- 宏观时间序列长表(把脉页省份段,契约 docs/design/就业把脉/把脉页省份段-契约-20260906.md §2):
 --   statcan 四表(人口/临时居民/GDP/失业率)+ ircc 三表(新发学签/PR 按年/配额)+ ee 抽选
 --   → etl/mart 段21 build_macro_series → data/mart/macro_series.json → seed 灌
 -- 流程(照 pilot-quota.sql 惯例):

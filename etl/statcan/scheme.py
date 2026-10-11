@@ -7,7 +7,7 @@ sys.path[0] 时 httpx/bs4 内部 import types 当场炸)。
 ① **域内接线形状 XxxIn** = dataclass —— 多入参函数的一参令载体(不是外来数据,不上 pydantic);
 ② **多返回值收编 XxxOut** = dataclass —— 原来 `return a, b` 的元组一律收成具名格。
 产出行不上 pydantic:raw/statcan/*.json 与 raw/ircc/npr_share.json 等**逐格顺序即文件契约**
-(契约 docs/design/把脉页省份段-契约-20260906.md §1),行构造留在 functions 的各段里按 K_ 键
+(契约 docs/design/就业把脉/把脉页省份段-契约-20260906.md §1),行构造留在 functions 的各段里按 K_ 键
 逐格写全,校验靠各步自校硬闸。
 2026-09-06 立域:段3/段4 的形状自 etl/ircc/scheme.py **原样搬来**(docstring 一字未改);
 段2/段5 是新写。

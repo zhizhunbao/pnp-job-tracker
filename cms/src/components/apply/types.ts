@@ -166,124 +166,105 @@ export type ApplyStartView = {
   sentAt: string
 
   /**
-   * AI 按 JD 写信还剩几个职位的试用(Pro 不限 = null;2026-10-07 批 C)。
+   * 是不是 Pro(2026-10-10 投递框三步:AI 写信试用撤,原 trialLeft / trialHere 两格退役;不是 Pro 点「按职位改写」弹升级框)。
    */
-  trialLeft: number | null
+  pro: boolean
 
   /**
-   * 本岗用过 AI 写信没有(用过的再写不扣)。
+   * 回复邮箱(用户注册邮箱;「确认」页摆)。
    */
-  trialHere: boolean
+  replyTo: string
 }
 
 /**
- * 试用那几格(2026-10-07 批 C):整机写信时要改。
+ * 求职信单选的一项(2026-10-10 投递框三步:这一岗的草稿、按职位改写出来的、刚上传的、写过的信;「不附求职信」也是一项)。
+ * 原 AI 写信试用那几格的形状(TrialCells / TrialPanel / TrialHook / TrialWriteIn / AiOpenIn)随试用撤。
  */
-export type TrialCells = {
+export type LetterOpt = {
   /**
-   * 还剩几个职位的试用(Pro = null)。
+   * 选项身份键(none / draft / ai / up<上传时刻>)。
    */
-  left: number | null
+  key: string
 
   /**
-   * 本岗用过 AI 写信没有。
+   * 文件名(「不附求职信」为空串,界面取词)。
    */
-  here: boolean
+  name: string
 
   /**
-   * 改剩几个。
+   * 小注的词条键(写于 / 上传于 / 这一岗的草稿 / 按职位改写;没有 = 空串)。
    */
-  setLeft: SetFn<number | null>
+  subKey: string
 
   /**
-   * 改本岗用过没有。
+   * 小注里的日期(ISO;不带日期 = 空串)。
    */
-  setHere: SetFn<boolean>
+  subAt: string
 
   /**
-   * 开 / 关升级框。
+   * 信的全文(「不附求职信」= 空串)。
    */
-  setUpsell: SetFn<boolean>
+  text: string
 }
 
 /**
- * 第 2 步读的试用面板。
+ * 三栏对照框(「按职位改写」Pro 才开;原来的 / 职位要求 / 改写后)。
  */
-export type TrialPanel = {
+export type RewriteView = {
   /**
-   * 还剩几个职位的试用(Pro = null,不出余量)。
+   * 正在写。
    */
-  left: number | null
+  busy: boolean
 
   /**
-   * 试用用完、本岗也没用过:信框上出升级条,「按职位重写」改成开升级框。
+   * 原来的信(点改写那一刻选中的那封;没附 = 空串)。
    */
-  locked: boolean
+  before: string
 
   /**
-   * 升级框开着没有。
+   * 这一岗的 JD 全文(写信接口一并回的)。
    */
-  upsell: boolean
+  jd: string
 
   /**
-   * 付完回哪儿(回到本岗投递区)。
+   * 改写后的信(没写成 = 空串)。
    */
-  back: string
+  after: string
 
   /**
-   * 开升级框。
+   * 没写成的词条键(没有 = 空串)。
    */
-  onUpsell: () => void
-
-  /**
-   * 关升级框。
-   */
-  onUpsellClose: () => void
+  err: string
 }
 
 /**
- * useTrial 交回的两半:整机用的格、第 2 步读的面板。
+ * 三栏对照框,或没开。
  */
-export type TrialHook = {
-  /**
-   * 整机用的格。
-   */
-  cells: TrialCells
-
-  /**
-   * 第 2 步读的面板。
-   */
-  panel: TrialPanel
-}
+export type MaybeRewrite = RewriteView | null
 
 /**
- * `trialAfterWrite` 的入参。
+ * 「确认」页的邮件预览与附件名。
  */
-export type TrialWriteIn = {
+export type MailView = {
   /**
-   * 整机的可变格。
+   * 收件人(公司名;雇主邮箱不出服务端)。
    */
-  cells: ApplyCells
+  to: string
 
   /**
-   * 写信回包。
+   * 邮件主题(与真发出去的同一个模板)。
    */
-  got: LetterJson
-}
-
-/**
- * `isAiOpenOf` 的入参。
- */
-export type AiOpenIn = {
-  /**
-   * 还剩几个职位的试用(Pro = null)。
-   */
-  left: number | null
+  subject: string
 
   /**
-   * 本岗用过 AI 写信没有。
+   * 邮件正文(短的那一段,不是求职信全文)。
    */
-  here: boolean
+  body: string
+
+  /**
+   * 求职信附件名(不附 = 空串)。
+   */
+  cover: string
 }
 
 /**
@@ -420,6 +401,7 @@ export type ApplyModalIn = {
 
 /**
  * 整机面板(`useApply` 交出;各件只读它)。
+ * 2026-10-10 投递框三步:步数行换页签、求职信改单选 + 预览、AI 试用撤、第 3 步改「确认」。
  */
 export type ApplyPanel = {
   /**
@@ -438,14 +420,24 @@ export type ApplyPanel = {
   step: string
 
   /**
-   * 当前步在前三步里的序号。
+   * 到过的最远一步的序号(这一步及之前的页签能点)。
    */
-  stepIndex: number
+  reached: number
 
   /**
-   * 文本框里的英文姓名。
+   * 英文姓名(档案里的,或「确认」页现填的)。
    */
   name: string
+
+  /**
+   * 档案里没有合规的英文姓名:「确认」页出输入框。
+   */
+  askName: boolean
+
+  /**
+   * 回复邮箱。
+   */
+  replyTo: string
 
   /**
    * 本人的简历清单。
@@ -458,14 +450,49 @@ export type ApplyPanel = {
   resumeId: number | null
 
   /**
-   * 求职信。
+   * 选中那份简历的原件地址(没选 = 空串)。
+   */
+  resumeSrc: string
+
+  /**
+   * 选中那份简历的 MIME(PDF 才在旁边画首页)。
+   */
+  resumeMime: string
+
+  /**
+   * 选中那份简历的文件名。
+   */
+  resumeName: string
+
+  /**
+   * 求职信单选的各项(这一岗的、改写的、上传的;「不附」另给。10-10 Frank「两处都改吧」:写过的信不再列)。
+   */
+  opts: LetterOpt[]
+
+  /**
+   * 「不附求职信」那一项。
+   */
+  noneOpt: LetterOpt
+
+  /**
+   * 选中哪一项(选项键)。
+   */
+  pick: string
+
+  /**
+   * 求职信(选中那一项的正文,可改)。
    */
   letter: string
 
   /**
-   * 正在按 JD 写信。
+   * 正在就地改信(预览换成多行框)。
    */
-  writing: boolean
+  editing: boolean
+
+  /**
+   * 信里写不进 PDF 的字。
+   */
+  badChars: string[]
 
   /**
    * 正在上传简历。
@@ -473,9 +500,34 @@ export type ApplyPanel = {
   uploading: boolean
 
   /**
-   * 信里写不进 PDF 的字。
+   * 正在上传求职信(抽字)。
    */
-  badChars: string[]
+  letterBusy: boolean
+
+  /**
+   * 简历「按职位改写」Pro 点了:出「即将上线」一句。
+   */
+  soon: boolean
+
+  /**
+   * 升级框开着没有。
+   */
+  upsell: boolean
+
+  /**
+   * 付完回哪儿(回到本岗投递框)。
+   */
+  back: string
+
+  /**
+   * 三栏对照框(没开 = null)。
+   */
+  rw: MaybeRewrite
+
+  /**
+   * 「确认」页的邮件预览与附件名。
+   */
+  mail: MailView
 
   /**
    * 错误 / 提示词条键(没有 = 空串)。
@@ -498,6 +550,11 @@ export type ApplyPanel = {
   canNext: boolean
 
   /**
+   * 点页签(到过的才走)。
+   */
+  onTab: (key: string) => void
+
+  /**
    * 改英文姓名。
    */
   onName: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -508,19 +565,44 @@ export type ApplyPanel = {
   pickOf: PickOfFn
 
   /**
-   * 隐藏的文件框挂上 / 卸下。
+   * 简历的隐藏文件框挂上 / 卸下。
    */
   onInputMount: (el: HTMLInputElement | null) => void
 
   /**
-   * 点「添加简历」(弹文件框)。
+   * 点「上传新简历」(弹文件框)。
    */
   onAdd: () => void
 
   /**
-   * 文件框选好了文件(上传)。
+   * 简历文件框选好了文件(上传)。
    */
   onFile: (e: React.ChangeEvent<HTMLInputElement>) => void
+
+  /**
+   * 求职信的隐藏文件框挂上 / 卸下。
+   */
+  onLetterInputMount: (el: HTMLInputElement | null) => void
+
+  /**
+   * 点「上传求职信」(弹文件框)。
+   */
+  onLetterAdd: () => void
+
+  /**
+   * 求职信文件框选好了文件(抽字,成新的一项)。
+   */
+  onLetterFile: (e: React.ChangeEvent<HTMLInputElement>) => void
+
+  /**
+   * 选求职信某一项的手柄(按项造)。
+   */
+  letterPickOf: LetterPickOfFn
+
+  /**
+   * 点预览右上「修改」。
+   */
+  onEdit: () => void
 
   /**
    * 改信。
@@ -533,17 +615,37 @@ export type ApplyPanel = {
   onLetterBlur: () => void
 
   /**
-   * 点「按职位重写」。
+   * 求职信卡头「按职位改写」。
    */
-  onRewrite: () => void
+  onLetterRewrite: () => void
 
   /**
-   * 试用面板(2026-10-07 批 C)。
+   * 简历卡头「按职位改写」。
    */
-  trial: TrialPanel
+  onResumeRewrite: () => void
 
   /**
-   * 主钮(下一步 / 预览 / 发送)。
+   * 关升级框。
+   */
+  onUpsellClose: () => void
+
+  /**
+   * 对照框「再写一次」。
+   */
+  onRwAgain: () => void
+
+  /**
+   * 对照框「用这一版」。
+   */
+  onRwUse: () => void
+
+  /**
+   * 关对照框。
+   */
+  onRwClose: () => void
+
+  /**
+   * 主钮(下一步 / 投出)。
    */
   onNext: () => void
 
@@ -551,11 +653,6 @@ export type ApplyPanel = {
    * 上一步。
    */
   onBack: () => void
-
-  /**
-   * 第 3 步的逐项检查面板。
-   */
-  check: CheckPanel
 }
 
 /**
@@ -569,19 +666,8 @@ export type ApplyStepIn = {
 }
 
 /**
- * ApplyJob 的 props。
+ * (ApplyJob 的 props ApplyJobIn 2026-10-10 随「职位信息」分区撤。)
  */
-export type ApplyJobIn = {
-  /**
-   * 本岗。
-   */
-  job: ApplyJobView
-
-  /**
-   * 职位名底下那行灰字。
-   */
-  titleSub: string
-}
 
 /**
  * 界面语三字面量(各域自抄)。
@@ -606,31 +692,6 @@ export type ApplyTitled = {
    * 库里存好的韩文译名;'' = 没有。
    */
   titleKo: string
-}
-
-/**
- * `startStepOf` 的入参。
- */
-export type StartStepIn = {
-  /**
-   * 这一岗的投递状态。
-   */
-  status: string
-
-  /**
-   * 草稿里的信。
-   */
-  cover: string
-
-  /**
-   * 选用哪一份简历。
-   */
-  resumeId: number | null
-
-  /**
-   * 英文署名。
-   */
-  name: string
 }
 
 /**
@@ -679,31 +740,6 @@ export type ErrJson = {
 }
 
 /**
- * 写信接口的回包。
- */
-export type LetterJson = {
-  /**
-   * 信。
-   */
-  text?: string
-
-  /**
-   * 是不是模型按 JD 写的(false = 写不成,给的兜底模板信)。
-   */
-  ai?: boolean
-
-  /**
-   * 写完还剩几个职位的试用(Pro = null);缺席 = 接口没给。
-   */
-  left?: number | null
-
-  /**
-   * 错误码。
-   */
-  error?: string
-}
-
-/**
  * 简历清单接口的回包。
  */
 export type ResumeFilesJson = {
@@ -735,6 +771,7 @@ export type UploadMetaJson = {
 
 /**
  * 整机的可变格(工厂们共用一份落格)。
+ * 2026-10-10 投递框三步:写信 / 试用几格撤,加页签、求职信单选、上传求职信、升级框与对照框几格。
  */
 export type ApplyCells = {
   /**
@@ -743,14 +780,29 @@ export type ApplyCells = {
   job: ApplyJobView
 
   /**
+   * 是不是 Pro。
+   */
+  pro: boolean
+
+  /**
    * 当前步。
    */
   step: string
 
   /**
-   * 文本框里的英文姓名。
+   * 到过的最远一步的序号。
+   */
+  reached: number
+
+  /**
+   * 英文姓名。
    */
   name: string
+
+  /**
+   * 档案里没有合规的英文姓名(「确认」页现填,投出前存回档案)。
+   */
+  askName: boolean
 
   /**
    * 信。
@@ -758,9 +810,14 @@ export type ApplyCells = {
   letter: string
 
   /**
-   * 现在这封信是按哪一份简历写的(还没写 = null)。
+   * 选中的求职信项。
    */
-  letterFor: number | null
+  pick: string
+
+  /**
+   * 这一岗的、改写的、上传的那几项。
+   */
+  mine: LetterOpt[]
 
   /**
    * 选用的简历 id。
@@ -768,9 +825,19 @@ export type ApplyCells = {
   resumeId: number | null
 
   /**
-   * 隐藏的文件框。
+   * 三栏对照框。
+   */
+  rw: MaybeRewrite
+
+  /**
+   * 简历的隐藏文件框。
    */
   input: HTMLInputElement | null
+
+  /**
+   * 求职信的隐藏文件框。
+   */
+  letterInput: HTMLInputElement | null
 
   /**
    * 改步。
@@ -778,14 +845,29 @@ export type ApplyCells = {
   setStep: SetFn<string>
 
   /**
+   * 改到过的最远一步。
+   */
+  setReached: SetFn<number>
+
+  /**
    * 改信。
    */
   setLetter: SetFn<string>
 
   /**
-   * 改「这封信按哪份简历写的」。
+   * 改选中的求职信项。
    */
-  setLetterFor: SetFn<number | null>
+  setPick: SetFn<string>
+
+  /**
+   * 改「这一岗的、改写的、上传的」那几项。
+   */
+  setMine: SetFn<LetterOpt[]>
+
+  /**
+   * 开 / 关就地改信。
+   */
+  setEditing: SetFn<boolean>
 
   /**
    * 改简历清单。
@@ -808,25 +890,34 @@ export type ApplyCells = {
   setBusy: SetFn<boolean>
 
   /**
-   * 改「在写信」。
-   */
-  setWriting: SetFn<boolean>
-
-  /**
-   * 改「在上传」。
+   * 改「在上传简历」。
    */
   setUploading: SetFn<boolean>
+
+  /**
+   * 改「在上传求职信」。
+   */
+  setLetterBusy: SetFn<boolean>
+
+  /**
+   * 开 / 关升级框。
+   */
+  setUpsell: SetFn<boolean>
+
+  /**
+   * 出「即将上线」。
+   */
+  setSoon: SetFn<boolean>
+
+  /**
+   * 改对照框。
+   */
+  setRw: SetFn<MaybeRewrite>
 
   /**
    * 发出去了的回调。
    */
   onSent: SentFn
-
-  /**
-   * 试用那几格(2026-10-07 批 C)。
-   */
-  trial: TrialCells
-
 }
 
 /**
@@ -859,20 +950,19 @@ export type CanNextIn = {
   badChars: string[]
 
   /**
-   * 信。
+   * 信(可以是空串 = 不附)。
    */
   letter: string
 
   /**
-   * 正在写信。
-   */
-  writing: boolean
-
-  /**
-   * 正在上传。
+   * 正在上传简历。
    */
   uploading: boolean
 
+  /**
+   * 正在上传求职信。
+   */
+  letterBusy: boolean
 }
 
 /**
@@ -1017,13 +1107,28 @@ export type UploadIn = {
 }
 
 /**
- * ApplyPick(一份简历一行)的 props。
+ * ApplyPick(单选一行)的 props(2026-10-10 起简历与求职信共用:文件名、默认小标、灰字小注)。
  */
 export type ApplyPickIn = {
   /**
-   * 这一份。
+   * 单选组的名字(简历一组、求职信一组)。
    */
-  r: ApplyResumeView
+  group: string
+
+  /**
+   * 文件名(或「不附求职信」)。
+   */
+  label: string
+
+  /**
+   * 灰字小注(上传于 / 写于 / 只发简历)。
+   */
+  sub: string
+
+  /**
+   * 默认小标(没有 = 空串)。
+   */
+  tag: string
 
   /**
    * 选中了没有。
@@ -1034,11 +1139,6 @@ export type ApplyPickIn = {
    * 选它。
    */
   onPick: () => void
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
 }
 
 /**
@@ -1054,6 +1154,11 @@ export type ApplyFileInputIn = {
    * 选好文件。
    */
   onPick: (e: React.ChangeEvent<HTMLInputElement>) => void
+
+  /**
+   * 收哪些文件(简历与求职信都是 PDF / Word)。
+   */
+  accept: string
 }
 
 /**
@@ -1278,56 +1383,6 @@ export type CheckPreviewHook = {
 }
 
 /**
- * `applyCheckOf`(装第 3 步逐项检查面板)的入参。
- */
-export type ApplyCheckPanelIn = {
-  /**
-   * 本岗。
-   */
-  job: ApplyJobView
-
-  /**
-   * 简历清单。
-   */
-  resumes: ApplyResumeView[]
-
-  /**
-   * 选中的简历 id。
-   */
-  resumeId: number | null
-
-  /**
-   * 英文姓名。
-   */
-  name: string
-
-  /**
-   * 信全文(邮件正文)。
-   */
-  letter: string
-
-  /**
-   * 预览三格。
-   */
-  pv: CheckPreviewHook
-
-  /**
-   * 改选中的简历 id。
-   */
-  setResumeId: SetFn<number | null>
-
-  /**
-   * 改错误词条键。
-   */
-  setErr: SetFn<string>
-
-  /**
-   * 整机的可变格(「改信」= 回第 2 步)。
-   */
-  cells: ApplyCells
-}
-
-/**
  * 换简历下拉的一项。
  */
 export type ResumePickItem = {
@@ -1343,26 +1398,126 @@ export type ResumePickItem = {
 }
 
 /**
- * `applyChecksOf` 的入参。
+ * 选求职信某一项的手柄工厂(按项造)。
  */
-export type ApplyChecksIn = {
+export type LetterPickOfFn = (o: LetterOpt) => () => void
+
+/**
+ * `makeSetTo` 的入参。
+ */
+export type SetToIn<T> = {
+  /**
+   * 落格。
+   */
+  set: SetFn<T>
+
+  /**
+   * 要设的值。
+   */
+  v: T
+}
+
+/**
+ * `makeFile` 的入参。
+ */
+export type FileMakeIn = {
+  /**
+   * 整机的可变格。
+   */
+  cells: ApplyCells
+
+  /**
+   * 是求职信(抽字成一项);false = 简历(传到「我的简历」)。
+   */
+  letter: boolean
+}
+
+/**
+ * `draftOf` 的入参。
+ */
+export type DraftOfIn = {
+  /**
+   * 整机的可变格。
+   */
+  cells: ApplyCells
+
+  /**
+   * 离页时发(fetch keepalive)。
+   */
+  keepalive: boolean
+}
+
+/**
+ * `goStep` / `reach` 的入参。
+ */
+export type GoStepIn = {
+  /**
+   * 整机的可变格。
+   */
+  cells: ApplyCells
+
+  /**
+   * 去哪一步。
+   */
+  step: string
+}
+
+/**
+ * `mailOf` 的入参。
+ */
+export type MailIn = {
   /**
    * 本岗。
    */
   job: ApplyJobView
 
   /**
-   * 简历清单。
-   */
-  resumes: ApplyResumeView[]
-
-  /**
-   * 选用的简历 id(还没选 = null)。
-   */
-  resumeId: number | null
-
-  /**
-   * 英文姓名(文本框里的,未去空白)。
+   * 英文姓名。
    */
   name: string
+
+  /**
+   * 信(空串 = 不附)。
+   */
+  letter: string
 }
+
+/**
+ * ApplyCard(一步一张分区卡:标题 + 卡头右侧钮 + 页签)的 props。
+ */
+export type ApplyCardIn = {
+  /**
+   * 整机面板。
+   */
+  p: ApplyPanel
+
+  /**
+   * 卡头右侧的钮(没有给 null)。
+   */
+  acts: React.ReactNode
+
+  /**
+   * 卡里的正文。
+   */
+  children: React.ReactNode
+}
+
+/**
+ * ApplyShow(选中那份简历的首页预览)的 props。
+ */
+export type ApplyShowIn = {
+  /**
+   * 原件地址。
+   */
+  src: string
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * (2026-10-10 Frank「大于 1000 就 拆 子桶」:写信 / 信清单 / 抽字三个回包与求职信页几个函数的入参 —— LetterJson、LettersJson、
+ * LetterItemJson、ExtractJson、LettersLoadIn、PastOptsIn、OptsTextIn、PickOptIn —— 随行为搬进子桶 letter/types.ts。)
+ */

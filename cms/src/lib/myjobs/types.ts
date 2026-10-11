@@ -94,6 +94,11 @@ export type MyJobDbRow = {
    * 库里有投递邮箱(我的收藏:能不能直接投;我的求职那条 SQL 给 false;2026-10-08)。
    */
   has_email: boolean | null
+
+  /**
+   * 发出时附了求职信(我的求职:cover_file 不空;收藏那条 SQL 给 false;2026-10-10 Frank「两处都改吧」)。
+   */
+  has_cover: boolean | null
 }
 
 /**
@@ -199,6 +204,11 @@ export type MyJobRow = {
    * 库里有投递邮箱(我的收藏表上出「投递」钮的前提;2026-10-08)。
    */
   hasEmail: boolean
+
+  /**
+   * 发出时附了求职信(我的求职表上出「求职信」链接的前提;2026-10-10 Frank「两处都改吧」)。
+   */
+  hasCover: boolean
 }
 
 /**

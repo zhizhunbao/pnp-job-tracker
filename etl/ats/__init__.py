@@ -3,7 +3,7 @@ workable/workday 的公开 JSON)抓岗。
 
 抓的是雇主自家 careers 页后端的原始挂岗(不是聚合站转发),产出就地写回一司一档的
 jobs.json + jobs/<职位>.md;ATS 专属的薪资抽取(extract_ats_salary)跟在同一条链上 ——
-「只对 ATS 生效的清洗步归 ats 域」(docs/design/etl分域-20260829.md §7 拍板点 8-②)。
+「只对 ATS 生效的清洗步归 ats 域」(docs/design/数据层/etl分域-20260829.md §7 拍板点 8-②)。
 2026-08-31 批F 立域(搬家批):04 自编号主管线迁入改名,META 自 sources/ats 役册搬来。
 2026-08-31 批H2 clean 横切层清算:薪资抽取件(原 clean/04b_extract_ats_salary.py)
 本体也迁进来了,门从 subprocess 包装改直调 —— 上面那句拍板点至此才真正兑现。

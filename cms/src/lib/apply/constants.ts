@@ -161,6 +161,11 @@ export const SUBJECT_TPL = 'Application for {{title}} - {{name}}'
 export const MAIL_FOOT = '\n\n--\nSent via Offer2PR (offer2pr.com). Resume and cover letter attached.'
 
 /**
+ * 不附求职信时的来源说明(2026-10-10 投递框三步:「不附求职信」只发简历,正文不提求职信)。
+ */
+export const MAIL_FOOT_RESUME = '\n\n--\nSent via Offer2PR (offer2pr.com). Resume attached.'
+
+/**
  * 求职信 PDF 文件名头(后接公司名的西文段)。
  */
 export const COVER_FILE_HEAD = 'Cover_Letter_'
@@ -362,8 +367,10 @@ export const E_MAIL = 'mail'
 
 /**
  * AI 按 JD 写信的免费试用用完了(402;回包带兜底模板信,前端出升级条;2026-10-07 批 C)。
+ * 2026-10-10 投递框三步(Frank「用户只要一点击,就弹收费。用户自己弄 不收费」):试用撤,不是 Pro 点「按职位改写」一律 402,
+ * 码由 trial 改叫 pro,回包不再带模板信。
  */
-export const E_TRIAL = 'trial'
+export const E_PRO = 'pro'
 
 /**
  * 退信回调:Resend 的事件名 —— 退信。
@@ -550,6 +557,11 @@ export const MAIL_BODY_DOT = '.'
  * 附件那一句。
  */
 export const MAIL_ATTACH = 'Please find my resume and cover letter attached.'
+
+/**
+ * 不附求职信时附件那一句(2026-10-10 投递框三步)。
+ */
+export const MAIL_ATTACH_RESUME = 'Please find my resume attached.'
 
 /**
  * 落款。

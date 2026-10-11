@@ -4,7 +4,7 @@
 合并进 processed/jobbank/postings.json;公司档(build_jobbank_companies)是本域的
 build —— 2026-08-31 Frank「build 应该每个域自己管自己的」,谁的数据谁管。
 2026-08-31 批F 立域(搬家批):三个抓岗件自编号主管线迁入改名,META 自
-sources/jobbank 役册搬来(docs/design/etl分域-20260829.md §7 拍板点 8)。
+sources/jobbank 役册搬来(docs/design/数据层/etl分域-20260829.md §7 拍板点 8)。
 
 META / METAS = 域即役的调度声明(2026-08-29 批2):role=挂哪个角色容器(SOURCE 环境变量),
 interval=本域一轮的间隔秒;入口固定 etl/jobbank/main.py,步骤清单在 main.py 里。

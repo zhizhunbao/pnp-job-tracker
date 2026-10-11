@@ -2171,7 +2171,7 @@ async function postTranslate(x: TranslateIn): Promise<string> {
  * launch 不再现查邮箱、不弹邮件投递框、不记「已投」,记一下投递埋点就跳投递页(会话过期由投递页的门送回职位页)。
  * 上文现查邮箱、邮件框、记「已投」、401 / 429 / 失败分流诸条,连同 loadApplyEmail / showApplyMiss / recordApplied /
  * makeCopyEmail 与登录 / 次数 / 失败三个浮层一并撤,只是历史。
- * 2026-10-09 A 批投递搬进弹框(docs/design/投递向导-照Azure-20261008.md 故事 1、2):launch 不再跳页,广播「要投这一岗」由全站骨架上的
+ * 2026-10-09 A 批投递搬进弹框(docs/design/我的/我的求职-20261009.md 故事 1、2):launch 不再跳页,广播「要投这一岗」由全站骨架上的
  * 投递框宿主弹框;未登录只弹注册 / 登录框(访客四题撤),已登录不再先过六步意向表(needIntent / 意向表单一段撤);
  * 跳页时代的在途闸 busy 随之撤(弹框是同步的)。
  *

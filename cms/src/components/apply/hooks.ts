@@ -3,6 +3,9 @@
  * 投递区的整机状态:当前步、英文姓名、选用的简历与清单、信(按哪份简历写的)、写信 / 上传 / 存发在途、错误;
  * 离页时存草稿(审查 #8)。另一台 useApplyStart 管投递区的取数。
  * 2026-10-07 二改:信由模型按 JD 每岗写一封(进第 2 步现写,可「按职位重写」),第 1 步按岗点选简历、就地添加。
+ * 2026-10-10 投递框三步:页签、求职信单选(写过的信进来就拉)+ 旁边预览、上传求职信、按职位改写只给 Pro(对照框)、
+ * 「确认」页;试用那台 useTrial 与「这封信按哪份简历写的」一格撤。
+ * 同日 Frank「两处都改吧」:不再拉写过的信(past 一格与 loadLetters 撤),单选项只剩这一岗的、本次上传 / 改写的与不附。
  *
  * @author Frank
  * @time 2026-10-07 03:00:00
@@ -11,19 +14,22 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { storedTitleOf, titleSubOf, useTitleTrans } from '@/components/jobtitle'
-import { pdfBadCharsOf } from '@/lib/apply'
+import { isSenderName, pdfBadCharsOf } from '@/lib/apply'
 import {
   ERR_NONE, EV_APPLY_NAV, EV_APPLY_OPEN, EV_APPLY_SENT, EV_PAGEHIDE, EV_POPSTATE, LOAD_BUSY, TEXT_NONE,
 } from './constants'
 import {
-  applyCheckOf, canNextOf, closeApply, isAiOpenOf, loadStart, makeAdd, makeAuthRetry, makeBack, makeFile,
-  makeLetterChange, makeNameChange, makeNext, makeOpenOf, makePickOf, makePreviewClose, makeQuietSave, makeRewrite,
-  makeUpsellClose, makeUpsellOpen, nextKeyOf, noteOpened, openFromEvent, readApplyId, sentOfEvent, startStepOf,
-  stepIndexOf, titledOf, upsellBackOf,
+  canNextOf, closeApply, loadStart, mailOf, makeAdd, makeAuthRetry, makeBack, makeFile, makeNameChange, makeNext,
+  makeOpenOf, makePickOf, makePreviewClose, makeQuietSave, makeSetTo, makeTab, nextKeyOf, noteOpened, openFromEvent,
+  readApplyId, resumeHrefOf, resumeMimeOf, resumeNameOf, sentOfEvent, startStepOf, titledOf, upsellBackOf,
 } from './functions'
+import {
+  draftOptsOf, firstPickOf, makeLetterChange, makeLetterPickOf, makeLetterRewrite, makeResumeRewrite,
+  makeRwUse, OPT_NONE_ITEM,
+} from './letter'
 import type {
   ApplyCells, ApplyHostPanel, ApplyPageIn, ApplyPanel, ApplyResumeView, ApplyStartPanel, ApplyStartView,
-  CheckPreviewHook, MaybeCheckPreview, SentFn, TrialHook,
+  CheckPreviewHook, LetterOpt, MaybeCheckPreview, MaybeRewrite, SentFn,
 } from './types'
 
 /**
@@ -32,74 +38,114 @@ import type {
  * @param x 起始态与发出后的回调。
  * @returns 面板(各件只读它)。
  */
+// eslint-disable-next-line local/function-length -- 整机的格一处声明一处交出(三步共用一份落格),拆开就要在几个钩子间来回传 setter
 export function useApply(x: ApplyPageIn): ApplyPanel {
   const s = x.start
   const [, , t] = useLang()
-  const [step, setStep] = useState(startStepOf({
-    status: s.status, cover: s.cover, resumeId: s.resumeId, name: s.senderName,
-  }))
+  const [step, setStep] = useState(startStepOf(s.status))
+  const [reached, setReached] = useState(0)
   const [name, setName] = useState(s.senderName)
+  const [askName] = useState(isSenderName(s.senderName) === false)
   const [letter, setLetter] = useState(s.cover)
-  const [letterFor, setLetterFor] = useState<number | null>(letterForOf(s))
+  const [mine, setMine] = useState<LetterOpt[]>(draftOptsOf(s))
+  const [pick, setPick] = useState(firstPickOf(s.cover))
+  const [editing, setEditing] = useState(false)
   const [resumes, setResumes] = useState<ApplyResumeView[]>(s.resumes)
   const [resumeId, setResumeId] = useState<number | null>(s.resumeId)
   const [err, setErr] = useState(ERR_NONE)
   const [busy, setBusy] = useState(false)
-  const [writing, setWriting] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [letterBusy, setLetterBusy] = useState(false)
   const [input, setInput] = useState<HTMLInputElement | null>(null)
-  const tr = useTrial(s)
-  const pv = useCheckPreview()
+  const [letterInput, setLetterInput] = useState<HTMLInputElement | null>(null)
+  const [upsell, setUpsell] = useState(false)
+  const [soon, setSoon] = useState(false)
+  const [rw, setRw] = useState<MaybeRewrite>(null)
   const cells: ApplyCells = {
     job: s.job,
+    pro: s.pro,
     step,
+    reached,
     name,
+    askName,
     letter,
-    letterFor,
+    pick,
+    mine,
     resumeId,
+    rw,
     input,
+    letterInput,
     setStep,
+    setReached,
     setLetter,
-    setLetterFor,
+    setPick,
+    setMine,
+    setEditing,
     setResumes,
     setResumeId,
     setErr,
     setBusy,
-    setWriting,
     setUploading,
+    setLetterBusy,
+    setUpsell,
+    setSoon,
+    setRw,
     onSent: x.onSent,
-    trial: tr.cells,
   }
   const quietSave = makeQuietSave({ cells })
   useSaveOnHide(quietSave)
 
   const badChars = pdfBadCharsOf(letter)
+  const chosen = { resumes, resumeId }
   return {
     t,
     job: s.job,
     step,
-    stepIndex: stepIndexOf(step),
+    reached,
     name,
+    askName,
+    replyTo: s.replyTo,
     resumes,
     resumeId,
+    resumeSrc: resumeHrefOf(resumeId),
+    resumeMime: resumeMimeOf(chosen),
+    resumeName: resumeNameOf(chosen),
+    opts: mine,
+    noneOpt: OPT_NONE_ITEM,
+    pick,
     letter,
-    writing,
-    uploading,
+    editing,
     badChars,
-    check: applyCheckOf({ job: s.job, resumes, resumeId, name, letter, pv, setResumeId, setErr, cells }),
+    uploading,
+    letterBusy,
+    soon,
+    upsell,
+    back: upsellBackOf(s.job.id),
+    rw,
+    mail: mailOf({ job: s.job, name, letter }),
     err,
     busy,
     nextKey: nextKeyOf(step),
-    canNext: canNextOf({ step, badChars, letter, writing, uploading }),
+    canNext: canNextOf({ step, badChars, letter, uploading, letterBusy }),
+    onTab: makeTab(cells),
     onName: makeNameChange(setName),
     pickOf: makePickOf({ setResumeId, setErr }),
     onInputMount: setInput,
-    onAdd: makeAdd(cells),
-    onFile: makeFile(cells),
-    onLetter: makeLetterChange(setLetter),
+    onAdd: makeAdd(input),
+    onFile: makeFile({ cells, letter: false }),
+    onLetterInputMount: setLetterInput,
+    onLetterAdd: makeAdd(letterInput),
+    onLetterFile: makeFile({ cells, letter: true }),
+    letterPickOf: makeLetterPickOf(cells),
+    onEdit: makeSetTo({ set: setEditing, v: true }),
+    onLetter: makeLetterChange(cells),
     onLetterBlur: quietSave,
-    onRewrite: makeRewrite(cells),
-    trial: tr.panel,
+    onLetterRewrite: makeLetterRewrite(cells),
+    onResumeRewrite: makeResumeRewrite(cells),
+    onUpsellClose: makeSetTo({ set: setUpsell, v: false }),
+    onRwAgain: makeLetterRewrite(cells),
+    onRwUse: makeRwUse(cells),
+    onRwClose: makeSetTo<MaybeRewrite>({ set: setRw, v: null }),
     onNext: makeNext(cells),
     onBack: makeBack(cells),
   }
@@ -114,29 +160,6 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
 export function useCheckPreview(): CheckPreviewHook {
   const [preview, setPreview] = useState<MaybeCheckPreview>(null)
   return { preview, openOf: makeOpenOf(setPreview), onPreviewClose: makePreviewClose(setPreview) }
-}
-
-/**
- * 试用那几格(2026-10-07 批 C):剩几个、本岗用过没有、升级框开没开;交回整机用的格与第 2 步读的面板。
- *
- * @param s 起始态。
- * @returns 格与面板。
- */
-function useTrial(s: ApplyStartView): TrialHook {
-  const [left, setLeft] = useState<number | null>(s.trialLeft)
-  const [here, setHere] = useState(s.trialHere)
-  const [upsell, setUpsell] = useState(false)
-  return {
-    cells: { left, here, setLeft, setHere, setUpsell },
-    panel: {
-      left,
-      locked: isAiOpenOf({ left, here }) === false,
-      upsell,
-      back: upsellBackOf(s.job.id),
-      onUpsell: makeUpsellOpen(setUpsell),
-      onUpsellClose: makeUpsellClose(setUpsell),
-    },
-  }
 }
 
 /**
@@ -165,19 +188,6 @@ function useSaveOnHide(save: () => void): void {
     }
     return last
   }, [])
-}
-
-/**
- * 草稿里的信是按哪份简历写的(有信就当是按草稿里记的那份写的;没信 = null,进第 2 步现写)。
- *
- * @param s 起始态。
- * @returns 简历 id 或 null。
- */
-function letterForOf(s: ApplyStartView): number | null {
-  if (s.cover === TEXT_NONE) {
-    return null
-  }
-  return s.resumeId
 }
 
 /**

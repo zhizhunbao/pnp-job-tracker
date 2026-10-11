@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-// 雇主 × 行业组桶行(雇主板重构批一,2026-08-30;设计稿 docs/design/雇主板重构-20260829.md)——
+// 雇主 × 行业组桶行(雇主板重构批一,2026-08-30;设计稿 docs/design/雇主/雇主板重构-20260829.md)——
 // ETL 写入。切面星住桶行:同一雇主在不同行业下星级不同(裸 LMIA 总量霸榜的老病根,
 // 证据必须按行业交叉)。indGroup='' = 指定雇主但无在招线索的通用桶;'other' = 未分类岗桶。
 // 2026-09-13 Frank「八组」:桶键由本站 27 大类(列 broad)改切 8 行业组(列 ind_group,键 = etl/noc GROUP_KEYS,

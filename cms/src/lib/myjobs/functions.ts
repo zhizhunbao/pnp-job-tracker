@@ -33,6 +33,7 @@ export function toMyJobRow(r: MyJobDbRow): MyJobRow {
     updatedAt: isoOf(r.updated_at),
     closed: r.job_status === JOB_CLOSED,
     hasEmail: r.has_email === true,
+    hasCover: r.has_cover === true,
   }
 }
 

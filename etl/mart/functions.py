@@ -1,6 +1,6 @@
 """
 mart 域函数 —— 全部行为住这(照 pnp/company 全溶样张,方言律全集见
-docs/design/etl分域-20260829.md §4)。
+docs/design/数据层/etl分域-20260829.md §4)。
 
 原六个文件 2026-08-31 批I 溶入本文件:四个步骤件(score / mart / rankings / stats)一步一段,
 两个私件库(grades 档位 / visa_flag 身份预筛)各成一段;大件 build_mart 按其内部关注点拆成
@@ -7298,7 +7298,7 @@ def to_city_i18n(table: dict) -> dict:
 def build_macro_series() -> list:
     """五路官方序列 → macro_series 长表(一行 = 一个 geo × key × period 的点)。
 
-    契约 docs/design/把脉页省份段-契约-20260906.md §2/§3:statcan 四表(人口/临时居民/GDP/
+    契约 docs/design/就业把脉/把脉页省份段-契约-20260906.md §2/§3:statcan 四表(人口/临时居民/GDP/
     失业率,目录驱动:加一张表 = 丢一个 json)+ ircc 三表(新发学签流量 / PR 按年 / 配额)
     + ee 历次抽选。**官方缺位的点不出行**(不折 0 —— 折了就是替官方编数)。
     五路输入全缺 → [](seed 侧 -1 跳过保留旧行);输入在而 0 行 → 抛错断整个 mart,

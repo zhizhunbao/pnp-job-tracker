@@ -1,4 +1,4 @@
--- 雇主池两表(雇主板重构批一,2026-08-30;设计稿 docs/design/雇主板重构-20260829.md)
+-- 雇主池两表(雇主板重构批一,2026-08-30;设计稿 docs/design/雇主/雇主板重构-20260829.md)
 -- 惯例(db-push-minefield):建表一律手写 SQL 先行,别让 DB_PUSH 猜;**人工审后手动跑生产**,
 -- 之后再部署带 collection/seed 白名单的代码(新维度表六步:忘给 payload_locked_documents_rels
 -- 补列 = seed 500 无 body)。

@@ -2992,7 +2992,7 @@ export const RESUME_FILE_SET_DEFAULT = `UPDATE user_resumes SET is_default = (id
 const MYJOBS_FROM = `s.id, s.job_id, s.title, s.company, s.status, s.created_at, s.updated_at,
        j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province,
        j.salary_text, j.salary_annual, j.date_posted, j.status::text AS job_status, c.slug AS company_slug,
-       (COALESCE(j.apply_email, '') <> '') AS has_email
+       (COALESCE(j.apply_email, '') <> '') AS has_email, false AS has_cover
      FROM saved_jobs s LEFT JOIN jobs j ON j.id = s.job_id
      LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
      LEFT JOIN companies c ON c.id = j.company_id`
@@ -3004,14 +3004,16 @@ const MYJOBS_FROM = `s.id, s.job_id, s.title, s.company, s.status, s.created_at,
  * (sent / replied / bounced;草稿与正在发的不列),按发出时刻倒序;列名对齐上面那份,线格式不变
  * (投递日期 = 发出时刻,职位名 / 公司名用投递时的快照)。mailto 年代收藏表上记的「已投」不再列进来(那只是打开过邮箱框)。
  * applications_user_sent_idx 管这条。
- * 2026-10-08 照 AIApply 重设计(docs/design/我的模块-照AIApply-20261007.md 故事 5):草稿也列(写到一半关了页的人要能找回那封信),
+ * 2026-10-08 照 AIApply 重设计(docs/design/我的/我的求职-20261009.md 故事 5):草稿也列(写到一半关了页的人要能找回那封信),
  * 排最前、最近改的在前;正在发的(sending)仍不列。草稿没有发出时刻,投递日期格空。has_email 在这张表里用不上,给 false。
+ * 2026-10-10 Frank「两处都改吧」:加 has_cover —— 发出时附没附求职信(投递框「不附求职信」只发简历,send 记空的 cover_file),
+ * 没附的行不出求职信链接;收藏那份(MYJOBS_FROM)给 false。
  */
 export const MYJOBS_APPLIED = `SELECT a.id, a.job_id, a.job_title AS title, a.company, a.status, a.created_at,
        COALESCE(a.sent_at, a.updated_at) AS updated_at,
        j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province,
        j.salary_text, j.salary_annual, j.date_posted, j.status::text AS job_status, c.slug AS company_slug,
-       false AS has_email
+       false AS has_email, (COALESCE(a.cover_file, '') <> '') AS has_cover
      FROM applications a LEFT JOIN jobs j ON j.id = a.job_id
      LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
      LEFT JOIN companies c ON c.id = j.company_id

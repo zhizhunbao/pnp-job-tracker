@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-// 宏观时间序列长表(把脉页省份段,契约 docs/design/把脉页省份段-契约-20260906.md §2)— ETL 写入,
+// 宏观时间序列长表(把脉页省份段,契约 docs/design/就业把脉/把脉页省份段-契约-20260906.md §2)— ETL 写入,
 // 源=StatCan WDS 四表 + IRCC 开放数据三表 + EE 历次抽选(etl/mart 段21 汇装)。
 // 一行 = 一个(geo, key, period)点;唯一键 geo+key+period(DDL docs/sql/macro-series.sql)。
 // 🔴 官方缺位的点根本不出行(ETL 侧不折 0);as_of 说的是「这个点截至什么时候」——

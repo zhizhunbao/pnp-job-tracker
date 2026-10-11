@@ -140,6 +140,36 @@ export type MailPartsIn = {
 }
 
 /**
+ * `mailTextOf` 的入参(2026-10-10 投递框三步:比标题多一格「附不附求职信」)。
+ */
+export type MailTextIn = {
+  /**
+   * 职位名。
+   */
+  title: string
+
+  /**
+   * 城市(没有 = 空串)。
+   */
+  city: string
+
+  /**
+   * 省码(没有 = 空串)。
+   */
+  province: string
+
+  /**
+   * 英文署名。
+   */
+  name: string
+
+  /**
+   * 附求职信(false = 只发简历)。
+   */
+  cover: boolean
+}
+
+/**
  * `resumeFileOf` 的入参。
  */
 export type ResumeFileIn = {
@@ -955,6 +985,7 @@ export type ApplyUserJobIn = {
 
 /**
  * 取起始态的入参:按人按岗取数,加上路由层算好的试用余量(lib/quota 的账,上层注进来)。
+ * 2026-10-10 投递框三步:试用余量换成路由层认好的「是不是 Pro」与回复邮箱。
  */
 export type ApplyStartIn = {
   /**
@@ -973,14 +1004,14 @@ export type ApplyStartIn = {
   jobId: number
 
   /**
-   * AI 写信还剩几个职位的试用(Pro = null)。
+   * 是不是 Pro(2026-10-10 投递框三步:AI 写信试用撤,「按职位改写」只看这一格;原 trialLeft / trialHere 两格随之退役)。
    */
-  trialLeft: number | null
+  pro: boolean
 
   /**
-   * 本岗用过 AI 写信没有。
+   * 回复邮箱(用户注册邮箱;「确认」页摆给本人看)。
    */
-  trialHere: boolean
+  replyTo: string
 }
 
 /**
@@ -1288,14 +1319,15 @@ export type ApplyStart = {
   sentAt: string
 
   /**
-   * AI 按 JD 写信还剩几个职位的试用(Pro 不限 = null;2026-10-07 批 C)。
+   * 是不是 Pro(2026-10-10 投递框三步:AI 写信试用撤 —— 原 trialLeft / trialHere 两格退役,
+   * 不是 Pro 点「按职位改写」就弹升级框)。
    */
-  trialLeft: number | null
+  pro: boolean
 
   /**
-   * 本岗用过 AI 写信没有(用过的再写不扣)。
+   * 回复邮箱(用户注册邮箱;「确认」页摆给本人看)。
    */
-  trialHere: boolean
+  replyTo: string
 }
 
 /**

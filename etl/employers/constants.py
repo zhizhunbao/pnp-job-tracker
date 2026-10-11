@@ -1,6 +1,6 @@
 """employers.constants — 雇主池词表(三源列键 / 入门档 / 星级权重 / 归一后缀表 / IN·OUT)。
 
-2026-08-30 立域(雇主板重构批一,设计稿 docs/design/雇主板重构-20260829.md):
+2026-08-30 立域(雇主板重构批一,设计稿 docs/design/雇主/雇主板重构-20260829.md):
 一行 = 一雇主(全局表)+ 雇主×行业组分桶表;零新抓取,纯三源聚合(jobs/designated/LMIA)。
 2026-09-13 Frank「八组」:桶键由本站 27 大类改为 8 行业组(noc.group_of,与把脉页同一份分组),
 桶表列 broad → indGroup(DDL docs/sql/employer-pool-groups-20260913.sql);星级/水位/LMIA 归桶口径不变,只是桶更粗。

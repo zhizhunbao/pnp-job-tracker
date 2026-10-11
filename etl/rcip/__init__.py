@@ -4,7 +4,7 @@ rcip 域:乡村社区移民试点(Rural Community Immigration Pilot)—— 14 �
 
 沿革:2026-08-31 批E 从 pilot 拆出(Frank 拍板「拆成三个 很少有人有法语」——
 法语是极少数用户的信号,FCIP 单拎让 RCIP 这条主流路径干净;落地细则见
-docs/design/etl分域-20260829.md §7 拍板点 8)。**双身份社区 Sudbury, ON 与 Timmins, ON
+docs/design/数据层/etl分域-20260829.md §7 拍板点 8)。**双身份社区 Sudbury, ON 与 Timmins, ON
 的抽取器住本域**(拍板点 8-②):IRCC 名单页 Rural 与 Francophone 两节都列它俩,
 抽取只做一次,产出行照旧逐行带 RCIP / FCIP / RCIP+FCIP 的 type,fcip 域不重复抽取。
 

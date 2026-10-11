@@ -1,34 +1,14 @@
 /*
  * 投递页(2026-10-07 B2)。骨架照职位详情页:860 读宽、白卡、卡内右上角返回钮、H1 右侧给返回钮留位。
  * 同日独立页撤、搬进「我的」页投递一节:外框(读宽、白卡、返回钮、H1)随之撤,「我的」页自有外框。
+ * 2026-10-10 投递框三步:步小标题 .h2 / .h2Row、英文姓名一行 .field、「添加简历」一行 .addRow、写信占位 .writing、
+ * 试用余量 .trialLeft 与黄条 .locked 随页签、卡头钮与试用撤。
  */
 
 /*
  * (2026-10-09 投递弹框换 section 形时本桶起的名字两行 .nameEn / .nameSub 同日随 N 批退役,改用全站 name 桶;
  * 更早的「本岗职位卡与步数行之间的空」.job 随 JobCard 撤。)
  */
-
-/*
- * 一步的小标题(简历 / 求职信 / 预览)。
- */
-.h2 {
-  margin: 14px 0 8px;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-/*
- * 英文姓名一行:标签在上、输入框在下。
- */
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 14px;
-  font-size: 13px;
-  color: #374151;
-}
 
 /*
  * 英文姓名输入框。
@@ -266,13 +246,13 @@
 
 /*
  * 一份简历一行:单选框、文件名、默认小标、上传日期;窄屏折行。
+ * 2026-10-10 投递框三步:简历与求职信共用,单选框在左、文件名与小注两行在右。
  */
 .pick {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
+  gap: 10px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
@@ -280,17 +260,35 @@
 }
 
 /*
+ * 选中那一行描蓝边。
+ */
+.pickOn {
+  border-color: var(--primary);
+}
+
+/*
+ * 文件名与小注两行。
+ */
+.pickText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/*
  * 文件名(长名字可断)。
  */
 .pickName {
   color: var(--text);
-  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 /*
  * 默认那份的小标(浅绿底,同「我的简历」的默认标)。
  */
 .pickTag {
+  margin-left: 6px;
   padding: 1px 6px;
   border-radius: 999px;
   background: #dcfce7;
@@ -307,17 +305,6 @@
 }
 
 /*
- * 「添加简历」一行。
- */
-.addRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-/*
  * 隐藏的文件框(由「添加简历」钮代点)。
  */
 .hidden {
@@ -325,49 +312,132 @@
 }
 
 /*
- * 第 2 步标题行:左标题、右「按职位重写」。
- */
-.h2Row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-/*
- * 写信时占住信框的位置(不跳)。
- */
-.writing {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 320px;
-  border: 1px dashed var(--border);
-  border-radius: 8px;
-}
-
-/*
  * 求职信标题行右边那一组:试用余量 + 「按职位重写」(2026-10-07 批 C)。
+ * 2026-10-10 投递框三步:改作分区卡卡头右侧那一组钮(「按职位改写」「上传新简历 / 上传求职信」)。
  */
 .h2Acts {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
 }
 
 /*
- * 「AI 试用还剩 N 次」小字。
+ * 2026-10-10 投递框三步:分区卡卡头 —— 左步名、右本步的钮(手机上钮折到下一行)。
  */
-.trialLeft {
-  font-size: 12.5px;
-  color: var(--text2);
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 /*
- * 试用用完的黄条:与信框拉开。
+ * 页签下面的正文与页签拉开。
  */
-.locked {
-  margin-bottom: 8px;
+.cardBody {
+  margin-top: 12px;
+}
+
+/*
+ * 左列单选、右列预览(手机竖排,预览在下面)。
+ */
+.split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+/*
+ * 选中那份简历的首页预览框(pdf.js 按框的宽高缩放整页)。
+ */
+.show {
+  position: relative;
+  height: 440px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #f9fafb;
+  overflow: hidden;
+}
+
+/*
+ * 预览画完前 / 画不了时的那一句(盖在框中间)。
+ */
+.showPh {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text2);
+  font-size: 13px;
+}
+
+/*
+ * 求职信预览纸:右上「修改」。
+ */
+.paper {
+  position: relative;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+/*
+ * 预览纸右上的「修改」。
+ */
+.paperEdit {
+  float: right;
+  margin: 0 0 6px 8px;
+}
+
+/*
+ * 信 / 邮件正文 / JD 照原样换行。
+ */
+.paperText {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+/*
+ * 邮件预览的正文与上面两行拉开。
+ */
+.mailText {
+  margin-top: 10px;
+}
+
+/*
+ * 对照框三栏(手机竖排)。
+ */
+.rwCols {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .rwCols {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/*
+ * 对照框每栏的灰字栏名。
+ */
+.rwLabel {
+  margin-bottom: 6px;
+  color: var(--text2);
+  font-size: 13px;
 }

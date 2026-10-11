@@ -266,7 +266,7 @@ export function cellRowOf(x: CellRowIn): MyJobCellRow {
     unsaveText: unsaveTextOf(x),
     onUnsave: unsaveOf(x),
     resumeHref: fileHrefOf({ x, tail: FILE_RESUME_TAIL }),
-    coverHref: fileHrefOf({ x, tail: FILE_COVER_TAIL }),
+    coverHref: coverHrefOf(x),
     resumeText: x.t('mj.col.resume'),
     coverText: x.t('mj.col.cover'),
     continueHref: continueHrefOf(x),
@@ -302,6 +302,19 @@ function fileHrefOf(y: FileHrefIn): string {
     return TEXT_NONE
   }
   return URL_FILE_HEAD + y.x.item.id + y.tail
+}
+
+/**
+ * 求职信附件地址:同上,但发出时没附求职信(投递框选了「不附求职信」)的行给空串,不出链接(2026-10-10 Frank「两处都改吧」)。
+ *
+ * @param x 哪张清单与这一行。
+ * @returns 地址或空串。
+ */
+function coverHrefOf(x: CellRowIn): string {
+  if (x.item.hasCover === false) {
+    return TEXT_NONE
+  }
+  return fileHrefOf({ x, tail: FILE_COVER_TAIL })
 }
 
 /**

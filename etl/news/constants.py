@@ -6,7 +6,7 @@ K_TITLE/K_DATE/K_URL 与 fetch 的 feed 三键同名同值 = 各域自抄的 wir
 2026-08-30 批C 子源溶解:七个 scrape_* 子源的字面量(list_url/citation/选择器/正则/阈值)
 与入口脚本的 LLM 层字面量全部收编到此(零字符串令,functions 体内不留字面量);
 唯一特批 import = `paths`(OUT_ 路径常量要经 paths 解析),方言律见
-docs/design/etl分域-20260829.md §4。
+docs/design/数据层/etl分域-20260829.md §4。
 """
 import re
 

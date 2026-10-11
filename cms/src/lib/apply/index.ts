@@ -12,7 +12,7 @@ export {
 } from './constants'
 export {
   coverFileOf, coverFillOf, coverNormOf, isSenderName, letterCleanOf, letterMessagesOf, letterProviderOf, loadApplyBlob,
-  mailSubjectOf,
+  mailSubjectOf, mailTextOf,
   loadApplyPrefs, loadApplyResumes, pdfBadCharsOf, saveApplyPrefs,
 } from './functions'
 export type { ApplyStart } from './types'

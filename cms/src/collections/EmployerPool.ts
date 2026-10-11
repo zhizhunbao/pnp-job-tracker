@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-// 雇主池主表(雇主板重构批一,2026-08-30;设计稿 docs/design/雇主板重构-20260829.md)——
+// 雇主池主表(雇主板重构批一,2026-08-30;设计稿 docs/design/雇主/雇主板重构-20260829.md)——
 // ETL 写入(etl/employers 是唯一口径来源,板与顾问只读)。一行 = 一雇主:池主键 key =
 // slug(有公司详情页)或 `n:` + 归一名(只在 LMIA/指定名单里出现过的雇主)。
 // 🔴 建表走 docs/sql/employer-pool.sql 手写 DDL(含 payload_locked_documents_rels 补列),

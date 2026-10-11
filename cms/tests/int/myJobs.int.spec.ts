@@ -3,7 +3,9 @@
 // 性质:① 清单没回来不渲;② 零条出各自的空态(我的求职带「去职位板」);③ 接口失败出「刷新再试」,不冒充空态;
 //       ④ 一张横卡:首字母块、职位名链到职位页(普通左键叠开职位描述弹框)、公司、城市(站规:有译名用译名 + 灰注「英文名 省码」;
 //          没译名主文案英文、灰注只剩省码)、日期一行(我的求职「投递于」、草稿「最近改于」、我的收藏「发布于」)、状态胶囊;
+//    2026-10-10 Frank「去职位板 删掉吧」:我的求职空态只留一行,② 改断言「不带去职位板」。
 //       ⑤ 投递状态只读:投过的胶囊「已投递」,没投过没胶囊;下架另挂「已下架」胶囊;我的求职发出去了的行带简历 / 求职信两个链接;
+//          2026-10-10 Frank「两处都改吧」:发出时没附求职信(hasCover = false)的行只出简历链接。探针:coverHrefOf 不看 hasCover → 该条红。
 //       ⑥ 职位删了:没有链接、没有「打开」;
 //       ⑦ 我的收藏有「取消收藏」:先本地删、发 DELETE /api/saved-jobs/<id>;服务端没删成就退回;我的求职没有这颗钮;
 //       ⑧ 照职位板:公司表里有的公司名是钮、点了叠开公司弹框(标题是公司名),没有的是纯文字;
@@ -22,7 +24,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { AppliedList, SavedList } from '@/components/myjobs'
 
-const BASE = { titleKo: '', cityKo: '', stage: 'applied', closed: false, salaryAnnual: null, companySlug: '', hasEmail: false }
+const BASE = { titleKo: '', cityKo: '', stage: 'applied', closed: false, salaryAnnual: null, companySlug: '', hasEmail: false, hasCover: true }
 const A = { ...BASE, id: 7, jobId: 101, companySlug: 'clean-co', salaryAnnual: 37440, title: 'light duty cleaner', titleZh: '轻型清洁工', company: 'Clean Co', city: 'Winnipeg', cityZh: '温尼伯', province: 'MB', salary: '$18/hr', datePosted: '2026-10-02T00:00:00.000Z', updatedAt: '2026-10-05T15:00:00.000Z' }
 const B = { ...BASE, id: 8, jobId: null, title: 'Cook', titleZh: 'Cook', company: 'Pie Wood', city: 'Steinbach', cityZh: '', province: 'MB', salary: '', datePosted: '', updatedAt: '2026-10-04T15:00:00.000Z', closed: true }
 const C = { ...BASE, id: 9, jobId: 103, salaryAnnual: 40040, title: 'truck washer', titleZh: '', company: 'Wash Ltd', city: 'Winnipeg', cityZh: '温尼伯', province: 'MB', salary: '$18–$21/hr', datePosted: '2026-09-30T00:00:00.000Z', updatedAt: '2026-09-30T15:00:00.000Z', stage: '' }
@@ -109,11 +111,11 @@ describe('我的求职', () => {
     expect((await mount(AppliedList)).textContent).toBe('')
   })
 
-  it('② 零条出空态 + 去职位板', async () => {
+  it('② 零条出空态,不带去职位板', async () => {
     server({ 'GET /api/myjobs/applied': { status: 200, body: { items: [] } } })
     const el = await mount(AppliedList)
     expect(el.textContent).toContain('mj.emptyApplied')
-    expect(Array.from(el.querySelectorAll('a')).find((x) => x.textContent === 'mj.toBoard')?.getAttribute('href')).toBe('/jobs')
+    expect(Array.from(el.querySelectorAll('a')).find((x) => x.textContent === 'mj.toBoard')).toBeUndefined()
   })
 
   it('③ 接口失败出「刷新再试」,不冒充空态', async () => {
@@ -148,6 +150,14 @@ describe('我的求职', () => {
     expect(b.textContent).toContain('Cook')   // 职位删了:职位名黑字、不成链
     expect(b.textContent).toContain('mj.closed')
     expect(b.textContent).not.toContain('mj.open')
+  })
+
+  it('⑤ 发出时没附求职信(投递框「不附求职信」)的行只出简历链接,不出求职信链接', async () => {
+    server({ 'GET /api/myjobs/applied': { status: 200, body: { items: [{ ...S, hasCover: false }] } } })
+    const el = await mount(AppliedList)
+    const a = rowOf(el, 'light duty cleaner')
+    expect(links(a)).toContainEqual(['mj.col.resume', '/api/apply/file?id=7&kind=resume'])
+    expect(links(a).some((l) => l[0] === 'mj.col.cover')).toBe(false)
   })
 
   it('⑨ 草稿行:最近改于、没附件、「继续」去投递区', async () => {

@@ -1,12 +1,12 @@
 """
 statcan 域函数 —— 全部行为住这(照 ircc/company/pnp 全溶样张,方言律全集见
-docs/design/etl分域-20260829.md §4)。
+docs/design/数据层/etl分域-20260829.md §4)。
 
 2026-09-06 立域:段3「NPR 占总人口比」与段4「StatCan 分省临时居民存量」**整段自
 etl/ircc/functions.py 纯搬**(函数体、docstring、行内注释一字未改;改的只有 import 路径),
 **产物路径不动** —— 段3 仍写 raw/ircc/npr_share.json,段4 仍写 raw/ircc/statcan_tr_prov.json。
 段2「WDS 通用取数」与段5「表清单取数」是新写(把脉页省份段契约
-docs/design/把脉页省份段-契约-20260906.md §1:四张宏观表 → raw/statcan/<pid>.json)。
+docs/design/就业把脉/把脉页省份段-契约-20260906.md §1:四张宏观表 → raw/statcan/<pid>.json)。
 搬来的两段各自留着自己的 httpx 调用(纯搬不改一字);新写的两段共用段2 的通用门。
 **零字符串令**:字面量全住 constants(文案 *_TPL 模板、JSON 键 K_ 词族);
 **显式循环令**:禁推导/genexp/lambda;**内嵌禁令**:内部函数出户成顶层具名函数;
@@ -520,7 +520,7 @@ def scrape_statcan_cubes() -> None:
     """四张宏观表(人口 / 临时居民 / GDP / 失业率)→ raw/statcan/。
 
     IN : StatCan WDS getCubeMetadata + getDataFromCubePidCoordAndLatestNPeriods(CUBES 清单)
-    OUT: raw/statcan/<pid>.json 一表一文件(形见 docs/design/把脉页省份段-契约-20260906.md §1)
+    OUT: raw/statcan/<pid>.json 一表一文件(形见 docs/design/就业把脉/把脉页省份段-契约-20260906.md §1)
     一表一 try:某表失败打 ⚠ 保留它的旧文件,其余表照跑;收尾有失败就 exit 1 让本轮红。
     """
     say(CUBES_PRINT_OUT_TPL.format(path=paths.STATCAN, n=len(CUBES)))

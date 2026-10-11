@@ -1,5 +1,5 @@
 """
-indexing 域函数 —— 全部行为住这(照 explore 样张,方言律全集见 docs/design/etl分域-20260829.md §4)。
+indexing 域函数 —— 全部行为住这(照 explore 样张,方言律全集见 docs/design/数据层/etl分域-20260829.md §4)。
 
 三个入口(零参):notify_round(默认链,实发)/ dry_round(干跑:只算不调 Google、不落盘)/ run_tests(决策逻辑自测)。
 **零字符串令**(字面量全住 constants)/ **显式循环令**(禁推导 / genexp / lambda)/ **内嵌禁令** /

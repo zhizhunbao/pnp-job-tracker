@@ -12,6 +12,6 @@
 它们写的是 processed/(raw→clean 那一格),不是 data/mart/,只进 TOOLS 由 build 链点名。
 
 **本域不自带役**:无 META —— 汇装是 load 域 build 链按序点用的一段(谁的数据谁管的收口:
-跨源汇装不归任何单源,归 mart;批H 拍板点见 docs/design/etl分域-20260829.md 8/10)。
+跨源汇装不归任何单源,归 mart;批H 拍板点见 docs/design/数据层/etl分域-20260829.md 8/10)。
 入口 etl/mart/main.py,步骤清单在 main.py 的 SCHEDULED。
 """

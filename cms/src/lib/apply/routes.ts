@@ -19,15 +19,12 @@ import { jobDescription, loadApplyUrlById } from '../jobs/server'
 import { completeText } from '../llm'
 import { APPLY_LOG, log } from '../log'
 import { postMail, WHY_DISABLED } from '../mail'
-import { LETTER_TRIAL_MAX, TRIAL_LETTER } from '../quota'
-import {
-  checkLimit, getUserOrNull, ipOf, isTrialOpen, loadTrial, markTrial, trialAfterOf, trialLeftOf,
-} from '../quota/server'
+import { checkLimit, getUserOrNull, ipOf, isPro } from '../quota/server'
 import { extractText } from '../resume'
 import {
   B64, CACHE_PRIVATE, COVER_LIMIT_DAILY, COVER_LIMIT_PREFIX, COVER_MAX, DISPOSITION_INLINE, DISPOSITION_TAIL,
   DRAFT_LIMIT_DAILY, DRAFT_LIMIT_PREFIX, E_AUTH, E_BODY, E_BOUNCED, E_BUSY, E_CHARS, E_CLOSED, E_DRAFT, E_JOB, E_LIMIT,
-  E_LONG, E_MAIL, E_MAIL_OFF, E_NAME, E_TRIAL, E_NO_EMAIL, E_RESUME, E_SAME_EMAIL, E_SENT, E_SIG, HDR_NOSNIFF, HDR_SVIX_ID,
+  E_LONG, E_MAIL, E_MAIL_OFF, E_NAME, E_PRO, E_NO_EMAIL, E_RESUME, E_SAME_EMAIL, E_SENT, E_SIG, HDR_NOSNIFF, HDR_SVIX_ID,
   HDR_SVIX_SIG, HDR_SVIX_TS, MIME_PDF, MS_PER_S, NOSNIFF, P_JOB, SEND_IP_DAILY, SEND_IP_PREFIX, SEND_LIMIT_DAILY,
   SEND_LIMIT_PREFIX, SITE_DAY_MAX, ST_DRAFT, ST_QUEUED, ST_SENDING, TEXT_NONE, USER_DAY_MAX, WEBHOOK_SECRET,
   COVER_DEFAULT, KIND_COVER, LETTER_LIMIT_DAILY, LETTER_LIMIT_PREFIX, LETTER_MIN_LEN, LETTER_PROVIDER_ENV,
@@ -92,6 +89,8 @@ export async function applyCoverRoute(req: Request): Promise<Response> {
  * PUT /api/apply/draft:存英文署名、这一岗的信与选用的简历;信里填进去的职位名、公司名、署名按位置换回占位,
  * 同时记成「我的模板」(10-05 拍板 #1、#2)。投递页失焦 / 切步 / 离页都会存(审查 #8)。
  * 2026-10-07 改判(Frank「得根据 jd 写啊」):信由模型按 JD 每岗写一封,「我的模板」与换回占位撤,这里只存署名、信与简历。
+ * 2026-10-10 投递框三步:信可以是空串(「不附求职信」,只发简历);署名可以是空串(档案里还没有、「确认」页才问,
+ * 空的不存进档案),有就得合规。
  *
  * @param req 请求(body 是 { jobId, senderName, cover, resumeId })。
  * @returns { ok };未登录 401、超限 429、体不合形 400、署名不合规 422 name、有坏字 422 chars、太长 413、
@@ -115,7 +114,7 @@ export async function applyDraftRoute(req: Request): Promise<Response> {
   if (body == null) {
     return Response.json({ error: E_BODY }, { status: BAD_REQUEST })
   }
-  if (isSenderName(body.senderName) === false) {
+  if (body.senderName !== TEXT_NONE && isSenderName(body.senderName) === false) {
     return Response.json({ error: E_NAME }, { status: UNPROCESSABLE })
   }
   const chars = pdfBadCharsOf(body.cover)
@@ -130,7 +129,9 @@ export async function applyDraftRoute(req: Request): Promise<Response> {
   if (job == null) {
     return Response.json({ error: E_JOB }, { status: NOT_FOUND })
   }
-  await saveApplyPrefs({ db, userId: user.id, senderName: body.senderName, template: null })
+  if (body.senderName !== TEXT_NONE) {
+    await saveApplyPrefs({ db, userId: user.id, senderName: body.senderName, template: null })
+  }
   const saved = await saveApplyDraft({ db, userId: user.id, job, cover: body.cover, resumeId: body.resumeId })
   if (saved === false) {
     return Response.json({ error: E_SENT }, { status: CONFLICT })
@@ -141,6 +142,7 @@ export async function applyDraftRoute(req: Request): Promise<Response> {
 /**
  * GET /api/apply/start?job=:投递一节的起始态(2026-10-07 Frank「投递不应该跳到我的投递页面吗」→ 投递整个放进「我的」:
  * 原先由 /apply/<id> 的页面门 SSR 取,页面撤了改由「我的」页的投递一节来取)。本岗(不带雇主邮箱)、简历清单、署名、模板、状态。
+ * 2026-10-10 投递框三步:试用余量两格撤,换成是不是 Pro 与回复邮箱(「确认」页摆)。
  *
  * @param req 请求(职位 id 在查询参数)。
  * @returns 起始态;未登录 401、id 不合形 400、岗不存在 404。
@@ -154,11 +156,7 @@ export async function applyStartRoute(req: Request): Promise<Response> {
   if (jobId == null) {
     return Response.json({ error: E_BODY }, { status: BAD_REQUEST })
   }
-  const db = await getDb()
-  const trial = await loadTrial({ db, userId: user.id, feature: TRIAL_LETTER, refId: jobId })
-  const start = await loadApplyStart({
-    db, userId: user.id, jobId, trialLeft: trialLeftOf({ user, trial, max: LETTER_TRIAL_MAX }), trialHere: trial.here,
-  })
+  const start = await loadApplyStart({ db: await getDb(), userId: user.id, jobId, pro: isPro(user), replyTo: user.email })
   if (start == null) {
     return Response.json({ error: E_JOB }, { status: NOT_FOUND })
   }
@@ -272,9 +270,12 @@ export async function applyInboundRoute(req: Request): Promise<Response> {
  * 真有人付钱再说」「然后随时切换」):模型通道由环境变量 APPLY_LETTER_PROVIDER 定(默认朋友的 qwen)。
  * 只许用简历里的事实(见 prompts 的 LETTER_SYSTEM);简历抽不出字、没有 JD、模型挂了或写得太短,一律退回站上默认模板填本岗(ai = false)。
  * 不存库 —— 写好的信由投递页接着存草稿。
+ * 2026-10-10 投递框三步(Frank「用户只要一点击,就弹收费」):试用撤,不是 Pro 一律 402;回包带上这一岗的 JD 全文
+ * (三栏对照框的「职位要求」栏,不再另取)。
  *
  * @param req 请求(body 是 { jobId, resumeId, senderName })。
- * @returns { text, ai };未登录 401、超限 429、体不合形 400、署名不合规 422、岗不存在 404、简历不是本人的 409。
+ * @returns { text, ai, jd };未登录 401、超限 429、体不合形 400、署名不合规 422、岗不存在 404、不是 Pro 402、
+ *   简历不是本人的 409。
  */
 export async function applyLetterRoute(req: Request): Promise<Response> {
   const user = await getUserOrNull(await headers())
@@ -302,12 +303,10 @@ export async function applyLetterRoute(req: Request): Promise<Response> {
   if (job == null) {
     return Response.json({ error: E_JOB }, { status: NOT_FOUND })
   }
-  const fallback = coverFillOf({ template: COVER_DEFAULT, title: job.title, company: job.company, name: body.senderName })
-  const trial = await loadTrial({ db, userId: user.id, feature: TRIAL_LETTER, refId: job.id })
-  const gate = { user, trial, max: LETTER_TRIAL_MAX }
-  if (isTrialOpen(gate) === false) {
-    return Response.json({ error: E_TRIAL, text: fallback, left: 0 }, { status: PAYMENT_REQUIRED })
+  if (isPro(user) === false) {
+    return Response.json({ error: E_PRO }, { status: PAYMENT_REQUIRED })
   }
+  const fallback = coverFillOf({ template: COVER_DEFAULT, title: job.title, company: job.company, name: body.senderName })
   const blob = await loadApplyBlob({ db, userId: user.id, resumeId: body.resumeId })
   if (blob == null) {
     return Response.json({ error: E_RESUME }, { status: CONFLICT })
@@ -320,7 +319,7 @@ export async function applyLetterRoute(req: Request): Promise<Response> {
   }
   if (resume.text == null || jd === TEXT_NONE) {
     log({ tag: APPLY_LOG.tag, text: APPLY_LOG.letterSkipped + user.id + APPLY_LOG.appFrag + job.id })
-    return Response.json({ text: fallback, ai: false, left: trialLeftOf(gate) })
+    return Response.json({ text: fallback, ai: false, jd })
   }
   let out = TEXT_NONE
   try {
@@ -335,10 +334,9 @@ export async function applyLetterRoute(req: Request): Promise<Response> {
     log({ tag: APPLY_LOG.tag, text: APPLY_LOG.letterFailed + user.id + APPLY_LOG.whyFrag + String(e) })
   }
   if (out.length < LETTER_MIN_LEN) {
-    return Response.json({ text: fallback, ai: false, left: trialLeftOf(gate) })
+    return Response.json({ text: fallback, ai: false, jd })
   }
-  await markTrial({ db, userId: user.id, feature: TRIAL_LETTER, refId: job.id })
-  return Response.json({ text: out, ai: true, left: trialLeftOf({ user, trial: trialAfterOf(trial), max: LETTER_TRIAL_MAX }) })
+  return Response.json({ text: out, ai: true, jd })
 }
 
 /**
@@ -346,6 +344,7 @@ export async function applyLetterRoute(req: Request): Promise<Response> {
  * 查额度与去重 →【批 C 挂点:免费额度用完回 402】→ 再判一次字符 → 认领(草稿 → sending)→ 渲染 PDF → 发信 →
  * 成功记 sent 与 Resend id,失败或没配密钥退回草稿并留痕。测试号收件方改投 Resend 测试地址。
  * 批 C 挂点在去重之后、判字符之前:isPro(user) === false 且已发数 ≥ FREE_APPLY_LIFETIME 时回 402 PAYMENT_REQUIRED。
+ * 2026-10-10 投递框三步:草稿里的信是空串(「不附求职信」)时只附简历,正文换不提求职信的一版,求职信附件名记空串。
  *
  * @param req 请求(body 是 { jobId })。
  * @returns { ok, id };错误码见设计稿接口表(401 / 400 / 404 / 409 / 410 / 422 / 429 / 502 / 503)。
@@ -417,12 +416,16 @@ export async function applySendRoute(req: Request): Promise<Response> {
   if (chars.length > 0) {
     return Response.json({ error: E_CHARS, chars }, { status: UNPROCESSABLE })
   }
+  const withCover = row.cover.trim() !== TEXT_NONE
   const parts = { title: job.title, city: job.city, province: job.province, name: prefs.senderName }
   const subject = mailSubjectOf(parts)
-  const bodyText = mailTextOf(parts)
+  const bodyText = mailTextOf({ title: job.title, city: job.city, province: job.province, name: prefs.senderName, cover: withCover })
   const to = recipientOf({ userEmail: user.email, employerEmail: job.email })
   const resumeFile = resumeFileOf({ name: prefs.senderName, mime: blob.mime })
-  const coverFile = coverFileOf(job.company)
+  let coverFile = TEXT_NONE
+  if (withCover) {
+    coverFile = coverFileOf(job.company)
+  }
   const idemKey = await idemKeyOf({
     appId: row.id, parts: [to, subject, bodyText, row.cover, String(blob.id), blob.uploadedAt],
   })
@@ -433,9 +436,11 @@ export async function applySendRoute(req: Request): Promise<Response> {
   if (appId == null) {
     return Response.json({ error: E_SENT }, { status: CONFLICT })
   }
-  let coverB64 = TEXT_NONE
+  const attachments = [{ filename: resumeFile, content: blob.b64 }]
   try {
-    coverB64 = Buffer.from(await coverPdfOf({ pdf: PdfLib, text: row.cover })).toString(B64)
+    if (withCover) {
+      attachments.push({ filename: coverFile, content: Buffer.from(await coverPdfOf({ pdf: PdfLib, text: row.cover })).toString(B64) })
+    }
   } catch (e) {
     await unclaimApply({ db, id: appId })
     const why = APPLY_LOG.appFrag + appId + APPLY_LOG.whyFrag + String(e)
@@ -444,7 +449,7 @@ export async function applySendRoute(req: Request): Promise<Response> {
   }
   const sent = await postMail({
     to, subject, html: mailHtmlOf(bodyText), text: bodyText, from: senderFromOf(prefs.senderName), replyTo: user.email,
-    attachments: [{ filename: resumeFile, content: blob.b64 }, { filename: coverFile, content: coverB64 }], idemKey,
+    attachments, idemKey,
   })
   if (sent.ok === false) {
     await unclaimApply({ db, id: appId })

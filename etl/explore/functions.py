@@ -1,5 +1,5 @@
 """
-explore 域函数 —— 全部行为住这(照 jdformat 样张,方言律全集见 docs/design/etl分域-20260829.md §4)。
+explore 域函数 —— 全部行为住这(照 jdformat 样张,方言律全集见 docs/design/数据层/etl分域-20260829.md §4)。
 
 一步一入口(零参):consume_queue。**零字符串令**(字面量全住 constants)/ **显式循环令**(禁推导 /
 genexp / lambda)/ **内嵌禁令** / **一参令**(多入参收 scheme 的 XxxIn dataclass)。

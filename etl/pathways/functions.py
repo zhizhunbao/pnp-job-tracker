@@ -1,5 +1,5 @@
 """
-pathways 域函数 —— 全部行为住这(照 citations / indexing 样张,方言律全集见 docs/design/etl分域-20260829.md §4)。
+pathways 域函数 —— 全部行为住这(照 citations / indexing 样张,方言律全集见 docs/design/数据层/etl分域-20260829.md §4)。
 
 一个入口(零参):build_pathways(默认链唯一一步)—— 读 raw/pnp 现值 → 拿通道对照表逐格对 → 全对上才写产物,
 有一处对不上就逐条报红、sys.exit(1)(门叶接住转成本轮失败、扣 ping),上一版产物原样留给 mart。

@@ -22,8 +22,9 @@ export const STEP_LETTER = 'letter'
 
 /**
  * 步骤:预览。
+ * 2026-10-10 投递框三步(Frank「就叫 确认吧」):改叫「确认」—— 只摆英文姓名、回复邮箱、简历、求职信与邮件预览。
  */
-export const STEP_PREVIEW = 'preview'
+export const STEP_CONFIRM = 'confirm'
 
 /**
  * 步骤:已投递。
@@ -32,8 +33,48 @@ export const STEP_DONE = 'done'
 
 /**
  * 前三步的顺序(步数行与上一步按它走;已投递不算一步)。
+ * 2026-10-10 投递框三步:步数行换成三个页签(简历 / 求职信 / 确认),到过的页签点了就回那一步。
  */
-export const STEP_ORDER = [STEP_RESUME, STEP_LETTER, STEP_PREVIEW]
+export const STEP_ORDER = [STEP_RESUME, STEP_LETTER, STEP_CONFIRM]
+
+/**
+ * 三个页签(步骤 + 文字词条键;顺序同 STEP_ORDER)。
+ */
+export const STEP_TABS = [
+  {
+    /**
+     * 简历。
+     */
+    key: STEP_RESUME,
+
+    /**
+     * 页签文字。
+     */
+    label: 'ap.resume',
+  },
+  {
+    /**
+     * 求职信。
+     */
+    key: STEP_LETTER,
+
+    /**
+     * 页签文字。
+     */
+    label: 'ap.letter',
+  },
+  {
+    /**
+     * 确认。
+     */
+    key: STEP_CONFIRM,
+
+    /**
+     * 页签文字。
+     */
+    label: 'ap.confirm',
+  },
+]
 
 /**
  * 已经发出去的投递状态(落「已投递」)。
@@ -53,7 +94,7 @@ export const URL_START_HEAD = '/api/apply/start?job='
 export const P_JOB = 'job'
 
 /**
- * 投递弹框的地址参数(任意页 `?apply=<职位号>` 弹投递框;2026-10-09 A 批,docs/design/投递向导-照Azure-20261008.md 故事 1)。
+ * 投递弹框的地址参数(任意页 `?apply=<职位号>` 弹投递框;2026-10-09 A 批,docs/design/我的/我的求职-20261009.md 故事 1)。
  */
 export const P_APPLY = 'apply'
 
@@ -117,34 +158,9 @@ export const CARD_MD_CLS = 'cardMd'
 export const CARD_HEAD_CLS = 'mcardHead'
 
 /**
- * 「职位信息」分区的标题词条键。
+ * (「职位信息」分区的标题与四行词条键 SEC_JOB_KEY / ROW_KEYS 2026-10-10 随该分区撤:框头已写职位名,
+ * Frank「点投递 还需要再显示一遍 职位信息吗?」。)
  */
-export const SEC_JOB_KEY = 'ap.secJob'
-
-/**
- * 「职位信息」分区四行的词条键:职位、公司、城市、省份(市和省分开,10-09 Frank「省市 分开」)。
- */
-export const ROW_KEYS = {
-  /**
-   * 职位名那一行。
-   */
-  title: 'ap.rowTitle',
-
-  /**
-   * 公司那一行。
-   */
-  company: 'ap.rowCompany',
-
-  /**
-   * 城市那一行。
-   */
-  city: 'ap.rowCity',
-
-  /**
-   * 省份那一行。
-   */
-  province: 'ap.rowProv',
-}
 
 /**
  * 投递区的取数状态:地址栏没带职位(只看投递记录表,投递区不出)。
@@ -303,14 +319,14 @@ export const NEXT_KEY: Record<string, string> = {
   resume: 'ap.next',
 
   /**
-   * 第 2 步:预览。
+   * 第 2 步:下一步(2026-10-10 原「预览」随步名改「确认」改叫下一步)。
    */
-  letter: 'ap.preview',
+  letter: 'ap.next',
 
   /**
-   * 第 3 步:发送。
+   * 第 3 步:投出。
    */
-  preview: 'ap.send',
+  confirm: 'ap.send',
 }
 
 /**
@@ -377,11 +393,6 @@ export const BTN_LINK = 'linkText'
 export const BTN_SECONDARY = 'secondary'
 
 /**
- * 按 JD 写信的接口(2026-10-07)。
- */
-export const URL_LETTER = '/api/apply/letter'
-
-/**
  * 上传简历的接口(同「我的简历」;PUT 不带 id = 新加一份)。
  */
 export const URL_RESUME_FILE = '/api/resume/file'
@@ -438,13 +449,13 @@ export const DEFAULT_KEY = 'rf.default'
 
 /**
  * 「添加简历」(同「我的简历」)。
+ * 2026-10-10 投递框三步:钮挪到卡头右侧,改叫「上传新简历」。
  */
-export const ADD_KEY = 'rf.add'
+export const ADD_KEY = 'ap.upResume'
 
 /**
- * 文件要求一行(同「我的简历」:PDF 或 Word,5 MB 以内)。
+ * (文件要求一行 UP_SUB_KEY 2026-10-10 随「添加简历」一行撤:钮挪到卡头右侧,不带小注。)
  */
-export const UP_SUB_KEY = 'rf.upSub'
 
 /**
  * 满了的词条(同「我的简历」)。
@@ -457,19 +468,10 @@ export const ERR_KEY_FULL = 'rf.full'
 export const ERR_KEY_UPLOAD = 'ap.e.upload'
 
 /**
- * 写信接口没回信(网络 / 别的错)的词条。
+ * 「按职位改写」钮(2026-10-10 投递框三步:原「按职位重写」挪到卡头右侧,简历与求职信各一颗;不进页自动写,
+ * 模型写不成不再塞通用信,给「没写成」一行)。
  */
-export const ERR_KEY_WRITE = 'ap.e.write'
-
-/**
- * 模型没按 JD 写成、先给了通用信的提示词条。
- */
-export const ERR_KEY_TEMPLATE = 'ap.e.template'
-
-/**
- * 「按职位重写」钮。
- */
-export const REWRITE_KEY = 'ap.rewrite'
+export const REWRITE_KEY = 'ap.rewriteJob'
 
 /**
  * 写信时的进度一句。
@@ -477,39 +479,28 @@ export const REWRITE_KEY = 'ap.rewrite'
 export const WRITING_KEY = 'ap.writing'
 
 /**
- * 加载中的一句(全站同词)。
+ * (加载中的一句 LOADING_KEY 2026-10-10 随写信占位撤:改写时对照框里只出 WRITING_KEY 那一句。)
  */
-export const LOADING_KEY = 'act.loadingText'
 
 /**
- * 写信接口回「试用用完」的码(同 lib/apply 的 E_TRIAL;402,回包带兜底模板信;2026-10-07 批 C)。
+ * 升级框里「为什么弹」那一行的词条键(点「按职位改写」而不是 Pro)。
  */
-export const E_TRIAL = 'trial'
+export const PRO_REASON_KEY = 'ap.proReason'
 
 /**
- * 「AI 试用还剩 N 次」的词条键。
+ * 简历的「按职位改写」Pro 点了的那一句(本批只做求职信的改写)。
  */
-export const TRIAL_LEFT_KEY = 'ap.trialLeft'
+export const SOON_KEY = 'ap.soon'
 
 /**
- * 试用用完时信框上那条提示的词条键。
+ * 求职信单选组的名字。
  */
-export const TRIAL_OUT_KEY = 'ap.trialOut'
+export const RADIO_LETTER = 'apply-letter'
 
 /**
- * 升级框里「为什么弹」那一行的词条键。
+ * 三栏对照框没有记忆时的宽(px;三栏并排)。
  */
-export const TRIAL_REASON_KEY = 'ap.trialReason'
-
-/**
- * 升级钮的词条键(全站同一个「升级 Pro」)。
- */
-export const UPGRADE_KEY = 'up.cta2'
-
-/**
- * 试用用完那条提示的色档(notice 四色里的黄)。
- */
-export const NOTICE_WARN = 'warn'
+export const RW_MODAL_W = 1100
 
 /**
  * 付完回到本岗投递区的地址头(后接职位 id)。
@@ -568,3 +559,8 @@ export const INPUT_CHECKBOX = 'checkbox'
  * 逐项检查的值在哪儿允许折行:下划线之后(文件名 Cover_Letter_Markham_NS_Dental.pdf 只在 _ 后断,不断在词中间)。
  */
 export const BREAK_AFTER_RE = /(?<=_)/
+
+/**
+ * (2026-10-10 Frank「大于 1000 就 拆 子桶」:求职信页一族只有子桶 ./letter 用的常量 —— 写信 / 信清单 / 抽字三个接口、
+ * 不是 Pro 的码、单选项键与「不附」那一项、写于 / 草稿小注、没写成的词条 —— 搬进 letter/constants.ts。)
+ */

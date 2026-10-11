@@ -71,7 +71,7 @@ MINWAGE = RAW / "minwage"
 STATCAN = RAW / "statcan"
 """StatCan WDS 表(2026-09-06 立 statcan 域):一表一文件 <pid>.json —— 人口 17100009 /
 临时居民 17100121 / GDP 36100222 / 失业率 14100287,形见
-docs/design/把脉页省份段-契约-20260906.md §1。
+docs/design/就业把脉/把脉页省份段-契约-20260906.md §1。
 ⚠ 同域另两张老表(npr_share.json / statcan_tr_prov.json)产物路径不动,仍在 raw/ircc/。"""
 
 NOC = RAW / "noc"
