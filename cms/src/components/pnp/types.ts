@@ -3810,6 +3810,11 @@ export type DrawGroupsBodyIn = {
    * 本岗(本通道)那组标不标浅蓝底(口径见 EeCmpGroupIn.mark)。
    */
   mark: boolean
+
+  /**
+   * 整张只有一组时默认展开不(2026-10-10 Frank「申请步骤这块。这个默认不要展开」:抽选卡传 true,「申请步骤」那一步传 false)。
+   */
+  openSingle: boolean
 }
 
 /**

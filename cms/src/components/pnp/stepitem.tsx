@@ -45,7 +45,7 @@ export function StepItem({ step, t, draws, open, toggleOf, mark }: StepItemIn) {
         )}
         {step.draws && draws != null && (
           <div className={css.stepTable}>
-            <DrawGroupsBody t={t} card={draws} open={open} toggleOf={toggleOf} mark={mark} />
+            <DrawGroupsBody t={t} card={draws} open={open} toggleOf={toggleOf} mark={mark} openSingle={false} />
           </div>
         )}
       </div>

@@ -42,7 +42,7 @@ export function PnpDrawGroups({ t, card, open, toggleOf }: PnpDrawGroupsIn) {
   return (
     <div className={css.card}>
       <DrawsHead title={card.title} source={card.source} jump={null} />
-      <DrawGroupsBody t={t} card={card} open={open} toggleOf={toggleOf} mark />
+      <DrawGroupsBody t={t} card={card} open={open} toggleOf={toggleOf} mark openSingle />
     </div>
   )
 }

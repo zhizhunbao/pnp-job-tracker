@@ -1321,12 +1321,6 @@ export const TARGET_BLANK = '_blank'
 export const LINK_ARROW = ' ↗'
 
 /**
- * 站内互跳的记号(→ = 本页签切到另一个页签,区别于来源钮的 ↗ 新开页;2026-10-04 资讯页门槛卡 ↔ 步骤卡互跳,
- * Frank「通道和申请步骤 之前 互相 是不是应该有个按钮能切来切去」→ 勾「卡上加钮 + 页签带省份」)。
- */
-export const JUMP_ARROW = ' →'
-
-/**
  * 资讯「申请步骤」页签的地址(门槛卡互跳钮的去处;本域自抄,与 components/streams 的 URL_STEPS 同字)。
  */
 export const URL_STEPS = '/steps'

@@ -22,8 +22,8 @@ import { DAY_MS } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS, DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE,
-  DRAWS_ALL_KEY, DRAWS_FORM_STATUS, HOST_RE, LANG_EN, LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
-  JUMP_ARROW, K_GATE_TITLE, P_PROV, SCROLL_START, URL_HASH_HEAD, URL_KV_SEP, URL_QUERY_HEAD, URL_STEPS, URL_STREAMS,
+  DRAWS_ALL_KEY, DRAWS_FORM_STATUS, HOST_RE, LANG_EN, MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
+  K_GATE_TITLE, P_PROV, SCROLL_START, URL_HASH_HEAD, URL_KV_SEP, URL_QUERY_HEAD, URL_STEPS, URL_STREAMS,
   MONTHS_KEYS,
   NUM_LOCALE, OPS_ALLOCATION, OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, ROUNDS_KEYS, YEAR_LEN,
   SEL_CAT_HEAD, SEL_CODE_RE, SEL_KEYS, SEL_PATH, SEL_PATH_HEAD, SEL_PATH_SEP, SEL_POINTS, SEL_TOP, SEL_WAGE, TAG_V_GRAY,
@@ -800,13 +800,14 @@ function statusGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
  * @param x 取词函数与数据层记的官方页地址。
  * @returns 来源链接;认不出站名给 null(不出)。
  * 2026-09-27 Frank「这个来源看着很突兀 按钮」→ 选「描边小钮」:钮上只写「来源 ↗」,站名只用来认出这是个像样的网址。
+ * 2026-10-10 Frank「先把这两个箭头都去掉」:来源钮与互跳钮的 ↗ / → 撤,钮上只剩字。
  */
 function sourceLinkOf(x: SourceLinkIn): SourceLink | null {
   const m = HOST_RE.exec(x.url)
   if (m == null || m.groups == null || m.groups.host == null) {
     return null
   }
-  return { text: x.t('col.source') + LINK_ARROW, href: x.url }
+  return { text: x.t('col.source'), href: x.url }
 }
 
 /**
@@ -3700,11 +3701,11 @@ export function provStreamItemsOf(x: ProvStreamItemsIn): ProvStreamItem[] {
  * 资讯页门槛卡 ↔ 步骤卡的互跳钮(2026-10-04):去另一个页签,带上省码(落地页按它预选省份)与通道编号(锚点,落地页滚到同一条通道的卡)。
  *
  * @param x 钮上的字、去处页签、省码与通道编号。
- * @returns 互跳钮(字带 → 记号)。
+ * @returns 互跳钮。
  */
 function jumpOf(x: JumpOfIn): SourceLink {
   return {
-    text: x.text + JUMP_ARROW,
+    text: x.text,
     href: x.base + URL_QUERY_HEAD + P_PROV + URL_KV_SEP + x.province + URL_HASH_HEAD + x.key,
   }
 }

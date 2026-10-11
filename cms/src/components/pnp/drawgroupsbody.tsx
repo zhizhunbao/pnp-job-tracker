@@ -5,6 +5,7 @@
  * 组的开合口径照抽选卡原注(drawGroupOpenOf:整张只有一组的默认展开)。
  * 2026-10-04 Frank 勾「去掉」(资讯页「申请步骤」页签抽选表的蓝底):多收一格 mark 递给每一组(props 随之自 PnpDrawGroupsIn 分出 DrawGroupsBodyIn),
  * 抽选卡恒传 true,步骤卡按场合传。
+ * 2026-10-10 Frank「申请步骤这块。这个默认不要展开」:多收一格 openSingle,「整张只有一组默认展开」只给抽选卡,步骤卡一律折着。
  *
  * @author Frank
  * @time 2026-10-02 23:40:00
@@ -23,7 +24,7 @@ import css from './pnp.module.css'
  * @param props 取词函数、这张抽选表、展开着的组、开合手柄工厂与蓝底开关。
  * @returns 组区(不带卡框与标题行)。
  */
-export function DrawGroupsBody({ t, card, open, toggleOf, mark }: DrawGroupsBodyIn) {
+export function DrawGroupsBody({ t, card, open, toggleOf, mark, openSingle }: DrawGroupsBodyIn) {
   const lines = []
   for (const line of card.lines) {
     lines.push(<div key={line} className={css.drawsBasis}>{line}</div>)
@@ -32,7 +33,7 @@ export function DrawGroupsBody({ t, card, open, toggleOf, mark }: DrawGroupsBody
   for (const line of card.foot) {
     foot.push(<div key={line} className={css.drawsFoot}>{line}</div>)
   }
-  const single = card.hits.length + card.others.length === 1
+  const single = openSingle && card.hits.length + card.others.length === 1
   const hits = []
   for (const g of card.hits) {
     hits.push(<EeCmpGroupView key={g.key} g={g} open={drawGroupOpenOf({ open, key: g.key, single })}
