@@ -366,6 +366,16 @@ export type AccountPanel = {
    * 收件箱未读几封(「收件箱」页签红点;2026-10-10 批 3)。
    */
   unread: number
+
+  /**
+   * 答档案代数(2026-10-11「进我的求职先弹五题」关一次加一,今日推荐跟着现算重拉)。
+   */
+  askedGen: number
+
+  /**
+   * 五题弹框关了(答完保存或 × 关掉)。
+   */
+  onAsked: () => void
 }
 
 /**
@@ -1905,6 +1915,11 @@ export type PfView = {
    * 英文姓名;没填空串。
    */
   name: string
+
+  /**
+   * 「进我的求职先弹五题」弹过了(2026-10-11;记在答案档里随账号走)。
+   */
+  asked: boolean
 }
 
 /**
@@ -2130,4 +2145,89 @@ export type PfFoldPanel = {
    * 展开。
    */
   onOpen: () => void
+}
+
+/**
+ * JobsQuiz(进「我的求职」先弹五题)的 props。
+ */
+export type JobsQuizIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 弹框关了(调用方重拉今日推荐)。
+   */
+  onDone: () => void
+}
+
+/**
+ * useJobsQuiz 的入参。
+ */
+export type JobsQuizHookIn = {
+  /**
+   * 弹框关了。
+   */
+  onDone: () => void
+}
+
+/**
+ * 五题整机交回的面板。
+ */
+export type JobsQuizPanel = {
+  /**
+   * 档案(没取回来 null)。
+   */
+  view: PfView | null
+
+  /**
+   * 弹着。
+   */
+  open: boolean
+
+  /**
+   * 关框(保存成功也走它)。
+   */
+  onClose: () => void
+}
+
+/**
+ * jobsQuizOpenOf 的入参。
+ */
+export type QuizOpenIn = {
+  /**
+   * 档案(没取回来 null)。
+   */
+  view: PfView | null
+
+  /**
+   * 这一页已经关过。
+   */
+  closed: boolean
+}
+
+/**
+ * makeAskedDone 的入参。
+ */
+export type AskedDoneIn = {
+  /**
+   * 「关过了」落格。
+   */
+  setClosed: (v: boolean) => void
+
+  /**
+   * 交还调用方。
+   */
+  onDone: () => void
+}
+
+/**
+ * makeGenBump 的入参。
+ */
+export type GenBumpIn = {
+  /**
+   * 计数格 setter。
+   */
+  setGen: GenSetFn
 }

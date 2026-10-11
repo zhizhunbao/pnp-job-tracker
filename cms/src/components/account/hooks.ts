@@ -28,6 +28,7 @@ import {
   applyViewTo, makeDocDrop, makeGripDown, makeGripMove, makeGripUp, makePageTurn, makeWheelBind, makeZoomHome,
   makeZoomRedraw, makeZoomStep, zoomPctOf,
   loadProfile, makeFlagSet, makeProfileSaved, bindUnread,
+  jobsQuizOpenOf, makeAskedDone, makeGenBump, markJobsAsked,
 } from './functions'
 import type {
   AccountPanel, MaybeResumeMeta, Me, ResumeFilePanel, ResumeMetas, ResumePagesPanel, ResumeThumbHookIn,
@@ -35,6 +36,7 @@ import type {
   Sec, SubscriptionPanel,
   CoverLettersPanel, LetterMetas, PaymentRows,
   PfFoldPanel, PfView, ProfilePanel,
+  JobsQuizHookIn, JobsQuizPanel,
 } from './types'
 
 /**
@@ -46,6 +48,7 @@ import type {
  * 2026-10-09 A 批投递搬进弹框:「正在投地址栏带来的那一岗」那一格(jobLink → applying,连同 isJobLink、QP_JOB)随页内投递区退役 ——
  * 投递搬进全站骨架上的投递框,「今日待投」不再为它让位;发出后的刷新改由页面门里的 ApplySentSync 调 onApplied。
  * 2026-10-10 批 3:多一格收件箱未读数(「收件箱」页签红点;挂上拉一次,收件箱里读了一封再拉)。
+ * 2026-10-11「进我的求职先弹五题」:多一格答档案代数(五题弹框关一次加一,今日推荐按它现算重拉)。
  *
  * @returns 门(page.tsx)要的整块面板:状态 + 手柄。
  */
@@ -61,6 +64,7 @@ export function useAccountPage(): AccountPanel {
   const [sent, setSent] = useState(0)
   const [sentTo, setSentTo] = useState<string | null>(null)
   const [unread, setUnread] = useState(0)
+  const [askedGen, setAskedGen] = useState(0)
   const reloadSent = makeSentCountLoad({ setSent })
 
   useEffect(function readPayOk() {
@@ -102,6 +106,8 @@ export function useAccountPage(): AccountPanel {
     sent,
     sentTo,
     unread,
+    askedGen,
+    onAsked: makeGenBump({ setGen: setAskedGen }),
   }
 }
 
@@ -297,4 +303,27 @@ export function useProfile(): ProfilePanel {
 export function usePfFold(): PfFoldPanel {
   const [open, setOpen] = useState(false)
   return { open, onOpen: makeFlagSet({ set: setOpen, v: true }) }
+}
+
+/**
+ * 「进我的求职先弹五题」整机(2026-10-11 Frank「一共没几个问题啊 都问不行吗」):挂上取一次档案;该弹就弹
+ * (判定见 functions 的 jobsQuizOpenOf),弹出那一刻记进答案档「弹过了」;关了(保存或 ×)这一页不再弹、交还调用方。
+ *
+ * @param x 关了之后的交还口。
+ * @returns 档案、弹没弹与关框手柄。
+ */
+export function useJobsQuiz(x: JobsQuizHookIn): JobsQuizPanel {
+  const [view, setView] = useState<PfView | null>(null)
+  const [, setLoad] = useState(PF_LOAD_BUSY)
+  const [closed, setClosed] = useState(false)
+  useEffect(function loadOnce() {
+    void loadProfile({ setView, setLoad })
+  }, [])
+  const open = jobsQuizOpenOf({ view, closed })
+  useEffect(function markAskedOnOpen() {
+    if (open) {
+      void markJobsAsked()
+    }
+  }, [open])
+  return { view, open, onClose: makeAskedDone({ setClosed, onDone: x.onDone }) }
 }

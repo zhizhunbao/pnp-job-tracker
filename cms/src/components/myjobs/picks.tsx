@@ -23,12 +23,12 @@ import css from './myjobs.module.css'
 /**
  * 推荐两张卡。
  *
- * @param props 取词函数、是不是 Pro 与重拉代数。
+ * @param props 取词函数、是不是 Pro、重拉代数与答档案代数。
  * @returns 今日推荐卡(免费号推荐多时再加更多推荐卡)。
  */
-export function Picks({ t, pro, gen }: PicksIn) {
+export function Picks({ t, pro, gen, asked }: PicksIn) {
   const [lang] = useLang()
-  const p = usePicks({ gen })
+  const p = usePicks({ gen, asked })
   if (p.failed) {
     return (
       <Section title={t('mj.picks')} count={null} anchor={ANCHOR_PICKS}>

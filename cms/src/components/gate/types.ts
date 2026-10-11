@@ -858,6 +858,11 @@ export type EditBits = {
    * 保存失败那一行的词条键;空串 = 没失败。
    */
   failKey: string
+
+  /**
+   * 出「跳过这步」(2026-10-11:只问没答那几题的弹法里、这一题还空着时出;访客向导与「修改」恒 false)。
+   */
+  skip: boolean
 }
 
 /**
@@ -1094,6 +1099,11 @@ export type GateEditIn = {
    * 保存成功(调用方关框并重取档案)。
    */
   onSaved: () => void
+
+  /**
+   * 只问起始答案里还空着的那几题、每题可跳(2026-10-11「进我的求职先弹五题」;不给 = 五题全问,档案页「修改」)。
+   */
+  missing?: boolean
 }
 
 /**
@@ -1119,6 +1129,11 @@ export type GateEditHookIn = {
    * 保存成功。
    */
   onSaved: () => void
+
+  /**
+   * 只问还空着的那几题、每题可跳(2026-10-11)。
+   */
+  missing: boolean
 }
 
 /**
@@ -1129,6 +1144,11 @@ export type EditNextIn = {
    * 走到第几步。
    */
   step: number
+
+  /**
+   * 这一回一共几题(2026-10-11:只问没答那几题时少于五题)。
+   */
+  total: number
 
   /**
    * 步数落格。
@@ -1199,4 +1219,69 @@ export type EditPatch = {
    * 处境(只有答了境外才写 overseas)。
    */
   status?: string
+}
+
+/**
+ * editNextKeyOf 的入参(2026-10-11:原只收步数,只问没答那几题起要带一共几题)。
+ */
+export type EditNextKeyIn = {
+  /**
+   * 走到第几步。
+   */
+  step: number
+
+  /**
+   * 一共几题。
+   */
+  total: number
+}
+
+/**
+ * editStepsOf 的入参。
+ */
+export type EditStepsIn = {
+  /**
+   * 起始答案。
+   */
+  seed: GateEditSeed
+
+  /**
+   * 只问还空着的那几题。
+   */
+  missing: boolean
+}
+
+/**
+ * editBlankOf(这一题还空着没有)的入参。
+ */
+export type EditBlankIn = {
+  /**
+   * 当前这一屏。
+   */
+  cur: GateStep
+
+  /**
+   * 目标档;0 = 没答。
+   */
+  goal: number
+
+  /**
+   * 专业码清单。
+   */
+  majors: string[]
+
+  /**
+   * 已选职业码。
+   */
+  nocs: string[]
+
+  /**
+   * 所在省那一格亮哪个(空串 = 都不亮)。
+   */
+  provActive: string
+
+  /**
+   * 英文姓名。
+   */
+  name: string
 }

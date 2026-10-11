@@ -64,6 +64,22 @@ export const PICKS_CACHE_MAX = 5000
 export const P_PROV = 'prov'
 
 /**
+ * 推荐接口的查询参数:不用当天缓存、现算一份(2026-10-11「进我的求职先弹五题」:答完档案重拉推荐要按新答案推)。
+ */
+export const P_FRESH = 'fresh'
+
+/**
+ * 「不用缓存」那个参数的取值。
+ */
+export const FRESH_ON = '1'
+
+/**
+ * 省提名加分要「雇主 offer 类通道近多少天抽过」(2026-10-11 Frank「OINP 很长时间没有捞人了」→「90 天可以」;
+ * 最近一次抽选日由数据层挂在 provinces.info.offerDrawLast,SQL.MYJOBS_PICKS 的 $4)。
+ */
+export const PICKS_DRAW_DAYS = 90
+
+/**
  * 省码长度(查询参数只认两位大写字母,别的当没给)。
  */
 export const PROV_RE = /^[A-Z]{2}$/

@@ -10,7 +10,7 @@ import { headers } from 'next/headers'
 import { getDb } from '../db/server'
 import { HDR_CACHE_CONTROL, UNAUTHORIZED } from '../http'
 import { getUserOrNull, isPro } from '../quota/server'
-import { CACHE_PRIVATE, E_AUTH, P_PROV, PROV_RE, TEXT_NONE } from './constants'
+import { CACHE_PRIVATE, E_AUTH, FRESH_ON, P_FRESH, P_PROV, PROV_RE, TEXT_NONE } from './constants'
 import { getPicks, loadApplied, loadSaved, loadSentCount } from './functions'
 
 /**
@@ -46,6 +46,7 @@ export async function myjobsCountRoute(_req: Request): Promise<Response> {
 /**
  * GET /api/myjobs/picks:今日推荐(免费号看 3 条 + 「更多推荐」的条数与锁住的两条;Pro 全给)。
  * `?prov=` = 浏览器按时区预选的省码(他没答所在省时用;不合形当没给)。
+ * 2026-10-11 `?fresh=1` = 不用当天缓存、现算一份(「进我的求职先弹五题」答完重拉推荐要按新答案推;只算他自己的一份)。
  *
  * @param req 请求。
  * @returns { picks, more, locked };未登录 401。
@@ -56,11 +57,13 @@ export async function myjobsPicksRoute(req: Request): Promise<Response> {
     return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
   }
   let prov = TEXT_NONE
-  const p = new URL(req.url).searchParams.get(P_PROV)
+  const q = new URL(req.url).searchParams
+  const p = q.get(P_PROV)
   if (p != null && PROV_RE.test(p)) {
     prov = p
   }
-  const body = await getPicks({ db: await getDb(), userId: user.id, prov, pro: isPro(user) })
+  const fresh = q.get(P_FRESH) === FRESH_ON
+  const body = await getPicks({ db: await getDb(), userId: user.id, prov, pro: isPro(user), fresh })
   return Response.json(body, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
 }
 

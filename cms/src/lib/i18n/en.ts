@@ -1092,7 +1092,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'acct.toReg': 'Sign up free', 'acct.toLogin': 'Have an account?',
   'acct.err.cred': 'Wrong email or password', 'acct.err.exists': 'Email already registered — sign in instead', 'acct.err.weakPw': 'Password too weak: at least 8 characters', 'acct.err.generic': 'Something went wrong, try again', 'acct.err.oauth': 'Google sign-in didn’t go through — try again or use email',
   'acct.pw.short': 'Too short: 8+ characters', 'acct.pw.weak': 'Weak', 'acct.pw.medium': 'Fair', 'acct.pw.strong': 'Strong', 'acct.pw.hint': 'Mix upper/lower case, digits or symbols',
-  'pf.title': 'My profile', 'pf.card': 'Job search', 'pf.edit': 'Edit', 'pf.none': 'Not answered',
+  'pf.title': 'My profile', 'pf.card': 'Job search', 'pf.edit': 'Edit', 'pf.none': 'Not answered', 'pf.noneName': 'Not filled in',
   'pf.loadFail': "Couldn't load. Refresh to try again.",
   'pf.more': '{n} more', 'pf.goal': 'Goal', 'pf.majors': 'Field of study', 'pf.jobs': 'Target jobs', 'pf.where': 'Location',
   'pf.name': 'Name on applications',

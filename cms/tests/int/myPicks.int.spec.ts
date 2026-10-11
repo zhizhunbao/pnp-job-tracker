@@ -9,6 +9,9 @@
 //       ⑤ SQL:硬条件(在架、有投递邮箱、没碰过、没退信、30 天同邮箱)都在;排序键依次 = 能走省提名 → 通道档 → 发布日期 → 高于中位;
 //       ⑥ 组件:免费号推荐多时出「更多推荐」卡(锁住那条的职位名看得见,假字纹理不是任何真公司名);Pro 不出;理由胶囊按码出字,
 //          认不得的码不出;接口失败出「刷新再试」。
+// 2026-10-11 Frank「OINP 很长时间没有捞人了」→「90 天可以」:① 再穷举「档案想做的工作同组 × 本省 offer 类通道近 90 天抽过」——
+//          想做的工作同组也出 occ;过了 90 天的省不出 pnp;⑤ 能走省提名 / 通道档两个排序键都只对没过期的省生效(stale 子查询),
+//          天数 = PICKS_DRAW_DAYS(90)作 $4 交给库;⑦ 答过档案后重拉带 fresh=1(不吃当天缓存)。
 // 探针:reasonsOf 去掉 else(occ 与 saved 同出)→ ① 红;picksViewOf 锁住行抄整行 → ②「只有三键」红;dropTouchedOf 不剔 → ③ 红;
 //       ORDER BY 里 date_posted 挪到 pnp_eligible 前 → ⑤ 红;Picks 对 Pro 也出更多卡 → ⑥ 红。
 import { act, createElement } from 'react'
@@ -17,9 +20,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { Picks, Push } from '@/components/myjobs'
 import { SQL } from '@/lib/db'
-import { PICKS_FREE, PICKS_LOCKED_SHOW } from '@/lib/myjobs/constants'
+import { PICKS_DRAW_DAYS, PICKS_FREE, PICKS_LOCKED_SHOW } from '@/lib/myjobs/constants'
 // 测试例外:域内函数直接点文件(server 门只放路由与注入件)
-import { addressOf, dropTouchedOf, picksViewOf, reasonsOf } from '@/lib/myjobs/functions'
+import { addressOf, dropTouchedOf, loadPicks, picksViewOf, reasonsOf } from '@/lib/myjobs/functions'
 import type { PickRow } from '@/lib/myjobs/types'
 
 const PROVS = ['ON', 'BC', 'QC', ''] as const
@@ -38,29 +41,39 @@ describe('推荐理由', () => {
   it('① 只放真的,全格穷举', () => {
     for (const occApplied of BOOLS) {
       for (const occSaved of BOOLS) {
-        for (const pnp of BOOLS) {
-          for (const aboveMed of BOOLS) {
-            for (const province of PROVS) {
-              const r = reasonsOf({ occApplied, occSaved, pnp, aboveMed, province })
-              const want: string[] = []
-              if (occApplied) {
-                want.push('occ')
-              } else if (occSaved) {
-                want.push('saved')
+        for (const occWant of BOOLS) {
+          for (const pnp of BOOLS) {
+            for (const offerActive of BOOLS) {
+              for (const aboveMed of BOOLS) {
+                for (const province of PROVS) {
+                  const r = reasonsOf({ occApplied, occSaved, occWant, pnp, offerActive, aboveMed, province })
+                  const want: string[] = []
+                  if (occApplied || occWant) {
+                    want.push('occ')
+                  } else if (occSaved) {
+                    want.push('saved')
+                  }
+                  if (pnp && offerActive && (province === 'ON' || province === 'BC')) {
+                    want.push('pnp')
+                  }
+                  if (aboveMed) {
+                    want.push('wage')
+                  }
+                  expect(r).toEqual(want)
+                  expect(r.includes('occ') && r.includes('saved')).toBe(false)
+                }
               }
-              if (pnp && (province === 'ON' || province === 'BC')) {
-                want.push('pnp')
-              }
-              if (aboveMed) {
-                want.push('wage')
-              }
-              expect(r).toEqual(want)
-              expect(r.includes('occ') && r.includes('saved')).toBe(false)
             }
           }
         }
       }
     }
+  })
+
+  it('金标(2026-10-11):ON 能走省提名、但 offer 类通道 90 天没抽 → 不出 pnp;BC 抽过 → 出', () => {
+    const base = { occApplied: false, occSaved: false, occWant: false, pnp: true, aboveMed: false }
+    expect(reasonsOf({ ...base, province: 'ON', offerActive: false })).toEqual([])
+    expect(reasonsOf({ ...base, province: 'BC', offerActive: true })).toEqual(['pnp'])
   })
 })
 
@@ -113,6 +126,35 @@ describe('推荐 SQL', () => {
     expect(at.every((i) => i >= 0)).toBe(true)
     expect([...at].sort((a, b) => a - b)).toEqual(at)
   })
+
+  it('⑤ 金标(2026-10-11):过期省不加分 —— 两个省提名排序键都套 stale 守卫;过期 = offerDrawLast 早于今天减 $4 天;缺这一格不算过期', () => {
+    const q = SQL.MYJOBS_PICKS
+    const order = q.slice(q.indexOf('ORDER BY'))
+    expect(order).toContain('(j.pnp_eligible AND st.code IS NULL) DESC')
+    expect(order).toContain('CASE WHEN st.code IS NULL THEN j.grade_channel END DESC')
+    expect(q).toContain("info->>'offerDrawLast' IS NOT NULL AND (info->>'offerDrawLast')::date < current_date - $4::int")
+    expect(q).toContain('LEFT JOIN stale st ON st.code = j.province')
+    expect(q).toContain('(st.code IS NULL) AS offer_active')
+    expect(q).toContain("u.answers->'basic'->'nocs'")
+  })
+
+  it('⑤ 天数 90 作 $4 交给库;库行的 offer_active / occ_want 落到理由上', async () => {
+    expect(PICKS_DRAW_DAYS).toBe(90)
+    const seen: unknown[][] = []
+    const dbRow = {
+      id: 1, title: 'cook', province: 'ON', city: 'Toronto', pnp_eligible: true, above_med: false,
+      occ_applied: false, occ_saved: false, occ_want: true, offer_active: false,
+    }
+    const db = {
+      query: async (_sql: string, params: unknown[]) => {
+        seen.push(params)
+        return { rows: [dbRow, { ...dbRow, id: 2, province: 'BC', occ_want: false, offer_active: true }] }
+      },
+    }
+    const rows = await loadPicks({ db: db as never, userId: 5, prov: 'ON' })
+    expect(seen[0]).toEqual([5, 'ON', 50, 90])
+    expect(rows.map((r) => r.reasons)).toEqual([['occ'], ['pnp']])
+  })
 })
 
 const t = (k: string, v?: Record<string, string | number>) => (v == null ? k : k + JSON.stringify(v))
@@ -137,7 +179,7 @@ async function mount(pro: boolean) {
   document.body.appendChild(el)
   const root = createRoot(el)
   await act(async () => {
-    root.render(createElement(Picks, { t, pro, gen: 0 }))
+    root.render(createElement(Picks, { t, pro, gen: 0, asked: 0 }))
   })
   for (let i = 0; i < 3; i++) {
     await act(async () => {
@@ -259,5 +301,28 @@ describe('新岗推送卡', () => {
       })
     }
     expect(el.textContent).toContain('mj.fail')
+  })
+})
+
+describe('答完档案重拉', () => {
+  it('⑦ asked 0 不带 fresh;asked 变 1 重拉一次且带 fresh=1', async () => {
+    const urls: string[] = []
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      urls.push(String(url))
+      return { status: 200, ok: true, json: async () => ({ picks: [], more: 0, locked: [] }) }
+    }))
+    const el = document.createElement('div')
+    document.body.appendChild(el)
+    const root = createRoot(el)
+    await act(async () => {
+      root.render(createElement(Picks, { t, pro: false, gen: 0, asked: 0 }))
+    })
+    await act(async () => {
+      root.render(createElement(Picks, { t, pro: false, gen: 0, asked: 1 }))
+    })
+    const picks = urls.filter((u) => u.startsWith('/api/myjobs/picks'))
+    expect(picks).toHaveLength(2)
+    expect(picks[0]).not.toContain('fresh=1')
+    expect(picks[1]).toContain('&fresh=1')
   })
 })

@@ -248,6 +248,11 @@ export const NOC_DESC_NONE = []
 export const URL_PICKS = '/api/myjobs/picks?prov='
 
 /**
+ * 今日推荐接口「不用当天缓存、现算一份」的尾巴(2026-10-11「进我的求职先弹五题」:答完档案重拉要按新答案推)。
+ */
+export const URL_PICKS_FRESH = '&fresh=1'
+
+/**
  * 推荐理由码 → 胶囊词条(顺序由服务端定;认不得的码不出)。
  */
 export const WHY_KEYS: Record<string, string> = {

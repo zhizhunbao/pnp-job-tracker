@@ -23,16 +23,17 @@ import {
 } from '@/lib/guest'
 import { track } from '@/lib/track'
 import {
-  GATE_BACK_KEY, GATE_EDIT_STEPS, GATE_STEPS, GATE_STEP_REG, NEXT_KEY, TEXT_NONE, TRACK_GATE_OPEN,
+  GATE_BACK_KEY, GATE_STEPS, GATE_STEP_REG, NEXT_KEY, TEXT_NONE, TRACK_GATE_OPEN,
 } from './constants'
 import {
-  cityOptsOf, dropGateHandoff, editNextKeyOf, focusGateQuestion, gateNextOffOf, gateProvActiveOf, gateStepOf,
+  cityOptsOf, dropGateHandoff, editBlankOf, editNextKeyOf, editStepsOf, focusGateQuestion, gateNextOffOf,
+  gateProvActiveOf, gateStepOf,
   loadProvCities, makeCityPick, makeEditNext, makeEditSave, makeEntryClose, makeEntryDone, makeGateBack, makeGateClose,
   makeGateDone, makeGateNext, makeGoalPick, makeMajorsPick, makeProvPick, makeTouchedNocs, nameBadOf, runGateSync,
 } from './functions'
 import type {
   CitiesGot, CityOpt, CityPickHookIn, CityPickOut, DeadFlag, EntryGatePanel, GateBack, GateDraft, GateEditHookIn,
-  GateHookIn, GatePanel, ProvCitiesIn,
+  GateHookIn, GatePanel, GateStep, ProvCitiesIn,
 } from './types'
 
 /**
@@ -112,7 +113,7 @@ export function useGateWizard(x: GateHookIn): GatePanel {
     provActive,
     onProv: makeProvPick({ setProv, setAbroad, setTouched, setCity: c.setCity }),
     cities: c.panel,
-    edit: { name, onName: setName, nameBad: false, nextKey: NEXT_KEY, saving: false, failKey: TEXT_NONE },
+    edit: { name, onName: setName, nameBad: false, nextKey: NEXT_KEY, saving: false, failKey: TEXT_NONE, skip: false },
     total: GATE_STEPS.length,
     onNext: next,
     nextOff: gateNextOffOf({ cur, majors, nocs, provActive, nameBad: false }),
@@ -247,6 +248,8 @@ export function useProvCities(x: ProvCitiesIn): CityOpt[] {
  * 编辑模式的整机(2026-10-09「我的档案」批,Frank「答题还是之前弹框的那种干净」):档案页「修改」走访客向导同一套题、同一副样子,
  * 但从档案里的答案起头、末尾多问英文姓名、最后一题点「保存」—— 不写访客草稿、不打交接戳、不进注册屏、不记 gate-open
  * (那几样是访客注册漏斗的事,编辑的人早已登录)。
+ * 2026-10-11「进我的求职先弹五题」:x.missing 时只问起始答案里还空着的那几题(开框那一刻定下,答着答着不缩),
+ * 空着的题出「跳过这步」(跳过 = 往后走,最后一题跳过 = 保存前面答的)。
  *
  * @param x 取词函数、起始答案、关框与保存成功。
  * @returns 与访客向导同形的整机面板(顶行、各题、钮区原样读它)。
@@ -265,6 +268,9 @@ export function useGateEdit(x: GateEditHookIn): GatePanel {
   const [saving, setSaving] = useState(false)
   const [failKey, setFail] = useState(TEXT_NONE)
   const [, setTouched] = useState(false)
+  const [steps] = useState(function initEditSteps(): GateStep[] {
+    return editStepsOf({ seed: s, missing: x.missing })
+  })
   const qid = useId()
   const lastStep = useRef(0)
 
@@ -272,7 +278,7 @@ export function useGateEdit(x: GateEditHookIn): GatePanel {
     focusGateQuestion({ id: qid, step, last: lastStep })
   }, [qid, step])
 
-  const cur = gateStepOf({ step, steps: GATE_EDIT_STEPS })
+  const cur = gateStepOf({ step, steps })
   const provActive = gateProvActiveOf({ prov, abroad })
   const nameBad = nameBadOf(name)
   const save = makeEditSave({
@@ -281,7 +287,8 @@ export function useGateEdit(x: GateEditHookIn): GatePanel {
     setFail,
     onSaved: x.onSaved,
   })
-  const next = makeEditNext({ step, setStep, save })
+  const next = makeEditNext({ step, total: steps.length, setStep, save })
+  const skip = x.missing && editBlankOf({ cur, goal, majors, nocs, provActive, name })
   const onBack = makeGateBack({ step, setStep })
   let back: GateBack = null
   if (step > 0) {
@@ -301,8 +308,10 @@ export function useGateEdit(x: GateEditHookIn): GatePanel {
     provActive,
     onProv: makeProvPick({ setProv, setAbroad, setTouched, setCity: c.setCity }),
     cities: c.panel,
-    edit: { name, onName: setName, nameBad, nextKey: editNextKeyOf(step), saving, failKey },
-    total: GATE_EDIT_STEPS.length,
+    edit: {
+      name, onName: setName, nameBad, nextKey: editNextKeyOf({ step, total: steps.length }), saving, failKey, skip,
+    },
+    total: steps.length,
     onNext: next,
     nextOff: gateNextOffOf({ cur, majors, nocs, provActive, nameBad }) || saving,
     onBack,

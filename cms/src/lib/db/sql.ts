@@ -3053,30 +3053,47 @@ export const MYJOBS_SAVED = `SELECT ${MYJOBS_FROM}
  * 职业:他收藏 / 投过的岗的职业单元组(NOC 前 4 位);都没有 = 不限职业。
  * 排序:能走省提名在前 → 通道档高在前 → 越新越前 → 薪资高于本省同职业中位在前。$1=用户 id,$2=时区预选省码(空串 = 不知道),$3=条数上限。
  * 用到的列 status / province / noc 都有索引;生产实测单人 50~130ms,结果按人按天缓存(lib/myjobs 的 CACHE)。
+ * 2026-10-11 Frank「OINP 很长时间没有捞人了」→「90 天可以」:省提名加分只给「雇主 offer 类通道近 $4 天抽过」的省 ——
+ * 哪些抽选算 offer 类、最近一次在哪天由数据层算好挂在 provinces.info.offerDrawLast(etl mart 的 fill_offer_draw);
+ * 过了 $4 天的省(stale)那几岗不按能走省提名 / 通道档往前排、也不出省提名理由(offer_active = false),落回越新越前 / 薪资;
+ * 没挂这一格的省(本站没收录到抽选,如 SK)照旧加分(不知道 ≠ 官方没抽)。provinces 十行,子查询零成本。
+ * 同日「进我的求职先弹五题」:职业组再并上他在档案里答的「想做的工作」(answers.basic.nocs,want_g)—— 答完重拉推荐就按它推;
+ * 命中算「职业对口」(occ_want)。$4=多少天内抽过才算(lib/myjobs 的 PICKS_DRAW_DAYS)。
  */
 export const MYJOBS_PICKS = `WITH me AS (
        SELECT COALESCE(NULLIF(u.answers->'basic'->>'resProv', ''), $2::text) AS prov,
               ARRAY(SELECT DISTINCT left(sj.noc, 4) FROM saved_jobs s JOIN jobs sj ON sj.id = s.job_id
                     WHERE s.user_id = $1 AND length(sj.noc) >= 4) AS saved_g,
               ARRAY(SELECT DISTINCT left(aj.noc, 4) FROM applications a JOIN jobs aj ON aj.id = a.job_id
-                    WHERE a.user_id = $1 AND length(aj.noc) >= 4) AS applied_g
-         FROM users u WHERE u.id = $1)
+                    WHERE a.user_id = $1 AND length(aj.noc) >= 4) AS applied_g,
+              ARRAY(SELECT DISTINCT left(w, 4) FROM jsonb_array_elements_text(
+                      CASE WHEN jsonb_typeof(u.answers->'basic'->'nocs') = 'array' THEN u.answers->'basic'->'nocs'
+                           ELSE '[]'::jsonb END) w
+                    WHERE length(w) >= 4) AS want_g
+         FROM users u WHERE u.id = $1),
+     stale AS (
+       SELECT code FROM provinces
+        WHERE info->>'offerDrawLast' IS NOT NULL AND (info->>'offerDrawLast')::date < current_date - $4::int)
      SELECT j.id, j.title, j.title_zh, j.title_ko, j.trans_v, c.name AS company_name, c.alias_zh, c.alias_ko,
             c.slug AS company_slug, j.address, j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province,
             j.salary_text, j.date_posted, j.pnp_eligible, (j.salary_annual > j.wage_med_annual) AS above_med,
             j.employment_hours, j.employment_term, j.valid_through,
-            (left(j.noc, 4) = ANY(me.applied_g)) AS occ_applied, (left(j.noc, 4) = ANY(me.saved_g)) AS occ_saved
+            (left(j.noc, 4) = ANY(me.applied_g)) AS occ_applied, (left(j.noc, 4) = ANY(me.saved_g)) AS occ_saved,
+            (left(j.noc, 4) = ANY(me.want_g)) AS occ_want, (st.code IS NULL) AS offer_active
        FROM me CROSS JOIN jobs j
        LEFT JOIN companies c ON c.id = j.company_id
        LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
+       LEFT JOIN stale st ON st.code = j.province
       WHERE j.status = 'open' AND COALESCE(j.apply_email, '') <> '' AND j.is_dup IS NOT TRUE
         AND (me.prov = '' OR j.province = me.prov)
-        AND (cardinality(me.saved_g) + cardinality(me.applied_g) = 0 OR left(j.noc, 4) = ANY(me.saved_g || me.applied_g))
+        AND (cardinality(me.saved_g) + cardinality(me.applied_g) + cardinality(me.want_g) = 0
+             OR left(j.noc, 4) = ANY(me.saved_g || me.applied_g || me.want_g))
         AND NOT EXISTS (SELECT 1 FROM applications a WHERE a.user_id = $1 AND a.job_id = j.id)
         AND NOT EXISTS (SELECT 1 FROM bounced_emails b WHERE b.email = lower(j.apply_email))
         AND NOT EXISTS (SELECT 1 FROM applications a2 WHERE a2.user_id = $1 AND lower(a2.employer_email) = lower(j.apply_email)
                         AND a2.status IN ('sending', 'sent', 'replied') AND a2.updated_at > now() - interval '30 days')
-      ORDER BY j.pnp_eligible DESC NULLS LAST, j.grade_channel DESC NULLS LAST, j.date_posted DESC NULLS LAST,
+      ORDER BY (j.pnp_eligible AND st.code IS NULL) DESC NULLS LAST,
+               CASE WHEN st.code IS NULL THEN j.grade_channel END DESC NULLS LAST, j.date_posted DESC NULLS LAST,
                (j.salary_annual > j.wage_med_annual) DESC NULLS LAST, j.id DESC
       LIMIT $3`
 

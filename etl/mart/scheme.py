@@ -1173,6 +1173,19 @@ class ProvFillIn:
     """IRCC 存量表。"""
 
 @dataclass
+class OfferDrawIn:
+    """fill_offer_draw() 入参(2026-10-11 推荐只给近 90 天抽过雇主 offer 类通道的省加分)。"""
+
+    info: dict
+    """省码 → 体量卡(就地填)。"""
+
+    draws: list
+    """pnp_draws 整表行。"""
+
+    pathways: list
+    """pathways 整表行。"""
+
+@dataclass
 class TrRefIn:
     """tr_ref_of() 入参。"""
 
@@ -5577,3 +5590,38 @@ class MartNocDescExamplesTest(unittest.TestCase):
         """旧版条目(没有 examples 格)与空清单都给空串。"""
         self.assertEqual(self.row({"title": "x", "duties": [], "requirements": []})["examples"], "")
         self.assertEqual(self.row({"title": "x", "duties": [], "requirements": [], "examples": []})["examples"], "")
+
+
+class MartOfferDrawTest(unittest.TestCase):
+    """省「雇主 offer 类通道最近一次抽选日」自测(2026-10-11 Frank「90 天可以」):只认 jobLinked 通道点名的抽选组、
+    同省才算;通告行不算;关了的通道照算;只到月的补当月最后一天;一轮都没收录的省不挂(缺席 ≠ 官方没抽)。"""
+
+    def test_golden(self) -> None:
+        """金标:ON 只有关了的 offer 通道抽过(4-30),硕士通道 9 月那轮不算;NS 按月 → 月末;SK 没收录不挂。"""
+        from mart import functions as fn
+        pathways = [
+            {"province": "ON", "jobLinked": True, "status": "closed", "drawStreams": ["Employer Job Offer: Foreign Worker stream"]},
+            {"province": "ON", "jobLinked": False, "drawStreams": ["Masters Graduate stream"]},
+            {"province": "NS", "jobLinked": True, "drawStreams": ["Monthly EOI selections"]},
+            {"province": "SK", "jobLinked": True, "drawStreams": []},
+        ]
+        draws = [
+            {"province": "ON", "kind": "draw", "drawDate": "2026-04-30", "stream": "Employer Job Offer: Foreign Worker stream"},
+            {"province": "ON", "kind": "draw", "drawDate": "2026-04-02", "stream": "Employer Job Offer: Foreign Worker stream"},
+            {"province": "ON", "kind": "draw", "drawDate": "2026-09-30", "stream": "Masters Graduate stream"},
+            {"province": "ON", "kind": "notice", "drawDate": "2026-10-01", "stream": "Employer Job Offer: Foreign Worker stream"},
+            {"province": "NS", "kind": "draw", "drawDate": "2026-07", "stream": "Monthly EOI selections"},
+            {"province": "BC", "kind": "draw", "drawDate": "2026-10-08", "stream": "Monthly EOI selections"},
+        ]
+        info: dict = {"ON": {}, "NS": {}, "SK": {}, "BC": {}}
+        fn.fill_offer_draw(OfferDrawIn(info=info, draws=draws, pathways=pathways))
+        self.assertEqual(info, {"ON": {"offerDrawLast": "2026-04-30"}, "NS": {"offerDrawLast": "2026-07-31"},
+                                "SK": {}, "BC": {}})
+
+    def test_day_of(self) -> None:
+        """日子写法:到日原样、到月补月末(闰年 2 月 29)、认不出给空串。"""
+        from mart import functions as fn
+        self.assertEqual(fn.draw_last_day_of("2026-09-17"), "2026-09-17")
+        self.assertEqual(fn.draw_last_day_of("2028-02"), "2028-02-29")
+        self.assertEqual(fn.draw_last_day_of("2026"), "")
+        self.assertEqual(fn.draw_last_day_of(""), "")

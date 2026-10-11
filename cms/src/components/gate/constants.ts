@@ -77,6 +77,17 @@ export const GATE_STEP_NAME = 'name'
 export const GATE_EDIT_STEPS = ['goal', 'major', 'job', 'prov', 'name'] as const
 
 /**
+ * 「跳过这步」的词条键(2026-10-11「进我的求职先弹五题」:只问没答的那几题、每题可跳,只在这一种弹法里出;
+ * 访客向导与档案页「修改」照旧不出,10-04「跳过这步 去掉」的判定不变)。
+ */
+export const SKIP_KEY = 'ob.skip'
+
+/**
+ * 「跳过这步」的钮形(ghost 底 + 本域类定形,同 account 桶 PLAIN_BTN_KIND 的口径)。
+ */
+export const SKIP_BTN_KIND = 'ghost'
+
+/**
  * 访客向导第一问的题面键。单独起名是因为它同时是取题面时的兜底(同 profile 的 OB_QUESTION_STATUS 的理由)。
  */
 export const GATE_QUESTION_GOAL = 'gate.q.goal'

@@ -24,6 +24,7 @@
  * @time 2026-10-04 02:10:00
  */
 export { GateEdit } from './gateedit'
+export { missingStepsOf } from './functions'
 export { GateSync } from './gatesync'
 export { GateWizard } from './gatewizard'
 export type { GateEditSeed } from './types'

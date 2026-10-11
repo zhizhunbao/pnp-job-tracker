@@ -56,6 +56,8 @@
  * 今日推荐(+ 免费号的更多推荐)→ 我的收藏 → 我的投递 → 新岗推送(Push,接替周报开关 WeeklyOptin)。发出后投递表重挂、推荐卡按同一个代数重拉。
  * 2026-10-10 批 3(docs/design/我的/我的求职-20261009.md 1.5 / 2.5 / 1.6 / 2.6):「我的求职」后面加「收件箱」一节(inbox 桶 Inbox,
  * 页签带红色未读数);门里再摆只读投递框宿主 AppViewHost(地址栏 `?app=` 就弹:我的投递「打开」、收件箱「打开这次投递」)。
+ * 2026-10-11「进我的求职先弹五题」(Frank「一共没几个问题啊 都问不行吗」):「我的求职」节多摆 JobsQuiz —— 档案五样有空着的
+ * 自动弹「修改」同一个弹框、只问空着的;关了今日推荐按答档案代数现算重拉。
  *
  * @author Frank
  * @time 2026-07-02 00:00:00
@@ -71,6 +73,7 @@ import {
   AccountNav,
   AccountRedirect,
   CoverLetters,
+  JobsQuiz,
   PayOkNotice,
   Profile,
   ResumeFile,
@@ -107,10 +110,11 @@ export default function AccountPage() {
             {a.sec === SEC_SJOBS && a.sentTo != null && <SentNotice t={a.t} company={a.sentTo} />}
             {a.sec === SEC_RESUME && <ResumeFile t={a.t} />}
             {a.sec === SEC_RESUME && <CoverLetters t={a.t} />}
-            {a.sec === SEC_SJOBS && <Picks gen={a.appliedGen} t={a.t} pro={a.pro} />}
+            {a.sec === SEC_SJOBS && <Picks gen={a.appliedGen} asked={a.askedGen} t={a.t} pro={a.pro} />}
             {a.sec === SEC_SJOBS && <SavedList t={a.t} plan={a.plan} />}
             {a.sec === SEC_SJOBS && <AppliedList key={a.appliedGen} t={a.t} plan={a.plan} />}
             {a.sec === SEC_SJOBS && <Push t={a.t} />}
+            {a.sec === SEC_SJOBS && <JobsQuiz t={a.t} onDone={a.onAsked} />}
             {a.sec === SEC_INBOX && <Inbox t={a.t} />}
             {a.sec === SEC_PROFILE && <Profile t={a.t} />}
             {a.sec === SEC_SUB && <Subscription t={a.t} until={a.me.proUntil} />}

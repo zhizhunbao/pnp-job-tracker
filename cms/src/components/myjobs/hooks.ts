@@ -46,8 +46,9 @@ export function useMyJobs(x: MyJobsHookIn): MyJobsPanel {
 
 /**
  * 今日推荐整机:挂上拉一次、重拉代数变了再拉(刚投出的岗从推荐里下去);「升级 Pro」开定价框。
+ * 2026-10-11:答档案代数变了也重拉(五题答完按新答案推)。
  *
- * @param x 重拉代数。
+ * @param x 重拉代数与答档案代数。
  * @returns 推荐、拉失败了没与定价框开关。
  */
 export function usePicks(x: PicksHookIn): PicksPanel {
@@ -56,8 +57,8 @@ export function usePicks(x: PicksHookIn): PicksPanel {
   const [upsell, setUpsell] = useState(false)
 
   useEffect(function firstLoad() {
-    void makeLoadPicks({ setData, setFailed })()
-  }, [x.gen])
+    void makeLoadPicks({ setData, setFailed, fresh: x.asked > 0 })()
+  }, [x.gen, x.asked])
 
   return {
     data,

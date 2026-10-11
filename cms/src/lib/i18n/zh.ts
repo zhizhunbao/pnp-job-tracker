@@ -1165,7 +1165,7 @@ export const siteZh = {
   'acct.toReg': '免费注册', 'acct.toLogin': '已有账号?',   // 2026-09-14 Frank「改成免费注册」「把登录两个字删了」
   'acct.err.cred': '邮箱或密码不正确', 'acct.err.exists': '该邮箱已注册,请直接登录', 'acct.err.weakPw': '密码不够强:至少 8 位', 'acct.err.generic': '操作失败,请稍后再试', 'acct.err.oauth': 'Google 登录没成功,请重试或用邮箱登录',
   'acct.pw.short': '太短:至少 8 位', 'acct.pw.weak': '弱', 'acct.pw.medium': '中', 'acct.pw.strong': '强', 'acct.pw.hint': '建议混合大小写、数字或符号',
-  'pf.title': '我的档案', 'pf.card': '求职', 'pf.edit': '修改', 'pf.none': '还没答', 'pf.loadFail': '没取到,刷新再试',
+  'pf.title': '我的档案', 'pf.card': '求职', 'pf.edit': '修改', 'pf.none': '还没答', 'pf.noneName': '还没填', 'pf.loadFail': '没取到,刷新再试',
   'pf.more': '还有 {n} 个', 'pf.goal': '目标', 'pf.majors': '专业', 'pf.jobs': '想做的工作', 'pf.where': '所在地', 'pf.name': '英文姓名',
   'acct.plan.free': '免费版', 'sub.title': '我的订阅', 'sub.renew': '续买', 'acct.plan.pro': '有效期至 {d}',
   // 2026-10-08 「我的订阅」照 AIApply 的 Billing:方案卡、付款记录

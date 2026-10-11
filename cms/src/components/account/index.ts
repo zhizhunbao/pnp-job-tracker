@@ -32,6 +32,7 @@
  * 2026-10-09「我的档案」批:桶门加 Profile(「我的档案」一节)与 SEC_PROFILE。
  * 2026-10-10 投递框三步:桶门加 ResumePages 与 useResumePages(投递框「简历」页选中哪份就在旁边画那份的首页)。
  * 2026-10-10 批 3:桶门加 SEC_INBOX(收件箱一节)。
+ * 2026-10-11「进我的求职先弹五题」:桶门加 JobsQuiz(进「我的求职」档案五样有空着的,自动弹「修改」同一个弹框,只问空着的)。
  *
  * @author Claude
  * @time 2026-08-26 19:28:00
@@ -45,6 +46,7 @@ export {
   SEC_INBOX, SEC_PROFILE, SEC_RESUME, SEC_SJOBS, SEC_SUB, SHELL_BOTTOM, SHELL_TOP,
 } from './constants'
 export { useAccountPage, useResumePages } from './hooks'
+export { JobsQuiz } from './jobsquiz'
 export { PayOkNotice } from './payoknotice'
 export { Profile } from './profile'
 export { ResumeFile } from './resumefile'

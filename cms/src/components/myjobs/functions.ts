@@ -27,6 +27,7 @@ import {
   COL_WHY, CRED_INCLUDE, FILE_COVER_TAIL, FILE_RESUME_TAIL, HOURS_EN, JOB_HREF_HEAD, KEY_HOURS_HEAD, KEY_TERM_HEAD,
   KIND_APPLIED, KIND_SAVED, LOCK_FILL, LOCK_FILL_N, METHOD_DELETE, OPEN_KIND, PRIMARY_KIND, QP_SEC, SEC_FAVS, STAGES,
   STAGE_ALL, STAGE_FILTERS, ST_DRAFT, TERM_EN, TEXT_NONE, UNSAVE_KIND, URL_APPLY_HEAD, URL_FILE_HEAD, URL_PICKS,
+  URL_PICKS_FRESH,
   URL_SAVED_JOB_HEAD, WHY_KEYS, WHY_TAG,
 } from './constants'
 import { DeadlineCell } from './deadlinecell'
@@ -622,14 +623,19 @@ function baseColsOf(x: ColsIn): MjCol<ListRow>[] {
 
 /**
  * 造「拉一次推荐」:带上浏览器按时区预选的省(他没答所在省时服务端用它);失败拨「拉失败了」。
+ * 2026-10-11:这一页答过档案(fresh)就让服务端不用当天缓存、按新答案现算。
  *
- * @param x 两个落格。
+ * @param x 两个落格与要不要现算。
  * @returns 拉推荐的函数。
  */
 export function makeLoadPicks(x: LoadPicksIn): () => Promise<void> {
   return async function loadPicks(): Promise<void> {
+    let url = URL_PICKS + homeProvinceOf()
+    if (x.fresh) {
+      url += URL_PICKS_FRESH
+    }
     try {
-      const r = await fetch(URL_PICKS + homeProvinceOf(), { credentials: CRED_INCLUDE })
+      const r = await fetch(url, { credentials: CRED_INCLUDE })
       if (r.ok === false) {
         x.setFailed(true)
         return

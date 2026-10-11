@@ -7,7 +7,8 @@
  */
 import { describe, expect, it } from 'vitest'
 import fc from 'fast-check'
-import { cityOptsOf, editNextKeyOf, nameBadOf } from '@/components/gate/functions'
+import { jobsQuizOpenOf } from '@/components/account/functions'
+import { cityOptsOf, editBlankOf, editNextKeyOf, editStepsOf, missingStepsOf, nameBadOf } from '@/components/gate/functions'
 import { toProfileBasic } from '@/lib/quiz/functions'
 
 const ROW = (name: string, zh = '', ko = '', jobs = 1) => ({ name, zh, ko, jobs })
@@ -67,25 +68,82 @@ describe('英文姓名与主钮', () => {
   })
 
   it('金标:编辑模式五题,前四题主钮「下一步」,最后一题「保存」', () => {
-    expect([0, 1, 2, 3].map(editNextKeyOf)).toEqual(['ob.next', 'ob.next', 'ob.next', 'ob.next'])
-    expect(editNextKeyOf(4)).toBe('gate.save')
+    expect([0, 1, 2, 3].map((step) => editNextKeyOf({ step, total: 5 }))).toEqual(['ob.next', 'ob.next', 'ob.next', 'ob.next'])
+    expect(editNextKeyOf({ step: 4, total: 5 })).toBe('gate.save')
+  })
+
+  it('金标(2026-10-11):只问两题时第 2 题就是「保存」;只问一题第 1 题就是「保存」', () => {
+    expect(editNextKeyOf({ step: 0, total: 2 })).toBe('ob.next')
+    expect(editNextKeyOf({ step: 1, total: 2 })).toBe('gate.save')
+    expect(editNextKeyOf({ step: 0, total: 1 })).toBe('gate.save')
   })
 })
 
 describe('档案取数:答案档 → 五格', () => {
   it('金标:jsonb 是对象或串都认;省市、目标、两份码清单照抄', () => {
     const basic = { goalBand: 2, majors: ['11.0701', '52.0201'], nocs: ['21220'], resProv: 'ON', resCity: 'Mississauga' }
-    const want = { goal: 2, majors: ['11.0701', '52.0201'], nocs: ['21220'], prov: 'ON', abroad: false, city: 'Mississauga' }
+    const want = { goal: 2, majors: ['11.0701', '52.0201'], nocs: ['21220'], prov: 'ON', abroad: false, city: 'Mississauga', asked: false }
     expect(toProfileBasic({ answers: { basic } })).toEqual(want)
     expect(toProfileBasic({ answers: JSON.stringify({ basic }) })).toEqual(want)
   })
 
   it('金标:在境外不算省市;没省不留城市;格缺 / 错型按没答;没存过档全空', () => {
     expect(toProfileBasic({ answers: { basic: { status: 'overseas', resProv: 'ON', resCity: 'Toronto' } } }))
-      .toEqual({ goal: 0, majors: [], nocs: [], prov: '', abroad: true, city: '' })
+      .toEqual({ goal: 0, majors: [], nocs: [], prov: '', abroad: true, city: '', asked: false })
     expect(toProfileBasic({ answers: { basic: { resCity: 'Toronto' } } }).city).toBe('')
     expect(toProfileBasic({ answers: { basic: { goalBand: null, majors: null, nocs: [7, '', '21220'] as unknown as string[] } } }))
-      .toEqual({ goal: 0, majors: [], nocs: ['21220'], prov: '', abroad: false, city: '' })
-    expect(toProfileBasic({ answers: null })).toEqual({ goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '' })
+      .toEqual({ goal: 0, majors: [], nocs: ['21220'], prov: '', abroad: false, city: '', asked: false })
+    expect(toProfileBasic({ answers: null })).toEqual({ goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', asked: false })
+    expect(toProfileBasic({ answers: { basic: { jobsAsked: true } } }).asked).toBe(true)
+  })
+})
+
+const FULL = { goal: 2, majors: ['11.0701'], nocs: ['21220'], prov: 'ON', abroad: false, city: 'Toronto', name: 'Li Wei' }
+const EMPTY = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '' }
+const PF_FULL = {
+  goal: 2, majors: [{ code: '11.0701', en: 'CS', zh: '', ko: '' }], nocs: [{ code: '21220', en: 'Dev', zh: '', ko: '' }],
+  prov: 'ON', abroad: false, city: { code: '', en: 'Toronto', zh: '', ko: '' }, name: 'Li Wei', asked: false,
+}
+
+describe('进我的求职先弹五题(2026-10-11)', () => {
+  it('金标:都答了 → 没有空着的;全空 → 五题按原序;境外算答了所在地;姓名只有空白算没填', () => {
+    expect(missingStepsOf(FULL)).toEqual([])
+    expect(missingStepsOf(EMPTY)).toEqual(['goal', 'major', 'job', 'prov', 'name'])
+    expect(missingStepsOf({ ...FULL, prov: '', abroad: true })).toEqual([])
+    expect(missingStepsOf({ ...FULL, name: '   ', majors: [] })).toEqual(['major', 'name'])
+  })
+
+  it('性质:missing 弹法只排空着的题且保序;不 missing 恒五题', () => {
+    const ALL = ['goal', 'major', 'job', 'prov', 'name']
+    fc.assert(fc.property(fc.boolean(), fc.boolean(), fc.boolean(), fc.boolean(), fc.boolean(), (g, m, j, p, n) => {
+      const seed = {
+        goal: g ? 1 : 0, majors: m ? ['11.0701'] : [], nocs: j ? ['21220'] : [], prov: p ? 'BC' : '', abroad: false, city: '',
+        name: n ? 'Ann Lee' : '',
+      }
+      const steps = editStepsOf({ seed, missing: true })
+      const want = ALL.filter((_, i) => [g, m, j, p, n][i] === false)
+      expect(steps).toEqual(want)
+      expect(editStepsOf({ seed, missing: false })).toEqual(ALL)
+    }))
+  })
+
+  it('金标:「跳过这步」只在这一题空着时出', () => {
+    const v = { goal: 0, majors: [], nocs: [], provActive: '', name: '' }
+    expect(editBlankOf({ ...v, cur: 'goal' })).toBe(true)
+    expect(editBlankOf({ ...v, cur: 'goal', goal: 1 })).toBe(false)
+    expect(editBlankOf({ ...v, cur: 'major' })).toBe(true)
+    expect(editBlankOf({ ...v, cur: 'major', majors: ['11.0701'] })).toBe(false)
+    expect(editBlankOf({ ...v, cur: 'prov', provActive: 'ON' })).toBe(false)
+    expect(editBlankOf({ ...v, cur: 'name', name: '  ' })).toBe(true)
+    expect(editBlankOf({ ...v, cur: 'name', name: 'Li' })).toBe(false)
+  })
+
+  it('金标:只在有空着的、没弹过、这一页没关过时弹 —— 一人一次', () => {
+    expect(jobsQuizOpenOf({ view: null, closed: false })).toBe(false)
+    expect(jobsQuizOpenOf({ view: PF_FULL, closed: false })).toBe(false)
+    const noName = { ...PF_FULL, name: '' }
+    expect(jobsQuizOpenOf({ view: noName, closed: false })).toBe(true)
+    expect(jobsQuizOpenOf({ view: noName, closed: true })).toBe(false)
+    expect(jobsQuizOpenOf({ view: { ...noName, asked: true }, closed: false })).toBe(false)
   })
 })

@@ -1059,7 +1059,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'acct.toReg': '무료 가입', 'acct.toLogin': '이미 계정이 있으신가요?',
   'acct.err.cred': '이메일 또는 비밀번호가 올바르지 않습니다', 'acct.err.exists': '이미 등록된 이메일입니다. 로그인해 주세요', 'acct.err.weakPw': '비밀번호가 약합니다: 8자 이상', 'acct.err.generic': '오류가 발생했습니다. 다시 시도하세요', 'acct.err.oauth': 'Google 로그인에 실패했습니다. 다시 시도하거나 이메일로 로그인하세요',
   'acct.pw.short': '너무 짧음: 8자 이상', 'acct.pw.weak': '약함', 'acct.pw.medium': '보통', 'acct.pw.strong': '강함', 'acct.pw.hint': '대소문자·숫자·기호를 섞어 주세요',
-  'pf.title': '내 프로필', 'pf.card': '구직', 'pf.edit': '수정', 'pf.none': '미응답',
+  'pf.title': '내 프로필', 'pf.card': '구직', 'pf.edit': '수정', 'pf.none': '미응답', 'pf.noneName': '미입력',
   'pf.loadFail': '불러오지 못했어요. 새로고침해 주세요.',
   'pf.more': '{n}개 더', 'pf.goal': '목표', 'pf.majors': '전공', 'pf.jobs': '희망 직업', 'pf.where': '거주지', 'pf.name': '영문 이름',
   'acct.plan.free': '무료', 'sub.title': '내 구독', 'sub.renew': '연장', 'acct.plan.pro': '{d}까지',

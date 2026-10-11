@@ -6,7 +6,7 @@
  */
 import { count, firstOf, numOrNull, queryRows, SQL, text, vtext } from '../db'
 import {
-  ADDR_SEP, DAY_LOCALE, DAY_ZONE, JOB_CLOSED, MYJOBS_LIMIT, PICKS_CACHE_MAX, PICKS_FREE, PICKS_LOCKED_SHOW, PICKS_MAX, PROV_PNP, TEXT_NONE, TIME_NONE,
+  ADDR_SEP, DAY_LOCALE, DAY_ZONE, JOB_CLOSED, MYJOBS_LIMIT, PICKS_CACHE_MAX, PICKS_DRAW_DAYS, PICKS_FREE, PICKS_LOCKED_SHOW, PICKS_MAX, PROV_PNP, TEXT_NONE, TIME_NONE,
   WHY_OCC, WHY_PNP, WHY_SAVED, WHY_WAGE,
 } from './constants'
 import { CACHE } from './variables'
@@ -125,7 +125,7 @@ export async function getPicks(x: PicksViewIn): PicksJsonOut {
   const day = dayOf()
   const hit = CACHE.picks.get(key)
   let rows: PickRow[] = []
-  if (hit != null && hit.day === day && hit.prov === x.prov) {
+  if (x.fresh === false && hit != null && hit.day === day && hit.prov === x.prov) {
     rows = hit.rows
   } else {
     rows = await loadPicks({ db: x.db, userId: x.userId, prov: x.prov })
@@ -154,7 +154,9 @@ export function dayOf(): string {
  * @returns 推荐,最多 PICKS_MAX 条。
  */
 export async function loadPicks(x: PicksIn): PicksOut {
-  return queryRows({ db: x.db, sql: SQL.MYJOBS_PICKS, params: [x.userId, x.prov, PICKS_MAX], map: toPickRow })
+  return queryRows({
+    db: x.db, sql: SQL.MYJOBS_PICKS, params: [x.userId, x.prov, PICKS_MAX, PICKS_DRAW_DAYS], map: toPickRow,
+  })
 }
 
 /**
@@ -234,18 +236,20 @@ export function addressOf(x: AddressIn): string {
 /**
  * 推荐理由(只放真的;顺序 = 职业对口 / 和收藏的同类 → 能走省提名 → 薪资高于中位)。
  * 投过的同组已写「职业对口」时不再写「和你收藏的同类」(一个事实一枚胶囊);魁北克等没有 PNP 简称的省不出省提名理由。
+ * 2026-10-11 Frank「OINP 很长时间没有捞人了」→「90 天可以」:这一省雇主 offer 类通道近 90 天没抽过的,也不出省提名理由;
+ * 同日档案「想做的工作」同组也算「职业对口」。
  *
  * @param x 四个判定格与省码。
  * @returns 理由码。
  */
 export function reasonsOf(x: ReasonsIn): ReasonCodes {
   const out: ReasonCodes = []
-  if (x.occApplied) {
+  if (x.occApplied || x.occWant) {
     out.push(WHY_OCC)
   } else if (x.occSaved) {
     out.push(WHY_SAVED)
   }
-  if (x.pnp && programOf(x.province) !== TEXT_NONE) {
+  if (x.pnp && x.offerActive && programOf(x.province) !== TEXT_NONE) {
     out.push(WHY_PNP)
   }
   if (x.aboveMed) {
@@ -300,6 +304,7 @@ export function toPickRow(r: PickDbRow): PickRow {
     reasons: reasonsOf({
       pnp: r.pnp_eligible === true, province, aboveMed: r.above_med === true,
       occApplied: r.occ_applied === true, occSaved: r.occ_saved === true,
+      occWant: r.occ_want === true, offerActive: r.offer_active === true,
     }),
     program: programOf(province),
     hours: text(r.employment_hours),

@@ -2238,6 +2238,26 @@ IN_DESIG_DISTRICTS = paths.MART / "districts.json"
 DESIG_PLACES_MISSING_TPL = "  designated 拆门店:地名表 {path} 不在,门店这一轮一个都不认"
 """地名表缺失的留痕(表照出,门店全空)。"""
 
+K_OFFER_DRAW_LAST = "offerDrawLast"
+"""省体量卡里「本省雇主 offer 类通道最近一次抽选日」的挂点(ISO 到日;2026-10-11 Frank「OINP 很长时间没有捞人了」→「90 天可以」:
+今日推荐只给近 90 天抽过的省加分、出「能走 X 雇主担保」;90 天的尺在 cms lib/myjobs,这里只落日子。
+缺席 = 本站没收录到这一省的这类抽选(SK 等),不等于官方没抽 —— 消费端按「不知道」照旧加分,不罚)。"""
+
+K_JOB_LINKED = "jobLinked"
+"""pathways 行的「跟这个岗有关系」格(要本省 offer 或本省工作经验;pathways 域人工核定)。"""
+
+K_DRAW_STREAMS = "drawStreams"
+"""pathways 行的「官方用来邀请它的抽选组」格(pnp_draws.stream 原值清单)。"""
+
+OFFER_MONTH_RE = re.compile(r"^\d{4}-\d{2}$")
+"""只到月的抽选日(NS 按月出人数,写「2026-07」)。"""
+
+OFFER_DAY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+"""到日的抽选日。"""
+
+OFFER_DAY_TPL = "{month}-{day:02d}"
+"""只到月的抽选日补成当月最后一天(那一轮最晚可能的日子)。"""
+
 
 # =========================================================================
 # 10. mart:pnp 五表(通道清单 / 抽选事实 / 分值表 / 门槛 / 运营统计)

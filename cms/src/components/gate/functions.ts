@@ -31,14 +31,17 @@ import { track } from '@/lib/track'
 import {
   BOARD_HEAD, BOARD_INTENTS, BOARD_PATH, BROAD_DROP_PARAMS, CITIES_BAD, CITY_HIT_MAX, CITY_HOT_N, CRED_INCLUDE,
   EDIT_ERR_ANSWERS, EDIT_ERR_NAME, GATE_EDIT_STEPS,
-  GATE_FRAME_SEL, GATE_QUESTIONS, GATE_QUESTION_GOAL, GATE_STEPS, GATE_STEP_JOB, GATE_STEP_MAJOR, GATE_STEP_NAME,
+  GATE_FRAME_SEL, GATE_QUESTIONS, GATE_QUESTION_GOAL, GATE_STEPS, GATE_STEP_GOAL, GATE_STEP_JOB, GATE_STEP_MAJOR,
+  GATE_STEP_NAME,
   GATE_STEP_PROV, GATE_STEP_REG, HDR_CONTENT_TYPE, LANG_KO, LANG_ZH, MAJOR_SEP, METHOD_PATCH, MIME_JSON,
   NEXT_KEY, NOC_DROP_PARAMS, NOC_SEP, PROV_ABROAD, PROV_DROP_PARAMS, P_BROAD, P_NOC, P_PROV, SAVE_FAIL_KEY, SAVE_KEY,
   STATUS_OVERSEAS,
   TEXT_NONE, TRACK_GATE_STEP, URL_CITIES_HEAD, URL_PREFS,
 } from './constants'
 import type {
-  BoardGoIn, BoardUrlIn, CitiesJson, CityLabelIn, CityOpt, CityOptsIn, CityPickIn, EditNextIn, EditPatch, EditSaveIn,
+  BoardGoIn, BoardUrlIn, CitiesJson, CityLabelIn, CityOpt, CityOptsIn, CityPickIn, EditBlankIn, EditNextIn,
+  EditNextKeyIn,
+  EditPatch, EditSaveIn, EditStepsIn,
   EntryCloseIn, EntryDoneIn, GateBackIn, GateCloseIn, GateDoneIn, GateEditSeed, GateIntent, GateNextIn, GateNextOffIn,
   GateProvActiveIn, GateQuestionIn, GateStep, GateStepOfIn, GateSyncRunIn, GoalPickIn, LoadCitiesIn, MajorsPickIn,
   MaybeBoardMajor, NocsMergeFn, ParamsDropIn, ProvPickIn, QuestionFocusIn, SetNocsFn, TouchedNocsIn,
@@ -549,26 +552,89 @@ export function nameBadOf(name: string): boolean {
 
 /**
  * 编辑模式钮区主钮的词条键:最后一题是「保存」,其余「下一步」。
+ * 2026-10-11:「最后一题」按这一回一共几题算(只问没答那几题时不是五题);原只收步数、按 GATE_EDIT_STEPS 的长度算。
  *
- * @param step 走到第几步。
+ * @param x 走到第几步与一共几题。
  * @returns 词条键。
  */
-export function editNextKeyOf(step: number): string {
-  if (step + 1 >= GATE_EDIT_STEPS.length) {
+export function editNextKeyOf(x: EditNextKeyIn): string {
+  if (x.step + 1 >= x.total) {
     return SAVE_KEY
   }
   return NEXT_KEY
 }
 
 /**
+ * 编辑模式这一回问哪几题(2026-10-11「进我的求职先弹五题」,Frank「一共没几个问题啊 都问不行吗」):
+ * 五题全问(档案页「修改」),或只问起始答案里还空着的那几题、按原序(进「我的求职」自动弹)。
+ *
+ * @param x 起始答案与要不要只问空着的。
+ * @returns 步序。
+ */
+export function editStepsOf(x: EditStepsIn): GateStep[] {
+  if (x.missing) {
+    return missingStepsOf(x.seed)
+  }
+  const out: GateStep[] = []
+  for (const s of GATE_EDIT_STEPS) {
+    out.push(s)
+  }
+  return out
+}
+
+/**
+ * 档案里还空着的那几题(按五题原序):目标没答、专业 / 想做的工作一个没选、所在地没答(省与境外都没有)、英文姓名没填。
+ * 「我的」页据它判进「我的求职」要不要自动弹(一题不空就不弹),弹框据它排这一回的题。
+ *
+ * @param s 档案的起始答案。
+ * @returns 空着的题;都答了给空列。
+ */
+export function missingStepsOf(s: GateEditSeed): GateStep[] {
+  const out: GateStep[] = []
+  if (s.goal === 0) {
+    out.push(GATE_STEP_GOAL)
+  }
+  if (s.majors.length === 0) {
+    out.push(GATE_STEP_MAJOR)
+  }
+  if (s.nocs.length === 0) {
+    out.push(GATE_STEP_JOB)
+  }
+  if (s.prov === TEXT_NONE && s.abroad === false) {
+    out.push(GATE_STEP_PROV)
+  }
+  if (s.name.trim() === TEXT_NONE) {
+    out.push(GATE_STEP_NAME)
+  }
+  return out
+}
+
+/**
+ * 这一题眼下还空着没有(「跳过这步」只在空着时出;答了就点主钮)。
+ *
+ * @param x 当前这一屏与各题的值。
+ * @returns 空着 true。
+ */
+export function editBlankOf(x: EditBlankIn): boolean {
+  if (x.cur === GATE_STEP_GOAL) {
+    return x.goal === 0
+  }
+  if (x.cur === GATE_STEP_NAME) {
+    return x.name.trim() === TEXT_NONE
+  }
+  return gateNextOffOf({ cur: x.cur, majors: x.majors, nocs: x.nocs, provActive: x.provActive, nameBad: false })
+}
+
+/**
  * 造编辑模式的「下一题」:没到最后一题往后走;最后一题 = 保存(不打交接戳、不进注册屏,与访客向导分开)。
+ * 2026-10-11:最后一题按这一回一共几题算(x.total);「跳过这步」也是它(跳过的那题本来就空着,往后走即可)。
  *
  * @param x 步数、落格与保存。
  * @returns 点击手柄。
  */
 export function makeEditNext(x: EditNextIn): () => void {
   return function editNext(): void {
-    if (x.step + 1 >= GATE_EDIT_STEPS.length) {
+    if (x.step + 1 >= x.total) {
       x.save()
       return
     }

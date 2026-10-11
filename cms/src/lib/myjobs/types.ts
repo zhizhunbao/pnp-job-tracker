@@ -431,6 +431,16 @@ export type PickDbRow = {
   occ_saved: boolean | null
 
   /**
+   * 和他档案里答的「想做的工作」同一职业单元组(2026-10-11)。
+   */
+  occ_want: boolean | null
+
+  /**
+   * 这一岗所在省的雇主 offer 类通道近 PICKS_DRAW_DAYS 天抽过(没收录到抽选的省也算 true;2026-10-11)。
+   */
+  offer_active: boolean | null
+
+  /**
    * 工时归一值 full / part(数据层洗好;没标 NULL;2026-10-10 批 2)。
    */
   employment_hours: string | null
@@ -634,6 +644,11 @@ export type PicksViewIn = {
    * 是不是 Pro(Pro 看全部,免费号看 PICKS_FREE 条)。
    */
   pro: boolean
+
+  /**
+   * 不用当天缓存、现算一份(2026-10-11:答完档案重拉推荐)。
+   */
+  fresh: boolean
 }
 
 /**
@@ -714,6 +729,16 @@ export type ReasonsIn = {
    * 和收藏的同职业单元组。
    */
   occSaved: boolean
+
+  /**
+   * 和档案里答的「想做的工作」同职业单元组(2026-10-11;与投过的同组一样算「职业对口」)。
+   */
+  occWant: boolean
+
+  /**
+   * 这一省的雇主 offer 类通道近 PICKS_DRAW_DAYS 天抽过(2026-10-11 Frank「90 天可以」;过了不出省提名理由)。
+   */
+  offerActive: boolean
 }
 
 /**

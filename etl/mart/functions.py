@@ -302,6 +302,10 @@ from mart.constants import ASSESSING_DATE_RE, METRIC_ASSESSING_DATE  # 2026-10-0
 from mart.constants import (  # 2026-10-02 申请步骤批 1(萨省限额行业收件窗口摊进运营统计表)
     K_INTAKE_FILLED, K_INTAKE_OPENED, K_INTAKE_WINDOWS, METRIC_INTAKE_FILLED, SCOPE_INTAKE, SK_INTAKE_METRICS,
 )
+from mart.constants import (  # 2026-10-11 推荐只给近 90 天抽过雇主 offer 类通道的省加分(Frank「90 天可以」)
+    K_DRAW_STREAMS, K_JOB_LINKED, K_OFFER_DRAW_LAST, OFFER_DAY_RE, OFFER_DAY_TPL, OFFER_MONTH_RE,
+)
+from mart.scheme import MartOfferDrawTest, OfferDrawIn  # 同上
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CareersHostIn, CatI18nIn,
     ChannelTierIn, CityBuildIn, CityRowIn, CityStatsIn, CityStatsRowIn, ClosedDaysIn, ClosedJobIn,
@@ -2887,6 +2891,44 @@ def load_minwage() -> dict:
     return out
 
 
+def fill_offer_draw(x: OfferDrawIn) -> None:
+    """各省「雇主 offer 类通道最近一次抽选日」挂进 info(2026-10-11 Frank「OINP 很长时间没有捞人了」→「90 天可以」)。
+    哪些抽选算雇主 offer 类 = pathways 表里 jobLinked 的通道、它的 drawStreams 点名的抽选组(同省;人工核定,不按流名猜);
+    通道关了(ON 两条 Employer Job Offer)照算 —— 它们最后那一轮就是本省最近一次捞有 offer 的人。
+    一轮也没收录到的省不挂(缺席 = 不知道,宁缺毋假;消费端照旧加分)。"""
+    linked = offer_streams_of(x.pathways)
+    for r in x.draws:
+        if r.get(K_KIND) != DRAW_KIND_DRAW:
+            continue
+        c = r.get(K_PROVINCE) or ""
+        if c not in x.info or (c, r.get(K_STREAM) or "") not in linked:
+            continue
+        day = draw_last_day_of(str(r.get(K_DRAW_DATE) or ""))
+        if day and day > x.info[c].get(K_OFFER_DRAW_LAST, ""):
+            x.info[c][K_OFFER_DRAW_LAST] = day
+
+
+def offer_streams_of(pathways: list) -> set:
+    """pathways 行 → 雇主 offer 类抽选组的 (省码, 抽选组原名) 集合(只取 jobLinked 的通道)。"""
+    out: set = set()
+    for p in pathways:
+        if p.get(K_JOB_LINKED) is not True:
+            continue
+        for s in p.get(K_DRAW_STREAMS) or []:
+            out.add((p.get(K_PROVINCE) or "", s))
+    return out
+
+
+def draw_last_day_of(d: str) -> str:
+    """抽选日 → 那一轮最晚可能的日子:到日的原样;只到月的(NS 按月出)补当月最后一天;认不出给空串(不瞎猜)。"""
+    if OFFER_DAY_RE.match(d):
+        return d
+    if OFFER_MONTH_RE.match(d):
+        last = calendar.monthrange(int(d[:YEAR_LEN]), int(d[YEAR_LEN + 1:]))[1]
+        return OFFER_DAY_TPL.format(month=d, day=last)
+    return ""
+
+
 def minwage_effective_of(r: dict) -> str:
     """调整行的排序键:生效日。"""
     return r[K_MW_EFFECTIVE]
@@ -5381,11 +5423,15 @@ def to_mart_tables() -> dict:
     ee_draws = load_ee_draws()
     descriptions = build_noc_descriptions(NocDescIn(jobs=ctx.jobs, i18n=noc_i18n))
     universe = load_noc_universe()
+    draws = pnp_draws_of(ee_draws)
+    pathways = build_pathways()
+    info = prov_info()
+    fill_offer_draw(OfferDrawIn(info=info, draws=draws, pathways=pathways))
     tables = {
         "companies": list(ctx.companies.values()), "jobs": ctx.jobs,
         "pending_jobs": pending, "held_jobs": split.held,
         "closed_jobs": build_closed_jobs(), "seen_ids": sorted(ctx.seen_ids),
-        "provinces": build_provinces(prov_info()),
+        "provinces": build_provinces(info),
         "cities": build_cities(CityBuildIn(jobs=ctx.jobs, i18n=city_i18n,
                                            macro=load_city_macro())),
         "districts": build_districts(ctx.jobs),
@@ -5400,11 +5446,11 @@ def to_mart_tables() -> dict:
         "experience_levels": build_name_rows(field_values_of(
             FieldValuesIn(jobs=ctx.jobs, key=K_ACCESSIBILITY))),
         "pnp_occupations": pnp_occupations_of(),
-        "pnp_draws": pnp_draws_of(ee_draws),
+        "pnp_draws": draws,
         "pnp_score_factors": build_pnp_score_factors(universe),
         "pnp_requirements": pnp_requirements_of(),
         "pnp_ops_stats": pnp_ops_of(),
-        "pathways": build_pathways(),
+        "pathways": pathways,
         "qc_noc_streams": build_qc_noc_streams(),
         "ee_categories": build_ee_categories(ee_draws.by_category),
         "ee_points_grid": build_ee_points_grid(EePointsIn(crs_src=IN_EE_CRS,
@@ -7963,13 +8009,14 @@ def run_tests() -> None:
     2026-09-30 来源定位 ③-1 再加一组:MartDrawAnchorTest(抽选日期写法、文字片段编码与后缀、挂片段;③-2 起加区间写法与各表候选)。
     2026-10-02 再加一组:MartDesignatedSplitTest(指定雇主拆招牌 / 门店 / 法人:金标、门店只认地名、城市名不当招牌、变异探针)。
     2026-10-04 再加一组:MartCipProgramsTest(专业表源文件缺席整张不进汇装字典、留痕带 ✗;在就原样放进来)。
-    2026-10-05 再加一组:MartNocDescExamplesTest(noc_descriptions 行带官方示例职称:换行拼接、没有给空串)。"""
+    2026-10-05 再加一组:MartNocDescExamplesTest(noc_descriptions 行带官方示例职称:换行拼接、没有给空串)。
+    2026-10-11 再加一组:MartOfferDrawTest(省「雇主 offer 类通道最近一次抽选日」:只认 jobLinked 点名的组、按月补月末、没收录不挂)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
                  MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest, MartNbNlOpsTest,
                  MartBcFunnelOpsTest, MartMbPoolTest, MartAbFederalTest,
                  MartDrawSelectionTest, MartDrawAnchorTest, MartDesignatedSplitTest, MartCipProgramsTest,
-                 MartNocDescExamplesTest):
+                 MartNocDescExamplesTest, MartOfferDrawTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

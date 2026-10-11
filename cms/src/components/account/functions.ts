@@ -10,8 +10,10 @@
  */
 import { cssOf } from '@/components/css'
 import { toJobPlan } from '@/components/jobs'
+import { missingStepsOf } from '@/components/gate'
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
 import { log, PROFILE_LOG } from '@/lib/log'
+import { saveBasics } from '@/lib/quiz'
 import { DAY_MS, ymd } from '@/lib/time'
 import {
   CARD_CLS, CLS_SEP, CRED_INCLUDE,
@@ -26,9 +28,10 @@ import {
   AMOUNT_DIGITS, CUR_GAP, CUR_SIGN, LETTER_FILE_TAIL, LOGIN_URL, NEXT_SEP, PAY_COL_ACT, PAY_COL_AMOUNT, PAY_COL_DATE,
   PAY_COL_ITEM, ST_DRAFT, URL_APPLY_HEAD, URL_LETTERS, URL_LETTER_FILE_HEAD, URL_PAYMENTS, URL_SENT_COUNT,
   PF_ERR_EMPTY, PF_FOLD_N, PF_GOAL_JOBS, PF_GOAL_JOBS_KEY, PF_GOAL_PR, PF_GOAL_PR_KEY, PF_LOAD_FAIL, PF_LOAD_OK,
-  URL_PROFILE, EV_INBOX_UNREAD, SEC_INBOX, URL_INBOX_COUNT,
+  URL_PROFILE, EV_INBOX_UNREAD, SEC_INBOX, URL_INBOX_COUNT, PF_ERR_ASKED,
 } from './constants'
 import type {
+  AskedDoneIn, GenBumpIn, QuizOpenIn,
   AskOfIn, DivDragEvent, FileDropIn, FilePickIn, IdHandlerFn, InputChangeEvent, PdfPagesIn, PdfjsOut,
   PickerIn, PreviewOfIn, ResumeActIn, ResumeActSendIn, ResumeListLoadIn, ResumeMeta, ResumeMetas, ResumeReloadFn,
   ResumeRespJson, ResumeUploadFn, ResumeUploadIn, ShowPageIn,
@@ -1428,4 +1431,59 @@ export function pfShownOf(x: PfShownIn): PfNames {
     return x.names
   }
   return x.names.slice(0, PF_FOLD_N)
+}
+
+/**
+ * 进「我的求职」该不该弹五题(2026-10-11 Frank「一共没几个问题啊 都问不行吗」):档案取回来了、这一页还没关过、
+ * 这个账号没弹过、五样里还有空着的(判空与弹框排题同一把尺:gate 桶 missingStepsOf)。
+ *
+ * @param x 档案与「这一页关过了」。
+ * @returns 弹。
+ */
+export function jobsQuizOpenOf(x: QuizOpenIn): boolean {
+  if (x.view == null || x.closed || x.view.asked) {
+    return false
+  }
+  return missingStepsOf(profileSeedOf(x.view)).length > 0
+}
+
+/**
+ * 记「五题弹过了」(写进答案档 jobsAsked 立刻推,随账号走、换设备不再弹)。没记上留痕 —— 下次进来会再弹一次,不拦这一次。
+ *
+ * @returns 无。
+ */
+export async function markJobsAsked(): Promise<void> {
+  try {
+    const ok = await saveBasics({ jobsAsked: true })
+    if (ok === false) {
+      throw new Error(PF_ERR_ASKED)
+    }
+  } catch (e) {
+    log({ tag: PROFILE_LOG.tag, text: PROFILE_LOG.askedMark + String(e) })
+  }
+}
+
+/**
+ * 造五题弹框的「关了」:记这一页关过、交还调用方(重拉今日推荐)。
+ *
+ * @param x 「关过了」落格与交还口。
+ * @returns 手柄。
+ */
+export function makeAskedDone(x: AskedDoneIn): () => void {
+  return function askedDone(): void {
+    x.setClosed(true)
+    x.onDone()
+  }
+}
+
+/**
+ * 造「计数加一」(答档案代数;2026-10-11)。
+ *
+ * @param x 计数格 setter。
+ * @returns 手柄。
+ */
+export function makeGenBump(x: GenBumpIn): () => void {
+  return function bumpGen(): void {
+    x.setGen(genNextOf)
+  }
 }

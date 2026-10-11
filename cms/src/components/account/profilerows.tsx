@@ -3,13 +3,14 @@
  * 我的档案卡里的五行(2026-10-09「我的档案」批):通用 Row 件的左标签右值(照 Azure Essentials 用短名词标签);
  * 名字照名字规范英文在上、界面语译名灰字在下(name 桶),所在地的城市和省份两个名字并排;没答的写「还没答」。
  * 电脑两列(样式归 .pfRows)。
+ * 2026-10-11:英文姓名是填的不是答的,没填写「还没填」;另外四行照旧「还没答」。
  *
  * @author Frank
  * @time 2026-10-09 23:30:00
  */
 import { cssOf } from '@/components/css'
 import { Row } from '@/components/row'
-import { PF_NONE_KEY, PF_ROW_KEYS, TEXT_NONE } from './constants'
+import { PF_NONE_KEY, PF_NONE_NAME_KEY, PF_ROW_KEYS, TEXT_NONE } from './constants'
 import { pfGoalKeyOf } from './functions'
 import { ProfileNames } from './profilenames'
 import { ProfileWhere } from './profilewhere'
@@ -44,7 +45,7 @@ export function ProfileRows({ v, lang, t }: PfRowsIn) {
         {(v.prov !== TEXT_NONE || v.abroad) && <ProfileWhere v={v} t={t} />}
       </Row>
       <Row k={t(PF_ROW_KEYS.name)}>
-        {v.name === TEXT_NONE && none}
+        {v.name === TEXT_NONE && <span className={cssOf(css.pfNone)}>{t(PF_NONE_NAME_KEY)}</span>}
         {v.name !== TEXT_NONE && v.name}
       </Row>
     </div>

@@ -3,6 +3,8 @@
  * 档案编辑弹框(2026-10-09「我的档案」批,Frank「答题还是之前弹框的那种干净。样式也好看」):与访客向导同一个弹框、同一套题、
  * 同一副样子(顶行、各题、粘底主钮),只是从档案里的答案起头、末尾多问英文姓名、最后一题点「保存」,没有注册屏。
  * 整机在 hooks 的 useGateEdit;本件只拼装(专业选择器、职业选择器照访客向导挂法)。
+ * 2026-10-11「进我的求职先弹五题」(Frank「一共没几个问题啊 都问不行吗」):多收 missing —— 只问档案里还空着的那几题、每题可跳;
+ * 同一个弹框,不另做一套问卷。
  *
  * @author Frank
  * @time 2026-10-09 22:30:00
@@ -23,11 +25,11 @@ import css from './gate.module.css'
 /**
  * 档案编辑弹框。
  *
- * @param props 取词函数、起始答案、关框与保存成功。
+ * @param props 取词函数、起始答案、关框、保存成功与要不要只问空着的。
  * @returns 弹框。
  */
-export function GateEdit({ t, seed, onClose, onSaved }: GateEditIn) {
-  const g = useGateEdit({ t, seed, onClose, onSaved })
+export function GateEdit({ t, seed, onClose, onSaved, missing }: GateEditIn) {
+  const g = useGateEdit({ t, seed, onClose, onSaved, missing: missing === true })
   const picker = useMajorPicker({ value: g.majors, onChange: g.onMajors })
   const occ = useOccPicker({
     t, lang: g.lang, initial: g.nocs, onChange: g.setNocs, onDone: g.onNext, majorCode: occMajorOf(g.majors),

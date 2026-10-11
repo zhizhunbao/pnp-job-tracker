@@ -882,6 +882,11 @@ export const PROFILE_LOG = {
    * 「我的」页「我的档案」取档案没成(2026-10-09「我的档案」批):这一节摆一行「没取到,刷新再试」,后面接错误。
    */
   viewLoad: 'profile view fetch failed: ',
+
+  /**
+   * 「进我的求职先弹五题」弹出时记「弹过了」没记上(2026-10-11;下次进来还会再弹一次,后面接原因)。
+   */
+  askedMark: 'jobs quiz asked flag not saved: ',
 } as const
 
 /**

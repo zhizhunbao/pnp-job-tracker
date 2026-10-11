@@ -713,6 +713,16 @@ export const PF_EDIT_KEY = 'pf.edit'
 export const PF_NONE_KEY = 'pf.none'
 
 /**
+ * 英文姓名没填的词条键(2026-10-11:姓名是填的不是答的,写「还没填」;另外四行照旧「还没答」)。
+ */
+export const PF_NONE_NAME_KEY = 'pf.noneName'
+
+/**
+ * 「进我的求职先弹五题」记「弹过了」没成时的原因(saveBasics 回 false:没登录或没推上去)。
+ */
+export const PF_ERR_ASKED = 'not synced'
+
+/**
  * 取不到的词条键。
  */
 export const PF_FAIL_KEY = 'pf.loadFail'

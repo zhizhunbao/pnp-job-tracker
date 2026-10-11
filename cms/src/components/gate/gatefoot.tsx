@@ -9,13 +9,15 @@
  * 上面那句「没选也照常可点」作废,否则主钮自己就是一个看不见的跳过。目标题(两张大卡点了就走)整块钮区不出。
  *
  * 2026-10-09「我的档案」批:主钮的字读整机(编辑模式最后一题是「保存」);保存没成时钮上方摆一行「没存上」。
+ * 2026-10-11「进我的求职先弹五题」:整机说出「跳过这步」(g.edit.skip:只问没答那几题的弹法里、这一题还空着)时,
+ * 主钮下面摆一颗灰字「跳过这步」,点了 = 往后走;目标题照旧不出主钮,只摆它。别的弹法 g.edit.skip 恒 false,长相不变。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { GATE_STEP_GOAL, TEXT_NONE } from './constants'
+import { GATE_STEP_GOAL, SKIP_BTN_KIND, SKIP_KEY, TEXT_NONE } from './constants'
 import type { GatePartIn } from './types'
 import css from './gate.module.css'
 
@@ -23,16 +25,24 @@ import css from './gate.module.css'
  * 粘底钮区。
  *
  * @param props 访客向导整机与取词函数(见 GatePartIn 逐格注释)。
- * @returns 主钮;目标题 null。
+ * @returns 主钮(可跳时下面多一颗「跳过这步」);目标题 null(可跳时只摆「跳过这步」)。
  */
 export function GateFoot({ g, t }: GatePartIn) {
-  if (g.cur === GATE_STEP_GOAL) {
+  const goal = g.cur === GATE_STEP_GOAL
+  if (goal && g.edit.skip === false) {
     return null
   }
   return (
     <div className={cssOf(css.foot)}>
       {g.edit.failKey !== TEXT_NONE && <div className={cssOf(css.fail)}>{t(g.edit.failKey)}</div>}
-      <Button xl onClick={g.onNext} disabled={g.nextOff} className={cssOf(css.next)}>{t(g.edit.nextKey)}</Button>
+      {goal === false && (
+        <Button xl onClick={g.onNext} disabled={g.nextOff} className={cssOf(css.next)}>{t(g.edit.nextKey)}</Button>
+      )}
+      {g.edit.skip && (
+        <Button kind={SKIP_BTN_KIND} onClick={g.onNext} disabled={g.edit.saving} className={cssOf(css.skip)}>
+          {t(SKIP_KEY)}
+        </Button>
+      )}
     </div>
   )
 }

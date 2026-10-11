@@ -407,6 +407,12 @@ export type Answers = {
   done?: boolean
 
   /**
+   * 「进我的求职先弹五题」弹过了(2026-10-11 Frank「一共没几个问题啊 都问不行吗」:一人只自动弹一次,跨设备不再弹;
+   * 存在答案档里随账号走,重置答案一并清)。
+   */
+  jobsAsked?: boolean
+
+  /**
    * 英语档(2=CLB4 … 8=CLB10+,精确档 v2)。
    */
   clbBand: number
@@ -1284,6 +1290,11 @@ export type QuizProfile = {
    * 投递署名(英文姓名);没填 = 空串。
    */
   name: string
+
+  /**
+   * 「进我的求职先弹五题」弹过了(2026-10-11)。
+   */
+  asked: boolean
 }
 
 /**
@@ -1319,6 +1330,11 @@ export type ProfileBasicFact = {
    * 现居城市英文名。
    */
   city: string
+
+  /**
+   * 「进我的求职先弹五题」弹过了(2026-10-11)。
+   */
+  asked: boolean
 }
 
 /**
@@ -1374,6 +1390,11 @@ export type ProfileBasicJson = {
    * 处境(overseas = 在境外)。
    */
   status?: string | null
+
+  /**
+   * 「进我的求职先弹五题」弹过了(2026-10-11)。
+   */
+  jobsAsked?: boolean | null
 }
 
 /**

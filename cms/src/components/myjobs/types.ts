@@ -758,6 +758,11 @@ export type LoadPicksIn = {
    * 拨「拉失败了」。
    */
   setFailed: (v: boolean) => void
+
+  /**
+   * 不用服务端当天缓存、现算一份(2026-10-11:这一页答过档案)。
+   */
+  fresh: boolean
 }
 
 /**
@@ -838,6 +843,11 @@ export type PicksIn = {
    * 重拉代数(投出一封加一,推荐跟着重拉;页面门递来)。
    */
   gen: number
+
+  /**
+   * 答档案代数(2026-10-11「进我的求职先弹五题」:五题弹框关了加一,推荐跟着重拉、且不用服务端当天缓存;页面门递来)。
+   */
+  asked: number
 }
 
 /**
@@ -848,6 +858,11 @@ export type PicksHookIn = {
    * 重拉代数。
    */
   gen: number
+
+  /**
+   * 答档案代数(大于 0 = 这一页答过,重拉时现算)。
+   */
+  asked: number
 }
 
 /**
