@@ -6,6 +6,7 @@
  * 2026-10-02 申请步骤批 2:收抽选表与开合,递给引用 draws 的那一步(StepItem 挂 DrawGroupsBody);资讯页每条通道也用这一件(ProvStepsCard)。
  * 2026-10-03 资讯页签四分:标题下可有一行灰字(spec.sub,资讯页「申请步骤」页签写通道的界面语言名,同门槛卡那一行);弹框这格为空,样子不变。
  * 2026-10-04 多收一格 mark(抽选表本通道那组标不标浅蓝底),原样递给各步:弹框传 true,资讯页「申请步骤」页签传 false。
+ * 2026-10-11 申请步骤时间线:标题下灰字之后、各步之前挂卡顶时间线(TimelineBar;数据层没给时间线就不出)。
  *
  * @author Frank
  * @time 2026-10-02 22:30:00
@@ -13,6 +14,7 @@
 import { TEXT_NONE } from './constants'
 import { DrawsHead } from './drawshead'
 import { StepItem } from './stepitem'
+import { TimelineBar } from './timelinebar'
 import type { PnpStepsCardIn } from './types'
 import css from './pnp.module.css'
 
@@ -31,6 +33,7 @@ export function PnpStepsCard({ spec, t, draws, open, toggleOf, mark }: PnpStepsC
     <div className={css.card}>
       <DrawsHead title={spec.title} source={spec.source} jump={spec.jump} />
       {spec.sub !== TEXT_NONE && <div className={css.drawsBasis}>{spec.sub}</div>}
+      {spec.timeline != null && <TimelineBar spec={spec.timeline} />}
       <ol className={css.steps}>{items}</ol>
     </div>
   )

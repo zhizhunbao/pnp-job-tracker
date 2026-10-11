@@ -29,7 +29,7 @@ import { describe, expect, it } from 'vitest'
 
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
 import {
-  allGroupsLabelOf, channelListOf, channelsOf, drawCardOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
+  drawExtraOf, channelListOf, channelsOf, drawCardOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
   aipCardOf, aipChannelsOf, aipGateCardOf, aipSectionOf, drawCtxOf, cardYearOf, channelHitOf, channelSplitOf, makePickOf, pnpKickerOf, preReformCardOf,
   quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCardOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
@@ -373,16 +373,16 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     // 2026-09-27 Frank 选「不拆,去重复」:组里各轮是同一个流,组头已写,展开行不再逐行重复通道名
     expect(card?.hits[0]?.rows.map((r) => r.stream)).toEqual(['', '', '', '', ''])
     expect(card?.others.map(headOf)).toEqual([['Rural Renewal Stream', false, '最低 51 分', '2026-08-11', '1 轮']])
-    expect(card?.source).toEqual({ text: '来源 ↗', href: AB_SRC })
+    expect(card?.source).toEqual({ text: '来源', href: AB_SRC })
     const e = drawCardOf({ t: en, lang: 'en', province: 'AB', draws: ab, hitStreams: [AOS], genDraw: genDrawOf({ province: 'AB', pathways: PATHWAYS }), ops: [], reqs: [], year: '' })
     expect(e?.hits.map(headOf)).toEqual([[AOS, true, 'min 58', '2026-09-23', '5 rounds']])
-    expect(e?.source).toEqual({ text: 'Source ↗', href: AB_SRC })
-    expect(drawCardOf({ t: ko, lang: 'ko', province: 'AB', draws: ab, hitStreams: [AOS], genDraw: genDrawOf({ province: 'AB', pathways: PATHWAYS }), ops: [], reqs: [], year: '' })?.source?.text).toBe('출처 ↗')
+    expect(e?.source).toEqual({ text: 'Source', href: AB_SRC })
+    expect(drawCardOf({ t: ko, lang: 'ko', province: 'AB', draws: ab, hitStreams: [AOS], genDraw: genDrawOf({ province: 'AB', pathways: PATHWAYS }), ops: [], reqs: [], year: '' })?.source?.text).toBe('출처')
   })
 
-  it('开关文案:收着「查看全省 N 组」(2026-09-30 起展开后开关不出,没有「收起」);对不上本岗那一组时没有命中行,来源照旧', () => {
-    expect(allGroupsLabelOf({ t: zh, total: 13, label: 'AAIP' })).toBe('查看全省 13 组 ▾')
-    expect(allGroupsLabelOf({ t: en, total: 13, label: 'AAIP' })).toBe('All 13 AAIP streams ▾')
+  it('开关:收着展开 0 组、展开后 = 其余全部(2026-10-11 起走 FoldLine「展开 / 收起」);对不上本岗那一组时没有命中行,来源照旧', () => {
+    expect(drawExtraOf({ open: false, n: 13 })).toBe(0)
+    expect(drawExtraOf({ open: true, n: 13 })).toBe(13)
     const none = drawCardOf({ t: zh, lang: 'zh', province: 'AB', draws: ab, hitStreams: [], genDraw: genDrawOf({ province: 'AB', pathways: PATHWAYS }), ops: [], reqs: [], year: '' })
     expect(none?.hits).toEqual([])
     expect(none?.others.length).toBe(2)
@@ -481,7 +481,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       .toEqual([['Monthly EOI selections', true, '', '2026-07', '2 个月', 2]])
     expect(card?.hits[0]?.rows.map((r) => r.inv)).toEqual(['671 人入选', '531 人入选'])
     expect(card?.others).toEqual([])
-    expect(card?.source).toEqual({ text: '来源 ↗', href: src })
+    expect(card?.source).toEqual({ text: '来源', href: src })
     const en1 = drawCardOf({ t: en, lang: 'en', province: 'NS', draws: [ns[1]!], hitStreams: hitNs, genDraw: genDrawOf({ province: 'NS', pathways: PATHWAYS }), ops: [], reqs: [], year: '' })
     expect(en1?.hits.map((g) => [g.score, g.rounds])).toEqual([['', '1 month']])
     // 不可提名的 NS 岗:同一组照出,不标命中
@@ -507,7 +507,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(hitOn).toEqual(['Ontario Workforce Priority Stream'])
     const card = drawCardOf({ t: zh, lang: 'zh', province: 'ON', draws: on, hitStreams: hitOn, genDraw: genDrawOf({ province: 'ON', pathways: PATHWAYS }), ops: [], reqs: [], year: '' })
     expect(card?.title).toBe('抽选')
-    expect(card?.source).toEqual({ text: '来源 ↗', href: url })
+    expect(card?.source).toEqual({ text: '来源', href: url })
     expect(card?.others).toEqual([])
     expect(card?.hits.map((g) => [g.name, g.sub, g.score, g.date, g.rounds, g.expandable, g.tip]))
       .toEqual([['Ontario Workforce Priority Stream', 'ON 劳动力优先', '暂无邀请', '2026-08-04', '', false, note]])
@@ -552,7 +552,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       ['全省', ['6,603', '5,221', '1,382']], ['本岗通道', ['3,562', '2,911', '651']],
     ])
     expect(ab?.asOfLines).toEqual(['截至 2026-09-23'])
-    expect(ab?.source).toEqual({ text: '来源 ↗', href: url })
+    expect(ab?.source).toEqual({ text: '来源', href: url })
     const abEn = quotaCardOf({ t: en, province: 'AB', ops, hitStreams: ['Alberta Opportunity Stream'], quotaKey: '' })
     expect([abEn?.title, abEn?.heads, abEn?.asOfLines]).toEqual(['2026 allocation', ['Total', 'Nominated', 'Remaining'], ['As of 2026-09-23']])
     // 2026-09-27 九省体检:阿省医护 / 科技 / 警务三条抽选组名与配额通道名不同字,按具名通道查人工对照表(QUOTA_STREAM_KEYS)
@@ -714,12 +714,12 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   it('「本岗通道的门槛」卡:AB 机会通道四行(offer 形态 / 语言档 / 经验两款 / 雇主三项),只列门槛;来源同抽选卡的钮', () => {
     const card = gateCardOf({ t: zh, job: abJob, reqs: abReqs, channel: chanOf(abJob) })
     expect(card?.title).toBe('申请门槛')
-    expect(card?.source).toEqual({ text: '来源 ↗', href: AOS_URL })
+    expect(card?.source).toEqual({ text: '来源', href: AOS_URL })
     expect(gateOf(card)).toEqual([
       ['身份', ['申请时须在阿尔伯塔省工作', '须持以下工签之一:', 'LMIA 工签', '部分免 LMIA 工签', '本省公立院校毕业的 PGWP',
         '几类开放工签', '申请期间维持身份的不算']],
       ['雇主 offer', ['全职', '不收兼职、临时工、季节工']],
-      ['雇主条件', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人']],
+      ['雇主条件', ['在本省连续营业满 2 年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人']],
       ['语言', ['英语或法语每项 CLB 5']],
       ['工作经验', ['24 个月全职经验(近 30 个月内)', '加拿大境内外的经验都算', '须是这个职业的经验',
         '或在本省 12 个月(近 18 个月内)', '持 PGWP 的:', '本省 6 个月(近 18 个月内)']],
@@ -747,7 +747,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const tech = gateCardOf({ t: zh, job: job({ ...abJob, pnpStream: 'AB 科技' }), reqs: abReqs, channel: chanOf(job({ ...abJob, pnpStream: 'AB 科技' })) })
     expect(gateOf(tech)).toEqual([
       ['雇主 offer', ['全职', '不收兼职、临时工、季节工']],
-      ['雇主条件', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人']],
+      ['雇主条件', ['在本省连续营业满 2 年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人']],
       ['EE', ['联邦 EE 档案', '符合 CEC、FSW 或 FST', 'CRS ≥ 300']],
     ])
     const rural = gateCardOf({ t: zh, job: job({ ...abJob, pnpStream: 'AB 乡村振兴' }), reqs: abReqs, channel: chanOf(job({ ...abJob, pnpStream: 'AB 乡村振兴' })) })
@@ -1369,12 +1369,12 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   it('资讯页门槛卡·阿省机会通道:语言全档 + 点名职业灰字码、经验照弹框写法;卡头原名 / 直白名 / 来源;弹框卡不带标签与空态', () => {
     const [card] = provCards({ province: 'AB', pathways: [AOS_PATH], reqs: abReqs })
     expect([card?.title, card?.sub, card?.tags, card?.source, card?.empty]).toEqual(
-      ['Alberta Opportunity Stream', '阿尔伯塔机会通道', [], { text: '来源 ↗', href: AOS_URL }, ''])
+      ['Alberta Opportunity Stream', '阿尔伯塔机会通道', [], { text: '来源', href: AOS_URL }, ''])
     expect(rowsOf(card)).toEqual([
       ['身份', ['申请时须在阿尔伯塔省工作', '须持以下工签之一:', 'LMIA 工签', '部分免 LMIA 工签', '本省公立院校毕业的 PGWP',
         '几类开放工签', '申请期间维持身份的不算'], []],
       ['雇主 offer', ['全职', '不收兼职、临时工、季节工'], []],
-      ['雇主条件', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人'], []],
+      ['雇主条件', ['在本省连续营业满 2 年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人'], []],
       ['语言', ['TEER 0–3:每项 CLB 5', 'TEER 4–5:每项 CLB 4', '指定职业:每项 CLB 7'], ['NOC 33102']],
       ['工作经验', ['24 个月全职经验(近 30 个月内)', '加拿大境内外的经验都算', '须是这个职业的经验',
         '或在本省 12 个月(近 18 个月内)', '持 PGWP 的:', '本省 6 个月(近 18 个月内)'], []],

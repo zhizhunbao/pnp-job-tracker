@@ -6,15 +6,17 @@
  * 2026-10-04 Frank 勾「去掉」(资讯页「申请步骤」页签抽选表的蓝底):多收一格 mark 递给每一组(props 随之自 PnpDrawGroupsIn 分出 DrawGroupsBodyIn),
  * 抽选卡恒传 true,步骤卡按场合传。
  * 2026-10-10 Frank「申请步骤这块。这个默认不要展开」:多收一格 openSingle,「整张只有一组默认展开」只给抽选卡,步骤卡一律折着。
+ * 2026-10-11 Frank「这两个最好放到一行」:「查看全省 N 组」开关与卡底合计包进同一行(drawsTail),开关靠左、合计靠右,放不下折行。
+ * 同日 Frank「这个改成叫 展开 收起 吧」:开关换成 pager 桶 FoldLine(全站唯一的展开 / 收起,10-02「全站统一 都改成 展开 20 和 收起」),
+ * 展开后出「收起」折回去;原「查看全省 N 组」词条随之退役。
  *
  * @author Frank
  * @time 2026-10-02 23:40:00
  */
-import { Button } from '@/components/button'
-import { cssOf } from '@/components/css'
-import { PLAIN_BTN_KIND } from './constants'
+import { FoldLine } from '@/components/pager'
+import { K_FOLD_UNIT_GROUP } from './constants'
 import { EeCmpGroupView } from './eecmpgroupview'
-import { allGroupsLabelOf, drawGroupOpenOf } from './functions'
+import { drawExtraOf, drawGroupOpenOf } from './functions'
 import type { DrawGroupsBodyIn } from './types'
 import css from './pnp.module.css'
 
@@ -40,6 +42,7 @@ export function DrawGroupsBody({ t, card, open, toggleOf, mark, openSingle }: Dr
       onToggle={toggleOf(g.key)} dateBelow mark={mark} />)
   }
   const allOpen = open.has(card.allKey)
+  const hasOthers = card.others.length > 0
   const others = []
   if (allOpen) {
     for (const g of card.others) {
@@ -52,12 +55,20 @@ export function DrawGroupsBody({ t, card, open, toggleOf, mark, openSingle }: Dr
       {lines}
       {hits}
       {others}
-      {card.others.length > 0 && allOpen === false && (
-        <Button kind={PLAIN_BTN_KIND} className={cssOf(css.foldMore)} onClick={toggleOf(card.allKey)}>
-          {allGroupsLabelOf({ t, total: card.total, label: card.label })}
-        </Button>
+      {(hasOthers || foot.length > 0) && (
+        <div className={css.drawsTail}>
+          {hasOthers && (
+            <FoldLine t={t}
+              unit={t(K_FOLD_UNIT_GROUP)}
+              hidden={card.others.length}
+              extra={drawExtraOf({ open: allOpen, n: card.others.length })}
+              busy={false}
+              onMore={toggleOf(card.allKey)}
+              onFold={toggleOf(card.allKey)} />
+          )}
+          {foot.length > 0 && <div className={css.drawsTailFoot}>{foot}</div>}
+        </div>
       )}
-      {foot}
     </>
   )
 }

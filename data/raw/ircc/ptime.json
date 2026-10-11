@@ -1,0 +1,41 @@
+{
+ "source": "IRCC — check processing times (permanent residence, economic classes)",
+ "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/check-processing-times.html",
+ "dataUrl": "https://www.canada.ca/content/dam/ircc/documents/json/flpt-en.json",
+ "fetched": "2026-10-11",
+ "updated": "2026-09-03",
+ "interval": "monthly",
+ "note": "官方工具现行估算(申请递交后到出结果的大致时长);月数由原文「About N months」解析,别的写法记 null。",
+ "programs": [
+  {
+   "key": "pnp-base",
+   "label": "Provincial Nominee Program (non-Express Entry)",
+   "text": "About 13 months",
+   "months": 13
+  },
+  {
+   "key": "pnp-ee",
+   "label": "Provincial Nominee Program (Express Entry)",
+   "text": "About 7 months",
+   "months": 7
+  },
+  {
+   "key": "aip",
+   "label": "Atlantic Immigration Program",
+   "text": "About 26 months",
+   "months": 26
+  },
+  {
+   "key": "cec",
+   "label": "Canadian Experience Class",
+   "text": "About 6 months",
+   "months": 6
+  },
+  {
+   "key": "fsw",
+   "label": "Federal Skilled Worker",
+   "text": "About 7 months",
+   "months": 7
+  }
+ ]
+}

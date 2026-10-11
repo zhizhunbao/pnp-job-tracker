@@ -47,6 +47,11 @@ from fetch.constants import BROWSER_UA, HDR_UA, PARSER_HTML, WS_RE
 from crawl.functions import convert_md
 from crawl.scheme import ConvertIn
 from ircc.constants import (
+    K_DATA_URL, K_INTERVAL, K_KEY, K_MONTHS, K_PROGRAMS, K_TEXT, K_UPDATED, OUT_PTIME, PTIME_BULLET_TPL,
+    PTIME_CURRENT_KEY, PTIME_DATA_URL, PTIME_DATE_FMT, PTIME_DONE_TPL, PTIME_FAIL_HEADER, PTIME_INTERVAL_KEY,
+    PTIME_MONTHS_RE, PTIME_NOTE, PTIME_PAGE_URL, PTIME_PRINT_OUT_TPL, PTIME_PROBLEM_MISSING_TPL,
+    PTIME_PROBLEM_MONTHS_TPL, PTIME_PROBLEM_UPDATED_TPL, PTIME_PROGRAMS, PTIME_REQUIRED, PTIME_SOURCE,
+    PTIME_TIMEOUT_S, PTIME_UPDATE_KEY, PTIME_UPDATED_KEY,
     ACTIVITY_DAYS, ACTIVITY_EASY, ACTIVITY_TIGHT, ASOF_MONTH_LEN, COMP_EASY, COMP_ROUND,
     COMP_TIGHT, DIFF_DONE_TPL, DIFF_NO_DRAWS_TPL, DIFF_NO_LATEST_REF, DIFF_PRINT_TPL, DIFF_PROVS, DIFF_ROW_TPL, FACTOR_ACTIVITY,
     FACTOR_COMP, FACTOR_QUOTA_TREND, FACTOR_SCORE_LEVEL, IN_ALLOC, IN_DRAWS_DIR, IN_DRAWS_GLOB, IN_TR_PROV, K_SCALE,
@@ -90,7 +95,7 @@ from ircc.scheme import (
     ActivityFactorIn, ActivityIn, CatBlockIn, CellAtIn, CompFactorIn, CompIn, DiffDocIn,
     DiffProvIn, DiffProvOut, DiffRowIn, DrawRow, FailIn, FeeRowIn, FlowGotIn, FlowMonthsIn,
     FlowTailIn, FlowYearIn, ItemsOut, PendRowIn, PgwpReqIn, PnpYearsOut, PoolOut, PrCatsSayIn,
-    PrKeyAtIn,
+    PrKeyAtIn, PtimeRowIn, PtimeRowsOut,
     QuotaOut, ScoreFactorIn, ScoreLevelIn, ScoredDraw, ScoredIn, SectionItemsIn,
     TrendFactorIn, YearCellsIn, YearTotals,
 )
@@ -1261,3 +1266,88 @@ def to_difficulty_doc(x: DiffDocIn) -> dict:
     """落盘表。"""
     return {"generated": x.generated, "trAsOf": x.tr_asof, "rows": x.rows}
 
+
+
+# =========================================================================
+# 8. 联邦审理时长(2026-10-11 申请步骤时间线批;官方「查审理时长」工具背后的数据)
+# =========================================================================
+
+
+def ptime_months_of(text: str) -> int | None:
+    """官方原文 → 月数(只认「About N months」;别的写法 None,由调用方决定算不算问题)。"""
+    m = PTIME_MONTHS_RE.match(text)
+    if m is None:
+        return None
+    return int(m.group(1))
+
+
+def to_ptime_row(x: PtimeRowIn) -> dict:
+    """一类 → 落盘行(键序即文件契约)。"""
+    return {K_KEY: x.key, K_LABEL: x.label, K_TEXT: x.text, K_MONTHS: x.months}
+
+
+def ptime_rows(current: dict) -> PtimeRowsOut:
+    """数据文件「现行时长」一格 → 收的几类的行 + 自校问题(缺类、必需的类解析不出月数)。"""
+    rows: list = []
+    problems: list[str] = []
+    for key, label in PTIME_PROGRAMS:
+        if key not in current:
+            problems.append(PTIME_PROBLEM_MISSING_TPL.format(key=key))
+            continue
+        text = str(current[key])
+        months = ptime_months_of(text)
+        if months is None and key in PTIME_REQUIRED:
+            problems.append(PTIME_PROBLEM_MONTHS_TPL.format(key=key, text=text))
+        rows.append(to_ptime_row(PtimeRowIn(key=key, label=label, text=text, months=months)))
+    return PtimeRowsOut(rows=rows, problems=problems)
+
+
+def ptime_updated_of(text: str) -> str | None:
+    """官方更新日原文(「September 3, 2026」)→ ISO 日期;认不出 None(调用方记成自校问题,不吞)。"""
+    try:
+        return datetime.strptime(text, PTIME_DATE_FMT).date().isoformat()
+    except ValueError:
+        return None
+
+
+def ptime_by(rows: list) -> dict:
+    """类键 → 原文(收尾报数用)。"""
+    by: dict = {}
+    for r in rows:
+        by[r[K_KEY]] = r[K_TEXT]
+    return by
+
+
+def ptime_problem_lines(problems: list) -> list:
+    """自校未过的逐条明细。"""
+    lines = []
+    for p in problems:
+        lines.append(PTIME_BULLET_TPL.format(problem=p))
+    return lines
+
+
+def build_ircc_ptime() -> None:
+    """联邦审理时长(2026-10-11 申请步骤时间线批;Frank「得有时间线啊,不然用户能看懂吗」)。
+
+    源 = IRCC 官方「查审理时长」工具页加载的数据文件(PTIME_DATA_URL,浏览器打开工具页记下的请求,httpx 直连 200)。
+    收省提名两版(非 EE / EE)+ 大西洋、CEC、FSW 三类作对照;省提名两版必须解析出月数,任一缺类 / 解析不出 /
+    更新日认不出 → 保留旧表 exit 1(硬闸,照段6 规费)。官方月更,本域日更兜底。
+    """
+    say(PTIME_PRINT_OUT_TPL.format(path=OUT_PTIME))
+    doc = httpx.get(PTIME_DATA_URL, headers={HDR_UA: BROWSER_UA}, follow_redirects=True,
+                    timeout=PTIME_TIMEOUT_S).json()
+    upd = doc[PTIME_UPDATE_KEY]
+    got = ptime_rows(doc[PTIME_CURRENT_KEY])
+    problems = got.problems
+    updated_text = str(upd[PTIME_UPDATED_KEY])
+    updated = ptime_updated_of(updated_text)
+    if updated is None:
+        problems.append(PTIME_PROBLEM_UPDATED_TPL.format(text=updated_text))
+    if len(problems) > 0:
+        fail_keep_old(FailIn(header=PTIME_FAIL_HEADER, lines=ptime_problem_lines(problems)))
+    paths.write_json(paths.WriteJsonIn(path=OUT_PTIME, payload={
+        K_SOURCE: PTIME_SOURCE, K_URL: PTIME_PAGE_URL, K_DATA_URL: PTIME_DATA_URL,
+        K_FETCHED: today_iso(), K_UPDATED: updated, K_INTERVAL: str(upd[PTIME_INTERVAL_KEY]),
+        K_NOTE: PTIME_NOTE, K_PROGRAMS: got.rows,
+    }, indent=INDENT_1))
+    say(PTIME_DONE_TPL.format(n=len(got.rows), updated=updated, by=ptime_by(got.rows)))

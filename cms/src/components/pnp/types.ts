@@ -4587,23 +4587,18 @@ export type RoundRowsIn = {
 }
 
 /**
- * allGroupsLabelOf 的入参。
+ * drawExtraOf 的入参。
  */
-export type AllGroupsLabelIn = {
+export type DrawExtraIn = {
   /**
-   * 取词函数。
+   * 其余组展开了没。
    */
-  t: TFn
+  open: boolean
 
   /**
-   * 全省一共几组。
+   * 其余组一共几组。
    */
-  total: number
-
-  /**
-   * 轮次标签(官方项目名)。
-   */
-  label: string
+  n: number
 }
 
 /**
@@ -6551,6 +6546,61 @@ export type PnpStepSet = {
    * 步骤。
    */
   steps: PnpStepJson[]
+
+  /**
+   * 时间线(2026-10-11;逐步时长与 steps 同序 + 全程区间,数据层 etl/mart 段25 算好;没有 = null)。
+   */
+  timeline: PnpTimelineJson | null
+}
+
+/**
+ * 一条通道的时间线(/api/jobs/pnp 的 pnpSteps 一行的 timeline 格;2026-10-11 申请步骤时间线)。
+ */
+export type PnpTimelineJson = {
+  /**
+   * 逐步时长(与 steps 同序同长)。
+   */
+  steps: PnpSpanJson[]
+
+  /**
+   * 全程下限(月;有任一步算不出 = null)。
+   */
+  totalMin: number | null
+
+  /**
+   * 全程上限(月;同上)。
+   */
+  totalMax: number | null
+
+  /**
+   * 联邦审理时长的官方更新日(没读到 = null)。
+   */
+  fedUpdated: string | null
+}
+
+/**
+ * 一步的时长(数据层的线格式)。
+ */
+export type PnpSpanJson = {
+  /**
+   * 形:none 不占时间 / exact 定长 / range 区间 / upto 最长 / about 约 / unknown 本站未收录。
+   */
+  kind: string
+
+  /**
+   * 单位:month / day(none 与 unknown 为 null)。
+   */
+  unit: string | null
+
+  /**
+   * 下限(unknown = null)。
+   */
+  min: number | null
+
+  /**
+   * 上限(unknown = null)。
+   */
+  max: number | null
 }
 
 /**
@@ -6681,6 +6731,16 @@ export type StepSpec = {
    * 这一步下挂抽选表(数据里引用了 draws;2026-10-02 申请步骤批 2)。
    */
   draws: boolean
+
+  /**
+   * 这一步要多久(步骤名那一行右端灰字;不占时间 / 没有时间线给空串不出;2026-10-11)。
+   */
+  dur: string
+
+  /**
+   * 色号(圆点与卡顶时间线那一段同色;0 = 不上色,不需要的步骤与没有时间线的卡)。
+   */
+  tone: number
 }
 
 /**
@@ -6711,6 +6771,191 @@ export type StepsCardSpec = {
    * 标题行的互跳钮:资讯页「申请步骤」页签回「通道」页签同一省、同一条通道的门槛卡(2026-10-04);弹框给 null 不出。
    */
   jump: SourceLink | null
+
+  /**
+   * 卡顶的时间线(2026-10-11;数据层没给 = null 不出)。
+   */
+  timeline: TimelineSpec | null
+}
+
+/**
+ * 卡顶的时间线(全程一行 + 分段条 + 逐步说明)。
+ */
+export type TimelineSpec = {
+  /**
+   * 全程(「全程约 28–41 个月」;有任一步算不出给空串不出)。
+   */
+  total: string
+
+  /**
+   * 各段(与步骤同序;不占时间的步骤也在,条上只占一小格)。
+   */
+  segs: TimelineSegSpec[]
+}
+
+/**
+ * 时间线的一段。
+ */
+export type TimelineSegSpec = {
+  /**
+   * 列表键(同那一步)。
+   */
+  key: string
+
+  /**
+   * 编号(同那一步的圆点)。
+   */
+  n: string
+
+  /**
+   * 步骤名(同那一步)。
+   */
+  name: string
+
+  /**
+   * 时长的字(不占时间写「—」)。
+   */
+  dur: string
+
+  /**
+   * 条上占的份量(月;不占时间 = 0)。
+   */
+  weight: number
+
+  /**
+   * 色号(同那一步的圆点)。
+   */
+  tone: number
+}
+
+/**
+ * spanTextOf 的入参。
+ */
+export type SpanTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这一步的时长。
+   */
+  span: PnpSpanJson
+}
+
+/**
+ * timelineSpecOf 的入参。
+ */
+export type TimelineSpecIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 洗好的各步(取名字、编号、色号)。
+   */
+  steps: StepSpec[]
+
+  /**
+   * 数据层的时间线;没有 = null。
+   */
+  tl: PnpTimelineJson | null
+}
+
+/**
+ * spanAtOf 的入参。
+ */
+export type SpanAtIn = {
+  /**
+   * 时间线;没有 = null。
+   */
+  tl: PnpTimelineJson | null
+
+  /**
+   * 第几步(从 0 起)。
+   */
+  i: number
+}
+
+/**
+ * stepDurOf 的入参。
+ */
+export type StepDurIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这一步的时长;没有时间线 = null。
+   */
+  span: PnpSpanJson | null
+}
+
+/**
+ * toneOf 的入参。
+ */
+export type ToneIn = {
+  /**
+   * 第几步(从 1 起)。
+   */
+  n: number
+
+  /**
+   * 这一步不需要。
+   */
+  none: boolean
+
+  /**
+   * 这一步的时长;没有时间线 = null。
+   */
+  span: PnpSpanJson | null
+
+  /**
+   * 是不是联邦那步(固定灰蓝)。
+   */
+  fed: boolean
+}
+
+/**
+ * totalTextOf 的入参。
+ */
+export type TotalTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 时间线。
+   */
+  tl: PnpTimelineJson
+}
+
+/**
+ * withToneOf 的入参。
+ */
+export type WithToneIn = {
+  /**
+   * 底类。
+   */
+  base: string
+
+  /**
+   * 色号(0 = 不上色)。
+   */
+  tone: number
+}
+
+/**
+ * TimelineBar 的 props。
+ */
+export type TimelineBarIn = {
+  /**
+   * 洗好的时间线。
+   */
+  spec: TimelineSpec
 }
 
 /**
@@ -6802,6 +7047,11 @@ export type StepOfIn = {
    * 门槛行构造器的共同入参(本岗是谁 + 本省与本通道的门槛行;一张卡算一次)。
    */
   one: GateRowOfIn
+
+  /**
+   * 这一步的时长(数据层时间线同序那一格;没有时间线 = null)。
+   */
+  span: PnpSpanJson | null
 }
 
 /**

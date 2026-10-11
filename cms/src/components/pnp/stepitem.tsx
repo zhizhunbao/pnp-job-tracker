@@ -5,11 +5,12 @@
  * 同日批 2:引用 draws 的那一步下挂抽选表(DrawGroupsBody,与抽选卡同一份),抽选表的「来源」钮挂在步骤名那一行右端。
  * 2026-10-04 Frank「下面那个来源不需要吧」:步骤名那一行右端的「来源」钮撤(卡标题行右端已有一枚),弹框与资讯页同一张卡一起撤;
  * 抽选表的蓝底开关(mark)原样递下去。
+ * 2026-10-11 申请步骤时间线:步骤名那一行右端出这一步要多久(灰字;不占时间的不出)。
  *
  * @author Frank
  * @time 2026-10-02 22:30:00
  */
-import { KEY_SEP } from './constants'
+import { KEY_SEP, TEXT_NONE } from './constants'
 import { DrawGroupsBody } from './drawgroupsbody'
 import { stepClsOf, stepLineClsOf } from './functions'
 import { QuotaGrid } from './quotagrid'
@@ -36,6 +37,7 @@ export function StepItem({ step, t, draws, open, toggleOf, mark }: StepItemIn) {
         <div className={css.stepName}>
           {step.name}
           {step.none === false && <span className={css.stepWho}>{step.who}</span>}
+          {step.dur !== TEXT_NONE && <span className={css.stepDur}>{step.dur}</span>}
         </div>
         {lines}
         {step.table != null && (

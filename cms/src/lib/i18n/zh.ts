@@ -615,6 +615,11 @@ export const jobsZh = {
   'pnpdraws.noInvYet': '暂无邀请',
   // 2026-10-02 申请步骤批 1(Frank「每个省 每个通道 EE PNP AIP 都要有吧」「还是别改小版本了」;设计 docs/design/申请步骤-20261002.md):省提名弹框第 ⑤ 张「申请步骤」卡 —— 步骤名 / 谁做 / 事实词(数据层登记、原句逐句核过)/ 处理时长 / 萨省收件窗口
   'pnpstep.head': '申请步骤',
+  // 2026-10-11 申请步骤时间线(Frank「得有时间线啊,不然用户能看懂吗」;效果图 docs/design/资讯/申请步骤-时间线-20261011.md)
+  'pnptl.total': '全程约 {a}–{b} 个月', 'pnptl.totalOne': '全程约 {n} 个月', 'pnptl.months': '{n} 个月', 'pnptl.days': '{n} 天',
+  'pnptl.range': '{a}–{b} 个月', 'pnptl.uptoDays': '最长 {n} 天', 'pnptl.uptoMonths': '最长 {n} 个月', 'pnptl.about': '约 {n} 个月', 'pnptl.aboutDays': '约 {n} 天',
+  'pnptl.unknown': '本站未收录',
+  'pnpstep.f.expLocalFirst': '在本省全职满 {n} 个月(近 {w} 个月内)',
   'pnpstep.s.employerRegister': '雇主登记', 'pnpstep.s.offer': '拿本省雇主 offer', 'pnpstep.s.work': '在这份工作上干够', 'pnpstep.s.workLocal': '在本省工作满',
   'pnpstep.s.epa': '雇主递职位审批', 'pnpstep.s.eeProfile': '建 EE 档案', 'pnpstep.s.eoi': '递 EOI', 'pnpstep.s.draw': '进池与抽选',
   'pnpstep.s.confirm': '确认职位、递申请', 'pnpstep.s.apply': '收邀请、递申请', 'pnpstep.s.review': '省里审批',
@@ -793,7 +798,7 @@ export const jobsZh = {
   'pnpgate.k.points': '积分', 'pnpgate.pointsMin': '本省打分表 ≥ {n} 分', 'pnpgate.empMonths': '在本省经营满 {n} 个月',
   'pnpgate.expWinYears': '{n} 个月全职经验(近 {w} 年内)',
   // 2026-09-29 七省合并:经营年限默认写「年」(只有阿省官方写 fiscal years,另用财年键);居住行;经验三种新写法
-  'pnpgate.empFiscalYears': '雇主在本省连续营业满 {n} 年', 'pnpgate.k.residence': '居住',
+  'pnpgate.empFiscalYears': '在本省连续营业满 {n} 年', 'pnpgate.k.residence': '居住',
   'pnpgate.residence': '近 {n} 个月住在本省', 'pnpgate.expGradOther': '外省毕业的须满 {n} 个月', 'pnpgate.expProvGradNone': '本省院校毕业不要求经验',
   'pnpgate.expAltTenure': '或在现雇主全职满 {n} 个月', 'pnpgate.expAltProvGrad': '或本省院校毕业',
   'pnpgate.langExempt': '近 {n} 年在本省毕业免考',
@@ -855,7 +860,6 @@ export const jobsZh = {
   'pnp.block.unfit': '不符合',
   'pnpfacts.selected': '入选',
   'pnpfacts.selPeople': '{n} 人入选',
-  'pnpfacts.allGroups': '查看全省 {n} 组 ▾',
   // 列名
   // 2026-09-26 晚 Frank「发布时间 改成 发布日期」:显示的只是日期;职位板列名与职位页日期行共用这一条,一起改
   'col.datePosted': '发布日期', 'col.broad': '大分类', 'col.teer': 'TEER',

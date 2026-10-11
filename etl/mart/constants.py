@@ -5158,3 +5158,218 @@ NUM_GROUP_TPL = "{:,}"
 K_VALUE_TEXT = "valueText"
 """原句格(pnp_ops_stats / pnp_requirements)。"""
 
+
+
+# =========================================================================
+# 25. 跨源汇装:申请步骤时间线(2026-10-11;Frank「得有时间线啊,不然用户能看懂吗」,效果图 docs/design/资讯/申请步骤-时间线-20261011.md)
+# =========================================================================
+
+IN_PTIME = paths.IRCC / "ptime.json"
+"""联邦审理时长(ircc 域段8 每天抓官方「查审理时长」数据;时间线「拿提名,递永居」一段读它)。"""
+
+PTIME_MISSING_TPL = "! 联邦审理时长不在:{path} —— 先跑 python etl/ircc/main.py --only ptime(本轮时间线的联邦一段记本站未收录)"
+"""联邦时长缺文件(喊一声,不中止;那一段记 unknown,全程不出)。"""
+
+TL_KEY = "timeline"
+"""pathways 行的时间线格(与 steps 逐步对齐;没登步骤的通道 = None)。"""
+
+TL_STEPS = "steps"
+"""时间线里逐步时长的格(与 pathways.steps 同序同长)。"""
+
+TL_TOTAL_MIN = "totalMin"
+"""全程下限(月,四舍五入;有任一步算不出 = None,不出半截的全程)。"""
+
+TL_TOTAL_MAX = "totalMax"
+"""全程上限(月,四舍五入;同上)。"""
+
+TL_FED_UPDATED = "fedUpdated"
+"""联邦时长的官方更新日(出处日期;没读到 = None)。"""
+
+TL_KIND = "kind"
+"""一步时长的形:none 不占时间 / exact 定长 / range 区间 / upto 最长 / about 约 / unknown 本站未收录。"""
+
+TL_UNIT = "unit"
+"""一步时长的单位:month / day(none 与 unknown 为 None)。"""
+
+TL_MIN = "min"
+"""一步时长下限(none = 0;unknown = None)。"""
+
+TL_MAX = "max"
+"""一步时长上限(同上)。"""
+
+TL_NONE = "none"
+"""形:这一步不占时间(拿 offer、递 EOI、建档案这类当天办完的动作)。"""
+
+TL_EXACT = "exact"
+"""形:定长(在本省 / 这份工作上干满 N 个月)。"""
+
+TL_RANGE = "range"
+"""形:区间(进池等抽选 0 到 EOI 有效期)。"""
+
+TL_UPTO = "upto"
+"""形:最长(收邀请后接受 + 递交的期限之和)。"""
+
+TL_ABOUT = "about"
+"""形:约(省里审理积压、联邦审理时长 —— 官方现行估算)。"""
+
+TL_UNKNOWN = "unknown"
+"""形:本站未收录(没有对应数据;全程随之不出)。"""
+
+TL_MONTH = "month"
+"""单位:月。"""
+
+TL_DAY = "day"
+"""单位:天。"""
+
+TL_NONE_STEPS = ("offer", "eoi", "eeProfile", "community", "register", "employerRegister", "settle", "submit")
+"""不占时间的步骤词(当天办完的动作;雇主递审批 epa、省背书 endorse 这类有官方处理期的不在这,留 unknown 等逐省补)。"""
+
+TL_WORK_STEPS = ("work", "workLocal")
+"""「干满」两步:时长 = 这条通道门槛表 experience 行的月数(多行取最短 —— 阿省机会通道本省 12 个月 / 各地 24 个月,刚到阿省
+上班的人要等的是本省那 12 个月)。"""
+
+TL_EXP_FACTOR = "experience"
+"""门槛表工作经验行的 factor。"""
+
+TL_EXP_ALT_FACTOR = "experienceAlt"
+"""门槛表经验替代行的 factor(带 employerTenure 的那种 = 在现雇主满 N 个月,萨省定向三条;2026-10-11 核 SK:从零开始的人要等的是
+它,不是既往 1 年经验)。"""
+
+TL_TENURE_BASIS = "employerTenure"
+"""替代行 basis 里标「在现雇主」的词。"""
+
+TL_EXP_UNIT = "months"
+"""门槛表工作经验行只认月数单位(小时数等别的单位不折算,记 unknown)。"""
+
+TL_DRAW_STEP = "draw"
+"""进池与抽选:0 到 EOI / 注册的有效期(同一条通道步骤里 eoiValidMonths / eoiValidDays 那一行)。"""
+
+TL_VALID_MONTH_KEYS = ("eoiValidMonths",)
+"""EOI / 注册有效期的事实词(月)。"""
+
+TL_VALID_DAY_KEYS = ("eoiValidDays",)
+"""EOI / 注册有效期的事实词(天)。"""
+
+TL_APPLY_STEPS = ("apply", "confirm")
+"""收邀请、递申请:时长 = 这一步各期限天数之和(接受邀请 + 递交)。"""
+
+TL_APPLY_DAY_KEYS = ("inviteAcceptDays", "appSubmitDays", "inviteSubmitDays")
+
+TL_CONFIRM_FACT = "confirmSubmit"
+"""确认职位、递申请(萨省)的期限事实词:vars 里 confirm 天内确认 + submit 天内递申请,两段相加(2026-10-11 截图核出原先记成不占时间)。"""
+
+TL_CONFIRM_VARS = ("confirm", "submit")
+"""confirmSubmit 事实行里要相加的两个天数键。"""
+"""收邀请、递申请那一步的期限事实词(天)。"""
+
+TL_REVIEW_STEP = "review"
+"""省里审批:时长 = 运营统计「已审到哪天收到的申请」游标到统计日的间隔(官方现行积压)。"""
+
+TL_EPA_STEP = "epa"
+"""雇主递职位审批(萨省):时长同省里审批,读这一步事实行配的处理时长行(萨省 EPA 按周给,2026-10-11 核 SK 补)。"""
+
+TL_WORK_FACT = "workMonths"
+"""干满一步的事实词(满 N 个月,vars.n;萨省现有工签、曼省在职 —— 门槛表没有那一行时读它)。"""
+
+TL_REVIEW_METRIC = "assessing_up_to_date"
+"""审理游标日期的指标名(阿省;别的省的处理时长指标逐省补)。"""
+
+TL_REVIEW_UNITS = {"processing_months": 30.44, "processing_weeks": 7, "processing_days": 1}
+"""官方直接给时长的处理时长指标 → 每单位几天(2026-10-11 核 BC:卑诗 processing_months「约八成 3 个月内」、萨省 processing_weeks、
+曼省年报平均 processing_days);审理那一步按事实行登的 metric 认,按 streamKey 或 scope 配行。"""
+
+TL_MONTHS_MIN_DAYS = 60
+"""时长满这么多天写月数,不满写天数(2 周写「约 14 天」,207 天写「约 7 个月」)。"""
+
+TL_PR_STEP = "pr"
+"""拿提名,递永居:时长 = 联邦省提名审理时长(EE 版 / 非 EE 版)。"""
+
+TL_EE_STEP = "eeProfile"
+"""步骤里有建 EE 档案 = 走 EE 版省提名。"""
+
+TL_EE_FACT = "eeAcceptDays"
+"""拿提名那步有「在 EE 接受提名」= 走 EE 版省提名。"""
+
+TL_FED_EE = "pnp-ee"
+"""联邦时长表:EE 版省提名的类键。"""
+
+TL_FED_BASE = "pnp-base"
+"""联邦时长表:非 EE 版省提名的类键。"""
+
+TL_DAYS_PER_MONTH = 30.44
+"""天折月(平均每月天数)。"""
+
+TL_FACT_N = "n"
+"""事实行 vars 里的数值键。"""
+
+TL_DONE_TPL = "  时间线:{n} 条通道有步骤,其中 {full} 条算出全程"
+"""汇装时间线报数。"""
+
+TL_PT_PROGRAMS = "programs"
+"""联邦时长表的类行格(ircc 段8 落盘契约)。"""
+
+TL_PT_KEY = "key"
+"""联邦时长行的类键。"""
+
+TL_PT_MONTHS = "months"
+"""联邦时长行的月数。"""
+
+TL_PT_UPDATED = "updated"
+"""联邦时长表的官方更新日。"""
+
+TL_K_AS_OF = "asOf"
+"""运营统计行的统计日格。(段25 时间线读格用)"""
+
+TL_K_BASIS = "basis"
+"""门槛行的口径格。(段25 时间线读格用)"""
+
+TL_K_FACTOR = "factor"
+"""门槛行的因子格。(段25 时间线读格用)"""
+
+TL_K_FACTS = "facts"
+"""一步的事实行格。(段25 时间线读格用)"""
+
+TL_K_KEY = "key"
+"""事实行的事实词格。(段25 时间线读格用)"""
+
+TL_K_METRIC = "metric"
+"""事实行 / 运营统计行的指标格。(段25 时间线读格用)"""
+
+TL_K_NONE = "none"
+"""一步「不需要」格。(段25 时间线读格用)"""
+
+TL_REF_PROCESSING = "processing"
+"""事实行引用处理时长的 ref 值。(段25 时间线读格用)"""
+
+TL_K_PROVINCE = "province"
+"""省码格。(段25 时间线读格用)"""
+
+TL_K_REF = "ref"
+"""事实行的引用格。(段25 时间线读格用)"""
+
+TL_K_REQ_STREAMS = "reqStreams"
+"""通道行的门槛流格。(段25 时间线读格用)"""
+
+TL_K_SCOPE = "scope"
+"""事实行 / 运营统计行的官方原名格。(段25 时间线读格用)"""
+
+TL_K_STEP = "step"
+"""一步的步骤词格。(段25 时间线读格用)"""
+
+TL_K_STEPS = "steps"
+"""通道行的步骤格。(段25 时间线读格用)"""
+
+TL_K_STREAM = "stream"
+"""门槛行的门槛流格。(段25 时间线读格用)"""
+
+TL_K_STREAM_KEY = "streamKey"
+"""事实行 / 运营统计行的归一键格。(段25 时间线读格用)"""
+
+TL_K_UNIT = "unit"
+"""门槛行的单位格。(段25 时间线读格用)"""
+
+TL_K_VALUE = "value"
+"""门槛行 / 运营统计行的数值格。(段25 时间线读格用)"""
+
+TL_K_VARS = "vars"
+"""事实行的变量格。(段25 时间线读格用)"""

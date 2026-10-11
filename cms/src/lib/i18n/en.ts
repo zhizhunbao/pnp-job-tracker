@@ -567,6 +567,11 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.noInvYet': 'No invitations yet',
   // 2026-10-02 申请步骤批 1(Frank「每个省 每个通道 EE PNP AIP 都要有吧」「还是别改小版本了」;设计 docs/design/申请步骤-20261002.md):省提名弹框第 ⑤ 张「申请步骤」卡 —— 步骤名 / 谁做 / 事实词(数据层登记、原句逐句核过)/ 处理时长 / 萨省收件窗口
   'pnpstep.head': 'Application steps',
+  // 2026-10-11 申请步骤时间线
+  'pnptl.total': 'About {a}–{b} months in total', 'pnptl.totalOne': 'About {n} months in total', 'pnptl.months': '{n} months',
+  'pnptl.days': '{n} days', 'pnptl.range': '{a}–{b} months', 'pnptl.uptoDays': 'Up to {n} days', 'pnptl.uptoMonths': 'Up to {n} months',
+  'pnptl.about': 'About {n} months', 'pnptl.aboutDays': 'About {n} days', 'pnptl.unknown': 'Not collected',
+  'pnpstep.f.expLocalFirst': '{n} months full-time in {prov} (within the last {w} months)',
   'pnpstep.s.employerRegister': 'Employer registers', 'pnpstep.s.offer': 'Get a job offer', 'pnpstep.s.work': 'Work in the job long enough', 'pnpstep.s.workLocal': 'Work in the province long enough',
   'pnpstep.s.epa': 'Employer applies for position approval', 'pnpstep.s.eeProfile': 'Create an Express Entry profile',
   'pnpstep.s.eoi': 'Submit an EOI', 'pnpstep.s.draw': 'Pool and draw',
@@ -815,7 +820,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnp.block.unfit': 'Not eligible',
   'pnpfacts.selected': 'Selected',
   'pnpfacts.selPeople': '{n} selected',
-  'pnpfacts.allGroups': 'All {n} {label} streams ▾',
   'col.datePosted': 'Posted', 'col.broad': 'Group', 'col.teer': 'TEER',
   'col.company': 'Company', 'col.title': 'Title', 'col.noc': 'Occupation', 'col.nocCode': 'NOC', 'col.accessibility': 'Level',
   'col.country': 'Country', 'col.province': 'Province', 'col.city': 'City', 'col.district': 'District', 'col.address': 'Address',

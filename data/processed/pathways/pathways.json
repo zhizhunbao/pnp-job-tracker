@@ -43,6 +43,18 @@
           ]
         },
         {
+          "step": "workLocal",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "experience"
+            }
+          ]
+        },
+        {
           "step": "eoi",
           "who": "you",
           "none": false,
@@ -600,18 +612,6 @@
       "employers": [],
       "steps": [
         {
-          "step": "work",
-          "who": "you",
-          "none": false,
-          "stuck": false,
-          "facts": [
-            {
-              "ref": "req",
-              "factor": "experience"
-            }
-          ]
-        },
-        {
           "step": "offer",
           "who": "employer",
           "none": false,
@@ -620,6 +620,18 @@
             {
               "ref": "req",
               "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "work",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "experience"
             }
           ]
         },
@@ -737,6 +749,18 @@
       "employers": [],
       "steps": [
         {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "empYears"
+            }
+          ]
+        },
+        {
           "step": "community",
           "who": "you",
           "none": false,
@@ -747,18 +771,6 @@
               "vars": {},
               "quote": "To qualify for selection and receive WEOI points, an endorsement letter from a designated community is required at the time of WEOI submission.",
               "url": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams"
-            }
-          ]
-        },
-        {
-          "step": "offer",
-          "who": "employer",
-          "none": false,
-          "stuck": false,
-          "facts": [
-            {
-              "ref": "req",
-              "factor": "empYears"
             }
           ]
         },
@@ -1662,6 +1674,13 @@
       "employers": [],
       "steps": [
         {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
           "step": "employerRegister",
           "who": "employer",
           "none": false,
@@ -1786,6 +1805,13 @@
       "employers": [],
       "steps": [
         {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
           "step": "work",
           "who": "you",
           "none": false,
@@ -1904,6 +1930,13 @@
       "nocs": [],
       "employers": [],
       "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
         {
           "step": "work",
           "who": "you",
@@ -2024,6 +2057,13 @@
       "employers": [],
       "steps": [
         {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
           "step": "work",
           "who": "you",
           "none": false,
@@ -2138,6 +2178,13 @@
       "nocs": [],
       "employers": [],
       "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
         {
           "step": "work",
           "who": "you",
@@ -2277,6 +2324,13 @@
       "nocs": [],
       "employers": [],
       "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
         {
           "step": "workLocal",
           "who": "you",
@@ -2619,6 +2673,13 @@
       "employers": [],
       "steps": [
         {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
           "step": "work",
           "who": "you",
           "none": false,
@@ -2633,13 +2694,6 @@
               "url": "https://immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility"
             }
           ]
-        },
-        {
-          "step": "offer",
-          "who": "employer",
-          "none": false,
-          "stuck": false,
-          "facts": []
         },
         {
           "step": "eoi",
@@ -3061,6 +3115,13 @@
       "nocs": [],
       "employers": [],
       "steps": [
+        {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
         {
           "step": "work",
           "who": "you",
@@ -3879,6 +3940,13 @@
       "employers": [],
       "steps": [
         {
+          "step": "offer",
+          "who": "employer",
+          "none": false,
+          "stuck": false,
+          "facts": []
+        },
+        {
           "step": "workLocal",
           "who": "you",
           "none": false,
@@ -4196,18 +4264,6 @@
       "employers": [],
       "steps": [
         {
-          "step": "work",
-          "who": "you",
-          "none": false,
-          "stuck": false,
-          "facts": [
-            {
-              "ref": "req",
-              "factor": "experience"
-            }
-          ]
-        },
-        {
           "step": "offer",
           "who": "employer",
           "none": false,
@@ -4216,6 +4272,18 @@
             {
               "ref": "req",
               "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "work",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "experience"
             }
           ]
         },
@@ -5409,18 +5477,6 @@
       "employers": [],
       "steps": [
         {
-          "step": "workLocal",
-          "who": "you",
-          "none": false,
-          "stuck": false,
-          "facts": [
-            {
-              "ref": "req",
-              "factor": "experience"
-            }
-          ]
-        },
-        {
           "step": "offer",
           "who": "employer",
           "none": false,
@@ -5429,6 +5485,18 @@
             {
               "ref": "req",
               "factor": "empYears"
+            }
+          ]
+        },
+        {
+          "step": "workLocal",
+          "who": "you",
+          "none": false,
+          "stuck": false,
+          "facts": [
+            {
+              "ref": "req",
+              "factor": "experience"
             }
           ]
         },

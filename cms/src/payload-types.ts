@@ -1266,6 +1266,18 @@ export interface Pathway {
     | number
     | boolean
     | null;
+  /**
+   * 申请步骤时间线 {steps,totalMin,totalMax,fedUpdated}(逐步时长与 steps 同序 + 全程区间;etl/mart 段25 跨门槛 / 运营统计 / 联邦审理时长汇装,2026-10-11);DDL docs/sql/pathways-timeline-20261011.sql
+   */
+  timeline?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3492,6 +3504,7 @@ export interface PathwaysSelect<T extends boolean = true> {
   nocs?: T;
   employers?: T;
   steps?: T;
+  timeline?: T;
   updatedAt?: T;
   createdAt?: T;
 }

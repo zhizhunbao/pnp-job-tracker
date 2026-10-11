@@ -1738,6 +1738,11 @@ export const K_AIP_EMP_UNIT = 'fold.u.employer'
 export const K_FOLD_UNIT_ITEM = 'fold.u.item'
 
 /**
+ * 抽选表其余组展开钮的量词词条(「组」;2026-10-11 Frank「这个改成叫 展开 收起 吧」:钮走 pager 桶 FoldLine)。
+ */
+export const K_FOLD_UNIT_GROUP = 'fold.u.group'
+
+/**
  * 门店认不出时表格里那一格写的(长横)。
  */
 export const AIP_EMP_DASH = '—'
@@ -2297,3 +2302,123 @@ export const STEP_PROCESSING_KEY: Record<string, string> = {
    */
   assessing_up_to_date: 'pnpstep.assessing',
 }
+
+/**
+ * 时间线里不占时间的那一步写的(长横;2026-10-11 申请步骤时间线)。
+ */
+export const TL_DASH = '—'
+
+/**
+ * 时间线时长的形(与数据层 etl/mart 段25 的 TL_* 同字)。
+ */
+export const TL_KIND = {
+  /**
+   * 不占时间。
+   */
+  none: 'none',
+
+  /**
+   * 定长。
+   */
+  exact: 'exact',
+
+  /**
+   * 区间。
+   */
+  range: 'range',
+
+  /**
+   * 最长。
+   */
+  upto: 'upto',
+
+  /**
+   * 约。
+   */
+  about: 'about',
+
+  /**
+   * 本站未收录。
+   */
+  unknown: 'unknown',
+} as const
+
+/**
+ * 时间线时长的单位:天(其余按月)。
+ */
+export const TL_UNIT_DAY = 'day'
+
+/**
+ * 天折月(条上份量用;同数据层)。
+ */
+export const TL_DAYS_PER_MONTH = 30.44
+
+/**
+ * 时间线色号里轮着用的几种(联邦那步不在里面,固定 TONE_FED;步骤多于这么多就从头轮)。
+ */
+export const TONE_CYCLE = 7
+
+/**
+ * 联邦那步的色号(灰蓝,固定)。
+ */
+export const TONE_FED = 8
+
+/**
+ * 「谁做」里的联邦(联邦那步固定色号用)。
+ */
+export const STEP_WHO_FED = 'federal'
+
+/**
+ * 时间线词条:全程区间。
+ */
+export const K_TL_TOTAL = 'pnptl.total'
+
+/**
+ * 时间线词条:全程上下限相同。
+ */
+export const K_TL_TOTAL_ONE = 'pnptl.totalOne'
+
+/**
+ * 时间线词条:定长(月)。
+ */
+export const K_TL_MONTHS = 'pnptl.months'
+
+/**
+ * 时间线词条:定长(天)。
+ */
+export const K_TL_DAYS = 'pnptl.days'
+
+/**
+ * 时间线词条:区间(月)。
+ */
+export const K_TL_RANGE = 'pnptl.range'
+
+/**
+ * 时间线词条:最长(天)。
+ */
+export const K_TL_UPTO_DAYS = 'pnptl.uptoDays'
+
+/**
+ * 时间线词条:最长(月)。
+ */
+export const K_TL_UPTO_MONTHS = 'pnptl.uptoMonths'
+
+/**
+ * 时间线词条:约(月)。
+ */
+export const K_TL_ABOUT = 'pnptl.about'
+
+/**
+ * 时间线词条:约(天;省审时长不满两个月,萨省按周给的那种)。
+ */
+export const K_TL_ABOUT_DAYS = 'pnptl.aboutDays'
+
+/**
+ * 时间线词条:本站未收录。
+ */
+export const K_TL_UNKNOWN = 'pnptl.unknown'
+
+/**
+ * 区间取中点的除数(条上份量:进池等抽选 0–12 个月按 6 个月画)。
+ */
+export const TL_RANGE_MID_DIV = 2

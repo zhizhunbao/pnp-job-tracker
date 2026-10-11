@@ -5625,3 +5625,100 @@ class MartOfferDrawTest(unittest.TestCase):
         self.assertEqual(fn.draw_last_day_of("2028-02"), "2028-02-29")
         self.assertEqual(fn.draw_last_day_of("2026"), "")
         self.assertEqual(fn.draw_last_day_of(""), "")
+
+
+# =========================================================================
+# 25. 跨源汇装:申请步骤时间线
+# =========================================================================
+
+
+@dataclass
+class TimelineIn:
+    """timeline_of() 入参:一条通道 + 汇装好的门槛表、运营统计、联邦时长。"""
+
+    row: dict
+    """pathways 一行(带 steps)。"""
+
+    reqs: list
+    """pnp_requirements 整表。"""
+
+    ops: list
+    """pnp_ops_stats 整表。"""
+
+    fed: dict
+    """联邦时长:类键 → 月数(读不到 = 空表)。"""
+
+    fed_updated: str | None
+    """联邦时长的官方更新日(读不到 = None)。"""
+
+
+@dataclass
+class StepSpanIn:
+    """step_span_of() 入参:一步 + 它所在通道的上下文。"""
+
+    step: dict
+    """这一步。"""
+
+    ctx: TimelineIn
+    """通道上下文。"""
+
+
+@dataclass
+class FedTimes:
+    """load_fed_times() 出参:联邦时长表 + 官方更新日。"""
+
+    months: dict
+    """类键 → 月数。"""
+
+    updated: str | None
+    """官方更新日(读不到 = None)。"""
+
+
+@dataclass
+class SpanIn:
+    """to_span() 入参:一步时长的四格。"""
+
+    kind: str
+    """形(TL_NONE / TL_EXACT / …)。"""
+
+    unit: str | None
+    """单位(none 与 unknown 为 None)。"""
+
+    lo: float | None
+    """下限。"""
+
+    hi: float | None
+    """上限。"""
+
+
+@dataclass
+class PathwaysIn:
+    """build_pathways() 入参:汇装好的门槛表与运营统计(时间线要读;汇装与单表件各自先算好递进来,不重算)。"""
+
+    reqs: list
+    """pnp_requirements 整表。"""
+
+    ops: list
+    """pnp_ops_stats 整表。"""
+
+
+@dataclass
+class TotalIn:
+    """total_months_of() 入参:逐步时长 + 取哪一头。"""
+
+    spans: list
+    """逐步时长。"""
+
+    end: str
+    """TL_MIN 或 TL_MAX。"""
+
+
+@dataclass
+class OpsHitIn:
+    """ops_row_hit() 入参:运营统计一行 + 审理那一步的一行事实。"""
+
+    row: dict
+    """运营统计行。"""
+
+    fact: dict
+    """事实行(ref processing,带 streamKey 或 scope)。"""

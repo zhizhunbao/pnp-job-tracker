@@ -577,6 +577,7 @@ function toPnpOpsStat(r: MartRow): MartRow {
  * board_label / quota_scope / quota_key 保 null(省默认通道、没有通道级配额的通道本来就没有)。
  * 2026-09-30 通道补全批一加五格:job_linked 布尔(mart 行里 etl 已按默认补齐,不在这里猜),tags / teers / nocs / employers 同样照写 []。
  * 2026-10-02 申请步骤批 1 加 steps(没登步骤的通道照写 [])。
+ * 2026-10-11 申请步骤时间线加 timeline(对象;没登步骤的通道 mart 给 null,这里照 null 写)。
  *
  * @param r mart 行。
  * @returns 库行。
@@ -590,6 +591,7 @@ function toPathway(r: MartRow): MartRow {
     occ_labels: jsonTextOf(r.occLabels), status: cellOf(r.status), url: cellOf(r.url), quote: cellOf(r.quote),
     checked: cellOf(r.checked), job_linked: truthyOf(r.jobLinked), tags: jsonTextOf(r.tags), teers: jsonTextOf(r.teers),
     nocs: jsonTextOf(r.nocs), employers: jsonTextOf(r.employers), steps: jsonTextOf(r.steps),
+    timeline: jsonTextOf(r.timeline),
   }
 }
 

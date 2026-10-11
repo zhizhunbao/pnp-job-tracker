@@ -32,12 +32,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import say
 from door.functions import run_steps
 from ircc.functions import (
-    build_ircc_difficulty, build_ircc_fees, build_ircc_pgwp_rules, scrape_ircc_stats,
+    build_ircc_difficulty, build_ircc_fees, build_ircc_pgwp_rules, build_ircc_ptime, scrape_ircc_stats,
 )
 
 UNITS = {
     "ircc": [("stats", scrape_ircc_stats), ("difficulty", build_ircc_difficulty)],
-    "ircc_rules": [("pgwp", build_ircc_pgwp_rules), ("fees", build_ircc_fees)],
+    "ircc_rules": [("pgwp", build_ircc_pgwp_rules), ("fees", build_ircc_fees), ("ptime", build_ircc_ptime)],
 }
 """调度单元(调度真相,2026-09-26 晚立;Frank「其中一个失败,其余照跑?那我怎么知道这个失败」→ 选「拆 + 每个单元配 ping」
 「一单元一容器」,pnp 同批同形)。一单元 = 一个容器(SOURCE = 单元名)= 一个 healthchecks 检查项;
@@ -76,6 +76,7 @@ TOOLS = {
     "difficulty": build_ircc_difficulty,
     "pgwp": build_ircc_pgwp_rules,
     "fees": build_ircc_fees,
+    "ptime": build_ircc_ptime,
 }
 """全部可 --only 点名的步(与默认链同一份四步,本域没有不进链的手动件)。
 2026-09-06:npr / tr_prov 两键随段3/段4 搬去 statcan 域,那边叫 npr_share / tr_prov。"""

@@ -79,7 +79,18 @@ ABS_STEP_WORK = {"step": "work", "who": "you", "none": False, "stuck": False,
 """在这份工作上干够(旅游酒店通道):读门槛卡「工作经验」行(门槛表 experience:在现雇主连续全职满 6 个月 / 780 小时)。
 2026-10-08 Frank「这个很多不是需要工作满 1 年 或者 3 个月 或者半年 才能投递么」「其他省也检查一下」:凡门槛是
 「在这份工作 / 这家雇主干够 N 个月」(employerTenure)的通道都挂这一步,排第一步(照萨省 SKS_STEP_WORK、曼省
-MBS_STEP_WORK 的位置);申请前的既往经验(近 N 年内满 M 个月)不是流程里的一步,留在门槛卡。"""
+MBS_STEP_WORK 的位置);申请前的既往经验(近 N 年内满 M 个月)不是流程里的一步,留在门槛卡。
+2026-10-11 Frank「应该是先拿 offer 然后 工作满 1 年」「这个顺序吧」:阿省这一步改排在拿 offer 之后(先有这份工作才谈得上在这份
+工作上干满);旅游酒店官方原句「You must have 6 consecutive months (780 hours) of work experience with your current employer.」。"""
+
+ABS_STEP_WORK_LOCAL = {"step": "workLocal", "who": "you", "none": False, "stuck": False,
+                       "facts": [{"ref": "req", "factor": "experience"}]}
+"""在本省工作满(机会通道;2026-10-11 Frank「先把 AB 弄明白」后补):读门槛卡「工作经验」行 —— 递交时须在阿省现职全职满 12 个月
+(近 18 个月内),或同职业在加拿大 / 国外累计满 24 个月(近 30 个月内),毕业工签满 6 个月。官方原句「At the time your
+application is submitted you must have either: a minimum of 12 months full-time work experience in your current occupation in
+Alberta within the last 18 months, or a minimum of 24 months ...」,且递交与审批时都须持工签在阿省做这份工作(「temporary
+residents living or working in a province or territory of Canada other than Alberta」不能申请)—— 没有既往经验的人拿到 offer
+得先在阿省干满,按 10-08 判据(拿到 offer 之后还要不要等)是一步;10-08 审计把它当既往经验留在门槛卡,判错。排在拿 offer 之后。"""
 
 ABS_STEP_COMMUNITY = {"step": "community", "who": "you", "none": False, "stuck": False,
                       "facts": [{"key": "communityLetter", "vars": {},
@@ -186,7 +197,8 @@ PW_AB_OPPORTUNITY = {
     "quote": ("The Alberta Opportunity Stream is for temporary foreign workers who are already working full-time in Alberta "
               "and have a full-time job offer from an Alberta employer in an eligible occupation."),
     "checked": "2026-09-28",
-    "steps": [ABS_STEP_OFFER, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY, ABS_STEP_REVIEW_AOS, ABS_STEP_PR_AOS],
+    "steps": [ABS_STEP_OFFER, ABS_STEP_WORK_LOCAL, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY, ABS_STEP_REVIEW_AOS,
+              ABS_STEP_PR_AOS],
 }
 """阿省默认通道:可提名但没挂具名清单的阿省岗落这里(排除式,不在 AAIP 不符合清单上即可)。
 抽选组同名(components/pnp GEN_DRAW_STREAM 原注「AB 机会通道(官网 Alberta Opportunity Stream,抽选组同名)」);
@@ -283,7 +295,7 @@ PW_AB_TOURISM_HOSPITALITY = {
     "quote": ("Tourism and Hospitality Stream – Qualified candidates who live and work in Alberta and have a full-time job offer "
               "to continue working with an Alberta tourism and hospitality sector employer."),
     "checked": "2026-09-28",
-    "steps": [ABS_STEP_WORK, ABS_STEP_OFFER, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY, ABS_STEP_REVIEW_TOURISM,
+    "steps": [ABS_STEP_OFFER, ABS_STEP_WORK, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY, ABS_STEP_REVIEW_TOURISM,
               ABS_STEP_PR],
 }
 """阿省旅游酒店通道(清单 ab-tourism.json;雇主须属合格旅游酒店行业)。
@@ -378,6 +390,9 @@ ONS_PROCESS_URL = "https://www.ontario.ca/page/ontario-immigrant-nominee-program
 ONS_ITA_URL = "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply"
 """安省抽选结果页(自雇医生收到邀请后 17 天内递那句在 Overview 段)。"""
 
+ONS_STEP_OFFER = {"step": "offer", "who": "employer", "none": False, "stuck": False, "facts": []}
+"""拿安省雇主 offer(2026-10-11 补;理由见 SKS_STEP_OFFER):Workforce Priority 要先有这份工作才谈得上在这家干满。"""
+
 ONS_STEP_REGISTER = {"step": "employerRegister", "who": "employer", "none": False, "stuck": False,
                      "facts": [{"ref": "req", "factor": "empYears"}]}
 """雇主登记(在雇主门户登记公司、为你的职位递 job offer;劳动力优先页「Your employer must start the process by registering
@@ -464,11 +479,13 @@ PW_AB_RURAL_RENEWAL = {
     "quote": ("The Rural Renewal Stream empowers rural communities to recruit and retain foreign nationals to live, work and "
               "settle in their communities."),
     "checked": "2026-09-28",
-    "steps": [ABS_STEP_COMMUNITY, ABS_STEP_OFFER, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY,
+    "steps": [ABS_STEP_OFFER, ABS_STEP_COMMUNITY, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY,
               ABS_STEP_REVIEW_RURAL, ABS_STEP_PR_RURAL],
 }
 """阿省乡村振兴(按指定社区判:岗位城市在社区名单、职业不在它的 17 个排除码里,社区表 ab-rural.json;2026-09-24 第三批)。
-配额行与抽选组同名。英文界面现显示官方原名(stream.abRural = Rural Renewal Stream)。"""
+配额行与抽选组同名。英文界面现显示官方原名(stream.abRural = Rural Renewal Stream)。
+2026-10-11(Frank「先把 AB 弄明白」):步骤改成先拿 offer 再拿社区推荐信 —— 资格页原句推荐信「must outline the following: …
+details of the bona fide job offer」,先有 offer 社区才出得了推荐信(原先推荐信排第一,反了)。"""
 
 PW_BC_SKILLED_WORKER = {
     "key": "bc-skilled-worker", "province": "BC", "program": "PNP",
@@ -656,6 +673,13 @@ SKS_EXP_BASE = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/li
                 "saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/")
 """萨省本省经验类页面前缀。"""
 
+SKS_STEP_OFFER = {"step": "offer", "who": "employer", "none": False, "stuck": False, "facts": []}
+"""拿萨省雇主 offer(2026-10-11 Frank「不可能 没有拿 offer 这一步」「没拿 offer 怎么 工作满」):雇主递职位审批(EPA)要先有 offer,
+定向三条 / 现有工签 / 留学生的「工作满」也得先有这份工作 —— 萨省六条要 offer 的通道补这一步、排第一(雇主条件在「雇主登记」那步
+读门槛卡,这里不重复写)。同批全国扫一遍「工作满」排在 offer 前或没有 offer 的:萨省六条、曼省 SWM、安省 Workforce Priority、
+NS 快速通道本省经验、NB 技术工人、NL 国际毕业生,一律改成先拿 offer 再干满(10-08 work-step 判据「一律排第一步」随之翻成排 offer 之后);
+NB 远程法语(给外省雇主远程干活)不是本省雇主 offer,不补。"""
+
 SKS_STEP_REGISTER = {"step": "employerRegister", "who": "employer", "none": False, "stuck": False,
                      "facts": [{"ref": "req", "factor": "empYears"}]}
 """雇主登记:经营年限读门槛表 empYears 行(雇主登记页不在 crawl 缓存,原句随门槛行走,这里不另存)。"""
@@ -802,7 +826,8 @@ PW_SK_EMPLOYMENT_OFFER = {
     "quote": ("International Skilled Worker: Employment Offer: For high-skilled workers (occupations that typically require "
               "post-secondary education) who are not working in Saskatchewan."),
     "checked": "2026-09-28",
-    "steps": [SKS_STEP_REGISTER, SKS_STEP_EPA_CAPPED, SKS_STEP_DIRECT, SKS_STEP_CONFIRM, SKS_STEP_REVIEW_EO, SKS_STEP_PR],
+    "steps": [SKS_STEP_OFFER, SKS_STEP_REGISTER, SKS_STEP_EPA_CAPPED, SKS_STEP_DIRECT, SKS_STEP_CONFIRM, SKS_STEP_REVIEW_EO,
+              SKS_STEP_PR],
 }
 """萨省默认通道:持萨省雇主 offer 的高技能岗(排除式,不在 Job Offer 不合格清单上即可)。
 萨省这条不经 EOI 抽选(2026-09-27 bb38b884「持 offer 直接申请、不经 EOI」),没有抽选组;门槛卡没接。
@@ -827,7 +852,7 @@ PW_SK_HEALTH_TALENT = {
             "saskatchewan-immigrant-nominee-program/assess-your-eligibility"),
     "quote": "Health Talent Pathway: For physicians, nurses and other health workers.",
     "checked": "2026-09-28",
-    "steps": [SKS_STEP_WORK_REQ, SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM,
+    "steps": [SKS_STEP_OFFER, SKS_STEP_WORK_REQ, SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM,
               SKS_STEP_REVIEW_HEALTH, SKS_STEP_PR],
 }
 """萨省医疗人才通道(清单 sk-health.json)。萨省 Talent Pathway 不公布抽选,没有抽选组。
@@ -852,7 +877,7 @@ PW_SK_TECH_TALENT = {
             "saskatchewan-immigrant-nominee-program/assess-your-eligibility"),
     "quote": "Innovation and Tech Talent Pathway: For innovation and tech sector workers in 32 high-skilled occupations.",
     "checked": "2026-09-28",
-    "steps": [SKS_STEP_WORK_REQ, SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM,
+    "steps": [SKS_STEP_OFFER, SKS_STEP_WORK_REQ, SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM,
               SKS_STEP_REVIEW_TECH, SKS_STEP_PR],
 }
 """萨省创新与科技人才通道(清单 sk-tech.json,32 个职业)。
@@ -877,7 +902,7 @@ PW_SK_AGRICULTURE_TALENT = {
     "quote": ("Agriculture Talent Pathway: For general farm workers, nursery/greenhouse workers and workers in select food and "
               "beverage processing occupations."),
     "checked": "2026-09-28",
-    "steps": [SKS_STEP_WORK_REQ, SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM,
+    "steps": [SKS_STEP_OFFER, SKS_STEP_WORK_REQ, SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM,
               SKS_STEP_REVIEW_AGRI, SKS_STEP_PR],
 }
 """萨省农业人才通道(清单 sk-agri.json;带星号的码要看得出雇主在农业食品行业才挂,2026-09-27「看得出才改判」)。
@@ -1155,7 +1180,7 @@ PW_SK_EXISTING_WORK_PERMIT = {
     "quote": ("Skilled-Worker with Existing Work Permit: For high-skilled foreign workers (with post-secondary education) with "
               "a valid work permit."),
     "checked": "2026-09-28",
-    "steps": [SKS_STEP_WORK, SKS_STEP_REGISTER, SKS_STEP_EPA_CAPPED, SKS_STEP_NO_EOI, SKS_STEP_CONFIRM,
+    "steps": [SKS_STEP_OFFER, SKS_STEP_WORK, SKS_STEP_REGISTER, SKS_STEP_EPA_CAPPED, SKS_STEP_NO_EOI, SKS_STEP_CONFIRM,
               SKS_STEP_REVIEW_EWP, SKS_STEP_PR],
 }
 """萨省现有工签通道:不靠清单,是 mart 的规则判(具名清单都没命中、可提名的 TEER 4-5 与卡车司机岗给它;2026-09-24 九省通道审计,
@@ -1196,7 +1221,7 @@ PW_MB_SKILLED_WORKER_IN_MANITOBA = {
               "through ongoing employment and sufficient skills, education and training, work experience and official language "
               "proficiency to make an immediate and ongoing contribution to the Manitoba economy and our community at large."),
     "checked": "2026-09-28",
-    "steps": [MBS_STEP_WORK, MBS_STEP_OFFER, MBS_STEP_EOI, MBS_STEP_DRAW, MBS_STEP_APPLY, MBS_STEP_REVIEW_SWM, MBS_STEP_PR],
+    "steps": [MBS_STEP_OFFER, MBS_STEP_WORK, MBS_STEP_EOI, MBS_STEP_DRAW, MBS_STEP_APPLY, MBS_STEP_REVIEW_SWM, MBS_STEP_PR],
 }
 """曼省默认通道(SWM,下面三种选取)。抽选组:etl 已把 Skilled Worker in Manitoba 那一层留作组名(2026-09-24 第三批,GEN_DRAW_STREAM 原注)。
 曼省在需职业两张表只作信号、不当通道(2026-09-24 九省通道审计),不挂这里。配额:曼省只按大流(Skilled Worker)公布,
@@ -1233,8 +1258,8 @@ PW_ON_WORKFORCE_PRIORITY = {
               "experience in any National Occupational Classification (NOC) occupation a pathway to apply to permanently live and "
               "work in Ontario."),
     "checked": "2026-09-28",
-    "steps": [ONS_STEP_WORK, ONS_STEP_REGISTER, ONS_STEP_EOI, ONS_STEP_DRAW, ONS_STEP_EPA, ONS_STEP_APPLY, ONS_STEP_REVIEW,
-              ONS_STEP_PR],
+    "steps": [ONS_STEP_OFFER, ONS_STEP_WORK, ONS_STEP_REGISTER, ONS_STEP_EOI, ONS_STEP_DRAW, ONS_STEP_EPA, ONS_STEP_APPLY,
+              ONS_STEP_REVIEW, ONS_STEP_PR],
 }
 """安省默认通道(2026-06 改制后只剩这一条,生效日按官方原句定为 2026-06-25)。
 2026-09-30 注:旧三条 Employer Job Offer 流是 2026-05-30 关的(各自页面关闭通告原句「closed as of May 30, 2026」),与本条生效日
@@ -1851,7 +1876,7 @@ PW_NB_SKILLED_WORKER = {
             "skilled-worker-stream.html"),
     "quote": "A pathway for foreign workers with a full-time, non-seasonal job or job offer in New Brunswick.",
     "checked": "2026-09-28",
-    "steps": [NBS_STEP_WORK, NBS_STEP_OFFER, NBS_STEP_EOI_SW, NBS_STEP_DRAW_SW, NBS_STEP_APPLY_SW, NBS_STEP_REVIEW,
+    "steps": [NBS_STEP_OFFER, NBS_STEP_WORK, NBS_STEP_EOI_SW, NBS_STEP_DRAW_SW, NBS_STEP_APPLY_SW, NBS_STEP_REVIEW,
               NBS_STEP_PR],
 }
 """新不伦瑞克默认通道。抽选组:2026-09-23 Frank「所以这个 NB 技术工人点进去应该哪个高亮」立(GEN_DRAW_STREAM 原注);
@@ -2052,8 +2077,8 @@ PW_SK_STUDENTS = {
     "teers": [],
     "nocs": [],
     "employers": [],
-    "steps": [SKS_STEP_WORK_LOCAL, SKS_STEP_REGISTER, SKS_STEP_EPA_CAPPED, SKS_STEP_NO_EOI, SKS_STEP_CONFIRM,
-              SKS_STEP_REVIEW_STUDENTS, SKS_STEP_PR],
+    "steps": [SKS_STEP_OFFER, SKS_STEP_WORK_LOCAL, SKS_STEP_REGISTER, SKS_STEP_EPA_CAPPED, SKS_STEP_NO_EOI,
+              SKS_STEP_CONFIRM, SKS_STEP_REVIEW_STUDENTS, SKS_STEP_PR],
 }
 """Saskatchewan Experience 类的学生子类:本省专上毕业、专业对口的 SK offer(2026 年给优先行业的本省毕业生留 750 个名额)。不抽选。原句末尾页面里嵌了链接,
 抽出的正文句号前多一个空格,quote 截到句号前。
@@ -2290,7 +2315,7 @@ PW_NS_EXPRESS_ENTRY_EXPERIENCE = {
     "teers": [0, 1, 2, 3],
     "nocs": [],
     "employers": [],
-    "steps": [NSS_STEP_WORK, NSS_STEP_EE_PROFILE, NSS_STEP_EOI_EE, NSS_STEP_DRAW, NSS_STEP_REVIEW, NSS_STEP_PR_EE],
+    "steps": [NSS_STEP_OFFER, NSS_STEP_WORK, NSS_STEP_EE_PROFILE, NSS_STEP_EOI_EE, NSS_STEP_DRAW, NSS_STEP_REVIEW, NSS_STEP_PR_EE],
 }
 """不要 offer,但要本省 TEER 0–3 满 1 年经验 + EE 档案 → 看工作(这岗攒的就是它要的经验),标「需先有 EE 档案」「需本省工作满 1 年」。旧 Nova Scotia 
 Experience: Express Entry 与 Labour Market Priorities 并入。
@@ -2628,7 +2653,7 @@ PW_NL_INTERNATIONAL_GRADUATE = {
     "teers": [0, 1, 2, 3],
     "nocs": [],
     "employers": [],
-    "steps": [NLS_STEP_WORK_LOCAL, NLS_STEP_OFFER, NLS_STEP_EOI, NLS_STEP_DRAW, NLS_STEP_APPLY, NLS_STEP_REVIEW,
+    "steps": [NLS_STEP_OFFER, NLS_STEP_WORK_LOCAL, NLS_STEP_EOI, NLS_STEP_DRAW, NLS_STEP_APPLY, NLS_STEP_REVIEW,
               NLS_STEP_PR],
 }
 """NL 持 PGWP 的人只能走本类或 EE 类(技术工人类明文「Cannot hold a Post-Graduation Work Permit.」)—— Frank「nl 之前不说有个毕业生通道吗?」

@@ -870,3 +870,101 @@ DIFF_NO_LATEST_REF = ("difficulty: raw/ircc/statcan_tr_prov.json 缺 latestRefPe
 PCT_SCALE = 100
 """占比 → 百分数的倍率。
 2026-09-06 段3 迁出后留守:段7 的分数线水位分位换算要用它。"""
+
+
+# =========================================================================
+# 8. 联邦审理时长(2026-10-11 申请步骤时间线批;官方「查审理时长」工具背后的数据)
+# =========================================================================
+
+OUT_PTIME = paths.IRCC / "ptime.json"
+"""段8 输出:raw/ircc/ptime.json —— 联邦各类经济移民永居申请现在要审多久(官方工具的现行估算,月更)。
+申请步骤卡时间线的「拿提名,递永居」一段读它(2026-10-11 Frank「得有时间线啊,不然用户能看懂吗」;
+省提名分非 EE 版 pnp-base 与 EE 版 pnp-ee,两者差近一倍)。"""
+
+PTIME_PAGE_URL = "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/check-processing-times.html"
+"""官方「查审理时长」工具页(IRCC 首页「Processing times」链接的去处;用户看的那一页,出处钮指这里)。"""
+
+PTIME_DATA_URL = "https://www.canada.ca/content/dam/ircc/documents/json/flpt-en.json"
+"""工具页加载的官方数据文件(2026-10-11 浏览器打开工具页、记下它请求的 json 得来,不是猜的;
+current-flpt 一格 = 各类永居现行审理时长原文,default-update 一格 = 官方更新日与频率)。"""
+
+PTIME_TIMEOUT_S = 45
+"""数据文件抓取超时。"""
+
+PTIME_CURRENT_KEY = "current-flpt"
+"""数据文件里「各类现行审理时长」那一格。"""
+
+PTIME_UPDATE_KEY = "default-update"
+"""数据文件里「更新信息」那一格。"""
+
+PTIME_UPDATED_KEY = "flpt_lastupdated"
+"""更新信息里的官方更新日(原文如「September 3, 2026」)。"""
+
+PTIME_INTERVAL_KEY = "flpt_interval"
+"""更新信息里的更新频率(原文如「monthly」)。"""
+
+PTIME_DATE_FMT = "%B %d, %Y"
+"""官方更新日的原文格式。"""
+
+PTIME_PROGRAMS = (
+    ("pnp-base", "Provincial Nominee Program (non-Express Entry)"),
+    ("pnp-ee", "Provincial Nominee Program (Express Entry)"),
+    ("aip", "Atlantic Immigration Program"),
+    ("cec", "Canadian Experience Class"),
+    ("fsw", "Federal Skilled Worker"),
+)
+"""收哪几类(数据文件键 → 落盘说明):省提名两版是时间线要读的,另收大西洋与 EE 两类作对照;别的类(家庭团聚、难民…)不收。"""
+
+PTIME_REQUIRED = ("pnp-base", "pnp-ee")
+"""必须解析出月数的类 —— 时间线要用,没解析到 = 官方改了写法,保留旧表报错。"""
+
+PTIME_MONTHS_RE = re.compile(r"^About (\d+) months?$")
+"""现行时长原文的唯一认得的写法(「About 13 months」);别的写法(「More than 10 years」等)只留原文、月数记 null。"""
+
+K_PROGRAMS = "programs"
+"""表键:各类时长行。"""
+
+K_KEY = "key"
+"""行键:数据文件里的类键。"""
+
+K_TEXT = "text"
+"""行键:官方原文。"""
+
+K_MONTHS = "months"
+"""行键:解析出的月数(认不出写法 = null)。"""
+
+K_UPDATED = "updated"
+"""表键:官方更新日(ISO)。"""
+
+K_INTERVAL = "interval"
+"""表键:官方更新频率原文。"""
+
+K_DATA_URL = "dataUrl"
+"""表键:数据文件地址。"""
+
+PTIME_SOURCE = "IRCC — check processing times (permanent residence, economic classes)"
+"""表级来源名。"""
+
+PTIME_NOTE = "官方工具现行估算(申请递交后到出结果的大致时长);月数由原文「About N months」解析,别的写法记 null。"
+"""段8 表级口径注。"""
+
+PTIME_PRINT_OUT_TPL = "OUT: {path}"
+"""段8 开工报输出。"""
+
+PTIME_PROBLEM_MISSING_TPL = "「{key}」不在数据文件里(官方可能改了键名)"
+"""某一类不在数据文件里。"""
+
+PTIME_PROBLEM_MONTHS_TPL = "「{key}」原文「{text}」解析不出月数"
+"""必需的类解析不出月数。"""
+
+PTIME_PROBLEM_UPDATED_TPL = "官方更新日「{text}」认不出"
+"""更新日格式变了。"""
+
+PTIME_FAIL_HEADER = "✗ 联邦审理时长自校未过,保留旧表不覆盖:"
+"""段8 自校未过的抬头。"""
+
+PTIME_BULLET_TPL = "   - {problem}"
+"""段8 自校未过的逐条明细。"""
+
+PTIME_DONE_TPL = "✓ 联邦审理时长 {n} 类(官方 {updated} 更新):{by}"
+"""段8 收尾报数(by = 类键 → 原文)。"""

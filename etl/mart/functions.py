@@ -45,7 +45,8 @@ from urllib.parse import quote, urlparse
 from bs4 import BeautifulSoup
 
 import paths
-from crawl.functions import get_cached_page
+from crawl.functions import cached_hit_of, manifest_entries
+from crawl.scheme import CacheLookupIn
 from log.functions import err, say
 from richtext.functions import md_head_of
 from names.constants import ALIAS_LEAD_RE, DASH_SPLIT, LEGAL_HINT_RE, PAREN_HEAD, PAREN_INNER, PAREN_TAIL_RE
@@ -306,6 +307,18 @@ from mart.constants import (  # 2026-10-11 推荐只给近 90 天抽过雇主 of
     K_DRAW_STREAMS, K_JOB_LINKED, K_OFFER_DRAW_LAST, OFFER_DAY_RE, OFFER_DAY_TPL, OFFER_MONTH_RE,
 )
 from mart.scheme import MartOfferDrawTest, OfferDrawIn  # 同上
+from mart.constants import (  # 2026-10-11 申请步骤时间线(段25)
+    IN_PTIME, PTIME_MISSING_TPL, TL_APPLY_DAY_KEYS, TL_APPLY_STEPS, TL_DAY, TL_DAYS_PER_MONTH, TL_DONE_TPL, TL_DRAW_STEP,
+    TL_EE_FACT, TL_EE_STEP, TL_EXACT, TL_EXP_FACTOR, TL_EXP_UNIT, TL_FACT_N, TL_FED_BASE, TL_FED_EE, TL_FED_UPDATED,
+    TL_ABOUT, TL_KEY, TL_KIND, TL_MAX, TL_MIN, TL_MONTH, TL_NONE, TL_NONE_STEPS, TL_PR_STEP, TL_PT_KEY, TL_PT_MONTHS,
+    TL_PT_PROGRAMS, TL_PT_UPDATED, TL_RANGE, TL_REVIEW_METRIC, TL_REVIEW_STEP, TL_STEPS, TL_TOTAL_MAX, TL_TOTAL_MIN,
+    TL_UNIT, TL_UNKNOWN, TL_UPTO, TL_VALID_DAY_KEYS, TL_VALID_MONTH_KEYS, TL_WORK_STEPS, TL_MONTHS_MIN_DAYS, TL_REVIEW_UNITS,
+    TL_EPA_STEP, TL_WORK_FACT, TL_EXP_ALT_FACTOR, TL_TENURE_BASIS, TL_CONFIRM_FACT, TL_CONFIRM_VARS,
+    TL_K_AS_OF, TL_K_BASIS, TL_K_FACTOR, TL_K_FACTS, TL_K_KEY, TL_K_METRIC, TL_K_NONE, TL_K_PROVINCE, TL_K_REF,
+    TL_K_REQ_STREAMS, TL_K_SCOPE, TL_K_STEP, TL_K_STEPS, TL_K_STREAM, TL_K_STREAM_KEY, TL_K_UNIT, TL_K_VALUE,
+    TL_K_VARS, TL_REF_PROCESSING,
+)
+from mart.scheme import FedTimes, OpsHitIn, PathwaysIn, SpanIn, StepSpanIn, TimelineIn, TotalIn  # 同上
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CareersHostIn, CatI18nIn,
     ChannelTierIn, CityBuildIn, CityRowIn, CityStatsIn, CityStatsRowIn, ClosedDaysIn, ClosedJobIn,
@@ -4969,7 +4982,7 @@ def build_pathways_table() -> None:
     """单表增量:只重建 data/mart/pathways.json(2026-09-30 通道补全批一 —— 对照表加列加行后照 build_dli_table 的形立,
     直通表改动不陪跑跨源汇装;之后 load --only upload + seed,seed 端按表哈希只灌这一张)。"""
     OUT_MART.mkdir(parents=True, exist_ok=True)
-    tables = {TABLE_PATHWAYS: build_pathways()}
+    tables = {TABLE_PATHWAYS: build_pathways(PathwaysIn(reqs=pnp_requirements_of(), ops=pnp_ops_of()))}
     write_mart_table(TableWriteIn(tables=tables, out_dir=OUT_MART))
     say_table_counts(SayCountsIn(tables=tables, width=TABLE_NAME_WIDTH))
 
@@ -5046,15 +5059,27 @@ def build_field_sources() -> list:
     return read_table_soft(IN_FIELD_SOURCES).get(K_ROWS, [])
 
 
-def build_pathways() -> list:
+def build_pathways(x: PathwaysIn) -> list:
     """全国通道对照表(2026-09-28 立 pathways 域):那边每轮对过 raw/pnp 才写,这里直通,只多算一格 quotaKey。
-    缺文件照 field_sources 出空表,但要喊出来(产物在仓库里跟踪着,缺了就是出事了)。"""
+    缺文件照 field_sources 出空表,但要喊出来(产物在仓库里跟踪着,缺了就是出事了)。
+    2026-10-11 申请步骤时间线批:多算一格 timeline(逐步时长 + 全程区间,跨门槛表 / 运营统计 / 联邦时长汇装,见段25)。"""
     if not IN_PATHWAYS.exists():
         say(PATHWAYS_MISSING_TPL.format(path=IN_PATHWAYS))
         return []
+    fed = load_fed_times()
     rows: list = []
+    with_steps = 0
+    full = 0
     for r in read_table_soft(IN_PATHWAYS).get(K_ROWS, []):
-        rows.append(to_pathway_row(r))
+        row = to_pathway_row(r)
+        tl = timeline_of(TimelineIn(row=row, reqs=x.reqs, ops=x.ops, fed=fed.months, fed_updated=fed.updated))
+        row[TL_KEY] = tl
+        if tl is not None:
+            with_steps += 1
+            if tl[TL_TOTAL_MIN] is not None:
+                full += 1
+        rows.append(row)
+    say(TL_DONE_TPL.format(n=with_steps, full=full))
     return rows
 
 
@@ -5424,7 +5449,9 @@ def to_mart_tables() -> dict:
     descriptions = build_noc_descriptions(NocDescIn(jobs=ctx.jobs, i18n=noc_i18n))
     universe = load_noc_universe()
     draws = pnp_draws_of(ee_draws)
-    pathways = build_pathways()
+    reqs = pnp_requirements_of()
+    ops = pnp_ops_of()
+    pathways = build_pathways(PathwaysIn(reqs=reqs, ops=ops))
     info = prov_info()
     fill_offer_draw(OfferDrawIn(info=info, draws=draws, pathways=pathways))
     tables = {
@@ -5448,8 +5475,8 @@ def to_mart_tables() -> dict:
         "pnp_occupations": pnp_occupations_of(),
         "pnp_draws": draws,
         "pnp_score_factors": build_pnp_score_factors(universe),
-        "pnp_requirements": pnp_requirements_of(),
-        "pnp_ops_stats": pnp_ops_of(),
+        "pnp_requirements": reqs,
+        "pnp_ops_stats": ops,
         "pathways": pathways,
         "qc_noc_streams": build_qc_noc_streams(),
         "ee_categories": build_ee_categories(ee_draws.by_category),
@@ -8032,17 +8059,24 @@ def anchor_rows(x: AnchorRowsIn) -> None:
     清单卡):行的出处页 url 挂上文字片段,点「来源」直接滚到那一句。候选原句由各表给(x.picks_of,按先后试),**只在 crawl 缓存
     那页的正文里逐字找得到才挂**;都找不到(缓存没有 —— PDF、开放数据平台、没爬到的页 —— 官方写法不同、已滚出页面)url 原样不动
     = 打开页面顶部,同原先。汇装不上网;原表不动,只改汇装出来的行(卡片来源、把脉页各行、判定引擎「依据」链接读同一格,一并受益)。
-    同一页只读一次缓存。③-1 抽选行起步时叫 anchor_draw_rows,③-2 起抽成本件、各表只给候选。"""
+    同一页只读一次缓存。③-1 抽选行起步时叫 anchor_draw_rows,③-2 起抽成本件、各表只给候选。
+    2026-10-11 提速(Frank「mart 为什么需要这么长时间」「你直接检查」;py-spy 抓栈三次都停在 get_cached_page → manifest_entries):
+    行的网址多带各自的 #:~:text 片段、几乎行行不同,原先每行一次 get_cached_page,每次把 data/crawl 下 1.3 万个 manifest 全 stat 一遍
+    (容器挂载 Windows 目录,单次数秒;四张表两千来行)。改成本件开头拍一份索引快照,逐行用 cached_hit_of 在快照里查 —— 挑选规则
+    同 get_cached_page(它本身就是 manifest_entries + cached_hit_of),结果不变,只省掉重复扫描。
+    同日第二处:「同一页只读一次」原先按带片段的整串网址认页,行行片段不同 = 同一页反复读、反复解析;改按去掉 # 之后的网址认页。"""
+    entries = manifest_entries()
     pages: dict = {}
     for r in x.rows:
         url = r.get(K_URL) or ""
         if not url:
             continue
-        if url not in pages:
-            pages[url] = cached_text_of(url)
+        page = url.split(FRAG_HASH)[0]
+        if page not in pages:
+            pages[page] = cached_text_of(CacheLookupIn(entries=entries, url=page))
         frag = ""
         for start, suffix in x.picks_of(r):
-            frag = text_fragment_of(TextFragmentIn(text=pages[url], start=start, suffix=suffix))
+            frag = text_fragment_of(TextFragmentIn(text=pages[page], start=start, suffix=suffix))
             if frag:
                 break
         r[K_URL] = with_fragment(FragmentUrlIn(url=url, frag=frag))
@@ -8102,10 +8136,11 @@ def label_pick_of(label: str) -> str:
     return label
 
 
-def cached_text_of(url: str) -> str:
+def cached_text_of(x: CacheLookupIn) -> str:
     """crawl 缓存里这一页的可见正文:剥 script / style / noscript,块级元素前后断行(BLOCK_TAGS),块内空白折成一个空格、行内元素
-    照渲染直接相连;没缓存给空串 —— 汇装不上网。2026-09-30 抽样实测后由「整页折成一行」改成按块分行(单句写法跨块浏览器匹配不上)。"""
-    hit = get_cached_page(url)
+    照渲染直接相连;没缓存给空串 —— 汇装不上网。2026-09-30 抽样实测后由「整页折成一行」改成按块分行(单句写法跨块浏览器匹配不上)。
+    2026-10-11 入参改成索引快照 + 网址(调用方 anchor_rows 拍一次快照,见那边注)。"""
+    hit = cached_hit_of(x)
     if not hit.html:
         return ""
     soup = BeautifulSoup(hit.html, HTML_PARSER)
@@ -8199,3 +8234,221 @@ def with_fragment(x: FragmentUrlIn) -> str:
     if FRAG_HASH in x.url:
         return x.url + x.frag
     return x.url + FRAG_HASH + x.frag
+
+
+# =========================================================================
+# 25. 跨源汇装:申请步骤时间线(2026-10-11;Frank「得有时间线啊,不然用户能看懂吗」,效果图 docs/design/资讯/申请步骤-时间线-20261011.md)
+# =========================================================================
+
+
+def load_fed_times() -> FedTimes:
+    """联邦审理时长(ircc 段8)→ 类键 → 月数 + 官方更新日;缺文件喊一声,联邦一段记本站未收录。"""
+    if not IN_PTIME.exists():
+        say(PTIME_MISSING_TPL.format(path=IN_PTIME))
+        return FedTimes(months={}, updated=None)
+    doc = read_table_soft(IN_PTIME)
+    months: dict = {}
+    for p in doc.get(TL_PT_PROGRAMS, []):
+        if p.get(TL_PT_MONTHS) is not None:
+            months[p[TL_PT_KEY]] = p[TL_PT_MONTHS]
+    return FedTimes(months=months, updated=doc.get(TL_PT_UPDATED))
+
+
+def to_span(x: SpanIn) -> dict:
+    """一步时长 → 落盘格(键序即契约)。"""
+    return {TL_KIND: x.kind, TL_UNIT: x.unit, TL_MIN: x.lo, TL_MAX: x.hi}
+
+
+def timeline_of(x: TimelineIn) -> dict | None:
+    """一条通道的时间线:逐步时长(与 steps 同序)+ 全程区间(有任一步算不出就不出全程,不给半截的数)。没登步骤 = None。"""
+    steps = x.row.get(TL_K_STEPS) or []
+    if len(steps) == 0:
+        return None
+    spans: list = []
+    for s in steps:
+        spans.append(step_span_of(StepSpanIn(step=s, ctx=x)))
+    lo = total_months_of(TotalIn(spans=spans, end=TL_MIN))
+    hi = total_months_of(TotalIn(spans=spans, end=TL_MAX))
+    return {TL_STEPS: spans, TL_TOTAL_MIN: lo, TL_TOTAL_MAX: hi, TL_FED_UPDATED: x.fed_updated}
+
+
+def step_span_of(x: StepSpanIn) -> dict:
+    """一步 → 时长(按步骤词分派;没有对应数据的记 unknown)。"""
+    name = x.step[TL_K_STEP]
+    if x.step.get(TL_K_NONE) or name in TL_NONE_STEPS:
+        return to_span(SpanIn(kind=TL_NONE, unit=None, lo=0, hi=0))
+    if name in TL_WORK_STEPS:
+        return work_span_of(x)
+    if name == TL_DRAW_STEP:
+        return draw_span_of(x.ctx.row)
+    if name in TL_APPLY_STEPS:
+        return apply_span_of(x.step)
+    if name == TL_REVIEW_STEP or name == TL_EPA_STEP:
+        return review_span_of(x)
+    if name == TL_PR_STEP:
+        return pr_span_of(x.ctx)
+    return to_span(SpanIn(kind=TL_UNKNOWN, unit=None, lo=None, hi=None))
+
+
+def work_span_of(x: StepSpanIn) -> dict:
+    """干满一步:这一步事实行写了满 N 个月(workMonths)就用它;否则读本通道门槛流里 experience 行(连同「在现雇主满 N 个月」的
+    替代行)的月数,多行取最短(刚到本省上班的人要等的那一档)。"""
+    for f in x.step.get(TL_K_FACTS) or []:
+        n = fact_n_of(f)
+        if f.get(TL_K_KEY) == TL_WORK_FACT and n is not None:
+            return to_span(SpanIn(kind=TL_EXACT, unit=TL_MONTH, lo=n, hi=n))
+    ctx = x.ctx
+    streams = set(ctx.row.get(TL_K_REQ_STREAMS) or [])
+    best = None
+    for r in ctx.reqs:
+        if r.get(TL_K_STREAM) not in streams or r.get(TL_K_UNIT) != TL_EXP_UNIT:
+            continue
+        tenure = r.get(TL_K_FACTOR) == TL_EXP_ALT_FACTOR and TL_TENURE_BASIS in (r.get(TL_K_BASIS) or "")
+        if r.get(TL_K_FACTOR) != TL_EXP_FACTOR and not tenure:
+            continue
+        v = r.get(TL_K_VALUE)
+        if v is not None and (best is None or v < best):
+            best = v
+    if best is None:
+        return to_span(SpanIn(kind=TL_UNKNOWN, unit=None, lo=None, hi=None))
+    return to_span(SpanIn(kind=TL_EXACT, unit=TL_MONTH, lo=best, hi=best))
+
+
+def fact_n_of(fact: dict) -> float | None:
+    """事实行 vars 里的数值(没有 = None)。"""
+    v = (fact.get(TL_K_VARS) or {}).get(TL_FACT_N)
+    if isinstance(v, (int, float)):
+        return v
+    return None
+
+
+def draw_span_of(row: dict) -> dict:
+    """进池与抽选:0 到本通道 EOI / 注册的有效期(读同一条通道步骤里的有效期事实行);没登有效期记 unknown。"""
+    for s in row.get(TL_K_STEPS) or []:
+        for f in s.get(TL_K_FACTS) or []:
+            n = fact_n_of(f)
+            if n is None:
+                continue
+            if f.get(TL_K_KEY) in TL_VALID_MONTH_KEYS:
+                return to_span(SpanIn(kind=TL_RANGE, unit=TL_MONTH, lo=0, hi=n))
+            if f.get(TL_K_KEY) in TL_VALID_DAY_KEYS:
+                return to_span(SpanIn(kind=TL_RANGE, unit=TL_MONTH, lo=0, hi=round(n / TL_DAYS_PER_MONTH)))
+    return to_span(SpanIn(kind=TL_UNKNOWN, unit=None, lo=None, hi=None))
+
+
+def apply_span_of(step: dict) -> dict:
+    """收邀请、递申请:这一步各期限天数之和(接受邀请 + 递交);一条都没有记 unknown。"""
+    days = 0
+    for f in step.get(TL_K_FACTS) or []:
+        n = fact_n_of(f)
+        if n is not None and f.get(TL_K_KEY) in TL_APPLY_DAY_KEYS:
+            days += n
+        if f.get(TL_K_KEY) == TL_CONFIRM_FACT:
+            days += confirm_days_of(f)
+    if days == 0:
+        return to_span(SpanIn(kind=TL_UNKNOWN, unit=None, lo=None, hi=None))
+    return to_span(SpanIn(kind=TL_UPTO, unit=TL_DAY, lo=0, hi=days))
+
+
+def confirm_days_of(fact: dict) -> float:
+    """确认职位、递申请那一行的天数:vars 里确认 + 递申请两段相加(缺哪段不算哪段)。"""
+    total = 0
+    v = fact.get(TL_K_VARS) or {}
+    for k in TL_CONFIRM_VARS:
+        if isinstance(v.get(k), (int, float)):
+            total += v[k]
+    return total
+
+
+def review_span_of(x: StepSpanIn) -> dict:
+    """省里审批:按这一步事实行登的处理时长指标配运营统计行 —— 阿省「已审到哪天收到的申请」游标到统计日的间隔(月,至少 1);
+    卑诗 / 萨省 / 曼省官方直接给的时长(月 / 周 / 天,TL_REVIEW_UNITS)。配不上记 unknown。"""
+    for f in x.step.get(TL_K_FACTS) or []:
+        if f.get(TL_K_REF) != TL_REF_PROCESSING:
+            continue
+        for r in x.ctx.ops:
+            if r.get(TL_K_PROVINCE) != x.ctx.row.get(TL_K_PROVINCE) or not ops_metric_hit(OpsHitIn(row=r, fact=f)):
+                continue
+            if not ops_row_hit(OpsHitIn(row=r, fact=f)):
+                continue
+            span = ops_span_of(r)
+            if span is not None:
+                return span
+    return to_span(SpanIn(kind=TL_UNKNOWN, unit=None, lo=None, hi=None))
+
+
+def ops_metric_hit(x: OpsHitIn) -> bool:
+    """指标对得上:事实写了 metric 就要相同;没写(萨省按原名认的那几行)就认任一种直接给时长的指标。"""
+    if x.fact.get(TL_K_METRIC):
+        return x.row.get(TL_K_METRIC) == x.fact.get(TL_K_METRIC)
+    return (x.row.get(TL_K_METRIC) or "") in TL_REVIEW_UNITS
+
+
+def ops_row_hit(x: OpsHitIn) -> bool:
+    """运营统计行是不是这一行事实指的那一条:事实带 streamKey 按归一键认,带 scope 按原名认(同前端步骤卡的认法)。"""
+    if x.fact.get(TL_K_STREAM_KEY):
+        return x.row.get(TL_K_STREAM_KEY) == x.fact.get(TL_K_STREAM_KEY)
+    if x.fact.get(TL_K_SCOPE):
+        return x.row.get(TL_K_SCOPE) == x.fact.get(TL_K_SCOPE)
+    return False
+
+
+def ops_span_of(r: dict) -> dict | None:
+    """一条处理时长行 → 时长:游标日期行算积压月数;直接给时长的按单位折天,满 TL_MONTHS_MIN_DAYS 写月;认不出 None。"""
+    if r.get(TL_K_METRIC) == TL_REVIEW_METRIC:
+        months = backlog_months_of(r)
+        if months is None:
+            return None
+        return to_span(SpanIn(kind=TL_ABOUT, unit=TL_MONTH, lo=months, hi=months))
+    per = TL_REVIEW_UNITS.get(r.get(TL_K_METRIC) or "")
+    v = r.get(TL_K_VALUE)
+    if per is None or not isinstance(v, (int, float)):
+        return None
+    days = v * per
+    if days >= TL_MONTHS_MIN_DAYS:
+        months = round(days / TL_DAYS_PER_MONTH)
+        return to_span(SpanIn(kind=TL_ABOUT, unit=TL_MONTH, lo=months, hi=months))
+    return to_span(SpanIn(kind=TL_ABOUT, unit=TL_DAY, lo=round(days), hi=round(days)))
+
+
+def backlog_months_of(r: dict) -> int | None:
+    """审理游标行 → 游标日到统计日相隔几个月(两头任一认不出日期 = None)。"""
+    try:
+        cursor = date.fromisoformat(r.get(K_VALUE_TEXT) or "")
+        as_of = date.fromisoformat(r.get(TL_K_AS_OF) or "")
+    except ValueError:
+        return None
+    return max(1, round((as_of - cursor).days / TL_DAYS_PER_MONTH))
+
+
+def pr_span_of(ctx: TimelineIn) -> dict:
+    """拿提名,递永居:联邦省提名审理时长 —— 步骤里有建 EE 档案或「在 EE 接受提名」走 EE 版,否则非 EE 版。"""
+    ee = False
+    for s in ctx.row.get(TL_K_STEPS) or []:
+        if s.get(TL_K_STEP) == TL_EE_STEP:
+            ee = True
+        for f in s.get(TL_K_FACTS) or []:
+            if f.get(TL_K_KEY) == TL_EE_FACT:
+                ee = True
+    fed_key = TL_FED_BASE
+    if ee:
+        fed_key = TL_FED_EE
+    months = ctx.fed.get(fed_key)
+    if months is None:
+        return to_span(SpanIn(kind=TL_UNKNOWN, unit=None, lo=None, hi=None))
+    return to_span(SpanIn(kind=TL_ABOUT, unit=TL_MONTH, lo=months, hi=months))
+
+
+def total_months_of(x: TotalIn) -> int | None:
+    """逐步时长的一头(下限或上限)加总成月,四舍五入;有任一步 unknown 就 None(不出半截的全程)。"""
+    total = 0.0
+    for s in x.spans:
+        if s[TL_KIND] == TL_UNKNOWN:
+            return None
+        v = s[x.end]
+        if s[TL_KIND] == TL_UPTO and x.end == TL_MIN:
+            v = 0
+        if s[TL_UNIT] == TL_DAY:
+            v = v / TL_DAYS_PER_MONTH
+        total += v
+    return round(total)

@@ -23,9 +23,9 @@ const mart = <T>(name: string): T[] =>
 const STEP_METRICS = ['processing_weeks', 'processing_months', 'processing_days', 'assessing_up_to_date',
   'intake_limit', 'intake_used', 'intake_remaining', 'intake_filled']
 
-const PATHWAYS = mart<PnpPathway & { steps: PnpStepSet['steps'], status: string }>('pathways')
+const PATHWAYS = mart<PnpPathway & { steps: PnpStepSet['steps'], timeline: PnpStepSet['timeline'], status: string }>('pathways')
   .filter((p) => p.status !== 'closed')
-const SETS: PnpStepSet[] = PATHWAYS.filter((p) => p.steps.length > 0).map((p) => ({ key: p.key, steps: p.steps }))
+const SETS: PnpStepSet[] = PATHWAYS.filter((p) => p.steps.length > 0).map((p) => ({ key: p.key, steps: p.steps, timeline: p.timeline }))
 const OPS = mart<PnpOps & PnpStepOp>('pnp_ops_stats')
 const STEP_OPS: PnpStepOp[] = OPS.filter((o) => STEP_METRICS.includes(o.metric))
 const DRAWS = mart<PnpDraw>('pnp_draws')
@@ -116,7 +116,7 @@ describe('申请步骤卡', () => {
     const channel = PATHWAYS.find((p) => p.key === 'ab-accelerated-tech') ?? null
     const card = (fact: PnpStepSet['steps'][number]['facts'][number]) => stepsCardOf({
       t: makeT('zh'), province: 'AB', channel, stepOps: [op], reqs: [], who: { province: 'AB', noc: '', teer: null },
-      sets: [{ key: 'ab-accelerated-tech', steps: [{ step: 'review', who: 'province', none: false, stuck: false, facts: [fact] }] }],
+      sets: [{ key: 'ab-accelerated-tech', steps: [{ step: 'review', who: 'province', none: false, stuck: false, facts: [fact] }], timeline: null }],
     })
     const byKey = card({ ref: 'processing', metric: 'assessing_up_to_date', streamKey: 'accelerated tech pathway' })
     expect(byKey?.steps[0]?.lines.map((l) => l.text)).toEqual(['已审到 2026-06-23 收到的申请(截至 2026-09-23)'])
@@ -124,5 +124,39 @@ describe('申请步骤卡', () => {
     expect([byKey?.title, byKey?.sub, byKey?.jump]).toEqual(['申请步骤', '', null])
     const byScope = card({ ref: 'processing', metric: 'assessing_up_to_date', scope: 'Accelerated Tech Pathway' })
     expect(byScope?.steps[0]?.lines).toEqual([])
+  })
+
+  // 2026-10-11 申请步骤时间线(Frank「得有时间线啊,不然用户能看懂吗」「上下 7 种 颜色 对齐呢?」)
+  it('真表:有时间线的卡,段数 = 步骤数、每段的名字 / 编号 / 色号同那一步;全程只在数据层给了上下限时出;时长字不露词条键(三语)', () => {
+    for (const lang of ['zh', 'en', 'ko'] as const) {
+      for (const prov of PROVS) {
+        for (const it of itemsOf(prov, lang)) {
+          const set = SETS.find((s) => s.key === it.key)
+          const tl = it.steps?.timeline
+          if (set == null || set.timeline == null || tl == null) {
+            continue
+          }
+          expect(tl.segs.length).toBe(it.steps?.steps.length)
+          tl.segs.forEach((seg, i) => {
+            const step = it.steps?.steps[i]
+            expect([seg.name, seg.n, seg.tone]).toEqual([step?.name, String(step?.n), step?.tone])
+            expect(seg.dur).not.toMatch(/^pnptl\./)
+            expect(seg.weight).toBeGreaterThanOrEqual(0)
+          })
+          expect(tl.total === '').toBe(set.timeline.totalMin == null)
+        }
+      }
+    }
+  })
+
+  it('金标:阿省机会通道 —— 全程约 28–41 个月(随官方数据变,只认形);第 2 步在本省工作满 12 个月;拿 offer 不占时间不出右端字', () => {
+    const it = itemsOf('AB', 'zh').find((x) => x.key === 'ab-opportunity')
+    const tl = it?.steps?.timeline
+    expect(tl?.total).toMatch(/^全程约 \d+–\d+ 个月$/)
+    expect(it?.steps?.steps.map((s) => s.name).slice(0, 2)).toEqual(['拿本省雇主 offer', '在本省工作满'])
+    expect(it?.steps?.steps[0]?.dur).toBe('')
+    expect(it?.steps?.steps[1]?.dur).toBe('12 个月')
+    expect(tl?.segs[0]?.dur).toBe('—')
+    expect(it?.steps?.steps[1]?.tone).toBe(2)
   })
 })

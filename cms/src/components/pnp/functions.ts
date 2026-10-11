@@ -24,7 +24,9 @@ import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS, DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE,
   DRAWS_ALL_KEY, DRAWS_FORM_STATUS, HOST_RE, LANG_EN, MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
   K_GATE_TITLE, P_PROV, SCROLL_START, URL_HASH_HEAD, URL_KV_SEP, URL_QUERY_HEAD, URL_STEPS, URL_STREAMS,
-  MONTHS_KEYS,
+  MONTHS_KEYS, K_TL_ABOUT, K_TL_ABOUT_DAYS, K_TL_DAYS, K_TL_MONTHS, K_TL_RANGE, K_TL_TOTAL, K_TL_TOTAL_ONE,
+  K_TL_UNKNOWN,
+  K_TL_UPTO_DAYS, K_TL_UPTO_MONTHS, TL_DASH, TL_DAYS_PER_MONTH, TL_KIND, TL_UNIT_DAY, TONE_CYCLE, TONE_FED, TL_RANGE_MID_DIV, STEP_WHO_FED,
   NUM_LOCALE, OPS_ALLOCATION, OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, ROUNDS_KEYS, YEAR_LEN,
   SEL_CAT_HEAD, SEL_CODE_RE, SEL_KEYS, SEL_PATH, SEL_PATH_HEAD, SEL_PATH_SEP, SEL_POINTS, SEL_TOP, SEL_WAGE, TAG_V_GRAY,
   TAG_V_IMP, TAG_V_OK, TAG_V_WARN, AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS,
@@ -69,7 +71,9 @@ import {
   STEP_PROCESSING_KEY,
 } from './constants'
 import type {
-  AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
+  PnpSpanJson, PnpTimelineJson, SpanAtIn, SpanTextIn, StepDurIn, ToneIn, TotalTextIn, TimelineSegSpec, TimelineSpec,
+  TimelineSpecIn, WithToneIn,
+  ChannelOfIn, ChannelSpec, DrawExtraIn, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
   SourceLink, SourceLinkIn, OpsPickIn, PnpOps, QuotaCardOfIn, QuotaCardSpec, QuotaRowIn, QuotaRowSpec, QuotaStreamIn,
   MonthRowsIn, RoundRowsIn, AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawRowIn, DrawRowSpec, DrawRowsIn,
   DrawsClsIn, EeDrawDateRow, CmpGroupIn, CmpHeadClsIn, CmpLineClsIn, CmpScoreClsIn, CmpLineIn, DrawHist, EeCmp,
@@ -3687,6 +3691,7 @@ export function provStreamItemsOf(x: ProvStreamItemsIn): ProvStreamItem[] {
         source: raw.source,
         steps: raw.steps,
         jump: jumpOf({ text: x.t(K_GATE_TITLE), base: URL_STREAMS, province: p.province, key: p.key }),
+        timeline: raw.timeline,
       }
       draws = provDrawCardOf({
         t: x.t, lang: x.lang, p, draws: x.draws, ops: x.ops, reqs: x.reqs, pathways: x.pathways,
@@ -4120,14 +4125,18 @@ function bandTeerOf(band: string): number {
 
 
 /**
- * 「查看全省 N 组」那个开关的字(展开后改「收起」,同清单卡末尾的开关)。
- * 2026-09-30 Frank「收起那个按钮是不是不要放在外面」,选「可提名的岗去掉收起」:展开后开关不再出(PnpDrawGroups),「收起」那一支撤。
+ * 抽选表其余组展开了几组(FoldLine 的 extra:收着 0,展开 = 其余全部)。
+ * 原「查看全省 N 组」开关的字(allGroupsLabelOf)2026-10-11 退役 —— Frank「这个改成叫 展开 收起 吧」,开关换成 pager 桶 FoldLine;
+ * 09-30「收起那个按钮是不是不要放在外面」选的「可提名的岗去掉收起」(展开后开关不再出)随之翻回:展开后出「收起」。
  *
- * @param x 取词函数、全省组数与轮次标签。
- * @returns 开关的字。
+ * @param x 展开没与其余组数。
+ * @returns 展开了几组。
  */
-export function allGroupsLabelOf(x: AllGroupsLabelIn): string {
-  return x.t('pnpfacts.allGroups', { n: x.total, label: x.label })
+export function drawExtraOf(x: DrawExtraIn): number {
+  if (x.open) {
+    return x.n
+  }
+  return 0
 }
 
 /**
@@ -6470,11 +6479,13 @@ export function stepsCardOf(x: StepsCardOfIn): StepsCardSpec | null {
     return null
   }
   const one = gateOneOf({ t: x.t, job: x.who, reqs: x.reqs, streams: x.channel.reqStreams })
+  const tl = timelineOrNullOf(set)
   const steps: StepSpec[] = []
   let n = 0
   for (const step of set.steps) {
     n += 1
-    steps.push(stepOf({ t: x.t, province: x.province, step, n, stepOps: x.stepOps, one }))
+    const span = spanAtOf({ tl, i: n - 1 })
+    steps.push(stepOf({ t: x.t, province: x.province, step, n, stepOps: x.stepOps, one, span }))
   }
   return {
     title: x.t(K_STEPS_HEAD),
@@ -6482,7 +6493,38 @@ export function stepsCardOf(x: StepsCardOfIn): StepsCardSpec | null {
     source: sourceLinkOf({ t: x.t, url: x.channel.url }),
     steps,
     jump: null,
+    timeline: timelineSpecOf({ t: x.t, steps, tl }),
   }
+}
+
+/**
+ * 登了步骤的通道带的时间线;逐步时长与步骤对不上长度(数据层与步骤表不同版)就当没有,不错位着出。
+ *
+ * @param set 登了步骤的那一条。
+ * @returns 时间线;没有或对不上给 null。
+ */
+function timelineOrNullOf(set: PnpStepSet): PnpTimelineJson | null {
+  if (set.timeline == null || set.timeline.steps.length !== set.steps.length) {
+    return null
+  }
+  return set.timeline
+}
+
+/**
+ * 时间线第几步的时长。
+ *
+ * @param x 时间线与下标。
+ * @returns 那一步的时长;没有时间线给 null。
+ */
+function spanAtOf(x: SpanAtIn): PnpSpanJson | null {
+  if (x.tl == null) {
+    return null
+  }
+  const span = x.tl.steps[x.i]
+  if (span == null) {
+    return null
+  }
+  return span
 }
 
 /**
@@ -6534,7 +6576,171 @@ function stepOf(x: StepOfIn): StepSpec {
     lines,
     table,
     draws,
+    dur: stepDurOf({ t: x.t, span: x.span }),
+    tone: toneOf({ n: x.n, none: x.step.none, span: x.span, fed: x.step.who === STEP_WHO_FED }),
   }
+}
+
+/**
+ * 步骤名那一行右端的时长灰字:不占时间、没有时间线的不出。
+ *
+ * @param x 取词函数与这一步的时长。
+ * @returns 字;不出给空串。
+ */
+function stepDurOf(x: StepDurIn): string {
+  if (x.span == null || x.span.kind === TL_KIND.none) {
+    return TEXT_NONE
+  }
+  return spanTextOf({ t: x.t, span: x.span })
+}
+
+/**
+ * 一步的色号:按第几步在前几色里轮(同卡顶时间线那一段);联邦那步固定灰蓝(2026-10-11 截图核出:萨省八步时联邦一步轮到第 8 色琥珀,
+ * 与「联邦落灰蓝」的设计不符);不需要的步骤、没有时间线的卡不上色(0)。
+ *
+ * @param x 第几步、不需要没有、这一步的时长、是不是联邦那步。
+ * @returns 色号。
+ */
+function toneOf(x: ToneIn): number {
+  if (x.none || x.span == null) {
+    return 0
+  }
+  if (x.fed) {
+    return TONE_FED
+  }
+  return ((x.n - 1) % TONE_CYCLE) + 1
+}
+
+/**
+ * 一步时长 → 字(「12 个月」「0–12 个月」「最长 45 天」「约 3 个月」;不占时间写长横,没数据写本站未收录)。
+ *
+ * @param x 取词函数与时长。
+ * @returns 字。
+ */
+export function spanTextOf(x: SpanTextIn): string {
+  const s = x.span
+  if (s.kind === TL_KIND.none) {
+    return TL_DASH
+  }
+  if (s.kind === TL_KIND.unknown || s.max == null || s.min == null) {
+    return x.t(K_TL_UNKNOWN)
+  }
+  const day = s.unit === TL_UNIT_DAY
+  if (s.kind === TL_KIND.range) {
+    return x.t(K_TL_RANGE, { a: s.min, b: s.max })
+  }
+  if (s.kind === TL_KIND.upto && day) {
+    return x.t(K_TL_UPTO_DAYS, { n: s.max })
+  }
+  if (s.kind === TL_KIND.upto) {
+    return x.t(K_TL_UPTO_MONTHS, { n: s.max })
+  }
+  if (s.kind === TL_KIND.about && day) {
+    return x.t(K_TL_ABOUT_DAYS, { n: s.max })
+  }
+  if (s.kind === TL_KIND.about) {
+    return x.t(K_TL_ABOUT, { n: s.max })
+  }
+  if (day) {
+    return x.t(K_TL_DAYS, { n: s.max })
+  }
+  return x.t(K_TL_MONTHS, { n: s.max })
+}
+
+/**
+ * 一步在条上占的份量(月):区间取中点、天折月;不占时间与没数据给 0。
+ *
+ * @param s 时长。
+ * @returns 份量。
+ */
+function spanWeightOf(s: PnpSpanJson): number {
+  if (s.kind === TL_KIND.none || s.kind === TL_KIND.unknown || s.max == null) {
+    return 0
+  }
+  let v = s.max
+  if (s.kind === TL_KIND.range && s.min != null) {
+    v = (s.min + s.max) / TL_RANGE_MID_DIV
+  }
+  if (s.unit === TL_UNIT_DAY) {
+    v = v / TL_DAYS_PER_MONTH
+  }
+  return v
+}
+
+/**
+ * 卡顶的时间线:全程一行 + 逐段(名字、编号、色号同下面那一步)。
+ *
+ * @param x 取词函数、洗好的各步、数据层的时间线。
+ * @returns 时间线;没有给 null。
+ */
+export function timelineSpecOf(x: TimelineSpecIn): TimelineSpec | null {
+  if (x.tl == null) {
+    return null
+  }
+  const segs: TimelineSegSpec[] = []
+  let i = 0
+  for (const step of x.steps) {
+    const span = x.tl.steps[i]
+    if (span == null) {
+      return null
+    }
+    segs.push({
+      key: step.key,
+      n: String(step.n),
+      name: step.name,
+      dur: spanTextOf({ t: x.t, span }),
+      weight: spanWeightOf(span),
+      tone: step.tone,
+    })
+    i += 1
+  }
+  return { total: totalTextOf({ t: x.t, tl: x.tl }), segs }
+}
+
+/**
+ * 全程一行:上下限一样写一个数;有任一步算不出(数据层给 null)不出。
+ *
+ * @param x 取词函数与时间线。
+ * @returns 字;不出给空串。
+ */
+function totalTextOf(x: TotalTextIn): string {
+  const lo = x.tl.totalMin
+  const hi = x.tl.totalMax
+  if (lo == null || hi == null) {
+    return TEXT_NONE
+  }
+  if (lo === hi) {
+    return x.t(K_TL_TOTAL_ONE, { n: lo })
+  }
+  return x.t(K_TL_TOTAL, { a: lo, b: hi })
+}
+
+/**
+ * 底类拼上色号类(0 不拼)。圆点、条上那一段、说明那一行共用。
+ *
+ * @param x 底类与色号。
+ * @returns className。
+ */
+export function withToneOf(x: WithToneIn): string {
+  const tone = toneClsOf(x.tone)
+  if (tone === TEXT_NONE) {
+    return x.base
+  }
+  return x.base + SPACE + tone
+}
+
+/**
+ * 色号 → 色号类(1–8;别的给空串)。
+ *
+ * @param tone 色号。
+ * @returns className。
+ */
+function toneClsOf(tone: number): string {
+  const all = [css.tone1, css.tone2, css.tone3, css.tone4, css.tone5, css.tone6, css.tone7, css.tone8]
+  if (tone < 1 || tone > all.length) {
+    return TEXT_NONE
+  }
+  return cssOf(css.toned) + SPACE + cssOf(all[tone - 1])
 }
 
 /**
@@ -6623,7 +6829,7 @@ function stepReqLinesOf(x: StepFactIn): StepLineSpec[] {
 function stepExpRowOf(x: GateRowOfIn): GateRowSpec | null {
   const tenure = tenureAltRowOf(x)
   if (tenure == null || tenure.value == null) {
-    return expRowOf(x)
+    return stepLocalExpRowOf(x)
   }
   const lines = [x.t('pnpgate.expTenure', { n: tenure.value })]
   const main = expMainRowOf(x)
@@ -6634,6 +6840,56 @@ function stepExpRowOf(x: GateRowOfIn): GateRowSpec | null {
     }
   }
   return { key: GATE_ROW.exp, label: x.t('pnpgate.k.exp'), lines, notes: [] }
+}
+
+/**
+ * 「在本省工作满」一步的经验行(2026-10-11 Frank「先把 AB 弄明白」):门槛卡把各地累计的既往经验当主行、「或在本省 N 个月」排后面;
+ * 步骤里刚到本省上班的人要做的是本省那一档 —— 本省档提到第一行,既往经验改「或已有 …」+ 口径小注,毕业工签那档照旧殿后。
+ * 没有本省档的通道照门槛卡那一行。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;本岗通道没有经验门槛给 null。
+ */
+function stepLocalExpRowOf(x: GateRowOfIn): GateRowSpec | null {
+  const local = localAltRowOf(x)
+  if (local == null || local.value == null) {
+    return expRowOf(x)
+  }
+  const w = basisValueOf({ basis: local.basis, key: BASIS_WINDOW })
+  if (w === TEXT_NONE) {
+    return expRowOf(x)
+  }
+  const prov = x.t(PROV_KEY_HEAD + x.job.province)
+  const lines = [x.t('pnpstep.f.expLocalFirst', { n: local.value, w, prov })]
+  const main = expMainRowOf(x)
+  if (main != null && main.value != null) {
+    lines.push(x.t('pnpstep.f.orPrior', { x: expLineOf({ t: x.t, r: main, n: main.value }) }))
+    for (const line of expScopeLinesOf({ t: x.t, r: main, prov })) {
+      lines.push(line)
+    }
+  }
+  for (const line of expAltLinesOf(x)) {
+    lines.push(line)
+  }
+  return { key: GATE_ROW.exp, label: x.t('pnpgate.k.exp'), lines, notes: [] }
+}
+
+/**
+ * 「在本省满 N 个月」那一档(门槛表 experience + 本省条件,按月计,管本岗;与 expRowOf 挑本省档同一把筛子)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 那一行;没有给 null。
+ */
+function localAltRowOf(x: GateRowOfIn): PnpReq | null {
+  for (const r of x.chan) {
+    if (r.factor !== GATE_F.experience || r.unit !== GATE_UNIT_MONTHS || r.value == null) {
+      continue
+    }
+    if (r.appliesCondition === GATE_COND_LOCAL && reqAppliesOf({ r, job: x.job })) {
+      return r
+    }
+  }
+  return null
 }
 
 /**
@@ -6840,6 +7096,7 @@ function intakeRowOf(x: IntakeRowIn): QuotaRowSpec {
 
 /**
  * 「申请步骤」卡一步的外框类:不需要的整步灰、卡点的圆点橙。
+ * 2026-10-11 申请步骤时间线:有时间线的卡,圆点按色号上色(同卡顶时间线那一段;Frank「上下 7 种 颜色 对齐呢?」),压过卡点的橙。
  *
  * @param step 洗好的一步。
  * @returns className。
@@ -6852,7 +7109,7 @@ export function stepClsOf(step: StepSpec): string {
   if (step.stuck) {
     cls = cls + SPACE + cssOf(css.stepStuck)
   }
-  return cls
+  return withToneOf({ base: cls, tone: step.tone })
 }
 
 /**

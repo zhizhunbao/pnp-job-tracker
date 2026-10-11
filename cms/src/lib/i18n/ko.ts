@@ -561,6 +561,11 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.noInvYet': '아직 초청 없음',
   // 2026-10-02 申请步骤批 1(Frank「每个省 每个通道 EE PNP AIP 都要有吧」「还是别改小版本了」;设计 docs/design/申请步骤-20261002.md):省提名弹框第 ⑤ 张「申请步骤」卡 —— 步骤名 / 谁做 / 事实词(数据层登记、原句逐句核过)/ 处理时长 / 萨省收件窗口
   'pnpstep.head': '신청 절차',
+  // 2026-10-11 申请步骤时间线
+  'pnptl.total': '전체 약 {a}–{b}개월', 'pnptl.totalOne': '전체 약 {n}개월', 'pnptl.months': '{n}개월', 'pnptl.days': '{n}일',
+  'pnptl.range': '{a}–{b}개월', 'pnptl.uptoDays': '최대 {n}일', 'pnptl.uptoMonths': '최대 {n}개월', 'pnptl.about': '약 {n}개월', 'pnptl.aboutDays': '약 {n}일',
+  'pnptl.unknown': '미수집',
+  'pnpstep.f.expLocalFirst': '{prov}에서 {n}개월 풀타임 (최근 {w}개월 이내)',
   'pnpstep.s.employerRegister': '고용주 등록', 'pnpstep.s.offer': '고용 오퍼 받기', 'pnpstep.s.work': '해당 직무 근무 기간 채우기', 'pnpstep.s.workLocal': '주 내 근무 기간 채우기',
   'pnpstep.s.epa': '고용주 직무 승인 신청', 'pnpstep.s.eeProfile': 'EE 프로필 생성', 'pnpstep.s.eoi': 'EOI 제출', 'pnpstep.s.draw': '풀 등록과 추첨',
   'pnpstep.s.confirm': '직무 확인 후 신청', 'pnpstep.s.apply': '초청 받은 후 신청', 'pnpstep.s.review': '주정부 심사',
@@ -788,7 +793,6 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnp.block.unfit': '요건 미충족',
   'pnpfacts.selected': '선정',
   'pnpfacts.selPeople': '{n}명 선정',
-  'pnpfacts.allGroups': '주 전체 {n}개 스트림 보기 ▾',
   'col.datePosted': '게시일', 'col.broad': '대분류', 'col.teer': 'TEER',
   'col.company': '회사명', 'col.title': '직책', 'col.noc': '직무', 'col.nocCode': 'NOC', 'col.accessibility': '경력 수준',
   'col.country': '국가', 'col.province': '주/도', 'col.city': '시', 'col.district': '구/군', 'col.address': '주소',
