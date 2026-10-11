@@ -34,7 +34,10 @@ export function ApplyConfirm({ p }: ApplyStepIn) {
           )}
           {p.askName === false && p.name}
         </Row>
-        <Row k={p.t('ap.replyTo')}>{p.replyTo}</Row>
+        <Row k={p.t('ap.replyTo')}>
+          {p.replyTo === TEXT_NONE && p.t('ap.replyInbox')}
+          {p.replyTo}
+        </Row>
         <Row k={p.t('ap.resume')}>{p.resumeName}</Row>
         <Row k={p.t('ap.letter')}>
           {p.mail.cover === TEXT_NONE && p.t('ap.noLetter')}

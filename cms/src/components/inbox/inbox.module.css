@@ -24,30 +24,6 @@
 }
 
 /*
- * 投递邮箱那一段。
- */
-.addr {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  min-width: 0;
-}
-
-/*
- * 「投递邮箱」灰字。
- */
-.addrK {
-  color: var(--text2);
-}
-
-/*
- * 专属地址本身(长地址可断)。
- */
-.addrV {
-  word-break: break-all;
-}
-
-/*
  * 「同时转到」勾选。
  */
 .fwd {

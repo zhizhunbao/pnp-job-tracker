@@ -147,6 +147,7 @@ export async function applyDraftRoute(req: Request): Promise<Response> {
  * 原先由 /apply/<id> 的页面门 SSR 取,页面撤了改由「我的」页的投递一节来取)。本岗(不带雇主邮箱)、简历清单、署名、模板、状态。
  * 2026-10-10 投递框三步:试用余量两格撤,换成是不是 Pro 与回复邮箱(「确认」页摆)。
  * 2026-10-10 批 3「收件箱」:收件箱开通了,回复邮箱 = 本人专属投递邮箱(第一次要用时懒建),没开通照旧注册邮箱。
+ * 2026-10-11 Frank「用户看到投递邮箱,脑袋不会疼吗」:确认页不露专属地址 —— 收件箱开通了这一格回空串(前端写「收件箱」),没开通照旧回账户邮箱;专属地址仍懒建,发信时才用。
  *
  * @param req 请求(职位 id 在查询参数)。
  * @returns 起始态;未登录 401、id 不合形 400、岗不存在 404。
@@ -161,9 +162,9 @@ export async function applyStartRoute(req: Request): Promise<Response> {
     return Response.json({ error: E_BODY }, { status: BAD_REQUEST })
   }
   const db = await getDb()
-  let replyTo = await inboxAddressOf({ db, userId: user.id, appId: null })
-  if (replyTo === TEXT_NONE) {
-    replyTo = user.email
+  let replyTo = user.email
+  if (await inboxAddressOf({ db, userId: user.id, appId: null }) !== TEXT_NONE) {
+    replyTo = TEXT_NONE
   }
   const start = await loadApplyStart({ db, userId: user.id, jobId, pro: isPro(user), replyTo })
   if (start == null) {

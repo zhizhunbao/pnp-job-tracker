@@ -615,7 +615,7 @@ export const jobsZh = {
   'pnpdraws.noInvYet': '暂无邀请',
   // 2026-10-02 申请步骤批 1(Frank「每个省 每个通道 EE PNP AIP 都要有吧」「还是别改小版本了」;设计 docs/design/申请步骤-20261002.md):省提名弹框第 ⑤ 张「申请步骤」卡 —— 步骤名 / 谁做 / 事实词(数据层登记、原句逐句核过)/ 处理时长 / 萨省收件窗口
   'pnpstep.head': '申请步骤',
-  'pnpstep.s.employerRegister': '雇主登记', 'pnpstep.s.offer': '拿雇主 offer', 'pnpstep.s.work': '在这份工作上干够', 'pnpstep.s.workLocal': '在本省干够',
+  'pnpstep.s.employerRegister': '雇主登记', 'pnpstep.s.offer': '拿本省雇主 offer', 'pnpstep.s.work': '在这份工作上干够', 'pnpstep.s.workLocal': '在本省工作满',
   'pnpstep.s.epa': '雇主递职位审批', 'pnpstep.s.eeProfile': '建 EE 档案', 'pnpstep.s.eoi': '递 EOI', 'pnpstep.s.draw': '进池与抽选',
   'pnpstep.s.confirm': '确认职位、递申请', 'pnpstep.s.apply': '收邀请、递申请', 'pnpstep.s.review': '省里审批',
   'pnpstep.s.settle': '做安置计划', 'pnpstep.s.endorse': '雇主递省背书', 'pnpstep.s.pr': '拿提名,递永居',
@@ -630,7 +630,7 @@ export const jobsZh = {
   // 2026-10-02 申请步骤批 2(阿省样张):拿社区推荐信一步;EOI 费 / 有效期、邀请接受期、申请递交期、提名有效期、社区推荐信六个事实词
   'pnpstep.s.community': '拿社区推荐信', 'pnpstep.f.eoiFee': '交 {n} 加元申请费', 'pnpstep.f.eoiValidMonths': '在池里有效 {n} 个月',
   'pnpstep.f.inviteAcceptDays': '收到邀请后 {n} 天内接受', 'pnpstep.f.appSubmitDays': '建好申请后 {n} 天内递交并付费',
-  'pnpstep.f.nominationValidMonths': '提名有效 {n} 个月,过期前向联邦递永居', 'pnpstep.f.communityLetter': '递 EOI 时就要有指定社区的推荐信',
+  'pnpstep.f.nominationValidMonths': '拿到提名后 {n} 个月内向联邦递永居申请', 'pnpstep.f.communityLetter': '递 EOI 时就要有指定社区的推荐信',
   // 2026-10-03 申请步骤批 2(卑诗 / 安省):新增步骤词 / 事实词
   'pnpstep.s.register': '网上注册打分',
   'pnpstep.s.submit': '递申请',
@@ -654,7 +654,7 @@ export const jobsZh = {
   'pnpstep.f.remoteNonQc': '期间一直远程为魁省外的加拿大雇主工作',
   // 2026-10-03 申请步骤批 2(曼省 / 新斯科舍):新增步骤词 / 事实词
   'pnpstep.f.movedToSwm': '本省工作满 {n} 个月的 EOI 转 MB 技术工人抽选',
-  'pnpstep.f.nominationValidDays': '提名后 {n} 天内向联邦递永居',
+  'pnpstep.f.nominationValidDays': '拿到提名后 {n} 天内向联邦递永居申请',
   'pnpstep.f.eoiIsApplication': 'EOI 即完整申请',
   'pnpstep.f.selectedPayDays': '被选中后 {n} 天内更新材料并交费',
   'pnpstep.f.afsPaused': '餐饮住宿行业暂停收件',
@@ -793,7 +793,7 @@ export const jobsZh = {
   'pnpgate.k.points': '积分', 'pnpgate.pointsMin': '本省打分表 ≥ {n} 分', 'pnpgate.empMonths': '在本省经营满 {n} 个月',
   'pnpgate.expWinYears': '{n} 个月全职经验(近 {w} 年内)',
   // 2026-09-29 七省合并:经营年限默认写「年」(只有阿省官方写 fiscal years,另用财年键);居住行;经验三种新写法
-  'pnpgate.empFiscalYears': '在本省经营满 {n} 个财年', 'pnpgate.k.residence': '居住',
+  'pnpgate.empFiscalYears': '雇主在本省连续营业满 {n} 年', 'pnpgate.k.residence': '居住',
   'pnpgate.residence': '近 {n} 个月住在本省', 'pnpgate.expGradOther': '外省毕业的须满 {n} 个月', 'pnpgate.expProvGradNone': '本省院校毕业不要求经验',
   'pnpgate.expAltTenure': '或在现雇主全职满 {n} 个月', 'pnpgate.expAltProvGrad': '或本省院校毕业',
   'pnpgate.langExempt': '近 {n} 年在本省毕业免考',
@@ -910,7 +910,7 @@ export const jobsZh = {
   'mj.pushTo': '发到', 'mj.pushSave': '保存', 'mj.pushSaved': '已保存', 'mj.pushPending': '点 {e} 收到的链接后生效',
   'mj.pushBad': '邮箱格式不对', 'mj.pushFail': '没保存上,再试一次', 'mj.pushMailFail': '确认信没发出去,再试一次',
   // 2026-10-10 批 3「收件箱」(专属投递邮箱、雇主回信、站内回信)与「打开」一条投递的只读框
-  'ib.title': '收件箱', 'ib.addr': '投递邮箱', 'ib.forward': '同时转到 {e}', 'ib.empty': '还没有雇主回信',
+  'ib.title': '收件箱', 'ib.forward': '同时转到 {e}', 'ib.empty': '还没有雇主回信',
   'ib.reply': '回复', 'ib.openApp': '打开这次投递', 'ib.noSubject': '(无主题)', 'ib.mine': '我的回复',
   'ib.send': '发送', 'ib.cancel': '取消', 'ib.e.send': '没发出去,再试一次', 'ib.e.off': '发信还没开通',
   'av.job': '职位信息', 'av.replies': '雇主回复', 'av.noReply': '还没有雇主回复', 'av.fwdTo': '回信同时转到 {e}',
@@ -925,7 +925,7 @@ export const jobsZh = {
   // 2026-10-10 投递框三步(页签、求职信单选、按职位改写只给 Pro、「确认」页);试用、职位信息分区与「预览」几条词随之撤
   'ap.confirm': '确认', 'ap.rewriteJob': '按职位改写', 'ap.upResume': '上传新简历', 'ap.upLetter': '上传求职信',
   'ap.noLetter': '不附求职信', 'ap.noLetterSub': '只发简历', 'ap.draftOpt': '这个职位的草稿', 'ap.modify': '修改',
-  'ap.replyTo': '回复邮箱', 'ap.mailPv': '邮件预览', 'ap.noPv': 'Word 简历这里预览不了', 'ap.soon': '简历按职位改写即将上线',
+  'ap.replyTo': '雇主回信', 'ap.replyInbox': '收件箱', 'ap.mailPv': '邮件预览', 'ap.noPv': 'Word 简历这里预览不了', 'ap.soon': '简历按职位改写即将上线',
   'ap.proReason': '按职位改写是 Pro 功能', 'ap.rwTitle': '按职位改写求职信', 'ap.rwBefore': '原来的', 'ap.rwJd': '职位要求',
   'ap.rwAfter': '改写后', 'ap.rwAgain': '再写一次', 'ap.rwUse': '用这一版',
   'ap.applied': '已投递', 'ap.resume': '简历', 'ap.name': '英文姓名', 'ap.letter': '求职信',

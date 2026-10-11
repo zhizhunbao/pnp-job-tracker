@@ -860,7 +860,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'mj.push': 'Job alerts', 'mj.pushRow': 'Email me picks and saved-job updates', 'mj.freqOff': 'Off', 'mj.freqDaily': 'Daily', 'mj.freqWeekly': 'Weekly',
   'mj.pushTo': 'Send to', 'mj.pushSave': 'Save', 'mj.pushSaved': 'Saved', 'mj.pushPending': 'Click the link sent to {e} to confirm',
   'mj.pushBad': 'Invalid email', 'mj.pushFail': 'Couldn’t save. Try again', 'mj.pushMailFail': 'Couldn’t send the confirmation email. Try again',
-  'ib.title': 'Inbox', 'ib.addr': 'Application email', 'ib.forward': 'Also forward to {e}', 'ib.empty': 'No employer replies yet',
+  'ib.title': 'Inbox', 'ib.forward': 'Also forward to {e}', 'ib.empty': 'No employer replies yet',
   'ib.reply': 'Reply', 'ib.openApp': 'Open application', 'ib.noSubject': '(No subject)', 'ib.mine': 'My reply',
   'ib.send': 'Send', 'ib.cancel': 'Cancel', 'ib.e.send': 'Not sent. Try again', 'ib.e.off': 'Sending isn’t set up yet',
   'av.job': 'Job details', 'av.replies': 'Employer replies', 'av.noReply': 'No reply yet', 'av.fwdTo': 'Replies also go to {e}',
@@ -875,7 +875,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   // 2026-10-10 投递框三步(页签、求职信单选、按职位改写只给 Pro、「确认」页);试用、职位信息分区与「预览」几条词随之撤
   'ap.confirm': 'Confirm', 'ap.rewriteJob': 'Tailor to this job', 'ap.upResume': 'Upload resume', 'ap.upLetter': 'Upload cover letter',
   'ap.noLetter': 'No cover letter', 'ap.noLetterSub': 'Resume only', 'ap.draftOpt': 'Draft for this job', 'ap.modify': 'Edit',
-  'ap.replyTo': 'Reply-to email', 'ap.mailPv': 'Email preview', 'ap.noPv': 'Word files can’t be previewed here', 'ap.soon': 'Resume tailoring is coming soon',
+  'ap.replyTo': 'Employer replies', 'ap.replyInbox': 'Your inbox', 'ap.mailPv': 'Email preview', 'ap.noPv': 'Word files can’t be previewed here', 'ap.soon': 'Resume tailoring is coming soon',
   'ap.proReason': 'Tailoring to the job is a Pro feature', 'ap.rwTitle': 'Tailor cover letter', 'ap.rwBefore': 'Original', 'ap.rwJd': 'Job requirements',
   'ap.rwAfter': 'Rewritten', 'ap.rwAgain': 'Try again', 'ap.rwUse': 'Use this version',
   'ap.applied': 'Applied', 'ap.resume': 'Resume', 'ap.name': 'Full name',

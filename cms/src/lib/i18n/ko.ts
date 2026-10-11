@@ -833,7 +833,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'mj.push': '새 공고 알림', 'mj.pushRow': '추천과 저장 공고 소식을 이메일로 받기', 'mj.freqOff': '받지 않음', 'mj.freqDaily': '매일', 'mj.freqWeekly': '매주',
   'mj.pushTo': '받는 주소', 'mj.pushSave': '저장', 'mj.pushSaved': '저장됨', 'mj.pushPending': '{e}로 보낸 링크를 누르면 적용됩니다',
   'mj.pushBad': '이메일 형식이 올바르지 않습니다', 'mj.pushFail': '저장하지 못했습니다. 다시 시도해 주세요', 'mj.pushMailFail': '확인 메일을 보내지 못했습니다. 다시 시도해 주세요',
-  'ib.title': '받은편지함', 'ib.addr': '지원용 이메일', 'ib.forward': '{e}(으)로도 전달', 'ib.empty': '아직 고용주 회신이 없습니다',
+  'ib.title': '받은편지함', 'ib.forward': '{e}(으)로도 전달', 'ib.empty': '아직 고용주 회신이 없습니다',
   'ib.reply': '회신', 'ib.openApp': '지원 내역 열기', 'ib.noSubject': '(제목 없음)', 'ib.mine': '내 회신',
   'ib.send': '보내기', 'ib.cancel': '취소', 'ib.e.send': '보내지 못했습니다. 다시 시도해 주세요', 'ib.e.off': '메일 발송이 아직 설정되지 않았습니다',
   'av.job': '채용 정보', 'av.replies': '고용주 회신', 'av.noReply': '아직 회신이 없습니다', 'av.fwdTo': '회신은 {e}(으)로도 전달됩니다',
@@ -848,7 +848,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   // 2026-10-10 投递框三步(页签、求职信单选、按职位改写只给 Pro、「确认」页);试用、职位信息分区与「预览」几条词随之撤
   'ap.confirm': '확인', 'ap.rewriteJob': '공고에 맞게 고치기', 'ap.upResume': '새 이력서 올리기', 'ap.upLetter': '자기소개서 올리기',
   'ap.noLetter': '자기소개서 없이', 'ap.noLetterSub': '이력서만 보내기', 'ap.draftOpt': '이 공고의 초안', 'ap.modify': '수정',
-  'ap.replyTo': '회신 이메일', 'ap.mailPv': '메일 미리보기', 'ap.noPv': 'Word 파일은 여기서 미리 볼 수 없습니다', 'ap.soon': '이력서 맞춤 수정은 곧 제공됩니다',
+  'ap.replyTo': '고용주 회신', 'ap.replyInbox': '받은편지함', 'ap.mailPv': '메일 미리보기', 'ap.noPv': 'Word 파일은 여기서 미리 볼 수 없습니다', 'ap.soon': '이력서 맞춤 수정은 곧 제공됩니다',
   'ap.proReason': '공고 맞춤 수정은 Pro 기능입니다', 'ap.rwTitle': '자기소개서 맞춤 수정', 'ap.rwBefore': '원본', 'ap.rwJd': '공고 요건',
   'ap.rwAfter': '수정본', 'ap.rwAgain': '다시 쓰기', 'ap.rwUse': '이 버전 사용',
   'ap.applied': '지원 완료', 'ap.resume': '이력서', 'ap.name': '영문 이름', 'ap.letter': '자기소개서',
