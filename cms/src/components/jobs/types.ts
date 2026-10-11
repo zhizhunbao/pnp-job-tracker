@@ -5728,6 +5728,11 @@ export type ColOptionView = {
   always: boolean
 
   /**
+   * 列数满了(COLS_SHOWN_MAX)且这一列没勾:锁住不让勾(2026-10-11 Frank「设上限吧,14 列」)。
+   */
+  full: boolean
+
+  /**
    * 固定列后面那句小注;'' = 不出。
    */
   fixedNote: string

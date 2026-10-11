@@ -38,7 +38,8 @@ import { track } from '@/lib/track'
 import {
   ACC_UNKNOWN, APPLY_MAIL_RE, AT, AUTH_LOGIN,
   AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BROAD_ORDER_LAST, CANADA_MAIL_SUFFIX, CARET_CLOSED, CARET_OPEN,
-  CELL_TONE_CLS, CHIP, CHIP_TONE_CLS, COL, COLS_COOKIE, COLS_MAX_AGE_S, COLUMNS, COLW_COOKIE, COLW_MAX_AGE_S, COL_FLOOR,
+  CELL_TONE_CLS, CHIP, CHIP_TONE_CLS, COL, COLS_COOKIE, COLS_MAX_AGE_S,
+  COLS_SHOWN_MAX, COLUMNS, COLW_COOKIE, COLW_MAX_AGE_S, COL_FLOOR,
   COMMA, COOKIE_EQ, COOKIE_PATH_AGE, COOKIE_SAMESITE, COOKIE_SEP, CSS_BORDER_NONE,
   CSS_STICKY, DASH, DATE_LEN, DEFAULT_COLS, DIR_ASC, DIR_DESC, DISPOSITION_NONE, EE_PREFIX, FIELD_GROUP, FILTER_PROV,
   FILTER_Q, FK, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW, FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX,
@@ -347,14 +348,25 @@ export function knownColsOf(keys: string[]): JobColKey[] {
  * view=match 的 WHERE、fElig 筛选、sort=match,只是不占一列)。
  * 2026-09-23「我的匹配」整拆,match 列与匹配视图一起撤,这里不再需要跳过它。
  *
+ * 2026-10-11 Frank「设上限吧,14 列」:勾选列超出 COLS_SHOWN_MAX(固定列先占)按列序截掉多出的。
+ *
  * @param visible 勾选的列键。
  * @returns 按列序排好的列。
  */
 export function shownColsOf(visible: JobColKey[]): ColSpec[] {
+  let room = COLS_SHOWN_MAX
+  for (const c of COLUMNS) {
+    if (c.always === true) {
+      room -= 1
+    }
+  }
   const out: ColSpec[] = []
   for (const c of COLUMNS) {
-    if (c.always === true || visible.includes(c.key)) {
+    if (c.always === true) {
       out.push(c)
+    } else if (visible.includes(c.key) && room > 0) {
+      out.push(c)
+      room -= 1
     }
   }
   return out
@@ -5112,18 +5124,23 @@ export function foldCaretOf(fold: boolean): string {
 /**
  * 字段面板里的逐列勾选(match 列不进选择器 —— 它是「我的匹配」视图专属,勾了也不出列)。
  * 2026-09-23 match 列随「我的匹配」整拆出了列表,这里不再需要跳过它。
+ * 2026-10-11 Frank「设上限吧,14 列」:勾选态按实际出的列算(超额老偏好截掉的不打勾);满 COLS_SHOWN_MAX 时没勾的那些锁住。
  *
  * @param b 职位板整台状态机。
  * @returns 逐列的展示行。
  */
 export function colPanelRowsOf(b: JobsBoardPanel): ColOptionView[] {
   const out: ColOptionView[] = []
+  const shown = shownColsOf(b.cols.visible)
+  const full = shown.length >= COLS_SHOWN_MAX
   for (const c of COLUMNS) {
+    const checked = shown.includes(c)
     out.push({
       k: c.key,
       label: b.t(K_COL + c.key),
-      checked: c.always === true || b.cols.visible.includes(c.key),
+      checked,
       always: c.always === true,
+      full: full && checked === false,
       fixedNote: fixedNoteOf({ t: b.t, always: c.always === true }),
       onToggle: makeColAction({ act: b.cols.onCol, k: c.key }),
     })

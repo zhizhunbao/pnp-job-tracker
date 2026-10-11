@@ -592,7 +592,7 @@ export const jobsZh = {
   'filter.picked': '已选',
   'filter.nocMore': '{first}等 {n} 个',
   'all.score': '全部评分', 'sc.high': '高(≥75)', 'sc.mid': '中(50–74)', 'sc.low': '低(<50)',
-  'fields': '字段 ({n})', 'fields.main': '主要', 'fields.all': '全选', 'fields.invert': '反选', 'fields.fixed': ' (固定)', 'cols.hidden': '{n} 列宽度不够已隐藏',
+  'fields': '字段 ({n})', 'fields.main': '主要', 'fields.all': '全选', 'fields.invert': '反选', 'fields.max': '最多 {n} 列', 'fields.fixed': ' (固定)', 'cols.hidden': '{n} 列宽度不够已隐藏',
   'th.tip': '点击表头排序',
   'cell.uncat': '未分类', 'cell.first': '第一方', 'cell.repost': '转贴', 'cell.today': '今天',
   'cell.pnpExcl': '不符合',

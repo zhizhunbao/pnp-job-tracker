@@ -607,6 +607,12 @@ export const SAVE_RESUME_TTL_MS = 600000
 export const COLS_MAX_AGE_S = 31536000
 
 /**
+ * 表格最多出几列(固定列也算)。2026-10-11 Frank「设上限吧,14 列」:列多了分宽只能把公司 / 职位压成一条缝,
+ * 勾满就不让再加;cookie 里存着超额的老列偏好,按列序截到这个数。
+ */
+export const COLS_SHOWN_MAX = 14
+
+/**
  * 列宽 cookie 的存活秒数(30 天):列宽跟着数据走,过一个月的比例已经不作数了。
  */
 export const COLW_MAX_AGE_S = 2592000

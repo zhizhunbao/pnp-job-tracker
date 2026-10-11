@@ -538,7 +538,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'filter.picked': '선택됨',
   'filter.nocMore': '{first} 외 {rest}개',
   'all.score': '전체 점수', 'sc.high': '높음(≥75)', 'sc.mid': '중간(50–74)', 'sc.low': '낮음(<50)',
-  'fields': '열 ({n})', 'fields.main': '주요', 'fields.all': '전체', 'fields.invert': '반전', 'fields.fixed': '(고정)', 'cols.hidden': '{n}열 숨김(공간 부족)',
+  'fields': '열 ({n})', 'fields.main': '주요', 'fields.all': '전체', 'fields.invert': '반전', 'fields.max': '최대 {n}열', 'fields.fixed': '(고정)', 'cols.hidden': '{n}열 숨김(공간 부족)',
   'th.tip': '클릭하여 정렬',
   'cell.uncat': '미분류', 'cell.first': '직접', 'cell.repost': '재게시', 'cell.today': '오늘',
   'cell.pnpExcl': '요건 미충족',

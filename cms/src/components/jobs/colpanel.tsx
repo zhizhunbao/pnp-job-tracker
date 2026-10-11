@@ -9,7 +9,7 @@
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { BTN_GHOST } from './constants'
+import { BTN_GHOST, COLS_SHOWN_MAX } from './constants'
 import { colPanelRowsOf } from './functions'
 import { ColOption } from './coloption'
 import type { BoardPanelIn } from './types'
@@ -27,7 +27,7 @@ export function ColPanel({ b }: BoardPanelIn) {
     rows.push(
       <ColOption key={r.k} label={r.label}
         checked={r.checked}
-        always={r.always}
+        always={r.always || r.full}
         fixedNote={r.fixedNote}
         onToggle={r.onToggle} />,
     )
@@ -44,6 +44,7 @@ export function ColPanel({ b }: BoardPanelIn) {
           {b.t('fields.invert')}
         </Button>
       </div>
+      <div className={cssOf(css.colMax)}>{b.t('fields.max', { n: COLS_SHOWN_MAX })}</div>
       {rows}
     </div>
   )

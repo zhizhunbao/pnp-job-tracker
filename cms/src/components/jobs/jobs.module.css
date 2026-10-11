@@ -267,6 +267,17 @@
 }
 
 /*
+ * 字段面板里「最多 14 列」灰字(2026-10-11 Frank「设上限吧,14 列」)。
+ */
+.colMax {
+  padding: 4px 8px 6px;
+
+  font-size: 12px;
+
+  color: var(--text2);
+}
+
+/*
  * 浮层顶上的一排快捷钮。
  */
 .colHead {

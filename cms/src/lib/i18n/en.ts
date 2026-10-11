@@ -543,7 +543,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'filter.picked': 'Picked',
   'filter.nocMore': '{first} +{rest}',
   'all.score': 'All scores', 'sc.high': 'High (≥75)', 'sc.mid': 'Mid (50–74)', 'sc.low': 'Low (<50)',
-  'fields': 'Columns ({n})', 'fields.main': 'Main', 'fields.all': 'All', 'fields.invert': 'Invert', 'fields.fixed': ' (fixed)', 'cols.hidden': '{n} hidden (no room)',
+  'fields': 'Columns ({n})', 'fields.main': 'Main', 'fields.all': 'All', 'fields.invert': 'Invert', 'fields.max': 'Up to {n} columns', 'fields.fixed': ' (fixed)', 'cols.hidden': '{n} hidden (no room)',
   'th.tip': 'Click to sort',
   'cell.uncat': 'Uncategorized', 'cell.first': 'Direct', 'cell.repost': 'Repost', 'cell.today': 'today',
   'cell.pnpExcl': 'Not eligible',
