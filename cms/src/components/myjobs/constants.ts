@@ -278,16 +278,6 @@ export const WHY_KEYS: Record<string, string> = {
 export const WHY_TAG = 'ok'
 
 /**
- * Pro 好处胶囊的档(tag 桶 pro)。
- */
-export const PRO_TAG = 'pro'
-
-/**
- * 「更多推荐」两条好处的词条(网页端 pro 胶囊、手机端 bullet)。
- */
-export const PERK_KEYS = ['mj.perkPicks', 'mj.perkAuto'] as const
-
-/**
  * 锁住那条的假字纹理(模糊着看不清,真的公司 / 地址 / 薪资不下发;两份轮着用)。
  */
 export const LOCK_FILL = {
@@ -534,3 +524,24 @@ export const NARROW_MAX = 767
  * 网页端表格的最小宽(列多,窄了横滚不挤成竖排)。
  */
 export const TABLE_MIN_W = 1000
+
+/**
+ * 只读投递框的尺寸记忆键(2026-10-10 批 3;10-09 Frank「所有弹框 都能放大缩小 拖动,保持一致」:与投递框、职位 / 公司弹框共用一份
+ * 记住的宽高;值与 apply 的 APPLY_MODAL_PREF 相同,各域自抄)。
+ */
+export const AV_MODAL_PREF = 'adv_modal_pref'
+
+/**
+ * 只读投递框没有记忆时的宽(px;照投递框)。
+ */
+export const AV_MODAL_W = 900
+
+/**
+ * 只读投递框没有记忆时的高(px;照投递框)。
+ */
+export const AV_MODAL_H = 760
+
+/**
+ * 「已发出 <时刻>」胶囊的变体(绿:成功)。
+ */
+export const SENT_TAG = 'ok'

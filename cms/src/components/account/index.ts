@@ -31,6 +31,7 @@
  * CoverLetters(「我的简历」页签下的「求职信」段)。
  * 2026-10-09「我的档案」批:桶门加 Profile(「我的档案」一节)与 SEC_PROFILE。
  * 2026-10-10 投递框三步:桶门加 ResumePages 与 useResumePages(投递框「简历」页选中哪份就在旁边画那份的首页)。
+ * 2026-10-10 批 3:桶门加 SEC_INBOX(收件箱一节)。
  *
  * @author Claude
  * @time 2026-08-26 19:28:00
@@ -41,7 +42,7 @@ export { AccountNav } from './accountnav'
 export { AccountRedirect } from './accountredirect'
 export { CoverLetters } from './coverletters'
 export {
-  SEC_PROFILE, SEC_RESUME, SEC_SJOBS, SEC_SUB, SHELL_BOTTOM, SHELL_TOP,
+  SEC_INBOX, SEC_PROFILE, SEC_RESUME, SEC_SJOBS, SEC_SUB, SHELL_BOTTOM, SHELL_TOP,
 } from './constants'
 export { useAccountPage, useResumePages } from './hooks'
 export { PayOkNotice } from './payoknotice'

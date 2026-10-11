@@ -7,6 +7,8 @@
 //       ⑤ 投递状态只读:投过的胶囊「已投递」,没投过没胶囊;下架另挂「已下架」胶囊;我的求职发出去了的行带简历 / 求职信两个链接;
 //          2026-10-10 Frank「两处都改吧」:发出时没附求职信(hasCover = false)的行只出简历链接。探针:coverHrefOf 不看 hasCover → 该条红。
 //       ⑥ 职位删了:没有链接、没有「打开」;
+//    2026-10-10 批 3(1.6 / 2.6):我的投递发出去了的行「打开」从职位页链接改成钮,点了就地弹只读投递框(地址栏 `?app=<投递行 id>`);
+//       职位删了的行照样有「打开」(发出那一封与雇主回复还在)—— ④⑥ 改断言。探针:actsOf 投递行回到职位页链接 → ④ 红。
 //       ⑦ 我的收藏有「取消收藏」:先本地删、发 DELETE /api/saved-jobs/<id>;服务端没删成就退回;我的求职没有这颗钮;
 //       ⑧ 照职位板:公司表里有的公司名是钮、点了叠开公司弹框(标题是公司名),没有的是纯文字;
 //       ⑨ 草稿行:日期「最近改于」、没附件、操作「继续」去投递区;收藏有邮箱在架没投过的行「打开」换「投递」;
@@ -146,7 +148,7 @@ describe('我的求职', () => {
     expect(a.tagName).toBe('TR')   // 2026-10-10 批 2:网页端走通用表格
     expect(links(a)).toEqual([
       ['light duty cleaner', '/jobs/101'], ['Clean Co', '/companies/clean-co'], ['Winnipeg, MB', MAP('Winnipeg, MB')],
-      ['mj.open', '/jobs/101'], ['mj.col.resume', '/api/apply/file?id=7&kind=resume'],
+      ['mj.col.resume', '/api/apply/file?id=7&kind=resume'],
       ['mj.col.cover', '/api/apply/file?id=7&kind=cover'],
     ])
     expect(a.textContent).toContain('温尼伯')   // 地点灰字「市译名,省译名」(默认中文界面)
@@ -163,7 +165,12 @@ describe('我的求职', () => {
     ])
     expect(b.textContent).toContain('Cook')   // 职位删了:职位名黑字、不成链
     expect(b.textContent).toContain('mj.closed')
-    expect(b.textContent).not.toContain('mj.open')
+    expect(buttons(b)).toContain('mj.open')
+    expect(buttons(a)).toContain('mj.open')
+    await act(async () => {
+      Array.from(a.querySelectorAll('button')).find((x) => x.textContent === 'mj.open')?.click()
+    })
+    expect(new URL(window.location.href).searchParams.get('app')).toBe('7')
   })
 
   it('⑤ 发出时没附求职信(投递框「不附求职信」)的行只出简历链接,不出求职信链接', async () => {

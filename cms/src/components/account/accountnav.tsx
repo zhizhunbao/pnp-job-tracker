@@ -10,6 +10,7 @@
  *
  * 2026-10-05 Frank「tab 不应该是横着的么」「我不是有现成的 tab 组件吗」:左侧栏一列竖钮换成 tabs 桶的通用页签条
  * (横排、键盘左右切换、aria 都由它管),本件只递清单与切换手柄。
+ * 2026-10-10 批 3:「收件箱」页签带红色未读数(tabs 桶通用页签的 alert 小字)。
  *
  * @author Frank
  * @time 2026-08-26 20:30:20
@@ -22,15 +23,15 @@ import type { AccountNavIn } from './types'
 /**
  * 账户页节导航:横排页签条。
  *
- * @param props 当前节、取词函数与切节回调。
+ * @param props 当前节、取词函数、切节回调与收件箱未读数。
  * @returns 页签条。
  */
-export function AccountNav({ sec, t, onPick }: AccountNavIn) {
+export function AccountNav({ sec, t, onPick, unread }: AccountNavIn) {
   return (
     <Tabs ariaLabel={t(ACCT_BANNER_TITLE_KEY)}
       idPrefix={ACCT_TAB_ID}
       value={sec}
       onChange={makeSecChange({ onPick })}
-      items={secTabItemsOf({ t })} />
+      items={secTabItemsOf({ t, unread })} />
   )
 }

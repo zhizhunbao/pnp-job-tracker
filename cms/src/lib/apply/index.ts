@@ -4,11 +4,15 @@
  * 门里只有转发(闸 door-forward-only)。
  * 2026-10-10 Frank「删吧」(「今日待投 / 智能投递」整条撤):只给 queue 域用的那批出桶(模板信与写信参数、取简历原件 / 署名 /
  * 简历清单、存署名)随之收回,域内照用。
+ * 2026-10-10 批 3「收件箱」:出测试号收件人换算 recipientOf 与发件人显示 senderFromOf(收件箱的转发 / 回信由 lib/inbox 的 routes 注入用,
+ * 同一个口径不复制第二份)。
  *
  * @author Frank
  * @time 2026-10-07 01:30:00
  */
 
 export { COVER_MAX } from './constants'
-export { coverFileOf, coverNormOf, isSenderName, mailSubjectOf, mailTextOf, pdfBadCharsOf } from './functions'
+export {
+  coverFileOf, coverNormOf, isSenderName, mailSubjectOf, mailTextOf, pdfBadCharsOf, recipientOf, senderFromOf,
+} from './functions'
 export type { ApplyStart } from './types'

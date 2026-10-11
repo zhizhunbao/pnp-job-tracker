@@ -3278,3 +3278,130 @@ export const DIGEST_USERS = `SELECT p.user_id, COALESCE(NULLIF(p.email, ''), u.e
  * 记这个人今天的每日推送发过了。$1=用户 id。
  */
 export const DIGEST_DAILY_MARK = `UPDATE digest_prefs SET last_daily_at = now() WHERE user_id = $1`
+
+// =========================================================================
+// 36. 收件箱(「我的」收件箱页签;2026-10-10 批 3,docs/design/我的/我的求职-20261009.md 1.5 / 2.5 / 1.6 / 2.6;
+//     表 docs/sql/inbox-20261010.sql:inbox_aliases / inbox_messages;读写方只有 lib/inbox)
+// =========================================================================
+
+/**
+ * 本人的专属地址与转发开关(没行 = 还没建地址)。$1=用户 id。
+ */
+export const INBOX_ALIAS_ONE = `SELECT alias, forward FROM inbox_aliases WHERE user_id = $1`
+
+/**
+ * 建专属地址(懒建:第一次要用时)。本人已有、或地址撞了别人都不写,回 0 行(调用方再读一次本人的;撞了换随机段重试)。
+ * $1=用户 id,$2=地址名。
+ */
+export const INBOX_ALIAS_ADD = `INSERT INTO inbox_aliases (user_id, alias) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING alias`
+
+/**
+ * 建地址时名字段的来源:投递英文署名,没有就用账户邮箱(取 @ 前的字母)。$1=用户 id。
+ */
+export const INBOX_SEED = `SELECT COALESCE(NULLIF(p.sender_name, ''), u.email) AS seed
+     FROM users u LEFT JOIN apply_prefs p ON p.user_id = u.id WHERE u.id = $1`
+
+/**
+ * 回调认人:地址名 → 用户 id、转发开关、账户邮箱。inbox_aliases.alias 唯一索引管这条。$1=地址名。
+ */
+export const INBOX_ALIAS_USER = `SELECT a.user_id, a.forward, u.email FROM inbox_aliases a JOIN users u ON u.id = a.user_id
+     WHERE a.alias = $1`
+
+/**
+ * 改转发开关。$1=用户 id,$2=开 / 关。
+ */
+export const INBOX_FORWARD_SET = `UPDATE inbox_aliases SET forward = $2, updated_at = now() WHERE user_id = $1`
+
+/**
+ * 对投递:子地址标记里的投递行是不是本人的。$1=投递行 id,$2=用户 id。
+ */
+export const INBOX_APP_TAG = `SELECT id FROM applications WHERE id = $1 AND user_id = $2`
+
+/**
+ * 对投递:这一封回的是本人收件箱里哪一封(In-Reply-To / References 里的 Message-ID),取那一封挂的投递。
+ * $1=用户 id,$2=Message-ID 数组。inbox_messages_msgid_idx 管这条。
+ */
+export const INBOX_APP_THREAD = `SELECT application_id AS id FROM inbox_messages
+     WHERE user_id = $1 AND message_id = ANY($2::text[]) AND application_id IS NOT NULL
+     ORDER BY id DESC LIMIT 1`
+
+/**
+ * 对投递:发件人就是本人投过的雇主邮箱(最近投的那一封)。$1=用户 id,$2=发件地址。applications_user_email_idx 管这条。
+ */
+export const INBOX_APP_SENDER = `SELECT id FROM applications
+     WHERE user_id = $1 AND lower(employer_email) = lower($2) AND status IN ('sent', 'replied', 'bounced')
+     ORDER BY sent_at DESC NULLS LAST LIMIT 1`
+
+/**
+ * 记一封收到的信(同一个 Resend 收信 id 重放不重记,回 0 行)。
+ * $1=用户 id,$2=投递行 id(可空),$3=发件地址,$4=发件人名,$5=收件地址,$6=标题,$7=正文,$8=Message-ID,$9=In-Reply-To,
+ * $10=Resend 收信 id。
+ */
+export const INBOX_IN_ADD = `INSERT INTO inbox_messages (user_id, application_id, direction, from_addr, from_name, to_addr, subject,
+       body_text, message_id, in_reply_to, inbound_id)
+     VALUES ($1, $2, 'in', $3, $4, $5, $6, $7, NULLIF($8, ''), NULLIF($9, ''), $10)
+     ON CONFLICT (inbound_id) WHERE inbound_id IS NOT NULL DO NOTHING RETURNING id`
+
+/**
+ * 收到回信:那一条投递记成「雇主回复」(已投 / 退信才改;不碰 updated_at —— 每人日限与 30 天同雇主去重按它算)。
+ * $1=投递行 id,$2=用户 id。
+ */
+export const INBOX_APP_REPLIED = `UPDATE applications SET status = 'replied' WHERE id = $1 AND user_id = $2 AND status IN ('sent', 'bounced')`
+
+/**
+ * 转发出去了。$1=信 id。
+ */
+export const INBOX_FORWARDED = `UPDATE inbox_messages SET forwarded_at = now() WHERE id = $1`
+
+/**
+ * 收件箱清单(两个方向都列;回出去的挂在它回的那一封下面),最近的在前,正文截 2 万字。
+ * $1=用户 id,$2=条数上限。inbox_messages_user_idx 管这条。
+ */
+export const INBOX_LIST = `SELECT m.id, m.application_id, m.direction, m.from_addr, m.from_name, m.subject,
+       left(m.body_text, 20000) AS body_text, m.received_at, m.read_at, m.reply_of, a.job_title
+     FROM inbox_messages m LEFT JOIN applications a ON a.id = m.application_id
+     WHERE m.user_id = $1 ORDER BY m.received_at DESC LIMIT $2`
+
+/**
+ * 本人几封没读的(「收件箱」页签红点)。$1=用户 id。inbox_messages_unread_idx 管这条。
+ */
+export const INBOX_UNREAD = `SELECT count(*)::int AS n FROM inbox_messages WHERE user_id = $1 AND direction = 'in' AND read_at IS NULL`
+
+/**
+ * 读了一封(只认本人的)。$1=用户 id,$2=信 id。
+ */
+export const INBOX_READ = `UPDATE inbox_messages SET read_at = now() WHERE user_id = $1 AND id = $2 AND read_at IS NULL`
+
+/**
+ * 要回的那一封(只认本人收到的):发件人、标题、Message-ID、挂的投递,连同本人的地址与投递署名。$1=用户 id,$2=信 id。
+ */
+export const INBOX_MSG_ONE = `SELECT m.id, m.application_id, m.from_addr, m.subject, m.message_id, x.alias, p.sender_name
+     FROM inbox_messages m JOIN inbox_aliases x ON x.user_id = m.user_id
+     LEFT JOIN apply_prefs p ON p.user_id = m.user_id
+     WHERE m.user_id = $1 AND m.id = $2 AND m.direction = 'in'`
+
+/**
+ * 记一封回出去的信(进同一串,本人写的不算未读)。
+ * $1=用户 id,$2=投递行 id(可空),$3=发件地址(本人专属地址),$4=收件地址,$5=标题,$6=正文,$7=Resend 邮件 id,$8=回的是哪一封。
+ */
+export const INBOX_OUT_ADD = `INSERT INTO inbox_messages (user_id, application_id, direction, from_addr, from_name, to_addr, subject,
+       body_text, resend_id, reply_of, read_at)
+     VALUES ($1, $2, 'out', $3, '', $4, $5, $6, NULLIF($7, ''), $8, now()) RETURNING id, received_at`
+
+/**
+ * 「打开」一条投递:发出那一封的快照(回复地址、附件名、标题、正文、发出时刻、公司)与投递署名。只给本人、只给发出去了的。
+ * $1=用户 id,$2=投递行 id。
+ */
+export const INBOX_THREAD_APP = `SELECT a.id, a.company, a.reply_to, a.resume_file, a.cover_file, a.subject, a.body_text, a.sent_at,
+       p.sender_name
+     FROM applications a LEFT JOIN apply_prefs p ON p.user_id = a.user_id
+     WHERE a.user_id = $1 AND a.id = $2 AND a.status IN ('sent', 'replied', 'bounced')`
+
+/**
+ * 「打开」一条投递:挂在它上面的往来信(两个方向,先来的在前;列同收件箱清单)。$1=用户 id,$2=投递行 id。
+ * inbox_messages_app_idx 管这条。
+ */
+export const INBOX_THREAD_MSGS = `SELECT m.id, m.application_id, m.direction, m.from_addr, m.from_name, m.subject,
+       left(m.body_text, 20000) AS body_text, m.received_at, m.read_at, m.reply_of, a.job_title
+     FROM inbox_messages m LEFT JOIN applications a ON a.id = m.application_id
+     WHERE m.user_id = $1 AND m.application_id = $2 ORDER BY m.received_at`

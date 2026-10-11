@@ -150,6 +150,34 @@
 }
 
 /*
+ * 要人去看的数(未读之类;2026-10-10 批 3「收件箱」页签):红底白字圆胶囊,选中不选中都一样醒目。
+ */
+.badgeAlert {
+  /*
+   * 竖向居中对齐文字。
+   */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /*
+   * 圆胶囊:最小一个圆,数字多了横向撑开。
+   */
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+
+  /*
+   * 红底白字(选中态也不改蓝)。
+   */
+  background: #dc2626;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+}
+
+/*
  * 选中页签的小字:跟高亮线同蓝。
  */
 .badgeOn {

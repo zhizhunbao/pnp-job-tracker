@@ -568,9 +568,11 @@ export const RF_ZOOM_KIND = 'secondary'
  * 2026-10-08 照 AIApply 重设计(10-05 定稿第 1 条,V1 搬家):顺序换成 我的求职 / 我的收藏 / 我的简历 / 我的订阅;深链键不改。
  * 2026-10-09「我的档案」批(Frank「用户需要知道自己之前回答的问题」):我的简历后面加一节 我的档案 profile(深链 `?sec=profile`)。
  * 2026-10-10 批 2(16b):「我的收藏」页签撤,页签剩 我的求职 / 我的简历 / 我的档案 / 我的订阅;旧深链 `?sec=favs` 见 secLinkOf。
+ * 2026-10-10 批 3(Frank 拍板):「我的求职」后面加一节 收件箱 inbox(深链 `?sec=inbox`;页签带红色未读数)。
  */
 export const SEC_TABS = [
   { sec: 'sjobs', labelKey: 'sj.title' },
+  { sec: 'inbox', labelKey: 'ib.title' },
   { sec: 'resume', labelKey: 'rm.arch.title' },
   { sec: 'profile', labelKey: 'pf.title' },
   { sec: 'sub', labelKey: 'sub.title' },
@@ -789,3 +791,18 @@ export const PF_LOAD_OK = 'ok'
  * 档案取数状态:取不到。
  */
 export const PF_LOAD_FAIL = 'fail'
+
+/**
+ * 收件箱节的节标识(同 URL 深链 `?sec=` 的取值;2026-10-10 批 3)。
+ */
+export const SEC_INBOX = 'inbox'
+
+/**
+ * 收件箱未读数接口(「收件箱」页签红点;2026-10-10 批 3)。
+ */
+export const URL_INBOX_COUNT = '/api/inbox/count'
+
+/**
+ * 收件箱里读了一封(inbox 桶发这个事件,页签红点重拉;值与 inbox 桶的 EV_UNREAD 相同,各域自抄)。
+ */
+export const EV_INBOX_UNREAD = 'inbox:unread'

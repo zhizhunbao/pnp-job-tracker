@@ -4,6 +4,8 @@
  * POST /api/apply/letter(按 JD 写求职信)、GET /api/apply/start(投递区的起始态)、POST /api/apply/send(代发:简历 + 求职信 PDF 两个附件,
  * 回复地址 = 用户注册邮箱)、POST /api/apply/inbound(Resend 回调:退信 / 投诉记进退信名单;URL 按设计稿冻结,
  * 下一批中转回信同一个口)。都只给本人;雇主邮箱永不出响应。pdf-lib 只在本文件 import,注给 functions(审查 #9)。
+ * 2026-10-10 批 3「收件箱」:回调口多认一种 email.received(雇主回信),转给 lib/inbox 的 receiveInbound;
+ * 收件箱开通了(INBOUND_DOMAIN),投递的回复地址 = 本人专属投递邮箱(挂这一条投递的标记),没开通照旧用注册邮箱。
  *
  * @author Frank
  * @time 2026-10-07 01:30:00
@@ -17,9 +19,10 @@ import {
 } from '../http'
 import { jobDescription, loadApplyUrlById } from '../jobs/server'
 import { completeText } from '../llm'
-import { APPLY_LOG, log } from '../log'
+import { APPLY_LOG, INBOX_LOG, log } from '../log'
 import { postMail, WHY_DISABLED } from '../mail'
 import { checkLimit, getUserOrNull, ipOf, isPro } from '../quota/server'
+import { inboxAddressOf, receiveInbound, RECV_FETCH } from '../inbox/server'
 import { extractText } from '../resume'
 import {
   B64, CACHE_PRIVATE, COVER_LIMIT_DAILY, COVER_LIMIT_PREFIX, COVER_MAX, DISPOSITION_INLINE, DISPOSITION_TAIL,
@@ -28,7 +31,7 @@ import {
   HDR_SVIX_SIG, HDR_SVIX_TS, MIME_PDF, MS_PER_S, NOSNIFF, P_JOB, SEND_IP_DAILY, SEND_IP_PREFIX, SEND_LIMIT_DAILY,
   SEND_LIMIT_PREFIX, SITE_DAY_MAX, ST_DRAFT, ST_QUEUED, ST_SENDING, TEXT_NONE, USER_DAY_MAX, WEBHOOK_SECRET,
   COVER_DEFAULT, KIND_COVER, LETTER_LIMIT_DAILY, LETTER_LIMIT_PREFIX, LETTER_MIN_LEN, LETTER_PROVIDER_ENV,
-  LETTER_TEMPERATURE, LETTER_TOKENS_MAX, P_ID, P_KIND,
+  LETTER_TEMPERATURE, LETTER_TOKENS_MAX, P_ID, P_KIND, EV_RECEIVED,
 } from './constants'
 import {
   bounceKindOf, claimApply, coverFileOf, coverFillOf, coverPdfOf, idemKeyOf, isBouncedEmail,
@@ -143,6 +146,7 @@ export async function applyDraftRoute(req: Request): Promise<Response> {
  * GET /api/apply/start?job=:投递一节的起始态(2026-10-07 Frank「投递不应该跳到我的投递页面吗」→ 投递整个放进「我的」:
  * 原先由 /apply/<id> 的页面门 SSR 取,页面撤了改由「我的」页的投递一节来取)。本岗(不带雇主邮箱)、简历清单、署名、模板、状态。
  * 2026-10-10 投递框三步:试用余量两格撤,换成是不是 Pro 与回复邮箱(「确认」页摆)。
+ * 2026-10-10 批 3「收件箱」:收件箱开通了,回复邮箱 = 本人专属投递邮箱(第一次要用时懒建),没开通照旧注册邮箱。
  *
  * @param req 请求(职位 id 在查询参数)。
  * @returns 起始态;未登录 401、id 不合形 400、岗不存在 404。
@@ -156,7 +160,12 @@ export async function applyStartRoute(req: Request): Promise<Response> {
   if (jobId == null) {
     return Response.json({ error: E_BODY }, { status: BAD_REQUEST })
   }
-  const start = await loadApplyStart({ db: await getDb(), userId: user.id, jobId, pro: isPro(user), replyTo: user.email })
+  const db = await getDb()
+  let replyTo = await inboxAddressOf({ db, userId: user.id, appId: null })
+  if (replyTo === TEXT_NONE) {
+    replyTo = user.email
+  }
+  const start = await loadApplyStart({ db, userId: user.id, jobId, pro: isPro(user), replyTo })
   if (start == null) {
     return Response.json({ error: E_JOB }, { status: NOT_FOUND })
   }
@@ -255,6 +264,8 @@ export async function applyLettersRoute(_req: Request): Promise<Response> {
 /**
  * POST /api/apply/inbound:Resend 回调(svix 签名)。永久退信与投诉 / 被抑制:那一封标退信、雇主邮箱进退信名单
  * (发送前拦,审查 #3);临时退信与别的事件只留痕。对不上投递行(提醒信的退信)回 200 不重试。
+ * 2026-10-10 批 3「收件箱」:email.received(雇主回信打到专属投递邮箱)转给 lib/inbox 的 receiveInbound;
+ * 只有「全文取不到」回 502 让 Resend 重试,其余(不是本站地址、地址不是任何人的、重放)一律 200。
  *
  * @param req 请求(原始体用来验签)。
  * @returns { received };没配密钥 503、签名或时间戳不对 400。
@@ -278,6 +289,14 @@ export async function applyInboundRoute(req: Request): Promise<Response> {
     event = JSON.parse(body) as WebhookJson
   } catch {
     return Response.json({ error: E_BODY }, { status: BAD_REQUEST })
+  }
+  if (event.type === EV_RECEIVED) {
+    const got = await receiveInbound({ db: await getDb(), body, mailTo: recipientOf })
+    log({ tag: INBOX_LOG.tag, text: INBOX_LOG.received + got })
+    if (got === RECV_FETCH) {
+      return Response.json({ error: E_MAIL }, { status: BAD_GATEWAY })
+    }
+    return Response.json({ received: true })
   }
   const kind = bounceKindOf(event)
   const resendId = webhookEmailIdOf(event)
@@ -374,6 +393,8 @@ export async function applyLetterRoute(req: Request): Promise<Response> {
  * 成功记 sent 与 Resend id,失败或没配密钥退回草稿并留痕。测试号收件方改投 Resend 测试地址。
  * 批 C 挂点在去重之后、判字符之前:isPro(user) === false 且已发数 ≥ FREE_APPLY_LIFETIME 时回 402 PAYMENT_REQUIRED。
  * 2026-10-10 投递框三步:草稿里的信是空串(「不附求职信」)时只附简历,正文换不提求职信的一版,求职信附件名记空串。
+ * 2026-10-10 批 3「收件箱」:回复地址 = 本人专属投递邮箱 + 这一条投递的标记(alias+a<投递行 id>,雇主一回就对得上);
+ * 收件箱没开通(没配 INBOUND_DOMAIN)照旧用注册邮箱。
  *
  * @param req 请求(body 是 { jobId })。
  * @returns { ok, id };错误码见设计稿接口表(401 / 400 / 404 / 409 / 410 / 422 / 429 / 502 / 503)。
@@ -445,6 +466,10 @@ export async function applySendRoute(req: Request): Promise<Response> {
   if (chars.length > 0) {
     return Response.json({ error: E_CHARS, chars }, { status: UNPROCESSABLE })
   }
+  let replyTo = await inboxAddressOf({ db, userId: user.id, appId: row.id })
+  if (replyTo === TEXT_NONE) {
+    replyTo = user.email
+  }
   const withCover = row.cover.trim() !== TEXT_NONE
   const parts = { title: job.title, city: job.city, province: job.province, name: prefs.senderName }
   const subject = mailSubjectOf(parts)
@@ -459,7 +484,7 @@ export async function applySendRoute(req: Request): Promise<Response> {
     appId: row.id, parts: [to, subject, bodyText, row.cover, String(blob.id), blob.uploadedAt],
   })
   const appId = await claimApply({
-    db, userId: user.id, jobId, employerEmail: job.email, replyTo: user.email, subject, bodyText, resumeFile,
+    db, userId: user.id, jobId, employerEmail: job.email, replyTo, subject, bodyText, resumeFile,
     resumeUploadedAt: blob.uploadedAt, coverFile, idemKey, resumeB64: blob.b64, resumeMime: blob.mime,
   })
   if (appId == null) {
@@ -477,8 +502,8 @@ export async function applySendRoute(req: Request): Promise<Response> {
     return Response.json({ error: E_CHARS, chars: [] }, { status: UNPROCESSABLE })
   }
   const sent = await postMail({
-    to, subject, html: mailHtmlOf(bodyText), text: bodyText, from: senderFromOf(prefs.senderName), replyTo: user.email,
-    attachments, idemKey,
+    to, subject, html: mailHtmlOf(bodyText), text: bodyText, from: senderFromOf(prefs.senderName), replyTo,
+    attachments, idemKey, headers: {},
   })
   if (sent.ok === false) {
     await unclaimApply({ db, id: appId })

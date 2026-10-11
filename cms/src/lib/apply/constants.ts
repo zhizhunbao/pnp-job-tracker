@@ -378,6 +378,11 @@ export const E_PRO = 'pro'
 export const EV_BOUNCED = 'email.bounced'
 
 /**
+ * Resend 回调事件:收到一封信(2026-10-10 批 3 收件箱;雇主回信打到专属投递邮箱,本口转给 lib/inbox)。
+ */
+export const EV_RECEIVED = 'email.received'
+
+/**
  * 退信回调:Resend 的事件名 —— 被投诉(当退信处理,同一邮箱不再投)。
  */
 export const EV_COMPLAINED = 'email.complained'

@@ -31,6 +31,11 @@ export const ERR_NAME = {
    * Wikidata 懒查的 HTTP 失败(employers 域;只在域内 catch 留痕,不见客)。
    */
   wikidata: 'WikidataHttpError',
+
+  /**
+   * 收件箱建专属地址重试到顶还没建上(inbox 域;随机段撞名概率极小,到顶就是库出了别的事,交路由层 500)。
+   */
+  inboxAlias: 'InboxAliasError',
 }
 
 /**

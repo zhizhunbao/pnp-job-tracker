@@ -28,7 +28,7 @@ import { HDR_CONTENT_TYPE } from '../http'
 export async function sendMail(input: SendMailIn): SentOut {
   const r = await postMail({
     to: input.to, subject: input.subject, html: input.html, text: ID_NONE, from: ID_NONE, replyTo: ID_NONE,
-    attachments: [], idemKey: ID_NONE,
+    attachments: [], idemKey: ID_NONE, headers: {},
   })
   return r.ok
 }
@@ -108,6 +108,9 @@ function resendBodyOf(input: PostMailIn): ResendBodyJson {
   }
   if (input.attachments.length > 0) {
     body.attachments = input.attachments
+  }
+  if (Object.keys(input.headers).length > 0) {
+    body.headers = input.headers
   }
   return body
 }

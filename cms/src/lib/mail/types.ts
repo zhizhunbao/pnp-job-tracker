@@ -108,6 +108,11 @@ export type PostMailIn = {
    * 幂等键;空串 = 不带(同一个键 24 小时内重放只发一封)。
    */
   idemKey: string
+
+  /**
+   * 自定义邮件头(2026-10-10 批 3 收件箱:回信带 In-Reply-To / References 接上雇主那一串);没有给空对象。
+   */
+  headers: ResendHeaders
 }
 
 /**
@@ -183,6 +188,11 @@ export type ResendBodyJson = {
    * 附件。
    */
   attachments?: MailAttachment[]
+
+  /**
+   * 自定义邮件头(2026-10-10 批 3)。
+   */
+  headers?: ResendHeaders
 }
 
 /**

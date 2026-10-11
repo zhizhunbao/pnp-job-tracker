@@ -54,12 +54,15 @@
  * 2026-10-10 批 2「我的求职」四段(docs/design/我的/我的求职-20261009.md 第 3 节 15 / 16b / 16c / 16d):「今日待投」QueueReview
  * 与它的准备清单、智能投递开关从本页撤(队列后端不动);「我的收藏」页签撤,收藏表搬进「我的求职」;节内顺序 =
  * 今日推荐(+ 免费号的更多推荐)→ 我的收藏 → 我的投递 → 新岗推送(Push,接替周报开关 WeeklyOptin)。发出后投递表重挂、推荐卡按同一个代数重拉。
+ * 2026-10-10 批 3(docs/design/我的/我的求职-20261009.md 1.5 / 2.5 / 1.6 / 2.6):「我的求职」后面加「收件箱」一节(inbox 桶 Inbox,
+ * 页签带红色未读数);门里再摆只读投递框宿主 AppViewHost(地址栏 `?app=` 就弹:我的投递「打开」、收件箱「打开这次投递」)。
  *
  * @author Frank
  * @time 2026-07-02 00:00:00
  */
 import { ApplySentSync } from '@/components/apply'
-import { AppliedList, Picks, Push, SavedList } from '@/components/myjobs'
+import { Inbox } from '@/components/inbox'
+import { AppliedList, AppViewHost, Picks, Push, SavedList } from '@/components/myjobs'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import {
@@ -73,6 +76,7 @@ import {
   ResumeFile,
   SentNotice,
   Subscription,
+  SEC_INBOX,
   SEC_PROFILE,
   SEC_RESUME,
   SEC_SJOBS,
@@ -98,7 +102,7 @@ export default function AccountPage() {
         <AccountBanner t={a.t} sent={a.sent} />
         {a.checked && a.me != null && (
           <AccountColumns
-            nav={<AccountNav sec={a.sec} t={a.t} onPick={a.onPick} />}>
+            nav={<AccountNav sec={a.sec} t={a.t} onPick={a.onPick} unread={a.unread} />}>
             {a.payOk && <PayOkNotice t={a.t} />}
             {a.sec === SEC_SJOBS && a.sentTo != null && <SentNotice t={a.t} company={a.sentTo} />}
             {a.sec === SEC_RESUME && <ResumeFile t={a.t} />}
@@ -107,12 +111,14 @@ export default function AccountPage() {
             {a.sec === SEC_SJOBS && <SavedList t={a.t} plan={a.plan} />}
             {a.sec === SEC_SJOBS && <AppliedList key={a.appliedGen} t={a.t} plan={a.plan} />}
             {a.sec === SEC_SJOBS && <Push t={a.t} />}
+            {a.sec === SEC_INBOX && <Inbox t={a.t} />}
             {a.sec === SEC_PROFILE && <Profile t={a.t} />}
             {a.sec === SEC_SUB && <Subscription t={a.t} until={a.me.proUntil} />}
           </AccountColumns>
         )}
         {a.checked && a.me == null && <AccountRedirect />}
         <ApplySentSync onSent={a.onApplied} />
+        {a.checked && a.me != null && <AppViewHost t={a.t} />}
       </Shell>
 
       <Footer />

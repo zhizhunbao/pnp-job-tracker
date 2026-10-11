@@ -1309,3 +1309,248 @@ export type AddrSubIn = {
    */
   t: TFn
 }
+
+/**
+ * viewRowOf 的入参(只读投递框「职位信息」卡的展示行)。
+ */
+export type ViewRowIn = {
+  /**
+   * 我的投递清单里那一行。
+   */
+  item: MyJobItem
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+}
+
+/**
+ * itemByIdOf 的入参。
+ */
+export type ItemByIdIn = {
+  /**
+   * 我的投递清单。
+   */
+  items: MyJobItem[]
+
+  /**
+   * 投递行 id。
+   */
+  id: number
+}
+
+/**
+ * fileHrefFor 的入参。
+ */
+export type FileHrefForIn = {
+  /**
+   * 展示行。
+   */
+  row: ListRow
+
+  /**
+   * 附件身份(ACT_RESUME / ACT_COVER)。
+   */
+  key: string
+}
+
+/**
+ * 只读投递框宿主 AppViewHost 的 props(2026-10-10 批 3)。
+ */
+export type AppViewHostIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * 只读投递框 AppView 的 props。
+ */
+export type AppViewIn = {
+  /**
+   * 投递行 id。
+   */
+  appId: number
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 关框。
+   */
+  onClose: () => void
+}
+
+/**
+ * useAppView 整机的面板:清单里那一行、往来、拉失败了没。
+ */
+export type AppViewPanel = {
+  /**
+   * 我的投递清单里那一行(还没拉回来 / 不在清单里 = null)。
+   */
+  item: MyJobItem | null
+
+  /**
+   * 往来(还没拉回来 = null)。
+   */
+  thread: AvThread | null
+
+  /**
+   * 两样有一样拉失败了。
+   */
+  failed: boolean
+}
+
+/**
+ * 只读投递框「雇主回复」卡里一封回信的 props。
+ */
+export type AvMsgIn = {
+  /**
+   * 那一封。
+   */
+  m: AvMsg
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * 只读投递框要的往来(子桶 thread 的 ThreadView 全格照抄;types 不 import)。
+ */
+export type AvThread = {
+  /**
+   * 英文姓名(没有给空串)。
+   */
+  senderName: string
+
+  /**
+   * 回复邮箱。
+   */
+  replyTo: string
+
+  /**
+   * 简历附件名。
+   */
+  resumeFile: string
+
+  /**
+   * 求职信附件名(空串 = 没附)。
+   */
+  coverFile: string
+
+  /**
+   * 邮件预览的收件人(公司名)。
+   */
+  company: string
+
+  /**
+   * 标题。
+   */
+  subject: string
+
+  /**
+   * 正文。
+   */
+  body: string
+
+  /**
+   * 发出时刻('YYYY-MM-DD HH:mm')。
+   */
+  sentAt: string
+
+  /**
+   * 雇主回信(先来的在前)。
+   */
+  messages: AvMsg[]
+
+  /**
+   * 回信同时转到的邮箱(转发关着给空串)。
+   */
+  forwardTo: string
+}
+
+/**
+ * 只读投递框里一封雇主回信(子桶 thread 的 ThreadMsg 全格照抄)。
+ */
+export type AvMsg = {
+  /**
+   * 信 id。
+   */
+  id: number
+
+  /**
+   * 发件人一行。
+   */
+  from: string
+
+  /**
+   * 正文。
+   */
+  text: string
+
+  /**
+   * 收到的时刻('YYYY-MM-DD HH:mm')。
+   */
+  at: string
+
+  /**
+   * 本人回出去的。
+   */
+  replies: AvReply[]
+}
+
+/**
+ * 本人回出去的一封(子桶 thread 的 ThreadReply 全格照抄)。
+ */
+export type AvReply = {
+  /**
+   * 信 id。
+   */
+  id: number
+
+  /**
+   * 正文。
+   */
+  text: string
+
+  /**
+   * 发出的时刻。
+   */
+  at: string
+}
+
+/**
+ * useAppView 的入参。
+ */
+export type AppViewHookIn = {
+  /**
+   * 投递行 id。
+   */
+  appId: number
+}
+
+/**
+ * useAppHost 整机的面板:地址栏里开着的投递行与关框。
+ */
+export type AppHostPanel = {
+  /**
+   * 开着的投递行 id(没开 = null)。
+   */
+  id: number | null
+
+  /**
+   * 关框。
+   */
+  onClose: () => void
+}

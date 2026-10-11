@@ -133,7 +133,8 @@
 }
 
 /*
- * 「更多推荐」卡头:标题 + 「升级 Pro 解锁:」+ pro 胶囊 + 右上「升级 Pro」。
+ * 「更多推荐」卡头:标题 + 右上「升级 Pro」。
+ * 2026-10-10 Frank「这个删了吧」「蓝框 也去掉」:撤「升级 Pro 解锁:」与 pro 胶囊,卡头去蓝底,照其他分区卡的卡头。
  */
 .moreHead {
   display: flex;
@@ -143,12 +144,6 @@
   align-items: center;
 
   gap: 8px;
-
-  padding: 10px 12px;
-
-  border-radius: 8px;
-
-  background: #eff6ff;
 }
 
 /*
@@ -163,24 +158,6 @@
 }
 
 /*
- * 「升级 Pro 解锁:」(灰)。
- */
-.moreUnlock {
-  font-size: 13px;
-
-  color: var(--text2);
-}
-
-/*
- * 两枚好处胶囊。
- */
-.morePerks {
-  display: inline-flex;
-
-  gap: 6px;
-}
-
-/*
  * 网页端右上「升级 Pro」(顶到右端)。
  */
 .moreBtnWide {
@@ -191,13 +168,6 @@
  * 手机端整宽「升级 Pro」(网页端不出)。
  */
 .moreBtnNarrow {
-  display: none;
-}
-
-/*
- * 手机端好处 bullet(网页端不出)。
- */
-.perkList {
   display: none;
 }
 
@@ -310,8 +280,6 @@
   /*
    * 网页端那排「解锁:」与胶囊、右上钮都不出。
    */
-  .moreUnlock,
-  .morePerks,
   .moreBtnWide {
     display: none;
   }
@@ -332,18 +300,6 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  /*
-   * 好处 bullet。
-   */
-  .perkList {
-    display: block;
-
-    margin: 10px 0 0;
-
-    padding-left: 18px;
-
-    font-size: 13px;
-  }
 
   /*
    * 整宽「升级 Pro」。
@@ -510,4 +466,109 @@
   gap: 6px;
 
   align-items: center;
+}
+
+/*
+ * 只读投递框(2026-10-10 批 3「点已投行『打开』」,照效果图 网页端-改之后-4-点打开):卡头一行左标题右胶囊。
+ */
+.avHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/*
+ * 只读投递框:还没有雇主回复那一行。
+ */
+.avNone {
+  color: var(--text2);
+  font-size: 13px;
+  padding: 4px 0;
+}
+
+/*
+ * 只读投递框:一封雇主回信(多封之间一条细线隔开)。
+ */
+.avMsg {
+  padding: 6px 0;
+}
+
+.avMsg + .avMsg {
+  border-top: 1px solid var(--border);
+}
+
+/*
+ * 回信头一行:发件人粗体在左,时刻灰字在右。
+ */
+.avMsgHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/*
+ * 回信发件人。
+ */
+.avFrom {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/*
+ * 回信时刻。
+ */
+.avAt {
+  flex: none;
+  color: var(--text2);
+  font-size: 13px;
+}
+
+/*
+ * 回信正文 / 发出那一封的正文:原样换行。
+ */
+.avText,
+.avBody {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+  margin-top: 6px;
+}
+
+/*
+ * 邮件预览的正文与上面两行拉开。
+ */
+.avBody {
+  margin-top: 10px;
+}
+
+/*
+ * 本人在站内回过的一封:左边一道浅线缩进。
+ */
+.avMine {
+  margin-top: 10px;
+  padding-left: 10px;
+  border-left: 3px solid var(--border);
+}
+
+/*
+ * 「我的回复」小字。
+ */
+.avMineTag {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+}
+
+/*
+ * 「回信同时转到 …」一行。
+ */
+.avFwd {
+  margin-top: 8px;
+  color: var(--text2);
+  font-size: 13px;
 }

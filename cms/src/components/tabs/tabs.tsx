@@ -40,6 +40,9 @@ export function Tabs({ items, value, onChange, ariaLabel, idPrefix = ID_PREFIX_D
       badgeCls = `${css.badge} ${css.badgeOn}`
       tabIndex = 0
     }
+    if (it.alert === true) {
+      badgeCls = `${css.badge} ${css.badgeAlert}`
+    }
     let badge = null
     if (it.badge != null && it.badge !== '') {
       badge = <span className={badgeCls}>{it.badge}</span>

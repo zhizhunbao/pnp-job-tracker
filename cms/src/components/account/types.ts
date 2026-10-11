@@ -23,8 +23,9 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
  * 账户页的节标识。同 URL 深链 `?sec=` 的取值,也是侧栏节表 SEC_TABS 的键
  * (2026-08-26 自 page.tsx 迁入)。
  * 2026-09-23 撤概览、移民档案、已保存的筛选、升级 Pro 四节后只剩三个值(新立的 resume = 我的简历)。
+ * 2026-10-10 批 3:加 inbox(收件箱)。
  */
-export type Sec = 'resume' | 'sjobs' | 'profile' | 'sub'
+export type Sec = 'resume' | 'sjobs' | 'inbox' | 'profile' | 'sub'
 
 /**
  * 用户档案 + 简历存档两键。profile 上的简历存档两键(E11-08)只在本页读显示、
@@ -237,6 +238,11 @@ export type AccountNavIn = {
    * 点某一节。
    */
   onPick: (sec: Sec) => void
+
+  /**
+   * 收件箱未读几封(页签红点;0 不出)。
+   */
+  unread: number
 }
 
 /**
@@ -355,6 +361,11 @@ export type AccountPanel = {
    * 是不是 Pro(2026-10-10 批 2:「今日推荐」决定出不出「更多推荐」卡、定价框按它出档)。
    */
   pro: boolean
+
+  /**
+   * 收件箱未读几封(「收件箱」页签红点;2026-10-10 批 3)。
+   */
+  unread: number
 }
 
 /**
@@ -1720,6 +1731,16 @@ export type SecTabItem = {
    * 页签文字。
    */
   label: string
+
+  /**
+   * 右上角的数(收件箱未读;空串 = 不出)。
+   */
+  badge: string
+
+  /**
+   * 数是要人去看的(红底白字)。
+   */
+  alert: boolean
 }
 
 /**
@@ -1730,6 +1751,31 @@ export type SecItemsIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 收件箱未读几封。
+   */
+  unread: number
+}
+
+/**
+ * makeUnreadLoad 的入参(2026-10-10 批 3)。
+ */
+export type UnreadLoadIn = {
+  /**
+   * 未读数落格。
+   */
+  setUnread: (n: number) => void
+}
+
+/**
+ * 收件箱未读数接口的回包。
+ */
+export type UnreadRespJson = {
+  /**
+   * 未读数。
+   */
+  unread: number
 }
 
 /**

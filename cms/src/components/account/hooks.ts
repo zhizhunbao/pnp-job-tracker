@@ -27,7 +27,7 @@ import {
   planOf, renderPdfPages, secLinkOf, showPdfPage,
   applyViewTo, makeDocDrop, makeGripDown, makeGripMove, makeGripUp, makePageTurn, makeWheelBind, makeZoomHome,
   makeZoomRedraw, makeZoomStep, zoomPctOf,
-  loadProfile, makeFlagSet, makeProfileSaved,
+  loadProfile, makeFlagSet, makeProfileSaved, bindUnread,
 } from './functions'
 import type {
   AccountPanel, MaybeResumeMeta, Me, ResumeFilePanel, ResumeMetas, ResumePagesPanel, ResumeThumbHookIn,
@@ -45,6 +45,7 @@ import type {
  * 支付成功提示改由页面门在右列最上面挂 PayOkNotice(三节都出)。
  * 2026-10-09 A 批投递搬进弹框:「正在投地址栏带来的那一岗」那一格(jobLink → applying,连同 isJobLink、QP_JOB)随页内投递区退役 ——
  * 投递搬进全站骨架上的投递框,「今日待投」不再为它让位;发出后的刷新改由页面门里的 ApplySentSync 调 onApplied。
+ * 2026-10-10 批 3:多一格收件箱未读数(「收件箱」页签红点;挂上拉一次,收件箱里读了一封再拉)。
  *
  * @returns 门(page.tsx)要的整块面板:状态 + 手柄。
  */
@@ -59,6 +60,7 @@ export function useAccountPage(): AccountPanel {
   const [appliedGen, setAppliedGen] = useState(0)
   const [sent, setSent] = useState(0)
   const [sentTo, setSentTo] = useState<string | null>(null)
+  const [unread, setUnread] = useState(0)
   const reloadSent = makeSentCountLoad({ setSent })
 
   useEffect(function readPayOk() {
@@ -79,6 +81,10 @@ export function useAccountPage(): AccountPanel {
     void makeSentCountLoad({ setSent })()
   }, [])
 
+  useEffect(function bindInboxUnread() {
+    return bindUnread({ setUnread })
+  }, [])
+
   return {
     lang,
     setLang: setLangSaved,
@@ -95,6 +101,7 @@ export function useAccountPage(): AccountPanel {
     onApplied: makeOnApplied({ setGen: setAppliedGen, setSentTo, reloadSent }),
     sent,
     sentTo,
+    unread,
   }
 }
 

@@ -36,12 +36,13 @@ import { PostedCell } from './postedcell'
 import { SavedOnCell } from './savedoncell'
 import { TagsCell } from './tagscell'
 import { TermCell } from './termcell'
+import { openAppView } from './thread'
 import { TitleCell } from './titlecell'
 import type {
   ActBtn, AddrSubIn, ByStageIn, CellRowIn, CellRowsIn, ColsIn, FileHrefIn, FlagIn, KindNameIn, ListRow, LoadMyJobsIn,
   LoadPicksIn, LockFill, LockedItem, MaybeStageDef, MjCol, MyJobItem, MyJobsRespJson, NamePair, PickIn, PickItem,
   PickRowIn, PickRowsIn, PicksFact, PicksRespJson, PillClickIn, ReasonTextsIn, StagePill, StagePillsIn, TagItem,
-  UnsaveIn,
+  UnsaveIn, ViewRowIn, ItemByIdIn, FileHrefForIn,
 } from './types'
 import css from './myjobs.module.css'
 
@@ -236,6 +237,8 @@ export function tagsOf(x: CellRowIn): TagItem[] {
 /**
  * 操作钮:我的投递 未发出「继续」(主钮,就地弹投递框)、其余「打开」(带框次钮);
  * 我的收藏 能投的「投递」(主钮)、投过的「打开」,外加「取消收藏」(带框次钮,16d)。
+ * 2026-10-10 批 3(1.6 / 2.6):我的投递发出去了的行「打开」不再去职位页,改就地弹只读投递框(职位信息 / 雇主回复 / 投递内容 / 邮件预览);
+ * 我的收藏投过的行「打开」照旧去职位页。
  *
  * @param x 哪张清单、这一行与取词函数。
  * @returns 钮。
@@ -246,6 +249,8 @@ export function actsOf(x: CellRowIn): ActBtn[] {
     out.push({ key: ACT_CONT, text: x.t('mj.cont'), kind: PRIMARY_KIND, onClick: makeContinue(x), href: TEXT_NONE })
   } else if (applyHrefOf(x) !== TEXT_NONE) {
     out.push({ key: ACT_APPLY, text: x.t('mj.apply'), kind: PRIMARY_KIND, onClick: makeApplyOpen(x), href: TEXT_NONE })
+  } else if (x.kind === KIND_APPLIED) {
+    out.push({ key: ACT_OPEN, text: x.t('mj.open'), kind: OPEN_KIND, onClick: makeAppOpen(x.item.id), href: TEXT_NONE })
   } else if (jobHrefOf(x.item.jobId) !== TEXT_NONE && x.item.stage !== TEXT_NONE) {
     out.push({ key: ACT_OPEN, text: x.t('mj.open'), kind: OPEN_KIND, onClick: null, href: jobHrefOf(x.item.jobId) })
   }
@@ -784,4 +789,67 @@ export function lockFillOf(i: number): LockFill {
     return LOCK_FILL.even
   }
   return LOCK_FILL.odd
+}
+
+/**
+ * 造「打开」:就地弹只读投递框(地址栏 `?app=<投递行 id>`,框由「我的」页上的宿主 AppViewHost 画)。
+ *
+ * @param appId 投递行 id。
+ * @returns 点击手柄。
+ */
+export function makeAppOpen(appId: number): () => void {
+  return function openApp(): void {
+    openAppView(appId)
+  }
+}
+
+/**
+ * 只读投递框「职位信息」那张卡的展示行:同我的投递清单一行的展示行(单元格共用),框里不改清单。
+ *
+ * @param x 这一行、取词函数与界面语。
+ * @returns 展示行。
+ */
+export function viewRowOf(x: ViewRowIn): ListRow {
+  return listRowOf({
+    kind: KIND_APPLIED, filter: STAGE_ALL, item: x.item, items: [x.item], t: x.t, setItems: keepItems, lang: x.lang,
+  })
+}
+
+/**
+ * 不改清单(只读框里展示行要一个落格,取消收藏这类改清单的钮在投递行上本来就没有)。
+ *
+ * @returns 无。
+ */
+function keepItems(): void {
+  return
+}
+
+/**
+ * 在我的投递清单里按投递行 id 找那一行。
+ *
+ * @param x 清单与投递行 id。
+ * @returns 那一行;不在清单里给 null。
+ */
+export function itemByIdOf(x: ItemByIdIn): MyJobItem | null {
+  for (const it of x.items) {
+    if (it.id === x.id) {
+      return it
+    }
+  }
+  return null
+}
+
+/**
+ * 展示行里某个附件的地址(简历 / 求职信;发出时没附求职信的没有)。
+ *
+ * @param x 展示行与附件身份。
+ * @returns 地址;没有给空串。
+ */
+export function fileHrefFor(x: FileHrefForIn): string {
+  for (const f of x.row.files) {
+    if (f.key === x.key) {
+      return f.href
+    }
+  }
+  return TEXT_NONE
 }

@@ -1,0 +1,346 @@
+/*
+ * inbox 组件桶的样式(2026-10-10 批 3「收件箱」;照效果图 网页端-改之后-8-收件箱 / 手机端-改之后-8-收件箱)。
+ */
+
+/*
+ * 空态 / 失败一句。
+ */
+.note {
+  color: var(--text2);
+  font-size: 13px;
+  padding: 12px 0;
+}
+
+/*
+ * 地址卡:投递邮箱与转发勾选并一行(手机折成两行)。
+ */
+.addrRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 22px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+/*
+ * 投递邮箱那一段。
+ */
+.addr {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+/*
+ * 「投递邮箱」灰字。
+ */
+.addrK {
+  color: var(--text2);
+}
+
+/*
+ * 专属地址本身(长地址可断)。
+ */
+.addrV {
+  word-break: break-all;
+}
+
+/*
+ * 「同时转到」勾选。
+ */
+.fwd {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/*
+ * 转发开关没存上那一句。
+ */
+.fwdNote {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #b91c1c;
+}
+
+/*
+ * 第二张卡:网页端左清单右阅读区。
+ */
+.panes {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (width > 640px) {
+  .panes {
+    grid-template-columns: 330px 1fr;
+  }
+}
+
+/*
+ * 左清单。
+ */
+.list {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/*
+ * 清单一行(整行一颗素底钮;加倍类压过 Button 底座)。
+ */
+.row.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 8px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--text);
+  font-weight: 400;
+  cursor: pointer;
+}
+
+/*
+ * 选中的一行:浅蓝底、圆角(网页端)。
+ */
+.rowOn.rowOn {
+  background: #eff4ff;
+  border-radius: 8px;
+}
+
+/*
+ * 首字母圆块。
+ */
+.avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e0e7ff;
+  color: #3730a3;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/*
+ * 行右侧三行。
+ */
+.rowMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+/*
+ * 第一行:发件人与日期。
+ */
+.rowTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/*
+ * 发件人(一行截断)。
+ */
+.sender {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+/*
+ * 没读的蓝点。
+ */
+.dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2563eb;
+}
+
+/*
+ * 日期(月-日)。
+ */
+.day {
+  flex: none;
+  color: var(--text2);
+  font-size: 13px;
+}
+
+/*
+ * 标题(一行截断)。
+ */
+.subject {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+/*
+ * 相关职位灰字。
+ */
+.job {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text2);
+  font-size: 13px;
+}
+
+/*
+ * 没读的:发件人与标题加粗。
+ */
+.unread .sender,
+.unread .subject {
+  font-weight: 700;
+}
+
+/*
+ * 右阅读区(与清单一条竖线隔开)。
+ */
+.pane {
+  min-width: 0;
+  border-left: 1px solid var(--border);
+  padding-left: 16px;
+  margin-left: 12px;
+}
+
+/*
+ * 阅读区。
+ */
+.read {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/*
+ * 阅读区头:标题在左,两颗钮在右。
+ */
+.readHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/*
+ * 阅读区标题。
+ */
+.readTitle {
+  flex: 1;
+  min-width: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  word-break: break-word;
+}
+
+/*
+ * 阅读区右上两颗钮。
+ */
+.readActs {
+  display: inline-flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/*
+ * 发件人一行 + 时刻(灰字)。
+ */
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  color: var(--text2);
+  font-size: 13px;
+  word-break: break-all;
+}
+
+/*
+ * 正文:原样换行。
+ */
+.body {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+/*
+ * 本人回过的一封:左边一道浅线缩进。
+ */
+.mine {
+  margin-top: 6px;
+  padding-left: 10px;
+  border-left: 3px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/*
+ * 「我的回复」小字。
+ */
+.mineTag {
+  font-weight: 600;
+}
+
+/*
+ * 回信文字区。
+ */
+.compose {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.55;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+/*
+ * 回信没发出去那一句。
+ */
+.replyNote {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #b91c1c;
+}
+
+/*
+ * 回信框底下两颗钮(靠右)。
+ */
+.composeActs {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}

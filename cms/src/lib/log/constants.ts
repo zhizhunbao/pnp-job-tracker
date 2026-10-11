@@ -824,6 +824,46 @@ export const APPLY_LOG = {
 } as const
 
 /**
+ * 收件箱域(lib/inbox)的日志字面量(2026-10-10 批 3)。
+ */
+export const INBOX_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'inbox',
+
+  /**
+   * 收信回调处理完(后接结果:ignored / unknown / loop / dup / fetch / stored)。
+   */
+  received: 'inbound result=',
+
+  /**
+   * 取收信全文没成(后接状态码或原因)。
+   */
+  fetchFailed: 'receiving fetch failed: ',
+
+  /**
+   * 没配发信密钥,取不了收信全文。
+   */
+  noKey: 'receiving fetch skipped, RESEND_API_KEY not set',
+
+  /**
+   * 回信发出去了(后接用户 id)。
+   */
+  replied: 'reply sent user=',
+
+  /**
+   * 回信没发出去(后接用户 id 与原因)。
+   */
+  replyFailed: 'reply failed user=',
+
+  /**
+   * 原因段。
+   */
+  whyFrag: ' why=',
+} as const
+
+/**
  * 档案域的日志字面量(2026-08-22 profile 定型批立)。
  */
 export const PROFILE_LOG = {

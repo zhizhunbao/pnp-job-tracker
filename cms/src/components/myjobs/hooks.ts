@@ -5,16 +5,19 @@
  * 2026-10-09 N 批:弹框栈改用 modal 桶的代理栈 usePeekBus(只发消息),唯一的栈在全站骨架上的 PeekHost。
  * 同日 N6 批:职位名 / 公司名换 name 桶的 JobName / CompanyName(件自己往弹框总线上推层),本机不再持栈、不再递界面语。
  * 2026-10-10 批 2:加两台机器 —— usePicks(今日推荐:挂上拉一次 + 定价框开关)、usePush(新岗推送:拉设置、改、存)。
+ * 2026-10-10 批 3:加两台 —— useAppHost(只读投递框宿主:读地址栏 `?app=`)、useAppView(框里:拉投递清单找那一行 + 拉往来)。
  *
  * @author Frank
  * @time 2026-10-06 23:20:00
  */
 import { useEffect, useState } from 'react'
-import { STAGE_ALL, TEXT_NONE } from './constants'
-import { makeFlag, makeLoadMyJobs, makeLoadPicks, scrollSavedIfLinked } from './functions'
+import { STAGE_ALL, TEXT_NONE, URL_APPLIED } from './constants'
+import { itemByIdOf, makeFlag, makeLoadMyJobs, makeLoadPicks, scrollSavedIfLinked } from './functions'
 import { makeLoadPush, makeSavePush } from './prefs'
+import { bindAppHost, closeAppView, makeLoadThread } from './thread'
 import type {
-  MyJobItem, MyJobsHookIn, MyJobsPanel, PicksFact, PicksHookIn, PicksPanel, PushIn, PushPanel,
+  AppHostPanel, AppViewHookIn, AppViewPanel, AvThread, MyJobItem, MyJobsHookIn, MyJobsPanel, PicksFact, PicksHookIn,
+  PicksPanel, PushIn, PushPanel,
 } from './types'
 
 /**
@@ -107,4 +110,40 @@ export function useScrollSaved(loaded: boolean): void {
       scrollSavedIfLinked()
     }
   }, [loaded])
+}
+
+/**
+ * 只读投递框宿主整机(2026-10-10 批 3):挂上读一次地址栏 `?app=`,开关框与浏览器后退都重读。
+ *
+ * @returns 开着的投递行与关框。
+ */
+export function useAppHost(): AppHostPanel {
+  const [id, setId] = useState<number | null>(null)
+  useEffect(function bindHost() {
+    return bindAppHost({ setId })
+  }, [])
+  return { id, onClose: closeAppView }
+}
+
+/**
+ * 只读投递框整机(2026-10-10 批 3):挂上拉我的投递清单(找那一行画「职位信息」,单元格同清单)与这一条的往来。
+ *
+ * @param x 投递行 id。
+ * @returns 那一行、往来与拉失败了没。
+ */
+export function useAppView(x: AppViewHookIn): AppViewPanel {
+  const [items, setItems] = useState<MyJobItem[] | null>(null)
+  const [thread, setThread] = useState<AvThread | null>(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(function firstLoad() {
+    void makeLoadMyJobs({ url: URL_APPLIED, setItems, setFailed })()
+    void makeLoadThread({ appId: x.appId, setThread, setFailed })()
+  }, [x.appId])
+
+  let item: MyJobItem | null = null
+  if (items != null) {
+    item = itemByIdOf({ items, id: x.appId })
+  }
+  return { item, thread, failed: failed || (items != null && item == null) }
 }

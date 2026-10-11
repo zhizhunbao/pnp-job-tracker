@@ -26,7 +26,7 @@ import {
   AMOUNT_DIGITS, CUR_GAP, CUR_SIGN, LETTER_FILE_TAIL, LOGIN_URL, NEXT_SEP, PAY_COL_ACT, PAY_COL_AMOUNT, PAY_COL_DATE,
   PAY_COL_ITEM, ST_DRAFT, URL_APPLY_HEAD, URL_LETTERS, URL_LETTER_FILE_HEAD, URL_PAYMENTS, URL_SENT_COUNT,
   PF_ERR_EMPTY, PF_FOLD_N, PF_GOAL_JOBS, PF_GOAL_JOBS_KEY, PF_GOAL_PR, PF_GOAL_PR_KEY, PF_LOAD_FAIL, PF_LOAD_OK,
-  URL_PROFILE,
+  URL_PROFILE, EV_INBOX_UNREAD, SEC_INBOX, URL_INBOX_COUNT,
 } from './constants'
 import type {
   AskOfIn, DivDragEvent, FileDropIn, FilePickIn, IdHandlerFn, InputChangeEvent, PdfPagesIn, PdfjsOut,
@@ -42,6 +42,7 @@ import type {
   AppliedSentOut, CountRespJson, LetterMeta, LetterMetas, LettersLoadIn, LettersRespJson, OnAppliedIn, PayCellRow,
   PayCellRowsIn, PayCol, PaymentRow, PaymentRows, PaymentsLoadIn, PaymentsRespJson, SentCountLoadIn, TFn,
   PfJson, PfLoadIn, PfNames, PfSavedIn, PfSeed, PfShownIn, PfView,
+  UnreadLoadIn, UnreadRespJson,
 } from './types'
 import { PayReceiptCell } from './payreceiptcell'
 import css from './account.module.css'
@@ -70,9 +71,52 @@ export function navLabelOf(x: NavLabelIn): string {
 export function secTabItemsOf(x: SecItemsIn): SecTabItem[] {
   const out: SecTabItem[] = []
   for (const tab of SEC_TABS) {
-    out.push({ key: tab.sec, label: navLabelOf({ label: x.t(tab.labelKey) }) })
+    let badge = TEXT_NONE
+    if (tab.sec === SEC_INBOX && x.unread > 0) {
+      badge = String(x.unread)
+    }
+    out.push({ key: tab.sec, label: navLabelOf({ label: x.t(tab.labelKey) }), badge, alert: badge !== TEXT_NONE })
   }
   return out
+}
+
+/**
+ * 造「拉收件箱未读数」(「收件箱」页签红点;2026-10-10 批 3):拉不到(库没就绪、网络)按 0 读,不出红点。
+ *
+ * @param x 未读数落格。
+ * @returns 拉的函数。
+ */
+export function makeUnreadLoad(x: UnreadLoadIn): () => Promise<void> {
+  return async function loadUnread(): Promise<void> {
+    try {
+      const r = await fetch(URL_INBOX_COUNT, { credentials: CRED_INCLUDE })
+      if (r.ok === false) {
+        x.setUnread(0)
+        return
+      }
+      x.setUnread((await r.json() as UnreadRespJson).unread)
+    } catch {
+      x.setUnread(0)
+    }
+  }
+}
+
+/**
+ * 绑「收件箱里读了一封」事件:页签红点重拉。
+ *
+ * @param x 未读数落格。
+ * @returns 解绑函数。
+ */
+export function bindUnread(x: UnreadLoadIn): () => void {
+  const load = makeUnreadLoad(x)
+  void load()
+  function onUnread(): void {
+    void load()
+  }
+  window.addEventListener(EV_INBOX_UNREAD, onUnread)
+  return function unbind(): void {
+    window.removeEventListener(EV_INBOX_UNREAD, onUnread)
+  }
 }
 
 /**
