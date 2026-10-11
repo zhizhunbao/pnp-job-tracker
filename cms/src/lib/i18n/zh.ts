@@ -863,6 +863,8 @@ export const jobsZh = {
   'col.country': '国家', 'col.province': '省', 'col.city': '市', 'col.district': '区', 'col.address': '地址',
   'col.salary': '薪资', 'col.salaryYr': '年薪', 'col.wageMedHr': '中位时薪', 'col.wageMedYr': '中位年薪', 'col.vsMedian': 'vs 中位', 'col.source': '来源', 'col.origin': '渠道', 'col.direct': '发布',
   'col.pnp': 'PNP', 'col.ee': 'EE 类别', 'col.aip': 'AIP', 'col.pilot': '试点社区', 'col.lmia': '外劳记录', 'col.eligibility': '身份预筛', 'col.status': '状态', 'col.firstSeen': '首次收录', 'col.lastSeen': '最后可见', 'col.closedAt': '下架时间', 'col.score': '通道',
+  // 2026-10-11 批 4 全站卡片字段:职位板截止日期列 + 职位框 / 职位页「职位信息」分区卡
+  'col.validThrough': '截止日期', 'detail.info': '职位信息',
   'cell.elig.no_sponsorship': '🚫 明确不担保', 'cell.elig.pr_required': '🚫 须 PR/公民',
   'fact.elig': '身份预筛', 'fact.eligQuote': 'JD 原句', 'fact.eligNote': '数据层按 JD 原文检测(精确优先宁可漏);「—」= 未检出此类表述,不代表雇主提供担保',
   'eelist.source': '来源:Express Entry 类别抽选', 'eelist.loading': '加载 EE 清单…', 'eelist.count': '{n} 个职业',
@@ -900,12 +902,15 @@ export const jobsZh = {
   'mj.col.title': '职位', 'mj.col.company': '公司', 'mj.col.addr': '地址', 'mj.col.pay': '薪资', 'mj.col.hours': '工时',
   'mj.col.term': '雇佣期', 'mj.col.posted': '发布日期', 'mj.col.deadline': '截止日期', 'mj.col.why': '为什么推荐',
   'mj.col.status': '状态', 'mj.col.savedOn': '收藏于', 'mj.col.appliedOn': '投递于', 'mj.col.act': '操作',
-  'mj.hours.full': '全职', 'mj.hours.part': '兼职',
-  'mj.term.permanent': '长期', 'mj.term.term': '定期合同', 'mj.term.seasonal': '季节性', 'mj.term.casual': '临时',
+  // 2026-10-11 批 4:工时 / 雇佣期 / 地点灰字三组词条改归 name 桶(职位板 + 我的求职共用,键头 mj. 改 name.)
+  'name.hours.full': '全职', 'name.hours.part': '兼职', 'name.placeSub': '{c},{p}',
+  'name.term.permanent': '长期', 'name.term.term': '定期合同', 'name.term.seasonal': '季节性', 'name.term.casual': '临时',
   'mj.picks': '今日推荐', 'mj.picksEmpty': '今天没有新推荐', 'mj.more': '更多推荐',
   'mj.upgrade': '升级 Pro',
+  // 2026-10-11 Frank「可以,按你说的改」:按真发出去的投递命中的推荐理由
+  'mj.why.applied': '和你投过的同类',
   'mj.why.pnp': '能走 {p} 雇主担保', 'mj.why.wage': '薪资高于本省同职业中位', 'mj.why.occ': '职业对口', 'mj.why.saved': '和你收藏的同类',
-  'mj.appliedTitle': '我的投递', 'mj.unsent': '未发出', 'mj.addrSub': '{c},{p}',
+  'mj.appliedTitle': '我的投递', 'mj.unsent': '未发出',
   'mj.push': '新岗推送', 'mj.pushRow': '把推荐和收藏动态发到邮箱', 'mj.freqOff': '不发', 'mj.freqDaily': '每天', 'mj.freqWeekly': '每周',
   'mj.pushTo': '发到', 'mj.pushSave': '保存', 'mj.pushSaved': '已保存', 'mj.pushPending': '点 {e} 收到的链接后生效',
   'mj.pushBad': '邮箱格式不对', 'mj.pushFail': '没保存上,再试一次', 'mj.pushMailFail': '确认信没发出去,再试一次',
@@ -969,7 +974,7 @@ export const jobsZh = {
   // 2026-09-16 Frank「去掉箭头」:看原文 / 看整理版是状态行里的切换文链,不再是下拉展开。
   // ⚠ 同日事故:这条注释曾写在本行行尾,把后面 act.aiWorking / act.aiFail 两个词条一起注释掉,页面直出键名;注释只许独占一行。
   'act.ai': 'AI 整理', 'act.aiNote': '只搬运原帖信息,未添加', 'act.aiQuota': '今日 AI 次数已用完', 'act.aiQuotaLogin': '请登录', 'act.fmtTab': '整理版', 'act.origTab': '原文', 'act.viewOrig': '查看原帖', 'act.backFmt': '返回整理版', 'act.aiWorking': 'AI 整理中，先看原文…', 'act.aiFail': 'AI 整理没成功',
-  'act.f.role': '工作内容', 'act.f.reqs': '硬性要求', 'act.f.pay': '薪资福利', 'act.f.hours': '工作形式', 'act.f.loc': '工作地点', 'act.f.apply': '怎么投', 'act.f.none': '原帖未提及',
+  'act.f.role': '工作内容', 'act.f.reqs': '硬性要求', 'act.f.pay': '薪资福利', 'act.f.hours': '工作形式', 'act.f.apply': '怎么投', 'act.f.none': '原帖未提及',
   // 2026-09-27 Frank「放到 jd 正文部分如何」「格式不对啊 怎么是灰字」→ 看过效果图选 ①:日期改成正文里单独一节(两行标签复用 col.datePosted / detail.closes)
   // 2026-10-01 Frank「这种有点突兀」「这种也突兀」(没正文 / 整理版 / 原帖三档里那一节都不搭)→ 选「回到职位名下面」:正文里那一节撤,act.f.dates 词条随删
   'co.f.what': '主营业务', 'co.f.base': '所在地', 'co.f.size': '规模', 'co.f.founded': '成立时间', 'co.f.note': '其他要点',   // #158 公司简介分节(2026-07-21 增至五节)

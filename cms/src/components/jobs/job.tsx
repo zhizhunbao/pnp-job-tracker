@@ -36,6 +36,8 @@
  * 2026-10-09 N 批(Frank「一个全站宿主,并掉各页那 5 套」):本页不再自己画 PeekStack,改摆 modal 桶的报件 PeekContext
  * (报本页的分层态与职业名表),弹框由全站骨架上的 PeekHost 画。
  * 2026-10-09 N6b 批:相关职位 / 公司信息卡 / 移民相关卡里的名字 N6 起由 name 桶自开弹框,本页递下去的两只手柄(useJobPeek)随之撤。
+ * 2026-10-11 批 4 全站卡片字段:JD 白卡下面加「职位信息」分区卡(JobInfoCard:地址一行 / 薪资 / 工时 / 雇佣期 / 发布日期 / 截止日期,
+ * 与职位框同一件);译名行右端的日期槽(.titleMeta + JobDates)撤,两个日期收进该卡(一个事实一处)。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -51,8 +53,8 @@ import { useJobBody, useJobDetail } from './hooks'
 import { JdOrigLink } from './jdoriglink'
 import { JobBody } from './jobbody'
 import { JobCrumbs } from './jobcrumbs'
-import { JobDates } from './jobdates'
 import { JobImmCard } from './jobimmcard'
+import { JobInfoCard } from './jobinfocard'
 import { JobRelated } from './jobrelated'
 import type { JobIn } from './types'
 import css from './jobs.module.css'
@@ -78,11 +80,11 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted, 
           <h1 className={cssOf(css.title)}>{job.title}</h1>
           <div className={cssOf(css.titleRow)}>
             {d.view.alias !== TEXT_NONE && <div className={cssOf(css.titleAlias)}>{d.view.alias}</div>}
-            <div className={cssOf(css.titleMeta)}><JobDates job={job} t={d.t} /></div>
             <JdOrigLink d={body} />
           </div>
-          <JobBody job={job} lang={d.lang} plan={plan} d={body} />
+          <JobBody job={job} plan={plan} d={body} />
         </div>
+        <JobInfoCard job={job} lang={d.lang} />
         <JobImmCard job={job} imm={imm} lang={d.lang} plan={plan} nocDesc={dims.nocDesc} />
         <CompanyInfoCard jobId={Number(job.id)} lang={d.lang} seed={company} />
         {showRelatedOf({ related, fallbackHref: d.view.fallbackHref }) && (

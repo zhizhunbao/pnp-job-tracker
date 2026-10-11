@@ -11,6 +11,8 @@
  * 2026-09-28 并壳(Frank「别并存啊」):壳换成 modal 桶的 Modal(窗口形,JD 正文档);白卡机器由外层 ActModal 起、原样递进来
  * (本域的形状里它是不透明格,交回 Modal 时断言回 modal 桶的 FrameOut),重新翻译整块重挂时位置尺寸不丢。
  * 2026-10-09 N6b 批:正文下面两张卡里的名字 N6 起由 name 桶自开弹框,点公司名 / 相关职位两个回调撤。
+ * 2026-10-11 批 4 全站卡片字段:发布 / 截止两个日期收进正文下面的「职位信息」卡(jobs 桶 JobInfoCard,经 JobModalCards),
+ * 页眉 dates 槽撤(一个事实一处)。
  *
  * @author Frank
  * @time 2026-09-16 21:30:00
@@ -18,7 +20,6 @@
 import { useJobBody } from '@/components/jobs/hooks'
 import { JdOrigLink } from '@/components/jobs/jdoriglink'
 import { JobBody } from '@/components/jobs/jobbody'
-import { JobDates } from '@/components/jobs/jobdates'
 import { JobModalCards } from '@/components/jobs/jobmodalcards'
 import { Modal } from '@/components/modal'
 import type { FrameOut } from '@/components/modal'
@@ -44,8 +45,7 @@ export function ActJd({ job, lang, plan, onClose, frame, sub, a }: ActJdIn) {
     <ActHead t={t} title={firstTextOf({ list: [job.title] })}
       sub={sub}
       freeLeft={a.freeLeft}
-      ctl={<JdOrigLink d={d} />}
-      dates={<JobDates job={job} t={t} />} />
+      ctl={<JdOrigLink d={d} />} />
   )
   return (
     <Modal onClose={onClose} frame={frame as FrameOut}
@@ -54,7 +54,7 @@ export function ActJd({ job, lang, plan, onClose, frame, sub, a }: ActJdIn) {
         <WinActs t={t} onRefresh={jobRefreshOf({ plan, job, onDone: a.onRetranslated })}
           pageHref={URL_JOB_HEAD + String(job.id)} />
       )}>
-      <JobBody job={job} lang={lang} plan={plan} inModal d={d}
+      <JobBody job={job} plan={plan} inModal d={d}
         tail={<JobModalCards job={job} lang={lang} />} />
     </Modal>
   )

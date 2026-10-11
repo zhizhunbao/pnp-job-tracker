@@ -9,6 +9,8 @@
  * 2026-08-24 自 ui/Card.tsx 拆出(内嵌 Row/TextButton 提成域内小件,展开与 ?? 清零)。
  * 2026-10-09 N6 批(Frank「职位名、公司名、地点同形」):标题位加 head 插槽 —— 名字两行(英文在上、译名灰字在下)由调用方
  * 用 name 桶渲染好放进来,卡只给字号与位置;原 title 文字链照旧可用,两者二选一。
+ * 2026-10-11 批 4 全站卡片字段:加 kinds 插槽(工时与雇佣期两名并排,name 桶 HoursName / TermName 由调用方放进来),
+ * 排在公司 / 地点两行之后、胶囊排之前;地点格放开折行(完整地址一行不截断)。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
@@ -36,6 +38,7 @@ export function JobCard({
   salary,
   location,
   date,
+  kinds,
   chips,
   action,
   footer,
@@ -86,6 +89,7 @@ export function JobCard({
       {note != null && <div className={css.note}>{note}</div>}
       <JobCardRow left={companyCell} right={salaryCell} />
       <JobCardRow left={locationCell} right={dateCell} />
+      {kinds != null && <div className={css.kinds}>{kinds}</div>}
       {chips != null && <div className={css.chips}>{chips}</div>}
       {footer != null && <div className={css.foot}>{footer}</div>}
     </div>

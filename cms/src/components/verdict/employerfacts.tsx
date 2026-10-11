@@ -11,19 +11,21 @@
  * 雇主 / 城市 / 省三块换名字瓦片 NameTile —— 雇主走 name 桶 Name(黑字不可点:本岗只带公司名,没有公司页 slug,
  * 也没带公司译名,灰字暂空)、城市走 CityName(带的城市没有译名,灰字暂空)、省走 ProvName(英文省名在上、
  * 界面语省名灰字在下),城市与省点了新标签开 Google 地图;库里没记城市的照旧横杠事实瓦片。
+ * 2026-10-11 批 4 全站卡片字段(CLAUDE.md「地点照 Indeed 写一行」,覆盖上面「省市分开」):市、省两个名字并成 name 桶 PlaceName ——
+ * 「市, 省码」一行(lib/location placeLineOf;本处数据不带街号)整行一个地图链,中 / 韩界面下面灰字「市译名,省译名」。
  *
  * @author Frank
  * @time 2026-08-28 17:55:00
  */
 import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { CityName, Name, ProvName } from '@/components/name'
+import { Name, PlaceName } from '@/components/name'
+import { placeLineOf } from '@/lib/location'
 import { TEXT_NONE, TRACK_NEXT_EMPLOYER } from './constants'
-import { FactTile } from './facttile'
 import { NameTile } from './nametile'
 import { VerdictCard } from './verdictcard'
 import { VerdictRows } from './verdictrows'
-import { cityTextOf, companyJobsHrefOf, empRowsOf, makeTrackClick } from './functions'
+import { companyJobsHrefOf, empRowsOf, makeTrackClick } from './functions'
 import type { EmployerFactsIn } from './types'
 import css from './verdict.module.css'
 
@@ -45,15 +47,10 @@ export function EmployerFacts({ t, lang, job, wire }: EmployerFactsIn) {
       }>
       <div className={css.answers}>
         <NameTile label={t('tv.f.employer')}><Name en={job.company} sub={TEXT_NONE} /></NameTile>
-        {job.city === TEXT_NONE && (
-          <FactTile label={t('tv.f.city')} value={cityTextOf({ city: job.city })} sub={TEXT_NONE} />
-        )}
-        {job.city !== TEXT_NONE && (
-          <NameTile label={t('tv.f.city')}>
-            <CityName city={job.city} province={job.province} zh={TEXT_NONE} ko={TEXT_NONE} />
-          </NameTile>
-        )}
-        <NameTile label={t('tv.f.prov')}><ProvName code={job.province} /></NameTile>
+        <NameTile label={t('tv.f.place')}>
+          <PlaceName line={placeLineOf({ address: TEXT_NONE, city: job.city, province: job.province })}
+            cityZh={TEXT_NONE} cityKo={TEXT_NONE} province={job.province} />
+        </NameTile>
         <VerdictRows t={t} lang={lang} rows={empRowsOf({ wire })} />
       </div>
     </VerdictCard>

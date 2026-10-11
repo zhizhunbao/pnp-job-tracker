@@ -794,6 +794,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'col.country': '국가', 'col.province': '주/도', 'col.city': '시', 'col.district': '구/군', 'col.address': '주소',
   'col.salary': '급여', 'col.salaryYr': '연봉', 'col.wageMedHr': '중위 시급', 'col.wageMedYr': '중위 연봉', 'col.vsMedian': '중위 대비', 'col.source': '출처', 'col.origin': '채널', 'col.direct': '게시',
   'col.pnp': 'PNP', 'col.ee': 'EE 카테고리', 'col.aip': 'AIP', 'col.pilot': '시범 커뮤니티', 'col.lmia': 'LMIA 이력', 'col.eligibility': '비자 플래그', 'col.status': '상태', 'col.firstSeen': '최초 수집', 'col.lastSeen': '마지막 확인', 'col.closedAt': '마감일', 'col.score': '이민 경로',
+  // 2026-10-11 批 4 全站卡片字段:职位板截止日期列 + 职位框 / 职位页「职位信息」分区卡
+  'col.validThrough': '지원 마감일', 'detail.info': '채용 정보',
   'cell.elig.no_sponsorship': '🚫 스폰서 불가 명시', 'cell.elig.pr_required': '🚫 시민권/PR 한정',
   'fact.elig': '비자 플래그', 'fact.eligQuote': 'JD 원문', 'fact.eligNote': 'JD 원문 기반 검출(정밀도 우선); 「—」= 해당 표현 미검출, 스폰서 제공을 의미하지 않음',
   'eelist.source': '출처: Express Entry 카테고리 기반 선발', 'eelist.loading': 'EE 목록 로딩 중…', 'eelist.count': '{n}개 직업',
@@ -824,12 +826,15 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'mj.col.title': '직무', 'mj.col.company': '회사', 'mj.col.addr': '주소', 'mj.col.pay': '급여', 'mj.col.hours': '근무 형태',
   'mj.col.term': '고용 기간', 'mj.col.posted': '게시일', 'mj.col.deadline': '마감일', 'mj.col.why': '추천 이유',
   'mj.col.status': '상태', 'mj.col.savedOn': '저장일', 'mj.col.appliedOn': '지원일', 'mj.col.act': '작업',
-  'mj.hours.full': '정규직', 'mj.hours.part': '파트타임',
-  'mj.term.permanent': '상시', 'mj.term.term': '계약직', 'mj.term.seasonal': '계절직', 'mj.term.casual': '임시직',
+  // 2026-10-11 批 4:工时 / 雇佣期 / 地点灰字三组词条改归 name 桶(职位板 + 我的求职共用,键头 mj. 改 name.)
+  'name.hours.full': '정규직', 'name.hours.part': '파트타임', 'name.placeSub': '{c}, {p}',
+  'name.term.permanent': '상시', 'name.term.term': '계약직', 'name.term.seasonal': '계절직', 'name.term.casual': '임시직',
   'mj.picks': '오늘의 추천', 'mj.picksEmpty': '오늘은 추천이 없습니다', 'mj.more': '추천 더 보기',
   'mj.upgrade': 'Pro 업그레이드',
+  // 2026-10-11 Frank「可以,按你说的改」:按真发出去的投递命中的推荐理由
+  'mj.why.applied': '지원한 공고와 비슷',
   'mj.why.pnp': '{p} 고용주 지명 가능', 'mj.why.wage': '주 내 같은 직업 중위 임금 이상', 'mj.why.occ': '직종 일치', 'mj.why.saved': '저장한 공고와 비슷',
-  'mj.appliedTitle': '내 지원', 'mj.unsent': '미발송', 'mj.addrSub': '{c}, {p}',
+  'mj.appliedTitle': '내 지원', 'mj.unsent': '미발송',
   'mj.push': '새 공고 알림', 'mj.pushRow': '추천과 저장 공고 소식을 이메일로 받기', 'mj.freqOff': '받지 않음', 'mj.freqDaily': '매일', 'mj.freqWeekly': '매주',
   'mj.pushTo': '받는 주소', 'mj.pushSave': '저장', 'mj.pushSaved': '저장됨', 'mj.pushPending': '{e}로 보낸 링크를 누르면 적용됩니다',
   'mj.pushBad': '이메일 형식이 올바르지 않습니다', 'mj.pushFail': '저장하지 못했습니다. 다시 시도해 주세요', 'mj.pushMailFail': '확인 메일을 보내지 못했습니다. 다시 시도해 주세요',
@@ -891,7 +896,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'col.empHours': '근무 형태', 'col.whoCanApply': '지원 자격', 'col.empTerm': '고용 기간', 'fact.unstated': '원문에 명시 없음',
   // 2026-09-16 去箭头:看原文 / 看整理版是状态行里的切换文链。⚠ 这条注释曾写在行尾,把 act.aiWorking / act.aiFail 注释掉过;注释只许独占一行。
   'act.ai': 'AI 정리', 'act.aiNote': '원문 재배열, 추가 없음', 'act.aiQuota': '오늘 AI 사용량을 모두 사용했습니다. 내일 초기화됩니다', 'act.aiQuotaLogin': '로그인하면 일일 횟수가 늘어납니다', 'act.fmtTab': '정리본', 'act.origTab': '원문', 'act.viewOrig': '원문 보기', 'act.backFmt': '정리본으로', 'act.aiWorking': 'AI 정리 중, 원문 먼저 보기…', 'act.aiFail': 'AI 정리 실패',
-  'act.f.role': '담당 업무', 'act.f.reqs': '필수 요건', 'act.f.pay': '급여·복지', 'act.f.hours': '근무 형태', 'act.f.loc': '근무지', 'act.f.apply': '지원 방법', 'act.f.none': '원문에 언급 없음',
+  'act.f.role': '담당 업무', 'act.f.reqs': '필수 요건', 'act.f.pay': '급여·복지', 'act.f.hours': '근무 형태', 'act.f.apply': '지원 방법', 'act.f.none': '원문에 언급 없음',
   // 2026-09-27 날짜를 JD 본문의 별도 섹션으로 (줄 라벨은 col.datePosted / detail.closes 재사용)
   // 2026-10-01 날짜 섹션 철회, 공고명 아래 한 줄로 복귀(act.f.dates 삭제)
   'co.f.what': '주요 사업', 'co.f.base': '소재지', 'co.f.size': '규모', 'co.f.founded': '설립 연도', 'co.f.note': '참고 사항',

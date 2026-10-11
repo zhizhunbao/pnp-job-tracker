@@ -17,12 +17,15 @@
  * 相似雇主行不带市的译名,市只出英文)。递下来的 onOpenCompany / newTab 两格从此不读,上游接线另批清;
  * 本桶的 simCityOf、makeOpenCompany 与别名灰字类 .simAlias 随之退役(09-14「相似雇主要加翻译」那条见上,形照旧)。
  * 2026-10-09 N6b 批:上游接线清了 —— props 里 onOpenCompany / newTab 两格撤(09-19「给了 onOpenCompany 就拦普通左键开公司弹框」至此连形状一起退役)。
+ * 2026-10-11 批 4 全站卡片字段(CLAUDE.md「地点照 Indeed 写一行」,覆盖上面「省市分开」):市、省两个名字并成 name 桶 PlaceName ——
+ * 「市, 省码」一行(lib/location placeLineOf;本处数据不带街号)整行一个地图链,中 / 韩界面下面灰字「市译名,省译名」。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
 import { cssOf } from '@/components/css'
-import { CityName, CompanyName, ProvName } from '@/components/name'
+import { CompanyName, PlaceName } from '@/components/name'
+import { placeLineOf } from '@/lib/location'
 import { TEXT_NONE } from './constants'
 import { aliasOf, zhShownOf } from './functions'
 import { useCompanyAlias } from './hooks'
@@ -51,8 +54,8 @@ export function CompanySimilarRow({ employer, t, lang, showTrans }: CompanySimil
         )}
         {employer.city !== TEXT_NONE && (
           <span className={css.simCity}>
-            <CityName city={employer.city} province={employer.province} zh={TEXT_NONE} ko={TEXT_NONE} />
-            {employer.province !== TEXT_NONE && <ProvName code={employer.province} />}
+            <PlaceName line={placeLineOf({ address: TEXT_NONE, city: employer.city, province: employer.province })}
+              cityZh={TEXT_NONE} cityKo={TEXT_NONE} province={employer.province} />
           </span>
         )}
       </span>

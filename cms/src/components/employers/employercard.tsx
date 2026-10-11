@@ -16,14 +16,17 @@
  * 两行名放不进去(要 card 桶给标题开插槽,另批)。
  * 同日收口:card 桶 JobCard 开了 head 插槽,标题换 name 桶 Name —— 英文在上、界面语别名灰字在下(行业照旧是下面那行注);
  * 有公司页的蓝链普通左键开框、Ctrl 点去公司页,没有的只开框(池键);标题文本形 CardTitle 与悬停提示 hrefTitle 随之退役。
+ * 2026-10-11 批 4 全站卡片字段(CLAUDE.md「地点照 Indeed 写一行」,覆盖上面「省市分开」):市、省两个名字并成 name 桶 PlaceName ——
+ * 「市, 省码」一行(lib/location placeLineOf;本处数据不带街号)整行一个地图链,中 / 韩界面下面灰字「市译名,省译名」。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
 import { JobCard } from '@/components/card'
 import { cssOf } from '@/components/css'
-import { CityName, Name, ProvName } from '@/components/name'
+import { Name, PlaceName } from '@/components/name'
 import { Tag } from '@/components/tag'
+import { placeLineOf } from '@/lib/location'
 import { TAG_DESIGNATED, TEXT_NONE } from './constants'
 import type { EmployerCardIn } from './types'
 import css from './employers.module.css'
@@ -44,8 +47,8 @@ export function EmployerCard({ r }: EmployerCardIn) {
   const chips = <>{r.designatedChip !== TEXT_NONE && <Tag variant={TAG_DESIGNATED}>{r.designatedChip}</Tag>}</>
   const where = (
     <span className={cssOf(css.cardPlace)}>
-      {r.city !== TEXT_NONE && <CityName city={r.city} province={r.province} zh={r.cityZh} ko={r.cityKo} />}
-      {r.province !== TEXT_NONE && <ProvName code={r.province} />}
+      <PlaceName line={placeLineOf({ address: TEXT_NONE, city: r.city, province: r.province })}
+        cityZh={r.cityZh} cityKo={r.cityKo} province={r.province} />
     </span>
   )
   if (r.industry === TEXT_NONE) {

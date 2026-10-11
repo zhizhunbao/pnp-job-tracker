@@ -821,6 +821,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'col.country': 'Country', 'col.province': 'Province', 'col.city': 'City', 'col.district': 'District', 'col.address': 'Address',
   'col.salary': 'Salary', 'col.salaryYr': 'Annual', 'col.wageMedHr': 'Median $/hr', 'col.wageMedYr': 'Median $/yr', 'col.vsMedian': 'vs median', 'col.source': 'Source', 'col.origin': 'Channel', 'col.direct': 'Posting',
   'col.pnp': 'PNP', 'col.ee': 'EE category', 'col.aip': 'AIP', 'col.pilot': 'Pilot community', 'col.lmia': 'LMIA history', 'col.eligibility': 'Visa flags', 'col.status': 'Status', 'col.firstSeen': 'First seen', 'col.lastSeen': 'Last seen', 'col.closedAt': 'Closed', 'col.score': 'Pathway',
+  // 2026-10-11 批 4 全站卡片字段:职位板截止日期列 + 职位框 / 职位页「职位信息」分区卡
+  'col.validThrough': 'Closes', 'detail.info': 'Job details',
   'cell.elig.no_sponsorship': '🚫 No sponsorship', 'cell.elig.pr_required': '🚫 PR/citizen only',
   'fact.elig': 'Visa flag', 'fact.eligQuote': 'JD quote', 'fact.eligNote': 'Detected from the JD text (precision-first); "—" means no such wording was found — not that the employer sponsors',
   'eelist.source': 'Source: Express Entry category-based selection', 'eelist.loading': 'Loading EE list…', 'eelist.count': '{n} occupations',
@@ -851,12 +853,15 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'mj.col.title': 'Job', 'mj.col.company': 'Company', 'mj.col.addr': 'Address', 'mj.col.pay': 'Pay', 'mj.col.hours': 'Hours',
   'mj.col.term': 'Term', 'mj.col.posted': 'Posted', 'mj.col.deadline': 'Closes', 'mj.col.why': 'Why this job',
   'mj.col.status': 'Status', 'mj.col.savedOn': 'Saved', 'mj.col.appliedOn': 'Applied', 'mj.col.act': 'Actions',
-  'mj.hours.full': 'Full-time', 'mj.hours.part': 'Part-time',
-  'mj.term.permanent': 'Permanent', 'mj.term.term': 'Fixed-term', 'mj.term.seasonal': 'Seasonal', 'mj.term.casual': 'Casual',
+  // 2026-10-11 批 4:工时 / 雇佣期 / 地点灰字三组词条改归 name 桶(职位板 + 我的求职共用,键头 mj. 改 name.)
+  'name.hours.full': 'Full-time', 'name.hours.part': 'Part-time', 'name.placeSub': '{c}, {p}',
+  'name.term.permanent': 'Permanent', 'name.term.term': 'Fixed-term', 'name.term.seasonal': 'Seasonal', 'name.term.casual': 'Casual',
   'mj.picks': 'Today’s picks', 'mj.picksEmpty': 'No picks today', 'mj.more': 'More picks',
   'mj.upgrade': 'Upgrade to Pro',
+  // 2026-10-11 Frank「可以,按你说的改」:按真发出去的投递命中的推荐理由
+  'mj.why.applied': 'Like jobs you applied to',
   'mj.why.pnp': '{p} employer stream', 'mj.why.wage': 'Above provincial median for this job', 'mj.why.occ': 'Matches your field', 'mj.why.saved': 'Like jobs you saved',
-  'mj.appliedTitle': 'My applications', 'mj.unsent': 'Not sent', 'mj.addrSub': '{c}, {p}',
+  'mj.appliedTitle': 'My applications', 'mj.unsent': 'Not sent',
   'mj.push': 'Job alerts', 'mj.pushRow': 'Email me picks and saved-job updates', 'mj.freqOff': 'Off', 'mj.freqDaily': 'Daily', 'mj.freqWeekly': 'Weekly',
   'mj.pushTo': 'Send to', 'mj.pushSave': 'Save', 'mj.pushSaved': 'Saved', 'mj.pushPending': 'Click the link sent to {e} to confirm',
   'mj.pushBad': 'Invalid email', 'mj.pushFail': 'Couldn’t save. Try again', 'mj.pushMailFail': 'Couldn’t send the confirmation email. Try again',
@@ -922,7 +927,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'col.empHours': 'Hours', 'col.whoCanApply': 'Who can apply', 'col.empTerm': 'Term', 'fact.unstated': 'Not stated in posting',
   // 2026-09-16 去箭头:看原文 / 看整理版是状态行里的切换文链。⚠ 这条注释曾写在行尾,把 act.aiWorking / act.aiFail 注释掉过;注释只许独占一行。
   'act.ai': 'AI-organized', 'act.aiNote': 'rearranged from the posting, nothing added', 'act.aiQuota': 'Daily AI quota used up — resets tomorrow', 'act.aiQuotaLogin': 'Sign in for more daily uses', 'act.fmtTab': 'Organized', 'act.origTab': 'Original', 'act.viewOrig': 'View original', 'act.backFmt': 'Back to summary', 'act.aiWorking': 'AI organizing, showing original…', 'act.aiFail': 'AI organizing failed',
-  'act.f.role': 'Duties', 'act.f.reqs': 'Hard requirements', 'act.f.pay': 'Pay & benefits', 'act.f.hours': 'Work format', 'act.f.loc': 'Work location', 'act.f.apply': 'How to apply', 'act.f.none': 'Not mentioned in posting',
+  'act.f.role': 'Duties', 'act.f.reqs': 'Hard requirements', 'act.f.pay': 'Pay & benefits', 'act.f.hours': 'Work format', 'act.f.apply': 'How to apply', 'act.f.none': 'Not mentioned in posting',
   // 2026-09-27 dates become their own JD section (line labels reuse col.datePosted / detail.closes)
   // 2026-10-01 dates section withdrawn, back to the line under the job title (act.f.dates removed)
   'co.f.what': 'What it does', 'co.f.base': 'Based in', 'co.f.size': 'Size', 'co.f.founded': 'Founded', 'co.f.note': 'Worth knowing',

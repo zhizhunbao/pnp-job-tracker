@@ -12,6 +12,9 @@
 // 2026-10-11 Frank「OINP 很长时间没有捞人了」→「90 天可以」:① 再穷举「档案想做的工作同组 × 本省 offer 类通道近 90 天抽过」——
 //          想做的工作同组也出 occ;过了 90 天的省不出 pnp;⑤ 能走省提名 / 通道档两个排序键都只对没过期的省生效(stale 子查询),
 //          天数 = PICKS_DRAW_DAYS(90)作 $4 交给库;⑦ 答过档案后重拉带 fresh=1(不吃当天缓存)。
+// 2026-10-11 晚 Frank「可以,按你说的改」(草稿被当成投过):① 改成档案命中出 occ、否则收藏命中出 saved、否则真发出去的投递命中出 applied,
+//          一岗只出一枚;④ 地点一行的金标搬去 placeLine.int.spec.ts(placeLineOf 收进 lib/location);
+//          ⑧ SQL:档案答了就不按收藏 / 投递选岗(两组套 cardinality(want.g) = 0)、投递只算 sent / replied、比对完整 5 位 NOC(不再 left(noc, 4))。
 // 探针:reasonsOf 去掉 else(occ 与 saved 同出)→ ① 红;picksViewOf 锁住行抄整行 → ②「只有三键」红;dropTouchedOf 不剔 → ③ 红;
 //       ORDER BY 里 date_posted 挪到 pnp_eligible 前 → ⑤ 红;Picks 对 Pro 也出更多卡 → ⑥ 红。
 import { act, createElement } from 'react'
@@ -22,7 +25,7 @@ import { Picks, Push } from '@/components/myjobs'
 import { SQL } from '@/lib/db'
 import { PICKS_DRAW_DAYS, PICKS_FREE, PICKS_LOCKED_SHOW } from '@/lib/myjobs/constants'
 // 测试例外:域内函数直接点文件(server 门只放路由与注入件)
-import { addressOf, dropTouchedOf, loadPicks, picksViewOf, reasonsOf } from '@/lib/myjobs/functions'
+import { dropTouchedOf, loadPicks, picksViewOf, reasonsOf } from '@/lib/myjobs/functions'
 import type { PickRow } from '@/lib/myjobs/types'
 
 const PROVS = ['ON', 'BC', 'QC', ''] as const
@@ -48,10 +51,12 @@ describe('推荐理由', () => {
                 for (const province of PROVS) {
                   const r = reasonsOf({ occApplied, occSaved, occWant, pnp, offerActive, aboveMed, province })
                   const want: string[] = []
-                  if (occApplied || occWant) {
+                  if (occWant) {
                     want.push('occ')
                   } else if (occSaved) {
                     want.push('saved')
+                  } else if (occApplied) {
+                    want.push('applied')
                   }
                   if (pnp && offerActive && (province === 'ON' || province === 'BC')) {
                     want.push('pnp')
@@ -60,7 +65,7 @@ describe('推荐理由', () => {
                     want.push('wage')
                   }
                   expect(r).toEqual(want)
-                  expect(r.includes('occ') && r.includes('saved')).toBe(false)
+                  expect(r.filter((c) => c === 'occ' || c === 'saved' || c === 'applied').length <= 1).toBe(true)
                 }
               }
             }
@@ -102,13 +107,6 @@ describe('免费 / Pro 切分', () => {
     expect(dropTouchedOf({ rows, touched: [3, 1, 77] }).map((r) => r.id)).toEqual([5, 9])
     expect(dropTouchedOf({ rows, touched: [] })).toEqual(rows)
   })
-
-  it('④ 地点一行照 Indeed', () => {
-    expect(addressOf({ address: '1 Bowes Rd, Concord, ON L4K 1H4', city: 'Concord', province: 'ON' })).toBe('1 Bowes Rd, Concord, ON L4K 1H4')
-    expect(addressOf({ address: '', city: 'Concord', province: 'ON' })).toBe('Concord, ON')
-    expect(addressOf({ address: '', city: '', province: 'ON' })).toBe('ON')
-    expect(addressOf({ address: '', city: 'Concord', province: '' })).toBe('Concord')
-  })
 })
 
 describe('推荐 SQL', () => {
@@ -136,6 +134,27 @@ describe('推荐 SQL', () => {
     expect(q).toContain('LEFT JOIN stale st ON st.code = j.province')
     expect(q).toContain('(st.code IS NULL) AS offer_active')
     expect(q).toContain("u.answers->'basic'->'nocs'")
+  })
+
+  it('⑧ 金标(2026-10-11 晚):档案答了只按它选岗;投递只算真发出去的;完整 5 位 NOC 比对', () => {
+    const q = SQL.MYJOBS_PICKS
+    expect(q).not.toContain('left(')
+    expect(q).toContain('WHERE length(w) = 5')
+    const saved = q.slice(q.indexOf('FROM saved_jobs'), q.indexOf('AS saved_g'))
+    expect(saved).toContain('cardinality(want.g) = 0')
+    const applied = q.slice(q.indexOf('FROM applications a JOIN jobs aj'), q.indexOf('AS applied_g'))
+    expect(applied).toContain("a.status IN ('sent', 'replied')")
+    expect(applied).toContain('cardinality(want.g) = 0')
+    expect(applied).not.toContain('draft')
+    expect(q).toContain('j.noc = ANY(me.saved_g || me.applied_g || me.want_g)')
+    expect(q).toContain('(j.noc = ANY(me.want_g)) AS occ_want')
+  })
+
+  it('⑧ 金标:三种理由各自命中(档案 = 职业对口、收藏 = 和你收藏的同类、投递 = 和你投过的同类)', () => {
+    const base = { occApplied: false, occSaved: false, occWant: false, pnp: false, offerActive: true, aboveMed: false, province: 'ON' }
+    expect(reasonsOf({ ...base, occWant: true })).toEqual(['occ'])
+    expect(reasonsOf({ ...base, occSaved: true })).toEqual(['saved'])
+    expect(reasonsOf({ ...base, occApplied: true })).toEqual(['applied'])
   })
 
   it('⑤ 天数 90 作 $4 交给库;库行的 offer_active / occ_want 落到理由上', async () => {

@@ -3059,18 +3059,26 @@ export const MYJOBS_SAVED = `SELECT ${MYJOBS_FROM}
  * 没挂这一格的省(本站没收录到抽选,如 SK)照旧加分(不知道 ≠ 官方没抽)。provinces 十行,子查询零成本。
  * 同日「进我的求职先弹五题」:职业组再并上他在档案里答的「想做的工作」(answers.basic.nocs,want_g)—— 答完重拉推荐就按它推;
  * 命中算「职业对口」(occ_want)。$4=多少天内抽过才算(lib/myjobs 的 PICKS_DRAW_DAYS)。
+ * 2026-10-11 Frank「可以,按你说的改」(他点开卡车司机 / 油漆工 / 厨师的投递框留了草稿,被当成「投过」,推出卡车司机、屋顶工还贴「职业对口」):
+ * ① 档案答了「想做的工作」(want_g 非空)就只按它选岗,收藏 / 投过的两组置空、不参与选岗;② 没答才看行为:投递只算真发出去的
+ * (status sent / replied,草稿 / queued 不算)与收藏;③ 比对改完整 5 位 NOC(原 left(noc, 4) 让 73112 油漆工撞上 73110 屋顶工 / 73111 玻璃工)。
+ * 上面「NOC 前 4 位」「职业单元组」两处作废。理由:want 命中 = 职业对口、收藏命中 = 和你收藏的同类、投递命中 = 和你投过的同类(lib/myjobs reasonsOf)。
  */
-export const MYJOBS_PICKS = `WITH me AS (
-       SELECT COALESCE(NULLIF(u.answers->'basic'->>'resProv', ''), $2::text) AS prov,
-              ARRAY(SELECT DISTINCT left(sj.noc, 4) FROM saved_jobs s JOIN jobs sj ON sj.id = s.job_id
-                    WHERE s.user_id = $1 AND length(sj.noc) >= 4) AS saved_g,
-              ARRAY(SELECT DISTINCT left(aj.noc, 4) FROM applications a JOIN jobs aj ON aj.id = a.job_id
-                    WHERE a.user_id = $1 AND length(aj.noc) >= 4) AS applied_g,
-              ARRAY(SELECT DISTINCT left(w, 4) FROM jsonb_array_elements_text(
+export const MYJOBS_PICKS = `WITH want AS (
+       SELECT ARRAY(SELECT DISTINCT w FROM jsonb_array_elements_text(
                       CASE WHEN jsonb_typeof(u.answers->'basic'->'nocs') = 'array' THEN u.answers->'basic'->'nocs'
                            ELSE '[]'::jsonb END) w
-                    WHERE length(w) >= 4) AS want_g
+                    WHERE length(w) = 5) AS g
          FROM users u WHERE u.id = $1),
+     me AS (
+       SELECT COALESCE(NULLIF(u.answers->'basic'->>'resProv', ''), $2::text) AS prov,
+              ARRAY(SELECT DISTINCT sj.noc FROM saved_jobs s JOIN jobs sj ON sj.id = s.job_id
+                    WHERE s.user_id = $1 AND length(sj.noc) = 5 AND cardinality(want.g) = 0) AS saved_g,
+              ARRAY(SELECT DISTINCT aj.noc FROM applications a JOIN jobs aj ON aj.id = a.job_id
+                    WHERE a.user_id = $1 AND a.status IN ('sent', 'replied') AND length(aj.noc) = 5
+                      AND cardinality(want.g) = 0) AS applied_g,
+              want.g AS want_g
+         FROM users u CROSS JOIN want WHERE u.id = $1),
      stale AS (
        SELECT code FROM provinces
         WHERE info->>'offerDrawLast' IS NOT NULL AND (info->>'offerDrawLast')::date < current_date - $4::int)
@@ -3078,8 +3086,8 @@ export const MYJOBS_PICKS = `WITH me AS (
             c.slug AS company_slug, j.address, j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province,
             j.salary_text, j.date_posted, j.pnp_eligible, (j.salary_annual > j.wage_med_annual) AS above_med,
             j.employment_hours, j.employment_term, j.valid_through,
-            (left(j.noc, 4) = ANY(me.applied_g)) AS occ_applied, (left(j.noc, 4) = ANY(me.saved_g)) AS occ_saved,
-            (left(j.noc, 4) = ANY(me.want_g)) AS occ_want, (st.code IS NULL) AS offer_active
+            (j.noc = ANY(me.applied_g)) AS occ_applied, (j.noc = ANY(me.saved_g)) AS occ_saved,
+            (j.noc = ANY(me.want_g)) AS occ_want, (st.code IS NULL) AS offer_active
        FROM me CROSS JOIN jobs j
        LEFT JOIN companies c ON c.id = j.company_id
        LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
@@ -3087,7 +3095,7 @@ export const MYJOBS_PICKS = `WITH me AS (
       WHERE j.status = 'open' AND COALESCE(j.apply_email, '') <> '' AND j.is_dup IS NOT TRUE
         AND (me.prov = '' OR j.province = me.prov)
         AND (cardinality(me.saved_g) + cardinality(me.applied_g) + cardinality(me.want_g) = 0
-             OR left(j.noc, 4) = ANY(me.saved_g || me.applied_g || me.want_g))
+             OR j.noc = ANY(me.saved_g || me.applied_g || me.want_g))
         AND NOT EXISTS (SELECT 1 FROM applications a WHERE a.user_id = $1 AND a.job_id = j.id)
         AND NOT EXISTS (SELECT 1 FROM bounced_emails b WHERE b.email = lower(j.apply_email))
         AND NOT EXISTS (SELECT 1 FROM applications a2 WHERE a2.user_id = $1 AND lower(a2.employer_email) = lower(j.apply_email)

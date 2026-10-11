@@ -4527,7 +4527,7 @@ export type Plan = {
  * 主表列名全集。显示顺序/默认可见/表头文案在 Table.tsx,这里只定「有哪些列」——
  * 它同时是**字段名**:顾问弹框按字段开、字段来源按字段查,都拿它当键。
  */
-export type ColKey = 'score' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'lmia' | 'eligibility' | 'broad' | 'mid' | 'fine' | 'teer' | 'empHours' | 'empTerm' | 'whoCanApply' | 'title' | 'company' | 'noc' | 'nocCode' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
+export type ColKey = 'score' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'lmia' | 'eligibility' | 'broad' | 'mid' | 'fine' | 'teer' | 'empHours' | 'empTerm' | 'whoCanApply' | 'title' | 'company' | 'noc' | 'nocCode' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'validThrough' | 'lastSeen' | 'closedAt' | 'actions'
 
 /**
  * 弹框分组(E8-10 三合一后陆续拆出的九组)。
@@ -5438,6 +5438,11 @@ export type PnpStepsDbRow = {
    * 步骤(本域不读格,原样转给弹框;形状由 components/pnp 在信任边界收窄)。
    */
   steps: MaybeList<object>
+
+  /**
+   * 时间线(2026-10-11;jsonb 对象,没登步骤的通道 null;本域不读格,原样转给弹框)。
+   */
+  timeline: object | null
 }
 
 /**
@@ -5453,6 +5458,11 @@ export type PnpStepsRow = {
    * 步骤(零读格透传)。
    */
   steps: object[]
+
+  /**
+   * 时间线(零读格透传;没有 = null)。
+   */
+  timeline: object | null
 }
 
 /**

@@ -15,6 +15,7 @@
  * 2026-10-01 Frank「这种有点突兀」「这种也突兀」(没正文 / 整理版 / 原帖三档里那一节都不搭)→ 选「回到职位名下面」:dates 槽挂回,排在 ModalHead(左块 + 译名行)之后。
  * 2026-10-02 Frank「这个放到右边 和 灰字翻译在一行可以吗」「可以,按你说的做」:日期改走 ModalHead 的信息槽(meta),
  * 与灰字译名同一行、贴右排在「查看原帖」前;窄档整块换到下一行仍贴右。
+ * 2026-10-11 批 4 全站卡片字段:两个日期收进正文下面的「职位信息」卡(jobs 桶 JobInfoCard),dates 槽撤。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -25,12 +26,12 @@ import type { ActHeadIn } from './types'
 /**
  * 渲染职位描述弹框的页眉左块。
  *
- * @param props 取词函数、岗位名、译名、剩余次数、切换控件与日期行。
- * @returns 页眉左块 + 译名行(日期在译名行里贴右)。
+ * @param props 取词函数、岗位名、译名、剩余次数与切换控件。
+ * @returns 页眉左块 + 译名行。
  */
-export function ActHead({ t, title, sub, freeLeft, ctl, dates }: ActHeadIn) {
+export function ActHead({ t, title, sub, freeLeft, ctl }: ActHeadIn) {
   return (
-    <ModalHead title={title} sub={sub} ctl={ctl} meta={dates}
+    <ModalHead title={title} sub={sub} ctl={ctl}
       kicker={(
         <>
           {t('act.descTitle')}

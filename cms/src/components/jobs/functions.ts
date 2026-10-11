@@ -25,9 +25,12 @@ import {
 } from '@/components/pnp'
 import { cssOf } from '@/components/css'
 import { lazyTitleOf, titleSubOf, untranslatedOf } from '@/components/jobtitle'
+import { hoursNameOf, placeHrefOf, placeSubOf, termNameOf } from '@/components/name'
 import { BROAD_SLUGS } from '@/lib/stats'
 import { eeDisplay, isDirect, isExpiredJob, isJdNone, sourceLabel } from '@/lib/jobs'
-import { PROV_NAMES, homeGateJsOf, homeProvinceOf, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
+import {
+  PROV_NAMES, homeGateJsOf, homeProvinceOf, mapQuery, mapsUrl, parseLoc, placeLineOf, provName,
+} from '@/lib/location'
 import { catName, colorOf, nocLocalTitle, pickName } from '@/lib/noc'
 import { makeT } from '@/lib/i18n'
 import { fmtLocal, fmtLocalSec, ymd } from '@/lib/time'
@@ -45,11 +48,11 @@ import {
   JD_GUESS_NEXT_PARA_LEN, JD_HEAD_MARK, JD_DASH_PREFIX_RE, JD_ITEM_TAIL_RE, JD_PREFERRED_HEAD, JD_SUBHEAD_COLON_RE,
   JD_LONG_LINE_LEN, JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_ESC_RE,
   JD_ESC_TO, JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS, JD_HR_LINE_TO, JD_HR_LINE_TPL, JD_INLINE_LABELS, JD_INLINE_TPL,
-  JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE, JD_LOC_PROV_KEY, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC,
+  JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY,
   JD_SEC_PAY, JD_SEC_ROLE, JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE,
-  JD_SUB_HEADS, JD_TOP_HEADS, JD_TPL_SLOT, JD_DONE, JD_EMPTY, JD_LIMITED, KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP,
-  K_LOCK_TIP, K_ORIGIN, K_PROV, K_SPONSOR_GRADE, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_KO,
-  LANG_ZH, LAYER_JOB, LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MEASURE_ROWS,
+  JD_SUB_HEADS, JD_TOP_HEADS, JD_TPL_SLOT, JD_DONE, JD_EMPTY, JD_LIMITED, KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG,
+  K_LOCK_TIP, K_ORIGIN, K_PROV, K_SPONSOR_GRADE, K_TEER, K_UNCAT, K_WHO, LANG_KO,
+  LANG_ZH, LAYER_JOB, LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, MEASURE_ROWS,
   NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R, PCT_DECIMALS, PCT_MULTIPLIER, PREF_KEY, PROV_PICK_COOKIE,
   PROV_PICK_MAX_AGE_S, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP, P_SORT, QS_HEAD,
   RE_FLAG_G, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE, SAVED_STATUS_WISH, SEC_MODE, SEP_EN,
@@ -75,8 +78,8 @@ import type {
   FallbackHrefIn, FallbackTextIn, FallbackValueIn, FetchJobTextIn, FieldOpenIn, FillIn, FilterCountIn, FilterOpts,
   FilterOptsIn, FilterState, FilterValueIn, FixedNoteIn, FoldBtnClsIn, FoldNClsIn, FrozenStyleIn, GatedFiltersIn,
   GatedSetIn, HeadCellAtIn,
-  HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdCityLocalIn, JdLineView, JdLineViewIn, JdLinesIn,
-  JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn, JdSecHeadIn, JdSecModeIn, JdSectionMode,
+  HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdLineView, JdLineViewIn, JdLinesIn,
+  JdPair, JdPairsIn, JdPayIn, JdReIn, JdSecHeadIn, JdSecModeIn, JdSectionMode,
   JdSectionView, JdSectionsIn, JobColKey, JobDetailIn, JobDetailView, JobDims, JobFact, JobFilters, JobPlan, JobPlanIn,
   JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn, MapHrefIn, MatchProfileFact, MeasureIn,
   MeasureOut, MeasurePassIn, MeasureWordIn, MoreLabelIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, OrigLinkLabelIn,
@@ -743,6 +746,8 @@ function occCellTextOf(x: OccCellIn): string {
 
 /**
  * 岗位本身:职位名、公司名、工时、雇佣期。
+ * 2026-10-11 批 4:工时、雇佣期两格改英文黑字 + 界面语灰字(name 桶 hoursNameOf / termNameOf,与我的求职、手机卡、职位框同一份;
+ * 原中文短名 emp.* / term.* 词条只剩筛选下拉在用)。
  * #175:职位/公司格的外链 href 摘除 —— 点击行为只剩弹框(外链出口在弹框/详情页里,
  * 一格一个动作)。
  *
@@ -757,16 +762,18 @@ function jobCellOf(x: CellIn): CellView | null {
     return blankView({ text: x.j.company, tone: TONE.link })
   }
   if (x.k === COL.empHours) {
-    if (hasText(x.j.employmentHours) === false) {
+    const n = hoursNameOf({ v: x.j.employmentHours, lang: x.cx.lang, t: x.cx.t })
+    if (n.en === TEXT_NONE) {
       return blankView({ tone: TONE.faintSm })
     }
-    return blankView({ text: x.cx.t(K_EMP + x.j.employmentHours), tone: TONE.slateSm })
+    return blankView({ text: n.en, sub: n.sub, tone: TONE.ink })
   }
   if (x.k === COL.empTerm) {
-    if (hasText(x.j.employmentTerm) === false) {
+    const n = termNameOf({ v: x.j.employmentTerm, lang: x.cx.lang, t: x.cx.t })
+    if (n.en === TEXT_NONE) {
       return blankView({ tone: TONE.faintSm })
     }
-    return blankView({ text: x.cx.t(K_TERM + x.j.employmentTerm), tone: TONE.slateSm })
+    return blankView({ text: n.en, sub: n.sub, tone: TONE.ink })
   }
   if (x.k === COL.whoCanApply) {
     if (hasText(x.j.whoCanApply) === false) {
@@ -849,6 +856,8 @@ function vsMedianOf(x: CellIn): CellView {
  * 地点族:国家、省、市、区、地址。省/市/区 → 文字 = 地图链接、格子 = 地点弹框
  * (E8-12 Frank「点文字跳 map,点框弹框」);各字段只查自己那一级(与「一格一事」同一原则:
  * 点省看省、点市看市、点区/地址才到街号)。
+ * 2026-10-11 批 4(CLAUDE.md「地点照 Indeed 写一行」):地址列改地点一行 —— 有街号写完整地址,没有写「市, 省码」,
+ * 整格一个地图链;中 / 韩界面下面灰字「市译名,省译名」(name 桶 placeSubOf,与手机卡、职位框同一份)。
  *
  * @param x 列键、库行、上下文。
  * @returns 展示行;不是本族给 null。
@@ -869,11 +878,11 @@ function placeCellOf(x: CellIn): CellView | null {
     return blankView({ text: dashOf(L.district), tone: TONE.ink, href })
   }
   if (x.k === COL.address) {
-    let href = TEXT_NONE
-    if (hasText(x.j.address)) {
-      href = mapsUrl(x.j.address)
-    }
-    return blankView({ text: dashOf(x.j.address), href })
+    const line = placeLineOf({ address: x.j.address, city: x.j.city, province: x.j.province })
+    const sub = placeSubOf({
+      cityZh: x.j.cityZh, cityKo: x.j.cityKo, province: x.j.province, lang: x.cx.lang, t: x.cx.t,
+    })
+    return blankView({ text: dashOf(line), href: placeHrefOf(line), sub })
   }
   return null
 }
@@ -1030,6 +1039,7 @@ function aipCellOf(x: CellIn): CellView {
 
 /**
  * 其余各列:来源、渠道、首发、状态、三个时间。
+ * 2026-10-11 批 4:加截止日期(validThrough;没写截止日的帖长横)。
  *
  * @param x 列键、库行、上下文。
  * @returns 展示行。
@@ -1061,6 +1071,9 @@ function metaCellOf(x: CellIn): CellView {
   }
   if (x.k === COL.datePosted) {
     return blankView({ text: ymdOf(x.j.datePosted), tone: TONE.graySm })
+  }
+  if (x.k === COL.validThrough) {
+    return blankView({ text: ymdOf(x.j.validThrough), tone: TONE.graySm })
   }
   if (hasText(x.j.lastSeen) === false) {
     return blankView({ tone: TONE.mutedSm })
@@ -3452,6 +3465,7 @@ export function origLinkLabelOf(x: OrigLinkLabelIn): string {
  * 职位名下面那行日期的格(2026-09-26 Frank 看过效果图点头;详情页 H1 下、职位弹框标题下同一件 JobDates):
  * 发布一格(库里有发布日才出)、截止一格(发帖方写了截止日且没过期才出)。来源没给截止日就只出发布一格,不编「预计截止」。
  * 过期口径 = lib/jobs 的 isExpiredJob(与 JobPosting 同一条,已下架也算过期),「今天」按多伦多日期,截止日当天还算在期。
+ * 2026-10-11 批 4:两格挪进「职位信息」卡(JobInfoCard)当两行,标签改用职位板列名「发布日期」「截止日期」(原 Posted / Closes)。
  *
  * @param x 本岗、取词函数与此刻。
  * @returns 0 ~ 2 格,发布在前。
@@ -3459,10 +3473,10 @@ export function origLinkLabelOf(x: OrigLinkLabelIn): string {
 export function jobDatesOf(x: JobDatesOfIn): JobDateCell[] {
   const cells: JobDateCell[] = []
   if (x.job.datePosted !== TEXT_NONE) {
-    cells.push({ k: DATE_CELL.posted, label: x.t('detail.posted'), iso: x.job.datePosted })
+    cells.push({ k: DATE_CELL.posted, label: x.t('col.datePosted'), iso: x.job.datePosted })
   }
   if (x.job.validThrough !== TEXT_NONE && isExpiredJob({ job: x.job, today: todayOf(x.now) }) === false) {
-    cells.push({ k: DATE_CELL.closes, label: x.t('detail.closes'), iso: x.job.validThrough })
+    cells.push({ k: DATE_CELL.closes, label: x.t('col.validThrough'), iso: x.job.validThrough })
   }
   return cells
 }
@@ -3527,120 +3541,6 @@ export function aiNoteTextOf(x: AiNoteTextIn): string {
     return x.t('act.aiQuota')
   }
   return x.t('act.aiFail')
-}
-
-/**
- * 工作地点的界面语版(2026-09-14):市名用 cities 表人工核定译名(没核定照英文,Frank「可以」),省用 i18n 省译名;
- * 英文界面或省译名缺给空串。
- * 2026-09-16 Frank「这个有 bug」:对照开关关着(或译文还没回)时不出,跟正文对照行同进同退。
- *
- * @param x 取词函数、本岗、界面语言与对照在不在屏。
- * @returns 界面语版;'' = 不出对照行。
- */
-export function jdLocationZhOf(x: JdLocationZhIn): string {
-  if (x.shown === false || x.job.province === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  const key = JD_LOC_PROV_KEY + x.job.province.toUpperCase()
-  const provZh = x.t(key)
-  const provEn = PROV_NAMES[x.job.province.toUpperCase()]
-  if (provZh === TEXT_NONE || provZh === key || provZh === provEn) {
-    return TEXT_NONE
-  }
-  if (x.job.city === TEXT_NONE) {
-    return provZh
-  }
-  return jdCityLocalOf({ job: x.job, lang: x.lang }) + LOC_SEP + provZh
-}
-
-/**
- * 市名的界面语版:中文 / 韩文界面取核定译名,没核定或英文界面照英文。
- *
- * @param x 本岗与界面语言。
- * @returns 市名。
- */
-export function jdCityLocalOf(x: JdCityLocalIn): string {
-  if (x.lang === LANG_ZH && x.job.cityZh !== TEXT_NONE) {
-    return x.job.cityZh
-  }
-  if (x.lang === LANG_KO && x.job.cityKo !== TEXT_NONE) {
-    return x.job.cityKo
-  }
-  return x.job.city
-}
-
-/**
- * 「工作地点」节的英文行(合成节只有一行;2026-09-14)。
- *
- * @param sec 这一节。
- * @returns 英文地点;没有给空串。
- */
-export function jdLocationTextOf(sec: JdSectionView): string {
-  const first = sec.pairs[0]
-  if (first == null) {
-    return TEXT_NONE
-  }
-  return first.en
-}
-
-/**
- * 「工作地点」节的对照行。
- *
- * @param sec 这一节。
- * @returns 对照;没有给空串。
- */
-export function jdLocationZhTextOf(sec: JdSectionView): string {
-  const first = sec.pairs[0]
-  if (first == null) {
-    return TEXT_NONE
-  }
-  return first.zh
-}
-
-/**
- * 「工作地点」节(2026-09-14 Frank「应该单独一个分类吧」):不是原帖分出来的,由岗位地点字段合成一节,排在最前。
- *
- * @param x 取词函数、地点两版与节形状要的两格。
- * @returns 一节;没有地点给 null。
- */
-export function jdLocationSectionOf(x: JdLocationSectionIn): JdSectionView | null {
-  if (x.location === TEXT_NONE) {
-    return null
-  }
-  return {
-    m: JD_SEC_LOC,
-    head: x.t('act.f.loc'),
-    mode: SEC_MODE.lines,
-    pairs: [{ en: x.location, zh: x.locationZh }],
-    bullets: false,
-    payFallback: TEXT_NONE,
-    payFallbackZh: TEXT_NONE,
-    applyUrl: x.applyUrl,
-    applyEmail: x.applyEmail,
-    noneText: x.t('act.f.none'),
-    officialText: x.t('act.seeOfficial'),
-  }
-}
-
-/**
- * 职位描述顶上的工作地点一句(2026-09-14 Frank「职位描述里也应该显示工作地点吧」):有街址出街址(它已含市省邮编),
- * 否则「市, 省全名」;都没有给空串。
- *
- * @param job 本岗。
- * @returns 一句地点;'' = 不出。
- */
-export function jdLocationOf(job: JobFact): string {
-  if (job.address !== TEXT_NONE) {
-    return job.address
-  }
-  const prov = PROV_NAMES[job.province.toUpperCase()]
-  if (prov == null) {
-    return job.city
-  }
-  if (job.city === TEXT_NONE) {
-    return prov
-  }
-  return job.city + LOC_SEP + prov
 }
 
 /**
@@ -4465,6 +4365,7 @@ export function isAltRow(i: number): boolean {
  * 2026-09-23 Frank「统一成标题译名」「应该优先使用详情下的翻译 更准吧」:职位名下那条改成标题译名 ——
  * 这一岗库里存好的(详情页 / 弹框按岗翻的,多词标题批量翻的)→ 这一页批量懒翻的(x.titleMap)→ 都没有才退回职业名(titleSubOf)。
  * 2026-10-09 N6 批:地点两段换 name 桶的 CityName / ProvName,市 / 省的地图链接与显示值不再在这里算。
+ * 2026-10-11 批 4:市 / 省两格并成地点一行(lib/location placeLineOf:有街号写完整地址,没有写「市, 省码」)。
  *
  * @param x 整台状态机与这一行。
  * @returns 一张卡的展示行。
@@ -4487,8 +4388,7 @@ export function boardCardViewOf(x: BoardCardIn): BoardCardView {
     }),
     companyHref: URL_JOBS_QUERY + encodeURIComponent(x.job.company),
     salary: x.job.salaryText,
-    city: L.city,
-    prov: x.job.province,
+    place: placeLineOf({ address: x.job.address, city: L.city, province: x.job.province }),
     chips: chipSpecsOf({
       j: x.job,
       t: x.b.t,

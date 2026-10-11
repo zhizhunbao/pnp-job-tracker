@@ -2403,6 +2403,7 @@ export function useJobDetail(x: JobIn): JobDetailPanel {
 
 /**
  * 职位名下那行日期(2026-09-26;详情页与职位弹框同一台):「此刻」在首渲那一拍取一次 ——
+ * (2026-10-11 批 4:两格挪进「职位信息」卡 JobInfoCard 当两行,职位名旁那一处撤。)
  * 截止格按天判过期,渲染之间不必再读时钟(与 advisor 时间事实块 useState(Date.now) 同款)。
  *
  * @param x 本岗与取词函数。

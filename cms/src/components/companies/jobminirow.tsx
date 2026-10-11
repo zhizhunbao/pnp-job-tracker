@@ -19,12 +19,15 @@
  * 2026-10-09 N6b 批:上游接线清了 —— props 里 onOpenJob / row / newTab 三格撤(09-19 Frank「这种里面的链接都改成弹框显示」那一对手柄:
  * 原 `onOpen` 只有已载入整行才给,换成 onOpenJob + row,没载入的点了按号现取 `/api/jobs/row`);「我的」页与投递队列也换了 JobName,
  * makeOpenJob 随之退役。
+ * 2026-10-11 批 4 全站卡片字段(CLAUDE.md「地点照 Indeed 写一行」,覆盖上面「省市分开」):市、省两个名字并成 name 桶 PlaceName ——
+ * 「市, 省码」一行(lib/location placeLineOf;本处数据不带街号)整行一个地图链,中 / 韩界面下面灰字「市译名,省译名」。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
 import { cssOf } from '@/components/css'
-import { CityName, JobName } from '@/components/name'
+import { JobName, PlaceName } from '@/components/name'
+import { placeLineOf } from '@/lib/location'
 import { CLS_SEP, TEXT_NONE } from './constants'
 import { payShownOf } from './functions'
 import type { JobMiniRowIn } from './types'
@@ -54,7 +57,10 @@ export function JobMiniRow({
       <span className={css.jobR}>
         <div className={css.jobPay}>{payShownOf(salaryText)}</div>
         <div className={css.jobCity}>
-          {city !== TEXT_NONE && <CityName city={city} province={province} zh={cityZh} ko={cityKo} />}
+          {city !== TEXT_NONE && (
+            <PlaceName line={placeLineOf({ address: TEXT_NONE, city, province })}
+              cityZh={cityZh} cityKo={cityKo} province={province} />
+          )}
         </div>
       </span>
     </div>

@@ -6,8 +6,13 @@
  */
 import { peekJobById } from '@/components/modal'
 import { mapQuery, mapsUrl, PROV_NAMES } from '@/lib/location'
-import { LANG_KO, LANG_ZH, LAYER_CO, MAP_CITY, MAP_PROVINCE, POOL_KEY_HEAD, PROV_KEY, TEXT_NONE } from './constants'
-import type { CityMapIn, CoPeekIn, MapHrefIn, NameClickFn, NameView, ProvNameOfIn, SubIn } from './types'
+import {
+  HOURS_EN, KEY_HOURS_HEAD, KEY_PLACE_SUB, KEY_TERM_HEAD, LANG_KO, LANG_ZH, LAYER_CO, MAP_CITY, MAP_PROVINCE,
+  POOL_KEY_HEAD, PROV_KEY, TERM_EN, TEXT_NONE,
+} from './constants'
+import type {
+  CityMapIn, CoPeekIn, KindNameIn, KindTableIn, MapHrefIn, NameClickFn, NameView, PlaceSubIn, ProvNameOfIn, SubIn,
+} from './types'
 
 /**
  * 造「点名字」的手柄:普通左键拦下、开弹框;按着 Ctrl / ⌘ / Shift / Alt 或非左键的放行给链接(新标签开整页的习惯不破)。
@@ -108,6 +113,73 @@ export function provNameOf(x: ProvNameOfIn): NameView {
   if (local === key) {
     return { en, sub: TEXT_NONE }
   }
+  return { en, sub: subOf({ lang: x.lang, zh: local, ko: local }) }
+}
+
+/**
+ * 地点一行的 Google 地图链接(整行一个链;2026-10-11 批 4 自 myjobs 桶收过来)。
+ *
+ * @param line 地点一行。
+ * @returns 链接;没有地点给空串。
+ */
+export function placeHrefOf(line: string): string {
+  if (line === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  return mapsUrl(line)
+}
+
+/**
+ * 地点一行底下的灰字:「市译名,省译名」(英文界面不出;只有一样有就只写那一样)。
+ * 2026-10-11 批 4 自 myjobs 桶收过来(CLAUDE.md「地点照 Indeed 写一行」)。
+ *
+ * @param x 城市两种译名、省码、界面语与取词函数。
+ * @returns 灰字;不出给空串。
+ */
+export function placeSubOf(x: PlaceSubIn): string {
+  const city = subOf({ lang: x.lang, zh: x.cityZh, ko: x.cityKo })
+  const prov = provNameOf({ code: x.province, lang: x.lang, t: x.t }).sub
+  if (city === TEXT_NONE) {
+    return prov
+  }
+  if (prov === TEXT_NONE) {
+    return city
+  }
+  return x.t(KEY_PLACE_SUB, { c: city, p: prov })
+}
+
+/**
+ * 工时两行名:full / part = Full-time 全职 / Part-time 兼职(数据层归一值;没标或认不得两格都空)。
+ *
+ * @param x 归一值、界面语与取词函数。
+ * @returns 两行名。
+ */
+export function hoursNameOf(x: KindNameIn): NameView {
+  return kindNameOf({ v: x.v, en: HOURS_EN, keyHead: KEY_HOURS_HEAD, lang: x.lang, t: x.t })
+}
+
+/**
+ * 雇佣期两行名:permanent / term / seasonal / casual = Permanent 长期 / Fixed-term 定期合同 / Seasonal 季节性 / Casual 临时。
+ *
+ * @param x 归一值、界面语与取词函数。
+ * @returns 两行名。
+ */
+export function termNameOf(x: KindNameIn): NameView {
+  return kindNameOf({ v: x.v, en: TERM_EN, keyHead: KEY_TERM_HEAD, lang: x.lang, t: x.t })
+}
+
+/**
+ * 工时 / 雇佣期共用的查表(16d,Frank「可以,按这个改」;2026-10-11 批 4 自 myjobs 桶 namesOf 收过来)。
+ *
+ * @param x 归一值、英文名表、词条头、界面语与取词函数。
+ * @returns 两行名;没标或认不得两格都空。
+ */
+function kindNameOf(x: KindTableIn): NameView {
+  const en = x.en[x.v]
+  if (en == null) {
+    return { en: TEXT_NONE, sub: TEXT_NONE }
+  }
+  const local = x.t(x.keyHead + x.v)
   return { en, sub: subOf({ lang: x.lang, zh: local, ko: local }) }
 }
 

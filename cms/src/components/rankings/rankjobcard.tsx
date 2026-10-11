@@ -9,12 +9,15 @@
  * 2026-10-09 N 批(Frank「职位名、公司名、地点同形,省市分开」「城市 和 省份 点击 跳 google 地图」):
  * 地点行由「市, 省」一格拆成两个名字件(name 桶 CityName / ProvName,英文在上、界面语译名灰字在下,点了新标签开地图);
  * 职位名照旧直链官方原帖(榜单行没有职位号,开不了职位框;外站链接照旧新开标签页)。
+ * 2026-10-11 批 4 全站卡片字段(CLAUDE.md「地点照 Indeed 写一行」,覆盖上面「省市分开」):市、省两个名字并成 name 桶 PlaceName ——
+ * 「市, 省码」一行(lib/location placeLineOf;本处数据不带街号)整行一个地图链,中 / 韩界面下面灰字「市译名,省译名」。
  *
  * @author Frank
  * @time 2026-08-28 12:49:56
  */
 import { JobCard } from '@/components/card'
-import { CityName, ProvName } from '@/components/name'
+import { PlaceName } from '@/components/name'
+import { placeLineOf } from '@/lib/location'
 import { TEXT_NONE } from './constants'
 import { toRankJobCard } from './functions'
 import type { RankJobCardIn } from './types'
@@ -32,8 +35,8 @@ export function RankJobCard({ r }: RankJobCardIn) {
   if (r.city !== TEXT_NONE || r.province !== TEXT_NONE) {
     location = (
       <span className={css.cardWhere}>
-        {r.city !== TEXT_NONE && <CityName city={r.city} province={r.province} zh={TEXT_NONE} ko={TEXT_NONE} />}
-        {r.province !== TEXT_NONE && <ProvName code={r.province} />}
+        <PlaceName line={placeLineOf({ address: TEXT_NONE, city: r.city, province: r.province })}
+          cityZh={TEXT_NONE} cityKo={TEXT_NONE} province={r.province} />
       </span>
     )
   }

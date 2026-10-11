@@ -16,7 +16,7 @@ import { useLang } from '@/components/i18n'
 import { PeekContext } from '@/components/modal'
 import { ANCHOR_SAVED, KIND_SAVED, NOC_DESC_NONE, STAGE_ALL, URL_SAVED } from './constants'
 import { countOf, listRowsOf, savedColsOf } from './functions'
-import { useMyJobs, useScrollSaved } from './hooks'
+import { useLazyTitles, useMyJobs, useScrollSaved } from './hooks'
 import { JobList } from './joblist'
 import { Section } from './section'
 import type { MyJobsListIn } from './types'
@@ -31,6 +31,7 @@ import css from './myjobs.module.css'
 export function SavedList({ t, plan }: MyJobsListIn) {
   const [lang] = useLang()
   const p = useMyJobs({ url: URL_SAVED })
+  const titles = useLazyTitles({ items: p.items, lang })
   useScrollSaved(p.items != null)
   if (p.items == null) {
     return null
@@ -49,6 +50,7 @@ export function SavedList({ t, plan }: MyJobsListIn) {
     t,
     setItems: p.setItems,
     lang,
+    titles,
   })
   return (
     <Section title={t('fav.title')} count={countOf(p.items.length)} anchor={ANCHOR_SAVED}>

@@ -275,6 +275,11 @@ export const WHY_KEYS: Record<string, string> = {
    * 和你收藏的同类。
    */
   saved: 'mj.why.saved',
+
+  /**
+   * 和你投过的同类(2026-10-11)。
+   */
+  applied: 'mj.why.applied',
 }
 
 /**
@@ -374,56 +379,6 @@ export const SAVE_KIND = 'secondary'
  * 「取消收藏」的钮档(2026-10-10 批 2:收藏行「取消收藏」改带框次钮,16d)。
  */
 export const UNSAVE_KIND = 'secondary'
-
-/**
- * 工时归一值 → 英文名(数据层 employmentHours;16d,Frank「可以,按这个改」;界面语灰字走词条 mj.hours.*)。
- */
-export const HOURS_EN: Record<string, string> = {
-  /**
-   * 全职。
-   */
-  full: 'Full-time',
-
-  /**
-   * 兼职。
-   */
-  part: 'Part-time',
-}
-
-/**
- * 雇佣期归一值 → 英文名(数据层 employmentTerm;界面语灰字走词条 mj.term.*)。
- */
-export const TERM_EN: Record<string, string> = {
-  /**
-   * 长期。
-   */
-  permanent: 'Permanent',
-
-  /**
-   * 定期合同。
-   */
-  term: 'Fixed-term',
-
-  /**
-   * 季节性。
-   */
-  seasonal: 'Seasonal',
-
-  /**
-   * 临时。
-   */
-  casual: 'Casual',
-}
-
-/**
- * 工时灰字的词条头(后接归一值)。
- */
-export const KEY_HOURS_HEAD = 'mj.hours.'
-
-/**
- * 雇佣期灰字的词条头(后接归一值)。
- */
-export const KEY_TERM_HEAD = 'mj.term.'
 
 /**
  * 列身份:职位。
@@ -550,3 +505,8 @@ export const AV_MODAL_H = 760
  * 「已发出 <时刻>」胶囊的变体(绿:成功)。
  */
 export const SENT_TAG = 'ok'
+
+/**
+ * 空的懒翻表(只读投递框一行一条,不另起懒翻;库里存好的译名照出)。
+ */
+export const TITLES_NONE: Record<string, string> = {}

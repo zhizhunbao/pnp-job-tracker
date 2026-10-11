@@ -195,6 +195,11 @@ export const COL = {
   datePosted: 'datePosted',
 
   /**
+   * 截止日期(2026-10-11 批 4)。
+   */
+  validThrough: 'validThrough',
+
+  /**
    * 更新时间。
    */
   lastSeen: 'lastSeen',
@@ -1181,16 +1186,6 @@ export const Q_URL_SETTLE_MS = 600
 export const K_COL = 'col.'
 
 /**
- * 职位类型档(`emp.full` 等)。
- */
-export const K_EMP = 'emp.'
-
-/**
- * 雇佣期档(`term.permanent` 等)。
- */
-export const K_TERM = 'term.'
-
-/**
  * 谁能投三档的文案键前缀(后接 citizens_pr / temporary_ok / anyone)。
  */
 export const K_WHO = 'who.'
@@ -1242,9 +1237,13 @@ export const K_UNCAT = 'cell.uncat'
  * 2026-09-14 Frank「在大类前面也需要加一个 EE 的类别吧」:EE 类别列进默认集,排大分类之前(字段面板同序)。
  * 2026-09-21 Frank「默认显示这些列」(截图定版):EE 类别列出默认集(字段面板仍可调回),渠道列进默认集。
  * 2026-10-02 Frank「这个默认列 改成 职业」:默认集里大分类换成职业(同位,大分类回字段面板可勾);上面「大分类」是历史。
+ * 2026-10-11 批 4 全站卡片字段(Frank「卡片不要显示这个时间,网页加两列」;CLAUDE.md「地点照 Indeed 写一行」表格里默认只出「地址」):
+ * 省、市两列出默认集(字段面板仍可勾),换成地址一列(有街号写完整地址,没有写「市, 省码」);截止日期列进默认集、紧跟发布日期;
+ * 工时、雇佣期两列进默认集(排在 vs 中位后,同我的求职「薪资 → 工时 → 雇佣期」)。上面「11 列」是历史。
  */
 export const DEFAULT_COLS: JobColKey[] = [
-  'datePosted', 'noc', 'company', 'title', 'province', 'city', 'salary', 'salaryYr', 'vsMedian', 'origin', 'actions',
+  'datePosted', 'validThrough', 'noc', 'company', 'title', 'address', 'salary', 'salaryYr', 'vsMedian', 'empHours',
+  'empTerm', 'origin', 'actions',
 ]
 
 /**
@@ -1261,9 +1260,12 @@ export const DEFAULT_COLS: JobColKey[] = [
  * 2026-09-26 晚 Frank「发布时间 改成 发布日期」:第一列 label 随 i18n col.datePosted 改名。
  * 2026-10-01 Frank「AIP 弹框放到 PNP 列后面吗」「都做吧」:AIP 列从「发布」后挪到 PNP 后(EE › PNP › AIP 三个移民信号挨着,
  * 同 09-23 PNP 挪列的理由)。
+ * 2026-10-11 批 4:加截止日期列(紧跟发布日期);工时、雇佣期两列从 TEER 后挪到 vs 中位后(薪资 → 工时 → 雇佣期,同我的求职),
+ * 两格改英文黑字 + 界面语灰字(name 桶 hoursNameOf / termNameOf,与手机卡、职位框同一份)。
  */
 export const COLUMNS: ColSpec[] = [
   { key: 'datePosted', label: '发布日期' },
+  { key: 'validThrough', label: '截止日期' },
   { key: 'ee', label: 'EE 类别' },
   { key: 'pnp', label: 'PNP' },
   { key: 'aip', label: 'AIP' },
@@ -1271,8 +1273,6 @@ export const COLUMNS: ColSpec[] = [
   { key: 'noc', label: '职业' },
   { key: 'nocCode', label: 'NOC' },
   { key: 'teer', label: 'TEER' },
-  { key: 'empHours', label: '工时' },
-  { key: 'empTerm', label: '雇佣期' },
   { key: 'whoCanApply', label: '谁能投' },
   { key: 'company', label: '公司' },
   { key: 'title', label: '职位', always: true },
@@ -1287,6 +1287,8 @@ export const COLUMNS: ColSpec[] = [
   { key: 'wageMedHr', label: '中位时薪' },
   { key: 'wageMedYr', label: '中位年薪' },
   { key: 'vsMedian', label: 'vs 中位' },
+  { key: 'empHours', label: '工时' },
+  { key: 'empTerm', label: '雇佣期' },
   { key: 'source', label: '来源' },
   { key: 'origin', label: '渠道' },
   { key: 'direct', label: '发布' },
@@ -1330,7 +1332,7 @@ export const COL_SALARY_YR: JobColKey = 'salaryYr'
  * 同日 PNP 列同理(Frank 截图「ON 可提名」折成「ON 可提 / 名」):通道短标签不折行。
  */
 export const NOWRAP_COLS = new Set<JobColKey>([
-  'datePosted', 'lastSeen', 'closedAt', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer',
+  'datePosted', 'validThrough', 'lastSeen', 'closedAt', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer',
   'empHours', 'empTerm', 'whoCanApply', 'status', 'direct', 'aip', 'pilot', 'lmia', 'eligibility', 'city', 'noc',
   'nocCode', 'pnp',
 ])
@@ -1347,8 +1349,9 @@ export const WRAP_COLS = new Set<JobColKey>(['pilot', 'lmia', 'eligibility'])
  * (默认总宽 = 容器宽,压根不滚)。顺带收掉一个副作用:border-collapse 的表里
  * sticky 单元格的右边框 Chromium 不画 —— Frank「查询之后列竖线没了,点一下竖线才恢复」就是它。
  * 2026-10-02 默认集大分类换职业:固定左列跟着换成职业(与 DEFAULT_COLS 左四列一致)。
+ * 2026-10-11 批 4:截止日期列插在发布日期与职业之间,跟着固定(固定列中间夹一列不固定的,横滚时会被盖住)。
  */
-export const FROZEN_COLS = new Set<JobColKey>(['datePosted', 'noc', 'company', 'title'])
+export const FROZEN_COLS = new Set<JobColKey>(['datePosted', 'validThrough', 'noc', 'company', 'title'])
 
 /**
  * Pro 专属列(免费用户列位打码,真值本就没进浏览器)。**单一来源就是这一格** ——
@@ -1841,17 +1844,18 @@ export const SPONSOR_GRADE_AIP_ONLY = 3
  * 2026-09-14 EE 类别列插进默认集:比例手分(EE 7,公司 / 职位 / 操作让出),非实测。
  * 2026-09-21 EE 换渠道:EE 的 7 原额转给渠道列(GC Jobs / Job Bank 一类短词,够用),其余不动。
  * 2026-10-02 大分类换职业:职业接大分类的 9 原额(职业短名中文最长 8 字,与大分类同量级),非实测。
+ * 2026-10-11 批 4 默认集换成 13 列(加截止日期、地址、工时、雇佣期,撤省、市):比例手分,非实测。
  */
 export const DEFAULT_COLW_SEED = {
   /**
    * 这份比例对应的列集(逗号分隔,顺序即列序)。
    */
-  keys: 'datePosted,noc,company,title,province,city,salary,salaryYr,vsMedian,origin,actions',
+  keys: 'datePosted,validThrough,noc,company,title,address,salary,salaryYr,vsMedian,empHours,empTerm,origin,actions',
 
   /**
    * 各列占容器宽的百分比(和 = 100)。
    */
-  pct: [6.69, 9, 18.6, 13.9, 9, 9, 8, 5.8, 6.6, 7, 6.4],
+  pct: [6.69, 6.69, 7.5, 13, 12, 13, 6.5, 5.5, 5.6, 5.5, 6, 6.5, 5.52],
 }
 
 /**
@@ -2335,16 +2339,6 @@ export const JD_SEC_PAY = 'PAY'
 export const JD_SEC_APPLY = 'APPLY'
 
 /**
- * 「工作地点」节的键(2026-09-14 Frank「应该单独一个分类吧」:不在原帖分节里,由岗位地点字段合成)。
- */
-export const JD_SEC_LOC = 'LOC'
-
-/**
- * 省译名的 i18n 键头(lib/location 的 PROV_KEY 没出桶,本域自抄)。
- */
-export const JD_LOC_PROV_KEY = 'prov.'
-
-/**
  * 分节时相邻两片(标记、正文)的步长。
  */
 export const JD_SEC_STEP = 2
@@ -2419,11 +2413,6 @@ export const CANADA_MAIL_SUFFIX = 'canada.ca'
  * 来源行只报域名不铺整条链接(#239:整条 URL 在 375 上折两行又长又丑)。
  */
 export const WWW_PREFIX_RE = /^www\./
-
-/**
- * 地点两段之间的分隔(城市, 省)。
- */
-export const LOC_SEP = ', '
 
 /**
  * OAuth 回跳续投的有效期(10 分钟):超时就不再替他接着投,免得莫名其妙弹出投递。

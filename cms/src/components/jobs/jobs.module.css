@@ -1051,13 +1051,6 @@
 }
 
 /*
- * 市与省之间的逗号(2026-10-09 N6 批:两段换 name 桶 CityName / ProvName,原两段链接类 .cardLink 随之撤)。
- */
-.cardSep {
-  color: #9ca3af;
-}
-
-/*
  * 卡右上角的星标(#167⑩:胶囊都归卡底那排,右上角只留星标 —— 它是按钮不是胶囊)。
  */
 .star {
@@ -1349,14 +1342,6 @@
 .bullets {
   margin: 0;
   padding-left: 30px;
-}
-
-/*
- * 「怎么投」里的官方原帖链接。
- */
-.jdLink {
-  color: #2563eb;
-  text-decoration: none;
 }
 
 /*
@@ -1711,40 +1696,6 @@
 }
 
 /*
- * 职位名下面那行日期(2026-09-26 Frank 看过效果图点头;JobDates,详情页 H1 下与职位弹框标题下同一件):
- * 发布、截止两格,格间留空隙不用分隔符;窄屏放不下时第二格整格折到下一行,格内不拆。
- * 2026-10-01 撤回正文一节后原样挂回(09-27 删的三条)。
- */
-.dates {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 16px;
-  font-size: 13px;
-  color: #111827;
-
-  /*
-   * 2026-10-02 Frank「这个放到右边 和 灰字翻译在一行可以吗」「可以,按你说的做」:日期挪进译名行贴右
-   * (详情页 .titleMeta、弹框 modal 桶 .subMeta 管位置),这里只管两格本身;原先独占一行用的 order / flex-basis / 上下外边距撤,
-   * 字号随译名行改 13px。
-   */
-  justify-content: flex-end;
-}
-
-/*
- * 日期行的一格:标签与日期不拆行。
- */
-.dateCell {
-  white-space: nowrap;
-}
-
-/*
- * 日期行的标签灰(日期随行深色)。
- */
-.dateK {
-  color: #9ca3af;
-}
-
-/*
  * 职位名译名对照(#151 口径,与公司页在招职位同款)。
  */
 .titleAlias {
@@ -1773,44 +1724,9 @@
 
   /*
    * 2026-10-02 起按本行宽度切窄档(下面 @container):日期放不下时整块换到下一行。
+   * 2026-10-11 批 4:日期槽(.titleMeta)随两个日期收进「职位信息」卡撤,窄档那段 @container 一并撤;容器声明留着无害。
    */
   container-type: inline-size;
-}
-
-/*
- * 详情页译名行里的日期槽(2026-10-02 Frank「这个放到右边 和 灰字翻译在一行可以吗」「可以,按你说的做」;与弹框 modal 桶 .subMeta 同形):
- * 宽档贴右、排在「查看原帖」前;空槽不占位。
- */
-.titleMeta {
-  margin-left: auto;
-}
-
-/*
- * 有日期槽时「查看原帖」紧跟它(两个 auto 外边距会平分空白,把日期挤到中间)。
- */
-.titleMeta + .aiCtl {
-  margin-left: 0;
-}
-
-/*
- * 这一岗一个日期都没有:槽不占位,免得窄档多出一行空白。
- */
-.titleMeta:empty {
-  display: none;
-}
-
-/*
- * 窄档(手机宽度放不下译名 + 日期 + 查看原帖):第一行译名左、查看原帖右,日期整块换到下一行、仍贴右。
- */
-@container (max-width: 440px) {
-  .titleMeta {
-    order: 1;
-    flex-basis: 100%;
-  }
-
-  .titleMeta + .aiCtl {
-    margin-left: auto;
-  }
 }
 
 /*

@@ -90,6 +90,11 @@ export const SORT_COLUMNS: Record<string, string> = {
   datePosted: 'j.date_posted',
 
   /**
+   * 截止日期(2026-10-11 批 4 职位板加列;排序不是筛选,不另建索引,同 closedAt / lastSeen)。
+   */
+  validThrough: 'j.valid_through',
+
+  /**
    * 通道档(评分列的排序主键)。
    */
   score: 'j.grade_channel',

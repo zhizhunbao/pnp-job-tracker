@@ -122,6 +122,26 @@ export type HqLineIn = {
 }
 
 /**
+ * `placeLineOf` 的入参:职位地点三格('' = 这一格没有)。
+ */
+export type PlaceLineIn = {
+  /**
+   * 精确地址(带街号到邮编)。
+   */
+  address: string
+
+  /**
+   * 城市英文名。
+   */
+  city: string
+
+  /**
+   * 两位省码。
+   */
+  province: string
+}
+
+/**
  * `cleanProvs` 的入参。
  */
 export type CleanProvsIn = {

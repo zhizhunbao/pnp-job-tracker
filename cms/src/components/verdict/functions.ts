@@ -33,7 +33,7 @@ import type {
   ActiveProvIn, BuildProfileIn, ClickFn, CompanyJobsHrefIn, ConditionRow, EditAnswersIn, EntryLgIn,
   FetchVerdictIn, FilledClsIn, GateRowsIn, GroupClsIn, GroupNamesIn, GroupRowsIn, HasLocalAnswersIn,
   HasProfileIn, InitialWireIn, JobHrefIn, LoadStopIn, MaybeRowText, MaybeVerdictWire, NeedsFetchIn,
-  CityTextIn, MakeProvDispIn, ParamTextIn, PathwayNamesIn, ProvDispIn, ProvLabelFn, ProvRowsIn,
+  MakeProvDispIn, ParamTextIn, PathwayNamesIn, ProvDispIn, ProvLabelFn, ProvRowsIn,
   RowLabelIn, RowStateIn, RowSubIn, RowTextIn,
   RowTileStateIn, RowsIn, StopFn, TFn, TabChangeIn, TabItemsIn, TeerAtIn, TeerPartIn, TeerRangeIn,
   TileClickIn, TileEditIn, TileFn, TitleTile, TitleTileIn, TOfIn, TrackClickIn, VerdictLoadIn,
@@ -850,19 +850,6 @@ export function titleTileOf(x: TitleTileIn): TitleTile {
     return { value: x.title, sub: TEXT_NONE }
   }
   return { value: x.title, sub: alias }
-}
-
-/**
- * 「城市」事实格的值。
- *
- * @param x 城市名。
- * @returns 城市名;库里没记时给横杠。
- */
-export function cityTextOf(x: CityTextIn): string {
-  if (x.city === TEXT_NONE) {
-    return TEXT_DASH
-  }
-  return x.city
 }
 
 /**

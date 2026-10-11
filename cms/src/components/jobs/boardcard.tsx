@@ -12,18 +12,21 @@
  * 2026-08-28 换装批自 Jobs.tsx 重写落位。
  * 2026-10-09 N6 批(Frank「职位名、公司名、地点同形,省市分开」):地点改市、省两个名字(CardLocation 内换 name 桶 CityName / ProvName,
  * 点了去 Google 地图);公司名照旧英文一行、点了开职位板字段弹框 —— 职位板库行不带公司译名,两行形等数据补上再换。
+ * 2026-10-11 批 4 全站卡片字段(照我的求职手机卡):地点改 name 桶 PlaceName —— 照 Indeed 一行(有街号写完整地址,没有写
+ * 「市, 省码」)整行一个地图链 + 「市译名,省译名」灰字(CardLocation 市 / 省两段撤);地点行下加工时与雇佣期两名并排
+ * (HoursName / TermName,英文黑字 + 界面语灰字)。卡上不加截止日期(Frank「卡片不要显示这个时间,网页加两列」),右侧发布日期照旧。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { JobCard } from '@/components/card'
+import { HoursName, PlaceName, TermName } from '@/components/name'
 import { DateAge, TimeText } from '@/components/time'
 import { COL, GRAIN_MINUTE, SPACE, TEXT_NONE } from './constants'
 import {
   boardCardViewOf, makeCardFieldClick, makeCardTitleClick, makeChipClick, makeSaveToggle, someOf,
 } from './functions'
 import { BoardChip } from './boardchip'
-import { CardLocation } from './cardlocation'
 import { CardStar } from './cardstar'
 import type { BoardCardIn } from './types'
 
@@ -49,10 +52,13 @@ export function BoardCard({ b, job, titleMap }: BoardCardIn) {
         onClick: makeCardFieldClick({ onField: b.onField, job, k: COL.company, title: job.company }),
       }}
       salary={someOf(v.salary)}
-      location={v.city !== TEXT_NONE && (
-        <CardLocation city={v.city} province={v.prov} zh={job.cityZh} ko={job.cityKo} />
+      location={v.place !== TEXT_NONE && (
+        <PlaceName line={v.place} cityZh={job.cityZh} cityKo={job.cityKo} province={job.province} />
       )}
       date={<DateAge iso={job.datePosted} aging={v.aging} ageText={v.ageText} />}
+      kinds={(job.employmentHours !== TEXT_NONE || job.employmentTerm !== TEXT_NONE) && (
+        <><HoursName v={job.employmentHours} /><TermName v={job.employmentTerm} /></>
+      )}
       action={
         <CardStar label={v.starLabel} star={v.star} saved={v.saved}
           onToggle={makeSaveToggle({ onSave: b.onSave, job })} />

@@ -1132,16 +1132,6 @@ export type TitleTileIn = {
 }
 
 /**
- * cityTextOf 的入参。
- */
-export type CityTextIn = {
-  /**
-   * 城市名;'' = 库里没记(渲横杠)。
-   */
-  city: string
-}
-
-/**
  * makeProvDisp 的入参。
  */
 export type MakeProvDispIn = {

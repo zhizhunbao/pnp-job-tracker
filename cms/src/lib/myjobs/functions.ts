@@ -5,13 +5,14 @@
  * @time 2026-10-06 23:00:00
  */
 import { count, firstOf, numOrNull, queryRows, SQL, text, vtext } from '../db'
+import { placeLineOf } from '../location'
 import {
-  ADDR_SEP, DAY_LOCALE, DAY_ZONE, JOB_CLOSED, MYJOBS_LIMIT, PICKS_CACHE_MAX, PICKS_DRAW_DAYS, PICKS_FREE, PICKS_LOCKED_SHOW, PICKS_MAX, PROV_PNP, TEXT_NONE, TIME_NONE,
-  WHY_OCC, WHY_PNP, WHY_SAVED, WHY_WAGE,
+  DAY_LOCALE, DAY_ZONE, JOB_CLOSED, MYJOBS_LIMIT, PICKS_CACHE_MAX, PICKS_DRAW_DAYS, PICKS_FREE, PICKS_LOCKED_SHOW, PICKS_MAX, PROV_PNP, TEXT_NONE, TIME_NONE,
+  WHY_APPLIED, WHY_OCC, WHY_PNP, WHY_SAVED, WHY_WAGE,
 } from './constants'
 import { CACHE } from './variables'
 import type {
-  AddressIn, CountDbRow, CountOut, DropTouchedIn, IdDbRow, LockedPick, MyJobDbRow, MyJobRow, MyJobsIn, MyJobsOut, PickDbRow,
+  CountDbRow, CountOut, DropTouchedIn, IdDbRow, LockedPick, MyJobDbRow, MyJobRow, MyJobsIn, MyJobsOut, PickDbRow,
   PickRow, PickRows, PicksIn, PicksJson, PicksJsonOut, PicksOut, PicksSplitIn, PicksViewIn, ReasonCodes, ReasonsIn,
   TimeCell, TouchedOut,
 } from './types'
@@ -46,7 +47,7 @@ export function toMyJobRow(r: MyJobDbRow): MyJobRow {
     titleKo: vtext({ v: r.trans_v, cell: r.title_ko }),
     companyZh: text(r.alias_zh),
     companyKo: text(r.alias_ko),
-    address: addressOf({ address: text(r.address), city: text(r.city), province: text(r.province) }),
+    address: placeLineOf({ address: text(r.address), city: text(r.city), province: text(r.province) }),
     hours: text(r.employment_hours),
     term: text(r.employment_term),
     validThrough: isoOf(r.valid_through),
@@ -215,39 +216,25 @@ export function toLockedPick(r: PickRow): LockedPick {
 }
 
 /**
- * 地点一行(照 Indeed;CLAUDE.md「地点照 Indeed 写一行」):有精确地址用它,没有写「市, 省码」,市也没有只写省码。
- *
- * @param x 精确地址、城市、省码。
- * @returns 一行。
- */
-export function addressOf(x: AddressIn): string {
-  if (x.address !== TEXT_NONE) {
-    return x.address
-  }
-  if (x.city === TEXT_NONE) {
-    return x.province
-  }
-  if (x.province === TEXT_NONE) {
-    return x.city
-  }
-  return x.city + ADDR_SEP + x.province
-}
-
-/**
  * 推荐理由(只放真的;顺序 = 职业对口 / 和收藏的同类 → 能走省提名 → 薪资高于中位)。
  * 投过的同组已写「职业对口」时不再写「和你收藏的同类」(一个事实一枚胶囊);魁北克等没有 PNP 简称的省不出省提名理由。
  * 2026-10-11 Frank「OINP 很长时间没有捞人了」→「90 天可以」:这一省雇主 offer 类通道近 90 天没抽过的,也不出省提名理由;
  * 同日档案「想做的工作」同组也算「职业对口」。
+ * 2026-10-11 晚 Frank「可以,按你说的改」(草稿被当成投过、推出卡车司机还贴「职业对口」):「职业对口」只给档案答案命中的;
+ * 收藏命中照旧「和你收藏的同类」;真发出去的投递命中改出「和你投过的同类」(WHY_APPLIED)。三样一岗只出一枚,
+ * 档案 → 收藏 → 投递(SQL 那头档案答了就不按收藏 / 投递选岗,两格必是 false)。上面「投过的同组已写职业对口」作废。
  *
  * @param x 四个判定格与省码。
  * @returns 理由码。
  */
 export function reasonsOf(x: ReasonsIn): ReasonCodes {
   const out: ReasonCodes = []
-  if (x.occApplied || x.occWant) {
+  if (x.occWant) {
     out.push(WHY_OCC)
   } else if (x.occSaved) {
     out.push(WHY_SAVED)
+  } else if (x.occApplied) {
+    out.push(WHY_APPLIED)
   }
   if (x.pnp && x.offerActive && programOf(x.province) !== TEXT_NONE) {
     out.push(WHY_PNP)
@@ -294,7 +281,7 @@ export function toPickRow(r: PickDbRow): PickRow {
     companyZh: text(r.alias_zh),
     companyKo: text(r.alias_ko),
     companySlug: text(r.company_slug),
-    address: addressOf({ address: text(r.address), city, province }),
+    address: placeLineOf({ address: text(r.address), city, province }),
     city,
     cityZh: text(r.city_zh),
     cityKo: text(r.city_ko),

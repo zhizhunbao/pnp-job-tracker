@@ -13,8 +13,9 @@
  */
 import { openApply } from '@/components/apply'
 import { cssOf } from '@/components/css'
-import { provNameOf, subOf } from '@/components/name'
-import { homeProvinceOf, mapsUrl } from '@/lib/location'
+import { lazyTitleOf, titleSubOf } from '@/components/jobtitle'
+import { hoursNameOf, placeHrefOf, placeSubOf, termNameOf } from '@/components/name'
+import { homeProvinceOf } from '@/lib/location'
 import { ymd } from '@/lib/time'
 import { ActCell } from './actcell'
 import { AddrCell } from './addrcell'
@@ -24,9 +25,9 @@ import {
   ACT_APPLY, ACT_CONT, ACT_COVER, ACT_OPEN, ACT_RESUME, ACT_UNSAVE, ANCHOR_SAVED, CLS_SEP, COL_ACT, COL_ADDR,
   COL_APPLIED_ON, COL_COMPANY, COL_DEADLINE, COL_HOURS, COL_PAY, COL_POSTED, COL_SAVED_ON, COL_STATUS, COL_TERM,
   COL_TITLE,
-  COL_WHY, CRED_INCLUDE, FILE_COVER_TAIL, FILE_RESUME_TAIL, HOURS_EN, JOB_HREF_HEAD, KEY_HOURS_HEAD, KEY_TERM_HEAD,
+  COL_WHY, CRED_INCLUDE, FILE_COVER_TAIL, FILE_RESUME_TAIL, JOB_HREF_HEAD,
   KIND_APPLIED, KIND_SAVED, LOCK_FILL, LOCK_FILL_N, METHOD_DELETE, OPEN_KIND, PRIMARY_KIND, QP_SEC, SEC_FAVS, STAGES,
-  STAGE_ALL, STAGE_FILTERS, ST_DRAFT, TERM_EN, TEXT_NONE, UNSAVE_KIND, URL_APPLY_HEAD, URL_FILE_HEAD, URL_PICKS,
+  STAGE_ALL, STAGE_FILTERS, ST_DRAFT, TEXT_NONE, TITLES_NONE, UNSAVE_KIND, URL_APPLY_HEAD, URL_FILE_HEAD, URL_PICKS,
   URL_PICKS_FRESH,
   URL_SAVED_JOB_HEAD, WHY_KEYS, WHY_TAG,
 } from './constants'
@@ -40,10 +41,10 @@ import { TermCell } from './termcell'
 import { openAppView } from './thread'
 import { TitleCell } from './titlecell'
 import type {
-  ActBtn, AddrSubIn, ByStageIn, CellRowIn, CellRowsIn, ColsIn, FileHrefIn, FlagIn, KindNameIn, ListRow, LoadMyJobsIn,
-  LoadPicksIn, LockFill, LockedItem, MaybeStageDef, MjCol, MyJobItem, MyJobsRespJson, NamePair, PickIn, PickItem,
+  ActBtn, ByStageIn, CellRowIn, CellRowsIn, ColsIn, FileHrefForIn, FileHrefIn, FlagIn, ItemByIdIn, ListRow,
+  LoadMyJobsIn, LoadPicksIn, LockFill, LockedItem, MaybeStageDef, MjCol, MyJobItem, MyJobsRespJson, PickIn, PickItem,
   PickRowIn, PickRowsIn, PicksFact, PicksRespJson, PillClickIn, ReasonTextsIn, StagePill, StagePillsIn, TagItem,
-  UnsaveIn, ViewRowIn, ItemByIdIn, FileHrefForIn,
+  TitleSubForIn, UnsaveIn, ViewRowIn,
 } from './types'
 import css from './myjobs.module.css'
 
@@ -154,6 +155,7 @@ export function listRowsOf(x: CellRowsIn): ListRow[] {
       t: x.t,
       setItems: x.setItems,
       lang: x.lang,
+      titles: x.titles,
     }))
   }
   return out
@@ -169,8 +171,8 @@ export function listRowsOf(x: CellRowsIn): ListRow[] {
  */
 export function listRowOf(x: CellRowIn): ListRow {
   const it = x.item
-  const hours = namesOf({ v: it.hours, en: HOURS_EN, keyHead: KEY_HOURS_HEAD, lang: x.lang, t: x.t })
-  const term = namesOf({ v: it.term, en: TERM_EN, keyHead: KEY_TERM_HEAD, lang: x.lang, t: x.t })
+  const hours = hoursNameOf({ v: it.hours, lang: x.lang, t: x.t })
+  const term = termNameOf({ v: it.term, lang: x.lang, t: x.t })
   const appliedOn = appliedOnOf(x)
   let savedOn = TEXT_NONE
   let cornerDate = appliedOn
@@ -182,15 +184,17 @@ export function listRowOf(x: CellRowIn): ListRow {
     key: String(it.id),
     jobId: it.jobId,
     title: it.title,
-    titleSub: subOf({ lang: x.lang, zh: it.titleZh, ko: it.titleKo }),
+    titleSub: titleSubFor({
+      title: it.title, titleZh: it.titleZh, titleKo: it.titleKo, titles: x.titles, lang: x.lang,
+    }),
     closedText: closedTextOf(x),
     company: it.company,
     companyZh: it.companyZh,
     companyKo: it.companyKo,
     companySlug: it.companySlug,
     address: it.address,
-    addressHref: mapHrefOf(it.address),
-    addressSub: addrSubOf({ cityZh: it.cityZh, cityKo: it.cityKo, province: it.province, lang: x.lang, t: x.t }),
+    addressHref: placeHrefOf(it.address),
+    addressSub: placeSubOf({ cityZh: it.cityZh, cityKo: it.cityKo, province: it.province, lang: x.lang, t: x.t }),
     salary: it.salary,
     hoursEn: hours.en,
     hoursSub: hours.sub,
@@ -515,51 +519,19 @@ export function ymdOf(iso: string): string {
 }
 
 /**
- * 地点一行的 Google 地图链接(没有地点给空串)。
+ * 职位名底下的灰字(2026-10-11 Frank「可以,按你说的改」:三张清单的职位格照全站 jobtitle 口径 —— 库里存好的标题译名 →
+ * 懒翻回来的;英文界面不出、和岗名一样的不出。清单行不带职业名,职业名兜底那一档空着)。
  *
- * @param address 地点一行。
- * @returns 链接。
+ * @param x 职位名、两语库存译名、懒翻表与界面语。
+ * @returns 灰字;没有给空串。
  */
-export function mapHrefOf(address: string): string {
-  if (address === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  return mapsUrl(address)
-}
-
-/**
- * 地点一行底下的灰字:「市译名,省译名」(英文界面不出;只有一样有就只写那一样)。
- *
- * @param x 城市两种译名、省码、界面语与取词函数。
- * @returns 灰字;不出给空串。
- */
-export function addrSubOf(x: AddrSubIn): string {
-  const city = subOf({ lang: x.lang, zh: x.cityZh, ko: x.cityKo })
-  const prov = provNameOf({ code: x.province, lang: x.lang, t: x.t }).sub
-  if (city === TEXT_NONE) {
-    return prov
-  }
-  if (prov === TEXT_NONE) {
-    return city
-  }
-  return x.t('mj.addrSub', { c: city, p: prov })
-}
-
-/**
- * 工时 / 雇佣期的两行名(数据层归一值 → 英文名 + 界面语灰字;16d,Frank「可以,按这个改」):
- * full / part = Full-time 全职 / Part-time 兼职;permanent / term / seasonal / casual = Permanent 长期 / Fixed-term 定期合同 /
- * Seasonal 季节性 / Casual 临时。没标或认不得的两格都空。
- *
- * @param x 归一值、英文名表、词条头、界面语与取词函数。
- * @returns 两行名。
- */
-export function namesOf(x: KindNameIn): NamePair {
-  const en = x.en[x.v]
-  if (en == null) {
-    return { en: TEXT_NONE, sub: TEXT_NONE }
-  }
-  const local = x.t(x.keyHead + x.v)
-  return { en, sub: subOf({ lang: x.lang, zh: local, ko: local }) }
+export function titleSubFor(x: TitleSubForIn): string {
+  return titleSubOf({
+    row: { title: x.title, titleZh: x.titleZh, titleKo: x.titleKo },
+    lang: x.lang,
+    lazy: lazyTitleOf({ map: x.titles, title: x.title }),
+    noc: TEXT_NONE,
+  })
 }
 
 /**
@@ -670,6 +642,19 @@ export function toPicksFact(d: PicksRespJson): PicksFact {
 }
 
 /**
+ * 推荐清单里看得见的那几条(还没拉到给 null;懒翻表的入参)。
+ *
+ * @param data 推荐整包。
+ * @returns 看得见的推荐;没拉到给 null。
+ */
+export function picksOf(data: PicksFact | null): PickItem[] | null {
+  if (data == null) {
+    return null
+  }
+  return data.picks
+}
+
+/**
  * 推荐的展示行。
  *
  * @param x 推荐、界面语与取词函数。
@@ -678,7 +663,7 @@ export function toPicksFact(d: PicksRespJson): PicksFact {
 export function pickRowsOf(x: PickRowsIn): ListRow[] {
   const out: ListRow[] = []
   for (const item of x.items) {
-    out.push(pickRowOf({ item, lang: x.lang, t: x.t }))
+    out.push(pickRowOf({ item, lang: x.lang, t: x.t, titles: x.titles }))
   }
   return out
 }
@@ -692,8 +677,8 @@ export function pickRowsOf(x: PickRowsIn): ListRow[] {
  */
 export function pickRowOf(x: PickRowIn): ListRow {
   const it = x.item
-  const hours = namesOf({ v: it.hours, en: HOURS_EN, keyHead: KEY_HOURS_HEAD, lang: x.lang, t: x.t })
-  const term = namesOf({ v: it.term, en: TERM_EN, keyHead: KEY_TERM_HEAD, lang: x.lang, t: x.t })
+  const hours = hoursNameOf({ v: it.hours, lang: x.lang, t: x.t })
+  const term = termNameOf({ v: it.term, lang: x.lang, t: x.t })
   const tags: TagItem[] = []
   for (const text of reasonTextsOf({ reasons: it.reasons, program: it.program, t: x.t })) {
     tags.push({ text, variant: WHY_TAG })
@@ -703,15 +688,17 @@ export function pickRowOf(x: PickRowIn): ListRow {
     key: String(it.id),
     jobId: it.id,
     title: it.title,
-    titleSub: subOf({ lang: x.lang, zh: it.titleZh, ko: it.titleKo }),
+    titleSub: titleSubFor({
+      title: it.title, titleZh: it.titleZh, titleKo: it.titleKo, titles: x.titles, lang: x.lang,
+    }),
     closedText: TEXT_NONE,
     company: it.company,
     companyZh: it.companyZh,
     companyKo: it.companyKo,
     companySlug: it.companySlug,
     address: it.address,
-    addressHref: mapHrefOf(it.address),
-    addressSub: addrSubOf({ cityZh: it.cityZh, cityKo: it.cityKo, province: it.province, lang: x.lang, t: x.t }),
+    addressHref: placeHrefOf(it.address),
+    addressSub: placeSubOf({ cityZh: it.cityZh, cityKo: it.cityKo, province: it.province, lang: x.lang, t: x.t }),
     salary: it.salary,
     hoursEn: hours.en,
     hoursSub: hours.sub,
@@ -817,7 +804,14 @@ export function makeAppOpen(appId: number): () => void {
  */
 export function viewRowOf(x: ViewRowIn): ListRow {
   return listRowOf({
-    kind: KIND_APPLIED, filter: STAGE_ALL, item: x.item, items: [x.item], t: x.t, setItems: keepItems, lang: x.lang,
+    kind: KIND_APPLIED,
+    filter: STAGE_ALL,
+    item: x.item,
+    items: [x.item],
+    t: x.t,
+    setItems: keepItems,
+    lang: x.lang,
+    titles: TITLES_NONE,
   })
 }
 

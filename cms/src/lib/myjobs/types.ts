@@ -682,26 +682,6 @@ export type DropTouchedIn = {
 }
 
 /**
- * 地点一行(addressOf)的入参。
- */
-export type AddressIn = {
-  /**
-   * 精确地址(没有 = 空串)。
-   */
-  address: string
-
-  /**
-   * 城市英文名。
-   */
-  city: string
-
-  /**
-   * 省码。
-   */
-  province: string
-}
-
-/**
  * 推荐理由(reasonsOf)的入参:库行里的四个判定格与省码。
  */
 export type ReasonsIn = {
@@ -721,7 +701,7 @@ export type ReasonsIn = {
   aboveMed: boolean
 
   /**
-   * 和投过的同职业单元组。
+   * 和投过的同职业单元组(2026-10-11 起:只算真发出去的投递,完整 5 位 NOC 比)。
    */
   occApplied: boolean
 

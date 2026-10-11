@@ -12,8 +12,8 @@
 import { useLang } from '@/components/i18n'
 import { PricingModal } from '@/components/pricing'
 import { ANCHOR_PICKS } from './constants'
-import { pickColsOf, pickRowsOf } from './functions'
-import { usePicks } from './hooks'
+import { pickColsOf, pickRowsOf, picksOf } from './functions'
+import { useLazyTitles, usePicks } from './hooks'
 import { JobList } from './joblist'
 import { MorePicks } from './morepicks'
 import { Section } from './section'
@@ -29,6 +29,7 @@ import css from './myjobs.module.css'
 export function Picks({ t, pro, gen, asked }: PicksIn) {
   const [lang] = useLang()
   const p = usePicks({ gen, asked })
+  const titles = useLazyTitles({ items: picksOf(p.data), lang })
   if (p.failed) {
     return (
       <Section title={t('mj.picks')} count={null} anchor={ANCHOR_PICKS}>
@@ -39,7 +40,7 @@ export function Picks({ t, pro, gen, asked }: PicksIn) {
   if (p.data == null) {
     return null
   }
-  const rows = pickRowsOf({ items: p.data.picks, lang, t })
+  const rows = pickRowsOf({ items: p.data.picks, lang, t, titles })
   return (
     <>
       <Section title={t('mj.picks')} count={p.data.picks.length} anchor={ANCHOR_PICKS}>

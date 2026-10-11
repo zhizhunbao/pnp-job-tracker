@@ -6,18 +6,20 @@
  * 同日 N6 批:职位名 / 公司名换 name 桶的 JobName / CompanyName(件自己往弹框总线上推层),本机不再持栈、不再递界面语。
  * 2026-10-10 批 2:加两台机器 —— usePicks(今日推荐:挂上拉一次 + 定价框开关)、usePush(新岗推送:拉设置、改、存)。
  * 2026-10-10 批 3:加两台 —— useAppHost(只读投递框宿主:读地址栏 `?app=`)、useAppView(框里:拉投递清单找那一行 + 拉往来)。
+ * 2026-10-11:加 useLazyTitles(三张清单职位名灰字的懒翻表,jobtitle 桶 useTitleMap 包一层)。
  *
  * @author Frank
  * @time 2026-10-06 23:20:00
  */
 import { useEffect, useState } from 'react'
+import { untranslatedOf, useTitleMap } from '@/components/jobtitle'
 import { STAGE_ALL, TEXT_NONE, URL_APPLIED } from './constants'
 import { itemByIdOf, makeFlag, makeLoadMyJobs, makeLoadPicks, scrollSavedIfLinked } from './functions'
 import { makeLoadPush, makeSavePush } from './prefs'
 import { bindAppHost, closeAppView, makeLoadThread } from './thread'
 import type {
-  AppHostPanel, AppViewHookIn, AppViewPanel, AvThread, MyJobItem, MyJobsHookIn, MyJobsPanel, PicksFact, PicksHookIn,
-  PicksPanel, PushIn, PushPanel,
+  AppHostPanel, AppViewHookIn, AppViewPanel, AvThread, LazyTitlesIn, MyJobItem, MyJobsHookIn, MyJobsPanel, PicksFact,
+  PicksHookIn, PicksPanel, PushIn, PushPanel, TitledItem,
 } from './types'
 
 /**
@@ -147,4 +149,21 @@ export function useAppView(x: AppViewHookIn): AppViewPanel {
     item = itemByIdOf({ items, id: x.appId })
   }
   return { item, thread, failed: failed || (items != null && item == null) }
+}
+
+/**
+ * 一张清单的职位名懒翻表(2026-10-11 Frank「可以,按你说的改」:职位格照全站 jobtitle 口径补灰字):
+ * 库里没存界面语译名的岗名批量懒翻,英文界面不翻;清单还没拉到给空表。
+ *
+ * @param x 清单行与界面语。
+ * @returns 岗名 → 译名。
+ */
+export function useLazyTitles(x: LazyTitlesIn): Record<string, string> {
+  const rows: TitledItem[] = []
+  if (x.items != null) {
+    for (const it of x.items) {
+      rows.push({ title: it.title, titleZh: it.titleZh, titleKo: it.titleKo })
+    }
+  }
+  return useTitleMap({ titles: untranslatedOf({ rows, lang: x.lang }), lang: x.lang })
 }

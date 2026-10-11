@@ -7,6 +7,8 @@
 // 2026-09-27 Frank「放到 jd 正文部分如何」→ 选 ①:JobDates 改成正文里单独一节「日期」(小标题 + 一行一条),渲染段改认 li,
 // 并钉住小标题;四件性质不变。
 // 2026-10-01 Frank 选「回到职位名下面」:撤回一行两格,渲染段改认格(span),小标题那条随撤。
+// 2026-10-11 批 4:两格收进「职位信息」卡(JobInfoCard)当两行,标签键改职位板列名 col.datePosted / col.validThrough;
+// 渲染段改挂 JobInfoCard、认卡里的日期文字;四件性质不变。
 import fc from 'fast-check'
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -14,7 +16,7 @@ import { describe, expect, it } from 'vitest'
 
 // 测试例外:纯函数与组件直接点文件(桶只走门的规矩不管测试)
 import { jobDatesOf } from '@/components/jobs/functions'
-import { JobDates } from '@/components/jobs/jobdates'
+import { JobInfoCard } from '@/components/jobs/jobinfocard'
 import { isExpiredJob, toJobRow } from '@/lib/jobs/functions'
 import type { JobDbRow, JobRow } from '@/lib/jobs/types'
 import { ymd } from '@/lib/time'
@@ -53,25 +55,25 @@ const AFTER_MIDNIGHT_0927 = Date.UTC(2026, 8, 27, 4, 30)
 describe('金标:四种情形', () => {
   it('有截止日:发布、截止两格,发布在前', () => {
     expect(cellsOf(jobOf({ valid_through: '2026-10-16T00:00:00.000Z' }), NOON_0926)).toEqual([
-      ['detail.posted', '2026-09-25'],
-      ['detail.closes', '2026-10-16'],
+      ['col.datePosted', '2026-09-25'],
+      ['col.validThrough', '2026-10-16'],
     ])
   })
 
   it('没截止日:只出发布一格(不编预计截止)', () => {
-    expect(cellsOf(jobOf({ valid_through: null }), NOON_0926)).toEqual([['detail.posted', '2026-09-25']])
+    expect(cellsOf(jobOf({ valid_through: null }), NOON_0926)).toEqual([['col.datePosted', '2026-09-25']])
   })
 
   it('截止日已过:截止格不出', () => {
     expect(cellsOf(jobOf({ valid_through: '2026-09-25T00:00:00.000Z' }), NOON_0926)).toEqual([
-      ['detail.posted', '2026-09-25'],
+      ['col.datePosted', '2026-09-25'],
     ])
   })
 
   it('截止日就是今天:还算在期,两格都出', () => {
     expect(cellsOf(jobOf({ valid_through: '2026-09-26T00:00:00.000Z' }), NOON_0926)).toEqual([
-      ['detail.posted', '2026-09-25'],
-      ['detail.closes', '2026-09-26'],
+      ['col.datePosted', '2026-09-25'],
+      ['col.validThrough', '2026-09-26'],
     ])
   })
 })
@@ -79,7 +81,7 @@ describe('金标:四种情形', () => {
 describe('金标:边角', () => {
   it('已下架:截止日还没到也不出截止格(与 JobPosting 同口径)', () => {
     expect(cellsOf(jobOf({ status: 'closed', valid_through: '2026-10-16T00:00:00.000Z' }), NOON_0926)).toEqual([
-      ['detail.posted', '2026-09-25'],
+      ['col.datePosted', '2026-09-25'],
     ])
   })
 
@@ -89,14 +91,14 @@ describe('金标:边角', () => {
 
   it('没发布日但有截止日:只出截止一格', () => {
     expect(cellsOf(jobOf({ date_posted: null, valid_through: '2026-10-16T00:00:00.000Z' }), NOON_0926)).toEqual([
-      ['detail.closes', '2026-10-16'],
+      ['col.validThrough', '2026-10-16'],
     ])
   })
 
   it('板帖带时区的截止日(东部零点落库成 UTC 04:00):裁出来仍是发帖方写的那天', () => {
     expect(cellsOf(jobOf({ valid_through: '2026-10-11T04:00:00.000Z' }), NOON_0926)).toEqual([
-      ['detail.posted', '2026-09-25'],
-      ['detail.closes', '2026-10-11'],
+      ['col.datePosted', '2026-09-25'],
+      ['col.validThrough', '2026-10-11'],
     ])
   })
 })
@@ -105,11 +107,11 @@ describe('今天按多伦多日期', () => {
   const today = jobOf({ valid_through: '2026-09-26T00:00:00.000Z' })
 
   it('多伦多晚上 10 点(UTC 已是明天):截止日当天照出', () => {
-    expect(cellsOf(today, LATE_0926).map((c) => c[0])).toEqual(['detail.posted', 'detail.closes'])
+    expect(cellsOf(today, LATE_0926).map((c) => c[0])).toEqual(['col.datePosted', 'col.validThrough'])
   })
 
   it('多伦多过了零点:昨天截止的收掉', () => {
-    expect(cellsOf(today, AFTER_MIDNIGHT_0927).map((c) => c[0])).toEqual(['detail.posted'])
+    expect(cellsOf(today, AFTER_MIDNIGHT_0927).map((c) => c[0])).toEqual(['col.datePosted'])
   })
 })
 
@@ -166,10 +168,10 @@ describe('性质:任意截止日 × 任意此刻 × 任意状态', () => {
       const wantCloses = vt != null && x.status !== 'closed' && vt.slice(0, 10) >= torontoToday(x.now)
       const want: string[] = []
       if (x.hasPosted) {
-        want.push('detail.posted')
+        want.push('col.datePosted')
       }
       if (wantCloses) {
-        want.push('detail.closes')
+        want.push('col.validThrough')
       }
       expect(labels).toEqual(want)
     }), { numRuns: 500 })
@@ -181,44 +183,39 @@ describe('性质:任意截止日 × 任意此刻 × 任意状态', () => {
         return
       }
       const job = jobOf({ status: x.status, valid_through: deadlineOf(x.now, x.offset) })
-      const shown = jobDatesOf({ job, t, now: x.now }).some((c) => c.label === 'detail.closes')
+      const shown = jobDatesOf({ job, t, now: x.now }).some((c) => c.label === 'col.validThrough')
       expect(shown).toBe(isExpiredJob({ job, today: torontoToday(x.now) }) === false)
     }), { numRuns: 500 })
   })
 })
 
-describe('JobDates 渲染(真时钟,截止日取远未来 / 远过去,结果不随跑测的日子变)', () => {
-  /** 挂一次组件,交回每一格的文本;整行没渲给 null。 */
-  function cellTexts(job: JobRow): string[] | null {
+describe('JobInfoCard 日期两行(真时钟,截止日取远未来 / 远过去,结果不随跑测的日子变)', () => {
+  /** 挂一次卡,交回整卡文本。 */
+  function cardText(job: JobRow): string {
     ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
     const host = document.createElement('div')
     const root = createRoot(host)
     act(() => {
-      root.render(React.createElement(JobDates, { job, t }))
+      root.render(React.createElement(JobInfoCard, { job, lang: 'en' }))
     })
-    const sec = host.firstElementChild
-    let out: string[] | null = null
-    if (sec != null) {
-      out = Array.from(sec.children).map((c) => String(c.textContent))
-    }
+    const out = String(host.textContent)
     act(() => {
       root.unmount()
     })
     return out
   }
 
-  it('两格:标签、一个空格、YYYY-MM-DD', () => {
-    expect(cellTexts(jobOf({ valid_through: '2999-12-31T00:00:00.000Z' }))).toEqual([
-      'detail.posted 2026-09-25',
-      'detail.closes 2999-12-31',
-    ])
+  it('两行:发布日期、截止日期,YYYY-MM-DD', () => {
+    const text = cardText(jobOf({ valid_through: '2999-12-31T00:00:00.000Z' }))
+    expect(text).toContain('2026-09-25')
+    expect(text).toContain('2999-12-31')
   })
 
-  it('截止日已过:只剩发布一格', () => {
-    expect(cellTexts(jobOf({ valid_through: '2000-01-01T00:00:00.000Z' }))).toEqual(['detail.posted 2026-09-25'])
+  it('截止日已过:截止那行不出', () => {
+    expect(cardText(jobOf({ valid_through: '2000-01-01T00:00:00.000Z' }))).not.toContain('2000-01-01')
   })
 
-  it('一格都没有:整行不渲(不留空行)', () => {
-    expect(cellTexts(jobOf({ date_posted: null, valid_through: null }))).toBeNull()
+  it('地点照 Indeed 一行:没街号写「市, 省码」', () => {
+    expect(cardText(jobOf({ valid_through: null }))).toContain('Ottawa, ON')
   })
 })

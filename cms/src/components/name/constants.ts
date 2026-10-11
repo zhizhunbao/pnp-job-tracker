@@ -65,3 +65,59 @@ export const LAYER_CO = 'company'
  * 没有公司页的雇主池键头(AIP 指定雇主名单里对不上公司表的行,`n:<归一名>`;公司框认它,公司页不认)。
  */
 export const POOL_KEY_HEAD = 'n:'
+
+/**
+ * 工时归一值 → 英文名(数据层 employmentHours;界面语灰字走词条 `name.hours.*`)。
+ * 2026-10-11 批 4 自 myjobs 桶收过来(我的求职 + 职位板两个消费者)。
+ */
+export const HOURS_EN: Record<string, string> = {
+  /**
+   * 全职。
+   */
+  full: 'Full-time',
+
+  /**
+   * 兼职。
+   */
+  part: 'Part-time',
+}
+
+/**
+ * 雇佣期归一值 → 英文名(数据层 employmentTerm;界面语灰字走词条 `name.term.*`)。2026-10-11 批 4 自 myjobs 桶收过来。
+ */
+export const TERM_EN: Record<string, string> = {
+  /**
+   * 长期。
+   */
+  permanent: 'Permanent',
+
+  /**
+   * 定期合同。
+   */
+  term: 'Fixed-term',
+
+  /**
+   * 季节性。
+   */
+  seasonal: 'Seasonal',
+
+  /**
+   * 临时。
+   */
+  casual: 'Casual',
+}
+
+/**
+ * 工时灰字的词条头(后接归一值)。
+ */
+export const KEY_HOURS_HEAD = 'name.hours.'
+
+/**
+ * 雇佣期灰字的词条头(后接归一值)。
+ */
+export const KEY_TERM_HEAD = 'name.term.'
+
+/**
+ * 地点一行底下灰字「市译名,省译名」的词条键。
+ */
+export const KEY_PLACE_SUB = 'name.placeSub'

@@ -576,6 +576,8 @@
 
 /*
  * 地点:超长省略。
+ * 2026-10-11 批 4(CLAUDE.md「地点照 Indeed 写一行」):地点改完整地址一行 + 灰字(name 桶 PlaceName),名字不截断 ——
+ * 放开折行、撤裁口与省略号(上面「超长省略」作废)。
  */
 .loc {
   /*
@@ -589,19 +591,9 @@
   min-width: 0;
 
   /*
-   * 不折行。
+   * 长地址在词间折行,一串不带空格的也能断开。
    */
-  white-space: nowrap;
-
-  /*
-   * 超长裁掉。
-   */
-  overflow: hidden;
-
-  /*
-   * 裁口给省略号。
-   */
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 /*
@@ -622,6 +614,31 @@
    * 不折行。
    */
   white-space: nowrap;
+}
+
+/*
+ * 工时与雇佣期两名并排(2026-10-11 批 4,照我的求职手机卡 .kinds:英文黑字 + 界面语灰字,两名之间留空)。
+ */
+.kinds {
+  /*
+   * 两名一行。
+   */
+  display: flex;
+
+  /*
+   * 两名间距。
+   */
+  gap: 24px;
+
+  /*
+   * 与上文留 6px。
+   */
+  margin-top: 6px;
+
+  /*
+   * 字号同地点。
+   */
+  font-size: 12.5px;
 }
 
 /*

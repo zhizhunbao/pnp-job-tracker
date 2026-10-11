@@ -43,14 +43,14 @@ import css from './jobs.module.css'
 /**
  * 渲染 JD 身体。
  *
- * @param props 本岗、界面语言、分层态、在不在弹框里、JD 身体状态机与正文下面的尾巴。
+ * @param props 本岗、分层态、在不在弹框里、JD 身体状态机与正文下面的尾巴。
  * @returns 整副身体。
  */
-export function JobBody({ job, lang, plan, inModal = false, d, tail = null }: JobBodyIn) {
+export function JobBody({ job, plan, inModal = false, d, tail = null }: JobBodyIn) {
   const content = (
     <>
       {job.status === STATUS_CLOSED && <JdClosed text={d.t('detail.closedNote')} />}
-      <JdContent d={d} job={job} underTitle={UNDER_TITLE} loggedIn={plan.loggedIn} lang={lang} />
+      <JdContent d={d} job={job} underTitle={UNDER_TITLE} loggedIn={plan.loggedIn} />
     </>
   )
   return (

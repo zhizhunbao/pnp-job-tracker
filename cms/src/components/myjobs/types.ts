@@ -303,6 +303,11 @@ export type CellRowsIn = {
    * 界面语(译名灰字要它;2026-10-10 批 2)。
    */
   lang: Lang
+
+  /**
+   * 懒翻回来的职位名译名表(jobtitle 桶 useTitleMap;库里没存界面语译名的岗名才在里面)。
+   */
+  titles: Record<string, string>
 }
 
 /**
@@ -343,6 +348,11 @@ export type CellRowIn = {
    * 界面语。
    */
   lang: Lang
+
+  /**
+   * 懒翻回来的职位名译名表(jobtitle 桶 useTitleMap;库里没存界面语译名的岗名才在里面)。
+   */
+  titles: Record<string, string>
 }
 
 /**
@@ -783,6 +793,11 @@ export type PickRowsIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 懒翻回来的职位名译名表(jobtitle 桶 useTitleMap;库里没存界面语译名的岗名才在里面)。
+   */
+  titles: Record<string, string>
 }
 
 /**
@@ -803,6 +818,11 @@ export type PickRowIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 懒翻回来的职位名译名表(jobtitle 桶 useTitleMap;库里没存界面语译名的岗名才在里面)。
+   */
+  titles: Record<string, string>
 }
 
 /**
@@ -1251,81 +1271,6 @@ export type ColsIn = {
 }
 
 /**
- * 工时 / 雇佣期两行名(namesOf)的入参。
- */
-export type KindNameIn = {
-  /**
-   * 归一值。
-   */
-  v: string
-
-  /**
-   * 归一值 → 英文名。
-   */
-  en: Record<string, string>
-
-  /**
-   * 词条头(后接归一值)。
-   */
-  keyHead: string
-
-  /**
-   * 界面语。
-   */
-  lang: Lang
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
-/**
- * 一个名字的两行(英文 + 界面语灰字)。
- */
-export type NamePair = {
-  /**
-   * 英文。
-   */
-  en: string
-
-  /**
-   * 灰字。
-   */
-  sub: string
-}
-
-/**
- * 地点灰字(addrSubOf)的入参。
- */
-export type AddrSubIn = {
-  /**
-   * 城市中文译名。
-   */
-  cityZh: string
-
-  /**
-   * 城市韩文译名。
-   */
-  cityKo: string
-
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 界面语。
-   */
-  lang: Lang
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
-/**
  * viewRowOf 的入参(只读投递框「职位信息」卡的展示行)。
  */
 export type ViewRowIn = {
@@ -1568,4 +1513,69 @@ export type AppHostPanel = {
    * 关框。
    */
   onClose: () => void
+}
+
+/**
+ * useLazyTitles 的入参(2026-10-11 三张清单的职位名灰字补懒翻)。
+ */
+export type LazyTitlesIn = {
+  /**
+   * 这一张清单的行(还没拉到 = null)。
+   */
+  items: TitledItem[] | null
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+}
+
+/**
+ * 带职位名与两语库存译名的一行(MyJobItem / PickItem 都合这个形)。
+ */
+export type TitledItem = {
+  /**
+   * 职位名(英文原名)。
+   */
+  title: string
+
+  /**
+   * 库里存好的中文译名(过期当没有 = 空串)。
+   */
+  titleZh: string
+
+  /**
+   * 库里存好的韩文译名。
+   */
+  titleKo: string
+}
+
+/**
+ * titleSubFor 的入参:职位名、两语库存译名、懒翻表与界面语。
+ */
+export type TitleSubForIn = {
+  /**
+   * 职位名。
+   */
+  title: string
+
+  /**
+   * 库里存好的中文译名。
+   */
+  titleZh: string
+
+  /**
+   * 库里存好的韩文译名。
+   */
+  titleKo: string
+
+  /**
+   * 懒翻回来的译名表。
+   */
+  titles: Record<string, string>
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
 }

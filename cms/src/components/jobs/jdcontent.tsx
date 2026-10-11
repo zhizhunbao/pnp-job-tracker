@@ -29,6 +29,7 @@
  * 2026-09-27 Frank「放到 jd 正文部分如何」→ 看过效果图选 ①:正文区末尾挂一节「日期」(JobDates;整理版排在「工作地点」之后,
  * 原帖正文、没正文、额度到头三档同样挂),出不出与弹框尾巴同口径(jdShownOf:正文区有东西了才出,不让日期先于正文孤零零出现)。
  * 2026-10-01 Frank「这种有点突兀」「这种也突兀」(没正文 / 整理版 / 原帖三档里那一节都不搭)→ 选「回到职位名下面」:这一节撤,日期回职位名下(详情页 Job、弹框 ActHead)。
+ * 2026-10-11 Frank「三处都按你说的」:「工作地点」合成节与职位信息卡重复撤,地点两格的传参与只为它要的界面语言(lang)一并撤。
  * jdWaitingOf 的注释原文照录,留「当初为什么」:
  *   「正文区从头到尾要不要出转圈行:取数在途、整理在途、翻译在途三段合一(2026-09-14 Frank「加载途中为什么会闪一下」:
  *   三段各渲一条转圈,段切换那一瞬旧条卸新条挂就闪;合成一个判定一个元素就不闪)。
@@ -43,9 +44,9 @@
  */
 import { cssOf } from '@/components/css'
 import { blockedSrc } from '@/lib/jobs'
-import { JD_DONE, JD_EMPTY, JD_LIMITED, JD_MAX_LEN, TEXT_NONE } from './constants'
+import { JD_DONE, JD_EMPTY, JD_LIMITED, JD_MAX_LEN } from './constants'
 import {
-  fallbackPayOf, jdLocationOf, jdLocationZhOf, noTextOf, showFormattedOf, transShownOf,
+  fallbackPayOf, noTextOf, showFormattedOf, transShownOf,
 } from './functions'
 import { JdAiNote } from './jdainote'
 import { JdEmpty } from './jdempty'
@@ -60,7 +61,7 @@ import css from './jobs.module.css'
  * @param props JD 身体状态机、本岗、是不是紧跟大标题与登录态。
  * @returns 按取数态渲的正文区。
  */
-export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
+export function JdContent({ d, job, underTitle, loggedIn }: JdContentIn) {
   return (
     <>
       {d.status === JD_LIMITED && (
@@ -77,10 +78,6 @@ export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
             <JdFormattedView text={String(d.fmt)}
               t={d.t}
               fallbackPay={fallbackPayOf(job)}
-              location={jdLocationOf(job)}
-              locationZh={jdLocationZhOf({
-                t: d.t, job, lang, shown: transShownOf({ shown: d.showTrans, trans: d.trans }) !== TEXT_NONE,
-              })}
               applyUrl={job.applyUrl}
               applyEmail={d.applyEmail}
               underTitle={underTitle}

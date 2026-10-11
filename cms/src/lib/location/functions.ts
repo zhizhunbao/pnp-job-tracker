@@ -11,7 +11,7 @@ import {
   HOME_GATE_CSS_SLOT, HOME_GATE_JS, HOME_GATE_ZONES_SLOT,
   LANG_FR_HEAD, PROV_KEY, PROV_NAMES, PROV_QC, SEP_COMMA, TZ_CANADA_HEAD, TZ_CANADA_OTHER, TZ_EASTERN, TZ_PROVINCE,
 } from './constants'
-import type { CleanProvsIn, HqLineIn, LocJob, MapQueryIn, ParsedLoc, ProvList, ProvNameIn } from './types'
+import type { CleanProvsIn, HqLineIn, LocJob, MapQueryIn, ParsedLoc, PlaceLineIn, ProvList, ProvNameIn } from './types'
 
 /**
  * #146 显示用省名(Frank「中韩用户只看英文难理解」,拍板英文在前):中韩界面出
@@ -65,6 +65,27 @@ export function hqLineOf(input: HqLineIn): string {
     parts.push(COUNTRY_CANADA)
   }
   return parts.join(SEP_COMMA)
+}
+
+/**
+ * 职位地点一行(照 Indeed;CLAUDE.md「地点照 Indeed 写一行」,2026-10-10 Frank):有精确地址(数据层只留带街号的)用它,
+ * 没有写「市, 省码」,市也没有只写省码。2026-10-11 批 4 自 lib/myjobs 的 addressOf 收过来(我的求职 + 职位板两个消费者,
+ * 行为只留这一份)。
+ *
+ * @param input 精确地址、城市、省码。
+ * @returns 一行;三格都空给空串。
+ */
+export function placeLineOf(input: PlaceLineIn): string {
+  if (input.address !== LOC_NONE) {
+    return input.address
+  }
+  if (input.city === LOC_NONE) {
+    return input.province
+  }
+  if (input.province === LOC_NONE) {
+    return input.city
+  }
+  return input.city + SEP_COMMA + input.province
 }
 
 /**

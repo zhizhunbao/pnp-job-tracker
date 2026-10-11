@@ -887,11 +887,6 @@ export type ActHeadIn = {
    * 译名行右端的切换控件(jobs 桶 JdSwitches;2026-09-16 Frank「放到一行」)。
    */
   ctl: React.ReactNode
-
-  /**
-   * 译名行下那行日期(jobs 桶 JobDates,与详情页 H1 下同一件;2026-09-26 立、09-27 撤、10-01 挂回)。
-   */
-  dates: React.ReactNode
 }
 
 /**

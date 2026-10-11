@@ -95,11 +95,6 @@ export const DAY_ZONE = 'America/Toronto'
 export const DAY_LOCALE = 'en-CA'
 
 /**
- * 地点一行里市与省码之间的分隔(照 Indeed「Concord, ON」)。
- */
-export const ADDR_SEP = ', '
-
-/**
  * 推荐理由码:能走省提名雇主担保(胶囊写「能走 OINP 雇主担保」)。
  */
 export const WHY_PNP = 'pnp'
@@ -111,6 +106,7 @@ export const WHY_WAGE = 'wage'
 
 /**
  * 推荐理由码:和他投过的岗同一职业单元组。
+ * 2026-10-11 Frank「可以,按你说的改」:改成只给档案「想做的工作」命中的(胶囊「职业对口」);投过的另起 WHY_APPLIED。
  */
 export const WHY_OCC = 'occ'
 
@@ -118,6 +114,11 @@ export const WHY_OCC = 'occ'
  * 推荐理由码:和他收藏的岗同一职业单元组(投过的同组已写「职业对口」时不重复)。
  */
 export const WHY_SAVED = 'saved'
+
+/**
+ * 推荐理由码:和他真发出去的投递同一职业(完整 5 位 NOC;胶囊「和你投过的同类」;2026-10-11 立,草稿 / 待投不算)。
+ */
+export const WHY_APPLIED = 'applied'
 
 /**
  * 省码 → 省提名项目的通行简称(胶囊「能走 {简称} 雇主担保」;魁北克不属 PNP,不出)。

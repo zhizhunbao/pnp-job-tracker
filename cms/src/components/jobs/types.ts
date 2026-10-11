@@ -1448,32 +1448,6 @@ export type BoardChipIn = {
 }
 
 /**
- * CardLocation(卡片上的市/省两段链接)的 props。
- * 2026-10-09 N6 批:两段换 name 桶的 CityName / ProvName(地图链接由它们自己拼),原地图链接两格与市 / 省两个点击手柄撤。
- */
-export type CardLocationIn = {
-  /**
-   * 市名(英文)。
-   */
-  city: string
-
-  /**
-   * 省码;'' = 只出市。
-   */
-  province: string
-
-  /**
-   * 市名中文译名;'' = 没有。
-   */
-  zh: string
-
-  /**
-   * 市名韩文译名;'' = 没有。
-   */
-  ko: string
-}
-
-/**
  * 详情页维度:B2 后页面只用 NOC 职业名与分类译名(其余维度随移民卡砍一并不用)。
  */
 export type JobPageDims = {
@@ -1805,17 +1779,13 @@ export type RelatedGroupIn = {
 /**
  * JobBody(JD 正文身体:详情页与弹框同一棵树)的 props。
  * 2026-09-16 Frank「右边的按钮部分和左边的中文翻译放到一行」:切换控件上提到标题区,状态机由外面(详情页 / 弹框)起,递进来。
+ * 2026-10-11 Frank「三处都按你说的」:「工作地点」合成节撤,界面语言格(只递给 JdContent 拼地点译名)随之撤。
  */
 export type JobBodyIn = {
   /**
    * 本岗。
    */
   job: JobFact
-
-  /**
-   * 界面语言。
-   */
-  lang: Lang
 
   /**
    * 分层态。
@@ -1864,7 +1834,7 @@ export type JdOrigLinkIn = {
 }
 
 /**
- * JobDates(职位名下那行日期:发布 / 截止两格)的 props,也是 useJobDates 的入参。
+ * useJobDates 的入参(发布 / 截止两格;2026-10-11 批 4 起只剩「职位信息」卡一个消费者,JobDates 件撤)。
  */
 export type JobDatesIn = {
   /**
@@ -1876,6 +1846,21 @@ export type JobDatesIn = {
    * 取词函数。
    */
   t: TFn
+}
+
+/**
+ * JobInfoCard(职位页 / 职位框「职位信息」分区卡)的 props。
+ */
+export type JobInfoCardIn = {
+  /**
+   * 本岗。
+   */
+  job: JobFact
+
+  /**
+   * 界面语言。
+   */
+  lang: Lang
 }
 
 /**
@@ -2204,15 +2189,6 @@ export type JdFormattedViewIn = {
    */
   trans: string
 
-  /**
-   * 工作地点一句(街址或市 + 省;'' = 不出「工作地点」节,2026-09-14)。
-   */
-  location: string
-
-  /**
-   * 工作地点的界面语版;'' = 不出对照行。
-   */
-  locationZh: string
 }
 
 /**
@@ -5171,11 +5147,6 @@ export type JdContentIn = {
    * 登录态(额度用完时给匿名用户补一句登录提额说明)。
    */
   loggedIn: boolean
-
-  /**
-   * 界面语言(在途判定要看它)。
-   */
-  lang: Lang
 }
 
 /**
@@ -5590,14 +5561,9 @@ export type BoardCardView = {
   salary: string
 
   /**
-   * 市名;'' = 整段地点不出。
+   * 地点一行(2026-10-11 批 4,原市 / 省两格并成一格;'' = 整段地点不出)。
    */
-  city: string
-
-  /**
-   * 省码;'' = 只出市。
-   */
-  prov: string
+  place: string
 
   /**
    * 通道胶囊排;空 = 整排不出。
@@ -6026,76 +5992,6 @@ export type NocCategoryDoc = {
    * 小分类韩文名。
    */
   fineKo?: string | null
-}
-
-/**
- * jdLocationZhOf 的入参。
- */
-export type JdLocationZhIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 本岗。
-   */
-  job: JobFact
-
-  /**
-   * 界面语言:市名按它取核定译名(2026-09-14)。
-   */
-  lang: Lang
-
-  /**
-   * 正文对照在不在屏(开关关着或译文没回就不出,2026-09-16)。
-   */
-  shown: boolean
-}
-
-/**
- * jdCityLocalOf 的入参。
- */
-export type JdCityLocalIn = {
-  /**
-   * 本岗。
-   */
-  job: JobFact
-
-  /**
-   * 界面语言。
-   */
-  lang: Lang
-}
-
-/**
- * jdLocationSectionOf 的入参。
- */
-export type JdLocationSectionIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 工作地点一句;'' = 不出节。
-   */
-  location: string
-
-  /**
-   * 界面语版;'' = 不出对照行。
-   */
-  locationZh: string
-
-  /**
-   * 官方原帖链接(节形状要求的格,本节不用)。
-   */
-  applyUrl: string
-
-  /**
-   * 投递邮箱(节形状要求的格,本节不用)。
-   */
-  applyEmail: string
 }
 
 /**

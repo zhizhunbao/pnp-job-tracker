@@ -217,7 +217,7 @@ export type JobCardIn = {
   salary?: React.ReactNode
 
   /**
-   * 地点(市/省可能各自可点,交给调用方渲染)。
+   * 地点(市/省可能各自可点,交给调用方渲染)。2026-10-11 批 4 起一律 name 桶 PlaceName(完整地址一行 + 灰字)。
    */
   location?: React.ReactNode
 
@@ -225,6 +225,11 @@ export type JobCardIn = {
    * 发布时间(右列)。
    */
   date?: React.ReactNode
+
+  /**
+   * 工时与雇佣期两名并排(2026-10-11 批 4;没给 = 整行不出)。
+   */
+  kinds?: React.ReactNode
 
   /**
    * 通道胶囊排(PNP/EE/AIP…),空则整行不出。

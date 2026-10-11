@@ -17,7 +17,7 @@ import { useLang } from '@/components/i18n'
 import { PeekContext } from '@/components/modal'
 import { ANCHOR_APPLIED, KIND_APPLIED, NOC_DESC_NONE, URL_APPLIED } from './constants'
 import { appliedColsOf, byStageOf, countOf, listRowsOf, makePick, stagePillsOf } from './functions'
-import { useMyJobs } from './hooks'
+import { useLazyTitles, useMyJobs } from './hooks'
 import { JobList } from './joblist'
 import { Section } from './section'
 import { StageBar } from './stagebar'
@@ -33,6 +33,7 @@ import css from './myjobs.module.css'
 export function AppliedList({ t, plan }: MyJobsListIn) {
   const [lang] = useLang()
   const p = useMyJobs({ url: URL_APPLIED })
+  const titles = useLazyTitles({ items: p.items, lang })
   if (p.items == null) {
     return null
   }
@@ -50,6 +51,7 @@ export function AppliedList({ t, plan }: MyJobsListIn) {
     t,
     setItems: p.setItems,
     lang,
+    titles,
   })
   const empty = <div className={css.note}>{t('mj.emptyApplied')}</div>
   return (

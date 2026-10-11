@@ -259,3 +259,118 @@ export type ProvNameIn = {
    */
   code: string
 }
+
+/**
+ * `placeSubOf` 的入参:城市两种译名、省码、界面语与取词函数。
+ */
+export type PlaceSubIn = {
+  /**
+   * 城市中文译名(没有 = 空串)。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名(没有 = 空串)。
+   */
+  cityKo: string
+
+  /**
+   * 两位省码(没有 = 空串)。
+   */
+  province: string
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * `hoursNameOf` / `termNameOf` 的入参:归一值、界面语与取词函数。
+ */
+export type KindNameIn = {
+  /**
+   * 数据层归一值(没标 = 空串)。
+   */
+  v: string
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * `kindNameOf` 的入参:归一值、英文名表、词条头、界面语与取词函数。
+ */
+export type KindTableIn = {
+  /**
+   * 数据层归一值。
+   */
+  v: string
+
+  /**
+   * 归一值 → 英文名。
+   */
+  en: Record<string, string>
+
+  /**
+   * 灰字词条头(后接归一值)。
+   */
+  keyHead: string
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * PlaceName 的 props(tsx props):地点一行与灰字要的几格。
+ */
+export type PlaceNameIn = {
+  /**
+   * 地点一行(lib/location 的 placeLineOf 拼好:有街号是完整地址,没有是「市, 省码」;空串 = 不出)。
+   */
+  line: string
+
+  /**
+   * 城市中文译名(没有 = 空串)。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名(没有 = 空串)。
+   */
+  cityKo: string
+
+  /**
+   * 两位省码(没有 = 空串)。
+   */
+  province: string
+}
+
+/**
+ * HoursName / TermName 的 props(tsx props)。
+ */
+export type KindNameProps = {
+  /**
+   * 数据层归一值(没标 = 空串,不出)。
+   */
+  v: string
+}
