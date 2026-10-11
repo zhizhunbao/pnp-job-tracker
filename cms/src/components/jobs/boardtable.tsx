@@ -12,6 +12,7 @@
  * 2026-09-23「我的匹配」整拆:匹配视图换血期的骨架行与空态里的「去改档案」出口随之撤,空态只剩一句话。
  * 2026-09-26 /fe 首页 Frank「首屏整表替换」:表身随首屏本省闸挂类(rowsClsOf)—— 服务端照旧渲全国 50 行
  * (爬虫要读),设备时区对得上省的访客在本省那一页到之前看不到它们;表头与版面照占,换进来不整体跳。
+ * 2026-10-11 Frank「jobs 这个 横条去掉」:列多到下限之和超外框时列宽机器压文字列、表宽恒 100%,表格多挂紧排类(tableClsOf)。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -44,7 +45,8 @@ export function BoardTable({ b, headRowRef }: BoardTableIn) {
   return (
     <div className={wrapClsOf(b.data.swapping)}>
       {/* eslint-disable-next-line react/forbid-dom-props -- 表宽是列宽机器算出来的像素(溢出时),不是排版 */}
-      <table className={tableClsOf(b.cols.cw.ready)} style={{ width: b.cols.cw.tableWidth }}>
+      <table style={{ width: b.cols.cw.tableWidth }}
+        className={tableClsOf({ ready: b.cols.cw.ready, tight: b.cols.cw.tight })}>
         {b.cols.cw.ready && <ColGroup b={b} />}
         <thead>
           <tr ref={headRowRef} className={cssOf(css.headRow)}>{heads}</tr>

@@ -18,6 +18,8 @@
  * 2026-10-04 改判:不再数第 3 个,未登录开职位弹框一律先出向导。
  * 同日访客四题改版:GateWizard 自 profile 桶迁入 gate 桶,改从 gate 桶取(契约不变)。
  * 2026-10-09 N6b 批:正文下面两张卡里的名字 N6 起由 name 桶自开弹框,宿主注的点公司名 / 点相关职位两个回调撤。
+ * 2026-10-11 Frank「我应该先注册 再问问题吧」→「需要改」:未登录开职位弹框先出的不再是访客向导(四道题),
+ * 只出注册框(gate 桶 GateAuth,注册档、框内能切登录);关掉 = 关掉这一层、登录完亮出这一岗,照旧。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -26,7 +28,7 @@ import { GATE_INTENT_JOB, JD_PANEL_H, JD_PANEL_W, JD_PREF, URL_JOB_HEAD } from '
 import { ActJd } from './actjd'
 import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { useFrame } from '@/components/modal'
-import { GateWizard } from '@/components/gate'
+import { GateAuth } from '@/components/gate'
 import { makeT } from '@/lib/i18n'
 import { useActModal } from './hooks'
 import type { ActModalIn } from './types'
@@ -35,7 +37,7 @@ import type { ActModalIn } from './types'
  * 渲染职位描述弹框。
  *
  * @param props 这一岗、界面语言、分层态、描述表与关闭回调。
- * @returns 浮层;该先弹访客向导时是向导。
+ * @returns 浮层;该先弹注册框时是注册框(2026-10-11 前是访客向导)。
  */
 export function ActModal({ job, lang, plan, onClose }: ActModalIn) {
   const a = useActModal({ job, plan })
@@ -45,7 +47,7 @@ export function ActModal({ job, lang, plan, onClose }: ActModalIn) {
   })
   if (a.gate) {
     return (
-      <GateWizard t={makeT(lang)} intent={GATE_INTENT_JOB} returnTo={URL_JOB_HEAD + String(job.id)}
+      <GateAuth t={makeT(lang)} intent={GATE_INTENT_JOB} returnTo={URL_JOB_HEAD + String(job.id)}
         onClose={onClose}
         onDone={a.onGateDone} />
     )

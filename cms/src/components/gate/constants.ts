@@ -11,6 +11,8 @@
  * 2026-10-05 专业题的选择器整块搬去 components/majors(取数接口、防抖与起搜门槛、结果条数、读屏播报档、界面语言码、
  * 左栏「热门」键、页签 / 白卡 id 前缀与五个词条键,注释原样带过去;首句「专业取数接口」那半随之不在本文件);
  * 同日专业改多选,多一枚 MAJOR_SEP(给第 3 题选职业控件递专业码清单)。
+ * 2026-10-11 Frank「我应该先注册 再问问题吧」→「需要改」:访客不再答题,访客向导步序 GATE_STEPS、离开一步的埋点 TRACK_GATE_STEP、
+ * 回职位板的地址拼法(路径、地址头、八个参数名、三张「设了谁撤谁」表、职业分隔符、由头表)随之删;余下的是档案编辑弹框在用。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
@@ -58,13 +60,9 @@ export const GATE_STEP_PROV = 'prov'
 /**
  * 访客向导第五屏:注册(不计步数 —— 注册屏不出顶行与钮区,注册不可跳过)。
  * 2026-10-04 改版:「第 N 步 · 共 4 步」那行字撤了,进度只剩顶行的四段条。
+ * 2026-10-11 访客向导撤、注册屏随之没了:这一枚只剩 gateStepOf 步数越界时的兜底值(编辑模式走不到)。
  */
 export const GATE_STEP_REG = 'reg'
-
-/**
- * 访客向导四道题的顺序(下标即步数;走过最后一道就是注册屏;进度条一题一段)。
- */
-export const GATE_STEPS = ['goal', 'major', 'job', 'prov'] as const
 
 /**
  * 编辑模式那一题:英文姓名(2026-10-09「我的档案」批:档案页「修改」走同一套题,末尾多问一句投递署名;访客向导不问)。
@@ -160,6 +158,7 @@ export const GATE_PROV_OPTS = [
 
 /**
  * 注册屏的 AuthForm 初始态(向导走到第五屏直接是注册态,框内照旧能切登录)。
+ * 2026-10-11 访客不再答题:访客门整个只剩注册框(GateAuth 里 auth 桶 AuthModal 的初始态),照旧注册态、框内能切登录。
  */
 export const GATE_AUTH_MODE = 'register'
 
@@ -171,6 +170,7 @@ export const ROLE_PROGRESS = 'progressbar'
 /**
  * 埋点:访客向导弹出(kind 记由头 job|apply|save)。进第一方漏斗白名单(lib/funnel)。
  * 2026-10-04 kind 加 entry(进站即弹)。
+ * 2026-10-11 访客不再答题:弹的是注册框(GateAuth),同一个埋点照记(漏斗前后可比);离开某一步的 gate-step 随访客向导撤。
  */
 export const TRACK_GATE_OPEN = 'gate-open'
 
@@ -180,96 +180,10 @@ export const TRACK_GATE_OPEN = 'gate-open'
 export const GATE_INTENT_ENTRY = 'entry'
 
 /**
- * 埋点:离开向导的某一步(kind 记哪一步 goal|major|job|prov;到了注册屏记 reg)。进第一方漏斗白名单。
- */
-export const TRACK_GATE_STEP = 'gate-step'
-
-/**
- * 职位板的路径(注册完只在这一页上按答案筛;2026-10-04 A2)。旧 /jobs 由 middleware 301 回根,不另列。
- */
-export const BOARD_PATH = '/'
-
-/**
- * 回职位板的地址头(后面拼查询串)。
- */
-export const BOARD_HEAD = '/?'
-
-/**
- * 职位板的省参数名(两位码,板子自己转全名;答了境外不带)。
- */
-export const P_PROV = 'prov'
-
-/**
- * 职位板的职业参数名(逗号连的多个 NOC 码)。
- */
-export const P_NOC = 'noc'
-
-/**
- * 职位板的大类参数名(单值;没选职业时带专业对应的第一个本站大类)。
- * 2026-10-05 专业改多选后照旧单值、带第一个专业的第一个大类:职位板的 broad 是等值筛(lib/jobs buildJobsWhere 的 broadEq),
- * 不收逗号连的多值(noc 才收)。
- */
-export const P_BROAD = 'broad'
-
-/**
- * 职位板的市参数名(以 jobs 桶 URL_TO_FILTER 的短名为准,本域自抄一份;2026-10-04 收口审查:
- * 注册完回职位板改成在现有地址上改 —— 设了省就撤掉市 / 区 / 国家,免得拼出「安省 + 温哥华」)。
- */
-export const P_CITY = 'city'
-
-/**
- * 职位板的区参数名(同上,设了省一起撤)。
- */
-export const P_DIST = 'dist'
-
-/**
- * 职位板的国家参数名(同上,设了省一起撤)。
- */
-export const P_COUNTRY = 'country'
-
-/**
- * 职位板的中分类参数名(设了职业或大类就撤 —— 分类三级与职业码只认一组,拼出来的组合互相打架)。
- */
-export const P_MID = 'mid'
-
-/**
- * 职位板的小分类参数名(同上)。
- */
-export const P_FINE = 'fine'
-
-/**
- * 设了省要撤的职位板参数(省以下的地域:市、区;与省并列的国家)。其余参数(关键词、排序、页码……)原样留着。
- */
-export const PROV_DROP_PARAMS = [P_CITY, P_DIST, P_COUNTRY]
-
-/**
- * 设了职业要撤的职位板参数(分类三级:大类、中分类、小分类)。
- */
-export const NOC_DROP_PARAMS = [P_BROAD, P_MID, P_FINE]
-
-/**
- * 设了大类要撤的职位板参数(职业码与中 / 小分类)。
- */
-export const BROAD_DROP_PARAMS = [P_NOC, P_MID, P_FINE]
-
-/**
- * 多个职业码之间的分隔符(与职位板 noc 参数的多值约定同)。
- */
-export const NOC_SEP = ','
-
-/**
  * 多个专业码之间的分隔符(2026-10-05 专业改多选:第 3 题选职业控件的 majorCode 一格改收逗号连的专业码清单,
  * 与 lib/quiz 的 /api/quiz?major= 多值约定同)。
  */
 export const MAJOR_SEP = ','
-
-/**
- * 注册完要回职位板按答案筛的由头:只有进站即弹。点投递 / 收藏的照旧接着投 / 收藏,不改筛选。
- * 2026-10-04 A2 立时是「进站即弹、点开职位弹框」两个;同日收口撤掉点开职位 —— 职位板挂着 key = 筛选签名,地址栏一换整块重挂,
- * 刚亮出来的职位弹框(弹框栈住在板子里)跟着卸掉,闪一下就关,开框埋点还多打一次;Google 整页登录那一路回跳的是职位整页
- * (/jobs/<号>),本来就不在板上。两路一致:点开职位的注册完看那一岗,不改筛选。
- */
-export const BOARD_INTENTS = ['entry']
 
 /**
  * 返回钮读屏名的词条键(2026-10-05 返回钮收进弹框壳,读屏名由整机交给壳;词条沿用首访向导那一条)。

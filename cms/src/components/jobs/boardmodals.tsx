@@ -24,6 +24,8 @@
  * (报本页的分层态与职业名表),弹框由全站骨架上的 PeekHost 画。
  * 2026-10-09 N6b 批:字段弹框里的名字(公司组在招职位 / 相似雇主、AIP 名单招牌)N6 起由 name 桶自开弹框,递给字段弹框的两个回调撤;
  * 09-19「字段弹框让位给公司弹框」那只手柄(onPeekCo)随之退役 —— 现在点相似雇主是公司弹框叠在字段弹框上面。
+ * 2026-10-11 Frank「我应该先注册 再问问题吧」→「需要改」:收藏、筛选两路弹的从访客向导(四道题)换成注册框(gate 桶 GateAuth);
+ * 弹的时机与登录完的事(补收那一岗 / 收起并软刷)照旧。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -31,7 +33,7 @@
 import { AdvisorModal } from '@/components/advisor'
 import { PeekContext } from '@/components/modal'
 import { AuthModal } from '@/components/auth'
-import { GateWizard } from '@/components/gate'
+import { GateAuth } from '@/components/gate'
 import { PnpModal } from '@/components/pnp'
 import { UpgradeModal } from '@/components/pricing'
 import { AUTH_REGISTER, GATE_INTENT_FILTER, GATE_INTENT_SAVE, GROUP_PNP } from './constants'
@@ -75,10 +77,10 @@ export function BoardModals({ b }: BoardPanelIn) {
           onDone={m.onUpsellDone} />
       )}
       {m.saveGate != null && (
-        <GateWizard t={b.t} intent={GATE_INTENT_SAVE} onClose={m.onSaveGateClose} onDone={b.onSaveGateDone} />
+        <GateAuth t={b.t} intent={GATE_INTENT_SAVE} onClose={m.onSaveGateClose} onDone={b.onSaveGateDone} />
       )}
       {m.filterGate && (
-        <GateWizard t={b.t} intent={GATE_INTENT_FILTER} onClose={m.onFilterGateClose} onDone={m.onFilterGateDone} />
+        <GateAuth t={b.t} intent={GATE_INTENT_FILTER} onClose={m.onFilterGateClose} onDone={m.onFilterGateDone} />
       )}
     </>
   )

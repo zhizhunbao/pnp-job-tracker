@@ -686,23 +686,9 @@ export type PulledOut = Promise<boolean>
 
 /**
  * `mergeBasics` 的返回(true = 并进去且推上服务端了;false = 没拉到档或没推成,调用方留着草稿下次再来)。
+ * 2026-10-11 访客不再答题,mergeBasics(与它的 blankPatchOf / BlankPatchIn)随访客草稿删,这一形只剩 saveBasics 在交。
  */
 export type MergedOut = Promise<boolean>
-
-/**
- * `blankPatchOf` 的入参(现档与要填的格)。
- */
-export type BlankPatchIn = {
-  /**
-   * 现档(刚从服务端拉回的那份)。
-   */
-  cur: Answers
-
-  /**
-   * 要填的格(缺席 = 不碰)。
-   */
-  patch: AnswersPatch
-}
 
 /**
  * 字段名的过滤函数形状(filter 用)。

@@ -1087,32 +1087,13 @@ export const TRACK_LOG = {
  * 访客域(lib/guest,2026-10-03 付费闭环批 A1)的日志字面量。
  * 浏览记录与向导草稿都存在浏览器本地,读写抛了(无痕模式 / 站点数据被禁 / 配额满)照常往下走,
  * 但要在浏览器控制台留一行 —— 不留痕就分不清「没人点到第 3 个」与「记录根本没写进去」。
+ * 2026-10-11 访客不再答题(Frank「我应该先注册 再问问题吧」):向导草稿与交接戳整段删,draftRead / draftWrite / draftSync / handoff 四条随之撤。
  */
 export const GUEST_LOG = {
   /**
    * 这个域每一行日志的来源标签。
    */
   tag: 'guest',
-
-  /**
-   * 读向导草稿抛了:这次按没有草稿开,后面接错误。
-   */
-  draftRead: 'gate draft read failed, starting blank: ',
-
-  /**
-   * 写 / 清向导草稿抛了:草稿没存上(或没清掉),后面接错误。
-   */
-  draftWrite: 'gate draft write failed: ',
-
-  /**
-   * 注册后把草稿并进服务端答案没成:草稿与交接戳都放回去,这个标签页 10 分钟内再进站再并,后面接这一份草稿的由头。
-   */
-  draftSync: 'gate draft not merged, kept for retry: intent=',
-
-  /**
-   * 读 / 写 / 撤交接戳抛了(会话存储被禁):Google 回跳后这一份草稿交不上去,后面接错误。
-   */
-  handoff: 'gate handoff stamp failed: ',
 
   /**
    * 读 / 写「本页弹过进站向导」抛了(会话存储被禁;2026-10-04 进站即弹):这一页照弹,后面接错误。

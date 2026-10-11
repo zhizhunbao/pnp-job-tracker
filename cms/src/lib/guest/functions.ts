@@ -8,22 +8,17 @@
  * 回跳后交;答案档里已有的格不覆盖(lib/quiz 的 mergeBasics 只填空格);读回的草稿逐格验值域。
  * 2026-10-04 改判(Frank「进来就要求用户登录注册」→「照这样改」):第 3 个的门槛撤(isGateDue 随撤),未登录开职位弹框
  * 一律弹;另立进站即弹(5 段:例外表判定 + 会话存储记「本页弹过」)。浏览记录照记,只剩预选职业一个用处。
+ * 2026-10-11 Frank「我应该先注册 再问问题吧。不然回答的问题 存哪里去了」→「需要改」:访客不再答题(门只剩注册框),
+ * 向导草稿(本地存储 o2p_gate_v2 的读写、验值、并进答案档)、Google 回跳交接戳与所在省预选整段删;
+ * 留下起弹判定、「这个页面里刚登录过」一对与进站即弹。上面讲草稿 / 交接 / 预选的句子作废。
  *
  * @author Frank
  * @time 2026-10-03 20:10:00
  */
-import { deviceTzOf, homeProvinceOf, isCanadaTz } from '../location'
 import { GUEST_LOG, log } from '../log'
-import { mergeBasics } from '../quiz'
-import {
-  CITY_LEN_MAX, DRAFT_KEY, ENTRY_EXEMPT_PARAMS, ENTRY_EXEMPT_ROOTS, ENTRY_EXEMPT_UNDER, ENTRY_SHOWN_KEY, GOAL_BANDS, HANDOFF_KEY,
-  HANDOFF_TTL_MS, INTENT_JOB, INTENTS, MAJOR_PICK_MAX, MAJOR_RE, NOC_RE, PATH_SEP, PROV_CODES, STATUS_OVERSEAS, TEXT_NONE,
-} from './constants'
+import { ENTRY_EXEMPT_PARAMS, ENTRY_EXEMPT_ROOTS, ENTRY_EXEMPT_UNDER, ENTRY_SHOWN_KEY, PATH_SEP } from './constants'
 import { CACHE } from './variables'
-import type {
-  EntryExemptIn, EntryGateIn, GateDraft, GateForIn, GateIntent, GatePatch, GateSeedIn, HandoffFreshIn, MaybeGateDraft,
-  ProvSeed, ProvSeedIn, RawCell, RawDoc, RawText, SyncOut,
-} from './types'
+import type { EntryExemptIn, EntryGateIn, GateForIn } from './types'
 
 // =========================================================================
 // 1. 起弹判定(2026-10-07 浏览记录整条删,本段只剩 gateDueFor)
@@ -43,193 +38,8 @@ export function gateDueFor(x: GateForIn): boolean {
 }
 
 // =========================================================================
-// 2. 访客向导草稿
-// =========================================================================
-
-/**
- * 向导开屏时的各格初值:有草稿就照草稿(再次打开接着答);没有就按浏览记录预选职业、
- * 按设备时区预选所在省,其余留空。
- * 2026-10-07 Frank「为什么我选的是 AI 和 cloud,然后做的工作是上面的」→「你弄吧」:按浏览记录预选职业撤
- * (专业是必答,第 3 题照专业推荐;预选的是看过的岗,和专业对不上),浏览记录随之整条删,职业一格开屏留空。
- *
- * @param x 这次的由头(没有草稿时记进新开的那份)。
- * @returns 各格初值(形状同草稿)。
- */
-export function readGateSeed(x: GateSeedIn): GateDraft {
-  const d = readGateDraft()
-  if (d != null) {
-    return d
-  }
-  const where = guessProv()
-  return {
-    goal: 0,
-    majors: [],
-    nocs: [],
-    prov: where.prov,
-    city: TEXT_NONE,
-    abroad: where.abroad,
-    intent: x.intent,
-  }
-}
-
-/**
- * 读草稿;没存过、存的认不出都给 null,读抛了留痕。
- *
- * @returns 草稿或 null。
- */
-export function readGateDraft(): MaybeGateDraft {
-  try {
-    return toGateDraft(localStorage.getItem(DRAFT_KEY))
-  } catch (e) {
-    log({ tag: GUEST_LOG.tag, text: GUEST_LOG.draftRead + String(e) })
-    return null
-  }
-}
-
-/**
- * 草稿原文 → 草稿(行构造器):每格验类型与值域(本地存储是信任边界,谁都能改),不对的按没答 ——
- * 目标档只认 GOAL_BANDS、专业只认 CIP class 码形 MAJOR_RE(2026-10-04 A2 前只认大类码表)、省只认 PROV_CODES、职业码只认五位数字(去重);
- * 答了境外就不留省;由头认不出按「点开职位」。原文不是 json 时 JSON.parse 会抛,由调用方的 catch 收。
- * 2026-10-05 专业改多选:读 majors 数组 —— 逐个验码形、去重、超过 MAJOR_PICK_MAX 个的丢掉;单值那版留下的 major 串不认。
- *
- * @param raw 本地存储原文;null = 没存过。
- * @returns 草稿;原文不是对象 = null。
- */
-export function toGateDraft(raw: RawText): MaybeGateDraft {
-  if (raw == null || raw === '') {
-    return null
-  }
-  const doc: RawCell = JSON.parse(raw)
-  if (doc == null || typeof doc !== 'object' || Array.isArray(doc)) {
-    return null
-  }
-  const row = doc as RawDoc
-  const out: GateDraft = {
-    goal: 0, majors: [], nocs: [], prov: TEXT_NONE, city: TEXT_NONE, abroad: row.abroad === true, intent: INTENT_JOB,
-  }
-  if (typeof row.goal === 'number' && GOAL_BANDS.includes(row.goal)) {
-    out.goal = row.goal
-  }
-  if (Array.isArray(row.majors)) {
-    for (const c of row.majors) {
-      if (typeof c === 'string' && MAJOR_RE.test(c) && out.majors.includes(c) === false
-        && out.majors.length < MAJOR_PICK_MAX) {
-        out.majors.push(c)
-      }
-    }
-  }
-  if (Array.isArray(row.nocs)) {
-    for (const c of row.nocs) {
-      if (typeof c === 'string' && NOC_RE.test(c) && out.nocs.includes(c) === false) {
-        out.nocs.push(c)
-      }
-    }
-  }
-  if (out.abroad === false && typeof row.prov === 'string' && PROV_CODES.includes(row.prov)) {
-    out.prov = row.prov
-  }
-  if (out.prov !== TEXT_NONE && typeof row.city === 'string' && row.city.length <= CITY_LEN_MAX) {
-    out.city = row.city
-  }
-  if (typeof row.intent === 'string' && isGateIntent(row.intent)) {
-    out.intent = row.intent
-  }
-  return out
-}
-
-/**
- * 这个串是不是认得的向导由头。
- *
- * @param v 草稿里读出的由头原文。
- * @returns 认得 = true(并把它收窄成由头)。
- */
-export function isGateIntent(v: string): v is GateIntent {
-  return INTENTS.includes(v)
-}
-
-/**
- * 写草稿(每步改动即写);写抛了留痕,向导照常往下走。
- *
- * @param d 草稿。
- * @returns 无。
- */
-export function writeGateDraft(d: GateDraft): void {
-  try {
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(d))
-  } catch (e) {
-    log({ tag: GUEST_LOG.tag, text: GUEST_LOG.draftWrite + String(e) })
-  }
-}
-
-/**
- * 清草稿;清抛了留痕。
- *
- * @returns 无。
- */
-export function clearGateDraft(): void {
-  try {
-    localStorage.removeItem(DRAFT_KEY)
-  } catch (e) {
-    log({ tag: GUEST_LOG.tag, text: GUEST_LOG.draftWrite + String(e) })
-  }
-}
-
-/**
- * 草稿 → 并进答案档的那几格:没答的格缺席(不动旧答案);答了境外写处境 overseas、现居省清空;
- * 答了省只写现居省(处境不动 —— 人在境内是什么处境,这四道题没问)。
- * 2026-10-05 专业改多选:选了专业写码清单 majors(没选缺席)。
- * 2026-10-09「我的档案」批:答了省连城市一起写(没选城市写空串 —— 城市挂在省下面,换了省旧城市就不作数)。
- *
- * @param d 草稿。
- * @returns 要改的那几格。
- */
-export function gatePatchOf(d: GateDraft): GatePatch {
-  const out: GatePatch = {}
-  if (d.goal > 0) {
-    out.goalBand = d.goal
-  }
-  if (d.majors.length > 0) {
-    out.majors = d.majors
-  }
-  if (d.nocs.length > 0) {
-    out.nocs = d.nocs
-  }
-  if (d.abroad) {
-    out.status = STATUS_OVERSEAS
-    out.resProv = TEXT_NONE
-    return out
-  }
-  if (d.prov !== '') {
-    out.resProv = d.prov
-    out.resCity = d.city
-  }
-  return out
-}
-
-// =========================================================================
 // 3. 交接
 // =========================================================================
-
-/**
- * 在向导里登录 / 注册成功后把草稿交给答案档:先撤本地草稿与交接戳(同一页里全站骨架的补交钩子不会再并一次),
- * 再经 lib/quiz 的 mergeBasics 读回服务端档、只填还空着的格、整份推上去;没成就把草稿与戳都放回去,
- * 这个标签页 10 分钟内再进站时由补交钩子再交一次。
- * 2026-10-04 收口审查:交回成没成(补交钩子凭它决定记不记「首访引导弹过了」、回不回职位板筛)。
- *
- * @param d 草稿。
- * @returns 并进去且推上去了 = true(结果另落在本地存储与答案档上)。
- */
-export async function syncGateDraft(d: GateDraft): SyncOut {
-  clearGateDraft()
-  clearGateHandoff()
-  const ok = await mergeBasics(gatePatchOf(d))
-  if (ok === false) {
-    writeGateDraft(d)
-    markGateHandoff()
-    log({ tag: GUEST_LOG.tag, text: GUEST_LOG.draftSync + d.intent })
-  }
-  return ok
-}
 
 /**
  * 记下「这个页面里刚在访客向导里登录 / 注册成功」(软刷回来之前起弹判定靠它认人)。
@@ -247,97 +57,6 @@ export function markGateSignedIn(): void {
  */
 export function isGateSignedIn(): boolean {
   return CACHE.signedIn
-}
-
-/**
- * 落交接戳(访客向导走到注册屏那一刻;Google 整页登录跳走前戳就在了);落不上留痕。
- *
- * @returns 无。
- */
-export function markGateHandoff(): void {
-  try {
-    sessionStorage.setItem(HANDOFF_KEY, String(Date.now()))
-  } catch (e) {
-    log({ tag: GUEST_LOG.tag, text: GUEST_LOG.handoff + String(e) })
-  }
-}
-
-/**
- * 取交接戳(全站骨架的补交钩子在登录态下调):读完即撤,交回它还在不在有效期内。
- * 读抛了留痕并按没有戳算(宁可不交,不替别的登录改答案档)。
- *
- * @returns 有戳且没过期 = true。
- */
-export function takeGateHandoff(): boolean {
-  let raw: RawText = null
-  try {
-    raw = sessionStorage.getItem(HANDOFF_KEY)
-  } catch (e) {
-    log({ tag: GUEST_LOG.tag, text: GUEST_LOG.handoff + String(e) })
-    return false
-  }
-  clearGateHandoff()
-  return isHandoffFresh({ raw, now: Date.now() })
-}
-
-/**
- * 交接戳在不在有效期内:没落过、不是数、落在将来、超过 HANDOFF_TTL_MS 都算不在。
- *
- * @param x 戳原文与此刻。
- * @returns 在 = true。
- */
-export function isHandoffFresh(x: HandoffFreshIn): boolean {
-  if (x.raw == null || x.raw === '') {
-    return false
-  }
-  const at = Number(x.raw)
-  if (Number.isFinite(at) === false || at > x.now) {
-    return false
-  }
-  return x.now - at <= HANDOFF_TTL_MS
-}
-
-/**
- * 撤交接戳(× 关掉向导、开始交接时);撤不掉留痕。
- *
- * @returns 无。
- */
-export function clearGateHandoff(): void {
-  try {
-    sessionStorage.removeItem(HANDOFF_KEY)
-  } catch (e) {
-    log({ tag: GUEST_LOG.tag, text: GUEST_LOG.handoff + String(e) })
-  }
-}
-
-// =========================================================================
-// 4. 所在省预选
-// =========================================================================
-
-/**
- * 读这台设备该预选什么(设备时区与浏览器语言交给 lib/location 判,本函数只拼两样)。
- *
- * @returns 所在省的预选。
- */
-export function guessProv(): ProvSeed {
-  return gateProvSeedOf({ home: homeProvinceOf(), tz: deviceTzOf() })
-}
-
-/**
- * 所在省预选的判定:时区对得上省就选那个省;对不上、时区又不在加拿大境内,预选「加拿大境外」;
- * 其余(浏览器没报时区、大西洋时区这类分不出省的)不预选 —— 宁可留空,不瞎猜。
- *
- * @param x 时区判出的省码与时区名。
- * @returns 所在省的预选。
- */
-export function gateProvSeedOf(x: ProvSeedIn): ProvSeed {
-  if (x.home !== '') {
-    return { prov: x.home, abroad: false }
-  }
-  if (x.tz === '' || isCanadaTz(x.tz)) {
-    return { prov: TEXT_NONE, abroad: false }
-  }
-  return { prov: TEXT_NONE, abroad: true }
 }
 
 // =========================================================================

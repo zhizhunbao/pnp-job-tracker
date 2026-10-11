@@ -29,11 +29,12 @@ import css from './auth.module.css'
  * 宪法「语言接缝在拿到的那一行当场收」说的正是它。
  * 2026-08-25 折叠空转判空时误判过一次,tsc 当场拦下(TS2322),记在这免得再折。
  * 2026-10-03 付费闭环批 A1 加 keepPage(访客向导注册屏):同上,`boolean | undefined` 当场收成 boolean。
+ * 2026-10-11 访客不再答题、访客向导删:keepPage 再无人传(10-08 起两路已同形),随之删。
  *
  * @param props 完成回调与入口参数(见 AuthFormIn 逐格注释)。
  * @returns 表单。
  */
-export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero, keepPage }: AuthFormIn) {
+export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }: AuthFormIn) {
   let init: AuthMode = MODE_LOGIN
   if (initialMode != null) {
     init = initialMode
@@ -50,11 +51,7 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero, k
   if (hero != null) {
     heroIn = hero
   }
-  let keep = false
-  if (keepPage === true) {
-    keep = true
-  }
-  const f = useAuthForm({ t, onDone, init, resetToken: token, returnTo: rt, keepPage: keep })
+  const f = useAuthForm({ t, onDone, init, resetToken: token, returnTo: rt })
 
   return (
     <div>

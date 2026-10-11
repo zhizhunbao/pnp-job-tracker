@@ -10,17 +10,14 @@
 //       focusGateQuestion 恒 return → ④「点目标大卡后焦点在题面」红;开屏也挪 → ④「开屏不挪」红。
 // 2026-10-09「我的档案」批:首访引导向导退役,「记引导弹过」(本地存储 jobs_onboarding_v1)那一记从 gate 撤 ——
 //       ② ③ 里对它的断言删(③ 原先拿它等补交那一跑交成,交成的证据改由随后的戳 / 草稿 / 地址栏断言给)。
-import { act, createElement, type ReactNode } from 'react'
+// 2026-10-11 Frank「我应该先注册 再问问题吧」→「需要改」:访客不再答题,访客向导与交接戳整套删 —— ①②③ 随之删;
+//       ④ 换题挪焦点照验,挂的件从访客向导换成档案编辑弹框 GateEdit(同一个 focusGateQuestion)。
+import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // 测试例外:域内件直接点文件(桶只走门的规矩不管测试)
-import { SessionProvider } from '@/components/auth'
-import { GateWizard } from '@/components/gate/gatewizard'
-import { useGateSync, useGateWizard } from '@/components/gate/hooks'
-import type { GatePanel } from '@/components/gate/types'
-import { readGateDraft } from '@/lib/guest/functions'
-import { CACHE as GUEST } from '@/lib/guest/variables'
+import { GateEdit } from '@/components/gate/gateedit'
 import type { TFn } from '@/lib/i18n'
 import { resetAnswersMemory } from '@/lib/quiz'
 
@@ -31,9 +28,10 @@ vi.mock('next/navigation', () => ({
   usePathname: () => PATH.current,
 }))
 
-const HANDOFF_KEY = 'o2p_gate_handoff_v1'
-
 const t = ((key: string) => key) as TFn
+
+// 档案编辑弹框的空档(2026-10-11 访客向导删,换题挪焦点改在 GateEdit 上验 —— 同一副顶行与题面,五题全问从目标题起)
+const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '' }
 
 function reply(status: number, body: object) {
   return { status, ok: status >= 200 && status < 300, json: async () => body }
@@ -52,53 +50,11 @@ function server(status = 200) {
   return puts
 }
 
-function seed(loggedIn: boolean) {
-  const initial = { in: loggedIn, email: loggedIn ? 'a@b.c' : '', displayName: null, avatar: null, proUntil: null }
-  return function wrapSession(children: ReactNode) {
-    // eslint-disable-next-line react/no-children-prop -- SessionProviderIn 的 children 是必填属性,走 createElement 第三参过不了类型
-    return createElement(SessionProvider, { initial, children })
-  }
-}
-
-// 挂一个只跑 hook 的探针件,交回现值与卸载口(同 guestGate 的 createRoot 形;不为测试加依赖)
-function mountHook<T>(hook: () => T, wrap: ((c: ReactNode) => ReactNode) | null = null) {
-  const out: { current: T | null } = { current: null }
-  function Probe() {
-    out.current = hook()
-    return null
-  }
-  const root = createRoot(document.createElement('div'))
-  act(() => {
-    const el = createElement(Probe)
-    root.render(wrap == null ? el : wrap(el))
-  })
-  return { out, unmount: () => act(() => root.unmount()) }
-}
-
-function panel(p: { current: GatePanel | null }): GatePanel {
-  if (p.current == null) {
-    throw new Error('hook not mounted')
-  }
-  return p.current
-}
-
-// 答目标(点了即进下一题)、专业职业照预选、所在省点新斯科舍,一路「下一步」走到注册屏(走过第四题那一下落交接戳)
-function walkToSignup(p: { current: GatePanel | null }) {
-  act(() => panel(p).onGoal(2))
-  act(() => panel(p).onNext())
-  act(() => panel(p).onNext())
-  expect(panel(p).cur).toBe('prov')
-  act(() => panel(p).onProv('NS'))
-  act(() => panel(p).onNext())
-  expect(panel(p).cur).toBe('reg')
-}
-
 beforeEach(() => {
   ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
   localStorage.clear()
   sessionStorage.clear()
   resetAnswersMemory()
-  GUEST.signedIn = false
   PATH.current = '/'
   ROUTER.replace.mockReset()
 })
@@ -107,80 +63,6 @@ afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
   document.body.innerHTML = ''
-})
-
-describe('交接戳随向导的走法(收口审查)', () => {
-  it('① 走到注册屏落戳;没注册就卸掉(返回 / 换页 / 弹它的页卸掉)→ 戳撤掉,草稿留着只给预填', () => {
-    server()
-    const w = mountHook(() => useGateWizard({ intent: 'entry', onDone: () => undefined, onClose: () => undefined, t: (k: string) => k }))
-    walkToSignup(w.out)
-    expect(sessionStorage.getItem(HANDOFF_KEY)).not.toBeNull()
-    w.unmount()
-    expect(sessionStorage.getItem(HANDOFF_KEY)).toBeNull()
-    expect(readGateDraft()?.goal).toBe(2)
-  })
-
-  it('① 还没走到注册屏就卸掉:本来就没戳,卸掉也不凭空落戳', () => {
-    server()
-    const w = mountHook(() => useGateWizard({ intent: 'job', onDone: () => undefined, onClose: () => undefined, t: (k: string) => k }))
-    act(() => panel(w.out).onGoal(1))
-    w.unmount()
-    expect(sessionStorage.getItem(HANDOFF_KEY)).toBeNull()
-  })
-
-  it('② 邮箱注册当场交成了:戳与草稿撤掉、答案档推上去、回职位板筛;随后卸掉不再动', async () => {
-    const puts = server()
-    const onDone = vi.fn()
-    const w = mountHook(() => useGateWizard({ intent: 'entry', onDone, onClose: () => undefined, t: (k: string) => k }))
-    walkToSignup(w.out)
-    act(() => panel(w.out).onRegistered())
-    expect(onDone).toHaveBeenCalledTimes(1)
-    await vi.waitFor(() => expect(puts.length).toBe(1))
-    w.unmount()
-    expect(sessionStorage.getItem(HANDOFF_KEY)).toBeNull()
-    expect(readGateDraft()).toBeNull()
-    expect(JSON.parse(puts[0] ?? '{}').basic.goalBand).toBe(2)
-  })
-
-  it('② 邮箱注册当场没交成(会话没了):戳放回去;卸掉向导不撤(这个页面里刚登录过),留给下一次补交', async () => {
-    vi.spyOn(console, 'log').mockImplementation(() => undefined)
-    server(401)
-    const w = mountHook(() => useGateWizard({ intent: 'apply', onDone: () => undefined, onClose: () => undefined, t: (k: string) => k }))
-    walkToSignup(w.out)
-    act(() => panel(w.out).onRegistered())
-    await vi.waitFor(() => expect(sessionStorage.getItem(HANDOFF_KEY)).not.toBeNull())
-    w.unmount()
-    expect(sessionStorage.getItem(HANDOFF_KEY)).not.toBeNull()
-    expect(readGateDraft()).not.toBeNull()
-  })
-
-  it('③ Google 整页登录:注册屏上戳与草稿都在(整页跳走不跑收尾器);回跳那一页登录态下补交并回职位板按答案筛', async () => {
-    server()
-    const w = mountHook(() => useGateWizard({ intent: 'entry', onDone: () => undefined, onClose: () => undefined, t: (k: string) => k }))
-    walkToSignup(w.out)
-    expect(sessionStorage.getItem(HANDOFF_KEY)).not.toBeNull()
-    expect(readGateDraft()?.intent).toBe('entry')
-    const puts = server()
-    window.history.replaceState(null, '', '/?q=cook')
-    mountHook(() => useGateSync(), seed(true))
-    await vi.waitFor(() => expect(puts.length).toBe(1))
-    expect(sessionStorage.getItem(HANDOFF_KEY)).toBeNull()
-    expect(readGateDraft()).toBeNull()
-    expect(JSON.parse(puts[0] ?? '{}').basic.resProv).toBe('NS')
-    await vi.waitFor(() => expect(ROUTER.replace).toHaveBeenCalledWith('/?q=cook&prov=NS'))
-    window.history.replaceState(null, '', '/')
-  })
-
-  it('③ 回跳没登上(仍匿名):补交钩子开页撤掉这枚戳,答案档不碰', async () => {
-    const puts = server()
-    const w = mountHook(() => useGateWizard({ intent: 'entry', onDone: () => undefined, onClose: () => undefined, t: (k: string) => k }))
-    walkToSignup(w.out)
-    mountHook(() => useGateSync(), seed(false))
-    await new Promise((r) => setTimeout(r, 20))
-    expect(sessionStorage.getItem(HANDOFF_KEY)).toBeNull()
-    expect(puts.length).toBe(0)
-    expect(readGateDraft()).not.toBeNull()
-  })
 })
 
 describe('换题挪焦点(收口审查)', () => {
@@ -205,7 +87,7 @@ describe('换题挪焦点(收口审查)', () => {
     document.body.appendChild(host)
     const root = createRoot(host)
     act(() => {
-      root.render(createElement(GateWizard, { t, intent: 'entry', onClose: () => undefined, onDone: () => undefined }))
+      root.render(createElement(GateEdit, { t, seed: EMPTY_SEED, onClose: () => undefined, onSaved: () => undefined }))
     })
     return { host, root }
   }

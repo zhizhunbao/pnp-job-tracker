@@ -6,24 +6,25 @@
  * 2026-10-04 进站即弹(Frank「进来就要求用户登录注册」→「照这样改」):同一件顺带弹进站向导 —— 全站骨架只挂这一处,
  * 每个页面都跑得到;判哪一页弹、弹没弹过在 hooks 的 useEntryGate。上面「无界面」从此只指补交那一半。
  * 2026-10-04 访客四题改版:随访客向导自 profile 桶迁入 gate 桶,原样搬。
+ * 2026-10-11 Frank「我应该先注册 再问问题吧」→「需要改」:访客不再答题,没有草稿可补交 —— 补交那一半(useGateSync)删,
+ * 本件只剩进站即弹,弹的从访客向导换成注册框(GateAuth,注册档、框内能切登录);判哪一页弹照旧在 useEntryGate。
  *
  * @author Frank
  * @time 2026-10-03 20:40:00
  */
 import { GATE_INTENT_ENTRY } from './constants'
-import { GateWizard } from './gatewizard'
-import { useEntryGate, useGateSync } from './hooks'
+import { GateAuth } from './gateauth'
+import { useEntryGate } from './hooks'
 
 /**
- * 草稿补交件 + 进站向导。
+ * 进站即弹(2026-10-11 起弹注册框;原为草稿补交件 + 进站向导)。
  *
- * @returns 这一页该弹进站向导时是向导,其余什么都不渲。
+ * @returns 这一页该弹时是注册框,其余什么都不渲。
  */
 export function GateSync() {
-  useGateSync()
   const e = useEntryGate()
   if (e.open === false) {
     return null
   }
-  return <GateWizard t={e.t} intent={GATE_INTENT_ENTRY} onClose={e.onClose} onDone={e.onDone} />
+  return <GateAuth t={e.t} intent={GATE_INTENT_ENTRY} onClose={e.onClose} onDone={e.onDone} />
 }

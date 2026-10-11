@@ -27,13 +27,15 @@
  * 访客关掉进站向导后动筛选 / 搜索再弹,照职位板弹框层(boardmodals)那一路的形挂。
  * 2026-10-09 N 批(Frank「一个全站宿主,并掉各页那 5 套」):本页不再自己画 PeekStack,改摆 modal 桶的报件 PeekContext
  * (报本页的分层态与职业名表),弹框由全站骨架上的 PeekHost 画。
+ * 2026-10-11 Frank「我应该先注册 再问问题吧」→「需要改」:筛选那一路弹的从访客向导(四道题)换成注册框(gate 桶 GateAuth),
+ * 弹的时机与登录完收起 + 软刷照旧。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
 import { PeekContext } from '@/components/modal'
 import { Banner, BANNER_IMGS } from '@/components/banner'
-import { GateWizard } from '@/components/gate'
+import { GateAuth } from '@/components/gate'
 import { IconUsers } from '@/components/icons'
 import { Shell } from '@/components/shell'
 import { Updated } from '@/components/time'
@@ -69,7 +71,7 @@ export function Employers({ initial, initialFilters, updatedAt, initialCols, pla
       </Shell>
       <PeekContext plan={p.peek.plan} nocDesc={NOC_DESC_NONE} />
       {p.peek.filterGate && (
-        <GateWizard t={p.t}
+        <GateAuth t={p.t}
           intent={GATE_INTENT_FILTER}
           onClose={p.peek.onFilterGateClose}
           onDone={p.peek.onFilterGateDone} />

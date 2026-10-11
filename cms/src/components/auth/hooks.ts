@@ -136,7 +136,7 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
           return
         }
         setPw(FIELD_EMPTY)
-        await finishAuth({ mode: MODE_LOGIN, keepPage: x.keepPage, returnTo: x.returnTo, onDone: x.onDone })
+        await finishAuth({ mode: MODE_LOGIN, returnTo: x.returnTo, onDone: x.onDone })
         return
       }
       if (out.kind === FLOW_ERR) {
@@ -146,7 +146,7 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
         return
       }
       setPw(FIELD_EMPTY)
-      await finishAuth({ mode, keepPage: x.keepPage, returnTo: x.returnTo, onDone: x.onDone })
+      await finishAuth({ mode, returnTo: x.returnTo, onDone: x.onDone })
     } catch {
       setErr(x.t('acct.err.generic'))
     } finally {

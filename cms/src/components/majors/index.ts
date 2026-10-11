@@ -6,10 +6,10 @@
  * 用法 = 开屏挂 useMajorPicker({ value, onChange })(热门与大类开屏就取),这一题渲 <MajorPicker picker t lang />;
  * 回职位板要专业的本站大类时借 fetchMajor(按码取一行,与选择器回显同一份取数)。
  * 对应 lib 域:lib/majors(/api/majors 取数口)。
+ * 2026-10-11 访客不再答题、注册完回职位板一段随访客向导删:fetchMajor 不再出桶(本桶内回显照用);宿主现只有 gate 的档案编辑弹框。
  *
  * @author Frank
  * @time 2026-10-05 12:24:22
  */
 export { useMajorPicker } from './hooks'
 export { MajorPicker } from './majorpicker'
-export { fetchMajor } from './functions'

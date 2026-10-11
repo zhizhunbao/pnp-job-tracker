@@ -81,6 +81,7 @@ export function stableColor(s: string): string {
  * 2026-10-08 第三轮小白走查(Frank「新注册不应该跳 plan pr」):注册的补题漏斗整个退役,注册与登录同路;
  * 问卷缺口由 /plan/pr 答题入口自己兜底。quizDestinationOf 与它的七个常量随之退役(见 git 历史);
  * keepPage 自此两路同形,留作访客向导的接线不再分支。
+ * 2026-10-11 访客向导删(访客不再答题),keepPage 随之撤。
  *
  * @param x 回跳路径与完成回调。
  * @returns 无(可能整页跳转)。

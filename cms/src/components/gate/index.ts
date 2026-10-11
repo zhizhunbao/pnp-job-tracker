@@ -19,12 +19,16 @@
  * 同日专业改多选(至多 3 个)。
  * 同日职业题改成与专业题同一副左右两栏(Frank「也改成左右 两部分吗?」「改啊」;摆法在 quiz 桶选职业控件的大号档里):
  * 上面 A2 那句「已选标签由它借 profile 的 OnboardingTags」作废 —— 控件自己用 tag 桶已选一行摆,不再经 profile。
+ * 2026-10-11 Frank「我应该先注册 再问问题吧。不然回答的问题 存哪里去了」→「需要改」:访客不再答题,访客门只剩注册框
+ * GateAuth(auth 桶 AuthModal 注册档)—— 首句的「四道题 + 注册这一屏(GateWizard)」与「草稿补交件」作废,GateWizard 删、
+ * GateSync 只剩进站即弹;题目由登录后「我的求职」首访弹框(本桶 GateEdit 只问空着的)来问。gate → majors / quiz 两条边
+ * 现只为 GateEdit 而在。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
  */
+export { GateAuth } from './gateauth'
 export { GateEdit } from './gateedit'
 export { missingStepsOf } from './functions'
 export { GateSync } from './gatesync'
-export { GateWizard } from './gatewizard'
 export type { GateEditSeed } from './types'

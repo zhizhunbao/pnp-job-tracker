@@ -199,15 +199,13 @@ describe('认证收尾 finishAuth', () => {
     vi.unstubAllGlobals()
   })
 
-  it('注册与登录一律留在原页调 onDone,不再跳补题问卷(2026-10-08 Frank「新注册不应该跳 plan pr」);keepPage 两路同形', async () => {
+  // 2026-10-11 访客向导删,keepPage 随之撤(原断言「keepPage 两路同形」作废)
+  it('注册与登录一律留在原页调 onDone,不再跳补题问卷(2026-10-08 Frank「新注册不应该跳 plan pr」)', async () => {
     const done = vi.fn()
-    await finishAuth({ mode: 'register', keepPage: false, returnTo: null, onDone: done })
+    await finishAuth({ mode: 'register', returnTo: null, onDone: done })
     expect(done).toHaveBeenCalledTimes(1)
-    await finishAuth({ mode: 'register', keepPage: true, returnTo: null, onDone: done })
+    await finishAuth({ mode: 'login', returnTo: null, onDone: done })
     expect(done).toHaveBeenCalledTimes(2)
-    await finishAuth({ mode: 'login', keepPage: false, returnTo: null, onDone: done })
-    await finishAuth({ mode: 'login', keepPage: true, returnTo: null, onDone: done })
-    expect(done).toHaveBeenCalledTimes(4)
   })
 
   it('带 ?next= 的注册回那条(深链),不回问卷', async () => {
@@ -215,7 +213,7 @@ describe('认证收尾 finishAuth', () => {
     window.history.replaceState(null, '', '/?next=%2Faccount%3Fsec%3Dsjobs')
     const assign = vi.fn()
     vi.stubGlobal('location', { ...window.location, assign, search: '?next=%2Faccount%3Fsec%3Dsjobs', pathname: '/', origin: 'http://localhost' })
-    await finishAuth({ mode: 'register', keepPage: false, returnTo: null, onDone: done })
+    await finishAuth({ mode: 'register', returnTo: null, onDone: done })
     expect(assign).toHaveBeenCalledWith('/account?sec=sjobs')
     expect(done).not.toHaveBeenCalled()
   })

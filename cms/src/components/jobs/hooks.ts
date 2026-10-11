@@ -48,14 +48,15 @@ import {
 import {
   allocateColWidths, anyFilterOf, applyEmailOf, applyFiltersTo, applyHomeProvince, authFromUrl, blockedSetsOf,
   dropUrlParam,
-  homeGateAfterOf, homeGateInitOf, hydratingClientOf, hydratingServerOf, subscribeNever,
+  homeGateAfterOf, homeGateInitOf, hydratingClientOf, hydratingServerOf, keepWidthOf, subscribeNever,
   clearFiltersIn, colsKeyOf, colWidthSeedValue, curFiltersOf, dataKeyOf, defaultColsOf,
   fetchJobText, filterOptsOf, filterSig, foldActiveNarrowOf, foldActiveOf, frozenKeysOf, homeProvPickOf, initialColsOf,
   initialFiltersOf, userFilterOf,
   jobDetailViewOf, jobsQueryOf, keysOf, lastOf, makeColWidth, makeGatedFilters, makeGatedProvChange, makeOccName,
   makePushJobLayer,
   measureColWidths, nextSortOf, nocLabelOf, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
-  saveFiltersOf, seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf,
+  saveFiltersOf, seedFilter, setterOf, shownColsOf, slotOf, squeezableOf, stickyOffsetsOf, strOf, strOrNull,
+  togglableColsOf,
   toRelatedJobs, chipNocOf, occGroupsOf, occSlotOf, tableWrapOf,
   widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
   jobDatesOf, ssrTransOf,
@@ -224,6 +225,8 @@ function useWrapWidth(headRowRef: HeadRowRef, x: WrapWidthIn): void {
  * 实宽钉住,minTotal = wrapW > avail = wrapW-2 → overflow 判真 → 固定左列开 sticky →
  * 偏移量一旦跟不上拖动就把隔壁列盖住(2026-08-16 Frank 实拍「穿透了职位列」)。
  * 种子只在「还没量到 + 列集对得上」时顶班:量到了立刻换成像素(同一批数据,差几像素看不出来)。
+ * 2026-10-11 Frank「jobs 这个 横条去掉」:下限之和超容器时不再按下限之和撑宽(原 avail: max(avail, minTotal)),
+ * 照容器宽分(allocateColWidths 压文字列),表宽恒 100%;压过时出 tight(表格挂紧排类)。容器宽还没量到(0)才按下限之和分。
  *
  * @param x 列集、种子、量宽结果与容器宽。
  * @returns 列宽面板。
@@ -237,12 +240,16 @@ function useColWidthsPanel(x: ColWidthsPanelIn): ColWidthsPanel {
     minTotal = minTotal + floorOf(one)
   }
   const avail = x.wrapW
-  const overflow = avail > 0 && minTotal > avail
-  const px = allocateColWidths({ cols, avail: Math.max(avail, minTotal) })
+  let room = avail
+  if (room <= 0) {
+    room = minTotal
+  }
+  const px = allocateColWidths({ cols, avail: room })
   let total = 0
   for (const k of x.keys) {
     total = total + numOf(px[k])
   }
+  const overflow = avail > 0 && total > avail
   const measuredReady = avail > 0 && Object.keys(x.measured).length > 0
   useSeedCookie({ measuredReady, keysKey: x.keysKey, px, total, keys: x.keys })
   const useSeed = measuredReady === false && x.seed != null && x.seed.keys === x.keysKey
@@ -251,6 +258,7 @@ function useColWidthsPanel(x: ColWidthsPanelIn): ColWidthsPanel {
     width: makeColWidth({ measuredReady, px, useSeed, seed: x.seed, keys: x.keys }),
     tableWidth: tableWidthOf({ measuredReady, overflow, total }),
     overflow: measuredReady && overflow,
+    tight: measuredReady && minTotal > avail,
   }
 }
 
@@ -261,7 +269,9 @@ function useColWidthsPanel(x: ColWidthsPanelIn): ColWidthsPanel {
  * @returns 分宽输入。
  */
 function allocOf(x: AllocOfIn): Alloc {
-  const one: Alloc = { key: x.k, head: COL_FLOOR, word: 0, p90: COL_FLOOR, max: COL_FLOOR }
+  const one: Alloc = {
+    key: x.k, head: COL_FLOOR, word: 0, p90: COL_FLOOR, max: COL_FLOOR, wrap: squeezableOf(x.k), keep: keepWidthOf(x.k),
+  }
   if (x.m != null) {
     one.head = x.m.head
     one.word = x.m.word

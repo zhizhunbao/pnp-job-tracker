@@ -88,7 +88,7 @@ import type {
   PlanProfileIn, PrefixLabelIn, ProvFullIn, ProvWordIn, RankOfIn, RelJsonTotalIn, RelPageUrlIn,
   RelatedJobFact, RelatedJobJson, RelatedJobs, RelatedJson, RoundIn, SaveLabelIn, SaveToggleIn,
   SavedEntry, SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn,
-  ShowRelatedIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, TFn, TextFn, ThWidthIn,
+  ShowRelatedIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, TFn, TableClsIn, TextFn, ThWidthIn,
   TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellReasonIn, UserFilterIn, WantsIn, WidthsKeyIn,
   JobBodyPanel, JobDateCell, JobDatesOfIn, JdGroup, JdSubgroupsIn, PushGroupIn, RepeatItemIn, SubheadPairIn,
   CellCtx, ImmCtxIn, ImmMoneyIn, ImmNameEnIn, PopupState, ImmRow, ImmRowsIn, ImmSignalIn, ImmWageIn, OpenImmIn,
@@ -1358,9 +1358,11 @@ function nOf(x: NumOrIn): number {
  * ① 表头永不折行、永不截断,顺带保底:再挤也不把一个词拦腰断成「Newfoundlan / d」。
  * ④ 总宽恒等于容器宽 → **永不横滚**;只有「表头都放不下」或用户手动拖宽才允许滚。
  * 2026-09-23 拖列撤,钉死的宽(pinned)随删,只剩「表头都放不下」一种会滚。
+ * 2026-10-11 Frank「jobs 这个 横条去掉」(登录用户列偏好多到 15 列以上,各列最长词下限之和超外框,表格撑出横滚):
+ * 下限之和超过可分宽度时不再撑宽,改按比例压文字列(squeezeTo)—— 总宽照旧恒等于容器宽,横滚彻底不出。
  *
  * @param x 各列的量宽结果与可分宽度。
- * @returns 各列像素,和恒等于可分宽度(除非表头都放不下)。
+ * @returns 各列像素,和恒等于可分宽度。
  */
 export function allocateColWidths(x: AllocateIn): Record<string, number> {
   const out: Record<string, number> = {}
@@ -1375,6 +1377,11 @@ export function allocateColWidths(x: AllocateIn): Record<string, number> {
     out[c.key] = w
     used = used + w
   }
+  if (used > room) {
+    squeezeTo({ out, flex, room })
+    roundOut({ out, flex, room })
+    return out
+  }
   let extra = room - used
   extra = fillTo({ out, flex, extra, target: TARGET_P90 })
   extra = fillTo({ out, flex, extra, target: TARGET_MAX })
@@ -1384,6 +1391,141 @@ export function allocateColWidths(x: AllocateIn): Record<string, number> {
   }
   roundOut({ out, flex, room })
   return out
+}
+
+/**
+ * 下限之和超过可分宽度时的压法(2026-10-11):原子值列(日期 / 地名 / 分级)与操作列照下限一像素不动,
+ * 余下的宽按各文字列的下限**等比例**分给文字列(一样的缩放比,宽的文字列分得多),压到表头宽的那列钉住、比例再算;
+ * 文字列全压到表头宽还不够(表头都放不下),走末路 squeezeAll。
+ *
+ * @param a 分宽表(就地改)、参与瓜分的列与可分宽度。
+ * @returns 无。
+ */
+function squeezeTo(a: RoundIn): void {
+  let rigid = 0
+  let wrapHard = 0
+  for (const c of a.flex) {
+    if (c.wrap) {
+      wrapHard = wrapHard + hardWidthOf(c)
+    } else {
+      rigid = rigid + hardWidthOf(c)
+    }
+  }
+  if (rigid + wrapHard > a.room) {
+    squeezeAll(a)
+    return
+  }
+  for (const c of a.flex) {
+    if (c.wrap === false) {
+      a.out[c.key] = hardWidthOf(c)
+    }
+  }
+  squeezeWrap({ out: a.out, flex: a.flex, room: a.room - rigid })
+}
+
+/**
+ * 文字列等比缩(注水法):缩放比 = 余宽 ÷ 还没钉住的文字列下限之和;哪列按比缩完不到表头宽就钉在表头宽、扣掉它再算一遍,
+ * 直到没有新钉住的列(最多文字列个数轮)。
+ *
+ * @param a 分宽表(就地改)、参与瓜分的列(只动文字列)与留给文字列的宽。
+ * @returns 无。
+ */
+function squeezeWrap(a: RoundIn): void {
+  const pinned: string[] = []
+  for (let round = 0; round <= a.flex.length; round = round + 1) {
+    let left = a.room
+    let free = 0
+    for (const c of a.flex) {
+      if (c.wrap && pinned.includes(c.key)) {
+        left = left - hardWidthOf(c)
+      } else if (c.wrap) {
+        free = free + Math.max(COL_FLOOR, c.head, c.word)
+      }
+    }
+    const k = left / Math.max(1, free)
+    let fresh = 0
+    for (const c of a.flex) {
+      if (c.wrap && pinned.includes(c.key) === false) {
+        const w = Math.max(COL_FLOOR, c.head, c.word) * k
+        if (w < hardWidthOf(c)) {
+          pinned.push(c.key)
+          fresh = fresh + 1
+        }
+        a.out[c.key] = Math.max(w, hardWidthOf(c))
+      }
+    }
+    if (fresh === 0) {
+      return
+    }
+  }
+}
+
+/**
+ * 末路(表头都放不下):操作列照原宽,其余列按压不动的宽等比例缩到余下的宽 —— 表头与原子值被裁,但不横滚;
+ * 操作列不缩:它的按钮不裁,缩了会溢出格子把外框撑出横滚。
+ *
+ * @param a 分宽表(就地改)、参与瓜分的列与可分宽度。
+ * @returns 无。
+ */
+function squeezeAll(a: RoundIn): void {
+  let kept = 0
+  let rest = 0
+  for (const c of a.flex) {
+    if (c.keep) {
+      kept = kept + hardWidthOf(c)
+    } else {
+      rest = rest + hardWidthOf(c)
+    }
+  }
+  const scale = Math.max(0, a.room - kept) / Math.max(1, rest)
+  for (const c of a.flex) {
+    if (c.keep) {
+      a.out[c.key] = hardWidthOf(c)
+    } else {
+      a.out[c.key] = hardWidthOf(c) * scale
+    }
+  }
+}
+
+/**
+ * 一列压不动的宽:文字列 = 表头宽(表头不折行);原子值列与操作列 = 最长词宽(原下限,不许折)。
+ *
+ * @param c 分宽输入。
+ * @returns 像素。
+ */
+function hardWidthOf(c: Alloc): number {
+  if (c.wrap) {
+    return Math.max(COL_FLOOR, c.head)
+  }
+  return Math.max(COL_FLOOR, c.head, c.word)
+}
+
+/**
+ * 这一列压得动没有(2026-10-11):操作列装的是按钮,不压;不折行的原子值列(见 colNoWrapOf)不压;其余文字列压得动。
+ *
+ * @param k 列键。
+ * @returns 压得动 = true。
+ */
+export function squeezableOf(k: string): boolean {
+  if (k === COL.actions) {
+    return false
+  }
+  for (const n of NOWRAP_COLS) {
+    if (n === k && colNoWrapOf(n)) {
+      return false
+    }
+  }
+  return true
+}
+
+/**
+ * 这一列末路也不缩没有(2026-10-11):只有操作列(按钮)。
+ *
+ * @param k 列键。
+ * @returns 不缩 = true。
+ */
+export function keepWidthOf(k: string): boolean {
+  return k === COL.actions
 }
 
 /**
@@ -4252,15 +4394,20 @@ export function loadTipClsOf(on: boolean): string {
 
 /**
  * 表格本体的类:量好宽之后换固定布局(colgroup 说了算)。
+ * 2026-10-11 多收紧排(分宽压过文字列):再挂 tableTight,文字列长词按任意处折(只在压过时生效)。
  *
- * @param ready 有宽度可下没。
+ * @param x 有宽度可下没与压没压过。
  * @returns 类名。
  */
-export function tableClsOf(ready: boolean): string {
-  if (ready) {
-    return cssOf(css.table) + SPACE + cssOf(css.tableFixed)
+export function tableClsOf(x: TableClsIn): string {
+  if (x.ready === false) {
+    return cssOf(css.table)
   }
-  return cssOf(css.table)
+  const cls = cssOf(css.table) + SPACE + cssOf(css.tableFixed)
+  if (x.tight) {
+    return cls + SPACE + cssOf(css.tableTight)
+  }
+  return cls
 }
 
 /**

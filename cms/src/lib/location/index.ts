@@ -7,6 +7,6 @@
 
 export { ALL_PROVS, PNP_PROVINCES, PROV_NAMES } from './constants'
 export {
-  cleanProvs, deviceTzOf, homeGateJsOf, homeProvinceOf, hqLineOf, isCanadaTz, mapQuery, mapsUrl, parseLoc, placeLineOf,
+  cleanProvs, homeGateJsOf, homeProvinceOf, hqLineOf, mapQuery, mapsUrl, parseLoc, placeLineOf,
   provName,
 } from './functions'

@@ -17,34 +17,29 @@
  * 它们的行构造器,注释原样带过去;首句「专业题的取数与搜索」那半随之不在本文件);回职位板要专业大类时借那边的 fetchMajor。
  * 同日专业改多选:专业上报口改报码清单(makeMajorsPick),主钮按清单空不空判,回职位板取第一个专业的大类;
  * 第 3 题选职业控件的专业码改递逗号连的清单(occMajorOf)。
+ * 2026-10-11 Frank「我应该先注册 再问问题吧。不然回答的问题 存哪里去了」→「需要改」:访客不再答题,门只剩注册 / 登录框。
+ * 访客向导独有的走步(makeGateNext)、上报口的「动过了」(makeMajorsPick / makeTouchedNocs)、关闭与交接(makeGateClose /
+ * dropGateHandoff / makeGateDone / runGateSync)、回职位板一整段(gateBoardGo 及其拼地址的四个私件)随之删;
+ * 新增注册框登录完的回调 makeGateAuthDone。余下的题面、上报口、城市与编辑模式是档案编辑弹框(GateEdit)在用。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
  */
-import { fetchMajor } from '@/components/majors'
 import { quizToProfile } from '@/components/quiz'
 import { isSenderName } from '@/lib/apply'
-import { clearGateHandoff, isGateSignedIn, markGateHandoff, markGateSignedIn, syncGateDraft } from '@/lib/guest'
+import { markGateSignedIn } from '@/lib/guest'
 import { GUEST_LOG, log } from '@/lib/log'
 import { readAnswers, saveBasics } from '@/lib/quiz'
-import { track } from '@/lib/track'
 import {
-  BOARD_HEAD, BOARD_INTENTS, BOARD_PATH, BROAD_DROP_PARAMS, CITIES_BAD, CITY_HIT_MAX, CITY_HOT_N, CRED_INCLUDE,
-  EDIT_ERR_ANSWERS, EDIT_ERR_NAME, GATE_EDIT_STEPS,
-  GATE_FRAME_SEL, GATE_QUESTIONS, GATE_QUESTION_GOAL, GATE_STEPS, GATE_STEP_GOAL, GATE_STEP_JOB, GATE_STEP_MAJOR,
-  GATE_STEP_NAME,
+  CITIES_BAD, CITY_HIT_MAX, CITY_HOT_N, CRED_INCLUDE, EDIT_ERR_ANSWERS, EDIT_ERR_NAME, GATE_EDIT_STEPS,
+  GATE_FRAME_SEL, GATE_QUESTIONS, GATE_QUESTION_GOAL, GATE_STEP_GOAL, GATE_STEP_JOB, GATE_STEP_MAJOR, GATE_STEP_NAME,
   GATE_STEP_PROV, GATE_STEP_REG, HDR_CONTENT_TYPE, LANG_KO, LANG_ZH, MAJOR_SEP, METHOD_PATCH, MIME_JSON,
-  NEXT_KEY, NOC_DROP_PARAMS, NOC_SEP, PROV_ABROAD, PROV_DROP_PARAMS, P_BROAD, P_NOC, P_PROV, SAVE_FAIL_KEY, SAVE_KEY,
-  STATUS_OVERSEAS,
-  TEXT_NONE, TRACK_GATE_STEP, URL_CITIES_HEAD, URL_PREFS,
+  NEXT_KEY, PROV_ABROAD, SAVE_FAIL_KEY, SAVE_KEY, STATUS_OVERSEAS, TEXT_NONE, URL_CITIES_HEAD, URL_PREFS,
 } from './constants'
 import type {
-  BoardGoIn, BoardUrlIn, CitiesJson, CityLabelIn, CityOpt, CityOptsIn, CityPickIn, EditBlankIn, EditNextIn,
-  EditNextKeyIn,
-  EditPatch, EditSaveIn, EditStepsIn,
-  EntryCloseIn, EntryDoneIn, GateBackIn, GateCloseIn, GateDoneIn, GateEditSeed, GateIntent, GateNextIn, GateNextOffIn,
-  GateProvActiveIn, GateQuestionIn, GateStep, GateStepOfIn, GateSyncRunIn, GoalPickIn, LoadCitiesIn, MajorsPickIn,
-  MaybeBoardMajor, NocsMergeFn, ParamsDropIn, ProvPickIn, QuestionFocusIn, SetNocsFn, TouchedNocsIn,
+  CitiesJson, CityLabelIn, CityOpt, CityOptsIn, CityPickIn, EditBlankIn, EditNextIn, EditNextKeyIn, EditPatch,
+  EditSaveIn, EditStepsIn, EntryCloseIn, EntryDoneIn, GateAuthDoneIn, GateBackIn, GateEditSeed, GateNextOffIn,
+  GateProvActiveIn, GateQuestionIn, GateStep, GateStepOfIn, GoalPickIn, LoadCitiesIn, ProvPickIn, QuestionFocusIn,
 } from './types'
 
 /**
@@ -105,25 +100,6 @@ export function focusGateQuestion(x: QuestionFocusIn): void {
 }
 
 /**
- * 造访客向导的「下一步」手柄:打一个「离开这一步」的点、记「动过了」(从此每次改动都写草稿)、往后走一步;
- * 走过第四道题进注册屏时再打一个 reg 点,并落交接戳(Google 整页登录回跳后凭它补交草稿)。
- *
- * @param x 位置、当前这一屏与两个落格。
- * @returns 下一步手柄。
- */
-export function makeGateNext(x: GateNextIn): () => void {
-  return function gateNext(): void {
-    track(TRACK_GATE_STEP, { kind: x.cur })
-    x.setTouched(true)
-    x.setStep(x.step + 1)
-    if (x.step + 1 >= GATE_STEPS.length) {
-      track(TRACK_GATE_STEP, { kind: GATE_STEP_REG })
-      markGateHandoff()
-    }
-  }
-}
-
-/**
  * 造访客向导的「回上一题」手柄(顶行左边的返回钮;第 1 题上不出钮,这里再夹一次不走到负数)。
  * 回头不清答案、不打点 —— 答过的照旧亮着,改不改由他。
  *
@@ -164,29 +140,15 @@ export function gateNextOffOf(x: GateNextOffIn): boolean {
 /**
  * 造目标大卡的上报口:记「动过了」、记下这一档,随即进下一题(2026-10-04 改版:目标题只有两张大卡,
  * 点了就是答了,不再要「下一步」;原先报 number | null 是借区间单选行的形,大卡不会报 null,收窄成数)。
+ * 2026-10-11 访客不再答题(Frank「我应该先注册 再问问题吧」):「动过了」只为写访客草稿,随访客向导撤,这里只剩记档与往后走。
  *
- * @param x 目标档与「动过了」两个落格,外加往后走的手柄。
+ * @param x 目标档落格,外加往后走的手柄。
  * @returns 上报口。
  */
 export function makeGoalPick(x: GoalPickIn): (v: number) => void {
   return function pickGoal(v: number): void {
-    x.setTouched(true)
     x.setGoal(v)
     x.next()
-  }
-}
-
-/**
- * 造专业胶囊的上报口。
- * 2026-10-05 专业改多选(原名 makeMajorPick,报一个码):收选择器报来的整份码清单,照旧记「动过了」。
- *
- * @param x 专业码清单与「动过了」两个落格。
- * @returns 上报口。
- */
-export function makeMajorsPick(x: MajorsPickIn): (v: string[]) => void {
-  return function pickMajors(v: string[]): void {
-    x.setTouched(true)
-    x.setMajors(v)
   }
 }
 
@@ -204,13 +166,13 @@ export function occMajorOf(codes: string[]): string {
 
 /**
  * 造所在省格子的上报口:点「加拿大境外」= 境外、省清空;点省 = 那个省、境外撤掉(单选,两样不并存)。
+ * 2026-10-11 访客向导撤:「动过了」那一记随访客草稿撤。
  *
- * @param x 省、境外与「动过了」三个落格。
+ * @param x 省、境外与城市三个落格。
  * @returns 上报口。
  */
 export function makeProvPick(x: ProvPickIn): (v: string) => void {
   return function pickProv(v: string): void {
-    x.setTouched(true)
     x.setCity(TEXT_NONE)
     if (v === PROV_ABROAD) {
       x.setProv(TEXT_NONE)
@@ -219,19 +181,6 @@ export function makeProvPick(x: ProvPickIn): (v: string) => void {
     }
     x.setProv(v)
     x.setAbroad(false)
-  }
-}
-
-/**
- * 造访客向导职业题的落格:职业胶囊与标签 × 照常拨清单,顺手记「动过了」。
- *
- * @param x 已选职业与「动过了」两个落格。
- * @returns 职业题用的落格。
- */
-export function makeTouchedNocs(x: TouchedNocsIn): SetNocsFn {
-  return function setNocsTouched(v: string[] | NocsMergeFn): void {
-    x.setTouched(true)
-    x.setNocs(v)
   }
 }
 
@@ -249,184 +198,18 @@ export function gateProvActiveOf(x: GateProvActiveIn): string {
 }
 
 /**
- * 造访客向导的关闭手柄(×、Esc、点遮罩):先撤交接戳 —— 关掉了,之后页头登录、别处登录都不许替他交草稿
- * (草稿留着,下次弹向导照它预填)—— 再交还调用方。
+ * 造访客注册框登录完的回调(2026-10-11 访客不再答题,注册框替掉访客向导):先记「这个页面里刚登录过」
+ * (lib/guest 的 markGateSignedIn —— 软刷回来之前分层态还是匿名,不记就会在那段空档里再弹一次),再交还调用方
+ * (亮出这一岗 / 补收那一岗 / 收起并软刷)。
  *
- * @param x 调用方的关法。
- * @returns 关闭手柄。
+ * @param x 交还口。
+ * @returns 登录完回调。
  */
-export function makeGateClose(x: GateCloseIn): () => void {
-  return function closeGate(): void {
-    clearGateHandoff()
-    x.onClose()
-  }
-}
-
-/**
- * 访客向导卸掉时的收尾器(2026-10-04 收口审查;整机的 effect 原样交出去):没在注册屏注册 / 登录成就卸掉
- * (浏览器返回、换页、弹它的那一页自己卸掉)= 同 × 一样撤交接戳 —— 原先只有 × 撤,别的走法戳留着,10 分钟内页头登录
- * 就会替他交草稿、改地址栏,破了「没戳的登录不碰答案档」。这个页面里在向导里注册 / 登录成功过(lib/guest 的
- * isGateSignedIn,注册成功回调当场记)的不撤:交没交成归 syncGateDraft(没交成它会把戳放回去等补交)。
- * Google 整页登录是整页卸载,React 不跑收尾器,戳照旧带到回跳那一页 —— 不用另立「跳转中」的记号。
- *
- * @returns 无。
- */
-export function dropGateHandoff(): void {
-  if (isGateSignedIn()) {
-    return
-  }
-  clearGateHandoff()
-}
-
-/**
- * 造注册屏成功后的回调:先记「首访引导弹过了」(四道题就是他的建档,职位板别再自动弹六步那套 ——
- * 同 quiz 桶 quizToProfile 落档即记的先例;记法借 profile 桶的 obMarkSeen,与首访向导走完时同一枚手柄)
- * 与「这个页面里刚登录过」(软刷回来之前别再起弹),再把内存里这一刻的草稿交给 lib/guest 并进答案档
- * (只填空格;不等它,网络慢也不卡用户),最后交还调用方。
- * 2026-10-04 A2:交还之后再按同一份内存草稿回职位板筛(gateBoardGo;只在职位板上、由头是进站或点开职位时换地址栏)——
- * syncGateDraft 一上来就清本地草稿,筛选只认内存这份。同日收口:由头只剩进站(点开职位撤,理由见 constants 的 BOARD_INTENTS)。
- * 同日收口审查:「这个页面里刚登录过」那一记同时让随后卸掉向导时不撤交接戳(见 dropGateHandoff);回职位板带上这一页
- * 现在的查询串(在现有地址上改,见 gateBoardUrlOf)。
- * 2026-10-09「我的档案」批:首访引导向导退役,开头那一记「首访引导弹过了」(obMarkSeen)随之撤 —— 没有六步那套可弹了。
- *
- * @param x 这一刻的草稿、交还口、这一页的路径与换地址栏。
- * @returns 注册成功回调。
- */
-export function makeGateDone(x: GateDoneIn): () => void {
-  return function gateDone(): void {
+export function makeGateAuthDone(x: GateAuthDoneIn): () => void {
+  return function gateAuthDone(): void {
     markGateSignedIn()
-    void syncGateDraft(x.draft)
     x.onDone()
-    void gateBoardGo({ draft: x.draft, path: x.path, search: window.location.search, replace: x.replace })
   }
-}
-
-/**
- * 补交钩子那一跑(2026-10-04 收口审查,自 useGateSync 的 effect 体下沉):把读回的草稿交给 lib/guest 并进答案档,
- * **交成了**才记「首访引导弹过了」、才回职位板按答案筛 —— 原先不等结果就记、就换地址栏,票据过期(还是匿名)的人
- * 被记成弹过、地址栏被改。回职位板一页只试一次:第一跑就记上「试过」,第一跑没交成(草稿与戳放回去),
- * 后面换页补交成了也不换 —— 那时用户多半已自己动过筛选,再换就冲掉(同 useGateSync 头注「地址栏一页只换一次」);
- * 这一页刚在向导里登录过(邮箱注册当场已换过)的也不换。
- * 2026-10-09「我的档案」批:首访引导向导退役,「交成了才记首访引导弹过了」那一记(obMarkSeen)撤;交成了才回职位板照旧。
- *
- * @param x 草稿、路径、查询串、换地址栏与「这一页试过」记号。
- * @returns 无(结果在答案档、本地存储与地址栏上)。
- */
-export async function runGateSync(x: GateSyncRunIn): Promise<void> {
-  const first = x.boardWent.current === false
-  x.boardWent.current = true
-  const ok = await syncGateDraft(x.draft)
-  if (ok === false) {
-    return
-  }
-  if (first === false || isGateSignedIn()) {
-    return
-  }
-  await gateBoardGo({ draft: x.draft, path: x.path, search: x.search, replace: x.replace })
-}
-
-/**
- * 注册完回职位板按答案筛(2026-10-04 A2,Frank「大类和职业我也都是现成的」):人在职位板(/)上、由头是进站,
- * 才把地址栏换成 /?prov=<省码>&noc=<职业码逗号连>;没选职业改带该专业的第一个本站大类(先按码取专业);境外不带省。
- * 职位板挂着 key = 筛选签名,地址栏一换整块重挂,筛选随之套上。点投递 / 收藏的由头不动地址栏(接着投 / 收藏)。
- * 什么都没答(拼不出一个参数)不换。
- * 立时由头是「进站或点开职位」;同日收口撤掉点开职位(板子重挂会卸掉刚亮出的职位弹框,见 constants 的 BOARD_INTENTS)。
- * 同日收口审查:地址在这一页现有的查询串上改(调用方传进来),关键词、排序这些用户自己带来的参数不丢。
- * 2026-10-05 专业改多选:没选职业时带第一个专业的第一个大类 —— 职位板的 broad 只收单值(等值筛,不收逗号连;
- * 见 constants 的 P_BROAD),几个专业的大类并集带不上去;按码取专业借 majors 桶的 fetchMajor。
- *
- * @param x 草稿、这一页的路径、现在的查询串与换地址栏。
- * @returns 无(结果在地址栏上)。
- */
-export async function gateBoardGo(x: BoardGoIn): Promise<void> {
-  if (x.path !== BOARD_PATH || isBoardIntent(x.draft.intent) === false) {
-    return
-  }
-  let broad = TEXT_NONE
-  const first = x.draft.majors[0]
-  if (x.draft.nocs.length === 0 && first != null) {
-    broad = majorBroadOf(await fetchMajor(first))
-  }
-  const url = gateBoardUrlOf({
-    prov: x.draft.prov, abroad: x.draft.abroad, nocs: x.draft.nocs, broad, search: x.search,
-  })
-  if (url !== TEXT_NONE) {
-    x.replace(url)
-  }
-}
-
-/**
- * 这个由头注册完要不要回职位板按答案筛(进站即弹要;点开职位、点投递 / 收藏不要 —— 点开职位那一个 2026-10-04 A2 收口撤)。
- *
- * @param intent 这次向导的由头。
- * @returns 要 = true。
- */
-function isBoardIntent(intent: GateIntent): boolean {
-  return BOARD_INTENTS.includes(intent)
-}
-
-/**
- * 回职位板的地址(纯拼法):省码(境外不带)+ 职业码逗号连;没选职业时换成大类;一个参数都拼不出给空串。
- * 编码交给 URLSearchParams(与职位板自己写地址栏同一套,逗号编成 %2C,板子读回来解码一致)。
- * 2026-10-04 收口审查:从这一页现有的查询串起拼(调用方传 window.location.search,函数照旧纯)—— 原先从空串起拼,
- * 分享链接带来的关键词、市、排序注册完全丢。只改答案管得着的几格并撤掉会打架的:设了省撤市 / 区 / 国家,
- * 设了职业撤大类 / 中 / 小分类,设了大类撤职业 / 中 / 小分类;其余参数原样留着。答案一格都拼不出(没答 / 境外又没职业专业)
- * 照旧给空串不换(现有地址上本来就有的参数不算)。
- *
- * @param x 省、境外、职业码、大类与现在的查询串。
- * @returns 地址;空串 = 不用换。
- */
-function gateBoardUrlOf(x: BoardUrlIn): string {
-  const sp = new URLSearchParams(x.search)
-  let set = false
-  if (x.abroad === false && x.prov !== TEXT_NONE) {
-    sp.set(P_PROV, x.prov)
-    dropParams({ sp, keys: PROV_DROP_PARAMS })
-    set = true
-  }
-  if (x.nocs.length > 0) {
-    sp.set(P_NOC, x.nocs.join(NOC_SEP))
-    dropParams({ sp, keys: NOC_DROP_PARAMS })
-    set = true
-  } else if (x.broad !== TEXT_NONE) {
-    sp.set(P_BROAD, x.broad)
-    dropParams({ sp, keys: BROAD_DROP_PARAMS })
-    set = true
-  }
-  if (set === false) {
-    return TEXT_NONE
-  }
-  return BOARD_HEAD + sp.toString()
-}
-
-/**
- * 从正在拼的查询参数里撤掉一组参数名(就地删;没有的跳过)。
- *
- * @param x 查询参数与要撤的参数名。
- * @returns 无。
- */
-function dropParams(x: ParamsDropIn): void {
-  for (const k of x.keys) {
-    x.sp.delete(k)
-  }
-}
-
-/**
- * 一个专业的第一个本站大类(回职位板按大类筛用);没取到专业、或它没有大类,给空串。
- * 2026-10-05 入参形改成本域自声明的 MaybeBoardMajor(只读 broads 一格;行的主人搬去 majors 桶)。
- *
- * @param row 按码取回的专业;null = 没取到。
- * @returns 大类;空串 = 没有。
- */
-function majorBroadOf(row: MaybeBoardMajor): string {
-  if (row == null) {
-    return TEXT_NONE
-  }
-  const first = row.broads[0]
-  if (first == null) {
-    return TEXT_NONE
-  }
-  return first
 }
 
 /**
@@ -443,6 +226,7 @@ export function makeEntryClose(x: EntryCloseIn): () => void {
 
 /**
  * 造进站向导注册完的回调(草稿已由向导交出去):收起,再软刷让服务端组件与会话种子换成登录态。
+ * 2026-10-11 访客不再答题:进站弹的是注册框,没有草稿可交;收起 + 软刷照旧。
  *
  * @param x 「为哪一页弹的」落格与软刷。
  * @returns 注册完回调。

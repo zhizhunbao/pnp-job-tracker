@@ -62,12 +62,6 @@ export type AuthFormIn = {
    * 只换 register 态大标题,登录态照旧。
    */
   hero?: string
-
-  /**
-   * 注册成功后留在原页、不跳补题问卷(可省 = 照旧跳)。2026-10-03 付费闭环批 A1:访客向导里的注册屏
-   * 四道题已经答过,注册完要回到刚才那个职位 / 接着投递 / 完成收藏,不许被整页拽去 /plan/pr?quiz=1。
-   */
-  keepPage?: boolean
 }
 
 /**
@@ -169,11 +163,6 @@ export type FinishAuthIn = {
    * 2026-08-29 Frank「不应该在哪个页面就保留在哪个页面吗」拍板)。
    */
   mode: AuthMode
-
-  /**
-   * 调用方要求注册后也留在原页(访客向导的注册屏);true = 不进补题漏斗。
-   */
-  keepPage: boolean
 
   /**
    * 回跳路径;null = 当前页。
@@ -390,11 +379,6 @@ export type AuthFormHookIn = {
    * 回跳路径;null = 当前页。
    */
   returnTo: string | null
-
-  /**
-   * 注册后留在原页、不跳补题问卷。
-   */
-  keepPage: boolean
 }
 
 /**

@@ -15,6 +15,9 @@
  * 带过去(注释原样);同日专业改多选:草稿、整机面板与主钮判定里的专业码换成码清单,整机面板上的专业题面板一格撤
  * (选择器机器改由向导件 GateWizard 挂,本域只留答案与上报口);题目分派多收一格 children(专业题那一屏);
  * 回职位板取专业大类只声明真读的那一格(BoardMajor)。
+ * 2026-10-11 访客不再答题(Frank「我应该先注册 再问问题吧」):草稿、访客向导整机入参、向导 props、走步 / 关闭 / 交接 /
+ * 补交 / 回职位板各入参与「动过了」落格随访客向导删;整机面板的 onRegistered 一格撤(只剩编辑模式,没有注册屏);
+ * 新增访客注册框 GateAuth 的 props、钩子与回调入参。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
@@ -38,51 +41,10 @@ export type GateIntent = 'job' | 'apply' | 'save' | 'entry' | 'filter'
 export type GateStep = 'goal' | 'major' | 'job' | 'prov' | 'name' | 'reg'
 
 /**
- * 访客向导草稿(亲手构造后交 lib/guest 存与交接,全格照抄它的 GateDraft)。
- */
-export type GateDraft = {
-  /**
-   * 目标档(1 = 拿 PR、2 = 先找工作);0 = 没答。
-   */
-  goal: number
-
-  /**
-   * 专业的 CIP 2021 class 码(如 '52.0203');空串 = 没答。
-   * A1 立时存的是专业大类码('01'…'12');2026-10-04 A2 起存 class 码,A1 没上线,线上没有大类码的旧值。
-   * 2026-10-05 改多选:格名 major → majors,存码清单(至多 3 个,选的先后序);空列 = 没答。单值那版没上线,不迁移。
-   */
-  majors: string[]
-
-  /**
-   * 想做的职业码。
-   */
-  nocs: string[]
-
-  /**
-   * 现在在哪个省;空串 = 没答或答了境外。
-   */
-  prov: string
-
-  /**
-   * 现在在哪个城市(2026-10-09「我的档案」批,选填):英文城市名;空串 = 没选。
-   */
-  city: string
-
-  /**
-   * 答的是「加拿大境外」。
-   */
-  abroad: boolean
-
-  /**
-   * 这次向导的由头。
-   */
-  intent: GateIntent
-}
-
-/**
  * 往已选职业清单上合并的更新函数(React 落格收的另一种形态;本域只整份地拨,形状照 profile 的同名件自抄,
  * 好让整机面板原样喂给 profile 桶的已选标签件)。
  * 2026-10-04 A2 起已选标签归 quiz 桶选职业控件,这一形只剩「职业题落格(makeTouchedNocs)也收它」一个用处。
+ * 2026-10-11 访客向导撤、makeTouchedNocs 随之删:职业题落格直接是 React 的 setNocs,整机面板的 setNocs 格照收这两形。
  */
 export type NocsMergeFn = (prev: string[]) => string[]
 
@@ -90,31 +52,6 @@ export type NocsMergeFn = (prev: string[]) => string[]
  * 已选职业清单的落格:既收整份新清单,也收上面那种合并函数。
  */
 export type SetNocsFn = (v: string[] | NocsMergeFn) => void
-
-/**
- * useGateWizard 的入参。
- */
-export type GateHookIn = {
-  /**
-   * 这次向导的由头。
-   */
-  intent: GateIntent
-
-  /**
-   * 注册成功、草稿交出去之后交还调用方(打开刚才的职位 / 接着投递 / 完成收藏)。
-   */
-  onDone: () => void
-
-  /**
-   * 关掉向导(调用方的关法;向导先撤交接戳再交给它)。
-   */
-  onClose: () => void
-
-  /**
-   * 取词函数(返回钮的读屏名;2026-10-05 返回钮收进弹框壳时加)。
-   */
-  t: TFn
-}
 
 /**
  * 弹框壳左上角返回钮的规格(与 modal 桶 back 位同形,本域自抄;null = 此刻不出 —— 第 1 题与注册屏)。2026-10-05 立。
@@ -134,6 +71,7 @@ export type GateBack = {
 /**
  * 访客向导的整块面板(useGateWizard 出;顶行、各题、钮区与借来的已选标签件都读它)。
  * 2026-10-04 改版:钮组改成本域自己的粘底钮区,原为共用首访向导钮组凑的三格(saving / isLast / apply 恒 false)随之撤。
+ * 2026-10-11 访客向导撤:只剩档案编辑整机 useGateEdit 出它(GateEdit 的顶行、各题、钮区读它)。
  */
 export type GatePanel = {
   /**
@@ -237,11 +175,6 @@ export type GatePanel = {
   back: GateBack
 
   /**
-   * 注册屏 AuthForm 成功后的回调。
-   */
-  onRegistered: () => void
-
-  /**
    * 关掉向导(×、Esc、点遮罩):撤交接戳再交还调用方 —— 关掉了就不许 Google 回跳以外的登录替他交草稿。
    */
   onClose: () => void
@@ -299,16 +232,16 @@ export type GateJobsIn = {
 }
 
 /**
- * GateWizard 的 props(契约照 A1 冻结:职位弹框、投递流、收藏、进站四处在传)。
+ * GateAuth(访客注册框)的 props(2026-10-11 访客不再答题,替掉 GateWizardIn;职位弹框、收藏、筛选、进站四处在传)。
  */
-export type GateWizardIn = {
+export type GateAuthIn = {
   /**
    * 取词函数。
    */
   t: TFn
 
   /**
-   * 这次向导的由头。
+   * 这次弹框的由头(记进 gate-open 埋点)。
    */
   intent: GateIntent
 
@@ -318,17 +251,42 @@ export type GateWizardIn = {
   returnTo?: string
 
   /**
-   * 弹框层级(调用方可省;投递流叠在职位弹框上要抬一层)。
+   * 弹框层级(调用方可省)。
    */
   z?: number
 
   /**
-   * 关掉向导(×、Esc、点遮罩)。
+   * 关掉(×、Esc、点遮罩)。
    */
   onClose: () => void
 
   /**
-   * 注册成功、草稿交出去之后交还调用方。
+   * 注册 / 登录成功之后交还调用方。
+   */
+  onDone: () => void
+}
+
+/**
+ * useGateAuth 的入参。
+ */
+export type GateAuthHookIn = {
+  /**
+   * 这次弹框的由头。
+   */
+  intent: GateIntent
+
+  /**
+   * 注册 / 登录成功之后交还调用方。
+   */
+  onDone: () => void
+}
+
+/**
+ * makeGateAuthDone 的入参。
+ */
+export type GateAuthDoneIn = {
+  /**
+   * 交还调用方。
    */
   onDone: () => void
 }
@@ -414,31 +372,6 @@ export type QuestionFocusIn = {
 }
 
 /**
- * makeGateNext 的入参。
- */
-export type GateNextIn = {
-  /**
-   * 走到第几步。
-   */
-  step: number
-
-  /**
-   * 当前这一屏(离开时打点用)。
-   */
-  cur: GateStep
-
-  /**
-   * 步数落格。
-   */
-  setStep: (v: number) => void
-
-  /**
-   * 「动过了」落格(动过才写草稿)。
-   */
-  setTouched: (v: boolean) => void
-}
-
-/**
  * makeGateBack 的入参。
  */
 export type GateBackIn = {
@@ -493,29 +426,9 @@ export type GoalPickIn = {
   setGoal: (v: number) => void
 
   /**
-   * 「动过了」落格。
-   */
-  setTouched: (v: boolean) => void
-
-  /**
    * 记完往后走一步(2026-10-04 改版:目标题点了直接进下一题)。
    */
   next: () => void
-}
-
-/**
- * makeMajorsPick 的入参(2026-10-05 多选前名 makeMajorPick / MajorPickIn,落一个码)。
- */
-export type MajorsPickIn = {
-  /**
-   * 专业码清单落格。
-   */
-  setMajors: (v: string[]) => void
-
-  /**
-   * 「动过了」落格。
-   */
-  setTouched: (v: boolean) => void
 }
 
 /**
@@ -533,29 +446,9 @@ export type ProvPickIn = {
   setAbroad: (v: boolean) => void
 
   /**
-   * 「动过了」落格。
-   */
-  setTouched: (v: boolean) => void
-
-  /**
    * 城市落格(2026-10-09:换省 / 选境外时清掉旧城市 —— 城市挂在省下面)。
    */
   setCity: CityClearFn
-}
-
-/**
- * makeTouchedNocs 的入参。
- */
-export type TouchedNocsIn = {
-  /**
-   * 已选职业落格。
-   */
-  setNocs: SetNocsFn
-
-  /**
-   * 「动过了」落格。
-   */
-  setTouched: (v: boolean) => void
 }
 
 /**
@@ -571,167 +464,6 @@ export type GateProvActiveIn = {
    * 答的是境外。
    */
   abroad: boolean
-}
-
-/**
- * makeGateClose 的入参。
- */
-export type GateCloseIn = {
-  /**
-   * 调用方的关法。
-   */
-  onClose: () => void
-}
-
-/**
- * makeGateDone 的入参。
- */
-export type GateDoneIn = {
-  /**
-   * 这一刻的草稿(内存里那份,本地存储被禁时也交得出去)。
-   */
-  draft: GateDraft
-
-  /**
-   * 交还调用方。
-   */
-  onDone: () => void
-
-  /**
-   * 这一页的路径(只在职位板上按答案筛;2026-10-04 A2)。
-   */
-  path: string
-
-  /**
-   * 换地址栏(router.replace;职位板按地址栏重挂套上筛选)。
-   */
-  replace: (href: string) => void
-}
-
-/**
- * 「这一页已经试过回职位板筛」的记号(useRef 那一格;本域自抄形)。
- */
-export type BoardWentRef = {
-  /**
-   * 这一页已经试过(成没成都算 —— 一页只试一次)。
-   */
-  current: boolean
-}
-
-/**
- * runGateSync 的入参(2026-10-04 收口审查:补交钩子那一跑)。
- */
-export type GateSyncRunIn = {
-  /**
-   * 读回的草稿。
-   */
-  draft: GateDraft
-
-  /**
-   * 这一页的路径(只在职位板上筛)。
-   */
-  path: string
-
-  /**
-   * 这一页现在的查询串(window.location.search;回职位板在它上面改)。
-   */
-  search: string
-
-  /**
-   * 换地址栏(router.replace)。
-   */
-  replace: (href: string) => void
-
-  /**
-   * 这一页试没试过回职位板筛。
-   */
-  boardWent: BoardWentRef
-}
-
-/**
- * gateBoardUrlOf 的入参(2026-10-04 A2:注册完回职位板按答案筛)。
- */
-export type BoardUrlIn = {
-  /**
-   * 所在省码;空串 = 没答。
-   */
-  prov: string
-
-  /**
-   * 答的是境外(境外不带省)。
-   */
-  abroad: boolean
-
-  /**
-   * 第 3 题选的职业码。
-   */
-  nocs: string[]
-
-  /**
-   * 该专业的第一个本站大类(没选职业时带它);空串 = 没有。
-   * 2026-10-05 专业改多选后是第一个专业的第一个大类(职位板 broad 只收单值,见 constants 的 P_BROAD)。
-   */
-  broad: string
-
-  /**
-   * 这一页现在的查询串(调用方传 window.location.search;2026-10-04 收口审查:在现有地址上改,不从空串起拼)。
-   */
-  search: string
-}
-
-/**
- * dropParams 的入参。
- */
-export type ParamsDropIn = {
-  /**
-   * 正在拼的查询参数(就地删)。
-   */
-  sp: URLSearchParams
-
-  /**
-   * 要撤的参数名。
-   */
-  keys: string[]
-}
-
-/**
- * 回职位板要的那个专业(majors 桶 fetchMajor 取回的行,只声明本域真读的一格;2026-10-05 选择器搬家时立)。
- */
-export type BoardMajor = {
-  /**
-   * 本站职业大类清单(取第一个;数据层推好的)。
-   */
-  broads: string[]
-}
-
-/**
- * 回职位板要的那个专业或没有(查无此码 / 取挂了)。
- */
-export type MaybeBoardMajor = BoardMajor | null
-
-/**
- * gateBoardGo 的入参。
- */
-export type BoardGoIn = {
-  /**
-   * 这一份草稿(邮箱注册是向导内存里那份,Google 回跳是补交时读回的那份)。
-   */
-  draft: GateDraft
-
-  /**
-   * 这一页的路径(只在职位板上筛)。
-   */
-  path: string
-
-  /**
-   * 这一页现在的查询串(调用方传 window.location.search;2026-10-04 收口审查)。
-   */
-  search: string
-
-  /**
-   * 换地址栏(router.replace)。
-   */
-  replace: (href: string) => void
 }
 
 /**

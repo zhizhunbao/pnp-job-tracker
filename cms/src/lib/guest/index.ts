@@ -3,12 +3,12 @@
  * 2026-10-03 付费闭环批 A1 立:职位弹框 / 职位整页记浏览、职位弹框判起弹、访客向导读写草稿与交接。
  * 同日审查后补:交接戳三件(走到注册屏落、× 撤、补交钩子取)与「向导里刚登录过」一对。
  * 2026-10-04 进站即弹:全站骨架判这一页要不要弹(takeEntryGate)。
+ * 2026-10-11 Frank「我应该先注册 再问问题吧。不然回答的问题 存哪里去了」→「需要改」:访客不再答题(门只剩注册框),
+ * 向导草稿(本地存储 o2p_gate_v2 的读写、验值、并进答案档)、Google 回跳交接戳与所在省预选整段删;
+ * 留下起弹判定、「这个页面里刚登录过」一对与进站即弹。上面讲草稿 / 交接 / 预选的句子作废。
  *
  * @author Frank
  * @time 2026-10-03 20:10:00
  */
 
-export {
-  clearGateHandoff, gateDueFor, isGateSignedIn, markGateHandoff, markGateSignedIn, readGateDraft,
-  readGateSeed, syncGateDraft, takeEntryGate, takeGateHandoff, writeGateDraft,
-} from './functions'
+export { gateDueFor, isGateSignedIn, markGateSignedIn, takeEntryGate } from './functions'

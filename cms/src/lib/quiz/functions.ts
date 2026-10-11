@@ -44,7 +44,7 @@ import {
 import { firstOf, jsonOrNull, queryRows, SQL, text } from '../db'
 import { CACHE } from './variables'
 import type {
-  Answers, AnswersDoc, AnswersOut, AnswersPatch, BandValue, BlankPatchIn, DropFn, EngineAnswers, EngineValue,
+  Answers, AnswersDoc, AnswersOut, AnswersPatch, BandValue, DropFn, EngineAnswers, EngineValue,
   FactsStoreFn, FieldBehavior, FieldMap, FieldNames, FirstStoreFn, LoadAnswersIn, MaybeAnswers, MaybeProvList,
   MaybeRawDoc, MergedOut,
   NameFilter, ProvList, PulledOut, PushedOut, RawAnswersSource, RawCell, RawDoc, RawField, RawScoreSource, RawText,
@@ -71,32 +71,9 @@ export function resetAnswersMemory(): void {
 }
 
 /**
- * 把几格基础题并进服务端档并当场推上去(2026-10-03 付费闭环批 A1:访客向导注册成功那一刻)。
- * 先拉服务端档(新注册的人是空档,登录老号就是他已有的整份),再只填 patch 里**服务端还空着的**那几格
- * (同日审查改判:向导注册屏能切登录,老账号已答的处境 / 省 / 职业不许被几道访客题盖掉;新号整份是空的,
- * 等于全写)—— 整档 PUT 之前其余字段原样带回(#107 同类保险丝:不许拿几格新答案抹掉整份旧档);
- * 不等防抖,直接推一次。没拉到档、推的时候会话没了(401)、推没成,一律交回 false 由调用方留着草稿下次再来。
- *
- * @param patch 要填的那几格。
- * @returns 并进去且推上去了 true。
- */
-export async function mergeBasics(patch: AnswersPatch): MergedOut {
-  await pullAndMerge(true)
-  if (CACHE.hydrated === false || CACHE.loggedIn !== true) {
-    return false
-  }
-  writeAnswers(blankPatchOf({ cur: readAnswers(), patch }))
-  if (CACHE.syncTimer != null) {
-    clearTimeout(CACHE.syncTimer)
-    CACHE.syncTimer = null
-  }
-  await pushToServer()
-  return isSynced()
-}
-
-/**
  * 改答案(2026-10-09「我的档案」批:档案页「修改」走完那几题点保存):先拉服务端那份并进来,再把 patch 整格覆盖上去、立刻推。
  * 与 mergeBasics 的分别只在「覆盖」还是「只填空格」—— 改答案就是要盖掉旧的。
+ * (2026-10-11 访客不再答题,只填空格的 mergeBasics 随访客草稿删,写答案档只剩本函数这一个口。)
  *
  * @param patch 要改的那几格。
  * @returns 改了且推上去了 true;没登录 / 推挂了 false。
@@ -123,45 +100,6 @@ export async function saveBasics(patch: AnswersPatch): MergedOut {
  */
 function isSynced(): boolean {
   return CACHE.loggedIn === true && CACHE.dirty === false
-}
-
-/**
- * patch 里只留现档还空着的格(mergeBasics 的「只填空格」)。目标档 / 专业 / 职业各看各的;
- * 处境与现居省是一件事的两格,绑在一起判:答了境外(patch 带处境)只在现档处境与现居省都空时写;
- * 答了省(只带现居省)只在现居省空、且现档不是「在境外」时写 —— 不许拼出「人在境外、住在安省」。
- * 2026-10-05 访客第 2 题改多选:专业一格改成码清单 majors,现档一个专业都没有才填。
- * 2026-10-09「我的档案」批:现居城市跟着现居省走 —— 省这次真写进去了,城市一并写;省没写(现档已有省)城市也不写,免得省市对不上。
- *
- * @param x 现档与要填的格。
- * @returns 真要写的格。
- */
-export function blankPatchOf(x: BlankPatchIn): AnswersPatch {
-  const a = x.cur
-  const p = x.patch
-  const out: AnswersPatch = {}
-  if (p.goalBand != null && a.goalBand === 0) {
-    out.goalBand = p.goalBand
-  }
-  if (p.majors != null && a.majors.length === 0) {
-    out.majors = p.majors
-  }
-  if (p.nocs != null && a.nocs.length === 0) {
-    out.nocs = p.nocs
-  }
-  if (p.status != null) {
-    if (a.status === '' && a.resProv === '') {
-      out.status = p.status
-      out.resProv = STR_NONE
-    }
-    return out
-  }
-  if (p.resProv != null && a.resProv === '' && a.status !== STATUS_OVERSEAS) {
-    out.resProv = p.resProv
-    if (p.resCity != null) {
-      out.resCity = p.resCity
-    }
-  }
-  return out
 }
 
 /**
