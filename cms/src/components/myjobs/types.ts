@@ -15,6 +15,31 @@ import type { Plan } from '@/lib/jobs'
 export type TFn = (key: string, vars?: Record<string, string | number>) => string
 
 /**
+ * 界面语三字面量(各域自抄;2026-10-10 批 2 推荐行的译名灰字要它)。
+ */
+export type Lang = 'zh' | 'en' | 'ko'
+
+/**
+ * 锁住那条的一份假字纹理。
+ */
+export type LockFill = {
+  /**
+   * 假公司名。
+   */
+  company: string
+
+  /**
+   * 假地址。
+   */
+  address: string
+
+  /**
+   * 假薪资。
+   */
+  salary: string
+}
+
+/**
  * 哪张清单:我的求职 / 我的收藏。
  */
 export type ListKind = 'applied' | 'saved'
@@ -107,6 +132,51 @@ export type MyJobItem = {
    * 发出时附了求职信(我的求职:出「求职信」链接的前提;2026-10-10 Frank「两处都改吧」)。
    */
   hasCover: boolean
+
+  /**
+   * 职位名中文译文(没有 = 空串;2026-10-10 批 2)。
+   */
+  titleZh: string
+
+  /**
+   * 职位名韩文译文(没有 = 空串)。
+   */
+  titleKo: string
+
+  /**
+   * 公司中文译名(没有 = 空串)。
+   */
+  companyZh: string
+
+  /**
+   * 公司韩文译名(没有 = 空串)。
+   */
+  companyKo: string
+
+  /**
+   * 地点一行(照 Indeed)。
+   */
+  address: string
+
+  /**
+   * 工时归一值 full / part(没标 = 空串;2026-10-10 批 2)。
+   */
+  hours: string
+
+  /**
+   * 雇佣期归一值(没标 = 空串)。
+   */
+  term: string
+
+  /**
+   * 截止日(ISO;没有 = 空串)。
+   */
+  validThrough: string
+
+  /**
+   * 收藏的时刻(ISO;「收藏于」与手机卡右上日期;2026-10-10 批 2)。
+   */
+  savedAt: string
 }
 
 /**
@@ -200,172 +270,6 @@ export type LoadMyJobsIn = {
 }
 
 /**
- * 一行展示行(洗好的字、链接与手柄;横卡只管摆)。
- */
-export type MyJobCellRow = {
-  /**
-   * 行身份(收藏记录 / 投递行 id)。
-   */
-  key: string
-
-  /**
-   * 原始投递进度(阶段筛选按它;只收藏没投 = 空串)。
-   */
-  stage: string
-
-  /**
-   * 公司首字母(没公司名 = ?)。
-   */
-  avatar: string
-
-  /**
-   * 首字母块的配色类名(c0 ~ c6)。
-   */
-  avatarCls: string
-
-  /**
-   * 职位 id(职位名点了按它叠开职位框;2026-10-09 N6 批换 name 桶 JobName);null = 职位已删,职位名黑字不可点。
-   */
-  jobId: number | null
-
-  /**
-   * 职位页链接;空串 = 职位已删、不出链接。
-   */
-  href: string
-
-  /**
-   * 职位名。
-   */
-  title: string
-
-  /**
-   * 公司名。
-   */
-  company: string
-
-  /**
-   * 公司页 slug(公司名点了开公司弹框;2026-10-09 N6 批换 name 桶 CompanyName);空串 = 公司表没这家,公司名黑字不可点。
-   */
-  companySlug: string
-
-  /**
-   * 城市英文名(name 桶 CityName 主文案;空串 = 没有,不出)。
-   */
-  city: string
-
-  /**
-   * 城市中文译名(CityName 灰字;空串 = 译名表外)。
-   */
-  cityZh: string
-
-  /**
-   * 城市韩文译名(同上)。
-   */
-  cityKo: string
-
-  /**
-   * 两位省码(name 桶 ProvName,与城市分开各一份;空串 = 没有,不出)。
-   */
-  province: string
-
-  /**
-   * 薪资(没有 = 空串;只收藏那张清单出)。
-   */
-  salary: string
-
-  /**
-   * 日期一行(「投递于 日期」「最近改于 日期」「发布于 日期」;没有 = 空串)。
-   */
-  dateText: string
-
-  /**
-   * 投递状态胶囊的字(只收藏没投 = 空串)。
-   */
-  statusText: string
-
-  /**
-   * 投递状态胶囊的档(tag 桶;没投 = 空串)。
-   */
-  statusTag: StatusTag
-
-  /**
-   * 职位已下架。
-   */
-  closed: boolean
-
-  /**
-   * 「已下架」字样;在架 = 空串。
-   */
-  closedText: string
-
-  /**
-   * 「打开」的字。
-   */
-  openText: string
-
-  /**
-   * 「取消收藏」的字(我的求职那张清单不出这颗钮,给空串)。
-   */
-  unsaveText: string
-
-  /**
-   * 取消收藏的手柄(我的求职那张清单给 null)。
-   */
-  onUnsave: (() => void) | null
-
-  /**
-   * 发出去的那份简历的地址(我的求职;草稿、我的收藏给空串)。
-   */
-  resumeHref: string
-
-  /**
-   * 那封求职信 PDF 的地址(同上)。
-   */
-  coverHref: string
-
-  /**
-   * 「简历」「求职信」两个字(附件链接)。
-   */
-  resumeText: string
-
-  /**
-   * 「求职信」的字。
-   */
-  coverText: string
-
-  /**
-   * 草稿 / 待投「继续」的去处(投递区);其余 = 空串(2026-10-08)。
-   */
-  continueHref: string
-
-  /**
-   * 点「继续」:整页跳到投递区(2026-10-08 Frank「点继续应该触发什么」—— 同页软跳转只改地址栏不装流程,实撞)。
-   * 2026-10-09 A 批:草稿行改为就地弹投递框;待投行照旧整页跳到「今日待投」。
-   */
-  onContinue: () => void
-
-  /**
-   * 「继续」的字。
-   */
-  continueText: string
-
-  /**
-   * 收藏行「投递」的去处(投递区);投不了 = 空串(2026-10-08)。
-   */
-  applyHref: string
-
-  /**
-   * 点收藏行「投递」:就地弹投递框(2026-10-09 A 批)。
-   */
-  onApply: () => void
-
-  /**
-   * 「投递」的字。
-   */
-  applyText: string
-}
-
-/**
  * 造展示行(myJobCellRowsOf)的入参。
  */
 export type CellRowsIn = {
@@ -394,6 +298,11 @@ export type CellRowsIn = {
    * 改清单(取消收藏要用)。
    */
   setItems: SetItemsFn
+
+  /**
+   * 界面语(译名灰字要它;2026-10-10 批 2)。
+   */
+  lang: Lang
 }
 
 /**
@@ -429,6 +338,11 @@ export type CellRowIn = {
    * 改清单。
    */
   setItems: SetItemsFn
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
 }
 
 /**
@@ -452,28 +366,23 @@ export type UnsaveIn = {
 }
 
 /**
- * 横卡清单(JobList)的 props。
+ * 一张清单(JobList:网页端通用 Table、手机一岗一张卡)的 props。
  */
 export type JobListIn = {
   /**
    * 展示行。
    */
-  rows: MyJobCellRow[]
+  rows: ListRow[]
+
+  /**
+   * 网页端的列。
+   */
+  cols: MjCol<ListRow>[]
 
   /**
    * 空态。
    */
   empty: React.ReactNode
-}
-
-/**
- * 一张横卡(JobRow)的 props。
- */
-export type JobRowIn = {
-  /**
-   * 这一行的展示行。
-   */
-  r: MyJobCellRow
 }
 
 /**
@@ -634,39 +543,769 @@ export type StageDef = {
 /**
  * 投递状态胶囊能用的档(tag 桶的四档;空串 = 没胶囊)。
  */
-export type StatusTag = 'info' | 'ok' | 'bad' | 'gray' | ''
-
-/**
- * `dateLineOf` 的入参。
- */
-export type DateLineIn = {
-  /**
-   * 造行入参(取词函数在里面)。
-   */
-  x: CellRowIn
-
-  /**
-   * 词条键。
-   */
-  key: string
-
-  /**
-   * ISO 时刻(没有 = 空串)。
-   */
-  iso: string
-}
-
-/**
- * `avaClsOf` 的入参。
- */
-export type AvaClsIn = {
-  /**
-   * 配色类名(c0 ~ c6)。
-   */
-  cls: string
-}
+export type StatusTag = 'info' | 'ok' | 'bad' | 'gray'
 
 /**
  * 没有这一档。
  */
 export type MaybeStageDef = StageDef | null
+
+/**
+ * 今日推荐一行(线格式;lib/myjobs 的 PickRow 全格照抄)。
+ */
+export type PickItem = {
+  /**
+   * 职位 id。
+   */
+  id: number
+
+  /**
+   * 职位名英文原文。
+   */
+  title: string
+
+  /**
+   * 职位名中文译文(没有 = 空串)。
+   */
+  titleZh: string
+
+  /**
+   * 职位名韩文译文(没有 = 空串)。
+   */
+  titleKo: string
+
+  /**
+   * 公司英文名。
+   */
+  company: string
+
+  /**
+   * 公司中文译名(没有 = 空串)。
+   */
+  companyZh: string
+
+  /**
+   * 公司韩文译名(没有 = 空串)。
+   */
+  companyKo: string
+
+  /**
+   * 公司页 slug(没有 = 空串)。
+   */
+  companySlug: string
+
+  /**
+   * 地点一行(照 Indeed)。
+   */
+  address: string
+
+  /**
+   * 城市英文名。
+   */
+  city: string
+
+  /**
+   * 城市中文译名(没有 = 空串)。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名(没有 = 空串)。
+   */
+  cityKo: string
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 薪资显示串(没有 = 空串)。
+   */
+  salary: string
+
+  /**
+   * 发布日期(ISO;没有 = 空串)。
+   */
+  datePosted: string
+
+  /**
+   * 推荐理由码。
+   */
+  reasons: string[]
+
+  /**
+   * 省提名项目简称(没有 = 空串)。
+   */
+  program: string
+
+  /**
+   * 工时归一值 full / part(没标 = 空串;2026-10-10 批 2)。
+   */
+  hours: string
+
+  /**
+   * 雇佣期归一值(没标 = 空串)。
+   */
+  term: string
+
+  /**
+   * 截止日(ISO;没有 = 空串)。
+   */
+  validThrough: string
+}
+
+/**
+ * 「更多推荐」里锁住的一条(线格式:只有职位名与理由)。
+ */
+export type LockedItem = {
+  /**
+   * 职位名英文原文。
+   */
+  title: string
+
+  /**
+   * 推荐理由码。
+   */
+  reasons: string[]
+
+  /**
+   * 省提名项目简称(没有 = 空串)。
+   */
+  program: string
+}
+
+/**
+ * 推荐接口回包(信任边界:缺席的格按空读)。
+ */
+export type PicksRespJson = {
+  /**
+   * 看得见的推荐。
+   */
+  picks?: PickItem[]
+
+  /**
+   * 还有几条看不见。
+   */
+  more?: number
+
+  /**
+   * 锁住给看的几条。
+   */
+  locked?: LockedItem[]
+}
+
+/**
+ * 推荐(洗净)。
+ */
+export type PicksFact = {
+  /**
+   * 看得见的推荐。
+   */
+  picks: PickItem[]
+
+  /**
+   * 还有几条看不见。
+   */
+  more: number
+
+  /**
+   * 锁住给看的几条。
+   */
+  locked: LockedItem[]
+}
+
+/**
+ * 推荐整机的面板(usePicks 出)。
+ */
+export type PicksPanel = {
+  /**
+   * 推荐(还没拉回来 = null)。
+   */
+  data: PicksFact | null
+
+  /**
+   * 拉失败了。
+   */
+  failed: boolean
+
+  /**
+   * 定价框开着没有。
+   */
+  upsell: boolean
+
+  /**
+   * 开定价框。
+   */
+  onUpsell: () => void
+
+  /**
+   * 关定价框。
+   */
+  onUpsellClose: () => void
+}
+
+/**
+ * 拉推荐(makeLoadPicks)的入参。
+ */
+export type LoadPicksIn = {
+  /**
+   * 写推荐。
+   */
+  setData: (v: PicksFact) => void
+
+  /**
+   * 拨「拉失败了」。
+   */
+  setFailed: (v: boolean) => void
+}
+
+/**
+ * 推荐展示行(pickCellRowsOf)的入参。
+ */
+export type PickRowsIn = {
+  /**
+   * 推荐。
+   */
+  items: PickItem[]
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * 一行推荐展示行(pickCellRowOf)的入参。
+ */
+export type PickRowIn = {
+  /**
+   * 这一行。
+   */
+  item: PickItem
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * 理由胶囊的字(reasonTextsOf)的入参。
+ */
+export type ReasonTextsIn = {
+  /**
+   * 理由码。
+   */
+  reasons: string[]
+
+  /**
+   * 省提名项目简称。
+   */
+  program: string
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * 推荐两张卡(Picks)的 props。
+ */
+export type PicksIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 是不是 Pro(决定出不出「更多推荐」;服务端另有自己的判定)。
+   */
+  pro: boolean
+
+  /**
+   * 重拉代数(投出一封加一,推荐跟着重拉;页面门递来)。
+   */
+  gen: number
+}
+
+/**
+ * usePicks 的入参。
+ */
+export type PicksHookIn = {
+  /**
+   * 重拉代数。
+   */
+  gen: number
+}
+
+/**
+ * 「更多推荐」卡的 props。
+ */
+export type MorePicksIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 还有几条看不见。
+   */
+  more: number
+
+  /**
+   * 锁住给看的几条。
+   */
+  locked: LockedItem[]
+
+  /**
+   * 点「升级 Pro」。
+   */
+  onUpgrade: () => void
+}
+
+/**
+ * 锁住的一条(LockedPick 组件)的 props。
+ */
+export type LockedPickIn = {
+  /**
+   * 职位名。
+   */
+  title: string
+
+  /**
+   * 理由胶囊的字。
+   */
+  reasons: string[]
+
+  /**
+   * 第几条(挑一份假字纹理)。
+   */
+  i: number
+}
+
+/**
+ * 一张分区白卡(Section)的 props。
+ */
+export type SectionIn = {
+  /**
+   * 卡标题。
+   */
+  title: string
+
+  /**
+   * 标题旁的灰字计数(不出 = null)。
+   */
+  count: number | null
+
+  /**
+   * 锚点 id(旧深链 `?sec=favs` 滚到收藏卡用;不要 = 空串)。
+   */
+  anchor: string
+
+  /**
+   * 卡内容。
+   */
+  children: React.ReactNode
+}
+
+/**
+ * 推送卡整机的面板(usePush 出)。
+ */
+export type PushPanel = {
+  /**
+   * 设置拉回来了没有(没拉回来不渲)。
+   */
+  ready: boolean
+
+  /**
+   * 拉失败了。
+   */
+  failed: boolean
+
+  /**
+   * 选中的频率(空串 = 不发;下拉的「全部」档就是它)。
+   */
+  freq: string
+
+  /**
+   * 改频率。
+   */
+  setFreq: (v: string) => void
+
+  /**
+   * 邮箱框里的字。
+   */
+  email: string
+
+  /**
+   * 改邮箱框。
+   */
+  setEmail: (v: string) => void
+
+  /**
+   * 保存后的那一句(没有 = 空串)。
+   */
+  note: string
+
+  /**
+   * 正在存。
+   */
+  busy: boolean
+
+  /**
+   * 点「保存」。
+   */
+  onSave: () => void
+}
+
+/**
+ * 推送卡(Push)的 props。
+ */
+export type PushIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * 拨一个开关(makeFlag)的入参。
+ */
+export type FlagIn = {
+  /**
+   * 落格。
+   */
+  set: (v: boolean) => void
+
+  /**
+   * 拨成什么。
+   */
+  v: boolean
+}
+
+/**
+ * 一枚胶囊(理由 / 状态 / 已下架)。
+ */
+export type TagItem = {
+  /**
+   * 字。
+   */
+  text: string
+
+  /**
+   * tag 桶的档。
+   */
+  variant: StatusTag | 'warn'
+}
+
+/**
+ * 操作格里的一颗钮。
+ */
+export type ActBtn = {
+  /**
+   * 身份。
+   */
+  key: string
+
+  /**
+   * 字。
+   */
+  text: string
+
+  /**
+   * 钮档:主钮 / 带框次钮。
+   */
+  kind: 'primary' | 'secondary'
+
+  /**
+   * 点了做什么(链接钮给 null)。
+   */
+  onClick: (() => void) | null
+
+  /**
+   * 链接(新标签开;按钮给空串)。
+   */
+  href: string
+}
+
+/**
+ * 三张清单(今日推荐 / 我的收藏 / 我的投递)共用的展示行(2026-10-10 批 2:网页端表格各格、手机卡各行都从它取)。
+ */
+export type ListRow = {
+  /**
+   * 行身份。
+   */
+  key: string
+
+  /**
+   * 职位 id(职位删了 = null,职位名黑字不可点)。
+   */
+  jobId: number | null
+
+  /**
+   * 职位名英文原文。
+   */
+  title: string
+
+  /**
+   * 职位名灰字(界面语译名;英文界面空串)。
+   */
+  titleSub: string
+
+  /**
+   * 「已下架」字(在架 = 空串;挂在职位名后面)。
+   */
+  closedText: string
+
+  /**
+   * 公司英文名。
+   */
+  company: string
+
+  /**
+   * 公司中文译名。
+   */
+  companyZh: string
+
+  /**
+   * 公司韩文译名。
+   */
+  companyKo: string
+
+  /**
+   * 公司页 slug(没有 = 空串)。
+   */
+  companySlug: string
+
+  /**
+   * 地点一行(照 Indeed)。
+   */
+  address: string
+
+  /**
+   * 地点的 Google 地图链接(没有地点 = 空串)。
+   */
+  addressHref: string
+
+  /**
+   * 地点灰字(「市译名,省译名」;英文界面空串)。
+   */
+  addressSub: string
+
+  /**
+   * 薪资(没有 = 空串)。
+   */
+  salary: string
+
+  /**
+   * 工时英文名(Full-time / Part-time;没标 = 空串)。
+   */
+  hoursEn: string
+
+  /**
+   * 工时界面语灰字。
+   */
+  hoursSub: string
+
+  /**
+   * 雇佣期英文名(Permanent / Fixed-term / Seasonal / Casual;没标 = 空串)。
+   */
+  termEn: string
+
+  /**
+   * 雇佣期界面语灰字。
+   */
+  termSub: string
+
+  /**
+   * 发布日期(年-月-日;没有 = 空串)。
+   */
+  posted: string
+
+  /**
+   * 截止日期(年-月-日;没有 = 空串)。
+   */
+  deadline: string
+
+  /**
+   * 收藏于(年-月-日;不是收藏清单 = 空串)。
+   */
+  savedOn: string
+
+  /**
+   * 投递于(年-月-日;只有发出去的行有)。
+   */
+  appliedOn: string
+
+  /**
+   * 手机卡右上角的日期(推荐 = 发布日期、收藏 = 收藏日期、已投 = 投递日期;没有 = 空串)。
+   */
+  cornerDate: string
+
+  /**
+   * 胶囊(推荐 = 理由、投递 = 状态)。
+   */
+  tags: TagItem[]
+
+  /**
+   * 操作钮(主钮在前)。
+   */
+  acts: ActBtn[]
+
+  /**
+   * 附件链接(我的投递发出去的行:简历 / 求职信;没有 = 空清单)。
+   */
+  files: ActBtn[]
+}
+
+/**
+ * 网页端一列(table 桶 Col 的本桶抄形;只声明用到的格)。
+ */
+export type MjCol<T> = {
+  /**
+   * 列身份。
+   */
+  key: string
+
+  /**
+   * 表头。
+   */
+  label: React.ReactNode
+
+  /**
+   * 单元格。
+   */
+  render: (r: T) => React.ReactNode
+
+  /**
+   * 单元格不换行。
+   */
+  nowrap?: boolean
+}
+
+/**
+ * 手机卡(MjCard)的 props。
+ */
+export type MjCardIn = {
+  /**
+   * 展示行。
+   */
+  r: ListRow
+}
+
+/**
+ * 胶囊一排(TagList)的 props。
+ */
+export type TagListIn = {
+  /**
+   * 胶囊。
+   */
+  tags: TagItem[]
+}
+
+/**
+ * 一排钮(ActList)的 props。
+ */
+export type ActListIn = {
+  /**
+   * 钮。
+   */
+  acts: ActBtn[]
+}
+
+/**
+ * 列构造(pickColsOf / savedColsOf / appliedColsOf)的入参。
+ */
+export type ColsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * 工时 / 雇佣期两行名(namesOf)的入参。
+ */
+export type KindNameIn = {
+  /**
+   * 归一值。
+   */
+  v: string
+
+  /**
+   * 归一值 → 英文名。
+   */
+  en: Record<string, string>
+
+  /**
+   * 词条头(后接归一值)。
+   */
+  keyHead: string
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * 一个名字的两行(英文 + 界面语灰字)。
+ */
+export type NamePair = {
+  /**
+   * 英文。
+   */
+  en: string
+
+  /**
+   * 灰字。
+   */
+  sub: string
+}
+
+/**
+ * 地点灰字(addrSubOf)的入参。
+ */
+export type AddrSubIn = {
+  /**
+   * 城市中文译名。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名。
+   */
+  cityKo: string
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}

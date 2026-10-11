@@ -275,29 +275,9 @@ export const TARGET_BLANK = '_blank'
 export const MIME_PDF = 'application/pdf'
 
 /**
- * 逐项检查求职信行「改信」钮的词条键(投递区 = 回第 2 步;今日待投 = 开改信弹框)。
- */
-export const EDIT_KEY = 'ap.edit'
-
-/**
  * 邮件形预览「主题」行的词条键(2026-10-08 Frank「这个不能改成类似于邮件那种吗」)。
  */
 export const SUBJECT_KEY = 'ap.subject'
-
-/**
- * 邮件形预览「附件」行的词条键。
- */
-export const ATTACH_KEY = 'ap.attach'
-
-/**
- * 逐项检查简历行换简历下拉的尺寸档。
- */
-export const PICK_SELECT_SIZE = 'sm' as const
-
-/**
- * 换简历下拉至少要几份才出(只有一份没得换)。
- */
-export const PICK_MIN = 2
 
 /**
  * 英文姓名框的浏览器自动填充类别(全名)。
@@ -518,32 +498,6 @@ export const TRACK_APPLY_SENT = 'apply-sent'
  * 发出前四项逐一打勾才放行,手动投递第 3 步与「今日待投」同一个组件)。
  */
 export const CHECK_TO = 'ap.to'
-
-/**
- * 逐项检查:简历一项。
- */
-export const CHECK_RESUME = 'ap.resume'
-
-/**
- * 逐项检查:求职信一项。
- */
-export const CHECK_LETTER = 'ap.letter'
-
-/**
- * 逐项检查:署名一项。
- */
-export const CHECK_SIGN = 'ap.sign'
-
-
-/**
- * 逐项检查里「打开简历」的词条键。
- */
-export const VIEW_KEY = 'ap.view'
-
-/**
- * 逐项检查里「查看 PDF」的词条键。
- */
-export const PDF_KEY = 'ap.pdf'
 
 /**
  * 简历原件地址的查询头(后接简历 id;同「我的简历」)。

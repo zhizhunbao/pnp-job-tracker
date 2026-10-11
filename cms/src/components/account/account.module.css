@@ -34,12 +34,35 @@
 
 /*
  * 选中那一节的内容区。
+ * 2026-10-10 批 2(外层大白卡拆掉):不再是卡里的内衬区,改成页签卡下面一列分区卡,卡与卡隔 12px。
  */
 .sheetBody {
   /*
-   * 四周内衬。
+   * 竖排一列。
    */
-  padding: 18px 20px 22px;
+  display: flex;
+
+  flex-direction: column;
+
+  /*
+   * 卡与卡之间 12px(效果图)。
+   */
+  gap: 12px;
+
+  /*
+   * 与页签卡隔 12px。
+   */
+  margin-top: 12px;
+}
+
+/*
+ * 内容列里的每张卡:外边距清零,间距统一由上面的 gap 给(全局 cardMd 自带的下边距不叠加)。
+ */
+.sheetBody > * {
+  /*
+   * 清零。
+   */
+  margin: 0;
 }
 
 /*
@@ -57,27 +80,6 @@
  * ── 以下自 2026-08-27 换装批迁入:ProfileForm / SavedJobsList / SavedSearchList /
  *    ResumeArchive 四件的内联样式逐格迁类,值一个不改。──
  */
-
-/*
- * 各节的小标题(档案/收藏/订阅/简历存档四节共用;与 .buyTitle 同规格 ——
- * 各节自带图标,合并成一个类会把「购买节」的历史注释挤走,所以另起同值类)。
- */
-.secTitle {
-  /*
-   * 节内小标题字号。
-   */
-  font-size: 13.5px;
-
-  /*
-   * 半粗。
-   */
-  font-weight: 600;
-
-  /*
-   * 正文灰。
-   */
-  color: #374151;
-}
 
 /*
  * 节标题下的灰字小注。
@@ -107,56 +109,6 @@
    * 与套餐行拉开。
    */
   margin-top: 12px;
-}
-
-/*
- * 周报开关那一行(E9-02b:勾选框 + 说明,整行可点)。
- */
-.weeklyRow {
-  /*
-   * 勾选框与文字并排。
-   */
-  display: flex;
-
-  /*
-   * 竖直居中。
-   */
-  align-items: center;
-
-  /*
-   * 勾选框与文字的间距。
-   */
-  gap: 8px;
-
-  /*
-   * 与上方清单留 14px。
-   */
-  margin-top: 14px;
-
-  /*
-   * 分隔线之下再衬 10px。
-   */
-  padding-top: 10px;
-
-  /*
-   * 与清单之间一条最浅分隔线。
-   */
-  border-top: 1px solid #f3f4f6;
-
-  /*
-   * 开关说明字号。
-   */
-  font-size: 12.5px;
-
-  /*
-   * 次要灰。
-   */
-  color: #6b7280;
-
-  /*
-   * 整行可点手型(label 包着勾选框)。
-   */
-  cursor: pointer;
 }
 
 /*
@@ -594,26 +546,8 @@
 }
 
 /*
- * 「求职信」「Pro 包含」「付款记录」这类分段:与上一块拉开,标题下面留一点。
+ * 「求职信」「Pro 包含」「付款记录」分段类 .subSection(及其小标题)2026-10-10 批 2 撤:三段各自成分区卡(cardMd + mcardHead)。
  */
-.subSection {
-  /*
-   * 与上一块拉开。
-   */
-  margin-top: 26px;
-}
-
-.subSection > .secTitle {
-  /*
-   * 标题与正文之间。
-   */
-  margin-bottom: 12px;
-
-  /*
-   * 分段标题稍大(与定价页「Pro 包含」同档)。
-   */
-  font-size: 15px;
-}
 
 /*
  * 方案卡(2026-10-08 照 AIApply 的 Billing 卡):左图标、中文字、右钮,窄了换行。

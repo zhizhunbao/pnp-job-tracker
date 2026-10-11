@@ -256,6 +256,11 @@ export type RunIn = {
    * saved-search 命中取数(路由注入 loadAlertHits)。
    */
   fetchHits: LoadHitsFn
+
+  /**
+   * 每日推送取今日推荐(路由注入 lib/myjobs 的 loadPicks + picksViewOf;2026-10-10 批 2)。
+   */
+  loadPicks: LoadPicksFn
 }
 
 /**
@@ -306,6 +311,16 @@ export type AlertCounts = {
    * 认不出的筛选键(fetchHits 上报的并集)。
    */
   skippedFilters: string[]
+
+  /**
+   * 每日推送发出几封(2026-10-10 批 2;键追加在末尾,老键序不动)。
+   */
+  dailyEmails: number
+
+  /**
+   * 每日推送核了几个人。
+   */
+  dailyChecked: number
 }
 
 /**
@@ -551,6 +566,11 @@ export type UnsubIn = {
    * payload 句柄（路由注入）。
    */
   payload: PayloadHandle
+
+  /**
+   * 能查的连接(2026-10-10 批 2:退订连新岗推送一起拨回不发)。
+   */
+  db: Db
 
   /**
    * 链接里的用户 id（原料）。
@@ -813,3 +833,313 @@ export type ProvCodes = string[]
  * `unsubApply` 的返回。
  */
 export type UnsubOut = Promise<UnsubState>
+
+/**
+ * 每日推送的一条(lib/myjobs 的推荐一行里本域读的格;全格照抄形状,不跨域引 type)。
+ */
+export type MailPick = {
+  /**
+   * 职位 id(链到本站职位页)。
+   */
+  id: number
+
+  /**
+   * 职位名英文原文。
+   */
+  title: string
+
+  /**
+   * 公司英文名。
+   */
+  company: string
+
+  /**
+   * 地点一行。
+   */
+  address: string
+
+  /**
+   * 薪资显示串(没有 = 空串)。
+   */
+  salary: string
+}
+
+/**
+ * 取某人今日推荐(路由注入)的入参。
+ */
+export type PicksForIn = {
+  /**
+   * 用户 id。
+   */
+  userId: number
+
+  /**
+   * 是不是 Pro(免费号只给 3 条)。
+   */
+  pro: boolean
+}
+
+/**
+ * 取某人今日推荐的函数形状(路由注入,解本域对 myjobs 域的直接依赖)。
+ */
+export type LoadPicksFn = (x: PicksForIn) => Promise<MailPick[]>
+
+/**
+ * SQL.DIGEST_USERS 的一行。
+ */
+export type DigestUserDbRow = {
+  /**
+   * 用户 id。
+   */
+  user_id: number | string | null
+
+  /**
+   * 收件邮箱(设了用设的,没设用账户邮箱)。
+   */
+  email: string | null
+
+  /**
+   * 界面语。
+   */
+  locale: string | null
+
+  /**
+   * Pro 到期日。
+   */
+  pro_until: Date | string | null
+
+  /**
+   * 上次每日推送的时刻。
+   */
+  last_daily_at: Date | string | null
+}
+
+/**
+ * 推送收件人(洗净)。
+ */
+export type DigestUser = {
+  /**
+   * 用户 id。
+   */
+  userId: number
+
+  /**
+   * 收件邮箱(没有 = 空串)。
+   */
+  email: string
+
+  /**
+   * 界面语(没有 = 空串)。
+   */
+  locale: string
+
+  /**
+   * 是不是 Pro。
+   */
+  pro: boolean
+
+  /**
+   * 上次每日推送的时刻(ISO;没发过 = 空串)。
+   */
+  lastDailyAt: string
+}
+
+/**
+ * 取某一档频率的收件人(loadDigestUsers)的入参。
+ */
+export type DigestUsersIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+
+  /**
+   * 频率。
+   */
+  freq: string
+}
+
+/**
+ * 每日推送那一轮(dailyRound)的入参。
+ */
+export type DailyRoundIn = {
+  /**
+   * 整轮的入参(连接、dry、preview、取推荐)。
+   */
+  run: RunIn
+
+  /**
+   * 整轮的计数(本轮就地加)。
+   */
+  out: AlertCounts
+}
+
+/**
+ * 每日推送那一轮的返回:preview 时是那封 HTML,否则空串。
+ */
+export type DailyRoundOut = Promise<string>
+
+/**
+ * 每日推送整封 HTML(dailyHtml)的入参。
+ */
+export type DailyHtmlIn = {
+  /**
+   * 推荐。
+   */
+  picks: MailPick[]
+
+  /**
+   * 邮件语言。
+   */
+  lang: MailLang
+
+  /**
+   * 退订链接。
+   */
+  unsubUrl: string
+}
+
+/**
+ * SQL.DIGEST_PREFS_ONE 的一行。
+ */
+export type DigestPrefsDbRow = {
+  /**
+   * 频率。
+   */
+  freq: string | null
+
+  /**
+   * 收件邮箱(NULL = 账户邮箱)。
+   */
+  email: string | null
+
+  /**
+   * 待确认的新邮箱。
+   */
+  pending_email: string | null
+}
+
+/**
+ * 推送设置(对外线格式)。
+ */
+export type DigestPrefs = {
+  /**
+   * 频率:off / daily / weekly。
+   */
+  freq: string
+
+  /**
+   * 实际收件邮箱(设了用设的,没设用账户邮箱)。
+   */
+  email: string
+
+  /**
+   * 待确认的新邮箱(没有 = 空串)。
+   */
+  pending: string
+}
+
+/**
+ * 读推送设置(loadDigestPrefs)的入参。
+ */
+export type PrefsLoadIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: MailUserId
+
+  /**
+   * 账户邮箱(没设收件邮箱时用它)。
+   */
+  account: string
+}
+
+/**
+ * 存推送设置(saveDigestPrefs)的入参。
+ */
+export type PrefsPutIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: MailUserId
+
+  /**
+   * 账户邮箱。
+   */
+  account: string
+
+  /**
+   * 频率(已核过是三档之一)。
+   */
+  freq: string
+
+  /**
+   * 想发到的邮箱(已核过格式,已转小写去空白)。
+   */
+  email: string
+}
+
+/**
+ * 存推送设置的结果:saved 直接生效 / pending 新邮箱待确认 / mail 确认信没发出去。
+ */
+export type PrefsPutOut = Promise<string>
+
+/**
+ * 推送设置请求体(信任边界;字段缺席 = 不合形)。
+ */
+export type PrefsBodyJson = {
+  /**
+   * 频率。
+   */
+  freq?: string
+
+  /**
+   * 收件邮箱。
+   */
+  email?: string
+}
+
+/**
+ * 取收件人的返回。
+ */
+export type DigestUsersOut = Promise<DigestUser[]>
+
+/**
+ * 读推送设置的返回。
+ */
+export type DigestPrefsOut = Promise<DigestPrefs>
+
+/**
+ * 点确认链接(confirmApply)的入参。
+ */
+export type ConfirmIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+
+  /**
+   * 链接里的用户 id(原料)。
+   */
+  u: string
+
+  /**
+   * 链接里的 token(原料)。
+   */
+  t: string
+}
+
+/**
+ * 点确认链接的结果:done 换上了 / invalid 链接不对或过期。
+ */
+export type ConfirmOut = Promise<string>

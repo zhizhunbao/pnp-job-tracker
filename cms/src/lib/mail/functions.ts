@@ -10,11 +10,11 @@
 import crypto from 'crypto'
 import { log, MAIL_LOG } from '../log'
 import {
-  BEARER_PREFIX, ERR_BODY_LEN, FROM, HDR_IDEMPOTENCY, HEX_ENC, HMAC_ALGO, HMAC_KEY_NONE, ID_NONE, JSON_MIME,
+  BEARER_PREFIX, CONFIRM_PREFIX, CONFIRM_SEP, ERR_BODY_LEN, FROM, HDR_IDEMPOTENCY, HEX_ENC, HMAC_ALGO, HMAC_KEY_NONE, ID_NONE, JSON_MIME,
   MAIL_ENABLED, METHOD_POST, RESEND_URL, UNSUB_PREFIX, UNSUB_TOKEN_LEN, WHY_DISABLED, WHY_THROWN,
 } from './constants'
 import type {
-  MailUserId, PostMailIn, PostMailOut, ResendBodyJson, ResendHeaders, ResendRespJson, SendMailIn, SentOut,
+  ConfirmTokenIn, MailUserId, PostMailIn, PostMailOut, ResendBodyJson, ResendHeaders, ResendRespJson, SendMailIn, SentOut,
 } from './types'
 import { HDR_CONTENT_TYPE } from '../http'
 
@@ -121,4 +121,20 @@ function resendBodyOf(input: PostMailIn): ResendBodyJson {
  */
 export function unsubToken(userId: MailUserId): string {
   return crypto.createHmac(HMAC_ALGO, process.env.PAYLOAD_SECRET || HMAC_KEY_NONE).update(UNSUB_PREFIX + userId).digest(HEX_ENC).slice(0, UNSUB_TOKEN_LEN)
+}
+
+/**
+ * 换收件邮箱的确认 token(2026-10-10 批 2「新岗推送」:换成别的邮箱先发确认信,点了才生效,防拿别人邮箱刷信):
+ * 与退订 token 同一套 HMAC、同样截 16 hex,签的是「用户 id + 新邮箱」—— 再换一次邮箱,旧链接自然作废;无新密钥无 token 列。
+ *
+ * @param x 用户 id 与待确认的新邮箱。
+ * @returns 16 位 hex token。
+ */
+export function confirmToken(x: ConfirmTokenIn): string {
+  let key = HMAC_KEY_NONE
+  if (process.env.PAYLOAD_SECRET != null) {
+    key = process.env.PAYLOAD_SECRET
+  }
+  return crypto.createHmac(HMAC_ALGO, key).update(CONFIRM_PREFIX + String(x.userId) + CONFIRM_SEP + x.email)
+    .digest(HEX_ENC).slice(0, UNSUB_TOKEN_LEN)
 }

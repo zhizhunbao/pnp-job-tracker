@@ -1405,6 +1405,16 @@ export type ApplyStartOut = Promise<MaybeApplyStart>
 // =========================================================================
 
 /**
+ * 署名请求体原样(PATCH /api/apply/name;线格式,缺席或类型不对 = 不合形;2026-10-10)。
+ */
+export type NameBodyJson = {
+  /**
+   * 英文署名。
+   */
+  senderName?: string | number | boolean | null
+}
+
+/**
  * 草稿请求体原样(线格式,每格都可能缺席或类型不对)。
  */
 export type DraftBodyJson = {

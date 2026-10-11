@@ -3,13 +3,13 @@
  * 同日独立页 /apply/<id> 撤,投递并进「我的求职」(投递区 ApplySection 摆在投递记录表上方,/account?sec=sjobs&job=<id>)。
  * 2026-10-09 A 批投递搬进弹框:桶门出投递框宿主 ApplyHost(挂全站骨架)、开框 openApply(各入口调)、发出接收件 ApplySentSync
  * (「我的」页门里摆,刷新投递表);ApplySection 只剩投递框自己用,不再出门。
+ * 2026-10-10 Frank「删吧」(「今日待投 / 智能投递」整条撤):只给今日待投卡用的出桶件(邮件预览 ApplyMail、逐项检查四行、
+ * 换简历下拉三件、逐项检查预览机)随 queue 桶一起删。
  *
  * @author Frank
  * @time 2026-10-07 03:00:00
  */
 
 export { ApplyHost } from './applyhost'
-export { ApplyMail } from './applymail'
 export { ApplySentSync } from './applysentsync'
-export { checkRowsOf, makeResumeLabel, openApply, pickOptsOf, resumeValueOf } from './functions'
-export { useCheckPreview } from './hooks'
+export { openApply } from './functions'

@@ -506,6 +506,11 @@ export const MAJORS_BY_CODES = `SELECT code, title_en, COALESCE(title_zh,'') tit
 export const CITY_NAMES_ONE = `SELECT COALESCE(name_zh,'') name_zh, COALESCE(name_ko,'') name_ko
        FROM cities WHERE name = $1 AND province = $2 LIMIT 1`
 
+/**
+ * 本人的答案档(「我的档案」卡;2026-10-10 Frank「删吧」:原借智能投递段的 QUEUE_USER_ANSWERS,随该段撤改名搬来)。$1=用户 id。
+ */
+export const QUIZ_USER_ANSWERS = `SELECT answers FROM users WHERE id = $1`
+
 // =========================================================================
 // 8. 统计 / 难度 / 职业报告
 // =========================================================================
@@ -2988,8 +2993,11 @@ export const RESUME_FILE_SET_DEFAULT = `UPDATE user_resumes SET is_default = (id
 /**
  * 两张表共用的列与连表:收藏表 + 职位表(城市、薪资、发布日期、在不在架)+ 城市表(人工核定的市译名,同职位板)
  * + 公司表(slug:点公司名开公司弹框;同 JOB_FROM 的连法)。
+ * 2026-10-10 批 2(网页端表格形 / 手机卡):再带职位名与公司译名、精确地址、工时、雇佣期、截止日(只读,不新增筛选列)。
  */
 const MYJOBS_FROM = `s.id, s.job_id, s.title, s.company, s.status, s.created_at, s.updated_at,
+       j.title_zh, j.title_ko, j.trans_v, c.alias_zh, c.alias_ko, j.address, j.employment_hours, j.employment_term,
+       j.valid_through,
        j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province,
        j.salary_text, j.salary_annual, j.date_posted, j.status::text AS job_status, c.slug AS company_slug,
        (COALESCE(j.apply_email, '') <> '') AS has_email, false AS has_cover
@@ -3008,17 +3016,22 @@ const MYJOBS_FROM = `s.id, s.job_id, s.title, s.company, s.status, s.created_at,
  * 排最前、最近改的在前;正在发的(sending)仍不列。草稿没有发出时刻,投递日期格空。has_email 在这张表里用不上,给 false。
  * 2026-10-10 Frank「两处都改吧」:加 has_cover —— 发出时附没附求职信(投递框「不附求职信」只发简历,send 记空的 cover_file),
  * 没附的行不出求职信链接;收藏那份(MYJOBS_FROM)给 false。
+ * 2026-10-10 批 2:同 MYJOBS_FROM 再带译名、地址、工时、雇佣期、截止日。
+ * 2026-10-10 Frank「删吧」(「今日待投 / 智能投递」整条撤):queued 行(后台提前写好、没人碰过的待投)不再列;
+ * 用户点开过、已变成 draft 的照常列成「未发出」。库里的 queued 行不删。
  */
 export const MYJOBS_APPLIED = `SELECT a.id, a.job_id, a.job_title AS title, a.company, a.status, a.created_at,
        COALESCE(a.sent_at, a.updated_at) AS updated_at,
+       j.title_zh, j.title_ko, j.trans_v, c.alias_zh, c.alias_ko, j.address, j.employment_hours, j.employment_term,
+       j.valid_through,
        j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province,
        j.salary_text, j.salary_annual, j.date_posted, j.status::text AS job_status, c.slug AS company_slug,
        false AS has_email, (COALESCE(a.cover_file, '') <> '') AS has_cover
      FROM applications a LEFT JOIN jobs j ON j.id = a.job_id
      LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
      LEFT JOIN companies c ON c.id = j.company_id
-     WHERE a.user_id = $1 AND a.status IN ('draft', 'queued', 'sent', 'replied', 'bounced')
-     ORDER BY (a.status IN ('draft', 'queued')) DESC, COALESCE(a.sent_at, a.updated_at) DESC LIMIT $2`
+     WHERE a.user_id = $1 AND a.status IN ('draft', 'sent', 'replied', 'bounced')
+     ORDER BY (a.status = 'draft') DESC, COALESCE(a.sent_at, a.updated_at) DESC LIMIT $2`
 
 /**
  * 本人真发出去了几封(「我的」页 banner 副题「已投 N 封」;2026-10-08)。$1=用户 id。applications_user_sent_idx 管这条。
@@ -3033,6 +3046,46 @@ export const MYJOBS_SAVED = `SELECT ${MYJOBS_FROM}
      WHERE s.user_id = $1
      ORDER BY s.created_at DESC LIMIT $2`
 
+/**
+ * 今日推荐(2026-10-10 批 2,docs/design/我的/我的求职-20261009.md 第 3 节 15b / 16c / 16d):不答题也推。
+ * 硬条件同原智能投递的候选岗 SQL(2026-10-10 Frank「删吧」随该功能撤):在架、有投递邮箱、没投过(任何状态)、雇主邮箱没退过信、30 天内没给同一个雇主邮箱投过;另去重帖。
+ * 省:答过所在省(answers.basic.resProv)按它,没答用 $2(浏览器按时区预选的省),都没有 = 全国。
+ * 职业:他收藏 / 投过的岗的职业单元组(NOC 前 4 位);都没有 = 不限职业。
+ * 排序:能走省提名在前 → 通道档高在前 → 越新越前 → 薪资高于本省同职业中位在前。$1=用户 id,$2=时区预选省码(空串 = 不知道),$3=条数上限。
+ * 用到的列 status / province / noc 都有索引;生产实测单人 50~130ms,结果按人按天缓存(lib/myjobs 的 CACHE)。
+ */
+export const MYJOBS_PICKS = `WITH me AS (
+       SELECT COALESCE(NULLIF(u.answers->'basic'->>'resProv', ''), $2::text) AS prov,
+              ARRAY(SELECT DISTINCT left(sj.noc, 4) FROM saved_jobs s JOIN jobs sj ON sj.id = s.job_id
+                    WHERE s.user_id = $1 AND length(sj.noc) >= 4) AS saved_g,
+              ARRAY(SELECT DISTINCT left(aj.noc, 4) FROM applications a JOIN jobs aj ON aj.id = a.job_id
+                    WHERE a.user_id = $1 AND length(aj.noc) >= 4) AS applied_g
+         FROM users u WHERE u.id = $1)
+     SELECT j.id, j.title, j.title_zh, j.title_ko, j.trans_v, c.name AS company_name, c.alias_zh, c.alias_ko,
+            c.slug AS company_slug, j.address, j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province,
+            j.salary_text, j.date_posted, j.pnp_eligible, (j.salary_annual > j.wage_med_annual) AS above_med,
+            j.employment_hours, j.employment_term, j.valid_through,
+            (left(j.noc, 4) = ANY(me.applied_g)) AS occ_applied, (left(j.noc, 4) = ANY(me.saved_g)) AS occ_saved
+       FROM me CROSS JOIN jobs j
+       LEFT JOIN companies c ON c.id = j.company_id
+       LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
+      WHERE j.status = 'open' AND COALESCE(j.apply_email, '') <> '' AND j.is_dup IS NOT TRUE
+        AND (me.prov = '' OR j.province = me.prov)
+        AND (cardinality(me.saved_g) + cardinality(me.applied_g) = 0 OR left(j.noc, 4) = ANY(me.saved_g || me.applied_g))
+        AND NOT EXISTS (SELECT 1 FROM applications a WHERE a.user_id = $1 AND a.job_id = j.id)
+        AND NOT EXISTS (SELECT 1 FROM bounced_emails b WHERE b.email = lower(j.apply_email))
+        AND NOT EXISTS (SELECT 1 FROM applications a2 WHERE a2.user_id = $1 AND lower(a2.employer_email) = lower(j.apply_email)
+                        AND a2.status IN ('sending', 'sent', 'replied') AND a2.updated_at > now() - interval '30 days')
+      ORDER BY j.pnp_eligible DESC NULLS LAST, j.grade_channel DESC NULLS LAST, j.date_posted DESC NULLS LAST,
+               (j.salary_annual > j.wage_med_annual) DESC NULLS LAST, j.id DESC
+      LIMIT $3`
+
+/**
+ * 本人碰过的岗(投递表里任何状态;今日推荐命中缓存后,当天新投 / 新开草稿的岗从推荐里剔掉)。$1=用户 id。
+ * applications_user_job_uq 管这条。
+ */
+export const MYJOBS_TOUCHED_IDS = `SELECT job_id AS id FROM applications WHERE user_id = $1 AND job_id IS NOT NULL`
+
 // =========================================================================
 // 32. 站内投递(代投;2026-10-07 立,设计稿 docs/design/投递页-B2-实施方案-20261005.md 末节「10-05 拍板」;
 //     表 docs/sql/apply-b2-20261005.sql:applications / apply_prefs / bounced_emails)
@@ -3042,7 +3095,7 @@ export const MYJOBS_SAVED = `SELECT ${MYJOBS_FROM}
  * 投递页的本岗:职位名、公司名(公司表,同职位板)、城市、省、在不在架、投递邮箱(只在服务端用,不下发)。
  * $1=职位 id。信是英文,职位名只取英文原名。
  * 2026-10-09 投递弹框换 section 形(Frank「这个地方英文,中文灰字 没有啊」):职位名、公司、城市的中韩译名一并带上
- * (职位名译文带版本号,过期当没有;城市译名照 QUEUE_LIST 按城市 + 省连 cities),只给界面看,信照旧只用英文原名。
+ * (职位名译文带版本号,过期当没有;城市译名按城市 + 省连 cities(原照智能投递队列那条,2026-10-10 随该功能撤)),只给界面看,信照旧只用英文原名。
  * 同日 N 批:再带公司 slug(投递框里点公司名开公司框)。
  */
 export const APPLY_JOB = `SELECT j.id, j.title, c.name AS company_name, j.city, j.province,
@@ -3171,119 +3224,57 @@ export const APPLY_BOUNCE_LIST = `INSERT INTO bounced_emails (email, kind) VALUE
 /**
  * 本人写过的求职信清单(「我的简历」页签下的「求职信」段;2026-10-08 照 AIApply 的 My Cover Letters):投递表里有信的行,
  * 草稿与发出去的都列,最近的在前;信的正文不下发(打开走 /api/apply/file 现渲 PDF)。$1=用户 id,$2=条数上限。
+ * 2026-10-10 Frank「删吧」(「今日待投 / 智能投递」整条撤):queued 行(后台提前写好、没人碰过的信)不再列,与投递表同口径。
  */
 export const APPLY_LETTERS = `SELECT id, job_id, job_title, company, status, updated_at, sent_at FROM applications
-     WHERE user_id = $1 AND cover_text <> '' AND status IN ('draft', 'queued', 'sent', 'replied', 'bounced')
+     WHERE user_id = $1 AND cover_text <> '' AND status IN ('draft', 'sent', 'replied', 'bounced')
      ORDER BY COALESCE(sent_at, updated_at) DESC LIMIT $2`
 
 // =========================================================================
-// 34. 智能投递(2026-10-08 照 AIApply 的 Auto Apply;域 lib/queue;表改动 docs/sql/apply-queue-20261008.sql:
-//     applications 状态加 queued / declined、apply_prefs 加 auto_queue / last_queue_at)
+// 35. 新岗推送(「我的求职」末段;2026-10-10 批 2,docs/design/我的/我的求职-20261009.md 第 3 节 16b / 16d;
+//     表 docs/sql/digest-prefs-20261010.sql:digest_prefs;读写方只有 lib/alerts)
 // =========================================================================
 
 /**
- * 开了开关、填了英文署名的人,连带四题答案(想做的工作 nocs、所在省 resProv 在 answers.basic)、Pro 到期日、默认那份简历。
- * $1=人数上限。
+ * 本人的推送设置(没行 = 没设过:不发、发到账户邮箱)。$1=用户 id。
  */
-export const QUEUE_USERS = `SELECT p.user_id, p.sender_name, p.last_queue_at, u.answers, u.pro_until,
-       (SELECT r.id FROM user_resumes r WHERE r.user_id = p.user_id ORDER BY r.is_default DESC, r.uploaded_at DESC LIMIT 1) AS resume_id
-     FROM apply_prefs p JOIN users u ON u.id = p.user_id
-     WHERE p.auto_queue = true AND p.sender_name IS NOT NULL LIMIT $1`
+export const DIGEST_PREFS_ONE = `SELECT freq, email, pending_email FROM digest_prefs WHERE user_id = $1`
 
 /**
- * 一个人的智能投递档(开启那一刻立刻给他跑一轮,2026-10-08 小白走查:开了对着「今天没有新岗」等一小时);
- * 不管开关与署名(有没有由调用方判)。$1=用户 id。
+ * 存推送频率与收件邮箱(没行就建;待确认的新邮箱清掉)。$1=用户 id,$2=频率,$3=收件邮箱(NULL = 账户邮箱)。
  */
-export const QUEUE_USER_ONE = `SELECT p.user_id, p.sender_name, p.last_queue_at, u.answers, u.pro_until,
-       (SELECT r.id FROM user_resumes r WHERE r.user_id = p.user_id ORDER BY r.is_default DESC, r.uploaded_at DESC LIMIT 1) AS resume_id
-     FROM apply_prefs p JOIN users u ON u.id = p.user_id
-     WHERE p.user_id = $1`
+export const DIGEST_PREFS_PUT = `INSERT INTO digest_prefs (user_id, freq, email, pending_email, pending_at) VALUES ($1, $2, $3, NULL, NULL)
+     ON CONFLICT (user_id) DO UPDATE SET freq = EXCLUDED.freq, email = EXCLUDED.email, pending_email = NULL, pending_at = NULL,
+       updated_at = now()`
 
 /**
- * 智能投递的候选岗:在架、有投递邮箱、职业在想做的工作里、这之后新上的;没投过(任何状态都算)、雇主邮箱没退过信、
- * 30 天内没给同一个雇主邮箱投过别的岗;所在省优先,再按评分。$1=用户 id,$2=NOC 码数组,$3=起始时刻,$4=所在省码,$5=条数上限。
- * 2026-10-08 小白走查改判:$2 改成职业单元组前缀数组(NOC 前 4 位),按「前缀 ~ 前缀 + 9」范围匹配,
- * 与 RELATED_SAME_OCC 同口径(医疗行政助理只认 13112 全国 19 岗、1311 组安大略 45 家);生产实测单人 ~250ms(批量役可接受)。
- * 2026-10-08 第三轮小白走查改判:所在省从「优先排序」改成「只取本省」—— 原先本省不够 5 岗就拿外省补,安大略的人收到
- * 3 条魁北克 + 1 条卡尔加里(Frank「先做投错省」);没答省的人上游不跑(routes 与 isReadyOf 同闸),$4 不会是空串。
- * 2026-10-09「我的档案」批:先找工作的人(goalBand = 2)答了所在城市,同都会区(CMA)的岗排前面 —— $6=所在城市英文名
- * (空串 = 不按城市排);同城算同区,两边任一没有 CMA 时只认同城;WHERE 不动(仍只取本省),只改排序的头一键。
+ * 存推送频率,另记一个待确认的新邮箱(点了确认信里的链接才换上)。$1=用户 id,$2=频率,$3=待确认邮箱。
  */
-export const QUEUE_CANDIDATES = `SELECT j.id, j.title, c.name AS company_name, j.city, j.province
-     FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
-     LEFT JOIN cities jc ON jc.name = j.city AND jc.province = j.province
-     WHERE j.status = 'open' AND COALESCE(j.apply_email, '') <> '' AND j.first_seen > $3 AND j.province = $4
-       AND EXISTS (SELECT 1 FROM unnest($2::text[]) AS p(pre) WHERE j.noc >= p.pre AND j.noc <= p.pre || '9')
-       AND NOT EXISTS (SELECT 1 FROM applications a WHERE a.user_id = $1 AND a.job_id = j.id)
-       AND NOT EXISTS (SELECT 1 FROM bounced_emails b WHERE b.email = lower(j.apply_email))
-       AND NOT EXISTS (SELECT 1 FROM applications a2 WHERE a2.user_id = $1 AND lower(a2.employer_email) = lower(j.apply_email)
-                       AND a2.status IN ('sending', 'sent', 'replied') AND a2.updated_at > now() - interval '30 days')
-     ORDER BY CASE WHEN $6::text = '' THEN 1 WHEN j.city = $6::text THEN 0
-                   WHEN jc.cma IS NOT NULL AND jc.cma = (SELECT uc.cma FROM cities uc WHERE uc.name = $6::text AND uc.province = $4 LIMIT 1) THEN 0
-                   ELSE 1 END,
-              j.score DESC NULLS LAST, j.first_seen DESC LIMIT $5`
+export const DIGEST_PREFS_PENDING = `INSERT INTO digest_prefs (user_id, freq, pending_email, pending_at) VALUES ($1, $2, $3, now())
+     ON CONFLICT (user_id) DO UPDATE SET freq = EXCLUDED.freq, pending_email = EXCLUDED.pending_email, pending_at = now(),
+       updated_at = now()`
 
 /**
- * 进队列:一行 queued,信已写好;这一岗已有行(任何状态)就不动。$1=用户 id,$2=职位 id,$3=职位名快照,$4=公司名快照,$5=信,$6=简历 id。
+ * 点了确认链接:待确认邮箱换上(只认 7 天内的待确认)。$1=用户 id,$2=链接里核对过的邮箱。回 0 行 = 没有这个待确认 / 过期。
  */
-export const QUEUE_PUT = `INSERT INTO applications (user_id, job_id, job_title, company, status, cover_text, resume_id)
-     VALUES ($1, $2, $3, $4, 'queued', $5, $6) ON CONFLICT (user_id, job_id) DO NOTHING RETURNING id`
+export const DIGEST_PREFS_CONFIRM = `UPDATE digest_prefs SET email = pending_email, pending_email = NULL, pending_at = NULL, updated_at = now()
+     WHERE user_id = $1 AND pending_email = $2 AND pending_at > now() - interval '7 days' RETURNING user_id`
 
 /**
- * 本人的队列(「今日待投」):信、简历 id、岗的城市 / 薪资 / 在不在架;最近进队的在前。$1=用户 id,$2=条数上限。applications_user_status_idx 管。
- * 2026-10-08 小白走查(投出前逐项检查):带上附的那份简历的文件名(简历删了是 NULL)。
+ * 邮件一键退订:推送频率拨回不发(没行就建一行不发)。$1=用户 id。
  */
-export const QUEUE_LIST = `SELECT a.id, a.job_id, a.job_title, a.company, a.cover_text, a.resume_id, a.created_at,
-       j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province, j.salary_text, j.status::text AS job_status,
-       ur.file_name AS resume_name
-     FROM applications a LEFT JOIN jobs j ON j.id = a.job_id
-     LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
-     LEFT JOIN user_resumes ur ON ur.id = a.resume_id AND ur.user_id = a.user_id
-     WHERE a.user_id = $1 AND a.status = 'queued' ORDER BY a.created_at DESC LIMIT $2`
+export const DIGEST_PREFS_OFF = `INSERT INTO digest_prefs (user_id, freq) VALUES ($1, 'off')
+     ON CONFLICT (user_id) DO UPDATE SET freq = 'off', updated_at = now()`
 
 /**
- * 拨「智能投递」开关(没偏好行就建)。$1=用户 id,$2=开关。
+ * 某一档频率的收件人:用户 id、收件邮箱(设了用设的,没设用账户邮箱)、界面语、Pro 到期日、上次每日推送时刻。$1=频率,$2=人数上限。
+ * digest_prefs_freq_idx 管这条。
  */
-export const QUEUE_PREFS_AUTO = `INSERT INTO apply_prefs (user_id, auto_queue) VALUES ($1, $2)
-     ON CONFLICT (user_id) DO UPDATE SET auto_queue = EXCLUDED.auto_queue, updated_at = now()`
+export const DIGEST_USERS = `SELECT p.user_id, COALESCE(NULLIF(p.email, ''), u.email) AS email, u.locale, u.pro_until, p.last_daily_at
+     FROM digest_prefs p JOIN users u ON u.id = p.user_id
+     WHERE p.freq = $1 LIMIT $2`
 
 /**
- * 记这个人这一轮跑过队列了(下一轮只看这之后新上的岗)。$1=用户 id。
+ * 记这个人今天的每日推送发过了。$1=用户 id。
  */
-export const QUEUE_MARK = `UPDATE apply_prefs SET last_queue_at = now() WHERE user_id = $1`
-
-/**
- * 就地改队列里那一岗的信(还在队列里才改;投出走原发送链)。$1=用户 id,$2=职位 id,$3=信。不在队列 = 0 行。
- */
-export const QUEUE_COVER_PUT = `UPDATE applications SET cover_text = $3, updated_at = now()
-     WHERE user_id = $1 AND job_id = $2 AND status = 'queued' RETURNING id`
-
-/**
- * 就地换队列里那一岗附的简历(2026-10-08 Frank「这两个应该都是可以弹框,并且可以替换吧」):还在队列里、且那份简历是本人的才换。
- * $1=用户 id,$2=职位 id,$3=简历 id。不在队列 / 不是本人的简历 = 0 行。
- */
-export const QUEUE_RESUME_PUT = `UPDATE applications SET resume_id = $3, updated_at = now()
-     WHERE user_id = $1 AND job_id = $2 AND status = 'queued'
-       AND EXISTS (SELECT 1 FROM user_resumes r WHERE r.id = $3 AND r.user_id = $1) RETURNING id`
-
-/**
- * 本人的四题答案(「今日待投」判答没答「想做的工作」)。$1=用户 id。
- */
-export const QUEUE_USER_ANSWERS = `SELECT answers FROM users WHERE id = $1`
-
-// =========================================================================
-// 33. AI 功能试用账(批 C 收费闸;2026-10-07 立,表 docs/sql/ai-trials-20261007.sql:ai_trials;
-//     读写方只有 lib/quota 的 loadTrial / markTrial)
-// =========================================================================
-
-/**
- * 某人某项 AI 功能的试用用量:用过几个、这一个用过没有。$1=用户 id,$2=功能名,$3=用在哪一个(职位 id)。
- */
-export const TRIAL_USED = `SELECT count(*)::int AS used, coalesce(bool_or(ref_id = $3), false) AS here
-     FROM ai_trials WHERE user_id = $1 AND feature = $2`
-
-/**
- * 记一笔试用(同一个只记一次)。$1=用户 id,$2=功能名,$3=用在哪一个。
- */
-export const TRIAL_MARK = `INSERT INTO ai_trials (user_id, feature, ref_id) VALUES ($1, $2, $3)
-     ON CONFLICT (user_id, feature, ref_id) DO NOTHING`
+export const DIGEST_DAILY_MARK = `UPDATE digest_prefs SET last_daily_at = now() WHERE user_id = $1`

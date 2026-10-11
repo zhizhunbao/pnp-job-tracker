@@ -17,6 +17,11 @@
 // 2026-10-09 N6 批(名字全站一种形:英文在上、界面语译名灰字在下,省市分开):④ 职位名、公司名、城市、省份改走 name 桶 ——
 //       城市 = 英文名 Google 地图链 + 译名灰字,省份另起一份(英文全名地图链 + 省名灰字),原「中文主文案 + 灰注 英文名 省码」撤;
 //       ⑧ 改读作「有公司页的公司名是链(/companies/<slug>),普通左键往弹框总线上推一层公司层;没有的是黑字」(原是钮)。
+// 2026-10-10 批 2「我的求职」四段(16b / 16d):两张清单各成分区白卡(卡头 = 标题 + 计数,「N 个收藏」胶囊撤 → ④⑤⑨ 改断言卡头计数);
+//       「草稿」改叫「未发出」、待投并进未发出、未发出不出日期(⑨ 改断言「没有最近改于」);阶段胶囊 全部 / 未发出 / 已投 / 雇主回复 / 退信,
+//       计数为 0 的不出(⑩ 改断言)。探针:stagePillsOf 不藏 0 → ⑩ 红。同日 Frank「删吧」:待投(queued)行接口不再列,⑩ 那条待投用例撤。
+// 同日 lead 对效果图:网页端改通用表格(行 = tr)、手机一岗一张卡;地点改「一行完整地址 + 市译名灰字」整行一个地图链(原市 / 省两链撤),
+//       日期改裸年-月-日(发布 / 收藏于 / 投递于各一列),投递表也出薪资;首字母块撤 → ④⑤⑥ / ⑨ / 收藏 ④⑤⑨ 改断言。
 // 探针:makeUnsave 失败不退回 → ⑦「失败退回」红;closedTextOf 不认下架 → ⑤ 红;byStageOf 不筛 → ⑩ 红;makeLoadMyJobs 失败不拨 failed → ③ 红。
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -24,11 +29,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { AppliedList, SavedList } from '@/components/myjobs'
 
-const BASE = { titleKo: '', cityKo: '', stage: 'applied', closed: false, salaryAnnual: null, companySlug: '', hasEmail: false, hasCover: true }
-const A = { ...BASE, id: 7, jobId: 101, companySlug: 'clean-co', salaryAnnual: 37440, title: 'light duty cleaner', titleZh: '轻型清洁工', company: 'Clean Co', city: 'Winnipeg', cityZh: '温尼伯', province: 'MB', salary: '$18/hr', datePosted: '2026-10-02T00:00:00.000Z', updatedAt: '2026-10-05T15:00:00.000Z' }
-const B = { ...BASE, id: 8, jobId: null, title: 'Cook', titleZh: 'Cook', company: 'Pie Wood', city: 'Steinbach', cityZh: '', province: 'MB', salary: '', datePosted: '', updatedAt: '2026-10-04T15:00:00.000Z', closed: true }
-const C = { ...BASE, id: 9, jobId: 103, salaryAnnual: 40040, title: 'truck washer', titleZh: '', company: 'Wash Ltd', city: 'Winnipeg', cityZh: '温尼伯', province: 'MB', salary: '$18–$21/hr', datePosted: '2026-09-30T00:00:00.000Z', updatedAt: '2026-09-30T15:00:00.000Z', stage: '' }
-const D = { ...BASE, id: 10, jobId: 105, title: 'office manager', titleZh: '', company: 'Anurag Homes Team', city: 'Kitchener', cityZh: '基奇纳', province: 'ON', salary: '$80K/yr', datePosted: '2026-10-05T00:00:00.000Z', updatedAt: '2026-10-07T10:00:00.000Z', stage: 'draft' }
+const BASE = {
+  titleKo: '', cityKo: '', stage: 'applied', closed: false, salaryAnnual: null, companySlug: '', hasEmail: false, hasCover: true,
+  companyZh: '', companyKo: '', address: '', hours: 'full', term: 'permanent', validThrough: '', savedAt: '2026-10-03T15:00:00.000Z',
+}
+const A = { ...BASE, id: 7, jobId: 101, companySlug: 'clean-co', salaryAnnual: 37440, address: 'Winnipeg, MB', title: 'light duty cleaner', titleZh: '轻型清洁工', company: 'Clean Co', city: 'Winnipeg', cityZh: '温尼伯', province: 'MB', salary: '$18/hr', datePosted: '2026-10-02T00:00:00.000Z', updatedAt: '2026-10-05T15:00:00.000Z' }
+const B = { ...BASE, id: 8, jobId: null, address: 'Steinbach, MB', title: 'Cook', titleZh: 'Cook', company: 'Pie Wood', city: 'Steinbach', cityZh: '', province: 'MB', salary: '', datePosted: '', updatedAt: '2026-10-04T15:00:00.000Z', closed: true }
+const C = { ...BASE, id: 9, jobId: 103, salaryAnnual: 40040, address: 'Winnipeg, MB', title: 'truck washer', titleZh: '', company: 'Wash Ltd', city: 'Winnipeg', cityZh: '温尼伯', province: 'MB', salary: '$18–$21/hr', datePosted: '2026-09-30T00:00:00.000Z', updatedAt: '2026-09-30T15:00:00.000Z', stage: '' }
+const D = { ...BASE, id: 10, jobId: 105, address: 'Kitchener, ON', title: 'office manager', titleZh: '', company: 'Anurag Homes Team', city: 'Kitchener', cityZh: '基奇纳', province: 'ON', salary: '$80K/yr', datePosted: '2026-10-05T00:00:00.000Z', updatedAt: '2026-10-07T10:00:00.000Z', stage: 'draft' }
 const E = { ...C, hasEmail: true }
 const S = { ...A, stage: 'sent' }
 
@@ -76,7 +84,7 @@ async function mount(comp: typeof AppliedList) {
 // 一张横卡:按职位名找,往上到带 data-row 的那层;没有这一张给 null
 function rowOf(el: HTMLElement, name: string) {
   const title = Array.from(el.querySelectorAll('a, span')).find((x) => x.textContent === name)
-  return (title?.closest('[data-row]') ?? null) as HTMLElement
+  return (title?.closest('[data-row], tr') ?? null) as HTMLElement
 }
 
 function links(row: HTMLElement) {
@@ -99,6 +107,12 @@ window.matchMedia = ((q: string) => ({
   matches: false, media: q, onchange: null, addEventListener: () => undefined, removeEventListener: () => undefined,
   addListener: () => undefined, removeListener: () => undefined, dispatchEvent: () => false,
 })) as unknown as typeof window.matchMedia
+
+// jsdom 没有 scrollIntoView(旧深链 `?sec=favs` 收藏卡挂上后滚过去,2026-10-10 批 2);给一个记账的桩
+const scrolled: string[] = []
+Element.prototype.scrollIntoView = function scrollIntoView(this: Element) {
+  scrolled.push(this.id)
+}
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -125,26 +139,26 @@ describe('我的求职', () => {
     expect(el.textContent).not.toContain('mj.emptyApplied')
   })
 
-  it('④⑤⑥ 横卡:首字母、职位链、公司、城市、投递于、胶囊、附件;职位已删', async () => {
+  it('④⑤⑥ 表格行:职位链、公司、地址一行(地图链 + 市译名灰字)、薪资、工时 / 雇佣期、投递于、状态胶囊、打开、附件;职位已删', async () => {
     server({ 'GET /api/myjobs/applied': { status: 200, body: { items: [S, B] } } })
     const el = await mount(AppliedList)
     const a = rowOf(el, 'light duty cleaner')
-    expect(a.textContent?.startsWith('C')).toBe(true)
+    expect(a.tagName).toBe('TR')   // 2026-10-10 批 2:网页端走通用表格
     expect(links(a)).toEqual([
-      ['light duty cleaner', '/jobs/101'], ['Clean Co', '/companies/clean-co'],
-      ['Winnipeg', MAP('Winnipeg, Manitoba, Canada')], ['Manitoba', MAP('Manitoba, Canada')],
-      ['mj.col.resume', '/api/apply/file?id=7&kind=resume'],
-      ['mj.col.cover', '/api/apply/file?id=7&kind=cover'], ['mj.open', '/jobs/101'],
+      ['light duty cleaner', '/jobs/101'], ['Clean Co', '/companies/clean-co'], ['Winnipeg, MB', MAP('Winnipeg, MB')],
+      ['mj.open', '/jobs/101'], ['mj.col.resume', '/api/apply/file?id=7&kind=resume'],
+      ['mj.col.cover', '/api/apply/file?id=7&kind=cover'],
     ])
-    expect(a.textContent).toContain('温尼伯')   // 城市译名灰字(默认中文界面)
-    expect(a.textContent).not.toContain('Winnipeg MB')   // 原「英文名 省码」灰注撤(N6 批省市分开)
-    expect(a.textContent).toContain('mj.appliedOn{"d":"2026-10-05"}')
+    expect(a.textContent).toContain('温尼伯')   // 地点灰字「市译名,省译名」(默认中文界面)
+    expect(a.textContent).toContain('Full-time')
+    expect(a.textContent).toContain('Permanent')
+    expect(a.textContent).toContain('2026-10-05')   // 投递于
     expect(a.textContent).toContain('ap.applied')
     expect(a.textContent).not.toContain('mj.closed')
-    expect(a.textContent).not.toContain('$18/hr')
+    expect(a.textContent).toContain('$18/hr')   // 2026-10-10 批 2:投递表也出薪资列
     const b = rowOf(el, 'Cook')
     expect(links(b)).toEqual([
-      ['Steinbach', MAP('Steinbach, Manitoba, Canada')], ['Manitoba', MAP('Manitoba, Canada')],
+      ['Steinbach, MB', MAP('Steinbach, MB')],
       ['mj.col.resume', '/api/apply/file?id=8&kind=resume'], ['mj.col.cover', '/api/apply/file?id=8&kind=cover'],
     ])
     expect(b.textContent).toContain('Cook')   // 职位删了:职位名黑字、不成链
@@ -160,15 +174,13 @@ describe('我的求职', () => {
     expect(links(a).some((l) => l[0] === 'mj.col.cover')).toBe(false)
   })
 
-  it('⑨ 草稿行:最近改于、没附件、「继续」去投递区', async () => {
+  it('⑨ 草稿行:未发出、不出日期、没附件、「继续」去投递区', async () => {
     server({ 'GET /api/myjobs/applied': { status: 200, body: { items: [D, S] } } })
     const el = await mount(AppliedList)
     const d = rowOf(el, 'office manager')
-    expect(d.textContent).toContain('mj.draft')
-    expect(d.textContent).toContain('mj.editedOn{"d":"2026-10-07"}')
-    expect(links(d)).toEqual([
-      ['office manager', '/jobs/105'], ['Kitchener', MAP('Kitchener, Ontario, Canada')], ['Ontario', MAP('Ontario, Canada')],
-    ])
+    expect(d.textContent).toContain('mj.unsent')
+    expect(d.textContent).not.toContain('2026-10-07')   // 未发出不出投递于 / 改于
+    expect(links(d)).toEqual([['office manager', '/jobs/105'], ['Kitchener, ON', MAP('Kitchener, ON')]])
     window.history.replaceState(null, '', '/account?sec=sjobs')
     await click(d, 'mj.cont')   // 2026-10-09 A 批:就地弹投递框(地址栏带上 apply,不整页跳)
     expect(new URLSearchParams(window.location.search).get('apply')).toBe('105')
@@ -178,10 +190,11 @@ describe('我的求职', () => {
     const X = { ...S, id: 11, jobId: 111, title: 'bounced one', stage: 'bounced' }
     server({ 'GET /api/myjobs/applied': { status: 200, body: { items: [D, S, X] } } })
     const el = await mount(AppliedList)
-    expect(buttons(el).slice(0, 6)).toEqual(['mj.all3', 'mj.draft1', 'mj.queued0', 'ap.applied1', 'mj.replied0', 'mj.bounced1'])
-    await click(el, 'mj.draft1')
+    expect(buttons(el).slice(0, 3)).toEqual(['mj.all3', 'mj.unsent1', 'ap.applied1'])
+    expect(buttons(el).some((b) => b?.startsWith('mj.replied'))).toBe(false)   // 计数 0 的不出
+    await click(el, 'mj.unsent1')
     expect(rowOf(el, 'office manager')).not.toBeNull()
-    expect(rowOf(el, 'office manager').textContent).not.toContain('mj.draft')   // 筛到单一状态,行上不再重复挂胶囊(Frank 10-08)
+    expect(rowOf(el, 'office manager').textContent).not.toContain('mj.unsent')   // 筛到单一状态,行上不再重复挂胶囊(Frank 10-08)
     expect(rowOf(el, 'light duty cleaner')).toBeNull()
     expect(rowOf(el, 'bounced one')).toBeNull()
     await click(el, 'mj.all3')
@@ -190,6 +203,19 @@ describe('我的求职', () => {
 })
 
 describe('我的收藏', () => {
+  it('旧深链 ?sec=favs:收藏卡挂上后滚过去;别的深链不滚(2026-10-10 批 2,「我的收藏」页签撤)', async () => {
+    server({ 'GET /api/myjobs/saved': { status: 200, body: { items: [A] } } })
+    window.history.replaceState(null, '', '/account?sec=favs')
+    scrolled.length = 0
+    await mount(SavedList)
+    expect(scrolled).toEqual(['mj-saved'])
+    document.body.innerHTML = ''
+    window.history.replaceState(null, '', '/account?sec=sjobs')
+    scrolled.length = 0
+    await mount(SavedList)
+    expect(scrolled).toEqual([])
+  })
+
   it('② 零条出空态', async () => {
     server({ 'GET /api/myjobs/saved': { status: 200, body: { items: [] } } })
     expect((await mount(SavedList)).textContent).toContain('sj.empty')
@@ -198,26 +224,25 @@ describe('我的收藏', () => {
   it('④⑤⑨ 薪资、发布于、没投的没胶囊;有邮箱在架没投过的行「投递」,投过的「打开」,下架的没有「投递」', async () => {
     server({ 'GET /api/myjobs/saved': { status: 200, body: { items: [E, A, B] } } })
     const el = await mount(SavedList)
-    expect(el.textContent).toContain('mj.savedCount{"n":3}')
+    expect(el.textContent?.startsWith('fav.title3')).toBe(true)   // 2026-10-10 批 2:计数挪到卡头
     const e = rowOf(el, 'truck washer')
     expect(e.textContent).toContain('$18–$21/hr')
-    expect(e.textContent).toContain('mj.postedOn{"d":"2026-09-30"}')
+    expect(e.textContent).toContain('2026-09-30')   // 发布日期
+    expect(e.textContent).toContain('2026-10-03')   // 收藏于
     expect(e.textContent).not.toContain('ap.applied')
-    expect(links(e)).toEqual([
-      ['truck washer', '/jobs/103'], ['Winnipeg', MAP('Winnipeg, Manitoba, Canada')], ['Manitoba', MAP('Manitoba, Canada')],
-    ])
+    expect(links(e)).toEqual([['truck washer', '/jobs/103'], ['Winnipeg, MB', MAP('Winnipeg, MB')]])
     expect(buttons(e)).toEqual(['mj.apply', 'mj.unsave'])
     window.history.replaceState(null, '', '/account?sec=favs')
     await click(e, 'mj.apply')   // 2026-10-09 A 批:就地弹投递框
     expect(new URLSearchParams(window.location.search).get('apply')).toBe('103')
     const a = rowOf(el, 'light duty cleaner')
-    expect(a.textContent).toContain('sj.st.applied')
+    expect(buttons(a)).toEqual(['mj.unsave'])   // 投过的收藏行:「打开」是链、没有「投递」(收藏表网页端不设状态列)
     expect(links(a)).toEqual([
-      ['light duty cleaner', '/jobs/101'], ['Clean Co', '/companies/clean-co'],
-      ['Winnipeg', MAP('Winnipeg, Manitoba, Canada')], ['Manitoba', MAP('Manitoba, Canada')], ['mj.open', '/jobs/101'],
+      ['light duty cleaner', '/jobs/101'], ['Clean Co', '/companies/clean-co'], ['Winnipeg, MB', MAP('Winnipeg, MB')],
+      ['mj.open', '/jobs/101'],
     ])
     const b = rowOf(el, 'Cook')
-    expect(links(b)).toEqual([['Steinbach', MAP('Steinbach, Manitoba, Canada')], ['Manitoba', MAP('Manitoba, Canada')]])
+    expect(links(b)).toEqual([['Steinbach, MB', MAP('Steinbach, MB')]])
     expect(buttons(b)).toEqual(['mj.unsave'])
   })
 

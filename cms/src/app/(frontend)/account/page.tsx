@@ -51,13 +51,15 @@
  * 否则两块都在要简历和英文姓名,他不知道填哪个。
  * 2026-10-09 A 批投递搬进弹框(docs/design/我的/我的求职-20261009.md):页内投递区 ApplySection 撤 —— 投递框挂在全站骨架上,
  * 任何一页带 `?apply=<职位号>` 就弹;本页摆一个无界面的 ApplySentSync,收到「发出去了」就刷新投递表、出成功条;「今日待投」不再让位。
+ * 2026-10-10 批 2「我的求职」四段(docs/design/我的/我的求职-20261009.md 第 3 节 15 / 16b / 16c / 16d):「今日待投」QueueReview
+ * 与它的准备清单、智能投递开关从本页撤(队列后端不动);「我的收藏」页签撤,收藏表搬进「我的求职」;节内顺序 =
+ * 今日推荐(+ 免费号的更多推荐)→ 我的收藏 → 我的投递 → 新岗推送(Push,接替周报开关 WeeklyOptin)。发出后投递表重挂、推荐卡按同一个代数重拉。
  *
  * @author Frank
  * @time 2026-07-02 00:00:00
  */
 import { ApplySentSync } from '@/components/apply'
-import { QueueReview } from '@/components/queue'
-import { AppliedList, SavedList } from '@/components/myjobs'
+import { AppliedList, Picks, Push, SavedList } from '@/components/myjobs'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import {
@@ -71,7 +73,6 @@ import {
   ResumeFile,
   SentNotice,
   Subscription,
-  SEC_FAVS,
   SEC_PROFILE,
   SEC_RESUME,
   SEC_SJOBS,
@@ -79,7 +80,6 @@ import {
   SHELL_BOTTOM,
   SHELL_TOP,
   useAccountPage,
-  WeeklyOptin,
 } from '@/components/account'
 import { Frame, Shell } from '@/components/shell'
 
@@ -103,10 +103,10 @@ export default function AccountPage() {
             {a.sec === SEC_SJOBS && a.sentTo != null && <SentNotice t={a.t} company={a.sentTo} />}
             {a.sec === SEC_RESUME && <ResumeFile t={a.t} />}
             {a.sec === SEC_RESUME && <CoverLetters t={a.t} />}
-            {a.sec === SEC_FAVS && <SavedList t={a.t} plan={a.plan} />}
-            {a.sec === SEC_FAVS && <WeeklyOptin t={a.t} userId={a.me.id} weeklyOptOut={!!(a.me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
-            {a.sec === SEC_SJOBS && <QueueReview t={a.t} plan={a.plan} onSent={a.onApplied} />}
+            {a.sec === SEC_SJOBS && <Picks gen={a.appliedGen} t={a.t} pro={a.pro} />}
+            {a.sec === SEC_SJOBS && <SavedList t={a.t} plan={a.plan} />}
             {a.sec === SEC_SJOBS && <AppliedList key={a.appliedGen} t={a.t} plan={a.plan} />}
+            {a.sec === SEC_SJOBS && <Push t={a.t} />}
             {a.sec === SEC_PROFILE && <Profile t={a.t} />}
             {a.sec === SEC_SUB && <Subscription t={a.t} until={a.me.proUntil} />}
           </AccountColumns>

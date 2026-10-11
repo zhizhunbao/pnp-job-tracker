@@ -14,15 +14,6 @@
 }
 
 /*
- * 空态(一句 + 「去职位板」),居中。
- */
-.empty {
-  padding: 20px 0 12px;
-
-  text-align: center;
-}
-
-/*
  * 阶段胶囊排。
  */
 .stages {
@@ -79,136 +70,6 @@
 }
 
 /*
- * 只有一枚、不可点的计数胶囊(我的收藏「N 个收藏」)。
- */
-.stageOnly {
-  display: inline-flex;
-
-  align-items: center;
-
-  padding: 6px 14px;
-
-  border-radius: 999px;
-
-  background: var(--text);
-
-  color: #fff;
-
-  font-size: 13px;
-}
-
-/*
- * 横卡清单。
- */
-.list {
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 10px;
-}
-
-/*
- * 一张横卡:五格(首字母块 / 主体 / 状态与日期 / 材料 / 操作)横排。
- */
-.row {
-  display: grid;
-
-  grid-template-columns: 44px minmax(0, 1fr) auto auto auto;
-
-  align-items: center;
-
-  gap: 16px;
-
-  padding: 14px 16px;
-
-  border: 1px solid var(--border);
-
-  border-radius: 12px;
-
-  background: var(--card);
-}
-
-/*
- * 公司首字母块。
- */
-.ava {
-  width: 44px;
-
-  height: 44px;
-
-  border-radius: 10px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  font-weight: 700;
-
-  font-size: 16px;
-
-  color: #fff;
-}
-
-/*
- * 首字母块配色 0:主蓝。
- */
-.c0 {
-  background: #2563eb;
-}
-
-/*
- * 配色 1:紫。
- */
-.c1 {
-  background: #7c3aed;
-}
-
-/*
- * 配色 2:青。
- */
-.c2 {
-  background: #0891b2;
-}
-
-/*
- * 配色 3:绿。
- */
-.c3 {
-  background: #059669;
-}
-
-/*
- * 配色 4:橙。
- */
-.c4 {
-  background: #d97706;
-}
-
-/*
- * 配色 5:红。
- */
-.c5 {
-  background: #dc2626;
-}
-
-/*
- * 配色 6:靛。
- */
-.c6 {
-  background: #4f46e5;
-}
-
-/*
- * 主体(职位 / 公司 / 城市),能缩。
- */
-.main {
-  min-width: 0;
-}
-
-/*
  * 职位名一行。
  */
 .rowTitle {
@@ -229,69 +90,6 @@
 }
 
 /*
- * 「取消收藏」(灰字文字钮,双类压过 button 桶的钮形)。
- */
-.unsave.unsave {
-  padding: 0;
-
-  font-size: 13px;
-
-  font-weight: 400;
-
-  color: var(--text2);
-
-  border: none;
-
-  background: none;
-
-  cursor: pointer;
-}
-
-/*
- * 城市一行(灰)。
- * 2026-10-09 N6 批:市和省各一份 name 桶两行名(英文在上、译名灰字在下),左右并排隔开;原「英文名 省码」灰注类撤。
- */
-.sub {
-  margin-top: 2px;
-
-  display: flex;
-
-  gap: 12px;
-
-  font-size: 12.5px;
-
-  color: var(--text2);
-}
-
-/*
- * 状态与日期那一格(右对齐)。
- */
-.meta {
-  text-align: right;
-
-  font-size: 12.5px;
-
-  color: var(--text2);
-
-  white-space: nowrap;
-}
-
-/*
- * 胶囊一行(状态 / 已下架 / 薪资),右对齐、能折行。
- */
-.pills {
-  display: flex;
-
-  gap: 6px;
-
-  justify-content: flex-end;
-
-  flex-wrap: wrap;
-
-  align-items: center;
-}
-
-/*
  * 薪资(绿,同职位卡)。
  */
 .pay {
@@ -302,118 +100,414 @@
   font-size: 13px;
 }
 
+
 /*
- * 日期一行。
+ * ===== 2026-10-10 批 2「我的求职」四段:分区白卡、今日推荐、更多推荐、新岗推送 =====
  */
-.date {
+
+/*
+ * 卡头标题旁的灰字计数。
+ */
+.secN {
+  margin-left: 6px;
+
+  font-weight: 400;
+
+  color: var(--text2);
+}
+
+/*
+ * 分区白卡的内容区(卡头下面留一点)。
+ */
+.sec {
+  margin-top: 8px;
+}
+
+/*
+ * 地点一行(照 Indeed;蓝链同公司名,不带下划线由 name 桶管)。
+ */
+.addr {
+  margin-top: 2px;
+
+  font-size: 13px;
+}
+
+/*
+ * 「更多推荐」卡头:标题 + 「升级 Pro 解锁:」+ pro 胶囊 + 右上「升级 Pro」。
+ */
+.moreHead {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 10px 12px;
+
+  border-radius: 8px;
+
+  background: #eff6ff;
+}
+
+/*
+ * 「更多推荐 N」。
+ */
+.moreTitle {
+  font-size: 13.5px;
+
+  font-weight: 700;
+
+  color: #111827;
+}
+
+/*
+ * 「升级 Pro 解锁:」(灰)。
+ */
+.moreUnlock {
+  font-size: 13px;
+
+  color: var(--text2);
+}
+
+/*
+ * 两枚好处胶囊。
+ */
+.morePerks {
+  display: inline-flex;
+
+  gap: 6px;
+}
+
+/*
+ * 网页端右上「升级 Pro」(顶到右端)。
+ */
+.moreBtnWide {
+  margin-left: auto;
+}
+
+/*
+ * 手机端整宽「升级 Pro」(网页端不出)。
+ */
+.moreBtnNarrow {
+  display: none;
+}
+
+/*
+ * 手机端好处 bullet(网页端不出)。
+ */
+.perkList {
+  display: none;
+}
+
+/*
+ * 锁住的两条。
+ */
+.lockedList {
+  display: flex;
+
+  flex-direction: column;
+
   margin-top: 6px;
 }
 
 /*
- * 材料(简历 / 求职信两个链接)。
+ * 锁住的一条:职位名 / 公司 / 地址 / 薪资 / 理由 横排。
  */
-.files {
-  display: flex;
+.locked {
+  display: grid;
 
-  gap: 12px;
+  grid-template-columns: minmax(140px, 1.2fr) minmax(0, 1fr) minmax(0, 1.3fr) 56px minmax(0, 1.6fr);
 
-  font-size: 13px;
-
-  white-space: nowrap;
-}
-
-/*
- * 操作(一颗钮 + 取消收藏)。
- */
-.acts {
-  display: flex;
-
-  gap: 8px;
+  gap: 6px 16px;
 
   align-items: center;
 
-  white-space: nowrap;
+  padding: 10px 0;
+
+  border-top: 1px solid var(--border);
+
+  font-size: 13px;
 }
 
 /*
- * 手机:同一张卡按格子竖排。
+ * 锁住那条的职位名(看得见,蓝字不可点)。
+ */
+.lockedTitle {
+  font-weight: 600;
+
+  color: var(--accent, #2563eb);
+}
+
+/*
+ * 锁住那条的理由胶囊(不占推荐行的 why 格,就在本行最后一列;能折行)。
+ */
+.lockedWhy {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 6px;
+}
+
+/*
+ * 模糊的假字(真值不下发)。
+ */
+.blur {
+  filter: blur(5px);
+
+  user-select: none;
+
+  color: var(--text2);
+
+  white-space: nowrap;
+
+  overflow: hidden;
+}
+
+/*
+ * 新岗推送的一行(字 + 控件)。
+ */
+.pushRow {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 8px;
+
+  font-size: 13.5px;
+}
+
+/*
+ * 「发到」邮箱框(网页端限宽,Frank「网页端这个太长了吧」)。
+ */
+.pushEmail {
+  width: 300px;
+
+  max-width: 100%;
+}
+
+/*
+ * 保存后的那一句(灰)。
+ */
+.pushNote {
+  margin-top: 8px;
+
+  font-size: 13px;
+
+  color: var(--text2);
+}
+
+/*
+ * 手机:「更多推荐」换 bullet + 整宽钮;邮箱框占满。
  */
 @media (width <= 640px) {
   /*
-   * 四行:首字母块 + 主体 / 状态 / 材料 / 操作。
+   * 网页端那排「解锁:」与胶囊、右上钮都不出。
    */
-  .row {
-    grid-template-columns: 40px minmax(0, 1fr);
-
-    grid-template-areas: 'ava main' 'meta meta' 'files files' 'acts acts';
-
-    gap: 10px 12px;
+  .moreUnlock,
+  .morePerks,
+  .moreBtnWide {
+    display: none;
   }
 
   /*
-   * 首字母块小一号。
+   * 卡头去底色,只剩标题。
    */
-  .ava {
-    grid-area: ava;
+  .moreHead {
+    padding: 0;
 
-    width: 40px;
-
-    height: 40px;
+    background: none;
   }
 
   /*
-   * 主体。
+   * 锁住的一条竖排。
    */
-  .main {
-    grid-area: main;
+  .locked {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   /*
-   * 状态与日期改成一行左对齐。
+   * 好处 bullet。
    */
-  .meta {
-    grid-area: meta;
+  .perkList {
+    display: block;
 
-    text-align: left;
+    margin: 10px 0 0;
 
-    display: flex;
+    padding-left: 18px;
 
-    gap: 10px;
-
-    align-items: center;
-
-    flex-wrap: wrap;
-
-    white-space: normal;
+    font-size: 13px;
   }
 
   /*
-   * 胶囊靠左。
+   * 整宽「升级 Pro」。
    */
-  .pills {
-    justify-content: flex-start;
+  .moreBtnNarrow {
+    display: block;
+
+    margin-top: 10px;
   }
 
   /*
-   * 日期不另起一行。
+   * 整宽钮撑满。
    */
-  .date {
-    margin-top: 0;
+  .moreBtnNarrow > * {
+    width: 100%;
   }
 
   /*
-   * 材料。
+   * 邮箱框占满剩下的宽。
    */
-  .files {
-    grid-area: files;
-  }
+  .pushEmail {
+    flex: 1;
 
-  /*
-   * 操作靠右。
-   */
-  .acts {
-    grid-area: acts;
-
-    justify-content: flex-end;
+    width: auto;
   }
+}
+
+/*
+ * ===== 2026-10-10 批 2 lead 对效果图:网页端通用表格各格 + 手机一岗一张卡(原横卡、首字母块、推荐横行的类撤) =====
+ */
+
+/*
+ * 职位格:两行名 + 已下架胶囊。
+ */
+.titleCell {
+  display: inline-flex;
+
+  flex-wrap: wrap;
+
+  gap: 6px;
+
+  align-items: flex-start;
+}
+
+/*
+ * 一排胶囊(能折行)。
+ */
+.tagList {
+  display: inline-flex;
+
+  flex-wrap: wrap;
+
+  gap: 6px;
+}
+
+/*
+ * 一排钮。
+ */
+.actList {
+  display: inline-flex;
+
+  flex-wrap: wrap;
+
+  gap: 6px;
+
+  align-items: center;
+}
+
+/*
+ * 操作格:钮在上、附件链接在下。
+ */
+.actCell {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+
+  align-items: flex-start;
+}
+
+/*
+ * 手机卡清单。
+ */
+.cards {
+  display: flex;
+
+  flex-direction: column;
+}
+
+/*
+ * 一张手机卡(卡间分隔线,不再自带框)。
+ */
+.card {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+  padding: 12px 0;
+
+  border-top: 1px solid var(--border);
+
+  font-size: 13px;
+}
+
+/*
+ * 卡头:职位在左、日期在右上。
+ */
+.cardTop {
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 10px;
+
+  align-items: flex-start;
+}
+
+/*
+ * 卡右上日期(灰)。
+ */
+.cardDate {
+  flex: none;
+
+  font-size: 12.5px;
+
+  color: var(--text2);
+}
+
+/*
+ * 工时与雇佣期两名并排。
+ */
+.kinds {
+  display: flex;
+
+  gap: 24px;
+}
+
+/*
+ * 卡底:胶囊在左、钮在右。
+ */
+.cardFoot {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-end;
+
+  gap: 10px;
+
+  margin-top: 6px;
+}
+
+/*
+ * 卡底的钮(靠右,不缩)。
+ */
+.cardActs {
+  display: inline-flex;
+
+  flex: none;
+
+  gap: 6px;
+
+  align-items: center;
 }

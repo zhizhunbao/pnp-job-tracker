@@ -896,12 +896,21 @@ export const jobsZh = {
   // 2026-10-08 照 AIApply 重设计:草稿入表、继续、收藏行投递、空态引导、成功条、求职信段
   'mj.draft': '草稿', 'mj.queued': '待投', 'mj.replied': '雇主回复', 'mj.all': '全部', 'mj.savedCount': '{n} 个收藏',
   'mj.appliedOn': '投递于 {d}', 'mj.editedOn': '最近改于 {d}', 'mj.postedOn': '发布于 {d}', 'mj.cont': '继续', 'mj.apply': '投递', 'mj.toBoard': '去职位板', 'mj.sentTo': '已发给 {co}',
+  // 2026-10-10 批 2「我的求职」四段(今日推荐 / 更多推荐 / 我的收藏 / 我的投递 + 新岗推送):草稿改叫「未发出」,待投并进未发出
+  'mj.col.title': '职位', 'mj.col.company': '公司', 'mj.col.addr': '地址', 'mj.col.pay': '薪资', 'mj.col.hours': '工时',
+  'mj.col.term': '雇佣期', 'mj.col.posted': '发布日期', 'mj.col.deadline': '截止日期', 'mj.col.why': '为什么推荐',
+  'mj.col.status': '状态', 'mj.col.savedOn': '收藏于', 'mj.col.appliedOn': '投递于', 'mj.col.act': '操作',
+  'mj.hours.full': '全职', 'mj.hours.part': '兼职',
+  'mj.term.permanent': '长期', 'mj.term.term': '定期合同', 'mj.term.seasonal': '季节性', 'mj.term.casual': '临时',
+  'mj.picks': '今日推荐', 'mj.picksEmpty': '今天没有新推荐', 'mj.more': '更多推荐', 'mj.unlock': '升级 Pro 解锁:',
+  'mj.perkPicks': '每天推荐无上限', 'mj.perkAuto': '智能投递', 'mj.upgrade': '升级 Pro',
+  'mj.why.pnp': '能走 {p} 雇主担保', 'mj.why.wage': '薪资高于本省中位', 'mj.why.occ': '职业对口', 'mj.why.saved': '和你收藏的同类',
+  'mj.appliedTitle': '我的投递', 'mj.unsent': '未发出', 'mj.addrSub': '{c},{p}',
+  'mj.push': '新岗推送', 'mj.pushRow': '把推荐和收藏动态发到邮箱', 'mj.freqOff': '不发', 'mj.freqDaily': '每天', 'mj.freqWeekly': '每周',
+  'mj.pushTo': '发到', 'mj.pushSave': '保存', 'mj.pushSaved': '已保存', 'mj.pushPending': '点 {e} 收到的链接后生效',
+  'mj.pushBad': '邮箱格式不对', 'mj.pushFail': '没保存上,再试一次', 'mj.pushMailFail': '确认信没发出去,再试一次',
   'ap.sentOn': '这个职位已于 {d} 投递',
   'rl.title': '求职信', 'rl.wrote': '写于 {d}',
-  // 2026-10-08 智能投递「今日待投」(照 AIApply 的 Quick Review)
-  'qu.title': '今日待投', 'qu.auto': '智能投递', 'qu.send': '投出', 'qu.edit': '改信',
-  'qu.none': '今天没有新岗', 'qu.finding': '正在找新岗、写信,大约一分钟', 'qu.stepResume': '简历', 'qu.stepNocs': '想做的工作', 'qu.stepName': '英文姓名', 'qu.upload': '上传',
-  'qu.pick': '去选', 'qu.save': '保存', 'qu.enable': '开启智能投递', 'qu.stepProv': '所在省', 'qu.provFail': '所在省没存上',
   // 2026-10-07 站内投递页 /apply/<id>(B2:简历 → 求职信 → 预览 → 已投递;错误码与 lib/apply 接口一一对应)
   'ap.writing': '正在按这个职位的要求写求职信,大约半分钟',
   'ap.e.write': '求职信没写成,点「再写一次」',

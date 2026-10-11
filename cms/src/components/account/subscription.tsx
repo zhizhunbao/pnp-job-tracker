@@ -5,6 +5,7 @@
  * 下单只此一处,本节不另造)。账户下拉里原先那一项「升级 Pro」同日撤,升级入口挪到这里。
  * 2026-10-08 照 AIApply 的 Billing 重设计(docs/design/我的/我的求职-20261009.md 故事 16–19):方案卡 → Pro 包含 → 付款记录
  * (懒查 Stripe);「付款方式」「到期与退款」「到期不会自动续费」这些解释块不出(Frank 10-07「不需要解释性文字」)。
+ * 2026-10-10 批 2(外层大白卡拆掉):外包的 div 换成片段,方案卡 / Pro 包含 / 付款记录三张卡直接摆进内容列,卡间距由内容列统一给。
  *
  * @author Frank
  * @time 2026-10-04 01:10:00
@@ -36,11 +37,11 @@ export function Subscription({ t, until }: SubscriptionIn) {
   }
   const s = useSubscription()
   return (
-    <div>
+    <>
       <SubPlan t={t} pro={pro} until={untilText} onOpen={makeFlagSet({ set: s.setOpen, v: true })} />
       <SubPerks t={t} pro={pro} />
       {s.payments.length > 0 && <SubPayments t={t} items={s.payments} />}
       {s.open && <PricingModal t={t} loggedIn pro={pro} onClose={makeFlagSet({ set: s.setOpen, v: false })} />}
-    </div>
+    </>
   )
 }

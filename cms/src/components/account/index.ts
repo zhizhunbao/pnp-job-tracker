@@ -41,7 +41,7 @@ export { AccountNav } from './accountnav'
 export { AccountRedirect } from './accountredirect'
 export { CoverLetters } from './coverletters'
 export {
-  SEC_FAVS, SEC_PROFILE, SEC_RESUME, SEC_SJOBS, SEC_SUB, SHELL_BOTTOM, SHELL_TOP,
+  SEC_PROFILE, SEC_RESUME, SEC_SJOBS, SEC_SUB, SHELL_BOTTOM, SHELL_TOP,
 } from './constants'
 export { useAccountPage, useResumePages } from './hooks'
 export { PayOkNotice } from './payoknotice'
@@ -51,4 +51,3 @@ export { ResumePages } from './resumepages'
 export { ResumePreview } from './resumepreview'
 export { SentNotice } from './sentnotice'
 export { Subscription } from './subscription'
-export { WeeklyOptin } from './weeklyoptin'

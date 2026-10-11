@@ -20,7 +20,7 @@ import {
 } from './constants'
 import {
   canNextOf, closeApply, loadStart, mailOf, makeAdd, makeAuthRetry, makeBack, makeFile, makeNameChange, makeNext,
-  makeOpenOf, makePickOf, makePreviewClose, makeQuietSave, makeSetTo, makeTab, nextKeyOf, noteOpened, openFromEvent,
+  makePickOf, makeQuietSave, makeSetTo, makeTab, nextKeyOf, noteOpened, openFromEvent,
   readApplyId, resumeHrefOf, resumeMimeOf, resumeNameOf, sentOfEvent, startStepOf, titledOf, upsellBackOf,
 } from './functions'
 import {
@@ -29,7 +29,7 @@ import {
 } from './letter'
 import type {
   ApplyCells, ApplyHostPanel, ApplyPageIn, ApplyPanel, ApplyResumeView, ApplyStartPanel, ApplyStartView,
-  CheckPreviewHook, LetterOpt, MaybeCheckPreview, MaybeRewrite, SentFn,
+  LetterOpt, MaybeRewrite, SentFn,
 } from './types'
 
 /**
@@ -149,17 +149,6 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
     onNext: makeNext(cells),
     onBack: makeBack(cells),
   }
-}
-
-/**
- * 逐项检查的弹框预览三格(2026-10-08 Frank「这两个应该都是可以弹框,并且可以替换吧」):正在预览的那一份、按行开、关。
- * 投递区与今日待投都用它(今日待投从桶门取)。
- *
- * @returns 三格。
- */
-export function useCheckPreview(): CheckPreviewHook {
-  const [preview, setPreview] = useState<MaybeCheckPreview>(null)
-  return { preview, openOf: makeOpenOf(setPreview), onPreviewClose: makePreviewClose(setPreview) }
 }
 
 /**

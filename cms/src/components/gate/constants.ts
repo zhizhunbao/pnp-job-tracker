@@ -312,8 +312,9 @@ export const URL_CITIES_HEAD = '/api/stats/cities?prov='
 
 /**
  * 投递署名接口(queue 域 PATCH {senderName};与今日待投设置清单同一个口)。
+ * 2026-10-10 Frank「删吧」(「今日待投 / 智能投递」整条撤,queue 域随之删):署名改走 apply 域 PATCH /api/apply/name {senderName}。
  */
-export const URL_PREFS = '/api/queue/prefs'
+export const URL_PREFS = '/api/apply/name'
 
 /**
  * 城市区没搜时摆几个热门城市。

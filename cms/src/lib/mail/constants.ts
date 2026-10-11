@@ -43,6 +43,16 @@ export const ID_NONE = ''
 export const UNSUB_PREFIX = 'unsub:'
 
 /**
+ * 换收件邮箱确认 token 的 HMAC 输入前缀(2026-10-10 批 2「新岗推送」;与退订 token 同一把钥匙,前缀分开,两种链接互不通用)。
+ */
+export const CONFIRM_PREFIX = 'confirm:'
+
+/**
+ * 确认 token 里用户 id 与新邮箱之间的分隔。
+ */
+export const CONFIRM_SEP = '|'
+
+/**
  * 退订 token 的摘要算法。
  */
 export const HMAC_ALGO = 'sha256'

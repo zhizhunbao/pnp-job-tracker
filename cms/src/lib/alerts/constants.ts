@@ -715,3 +715,217 @@ export const HTML_SEP = ''
  * 下游一律用 `=== ''` 判「这个参数没带」,不用真假值 —— `dry=0` 也是带了参数。
  */
 export const PARAM_NONE = ''
+
+// =========================================================================
+// 新岗推送(「我的求职」末段;2026-10-10 批 2,docs/design/我的/我的求职-20261009.md 第 3 节 16b / 16d;
+// 表 docs/sql/digest-prefs-20261010.sql)
+// =========================================================================
+
+/**
+ * 推送频率:不发(没设过也是它;新用户默认)。
+ */
+export const FREQ_OFF = 'off'
+
+/**
+ * 推送频率:每天(今日推荐)。
+ */
+export const FREQ_DAILY = 'daily'
+
+/**
+ * 推送频率:每周(收藏岗动态,即原周报)。
+ */
+export const FREQ_WEEKLY = 'weekly'
+
+/**
+ * 认得的三档频率(请求体只收这三个)。
+ */
+export const FREQS = ['off', 'daily', 'weekly'] as const
+
+/**
+ * 每一轮每一档最多取多少收件人(同 SCAN_LIMIT)。
+ */
+export const DIGEST_USERS_MAX = 1000
+
+/**
+ * 每日推送两封之间至少隔多久(20 小时:每小时跑一轮,一天只发一封,早晚漂一点不重发)。
+ */
+export const DAILY_GAP_MS = 20 * 3600_000
+
+/**
+ * 每日推送一封最多列几条(Pro 无上限的推荐里取前几条;免费号本来就只有 3 条)。
+ */
+export const DAILY_MAIL_MAX = 10
+
+/**
+ * ?preview=daily:只渲染第一封每日推送的 HTML 返回,不发信不写库(走查用)。
+ */
+export const PREVIEW_DAILY = 'daily'
+
+/**
+ * 请求体里的频率字段。
+ */
+export const FIELD_FREQ = 'freq'
+
+/**
+ * 请求体里的收件邮箱字段。
+ */
+export const FIELD_EMAIL = 'email'
+
+/**
+ * 邮箱格式(粗校:有 @、两边非空、域名带点、不含空白)。
+ */
+export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/**
+ * 链接里的用户 id 只认纯数字(确认链接;别的当无效)。
+ */
+export const USER_ID_RE = /^\d+$/
+
+/**
+ * 邮箱最长多少字(RFC 5321 上限)。
+ */
+export const EMAIL_MAX_LEN = 254
+
+/**
+ * 错误体:要登录。
+ */
+export const E_AUTH = 'auth'
+
+/**
+ * 错误体:请求体不合形(频率不认得)。
+ */
+export const E_BODY = 'body'
+
+/**
+ * 错误体:邮箱格式不对。
+ */
+export const E_EMAIL = 'email'
+
+/**
+ * 错误体:确认信没发出去(新邮箱没记成待确认)。
+ */
+export const E_MAIL = 'mail'
+
+/**
+ * 推送设置响应的缓存头:只给本人,哪一层都不许存。
+ */
+export const CACHE_PRIVATE = 'private, no-store'
+
+/**
+ * 存推送设置的结果:直接生效。
+ */
+export const PUT_SAVED = 'saved'
+
+/**
+ * 存推送设置的结果:新邮箱待确认(确认信已发)。
+ */
+export const PUT_PENDING = 'pending'
+
+/**
+ * 换收件邮箱的确认链接模板。
+ */
+export const CONFIRM_URL = '{site}/api/alerts/confirm?u={u}&t={t}'
+
+/**
+ * 确认信标题(三语一行;收信人这时还没选语言,照退订页双语的老规矩)。
+ */
+export const CONFIRM_SUBJ = '确认收件邮箱 / Confirm your email — Offer2PR'
+
+/**
+ * 确认信正文。
+ */
+export const CONFIRM_HTML = `<div style="font-family:system-ui,sans-serif;color:#1f2937;font-size:14px">
+    <p>🍁 <strong>Offer2PR</strong></p>
+    <p>点下面的链接,新岗推送就发到这个邮箱。<br/>Click the link below to receive job alerts at this address.</p>
+    <p><a href="{url}" style="color:#2563eb">确认 / Confirm →</a></p>
+    <p style="color:#9ca3af;font-size:12px">不是你本人操作的,忽略这封信即可。/ If this wasn't you, ignore this email.</p></div>`
+
+/**
+ * 确认页:换上了。
+ */
+export const CONFIRM_MSG_DONE = '<p><strong>收件邮箱已确认。</strong><br/>Your email is confirmed.</p><p><a href="{site}/account" style="color:#2563eb">回到我的 / Back to my account →</a></p>'
+
+/**
+ * 确认页:链接无效或过期。
+ */
+export const CONFIRM_MSG_INVALID = '<p>链接无效或已过期。<br/>This link is invalid or has expired.</p>'
+
+/**
+ * 每日推送:一行(职位名链到本站职位页 + 公司 + 地点一行 + 薪资)。
+ */
+export const TR_PICK = `<tr>
+    <td style="padding:6px 10px;border-bottom:1px solid #eee"><a href="{href}" style="color:#2563eb;text-decoration:none">{title}</a></td>
+    <td style="padding:6px 10px;border-bottom:1px solid #eee;color:#6b7280">{company}</td>
+    <td style="padding:6px 10px;border-bottom:1px solid #eee;color:#6b7280">{address}</td>
+    <td style="padding:6px 10px;border-bottom:1px solid #eee;color:#15803d">{salary}</td>
+  </tr>`
+
+/**
+ * 每日推送外壳。
+ */
+export const DAILY_SHELL = `<div style="font-family:system-ui,sans-serif;color:#1f2937;font-size:14px">
+    <p>🍁 <strong>Offer2PR</strong></p>
+    <p>{head}</p>
+    <table style="border-collapse:collapse;font-size:13px">{rows}</table>
+    <p style="margin-top:14px"><a href="{site}/account" style="color:#2563eb">{cta}</a></p>
+    <p style="color:#9ca3af;font-size:12px"><a href="{unsubUrl}" style="color:#9ca3af">{unsub}</a></p></div>`
+
+/**
+ * 每日推送头行三语。
+ */
+export const DAILY_HEAD = {
+  /**
+   * 中文。
+   */
+  zh: '今日推荐 {n} 个岗',
+
+  /**
+   * 英文。
+   */
+  en: "Today's picks: {n} jobs",
+
+  /**
+   * 韩文。
+   */
+  ko: '오늘의 추천 {n}건',
+} as const
+
+/**
+ * 每日推送 CTA 三语。
+ */
+export const DAILY_CTA = {
+  /**
+   * 中文。
+   */
+  zh: '去投递',
+
+  /**
+   * 英文。
+   */
+  en: 'Apply now',
+
+  /**
+   * 韩文。
+   */
+  ko: '지원하러 가기',
+} as const
+
+/**
+ * 每日推送标题三语。
+ */
+export const SUBJ_DAILY = {
+  /**
+   * 中文。
+   */
+  zh: '今日推荐 {n} 个岗 — Offer2PR',
+
+  /**
+   * 英文。
+   */
+  en: "Today's picks: {n} jobs — Offer2PR",
+
+  /**
+   * 韩文。
+   */
+  ko: '오늘의 추천 {n}건 — Offer2PR',
+} as const

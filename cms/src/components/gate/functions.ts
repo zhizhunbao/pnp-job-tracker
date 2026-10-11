@@ -651,6 +651,7 @@ function editProvsOf(a: GateEditSeed): string[] {
 
 /**
  * 存投递署名(queue 域 PATCH,与今日待投设置清单同一个口;不合规服务端回 422)。
+ * 2026-10-10 Frank「删吧」:queue 域撤,口子换成 apply 域的 PATCH /api/apply/name,回包不变。
  *
  * @param name 英文姓名。
  * @returns 无;没存上抛错。

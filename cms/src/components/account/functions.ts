@@ -13,18 +13,16 @@ import { toJobPlan } from '@/components/jobs'
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
 import { log, PROFILE_LOG } from '@/lib/log'
 import { DAY_MS, ymd } from '@/lib/time'
-import { track } from '@/lib/track'
 import {
-  CARD_CLS, CLS_SEP, CRED_INCLUDE, EV_WEEKLY,
-  HDR_CONTENT_TYPE, METHOD_DELETE, METHOD_PATCH, MIME_JSON, QP_OK,
+  CARD_CLS, CLS_SEP, CRED_INCLUDE,
+  METHOD_DELETE, METHOD_PATCH, QP_OK,
   BYTES_KB, BYTES_MB, FIELD_FILE, MB_DIGITS, METHOD_PUT, RESUME_MAX_BYTES, RF_ERR_FALLBACK, RF_ERR_KEY, RF_ERR_NONE,
   RF_ERR_SIZE, THUMB_BASE_SCALE, THUMB_PAGE, UNIT_KB, UNIT_MB, URL_RESUME_FILE, URL_RESUME_FILES,
   MIME_PDF as MIME_PDF_TYPE, Q_DL_TAIL, Q_ID_HEAD, Q_VER_MID, RESUME_FILES_MAX, COUNT_SEP, CANVAS_TAG,
   CENTER_DIV, EV_WHEEL, PCT_SIGN, PX, TF_HEAD, TF_MID, TF_SCALE, TF_TAIL, WHEEL_OPTS, ZOOM_HOME, ZOOM_MAX, ZOOM_MIN,
   ZOOM_PCT, ZOOM_PINCH_K, ZOOM_PX_MAX, ZOOM_SETTLE_MS, ZOOM_WHEEL_K,
-  QP_OK_ON, QP_SEC, SEC_LABEL_CUT_RE, SEC_TABS,
+  QP_OK_ON, QP_SEC, SEC_FAVS, SEC_LABEL_CUT_RE, SEC_SJOBS, SEC_TABS,
   TEXT_NONE, URL_ME,
-  URL_USER_HEAD,
   AMOUNT_DIGITS, CUR_GAP, CUR_SIGN, LETTER_FILE_TAIL, LOGIN_URL, NEXT_SEP, PAY_COL_ACT, PAY_COL_AMOUNT, PAY_COL_DATE,
   PAY_COL_ITEM, ST_DRAFT, URL_APPLY_HEAD, URL_LETTERS, URL_LETTER_FILE_HEAD, URL_PAYMENTS, URL_SENT_COUNT,
   PF_ERR_EMPTY, PF_FOLD_N, PF_GOAL_JOBS, PF_GOAL_JOBS_KEY, PF_GOAL_PR, PF_GOAL_PR_KEY, PF_LOAD_FAIL, PF_LOAD_OK,
@@ -41,7 +39,6 @@ import type {
   NavLabelIn, SecChangeFn, SecChangeIn, SecItemsIn, SecTabItem,
   RefreshFn, RefreshIn,
   Sec,
-  WeeklyToggleFn, WeeklyToggleIn,
   AppliedSentOut, CountRespJson, LetterMeta, LetterMetas, LettersLoadIn, LettersRespJson, OnAppliedIn, PayCellRow,
   PayCellRowsIn, PayCol, PaymentRow, PaymentRows, PaymentsLoadIn, PaymentsRespJson, SentCountLoadIn, TFn,
   PfJson, PfLoadIn, PfNames, PfSavedIn, PfSeed, PfShownIn, PfView,
@@ -119,12 +116,17 @@ export function okFlagOf(): boolean {
  * 2026-09-23 SEC_TABS 撤到三节后白名单跟着收窄成 resume/favs/sjobs:旧链接带
  * `?sec=overview|profile|saved|buy` 进来一律返回 null,页面停在默认节「我的简历」,不报错不白屏。
  *
+ * 2026-10-10 批 2:「我的收藏」页签撤,旧深链 `?sec=favs` 落「我的求职」(收藏卡由 myjobs 桶滚过去)。
+ *
  * @returns 深链点名的节;没带或不认识是 null。
  */
 export function secLinkOf(): Sec | null {
   const s = new URLSearchParams(window.location.search).get(QP_SEC)
   if (s == null) {
     return null
+  }
+  if (s === SEC_FAVS) {
+    return SEC_SJOBS
   }
   for (const tab of SEC_TABS) {
     if (tab.sec === s) {
@@ -236,34 +238,6 @@ export function makeRefresh(x: RefreshIn): RefreshFn {
  */
 export function ignoreWriteErr(): void {
   return
-}
-
-/**
- * 造一枚周报开关的 change 手柄(E9-02b):显示语义取反(勾 = 订阅,存的是退订),
- * 先拨本地,发 umami 的订阅/退订事件(统计对象由环境注入,没有就不发、发挂了不挡),
- * 再 PATCH 跟投(失败静默)。
- * 2026-09-26 /fe Frank:订阅/退订事件改走统一上报门 lib/track(umami + 第一方漏斗,两条腿各自吞错,
- * 照旧不挡 PATCH)—— 原先直调 window.umami,被拦截器挡掉就没了;开关值 on 记成第一方的低基数分组。
- *
- * @param x 登录人 id 与退订落格。
- * @returns 勾选框 change 手柄。
- */
-export function makeWeeklyToggle(x: WeeklyToggleIn): WeeklyToggleFn {
-  return async function toggleWeekly(e): Promise<void> {
-    const optOut = e.target.checked === false
-    x.setOptOut(optOut)
-    track(EV_WEEKLY, { on: String(optOut === false) })
-    try {
-      await fetch(URL_USER_HEAD + x.userId, {
-        method: METHOD_PATCH,
-        credentials: CRED_INCLUDE,
-        headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-        body: JSON.stringify({ weeklyOptOut: optOut }),
-      })
-    } catch {
-      ignoreWriteErr()
-    }
-  }
 }
 
 /**

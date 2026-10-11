@@ -38,7 +38,7 @@ import {
   letterCleanOf, letterMessagesOf, letterProviderOf, loadApplyFile, toLetterBody,
   loadApplyLetters,
 } from './functions'
-import type { DraftBodyJson, LetterBodyJson, SendBodyJson, WebhookJson } from './types'
+import type { DraftBodyJson, LetterBodyJson, NameBodyJson, SendBodyJson, WebhookJson } from './types'
 
 /**
  * GET /api/apply/cover?job=:求职信 PDF(本人预览,在浏览器里直接打开)。有草稿渲草稿;
@@ -205,6 +205,35 @@ export async function applyFileRoute(req: Request): Promise<Response> {
       [HDR_NOSNIFF]: NOSNIFF,
     },
   })
+}
+
+/**
+ * PATCH /api/apply/name {senderName}:存投递署名(访客向导「我的档案」改英文姓名;2026-10-10 Frank「删吧」:原借智能投递的
+ * PATCH /api/queue/prefs,queue 域撤后搬来,回包不变)。不合规 422。
+ *
+ * @param req 请求。
+ * @returns { ok, senderName };未登录 401、体不合形 400、署名不合规 422。
+ */
+export async function applyNameRoute(req: Request): Promise<Response> {
+  const user = await getUserOrNull(await headers())
+  if (user == null) {
+    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  let raw: NameBodyJson = {}
+  try {
+    raw = await req.json() as NameBodyJson
+  } catch {
+    return Response.json({ error: E_BODY }, { status: BAD_REQUEST })
+  }
+  if (typeof raw.senderName !== 'string') {
+    return Response.json({ error: E_BODY }, { status: BAD_REQUEST })
+  }
+  const senderName = raw.senderName.trim()
+  if (isSenderName(senderName) === false) {
+    return Response.json({ error: E_NAME }, { status: UNPROCESSABLE })
+  }
+  await saveApplyPrefs({ db: await getDb(), userId: user.id, senderName, template: null })
+  return Response.json({ ok: true, senderName })
 }
 
 /**

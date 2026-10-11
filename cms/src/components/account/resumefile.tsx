@@ -4,11 +4,12 @@
  * 隐藏文件框 + 三种状态 —— 清单没回来先占位、一份都没有出上传区、有了出一张张卡片加「添加简历」一行;
  * 下面一行报错;点「预览」开弹框。节标题不另出:横排页签上已经写着「我的简历」。
  * 2026-10-08 照 AIApply 重设计:「添加简历」那一行挪到卡片上方,卡片改成网格(电脑一行三张)。
+ * 2026-10-10 批 2(外层大白卡拆掉,CLAUDE.md「页面与弹框正文一律分区卡」):本段自己成一张分区卡(cardMd + 卡头 mcardHead)。
  *
  * @author Frank
  * @time 2026-10-06 12:18:31
  */
-import { RF_ERR_NONE } from './constants'
+import { CARD_HEAD_CLS, CARD_MD_CLS, RF_ERR_NONE } from './constants'
 import { thumbSrcOf } from './functions'
 import { useResumeFile } from './hooks'
 import { ResumeAdd } from './resumeadd'
@@ -28,7 +29,8 @@ import css from './account.module.css'
 export function ResumeFile({ t }: ResumeFileIn) {
   const p = useResumeFile()
   return (
-    <div>
+    <div className={CARD_MD_CLS}>
+      <div className={CARD_HEAD_CLS}>{t('rm.arch.title')}</div>
       <ResumeInput onMount={p.onInputMount} onPick={p.onPick} />
       {p.checked === false && <div className={css.rfSkel} />}
       {p.checked && p.items.length === 0 && <ResumeDrop p={p} t={t} />}

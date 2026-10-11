@@ -7,5 +7,5 @@
  */
 
 export { isDryRun, quietInfo, runAlerts } from './functions'
-export { alertsRunRoute, alertsUnsubRoute } from './routes'
+export { alertsConfirmRoute, alertsPrefsGetRoute, alertsPrefsPostRoute, alertsRunRoute, alertsUnsubRoute } from './routes'
 export type { LoadHitsFn, RunIn, RunResult } from './types'

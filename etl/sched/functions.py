@@ -33,9 +33,9 @@ import httpx
 from loguru import logger
 
 import paths
-from load.functions import trigger_alerts, trigger_queue, trigger_seed
+from load.functions import trigger_alerts, trigger_seed
 from sched.constants import (
-    ALERTS_FAIL_TPL, ALERTS_OK_TPL, QUEUE_FAIL_TPL, QUEUE_OK_TPL, ARG_ONLY, ATTR_META, ATTR_METAS, CMD_SEP, CMS_DIR,
+    ALERTS_FAIL_TPL, ALERTS_OK_TPL, ARG_ONLY, ATTR_META, ATTR_METAS, CMD_SEP, CMS_DIR,
     DEFAULT_INTERVAL_S, DEFAULT_ROLES, DEFAULT_SEED_URL, DEFAULT_SOURCE, DOM_MAIN_TPL,
     DOM_MOD_TPL, DONE_NAME_TPL, ENC_UTF8, ENV_FILE, ENV_IOENCODING, ENV_PING_FRESH, ENV_PING_TPL,
     ENV_SEED_TOKEN, ENV_SEED_URL, ENV_SOURCE, ENV_UNBUFFERED, ERRORS_REPLACE, ERR_PREFIXES,
@@ -308,6 +308,7 @@ def finish_seed() -> bool:
 
     HTTP 细节住 load 域(600s 放弃线 / ok:true 真实判定 / 两种尾巴反推 alerts);
     load.functions 纯返回不打日志 —— 日志面与心跳判定留这。alerts 失败不影响本轮。
+    2026-10-10 Frank「删吧」:alerts 之后那一步智能投递(trigger_queue → /api/queue/run)随「今日待投」整条撤。
     """
     out = trigger_seed()
     if out.ok is False:
@@ -319,11 +320,6 @@ def finish_seed() -> bool:
         logger.error(ALERTS_FAIL_TPL.format(status=alerts.status, body=alerts.body))
     else:
         logger.info(ALERTS_OK_TPL.format(status=alerts.status, body=alerts.body))
-    queue = trigger_queue()
-    if queue.ok is False:
-        logger.error(QUEUE_FAIL_TPL.format(status=queue.status, body=queue.body))
-        return True
-    logger.info(QUEUE_OK_TPL.format(status=queue.status, body=queue.body))
     return True
 
 

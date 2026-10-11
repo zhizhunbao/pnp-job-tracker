@@ -10,12 +10,12 @@
 // 2026-10-10 投递框三步(Frank「用户只要一点击,就弹收费。用户自己弄 不收费」):写信路由的试用撤,② 改验 Pro 闸 —— 免费档一律 402 pro、
 //       不调模型不记账;Pro 照写、回包带 JD(对照框「职位要求」栏)。① 的三判仍是智能投递(lib/queue)在用。
 // 探针:applyLetterRoute 去掉 isPro 判 → ②第一条红。
+// 2026-10-10 Frank「删吧」(「今日待投 / 智能投递」整条撤):① 试用三判的最后消费者智能投递删了,lib/quota 的试用账函数与 TRIAL_USED /
+//       TRIAL_MARK 两条 SQL 随之删,① 用例撤;桩改按 SQL 文本认 ai_trials 读写(② 仍断言「不记账」)。
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { SQL } from '@/lib/db'
 import type { QueryResult, SqlParam } from '@/lib/db'
-import { isTrialOpen, trialAfterOf, trialLeftOf } from '@/lib/quota/server'
-import type { SessionUser } from '@/lib/quota'
 import { returnPathsOf } from '@/lib/stripe/functions'
 
 const LETTER = 'Dear Hiring Manager,\n\nI am applying for the Cook position at Pie Wood. My resume shows three years of line cooking '
@@ -53,7 +53,7 @@ vi.mock('@/lib/db/server', () => ({
           rowCount: 1,
         }
       }
-      if (sql === SQL.TRIAL_USED) {
+      if (sql.includes('FROM ai_trials')) {
         return { rows: [{ used: h.trial.used, here: h.trial.here }], rowCount: 1 }
       }
       if (sql === SQL.APPLY_RESUME_BLOB) {
@@ -62,7 +62,7 @@ vi.mock('@/lib/db/server', () => ({
           rowCount: 1,
         }
       }
-      if (sql === SQL.TRIAL_MARK) {
+      if (sql.includes('INSERT INTO ai_trials')) {
         h.marks.push(params)
       }
       return { rows: [], rowCount: 0 }
@@ -72,10 +72,6 @@ vi.mock('@/lib/db/server', () => ({
 
 const FREE = { id: 5, email: 'zhang@test.local', role: 'user', proUntil: null }
 const PRO = { id: 6, email: 'pro@test.local', role: 'user', proUntil: '2099-01-01T00:00:00.000Z' }
-
-function user(p: { pro: boolean }): SessionUser {
-  return (p.pro ? PRO : FREE) as unknown as SessionUser
-}
 
 async function write(): Promise<{ status: number, body: { text?: string, ai?: boolean, jd?: string, error?: string } }> {
   const { applyLetterRoute } = await import('@/lib/apply/routes')
@@ -98,22 +94,6 @@ beforeEach(() => {
 
 afterEach(() => {
   h.user.current = null
-})
-
-describe('① 试用三判', () => {
-  it('全格:Pro 恒放行、余量 null;本岗用过放行;其余用量 < 上限才放行;余量不低于 0;记一笔只在本岗没用过时 +1', () => {
-    const max = 3
-    for (const pro of [false, true]) {
-      for (const here of [false, true]) {
-        for (let used = 0; used <= 4; used++) {
-          const gate = { user: user({ pro }), trial: { used, here }, max }
-          expect(isTrialOpen(gate)).toBe(pro || here || used < max)
-          expect(trialLeftOf(gate)).toBe(pro ? null : Math.max(0, max - used))
-          expect(trialAfterOf({ used, here })).toEqual(here ? { used, here } : { used: used + 1, here: true })
-        }
-      }
-    }
-  })
 })
 
 describe('② 写信路由的 Pro 闸(2026-10-10 投递框三步:试用撤,不是 Pro 一律 402)', () => {

@@ -17,19 +17,19 @@ import {
   ERR_KEY_RESUME, ERR_KEY_UPLOAD, ERR_NONE, FIELD_FILE, HDR_CONTENT_TYPE,
   HTTP_CONFLICT, HTTP_UNAUTH, LOAD_AUTH, LOAD_BUSY, LOAD_FAIL, LOAD_NONE, LOAD_OK, METHOD_POST, METHOD_PUT, MIME_JSON,
   NEXT_KEY, NO_EMAIL_KEY, P_JOB,
-  MIME_PDF, PICK_MIN, SENT_STATUSES, STEP_CONFIRM, STEP_DONE, STEP_LETTER, STEP_ORDER, STEP_RESUME, TEXT_NONE,
+  SENT_STATUSES, STEP_CONFIRM, STEP_DONE, STEP_LETTER, STEP_ORDER, STEP_RESUME, TEXT_NONE,
   TRACK_APPLY_SENT,
   UPLOADED_KEY, URL_BACK_HEAD, URL_COVER_HEAD, URL_DRAFT, URL_RESUME_FILE, URL_RESUME_FILES, URL_SEND,
-  URL_START_HEAD, BREAK_AFTER_RE, CHECK_LETTER, CHECK_RESUME, CHECK_SIGN, CHECK_TO, PDF_KEY,
-  Q_ID_HEAD, VIEW_KEY, EV_APPLY_NAV, EV_APPLY_SENT, PATH_ACCOUNT, P_APPLY,
+  URL_START_HEAD, BREAK_AFTER_RE,
+  Q_ID_HEAD, EV_APPLY_NAV, EV_APPLY_SENT, PATH_ACCOUNT, P_APPLY,
 } from './constants'
 import type {
   ApplyCells, ApplyResumeView, ApplyStartView, CanNextIn, DraftIn, DraftOfIn, ErrJson, ErrOut, FileMakeIn,
   GoStepIn, LoadStartIn, MailIn, MailView,
   PageHideIn, PickIn, PickOfFn, ResumeFilesJson, ResumeNameIn, SetFn, SetToIn,
   UploadedTextIn, UploadIn, UploadJson,
-  ApplySentOut, CheckRow, CheckRowsIn, MaybeCheckPreview, OpenOfFn, MaybeCheckRow,
-  ResumePickItem, RowOfIn, ApplyIdIn, ApplyOpenDetail, OpenedIn,
+  ApplySentOut,
+  ApplyIdIn, ApplyOpenDetail, OpenedIn,
   ApplyTitled, AuthRetryIn,
 } from './types'
 import { uploadLetter } from './letter'
@@ -346,27 +346,6 @@ export function canNextOf(x: CanNextIn): boolean {
 }
 
 /**
- * 逐项检查的四行:收件人(雇主名;邮箱不出服务端)、简历(文件名 + 打开)、求职信(附件名 + 查看 PDF)、署名。
- *
- * @param x 这一封投递的四样。
- * @returns 四行。
- */
-export function checkRowsOf(x: CheckRowsIn): CheckRow[] {
-  return [
-    { key: CHECK_TO, value: x.company, href: TEXT_NONE, linkKey: TEXT_NONE, previewable: false },
-    {
-      key: CHECK_RESUME,
-      value: x.resumeName,
-      href: resumeHrefOf(x.resumeId),
-      linkKey: VIEW_KEY,
-      previewable: x.resumeMime === MIME_PDF,
-    },
-    { key: CHECK_LETTER, value: x.coverFile, href: coverHrefOf(x.jobId), linkKey: PDF_KEY, previewable: true },
-    { key: CHECK_SIGN, value: x.sender, href: TEXT_NONE, linkKey: TEXT_NONE, previewable: false },
-  ]
-}
-
-/**
  * 逐项检查的值切成可折行的几段(下划线之后可断;每段后面接一个 wbr)。
  *
  * @param value 值。
@@ -417,94 +396,6 @@ export function resumeMimeOf(x: ResumeNameIn): string {
     }
   }
   return TEXT_NONE
-}
-
-/**
- * 换简历下拉的选项值(id 串;不足两份给空清单 —— 只有一份没得换,不出下拉)。
- *
- * @param items 下拉的项。
- * @returns id 串。
- */
-export function pickOptsOf(items: ResumePickItem[]): string[] {
-  if (items.length < PICK_MIN) {
-    return []
-  }
-  const out: string[] = []
-  for (const it of items) {
-    out.push(String(it.id))
-  }
-  return out
-}
-
-/**
- * 下拉当前值(选中的简历 id 串;没选 = 空串)。
- *
- * @param id 选中的简历 id。
- * @returns id 串。
- */
-export function resumeValueOf(id: number | null): string {
-  if (id == null) {
-    return TEXT_NONE
-  }
-  return String(id)
-}
-
-/**
- * 造换简历下拉的取名函数(id 串 → 文件名;认不出给原串)。
- *
- * @param items 下拉的项。
- * @returns 取名函数。
- */
-export function makeResumeLabel(items: ResumePickItem[]): (v: string) => string {
-  return function resumeLabel(v: string): string {
-    for (const it of items) {
-      if (String(it.id) === v) {
-        return it.name
-      }
-    }
-    return v
-  }
-}
-
-/**
- * 四行里按键取一行(邮件形按收件人 / 简历 / 求职信 / 署名各取各的;没有 = null)。
- *
- * @param x 四行与键。
- * @returns 那一行。
- */
-export function rowOf(x: RowOfIn): MaybeCheckRow {
-  for (const r of x.rows) {
-    if (r.key === x.key) {
-      return r
-    }
-  }
-  return null
-}
-
-/**
- * 造「按行打开弹框预览」:行上的地址当 PDF 地址、值(文件名)当标题。
- *
- * @param set 落格。
- * @returns 按行造点击手柄。
- */
-export function makeOpenOf(set: SetFn<MaybeCheckPreview>): OpenOfFn {
-  return function openOf(row: CheckRow): () => void {
-    return function open(): void {
-      set({ src: row.href, title: row.value })
-    }
-  }
-}
-
-/**
- * 造「关预览弹框」。
- *
- * @param set 落格。
- * @returns 点击手柄。
- */
-export function makePreviewClose(set: SetFn<MaybeCheckPreview>): () => void {
-  return function closePreview(): void {
-    set(null)
-  }
 }
 
 /**

@@ -13,8 +13,8 @@
  */
 import crypto from 'crypto'
 import { fill } from '../template'
-import { numOrNull, SQL, text } from '../db'
-import { MAIL_ENABLED, sendMail, unsubToken } from '../mail'
+import { count, firstOf, numOrNull, queryRows, SQL, text } from '../db'
+import { confirmToken, MAIL_ENABLED, sendMail, unsubToken } from '../mail'
 import { hasProfile, match, normalizeProfile } from '../jobs'
 import { ALERT_MATCH_LEVEL } from '../quota'
 import {
@@ -31,6 +31,9 @@ import {
   US_DONE, US_FAIL, US_INVALID,
   UNSUB_PREVIEW, UNSUB_SAVED, UNSUB_URL, USERS_WEEKLY_OPT, WEEKLY_CAP,
   WEEKLY_NEW_NONE, WEEKLY_NEW_P, WEEKLY_SHELL, WEEK_MS, WK_CTA, WK_FOOT, WK_HEAD, WK_SETTINGS, WK_UNSUB,
+  CONFIRM_HTML, CONFIRM_MSG_DONE, CONFIRM_MSG_INVALID, CONFIRM_SUBJ, CONFIRM_URL, DAILY_CTA, DAILY_GAP_MS, DAILY_HEAD,
+  DAILY_MAIL_MAX, DAILY_SHELL, DIGEST_USERS_MAX, E_MAIL, FREQ_DAILY, FREQ_OFF, FREQ_WEEKLY, PREVIEW_DAILY, PUT_PENDING,
+  PUT_SAVED, SUBJ_DAILY, TR_PICK, USER_ID_RE,
 } from './constants'
 import type {
   AlertCounts, AlertJobRow, EngineJob, MaybeWeeklyStatRow, SampleDbRow, DimsOfFn, MailLang, MailUserId, QuietInfo, RunIn, RunOut, SampleRow,
@@ -38,6 +41,8 @@ import type {
   ProvBroadPair, ProvCodes, SavedFilters, SavedJobStatusRow, TargetFirstFn, UnsubIn,
   UnsubOut, UnsubState,
   WeeklyHtmlIn, WeeklyItem, WeeklyStat,
+  ConfirmIn, ConfirmOut, DailyHtmlIn, DailyRoundIn, DailyRoundOut, DigestPrefs, DigestPrefsDbRow, DigestUser, DigestUserDbRow,
+  DigestPrefsOut, DigestUsersIn, DigestUsersOut, PrefsLoadIn, PrefsPutIn, PrefsPutOut,
 } from './types'
 
 
@@ -69,6 +74,9 @@ export function quietInfo(): QuietInfo {
 
 /**
  * 整轮提醒(路由只做鉴权/取参/静默判定,选人与拼信全在这)。
+ * 2026-10-10 批 2「新岗推送」:周报之前插一轮每日推送(dailyRound;preview=daily 时只渲第一封返回);
+ * 周报收件人改读 digest_prefs 的「每周」档(原「免费号且没退订」的条件随 DDL 搬成 weekly 行,新用户默认不发),
+ * 收件邮箱设了用设的;现在 Pro 选了每周也发。
  *
  * @param input 连接、开关、维度表与注入的取数函数。
  * @returns 计数;preview 命中时是第一封周报的 HTML。
@@ -79,7 +87,7 @@ export async function runAlerts(input: RunIn): RunOut {
   const now = new Date().toISOString()
   const out: AlertCounts = {
     dryRun: input.dry, matchEmails: 0, searchEmails: 0, weeklyEmails: 0, sendFails: 0,
-    usersChecked: 0, searchesChecked: 0, weeklyChecked: 0, skippedFilters: [],
+    usersChecked: 0, searchesChecked: 0, weeklyChecked: 0, skippedFilters: [], dailyEmails: 0, dailyChecked: 0,
   }
 
   const cut = new Date(Date.now() - DRAW_WINDOW_MS).toISOString().slice(0, ISO_DATE_LEN)
@@ -194,20 +202,39 @@ export async function runAlerts(input: RunIn): RunOut {
     }
   }
 
+  const dailyPreview = await dailyRound({ run: input, out })
+  if (dailyPreview !== FIELD_NONE) {
+    return { kind: K_PREVIEW, html: dailyPreview }
+  }
+
   const weekAgo = new Date(Date.now() - WEEK_MS).toISOString()
   const cut7 = new Date(Date.now() - WEEK_MS).toISOString().slice(0, ISO_DATE_LEN)
-  const freeUsers = await payload.find({
-    collection: COL_USERS, limit: SCAN_LIMIT, depth: 0, overrideAccess: true,
-    where: { and: [
-      { or: [{ proUntil: { exists: false } }, { proUntil: { less_than: now } }] },
-      { or: [{ weeklyOptOut: { not_equals: true } }, { weeklyOptOut: { exists: false } }] },
-      { or: [{ lastWeeklyAt: { exists: false } }, { lastWeeklyAt: { less_than: weekAgo } }] },
-    ] },
-  })
+  const weeklyTo = await loadDigestUsers({ db: input.db, freq: FREQ_WEEKLY })
+  const weeklyIds: number[] = []
+  const weeklyMail = new Map<string, string>()
+  for (const w of weeklyTo) {
+    weeklyIds.push(w.userId)
+    weeklyMail.set(String(w.userId), w.email)
+  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload 生成型接缝(读的格见文件头)
-  for (const u of freeUsers.docs as any[]) {
+  let freeDocs: any[] = []
+  if (weeklyIds.length > 0) {
+    const freeUsers = await payload.find({
+      collection: COL_USERS, limit: SCAN_LIMIT, depth: 0, overrideAccess: true,
+      where: { and: [
+        { id: { in: weeklyIds } },
+        { or: [{ lastWeeklyAt: { exists: false } }, { lastWeeklyAt: { less_than: weekAgo } }] },
+      ] },
+    })
+    freeDocs = freeUsers.docs
+  }
+  for (const u of freeDocs) {
     if (out.weeklyEmails >= WEEKLY_CAP) {
       break
+    }
+    const to = weeklyMail.get(String(u.id))
+    if (to != null && to !== '') {
+      u.email = to
     }
     if (u.email == null || u.email === '') {
       continue
@@ -594,6 +621,7 @@ export function makeDimsOf(input: DimsOfMakeIn): DimsOfFn {
 /**
  * 退订判定与落库（E9-02b，CASL 要求免登录一键可达）：token 与 unsubToken 同源，
  * 常量时间比对防侧信道；写库失败给 fail（路由出失败页，不抛）。
+ * 2026-10-10 批 2「新岗推送」:周报 / 每日推送都认 digest_prefs,退订连它一起把频率拨回不发。
  *
  * @param input payload 句柄与链接两参。
  * @returns 三态。
@@ -606,6 +634,7 @@ export async function unsubApply(input: UnsubIn): UnsubOut {
   }
   try {
     await input.payload.update({ collection: USERS_WEEKLY_OPT, id: input.u, overrideAccess: true, data: { weeklyOptOut: true } })
+    await input.db.query(SQL.DIGEST_PREFS_OFF, [input.u])
     return US_DONE
   } catch {
     return US_FAIL
@@ -626,6 +655,202 @@ export function unsubPageHtml(state: UnsubState): string {
     body = UNSUB_MSG_FAIL
   }
   return fill({ tpl: UNSUB_PAGE, params: { body: body } })
+}
+
+// =========================================================================
+// 新岗推送(2026-10-10 批 2:「我的求职」末段的频率 + 收件邮箱;每日推送一轮;换邮箱的确认链接)
+// =========================================================================
+
+/**
+ * 每日推送一轮:「每天」档的人各取今日推荐(路由注入),一天一封;preview=daily 时只渲第一封返回,别的 preview 整轮不跑
+ * (不在走查时真发信)。
+ *
+ * @param x 整轮入参与计数。
+ * @returns preview 时那封 HTML;否则空串。
+ */
+async function dailyRound(x: DailyRoundIn): DailyRoundOut {
+  const preview = x.run.preview === PREVIEW_DAILY
+  if (x.run.preview !== FIELD_NONE && preview === false) {
+    return FIELD_NONE
+  }
+  const users = await loadDigestUsers({ db: x.run.db, freq: FREQ_DAILY })
+  for (const u of users) {
+    if (u.email === '' || (preview === false && isDailyTooSoon(u.lastDailyAt))) {
+      continue
+    }
+    x.out.dailyChecked++
+    const picks = (await x.run.loadPicks({ userId: u.userId, pro: u.pro })).slice(0, DAILY_MAIL_MAX)
+    if (picks.length === 0) {
+      continue
+    }
+    let lang = mailLangOf(u.locale)
+    if (preview) {
+      if (x.run.previewLang !== '') {
+        lang = mailLangOf(x.run.previewLang)
+      }
+      return dailyHtml({ picks, lang, unsubUrl: fill({ tpl: UNSUB_PREVIEW, params: { site: SITE } }) })
+    }
+    if (x.run.dry) {
+      x.out.dailyEmails++
+      continue
+    }
+    const html = dailyHtml({ picks, lang, unsubUrl: unsubUrlOf(u.userId) })
+    const ok = await sendMail({ to: u.email, subject: fill({ tpl: SUBJ_DAILY[lang], params: { n: picks.length } }), html })
+    if (ok) {
+      x.out.dailyEmails++
+      await x.run.db.query(SQL.DIGEST_DAILY_MARK, [u.userId])
+    } else {
+      x.out.sendFails++
+    }
+  }
+  return FIELD_NONE
+}
+
+/**
+ * 离上次每日推送还不到 DAILY_GAP_MS。
+ *
+ * @param last 上次的 ISO 时刻(没发过 = 空串)。
+ * @returns 太近了 true。
+ */
+function isDailyTooSoon(last: string): boolean {
+  if (last === '') {
+    return false
+  }
+  return Date.now() - new Date(last).getTime() < DAILY_GAP_MS
+}
+
+/**
+ * 界面语 → 邮件语言(认不得的按中文,同周报)。
+ *
+ * @param locale 界面语。
+ * @returns 邮件语言。
+ */
+function mailLangOf(locale: string): MailLang {
+  if (locale === L_EN || locale === L_KO) {
+    return locale
+  }
+  return L_ZH
+}
+
+/**
+ * 每日推送整封 HTML。
+ *
+ * @param x 推荐、语言与退订链接。
+ * @returns 整封 HTML。
+ */
+export function dailyHtml(x: DailyHtmlIn): string {
+  const trs: string[] = []
+  for (const p of x.picks) {
+    trs.push(fill({
+      tpl: TR_PICK,
+      params: { href: SITE + JOB_PATH + p.id, title: p.title, company: p.company, address: p.address, salary: p.salary },
+    }))
+  }
+  return fill({
+    tpl: DAILY_SHELL,
+    params: {
+      head: fill({ tpl: DAILY_HEAD[x.lang], params: { n: x.picks.length } }), rows: trs.join(HTML_SEP), site: SITE,
+      cta: DAILY_CTA[x.lang], unsub: WK_UNSUB[x.lang], unsubUrl: x.unsubUrl,
+    },
+  })
+}
+
+/**
+ * 某一档频率的收件人。
+ *
+ * @param x 连接与频率。
+ * @returns 收件人。
+ */
+export async function loadDigestUsers(x: DigestUsersIn): DigestUsersOut {
+  return queryRows({ db: x.db, sql: SQL.DIGEST_USERS, params: [x.freq, DIGEST_USERS_MAX], map: toDigestUser })
+}
+
+/**
+ * 存推送设置:邮箱是账户邮箱或已确认的那个 → 直接生效;换成新邮箱 → 先往新邮箱发确认信,发出去了才记成待确认
+ * (点了链接才换上,防拿别人邮箱刷信);确认信没发出去 → 频率照存、邮箱不动,回 mail。
+ *
+ * @param x 连接、用户 id、账户邮箱、频率与想发到的邮箱。
+ * @returns saved / pending / mail。
+ */
+export async function saveDigestPrefs(x: PrefsPutIn): PrefsPutOut {
+  const now = await loadDigestPrefs({ db: x.db, userId: x.userId, account: x.account })
+  const account = x.account.toLowerCase()
+  let keep: string | null = null
+  if (now.email.toLowerCase() !== account) {
+    keep = now.email
+  }
+  if (x.email === account) {
+    await x.db.query(SQL.DIGEST_PREFS_PUT, [x.userId, x.freq, null])
+    return PUT_SAVED
+  }
+  if (x.email === now.email.toLowerCase()) {
+    await x.db.query(SQL.DIGEST_PREFS_PUT, [x.userId, x.freq, keep])
+    return PUT_SAVED
+  }
+  const url = fill({ tpl: CONFIRM_URL, params: { site: SITE, u: x.userId, t: confirmToken({ userId: x.userId, email: x.email }) } })
+  const sent = await sendMail({ to: x.email, subject: CONFIRM_SUBJ, html: fill({ tpl: CONFIRM_HTML, params: { url } }) })
+  if (sent === false) {
+    await x.db.query(SQL.DIGEST_PREFS_PUT, [x.userId, x.freq, keep])
+    return E_MAIL
+  }
+  await x.db.query(SQL.DIGEST_PREFS_PENDING, [x.userId, x.freq, x.email])
+  return PUT_PENDING
+}
+
+/**
+ * 本人的推送设置(没设过 = 不发、发到账户邮箱)。
+ *
+ * @param x 连接、用户 id 与账户邮箱。
+ * @returns 推送设置。
+ */
+export async function loadDigestPrefs(x: PrefsLoadIn): DigestPrefsOut {
+  const first = firstOf(await queryRows({ db: x.db, sql: SQL.DIGEST_PREFS_ONE, params: [x.userId], map: toDigestPrefs }))
+  if (first == null) {
+    return { freq: FREQ_OFF, email: x.account, pending: FIELD_NONE }
+  }
+  if (first.email === '') {
+    return { freq: first.freq, email: x.account, pending: first.pending }
+  }
+  return first
+}
+
+/**
+ * 点了确认链接:token 与「用户 id + 待确认邮箱」对得上(常量时间比对)且 7 天内,换上新邮箱。
+ *
+ * @param x 连接与链接两参。
+ * @returns done / invalid。
+ */
+export async function confirmApply(x: ConfirmIn): ConfirmOut {
+  if (USER_ID_RE.test(x.u) === false) {
+    return US_INVALID
+  }
+  const first = firstOf(await queryRows({ db: x.db, sql: SQL.DIGEST_PREFS_ONE, params: [x.u], map: toDigestPrefs }))
+  if (first == null || first.pending === '') {
+    return US_INVALID
+  }
+  const want = confirmToken({ userId: x.u, email: first.pending })
+  if (x.t.length !== want.length || crypto.timingSafeEqual(Buffer.from(x.t), Buffer.from(want)) === false) {
+    return US_INVALID
+  }
+  const res = await x.db.query(SQL.DIGEST_PREFS_CONFIRM, [x.u, first.pending])
+  if (res.rows.length === 0) {
+    return US_INVALID
+  }
+  return US_DONE
+}
+
+/**
+ * 确认页(同退订页的壳)。
+ *
+ * @param state done / invalid。
+ * @returns 整页 HTML。
+ */
+export function confirmPageHtml(state: string): string {
+  let body = CONFIRM_MSG_INVALID
+  if (state === US_DONE) {
+    body = fill({ tpl: CONFIRM_MSG_DONE, params: { site: SITE } })
+  }
+  return fill({ tpl: UNSUB_PAGE, params: { body } })
 }
 
 // =========================================================================
@@ -678,4 +903,36 @@ export function toWeeklyStat(r: MaybeWeeklyStatRow): WeeklyStat {
  */
 export function toSampleRow(r: SampleDbRow): SampleRow {
   return { title: text(r.title), company: text(r.company), sal: text(r.sal) }
+}
+
+/**
+ * 推送收件人库行 → 收件人。
+ *
+ * @param r 库行。
+ * @returns 收件人。
+ */
+export function toDigestUser(r: DigestUserDbRow): DigestUser {
+  let pro = false
+  if (r.pro_until != null) {
+    pro = new Date(r.pro_until).getTime() > Date.now()
+  }
+  let lastDailyAt = ''
+  if (r.last_daily_at != null) {
+    lastDailyAt = new Date(r.last_daily_at).toISOString()
+  }
+  return { userId: count(r.user_id), email: text(r.email), locale: text(r.locale), pro, lastDailyAt }
+}
+
+/**
+ * 推送设置库行 → 推送设置(收件邮箱空 = 账户邮箱,由 loadDigestPrefs 补)。
+ *
+ * @param r 库行。
+ * @returns 推送设置。
+ */
+export function toDigestPrefs(r: DigestPrefsDbRow): DigestPrefs {
+  let freq = FREQ_OFF
+  if (r.freq === FREQ_DAILY || r.freq === FREQ_WEEKLY) {
+    freq = r.freq
+  }
+  return { freq, email: text(r.email), pending: text(r.pending_email) }
 }

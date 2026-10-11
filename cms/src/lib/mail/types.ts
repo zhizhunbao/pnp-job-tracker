@@ -11,6 +11,21 @@
 export type MailUserId = string | number
 
 /**
+ * `confirmToken` 的入参(换收件邮箱的确认链接;2026-10-10 批 2)。
+ */
+export type ConfirmTokenIn = {
+  /**
+   * 用户 id。
+   */
+  userId: MailUserId
+
+  /**
+   * 待确认的新邮箱。
+   */
+  email: string
+}
+
+/**
  * `sendMail` 的返回(发出去了 true)。
  */
 export type SentOut = Promise<boolean>

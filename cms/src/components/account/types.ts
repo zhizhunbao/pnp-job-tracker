@@ -24,7 +24,7 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
  * (2026-08-26 自 page.tsx 迁入)。
  * 2026-09-23 撤概览、移民档案、已保存的筛选、升级 Pro 四节后只剩三个值(新立的 resume = 我的简历)。
  */
-export type Sec = 'resume' | 'favs' | 'sjobs' | 'profile' | 'sub'
+export type Sec = 'resume' | 'sjobs' | 'profile' | 'sub'
 
 /**
  * 用户档案 + 简历存档两键。profile 上的简历存档两键(E11-08)只在本页读显示、
@@ -350,6 +350,11 @@ export type AccountPanel = {
    * 分层态(2026-10-06:「我的求职」「我的收藏」点公司名开公司弹框要它;口径同各页面门的 toJobPlan)。
    */
   plan: AcctPlan
+
+  /**
+   * 是不是 Pro(2026-10-10 批 2:「今日推荐」决定出不出「更多推荐」卡、定价框按它出档)。
+   */
+  pro: boolean
 }
 
 /**
@@ -376,82 +381,6 @@ export type RefreshIn = {
  * 重查登录态的手柄。
  */
 export type RefreshFn = () => Promise<void>
-
-/**
- * makeWeeklyToggle 的入参(周报开关:E9-02b)。
- */
-export type WeeklyToggleIn = {
-  /**
-   * 登录人 id(PATCH 地址)。
-   */
-  userId: number | string
-
-  /**
-   * 退订态落格。
-   */
-  setOptOut: (v: boolean) => void
-}
-
-/**
- * 周报勾选框的 change 手柄(只读 target.checked 一格;实参是 React.ChangeEvent,
- * 结构上兜得住)。
- */
-export type WeeklyToggleFn = (e: {
-  /**
-   * 事件源(勾选框本体)。
-   */
-  target: {
-    /**
-     * 勾着 = 订阅(存进库前语义取反成退订)。
-     */
-    checked: boolean
-  }
-}) => void
-
-/**
- * WeeklyOptin 的 props(周报开关那一行)。
- */
-export type WeeklyOptinIn = {
-  /**
-   * 登录人 id。
-   */
-  userId: number | string
-
-  /**
-   * 库里的退订现状(开关的初值;之后由 useWeeklyOptin 自管)。
-   */
-  weeklyOptOut: boolean
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
-/**
- * useWeeklyOptin 的入参。
- */
-export type WeeklyHookIn = {
-  /**
-   * 库里的退订现状。
-   */
-  weeklyOptOut: boolean
-}
-
-/**
- * 周报开关的退订态(useWeeklyOptin 出)。
- */
-export type WeeklyPanel = {
-  /**
-   * 退订现状(显示语义取反:勾 = 订阅)。
-   */
-  optOut: boolean
-
-  /**
-   * 退订落格。
-   */
-  setOptOut: (v: boolean) => void
-}
 
 /**
  * Subscription(「我的订阅」节)的 props(2026-10-04 页面门在传)。

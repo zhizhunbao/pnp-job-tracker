@@ -2,23 +2,46 @@
  * 「我的」页两张岗位清单(myjobs 组件桶)的函数:拉清单、取消收藏、洗展示行、阶段胶囊、按阶段筛。
  * 2026-10-08 进度板:列构造段撤(表换横卡),展示行多了首字母块、日期一行、状态胶囊档。
  * 2026-10-09 N6 批:职位名 / 公司名 / 城市 / 省份换 name 桶现成件,点名字开弹框的手柄与城市拼一格撤,展示行改交原值。
+ * 2026-10-10 批 2「我的求职」四段:加今日推荐段(拉推荐、洗展示行、理由胶囊、地点一行)与新岗推送段(拉 / 存设置);
+ * 未发出(草稿 + 待投)只在发出去的行出日期;阶段胶囊计数为 0 的不出。
+ * 同日 lead 走查对效果图:三张清单网页端改走通用 Table 的表格形(列构造段 pickColsOf / savedColsOf / appliedColsOf + 各 *cell.tsx,
+ * 照雇主板样张),手机一岗一张卡(MjCard);展示行并成一种 ListRow(原横卡展示行、首字母块、日期一行撤);
+ * 新岗推送段(拉 / 存设置)按 1000 行闸切进子桶 prefs/。
  *
  * @author Frank
  * @time 2026-10-06 23:20:00
  */
 import { openApply } from '@/components/apply'
 import { cssOf } from '@/components/css'
+import { provNameOf, subOf } from '@/components/name'
+import { homeProvinceOf, mapsUrl } from '@/lib/location'
 import { ymd } from '@/lib/time'
+import { ActCell } from './actcell'
+import { AddrCell } from './addrcell'
+import { AppliedOnCell } from './appliedoncell'
+import { CompanyCell } from './companycell'
 import {
-  AVATAR_CLS_HEAD, AVATAR_COLORS, AVATAR_NONE, CLS_SEP, CRED_INCLUDE, FILE_COVER_TAIL, FILE_RESUME_TAIL, JOB_HREF_HEAD,
-  KEY_APPLIED_ON, KEY_EDITED_ON, KEY_POSTED_ON, KIND_APPLIED, KIND_SAVED, METHOD_DELETE, STAGES,
-  STAGE_ALL, STAGE_FILTERS, ST_DRAFT, ST_QUEUED, TAG_NONE, TEXT_NONE, URL_APPLY_HEAD, URL_FILE_HEAD, URL_QUEUED_HEAD,
-  URL_SAVED_JOB_HEAD,
+  ACT_APPLY, ACT_CONT, ACT_COVER, ACT_OPEN, ACT_RESUME, ACT_UNSAVE, ANCHOR_SAVED, CLS_SEP, COL_ACT, COL_ADDR,
+  COL_APPLIED_ON, COL_COMPANY, COL_DEADLINE, COL_HOURS, COL_PAY, COL_POSTED, COL_SAVED_ON, COL_STATUS, COL_TERM,
+  COL_TITLE,
+  COL_WHY, CRED_INCLUDE, FILE_COVER_TAIL, FILE_RESUME_TAIL, HOURS_EN, JOB_HREF_HEAD, KEY_HOURS_HEAD, KEY_TERM_HEAD,
+  KIND_APPLIED, KIND_SAVED, LOCK_FILL, LOCK_FILL_N, METHOD_DELETE, OPEN_KIND, PRIMARY_KIND, QP_SEC, SEC_FAVS, STAGES,
+  STAGE_ALL, STAGE_FILTERS, ST_DRAFT, TERM_EN, TEXT_NONE, UNSAVE_KIND, URL_APPLY_HEAD, URL_FILE_HEAD, URL_PICKS,
+  URL_SAVED_JOB_HEAD, WHY_KEYS, WHY_TAG,
 } from './constants'
+import { DeadlineCell } from './deadlinecell'
+import { HoursCell } from './hourscell'
+import { PayCell } from './paycell'
+import { PostedCell } from './postedcell'
+import { SavedOnCell } from './savedoncell'
+import { TagsCell } from './tagscell'
+import { TermCell } from './termcell'
+import { TitleCell } from './titlecell'
 import type {
-  AvaClsIn, ByStageIn, CellRowIn, CellRowsIn, DateLineIn, FileHrefIn, LoadMyJobsIn, MaybeStageDef, MyJobCellRow,
-  MyJobItem, MyJobsRespJson, PickIn, PillClickIn,
-  StagePill, StagePillsIn, StatusTag, UnsaveIn,
+  ActBtn, AddrSubIn, ByStageIn, CellRowIn, CellRowsIn, ColsIn, FileHrefIn, FlagIn, KindNameIn, ListRow, LoadMyJobsIn,
+  LoadPicksIn, LockFill, LockedItem, MaybeStageDef, MjCol, MyJobItem, MyJobsRespJson, NamePair, PickIn, PickItem,
+  PickRowIn, PickRowsIn, PicksFact, PicksRespJson, PillClickIn, ReasonTextsIn, StagePill, StagePillsIn, TagItem,
+  UnsaveIn,
 } from './types'
 import css from './myjobs.module.css'
 
@@ -113,31 +136,143 @@ export function stageDefOf(stage: string): MaybeStageDef {
 }
 
 /**
- * 投递状态胶囊的字(只读;只收藏没投给空串)。
+ * 整张清单的展示行(我的收藏 / 我的投递;2026-10-10 批 2 网页端表格与手机卡共用,原横卡展示行 myJobCellRowsOf 换掉)。
  *
- * @param x 这一行与取词函数。
- * @returns 字样。
+ * @param x 哪张清单、清单、取词函数、落格与界面语。
+ * @returns 展示行。
  */
-export function statusTextOf(x: CellRowIn): string {
-  const def = stageDefOf(x.item.stage)
-  if (def == null) {
-    return TEXT_NONE
+export function listRowsOf(x: CellRowsIn): ListRow[] {
+  const out: ListRow[] = []
+  for (const item of x.items) {
+    out.push(listRowOf({
+      kind: x.kind,
+      filter: x.filter,
+      item,
+      items: x.items,
+      t: x.t,
+      setItems: x.setItems,
+      lang: x.lang,
+    }))
   }
-  return x.t(def.labelKey)
+  return out
 }
 
 /**
- * 投递状态胶囊的档(tag 桶;没投给空串)。
+ * 一行展示行(收藏 / 投递):职位两行、公司、地点一行 + 灰字、薪资、工时与雇佣期两名、发布 / 截止 / 收藏于 / 投递于、
+ * 胶囊(状态)、操作钮与附件链接;手机卡右上日期 = 收藏清单的收藏日期、投递清单的投递日期(未发出的行没有)。
+ * 2026-10-10 批 2:原横卡展示行 cellRowOf(首字母块、日期一行)换掉。
  *
- * @param x 这一行。
- * @returns 档。
+ * @param x 哪张清单、这一行、整张清单、取词函数、落格与界面语。
+ * @returns 展示行。
  */
-export function statusTagOf(x: CellRowIn): StatusTag {
+export function listRowOf(x: CellRowIn): ListRow {
+  const it = x.item
+  const hours = namesOf({ v: it.hours, en: HOURS_EN, keyHead: KEY_HOURS_HEAD, lang: x.lang, t: x.t })
+  const term = namesOf({ v: it.term, en: TERM_EN, keyHead: KEY_TERM_HEAD, lang: x.lang, t: x.t })
+  const appliedOn = appliedOnOf(x)
+  let savedOn = TEXT_NONE
+  let cornerDate = appliedOn
+  if (x.kind === KIND_SAVED) {
+    savedOn = ymdOf(it.savedAt)
+    cornerDate = savedOn
+  }
+  return {
+    key: String(it.id),
+    jobId: it.jobId,
+    title: it.title,
+    titleSub: subOf({ lang: x.lang, zh: it.titleZh, ko: it.titleKo }),
+    closedText: closedTextOf(x),
+    company: it.company,
+    companyZh: it.companyZh,
+    companyKo: it.companyKo,
+    companySlug: it.companySlug,
+    address: it.address,
+    addressHref: mapHrefOf(it.address),
+    addressSub: addrSubOf({ cityZh: it.cityZh, cityKo: it.cityKo, province: it.province, lang: x.lang, t: x.t }),
+    salary: it.salary,
+    hoursEn: hours.en,
+    hoursSub: hours.sub,
+    termEn: term.en,
+    termSub: term.sub,
+    posted: ymdOf(it.datePosted),
+    deadline: ymdOf(it.validThrough),
+    savedOn,
+    appliedOn,
+    cornerDate,
+    tags: tagsOf(x),
+    acts: actsOf(x),
+    files: filesOf(x),
+  }
+}
+
+/**
+ * 投递于:我的投递清单里发出去了的行(已投 / 雇主回复 / 退信)才有,未发出(草稿)与收藏清单给空串
+ * (16d「草稿 / 待确认行不出日期」)。
+ *
+ * @param x 哪张清单与这一行。
+ * @returns 年-月-日或空串。
+ */
+export function appliedOnOf(x: CellRowIn): string {
+  if (x.kind !== KIND_APPLIED || x.item.stage === ST_DRAFT) {
+    return TEXT_NONE
+  }
+  return ymdOf(x.item.updatedAt)
+}
+
+/**
+ * 胶囊:投递状态一枚(筛到单一状态时不再重复挂;只收藏没投的没有)。
+ *
+ * @param x 这一行、当前筛选与取词函数。
+ * @returns 胶囊。
+ */
+export function tagsOf(x: CellRowIn): TagItem[] {
   const def = stageDefOf(x.item.stage)
   if (def == null || x.filter !== STAGE_ALL) {
-    return TAG_NONE
+    return []
   }
-  return def.tag
+  return [{ text: x.t(def.labelKey), variant: def.tag }]
+}
+
+/**
+ * 操作钮:我的投递 未发出「继续」(主钮,就地弹投递框)、其余「打开」(带框次钮);
+ * 我的收藏 能投的「投递」(主钮)、投过的「打开」,外加「取消收藏」(带框次钮,16d)。
+ *
+ * @param x 哪张清单、这一行与取词函数。
+ * @returns 钮。
+ */
+export function actsOf(x: CellRowIn): ActBtn[] {
+  const out: ActBtn[] = []
+  if (continueHrefOf(x) !== TEXT_NONE) {
+    out.push({ key: ACT_CONT, text: x.t('mj.cont'), kind: PRIMARY_KIND, onClick: makeContinue(x), href: TEXT_NONE })
+  } else if (applyHrefOf(x) !== TEXT_NONE) {
+    out.push({ key: ACT_APPLY, text: x.t('mj.apply'), kind: PRIMARY_KIND, onClick: makeApplyOpen(x), href: TEXT_NONE })
+  } else if (jobHrefOf(x.item.jobId) !== TEXT_NONE && x.item.stage !== TEXT_NONE) {
+    out.push({ key: ACT_OPEN, text: x.t('mj.open'), kind: OPEN_KIND, onClick: null, href: jobHrefOf(x.item.jobId) })
+  }
+  const unsave = unsaveOf(x)
+  if (unsave != null) {
+    out.push({ key: ACT_UNSAVE, text: x.t('mj.unsave'), kind: UNSAVE_KIND, onClick: unsave, href: TEXT_NONE })
+  }
+  return out
+}
+
+/**
+ * 附件链接:我的投递发出去了的行给简历 / 求职信(发出时没附求职信的不出),新标签开。
+ *
+ * @param x 哪张清单、这一行与取词函数。
+ * @returns 链接。
+ */
+export function filesOf(x: CellRowIn): ActBtn[] {
+  const out: ActBtn[] = []
+  const resume = fileHrefOf({ x, tail: FILE_RESUME_TAIL })
+  if (resume !== TEXT_NONE) {
+    out.push({ key: ACT_RESUME, text: x.t('mj.col.resume'), kind: OPEN_KIND, onClick: null, href: resume })
+  }
+  const cover = coverHrefOf(x)
+  if (cover !== TEXT_NONE) {
+    out.push({ key: ACT_COVER, text: x.t('mj.col.cover'), kind: OPEN_KIND, onClick: null, href: cover })
+  }
+  return out
 }
 
 /**
@@ -154,35 +289,6 @@ export function closedTextOf(x: CellRowIn): string {
 }
 
 /**
- * 日期一行:我的求职发出去的写「投递于」,草稿 / 待投写「最近改于」;我的收藏写「发布于」;没日期给空串。
- *
- * @param x 哪张清单、这一行与取词函数。
- * @returns 一行字。
- */
-export function dateTextOf(x: CellRowIn): string {
-  if (x.kind === KIND_SAVED) {
-    return dateLineOf({ x, key: KEY_POSTED_ON, iso: x.item.datePosted })
-  }
-  if (x.item.stage === ST_DRAFT || x.item.stage === ST_QUEUED) {
-    return dateLineOf({ x, key: KEY_EDITED_ON, iso: x.item.updatedAt })
-  }
-  return dateLineOf({ x, key: KEY_APPLIED_ON, iso: x.item.updatedAt })
-}
-
-/**
- * 词条 + 年-月-日(没日期给空串)。
- *
- * @param y 造行入参、词条键与 ISO 时刻。
- * @returns 一行字。
- */
-function dateLineOf(y: DateLineIn): string {
-  if (y.iso === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  return y.x.t(y.key, { d: ymd(y.iso) })
-}
-
-/**
  * 取消收藏的手柄(只有我的收藏那张清单有)。
  *
  * @param x 哪张清单、这一行与落格。
@@ -196,109 +302,13 @@ export function unsaveOf(x: CellRowIn): (() => void) | null {
 }
 
 /**
- * 「取消收藏」的字(我的求职那张清单给空串)。
- *
- * @param x 哪张清单与取词函数。
- * @returns 字。
- */
-export function unsaveTextOf(x: CellRowIn): string {
-  if (x.kind === KIND_APPLIED) {
-    return TEXT_NONE
-  }
-  return x.t('mj.unsave')
-}
-
-/**
- * 公司首字母(大写;没公司名给问号)。
- *
- * @param company 公司名。
- * @returns 一个字。
- */
-export function avatarOf(company: string): string {
-  if (company === TEXT_NONE) {
-    return AVATAR_NONE
-  }
-  return company.slice(0, 1).toUpperCase()
-}
-
-/**
- * 首字母块的配色类名:公司名字符和对档数取模,同一家永远同一色。
- *
- * @param company 公司名。
- * @returns 类名(c0 ~ c6)。
- */
-export function avatarClsOf(company: string): string {
-  let sum = 0
-  for (const ch of company) {
-    sum += ch.charCodeAt(0)
-  }
-  return AVATAR_CLS_HEAD + String(sum % AVATAR_COLORS)
-}
-
-/**
- * 一行展示行。
- *
- * @param x 哪张清单、这一行、整张清单、取词函数与落格。
- * @returns 展示行。
- */
-export function cellRowOf(x: CellRowIn): MyJobCellRow {
-  return {
-    key: String(x.item.id),
-    stage: x.item.stage,
-    avatar: avatarOf(x.item.company),
-    avatarCls: avatarClsOf(x.item.company),
-    jobId: x.item.jobId,
-    href: jobHrefOf(x.item.jobId),
-    title: x.item.title,
-    company: x.item.company,
-    companySlug: x.item.companySlug,
-    city: x.item.city,
-    cityZh: x.item.cityZh,
-    cityKo: x.item.cityKo,
-    province: x.item.province,
-    salary: salaryOf(x),
-    dateText: dateTextOf(x),
-    statusText: statusTextOf(x),
-    statusTag: statusTagOf(x),
-    closed: x.item.closed,
-    closedText: closedTextOf(x),
-    openText: x.t('mj.open'),
-    unsaveText: unsaveTextOf(x),
-    onUnsave: unsaveOf(x),
-    resumeHref: fileHrefOf({ x, tail: FILE_RESUME_TAIL }),
-    coverHref: coverHrefOf(x),
-    resumeText: x.t('mj.col.resume'),
-    coverText: x.t('mj.col.cover'),
-    continueHref: continueHrefOf(x),
-    onContinue: makeContinue(x),
-    continueText: x.t('mj.cont'),
-    applyHref: applyHrefOf(x),
-    onApply: makeApplyOpen(x),
-    applyText: x.t('mj.apply'),
-  }
-}
-
-/**
- * 薪资(只收藏那张清单出;我的求职不出 —— 投了的人关心的是进度)。
- *
- * @param x 哪张清单与这一行。
- * @returns 薪资或空串。
- */
-export function salaryOf(x: CellRowIn): string {
-  if (x.kind !== KIND_SAVED) {
-    return TEXT_NONE
-  }
-  return x.item.salary
-}
-
-/**
  * 附件地址:我的求职那张清单发出去了的行(行 id = 投递行 id)给 /api/apply/file 的地址;草稿、待投与我的收藏给空串。
  *
  * @param y 这一行与种类尾。
  * @returns 地址或空串。
  */
 function fileHrefOf(y: FileHrefIn): string {
-  if (y.x.kind !== KIND_APPLIED || y.x.item.stage === ST_DRAFT || y.x.item.stage === ST_QUEUED) {
+  if (y.x.kind !== KIND_APPLIED || y.x.item.stage === ST_DRAFT) {
     return TEXT_NONE
   }
   return URL_FILE_HEAD + y.x.item.id + y.tail
@@ -319,6 +329,7 @@ function coverHrefOf(x: CellRowIn): string {
 
 /**
  * 草稿 / 待投「继续」的去处:我的求职那张清单、职位还在,去投递区接着写 / 发(2026-10-08)。
+ * 2026-10-10 Frank「删吧」:待投(queued)行不再列,只剩草稿。
  *
  * @param x 哪张清单与这一行。
  * @returns 投递区地址;其余给空串。
@@ -326,9 +337,6 @@ function coverHrefOf(x: CellRowIn): string {
 export function continueHrefOf(x: CellRowIn): string {
   if (x.kind !== KIND_APPLIED || x.item.jobId == null) {
     return TEXT_NONE
-  }
-  if (x.item.stage === ST_QUEUED) {
-    return URL_QUEUED_HEAD + x.item.jobId
   }
   if (x.item.stage !== ST_DRAFT) {
     return TEXT_NONE
@@ -339,6 +347,7 @@ export function continueHrefOf(x: CellRowIn): string {
 /**
  * 造「点继续」:整页跳到投递区(同页软跳转只改地址栏、不装投递流程,2026-10-08 实撞;空地址不动)。
  * 2026-10-09 A 批投递搬进弹框:草稿行就地弹投递框(不再整页跳);待投行照旧整页跳到「今日待投」卡那一张。
+ * 2026-10-10 批 2:「今日待投」卡从本页撤了,待投行并进「未发出」,同草稿就地弹投递框。
  *
  * @param x 哪张清单与这一行。
  * @returns 点击手柄。
@@ -349,11 +358,7 @@ export function makeContinue(x: CellRowIn): () => void {
     if (href === TEXT_NONE || x.item.jobId == null) {
       return
     }
-    if (x.item.stage === ST_DRAFT) {
-      openApply(x.item.jobId)
-      return
-    }
-    window.location.assign(href)
+    openApply(x.item.jobId)
   }
 }
 
@@ -388,28 +393,7 @@ export function applyHrefOf(x: CellRowIn): string {
 }
 
 /**
- * 整张清单的展示行。
- *
- * @param x 哪张清单、清单、取词函数与落格。
- * @returns 展示行。
- */
-export function myJobCellRowsOf(x: CellRowsIn): MyJobCellRow[] {
-  const out: MyJobCellRow[] = []
-  for (const item of x.items) {
-    out.push(cellRowOf({
-      kind: x.kind,
-      filter: x.filter,
-      item,
-      items: x.items,
-      t: x.t,
-      setItems: x.setItems,
-    }))
-  }
-  return out
-}
-
-/**
- * 按阶段筛清单(all = 原样)。
+ * 按阶段筛清单(all = 原样)。2026-10-10 批 2:「未发出」(draft)那一档连待投(queued)一起算;同日 Frank「删吧」:queued 行不再列,只认 draft。
  *
  * @param x 清单与筛哪一类。
  * @returns 筛后的清单。
@@ -428,7 +412,7 @@ export function byStageOf(x: ByStageIn): MyJobItem[] {
 }
 
 /**
- * 我的求职顶上那排阶段胶囊(每档带计数;当前档选中)。
+ * 我的求职顶上那排阶段胶囊(每档带计数;当前档选中)。2026-10-10 批 2:除「全部」与当前档外,计数为 0 的不出。
  *
  * @param x 清单、当前档与取词函数。
  * @returns 胶囊。
@@ -436,10 +420,14 @@ export function byStageOf(x: ByStageIn): MyJobItem[] {
 export function stagePillsOf(x: StagePillsIn): StagePill[] {
   const out: StagePill[] = []
   for (const f of STAGE_FILTERS) {
+    const n = byStageOf({ items: x.items, stage: f.key }).length
+    if (n === 0 && f.key !== STAGE_ALL && f.key !== x.stage) {
+      continue
+    }
     out.push({
       key: f.key,
       label: x.t(f.labelKey),
-      count: byStageOf({ items: x.items, stage: f.key }).length,
+      count: n,
       on: f.key === x.stage,
     })
   }
@@ -484,21 +472,316 @@ export function stagePillClsOf(on: boolean): string {
 }
 
 /**
- * 首字母块的 className:底座 + 配色类。
- *
- * @param x 配色类名。
- * @returns className。
- */
-export function avaClsOf(x: AvaClsIn): string {
-  return cssOf(css.ava) + CLS_SEP + cssOf(css[x.cls])
-}
-
-/**
  * 行身份。
  *
  * @param r 展示行。
  * @returns 收藏记录 / 投递行 id。
  */
-export function rowKeyOf(r: MyJobCellRow): string {
+export function rowKeyOf(r: ListRow): string {
   return r.key
+}
+
+
+/**
+ * 卡头计数:零条不出(空态那一行已经说了)。
+ *
+ * @param n 条数。
+ * @returns 条数;零给 null。
+ */
+export function countOf(n: number): number | null {
+  if (n === 0) {
+    return null
+  }
+  return n
+}
+
+/**
+ * ISO 时刻 → 年-月-日(没有给空串)。
+ *
+ * @param iso ISO 时刻。
+ * @returns 年-月-日。
+ */
+export function ymdOf(iso: string): string {
+  if (iso === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  return ymd(iso)
+}
+
+/**
+ * 地点一行的 Google 地图链接(没有地点给空串)。
+ *
+ * @param address 地点一行。
+ * @returns 链接。
+ */
+export function mapHrefOf(address: string): string {
+  if (address === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  return mapsUrl(address)
+}
+
+/**
+ * 地点一行底下的灰字:「市译名,省译名」(英文界面不出;只有一样有就只写那一样)。
+ *
+ * @param x 城市两种译名、省码、界面语与取词函数。
+ * @returns 灰字;不出给空串。
+ */
+export function addrSubOf(x: AddrSubIn): string {
+  const city = subOf({ lang: x.lang, zh: x.cityZh, ko: x.cityKo })
+  const prov = provNameOf({ code: x.province, lang: x.lang, t: x.t }).sub
+  if (city === TEXT_NONE) {
+    return prov
+  }
+  if (prov === TEXT_NONE) {
+    return city
+  }
+  return x.t('mj.addrSub', { c: city, p: prov })
+}
+
+/**
+ * 工时 / 雇佣期的两行名(数据层归一值 → 英文名 + 界面语灰字;16d,Frank「可以,按这个改」):
+ * full / part = Full-time 全职 / Part-time 兼职;permanent / term / seasonal / casual = Permanent 长期 / Fixed-term 定期合同 /
+ * Seasonal 季节性 / Casual 临时。没标或认不得的两格都空。
+ *
+ * @param x 归一值、英文名表、词条头、界面语与取词函数。
+ * @returns 两行名。
+ */
+export function namesOf(x: KindNameIn): NamePair {
+  const en = x.en[x.v]
+  if (en == null) {
+    return { en: TEXT_NONE, sub: TEXT_NONE }
+  }
+  const local = x.t(x.keyHead + x.v)
+  return { en, sub: subOf({ lang: x.lang, zh: local, ko: local }) }
+}
+
+/**
+ * 网页端「今日推荐」的列(16d):职位 / 公司 / 地址 / 薪资 / 工时 / 雇佣期 / 发布日期 / 截止日期 / 为什么推荐 / 操作。
+ *
+ * @param x 取词函数。
+ * @returns 列。
+ */
+export function pickColsOf(x: ColsIn): MjCol<ListRow>[] {
+  return baseColsOf(x).concat([
+    { key: COL_WHY, label: x.t('mj.col.why'), render: TagsCell },
+    { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true },
+  ])
+}
+
+/**
+ * 网页端「我的收藏」的列:职位 / 公司 / 地址 / 薪资 / 工时 / 雇佣期 / 发布日期 / 截止日期 / 收藏于 / 操作。
+ *
+ * @param x 取词函数。
+ * @returns 列。
+ */
+export function savedColsOf(x: ColsIn): MjCol<ListRow>[] {
+  return baseColsOf(x).concat([
+    { key: COL_SAVED_ON, label: x.t('mj.col.savedOn'), render: SavedOnCell, nowrap: true },
+    { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true },
+  ])
+}
+
+/**
+ * 网页端「我的投递」的列:职位 / 公司 / 地址 / 薪资 / 工时 / 雇佣期 / 发布日期 / 截止日期 / 状态 / 投递于 / 操作。
+ *
+ * @param x 取词函数。
+ * @returns 列。
+ */
+export function appliedColsOf(x: ColsIn): MjCol<ListRow>[] {
+  return baseColsOf(x).concat([
+    { key: COL_STATUS, label: x.t('mj.col.status'), render: TagsCell },
+    { key: COL_APPLIED_ON, label: x.t('mj.col.appliedOn'), render: AppliedOnCell, nowrap: true },
+    { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true },
+  ])
+}
+
+/**
+ * 三张表共用的前八列(照职位板)。
+ *
+ * @param x 取词函数。
+ * @returns 列。
+ */
+function baseColsOf(x: ColsIn): MjCol<ListRow>[] {
+  return [
+    { key: COL_TITLE, label: x.t('mj.col.title'), render: TitleCell },
+    { key: COL_COMPANY, label: x.t('mj.col.company'), render: CompanyCell },
+    { key: COL_ADDR, label: x.t('mj.col.addr'), render: AddrCell },
+    { key: COL_PAY, label: x.t('mj.col.pay'), render: PayCell, nowrap: true },
+    { key: COL_HOURS, label: x.t('mj.col.hours'), render: HoursCell, nowrap: true },
+    { key: COL_TERM, label: x.t('mj.col.term'), render: TermCell, nowrap: true },
+    { key: COL_POSTED, label: x.t('mj.col.posted'), render: PostedCell, nowrap: true },
+    { key: COL_DEADLINE, label: x.t('mj.col.deadline'), render: DeadlineCell, nowrap: true },
+  ]
+}
+
+/**
+ * 造「拉一次推荐」:带上浏览器按时区预选的省(他没答所在省时服务端用它);失败拨「拉失败了」。
+ *
+ * @param x 两个落格。
+ * @returns 拉推荐的函数。
+ */
+export function makeLoadPicks(x: LoadPicksIn): () => Promise<void> {
+  return async function loadPicks(): Promise<void> {
+    try {
+      const r = await fetch(URL_PICKS + homeProvinceOf(), { credentials: CRED_INCLUDE })
+      if (r.ok === false) {
+        x.setFailed(true)
+        return
+      }
+      x.setData(toPicksFact(await r.json() as PicksRespJson))
+    } catch {
+      x.setFailed(true)
+    }
+  }
+}
+
+/**
+ * 推荐回包 → 推荐(行构造器:缺席按空读)。
+ *
+ * @param d 回包。
+ * @returns 推荐。
+ */
+export function toPicksFact(d: PicksRespJson): PicksFact {
+  let picks: PickItem[] = []
+  if (d.picks != null) {
+    picks = d.picks
+  }
+  let more = 0
+  if (d.more != null) {
+    more = d.more
+  }
+  let locked: LockedItem[] = []
+  if (d.locked != null) {
+    locked = d.locked
+  }
+  return { picks, more, locked }
+}
+
+/**
+ * 推荐的展示行。
+ *
+ * @param x 推荐、界面语与取词函数。
+ * @returns 展示行。
+ */
+export function pickRowsOf(x: PickRowsIn): ListRow[] {
+  const out: ListRow[] = []
+  for (const item of x.items) {
+    out.push(pickRowOf({ item, lang: x.lang, t: x.t }))
+  }
+  return out
+}
+
+/**
+ * 一行推荐的展示行:同收藏 / 投递的展示行,胶囊是理由(tag 桶 ok 档,只放真的),操作只有主钮「投递」(就地弹投递框),
+ * 手机卡右上是发布日期。
+ *
+ * @param x 这一行、界面语与取词函数。
+ * @returns 展示行。
+ */
+export function pickRowOf(x: PickRowIn): ListRow {
+  const it = x.item
+  const hours = namesOf({ v: it.hours, en: HOURS_EN, keyHead: KEY_HOURS_HEAD, lang: x.lang, t: x.t })
+  const term = namesOf({ v: it.term, en: TERM_EN, keyHead: KEY_TERM_HEAD, lang: x.lang, t: x.t })
+  const tags: TagItem[] = []
+  for (const text of reasonTextsOf({ reasons: it.reasons, program: it.program, t: x.t })) {
+    tags.push({ text, variant: WHY_TAG })
+  }
+  const posted = ymdOf(it.datePosted)
+  return {
+    key: String(it.id),
+    jobId: it.id,
+    title: it.title,
+    titleSub: subOf({ lang: x.lang, zh: it.titleZh, ko: it.titleKo }),
+    closedText: TEXT_NONE,
+    company: it.company,
+    companyZh: it.companyZh,
+    companyKo: it.companyKo,
+    companySlug: it.companySlug,
+    address: it.address,
+    addressHref: mapHrefOf(it.address),
+    addressSub: addrSubOf({ cityZh: it.cityZh, cityKo: it.cityKo, province: it.province, lang: x.lang, t: x.t }),
+    salary: it.salary,
+    hoursEn: hours.en,
+    hoursSub: hours.sub,
+    termEn: term.en,
+    termSub: term.sub,
+    posted,
+    deadline: ymdOf(it.validThrough),
+    savedOn: TEXT_NONE,
+    appliedOn: TEXT_NONE,
+    cornerDate: posted,
+    tags,
+    acts: [
+      { key: ACT_APPLY, text: x.t('mj.apply'), kind: PRIMARY_KIND, onClick: makeOpenApply(it.id), href: TEXT_NONE },
+    ],
+    files: [],
+  }
+}
+
+/**
+ * 理由码 → 胶囊的字(认不得的码不出;省提名那枚带项目简称)。
+ *
+ * @param x 理由码、项目简称与取词函数。
+ * @returns 胶囊的字。
+ */
+export function reasonTextsOf(x: ReasonTextsIn): string[] {
+  const out: string[] = []
+  for (const code of x.reasons) {
+    const key = WHY_KEYS[code]
+    if (key != null) {
+      out.push(x.t(key, { p: x.program }))
+    }
+  }
+  return out
+}
+
+/**
+ * 造「点投递」:就地弹投递框。
+ *
+ * @param jobId 职位号。
+ * @returns 点击手柄。
+ */
+export function makeOpenApply(jobId: number): () => void {
+  return function openIt(): void {
+    openApply(jobId)
+  }
+}
+
+/**
+ * 造「拨一个开关」(开 / 关定价框)。
+ *
+ * @param x 落格与拨成什么。
+ * @returns 点击手柄。
+ */
+export function makeFlag(x: FlagIn): () => void {
+  return function flag(): void {
+    x.set(x.v)
+  }
+}
+
+/**
+ * 旧深链 `?sec=favs`(「我的收藏」页签撤了,落「我的求职」):收藏卡挂上后滚过去。
+ */
+export function scrollSavedIfLinked(): void {
+  if (new URLSearchParams(window.location.search).get(QP_SEC) !== SEC_FAVS) {
+    return
+  }
+  const el = document.getElementById(ANCHOR_SAVED)
+  if (el != null) {
+    el.scrollIntoView()
+  }
+}
+
+/**
+ * 锁住那条用哪份假字纹理(两份轮着用)。
+ *
+ * @param i 第几条。
+ * @returns 一份纹理。
+ */
+export function lockFillOf(i: number): LockFill {
+  if (i % LOCK_FILL_N === 0) {
+    return LOCK_FILL.even
+  }
+  return LOCK_FILL.odd
 }

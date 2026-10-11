@@ -61,6 +61,8 @@ export const SEC_RESUME = 'resume'
  * 我的收藏节的节标识(#62A:同一份收藏数据的纯列表视图)。
  * 它也是收藏列表件的视图档名 —— 那一件按 `variant='favs'` 从看板切成纯列表,
  * 说的是同一件事(这一节要的是收藏视图),所以两处共用这一个名字。
+ * 2026-10-10 批 2(16b,Frank「单独一个我的收藏没意义」):「我的收藏」页签撤,收藏表搬进「我的求职」成一张分区卡;
+ * 本常量只剩旧深链 `?sec=favs` 的认法 —— secLinkOf 把它落到「我的求职」(收藏卡由 myjobs 桶滚过去)。
  */
 export const SEC_FAVS = 'favs'
 
@@ -565,10 +567,10 @@ export const RF_ZOOM_KIND = 'secondary'
  * 2026-10-04 Frank「升级 Pro 这个删了,放到 我的 模块里,加一个我的订阅」:末尾加回一节 我的订阅 sub(深链 `?sec=sub`)。
  * 2026-10-08 照 AIApply 重设计(10-05 定稿第 1 条,V1 搬家):顺序换成 我的求职 / 我的收藏 / 我的简历 / 我的订阅;深链键不改。
  * 2026-10-09「我的档案」批(Frank「用户需要知道自己之前回答的问题」):我的简历后面加一节 我的档案 profile(深链 `?sec=profile`)。
+ * 2026-10-10 批 2(16b):「我的收藏」页签撤,页签剩 我的求职 / 我的简历 / 我的档案 / 我的订阅;旧深链 `?sec=favs` 见 secLinkOf。
  */
 export const SEC_TABS = [
   { sec: 'sjobs', labelKey: 'sj.title' },
-  { sec: 'favs', labelKey: 'fav.title' },
   { sec: 'resume', labelKey: 'rm.arch.title' },
   { sec: 'profile', labelKey: 'pf.title' },
   { sec: 'sub', labelKey: 'sub.title' },
@@ -661,18 +663,6 @@ export const MIME_JSON = 'application/json'
  */
 export const METHOD_DELETE = 'DELETE'
 
-/**
- * 周报开关的统计事件名(E5-07 §3.4 漏斗第 3 步:周报是留存钩的主力,
- * 订阅/退订都要能看见 —— 退订量本身就是信号)。
- * 2026-09-26 /fe Frank:同名进第一方漏斗白名单(lib/funnel 的 ALIAS;只计数不成链),
- * 订阅 / 退订按开关值分组(true / false)。
- */
-export const EV_WEEKLY = 'weekly-optin'
-
-/**
- * 周报开关勾选框的 input 类型字(DOM 定值;平台串起名挂注释)。
- */
-export const CHECKBOX_TYPE = 'checkbox'
 
 
 /**

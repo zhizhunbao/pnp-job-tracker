@@ -1651,7 +1651,7 @@ async function majorBroadsOf(x: MajorBroadsUnionIn): MajorBroadsUnionOut {
  * @returns 档案。
  */
 export async function loadQuizProfile(x: ProfileLoadIn): QuizProfileOut {
-  const got = firstOf(await queryRows({ db: x.db, sql: SQL.QUEUE_USER_ANSWERS, params: [x.userId], map: toProfileBasic }))
+  const got = firstOf(await queryRows({ db: x.db, sql: SQL.QUIZ_USER_ANSWERS, params: [x.userId], map: toProfileBasic }))
   let b: ProfileBasicFact = { goal: 0, majors: [], nocs: [], prov: STR_NONE, abroad: false, city: STR_NONE }
   if (got != null) {
     b = got
