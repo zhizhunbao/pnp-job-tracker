@@ -620,7 +620,7 @@ export const jobsZh = {
   'pnptl.range': '{a}–{b} 个月', 'pnptl.uptoDays': '最长 {n} 天', 'pnptl.uptoMonths': '最长 {n} 个月', 'pnptl.about': '约 {n} 个月', 'pnptl.aboutDays': '约 {n} 天',
   'pnptl.unknown': '本站未收录',
   'pnpstep.f.expLocalFirst': '在本省全职满 {n} 个月(近 {w} 个月内)',
-  'pnpstep.s.employerRegister': '雇主登记', 'pnpstep.s.offer': '拿本省雇主 offer', 'pnpstep.s.work': '在这份工作上干够', 'pnpstep.s.workLocal': '在本省工作满',
+  'pnpstep.s.employerRegister': '雇主登记', 'pnpstep.s.offer': '拿本省雇主 offer', 'pnpstep.s.work': '在现雇主处工作满', 'pnpstep.s.workLocal': '在本省工作满',
   'pnpstep.s.epa': '雇主递职位审批', 'pnpstep.s.eeProfile': '建 EE 档案', 'pnpstep.s.eoi': '递 EOI', 'pnpstep.s.draw': '进池与抽选',
   'pnpstep.s.confirm': '确认职位、递申请', 'pnpstep.s.apply': '收邀请、递申请', 'pnpstep.s.review': '省里审批',
   'pnpstep.s.settle': '做安置计划', 'pnpstep.s.endorse': '雇主递省背书', 'pnpstep.s.pr': '拿提名,递永居',
