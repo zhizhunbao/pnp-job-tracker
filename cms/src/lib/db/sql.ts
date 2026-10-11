@@ -3328,8 +3328,9 @@ export const INBOX_SEED = `SELECT COALESCE(NULLIF(p.sender_name, ''), u.email) A
 
 /**
  * 回调认人:地址名 → 用户 id、转发开关、账户邮箱。inbox_aliases.alias 唯一索引管这条。$1=地址名。
+ * 2026-10-11 批 5:多取界面语 u.locale(转发信按它出三语)。
  */
-export const INBOX_ALIAS_USER = `SELECT a.user_id, a.forward, u.email FROM inbox_aliases a JOIN users u ON u.id = a.user_id
+export const INBOX_ALIAS_USER = `SELECT a.user_id, a.forward, u.email, u.locale FROM inbox_aliases a JOIN users u ON u.id = a.user_id
      WHERE a.alias = $1`
 
 /**
@@ -3430,3 +3431,37 @@ export const INBOX_THREAD_MSGS = `SELECT m.id, m.application_id, m.direction, m.
        left(m.body_text, 20000) AS body_text, m.received_at, m.read_at, m.reply_of, a.job_title
      FROM inbox_messages m LEFT JOIN applications a ON a.id = m.application_id
      WHERE m.user_id = $1 AND m.application_id = $2 ORDER BY m.received_at`
+
+// =========================================================================
+// 37. 顶栏通知铃铛(2026-10-11 批 5「提示统一 + 顶栏铃铛」;表 docs/sql/notify-20261011.sql:notify_seen;
+//     清单从既有表按人现查,每段都走本人的索引;读写方只有 lib/notify)
+// =========================================================================
+
+/**
+ * 本人的通知清单:雇主回信、退信、近 N 天发出的投递、今日推荐那一条(恒有一行,条数由调用方补、为 0 就丢),
+ * 新的在前;每行带「比上次看铃铛新」。每段先各自截上限再合(各走本人的索引:inbox_messages_user_idx、
+ * applications_user_status_idx、applications_user_sent_idx),今日推荐的时刻 = 多伦多当天零点。
+ * $1=用户 id,$2=条数上限,$3=发出的投递算几天内。
+ */
+export const NOTIFY_LIST = `SELECT k.kind, k.ref_id, k.label, k.at, (k.at > COALESCE(s.seen_at, '-infinity'::timestamptz)) AS unseen
+     FROM (
+       (SELECT 'reply' AS kind, m.id AS ref_id, COALESCE(a.company, NULLIF(m.from_name, ''), m.from_addr) AS label,
+               m.received_at AS at
+          FROM inbox_messages m LEFT JOIN applications a ON a.id = m.application_id
+         WHERE m.user_id = $1 AND m.direction = 'in' ORDER BY m.received_at DESC LIMIT $2)
+       UNION ALL
+       (SELECT 'bounced', a.id, a.company, a.updated_at FROM applications a
+         WHERE a.user_id = $1 AND a.status = 'bounced' ORDER BY a.updated_at DESC LIMIT $2)
+       UNION ALL
+       (SELECT 'sent', a.id, a.company, a.sent_at FROM applications a
+         WHERE a.user_id = $1 AND a.sent_at > now() - make_interval(days => $3::int) ORDER BY a.sent_at DESC LIMIT $2)
+       UNION ALL
+       SELECT 'picks', 0, '', date_trunc('day', now() AT TIME ZONE 'America/Toronto') AT TIME ZONE 'America/Toronto'
+     ) k LEFT JOIN notify_seen s ON s.user_id = $1
+     ORDER BY k.at DESC LIMIT $2::int + 1`
+
+/**
+ * 记本人看过铃铛了(没行建行,有行改时刻)。$1=用户 id。
+ */
+export const NOTIFY_SEEN = `INSERT INTO notify_seen (user_id, seen_at) VALUES ($1, now())
+     ON CONFLICT (user_id) DO UPDATE SET seen_at = now()`

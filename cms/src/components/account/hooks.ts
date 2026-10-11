@@ -22,7 +22,7 @@ import { PF_LOAD_BUSY, RF_ERR_NONE, SEC_DEFAULT, ZOOM_HOME, ZOOM_MAX, ZOOM_MIN, 
 import {
   makeAdd, makeAskOf, makeDefaultOf, makeDeleteOf, makeDragLeave, makeDragOver, makeFileDrop, makeFilePick,
   makePickerOf, makePreviewClose, makePreviewOf, makeRefresh, makeSureClear, makeResumeListLoad,
-  makeResumeUpload, okFlagOf,
+  makeResumeUpload, payOkToast,
   makeLettersLoad, makeOnApplied, makePaymentsLoad, makeSentCountLoad,
   planOf, renderPdfPages, secLinkOf, showPdfPage,
   applyViewTo, makeDocDrop, makeGripDown, makeGripMove, makeGripUp, makePageTurn, makeWheelBind, makeZoomHome,
@@ -49,6 +49,8 @@ import type {
  * 投递搬进全站骨架上的投递框,「今日待投」不再为它让位;发出后的刷新改由页面门里的 ApplySentSync 调 onApplied。
  * 2026-10-10 批 3:多一格收件箱未读数(「收件箱」页签红点;挂上拉一次,收件箱里读了一封再拉)。
  * 2026-10-11「进我的求职先弹五题」:多一格答档案代数(五题弹框关一次加一,今日推荐按它现算重拉)。
+ * 2026-10-11 批 5「提示统一 + 顶栏铃铛」:付款成功与「已发给 <公司>」改右上角提示(toast 桶),payOk、sentTo 两格随两条绿条撤;
+ * 回跳标记改在挂上时读一次就弹、弹完洗掉。
  *
  * @returns 门(page.tsx)要的整块面板:状态 + 手柄。
  */
@@ -59,18 +61,15 @@ export function useAccountPage(): AccountPanel {
 
   const [me, setMe] = useState<Me>(null)
   const [checked, setChecked] = useState(false)
-  const [payOk, setPayOk] = useState(false)
   const [appliedGen, setAppliedGen] = useState(0)
   const [sent, setSent] = useState(0)
-  const [sentTo, setSentTo] = useState<string | null>(null)
   const [unread, setUnread] = useState(0)
   const [askedGen, setAskedGen] = useState(0)
   const reloadSent = makeSentCountLoad({ setSent })
 
   useEffect(function readPayOk() {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 故意分两步:地址栏参数只有浏览器里读得到,服务端画首帧时没有,活过来后再补
-    setPayOk(okFlagOf())
-  }, [])
+    payOkToast(t)
+  }, [t])
 
   useEffect(function readSecLink() {
     const s = secLinkOf()
@@ -97,14 +96,12 @@ export function useAccountPage(): AccountPanel {
     sec,
     me,
     checked,
-    payOk,
     onPick: setSec,
     plan: planOf(me),
     pro: planOf(me).isPro,
     appliedGen,
-    onApplied: makeOnApplied({ setGen: setAppliedGen, setSentTo, reloadSent }),
+    onApplied: makeOnApplied({ setGen: setAppliedGen, t, reloadSent }),
     sent,
-    sentTo,
     unread,
     askedGen,
     onAsked: makeGenBump({ setGen: setAskedGen }),

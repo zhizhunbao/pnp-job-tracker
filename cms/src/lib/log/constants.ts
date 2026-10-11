@@ -864,6 +864,36 @@ export const INBOX_LOG = {
 } as const
 
 /**
+ * 通知域的日志字面量(2026-10-11 批 5「提示统一 + 顶栏铃铛」)。
+ */
+export const NOTIFY_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'notify',
+
+  /**
+   * 通知清单没查成(后接用户 id;notify_seen 表没建也落这里)。
+   */
+  listFailed: 'list failed user=',
+
+  /**
+   * 记「看过了」没写成(后接用户 id)。
+   */
+  seenFailed: 'seen failed user=',
+
+  /**
+   * 今日推荐条数没算成(后接用户 id;铃铛照出别的几样,推荐那一条不出)。
+   */
+  picksFailed: 'picks failed user=',
+
+  /**
+   * 原因段。
+   */
+  whyFrag: ' why=',
+} as const
+
+/**
  * 档案域的日志字面量(2026-08-22 profile 定型批立)。
  */
 export const PROFILE_LOG = {

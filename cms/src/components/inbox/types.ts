@@ -160,11 +160,6 @@ export type InboxPanel = {
   onForward: (e: React.ChangeEvent<HTMLInputElement>) => void
 
   /**
-   * 转发开关没存上那一句(没有给空串)。
-   */
-  fwdNote: string
-
-  /**
    * 开「打开这次投递」(阅读区那一封挂的投递)。
    */
   onOpenApp: () => void
@@ -280,9 +275,24 @@ export type ForwardMakeIn = {
   setData: (v: InboxView) => void
 
   /**
-   * 写没存上那一句。
+   * 取词函数。
    */
-  setNote: (v: string) => void
+  t: TFn
+}
+
+/**
+ * `forwardSavedOf` 的入参(2026-10-11 批 5)。
+ */
+export type ForwardSavedIn = {
+  /**
+   * 存上的开 / 关。
+   */
+  forward: boolean
+
+  /**
+   * 账户邮箱(开着时转到哪)。
+   */
+  account: string
 
   /**
    * 取词函数。

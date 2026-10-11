@@ -9,6 +9,7 @@
  */
 export {
   IconArrowUp,
+  IconBell,
   IconBriefcase,
   IconMoveUpRight,
   IconChart,
@@ -57,4 +58,5 @@ export {
   IconUsers,
   IconWarn,
   IconX,
+  IconXCircle,
 } from './icons'

@@ -11,6 +11,7 @@
 import { cssOf } from '@/components/css'
 import { toJobPlan } from '@/components/jobs'
 import { missingStepsOf } from '@/components/gate'
+import { toast } from '@/components/toast'
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
 import { log, PROFILE_LOG } from '@/lib/log'
 import { saveBasics } from '@/lib/quiz'
@@ -29,6 +30,7 @@ import {
   PAY_COL_ITEM, ST_DRAFT, URL_APPLY_HEAD, URL_LETTERS, URL_LETTER_FILE_HEAD, URL_PAYMENTS, URL_SENT_COUNT,
   PF_ERR_EMPTY, PF_FOLD_N, PF_GOAL_JOBS, PF_GOAL_JOBS_KEY, PF_GOAL_PR, PF_GOAL_PR_KEY, PF_LOAD_FAIL, PF_LOAD_OK,
   URL_PROFILE, EV_INBOX_UNREAD, SEC_INBOX, URL_INBOX_COUNT, PF_ERR_ASKED,
+  PAY_OK_KIND, SENT_NOTICE_KEY, SENT_NOTICE_KIND,
 } from './constants'
 import type {
   AskedDoneIn, GenBumpIn, QuizOpenIn,
@@ -158,6 +160,23 @@ export function okFlagOf(): boolean {
 }
 
 /**
+ * Stripe 回跳带成功标记就弹一条右上角提示,随手把 `?ok=1` 从地址栏洗掉(2026-10-11 批 5「提示统一 + 顶栏铃铛」:
+ * 原先是挂在右列最上面的绿条 PayOkNotice,刷新还在;改成提示后只弹一次,刷新、切语言都不再弹)。
+ *
+ * @param t 取词函数。
+ * @returns 无。
+ */
+export function payOkToast(t: TFn): void {
+  if (okFlagOf() === false) {
+    return
+  }
+  toast({ kind: PAY_OK_KIND, title: t('acct.payOk') })
+  const url = new URL(window.location.href)
+  url.searchParams.delete(QP_OK)
+  window.history.replaceState(null, TEXT_NONE, url.pathname + url.search + url.hash)
+}
+
+/**
  * 账户下拉深链(E11-02):`?sec=`(profile/favs/sjobs/saved/buy/overview)直落对应节。
  * 白名单就是 SEC_TABS 的键 —— 不在表里的值不认,返回 null 让页面留在默认节。
  * 2026-09-23 SEC_TABS 撤到三节后白名单跟着收窄成 resume/favs/sjobs:旧链接带
@@ -195,14 +214,15 @@ function genNextOf(n: number): number {
 
 /**
  * 造「投递区发出去了」的手柄(2026-10-08 故事 6):表重挂、成功条写上公司名、重拉已投几封。
+ * 2026-10-11 批 5「提示统一 + 顶栏铃铛」:「已发给 <公司>」从表上方的绿条 SentNotice 改成右上角提示(投递框自己的已投递一步照旧摆它)。
  *
- * @param x 三个落格。
+ * @param x 两个落格与取词函数。
  * @returns 手柄。
  */
 export function makeOnApplied(x: OnAppliedIn): (y: AppliedSentOut) => void {
   return function onApplied(y: AppliedSentOut): void {
     x.setGen(genNextOf)
-    x.setSentTo(y.company)
+    toast({ kind: SENT_NOTICE_KIND, title: x.t(SENT_NOTICE_KEY, { co: y.company }) })
     void x.reloadSent()
   }
 }

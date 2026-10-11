@@ -58,6 +58,8 @@
  * 页签带红色未读数);门里再摆只读投递框宿主 AppViewHost(地址栏 `?app=` 就弹:我的投递「打开」、收件箱「打开这次投递」)。
  * 2026-10-11「进我的求职先弹五题」(Frank「一共没几个问题啊 都问不行吗」):「我的求职」节多摆 JobsQuiz —— 档案五样有空着的
  * 自动弹「修改」同一个弹框、只问空着的;关了今日推荐按答档案代数现算重拉。
+ * 2026-10-11 批 5「提示统一 + 顶栏铃铛」(Frank「所有的消息 是不是应该统一放到一个地方显示」):右列最上面的付款成功条 PayOkNotice
+ * 与「我的求职」表上方的「已发给 <公司>」成功条 SentNotice 撤,两句都改右上角提示(全站骨架上的 ToastHost)。
  *
  * @author Frank
  * @time 2026-07-02 00:00:00
@@ -74,10 +76,8 @@ import {
   AccountRedirect,
   CoverLetters,
   JobsQuiz,
-  PayOkNotice,
   Profile,
   ResumeFile,
-  SentNotice,
   Subscription,
   SEC_INBOX,
   SEC_PROFILE,
@@ -106,8 +106,6 @@ export default function AccountPage() {
         {a.checked && a.me != null && (
           <AccountColumns
             nav={<AccountNav sec={a.sec} t={a.t} onPick={a.onPick} unread={a.unread} />}>
-            {a.payOk && <PayOkNotice t={a.t} />}
-            {a.sec === SEC_SJOBS && a.sentTo != null && <SentNotice t={a.t} company={a.sentTo} />}
             {a.sec === SEC_RESUME && <ResumeFile t={a.t} />}
             {a.sec === SEC_RESUME && <CoverLetters t={a.t} />}
             {a.sec === SEC_SJOBS && <Picks gen={a.appliedGen} asked={a.askedGen} t={a.t} pro={a.pro} />}

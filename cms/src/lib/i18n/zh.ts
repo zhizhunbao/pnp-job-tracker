@@ -918,6 +918,10 @@ export const jobsZh = {
   'ib.title': '收件箱', 'ib.forward': '同时转到 {e}', 'ib.empty': '还没有雇主回信',
   'ib.reply': '回复', 'ib.openApp': '打开这次投递', 'ib.noSubject': '(无主题)', 'ib.mine': '我的回复',
   'ib.send': '发送', 'ib.cancel': '取消', 'ib.e.send': '没发出去,再试一次', 'ib.e.off': '发信还没开通',
+  // 2026-10-11 批 5「提示统一 + 顶栏铃铛」:右上角提示的几句与顶栏通知面板
+  'mj.pushMailSent': '确认信已发出', 'ib.fwdOn': '回信会同时转到 {e}', 'ib.fwdOff': '回信不再转发',
+  'nt.title': '通知', 'nt.empty': '暂无通知', 'nt.fail': '通知没拉下来,稍后再试',
+  'nt.reply': '{co} 回信了', 'nt.bounced': '投给 {co} 的信被退回', 'nt.sent': '已发给 {co}', 'nt.picks': '今日推荐 {n} 条已更新',
   'av.job': '职位信息', 'av.replies': '雇主回复', 'av.noReply': '还没有雇主回复', 'av.fwdTo': '回信同时转到 {e}',
   'av.content': '投递内容', 'av.sentAt': '已发出 {d}',
   'ap.sentOn': '这个职位已于 {d} 投递',

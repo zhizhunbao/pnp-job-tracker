@@ -1,0 +1,364 @@
+/*
+ * toast 域的私有样式(2026-10-11 批 5,照 Azure 门户的通知卡):白卡 + 左边档位色条 + 图标,粗体一行、灰字副行、右上 ×。
+ * 档位色取全站色板(--ok / --warn / --danger),与 notice 桶的三色同义。
+ */
+
+/*
+ * 播报区:网页端贴右上(顶栏下方),卡竖排;区本身不挡点击,只有卡接点击。
+ */
+.host {
+  /*
+   * 跟着视口,不随页面滚。
+   */
+  position: fixed;
+
+  /*
+   * 顶栏下沿再留 8px。
+   */
+  top: 64px;
+
+  /*
+   * 贴右,留 16px。
+   */
+  right: 16px;
+
+  /*
+   * 压过弹框(弹框层 50 起,一层层往上叠)。
+   */
+  z-index: 1000;
+
+  /*
+   * 卡竖排。
+   */
+  display: flex;
+
+  /*
+   * 上下排。
+   */
+  flex-direction: column;
+
+  /*
+   * 卡与卡的间距。
+   */
+  gap: 8px;
+
+  /*
+   * 网页端卡宽。
+   */
+  width: 360px;
+
+  /*
+   * 空白处让点击穿过去。
+   */
+  pointer-events: none;
+}
+
+/*
+ * 一张卡:白底、细边、阴影,左边 4px 档位色条。
+ */
+.card {
+  /*
+   * 卡接点击(区本身不接)。
+   */
+  pointer-events: auto;
+
+  /*
+   * 图标、正文、× 排一行。
+   */
+  display: flex;
+
+  /*
+   * 顶对齐(副行折下来时图标与 × 不跑到中间)。
+   */
+  align-items: flex-start;
+
+  /*
+   * 件与件的间距。
+   */
+  gap: 10px;
+
+  /*
+   * 白卡底。
+   */
+  background: var(--card);
+
+  /*
+   * 浅灰描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 左边档位色条(色由档位类给)。
+   */
+  border-left-width: 4px;
+
+  /*
+   * 圆角。
+   */
+  border-radius: 10px;
+
+  /*
+   * 浮起来的阴影。
+   */
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.12);
+
+  /*
+   * 内衬。
+   */
+  padding: 12px 10px 12px 12px;
+
+  /*
+   * 正文字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 正文色。
+   */
+  color: var(--text);
+}
+
+/*
+ * 成功一档:绿条绿图标。
+ */
+.ok {
+  /*
+   * 左条绿。
+   */
+  border-left-color: var(--ok);
+}
+
+/*
+ * 提醒一档:琥珀条。
+ */
+.warn {
+  /*
+   * 左条琥珀。
+   */
+  border-left-color: var(--warn);
+}
+
+/*
+ * 出错一档:红条。
+ */
+.err {
+  /*
+   * 左条红。
+   */
+  border-left-color: var(--danger);
+}
+
+/*
+ * 图标格:随档位上色。
+ */
+.icon {
+  /*
+   * 图标比正文大一号。
+   */
+  font-size: 18px;
+
+  /*
+   * 与粗体行对齐。
+   */
+  line-height: 20px;
+
+  /*
+   * 不被正文挤窄。
+   */
+  flex: none;
+}
+
+/*
+ * 成功档的图标色。
+ */
+.ok .icon {
+  /*
+   * 绿。
+   */
+  color: var(--ok);
+}
+
+/*
+ * 提醒档的图标色。
+ */
+.warn .icon {
+  /*
+   * 琥珀。
+   */
+  color: var(--warn);
+}
+
+/*
+ * 出错档的图标色。
+ */
+.err .icon {
+  /*
+   * 红。
+   */
+  color: var(--danger);
+}
+
+/*
+ * 正文区:粗体一行 + 灰字副行竖排,吃剩余宽。
+ */
+.text {
+  /*
+   * 吃剩余宽。
+   */
+  flex: 1;
+
+  /*
+   * 允许缩到比内容窄(长字折行而不是撑破卡)。
+   */
+  min-width: 0;
+
+  /*
+   * 竖排。
+   */
+  display: flex;
+
+  /*
+   * 上下排。
+   */
+  flex-direction: column;
+
+  /*
+   * 两行之间的间距。
+   */
+  gap: 2px;
+}
+
+/*
+ * 粗体那一行。
+ */
+.title {
+  /*
+   * 粗体。
+   */
+  font-weight: 600;
+
+  /*
+   * 行高与图标对齐。
+   */
+  line-height: 20px;
+
+  /*
+   * 长邮箱、长公司名在任意处折。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 灰字副行。
+ */
+.detail {
+  /*
+   * 小一号。
+   */
+  font-size: 13px;
+
+  /*
+   * 灰字。
+   */
+  color: var(--text2);
+
+  /*
+   * 长字折行。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 右上 ×:小方钮,灰字,悬停变深。
+ */
+.close {
+  /*
+   * 不被正文挤窄。
+   */
+  flex: none;
+
+  /*
+   * 图标居中。
+   */
+  display: inline-flex;
+
+  /*
+   * 横向居中。
+   */
+  justify-content: center;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 点击区宽。
+   */
+  width: 24px;
+
+  /*
+   * 点击区高。
+   */
+  height: 24px;
+
+  /*
+   * 去掉钮底内衬。
+   */
+  padding: 0;
+
+  /*
+   * 灰字。
+   */
+  color: var(--text3);
+
+  /*
+   * 圆角。
+   */
+  border-radius: 6px;
+}
+
+/*
+ * × 悬停。
+ */
+.close:hover {
+  /*
+   * 深一档。
+   */
+  color: var(--text);
+
+  /*
+   * 浅灰底。
+   */
+  background: var(--hairline);
+}
+
+/*
+ * 窄屏:贴顶,左右各留 16,卡占满。
+ */
+@media (max-width: 767px) {
+  /*
+   * 播报区换成贴顶通栏。
+   */
+  .host {
+    /*
+     * 顶上留 8。
+     */
+    top: 8px;
+
+    /*
+     * 左边留 16。
+     */
+    left: 16px;
+
+    /*
+     * 右边留 16。
+     */
+    right: 16px;
+
+    /*
+     * 宽度由左右定。
+     */
+    width: auto;
+  }
+}

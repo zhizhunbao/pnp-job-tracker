@@ -868,6 +868,10 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'ib.title': 'Inbox', 'ib.forward': 'Also forward to {e}', 'ib.empty': 'No employer replies yet',
   'ib.reply': 'Reply', 'ib.openApp': 'Open application', 'ib.noSubject': '(No subject)', 'ib.mine': 'My reply',
   'ib.send': 'Send', 'ib.cancel': 'Cancel', 'ib.e.send': 'Not sent. Try again', 'ib.e.off': 'Sending isn’t set up yet',
+  // 2026-10-11 batch 5: toast lines and the header notifications panel
+  'mj.pushMailSent': 'Confirmation email sent', 'ib.fwdOn': 'Replies will also go to {e}', 'ib.fwdOff': 'Replies will no longer be forwarded',
+  'nt.title': 'Notifications', 'nt.empty': 'No notifications', 'nt.fail': 'Couldn’t load notifications. Try again later',
+  'nt.reply': '{co} replied', 'nt.bounced': 'Your email to {co} bounced', 'nt.sent': 'Sent to {co}', 'nt.picks': 'Today’s picks updated: {n}',
   'av.job': 'Job details', 'av.replies': 'Employer replies', 'av.noReply': 'No reply yet', 'av.fwdTo': 'Replies also go to {e}',
   'av.content': 'What you sent', 'av.sentAt': 'Sent {d}',
   'ap.sentOn': 'Applied on {d}',

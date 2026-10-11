@@ -263,9 +263,15 @@ describe('今日推荐卡', () => {
 
 // 新岗推送卡(Push;2026-10-10 批 2):设置拉回来才出;频率 weekly 回显、「不发」是空值档;保存发 POST { freq, email },
 // 回 pending 出「点 X 收到的链接后生效」;拉失败出刷新再试。探针:freqOutOf 不把空串折 off → POST 体那条红。
+// 2026-10-11 批 5「提示统一 + 顶栏铃铛」:存完那一句改右上角提示(toast 总线),pending = 「确认信已发出」+ 灰字副行;卡里不再出。
 describe('新岗推送卡', () => {
   it('回显、保存、待确认那一句', async () => {
     const posts: string[] = []
+    const toasts: unknown[] = []
+    function onToast(e: Event) {
+      toasts.push((e as CustomEvent).detail)
+    }
+    window.addEventListener('offer2pr:toast', onToast)
     vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
       if (init?.method === 'POST' && String(url) === '/api/alerts/prefs') {
         posts.push(String(init.body))
@@ -304,7 +310,9 @@ describe('新岗推送卡', () => {
       })
     }
     expect(posts).toEqual([JSON.stringify({ freq: 'off', email: 'me@x.com' })])
-    expect(el.textContent).toContain('mj.pushPending{"e":"me@x.com"}')
+    expect(toasts).toEqual([{ kind: 'ok', title: 'mj.pushMailSent', detail: 'mj.pushPending{"e":"me@x.com"}' }])
+    expect(el.textContent).not.toContain('mj.pushPending')
+    window.removeEventListener('offer2pr:toast', onToast)
   })
 
   it('拉失败出刷新再试', async () => {

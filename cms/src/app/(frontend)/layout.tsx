@@ -15,6 +15,7 @@ import { OG_H, OG_SITE_ALT, OG_W } from '@/components/og'
 import { GateSync } from '@/components/gate'
 import { ApplyHost } from '@/components/apply'
 import { PeekHost } from '@/components/peek'
+import { ToastHost } from '@/components/toast'
 import { SITE_JSON_LD } from '@/components/shell'
 import { headers } from 'next/headers'
 import { ssrLang } from '@/lib/i18n/server'
@@ -88,6 +89,8 @@ export const metadata = {
  * 同日访客四题改版:GateSync 随访客向导自 profile 桶迁入 gate 桶,改从 gate 桶取,挂载点不变。
  * 2026-10-09 投递搬进弹框(A 批):GateSync 旁挂投递框宿主 ApplyHost —— 任何一页带 `?apply=<职位号>` 就弹投递框。
  * 同日 N 批:再挂职位框 / 公司框的全站宿主 PeekHost —— 全站只剩这一个弹框栈,各页改发弹框总线。
+ * 2026-10-11 批 5「提示统一 + 顶栏铃铛」:再挂右上角提示的全站宿主 ToastHost —— 各处操作结果调 toast 桶的 toast() 发到总线,
+ * 全站只在这一处画。
  *
  * @param props children = 各路由的页面。
  * @returns 整份文档。
@@ -112,6 +115,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
             <GateSync />
             <ApplyHost />
             <PeekHost />
+            <ToastHost />
             <main>{children}</main>
           </SessionProvider>
         </LangProvider>

@@ -1,0 +1,509 @@
+/*
+ * notify 域的私有样式(2026-10-11 批 5「提示统一 + 顶栏铃铛」):铃铛钮 + 红色数字,挂在钮下的面板(形同账户头像下拉:
+ * 钮下 6px、右对齐、白底细边阴影圆角 10),一条一行 + 灰字时刻。窄屏面板贴顶栏下沿、左右各留 16。
+ */
+
+/*
+ * 钮 + 面板的外框:面板的参照系。
+ */
+.wrap {
+  /*
+   * 面板相对它定位。
+   */
+  position: relative;
+
+  /*
+   * 行内弹性盒。
+   */
+  display: inline-flex;
+}
+
+/*
+ * 铃铛圆钮:与头像同高 32。
+ */
+.bell {
+  /*
+   * 数字角标的参照系。
+   */
+  position: relative;
+
+  /*
+   * 图标居中。
+   */
+  display: inline-flex;
+
+  /*
+   * 横向居中。
+   */
+  justify-content: center;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 宽。
+   */
+  width: 32px;
+
+  /*
+   * 高。
+   */
+  height: 32px;
+
+  /*
+   * 去掉钮底内衬。
+   */
+  padding: 0;
+
+  /*
+   * 圆钮。
+   */
+  border-radius: 50%;
+
+  /*
+   * 图标大小。
+   */
+  font-size: 18px;
+
+  /*
+   * 灰字图标。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 铃铛悬停。
+ */
+.bell:hover {
+  /*
+   * 浅灰底。
+   */
+  background: var(--hairline);
+
+  /*
+   * 深一档。
+   */
+  color: var(--text);
+}
+
+/*
+ * 红色数字角标:贴铃铛右上。
+ */
+.badge {
+  /*
+   * 叠在铃铛上。
+   */
+  position: absolute;
+
+  /*
+   * 贴顶。
+   */
+  top: 0;
+
+  /*
+   * 贴右。
+   */
+  right: 0;
+
+  /*
+   * 最窄是个圆。
+   */
+  min-width: 16px;
+
+  /*
+   * 高。
+   */
+  height: 16px;
+
+  /*
+   * 两位数时左右留一点。
+   */
+  padding: 0 4px;
+
+  /*
+   * 胶囊形。
+   */
+  border-radius: 8px;
+
+  /*
+   * 红底。
+   */
+  background: var(--danger);
+
+  /*
+   * 白字。
+   */
+  color: #fff;
+
+  /*
+   * 小字。
+   */
+  font-size: 10px;
+
+  /*
+   * 粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 竖向居中。
+   */
+  line-height: 16px;
+
+  /*
+   * 横向居中。
+   */
+  text-align: center;
+
+  /*
+   * 别把角标算进点击(点的是铃铛)。
+   */
+  pointer-events: none;
+}
+
+/*
+ * 面板:挂在钮下,右对齐。
+ */
+.pop {
+  /*
+   * 锚在钮下。
+   */
+  position: absolute;
+
+  /*
+   * 钮下 6px。
+   */
+  top: calc(100% + 6px);
+
+  /*
+   * 右对齐钮。
+   */
+  right: 0;
+
+  /*
+   * 压过顶栏里的别的件(与账户下拉同层)。
+   */
+  z-index: 30;
+
+  /*
+   * 网页端面板宽。
+   */
+  width: 360px;
+
+  /*
+   * 太多条时面板里滚。
+   */
+  max-height: 70vh;
+
+  /*
+   * 竖排。
+   */
+  display: flex;
+
+  /*
+   * 上下排。
+   */
+  flex-direction: column;
+
+  /*
+   * 白底。
+   */
+  background: var(--card);
+
+  /*
+   * 浅灰描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 圆角。
+   */
+  border-radius: 10px;
+
+  /*
+   * 浮起来的阴影。
+   */
+  box-shadow: 0 10px 30px rgb(0 0 0 / 12%);
+
+  /*
+   * 圆角里的内容不溢出。
+   */
+  overflow: hidden;
+}
+
+/*
+ * 卡头「通知」。
+ */
+.head {
+  /*
+   * 内衬。
+   */
+  padding: 12px 14px;
+
+  /*
+   * 粗体。
+   */
+  font-weight: 600;
+
+  /*
+   * 字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 正文色。
+   */
+  color: var(--text);
+
+  /*
+   * 与清单之间一道细线。
+   */
+  border-bottom: 1px solid var(--border);
+}
+
+/*
+ * 没有通知 / 拉失败那一句。
+ */
+.note {
+  /*
+   * 内衬。
+   */
+  padding: 16px 14px;
+
+  /*
+   * 字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 灰字。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 清单:面板里滚。
+ */
+.list {
+  /*
+   * 竖排。
+   */
+  display: flex;
+
+  /*
+   * 上下排。
+   */
+  flex-direction: column;
+
+  /*
+   * 超高时滚。
+   */
+  overflow-y: auto;
+}
+
+/*
+ * 一条:蓝点 + 一句 + 灰字时刻,整行可点。
+ */
+.row {
+  /*
+   * 三格排一行。
+   */
+  display: flex;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 格间距。
+   */
+  gap: 8px;
+
+  /*
+   * 占满面板宽。
+   */
+  width: 100%;
+
+  /*
+   * 内衬。
+   */
+  padding: 10px 14px;
+
+  /*
+   * 左对齐。
+   */
+  text-align: left;
+
+  /*
+   * 字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 正文色。
+   */
+  color: var(--text);
+
+  /*
+   * 条与条之间一道细线。
+   */
+  border-bottom: 1px solid var(--hairline);
+
+  /*
+   * 去掉钮的圆角。
+   */
+  border-radius: 0;
+
+  /*
+   * 看过的一条常规字重(钮底默认加粗)。
+   */
+  font-weight: 400;
+
+  /*
+   * 长句允许折行(钮底默认不折)。
+   */
+  white-space: normal;
+}
+
+/*
+ * 一条悬停。
+ */
+.row:hover {
+  /*
+   * 浅蓝底。
+   */
+  background: var(--hover-bg);
+}
+
+/*
+ * 没看过的一条:浅蓝底、加粗。
+ */
+.rowNew {
+  /*
+   * 浅蓝底。
+   */
+  background: var(--hover-bg);
+
+  /*
+   * 加粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 蓝点格(只在没看过的一条里亮)。
+ */
+.dot {
+  /*
+   * 不被挤窄。
+   */
+  flex: none;
+
+  /*
+   * 点宽。
+   */
+  width: 8px;
+
+  /*
+   * 点高。
+   */
+  height: 8px;
+
+  /*
+   * 圆点。
+   */
+  border-radius: 50%;
+
+  /*
+   * 看过的透明(占位,让各行的字对齐)。
+   */
+  background: transparent;
+}
+
+/*
+ * 没看过的一条亮蓝点。
+ */
+.rowNew .dot {
+  /*
+   * 蓝。
+   */
+  background: var(--primary);
+}
+
+/*
+ * 一句:吃剩余宽,长公司名折行。
+ */
+.line {
+  /*
+   * 吃剩余宽。
+   */
+  flex: 1;
+
+  /*
+   * 允许缩到比内容窄。
+   */
+  min-width: 0;
+
+  /*
+   * 长字折行。
+   */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 灰字时刻:不折行。
+ */
+.when {
+  /*
+   * 不被挤窄。
+   */
+  flex: none;
+
+  /*
+   * 小一号。
+   */
+  font-size: 12px;
+
+  /*
+   * 一行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 窄屏:面板贴顶栏下沿,左右各留 16。
+ */
+@media (max-width: 767px) {
+  /*
+   * 改跟视口定位。
+   */
+  .pop {
+    /*
+     * 跟视口。
+     */
+    position: fixed;
+
+    /*
+     * 顶栏下沿。
+     */
+    top: 56px;
+
+    /*
+     * 左边留 16。
+     */
+    left: 16px;
+
+    /*
+     * 右边留 16。
+     */
+    right: 16px;
+
+    /*
+     * 宽度由左右定。
+     */
+    width: auto;
+  }
+}

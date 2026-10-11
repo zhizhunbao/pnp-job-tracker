@@ -10,7 +10,8 @@
  * @time 2026-08-24 04:30:00
  */
 import {
-  ArrowUp, Briefcase, ChartColumn, ChartLine, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, ClipboardList,
+  ArrowUp, Bell, Briefcase, ChartColumn, ChartLine, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, CircleX,
+  ClipboardList,
   Compass, Globe, GripVertical, IdCard, Lock, Mail, Map as LMap, MapPin, Maximize, Medal, Menu, MessageCircle, Mic,
   Minimize, Minus, MoveUpRight, Newspaper, Pause, Pencil, Play, Rocket, RotateCcw, Save, Scale, Search, Settings,
   Square, Star, Plus, Table, Target, ThumbsDown, ThumbsUp, TriangleAlert, User, Users, Volume2, X,
@@ -234,6 +235,16 @@ export const IconWarn = makeIcon(TriangleAlert)
  * 关闭(弹框、抽屉、筛选清除;2026-08-24 替 × ✕ 字符)。
  */
 export const IconX = makeIcon(X)
+
+/**
+ * 顶栏通知铃铛(2026-10-11 批 5「提示统一 + 顶栏铃铛」,照 Azure 门户的 Notifications)。
+ */
+export const IconBell = makeIcon(Bell)
+
+/**
+ * 出错(带圈的叉;右上角提示的出错一档,2026-10-11 批 5)。
+ */
+export const IconXCircle = makeIcon(CircleX)
 
 /**
  * 表态(序列表工具条左边那枚:列是时间点时切回一格一个原值的表)。

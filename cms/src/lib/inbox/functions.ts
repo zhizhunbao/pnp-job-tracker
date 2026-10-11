@@ -15,14 +15,14 @@ import {
   ALIAS_SEP, ALIAS_TRIES, ANGLE_L, APP_TAG, APP_TAG_RE, AT, BEARER_PREFIX, BLANKS_RE, BODY_MAX, DIR_OUT, E_NOT_FOUND,
   EV_RECEIVED, FWD_FOOT, FWD_FROM, FWD_LINK, FWD_SEP, FWD_SUBJECT, FWD_SUBJECT_HEAD, HDR_AUTH, HDR_IN_REPLY_TO,
   HDR_IN_REPLY_TO_LC, HDR_REFERENCES, HDR_REFERENCES_LC, HTML_BR, HTML_BREAK_RE, HTML_DROP_RE, HTML_ENTITIES,
-  HTML_ENTITY_RE, HTML_ESC, HTML_ESC_RE, HTML_TAG_RE, INBOUND_DOMAIN, INBOX_PATH_HEAD, LIST_LIMIT, MSG_ID_RE,
+  HTML_ENTITY_RE, HTML_ESC, HTML_ESC_RE, HTML_TAG_RE, INBOUND_DOMAIN, INBOX_PATH_HEAD, LIST_LIMIT, MAIL_EN, MAIL_KO, MAIL_ZH, MSG_ID_RE,
   NAME_DROP_RE, NAME_QUOTES_RE, NEWLINE, PLUS, RE_HEAD, RE_RE, RECEIVED_URL, RECV_DUP, RECV_FETCH, RECV_IGNORED,
   RECV_LOOP, RECV_STORED, RECV_UNKNOWN, REPLY_MAX, SITE, TEXT_NONE, TRAIL_SPACE_RE,
 } from './constants'
 import type {
   AddressIn, AliasDbRow, AliasEnsureIn, AliasFact, AliasOut, AliasUserDbRow, AliasUserFact, CountDbRow, CountOut,
   ForwardIn, ForwardSetIn, ForwardTextIn, HeaderOfIn, IdDbRow, InboxAddressIn, InboxAddressOut, InboxIn, InboxMsgRow,
-  InboxMsgRows, InboxOut, InboxReplyRow, InboxRowsIn, InMail, InMailOfIn, LinkAppIn, LinkAppOut, MailHeaders,
+  InboxMsgRows, InboxOut, InboxReplyRow, InboxRowsIn, InMail, InMailOfIn, LinkAppIn, LinkAppOut, MailHeaders, MailLang,
   MaybeAliasOut, MaybeId, MaybeRecipientHit, MaybeReplyBody, MsgDbRow, MsgFact, MsgOneDbRow, MsgOneFact, OutAddDbRow,
   OutAddFact, ParsedAddr, RawId, ReadBodyJson, ReceivedEmailFact, ReceivedEmailJson, ReceivedEventJson, ReceivedFact,
   ReceivedDataJson, ReceivedOut, ReceiveIn, ReceiveOut, RecipientHitIn, ReplyBodyJson, SeedDbRow, SendReplyIn,
@@ -330,12 +330,29 @@ export function toReceived(d: ReceivedDataJson): ReceivedFact {
 
 /**
  * 认人库行 → 人。
+ * 2026-10-11 批 5:多带界面语(转发信按它出三语;认不得的按中文)。
  *
  * @param r 库行。
  * @returns 人。
  */
 export function toAliasUser(r: AliasUserDbRow): AliasUserFact {
-  return { userId: count(r.user_id), forward: r.forward !== false, email: text(r.email) }
+  return { userId: count(r.user_id), forward: r.forward !== false, email: text(r.email), lang: mailLangOf(text(r.locale)) }
+}
+
+/**
+ * 界面语 → 转发信语言(认不得的按中文,同周报 / 每日推送)。
+ *
+ * @param locale 界面语。
+ * @returns 转发信语言。
+ */
+export function mailLangOf(locale: string): MailLang {
+  if (locale === MAIL_EN) {
+    return MAIL_EN
+  }
+  if (locale === MAIL_KO) {
+    return MAIL_KO
+  }
+  return MAIL_ZH
 }
 
 /**
@@ -532,20 +549,22 @@ export async function forwardIn(x: ForwardIn): WriteOut {
 
 /**
  * 转发信正文:分隔行、原发件人、原标题、原文、去站内看的链接、为什么收到。
+ * 2026-10-11 批 5:除原文外几行按收件人界面语出(中 / 英 / 韩)。
  *
  * @param x 那一封与信 id。
  * @returns 纯文本。
  */
 export function forwardTextOf(x: ForwardTextIn): string {
+  const lang = x.mail.user.lang
   return [
-    FWD_SEP,
-    FWD_FROM + senderLineOf(x.mail.from),
-    FWD_SUBJECT + x.mail.subject,
+    FWD_SEP[lang],
+    FWD_FROM[lang] + senderLineOf(x.mail.from),
+    FWD_SUBJECT[lang] + x.mail.subject,
     TEXT_NONE,
     x.mail.text,
     TEXT_NONE,
-    FWD_LINK + SITE + INBOX_PATH_HEAD + x.msgId,
-    FWD_FOOT,
+    FWD_LINK[lang] + SITE + INBOX_PATH_HEAD + x.msgId,
+    FWD_FOOT[lang],
   ].join(NEWLINE)
 }
 

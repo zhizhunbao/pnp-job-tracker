@@ -72,6 +72,16 @@ export const ST_UNAVAILABLE = 503
 export const TEXT_NONE = ''
 
 /**
+ * 右上角提示的两档(与 toast 桶同值,各域自抄;2026-10-11 批 5:转发开关存上 / 没存上的那一句挪到右上角)。
+ */
+export const TOAST_OK = 'ok'
+
+/**
+ * 出错一档(没存上,勾选已退回)。
+ */
+export const TOAST_ERR = 'err'
+
+/**
  * 白卡分区的全局类名(main.css 第 9 段;myjobs / apply 同值,各域自抄)。
  */
 export const CARD_MD_CLS = 'cardMd'

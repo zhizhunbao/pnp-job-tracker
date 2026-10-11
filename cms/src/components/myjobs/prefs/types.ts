@@ -64,6 +64,7 @@ export type SavePushIn = {
 
 /**
  * 存设置回包 → 那一句(pushNoteOf)的入参。
+ * 2026-10-11 批 5:那一句改右上角提示,函数改名 pushToastOf,入参不变。
  */
 export type PushNoteIn = {
   /**
@@ -131,3 +132,23 @@ export type FreqLabelFn = (v: string) => string
  * 界面语取词函数(与 lib/i18n 的 TFn 同形;形状本桶自己声明)。
  */
 export type TFn = (key: string, vars?: Record<string, string | number>) => string
+
+/**
+ * 存设置后的那一句右上角提示(与 toast 桶的 ToastMsg 同形,本桶自声明;2026-10-11 批 5)。
+ */
+export type PushToast = {
+  /**
+   * 哪一档。
+   */
+  kind: 'ok' | 'warn' | 'err'
+
+  /**
+   * 粗体那一行。
+   */
+  title: string
+
+  /**
+   * 灰字副行(空串 = 没有)。
+   */
+  detail: string
+}

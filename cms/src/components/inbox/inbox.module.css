@@ -34,15 +34,6 @@
 }
 
 /*
- * 转发开关没存上那一句。
- */
-.fwdNote {
-  margin-top: 6px;
-  font-size: 13px;
-  color: #b91c1c;
-}
-
-/*
  * 第二张卡:网页端左清单右阅读区。
  */
 .panes {

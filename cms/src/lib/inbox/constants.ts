@@ -271,28 +271,123 @@ export const FWD_SUBJECT_HEAD = 'Fwd: '
 
 /**
  * 转发信正文的分隔行。
+ * 2026-10-11 批 5(Frank 早先点的「转发信按用户语言」):按收件人界面语(users.locale)三语,认不得的按中文(同周报 / 每日推送)。
  */
-export const FWD_SEP = '---------- Forwarded message ----------'
+export const FWD_SEP = {
+  /**
+   * 中文。
+   */
+  zh: '---------- 转发的邮件 ----------',
+
+  /**
+   * 英文。
+   */
+  en: '---------- Forwarded message ----------',
+
+  /**
+   * 韩文。
+   */
+  ko: '---------- 전달된 메일 ----------',
+}
 
 /**
  * 转发信正文:发件人一行。
+ * 2026-10-11 批 5(Frank 早先点的「转发信按用户语言」):按收件人界面语(users.locale)三语,认不得的按中文(同周报 / 每日推送)。
  */
-export const FWD_FROM = 'From: '
+export const FWD_FROM = {
+  /**
+   * 中文。
+   */
+  zh: '发件人:',
+
+  /**
+   * 英文。
+   */
+  en: 'From: ',
+
+  /**
+   * 韩文。
+   */
+  ko: '보낸 사람: ',
+}
 
 /**
  * 转发信正文:标题一行。
+ * 2026-10-11 批 5(Frank 早先点的「转发信按用户语言」):按收件人界面语(users.locale)三语,认不得的按中文(同周报 / 每日推送)。
  */
-export const FWD_SUBJECT = 'Subject: '
+export const FWD_SUBJECT = {
+  /**
+   * 中文。
+   */
+  zh: '主题:',
+
+  /**
+   * 英文。
+   */
+  en: 'Subject: ',
+
+  /**
+   * 韩文。
+   */
+  ko: '제목: ',
+}
 
 /**
  * 转发信正文:去站内看的一行。
+ * 2026-10-11 批 5(Frank 早先点的「转发信按用户语言」):按收件人界面语(users.locale)三语,认不得的按中文(同周报 / 每日推送)。
  */
-export const FWD_LINK = 'Open in Offer2PR: '
+export const FWD_LINK = {
+  /**
+   * 中文。
+   */
+  zh: '在 Offer2PR 打开:',
+
+  /**
+   * 英文。
+   */
+  en: 'Open in Offer2PR: ',
+
+  /**
+   * 韩文。
+   */
+  ko: 'Offer2PR에서 열기: ',
+}
 
 /**
  * 转发信页脚:为什么收到这一封。
+ * 2026-10-11 批 5(Frank 早先点的「转发信按用户语言」):按收件人界面语(users.locale)三语,认不得的按中文(同周报 / 每日推送)。
  */
-export const FWD_FOOT = 'You get this copy because forwarding is on in Offer2PR > Inbox.'
+export const FWD_FOOT = {
+  /**
+   * 中文。
+   */
+  zh: '你收到这一份,是因为在 Offer2PR 收件箱里开着「同时转到」。',
+
+  /**
+   * 英文。
+   */
+  en: 'You get this copy because forwarding is on in Offer2PR > Inbox.',
+
+  /**
+   * 韩文。
+   */
+  ko: 'Offer2PR 받은편지함에서 전달이 켜져 있어 이 사본을 받았습니다.',
+}
+
+/**
+ * 转发信语言:英文(界面语 users.locale 的值;2026-10-11 批 5)。
+ */
+export const MAIL_EN = 'en'
+
+/**
+ * 转发信语言:韩文。
+ */
+export const MAIL_KO = 'ko'
+
+/**
+ * 转发信语言:中文(认不得的界面语也按它,同周报 / 每日推送)。
+ */
+export const MAIL_ZH = 'zh'
 
 /**
  * 站点根(去站内收件箱的链接)。

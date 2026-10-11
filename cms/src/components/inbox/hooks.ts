@@ -2,6 +2,7 @@
 /**
  * inbox 组件桶的状态机器(2026-10-10 批 3「收件箱」):useInbox 管整节(拉收件箱、选一封、转发开关、回信框)。
  * 页签红点归 account 桶自己拉(account → inbox → myjobs → apply → account 会成环)。
+ * 2026-10-11 批 5「提示统一 + 顶栏铃铛」:转发开关存上 / 没存上改右上角提示(toast 桶),fwdNote 一格撤。
  *
  * @author Frank
  * @time 2026-10-10 23:50:00
@@ -27,7 +28,6 @@ export function useInbox(x: InboxIn): InboxPanel {
   const [data, setData] = useState<InboxView | null>(null)
   const [failed, setFailed] = useState(false)
   const [sel, setSel] = useState<number | null>(null)
-  const [fwdNote, setFwdNote] = useState(TEXT_NONE)
   const [replying, setReplying] = useState(false)
   const [replyText, setReplyText] = useState(TEXT_NONE)
   const [replyBusy, setReplyBusy] = useState(false)
@@ -55,8 +55,7 @@ export function useInbox(x: InboxIn): InboxPanel {
     cur,
     pickOf,
     onUnpick: makeUnpick({ setSel }),
-    onForward: makeForward({ data, setData, setNote: setFwdNote, t: x.t }),
-    fwdNote,
+    onForward: makeForward({ data, setData, t: x.t }),
     onOpenApp: makeOpenApp({ cur, open: openAppView }),
     replying,
     onReply: makeFlagSet({ set: setReplying, v: true }),

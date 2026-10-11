@@ -5,13 +5,16 @@
  * @author Frank
  * @time 2026-10-10 23:50:00
  */
+import { toast } from '@/components/toast'
 import { fmtLocal } from '@/lib/time'
 import {
   ADDR_L, ADDR_R, AT, CRED_INCLUDE, EV_UNREAD, HDR_CONTENT_TYPE, INITIALS_MAX, MD_FROM, MD_TO, METHOD_PATCH,
-  METHOD_POST, MIME_JSON, P_MSG, ST_UNAVAILABLE, TEXT_NONE, URL_INBOX, URL_PREFS, URL_READ, URL_REPLY, WORD_SPLIT_RE,
+  METHOD_POST, MIME_JSON, P_MSG, ST_UNAVAILABLE, TEXT_NONE, TOAST_ERR, TOAST_OK, URL_INBOX, URL_PREFS, URL_READ,
+  URL_REPLY, WORD_SPLIT_RE,
 } from './constants'
 import type {
-  AfterReplyIn, CurIn, FlagSetIn, ForwardMakeIn, InboxItem, InboxView, LoadInboxIn, OpenAppIn, PickMakeIn, PickOfFn,
+  AfterReplyIn, CurIn, FlagSetIn, ForwardMakeIn, ForwardSavedIn, InboxItem, InboxView, LoadInboxIn, OpenAppIn,
+  PickMakeIn, PickOfFn,
   ReplyPostIn, SubjectIn, ReplyRespJson, ReplySendIn, TextSetIn, UnpickIn, WithForwardIn, WithReadIn, WithReplyIn,
 } from './types'
 
@@ -181,8 +184,10 @@ export function makeOpenApp(x: OpenAppIn): () => void {
 
 /**
  * 造「勾 / 不勾同时转到」:本地先改,存不上退回原值并出一句。
+ * 2026-10-11 批 5「提示统一 + 顶栏铃铛」:那一句改右上角提示 —— 存上了说「回信会同时转到 <邮箱>」/「回信不再转发」,
+ * 没存上出错一档(勾选照旧退回)。
  *
- * @param x 整份、两个落格与取词函数。
+ * @param x 整份、写整份与取词函数。
  * @returns 复选框的 onChange。
  */
 export function makeForward(x: ForwardMakeIn): (e: React.ChangeEvent<HTMLInputElement>) => void {
@@ -193,14 +198,28 @@ export function makeForward(x: ForwardMakeIn): (e: React.ChangeEvent<HTMLInputEl
     const before = x.data
     const forward = e.target.checked
     x.setData(withForward({ data: before, forward }))
-    x.setNote(TEXT_NONE)
     void saveForward(forward).then(function done(ok: boolean): void {
       if (ok === false) {
         x.setData(before)
-        x.setNote(x.t('mj.pushFail'))
+        toast({ kind: TOAST_ERR, title: x.t('mj.pushFail') })
+        return
       }
+      toast({ kind: TOAST_OK, title: forwardSavedOf({ forward, account: before.account, t: x.t }) })
     })
   }
+}
+
+/**
+ * 转发开关存上以后的那一句。
+ *
+ * @param x 开 / 关、账户邮箱与取词函数。
+ * @returns 一句。
+ */
+export function forwardSavedOf(x: ForwardSavedIn): string {
+  if (x.forward) {
+    return x.t('ib.fwdOn', { e: x.account })
+  }
+  return x.t('ib.fwdOff')
 }
 
 /**

@@ -841,6 +841,10 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'ib.title': '받은편지함', 'ib.forward': '{e}(으)로도 전달', 'ib.empty': '아직 고용주 회신이 없습니다',
   'ib.reply': '회신', 'ib.openApp': '지원 내역 열기', 'ib.noSubject': '(제목 없음)', 'ib.mine': '내 회신',
   'ib.send': '보내기', 'ib.cancel': '취소', 'ib.e.send': '보내지 못했습니다. 다시 시도해 주세요', 'ib.e.off': '메일 발송이 아직 설정되지 않았습니다',
+  // 2026-10-11 배치 5: 오른쪽 위 알림 문구와 상단 알림 패널
+  'mj.pushMailSent': '확인 메일을 보냈습니다', 'ib.fwdOn': '회신이 {e}(으)로도 전달됩니다', 'ib.fwdOff': '회신을 더 이상 전달하지 않습니다',
+  'nt.title': '알림', 'nt.empty': '알림이 없습니다', 'nt.fail': '알림을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요',
+  'nt.reply': '{co}에서 회신했습니다', 'nt.bounced': '{co}(으)로 보낸 메일이 반송되었습니다', 'nt.sent': '{co}에 보냈습니다', 'nt.picks': '오늘의 추천 {n}건이 업데이트되었습니다',
   'av.job': '채용 정보', 'av.replies': '고용주 회신', 'av.noReply': '아직 회신이 없습니다', 'av.fwdTo': '회신은 {e}(으)로도 전달됩니다',
   'av.content': '지원 내용', 'av.sentAt': '{d} 전송',
   'ap.sentOn': '{d}에 지원한 공고입니다',

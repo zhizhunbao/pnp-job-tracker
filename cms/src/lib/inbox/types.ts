@@ -402,7 +402,17 @@ export type AliasUserDbRow = {
    * 账户邮箱。
    */
   email: string | null
+
+  /**
+   * 界面语(注册时记的;2026-10-11 批 5 转发信按它)。
+   */
+  locale: string | null
 }
+
+/**
+ * 转发信语言(界面语三字面量,各域自抄)。
+ */
+export type MailLang = 'zh' | 'en' | 'ko'
 
 /**
  * 回调认出的人。
@@ -422,6 +432,11 @@ export type AliasUserFact = {
    * 账户邮箱。
    */
   email: string
+
+  /**
+   * 转发信用的语言(界面语认不得按中文)。
+   */
+  lang: MailLang
 }
 
 /**

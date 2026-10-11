@@ -13,6 +13,7 @@
  * 2026-10-03 付费闭环批 B1:导航排与抽屉挂「我的」—— 只在账户三态的已登录那一态出(身份未知那一拍不出,免首帧闪)。
  * 同日收口审查:宿主递了登录态(职位板 plan.loggedIn、详情页等服务端判的)就跟宿主走 —— 账户三态只在挂载时算一次,
  * 流程内注册完软刷后宿主的登录态会更新、三态不会,板上头像已变「我的」却不出;宿主没递才看三态。
+ * 2026-10-11 批 5「提示统一 + 顶栏铃铛」:账户区左边挂通知铃铛(notify 桶 Bell),与「我的」同判 —— 只在已登录那一态出。
  *
  * @author Frank
  * @time 2026-08-24 08:00:00
@@ -24,6 +25,7 @@ import { IconMenu } from '@/components/icons'
 import { Button, LinkButton } from '@/components/button'
 
 import { useLang } from '@/components/i18n'
+import { Bell } from '@/components/notify'
 import { ACCT_IN, BRAND_MARK, PATH_HOME, PLAIN_BTN_KIND } from './constants'
 import { AccountLite } from './accountlite'
 import { HeaderNav } from './headernav'
@@ -86,6 +88,7 @@ export function Header({ sticky = false, accountArea, loggedIn }: HeaderIn) {
           <span className={css.divider} />
           <div className={css.acct}>
             <LangSwitch lang={lang} setLang={setLang} />
+            {mine && <Bell t={t} />}
             {area}
           </div>
         </div>

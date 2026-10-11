@@ -6,12 +6,15 @@
  * @author Frank
  * @time 2026-10-10 20:00:00
  */
+import { toast } from '@/components/toast'
 import { track } from '@/lib/track'
 import {
   CRED_INCLUDE, EMAIL_MAX, EV_PUSH, E_EMAIL, FREQ_KEYS, FREQ_OFF, HDR_CONTENT_TYPE, METHOD_POST, MIME_JSON, PUT_MAIL,
-  PUT_PENDING, TEXT_NONE, URL_PUSH,
+  PUT_PENDING, TEXT_NONE, TOAST_ERR, TOAST_OK, TOAST_WARN, URL_PUSH,
 } from './constants'
-import type { FreqLabelFn, LoadPushIn, PushNoteIn, PushPrefsJson, PushSaveJson, SavePushIn, TFn } from './types'
+import type {
+  FreqLabelFn, LoadPushIn, PushNoteIn, PushPrefsJson, PushSaveJson, PushToast, SavePushIn, TFn,
+} from './types'
 
 /**
  * 造「拉一次推送设置」。
@@ -98,6 +101,7 @@ export function makeSavePush(x: SavePushIn): () => Promise<void> {
       return
     }
     x.setBusy(true)
+    x.setNote(TEXT_NONE)
     try {
       const r = await fetch(URL_PUSH, {
         method: METHOD_POST,
@@ -106,12 +110,16 @@ export function makeSavePush(x: SavePushIn): () => Promise<void> {
         body: JSON.stringify({ freq: freqOutOf(x.freq), email }),
       })
       const d = await r.json() as PushSaveJson
-      x.setNote(pushNoteOf({ d, ok: r.ok, email, t: x.t }))
+      if (d.error === E_EMAIL) {
+        x.setNote(x.t('mj.pushBad'))
+      } else {
+        toast(pushToastOf({ d, ok: r.ok, email, t: x.t }))
+      }
       if (r.ok) {
         track(EV_PUSH, { on: String(freqOutOf(x.freq) !== FREQ_OFF) })
       }
     } catch {
-      x.setNote(x.t('mj.pushFail'))
+      toast({ kind: TOAST_ERR, title: x.t('mj.pushFail'), detail: TEXT_NONE })
     }
     x.setBusy(false)
   }
@@ -119,22 +127,21 @@ export function makeSavePush(x: SavePushIn): () => Promise<void> {
 
 /**
  * 存设置回包 → 那一句。
+ * 2026-10-11 批 5「提示统一 + 顶栏铃铛」:那一句从卡里挪到右上角提示(改名 pushToastOf);邮箱格式不对要他改框,
+ * 照旧贴在邮箱框下面(调用方先判掉,不进这里)。换了邮箱 = 确认信已发出 + 灰字「点 <邮箱> 收到的链接后生效」。
  *
  * @param x 回包、HTTP 成没成、邮箱与取词函数。
- * @returns 一句。
+ * @returns 一条提示。
  */
-export function pushNoteOf(x: PushNoteIn): string {
-  if (x.d.error === E_EMAIL) {
-    return x.t('mj.pushBad')
-  }
+export function pushToastOf(x: PushNoteIn): PushToast {
   if (x.ok === false) {
-    return x.t('mj.pushFail')
+    return { kind: TOAST_ERR, title: x.t('mj.pushFail'), detail: TEXT_NONE }
   }
   if (x.d.result === PUT_PENDING) {
-    return x.t('mj.pushPending', { e: x.email })
+    return { kind: TOAST_OK, title: x.t('mj.pushMailSent'), detail: x.t('mj.pushPending', { e: x.email }) }
   }
   if (x.d.result === PUT_MAIL) {
-    return x.t('mj.pushMailFail')
+    return { kind: TOAST_WARN, title: x.t('mj.pushMailFail'), detail: TEXT_NONE }
   }
-  return x.t('mj.pushSaved')
+  return { kind: TOAST_OK, title: x.t('mj.pushSaved'), detail: TEXT_NONE }
 }

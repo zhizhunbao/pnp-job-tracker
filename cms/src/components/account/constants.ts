@@ -107,6 +107,7 @@ export const SENT_NOTICE_KEY = 'mj.sentTo'
 
 /**
  * 成功条的色档(notice 四色里的绿:成功)。
+ * 2026-10-11 批 5:「我的」页上那一条改右上角提示,沿用这一格当提示档位(toast 桶同值)。
  */
 export const SENT_NOTICE_KIND = 'ok'
 
@@ -593,6 +594,7 @@ export const ACCT_TAB_ID = 'acct-tab'
 /**
  * 支付成功提示的色档(notice 四色里的绿:成功)。Stripe 回跳带 `?ok=1` 时出这一条 ——
  * 钱已经付了,这是**成功**不是警告,所以不是琥珀。
+ * 2026-10-11 批 5:提示条改成右上角提示(toast 桶),同值同义,沿用这一格当提示档位。
  */
 export const PAY_OK_KIND = 'ok'
 

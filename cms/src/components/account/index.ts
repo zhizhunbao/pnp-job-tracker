@@ -33,6 +33,8 @@
  * 2026-10-10 投递框三步:桶门加 ResumePages 与 useResumePages(投递框「简历」页选中哪份就在旁边画那份的首页)。
  * 2026-10-10 批 3:桶门加 SEC_INBOX(收件箱一节)。
  * 2026-10-11「进我的求职先弹五题」:桶门加 JobsQuiz(进「我的求职」档案五样有空着的,自动弹「修改」同一个弹框,只问空着的)。
+ * 2026-10-11 批 5「提示统一 + 顶栏铃铛」:付款成功改右上角提示(toast 桶),PayOkNotice 删文件出桶;SentNotice 留着
+ * (「我的」页上的那一条改提示,投递框已投递一步照旧摆它)。
  *
  * @author Claude
  * @time 2026-08-26 19:28:00
@@ -47,7 +49,6 @@ export {
 } from './constants'
 export { useAccountPage, useResumePages } from './hooks'
 export { JobsQuiz } from './jobsquiz'
-export { PayOkNotice } from './payoknotice'
 export { Profile } from './profile'
 export { ResumeFile } from './resumefile'
 export { ResumePages } from './resumepages'

@@ -254,3 +254,26 @@ describe('本人隔离', () => {
     expect((await inboxRoute(new Request('http://x/api/inbox'))).status).toBe(401)
   })
 })
+
+// 2026-10-11 批 5:转发信按收件人界面语(users.locale)出三语;认不得的按中文;原发件人与原文三语都原样在。
+// 探针:mailLangOf 把 ko 折成 zh → 韩文那条红;forwardTextOf 写死英文 → 中文那条红。
+describe('转发信语言', () => {
+  it('zh / en / ko 各出各的;认不得按中文;原发件人原文都在', async () => {
+    const { forwardTextOf, mailLangOf } = await import('@/lib/inbox/functions')
+    expect([mailLangOf('en'), mailLangOf('ko'), mailLangOf('zh'), mailLangOf(''), mailLangOf('fr')]).toEqual(['en', 'ko', 'zh', 'zh', 'zh'])
+    const base = {
+      appId: null, from: { addr: 'sarah@corp.com', name: 'Sarah Chen' }, to: 'x', subject: 'Interview', text: 'Are you free?',
+      messageId: '', inReplyTo: '', inboundId: 'in_1',
+    }
+    const of = (lang: 'zh' | 'en' | 'ko') => forwardTextOf({
+      mail: { ...base, user: { userId: 5, forward: true, email: 'li@gmail.com', lang } }, msgId: 9,
+    } as never)
+    expect(of('zh')).toContain('在 Offer2PR 打开')
+    expect(of('en')).toContain('Open in Offer2PR')
+    expect(of('ko')).toContain('Offer2PR에서 열기')
+    for (const l of ['zh', 'en', 'ko'] as const) {
+      expect(of(l)).toContain('Sarah Chen <sarah@corp.com>')
+      expect(of(l)).toContain('Are you free?')
+    }
+  })
+})

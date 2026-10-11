@@ -82,3 +82,18 @@ export const EMAIL_MAX = 254
  * 空串(没有链接 / 没有字样)。
  */
 export const TEXT_NONE = ''
+
+/**
+ * 右上角提示的三档(与 toast 桶同值,各域自抄;2026-10-11 批 5:存设置后的那一句从卡里挪到右上角)。
+ */
+export const TOAST_OK = 'ok'
+
+/**
+ * 提醒一档(存上了、确认信没发出)。
+ */
+export const TOAST_WARN = 'warn'
+
+/**
+ * 出错一档(没存上;邮箱格式不对那句照旧贴在邮箱框下面)。
+ */
+export const TOAST_ERR = 'err'

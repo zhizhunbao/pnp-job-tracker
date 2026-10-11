@@ -210,9 +210,9 @@ export type OnAppliedIn = {
   setGen: GenSetFn
 
   /**
-   * 成功条落格(发给了哪家)。
+   * 取词函数(「已发给 <公司>」右上角提示;2026-10-11 批 5 接替成功条落格 setSentTo)。
    */
-  setSentTo: (co: string) => void
+  t: TFn
 
   /**
    * 重拉已投几封。
@@ -253,16 +253,6 @@ export type NavLabelIn = {
    * 该节的标题原文(可能带括号说明)。
    */
   label: string
-}
-
-/**
- * PayOkNotice 的 props(Stripe 回跳 `?ok=1` 的成功提示;出不出由页面门按面板的 payOk 判)。
- */
-export type PayOkNoticeIn = {
-  /**
-   * 取词函数(提示文案 acct.payOk)。
-   */
-  t: TFn
 }
 
 /**
@@ -323,11 +313,6 @@ export type AccountPanel = {
   checked: boolean
 
   /**
-   * Stripe 回跳带 `?ok=1` = true。
-   */
-  payOk: boolean
-
-  /**
    * 切节。
    */
   onPick: (s: Sec) => void
@@ -338,7 +323,7 @@ export type AccountPanel = {
   appliedGen: number
 
   /**
-   * 投递区发出去了(计数加一、出成功条、重拉已投几封;2026-10-08)。
+   * 投递区发出去了(计数加一、出成功条、重拉已投几封;2026-10-08;2026-10-11 批 5 成功条改右上角提示)。
    */
   onApplied: (x: AppliedSentOut) => void
 
@@ -346,11 +331,6 @@ export type AccountPanel = {
    * 已投几封(banner 副题;2026-10-08)。
    */
   sent: number
-
-  /**
-   * 刚发给了哪家(成功条;null = 不出;2026-10-08)。
-   */
-  sentTo: string | null
 
   /**
    * 分层态(2026-10-06:「我的求职」「我的收藏」点公司名开公司弹框要它;口径同各页面门的 toJobPlan)。
