@@ -21,14 +21,19 @@ import css from './time.module.css'
  * 「更新时间 YYYY-MM-DD HH:mm」一行(靠右、灰小字、不折行);开了窄屏短写,窄屏换成「更新时间 HH:mm」
  * (不是当天写「月-日 时刻」)。
  *
- * @param props ISO 串、取词函数与窄屏短写开没开。
+ * 2026-10-12 加横幅档(inBanner):放进横幅副标题,另起一行、字色跟横幅走(抽选页「更新时间放到 banner 上」)。
+ *
+ * @param props ISO 串、取词函数、窄屏短写开没开与是否放进横幅。
  * @returns 一行文本;还没拿到时间时不渲。
  */
-export function Updated({ iso, t, narrowShort = false }: UpdatedIn) {
+export function Updated({ iso, t, narrowShort = false, inBanner = false }: UpdatedIn) {
   if (iso === EMPTY_ISO) {
     return null
   }
   const full = t(KEY_UPDATED, { t: fmtLocal(iso) })
+  if (inBanner) {
+    return <span className={css.updatedBanner} suppressHydrationWarning>{full}</span>
+  }
   if (narrowShort === false) {
     return (
       <div className={css.updated} suppressHydrationWarning>{full}</div>

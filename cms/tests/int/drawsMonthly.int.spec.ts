@@ -8,6 +8,8 @@
 // 金标手写:NS 取官网 liveinnovascotia.com/eoi-selection 2026 年 5-7 月三个月的选取人数,阿省取机会通道 09-01、09-23 两轮。
 // 探针:同样的 NS 行换成带日的日期,就进节奏统计 —— 分界是日期形,不是省码;把 unit 换成 invitation,人数就写回「邀请」
 // (2026-09-30 起分界是 unit 格,也不是省码:阿省的行标成 selection 照样写「入选」)。
+// 2026-10-12 抽选页三段式:① 的节奏统计整段下沉数据层(etl/mart/rank 算好写 draw_rank,「只到月不进间隔」那条规则随之搬过去,
+// 用例在 etl/mart/rank/scheme.py 的 RankMonthOnlyTest);这里只验取数层:事件流照出到月的行,节奏卡原样读 draw_rank、联邦省码折 ''。
 import { describe, expect, it } from 'vitest'
 
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
@@ -21,10 +23,19 @@ import { toDrawCellRow as toPlanDrawRow } from '@/components/plan/functions'
 import { toDrawCellRow as toStartDrawRow, toPulseDraws } from '@/components/start/functions'
 import type { PulseDraw } from '@/components/start/types'
 
-/** 假库:抽选那条查询给定的行,别的查询给空 */
-function fakeDb(draws: Record<string, unknown>[]): Db {
-  return { query: async (sql: string) => ({ rows: sql === SQL.PNP_DRAWS_ALL ? draws : [] }) } as unknown as Db
+/** 假库:抽选那条查询给定的行,排名卡那条给定的行(缺省空),别的查询给空 */
+function fakeDb(draws: Record<string, unknown>[], ranks: Record<string, unknown>[] = []): Db {
+  return {
+    query: async (sql: string) => ({ rows: sql === SQL.PNP_DRAWS_ALL ? draws : sql === SQL.DRAW_RANK_ALL ? ranks : [] }),
+  } as unknown as Db
 }
+
+/** draw_rank 一行(节奏卡;数据层算好的样子) */
+const rank = (key: string, province: string, lastDate: string, gap: number | null) => ({
+  key, kind: 'cadence', rank: '1', province, label: '', name_en: key, name_zh: '', name_ko: '', covers: [], streams: [key],
+  scale: '', last_date: lastDate, avg_gap_days: gap === null ? null : String(gap), status: 'ok', draws_ytd: '2',
+  invitations_ytd: '226', invite_unit: 'invitation', nominations_ytd: null, allocation: null, allocation_kind: '',
+})
 
 /** NS 一个月的选取人数(pnp_draws 原样行) */
 const ns = (date: string, n: number) => ({
@@ -38,20 +49,36 @@ const ab = (date: string) => ({
   note: '', label: 'AAIP', url: '', unit: 'invitation',
 })
 
-describe('① 时间线节奏:只到月的行不进统计', () => {
-  it('NS 三个月:事件流照出(日期到月),节奏统计里没有 NS;阿省照常(两轮、间隔 22 天)', async () => {
-    const out = await fetchTimeline(fakeDb([ab('2026-09-23'), ab('2026-09-01'), ns('2026-07', 671), ns('2026-06', 531), ns('2026-05', 789)]))
-    expect(out.cadence.map((c) => c.prov)).toEqual(['AB'])
-    expect(out.cadence[0]).toMatchObject({ stream: 'AAIP', last: '2026-09-23', avgGapDays: 22, draws: 2 })
+describe('① 时间线取数:到月的行照进事件流,节奏卡读 draw_rank', () => {
+  it('NS 三个月:事件流照出(日期到月、标题取流名);节奏卡原样读数据层的行', async () => {
+    const out = await fetchTimeline(fakeDb(
+      [ab('2026-09-23'), ab('2026-09-01'), ns('2026-07', 671), ns('2026-06', 531), ns('2026-05', 789)],
+      [rank('ab-opportunity', 'AB', '2026-09-23', 22), rank('NS:Monthly EOI selections', 'NS', '2026-07', null)],
+    ))
     expect(out.events.filter((e) => e.prov === 'NS').map((e) => e.date)).toEqual(['2026-07', '2026-06', '2026-05'])
-    // 事件带上 unit 格(时间线写「人入选」读它)
+    // 事件带上 unit 格(时间线写「人入选」读它);2026-10-12 起省行标题取流名
     expect(out.events.filter((e) => e.prov === 'NS').map((e) => e.unit)).toEqual(['selection', 'selection', 'selection'])
+    expect(out.events.filter((e) => e.prov === 'AB').map((e) => e.title)).toEqual(['Alberta Opportunity Stream', 'Alberta Opportunity Stream'])
+    expect(out.cadence.map((c) => c.key)).toEqual(['ab-opportunity', 'NS:Monthly EOI selections'])
+    expect(out.cadence[0]).toMatchObject({ prov: 'AB', lastDate: '2026-09-23', avgGapDays: 22, drawsYtd: 2, invitationsYtd: 226 })
+    // 只到月:距今算不出(null),不编一个「当月 1 号」
+    expect(out.cadence[1]).toMatchObject({ lastDate: '2026-07', daysSince: null, avgGapDays: null })
   })
 
-  it('探针:同样的 NS 行换成带日的日期,就进节奏统计', async () => {
-    const out = await fetchTimeline(fakeDb([ns('2026-07-15', 671), ns('2026-06-15', 531)]))
-    expect(out.cadence.map((c) => c.prov)).toEqual(['NS'])
-    expect(out.cadence[0]).toMatchObject({ last: '2026-07-15', avgGapDays: 30, draws: 2 })
+  it('探针:联邦行省码折成 \'\'(与事件流同口径);draw_rank 还没建表(查挂)时节奏卡与配额卡回空、事件流照出', async () => {
+    const fed = { ...rank('ee-cec', 'FED', '2026-09-29', 17), label: 'cec' }
+    const out = await fetchTimeline(fakeDb([ab('2026-09-23')], [fed]))
+    expect(out.cadence[0]).toMatchObject({ prov: '', label: 'cec' })
+    const broken = { query: async (sql: string) => {
+      if (sql === SQL.DRAW_RANK_ALL) {
+        throw new Error('relation "draw_rank" does not exist')
+      }
+      return { rows: sql === SQL.PNP_DRAWS_ALL ? [ab('2026-09-23')] : [] }
+    } } as unknown as Db
+    const out2 = await fetchTimeline(broken)
+    expect(out2.cadence).toEqual([])
+    expect(out2.quota).toEqual([])
+    expect(out2.events.length).toBe(1)
   })
 })
 
@@ -62,8 +89,8 @@ describe('② NS 的人数写「入选」,别的省照旧「邀请」', () => {
 
   it('时间线事件', () => {
     const row: EventRow = {
-      date: '2026-07', prov: 'NS', kind: 'draw', title: 'NSNP + AIP', score: null, scale: '', invitations: 671, note: '',
-      unit: 'selection',
+      date: '2026-07', prov: 'NS', kind: 'draw', title: 'NSNP + AIP', titleZh: '', label: '', score: null, scale: '',
+      invitations: 671, note: '', unit: 'selection',
     }
     expect(invTextOf({ t: zh, row })).toBe('671 人入选')
     expect(invTextOf({ t: en, row })).toBe('671 selected')

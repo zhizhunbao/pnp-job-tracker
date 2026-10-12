@@ -8,6 +8,8 @@
  * 更新时间挂在它的右端(time 桶的 Updated 是全站唯一形)。
  * 2026-10-03 资讯页签四分(页签改叫「抽选」):政策公告撤出时间线,类型组三枚药丸与分组竖细线撤,行里只剩省组与流筛。
  * 2026-10-04 Frank「这个只需要一个 更新时间」:本页两枚更新时间是同一个时刻,只留节奏格标题下那一枚,行端这枚撤。
+ * 2026-10-12 抽选页三段式:流筛药丸改成卡筛药丸 —— 字是点中那张卡的界面语短名(Frank「这个最好统一用中文」),
+ * 不再是英文流名原文。
  *
  * @author Frank
  * @time 2026-08-28 12:43:06
@@ -25,7 +27,7 @@ import css from './timeline.module.css'
  * @returns 药丸行。
  */
 export function FilterChips({
-  t, provs, prov, stream, provPickOf, onStreamClear,
+  t, provs, prov, pickLabel, provPickOf, onStreamClear,
 }: FilterChipsIn) {
   const provChips = []
   for (const code of provs) {
@@ -38,7 +40,7 @@ export function FilterChips({
       <Chip onClick={provPickOf(TEXT_NONE)} active={prov === TEXT_NONE}>{t('all.prov')}</Chip>
       <Chip onClick={provPickOf(PROV_FED)} active={prov === PROV_FED}>{t('tl.fed')}</Chip>
       {provChips}
-      {stream !== TEXT_NONE && <Chip onClick={onStreamClear} active>{stream}{CHIP_CLEAR}</Chip>}
+      {pickLabel !== TEXT_NONE && <Chip onClick={onStreamClear} active>{pickLabel}{CHIP_CLEAR}</Chip>}
     </div>
   )
 }

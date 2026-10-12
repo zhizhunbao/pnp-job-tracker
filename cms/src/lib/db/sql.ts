@@ -1266,16 +1266,19 @@ export const PILOT_QUOTA_COMMUNITIES = `SELECT community, province, type, first_
  * PSTQ 放哪 Frank 还没定 —— 读 pnp_draws 的四条查询(本条、DIMS_PNP_DRAWS、PNP_DRAWS_RECENT、PNP_DRAWS_FULL)一律先挡掉,
  * 定了位置另起专用查询。
  * 2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」:多取 unit(人数口径;时间线 selection 那种写「人入选」)。
+ * 2026-10-12 抽选页三段式:本条放行魁省行(理由见下一条 DRAW_RANK_ALL;另三条照旧挡),多取 stream_zh(事件标题下的中文灰字)。
  */
-export const PNP_DRAWS_ALL = `SELECT province, kind, draw_date, stream, score, scale, invitations, note, label, url,
-       COALESCE(unit, '') AS unit FROM pnp_draws
-     WHERE COALESCE(province, '') <> 'QC'`
+export const PNP_DRAWS_ALL = `SELECT province, kind, draw_date, stream, COALESCE(stream_zh, '') AS stream_zh, score, scale,
+       invitations, note, label, url, COALESCE(unit, '') AS unit FROM pnp_draws`
 
 /**
- * 每个 EE 类别最近一轮(DISTINCT ON)。
+ * 抽选页排名卡全量(2026-10-12 抽选页三段式;draw_rank 由 etl/mart/rank 算好名次与状态,配额卡在前、节奏卡在后,各按名次)。
+ * 上一条 PNP_DRAWS_ALL 同日放行魁省行:定稿效果图里魁省与九省同排(Frank 09-29「不属于省提名 也算是省的吧」),
+ * 节奏卡点魁省通道要筛得出事件。PSTQ 不属省提名的标注由卡片与事件上的项目名自带,不在这里挡。
  */
-export const EE_CATEGORIES_LATEST = `SELECT DISTINCT ON (category) category, label, draw_crs, draw_date, draw_size, url FROM ee_categories
-                WHERE draw_date IS NOT NULL AND draw_date <> '' ORDER BY category`
+export const DRAW_RANK_ALL = `SELECT key, kind, rank, province, label, name_en, name_zh, name_ko, covers, streams, scale, last_date,
+       avg_gap_days, status, draws_ytd, invitations_ytd, invite_unit, nominations_ytd, allocation, allocation_kind
+     FROM draw_rank ORDER BY kind DESC, rank`
 
 // 🔴 **口径写在 WHERE 里**:省提名匹配只吃 `program='PNP'` 的清单行 —— AIP 背书是另一条路,
 //    混进来会让「命中/被排除」判在错的项目上(同 lib/jobs/queries.ts 的 pnpOnly,那条注释 2026 年就写下了)。

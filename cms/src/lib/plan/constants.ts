@@ -134,6 +134,21 @@ export const KIND_NOTICE = 'notice'
  */
 export const GROUP_SEP = '|'
 
+/**
+ * 时间线:排名卡的「配额卡」卡种值(draw_rank.kind;另一种是 cadence 抽选节奏卡)。
+ */
+export const RANK_QUOTA = 'quota'
+
+/**
+ * 时间线:节奏状态「正常」(认不出的状态串也当它)。
+ */
+export const RANK_OK = 'ok'
+
+/**
+ * 时间线:排名卡的节奏状态值(数据层 etl/mart/rank 只写这三种)。
+ */
+export const RANK_STATUSES = ['ok', 'late', 'idle'] as const
+
 
 /**
  * 四态字面量(值域与 Availability 联合逐字对齐)。

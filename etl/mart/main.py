@@ -20,7 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from mart.functions import (
-    build_city_names, build_designated_table, build_dli_table, build_ee_categories_table, build_mart, build_mart_rankings, build_mart_stats, build_pathways_table,
+    build_city_names, build_designated_table, build_dli_table, build_draw_rank_table, build_ee_categories_table, build_mart, build_mart_rankings, build_mart_stats, build_pathways_table,
     build_pnp_draws_table, build_pnp_occ_table, build_pnp_ops_table, build_pnp_req_table,
     clean_job_locations, clean_job_salary, flag_job_pilot, run_tests, score_mart_jobs,
 )
@@ -57,6 +57,7 @@ TOOLS = {
     "pnp_draws_table": build_pnp_draws_table,
     "pnp_ops_table": build_pnp_ops_table,
     "pnp_occ_table": build_pnp_occ_table,
+    "draw_rank_table": build_draw_rank_table,
     "test": run_tests,
 }
 """全部可 --only 点名的步 = 默认链四步 + 三个跨源清洗步 + 两个手动件:
@@ -92,6 +93,10 @@ TOOLS = {
 (逐对核过:locations / salary / pilot_flag 既不含既有键、也不被既有键含);cities 与
 七个既有键同样逐对核过互不含;dli_table 与八个既有键逐对核过互不含(⚠ `--only dli`
 会命中它,但 dli 域自己的门键在 etl/dli/main.py,两门不撞)。
+
+  draw_rank_table  单表增量:只重建 mart/draw_rank.json(2026-10-12 抽选页三段式:配额卡 + 抽选节奏卡的综合排名,算法住
+              mart/rank 子域;读已落盘的 pnp_draws / pnp_ops_stats / pathways / macro_series 四表。手动件,不进任何链)。
+              与既有键逐对核过互不含(⚠ `--only rank` 会同时命中 rankings 与它,要单点写全名)。
 
   test        自测(2026-09-26 /fe Frank 勾「省提名标签吃工时与雇佣期」批立;用例住 scheme 的 MartOfferTest,不读不写
               仓内文件)。手动件,不进任何链;与九个既有键逐对核过互不含(build 链点名的 locations / salary /

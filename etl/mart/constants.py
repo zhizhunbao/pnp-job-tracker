@@ -3273,6 +3273,13 @@ TABLE_PNP_OCCUPATIONS = "pnp_occupations"
 TABLE_PNP_DRAWS = "pnp_draws"
 """pnp_draws 表名(单表增量件 build_pnp_draws_table 落盘用;与 to_mart_tables 字典键同字;2026-09-30 来源定位 ③-1 立)。"""
 
+TABLE_DRAW_RANK = "draw_rank"
+"""抽选页排名表名(2026-10-12 抽选页三段式立:配额卡 + 抽选节奏卡各一套综合排名,算法住 mart/rank 子域;
+to_mart_tables 字典键与单表件 build_draw_rank_table 落盘同字)。"""
+
+TABLE_MACRO_SERIES = "macro_series"
+"""宏观序列表名(排名单表件读它取联邦 EE 永居目标;与 to_mart_tables 字典键同字)。"""
+
 TABLE_PNP_REQUIREMENTS = "pnp_requirements"
 """pnp_requirements 表名(单表增量件 build_pnp_req_table 落盘用;与 to_mart_tables 字典键同字;2026-09-30 通道补全批一 1b 立 ——
 各省补门槛行逐省重跑,不陪跑约 9 分钟的跨源汇装)。"""

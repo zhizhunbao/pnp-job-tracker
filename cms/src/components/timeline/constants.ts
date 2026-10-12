@@ -93,11 +93,6 @@ export const SCALE_CRS = 'CRS'
 export const UNIT_SELECTION = 'selection'
 
 /**
- * EE 节奏卡的联邦标文字(类别名本身已经是人话名,标上只留项目缩写)。
- */
-export const TAG_EE = 'EE'
-
-/**
  * 分制小注的开头(分数后面空一格再起括号 —— 那一格空格是分数与小注的间距,
  * 由这个词带着,不靠样式挤)。
  */
@@ -132,16 +127,255 @@ export const CARD_BTN_KIND = 'ghost'
 export const PROV_KEY_HEAD = 'pr.'
 
 /**
- * 节奏卡上两截统计(最近一期 / 距今多少天)之间的记号。全站禁「·」杂糅多信息那条
- * 说的是**多条并列信息**,这里两截是同一件事的两个读法,换行反而读不成一句;
- * 2026-08-28 换装批原样保留,值一个不改。
- */
-export const META_SEP = ' · '
-
-/**
  * 流筛药丸上的撤销记号(点它取消节奏卡带入的流过滤,回到该省该类型的全部事件)。
  */
 export const CHIP_CLEAR = ' ✕'
+
+/**
+ * 前三名的名次记号(2026-10-12 Frank「用那个 emoji 的排名 图标吧」;第 4 名起写灰字 #4)。
+ */
+export const MEDALS = ['🥇', '🥈', '🥉']
+
+/**
+ * 第 4 名起的名次前缀。
+ */
+export const RANK_HEAD = '#'
+
+/**
+ * 节奏状态:比平常晚(数据层判;胶囊 warn)。
+ */
+export const STATUS_LATE = 'late'
+
+/**
+ * 节奏状态:久未抽选(数据层判;胶囊 gray)。
+ */
+export const STATUS_IDLE = 'idle'
+
+/**
+ * 「比平常晚」胶囊的变体。
+ */
+export const TAG_WARN = 'warn'
+
+/**
+ * 「久未抽选」胶囊的变体。
+ */
+export const TAG_GRAY = 'gray'
+
+/**
+ * 联邦配额卡的英文名(名字一律英文黑字在上,译名灰字在下)。
+ */
+export const FED_NAME_EN = 'Federal'
+
+/**
+ * 界面语:英文(英文界面只出一行,不出译名灰字)。
+ */
+export const LANG_EN = 'en'
+
+/**
+ * 界面语:韩文。
+ */
+export const LANG_KO = 'ko'
+
+/**
+ * 联邦 EE 类别键 → ee.* 词条键(照 lib/jobs 的 EE_KEY_L10N 抄一份:域之间不互取常量;
+ * 「省提名专场」pnp 数据层已不出卡,事件流里仍有它的历次抽选,词条照留)。
+ */
+export const EE_KEY_I18N: Record<string, string> = {
+  /**
+   * 医疗社服。
+   */
+  healthcare: 'ee.healthcare',
+
+  /**
+   * STEM。
+   */
+  stem: 'ee.stem',
+
+  /**
+   * 技工。
+   */
+  trade: 'ee.trade',
+
+  /**
+   * 教育。
+   */
+  education: 'ee.education',
+
+  /**
+   * 运输。
+   */
+  transport: 'ee.transport',
+
+  /**
+   * 医生。
+   */
+  physicians: 'ee.physicians',
+
+  /**
+   * 高管。
+   */
+  'senior-managers': 'ee.seniorMgr',
+
+  /**
+   * 研究。
+   */
+  researchers: 'ee.researchers',
+
+  /**
+   * 军职。
+   */
+  military: 'ee.military',
+
+  /**
+   * 农业食品。
+   */
+  agriculture: 'ee.agriculture',
+
+  /**
+   * 加拿大经验类。
+   */
+  cec: 'ee.cec',
+
+  /**
+   * 法语。
+   */
+  french: 'ee.french',
+
+  /**
+   * 省提名专场。
+   */
+  pnp: 'ee.pnpLinked',
+
+  /**
+   * 不限类别。
+   */
+  general: 'ee.general',
+
+  /**
+   * 联邦技术移民。
+   */
+  fsw: 'ee.fsw',
+
+  /**
+   * 联邦技工移民。
+   */
+  fst: 'ee.fst',
+}
+
+/**
+ * 合卡「覆盖 …」清单的分隔(中文顿号,英 / 韩逗号)。
+ */
+export const COVER_SEP: Record<string, string> = {
+  /**
+   * 中文:顿号。
+   */
+  zh: '、',
+
+  /**
+   * 英文:逗号。
+   */
+  en: ', ',
+
+  /**
+   * 韩文:逗号。
+   */
+  ko: ', ',
+}
+
+/**
+ * 配额口径:联邦永居目标(格名写「{年} 永居目标」,不叫配额 —— 联邦没有提名这一步,目标数的是拿永居的人头)。
+ */
+export const ALLOC_PR_TARGET = 'prTarget'
+
+/**
+ * 人数口径:入选的申请(NB 的 AIP;格名写「今年入选申请」)。
+ */
+export const UNIT_APPLICATION = 'application'
+
+/**
+ * 两枚类名之间的空格(数字格底类 + 状态色)。
+ */
+export const CLS_SEP = ' '
+
+/**
+ * 缺数格写的一横(2026-10-12 Frank「没有就 -」)。
+ */
+export const DASH = '-'
+
+/**
+ * 十位日期的长度(到日的日期才拆年份与月日)。
+ */
+export const DATE10_LEN = 10
+
+/**
+ * 年份前缀长度(今年的日期只写月日)。
+ */
+export const YEAR_LEN = 4
+
+/**
+ * 千分位的写法(数字一律 13,559 这种,与界面语无关)。
+ */
+export const NUM_LOCALE = 'en-US'
+
+/**
+ * 卡种:配额卡(数据层 draw_rank.kind)。
+ */
+export const KIND_QUOTA = 'quota'
+
+/**
+ * 卡种:抽选节奏卡。
+ */
+export const KIND_CADENCE = 'cadence'
+
+/**
+ * 词条:「N 天」。
+ */
+export const K_N_DAYS = 'tl.nDays'
+
+/**
+ * 词条:「~N 天」(平均间隔)。
+ */
+export const K_GAP_DAYS = 'tl.gapDays'
+
+/**
+ * 词条:「N 次」。
+ */
+export const K_N_TIMES = 'tl.nTimes'
+
+/**
+ * 词条:「N 人」。
+ */
+export const K_N_PEOPLE = 'tl.nPeople'
+
+/**
+ * 词条:光数字(配额卡的格子不带单位)。
+ */
+export const K_N = 'tl.n'
+
+/**
+ * 词条:「{年} 配额」。
+ */
+export const K_ALLOC = 'tl.alloc'
+
+/**
+ * 词条:「{年} 永居目标」(联邦)。
+ */
+export const K_PR_TARGET = 'tl.prTarget'
+
+/**
+ * 折叠件的量词词条(「展开 N 条」的「条」)。
+ */
+export const K_FOLD_UNIT = 'tl.unitCard'
+
+/**
+ * 白卡分区的全局类名(main.css 第 9 段;页面与弹框正文一律分区卡 —— 同 account / apply / companies,各域自抄)。
+ */
+export const CARD_MD_CLS = 'cardMd'
+
+/**
+ * 分区小标题的全局类名(main.css 第 9 段;同上)。
+ */
+export const CARD_HEAD_CLS = 'mcardHead'
 
 /**
  * 这页的 SEO 头(时间线是全站唯一一处把省抽选、联邦 EE 抽选与官方政策公告排在一条轴上的页面,

@@ -16,6 +16,9 @@
  * 二级导航改四个短名页签 —— 最新公告 | 抽选(本页)| 通道 | 申请步骤(/steps);政策公告撤出本页(与「最新公告」同一张表),
  * 类型筛随之撤,页头标题改「抽选时间线」。
  * 2026-10-04 Frank「这个只需要一个 更新时间」:两枚更新时间是同一个时刻,只留节奏格标题下那一枚,筛选药丸行端那枚撤。
+ * 2026-10-12 抽选页三段式(Frank 看效果图拍「定稿,开工」;docs/design/资讯/抽选-三段式-20261012.md):正文改三张分区卡 ——
+ * 配额(联邦 + 各省)→ 抽选节奏(一条通道一张,先出 10 张)→ 事件流(筛选药丸 + 时间轴);两种卡都按数据层的综合名次排。
+ * 更新时间挪进横幅副标题下面(Frank「更新时间去掉,更新时间放到 banner 上」),各段卡头不再挂。
  *
  * @author Frank
  * @time 2026-08-28 12:43:06
@@ -25,33 +28,30 @@ import { IconNews } from '@/components/icons'
 import { Shell } from '@/components/shell'
 import { SectionTabs } from '@/components/tabs'
 import { Updated } from '@/components/time'
-import { Title } from '@/components/title'
+import { FOLD_FIRST } from '@/components/pager'
 import {
-  BANNER_MODULE, EVENTS_ANCHOR_ID, SHELL_TOP, TABS_TONE, URL_NEWS, URL_STEPS, URL_STREAMS, URL_TIMELINE,
+  BANNER_MODULE, SHELL_TOP, TABS_TONE, URL_NEWS, URL_STEPS, URL_STREAMS, URL_TIMELINE,
 } from './constants'
-import { CadenceGrid } from './cadencegrid'
-import { EventList } from './eventlist'
-import { FilterChips } from './filterchips'
-import { provsOf, shownOf } from './functions'
+import { CadenceSection } from './cadencesection'
+import { EventSection } from './eventsection'
 import { useTimeline } from './hooks'
+import { QuotaSection } from './quotasection'
 import type { TimelineIn } from './types'
-import css from './timeline.module.css'
 
 /**
- * 时间线整块视图:页头 + 二级导航 → 抽选节奏卡 → 筛选药丸 → 混排时间轴。
+ * 时间线整块视图:页头(副标题下挂更新时间)+ 二级导航 → 配额 → 抽选节奏 → 事件流。
  *
- * @param props 三路数据与更新时刻(逐格注释见 TimelineIn)。
+ * @param props 事件、两种排名卡与更新时刻(逐格注释见 TimelineIn)。
  * @returns 正文(Shell 轨往下)。
  */
-export function Timeline({ events, cadence, eeCadence, updatedAt }: TimelineIn) {
-  const p = useTimeline()
-  const shown = shownOf({ events, prov: p.prov, stream: p.stream })
+export function Timeline({ events, quota, cadence, updatedAt }: TimelineIn) {
+  const p = useTimeline({ hidden: Math.max(cadence.length - FOLD_FIRST, 0) })
   return (
     <Shell top={SHELL_TOP}>
       <Banner module={BANNER_MODULE}
         icon={<IconNews />}
         title={p.t('tl.title')}
-        sub={p.t('tl.sub')}
+        sub={<>{p.t('tl.sub')}<Updated iso={updatedAt} t={p.t} inBanner /></>}
         images={BANNER_IMGS.news} />
       <SectionTabs tone={TABS_TONE}
         tabs={[
@@ -60,17 +60,22 @@ export function Timeline({ events, cadence, eeCadence, updatedAt }: TimelineIn) 
           { href: URL_STREAMS, label: p.t('tl.tabStreams') },
           { href: URL_STEPS, label: p.t('tl.tabSteps') },
         ]} />
-      <Title>{p.t('tl.cadence')}</Title>
-      <Updated iso={updatedAt} t={p.t} />
-      <CadenceGrid t={p.t} cadence={cadence} eeCadence={eeCadence} drillOf={p.drillOf} />
-      <div id={EVENTS_ANCHOR_ID} className={css.anchor}><Title>{p.t('tl.events')}</Title></div>
-      <FilterChips t={p.t}
-        provs={provsOf({ events })}
+      <QuotaSection t={p.t} lang={p.lang} cards={quota} />
+      <CadenceSection t={p.t}
+        lang={p.lang}
+        cards={cadence}
+        extra={p.extra}
+        onMore={p.onMore}
+        onFold={p.onFold}
+        drillOf={p.drillOf} />
+      <EventSection t={p.t}
+        lang={p.lang}
+        events={events}
+        cadence={cadence}
         prov={p.prov}
-        stream={p.stream}
+        pick={p.pick}
         provPickOf={p.provPickOf}
         onStreamClear={p.onStreamClear} />
-      <EventList t={p.t} events={shown} />
     </Shell>
   )
 }

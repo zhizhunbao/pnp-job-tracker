@@ -994,9 +994,19 @@ export type TlEvent = {
   kind: 'draw' | 'notice'
 
   /**
-   * draw=流名。
+   * draw=流名(2026-10-12 起省行也取通道流名,不再取项目名)。
    */
   title: string
+
+  /**
+   * 流名中文灰注(pnp_draws.stream_zh;'' = 没有。中文界面读,英 / 韩不读)。
+   */
+  titleZh: string
+
+  /**
+   * 联邦类别键(trade / cec …;前端查 ee.* 词条出中 / 韩灰字);省行为 ''。
+   */
+  label: string
 
   /**
    * draw:最低分;null = 未公布。
@@ -1030,68 +1040,283 @@ export type TlEvent = {
 }
 
 /**
- * 抽选节奏(省×项目;只报历史统计不预测下一次 —— 伪权威红线)。
+ * 抽选节奏状态(数据层 etl/mart/rank 判好:正常 / 比平常晚 / 久未抽选)。
  */
-export type TlCadence = {
+export type TlStatus = 'ok' | 'late' | 'idle'
+
+/**
+ * 合卡覆盖的一条通道(三语名;官方一次抽选同时覆盖几条通道时,节奏卡列出覆盖了哪几条)。
+ */
+export type TlCover = {
   /**
-   * 省码。
+   * 官方英文名。
+   */
+  en: string
+
+  /**
+   * 中文白话名(已去省码前缀)。
+   */
+  zh: string
+
+  /**
+   * 韩文白话名(已去省码前缀)。
+   */
+  ko: string
+}
+
+/**
+ * 一张排名卡(2026-10-12 抽选页三段式;draw_rank 一行,配额卡与抽选节奏卡共用一形 —— 只报历史统计不预测下一次,伪权威红线)。
+ */
+export type TlRank = {
+  /**
+   * 卡片稳定键。
+   */
+  key: string
+
+  /**
+   * 卡种:配额卡 / 抽选节奏卡。
+   */
+  kind: 'quota' | 'cadence'
+
+  /**
+   * 名次(两种卡各排各的,1 起)。
+   */
+  rank: number
+
+  /**
+   * 省码;'' = 联邦(与事件流同口径)。
    */
   prov: string
 
   /**
-   * 项目名。
-   */
-  stream: string
-
-  /**
-   * 分制标注。
-   */
-  scale: string
-
-  /**
-   * 最近抽选日期。
-   */
-  last: string
-
-  /**
-   * 距今天数(服务端算,当天口径 UTC 日)。
-   */
-  daysSince: number
-
-  /**
-   * 近几期平均间隔;<2 期 = null。
-   */
-  avgGapDays: number | null
-
-  /**
-   * 在库期数。
-   */
-  draws: number
-}
-
-/**
- * 联邦 EE 各类别「距今」(历史未入库,只报距今;二期历史入库后并入 cadence)。
- */
-export type EeCadence = {
-  /**
-   * 类别 key。
-   */
-  category: string
-
-  /**
-   * 类别人话名。
+   * 联邦类别键(前端查 ee.* 词条);省卡 ''。
    */
   label: string
 
   /**
-   * 最近一期日期。
+   * 英文名(配额卡 '',前端按省码出省名)。
    */
-  last: string
+  nameEn: string
 
   /**
-   * 距今天数。
+   * 中文名('' = 没有)。
    */
-  daysSince: number
+  nameZh: string
+
+  /**
+   * 韩文名('' = 没有)。
+   */
+  nameKo: string
+
+  /**
+   * 合卡覆盖的通道(单条通道 / 联邦 / 配额卡为空)。
+   */
+  covers: TlCovers
+
+  /**
+   * 这张卡统计的抽选流名(点卡片按它筛事件流)。
+   */
+  streams: TlStreams
+
+  /**
+   * 最近一期的分制。
+   */
+  scale: string
+
+  /**
+   * 最近一期抽选日期(到日;NS 只到月)。
+   */
+  lastDate: string
+
+  /**
+   * 距今天数(服务端按今天现算);null = 日期只到月,算不出。
+   */
+  daysSince: number | null
+
+  /**
+   * 平均间隔天数;null = 算不出(只有一期到日的抽选)。
+   */
+  avgGapDays: number | null
+
+  /**
+   * 节奏状态。
+   */
+  status: TlStatus
+
+  /**
+   * 今年抽选次数。
+   */
+  drawsYtd: number
+
+  /**
+   * 今年邀请人数;null = 没公布 / 今年没抽过。
+   */
+  invitationsYtd: number | null
+
+  /**
+   * 人数口径(invitation / selection / application)。
+   */
+  inviteUnit: string
+
+  /**
+   * 今年已发提名;null = 没有这一步(联邦)或本站未收录。
+   */
+  nominationsYtd: number | null
+
+  /**
+   * 配额卡:2026 配额 / 联邦永居目标;null = 本站未收录。节奏卡恒为 null。
+   */
+  allocation: number | null
+
+  /**
+   * 配额口径(quota 省配额 / prTarget 联邦永居目标;节奏卡 '')。
+   */
+  allocationKind: string
+}
+
+/**
+ * covers jsonb 里的一项(pg 交回解析好的对象;三格本站 ETL 自产)。
+ */
+export type CoverDbCell = {
+  /**
+   * 官方英文名。
+   */
+  en: Cell
+
+  /**
+   * 中文名。
+   */
+  zh: Cell
+
+  /**
+   * 韩文名。
+   */
+  ko: Cell
+}
+
+/**
+ * covers 格(NULL = 不是合卡)。
+ */
+export type CoversCell = CoverDbCell[] | null
+
+/**
+ * streams 格(NULL = 没登流名)。
+ */
+export type StreamsCell = Cell[] | null
+
+/**
+ * 合卡覆盖的通道清单。
+ */
+export type TlCovers = TlCover[]
+
+/**
+ * 一张卡统计的抽选流名清单。
+ */
+export type TlStreams = string[]
+
+/**
+ * `DRAW_RANK_ALL` 的库行(pg 原始;numeric 按字符串交回,jsonb 交回解析好的值 —— 两格是本站 ETL 自产的形,照形声明)。
+ */
+export type DrawRankDbRow = {
+  /**
+   * 卡片键。
+   */
+  key: Cell
+
+  /**
+   * 卡种。
+   */
+  kind: Cell
+
+  /**
+   * 名次。
+   */
+  rank: Cell
+
+  /**
+   * 省码(联邦 FED)。
+   */
+  province: Cell
+
+  /**
+   * 联邦类别键。
+   */
+  label: Cell
+
+  /**
+   * 英文名。
+   */
+  name_en: Cell
+
+  /**
+   * 中文名。
+   */
+  name_zh: Cell
+
+  /**
+   * 韩文名。
+   */
+  name_ko: Cell
+
+  /**
+   * 合卡覆盖的通道(jsonb)。
+   */
+  covers: CoversCell
+
+  /**
+   * 抽选流名(jsonb)。
+   */
+  streams: StreamsCell
+
+  /**
+   * 分制。
+   */
+  scale: Cell
+
+  /**
+   * 最近一期日期。
+   */
+  last_date: Cell
+
+  /**
+   * 平均间隔天数。
+   */
+  avg_gap_days: Cell
+
+  /**
+   * 节奏状态。
+   */
+  status: Cell
+
+  /**
+   * 今年抽选次数。
+   */
+  draws_ytd: Cell
+
+  /**
+   * 今年邀请人数。
+   */
+  invitations_ytd: Cell
+
+  /**
+   * 人数口径。
+   */
+  invite_unit: Cell
+
+  /**
+   * 今年已发提名。
+   */
+  nominations_ytd: Cell
+
+  /**
+   * 配额 / 永居目标。
+   */
+  allocation: Cell
+
+  /**
+   * 配额口径。
+   */
+  allocation_kind: Cell
 }
 
 /**
@@ -1104,14 +1329,14 @@ export type TimelineOut = Promise<{
   events: TlEvent[]
 
   /**
-   * 省级抽选节奏。
+   * 配额卡(联邦 + 各省,按名次)。
    */
-  cadence: TlCadence[]
+  quota: TlRank[]
 
   /**
-   * 联邦 EE 距今。
+   * 抽选节奏卡(一条通道一张,按名次)。
    */
-  eeCadence: EeCadence[]
+  cadence: TlRank[]
 }>
 
 /**
@@ -1224,27 +1449,3 @@ export type PgDate = Date
  */
 export type TimeLike = Cell | PgDate
 
-/**
- * 节奏分组的累积格(byStream 聚合用)。
- */
-export type CadenceGroup = {
-  /**
-   * 省码。
-   */
-  prov: string
-
-  /**
-   * 项目名。
-   */
-  stream: string
-
-  /**
-   * 分制标注。
-   */
-  scale: string
-
-  /**
-   * 各期日期。
-   */
-  dates: string[]
-}

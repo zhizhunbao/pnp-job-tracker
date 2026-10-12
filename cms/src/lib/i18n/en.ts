@@ -1250,10 +1250,15 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   // C6-01 timeline
   'tl.title': 'Draw timeline', 'tl.sub': 'Provincial and EE draws, one timeline',
   'tl.cadence': 'Draw cadence', 'tl.events': 'Events', 'tl.fed': 'Federal',
-  'tl.last': 'Last {d}', 'tl.daysSince': '{n} days ago', 'tl.avgGap': '~{n}-day avg interval over {m} draws',
+  // 2026-10-12 抽选页三段式(配额 / 抽选节奏 / 事件流三张分区卡)
+  'tl.quota': 'Allocations', 'tl.lastDraw': 'Last draw', 'tl.since': 'Since', 'tl.gap': 'Avg interval', 'tl.drawsYtd': 'Draws YTD',
+  'tl.invYtd': 'Invited YTD', 'tl.selYtd': 'Selected YTD', 'tl.appYtd': 'Apps selected', 'tl.nomYtd': 'Nominated YTD',
+  'tl.alloc': '{y} allocation', 'tl.prTarget': '{y} PR target', 'tl.nDays': '{n} days', 'tl.gapDays': '~{n} days',
+  'tl.nTimes': '{n}', 'tl.nPeople': '{n}', 'tl.n': '{n}', 'tl.late': 'Later than usual', 'tl.idle': 'No recent draws',
+  'tl.covers': 'Covers {list}', 'tl.unitCard': 'cards',
   'tl.notice': 'Notice',
   'tl.min': 'Min {n}', 'tl.notCrs': ', not CRS', 'tl.inv': '{n} invited', 'tl.src': 'Official source',
-  'tl.entry': 'Draws & policy timeline', 'tl.empty': 'No matching events', 'tl.hist': 'Draw history',
+  'tl.entry': 'Draws & policy timeline', 'tl.empty': 'No matching events',
   'loading': 'Updating…',
   'origin.hireac': 'HireAC', 'origin.gcjobs': 'GC Jobs',
   'origin.jobillico': 'Jobillico', 'origin.jobboom': 'Jobboom', 'origin.careerbeacon': 'CareerBeacon',

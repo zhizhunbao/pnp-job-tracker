@@ -7,4 +7,4 @@
  */
 
 export { fetchTimeline } from './functions'
-export type { TlCadence, TlEvent } from './types'
+export type { TlEvent, TlRank } from './types'

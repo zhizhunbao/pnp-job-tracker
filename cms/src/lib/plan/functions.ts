@@ -18,20 +18,22 @@
  * @time 2026-08-22 01:00:16
  */
 
-import { queryRows, SQL, numOrNull, text } from '../db'
+import { count, queryRows, queryRowsOrEmpty, SQL, numOrNull, text } from '../db'
 import { DAY_MS } from '@/lib/time'
 import type { Db } from '../db'
 import {
   AV, BAND_A, BAND_NONE, BAND_Y, BAND_Z, BASIS_NONE, CADENCE_FACTOR, CERT, CMP, DATE10_LEN, DATE_NONE, DAYS_PER_MONTH,
   DAYS_PER_WEEK, DRAW_ROWS_MIN, GROUP_SEP, KIND_NOTICE, MONTHS_PER_YEAR, NA_TEXT, NOT_TIME_CONVERTIBLE, PLAN_NOTES,
-  PLAN_TEXT, PROCESSING_KEY, PROV_FED, PROV_RE, ROUND_TENTHS_SCALE, SLOT_NONE, SPACE, STEP, SUBJECT_EMPLOYER,
+  PLAN_TEXT, PROCESSING_KEY, PROV_FED, PROV_RE, RANK_OK, RANK_QUOTA, RANK_STATUSES, ROUND_TENTHS_SCALE, SLOT_NONE, SPACE, STEP,
+  SUBJECT_EMPLOYER,
   TEXT_NONE, THIN_MIN, TV, UNIT_HEADS, WHY_NONE,
 } from './constants'
 import { fill } from '../template'
 import type {
-  Availability, CadenceGroup, ComparisonsIn, DaysIn, DecoratedRows, DrawRow, EeCadence, MaybeNum, MaybeOutside,
+  Availability, ComparisonsIn, CoversCell, DaysIn, DecoratedRows, DrawRankDbRow, DrawRow, MaybeNum, MaybeOutside,
   MonthsIn, OpsMetric, OutsideIn, Plan, PlanBlockers, PlanComparisons, PlanIn, PlanPath, PlanPathInput, PlanStep,
-  PlanSteps, RankableRow, RankedRows, RankIn, ThresholdRows, TimelineOut, TlCadence, TlEvent, Row, TimeLike,
+  PlanSteps, RankableRow, RankedRows, RankIn, ThresholdRows, TimelineOut, StreamsCell, TlCovers, TlEvent, TlRank, TlStatus, TlStreams, Row,
+  TimeLike,
   DecoratedRow,
 } from './types'
 // =========================================================================
@@ -566,102 +568,30 @@ function comparisonsOf(input: ComparisonsIn): PlanComparisons {
  * 这种行照旧进事件流(日期原样到月),只是不进节奏统计。
  * 2026-10-03 资讯页签四分(Frank「这个是不是拆成两个 tab」→ 提案「可以,做吧」):时间线页签改叫「抽选」,
  * 政策公告那一路(news 表最近 90 条)撤出事件流 —— 与「最新公告」页签读的是同一张表,政策公告只在那里看;事件流只剩抽选与省通告。
+ * 2026-10-12 抽选页三段式(Frank 看效果图拍「定稿,开工」;docs/design/资讯/抽选-三段式-20261012.md):节奏统计整段下沉数据层 ——
+ * etl/mart/rank 子域按通道一张卡算好平均间隔 / 今年次数与人数 / 状态 / 综合名次,另出配额卡(联邦 + 各省),写进 draw_rank 表;
+ * 本函数不再分组求间隔,只读那张表(上面几段说的省×项目分组、eeCadence 两套口径随之作废,NS 只到月照旧不进间隔,规则搬到了数据层)。
+ * draw_rank 还没建表时(生产 DDL 未跑)查挂回空,事件流照出。
  *
  * @param db 数据库连接(池由调用方注进来)。
- * @returns 事件流、省级节奏与联邦 EE 距今。
+ * @returns 事件流、配额卡与抽选节奏卡(两种卡各按名次)。
  */
-// eslint-disable-next-line local/function-length -- 事件流与两套节奏统计共享同一批行
 export async function fetchTimeline(db: Db): TimelineOut {
-  const [draws, ee] = await Promise.all([
-    queryRows({ db: db, sql: SQL.PNP_DRAWS_ALL, params: [], map: passRow }),
-    queryRows({ db: db, sql: SQL.EE_CATEGORIES_LATEST, params: [], map: passRow }),
+  const [draws, ranks] = await Promise.all([
+    queryRows({ db: db, sql: SQL.PNP_DRAWS_ALL, params: [], map: toDrawEvent }),
+    queryRowsOrEmpty({ db: db, sql: SQL.DRAW_RANK_ALL, params: [], map: toTlRank }),
   ])
-  const today = new Date().toISOString().slice(0, DATE10_LEN)
-
-  const events: TlEvent[] = []
-  for (const r of draws) {
-    events.push(toDrawEvent(r))
+  draws.sort(byDateDesc)
+  const quota: TlRank[] = []
+  const cadence: TlRank[] = []
+  for (const r of ranks) {
+    if (r.kind === RANK_QUOTA) {
+      quota.push(r)
+    } else {
+      cadence.push(r)
+    }
   }
-  events.sort(byDateDesc)
-
-  const byStream = new Map<string, CadenceGroup>()
-  for (const r of draws) {
-    if (r.kind === KIND_NOTICE || r.province === PROV_FED) {
-      continue
-    }
-    const d = day(r.draw_date)
-    if (d.length !== DATE10_LEN) {
-      continue
-    }
-    let name = TEXT_NONE
-    if (r.label != null && r.label !== '') {
-      name = String(r.label)
-    } else if (r.stream != null) {
-      name = String(r.stream)
-    }
-    const key = String(r.province) + GROUP_SEP + name
-    let g = byStream.get(key)
-    if (g == null) {
-      let prov = TEXT_NONE
-      if (r.province != null) {
-        prov = String(r.province)
-      }
-      let scale = TEXT_NONE
-      if (r.scale != null) {
-        scale = String(r.scale)
-      }
-      g = { prov: prov, stream: name, scale: scale, dates: [] }
-      byStream.set(key, g)
-    }
-    g.dates.push(d)
-  }
-  const cadence: TlCadence[] = []
-  for (const g of byStream.values()) {
-    const dates = Array.from(new Set(g.dates))
-    dates.sort(byDateAsc)
-    let gapSum = 0
-    let prevDate: string | null = null
-    for (const d of dates) {
-      if (prevDate != null) {
-        gapSum += daysBetween({ from: prevDate, to: d })
-      }
-      prevDate = d
-    }
-    let avgGapDays: MaybeNum = null
-    if (dates.length > 1) {
-      avgGapDays = Math.round(gapSum / (dates.length - 1))
-    }
-    const last = dates[dates.length - 1]
-    if (last == null) {
-      continue
-    }
-    cadence.push({
-      prov: g.prov, stream: g.stream, scale: g.scale,
-      last: last, daysSince: daysBetween({ from: last, to: today }),
-      avgGapDays: avgGapDays, draws: dates.length,
-    })
-  }
-  cadence.sort(byProvStream)
-
-  const eeCadence: EeCadence[] = []
-  for (const r of ee) {
-    const last = day(r.draw_date)
-    if (last === '') {
-      continue
-    }
-    let category = TEXT_NONE
-    if (r.category != null) {
-      category = String(r.category)
-    }
-    let label = category
-    if (r.label != null && r.label !== '') {
-      label = String(r.label)
-    }
-    eeCadence.push({ category: category, label: label, last: last, daysSince: daysBetween({ from: last, to: today }) })
-  }
-  eeCadence.sort(byDaysSince)
-
-  return { events: events, cadence: cadence, eeCadence: eeCadence }
+  return { events: draws, quota: quota, cadence: cadence }
 }
 
 /**
@@ -677,6 +607,40 @@ function daysBetween(input: DaysIn): number {
 // =========================================================================
 // 行构造器(rows 抽屉 2026-08-23 撤编后的固定尾段;体内只许词汇表 + 纯拼装)
 // =========================================================================
+
+/**
+ * `PNP_DRAWS_ALL` 一行 → 时间线事件(FED 行 label=类别 key、stream=官方 drawName → 标题取 stream;
+ * prov 留空 = 联邦口径不变)。
+ * 2026-10-12 抽选页三段式:省行标题也改取 stream(通道名)—— 节奏卡拆到一条通道一张,事件标题若还写项目名(BC 五条都叫
+ * 「BC PNP Skills Immigration」)就分不出是哪条通道,点卡片按流名筛也对不上;项目名退出标题。多带 titleZh(stream_zh,
+ * 中文界面灰字)与 label(联邦类别键,前端按它查 ee.* 词条出中 / 韩灰字)。
+ *
+ * @param r 原始行。
+ * @returns 事件。
+ */
+export function toDrawEvent(r: Row): TlEvent {
+  const fed = r.province === PROV_FED
+  let prov = text(r.province)
+  let title = text(r.stream)
+  if (title === '') {
+    title = text(r.label)
+  }
+  let label = ''
+  if (fed) {
+    prov = ''
+    label = text(r.label)
+  }
+  let kind: TlEvent['kind'] = 'draw'
+  if (r.kind === KIND_NOTICE) {
+    kind = 'notice'
+  }
+  return {
+    date: day(r.draw_date), prov: prov, kind: kind,
+    title: title, titleZh: text(r.stream_zh), label: label, score: numOrNull(r.score), scale: text(r.scale),
+    invitations: numOrNull(r.invitations), note: text(r.note),
+    url: text(r.url), unit: text(r.unit),
+  }
+}
 
 /**
  * 时间格 → YYYY-MM-DD(pg timestamp 回 Date、文本列回字符串,一网收干净;空落空串)。
@@ -696,46 +660,85 @@ export function day(v: TimeLike | undefined): string {
 }
 
 /**
- * `PNP_DRAWS_ALL` 一行 → 时间线事件(FED 行 label=类别 key、stream=官方 drawName → 标题取 stream;
- * prov 留空 = 联邦口径不变)。
+ * `DRAW_RANK_ALL` 一行 → 一张排名卡(2026-10-12 抽选页三段式)。联邦省码折成 ''(与事件流同口径,点卡片按它筛);
+ * 距今按今天现算(统计日之后过了几天也准),状态照数据层判的原样读;jsonb 两格(covers / streams)是本站 ETL 自产的形,
+ * 不是数组就当空。
  *
  * @param r 原始行。
- * @returns 事件。
+ * @returns 排名卡。
  */
-export function toDrawEvent(r: Row): TlEvent {
-  const fed = r.province === 'FED'
+export function toTlRank(r: DrawRankDbRow): TlRank {
   let prov = text(r.province)
-  let title = text(r.label)
-  if (title === '') {
-    title = text(r.stream)
-  }
-  if (fed) {
+  if (prov === PROV_FED) {
     prov = ''
-    title = text(r.stream)
-    if (title === '') {
-      title = text(r.label)
-    }
   }
-  let kind: TlEvent['kind'] = 'draw'
-  if (r.kind === 'notice') {
-    kind = 'notice'
+  const lastDate = text(r.last_date)
+  let daysSince: MaybeNum = null
+  if (lastDate.length === DATE10_LEN) {
+    daysSince = daysBetween({ from: lastDate, to: new Date().toISOString().slice(0, DATE10_LEN) })
+  }
+  let kind: TlRank['kind'] = 'cadence'
+  if (r.kind === RANK_QUOTA) {
+    kind = 'quota'
   }
   return {
-    date: day(r.draw_date), prov: prov, kind: kind,
-    title: title, score: numOrNull(r.score), scale: text(r.scale),
-    invitations: numOrNull(r.invitations), note: text(r.note),
-    url: text(r.url), unit: text(r.unit),
+    key: text(r.key), kind: kind, rank: count(r.rank), prov: prov, label: text(r.label),
+    nameEn: text(r.name_en), nameZh: text(r.name_zh), nameKo: text(r.name_ko), covers: toCovers(r.covers),
+    streams: toStreams(r.streams), scale: text(r.scale), lastDate: lastDate, daysSince: daysSince,
+    avgGapDays: numOrNull(r.avg_gap_days), status: statusOf(text(r.status)), drawsYtd: count(r.draws_ytd),
+    invitationsYtd: numOrNull(r.invitations_ytd), inviteUnit: text(r.invite_unit),
+    nominationsYtd: numOrNull(r.nominations_ytd), allocation: numOrNull(r.allocation),
+    allocationKind: text(r.allocation_kind),
   }
 }
 
 /**
- * 窄行原样透传(节奏聚合要按原始列分组;照 ruling `passRow` 先例)。
+ * 节奏状态串 → 三态(数据层只写 ok / late / idle;认不出的当正常)。
  *
- * @param r 原始行。
- * @returns 同一行。
+ * @param s 库里的状态串。
+ * @returns 三态之一。
  */
-export function passRow(r: Row): Row {
-  return r
+function statusOf(s: string): TlStatus {
+  for (const st of RANK_STATUSES) {
+    if (st === s) {
+      return st
+    }
+  }
+  return RANK_OK
+}
+
+/**
+ * covers jsonb → 覆盖通道清单(NULL 当空;每项三格缺了当空串)。
+ *
+ * @param v 库回的 jsonb 格。
+ * @returns 覆盖通道清单。
+ */
+function toCovers(v: CoversCell): TlCovers {
+  const out: TlCovers = []
+  if (v == null) {
+    return out
+  }
+  for (const c of v) {
+    out.push({ en: text(c.en), zh: text(c.zh), ko: text(c.ko) })
+  }
+  return out
+}
+
+/**
+ * streams jsonb → 抽选流名清单(NULL 当空)。
+ *
+ * @param v 库回的 jsonb 格。
+ * @returns 流名清单。
+ */
+function toStreams(v: StreamsCell): TlStreams {
+  const out: TlStreams = []
+  if (v == null) {
+    return out
+  }
+  for (const s of v) {
+    out.push(text(s))
+  }
+  return out
 }
 
 // =========================================================================
@@ -819,34 +822,6 @@ export function byDateDesc(a: TlEvent, b: TlEvent): number {
     return -1
   }
   return 0
-}
-
-/**
- * 省级节奏:省码字典序,同省内项目字典序。
- *
- * @param a 左行。
- * @param b 右行。
- * @returns 负数 a 在前,正数 b 在前。
- */
-// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
-export function byProvStream(a: TlCadence, b: TlCadence): number {
-  const prov = a.prov.localeCompare(b.prov)
-  if (prov !== 0) {
-    return prov
-  }
-  return a.stream.localeCompare(b.stream)
-}
-
-/**
- * 联邦 EE 距今:近在前。
- *
- * @param a 左行。
- * @param b 右行。
- * @returns 负数 a 在前,正数 b 在前。
- */
-// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
-export function byDaysSince(a: EeCadence, b: EeCadence): number {
-  return a.daysSince - b.daysSince
 }
 
 /**

@@ -81,6 +81,12 @@ export type UpdatedIn = {
    * 当天只写时刻、不是当天写「月-日 时刻」;宽屏照旧写全。
    */
   narrowShort?: boolean
+
+  /**
+   * 放进横幅副标题(可省 = 否;2026-10-12 抽选页三段式 Frank「更新时间去掉,更新时间放到 banner 上」):
+   * 出一行行内块,字色跟横幅走、不靠右,不再是右上角那枚灰字。
+   */
+  inBanner?: boolean
 }
 
 /**

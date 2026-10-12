@@ -98,6 +98,32 @@
 }
 
 /*
+ * 横幅档(2026-10-12 抽选页三段式 Frank「更新时间放到 banner 上」;Updated 的 inBanner 档):
+ * 横幅副标题下另起一行,字色跟横幅(白字压图),只比副标题小一号、淡一点。
+ */
+.updatedBanner {
+  /*
+   * 另起一行。
+   */
+  display: block;
+
+  /*
+   * 比副标题小一号。
+   */
+  font-size: 12px;
+
+  /*
+   * 字色跟横幅走,淡一点。
+   */
+  opacity: 0.85;
+
+  /*
+   * 与副标题拉开一点。
+   */
+  margin-top: 4px;
+}
+
+/*
  * 窄屏短写那一句(2026-09-26 /fe 首页 Frank 看效果图点头「Updated 12:57」;Updated 的 narrowShort 档):宽屏收起。
  */
 .updatedShort {

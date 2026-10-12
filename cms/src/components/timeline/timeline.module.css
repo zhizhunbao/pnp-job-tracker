@@ -11,28 +11,352 @@
  */
 
 /*
- * 抽选节奏卡的网格(个人化钩 v1):一行铺得下几张就几张,窄到手机时每张吃满整宽。
+ * 配额卡 / 节奏卡的网格(2026-10-12 抽选页三段式):网页一行四张,手机一行一张(Frank「这个一行放一个卡片?」)。
  */
-.cadenceGrid {
+.cardGrid {
   /*
    * 网格排布。
    */
   display: grid;
 
   /*
-   * 每张卡最窄 300px,窄于 300 的屏改吃满整宽(min() 那半),余量均分。
+   * 一行四张,等宽(minmax 0 让长名字折行而不是撑破格子)。
    */
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 
   /*
    * 卡与卡的间距。
    */
   gap: 10px;
+}
+
+@media (width <= 767px) {
+  .cardGrid {
+    /*
+     * 手机一行一张。
+     */
+    grid-template-columns: 1fr;
+  }
+}
+
+/*
+ * 一张配额卡(不可点,普通白卡)。
+ */
+.mini {
+  /*
+   * 名次记号相对它绝对定位。
+   */
+  position: relative;
 
   /*
-   * 与下面「事件」标题的间距。
+   * 白底。
    */
-  margin-bottom: 8px;
+  background: var(--card);
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 卡圆角(同节奏卡)。
+   */
+  border-radius: 10px;
+
+  /*
+   * 卡内衬。
+   */
+  padding: 10px 12px;
+}
+
+/*
+ * 卡里除名次记号以外的正文:右边让出名次记号的位置。
+ */
+.miniBody {
+  /*
+   * 块级(节奏卡里是 span)。
+   */
+  display: block;
+
+  /*
+   * 给右上角名次让位。
+   */
+  padding-right: 30px;
+}
+
+/*
+ * 前三名的奖牌 emoji(2026-10-12 Frank「用那个 emoji 的排名 图标吧」)。
+ */
+.medal {
+  /*
+   * 钉在卡的右上角。
+   */
+  position: absolute;
+
+  /*
+   * 距上沿。
+   */
+  top: 6px;
+
+  /*
+   * 距右沿。
+   */
+  right: 10px;
+
+  /*
+   * emoji 字号。
+   */
+  font-size: 22px;
+
+  /*
+   * 不撑行高。
+   */
+  line-height: 1;
+}
+
+/*
+ * 第 4 名起的灰字名次。
+ */
+.rank {
+  /*
+   * 钉在卡的右上角。
+   */
+  position: absolute;
+
+  /*
+   * 距上沿。
+   */
+  top: 10px;
+
+  /*
+   * 距右沿。
+   */
+  right: 12px;
+
+  /*
+   * 小字。
+   */
+  font-size: 13px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 名字两行(英文黑字 + 译名灰字)。
+ */
+.names {
+  /*
+   * 纵排两行。
+   */
+  display: flex;
+
+  /*
+   * 纵向。
+   */
+  flex-direction: column;
+
+  /*
+   * 长名字可以收窄折行。
+   */
+  min-width: 0;
+}
+
+/*
+ * 英文名(主文案)。
+ */
+.nameEn {
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 近黑。
+   */
+  color: var(--text);
+
+  /*
+   * 主文案字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 两行名字收紧行高。
+   */
+  line-height: 1.3;
+}
+
+/*
+ * 译名灰字。
+ */
+.nameGray {
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 与英文名拉开一点。
+   */
+  margin-top: 1px;
+}
+
+/*
+ * 数字格栅:一行三格。
+ */
+.stats {
+  /*
+   * 网格排布。
+   */
+  display: grid;
+
+  /*
+   * 一行三格等宽(英文格名「Nominated」一个词就要 60px 上下,第一格加宽会把后两格挤到放不下一个词)。
+   */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  /*
+   * 行距 8、列距 10。
+   */
+  gap: 8px 10px;
+
+  /*
+   * 与名字拉开。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 一格(格名在上、数字在下)。
+ */
+.stat {
+  /*
+   * 纵排。
+   */
+  display: flex;
+
+  /*
+   * 纵向。
+   */
+  flex-direction: column;
+
+  /*
+   * 格名在上、数字贴底:同一行里格名折成两行的那格,数字也和邻格对齐。
+   */
+  justify-content: space-between;
+
+  /*
+   * 可收窄。
+   */
+  min-width: 0;
+}
+
+/*
+ * 格名(黑字;2026-10-12 Frank「key 不要是灰字,数字应该是灰字吧」)。
+ */
+.statK {
+  /*
+   * 近黑。
+   */
+  color: var(--text);
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 格窄时按词折行(英文格名长,不折会压到旁边那格上;只在词间断,不拆单词)。
+   */
+  overflow-wrap: break-word;
+}
+
+/*
+ * 数字(灰字,不加粗;Frank「这个不用加粗 吧」)。
+ */
+.statV {
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 数字字号。
+   */
+  font-size: 16px;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+
+  /*
+   * 等宽数字(上下卡对得齐)。
+   */
+  font-variant-numeric: tabular-nums;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 「距今」正常档:绿。
+ */
+.vOk {
+  /*
+   * 成功绿。
+   */
+  color: var(--ok);
+}
+
+/*
+ * 「距今」比平常晚档:琥珀。
+ */
+.vLate {
+  /*
+   * 警示琥珀。
+   */
+  color: var(--warn);
+}
+
+/*
+ * 「距今」久未抽选档:浅灰。
+ */
+.vIdle {
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 状态胶囊那一行。
+ */
+.tags {
+  /*
+   * 块级。
+   */
+  display: block;
+
+  /*
+   * 与数字格拉开。
+   */
+  margin-top: 6px;
 }
 
 /*
@@ -41,6 +365,26 @@
  * .btn/.ghost 的同权重声明且不赌打包顺序(先例 account 的 .logoutBtn、companies 的 .backBtn)。
  */
 .card.card {
+  /*
+   * 名次记号相对它绝对定位(2026-10-12 抽选页三段式)。
+   */
+  position: relative;
+
+  /*
+   * 纵向弹性:网格把卡拉高后,按钮默认把内容竖向居中,字少的卡会浮在中间 —— 改成顶对齐。
+   */
+  flex-direction: column;
+
+  /*
+   * 内容贴顶。
+   */
+  justify-content: flex-start;
+
+  /*
+   * 子块撑满整宽。
+   */
+  align-items: stretch;
+
   /*
    * 白底(盖掉 .ghost 的无底)。
    */
@@ -82,9 +426,9 @@
   font-family: inherit;
 
   /*
-   * 块级(盖掉 .btn 的 inline-block:它是网格里的一格,要吃满这一格)。
+   * 块级(盖掉 .btn 的 inline-block:它是网格里的一格,要吃满这一格);2026-10-12 起改弹性块,理由见上面 flex-direction 那条。
    */
-  display: block;
+  display: flex;
 
   /*
    * 整宽。
@@ -103,7 +447,7 @@
 }
 
 /*
- * 卡的头一行:省标 + 流名 + 分制 + 右端的口径小注。
+ * 卡的头一行:省标 + 名字两行(2026-10-12 起名字两行,省标顶对齐)。
  */
 .cardHead {
   /*
@@ -117,105 +461,16 @@
   gap: 6px;
 
   /*
-   * 竖直居中。
+   * 顶对齐(名字可能两行)。
    */
-  align-items: center;
-
-  /*
-   * 与下面统计行的间距。
-   */
-  margin-bottom: 3px;
+  align-items: flex-start;
 }
 
-/*
- * 流名(卡上的主文案)。
- */
-.stream {
-  /*
-   * 半粗(主文案)。
-   */
-  font-weight: 600;
 
-  /*
-   * 近黑。
-   */
-  color: var(--text);
-}
 
-/*
- * 分制小注(SIRS/WEOI/CRS…;灰字小字跟在人话名后面)。
- */
-.scale {
-  /*
-   * 浅灰。
-   */
-  color: var(--text3);
 
-  /*
-   * 小注字号。
-   */
-  font-size: 11px;
-}
 
-/*
- * 右端的口径小注:这张卡说的是**历史统计**,不预测下一次(伪权威红线)。
- */
-.hist {
-  /*
-   * 推到行末。
-   */
-  margin-left: auto;
 
-  /*
-   * 品牌蓝。
-   */
-  color: var(--primary);
-
-  /*
-   * 小注字号。
-   */
-  font-size: 11px;
-
-  /*
-   * 不折行(折了就读不出是一句口径声明)。
-   */
-  white-space: nowrap;
-}
-
-/*
- * 卡的统计行(最近一期 / 距今多少天 / 平均间隔)。
- */
-.cardBody {
-  /*
-   * 块级(原先是 div,换成 span 后要自己声明)。
-   */
-  display: block;
-
-  /*
-   * 次级灰。
-   */
-  color: var(--text2);
-}
-
-/*
- * 「距今 N 天」的常规档。
- */
-.days {
-  /*
-   * 深灰(本页私有,不是全站色板成员)。
-   */
-  color: #374151;
-}
-
-/*
- * 「距今 N 天」的琥珀档:比历史平均间隔还久 —— 这条流拖长了。
- */
-.daysLate {
-  /*
-   * 警示琥珀。
-   */
-  color: var(--warn);
-}
 
 /*
  * 事件流那一段的锚点(节奏卡点一下滚到这里)。
@@ -420,6 +675,64 @@
    * 近黑。
    */
   color: var(--text);
+}
+
+/*
+ * 流名下的译名灰字(2026-10-12 Frank「英文下面加 中文灰字」)。
+ */
+.titleGray {
+  /*
+   * 另起一行。
+   */
+  display: block;
+
+  /*
+   * 浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 常规字重(不跟流名加粗)。
+   */
+  font-weight: 400;
+}
+
+@media (width >= 768px) {
+  .drawTitle {
+    /*
+     * 网页端把最低分与人数推到右边(Frank「这部分放右边对齐呢」)。
+     */
+    margin-right: auto;
+  }
+
+  .score {
+    /*
+     * 最低分一列定宽靠右,上下行对得齐。
+     */
+    min-width: 200px;
+
+    /*
+     * 靠右。
+     */
+    text-align: right;
+  }
+
+  .inv {
+    /*
+     * 人数一列定宽靠右。
+     */
+    min-width: 96px;
+
+    /*
+     * 靠右。
+     */
+    text-align: right;
+  }
 }
 
 /*

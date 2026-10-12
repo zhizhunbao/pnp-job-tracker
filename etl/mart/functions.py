@@ -326,6 +326,9 @@ from mart.constants import (  # 2026-10-11 申请步骤时间线(段25)
     TL_MONTHS_PER_YEAR, TL_NOTE_DEADLINE_STEPS, TL_NOTE_FULL_STEPS,
 )
 from mart.scheme import FedTimes, OpsHitIn, PathwaysIn, SpanIn, StepSpanIn, TimelineIn, TotalIn  # 同上
+from mart.constants import TABLE_DRAW_RANK, TABLE_MACRO_SERIES  # 2026-10-12 抽选页三段式(Frank「定稿,开工」)
+from mart.rank.functions import draw_rank_of  # 同上(排名子域 mart/rank:依赖单向 mart → 子域)
+from mart.rank.scheme import DrawRankIn, RankMonthOnlyTest  # 同上
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CareersHostIn, CatI18nIn,
     ChannelTierIn, CityBuildIn, CityRowIn, CityStatsIn, CityStatsRowIn, ClosedDaysIn, ClosedJobIn,
@@ -5012,6 +5015,24 @@ def build_pnp_draws_table() -> None:
     say_table_counts(SayCountsIn(tables=tables, width=TABLE_NAME_WIDTH))
 
 
+def build_draw_rank_table() -> None:
+    """单表增量:只重建 data/mart/draw_rank.json(2026-10-12 抽选页三段式:配额卡 + 抽选节奏卡的综合排名,算法住 mart/rank 子域)。
+    读本目录已落盘的四张上游表(pnp_draws / pnp_ops_stats / pathways / macro_series),不陪跑跨源汇装;
+    之后 load --only upload + seed。全量汇装(to_mart_tables)照同一个入口算,两路同一份拼法。"""
+    OUT_MART.mkdir(parents=True, exist_ok=True)
+    rank_in = DrawRankIn(draws=mart_rows_of(TABLE_PNP_DRAWS), ops=mart_rows_of(TABLE_PNP_OPS),
+                         pathways=mart_rows_of(TABLE_PATHWAYS), macro=mart_rows_of(TABLE_MACRO_SERIES),
+                         today=date.today())
+    tables = {TABLE_DRAW_RANK: draw_rank_of(rank_in)}
+    write_mart_table(TableWriteIn(tables=tables, out_dir=OUT_MART))
+    say_table_counts(SayCountsIn(tables=tables, width=TABLE_NAME_WIDTH))
+
+
+def mart_rows_of(table: str) -> list:
+    """读本目录一张已落盘的 mart 表(顶层是行清单;读不动就抛 —— 硬依赖档,同 read_table)。"""
+    return json.loads((OUT_MART / TABLE_FILE_TPL.format(table=table)).read_text(encoding=ENC_UTF8))
+
+
 def pnp_draws_of(ee_draws: EeDrawsOut) -> list:
     """pnp_draws 整表:抽选事实(build_pnp_draws)+ 出处页挂文字片段(anchor_draw_rows)。汇装与单表件共用这一份拼法
     (2026-09-30 来源定位 ③-1 自 to_mart_tables 的字典项提出,入参一字未改)。"""
@@ -5501,6 +5522,8 @@ def to_mart_tables() -> dict:
         "news": build_news(),
         "macro_series": build_macro_series(),
     }
+    tables[TABLE_DRAW_RANK] = draw_rank_of(DrawRankIn(draws=draws, ops=ops, pathways=pathways,
+                                                      macro=tables[TABLE_MACRO_SERIES], today=date.today()))
     build_cip_programs(tables)
     return tables
 
@@ -8149,13 +8172,14 @@ def run_tests() -> None:
     2026-10-02 再加一组:MartDesignatedSplitTest(指定雇主拆招牌 / 门店 / 法人:金标、门店只认地名、城市名不当招牌、变异探针)。
     2026-10-04 再加一组:MartCipProgramsTest(专业表源文件缺席整张不进汇装字典、留痕带 ✗;在就原样放进来)。
     2026-10-05 再加一组:MartNocDescExamplesTest(noc_descriptions 行带官方示例职称:换行拼接、没有给空串)。
-    2026-10-11 再加一组:MartOfferDrawTest(省「雇主 offer 类通道最近一次抽选日」:只认 jobLinked 点名的组、按月补月末、没收录不挂)。"""
+    2026-10-11 再加一组:MartOfferDrawTest(省「雇主 offer 类通道最近一次抽选日」:只认 jobLinked 点名的组、按月补月末、没收录不挂)。
+    2026-10-12 再加一组:RankMonthOnlyTest(住 mart/rank 子域:只到月不进间隔、状态三档金标、合卡与省提名专场、邀请人数排前)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
                  MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest, MartNbNlOpsTest,
                  MartBcFunnelOpsTest, MartMbPoolTest, MartAbFederalTest,
                  MartDrawSelectionTest, MartDrawAnchorTest, MartDesignatedSplitTest, MartCipProgramsTest,
-                 MartNocDescExamplesTest, MartOfferDrawTest):
+                 MartNocDescExamplesTest, MartOfferDrawTest, RankMonthOnlyTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

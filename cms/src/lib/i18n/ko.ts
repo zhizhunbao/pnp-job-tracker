@@ -1206,10 +1206,15 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   // C6-01 타임라인
   'tl.title': '추첨 타임라인', 'tl.sub': '주정부 추첨과 연방 EE 추첨 타임라인',
   'tl.cadence': '추첨 주기', 'tl.events': '이벤트', 'tl.fed': '연방',
-  'tl.last': '최근 {d}', 'tl.daysSince': '{n}일 전', 'tl.avgGap': '최근 {m}회 평균 간격 ~{n}일',
+  // 2026-10-12 抽选页三段式(配额 / 抽选节奏 / 事件流三张分区卡)
+  'tl.quota': '배정', 'tl.lastDraw': '최근 추첨', 'tl.since': '경과', 'tl.gap': '평균 간격', 'tl.drawsYtd': '올해 추첨',
+  'tl.invYtd': '올해 초청', 'tl.selYtd': '올해 선발', 'tl.appYtd': '올해 선발 신청', 'tl.nomYtd': '올해 지명',
+  'tl.alloc': '{y} 배정', 'tl.prTarget': '{y} 영주권 목표', 'tl.nDays': '{n}일', 'tl.gapDays': '~{n}일',
+  'tl.nTimes': '{n}회', 'tl.nPeople': '{n}명', 'tl.n': '{n}', 'tl.late': '평소보다 늦음', 'tl.idle': '장기간 추첨 없음',
+  'tl.covers': '{list} 포함', 'tl.unitCard': '개',
   'tl.notice': '공지',
   'tl.min': '최저 {n}점', 'tl.notCrs': ', 비CRS', 'tl.inv': '초청 {n}명', 'tl.src': '공식 출처',
-  'tl.entry': '추첨·정책 타임라인', 'tl.empty': '일치하는 이벤트 없음', 'tl.hist': '추첨 이력',
+  'tl.entry': '추첨·정책 타임라인', 'tl.empty': '일치하는 이벤트 없음',
   'loading': '업데이트 중…',
   'origin.hireac': 'HireAC', 'origin.gcjobs': 'GC Jobs',
   'origin.jobillico': 'Jobillico', 'origin.jobboom': 'Jobboom', 'origin.careerbeacon': 'CareerBeacon',

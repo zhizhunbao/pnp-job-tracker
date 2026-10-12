@@ -17,10 +17,10 @@ import css from './timeline.module.css'
  * @param props 取词函数与筛过之后的事件。
  * @returns 时间轴(空时出空态那句话)。
  */
-export function EventList({ t, events }: EventListIn) {
+export function EventList({ t, lang, events }: EventListIn) {
   const rows = []
   for (const [i, row] of events.entries()) {
-    rows.push(<EventCard key={i} t={t} row={row} />)
+    rows.push(<EventCard key={i} t={t} lang={lang} row={row} />)
   }
   return (
     <div className={css.rail}>

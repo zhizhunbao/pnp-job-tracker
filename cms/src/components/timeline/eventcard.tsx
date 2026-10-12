@@ -21,7 +21,7 @@ import css from './timeline.module.css'
  * @param props 取词函数与这一条事件。
  * @returns 圆点与事件白卡。
  */
-export function EventCard({ t, row }: EventCardIn) {
+export function EventCard({ t, lang, row }: EventCardIn) {
   return (
     <div className={css.event}>
       <span className={css.dot} />
@@ -29,7 +29,7 @@ export function EventCard({ t, row }: EventCardIn) {
         <div className={css.eventHead}>
           <span className={css.date}>{row.date}</span>
           <ProvTag t={t} prov={row.prov} />
-          <DrawLine t={t} row={row} />
+          <DrawLine t={t} lang={lang} row={row} />
         </div>
         {row.kind === KIND_NOTICE && row.note !== TEXT_NONE && <div className={css.note}>{row.note}</div>}
       </div>

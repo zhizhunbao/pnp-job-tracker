@@ -38,7 +38,7 @@ import {
   COLS_DESIGNATED_EMPLOYERS, COLS_DISTRICTS, COLS_DLI, COLS_EE_CATEGORIES, COLS_EE_POINTS_GRID,
   COLS_EMPLOYER_POOL, COLS_EMPLOYER_POOL_BUCKETS, COLS_EXPERIENCE_LEVELS, COLS_FIELD_SOURCES, COLS_JOBS, COLS_JOBS_COALESCE, COLS_JOBS_FIXED, COLS_NEWS,
   COLS_MACRO_SERIES, COLS_NEWS_CACHE, COLS_NOC_CATEGORIES, COLS_NOC_DESCRIPTIONS, COLS_NOC_OPENINGS, COLS_PILOT_COMMUNITIES,
-  COLS_PILOT_OCCUPATIONS, COLS_PILOT_QUOTA, COLS_PNP_DRAWS, COLS_PTE_AUDIO, COLS_PTE_DICT, COLS_PTE_QUESTIONS, COLS_PTE_SENTENCES, COLS_PTE_TYPES, COLS_PNP_OCCUPATIONS, COLS_PNP_OPS_STATS, COLS_PATHWAYS, COLS_QC_NOC_STREAMS,
+  COLS_PILOT_OCCUPATIONS, COLS_PILOT_QUOTA, COLS_PNP_DRAWS, COLS_PTE_AUDIO, COLS_PTE_DICT, COLS_PTE_QUESTIONS, COLS_PTE_SENTENCES, COLS_PTE_TYPES, COLS_PNP_OCCUPATIONS, COLS_PNP_OPS_STATS, COLS_PATHWAYS, COLS_QC_NOC_STREAMS, COLS_DRAW_RANK,
   COLS_CIP_PROGRAMS, TBL_CIP_PROGRAMS,
   COLS_PNP_REQUIREMENTS, COLS_PNP_SCORE_FACTORS, COLS_PROVINCES, COLS_RANKINGS, COLS_ROW_TS, COLS_SOURCES,
   COLS_STATS, COLS_STATS_CITY, COLS_STATS_DAILY, COLS_STATS_OCCUPATION, COUNT_NO_TABLE, COUNT_NO_UPLOAD,
@@ -52,7 +52,7 @@ import {
   TBL_EE_POINTS_GRID, TBL_EMPLOYER_POOL, TBL_EMPLOYER_POOL_BUCKETS, TBL_EXPERIENCE_LEVELS, TBL_FIELD_SOURCES, TBL_JOBS, TBL_NEWS, TBL_NOC_CATEGORIES,
   TBL_MACRO_SERIES,
   TBL_NOC_DESCRIPTIONS, TBL_NOC_OPENINGS, TBL_PILOT_COMMUNITIES, TBL_PILOT_OCCUPATIONS, TBL_PILOT_QUOTA, TBL_PTE_AUDIO, TBL_PTE_DICT, TBL_PTE_QUESTIONS, TBL_PTE_SENTENCES, TBL_PTE_TYPES,
-  TBL_PNP_DRAWS, TBL_PNP_OCCUPATIONS, TBL_PNP_OPS_STATS, TBL_PATHWAYS, TBL_QC_NOC_STREAMS, TBL_PNP_REQUIREMENTS, TBL_PNP_SCORE_FACTORS,
+  TBL_PNP_DRAWS, TBL_PNP_OCCUPATIONS, TBL_PNP_OPS_STATS, TBL_PATHWAYS, TBL_QC_NOC_STREAMS, TBL_DRAW_RANK, TBL_PNP_REQUIREMENTS, TBL_PNP_SCORE_FACTORS,
   TBL_PROVINCES, TBL_RANKINGS, TBL_SOURCES, TBL_STATS, TBL_STATS_CITY, TBL_STATS_DAILY, TBL_STATS_OCCUPATION,
   UTF8,
 } from './constants'
@@ -608,6 +608,23 @@ function toQcNocStream(r: MartRow): MartRow {
 }
 
 /**
+ * draw_rank 行(2026-10-12 抽选页三段式;covers / streams 整格序列化成 JSON 串进 jsonb 列,可空数值格保 null —— 缺数 ≠ 0)。
+ *
+ * @param r mart 行。
+ * @returns 库行。
+ */
+function toDrawRank(r: MartRow): MartRow {
+  return {
+    key: cellOf(r.key), kind: cellOf(r.kind), rank: cellOf(r.rank), score: cellOf(r.score), province: cellOf(r.province),
+    label: textOf(r.label), name_en: textOf(r.nameEn), name_zh: textOf(r.nameZh), name_ko: textOf(r.nameKo),
+    covers: jsonTextOf(r.covers), streams: jsonTextOf(r.streams), scale: textOf(r.scale), last_date: textOf(r.lastDate),
+    avg_gap_days: cellOf(r.avgGapDays), status: textOf(r.status), draws_ytd: cellOf(r.drawsYtd),
+    invitations_ytd: cellOf(r.invitationsYtd), invite_unit: textOf(r.inviteUnit), nominations_ytd: cellOf(r.nominationsYtd),
+    allocation: cellOf(r.allocation), allocation_kind: textOf(r.allocationKind), as_of: cellOf(r.asOf),
+  }
+}
+
+/**
  * cip_programs 行(2026-10-04 访客四题第 2 题;broads 整格序列化成 JSON 串进 jsonb 列,没译成的语言格保 NULL)。
  * 2026-10-05 加 title_en_short(英文显示名,原样进库,空串 = 照用 title_en)与 places(同 broads 整格序列化进 jsonb;
  * 不进选择器的专业是 [],照样写 '[]';mart 里没这格的旧文件写 NULL)。
@@ -1002,6 +1019,7 @@ export function dimSpecs(): DimSpecs {
     { table: TBL_PNP_OPS_STATS, cols: COLS_PNP_OPS_STATS, toRow: toPnpOpsStat },
     { table: TBL_PATHWAYS, cols: COLS_PATHWAYS, toRow: toPathway },
     { table: TBL_QC_NOC_STREAMS, cols: COLS_QC_NOC_STREAMS, toRow: toQcNocStream },
+    { table: TBL_DRAW_RANK, cols: COLS_DRAW_RANK, toRow: toDrawRank },
     { table: TBL_CIP_PROGRAMS, cols: COLS_CIP_PROGRAMS, toRow: toCipProgram },
     { table: TBL_EE_CATEGORIES, cols: COLS_EE_CATEGORIES, toRow: toEeCategory },
     { table: TBL_EE_POINTS_GRID, cols: COLS_EE_POINTS_GRID, toRow: toEePointsGrid },

@@ -6,6 +6,8 @@
  * 下层多一格不必跟着改,真读不到会当场 tsc 红。
  * 整页外框不在这里:那层容器 2026-08-27 已收拢成 shell 域的通用件 Frame,本域不留克隆。
  * 2026-10-03 资讯页签四分(页签改叫「抽选」):政策公告那一路撤出时间线,事件剩抽选 / 省通告两路;类型筛与政策公告那一半的形状随之撤。
+ * 2026-10-12 抽选页三段式(docs/design/资讯/抽选-三段式-20261012.md):CadenceRow / EeCadenceRow 两形撤,
+ * 换成一形 RankCard(配额卡与抽选节奏卡共用,数据层 draw_rank 一行);流筛从「流名串」改成「点中的卡」(按卡的流名清单筛)。
  *
  * @author Frank
  * @time 2026-08-28 12:43:06
@@ -21,6 +23,11 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
  * 无参无返的点击手柄(药丸与节奏卡的 onClick 都是这一形)。
  */
 export type ClickFn = () => void
+
+/**
+ * 界面语(本域自抄三字面量,types 叶不 import)。
+ */
+export type Lang = 'zh' | 'en' | 'ko'
 
 /**
  * 时间线上的一件事(两路混排:省抽选 / 省通告;政策公告 2026-10-03 撤出)。
@@ -45,6 +52,16 @@ export type EventRow = {
    * 抽选给流名;省通告的标题走 i18n 的固定说法,不读这一格。
    */
   title: string
+
+  /**
+   * 流名中文灰注(中文界面读;'' = 没有)。
+   */
+  titleZh: string
+
+  /**
+   * 联邦类别键(查 ee.* 词条出中 / 韩灰字);省行 ''。
+   */
+  label: string
 
   /**
    * 抽选的最低分;null = 官方这期没公布(不是零分)。
@@ -73,68 +90,148 @@ export type EventRow = {
 }
 
 /**
- * 一个省一条流的抽选节奏(只报历史统计,不预测下一次 —— 伪权威红线)。
+ * 合卡覆盖的一条通道(三语名)。
  */
-export type CadenceRow = {
+export type CoverRow = {
+  /**
+   * 官方英文名。
+   */
+  en: string
+
+  /**
+   * 中文名。
+   */
+  zh: string
+
+  /**
+   * 韩文名。
+   */
+  ko: string
+}
+
+/**
+ * 一张排名卡(配额卡 / 抽选节奏卡共用;数据层 draw_rank 一行,名次与状态在数据层算好 —— 只报历史统计,不预测下一次)。
+ */
+export type RankCard = {
+  /**
+   * 卡片稳定键。
+   */
+  key: string
+
+  /**
+   * 卡种。
+   */
+  kind: 'quota' | 'cadence'
+
+  /**
+   * 名次(1 起)。
+   */
+  rank: number
+
   /**
    * 省码;'' = 联邦。
    */
   prov: string
 
   /**
-   * 流名(与事件的 title 同源,所以点卡片能按它筛出这条流的历次抽选)。
-   */
-  stream: string
-
-  /**
-   * 分制标注('' = 无)。
-   */
-  scale: string
-
-  /**
-   * 最近一期的日期。
-   */
-  last: string
-
-  /**
-   * 最近一期距今多少天(服务端按 UTC 日算好)。
-   */
-  daysSince: number
-
-  /**
-   * 近几期的平均间隔;null = 在库不足两期,算不出间隔(不是「间隔为零」)。
-   */
-  avgGapDays: number | null
-
-  /**
-   * 在库期数(平均间隔是几期算出来的,一并说清)。
-   */
-  draws: number
-}
-
-/**
- * 联邦 EE 一个类别的「距今」(历史未入库,只报距今;二期历史入库后并进上面那张表)。
- */
-export type EeCadenceRow = {
-  /**
-   * 类别 key(也当列表的身份键)。
-   */
-  category: string
-
-  /**
-   * 类别的人话名(点卡片时按它筛事件流,所以与事件的 title 同源)。
+   * 联邦类别键(查 ee.* 词条);省卡 ''。
    */
   label: string
 
   /**
-   * 最近一期的日期。
+   * 英文名(配额卡 '',按省码出省名)。
    */
-  last: string
+  nameEn: string
 
   /**
-   * 最近一期距今多少天。
+   * 中文名('' = 没有)。
    */
-  daysSince: number
+  nameZh: string
+
+  /**
+   * 韩文名('' = 没有)。
+   */
+  nameKo: string
+
+  /**
+   * 合卡覆盖的通道。
+   */
+  covers: CoverRow[]
+
+  /**
+   * 这张卡统计的抽选流名(点卡片按它筛事件流)。
+   */
+  streams: string[]
+
+  /**
+   * 最近一期抽选日期(到日;NS 只到月)。
+   */
+  lastDate: string
+
+  /**
+   * 距今天数;null = 日期只到月。
+   */
+  daysSince: number | null
+
+  /**
+   * 平均间隔天数;null = 算不出。
+   */
+  avgGapDays: number | null
+
+  /**
+   * 节奏状态。
+   */
+  status: 'ok' | 'late' | 'idle'
+
+  /**
+   * 今年抽选次数。
+   */
+  drawsYtd: number
+
+  /**
+   * 今年邀请人数;null = 没公布。
+   */
+  invitationsYtd: number | null
+
+  /**
+   * 人数口径(invitation / selection / application)。
+   */
+  inviteUnit: string
+
+  /**
+   * 今年已发提名;null = 没有这一步或本站未收录。
+   */
+  nominationsYtd: number | null
+
+  /**
+   * 配额卡:今年配额 / 联邦永居目标;null = 本站未收录。
+   */
+  allocation: number | null
+
+  /**
+   * 配额口径(quota / prTarget)。
+   */
+  allocationKind: string
+}
+
+/**
+ * 卡上的一格(格名黑字 + 数字灰字;2026-10-12 Frank「key 不要是灰字,数字应该是灰字吧」)。
+ */
+export type StatCellRow = {
+  /**
+   * 格名。
+   */
+  k: string
+
+  /**
+   * 数字(已拼好单位;缺数是「-」)。
+   */
+  v: string
+
+  /**
+   * 数字那一行的类名(底类;距今另带状态色)。
+   */
+  cls: string
 }
 
 /**
@@ -147,19 +244,29 @@ export type TimelineIn = {
   events: EventRow[]
 
   /**
-   * 省×流的抽选节奏。
+   * 配额卡(联邦 + 各省,按名次)。
    */
-  cadence: CadenceRow[]
+  quota: RankCard[]
 
   /**
-   * 联邦 EE 各类别的距今。
+   * 抽选节奏卡(一条通道一张,按名次)。
    */
-  eeCadence: EeCadenceRow[]
+  cadence: RankCard[]
 
   /**
    * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
    */
   updatedAt: string
+}
+
+/**
+ * useTimeline 的入参。
+ */
+export type TimelineHookIn = {
+  /**
+   * 节奏卡折起来的张数(总数减去先出的那几张;不足则 0)。
+   */
+  hidden: number
 }
 
 /**
@@ -172,14 +279,34 @@ export type TimelinePanel = {
   t: TFn
 
   /**
+   * 界面语(灰字译名按它取)。
+   */
+  lang: Lang
+
+  /**
    * 当前省筛:'' = 全部,'FED' = 联邦,两字码 = 那个省。
    */
   prov: string
 
   /**
-   * 当前流筛:'' = 不按流筛;非空 = 节奏卡带进来的流名。
+   * 当前点中的节奏卡键:'' = 不按卡筛;非空 = 点过的那张卡(按它的流名清单筛)。
    */
-  stream: string
+  pick: string
+
+  /**
+   * 节奏卡折起来时多展开了几张(全站折叠件 FoldLine 的状态)。
+   */
+  extra: number
+
+  /**
+   * 展开一批节奏卡。
+   */
+  onMore: ClickFn
+
+  /**
+   * 收起节奏卡。
+   */
+  onFold: ClickFn
 
   /**
    * 造省筛手柄的工厂(给它省码,换一只切到那个省的手柄)。
@@ -187,43 +314,98 @@ export type TimelinePanel = {
   provPickOf: (code: string) => ClickFn
 
   /**
-   * 撤掉流筛的手柄(流筛药丸上那枚记号)。
+   * 撤掉卡筛的手柄(卡筛药丸上那枚记号)。
    */
   onStreamClear: ClickFn
 
   /**
-   * 造节奏卡点击手柄的工厂(给它省与流,换一只筛过去并滚过去的手柄)。
+   * 造节奏卡点击手柄的工厂(给它一张卡,换一只筛过去并滚过去的手柄)。
    */
-  drillOf: (x: DrillIn) => ClickFn
+  drillOf: (x: RankCard) => ClickFn
 }
 
 /**
- * CadenceGrid(节奏卡网格)的 props。
+ * QuotaSection(配额分区卡)的 props。
  */
-export type CadenceGridIn = {
+export type QuotaSectionIn = {
   /**
    * 取词函数。
    */
   t: TFn
 
   /**
-   * 省×流的抽选节奏。
+   * 界面语。
    */
-  cadence: CadenceRow[]
+  lang: Lang
 
   /**
-   * 联邦 EE 各类别的距今。
+   * 配额卡(按名次)。
    */
-  eeCadence: EeCadenceRow[]
+  cards: RankCard[]
+}
+
+/**
+ * QuotaCard(一张配额卡)的 props。
+ */
+export type QuotaCardIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 这张卡。
+   */
+  card: RankCard
+}
+
+/**
+ * CadenceSection(抽选节奏分区卡)的 props。
+ */
+export type CadenceSectionIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 节奏卡(按名次)。
+   */
+  cards: RankCard[]
+
+  /**
+   * 折起来时多展开了几张。
+   */
+  extra: number
+
+  /**
+   * 展开一批。
+   */
+  onMore: ClickFn
+
+  /**
+   * 收起。
+   */
+  onFold: ClickFn
 
   /**
    * 造节奏卡点击手柄的工厂。
    */
-  drillOf: (x: DrillIn) => ClickFn
+  drillOf: (x: RankCard) => ClickFn
 }
 
 /**
- * CadenceCard(省×流节奏卡)的 props。
+ * CadenceCard(一张节奏卡)的 props。
  */
 export type CadenceCardIn = {
   /**
@@ -232,42 +414,122 @@ export type CadenceCardIn = {
   t: TFn
 
   /**
-   * 这张卡的节奏数据。
+   * 界面语。
    */
-  row: CadenceRow
+  lang: Lang
 
   /**
-   * 点这张卡的手柄。
+   * 这张卡。
+   */
+  card: RankCard
+
+  /**
+   * 点击手柄(筛事件流并滚过去)。
    */
   onClick: ClickFn
 }
 
 /**
- * EeCard(联邦 EE 节奏卡)的 props。
+ * RankMark(右上角名次)的 props。
  */
-export type EeCardIn = {
+export type RankMarkIn = {
+  /**
+   * 名次(1 起)。
+   */
+  rank: number
+}
+
+/**
+ * NameLines(英文黑字 + 译名灰字两行)的 props。
+ */
+export type NameLinesIn = {
+  /**
+   * 英文名。
+   */
+  en: string
+
+  /**
+   * 译名('' = 不出第二行)。
+   */
+  gray: string
+}
+
+/**
+ * StatGrid(卡上的数字格)的 props。
+ */
+export type StatGridIn = {
+  /**
+   * 各格(按出现顺序)。
+   */
+  cells: StatCellRow[]
+}
+
+/**
+ * StatusTag(节奏状态胶囊)的 props。
+ */
+export type StatusTagIn = {
   /**
    * 取词函数。
    */
   t: TFn
 
   /**
-   * 这张卡的类别距今数据。
+   * 节奏状态(正常不出胶囊)。
    */
-  row: EeCadenceRow
-
-  /**
-   * 点这张卡的手柄。
-   */
-  onClick: ClickFn
+  status: RankCard['status']
 }
 
 /**
- * ProvTag(省/联邦标)的 props。
+ * EventSection(事件流分区卡)的 props。
+ */
+export type EventSectionIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 全部事件(筛选在本件里做)。
+   */
+  events: EventRow[]
+
+  /**
+   * 节奏卡(点中的那张按键找回来,取流名清单与药丸字)。
+   */
+  cadence: RankCard[]
+
+  /**
+   * 当前省筛。
+   */
+  prov: string
+
+  /**
+   * 当前点中的节奏卡键。
+   */
+  pick: string
+
+  /**
+   * 造省筛手柄的工厂。
+   */
+  provPickOf: (code: string) => ClickFn
+
+  /**
+   * 撤掉卡筛的手柄。
+   */
+  onStreamClear: ClickFn
+}
+
+/**
+ * ProvTag(省标)的 props。
  */
 export type ProvTagIn = {
   /**
-   * 取词函数(联邦档的字走 i18n)。
+   * 取词函数(联邦那一档要出「联邦」二字)。
    */
   t: TFn
 
@@ -287,7 +549,7 @@ export type FilterChipsIn = {
   t: TFn
 
   /**
-   * 本页事件里真出现过的省码(筛出来是空结果的省不给药丸)。
+   * 事件流里出现过的省码(已排好序;联邦那一档单独出,不在这里)。
    */
   provs: string[]
 
@@ -297,9 +559,9 @@ export type FilterChipsIn = {
   prov: string
 
   /**
-   * 当前流筛。
+   * 点中的节奏卡在药丸上的字('' = 没点卡,不出这枚药丸)。
    */
-  stream: string
+  pickLabel: string
 
   /**
    * 造省筛手柄的工厂。
@@ -307,7 +569,7 @@ export type FilterChipsIn = {
   provPickOf: (code: string) => ClickFn
 
   /**
-   * 撤掉流筛的手柄。
+   * 撤掉卡筛的手柄。
    */
   onStreamClear: ClickFn
 }
@@ -322,7 +584,12 @@ export type EventListIn = {
   t: TFn
 
   /**
-   * 筛过之后要渲的事件(空 = 出空态那句话)。
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 筛过的事件(新在前)。
    */
   events: EventRow[]
 }
@@ -337,13 +604,18 @@ export type EventCardIn = {
   t: TFn
 
   /**
-   * 这一条事件。
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 这件事。
    */
   row: EventRow
 }
 
 /**
- * DrawLine(抽选那一行)的 props。
+ * DrawLine(抽选那一行的后半截)的 props。
  */
 export type DrawLineIn = {
   /**
@@ -352,27 +624,32 @@ export type DrawLineIn = {
   t: TFn
 
   /**
-   * 这一条事件。
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 这件事。
    */
   row: EventRow
 }
 
 /**
- * provsOf 的入参:整条事件流。
+ * provsOf 的入参。
  */
 export type EventsIn = {
   /**
-   * 全部事件(未筛)。
+   * 全部事件。
    */
   events: EventRow[]
 }
 
 /**
- * shownOf 的入参:整条事件流与两个筛选(省筛 / 流筛)的现值。
+ * shownOf 的入参:全部事件 + 两格筛选。
  */
 export type ShownOfIn = {
   /**
-   * 全部事件(未筛)。
+   * 全部事件。
    */
   events: EventRow[]
 
@@ -382,17 +659,17 @@ export type ShownOfIn = {
   prov: string
 
   /**
-   * 当前流筛。
+   * 点中那张卡的流名清单(null = 没点卡,不按流筛)。
    */
-  stream: string
+  streams: string[] | null
 }
 
 /**
- * isProvMatch 的入参:一条事件的省码与当前省筛。
+ * isProvMatch 的入参。
  */
 export type ProvMatchIn = {
   /**
-   * 这条事件的省码;'' = 联邦。
+   * 这条事件的省码('' = 联邦)。
    */
   rowProv: string
 
@@ -403,22 +680,37 @@ export type ProvMatchIn = {
 }
 
 /**
- * isStreamMatch 的入参:一条事件的标题与当前流筛。
+ * isStreamMatch 的入参。
  */
 export type StreamMatchIn = {
   /**
-   * 这条事件的标题(抽选事件的标题就是流名)。
+   * 这条事件的标题(= 流名)。
    */
   title: string
 
   /**
-   * 当前流筛。
+   * 点中那张卡的流名清单(null = 不按流筛)。
    */
-  stream: string
+  streams: string[] | null
 }
 
 /**
- * provLabelOf 的入参:取词函数与省码。
+ * pickedOf 的入参:按键找回点中的卡。
+ */
+export type PickedOfIn = {
+  /**
+   * 全部节奏卡。
+   */
+  cards: RankCard[]
+
+  /**
+   * 点中的卡键('' = 没点)。
+   */
+  pick: string
+}
+
+/**
+ * provLabelOf 的入参。
  */
 export type ProvLabelIn = {
   /**
@@ -433,22 +725,102 @@ export type ProvLabelIn = {
 }
 
 /**
- * daysClsOf 的入参:一张节奏卡的距今与平均间隔。
+ * 卡片译名 / 药丸字 / 格子拼装的通用入参(取词函数 + 界面语 + 一张卡)。
  */
-export type DaysClsIn = {
+export type CardTextIn = {
   /**
-   * 距今多少天。
+   * 取词函数。
    */
-  daysSince: number
+  t: TFn
 
   /**
-   * 平均间隔;null = 算不出(那就没有「拖长了」这一说)。
+   * 界面语。
    */
-  avgGapDays: number | null
+  lang: Lang
+
+  /**
+   * 这张卡。
+   */
+  card: RankCard
 }
 
 /**
- * eventTitleOf 的入参:取词函数与一条事件的类型、标题。
+ * 事件标题灰字的入参。
+ */
+export type EventGrayIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 这件事。
+   */
+  row: EventRow
+}
+
+/**
+ * eeNameOf 的入参:联邦类别键查词。
+ */
+export type EeNameIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 类别键('' = 不是联邦类别)。
+   */
+  label: string
+}
+
+/**
+ * 人数格名 / 人数串的入参。
+ */
+export type UnitTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 人数口径。
+   */
+  unit: string
+}
+
+/**
+ * 带单位的数字格的入参。
+ */
+export type NumTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 词条键(插值 {n})。
+   */
+  key: string
+
+  /**
+   * 数字(null / 0 写「-」看 zeroDash)。
+   */
+  n: number | null
+
+  /**
+   * 0 是否也写「-」(今年抽选 0 次写「-」;人数 0 照写)。
+   */
+  zeroDash: boolean
+}
+
+/**
+ * eventTitleOf 的入参。
  */
 export type EventTitleIn = {
   /**
@@ -457,28 +829,28 @@ export type EventTitleIn = {
   t: TFn
 
   /**
-   * 这条事件的类型。
+   * 这件事是哪一路。
    */
   kind: string
 
   /**
-   * 这条事件的标题。
+   * 抽选的流名。
    */
   title: string
 }
 
 /**
- * isScaleShown 的入参:一条抽选的分制标注。
+ * isScaleShown 的入参。
  */
 export type ScaleIn = {
   /**
-   * 分制标注('' = 无)。
+   * 分制标注。
    */
   scale: string
 }
 
 /**
- * invTextOf 的入参:取词函数与这一条事件。
+ * invTextOf 的入参。
  */
 export type InvTextIn = {
   /**
@@ -487,13 +859,13 @@ export type InvTextIn = {
   t: TFn
 
   /**
-   * 这一条事件(读省码与人数)。
+   * 这件事。
    */
   row: EventRow
 }
 
 /**
- * makeProvPickOf 的入参:省筛与流筛的落格。
+ * makeProvPickOf 的入参:两格筛选的落格。
  */
 export type ProvPickIn = {
   /**
@@ -502,23 +874,23 @@ export type ProvPickIn = {
   setProv: (v: string) => void
 
   /**
-   * 流筛落格(切省时要顺手清掉)。
+   * 卡筛落格(换省时清掉)。
    */
-  setStream: (v: string) => void
+  setPick: (v: string) => void
 }
 
 /**
- * makeStreamClear 的入参:流筛的落格。
+ * makeStreamClear 的入参。
  */
 export type StreamClearIn = {
   /**
-   * 流筛落格。
+   * 卡筛落格。
    */
-  setStream: (v: string) => void
+  setPick: (v: string) => void
 }
 
 /**
- * makeDrillOf 的入参:省筛与流筛的落格(节奏卡一点要同时落两格)。
+ * makeDrillOf 的入参:省筛与卡筛的落格(节奏卡一点要同时落两格)。
  */
 export type DrillOfIn = {
   /**
@@ -527,22 +899,7 @@ export type DrillOfIn = {
   setProv: (v: string) => void
 
   /**
-   * 流筛落格。
+   * 卡筛落格。
    */
-  setStream: (v: string) => void
-}
-
-/**
- * 节奏卡点击手柄工厂的入参:这张卡代表的省与流。
- */
-export type DrillIn = {
-  /**
-   * 这张卡的省码;'' = 联邦(筛选里要换成联邦那一档的词)。
-   */
-  prov: string
-
-  /**
-   * 这张卡的流名(= 事件的标题,分组键同源)。
-   */
-  stream: string
+  setPick: (v: string) => void
 }

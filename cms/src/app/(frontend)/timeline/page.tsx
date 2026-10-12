@@ -40,7 +40,7 @@ export default async function TimelinePage() {
   return (
     <Frame>
       <Header />
-      <Timeline events={data.events} cadence={data.cadence} eeCadence={data.eeCadence} updatedAt={updatedAt} />
+      <Timeline events={data.events} quota={data.quota} cadence={data.cadence} updatedAt={updatedAt} />
       <Footer />
     </Frame>
   )

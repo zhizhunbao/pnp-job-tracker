@@ -359,6 +359,11 @@ export const TBL_PATHWAYS = 'pathways'
 export const TBL_QC_NOC_STREAMS = 'qc_noc_streams'
 
 /**
+ * 抽选页排名表(2026-10-12 抽选页三段式;一行 = 一张卡:配额卡 quota / 抽选节奏卡 cadence,etl/mart/rank 子域算好名次与状态)。
+ */
+export const TBL_DRAW_RANK = 'draw_rank'
+
+/**
  * CIP 2021 专业表(2026-10-04 访客四题第 2 题;一行 = 一个 class,etl/statcan/cip 子域产)。
  */
 export const TBL_CIP_PROGRAMS = 'cip_programs'
@@ -681,6 +686,12 @@ export const COLS_PATHWAYS = ['key', 'seq', 'province', 'program', 'plain_zh', '
  * 建了表却漏了 payload_locked_documents_rels.qc_noc_streams_id 就撞 42703 → 整个 seed 事务回滚(两件在同一个文件里,一起跑)。
  */
 export const COLS_QC_NOC_STREAMS = ['noc', 'name', 'channels']
+
+/**
+ * draw_rank 列(covers / streams 是 jsonb)。⚠️ 新表,建表走 docs/sql/draw-rank-20261012.sql:表还没建时 seed 按 tableExists 跳过;
+ * 建了表却漏了 payload_locked_documents_rels.draw_rank_id 就撞 42703 → 整个 seed 事务回滚(两件在同一个文件里,一起跑)。
+ */
+export const COLS_DRAW_RANK = ['key', 'kind', 'rank', 'score', 'province', 'label', 'name_en', 'name_zh', 'name_ko', 'covers', 'streams', 'scale', 'last_date', 'avg_gap_days', 'status', 'draws_ytd', 'invitations_ytd', 'invite_unit', 'nominations_ytd', 'allocation', 'allocation_kind', 'as_of']
 
 /**
  * cip_programs 列(broads 是 jsonb)。⚠️ 新表,建表走 docs/sql/cip-programs-20261004.sql:表还没建时 seed 按 tableExists 跳过,

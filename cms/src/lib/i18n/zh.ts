@@ -1326,10 +1326,15 @@ export const siteZh = {
   // 2026-10-03 资讯页签四分:政策公告撤出时间线,页头标题改「抽选时间线」;重要徽标与类型筛三词随之撤
   'tl.title': '抽选时间线', 'tl.sub': '省抽选与联邦 EE 抽选时间线',
   'tl.cadence': '抽选节奏', 'tl.events': '事件流', 'tl.fed': '联邦',
-  'tl.last': '最近 {d}', 'tl.daysSince': '距今 {n} 天', 'tl.avgGap': '近 {m} 期平均间隔 ~{n} 天',
+  // 2026-10-12 抽选页三段式(配额 / 抽选节奏 / 事件流三张分区卡;数字格格名在上、数字在下,缺数写「-」)
+  'tl.quota': '配额', 'tl.lastDraw': '最近抽选', 'tl.since': '距今', 'tl.gap': '平均间隔', 'tl.drawsYtd': '今年抽选',
+  'tl.invYtd': '今年邀请', 'tl.selYtd': '今年入选', 'tl.appYtd': '今年入选申请', 'tl.nomYtd': '今年提名',
+  'tl.alloc': '{y} 配额', 'tl.prTarget': '{y} 永居目标', 'tl.nDays': '{n} 天', 'tl.gapDays': '~{n} 天',
+  'tl.nTimes': '{n} 次', 'tl.nPeople': '{n} 人', 'tl.n': '{n}', 'tl.late': '比平常晚', 'tl.idle': '久未抽选',
+  'tl.covers': '覆盖 {list}', 'tl.unitCard': '条',
   'tl.notice': '通告',
   'tl.min': '最低分 {n}', 'tl.notCrs': ',非 CRS', 'tl.inv': '邀请 {n} 人', 'tl.src': '官方来源',
-  'tl.entry': '抽选与政策时间线', 'tl.empty': '没有匹配的事件', 'tl.hist': '历次抽选',
+  'tl.entry': '抽选与政策时间线', 'tl.empty': '没有匹配的事件',
   'loading': '更新中…',
   'origin.hireac': 'HireAC', 'origin.gcjobs': 'GC Jobs',
   'origin.jobillico': 'Jobillico', 'origin.jobboom': 'Jobboom', 'origin.careerbeacon': 'CareerBeacon',
