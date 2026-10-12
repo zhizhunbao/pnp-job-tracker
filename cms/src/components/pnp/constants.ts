@@ -470,8 +470,9 @@ export const BTN_SEG = 'seg'
 
 /**
  * 通道对照表里 AIP 那一行的编号(通道卡上段在本岗能走 AIP 时列它;2026-09-30 Frank「能走 AIP 就列,不能走就不列」)。
+ * 2026-10-12 旧 aip 条目并进 fed-aip(一个项目一条)。
  */
-export const AIP_PATHWAY_KEY = 'aip'
+export const AIP_PATHWAY_KEY = 'fed-aip'
 
 /**
  * AIP 收的 TEER(官方:TEER 0–3 的 offer 至少一年,TEER 4 要长期;见 etl/mart AIP_TEERS 的原句)。
@@ -2483,9 +2484,19 @@ export const PROGRAM_FAMILY = 'FAMILY'
 export const PROGRAM_REFUGEE = 'REFUGEE'
 
 /**
- * 联邦组头键尾:经济类。
+ * 联邦组头键尾:工作(2026-10-12 Frank「改成 工作 投资创业 吧」,原经济类一组拆成工作与投资创业)。
  */
-export const GROUP_ECON = 'econ'
+export const GROUP_WORK = 'work'
+
+/**
+ * 联邦组头键尾:投资创业。
+ */
+export const GROUP_BUSINESS = 'business'
+
+/**
+ * 联邦投资创业类项目(创业签证、自雇移民)。
+ */
+export const PROGRAMS_BUSINESS = ['SUV', 'SELF']
 
 /**
  * 联邦组头键尾:家庭团聚。

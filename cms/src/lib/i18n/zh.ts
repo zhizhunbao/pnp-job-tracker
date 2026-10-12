@@ -663,7 +663,7 @@ export const jobsZh = {
   'gatef.income': '担保人收入', 'gatef.relationship': '关系', 'gatef.protection': '保护理由', 'gatef.ineligible': '不受理',
   'gatef.intent': '定居意向', 'gatef.other': '其他',
   // 2026-10-12 Frank「加组头」:资讯页联邦三组的组头;联邦 / 魁北克的「拿雇主 offer」
-  'pnp.grp.econ': '经济类', 'pnp.grp.family': '家庭团聚', 'pnp.grp.refugee': '难民', 'pnpstep.s.jobOffer': '拿雇主 offer',
+  'pnp.grp.work': '工作', 'pnp.grp.business': '投资创业', 'pnp.grp.family': '家庭团聚', 'pnp.grp.refugee': '难民', 'pnpstep.s.jobOffer': '拿雇主 offer',
   'pnpstep.f.noFee': '不收费',
   'pnpstep.f.eoiValidDays': '在池里有效 {n} 天',
   'pnpstep.f.appFee': '交 {n} 加元申请费,不退',

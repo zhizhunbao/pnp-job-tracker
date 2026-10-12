@@ -628,7 +628,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'gatef.relationship': 'Relationship', 'gatef.protection': 'Grounds for protection',
   'gatef.ineligible': 'Not eligible', 'gatef.intent': 'Intent to settle', 'gatef.other': 'Other',
   // 2026-10-12 Frank「加组头」:资讯页联邦三组的组头;联邦 / 魁北克的「拿雇主 offer」
-  'pnp.grp.econ': 'Economic', 'pnp.grp.family': 'Family sponsorship', 'pnp.grp.refugee': 'Refugees', 'pnpstep.s.jobOffer': 'Get a job offer',
+  'pnp.grp.work': 'Work', 'pnp.grp.business': 'Business and investment', 'pnp.grp.family': 'Family sponsorship', 'pnp.grp.refugee': 'Refugees', 'pnpstep.s.jobOffer': 'Get a job offer',
   'pnpstep.f.noFee': 'No fee',
   'pnpstep.f.eoiValidDays': 'Stays in the pool for {n} days',
   'pnpstep.f.appFee': '{n} CAD application fee, non-refundable',

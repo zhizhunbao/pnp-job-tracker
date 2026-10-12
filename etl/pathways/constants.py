@@ -2016,29 +2016,6 @@ NAMED_DRAW_STREAMS 原注)。quote 是官方页的副标题(这条流属于 Work
 2026-09-30 通道补全批一 1b:门槛流登记不变;语言行改落本流(CLB 4,官方各职业都要考 —— 清单里的 33102 / 73300 是 TEER 3,不按 TEER
 挂),四流合称那条流不再有语言行。"""
 
-PW_AIP = {
-    "key": "aip", "province": "FED", "program": "AIP",
-    "plainZh": "AIP", "plainEn": "AIP", "plainKo": "AIP",
-    "officialName": "Atlantic Immigration Program",
-    "boardLabel": None, "isDefault": False,
-    "drawStreams": ["AIP", "AIP (ITA batch)", "Monthly EOI selections"],
-    "reqStreams": [],
-    "quotaScope": None,
-    "occLabels": [],
-    "status": "open",
-    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration.html",
-    "quote": ("The Atlantic Immigration Program is a pathway to permanent residence for skilled foreign workers and international "
-              "graduates from a Canadian institution who want to work and live in 1 of Canada’s 4 Atlantic provinces—New "
-              "Brunswick, Nova Scotia, Prince Edward Island or Newfoundland and Labrador."),
-    "checked": "2026-09-28",
-}
-"""大西洋移民计划(联邦项目,四省背书;职位板另有 AIP 一列,不走 PNP 格)。
-抽选:NB 把 AIP 选取与省提名邀请发在同一张抽选页(组名「AIP」,数字是选中进入审理的申请、不是邀请);NL 批次与 NS 按月那一组
-都与省提名同一个池(见 NL / NS 两段)。
-⚠ 名字:抽选卡现把 NB 那组叫「AIP 大西洋移民计划」,而 NL / NS 两组的灰字里写「AIP」—— 同一个项目两个写法;表里取「AIP」
-(与职位板 AIP 列同名),统一归批二效果图。
-2026-09-29 抽选卡重排:NL 每批拆出来的 AIP 那行组名「AIP (ITA batch)」(发出的邀请,与 NB「AIP」组数申请不同),替掉原来的
-整批组「NLPNP + AIP (ITA batch)」;NS 按月那一组照旧同池、仍挂这里。"""
 
 PW_AB_EXPRESS_ENTRY_PRIORITY_SECTORS = {
     "key": "ab-express-entry-priority-sectors", "province": "AB", "program": "PNP",
@@ -10072,7 +10049,7 @@ PW_FED_AIP = {
     "plainZh": "大西洋移民", "plainEn": "Atlantic Immigration Program", "plainKo": "대서양 이민 프로그램",
     "officialName": "Atlantic Immigration Program",
     "boardLabel": None, "isDefault": False,
-    "drawStreams": [], "reqStreams": [], "quotaScope": None, "occLabels": [],
+    "drawStreams": ["AIP", "AIP (ITA batch)", "Monthly EOI selections"], "reqStreams": [], "quotaScope": None, "occLabels": [],
     "status": "open",
     "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration.html",
     "quote": "The Atlantic Immigration Program is a pathway to permanent residence for skilled foreign workers and international graduates from a Canadian institution who want to work and live in 1 of Canada’s 4 Atlantic provinces—New Brunswick, Nova Scotia, Prince Edward Island or Newfoundland and Labrador",
@@ -10354,7 +10331,15 @@ PW_FED_AIP = {
     ],
 }
 """补全通道(2026-10-12 Frank「还缺多少条通道 都补上」→「全部都补」;六组并行调研,原句逐字核 crawl 缓存)。
-判读:「申请永居」页的费用、处理时长都是动态加载(Error loading fee / We couldn’t load the data),缓存里没有数字;时长改取 flpt-en.json 的 aip 键。closedPermit 一步是可选(只在要先来加拿大工作时才申请,主页原句要省里的 referral letter)。"""
+判读:「申请永居」页的费用、处理时长都是动态加载(Error loading fee / We couldn’t load the data),缓存里没有数字;时长改取 flpt-en.json 的 aip 键。closedPermit 一步是可选(只在要先来加拿大工作时才申请,主页原句要省里的 referral letter)。
+2026-10-12 Frank「改成 工作 投资创业 吧」同批:旧 aip 条目(只挂抽选组、没有步骤与门槛)并进本条,一个项目一条;抽选组搬来,编号随改(cms AIP_PATHWAY_KEY 同改)。旧条目原注照录:
+大西洋移民计划(联邦项目,四省背书;职位板另有 AIP 一列,不走 PNP 格)。
+抽选:NB 把 AIP 选取与省提名邀请发在同一张抽选页(组名「AIP」,数字是选中进入审理的申请、不是邀请);NL 批次与 NS 按月那一组
+都与省提名同一个池(见 NL / NS 两段)。
+⚠ 名字:抽选卡现把 NB 那组叫「AIP 大西洋移民计划」,而 NL / NS 两组的灰字里写「AIP」—— 同一个项目两个写法;表里取「AIP」
+(与职位板 AIP 列同名),统一归批二效果图。
+2026-09-29 抽选卡重排:NL 每批拆出来的 AIP 那行组名「AIP (ITA batch)」(发出的邀请,与 NB「AIP」组数申请不同),替掉原来的
+整批组「NLPNP + AIP (ITA batch)」;NS 按月那一组照旧同池、仍挂这里。"""
 
 PW_FED_RCIP = {
     "key": "fed-rcip", "province": "FED", "program": "RCIP",
@@ -14905,16 +14890,15 @@ PATHWAYS = [
     PW_NL_INTERNATIONAL_ENTREPRENEUR, PW_NL_INTERNATIONAL_GRADUATE_ENTREPRENEUR, PW_YT_SKILLED_WORKER,
     PW_YT_CRITICAL_IMPACT_WORKER, PW_YT_EXPRESS_ENTRY, PW_YT_BUSINESS_NOMINEE, PW_NT_SKILLED_WORKER,
     PW_NT_ENTRY_LEVEL_SEMI_SKILLED, PW_NT_EXPRESS_ENTRY, PW_NT_FRANCOPHONE, PW_NT_BUSINESS, PW_FED_CEC, PW_FED_FSW,
-    PW_FED_FST, PW_FED_AIP, PW_FED_RCIP, PW_FED_FCIP, PW_FED_HOME_CARE_WORKER, PW_FED_SPOUSE_INLAND,
+    PW_FED_FST, PW_FED_AIP, PW_FED_RCIP, PW_FED_FCIP, PW_FED_AGRI_FOOD, PW_FED_HOME_CARE_WORKER, PW_FED_START_UP_VISA,
+    PW_FED_SELF_EMPLOYED, PW_FED_SPOUSE_INLAND,
     PW_FED_SPOUSE_OUTLAND, PW_FED_DEPENDENT_CHILD, PW_FED_PGP, PW_FED_OTHER_RELATIVES, PW_FED_REFUGEE_CLAIM,
     PW_FED_REFUGEE_GAR, PW_FED_REFUGEE_PSR, PW_QC_PSTQ_STREAM_1, PW_QC_PSTQ_STREAM_2, PW_QC_PSTQ_STREAM_3,
     PW_QC_PSTQ_STREAM_4, PW_QC_PEQ_GRADUATES, PW_QC_PEQ_TEMPORARY_WORKERS, PW_QC_INVESTOR, PW_QC_ENTREPRENEUR_STARTUP,
     PW_QC_SELF_EMPLOYED,
-    PW_FED_START_UP_VISA, PW_FED_SELF_EMPLOYED, PW_FED_AGRI_FOOD,
-    PW_AIP,
 ]
 """全表(顺序 = 产物 seq 序)。⚠ 顺序有意义:一组抽选覆盖几条通道时,通道名按这里的先后拼(PE 劳工通道在 PE 在需职业前;
-NS 两条在 AIP 前、NL 在 AIP 前 —— AIP 放最后)。省内一律省默认通道打头。
+NS 两条在 AIP 前、NL 在 AIP 前 —— AIP 放最后;2026-10-12 旧 aip 并进 fed-aip,仍在 NS / NL 之后)。2026-10-12 联邦按组头排:工作(含已关停两条)→ 投资创业 → 家庭团聚 → 难民,页面遇组变就出组头,乱序会重复出组头。省内一律省默认通道打头。
 2026-09-28 通道表批二:前端 components/pnp 的六张对照常量退役、改读本表进库的那份,各张原注里的决策记录搬到这里(逐段的已并进上面各 PW_ 段):
 - GEN_CHANNEL_PROVS(有省默认通道的九省):2026-09-23 Frank「改 全改」—— PNP 格写这条通道的名字(词条 `pnp.gen.` + 省码),不再写
   「{省} 可提名」;出处逐省在 etl 的 PNP 资格表与 mart 常量 UNIVERSAL_*_PROVS。BC 原叫 Skills Immigration,2026-09-24 九省通道审计改名

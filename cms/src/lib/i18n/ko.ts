@@ -609,7 +609,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'gatef.income': '보증인 소득', 'gatef.relationship': '관계', 'gatef.protection': '보호 사유', 'gatef.ineligible': '신청 불가',
   'gatef.intent': '정착 의사', 'gatef.other': '기타',
   // 2026-10-12 Frank「加组头」:资讯页联邦三组的组头;联邦 / 魁北克的「拿雇主 offer」
-  'pnp.grp.econ': '경제 이민', 'pnp.grp.family': '가족 초청', 'pnp.grp.refugee': '난민', 'pnpstep.s.jobOffer': '고용주 오퍼 받기',
+  'pnp.grp.work': '취업', 'pnp.grp.business': '투자 창업', 'pnp.grp.family': '가족 초청', 'pnp.grp.refugee': '난민', 'pnpstep.s.jobOffer': '고용주 오퍼 받기',
   'pnpstep.f.noFee': '수수료 없음',
   'pnpstep.f.eoiValidDays': '풀에서 {n}일 유효',
   'pnpstep.f.appFee': '신청 수수료 {n} 캐나다달러, 환불 불가',
