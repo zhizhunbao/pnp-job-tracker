@@ -602,6 +602,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpstep.s.eligibilityCheck': '신청 가능 여부 확인', 'pnpstep.s.hearing': '난민위원회 심리', 'pnpstep.s.acceptInvite': '초청 수락',
   'pnpstep.s.licence': '직업 자격 인정', 'pnpstep.s.invest': '투자 이행', 'pnpstep.s.residence': '퀘벡 거주 요건 충족',
   'pnpstep.s.deposit': '사업 보증금 예치', 'pnpstep.s.prApply': '연방에 영주권 신청', 'pnpstep.who.sponsor': '보증인',
+  // 2026-10-12 Frank「加组头」:资讯页联邦三组的组头;联邦 / 魁北克的「拿雇主 offer」
+  'pnp.grp.econ': '경제 이민', 'pnp.grp.family': '가족 초청', 'pnp.grp.refugee': '난민', 'pnpstep.s.jobOffer': '고용주 오퍼 받기',
   'pnpstep.f.noFee': '수수료 없음',
   'pnpstep.f.eoiValidDays': '풀에서 {n}일 유효',
   'pnpstep.f.appFee': '신청 수수료 {n} 캐나다달러, 환불 불가',
@@ -1068,7 +1070,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'chart.common': '일반 차트', 'chart.custom': '사용자 지정 차트', 'chart.dim': '차원', 'chart.metric': '지표', 'chart.dimProv': '주별', 'chart.dimCat': '직업 대분류별', 'chart.all': '전체', 'chart.medianNote': '중위값은 주 간 합산되지 않습니다. 주를 선택해 각 그룹별 중위값을 확인하세요.',
   'prov.ON': '온타리오주', 'prov.BC': '브리티시컬럼비아주', 'prov.AB': '앨버타주', 'prov.QC': '퀘벡주',
   'prov.MB': '매니토바주', 'prov.SK': '서스캐처원주', 'prov.NS': '노바스코샤주', 'prov.NB': '뉴브런즈윅주',
-  'prov.NL': '뉴펀들랜드 래브라도주', 'prov.PE': '프린스에드워드아일랜드주', 'prov.NT': '노스웨스트준주', 'prov.YT': '유콘준주', 'prov.NU': '누나부트준주',
+  'prov.NL': '뉴펀들랜드 래브라도주', 'prov.PE': '프린스에드워드아일랜드주', 'prov.NT': '노스웨스트준주', 'prov.YT': '유콘준주', 'prov.NU': '누나부트준주', 'prov.FED': '연방',
   // E8-07 C/D/E: 헤더 소식 그룹 + 모바일 드로어
   'nav.info': '소식', 'nav.timeline': '정책 타임라인', 'nav.menu': '메뉴', 'nav.sect.data': '데이터', 'nav.sect.mine': '내 메뉴',
   'updated': '업데이트 {t}',

@@ -81,7 +81,8 @@ function job(p: Partial<PnpJob>): PnpJob {
 /** 手写一条通道(2026-09-30 通道补全批二加九格,没写的给默认:看工作、无标签、不筛) */
 function pathway(p: Partial<PnpPathway>): PnpPathway {
   return {
-    province: '', boardLabel: null, isDefault: false, drawStreams: [], reqStreams: [], quotaKey: null, officialName: '',
+    province: '', program: 'PNP', boardLabel: null, isDefault: false, drawStreams: [], reqStreams: [], quotaKey: null,
+    officialName: '',
     key: '', plainZh: '', plainKo: '', jobLinked: true, tags: [], teers: [], nocs: [], employers: [], occLabels: [], url: '',
     hasSteps: false,
     ...p,

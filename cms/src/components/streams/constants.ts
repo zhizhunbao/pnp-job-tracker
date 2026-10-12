@@ -46,8 +46,9 @@ export const URL_STEPS = '/steps'
 
 /**
  * 省份胶囊:九个参加省提名的省,自西向东(魁省另成体系、AIP 是联邦项目,两处的门槛卡下一批再接)。
+ * 2026-10-12 补全通道(Frank「加组头,修完推上去」):九省后面接育空地区、西北地区、魁北克省、联邦四枚(联邦含经济类 / 家庭团聚 / 难民)。
  */
-export const STREAM_PROVS = ['BC', 'AB', 'SK', 'MB', 'ON', 'NB', 'NS', 'PE', 'NL']
+export const STREAM_PROVS = ['BC', 'AB', 'SK', 'MB', 'ON', 'NB', 'NS', 'PE', 'NL', 'YT', 'NT', 'QC', 'FED']
 
 /**
  * 设备时区对不上这九省时(人在国内、魁省、三个地区)先看哪一省:第一枚胶囊。

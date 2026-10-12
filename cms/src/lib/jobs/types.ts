@@ -929,6 +929,11 @@ export type PathwayDbRow = {
   province: string | null
 
   /**
+   * 项目(PNP / EE / AIP / FAMILY / REFUGEE / PSTQ …;2026-10-12 资讯页联邦组头按它分经济类 / 家庭团聚 / 难民)。
+   */
+  program: string | null
+
+  /**
    * 岗位上挂的通道名(= jobs.pnp_stream 取值);省默认通道为 null。
    */
   boardLabel: string | null
@@ -1023,6 +1028,11 @@ export type Pathway = {
    * 省码(联邦项目写 FED)。
    */
   province: string
+
+  /**
+   * 项目(PNP / EE / AIP / FAMILY / REFUGEE / PSTQ …;2026-10-12 资讯页联邦组头按它分经济类 / 家庭团聚 / 难民)。
+   */
+  program: string
 
   /**
    * 岗位上挂的通道名(= 数据层 pnp_stream 取值);省默认通道为 null。

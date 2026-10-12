@@ -620,6 +620,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpstep.s.invest': 'Make the investment', 'pnpstep.s.residence': 'Live in Québec',
   'pnpstep.s.deposit': 'Pay the start-up deposit', 'pnpstep.s.prApply': 'Apply to IRCC for PR',
   'pnpstep.who.sponsor': 'Sponsor',
+  // 2026-10-12 Frank「加组头」:资讯页联邦三组的组头;联邦 / 魁北克的「拿雇主 offer」
+  'pnp.grp.econ': 'Economic', 'pnp.grp.family': 'Family sponsorship', 'pnp.grp.refugee': 'Refugees', 'pnpstep.s.jobOffer': 'Get a job offer',
   'pnpstep.f.noFee': 'No fee',
   'pnpstep.f.eoiValidDays': 'Stays in the pool for {n} days',
   'pnpstep.f.appFee': '{n} CAD application fee, non-refundable',
@@ -1108,7 +1110,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   // provName 判断「译名==英文名」时不加括号注,于是英文界面自然只出英文
   'prov.ON': 'Ontario', 'prov.BC': 'British Columbia', 'prov.AB': 'Alberta', 'prov.QC': 'Quebec',
   'prov.MB': 'Manitoba', 'prov.SK': 'Saskatchewan', 'prov.NS': 'Nova Scotia', 'prov.NB': 'New Brunswick',
-  'prov.NL': 'Newfoundland and Labrador', 'prov.PE': 'Prince Edward Island', 'prov.NT': 'Northwest Territories', 'prov.YT': 'Yukon', 'prov.NU': 'Nunavut',
+  'prov.NL': 'Newfoundland and Labrador', 'prov.PE': 'Prince Edward Island', 'prov.NT': 'Northwest Territories', 'prov.YT': 'Yukon', 'prov.NU': 'Nunavut', 'prov.FED': 'Federal',
   // E8-07 C/D/E: header info group + mobile drawer
   'nav.info': 'Updates', 'nav.timeline': 'Policy timeline', 'nav.menu': 'Menu', 'nav.sect.data': 'DATA & INSIGHTS', 'nav.sect.mine': 'MINE',
   'updated': 'Updated {t}',

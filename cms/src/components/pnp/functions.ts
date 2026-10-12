@@ -23,6 +23,7 @@ import { track } from '@/lib/track'
 import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS, DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE,
   DRAWS_ALL_KEY, DRAWS_FORM_STATUS, HOST_RE, LANG_EN, LANG_KO, FACT_NOTE, NOTE_VAR_OPEN, NOTE_VAR_CLOSE,
+  GROUP_ECON, GROUP_FAMILY, GROUP_REFUGEE, PROGRAM_FAMILY, PROGRAM_REFUGEE,
   MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
   K_GATE_TITLE, P_PROV, SCROLL_START, URL_HASH_HEAD, URL_KV_SEP, URL_QUERY_HEAD, URL_STEPS, URL_STREAMS,
   MONTHS_KEYS, K_TL_ABOUT, K_TL_ABOUT_DAYS, K_TL_DAYS, K_TL_MONTHS, K_TL_RANGE, K_TL_TOTAL, K_TL_TOTAL_ONE,
@@ -3701,7 +3702,7 @@ export function provStreamItemsOf(x: ProvStreamItemsIn): ProvStreamItem[] {
         t: x.t, lang: x.lang, p, draws: x.draws, ops: x.ops, reqs: x.reqs, pathways: x.pathways,
       })
     }
-    out.push({ key: p.key, gate, steps, draws, fits: fitsOfSet({ sets: x.sets, key: p.key }) })
+    out.push({ key: p.key, gate, steps, draws, fits: fitsOfSet({ sets: x.sets, key: p.key }), group: fedGroupOf(p) })
   }
   return out
 }
@@ -6584,6 +6585,25 @@ function spanAtOf(x: SpanAtIn): PnpSpanJson | null {
     return null
   }
   return span
+}
+
+/**
+ * 联邦通道的组(2026-10-12 Frank「加组头」):家庭团聚 / 难民按项目分,其余联邦项目归经济类;别的省不分组(给 '')。
+ *
+ * @param p 通道对照行。
+ * @returns 组头词条键尾或空串。
+ */
+function fedGroupOf(p: PnpPathway): string {
+  if (p.province !== PROV_FED) {
+    return TEXT_NONE
+  }
+  if (p.program === PROGRAM_FAMILY) {
+    return GROUP_FAMILY
+  }
+  if (p.program === PROGRAM_REFUGEE) {
+    return GROUP_REFUGEE
+  }
+  return GROUP_ECON
 }
 
 /**

@@ -12433,7 +12433,7 @@
       "employers": [],
       "steps": [
         {
-          "step": "offer",
+          "step": "jobOffer",
           "who": "employer",
           "none": false,
           "stuck": false,
@@ -12576,7 +12576,7 @@
       "employers": [],
       "steps": [
         {
-          "step": "offer",
+          "step": "jobOffer",
           "who": "employer",
           "none": false,
           "stuck": false,
@@ -12762,7 +12762,7 @@
       "employers": [],
       "steps": [
         {
-          "step": "offer",
+          "step": "jobOffer",
           "who": "employer",
           "none": false,
           "stuck": false,
@@ -12906,7 +12906,7 @@
       "employers": [],
       "steps": [
         {
-          "step": "offer",
+          "step": "jobOffer",
           "who": "employer",
           "none": false,
           "stuck": false,
@@ -13050,7 +13050,7 @@
       "employers": [],
       "steps": [
         {
-          "step": "offer",
+          "step": "jobOffer",
           "who": "employer",
           "none": false,
           "stuck": false,

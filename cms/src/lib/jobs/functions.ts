@@ -3098,7 +3098,7 @@ export function toPnpDraw(r: Row): PnpDraw {
  */
 function toPathway(r: PathwayDbRow): Pathway {
   return {
-    province: text(r.province), boardLabel: textOrNull(r.boardLabel), isDefault: r.isDefault === true,
+    province: text(r.province), program: text(r.program), boardLabel: textOrNull(r.boardLabel), isDefault: r.isDefault === true,
     drawStreams: toList(r.drawStreams), reqStreams: toList(r.reqStreams), quotaKey: textOrNull(r.quotaKey),
     officialName: text(r.officialName), key: text(r.key), plainZh: text(r.plainZh), plainKo: text(r.plainKo),
     jobLinked: r.jobLinked !== false, tags: toList(r.tags), teers: toList(r.teers), nocs: toList(r.nocs),

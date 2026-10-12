@@ -2471,3 +2471,33 @@ export const NOTE_VAR_CLOSE = '}'
  * 界面语言:韩文(一次性事实挑文本用;2026-10-12)。
  */
 export const LANG_KO = 'ko'
+
+/**
+ * 联邦通道项目:家庭团聚(组头用;2026-10-12)。
+ */
+export const PROGRAM_FAMILY = 'FAMILY'
+
+/**
+ * 联邦通道项目:难民。
+ */
+export const PROGRAM_REFUGEE = 'REFUGEE'
+
+/**
+ * 联邦组头键尾:经济类。
+ */
+export const GROUP_ECON = 'econ'
+
+/**
+ * 联邦组头键尾:家庭团聚。
+ */
+export const GROUP_FAMILY = 'family'
+
+/**
+ * 联邦组头键尾:难民。
+ */
+export const GROUP_REFUGEE = 'refugee'
+
+/**
+ * 联邦组头词条键头(拼组头键尾)。
+ */
+export const GROUP_KEY_HEAD = 'pnp.grp.'

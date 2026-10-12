@@ -7198,9 +7198,9 @@ TL_MONTH = "month"
 TL_DAY = "day"
 """单位:天。"""
 
-TL_NONE_STEPS = ("offer", "eoi", "eeProfile", "community", "register", "employerRegister", "settle", "submit", "csq")
+TL_NONE_STEPS = ("offer", "eoi", "eeProfile", "community", "register", "employerRegister", "settle", "submit", "csq", "jobOffer")
 """不占时间的步骤词(当天办完的动作;雇主递审批 epa、省背书 endorse 这类有官方处理期的不在这,留 unknown 等逐省补)。
-2026-10-12 加 csq(拿魁北克甄选证书:审批通过即发证,时长已算在审批那一步)。"""
+2026-10-12 加 csq(拿魁北克甄选证书:审批通过即发证,时长已算在审批那一步)、jobOffer(联邦 / 魁北克的拿雇主 offer)。"""
 
 TL_WORK_STEPS = ("work", "workLocal")
 """「干满」两步:时长 = 这条通道门槛表 experience 行的月数(多行取最短 —— 阿省机会通道本省 12 个月 / 各地 24 个月,刚到阿省
@@ -7231,7 +7231,8 @@ TL_VALID_DAY_KEYS = ("eoiValidDays",)
 TL_APPLY_STEPS = ("apply", "confirm")
 """收邀请、递申请:时长 = 这一步各期限天数之和(接受邀请 + 递交)。"""
 
-TL_APPLY_DAY_KEYS = ("inviteAcceptDays", "appSubmitDays", "inviteSubmitDays")
+TL_APPLY_DAY_KEYS = ("inviteAcceptDays", "appSubmitDays", "inviteSubmitDays", "prSubmitDays")
+"""收邀请、递申请这一步里算天数的期限事实词。2026-10-12 加 prSubmitDays(联邦 EE「收到邀请后 60 天内递永居」登在这一步;省提名通道这个词只在拿提名一步,不受影响)。"""
 
 TL_CONFIRM_FACT = "confirmSubmit"
 """确认职位、递申请(萨省)的期限事实词:vars 里 confirm 天内确认 + submit 天内递申请,两段相加(2026-10-11 截图核出原先记成不占时间)。"""

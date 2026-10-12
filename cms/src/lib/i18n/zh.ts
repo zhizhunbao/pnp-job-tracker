@@ -656,6 +656,8 @@ export const jobsZh = {
   'pnpstep.s.eligibilityCheck': '确认能否提出', 'pnpstep.s.hearing': '难民局听证', 'pnpstep.s.acceptInvite': '收邀请、接受',
   'pnpstep.s.licence': '办职业资格认可', 'pnpstep.s.invest': '投资到位', 'pnpstep.s.residence': '在魁北克住满',
   'pnpstep.s.deposit': '存启动保证金', 'pnpstep.s.prApply': '向联邦递永居', 'pnpstep.who.sponsor': '担保人',
+  // 2026-10-12 Frank「加组头」:资讯页联邦三组的组头;联邦 / 魁北克的「拿雇主 offer」
+  'pnp.grp.econ': '经济类', 'pnp.grp.family': '家庭团聚', 'pnp.grp.refugee': '难民', 'pnpstep.s.jobOffer': '拿雇主 offer',
   'pnpstep.f.noFee': '不收费',
   'pnpstep.f.eoiValidDays': '在池里有效 {n} 天',
   'pnpstep.f.appFee': '交 {n} 加元申请费,不退',
@@ -1172,7 +1174,7 @@ export const siteZh = {
   // 筛选/排序仍用英文全名(PROV_NAMES 是 fProv 的取值,动它会打断深链与保存的筛选)
   'prov.ON': '安大略省', 'prov.BC': '不列颠哥伦比亚省', 'prov.AB': '阿尔伯塔省', 'prov.QC': '魁北克省',
   'prov.MB': '曼尼托巴省', 'prov.SK': '萨斯喀彻温省', 'prov.NS': '新斯科舍省', 'prov.NB': '新不伦瑞克省',
-  'prov.NL': '纽芬兰与拉布拉多省', 'prov.PE': '爱德华王子岛省', 'prov.NT': '西北地区', 'prov.YT': '育空地区', 'prov.NU': '努纳武特地区',
+  'prov.NL': '纽芬兰与拉布拉多省', 'prov.PE': '爱德华王子岛省', 'prov.NT': '西北地区', 'prov.YT': '育空地区', 'prov.NU': '努纳武特地区', 'prov.FED': '联邦',
   // E8-07 C/D/E:顶栏资讯聚合 + 手机抽屉
   'nav.info': '资讯', 'nav.timeline': '政策时间线', 'nav.menu': '菜单', 'nav.sect.data': '数据与结论', 'nav.sect.mine': '我的',
   // Frank 2026-07-26 二次拍板改回「更新时间」(07-26 白天曾由「更新」改「核对」,理由是凌晨无新岗时

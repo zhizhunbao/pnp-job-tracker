@@ -8,12 +8,14 @@
  * 步骤卡挪去「申请步骤」页签(PnpProvSteps),本件只出门槛卡。
  * 2026-10-04 互跳:每张卡外包一层锚点(id = 通道编号),步骤卡的互跳钮带 #通道编号 过来时滚到这张(usePnpProvStreams 里 applyHashJump)。
  *
+ * 2026-10-12 Frank「加组头」:联邦那一页按经济类 / 家庭团聚 / 难民在卡前出组头(it.group 变了才出一行)。
+ *
  * @author Frank
  * @time 2026-09-30 21:46:44
  */
 import { Loading } from '@/components/loading'
 import { Notice } from '@/components/notice'
-import { K_LOAD_FAILED, K_LOADING, NOTICE_ERR } from './constants'
+import { GROUP_KEY_HEAD, K_LOAD_FAILED, K_LOADING, NOTICE_ERR, TEXT_NONE } from './constants'
 import { usePnpProvStreams } from './hooks'
 import { PnpGateCard } from './pnpgatecard'
 import type { PnpProvStreamsIn } from './types'
@@ -28,7 +30,12 @@ import css from './pnp.module.css'
 export function PnpProvStreams({ lang, province }: PnpProvStreamsIn) {
   const p = usePnpProvStreams({ lang, province })
   const cards = []
+  let group = TEXT_NONE
   for (const it of p.items) {
+    if (it.group !== group) {
+      group = it.group
+      cards.push(<div key={GROUP_KEY_HEAD + group} className={css.groupHead}>{p.t(GROUP_KEY_HEAD + group)}</div>)
+    }
     cards.push(<div key={it.key} id={it.key} className={css.jumpAnchor}><PnpGateCard spec={it.gate} /></div>)
   }
   return (

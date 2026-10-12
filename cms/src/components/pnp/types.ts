@@ -246,6 +246,11 @@ export type PnpPathway = {
   province: string
 
   /**
+   * 项目(PNP / EE / AIP / FAMILY / REFUGEE / PSTQ …;2026-10-12 联邦组头按它分)。
+   */
+  program: string
+
+  /**
    * 岗位上挂的通道名(= 数据层 pnp_stream 取值);省默认通道为 null。
    */
   boardLabel: string | null
@@ -7455,6 +7460,11 @@ export type ProvStreamItem = {
    * 身份对照(资讯页「申请步骤」筛卡用;没登 = null)。
    */
   fits: PnpFitsJson | null
+
+  /**
+   * 组头词条键尾(联邦三组 econ / family / refugee;别的省 '' = 不出组头;2026-10-12)。
+   */
+  group: string
 }
 
 /**

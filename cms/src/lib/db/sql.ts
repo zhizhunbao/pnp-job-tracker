@@ -1945,7 +1945,7 @@ export const DIMS_PNP_DRAWS = `SELECT province, kind, draw_date AS "drawDate", s
  * 把「登了步骤」也算有卡(萨省现有工签没登门槛,原先格子与职位页移民相关卡那一行不可点)。步骤本体不进首屏;走 to_jsonb 取,
  * 生产还没加 steps 列时取到 null 当没有;加了列、seed 还没灌的旧行是 JSON null,先判是不是数组再数,首屏不挂。
  */
-export const DIMS_PATHWAYS = `SELECT key, province, board_label AS "boardLabel", is_default AS "isDefault",
+export const DIMS_PATHWAYS = `SELECT key, province, program, board_label AS "boardLabel", is_default AS "isDefault",
        draw_streams AS "drawStreams", req_streams AS "reqStreams", quota_key AS "quotaKey", official_name AS "officialName",
        plain_zh AS "plainZh", plain_ko AS "plainKo", job_linked AS "jobLinked", tags, teers, nocs, employers,
        occ_labels AS "occLabels", url,

@@ -7549,7 +7549,7 @@ PW_FED_FST = {
     "jobLinked": False,
     "steps": [
         {
-            "step": "offer",
+            "step": "jobOffer",
             "who": "employer",
             "none": False,
             "stuck": False,
@@ -7681,7 +7681,7 @@ PW_FED_AIP = {
     "jobLinked": False,
     "steps": [
         {
-            "step": "offer",
+            "step": "jobOffer",
             "who": "employer",
             "none": False,
             "stuck": False,
@@ -7856,7 +7856,7 @@ PW_FED_RCIP = {
     "jobLinked": False,
     "steps": [
         {
-            "step": "offer",
+            "step": "jobOffer",
             "who": "employer",
             "none": False,
             "stuck": False,
@@ -7989,7 +7989,7 @@ PW_FED_FCIP = {
     "jobLinked": False,
     "steps": [
         {
-            "step": "offer",
+            "step": "jobOffer",
             "who": "employer",
             "none": False,
             "stuck": False,
@@ -8122,7 +8122,7 @@ PW_FED_HOME_CARE_WORKER = {
     "jobLinked": False,
     "steps": [
         {
-            "step": "offer",
+            "step": "jobOffer",
             "who": "employer",
             "none": False,
             "stuck": False,
@@ -11047,7 +11047,7 @@ STEP_KEYS = ["employerRegister", "offer", "work", "workLocal", "epa", "eeProfile
              "csq", "finalReport", "fedReview", "workPermit", "runBusiness", "sponsorEligible", "undertaking",
              "sponsorInterest", "agreement", "biometrics", "visit", "referral", "sponsorGroup", "businessPlan",
              "workCanada", "eligibilityCheck", "hearing", "acceptInvite", "licence", "invest", "residence", "deposit",
-             "prApply"]
+             "prApply", "jobOffer"]
 """步骤词表(三语文案在 cms i18n pnp.step.*):雇主登记 / 拿雇主 offer / 在这份工作上干够 / 在本省干够(2026-10-08) / 雇主递职位审批 / 建 EE 档案 / 递 EOI /
 进池与抽选 / 确认职位、递申请 / 收邀请、递申请 / 省里审批 / 做安置计划 / 雇主递省背书 / 拿提名,递永居 /
 拿社区推荐信(community,2026-10-02 批 2 阿省乡村振兴加)/ 网上注册打分(register,2026-10-03 批 2 卑诗加:卑诗叫 registration,

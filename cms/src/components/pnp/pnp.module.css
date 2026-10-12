@@ -3497,3 +3497,13 @@
    */
   padding: 6px 8px;
 }
+
+/*
+ * 资讯页联邦那一页的组头(经济类 / 家庭团聚 / 难民;2026-10-12 Frank「加组头」):卡前一行粗字,与上一组的卡留一口气。
+ */
+.groupHead {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin: 18px 0 10px;
+}

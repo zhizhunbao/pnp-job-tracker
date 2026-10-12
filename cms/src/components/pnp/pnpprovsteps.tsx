@@ -8,12 +8,14 @@
  * (判定在子桶 fit 的 keepStreamOf);全部省份一起看时(group)卡前出省名组头,这省一条不剩整组不出;只看一省时一条不剩出空态一句。
  * 2026-10-12 Frank「全部省份 去掉吧」:分组那一套(组头、空态句)撤;资讯页筛选也撤了(挪「我的通道」),筛选条件仍收、资讯页递空。
  *
+ * 2026-10-12 Frank「加组头」:联邦那一页按经济类 / 家庭团聚 / 难民在卡前出组头(it.group 变了才出一行)。
+ *
  * @author Frank
  * @time 2026-10-03 23:44:58
  */
 import { Loading } from '@/components/loading'
 import { Notice } from '@/components/notice'
-import { K_LOAD_FAILED, K_LOADING, NOTICE_ERR } from './constants'
+import { GROUP_KEY_HEAD, K_LOAD_FAILED, K_LOADING, NOTICE_ERR, TEXT_NONE } from './constants'
 import { keepStreamOf } from './fit'
 import { usePnpProvStreams } from './hooks'
 import { ProvStepsCard } from './provstepscard'
@@ -29,8 +31,13 @@ import css from './pnp.module.css'
 export function PnpProvSteps({ lang, province, filter }: PnpProvStepsIn) {
   const p = usePnpProvStreams({ lang, province })
   const cards = []
+  let group = TEXT_NONE
   for (const it of p.items) {
     if (it.steps != null && keepStreamOf({ fits: it.fits, province, filter })) {
+      if (it.group !== group) {
+        group = it.group
+        cards.push(<div key={GROUP_KEY_HEAD + group} className={css.groupHead}>{p.t(GROUP_KEY_HEAD + group)}</div>)
+      }
       cards.push(
         <div key={it.key} id={it.key} className={css.jumpAnchor}>
           <ProvStepsCard spec={it.steps} draws={it.draws} t={p.t} />
