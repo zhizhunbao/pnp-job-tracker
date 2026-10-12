@@ -92,7 +92,8 @@ import type {
   ShowRelatedIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, TFn, TableClsIn, TextFn, ThWidthIn,
   TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellReasonIn, UserFilterIn, WantsIn, WidthsKeyIn,
   JobBodyPanel, JobDateCell, JobDatesOfIn, JdGroup, JdSubgroupsIn, PushGroupIn, RepeatItemIn, SubheadPairIn,
-  CellCtx, ImmCtxIn, ImmMoneyIn, ImmNameEnIn, PopupState, ImmRow, ImmRowsIn, ImmSignalIn, ImmWageIn, OpenImmIn,
+  CellCtx, ImmCtxIn, ImmMoneyIn, InfoWageIn, TransToggleLabelIn,
+  ImmNameEnIn, PopupState, ImmRow, ImmRowsIn, ImmSignalIn, ImmWageIn, OpenImmIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -3616,6 +3617,19 @@ export function origLinkLabelOf(x: OrigLinkLabelIn): string {
 }
 
 /**
+ * 相关职位卡右上那行小字的字(2026-10-11 Frank「右边加个 隐藏翻译的按钮」,形照「查看原帖」):出着灰字 =「隐藏翻译」,藏着 =「显示翻译」。
+ *
+ * @param x 取词函数与现在出不出灰字。
+ * @returns 小字文案。
+ */
+export function transToggleLabelOf(x: TransToggleLabelIn): string {
+  if (x.show) {
+    return x.t('rel.hideTrans')
+  }
+  return x.t('rel.showTrans')
+}
+
+/**
  * 职位名下面那行日期的格(2026-09-26 Frank 看过效果图点头;详情页 H1 下、职位弹框标题下同一件 JobDates):
  * 发布一格(库里有发布日才出)、截止一格(发帖方写了截止日且没过期才出)。来源没给截止日就只出发布一格,不编「预计截止」。
  * 过期口径 = lib/jobs 的 isExpiredJob(与 JobPosting 同一条,已下架也算过期),「今天」按多伦多日期,截止日当天还算在期。
@@ -4008,6 +4022,8 @@ export function toRelatedJob(r: RelatedJobJson): RelatedJobFact {
     salaryText: strOf(r.salaryText),
     titleZh: strOf(r.titleZh),
     titleKo: strOf(r.titleKo),
+    cityZh: strOf(r.cityZh),
+    cityKo: strOf(r.cityKo),
   }
 }
 
@@ -5467,6 +5483,31 @@ function immMoneyOf(x: ImmMoneyIn): string {
     return TEXT_NONE
   }
   return SIGN_DOLLAR + String(Math.round(x.annual / K_DIVISOR)) + UNIT_K_YEAR
+}
+
+/**
+ * 「职位信息」卡薪资下的灰字:比本省本职业中位高 / 低百分之几,括号里是中位数(2026-10-11 Frank「这个地方要知道本省本职业 中位薪职，要知道 高于 还是 低于 百分比」)。
+ * 百分比口径同职位板「vs 当地中位」列(年薪对年薪),中位数写法同移民相关卡(immMoneyOf:时薪帖写时薪)。
+ *
+ * @param x 本岗与取词函数。
+ * @returns 灰字;薪资或中位缺一给空串。
+ */
+export function infoWageSubOf(x: InfoWageIn): string {
+  const a = x.job.salaryAnnual
+  const m = x.job.wageMedAnnual
+  if (a == null || m == null || m === 0) {
+    return TEXT_NONE
+  }
+  const v = immMoneyOf({ job: x.job, hourly: x.job.wageMedHourly, annual: m })
+  const p = provName({ t: x.t, code: x.job.province, localeOnly: true })
+  const pct = Math.round((a / m - 1) * PCT_MULTIPLIER)
+  if (pct > 0) {
+    return x.t('info.wageUp', { p, pct, v })
+  }
+  if (pct < 0) {
+    return x.t('info.wageDown', { p, pct: -pct, v })
+  }
+  return x.t('info.wageEq', { p, v })
 }
 
 /**

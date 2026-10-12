@@ -6,12 +6,15 @@
  * 2026-10-09 N6 批:行里城市换 name 桶 CityName,多递省码(地图查询用);相关职位接口不带市名译名,城市只出英文。
  * 行内已不读 onOpenJob(岗名换 JobName 经总线自开),照旧递着,上游接线另批清。
  * 2026-10-09 N6b 批:上游接线清了 —— 这一格撤,相关职位卡不再往下递点一行的去处。
+ * 2026-10-11 相关职位接口补带市译名,地点灰字出「市译名,省译名」(Frank「而且缺少城市」)。
+ * 同日加 trans:相关职位卡右上「隐藏翻译」关掉时,职位名与地点的灰字都不出。
  *
  * @author Frank
  * @time 2026-09-21 18:30:00
  */
 import { JobMiniRow } from './jobminirow'
 import { untranslatedOf, useTitleMap } from '@/components/jobtitle'
+import { TEXT_NONE } from './constants'
 import { miniSubOf } from './functions'
 import type { JobMiniListIn } from './types'
 
@@ -21,17 +24,24 @@ import type { JobMiniListIn } from './types'
  * @param props 这一组的行与界面语言(逐格注释见 JobMiniListIn)。
  * @returns 若干行。
  */
-export function JobMiniList({ rows, lang }: JobMiniListIn) {
+export function JobMiniList({ rows, lang, trans }: JobMiniListIn) {
   const map = useTitleMap({ titles: untranslatedOf({ rows, lang }), lang })
   const items = []
   for (const row of rows) {
+    let sub = TEXT_NONE
+    if (trans) {
+      sub = miniSubOf({ row, lang, map })
+    }
     items.push(
       <JobMiniRow key={row.id} id={row.id}
         title={row.title}
-        sub={miniSubOf({ row, lang, map })}
+        sub={sub}
         salaryText={row.salaryText}
         city={row.city}
-        province={row.province} />,
+        province={row.province}
+        cityZh={row.cityZh}
+        cityKo={row.cityKo}
+        plain={trans === false} />,
     )
   }
   return <>{items}</>

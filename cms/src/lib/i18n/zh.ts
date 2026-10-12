@@ -869,6 +869,9 @@ export const jobsZh = {
   'col.pnp': 'PNP', 'col.ee': 'EE 类别', 'col.aip': 'AIP', 'col.pilot': '试点社区', 'col.lmia': '外劳记录', 'col.eligibility': '身份预筛', 'col.status': '状态', 'col.firstSeen': '首次收录', 'col.lastSeen': '最后可见', 'col.closedAt': '下架时间', 'col.score': '通道',
   // 2026-10-11 批 4 全站卡片字段:职位板截止日期列 + 职位框 / 职位页「职位信息」分区卡
   'col.validThrough': '截止日期', 'detail.info': '职位信息',
+  // 2026-10-11 Frank「要知道 高于 还是 低于 百分比」:职位信息卡薪资下灰字;相关职位卡右上「隐藏翻译」。
+  'info.wageUp': '高于本省本职业中位 {pct}%({v})', 'info.wageDown': '低于本省本职业中位 {pct}%({v})', 'info.wageEq': '与本省本职业中位持平({v})',
+  'rel.hideTrans': '隐藏翻译', 'rel.showTrans': '显示翻译',
   'cell.elig.no_sponsorship': '🚫 明确不担保', 'cell.elig.pr_required': '🚫 须 PR/公民',
   'fact.elig': '身份预筛', 'fact.eligQuote': 'JD 原句', 'fact.eligNote': '数据层按 JD 原文检测(精确优先宁可漏);「—」= 未检出此类表述,不代表雇主提供担保',
   'eelist.source': '来源:Express Entry 类别抽选', 'eelist.loading': '加载 EE 清单…', 'eelist.count': '{n} 个职业',

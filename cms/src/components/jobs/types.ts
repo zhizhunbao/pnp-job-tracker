@@ -1806,6 +1806,11 @@ export type RelatedGroupIn = {
    * 界面语言(行下灰字 = 这门语言的职位名译名,2026-09-21;英文界面不出)。
    */
   lang: Lang
+
+  /**
+   * 出不出译名灰字(2026-10-11 卡右上「隐藏翻译」)。
+   */
+  trans: boolean
 }
 
 /**
@@ -6214,6 +6219,16 @@ export type RelatedJobJson = {
    * 职位名韩文译名。
    */
   titleKo?: string
+
+  /**
+   * 城市中文译名。
+   */
+  cityZh?: string
+
+  /**
+   * 城市韩文译名。
+   */
+  cityKo?: string
 }
 
 /**
@@ -6434,6 +6449,51 @@ export type ImmMoneyIn = {
    * 年薪口径的数。
    */
   annual: number | null
+}
+
+/**
+ * 相关职位卡「隐藏翻译 / 显示翻译」开关的状态(2026-10-11)。
+ */
+export type TransTogglePanel = {
+  /**
+   * 现在出不出译名灰字。
+   */
+  show: boolean
+
+  /**
+   * 切换。
+   */
+  onToggle: () => void
+}
+
+/**
+ * transToggleLabelOf 的入参。
+ */
+export type TransToggleLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 现在出不出译名灰字。
+   */
+  show: boolean
+}
+
+/**
+ * infoWageSubOf 的入参。
+ */
+export type InfoWageIn = {
+  /**
+   * 本岗。
+   */
+  job: JobFact
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
 }
 
 /**

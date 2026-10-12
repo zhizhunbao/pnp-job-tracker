@@ -2810,6 +2810,16 @@ export type RelatedJob = {
    * 职位名韩文译名;'' = 还没译。
    */
   titleKo: string
+
+  /**
+   * 城市中文译名(cities 表人工核定);'' = 没有。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名;'' = 没有。
+   */
+  cityKo: string
 }
 
 /**

@@ -62,7 +62,8 @@ import {
   jobDatesOf, ssrTransOf,
 } from './functions'
 import type {
-  AccountAreaPanel, Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyOpenDetail, ApplyResumeIn,
+  AccountAreaPanel, TransTogglePanel,
+  Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyOpenDetail, ApplyResumeIn,
   ApplyStage, AuthDoneIn,
   BlockedKeys, BoardColsHookIn, BoardColsOut, BoardColsPanel,
   BoardDataHookIn, BoardDataOut, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoardPnpFacts, BoxRef,
@@ -2483,4 +2484,17 @@ export function useImmPopup(): ImmPopupPanel {
     setCol(null)
   }
   return { col, open, close }
+}
+
+/**
+ * 相关职位卡「隐藏翻译 / 显示翻译」开关(2026-10-11;默认出灰字,只在本卡本次有效)。
+ *
+ * @returns 现在出不出灰字与切换口。
+ */
+export function useTransToggle(): TransTogglePanel {
+  const [show, setShow] = useState(true)
+  function onToggle(): void {
+    setShow(show === false)
+  }
+  return { show, onToggle }
 }

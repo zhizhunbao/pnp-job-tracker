@@ -831,6 +831,16 @@ export type MiniJobFact = {
    * 职位名韩文译名;'' = 库里还没有。
    */
   titleKo: string
+
+  /**
+   * 城市中文译名;'' = 没有。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名;'' = 没有。
+   */
+  cityKo: string
 }
 
 /**
@@ -846,6 +856,11 @@ export type JobMiniListIn = {
    * 界面语言(英文界面不出灰字)。
    */
   lang: CompaniesLang
+
+  /**
+   * 出不出译名灰字(2026-10-11 相关职位卡右上「隐藏翻译」;false = 职位名、地点都只出英文)。
+   */
+  trans: boolean
 }
 
 /**
@@ -1355,6 +1370,11 @@ export type JobMiniRowIn = {
    * 城市韩文译名(2026-10-09 N6 批);可省 = 没有。
    */
   cityKo?: string
+
+  /**
+   * 地点只出英文一行(2026-10-11 相关职位卡「隐藏翻译」);可省 = 照常出灰字。
+   */
+  plain?: boolean
 }
 
 /**

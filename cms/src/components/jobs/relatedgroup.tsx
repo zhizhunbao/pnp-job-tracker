@@ -32,7 +32,7 @@ import css from './jobs.module.css'
  * @param props 组小标题、总数、首屏这几行、取一页的接口地址、取词函数与界面语言。
  * @returns 小标题 + 若干行 + 展开 / 收起钮。
  */
-export function RelatedGroup({ label, total, rows, url, t, lang }: RelatedGroupIn) {
+export function RelatedGroup({ label, total, rows, url, t, lang, trans }: RelatedGroupIn) {
   const paged = usePagedFold<RelatedJobFact>({ top: rows, total, url, skip: rows.length })
   return (
     <div>
@@ -40,7 +40,7 @@ export function RelatedGroup({ label, total, rows, url, t, lang }: RelatedGroupI
         {label}
         {total > 0 && <span> {PAREN_L}{total}{PAREN_R}</span>}
       </div>
-      <JobMiniList rows={paged.rows} lang={lang} />
+      <JobMiniList rows={paged.rows} lang={lang} trans={trans} />
       <FoldLine t={t}
         unit={t(K_REL_UNIT)}
         hidden={paged.hidden}

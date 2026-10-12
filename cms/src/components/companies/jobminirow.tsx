@@ -48,6 +48,7 @@ export function JobMiniRow({
   province = TEXT_NONE,
   cityZh = TEXT_NONE,
   cityKo = TEXT_NONE,
+  plain = false,
 }: JobMiniRowIn) {
   return (
     <div className={css.jobRow}>
@@ -59,7 +60,7 @@ export function JobMiniRow({
         <div className={css.jobCity}>
           {city !== TEXT_NONE && (
             <PlaceName line={placeLineOf({ address: TEXT_NONE, city, province })}
-              cityZh={cityZh} cityKo={cityKo} province={province} />
+              cityZh={cityZh} cityKo={cityKo} province={province} plain={plain} />
           )}
         </div>
       </span>

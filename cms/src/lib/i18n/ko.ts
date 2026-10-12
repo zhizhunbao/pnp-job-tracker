@@ -800,6 +800,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'col.pnp': 'PNP', 'col.ee': 'EE 카테고리', 'col.aip': 'AIP', 'col.pilot': '시범 커뮤니티', 'col.lmia': 'LMIA 이력', 'col.eligibility': '비자 플래그', 'col.status': '상태', 'col.firstSeen': '최초 수집', 'col.lastSeen': '마지막 확인', 'col.closedAt': '마감일', 'col.score': '이민 경로',
   // 2026-10-11 批 4 全站卡片字段:职位板截止日期列 + 职位框 / 职位页「职位信息」分区卡
   'col.validThrough': '지원 마감일', 'detail.info': '채용 정보',
+  'info.wageUp': '{p} 동일 직종 중위보다 {pct}% 높음 ({v})', 'info.wageDown': '{p} 동일 직종 중위보다 {pct}% 낮음 ({v})', 'info.wageEq': '{p} 동일 직종 중위와 같음 ({v})',
+  'rel.hideTrans': '번역 숨기기', 'rel.showTrans': '번역 보기',
   'cell.elig.no_sponsorship': '🚫 스폰서 불가 명시', 'cell.elig.pr_required': '🚫 시민권/PR 한정',
   'fact.elig': '비자 플래그', 'fact.eligQuote': 'JD 원문', 'fact.eligNote': 'JD 원문 기반 검출(정밀도 우선); 「—」= 해당 표현 미검출, 스폰서 제공을 의미하지 않음',
   'eelist.source': '출처: Express Entry 카테고리 기반 선발', 'eelist.loading': 'EE 목록 로딩 중…', 'eelist.count': '{n}개 직업',

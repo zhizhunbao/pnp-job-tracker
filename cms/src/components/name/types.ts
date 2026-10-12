@@ -363,6 +363,11 @@ export type PlaceNameIn = {
    * 两位省码(没有 = 空串)。
    */
   province: string
+
+  /**
+   * 只出英文一行、不出灰字(2026-10-11 相关职位卡「隐藏翻译」);可省 = 照常出灰字。
+   */
+  plain?: boolean
 }
 
 /**

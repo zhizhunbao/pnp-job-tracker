@@ -100,9 +100,10 @@ export const JOB_FROM = `FROM jobs j LEFT JOIN companies c ON c.id = j.company_i
  * 相似/相关职位用的瘦列清单
  * 2026-09-21 多带职位名译名两格与这一行的译文版本号(Frank「这个下面显示中文翻译,不要显示公司」):
  * 版本号起别名 job_trans_v —— JOB_FROM 连着公司表,那边也有 trans_v。
+ * 2026-10-11 再带市译名两格(Frank「而且缺少城市」:相关职位卡地点灰字只剩省译名;JOB_FROM 已连 cities)。
  */
 const REL_COLS = `j.id, j.title, c.name AS company_name, j.city, j.province, j.salary, j.salary_text,
-  j.title_zh, j.title_ko, j.trans_v AS job_trans_v`
+  j.title_zh, j.title_ko, j.trans_v AS job_trans_v, ci.name_zh AS city_zh, ci.name_ko AS city_ko`
 
 /**
  * 去重:同一岗多渠道重复发布时只留一条
@@ -215,7 +216,7 @@ export const RELATED_SAME_COMPANY = `SELECT ${REL_COLS}, count(*) OVER()::int AS
  * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:首屏只取 6 家,卡上「展开 20 个」一页 20 家,接口并成 /api/jobs/related/page(loadRelatedPage,同公司组同一个)。
  */
 export const RELATED_SAME_OCC = `SELECT id, title, company_name, city, province, salary, salary_text, title_zh, title_ko,
-         job_trans_v, count(*) OVER()::int AS total FROM (
+         job_trans_v, city_zh, city_ko, count(*) OVER()::int AS total FROM (
          SELECT ${REL_COLS}, j.date_posted, j.first_seen,
            CASE WHEN j.noc = $2 AND j.city = $5 THEN 1 WHEN j.city = $5 THEN 2 WHEN j.noc = $2 THEN 3 ELSE 4 END AS tier,
            row_number() OVER (PARTITION BY COALESCE(j.company_id::text, 'j' || j.id::text) ORDER BY

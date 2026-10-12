@@ -827,6 +827,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'col.pnp': 'PNP', 'col.ee': 'EE category', 'col.aip': 'AIP', 'col.pilot': 'Pilot community', 'col.lmia': 'LMIA history', 'col.eligibility': 'Visa flags', 'col.status': 'Status', 'col.firstSeen': 'First seen', 'col.lastSeen': 'Last seen', 'col.closedAt': 'Closed', 'col.score': 'Pathway',
   // 2026-10-11 批 4 全站卡片字段:职位板截止日期列 + 职位框 / 职位页「职位信息」分区卡
   'col.validThrough': 'Closes', 'detail.info': 'Job details',
+  'info.wageUp': '{pct}% above the {p} median for this occupation ({v})', 'info.wageDown': '{pct}% below the {p} median for this occupation ({v})', 'info.wageEq': 'Same as the {p} median for this occupation ({v})',
+  'rel.hideTrans': 'Hide translation', 'rel.showTrans': 'Show translation',
   'cell.elig.no_sponsorship': '🚫 No sponsorship', 'cell.elig.pr_required': '🚫 PR/citizen only',
   'fact.elig': 'Visa flag', 'fact.eligQuote': 'JD quote', 'fact.eligNote': 'Detected from the JD text (precision-first); "—" means no such wording was found — not that the employer sponsors',
   'eelist.source': 'Source: Express Entry category-based selection', 'eelist.loading': 'Loading EE list…', 'eelist.count': '{n} occupations',

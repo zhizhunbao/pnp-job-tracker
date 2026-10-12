@@ -833,6 +833,24 @@
 }
 
 /*
+ * 「职位信息」卡薪资格:薪资一行、比中位灰字一行,左对齐竖排(2026-10-11;灰字照 name 桶 .sub 的灰与字号)。
+ */
+.infoPay {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/*
+ * 比本省本职业中位高 / 低百分之几的灰字。
+ */
+.infoPaySub {
+  margin-top: 1px;
+  font-size: 0.88em;
+  color: #9ca3af;
+}
+
+/*
  * 绿小字(首发 / 在招)。
  */
 .moneySm {
@@ -1767,6 +1785,20 @@
  * 2026-09-21 Frank「这两个分类灰字是不是最好和翻译的灰字区分一下」→ 效果图选 A:半粗 + 深一档灰(原与行下译名同为
  * 11.5px #9ca3af,看着像又一行翻译);字号不变,不抢卡标题「相关职位」。
  */
+/*
+ * 相关职位卡标题行最右的「隐藏翻译 / 显示翻译」小字(2026-10-11;字形照 .origLink,跟在 Updated 后面 —— Updated 自带 margin-left:auto 顶右)。
+ */
+.relTrans {
+  border: none;
+  background: none;
+  padding: 0;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
 .relGroup {
   font-size: 11.5px;
   font-weight: 600;
