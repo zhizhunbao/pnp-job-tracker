@@ -32,7 +32,7 @@ import type { SqlBriefKeepBaseIn, SqlBriefMergeIn, SqlCompaniesUpsertIn, SqlInse
  * 2026-09-23 再带职业名六格(Frank「刷新的时候为什么先显示号码」:「职业」列的名字原来等懒取的大维度包,首屏先露职业码):
  * 官方名、中韩完整译名、三语短名随行出来,首屏就是名字;回退顺序由 lib/noc 的 pickName 一处定,SQL 不另抄。
  */
-export const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.slug AS company_slug, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,
+export const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.slug AS company_slug, c.description AS company_description, c.sectors AS company_sectors,
   c.website AS company_website, c.website_source,
   c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled, c.sponsor_grade,
   j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.grade_channel, j.pnp_eligible, j.pnp_stream, j.pnp_block, j.ee_category, j.aip, j.pilot, j.pilot_community, j.pilot_employer, j.pilot_occ,

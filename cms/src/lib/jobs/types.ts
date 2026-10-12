@@ -103,11 +103,6 @@ export type JobDbRow = {
   address: string | null
 
   /**
-   * 公司地址(岗位地址空时兜底)。
-   */
-  company_address: string | null
-
-  /**
    * 原始板来源。
    */
   source: string | null

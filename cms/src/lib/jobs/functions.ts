@@ -2859,6 +2859,8 @@ export function iso(v: TimeLike | undefined): string {
 /**
  * jobs 主表一行 → 板上一行(不含 match;match 由调用方按人/序算好传入)。
  * Pro 数据列 2026-07-25「先都显示出来」后暂不剥值(pro 参数保留,收费面回收时改回)。
+ * 2026-10-11 地址不再拿公司地址兜底(Frank「修」:CSN Collision 岗在 Sault Ste. Marie,弹框地址出了渥太华总部「9 Caesar Ave」,
+ * 灰字却是苏圣玛丽):岗位没有街号地址就留空,地点一行由 placeLineOf 写「市, 省码」。
  *
  * @param input 原始行、匹配档与付费态。
  * @returns 板上一行。
@@ -2878,10 +2880,7 @@ export function toJobRow(input: ToJobRowIn): JobRow {
   if (fine === '') {
     fine = UNCAT
   }
-  let address = text(j.address)
-  if (address === '') {
-    address = text(j.company_address)
-  }
+  const address = text(j.address)
   let officialUrl = text(j.official_url)
   if (officialUrl === '') {
     officialUrl = text(j.company_website)
