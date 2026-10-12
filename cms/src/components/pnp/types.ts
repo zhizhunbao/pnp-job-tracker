@@ -6494,6 +6494,11 @@ export type PnpStepFactJson = {
   key?: string
 
   /**
+   * 一次性事实的三语文本(事实词 note 才有;2026-10-12 补全通道:只用一次的移民事实随数据走,不进 i18n)。
+   */
+  text?: PnpNoteText
+
+  /**
    * 事实词模板里的数(10 天、60 天、6 个月…)。
    */
   vars?: Record<string, number>
@@ -7055,6 +7060,11 @@ export type StepsCardOfIn = {
   t: TFn
 
   /**
+   * 界面语言(一次性事实按它挑文本;2026-10-12)。
+   */
+  lang: PnpLang
+
+  /**
    * 本岗省码。
    */
   province: string
@@ -7111,6 +7121,11 @@ export type StepOfIn = {
   t: TFn
 
   /**
+   * 界面语言(一次性事实按它挑文本;2026-10-12)。
+   */
+  lang: PnpLang
+
+  /**
    * 本岗省码。
    */
   province: string
@@ -7149,6 +7164,11 @@ export type StepFactIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 界面语言(一次性事实按它挑文本;2026-10-12)。
+   */
+  lang: PnpLang
 
   /**
    * 本岗省码。
@@ -7600,4 +7620,44 @@ export type ProvCountsHookIn = {
    * 只数登了步骤的(「申请步骤」页 true,「通道」页 false)。
    */
   stepsOnly: boolean
+}
+
+/**
+ * 一次性事实的三语文本(模板里可带 {n} {w} 等数,同事实词的插值)。
+ */
+export type PnpNoteText = {
+  /**
+   * 中文。
+   */
+  zh: string
+
+  /**
+   * 英文。
+   */
+  en: string
+
+  /**
+   * 韩文。
+   */
+  ko: string
+}
+
+/**
+ * noteTextOf 的入参。
+ */
+export type NoteTextIn = {
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 三语文本。
+   */
+  text: PnpNoteText
+
+  /**
+   * 模板里的数(已加千分位)。
+   */
+  vars: Record<string, string>
 }

@@ -2452,3 +2452,22 @@ export const K_TL_TOTAL_ATLEAST = 'pnptl.totalAtLeast'
  */
 export const TL_RANGE_MID_DIV = 2
 
+/**
+ * 一次性事实的事实词(2026-10-12 补全通道:三语文本随数据走,与 etl/pathways FACT_KEYS 的 note 同名)。
+ */
+export const FACT_NOTE = 'note'
+
+/**
+ * 一次性事实模板占位的左括号。
+ */
+export const NOTE_VAR_OPEN = '{'
+
+/**
+ * 一次性事实模板占位的右括号。
+ */
+export const NOTE_VAR_CLOSE = '}'
+
+/**
+ * 界面语言:韩文(一次性事实挑文本用;2026-10-12)。
+ */
+export const LANG_KO = 'ko'

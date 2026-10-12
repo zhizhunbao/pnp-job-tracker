@@ -647,6 +647,15 @@ export const jobsZh = {
   // 2026-10-03 申请步骤批 2(新不伦瑞克):新增步骤词 / 事实词
   'pnpstep.s.interestLetter': '收到省兴趣信',
   'pnpstep.s.closedPermit': '申请封闭工签',
+  // 2026-10-12 补全通道(Frank「还缺多少条通道 都补上」→「全部都补」):创业 / 商业、育空 / 西北地区、魁北克、联邦经济类、家庭团聚与难民用到的新步骤词与「担保人」
+  'pnpstep.s.csq': '拿魁北克甄选证书', 'pnpstep.s.finalReport': '递终期报告', 'pnpstep.s.fedReview': '联邦审理永居',
+  'pnpstep.s.workPermit': '申请工签', 'pnpstep.s.runBusiness': '落地开业经营', 'pnpstep.s.sponsorEligible': '确认担保资格',
+  'pnpstep.s.undertaking': '签担保承诺', 'pnpstep.s.sponsorInterest': '递担保意向表', 'pnpstep.s.agreement': '签履约协议',
+  'pnpstep.s.biometrics': '录指纹、体检、面谈', 'pnpstep.s.visit': '考察并面试', 'pnpstep.s.referral': '拿机构推荐',
+  'pnpstep.s.sponsorGroup': '由担保团体担保', 'pnpstep.s.businessPlan': '写商业计划书', 'pnpstep.s.workCanada': '在加拿大工作满',
+  'pnpstep.s.eligibilityCheck': '确认能否提出', 'pnpstep.s.hearing': '难民局听证', 'pnpstep.s.acceptInvite': '收邀请、接受',
+  'pnpstep.s.licence': '办职业资格认可', 'pnpstep.s.invest': '投资到位', 'pnpstep.s.residence': '在魁北克住满',
+  'pnpstep.s.deposit': '存启动保证金', 'pnpstep.s.prApply': '向联邦递永居', 'pnpstep.who.sponsor': '担保人',
   'pnpstep.f.noFee': '不收费',
   'pnpstep.f.eoiValidDays': '在池里有效 {n} 天',
   'pnpstep.f.appFee': '交 {n} 加元申请费,不退',

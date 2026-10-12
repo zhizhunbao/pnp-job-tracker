@@ -114,7 +114,7 @@ describe('申请步骤卡', () => {
       streamKey: 'accelerated tech pathway', value: null, valueText: '2026-06-23', period: '', asOf: '2026-09-23',
     }
     const channel = PATHWAYS.find((p) => p.key === 'ab-accelerated-tech') ?? null
-    const card = (fact: PnpStepSet['steps'][number]['facts'][number]) => stepsCardOf({
+    const card = (fact: PnpStepSet['steps'][number]['facts'][number]) => stepsCardOf({ lang: 'zh',
       t: makeT('zh'), province: 'AB', channel, stepOps: [op], reqs: [], who: { province: 'AB', noc: '', teer: null },
       sets: [{ key: 'ab-accelerated-tech', steps: [{ step: 'review', who: 'province', none: false, stuck: false, facts: [fact] }], timeline: null, fits: null }],
     })

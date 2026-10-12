@@ -593,6 +593,15 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   // 2026-10-03 申请步骤批 2(新不伦瑞克):新增步骤词 / 事实词
   'pnpstep.s.interestLetter': '주정부 관심 서한 받기',
   'pnpstep.s.closedPermit': '폐쇄형 취업허가 신청',
+  // 2026-10-12 补全通道(Frank「还缺多少条通道 都补上」→「全部都补」):创业 / 商业、育空 / 西北地区、魁北克、联邦经济类、家庭团聚与难民用到的新步骤词与「担保人」
+  'pnpstep.s.csq': '퀘벡 선발증명서(CSQ) 취득', 'pnpstep.s.finalReport': '최종 보고서 제출', 'pnpstep.s.fedReview': '연방 영주권 심사',
+  'pnpstep.s.workPermit': '취업비자 신청', 'pnpstep.s.runBusiness': '사업 개시·운영', 'pnpstep.s.sponsorEligible': '보증인 자격 확인',
+  'pnpstep.s.undertaking': '보증 서약 서명', 'pnpstep.s.sponsorInterest': '보증 의향서 제출', 'pnpstep.s.agreement': '이행 협약 서명',
+  'pnpstep.s.biometrics': '생체정보·신체검사·면접', 'pnpstep.s.visit': '사전 방문·면접', 'pnpstep.s.referral': '기관 추천 받기',
+  'pnpstep.s.sponsorGroup': '후원 단체의 보증', 'pnpstep.s.businessPlan': '사업계획서 작성', 'pnpstep.s.workCanada': '캐나다 근무 요건 충족',
+  'pnpstep.s.eligibilityCheck': '신청 가능 여부 확인', 'pnpstep.s.hearing': '난민위원회 심리', 'pnpstep.s.acceptInvite': '초청 수락',
+  'pnpstep.s.licence': '직업 자격 인정', 'pnpstep.s.invest': '투자 이행', 'pnpstep.s.residence': '퀘벡 거주 요건 충족',
+  'pnpstep.s.deposit': '사업 보증금 예치', 'pnpstep.s.prApply': '연방에 영주권 신청', 'pnpstep.who.sponsor': '보증인',
   'pnpstep.f.noFee': '수수료 없음',
   'pnpstep.f.eoiValidDays': '풀에서 {n}일 유효',
   'pnpstep.f.appFee': '신청 수수료 {n} 캐나다달러, 환불 불가',

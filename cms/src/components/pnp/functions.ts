@@ -22,7 +22,8 @@ import { DAY_MS } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS, DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE,
-  DRAWS_ALL_KEY, DRAWS_FORM_STATUS, HOST_RE, LANG_EN, MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
+  DRAWS_ALL_KEY, DRAWS_FORM_STATUS, HOST_RE, LANG_EN, LANG_KO, FACT_NOTE, NOTE_VAR_OPEN, NOTE_VAR_CLOSE,
+  MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
   K_GATE_TITLE, P_PROV, SCROLL_START, URL_HASH_HEAD, URL_KV_SEP, URL_QUERY_HEAD, URL_STEPS, URL_STREAMS,
   MONTHS_KEYS, K_TL_ABOUT, K_TL_ABOUT_DAYS, K_TL_DAYS, K_TL_MONTHS, K_TL_RANGE, K_TL_TOTAL, K_TL_TOTAL_ONE,
   K_TL_UNKNOWN, K_TL_UNPUBLISHED, K_TL_ATLEAST, K_TL_TOTAL_ATLEAST,
@@ -72,7 +73,7 @@ import {
   STEP_PROCESSING_KEY,
 } from './constants'
 import type {
-  PnpFitsJson, ProvCounts, ProvCountsOfIn,
+  PnpFitsJson, ProvCounts, ProvCountsOfIn, NoteTextIn,
   PnpSpanJson, PnpTimelineJson, SpanAtIn, SpanTextIn, StepDurIn, ToneIn, TotalTextIn, TimelineSegSpec, TimelineSpec,
   TimelineSpecIn, WithToneIn,
   ChannelOfIn, ChannelSpec, DrawExtraIn, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
@@ -3672,6 +3673,7 @@ export function provStreamItemsOf(x: ProvStreamItemsIn): ProvStreamItem[] {
   for (const p of ordered) {
     const raw = stepsCardOf({
       t: x.t,
+      lang: x.lang,
       province: p.province,
       channel: p,
       sets: x.sets,
@@ -6542,7 +6544,7 @@ export function stepsCardOf(x: StepsCardOfIn): StepsCardSpec | null {
   for (const step of set.steps) {
     n += 1
     const span = spanAtOf({ tl, i: n - 1 })
-    steps.push(stepOf({ t: x.t, province: x.province, step, n, stepOps: x.stepOps, one, span }))
+    steps.push(stepOf({ t: x.t, lang: x.lang, province: x.province, step, n, stepOps: x.stepOps, one, span }))
   }
   return {
     title: x.t(K_STEPS_HEAD),
@@ -6633,7 +6635,9 @@ function stepOf(x: StepOfIn): StepSpec {
       draws = true
       continue
     }
-    for (const line of stepFactLinesOf({ t: x.t, province: x.province, fact, stepOps: x.stepOps, one: x.one })) {
+    for (const line of stepFactLinesOf({
+      t: x.t, lang: x.lang, province: x.province, fact, stepOps: x.stepOps, one: x.one,
+    })) {
       lines.push(line)
     }
   }
@@ -6847,7 +6851,29 @@ function stepFactLinesOf(x: StepFactIn): StepLineSpec[] {
   if (f.vars != null) {
     vars = f.vars
   }
+  if (f.key === FACT_NOTE && f.text != null) {
+    return [{ text: noteTextOf({ lang: x.lang, text: f.text, vars: varsTextOf(vars) }), warn: false }]
+  }
   return [{ text: x.t(STEP_FACT_HEAD + f.key, varsTextOf(vars)), warn: STEP_WARN_FACTS.includes(f.key) }]
+}
+
+/**
+ * 一次性事实按界面语言挑文本,把 {n} 这类占位换成数(2026-10-12 补全通道)。
+ *
+ * @param x 界面语言、三语文本与数。
+ * @returns 一行字。
+ */
+function noteTextOf(x: NoteTextIn): string {
+  let out = x.text.zh
+  if (x.lang === LANG_EN) {
+    out = x.text.en
+  } else if (x.lang === LANG_KO) {
+    out = x.text.ko
+  }
+  for (const [k, v] of Object.entries(x.vars)) {
+    out = out.split(NOTE_VAR_OPEN + k + NOTE_VAR_CLOSE).join(v)
+  }
+  return out
 }
 
 /**

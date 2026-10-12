@@ -1,6 +1,7 @@
 /**
  * 资讯页「申请步骤」分区筛选的判定(pnp 子桶 fit 的 keepStreamOf;2026-10-11 申请步骤分区筛选批 1)。
  * 判定层测试三件:穷举输入断言性质 + 手写金标(真 mart 行 + 身份对照稿)+ 变异探针。
+ * 2026-10-12 补全通道后金标只比登了身份对照的通道(创业类等没登,按设计一律留,不在金标口径里)。
  */
 import fs from 'fs'
 import path from 'path'
@@ -18,7 +19,7 @@ const LENS = ['', 'y1', 'y2', 'y3', 'master']
 
 const edu = (prov: string, kind = '', len = ''): EduRow => ({ prov, kind, len })
 const keptKeys = (who: string, rows: EduRow[], province: string) =>
-  LIVE.filter((r) => r.province === province && keepStreamOf({ fits: r.fits, province: r.province, filter: { who, edu: rows } }))
+  LIVE.filter((r) => r.province === province && r.fits != null && keepStreamOf({ fits: r.fits, province: r.province, filter: { who, edu: rows } }))
     .map((r) => r.key)
 
 describe('性质', () => {
