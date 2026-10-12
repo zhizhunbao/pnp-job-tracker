@@ -32,7 +32,9 @@ export function EduLine({ p, i, row }: EduLineIn) {
       <Select value={row.len} onChange={p.eduPickOf(i, EDU_F_LEN)} opts={EDU_LENS} all={p.t(K_EDU_LEN)}
         labelOf={p.eduLenLabel} tap />
       {(p.s.edu.length > 1 || blank === false) && (
-        <Button kind={BTN_GHOST} className={css.removeBtn} onClick={p.eduRemoveOf(i)} title={p.t(K_REMOVE)}>{REMOVE_GLYPH}</Button>
+        <Button kind={BTN_GHOST} className={css.removeBtn} onClick={p.eduRemoveOf(i)} title={p.t(K_REMOVE)}>
+          {REMOVE_GLYPH}
+        </Button>
       )}
     </div>
   )
