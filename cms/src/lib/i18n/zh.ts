@@ -1327,7 +1327,8 @@ export const siteZh = {
   'loading': '更新中…',
   'origin.hireac': 'HireAC', 'origin.gcjobs': 'GC Jobs',
   'origin.jobillico': 'Jobillico', 'origin.jobboom': 'Jobboom', 'origin.careerbeacon': 'CareerBeacon',
-  'nav.library': '资料库', 'nav.employers': '雇主', 'nav.jobs': '职位', 'nav.mine': '我的', 'nav.pte': 'PTE 刷题', 'tl.tabNews': '最新公告', 'tl.tabStreams': '通道',
+  // 2026-10-12 Frank「通道 改成 申请门槛」:资讯第三个页签改名(页里是各通道的门槛卡)
+  'nav.library': '资料库', 'nav.employers': '雇主', 'nav.jobs': '职位', 'nav.mine': '我的', 'nav.pte': 'PTE 刷题', 'tl.tabNews': '最新公告', 'tl.tabStreams': '申请门槛',
   // 2026-10-03 资讯页签四分:四个短名页签 最新公告 | 抽选 | 通道 | 申请步骤(375px 英文四个放得下);页头标题各页另用自己的词条
   'tl.tabDraws': '抽选', 'tl.tabSteps': '申请步骤',
   'rank.bnSub': '按移民价值评分排序', 'rank.bnRows': '{n} 本榜岗位',
