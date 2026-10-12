@@ -36,6 +36,7 @@ import json
 import re
 import statistics
 import sys
+import unicodedata
 import unittest
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta, timezone
@@ -298,6 +299,8 @@ from mart.constants import (  # 2026-09-28 缺数据修复批:待修清单(Frank
 )
 from mart.scheme import MartPendingTest, MissingIn, PendingRowIn  # 同上
 from mart.scheme import HeldSplitIn, HeldSplitOut  # 同日晚接闸(Frank「确认,下线吧」)
+from mart.scheme import AddrProvIn  # 2026-10-11 省码对地址(Frank「数据问题也修」)
+from mart.constants import ADDR_CITY_PROV_RE, CITY_FOLD_RE, POSTAL_LETTER_PROVS, PRINT_CITY_UNIFY_TPL, UNICODE_NFKD  # 同上
 from mart.constants import DEDUP_CITY_KEY_TPL  # 同日晚展示去重加城市(Frank 勾「检查,不全的下线」)
 from mart.constants import ASSESSING_DATE_RE, METRIC_ASSESSING_DATE  # 2026-10-02 申请步骤批 2(AB 审理游标日期)
 from mart.constants import (  # 2026-10-02 申请步骤批 1(萨省限额行业收件窗口摊进运营统计表)
@@ -5443,6 +5446,9 @@ def to_mart_tables() -> dict:
     split = held_split_of(HeldSplitIn(jobs=ctx.jobs, pending=pending, dup_of=ctx.dup_of,
                                       dup_no_mail=dup_no_mail_of(ctx)))
     ctx.jobs = split.kept
+    unified = unify_city_spellings(ctx.jobs)
+    if unified:
+        say(PRINT_CITY_UNIFY_TPL.format(n=unified))
     noc_i18n = load_i18n(I18N_NOC_FILE)
     city_i18n = load_i18n(I18N_CITY_FILE)
     ee_draws = load_ee_draws()
@@ -6625,6 +6631,38 @@ def to_city_stats_row(x: CityStatsRowIn) -> dict:
 # =========================================================================
 
 
+def unify_city_spellings(jobs: list) -> int:
+    """同省同城异写并成一种(2026-10-11 Frank「数据问题也修」:Thetford Mines / Thetford-Mines、
+    Châteauguay / Chateauguay 在 cities 表里成了两个城市)。去重音、去空格连字符点撇号后相同即同城,
+    按岗位数取多数写法(平票取先出现的)。跨源(JB + 第三方板)一起比,所以放在汇装而不是单源地点步。
+    返回改写的岗数。
+    """
+    counts: dict = defaultdict(Counter)
+    for job in jobs:
+        city = job.get(K_CITY) or ""
+        if city:
+            counts[(job.get(K_PROVINCE) or "", city_fold_of(city))][city] += 1
+    fixed = 0
+    for job in jobs:
+        city = job.get(K_CITY) or ""
+        if not city:
+            continue
+        top = counts[(job.get(K_PROVINCE) or "", city_fold_of(city))].most_common(1)[0][0]
+        if top != city:
+            job[K_CITY] = top
+            fixed += 1
+    return fixed
+
+
+def city_fold_of(city: str) -> str:
+    """同城比较键:去重音、小写、去空格连字符点撇号。"""
+    kept = []
+    for c in unicodedata.normalize(UNICODE_NFKD, city):
+        if not unicodedata.combining(c):
+            kept.append(c)
+    return CITY_FOLD_RE.sub("", "".join(kept).lower())
+
+
 def clean_job_locations() -> None:
     """本域步骤入口:把两源的地点洗成结构化五格,并把 ATS 岗筛到焦点区(Ottawa,严)。
 
@@ -6779,6 +6817,7 @@ def normalize_jobbank_location(x: JbLocIn) -> dict:
     city_c = WS_RE.sub(SPACE, (x.city or "").strip())
     if city_c.lower().startswith(NON_CITY_PREFIXES):
         city_c = ""
+    prov = addr_prov_of(AddrProvIn(prov=prov, city=city_c, addr=x.addr or ""))
     fsa = fsa_of(JB_LOC_TPL.format(city=x.city or "", addr=x.addr or ""))
     district = ""
     entry = x.fsa_table.get(fsa)
@@ -6800,6 +6839,28 @@ def normalize_jobbank_location(x: JbLocIn) -> dict:
             K_DISTRICT: district, K_ADDRESS: clean_address(x.addr)}
 
 
+def addr_prov_of(x: AddrProvIn) -> str:
+    """列表页省码对详情页地址(2026-10-11 Frank「数据问题也修」)。
+
+    Job Bank 列表页偶有「Ottawa (QC)」「Surrey (AB)」这种市和省码串了的,详情页地址
+    「Ottawa, ON K1K 2C6」却是对的。地址省码只在和邮编首字母对得上时才算证据,然后:
+      · 列表省码空(多地点帖)→ 用地址的;
+      · 两边不同且列表市名出现在地址那一段里(地址印证了这个市)→ 用地址的;
+      · 其余(如列表 Vancouver BC、地址 Richmond Hill ON —— 地址可能是公司本部)保留列表的,不猜。
+    """
+    m = ADDR_CITY_PROV_RE.search((x.addr or "").strip())
+    if m is None:
+        return x.prov
+    seg, addr_prov, letter = m.group(1), m.group(2), m.group(3).upper()
+    if addr_prov not in POSTAL_LETTER_PROVS.get(letter, ()):
+        return x.prov
+    if x.prov == "":
+        return addr_prov
+    if addr_prov != x.prov and x.city and x.city.lower() in seg.lower():
+        return addr_prov
+    return x.prov
+
+
 def backfill_provinces(posts: list) -> int:
     """省份兜底:Job Bank 偶尔漏填某帖的省。
 
@@ -6810,7 +6871,7 @@ def backfill_provinces(posts: list) -> int:
     for job in posts:
         key = (job.get(K_CITY_RAW) or "").strip().lower()
         prov = (job.get(K_PROVINCE) or "").strip()
-        if key and prov:
+        if key and prov and not key.startswith(NON_CITY_PREFIXES):
             city_provs[key].add(prov)
     backfilled = 0
     for job in posts:
