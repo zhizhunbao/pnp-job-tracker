@@ -3279,7 +3279,7 @@ export function toPnpOpsRow(r: Row): PnpOpsRow {
  * @returns 一条通道的步骤。
  */
 function toPnpStepsRow(r: PnpStepsDbRow): PnpStepsRow {
-  return { key: text(r.key), steps: toList(r.steps), timeline: r.timeline }
+  return { key: text(r.key), steps: toList(r.steps), timeline: r.timeline, fits: r.fits }
 }
 
 /**

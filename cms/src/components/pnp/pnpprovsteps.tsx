@@ -4,14 +4,19 @@
  * 「申请步骤」卡 —— 与职位弹框同一张卡(ProvStepsCard → PnpStepsCard)、同一份懒取整表,卡标题写通道官方英文原名、灰字界面语言名;
  * 「进池与抽选」一步挂这条通道的抽选表。没登步骤的通道不出。形照同桶的 PnpProvStreams(加载行与失败框同它)。
  * 2026-10-04 互跳:每张卡外包一层锚点(id = 通道编号),门槛卡的互跳钮带 #通道编号 过来时滚到这张(usePnpProvStreams 里 applyHashJump)。
+ * 2026-10-11 申请步骤分区筛选批 1(设计 docs/design/资讯/申请步骤-分区筛选-20261011.md):收筛选条件,按身份与教育经历留卡
+ * (判定在子桶 fit 的 keepStreamOf);全部省份一起看时(group)卡前出省名组头,这省一条不剩整组不出;只看一省时一条不剩出空态一句。
  *
  * @author Frank
  * @time 2026-10-03 23:44:58
  */
 import { Loading } from '@/components/loading'
 import { Notice } from '@/components/notice'
-import { K_LOAD_FAILED, K_LOADING, NOTICE_ERR } from './constants'
+import { K_LOAD_FAILED, K_LOADING, K_STEPSF_COUNT, K_STEPSF_EMPTY, NOTICE_ERR, NOTICE_INFO } from './constants'
+import { keepStreamOf } from './fit'
+import { provEnOf, provSubOf } from './functions'
 import { usePnpProvStreams } from './hooks'
+import { ProvGroupHead } from './provgrouphead'
 import { ProvStepsCard } from './provstepscard'
 import type { PnpProvStepsIn } from './types'
 import css from './pnp.module.css'
@@ -19,14 +24,14 @@ import css from './pnp.module.css'
 /**
  * 渲染一省的步骤卡。
  *
- * @param props 界面语言与省码。
- * @returns 卡片列(每条登了步骤的通道一张;整表没到出加载行,取挂了出失败框)。
+ * @param props 界面语言、省码、筛选条件与是否全部省份一起看。
+ * @returns 卡片列(每条登了步骤、筛完还留着的通道一张;整表没到出加载行,取挂了出失败框)。
  */
-export function PnpProvSteps({ lang, province }: PnpProvStepsIn) {
+export function PnpProvSteps({ lang, province, filter, group }: PnpProvStepsIn) {
   const p = usePnpProvStreams({ lang, province })
   const cards = []
   for (const it of p.items) {
-    if (it.steps != null) {
+    if (it.steps != null && keepStreamOf({ fits: it.fits, province, filter })) {
       cards.push(
         <div key={it.key} id={it.key} className={css.jumpAnchor}>
           <ProvStepsCard spec={it.steps} draws={it.draws} t={p.t} />
@@ -34,10 +39,19 @@ export function PnpProvSteps({ lang, province }: PnpProvStepsIn) {
       )
     }
   }
+  if (group && p.failed === false && (p.ready === false || cards.length === 0)) {
+    return null
+  }
   return (
     <>
+      {group && (
+        <ProvGroupHead name={provEnOf(province)}
+          sub={provSubOf({ lang, t: p.t, code: province })}
+          count={p.t(K_STEPSF_COUNT, { n: cards.length })} />
+      )}
       {p.ready === false && p.failed === false && <Loading text={p.t(K_LOADING)} />}
       {p.failed && <Notice kind={NOTICE_ERR}>{p.t(K_LOAD_FAILED)}</Notice>}
+      {p.ready && cards.length === 0 && <Notice kind={NOTICE_INFO}>{p.t(K_STEPSF_EMPTY)}</Notice>}
       {cards}
     </>
   )

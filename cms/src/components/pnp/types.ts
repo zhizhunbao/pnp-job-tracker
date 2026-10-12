@@ -5386,6 +5386,16 @@ export type PnpProvStepsIn = {
    * 省码。
    */
   province: string
+
+  /**
+   * 筛选条件(2026-10-11 申请步骤分区筛选批 1)。
+   */
+  filter: PnpStepsFilter
+
+  /**
+   * 全部省份一起看(true = 卡前出省名组头,这省一条不剩就整组不出)。
+   */
+  group: boolean
 }
 
 /**
@@ -6551,6 +6561,86 @@ export type PnpStepSet = {
    * 时间线(2026-10-11;逐步时长与 steps 同序 + 全程区间,数据层 etl/mart 段25 算好;没有 = null)。
    */
   timeline: PnpTimelineJson | null
+
+  /**
+   * 身份对照(2026-10-11 申请步骤分区筛选批 1;etl/pathways 段 6 人工核定;没登 = null)。
+   */
+  fits: PnpFitsJson | null
+}
+
+/**
+ * 院校条件一条(身份对照的线格式;没写的格缺席 = 不限)。
+ */
+export type PnpSchoolJson = {
+  /**
+   * 地点词:own / other / canada / any。
+   */
+  prov: string
+
+  /**
+   * 性质词:public / private;缺席 = 不限。
+   */
+  kind?: string
+
+  /**
+   * 课程时长下限词:y1 / y2 / y3 / master;缺席 = 不限。
+   */
+  min?: string
+}
+
+/**
+ * 身份对照一格(能不能走 + 院校条件;原句与出处页本桶不读,不声明)。
+ */
+export type PnpFitJson = {
+  /**
+   * 能不能走:yes / after / no。
+   */
+  can: string
+
+  /**
+   * 院校条件;缺席 = 不挑院校。
+   */
+  schools?: PnpSchoolJson[]
+}
+
+/**
+ * 一条通道的身份对照(身份词 → 格;没登的身份缺席)。
+ */
+export type PnpFitsJson = Record<string, PnpFitJson>
+
+/**
+ * 资讯页「申请步骤」教育经历一段('' = 这一格没选;streams 桶递进来,子桶 fit 同形)。
+ */
+export type PnpEduRow = {
+  /**
+   * 院校所在地:省码或 abroad。
+   */
+  prov: string
+
+  /**
+   * 性质:public / private。
+   */
+  kind: string
+
+  /**
+   * 课程时长:y1 / y2 / y3 / master。
+   */
+  len: string
+}
+
+/**
+ * 资讯页「申请步骤」的筛选条件(省份不在这:哪几省的卡由页面挑)。
+ */
+export type PnpStepsFilter = {
+  /**
+   * 身份词;'' = 没选。
+   */
+  who: string
+
+  /**
+   * 教育经历(至多两段)。
+   */
+  edu: PnpEduRow[]
 }
 
 /**
@@ -6583,7 +6673,8 @@ export type PnpTimelineJson = {
  */
 export type PnpSpanJson = {
   /**
-   * 形:none 不占时间 / exact 定长 / range 区间 / upto 最长 / about 约 / unknown 本站未收录。
+   * 形:none 不占时间 / exact 定长 / range 区间 / upto 最长 / about 约 / unknown 本站未收录 /
+   * unpublished 官方未公布 / atleast 至少 N(只有下限;2026-10-12)。
    */
   kind: string
 
@@ -7343,6 +7434,11 @@ export type ProvStreamItem = {
    * 「进池与抽选」一步的抽选表(这条通道的组当高亮组);没有给 null。
    */
   draws: DrawCard | null
+
+  /**
+   * 身份对照(资讯页「申请步骤」筛卡用;没登 = null)。
+   */
+  fits: PnpFitsJson | null
 }
 
 /**
@@ -7478,4 +7574,44 @@ export type ProcessingTextIn = {
    * 词条键(按指标挑好的)。
    */
   key: string
+}
+
+/**
+ * ProvGroupHead 的 props(2026-10-11 申请步骤分区筛选批 1)。
+ */
+export type ProvGroupHeadIn = {
+  /**
+   * 省英文名(黑字主文案)。
+   */
+  name: string
+
+  /**
+   * 界面语言译名(灰字);英文界面为空串。
+   */
+  sub: string
+
+  /**
+   * 条数文案(灰字)。
+   */
+  count: string
+}
+
+/**
+ * provSubOf 的入参。
+ */
+export type ProvSubIn = {
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 省码。
+   */
+  code: string
 }

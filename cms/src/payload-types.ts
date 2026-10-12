@@ -1278,6 +1278,18 @@ export interface Pathway {
     | number
     | boolean
     | null;
+  /**
+   * 身份对照 {身份: {can, schools?, quote?, url?}}(在读留学生 / 毕业工签 / LMIA / 开放工签 / 人在国外 / EE;etl/pathways 段 6 人工核定、原句对 crawl 缓存自校,2026-10-11 申请步骤分区筛选批 1);没登 = null;DDL docs/sql/pathways-fits-20261011.sql
+   */
+  fits?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3505,6 +3517,7 @@ export interface PathwaysSelect<T extends boolean = true> {
   employers?: T;
   steps?: T;
   timeline?: T;
+  fits?: T;
   updatedAt?: T;
   createdAt?: T;
 }

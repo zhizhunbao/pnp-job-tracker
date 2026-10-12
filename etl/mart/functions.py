@@ -316,7 +316,7 @@ from mart.constants import (  # 2026-10-11 申请步骤时间线(段25)
     TL_EPA_STEP, TL_WORK_FACT, TL_EXP_ALT_FACTOR, TL_TENURE_BASIS, TL_CONFIRM_FACT, TL_CONFIRM_VARS,
     TL_K_AS_OF, TL_K_BASIS, TL_K_FACTOR, TL_K_FACTS, TL_K_KEY, TL_K_METRIC, TL_K_NONE, TL_K_PROVINCE, TL_K_REF,
     TL_K_REQ_STREAMS, TL_K_SCOPE, TL_K_STEP, TL_K_STEPS, TL_K_STREAM, TL_K_STREAM_KEY, TL_K_UNIT, TL_K_VALUE,
-    TL_K_VARS, TL_REF_PROCESSING,
+    TL_K_VARS, TL_REF_PROCESSING, TL_ATLEAST, TL_REVIEW_MIN_FACT, TL_UNPUBLISHED, TL_UNPUBLISHED_FACTS,
 )
 from mart.scheme import FedTimes, OpsHitIn, PathwaysIn, SpanIn, StepSpanIn, TimelineIn, TotalIn  # 同上
 from mart.scheme import (
@@ -8260,7 +8260,9 @@ def to_span(x: SpanIn) -> dict:
 
 
 def timeline_of(x: TimelineIn) -> dict | None:
-    """一条通道的时间线:逐步时长(与 steps 同序)+ 全程区间(有任一步算不出就不出全程,不给半截的数)。没登步骤 = None。"""
+    """一条通道的时间线:逐步时长(与 steps 同序)+ 全程区间(有任一步算不出就不出全程,不给半截的数)。没登步骤 = None。
+    2026-10-12 全程改口径(Frank「先预估一个时间不行吗?」→「至少 N 个月」):下限照加(算不出的步按 0),上限有任一步算不出就不出,
+    前端据此写「全程至少 N 个月」;下限加出来是 0 也不出。"""
     steps = x.row.get(TL_K_STEPS) or []
     if len(steps) == 0:
         return None
@@ -8374,6 +8376,19 @@ def review_span_of(x: StepSpanIn) -> dict:
             span = ops_span_of(r)
             if span is not None:
                 return span
+    return stated_review_span_of(x.step)
+
+
+def stated_review_span_of(step: dict) -> dict:
+    """运营统计配不上时,看这一步登的官方原话(2026-10-12):写了「N 个月或更久」记至少 N;写了不给 / 不保证时长记官方未公布;
+    都没有才是本站未收录。"""
+    for f in step.get(TL_K_FACTS) or []:
+        n = fact_n_of(f)
+        if f.get(TL_K_KEY) == TL_REVIEW_MIN_FACT and n is not None:
+            return to_span(SpanIn(kind=TL_ATLEAST, unit=TL_MONTH, lo=n, hi=None))
+    for f in step.get(TL_K_FACTS) or []:
+        if f.get(TL_K_KEY) in TL_UNPUBLISHED_FACTS:
+            return to_span(SpanIn(kind=TL_UNPUBLISHED, unit=None, lo=None, hi=None))
     return to_span(SpanIn(kind=TL_UNKNOWN, unit=None, lo=None, hi=None))
 
 
@@ -8440,10 +8455,16 @@ def pr_span_of(ctx: TimelineIn) -> dict:
 
 
 def total_months_of(x: TotalIn) -> int | None:
-    """逐步时长的一头(下限或上限)加总成月,四舍五入;有任一步 unknown 就 None(不出半截的全程)。"""
+    """逐步时长的一头(下限或上限)加总成月,四舍五入;有任一步 unknown 就 None(不出半截的全程)。
+    2026-10-12 改:上限照旧(unknown / 官方未公布 / 至少 N 任一步在就 None);下限把 unknown 与官方未公布按 0 加,至少 N 按 N 加,
+    加出来是 0 给 None(「至少 0 个月」不出)。"""
     total = 0.0
     for s in x.spans:
-        if s[TL_KIND] == TL_UNKNOWN:
+        if s[TL_KIND] in (TL_UNKNOWN, TL_UNPUBLISHED):
+            if x.end == TL_MAX:
+                return None
+            continue
+        if s[TL_KIND] == TL_ATLEAST and x.end == TL_MAX:
             return None
         v = s[x.end]
         if s[TL_KIND] == TL_UPTO and x.end == TL_MIN:
@@ -8451,4 +8472,6 @@ def total_months_of(x: TotalIn) -> int | None:
         if s[TL_UNIT] == TL_DAY:
             v = v / TL_DAYS_PER_MONTH
         total += v
+    if round(total) == 0:
+        return None
     return round(total)

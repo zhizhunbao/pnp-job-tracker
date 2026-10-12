@@ -2341,6 +2341,16 @@ export const TL_KIND = {
    * 本站未收录。
    */
   unknown: 'unknown',
+
+  /**
+   * 官方未公布(2026-10-12 审理与递申请时长补全:这一步挂了官方原句说不给 / 不保证时长)。
+   */
+  unpublished: 'unpublished',
+
+  /**
+   * 至少 N(官方只说「N 个月或更久」;只有下限)。
+   */
+  atleast: 'atleast',
 } as const
 
 /**
@@ -2419,6 +2429,36 @@ export const K_TL_ABOUT_DAYS = 'pnptl.aboutDays'
 export const K_TL_UNKNOWN = 'pnptl.unknown'
 
 /**
+ * 时间线词条:官方未公布(2026-10-12)。
+ */
+export const K_TL_UNPUBLISHED = 'pnptl.unpublished'
+
+/**
+ * 时间线词条:至少 N 个月(2026-10-12)。
+ */
+export const K_TL_ATLEAST = 'pnptl.atleast'
+
+/**
+ * 时间线词条:全程至少 N 个月(有一步算不出上限时;2026-10-12 Frank「先预估一个时间不行吗?」)。
+ */
+export const K_TL_TOTAL_ATLEAST = 'pnptl.totalAtLeast'
+
+/**
  * 区间取中点的除数(条上份量:进池等抽选 0–12 个月按 6 个月画)。
  */
 export const TL_RANGE_MID_DIV = 2
+
+/**
+ * 资讯页「申请步骤」筛完一条不剩时那一句的词条(2026-10-11 申请步骤分区筛选批 1;空态引导)。
+ */
+export const K_STEPSF_EMPTY = 'stepsf.empty'
+
+/**
+ * 全部省份一起看时组头条数的词条(插值 n)。
+ */
+export const K_STEPSF_COUNT = 'stepsf.count'
+
+/**
+ * 空态那一句的提示框颜色(中性蓝)。
+ */
+export const NOTICE_INFO = 'info'

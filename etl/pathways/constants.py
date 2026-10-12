@@ -972,8 +972,13 @@ MBS_STEP_DRAWS_MOVED = {"step": "draw", "who": "province", "none": False, "stuck
 """进池与抽选(毕业生就业通道 CEP):官方请本省工作满 6 个月的在池 EOI 转技术工人通道参加抽选 —— 卡点(stuck)。通道表
 标签 drawsStopped(6 月起没再抽选)的出处即这句;CEP 没登抽选组,不挂抽选表。"""
 
-MBS_STEP_APPLY = {"step": "apply", "who": "you", "none": False, "stuck": False, "facts": []}
-"""收邀请(LAA)、递完整申请:官方流程页只写收到 LAA 后递完整申请,没写几天内递,不写。"""
+MBS_STEP_APPLY = {"step": "apply", "who": "you", "none": False, "stuck": False,
+                  "facts": [{"key": "inviteSubmitDays", "vars": {"n": 60},
+                             "quote": "You will have 60 days from the date of your LAA to submit a full application.",
+                             "url": "https://immigratemanitoba.com/immigrate/apply/laa/"}]}
+"""收邀请(LAA)、递完整申请:官方流程页只写收到 LAA 后递完整申请,没写几天内递,不写。
+2026-10-12 审理与递申请时长补全(Frank「不能每次补数据都 好几个小时」→ 三省分组并行查):MPNP 通用的 LAA 页写明收到 LAA 后
+60 天内递完整申请(页面补进 crawl 缓存 mb-mpnp);四条通道都走 EOI → 抽选 → LAA,同一句适用。"""
 
 MBS_STEP_REVIEW_SWM = {"step": "review", "who": "province", "none": False, "stuck": False,
                        "facts": [{"ref": "processing", "metric": "processing_days",
@@ -1136,6 +1141,15 @@ NSS_STEP_REVIEW = {"step": "review", "who": "province", "none": False, "stuck": 
 「If You Are Selected」一段;申请费通告页另有只讲交费的同义句)。费额复用 eoiFee(三语文案「交 N 加元申请费」同义;键名带 eoi
 是阿省先例,新斯科舍这笔费在选中后交,通告页原句「There is no fee to submit an EOI.」)。官方没有处理时长统计,不写。
 选中后这 7 天是更新已递的申请、不是另递一份,不另立「收邀请、递申请」一步。"""
+
+NSS_STEP_REVIEW_EE = {"step": "review", "who": "province", "none": False, "stuck": False,
+                      "facts": [NSS_STEP_REVIEW["facts"][0], NSS_STEP_REVIEW["facts"][1],
+                                {"key": "reviewMonthsMin", "vars": {"n": 3},
+                                 "quote": "It can take 3 months or more to evaluate your submission for these reasons:",
+                                 "url": ("https://liveinnovascotia.com/sites/default/files/2026-02/"
+                                         "Guide-NSNP-Nova%20Scotia%20Express%20Entry-English.pdf")}]}
+"""省里审批(新斯科舍快速通道两条;2026-10-12 审理与递申请时长补全):同上两行,另加快速通道申请指南(2026 年 9 月版,原件进
+crawl 文件缓存)那句「审理要 3 个月或更久」—— 只说下限,时间线记「至少 3 个月」。技术工人 / 毕业生 / 建筑几条官方仍没写时长。"""
 
 NSS_STEP_PR_SW = {"step": "pr", "who": "federal", "none": False, "stuck": False,
                   "facts": [{"key": "nominationValidMonths", "vars": {"n": 12}, "quote": NSS_NOM_VALID_QUOTE,
@@ -1525,22 +1539,34 @@ NBS_STEP_POOL_CWP = {"step": "draw", "who": "province", "none": False, "stuck": 
 """进池与抽选(关键工人试点):按移民配额、申请量与本省用工需要从池里选人发邀请 —— 卡点。邀请由雇主发到你的 INB 账户(试点页原话
 「receive an Invitation to Apply (ITA) from your employer」),选人按的是配额,谁做仍记省里。"""
 
+NBS_GUIDES_BASE = "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/"
+"""新不伦瑞克各通道申请指南 PDF 的目录(原件进 crawl 文件缓存 files-www.gnb.ca)。"""
+
+NBS_ITA_DAYS_QUOTE = ("If you receive an invitation to apply (ITA), you will have 20 calendar days to submit a complete app"
+                      "lication to ImmigrationNB and pay the processing fee through the INB portal.")
+"""各通道申请指南同一句:收到邀请后 20 个日历日内递完整申请并交费(2026-10-12 审理与递申请时长补全;关键工人试点另写 45 天)。"""
+
 NBS_STEP_APPLY_SW = {"step": "apply", "who": "you", "none": False, "stuck": False,
-                     "facts": [{"key": "appFee", "vars": {"n": 250}, "quote": NBS_APP_FEE_QUOTE, "url": NBS_SW_URL}]}
-"""收邀请、递申请(技术工人):递完整申请前交 250 加元申请费、不退。"""
+                     "facts": [{"key": "appFee", "vars": {"n": 250}, "quote": NBS_APP_FEE_QUOTE, "url": NBS_SW_URL},
+                               {"key": "inviteSubmitDays", "vars": {"n": 20}, "quote": NBS_ITA_DAYS_QUOTE, "url": NBS_GUIDES_BASE + "guide-new-brunswick-experience.pdf"}]}
+"""收邀请、递申请(技术工人):递完整申请前交 250 加元申请费、不退。
+2026-10-12 加:收到邀请后 20 天内递(技术工人三份指南同句,取 NB Experience 那份)。"""
 
 NBS_STEP_APPLY_EE = {"step": "apply", "who": "you", "none": False, "stuck": False,
-                     "facts": [{"key": "appFee", "vars": {"n": 250}, "quote": NBS_APP_FEE_QUOTE, "url": NBS_EE_URL}]}
-"""收邀请、递申请(快速通道两条):同上。"""
+                     "facts": [{"key": "appFee", "vars": {"n": 250}, "quote": NBS_APP_FEE_QUOTE, "url": NBS_EE_URL},
+                               {"key": "inviteSubmitDays", "vars": {"n": 20}, "quote": NBS_ITA_DAYS_QUOTE, "url": NBS_GUIDES_BASE + "guide-employment-in-nb.pdf"}]}
+"""收邀请、递申请(快速通道两条):同上。2026-10-12 加 20 天(Employment in NB 指南;NB Interests 指南逐字同句)。"""
 
 NBS_STEP_APPLY_SI = {"step": "apply", "who": "you", "none": False, "stuck": False,
-                     "facts": [{"key": "appFee", "vars": {"n": 250}, "quote": NBS_APP_FEE_QUOTE, "url": NBS_SI_URL}]}
-"""收邀请、递申请(法语战略三条):同上。"""
+                     "facts": [{"key": "appFee", "vars": {"n": 250}, "quote": NBS_APP_FEE_QUOTE, "url": NBS_SI_URL},
+                               {"key": "inviteSubmitDays", "vars": {"n": 20}, "quote": NBS_ITA_DAYS_QUOTE, "url": NBS_GUIDES_BASE + "nbpnp-si-francophone-workers-in-nb.pdf"}]}
+"""收邀请、递申请(法语战略三条):同上。2026-10-12 加 20 天(Francophone Workers 指南;另两份指南逐字同句)。"""
 
 NBS_STEP_APPLY_PCCG = {"step": "apply", "who": "you", "none": False, "stuck": False,
                        "facts": [{"key": "appFee", "vars": {"n": 250},
-                                  "quote": NBS_APP_FEE_QUOTE, "url": NBS_PCCG_URL}]}
-"""收邀请、递申请(私立学院试点):同上,原句出自试点页。"""
+                                  "quote": NBS_APP_FEE_QUOTE, "url": NBS_PCCG_URL},
+                                 {"key": "inviteSubmitDays", "vars": {"n": 20}, "quote": NBS_ITA_DAYS_QUOTE, "url": NBS_GUIDES_BASE + "guide-nb-private-career-college-graduate-pilot.pdf"}]}
+"""收邀请、递申请(私立学院试点):同上,原句出自试点页。2026-10-12 加 20 天(试点申请指南)。"""
 
 NBS_STEP_APPLY_CWP = {"step": "apply", "who": "you", "none": False, "stuck": False,
                       "facts": [{"key": "inviteSubmitDays", "vars": {"n": 45},
@@ -1831,28 +1857,45 @@ PES_STEP_DRAW = {"step": "draw", "who": "province", "none": False, "stuck": True
 """进池与抽选:挂抽选表(卡点 —— 按月抽选,受邀才能递申请)+ 官方原话「销售服务类目前可能收不到邀请」(各流页与抽选页同句,
 取抽选页)。卡上写成条件句,不按本岗职业判(同萨省限额行业的写法)。"""
 
+PES_GUIDE_URL = "https://www.princeedwardisland.ca/sites/default/files/publications/pei_workforce_application_guide.pdf"
+"""劳工类申请指南(2026 年 1 月版,封面列全五条;原件在 crawl 文件缓存 files-www.princeedwardisland.ca)。"""
+
+PES_ITA_DAYS = {"key": "inviteSubmitDays", "vars": {"n": 30},
+                "quote": "You will have up to 30 days from the date of invitation to complete the online application form.",
+                "url": PES_GUIDE_URL}
+"""收到邀请后 30 天内填完网上申请(2026-10-12 审理与递申请时长补全;五条同一本指南)。"""
+
 PES_STEP_APPLY_WF = {"step": "apply", "who": "you", "none": False, "stuck": False,
-                     "facts": [{"key": "appFee", "vars": {"n": 300}, "quote": PES_APP_FEE_QUOTE, "url": PES_WF_URL}]}
+                     "facts": [{"key": "appFee", "vars": {"n": 300}, "quote": PES_APP_FEE_QUOTE, "url": PES_WF_URL},
+                               PES_ITA_DAYS]}
 """收邀请、递申请(劳工通道):受邀后递申请交 300 加元、不退;受邀后几天内递,各页没写,不写。"""
 
 PES_STEP_APPLY_OID = {"step": "apply", "who": "you", "none": False, "stuck": False,
-                      "facts": [{"key": "appFee", "vars": {"n": 300}, "quote": PES_APP_FEE_QUOTE, "url": PES_OID_URL}]}
+                      "facts": [{"key": "appFee", "vars": {"n": 300}, "quote": PES_APP_FEE_QUOTE, "url": PES_OID_URL},
+                                PES_ITA_DAYS]}
 """收邀请、递申请(在需职业):同上,出处换本流页。"""
 
 PES_STEP_APPLY_IG = {"step": "apply", "who": "you", "none": False, "stuck": False,
-                     "facts": [{"key": "appFee", "vars": {"n": 300}, "quote": PES_APP_FEE_QUOTE, "url": PES_IG_URL}]}
+                     "facts": [{"key": "appFee", "vars": {"n": 300}, "quote": PES_APP_FEE_QUOTE, "url": PES_IG_URL},
+                               PES_ITA_DAYS]}
 """收邀请、递申请(国际毕业生):同上,出处换本流页。"""
 
 PES_STEP_APPLY_IE = {"step": "apply", "who": "you", "none": False, "stuck": False,
-                     "facts": [{"key": "appFee", "vars": {"n": 300}, "quote": PES_APP_FEE_QUOTE, "url": PES_IE_URL}]}
+                     "facts": [{"key": "appFee", "vars": {"n": 300}, "quote": PES_APP_FEE_QUOTE, "url": PES_IE_URL},
+                               PES_ITA_DAYS]}
 """收邀请、递申请(中级经验):同上,出处换本流页。"""
 
 PES_STEP_APPLY_EE = {"step": "apply", "who": "you", "none": False, "stuck": False,
-                     "facts": [{"key": "appFee", "vars": {"n": 300}, "quote": PES_APP_FEE_QUOTE, "url": PES_EE_URL}]}
+                     "facts": [{"key": "appFee", "vars": {"n": 300}, "quote": PES_APP_FEE_QUOTE, "url": PES_EE_URL},
+                               PES_ITA_DAYS]}
 """收邀请、递申请(PE 快速通道):同上,出处换本页。"""
 
-PES_STEP_REVIEW = {"step": "review", "who": "province", "none": False, "stuck": False, "facts": []}
-"""省里审批:运营统计没有 PE 的时长行,各页也没写时长数,不写。"""
+PES_STEP_REVIEW = {"step": "review", "who": "province", "none": False, "stuck": False,
+                   "facts": [{"key": "noPostedTime", "quote": "Please note, our office does not post or guarantee progressing times.",
+                              "url": PES_GUIDE_URL}]}
+"""省里审批:运营统计没有 PE 的时长行,各页也没写时长数,不写。
+2026-10-12 审理与递申请时长补全:劳工类申请指南明写不公布、不保证处理时长(原文 progressing 照抄),登成「官方不公布」,
+时间线这一步记 unpublished(不再算「本站未收录」)。"""
 
 PES_STEP_PR = {"step": "pr", "who": "federal", "none": False, "stuck": False, "facts": []}
 """拿提名,递永居(五条同):各流页只写提名后自己向 IRCC 递永居,快速通道页只写在线接受提名、联邦邀请后递永居,都没写期限,不写。"""
@@ -2315,7 +2358,8 @@ PW_NS_EXPRESS_ENTRY_EXPERIENCE = {
     "teers": [0, 1, 2, 3],
     "nocs": [],
     "employers": [],
-    "steps": [NSS_STEP_OFFER, NSS_STEP_WORK, NSS_STEP_EE_PROFILE, NSS_STEP_EOI_EE, NSS_STEP_DRAW, NSS_STEP_REVIEW, NSS_STEP_PR_EE],
+    "steps": [NSS_STEP_OFFER, NSS_STEP_WORK, NSS_STEP_EE_PROFILE, NSS_STEP_EOI_EE, NSS_STEP_DRAW, NSS_STEP_REVIEW_EE,
+              NSS_STEP_PR_EE],
 }
 """不要 offer,但要本省 TEER 0–3 满 1 年经验 + EE 档案 → 看工作(这岗攒的就是它要的经验),标「需先有 EE 档案」「需本省工作满 1 年」。旧 Nova Scotia 
 Experience: Express Entry 与 Labour Market Priorities 并入。
@@ -2343,7 +2387,8 @@ PW_NS_EXPRESS_ENTRY_PHYSICIANS = {
     "teers": [],
     "nocs": ["31100", "31101", "31102"],
     "employers": ["nova scotia health", "iwk health"],
-    "steps": [NSS_STEP_OFFER, NSS_STEP_EE_PROFILE, NSS_STEP_LETTER, NSS_STEP_EOI_LETTER, NSS_STEP_DRAW, NSS_STEP_REVIEW, NSS_STEP_PR_EE],
+    "steps": [NSS_STEP_OFFER, NSS_STEP_EE_PROFILE, NSS_STEP_LETTER, NSS_STEP_EOI_LETTER, NSS_STEP_DRAW, NSS_STEP_REVIEW_EE,
+              NSS_STEP_PR_EE],
 }
 """快速通道下的医生子类:NS Health / IWK 的 approved offer + 省方意向信 + EE 档案(旧 Labour Market Priorities for Physicians)
 。
@@ -2972,7 +3017,8 @@ REF_KEYS = ["req", "processing", "intake", "draws"]
 
 FACT_KEYS = ["eoiFee", "eoiValidMonths", "inviteAcceptDays", "appSubmitDays", "nominationValidMonths", "communityLetter",
              "cappedEmployees", "windowCapped", "directApply", "eoiOnlyOther", "confirmSubmit", "noScheduledDraw", "inviteSubmitDays",
-             "eeAcceptDays", "prSubmitDays", "workMonths", "employerDeclaration", "offerEoiDays", "noFee", "eoiValidDays", "appFee", "reviewSeveralMonths", "noTimeGuarantee", "poolSelection", "inviteSectors", "letterOrGrad", "employerOnly", "empMonths", "closedPermitDays", "liveMonths", "remoteNonQc", "movedToSwm", "nominationValidDays", "teer45EmployerMonths", "localWorkMonths", "eoiIsApplication", "afsPaused", "letterSubmitDays", "selectedPayDays", "noPermitOnly", "abroadOnly", "noStandardTime", "salesServiceLow"]
+             "eeAcceptDays", "prSubmitDays", "workMonths", "employerDeclaration", "offerEoiDays", "noFee", "eoiValidDays", "appFee", "reviewSeveralMonths", "noTimeGuarantee", "poolSelection", "inviteSectors", "letterOrGrad", "employerOnly", "empMonths", "closedPermitDays", "liveMonths", "remoteNonQc", "movedToSwm", "nominationValidDays", "teer45EmployerMonths", "localWorkMonths", "eoiIsApplication", "afsPaused", "letterSubmitDays", "selectedPayDays", "noPermitOnly", "abroadOnly", "noStandardTime", "salesServiceLow",
+             "reviewMonthsMin", "noPostedTime"]
 """静态事实词表(三语文案在 cms i18n pnp.stepFact.*,数字从 vars 填)。"""
 
 BAD_STEP_TPL = "{key} 的第 {i} 步「{step}」不在步骤词表里"
@@ -3014,3 +3060,281 @@ EMPTY = ""
 
 SEQ_START = 1
 """seq 从 1 起(= PATHWAYS 顺序)。"""
+
+# =========================================================================
+# 6. 身份对照(2026-10-11 申请步骤分区筛选批 1;Frank「可以,开始做第一批」,设计 docs/design/资讯/申请步骤-分区筛选-20261011.md,
+#    判读稿 docs/design/资讯/申请步骤-身份对照-AB-20261011.md、申请步骤-身份对照-留学生-20261011.md)
+# =========================================================================
+# 一条通道一段:身份 → 能不能走(yes 能 / after 毕业后能 / no 不能)+ 院校条件(schools,任一段教育经历合上任一条即可)。
+# 没登的身份 = 本站未核,前端不拿它筛(宁可多出不瞎藏)。no 与带院校条件的格必须挂官方原句 + 出处页,自校逐字对 crawl 缓存
+# (同步骤事实的核法);yes / after 不挂原句。职业限制不在这里 —— 走通道行已有的 teers / nocs。
+# 判读口径:「在读留学生」= 毕业后照毕业工签那格判(after),官网点名排除学签的才写 no。
+# 待定未登:NB 关键工人试点(申请指南 PDF 下载 522)、MB SWO(海外通道,官网没写不收 PGWP)、两省医生通道(职业限死,交给职业筛)。
+
+FIT_IDS = ["student", "pgwp", "lmia", "open", "abroad", "ee"]
+"""身份词表(三语文案在 cms i18n):在读留学生 / 毕业工签 / 雇主工签(LMIA)/ 开放工签 / 人在国外 / 已有 EE 档案。"""
+
+FIT_CANS = ["yes", "after", "no"]
+"""能不能走的词表:能 / 毕业后能 / 不能。"""
+
+FIT_CAN_NO = "no"
+"""不能(必须挂原句)。"""
+
+SCHOOL_PROVS = ["own", "other", "canada", "any"]
+"""院校条件的地点词:本省 / 外省 / 加拿大任一省 / 不限(含国外)。本省外省按通道所在省算。"""
+
+SCHOOL_KINDS = ["public", "private"]
+"""院校条件的性质词:公立 / 私立(不写 = 不限)。"""
+
+SCHOOL_MINS = ["y1", "y2", "y3", "master"]
+"""院校条件的课程时长下限词(由短到长;不写 = 不限):一年制 / 两年制 / 三年以上 / 硕士及以上。"""
+
+K_FITS = "fits"
+"""产物行键:身份对照(没登的通道 None)。"""
+
+K_CAN = "can"
+"""身份格键:能不能走。"""
+
+K_SCHOOLS = "schools"
+"""身份格键:院校条件清单。"""
+
+K_SCHOOL_PROV = "prov"
+"""院校条件键:地点。"""
+
+K_SCHOOL_KIND = "kind"
+"""院校条件键:性质。"""
+
+K_SCHOOL_MIN = "min"
+"""院校条件键:课程时长下限。"""
+
+FIT_UNKNOWN_KEY_TPL = "身份对照登了不存在的通道「{key}」"
+"""自校:身份对照的通道编号不在通道表里。"""
+
+FIT_BAD_ID_TPL = "{key} 的身份对照有不认得的身份「{id}」"
+"""自校:身份词不认得。"""
+
+FIT_BAD_CAN_TPL = "{key} 的身份「{id}」能不能走写成了「{can}」"
+"""自校:能不能走不在词表里。"""
+
+FIT_BAD_SCHOOL_TPL = "{key} 的身份「{id}」院校条件不认得:{school}"
+"""自校:院校条件的词不认得。"""
+
+FIT_QUOTE_EMPTY_TPL = "{key} 的身份「{id}」写了不能走或院校条件,却没挂原句或出处页"
+"""自校:该挂原句的格没挂。"""
+
+FIT_PAGE_MISSING_TPL = "{key} 的身份「{id}」的出处页不在 crawl 缓存里:{url}"
+"""自校:出处页没爬到(先补 crawl,不现抓)。"""
+
+FIT_QUOTE_MISSING_TPL = "{key} 的身份「{id}」的原句在 crawl 缓存那一页里找不到(官网改字?):{url}"
+"""自校:原句核不上。"""
+
+FIT_YES = {"can": "yes"}
+"""能走(不挂原句)。"""
+
+FIT_AFTER = {"can": "after"}
+"""毕业后能走:先毕业拿毕业工签,再照毕业工签那格。"""
+
+FITS_GRAD = {"student": FIT_AFTER, "pgwp": FIT_YES}
+"""通用留学生两格:在读的毕业后能走、毕业工签能走,不挑院校(各省大多数持 offer 的通道)。"""
+
+FITS_OPEN_ALL = {"student": FIT_AFTER, "pgwp": FIT_YES, "lmia": FIT_YES, "open": FIT_YES, "abroad": FIT_YES, "ee": FIT_YES}
+"""六种身份都能走(在读的毕业后):阿省快速通道两条与医疗(只看 EE 档案 / 执业资格与 offer,不挑工签)。"""
+
+AB_AOS_ELIG_URL = "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility"
+"""阿省机会通道资格页(2026-10-11 补进 crawl 缓存 ab-aaip)。"""
+
+AB_AOS_SCHOOLS = [{"prov": "own", "kind": "public"}]
+"""阿省机会通道的毕业工签只认阿省公立院校的学历(资格页 Approved Alberta institutions 段)。"""
+
+AB_AOS_SCHOOL_QUOTE = "Your credential must be issued by an Alberta Advanced Education publicly funded post-secondary institution."
+"""同上的原句。"""
+
+AB_THS_ELIG_URL = "https://www.alberta.ca/tourism-and-hospitality-stream-eligibility"
+"""阿省旅游酒店资格页。"""
+
+AB_THS_LMIA_ONLY = {"can": "no", "quote": "Other types of work permits are not eligible at the time of application submission.",
+                    "url": AB_THS_ELIG_URL}
+"""阿省旅游酒店:只认 LMIA 工签(或山火特别措施),其他工签一律不收。"""
+
+SK_EWP_URL = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
+              "saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/"
+              "applicants-with-existing-work-permit")
+"""萨省现有工签类资格页。"""
+
+SK_STUDENTS_URL = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
+                   "saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/students")
+"""萨省毕业生类资格页。"""
+
+SK_STUDENTS_SCHOOL = {
+    "can": "yes", "schools": [{"prov": "own"}],
+    "quote": "Have graduated from a recognized post-secondary institution in Saskatchewan.", "url": SK_STUDENTS_URL,
+}
+"""萨省毕业生类:只收萨省院校毕业的(在读的读完即可申请,offer 须在优先行业)。"""
+
+SK_TECH_URL = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
+               "saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/"
+               "sinp-innovation-tech-talent-pathway")
+"""萨省科技人才资格页。"""
+
+SK_TECH_SCHOOLS = [{"prov": "any", "min": "y2"}]
+"""萨省科技人才:学历至少两年制(硕士 / 学士 / 三年制学位 / 两年制文凭,与 offer 相关)。"""
+
+SK_TECH_QUOTE = ("or a diploma that requires two years at a university, college, trade or technical school, or other "
+                 "post-secondary institution).")
+"""同上的原句(列举学历那一句的末段)。"""
+
+MB_CEP_URL = "https://immigratemanitoba.com/mpnp/ies/cep"
+"""曼省 CEP 介绍页(外省毕业的改走 SWM 那句在这)。"""
+
+MB_GIP_URL = "https://immigratemanitoba.com/mpnp/ies/gip"
+"""曼省 GIP 介绍页(同一句)。"""
+
+MB_OTHER_PROV_QUOTE = ("If you are an international student who graduated in another province of Canada and/or are not working "
+                       "in an in-demand occupation, you may be eligible to apply under the Skilled Worker in Manitoba Pathway.")
+"""曼省 CEP / GIP 页同一句:外省毕业的去走 SWM —— 这两条只收马省院校。(GIP 的硕博要求官网缓存页没找到原句,不登时长下限。)"""
+
+NS_GRAD_URL = "https://liveinnovascotia.com/nova-scotia-graduate"
+"""新斯省毕业生通道页。"""
+
+NS_GRAD_QUOTE = ("have met requirements for completing a program of study at an eligible Nova Scotia designated learning "
+                 "institution within three years of your application.")
+"""新斯省毕业生通道:只收新斯省院校。"""
+
+NS_EE_URL = "https://liveinnovascotia.com/express-entry"
+"""新斯省快速通道页。"""
+
+NS_EE_QUOTE = ("Applicants who are claiming work experience that was gained on a Post Graduate Work permit must have "
+               "graduated from an educational institution located in Nova Scotia.")
+"""新斯省快速通道本省经验:持 PGWP 攒经验的只收新斯省院校。"""
+
+NB_SI_URL = "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"
+"""新不伦瑞克法语战略倡议页。"""
+
+NB_FP_QUOTE = ("have completed an in-person program of study of at least 1-year long at either the Université de Moncton or "
+               "the Collège communautaire du Nouveau-Brunswick (CCNB)")
+"""新不伦瑞克法语优先:只收蒙克顿大学 / CCNB 面授 1 年以上(两校都是本省公立)。"""
+
+NB_PCCG_URL = "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/pccg-pilot-program.html"
+"""新不伦瑞克私立学院试点页。"""
+
+NL_SW_URL = "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/skilled-worker"
+"""纽芬兰与拉布拉多技术工人类资格页。"""
+
+NL_SW_NO = {"can": "no", "quote": "Cannot hold a Post-Graduation Work Permit.", "url": NL_SW_URL}
+"""纽芬兰与拉布拉多技术工人类:不收 PGWP(须走国际毕业生类或快速通道)。"""
+
+NL_IG_URL = ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/"
+             "applicants/international-graduate/")
+"""纽芬兰与拉布拉多国际毕业生类资格页。"""
+
+NL_IG_SCHOOLS = [{"prov": "own"}, {"prov": "other", "kind": "public"}]
+"""纽芬兰与拉布拉多国际毕业生类:本省院校不限;外省只收公立(外省私立不能)。"""
+
+NL_IG_QUOTE = ("Graduates from recognized public institutions outside NL must have a job or offer directly related to their "
+               "field and work in NL for at least one year before applying to the NLPNP.")
+"""同上的原句。"""
+
+PE_IG_URL = "https://www.princeedwardisland.ca/en/information/office-of-immigration/international-graduates"
+"""爱德华王子岛国际毕业生页。"""
+
+PE_IG_QUOTE = "have graduated from a publicly-funded Prince Edward Island institution;"
+"""爱德华王子岛国际毕业生:只收本省公立院校。"""
+
+PE_IE_NO = {
+    "can": "no", "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/intermediate-experience-stream",
+    "quote": ("have a minimum of six months full‐time Canadian work experience that was gained while on a Labour Market Impact "
+              "Assessment (LMIA) based work permit, and be relevant to the current position the individual is offered in PEI;"),
+}
+"""爱德华王子岛中级经验:经验只认 LMIA 工签下的(留学生毕业也走不了)。"""
+
+FITS = {
+    # 阿省六条(六种身份全登;已有 EE 档案在机会通道 / 旅游酒店 / 乡村振兴「跟 EE 无关」,不登 = 不拿它筛)
+    "ab-opportunity": {
+        "student": {"can": "after", "schools": AB_AOS_SCHOOLS, "quote": AB_AOS_SCHOOL_QUOTE, "url": AB_AOS_ELIG_URL},
+        "pgwp": {"can": "yes", "schools": AB_AOS_SCHOOLS, "quote": AB_AOS_SCHOOL_QUOTE, "url": AB_AOS_ELIG_URL},
+        "lmia": FIT_YES,
+        "open": {"can": "no", "quote": "If your work permit type is not included in the list above, you are not eligible to apply.",
+                 "url": AB_AOS_ELIG_URL},
+        "abroad": {"can": "no", "quote": ("At the time your application is submitted, and at the time AAIP assesses your "
+                                          "application, you must have a valid temporary resident status in Canada that "
+                                          "authorizes you to work in Canada, that is, a temporary foreign worker permit."),
+                   "url": AB_AOS_ELIG_URL},
+    },
+    "ab-accelerated-tech": FITS_OPEN_ALL,
+    "ab-dedicated-health-care": FITS_OPEN_ALL,
+    "ab-law-enforcement": FITS_OPEN_ALL,
+    "ab-tourism-hospitality": {
+        "student": AB_THS_LMIA_ONLY, "pgwp": AB_THS_LMIA_ONLY, "lmia": FIT_YES, "open": AB_THS_LMIA_ONLY,
+        "abroad": {"can": "no", "quote": ("be living and working in Alberta in an eligible occupation for an approved Tourism "
+                                          "and Hospitality employer;"), "url": AB_THS_ELIG_URL},
+    },
+    "ab-rural-renewal": {"student": FIT_AFTER, "pgwp": FIT_YES, "lmia": FIT_YES, "open": FIT_YES, "abroad": FIT_YES},
+    # 卑诗七条:学签期间的工不算经验,毕业工签能走
+    "bc-skilled-worker": FITS_GRAD, "bc-health-authority": FITS_GRAD, "bc-healthcare": FITS_GRAD, "bc-childcare": FITS_GRAD,
+    "bc-veterinary": FITS_GRAD, "bc-construction-trades": FITS_GRAD, "bc-french-teachers": FITS_GRAD,
+    # 萨省
+    "sk-employment-offer": FITS_GRAD, "sk-health-talent": FITS_GRAD, "sk-agriculture-talent": FITS_GRAD,
+    "sk-tech-talent": {
+        "student": {"can": "after", "schools": SK_TECH_SCHOOLS, "quote": SK_TECH_QUOTE, "url": SK_TECH_URL},
+        "pgwp": {"can": "yes", "schools": SK_TECH_SCHOOLS, "quote": SK_TECH_QUOTE, "url": SK_TECH_URL},
+    },
+    "sk-existing-work-permit": {
+        "student": {"can": "no", "quote": "Study permit holders are not eligible to apply under the Existing Work Permit category.",
+                    "url": SK_EWP_URL},
+        "pgwp": {"can": "no", "quote": ("Post-Graduation Work Permit (PGWP) and Spousal Open Work Permit holders are not "
+                                        "eligible to apply under this sub-category."), "url": SK_EWP_URL},
+    },
+    "sk-students": {"student": SK_STUDENTS_SCHOOL, "pgwp": SK_STUDENTS_SCHOOL},
+    "sk-occupation-in-demand": FITS_GRAD, "sk-express-entry": FITS_GRAD,
+    # 曼省(SWO 待定未登)
+    "mb-skilled-worker-in-manitoba": FITS_GRAD,
+    "mb-career-employment": {
+        "student": {"can": "after", "schools": [{"prov": "own"}], "quote": MB_OTHER_PROV_QUOTE, "url": MB_CEP_URL},
+        "pgwp": {"can": "yes", "schools": [{"prov": "own"}], "quote": MB_OTHER_PROV_QUOTE, "url": MB_CEP_URL},
+    },
+    "mb-graduate-internship": {
+        "student": {"can": "after", "schools": [{"prov": "own"}], "quote": MB_OTHER_PROV_QUOTE, "url": MB_GIP_URL},
+        "pgwp": {"can": "yes", "schools": [{"prov": "own"}], "quote": MB_OTHER_PROV_QUOTE, "url": MB_GIP_URL},
+    },
+    # 安省(自雇医生交给职业筛)
+    "on-workforce-priority": FITS_GRAD,
+    # 新斯省(两条医生通道交给职业筛)
+    "ns-skilled-worker": FITS_GRAD, "ns-construction": FITS_GRAD,
+    "ns-graduate": {
+        "student": {"can": "after", "schools": [{"prov": "own"}], "quote": NS_GRAD_QUOTE, "url": NS_GRAD_URL},
+        "pgwp": {"can": "yes", "schools": [{"prov": "own"}], "quote": NS_GRAD_QUOTE, "url": NS_GRAD_URL},
+    },
+    "ns-express-entry-experience": {
+        "student": {"can": "after", "schools": [{"prov": "own"}], "quote": NS_EE_QUOTE, "url": NS_EE_URL},
+        "pgwp": {"can": "yes", "schools": [{"prov": "own"}], "quote": NS_EE_QUOTE, "url": NS_EE_URL},
+    },
+    # 新不伦瑞克(关键工人试点待定未登)
+    "nb-skilled-worker": FITS_GRAD, "nb-express-entry-employment": FITS_GRAD, "nb-francophone-workers": FITS_GRAD,
+    "nb-express-entry-interest": FITS_GRAD, "nb-francophones-remote": FITS_GRAD,
+    "nb-francophone-priorities": {
+        "student": {"can": "after", "schools": [{"prov": "own", "kind": "public"}], "quote": NB_FP_QUOTE, "url": NB_SI_URL},
+        "pgwp": {"can": "yes", "schools": [{"prov": "own", "kind": "public"}], "quote": NB_FP_QUOTE, "url": NB_SI_URL},
+    },
+    "nb-private-college-pilot": {
+        "student": {"can": "yes", "schools": [{"prov": "own", "kind": "private"}], "url": NB_PCCG_URL,
+                    "quote": ("have successfully completed an eligible program of study at a participating private career "
+                              "college located in New Brunswick")},
+        "pgwp": {"can": "no", "url": NB_PCCG_URL,
+                 "quote": "This program is for students that are not eligible for the federal post-graduation work permit (PGWP) program."},
+    },
+    # 纽芬兰与拉布拉多
+    "nl-skilled-worker": {"student": NL_SW_NO, "pgwp": NL_SW_NO},
+    "nl-international-graduate": {
+        "student": {"can": "after", "schools": NL_IG_SCHOOLS, "quote": NL_IG_QUOTE, "url": NL_IG_URL},
+        "pgwp": {"can": "yes", "schools": NL_IG_SCHOOLS, "quote": NL_IG_QUOTE, "url": NL_IG_URL},
+    },
+    "nl-express-entry-skilled-worker": FITS_GRAD,
+    # 爱德华王子岛
+    "pe-workforce": FITS_GRAD, "pe-occupations-in-demand": FITS_GRAD, "pe-express-entry": FITS_GRAD,
+    "pe-international-graduate": {
+        "student": {"can": "after", "schools": [{"prov": "own", "kind": "public"}], "quote": PE_IG_QUOTE, "url": PE_IG_URL},
+        "pgwp": {"can": "yes", "schools": [{"prov": "own", "kind": "public"}], "quote": PE_IG_QUOTE, "url": PE_IG_URL},
+    },
+    "pe-intermediate-experience": {"student": PE_IE_NO, "pgwp": PE_IE_NO},
+}
+"""身份对照表(通道编号 → 身份 → 格)。2026-10-11 首批:阿省六条六种身份全登,其余八省登在读留学生与毕业工签两种。"""

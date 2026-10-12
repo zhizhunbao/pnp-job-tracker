@@ -23,9 +23,9 @@ const mart = <T>(name: string): T[] =>
 const STEP_METRICS = ['processing_weeks', 'processing_months', 'processing_days', 'assessing_up_to_date',
   'intake_limit', 'intake_used', 'intake_remaining', 'intake_filled']
 
-const PATHWAYS = mart<PnpPathway & { steps: PnpStepSet['steps'], timeline: PnpStepSet['timeline'], status: string }>('pathways')
+const PATHWAYS = mart<PnpPathway & { steps: PnpStepSet['steps'], timeline: PnpStepSet['timeline'], fits: PnpStepSet['fits'], status: string }>('pathways')
   .filter((p) => p.status !== 'closed')
-const SETS: PnpStepSet[] = PATHWAYS.filter((p) => p.steps.length > 0).map((p) => ({ key: p.key, steps: p.steps, timeline: p.timeline }))
+const SETS: PnpStepSet[] = PATHWAYS.filter((p) => p.steps.length > 0).map((p) => ({ key: p.key, steps: p.steps, timeline: p.timeline, fits: p.fits ?? null }))
 const OPS = mart<PnpOps & PnpStepOp>('pnp_ops_stats')
 const STEP_OPS: PnpStepOp[] = OPS.filter((o) => STEP_METRICS.includes(o.metric))
 const DRAWS = mart<PnpDraw>('pnp_draws')
@@ -116,7 +116,7 @@ describe('申请步骤卡', () => {
     const channel = PATHWAYS.find((p) => p.key === 'ab-accelerated-tech') ?? null
     const card = (fact: PnpStepSet['steps'][number]['facts'][number]) => stepsCardOf({
       t: makeT('zh'), province: 'AB', channel, stepOps: [op], reqs: [], who: { province: 'AB', noc: '', teer: null },
-      sets: [{ key: 'ab-accelerated-tech', steps: [{ step: 'review', who: 'province', none: false, stuck: false, facts: [fact] }], timeline: null }],
+      sets: [{ key: 'ab-accelerated-tech', steps: [{ step: 'review', who: 'province', none: false, stuck: false, facts: [fact] }], timeline: null, fits: null }],
     })
     const byKey = card({ ref: 'processing', metric: 'assessing_up_to_date', streamKey: 'accelerated tech pathway' })
     expect(byKey?.steps[0]?.lines.map((l) => l.text)).toEqual(['已审到 2026-06-23 收到的申请(截至 2026-09-23)'])

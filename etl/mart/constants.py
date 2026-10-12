@@ -5213,7 +5213,20 @@ TL_ABOUT = "about"
 """形:约(省里审理积压、联邦审理时长 —— 官方现行估算)。"""
 
 TL_UNKNOWN = "unknown"
-"""形:本站未收录(没有对应数据;全程随之不出)。"""
+"""形:本站未收录(没有对应数据;全程随之不出)。2026-10-12 起全程改口径:下限照加(这一步按 0 算),上限不出 —— 显示「至少 N 个月」。"""
+
+TL_UNPUBLISHED = "unpublished"
+"""形:官方未公布(2026-10-12 审理与递申请时长补全):这一步挂了官方原句说不给 / 不保证时长(TL_UNPUBLISHED_FACTS),
+与「本站未收录」分开 —— 前者是官方的事,后者是我们还没收。全程同 unknown:下限按 0,上限不出。"""
+
+TL_ATLEAST = "atleast"
+"""形:至少 N(官方只说「N 个月或更久」;下限 N、上限不出)。"""
+
+TL_UNPUBLISHED_FACTS = ("noStandardTime", "noTimeGuarantee", "reviewSeveralMonths", "noPostedTime")
+"""审理一步的「官方不给时长」事实词:NL 没有标准处理时长 / NB 不提供单个申请时长 / NB 可能要几个月 / PE 不公布不保证。"""
+
+TL_REVIEW_MIN_FACT = "reviewMonthsMin"
+"""审理一步的「至少 N 个月」事实词(NS 快速通道指南「3 months or more」)。"""
 
 TL_MONTH = "month"
 """单位:月。"""

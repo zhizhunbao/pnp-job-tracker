@@ -26,3 +26,80 @@
    */
   margin: 0 0 12px;
 }
+
+/*
+ * 「申请步骤」页分区筛选卡(2026-10-11 申请步骤分区筛选批 1):卡里的胶囊行(卡头下面,底下不再留距 —— 白卡自带下边距)。
+ */
+.cardChips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/*
+ * 卡头一行:左标题、右「清空」(只在选过东西时出)。
+ */
+.cardHeadRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/*
+ * 卡头标题字(同全局 mcardHead 的字号字重,外边距交给 .cardHeadRow)。
+ */
+.cardHeadText {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/*
+ * 教育经历各段竖排。
+ */
+.eduLines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+/*
+ * 教育经历一段:三只下拉并排,放不下折行(手机上两行),行尾 ✕。
+ */
+.eduLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/*
+ * 卡头「清空」(红字小号,同设计稿)。
+ */
+.clearBtn {
+  font-size: 13px;
+  font-weight: 400;
+  color: #b91c1c;
+}
+
+/*
+ * 「+ 再加一段」(主色字小号)。
+ */
+.linkBtn {
+  font-size: 13px;
+  font-weight: 400;
+  color: #2563eb;
+}
+
+/*
+ * 一段行尾的 ✕(灰字,点区留够手指)。
+ */
+.removeBtn {
+  font-size: 13px;
+  color: #9ca3af;
+  min-width: 32px;
+  min-height: 32px;
+}

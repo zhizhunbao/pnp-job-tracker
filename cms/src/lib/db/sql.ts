@@ -671,8 +671,9 @@ export const PNP_GATE_REQS = `SELECT province, stream, subject, factor, op, valu
  * 通道对照表登了步骤的那几条(etl/pathways 人工核定、原句逐句对 crawl 缓存自校)。不进首屏维度(DIMS_PATHWAYS)—— 全部通道铺开后几十 KB,
  * 只随弹框懒取。steps 列 2026-10-02 加(docs/sql/pathways-steps-20261002.sql):生产还没加列时这条查询挂,取数层回空、弹框照旧出抽选卡。
  * 2026-10-11 多取 timeline 列(申请步骤时间线;docs/sql/pathways-timeline-20261011.sql,必须先于代码跑,同上一句的挂法)。
+ * 同日多取 fits 列(身份对照,申请步骤分区筛选批 1;docs/sql/pathways-fits-20261011.sql,同样先于代码跑)。
  */
-export const PNP_STEPS = `SELECT key, steps, timeline FROM pathways
+export const PNP_STEPS = `SELECT key, steps, timeline, fits FROM pathways
      WHERE status <> 'closed' AND steps IS NOT NULL AND steps <> '[]'::jsonb
      ORDER BY seq`
 

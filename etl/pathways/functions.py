@@ -40,6 +40,12 @@ from pathways.constants import (  # 2026-10-02 申请步骤批 1(步骤登记的
 )
 from pathways.scheme import FactIn, PageIn, StepIn  # 同上
 from pathways.constants import FILETYPE_PDF  # 2026-10-03 核原句读 file_cache 的 PDF 原件
+from pathways.constants import (  # 2026-10-11 申请步骤分区筛选批 1(身份对照的自校与产出格)
+    FIT_BAD_CAN_TPL, FIT_BAD_ID_TPL, FIT_BAD_SCHOOL_TPL, FIT_CAN_NO, FIT_CANS, FIT_IDS, FIT_PAGE_MISSING_TPL,
+    FIT_QUOTE_EMPTY_TPL, FIT_QUOTE_MISSING_TPL, FIT_UNKNOWN_KEY_TPL, FITS, K_CAN, K_SCHOOL_KIND, K_SCHOOL_MIN,
+    K_SCHOOL_PROV, K_SCHOOLS, SCHOOL_KINDS, SCHOOL_MINS, SCHOOL_PROVS,
+)
+from pathways.scheme import FitCellIn  # 同上
 
 # =========================================================================
 # 1. 入口:读 pnp 产物 → 自校 → 对得上才写产物
@@ -187,6 +193,7 @@ def problems_of(x: CheckIn) -> list[str]:
     out.extend(default_problems_of(x.table))
     out.extend(condition_problems_of(x.table))
     out.extend(step_problems_of(x.table))
+    out.extend(fit_problems_of(x.table))
     for entry in x.table:
         out.extend(entry_problems_of(EntryIn(entry=entry, facts=x.facts)))
     return out
@@ -396,7 +403,7 @@ def pending_notes_of(x: CheckIn) -> list[str]:
 
 def to_pathway_row(x: RowIn) -> dict:
     """对照表一段 → 产物一行(camelCase 键 = 库表 snake_case 列;行序 = 列序)。2026-09-30 通道补全批一加五格(旧行没写的按默认:
-    看工作、无标签、不筛)。"""
+    看工作、无标签、不筛)。2026-10-11 加 fits(身份对照,没登的通道 None)。"""
     e = x.entry
     return {
         "key": e["key"], "seq": x.seq, "province": e["province"], "program": e["program"],
@@ -406,4 +413,66 @@ def to_pathway_row(x: RowIn) -> dict:
         "occLabels": e["occLabels"], "status": e["status"], "url": e["url"], "quote": e["quote"], "checked": e["checked"],
         "jobLinked": e.get(K_JOB_LINKED, JOB_LINKED_DEFAULT), "tags": e.get(K_TAGS, []), "teers": e.get(K_TEERS, []),
         "nocs": e.get(K_NOCS, []), "employers": e.get(K_EMPLOYERS, []), "steps": e.get(K_STEPS, []),
+        "fits": FITS.get(e["key"]),
     }
+
+
+# =========================================================================
+# 6. 身份对照(2026-10-11 申请步骤分区筛选批 1;对照表 FITS 在 constants 段 6)
+# =========================================================================
+
+
+def fit_problems_of(table: list) -> list[str]:
+    """身份对照的红:通道编号不在表里 / 身份词、能不能走、院校条件不认得 / 该挂原句的没挂或核不上(核法同步骤事实)。"""
+    keys: set = set()
+    for entry in table:
+        keys.add(entry[K_KEY])
+    out: list[str] = []
+    pages: dict = {}
+    for key, fits in FITS.items():
+        if key not in keys:
+            out.append(FIT_UNKNOWN_KEY_TPL.format(key=key))
+            continue
+        for fid, cell in fits.items():
+            out.extend(fit_cell_problems_of(FitCellIn(key=key, fid=fid, cell=cell, pages=pages)))
+    return out
+
+
+def fit_cell_problems_of(x: FitCellIn) -> list[str]:
+    """一格的红:词表 → 院校条件 → 原句。"""
+    if x.fid not in FIT_IDS:
+        return [FIT_BAD_ID_TPL.format(key=x.key, id=x.fid)]
+    can = x.cell.get(K_CAN, EMPTY)
+    if can not in FIT_CANS:
+        return [FIT_BAD_CAN_TPL.format(key=x.key, id=x.fid, can=can)]
+    schools = x.cell.get(K_SCHOOLS, [])
+    out: list[str] = []
+    for school in schools:
+        if is_school_ok(school) is False:
+            out.append(FIT_BAD_SCHOOL_TPL.format(key=x.key, id=x.fid, school=school))
+    if can != FIT_CAN_NO and len(schools) == 0:
+        return out
+    quote = x.cell.get(K_QUOTE, EMPTY)
+    url = x.cell.get(K_URL, EMPTY)
+    if quote == EMPTY or url == EMPTY:
+        return out + [FIT_QUOTE_EMPTY_TPL.format(key=x.key, id=x.fid)]
+    page = page_text_of(PageIn(url=url, pages=x.pages))
+    if page is None:
+        return out + [FIT_PAGE_MISSING_TPL.format(key=x.key, id=x.fid, url=url)]
+    if WS_RE.sub(EMPTY, quote) not in page:
+        return out + [FIT_QUOTE_MISSING_TPL.format(key=x.key, id=x.fid, url=url)]
+    return out
+
+
+def is_school_ok(school: dict) -> bool:
+    """院校条件三个词都在词表里(性质、时长下限可不写;地点必写),且没有别的键。"""
+    for k in school:
+        if k not in (K_SCHOOL_PROV, K_SCHOOL_KIND, K_SCHOOL_MIN):
+            return False
+    if school.get(K_SCHOOL_PROV, EMPTY) not in SCHOOL_PROVS:
+        return False
+    if K_SCHOOL_KIND in school and school[K_SCHOOL_KIND] not in SCHOOL_KINDS:
+        return False
+    if K_SCHOOL_MIN in school and school[K_SCHOOL_MIN] not in SCHOOL_MINS:
+        return False
+    return True

@@ -5448,6 +5448,11 @@ export type PnpStepsDbRow = {
    * 时间线(2026-10-11;jsonb 对象,没登步骤的通道 null;本域不读格,原样转给弹框)。
    */
   timeline: object | null
+
+  /**
+   * 身份对照(2026-10-11 申请步骤分区筛选批 1;jsonb 对象,没登 null;本域不读格,原样转给资讯页)。
+   */
+  fits: object | null
 }
 
 /**
@@ -5468,6 +5473,11 @@ export type PnpStepsRow = {
    * 时间线(零读格透传;没有 = null)。
    */
   timeline: object | null
+
+  /**
+   * 身份对照(零读格透传;没登 = null)。
+   */
+  fits: object | null
 }
 
 /**

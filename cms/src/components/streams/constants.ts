@@ -115,3 +115,178 @@ export const STEPS_META = {
     + ' job offer, EOI registration, draws, application, provincial review and PR, with official sources.'
     + ' 加拿大九省省提名(PNP)各现行通道的申请步骤:雇主 offer、EOI 注册、抽选、递交、省里审批、递永居,逐条注明出处。',
 }
+
+/**
+ * 「申请步骤」页省份卡的「全部省份」值(2026-10-11 申请步骤分区筛选批 1,Frank「省份 可能 不需要选」;地址里不写 prov 即全部)。
+ */
+export const PROV_ALL = 'all'
+
+/**
+ * 地址里的身份参数名(值 = 身份词)。
+ */
+export const P_WHO = 'who'
+
+/**
+ * 地址里的教育经历参数名(值 = 一段一节,段间 EDU_ROW_SEP,段内三格 EDU_CELL_SEP:地点.性质.时长,没选的格留空)。
+ */
+export const P_EDU = 'edu'
+
+/**
+ * 教育经历段间分隔(地址里)。
+ */
+export const EDU_ROW_SEP = '~'
+
+/**
+ * 教育经历段内三格分隔(地址里)。
+ */
+export const EDU_CELL_SEP = '.'
+
+/**
+ * 身份词(与 etl/pathways FIT_IDS 逐字相同;三语文案 stepsf.who.*):在读留学生 / 毕业工签 / 雇主工签 / 开放工签 / 人在国外 / 已有 EE 档案。
+ */
+export const FIT_WHOS = ['student', 'pgwp', 'lmia', 'open', 'abroad', 'ee']
+
+/**
+ * 教育经历「院校所在地」选了国外时的值(与 pnp 子桶 fit 的同名常量逐字相同)。
+ */
+export const EDU_ABROAD = 'abroad'
+
+/**
+ * 「院校所在地」下拉的选项:十省(含魁省,在魁省读书的照样能去别省)+ 国外。
+ */
+export const EDU_PROVS = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC', 'NB', 'NS', 'PE', 'NL', 'abroad']
+
+/**
+ * 「公立或私立」下拉的选项(三语文案 stepsf.kind.*)。
+ */
+export const EDU_KINDS = ['public', 'private']
+
+/**
+ * 「课程时长」下拉的选项,由短到长(三语文案 stepsf.len.*;与 etl/pathways SCHOOL_MINS 逐字相同)。
+ */
+export const EDU_LENS = ['y1', 'y2', 'y3', 'master']
+
+/**
+ * 教育经历至多几段(Frank「最近两年 和 两个 最重要」)。
+ */
+export const EDU_ROWS_MAX = 2
+
+/**
+ * 词条:省份卡头。
+ */
+export const K_PROV_HEAD = 'stepsf.provHead'
+
+/**
+ * 词条:全部省份胶囊。
+ */
+export const K_ALL_PROV = 'stepsf.allProv'
+
+/**
+ * 词条:身份卡头。
+ */
+export const K_WHO_HEAD = 'stepsf.whoHead'
+
+/**
+ * 身份胶囊词条键头(拼身份词)。
+ */
+export const WHO_KEY_HEAD = 'stepsf.who.'
+
+/**
+ * 词条:教育经历卡头。
+ */
+export const K_EDU_HEAD = 'stepsf.eduHead'
+
+/**
+ * 词条:院校所在地(下拉空值档)。
+ */
+export const K_EDU_WHERE = 'stepsf.eduWhere'
+
+/**
+ * 词条:公立或私立(下拉空值档)。
+ */
+export const K_EDU_KIND = 'stepsf.eduKind'
+
+/**
+ * 性质词条键头(拼 public / private)。
+ */
+export const KIND_KEY_HEAD = 'stepsf.kind.'
+
+/**
+ * 词条:课程时长(下拉空值档)。
+ */
+export const K_EDU_LEN = 'stepsf.eduLen'
+
+/**
+ * 时长词条键头(拼 y1 / y2 / y3 / master)。
+ */
+export const LEN_KEY_HEAD = 'stepsf.len.'
+
+/**
+ * 词条:国外(院校所在地)。
+ */
+export const K_ABROAD = 'stepsf.abroad'
+
+/**
+ * 词条:再加一段。
+ */
+export const K_ADD_ROW = 'stepsf.addRow'
+
+/**
+ * 词条:清空(卡头右侧)。
+ */
+export const K_CLEAR = 'stepsf.clear'
+
+/**
+ * 词条:删除这一段(✕ 钮的读屏名)。
+ */
+export const K_REMOVE = 'stepsf.remove'
+
+/**
+ * 分区卡白卡类(全局 main.css;CLAUDE.md「页面与弹框正文一律分区卡」)。
+ */
+export const CARD_MD_CLS = 'cardMd'
+
+/**
+ * 分区卡卡头类(全局 main.css)。
+ */
+export const CARD_HEAD_CLS = 'mcardHead'
+
+/**
+ * 删除一段的钮面(✕)。
+ */
+export const REMOVE_GLYPH = '✕'
+
+/**
+ * 清空 / 再加一段 / 删除一段三只钮的样式档(button 桶的素钮;字色由本桶 .linkBtn / .removeBtn 给)。
+ */
+export const BTN_GHOST = 'ghost'
+
+/**
+ * 教育经历一段的格名:院校所在地。
+ */
+export const EDU_F_PROV = 'prov'
+
+/**
+ * 教育经历一段的格名:公立或私立。
+ */
+export const EDU_F_KIND = 'kind'
+
+/**
+ * 教育经历一段的格名:课程时长。
+ */
+export const EDU_F_LEN = 'len'
+
+/**
+ * 地址里一段教育经历的第几格:院校所在地。
+ */
+export const EDU_I_PROV = 0
+
+/**
+ * 地址里一段教育经历的第几格:公立或私立。
+ */
+export const EDU_I_KIND = 1
+
+/**
+ * 地址里一段教育经历的第几格:课程时长。
+ */
+export const EDU_I_LEN = 2

@@ -25,7 +25,7 @@ import {
   DRAWS_ALL_KEY, DRAWS_FORM_STATUS, HOST_RE, LANG_EN, MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
   K_GATE_TITLE, P_PROV, SCROLL_START, URL_HASH_HEAD, URL_KV_SEP, URL_QUERY_HEAD, URL_STEPS, URL_STREAMS,
   MONTHS_KEYS, K_TL_ABOUT, K_TL_ABOUT_DAYS, K_TL_DAYS, K_TL_MONTHS, K_TL_RANGE, K_TL_TOTAL, K_TL_TOTAL_ONE,
-  K_TL_UNKNOWN,
+  K_TL_UNKNOWN, K_TL_UNPUBLISHED, K_TL_ATLEAST, K_TL_TOTAL_ATLEAST,
   K_TL_UPTO_DAYS, K_TL_UPTO_MONTHS, TL_DASH, TL_DAYS_PER_MONTH, TL_KIND, TL_UNIT_DAY, TONE_CYCLE, TONE_FED,
   TL_RANGE_MID_DIV, STEP_WHO_FED,
   NUM_LOCALE, OPS_ALLOCATION, OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, ROUNDS_KEYS, YEAR_LEN,
@@ -72,6 +72,7 @@ import {
   STEP_PROCESSING_KEY,
 } from './constants'
 import type {
+  PnpFitsJson, ProvSubIn,
   PnpSpanJson, PnpTimelineJson, SpanAtIn, SpanTextIn, StepDurIn, ToneIn, TotalTextIn, TimelineSegSpec, TimelineSpec,
   TimelineSpecIn, WithToneIn,
   ChannelOfIn, ChannelSpec, DrawExtraIn, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
@@ -3698,7 +3699,7 @@ export function provStreamItemsOf(x: ProvStreamItemsIn): ProvStreamItem[] {
         t: x.t, lang: x.lang, p, draws: x.draws, ops: x.ops, reqs: x.reqs, pathways: x.pathways,
       })
     }
-    out.push({ key: p.key, gate, steps, draws })
+    out.push({ key: p.key, gate, steps, draws, fits: fitsOfSet({ sets: x.sets, key: p.key }) })
   }
   return out
 }
@@ -6529,6 +6530,47 @@ function spanAtOf(x: SpanAtIn): PnpSpanJson | null {
 }
 
 /**
+ * 省英文全名(资讯页「申请步骤」全部省份一起看时的组头黑字;2026-10-11 申请步骤分区筛选批 1)。认不出的码原样给。
+ *
+ * @param code 省码。
+ * @returns 英文全名。
+ */
+export function provEnOf(code: string): string {
+  const name = PROV_NAMES[code]
+  if (name == null) {
+    return code
+  }
+  return name
+}
+
+/**
+ * 组头灰字:界面语言省名;英文界面不出(黑字已是英文名)。
+ *
+ * @param x 界面语言、取词函数与省码。
+ * @returns 译名或空串。
+ */
+export function provSubOf(x: ProvSubIn): string {
+  if (x.lang === LANG_EN) {
+    return TEXT_NONE
+  }
+  return x.t(PROV_KEY_HEAD + x.code)
+}
+
+/**
+ * 按通道编号找它登的身份对照(2026-10-11 申请步骤分区筛选批 1;跟步骤同一行带来)。
+ *
+ * @param x 登了步骤的通道与通道编号。
+ * @returns 身份对照;没登步骤或没登对照给 null。
+ */
+function fitsOfSet(x: StepSetOfIn): PnpFitsJson | null {
+  const set = stepSetOf(x)
+  if (set == null) {
+    return null
+  }
+  return set.fits
+}
+
+/**
  * 按通道编号找它登的步骤。
  *
  * @param x 登了步骤的通道与通道编号。
@@ -6623,6 +6665,12 @@ export function spanTextOf(x: SpanTextIn): string {
   if (s.kind === TL_KIND.none) {
     return TL_DASH
   }
+  if (s.kind === TL_KIND.unpublished) {
+    return x.t(K_TL_UNPUBLISHED)
+  }
+  if (s.kind === TL_KIND.atleast && s.min != null) {
+    return x.t(K_TL_ATLEAST, { n: s.min })
+  }
   if (s.kind === TL_KIND.unknown || s.max == null || s.min == null) {
     return x.t(K_TL_UNKNOWN)
   }
@@ -6655,6 +6703,9 @@ export function spanTextOf(x: SpanTextIn): string {
  * @returns 份量。
  */
 function spanWeightOf(s: PnpSpanJson): number {
+  if (s.kind === TL_KIND.atleast && s.min != null) {
+    return s.min
+  }
   if (s.kind === TL_KIND.none || s.kind === TL_KIND.unknown || s.max == null) {
     return 0
   }
@@ -6707,8 +6758,11 @@ export function timelineSpecOf(x: TimelineSpecIn): TimelineSpec | null {
 function totalTextOf(x: TotalTextIn): string {
   const lo = x.tl.totalMin
   const hi = x.tl.totalMax
-  if (lo == null || hi == null) {
+  if (lo == null) {
     return TEXT_NONE
+  }
+  if (hi == null) {
+    return x.t(K_TL_TOTAL_ATLEAST, { n: lo })
   }
   if (lo === hi) {
     return x.t(K_TL_TOTAL_ONE, { n: lo })

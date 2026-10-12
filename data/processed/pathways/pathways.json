@@ -142,7 +142,44 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after",
+          "schools": [
+            {
+              "prov": "own",
+              "kind": "public"
+            }
+          ],
+          "quote": "Your credential must be issued by an Alberta Advanced Education publicly funded post-secondary institution.",
+          "url": "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility"
+        },
+        "pgwp": {
+          "can": "yes",
+          "schools": [
+            {
+              "prov": "own",
+              "kind": "public"
+            }
+          ],
+          "quote": "Your credential must be issued by an Alberta Advanced Education publicly funded post-secondary institution.",
+          "url": "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility"
+        },
+        "lmia": {
+          "can": "yes"
+        },
+        "open": {
+          "can": "no",
+          "quote": "If your work permit type is not included in the list above, you are not eligible to apply.",
+          "url": "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility"
+        },
+        "abroad": {
+          "can": "no",
+          "quote": "At the time your application is submitted, and at the time AAIP assesses your application, you must have a valid temporary resident status in Canada that authorizes you to work in Canada, that is, a temporary foreign worker permit.",
+          "url": "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility"
+        }
+      }
     },
     {
       "key": "ab-accelerated-tech",
@@ -297,7 +334,27 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        },
+        "lmia": {
+          "can": "yes"
+        },
+        "open": {
+          "can": "yes"
+        },
+        "abroad": {
+          "can": "yes"
+        },
+        "ee": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "ab-dedicated-health-care",
@@ -423,7 +480,27 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        },
+        "lmia": {
+          "can": "yes"
+        },
+        "open": {
+          "can": "yes"
+        },
+        "abroad": {
+          "can": "yes"
+        },
+        "ee": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "ab-law-enforcement",
@@ -577,7 +654,27 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        },
+        "lmia": {
+          "can": "yes"
+        },
+        "open": {
+          "can": "yes"
+        },
+        "abroad": {
+          "can": "yes"
+        },
+        "ee": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "ab-tourism-hospitality",
@@ -714,7 +811,32 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "no",
+          "quote": "Other types of work permits are not eligible at the time of application submission.",
+          "url": "https://www.alberta.ca/tourism-and-hospitality-stream-eligibility"
+        },
+        "pgwp": {
+          "can": "no",
+          "quote": "Other types of work permits are not eligible at the time of application submission.",
+          "url": "https://www.alberta.ca/tourism-and-hospitality-stream-eligibility"
+        },
+        "lmia": {
+          "can": "yes"
+        },
+        "open": {
+          "can": "no",
+          "quote": "Other types of work permits are not eligible at the time of application submission.",
+          "url": "https://www.alberta.ca/tourism-and-hospitality-stream-eligibility"
+        },
+        "abroad": {
+          "can": "no",
+          "quote": "be living and working in Alberta in an eligible occupation for an approved Tourism and Hospitality employer;",
+          "url": "https://www.alberta.ca/tourism-and-hospitality-stream-eligibility"
+        }
+      }
     },
     {
       "key": "ab-rural-renewal",
@@ -862,7 +984,24 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        },
+        "lmia": {
+          "can": "yes"
+        },
+        "open": {
+          "can": "yes"
+        },
+        "abroad": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "bc-skilled-worker",
@@ -975,7 +1114,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "bc-health-authority",
@@ -1066,7 +1213,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "bc-healthcare",
@@ -1181,7 +1336,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "bc-childcare",
@@ -1296,7 +1459,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "bc-veterinary",
@@ -1411,7 +1582,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "bc-construction-trades",
@@ -1526,7 +1705,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "bc-french-teachers",
@@ -1641,7 +1828,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "sk-employment-offer",
@@ -1771,7 +1966,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "sk-health-talent",
@@ -1897,7 +2100,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "sk-tech-talent",
@@ -2023,7 +2234,31 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after",
+          "schools": [
+            {
+              "prov": "any",
+              "min": "y2"
+            }
+          ],
+          "quote": "or a diploma that requires two years at a university, college, trade or technical school, or other post-secondary institution).",
+          "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/sinp-innovation-tech-talent-pathway"
+        },
+        "pgwp": {
+          "can": "yes",
+          "schools": [
+            {
+              "prov": "any",
+              "min": "y2"
+            }
+          ],
+          "quote": "or a diploma that requires two years at a university, college, trade or technical school, or other post-secondary institution).",
+          "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/sinp-innovation-tech-talent-pathway"
+        }
+      }
     },
     {
       "key": "sk-agriculture-talent",
@@ -2149,7 +2384,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "sk-existing-work-permit",
@@ -2292,7 +2535,19 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "no",
+          "quote": "Study permit holders are not eligible to apply under the Existing Work Permit category.",
+          "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/applicants-with-existing-work-permit"
+        },
+        "pgwp": {
+          "can": "no",
+          "quote": "Post-Graduation Work Permit (PGWP) and Spousal Open Work Permit holders are not eligible to apply under this sub-category.",
+          "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/applicants-with-existing-work-permit"
+        }
+      }
     },
     {
       "key": "sk-students",
@@ -2434,7 +2689,29 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "yes",
+          "schools": [
+            {
+              "prov": "own"
+            }
+          ],
+          "quote": "Have graduated from a recognized post-secondary institution in Saskatchewan.",
+          "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/students"
+        },
+        "pgwp": {
+          "can": "yes",
+          "schools": [
+            {
+              "prov": "own"
+            }
+          ],
+          "quote": "Have graduated from a recognized post-secondary institution in Saskatchewan.",
+          "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/students"
+        }
+      }
     },
     {
       "key": "sk-occupation-in-demand",
@@ -2521,7 +2798,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "sk-express-entry",
@@ -2638,7 +2923,15 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "mb-skilled-worker-in-manitoba",
@@ -2764,7 +3057,15 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "mb-skilled-worker-overseas",
@@ -2866,7 +3167,8 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": null
     },
     {
       "key": "mb-career-employment",
@@ -2981,7 +3283,29 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after",
+          "schools": [
+            {
+              "prov": "own"
+            }
+          ],
+          "quote": "If you are an international student who graduated in another province of Canada and/or are not working in an in-demand occupation, you may be eligible to apply under the Skilled Worker in Manitoba Pathway.",
+          "url": "https://immigratemanitoba.com/mpnp/ies/cep"
+        },
+        "pgwp": {
+          "can": "yes",
+          "schools": [
+            {
+              "prov": "own"
+            }
+          ],
+          "quote": "If you are an international student who graduated in another province of Canada and/or are not working in an in-demand occupation, you may be eligible to apply under the Skilled Worker in Manitoba Pathway.",
+          "url": "https://immigratemanitoba.com/mpnp/ies/cep"
+        }
+      }
     },
     {
       "key": "mb-graduate-internship",
@@ -3084,7 +3408,29 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after",
+          "schools": [
+            {
+              "prov": "own"
+            }
+          ],
+          "quote": "If you are an international student who graduated in another province of Canada and/or are not working in an in-demand occupation, you may be eligible to apply under the Skilled Worker in Manitoba Pathway.",
+          "url": "https://immigratemanitoba.com/mpnp/ies/gip"
+        },
+        "pgwp": {
+          "can": "yes",
+          "schools": [
+            {
+              "prov": "own"
+            }
+          ],
+          "quote": "If you are an international student who graduated in another province of Canada and/or are not working in an in-demand occupation, you may be eligible to apply under the Skilled Worker in Manitoba Pathway.",
+          "url": "https://immigratemanitoba.com/mpnp/ies/gip"
+        }
+      }
     },
     {
       "key": "on-workforce-priority",
@@ -3236,7 +3582,15 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "on-employer-job-offer-foreign-worker",
@@ -3264,7 +3618,8 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [],
+      "fits": null
     },
     {
       "key": "on-employer-job-offer-international-student",
@@ -3292,7 +3647,8 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [],
+      "fits": null
     },
     {
       "key": "on-self-employed-physicians",
@@ -3391,7 +3747,8 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": null
     },
     {
       "key": "ns-skilled-worker",
@@ -3528,7 +3885,15 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "ns-construction",
@@ -3653,7 +4018,15 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "ns-graduate",
@@ -3774,7 +4147,29 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after",
+          "schools": [
+            {
+              "prov": "own"
+            }
+          ],
+          "quote": "have met requirements for completing a program of study at an eligible Nova Scotia designated learning institution within three years of your application.",
+          "url": "https://liveinnovascotia.com/nova-scotia-graduate"
+        },
+        "pgwp": {
+          "can": "yes",
+          "schools": [
+            {
+              "prov": "own"
+            }
+          ],
+          "quote": "have met requirements for completing a program of study at an eligible Nova Scotia designated learning institution within three years of your application.",
+          "url": "https://liveinnovascotia.com/nova-scotia-graduate"
+        }
+      }
     },
     {
       "key": "ns-physicians",
@@ -3900,7 +4295,8 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": null
     },
     {
       "key": "ns-express-entry-experience",
@@ -4067,7 +4463,29 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after",
+          "schools": [
+            {
+              "prov": "own"
+            }
+          ],
+          "quote": "Applicants who are claiming work experience that was gained on a Post Graduate Work permit must have graduated from an educational institution located in Nova Scotia.",
+          "url": "https://liveinnovascotia.com/express-entry"
+        },
+        "pgwp": {
+          "can": "yes",
+          "schools": [
+            {
+              "prov": "own"
+            }
+          ],
+          "quote": "Applicants who are claiming work experience that was gained on a Post Graduate Work permit must have graduated from an educational institution located in Nova Scotia.",
+          "url": "https://liveinnovascotia.com/express-entry"
+        }
+      }
     },
     {
       "key": "ns-express-entry-physicians",
@@ -4230,7 +4648,8 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": null
     },
     {
       "key": "nb-skilled-worker",
@@ -4369,7 +4788,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "nb-express-entry-employment",
@@ -4521,7 +4948,15 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "nb-francophone-workers",
@@ -4651,7 +5086,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "nb-express-entry-interest",
@@ -4785,7 +5228,15 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "nb-francophone-priorities",
@@ -4909,7 +5360,31 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after",
+          "schools": [
+            {
+              "prov": "own",
+              "kind": "public"
+            }
+          ],
+          "quote": "have completed an in-person program of study of at least 1-year long at either the Université de Moncton or the Collège communautaire du Nouveau-Brunswick (CCNB)",
+          "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"
+        },
+        "pgwp": {
+          "can": "yes",
+          "schools": [
+            {
+              "prov": "own",
+              "kind": "public"
+            }
+          ],
+          "quote": "have completed an in-person program of study of at least 1-year long at either the Université de Moncton or the Collège communautaire du Nouveau-Brunswick (CCNB)",
+          "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"
+        }
+      }
     },
     {
       "key": "nb-francophones-remote",
@@ -5043,7 +5518,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "nb-critical-worker-pilot",
@@ -5167,7 +5650,8 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": null
     },
     {
       "key": "nb-private-college-pilot",
@@ -5297,7 +5781,25 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "yes",
+          "schools": [
+            {
+              "prov": "own",
+              "kind": "private"
+            }
+          ],
+          "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/pccg-pilot-program.html",
+          "quote": "have successfully completed an eligible program of study at a participating private career college located in New Brunswick"
+        },
+        "pgwp": {
+          "can": "no",
+          "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/pccg-pilot-program.html",
+          "quote": "This program is for students that are not eligible for the federal post-graduation work permit (PGWP) program."
+        }
+      }
     },
     {
       "key": "nl-skilled-worker",
@@ -5436,7 +5938,19 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "no",
+          "quote": "Cannot hold a Post-Graduation Work Permit.",
+          "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/skilled-worker"
+        },
+        "pgwp": {
+          "can": "no",
+          "quote": "Cannot hold a Post-Graduation Work Permit.",
+          "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/skilled-worker"
+        }
+      }
     },
     {
       "key": "nl-international-graduate",
@@ -5579,7 +6093,37 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after",
+          "schools": [
+            {
+              "prov": "own"
+            },
+            {
+              "prov": "other",
+              "kind": "public"
+            }
+          ],
+          "quote": "Graduates from recognized public institutions outside NL must have a job or offer directly related to their field and work in NL for at least one year before applying to the NLPNP.",
+          "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/international-graduate/"
+        },
+        "pgwp": {
+          "can": "yes",
+          "schools": [
+            {
+              "prov": "own"
+            },
+            {
+              "prov": "other",
+              "kind": "public"
+            }
+          ],
+          "quote": "Graduates from recognized public institutions outside NL must have a job or offer directly related to their field and work in NL for at least one year before applying to the NLPNP.",
+          "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/international-graduate/"
+        }
+      }
     },
     {
       "key": "nl-express-entry-skilled-worker",
@@ -5747,7 +6291,15 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "pe-workforce",
@@ -5876,7 +6428,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "pe-occupations-in-demand",
@@ -6006,7 +6566,15 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "pe-international-graduate",
@@ -6123,7 +6691,31 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after",
+          "schools": [
+            {
+              "prov": "own",
+              "kind": "public"
+            }
+          ],
+          "quote": "have graduated from a publicly-funded Prince Edward Island institution;",
+          "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/international-graduates"
+        },
+        "pgwp": {
+          "can": "yes",
+          "schools": [
+            {
+              "prov": "own",
+              "kind": "public"
+            }
+          ],
+          "quote": "have graduated from a publicly-funded Prince Edward Island institution;",
+          "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/international-graduates"
+        }
+      }
     },
     {
       "key": "pe-intermediate-experience",
@@ -6254,7 +6846,19 @@
           "stuck": false,
           "facts": []
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "no",
+          "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/intermediate-experience-stream",
+          "quote": "have a minimum of six months full‐time Canadian work experience that was gained while on a Labour Market Impact Assessment (LMIA) based work permit, and be relevant to the current position the individual is offered in PEI;"
+        },
+        "pgwp": {
+          "can": "no",
+          "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/intermediate-experience-stream",
+          "quote": "have a minimum of six months full‐time Canadian work experience that was gained while on a Labour Market Impact Assessment (LMIA) based work permit, and be relevant to the current position the individual is offered in PEI;"
+        }
+      }
     },
     {
       "key": "pe-express-entry",
@@ -6390,7 +6994,15 @@
             }
           ]
         }
-      ]
+      ],
+      "fits": {
+        "student": {
+          "can": "after"
+        },
+        "pgwp": {
+          "can": "yes"
+        }
+      }
     },
     {
       "key": "aip",
@@ -6420,7 +7032,8 @@
       "teers": [],
       "nocs": [],
       "employers": [],
-      "steps": []
+      "steps": [],
+      "fits": null
     }
   ]
 }
