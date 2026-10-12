@@ -7198,9 +7198,12 @@ TL_MONTH = "month"
 TL_DAY = "day"
 """单位:天。"""
 
-TL_NONE_STEPS = ("offer", "eoi", "eeProfile", "community", "register", "employerRegister", "settle", "submit", "csq", "jobOffer")
+TL_NONE_STEPS = ("offer", "eoi", "eeProfile", "community", "register", "employerRegister", "settle", "submit", "csq", "jobOffer",
+                 "sponsorEligible", "undertaking", "sponsorInterest", "agreement", "businessPlan", "eligibilityCheck",
+                 "deposit")
 """不占时间的步骤词(当天办完的动作;雇主递审批 epa、省背书 endorse 这类有官方处理期的不在这,留 unknown 等逐省补)。
-2026-10-12 加 csq(拿魁北克甄选证书:审批通过即发证,时长已算在审批那一步)、jobOffer(联邦 / 魁北克的拿雇主 offer)。"""
+2026-10-12 加 csq(拿魁北克甄选证书:审批通过即发证,时长已算在审批那一步)、jobOffer(联邦 / 魁北克的拿雇主 offer)。
+同日 Frank「都做」:当天办完的动作补进来 —— 确认担保资格、签担保承诺、递担保意向表、签履约协议、写商业计划书、确认能否提出、存启动保证金(官网只写条件不写时长,本来就不占时间,不该记本站未收录)。"""
 
 TL_WORK_STEPS = ("work", "workLocal")
 """「干满」两步:时长 = 这条通道门槛表 experience 行的月数(多行取最短 —— 阿省机会通道本省 12 个月 / 各地 24 个月,刚到阿省
