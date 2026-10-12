@@ -5392,10 +5392,6 @@ export type PnpProvStepsIn = {
    */
   filter: PnpStepsFilter
 
-  /**
-   * 全部省份一起看(true = 卡前出省名组头,这省一条不剩就整组不出)。
-   */
-  group: boolean
 }
 
 /**
@@ -7577,41 +7573,31 @@ export type ProcessingTextIn = {
 }
 
 /**
- * ProvGroupHead 的 props(2026-10-11 申请步骤分区筛选批 1)。
+ * 九省各几条通道(省码 → 条数;2026-10-12)。
  */
-export type ProvGroupHeadIn = {
+export type ProvCounts = Record<string, number>
+
+/**
+ * provCountsOf 的入参。
+ */
+export type ProvCountsOfIn = {
   /**
-   * 省英文名(黑字主文案)。
+   * 通道对照表(现行)。
    */
-  name: string
+  pathways: PnpPathway[]
 
   /**
-   * 界面语言译名(灰字);英文界面为空串。
+   * 只数登了步骤的(「申请步骤」页)。
    */
-  sub: string
-
-  /**
-   * 条数文案(灰字)。
-   */
-  count: string
+  stepsOnly: boolean
 }
 
 /**
- * provSubOf 的入参。
+ * usePnpProvCounts 的入参。
  */
-export type ProvSubIn = {
+export type ProvCountsHookIn = {
   /**
-   * 界面语言。
+   * 只数登了步骤的(「申请步骤」页 true,「通道」页 false)。
    */
-  lang: PnpLang
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 省码。
-   */
-  code: string
+  stepsOnly: boolean
 }

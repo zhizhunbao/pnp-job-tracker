@@ -69,6 +69,11 @@ export type ProvChipsIn = {
    * 逐省的手柄工厂。
    */
   provPickOf: ProvPickOfFn
+
+  /**
+   * 各省条数(2026-10-12;整表没到是空表)。
+   */
+  counts: ProvCountsMap
 }
 
 /**
@@ -97,11 +102,26 @@ export type ProvPickIn = {
 }
 
 /**
- * 「申请步骤」页省份卡的 props(整机面板原样递进)。
+ * 省码 → 条数(pnp 桶 usePnpProvCounts 交回的形,本桶自抄)。
  */
-export type StepsCardIn = {
+export type ProvCountsMap = Record<string, number>
+
+/**
+ * provChipTextOf 的入参。
+ */
+export type ProvChipTextIn = {
   /**
-   * useSteps 的面板。
+   * 省名(界面语言)。
    */
-  p: StreamsPanel
+  name: string
+
+  /**
+   * 省码。
+   */
+  code: string
+
+  /**
+   * 各省条数(整表还没到是空表)。
+   */
+  counts: ProvCountsMap
 }

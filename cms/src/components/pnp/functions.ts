@@ -72,7 +72,7 @@ import {
   STEP_PROCESSING_KEY,
 } from './constants'
 import type {
-  PnpFitsJson, ProvSubIn,
+  PnpFitsJson, ProvCounts, ProvCountsOfIn,
   PnpSpanJson, PnpTimelineJson, SpanAtIn, SpanTextIn, StepDurIn, ToneIn, TotalTextIn, TimelineSegSpec, TimelineSpec,
   TimelineSpecIn, WithToneIn,
   ChannelOfIn, ChannelSpec, DrawExtraIn, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
@@ -4125,7 +4125,6 @@ function bandTeerOf(band: string): number {
   return Number(band.split(VALUE_CODE_SEP)[0])
 }
 
-
 /**
  * 抽选表其余组展开了几组(FoldLine 的 extra:收着 0,展开 = 其余全部)。
  * 原「查看全省 N 组」开关的字(allGroupsLabelOf)2026-10-11 退役 —— Frank「这个改成叫 展开 收起 吧」,开关换成 pager 桶 FoldLine;
@@ -5637,17 +5636,10 @@ export function makeToggleOf(x: ToggleSetIn): ToggleOfFn {
  */
 export function makeLoadPnpData(x: LoadPnpDataIn): LoadFn {
   return function loadPnpData(flag: DeadFlag): void {
-    function read(r: Response): Promise<PnpDataJson> {
-      if (r.ok) {
-        return r.json()
-      }
-      return Promise.resolve(null)
-    }
-    function land(j: PnpDataJson): void {
+    function land(d: PnpData | null): void {
       if (flag.dead) {
         return
       }
-      const d = toPnpData(j)
       if (d == null) {
         x.setFailed(true)
         return
@@ -5660,8 +5652,71 @@ export function makeLoadPnpData(x: LoadPnpDataIn): LoadFn {
         x.setFailed(true)
       }
     }
-    fetch(URL_API_JOBS_PNP).then(read).then(land).catch(fall)
+    pendingPnpDataOf().then(land).catch(fall)
   }
+}
+
+/**
+ * 整表那一次请求(2026-10-12 省份胶囊带通道数:页上同时挂了两处取整表的 —— 省份卡数条数、步骤正文出卡 —— 同一时刻只发一次,
+ * 后来的接同一个 Promise;取挂了或缺表清掉,下一次再取)。
+ *
+ * @returns 整表;没取成给 null。
+ */
+function pendingPnpDataOf(): Promise<PnpData | null> {
+  if (CACHE.pnpPending == null) {
+    CACHE.pnpPending = fetch(URL_API_JOBS_PNP).then(readPnpJson).then(settlePnpData)
+  }
+  return CACHE.pnpPending
+}
+
+/**
+ * 回包 → 线格式(没成给 null)。
+ *
+ * @param r 回包。
+ * @returns 线格式。
+ */
+function readPnpJson(r: Response): Promise<PnpDataJson> {
+  if (r.ok) {
+    return r.json()
+  }
+  return Promise.resolve(null)
+}
+
+/**
+ * 线格式 → 整表;没取成把在途那一次清掉(下次重取)。
+ *
+ * @param j 线格式。
+ * @returns 整表或 null。
+ */
+function settlePnpData(j: PnpDataJson): PnpData | null {
+  const d = toPnpData(j)
+  if (d == null) {
+    CACHE.pnpPending = null
+  }
+  return d
+}
+
+/**
+ * 九省各几条通道(2026-10-12 Frank「这个加上通道数」「加一个通道总数」):资讯「通道」页数全部现行通道,「申请步骤」页只数登了步骤的;
+ * 联邦行(FED)不在九省里,不数。
+ *
+ * @param x 通道对照表与是否只数登了步骤的。
+ * @returns 省码 → 条数。
+ */
+export function provCountsOf(x: ProvCountsOfIn): ProvCounts {
+  const out: ProvCounts = {}
+  for (const p of x.pathways) {
+    if (x.stepsOnly && p.hasSteps === false) {
+      continue
+    }
+    const n = out[p.province]
+    if (n == null) {
+      out[p.province] = 1
+    } else {
+      out[p.province] = n + 1
+    }
+  }
+  return out
 }
 
 /**
@@ -6527,33 +6582,6 @@ function spanAtOf(x: SpanAtIn): PnpSpanJson | null {
     return null
   }
   return span
-}
-
-/**
- * 省英文全名(资讯页「申请步骤」全部省份一起看时的组头黑字;2026-10-11 申请步骤分区筛选批 1)。认不出的码原样给。
- *
- * @param code 省码。
- * @returns 英文全名。
- */
-export function provEnOf(code: string): string {
-  const name = PROV_NAMES[code]
-  if (name == null) {
-    return code
-  }
-  return name
-}
-
-/**
- * 组头灰字:界面语言省名;英文界面不出(黑字已是英文名)。
- *
- * @param x 界面语言、取词函数与省码。
- * @returns 译名或空串。
- */
-export function provSubOf(x: ProvSubIn): string {
-  if (x.lang === LANG_EN) {
-    return TEXT_NONE
-  }
-  return x.t(PROV_KEY_HEAD + x.code)
 }
 
 /**

@@ -10,7 +10,7 @@
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { TEXT_NONE } from './constants'
-import { applyStartProv, applyStartStepsProv, makeProvPickOf } from './functions'
+import { applyStartProv, makeProvPickOf } from './functions'
 import type { StreamsPanel } from './types'
 
 /**
@@ -24,22 +24,6 @@ export function useStreams(): StreamsPanel {
 
   useEffect(function presetHomeProv() {
     applyStartProv({ setProv })
-  }, [])
-
-  return { t, lang, prov, provPickOf: makeProvPickOf({ setProv }) }
-}
-
-/**
- * 「申请步骤」页整机(2026-10-11 申请步骤分区筛选批 1;2026-10-12 Frank「去掉其他筛选,只保留省份切换」后只剩省份):
- * 取词函数、界面语言、当前省份(含 all = 全部省份)与逐省手柄;挂载时认一次地址,不按时区预选。
- * @returns 机器面板。
- */
-export function useSteps(): StreamsPanel {
-  const [lang, , t] = useLang()
-  const [prov, setProv] = useState(TEXT_NONE)
-
-  useEffect(function presetFromUrl() {
-    applyStartStepsProv({ setProv })
   }, [])
 
   return { t, lang, prov, provPickOf: makeProvPickOf({ setProv }) }

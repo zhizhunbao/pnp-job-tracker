@@ -1330,9 +1330,8 @@ export const siteZh = {
   'steps.title': '各省申请步骤', 'steps.bnSub': '各省现行通道的官方申请步骤',
   // 2026-10-11 申请步骤分区筛选批 1(Frank「可以,开始做第一批」;设计 docs/design/资讯/申请步骤-分区筛选-20261011.md):省份 / 身份 / 教育经历三张分区卡
   // 2026-10-12 Frank「去掉其他筛选,只保留省份切换」:身份 / 教育经历两张卡撤(筛选挪「我的通道」),只留省份卡与组头词条
-  'stepsf.provHead': '省份', 'stepsf.allProv': '全部省份',
-  'stepsf.empty': '没有符合条件的通道',
-  'stepsf.count': '{n} 条',
+  // 同日 Frank「全部省份 去掉吧」「加一个通道总数」:全部省份、组头条数、空态句三条撤,加卡头总数一条
+  'stepsf.total': '共 {n} 条通道', 'stepsf.provHead': '省份',
   'news.sub': '联邦 IRCC 与 7 省官方发布聚合 · 每 12 小时刷新 · 只收官方源',
   'news.federal': '联邦 IRCC',
   'news.qcNote': '魁省走自己的移民体系(非 PNP)',

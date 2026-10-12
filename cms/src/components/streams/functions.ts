@@ -6,13 +6,16 @@
  * 多出「申请步骤」页的筛选一族(startStepsStateOf 往下)—— 省份 / 身份 / 教育经历,整份跟着地址走(可转发给别人)。
  * 2026-10-12 Frank「要不这个只作为咨询列出所有通道」「去掉其他筛选,只保留省份切换」「之后,在 我的 模块里,开一个我的通道来做 筛选 table」:
  * 身份 / 教育经历一族撤掉(判定与身份对照数据留在 pnp 子桶 fit,「我的通道」接着用),本页只剩「全部省份 + 九省」切换。
+ * 同日 Frank「全部省份 去掉吧」:「申请步骤」页回到与「通道」页同一套省份口径(地址 / 时区预选),多出省份卡的条数两件。
  *
  * @author Frank
  * @time 2026-09-30 21:46:44
  */
 import { homeProvinceOf } from '@/lib/location'
-import { P_PROV, PROV_ALL, PROV_DEFAULT, STREAM_PROVS, TEXT_NONE, URL_KV_SEP, URL_QUERY_HEAD } from './constants'
-import type { ClickFn, ProvHrefIn, ProvPickIn, ProvPickOfFn } from './types'
+import {
+  P_PROV, PROV_COUNT_SEP, PROV_DEFAULT, STREAM_PROVS, TEXT_NONE, URL_KV_SEP, URL_QUERY_HEAD,
+} from './constants'
+import type { ClickFn, ProvChipTextIn, ProvCountsMap, ProvHrefIn, ProvPickIn, ProvPickOfFn } from './types'
 
 /**
  * 进页先看哪一省:设备时区(东部时区看浏览器语言,同职位板 homeProvinceOf);落在九省之外(魁省、三个地区)或认不出,
@@ -87,38 +90,32 @@ export function provHrefOf(x: ProvHrefIn): string {
 }
 
 /**
- * 「申请步骤」页进页先看哪一省:地址里带了九省之一就认,没带(或带的是 all)就是全部省份 —— 不按时区预选
- * (Frank「省份 可能 不需要选」「比如我是 安省毕业 我可能需要去其他省」)。
+ * 省份胶囊上的字:省名 + 条数(条数还没到只出省名)。
  *
- * @returns 省码或 all。
+ * @param x 省名、省码与各省条数。
+ * @returns 胶囊字。
  */
-export function startStepsProvOf(): string {
-  const asked = urlProvOf()
-  if (asked === TEXT_NONE) {
-    return PROV_ALL
+export function provChipTextOf(x: ProvChipTextIn): string {
+  const n = x.counts[x.code]
+  if (n == null) {
+    return x.name
   }
-  return asked
+  return x.name + PROV_COUNT_SEP + String(n)
 }
 
 /**
- * 挂载时预选一次「申请步骤」页的省份(服务端不知道地址参数,首帧不选)。
+ * 九省通道总数(卡头右侧灰字)。
  *
- * @param x 省份落格。
- * @returns 无。
+ * @param counts 省码 → 条数。
+ * @returns 总数;整表没到是 0。
  */
-export function applyStartStepsProv(x: ProvPickIn): void {
-  x.setProv(startStepsProvOf())
-}
-
-/**
- * 「通道」页签地址要带的省码:全部省份时不带(「通道」页一次看一省,进去按它自己的预选)。
- *
- * @param prov 本页当前省码或 all。
- * @returns 省码或空串。
- */
-export function streamsProvOf(prov: string): string {
-  if (prov === PROV_ALL) {
-    return TEXT_NONE
+export function provTotalOf(counts: ProvCountsMap): number {
+  let total = 0
+  for (const code of STREAM_PROVS) {
+    const n = counts[code]
+    if (n != null) {
+      total += n
+    }
   }
-  return prov
+  return total
 }

@@ -28,7 +28,7 @@
 }
 
 /*
- * 「申请步骤」页分区筛选卡(2026-10-11 申请步骤分区筛选批 1):卡里的胶囊行(卡头下面,底下不再留距 —— 白卡自带下边距)。
+ * 省份卡里的胶囊行(卡头下面,底下不再留距 —— 白卡自带下边距;2026-10-11 起,10-12「通道」页也用)。
  */
 .cardChips {
   display: flex;
@@ -36,3 +36,20 @@
   flex-wrap: wrap;
 }
 
+/*
+ * 省份卡卡头一行:左「省份」、右灰字通道总数(2026-10-12)。
+ */
+.cardHeadRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/*
+ * 卡头右侧通道总数(灰字小号)。
+ */
+.cardHeadSub {
+  font-size: 13px;
+  color: #6b7280;
+}

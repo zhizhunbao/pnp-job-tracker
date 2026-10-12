@@ -117,19 +117,9 @@ export const STEPS_META = {
 }
 
 /**
- * 「申请步骤」页省份卡的「全部省份」值(2026-10-11 申请步骤分区筛选批 1,Frank「省份 可能 不需要选」;地址里不写 prov 即全部)。
- */
-export const PROV_ALL = 'all'
-
-/**
  * 词条:省份卡头。
  */
 export const K_PROV_HEAD = 'stepsf.provHead'
-
-/**
- * 词条:全部省份胶囊。
- */
-export const K_ALL_PROV = 'stepsf.allProv'
 
 /**
  * 分区卡白卡类(全局 main.css;CLAUDE.md「页面与弹框正文一律分区卡」)。
@@ -155,3 +145,13 @@ export const STEPS_NO_FILTER = {
    */
   edu: [],
 }
+
+/**
+ * 词条:省份卡头右侧的通道总数(插值 n;2026-10-12 Frank「加一个通道总数」)。
+ */
+export const K_PROV_TOTAL = 'stepsf.total'
+
+/**
+ * 省份胶囊上省名与条数之间的空格。
+ */
+export const PROV_COUNT_SEP = ' '

@@ -582,7 +582,6 @@ export const FACTOR_EOI_DRAW = 'eoiDraw'
  */
 export const DRAWS_REFORM_ALL_KEY = '__allReform'
 
-
 /**
  * 「{年} 年配额」卡的列:每列认哪几个指标名 · 列名的词条键(顺序即列序;只列这个省官方有的项,2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
  * 2026-09-27 Frank「已发和总数放到一个卡片里可以吗」「你帮我弄」:抽选卡标题下那行全年合计并进来,排在剩余之后(已发邀请;NS 叫已入选)。
@@ -2448,17 +2447,3 @@ export const K_TL_TOTAL_ATLEAST = 'pnptl.totalAtLeast'
  */
 export const TL_RANGE_MID_DIV = 2
 
-/**
- * 资讯页「申请步骤」筛完一条不剩时那一句的词条(2026-10-11 申请步骤分区筛选批 1;空态引导)。
- */
-export const K_STEPSF_EMPTY = 'stepsf.empty'
-
-/**
- * 全部省份一起看时组头条数的词条(插值 n)。
- */
-export const K_STEPSF_COUNT = 'stepsf.count'
-
-/**
- * 空态那一句的提示框颜色(中性蓝)。
- */
-export const NOTICE_INFO = 'info'

@@ -30,7 +30,7 @@ import {
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
   makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, provStreamItemsOf, qcChannelsOf,
   aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, aipSectionOf, channelSplitOf,
-  makeLoadAipEmp, makePickOf, normName,
+  makeLoadAipEmp, makePickOf, normName, provCountsOf,
 } from './functions'
 import type {
   EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel, DeadFlag, PnpData, PnpDataHookIn, PnpDataPanel,
@@ -38,7 +38,7 @@ import type {
   QcChannelsPanel, AipEmpCardHookIn, AipEmpCardPanel, AipEmpData, AipEmpRowJson, AipSectionHookIn, AipSectionPanel,
   ChannelPickHookIn,
   ChannelPickPanel,
-  DrawFoldPanel,
+  DrawFoldPanel, ProvCounts, ProvCountsHookIn,
 } from './types'
 import { CACHE } from './variables'
 
@@ -274,6 +274,17 @@ export function usePnpProvStreams(x: PnpProvStreamsHookIn): PnpProvStreamsPanel 
   }, [data.ready, items.length])
 
   return { t, ready: data.ready, failed: data.failed, items }
+}
+
+/**
+ * 九省各几条通道(2026-10-12 Frank「这个加上通道数」:资讯「通道」「申请步骤」两页的省份卡用;与步骤正文共用一次整表请求)。
+ *
+ * @param x 是否只数登了步骤的。
+ * @returns 省码 → 条数;整表没到给空表。
+ */
+export function usePnpProvCounts(x: ProvCountsHookIn): ProvCounts {
+  const data = usePnpData({ enabled: true })
+  return provCountsOf({ pathways: data.pathways, stepsOnly: x.stepsOnly })
 }
 
 /**

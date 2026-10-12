@@ -18,4 +18,9 @@ export const CACHE = {
    * null = 这一页还没取过。取到一次整页复用,再开弹框当场就有,不再出加载行。
    */
   pnpData: null as PnpData | null,
+
+  /**
+   * 整表那一次在途请求(2026-10-12:页上两处同时要整表时只发一次;取挂了清回 null)。
+   */
+  pnpPending: null as Promise<PnpData | null> | null,
 }
