@@ -2,7 +2,7 @@
  "source": "IRCC — check processing times (permanent residence, economic classes)",
  "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/check-processing-times.html",
  "dataUrl": "https://www.canada.ca/content/dam/ircc/documents/json/flpt-en.json",
- "fetched": "2026-10-11",
+ "fetched": "2026-10-12",
  "updated": "2026-09-03",
  "interval": "monthly",
  "note": "官方工具现行估算(申请递交后到出结果的大致时长);月数由原文「About N months」解析,别的写法记 null。",
@@ -36,6 +36,72 @@
    "label": "Federal Skilled Worker",
    "text": "About 7 months",
    "months": 7
+  },
+  {
+   "key": "qsw",
+   "label": "Quebec Skilled Workers",
+   "text": "11 months",
+   "months": 11
+  },
+  {
+   "key": "quebec-business",
+   "label": "Quebec business immigration",
+   "text": "About 75 months",
+   "months": 75
+  },
+  {
+   "key": "caregiver",
+   "label": "Caregivers",
+   "text": "About 77 months",
+   "months": 77
+  },
+  {
+   "key": "startup-visa",
+   "label": "Start-up Visa",
+   "text": "More than 10 years",
+   "months": null
+  },
+  {
+   "key": "self-employed",
+   "label": "Self-employed Persons",
+   "text": "More than 10 years",
+   "months": null
+  },
+  {
+   "key": "spousal-canada-roc",
+   "label": "Spouse or common-law partner in Canada (outside Quebec)",
+   "text": "About 26 months",
+   "months": 26
+  },
+  {
+   "key": "spousal-abroad-roc",
+   "label": "Spouse or common-law partner outside Canada (outside Quebec)",
+   "text": "About 18 months",
+   "months": 18
+  },
+  {
+   "key": "pgp-roc",
+   "label": "Parents and grandparents (outside Quebec)",
+   "text": "About 28 months",
+   "months": 28
+  },
+  {
+   "key": "protected-persons-in-canada-roc",
+   "label": "Protected persons in Canada (outside Quebec)",
+   "text": "About 13 months",
+   "months": 13
+  },
+  {
+   "key": "government-refugees-roc",
+   "label": "Government-assisted refugees (outside Quebec)",
+   "text": "About 14 months",
+   "months": 14
+  },
+  {
+   "key": "private-refugees-roc",
+   "label": "Privately sponsored refugees (outside Quebec)",
+   "text": "About 40 months",
+   "months": 40
   }
  ]
 }

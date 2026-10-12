@@ -265,6 +265,10 @@ K_STATUS = "status"
 """页行键:HTTP 状态(cache 只认 200)。"""
 
 K_HTML = "html"
+
+
+K_PINNED = "pinned"
+"""manifest 页行键:写门存进来的页(2026-10-12),BFS 整份重写时保留(pinned_rows_of)。"""
 """页行键:html_cache 文件名(md5(url).html)。"""
 
 K_DATE = "date"

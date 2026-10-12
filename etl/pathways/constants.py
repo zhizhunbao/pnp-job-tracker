@@ -3454,6 +3454,7 @@ PW_BC_ENTREPRENEUR_BASE = {
         },
         {
             "step": "register",
+            "dur": {"kind": "about", "unit": "month", "min": 1, "max": 1, "quote": "Registration score notification 6 weeks", "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -3525,6 +3526,7 @@ PW_BC_ENTREPRENEUR_BASE = {
         },
         {
             "step": "review",
+            "dur": {"kind": "about", "unit": "month", "min": 4, "max": 4, "quote": "Application decision notification (work permit stage) 4 months", "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -3585,6 +3587,7 @@ PW_BC_ENTREPRENEUR_BASE = {
         },
         {
             "step": "finalReport",
+            "dur": {"kind": "about", "unit": "month", "min": 4, "max": 4, "quote": "Application decision notification (final report stage) 4 months", "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -3673,6 +3676,7 @@ PW_BC_ENTREPRENEUR_REGIONAL = {
         },
         {
             "step": "register",
+            "dur": {"kind": "about", "unit": "month", "min": 1, "max": 1, "quote": "Registration score notification 6 weeks", "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -3744,6 +3748,7 @@ PW_BC_ENTREPRENEUR_REGIONAL = {
         },
         {
             "step": "review",
+            "dur": {"kind": "about", "unit": "month", "min": 4, "max": 4, "quote": "Application decision notification (work permit stage) 4 months", "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -3804,6 +3809,7 @@ PW_BC_ENTREPRENEUR_REGIONAL = {
         },
         {
             "step": "finalReport",
+            "dur": {"kind": "about", "unit": "month", "min": 4, "max": 4, "quote": "Application decision notification (final report stage) 4 months", "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -4115,6 +4121,7 @@ PW_MB_ENTREPRENEUR = {
         },
         {
             "step": "review",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 6, "quote": "The MPNP’s targeted processing time is six (6) months or less after receipt of a complete application.", "url": "https://immigratemanitoba.com/wp-content/uploads/2024/07/BIS-Entrepreneur-Stream-Guidelines-final-July-2024.pdf"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -6150,6 +6157,7 @@ PW_YT_BUSINESS_NOMINEE = {
         },
         {
             "step": "review",
+            "dur": {"kind": "about", "unit": "month", "min": 3, "max": 3, "quote": "We'll contact you within 12 to 14 weeks with the decision of your application.", "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program/apply-run-your-own-business-yukon-foreign-entrepreneurs"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -6441,6 +6449,7 @@ PW_NT_SKILLED_WORKER = {
         },
         {
             "step": "review",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 3, "quote": "Aim to assess complete application packages (including all necessary forms and original/certified documentation) within twelve weeks of receipt; and,", "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -6650,6 +6659,7 @@ PW_NT_ENTRY_LEVEL_SEMI_SKILLED = {
         },
         {
             "step": "review",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 3, "quote": "Aim to assess complete application packages (including all necessary forms and original/certified documentation) within twelve weeks of receipt; and,", "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -6861,6 +6871,7 @@ PW_NT_EXPRESS_ENTRY = {
         },
         {
             "step": "review",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 3, "quote": "Aim to assess complete application packages (including all necessary forms and original/certified documentation) within twelve weeks of receipt; and,", "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -6979,6 +6990,7 @@ PW_NT_FRANCOPHONE = {
         },
         {
             "step": "review",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 3, "quote": "original/certified documentation) within twelve (12) weeks of receipt; and", "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/2025_-_11_-_ntnp_program_guidelines_-_francophone_stream-_final.pdf"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -7085,6 +7097,7 @@ PW_NT_BUSINESS = {
         },
         {
             "step": "apply",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 6, "quote": "The application has six (6) months from the date of the letter of invitation to apply.", "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_business_stream.pdf"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -7106,6 +7119,7 @@ PW_NT_BUSINESS = {
         },
         {
             "step": "review",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 3, "quote": "Endeavour to process complete applications within twelve (12) weeks of receipt of all required information and documentation; and", "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_business_stream.pdf"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -7372,6 +7386,7 @@ PW_FED_CEC = {
         },
         {
             "step": "fedReview",
+            "ptime": "cec",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -7496,6 +7511,7 @@ PW_FED_FSW = {
         },
         {
             "step": "fedReview",
+            "ptime": "fsw",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -7802,6 +7818,7 @@ PW_FED_AIP = {
         },
         {
             "step": "fedReview",
+            "ptime": "aip",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -8274,6 +8291,7 @@ PW_FED_SPOUSE_INLAND = {
         },
         {
             "step": "review",
+            "ptime": "spousal-canada-roc",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -8461,6 +8479,7 @@ PW_FED_SPOUSE_OUTLAND = {
         },
         {
             "step": "review",
+            "ptime": "spousal-abroad-roc",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -8812,6 +8831,7 @@ PW_FED_PGP = {
         },
         {
             "step": "review",
+            "ptime": "pgp-roc",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -9054,6 +9074,7 @@ PW_FED_REFUGEE_CLAIM = {
         },
         {
             "step": "prApply",
+            "ptime": "protected-persons-in-canada-roc",
             "who": "you",
             "none": False,
             "stuck": False,
@@ -9186,6 +9207,7 @@ PW_FED_REFUGEE_GAR = {
         },
         {
             "step": "prApply",
+            "ptime": "government-refugees-roc",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -9297,6 +9319,7 @@ PW_FED_REFUGEE_PSR = {
         },
         {
             "step": "prApply",
+            "ptime": "private-refugees-roc",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -9413,6 +9436,7 @@ PW_QC_PSTQ_STREAM_1 = {
         },
         {
             "step": "review",
+            "dur": {"kind": "about", "unit": "month", "min": 8, "max": 8, "quote": "We are currently reviewing applications for permanent selection under the Skilled Worker Selection Program (PSTQ) received in January 2026.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/applying"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -9452,6 +9476,7 @@ PW_QC_PSTQ_STREAM_1 = {
         },
         {
             "step": "prApply",
+            "ptime": "qsw",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -9600,6 +9625,7 @@ PW_QC_PSTQ_STREAM_2 = {
         },
         {
             "step": "review",
+            "dur": {"kind": "about", "unit": "month", "min": 8, "max": 8, "quote": "We are currently reviewing applications for permanent selection under the Skilled Worker Selection Program (PSTQ) received in January 2026.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/applying"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -9639,6 +9665,7 @@ PW_QC_PSTQ_STREAM_2 = {
         },
         {
             "step": "prApply",
+            "ptime": "qsw",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -9805,6 +9832,7 @@ PW_QC_PSTQ_STREAM_3 = {
         },
         {
             "step": "review",
+            "dur": {"kind": "about", "unit": "month", "min": 8, "max": 8, "quote": "We are currently reviewing applications for permanent selection under the Skilled Worker Selection Program (PSTQ) received in January 2026.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/applying"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -9844,6 +9872,7 @@ PW_QC_PSTQ_STREAM_3 = {
         },
         {
             "step": "prApply",
+            "ptime": "qsw",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -9971,6 +10000,7 @@ PW_QC_PSTQ_STREAM_4 = {
         },
         {
             "step": "review",
+            "dur": {"kind": "about", "unit": "month", "min": 8, "max": 8, "quote": "We are currently reviewing applications for permanent selection under the Skilled Worker Selection Program (PSTQ) received in January 2026.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/applying"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -10010,6 +10040,7 @@ PW_QC_PSTQ_STREAM_4 = {
         },
         {
             "step": "prApply",
+            "ptime": "qsw",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -10110,6 +10141,7 @@ PW_QC_PEQ_GRADUATES = {
         },
         {
             "step": "prApply",
+            "ptime": "qsw",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -10232,6 +10264,7 @@ PW_QC_PEQ_TEMPORARY_WORKERS = {
         },
         {
             "step": "prApply",
+            "ptime": "qsw",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -10393,6 +10426,7 @@ PW_QC_INVESTOR = {
         },
         {
             "step": "prApply",
+            "ptime": "quebec-business",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -10524,6 +10558,7 @@ PW_QC_ENTREPRENEUR_STARTUP = {
         },
         {
             "step": "prApply",
+            "ptime": "quebec-business",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -10658,6 +10693,7 @@ PW_QC_SELF_EMPLOYED = {
         },
         {
             "step": "prApply",
+            "ptime": "quebec-business",
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -11047,6 +11083,24 @@ QUOTE_MISSING_TPL = "{key} 的第 {i} 步「{fact}」的原句在 crawl 缓存�
 
 PAGE_MISSING_TPL = "{key} 的第 {i} 步「{fact}」的出处页不在 crawl 缓存里:{url}"
 """自校:出处页没爬到(先补 crawl 种子,不现抓)。"""
+
+K_DUR = "dur"
+"""步骤键:这一步的时长(2026-10-12 补全通道:官方原句直接给了时长的步骤登它,mart 时间线优先读;带原句与出处,自校逐字核)。"""
+
+K_DUR_KIND = "kind"
+"""时长键:形。"""
+
+K_DUR_UNIT = "unit"
+"""时长键:单位。"""
+
+DUR_KINDS = ["exact", "range", "upto", "about", "atleast"]
+"""时长形词表(与 mart 段 25 的 TL_* 同名)。"""
+
+DUR_UNITS = ["month", "day"]
+"""时长单位词表。"""
+
+BAD_DUR_TPL = "{key} 的第 {i} 步时长写法不认得:{dur}"
+"""自校:时长的形 / 单位不在词表里。"""
 
 WS_RE = re.compile(r"\s+")
 """核原句时去掉全部空白(页面链接断开会在标点前留空格,两边都去掉再比)。"""

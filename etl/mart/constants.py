@@ -7159,14 +7159,48 @@ TL_UNPUBLISHED_FACTS = ("noStandardTime", "noTimeGuarantee", "reviewSeveralMonth
 TL_REVIEW_MIN_FACT = "reviewMonthsMin"
 """审理一步的「至少 N 个月」事实词(NS 快速通道指南「3 months or more」)。"""
 
+TL_K_DUR = "dur"
+"""步骤键:这一步直接登的时长(2026-10-12 补全通道;etl/pathways 自校已核原句)。"""
+
+TL_K_PTIME = "ptime"
+"""步骤键:读 IRCC 处理时长表的类键(联邦经济类 / 家庭团聚 / 难民 / 魁北克的最后一步)。"""
+
+TL_K_TEXT = "text"
+"""事实行键:一次性事实的三语文本。"""
+
+TL_ZH = "zh"
+"""三语文本里的中文键(句式兜底只认中文模板)。"""
+
+TL_NOTE_DEADLINE_RE = re.compile(r"(?:收到|拿到|获).{0,14}后 ?\{n\} ?(天|个月)内(?:递|提交|交|申请|办)")
+"""一次性事实的期限句式:「收到 / 拿到…后 {n} 天 / 个月内递 / 办…」→ 这一步最长 N。"""
+
+TL_NOTE_FULL_RE = re.compile(r"满 ?\{n\} ?(个月|年)")
+"""一次性事实的定长句式:「(经营 / 住 / 工作)满 {n} 个月 / 年」→ 这一步定长 N。"""
+
+TL_NOTE_MONTH_WORD = "个月"
+"""期限句式的月单位字。"""
+
+TL_NOTE_YEAR_WORD = "年"
+"""定长句式的年单位字。"""
+
+TL_MONTHS_PER_YEAR = 12
+"""一年的月数。"""
+
+TL_NOTE_DEADLINE_STEPS = ("apply", "submit", "eoi", "workPermit", "closedPermit", "acceptInvite")
+"""期限句式(「收到…后 {n} 天内递」)只在这些递交 / 办证类步骤上算时长。"""
+
+TL_NOTE_FULL_STEPS = ("runBusiness", "workLocal", "work", "workCanada", "residence")
+"""定长句式(「满 {n} 个月 / 年」)只在这些经营 / 工作 / 居住类步骤上算时长。"""
+
 TL_MONTH = "month"
 """单位:月。"""
 
 TL_DAY = "day"
 """单位:天。"""
 
-TL_NONE_STEPS = ("offer", "eoi", "eeProfile", "community", "register", "employerRegister", "settle", "submit")
-"""不占时间的步骤词(当天办完的动作;雇主递审批 epa、省背书 endorse 这类有官方处理期的不在这,留 unknown 等逐省补)。"""
+TL_NONE_STEPS = ("offer", "eoi", "eeProfile", "community", "register", "employerRegister", "settle", "submit", "csq")
+"""不占时间的步骤词(当天办完的动作;雇主递审批 epa、省背书 endorse 这类有官方处理期的不在这,留 unknown 等逐省补)。
+2026-10-12 加 csq(拿魁北克甄选证书:审批通过即发证,时长已算在审批那一步)。"""
 
 TL_WORK_STEPS = ("work", "workLocal")
 """「干满」两步:时长 = 这条通道门槛表 experience 行的月数(多行取最短 —— 阿省机会通道本省 12 个月 / 各地 24 个月,刚到阿省

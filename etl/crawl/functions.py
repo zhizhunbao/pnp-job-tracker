@@ -36,6 +36,7 @@ from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, PARA_SEP, PARSER_HTML, SPACE_SEP, WS_RE
 from crawl import BROWSER_CHANNEL, BROWSER_COOKIES, BROWSER_UNATTENDED
 from crawl.constants import (
+    K_PINNED,
     BLOCKED_KEEP_RATIO, BLOCKED_MIN_PREV_OK, PRINT_SEED_ATTENDED_SKIP_TPL, PRINT_SEED_BLOCKED_TPL,
     COOKIE_JAR_EMPTY,
     BIN_SUFFIX, FILE_CACHE_DIR, FILES_SLUG_PREFIX, K_FILE, NO_HOST_TPL, PDF_MAGIC, PDF_SUFFIX,
@@ -236,6 +237,7 @@ from crawl.constants import (
     WAIT_FN_TPL,
 )
 from crawl.scheme import (
+    PinnedRowsIn,
     BrowserRouteLike,
     HttpAsyncClientLike,
     PageLike,
@@ -411,14 +413,16 @@ def put_cached_page(x: CachePutIn) -> Path:
 
     2026-09-02 Frank 拍板数据链 crawl → raw → processed → mart 的写门(读门是 get_cached_page):
     浏览器渲染态抓取(pte duoink 题页)也从这进,不在各域自定目录另存一份原文。manifest 不在
-    即建(seed_url = 本页,深度 0);crawled_at 刷成本次写盘时刻(cache 取最新份的比较键)。"""
+    即建(seed_url = 本页,深度 0);crawled_at 刷成本次写盘时刻(cache 取最新份的比较键)。
+    2026-10-12:行上打钉住标记(K_PINNED)—— 写门存进来的页多半是 BFS 爬不到的(深链、PDF 旁页、验证后的渲染态),
+    BFS 每轮整份重写 manifest 时要保留它们(见 pinned_rows_of),否则补存的原句出处整批失效。"""
     out_dir = paths.CRAWL / x.slug
     html_dir = out_dir / HTML_CACHE_DIR
     html_dir.mkdir(parents=True, exist_ok=True)
     html_name = hashlib.md5(x.url.encode()).hexdigest() + HTML_SUFFIX
     paths.write_text(paths.WriteTextIn(path=html_dir / html_name, text=x.html))
     upsert_manifest_row(ManifestRowIn(path=out_dir / MANIFEST_FILE, slug=x.slug, row={
-        K_URL: x.url, K_TITLE: x.title, K_DEPTH: 0, K_STATUS: STATUS_OK, K_HTML: html_name}))
+        K_URL: x.url, K_TITLE: x.title, K_DEPTH: 0, K_STATUS: STATUS_OK, K_HTML: html_name, K_PINNED: True}))
     return html_dir / html_name
 
 
@@ -1015,18 +1019,41 @@ async def discover_urls(x: DiscoverIn) -> Path:
                     next_level.append((child_url, child_depth))
             current_level = next_level
 
+    pages = ctx.discovered + pinned_rows_of(PinnedRowsIn(path=manifest_path, html_dir=html_dir, found=ctx.discovered))
     manifest = {
         K_SEED_URL: seed_url,
         K_SLUG: spec.slug,
-        K_TOTAL_URLS: len(ctx.discovered),
+        K_TOTAL_URLS: len(pages),
         K_MAX_DEPTH: spec.depth,
         K_CRAWLED_AT: datetime.now().isoformat(),
-        K_PAGES: ctx.discovered,
+        K_PAGES: pages,
     }
     paths.write_json(paths.WriteJsonIn(path=manifest_path, payload=manifest, indent=2))
     await close_browser()
     say(PRINT_MANIFEST_TPL.format(n=len(ctx.discovered), path=manifest_path))
     return manifest_path
+
+
+def pinned_rows_of(x: PinnedRowsIn) -> list:
+    """旧 manifest 里写门钉住的行(2026-10-12):本轮 BFS 没重新发现、缓存文件还在盘上的,原样留下;
+    旧 manifest 读不出就没有(不拦本轮写盘)。"""
+    if x.path.exists() is False:
+        return []
+    try:
+        old = json.loads(x.path.read_text(encoding=ENC_UTF8))
+    except (OSError, ValueError) as e:
+        err(str(x.path), e)
+        return []
+    found: set = set()
+    for p in x.found:
+        found.add(p.get(K_URL))
+    out: list = []
+    for p in old.get(K_PAGES, []) if isinstance(old, dict) else []:
+        if not isinstance(p, dict) or p.get(K_PINNED) is not True or p.get(K_URL) in found:
+            continue
+        if p.get(K_HTML) and (x.html_dir / p[K_HTML]).exists():
+            out.append(p)
+    return out
 
 
 # =========================================================================

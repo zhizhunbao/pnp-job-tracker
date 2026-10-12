@@ -807,3 +807,17 @@ class FileCacheTest(unittest.TestCase):
                 self.assertIsNone(fn.get_cached_file("https://nohost.example.test/x"))
                 fn.put_cached_page(CachePutIn(slug="s1", url="https://x.test/p", html="<html>p</html>", title="t"))
                 self.assertIsNone(fn.get_cached_file("https://x.test/p"))
+
+
+@dataclass
+class PinnedRowsIn:
+    """pinned_rows_of() 入参(2026-10-12)。"""
+
+    path: Path
+    """旧 manifest 路径。"""
+
+    html_dir: Path
+    """本 slug 的 html_cache 目录(文件还在才留)。"""
+
+    found: list
+    """本轮 BFS 发现的页行。"""

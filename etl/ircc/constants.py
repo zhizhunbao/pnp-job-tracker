@@ -912,14 +912,28 @@ PTIME_PROGRAMS = (
     ("aip", "Atlantic Immigration Program"),
     ("cec", "Canadian Experience Class"),
     ("fsw", "Federal Skilled Worker"),
+    ("qsw", "Quebec Skilled Workers"),
+    ("quebec-business", "Quebec business immigration"),
+    ("caregiver", "Caregivers"),
+    ("startup-visa", "Start-up Visa"),
+    ("self-employed", "Self-employed Persons"),
+    ("spousal-canada-roc", "Spouse or common-law partner in Canada (outside Quebec)"),
+    ("spousal-abroad-roc", "Spouse or common-law partner outside Canada (outside Quebec)"),
+    ("pgp-roc", "Parents and grandparents (outside Quebec)"),
+    ("protected-persons-in-canada-roc", "Protected persons in Canada (outside Quebec)"),
+    ("government-refugees-roc", "Government-assisted refugees (outside Quebec)"),
+    ("private-refugees-roc", "Privately sponsored refugees (outside Quebec)"),
 )
-"""收哪几类(数据文件键 → 落盘说明):省提名两版是时间线要读的,另收大西洋与 EE 两类作对照;别的类(家庭团聚、难民…)不收。"""
+"""收哪几类(数据文件键 → 落盘说明):省提名两版是时间线要读的,另收大西洋与 EE 两类作对照;别的类(家庭团聚、难民…)不收。
+2026-10-12 补全通道(Frank「都接不行吗」:新通道的时间线也接上):多收魁北克技术工人 / 商业类、护工、创业签证、自雇、
+家庭团聚(配偶境内外、父母祖父母)与难民三类 —— 都是通道表 2b 段里联邦 / 魁北克 / 家庭 / 难民通道最后一步要读的;
+「More than 10 years」这类写法照旧只留原文、月数 null。"""
 
 PTIME_REQUIRED = ("pnp-base", "pnp-ee")
 """必须解析出月数的类 —— 时间线要用,没解析到 = 官方改了写法,保留旧表报错。"""
 
-PTIME_MONTHS_RE = re.compile(r"^About (\d+) months?$")
-"""现行时长原文的唯一认得的写法(「About 13 months」);别的写法(「More than 10 years」等)只留原文、月数记 null。"""
+PTIME_MONTHS_RE = re.compile(r"^(?:About )?(\d+) months?$")
+"""现行时长原文的唯一认得的写法(「About 13 months」;2026-10-12 起也认不带 About 的「11 months」,魁北克技术工人那项这样写);别的写法(「More than 10 years」等)只留原文、月数记 null。"""
 
 K_PROGRAMS = "programs"
 """表键:各类时长行。"""

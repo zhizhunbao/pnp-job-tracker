@@ -322,6 +322,8 @@ from mart.constants import (  # 2026-10-11 申请步骤时间线(段25)
     TL_K_AS_OF, TL_K_BASIS, TL_K_FACTOR, TL_K_FACTS, TL_K_KEY, TL_K_METRIC, TL_K_NONE, TL_K_PROVINCE, TL_K_REF,
     TL_K_REQ_STREAMS, TL_K_SCOPE, TL_K_STEP, TL_K_STEPS, TL_K_STREAM, TL_K_STREAM_KEY, TL_K_UNIT, TL_K_VALUE,
     TL_K_VARS, TL_REF_PROCESSING, TL_ATLEAST, TL_REVIEW_MIN_FACT, TL_UNPUBLISHED, TL_UNPUBLISHED_FACTS,
+    TL_K_DUR, TL_K_PTIME, TL_K_TEXT, TL_ZH, TL_NOTE_DEADLINE_RE, TL_NOTE_FULL_RE, TL_NOTE_MONTH_WORD, TL_NOTE_YEAR_WORD,
+    TL_MONTHS_PER_YEAR, TL_NOTE_DEADLINE_STEPS, TL_NOTE_FULL_STEPS,
 )
 from mart.scheme import FedTimes, OpsHitIn, PathwaysIn, SpanIn, StepSpanIn, TimelineIn, TotalIn  # 同上
 from mart.scheme import (
@@ -8385,7 +8387,19 @@ def timeline_of(x: TimelineIn) -> dict | None:
 
 
 def step_span_of(x: StepSpanIn) -> dict:
-    """一步 → 时长(按步骤词分派;没有对应数据的记 unknown)。"""
+    """一步 → 时长(按步骤词分派;没有对应数据的记 unknown)。
+    2026-10-12 补全通道:先看这一步直接登的时长(dur / ptime);再按步骤词分派;分派算不出(unknown)再认事实句式兜底(note_span_of)。"""
+    stated = stated_step_span_of(x)
+    if stated is not None:
+        return stated
+    span = dispatched_span_of(x)
+    if span[TL_KIND] == TL_UNKNOWN:
+        return note_span_of(x.step)
+    return span
+
+
+def dispatched_span_of(x: StepSpanIn) -> dict:
+    """按步骤词分派的那一层(2026-10-12 自 step_span_of 拆出,逐行照旧)。"""
     name = x.step[TL_K_STEP]
     if x.step.get(TL_K_NONE) or name in TL_NONE_STEPS:
         return to_span(SpanIn(kind=TL_NONE, unit=None, lo=0, hi=0))
@@ -8399,6 +8413,47 @@ def step_span_of(x: StepSpanIn) -> dict:
         return review_span_of(x)
     if name == TL_PR_STEP:
         return pr_span_of(x.ctx)
+    return note_span_of(x.step)
+
+
+def stated_step_span_of(x: StepSpanIn) -> dict | None:
+    """2026-10-12 补全通道(Frank「都接不行吗」):这一步直接登了时长 —— dur(官方原句给的,自校已核)照用;
+    ptime(IRCC 处理时长的类键:联邦经济类 / 家庭团聚 / 难民 / 魁北克)读联邦时长表;都没有给 None,走原分派。"""
+    d = x.step.get(TL_K_DUR)
+    if isinstance(d, dict):
+        return to_span(SpanIn(kind=str(d[TL_KIND]), unit=d.get(TL_UNIT), lo=d.get(TL_MIN), hi=d.get(TL_MAX)))
+    key = x.step.get(TL_K_PTIME)
+    if key is None:
+        return None
+    months = x.ctx.fed.get(key)
+    if months is None:
+        return to_span(SpanIn(kind=TL_UNKNOWN, unit=None, lo=None, hi=None))
+    return to_span(SpanIn(kind=TL_ABOUT, unit=TL_MONTH, lo=months, hi=months))
+
+
+def note_span_of(step: dict) -> dict:
+    """新步骤词(创业 / 联邦 / 家庭…)没有专门算法时,只认两种事实句式(中文模板):「收到 / 拿到…后 {n} 天 / 个月内递 / 办…」
+    记最长 N;「满 {n} 个月 / 年」记定长。别的句子(年满 18 岁、获批后 14 天内签协议)不拿来算,记本站未收录。
+    同日收窄(核数时撞见「境内配偶担保 至少 86 个月」:担保资格那步「满 5 年才能再担保」被当成了时长):期限句式只用在递交 / 办证类步骤
+    (TL_NOTE_DEADLINE_STEPS),定长句式只用在经营 / 工作 / 居住类步骤(TL_NOTE_FULL_STEPS)。"""
+    name = step.get(TL_K_STEP)
+    for f in step.get(TL_K_FACTS) or []:
+        n = fact_n_of(f)
+        text = ((f.get(TL_K_TEXT) or {}).get(TL_ZH) or "")
+        if n is None or text == "":
+            continue
+        m = TL_NOTE_DEADLINE_RE.search(text)
+        if m is not None and name in TL_NOTE_DEADLINE_STEPS:
+            unit = TL_DAY
+            if m.group(1) == TL_NOTE_MONTH_WORD:
+                unit = TL_MONTH
+            return to_span(SpanIn(kind=TL_UPTO, unit=unit, lo=0, hi=n))
+        m = TL_NOTE_FULL_RE.search(text)
+        if m is not None and name in TL_NOTE_FULL_STEPS:
+            months = n
+            if m.group(1) == TL_NOTE_YEAR_WORD:
+                months = n * TL_MONTHS_PER_YEAR
+            return to_span(SpanIn(kind=TL_EXACT, unit=TL_MONTH, lo=months, hi=months))
     return to_span(SpanIn(kind=TL_UNKNOWN, unit=None, lo=None, hi=None))
 
 

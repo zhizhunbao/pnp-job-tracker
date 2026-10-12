@@ -46,6 +46,7 @@ from pathways.constants import (  # 2026-10-11 申请步骤分区筛选批 1(身
     K_SCHOOL_PROV, K_SCHOOLS, SCHOOL_KINDS, SCHOOL_MINS, SCHOOL_PROVS,
 )
 from pathways.scheme import FitCellIn  # 同上
+from pathways.constants import BAD_DUR_TPL, DUR_KINDS, DUR_UNITS, K_DUR, K_DUR_KIND, K_DUR_UNIT  # 2026-10-12 步骤时长 dur
 
 # =========================================================================
 # 1. 入口:读 pnp 产物 → 自校 → 对得上才写产物
@@ -309,7 +310,22 @@ def one_step_problems_of(x: StepIn) -> list[str]:
         out.append(BAD_WHO_TPL.format(key=x.key, i=x.i, who=x.step[K_WHO]))
     for fact in x.step[K_FACTS]:
         out.extend(fact_problems_of(FactIn(step=x, fact=fact)))
+    if K_DUR in x.step:
+        out.extend(dur_problems_of(x))
     return out
+
+
+def dur_problems_of(x: StepIn) -> list[str]:
+    """2026-10-12 补全通道:这一步登的时长(dur)—— 形 / 单位在词表里,原句逐字核得上出处页(核法同事实行)。"""
+    d = x.step[K_DUR]
+    if d.get(K_DUR_KIND) not in DUR_KINDS or d.get(K_DUR_UNIT) not in DUR_UNITS:
+        return [BAD_DUR_TPL.format(key=x.key, i=x.i, dur=d)]
+    page = page_text_of(PageIn(url=d.get(K_URL, EMPTY), pages=x.pages))
+    if page is None:
+        return [PAGE_MISSING_TPL.format(key=x.key, i=x.i, fact=K_DUR, url=d.get(K_URL, EMPTY))]
+    if WS_RE.sub(EMPTY, d.get(K_QUOTE, EMPTY)) not in page or d.get(K_QUOTE, EMPTY) == EMPTY:
+        return [QUOTE_MISSING_TPL.format(key=x.key, i=x.i, fact=K_DUR, url=d.get(K_URL, EMPTY))]
+    return []
 
 
 def fact_problems_of(x: FactIn) -> list[str]:
