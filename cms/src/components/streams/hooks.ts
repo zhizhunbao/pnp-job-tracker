@@ -9,12 +9,9 @@
  */
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
-import { KIND_KEY_HEAD, LEN_KEY_HEAD, TEXT_NONE } from './constants'
-import {
-  applyStartProv, applyStartSteps, filterOf, makeAddEdu, makeClearEdu, makeClearWho, makeEduPickOf, makeEduProvLabel,
-  makeEduRemoveOf, makeLabelOf, makeProvPickOf, makeStepsProvPickOf, makeWhoPickOf,
-} from './functions'
-import type { StepsPanel, StepsState, StreamsPanel } from './types'
+import { TEXT_NONE } from './constants'
+import { applyStartProv, applyStartStepsProv, makeProvPickOf } from './functions'
+import type { StreamsPanel } from './types'
 
 /**
  * 「通道与门槛」页整机:取词函数、界面语言、当前省份与逐省手柄。
@@ -33,34 +30,17 @@ export function useStreams(): StreamsPanel {
 }
 
 /**
- * 「申请步骤」页整机(2026-10-11 申请步骤分区筛选批 1;设计 docs/design/资讯/申请步骤-分区筛选-20261011.md):
- * 取词函数、界面语言、筛选状态(省份含「全部省份」/ 身份 / 教育经历,整份跟着地址走)与各手柄。
- * 挂载时认一次地址;不按时区预选省份(Frank「省份 可能 不需要选」)。
+ * 「申请步骤」页整机(2026-10-11 申请步骤分区筛选批 1;2026-10-12 Frank「去掉其他筛选,只保留省份切换」后只剩省份):
+ * 取词函数、界面语言、当前省份(含 all = 全部省份)与逐省手柄;挂载时认一次地址,不按时区预选。
  * @returns 机器面板。
  */
-export function useSteps(): StepsPanel {
+export function useSteps(): StreamsPanel {
   const [lang, , t] = useLang()
-  const [s, setS] = useState<StepsState>({ prov: TEXT_NONE, who: TEXT_NONE, edu: [] })
+  const [prov, setProv] = useState(TEXT_NONE)
 
   useEffect(function presetFromUrl() {
-    applyStartSteps({ setS })
+    applyStartStepsProv({ setProv })
   }, [])
 
-  const x = { s, setS }
-  return {
-    t,
-    lang,
-    s,
-    filter: filterOf(s),
-    provPickOf: makeStepsProvPickOf(x),
-    whoPickOf: makeWhoPickOf(x),
-    clearWho: makeClearWho(x),
-    eduPickOf: makeEduPickOf(x),
-    addEdu: makeAddEdu(x),
-    eduRemoveOf: makeEduRemoveOf(x),
-    clearEdu: makeClearEdu(x),
-    eduProvLabel: makeEduProvLabel(t),
-    eduKindLabel: makeLabelOf({ t, head: KIND_KEY_HEAD }),
-    eduLenLabel: makeLabelOf({ t, head: LEN_KEY_HEAD }),
-  }
+  return { t, lang, prov, provPickOf: makeProvPickOf({ setProv }) }
 }

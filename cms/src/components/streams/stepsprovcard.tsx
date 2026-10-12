@@ -19,11 +19,11 @@ import css from './streams.module.css'
  */
 export function StepsProvCard({ p }: StepsCardIn) {
   const chips = [
-    <Chip key={PROV_ALL} onClick={p.provPickOf(PROV_ALL)} active={p.s.prov === PROV_ALL}>{p.t(K_ALL_PROV)}</Chip>,
+    <Chip key={PROV_ALL} onClick={p.provPickOf(PROV_ALL)} active={p.prov === PROV_ALL}>{p.t(K_ALL_PROV)}</Chip>,
   ]
   for (const code of STREAM_PROVS) {
     chips.push(
-      <Chip key={code} onClick={p.provPickOf(code)} active={p.s.prov === code}>{p.t(PROV_KEY_HEAD + code)}</Chip>,
+      <Chip key={code} onClick={p.provPickOf(code)} active={p.prov === code}>{p.t(PROV_KEY_HEAD + code)}</Chip>,
     )
   }
   return (

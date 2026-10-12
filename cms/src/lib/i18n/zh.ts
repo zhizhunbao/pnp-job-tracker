@@ -1329,12 +1329,9 @@ export const siteZh = {
   'streams.title': '各省通道与门槛', 'streams.bnSub': '各省现行通道与官方门槛',
   'steps.title': '各省申请步骤', 'steps.bnSub': '各省现行通道的官方申请步骤',
   // 2026-10-11 申请步骤分区筛选批 1(Frank「可以,开始做第一批」;设计 docs/design/资讯/申请步骤-分区筛选-20261011.md):省份 / 身份 / 教育经历三张分区卡
-  'stepsf.provHead': '省份', 'stepsf.allProv': '全部省份', 'stepsf.whoHead': '身份', 'stepsf.who.student': '在读留学生',
-  'stepsf.who.pgwp': '毕业工签', 'stepsf.who.lmia': '雇主工签(LMIA)', 'stepsf.who.open': '开放工签', 'stepsf.who.abroad': '人在国外',
-  'stepsf.who.ee': '已有 EE 档案', 'stepsf.eduHead': '教育经历', 'stepsf.eduWhere': '院校所在地', 'stepsf.eduKind': '公立或私立',
-  'stepsf.kind.public': '公立', 'stepsf.kind.private': '私立', 'stepsf.eduLen': '课程时长', 'stepsf.len.y1': '一年制',
-  'stepsf.len.y2': '两年制', 'stepsf.len.y3': '三年以上', 'stepsf.len.master': '硕士及以上', 'stepsf.abroad': '国外',
-  'stepsf.addRow': '+ 再加一段', 'stepsf.clear': '清空', 'stepsf.remove': '删除这一段', 'stepsf.empty': '没有符合条件的通道',
+  // 2026-10-12 Frank「去掉其他筛选,只保留省份切换」:身份 / 教育经历两张卡撤(筛选挪「我的通道」),只留省份卡与组头词条
+  'stepsf.provHead': '省份', 'stepsf.allProv': '全部省份',
+  'stepsf.empty': '没有符合条件的通道',
   'stepsf.count': '{n} 条',
   'news.sub': '联邦 IRCC 与 7 省官方发布聚合 · 每 12 小时刷新 · 只收官方源',
   'news.federal': '联邦 IRCC',

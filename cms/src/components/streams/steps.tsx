@@ -7,6 +7,8 @@
  * 2026-10-11 申请步骤分区筛选批 1(Frank「可以,开始做第一批」;设计 docs/design/资讯/申请步骤-分区筛选-20261011.md):省份胶囊行换成
  * 三张分区卡 —— 省份(多一枚「全部省份」,进页默认它)/ 身份 / 教育经历;状态机器换成 useSteps(整份筛选跟着地址走)。
  * 全部省份时九省各挂一份步骤正文(group,卡前出省名组头,一条不剩的省整组不出)。工作经历卡归下一小批(要先在数据层给通道算职业)。
+ * 2026-10-12 Frank「要不这个只作为咨询列出所有通道」「去掉其他筛选,只保留省份切换」:身份 / 教育经历两张卡撤,本页只剩省份卡,
+ * 步骤正文一律不筛(STEPS_NO_FILTER);筛选挪「我的」模块的「我的通道」。
  *
  * @author Frank
  * @time 2026-10-03 23:44:58
@@ -17,29 +19,27 @@ import { PnpProvSteps } from '@/components/pnp'
 import { Shell } from '@/components/shell'
 import { SectionTabs } from '@/components/tabs'
 import {
-  BANNER_MODULE, PROV_ALL, SHELL_TOP, STREAM_PROVS, TABS_TONE, TEXT_NONE, URL_NEWS, URL_STEPS, URL_STREAMS,
-  URL_TIMELINE,
+  BANNER_MODULE, PROV_ALL, SHELL_TOP, STEPS_NO_FILTER, STREAM_PROVS, TABS_TONE, TEXT_NONE, URL_NEWS, URL_STEPS,
+  URL_STREAMS, URL_TIMELINE,
 } from './constants'
 import { provHrefOf, streamsProvOf } from './functions'
 import { useSteps } from './hooks'
-import { StepsEduCard } from './stepseducard'
 import { StepsProvCard } from './stepsprovcard'
-import { StepsWhoCard } from './stepswhocard'
 
 /**
- * 「申请步骤」整块视图:页头 + 二级导航 → 省份 / 身份 / 教育经历三张筛选卡 → 步骤卡(一省或九省分组)。
+ * 「申请步骤」整块视图:页头 + 二级导航 → 省份卡 → 步骤卡(一省或九省分组)。
  *
  * @returns 正文(Shell 轨往下)。
  */
 export function Steps() {
   const p = useSteps()
   const provs = []
-  if (p.s.prov === PROV_ALL) {
+  if (p.prov === PROV_ALL) {
     for (const code of STREAM_PROVS) {
-      provs.push(<PnpProvSteps key={code} lang={p.lang} province={code} filter={p.filter} group />)
+      provs.push(<PnpProvSteps key={code} lang={p.lang} province={code} filter={STEPS_NO_FILTER} group />)
     }
-  } else if (p.s.prov !== TEXT_NONE) {
-    provs.push(<PnpProvSteps key={p.s.prov} lang={p.lang} province={p.s.prov} filter={p.filter} group={false} />)
+  } else if (p.prov !== TEXT_NONE) {
+    provs.push(<PnpProvSteps key={p.prov} lang={p.lang} province={p.prov} filter={STEPS_NO_FILTER} group={false} />)
   }
   return (
     <Shell top={SHELL_TOP}>
@@ -52,16 +52,10 @@ export function Steps() {
         tabs={[
           { href: URL_NEWS, label: p.t('tl.tabNews') },
           { href: URL_TIMELINE, label: p.t('tl.tabDraws') },
-          { href: provHrefOf({ base: URL_STREAMS, prov: streamsProvOf(p.s.prov) }), label: p.t('tl.tabStreams') },
+          { href: provHrefOf({ base: URL_STREAMS, prov: streamsProvOf(p.prov) }), label: p.t('tl.tabStreams') },
           { href: URL_STEPS, label: p.t('tl.tabSteps'), active: true },
         ]} />
-      {p.s.prov !== TEXT_NONE && (
-        <>
-          <StepsProvCard p={p} />
-          <StepsWhoCard p={p} />
-          <StepsEduCard p={p} />
-        </>
-      )}
+      {p.prov !== TEXT_NONE && <StepsProvCard p={p} />}
       {provs}
     </Shell>
   )

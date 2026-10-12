@@ -1206,12 +1206,8 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'streams.title': '주정부 스트림과 요건', 'streams.bnSub': '주별 현행 스트림과 공식 요건',
   'steps.title': '주정부 신청 절차', 'steps.bnSub': '주별 현행 스트림의 공식 신청 절차',
   // 2026-10-11 申请步骤分区筛选批 1(Frank「可以,开始做第一批」;设计 docs/design/资讯/申请步骤-分区筛选-20261011.md):省份 / 身份 / 教育经历三张分区卡
-  'stepsf.provHead': '주', 'stepsf.allProv': '전체 주', 'stepsf.whoHead': '신분', 'stepsf.who.student': '재학 중인 유학생',
-  'stepsf.who.pgwp': '졸업 후 취업비자(PGWP)', 'stepsf.who.lmia': '고용주 지정 비자(LMIA)', 'stepsf.who.open': '오픈 워크퍼밋',
-  'stepsf.who.abroad': '해외 거주', 'stepsf.who.ee': 'Express Entry 프로필 보유', 'stepsf.eduHead': '학력', 'stepsf.eduWhere': '학교 소재지',
-  'stepsf.eduKind': '공립 또는 사립', 'stepsf.kind.public': '공립', 'stepsf.kind.private': '사립', 'stepsf.eduLen': '과정 기간',
-  'stepsf.len.y1': '1년제', 'stepsf.len.y2': '2년제', 'stepsf.len.y3': '3년 이상', 'stepsf.len.master': '석사 이상',
-  'stepsf.abroad': '해외', 'stepsf.addRow': '+ 하나 더 추가', 'stepsf.clear': '지우기', 'stepsf.remove': '삭제',
+  // 2026-10-12 Frank「去掉其他筛选,只保留省份切换」:身份 / 教育经历两张卡撤(筛选挪「我的通道」),只留省份卡与组头词条
+  'stepsf.provHead': '주', 'stepsf.allProv': '전체 주',
   'stepsf.empty': '조건에 맞는 경로가 없습니다', 'stepsf.count': '{n}개',
   'news.sub': '연방 IRCC 및 7개 주 공식 발표 · 12시간마다 갱신 · 공식 출처만',
   'news.federal': '연방 IRCC',

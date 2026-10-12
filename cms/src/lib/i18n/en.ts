@@ -1244,14 +1244,9 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'streams.title': 'PNP streams & requirements', 'streams.bnSub': 'Current streams and official requirements by province',
   'steps.title': 'PNP application steps', 'steps.bnSub': 'Official application steps for current streams by province',
   // 2026-10-11 申请步骤分区筛选批 1(Frank「可以,开始做第一批」;设计 docs/design/资讯/申请步骤-分区筛选-20261011.md):省份 / 身份 / 教育经历三张分区卡
-  'stepsf.provHead': 'Province', 'stepsf.allProv': 'All provinces', 'stepsf.whoHead': 'Status',
-  'stepsf.who.student': 'Current student', 'stepsf.who.pgwp': 'PGWP', 'stepsf.who.lmia': 'LMIA work permit',
-  'stepsf.who.open': 'Open work permit', 'stepsf.who.abroad': 'Outside Canada', 'stepsf.who.ee': 'Express Entry profile',
-  'stepsf.eduHead': 'Education', 'stepsf.eduWhere': 'School location', 'stepsf.eduKind': 'Public or private',
-  'stepsf.kind.public': 'Public', 'stepsf.kind.private': 'Private', 'stepsf.eduLen': 'Program length',
-  'stepsf.len.y1': '1 year', 'stepsf.len.y2': '2 years', 'stepsf.len.y3': '3+ years',
-  'stepsf.len.master': 'Master\'s or higher', 'stepsf.abroad': 'Outside Canada', 'stepsf.addRow': '+ Add another',
-  'stepsf.clear': 'Clear', 'stepsf.remove': 'Remove', 'stepsf.empty': 'No streams match these filters',
+  // 2026-10-12 Frank「去掉其他筛选,只保留省份切换」:身份 / 教育经历两张卡撤(筛选挪「我的通道」),只留省份卡与组头词条
+  'stepsf.provHead': 'Province', 'stepsf.allProv': 'All provinces',
+  'stepsf.empty': 'No streams match these filters',
   'stepsf.count': '{n} streams',
   'news.sub': 'Official releases from IRCC and 7 provinces, aggregated · refreshed every 12 hours · official sources only',
   'news.federal': 'Federal IRCC',
