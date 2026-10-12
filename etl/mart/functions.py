@@ -300,6 +300,8 @@ from mart.constants import (  # 2026-09-28 缺数据修复批:待修清单(Frank
 from mart.scheme import MartPendingTest, MissingIn, PendingRowIn  # 同上
 from mart.scheme import HeldSplitIn, HeldSplitOut  # 同日晚接闸(Frank「确认,下线吧」)
 from mart.scheme import AddrProvIn  # 2026-10-11 省码对地址(Frank「数据问题也修」)
+from mart.scheme import StrayCityIn  # 同日流浪城市名(Frank「修」)
+from mart.constants import PRINT_STRAY_CITY_TPL, STRAY_CITY_ELSEWHERE_MIN, STRAY_CITY_HERE_MAX  # 同上
 from mart.constants import ADDR_CITY_PROV_RE, CITY_FOLD_RE, POSTAL_LETTER_PROVS, PRINT_CITY_UNIFY_TPL, UNICODE_NFKD  # 同上
 from mart.constants import DEDUP_CITY_KEY_TPL  # 同日晚展示去重加城市(Frank 勾「检查,不全的下线」)
 from mart.constants import ASSESSING_DATE_RE, METRIC_ASSESSING_DATE  # 2026-10-02 申请步骤批 2(AB 审理游标日期)
@@ -6697,6 +6699,9 @@ def clean_job_locations() -> None:
     backfilled = backfill_provinces(posts)
     if backfilled:
         say(PRINT_LOC_BACKFILL_TPL.format(n=backfilled))
+    strays = fix_stray_cities(posts)
+    if strays:
+        say(PRINT_STRAY_CITY_TPL.format(n=strays))
     paths.write_json(paths.WriteJsonIn(path=OUT_JOBBANK, payload=posts, indent=INDENT_2))
     dist: Counter = Counter()
     for job in posts:
@@ -6859,6 +6864,50 @@ def addr_prov_of(x: AddrProvIn) -> str:
     if addr_prov != x.prov and x.city and x.city.lower() in seg.lower():
         return addr_prov
     return x.prov
+
+
+def fix_stray_cities(posts: list) -> int:
+    """流浪城市名改用地址城市(2026-10-11 Frank「修」)。
+
+    列表页「Saint-Hyacinthe (AB)」:省码和地址「Calgary, AB T3N 0A4」一致(addr_prov_of 管不到),
+    市名却是魁省的。判据(三条都满足才改,全量只命中这一帖):地址省码经邮编印证且等于帖子省码;
+    地址那一段是干净市名(无门牌)且不含列表市名;列表市名在本省至多 STRAY_CITY_HERE_MAX 帖、
+    在别的某省至少 STRAY_CITY_ELSEWHERE_MIN 帖。返回改写的帖数。
+    """
+    counts: dict = defaultdict(Counter)
+    for job in posts:
+        key = (job.get(K_CITY_RAW) or "").strip().lower()
+        if key:
+            counts[key][job.get(K_PROVINCE) or ""] += 1
+    fixed = 0
+    for job in posts:
+        city = stray_city_of(StrayCityIn(job=job, counts=counts))
+        if city:
+            job[K_CITY] = city
+            fixed += 1
+    return fixed
+
+
+def stray_city_of(x: StrayCityIn) -> str:
+    """一帖的流浪城市名判定:是就给地址里的市名,不是给空串。"""
+    raw = (x.job.get(K_CITY_RAW) or "").strip()
+    prov = x.job.get(K_PROVINCE) or ""
+    m = ADDR_CITY_PROV_RE.search((x.job.get(K_ADDRESS) or "").strip())
+    if not raw or m is None:
+        return ""
+    seg = WS_RE.sub(SPACE, m.group(1).strip())
+    if m.group(2) != prov or prov not in POSTAL_LETTER_PROVS.get(m.group(3).upper(), ()):
+        return ""
+    if not seg or DIGIT_RE.search(seg) or raw.lower() in seg.lower():
+        return ""
+    by_prov = x.counts[raw.lower()]
+    elsewhere = 0
+    for p, n in by_prov.items():
+        if p != prov and n > elsewhere:
+            elsewhere = n
+    if by_prov[prov] <= STRAY_CITY_HERE_MAX and elsewhere >= STRAY_CITY_ELSEWHERE_MIN:
+        return seg
+    return ""
 
 
 def backfill_provinces(posts: list) -> int:

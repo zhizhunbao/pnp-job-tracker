@@ -2939,6 +2939,17 @@ class JbLocIn:
 
 
 @dataclass
+class StrayCityIn:
+    """stray_city_of() 入参:一帖与全量「市名 → 各省出现次数」(2026-10-11)。"""
+
+    job: dict
+    """地点步洗过的帖子行(省码已对过地址)。"""
+
+    counts: dict
+    """city_raw 小写 → Counter(省码 → 帖数)。"""
+
+
+@dataclass
 class AddrProvIn:
     """addr_prov_of() 入参:列表页省码、市名与详情页地址(2026-10-11)。"""
 

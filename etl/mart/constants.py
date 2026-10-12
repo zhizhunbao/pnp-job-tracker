@@ -4056,6 +4056,13 @@ CITY_FOLD_RE = re.compile(r"[\s\-.'’]+")
 UNICODE_NFKD = "NFKD"
 """同城比较先拆重音(é → e + 重音符,再丢重音符)。"""
 
+STRAY_CITY_HERE_MAX = 2
+"""流浪城市名判据之一:这个市名在本省全量帖子里最多出现几次(2026-10-11 Frank「修」:
+Saint-Hyacinthe (AB) 一帖,地址 Calgary, AB T3N 0A4;全量 20 万帖按本判据只命中这一条)。"""
+
+STRAY_CITY_ELSEWHERE_MIN = 10
+"""判据之二:同名在别的某一省至少出现几次(Saint-Hyacinthe 在 QC 680 次)。"""
+
 COUNTRY_CANADA = "Canada"
 """清洗后 country 恒为它(全站只收加拿大岗)。"""
 
@@ -4131,6 +4138,9 @@ PRINT_LOC_BACKFILL_TPL = "Job Bank: 省份兜底补全 {n} 帖(同名城市唯�
 
 PRINT_CITY_UNIFY_TPL = "同城异写归一 {n} 岗(同省按多数写法)。"
 """汇装时同城异写归一命中才打的一行(2026-10-11)。"""
+
+PRINT_STRAY_CITY_TPL = "Job Bank: 流浪城市名改用地址城市 {n} 帖。"
+"""流浪城市名纠正命中才打的一行(2026-10-11)。"""
 
 PRINT_LOC_DONE_TPL = "Job Bank: structured {n} postings across {provs} provinces {dist}."
 """地点清洗收尾一行。"""
