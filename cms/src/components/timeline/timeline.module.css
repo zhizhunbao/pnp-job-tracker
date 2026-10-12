@@ -79,9 +79,9 @@
   display: block;
 
   /*
-   * 给右上角名次让位。
+   * 不再整块让位(2026-10-12:数字格要这 30px,放得下英文格名一个整词);让位只给名字那一行,见 .names。
    */
-  padding-right: 30px;
+  padding-right: 0;
 }
 
 /*
@@ -167,6 +167,11 @@
    * 长名字可以收窄折行。
    */
   min-width: 0;
+
+  /*
+   * 给右上角名次让位(名次只压在名字这一行)。
+   */
+  padding-right: 30px;
 }
 
 /*
@@ -224,9 +229,10 @@
   display: grid;
 
   /*
-   * 一行三格等宽(英文格名「Nominated」一个词就要 60px 上下,第一格加宽会把后两格挤到放不下一个词)。
+   * 一行三格:第一格按内容定宽、后两格均分(英文格名「Nominated」一个词就要 60px 上下,第一格固定加宽会把后两格挤到
+   * 放不下一个词;三格等宽又让「2026 永居目标」折成两行 —— 2026-10-12 Frank「不要换行」)。
    */
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: max-content repeat(2, minmax(0, 1fr));
 
   /*
    * 行距 8、列距 10。
