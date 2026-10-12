@@ -684,6 +684,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpgate.tier': 'TEER {teers}: {line}', 'pnpgate.tierHead': 'TEER {teers}:', 'pnpgate.langEach': '영역별 CLB {n}',
   'pnpgate.langNone': '어학 시험 불필요', 'pnpgate.langNoc': '지정 직업: 영역별 CLB {n}', 'pnpgate.langByOcc': '직업별: CLB {min}–{max}',
   'pnpgate.nocList': 'NOC {list}', 'pnpgate.nocExcept': 'NOC {list}({except} 제외)', 'pnpgate.noReqs': '요건 미수록',
+  // 2026-10-12 Frank「已暂停 就显示已暂停」:暂停的通道门槛卡只写这一句
+  'pnpgate.paused': '일시 중단',
   'pnpgate.exp': '풀타임 경력 {n}개월', 'pnpgate.expWin': '최근 {w}개월 내 풀타임 경력 {n}개월',
   'pnpgate.expTenure': '현 고용주에서 풀타임 {n}개월', 'pnpgate.expLocal': '또는 최근 {w}개월 내 {prov}에서 {n}개월',
   'pnpgate.eeProfile': 'Express Entry 프로필', 'pnpgate.eeProgram': 'CEC, FSW 또는 FST 충족', 'pnpgate.crs': 'CRS ≥ {n}',

@@ -709,6 +709,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpgate.langNone': 'No language test required', 'pnpgate.langNoc': 'Listed occupations: CLB {n} in each skill',
   'pnpgate.langByOcc': 'By occupation: CLB {min}–{max}', 'pnpgate.nocList': 'NOC {list}',
   'pnpgate.nocExcept': 'NOC {list} (except {except})', 'pnpgate.noReqs': 'Requirements not yet collected',
+  // 2026-10-12 Frank「已暂停 就显示已暂停」:暂停的通道门槛卡只写这一句
+  'pnpgate.paused': 'Paused',
   'pnpgate.exp': '{n} months of full-time experience',
   'pnpgate.expWin': '{n} months of full-time experience (within the last {w} months)',
   'pnpgate.expTenure': '{n} months full-time with your current employer',

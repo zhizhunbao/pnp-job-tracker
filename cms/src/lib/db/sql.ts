@@ -1948,11 +1948,12 @@ export const DIMS_PNP_DRAWS = `SELECT province, kind, draw_date AS "drawDate", s
  * 2026-10-02 申请步骤批 1(Frank「这个是不是弹框也要加,并且加上点击啊」):多取 hasSteps(这条通道登没登申请步骤)—— 格子能不能点
  * 把「登了步骤」也算有卡(萨省现有工签没登门槛,原先格子与职位页移民相关卡那一行不可点)。步骤本体不进首屏;走 to_jsonb 取,
  * 生产还没加 steps 列时取到 null 当没有;加了列、seed 还没灌的旧行是 JSON null,先判是不是数组再数,首屏不挂。
+ * 2026-10-12 Frank「已暂停 就显示已暂停」:多取 status(暂停的通道门槛卡写已暂停)。
  */
 export const DIMS_PATHWAYS = `SELECT key, province, program, board_label AS "boardLabel", is_default AS "isDefault",
        draw_streams AS "drawStreams", req_streams AS "reqStreams", quota_key AS "quotaKey", official_name AS "officialName",
        plain_zh AS "plainZh", plain_ko AS "plainKo", job_linked AS "jobLinked", tags, teers, nocs, employers,
-       occ_labels AS "occLabels", url,
+       occ_labels AS "occLabels", url, status,
        CASE WHEN jsonb_typeof(to_jsonb(p) -> 'steps') = 'array'
          THEN jsonb_array_length(to_jsonb(p) -> 'steps') > 0 ELSE false END AS "hasSteps"
      FROM pathways p WHERE status <> 'closed' ORDER BY seq`

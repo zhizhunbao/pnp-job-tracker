@@ -2506,3 +2506,8 @@ export const GROUP_KEY_HEAD = 'pnp.grp.'
  * 补全通道门槛清单的类别词条键头(拼类别;2026-10-12)。
  */
 export const GATE_FACTOR_HEAD = 'gatef.'
+
+/**
+ * 通道状态:已暂停(门槛卡只写已暂停,不列门槛;2026-10-12 Frank「已暂停 就显示已暂停」)。
+ */
+export const STATUS_PAUSED = 'paused'

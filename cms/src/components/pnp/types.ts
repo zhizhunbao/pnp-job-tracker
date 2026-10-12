@@ -334,6 +334,11 @@ export type PnpPathway = {
    * 登没登申请步骤(2026-10-02 申请步骤批 1;格子能不能点把它也算有卡)。
    */
   hasSteps: boolean
+
+  /**
+   * 通道状态 open / paused(2026-10-12 Frank「已暂停 就显示已暂停」)。
+   */
+  status: string
 }
 
 /**

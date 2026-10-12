@@ -23,7 +23,7 @@ import { track } from '@/lib/track'
 import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS, DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE,
   DRAWS_ALL_KEY, DRAWS_FORM_STATUS, HOST_RE, LANG_EN, LANG_KO, FACT_NOTE, NOTE_VAR_OPEN, NOTE_VAR_CLOSE,
-  GROUP_ECON, GROUP_FAMILY, GROUP_REFUGEE, PROGRAM_FAMILY, PROGRAM_REFUGEE, GATE_FACTOR_HEAD,
+  GROUP_ECON, GROUP_FAMILY, GROUP_REFUGEE, PROGRAM_FAMILY, PROGRAM_REFUGEE, GATE_FACTOR_HEAD, STATUS_PAUSED,
   MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
   K_GATE_TITLE, P_PROV, SCROLL_START, URL_HASH_HEAD, URL_KV_SEP, URL_QUERY_HEAD, URL_STEPS, URL_STREAMS,
   MONTHS_KEYS, K_TL_ABOUT, K_TL_ABOUT_DAYS, K_TL_DAYS, K_TL_MONTHS, K_TL_RANGE, K_TL_TOTAL, K_TL_TOTAL_ONE,
@@ -3691,6 +3691,10 @@ export function provStreamItemsOf(x: ProvStreamItemsIn): ProvStreamItem[] {
     if (gate.rows.length === 0 && curated != null && curated.length > 0) {
       gate.rows = curatedGateRowsOf({ t: x.t, lang: x.lang, gate: curated })
       gate.empty = TEXT_NONE
+    }
+    if (p.status === STATUS_PAUSED) {
+      gate.rows = []
+      gate.empty = x.t('pnpgate.paused')
     }
     let steps: StepsCardSpec | null = null
     let draws: DrawCard | null = null

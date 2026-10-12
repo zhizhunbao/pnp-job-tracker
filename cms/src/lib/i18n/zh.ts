@@ -742,6 +742,8 @@ export const jobsZh = {
   'pnpgate.tier': 'TEER {teers}:{line}', 'pnpgate.tierHead': 'TEER {teers}:', 'pnpgate.langEach': '每项 CLB {n}',
   'pnpgate.langNone': '不要求语言考试', 'pnpgate.langNoc': '指定职业:每项 CLB {n}', 'pnpgate.langByOcc': '按职业定:CLB {min}–{max}',
   'pnpgate.nocList': 'NOC {list}', 'pnpgate.nocExcept': 'NOC {list}({except} 除外)', 'pnpgate.noReqs': '本站未收录门槛',
+  // 2026-10-12 Frank「已暂停 就显示已暂停」:暂停的通道门槛卡只写这一句
+  'pnpgate.paused': '已暂停',
   'pnpgate.exp': '{n} 个月全职经验', 'pnpgate.expWin': '{n} 个月全职经验(近 {w} 个月内)',
   'pnpgate.expTenure': '在现雇主全职满 {n} 个月', 'pnpgate.expLocal': '或在本省 {n} 个月(近 {w} 个月内)',
   'pnpgate.eeProfile': '联邦 EE 档案', 'pnpgate.eeProgram': '符合 CEC、FSW 或 FST', 'pnpgate.crs': 'CRS ≥ {n}',
