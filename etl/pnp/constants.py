@@ -4585,13 +4585,14 @@ SKR_AGRI_LANG_LABEL_TPL = "Language score of at least CLB {n}; employers or regu
 SKR_PROBLEM_AGRI_LANG = "农业通道语言门槛没解析到(agriculture-talent-pathway 页可能改版)"
 """自校问题:农业通道语言。"""
 
-SKR_TALENT_EXP_RE = re.compile(r"If you have not been working for your supporting employer full-time for at least \w+ "
+SKR_TALENT_EXP_RE = re.compile(r"If you have not been working for your supporting employer full[- ]time for at least \w+ "
                                r"months, then you must have at least (\w+)[- ]year of work experience in your "
                                r"occupation within the last (\w+) years", re.I)
 """医疗、科技两页同一句(非 EE):「If you have not been working for your supporting employer full-time for at least six
 months, then you must have at least one-year of work experience in your occupation within the last five years.」
 —— 主档:近 5 年内本职业满 1 年(境外申请人只有这一条路;科技页另一句「If applying from inside or outside of Canada: One year
-of high-skilled related work experience in the past five years」同数)→ experience,basis=windowYears=5。"""
+of high-skilled related work experience in the past five years」同数)→ experience,basis=windowYears=5。
+2026-10-12 医疗页改写成「employer full time」(去了连字符),自校 10-05 起连红 6 天、sk-req 停在 10-01 → 两种写法都认。"""
 
 SKR_TALENT_ALT_RE = re.compile(r"If applying from in Saskatchewan: Currently working in Saskatchewan and have worked "
                                r"(\w+)[- ]months \([\d,]+ hours\) of full-time \(30\+ hours per week\) work experience "
@@ -6789,8 +6790,9 @@ SKS_MIN_PRIORITY = 4
 SKS_CAPPED_ROWS = 3
 """受限行业官方 3 个:卡车/零售/餐饮住宿。"""
 
-SKS_ALLOC_MIN_PARTS = 3
-"""配额表除 Total 外至少几档。"""
+SKS_ALLOC_MIN_PARTS = 2
+"""配额表除 Total 外至少几档。2026-10-12 3 → 2:官方把「Priority Sectors」与「Other Sectors」并成一档
+「Priority Sectors and Other Sectors」(3,946 / 5,261),表只剩两档 + Total,自校 10-02 起连红、sk-stats 停在 10-02。"""
 
 SKS_ALLOC_MIN_COLS = 3
 """配额表一行至少几格。"""
