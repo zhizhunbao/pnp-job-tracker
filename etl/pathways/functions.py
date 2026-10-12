@@ -47,6 +47,7 @@ from pathways.constants import (  # 2026-10-11 申请步骤分区筛选批 1(身
 )
 from pathways.scheme import FitCellIn  # 同上
 from pathways.constants import BAD_DUR_TPL, DUR_KINDS, DUR_UNITS, K_DUR, K_DUR_KIND, K_DUR_UNIT  # 2026-10-12 步骤时长 dur
+from pathways.constants import GATE_BAD_TPL, GATE_FACTORS, GATE_LANGS, K_GATE, K_GATE_FACTOR, K_GATE_TEXT  # 2026-10-12 申请门槛 gate
 
 # =========================================================================
 # 1. 入口:读 pnp 产物 → 自校 → 对得上才写产物
@@ -195,6 +196,7 @@ def problems_of(x: CheckIn) -> list[str]:
     out.extend(condition_problems_of(x.table))
     out.extend(step_problems_of(x.table))
     out.extend(fit_problems_of(x.table))
+    out.extend(gate_problems_of(x.table))
     for entry in x.table:
         out.extend(entry_problems_of(EntryIn(entry=entry, facts=x.facts)))
     return out
@@ -429,7 +431,7 @@ def to_pathway_row(x: RowIn) -> dict:
         "occLabels": e["occLabels"], "status": e["status"], "url": e["url"], "quote": e["quote"], "checked": e["checked"],
         "jobLinked": e.get(K_JOB_LINKED, JOB_LINKED_DEFAULT), "tags": e.get(K_TAGS, []), "teers": e.get(K_TEERS, []),
         "nocs": e.get(K_NOCS, []), "employers": e.get(K_EMPLOYERS, []), "steps": e.get(K_STEPS, []),
-        "fits": FITS.get(e["key"]),
+        "fits": FITS.get(e["key"]), "gate": e.get(K_GATE),
     }
 
 
@@ -492,3 +494,33 @@ def is_school_ok(school: dict) -> bool:
     if K_SCHOOL_MIN in school and school[K_SCHOOL_MIN] not in SCHOOL_MINS:
         return False
     return True
+
+
+def gate_problems_of(table: list) -> list[str]:
+    """2026-10-12 补全通道的申请门槛:每行类别在词表里、三语文本齐、原句逐字核得上出处页(核法同步骤事实)。"""
+    out: list[str] = []
+    pages: dict = {}
+    for entry in table:
+        i = 0
+        for row in entry.get(K_GATE) or []:
+            i += 1
+            out.extend(gate_row_problems_of(StepIn(key=entry[K_KEY], i=i, step=row, pages=pages)))
+    return out
+
+
+def gate_row_problems_of(x: StepIn) -> list[str]:
+    """一行门槛的红(借 StepIn 装:step 格放这一行)。"""
+    row = x.step
+    text = row.get(K_GATE_TEXT) or {}
+    ok = row.get(K_GATE_FACTOR) in GATE_FACTORS
+    for lang in GATE_LANGS:
+        if not text.get(lang):
+            ok = False
+    if ok is False:
+        return [GATE_BAD_TPL.format(key=x.key, i=x.i, row=row)]
+    page = page_text_of(PageIn(url=row.get(K_URL, EMPTY), pages=x.pages))
+    if page is None:
+        return [PAGE_MISSING_TPL.format(key=x.key, i=x.i, fact=K_GATE, url=row.get(K_URL, EMPTY))]
+    if row.get(K_QUOTE, EMPTY) == EMPTY or WS_RE.sub(EMPTY, row[K_QUOTE]) not in page:
+        return [QUOTE_MISSING_TPL.format(key=x.key, i=x.i, fact=K_GATE, url=row.get(K_URL, EMPTY))]
+    return []

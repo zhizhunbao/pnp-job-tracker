@@ -656,6 +656,12 @@ export const jobsZh = {
   'pnpstep.s.eligibilityCheck': '确认能否提出', 'pnpstep.s.hearing': '难民局听证', 'pnpstep.s.acceptInvite': '收邀请、接受',
   'pnpstep.s.licence': '办职业资格认可', 'pnpstep.s.invest': '投资到位', 'pnpstep.s.residence': '在魁北克住满',
   'pnpstep.s.deposit': '存启动保证金', 'pnpstep.s.prApply': '向联邦递永居', 'pnpstep.who.sponsor': '担保人',
+  // 2026-10-12 补全通道的申请门槛:门槛表没有行的通道读人工核定的门槛清单,按这些类别分组
+  'gatef.status': '身份', 'gatef.jobOffer': '雇主 offer', 'gatef.experience': '工作经验', 'gatef.language': '语言',
+  'gatef.education': '学历', 'gatef.age': '年龄', 'gatef.funds': '安家资金', 'gatef.netWorth': '净资产',
+  'gatef.investment': '投资额', 'gatef.business': '经营', 'gatef.community': '社区推荐', 'gatef.sponsor': '担保人',
+  'gatef.income': '担保人收入', 'gatef.relationship': '关系', 'gatef.protection': '保护理由', 'gatef.ineligible': '不受理',
+  'gatef.intent': '定居意向', 'gatef.other': '其他',
   // 2026-10-12 Frank「加组头」:资讯页联邦三组的组头;联邦 / 魁北克的「拿雇主 offer」
   'pnp.grp.econ': '经济类', 'pnp.grp.family': '家庭团聚', 'pnp.grp.refugee': '难民', 'pnpstep.s.jobOffer': '拿雇主 offer',
   'pnpstep.f.noFee': '不收费',

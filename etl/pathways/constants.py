@@ -2562,6 +2562,98 @@ PW_NB_CRITICAL_WORKER_PILOT = {
                   "groupe westco",
                   "imperial manufacturing",
                   "mccain foods"],
+    "gate": [
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "只能经参与雇主申请,个人不能直接申请",
+                "en": "Only through a participating employer; no direct applications",
+                "ko": "참여 고용주를 통해서만 신청, 개인 직접 신청 불가"
+            },
+            "quote": "The program does not accept direct applications from interested candidates.",
+            "url": "https://www.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-critical-workers-pilot.html"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "参与雇主的全职非季节性 offer",
+                "en": "Full-time (non-seasonal) job offer from an eligible NB employer",
+                "ko": "참여 고용주의 풀타임(비계절) 잡오퍼"
+            },
+            "quote": "You must accept a genuine offer of full-time (non-seasonal) employment from an eligible New Brunswick employer who is willing to support you through the immigration process.",
+            "url": "https://www2.gnb.ca/content/dam/gnb/Corporate/Promo/Immigration/guide-to-nb-critical-worker-pilot.pdf"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 5 年内干满 1,560 小时(12 个月内)",
+                "en": "At least 1,560 hours over 12 months in the last 5 years",
+                "ko": "최근 5년 내 12개월간 1,560시간 이상 근무"
+            },
+            "quote": "In the last five years you must have worked at least 1,560 hours, over a period of 12 months.",
+            "url": "https://www2.gnb.ca/content/dam/gnb/Corporate/Promo/Immigration/guide-to-nb-critical-worker-pilot.pdf"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB / NCLC 4(四项)",
+                "en": "CLB / NCLC 4 in all four abilities",
+                "ko": "CLB / NCLC 4(4개 영역)"
+            },
+            "quote": "show you have obtained a minimum score equal to or greater than a Canadian Language Benchmark (CLB) 4 for English or Niveaux de compétence linguistique canadiens (NCLC) 4 for French in all four language abilities",
+            "url": "https://www2.gnb.ca/content/dam/gnb/Corporate/Promo/Immigration/guide-to-nb-critical-worker-pilot.pdf"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "语言不到 CLB 4 可由雇主出具证明信",
+                "en": "Below CLB 4: employer attestation letter accepted",
+                "ko": "CLB 4 미달 시 고용주 확인서로 대체"
+            },
+            "quote": "Under the terms of this pilot, if you do not have valid language test results that illustrate a minimum score equivalent to Canadian Language Benchmark (CLB) 4 in all four language components at the time of application, your New Brunswick employer must provide a signed attestation letter as part of the nomination application.",
+            "url": "https://www2.gnb.ca/content/dam/gnb/Corporate/Promo/Immigration/guide-to-nb-critical-worker-pilot.pdf"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "高中及以上(国外学历要 ECA)",
+                "en": "High school diploma or foreign equivalent (ECA)",
+                "ko": "고등학교 졸업 이상(해외 학력은 ECA)"
+            },
+            "quote": "You must, at a minimum, have a Canadian secondary (high school) diploma or a foreign high school diploma equal to a Canadian credential.",
+            "url": "https://www2.gnb.ca/content/dam/gnb/Corporate/Promo/Immigration/guide-to-nb-critical-worker-pilot.pdf"
+        },
+        {
+            "factor": "age",
+            "text": {
+                "zh": "19 岁及以上",
+                "en": "At least 19 years old",
+                "ko": "19세 이상"
+            },
+            "quote": "You must be at least 19 years of age.",
+            "url": "https://www2.gnb.ca/content/dam/gnb/Corporate/Promo/Immigration/guide-to-nb-critical-worker-pilot.pdf"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算定居 NB",
+                "en": "Genuine intention to reside in New Brunswick",
+                "ko": "NB 정착 의사"
+            },
+            "quote": "It is your responsibility to prove a genuine intention to reside in New Brunswick",
+            "url": "https://www2.gnb.ca/content/dam/gnb/Corporate/Promo/Immigration/guide-to-nb-critical-worker-pilot.pdf"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "季节性、兼职、临时工 offer 不受理",
+                "en": "Seasonal, part-time or casual job offers not eligible",
+                "ko": "계절직·파트타임·임시직 오퍼 불가"
+            },
+            "quote": "Have been offered a seasonal, part-time or casual job in New Brunswick",
+            "url": "https://www2.gnb.ca/content/dam/gnb/Corporate/Promo/Immigration/guide-to-nb-critical-worker-pilot.pdf"
+        }
+    ],
     "steps": [NBS_STEP_OFFER_CWP, NBS_STEP_EOI_CWP, NBS_STEP_POOL_CWP, NBS_STEP_APPLY_CWP,
               NBS_STEP_SETTLE_CWP, NBS_STEP_REVIEW_CWP, NBS_STEP_PR_CWP],
 }
@@ -2756,6 +2848,98 @@ PW_AB_RURAL_ENTREPRENEUR = {
     "quote": "Entrepreneurs who want to start a business or buy an existing business in a rural Alberta community can submit an Expression of Interest.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 10 年:企业主 3 年或高管 4 年",
+                "en": "Owner/manager 3 years or senior manager 4 years in past 10 years",
+                "ko": "최근 10년: 사업주 3년 또는 고위 관리자 4년"
+            },
+            "quote": "Have either a minimum 3 years of experience as an active business owner/manager or a minimum of 4 years of experience as a senior manager within the past 10 years.",
+            "url": "https://www.alberta.ca/aaip-rural-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "高中及以上(要 ECA)",
+                "en": "High school or higher with ECA",
+                "ko": "고등학교 졸업 이상(ECA)"
+            },
+            "quote": "Completed a minimum of high school equivalent to the Canadian standard with an Education Credential Assessment (ECA).",
+            "url": "https://www.alberta.ca/aaip-rural-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB / NCLC 4",
+                "en": "CLB / NCLC 4",
+                "ko": "CLB / NCLC 4"
+            },
+            "quote": "Have a minimum Canadian Language Benchmark (CLB) level of 4 for each English language skill or Niveaux de compétence linguistique canadiens (NCLC) of 4 for each French language skill",
+            "url": "https://www.alberta.ca/aaip-rural-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "netWorth",
+            "text": {
+                "zh": "净资产 30 万加元",
+                "en": "Net worth $300,000",
+                "ko": "순자산 30만 달러"
+            },
+            "quote": "Minimum net worth of $300,000.",
+            "url": "https://www.alberta.ca/aaip-rural-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "自有资金投资 10 万加元",
+                "en": "Investment $100,000 of own equity",
+                "ko": "자기자본 10만 달러 투자"
+            },
+            "quote": "Minimum investment of $100,000 from candidate’s own (and/or spouse/common-law partner) equity.",
+            "url": "https://www.alberta.ca/aaip-rural-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "新企业持股 51%,收购须 100%",
+                "en": "New business 51% ownership; succession 100%",
+                "ko": "신규 51% 지분, 인수 시 100%"
+            },
+            "quote": "Minimum ownership of 51% for a new business.",
+            "url": "https://www.alberta.ca/aaip-rural-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "新企业至少雇 1 名公民或永居全职",
+                "en": "New business creates 1 full-time job for a citizen or PR",
+                "ko": "신규 사업은 시민·영주권자 풀타임 1명 고용"
+            },
+            "quote": "New businesses must create at least one full-time job for Canadian Citizens or Permanent Residents (not including relatives).",
+            "url": "https://www.alberta.ca/aaip-rural-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "community",
+            "text": {
+                "zh": "参与社区的支持信",
+                "en": "Community Support Letter from a participating community",
+                "ko": "참여 커뮤니티 지지서"
+            },
+            "quote": "Candidates must have a Community Support Letter from a participating rural Alberta community.",
+            "url": "https://www.alberta.ca/aaip-rural-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "other",
+            "text": {
+                "zh": "须完成考察访问",
+                "en": "Exploratory visit required",
+                "ko": "사전 답사 필수"
+            },
+            "quote": "Candidates must complete an exploratory visit.",
+            "url": "https://www.alberta.ca/aaip-rural-entrepreneur-stream-eligibility"
+        }
+    ],
     "steps": [
         {
             "step": "community",
@@ -2975,6 +3159,58 @@ PW_AB_GRADUATE_ENTREPRENEUR = {
     "quote": "The Graduate Entrepreneur Stream allows the AAIP to nominate qualified international graduates from Alberta post-secondary institutions who want to establish or operate a business in Alberta to apply for permanent residence.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "education",
+            "text": {
+                "zh": "AB 公立院校两年制及以上全日制学历",
+                "en": "2+ years full-time at an Alberta publicly funded institution",
+                "ko": "AB 공립 교육기관 2년 이상 풀타임 학위·디플로마"
+            },
+            "quote": "Have completed at least two years of full-time education, resulting in a degree or diploma from an Alberta Advanced Education publicly funded post-secondary institution",
+            "url": "https://www.alberta.ca/aaip-graduate-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "递 EOI 时持有效毕业工签",
+                "en": "Valid PGWP at EOI submission",
+                "ko": "EOI 제출 시 유효한 PGWP"
+            },
+            "quote": "Have a Post-Graduation Work Permit (PGWP) issued by Immigration, Refugees and Citizenship Canada (IRCC), which is valid at the time of your Expression of Interest (EOI) submission.",
+            "url": "https://www.alberta.ca/aaip-graduate-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB / NCLC 7",
+                "en": "CLB / NCLC 7",
+                "ko": "CLB / NCLC 7"
+            },
+            "quote": "Have a minimum Canadian Language Benchmark (CLB) level of 7 for each English language skill or Niveaux de compétence linguistique canadiens (NCLC) of 7 for each French language skill",
+            "url": "https://www.alberta.ca/aaip-graduate-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "在 AB 新开或收购企业,持股 34%",
+                "en": "Start or buy an Alberta business, 34% ownership",
+                "ko": "AB 사업 신규·인수, 지분 34%"
+            },
+            "quote": "Must establish a new business or buy an existing business in Alberta with a minimum 34% ownership.",
+            "url": "https://www.alberta.ca/aaip-graduate-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "合伙人须是公民或永居",
+                "en": "Business partners must be citizens or PRs",
+                "ko": "파트너는 시민·영주권자"
+            },
+            "quote": "Business Partners must be Canadian Citizens or Permanent Residents.",
+            "url": "https://www.alberta.ca/aaip-graduate-entrepreneur-stream-eligibility"
+        }
+    ],
     "steps": [
         {
             "step": "eoi",
@@ -3150,6 +3386,98 @@ PW_AB_FOREIGN_GRADUATE_ENTREPRENEUR = {
     "quote": "The Foreign Graduate Entrepreneur Stream is an economic immigration program for qualified foreign educated graduates from outside of Canada who want to launch start-up enterprises and innovative businesses in Alberta.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "education",
+            "text": {
+                "zh": "国外学位(要 ECA)",
+                "en": "Degree from outside Canada, with ECA",
+                "ko": "해외 학위(ECA)"
+            },
+            "quote": "Completion of a degree from a post-secondary institution outside of Canada with an Educational Credential Assessment (ECA)",
+            "url": "https://www.alberta.ca/aaip-foreign-graduate-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "学位在递 EOI 前 10 年内完成",
+                "en": "Degree completed within the last 10 years",
+                "ko": "최근 10년 내 학위 취득"
+            },
+            "quote": "have been completed within the last 10 years at the time of EOI submission",
+            "url": "https://www.alberta.ca/aaip-foreign-graduate-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "6 个月全职经营或孵化器经验",
+                "en": "6 months full-time managing/owning a business or equivalent",
+                "ko": "6개월 풀타임 사업 운영 또는 동등 경력"
+            },
+            "quote": "Minimum of 6 months full-time work experience that can be a combination of actively managing or owning the business or equivalent",
+            "url": "https://www.alberta.ca/aaip-foreign-graduate-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB / NCLC 5",
+                "en": "CLB / NCLC 5",
+                "ko": "CLB / NCLC 5"
+            },
+            "quote": "Minimum Canadian Language Benchmark (CLB) level of 5 for each English language skill or Niveaux de compétence linguistique canadiens (NCLC) of 5 for each French language skill",
+            "url": "https://www.alberta.ca/aaip-foreign-graduate-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "商业计划书(含财务预测)",
+                "en": "Business plan with projected financials",
+                "ko": "재무 예측 포함 사업계획서"
+            },
+            "quote": "A business plan with projected financials.",
+            "url": "https://www.alberta.ca/aaip-foreign-graduate-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "城市持股 34%,城外 51%",
+                "en": "34% ownership urban; 51% regional",
+                "ko": "도시 34%, 지방 51% 지분"
+            },
+            "quote": "Must have a minimum of 34% ownership if the business is located in an urban centre or a minimum of 51% ownership if located in regional area outside",
+            "url": "https://www.alberta.ca/aaip-foreign-graduate-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "投资:城市 10 万,城外 5 万加元",
+                "en": "Investment $100,000 urban; $50,000 regional",
+                "ko": "투자: 도시 10만, 지방 5만 달러"
+            },
+            "quote": "The mandatory minimum investment for an urban centre is $100,000 while the mandatory minimum investment for a regional area is $50,000.",
+            "url": "https://www.alberta.ca/aaip-foreign-graduate-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "community",
+            "text": {
+                "zh": "指定机构的推荐信",
+                "en": "Recommendation letter from an AAIP-approved designated agency",
+                "ko": "지정 기관 추천서"
+            },
+            "quote": "Must have a letter of recommendation from an AAIP-approved designated agency.",
+            "url": "https://www.alberta.ca/aaip-foreign-graduate-entrepreneur-stream-eligibility"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "安家资金(按 LICO)",
+                "en": "Settlement funds (based on LICO)",
+                "ko": "정착 자금(LICO 기준)"
+            },
+            "quote": "Candidates must demonstrate that they have the funds needed to set up their business and support themselves while they are on a work permit and launching their start-up.",
+            "url": "https://www.alberta.ca/aaip-foreign-graduate-entrepreneur-stream-eligibility"
+        }
+    ],
     "steps": [
         {
             "step": "referral",
@@ -3364,6 +3692,78 @@ PW_AB_FARM = {
     "quote": "This stream is for entrepreneurs who have the financial resources and farm management experience to establish a new or purchase an existing farm in Alberta.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "business",
+            "text": {
+                "zh": "具备农场管理能力",
+                "en": "Proven farm management skills",
+                "ko": "농장 경영 능력 입증"
+            },
+            "quote": "Candidates must prove that they have farm management skills.",
+            "url": "https://www.alberta.ca/aaip-farm-stream-eligibility"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "投资 50 万加元于初级生产农场",
+                "en": "Invest $500,000 equity in a primary production farm",
+                "ko": "1차 생산 농장에 50만 달러 투자"
+            },
+            "quote": "Candidates must be able to invest a minimum of CDN $500,000 of equity in a primary production farming business in Alberta.",
+            "url": "https://www.alberta.ca/aaip-farm-stream-eligibility"
+        },
+        {
+            "factor": "netWorth",
+            "text": {
+                "zh": "净资产 50 万加元",
+                "en": "Net worth $500,000",
+                "ko": "순자산 50만 달러"
+            },
+            "quote": "Documents must be provided that show a minimum net worth of CDN $500,000, or confirmation of the ability to access a similar amount of funds from other sources.",
+            "url": "https://www.alberta.ca/aaip-farm-stream-eligibility"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "商业计划书",
+                "en": "Proposed business plan",
+                "ko": "사업계획서"
+            },
+            "quote": "Candidates must document their investment plans in a proposed business plan and submit this with their application to AAIP.",
+            "url": "https://www.alberta.ca/aaip-farm-stream-eligibility"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "在加无合法身份不受理",
+                "en": "No valid temporary resident status in Canada",
+                "ko": "캐나다 내 합법 체류 신분 없음"
+            },
+            "quote": "are a foreign national living or working in Canada with no valid temporary resident status.",
+            "url": "https://www.alberta.ca/aaip-farm-stream-eligibility"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "在外省工作居住的外劳不受理",
+                "en": "Temporary foreign workers in another province",
+                "ko": "타주 거주 임시 외국인 근로자"
+            },
+            "quote": "are working and residing as a temporary foreign worker in a province other than Alberta",
+            "url": "https://www.alberta.ca/aaip-farm-stream-eligibility"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "在加国际学生不受理",
+                "en": "International students studying in Canada",
+                "ko": "캐나다 내 유학생"
+            },
+            "quote": "are an international student studying in Canada, including students doing co-op work placements or internships as part of their study program",
+            "url": "https://www.alberta.ca/aaip-farm-stream-eligibility"
+        }
+    ],
     "steps": [
         {
             "step": "submit",
@@ -3447,6 +3847,78 @@ PW_BC_ENTREPRENEUR_BASE = {
     "quote": "Base stream is an immigration pathway for individuals who are looking to start a new business, or take over and grow an existing one.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "netWorth",
+            "text": {
+                "zh": "净资产 60 万加元",
+                "en": "Net worth $600,000",
+                "ko": "순자산 60만 달러"
+            },
+            "quote": "Must have a personal net worth of at least $600,000 CAD",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 10 年内企业主兼管理 3 年",
+                "en": "3 years as owner-manager in the last 10 years",
+                "ko": "최근 10년 내 사업주 겸 관리자 3년"
+            },
+            "quote": "Must have a minimum of 3 years experience* as a business owner-manager in the last 10 years",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "个人投资 20 万加元",
+                "en": "Personal investment $200,000",
+                "ko": "개인 투자 20만 달러"
+            },
+            "quote": "Must make an eligible personal investment of at least $200,000 CAD in the business",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "至少雇 1 名公民或永居全职",
+                "en": "Create 1 full-time job for a citizen or PR",
+                "ko": "시민·영주권자 풀타임 1명 고용"
+            },
+            "quote": "Must create at least one new full-time job for a Canadian citizen or permanent resident",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 4",
+                "en": "CLB 4",
+                "ko": "CLB 4"
+            },
+            "quote": "Must meet the minimum language requirement of Canadian Language Benchmark level 4",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "经验不够可用学位替代",
+                "en": "Post-secondary degree may substitute for business experience",
+                "ko": "경력 부족 시 학위로 대체 가능"
+            },
+            "quote": "Applicants who do not meet the BC PNP's business experience requirement may instead submit proof of an eligible education credential (i.e., post-secondary degree) for consideration.",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "新开或接手并扩大现有企业",
+                "en": "Start a new business or take over and grow an existing one",
+                "ko": "신규 창업 또는 기존 사업 인수·확장"
+            },
+            "quote": "Must establish an eligible new business, or take over and grow an existing one",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        }
+    ],
     "steps": [
         {
             "step": "businessPlan",
@@ -3657,6 +4129,98 @@ PW_BC_ENTREPRENEUR_REGIONAL = {
     "quote": "Regional stream is an immigration pathway for individuals who are looking to start a new business outside the Metro Vancouver Regional District, wishing to make a participating B.C. community their home.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "netWorth",
+            "text": {
+                "zh": "净资产 30 万加元",
+                "en": "Net worth $300,000",
+                "ko": "순자산 30만 달러"
+            },
+            "quote": "Must have a personal net worth of at least $300,000 CAD",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 5 年内企业主兼管理 3 年",
+                "en": "3 years as owner-manager in the last 5 years",
+                "ko": "최근 5년 내 사업주 겸 관리자 3년"
+            },
+            "quote": "Must have a minimum of 3 years experience* as a business owner-manager in the last 5 years",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "个人投资 10 万加元",
+                "en": "Personal investment $100,000",
+                "ko": "개인 투자 10만 달러"
+            },
+            "quote": "Must make an eligible personal investment of at least $100,000 CAD in the business",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "至少雇 1 名公民或永居全职",
+                "en": "Create 1 full-time job for a citizen or PR",
+                "ko": "시민·영주권자 풀타임 1명 고용"
+            },
+            "quote": "Must create at least one new full-time job for a Canadian citizen or permanent resident",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 4",
+                "en": "CLB 4",
+                "ko": "CLB 4"
+            },
+            "quote": "Must meet the minimum language requirement of Canadian Language Benchmark level 4",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "经验不够可用学位替代",
+                "en": "Post-secondary degree may substitute for business experience",
+                "ko": "경력 부족 시 학위로 대체 가능"
+            },
+            "quote": "Applicants who do not meet the BC PNP's business experience requirement may instead submit proof of an eligible education credential (i.e., post-secondary degree) for consideration.",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "新开企业,符合社区发展重点",
+                "en": "New business aligned with the host community’s priorities",
+                "ko": "커뮤니티 경제 우선순위에 맞는 신규 사업"
+            },
+            "quote": "Must establish an eligible new business aligned with the economic development priorities of the referring host community",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "community",
+            "text": {
+                "zh": "社区推荐表",
+                "en": "Referral form from the host community",
+                "ko": "커뮤니티 추천서"
+            },
+            "quote": "Must have a completed referral form from the referring host community",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "other",
+            "text": {
+                "zh": "须到社区考察访问",
+                "en": "Exploratory visit to the community required",
+                "ko": "커뮤니티 사전 답사 필수"
+            },
+            "quote": "Must conduct an exploratory visit to the community where the business will be established",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        }
+    ],
     "steps": [
         {
             "step": "community",
@@ -3880,6 +4444,58 @@ PW_BC_STRATEGIC_PROJECTS = {
     "quote": "The Strategic Projects stream offers a pathway to permanent residency for current employees of foreign corporations wishing to operate in British Columbia.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "公司在 BC 投资 50 万加元",
+                "en": "Company equity investment of $500,000 in B.C.",
+                "ko": "회사가 BC에 50만 달러 투자"
+            },
+            "quote": "Must make a minimum equity investment of at least $500,000 CAD",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "公司具备向 BC 拓展的能力",
+                "en": "Company ready for international expansion into B.C.",
+                "ko": "회사의 BC 진출 준비·역량"
+            },
+            "quote": "Must demonstrate investment readiness and capacity for international expansion into B.C.",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "公司经营稳定、财务良好",
+                "en": "Company well-established and in good financial standing",
+                "ko": "회사 경영 안정·재무 건전"
+            },
+            "quote": "Must demonstrate that the business is well-established and is in good financial standing",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "申请人是公司长期全职关键员工",
+                "en": "Key staff employed permanent, full-time",
+                "ko": "신청자는 회사의 정규 풀타임 핵심 직원"
+            },
+            "quote": "Must be employed in a permanent, full-time capacity and have the experience needed to actively manage the business in B.C.",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "每名关键员工配 3 个新全职岗",
+                "en": "3 new full-time jobs per key staff member",
+                "ko": "핵심 직원 1명당 풀타임 3명 신규 고용"
+            },
+            "quote": "Must create at least three new full-time job for a Canadian citizen or permanent resident for each key staff member proposed",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
+        }
+    ],
     "steps": [
         {
             "step": "visit",
@@ -4420,6 +5036,98 @@ PW_MB_INTERNATIONAL_STUDENT_ENTREPRENEUR = {
     "quote": "The International Student Entrepreneur Pilot (ISEP) provides up to 20 (per calendar year) international students who have graduated in Manitoba the opportunity to pursue entrepreneurship rather than employment.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "education",
+            "text": {
+                "zh": "MB 两年制及以上全日制学历",
+                "en": "Full-time Manitoba post-secondary program of 2+ years",
+                "ko": "MB 2년 이상 풀타임 과정 이수"
+            },
+            "quote": "You must have completed a full-time post-secondary program in Manitoba that is at least 2 years in duration.",
+            "url": "https://immigratemanitoba.com/mpnp/ies/isep/eligibility"
+        },
+        {
+            "factor": "age",
+            "text": {
+                "zh": "21–35 岁",
+                "en": "Age 21 to 35",
+                "ko": "21–35세"
+            },
+            "quote": "You must be between 21 to 35 years of age.",
+            "url": "https://immigratemanitoba.com/mpnp/ies/isep/eligibility"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB / NCLC 7",
+                "en": "CLB / NCLC 7",
+                "ko": "CLB / NCLC 7"
+            },
+            "quote": "You must have a minimum level of CLB/NCLC 7.",
+            "url": "https://immigratemanitoba.com/mpnp/ies/isep/eligibility"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "申请时持有效开放工签",
+                "en": "Valid open work permit at application",
+                "ko": "신청 시 유효한 오픈 워크퍼밋"
+            },
+            "quote": "You must have a valid open work permit* at the time of application.",
+            "url": "https://immigratemanitoba.com/mpnp/ies/isep/eligibility"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "毕业后一直住在 MB",
+                "en": "Continuously resided in Manitoba since graduation",
+                "ko": "졸업 후 계속 MB 거주"
+            },
+            "quote": "You must have continuously resided in Manitoba since graduation.",
+            "url": "https://immigratemanitoba.com/mpnp/ies/isep/eligibility"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "提名后继续住在 MB",
+                "en": "Intend to keep residing in Manitoba",
+                "ko": "지명 후 MB 계속 거주 의사"
+            },
+            "quote": "You must show the intent to continue to reside in Manitoba after nomination.",
+            "url": "https://immigratemanitoba.com/mpnp/ies/isep/eligibility"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "持股 51%",
+                "en": "51% ownership",
+                "ko": "지분 51%"
+            },
+            "quote": "You must have at least 51% ownership of the business equity.",
+            "url": "https://immigratemanitoba.com/mpnp/ies/isep/eligibility"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "提名前在 MB 亲自经营满 6 个月",
+                "en": "Manage the business in Manitoba 6 months before nomination",
+                "ko": "지명 전 MB에서 6개월 직접 경영"
+            },
+            "quote": "You must operate the business as a senior manager on a daily basis from the place of business in Manitoba for at least 6 months prior to nomination",
+            "url": "https://immigratemanitoba.com/mpnp/ies/isep/eligibility"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "12 个月 LICO 流动资金",
+                "en": "Liquid funds equal to LICO for 12 months",
+                "ko": "12개월 LICO 유동 자금"
+            },
+            "quote": "You must demonstrate liquid funds equivalent to low income cut-off (LICO) requirements for independent financial resources for a twelve-month period.",
+            "url": "https://immigratemanitoba.com/mpnp/ies/isep/eligibility"
+        }
+    ],
     "steps": [
         {
             "step": "visit",
@@ -4566,6 +5274,68 @@ PW_NS_ENTREPRENEUR = {
     "quote": "The Entrepreneur Stream is for experienced business owners or senior business managers who want to live in Nova Scotia.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "age",
+            "text": {
+                "zh": "21 岁及以上",
+                "en": "21 or older",
+                "ko": "21세 이상"
+            },
+            "quote": "be 21 years of age or older",
+            "url": "https://liveinnovascotia.com/entrepreneur"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算长住 NS 并亲自经营",
+                "en": "Live permanently in Nova Scotia and manage the business",
+                "ko": "NS 영주 및 직접 경영 의사"
+            },
+            "quote": "want to live permanently in Nova Scotia while owning and actively managing a Nova Scotia business",
+            "url": "https://liveinnovascotia.com/entrepreneur"
+        },
+        {
+            "factor": "netWorth",
+            "text": {
+                "zh": "净资产 60 万(HRM 外 40 万)加元",
+                "en": "Net worth $600,000 ($400,000 outside HRM)",
+                "ko": "순자산 60만(HRM 외 40만) 달러"
+            },
+            "quote": "have a net worth of at least $600,000 CAD ($400,000 CAD if your business is outside Halifax Regional Municipality (HRM))",
+            "url": "https://liveinnovascotia.com/entrepreneur"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "自有资金投资 15 万(HRM 外 10 万)加元",
+                "en": "Invest $150,000 own money ($100,000 outside HRM)",
+                "ko": "자기자금 15만(HRM 외 10만) 달러 투자"
+            },
+            "quote": "be able to invest at least $150,000 CAD of your own money to establish a business in Nova Scotia ($100,000 CAD if your business is outside HRM)",
+            "url": "https://liveinnovascotia.com/entrepreneur"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "企业主 3 年(持股 1/3)或高管 5 年以上",
+                "en": "Owner-manager 3 years (1/3 ownership) or senior manager 5+ years",
+                "ko": "사업주 3년(1/3 지분) 또는 고위 관리자 5년 초과"
+            },
+            "quote": "have at least 3 years’ experience actively managing and owning a business (1/3 ownership minimum) OR more than 5 years’ experience in a senior business management role",
+            "url": "https://liveinnovascotia.com/entrepreneur"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 5",
+                "en": "CLB 5",
+                "ko": "CLB 5"
+            },
+            "quote": "have a score of at least 5 on the Canadian Language Benchmark in speaking, listening, reading and writing in English or French",
+            "url": "https://liveinnovascotia.com/entrepreneur"
+        }
+    ],
     "steps": [
         {
             "step": "eoi",
@@ -4773,6 +5543,58 @@ PW_NS_INTERNATIONAL_GRADUATE_ENTREPRENEUR = {
     "quote": "The International Graduate Entrepreneur sub-criteria is for recent graduates of a Nova Scotia university or the Nova Scotia Community College.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "education",
+            "text": {
+                "zh": "NS 大学或 NSCC 两学年全日制面授学历",
+                "en": "2 academic years full-time, in-person at a NS university or NSCC",
+                "ko": "NS 대학·NSCC 2학년 풀타임 대면 과정 이수"
+            },
+            "quote": "have completed a degree or diploma after at least 2 academic years of full-time, in-person study at a university in Nova Scotia or the Nova Scotia Community College",
+            "url": "https://liveinnovascotia.com/entrepreneur"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "持有效毕业工签",
+                "en": "Valid post-graduation work permit",
+                "ko": "유효한 졸업 후 워크퍼밋"
+            },
+            "quote": "have a valid post-graduation work permit",
+            "url": "https://liveinnovascotia.com/entrepreneur"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "已在 NS 经营自己企业满 1 年(持股 33.33%)",
+                "en": "1 year running own NS business (33.33% ownership)",
+                "ko": "NS 사업 1년 직접 경영(지분 33.33%)"
+            },
+            "quote": "have at least one year’s continuous experience actively managing and owning your current Nova Scotia business (33.33% ownership minimum)",
+            "url": "https://liveinnovascotia.com/entrepreneur"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 7",
+                "en": "CLB 7",
+                "ko": "CLB 7"
+            },
+            "quote": "have a score of at least 7 on the Canadian Language Benchmark in speaking, listening, reading and writing in English or French",
+            "url": "https://liveinnovascotia.com/entrepreneur"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算长住 NS 并亲自经营",
+                "en": "Live permanently in Nova Scotia and manage the business",
+                "ko": "NS 영주 및 직접 경영 의사"
+            },
+            "quote": "want to live permanently in Nova Scotia while owning and actively managing a Nova Scotia business",
+            "url": "https://liveinnovascotia.com/entrepreneur"
+        }
+    ],
     "steps": [
         {
             "step": "runBusiness",
@@ -4913,6 +5735,98 @@ PW_NB_BUSINESS_IMMIGRATION = {
     "quote": "The New Brunswick Business Immigration stream is for entrepreneurs who want to start or buy a business in New Brunswick.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "age",
+            "text": {
+                "zh": "19–59 岁",
+                "en": "Age 19 to 59",
+                "ko": "19–59세"
+            },
+            "quote": "are between the ages of 19 to 59",
+            "url": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/nb-business-immigration-stream-guide.pdf"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 4(四项)",
+                "en": "CLB 4 in all 4 skills",
+                "ko": "CLB 4(4개 영역)"
+            },
+            "quote": "demonstrate at least a level 4 in all 4 skills according to the Canadian Language Benchmarks (CLB)",
+            "url": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/nb-business-immigration-stream-guide.pdf"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "高中及以上",
+                "en": "Canadian high school diploma or foreign equivalent",
+                "ko": "고등학교 졸업 이상"
+            },
+            "quote": "have at least a Canadian high school diploma or its foreign equivalent",
+            "url": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/nb-business-immigration-stream-guide.pdf"
+        },
+        {
+            "factor": "netWorth",
+            "text": {
+                "zh": "净资产 50 万(农业 30 万)加元",
+                "en": "Net worth $500,000 ($300,000 agriculture)",
+                "ko": "순자산 50만(농업 30만) 달러"
+            },
+            "quote": "have a personal net worth of at least CAN$500,000, or CAN$300,000 if investing in the agriculture sector",
+            "url": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/nb-business-immigration-stream-guide.pdf"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 5 年企业主或高管 2 年",
+                "en": "2 years business ownership or senior management in past 5 years",
+                "ko": "최근 5년 내 사업주·고위 관리자 2년"
+            },
+            "quote": "have at least 2 years of business ownership or senior management experience in a for-profit business within the past 5 years",
+            "url": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/nb-business-immigration-stream-guide.pdf"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "投资 15 万加元",
+                "en": "Eligible investment of $150,000",
+                "ko": "15만 달러 투자"
+            },
+            "quote": "make an eligible investment of not less than CAN$150,000 before tax",
+            "url": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/nb-business-immigration-stream-guide.pdf"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "持股 33.3%",
+                "en": "33.3% equity",
+                "ko": "지분 33.3%"
+            },
+            "quote": "control at least 33.3% equity in the business.",
+            "url": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/nb-business-immigration-stream-guide.pdf"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "在外省有房产或企业不受理",
+                "en": "Own property or a business in another province",
+                "ko": "타주에 부동산·사업 보유 시 불가"
+            },
+            "quote": "own a property and/or a business in another province or territory in Canada",
+            "url": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/nb-business-immigration-stream-guide.pdf"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "在加全日制读书期间不受理",
+                "en": "Enrolled in full-time post-secondary education in Canada",
+                "ko": "캐나다 풀타임 학생 불가"
+            },
+            "quote": "are currently enrolled in full-time post-secondary education in Canada",
+            "url": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/nb-business-immigration-stream-guide.pdf"
+        }
+    ],
     "steps": [
         {
             "step": "eoi",
@@ -5082,6 +5996,78 @@ PW_PE_WORK_PERMIT = {
     "quote": "This stream is for foreign nationals with business ownership or extensive management experience who would like to move to PEI to start their business, and eventually become a permanent resident.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "netWorth",
+            "text": {
+                "zh": "净资产 60 万加元(合法来源)",
+                "en": "Verifiable net worth $600,000",
+                "ko": "순자산 60만 달러(합법 출처)"
+            },
+            "quote": "have a minimum verifiable personal net worth of $600,000 which has been accumulated through legal and legitimate sources in your own right",
+            "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/work-permit-stream"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "高中及以上",
+                "en": "Secondary school or higher",
+                "ko": "고등학교 졸업 이상"
+            },
+            "quote": "have a minimum education of secondary school equivalent",
+            "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/work-permit-stream"
+        },
+        {
+            "factor": "age",
+            "text": {
+                "zh": "21–59 岁",
+                "en": "Age 21 to 59",
+                "ko": "21–59세"
+            },
+            "quote": "be within 21-59 years of age at the time of application",
+            "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/work-permit-stream"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "管理或企业主经验",
+                "en": "Management or business ownership experience",
+                "ko": "관리·사업주 경력"
+            },
+            "quote": "have transferable management skills and past employment or business ownership experience",
+            "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/work-permit-stream"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB / NCLC 4",
+                "en": "CLB / NCLC 4",
+                "ko": "CLB / NCLC 4"
+            },
+            "quote": "meet minimum language requirements equivalent to a CLB/NCLC 4",
+            "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/work-permit-stream"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算在 PEI 生活并亲自经营",
+                "en": "Live and work in PEI managing the business",
+                "ko": "PEI 거주·직접 경영 의사"
+            },
+            "quote": "intend to live and work in PEI while providing day-to-day active and ongoing management of your PEI-based company",
+            "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/work-permit-stream"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "落地 12 个月内投资 15 万加元",
+                "en": "Invest $150,000 within 12 months of landing",
+                "ko": "입국 12개월 내 15만 달러 투자"
+            },
+            "quote": "invest a minimum of $150,000 into the business within 12 months of landing in PEI",
+            "url": "https://www.princeedwardisland.ca/sites/default/files/publications/business_impact_application_guide.pdf"
+        }
+    ],
     "steps": [
         {
             "step": "eoi",
@@ -5243,6 +6229,108 @@ PW_NL_INTERNATIONAL_ENTREPRENEUR = {
     "quote": "The International Entrepreneur category is for experienced business owners or senior managers who want to live in Newfoundland and Labrador permanently.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "age",
+            "text": {
+                "zh": "21–59 岁",
+                "en": "Age 21 to 59",
+                "ko": "21–59세"
+            },
+            "quote": "Be 21 to 59 years old",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-entrepreneur/eligibility-criteria"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "高中及以上(5 年内 ECA)",
+                "en": "High school or equivalent (ECA within 5 years)",
+                "ko": "고졸 이상(5년 내 ECA)"
+            },
+            "quote": "Have a Canadian high school diploma or equivalent (verified by an ECA done within the last 5 years)",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-entrepreneur/eligibility-criteria"
+        },
+        {
+            "factor": "netWorth",
+            "text": {
+                "zh": "可转入加拿大的资产 60 万加元",
+                "en": "$600,000 in assets transferable to Canada",
+                "ko": "캐나다로 이전 가능한 자산 60만 달러"
+            },
+            "quote": "Have at least $600,000 CAD in personal and business assets that can be transferred to Canada",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-entrepreneur/eligibility-criteria"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "投资 20 万(持股 33.3%)或股权 100 万加元",
+                "en": "Invest $200,000 (33.3% ownership) or $1 million equity",
+                "ko": "20만 달러(지분 33.3%) 또는 지분 100만 달러 투자"
+            },
+            "quote": "Be ready to invest at least $200,000 CAD in a business (own at least 33.3%) or invest $1 million CAD in equity",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-entrepreneur/eligibility-criteria"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "至少雇 1 名公民或永居全职",
+                "en": "Create 1 full-time job for a citizen or PR",
+                "ko": "시민·영주권자 풀타임 1명 고용"
+            },
+            "quote": "Create at least one full-time job for a Canadian citizen or permanent resident",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-entrepreneur/eligibility-criteria"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 5 年企业主 2 年(持股 25%)",
+                "en": "2+ years ownership-management (25%+) in last 5 years",
+                "ko": "최근 5년 내 사업주 2년(지분 25%)"
+            },
+            "quote": "2+ years of business ownership and management (25%+ ownership) in the last 5 years",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-entrepreneur/eligibility-criteria"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "或近 10 年高管 5 年",
+                "en": "Or 5+ years senior management in last 10 years",
+                "ko": "또는 최근 10년 내 고위 관리자 5년"
+            },
+            "quote": "5+ years in a senior management role in the last 10 years",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-entrepreneur/eligibility-criteria"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 5",
+                "en": "CLB 5",
+                "ko": "CLB 5"
+            },
+            "quote": "Score CLB 5 or higher in English or French (CELPIP, IELTS, or TEF accepted)",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-entrepreneur/eligibility-criteria"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算长住 NL 并亲自经营",
+                "en": "Live in NL permanently and manage the business",
+                "ko": "NL 영주·직접 경영 의사"
+            },
+            "quote": "Want to live in Newfoundland and Labrador permanently and actively manage a business that benefits the province",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-entrepreneur/eligibility-criteria"
+        },
+        {
+            "factor": "other",
+            "text": {
+                "zh": "省外申请人须先考察访问",
+                "en": "Exploratory visit required if applying from outside NL",
+                "ko": "NL 외부 신청자 사전 답사 필수"
+            },
+            "quote": "If you’re applying from outside Newfoundland and Labrador, you must visit the province before submitting your official application.",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-entrepreneur/eligibility-criteria"
+        }
+    ],
     "steps": [
         {
             "step": "visit",
@@ -5442,6 +6530,78 @@ PW_NL_INTERNATIONAL_GRADUATE_ENTREPRENEUR = {
     "quote": "This category is for graduates of Memorial University or College of the North Atlantic who want to live in Newfoundland and Labrador permanently and run a business.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "education",
+            "text": {
+                "zh": "Memorial 大学或 CNA 毕业",
+                "en": "Graduate of Memorial University or College of the North Atlantic",
+                "ko": "Memorial 대학 또는 CNA 졸업"
+            },
+            "quote": "This category is for graduates of Memorial University or College of the North Atlantic who want to live in Newfoundland and Labrador permanently and run a business.",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-graduate-entrepreneur/eligibility-criteria"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "近 2 年内两年制全日制面授学历",
+                "en": "2-year full-time, in-person program completed within 2 years",
+                "ko": "최근 2년 내 2년제 풀타임 대면 과정 이수"
+            },
+            "quote": "Have completed a degree or diploma (minimum 2 years, full-time, in-person) within the last 2 years",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-graduate-entrepreneur/eligibility-criteria"
+        },
+        {
+            "factor": "age",
+            "text": {
+                "zh": "21 岁及以上",
+                "en": "21 or older",
+                "ko": "21세 이상"
+            },
+            "quote": "Be 21 or older",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-graduate-entrepreneur/eligibility-criteria"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "持有效毕业工签",
+                "en": "Valid post-graduate work permit",
+                "ko": "유효한 졸업 후 워크퍼밋"
+            },
+            "quote": "Hold a valid post-graduate work permit",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-graduate-entrepreneur/eligibility-criteria"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "在 NL 经营企业满 1 年(持股 33.3%)",
+                "en": "Own and manage a local business 1 year (33.3%)",
+                "ko": "현지 사업 1년 경영(지분 33.3%)"
+            },
+            "quote": "Own and actively manage a local business (at least 33.3% ownership) for 1 full year",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-graduate-entrepreneur/eligibility-criteria"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "至少雇 1 名公民或永居全职",
+                "en": "Create 1 full-time job for a citizen or PR",
+                "ko": "시민·영주권자 풀타임 1명 고용"
+            },
+            "quote": "Create at least one full-time job for a Canadian citizen or permanent resident",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-graduate-entrepreneur/eligibility-criteria"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 7",
+                "en": "CLB 7",
+                "ko": "CLB 7"
+            },
+            "quote": "Score CLB 7 or higher in English or French (speaking, listening, reading, writing)",
+            "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-graduate-entrepreneur/eligibility-criteria"
+        }
+    ],
     "steps": [
         {
             "step": "runBusiness",
@@ -5554,6 +6714,108 @@ PW_YT_SKILLED_WORKER = {
     "quote": "The Skilled Worker stream is for management positions or jobs that require more education in:",
     "checked": "2026-10-12",
     "jobLinked": True,
+    "gate": [
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "育空雇主的全职 offer",
+                "en": "Full-time job offer from a Yukon employer",
+                "ko": "유콘 고용주의 풀타임 잡오퍼"
+            },
+            "quote": "have a full-time job offer from a Yukon employer",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "全年全职岗位(每周 35–40 小时)",
+                "en": "Year-round, full-time position (35-40 hours per week)",
+                "ko": "연중 풀타임 직위(주 35–40시간)"
+            },
+            "quote": "only employers can submit applications for year-round and full-time (35-40 hours per week) positions",
+            "url": "https://yukon.ca/sites/default/files/ecdev-ynp-2026-operational-guidance-2026-07-03.pdf"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "岗位 TEER 0–3",
+                "en": "Job in TEER 0, 1, 2 or 3",
+                "ko": "직위 TEER 0–3"
+            },
+            "quote": "The Skilled Worker stream is for management positions or jobs that require more education in",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "至少 12 个月相关工作经验",
+                "en": "At least 12 months of relevant work experience",
+                "ko": "관련 경력 최소 12개월"
+            },
+            "quote": "12 months relevant work experience for Skilled Workers",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 6(TEER 0、1 岗位)",
+                "en": "CLB 6 (TEER 0 or 1 jobs)",
+                "ko": "CLB 6(TEER 0·1 직위)"
+            },
+            "quote": "Level 6 for: TEER 0 and 1 positions",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 5(TEER 2、3 岗位)",
+                "en": "CLB 5 (TEER 2 or 3 jobs)",
+                "ko": "CLB 5(TEER 2·3 직위)"
+            },
+            "quote": "Level 5 for: TEER 2 and 3 positions",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "至少高中毕业",
+                "en": "At least a high school diploma",
+                "ko": "최소 고등학교 졸업"
+            },
+            "quote": "have at least a high school diploma",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "符合该 TEER 的学历要求",
+                "en": "Meet the education requirements for the job TEER",
+                "ko": "해당 TEER 학력 요건 충족"
+            },
+            "quote": "meet the education requirements for the applicable TEER",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "在加拿大境内的须全程保持合法身份",
+                "en": "If in Canada, keep legal status throughout",
+                "ko": "캐나다 체류 시 전 과정 합법 신분 유지"
+            },
+            "quote": "maintain legal status throughout the Yukon Nominee Program application and assessment process if they’re currently in Canada",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算在育空长期定居",
+                "en": "Intend to live permanently in Yukon",
+                "ko": "유콘 영구 거주 의향"
+            },
+            "quote": "intend to permanently live in the Yukon",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        }
+    ],
     "steps": [
         {
             "step": "offer",
@@ -5743,6 +7005,98 @@ PW_YT_CRITICAL_IMPACT_WORKER = {
     "quote": "The Critical Impact Worker stream is for entry-level jobs in:",
     "checked": "2026-10-12",
     "jobLinked": True,
+    "gate": [
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "育空雇主的全职 offer",
+                "en": "Full-time job offer from a Yukon employer",
+                "ko": "유콘 고용주의 풀타임 잡오퍼"
+            },
+            "quote": "have a full-time job offer from a Yukon employer",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "全年全职岗位(每周 35–40 小时)",
+                "en": "Year-round, full-time position (35-40 hours per week)",
+                "ko": "연중 풀타임 직위(주 35–40시간)"
+            },
+            "quote": "only employers can submit applications for year-round and full-time (35-40 hours per week) positions",
+            "url": "https://yukon.ca/sites/default/files/ecdev-ynp-2026-operational-guidance-2026-07-03.pdf"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "岗位 TEER 4–5",
+                "en": "Job in TEER 4 or 5",
+                "ko": "직위 TEER 4–5"
+            },
+            "quote": "The Critical Impact Worker stream is for entry-level jobs in",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "至少 6 个月相关工作经验",
+                "en": "At least 6 months of relevant work experience",
+                "ko": "관련 경력 최소 6개월"
+            },
+            "quote": "6 months relevant work experience for Critical Impact Workers",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 4",
+                "en": "CLB 4",
+                "ko": "CLB 4"
+            },
+            "quote": "Level 4 for: TEER 4 and 5 positions",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "至少高中毕业",
+                "en": "At least a high school diploma",
+                "ko": "최소 고등학교 졸업"
+            },
+            "quote": "have at least a high school diploma",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "在加拿大境内的须全程保持合法身份",
+                "en": "If in Canada, keep legal status throughout",
+                "ko": "캐나다 체류 시 전 과정 합법 신분 유지"
+            },
+            "quote": "maintain legal status throughout the Yukon Nominee Program application and assessment process if they’re currently in Canada",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "持学签的须先完成学业",
+                "en": "Students must finish their program before applying",
+                "ko": "학생비자 소지자는 학업 이수 후 신청"
+            },
+            "quote": "complete all the requirements for their academic program before applying if they’re in Canada on a student visa",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算在育空长期定居",
+                "en": "Intend to live permanently in Yukon",
+                "ko": "유콘 영구 거주 의향"
+            },
+            "quote": "intend to permanently live in the Yukon",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
+        }
+    ],
     "steps": [
         {
             "step": "offer",
@@ -5932,6 +7286,108 @@ PW_YT_EXPRESS_ENTRY = {
     "quote": "The Yukon Express Entry stream allows employers to hire foreign nationals who are in IRCC’s Express Entry pool.",
     "checked": "2026-10-12",
     "jobLinked": True,
+    "gate": [
+        {
+            "factor": "status",
+            "text": {
+                "zh": "有有效的联邦快速通道档案",
+                "en": "Valid Express Entry profile",
+                "ko": "유효한 익스프레스 엔트리 프로필"
+            },
+            "quote": "have a valid Express Entry profile",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-express-entry-stream-hire-foreign-worker"
+        },
+        {
+            "factor": "other",
+            "text": {
+                "zh": "符合 CEC、FSW 或 FST 之一",
+                "en": "Meet CEC, FSW or FST requirements",
+                "ko": "CEC·FSW·FST 중 하나 충족"
+            },
+            "quote": "The foreign worker must meet the requirements for at least 1 of the following federal economic immigration programs",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-express-entry-stream-hire-foreign-worker"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "育空雇主的全职 offer",
+                "en": "Full-time job offer from a Yukon employer",
+                "ko": "유콘 고용주의 풀타임 잡오퍼"
+            },
+            "quote": "have a full-time job offer from a Yukon employer",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-express-entry-stream-hire-foreign-worker"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "岗位 TEER 0–3",
+                "en": "Job in TEER 0, 1, 2 or 3",
+                "ko": "직위 TEER 0–3"
+            },
+            "quote": "Employers can hire through the Express Entry stream for",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-express-entry-stream-hire-foreign-worker"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "至少 6 个月相关工作经验",
+                "en": "At least 6 months of relevant work experience",
+                "ko": "관련 경력 최소 6개월"
+            },
+            "quote": "have at least 6 months of relevant work experience",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-express-entry-stream-hire-foreign-worker"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 7(TEER 0、1 岗位)",
+                "en": "CLB 7 (TEER 0 or 1 jobs)",
+                "ko": "CLB 7(TEER 0·1 직위)"
+            },
+            "quote": "Level 7 for: TEER 0 and 1 positions",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-express-entry-stream-hire-foreign-worker"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 5(TEER 2、3 岗位)",
+                "en": "CLB 5 (TEER 2 or 3 jobs)",
+                "ko": "CLB 5(TEER 2·3 직위)"
+            },
+            "quote": "Level 5 for: TEER 2 and 3 positions",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-express-entry-stream-hire-foreign-worker"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "至少高中毕业",
+                "en": "At least a high school diploma",
+                "ko": "최소 고등학교 졸업"
+            },
+            "quote": "have at least a high school diploma",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-express-entry-stream-hire-foreign-worker"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "在加拿大境内的须全程保持合法身份",
+                "en": "If in Canada, keep legal status throughout",
+                "ko": "캐나다 체류 시 전 과정 합법 신분 유지"
+            },
+            "quote": "maintain legal status throughout the Yukon Nominee Program application and assessment process if they’re currently in Canada",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-express-entry-stream-hire-foreign-worker"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算在育空长期定居",
+                "en": "Intend to live permanently in Yukon",
+                "ko": "유콘 영구 거주 의향"
+            },
+            "quote": "intend to permanently live in the Yukon",
+            "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-express-entry-stream-hire-foreign-worker"
+        }
+    ],
     "steps": [
         {
             "step": "eeProfile",
@@ -6149,6 +7605,108 @@ PW_YT_BUSINESS_NOMINEE = {
     "quote": "Foreign business owners and entrepreneurs can apply to run their business in Yukon via the Yukon Business Nominee Program.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "other",
+            "text": {
+                "zh": "评分表至少 65 分",
+                "en": "At least 65 points on the assessment grid",
+                "ko": "평가표 최소 65점"
+            },
+            "quote": "Achieve a score of at least 65 points on the assessment grid",
+            "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program/find-eligibility-requirements-apply-run-your-business-yukon-foreign-entrepreneurs"
+        },
+        {
+            "factor": "netWorth",
+            "text": {
+                "zh": "净资产至少 50 万加元",
+                "en": "Net worth of at least CAD $500,000",
+                "ko": "순자산 최소 50만 캐나다달러"
+            },
+            "quote": "Have a net worth of at least CAD $500,000",
+            "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program/find-eligibility-requirements-apply-run-your-business-yukon-foreign-entrepreneurs"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "流动资产至少 30 万加元",
+                "en": "At least CAD $300,000 in liquid assets",
+                "ko": "유동자산 최소 30만 캐나다달러"
+            },
+            "quote": "Have a minimum of CAD $300,000 in liquid assets",
+            "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program/find-eligibility-requirements-apply-run-your-business-yukon-foreign-entrepreneurs"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "头 2 年投资至少 30 万加元",
+                "en": "Invest at least CAD $300,000 in the first 2 years",
+                "ko": "첫 2년간 최소 30만 캐나다달러 투자"
+            },
+            "quote": "Show how you will invest at least CAD $300,000 in capital investments for the business in the first 2 years",
+            "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program/find-eligibility-requirements-apply-run-your-business-yukon-foreign-entrepreneurs"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "至少 3 年创业或企业管理经验",
+                "en": "At least 3 years of entrepreneurial or business management experience",
+                "ko": "창업·경영 경력 최소 3년"
+            },
+            "quote": "Have at least 3 years of entrepreneurial or business management experience",
+            "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program/find-eligibility-requirements-apply-run-your-business-yukon-foreign-entrepreneurs"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "至少 5 年与该生意相关的工作经验",
+                "en": "At least 5 years of work experience relevant to the business",
+                "ko": "사업 관련 경력 최소 5년"
+            },
+            "quote": "Have at least 5 years of work experience that is relevant to your business",
+            "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program/find-eligibility-requirements-apply-run-your-business-yukon-foreign-entrepreneurs"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "至少高中毕业",
+                "en": "At least a high school diploma",
+                "ko": "최소 고등학교 졸업"
+            },
+            "quote": "Have at least a high school diploma",
+            "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program/find-eligibility-requirements-apply-run-your-business-yukon-foreign-entrepreneurs"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "雅思 6 分或 TEF Canada 4 级",
+                "en": "IELTS level 6 or TEF Canada level 4",
+                "ko": "IELTS 6 또는 TEF Canada 4"
+            },
+            "quote": "level 6 on the International English Language Testing System (IELTS)",
+            "url": "https://yukon.ca/sites/default/files/ecdev-yukon-busines-nominee-program-assessment-grid.pdf"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算在育空长期定居",
+                "en": "Intend to live permanently in Yukon",
+                "ko": "유콘 영구 거주 의향"
+            },
+            "quote": "Intend to permanently live in Yukon",
+            "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program/find-eligibility-requirements-apply-run-your-business-yukon-foreign-entrepreneurs"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "难民或申请难民中不受理",
+                "en": "Refugees or refugee claimants are not eligible",
+                "ko": "난민·난민 신청자 불가"
+            },
+            "quote": "Not be a refugee or have an active request for refugee status with the Government of Canada",
+            "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program/find-eligibility-requirements-apply-run-your-business-yukon-foreign-entrepreneurs"
+        }
+    ],
     "steps": [
         {
             "step": "submit",
@@ -6352,6 +7910,108 @@ PW_NT_SKILLED_WORKER = {
     "quote": "This category is for occupations that fall under National Occupation Classification (NOC) TEER 0, 1, 2 or 3.",
     "checked": "2026-10-12",
     "jobLinked": True,
+    "gate": [
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "长期、全职、非季节性岗位",
+                "en": "Permanent, non-seasonal, full-time job",
+                "ko": "영구·비계절·풀타임 직위"
+            },
+            "quote": "The term of employment must be permanent, non-seasonal and full-time.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "岗位 TEER 0–3",
+                "en": "Job in TEER 0, 1, 2 or 3",
+                "ko": "직위 TEER 0–3"
+            },
+            "quote": "This category is for occupations that fall under National Occupation Classification (NOC) TEER 0, 1, 2 or 3.",
+            "url": "https://www.immigratenwt.ca/skilled-worker"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 10 年内同类职业全职 1 年",
+                "en": "1 year full-time in the same or similar job in the last 10 years",
+                "ko": "최근 10년 내 동일·유사 직종 풀타임 1년"
+            },
+            "quote": "Have one (1) year of full-time experience within the last 10 years in the same or similar occupation",
+            "url": "https://www.immigratenwt.ca/skilled-worker"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "经验的 TEER 不低于提名岗位",
+                "en": "Experience at the same or higher TEER",
+                "ko": "경력 TEER가 제안 직위 이상"
+            },
+            "quote": "The work experience must be equal or higher in NOC TEER level to the nominating occupation.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "持有效工签",
+                "en": "Valid work permit",
+                "ko": "유효한 취업허가"
+            },
+            "quote": "Have a valid work permit.",
+            "url": "https://www.immigratenwt.ca/skilled-worker"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 6(TEER 0、1 岗位)",
+                "en": "CLB 6 (TEER 0 or 1 jobs)",
+                "ko": "CLB 6(TEER 0·1 직위)"
+            },
+            "quote": "minimum Canadian Language Benchmark (CLB) Level 6 in either English or French",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 5(TEER 2、3 岗位)",
+                "en": "CLB 5 (TEER 2 or 3 jobs)",
+                "ko": "CLB 5(TEER 2·3 직위)"
+            },
+            "quote": "minimum CLB Level 5 in either English or French",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "海外学历须做 ECA",
+                "en": "Foreign education needs an ECA",
+                "ko": "해외 학력은 ECA 필요"
+            },
+            "quote": "Nominee Applicants whose education was completed outside of Canada must have it assessed to compare to Canadian educational standards.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算在西北地区定居",
+                "en": "Intend to settle permanently in the NWT",
+                "ko": "NWT 영구 정착 의향"
+            },
+            "quote": "the Nominee Applicant must have the ability and intention to economically establish and permanently settle in the NWT.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "难民申请人不受理",
+                "en": "Refugee claimants are not eligible",
+                "ko": "난민 신청자 불가"
+            },
+            "quote": "As determined by IRCC, refugee claimants are not eligible for the NTNP.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        }
+    ],
     "steps": [
         {
             "step": "offer",
@@ -6546,6 +8206,98 @@ PW_NT_ENTRY_LEVEL_SEMI_SKILLED = {
     "quote": "This category is for occupations that fall under National Occupation Classification (NOC) TEER 4 or 5.",
     "checked": "2026-10-12",
     "jobLinked": True,
+    "gate": [
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "长期、全职、非季节性岗位",
+                "en": "Permanent, non-seasonal, full-time job",
+                "ko": "영구·비계절·풀타임 직위"
+            },
+            "quote": "The term of employment must be permanent, non-seasonal and full-time.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "岗位 TEER 4–5",
+                "en": "Job in TEER 4 or 5",
+                "ko": "직위 TEER 4–5"
+            },
+            "quote": "This category is for occupations that fall under National Occupation Classification (NOC) TEER 4 or 5.",
+            "url": "https://www.immigratenwt.ca/entry-levelsemi-skilled-occupations"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "在提名雇主同岗位全职满 12 个月",
+                "en": "12 months full-time in the same job with the nominating employer",
+                "ko": "제안 고용주 동일 직위 풀타임 12개월"
+            },
+            "quote": "Have worked in the same position with the nominating Employer for a minimum of twelve (12) months full-time, immediately prior to submitting an application.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "在加拿大境内须持有效工签",
+                "en": "Valid work permit if in Canada",
+                "ko": "캐나다 체류 시 유효한 취업허가"
+            },
+            "quote": "Nominee Applicants currently in Canada must have legal status to work and must have a valid work permit for the duration of the application process.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 4",
+                "en": "CLB 4",
+                "ko": "CLB 4"
+            },
+            "quote": "minimum CLB Level 4 in either English or French",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "安家资金 1 万加元,每名随行家属加 2000",
+                "en": "CAD $10,000 plus $2,000 per accompanying dependant",
+                "ko": "정착자금 1만 캐나다달러, 동반가족 1인당 2,000 추가"
+            },
+            "quote": "Nominee Applicants are required to have $10,000 CAD for themselves, and an additional $2,000 CAD for each accompanying dependent spouse and/or child.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "海外学历须做 ECA",
+                "en": "Foreign education needs an ECA",
+                "ko": "해외 학력은 ECA 필요"
+            },
+            "quote": "Nominee Applicants whose education was completed outside of Canada must have it assessed to compare to Canadian educational standards.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算在西北地区定居",
+                "en": "Intend to settle permanently in the NWT",
+                "ko": "NWT 영구 정착 의향"
+            },
+            "quote": "the Nominee Applicant must have the ability and intention to economically establish and permanently settle in the NWT.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "难民申请人不受理",
+                "en": "Refugee claimants are not eligible",
+                "ko": "난민 신청자 불가"
+            },
+            "quote": "As determined by IRCC, refugee claimants are not eligible for the NTNP.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        }
+    ],
     "steps": [
         {
             "step": "offer",
@@ -6756,6 +8508,108 @@ PW_NT_EXPRESS_ENTRY = {
     "quote": "The NWT Express Entry category is for Skilled Workers who have a profile in the Express Entry System, a federal program with expedited application times for skilled individuals who want to work and live in the NWT.",
     "checked": "2026-10-12",
     "jobLinked": True,
+    "gate": [
+        {
+            "factor": "status",
+            "text": {
+                "zh": "已进联邦快速通道池",
+                "en": "Accepted into the Express Entry pool",
+                "ko": "익스프레스 엔트리 풀 등재"
+            },
+            "quote": "be accepted into Immigration, Refugees and Citizenship Canada’s Express Entry Pool",
+            "url": "https://www.immigratenwt.ca/nwt-express-entry"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "有求职者验证码",
+                "en": "Job Seeker Validation Code",
+                "ko": "구직자 확인 코드 보유"
+            },
+            "quote": "have a Job Seeker Validation Code",
+            "url": "https://www.immigratenwt.ca/nwt-express-entry"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "西北地区雇主的有效 offer",
+                "en": "Valid job offer from an NWT employer",
+                "ko": "NWT 고용주의 유효한 잡오퍼"
+            },
+            "quote": "have a valid job offer from an NWT Employer",
+            "url": "https://www.immigratenwt.ca/nwt-express-entry"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "岗位 TEER 0–3",
+                "en": "Job in TEER 0, 1, 2 or 3",
+                "ko": "직위 TEER 0–3"
+            },
+            "quote": "This category is for occupations that fall under National Occupation Classification (NOC) TEER 0, 1, 2 or 3.",
+            "url": "https://www.immigratenwt.ca/nwt-express-entry"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "持有效工签",
+                "en": "Valid work permit",
+                "ko": "유효한 취업허가"
+            },
+            "quote": "have a valid work permit",
+            "url": "https://www.immigratenwt.ca/nwt-express-entry"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 10 年内同类职业全职 1 年",
+                "en": "1 year full-time in the same or similar job in the last 10 years",
+                "ko": "최근 10년 내 동일·유사 직종 풀타임 1년"
+            },
+            "quote": "have one (1) year of full-time experience within the last 10 years in the same or similar occupation",
+            "url": "https://www.immigratenwt.ca/nwt-express-entry"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 7(TEER 0、1 岗位)",
+                "en": "CLB 7 (TEER 0 or 1 jobs)",
+                "ko": "CLB 7(TEER 0·1 직위)"
+            },
+            "quote": "minimum CLB Level 7 in either English or French",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 5(TEER 2、3 岗位)",
+                "en": "CLB 5 (TEER 2 or 3 jobs)",
+                "ko": "CLB 5(TEER 2·3 직위)"
+            },
+            "quote": "minimum CLB Level 5 in either English or French",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "表明打算在西北地区定居",
+                "en": "Expressed interest in settling permanently in the NWT",
+                "ko": "NWT 영구 정착 의사 표명"
+            },
+            "quote": "Have expressed interest in permanently settling in the NWT.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "难民申请人不受理",
+                "en": "Refugee claimants are not eligible",
+                "ko": "난민 신청자 불가"
+            },
+            "quote": "not be a refugee claimant",
+            "url": "https://www.immigratenwt.ca/nwt-express-entry"
+        }
+    ],
     "steps": [
         {
             "step": "eeProfile",
@@ -6981,6 +8835,108 @@ PW_NT_FRANCOPHONE = {
     "quote": "The Francophone Stream allows qualified foreign nationals, who speak both French and English and have a valid job offer from an NWT Employer, to apply to the Northwest Territories Nominee Program (NTNP).",
     "checked": "2026-10-12",
     "jobLinked": True,
+    "gate": [
+        {
+            "factor": "language",
+            "text": {
+                "zh": "法语 CLB 5",
+                "en": "French CLB 5",
+                "ko": "프랑스어 CLB 5"
+            },
+            "quote": "achieve a minimum language standard of the Canadian Language Benchmark (CLB) Level 5 in French",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/2025_-_11_-_ntnp_program_guidelines_-_francophone_stream-_final.pdf"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "英语 CLB 4",
+                "en": "English CLB 4",
+                "ko": "영어 CLB 4"
+            },
+            "quote": "Nominee Applicants must also achieve a minimum language standard of the Canadian Language Benchmark (CLB) Level 4 in English",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/2025_-_11_-_ntnp_program_guidelines_-_francophone_stream-_final.pdf"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "长期、全职、全年岗位(每周至少 30 小时)",
+                "en": "Permanent, full-time, year-round job (30+ hours per week)",
+                "ko": "영구·풀타임·연중 직위(주 30시간 이상)"
+            },
+            "quote": "The term of employment must be for a permanent (no end date) and full-time position (minimum 30 hours per week and year-round).",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/2025_-_11_-_ntnp_program_guidelines_-_francophone_stream-_final.pdf"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "岗位 TEER 0–5 均可",
+                "en": "Any TEER (0 to 5)",
+                "ko": "모든 TEER(0–5)"
+            },
+            "quote": "This stream is designed to increase the labour pool for bilingual workers within all National Occupational Classification (NOC) TEER categories",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/2025_-_11_-_ntnp_program_guidelines_-_francophone_stream-_final.pdf"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 10 年本职业全职 1 年,或在西北地区本职业全职 6 个月",
+                "en": "1 year full-time in the job in the last 10 years, or 6 months full-time in the NWT",
+                "ko": "최근 10년 내 해당 직종 풀타임 1년 또는 NWT 내 6개월"
+            },
+            "quote": "Have one (1) year of full-time work experience in the occupation they are being nominated for within the last 10 years OR six (6) months of full-time work experience in the NWT in the occupation they are being nominated for.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/2025_-_11_-_ntnp_program_guidelines_-_francophone_stream-_final.pdf"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "至少高中学历(相当于加拿大标准)",
+                "en": "At least high school education (Canadian equivalent)",
+                "ko": "최소 고등학교 학력(캐나다 기준 동등)"
+            },
+            "quote": "Have a minimum of high school education, that is equivalent to Canadian standards.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/2025_-_11_-_ntnp_program_guidelines_-_francophone_stream-_final.pdf"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "境外无工签也可申请",
+                "en": "Applicants outside Canada without a work permit may qualify",
+                "ko": "해외 체류·취업허가 없어도 신청 가능"
+            },
+            "quote": "Nominee Applicants outside of Canada without a work permit may be eligible for nomination.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/2025_-_11_-_ntnp_program_guidelines_-_francophone_stream-_final.pdf"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "安家资金 1 万加元,每名随行家属加 2000",
+                "en": "CAD $10,000 plus $2,000 per accompanying dependant",
+                "ko": "정착자금 1만 캐나다달러, 동반가족 1인당 2,000 추가"
+            },
+            "quote": "Nominee Applicants are required to have $10,000 CAD for themselves, and an additional $2,000 CAD for each accompanying dependent.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/2025_-_11_-_ntnp_program_guidelines_-_francophone_stream-_final.pdf"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "难民申请人不受理",
+                "en": "Refugee claimants are not eligible",
+                "ko": "난민 신청자 불가"
+            },
+            "quote": "refugee claimants are not eligible for the Nominee Program.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/2025_-_11_-_ntnp_program_guidelines_-_francophone_stream-_final.pdf"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "不能走快速通道提名",
+                "en": "Not eligible for Express Entry nomination",
+                "ko": "익스프레스 엔트리 지명 불가"
+            },
+            "quote": "Nominee Applicants to this stream are not eligible for nomination through Express Entry.",
+            "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/2025_-_11_-_ntnp_program_guidelines_-_francophone_stream-_final.pdf"
+        }
+    ],
     "steps": [
         {
             "step": "offer",
@@ -7087,6 +9043,108 @@ PW_NT_BUSINESS = {
     "quote": "The Business Stream is for foreign nationals who want to start a business in the NWT, purchase an existing business based here, or invest in and operate an existing business based here.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "耶洛奈夫市内投资至少 20 万加元",
+                "en": "At least CAD $200,000 equity inside Yellowknife",
+                "ko": "옐로나이프 시내 최소 20만 캐나다달러 투자"
+            },
+            "quote": "A minimum of $200,000 CDN equity* into starting or buying a business within the corporate boundaries of Yellowknife, Northwest Territories",
+            "url": "https://www.immigratenwt.ca/business-stream"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "耶洛奈夫市外投资至少 10 万加元",
+                "en": "At least CAD $100,000 equity outside Yellowknife",
+                "ko": "옐로나이프 시외 최소 10만 캐나다달러 투자"
+            },
+            "quote": "A minimum of $100,000 CDN equity* into starting or buying a business outside of the corporate boundaries of Yellowknife, Northwest Territories",
+            "url": "https://www.immigratenwt.ca/business-stream"
+        },
+        {
+            "factor": "netWorth",
+            "text": {
+                "zh": "耶洛奈夫市内净资产至少 50 万加元",
+                "en": "Net worth of at least CAD $500,000 inside Yellowknife",
+                "ko": "옐로나이프 시내 순자산 최소 50만 캐나다달러"
+            },
+            "quote": "At least $500,000 CDN if starting or buying a business within the corporate boundaries of Yellowknife, Northwest Territories",
+            "url": "https://www.immigratenwt.ca/business-stream"
+        },
+        {
+            "factor": "netWorth",
+            "text": {
+                "zh": "耶洛奈夫市外净资产至少 25 万加元",
+                "en": "Net worth of at least CAD $250,000 outside Yellowknife",
+                "ko": "옐로나이프 시외 순자산 최소 25만 캐나다달러"
+            },
+            "quote": "At least $250,000 CDN if starting or buying a business outside the corporate boundaries of Yellowknife, Northwest Territories",
+            "url": "https://www.immigratenwt.ca/business-stream"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "持股至少 33.3%(投资满 100 万可更少)",
+                "en": "Own at least 33.3% (less if investing $1,000,000+)",
+                "ko": "지분 최소 33.3%(100만 이상 투자 시 예외)"
+            },
+            "quote": "You must demonstrate you own at least 33.3% of the business, unless your personal equity investment is at least $1,000,000 CDN, in which case you may own less.",
+            "url": "https://www.immigratenwt.ca/business-stream"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 4 / NCLC 4",
+                "en": "CLB 4 or NCLC 4",
+                "ko": "CLB 4 / NCLC 4"
+            },
+            "quote": "You must demonstrate that they have achieved a level of proficiency of 4 against the Canadian Language Benchmark (CLB 4) in English",
+            "url": "https://www.immigratenwt.ca/business-stream"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "有落实商业计划所需的经验和学历",
+                "en": "Experience and education to carry out the business plan",
+                "ko": "사업계획 실행에 필요한 경력·학력"
+            },
+            "quote": "You need to have the necessary experience and education to implement the business plan successfully",
+            "url": "https://www.immigratenwt.ca/business-stream"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "足够资金经营生意并养活家人",
+                "en": "Enough funds to run the business and support dependants",
+                "ko": "사업 운영·가족 부양 자금"
+            },
+            "quote": "You must demonstrate sufficient financial resources to start and operate a business and support yourself and any dependents for the duration of the applicant’s Business Performance Agreement",
+            "url": "https://www.immigratenwt.ca/business-stream"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "其他省提名在审中不受理",
+                "en": "No active application with another PNP",
+                "ko": "타 주 PNP 진행 중 불가"
+            },
+            "quote": "You can not have an active application with any other provincial or territorial nominee program",
+            "url": "https://www.immigratenwt.ca/business-stream"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "愿意全职定居西北地区",
+                "en": "Ready to settle full-time in the NWT",
+                "ko": "NWT 상주 정착 의향"
+            },
+            "quote": "you must be ready and willing to settle full-time right here in the NWT",
+            "url": "https://www.immigratenwt.ca/business-stream"
+        }
+    ],
     "steps": [
         {
             "step": "register",
@@ -7310,6 +9368,108 @@ PW_FED_CEC = {
     "quote": "The Canadian Experience Class is for skilled workers who have Canadian work experience and want to become permanent residents.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "加拿大境内技术工作 1 年(近 3 年内)",
+                "en": "At least 1 year of skilled work in Canada in the last 3 years",
+                "ko": "최근 3년 내 캐나다 숙련 경력 1년"
+            },
+            "quote": "total at least 1 year of work or 1,560 hours total (30 hours per week) in the 3 years before you apply",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/canadian-experience-class.html"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "经验须属 TEER 0、1、2、3 职业",
+                "en": "Experience in TEER 0, 1, 2 or 3 jobs",
+                "ko": "TEER 0·1·2·3 직업 경력"
+            },
+            "quote": "be in 1 or more of these NOC categories: training, education, experience and responsibilities (TEER) 0, 1, 2 or 3",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/canadian-experience-class.html"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "持临时居民身份合法工作期间所得",
+                "en": "Gained while authorized to work in Canada under temporary resident status",
+                "ko": "임시 거주 신분으로 합법 취업 중 쌓은 경력"
+            },
+            "quote": "be gained by working in Canada (including the province of Quebec) while authorized to work under temporary resident status",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/canadian-experience-class.html"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "全日制读书期间打工不算",
+                "en": "Work while studying full-time doesn’t count",
+                "ko": "풀타임 학업 중 근무는 불인정"
+            },
+            "quote": "you were studying full-time while you worked (co-op work terms also don’t count)",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/canadian-experience-class.html"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "自雇经验不算",
+                "en": "Self-employed work doesn’t count",
+                "ko": "자영업 경력 불인정"
+            },
+            "quote": "you were self-employed (some physicians can count their time spent self-employed)",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/canadian-experience-class.html"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 7(TEER 0、1 职业)",
+                "en": "CLB 7 (TEER 0 or 1 jobs)",
+                "ko": "CLB 7(TEER 0·1 직업)"
+            },
+            "quote": "TEER 0 or 1 CLB 7 NCLC 7",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 5(TEER 2、3 职业)",
+                "en": "CLB 5 (TEER 2 or 3 jobs)",
+                "ko": "CLB 5(TEER 2·3 직업)"
+            },
+            "quote": "TEER 2 or 3 CLB 5 NCLC 5",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "无学历要求",
+                "en": "No education requirement",
+                "ko": "학력 요건 없음"
+            },
+            "quote": "There is no education requirement for the Canadian Experience Class.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/canadian-experience-class.html"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "不用证明安家资金",
+                "en": "No proof of funds needed",
+                "ko": "정착 자금 증명 불필요"
+            },
+            "quote": "you’re applying under the Canadian Experience Class",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/proof-funds.html"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算住在魁北克以外",
+                "en": "Plan to live outside Quebec",
+                "ko": "퀘벡 외 지역 거주 예정"
+            },
+            "quote": "You must plan to live outside the province of Quebec",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/canadian-experience-class.html"
+        }
+    ],
     "steps": [
         {
             "step": "workCanada",
@@ -7464,6 +9624,108 @@ PW_FED_FSW = {
     "quote": "The Federal Skilled Worker Program is for skilled workers who have foreign work experience and want to become permanent residents.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "1 年连续全职技术工作(近 10 年内)",
+                "en": "1 year of continuous skilled work in the last 10 years",
+                "ko": "최근 10년 내 연속 숙련 경력 1년"
+            },
+            "quote": "be at least 1 year of continuous work or 1,560 hours total (30 hours per week)",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/federal-skilled-workers.html"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "经验须属 TEER 0、1、2、3 职业",
+                "en": "Experience in TEER 0, 1, 2 or 3 jobs",
+                "ko": "TEER 0·1·2·3 직업 경력"
+            },
+            "quote": "be in 1 of these TEER categories: 0, 1, 2, or 3",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/federal-skilled-workers.html"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "境内境外经验都算",
+                "en": "Experience in Canada or abroad",
+                "ko": "캐나다 국내외 경력 모두 인정"
+            },
+            "quote": "have been obtained within the last 10 years, in Canada or abroad",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/federal-skilled-workers.html"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "第一官方语言 CLB 7(四项)",
+                "en": "CLB 7 in all 4 abilities (first official language)",
+                "ko": "제1공용어 CLB 7(4개 영역)"
+            },
+            "quote": "Minimum level for all 4 abilities English CLB 7 French NCLC7",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "境外学历需 ECA 认证",
+                "en": "Foreign education needs an Educational Credential Assessment",
+                "ko": "해외 학력은 ECA 필요"
+            },
+            "quote": "If you have foreign education, you must have: a completed educational credential and an Educational Credential Assessment for immigration purposes",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/federal-skilled-workers.html"
+        },
+        {
+            "factor": "other",
+            "text": {
+                "zh": "六项选择因素满 100 分须达 67 分",
+                "en": "Score 67 or higher out of 100 on selection factors",
+                "ko": "선발 요소 100점 중 67점 이상"
+            },
+            "quote": "If you score 67 points or higher",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/federal-skilled-workers.html"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "安家资金:单人 $15,263",
+                "en": "Settlement funds: $15,263 for 1 person",
+                "ko": "정착 자금: 1인 $15,263"
+            },
+            "quote": "Updated July 7, 2025 1 $15,263",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/proof-funds.html"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "有 offer 且可合法工作免资金证明",
+                "en": "No proof of funds if authorized to work with a valid job offer",
+                "ko": "취업 허가 + 유효 잡오퍼 있으면 자금 증명 면제"
+            },
+            "quote": "are currently able to legally work in Canada, and have a valid job offer from an employer in Canada",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/federal-skilled-workers.html"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "不要求 offer(有 1 年以上 offer 可加分)",
+                "en": "No job offer required (points for a 1-year offer)",
+                "ko": "잡오퍼 불필요(1년 이상 오퍼 시 가점)"
+            },
+            "quote": "You can get points if you have a job offer of at least 1 year from a Canadian employer.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/federal-skilled-workers.html"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算住在魁北克以外",
+                "en": "Plan to live outside Quebec",
+                "ko": "퀘벡 외 지역 거주 예정"
+            },
+            "quote": "You must plan to live outside the province of Quebec",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/federal-skilled-workers.html"
+        }
+    ],
     "steps": [
         {
             "step": "eeProfile",
@@ -7589,6 +9851,98 @@ PW_FED_FST = {
     "quote": "The Federal Skilled Trades Program is for skilled workers who want to become permanent residents based on being qualified in a skilled trade.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "技工全职 2 年(近 5 年内)",
+                "en": "2 years of full-time skilled trade work in the last 5 years",
+                "ko": "최근 5년 내 숙련 기술직 풀타임 2년"
+            },
+            "quote": "be at least 2 years of full-time work experience (or 3,120 hours total) in a skilled trade within the 5 years before you apply",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/skilled-trades.html"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "限 NOC 指定技工类别(72、73、82、83、92、93 等)",
+                "en": "Only listed trade NOC groups (72, 73, 82, 83, 92, 93 and more)",
+                "ko": "지정 기술직 NOC만(72·73·82·83·92·93 등)"
+            },
+            "quote": "Major Groups 72 (excluding Sub-Major Group 726), 73 , 82 , 83 , 92 , or 93 (excluding Sub-Major Group 932)",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/skilled-trades.html"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "在有执业资格的国家所得",
+                "en": "Gained where you were qualified to practise",
+                "ko": "자격을 갖춘 국가에서 쌓은 경력"
+            },
+            "quote": "have been obtained in a country where you were qualified to practice",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/skilled-trades.html"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "1 年全职 offer 或加拿大技工资格证书",
+                "en": "1-year full-time job offer or a Canadian certificate of qualification",
+                "ko": "1년 풀타임 잡오퍼 또는 캐나다 기술 자격증"
+            },
+            "quote": "a valid job offer of full-time employment for a total period of at least 1 year, or a certificate of qualification in your skilled trade issued by a Canadian provincial, territorial or federal authority",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/skilled-trades.html"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "听说 CLB 5、读写 CLB 4",
+                "en": "CLB 5 speaking and listening, CLB 4 reading and writing",
+                "ko": "말하기·듣기 CLB 5, 읽기·쓰기 CLB 4"
+            },
+            "quote": "Speaking and listening CLB 5 English Reading and writing CLB 4",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "无学历要求",
+                "en": "No education requirement",
+                "ko": "학력 요건 없음"
+            },
+            "quote": "There is no education requirement for the Federal Skilled Trades Program.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/skilled-trades.html"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "安家资金:单人 $15,263",
+                "en": "Settlement funds: $15,263 for 1 person",
+                "ko": "정착 자금: 1인 $15,263"
+            },
+            "quote": "Updated July 7, 2025 1 $15,263",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/proof-funds.html"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "有 offer 且可合法工作免资金证明",
+                "en": "No proof of funds if authorized to work with a valid job offer",
+                "ko": "취업 허가 + 유효 잡오퍼 있으면 자금 증명 면제"
+            },
+            "quote": "you’re authorized to work in Canada and you have a valid job offer",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/proof-funds.html"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算住在魁北克以外",
+                "en": "Plan to live outside Quebec",
+                "ko": "퀘벡 외 지역 거주 예정"
+            },
+            "quote": "You must plan to live outside the province of Quebec",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/skilled-trades.html"
+        }
+    ],
     "steps": [
         {
             "step": "jobOffer",
@@ -7724,6 +10078,118 @@ PW_FED_AIP = {
     "quote": "The Atlantic Immigration Program is a pathway to permanent residence for skilled foreign workers and international graduates from a Canadian institution who want to work and live in 1 of Canada’s 4 Atlantic provinces—New Brunswick, Nova Scotia, Prince Edward Island or Newfoundland and Labrador",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "大西洋省指定雇主的 offer",
+                "en": "Job offer from a designated employer",
+                "ko": "지정 고용주의 잡오퍼"
+            },
+            "quote": "get a valid job offer from a designated employer",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/eligibility.html"
+        },
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "全职(每周至少 30 小时)、非季节性",
+                "en": "Full-time (at least 30 hours a week), non-seasonal",
+                "ko": "풀타임(주 30시간 이상)·비계절직"
+            },
+            "quote": "full-time (at least 30 hours a week) non-seasonal",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/job-offer.html"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 5 年内相关工作 1,560 小时",
+                "en": "1,560 hours of related work in the last 5 years",
+                "ko": "최근 5년 내 관련 경력 1,560시간"
+            },
+            "quote": "You need at least 1,560 hours of related work experience over the past 5 years.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/work-experience.html"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "大西洋省院校毕业生可免工作经验",
+                "en": "Atlantic Canada graduates are exempt from work experience",
+                "ko": "대서양 주 졸업생은 경력 면제"
+            },
+            "quote": "You do not need to meet the work experience requirements if you’re an international graduate",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/work-experience.html"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 5(TEER 0–3 offer)",
+                "en": "CLB 5 (TEER 0 to 3 job offer)",
+                "ko": "CLB 5(TEER 0–3 오퍼)"
+            },
+            "quote": "CLB 5 for job offer in TEER 0, 1, 2 or 3",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/language-testing.html"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 4(TEER 4 offer)",
+                "en": "CLB 4 (TEER 4 job offer)",
+                "ko": "CLB 4(TEER 4 오퍼)"
+            },
+            "quote": "CLB 4 for job offer in TEER 4",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/language-testing.html"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "一年制大专以上(TEER 0、1 offer)",
+                "en": "One-year post-secondary credential (TEER 0 or 1 job offer)",
+                "ko": "1년제 이상 고등교육(TEER 0·1 오퍼)"
+            },
+            "quote": "TEER 0 or 1 : a Canadian one-year post-secondary (or higher) educational credential",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/education-assessment.html"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "高中及以上(TEER 2–4 offer)",
+                "en": "High school diploma (TEER 2 to 4 job offer)",
+                "ko": "고졸 이상(TEER 2–4 오퍼)"
+            },
+            "quote": "TEER 2, 3, or 4 : a Canadian high school diploma (or higher)",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/education-assessment.html"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "安家资金:单人 $3,815;持工签在职免",
+                "en": "Settlement funds: $3,815 for 1 person; exempt if working on a work permit",
+                "ko": "정착 자금: 1인 $3,815(취업 중 워크퍼밋 소지자 면제)"
+            },
+            "quote": "Funds you need (in Canadian dollars) 1 $3,815",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/proof-funds.html"
+        },
+        {
+            "factor": "other",
+            "text": {
+                "zh": "需安置服务机构出具定居计划",
+                "en": "Settlement plan from a service provider organization",
+                "ko": "정착 서비스 기관의 정착 계획서"
+            },
+            "quote": "get a settlement plan from a service provider organization",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/eligibility.html"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算在大西洋四省之一工作生活",
+                "en": "Plan to work and live in 1 of the 4 Atlantic provinces",
+                "ko": "대서양 4개 주 중 한 곳에서 근무·거주 예정"
+            },
+            "quote": "who want to work and live in 1 of Canada’s 4 Atlantic provinces",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration.html"
+        }
+    ],
     "steps": [
         {
             "step": "jobOffer",
@@ -7901,6 +10367,108 @@ PW_FED_RCIP = {
     "quote": "The Rural Community Immigration Pilot offers permanent residence (PR) to skilled workers who want to work and settle in rural and more remote communities.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "社区指定雇主的 offer",
+                "en": "Job offer from a designated employer in the community",
+                "ko": "커뮤니티 지정 고용주의 잡오퍼"
+            },
+            "quote": "have a valid job offer from a designated employer in the community",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility.html"
+        },
+        {
+            "factor": "community",
+            "text": {
+                "zh": "需社区推荐",
+                "en": "Community recommendation",
+                "ko": "커뮤니티 추천 필요"
+            },
+            "quote": "If they decide to recommend you, you can apply for permanent residence.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/job-offer.html"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 3 年内相关工作 1 年(1,560 小时)",
+                "en": "1 year (1,560 hours) of related work in the last 3 years",
+                "ko": "최근 3년 내 관련 경력 1년(1,560시간)"
+            },
+            "quote": "you need at least 1 year (1,560 hours) of related work experience in the past 3 years",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "本社区公立院校毕业生可免工作经验",
+                "en": "Graduates of a public school in the community are exempt",
+                "ko": "해당 커뮤니티 공립학교 졸업생은 경력 면제"
+            },
+            "quote": "You don’t need to meet the work experience requirement if you’re an international student who graduated from a public post-secondary school in the community",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 6(TEER 0、1 offer)",
+                "en": "CLB 6 (TEER 0 or 1 job offer)",
+                "ko": "CLB 6(TEER 0·1 오퍼)"
+            },
+            "quote": "TEER 0 or 1: CLB 6",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/language-test.html"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 5(TEER 2、3 offer)",
+                "en": "CLB 5 (TEER 2 or 3 job offer)",
+                "ko": "CLB 5(TEER 2·3 오퍼)"
+            },
+            "quote": "TEER 2 or 3: CLB 5",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/language-test.html"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "CLB 4(TEER 4、5 offer)",
+                "en": "CLB 4 (TEER 4 or 5 job offer)",
+                "ko": "CLB 4(TEER 4·5 오퍼)"
+            },
+            "quote": "TEER 4 or 5: CLB 4",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/language-test.html"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "高中及以上(境外学历需 ECA)",
+                "en": "High school diploma or higher (ECA for foreign education)",
+                "ko": "고졸 이상(해외 학력은 ECA)"
+            },
+            "quote": "shows you completed a foreign credential equal to a Canadian secondary school (high school) diploma",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/education-assessment.html"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "安家资金:单人 $10,507",
+                "en": "Settlement funds: $10,507 for 1 person",
+                "ko": "정착 자금: 1인 $10,507"
+            },
+            "quote": "Funds you need (in Canadian dollars) 1 $10,507",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/proof-funds.html"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "持工签在职免资金证明",
+                "en": "No proof of funds if working in Canada on a work permit",
+                "ko": "워크퍼밋으로 취업 중이면 자금 증명 면제"
+            },
+            "quote": "You do not need to show proof of funds if you’re already working in Canada with a valid work permit.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/proof-funds.html"
+        }
+    ],
     "steps": [
         {
             "step": "jobOffer",
@@ -8035,6 +10603,88 @@ PW_FED_FCIP = {
     "quote": "The Francophone Community Immigration Pilot offers permanent residence (PR) to skilled workers who want to work and settle in rural remote Francophone-minority communities.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "jobOffer",
+            "text": {
+                "zh": "社区指定雇主的 offer",
+                "en": "Job offer from a designated employer in the community",
+                "ko": "커뮤니티 지정 고용주의 잡오퍼"
+            },
+            "quote": "have a valid job offer from a designated employer in the community",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/franco-immigration/eligibility.html"
+        },
+        {
+            "factor": "community",
+            "text": {
+                "zh": "需社区推荐",
+                "en": "Community recommendation",
+                "ko": "커뮤니티 추천 필요"
+            },
+            "quote": "If they decide to recommend you, you can apply for permanent residence.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/franco-immigration/job-offer.html"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 3 年内相关工作 1 年(1,560 小时)",
+                "en": "1 year (1,560 hours) of related work in the last 3 years",
+                "ko": "최근 3년 내 관련 경력 1년(1,560시간)"
+            },
+            "quote": "you need at least 1 year (1,560 hours) of related work experience in the past 3 years",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/franco-immigration/eligibility/work-experience.html"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "本社区公立院校毕业生可免工作经验",
+                "en": "Graduates of a public school in the community are exempt",
+                "ko": "해당 커뮤니티 공립학교 졸업생은 경력 면제"
+            },
+            "quote": "You don’t need to meet the work experience requirement if you’re an international student who graduated from a public post-secondary school in the community",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/franco-immigration/eligibility/work-experience.html"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "法语 NCLC 5(四项)",
+                "en": "French NCLC 5 in all 4 abilities",
+                "ko": "프랑스어 NCLC 5(4개 영역)"
+            },
+            "quote": "You need a minimum score of NCLC 5 in all 4 abilities",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/franco-immigration/eligibility/language-test.html"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "高中及以上(境外学历需 ECA)",
+                "en": "High school diploma or higher (ECA for foreign education)",
+                "ko": "고졸 이상(해외 학력은 ECA)"
+            },
+            "quote": "shows you completed a foreign credential equal to a Canadian secondary school (high school) diploma",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/franco-immigration/eligibility/education-assessment.html"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "安家资金:单人 $10,507",
+                "en": "Settlement funds: $10,507 for 1 person",
+                "ko": "정착 자금: 1인 $10,507"
+            },
+            "quote": "Funds you need (in Canadian dollars) 1 $10,507",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/franco-immigration/eligibility/proof-funds.html"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "持工签在职免资金证明",
+                "en": "No proof of funds if working in Canada on a work permit",
+                "ko": "워크퍼밋으로 취업 중이면 자금 증명 면제"
+            },
+            "quote": "You do not need to show proof of funds if you’re already working in Canada with a valid work permit.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/franco-immigration/eligibility/proof-funds.html"
+        }
+    ],
     "steps": [
         {
             "step": "jobOffer",
@@ -8223,6 +10873,108 @@ PW_FED_SPOUSE_INLAND = {
     "quote": "This is a program to sponsor your spouse, common-law partner, conjugal partner or dependent child to become a permanent resident of Canada.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "sponsor",
+            "text": {
+                "zh": "担保人年满 18 岁",
+                "en": "Sponsor is at least 18 years old",
+                "ko": "보증인 만 18세 이상"
+            },
+            "quote": "are at least 18 years old",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        },
+        {
+            "factor": "sponsor",
+            "text": {
+                "zh": "担保人是公民、永久居民或印第安法登记者",
+                "en": "Sponsor is a Canadian citizen, permanent resident or registered under the Indian Act",
+                "ko": "보증인은 시민권자·영주권자 또는 인디언법 등록자"
+            },
+            "quote": "are a Canadian citizen, a permanent resident of Canada, or a person registered in Canada under the Canadian Indian Act",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        },
+        {
+            "factor": "sponsor",
+            "text": {
+                "zh": "担保人住在加拿大(永久居民住境外不能担保)",
+                "en": "Sponsor lives in Canada (PRs living abroad can’t sponsor)",
+                "ko": "보증인 캐나다 거주(해외 거주 영주권자 불가)"
+            },
+            "quote": "If you’re a permanent resident living outside Canada, you can’t sponsor.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "配偶与你在加拿大同住",
+                "en": "Spouse or partner lives with you in Canada",
+                "ko": "배우자가 캐나다에서 동거"
+            },
+            "quote": "You can apply under the Spouse or Common-Law Partner in Canada class if your spouse or common-law partner cohabits (lives) with you in Canada.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-5289-sponsor-your-spouse-common-law-partner-conjugal-partner-dependent-child-complete-guide.html"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "配偶持有效临时居民身份(或符合公共政策豁免)",
+                "en": "Spouse has valid temporary resident status (or a public policy exemption)",
+                "ko": "배우자 유효한 임시 체류 신분(또는 공공정책 면제)"
+            },
+            "quote": "has valid temporary resident status in Canada, or is exempt from needing this status under a public policy",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-5289-sponsor-your-spouse-common-law-partner-conjugal-partner-dependent-child-complete-guide.html"
+        },
+        {
+            "factor": "relationship",
+            "text": {
+                "zh": "合法配偶或同居伴侣(连续同住满 12 个月)",
+                "en": "Legally married spouse or common-law partner (12 consecutive months together)",
+                "ko": "법적 배우자 또는 사실혼 동반자(연속 12개월 동거)"
+            },
+            "quote": "as long as you’ve been living or have lived with your partner for at least 12 consecutive months in a marriage-like relationship",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-5289-sponsor-your-spouse-common-law-partner-conjugal-partner-dependent-child-complete-guide.html"
+        },
+        {
+            "factor": "relationship",
+            "text": {
+                "zh": "关系真实,不只为拿永居",
+                "en": "Genuine relationship, not only for PR status",
+                "ko": "진정한 관계(영주권만을 위한 관계 아님)"
+            },
+            "quote": "is in a genuine relationship with you, not only for the purpose of getting permanent resident status",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/who-you-can-sponsor.html"
+        },
+        {
+            "factor": "income",
+            "text": {
+                "zh": "一般无收入要求",
+                "en": "In most cases no income requirement",
+                "ko": "대부분 소득 요건 없음"
+            },
+            "quote": "In most cases, there isn’t an income requirement to sponsor your spouse, partner or dependent child.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "自己靠配偶担保拿永居不满 5 年",
+                "en": "You became a PR through spousal sponsorship less than 5 years ago",
+                "ko": "본인이 배우자 초청으로 영주권 취득 후 5년 미만"
+            },
+            "quote": "were sponsored by a spouse or partner and you became a permanent resident less than 5 years ago",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "领社会救助(残障原因除外)",
+                "en": "Receiving social assistance (other than for disability)",
+                "ko": "사회 보조금 수급(장애 사유 제외)"
+            },
+            "quote": "are receiving social assistance for a reason other than a disability",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        }
+    ],
     "steps": [
         {
             "step": "sponsorEligible",
@@ -8412,6 +11164,108 @@ PW_FED_SPOUSE_OUTLAND = {
     "quote": "This is a program to sponsor your spouse, common-law partner, conjugal partner or dependent child to become a permanent resident of Canada.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "sponsor",
+            "text": {
+                "zh": "担保人年满 18 岁",
+                "en": "Sponsor is at least 18 years old",
+                "ko": "보증인 만 18세 이상"
+            },
+            "quote": "are at least 18 years old",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        },
+        {
+            "factor": "sponsor",
+            "text": {
+                "zh": "担保人是公民、永久居民或印第安法登记者",
+                "en": "Sponsor is a Canadian citizen, permanent resident or registered under the Indian Act",
+                "ko": "보증인은 시민권자·영주권자 또는 인디언법 등록자"
+            },
+            "quote": "are a Canadian citizen, a permanent resident of Canada, or a person registered in Canada under the Canadian Indian Act",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        },
+        {
+            "factor": "sponsor",
+            "text": {
+                "zh": "公民住境外须打算回加拿大定居",
+                "en": "Citizens abroad must plan to live in Canada",
+                "ko": "해외 거주 시민권자는 캐나다 귀국 거주 계획 필요"
+            },
+            "quote": "If you’re a Canadian citizen living outside Canada, you must show that you plan to live in Canada when the people you’re sponsoring become permanent residents.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        },
+        {
+            "factor": "sponsor",
+            "text": {
+                "zh": "永久居民住境外不能担保",
+                "en": "PRs living outside Canada can’t sponsor",
+                "ko": "해외 거주 영주권자 초청 불가"
+            },
+            "quote": "If you’re a permanent resident living outside Canada, you can’t sponsor.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "被担保人住在加拿大境外",
+                "en": "Person you sponsor lives outside Canada",
+                "ko": "피초청인 캐나다 밖 거주"
+            },
+            "quote": "the person you want to sponsor lives outside Canada",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-5289-sponsor-your-spouse-common-law-partner-conjugal-partner-dependent-child-complete-guide.html"
+        },
+        {
+            "factor": "relationship",
+            "text": {
+                "zh": "合法配偶、同居伴侣或婚恋伴侣",
+                "en": "Spouse, common-law partner or conjugal partner",
+                "ko": "배우자·사실혼·혼인관계 동반자"
+            },
+            "quote": "You can sponsor your spouse, common-law partner, conjugal partner or dependent child if you",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        },
+        {
+            "factor": "relationship",
+            "text": {
+                "zh": "婚恋伴侣:排他关系满 1 年",
+                "en": "Conjugal partner: exclusive relationship for at least 1 year",
+                "ko": "혼인관계 동반자: 1년 이상 배타적 관계"
+            },
+            "quote": "has been in an exclusive and mutually interdependent relationship with you for at least 1 year",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/who-you-can-sponsor.html"
+        },
+        {
+            "factor": "relationship",
+            "text": {
+                "zh": "关系真实,不只为拿永居",
+                "en": "Genuine relationship, not only for PR status",
+                "ko": "진정한 관계(영주권만을 위한 관계 아님)"
+            },
+            "quote": "is in a genuine relationship with you, not only for the purpose of getting permanent resident status",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/who-you-can-sponsor.html"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "担保前任配偶未满 3 年",
+                "en": "Sponsored a previous partner less than 3 years ago",
+                "ko": "이전 배우자 초청 후 3년 미만"
+            },
+            "quote": "signed an undertaking for a previous spouse or partner that you sponsored and it hasn’t been 3 years since they became a permanent resident",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "自己靠配偶担保拿永居不满 5 年",
+                "en": "You became a PR through spousal sponsorship less than 5 years ago",
+                "ko": "본인이 배우자 초청으로 영주권 취득 후 5년 미만"
+            },
+            "quote": "were sponsored by a spouse or partner and you became a permanent resident less than 5 years ago",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        }
+    ],
     "steps": [
         {
             "step": "sponsorEligible",
@@ -8591,6 +11445,98 @@ PW_FED_DEPENDENT_CHILD = {
     "quote": "This is a program to sponsor your spouse, common-law partner, conjugal partner or dependent child to become a permanent resident of Canada.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "sponsor",
+            "text": {
+                "zh": "担保人年满 18 岁",
+                "en": "Sponsor is at least 18 years old",
+                "ko": "보증인 만 18세 이상"
+            },
+            "quote": "are at least 18 years old",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        },
+        {
+            "factor": "sponsor",
+            "text": {
+                "zh": "担保人是公民、永久居民或印第安法登记者",
+                "en": "Sponsor is a Canadian citizen, permanent resident or registered under the Indian Act",
+                "ko": "보증인은 시민권자·영주권자 또는 인디언법 등록자"
+            },
+            "quote": "are a Canadian citizen, a permanent resident of Canada, or a person registered in Canada under the Canadian Indian Act",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        },
+        {
+            "factor": "relationship",
+            "text": {
+                "zh": "亲生或领养子女(含配偶的)",
+                "en": "Biological or adopted child (yours or your partner’s)",
+                "ko": "친자 또는 입양 자녀(배우자 자녀 포함)"
+            },
+            "quote": "they’re your biological or adopted child (or your spouse or partner’s biological or adopted child)",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/who-you-can-sponsor.html"
+        },
+        {
+            "factor": "relationship",
+            "text": {
+                "zh": "22 岁以下且未婚无同居伴侣",
+                "en": "Under 22 with no spouse or common-law partner",
+                "ko": "22세 미만, 배우자·사실혼 동반자 없음"
+            },
+            "quote": "they’re under 22 years old and they don’t have a spouse or common-law partner",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/who-you-can-sponsor.html"
+        },
+        {
+            "factor": "relationship",
+            "text": {
+                "zh": "22 岁以上须因身心原因无法自立",
+                "en": "22 or older: unable to support themselves due to a mental or physical condition",
+                "ko": "22세 이상: 신체·정신 질환으로 자립 불가"
+            },
+            "quote": "they’re unable to financially support themselves because of a mental or physical condition",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/who-you-can-sponsor.html"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "走家庭类,境外审理",
+                "en": "Family Class, processed outside Canada",
+                "ko": "가족 이민 부문, 해외 심사"
+            },
+            "quote": "These applications are processed outside Canada.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-5289-sponsor-your-spouse-common-law-partner-conjugal-partner-dependent-child-complete-guide.html"
+        },
+        {
+            "factor": "income",
+            "text": {
+                "zh": "子女自己有子女时须达收入要求",
+                "en": "Income requirement applies if the child has children of their own",
+                "ko": "자녀에게 자녀가 있으면 소득 요건 적용"
+            },
+            "quote": "you’re sponsoring a dependent child that has 1 or more dependent children of their own",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "子女已是加拿大公民",
+                "en": "Child is already a Canadian citizen",
+                "ko": "자녀가 이미 캐나다 시민"
+            },
+            "quote": "You can’t sponsor your child for permanent residence if they’re already a citizen.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/who-you-can-sponsor.html"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "担保人在监狱服刑",
+                "en": "Sponsor is in jail or prison",
+                "ko": "보증인 수감 중"
+            },
+            "quote": "are in jail, prison or a penitentiary",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/eligibility.html"
+        }
+    ],
     "steps": [
         {
             "step": "sponsorEligible",
@@ -8921,6 +11867,108 @@ PW_FED_OTHER_RELATIVES = {
     "quote": "This is a program to sponsor certain relatives to become permanent residents of Canada.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "sponsor",
+            "text": {
+                "zh": "担保人年满 18 岁",
+                "en": "Sponsor is at least 18 years old",
+                "ko": "보증인 만 18세 이상"
+            },
+            "quote": "are at least 18 years old",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/other-relatives/eligibility.html"
+        },
+        {
+            "factor": "sponsor",
+            "text": {
+                "zh": "担保人是公民、永久居民或印第安法登记者",
+                "en": "Sponsor is a Canadian citizen, permanent resident or registered under the Indian Act",
+                "ko": "보증인은 시민권자·영주권자 또는 인디언법 등록자"
+            },
+            "quote": "are a Canadian citizen, a permanent resident of Canada, or a person registered in Canada under the Canadian Indian Act",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/other-relatives/eligibility.html"
+        },
+        {
+            "factor": "sponsor",
+            "text": {
+                "zh": "递件到出结果前主要住址都在加拿大",
+                "en": "Primary address in Canada from submission until decision",
+                "ko": "신청부터 결정까지 주 거주지 캐나다"
+            },
+            "quote": "Your primary residential address must be in Canada when you submit your application and until we make a decision on your application.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/other-relatives/eligibility.html"
+        },
+        {
+            "factor": "income",
+            "text": {
+                "zh": "须达收入标准",
+                "en": "Meet set income guidelines",
+                "ko": "정해진 소득 기준 충족"
+            },
+            "quote": "meet set income guidelines",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/other-relatives/eligibility.html"
+        },
+        {
+            "factor": "relationship",
+            "text": {
+                "zh": "孤儿兄弟姐妹、侄甥或孙辈:18 岁以下",
+                "en": "Orphaned sibling, nephew, niece or grandchild under 18",
+                "ko": "고아 형제자매·조카·손주: 18세 미만"
+            },
+            "quote": "they’re under 18 years old",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/other-relatives/who-you-can-sponsor.html"
+        },
+        {
+            "factor": "relationship",
+            "text": {
+                "zh": "孤儿:父母双亡",
+                "en": "Orphan: both parents have passed away",
+                "ko": "고아: 부모 모두 사망"
+            },
+            "quote": "both their parents have passed away",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/other-relatives/who-you-can-sponsor.html"
+        },
+        {
+            "factor": "relationship",
+            "text": {
+                "zh": "其他亲属:有血缘或领养关系",
+                "en": "Other relative: related by blood or adoption",
+                "ko": "기타 친척: 혈연 또는 입양 관계"
+            },
+            "quote": "you’re related to them by blood or adoption",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/other-relatives/who-you-can-sponsor.html"
+        },
+        {
+            "factor": "relationship",
+            "text": {
+                "zh": "你没有更近的亲属可担保",
+                "en": "You have no closer relative you could sponsor instead",
+                "ko": "대신 초청할 더 가까운 친척 없음"
+            },
+            "quote": "don't have a living relative you could sponsor instead",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/other-relatives/who-you-can-sponsor.html"
+        },
+        {
+            "factor": "relationship",
+            "text": {
+                "zh": "你在加拿大没有公民 / 永久居民亲属",
+                "en": "You have no relative who is a Canadian citizen or PR",
+                "ko": "캐나다 시민·영주권자 친척 없음"
+            },
+            "quote": "you (the sponsor) don’t have any relatives (aunt, uncle, or any of the relatives listed above), who is a",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/other-relatives/who-you-can-sponsor.html"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "领社会救助(残障原因除外)",
+                "en": "Got social assistance (other than for disability)",
+                "ko": "사회 보조금 수급(장애 사유 제외)"
+            },
+            "quote": "got social assistance for reasons other than being disabled",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/other-relatives/eligibility.html"
+        }
+    ],
     "steps": [
         {
             "step": "sponsorEligible",
@@ -9039,6 +12087,98 @@ PW_FED_REFUGEE_CLAIM = {
     "quote": "Canada offers asylum (legally known as refugee protection) to people within Canada who can prove they meet the definition of a Convention refugee or person in need of protection.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "status",
+            "text": {
+                "zh": "人在加拿大境内",
+                "en": "You are in Canada",
+                "ko": "캐나다 내에 있음"
+            },
+            "quote": "that you are in Canada",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/asylum/in-canada/eligibility.html"
+        },
+        {
+            "factor": "protection",
+            "text": {
+                "zh": "公约难民:因种族、宗教、政见、国籍或社会群体受迫害",
+                "en": "Convention refugee: persecution for race, religion, political opinion, nationality or social group",
+                "ko": "협약 난민: 인종·종교·정치적 견해·국적·사회집단으로 인한 박해"
+            },
+            "quote": "that you can’t return to your home country or the country you normally live in because you have a good reason to believe you will be persecuted because of",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/asylum/in-canada/eligibility.html"
+        },
+        {
+            "factor": "protection",
+            "text": {
+                "zh": "需要保护的人:回国面临酷刑或生命危险",
+                "en": "Person in need of protection: risk of torture or to life",
+                "ko": "보호가 필요한 사람: 고문·생명 위험"
+            },
+            "quote": "Canada offers asylum (legally known as refugee protection) to people within Canada who can prove they meet the definition of a Convention refugee or person in need of protection.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/asylum/in-canada.html"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "入境满 1 年后才申请",
+                "en": "Claim made more than 1 year after first entering Canada",
+                "ko": "입국 1년 이후 신청"
+            },
+            "quote": "more than 1 year after you first entered Canada",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/asylum/in-canada/eligibility.html"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "从美国陆路口岸入境(安全第三国协议)",
+                "en": "Entered from the US along the land border (STCA)",
+                "ko": "미국 육로 국경으로 입국(안전한 제3국 협정)"
+            },
+            "quote": "entered Canada from the United States (US) along the land border",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/asylum/in-canada/eligibility.html"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "已在别国申请过庇护",
+                "en": "Already made an asylum claim in another country",
+                "ko": "다른 나라에서 이미 난민 신청"
+            },
+            "quote": "have already made an asylum claim in another country",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/asylum/in-canada/eligibility.html"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "此前在加申请被拒、放弃或撤回",
+                "en": "Previous claim in Canada rejected, abandoned or withdrawn",
+                "ko": "이전 캐나다 신청 거절·포기·철회"
+            },
+            "quote": "made a previous asylum claim in Canada that was rejected, abandoned or withdrawn",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/asylum/in-canada/eligibility.html"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "已被可返回的他国认定为难民",
+                "en": "Recognized as a refugee by another country you can return to",
+                "ko": "돌아갈 수 있는 다른 나라에서 난민 인정"
+            },
+            "quote": "are recognized as a Convention refugee by another country that you can return to",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/asylum/in-canada/eligibility.html"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "因安全、犯罪或侵犯人权不可入境",
+                "en": "Inadmissible on security, criminality or human rights grounds",
+                "ko": "안보·범죄·인권침해로 입국 불허"
+            },
+            "quote": "are inadmissible to Canada on security or criminality grounds or human rights violations",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/asylum/in-canada/eligibility.html"
+        }
+    ],
     "steps": [
         {
             "step": "eligibilityCheck",
@@ -9180,6 +12320,78 @@ PW_FED_REFUGEE_GAR = {
     "quote": "Through the Government-Assisted Refugees (GAR) program, refugees are referred to Canada for resettlement by the United Nations Refugee Agency (UNHCR) or another referral organization",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "community",
+            "text": {
+                "zh": "须由联合国难民署等机构转介,不能自己申请",
+                "en": "Must be referred by UNHCR or another referral organization; you can’t apply",
+                "ko": "유엔난민기구 등 기관 추천 필요, 직접 신청 불가"
+            },
+            "quote": "You can’t apply to resettle in Canada as a government-assisted refugee.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/refugees/help-outside-canada/government-assisted-refugee-program.html"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "已向联合国难民署或当地政府登记难民身份",
+                "en": "Registered for refugee status with UNHCR or state authorities",
+                "ko": "유엔난민기구 또는 해당국에 난민 등록"
+            },
+            "quote": "To be considered by a referral organization, you must register for refugee status with the UNHCR or state authorities.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/refugees/help-outside-canada/government-assisted-refugee-program.html"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "人在国籍国以外,无法或不愿受其保护",
+                "en": "Outside your country of nationality and unable or unwilling to get its protection",
+                "ko": "국적국 밖에 있으며 그 보호를 받을 수 없거나 원치 않음"
+            },
+            "quote": "are outside your country of nationality and unable or, because of your fear, unwilling to obtain the protection of your country",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-6000-convention-refugees-abroad-humanitarian-protected-persons-abroad.html"
+        },
+        {
+            "factor": "protection",
+            "text": {
+                "zh": "海外公约难民:因种族、宗教等受迫害",
+                "en": "Convention refugee abroad: fear of persecution",
+                "ko": "해외 협약 난민: 박해의 두려움"
+            },
+            "quote": "are afraid of persecution because of your race, religion, nationality, membership in a particular social group or political opinion; and",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-6000-convention-refugees-abroad-humanitarian-protected-persons-abroad.html"
+        },
+        {
+            "factor": "protection",
+            "text": {
+                "zh": "庇护国类别:受内战或大规模侵犯人权严重影响",
+                "en": "Country of asylum class: seriously affected by armed conflict or human rights violations",
+                "ko": "비호국 부문: 내전·대규모 인권침해의 심각한 영향"
+            },
+            "quote": "are seriously and personally affected by civil or armed conflict or a massive violation of human rights in your country of nationality or habitual residence (home country); and",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-6000-convention-refugees-abroad-humanitarian-protected-persons-abroad.html"
+        },
+        {
+            "factor": "other",
+            "text": {
+                "zh": "没有其他持久解决办法",
+                "en": "No other durable solution",
+                "ko": "다른 지속 가능한 해결책 없음"
+            },
+            "quote": "a Migration Officer must be satisfied that there is no reasonable prospect, within a reasonable period of time, for the refugee applicant to obtain another durable solution",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-6000-convention-refugees-abroad-humanitarian-protected-persons-abroad.html"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "体检、安全、犯罪审查不过",
+                "en": "Fail medical, security or criminality checks",
+                "ko": "건강·보안·범죄 심사 불통과"
+            },
+            "quote": "pass medical, security and criminality checks.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-6000-convention-refugees-abroad-humanitarian-protected-persons-abroad.html"
+        }
+    ],
     "steps": [
         {
             "step": "referral",
@@ -9282,6 +12494,78 @@ PW_FED_REFUGEE_PSR = {
     "quote": "You become a privately sponsored refugee (PSR) when a group of people in Canada volunteers to help you adjust to life here.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "community",
+            "text": {
+                "zh": "须有加拿大民间担保团体",
+                "en": "Must have a private sponsorship group in Canada",
+                "ko": "캐나다 민간 후원 단체 필요"
+            },
+            "quote": "You become a privately sponsored refugee (PSR) when a group of people in Canada volunteers to help you adjust to life here.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/refugees/sponsor-refugee/private-sponsorship-program/refugees-information.html"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "五人小组 / 社区担保:须已获联合国难民署或所在国难民认定",
+                "en": "Groups of Five / Community Sponsors: already recognized as a refugee by UNHCR or the state",
+                "ko": "5인 그룹·지역사회 후원: 유엔난민기구 또는 거주국의 난민 인정 필요"
+            },
+            "quote": "already have been granted refugee status by the UNHCR or the government in your country of residence",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-6000-convention-refugees-abroad-humanitarian-protected-persons-abroad.html"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "人在国籍国以外,无法或不愿受其保护",
+                "en": "Outside your country of nationality and unable or unwilling to get its protection",
+                "ko": "국적국 밖에 있으며 그 보호를 받을 수 없거나 원치 않음"
+            },
+            "quote": "are outside your country of nationality and unable or, because of your fear, unwilling to obtain the protection of your country",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-6000-convention-refugees-abroad-humanitarian-protected-persons-abroad.html"
+        },
+        {
+            "factor": "protection",
+            "text": {
+                "zh": "海外公约难民:因种族、宗教等受迫害",
+                "en": "Convention refugee abroad: fear of persecution",
+                "ko": "해외 협약 난민: 박해의 두려움"
+            },
+            "quote": "are afraid of persecution because of your race, religion, nationality, membership in a particular social group or political opinion; and",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-6000-convention-refugees-abroad-humanitarian-protected-persons-abroad.html"
+        },
+        {
+            "factor": "protection",
+            "text": {
+                "zh": "庇护国类别:受内战或大规模侵犯人权严重影响",
+                "en": "Country of asylum class: seriously affected by armed conflict or human rights violations",
+                "ko": "비호국 부문: 내전·대규모 인권침해의 심각한 영향"
+            },
+            "quote": "are seriously and personally affected by civil or armed conflict or a massive violation of human rights in your country of nationality or habitual residence (home country); and",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-6000-convention-refugees-abroad-humanitarian-protected-persons-abroad.html"
+        },
+        {
+            "factor": "other",
+            "text": {
+                "zh": "没有其他持久解决办法",
+                "en": "No other durable solution",
+                "ko": "다른 지속 가능한 해결책 없음"
+            },
+            "quote": "a Migration Officer must be satisfied that there is no reasonable prospect, within a reasonable period of time, for the refugee applicant to obtain another durable solution",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-6000-convention-refugees-abroad-humanitarian-protected-persons-abroad.html"
+        },
+        {
+            "factor": "ineligible",
+            "text": {
+                "zh": "体检、安全、犯罪审查不过",
+                "en": "Fail medical, security or criminality checks",
+                "ko": "건강·보안·범죄 심사 불통과"
+            },
+            "quote": "pass medical, security and criminality checks.",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/guide-6000-convention-refugees-abroad-humanitarian-protected-persons-abroad.html"
+        }
+    ],
     "steps": [
         {
             "step": "sponsorGroup",
@@ -9394,6 +12678,88 @@ PW_QC_PSTQ_STREAM_1 = {
     "quote": "Your main occupation must be in the category FEER 0, 1 or 2.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "age",
+            "text": {
+                "zh": "年满 18 岁",
+                "en": "Be 18 or older",
+                "ko": "만 18세 이상"
+            },
+            "quote": "Be 18 years of age or older.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算在魁北克定居工作",
+                "en": "Intend to settle in Québec to take up employment",
+                "ko": "퀘벡 정착·취업 의향"
+            },
+            "quote": "Intend to settle in Québec to take up employment, which:",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "签自给合同,能养活全家 3 个月",
+                "en": "Sign a financial self-sufficiency contract covering 3 months",
+                "ko": "3개월 재정 자립 계약 서명"
+            },
+            "quote": "your capacity to provide for yourself and, if applicable, that of your accompanying family members for the three months after becoming a permanent resident",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "主职业属 FEER 0、1、2",
+                "en": "Main occupation in FEER 0, 1 or 2",
+                "ko": "주 직업 FEER 0·1·2"
+            },
+            "quote": "Your main occupation must be in the category FEER 0, 1 or 2.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 5 年内主职业全职经验 1 年",
+                "en": "1 year full-time experience in main occupation in the last 5 years",
+                "ko": "최근 5년 내 주 직업 풀타임 경력 1년"
+            },
+            "quote": "You must have at least 1 year of full-time or equivalent paid work experience in your main occupation, in Québec or outside Québec, during the 5 years prior to the date of your application.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "至少 1 年全日制职业类文凭",
+                "en": "Diploma from a full-time program of at least 1 year",
+                "ko": "1년 이상 풀타임 직업 학위"
+            },
+            "quote": "diploma leading directly to a profession, earned through a program of study of at least one year full-time",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "法语口语 7 级、书面 5 级",
+                "en": "French: oral level 7, written level 5",
+                "ko": "프랑스어 말하기 7·쓰기 5"
+            },
+            "quote": "oral knowledge of French of level 7 or higher and a written knowledge of level 5 or higher",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "随行配偶法语口语 4 级",
+                "en": "Accompanying spouse: oral French level 4",
+                "ko": "동반 배우자 프랑스어 말하기 4"
+            },
+            "quote": "Your accompanying spouse must have a spoken knowledge of French at level 4 or higher on the Échelle québécoise.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        }
+    ],
     "steps": [
         {
             "step": "eoi",
@@ -9562,6 +12928,98 @@ PW_QC_PSTQ_STREAM_2 = {
     "quote": "Your main occupation must be in the category FEER 3, 4 or 5.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "age",
+            "text": {
+                "zh": "年满 18 岁",
+                "en": "Be 18 or older",
+                "ko": "만 18세 이상"
+            },
+            "quote": "Be 18 years of age or older.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算在魁北克定居工作",
+                "en": "Intend to settle in Québec to take up employment",
+                "ko": "퀘벡 정착·취업 의향"
+            },
+            "quote": "Intend to settle in Québec to take up employment, which:",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "签自给合同,能养活全家 3 个月",
+                "en": "Sign a financial self-sufficiency contract covering 3 months",
+                "ko": "3개월 재정 자립 계약 서명"
+            },
+            "quote": "your capacity to provide for yourself and, if applicable, that of your accompanying family members for the three months after becoming a permanent resident",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "主职业属 FEER 3、4、5",
+                "en": "Main occupation in FEER 3, 4 or 5",
+                "ko": "주 직업 FEER 3·4·5"
+            },
+            "quote": "Your main occupation must be in the category FEER 3, 4 or 5.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 5 年内主职业经验 2 年,至少 1 年在魁北克",
+                "en": "2 years’ experience in the last 5 years, at least 1 in Québec",
+                "ko": "최근 5년 내 경력 2년(퀘벡 1년 이상)"
+            },
+            "quote": "You must have at least two years' paid work experience in your main occupation",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "魁北克以外的经验最多算 1 年",
+                "en": "Experience outside Québec counts for up to 1 year",
+                "ko": "퀘벡 외 경력은 최대 1년 인정"
+            },
+            "quote": "Work experience acquired outside Québec is eligible for up to one year.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "至少高中文凭(魁北克 DES 同等)",
+                "en": "At least a secondary school diploma (Québec DES equivalent)",
+                "ko": "고등학교 졸업장 이상(퀘벡 DES 동등)"
+            },
+            "quote": "Diploma corresponding to a secondary school diploma (DES) in Quebec",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "法语口语 5 级",
+                "en": "Oral French level 5",
+                "ko": "프랑스어 말하기 5"
+            },
+            "quote": "a spoken knowledge of French at level 5 or higher",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "随行配偶法语口语 4 级",
+                "en": "Accompanying spouse: oral French level 4",
+                "ko": "동반 배우자 프랑스어 말하기 4"
+            },
+            "quote": "Your accompanying spouse must have a spoken knowledge of French at level 4 or higher on the Échelle québécoise.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        }
+    ],
     "steps": [
         {
             "step": "workLocal",
@@ -9751,6 +13209,88 @@ PW_QC_PSTQ_STREAM_3 = {
     "quote": "Your main profession must be included in the Liste des professions réglementées du Ministère",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "age",
+            "text": {
+                "zh": "年满 18 岁",
+                "en": "Be 18 or older",
+                "ko": "만 18세 이상"
+            },
+            "quote": "Be 18 years of age or older.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算在魁北克定居工作",
+                "en": "Intend to settle in Québec to take up employment",
+                "ko": "퀘벡 정착·취업 의향"
+            },
+            "quote": "Intend to settle in Québec to take up employment, which:",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "签自给合同,能养活全家 3 个月",
+                "en": "Sign a financial self-sufficiency contract covering 3 months",
+                "ko": "3개월 재정 자립 계약 서명"
+            },
+            "quote": "your capacity to provide for yourself and, if applicable, that of your accompanying family members for the three months after becoming a permanent resident",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "主职业在受监管职业清单上",
+                "en": "Main occupation on the List of Regulated Professions",
+                "ko": "주 직업이 규제 직업 목록에 있음"
+            },
+            "quote": "Your main profession must be included in the Liste des professions réglementées du Ministère",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "持监管机构执业许可或学历等效认可",
+                "en": "Licence to practise or equivalence recognition from the regulatory body",
+                "ko": "규제기관 면허 또는 학력 동등 인정"
+            },
+            "quote": "You must hold one of the following documents issued by the regulatory authority governing your occupation in Québec:",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "FEER 0–2:法语口语 7 级、书面 5 级",
+                "en": "FEER 0–2: French oral level 7, written level 5",
+                "ko": "FEER 0~2: 프랑스어 말하기 7·쓰기 5"
+            },
+            "quote": "oral knowledge of French of level 7 or higher and a written knowledge of level 5 or higher",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "FEER 3–5:法语口语 5 级",
+                "en": "FEER 3–5: oral French level 5",
+                "ko": "FEER 3~5: 프랑스어 말하기 5"
+            },
+            "quote": "a level 5 or higher in spoken French",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "随行配偶法语口语 4 级",
+                "en": "Accompanying spouse: oral French level 4",
+                "ko": "동반 배우자 프랑스어 말하기 4"
+            },
+            "quote": "Your accompanying spouse must have a spoken knowledge of French at level 4 or higher on the Échelle québécoise",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        }
+    ],
     "steps": [
         {
             "step": "eoi",
@@ -9959,6 +13499,78 @@ PW_QC_PSTQ_STREAM_4 = {
     "quote": "Distinguish yourself clearly in your main occupation through exceptional expertise likely to contribute to Québec's prosperity;",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "age",
+            "text": {
+                "zh": "年满 18 岁",
+                "en": "Be 18 or older",
+                "ko": "만 18세 이상"
+            },
+            "quote": "Be 18 years of age or older.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算在魁北克定居工作",
+                "en": "Intend to settle in Québec to take up employment",
+                "ko": "퀘벡 정착·취업 의향"
+            },
+            "quote": "Intend to settle in Québec to take up employment, which:",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "签自给合同,能养活全家 3 个月",
+                "en": "Sign a financial self-sufficiency contract covering 3 months",
+                "ko": "3개월 재정 자립 계약 서명"
+            },
+            "quote": "your capacity to provide for yourself and, if applicable, that of your accompanying family members for the three months after becoming a permanent resident",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "other",
+            "text": {
+                "zh": "在主职业上有突出专长,能促进魁北克繁荣",
+                "en": "Exceptional expertise in your main occupation",
+                "ko": "주 직업에서 탁월한 전문성"
+            },
+            "quote": "Distinguish yourself clearly in your main occupation through exceptional expertise likely to contribute to Québec's prosperity;",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "other",
+            "text": {
+                "zh": "有成绩记录",
+                "en": "Proven track record of achievements",
+                "ko": "입증된 성과 기록"
+            },
+            "quote": "A proven track record of achievements related to your expertise;",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 5 年内从事主职业 3 年",
+                "en": "3 years in main occupation in the last 5 years",
+                "ko": "최근 5년 내 주 직업 3년"
+            },
+            "quote": "Have practiced your main occupation for at least three years during the five years prior to the date of application.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        },
+        {
+            "factor": "community",
+            "text": {
+                "zh": "成就在部里清单上,或获合作机构意见",
+                "en": "Achievement on the Ministère’s list or a partner’s opinion",
+                "ko": "부처 성과 목록 등재 또는 협력기관 의견"
+            },
+            "quote": "Have obtained an opinion from one of the Ministère's partners in a targeted field.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
+        }
+    ],
     "steps": [
         {
             "step": "eoi",
@@ -10127,6 +13739,98 @@ PW_QC_PEQ_GRADUATES = {
     "quote": "Pour le volet Diplômés du Québec : avoir obtenu, au Québec, un baccalauréat, une maîtrise ou un doctorat, un diplôme d’études collégiales techniques, un diplôme d’études professionnelles, seul ou suivi d’une attestation de spécialisation professionnelle, d’au moins 1 800 heures, en date du 19 novembre 2025",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "education",
+            "text": {
+                "zh": "2025-11-19 前在魁北克拿到学士 / 硕士 / 博士 / 技术类 DEC / 1800 小时 DEP",
+                "en": "Québec bachelor’s, master’s, PhD, technical DEC or 1,800-hour DEP by Nov 19, 2025",
+                "ko": "2025-11-19 이전 퀘벡 학사·석사·박사·기술 DEC·1,800시간 DEP"
+            },
+            "quote": "Pour le volet Diplômés du Québec : avoir obtenu, au Québec, un baccalauréat, une maîtrise ou un doctorat, un diplôme d’études collégiales techniques",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/diplomes-quebec"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "递件前 36 个月内毕业",
+                "en": "Graduated within 36 months before applying",
+                "ko": "신청 전 36개월 내 졸업"
+            },
+            "quote": "Avoir obtenu votre diplôme au cours des 36 mois qui précèdent la présentation de votre demande",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/diplomes-quebec"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "递件时合法在魁北克",
+                "en": "Legally in Québec when applying",
+                "ko": "신청 시 퀘벡에 합법 체류"
+            },
+            "quote": "Être légalement au Québec lorsque vous présentez votre demande;",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/diplomes-quebec"
+        },
+        {
+            "factor": "status",
+            "text": {
+                "zh": "至少一半学程人在魁北克读书",
+                "en": "Stayed in Québec for at least half of your program",
+                "ko": "학업 기간 절반 이상 퀘벡 체류"
+            },
+            "quote": "Avoir séjourné au Québec dans le but principal d’y étudier pendant au moins la moitié de votre programme d’étude;",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/diplomes-quebec"
+        },
+        {
+            "factor": "age",
+            "text": {
+                "zh": "年满 18 岁",
+                "en": "Be 18 or older",
+                "ko": "만 18세 이상"
+            },
+            "quote": "Avoir 18 ans ou plus;",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/diplomes-quebec"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算在魁北克定居工作",
+                "en": "Intend to settle in Québec to work",
+                "ko": "퀘벡 정착·취업 의향"
+            },
+            "quote": "Avoir l’intention de vous établir au Québec pour y occuper un emploi",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/diplomes-quebec"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "法语口语 7 级",
+                "en": "Oral French level 7",
+                "ko": "프랑스어 말하기 7"
+            },
+            "quote": "Avoir une connaissance du français oral de niveau 7 ou plus",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/diplomes-quebec"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "能养活全家 3 个月",
+                "en": "Support yourself and family for 3 months",
+                "ko": "가족 3개월 생계 유지"
+            },
+            "quote": "Vous conformer à votre engagement de subvenir à vos besoins essentiels",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/diplomes-quebec"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "法语书面 5 级",
+                "en": "Written French level 5",
+                "ko": "프랑스어 쓰기 5"
+            },
+            "quote": "Avoir une connaissance du français écrit de niveau 5 ou plus",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/diplomes-quebec"
+        }
+    ],
     "steps": [
         {
             "step": "submit",
@@ -10228,6 +13932,98 @@ PW_QC_PEQ_TEMPORARY_WORKERS = {
     "quote": "Pour le volet Travailleurs étrangers temporaires : avoir une expérience de travail au Québec de catégorie « Formation, études, expérience, responsabilités » 0, 1, 2 ou 3 au sens de la CNP d’une durée d’au moins deux ans, en date du 19 novembre 2025",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "status",
+            "text": {
+                "zh": "合法在魁北克的临时外劳或青年交流项目",
+                "en": "Legally in Québec as a temporary worker or youth exchange participant",
+                "ko": "퀘벡 합법 체류 임시 근로자 또는 청년 교류 참가자"
+            },
+            "quote": "Vous devez être légalement au Québec comme travailleuse ou travailleur étranger temporaire",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/travailleurs-temporaires"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "2025-11-19 前在魁北克有 FEER 0–3 经验满 2 年",
+                "en": "2 years of FEER 0–3 work in Québec by Nov 19, 2025",
+                "ko": "2025-11-19 이전 퀘벡 FEER 0~3 경력 2년"
+            },
+            "quote": "Pour le volet Travailleurs étrangers temporaires : avoir une expérience de travail au Québec de catégorie",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/travailleurs-temporaires"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "职业属 FEER 0、1、2、3",
+                "en": "Jobs in FEER 0, 1, 2 or 3",
+                "ko": "직업 FEER 0·1·2·3"
+            },
+            "quote": "FÉER 0, 1, 2 ou 3 de la Classification nationale des professions",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/travailleurs-temporaires"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "递件前 36 个月里在职至少 24 个月,递件时在职",
+                "en": "Working at application and for 24 of the last 36 months",
+                "ko": "신청 시 재직, 최근 36개월 중 24개월 근무"
+            },
+            "quote": "Vous devez aussi occuper un emploi qui répond à ces critères au moment où vous présentez votre demande et pendant au moins 24 des 36 mois",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/travailleurs-temporaires"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "全职:每周至少 30 小时带薪",
+                "en": "Full time: at least 30 paid hours a week",
+                "ko": "풀타임: 주 30시간 이상 유급"
+            },
+            "quote": "Avoir été occupés à temps plein (un minimum de 30 heures payées par semaine);",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/travailleurs-temporaires"
+        },
+        {
+            "factor": "age",
+            "text": {
+                "zh": "年满 18 岁",
+                "en": "Be 18 or older",
+                "ko": "만 18세 이상"
+            },
+            "quote": "Avoir 18 ans ou plus;",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/travailleurs-temporaires"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "打算在魁北克定居工作",
+                "en": "Intend to settle in Québec to work",
+                "ko": "퀘벡 정착·취업 의향"
+            },
+            "quote": "Avoir l’intention de vous établir au Québec pour y occuper un emploi",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/travailleurs-temporaires"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "法语口语 7 级",
+                "en": "Oral French level 7",
+                "ko": "프랑스어 말하기 7"
+            },
+            "quote": "Avoir une connaissance du français oral de niveau 7 ou plus",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/travailleurs-temporaires"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "能养活全家 3 个月",
+                "en": "Support yourself and family for 3 months",
+                "ko": "가족 3개월 생계 유지"
+            },
+            "quote": "Vous conformer à votre engagement de subvenir à vos besoins essentiels",
+            "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/travailleurs-temporaires"
+        }
+    ],
     "steps": [
         {
             "step": "workLocal",
@@ -10351,6 +14147,78 @@ PW_QC_INVESTOR = {
     "quote": "Settle in Québec and invest in Québec.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "business",
+            "text": {
+                "zh": "近 5 年内管理经验 2 年",
+                "en": "2 years of management experience in the last 5 years",
+                "ko": "최근 5년 내 경영 경력 2년"
+            },
+            "quote": "You must have at least two years of management experience.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/investors/conditions"
+        },
+        {
+            "factor": "netWorth",
+            "text": {
+                "zh": "净资产至少 200 万加元",
+                "en": "Net worth of at least CAD $2,000,000",
+                "ko": "순자산 200만 캐나다달러 이상"
+            },
+            "quote": "must have a net worth of at least CAD $2,000,000.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/investors/conditions"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "经金融中介投资 100 万加元 5 年 + 捐 20 万加元",
+                "en": "Invest CDN $1,000,000 for 5 years plus a CDN $200,000 contribution",
+                "ko": "중개기관 통해 100만 달러 5년 투자 + 20만 달러 기여"
+            },
+            "quote": "your financial intermediary must make a five-year term investment of CDN $1,000,000 and make a financial contribution of CDN $200,000",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/investors/conditions"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "与签约金融中介签投资协议",
+                "en": "Investment agreement with an approved financial intermediary",
+                "ko": "승인된 금융 중개기관과 투자 계약"
+            },
+            "quote": "First, you must enter into an investment agreement with a financial intermediary",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/investors/conditions"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "至少高中文凭",
+                "en": "At least a secondary school diploma",
+                "ko": "고등학교 졸업장 이상"
+            },
+            "quote": "A diploma equivalent to a Québec Secondary School Diploma (Diplôme d'études secondaires);",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/investors/conditions"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "法语口语 7 级",
+                "en": "Oral French level 7",
+                "ko": "프랑스어 말하기 7"
+            },
+            "quote": "You must have a knowledge of spoken French corresponding minimally to level 7 according to the",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/investors/conditions"
+        },
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "拿工签后 2 年内在魁北克住满 12 个月",
+                "en": "Stay in Québec 12 months within 2 years of the work permit",
+                "ko": "취업허가 후 2년 내 퀘벡 12개월 체류"
+            },
+            "quote": "Within two years following issuance of the work permit, you must complete a stay in Québec of at least 12 months.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/investors/conditions"
+        }
+    ],
     "steps": [
         {
             "step": "agreement",
@@ -10514,6 +14382,108 @@ PW_QC_ENTREPRENEUR_STARTUP = {
     "quote": "You can submit an application for the Start-up profile if you wish to settle in Québec to start a business here.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "age",
+            "text": {
+                "zh": "年满 18 岁",
+                "en": "At least 18 years old",
+                "ko": "만 18세 이상"
+            },
+            "quote": "You must be at least 18 years of age at the time of submission of the application.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/entrepreneurs/start-acquire-business/conditions"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "近 5 年内企业管理经验 2 年",
+                "en": "2 years of business management experience in the last 5 years",
+                "ko": "최근 5년 내 기업 경영 경력 2년"
+            },
+            "quote": "You must have at least two years of experience in business management acquired in the five years preceding the application.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/entrepreneurs/start-acquire-business/conditions"
+        },
+        {
+            "factor": "netWorth",
+            "text": {
+                "zh": "净资产至少 60 万加元",
+                "en": "Net worth of at least CAD $600,000",
+                "ko": "순자산 60만 캐나다달러 이상"
+            },
+            "quote": "You must have a minimum net worth of CAD $600,000.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/entrepreneurs/start-acquire-business/conditions"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "随申请交商业计划",
+                "en": "Business plan submitted with the application",
+                "ko": "신청 시 사업계획서 제출"
+            },
+            "quote": "Your business project must be outlined in a business plan and submitted with your application.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/entrepreneurs/start-acquire-business/conditions"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "持股至少 25%",
+                "en": "Hold at least 25% of the business",
+                "ko": "지분 25% 이상"
+            },
+            "quote": "Your contribution to the original capital of the business must correspond to at least 25% of the value of this business.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/entrepreneurs/start-acquire-business/conditions"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "蒙特利尔都会区开业花费至少 30 万加元",
+                "en": "Spend at least CDN$300,000 in the Montréal Metropolitan Area",
+                "ko": "몽트리올 광역권 창업 지출 30만 달러 이상"
+            },
+            "quote": "CDN$300,000, if your business is located in the Montréal Metropolitan Area",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/entrepreneurs/start-acquire-business/conditions"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "都会区外开业花费至少 15 万加元",
+                "en": "Spend at least CDN$150,000 outside the Montréal area",
+                "ko": "몽트리올 광역권 밖 창업 지출 15만 달러 이상"
+            },
+            "quote": "CDN$150,000, if your business is located outside the Montréal Metropolitan Area",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/entrepreneurs/start-acquire-business/conditions"
+        },
+        {
+            "factor": "business",
+            "text": {
+                "zh": "拿工签后 2 年内在魁北克开业",
+                "en": "Start the business within 2 years of the work permit",
+                "ko": "취업허가 후 2년 내 퀘벡 창업"
+            },
+            "quote": "You must have started a business in Québec no later than two years after the issuance of the work permit obtained with the notice of intent to be selected.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/entrepreneurs/start-acquire-business/conditions"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "至少高中文凭",
+                "en": "At least a secondary school diploma",
+                "ko": "고등학교 졸업장 이상"
+            },
+            "quote": "A diploma equivalent to a Québec Secondary School Diploma (Diplôme d'études secondaires);",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/entrepreneurs/start-acquire-business/conditions"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "法语口语 7 级",
+                "en": "Oral French level 7",
+                "ko": "프랑스어 말하기 7"
+            },
+            "quote": "You must have a knowledge of spoken French corresponding minimally to level 7 according to the",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/entrepreneurs/start-acquire-business/conditions"
+        }
+    ],
     "steps": [
         {
             "step": "submit",
@@ -10647,6 +14617,98 @@ PW_QC_SELF_EMPLOYED = {
     "quote": "You must practise your profession in Québec, alone or with others, with or without paid help.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "gate": [
+        {
+            "factor": "intent",
+            "text": {
+                "zh": "在魁北克从事本职业(可独立或合伙)",
+                "en": "Practise your profession in Québec, alone or with others",
+                "ko": "퀘벡에서 본인 직업 수행(단독·공동)"
+            },
+            "quote": "You must practise your profession in Québec, alone or with others, with or without paid help.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/self-employed-workers/conditions"
+        },
+        {
+            "factor": "experience",
+            "text": {
+                "zh": "近 5 年内以自己名义从业 2 年",
+                "en": "2 years of self-employed experience in the last 5 years",
+                "ko": "최근 5년 내 본인 명의 경력 2년"
+            },
+            "quote": "You must have at least two years of work experience in your profession, in your own name, in the five years preceding the date of submission of your application;",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/self-employed-workers/conditions"
+        },
+        {
+            "factor": "netWorth",
+            "text": {
+                "zh": "净资产至少 10 万加元",
+                "en": "Net worth of at least CDN$100,000",
+                "ko": "순자산 10만 캐나다달러 이상"
+            },
+            "quote": "You must have a net worth of at least CDN$100,000.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/self-employed-workers/conditions"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "创业保证金:都会区外 2.5 万加元",
+                "en": "Start-up deposit outside the CMM: CDN$25,000",
+                "ko": "창업 보증금: 몽트리올 광역권 밖 2.5만 달러"
+            },
+            "quote": "Outside the Communauté métropolitaine de Montréal (CMM), the start-up deposit is CDN$25,000.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/self-employed-workers/conditions"
+        },
+        {
+            "factor": "investment",
+            "text": {
+                "zh": "创业保证金:都会区内 5 万加元",
+                "en": "Start-up deposit in the CMM: CDN$50,000",
+                "ko": "창업 보증금: 몽트리올 광역권 5만 달러"
+            },
+            "quote": "On the territory of the CMM, the start-up deposit is CDN$50,000.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/self-employed-workers/conditions"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "受监管职业须有执业许可或学历等效认可",
+                "en": "Regulated profession: licence or equivalence recognition",
+                "ko": "규제 직업: 면허 또는 학력 동등 인정"
+            },
+            "quote": "If you wish to practise a profession that is regulated in Québec, you must fulfil one of the following conditions:",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/self-employed-workers/conditions"
+        },
+        {
+            "factor": "education",
+            "text": {
+                "zh": "至少高中文凭",
+                "en": "At least a secondary school diploma",
+                "ko": "고등학교 졸업장 이상"
+            },
+            "quote": "A diploma equivalent to a Québec Secondary School Diploma (Diplôme d'études secondaires);",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/self-employed-workers/conditions"
+        },
+        {
+            "factor": "language",
+            "text": {
+                "zh": "法语口语 7 级",
+                "en": "Oral French level 7",
+                "ko": "프랑스어 말하기 7"
+            },
+            "quote": "You must have a knowledge of spoken French corresponding minimally to level 7 according to the",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/self-employed-workers/conditions"
+        },
+        {
+            "factor": "funds",
+            "text": {
+                "zh": "签自给合同,能养活全家 3 个月",
+                "en": "Sign a financial self-sufficiency contract covering 3 months",
+                "ko": "3개월 재정 자립 계약 서명"
+            },
+            "quote": "You must sign a financial self-sufficiency contract, in which you commit for three months as of the date of obtaining permanent resident status to meeting your essential needs",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/self-employed-workers/conditions"
+        }
+    ],
     "steps": [
         {
             "step": "submit",
@@ -11157,6 +15219,26 @@ DUR_UNITS = ["month", "day", None]
 
 BAD_DUR_TPL = "{key} 的第 {i} 步时长写法不认得:{dur}"
 """自校:时长的形 / 单位不在词表里。"""
+
+K_GATE = "gate"
+"""通道键:申请门槛(2026-10-12 补全通道:门槛表里没有行的通道在这登,一行一个条件 {factor, text{zh,en,ko}, quote, url};
+资讯「申请门槛」页门槛卡没有门槛表行时读它)。"""
+
+GATE_FACTORS = ["status", "jobOffer", "experience", "language", "education", "age", "funds", "netWorth", "investment", "business", "community", "sponsor", "income", "relationship", "protection", "ineligible", "intent", "other"]
+"""门槛类别词表(三语文案在 cms i18n gatef.*):身份 / 雇主 offer / 工作经验 / 语言 / 学历 / 年龄 / 安家资金 / 净资产 / 投资额 /
+经营 / 社区推荐 / 担保人 / 担保人收入 / 关系 / 保护理由 / 不受理情形 / 定居意向 / 其他。"""
+
+GATE_BAD_TPL = "{key} 的第 {i} 条门槛写法不对(类别不认得或缺三语文本):{row}"
+"""自校:门槛行的类别不在词表里,或三语文本缺一语。"""
+
+GATE_LANGS = ["zh", "en", "ko"]
+"""门槛行三语文本的语言键。"""
+
+K_GATE_FACTOR = "factor"
+"""门槛行键:类别。"""
+
+K_GATE_TEXT = "text"
+"""门槛行键:三语文本。"""
 
 WS_RE = re.compile(r"\s+")
 """核原句时去掉全部空白(页面链接断开会在标点前留空格,两边都去掉再比)。"""

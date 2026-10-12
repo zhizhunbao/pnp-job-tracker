@@ -620,6 +620,13 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpstep.s.invest': 'Make the investment', 'pnpstep.s.residence': 'Live in Québec',
   'pnpstep.s.deposit': 'Pay the start-up deposit', 'pnpstep.s.prApply': 'Apply to IRCC for PR',
   'pnpstep.who.sponsor': 'Sponsor',
+  // 2026-10-12 补全通道的申请门槛:门槛表没有行的通道读人工核定的门槛清单,按这些类别分组
+  'gatef.status': 'Status', 'gatef.jobOffer': 'Job offer', 'gatef.experience': 'Work experience',
+  'gatef.language': 'Language', 'gatef.education': 'Education', 'gatef.age': 'Age', 'gatef.funds': 'Settlement funds',
+  'gatef.netWorth': 'Net worth', 'gatef.investment': 'Investment', 'gatef.business': 'Business',
+  'gatef.community': 'Community referral', 'gatef.sponsor': 'Sponsor', 'gatef.income': 'Sponsor income',
+  'gatef.relationship': 'Relationship', 'gatef.protection': 'Grounds for protection',
+  'gatef.ineligible': 'Not eligible', 'gatef.intent': 'Intent to settle', 'gatef.other': 'Other',
   // 2026-10-12 Frank「加组头」:资讯页联邦三组的组头;联邦 / 魁北克的「拿雇主 offer」
   'pnp.grp.econ': 'Economic', 'pnp.grp.family': 'Family sponsorship', 'pnp.grp.refugee': 'Refugees', 'pnpstep.s.jobOffer': 'Get a job offer',
   'pnpstep.f.noFee': 'No fee',

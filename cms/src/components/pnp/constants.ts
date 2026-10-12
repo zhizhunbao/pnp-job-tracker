@@ -2501,3 +2501,8 @@ export const GROUP_REFUGEE = 'refugee'
  * 联邦组头词条键头(拼组头键尾)。
  */
 export const GROUP_KEY_HEAD = 'pnp.grp.'
+
+/**
+ * 补全通道门槛清单的类别词条键头(拼类别;2026-10-12)。
+ */
+export const GATE_FACTOR_HEAD = 'gatef.'

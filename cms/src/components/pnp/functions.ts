@@ -23,7 +23,7 @@ import { track } from '@/lib/track'
 import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS, DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE,
   DRAWS_ALL_KEY, DRAWS_FORM_STATUS, HOST_RE, LANG_EN, LANG_KO, FACT_NOTE, NOTE_VAR_OPEN, NOTE_VAR_CLOSE,
-  GROUP_ECON, GROUP_FAMILY, GROUP_REFUGEE, PROGRAM_FAMILY, PROGRAM_REFUGEE,
+  GROUP_ECON, GROUP_FAMILY, GROUP_REFUGEE, PROGRAM_FAMILY, PROGRAM_REFUGEE, GATE_FACTOR_HEAD,
   MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
   K_GATE_TITLE, P_PROV, SCROLL_START, URL_HASH_HEAD, URL_KV_SEP, URL_QUERY_HEAD, URL_STEPS, URL_STREAMS,
   MONTHS_KEYS, K_TL_ABOUT, K_TL_ABOUT_DAYS, K_TL_DAYS, K_TL_MONTHS, K_TL_RANGE, K_TL_TOTAL, K_TL_TOTAL_ONE,
@@ -74,7 +74,7 @@ import {
   STEP_PROCESSING_KEY,
 } from './constants'
 import type {
-  PnpFitsJson, ProvCounts, ProvCountsOfIn, NoteTextIn,
+  PnpFitsJson, ProvCounts, ProvCountsOfIn, NoteTextIn, PnpGateJson, CuratedGateIn,
   PnpSpanJson, PnpTimelineJson, SpanAtIn, SpanTextIn, StepDurIn, ToneIn, TotalTextIn, TimelineSegSpec, TimelineSpec,
   TimelineSpecIn, WithToneIn,
   ChannelOfIn, ChannelSpec, DrawExtraIn, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
@@ -3687,6 +3687,11 @@ export function provStreamItemsOf(x: ProvStreamItemsIn): ProvStreamItem[] {
       toSteps = jumpOf({ text: x.t(K_STEPS_HEAD), base: URL_STEPS, province: p.province, key: p.key })
     }
     const gate = provStreamCardOf({ t: x.t, lang: x.lang, p, mine, jump: toSteps })
+    const curated = gateOfSet({ sets: x.sets, key: p.key })
+    if (gate.rows.length === 0 && curated != null && curated.length > 0) {
+      gate.rows = curatedGateRowsOf({ t: x.t, lang: x.lang, gate: curated })
+      gate.empty = TEXT_NONE
+    }
     let steps: StepsCardSpec | null = null
     let draws: DrawCard | null = null
     if (raw != null) {
@@ -6604,6 +6609,45 @@ function fedGroupOf(p: PnpPathway): string {
     return GROUP_REFUGEE
   }
   return GROUP_ECON
+}
+
+/**
+ * 按通道编号找它登的申请门槛清单(2026-10-12 补全通道;跟步骤同一行带来)。
+ *
+ * @param x 登了步骤的通道与通道编号。
+ * @returns 门槛清单;没登给 null。
+ */
+function gateOfSet(x: StepSetOfIn): PnpGateJson[] | null {
+  const set = stepSetOf(x)
+  if (set == null) {
+    return null
+  }
+  return set.gate
+}
+
+/**
+ * 门槛清单 → 门槛卡的行:同类别归一行(类别名作行头,条件一条一行),行序照清单里类别首次出现的先后;文本按界面语言挑。
+ *
+ * @param x 取词函数、界面语言与门槛清单。
+ * @returns 门槛卡的行。
+ */
+function curatedGateRowsOf(x: CuratedGateIn): GateRowSpec[] {
+  const rows: GateRowSpec[] = []
+  for (const g of x.gate) {
+    const line = noteTextOf({ lang: x.lang, text: g.text, vars: {} })
+    let row: GateRowSpec | null = null
+    for (const r of rows) {
+      if (r.key === g.factor) {
+        row = r
+      }
+    }
+    if (row == null) {
+      row = { key: g.factor, label: x.t(GATE_FACTOR_HEAD + g.factor), lines: [], notes: [] }
+      rows.push(row)
+    }
+    row.lines.push(line)
+  }
+  return rows
 }
 
 /**

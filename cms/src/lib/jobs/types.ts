@@ -5463,6 +5463,10 @@ export type PnpStepsDbRow = {
    * 身份对照(2026-10-11 申请步骤分区筛选批 1;jsonb 对象,没登 null;本域不读格,原样转给资讯页)。
    */
   fits: object | null
+  /**
+   * 申请门槛清单(2026-10-12 补全通道;jsonb 数组,没登 null;本域不读格,原样转给资讯页)。
+   */
+  gate: object | null
 }
 
 /**
@@ -5488,6 +5492,10 @@ export type PnpStepsRow = {
    * 身份对照(零读格透传;没登 = null)。
    */
   fits: object | null
+  /**
+   * 申请门槛清单(2026-10-12 补全通道;jsonb 数组,没登 null;本域不读格,原样转给资讯页)。
+   */
+  gate: object | null
 }
 
 /**

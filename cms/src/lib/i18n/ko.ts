@@ -602,6 +602,12 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpstep.s.eligibilityCheck': '신청 가능 여부 확인', 'pnpstep.s.hearing': '난민위원회 심리', 'pnpstep.s.acceptInvite': '초청 수락',
   'pnpstep.s.licence': '직업 자격 인정', 'pnpstep.s.invest': '투자 이행', 'pnpstep.s.residence': '퀘벡 거주 요건 충족',
   'pnpstep.s.deposit': '사업 보증금 예치', 'pnpstep.s.prApply': '연방에 영주권 신청', 'pnpstep.who.sponsor': '보증인',
+  // 2026-10-12 补全通道的申请门槛:门槛表没有行的通道读人工核定的门槛清单,按这些类别分组
+  'gatef.status': '신분', 'gatef.jobOffer': '고용주 오퍼', 'gatef.experience': '경력', 'gatef.language': '언어',
+  'gatef.education': '학력', 'gatef.age': '나이', 'gatef.funds': '정착 자금', 'gatef.netWorth': '순자산',
+  'gatef.investment': '투자금', 'gatef.business': '사업', 'gatef.community': '지역 추천', 'gatef.sponsor': '보증인',
+  'gatef.income': '보증인 소득', 'gatef.relationship': '관계', 'gatef.protection': '보호 사유', 'gatef.ineligible': '신청 불가',
+  'gatef.intent': '정착 의사', 'gatef.other': '기타',
   // 2026-10-12 Frank「加组头」:资讯页联邦三组的组头;联邦 / 魁北克的「拿雇主 offer」
   'pnp.grp.econ': '경제 이민', 'pnp.grp.family': '가족 초청', 'pnp.grp.refugee': '난민', 'pnpstep.s.jobOffer': '고용주 오퍼 받기',
   'pnpstep.f.noFee': '수수료 없음',

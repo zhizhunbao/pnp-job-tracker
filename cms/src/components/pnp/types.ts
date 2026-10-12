@@ -6572,6 +6572,46 @@ export type PnpStepSet = {
    * 身份对照(2026-10-11 申请步骤分区筛选批 1;etl/pathways 段 6 人工核定;没登 = null)。
    */
   fits: PnpFitsJson | null
+
+  /**
+   * 申请门槛清单(2026-10-12 补全通道:门槛表没有行的通道人工核定;没登 = null)。
+   */
+  gate: PnpGateJson[] | null
+}
+
+/**
+ * 申请门槛一行(线格式;原句与出处页本桶不读,不声明)。
+ */
+export type PnpGateJson = {
+  /**
+   * 类别(gatef.* 词条键尾)。
+   */
+  factor: string
+
+  /**
+   * 三语文本。
+   */
+  text: PnpNoteText
+}
+
+/**
+ * curatedGateRowsOf 的入参。
+ */
+export type CuratedGateIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 门槛清单。
+   */
+  gate: PnpGateJson[]
 }
 
 /**

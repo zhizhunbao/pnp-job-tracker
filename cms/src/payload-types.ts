@@ -1292,6 +1292,18 @@ export interface Pathway {
     | null;
   updatedAt: string;
   createdAt: string;
+  /**
+   * 申请门槛 [{factor, text{zh,en,ko}, quote, url}](补全通道:门槛表没有行的通道人工核定、原句对 crawl 缓存自校,2026-10-12);DDL docs/sql/pathways-gate-20261012.sql
+   */
+  gate?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3637,6 +3649,7 @@ export interface NocDescriptionsSelect<T extends boolean = true> {
  */
 export interface NocOpeningsSelect<T extends boolean = true> {
   noc?: T;
+  gate?: T;
   open?: T;
   eligible?: T;
   medianSalary?: T;
