@@ -882,7 +882,12 @@ async def fetch_page(x: FetchPageIn) -> list:
             status = resp.status_code
             if resp.status_code == HTTP_FORBIDDEN:
                 html = await fetch_browser_html(x.url)
+                # 2026-10-12(Frank「你直接 修 育空的」):兜底拿到真页面就记 200 —— 原先照记 httpx 的 403,
+                # 读门 get_cached_page 只认 200,yukon.ca 整站缓存读不到;兜底回来的仍是验证壳则不收。
+                if html and is_challenge_html(html):
+                    html = None
                 if html:
+                    status = STATUS_OK
                     say(PRINT_BROWSER_403_TPL.format(url=x.url[:80]))
             else:
                 resp.raise_for_status()
@@ -891,9 +896,12 @@ async def fetch_page(x: FetchPageIn) -> list:
                     base_url = str(resp.url)
                     if is_challenge_html(html):
                         browser_html = await fetch_browser_html(x.url)
-                        if browser_html:
+                        # 同日:兜底没取成(或取回的还是验证壳)就不收这页 —— 原先把 httpx 那份验证壳当 200 存进缓存
+                        if browser_html and is_challenge_html(browser_html) is False:
                             html = browser_html
                             say(PRINT_BROWSER_200_TPL.format(url=x.url[:80]))
+                        else:
+                            html = None
         except httpx.HTTPStatusError as e:
             say(PRINT_SKIP_HTTP_TPL.format(code=e.response.status_code, url=x.url[:80]))
             return []
