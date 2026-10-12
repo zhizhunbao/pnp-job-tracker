@@ -431,6 +431,7 @@ ONS_STEP_DRAW = {"step": "draw", "who": "province", "none": False, "stuck": True
 """进池与抽选:挂抽选表(卡点;两条同一组「Ontario Workforce Priority Stream」,还没抽过,表里那一行写暂无邀请)。"""
 
 ONS_STEP_EPA = {"step": "epa", "who": "employer", "none": False, "stuck": False,
+                "dur": {"kind": "upto", "unit": "day", "min": 0, "max": 14, "quote": "Employer application for an approval of an employment position must be submitted within 14 calendar days from the date the invitation to apply was issued.", "url": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-application-process"},
                 "facts": [{"key": "inviteSubmitDays", "vars": {"n": 14},
                            "quote": ("Employer application for an approval of an employment position must be "
                                      "submitted within 14 calendar days from the date the invitation to apply was "
@@ -733,6 +734,7 @@ SKS_STEP_EOI = {"step": "eoi", "who": "you", "none": False, "stuck": False,
 """递 EOI(无 offer 的两条):本省打分表门槛读门槛表 pointsMin 行。"""
 
 SKS_STEP_NO_DRAW_SCHEDULED = {"step": "draw", "who": "province", "none": False, "stuck": True,
+                              "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "There are no scheduled EOI draws at this time.", "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-eoi-system"},
                               "facts": [{"key": "noScheduledDraw", "vars": {},
                                          "quote": "There are no scheduled EOI draws at this time.",
                                          "url": SKS_ISW_BASE + "international-skilled-worker-eoi-system"}]}
@@ -804,7 +806,8 @@ SKS_STEP_REVIEW_STUDENTS = {"step": "review", "who": "province", "none": False, 
                             "facts": [{"ref": "processing", "scope": "International Students"}]}
 """省里审批(学生):处理时长读处理统计「International Students」那一行。"""
 
-SKS_STEP_REVIEW_NONE = {"step": "review", "who": "province", "none": False, "stuck": False, "facts": []}
+SKS_STEP_REVIEW_NONE = {"step": "review", "who": "province", "none": False, "stuck": False,
+                        "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 4, "quote": "Our goal is to process all International Skilled Worker and Saskatchewan Experience applications within 16 weeks", "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/sinp-processing-statistics"}, "facts": []}
 """省里审批(无 offer 的两条):处理统计没有这两类的时长行,不写。"""
 
 # 2026-09-29 七省门槛卡合并:萨省四条通道(EO 与三条定向)、NL 技术工人在 reqStreams 末尾挂上本省雇主门槛所在的「all streams」流 ——
@@ -1522,6 +1525,7 @@ NBS_STEP_POOL = {"step": "draw", "who": "province", "none": False, "stuck": True
 都没出现过,没登抽选组,不挂抽选表。"""
 
 NBS_STEP_POOL_PCCG = {"step": "draw", "who": "province", "none": False, "stuck": True,
+                      "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 12, "quote": "They remain valid for 365 days from the date of submission.", "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"},
                       "facts": [{"key": "poolSelection", "vars": {},
                                  "quote": ("Immigration New Brunswick reviews them and issues invitations to apply "
                                            "only to selected individuals based on provincial labour market needs, "
@@ -2849,6 +2853,7 @@ PW_AB_RURAL_ENTREPRENEUR = {
         },
         {
             "step": "review",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "Timelines for Entrepreneur stream applications vary as each file moves through several stages of review and require comprehensive documentation and verification.", "url": "https://www.alberta.ca/aaip-processing-information"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -2891,6 +2896,7 @@ PW_AB_RURAL_ENTREPRENEUR = {
         },
         {
             "step": "runBusiness",
+            "dur": {"kind": "atleast", "unit": "month", "min": 12, "max": None, "quote": "actively own and operate an eligible business in a rural Alberta community for at least 12 months", "url": "https://www.alberta.ca/aaip-rural-entrepreneur-stream-how-to-apply"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -2920,6 +2926,7 @@ PW_AB_RURAL_ENTREPRENEUR = {
         },
         {
             "step": "finalReport",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "Timelines for Entrepreneur stream applications vary as each file moves through several stages of review and require comprehensive documentation and verification.", "url": "https://www.alberta.ca/aaip-processing-information"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -3042,6 +3049,7 @@ PW_AB_GRADUATE_ENTREPRENEUR = {
         },
         {
             "step": "review",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "Timelines for Entrepreneur stream applications vary as each file moves through several stages of review and require comprehensive documentation and verification.", "url": "https://www.alberta.ca/aaip-processing-information"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -3063,6 +3071,7 @@ PW_AB_GRADUATE_ENTREPRENEUR = {
         },
         {
             "step": "runBusiness",
+            "dur": {"kind": "atleast", "unit": "month", "min": 12, "max": None, "quote": "actively own and operate an eligible business in Alberta with at least 34% ownership for at least 12 months", "url": "https://www.alberta.ca/aaip-graduate-entrepreneur-stream-how-to-apply"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -3092,6 +3101,7 @@ PW_AB_GRADUATE_ENTREPRENEUR = {
         },
         {
             "step": "finalReport",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "Timelines for Entrepreneur stream applications vary as each file moves through several stages of review and require comprehensive documentation and verification.", "url": "https://www.alberta.ca/aaip-processing-information"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -3232,6 +3242,7 @@ PW_AB_FOREIGN_GRADUATE_ENTREPRENEUR = {
         },
         {
             "step": "review",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "Timelines for Entrepreneur stream applications vary as each file moves through several stages of review and require comprehensive documentation and verification.", "url": "https://www.alberta.ca/aaip-processing-information"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -3274,6 +3285,7 @@ PW_AB_FOREIGN_GRADUATE_ENTREPRENEUR = {
         },
         {
             "step": "runBusiness",
+            "dur": {"kind": "atleast", "unit": "month", "min": 12, "max": None, "quote": "actively own and operate an eligible business in Alberta with at least 34% ownership in an urban centre or 51% ownership in a regional area for at least 12 months", "url": "https://www.alberta.ca/aaip-foreign-graduate-entrepreneur-stream-how-to-apply"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -3303,6 +3315,7 @@ PW_AB_FOREIGN_GRADUATE_ENTREPRENEUR = {
         },
         {
             "step": "finalReport",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "Timelines for Entrepreneur stream applications vary as each file moves through several stages of review and require comprehensive documentation and verification.", "url": "https://www.alberta.ca/aaip-processing-information"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -3385,6 +3398,7 @@ PW_AB_FARM = {
         },
         {
             "step": "review",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "Timelines for Entrepreneur stream applications vary as each file moves through several stages of review and require comprehensive documentation and verification.", "url": "https://www.alberta.ca/aaip-processing-information"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -3566,6 +3580,7 @@ PW_BC_ENTREPRENEUR_BASE = {
         },
         {
             "step": "runBusiness",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 20, "quote": "Once you arrive in B.C., you will have up to 20 months to implement your plan, actively manage your business, and meet the performance expectations outlined in your signed Performance Agreement.", "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -3788,6 +3803,7 @@ PW_BC_ENTREPRENEUR_REGIONAL = {
         },
         {
             "step": "runBusiness",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 20, "quote": "Once you arrive in B.C., you will have up to 20 months to implement your plan, actively manage your business, and meet the performance expectations outlined in your signed Performance Agreement.", "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -3958,6 +3974,7 @@ PW_BC_STRATEGIC_PROJECTS = {
         },
         {
             "step": "finalReport",
+            "dur": {"kind": "range", "unit": "month", "min": 12, "max": 24, "quote": "you will be asked to submit a final report to the BC PNP between 12 to 24 months after your arrival.", "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -4084,6 +4101,7 @@ PW_MB_ENTREPRENEUR = {
         },
         {
             "step": "draw",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "EOI draws for the Business Investor Stream are not currently being conducted.", "url": "https://immigratemanitoba.com/mpnp/bis/ep/apply"},
             "who": "province",
             "none": False,
             "stuck": True,
@@ -4140,6 +4158,7 @@ PW_MB_ENTREPRENEUR = {
         },
         {
             "step": "workPermit",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 12, "quote": "You have up to 12 months from the date of your work permit support letter issuance to arrive in Canada with your valid work permit.", "url": "https://immigratemanitoba.com/wp-content/uploads/2024/07/BIS-Entrepreneur-Stream-Guidelines-final-July-2024.pdf"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -4161,6 +4180,7 @@ PW_MB_ENTREPRENEUR = {
         },
         {
             "step": "runBusiness",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 20, "quote": "no later than twenty (20) months after the Date of Arrival, submit a Final Report to the Program", "url": "https://immigratemanitoba.com/wp-content/uploads/2024/07/BIS-Entrepreneur-Stream-Guidelines-final-July-2024.pdf"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -4237,6 +4257,7 @@ PW_MB_FARM_INVESTOR = {
     "steps": [
         {
             "step": "visit",
+            "dur": {"kind": "atleast", "unit": "day", "min": 5, "max": None, "quote": "You must visit Manitoba for a period of not less than five business days (excluding the days of arrival and departure), to conduct extensive farm business and rural lifestyle-related research.", "url": "https://immigratemanitoba.com/wp-content/uploads/2024/07/BIS-FIP-Guidelines-Kit-072024.pdf"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -4273,6 +4294,7 @@ PW_MB_FARM_INVESTOR = {
         },
         {
             "step": "draw",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "EOI draws for the Business Investor Stream are not currently being conducted.", "url": "https://immigratemanitoba.com/mpnp/bis/ep/apply"},
             "who": "province",
             "none": False,
             "stuck": True,
@@ -4348,6 +4370,7 @@ PW_MB_FARM_INVESTOR = {
         },
         {
             "step": "runBusiness",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 24, "quote": "An applicant must establish his/her farm business and fulfill the investment requirements as outlined in his/her Deposit Agreement within two years of landing.", "url": "https://immigratemanitoba.com/wp-content/uploads/2024/07/BIS-FIP-Guidelines-Kit-072024.pdf"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -4488,6 +4511,7 @@ PW_MB_INTERNATIONAL_STUDENT_ENTREPRENEUR = {
         },
         {
             "step": "runBusiness",
+            "dur": {"kind": "atleast", "unit": "month", "min": 6, "max": None, "quote": "You must operate the business as a senior manager on a daily basis from the place of business in Manitoba for at least 6 months prior to nomination, consistent with the requirements of your Business Performance Agreement (BPA).", "url": "https://immigratemanitoba.com/mpnp/ies/isep/eligibility"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -4584,6 +4608,7 @@ PW_NS_ENTREPRENEUR = {
         },
         {
             "step": "apply",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 6, "quote": "Within 180 calendar days of receiving your Invitation to Apply Submit the following:", "url": "https://liveinnovascotia.com/sites/default/files/2026-02/Guide-NSNP-ENT-English.pdf"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -4614,6 +4639,7 @@ PW_NS_ENTREPRENEUR = {
         },
         {
             "step": "review",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "We cannot tell you how long it will take to assess your application.", "url": "https://liveinnovascotia.com/sites/default/files/2026-02/Guide-NSNP-ENT-English.pdf"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -4656,6 +4682,7 @@ PW_NS_ENTREPRENEUR = {
         },
         {
             "step": "runBusiness",
+            "dur": {"kind": "atleast", "unit": "month", "min": 12, "max": None, "quote": "You must operate your business for at least one full year before you can ask us to nominate you.", "url": "https://liveinnovascotia.com/sites/default/files/2026-02/Guide-NSNP-ENT-English.pdf"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -4749,6 +4776,7 @@ PW_NS_INTERNATIONAL_GRADUATE_ENTREPRENEUR = {
     "steps": [
         {
             "step": "runBusiness",
+            "dur": {"kind": "atleast", "unit": "month", "min": 12, "max": None, "quote": "have at least one year’s continuous experience actively managing and owning your current Nova Scotia business (33.33% ownership minimum);", "url": "https://liveinnovascotia.com/entrepreneur"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -4833,6 +4861,7 @@ PW_NS_INTERNATIONAL_GRADUATE_ENTREPRENEUR = {
         },
         {
             "step": "review",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "We cannot tell you how long it will take to assess your application.", "url": "https://liveinnovascotia.com/sites/default/files/2026-02/Guide-NSNP-ENT-English.pdf"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -4989,6 +5018,7 @@ PW_NB_BUSINESS_IMMIGRATION = {
         },
         {
             "step": "runBusiness",
+            "dur": {"kind": "atleast", "unit": "month", "min": 6, "max": None, "quote": "After at least 6 months of business operation, ask for a nomination certificate.", "url": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/nb-business-immigration-stream-guide.pdf"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -5094,6 +5124,7 @@ PW_PE_WORK_PERMIT = {
         },
         {
             "step": "apply",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 2, "quote": "Individuals who are invited to apply will be removed from the pool and have up to 60 days from the invitation date to submit an application.", "url": "https://www.princeedwardisland.ca/sites/default/files/publications/business_impact_application_guide.pdf"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -5161,6 +5192,7 @@ PW_PE_WORK_PERMIT = {
         },
         {
             "step": "runBusiness",
+            "dur": {"kind": "atleast", "unit": "month", "min": 12, "max": None, "quote": "The Work Permit Stream is for individuals interested in coming to PEI on a work permit and operating a business for a minimum of one year prior to receiving a nomination for permanent residency.", "url": "https://www.princeedwardisland.ca/sites/default/files/publications/business_impact_application_guide.pdf"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -5281,6 +5313,7 @@ PW_NL_INTERNATIONAL_ENTREPRENEUR = {
         },
         {
             "step": "review",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "OIM does not currently have standard processing times for the NLPNP.", "url": "https://www.gov.nl.ca/immigration/faqs/nl-provincial-nominee-program-candidate-faqs"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -5336,6 +5369,7 @@ PW_NL_INTERNATIONAL_ENTREPRENEUR = {
         },
         {
             "step": "runBusiness",
+            "dur": {"kind": "atleast", "unit": "month", "min": 12, "max": None, "quote": "You must operate and actively manage your business for a minimum of one year before you are eligible for nomination.", "url": "https://www.gov.nl.ca/immigration/files/International-Entrepreneur.pdf"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -5411,6 +5445,7 @@ PW_NL_INTERNATIONAL_GRADUATE_ENTREPRENEUR = {
     "steps": [
         {
             "step": "runBusiness",
+            "dur": {"kind": "atleast", "unit": "month", "min": 12, "max": None, "quote": "have started or acquired a business in Newfoundland and Labrador, including actively operating and managing it for at least one (1) year;", "url": "https://www.gov.nl.ca/immigration/files/International-Graduate-Entrepreneur-Guide-April-2022-1.pdf"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -5476,6 +5511,7 @@ PW_NL_INTERNATIONAL_GRADUATE_ENTREPRENEUR = {
         },
         {
             "step": "review",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "OIM does not currently have standard processing times for the NLPNP.", "url": "https://www.gov.nl.ca/immigration/faqs/nl-provincial-nominee-program-candidate-faqs"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -5639,6 +5675,7 @@ PW_YT_SKILLED_WORKER = {
         },
         {
             "step": "review",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "We do not have an estimated time for how long an application takes for processing.", "url": "https://yukon.ca/sites/default/files/ecdev-ynp-2026-operational-guidance-2026-07-03.pdf"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -5827,6 +5864,7 @@ PW_YT_CRITICAL_IMPACT_WORKER = {
         },
         {
             "step": "review",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "We do not have an estimated time for how long an application takes for processing.", "url": "https://yukon.ca/sites/default/files/ecdev-ynp-2026-operational-guidance-2026-07-03.pdf"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -6033,6 +6071,7 @@ PW_YT_EXPRESS_ENTRY = {
         },
         {
             "step": "review",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "We do not have an estimated time for how long an application takes for processing.", "url": "https://yukon.ca/sites/default/files/ecdev-ynp-2026-operational-guidance-2026-07-03.pdf"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -6245,6 +6284,7 @@ PW_YT_BUSINESS_NOMINEE = {
         },
         {
             "step": "runBusiness",
+            "dur": {"kind": "exact", "unit": "month", "min": 24, "max": 24, "quote": "We'll support your permanent residency application to the federal government at the end of the 2-year work permit period if you meet the requirements.", "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program/apply-run-your-own-business-yukon-foreign-entrepreneurs"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -7076,6 +7116,7 @@ PW_NT_BUSINESS = {
         },
         {
             "step": "visit",
+            "dur": {"kind": "atleast", "unit": "day", "min": 4, "max": None, "quote": "This step includes a minimum four-day business trip to the community where the business is proposed and participating in at least one (1) face-to-face interview with the NTNP.", "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_business_stream.pdf"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -7183,6 +7224,7 @@ PW_NT_BUSINESS = {
         },
         {
             "step": "runBusiness",
+            "dur": {"kind": "atleast", "unit": "month", "min": 18, "max": None, "quote": "The applicant will be eligible for nomination during the nineteenth (19th) month after the Commencement Date as defined in the Business Performance Agreement, unless otherwise agreed by the GNWT.", "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_business_stream.pdf"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -7741,6 +7783,7 @@ PW_FED_AIP = {
         },
         {
             "step": "endorse",
+            "dur": {"kind": "unpublished", "unit": None, "min": None, "max": None, "quote": "OIM does not currently have standard processing times for the AIP.", "url": "https://www.gov.nl.ca/immigration/faqs/atlantic-immigration-program-candidate-faqs"},
             "who": "employer",
             "none": False,
             "stuck": False,
@@ -7769,6 +7812,7 @@ PW_FED_AIP = {
         },
         {
             "step": "closedPermit",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 2, "quote": "Initial work permits from outside Canada: All programs (excluding International Experience Canada) Footnote * 60 days", "url": "https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/service-declaration/service-standards.html"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -7913,6 +7957,7 @@ PW_FED_RCIP = {
         },
         {
             "step": "closedPermit",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 2, "quote": "Initial work permits from outside Canada: All programs (excluding International Experience Canada) Footnote * 60 days", "url": "https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/service-declaration/service-standards.html"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -8046,6 +8091,7 @@ PW_FED_FCIP = {
         },
         {
             "step": "closedPermit",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 2, "quote": "Initial work permits from outside Canada: All programs (excluding International Experience Canada) Footnote * 60 days", "url": "https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/service-declaration/service-standards.html"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -8270,6 +8316,7 @@ PW_FED_SPOUSE_INLAND = {
         },
         {
             "step": "biometrics",
+            "dur": {"kind": "upto", "unit": "day", "min": 0, "max": 30, "quote": "They have 30 days from the date of the letter to go to a biometric collection site .", "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/track-update-application.html"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -8458,6 +8505,7 @@ PW_FED_SPOUSE_OUTLAND = {
         },
         {
             "step": "biometrics",
+            "dur": {"kind": "upto", "unit": "day", "min": 0, "max": 30, "quote": "They have 30 days from the date of the letter to go to a biometric collection site .", "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/track-update-application.html"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -8636,6 +8684,7 @@ PW_FED_DEPENDENT_CHILD = {
         },
         {
             "step": "biometrics",
+            "dur": {"kind": "upto", "unit": "day", "min": 0, "max": 30, "quote": "They have 30 days from the date of the letter to go to a biometric collection site .", "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/family-sponsorship/spouse-partner-children/track-update-application.html"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -8657,6 +8706,7 @@ PW_FED_DEPENDENT_CHILD = {
         },
         {
             "step": "review",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 12, "quote": "Family class priority (overseas – spouses, common-law partners, conjugal partners and dependent children) 12 months", "url": "https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/service-declaration/service-standards.html"},
             "who": "federal",
             "none": False,
             "stuck": False,
@@ -9756,6 +9806,7 @@ PW_QC_PSTQ_STREAM_3 = {
         },
         {
             "step": "acceptInvite",
+            "dur": {"kind": "upto", "unit": "day", "min": 0, "max": 30, "quote": "If you receive an invitation to apply and still wish to settle in Québec, you have 30 days from the date of the invitation to accept it through your Arrima account.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/invitation"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -10355,6 +10406,7 @@ PW_QC_INVESTOR = {
         },
         {
             "step": "invest",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 4, "quote": "No later than 120 days following the date on which the Ministère requests this, your financial intermediary must make a five-year term investment of CDN $1,000,000 and make a financial contribution of CDN $200,000 to Investissement Québec Immigrants Investisseurs inc.", "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/investors/conditions"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -10499,6 +10551,7 @@ PW_QC_ENTREPRENEUR_STARTUP = {
         },
         {
             "step": "workPermit",
+            "dur": {"kind": "upto", "unit": "month", "min": 0, "max": 2, "quote": "Initial work permits from outside Canada: All programs (excluding International Experience Canada) Footnote * 60 days", "url": "https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/service-declaration/service-standards.html"},
             "who": "you",
             "none": False,
             "stuck": False,
@@ -11093,10 +11146,10 @@ K_DUR_KIND = "kind"
 K_DUR_UNIT = "unit"
 """时长键:单位。"""
 
-DUR_KINDS = ["exact", "range", "upto", "about", "atleast"]
-"""时长形词表(与 mart 段 25 的 TL_* 同名)。"""
+DUR_KINDS = ["exact", "range", "upto", "about", "atleast", "unpublished"]
+"""时长形词表(与 mart 段 25 的 TL_* 同名;unpublished = 官方原句明说不公布 / 不保证 / 因案而异,单位写 None)。"""
 
-DUR_UNITS = ["month", "day"]
+DUR_UNITS = ["month", "day", None]
 """时长单位词表。"""
 
 BAD_DUR_TPL = "{key} 的第 {i} 步时长写法不认得:{dur}"
