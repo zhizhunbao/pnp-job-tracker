@@ -2275,6 +2275,11 @@ export const QUOTA_SECTOR_KEY: Record<string, string> = {
    * 其他行业。
    */
   'other sectors': 'other',
+
+  /**
+   * 优先与其他行业合并档(2026-10-12 官方配额表把这两档并成一行「Priority Sectors and Other Sectors」)。
+   */
+  'priority sectors and other sectors': 'priorityOther',
 }
 
 /**

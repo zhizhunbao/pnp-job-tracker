@@ -644,7 +644,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   // 2026-09-27 allocation card (own box) and the draws card's year-to-date line
   'pnpquota.title': '{year} allocation', 'pnpquota.total': 'Total', 'pnpquota.issued': 'Nominated',
   // 2026-10-02 申请步骤批 1:配额卡加萨省分行业三行(官方处理统计页的分配表)
-  'pnpquota.sector.priority': 'Priority sectors', 'pnpquota.sector.capped': 'Capped sectors', 'pnpquota.sector.other': 'Other sectors',
+  'pnpquota.sector.priority': 'Priority sectors', 'pnpquota.sector.capped': 'Capped sectors', 'pnpquota.sector.other': 'Other sectors', 'pnpquota.sector.priorityOther': 'Priority and other sectors',
   'pnpquota.remaining': 'Remaining', 'pnpquota.prov': 'Province', 'pnpquota.stream': 'This stream',
   'pnpquota.asOf': 'As of {date}',
   // 2026-09-27 the draws card's year-to-date line moves into the allocation card as a column; pnpdraws.ytdInv / ytdSel retire

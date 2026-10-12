@@ -631,7 +631,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   // 2026-09-27 배정 카드(별도 박스)와 추첨 카드의 연간 누계 줄
   'pnpquota.title': '{year}년 배정', 'pnpquota.total': '총', 'pnpquota.issued': '지명 완료',
   // 2026-10-02 申请步骤批 1:配额卡加萨省分行业三行(官方处理统计页的分配表)
-  'pnpquota.sector.priority': '우선 업종', 'pnpquota.sector.capped': '제한 업종', 'pnpquota.sector.other': '기타 업종',
+  'pnpquota.sector.priority': '우선 업종', 'pnpquota.sector.capped': '제한 업종', 'pnpquota.sector.other': '기타 업종', 'pnpquota.sector.priorityOther': '우선 및 기타 업종',
   'pnpquota.remaining': '잔여', 'pnpquota.prov': '주 전체', 'pnpquota.stream': '이 스트림', 'pnpquota.asOf': '{date} 기준',
   // 2026-09-27 추첨 카드의 연간 누계 줄을 배정 카드의 한 열로 이동; pnpdraws.ytdInv / ytdSel 삭제
   // 2026-09-27 NS 선정 수는 EOI 풀 전체(NSNP와 AIP가 같은 풀), 옆의 총수는 NSNP만

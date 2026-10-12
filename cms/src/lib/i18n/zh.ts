@@ -685,7 +685,7 @@ export const jobsZh = {
   // 2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」,标题照「每个框先设计一个 title」那张表;勾「全年已邀请合计」
   'pnpquota.title': '{year} 年配额', 'pnpquota.total': '总数', 'pnpquota.issued': '已发提名',
   // 2026-10-02 申请步骤批 1:配额卡加萨省分行业三行(官方处理统计页的分配表)
-  'pnpquota.sector.priority': '优先行业', 'pnpquota.sector.capped': '限额行业', 'pnpquota.sector.other': '其他行业',
+  'pnpquota.sector.priority': '优先行业', 'pnpquota.sector.capped': '限额行业', 'pnpquota.sector.other': '其他行业', 'pnpquota.sector.priorityOther': '优先及其他行业',
   'pnpquota.remaining': '剩余', 'pnpquota.prov': '全省', 'pnpquota.stream': '本岗通道', 'pnpquota.asOf': '截至 {date}',
   // 2026-09-27 Frank「已发和总数放到一个卡片里可以吗」「你帮我弄」:抽选卡标题下那行全年合计并进配额卡当一列,原 pnpdraws.ytdInv / ytdSel 两条随行退役
   // 2026-09-27 九省体检:NS 的已入选是 EOI 池合计(NSNP 与 AIP 同一个池),旁边的总数只算 NSNP,列名注明含 AIP,免得读成超发
