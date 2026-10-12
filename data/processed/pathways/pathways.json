@@ -12880,10 +12880,38 @@
         },
         {
           "step": "fedReview",
+          "dur": {
+            "kind": "about",
+            "unit": "month",
+            "min": 92,
+            "max": 92,
+            "quote": "Skilled Trades (EE) 62 84 92",
+            "url": "https://www.canada.ca/en/immigration-refugees-citizenship/corporate/publications-manuals/express-entry-year-end-report-2024.html"
+          },
           "who": "federal",
           "none": false,
           "stuck": false,
           "facts": [
+            {
+              "key": "note",
+              "text": {
+                "zh": "IRCC 服务标准 6 个月(180 天),实际达标率 0%",
+                "en": "IRCC service standard: 6 months (180 days); actual on-time rate: 0%",
+                "ko": "IRCC 서비스 기준 6개월(180일), 실제 달성률 0%"
+              },
+              "quote": "Federal Skilled Trades Program (via Express Entry) 180 days ( not including the processing that the province or territory does) 0%",
+              "url": "https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/service-declaration/service-standards.html"
+            },
+            {
+              "key": "note",
+              "text": {
+                "zh": "2024 年审完的申请,80% 用了 92 个月(2023 年 84 个月,2022 年 62 个月)",
+                "en": "Applications finalized in 2024: 80% took 92 months (84 in 2023, 62 in 2022)",
+                "ko": "2024년 처리 완료 신청의 80%가 92개월 소요(2023년 84개월, 2022년 62개월)"
+              },
+              "quote": "Skilled Trades (EE) 62 84 92",
+              "url": "https://www.canada.ca/en/immigration-refugees-citizenship/corporate/publications-manuals/express-entry-year-end-report-2024.html"
+            },
             {
               "key": "note",
               "text": {
