@@ -18,7 +18,6 @@ import { CARD_BTN_KIND } from './constants'
 import { cadenceCellsOf, cardGrayOf, cardNameEnOf } from './functions'
 import { NameLines } from './namelines'
 import { ProvTag } from './provtag'
-import { RankMark } from './rankmark'
 import { StatGrid } from './statgrid'
 import { StatusTag } from './statustag'
 import type { CadenceCardIn } from './types'
@@ -33,11 +32,10 @@ import css from './timeline.module.css'
 export function CadenceCard({ t, lang, card, onClick }: CadenceCardIn) {
   return (
     <Button kind={CARD_BTN_KIND} onClick={onClick} className={cssOf(css.card)}>
-      <RankMark rank={card.rank} />
       <span className={css.miniBody}>
         <span className={css.cardHead}>
-          <ProvTag t={t} prov={card.prov} />
           <NameLines en={cardNameEnOf({ t, lang, card })} gray={cardGrayOf({ t, lang, card })} />
+          <ProvTag t={t} prov={card.prov} />
         </span>
         <StatGrid cells={cadenceCellsOf({ t, lang, card })} />
         <StatusTag t={t} status={card.status} />

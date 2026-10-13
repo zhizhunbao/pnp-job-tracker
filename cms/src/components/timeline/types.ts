@@ -430,16 +430,6 @@ export type CadenceCardIn = {
 }
 
 /**
- * RankMark(右上角名次)的 props。
- */
-export type RankMarkIn = {
-  /**
-   * 名次(1 起)。
-   */
-  rank: number
-}
-
-/**
  * NameLines(英文黑字 + 译名灰字两行)的 props。
  */
 export type NameLinesIn = {

@@ -15,8 +15,8 @@ import { PROV_NAMES } from '@/lib/location'
 import {
   ALLOC_PR_TARGET, CLS_SEP, COVER_SEP, KIND_CADENCE, KIND_QUOTA, K_ALLOC, K_GAP_DAYS, K_N, K_N_DAYS, K_N_PEOPLE,
   K_N_TIMES, K_PR_TARGET, DASH, DATE10_LEN, EE_KEY_I18N, FED_NAME_EN, LANG_EN, LANG_KO, NUM_LOCALE,
-  STATUS_IDLE, STATUS_LATE, UNIT_APPLICATION, UNIT_SELECTION, EVENTS_ANCHOR_ID, KIND_NOTICE, PROV_FED, PROV_KEY_HEAD,
-  SCALE_CRS, SCROLL_SMOOTH, TEXT_NONE, YEAR_LEN,
+  STATUS_IDLE, STATUS_LATE, UNIT_APPLICATION, UNIT_SELECTION, KIND_NOTICE, PROV_FED, PROV_KEY_HEAD,
+  SCALE_CRS, TEXT_NONE, YEAR_LEN,
 } from './constants'
 import type {
   CardTextIn, DrillOfIn, EeNameIn, EventGrayIn, EventRow, EventTitleIn, EventsIn, InvTextIn,
@@ -173,7 +173,7 @@ export function makeStreamClear(x: StreamClearIn): ClickFn {
 }
 
 /**
- * 造节奏卡点击手柄的工厂:点一张卡 = 事件流按这条流筛过去并滚过去
+ * 造节奏卡点击手柄的工厂:点一张卡 = 事件流按这条流筛过去(2026-10-12 Frank「点击卡片的时候,不要往下滚」:不再滚过去)
  * (详情就是这条流的历次抽选,数据已在同页,不必再跳一页)。
  * 联邦卡的省码是空串,筛选里要换成联邦那一档的词。
  *
@@ -189,23 +189,8 @@ export function makeDrillOf(x: DrillOfIn): (card: RankCard) => ClickFn {
       }
       x.setProv(code)
       x.setPick(card.key)
-      scrollToEvents()
     }
   }
-}
-
-/**
- * 把页面滚到事件流那一段。找不到锚点就什么都不做 —— 筛选已经落好了,
- * 用户往下翻一样看得到,不值得为一次滚动抛错。
- *
- * @returns 无。
- */
-export function scrollToEvents(): void {
-  const anchor = document.getElementById(EVENTS_ANCHOR_ID)
-  if (anchor == null) {
-    return
-  }
-  anchor.scrollIntoView({ behavior: SCROLL_SMOOTH })
 }
 
 /**

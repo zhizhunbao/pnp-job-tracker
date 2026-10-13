@@ -85,71 +85,6 @@
 }
 
 /*
- * 前三名的奖牌 emoji(2026-10-12 Frank「用那个 emoji 的排名 图标吧」)。
- */
-.medal {
-  /*
-   * 钉在卡的右上角。
-   */
-  position: absolute;
-
-  /*
-   * 距上沿。
-   */
-  top: 6px;
-
-  /*
-   * 距右沿。
-   */
-  right: 10px;
-
-  /*
-   * emoji 字号。
-   */
-  font-size: 22px;
-
-  /*
-   * 不撑行高。
-   */
-  line-height: 1;
-}
-
-/*
- * 第 4 名起的灰字名次。
- */
-.rank {
-  /*
-   * 钉在卡的右上角。
-   */
-  position: absolute;
-
-  /*
-   * 距上沿。
-   */
-  top: 10px;
-
-  /*
-   * 距右沿。
-   */
-  right: 12px;
-
-  /*
-   * 小字。
-   */
-  font-size: 13px;
-
-  /*
-   * 半粗。
-   */
-  font-weight: 600;
-
-  /*
-   * 浅灰。
-   */
-  color: var(--text3);
-}
-
-/*
  * 名字两行(英文黑字 + 译名灰字)。
  */
 .names {
@@ -232,7 +167,11 @@
    * 一行三格:第一格按内容定宽、后两格均分(英文格名「Nominated」一个词就要 60px 上下,第一格固定加宽会把后两格挤到
    * 放不下一个词;三格等宽又让「2026 永居目标」折成两行 —— 2026-10-12 Frank「不要换行」)。
    */
-  grid-template-columns: max-content repeat(2, minmax(0, 1fr));
+
+  /*
+   * 2026-10-12 Frank「对不齐」:改回三格等宽 —— 各卡同一列上下对齐;格名靠 nowrap 不折行(每格至少容下格名:卡宽够时三格均分、各卡对齐,窄卡里格名长的那格自己撑宽,不叠字)。
+   */
+  grid-template-columns: repeat(3, minmax(max-content, 1fr));
 
   /*
    * 行距 8、列距 10。
@@ -271,6 +210,36 @@
 }
 
 /*
+ * 一行三格左中右(2026-10-12 Frank「这个也改成左中右」):中间那格居中。
+ */
+.stat:nth-child(3n + 2) {
+  /*
+   * 居中。
+   */
+  align-items: center;
+
+  /*
+   * 字居中。
+   */
+  text-align: center;
+}
+
+/*
+ * 第三格靠右。
+ */
+.stat:nth-child(3n) {
+  /*
+   * 靠右。
+   */
+  align-items: flex-end;
+
+  /*
+   * 字靠右。
+   */
+  text-align: right;
+}
+
+/*
  * 格名(黑字;2026-10-12 Frank「key 不要是灰字,数字应该是灰字吧」)。
  */
 .statK {
@@ -287,7 +256,7 @@
   /*
    * 格窄时按词折行(英文格名长,不折会压到旁边那格上;只在词间断,不拆单词)。
    */
-  overflow-wrap: break-word;
+  white-space: nowrap;
 }
 
 /*
@@ -302,7 +271,7 @@
   /*
    * 数字字号。
    */
-  font-size: 16px;
+  font-size: 14px;
 
   /*
    * 常规字重。
@@ -310,14 +279,13 @@
   font-weight: 400;
 
   /*
-   * 等宽数字(上下卡对得齐)。
-   */
-  font-variant-numeric: tabular-nums;
-
-  /*
    * 不折行。
    */
   white-space: nowrap;
+
+  /*
+   * 2026-10-12 Frank「字体特别别扭」:去等宽数字(换了一套数字字形),字号 16 → 14(同日「数字 看着还是太大了」),与格名同一套字。
+   */
 }
 
 /*
@@ -470,6 +438,11 @@
    * 顶对齐(名字可能两行)。
    */
   align-items: flex-start;
+
+  /*
+   * 名字靠左、省份标签贴右上角(2026-10-12 Frank「AB 右对齐」「右上角」)。
+   */
+  justify-content: space-between;
 }
 
 

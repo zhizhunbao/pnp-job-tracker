@@ -54,12 +54,6 @@ export const URL_STEPS = '/steps'
 export const EVENTS_ANCHOR_ID = 'tl-events'
 
 /**
- * 滚到事件流那一段的滚法:平滑滚 —— 用户看得见页面在动,才知道点卡片是把下面那段
- * 筛过了,而不是瞬移到一个陌生位置。
- */
-export const SCROLL_SMOOTH = 'smooth'
-
-/**
  * 「全部 / 没有」的空文本:三个筛选的未选态都是它,联邦事件的省码也是它
  * (事件的省码为空 = 联邦发的,不是「省份没记」)。
  */
@@ -130,16 +124,6 @@ export const PROV_KEY_HEAD = 'pr.'
  * 流筛药丸上的撤销记号(点它取消节奏卡带入的流过滤,回到该省该类型的全部事件)。
  */
 export const CHIP_CLEAR = ' ✕'
-
-/**
- * 前三名的名次记号(2026-10-12 Frank「用那个 emoji 的排名 图标吧」;第 4 名起写灰字 #4)。
- */
-export const MEDALS = ['🥇', '🥈', '🥉']
-
-/**
- * 第 4 名起的名次前缀。
- */
-export const RANK_HEAD = '#'
 
 /**
  * 节奏状态:比平常晚(数据层判;胶囊 warn)。
@@ -402,3 +386,9 @@ export const TIMELINE_META = {
     + ' (days since last draw, average interval). Historical facts with sources, no predictions.'
     + ' 加拿大移民抽选时间线:省抽选+联邦 EE 抽选,含抽选节奏统计。',
 }
+
+/**
+ * 抽选节奏卡收起时出几张(2026-10-12 Frank「默认显示满」:宽屏一行 4 张,10 张末行只剩 2 张;12 = 4 × 3,
+ * 手机一行一张也是满行。全站通用的 FOLD_FIRST(10)不动)。
+ */
+export const CADENCE_FOLD = 12

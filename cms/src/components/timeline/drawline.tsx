@@ -36,7 +36,7 @@ export function DrawLine({ t, lang, row }: DrawLineIn) {
           {row.score != null && t('tl.min', { n: row.score })}
           {row.score != null && isScaleShown({ scale: row.scale }) && (
             <span className={css.scaleNote}>
-              {SCALE_NOTE_OPEN}{row.scale}{t('tl.notCrs')}{SCALE_NOTE_CLOSE}
+              {SCALE_NOTE_OPEN}{row.scale}{SCALE_NOTE_CLOSE}
             </span>
           )}
         </span>

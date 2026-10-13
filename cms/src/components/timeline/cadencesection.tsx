@@ -7,9 +7,9 @@
  * @author Frank
  * @time 2026-10-12 17:30:00
  */
-import { FOLD_FIRST, FoldLine } from '@/components/pager'
+import { FoldLine } from '@/components/pager'
 import { CadenceCard } from './cadencecard'
-import { CARD_HEAD_CLS, CARD_MD_CLS, K_FOLD_UNIT } from './constants'
+import { CADENCE_FOLD, CARD_HEAD_CLS, CARD_MD_CLS, K_FOLD_UNIT } from './constants'
 import type { CadenceSectionIn } from './types'
 import css from './timeline.module.css'
 
@@ -25,7 +25,7 @@ export function CadenceSection({ t, lang, cards, extra, onMore, onFold, drillOf 
   }
   const head = []
   for (const [i, card] of cards.entries()) {
-    if (i >= FOLD_FIRST + extra) {
+    if (i >= CADENCE_FOLD + extra) {
       break
     }
     head.push(<CadenceCard key={card.key} t={t} lang={lang} card={card} onClick={drillOf(card)} />)
@@ -36,7 +36,7 @@ export function CadenceSection({ t, lang, cards, extra, onMore, onFold, drillOf 
       <div className={css.cardGrid}>{head}</div>
       <FoldLine t={t}
         unit={t(K_FOLD_UNIT)}
-        hidden={Math.max(cards.length - FOLD_FIRST, 0)}
+        hidden={Math.max(cards.length - CADENCE_FOLD, 0)}
         extra={extra}
         busy={false}
         onMore={onMore}

@@ -19,6 +19,7 @@
  * 2026-10-12 抽选页三段式(Frank 看效果图拍「定稿,开工」;docs/design/资讯/抽选-三段式-20261012.md):正文改三张分区卡 ——
  * 配额(联邦 + 各省)→ 抽选节奏(一条通道一张,先出 10 张)→ 事件流(筛选药丸 + 时间轴);两种卡都按数据层的综合名次排。
  * 更新时间挪进横幅副标题下面(Frank「更新时间去掉,更新时间放到 banner 上」),各段卡头不再挂。
+ * 同日 Frank「这个时间,网页端放右下角」:更新时间从副标题挪进横幅右槽(宽屏右下角;窄屏横幅竖排,照旧落在副标题下)。
  *
  * @author Frank
  * @time 2026-08-28 12:43:06
@@ -28,9 +29,8 @@ import { IconNews } from '@/components/icons'
 import { Shell } from '@/components/shell'
 import { SectionTabs } from '@/components/tabs'
 import { Updated } from '@/components/time'
-import { FOLD_FIRST } from '@/components/pager'
 import {
-  BANNER_MODULE, SHELL_TOP, TABS_TONE, URL_NEWS, URL_STEPS, URL_STREAMS, URL_TIMELINE,
+  BANNER_MODULE, CADENCE_FOLD, SHELL_TOP, TABS_TONE, URL_NEWS, URL_STEPS, URL_STREAMS, URL_TIMELINE,
 } from './constants'
 import { CadenceSection } from './cadencesection'
 import { EventSection } from './eventsection'
@@ -45,13 +45,14 @@ import type { TimelineIn } from './types'
  * @returns 正文(Shell 轨往下)。
  */
 export function Timeline({ events, quota, cadence, updatedAt }: TimelineIn) {
-  const p = useTimeline({ hidden: Math.max(cadence.length - FOLD_FIRST, 0) })
+  const p = useTimeline({ hidden: Math.max(cadence.length - CADENCE_FOLD, 0) })
   return (
     <Shell top={SHELL_TOP}>
       <Banner module={BANNER_MODULE}
         icon={<IconNews />}
         title={p.t('tl.title')}
-        sub={<>{p.t('tl.sub')}<Updated iso={updatedAt} t={p.t} inBanner /></>}
+        sub={p.t('tl.sub')}
+        right={<Updated iso={updatedAt} t={p.t} inBanner />}
         images={BANNER_IMGS.news} />
       <SectionTabs tone={TABS_TONE}
         tabs={[

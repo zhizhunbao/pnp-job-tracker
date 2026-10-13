@@ -9,7 +9,6 @@
  */
 import { cardGrayOf, cardNameEnOf, quotaCellsOf } from './functions'
 import { NameLines } from './namelines'
-import { RankMark } from './rankmark'
 import { StatGrid } from './statgrid'
 import type { QuotaCardIn } from './types'
 import css from './timeline.module.css'
@@ -23,7 +22,6 @@ import css from './timeline.module.css'
 export function QuotaCard({ t, lang, card }: QuotaCardIn) {
   return (
     <div className={css.mini}>
-      <RankMark rank={card.rank} />
       <div className={css.miniBody}>
         <NameLines en={cardNameEnOf({ t, lang, card })} gray={cardGrayOf({ t, lang, card })} />
         <StatGrid cells={quotaCellsOf({ t, lang, card })} />
