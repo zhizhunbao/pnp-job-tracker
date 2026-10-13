@@ -142,7 +142,9 @@ describe('mart 实况', () => {
     // 2026-09-30 通道补全批一 1b 四省:NS 7→21(本省毕业生 / 医生 / 两条快速通道)、SK 17→29(学生、快速通道,医疗 / 科技 EE 版)、
     // NB 17→32(快速通道本省就业、法语工人、私立学院试点)、PE 9→18(撤「四流都考 CLB 4」一行,按流分档 + 三条新通道)→ 566
     // 2026-09-30 通道与门槛批 1:阿省机会通道补身份两行(status,判定引擎不读)、持 PGWP 一档(experienceAlt,不读)→ 569
-    expect(data.requirements).toHaveLength(569)
+    // 2026-10-12 金标追平(按省对 eecddca8 → HEAD 的 raw/pnp 门槛文件):ON 自雇医生补两条执照行(CPSO 注册证、OHIP 计费号)+2、
+    // NB 32 → 33(快速通道「近 10 年同一职业码连续 12 个月」经验行入表;法语远程工作者居住行改字)+1 → 572
+    expect(data.requirements).toHaveLength(572)
     expect(data.requirements.filter((r) => r.appliesCondition === 'ab-local-experience')).toHaveLength(1)
     // 2026-09-11 FCIP 3 → 25:eligibility 域立域后两试点各自全量抄门槛(offer 三态 / 工时 /
     // 语言 / 学历等整套),同门槛跨试点重复行随 2a8dcf07 退役 —— 25 行全为 FCIP 自己的。
@@ -166,7 +168,9 @@ describe('mart 实况', () => {
     const byProvince: Record<string, number> = {}
     for (const row of data.scoreFactors) byProvince[row.province] = (byProvince[row.province] ?? 0) + 1
     // 2026-08-14 AB 入列(AAIP Worker EOI Points Grid 30 行,官方 PDF 人工核对)
-    expect(byProvince).toEqual({ AB: 30, BC: 32, MB: 44, NL: 28, ON: 51, SK: 37 })
+    // 2026-10-12 ON 51 → 52:安省 10-07 通告改 Workforce Priority EOI 的收入分档 —— 加「$80k 及以上 10 分」一档(原顶档 $70k+ 8 分改为
+    // $70k–79,999 8 分),收入一项满分 8 → 10
+    expect(byProvince).toEqual({ AB: 30, BC: 32, MB: 44, NL: 28, ON: 52, SK: 37 })
     expect(data.eeGrid).toHaveLength(380)
     // 抽选表与指定雇主名录**按周增长**(抽选每轮一行、名录每次抓取补差)——钉死行数是纯脆断言,
     // 只守「不许倒退」;门槛/清单/分值表那四张是政策表,改版要炸得出来,继续钉死。
