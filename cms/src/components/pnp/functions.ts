@@ -3722,7 +3722,6 @@ export function provStreamItemsOf(x: ProvStreamItemsIn): ProvStreamItem[] {
       fits: fitsOfSet({ sets: x.sets, key: p.key }),
       group: g.key,
       groupHead: g.head,
-      groupSub: g.sub,
     })
   }
   return groupedOf(out)
@@ -6636,24 +6635,22 @@ function spanAtOf(x: SpanAtIn): PnpSpanJson | null {
 /**
  * 一条通道的组头(2026-10-12):联邦按 fedGroupOf 的四组取词条;各省照搬官方分类(Frank 选「照搬各省官方分类」)——
  * 官网英文原名黑字、界面语言译名灰字(英文界面只出一行);官方平铺列通道的省没登分类,不出组头。
+ * 2026-10-13 Frank「这个只显示 中文就可以了」:组头只出界面语言名一行(中文界面中文、英文界面官网英文名),不再英文黑字 + 译名灰字。
  *
  * @param x 取词函数、界面语言与通道对照行。
- * @returns 组键与组头两行字;不分组给三个空串。
+ * @returns 组键与组头字;不分组给两个空串。
  */
 function groupOf(x: GroupOfIn): GroupOfOut {
   const fed = fedGroupOf(x.p)
   if (fed !== TEXT_NONE) {
-    return { key: fed, head: x.t(GROUP_KEY_HEAD + fed), sub: TEXT_NONE }
+    return { key: fed, head: x.t(GROUP_KEY_HEAD + fed) }
   }
   const c = x.p.category
   if (c == null) {
-    return { key: TEXT_NONE, head: TEXT_NONE, sub: TEXT_NONE }
+    return { key: TEXT_NONE, head: TEXT_NONE }
   }
-  let sub = TEXT_NONE
-  if (x.lang !== LANG_EN) {
-    sub = noteTextOf({ lang: x.lang, text: { zh: c.zh, en: c.en, ko: c.ko }, vars: {} })
-  }
-  return { key: c.key, head: c.en, sub }
+  const head = noteTextOf({ lang: x.lang, text: { zh: c.zh, en: c.en, ko: c.ko }, vars: {} })
+  return { key: c.key, head }
 }
 
 /**
@@ -7368,7 +7365,7 @@ export function stepLineClsOf(line: StepLineSpec): string {
 
 /**
  * 一省的分类胶囊(2026-10-12 Frank「省份 下面加一个 分类 section 筛选」):按条目的组键归并,顺序照条目先后;胶囊字用界面语言名
- * (有灰字译名用译名,英文界面与联邦用组头那一行),带这一类的条数;不分组的省给空列。
+ * (与组头同字),带这一类的条数;不分组的省给空列。
  *
  * @param x 一省条目与是否只数登了步骤的。
  * @returns 胶囊列。
@@ -7386,11 +7383,7 @@ export function groupChipsOf(x: GroupChipsOfIn): PnpGroupChip[] {
       }
     }
     if (chip == null) {
-      let label = it.groupHead
-      if (it.groupSub !== TEXT_NONE) {
-        label = it.groupSub
-      }
-      chip = { key: it.group, label, n: 0 }
+      chip = { key: it.group, label: it.groupHead, n: 0 }
       out.push(chip)
     }
     chip.n += 1

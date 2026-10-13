@@ -38,7 +38,7 @@ export function PnpProvStreams({ lang, province, group }: PnpProvStreamsIn) {
     }
     if (it.group !== shown) {
       shown = it.group
-      cards.push(<GroupHead key={GROUP_KEY_HEAD + shown} head={it.groupHead} sub={it.groupSub} />)
+      cards.push(<GroupHead key={GROUP_KEY_HEAD + shown} head={it.groupHead} />)
     }
     cards.push(<div key={it.key} id={it.key} className={css.jumpAnchor}><PnpGateCard spec={it.gate} /></div>)
   }

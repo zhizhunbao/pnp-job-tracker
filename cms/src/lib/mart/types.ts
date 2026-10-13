@@ -138,6 +138,11 @@ export type RunSeedIn = {
    * ?reset=1:清空 jobs/companies 全量重建(⚠️ 碰生产的破坏性操作)。
    */
   reset: boolean
+
+  /**
+   * ?tables=:只灌这些维度表(空列 = 照旧全量;2026-10-13 提速)。
+   */
+  tables: string[]
 }
 
 /**
@@ -208,6 +213,11 @@ export type SeedDimsIn = {
    * 计数板(本函数就地记)。
    */
   counts: SeedCounts
+
+  /**
+   * 只灌这些表(空列 = 全部维度表)。
+   */
+  tables: string[]
 }
 
 /**

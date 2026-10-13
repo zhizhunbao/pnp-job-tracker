@@ -63,6 +63,17 @@ export const P_TOKEN = 'token'
 export const P_RESET = 'reset'
 
 /**
+ * /seed 只灌点名维度表的参数名(?tables=pathways,pnp_draws;2026-10-13 Frank「为什么每次 self-check 和 seed 要这么长时间」→「做吧,提速」:
+ * 只改了一张维度表时不再连带过新闻 / 公司 / 职位与关岗刷新,几十秒灌完)。
+ */
+export const P_TABLES = 'tables'
+
+/**
+ * ?tables= 里表名之间的分隔。
+ */
+export const TABLES_SEP = ','
+
+/**
  * gzip 魔数第一字节(不依赖 Content-Encoding —— 中间代理可能改写/吞掉)。
  */
 export const GZIP_MAGIC_0 = 0x1f

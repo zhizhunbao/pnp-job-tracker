@@ -17,8 +17,8 @@ import { DB_LOG, log } from '@/lib/log'
 import {
   BYTE_LBRACKET, BYTE_RBRACKET, BYTE_WS_MAX, E_BAD_GZIP, E_BAD_NAME, E_NOT_ARRAY, E_SEED_FAIL, GZIP_HEAD_LEN,
   GZIP_MAGIC_0,
-  GZIP_MAGIC_1, JSON_EXT, P_RESET, P_TOKEN, S_BAD_REQUEST, S_INTERNAL, S_UNAUTHORIZED, T_UNAUTHORIZED, TABLE_NAME_RE,
-  TMP_PREFIX, TMP_SUFFIX,
+  GZIP_MAGIC_1, JSON_EXT, P_RESET, P_TABLES, P_TOKEN, S_BAD_REQUEST, S_INTERNAL, S_UNAUTHORIZED, T_UNAUTHORIZED, TABLE_NAME_RE,
+  TABLES_SEP, TMP_PREFIX, TMP_SUFFIX,
 } from './constants'
 import { martCounterpart, martTmpDir, runSeed, seedTokenOk } from './functions'
 import type { UploadCtx } from './types'
@@ -106,9 +106,18 @@ export async function seedRoute(req: Request): Promise<Response> {
   if (resetParam != null && resetParam !== '') {
     reset = true
   }
+  const tables: string[] = []
+  const tablesParam = url.searchParams.get(P_TABLES)
+  if (tablesParam != null) {
+    for (const name of tablesParam.split(TABLES_SEP)) {
+      if (name.trim() !== '') {
+        tables.push(name.trim())
+      }
+    }
+  }
   const db = await getDb()
   try {
-    const out = await runSeed({ db: db, reset: reset })
+    const out = await runSeed({ db: db, reset: reset, tables: tables })
     return Response.json(out)
   } catch (e) {
     let msg = String(e)

@@ -1039,3 +1039,7 @@ COOKIE_JAR_EMPTY = "[]"
 
 TEST_VERBOSITY = 2
 """unittest 运行档:逐条打用例名与结果(同 indexing / gate / pnp 自查)。"""
+
+MANIFEST_RESTAT_S = 30.0
+"""读门 manifest 索引的复用窗(秒):窗内连查不再全量 stat(2026-10-13 Frank「为什么每次 self-check 和 seed 要这么长时间」→「做吧,提速」;
+跨进程的改动最多晚这么久被看到,本进程的写门写完即作废)。"""

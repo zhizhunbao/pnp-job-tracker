@@ -7552,14 +7552,9 @@ export type ProvStreamItem = {
   group: string
 
   /**
-   * 组头黑字(联邦取词条;各省取官网英文原名)。
+   * 组头字(联邦取词条;各省取官方分类的界面语言名)。
    */
   groupHead: string
-
-  /**
-   * 组头灰字(各省分类的界面语言译名;英文界面与联邦给 '')。
-   */
-  groupSub: string
 }
 
 /**
@@ -7595,11 +7590,6 @@ export type GroupOfOut = {
    * 组头黑字。
    */
   head: string
-
-  /**
-   * 组头灰字。
-   */
-  sub: string
 }
 
 /**
@@ -7812,14 +7802,9 @@ export type NoteTextIn = {
  */
 export type GroupHeadIn = {
   /**
-   * 黑字。
+   * 组头字。
    */
   head: string
-
-  /**
-   * 灰字;'' = 不出。
-   */
-  sub: string
 }
 
 /**

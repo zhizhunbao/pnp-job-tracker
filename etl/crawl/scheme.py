@@ -23,7 +23,7 @@ from pydantic import BaseModel, ConfigDict
 
 from crawl.constants import (
     BIN_SUFFIX, ENC_UTF8, ERRORS_REPLACE, FILE_CACHE_DIR, FILES_SLUG_PREFIX, HTML_CACHE_DIR, K_CRAWLED_AT,
-    K_FILE, K_HTML, K_PAGES, K_STATUS, K_URL, MANIFEST_FILE, MANIFEST_GLOB, PDF_MAGIC, PDF_SUFFIX,
+    K_FILE, K_HTML, K_PAGES, K_PINNED, K_STATUS, K_URL, MANIFEST_FILE, MANIFEST_GLOB, PDF_MAGIC, PDF_SUFFIX,
     STATUS_OK,
 )
 
@@ -578,7 +578,16 @@ class CacheIndexTest(unittest.TestCase):
     原样抄在 legacy_get 里当金标)逐 URL 比 html 与 fetched。两块:① 造一棵临时 data/crawl 覆盖各条挑选规则与失效
     路径(同 URL 多种子取最新、并列取路径序、非 200 / 空 html 跳过、首行文件缺席落到下一行、尾斜杠两写、坏 JSON、
     无 manifest 的目录、根上零散文件;改写 / 删除 / 新增 manifest 后再比);② 真 data/crawl 上抽样(没有就跳过)。
-    ①不联网、只写临时目录;②只读。"""
+    ①不联网、只写临时目录;②只读。
+    2026-10-13 读门加复用窗(MANIFEST_RESTAT_S)后:金标两条把窗关成 0(逐次全量核对,与旧实现逐次全读对得上);
+    窗本身的性质另钉一条 test_restat_window(窗内看不见外部改写、本进程写门写完立刻看得见)。"""
+
+    def setUp(self) -> None:
+        """金标比对一律关掉复用窗(窗的性质单独测)。"""
+        from crawl import functions as fn
+        patcher = mock.patch.object(fn, "MANIFEST_RESTAT_S", 0.0)
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     def legacy_get(self, url: str) -> CacheHit:
         """旧实现原样(2026-09-26 提速前的 get_cached_page 函数体,一字不改;金标)。"""
@@ -698,6 +707,22 @@ class CacheIndexTest(unittest.TestCase):
                 self.assert_same(self.urls())
                 self.assertIn("s8/h1.html", str(fn.get_cached_page("https://x.test/b").html))
 
+    def test_restat_window(self) -> None:
+        """复用窗(2026-10-13):窗内外部改写 manifest 看不见(省的就是这份全量 stat);本进程写门调 manifests_dirty 后立刻看得见。"""
+        from crawl import functions as fn
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.build_tree(root)
+            with mock.patch.object(fn.paths, "CRAWL", root), mock.patch.object(fn, "MANIFEST_RESTAT_S", 3600.0):
+                fn.manifests_dirty()
+                self.assertIn("s2/b1.html", str(fn.get_cached_page("https://x.test/a").html))
+                self.put_html(root, "s9", "i1.html")
+                self.put_manifest(root, "s9", {K_CRAWLED_AT: "2026-09-30T00:00:00", K_PAGES: [
+                    self.page("https://x.test/a", "i1.html", 200)]})
+                self.assertIn("s2/b1.html", str(fn.get_cached_page("https://x.test/a").html))
+                fn.manifests_dirty()
+                self.assertIn("s9/i1.html", str(fn.get_cached_page("https://x.test/a").html))
+
     def test_real_crawl_sample(self) -> None:
         """真 data/crawl 抽样(只读;没有就跳过):同一份索引快照上批量比 —— 每 25 份 manifest 取第一个 200 行的
         URL(连尾斜杠对偶)+ 一个不存在的,新读门本体 cached_hit_of 与旧实现规则逐个比;另拿 legacy_get 原样
@@ -788,7 +813,8 @@ class FileCacheTest(unittest.TestCase):
                 self.assertIsNone(fn.get_cached_page(u1).html)
                 fn.put_cached_page(CachePutIn(slug="s1", url="https://x.test/p", html="<html>p</html>", title="t"))
                 page = json.loads((root / "s1" / MANIFEST_FILE).read_text(encoding=ENC_UTF8))[K_PAGES][0]
-                self.assertEqual(sorted(page), sorted([K_URL, "title", "depth", K_STATUS, K_HTML]))
+                # 2026-10-12 写门行多一格 pinned(钉住:BFS 重写 manifest 时保留手存页),键集跟着加
+                self.assertEqual(sorted(page), sorted([K_URL, "title", "depth", K_STATUS, K_HTML, K_PINNED]))
                 self.assertEqual(fn.get_cached_page("https://x.test/p").html, "<html>p</html>")
 
     def test_get_file(self) -> None:

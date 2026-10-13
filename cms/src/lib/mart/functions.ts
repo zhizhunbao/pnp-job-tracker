@@ -1059,13 +1059,16 @@ export async function runSeed(x: RunSeedIn): RunSeedOut {
   const counts: Record<string, number> = {}
   let closed = 0
   let closedDead = 0
+  if (x.tables.length > 0) {
+    return runSeedTables(x)
+  }
   const client = await x.db.connect()
   try {
     await client.query(SQL.TX_BEGIN)
     await client.query(SQL.SEED_LOCK)
     await client.query(SQL.SEED_STATE_CREATE)
     const prevHash = await loadSeedState(client)
-    await seedDims({ client: client, now: now, prevHash: prevHash, counts: counts })
+    await seedDims({ client: client, now: now, prevHash: prevHash, counts: counts, tables: [] })
     await seedStatsDaily({ client: client, now: now, counts: counts })
     await seedNews({ client: client, now: now, prevHash: prevHash, counts: counts })
     if (x.reset) {
@@ -1108,6 +1111,33 @@ export async function runSeed(x: RunSeedIn): RunSeedOut {
 }
 
 /**
+ * 只灌点名维度表(''' + WHY + '''):同一个事务、同一把锁、同一套表级哈希跳过,
+ * 不碰新闻 / 公司 / 职位,不跑关岗与城市 / 雇主池刷新(那些只在全量 seed 里做)。
+ *
+ * @param x 连接池与点名表(reset 在这条路上不认)。
+ * @returns 与全量同形的响应体(只有点名表的计数)。
+ */
+async function runSeedTables(x: RunSeedIn): RunSeedOut {
+  const now = new Date().toISOString()
+  const counts: Record<string, number> = {}
+  const client = await x.db.connect()
+  try {
+    await client.query(SQL.TX_BEGIN)
+    await client.query(SQL.SEED_LOCK)
+    await client.query(SQL.SEED_STATE_CREATE)
+    const prevHash = await loadSeedState(client)
+    await seedDims({ client: client, now: now, prevHash: prevHash, counts: counts, tables: x.tables })
+    await client.query(SQL.TX_COMMIT)
+  } catch (e) {
+    await rollbackQuietly(client)
+    throw e
+  } finally {
+    client.release()
+  }
+  return { ok: true, reset: false, counts: counts, closed: 0, closedDead: 0, updatedAt: now }
+}
+
+/**
  * seed_state 全量读出(#118 表级哈希态;-1/-2/-3 哨兵语义见 constants)。
  *
  * @param client 事务连接。
@@ -1139,6 +1169,9 @@ async function loadSeedState(client: DbClient): SeedHashesOut {
  */
 async function seedDims(x: SeedDimsIn): DoneOut {
   for (const spec of dimSpecs()) {
+    if (x.tables.length > 0 && x.tables.includes(spec.table) === false) {
+      continue
+    }
     if (martPaths(spec.table).length === 0) {
       x.counts[spec.table] = COUNT_NO_UPLOAD
       continue

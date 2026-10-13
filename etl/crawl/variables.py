@@ -17,7 +17,9 @@ pw = playwright 驱动;context = 持久上下文(cf_clearance 随 profile
 patches = 已装配的站点脚本补丁表(route 回调只收一参,补丁表从这格取 —— 2026-09-03 由
 lambda 闭包改成容器格,过形制闸一参令)。"""
 
-MANIFESTS = SimpleNamespace(entries={})
+MANIFESTS = SimpleNamespace(entries={}, at=0.0, out=[], root=None)
 """读门 get_cached_page 的进程内 manifest 索引(第二种状态,2026-09-26 lead 派工④「crawl 读缓存提速」):
 entries = {manifest 路径: ManifestEntry}。每次读门都先 stat 全部 manifest,签名(inode, mtime_ns, size)变了 / 新出现的
-才重读重解析,消失的当场摘掉 —— 结果与逐次全读同源,省的只是重复的读与解析(对照自测 CacheIndexTest)。"""
+才重读重解析,消失的当场摘掉 —— 结果与逐次全读同源,省的只是重复的读与解析(对照自测 CacheIndexTest)。
+2026-10-13 Frank「为什么每次 self-check 和 seed 要这么长时间」→「做吧,提速」:at = 上次全量 stat 的单调时刻、out = 那次交回的索引列;MANIFEST_RESTAT_S 秒内再查直接交回 out
+(通道表自校一轮查 290 页,每页全量 stat 几千个子目录约 4 秒,占整轮 1376 秒里的 1262 秒);本进程写 manifest 的三个门写完把 at 清零;root = 那次扫的 data/crawl 根(根换了 —— 自测换临时树 —— 窗作废)。"""

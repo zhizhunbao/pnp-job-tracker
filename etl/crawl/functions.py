@@ -20,6 +20,7 @@ import os
 import re
 import shutil
 import sys
+import time
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
@@ -52,6 +53,7 @@ from crawl.constants import (
     BLOCK_TAGS,
     BOLD_TAGS,
     BROWSER_ARGS,
+    MANIFEST_RESTAT_S,
     CACHE_IO_WORKERS,
     CELL_TAGS,
     CHALLENGE_SNIFF_LEN,
@@ -346,6 +348,8 @@ def manifest_entries() -> list:
     缓存只住进程内(crawl.variables.MANIFESTS),不落盘 —— 各进程各自验,没有跨进程一致性问题。"""
     if paths.CRAWL.is_dir() is False:
         return []
+    if MANIFESTS.root == paths.CRAWL and MANIFESTS.at > 0 and time.monotonic() - MANIFESTS.at < MANIFEST_RESTAT_S:
+        return MANIFESTS.out
     cands: list = []
     for name in os.listdir(paths.CRAWL):
         cands.append(paths.CRAWL / name / MANIFEST_FILE)
@@ -374,7 +378,15 @@ def manifest_entries() -> list:
         entries[s.path] = e
         out.append(e)
     MANIFESTS.entries = entries
+    MANIFESTS.out = out
+    MANIFESTS.root = paths.CRAWL
+    MANIFESTS.at = time.monotonic()
     return out
+
+
+def manifests_dirty() -> None:
+    """本进程写了 manifest:作废读门的复用窗,下次读门重新全量 stat(2026-10-13 Frank「为什么每次 self-check 和 seed 要这么长时间」→「做吧,提速」)。"""
+    MANIFESTS.at = 0.0
 
 
 def sig_path_of(s: ManifestSig) -> Path:
@@ -447,6 +459,7 @@ def upsert_manifest_row(x: ManifestRowIn) -> None:
     manifest[K_TOTAL_URLS] = len(pages)
     manifest[K_CRAWLED_AT] = datetime.now().isoformat()
     paths.write_text(paths.WriteTextIn(path=x.path, text=json.dumps(manifest, ensure_ascii=False, indent=2)))
+    manifests_dirty()
 
 
 def load_cache_index(slug: str) -> dict:
@@ -506,6 +519,7 @@ def put_cached_pages(x: CachePutManyIn) -> int:
     manifest[K_TOTAL_URLS] = len(by_url)
     manifest[K_CRAWLED_AT] = datetime.now().isoformat()
     paths.write_text(paths.WriteTextIn(path=manifest_path, text=json.dumps(manifest, ensure_ascii=False, indent=2)))
+    manifests_dirty()
     return len(x.pages)
 
 
@@ -1029,6 +1043,7 @@ async def discover_urls(x: DiscoverIn) -> Path:
         K_PAGES: pages,
     }
     paths.write_json(paths.WriteJsonIn(path=manifest_path, payload=manifest, indent=2))
+    manifests_dirty()
     await close_browser()
     say(PRINT_MANIFEST_TPL.format(n=len(ctx.discovered), path=manifest_path))
     return manifest_path

@@ -38,7 +38,7 @@ export function PnpProvSteps({ lang, province, group, filter }: PnpProvStepsIn) 
     if (it.steps != null && inGroup && keepStreamOf({ fits: it.fits, province, filter })) {
       if (it.group !== shown) {
         shown = it.group
-        cards.push(<GroupHead key={GROUP_KEY_HEAD + shown} head={it.groupHead} sub={it.groupSub} />)
+        cards.push(<GroupHead key={GROUP_KEY_HEAD + shown} head={it.groupHead} />)
       }
       cards.push(
         <div key={it.key} id={it.key} className={css.jumpAnchor}>
