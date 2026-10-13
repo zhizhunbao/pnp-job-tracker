@@ -538,13 +538,13 @@ def category_problems_of(table: list) -> list[str]:
             i += 1
             out.extend(quote_problems_of(StepIn(key=prov, i=i, step=cat, pages=pages)))
     for entry in table:
-        cats = PROV_CATEGORIES.get(entry["province"])
+        cats = PROV_CATEGORIES.get(entry[K_PROVINCE])
         cell = entry.get(K_CATEGORY)
         if cell is None:
             if cats is not None:
-                out.append(CAT_PROV_MISSING_TPL.format(key=entry[K_KEY], prov=entry["province"]))
+                out.append(CAT_PROV_MISSING_TPL.format(key=entry[K_KEY], prov=entry[K_PROVINCE]))
             continue
-        if cats is None or cell.get(K_KEY) not in [c[K_KEY] for c in cats]:
+        if cats is None or cell.get(K_KEY) not in cat_keys_of(cats):
             out.append(CAT_UNKNOWN_TPL.format(key=entry[K_KEY], cat=cell.get(K_KEY)))
             continue
         out.extend(quote_problems_of(StepIn(key=entry[K_KEY], i=0, step=cell, pages=pages)))
@@ -567,8 +567,18 @@ def category_cell_of(entry: dict) -> dict | None:
     cell = entry.get(K_CATEGORY)
     if cell is None:
         return None
-    for cat in PROV_CATEGORIES.get(entry["province"], []):
+    for cat in PROV_CATEGORIES.get(entry[K_PROVINCE], []):
         if cat[K_KEY] == cell[K_KEY]:
-            return {k: cat[k] for k in CAT_KEYS}
+            out = {}
+            for k in CAT_KEYS:
+                out[k] = cat[k]
+            return out
     return None
 
+
+def cat_keys_of(cats: list) -> list[str]:
+    """本省分类表的编号列。"""
+    out: list[str] = []
+    for c in cats:
+        out.append(c[K_KEY])
+    return out
