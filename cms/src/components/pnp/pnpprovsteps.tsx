@@ -26,18 +26,19 @@ import css from './pnp.module.css'
 /**
  * 渲染一省的步骤卡。
  *
- * @param props 界面语言、省码与筛选条件。
+ * @param props 界面语言、省码、只看哪一类与筛选条件。
  * @returns 卡片列(每条登了步骤、筛完还留着的通道一张;整表没到出加载行,取挂了出失败框)。
  */
-export function PnpProvSteps({ lang, province, filter }: PnpProvStepsIn) {
+export function PnpProvSteps({ lang, province, group, filter }: PnpProvStepsIn) {
   const p = usePnpProvStreams({ lang, province })
   const cards = []
-  let group = TEXT_NONE
+  let shown = TEXT_NONE
   for (const it of p.items) {
-    if (it.steps != null && keepStreamOf({ fits: it.fits, province, filter })) {
-      if (it.group !== group) {
-        group = it.group
-        cards.push(<GroupHead key={GROUP_KEY_HEAD + group} head={it.groupHead} sub={it.groupSub} />)
+    const inGroup = group === TEXT_NONE || it.group === group
+    if (it.steps != null && inGroup && keepStreamOf({ fits: it.fits, province, filter })) {
+      if (it.group !== shown) {
+        shown = it.group
+        cards.push(<GroupHead key={GROUP_KEY_HEAD + shown} head={it.groupHead} sub={it.groupSub} />)
       }
       cards.push(
         <div key={it.key} id={it.key} className={css.jumpAnchor}>

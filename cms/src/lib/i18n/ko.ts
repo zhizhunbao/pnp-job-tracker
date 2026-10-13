@@ -1228,6 +1228,8 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'news.entry': '이민 소식',
   'news.title': '이민 정책 동향', 'news.bnSub': '연방 및 주정부 이민 공지',
   'streams.title': '주정부 스트림과 요건', 'streams.bnSub': '주별 현행 스트림과 공식 요건',
+  // 2026-10-12 Frank「省份 下面加一个 分类 section 筛选」:分类卡卡头
+  'streams.groupHead': '분류',
   'steps.title': '주정부 신청 경로', 'steps.bnSub': '주별 현행 스트림의 공식 신청 절차',
   // 2026-10-11 申请步骤分区筛选批 1(Frank「可以,开始做第一批」;设计 docs/design/资讯/申请步骤-分区筛选-20261011.md):省份 / 身份 / 教育经历三张分区卡
   // 2026-10-12 Frank「去掉其他筛选,只保留省份切换」:身份 / 教育经历两张卡撤(筛选挪「我的通道」),只留省份卡与组头词条

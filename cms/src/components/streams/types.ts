@@ -49,6 +49,16 @@ export type StreamsPanel = {
    * 逐省的手柄工厂。
    */
   provPickOf: ProvPickOfFn
+
+  /**
+   * 当前分类(组键;'' = 全部;2026-10-12)。
+   */
+  group: string
+
+  /**
+   * 逐类手柄(点选中的那枚 = 取消)。
+   */
+  groupPickOf: GroupPickOfFn
 }
 
 /**
@@ -99,6 +109,11 @@ export type ProvPickIn = {
    * 省份落格。
    */
   setProv: (v: string) => void
+
+  /**
+   * 分类落格(切省时清空;2026-10-12)。
+   */
+  setGroup: (v: string) => void
 }
 
 /**
@@ -124,4 +139,69 @@ export type ProvChipTextIn = {
    * 各省条数(整表还没到是空表)。
    */
   counts: ProvCountsMap
+}
+
+/**
+ * 逐类的手柄工厂:给组键,换一只切到(或取消)那一类的手柄。
+ */
+export type GroupPickOfFn = (key: string) => ClickFn
+
+/**
+ * 分类卡的一枚胶囊(pnp 桶 usePnpGroupChips 交回的形,本桶自抄)。
+ */
+export type GroupChip = {
+  /**
+   * 组键。
+   */
+  key: string
+
+  /**
+   * 胶囊字。
+   */
+  label: string
+
+  /**
+   * 条数。
+   */
+  n: number
+}
+
+/**
+ * makeGroupPickOf 的入参。
+ */
+export type GroupPickIn = {
+  /**
+   * 当前分类。
+   */
+  cur: string
+
+  /**
+   * 分类落格。
+   */
+  setGroup: (v: string) => void
+}
+
+/**
+ * GroupChips 的 props。
+ */
+export type GroupChipsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本省分类胶囊。
+   */
+  chips: GroupChip[]
+
+  /**
+   * 当前分类。
+   */
+  group: string
+
+  /**
+   * 逐类手柄。
+   */
+  groupPickOf: GroupPickOfFn
 }

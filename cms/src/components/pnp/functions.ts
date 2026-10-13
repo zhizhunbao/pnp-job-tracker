@@ -76,6 +76,7 @@ import {
 } from './constants'
 import type {
   PnpFitsJson, ProvCounts, ProvCountsOfIn, NoteTextIn, PnpGateJson, CuratedGateIn, GroupOfIn, GroupOfOut,
+  GroupChipsOfIn, PnpGroupChip,
   PnpSpanJson, PnpTimelineJson, SpanAtIn, SpanTextIn, StepDurIn, ToneIn, TotalTextIn, TimelineSegSpec, TimelineSpec,
   TimelineSpecIn, WithToneIn,
   ChannelOfIn, ChannelSpec, DrawExtraIn, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
@@ -3724,6 +3725,31 @@ export function provStreamItemsOf(x: ProvStreamItemsIn): ProvStreamItem[] {
       groupSub: g.sub,
     })
   }
+  return groupedOf(out)
+}
+
+/**
+ * 同一类的通道排拢(2026-10-12 Frank「有 bug」:SK 通道表里国际技术工人与本省经验两类交错,组头出了两遍):
+ * 类按首次出现的先后,类内保持原顺序(省默认仍在本类最前)。
+ *
+ * @param items 一省条目(通道表顺序)。
+ * @returns 按类排拢后的条目。
+ */
+function groupedOf(items: ProvStreamItem[]): ProvStreamItem[] {
+  const keys: string[] = []
+  for (const it of items) {
+    if (keys.includes(it.group) === false) {
+      keys.push(it.group)
+    }
+  }
+  const out: ProvStreamItem[] = []
+  for (const k of keys) {
+    for (const it of items) {
+      if (it.group === k) {
+        out.push(it)
+      }
+    }
+  }
   return out
 }
 
@@ -7338,4 +7364,36 @@ export function stepLineClsOf(line: StepLineSpec): string {
     return cssOf(css.stepLine) + SPACE + cssOf(css.stepWarn)
   }
   return cssOf(css.stepLine)
+}
+
+/**
+ * 一省的分类胶囊(2026-10-12 Frank「省份 下面加一个 分类 section 筛选」):按条目的组键归并,顺序照条目先后;胶囊字用界面语言名
+ * (有灰字译名用译名,英文界面与联邦用组头那一行),带这一类的条数;不分组的省给空列。
+ *
+ * @param x 一省条目与是否只数登了步骤的。
+ * @returns 胶囊列。
+ */
+export function groupChipsOf(x: GroupChipsOfIn): PnpGroupChip[] {
+  const out: PnpGroupChip[] = []
+  for (const it of x.items) {
+    if (it.group === TEXT_NONE || (x.stepsOnly && it.steps == null)) {
+      continue
+    }
+    let chip: PnpGroupChip | null = null
+    for (const c of out) {
+      if (c.key === it.group) {
+        chip = c
+      }
+    }
+    if (chip == null) {
+      let label = it.groupHead
+      if (it.groupSub !== TEXT_NONE) {
+        label = it.groupSub
+      }
+      chip = { key: it.group, label, n: 0 }
+      out.push(chip)
+    }
+    chip.n += 1
+  }
+  return out
 }

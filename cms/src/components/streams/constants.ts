@@ -158,3 +158,13 @@ export const K_PROV_TOTAL = 'stepsf.total'
  * 省份胶囊上省名与条数之间的空格。
  */
 export const PROV_COUNT_SEP = ' '
+
+/**
+ * 分类卡卡头词条键(2026-10-12 Frank「省份 下面加一个 分类 section 筛选」)。
+ */
+export const K_GROUP_HEAD = 'streams.groupHead'
+
+/**
+ * 分类卡至少几类才出(只有一类时筛了等于没筛;2026-10-12)。
+ */
+export const GROUP_CHIPS_MIN = 2

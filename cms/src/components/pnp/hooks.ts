@@ -25,14 +25,14 @@ import { track } from '@/lib/track'
 import {
   LANG_EN, PICK_NONE, TEXT_NONE, PROV_QC, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD,
 } from './constants'
-import {
+import { groupChipsOf,
   applyHashJump, channelListOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockCardOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
   makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, provStreamItemsOf, qcChannelsOf,
   aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, aipSectionOf, channelSplitOf,
   makeLoadAipEmp, makePickOf, normName, provCountsOf,
 } from './functions'
-import type {
+import type { PnpGroupChip, PnpGroupChipsHookIn,
   EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel, DeadFlag, PnpData, PnpDataHookIn, PnpDataPanel,
   PnpModalHookIn, PnpModalPanel, PnpProvStreamsHookIn, PnpProvStreamsPanel, QcChannel, QcChannelsHookIn,
   QcChannelsPanel, AipEmpCardHookIn, AipEmpCardPanel, AipEmpData, AipEmpRowJson, AipSectionHookIn, AipSectionPanel,
@@ -397,4 +397,27 @@ export function useChannelPick(x: ChannelPickHookIn): ChannelPickPanel {
 export function useDrawFold(): DrawFoldPanel {
   const [open, setOpen] = useState<Set<string>>(new Set())
   return { open, toggleOf: makeToggleOf({ setKeys: setOpen }) }
+}
+
+/**
+ * 一省的分类胶囊(2026-10-12 Frank「省份 下面加一个 分类 section 筛选」;资讯两页分类卡用,与正文共用一次整表请求)。
+ *
+ * @param x 界面语言、省码与是否只数登了步骤的。
+ * @returns 胶囊列;不分组的省或整表没到给空列。
+ */
+export function usePnpGroupChips(x: PnpGroupChipsHookIn): PnpGroupChip[] {
+  const t = makeT(x.lang)
+  const data = usePnpData({ enabled: true })
+  const items = provStreamItemsOf({
+    t,
+    lang: x.lang,
+    province: x.province,
+    pathways: data.pathways,
+    reqs: data.reqs,
+    draws: data.draws,
+    ops: data.ops,
+    sets: data.steps,
+    stepOps: data.stepOps,
+  })
+  return groupChipsOf({ items, stepsOnly: x.stepsOnly })
 }

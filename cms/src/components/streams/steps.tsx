@@ -17,7 +17,7 @@
  */
 import { BANNER_IMGS, Banner } from '@/components/banner'
 import { IconNews } from '@/components/icons'
-import { PnpProvSteps, usePnpProvCounts } from '@/components/pnp'
+import { PnpProvSteps, usePnpGroupChips, usePnpProvCounts } from '@/components/pnp'
 import { Shell } from '@/components/shell'
 import { SectionTabs } from '@/components/tabs'
 import {
@@ -25,6 +25,7 @@ import {
 } from './constants'
 import { provHrefOf } from './functions'
 import { useStreams } from './hooks'
+import { GroupChips } from './groupchips'
 import { ProvChips } from './provchips'
 
 /**
@@ -35,6 +36,7 @@ import { ProvChips } from './provchips'
 export function Steps() {
   const p = useStreams()
   const counts = usePnpProvCounts({ stepsOnly: true })
+  const chips = usePnpGroupChips({ lang: p.lang, province: p.prov, stepsOnly: true })
   return (
     <Shell top={SHELL_TOP}>
       <Banner module={BANNER_MODULE}
@@ -50,7 +52,10 @@ export function Steps() {
           { href: URL_STEPS, label: p.t('tl.tabSteps'), active: true },
         ]} />
       <ProvChips t={p.t} prov={p.prov} provPickOf={p.provPickOf} counts={counts} />
-      {p.prov !== TEXT_NONE && <PnpProvSteps lang={p.lang} province={p.prov} filter={STEPS_NO_FILTER} />}
+      <GroupChips t={p.t} chips={chips} group={p.group} groupPickOf={p.groupPickOf} />
+      {p.prov !== TEXT_NONE && (
+        <PnpProvSteps lang={p.lang} province={p.prov} group={p.group} filter={STEPS_NO_FILTER} />
+      )}
     </Shell>
   )
 }

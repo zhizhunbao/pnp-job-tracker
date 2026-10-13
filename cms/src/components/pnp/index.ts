@@ -58,4 +58,4 @@ export {
   qcCellNameOf,
   wageLowAppliesOf,
 } from './functions'
-export { usePnpData, usePnpProvCounts } from './hooks'
+export { usePnpData, usePnpGroupChips, usePnpProvCounts } from './hooks'

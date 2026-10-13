@@ -3,6 +3,7 @@
  * streams 域的状态机器:当前省份 + 界面语言;挂载时按设备时区预选一次。
  * 体内不留函数体 —— 带口径的步骤在 ./functions(形制同 timeline 的 useTimeline)。
  * 2026-10-03 资讯页签四分:「申请步骤」页(同桶 Steps)也用这一台(同一排省份胶囊、同一个预选口径)。
+ * 2026-10-12 Frank「省份 下面加一个 分类 section 筛选」:多一格当前分类(切省清空)。
  *
  * @author Frank
  * @time 2026-09-30 21:46:44
@@ -10,7 +11,7 @@
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { TEXT_NONE } from './constants'
-import { applyStartProv, makeProvPickOf } from './functions'
+import { applyStartProv, makeGroupPickOf, makeProvPickOf } from './functions'
 import type { StreamsPanel } from './types'
 
 /**
@@ -21,10 +22,18 @@ import type { StreamsPanel } from './types'
 export function useStreams(): StreamsPanel {
   const [lang, , t] = useLang()
   const [prov, setProv] = useState(TEXT_NONE)
+  const [group, setGroup] = useState(TEXT_NONE)
 
   useEffect(function presetHomeProv() {
-    applyStartProv({ setProv })
+    applyStartProv({ setProv, setGroup })
   }, [])
 
-  return { t, lang, prov, provPickOf: makeProvPickOf({ setProv }) }
+  return {
+    t,
+    lang,
+    prov,
+    provPickOf: makeProvPickOf({ setProv, setGroup }),
+    group,
+    groupPickOf: makeGroupPickOf({ cur: group, setGroup }),
+  }
 }

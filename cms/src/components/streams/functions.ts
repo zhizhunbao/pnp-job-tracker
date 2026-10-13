@@ -14,7 +14,9 @@
 import {
   P_PROV, PROV_COUNT_SEP, PROV_DEFAULT, STREAM_PROVS, TEXT_NONE, URL_KV_SEP, URL_QUERY_HEAD,
 } from './constants'
-import type { ClickFn, ProvChipTextIn, ProvCountsMap, ProvHrefIn, ProvPickIn, ProvPickOfFn } from './types'
+import type {
+  ClickFn, GroupChip, GroupPickIn, GroupPickOfFn, ProvChipTextIn, ProvCountsMap, ProvHrefIn, ProvPickIn, ProvPickOfFn,
+} from './types'
 
 /**
  * 进页先看哪一省:设备时区(东部时区看浏览器语言,同职位板 homeProvinceOf);落在九省之外(魁省、三个地区)或认不出,
@@ -59,6 +61,7 @@ export function applyStartProv(x: ProvPickIn): void {
  * 造省份手柄的工厂:给它省码,换一只只管切到那个省的手柄。
  * 2026-10-04 切省同时把地址换成 `?prov=新省`(replaceState,不进历史、不留锚点):刷新、转发停在同一省,
  * 也不会因为地址里还挂着别省的 #通道编号 再滚回去。
+ * 2026-10-12 加分类卡:切省同时清空分类(别省的类在这省没有)。
  *
  * @param x 省份落格。
  * @returns 逐省的手柄工厂。
@@ -67,6 +70,7 @@ export function makeProvPickOf(x: ProvPickIn): ProvPickOfFn {
   return function pickOf(code: string): ClickFn {
     return function pick(): void {
       x.setProv(code)
+      x.setGroup(TEXT_NONE)
       window.history.replaceState(null, TEXT_NONE, provHrefOf({ base: window.location.pathname, prov: code }))
     }
   }
@@ -114,4 +118,32 @@ export function provTotalOf(counts: ProvCountsMap): number {
     }
   }
   return total
+}
+
+/**
+ * 造分类手柄的工厂(2026-10-12 Frank「省份 下面加一个 分类 section 筛选」):点一类只看这一类,再点选中的那枚回到全部。
+ *
+ * @param x 当前分类与分类落格。
+ * @returns 逐类的手柄工厂。
+ */
+export function makeGroupPickOf(x: GroupPickIn): GroupPickOfFn {
+  return function pickOf(key: string): ClickFn {
+    return function pick(): void {
+      if (x.cur === key) {
+        x.setGroup(TEXT_NONE)
+        return
+      }
+      x.setGroup(key)
+    }
+  }
+}
+
+/**
+ * 分类胶囊上的字:类名 + 条数(同省份胶囊的写法)。
+ *
+ * @param chip 一枚分类胶囊。
+ * @returns 胶囊字。
+ */
+export function groupChipTextOf(chip: GroupChip): string {
+  return chip.label + PROV_COUNT_SEP + chip.n
 }

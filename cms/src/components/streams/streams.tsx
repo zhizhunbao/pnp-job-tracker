@@ -14,12 +14,13 @@
  */
 import { BANNER_IMGS, Banner } from '@/components/banner'
 import { IconNews } from '@/components/icons'
-import { PnpProvStreams, usePnpProvCounts } from '@/components/pnp'
+import { PnpProvStreams, usePnpGroupChips, usePnpProvCounts } from '@/components/pnp'
 import { Shell } from '@/components/shell'
 import { SectionTabs } from '@/components/tabs'
 import { BANNER_MODULE, SHELL_TOP, TABS_TONE, URL_NEWS, URL_STEPS, URL_STREAMS, URL_TIMELINE } from './constants'
 import { provHrefOf } from './functions'
 import { useStreams } from './hooks'
+import { GroupChips } from './groupchips'
 import { ProvChips } from './provchips'
 
 /**
@@ -30,6 +31,7 @@ import { ProvChips } from './provchips'
 export function Streams() {
   const p = useStreams()
   const counts = usePnpProvCounts({ stepsOnly: false })
+  const chips = usePnpGroupChips({ lang: p.lang, province: p.prov, stepsOnly: false })
   return (
     <Shell top={SHELL_TOP}>
       <Banner module={BANNER_MODULE}
@@ -45,7 +47,8 @@ export function Streams() {
           { href: provHrefOf({ base: URL_STEPS, prov: p.prov }), label: p.t('tl.tabSteps') },
         ]} />
       <ProvChips t={p.t} prov={p.prov} provPickOf={p.provPickOf} counts={counts} />
-      <PnpProvStreams lang={p.lang} province={p.prov} />
+      <GroupChips t={p.t} chips={chips} group={p.group} groupPickOf={p.groupPickOf} />
+      <PnpProvStreams lang={p.lang} province={p.prov} group={p.group} />
     </Shell>
   )
 }

@@ -1272,6 +1272,8 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'news.entry': 'Immigration news',
   'news.title': 'Immigration policy updates', 'news.bnSub': 'Federal and provincial notices',
   'streams.title': 'PNP streams & requirements', 'streams.bnSub': 'Current streams and official requirements by province',
+  // 2026-10-12 Frank「省份 下面加一个 分类 section 筛选」:分类卡卡头
+  'streams.groupHead': 'Category',
   'steps.title': 'PNP pathways', 'steps.bnSub': 'Official application steps for current streams by province',
   // 2026-10-11 申请步骤分区筛选批 1(Frank「可以,开始做第一批」;设计 docs/design/资讯/申请步骤-分区筛选-20261011.md):省份 / 身份 / 教育经历三张分区卡
   // 2026-10-12 Frank「去掉其他筛选,只保留省份切换」:身份 / 教育经历两张卡撤(筛选挪「我的通道」),只留省份卡与组头词条

@@ -25,17 +25,20 @@ import css from './pnp.module.css'
 /**
  * 渲染一省的门槛卡。
  *
- * @param props 界面语言与省码。
+ * @param props 界面语言、省码与只看哪一类。
  * @returns 卡片列(每条通道一张门槛卡;整表没到出加载行,取挂了出失败框)。
  */
-export function PnpProvStreams({ lang, province }: PnpProvStreamsIn) {
+export function PnpProvStreams({ lang, province, group }: PnpProvStreamsIn) {
   const p = usePnpProvStreams({ lang, province })
   const cards = []
-  let group = TEXT_NONE
+  let shown = TEXT_NONE
   for (const it of p.items) {
-    if (it.group !== group) {
-      group = it.group
-      cards.push(<GroupHead key={GROUP_KEY_HEAD + group} head={it.groupHead} sub={it.groupSub} />)
+    if (group !== TEXT_NONE && it.group !== group) {
+      continue
+    }
+    if (it.group !== shown) {
+      shown = it.group
+      cards.push(<GroupHead key={GROUP_KEY_HEAD + shown} head={it.groupHead} sub={it.groupSub} />)
     }
     cards.push(<div key={it.key} id={it.key} className={css.jumpAnchor}><PnpGateCard spec={it.gate} /></div>)
   }

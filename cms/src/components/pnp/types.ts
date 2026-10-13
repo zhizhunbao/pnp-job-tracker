@@ -5411,6 +5411,11 @@ export type PnpProvStreamsIn = {
    * 省码。
    */
   province: string
+
+  /**
+   * 只看这一类(分类卡选中的组键;'' = 全部;2026-10-12)。
+   */
+  group: string
 }
 
 /**
@@ -5426,6 +5431,11 @@ export type PnpProvStepsIn = {
    * 省码。
    */
   province: string
+
+  /**
+   * 只看这一类(分类卡选中的组键;'' = 全部;2026-10-12)。
+   */
+  group: string
 
   /**
    * 筛选条件(2026-10-11 申请步骤分区筛选批 1)。
@@ -7810,4 +7820,59 @@ export type GroupHeadIn = {
    * 灰字;'' = 不出。
    */
   sub: string
+}
+
+/**
+ * 分类卡的一枚胶囊(2026-10-12 Frank「省份 下面加一个 分类 section 筛选」)。
+ */
+export type PnpGroupChip = {
+  /**
+   * 组键(与条目的 group 同值)。
+   */
+  key: string
+
+  /**
+   * 胶囊字(界面语言名)。
+   */
+  label: string
+
+  /**
+   * 这一类几条通道。
+   */
+  n: number
+}
+
+/**
+ * groupChipsOf 的入参。
+ */
+export type GroupChipsOfIn = {
+  /**
+   * 一省条目。
+   */
+  items: ProvStreamItem[]
+
+  /**
+   * 只数登了步骤的(「申请通道」页)。
+   */
+  stepsOnly: boolean
+}
+
+/**
+ * usePnpGroupChips 的入参。
+ */
+export type PnpGroupChipsHookIn = {
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 只数登了步骤的。
+   */
+  stepsOnly: boolean
 }
