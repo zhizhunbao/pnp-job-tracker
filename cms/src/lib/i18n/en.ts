@@ -1257,7 +1257,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'tl.alloc': '{y} allocation', 'tl.prTarget': '{y} PR target', 'tl.nDays': '{n} days', 'tl.gapDays': '~{n} days',
   'tl.nTimes': '{n}', 'tl.nPeople': '{n}', 'tl.n': '{n}', 'tl.late': 'Later than usual', 'tl.idle': 'No recent draws',
   'tl.covers': 'Covers {list}', 'tl.unitCard': 'cards',
-  'tl.notice': 'Notice',
+ 
   'tl.min': 'Min {n}', 'tl.inv': '{n} invited', 'tl.src': 'Official source',
   'tl.entry': 'Draws & policy timeline', 'tl.empty': 'No matching events',
   'loading': 'Updating…',

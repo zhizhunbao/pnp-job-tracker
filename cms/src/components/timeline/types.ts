@@ -44,11 +44,6 @@ export type EventRow = {
   prov: string
 
   /**
-   * 这件事是哪一路:抽选 / 省通告。
-   */
-  kind: 'draw' | 'notice'
-
-  /**
    * 抽选给流名;省通告的标题走 i18n 的固定说法,不读这一格。
    */
   title: string
@@ -77,11 +72,6 @@ export type EventRow = {
    * 抽选发出的邀请数;null = 官方这期没公布。
    */
   invitations: number | null
-
-  /**
-   * 省通告的正文摘要(通告那一路真正的内容在这里)。
-   */
-  note: string
 
   /**
    * 抽选的人数口径(selection = 从 EOI 池选中的人,写「人入选」;新闻给 '';2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」)。
@@ -807,26 +797,6 @@ export type NumTextIn = {
    * 0 是否也写「-」(今年抽选 0 次写「-」;人数 0 照写)。
    */
   zeroDash: boolean
-}
-
-/**
- * eventTitleOf 的入参。
- */
-export type EventTitleIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 这件事是哪一路。
-   */
-  kind: string
-
-  /**
-   * 抽选的流名。
-   */
-  title: string
 }
 
 /**

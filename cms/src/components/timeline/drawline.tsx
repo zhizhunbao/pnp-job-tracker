@@ -12,8 +12,8 @@
  * @author Frank
  * @time 2026-08-28 12:43:06
  */
-import { KIND_NOTICE, SCALE_NOTE_CLOSE, SCALE_NOTE_OPEN, TEXT_NONE } from './constants'
-import { eventGrayOf, eventTitleOf, invTextOf, isScaleShown } from './functions'
+import { SCALE_NOTE_CLOSE, SCALE_NOTE_OPEN, TEXT_NONE } from './constants'
+import { eventGrayOf, invTextOf, isScaleShown } from './functions'
 import type { DrawLineIn } from './types'
 import css from './timeline.module.css'
 
@@ -28,20 +28,18 @@ export function DrawLine({ t, lang, row }: DrawLineIn) {
   return (
     <>
       <span className={css.drawTitle}>
-        {eventTitleOf({ t, kind: row.kind, title: row.title })}
+        {row.title}
         {gray !== TEXT_NONE && <span className={css.titleGray}>{gray}</span>}
       </span>
-      {row.kind !== KIND_NOTICE && (
-        <span className={css.score}>
-          {row.score != null && t('tl.min', { n: row.score })}
-          {row.score != null && isScaleShown({ scale: row.scale }) && (
-            <span className={css.scaleNote}>
-              {SCALE_NOTE_OPEN}{row.scale}{SCALE_NOTE_CLOSE}
-            </span>
-          )}
-        </span>
-      )}
-      {row.kind !== KIND_NOTICE && <span className={css.inv}>{invTextOf({ t, row })}</span>}
+      <span className={css.score}>
+        {row.score != null && t('tl.min', { n: row.score })}
+        {row.score != null && isScaleShown({ scale: row.scale }) && (
+          <span className={css.scaleNote}>
+            {SCALE_NOTE_OPEN}{row.scale}{SCALE_NOTE_CLOSE}
+          </span>
+        )}
+      </span>
+      <span className={css.inv}>{invTextOf({ t, row })}</span>
     </>
   )
 }

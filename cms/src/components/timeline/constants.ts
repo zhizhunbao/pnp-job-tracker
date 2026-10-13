@@ -66,11 +66,6 @@ export const TEXT_NONE = ''
 export const PROV_FED = 'FED'
 
 /**
- * 事件类型:省通告(标题一律走 i18n 的固定说法,真正的内容在 note 里)。
- */
-export const KIND_NOTICE = 'notice'
-
-/**
  * 联邦 EE 的分制名。两处用它:EE 节奏卡的分制小注;抽选行的分数后面**只在分制不是
  * CRS 时**才标注分制(诚实红线:省分数不是 CRS,不标会被当成 CRS 分读)。
  */

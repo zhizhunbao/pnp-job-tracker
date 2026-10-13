@@ -1333,7 +1333,7 @@ export const siteZh = {
   'tl.alloc': '{y} 配额', 'tl.prTarget': '{y} 永居目标', 'tl.nDays': '{n} 天', 'tl.gapDays': '~{n} 天',
   'tl.nTimes': '{n} 次', 'tl.nPeople': '{n} 人', 'tl.n': '{n}', 'tl.late': '比平常晚', 'tl.idle': '久未抽选',
   'tl.covers': '覆盖 {list}', 'tl.unitCard': '条',
-  'tl.notice': '通告',
+ 
   'tl.min': '最低分 {n}', 'tl.inv': '邀请 {n} 人', 'tl.src': '官方来源',
   'tl.entry': '抽选与政策时间线', 'tl.empty': '没有匹配的事件',
   'loading': '更新中…',

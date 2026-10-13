@@ -23,7 +23,7 @@ import { DAY_MS } from '@/lib/time'
 import type { Db } from '../db'
 import {
   AV, BAND_A, BAND_NONE, BAND_Y, BAND_Z, BASIS_NONE, CADENCE_FACTOR, CERT, CMP, DATE10_LEN, DATE_NONE, DAYS_PER_MONTH,
-  DAYS_PER_WEEK, DRAW_ROWS_MIN, GROUP_SEP, KIND_NOTICE, MONTHS_PER_YEAR, NA_TEXT, NOT_TIME_CONVERTIBLE, PLAN_NOTES,
+  DAYS_PER_WEEK, DRAW_ROWS_MIN, GROUP_SEP, MONTHS_PER_YEAR, NA_TEXT, NOT_TIME_CONVERTIBLE, PLAN_NOTES,
   PLAN_TEXT, PROCESSING_KEY, PROV_FED, PROV_RE, RANK_OK, RANK_QUOTA, RANK_STATUSES, ROUND_TENTHS_SCALE, SLOT_NONE, SPACE, STEP,
   SUBJECT_EMPLOYER,
   TEXT_NONE, THIN_MIN, TV, UNIT_HEADS, WHY_NONE,
@@ -630,14 +630,10 @@ export function toDrawEvent(r: Row): TlEvent {
     prov = ''
     label = text(r.label)
   }
-  let kind: TlEvent['kind'] = 'draw'
-  if (r.kind === KIND_NOTICE) {
-    kind = 'notice'
-  }
   return {
-    date: day(r.draw_date), prov: prov, kind: kind,
+    date: day(r.draw_date), prov: prov,
     title: title, titleZh: text(r.stream_zh), label: label, score: numOrNull(r.score), scale: text(r.scale),
-    invitations: numOrNull(r.invitations), note: text(r.note),
+    invitations: numOrNull(r.invitations),
     url: text(r.url), unit: text(r.unit),
   }
 }

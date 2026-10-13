@@ -15,11 +15,11 @@ import { PROV_NAMES } from '@/lib/location'
 import {
   ALLOC_PR_TARGET, CLS_SEP, COVER_SEP, KIND_CADENCE, KIND_QUOTA, K_ALLOC, K_GAP_DAYS, K_N, K_N_DAYS, K_N_PEOPLE,
   K_N_TIMES, K_PR_TARGET, DASH, DATE10_LEN, EE_KEY_I18N, FED_NAME_EN, LANG_EN, LANG_KO, NUM_LOCALE,
-  STATUS_IDLE, STATUS_LATE, UNIT_APPLICATION, UNIT_SELECTION, KIND_NOTICE, PROV_FED, PROV_KEY_HEAD,
+  STATUS_IDLE, STATUS_LATE, UNIT_APPLICATION, UNIT_SELECTION, PROV_FED, PROV_KEY_HEAD,
   SCALE_CRS, TEXT_NONE, YEAR_LEN,
 } from './constants'
 import type {
-  CardTextIn, DrillOfIn, EeNameIn, EventGrayIn, EventRow, EventTitleIn, EventsIn, InvTextIn,
+  CardTextIn, DrillOfIn, EeNameIn, EventGrayIn, EventRow, EventsIn, InvTextIn,
   ClickFn, NumTextIn, PickedOfIn, ProvLabelIn, ProvMatchIn, ProvPickIn, RankCard, ScaleIn, ShownOfIn,
   StatCellRow, StreamClearIn, StreamMatchIn, UnitTextIn,
 } from './types'
@@ -100,19 +100,6 @@ export function isStreamMatch(x: StreamMatchIn): boolean {
  */
 export function provLabelOf(x: ProvLabelIn): string {
   return x.t(PROV_KEY_HEAD + x.code)
-}
-
-/**
- * 抽选那一行的标题:省通告没有自己的标题(它的内容在摘要里),一律走 i18n 的固定说法。
- *
- * @param x 取词函数与这条事件的类型、标题。
- * @returns 该显示的标题。
- */
-export function eventTitleOf(x: EventTitleIn): string {
-  if (x.kind === KIND_NOTICE) {
-    return x.t('tl.notice')
-  }
-  return x.title
 }
 
 /**
@@ -318,7 +305,7 @@ export function pickLabelOf(x: CardTextIn): string {
  * @returns 灰字或 ''。
  */
 export function eventGrayOf(x: EventGrayIn): string {
-  if (x.lang === LANG_EN || x.row.kind === KIND_NOTICE) {
+  if (x.lang === LANG_EN) {
     return TEXT_NONE
   }
   if (x.row.label !== TEXT_NONE) {

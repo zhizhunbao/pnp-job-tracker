@@ -1267,9 +1267,10 @@ export const PILOT_QUOTA_COMMUNITIES = `SELECT community, province, type, first_
  * 定了位置另起专用查询。
  * 2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」:多取 unit(人数口径;时间线 selection 那种写「人入选」)。
  * 2026-10-12 抽选页三段式:本条放行魁省行(理由见下一条 DRAW_RANK_ALL;另三条照旧挡),多取 stream_zh(事件标题下的中文灰字)。
+ * 同日 Frank「不应该显示通告」:不取通告行(kind = notice),抽选页事件流只出抽选;kind / note 两格随之不取。
  */
-export const PNP_DRAWS_ALL = `SELECT province, kind, draw_date, stream, COALESCE(stream_zh, '') AS stream_zh, score, scale,
-       invitations, note, label, url, COALESCE(unit, '') AS unit FROM pnp_draws`
+export const PNP_DRAWS_ALL = `SELECT province, draw_date, stream, COALESCE(stream_zh, '') AS stream_zh, score, scale,
+       invitations, label, url, COALESCE(unit, '') AS unit FROM pnp_draws WHERE COALESCE(kind, '') <> 'notice'`
 
 /**
  * 抽选页排名卡全量(2026-10-12 抽选页三段式;draw_rank 由 etl/mart/rank 算好名次与状态,配额卡在前、节奏卡在后,各按名次)。

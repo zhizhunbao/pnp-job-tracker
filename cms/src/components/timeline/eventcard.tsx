@@ -9,7 +9,6 @@
  * @author Frank
  * @time 2026-08-28 12:43:06
  */
-import { KIND_NOTICE, TEXT_NONE } from './constants'
 import { DrawLine } from './drawline'
 import { ProvTag } from './provtag'
 import type { EventCardIn } from './types'
@@ -31,7 +30,6 @@ export function EventCard({ t, lang, row }: EventCardIn) {
           <ProvTag t={t} prov={row.prov} />
           <DrawLine t={t} lang={lang} row={row} />
         </div>
-        {row.kind === KIND_NOTICE && row.note !== TEXT_NONE && <div className={css.note}>{row.note}</div>}
       </div>
     </div>
   )

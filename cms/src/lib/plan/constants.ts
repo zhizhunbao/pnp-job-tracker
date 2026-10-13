@@ -125,11 +125,6 @@ export const REGION_FEDERAL = 'FEDERAL'
 export const REGION_CA = 'CA'
 
 /**
- * 时间线:通告类抽选行的 kind 值。
- */
-export const KIND_NOTICE = 'notice'
-
-/**
  * 节奏分组键的分隔符。
  */
 export const GROUP_SEP = '|'

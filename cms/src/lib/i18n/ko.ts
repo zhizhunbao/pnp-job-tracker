@@ -1213,7 +1213,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'tl.alloc': '{y} 배정', 'tl.prTarget': '{y} 영주권 목표', 'tl.nDays': '{n}일', 'tl.gapDays': '~{n}일',
   'tl.nTimes': '{n}회', 'tl.nPeople': '{n}명', 'tl.n': '{n}', 'tl.late': '평소보다 늦음', 'tl.idle': '장기간 추첨 없음',
   'tl.covers': '{list} 포함', 'tl.unitCard': '개',
-  'tl.notice': '공지',
+ 
   'tl.min': '최저 {n}점', 'tl.inv': '초청 {n}명', 'tl.src': '공식 출처',
   'tl.entry': '추첨·정책 타임라인', 'tl.empty': '일치하는 이벤트 없음',
   'loading': '업데이트 중…',

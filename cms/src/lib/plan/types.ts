@@ -989,11 +989,6 @@ export type TlEvent = {
   prov: string
 
   /**
-   * 抽选 / 省通告(2026-10-03 政策公告那一路撤出时间线,改在「最新公告」页签看)。
-   */
-  kind: 'draw' | 'notice'
-
-  /**
    * draw=流名(2026-10-12 起省行也取通道流名,不再取项目名)。
    */
   title: string
@@ -1022,11 +1017,6 @@ export type TlEvent = {
    * draw:邀请数;null = 未公布。
    */
   invitations: number | null
-
-  /**
-   * notice 摘要。
-   */
-  note: string
 
   /**
    * 外链(官方来源)或 ''。
