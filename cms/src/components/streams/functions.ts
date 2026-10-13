@@ -11,7 +11,6 @@
  * @author Frank
  * @time 2026-09-30 21:46:44
  */
-import { homeProvinceOf } from '@/lib/location'
 import {
   P_PROV, PROV_COUNT_SEP, PROV_DEFAULT, STREAM_PROVS, TEXT_NONE, URL_KV_SEP, URL_QUERY_HEAD,
 } from './constants'
@@ -21,6 +20,7 @@ import type { ClickFn, ProvChipTextIn, ProvCountsMap, ProvHrefIn, ProvPickIn, Pr
  * 进页先看哪一省:设备时区(东部时区看浏览器语言,同职位板 homeProvinceOf);落在九省之外(魁省、三个地区)或认不出,
  * 看第一枚胶囊。
  * 2026-10-04 地址里带了九省之一(`?prov=`,互跳钮与页签切换带过来的)就先认它。
+ * 2026-10-12 Frank「默认选联邦,放到第一位」:时区预选撤,地址没带省份一律先看联邦(PROV_DEFAULT)。
  *
  * @returns 省码。
  */
@@ -28,10 +28,6 @@ export function startProvOf(): string {
   const asked = urlProvOf()
   if (asked !== TEXT_NONE) {
     return asked
-  }
-  const prov = homeProvinceOf()
-  if (STREAM_PROVS.includes(prov)) {
-    return prov
   }
   return PROV_DEFAULT
 }

@@ -47,13 +47,15 @@ export const URL_STEPS = '/steps'
 /**
  * 省份胶囊:九个参加省提名的省,自西向东(魁省另成体系、AIP 是联邦项目,两处的门槛卡下一批再接)。
  * 2026-10-12 补全通道(Frank「加组头,修完推上去」):九省后面接育空地区、西北地区、魁北克省、联邦四枚(联邦含经济类 / 家庭团聚 / 难民)。
+ * 同日 Frank「默认选联邦,放到第一位」:联邦挪到最前。
  */
-export const STREAM_PROVS = ['BC', 'AB', 'SK', 'MB', 'ON', 'NB', 'NS', 'PE', 'NL', 'YT', 'NT', 'QC', 'FED']
+export const STREAM_PROVS = ['FED', 'BC', 'AB', 'SK', 'MB', 'ON', 'NB', 'NS', 'PE', 'NL', 'YT', 'NT', 'QC']
 
 /**
  * 设备时区对不上这九省时(人在国内、魁省、三个地区)先看哪一省:第一枚胶囊。
+ * 2026-10-12 Frank「默认选联邦,放到第一位」:进页一律先看联邦(不再按时区预选),地址带了省份的照旧认地址。
  */
-export const PROV_DEFAULT = 'BC'
+export const PROV_DEFAULT = 'FED'
 
 /**
  * 还没选省(首帧:服务端不知道时区,挂载后才按时区预选)。
