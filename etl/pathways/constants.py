@@ -12820,7 +12820,7 @@ PW_QC_PSTQ_STREAM_1 = {
             "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
         }
     ],
-    "category": {"key": "qc-skilled", "quote": "Skilled Worker Selection Program This program is for people who wish to immigrate to Québec as a skilled worker, whether they are in Québec or abroad.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
+    "category": {"key": "qc-pstq", "quote": "Skilled Worker Selection Program This program is for people who wish to immigrate to Québec as a skilled worker, whether they are in Québec or abroad.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
     "steps": [
         {
             "step": "eoi",
@@ -13081,7 +13081,7 @@ PW_QC_PSTQ_STREAM_2 = {
             "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
         }
     ],
-    "category": {"key": "qc-skilled", "quote": "Skilled Worker Selection Program This program is for people who wish to immigrate to Québec as a skilled worker, whether they are in Québec or abroad.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
+    "category": {"key": "qc-pstq", "quote": "Skilled Worker Selection Program This program is for people who wish to immigrate to Québec as a skilled worker, whether they are in Québec or abroad.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
     "steps": [
         {
             "step": "workLocal",
@@ -13353,7 +13353,7 @@ PW_QC_PSTQ_STREAM_3 = {
             "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
         }
     ],
-    "category": {"key": "qc-skilled", "quote": "Skilled Worker Selection Program This program is for people who wish to immigrate to Québec as a skilled worker, whether they are in Québec or abroad.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
+    "category": {"key": "qc-pstq", "quote": "Skilled Worker Selection Program This program is for people who wish to immigrate to Québec as a skilled worker, whether they are in Québec or abroad.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
     "steps": [
         {
             "step": "eoi",
@@ -13634,7 +13634,7 @@ PW_QC_PSTQ_STREAM_4 = {
             "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
         }
     ],
-    "category": {"key": "qc-skilled", "quote": "Skilled Worker Selection Program This program is for people who wish to immigrate to Québec as a skilled worker, whether they are in Québec or abroad.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
+    "category": {"key": "qc-pstq", "quote": "Skilled Worker Selection Program This program is for people who wish to immigrate to Québec as a skilled worker, whether they are in Québec or abroad.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
     "steps": [
         {
             "step": "eoi",
@@ -13895,7 +13895,7 @@ PW_QC_PEQ_GRADUATES = {
             "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/diplomes-quebec"
         }
     ],
-    "category": {"key": "qc-skilled", "quote": "Ce programme s’adresse aux travailleuses et travailleurs étrangers temporaires, aux étudiantes et étudiants étrangers diplômés du Québec.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
+    "category": {"key": "qc-peq", "quote": "Ce programme s’adresse aux travailleuses et travailleurs étrangers temporaires, aux étudiantes et étudiants étrangers diplômés du Québec.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
     "steps": [
         {
             "step": "submit",
@@ -14089,7 +14089,7 @@ PW_QC_PEQ_TEMPORARY_WORKERS = {
             "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/travailleurs-temporaires"
         }
     ],
-    "category": {"key": "qc-skilled", "quote": "Ce programme s’adresse aux travailleuses et travailleurs étrangers temporaires, aux étudiantes et étudiants étrangers diplômés du Québec.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
+    "category": {"key": "qc-peq", "quote": "Ce programme s’adresse aux travailleuses et travailleurs étrangers temporaires, aux étudiantes et étudiants étrangers diplômés du Québec.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
     "steps": [
         {
             "step": "workLocal",
@@ -14285,7 +14285,7 @@ PW_QC_INVESTOR = {
             "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/investors/conditions"
         }
     ],
-    "category": {"key": "qc-business", "quote": "Immigrate to Québec as an investor Settle in Québec and invest in Québec.", "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business"},
+    "category": {"key": "qc-investor", "quote": "Immigrate to Québec as an investor Settle in Québec and invest in Québec.", "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business"},
     "steps": [
         {
             "step": "agreement",
@@ -14551,7 +14551,7 @@ PW_QC_ENTREPRENEUR_STARTUP = {
             "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/entrepreneurs/start-acquire-business/conditions"
         }
     ],
-    "category": {"key": "qc-business", "quote": "Immigrate to Québec as an entrepreneur Settle in Québec to start or acquire a business in Québec.", "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business"},
+    "category": {"key": "qc-entrepreneur", "quote": "Immigrate to Québec as an entrepreneur Settle in Québec to start or acquire a business in Québec.", "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business"},
     "steps": [
         {
             "step": "submit",
@@ -14777,7 +14777,7 @@ PW_QC_SELF_EMPLOYED = {
             "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/self-employed-workers/conditions"
         }
     ],
-    "category": {"key": "qc-business", "quote": "Immigrate to Québec as a self-employed worker Settle in Québec and work for yourself.", "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business"},
+    "category": {"key": "qc-self-employed", "quote": "Immigrate to Québec as a self-employed worker Settle in Québec and work for yourself.", "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business"},
     "steps": [
         {
             "step": "submit",
@@ -15446,19 +15446,43 @@ PROV_CATEGORIES: dict = {
     ],
     "QC": [
         {
-            "key": "qc-skilled",
-            "en": "Immigration programs for skilled workers",
-            "zh": "技术移民项目",
-            "ko": "숙련 근로자 이민",
-            "quote": "Immigration programs for skilled workers Applying for selection to immigrate permanently to Québec to work.",
+            "key": "qc-pstq",
+            "en": "Skilled Worker Selection Program (PSTQ)",
+            "zh": "技术工人甄选(PSTQ)",
+            "ko": "숙련 근로자 선발(PSTQ)",
+            "quote": "Skilled Worker Selection Program This program is for people who wish to immigrate to Québec as a skilled worker, whether they are in Québec or abroad.",
             "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"
         },
         {
-            "key": "qc-business",
-            "en": "Immigrate to Québec to do business",
-            "zh": "商业移民",
-            "ko": "비즈니스 이민",
-            "quote": "Steps to immigrate to Québec as an investor, entrepreneur or self-employed worker.",
+            "key": "qc-peq",
+            "en": "Programme de l'expérience québécoise (PEQ)",
+            "zh": "魁北克经验类(PEQ)",
+            "ko": "퀘벡 경험 프로그램(PEQ)",
+            "quote": "Ce programme s’adresse aux travailleuses et travailleurs étrangers temporaires, aux étudiantes et étudiants étrangers diplômés du Québec.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"
+        },
+        {
+            "key": "qc-investor",
+            "en": "Investor Program",
+            "zh": "投资移民",
+            "ko": "투자 이민",
+            "quote": "Immigrate to Québec as an investor Settle in Québec and invest in Québec.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business"
+        },
+        {
+            "key": "qc-entrepreneur",
+            "en": "Entrepreneur Program",
+            "zh": "企业家移民",
+            "ko": "기업가 이민",
+            "quote": "Immigrate to Québec as an entrepreneur Settle in Québec to start or acquire a business in Québec.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business"
+        },
+        {
+            "key": "qc-self-employed",
+            "en": "Self-Employed Worker Program",
+            "zh": "自雇移民",
+            "ko": "자영업 이민",
+            "quote": "Immigrate to Québec as a self-employed worker Settle in Québec and work for yourself.",
             "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business"
         }
     ],
@@ -15604,7 +15628,9 @@ PROV_CATEGORIES: dict = {
 """各省官方分类表(省码 → [{key, en, zh, ko, quote, url}],顺序 = 官网列的先后;2026-10-12 三组子代理按官网逐省核,原句对 crawl 缓存自校)。
 官方平铺列通道、没有分类层的省不登(页面不出组头)。
 2026-10-12 Frank「都按你说的」:NL 不登 —— 官网正文平铺列五条通道,Applicants / Entrepreneurs 只在左侧导航与 URL 里,不当类名;
-NB 按 Streams 下一层分五类(上层只有 Streams / Pilot programs 两块)。"""
+NB 按 Streams 下一层分五类(上层只有 Streams / Pilot programs 两块)。
+同日 Frank 要省内分类筛选、魁北克「按项目」:QC 官方两类(技术移民项目 / 商业移民)拆成 PSTQ / PEQ / 投资 / 企业家 / 自雇五个项目,
+筛选胶囊与组头同一套;各类原句取自原两类页上逐项目那一句。"""
 
 WS_RE = re.compile(r"\s+")
 """核原句时去掉全部空白(页面链接断开会在标点前留空格,两边都去掉再比)。"""
