@@ -3103,7 +3103,7 @@ function toPathway(r: PathwayDbRow): Pathway {
     officialName: text(r.officialName), key: text(r.key), plainZh: text(r.plainZh), plainKo: text(r.plainKo),
     jobLinked: r.jobLinked !== false, tags: toList(r.tags), teers: toList(r.teers), nocs: toList(r.nocs),
     employers: toList(r.employers), occLabels: toList(r.occLabels), url: text(r.url), hasSteps: r.hasSteps === true,
-    status: text(r.status),
+    status: text(r.status), category: r.category,
   }
 }
 

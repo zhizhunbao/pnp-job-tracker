@@ -13,6 +13,7 @@
  * @author Frank
  * @time 2026-09-30 21:46:44
  */
+import { GroupHead } from './grouphead'
 import { Loading } from '@/components/loading'
 import { Notice } from '@/components/notice'
 import { GROUP_KEY_HEAD, K_LOAD_FAILED, K_LOADING, NOTICE_ERR, TEXT_NONE } from './constants'
@@ -34,7 +35,7 @@ export function PnpProvStreams({ lang, province }: PnpProvStreamsIn) {
   for (const it of p.items) {
     if (it.group !== group) {
       group = it.group
-      cards.push(<div key={GROUP_KEY_HEAD + group} className={css.groupHead}>{p.t(GROUP_KEY_HEAD + group)}</div>)
+      cards.push(<GroupHead key={GROUP_KEY_HEAD + group} head={it.groupHead} sub={it.groupSub} />)
     }
     cards.push(<div key={it.key} id={it.key} className={css.jumpAnchor}><PnpGateCard spec={it.gate} /></div>)
   }

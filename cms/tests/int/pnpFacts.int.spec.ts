@@ -84,7 +84,7 @@ function pathway(p: Partial<PnpPathway>): PnpPathway {
     province: '', program: 'PNP', boardLabel: null, isDefault: false, drawStreams: [], reqStreams: [], quotaKey: null,
     officialName: '',
     key: '', plainZh: '', plainKo: '', jobLinked: true, tags: [], teers: [], nocs: [], employers: [], occLabels: [], url: '',
-    hasSteps: false, status: 'open',
+    hasSteps: false, status: 'open', category: null,
     ...p,
   }
 }

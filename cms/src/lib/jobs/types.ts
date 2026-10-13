@@ -1022,6 +1022,11 @@ export type PathwayDbRow = {
    * 通道状态 open / paused(2026-10-12;closed 这张表不取)。
    */
   status: string | null
+
+  /**
+   * 本省官方分类(2026-10-12;jsonb 对象,pg 回对象,没登 null)。
+   */
+  category: PathwayCategory | null
 }
 
 /**
@@ -1128,6 +1133,36 @@ export type Pathway = {
    * 通道状态 open / paused(2026-10-12 Frank「已暂停 就显示已暂停」);库里缺了给空串。
    */
   status: string
+
+  /**
+   * 本省官方分类(原样透传;没登 = null;资讯页与职位板省提名弹框共用这一行,形状全格照抄)。
+   */
+  category: PathwayCategory | null
+}
+
+/**
+ * 通道的本省官方分类(2026-10-12 照搬各省官方分类;四格由 etl/pathways 写齐)。
+ */
+export type PathwayCategory = {
+  /**
+   * 分类编号。
+   */
+  key: string
+
+  /**
+   * 官网英文原名。
+   */
+  en: string
+
+  /**
+   * 中文译名。
+   */
+  zh: string
+
+  /**
+   * 韩文译名。
+   */
+  ko: string
 }
 
 /**

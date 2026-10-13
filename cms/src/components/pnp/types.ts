@@ -339,6 +339,36 @@ export type PnpPathway = {
    * 通道状态 open / paused(2026-10-12 Frank「已暂停 就显示已暂停」)。
    */
   status: string
+
+  /**
+   * 本省官方分类(2026-10-12 照搬各省官方分类;联邦与官方平铺的省 = null)。
+   */
+  category: PnpCategory | null
+}
+
+/**
+ * 本省官方分类(线格式;官方原句与出处页只在 etl 自校,不进库)。
+ */
+export type PnpCategory = {
+  /**
+   * 分类编号(本省内唯一,组头比对用)。
+   */
+  key: string
+
+  /**
+   * 官网英文原名(组头黑字)。
+   */
+  en: string
+
+  /**
+   * 中文译名(中文界面组头灰字)。
+   */
+  zh: string
+
+  /**
+   * 韩文译名(韩文界面组头灰字)。
+   */
+  ko: string
 }
 
 /**
@@ -7507,9 +7537,59 @@ export type ProvStreamItem = {
   fits: PnpFitsJson | null
 
   /**
-   * 组头词条键尾(联邦三组 econ / family / refugee;别的省 '' = 不出组头;2026-10-12)。
+   * 组键(联邦为组头词条键尾 work / business / family / refugee;各省为官方分类编号;'' = 不出组头;2026-10-12)。
    */
   group: string
+
+  /**
+   * 组头黑字(联邦取词条;各省取官网英文原名)。
+   */
+  groupHead: string
+
+  /**
+   * 组头灰字(各省分类的界面语言译名;英文界面与联邦给 '')。
+   */
+  groupSub: string
+}
+
+/**
+ * groupOf 的入参。
+ */
+export type GroupOfIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 通道对照行。
+   */
+  p: PnpPathway
+}
+
+/**
+ * groupOf 的出参。
+ */
+export type GroupOfOut = {
+  /**
+   * 组键。
+   */
+  key: string
+
+  /**
+   * 组头黑字。
+   */
+  head: string
+
+  /**
+   * 组头灰字。
+   */
+  sub: string
 }
 
 /**
@@ -7715,4 +7795,19 @@ export type NoteTextIn = {
    * 模板里的数(已加千分位)。
    */
   vars: Record<string, string>
+}
+
+/**
+ * GroupHead 组头小件的入参(2026-10-12)。
+ */
+export type GroupHeadIn = {
+  /**
+   * 黑字。
+   */
+  head: string
+
+  /**
+   * 灰字;'' = 不出。
+   */
+  sub: string
 }

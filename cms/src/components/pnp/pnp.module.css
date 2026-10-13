@@ -3507,3 +3507,12 @@
   color: #111827;
   margin: 18px 0 10px;
 }
+
+/* 2026-10-12 各省官方分类组头的译名灰字(英文官方名下面一行) */
+.groupSub {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #9ca3af;
+}

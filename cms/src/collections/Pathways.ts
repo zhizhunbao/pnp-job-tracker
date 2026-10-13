@@ -39,5 +39,6 @@ export const Pathways: CollectionConfig = {
     { name: 'timeline', type: 'json', admin: { description: '申请步骤时间线 {steps,totalMin,totalMax,fedUpdated}(逐步时长与 steps 同序 + 全程区间;etl/mart 段25 跨门槛 / 运营统计 / 联邦审理时长汇装,2026-10-11);DDL docs/sql/pathways-timeline-20261011.sql' } },
     { name: 'fits', type: 'json', admin: { description: '身份对照 {身份: {can, schools?, quote?, url?}}(在读留学生 / 毕业工签 / LMIA / 开放工签 / 人在国外 / EE;etl/pathways 段 6 人工核定、原句对 crawl 缓存自校,2026-10-11 申请步骤分区筛选批 1);没登 = null;DDL docs/sql/pathways-fits-20261011.sql' } },
     { name: 'gate', type: 'json', admin: { description: '申请门槛 [{factor, text{zh,en,ko}, quote, url}](补全通道:门槛表没有行的通道人工核定、原句对 crawl 缓存自校,2026-10-12);DDL docs/sql/pathways-gate-20261012.sql' } },
+    { name: 'category', type: 'json', admin: { description: '本省官方分类 {key, en, zh, ko}(资讯两页按它出组头;官网原句自校在 etl,2026-10-12);DDL docs/sql/pathways-category-20261012.sql' } },
   ],
 }

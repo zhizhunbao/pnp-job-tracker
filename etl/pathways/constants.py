@@ -197,6 +197,7 @@ PW_AB_OPPORTUNITY = {
     "quote": ("The Alberta Opportunity Stream is for temporary foreign workers who are already working full-time in Alberta "
               "and have a full-time job offer from an Alberta employer in an eligible occupation."),
     "checked": "2026-09-28",
+    "category": {"key": "ab-workers", "quote": "Alberta Opportunity Stream – Qualified candidates who live and work in Alberta and have a job offer from an Alberta employer can apply for an AAIP nomination.", "url": "https://www.alberta.ca/aaip-application-streams"},
     "steps": [ABS_STEP_OFFER, ABS_STEP_WORK_LOCAL, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY, ABS_STEP_REVIEW_AOS,
               ABS_STEP_PR_AOS],
 }
@@ -228,6 +229,7 @@ PW_AB_ACCELERATED_TECH = {
     "quote": ("a job offer for an eligible tech occupation from an Alberta employer in an eligible tech industry "
               "under the Accelerated Tech Pathway."),
     "checked": "2026-09-28",
+    "category": {"key": "ab-workers", "quote": "There are also dedicated pathways operated in this stream for health care professionals, technology workers and police occupations.", "url": "https://www.alberta.ca/aaip-application-streams"},
     "steps": [ABS_STEP_EE_PROFILE, ABS_STEP_OFFER, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY,
               ABS_STEP_REVIEW_TECH, ABS_STEP_PR_EE],
 }
@@ -251,6 +253,7 @@ PW_AB_DEDICATED_HEALTH_CARE = {
     "quote": ("Dedicated Health Care Pathway – Qualified individuals with job offers in eligible health care professions "
               "can apply to be nominated for permanent residence in Alberta."),
     "checked": "2026-09-28",
+    "category": {"key": "ab-workers", "quote": "Dedicated Health Care Pathway – Qualified individuals with job offers in eligible health care professions can apply to be nominated for permanent residence in Alberta.", "url": "https://www.alberta.ca/aaip-application-streams"},
     "steps": [ABS_STEP_OFFER, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY, ABS_STEP_REVIEW_HEALTH, ABS_STEP_PR],
 }
 """阿省医护专项(9 类受监管医护职业,清单 ab-health.json)。
@@ -274,6 +277,7 @@ PW_AB_LAW_ENFORCEMENT = {
     "quote": ("a job offer from an Alberta Association of Chiefs of Police member in one of the eligible police services "
               "occupations under the Law Enforcement Pathway."),
     "checked": "2026-09-28",
+    "category": {"key": "ab-workers", "quote": "There are also dedicated pathways operated in this stream for health care professionals, technology workers and police occupations.", "url": "https://www.alberta.ca/aaip-application-streams"},
     "steps": [ABS_STEP_EE_PROFILE, ABS_STEP_OFFER, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY,
               ABS_STEP_REVIEW_LAW, ABS_STEP_PR_EE],
 }
@@ -295,6 +299,7 @@ PW_AB_TOURISM_HOSPITALITY = {
     "quote": ("Tourism and Hospitality Stream – Qualified candidates who live and work in Alberta and have a full-time job offer "
               "to continue working with an Alberta tourism and hospitality sector employer."),
     "checked": "2026-09-28",
+    "category": {"key": "ab-workers", "quote": "Tourism and Hospitality Stream – Qualified candidates who live and work in Alberta and have a full-time job offer to continue working with an Alberta tourism and hospitality sector employer.", "url": "https://www.alberta.ca/aaip-application-streams"},
     "steps": [ABS_STEP_OFFER, ABS_STEP_WORK, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY, ABS_STEP_REVIEW_TOURISM,
               ABS_STEP_PR],
 }
@@ -480,6 +485,7 @@ PW_AB_RURAL_RENEWAL = {
     "quote": ("The Rural Renewal Stream empowers rural communities to recruit and retain foreign nationals to live, work and "
               "settle in their communities."),
     "checked": "2026-09-28",
+    "category": {"key": "ab-workers", "quote": "Rural Renewal Stream – Rural communities can apply for designation with the intent to attract and recruit newcomers to address labour needs and settle newcomers.", "url": "https://www.alberta.ca/aaip-application-streams"},
     "steps": [ABS_STEP_OFFER, ABS_STEP_COMMUNITY, ABS_STEP_EOI, ABS_STEP_DRAW, ABS_STEP_APPLY,
               ABS_STEP_REVIEW_RURAL, ABS_STEP_PR_RURAL],
 }
@@ -502,6 +508,7 @@ PW_BC_SKILLED_WORKER = {
     "quote": ("Through Skills Immigration, workers who meet specific eligibility criteria based on their job offer can choose "
               "to apply to the Skilled Worker or Health Authority stream."),
     "checked": "2026-09-28",
+    "category": {"key": "bc-skills", "quote": "Through Skills Immigration, workers who meet specific eligibility criteria based on their job offer can choose to apply to the Skilled Worker or Health Authority stream.", "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"},
     "steps": [BCS_STEP_OFFER, BCS_STEP_REGISTER, BCS_STEP_DRAW, BCS_STEP_APPLY, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗默认通道:可提名(只收 TEER 0-3,2026-09-24 九省通道审计)但不在定向清单上的卑诗岗落这里。
@@ -528,6 +535,7 @@ PW_BC_HEALTH_AUTHORITY = {
     "quote": ("The BC PNP Health Authority stream will continue to nominate qualified healthcare professionals who work in the "
               "public sector directly delivering healthcare services."),
     "checked": "2026-09-28",
+    "category": {"key": "bc-skills", "quote": "Through Skills Immigration, workers who meet specific eligibility criteria based on their job offer can choose to apply to the Skilled Worker or Health Authority stream.", "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration"},
     "steps": [BCS_STEP_OFFER_HA, BCS_STEP_DIRECT_HA, BCS_STEP_SUBMIT_HA, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗卫生局通道(雇主须是省卫生局,清单 bc-health-authority.json)。抽选卡没有这条通道自己的组,不登记 = 不高亮(与现状一致)。
@@ -550,6 +558,7 @@ PW_BC_HEALTHCARE = {
     "quote": ("British Columbia has a critical need for workers in key sectors of the care economy, particularly in healthcare, "
               "education, childcare, and veterinary care."),
     "checked": "2026-09-28",
+    "category": {"key": "bc-skills", "quote": "Skills Immigration invitations Date ITA type Selection factors Minimum score Number of invitations October 8, 2026 Care: Childcare Early childhood educators only * 99 86 Care: Health All priority health care occupations", "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply"},
     "steps": [BCS_STEP_OFFER, BCS_STEP_REGISTER, BCS_STEP_DRAW, BCS_STEP_APPLY, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗医疗定向(2026 新政 Care 类的医疗组,清单 bc-health.json)。officialName 照抄邀请页的类别名(BC 的定向是类别轮,不是单独的 stream)。
@@ -576,6 +585,7 @@ PW_BC_CHILDCARE = {
     "quote": ("Certified early childhood educators, French-speaking elementary and secondary school teachers, and veterinarians and "
               "veterinary technologists who are working toward Canadian certification will be prioritized."),
     "checked": "2026-09-28",
+    "category": {"key": "bc-skills", "quote": "Skills Immigration invitations Date ITA type Selection factors Minimum score Number of invitations October 8, 2026 Care: Childcare Early childhood educators only", "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply"},
     "steps": [BCS_STEP_OFFER, BCS_STEP_REGISTER, BCS_STEP_DRAW, BCS_STEP_APPLY, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗幼教定向(清单 bc-childcare.json)。英文界面现显示官方原名(stream.bcChildcare = Care: Childcare)。
@@ -598,6 +608,7 @@ PW_BC_VETERINARY = {
     "quote": ("Certified early childhood educators, French-speaking elementary and secondary school teachers, and veterinarians and "
               "veterinary technologists who are working toward Canadian certification will be prioritized."),
     "checked": "2026-09-28",
+    "category": {"key": "bc-skills", "quote": "Care: Veterinary Care All priority veterinary care occupations", "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply"},
     "steps": [BCS_STEP_OFFER, BCS_STEP_REGISTER, BCS_STEP_DRAW, BCS_STEP_APPLY, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗兽医定向(清单 bc-vet.json,2 个码)。英文界面现显示官方原名(stream.bcVet = Care: Veterinary Care)。
@@ -619,6 +630,7 @@ PW_BC_CONSTRUCTION_TRADES = {
     "quote": ("To see which workers may benefit from targeted invitations to apply, see the Build section of the BC PNP's "
               "selection of workers list."),
     "checked": "2026-09-28",
+    "category": {"key": "bc-skills", "quote": "Build: Construction Trades All priority construction occupations", "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply"},
     "steps": [BCS_STEP_OFFER, BCS_STEP_REGISTER, BCS_STEP_DRAW, BCS_STEP_APPLY, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗建筑技工定向(2026 新政 Build 类,清单 bc-construction.json)。英文界面现显示官方原名(stream.bcConstr = Build: Construction Trades)。
@@ -642,6 +654,7 @@ PW_BC_FRENCH_TEACHERS = {
     "quote": ("Certified early childhood educators, French-speaking elementary and secondary school teachers, and veterinarians and "
               "veterinary technologists who are working toward Canadian certification will be prioritized."),
     "checked": "2026-09-28",
+    "category": {"key": "bc-skills", "quote": "Care: Education All priority education occupations", "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply"},
     "steps": [BCS_STEP_OFFER, BCS_STEP_REGISTER, BCS_STEP_DRAW, BCS_STEP_APPLY, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗法语教师定向(Care 类的教育组只收讲法语的中小学教师,清单 bc-education.json)。清单码带雇主行业条件:看得出雇主是学校
@@ -829,6 +842,7 @@ PW_SK_EMPLOYMENT_OFFER = {
     "quote": ("International Skilled Worker: Employment Offer: For high-skilled workers (occupations that typically require "
               "post-secondary education) who are not working in Saskatchewan."),
     "checked": "2026-09-28",
+    "category": {"key": "sk-isw", "quote": "International Skilled Worker: Employment Offer Learn what you need to apply to the SINP as an international skilled worker with an employment offer from Saskatchewan.", "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers"},
     "steps": [SKS_STEP_OFFER, SKS_STEP_REGISTER, SKS_STEP_EPA_CAPPED, SKS_STEP_DIRECT, SKS_STEP_CONFIRM, SKS_STEP_REVIEW_EO,
               SKS_STEP_PR],
 }
@@ -855,6 +869,7 @@ PW_SK_HEALTH_TALENT = {
             "saskatchewan-immigrant-nominee-program/assess-your-eligibility"),
     "quote": "Health Talent Pathway: For physicians, nurses and other health workers.",
     "checked": "2026-09-28",
+    "category": {"key": "sk-isw", "quote": "Health Talent Pathway Learn more about the procedures and guidelines used for the Health Talent Pathway.", "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers"},
     "steps": [SKS_STEP_OFFER, SKS_STEP_WORK_REQ, SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM,
               SKS_STEP_REVIEW_HEALTH, SKS_STEP_PR],
 }
@@ -880,6 +895,7 @@ PW_SK_TECH_TALENT = {
             "saskatchewan-immigrant-nominee-program/assess-your-eligibility"),
     "quote": "Innovation and Tech Talent Pathway: For innovation and tech sector workers in 32 high-skilled occupations.",
     "checked": "2026-09-28",
+    "category": {"key": "sk-isw", "quote": "Innovation and Tech Talent Pathway Learn more about the procedures and guidelines used for the Innovation and Tech Talent Pathway.", "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers"},
     "steps": [SKS_STEP_OFFER, SKS_STEP_WORK_REQ, SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM,
               SKS_STEP_REVIEW_TECH, SKS_STEP_PR],
 }
@@ -905,6 +921,7 @@ PW_SK_AGRICULTURE_TALENT = {
     "quote": ("Agriculture Talent Pathway: For general farm workers, nursery/greenhouse workers and workers in select food and "
               "beverage processing occupations."),
     "checked": "2026-09-28",
+    "category": {"key": "sk-isw", "quote": "Agriculture Talent Pathway Learn more about the procedures and guidelines used for the Agriculture Talent Pathway.", "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers"},
     "steps": [SKS_STEP_OFFER, SKS_STEP_WORK_REQ, SKS_STEP_REGISTER, SKS_STEP_EPA_PRIORITY, SKS_STEP_DIRECT, SKS_STEP_CONFIRM,
               SKS_STEP_REVIEW_AGRI, SKS_STEP_PR],
 }
@@ -1197,6 +1214,7 @@ PW_SK_EXISTING_WORK_PERMIT = {
     "quote": ("Skilled-Worker with Existing Work Permit: For high-skilled foreign workers (with post-secondary education) with "
               "a valid work permit."),
     "checked": "2026-09-28",
+    "category": {"key": "sk-experience", "quote": "Skilled Worker With Existing Work Permit Learn what you need to apply as a skilled worker with an existing work permit.", "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience"},
     "steps": [SKS_STEP_OFFER, SKS_STEP_WORK, SKS_STEP_REGISTER, SKS_STEP_EPA_CAPPED, SKS_STEP_NO_EOI, SKS_STEP_CONFIRM,
               SKS_STEP_REVIEW_EWP, SKS_STEP_PR],
 }
@@ -1238,6 +1256,7 @@ PW_MB_SKILLED_WORKER_IN_MANITOBA = {
               "through ongoing employment and sufficient skills, education and training, work experience and official language "
               "proficiency to make an immediate and ongoing contribution to the Manitoba economy and our community at large."),
     "checked": "2026-09-28",
+    "category": {"key": "mb-skilled-worker", "quote": "There are two pathways: Skilled Worker in Manitoba (SWM) and Skilled Worker Overseas (SWO) .", "url": "https://immigratemanitoba.com/mpnp/skilled-worker"},
     "steps": [MBS_STEP_OFFER, MBS_STEP_WORK, MBS_STEP_EOI, MBS_STEP_DRAW, MBS_STEP_APPLY, MBS_STEP_REVIEW_SWM, MBS_STEP_PR],
 }
 """曼省默认通道(SWM,下面三种选取)。抽选组:etl 已把 Skilled Worker in Manitoba 那一层留作组名(2026-09-24 第三批,GEN_DRAW_STREAM 原注)。
@@ -1275,6 +1294,7 @@ PW_ON_WORKFORCE_PRIORITY = {
               "experience in any National Occupational Classification (NOC) occupation a pathway to apply to permanently live and "
               "work in Ontario."),
     "checked": "2026-09-28",
+    "category": {"key": "on-workforce", "quote": "The Ontario Workforce Priority stream offers eligible skilled foreign workers with a qualifying job offer and work experience in any National Occupational Classification ( NOC ) occupation a pathway to apply to permanently live and work in Ontario.", "url": "https://www.ontario.ca/page/ontario-workforce-priority-stream"},
     "steps": [ONS_STEP_OFFER, ONS_STEP_WORK, ONS_STEP_REGISTER, ONS_STEP_EOI, ONS_STEP_DRAW, ONS_STEP_EPA, ONS_STEP_APPLY,
               ONS_STEP_REVIEW, ONS_STEP_PR],
 }
@@ -1301,6 +1321,7 @@ PW_ON_EMPLOYER_JOB_OFFER_FOREIGN_WORKER = {
     "quote": ("The Employer Job Offer: Foreign Worker stream gives foreign workers with a job offer in a skilled occupation, or "
               "eligible physicians, the opportunity to apply to permanently live and work in Ontario."),
     "checked": "2026-09-28",
+    "category": {"key": "on-job-offer", "quote": "Employer Job Offer Category streams ( Foreign Worker , International Student and In-Demand Skills )", "url": "https://www.ontario.ca/page/2021-ontario-immigrant-nominee-program-updates"},
 }
 """安省旧通道(已关停:官网此页标题前缀「Archived -」,2026-06-25 改制并入 Ontario Workforce Priority)。
 2026-09-30 更正日期口径(立项稿第四节第 9 条):本页关闭通告原句是「closed as of May 30, 2026」(门槛表 ONR_CLOSED_RE 取的就是它),
@@ -1321,6 +1342,7 @@ PW_ON_EMPLOYER_JOB_OFFER_INTERNATIONAL_STUDENT = {
     "quote": ("The Employer Job Offer: International Student stream gives international students with a job offer in a skilled "
               "occupation the opportunity to apply to permanently live and work in Ontario."),
     "checked": "2026-09-28",
+    "category": {"key": "on-job-offer", "quote": "Employer Job Offer Category streams ( Foreign Worker , International Student and In-Demand Skills )", "url": "https://www.ontario.ca/page/2021-ontario-immigrant-nominee-program-updates"},
 }
 """安省旧通道(已关停,同上一段)。抽选卡现显示「雇主 offer:国际学生(已关停)」。"""
 
@@ -1339,6 +1361,7 @@ PW_NS_SKILLED_WORKER = {
     "quote": ("The Skilled Worker stream helps employers recruit foreign workers and recently graduated international students "
               "whose skills are needed in Nova Scotia."),
     "checked": "2026-09-28",
+    "category": {"key": "ns-skilled", "quote": "The Skilled Worker stream helps employers recruit foreign workers and recently graduated international students whose skills are needed in Nova Scotia.", "url": "https://liveinnovascotia.com/skilled-worker"},
     "steps": [NSS_STEP_OFFER_SW, NSS_STEP_EOI_SW, NSS_STEP_DRAW, NSS_STEP_REVIEW, NSS_STEP_PR_SW],
 }
 """新斯科舍默认通道。抽选:官方只按月公布 EOI 池的总选取人数(liveinnovascotia.com/eoi-selection「Nova Scotia selected the following
@@ -1644,6 +1667,7 @@ PW_NS_CONSTRUCTION = {
     "quote": ("Skilled Worker: The Construction Worker sub-criteria are the same eligibility requirements as the former Critical "
               "Construction Worker Pilot."),
     "checked": "2026-09-28",
+    "category": {"key": "ns-skilled", "quote": "Skilled Worker: The Construction Worker sub-criteria are the same eligibility requirements as the former Critical Construction Worker Pilot.", "url": "https://liveinnovascotia.com/resources/nsnp-update-four-consolidated-streams"},
     "steps": [NSS_STEP_OFFER_EMP, NSS_STEP_EOI, NSS_STEP_DRAW, NSS_STEP_REVIEW, NSS_STEP_PR_SW],
 }
 """新斯科舍建筑(Skilled Worker 流下的子条件,清单 ns-construction.json,限建筑业雇主)。与通用岗同一组按月选取
@@ -1923,6 +1947,7 @@ PW_NB_SKILLED_WORKER = {
             "skilled-worker-stream.html"),
     "quote": "A pathway for foreign workers with a full-time, non-seasonal job or job offer in New Brunswick.",
     "checked": "2026-09-28",
+    "category": {"key": "nb-skilled", "quote": "Overview This stream is for people who work in New Brunswick or have a full-time, non-seasonal job offer from an eligible employer.", "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html"},
     "steps": [NBS_STEP_OFFER, NBS_STEP_WORK, NBS_STEP_EOI_SW, NBS_STEP_DRAW_SW, NBS_STEP_APPLY_SW, NBS_STEP_REVIEW,
               NBS_STEP_PR],
 }
@@ -1978,6 +2003,7 @@ PW_PE_WORKFORCE = {
     "quote": ("The Workforce Category is an employer-driven category, designed to help you fill permanent labour shortages and "
               "skill gaps in your business by supporting foreign nationals for permanent residency."),
     "checked": "2026-09-28",
+    "category": {"key": "pe-workforce", "quote": "For all streams of the Workforce Category, the employer must validate the following requirements:", "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/supporting-a-worker-for-immigration"},
     "steps": [PES_STEP_ABROAD_WF, PES_STEP_OFFER, PES_STEP_EOI_WF, PES_STEP_DRAW, PES_STEP_APPLY_WF, PES_STEP_REVIEW,
               PES_STEP_PR],
 }
@@ -2005,6 +2031,7 @@ PW_PE_OCCUPATIONS_IN_DEMAND = {
     "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/occupations-in-demand",
     "quote": "Occupations in Demand Stream under the PEI PNP Workforce Category",
     "checked": "2026-09-28",
+    "category": {"key": "pe-workforce", "quote": "Occupations in Demand Stream under the PEI PNP Workforce Category", "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/occupations-in-demand"},
     "steps": [PES_STEP_ABROAD_OID, PES_STEP_OFFER, PES_STEP_EOI_OID, PES_STEP_DRAW, PES_STEP_APPLY_OID, PES_STEP_REVIEW,
               PES_STEP_PR],
 }
@@ -2101,6 +2128,7 @@ PW_SK_STUDENTS = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "category": {"key": "sk-experience", "quote": "Students Learn what you need to apply as a student who has graduated from a recognized post-secondary institution in Canada.", "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience"},
     "steps": [SKS_STEP_OFFER, SKS_STEP_WORK_LOCAL, SKS_STEP_REGISTER, SKS_STEP_EPA_CAPPED, SKS_STEP_NO_EOI,
               SKS_STEP_CONFIRM, SKS_STEP_REVIEW_STUDENTS, SKS_STEP_PR],
 }
@@ -2129,6 +2157,7 @@ PW_SK_OCCUPATION_IN_DEMAND = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "category": {"key": "sk-isw", "quote": "International Skilled Worker: Occupation In-Demand Learn what you need to apply the SINP as an international skilled worker in an occupation in-demand in Saskatchewan.", "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers"},
     "steps": [SKS_STEP_EOI, SKS_STEP_NO_DRAW_SCHEDULED, SKS_STEP_INVITED, SKS_STEP_REVIEW_NONE, SKS_STEP_PR],
 }
 """不要 offer 的 EOI 子类;EOI 页写「There are no scheduled EOI draws at this time.」→ 标「目前没有抽选排期」。不看工作(Frank 
@@ -2155,6 +2184,7 @@ PW_SK_EXPRESS_ENTRY = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "category": {"key": "sk-isw", "quote": "International Skilled Worker: Saskatchewan Express Entry Learn what you need to apply to the SINP as an international skilled worker through the Saskatchewan Express Entry sub-category.", "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers"},
     "steps": [SKS_STEP_EE_PROFILE, SKS_STEP_EOI, SKS_STEP_NO_DRAW_SCHEDULED, SKS_STEP_INVITED, SKS_STEP_REVIEW_NONE,
               SKS_STEP_PR_EE],
 }
@@ -2183,6 +2213,7 @@ PW_MB_SKILLED_WORKER_OVERSEAS = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "category": {"key": "mb-skilled-worker", "quote": "There are two pathways: Skilled Worker in Manitoba (SWM) and Skilled Worker Overseas (SWO) .", "url": "https://immigratemanitoba.com/mpnp/skilled-worker"},
     "steps": [MBS_STEP_EOI, MBS_STEP_DRAW, MBS_STEP_APPLY, MBS_STEP_REVIEW_SWO, MBS_STEP_PR],
 }
 """不要 offer,要与本省有联系(亲友 / 本省旧学历或经历 / 省方直接邀请);2026 年各轮只抽持省方邀请的 → 抽选组挂省方直接邀请那组「Skilled Worker Stream」
@@ -2210,6 +2241,7 @@ PW_MB_CAREER_EMPLOYMENT = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "category": {"key": "mb-ies", "quote": "There are three pathways: the Career Employment Pathway , the Graduate Internship Pathway , and the International Student Entrepreneur Pilot (ISEP) .", "url": "https://immigratemanitoba.com/mpnp/ies"},
     "steps": [MBS_STEP_OFFER, MBS_STEP_EOI, MBS_STEP_DRAWS_MOVED, MBS_STEP_APPLY, MBS_STEP_REVIEW_IES, MBS_STEP_PR],
 }
 """本省毕业 + offer 职业在在需职业表(IDOL)上且与所学对口。状态存疑:2026-06-11 官方请在池 CEP 档案转 SWM,之后抽选里再没出现,页面还在、没有关闭原句 → Frank 
@@ -2234,6 +2266,7 @@ PW_MB_GRADUATE_INTERNSHIP = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "category": {"key": "mb-ies", "quote": "There are three pathways: the Career Employment Pathway , the Graduate Internship Pathway , and the International Student Entrepreneur Pilot (ISEP) .", "url": "https://immigratemanitoba.com/mpnp/ies"},
     "steps": [MBS_STEP_EOI, MBS_STEP_DRAW, MBS_STEP_APPLY, MBS_STEP_REVIEW_IES, MBS_STEP_PR],
 }
 """本省硕博毕业、做过 Mitacs 实习,不要 offer;2026-07-16 还抽过一轮(78 份)。不看工作,通道卡下段。"""
@@ -2258,6 +2291,7 @@ PW_ON_SELF_EMPLOYED_PHYSICIANS = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "category": {"key": "on-workforce", "quote": "The stream is also available to eligible self-employed physicians who do not have a job offer.", "url": "https://www.ontario.ca/page/ontario-workforce-priority-stream"},
     "steps": [ONS_STEP_EOI_PHYSICIAN, ONS_STEP_DRAW, ONS_STEP_APPLY_PHYSICIAN, ONS_STEP_REVIEW, ONS_STEP_PR],
 }
 """安省唯一现行 stream 里给自雇医生的那条 pathway(CPSO 会员、有 OHIP 计费号),不要 offer。与 OWP 同一组抽选、同样还没抽过。
@@ -2284,6 +2318,7 @@ PW_NS_GRADUATE = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "category": {"key": "ns-graduate", "quote": "Nova Scotia Graduate: The eligibility requirements for International Graduates in Demand are included in the new Nova Scotia Graduate Stream.", "url": "https://liveinnovascotia.com/resources/nsnp-update-four-consolidated-streams"},
     "steps": [NSS_STEP_OFFER, NSS_STEP_EOI, NSS_STEP_DRAW, NSS_STEP_REVIEW, NSS_STEP_PR_GRAD],
 }
 """2026-02-18 十流并四流后的独立 stream(旧 International Graduates in Demand 并入),限 4 个职业(站上「NS 毕业生」清单同 4 码)。09-24 
@@ -2312,6 +2347,7 @@ PW_NS_PHYSICIANS = {
     "teers": [],
     "nocs": ["31100", "31101", "31102"],
     "employers": ["nova scotia health", "iwk health"],
+    "category": {"key": "ns-skilled", "quote": "The Physician sub-criteria are the same eligibility requirements as the Physician Stream.", "url": "https://liveinnovascotia.com/resources/nsnp-update-four-consolidated-streams"},
     "steps": [NSS_STEP_OFFER, NSS_STEP_EOI, NSS_STEP_DRAW, NSS_STEP_REVIEW, NSS_STEP_PR_SW],
 }
 """Skilled Worker 下的医生子类:只认 NS Health / IWK 两家的 approved opportunity。09-24 审计因判不了雇主身份没做 —— 现按雇主名命中(归一后比对,
@@ -2339,6 +2375,7 @@ PW_NS_EXPRESS_ENTRY_EXPERIENCE = {
     "teers": [0, 1, 2, 3],
     "nocs": [],
     "employers": [],
+    "category": {"key": "ns-express-entry", "quote": "The former Nova Scotia Experience: Express Entry, Labour Market Priorities and Labour Market Priorities for Physicians Streams have been consolidated into the new Nova Scotia: Express Entry Stream.", "url": "https://liveinnovascotia.com/resources/nsnp-update-four-consolidated-streams"},
     "steps": [NSS_STEP_OFFER, NSS_STEP_WORK, NSS_STEP_EE_PROFILE, NSS_STEP_EOI_EE, NSS_STEP_DRAW, NSS_STEP_REVIEW_EE,
               NSS_STEP_PR_EE],
 }
@@ -2368,6 +2405,7 @@ PW_NS_EXPRESS_ENTRY_PHYSICIANS = {
     "teers": [],
     "nocs": ["31100", "31101", "31102"],
     "employers": ["nova scotia health", "iwk health"],
+    "category": {"key": "ns-express-entry", "quote": "The former Nova Scotia Experience: Express Entry, Labour Market Priorities and Labour Market Priorities for Physicians Streams have been consolidated into the new Nova Scotia: Express Entry Stream.", "url": "https://liveinnovascotia.com/resources/nsnp-update-four-consolidated-streams"},
     "steps": [NSS_STEP_OFFER, NSS_STEP_EE_PROFILE, NSS_STEP_LETTER, NSS_STEP_EOI_LETTER, NSS_STEP_DRAW, NSS_STEP_REVIEW_EE,
               NSS_STEP_PR_EE],
 }
@@ -2395,6 +2433,7 @@ PW_NB_EXPRESS_ENTRY_EMPLOYMENT = {
     "teers": [0, 1, 2, 3],
     "nocs": [],
     "employers": [],
+    "category": {"key": "nb-express-entry", "quote": "Employment in New Brunswick To be eligible under this pathway, you must also:", "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/express-entry-stream.html"},
     "steps": [NBS_STEP_EE_PROFILE, NBS_STEP_OFFER, NBS_STEP_EOI_EE, NBS_STEP_DRAW, NBS_STEP_APPLY_EE,
               NBS_STEP_REVIEW, NBS_STEP_PR_EE],
 }
@@ -2424,6 +2463,7 @@ PW_NB_FRANCOPHONE_WORKERS = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "category": {"key": "nb-strategic", "quote": "Francophone Workers in New Brunswick To be eligible under this pathway, you must:", "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"},
     "steps": [NBS_STEP_OFFER_FR, NBS_STEP_EOI_FR, NBS_STEP_DRAW, NBS_STEP_APPLY_SI, NBS_STEP_REVIEW,
               NBS_STEP_PR],
 }
@@ -2452,6 +2492,7 @@ PW_NB_EXPRESS_ENTRY_INTEREST = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "category": {"key": "nb-express-entry", "quote": "New Brunswick Interest To be eligible under this pathway, you must also:", "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/express-entry-stream.html"},
     "steps": [NBS_STEP_EE_PROFILE_NONE, NBS_STEP_LETTER, NBS_STEP_EOI_EE_LETTER, NBS_STEP_POOL,
               NBS_STEP_APPLY_EE, NBS_STEP_REVIEW, NBS_STEP_PR_EE],
 }
@@ -2479,6 +2520,7 @@ PW_NB_FRANCOPHONE_PRIORITIES = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "category": {"key": "nb-strategic", "quote": "New Brunswick Francophone Priorities To be eligible under this pathway, you must meet the definition of one of the two priorities:", "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"},
     "steps": [NBS_STEP_LETTER_FR, NBS_STEP_EOI_SI, NBS_STEP_DRAW, NBS_STEP_APPLY_SI, NBS_STEP_REVIEW,
               NBS_STEP_PR],
 }
@@ -2508,6 +2550,7 @@ PW_NB_FRANCOPHONES_REMOTE = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "category": {"key": "nb-strategic", "quote": "Francophones Working Remotely in New Brunswick To be eligible under this pathway, you must:", "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"},
     "steps": [NBS_STEP_WORK_REMOTE, NBS_STEP_EOI_SI, NBS_STEP_POOL, NBS_STEP_APPLY_SI, NBS_STEP_REVIEW,
               NBS_STEP_PR],
 }
@@ -2631,6 +2674,7 @@ PW_NB_CRITICAL_WORKER_PILOT = {
             "url": "https://www2.gnb.ca/content/dam/gnb/Corporate/Promo/Immigration/guide-to-nb-critical-worker-pilot.pdf"
         }
     ],
+    "category": {"key": "nb-pilots", "quote": "Pilot programs New Brunswick Critical Worker Pilot", "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"},
     "steps": [NBS_STEP_OFFER_CWP, NBS_STEP_EOI_CWP, NBS_STEP_POOL_CWP, NBS_STEP_APPLY_CWP,
               NBS_STEP_SETTLE_CWP, NBS_STEP_REVIEW_CWP, NBS_STEP_PR_CWP],
 }
@@ -2663,6 +2707,7 @@ PW_NB_PRIVATE_COLLEGE_PILOT = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "category": {"key": "nb-pilots", "quote": "New Brunswick Critical Worker Pilot New Brunswick Private Career College Graduate Pilot Program", "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"},
     "steps": [NBS_STEP_OFFER, NBS_STEP_EOI_PCCG, NBS_STEP_POOL_PCCG, NBS_STEP_APPLY_PCCG,
               NBS_STEP_REVIEW_PCCG, NBS_STEP_CLOSED_PERMIT, NBS_STEP_PR],
 }
@@ -2691,6 +2736,7 @@ PW_PE_INTERNATIONAL_GRADUATE = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "category": {"key": "pe-workforce", "quote": "An Expression of Interest is not an application, but an indication of your interest in being considered to apply to the PEI Workforce Category.", "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/international-graduates"},
     "steps": [PES_STEP_OFFER, PES_STEP_EOI_IG, PES_STEP_DRAW, PES_STEP_APPLY_IG, PES_STEP_REVIEW, PES_STEP_PR],
 }
 """Workforce 类的国际毕业生流:本省公立院校毕业 + PGWP + PEI offer。共用门槛组的语言行写「全体 Workforce 流都要考 CLB 4」,对本流 TEER 0–3 
@@ -2717,6 +2763,7 @@ PW_PE_INTERMEDIATE_EXPERIENCE = {
     "teers": [4],
     "nocs": [],
     "employers": [],
+    "category": {"key": "pe-workforce", "quote": "Intermediate Experience Stream under the PEI PNP Workforce Category", "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/intermediate-experience-stream"},
     "steps": [PES_STEP_ABROAD_IE, PES_STEP_OFFER, PES_STEP_EOI_IE, PES_STEP_DRAW, PES_STEP_APPLY_IE, PES_STEP_REVIEW,
               PES_STEP_PR],
 }
@@ -2744,6 +2791,7 @@ PW_PE_EXPRESS_ENTRY = {
     "teers": [],
     "nocs": [],
     "employers": [],
+    "category": {"key": "pe-workforce", "quote": "An Expression of Interest is not an application, but an indication of your interest in being considered to apply to the PEI Workforce Category.", "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/pei-express-entry"},
     "steps": [PES_STEP_EE_PROFILE, PES_STEP_OFFER, PES_STEP_EOI_EE, PES_STEP_DRAW, PES_STEP_APPLY_EE, PES_STEP_REVIEW,
               PES_STEP_PR_EE],
 }
@@ -2917,6 +2965,7 @@ PW_AB_RURAL_ENTREPRENEUR = {
             "url": "https://www.alberta.ca/aaip-rural-entrepreneur-stream-eligibility"
         }
     ],
+    "category": {"key": "ab-entrepreneurs", "quote": "Rural Entrepreneur Stream – Entrepreneurs who want to start a business or buy an existing business in a rural Alberta community can submit an Expression of Interest.", "url": "https://www.alberta.ca/aaip-application-streams"},
     "steps": [
         {
             "step": "community",
@@ -3188,6 +3237,7 @@ PW_AB_GRADUATE_ENTREPRENEUR = {
             "url": "https://www.alberta.ca/aaip-graduate-entrepreneur-stream-eligibility"
         }
     ],
+    "category": {"key": "ab-entrepreneurs", "quote": "Graduate Entrepreneur Stream – International graduates of approved Alberta post-secondary institutions who want to start a business or buy an existing business can submit an Expression of Interest.", "url": "https://www.alberta.ca/aaip-application-streams"},
     "steps": [
         {
             "step": "eoi",
@@ -3455,6 +3505,7 @@ PW_AB_FOREIGN_GRADUATE_ENTREPRENEUR = {
             "url": "https://www.alberta.ca/aaip-foreign-graduate-entrepreneur-stream-eligibility"
         }
     ],
+    "category": {"key": "ab-entrepreneurs", "quote": "Foreign Graduate Entrepreneur Stream – Foreign graduates who have a degree from a post-secondary institution outside of Canada and want to launch a start-up enterprise and innovative business can work with a designated agency to submit an Expression of Interest.", "url": "https://www.alberta.ca/aaip-application-streams"},
     "steps": [
         {
             "step": "referral",
@@ -3741,6 +3792,7 @@ PW_AB_FARM = {
             "url": "https://www.alberta.ca/aaip-farm-stream-eligibility"
         }
     ],
+    "category": {"key": "ab-entrepreneurs", "quote": "Farm Stream – Experienced farmers who plan to buy or start a farm in Alberta can apply for nomination.", "url": "https://www.alberta.ca/aaip-application-streams"},
     "steps": [
         {
             "step": "submit",
@@ -3896,6 +3948,7 @@ PW_BC_ENTREPRENEUR_BASE = {
             "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
         }
     ],
+    "category": {"key": "bc-entrepreneur", "quote": "Base stream There are four key components to the Entrepreneur Immigration Base stream process:", "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"},
     "steps": [
         {
             "step": "businessPlan",
@@ -4198,6 +4251,7 @@ PW_BC_ENTREPRENEUR_REGIONAL = {
             "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
         }
     ],
+    "category": {"key": "bc-entrepreneur", "quote": "Regional stream There are four key components to the Entrepreneur Immigration Regional stream process:", "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"},
     "steps": [
         {
             "step": "community",
@@ -4473,6 +4527,7 @@ PW_BC_STRATEGIC_PROJECTS = {
             "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"
         }
     ],
+    "category": {"key": "bc-entrepreneur", "quote": "Businesses (foreign corporations) that wish to establish their operations in the province can apply to the program’s Strategic Projects stream.", "url": "https://www.welcomebc.ca/immigrate-to-b-c/entrepreneur-immigration"},
     "steps": [
         {
             "step": "visit",
@@ -4622,6 +4677,7 @@ PW_SK_ENTREPRENEUR = {
     "quote": "Through the SINP Entrepreneur Program, you can live in Saskatchewan when you start, own or partner in a business here.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "category": {"key": "sk-entrepreneur", "quote": "Entrepreneur Application - SINP Learn how to Immigrate to Saskatchewan if you are an entrepreneur and want to start a business.", "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/entrepreneur"},
     "steps": [],
 }
 """补全通道(2026-10-12 Frank「还缺多少条通道 都补上」→「全部都补」;六组并行调研,原句逐字核 crawl 缓存)。
@@ -4639,6 +4695,7 @@ PW_SK_INTERNATIONAL_GRADUATE_ENTREPRENEUR = {
     "quote": "You must be an international student graduating from a Saskatchewan institution who wants to become an entrepreneur.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "category": {"key": "sk-entrepreneur", "quote": "International Graduate Entrepreneur Learn how to immigrate to Saskatchewan as an entrepreneurial international graduate.", "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/entrepreneur"},
     "steps": [],
 }
 """补全通道(2026-10-12 Frank「还缺多少条通道 都补上」→「全部都补」;六组并行调研,原句逐字核 crawl 缓存)。
@@ -4656,6 +4713,7 @@ PW_SK_FARM_OWNER_OPERATOR = {
     "quote": "Plan to buy and run a farm in Saskatchewan.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "category": {"key": "sk-farm", "quote": "Farm Owner and Operator Categories Learn how to immigrate to Saskatchewan if you are a farmer and want to own a farm in Saskatchewan.", "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/farm-owner-and-operator"},
     "steps": [],
 }
 """补全通道(2026-10-12 Frank「还缺多少条通道 都补上」→「全部都补」;六组并行调研,原句逐字核 crawl 缓存)。
@@ -4673,6 +4731,7 @@ PW_MB_ENTREPRENEUR = {
     "quote": "The Entrepreneur Pathway (EP) allows Manitoba to recruit and nominate qualified business people from around the world who have the intent and ability to move to Manitoba and establish, purchase a business or become partners in an existing business after arrival in Canada on a temporary work permit.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "category": {"key": "mb-bis", "quote": "There are two pathways: the Entrepreneur Pathway (EP) for applicants seeking to open a business in Manitoba; and the Farm Investor Pathway (FIP) for those intending to establish and operate a farm operation in rural Manitoba.", "url": "https://immigratemanitoba.com/mpnp/bis"},
     "steps": [
         {
             "step": "eoi",
@@ -4847,6 +4906,7 @@ PW_MB_FARM_INVESTOR = {
     "quote": "The Farm Investor Pathway (FIP) is for individuals with proven farm business experience, sufficient available capital to invest, and who intend to establish and operate a farm operation in rural Manitoba.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "category": {"key": "mb-bis", "quote": "There are two pathways: the Entrepreneur Pathway (EP) for applicants seeking to open a business in Manitoba; and the Farm Investor Pathway (FIP) for those intending to establish and operate a farm operation in rural Manitoba.", "url": "https://immigratemanitoba.com/mpnp/bis"},
     "steps": [
         {
             "step": "visit",
@@ -5105,6 +5165,7 @@ PW_MB_INTERNATIONAL_STUDENT_ENTREPRENEUR = {
             "url": "https://immigratemanitoba.com/mpnp/ies/isep/eligibility"
         }
     ],
+    "category": {"key": "mb-ies", "quote": "There are three pathways: the Career Employment Pathway , the Graduate Internship Pathway , and the International Student Entrepreneur Pilot (ISEP) .", "url": "https://immigratemanitoba.com/mpnp/ies"},
     "steps": [
         {
             "step": "visit",
@@ -5234,6 +5295,7 @@ PW_ON_ENTREPRENEUR = {
     "quote": "The new Ontario Workforce Priority stream has now launched, and all previous streams are now closed.",
     "checked": "2026-10-12",
     "jobLinked": False,
+    "category": {"key": "on-business", "quote": "Business Category – Corporate and Entrepreneur Streams are now available.", "url": "https://www.ontario.ca/page/2015-ontario-immigrant-nominee-program-updates"},
     "steps": [],
 }
 """补全通道(2026-10-12 Frank「还缺多少条通道 都补上」→「全部都补」;六组并行调研,原句逐字核 crawl 缓存)。
@@ -5313,6 +5375,7 @@ PW_NS_ENTREPRENEUR = {
             "url": "https://liveinnovascotia.com/entrepreneur"
         }
     ],
+    "category": {"key": "ns-entrepreneur", "quote": "The Entrepreneur Stream is for experienced business owners or senior business managers who want to live in Nova Scotia.", "url": "https://liveinnovascotia.com/entrepreneur"},
     "steps": [
         {
             "step": "eoi",
@@ -5572,6 +5635,7 @@ PW_NS_INTERNATIONAL_GRADUATE_ENTREPRENEUR = {
             "url": "https://liveinnovascotia.com/entrepreneur"
         }
     ],
+    "category": {"key": "ns-entrepreneur", "quote": "Entrepreneur: The International Graduate sub-criteria are the same eligibility requirements as the International Graduate Entrepreneur Stream.", "url": "https://liveinnovascotia.com/resources/nsnp-update-four-consolidated-streams"},
     "steps": [
         {
             "step": "runBusiness",
@@ -5804,6 +5868,7 @@ PW_NB_BUSINESS_IMMIGRATION = {
             "url": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/nb-business-immigration-stream-guide.pdf"
         }
     ],
+    "category": {"key": "nb-business", "quote": "The New Brunswick Business Immigration stream is for entrepreneurs who want to start or buy a business in New Brunswick.", "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/business-immigration-stream.html"},
     "steps": [
         {
             "step": "eoi",
@@ -6045,6 +6110,7 @@ PW_PE_WORK_PERMIT = {
             "url": "https://www.princeedwardisland.ca/sites/default/files/publications/business_impact_application_guide.pdf"
         }
     ],
+    "category": {"key": "pe-business", "quote": "you may be eligible for a nomination for permanent residency through the Work Permit Stream of the Prince Edward Island Provincial Nominee Program (PEI PNP).", "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/work-permit-stream"},
     "steps": [
         {
             "step": "eoi",
@@ -6793,6 +6859,7 @@ PW_YT_SKILLED_WORKER = {
             "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
         }
     ],
+    "category": {"key": "yt-nominee", "quote": "Occupations in TEER 0, 1, 2 or 3 fall under the Skilled Worker stream and the Express Entry stream.", "url": "https://yukon.ca/en/immigrate-yukon"},
     "steps": [
         {
             "step": "offer",
@@ -7074,6 +7141,7 @@ PW_YT_CRITICAL_IMPACT_WORKER = {
             "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker"
         }
     ],
+    "category": {"key": "yt-nominee", "quote": "Occupations in TEER 4 or 5 fall under the Critical Impact Worker stream.", "url": "https://yukon.ca/en/immigrate-yukon"},
     "steps": [
         {
             "step": "offer",
@@ -7365,6 +7433,7 @@ PW_YT_EXPRESS_ENTRY = {
             "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-express-entry-stream-hire-foreign-worker"
         }
     ],
+    "category": {"key": "yt-nominee", "quote": "Occupations in TEER 0, 1, 2 or 3 fall under the Skilled Worker stream and the Express Entry stream.", "url": "https://yukon.ca/en/immigrate-yukon"},
     "steps": [
         {
             "step": "eeProfile",
@@ -7684,6 +7753,7 @@ PW_YT_BUSINESS_NOMINEE = {
             "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program/find-eligibility-requirements-apply-run-your-business-yukon-foreign-entrepreneurs"
         }
     ],
+    "category": {"key": "yt-business", "quote": "an entrepreneur under the Yukon Business Nominee Program .", "url": "https://yukon.ca/en/immigrate-yukon"},
     "steps": [
         {
             "step": "submit",
@@ -7989,6 +8059,7 @@ PW_NT_SKILLED_WORKER = {
             "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
         }
     ],
+    "category": {"key": "nt-employer", "quote": "you can then submit an Expression of Interest to indicate your interest in applying to one of three program categories: ENTRY LEVEL/SEMI-SKILLED OCCUPATIONS SKILLED WORKER NWT EXPRESS ENTRY", "url": "https://www.immigratenwt.ca/employer-driven-stream"},
     "steps": [
         {
             "step": "offer",
@@ -8275,6 +8346,7 @@ PW_NT_ENTRY_LEVEL_SEMI_SKILLED = {
             "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/ntnp_program_guidelines_-_employer_driven_stream_0.pdf"
         }
     ],
+    "category": {"key": "nt-employer", "quote": "you can then submit an Expression of Interest to indicate your interest in applying to one of three program categories: ENTRY LEVEL/SEMI-SKILLED OCCUPATIONS SKILLED WORKER NWT EXPRESS ENTRY", "url": "https://www.immigratenwt.ca/employer-driven-stream"},
     "steps": [
         {
             "step": "offer",
@@ -8587,6 +8659,7 @@ PW_NT_EXPRESS_ENTRY = {
             "url": "https://www.immigratenwt.ca/nwt-express-entry"
         }
     ],
+    "category": {"key": "nt-employer", "quote": "you can then submit an Expression of Interest to indicate your interest in applying to one of three program categories: ENTRY LEVEL/SEMI-SKILLED OCCUPATIONS SKILLED WORKER NWT EXPRESS ENTRY", "url": "https://www.immigratenwt.ca/employer-driven-stream"},
     "steps": [
         {
             "step": "eeProfile",
@@ -8914,6 +8987,7 @@ PW_NT_FRANCOPHONE = {
             "url": "https://www.immigratenwt.ca/sites/immigratenwt/files/resources/2025_-_11_-_ntnp_program_guidelines_-_francophone_stream-_final.pdf"
         }
     ],
+    "category": {"key": "nt-francophone", "quote": "The Francophone Stream allows qualified foreign nationals, who speak both French and English and have a valid job offer from an NWT Employer, to apply to the Northwest Territories Nominee Program (NTNP).", "url": "https://www.immigratenwt.ca/francophone-stream"},
     "steps": [
         {
             "step": "offer",
@@ -9122,6 +9196,7 @@ PW_NT_BUSINESS = {
             "url": "https://www.immigratenwt.ca/business-stream"
         }
     ],
+    "category": {"key": "nt-business", "quote": "The Business Stream is for foreign nationals who want to start a business in the NWT, purchase an existing business based here, or invest in and operate an existing business based here.", "url": "https://www.immigratenwt.ca/business-stream"},
     "steps": [
         {
             "step": "register",
@@ -12745,6 +12820,7 @@ PW_QC_PSTQ_STREAM_1 = {
             "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
         }
     ],
+    "category": {"key": "qc-skilled", "quote": "Skilled Worker Selection Program This program is for people who wish to immigrate to Québec as a skilled worker, whether they are in Québec or abroad.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
     "steps": [
         {
             "step": "eoi",
@@ -13005,6 +13081,7 @@ PW_QC_PSTQ_STREAM_2 = {
             "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
         }
     ],
+    "category": {"key": "qc-skilled", "quote": "Skilled Worker Selection Program This program is for people who wish to immigrate to Québec as a skilled worker, whether they are in Québec or abroad.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
     "steps": [
         {
             "step": "workLocal",
@@ -13276,6 +13353,7 @@ PW_QC_PSTQ_STREAM_3 = {
             "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
         }
     ],
+    "category": {"key": "qc-skilled", "quote": "Skilled Worker Selection Program This program is for people who wish to immigrate to Québec as a skilled worker, whether they are in Québec or abroad.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
     "steps": [
         {
             "step": "eoi",
@@ -13556,6 +13634,7 @@ PW_QC_PSTQ_STREAM_4 = {
             "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/requirements"
         }
     ],
+    "category": {"key": "qc-skilled", "quote": "Skilled Worker Selection Program This program is for people who wish to immigrate to Québec as a skilled worker, whether they are in Québec or abroad.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
     "steps": [
         {
             "step": "eoi",
@@ -13816,6 +13895,7 @@ PW_QC_PEQ_GRADUATES = {
             "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/diplomes-quebec"
         }
     ],
+    "category": {"key": "qc-skilled", "quote": "Ce programme s’adresse aux travailleuses et travailleurs étrangers temporaires, aux étudiantes et étudiants étrangers diplômés du Québec.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
     "steps": [
         {
             "step": "submit",
@@ -14009,6 +14089,7 @@ PW_QC_PEQ_TEMPORARY_WORKERS = {
             "url": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise/conditions-selection/travailleurs-temporaires"
         }
     ],
+    "category": {"key": "qc-skilled", "quote": "Ce programme s’adresse aux travailleuses et travailleurs étrangers temporaires, aux étudiantes et étudiants étrangers diplômés du Québec.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"},
     "steps": [
         {
             "step": "workLocal",
@@ -14204,6 +14285,7 @@ PW_QC_INVESTOR = {
             "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/investors/conditions"
         }
     ],
+    "category": {"key": "qc-business", "quote": "Immigrate to Québec as an investor Settle in Québec and invest in Québec.", "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business"},
     "steps": [
         {
             "step": "agreement",
@@ -14469,6 +14551,7 @@ PW_QC_ENTREPRENEUR_STARTUP = {
             "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/entrepreneurs/start-acquire-business/conditions"
         }
     ],
+    "category": {"key": "qc-business", "quote": "Immigrate to Québec as an entrepreneur Settle in Québec to start or acquire a business in Québec.", "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business"},
     "steps": [
         {
             "step": "submit",
@@ -14694,6 +14777,7 @@ PW_QC_SELF_EMPLOYED = {
             "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business/self-employed-workers/conditions"
         }
     ],
+    "category": {"key": "qc-business", "quote": "Immigrate to Québec as a self-employed worker Settle in Québec and work for yourself.", "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business"},
     "steps": [
         {
             "step": "submit",
@@ -15223,6 +15307,304 @@ K_GATE_FACTOR = "factor"
 
 K_GATE_TEXT = "text"
 """门槛行键:三语文本。"""
+
+K_CATEGORY = "category"
+"""通道键:本省官方分类归属 {key, quote, url}(2026-10-12 Frank「各省有自己单独的分类吗」→ 选「照搬各省官方分类」;
+资讯「申请门槛」「申请步骤」两页按它出组头;联邦不登,前端另有工作 / 投资创业 / 家庭团聚 / 难民四组)。"""
+
+CAT_KEYS = ["key", "en", "zh", "ko"]
+"""官方分类进产物的四格(编号、官网英文原名、中韩译名);原句与出处页只给自校用。"""
+
+CAT_UNKNOWN_TPL = "{key} 的官方分类 {cat} 不在本省分类表里"
+"""自校:通道登的分类编号在 PROV_CATEGORIES 本省那一列里找不到。"""
+
+CAT_PROV_MISSING_TPL = "{key} 所在省 {prov} 登了分类表,这条通道却没登分类"
+"""自校:本省有官方分类,通道漏登(省里每条通道都要归一类,关停的也要)。"""
+
+PROV_CATEGORIES: dict = {
+    "BC": [
+        {
+            "key": "bc-skills",
+            "en": "Skills Immigration",
+            "zh": "技术移民",
+            "ko": "기술 이민",
+            "quote": "The BC PNP offers two main immigration pathways: Skills Immigration and Entrepreneur Immigration.",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/about-the-bc-provincial-nominee-program"
+        },
+        {
+            "key": "bc-entrepreneur",
+            "en": "Entrepreneur Immigration",
+            "zh": "企业家移民",
+            "ko": "기업가 이민",
+            "quote": "Entrepreneur Immigration is for experienced entrepreneurs and businesses that can contribute to the province’s economy by establishing and managing businesses in B.C.",
+            "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/about-the-bc-provincial-nominee-program"
+        }
+    ],
+    "AB": [
+        {
+            "key": "ab-workers",
+            "en": "Streams for workers",
+            "zh": "工人类",
+            "ko": "근로자 스트림",
+            "quote": "Streams for workers A new worker expression of interest system is in place as of September 30, 2024.",
+            "url": "https://www.alberta.ca/aaip-application-streams"
+        },
+        {
+            "key": "ab-entrepreneurs",
+            "en": "Streams for entrepreneurs",
+            "zh": "企业家类",
+            "ko": "기업가 스트림",
+            "quote": "Streams for entrepreneurs AAIP has 4 streams for entrepreneurs who plan to live in Alberta and buy or start a business in the province:",
+            "url": "https://www.alberta.ca/aaip-application-streams"
+        }
+    ],
+    "SK": [
+        {
+            "key": "sk-isw",
+            "en": "International Skilled Worker",
+            "zh": "国际技术工人",
+            "ko": "해외 숙련 근로자",
+            "quote": "Immigrate to Saskatchewan under the program category that best fits your needs. Browse by Program: International Skilled Worker Worker with Saskatchewan Work Experience Entrepreneur Farm Owner and Operator",
+            "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs"
+        },
+        {
+            "key": "sk-experience",
+            "en": "Worker with Saskatchewan Work Experience",
+            "zh": "本省工作经验",
+            "ko": "서스캐처원 경력 근로자",
+            "quote": "Immigrate to Saskatchewan under the program category that best fits your needs. Browse by Program: International Skilled Worker Worker with Saskatchewan Work Experience Entrepreneur Farm Owner and Operator",
+            "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs"
+        },
+        {
+            "key": "sk-entrepreneur",
+            "en": "Entrepreneur",
+            "zh": "企业家",
+            "ko": "기업가",
+            "quote": "Immigrate to Saskatchewan under the program category that best fits your needs. Browse by Program: International Skilled Worker Worker with Saskatchewan Work Experience Entrepreneur Farm Owner and Operator",
+            "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs"
+        },
+        {
+            "key": "sk-farm",
+            "en": "Farm Owner and Operator",
+            "zh": "农场主",
+            "ko": "농장주",
+            "quote": "Immigrate to Saskatchewan under the program category that best fits your needs. Browse by Program: International Skilled Worker Worker with Saskatchewan Work Experience Entrepreneur Farm Owner and Operator",
+            "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs"
+        }
+    ],
+    "MB": [
+        {
+            "key": "mb-skilled-worker",
+            "en": "Skilled Worker Stream",
+            "zh": "技术工人类",
+            "ko": "숙련 근로자 스트림",
+            "quote": "The Skilled Worker Stream is for internationally trained and experienced workers who have the skills needed in the local labour market.",
+            "url": "https://immigratemanitoba.com/mpnp/streams"
+        },
+        {
+            "key": "mb-ies",
+            "en": "International Education Stream",
+            "zh": "国际教育类",
+            "ko": "국제 교육 스트림",
+            "quote": "The International Education Stream (IES) provides international students who graduate in Manitoba and meet industry needs faster pathways to nomination.",
+            "url": "https://immigratemanitoba.com/mpnp/streams"
+        },
+        {
+            "key": "mb-bis",
+            "en": "Business Investor Stream",
+            "zh": "商业投资类",
+            "ko": "비즈니스 투자자 스트림",
+            "quote": "The Business Investor Stream (BIS) is for qualified business investors and entrepreneurs who have the intent and ability to start or purchase businesses in Manitoba.",
+            "url": "https://immigratemanitoba.com/mpnp/streams"
+        }
+    ],
+    "ON": [
+        {
+            "key": "on-workforce",
+            "en": "Ontario Workforce Priority stream",
+            "zh": "安省劳动力优先类",
+            "ko": "온타리오 인력 우선",
+            "quote": "The new Ontario Workforce Priority stream has now launched, and all other streams are now closed.",
+            "url": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp"
+        },
+        {
+            "key": "on-job-offer",
+            "en": "Employer Job Offer Category",
+            "zh": "雇主工作邀请类",
+            "ko": "고용주 채용 제안",
+            "quote": "The pilot will also include a set-aside of approximately 150 nominations under the OINP Employer Job Offer Category streams, which will be reserved for applicants with job offers in the pilot communities.",
+            "url": "https://www.ontario.ca/page/2019-ontario-immigrant-nominee-program-updates"
+        },
+        {
+            "key": "on-business",
+            "en": "Business Category",
+            "zh": "商业类",
+            "ko": "비즈니스",
+            "quote": "Full eligibility criteria and application guidelines for the new Ontario Immigrant Nominee Program ( OINP ) Business Category – Corporate and Entrepreneur Streams are now available.",
+            "url": "https://www.ontario.ca/page/2015-ontario-immigrant-nominee-program-updates"
+        }
+    ],
+    "QC": [
+        {
+            "key": "qc-skilled",
+            "en": "Immigration programs for skilled workers",
+            "zh": "技术移民项目",
+            "ko": "숙련 근로자 이민",
+            "quote": "Immigration programs for skilled workers Applying for selection to immigrate permanently to Québec to work.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers"
+        },
+        {
+            "key": "qc-business",
+            "en": "Immigrate to Québec to do business",
+            "zh": "商业移民",
+            "ko": "비즈니스 이민",
+            "quote": "Steps to immigrate to Québec as an investor, entrepreneur or self-employed worker.",
+            "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business"
+        }
+    ],
+    "NB": [
+        {
+            "key": "nb-skilled",
+            "en": "New Brunswick Skilled Worker stream",
+            "zh": "新省技术工人类",
+            "ko": "뉴브런즈윅 숙련 근로자",
+            "quote": "Streams New Brunswick Skilled Worker stream New Brunswick Express Entry stream",
+            "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+        },
+        {
+            "key": "nb-express-entry",
+            "en": "New Brunswick Express Entry stream",
+            "zh": "新省快速通道类",
+            "ko": "뉴브런즈윅 익스프레스 엔트리",
+            "quote": "New Brunswick Skilled Worker stream New Brunswick Express Entry stream New Brunswick Strategic Initiative",
+            "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+        },
+        {
+            "key": "nb-strategic",
+            "en": "New Brunswick Strategic Initiative",
+            "zh": "新省法语战略类",
+            "ko": "뉴브런즈윅 전략 이니셔티브",
+            "quote": "New Brunswick Strategic Initiative New Brunswick Business Immigration stream Pilot programs",
+            "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+        },
+        {
+            "key": "nb-business",
+            "en": "New Brunswick Business Immigration stream",
+            "zh": "新省商业移民类",
+            "ko": "뉴브런즈윅 비즈니스 이민",
+            "quote": "New Brunswick Business Immigration stream Pilot programs New Brunswick Critical Worker Pilot",
+            "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+        },
+        {
+            "key": "nb-pilots",
+            "en": "Pilot programs",
+            "zh": "试点项目",
+            "ko": "시범 프로그램",
+            "quote": "Pilot programs New Brunswick Critical Worker Pilot New Brunswick Private Career College Graduate Pilot Program",
+            "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program.html"
+        }
+    ],
+    "NS": [
+        {
+            "key": "ns-skilled",
+            "en": "Skilled Worker",
+            "zh": "技术工人",
+            "ko": "숙련 근로자",
+            "quote": "As of February 18, 2026, the NSNP streams are: Nova Scotia Graduate Skilled Worker Entrepreneur Nova Scotia: Express Entry",
+            "url": "https://liveinnovascotia.com/resources/nsnp-update-four-consolidated-streams"
+        },
+        {
+            "key": "ns-graduate",
+            "en": "Nova Scotia Graduate",
+            "zh": "新斯科舍毕业生",
+            "ko": "노바스코샤 졸업생",
+            "quote": "As of February 18, 2026, the NSNP streams are: Nova Scotia Graduate",
+            "url": "https://liveinnovascotia.com/resources/nsnp-update-four-consolidated-streams"
+        },
+        {
+            "key": "ns-entrepreneur",
+            "en": "Entrepreneur",
+            "zh": "创业",
+            "ko": "창업",
+            "quote": "the NSNP streams are: Nova Scotia Graduate Skilled Worker Entrepreneur",
+            "url": "https://liveinnovascotia.com/resources/nsnp-update-four-consolidated-streams"
+        },
+        {
+            "key": "ns-express-entry",
+            "en": "Nova Scotia: Express Entry",
+            "zh": "新斯科舍:快速通道",
+            "ko": "노바스코샤: 익스프레스 엔트리",
+            "quote": "Skilled Worker Entrepreneur Nova Scotia: Express Entry Eligibility Remains the Same",
+            "url": "https://liveinnovascotia.com/resources/nsnp-update-four-consolidated-streams"
+        }
+    ],
+    "PE": [
+        {
+            "key": "pe-workforce",
+            "en": "Workforce Category",
+            "zh": "劳动力类",
+            "ko": "인력 부문",
+            "quote": "The Workforce Category is an employer-driven category, designed to help you fill permanent labour shortages and skill gaps in your business by supporting foreign nationals for permanent residency.",
+            "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/supporting-a-worker-for-immigration"
+        },
+        {
+            "key": "pe-business",
+            "en": "Business Impact Category",
+            "zh": "商业影响类",
+            "ko": "비즈니스 임팩트 부문",
+            "quote": "Important An Expression of Interest is not an application, but an indication of your interest in being considered to apply to the PEI PNP Business Impact Category.",
+            "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/work-permit-stream"
+        }
+    ],
+    "YT": [
+        {
+            "key": "yt-nominee",
+            "en": "Yukon Nominee Program",
+            "zh": "育空提名项目",
+            "ko": "유콘 추천 프로그램",
+            "quote": "a worker under the Yukon Nominee Program (YNP); or",
+            "url": "https://yukon.ca/en/immigrate-yukon"
+        },
+        {
+            "key": "yt-business",
+            "en": "Yukon Business Nominee Program",
+            "zh": "育空商业提名项目",
+            "ko": "유콘 비즈니스 추천 프로그램",
+            "quote": "an entrepreneur under the Yukon Business Nominee Program .",
+            "url": "https://yukon.ca/en/immigrate-yukon"
+        }
+    ],
+    "NT": [
+        {
+            "key": "nt-business",
+            "en": "Business Stream",
+            "zh": "商业类",
+            "ko": "비즈니스 부문",
+            "quote": "If you’re coming here to open, purchase or invest in a business in the NWT, you can apply for the Business Stream.",
+            "url": "https://www.immigratenwt.ca/immigrate-here"
+        },
+        {
+            "key": "nt-employer",
+            "en": "Employer-Driven Stream",
+            "zh": "雇主担保类",
+            "ko": "고용주 주도 부문",
+            "quote": "If you have a job offer from an NWT employer, we call that the Employer-Driven Stream.",
+            "url": "https://www.immigratenwt.ca/immigrate-here"
+        },
+        {
+            "key": "nt-francophone",
+            "en": "Francophone Stream",
+            "zh": "法语类",
+            "ko": "프랑스어권 부문",
+            "quote": "Select the option you would like to learn more about: Business Stream Employer-Driven Stream Francophone Stream",
+            "url": "https://www.immigratenwt.ca/immigrate-here"
+        }
+    ]
+}
+"""各省官方分类表(省码 → [{key, en, zh, ko, quote, url}],顺序 = 官网列的先后;2026-10-12 三组子代理按官网逐省核,原句对 crawl 缓存自校)。
+官方平铺列通道、没有分类层的省不登(页面不出组头)。
+2026-10-12 Frank「都按你说的」:NL 不登 —— 官网正文平铺列五条通道,Applicants / Entrepreneurs 只在左侧导航与 URL 里,不当类名;
+NB 按 Streams 下一层分五类(上层只有 Streams / Pilot programs 两块)。"""
 
 WS_RE = re.compile(r"\s+")
 """核原句时去掉全部空白(页面链接断开会在标点前留空格,两边都去掉再比)。"""

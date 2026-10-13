@@ -48,6 +48,7 @@ from pathways.constants import (  # 2026-10-11 申请步骤分区筛选批 1(身
 from pathways.scheme import FitCellIn  # 同上
 from pathways.constants import BAD_DUR_TPL, DUR_KINDS, DUR_UNITS, K_DUR, K_DUR_KIND, K_DUR_UNIT  # 2026-10-12 步骤时长 dur
 from pathways.constants import GATE_BAD_TPL, GATE_FACTORS, GATE_LANGS, K_GATE, K_GATE_FACTOR, K_GATE_TEXT  # 2026-10-12 申请门槛 gate
+from pathways.constants import CAT_KEYS, CAT_PROV_MISSING_TPL, CAT_UNKNOWN_TPL, K_CATEGORY, PROV_CATEGORIES  # 2026-10-12 各省官方分类
 
 # =========================================================================
 # 1. 入口:读 pnp 产物 → 自校 → 对得上才写产物
@@ -197,6 +198,7 @@ def problems_of(x: CheckIn) -> list[str]:
     out.extend(step_problems_of(x.table))
     out.extend(fit_problems_of(x.table))
     out.extend(gate_problems_of(x.table))
+    out.extend(category_problems_of(x.table))
     for entry in x.table:
         out.extend(entry_problems_of(EntryIn(entry=entry, facts=x.facts)))
     return out
@@ -431,7 +433,7 @@ def to_pathway_row(x: RowIn) -> dict:
         "occLabels": e["occLabels"], "status": e["status"], "url": e["url"], "quote": e["quote"], "checked": e["checked"],
         "jobLinked": e.get(K_JOB_LINKED, JOB_LINKED_DEFAULT), "tags": e.get(K_TAGS, []), "teers": e.get(K_TEERS, []),
         "nocs": e.get(K_NOCS, []), "employers": e.get(K_EMPLOYERS, []), "steps": e.get(K_STEPS, []),
-        "fits": FITS.get(e["key"]), "gate": e.get(K_GATE),
+        "fits": FITS.get(e["key"]), "gate": e.get(K_GATE), "category": category_cell_of(e),
     }
 
 
@@ -524,3 +526,49 @@ def gate_row_problems_of(x: StepIn) -> list[str]:
     if row.get(K_QUOTE, EMPTY) == EMPTY or WS_RE.sub(EMPTY, row[K_QUOTE]) not in page:
         return [QUOTE_MISSING_TPL.format(key=x.key, i=x.i, fact=K_GATE, url=row.get(K_URL, EMPTY))]
     return []
+
+
+def category_problems_of(table: list) -> list[str]:
+    """2026-10-12 各省官方分类:分类表每类的原句、每条通道的归属原句都逐字核出处页;登了分类表的省每条通道都要归类。"""
+    out: list[str] = []
+    pages: dict = {}
+    for prov, cats in PROV_CATEGORIES.items():
+        i = 0
+        for cat in cats:
+            i += 1
+            out.extend(quote_problems_of(StepIn(key=prov, i=i, step=cat, pages=pages)))
+    for entry in table:
+        cats = PROV_CATEGORIES.get(entry["province"])
+        cell = entry.get(K_CATEGORY)
+        if cell is None:
+            if cats is not None:
+                out.append(CAT_PROV_MISSING_TPL.format(key=entry[K_KEY], prov=entry["province"]))
+            continue
+        if cats is None or cell.get(K_KEY) not in [c[K_KEY] for c in cats]:
+            out.append(CAT_UNKNOWN_TPL.format(key=entry[K_KEY], cat=cell.get(K_KEY)))
+            continue
+        out.extend(quote_problems_of(StepIn(key=entry[K_KEY], i=0, step=cell, pages=pages)))
+    return out
+
+
+def quote_problems_of(x: StepIn) -> list[str]:
+    """一处分类原句的红(借 StepIn 装:step 格放带 quote / url 的那一项)。"""
+    row = x.step
+    page = page_text_of(PageIn(url=row.get(K_URL, EMPTY), pages=x.pages))
+    if page is None:
+        return [PAGE_MISSING_TPL.format(key=x.key, i=x.i, fact=K_CATEGORY, url=row.get(K_URL, EMPTY))]
+    if row.get(K_QUOTE, EMPTY) == EMPTY or WS_RE.sub(EMPTY, row[K_QUOTE]) not in page:
+        return [QUOTE_MISSING_TPL.format(key=x.key, i=x.i, fact=K_CATEGORY, url=row.get(K_URL, EMPTY))]
+    return []
+
+
+def category_cell_of(entry: dict) -> dict | None:
+    """通道的官方分类 → 产物格 {key, en, zh, ko};没登给 None。"""
+    cell = entry.get(K_CATEGORY)
+    if cell is None:
+        return None
+    for cat in PROV_CATEGORIES.get(entry["province"], []):
+        if cat[K_KEY] == cell[K_KEY]:
+            return {k: cat[k] for k in CAT_KEYS}
+    return None
+

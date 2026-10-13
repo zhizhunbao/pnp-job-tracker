@@ -24,7 +24,7 @@ import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS, DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE,
   DRAWS_ALL_KEY, DRAWS_FORM_STATUS, HOST_RE, LANG_EN, LANG_KO, FACT_NOTE, NOTE_VAR_OPEN, NOTE_VAR_CLOSE,
   GROUP_WORK, GROUP_BUSINESS, PROGRAMS_BUSINESS, GROUP_FAMILY, GROUP_REFUGEE, PROGRAM_FAMILY, PROGRAM_REFUGEE,
-  GATE_FACTOR_HEAD, STATUS_PAUSED,
+  GATE_FACTOR_HEAD, STATUS_PAUSED, GROUP_KEY_HEAD,
   MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
   K_GATE_TITLE, P_PROV, SCROLL_START, URL_HASH_HEAD, URL_KV_SEP, URL_QUERY_HEAD, URL_STEPS, URL_STREAMS,
   MONTHS_KEYS, K_TL_ABOUT, K_TL_ABOUT_DAYS, K_TL_DAYS, K_TL_MONTHS, K_TL_RANGE, K_TL_TOTAL, K_TL_TOTAL_ONE,
@@ -75,7 +75,7 @@ import {
   STEP_PROCESSING_KEY,
 } from './constants'
 import type {
-  PnpFitsJson, ProvCounts, ProvCountsOfIn, NoteTextIn, PnpGateJson, CuratedGateIn,
+  PnpFitsJson, ProvCounts, ProvCountsOfIn, NoteTextIn, PnpGateJson, CuratedGateIn, GroupOfIn, GroupOfOut,
   PnpSpanJson, PnpTimelineJson, SpanAtIn, SpanTextIn, StepDurIn, ToneIn, TotalTextIn, TimelineSegSpec, TimelineSpec,
   TimelineSpecIn, WithToneIn,
   ChannelOfIn, ChannelSpec, DrawExtraIn, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
@@ -3712,7 +3712,17 @@ export function provStreamItemsOf(x: ProvStreamItemsIn): ProvStreamItem[] {
         t: x.t, lang: x.lang, p, draws: x.draws, ops: x.ops, reqs: x.reqs, pathways: x.pathways,
       })
     }
-    out.push({ key: p.key, gate, steps, draws, fits: fitsOfSet({ sets: x.sets, key: p.key }), group: fedGroupOf(p) })
+    const g = groupOf({ t: x.t, lang: x.lang, p })
+    out.push({
+      key: p.key,
+      gate,
+      steps,
+      draws,
+      fits: fitsOfSet({ sets: x.sets, key: p.key }),
+      group: g.key,
+      groupHead: g.head,
+      groupSub: g.sub,
+    })
   }
   return out
 }
@@ -6595,6 +6605,29 @@ function spanAtOf(x: SpanAtIn): PnpSpanJson | null {
     return null
   }
   return span
+}
+
+/**
+ * 一条通道的组头(2026-10-12):联邦按 fedGroupOf 的四组取词条;各省照搬官方分类(Frank 选「照搬各省官方分类」)——
+ * 官网英文原名黑字、界面语言译名灰字(英文界面只出一行);官方平铺列通道的省没登分类,不出组头。
+ *
+ * @param x 取词函数、界面语言与通道对照行。
+ * @returns 组键与组头两行字;不分组给三个空串。
+ */
+function groupOf(x: GroupOfIn): GroupOfOut {
+  const fed = fedGroupOf(x.p)
+  if (fed !== TEXT_NONE) {
+    return { key: fed, head: x.t(GROUP_KEY_HEAD + fed), sub: TEXT_NONE }
+  }
+  const c = x.p.category
+  if (c == null) {
+    return { key: TEXT_NONE, head: TEXT_NONE, sub: TEXT_NONE }
+  }
+  let sub = TEXT_NONE
+  if (x.lang !== LANG_EN) {
+    sub = noteTextOf({ lang: x.lang, text: { zh: c.zh, en: c.en, ko: c.ko }, vars: {} })
+  }
+  return { key: c.key, head: c.en, sub }
 }
 
 /**
