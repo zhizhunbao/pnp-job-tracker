@@ -36,12 +36,14 @@ function row(id: number): PickRow {
     id, title: 'job ' + id, titleZh: '', titleKo: '', company: 'Secret Co ' + id, companyZh: '', companyKo: '',
     companySlug: 'secret-co-' + id, address: '1 Hidden St ' + id, city: 'Toronto', cityZh: '', cityKo: '', province: 'ON',
     salary: '$' + id + '/hr', datePosted: '2026-10-10T00:00:00.000Z', reasons: ['pnp'], program: 'OINP', hours: 'full',
-    term: 'permanent', validThrough: '',
+    term: 'permanent', validThrough: '', pnpStream: '', pnpEligible: true, provDefault: true, abovePct: null,
+    lmiaPositions: 0, eeCategory: '', drawLast: '', pilot: '',
   }
 }
 
 describe('推荐理由', () => {
   it('① 只放真的,全格穷举', () => {
+    // 2026-10-12「整点有吸引力的 bullets」:多 lmia / ee / aip 三格,顺序改成 省提名 → 薪资 → LMIA → EE → AIP → 职业三选一 → 全职长期
     for (const occApplied of BOOLS) {
       for (const occSaved of BOOLS) {
         for (const occWant of BOOLS) {
@@ -49,23 +51,53 @@ describe('推荐理由', () => {
             for (const offerActive of BOOLS) {
               for (const aboveMed of BOOLS) {
                 for (const province of PROVS) {
-                  const r = reasonsOf({ occApplied, occSaved, occWant, pnp, offerActive, aboveMed, province })
-                  const want: string[] = []
-                  if (occWant) {
-                    want.push('occ')
-                  } else if (occSaved) {
-                    want.push('saved')
-                  } else if (occApplied) {
-                    want.push('applied')
+                  {
+                    for (const lmia of BOOLS) {
+                      for (const ee of BOOLS) {
+                        for (const aip of BOOLS) {
+                          for (const pilot of BOOLS) {
+                          for (const known of BOOLS) {
+                          const r = reasonsOf({
+                            occApplied, occSaved, occWant, pnp, offerActive, aboveMed, province, lmia, ee, aip,
+                            pilot, known,
+                          })
+                          const want: string[] = []
+                          if (pnp && offerActive && (province === 'ON' || province === 'BC')) {
+                            want.push('pnp')
+                          }
+                          if (aboveMed) {
+                            want.push('wage')
+                          }
+                          if (lmia) {
+                            want.push('lmia')
+                          }
+                          if (ee) {
+                            want.push('ee')
+                          }
+                          if (aip) {
+                            want.push('aip')
+                          }
+                          if (pilot) {
+                            want.push('pilot')
+                          }
+                          if (known) {
+                            want.push('known')
+                          }
+                          if (occWant) {
+                            want.push('occ')
+                          } else if (occSaved) {
+                            want.push('saved')
+                          } else if (occApplied) {
+                            want.push('applied')
+                          }
+                          expect(r).toEqual(want)
+                          expect(r.filter((c) => c === 'occ' || c === 'saved' || c === 'applied').length <= 1).toBe(true)
+                          }
+                          }
+                        }
+                      }
+                    }
                   }
-                  if (pnp && offerActive && (province === 'ON' || province === 'BC')) {
-                    want.push('pnp')
-                  }
-                  if (aboveMed) {
-                    want.push('wage')
-                  }
-                  expect(r).toEqual(want)
-                  expect(r.filter((c) => c === 'occ' || c === 'saved' || c === 'applied').length <= 1).toBe(true)
                 }
               }
             }
@@ -76,7 +108,7 @@ describe('推荐理由', () => {
   })
 
   it('金标(2026-10-11):ON 能走省提名、但 offer 类通道 90 天没抽 → 不出 pnp;BC 抽过 → 出', () => {
-    const base = { occApplied: false, occSaved: false, occWant: false, pnp: true, aboveMed: false }
+    const base = { occApplied: false, occSaved: false, occWant: false, pnp: true, aboveMed: false, lmia: false, ee: false, aip: false, pilot: false, known: false }
     expect(reasonsOf({ ...base, province: 'ON', offerActive: false })).toEqual([])
     expect(reasonsOf({ ...base, province: 'BC', offerActive: true })).toEqual(['pnp'])
   })
@@ -91,7 +123,9 @@ describe('免费 / Pro 切分', () => {
       expect(free.more).toBe(Math.max(0, n - PICKS_FREE))
       expect(free.locked).toHaveLength(Math.min(PICKS_LOCKED_SHOW, Math.max(0, n - PICKS_FREE)))
       for (const l of free.locked) {
-        expect(Object.keys(l).sort()).toEqual(['program', 'reasons', 'title'])
+        expect(Object.keys(l).sort()).toEqual(
+          ['pnpEligible', 'pnpStream', 'program', 'provDefault', 'province', 'reasons', 'title', 'titleKo', 'titleZh'],
+        )
         const wire = JSON.stringify(l)
         expect(wire).not.toContain('Secret Co')
         expect(wire).not.toContain('Hidden St')
@@ -151,7 +185,10 @@ describe('推荐 SQL', () => {
   })
 
   it('⑧ 金标:三种理由各自命中(档案 = 职业对口、收藏 = 和你收藏的同类、投递 = 和你投过的同类)', () => {
-    const base = { occApplied: false, occSaved: false, occWant: false, pnp: false, offerActive: true, aboveMed: false, province: 'ON' }
+    const base = {
+      occApplied: false, occSaved: false, occWant: false, pnp: false, offerActive: true, aboveMed: false, province: 'ON',
+      lmia: false, ee: false, aip: false, pilot: false, known: false,
+    }
     expect(reasonsOf({ ...base, occWant: true })).toEqual(['occ'])
     expect(reasonsOf({ ...base, occSaved: true })).toEqual(['saved'])
     expect(reasonsOf({ ...base, occApplied: true })).toEqual(['applied'])
@@ -213,8 +250,12 @@ const PICK = {
   companyKo: '', companySlug: '', address: '1 Bowes Rd, Concord, ON L4K 1H4', city: 'Concord', cityZh: '', cityKo: '', province: 'ON',
   salary: '$24/hr', datePosted: '2026-10-10T00:00:00.000Z', reasons: ['occ', 'pnp', 'nope'], program: 'OINP',
   hours: 'part', term: 'seasonal', validThrough: '2026-11-09T00:00:00.000Z',
+  pnpStream: '', pnpEligible: true, provDefault: true, abovePct: null, lmiaPositions: 0, eeCategory: '', drawLast: '', pilot: '',
 }
-const LOCKED = { title: 'medical office assistant', reasons: ['pnp', 'wage'], program: 'OINP' }
+const LOCKED = {
+  title: 'medical office assistant', titleZh: '', titleKo: '', reasons: ['pnp', 'wage'], program: 'OINP', province: 'ON',
+  pnpStream: '', pnpEligible: true, provDefault: true,
+}
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -222,32 +263,43 @@ afterEach(() => {
 })
 
 describe('今日推荐卡', () => {
-  it('⑥ 免费号:推荐行 + 理由胶囊 + 更多推荐卡(锁住的职位名看得见)', async () => {
+  it('⑥ 免费号:推荐行 + 通道列 + 「显示更多」点开出锁住的(职位名看得见)', async () => {
     stub({ status: 200, body: { picks: [PICK], more: 7, locked: [LOCKED] } })
     const el = await mount(false)
     expect(el.textContent).toContain('mj.picks')
+    expect(el.textContent).toContain('8')   // 卡头数字 = 看得见的 1 + 锁住的 7
     expect(el.textContent).toContain('administrative assistant')
     expect(el.textContent).toContain('$24/hr')
     expect(el.textContent).toContain('2026-10-10')
     expect(el.textContent).toContain('2026-11-09')   // 截止日期列
-    expect(el.textContent).toContain('Part-time')
-    expect(el.textContent).toContain('Seasonal')
-    expect(el.textContent).toContain('mj.why.occ')
-    expect(el.textContent).toContain('mj.why.pnp{"p":"OINP"}')
+    expect(el.textContent).not.toContain('Part-time')   // 2026-10-12 推荐表不出工时 / 雇佣期两列
+    expect(el.textContent).not.toContain('Seasonal')
+    expect(el.textContent).toContain('pnp.gen.ON')   // 通道列:可提名 + 本省有省默认通道 = 那条省默认通道(取词桩原样回键)
+    expect(el.textContent).not.toContain('mj.why.occ')   // 2026-10-12 Frank「职业对口 也是废话」:不出
+    expect(el.textContent).not.toContain('mj.why.pnp')   // 2026-10-12 项目总名不是通道名、与通道列重复:不出
     expect(el.textContent).not.toContain('nope')
-    expect(el.textContent).toContain('mj.more7')
+    expect(el.textContent).not.toContain('medical office assistant')   // 没点「显示更多」锁住的不出
+    expect(el.textContent).toContain('loadMore{"n":7}')
+    await act(async () => {
+      Array.from(el.querySelectorAll('button')).find((x) => x.textContent === 'loadMore{"n":7}')?.click()
+    })
     expect(el.textContent).toContain('medical office assistant')
-    expect(el.textContent).toContain('mj.why.wage')
     expect(el.textContent).toContain('mj.upgrade')
     const addr = Array.from(el.querySelectorAll('a')).find((a) => a.textContent === PICK.address)
     expect(addr?.getAttribute('href')).toBe('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(PICK.address))
   })
 
-  it('⑥ Pro 不出更多推荐卡', async () => {
-    stub({ status: 200, body: { picks: [PICK], more: 0, locked: [] } })
+  it('⑥ Pro 不出锁住的与「升级 Pro」;多于 3 条先列 3 条,「显示更多」列全', async () => {
+    const many = [1, 2, 3, 4, 5].map((i) => ({ ...PICK, id: i, title: 'job ' + i }))
+    stub({ status: 200, body: { picks: many, more: 0, locked: [] } })
     const el = await mount(true)
-    expect(el.textContent).toContain('administrative assistant')
-    expect(el.textContent).not.toContain('mj.more')
+    expect(el.textContent).toContain('job 3')
+    expect(el.textContent).not.toContain('job 4')
+    await act(async () => {
+      Array.from(el.querySelectorAll('button')).find((x) => x.textContent === 'loadMore{"n":2}')?.click()
+    })
+    expect(el.textContent).toContain('job 5')
+    expect(el.textContent).not.toContain('mj.upgrade')
   })
 
   it('⑥ 零条出一行空态;失败出刷新再试', async () => {

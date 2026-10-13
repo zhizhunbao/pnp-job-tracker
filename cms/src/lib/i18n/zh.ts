@@ -919,7 +919,8 @@ export const jobsZh = {
   'sj.save': '☆ 收藏', 'sj.saved': '★ 已收藏', 'sj.view': '在职位板查看', 'sj.del': '移除', 'sj.weekly': '每周邮件摘要(收藏岗动态,可随时退订)',
   'fav.title': '我的收藏',
   // 2026-10-06 「我的求职」「我的收藏」改成 myjobs 桶的两张表;sj.note、fav.note 随旧清单撤
-  'mj.appliedAt': '投递日期', 'mj.open': '打开', 'mj.unsave': '取消收藏', 'mj.closed': '已下架',
+  'mj.appliedAt': '投递日期', 'mj.open': '打开', 'mj.closed': '已下架', 'mj.del': '删除', 'mj.delAsk': '确认删除?', 'mj.cancel': '取消', 'mj.col.chan': '通道',
+  'mj.col.why': '推荐原因', 'mj.why.wage': '薪资高于中位 {n}%', 'mj.why.wagePlain': '薪资高于中位', 'mj.why.aip': 'AIP 指定雇主', 'mj.why.pilot': '{g} 指定雇主', 'mj.why.known': '知名公司', 'mj.why.ee': 'EE {e}', 'mj.why.lmia': 'LMIA {m} 个',
   'mj.live': '在架', 'mj.col.stage': '投递状态', 'mj.col.listing': '职位状态',
   'mj.bounced': '退信',
   'mj.col.resume': '简历', 'mj.col.cover': '求职信', 'mj.view': '查看',
@@ -929,16 +930,14 @@ export const jobsZh = {
   'mj.appliedOn': '投递于 {d}', 'mj.editedOn': '最近改于 {d}', 'mj.postedOn': '发布于 {d}', 'mj.cont': '继续', 'mj.apply': '投递', 'mj.toBoard': '去职位板', 'mj.sentTo': '已发给 {co}',
   // 2026-10-10 批 2「我的求职」四段(今日推荐 / 更多推荐 / 我的收藏 / 我的投递 + 新岗推送):草稿改叫「未发出」,待投并进未发出
   'mj.col.title': '职位', 'mj.col.company': '公司', 'mj.col.addr': '地址', 'mj.col.pay': '薪资', 'mj.col.hours': '工时',
-  'mj.col.term': '雇佣期', 'mj.col.posted': '发布日期', 'mj.col.deadline': '截止日期', 'mj.col.why': '为什么推荐',
-  'mj.col.status': '状态', 'mj.col.savedOn': '收藏于', 'mj.col.appliedOn': '投递于', 'mj.col.act': '操作',
+  'mj.col.term': '雇佣期', 'mj.col.posted': '发布日期', 'mj.col.deadline': '截止日期',
+  'mj.col.status': '状态', 'mj.col.savedOn': '收藏日期', 'mj.col.appliedOn': '投递于', 'mj.col.act': '操作',
   // 2026-10-11 批 4:工时 / 雇佣期 / 地点灰字三组词条改归 name 桶(职位板 + 我的求职共用,键头 mj. 改 name.)
   'name.hours.full': '全职', 'name.hours.part': '兼职', 'name.placeSub': '{c},{p}',
   'name.term.permanent': '长期', 'name.term.term': '定期合同', 'name.term.seasonal': '季节性', 'name.term.casual': '临时',
-  'mj.picks': '今日推荐', 'mj.picksEmpty': '今天没有新推荐', 'mj.more': '更多推荐',
+  'mj.picks': '今日推荐', 'mj.picksEmpty': '今天没有新推荐',
   'mj.upgrade': '升级 Pro',
-  // 2026-10-11 Frank「可以,按你说的改」:按真发出去的投递命中的推荐理由
-  'mj.why.applied': '和你投过的同类',
-  'mj.why.pnp': '能走 {p} 雇主担保', 'mj.why.wage': '薪资高于本省同职业中位', 'mj.why.occ': '职业对口', 'mj.why.saved': '和你收藏的同类',
+  // 2026-10-11 Frank「可以,按你说的改」:按真发出去的投递命中的推荐理由(2026-10-12 理由胶囊换通道列,mj.why.* 与 mj.col.why、mj.more、mj.unsave 随之删)
   'mj.appliedTitle': '我的投递', 'mj.unsent': '未发出',
   'mj.push': '新岗推送', 'mj.pushRow': '把推荐和收藏动态发到邮箱', 'mj.freqOff': '不发', 'mj.freqDaily': '每天', 'mj.freqWeekly': '每周',
   'mj.pushTo': '发到', 'mj.pushSave': '保存', 'mj.pushSaved': '已保存', 'mj.pushPending': '点 {e} 收到的链接后生效',
@@ -1050,7 +1049,7 @@ export const jobsZh = {
   'rm.arch.title': '我的简历',
   'rf.upTitle': '上传简历', 'rf.upSub': 'PDF 或 Word,5 MB 以内', 'rf.upBtn': '选择文件', 'rf.upDrag': '拖到这里也可以',
   'rf.uploaded': '上传于 {d}', 'rf.preview': '预览', 'rf.replace': '替换文件', 'rf.download': '下载', 'rf.delete': '删除',
-  'rf.sure': '确认删除', 'rf.cancel': '取消',
+  'rf.delAsk': '确认删除?', 'rf.cancel': '取消',
   'rf.default': '默认', 'rf.setDefault': '设为默认', 'rf.add': '添加简历', 'rf.full': '最多 20 份', 'rf.loading': '加载中', 'rf.pvFail': '这份预览不了,下载后查看',
   'rf.zoomIn': '放大', 'rf.zoomOut': '缩小', 'rf.zoomReset': '恢复整页',
   'rf.count': '简历 {c}',
@@ -1204,7 +1203,7 @@ export const siteZh = {
   'acct.err.cred': '邮箱或密码不正确', 'acct.err.exists': '该邮箱已注册,请直接登录', 'acct.err.weakPw': '密码不够强:至少 8 位', 'acct.err.generic': '操作失败,请稍后再试', 'acct.err.oauth': 'Google 登录没成功,请重试或用邮箱登录',
   'acct.pw.short': '太短:至少 8 位', 'acct.pw.weak': '弱', 'acct.pw.medium': '中', 'acct.pw.strong': '强', 'acct.pw.hint': '建议混合大小写、数字或符号',
   'pf.title': '我的档案', 'pf.card': '求职', 'pf.edit': '修改', 'pf.none': '还没答', 'pf.noneName': '还没填', 'pf.loadFail': '没取到,刷新再试',
-  'pf.more': '还有 {n} 个', 'pf.goal': '目标', 'pf.majors': '专业', 'pf.jobs': '想做的工作', 'pf.where': '所在地', 'pf.name': '英文姓名',
+  'pf.goal': '目标', 'pf.majors': '专业', 'pf.jobs': '想做的工作', 'pf.where': '所在地', 'pf.name': '英文姓名',
   'acct.plan.free': '免费版', 'sub.title': '我的订阅', 'sub.renew': '续买', 'acct.plan.pro': '有效期至 {d}',
   // 2026-10-08 「我的订阅」照 AIApply 的 Billing:方案卡、付款记录
   'sub.left': '还剩 {n} 天', 'sub.price': '30 天 {a},90 天 {b}', 'sub.pay': '付款记录',

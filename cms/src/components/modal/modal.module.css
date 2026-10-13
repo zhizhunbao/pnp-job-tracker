@@ -535,3 +535,29 @@
   height: 14px;
   cursor: nwse-resize;
 }
+
+/*
+ * 删除确认框正文(2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」)。
+ */
+.confirmBody {
+  padding: 16px 20px 8px;
+
+  font-size: 14px;
+
+  color: #374151;
+
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 删除确认框两颗钮:靠右一排。
+ */
+.confirmActs {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 8px;
+
+  padding: 12px 20px 16px;
+}

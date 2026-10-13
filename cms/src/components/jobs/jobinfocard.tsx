@@ -6,6 +6,7 @@
  * 日期两行原挂在职位名旁(JobDates,2026-10-02 起贴译名行右端),同批收进本卡,职位名旁那一处撤(一个事实一处)。
  * 2026-10-11 Frank「这个字段顺序是不是要调整一下」:薪资提到第一行(薪资 → 地址 → 工时 → 雇佣期 → 两个日期);
  * 同日「要知道本省本职业 中位薪职，要知道 高于 还是 低于 百分比」:薪资下加一行灰字(infoWageSubOf)。
+ * 2026-10-12 Frank「低于中位 不要显示 绿色」:低于中位的薪资不上绿(belowMedOf)。
  *
  * @author Frank
  * @time 2026-10-11 10:00:00
@@ -17,7 +18,7 @@ import { TimeText } from '@/components/time'
 import { makeT } from '@/lib/i18n'
 import { placeLineOf } from '@/lib/location'
 import { CARD_HEAD_CLS, CARD_MD_CLS, TEXT_NONE, TIME_TONE_NORMAL } from './constants'
-import { infoWageSubOf } from './functions'
+import { belowMedOf, infoWageSubOf } from './functions'
 import { useJobDates } from './hooks'
 import type { JobInfoCardIn } from './types'
 import css from './jobs.module.css'
@@ -33,6 +34,7 @@ export function JobInfoCard({ job, lang }: JobInfoCardIn) {
   const dates = useJobDates({ job, t })
   const line = placeLineOf({ address: job.address, city: job.city, province: job.province })
   const wageSub = infoWageSubOf({ job, t })
+  const below = belowMedOf({ annual: job.salaryAnnual, med: job.wageMedAnnual })
   const dateRows = []
   for (const c of dates) {
     dateRows.push(
@@ -45,7 +47,8 @@ export function JobInfoCard({ job, lang }: JobInfoCardIn) {
       {job.salaryText !== TEXT_NONE && (
         <Row k={t('col.salary')}>
           <span className={cssOf(css.infoPay)}>
-            <span className={cssOf(css.money)}>{job.salaryText}</span>
+            {below && <span>{job.salaryText}</span>}
+            {below === false && <span className={cssOf(css.money)}>{job.salaryText}</span>}
             {wageSub !== TEXT_NONE && <span className={cssOf(css.infoPaySub)}>{wageSub}</span>}
           </span>
         </Row>

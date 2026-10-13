@@ -4,6 +4,8 @@
 //          Word 没有预览钮(2026-10-08 照 AIApply 卡形,缩略图与 DOCX 占位撤);顶行「简历 n / 20」+「添加简历」,满了钮换成「最多 20 份」;
 //       ④ 点缩略图(读屏名「预览」;10-06 预览钮撤,图即钮)开本页弹框(标题是文件名),关掉就没了;
 //       ⑤ 删除两步:点「删除」只亮那一份的确认,取消回原样;确认后服务端删成功才重拉,失败原样留着并报错;
+//          (2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」:就地两钮改删除确认框 —— 点「删除」只弹框、不发请求,
+//          框里取消关框什么都不做,框里「删除」才发 DELETE)
 //          「设为默认」发 PATCH 带那一份的 id,成功后重拉;
 //       ⑥ 上传失败按错误码出文案(type、full);超 5 MB 不发请求直接报;「替换文件」发 PUT 带那一份的 id。
 // 探针:ResumeFile 去掉 checked 闸 → ①红;sendResumeAct 不看 r.ok 就重拉 → ⑤「删除失败」红;
@@ -147,7 +149,7 @@ describe('「我的简历」一节', () => {
     expect((document.body.textContent ?? '').split('Zhang_San_Resume.pdf').length - 1).toBe(1)
   })
 
-  it('⑤ 删除两步只亮那一份;失败留着报错,成功重拉;设为默认带 id', async () => {
+  it('⑤ 删除先弹确认框;失败留着报错,成功重拉;设为默认带 id', async () => {
     const calls = server({
       'GET /api/resume/files': [
         { status: 200, body: { items: [PDF_A, DOCX_B] } },
@@ -157,21 +159,24 @@ describe('「我的简历」一节', () => {
       'PATCH /api/resume/file?id=12': { status: 200, body: { ok: true } },
     })
     const el = await mount()
-    const a = cardOf(el, 'Zhang_San_Resume.pdf')
-    await click(a, 'rf.delete')
-    expect(labels(cardOf(el, 'Zhang_San_Resume.pdf'))).toContain('rf.sure')
-    expect(labels(cardOf(el, 'cv.docx'))).not.toContain('rf.sure')
-    await click(el, 'rf.cancel')
-    expect(labels(el)).not.toContain('rf.sure')
+    const box = () => el.querySelector('[data-frame]') as HTMLElement
     await click(cardOf(el, 'Zhang_San_Resume.pdf'), 'rf.delete')
-    await click(el, 'rf.sure')
+    expect(box().textContent).toContain('rf.delAsk')
+    expect(box().textContent).toContain('Zhang_San_Resume.pdf')
+    expect(calls).not.toContain('DELETE /api/resume/file?id=11')
+    await click(box(), 'rf.cancel')
+    expect(box()).toBeNull()
+    expect(calls).not.toContain('DELETE /api/resume/file?id=11')
+    await click(cardOf(el, 'Zhang_San_Resume.pdf'), 'rf.delete')
+    await click(box(), 'rf.delete')
     expect(calls).toContain('DELETE /api/resume/file?id=11')
+    expect(box()).toBeNull()
     expect(el.textContent).toContain('Zhang_San_Resume.pdf')
     expect(el.textContent).toContain('rf.err.net')
     await click(cardOf(el, 'Zhang_San_Resume.pdf'), 'rf.delete')
-    expect(el.textContent).not.toContain('rf.err.net')
-    await click(el, 'rf.sure')
+    await click(box(), 'rf.delete')
     expect(el.textContent).not.toContain('Zhang_San_Resume.pdf')
+    expect(el.textContent).not.toContain('rf.err.net')
     await click(cardOf(el, 'cv.docx'), 'rf.setDefault')
     expect(calls).toContain('PATCH /api/resume/file?id=12')
   })

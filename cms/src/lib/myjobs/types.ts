@@ -317,6 +317,36 @@ export type MyJobsIn = {
 }
 
 /**
+ * 删一条(今日推荐「删除」/ 我的投递「删除」;2026-10-12)的入参。
+ */
+export type MyJobsDeleteIn = {
+  /**
+   * 数据库连接(调用方注入)。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: UserId
+
+  /**
+   * 要删的那一条:今日推荐是职位 id,我的投递是投递 id。
+   */
+  id: number
+}
+
+/**
+ * 查询参数里的 id:正整数,否则 null。
+ */
+export type MaybeId = number | null
+
+/**
+ * 删一条的返回(写完即了)。
+ */
+export type DeleteOut = Promise<void>
+
+/**
  * 取清单的返回。
  */
 export type MyJobsOut = Promise<MyJobRow[]>
@@ -421,6 +451,46 @@ export type PickDbRow = {
   above_med: boolean | null
 
   /**
+   * 薪资高出本省同职业中位的百分比(取整;两边任一没有是 NULL;2026-10-12 Frank「还是需要一个 推荐原因的列 然后 bullets 显示 好处」)。
+   */
+  above_pct: number | string | null
+
+  /**
+   * 雇主办过的 LMIA 外劳名额(没有是 NULL;2026-10-12 Frank「整点有吸引力的 bullets」)。
+   */
+  lmia_positions: number | string | null
+
+  /**
+   * EE 定向类别(没有是 NULL / 空串)。
+   */
+  ee_category: string | null
+
+  /**
+   * 雇主是 AIP 指定雇主。
+   */
+  aip: boolean | null
+
+  /**
+   * 本省雇主 offer 类最近一次抽选日(ISO;没收录是 NULL)。
+   */
+  draw_last: string | null
+
+  /**
+   * 社区试点名(RCIP / FCIP / RCIP+FCIP;没有是 NULL;2026-10-12 Frank「现在有数据能知道 这个雇主愿不愿意帮忙 弄 pr 吗」「知名公司 也算 一个吧」)。
+   */
+  pilot: string | null
+
+  /**
+   * 雇主是社区试点指定雇主。
+   */
+  pilot_employer: boolean | null
+
+  /**
+   * 公司表有维基百科词条。
+   */
+  known: boolean | null
+
+  /**
    * 和他投过的岗同一职业单元组。
    */
   occ_applied: boolean | null
@@ -439,6 +509,16 @@ export type PickDbRow = {
    * 这一岗所在省的雇主 offer 类通道近 PICKS_DRAW_DAYS 天抽过(没收录到抽选的省也算 true;2026-10-11)。
    */
   offer_active: boolean | null
+
+  /**
+   * 数据层分派的具名省提名通道(没有 NULL / 空串;2026-10-12 通道列)。
+   */
+  pnp_stream: string | null
+
+  /**
+   * 本省有没有省默认通道(pathways is_default;2026-10-12 通道列)。
+   */
+  prov_default: boolean | null
 
   /**
    * 工时归一值 full / part(数据层洗好;没标 NULL;2026-10-10 批 2)。
@@ -536,9 +616,34 @@ export type PickRow = {
   datePosted: string
 
   /**
-   * 推荐理由码(只放真的;顺序即胶囊顺序)。
+   * 推荐理由码(只放真的;顺序即 bullet 顺序)。
    */
   reasons: string[]
+
+  /**
+   * 薪资高出本省同职业中位的百分比(理由里有 wage 时 bullet 写它;没有是 null)。
+   */
+  abovePct: number | null
+
+  /**
+   * 雇主办过的 LMIA 外劳名额(理由里有 lmia 时 bullet 写它;没有是 0)。
+   */
+  lmiaPositions: number
+
+  /**
+   * EE 定向类别(没有 = 空串)。
+   */
+  eeCategory: string
+
+  /**
+   * 本省雇主 offer 类最近一次抽选日(年-月-日;没收录 = 空串)。
+   */
+  drawLast: string
+
+  /**
+   * 社区试点名(理由里有 pilot 时胶囊写它;没有 = 空串;2026-10-12 Frank「现在有数据能知道 这个雇主愿不愿意帮忙 弄 pr 吗」「知名公司 也算 一个吧」)。
+   */
+  pilot: string
 
   /**
    * 省提名项目简称(理由里有 pnp 时胶囊用;没有 = 空串)。
@@ -559,6 +664,21 @@ export type PickRow = {
    * 截止日(ISO;没有 = 空串)。
    */
   validThrough: string
+
+  /**
+   * 具名省提名通道(没有 = 空串;2026-10-12 通道列)。
+   */
+  pnpStream: string
+
+  /**
+   * 能走省提名。
+   */
+  pnpEligible: boolean
+
+  /**
+   * 本省有省默认通道。
+   */
+  provDefault: boolean
 }
 
 /**
@@ -579,6 +699,36 @@ export type LockedPick = {
    * 省提名项目简称(没有 = 空串)。
    */
   program: string
+
+  /**
+   * 省码(通道列判省默认通道用;2026-10-12)。
+   */
+  province: string
+
+  /**
+   * 具名省提名通道(没有 = 空串;2026-10-12 通道列)。
+   */
+  pnpStream: string
+
+  /**
+   * 能走省提名。
+   */
+  pnpEligible: boolean
+
+  /**
+   * 本省有省默认通道。
+   */
+  provDefault: boolean
+
+  /**
+   * 职位名中文译名(过期当没有 = 空串;2026-10-12 Frank「隐藏的 和 显示的 要对齐啊」「上下要对齐。有 中文 灰字的 要加上」:打码行职位名也出灰字)。
+   */
+  titleZh: string
+
+  /**
+   * 职位名韩文译名。
+   */
+  titleKo: string
 }
 
 /**
@@ -719,6 +869,31 @@ export type ReasonsIn = {
    * 这一省的雇主 offer 类通道近 PICKS_DRAW_DAYS 天抽过(2026-10-11 Frank「90 天可以」;过了不出省提名理由)。
    */
   offerActive: boolean
+
+  /**
+   * 雇主办过 LMIA 外劳名额。
+   */
+  lmia: boolean
+
+  /**
+   * 符合 EE 定向类别。
+   */
+  ee: boolean
+
+  /**
+   * AIP 指定雇主。
+   */
+  aip: boolean
+
+  /**
+   * 社区试点指定雇主。
+   */
+  pilot: boolean
+
+  /**
+   * 知名公司(有维基词条)。
+   */
+  known: boolean
 }
 
 /**

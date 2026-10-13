@@ -34,7 +34,7 @@ import {
 } from './constants'
 import type {
   AskedDoneIn, GenBumpIn, QuizOpenIn,
-  AskOfIn, DivDragEvent, FileDropIn, FilePickIn, IdHandlerFn, InputChangeEvent, PdfPagesIn, PdfjsOut,
+  AskIn, AskOkIn, AskSetFn, DivDragEvent, FileDropIn, FilePickIn, IdHandlerFn, InputChangeEvent, PdfPagesIn, PdfjsOut,
   PickerIn, PreviewOfIn, ResumeActIn, ResumeActSendIn, ResumeListLoadIn, ResumeMeta, ResumeMetas, ResumeReloadFn,
   ResumeRespJson, ResumeUploadFn, ResumeUploadIn, ShowPageIn,
   ApplyViewIn, DivPointerEvent, GripIn, GripViewIn, PageTurnIn, PdfDoc, PdfZoomDrawIn, PtPairIn, WheelBindIn,
@@ -590,22 +590,8 @@ export function makePickerOf(x: PickerIn): IdHandlerFn {
 }
 
 /**
- * 造「删除」工厂:按 id 亮二次确认,顺手清掉上一次留下的报错(那句话说的是上一个操作)。
- *
- * @param x 两个落格。
- * @returns 按 id 出手柄的工厂。
- */
-export function makeAskOf(x: AskOfIn): IdHandlerFn {
-  return function askOf(id: number): () => void {
-    return function askDelete(): void {
-      x.setErr(RF_ERR_NONE)
-      x.setSure(id)
-    }
-  }
-}
-
-/**
  * 造「确认删除」工厂:服务端删成功才重拉(删的是原件,失败不能假装删了)。
+ * 2026-10-12 起它是删除确认框「删除」钮跑的真删(makeAsk 递进框里),不再挂在卡上。
  *
  * @param x 重拉与两个落格。
  * @returns 按 id 出手柄的工厂。
@@ -634,12 +620,12 @@ export function makeDefaultOf(x: ResumeActIn): IdHandlerFn {
 
 /**
  * 删除 / 设默认共用的一次请求:熄确认、发请求,成功重拉清单并清报错,失败出「没成功,稍后再试」。
+ * 2026-10-12 就地二次确认撤(删除改走确认框,框由 makeAskOk 关),这里不再熄确认。
  *
  * @param y 落格、地址与方法。
  * @returns 请求结束时 resolve。
  */
 export async function sendResumeAct(y: ResumeActSendIn): Promise<void> {
-  y.x.setSure(null)
   try {
     const r = await fetch(y.url, { method: y.method, credentials: CRED_INCLUDE })
     if (r.ok) {
@@ -668,14 +654,42 @@ export function makePreviewOf(x: PreviewOfIn): (m: ResumeMeta) => () => void {
 }
 
 /**
- * 造「取消」手柄:熄掉删除的二次确认。
+ * 造「点删除」(2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」;照 myjobs 桶 makeAsk 的形):
+ * 不直接删,先拨开删除确认框,确认了才跑真删的手柄。
  *
- * @param x 落格(只用 setSure)。
+ * @param x 拨框手柄、名字与真删手柄。
  * @returns 点击手柄。
  */
-export function makeSureClear(x: AskOfIn): () => void {
-  return function cancelSure(): void {
-    x.setSure(null)
+export function makeAsk(x: AskIn): () => void {
+  return function ask(): void {
+    x.setAsk({ name: x.name, run: x.run })
+  }
+}
+
+/**
+ * 造删除确认框「删除」钮:真删再关框。
+ *
+ * @param x 等着确认的那一次与拨框手柄。
+ * @returns 点击手柄。
+ */
+export function makeAskOk(x: AskOkIn): () => void {
+  return function askOk(): void {
+    if (x.ask != null) {
+      x.ask.run()
+    }
+    x.setAsk(null)
+  }
+}
+
+/**
+ * 造删除确认框「取消」:关框。
+ *
+ * @param setAsk 拨框手柄。
+ * @returns 点击手柄。
+ */
+export function makeAskClose(setAsk: AskSetFn): () => void {
+  return function askClose(): void {
+    setAsk(null)
   }
 }
 
@@ -1442,15 +1456,14 @@ export function makeProfileSaved(x: PfSavedIn): () => void {
 
 /**
  * 一格名字这一刻摆哪些:展开了全摆;没展开只摆前 PF_FOLD_N 个(2026-10-09 Frank「可以」)。
+ * 2026-10-12 Frank「还有 11 个 改成 展开 / 收起,和其他地方一致」:折叠换 pager 桶 FoldLine + useFold,
+ * 摆前 PF_FOLD_N 个再加已展开的个数(收起归零)。
  *
- * @param x 全部名字与展开态。
+ * @param x 全部名字与已展开个数。
  * @returns 要摆的名字。
  */
 export function pfShownOf(x: PfShownIn): PfNames {
-  if (x.open || x.names.length <= PF_FOLD_N) {
-    return x.names
-  }
-  return x.names.slice(0, PF_FOLD_N)
+  return x.names.slice(0, PF_FOLD_N + x.extra)
 }
 
 /**

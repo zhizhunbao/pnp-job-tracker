@@ -187,6 +187,17 @@ export const DAYS_90 = 90
 export const URL_CHECKOUT = '/api/stripe/checkout'
 
 /**
+ * 结账新标签页先开的空白页地址。2026-10-12 Frank「应该新 弹个 tab 出来」:点购买在点击的同步调用栈里
+ * 先开一个空白标签占住(异步拿到 URL 再开会被浏览器当弹窗拦掉),拿到 Checkout URL 再给它换地址。
+ */
+export const URL_BLANK = 'about:blank'
+
+/**
+ * 结账新标签页的打开目标(新开一个标签)。
+ */
+export const TAB_BLANK = '_blank'
+
+/**
  * Checkout 请求的方法。
  */
 export const METHOD_POST = 'POST'

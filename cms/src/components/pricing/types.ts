@@ -331,8 +331,35 @@ export type PricingBuyIn = {
 
   /**
    * 忙态的落格(等 Checkout URL 期间两枚钮都禁用)。
+   * 2026-10-12 Frank「这个为什么点击左边的 按钮,右边的也跟着变颜色」:忙态改记「正在买哪一档」,
+   * 只压暗被点的那一枚;null = 没有在飞的请求。
    */
-  setBusy: (v: boolean) => void
+  setBusy: (v: MaybePricePlan) => void
+}
+
+/**
+ * 正在发起购买的档;null = 没有在飞的 Checkout 请求。
+ */
+export type MaybePricePlan = PricePlan | null
+
+/**
+ * 结账用的新标签页;null = 被浏览器拦了没开出来。
+ */
+export type MaybeTab = Window | null
+
+/**
+ * landCheckout 的入参:先开好的标签页与拿到的 Checkout URL。
+ */
+export type LandCheckoutIn = {
+  /**
+   * 点击时先开的空白标签;null = 被拦,改在本页跳。
+   */
+  tab: MaybeTab
+
+  /**
+   * Checkout 跳转地址。
+   */
+  url: string
 }
 
 /**
@@ -607,9 +634,9 @@ export type UpgradeModalHookIn = {
  */
 export type PricingBuyPanel = {
   /**
-   * 是不是正在等 Checkout URL。
+   * 正在等 Checkout URL 的是哪一档(2026-10-12 起按档记,只压暗被点的那一枚);null = 没有。
    */
-  busy: boolean
+  busy: MaybePricePlan
 
   /**
    * 发起一档购买。
@@ -741,4 +768,24 @@ export type PlanSelectIn = {
    * 落选中档。
    */
   set: (plan: PricePlan) => void
+}
+
+/**
+ * makeCardPick 的入参(2026-10-12 Frank「这个应该卡片也能点」)。
+ */
+export type CardPickIn = {
+  /**
+   * 档位。
+   */
+  plan: PricePlan
+
+  /**
+   * 购买手柄。
+   */
+  onBuy: BuyFn
+
+  /**
+   * 这一档正在跳转。
+   */
+  busy: boolean
 }

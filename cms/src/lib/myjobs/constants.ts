@@ -74,6 +74,16 @@ export const P_FRESH = 'fresh'
 export const FRESH_ON = '1'
 
 /**
+ * 查询参数名:要删的那一条(今日推荐给职位 id,我的投递给投递 id;2026-10-12 操作列加「删除」)。
+ */
+export const P_ID = 'id'
+
+/**
+ * 错误体:没带 id 或 id 不合形。
+ */
+export const E_NO_ID = 'id'
+
+/**
  * 省提名加分要「雇主 offer 类通道近多少天抽过」(2026-10-11 Frank「OINP 很长时间没有捞人了」→「90 天可以」;
  * 最近一次抽选日由数据层挂在 provinces.info.offerDrawLast,SQL.MYJOBS_PICKS 的 $4)。
  */
@@ -119,6 +129,31 @@ export const WHY_SAVED = 'saved'
  * 推荐理由码:和他真发出去的投递同一职业(完整 5 位 NOC;胶囊「和你投过的同类」;2026-10-11 立,草稿 / 待投不算)。
  */
 export const WHY_APPLIED = 'applied'
+
+/**
+ * 理由码:雇主办过 LMIA 外劳名额(2026-10-12 Frank「整点有吸引力的 bullets」)。
+ */
+export const WHY_LMIA = 'lmia'
+
+/**
+ * 理由码:符合 EE 定向类别。
+ */
+export const WHY_EE = 'ee'
+
+/**
+ * 理由码:AIP 指定雇主。
+ */
+export const WHY_AIP = 'aip'
+
+/**
+ * 理由码:社区试点(RCIP / FCIP)指定雇主(2026-10-12 Frank「现在有数据能知道 这个雇主愿不愿意帮忙 弄 pr 吗」「知名公司 也算 一个吧」)。
+ */
+export const WHY_PILOT = 'pilot'
+
+/**
+ * 理由码:知名公司(公司表有维基百科词条)。
+ */
+export const WHY_KNOWN = 'known'
 
 /**
  * 省码 → 省提名项目的通行简称(胶囊「能走 {简称} 雇主担保」;魁北克不属 PNP,不出)。

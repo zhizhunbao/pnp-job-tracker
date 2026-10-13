@@ -834,11 +834,6 @@ export type ResumeFilePanel = {
   err: string
 
   /**
-   * 哪一份的删除二次确认亮着(null = 都没亮)。
-   */
-  sure: number | null
-
-  /**
    * 有文件拖在上传区上方吗(上传区描边变蓝)。
    */
   dragOn: boolean
@@ -884,17 +879,12 @@ export type ResumeFilePanel = {
   replaceOf: IdHandlerFn
 
   /**
-   * 某一份的「删除」手柄(亮二次确认)。
+   * 删除确认框整机(2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」;就地二次确认随之撤)。
    */
-  askOf: IdHandlerFn
+  ask: AskPanel
 
   /**
-   * 「取消」:熄二次确认。
-   */
-  onCancel: () => void
-
-  /**
-   * 某一份的「确认删除」手柄。
+   * 某一份的真删手柄(确认框里点「删除」才跑)。
    */
   deleteOf: IdHandlerFn
 
@@ -1027,29 +1017,104 @@ export type ResumeActIn = {
   reload: ResumeReloadFn
 
   /**
-   * 熄二次确认。
-   */
-  setSure: (v: number | null) => void
-
-  /**
    * 报错落格。
    */
   setErr: (v: string) => void
 }
 
 /**
- * 「删除」亮确认工厂(makeAskOf)的入参。
+ * 等着确认的一次删除(2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」;形照 myjobs 桶,本域自声明)。
  */
-export type AskOfIn = {
+export type AskDel = {
   /**
-   * 亮哪一份的二次确认。
+   * 要删的那一份的名字(确认框正文)。
    */
-  setSure: (v: number | null) => void
+  name: string
 
   /**
-   * 报错落格(清掉上一次的)。
+   * 确认后真删的手柄。
    */
-  setErr: (v: string) => void
+  run: () => void
+}
+
+/**
+ * 拨删除确认框的函数(null = 关)。
+ */
+export type AskSetFn = (v: AskDel | null) => void
+
+/**
+ * 造「点删除先弹确认框」(makeAsk)的入参。
+ */
+export type AskIn = {
+  /**
+   * 拨确认框。
+   */
+  setAsk: AskSetFn
+
+  /**
+   * 要删的那一份的名字。
+   */
+  name: string
+
+  /**
+   * 确认后真删的手柄。
+   */
+  run: () => void
+}
+
+/**
+ * 删除确认框整机(useAskDel 出)。
+ */
+export type AskPanel = {
+  /**
+   * 等着确认的那一次(没有 = null)。
+   */
+  ask: AskDel | null
+
+  /**
+   * 拨确认框。
+   */
+  setAsk: AskSetFn
+
+  /**
+   * 点「删除」:真删并关框。
+   */
+  onOk: () => void
+
+  /**
+   * 点「取消」:关框。
+   */
+  onCancel: () => void
+}
+
+/**
+ * 删除确认框件(AskDelModal)的 props。
+ */
+export type AskDelModalIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 删除确认框整机。
+   */
+  a: AskPanel
+}
+
+/**
+ * 删除确认框「删除」钮(makeAskOk)的入参。
+ */
+export type AskOkIn = {
+  /**
+   * 等着确认的那一次。
+   */
+  ask: AskDel | null
+
+  /**
+   * 拨框手柄。
+   */
+  setAsk: AskSetFn
 }
 
 /**
@@ -2107,24 +2172,9 @@ export type PfShownIn = {
   names: PfNames
 
   /**
-   * 展开了。
+   * 已展开了几个(pager 桶 useFold 交回;0 = 收着)。
    */
-  open: boolean
-}
-
-/**
- * 一格名字的折叠态(usePfFold 交回)。
- */
-export type PfFoldPanel = {
-  /**
-   * 展开了。
-   */
-  open: boolean
-
-  /**
-   * 展开。
-   */
-  onOpen: () => void
+  extra: number
 }
 
 /**

@@ -131,6 +131,31 @@ export const WIN_MIN_W = 360
 export const WIN_MIN_H = 280
 
 /**
+ * 删除确认框记住位置的偏好键(2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」)。
+ */
+export const CONFIRM_PREF = 'confirm'
+
+/**
+ * 删除确认框宽(取窗口形最小宽)。
+ */
+export const CONFIRM_W = 360
+
+/**
+ * 删除确认框高(取窗口形最小高)。
+ */
+export const CONFIRM_H = 280
+
+/**
+ * 删除确认框「删除」钮的档(button 桶危险红)。
+ */
+export const CONFIRM_OK_KIND = 'danger'
+
+/**
+ * 删除确认框「取消」钮的档(带框次钮)。
+ */
+export const CONFIRM_CANCEL_KIND = 'secondary'
+
+/**
  * 视口边缘留白(px):拉伸的上限是视口减去它、窗口形首帧居中也先扣掉它(2026-09-28 并壳:
  * 普通弹框原上限 92vw × 85vh、浮层原先不设上限,并成一条「不许比屏幕大」)。
  */

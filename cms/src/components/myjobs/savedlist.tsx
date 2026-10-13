@@ -14,9 +14,10 @@
  */
 import { useLang } from '@/components/i18n'
 import { PeekContext } from '@/components/modal'
+import { AskDelModal } from './askdelmodal'
 import { ANCHOR_SAVED, KIND_SAVED, NOC_DESC_NONE, STAGE_ALL, URL_SAVED } from './constants'
 import { countOf, listRowsOf, savedColsOf } from './functions'
-import { useLazyTitles, useMyJobs, useScrollSaved } from './hooks'
+import { useAskDel, useLazyCompanies, useLazyTitles, useMyJobs, useScrollSaved } from './hooks'
 import { JobList } from './joblist'
 import { Section } from './section'
 import type { MyJobsListIn } from './types'
@@ -32,6 +33,8 @@ export function SavedList({ t, plan }: MyJobsListIn) {
   const [lang] = useLang()
   const p = useMyJobs({ url: URL_SAVED })
   const titles = useLazyTitles({ items: p.items, lang })
+  const cos = useLazyCompanies({ items: p.items, lang })
+  const del = useAskDel()
   useScrollSaved(p.items != null)
   if (p.items == null) {
     return null
@@ -51,11 +54,14 @@ export function SavedList({ t, plan }: MyJobsListIn) {
     setItems: p.setItems,
     lang,
     titles,
+    cos,
+    setAsk: del.setAsk,
   })
   return (
     <Section title={t('fav.title')} count={countOf(p.items.length)} anchor={ANCHOR_SAVED}>
       <JobList rows={rows} cols={savedColsOf({ t })} empty={<div className={css.note}>{t('sj.empty')}</div>} />
       <PeekContext plan={plan} nocDesc={NOC_DESC_NONE} />
+      <AskDelModal t={t} a={del} />
     </Section>
   )
 }

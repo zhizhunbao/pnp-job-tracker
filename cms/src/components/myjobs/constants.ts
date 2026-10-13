@@ -243,52 +243,49 @@ export const PLAIN_KIND = 'ghost'
 export const NOC_DESC_NONE = []
 
 /**
- * 今日推荐接口(2026-10-10 批 2;后接 `?prov=` 浏览器按时区预选的省码)。
+ * 列身份:推荐原因。
  */
-export const URL_PICKS = '/api/myjobs/picks?prov='
+export const COL_WHY = 'why'
 
 /**
- * 今日推荐接口「不用当天缓存、现算一份」的尾巴(2026-10-11「进我的求职先弹五题」:答完档案重拉要按新答案推)。
+ * 我的投递「删除」接口(后接投递 id;草稿真删、已发出的只藏起)。
  */
-export const URL_PICKS_FRESH = '&fresh=1'
+export const URL_APPLIED_DEL = '/api/myjobs/applied?id='
 
 /**
- * 推荐理由码 → 胶囊词条(顺序由服务端定;认不得的码不出)。
+ * 今日推荐先列几条,其余点「显示更多」再列(2026-10-12 Frank「这两个要不要合成一个 然后点击显示更多,列出来这个收费部分」;
+ * 与免费号每天看得见的条数同数)。
  */
-export const WHY_KEYS: Record<string, string> = {
-  /**
-   * 能走省提名雇主担保。
-   */
-  pnp: 'mj.why.pnp',
-
-  /**
-   * 薪资高于本省中位。
-   */
-  wage: 'mj.why.wage',
-
-  /**
-   * 职业对口。
-   */
-  occ: 'mj.why.occ',
-
-  /**
-   * 和你收藏的同类。
-   */
-  saved: 'mj.why.saved',
-
-  /**
-   * 和你投过的同类(2026-10-11)。
-   */
-  applied: 'mj.why.applied',
-}
+export const PICKS_FIRST = 3
 
 /**
- * 理由胶囊的档(tag 桶 ok:绿)。
+ * 英文界面语(通道名英文行取词用)。
  */
-export const WHY_TAG = 'ok'
+export const LANG_EN = 'en'
+
+/**
+ * 中文界面语(公司名懒翻译名落中文格)。
+ */
+export const LANG_ZH = 'zh'
+
+/**
+ * 韩文界面语(公司名懒翻译名落韩文格)。
+ */
+export const LANG_KO = 'ko'
+
+/**
+ * 公司名懒翻:要翻的名字连成一串当依赖签名时的分隔(公司名里不会有换行)。
+ */
+export const CO_SEP = '\n'
+
+/**
+ * 通道键没有时(这一岗不走省提名)通道格出的长横。
+ */
+export const CHAN_NONE = '—'
 
 /**
  * 锁住那条的假字纹理(模糊着看不清,真的公司 / 地址 / 薪资不下发;两份轮着用)。
+ * 2026-10-12 Frank「隐藏的 和 显示的 要对齐啊」「上下要对齐。有 中文 灰字的 要加上」:地址只留假街址,后接这一行的省码(原整条多伦多地址与露出来的省对不上)。
  */
 export const LOCK_FILL = {
   /**
@@ -296,7 +293,7 @@ export const LOCK_FILL = {
    */
   even: {
     company: 'Scarborough Health Network',
-    address: '1280 Main St, Toronto, ON M5V 1A1',
+    street: '1280 Main St, ',
     salary: '$23/hr',
   },
 
@@ -305,7 +302,7 @@ export const LOCK_FILL = {
    */
   odd: {
     company: 'Humber River Health',
-    address: '2111 Finch Ave W, Toronto, ON M3N 1N1',
+    street: '2111 Finch Ave W, ',
     salary: '$24/hr',
   },
 } as const
@@ -314,6 +311,16 @@ export const LOCK_FILL = {
  * 假字纹理有几份(按条数取模轮着用)。
  */
 export const LOCK_FILL_N = 2
+
+/**
+ * 打码行的行键头(后接第几条)。
+ */
+export const LOCK_KEY_HEAD = 'lock-'
+
+/**
+ * 打码行职位格 data-lock 的值。
+ */
+export const LOCK_MARK = '1'
 
 /**
  * 推送频率下拉的两档(「不发」是下拉的空值档)。
@@ -372,13 +379,14 @@ export const UPGRADE_KIND = 'primary'
 
 /**
  * 「保存」的钮档(白底描边)。
+ * 2026-10-12 Frank「这部分是不是太靠左了。是不是调大一些放中间,参考一下 indeed」:改主钮(蓝底),照 Indeed 订阅钮。
  */
-export const SAVE_KIND = 'secondary'
+export const SAVE_KIND = 'primary'
 
 /**
- * 「取消收藏」的钮档(2026-10-10 批 2:收藏行「取消收藏」改带框次钮,16d)。
+ * 「删除」的钮档(2026-10-10 批 2:收藏行「取消收藏」改带框次钮,16d;2026-10-12 三张表操作列都加「删除」,收藏行那颗改叫「删除」)。
  */
-export const UNSAVE_KIND = 'secondary'
+export const DEL_KIND = 'secondary'
 
 /**
  * 列身份:职位。
@@ -421,9 +429,9 @@ export const COL_POSTED = 'posted'
 export const COL_DEADLINE = 'deadline'
 
 /**
- * 列身份:为什么推荐。
+ * 列身份:通道(2026-10-12 Frank「这个为什么推荐?也没有吸引力?要不改成通道列吧」,「为什么推荐」列撤)。
  */
-export const COL_WHY = 'why'
+export const COL_CHAN = 'chan'
 
 /**
  * 列身份:状态。
@@ -461,9 +469,9 @@ export const ACT_APPLY = 'apply'
 export const ACT_OPEN = 'open'
 
 /**
- * 钮身份:取消收藏。
+ * 钮身份:删除(今日推荐不再推、我的收藏取消收藏、我的投递删草稿 / 藏起已发出的)。
  */
-export const ACT_UNSAVE = 'unsave'
+export const ACT_DEL = 'del'
 
 /**
  * 链接身份:简历附件。
@@ -510,3 +518,8 @@ export const SENT_TAG = 'ok'
  * 空的懒翻表(只读投递框一行一条,不另起懒翻;库里存好的译名照出)。
  */
 export const TITLES_NONE: Record<string, string> = {}
+
+/**
+ * 只读投递框那一行不懒翻公司名(给空表;2026-10-12)。
+ */
+export const COS_NONE: Record<string, string> = {}

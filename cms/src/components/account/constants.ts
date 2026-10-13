@@ -695,9 +695,10 @@ export const URL_PROFILE = '/api/quiz/profile'
 export const PF_FOLD_N = 5
 
 /**
- * 折起来时那一行「还有 N 个」的词条键。
+ * 一格名字折起来时展开钮的量词词条键(2026-10-12 Frank「还有 11 个 改成 展开 / 收起,和其他地方一致」:原「还有 N 个」词条 pf.more 撤,
+ * 换 pager 桶 FoldLine 的「展开 N 个 ▾」,量词照全站「个」)。
  */
-export const PF_MORE_KEY = 'pf.more'
+export const PF_FOLD_UNIT_KEY = 'fold.u.item'
 
 /**
  * 档案卡卡头(「求职」)的词条键。

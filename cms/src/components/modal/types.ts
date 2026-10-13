@@ -885,3 +885,38 @@ export type ZOfIn = {
    */
   open: number
 }
+
+/**
+ * 删除确认框(ConfirmModal)的 props(2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」)。
+ */
+export type ConfirmIn = {
+  /**
+   * 标题栏字(如「确认删除?」)。
+   */
+  title: string
+
+  /**
+   * 正文(要删的是哪一条;不需要时给空串)。
+   */
+  body: string
+
+  /**
+   * 「删除」钮的字。
+   */
+  okText: string
+
+  /**
+   * 「取消」钮的字。
+   */
+  cancelText: string
+
+  /**
+   * 点「删除」。
+   */
+  onOk: () => void
+
+  /**
+   * 点「取消」、× 或遮罩。
+   */
+  onCancel: () => void
+}

@@ -15,9 +15,10 @@
  */
 import { useLang } from '@/components/i18n'
 import { PeekContext } from '@/components/modal'
+import { AskDelModal } from './askdelmodal'
 import { ANCHOR_APPLIED, KIND_APPLIED, NOC_DESC_NONE, URL_APPLIED } from './constants'
 import { appliedColsOf, byStageOf, countOf, listRowsOf, makePick, stagePillsOf } from './functions'
-import { useLazyTitles, useMyJobs } from './hooks'
+import { useAskDel, useLazyCompanies, useLazyTitles, useMyJobs } from './hooks'
 import { JobList } from './joblist'
 import { Section } from './section'
 import { StageBar } from './stagebar'
@@ -34,6 +35,8 @@ export function AppliedList({ t, plan }: MyJobsListIn) {
   const [lang] = useLang()
   const p = useMyJobs({ url: URL_APPLIED })
   const titles = useLazyTitles({ items: p.items, lang })
+  const cos = useLazyCompanies({ items: p.items, lang })
+  const del = useAskDel()
   if (p.items == null) {
     return null
   }
@@ -52,6 +55,8 @@ export function AppliedList({ t, plan }: MyJobsListIn) {
     setItems: p.setItems,
     lang,
     titles,
+    cos,
+    setAsk: del.setAsk,
   })
   const empty = <div className={css.note}>{t('mj.emptyApplied')}</div>
   return (
@@ -62,6 +67,7 @@ export function AppliedList({ t, plan }: MyJobsListIn) {
       )}
       <JobList rows={rows} cols={appliedColsOf({ t })} empty={empty} />
       <PeekContext plan={plan} nocDesc={NOC_DESC_NONE} />
+      <AskDelModal t={t} a={del} />
     </Section>
   )
 }

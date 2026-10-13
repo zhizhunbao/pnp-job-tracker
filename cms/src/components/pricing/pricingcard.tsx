@@ -15,7 +15,7 @@
  */
 import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { PRO_PERKS, URL_ACCOUNT } from './constants'
+import { PLAN_30, PLAN_90, PRO_PERKS, URL_ACCOUNT } from './constants'
 import { usePricingBuy } from './hooks'
 import { PriceSell } from './pricesell'
 import { PricingPro30 } from './pricingpro30'
@@ -38,8 +38,8 @@ export function PricingCard({ t, loggedIn, pro, onRegister }: PricingCardIn) {
   return (
     <div>
       <div className={css.grid}>
-        <PricingPro90 t={t} busy={buy.busy} onBuy={buy.onBuy} />
-        <PricingPro30 t={t} busy={buy.busy} onBuy={buy.onBuy} />
+        <PricingPro90 t={t} busy={buy.busy === PLAN_90} onBuy={buy.onBuy} />
+        <PricingPro30 t={t} busy={buy.busy === PLAN_30} onBuy={buy.onBuy} />
       </div>
       <div className={css.perksHead}>{t('price.incl')}</div>
       <ul className={css.perks}>{perks}</ul>

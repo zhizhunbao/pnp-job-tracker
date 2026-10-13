@@ -13,15 +13,19 @@
  * 全站弹框只剩这一个壳;窗口形的页眉左块 ModalHead、小标副段 KickerNote、窗口图标钮 ModalBtn 出桶;
  * 白卡机器 useFrame 也出桶(职位描述弹框在外层起一台交给 Modal,重新翻译整块重挂内容时位置尺寸不丢)。
  * CARD / iconBtnS / MODAL_RADIUS / MODAL_SHADOW 零消费者,随之退役。
+ * 2026-10-12 多一件删除确认框 ConfirmModal(Frank「所有删除按钮不要直接删,先弹框确认是否删除」)。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
 export { overlayCls, peekJobById } from './functions'
 export { useEscClose, useFrame, useIsNarrow, useLayerStack, useOverlayClose, usePeekBus, usePeekInbox } from './hooks'
+export { ConfirmModal } from './confirmmodal'
 export { KickerNote } from './kickernote'
 export { Modal } from './modal'
 export { ModalBtn } from './modalbtn'
 export { ModalHead } from './modalhead'
 export { PeekContext } from './peekcontext'
-export type { FrameOut, LayerStackOut, ModalIn, ModalWin, OverlayHandlers, PeekCtxMsg, PeekMsg } from './types'
+export type {
+  ConfirmIn, FrameOut, LayerStackOut, ModalIn, ModalWin, OverlayHandlers, PeekCtxMsg, PeekMsg,
+} from './types'

@@ -5,6 +5,9 @@
  * (右上角提示 + 铃铛是批 5 的事,到时并过去)。
  * 2026-10-11 批 5 并过去了:已保存 / 确认信已发出 / 确认信没发出 / 没存上 改右上角提示(toast 桶);
  * 下面那一行只剩「邮箱格式不对」(要他改框的错贴在框旁边)。
+ * 2026-10-12 Frank「这部分是不是太靠左了。是不是调大一些放中间,参考一下 indeed」:照 Indeed 的邮件订阅块 ——
+ * 居中一列、上一行大字说明、下一行频率 / 邮箱 / 主钮「保存」排一排(「发到」两字撤,邮箱框本身说明了),
+ * 钮改主钮常规号。
  *
  * @author Frank
  * @time 2026-10-10 10:00:00
@@ -39,18 +42,17 @@ export function Push({ t }: PushIn) {
   }
   return (
     <Section title={t('mj.push')} count={null} anchor={ANCHOR_PUSH}>
-      <div className={css.pushRow}>
-        <span>{t('mj.pushRow')}</span>
-        <Select value={p.freq} onChange={p.setFreq} opts={PUSH_FREQS} all={t('mj.freqOff')}
-          labelOf={makeFreqLabel(t)} />
+      <div className={css.pushBox}>
+        <div className={css.pushLead}>{t('mj.pushRow')}</div>
+        <div className={css.pushRow}>
+          <Select value={p.freq} onChange={p.setFreq} opts={PUSH_FREQS} all={t('mj.freqOff')}
+            labelOf={makeFreqLabel(t)} />
+          <Input value={p.email} onChange={p.setEmail} maxLength={EMAIL_MAX} ariaLabel={t('mj.pushTo')}
+            className={css.pushEmail} />
+          <Button kind={SAVE_KIND} onClick={p.onSave} disabled={p.busy}>{t('mj.pushSave')}</Button>
+        </div>
+        {p.note !== TEXT_NONE && <div className={css.pushNote}>{p.note}</div>}
       </div>
-      <div className={css.pushRow}>
-        <span>{t('mj.pushTo')}</span>
-        <Input value={p.email} onChange={p.setEmail} maxLength={EMAIL_MAX} ariaLabel={t('mj.pushTo')}
-          className={css.pushEmail} />
-        <Button kind={SAVE_KIND} sm onClick={p.onSave} disabled={p.busy}>{t('mj.pushSave')}</Button>
-      </div>
-      {p.note !== TEXT_NONE && <div className={css.pushNote}>{p.note}</div>}
     </Section>
   )
 }

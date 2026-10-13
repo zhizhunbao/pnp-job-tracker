@@ -100,7 +100,6 @@
   font-size: 13px;
 }
 
-
 /*
  * ===== 2026-10-10 批 2「我的求职」四段:分区白卡、今日推荐、更多推荐、新岗推送 =====
  */
@@ -133,92 +132,10 @@
 }
 
 /*
- * 「更多推荐」卡头:标题 + 右上「升级 Pro」。
- * 2026-10-10 Frank「这个删了吧」「蓝框 也去掉」:撤「升级 Pro 解锁:」与 pro 胶囊,卡头去蓝底,照其他分区卡的卡头。
+ * 通道格没有通道时的长横(2026-10-12 通道列)。
  */
-.moreHead {
-  display: flex;
-
-  flex-wrap: wrap;
-
-  align-items: center;
-
-  gap: 8px;
-}
-
-/*
- * 「更多推荐 N」。
- */
-.moreTitle {
-  font-size: 13.5px;
-
-  font-weight: 700;
-
-  color: #111827;
-}
-
-/*
- * 网页端右上「升级 Pro」(顶到右端)。
- */
-.moreBtnWide {
-  margin-left: auto;
-}
-
-/*
- * 手机端整宽「升级 Pro」(网页端不出)。
- */
-.moreBtnNarrow {
-  display: none;
-}
-
-/*
- * 锁住的两条。
- */
-.lockedList {
-  display: flex;
-
-  flex-direction: column;
-
-  margin-top: 6px;
-}
-
-/*
- * 锁住的一条:职位名 / 公司 / 地址 / 薪资 / 理由 横排。
- */
-.locked {
-  display: grid;
-
-  grid-template-columns: minmax(140px, 1.2fr) minmax(0, 1fr) minmax(0, 1.3fr) 56px minmax(0, 1.6fr);
-
-  gap: 6px 16px;
-
-  align-items: center;
-
-  padding: 10px 0;
-
-  border-top: 1px solid var(--border);
-
-  font-size: 13px;
-}
-
-/*
- * 锁住那条的职位名(看得见,蓝字不可点)。
- */
-.lockedTitle {
-  font-weight: 600;
-
-  color: var(--accent, #2563eb);
-}
-
-/*
- * 锁住那条的理由胶囊(不占推荐行的 why 格,就在本行最后一列;能折行)。
- */
-.lockedWhy {
-  display: flex;
-
-  flex-wrap: wrap;
-
-  gap: 6px;
+.chanNone {
+  color: var(--text3);
 }
 
 /*
@@ -237,37 +154,67 @@
 }
 
 /*
- * 新岗推送的一行(字 + 控件)。
+ * 新岗推送整块(2026-10-12 Frank「这部分是不是太靠左了。是不是调大一些放中间,参考一下 indeed」):居中一列、限宽。
+ */
+.pushBox {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 14px;
+
+  max-width: 640px;
+
+  margin: 12px auto 8px;
+
+  text-align: center;
+}
+
+/*
+ * 上一行大字说明。
+ */
+.pushLead {
+  font-size: 17px;
+
+  font-weight: 600;
+
+  color: #111827;
+}
+
+/*
+ * 下一行:频率 / 邮箱 / 保存排一排,居中。
  */
 .pushRow {
   display: flex;
 
   flex-wrap: wrap;
 
+  justify-content: center;
+
   align-items: center;
 
   gap: 10px;
 
-  margin-top: 8px;
+  width: 100%;
 
-  font-size: 13.5px;
+  font-size: 14px;
 }
 
 /*
- * 「发到」邮箱框(网页端限宽,Frank「网页端这个太长了吧」)。
+ * 邮箱框吃满剩下的宽(网页端原限宽 300px,Frank「网页端这个太长了吧」;居中限宽后由外框 640px 管)。
  */
 .pushEmail {
-  width: 300px;
+  flex: 1;
 
-  max-width: 100%;
+  min-width: 220px;
 }
 
 /*
  * 保存后的那一句(灰)。
  */
 .pushNote {
-  margin-top: 8px;
-
   font-size: 13px;
 
   color: var(--text2);
@@ -277,53 +224,12 @@
  * 手机:「更多推荐」换 bullet + 整宽钮;邮箱框占满。
  */
 @media (width <= 640px) {
-  /*
-   * 网页端那排「解锁:」与胶囊、右上钮都不出。
-   */
-  .moreBtnWide {
-    display: none;
-  }
 
   /*
-   * 卡头去底色,只剩标题。
-   */
-  .moreHead {
-    padding: 0;
-
-    background: none;
-  }
-
-  /*
-   * 锁住的一条竖排。
-   */
-  .locked {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-
-  /*
-   * 整宽「升级 Pro」。
-   */
-  .moreBtnNarrow {
-    display: block;
-
-    margin-top: 10px;
-  }
-
-  /*
-   * 整宽钮撑满。
-   */
-  .moreBtnNarrow > * {
-    width: 100%;
-  }
-
-  /*
-   * 邮箱框占满剩下的宽。
+   * 邮箱框占满一整行(频率与保存钮各占一行的两头)。
    */
   .pushEmail {
-    flex: 1;
-
-    width: auto;
+    flex-basis: 100%;
   }
 }
 
@@ -361,7 +267,10 @@
 .actList {
   display: inline-flex;
 
-  flex-wrap: wrap;
+  /*
+   * 一排不折行(2026-10-12 Frank「这个不要换行吧」:「打开」「删除」上下两行)。
+   */
+  flex-wrap: nowrap;
 
   gap: 6px;
 
@@ -571,4 +480,41 @@
   margin-top: 8px;
   color: var(--text2);
   font-size: 13px;
+}
+
+/*
+ * 今日推荐表格外框:给「升级 Pro」大钮当定位框(2026-10-12 Frank「隐藏的 和 显示的 要对齐啊」「上下要对齐。有 中文 灰字的 要加上」)。
+ */
+.lockWrap {
+  position: relative;
+}
+
+/*
+ * 「升级 Pro」大钮:从第一条打码行上沿盖到表底,钮在正中,垫一层半透明白底。
+ */
+.lockCover {
+  position: absolute;
+
+  right: 0;
+
+  bottom: 0;
+
+  left: 0;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  background: rgb(255 255 255 / 55%);
+}
+
+/*
+ * 「升级 Pro」大钮(2026-10-12 Frank「这个按钮部分 也没改 看着有点单薄」):加宽、蓝色投影,压在打码行上要压得住。
+ */
+.lockBtn {
+  min-width: 220px;
+
+  box-shadow: 0 8px 24px rgb(37 99 235 / 35%);
 }

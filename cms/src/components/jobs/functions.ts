@@ -70,7 +70,7 @@ import {
   IMM_COLS, LANG_EN, DISPOSITION_MAP, GROUP_PNP,
 } from './constants'
 import type {
-  AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, SsrTransIn,
+  AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, BelowMedIn, SsrTransIn,
   AuthFromUrlOut, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, BoardPnpFacts, CardTitlesIn,
   CardsClsIn, HomeGate, LoadTipIn, PnpChipIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone,
   CellView, CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn,
@@ -801,6 +801,7 @@ function jobCellOf(x: CellIn): CellView | null {
  * 薪资族:帖面薪资、折算年薪、当地中位时薪/年薪、vs 中位。
  * 颜色跟 salaryText 走,不跟 salary(原文)走:护栏判定源头填错的行(如「$295,000.00 daily」)
  * 原文有值但我们不敢显示 —— 标成绿色等于说「这条有可信薪资」,是误导。2026-08-05 拍板。
+ * 2026-10-12 Frank「低于中位 不要显示 绿色」:帖面薪资低于本省本职业中位的不上绿(belowMedOf),高于、持平或没有中位照旧绿。
  *
  * @param x 列键、库行、上下文。
  * @returns 展示行;不是本族给 null。
@@ -810,7 +811,11 @@ function salaryCellOf(x: CellIn): CellView | null {
     if (hasText(x.j.salaryText) === false) {
       return blankView({ tone: TONE.muted, title: x.j.salary })
     }
-    return blankView({ text: x.j.salaryText, tone: TONE.money, title: x.j.salary })
+    let tone: CellTone = TONE.money
+    if (belowMedOf({ annual: x.j.salaryAnnual, med: x.j.wageMedAnnual })) {
+      tone = TONE.plain
+    }
+    return blankView({ text: x.j.salaryText, tone, title: x.j.salary })
   }
   if (x.k === COL.salaryYr) {
     return kMoneyOf({ v: x.j.salaryAnnual, tone: TONE.money })
@@ -5483,6 +5488,20 @@ function immMoneyOf(x: ImmMoneyIn): string {
     return TEXT_NONE
   }
   return SIGN_DOLLAR + String(Math.round(x.annual / K_DIVISOR)) + UNIT_K_YEAR
+}
+
+/**
+ * 帖面薪资低于本省本职业中位(2026-10-12 Frank「低于中位 不要显示 绿色」;年薪对年薪,同「vs 当地中位」列口径;缺一格算不低)。
+ * 职位板薪资格与「职位信息」卡薪资共用,低于的不上绿。
+ *
+ * @param x 折算年薪与中位年薪。
+ * @returns 低于 = true。
+ */
+export function belowMedOf(x: BelowMedIn): boolean {
+  if (x.annual == null || x.med == null || x.med === 0) {
+    return false
+  }
+  return x.annual < x.med
 }
 
 /**

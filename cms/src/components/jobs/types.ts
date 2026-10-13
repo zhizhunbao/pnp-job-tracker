@@ -6690,3 +6690,18 @@ export type FilterGateDoneIn = {
    */
   refresh: () => void
 }
+
+/**
+ * belowMedOf 的入参(2026-10-12 Frank「低于中位 不要显示 绿色」)。
+ */
+export type BelowMedIn = {
+  /**
+   * 折算年薪(没有是 null)。
+   */
+  annual: number | null
+
+  /**
+   * 本省本职业中位年薪(没有是 null)。
+   */
+  med: number | null
+}

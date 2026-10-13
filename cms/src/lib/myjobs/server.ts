@@ -8,5 +8,7 @@
  */
 
 export { getPicks, loadPicks, picksViewOf } from './functions'
-export { myjobsAppliedRoute, myjobsCountRoute, myjobsPicksRoute, myjobsSavedRoute } from './routes'
+export {
+  myjobsAppliedDeleteRoute, myjobsAppliedGetRoute, myjobsCountRoute, myjobsPicksDeleteRoute, myjobsPicksGetRoute, myjobsSavedRoute,
+} from './routes'
 export type { PickRow } from './types'

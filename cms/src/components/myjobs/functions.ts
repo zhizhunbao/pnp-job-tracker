@@ -15,25 +15,24 @@ import { openApply } from '@/components/apply'
 import { cssOf } from '@/components/css'
 import { lazyTitleOf, titleSubOf } from '@/components/jobtitle'
 import { hoursNameOf, placeHrefOf, placeSubOf, termNameOf } from '@/components/name'
-import { homeProvinceOf } from '@/lib/location'
 import { ymd } from '@/lib/time'
 import { ActCell } from './actcell'
 import { AddrCell } from './addrcell'
 import { AppliedOnCell } from './appliedoncell'
+import { ChanCell } from './chancell'
 import { CompanyCell } from './companycell'
 import {
-  ACT_APPLY, ACT_CONT, ACT_COVER, ACT_OPEN, ACT_RESUME, ACT_UNSAVE, ANCHOR_SAVED, CLS_SEP, COL_ACT, COL_ADDR,
-  COL_APPLIED_ON, COL_COMPANY, COL_DEADLINE, COL_HOURS, COL_PAY, COL_POSTED, COL_SAVED_ON, COL_STATUS, COL_TERM,
-  COL_TITLE,
-  COL_WHY, CRED_INCLUDE, FILE_COVER_TAIL, FILE_RESUME_TAIL, JOB_HREF_HEAD,
-  KIND_APPLIED, KIND_SAVED, LOCK_FILL, LOCK_FILL_N, METHOD_DELETE, OPEN_KIND, PRIMARY_KIND, QP_SEC, SEC_FAVS, STAGES,
-  STAGE_ALL, STAGE_FILTERS, ST_DRAFT, TEXT_NONE, TITLES_NONE, UNSAVE_KIND, URL_APPLY_HEAD, URL_FILE_HEAD, URL_PICKS,
-  URL_PICKS_FRESH,
-  URL_SAVED_JOB_HEAD, WHY_KEYS, WHY_TAG,
+  ACT_APPLY, ACT_CONT, ACT_COVER, ACT_DEL, ACT_OPEN, ACT_RESUME, ANCHOR_SAVED, CLOSED_TAG, CLS_SEP, COL_ACT, COL_ADDR,
+  COL_APPLIED_ON, COL_CHAN, COL_COMPANY, COL_DEADLINE, COL_HOURS, COL_PAY, COL_POSTED, COL_SAVED_ON, COL_STATUS,
+  COL_TERM, COL_TITLE, COL_WHY, COS_NONE, CRED_INCLUDE, DEL_KIND, FILE_COVER_TAIL, FILE_RESUME_TAIL, JOB_HREF_HEAD,
+  KIND_APPLIED, KIND_SAVED, LANG_EN, LANG_KO, LANG_ZH, LOCK_FILL, LOCK_FILL_N, LOCK_KEY_HEAD, METHOD_DELETE,
+  OPEN_KIND, PRIMARY_KIND, QP_SEC, SEC_FAVS, STAGES, STAGE_ALL, STAGE_FILTERS, ST_DRAFT, TEXT_NONE, TITLES_NONE,
+  URL_APPLIED_DEL, URL_APPLY_HEAD, URL_FILE_HEAD, URL_SAVED_JOB_HEAD,
 } from './constants'
 import { DeadlineCell } from './deadlinecell'
 import { HoursCell } from './hourscell'
 import { PayCell } from './paycell'
+import { chanNameOf, makeDismiss, whyTagsOf } from './recommend'
 import { PostedCell } from './postedcell'
 import { SavedOnCell } from './savedoncell'
 import { TagsCell } from './tagscell'
@@ -41,10 +40,10 @@ import { TermCell } from './termcell'
 import { openAppView } from './thread'
 import { TitleCell } from './titlecell'
 import type {
-  ActBtn, ByStageIn, CellRowIn, CellRowsIn, ColsIn, FileHrefForIn, FileHrefIn, FlagIn, ItemByIdIn, ListRow,
-  LoadMyJobsIn, LoadPicksIn, LockFill, LockedItem, MaybeStageDef, MjCol, MyJobItem, MyJobsRespJson, PickIn, PickItem,
-  PickRowIn, PickRowsIn, PicksFact, PicksRespJson, PillClickIn, ReasonTextsIn, StagePill, StagePillsIn, TagItem,
-  TitleSubForIn, UnsaveIn, ViewRowIn,
+  ActBtn, AskDel, AskIn, AskOkIn, AskSetFn, ByStageIn, CellRowIn, CellRowsIn, CoAliasForIn, CoLandIn, ColsIn,
+  FileHrefForIn, FileHrefIn, FlagIn, ItemByIdIn, LazyCompaniesIn, ListRow, LoadMyJobsIn, LockedRowIn, LockedRowsIn,
+  LockFill, MaybeStageDef, MjCol, MyJobItem, MyJobsRespJson, PickIn, PickRowIn, PickRowsIn, PillClickIn, RemoveIn,
+  StagePill, StagePillsIn, TagItem, TitleSubForIn, ViewRowIn,
 } from './types'
 import css from './myjobs.module.css'
 
@@ -85,13 +84,13 @@ export function makeLoadMyJobs(x: LoadMyJobsIn): () => Promise<void> {
 }
 
 /**
- * 造「取消收藏」的手柄:先本地删掉这一行,再 DELETE 收藏记录;服务端没删成(网络、非 2xx)就退回原样。
+ * 造「删除」的手柄(原「取消收藏」;2026-10-12 我的投递也用):先本地删掉这一行,再 DELETE;服务端没删成(网络、非 2xx)就退回原样。
  *
- * @param x 哪一行、原清单与落格。
+ * @param x 哪一行、DELETE 地址、原清单与落格。
  * @returns 点击手柄。
  */
-export function makeUnsave(x: UnsaveIn): () => Promise<void> {
-  return async function unsave(): Promise<void> {
+export function makeRemove(x: RemoveIn): () => Promise<void> {
+  return async function remove(): Promise<void> {
     const rest: MyJobItem[] = []
     for (const it of x.items) {
       if (it.id !== x.id) {
@@ -100,7 +99,7 @@ export function makeUnsave(x: UnsaveIn): () => Promise<void> {
     }
     x.setItems(rest)
     try {
-      const r = await fetch(URL_SAVED_JOB_HEAD + x.id, { method: METHOD_DELETE, credentials: CRED_INCLUDE })
+      const r = await fetch(x.url, { method: METHOD_DELETE, credentials: CRED_INCLUDE })
       if (r.ok === false) {
         x.setItems(x.items)
       }
@@ -156,6 +155,8 @@ export function listRowsOf(x: CellRowsIn): ListRow[] {
       setItems: x.setItems,
       lang: x.lang,
       titles: x.titles,
+      cos: x.cos,
+      setAsk: x.setAsk,
     }))
   }
   return out
@@ -187,10 +188,12 @@ export function listRowOf(x: CellRowIn): ListRow {
     titleSub: titleSubFor({
       title: it.title, titleZh: it.titleZh, titleKo: it.titleKo, titles: x.titles, lang: x.lang,
     }),
-    closedText: closedTextOf(x),
+    chanEn: TEXT_NONE,
+    chanSub: TEXT_NONE,
+    locked: false,
     company: it.company,
-    companyZh: it.companyZh,
-    companyKo: it.companyKo,
+    companyZh: coAliasFor({ own: it.companyZh, name: it.company, cos: x.cos, want: LANG_ZH, lang: x.lang }),
+    companyKo: coAliasFor({ own: it.companyKo, name: it.company, cos: x.cos, want: LANG_KO, lang: x.lang }),
     companySlug: it.companySlug,
     address: it.address,
     addressHref: placeHrefOf(it.address),
@@ -226,17 +229,22 @@ export function appliedOnOf(x: CellRowIn): string {
 }
 
 /**
- * 胶囊:投递状态一枚(筛到单一状态时不再重复挂;只收藏没投的没有)。
+ * 胶囊:投递状态一枚(筛到单一状态时不再重复挂;只收藏没投的没有)+ 已下架一枚。
+ * 2026-10-12 Frank「已下架这个应该有个状态列」:「已下架」从职位名下面挪进状态列(收藏表加状态列)。
  *
  * @param x 这一行、当前筛选与取词函数。
  * @returns 胶囊。
  */
 export function tagsOf(x: CellRowIn): TagItem[] {
+  const out: TagItem[] = []
   const def = stageDefOf(x.item.stage)
-  if (def == null || x.filter !== STAGE_ALL) {
-    return []
+  if (def != null && x.filter === STAGE_ALL) {
+    out.push({ text: x.t(def.labelKey), variant: def.tag })
   }
-  return [{ text: x.t(def.labelKey), variant: def.tag }]
+  if (x.item.closed) {
+    out.push({ text: x.t('mj.closed'), variant: CLOSED_TAG })
+  }
+  return out
 }
 
 /**
@@ -244,6 +252,7 @@ export function tagsOf(x: CellRowIn): TagItem[] {
  * 我的收藏 能投的「投递」(主钮)、投过的「打开」,外加「取消收藏」(带框次钮,16d)。
  * 2026-10-10 批 3(1.6 / 2.6):我的投递发出去了的行「打开」不再去职位页,改就地弹只读投递框(职位信息 / 雇主回复 / 投递内容 / 邮件预览);
  * 我的收藏投过的行「打开」照旧去职位页。
+ * 2026-10-12 Frank「这个所有的 操作列 都应该有个 删除 按钮」:两张清单每行末尾一颗「删除」(收藏行原「取消收藏」改叫「删除」)。
  *
  * @param x 哪张清单、这一行与取词函数。
  * @returns 钮。
@@ -259,10 +268,13 @@ export function actsOf(x: CellRowIn): ActBtn[] {
   } else if (jobHrefOf(x.item.jobId) !== TEXT_NONE && x.item.stage !== TEXT_NONE) {
     out.push({ key: ACT_OPEN, text: x.t('mj.open'), kind: OPEN_KIND, onClick: null, href: jobHrefOf(x.item.jobId) })
   }
-  const unsave = unsaveOf(x)
-  if (unsave != null) {
-    out.push({ key: ACT_UNSAVE, text: x.t('mj.unsave'), kind: UNSAVE_KIND, onClick: unsave, href: TEXT_NONE })
-  }
+  out.push({
+    key: ACT_DEL,
+    text: x.t('mj.del'),
+    kind: DEL_KIND,
+    href: TEXT_NONE,
+    onClick: makeAsk({ setAsk: x.setAsk, name: x.item.title, run: removeOf(x) }),
+  })
   return out
 }
 
@@ -286,29 +298,18 @@ export function filesOf(x: CellRowIn): ActBtn[] {
 }
 
 /**
- * 「已下架」字样。
- *
- * @param x 这一行与取词函数。
- * @returns 字样;在架给空串。
- */
-export function closedTextOf(x: CellRowIn): string {
-  if (x.item.closed) {
-    return x.t('mj.closed')
-  }
-  return TEXT_NONE
-}
-
-/**
- * 取消收藏的手柄(只有我的收藏那张清单有)。
+ * 「删除」的手柄(2026-10-12 三张表操作列都加「删除」):我的收藏删收藏记录(原「取消收藏」),
+ * 我的投递删草稿 / 藏起已发出的(服务端分辨)。
  *
  * @param x 哪张清单、这一行与落格。
- * @returns 手柄;我的求职给 null。
+ * @returns 手柄。
  */
-export function unsaveOf(x: CellRowIn): (() => void) | null {
+export function removeOf(x: CellRowIn): () => void {
+  let url = URL_SAVED_JOB_HEAD + x.item.id
   if (x.kind === KIND_APPLIED) {
-    return null
+    url = URL_APPLIED_DEL + x.item.id
   }
-  return makeUnsave({ id: x.item.id, items: x.items, setItems: x.setItems })
+  return makeRemove({ id: x.item.id, url, items: x.items, setItems: x.setItems })
 }
 
 /**
@@ -535,26 +536,39 @@ export function titleSubFor(x: TitleSubForIn): string {
 }
 
 /**
- * 网页端「今日推荐」的列(16d):职位 / 公司 / 地址 / 薪资 / 工时 / 雇佣期 / 发布日期 / 截止日期 / 为什么推荐 / 操作。
+ * 网页端「今日推荐」的列(16d):职位 / 公司 / 地址 / 薪资 / 工时 / 雇佣期 / 发布日期 / 截止日期 / 通道 / 推荐原因 / 操作。
+ * 2026-10-12 Frank「还是需要一个 推荐原因的列 然后 bullets 显示 好处」:通道后面加回「推荐原因」列,一行一条 bullet;
+ * 同日「bullets 都改成 简洁的胶囊呢? 最好是 别换行」:改一个好处一枚胶囊(tag 桶 ok 档,胶囊本身不折行),走现成的胶囊格。
+ * 2026-10-12 Frank「这个为什么推荐?也没有吸引力?要不改成通道列吧」:「为什么推荐」列换成「通道」(照职位板省提名格同一判据)。
+ * 同日 Frank「bullets 显示 全职 长期。这两个字段就没必要显示了吧」:推荐表不出工时 / 雇佣期两列(收藏 / 投递两张表照旧)。
  *
  * @param x 取词函数。
  * @returns 列。
  */
 export function pickColsOf(x: ColsIn): MjCol<ListRow>[] {
-  return baseColsOf(x).concat([
+  const base: MjCol<ListRow>[] = []
+  for (const c of baseColsOf(x)) {
+    if (c.key !== COL_HOURS && c.key !== COL_TERM) {
+      base.push(c)
+    }
+  }
+  return base.concat([
+    { key: COL_CHAN, label: x.t('mj.col.chan'), render: ChanCell },
     { key: COL_WHY, label: x.t('mj.col.why'), render: TagsCell },
     { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true },
   ])
 }
 
 /**
- * 网页端「我的收藏」的列:职位 / 公司 / 地址 / 薪资 / 工时 / 雇佣期 / 发布日期 / 截止日期 / 收藏于 / 操作。
+ * 网页端「我的收藏」的列:职位 / 公司 / 地址 / 薪资 / 工时 / 雇佣期 / 发布日期 / 截止日期 / 状态 / 收藏日期 / 操作。
+ * 2026-10-12 加状态列(投递状态 + 已下架;Frank「已下架这个应该有个状态列」)。
  *
  * @param x 取词函数。
  * @returns 列。
  */
 export function savedColsOf(x: ColsIn): MjCol<ListRow>[] {
   return baseColsOf(x).concat([
+    { key: COL_STATUS, label: x.t('mj.col.status'), render: TagsCell },
     { key: COL_SAVED_ON, label: x.t('mj.col.savedOn'), render: SavedOnCell, nowrap: true },
     { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true },
   ])
@@ -594,67 +608,6 @@ function baseColsOf(x: ColsIn): MjCol<ListRow>[] {
 }
 
 /**
- * 造「拉一次推荐」:带上浏览器按时区预选的省(他没答所在省时服务端用它);失败拨「拉失败了」。
- * 2026-10-11:这一页答过档案(fresh)就让服务端不用当天缓存、按新答案现算。
- *
- * @param x 两个落格与要不要现算。
- * @returns 拉推荐的函数。
- */
-export function makeLoadPicks(x: LoadPicksIn): () => Promise<void> {
-  return async function loadPicks(): Promise<void> {
-    let url = URL_PICKS + homeProvinceOf()
-    if (x.fresh) {
-      url += URL_PICKS_FRESH
-    }
-    try {
-      const r = await fetch(url, { credentials: CRED_INCLUDE })
-      if (r.ok === false) {
-        x.setFailed(true)
-        return
-      }
-      x.setData(toPicksFact(await r.json() as PicksRespJson))
-    } catch {
-      x.setFailed(true)
-    }
-  }
-}
-
-/**
- * 推荐回包 → 推荐(行构造器:缺席按空读)。
- *
- * @param d 回包。
- * @returns 推荐。
- */
-export function toPicksFact(d: PicksRespJson): PicksFact {
-  let picks: PickItem[] = []
-  if (d.picks != null) {
-    picks = d.picks
-  }
-  let more = 0
-  if (d.more != null) {
-    more = d.more
-  }
-  let locked: LockedItem[] = []
-  if (d.locked != null) {
-    locked = d.locked
-  }
-  return { picks, more, locked }
-}
-
-/**
- * 推荐清单里看得见的那几条(还没拉到给 null;懒翻表的入参)。
- *
- * @param data 推荐整包。
- * @returns 看得见的推荐;没拉到给 null。
- */
-export function picksOf(data: PicksFact | null): PickItem[] | null {
-  if (data == null) {
-    return null
-  }
-  return data.picks
-}
-
-/**
  * 推荐的展示行。
  *
  * @param x 推荐、界面语与取词函数。
@@ -663,7 +616,9 @@ export function picksOf(data: PicksFact | null): PickItem[] | null {
 export function pickRowsOf(x: PickRowsIn): ListRow[] {
   const out: ListRow[] = []
   for (const item of x.items) {
-    out.push(pickRowOf({ item, lang: x.lang, t: x.t, titles: x.titles }))
+    out.push(pickRowOf({
+      item, lang: x.lang, t: x.t, titles: x.titles, cos: x.cos, data: x.data, setData: x.setData, setAsk: x.setAsk,
+    }))
   }
   return out
 }
@@ -671,18 +626,22 @@ export function pickRowsOf(x: PickRowsIn): ListRow[] {
 /**
  * 一行推荐的展示行:同收藏 / 投递的展示行,胶囊是理由(tag 桶 ok 档,只放真的),操作只有主钮「投递」(就地弹投递框),
  * 手机卡右上是发布日期。
+ * 2026-10-12:理由胶囊撤,换通道两行名(通道列);操作加「删除」(这一岗以后不再推)。
+ * 2026-10-12 Frank「这个是 我的 推荐模块」「改吧」:推荐只推全职长期的岗,工时 / 雇佣期两格不带(表格不出这两列、手机卡不出那一行)。
  *
  * @param x 这一行、界面语与取词函数。
  * @returns 展示行。
  */
 export function pickRowOf(x: PickRowIn): ListRow {
   const it = x.item
-  const hours = hoursNameOf({ v: it.hours, lang: x.lang, t: x.t })
-  const term = termNameOf({ v: it.term, lang: x.lang, t: x.t })
-  const tags: TagItem[] = []
-  for (const text of reasonTextsOf({ reasons: it.reasons, program: it.program, t: x.t })) {
-    tags.push({ text, variant: WHY_TAG })
-  }
+  const chan = chanNameOf({
+    province: it.province,
+    pnpStream: it.pnpStream,
+    pnpEligible: it.pnpEligible,
+    provDefault: it.provDefault,
+    lang: x.lang,
+    t: x.t,
+  })
   const posted = ymdOf(it.datePosted)
   return {
     key: String(it.id),
@@ -691,47 +650,48 @@ export function pickRowOf(x: PickRowIn): ListRow {
     titleSub: titleSubFor({
       title: it.title, titleZh: it.titleZh, titleKo: it.titleKo, titles: x.titles, lang: x.lang,
     }),
-    closedText: TEXT_NONE,
+    chanEn: chan.en,
+    chanSub: chan.sub,
+    locked: false,
     company: it.company,
-    companyZh: it.companyZh,
-    companyKo: it.companyKo,
+    companyZh: coAliasFor({ own: it.companyZh, name: it.company, cos: x.cos, want: LANG_ZH, lang: x.lang }),
+    companyKo: coAliasFor({ own: it.companyKo, name: it.company, cos: x.cos, want: LANG_KO, lang: x.lang }),
     companySlug: it.companySlug,
     address: it.address,
     addressHref: placeHrefOf(it.address),
     addressSub: placeSubOf({ cityZh: it.cityZh, cityKo: it.cityKo, province: it.province, lang: x.lang, t: x.t }),
     salary: it.salary,
-    hoursEn: hours.en,
-    hoursSub: hours.sub,
-    termEn: term.en,
-    termSub: term.sub,
+    hoursEn: TEXT_NONE,
+    hoursSub: TEXT_NONE,
+    termEn: TEXT_NONE,
+    termSub: TEXT_NONE,
     posted,
     deadline: ymdOf(it.validThrough),
     savedOn: TEXT_NONE,
     appliedOn: TEXT_NONE,
     cornerDate: posted,
-    tags,
+    tags: whyTagsOf({
+      reasons: it.reasons,
+      abovePct: it.abovePct,
+      lmiaPositions: it.lmiaPositions,
+      eeCategory: it.eeCategory,
+      pilot: it.pilot,
+      t: x.t,
+    }),
     acts: [
       { key: ACT_APPLY, text: x.t('mj.apply'), kind: PRIMARY_KIND, onClick: makeOpenApply(it.id), href: TEXT_NONE },
+      {
+        key: ACT_DEL,
+        text: x.t('mj.del'),
+        kind: DEL_KIND,
+        href: TEXT_NONE,
+        onClick: makeAsk({
+          setAsk: x.setAsk, name: it.title, run: makeDismiss({ id: it.id, data: x.data, setData: x.setData }),
+        }),
+      },
     ],
     files: [],
   }
-}
-
-/**
- * 理由码 → 胶囊的字(认不得的码不出;省提名那枚带项目简称)。
- *
- * @param x 理由码、项目简称与取词函数。
- * @returns 胶囊的字。
- */
-export function reasonTextsOf(x: ReasonTextsIn): string[] {
-  const out: string[] = []
-  for (const code of x.reasons) {
-    const key = WHY_KEYS[code]
-    if (key != null) {
-      out.push(x.t(key, { p: x.program }))
-    }
-  }
-  return out
 }
 
 /**
@@ -812,6 +772,8 @@ export function viewRowOf(x: ViewRowIn): ListRow {
     setItems: keepItems,
     lang: x.lang,
     titles: TITLES_NONE,
+    cos: COS_NONE,
+    setAsk: keepAsk,
   })
 }
 
@@ -852,4 +814,183 @@ export function fileHrefFor(x: FileHrefForIn): string {
     }
   }
   return TEXT_NONE
+}
+
+/**
+ * 只读投递框那一行不弹删除确认框(那里没有删除钮;给个什么都不做的手柄)。
+ *
+ * @param _v 不用。
+ * @returns 无。
+ */
+function keepAsk(_v: AskDel | null): void {
+  return
+}
+
+/**
+ * 打码行(2026-10-12 Frank「隐藏的 和 显示的 要对齐啊」「上下要对齐。有 中文 灰字的 要加上」):免费号「显示更多」后锁住的推荐,并进同一张表 —— 职位名(带灰字)与通道照常出,
+ * 公司 / 地址 / 薪资是模糊假字(真值不下发;地址 = 假街址 + 这一行的省码),没有操作钮。
+ *
+ * @param x 锁住的一条、第几条、界面语、取词函数与懒翻表。
+ * @returns 展示行。
+ */
+export function lockedRowOf(x: LockedRowIn): ListRow {
+  const it = x.item
+  const fill = lockFillOf(x.i)
+  const chan = chanNameOf({
+    province: it.province,
+    pnpStream: it.pnpStream,
+    pnpEligible: it.pnpEligible,
+    provDefault: it.provDefault,
+    lang: x.lang,
+    t: x.t,
+  })
+  return {
+    key: LOCK_KEY_HEAD + String(x.i),
+    jobId: null,
+    title: it.title,
+    titleSub: titleSubFor({
+      title: it.title, titleZh: it.titleZh, titleKo: it.titleKo, titles: x.titles, lang: x.lang,
+    }),
+    chanEn: chan.en,
+    chanSub: chan.sub,
+    locked: true,
+    company: fill.company,
+    companyZh: TEXT_NONE,
+    companyKo: TEXT_NONE,
+    companySlug: TEXT_NONE,
+    address: fill.street + it.province,
+    addressHref: TEXT_NONE,
+    addressSub: TEXT_NONE,
+    salary: fill.salary,
+    hoursEn: TEXT_NONE,
+    hoursSub: TEXT_NONE,
+    termEn: TEXT_NONE,
+    termSub: TEXT_NONE,
+    posted: TEXT_NONE,
+    deadline: TEXT_NONE,
+    savedOn: TEXT_NONE,
+    appliedOn: TEXT_NONE,
+    cornerDate: TEXT_NONE,
+    tags: [],
+    acts: [],
+    files: [],
+  }
+}
+
+/**
+ * 打码行(只在免费号点了「显示更多」时出)。
+ *
+ * @param x 推荐整包、出不出、界面语、取词函数与懒翻表。
+ * @returns 展示行;不出给空列。
+ */
+export function lockedRowsOf(x: LockedRowsIn): ListRow[] {
+  const out: ListRow[] = []
+  if (x.show === false) {
+    return out
+  }
+  for (const [i, item] of x.data.locked.entries()) {
+    out.push(lockedRowOf({ item, i, lang: x.lang, t: x.t, titles: x.titles }))
+  }
+  return out
+}
+
+/**
+ * 一格公司译名(2026-10-12 Frank「这个也需要中文灰字」):库里存了用库里的;没存且这一格正是界面语,用懒翻回来的;都没有给空串。
+ *
+ * @param x 库里的、公司名、懒翻表、这一格的语言与界面语。
+ * @returns 译名。
+ */
+export function coAliasFor(x: CoAliasForIn): string {
+  if (x.own !== TEXT_NONE || x.want !== x.lang) {
+    return x.own
+  }
+  const got = x.cos[x.name]
+  if (got == null) {
+    return TEXT_NONE
+  }
+  return got
+}
+
+/**
+ * 清单里要懒翻的公司名:英文界面不翻;库里这一语没存译名的才翻,同名只翻一次。
+ *
+ * @param x 清单行与界面语。
+ * @returns 公司名。
+ */
+export function untranslatedCosOf(x: LazyCompaniesIn): string[] {
+  const out: string[] = []
+  if (x.items == null || x.lang === LANG_EN) {
+    return out
+  }
+  for (const it of x.items) {
+    let own = it.companyKo
+    if (x.lang === LANG_ZH) {
+      own = it.companyZh
+    }
+    if (own === TEXT_NONE && it.company !== TEXT_NONE && out.includes(it.company) === false) {
+      out.push(it.company)
+    }
+  }
+  return out
+}
+
+/**
+ * 造「懒翻回来一家」:译名并进译名表(换一份新表,别的公司照抄)。
+ *
+ * @param x 公司名与改表手柄。
+ * @returns 落格手柄。
+ */
+export function makeCoLand(x: CoLandIn): (alias: string | null) => void {
+  return function land(alias: string | null): void {
+    if (alias == null) {
+      return
+    }
+    x.setCos(function withOne(prev: Record<string, string>): Record<string, string> {
+      const next: Record<string, string> = {}
+      for (const [k, v] of Object.entries(prev)) {
+        next[k] = v
+      }
+      next[x.name] = alias
+      return next
+    })
+  }
+}
+
+/**
+ * 造「点删除」(2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」):不直接删,先拨开删除确认框,确认了才跑真删的手柄。
+ *
+ * @param x 拨框手柄、名字与真删手柄。
+ * @returns 点击手柄。
+ */
+export function makeAsk(x: AskIn): () => void {
+  return function ask(): void {
+    x.setAsk({ name: x.name, run: x.run })
+  }
+}
+
+/**
+ * 造删除确认框「删除」钮:真删再关框。
+ *
+ * @param x 等着确认的那一次与拨框手柄。
+ * @returns 点击手柄。
+ */
+export function makeAskOk(x: AskOkIn): () => void {
+  return function askOk(): void {
+    if (x.ask != null) {
+      x.ask.run()
+    }
+    x.setAsk(null)
+  }
+}
+
+/**
+ * 造删除确认框「取消」:关框。
+ *
+ * @param setAsk 拨框手柄。
+ * @returns 点击手柄。
+ */
+export function makeAskClose(setAsk: AskSetFn): () => void {
+  return function askClose(): void {
+    setAsk(null)
+  }
 }

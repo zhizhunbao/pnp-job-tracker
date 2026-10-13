@@ -3039,7 +3039,7 @@ export const MYJOBS_APPLIED = `SELECT a.id, a.job_id, a.job_title AS title, a.co
      FROM applications a LEFT JOIN jobs j ON j.id = a.job_id
      LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
      LEFT JOIN companies c ON c.id = j.company_id
-     WHERE a.user_id = $1 AND a.status IN ('draft', 'sent', 'replied', 'bounced')
+     WHERE a.user_id = $1 AND a.status IN ('draft', 'sent', 'replied', 'bounced') AND a.hidden_at IS NULL
      ORDER BY (a.status = 'draft') DESC, COALESCE(a.sent_at, a.updated_at) DESC LIMIT $2`
 
 /**
@@ -3072,6 +3072,16 @@ export const MYJOBS_SAVED = `SELECT ${MYJOBS_FROM}
  * ① 档案答了「想做的工作」(want_g 非空)就只按它选岗,收藏 / 投过的两组置空、不参与选岗;② 没答才看行为:投递只算真发出去的
  * (status sent / replied,草稿 / queued 不算)与收藏;③ 比对改完整 5 位 NOC(原 left(noc, 4) 让 73112 油漆工撞上 73110 屋顶工 / 73111 玻璃工)。
  * 上面「NOC 前 4 位」「职业单元组」两处作废。理由:want 命中 = 职业对口、收藏命中 = 和你收藏的同类、投递命中 = 和你投过的同类(lib/myjobs reasonsOf)。
+ * 2026-10-12 Frank「这个为什么推荐?也没有吸引力?要不改成通道列吧」:多取具名通道 pnp_stream 与「本省有没有省默认通道」prov_default
+ * (pathways 三十来行,同 DIMS_PATHWAYS 口径),前端照职位板省提名格同一个判据(pnp 桶 pnpChannelKeyOf)写通道名;
+ * 同日操作列加「删除」:点过删除的岗(pick_dismissed)不再推。
+ * 同日 Frank「这个通道也太扯淡了 还推荐」→ 选「改推正在抽签的省」:雇主 offer 类近 $4 天没抽过的省(stale,现为安省 —— 旧通道 4-30 后撤、
+ * 新 Ontario Workforce Priority 至今未发邀请)的岗一律不推;他所在省正是这种省时,改推近 $4 天抽过的省(fresh)里能走省提名的岗
+ * (搬省冲着省提名去);所在省没收录到抽选(SK 等,不知道 ≠ 没抽)照旧推本省。
+ * 同日 Frank「还是需要一个 推荐原因的列 然后 bullets 显示 好处」:多取高出本省同职业中位的百分比 above_pct(两边任一没有是 NULL)。
+ * 同日「整点有吸引力的 bullets」:再取雇主 LMIA 外劳名额(companies.lmia_positions)、EE 定向类别、AIP 指定雇主、本省雇主 offer 类最近抽选日(draw_last)。
+ * 2026-10-12 Frank「这个是 我的 推荐模块」「改吧」:推荐只推全职长期的岗(工时 full 且雇佣期 permanent;没标的也不推 —— 各省雇主担保类通道基本都要全职长期 offer)。
+ * 同日「这个雇主愿不愿意帮忙弄 pr」「知名公司也算一个」:再取社区试点指定雇主(pilot / pilot_employer)与「有维基词条」(known = companies.wiki_url 非空)。
  */
 export const MYJOBS_PICKS = `WITH want AS (
        SELECT ARRAY(SELECT DISTINCT w FROM jsonb_array_elements_text(
@@ -3090,22 +3100,36 @@ export const MYJOBS_PICKS = `WITH want AS (
          FROM users u CROSS JOIN want WHERE u.id = $1),
      stale AS (
        SELECT code FROM provinces
-        WHERE info->>'offerDrawLast' IS NOT NULL AND (info->>'offerDrawLast')::date < current_date - $4::int)
+        WHERE info->>'offerDrawLast' IS NOT NULL AND (info->>'offerDrawLast')::date < current_date - $4::int),
+     fresh AS (
+       SELECT code FROM provinces
+        WHERE info->>'offerDrawLast' IS NOT NULL AND (info->>'offerDrawLast')::date >= current_date - $4::int)
      SELECT j.id, j.title, j.title_zh, j.title_ko, j.trans_v, c.name AS company_name, c.alias_zh, c.alias_ko,
             c.slug AS company_slug, j.address, j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province,
             j.salary_text, j.date_posted, j.pnp_eligible, (j.salary_annual > j.wage_med_annual) AS above_med,
-            j.employment_hours, j.employment_term, j.valid_through,
+            CASE WHEN j.salary_annual > 0 AND j.wage_med_annual > 0
+              THEN round((j.salary_annual / j.wage_med_annual - 1) * 100)::int END AS above_pct,
+            j.employment_hours, j.employment_term, j.valid_through, c.lmia_positions, j.ee_category, j.aip,
+            j.pilot, j.pilot_employer, (COALESCE(c.wiki_url, '') <> '') AS known,
+            pr.info->>'offerDrawLast' AS draw_last,
             (j.noc = ANY(me.applied_g)) AS occ_applied, (j.noc = ANY(me.saved_g)) AS occ_saved,
-            (j.noc = ANY(me.want_g)) AS occ_want, (st.code IS NULL) AS offer_active
+            (j.noc = ANY(me.want_g)) AS occ_want, (st.code IS NULL) AS offer_active, j.pnp_stream,
+            EXISTS (SELECT 1 FROM pathways p WHERE p.province = j.province AND p.is_default AND p.status <> 'closed') AS prov_default
        FROM me CROSS JOIN jobs j
        LEFT JOIN companies c ON c.id = j.company_id
        LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
        LEFT JOIN stale st ON st.code = j.province
+       LEFT JOIN provinces pr ON pr.code = j.province
       WHERE j.status = 'open' AND COALESCE(j.apply_email, '') <> '' AND j.is_dup IS NOT TRUE
-        AND (me.prov = '' OR j.province = me.prov)
+        AND j.employment_hours = 'full' AND j.employment_term = 'permanent'
+        AND NOT EXISTS (SELECT 1 FROM stale s WHERE s.code = j.province)
+        AND (me.prov = '' OR j.province = me.prov
+             OR (EXISTS (SELECT 1 FROM stale s WHERE s.code = me.prov) AND j.pnp_eligible
+                 AND j.province IN (SELECT code FROM fresh)))
         AND (cardinality(me.saved_g) + cardinality(me.applied_g) + cardinality(me.want_g) = 0
              OR j.noc = ANY(me.saved_g || me.applied_g || me.want_g))
         AND NOT EXISTS (SELECT 1 FROM applications a WHERE a.user_id = $1 AND a.job_id = j.id)
+        AND NOT EXISTS (SELECT 1 FROM pick_dismissed pd WHERE pd.user_id = $1 AND pd.job_id = j.id)
         AND NOT EXISTS (SELECT 1 FROM bounced_emails b WHERE b.email = lower(j.apply_email))
         AND NOT EXISTS (SELECT 1 FROM applications a2 WHERE a2.user_id = $1 AND lower(a2.employer_email) = lower(j.apply_email)
                         AND a2.status IN ('sending', 'sent', 'replied') AND a2.updated_at > now() - interval '30 days')
@@ -3117,8 +3141,24 @@ export const MYJOBS_PICKS = `WITH want AS (
 /**
  * 本人碰过的岗(投递表里任何状态;今日推荐命中缓存后,当天新投 / 新开草稿的岗从推荐里剔掉)。$1=用户 id。
  * applications_user_job_uq 管这条。
+ * 2026-10-12 今日推荐加「删除」:点过删除的岗(pick_dismissed 主键管)也算碰过。
  */
-export const MYJOBS_TOUCHED_IDS = `SELECT job_id AS id FROM applications WHERE user_id = $1 AND job_id IS NOT NULL`
+export const MYJOBS_TOUCHED_IDS = `SELECT job_id AS id FROM applications WHERE user_id = $1 AND job_id IS NOT NULL
+     UNION SELECT job_id AS id FROM pick_dismissed WHERE user_id = $1`
+
+/**
+ * 今日推荐「删除」:这一岗以后不再推(2026-10-12,docs/sql/myjobs-delete-20261012.sql)。$1=用户 id,$2=职位 id。
+ */
+export const MYJOBS_PICK_DISMISS = `INSERT INTO pick_dismissed (user_id, job_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`
+
+/**
+ * 我的投递「删除」(2026-10-12 Frank 选「各删各的」):草稿真删;已发出的只藏起(投递记录与雇主回信留库)。
+ * $1=用户 id,$2=投递 id。
+ */
+export const MYJOBS_APPLIED_DELETE = `WITH d AS (
+       DELETE FROM applications WHERE id = $2 AND user_id = $1 AND status = 'draft' RETURNING id)
+     UPDATE applications SET hidden_at = now()
+      WHERE id = $2 AND user_id = $1 AND status <> 'draft' AND hidden_at IS NULL`
 
 // =========================================================================
 // 32. 站内投递(代投;2026-10-07 立,设计稿 docs/design/投递页-B2-实施方案-20261005.md 末节「10-05 拍板」;

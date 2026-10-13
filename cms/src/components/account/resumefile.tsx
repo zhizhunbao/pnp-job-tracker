@@ -5,10 +5,12 @@
  * 下面一行报错;点「预览」开弹框。节标题不另出:横排页签上已经写着「我的简历」。
  * 2026-10-08 照 AIApply 重设计:「添加简历」那一行挪到卡片上方,卡片改成网格(电脑一行三张)。
  * 2026-10-10 批 2(外层大白卡拆掉,CLAUDE.md「页面与弹框正文一律分区卡」):本段自己成一张分区卡(cardMd + 卡头 mcardHead)。
+ * 2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」:卡上点「删除」拨开删除确认框(AskDelModal),挂在本节。
  *
  * @author Frank
  * @time 2026-10-06 12:18:31
  */
+import { AskDelModal } from './askdelmodal'
 import { CARD_HEAD_CLS, CARD_MD_CLS, RF_ERR_NONE } from './constants'
 import { thumbSrcOf } from './functions'
 import { useResumeFile } from './hooks'
@@ -24,7 +26,7 @@ import css from './account.module.css'
  * 渲染「我的简历」一节。
  *
  * @param props 取词函数。
- * @returns 上传区或卡片清单、报错行、预览弹框。
+ * @returns 上传区或卡片清单、报错行、预览弹框、删除确认框。
  */
 export function ResumeFile({ t }: ResumeFileIn) {
   const p = useResumeFile()
@@ -40,6 +42,7 @@ export function ResumeFile({ t }: ResumeFileIn) {
       {p.preview != null && (
         <ResumePreview src={thumbSrcOf(p.preview)} title={p.preview.fileName} onClose={p.onPreviewClose} t={t} />
       )}
+      <AskDelModal t={t} a={p.ask} />
     </div>
   )
 }

@@ -9,6 +9,7 @@
 //       ⑥ 职位删了:没有链接、没有「打开」;
 //    2026-10-10 批 3(1.6 / 2.6):我的投递发出去了的行「打开」从职位页链接改成钮,点了就地弹只读投递框(地址栏 `?app=<投递行 id>`);
 //       职位删了的行照样有「打开」(发出那一封与雇主回复还在)—— ④⑥ 改断言。探针:actsOf 投递行回到职位页链接 → ④ 红。
+//       2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」:⑦⑪ 点「删除」先弹确认框(mj.delAsk),框里再点「删除」才发 DELETE。
 //       ⑦ 我的收藏有「取消收藏」:先本地删、发 DELETE /api/saved-jobs/<id>;服务端没删成就退回;我的求职没有这颗钮;
 //       ⑧ 照职位板:公司表里有的公司名是钮、点了叠开公司弹框(标题是公司名),没有的是纯文字;
 //       ⑨ 草稿行:日期「最近改于」、没附件、操作「继续」去投递区;收藏有邮箱在架没投过的行「打开」换「投递」;
@@ -24,6 +25,9 @@
 //       计数为 0 的不出(⑩ 改断言)。探针:stagePillsOf 不藏 0 → ⑩ 红。同日 Frank「删吧」:待投(queued)行接口不再列,⑩ 那条待投用例撤。
 // 同日 lead 对效果图:网页端改通用表格(行 = tr)、手机一岗一张卡;地点改「一行完整地址 + 市译名灰字」整行一个地图链(原市 / 省两链撤),
 //       日期改裸年-月-日(发布 / 收藏于 / 投递于各一列),投递表也出薪资;首字母块撤 → ④⑤⑥ / ⑨ / 收藏 ④⑤⑨ 改断言。
+// 2026-10-12 Frank「这个所有的 操作列 都应该有个 删除 按钮」「已下架这个应该有个状态列」:收藏行「取消收藏」改叫「删除」(mj.del),
+//       投递行也有「删除」(DELETE /api/myjobs/applied?id=<投递行 id>,⑪);「已下架」从职位名下面挪进状态列胶囊(收藏表加状态列)。
+//       探针:removeOf 投递行仍打 /api/saved-jobs → ⑪ 红;tagsOf 不挂已下架 → ⑤ 红。
 // 探针:makeUnsave 失败不退回 → ⑦「失败退回」红;closedTextOf 不认下架 → ⑤ 红;byStageOf 不筛 → ⑩ 红;makeLoadMyJobs 失败不拨 failed → ③ 红。
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -238,19 +242,19 @@ describe('我的收藏', () => {
     expect(e.textContent).toContain('2026-10-03')   // 收藏于
     expect(e.textContent).not.toContain('ap.applied')
     expect(links(e)).toEqual([['truck washer', '/jobs/103'], ['Winnipeg, MB', MAP('Winnipeg, MB')]])
-    expect(buttons(e)).toEqual(['mj.apply', 'mj.unsave'])
+    expect(buttons(e)).toEqual(['mj.apply', 'mj.del'])
     window.history.replaceState(null, '', '/account?sec=favs')
     await click(e, 'mj.apply')   // 2026-10-09 A 批:就地弹投递框
     expect(new URLSearchParams(window.location.search).get('apply')).toBe('103')
     const a = rowOf(el, 'light duty cleaner')
-    expect(buttons(a)).toEqual(['mj.unsave'])   // 投过的收藏行:「打开」是链、没有「投递」(收藏表网页端不设状态列)
+    expect(buttons(a)).toEqual(['mj.del'])   // 投过的收藏行:「打开」是链、没有「投递」
     expect(links(a)).toEqual([
       ['light duty cleaner', '/jobs/101'], ['Clean Co', '/companies/clean-co'], ['Winnipeg, MB', MAP('Winnipeg, MB')],
       ['mj.open', '/jobs/101'],
     ])
     const b = rowOf(el, 'Cook')
     expect(links(b)).toEqual([['Steinbach, MB', MAP('Steinbach, MB')]])
-    expect(buttons(b)).toEqual(['mj.unsave'])
+    expect(buttons(b)).toEqual(['mj.del'])
   })
 
   it('⑦ 取消收藏发 DELETE,成功后那一张没了', async () => {
@@ -260,11 +264,37 @@ describe('我的收藏', () => {
     })
     const el = await mount(SavedList)
     await act(async () => {
-      Array.from(rowOf(el, 'truck washer').querySelectorAll('button')).find((x) => x.textContent === 'mj.unsave')?.click()
+      Array.from(rowOf(el, 'truck washer').querySelectorAll('button')).find((x) => x.textContent === 'mj.del')?.click()
+    })
+    expect(document.body.textContent).toContain('mj.delAsk')   // 2026-10-12 先弹确认框,还没删
+    expect(rowOf(el, 'truck washer')).not.toBeNull()
+    await act(async () => {
+      Array.from(document.querySelectorAll('button')).filter((x) => x.textContent === 'mj.del').pop()?.click()
     })
     await flush()
     expect(calls).toContain('DELETE /api/saved-jobs/9')
     expect(rowOf(el, 'truck washer')).toBeNull()
+    expect(rowOf(el, 'light duty cleaner')).not.toBeNull()
+  })
+
+  it('⑪ 投递行「删除」发 DELETE /api/myjobs/applied?id=,成功后那一行没了', async () => {
+    const calls = server({
+      'GET /api/myjobs/applied': { status: 200, body: { items: [A, B] } },
+      'DELETE /api/myjobs/applied?id=8': { status: 200, body: { ok: true } },
+    })
+    const el = await mount(AppliedList)
+    expect(buttons(rowOf(el, 'Cook'))).toContain('mj.del')
+    await act(async () => {
+      Array.from(rowOf(el, 'Cook').querySelectorAll('button')).find((x) => x.textContent === 'mj.del')?.click()
+    })
+    expect(document.body.textContent).toContain('mj.delAsk')   // 2026-10-12 先弹确认框,还没删
+    expect(rowOf(el, 'Cook')).not.toBeNull()
+    await act(async () => {
+      Array.from(document.querySelectorAll('button')).filter((x) => x.textContent === 'mj.del').pop()?.click()
+    })
+    await flush()
+    expect(calls).toContain('DELETE /api/myjobs/applied?id=8')
+    expect(rowOf(el, 'Cook')).toBeNull()
     expect(rowOf(el, 'light duty cleaner')).not.toBeNull()
   })
 
@@ -275,7 +305,12 @@ describe('我的收藏', () => {
     })
     const el = await mount(SavedList)
     await act(async () => {
-      Array.from(rowOf(el, 'truck washer').querySelectorAll('button')).find((x) => x.textContent === 'mj.unsave')?.click()
+      Array.from(rowOf(el, 'truck washer').querySelectorAll('button')).find((x) => x.textContent === 'mj.del')?.click()
+    })
+    expect(document.body.textContent).toContain('mj.delAsk')   // 2026-10-12 先弹确认框,还没删
+    expect(rowOf(el, 'truck washer')).not.toBeNull()
+    await act(async () => {
+      Array.from(document.querySelectorAll('button')).filter((x) => x.textContent === 'mj.del').pop()?.click()
     })
     await flush()
     expect(rowOf(el, 'truck washer')).not.toBeNull()
@@ -289,7 +324,7 @@ describe('我的收藏', () => {
     const el = await mount(SavedList)
     // 2026-10-09 N6 批:公司名换 name 桶 CompanyName —— 有公司页的是 /companies/<slug> 链(Ctrl 点新标签开整页),原先是钮
     expect(links(rowOf(el, 'light duty cleaner'))).toContainEqual(['Clean Co', '/companies/clean-co'])
-    expect(buttons(rowOf(el, 'light duty cleaner'))).toEqual(['mj.unsave'])
+    expect(buttons(rowOf(el, 'light duty cleaner'))).toEqual(['mj.del'])
     expect(rowOf(el, 'truck washer').textContent).toContain('Wash Ltd')
     expect(links(rowOf(el, 'truck washer')).map((x) => x[0])).not.toContain('Wash Ltd')
     // 2026-10-09 N 批:公司框改由全站骨架上的 PeekHost 画,本页只往弹框总线上推一层 —— 断言推出去的那一层

@@ -14,12 +14,13 @@ import {
   CLS_SEP, CRED_INCLUDE, DAYS_30, DAYS_90, EVENT_CHECKOUT, EVENT_PAY_CLICK, EVENT_PRICING_OPEN, EVENT_SHOT_CLICK,
   EVENT_UPGRADE_OPEN, FROM_RE, HDR_CONTENT_TYPE, KIND_DIRECT, LANG_ZH, METHOD_POST,
   MIME_JSON, PCT_FULL, PER_30_DIV, PLAN_30, PLAN_90, PRICE_CURRENCY_RE, PRICE_DECIMALS, PRICE_DIGITS_RE,
-  PRICE_DISPLAY_DEFAULT, PRICE_SEP, P_FROM, TEXT_NONE, URL_CHECKOUT, URL_SHOT_EN,
+  PRICE_DISPLAY_DEFAULT, PRICE_SEP, P_FROM, TAB_BLANK, TEXT_NONE, URL_BLANK, URL_CHECKOUT, URL_SHOT_EN,
   URL_SHOT_ZH, WIDE_GAP,
 } from './constants'
 import type {
+  CardPickIn,
   BuyClsIn, BuyFn, CardClsIn, CheckoutRespJson, CheckoutUrlOfIn, ClickFn,
-  FlagSetIn, FromKindOfIn, Per30In, PerDayOfIn, PerLabelIn, PickedPriceIn, PlanPickIn,
+  FlagSetIn, FromKindOfIn, LandCheckoutIn, MaybeTab, Per30In, PerDayOfIn, PerLabelIn, PickedPriceIn, PlanPickIn,
   PlanSelectIn, Price, PriceAmountOfIn, PriceCaps, PriceCurrencyOfIn, PricePlan, PriceTexts, PricingBuyIn,
   PricingShotOfIn, SavePctOfIn, TrackCheckoutIn, TrackPayClickIn, UpBuyClsIn, UpCardClsIn, UpgradeBuyIn,
 } from './types'
@@ -214,6 +215,8 @@ export function clientCapsOf(): PriceCaps {
  * E5-07 §3.4 漏斗第 4 步:pay-click 必须在登录判断**之前**发 —— 未登录点了也是付费意向,
  * 放到后面等于把「点了但没注册」这段整个漏掉(checkout 只在已登录时发,两个事件不重复)。
  * 未登录就此打住,先开注册弹框;已登录才进忙态发请求,拿到 url 就跳,拿不到就退出忙态。
+ * 2026-10-12 Frank「这个为什么点击左边的 按钮,右边的也跟着变颜色」:忙态记成被点的那一档,只压暗那一枚;
+ * 同日「应该新 弹个 tab 出来」:点击当下先开空白标签,拿到 url 给它换地址,拿不到关掉它;本页不走,所以跳完退出忙态。
  *
  * @param x 登录态、注册出口与忙态落格。
  * @returns 发起一档购买的手柄。
@@ -225,36 +228,82 @@ export function makePricingBuy(x: PricingBuyIn): BuyFn {
       x.onRegister()
       return
     }
-    x.setBusy(true)
+    const tab = openCheckoutTab()
+    x.setBusy(plan)
     trackCheckout({ plan })
     const url = await checkoutUrlOf({ plan, back: TEXT_NONE })
     if (url === TEXT_NONE) {
-      x.setBusy(false)
+      closeCheckoutTab(tab)
+      x.setBusy(null)
       return
     }
-    window.location.href = url
+    landCheckout({ tab, url })
+    x.setBusy(null)
   }
 }
 
 /**
  * 造升级弹框里那条购买流。本弹框只出现在**已登录**上下文(未登录的升级入口先走注册框),
  * 所以这里不再判登录,拿不到 Checkout URL 就出话术 —— 不静默降级。
+ * 2026-10-12 Frank「应该新 弹个 tab 出来」:同价卡那条,点击当下先开空白标签,拿到 url 给它换地址,拿不到关掉它再出话术。
  *
  * @param x 取词函数与忙态、话术两格落格。
  * @returns 发起一档购买的手柄。
  */
 export function makeUpgradeBuy(x: UpgradeBuyIn): BuyFn {
   return async function buy(plan: PricePlan): Promise<void> {
+    const tab = openCheckoutTab()
     x.setBusy(true)
     x.setErr(TEXT_NONE)
     trackCheckout({ plan })
     const url = await checkoutUrlOf({ plan, back: x.back })
     if (url === TEXT_NONE) {
+      closeCheckoutTab(tab)
       x.setErr(x.t('acct.err.generic'))
       x.setBusy(false)
       return
     }
-    window.location.href = url
+    landCheckout({ tab, url })
+    x.setBusy(false)
+  }
+}
+
+/**
+ * 在点击的同步调用栈里先开一个空白标签占位(异步拿到 URL 再开会被浏览器当弹窗拦掉)。
+ * 开出来就切断它对本页的 opener,免得结账页反手改本页。
+ *
+ * @returns 开出来的标签;null = 被浏览器拦了。
+ */
+export function openCheckoutTab(): MaybeTab {
+  const tab = window.open(URL_BLANK, TAB_BLANK)
+  if (tab != null) {
+    tab.opener = null
+  }
+  return tab
+}
+
+/**
+ * 把先开好的空白标签换成 Checkout 页。标签被拦(null)时改在本页跳 —— 用户点的就是去付款,
+ * 这一步不能因为拦弹窗而没反应。
+ *
+ * @param x 空白标签与 Checkout URL。
+ */
+export function landCheckout(x: LandCheckoutIn): void {
+  if (x.tab == null) {
+    window.location.href = x.url
+    return
+  }
+  x.tab.location.href = x.url
+}
+
+/**
+ * 拿不到 Checkout URL 时关掉先开的空白标签(被拦没开出来就无事可做)。
+ *
+ * @param tab 先开的空白标签。
+ */
+export function closeCheckoutTab(tab: MaybeTab): void {
+  if (tab != null) {
+    tab.close()
   }
 }
 
@@ -320,6 +369,21 @@ export function trackPricingModalOpen(): void {
  */
 export function trackUpgradeOpen(): void {
   track(EVENT_UPGRADE_OPEN)
+}
+
+/**
+ * 造「点价卡」(2026-10-12 Frank「这个应该卡片也能点」):整张卡点了等于点购买钮(钮不另挂点击,冒泡到卡上);这一档正在跳转时什么都不做。
+ *
+ * @param x 档位、购买手柄与这一档忙没忙。
+ * @returns 点击手柄。
+ */
+export function makeCardPick(x: CardPickIn): ClickFn {
+  return function pickCard(): void {
+    if (x.busy) {
+      return
+    }
+    x.onBuy(x.plan)
+  }
 }
 
 /**

@@ -8,11 +8,14 @@ import { count, firstOf, numOrNull, queryRows, SQL, text, vtext } from '../db'
 import { placeLineOf } from '../location'
 import {
   DAY_LOCALE, DAY_ZONE, JOB_CLOSED, MYJOBS_LIMIT, PICKS_CACHE_MAX, PICKS_DRAW_DAYS, PICKS_FREE, PICKS_LOCKED_SHOW, PICKS_MAX, PROV_PNP, TEXT_NONE, TIME_NONE,
-  WHY_APPLIED, WHY_OCC, WHY_PNP, WHY_SAVED, WHY_WAGE,
+  P_ID, WHY_AIP, WHY_APPLIED, WHY_EE, WHY_KNOWN, WHY_LMIA, WHY_OCC, WHY_PILOT, WHY_PNP,
+  WHY_SAVED,
+  WHY_WAGE,
 } from './constants'
 import { CACHE } from './variables'
 import type {
-  CountDbRow, CountOut, DropTouchedIn, IdDbRow, LockedPick, MyJobDbRow, MyJobRow, MyJobsIn, MyJobsOut, PickDbRow,
+  CountDbRow, CountOut, DeleteOut, DropTouchedIn, IdDbRow, LockedPick, MaybeId, MyJobDbRow, MyJobRow, MyJobsDeleteIn, MyJobsIn,
+  MyJobsOut, PickDbRow,
   PickRow, PickRows, PicksIn, PicksJson, PicksJsonOut, PicksOut, PicksSplitIn, PicksViewIn, ReasonCodes, ReasonsIn,
   TimeCell, TouchedOut,
 } from './types'
@@ -102,6 +105,40 @@ export async function loadSentCount(x: MyJobsIn): CountOut {
     return 0
   }
   return first
+}
+
+/**
+ * 我的投递「删除」(2026-10-12 Frank 选「各删各的」):草稿真删,已发出的只从列表藏起。
+ *
+ * @param x 连接、用户 id 与投递 id。
+ * @returns 写完。
+ */
+export async function deleteApplied(x: MyJobsDeleteIn): DeleteOut {
+  await x.db.query(SQL.MYJOBS_APPLIED_DELETE, [x.userId, x.id])
+}
+
+/**
+ * 今日推荐「删除」:这一岗以后不再推(当天缓存不用清 —— 取推荐时剔「碰过的岗」已含删过的)。
+ *
+ * @param x 连接、用户 id 与职位 id。
+ * @returns 写完。
+ */
+export async function dismissPick(x: MyJobsDeleteIn): DeleteOut {
+  await x.db.query(SQL.MYJOBS_PICK_DISMISS, [x.userId, x.id])
+}
+
+/**
+ * 查询参数里的 id:正整数才认,其余(缺席、乱填)给 null。
+ *
+ * @param url 请求地址。
+ * @returns id 或 null。
+ */
+export function idOf(url: string): MaybeId {
+  const n = Number(new URL(url).searchParams.get(P_ID))
+  if (Number.isInteger(n) && n > 0) {
+    return n
+  }
+  return null
 }
 
 /**
@@ -206,13 +243,16 @@ export function picksViewOf(x: PicksSplitIn): PicksJson {
 }
 
 /**
- * 推荐一行 → 锁住的一条(只抄职位名、理由、项目简称)。
+ * 推荐一行 → 锁住的一条(只抄职位名、理由、项目简称;2026-10-12 再抄省码与通道三格,通道列要写通道名)。
  *
  * @param r 推荐一行。
  * @returns 锁住的一条。
  */
 export function toLockedPick(r: PickRow): LockedPick {
-  return { title: r.title, reasons: r.reasons, program: r.program }
+  return {
+    title: r.title, titleZh: r.titleZh, titleKo: r.titleKo, reasons: r.reasons, program: r.program, province: r.province,
+    pnpStream: r.pnpStream, pnpEligible: r.pnpEligible, provDefault: r.provDefault,
+  }
 }
 
 /**
@@ -223,24 +263,44 @@ export function toLockedPick(r: PickRow): LockedPick {
  * 2026-10-11 晚 Frank「可以,按你说的改」(草稿被当成投过、推出卡车司机还贴「职业对口」):「职业对口」只给档案答案命中的;
  * 收藏命中照旧「和你收藏的同类」;真发出去的投递命中改出「和你投过的同类」(WHY_APPLIED)。三样一岗只出一枚,
  * 档案 → 收藏 → 投递(SQL 那头档案答了就不按收藏 / 投递选岗,两格必是 false)。上面「投过的同组已写职业对口」作废。
+ * 2026-10-12 Frank「还是需要一个 推荐原因的列 然后 bullets 显示 好处」:末尾再加「全职长期」(WHY_PERM)。
+ * 2026-10-12 Frank「这个是 我的 推荐模块」「改吧」:SQL 只推全职长期的岗,这一码条条成立没区分度,撤。
+ * 同日「整点有吸引力的 bullets」:再加雇主 LMIA 外劳名额 / EE 定向类别 / AIP 指定雇主三条;顺序改成移民好处在前 ——
+ * 省提名 → 薪资 → LMIA → EE → AIP → 职业对口(或收藏 / 投过的同类)→ 全职长期。上面「顺序 = 职业对口 … → 薪资」作废。
+ * 2026-10-12 Frank「现在有数据能知道 这个雇主愿不愿意帮忙 弄 pr 吗」「知名公司 也算 一个吧」:AIP 后面再加社区试点指定雇主、知名公司(有维基词条)两条。
  *
  * @param x 四个判定格与省码。
  * @returns 理由码。
  */
 export function reasonsOf(x: ReasonsIn): ReasonCodes {
   const out: ReasonCodes = []
+  if (x.pnp && x.offerActive && programOf(x.province) !== TEXT_NONE) {
+    out.push(WHY_PNP)
+  }
+  if (x.aboveMed) {
+    out.push(WHY_WAGE)
+  }
+  if (x.lmia) {
+    out.push(WHY_LMIA)
+  }
+  if (x.ee) {
+    out.push(WHY_EE)
+  }
+  if (x.aip) {
+    out.push(WHY_AIP)
+  }
+  if (x.pilot) {
+    out.push(WHY_PILOT)
+  }
+  if (x.known) {
+    out.push(WHY_KNOWN)
+  }
   if (x.occWant) {
     out.push(WHY_OCC)
   } else if (x.occSaved) {
     out.push(WHY_SAVED)
   } else if (x.occApplied) {
     out.push(WHY_APPLIED)
-  }
-  if (x.pnp && x.offerActive && programOf(x.province) !== TEXT_NONE) {
-    out.push(WHY_PNP)
-  }
-  if (x.aboveMed) {
-    out.push(WHY_WAGE)
   }
   return out
 }
@@ -292,11 +352,21 @@ export function toPickRow(r: PickDbRow): PickRow {
       pnp: r.pnp_eligible === true, province, aboveMed: r.above_med === true,
       occApplied: r.occ_applied === true, occSaved: r.occ_saved === true,
       occWant: r.occ_want === true, offerActive: r.offer_active === true,
+      lmia: count(r.lmia_positions) > 0, ee: text(r.ee_category) !== TEXT_NONE, aip: r.aip === true,
+      pilot: r.pilot_employer === true && text(r.pilot) !== TEXT_NONE, known: r.known === true,
     }),
+    abovePct: numOrNull(r.above_pct),
+    lmiaPositions: count(r.lmia_positions),
+    eeCategory: text(r.ee_category),
+    drawLast: text(r.draw_last),
+    pilot: text(r.pilot),
     program: programOf(province),
     hours: text(r.employment_hours),
     term: text(r.employment_term),
     validThrough: isoOf(r.valid_through),
+    pnpStream: text(r.pnp_stream),
+    pnpEligible: r.pnp_eligible === true,
+    provDefault: r.prov_default === true,
   }
 }
 

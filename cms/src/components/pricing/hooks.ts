@@ -17,7 +17,7 @@ import {
   reloadPage, trackPricingModalOpen, trackPricingOpen, trackShotClick, trackUpgradeOpen,
 } from './functions'
 import type {
-  PricePlan, PricingBuyHookIn, PricingBuyPanel, PricingModalPanel, PricingPanel,
+  MaybePricePlan, PricePlan, PricingBuyHookIn, PricingBuyPanel, PricingModalPanel, PricingPanel,
   UpgradeModalHookIn, UpgradeModalPanel,
 } from './types'
 
@@ -69,12 +69,14 @@ export function usePricingModal(): PricingModalPanel {
 /**
  * 价卡购买流:一格忙态 + 一只手柄。忙态是两枚 Pro 钮共用的 —— 同一时刻只该有一条
  * Checkout 在飞,拿到 url 就整页跳走,所以忙态不必按档分开记。
+ * 2026-10-12 Frank「这个为什么点击左边的 按钮,右边的也跟着变颜色」:上面那条前提作废 —— 两枚钮读同一格
+ * 布尔忙态,点一枚两枚一起压暗。忙态改记「正在买哪一档」,各钮只认自己那档;结账改开新标签,本页不再跳走。
  *
  * @param x 登录态与未登录时的注册出口。
  * @returns 视图要的整块面板:忙态 + 手柄。
  */
 export function usePricingBuy(x: PricingBuyHookIn): PricingBuyPanel {
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState<MaybePricePlan>(null)
   return {
     busy,
     onBuy: makePricingBuy({ loggedIn: x.loggedIn, onRegister: x.onRegister, setBusy }),

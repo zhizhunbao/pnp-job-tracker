@@ -1192,40 +1192,6 @@
 
 
 /*
- * 简历卡中间那行文字钮(设为默认 / 替换文件 / 删除;2026-10-08 照 AIApply 卡形)。
- */
-.rfLinks {
-  display: flex;
-
-  flex-wrap: wrap;
-
-  gap: 14px;
-
-  margin-top: 10px;
-
-  align-items: center;
-}
-
-/*
- * 文字钮(蓝字无底,双类压过 button 桶的 ghost 形)。
- */
-.rfLink.rfLink {
-  padding: 0;
-
-  font-size: 13px;
-
-  font-weight: 400;
-
-  color: var(--primary);
-
-  border: none;
-
-  background: none;
-
-  cursor: pointer;
-}
-
-/*
  * 预览弹框里一页一张画布(pdf.js 画;铺满纸宽、高随比例、不留行内空隙)。
  */
 .rfCanvas {
@@ -1383,29 +1349,4 @@
    * 正文字号。
    */
   font-size: 14px;
-}
-
-/*
- * 一格名字折起来时那一行「还有 N 个」:蓝字、靠左,不像按钮那样带底。
- */
-.pfMore {
-  /*
-   * 链接蓝。
-   */
-  color: var(--primary);
-
-  /*
-   * 正文字号。
-   */
-  font-size: 14px;
-
-  /*
-   * 靠左(竖排里不撑满整行)。
-   */
-  align-self: flex-start;
-
-  /*
-   * 没有按钮内边距,和名字左边对齐。
-   */
-  padding: 0;
 }

@@ -79,6 +79,28 @@
 }
 
 /*
+ * 密码框(2026-10-12 Frank「这个 password 为什么 . 这么分散」):中文 Windows 上 system-ui 落到微软雅黑,遮罩圆点是全角字形、
+ * 一个隔一个;密码框单独用西文字体,圆点挨着排。
+ */
+.input[type='password'] {
+  /*
+   * 西文字体(圆点半角)。
+   */
+  font-family: Arial, sans-serif;
+}
+
+/*
+ * Chrome 用保存的账号自动填充时,给填进来的字套自己的字体(上一条管不到,圆点照旧散;同日 Frank「之前有保存的 账号 password 太分开」),
+ * 自动填充态的首行再指一遍。
+ */
+.input[type='password']:-webkit-autofill::first-line {
+  /*
+   * 西文字体(圆点半角)。
+   */
+  font-family: Arial, sans-serif;
+}
+
+/*
  * 表单字段的 label(文字 + 输入框竖排)。
  */
 .label {

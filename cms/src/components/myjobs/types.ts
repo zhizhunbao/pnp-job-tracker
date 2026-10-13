@@ -29,9 +29,9 @@ export type LockFill = {
   company: string
 
   /**
-   * 假地址。
+   * 假街址(后接这一行的省码;2026-10-12 原整条多伦多地址与露出来的省对不上)。
    */
-  address: string
+  street: string
 
   /**
    * 假薪资。
@@ -308,6 +308,16 @@ export type CellRowsIn = {
    * 懒翻回来的职位名译名表(jobtitle 桶 useTitleMap;库里没存界面语译名的岗名才在里面)。
    */
   titles: Record<string, string>
+
+  /**
+   * 懒翻回来的公司名译名表(公司名 → 界面语译名;库里没存译名的公司才在里面;2026-10-12 Frank「这个也需要中文灰字」)。
+   */
+  cos: Record<string, string>
+
+  /**
+   * 拨「删除确认框」(点「删除」先弹框,2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」)。
+   */
+  setAsk: AskSetFn
 }
 
 /**
@@ -353,16 +363,31 @@ export type CellRowIn = {
    * 懒翻回来的职位名译名表(jobtitle 桶 useTitleMap;库里没存界面语译名的岗名才在里面)。
    */
   titles: Record<string, string>
+
+  /**
+   * 懒翻回来的公司名译名表(公司名 → 界面语译名;库里没存译名的公司才在里面;2026-10-12 Frank「这个也需要中文灰字」)。
+   */
+  cos: Record<string, string>
+
+  /**
+   * 拨「删除确认框」(点「删除」先弹框,2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」)。
+   */
+  setAsk: AskSetFn
 }
 
 /**
- * 取消收藏(makeUnsave)的入参。
+ * 删一行(makeRemove:取消收藏 / 删投递)的入参。
  */
-export type UnsaveIn = {
+export type RemoveIn = {
   /**
-   * 哪一行(收藏记录 id)。
+   * 哪一行(收藏记录 id / 投递 id)。
    */
   id: number
+
+  /**
+   * DELETE 地址(已接上 id;2026-10-12 我的投递也用这一套)。
+   */
+  url: string
 
   /**
    * 删之前的整张清单(请求失败时退回它)。
@@ -640,33 +665,54 @@ export type PickItem = {
   datePosted: string
 
   /**
-   * 推荐理由码。
+   * 截止日(ISO;没有 = 空串)。
+   */
+  validThrough: string
+
+  /**
+   * 具名省提名通道(没有 = 空串;2026-10-12 通道列)。
+   */
+  pnpStream: string
+
+  /**
+   * 能走省提名。
+   */
+  pnpEligible: boolean
+
+  /**
+   * 本省有省默认通道。
+   */
+  provDefault: boolean
+
+  /**
+   * 推荐理由码(2026-10-12 Frank「还是需要一个 推荐原因的列 然后 bullets 显示 好处」)。
    */
   reasons: string[]
 
   /**
-   * 省提名项目简称(没有 = 空串)。
+   * 薪资高出本省同职业中位的百分比(没有是 null)。
    */
-  program: string
+  abovePct: number | null
+
 
   /**
-   * 工时归一值 full / part(没标 = 空串;2026-10-10 批 2)。
+   * 雇主办过的 LMIA 外劳名额(没有是 0;2026-10-12 Frank「整点有吸引力的 bullets」)。
    */
-  hours: string
+  lmiaPositions: number
 
   /**
-   * 雇佣期归一值(没标 = 空串)。
+   * EE 定向类别(没有 = 空串)。
    */
-  term: string
+  eeCategory: string
 
   /**
-   * 截止日(ISO;没有 = 空串)。
+   * 社区试点名(RCIP / FCIP;没有 = 空串;2026-10-12 Frank「现在有数据能知道 这个雇主愿不愿意帮忙 弄 pr 吗」「知名公司 也算 一个吧」)。
    */
-  validThrough: string
+  pilot: string
 }
 
 /**
- * 「更多推荐」里锁住的一条(线格式:只有职位名与理由)。
+ * 「显示更多」里锁住的一条(线格式:职位名与通道;2026-10-12 理由胶囊撤、改读通道三格)。
  */
 export type LockedItem = {
   /**
@@ -675,34 +721,34 @@ export type LockedItem = {
   title: string
 
   /**
-   * 推荐理由码。
+   * 省码。
    */
-  reasons: string[]
+  province: string
 
   /**
-   * 省提名项目简称(没有 = 空串)。
+   * 具名省提名通道(没有 = 空串;2026-10-12 通道列)。
    */
-  program: string
-}
-
-/**
- * 推荐接口回包(信任边界:缺席的格按空读)。
- */
-export type PicksRespJson = {
-  /**
-   * 看得见的推荐。
-   */
-  picks?: PickItem[]
+  pnpStream: string
 
   /**
-   * 还有几条看不见。
+   * 能走省提名。
    */
-  more?: number
+  pnpEligible: boolean
 
   /**
-   * 锁住给看的几条。
+   * 本省有省默认通道。
    */
-  locked?: LockedItem[]
+  provDefault: boolean
+
+  /**
+   * 职位名中文译名(2026-10-12 Frank「隐藏的 和 显示的 要对齐啊」「上下要对齐。有 中文 灰字的 要加上」)。
+   */
+  titleZh: string
+
+  /**
+   * 职位名韩文译名。
+   */
+  titleKo: string
 }
 
 /**
@@ -753,26 +799,21 @@ export type PicksPanel = {
    * 关定价框。
    */
   onUpsellClose: () => void
-}
 
-/**
- * 拉推荐(makeLoadPicks)的入参。
- */
-export type LoadPicksIn = {
   /**
-   * 写推荐。
+   * 写推荐(「删除」本地先删那一行;2026-10-12)。
    */
   setData: (v: PicksFact) => void
 
   /**
-   * 拨「拉失败了」。
+   * 点过「显示更多」(2026-10-12 今日推荐与更多推荐合成一张卡)。
    */
-  setFailed: (v: boolean) => void
+  expanded: boolean
 
   /**
-   * 不用服务端当天缓存、现算一份(2026-10-11:这一页答过档案)。
+   * 点「显示更多」。
    */
-  fresh: boolean
+  onExpand: () => void
 }
 
 /**
@@ -798,6 +839,26 @@ export type PickRowsIn = {
    * 懒翻回来的职位名译名表(jobtitle 桶 useTitleMap;库里没存界面语译名的岗名才在里面)。
    */
   titles: Record<string, string>
+
+  /**
+   * 整包推荐(「删除」失败时退回它;2026-10-12)。
+   */
+  data: PicksFact
+
+  /**
+   * 写推荐。
+   */
+  setData: (v: PicksFact) => void
+
+  /**
+   * 懒翻回来的公司名译名表(公司名 → 界面语译名;库里没存译名的公司才在里面;2026-10-12 Frank「这个也需要中文灰字」)。
+   */
+  cos: Record<string, string>
+
+  /**
+   * 拨「删除确认框」(点「删除」先弹框,2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」)。
+   */
+  setAsk: AskSetFn
 }
 
 /**
@@ -823,26 +884,26 @@ export type PickRowIn = {
    * 懒翻回来的职位名译名表(jobtitle 桶 useTitleMap;库里没存界面语译名的岗名才在里面)。
    */
   titles: Record<string, string>
-}
-
-/**
- * 理由胶囊的字(reasonTextsOf)的入参。
- */
-export type ReasonTextsIn = {
-  /**
-   * 理由码。
-   */
-  reasons: string[]
 
   /**
-   * 省提名项目简称。
+   * 整包推荐(「删除」失败时退回它;2026-10-12)。
    */
-  program: string
+  data: PicksFact
 
   /**
-   * 取词函数。
+   * 写推荐。
    */
-  t: TFn
+  setData: (v: PicksFact) => void
+
+  /**
+   * 懒翻回来的公司名译名表(公司名 → 界面语译名;库里没存译名的公司才在里面;2026-10-12 Frank「这个也需要中文灰字」)。
+   */
+  cos: Record<string, string>
+
+  /**
+   * 拨「删除确认框」(点「删除」先弹框,2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」)。
+   */
+  setAsk: AskSetFn
 }
 
 /**
@@ -883,51 +944,6 @@ export type PicksHookIn = {
    * 答档案代数(大于 0 = 这一页答过,重拉时现算)。
    */
   asked: number
-}
-
-/**
- * 「更多推荐」卡的 props。
- */
-export type MorePicksIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 还有几条看不见。
-   */
-  more: number
-
-  /**
-   * 锁住给看的几条。
-   */
-  locked: LockedItem[]
-
-  /**
-   * 点「升级 Pro」。
-   */
-  onUpgrade: () => void
-}
-
-/**
- * 锁住的一条(LockedPick 组件)的 props。
- */
-export type LockedPickIn = {
-  /**
-   * 职位名。
-   */
-  title: string
-
-  /**
-   * 理由胶囊的字。
-   */
-  reasons: string[]
-
-  /**
-   * 第几条(挑一份假字纹理)。
-   */
-  i: number
 }
 
 /**
@@ -1100,9 +1116,14 @@ export type ListRow = {
   titleSub: string
 
   /**
-   * 「已下架」字(在架 = 空串;挂在职位名后面)。
+   * 通道英文名(只有今日推荐有;不走省提名 = 空串;2026-10-12 通道列)。
    */
-  closedText: string
+  chanEn: string
+
+  /**
+   * 通道界面语名(灰字;英文界面、与英文同字或没有 = 空串)。
+   */
+  chanSub: string
 
   /**
    * 公司英文名。
@@ -1203,6 +1224,11 @@ export type ListRow = {
    * 附件链接(我的投递发出去的行:简历 / 求职信;没有 = 空清单)。
    */
   files: ActBtn[]
+
+  /**
+   * 打码行(免费号「显示更多」后锁住的推荐;公司 / 地址 / 薪资是模糊假字,2026-10-12 Frank「隐藏的 和 显示的 要对齐啊」「上下要对齐。有 中文 灰字的 要加上」)。
+   */
+  locked: boolean
 }
 
 /**
@@ -1578,4 +1604,269 @@ export type TitleSubForIn = {
    * 界面语。
    */
   lang: Lang
+}
+
+/**
+ * 等着确认的一次删除(2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」)。
+ */
+export type AskDel = {
+  /**
+   * 要删的那一条的名字(确认框正文)。
+   */
+  name: string
+
+  /**
+   * 确认后真删的手柄。
+   */
+  run: () => void
+}
+
+/**
+ * 拨删除确认框的函数(null = 关)。
+ */
+export type AskSetFn = (v: AskDel | null) => void
+
+/**
+ * 删除确认框整机(useAskDel 出)。
+ */
+export type AskPanel = {
+  /**
+   * 等着确认的那一次(没有 = null)。
+   */
+  ask: AskDel | null
+
+  /**
+   * 拨确认框。
+   */
+  setAsk: AskSetFn
+
+  /**
+   * 点「删除」:真删并关框。
+   */
+  onOk: () => void
+
+  /**
+   * 点「取消」:关框。
+   */
+  onCancel: () => void
+}
+
+/**
+ * 删除确认框件(AskDelModal)的 props。
+ */
+export type AskDelModalIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 删除确认框整机。
+   */
+  a: AskPanel
+}
+
+/**
+ * 打码行(lockedRowOf)的入参。
+ */
+export type LockedRowIn = {
+  /**
+   * 锁住的一条。
+   */
+  item: LockedItem
+
+  /**
+   * 第几条(挑假字纹理)。
+   */
+  i: number
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 懒翻回来的职位名译名表。
+   */
+  titles: Record<string, string>
+}
+
+/**
+ * 打码行上沿位置(useLockTop 出;2026-10-12 Frank「隐藏的 和 显示的 要对齐啊」「上下要对齐。有 中文 灰字的 要加上」)。
+ */
+export type LockTopPanel = {
+  /**
+   * 表格外框。
+   */
+  ref: React.RefObject<HTMLDivElement | null>
+
+  /**
+   * 第一条打码行相对外框的上沿(px;没有打码行 = null)。
+   */
+  top: number | null
+}
+
+/**
+ * useLockTop 的入参。
+ */
+export type LockTopIn = {
+  /**
+   * 有没有打码行。
+   */
+  on: boolean
+
+  /**
+   * 行数(变了重量)。
+   */
+  n: number
+}
+
+/**
+ * 打码行们(lockedRowsOf)的入参。
+ */
+export type LockedRowsIn = {
+  /**
+   * 推荐整包。
+   */
+  data: PicksFact
+
+  /**
+   * 出不出(免费号点了「显示更多」才出)。
+   */
+  show: boolean
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 懒翻回来的职位名译名表。
+   */
+  titles: Record<string, string>
+}
+
+/**
+ * 一张清单的公司名懒翻表(useLazyCompanies)的入参。
+ */
+export type LazyCompaniesIn = {
+  /**
+   * 这一张清单的行(还没拉到 = null)。
+   */
+  items: CompanyNamedItem[] | null
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+}
+
+/**
+ * 带公司名与两语库存译名的一行(MyJobItem / PickItem 都合这个形)。
+ */
+export type CompanyNamedItem = {
+  /**
+   * 公司名(英文原名)。
+   */
+  company: string
+
+  /**
+   * 库里存好的中文译名(没有 = 空串)。
+   */
+  companyZh: string
+
+  /**
+   * 库里存好的韩文译名。
+   */
+  companyKo: string
+}
+
+/**
+ * 懒翻回来一家落进译名表(makeCoLand)的入参。
+ */
+export type CoLandIn = {
+  /**
+   * 公司名。
+   */
+  name: string
+
+  /**
+   * 改译名表。
+   */
+  setCos: (f: (prev: Record<string, string>) => Record<string, string>) => void
+}
+
+/**
+ * 一格公司译名(coAliasFor)的入参。
+ */
+export type CoAliasForIn = {
+  /**
+   * 库里存的这一语译名。
+   */
+  own: string
+
+  /**
+   * 公司名。
+   */
+  name: string
+
+  /**
+   * 懒翻表(当前界面语的)。
+   */
+  cos: Record<string, string>
+
+  /**
+   * 这一格是哪一语。
+   */
+  want: Lang
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+}
+
+/**
+ * makeAsk 的入参。
+ */
+export type AskIn = {
+  /**
+   * 拨确认框。
+   */
+  setAsk: AskSetFn
+
+  /**
+   * 要删的那一条的名字。
+   */
+  name: string
+
+  /**
+   * 确认后真删的手柄。
+   */
+  run: () => void
+}
+
+/**
+ * makeAskOk 的入参。
+ */
+export type AskOkIn = {
+  /**
+   * 等着确认的那一次。
+   */
+  ask: AskDel | null
+
+  /**
+   * 拨框手柄。
+   */
+  setAsk: AskSetFn
 }

@@ -20,8 +20,8 @@ import { useLang } from '@/components/i18n'
 import { useIsNarrow } from '@/components/modal'
 import { PF_LOAD_BUSY, RF_ERR_NONE, SEC_DEFAULT, ZOOM_HOME, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from './constants'
 import {
-  makeAdd, makeAskOf, makeDefaultOf, makeDeleteOf, makeDragLeave, makeDragOver, makeFileDrop, makeFilePick,
-  makePickerOf, makePreviewClose, makePreviewOf, makeRefresh, makeSureClear, makeResumeListLoad,
+  makeAdd, makeAskClose, makeAskOk, makeDefaultOf, makeDeleteOf, makeDragLeave, makeDragOver, makeFileDrop,
+  makeFilePick, makePickerOf, makePreviewClose, makePreviewOf, makeRefresh, makeResumeListLoad,
   makeResumeUpload, payOkToast,
   makeLettersLoad, makeOnApplied, makePaymentsLoad, makeSentCountLoad,
   planOf, renderPdfPages, secLinkOf, showPdfPage,
@@ -31,11 +31,12 @@ import {
   jobsQuizOpenOf, makeAskedDone, makeGenBump, markJobsAsked,
 } from './functions'
 import type {
-  AccountPanel, MaybeResumeMeta, Me, ResumeFilePanel, ResumeMetas, ResumePagesPanel, ResumeThumbHookIn,
+  AccountPanel, AskDel, AskPanel, MaybeResumeMeta, Me, ResumeFilePanel, ResumeMetas, ResumePagesPanel,
+  ResumeThumbHookIn,
   MaybePdfDoc, MaybeZoomGrip, ZoomView,
   Sec, SubscriptionPanel,
   CoverLettersPanel, LetterMetas, PaymentRows,
-  PfFoldPanel, PfView, ProfilePanel,
+  PfView, ProfilePanel,
   JobsQuizHookIn, JobsQuizPanel,
 } from './types'
 
@@ -141,6 +142,7 @@ export function useSubscription(): SubscriptionPanel {
  * 「我的简历」整机(2026-10-05;10-06 改一人多份):挂载拉一次清单;新加(选文件 / 拖进来)、替换某一份、
  * 删某一份(就地二次确认)、设默认、开关预览弹框、拖放高亮与报错都在这一台 —— 所有份共用一个隐藏文件框,
  * 点「替换文件」先记下替换哪一份再打开它。
+ * 2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」:就地二次确认(sure 格)撤,删除确认框整机 useAskDel 挂进来。
  *
  * @returns 「我的简历」的面板。
  */
@@ -149,7 +151,6 @@ export function useResumeFile(): ResumeFilePanel {
   const [items, setItems] = useState<ResumeMetas>([])
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string>(RF_ERR_NONE)
-  const [sure, setSure] = useState<number | null>(null)
   const [dragOn, setDragOn] = useState(false)
   const [preview, setPreview] = useState<MaybeResumeMeta>(null)
   const [replaceId, setReplaceId] = useState<number | null>(null)
@@ -161,13 +162,13 @@ export function useResumeFile(): ResumeFilePanel {
   }, [])
 
   const upload = makeResumeUpload({ replaceId, reload, setBusy, setErr })
-  const act = { reload, setSure, setErr }
+  const act = { reload, setErr }
+  const ask = useAskDel()
   return {
     checked,
     items,
     busy,
     err,
-    sure,
     dragOn,
     preview,
     onInputMount: setInput,
@@ -177,13 +178,23 @@ export function useResumeFile(): ResumeFilePanel {
     onDragLeave: makeDragLeave({ upload, setDragOn }),
     onDrop: makeFileDrop({ upload, setDragOn }),
     replaceOf: makePickerOf({ input, setReplaceId }),
-    askOf: makeAskOf({ setSure, setErr }),
-    onCancel: makeSureClear({ setSure, setErr }),
+    ask,
     deleteOf: makeDeleteOf(act),
     defaultOf: makeDefaultOf(act),
     previewOf: makePreviewOf({ setPreview }),
     onPreviewClose: makePreviewClose({ setPreview }),
   }
+}
+
+/**
+ * 删除确认框整机(2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」;照 myjobs 桶 useAskDel 的形):
+ * 记下等着确认的那一次删除;框里点「删除」才跑真删,点「取消」或 × 只关框。
+ *
+ * @returns 等着确认的那一次与三只手柄。
+ */
+function useAskDel(): AskPanel {
+  const [ask, setAsk] = useState<AskDel | null>(null)
+  return { ask, setAsk, onOk: makeAskOk({ ask, setAsk }), onCancel: makeAskClose(setAsk) }
 }
 
 /**
@@ -290,16 +301,6 @@ export function useProfile(): ProfilePanel {
     onClose: makeFlagSet({ set: setEditing, v: false }),
     onSaved: makeProfileSaved({ setEditing, setGen, gen }),
   }
-}
-
-/**
- * 一格名字的折叠态(2026-10-09:多于 PF_FOLD_N 个先折起来,点「还有 N 个」展开;展开了不再收)。
- *
- * @returns 折叠态。
- */
-export function usePfFold(): PfFoldPanel {
-  const [open, setOpen] = useState(false)
-  return { open, onOpen: makeFlagSet({ set: setOpen, v: true }) }
 }
 
 /**

@@ -156,16 +156,6 @@ export const FROM_GT = '>'
 export const SUBJECT_TPL = 'Application for {{title}} - {{name}}'
 
 /**
- * 邮件正文末尾的来源说明(纯文本)。
- */
-export const MAIL_FOOT = '\n\n--\nSent via Offer2PR (offer2pr.com). Resume and cover letter attached.'
-
-/**
- * 不附求职信时的来源说明(2026-10-10 投递框三步:「不附求职信」只发简历,正文不提求职信)。
- */
-export const MAIL_FOOT_RESUME = '\n\n--\nSent via Offer2PR (offer2pr.com). Resume attached.'
-
-/**
  * 求职信 PDF 文件名头(后接公司名的西文段)。
  */
 export const COVER_FILE_HEAD = 'Cover_Letter_'
