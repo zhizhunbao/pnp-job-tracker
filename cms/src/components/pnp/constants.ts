@@ -144,9 +144,9 @@ export const ATLANTIC_PROVS = ['NL', 'NB', 'NS', 'PE']
 
 /**
  * 先同雇主干满 6 个月才走得通的普通通道省(TEER 4-5 的「凭什么」分档之一;
- * 省集合镜像 etl/08_score.UNIVERSAL_*_PROVS)。
+ * 省集合镜像 etl/08_score.UNIVERSAL_*_PROVS)。2026-10-15 领地批加 NT(12 个月)。
  */
-export const COND_PROVS = ['MB', 'NS', 'NB', 'PE']
+export const COND_PROVS = ['MB', 'NS', 'NB', 'PE', 'NT']
 
 /**
  * 大西洋试点(AIP)的项目名。

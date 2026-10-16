@@ -10,8 +10,9 @@
 /**
  * 有 PNP 的九省。**顺序只是声明顺序**,不是排名 —— 别拿前几个当默认
  * (chat/cards.ts:224 那条教训)。
+ * 2026-10-15 领地批:育空、西北地区有自己的提名项目(Yukon / NWT Nominee Program),并进来;努纳武特没有提名项目,不进。
  */
-export const PNP_PROVINCES = ['ON', 'BC', 'AB', 'SK', 'MB', 'NS', 'NB', 'NL', 'PE']
+export const PNP_PROVINCES = ['ON', 'BC', 'AB', 'SK', 'MB', 'NS', 'NB', 'NL', 'PE', 'YT', 'NT']
 
 /**
  * 认得出的省码判集:九省 + QC(魁省走自己的体系,不属 PNP,但用户会提、模型会给)。
@@ -19,8 +20,9 @@ export const PNP_PROVINCES = ['ON', 'BC', 'AB', 'SK', 'MB', 'NS', 'NB', 'NL', 'P
  * 而省码是**全站口径**,不该由某个域拥有(域之间不互相取常量;共享叶子才是它的家)。
  * ⚠️ 顺带治了一个老雷:它原先住 `chat/tools.ts`(1141 行、依赖一大串),
  * 三处文件头注释记着它「初始化时 undefined / is not iterable」。本域零运行时 import,不会有那问题。
+ * 2026-10-15 领地批:加努纳武特(没有提名项目、但有岗),十三个省码认全。
  */
-export const ALL_PROVS = new Set([...PNP_PROVINCES, 'QC'])
+export const ALL_PROVS = new Set([...PNP_PROVINCES, 'QC', 'NU'])
 
 /**
  * 省码 → 省全名。筛选值一律用全名(fProv/深链/保存的筛选都依赖它);

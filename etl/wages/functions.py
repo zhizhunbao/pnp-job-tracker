@@ -12,6 +12,8 @@ import io
 import json
 import os
 import subprocess
+import sys
+import unittest
 import zipfile
 from datetime import date
 
@@ -35,6 +37,7 @@ from wages.constants import (
     JVWS_WDS_CSV_LINK, JVWS_WDS_META, JVWS_ZIP_TIMEOUT_S, MART_DONE_TPL, MART_IN_TPL, MART_OUT_TPL,
     MART_UNAVAILABLE_QUALITY, MONTH_LEN, MONTH_QUARTER, OUT_JVWS_TABLE, OUT_MART, OUT_WAGE_TABLE,
     PROV_NAT, READ_ERRORS, TEXT_ENCODING, WAGE_ANNUAL_FLAG_TRUE, WAGE_CACHED_TPL, WAGE_DONE_TPL,
+    TEST_VERBOSITY, WAGE_PROV_ALIAS, WAGE_WHOLE_PROV_ERS,
     WAGE_DOWNLOAD_TPL, WAGE_ER_PROVINCE_LEN, WAGE_HOURS_PER_YEAR, WAGE_NOC_PREFIX, WAGE_OUT_INDENT,
     WAGE_PROBE_NOCS, WAGE_PROBE_PROV, WAGE_PROBE_TPL, WAGE_ROUND_DIGITS, WAGE_TIMEOUT_S, WAGE_URL,
 )
@@ -42,7 +45,7 @@ from wages.scheme import (
     CurlGetIn, DimensionAtIn, HourlyIn, JvwsBufRow, JvwsDimension, JvwsExtractOut, JvwsFact,
     JvwsFactIn, JvwsFileIn, JvwsMeta, JvwsMetaEnvelope, JvwsProbeIn, JvwsRawFile, JvwsRawRow,
     JvwsSayProbeIn, JvwsScanIn, JvwsScanOut, MartRowIn, WageCsvRow, WageEntryIn, WagePair,
-    WageProbeIn,
+    WageProbeIn, WageGeographyTest,
 )
 
 
@@ -69,7 +72,7 @@ def to_wage_csv_row(r: dict) -> WageCsvRow:
     """源 CSV 一行 → 洗净事实(列名只住本函数体内,⑩ 号方言律)。"""
     return WageCsvRow(
         noc=(r.get("NOC_CNP") or "").replace(WAGE_NOC_PREFIX, "").strip(),
-        prov=(r.get("prov") or "").strip().upper(),
+        prov=prov_of((r.get("prov") or "").strip().upper()),
         er=(r.get("ER_Code_Code_RE") or "").strip(),
         annual_flag=(r.get("Annual_Wage_Flag_Salaire_annuel") or "").strip() == WAGE_ANNUAL_FLAG_TRUE,
         median=r.get("Median_Wage_Salaire_Median") or "",
@@ -77,6 +80,13 @@ def to_wage_csv_row(r: dict) -> WageCsvRow:
         high=r.get("High_Wage_Salaire_Maximal") or "",
         year=(r.get("Reference_Period") or "").strip(),
     )
+
+
+def prov_of(code: str) -> str:
+    """CSV 的省写法 → 全站省码(WAGE_PROV_ALIAS 里的三地换码,其余原样;2026-10-15 领地批)。"""
+    if code in WAGE_PROV_ALIAS:
+        return WAGE_PROV_ALIAS[code]
+    return code
 
 
 def to_hr_yr(x: HourlyIn) -> WagePair | None:
@@ -109,8 +119,10 @@ def to_wage_entry(x: WageEntryIn) -> dict:
 
 def is_kept_geography(row: WageCsvRow) -> bool:
     """只取「省级」(prov 是省码 + ER_Code 为 4 位 = 整省)与「国家级」(prov=NAT)兜底;
-    经济区(6 位)粒度先不要。"""
-    is_province = row.prov != PROV_NAT and len(row.er) == WAGE_ER_PROVINCE_LEN
+    经济区(6 位)粒度先不要。
+    2026-10-15 领地批:整省只有一个经济区的四地(WAGE_WHOLE_PROV_ERS),那行 6 位码就是整省,同样算省级。"""
+    whole = len(row.er) == WAGE_ER_PROVINCE_LEN or row.er in WAGE_WHOLE_PROV_ERS
+    is_province = row.prov != PROV_NAT and whole
     return row.noc != "" and (is_province or row.prov == PROV_NAT)
 
 
@@ -455,3 +467,16 @@ def build_statcan_jvws_mart() -> None:
     say(MART_DONE_TPL.format(n=len(rows), first=data.quarters[0], last=data.quarters[-1],
                              avail=avail, suppressed=len(rows) - avail, name=OUT_MART.name,
                              mb=OUT_MART.stat().st_size / 1e6))
+
+
+# =========================================================================
+# 4. 自测(用例住 scheme)
+# =========================================================================
+
+
+def run_tests() -> None:
+    """本域手动件 `--only test`:跑 ESDC 中位工资取地理行的自测(用例集住 scheme 的 WageGeographyTest,先例 jobbank);
+    有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。2026-10-15 领地批立。"""
+    suite = unittest.TestLoader().loadTestsFromTestCase(WageGeographyTest)
+    if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
+        sys.exit(1)

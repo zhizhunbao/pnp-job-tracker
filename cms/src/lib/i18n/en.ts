@@ -1032,7 +1032,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   // E13-09 three pass reasons for TEER 4-5 (province sets mirror etl/08_score)
   'match.r.prov.open': '{prov} runs an exclusion list and this occupation is not on it',
   'match.r.prov.nl': '{prov} Skilled Worker takes TEER 0-5 with a job offer',
-  'match.r.prov.cond': '{prov} general stream opens after 6 months full-time with the employer',
+  'match.r.prov.cond': '{prov} general stream opens after {months} months full-time with the employer',
+  'match.r.prov.direct': '{prov} takes TEER 4-5 with a full-time, year-round job offer; the employer applies',
   'match.r.prov.uncovered': '{prov} occupation list not yet covered here; TEER screen only',
   'match.r.prov.none': 'Does not meet the provincial screen for {prov}',
   'match.r.ee.none': 'Job NOC is not on any federal EE category list',
@@ -1241,6 +1242,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'cmp.demo': 'Sample data', 'cmp.demoCta': 'Upgrade to Pro for real comparison',
   'pr.ON': 'Ontario', 'pr.BC': 'British Columbia', 'pr.AB': 'Alberta', 'pr.SK': 'Saskatchewan', 'pr.MB': 'Manitoba',
   'pr.QC': 'Quebec', 'pr.NS': 'Nova Scotia', 'pr.NB': 'New Brunswick', 'pr.NL': 'Newfoundland and Labrador', 'pr.PE': 'Prince Edward Island',
+  'pr.YT': 'Yukon', 'pr.NT': 'Northwest Territories', 'pr.NU': 'Nunavut',
   'stats.bnProvs': 'provinces covered', 'stats.bnBroads': 'occupation groups',
   // B4-01 directory
   'dir.title': 'Employer directory',

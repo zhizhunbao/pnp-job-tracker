@@ -178,10 +178,12 @@ PROV_FULL = {
     "ON": "ontario", "QC": "quebec", "BC": "british-columbia", "AB": "alberta",
     "SK": "saskatchewan", "MB": "manitoba", "NB": "new-brunswick", "NS": "nova-scotia",
     "NL": "newfoundland-and-labrador", "PE": "prince-edward-island",
+    "YT": "yukon", "NT": "northwest-territories", "NU": "nunavut",
 }
 """省码 → 目录/文件名用的全称(对齐 ATS 的 ontario/ottawa 风格)。
 2026-08-31 批I 收拢:列表抓取与公司档构建各抄了一份**逐字相同**的十省表,
-行为复制=口径开岔的现行犯,合成本域唯一来源。"""
+行为复制=口径开岔的现行犯,合成本域唯一来源。
+2026-10-15 领地批(Frank「全接上」)补三领地。"""
 
 
 # =========================================================================
@@ -192,8 +194,10 @@ LISTING_URL_TPL = ("https://www.jobbank.gc.ca/jobsearch/jobsearch"
                    "?fprov={prov}&sort=D&page={page}")
 """全职业按省翻页的列表地址(fprov 是官方校验过的省筛选参数,sort=D 按日期降序)。"""
 
-ALL_PROVINCES = ["ON", "QC", "SK", "AB", "BC", "MB", "NB", "NS", "NL", "PE"]
-"""全加拿大省份(领地暂跳过)。QC 也抓 —— 站点是全职业职位板,PNP 只是其中一种状态标记。"""
+ALL_PROVINCES = ["ON", "QC", "SK", "AB", "BC", "MB", "NB", "NS", "NL", "PE", "YT", "NT", "NU"]
+"""全加拿大省份(领地暂跳过)。QC 也抓 —— 站点是全职业职位板,PNP 只是其中一种状态标记。
+2026-10-15 领地批(Frank「全接上」):三领地并进来(10-15 Job Bank 列表 YT 262 / NT 226 / NU 70 帖,
+合计 24 页;fprov=YT/NT/NU 实测可用),上一句「领地暂跳过」作废。"""
 
 CHAIN_MAX_PAGES = 400
 """每省翻页上限(失控保险)。#118:max-pages 默认 15 在周末积压+周一补抓时截断 ON/QC
@@ -772,7 +776,8 @@ POSTAL_PROV = {
     "K": "ON", "L": "ON", "M": "ON", "N": "ON", "P": "ON",
     "R": "MB", "S": "SK", "T": "AB", "V": "BC", "Y": "YT",
 }
-"""加拿大邮编首字母 → 省(粗校验地理一致性)。"""
+"""加拿大邮编首字母 → 省(粗校验地理一致性)。
+X 打头是西北地区与努纳武特共用(2026-10-15 领地批),一个字母对不上唯一的省,不进表 = 不校验。"""
 
 ATLANTIC = {"NL", "NB", "NS", "PE"}
 """大西洋四省(AIP 只在这四省成立)。"""
@@ -789,8 +794,9 @@ OTTAWA_FSA_PREFIX = ("K1", "K2")
 PROV_NAMES = {
     "newfoundland and labrador", "nova scotia", "new brunswick", "prince edward island",
     "ontario", "quebec", "manitoba", "saskatchewan", "alberta", "british columbia",
+    "yukon", "northwest territories", "nunavut",
 }
-"""市字段若等于这些(省名)→ 错(全省岗只给了省名,没具体城市)。"""
+"""市字段若等于这些(省名)→ 错(全省岗只给了省名,没具体城市)。2026-10-15 领地批补三领地名。"""
 
 POSTAL_RE = re.compile(r"\b([A-Za-z]\d[A-Za-z])\s*\d[A-Za-z]\d\b")
 """从文本里认完整邮编,取前三位(FSA)。"""

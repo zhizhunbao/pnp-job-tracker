@@ -8,6 +8,7 @@ jvws 必须先于 mart —— mart 吃的是 jvws 的产出)。
     python etl/wages/main.py --only medians   # ESDC 中位工资 → raw/wages/wages.json
     python etl/wages/main.py --only jvws      # StatCan 空缺岗位 → raw/jvws/jvws-vacancies.json
     python etl/wages/main.py --only mart      # 上一步产出 → mart/jvws_vacancies.json
+    python etl/wages/main.py --only test      # 本域自测(2026-10-15 领地批:中位工资取哪些地理行)
 """
 import sys
 from pathlib import Path
@@ -15,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import say
 from door.functions import run_steps
-from wages.functions import build_esdc_wage_medians, build_statcan_jvws, build_statcan_jvws_mart
+from wages.functions import build_esdc_wage_medians, build_statcan_jvws, build_statcan_jvws_mart, run_tests
 
 SCHEDULED = []
 """无默认链(本域三步全靠手动点名,节奏见各步源的更新频率)。
@@ -27,8 +28,9 @@ TOOLS = {
     "medians": build_esdc_wage_medians,
     "jvws": build_statcan_jvws,
     "mart": build_statcan_jvws_mart,
+    "test": run_tests,
 }
-"""全部可 --only 点名的步。"""
+"""全部可 --only 点名的步。2026-10-15 领地批加 test(键与既有三键互不误命中)。"""
 
 
 def main() -> int:

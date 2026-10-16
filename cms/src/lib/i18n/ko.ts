@@ -993,7 +993,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   // E13-09 TEER4-5 통과 사유 3종(주 집합은 etl/08_score와 동일)
   'match.r.prov.open': '{prov}는 제외식 목록 운영, 이 직업은 제외 대상 아님',
   'match.r.prov.nl': '{prov} Skilled Worker는 오퍼만으로 TEER 0-5 가능',
-  'match.r.prov.cond': '{prov} 일반 스트림은 동일 고용주 6개월 전일제 근무 후 지원 가능',
+  'match.r.prov.cond': '{prov} 일반 스트림은 동일 고용주 {months}개월 전일제 근무 후 지원 가능',
+  'match.r.prov.direct': '{prov}는 풀타임 상시 오퍼만으로 TEER 4-5 가능하며 고용주가 신청합니다',
   'match.r.prov.uncovered': '{prov} 직업 목록 미수록, TEER 스크린만 적용',
   'match.r.prov.none': '{prov} 주정부 스크린 미충족',
   'match.r.ee.none': '공고 NOC가 연방 EE 카테고리 목록에 없음',
@@ -1197,6 +1198,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'cmp.demo': '예시 데이터', 'cmp.demoCta': 'Pro 업그레이드로 실제 비교 보기',
   'pr.ON': '온타리오주', 'pr.BC': '브리티시컬럼비아주', 'pr.AB': '앨버타주', 'pr.SK': '서스캐처원주', 'pr.MB': '매니토바주',
   'pr.QC': '퀘벡주', 'pr.NS': '노바스코샤주', 'pr.NB': '뉴브런즈윅주', 'pr.NL': '뉴펀들랜드 래브라도주', 'pr.PE': '프린스에드워드아일랜드주',
+  'pr.YT': '유콘준주', 'pr.NT': '노스웨스트준주', 'pr.NU': '누나부트준주',
   'stats.bnProvs': '대상 주 수', 'stats.bnBroads': '직업 대분류 수',
   // B4-01 디렉터리
   'dir.title': '고용주 디렉터리',

@@ -52,7 +52,7 @@ import {
   RK, RULE, SCORE_HIGH, SCORE_MID, SEARCH_COLS, SEO_DASH, SEO_LOC_SEP,
   SEO_PAREN_L, SEO_PAREN_R, SEP_KEY, SITE_ENV, SITE_FALLBACK, SITE_NAME, SITE_TAIL_RE, SORT_COLUMNS,
   SORT_NONE, SPACE, SPACES_RE, SQL_SEG_NONE, SRC_DASH, SRC_JOB_BANK, SSR_DIMS_TTL_MS, STAMP_NONE, STATUS_CLOSED_WORD,
-  STREAM_L10N, STREAM_NOTE_NONE, STRIP_REPL, T45_COND_PROVS, T45_NL, TEER_GENERAL_MAX, TEER_LOW_MIN, TERM_PERMANENT,
+  STREAM_L10N, STREAM_NOTE_NONE, STRIP_REPL, COND_MONTHS, T45_DIRECT_PROVS, T45_NL, TEER_GENERAL_MAX, TEER_LOW_MIN, TERM_PERMANENT,
   JD_HEAD_MARK_RE, JD_ROLE_SECTION_RE, TITLE_AMBIGUOUS, TITLE_BATCH_MAX, TITLE_CTX_CLEAN_RE, TITLE_CTX_MAX_LEN, TITLE_CTX_PREFIX,
   TITLE_CTX_STRIP_RE, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE,
   TITLE_MAX_LEN, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS,
@@ -506,16 +506,20 @@ function provRule(input: RuleIn): RuleScoreOut {
     score += PTS.provEligible
     const t45 = job.teer != null && job.teer >= TEER_LOW_MIN
     let key: string = RK.provGeneric
+    const params: Record<string, string | number> = { prov: prov }
     if (t45) {
       if (prov === T45_NL) {
         key = RK.provNl
-      } else if ((T45_COND_PROVS as readonly string[]).includes(prov)) {
+      } else if ((T45_DIRECT_PROVS as readonly string[]).includes(prov)) {
+        key = RK.provDirect
+      } else if (COND_MONTHS[prov] != null) {
         key = RK.provCond
+        params.months = COND_MONTHS[prov]
       } else {
         key = RK.provOpen
       }
     }
-    reasons.push({ rule: RULE.prov, verdict: VD.pass, key: key, params: { prov: prov }, source: null })
+    reasons.push({ rule: RULE.prov, verdict: VD.pass, key: key, params: params, source: null })
   } else {
     score += PTS.provNone
     reasons.push({ rule: RULE.prov, verdict: VD.fail, key: RK.provNone, params: { prov: prov }, source: null })

@@ -61,6 +61,21 @@ export const PROV_CODE: Record<string, string> = {
    * 爱德华王子岛。
    */
   'Prince Edward Island': 'PE',
+
+  /**
+   * 育空(2026-10-15 领地批,Frank「全接上」:三领地岗进站后,按全名筛选也要落到省码)。
+   */
+  'Yukon': 'YT',
+
+  /**
+   * 西北地区(同上)。
+   */
+  'Northwest Territories': 'NT',
+
+  /**
+   * 努纳武特(同上)。
+   */
+  'Nunavut': 'NU',
 }
 
 /**
@@ -328,6 +343,18 @@ export const MAIN_LIST_COVERAGE: Record<string, string> = {
    * Occupations in Demand 具名 8 个,但 PEI 另有不列职业的通道。
    */
   PE: 'partial',
+
+  /**
+   * 育空不列职业:按 TEER 分流(「The TEER of the job determines which stream you must apply to.」,Critical Impact Worker 收
+   * TEER 4、5,Skilled Worker 收 TEER 0-3;yukon.ca apply-skilled-worker-and-critical-impact-worker 页,2026-10-15 领地批核)。
+   */
+  YT: 'exclusion',
+
+  /**
+   * 西北地区不列职业:Skilled Worker 收 TEER 0-3、Entry Level/Semi-Skilled 收 TEER 4、5(immigratenwt.ca 两页原句,
+   * 2026-10-15 领地批核)。
+   */
+  NT: 'exclusion',
 }
 
 /**
@@ -1411,7 +1438,12 @@ export const RK = {
   provNl: 'match.r.prov.nl',
 
   /**
-   * MB/NS/NB/PE:先同雇主 6 个月。
+   * YT:TEER 4-5 拿全职长期 offer 即可,由雇主申请(2026-10-15 领地批)。
+   */
+  provDirect: 'match.r.prov.direct',
+
+  /**
+   * MB/NS/NB/PE:先同雇主 6 个月。2026-10-15 起带月数参数(NT 12 个月,见 COND_MONTHS)。
    */
   provCond: 'match.r.prov.cond',
 
@@ -1512,9 +1544,41 @@ export const RK = {
 export const T45_NL = 'NL'
 
 /**
- * E13-09:先同雇主 6 个月的省集合(镜像 etl/08_score.UNIVERSAL_*_PROVS)。
+ * TEER 4-5 拿 offer 即可、但不走 NL 那句文案的省(镜像 etl mart 的 UNIVERSAL_DIRECT_PROVS 减 NL;2026-10-15 领地批加 YT)。
  */
-export const T45_COND_PROVS = ['MB', 'NS', 'NB', 'PE'] as const
+export const T45_DIRECT_PROVS = ['YT'] as const
+
+/**
+ * E13-09:先同雇主干满若干个月的省 → 月数(镜像 etl mart 的 UNIVERSAL_COND_PROVS;原 T45_COND_PROVS 省集合并进来)。
+ * 2026-10-15 领地批 Frank 选「文案按省带月数」:NT Entry Level/Semi-Skilled 是 12 个月(「for a minimum of twelve (12)
+ * months full-time」,NTNP 雇主通道指南),其余四省 6 个月;文案 match.r.prov.cond 按这里的月数填。
+ */
+export const COND_MONTHS: Record<string, number> = {
+  /**
+   * 曼省 SWM:同雇主连续全职 6 个月。
+   */
+  MB: 6,
+
+  /**
+   * 新斯 Skilled Worker TEER 4-5:同雇主 6 个月。
+   */
+  NS: 6,
+
+  /**
+   * 新不 Experience:同雇主 6 个月。
+   */
+  NB: 6,
+
+  /**
+   * 爱岛 Critical Worker TEER 4-5:同雇主 6 个月。
+   */
+  PE: 6,
+
+  /**
+   * 西北地区 Entry Level/Semi-Skilled:同一职位在提名雇主那里全职 12 个月。
+   */
+  NT: 12,
+}
 
 /**
  * NOC 同小类的前缀长(前 4 位)。

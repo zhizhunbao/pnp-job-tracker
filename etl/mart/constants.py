@@ -741,6 +741,14 @@ PROV_OFFER_QUOTE = {
         "Employment is full‐time, non-seasonal with a contract for a permanent position or a minimum length of two years",
         "have been offered a seasonal, part-time or casual job in Prince Edward Island",
     ),
+    "YT": (
+        "https://yukon.ca/en/immigrate-yukon",
+        "have a full-time and year-round job offer from an eligible Yukon employer",
+    ),
+    "NT": (
+        "https://www.immigratenwt.ca/newsroom/nwt-nominee-program-opens-updated-selection-process",
+        "you must have a valid full-time and permanent job offer from an NWT employer",
+    ),
 }
 """省 → offer 形态门槛的出处页与官方原句(出处页, 原句…)(2026-09-27 Frank 勾「门槛卡」:省提名弹框「本岗通道的门槛」卡的
 「雇主 offer」行读它)。过不了的取值照旧只写在 PROV_OFFER_BLOCKED 一处,offer_form_rows 按省把两张表拼成 pnp_requirements 行
@@ -748,7 +756,8 @@ PROV_OFFER_QUOTE = {
 其余省随门槛卡分批逐省核网址与原句再补(PROV_OFFER_BLOCKED 注释里的旧路径不拿来拼网址)。
 2026-09-29 补 ON(劳动力优先通道页「Employer’s job offer requirements」一节原句,on-oinp 缓存核过;Frank「都接上,开工吧」)。
 同日七省门槛卡合并补 BC / SK / MB / NS / NB / NL / PE(各省子代理对缓存或官方指南逐字核过;NL 雇主页写「at least 2 years」、
-技术工人政策页写 12 个月,两页不一,照录雇主页原句 —— 卡片只用 PROV_OFFER_BLOCKED 的取值,不读这句的年限)。"""
+技术工人政策页写 12 个月,两页不一,照录雇主页原句 —— 卡片只用 PROV_OFFER_BLOCKED 的取值,不读这句的年限)。
+2026-10-15 领地批补 YT / NT(两句就是 PROV_OFFER_BLOCKED 注释里那两句,crawl 缓存 2026-10-15 逐字核过网址与原句)。"""
 
 OFFER_FORM_STREAM = "Job offer (all streams)"
 """offer 形态门槛行的通道名:本省凡要雇主 offer 的流都成立。名字里不带任何流名 —— 判定引擎按通道名正则挑行
@@ -784,19 +793,29 @@ OFFER_FORM_FETCHED = "2026-09-27"
 TEER_SKILLED = (0, 1, 2, 3)
 """技能岗 TEER 集(粗筛通用档)。"""
 
-UNIVERSAL_DIRECT_PROVS = {"NL"}
+UNIVERSAL_DIRECT_PROVS = {"NL", "YT"}
 """E13-09 五省「普通通道」之 direct = 拿 offer 即可入池:NL Skilled Worker「a full-time job
 or job offer: In a TEER 0, 1, 2, 3, 4 or 5 occupation」
 (gov.nl.ca/immigration/4-skilled-worker-category-eligibility-criteria)。
 2026-08-07 深夜拍板修口径根:inclusion 模型对 TEER4-5 系统性低估 —— 不看职业清单的
-雇主/经验锚定通道,逐省锚官方原句(全文见 docs/implementation/E13-把脉首页/09_*.md §2)。"""
+雇主/经验锚定通道,逐省锚官方原句(全文见 docs/implementation/E13-把脉首页/09_*.md §2)。
+2026-10-15 领地批(Frank「全接上」)加 YT:Critical Impact Worker 原句「The Critical Impact Worker stream is for entry-level
+jobs in: TEER 4; and TEER 5 positions.」(yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-
+impact-worker-streams-hire-foreign-worker,crawl 缓存 2026-10-15 核);6 个月经验是对申请人本人的要求(「6 months relevant work
+experience for Critical Impact Workers」),不要求先在育空同雇主干过 —— 与 NL 同属拿 offer 即可。两条流眼下 paused(EOI 每年
+1 月、7 月两窗),判定照全站口径不看开关。"""
 
-UNIVERSAL_COND_PROVS = {"MB", "NS", "NB", "PE"}
+UNIVERSAL_COND_PROVS = {"MB", "NS", "NB", "PE", "NT"}
 """同上之 cond = 须先省内同雇主干满 6 个月:MB SWM
 (immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility)、NS Skilled Worker TEER4-5
 (liveinnovascotia.com/skilled-worker)、NB Experience(gnb.ca …/nb-skilled-worker-stream.html;2026-09-24 官网迁版后现址
 www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html)、
-PE Critical Worker TEER4-5(pei_workforce_application_guide.pdf)。"""
+PE Critical Worker TEER4-5(pei_workforce_application_guide.pdf)。
+2026-10-15 领地批加 NT:Entry Level/Semi-Skilled 原句「This category is for occupations that fall under National Occupation
+Classification (NOC) TEER 4 or 5.」(immigratenwt.ca/entry-levelsemi-skilled-occupations),前置是 12 个月不是 6 个月:「Have worked
+in the same position with the nominating Employer for a minimum of twelve (12) months full-time, immediately prior to submitting an
+application.」(ntnp_program_guidelines_-_employer_driven_stream_0.pdf)。月数按省展示(cms lib/jobs 的 COND_MONTHS,Frank 选
+「文案按省带月数」),本集合只管「需前置」这一档。"""
 
 EXCL_TEER03_PROVS = {"BC"}
 """排除式省里只收 TEER 0-3 的(TEER 4-5 只有落在本省具名清单里才算):BC skills-immigration 页 Skilled Worker 一栏原句
@@ -2029,8 +2048,10 @@ PROV_FULL = {
     "ON": "Ontario", "QC": "Quebec", "BC": "British Columbia", "AB": "Alberta",
     "SK": "Saskatchewan", "MB": "Manitoba", "NB": "New Brunswick", "NS": "Nova Scotia",
     "NL": "Newfoundland and Labrador", "PE": "Prince Edward Island",
+    "YT": "Yukon", "NT": "Northwest Territories", "NU": "Nunavut",
 }
-"""省码 → 全名(provinces 维度表的十行;顺序即落盘序)。"""
+"""省码 → 全名(provinces 维度表的十行;顺序即落盘序)。
+2026-10-15 领地批(Frank「全接上」)补三领地,维度表十三行;三领地挂在十省之后。"""
 
 PROV_ON = "ON"
 """安省(评分的基准省:非 ON 扣分)。"""
@@ -3771,12 +3792,13 @@ OUT_CITY = paths.MART / "stats_city.json"
 「城市」两条横轴);都是「当下状态」的维度表(走 dims 的清空+重灌),与 stats_daily 的
 追加语义不同。"""
 
-PROVS = ["ON", "BC", "AB", "SK", "MB", "QC", "NS", "NB", "NL", "PE"]
-"""统计口径里的十省(v1 只做省级,市级后置;RNIP 待 E6 有数据再并入)。"""
+PROVS = ["ON", "BC", "AB", "SK", "MB", "QC", "NS", "NB", "NL", "PE", "YT", "NT", "NU"]
+"""统计口径里的十省(v1 只做省级,市级后置;RNIP 待 E6 有数据再并入)。
+2026-10-15 领地批:三领地并入,领地岗进 stats / 流量统计,不再被这张名单挡掉。"""
 
-PNP_PROV_ORDER = ["BC", "AB", "SK", "MB", "ON", "NB", "NS", "PE", "NL"]
+PNP_PROV_ORDER = ["BC", "AB", "SK", "MB", "ON", "NB", "NS", "PE", "NL", "YT", "NT"]
 """E13-05 榜A「可提名省份」列的省序(工作项文档 §3.1 写死);
-QC 由 pnp_eligible 内部按 NON_PNP_PROV 自然排除,不入序。"""
+QC 由 pnp_eligible 内部按 NON_PNP_PROV 自然排除,不入序。2026-10-15 领地批:YT / NT 排在九省之后(NU 同 QC 不属 PNP,不入序)。"""
 
 STATS_NEW_DAYS = 7
 """stats 的 new7d 窗口。"""

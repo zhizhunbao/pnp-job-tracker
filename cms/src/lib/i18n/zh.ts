@@ -1079,7 +1079,8 @@ export const jobsZh = {
   // E13-09 TEER4-5 通过理由三分(省集合镜像 etl/08_score)
   'match.r.prov.open': '{prov} 为排除式清单省,该职业不在排除之列',
   'match.r.prov.nl': '{prov} 技术工人类别 TEER 0-5 拿 offer 即可',
-  'match.r.prov.cond': '{prov} 普通通道:同雇主全职工作满 6 个月后可入池',
+  'match.r.prov.cond': '{prov} 普通通道:同雇主全职工作满 {months} 个月后可入池',
+  'match.r.prov.direct': '{prov} TEER 4-5 拿雇主全职长期 offer 即可,由雇主申请',
   'match.r.prov.uncovered': '{prov} 职业清单本站未收录,仅按 TEER 粗筛',
   'match.r.prov.none': '不符合 {prov} 的省提名粗筛条件',
   'match.r.ee.none': '本岗 NOC 不在任何联邦 EE 类别抽选清单',
@@ -1316,6 +1317,7 @@ export const siteZh = {
   // 省全名(#58 零黑话:chips 显示全名,码存幕后)
   'pr.ON': '安大略', 'pr.BC': '不列颠哥伦比亚', 'pr.AB': '阿尔伯塔', 'pr.SK': '萨斯喀彻温', 'pr.MB': '曼尼托巴',
   'pr.QC': '魁北克', 'pr.NS': '新斯科舍', 'pr.NB': '新不伦瑞克', 'pr.NL': '纽芬兰与拉布拉多', 'pr.PE': '爱德华王子岛',
+  'pr.YT': '育空', 'pr.NT': '西北地区', 'pr.NU': '努纳武特',
   'stats.bnProvs': '省全覆盖', 'stats.bnBroads': '职业大类',
   // B4-01 实体名录(雇主名录 + 紧缺职业清单)
   'dir.title': '雇主名录',

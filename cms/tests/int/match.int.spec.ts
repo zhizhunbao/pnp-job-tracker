@@ -106,6 +106,21 @@ describe('match rules v1', () => {
     expect(r.reasons.find((x) => x.key === 'match.r.prov.qc')).toBeTruthy()
   })
 
+  it('TEER 4-5 的省理由:前置档按省带月数(MB 6 / NT 12)、YT 拿 offer 即可、NL 原句不变(2026-10-15 领地批,Frank「文案按省带月数」)', () => {
+    const anyProv = normalizeProfile({ nocCodes: ['65201'], clb: 5, crs: null, targetProvinces: [] })
+    const mbRow = { province: 'MB', label: 'MPNP In-Demand', type: 'indemand', noc: '72106', url: 'https://immigratemanitoba.com/x', fetched: '2026-10-15', appliesTo: '' }
+    const withMb: MatchDims = { pnpOccupations: [...dims.pnpOccupations, mbRow], eeCategories: dims.eeCategories }
+    const provOf = (province: string) => match({ profile: anyProv, job: job({ noc: '65201', teer: 5, province, pnpEligible: true }), dims: withMb })
+      .reasons.find((x) => x.rule === 'prov')!
+    expect([provOf('MB').key, provOf('MB').params.months]).toEqual(['match.r.prov.cond', 6])
+    expect([provOf('NT').key, provOf('NT').params.months]).toEqual(['match.r.prov.cond', 12])
+    expect(provOf('YT').key).toBe('match.r.prov.direct')
+    expect(provOf('NL').key).toBe('match.r.prov.nl')
+    expect(provOf('YT').params.months).toBeUndefined()
+    const t1 = match({ profile: anyProv, job: job({ noc: '21231', teer: 1, province: 'NT', pnpEligible: true }), dims })
+    expect(t1.reasons.find((x) => x.rule === 'prov')!.key).toBe('match.r.prov.generic')
+  })
+
   it('同小类 NOC 记 minor 分(2026-07-21 三档:精确 40 / 同小类 30 / 同族 20)', () => {
     const r = match({ profile: dev, job: job({ noc: '21233', teer: 1, province: 'BC', pnpEligible: true }), dims })
     expect(r.reasons.find((x) => x.key === 'match.r.noc.minor')).toBeTruthy()

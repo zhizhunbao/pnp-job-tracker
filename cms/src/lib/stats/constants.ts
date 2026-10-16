@@ -26,8 +26,9 @@ export const BROAD_SLUGS: [string, string][] = [
 
 /**
  * 统计页收录的 10 个省(展示序)。
+ * 2026-10-15 领地批(Frank「全接上」):三领地排在十省之后,统计页 13 列。
  */
-export const PROVS = ['ON', 'BC', 'AB', 'SK', 'MB', 'QC', 'NS', 'NB', 'NL', 'PE']
+export const PROVS = ['ON', 'BC', 'AB', 'SK', 'MB', 'QC', 'NS', 'NB', 'NL', 'PE', 'YT', 'NT', 'NU']
 
 /**
  * 两位省码 → 英文省全名。
@@ -82,6 +83,21 @@ export const PROV_NAME: Record<string, string> = {
    * 爱德华王子岛。
    */
   PE: 'Prince Edward Island',
+
+  /**
+   * 育空(2026-10-15 领地批)。
+   */
+  YT: 'Yukon',
+
+  /**
+   * 西北地区(同上)。
+   */
+  NT: 'Northwest Territories',
+
+  /**
+   * 努纳武特(同上)。
+   */
+  NU: 'Nunavut',
 }
 
 /**

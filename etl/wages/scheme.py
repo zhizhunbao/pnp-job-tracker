@@ -5,6 +5,7 @@ wages 域行形状(照样张 etl/company/scheme.py;2026-08-30 批D 全溶)。
 validation_alias,键从 functions 消失);② 域内接线与洗净事实(XxxIn/XxxOut/XxxFact)
 = dataclass。落盘用的驼峰键由 functions 的 to_* 行构造器一次拼(⑩ 号方言律)。
 """
+import unittest
 from dataclasses import dataclass
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -396,3 +397,48 @@ class MartRowIn:
 
     fetched: str
     """抓取日 ISO(同上)。"""
+
+
+# =========================================================================
+# 4. 自测
+# =========================================================================
+
+
+class WageGeographyTest(unittest.TestCase):
+    """ESDC 中位工资取哪些地理行的自测(2026-10-15 领地批立;跑法 `python etl/wages/main.py --only test`):
+    省码别名归一、整省只有一个经济区的四地当省级、其余 6 位经济区照旧不取。行是手写的 wage2025.csv 真行形状,
+    不联网、不读写仓内文件;被测函数在用例体内现取(functions 反过来 import 本文件,顶部 import 会成环)。"""
+
+    def row_of(self, prov: str, er: str) -> dict:
+        """造一行 CSV 字典(只填被测用到的列)。"""
+        return {"NOC_CNP": "NOC_63200", "prov": prov, "ER_Code_Code_RE": er, "Annual_Wage_Flag_Salaire_annuel": "0",
+                "Median_Wage_Salaire_Median": "17.50", "Low_Wage_Salaire_Minium": "", "High_Wage_Salaire_Maximal": "",
+                "Reference_Period": "2023-2024"}
+
+    def test_golden(self) -> None:
+        """金标:(CSV prov, ER 码) → (落盘省码, 收不收)。四地整省一行收并归一省码;十省 4 位整省行与全国行收;
+        十省 6 位经济区不收;四地以外的 6 位码不因长得像而被收。"""
+        from wages import functions as fn
+        cases = [
+            ("PEI", "ER1110", "PE", True),
+            ("YK", "ER6010", "YT", True),
+            ("NWT", "ER6110", "NT", True),
+            ("NU", "ER6210", "NU", True),
+            ("ON", "ER35", "ON", True),
+            ("NAT", "ER00", "NAT", True),
+            ("ON", "ER3510", "ON", False),
+            ("BC", "ER5910", "BC", False),
+            ("QC", "ER2410", "QC", False),
+        ]
+        for prov, er, want_prov, want_kept in cases:
+            with self.subTest(prov=prov, er=er):
+                row = fn.to_wage_csv_row(self.row_of(prov, er))
+                self.assertEqual((row.prov, fn.is_kept_geography(row)), (want_prov, want_kept))
+
+    def test_no_noc_dropped(self) -> None:
+        """性质:没有职业码的行无论地理都不收。"""
+        from wages import functions as fn
+        for prov, er in (("PEI", "ER1110"), ("ON", "ER35"), ("NAT", "ER00")):
+            raw = self.row_of(prov, er)
+            raw["NOC_CNP"] = ""
+            self.assertFalse(fn.is_kept_geography(fn.to_wage_csv_row(raw)))

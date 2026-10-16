@@ -3400,7 +3400,9 @@ class MartOfferTest(unittest.TestCase):
         (评分与展示读同一份,变异探针:改门槛表行跟着变);主体不是 applicant / employer(不进判定);行键与各省门槛文件出的行同名同序。"""
         from mart import functions as fn
         rows = fn.offer_form_rows()
-        self.assertEqual([r["province"] for r in rows], ["AB", "ON", "BC", "SK", "MB", "NS", "NB", "NL", "PE"])
+        self.assertEqual([r["province"] for r in rows], ["AB", "ON", "BC", "SK", "MB", "NS", "NB", "NL", "PE", "YT", "NT"])
+        self.assertIn("full-time and year-round job offer from an eligible Yukon employer", rows[9]["valueText"])
+        self.assertEqual(rows[10]["basis"], "valueCode=part,term,seasonal,casual")
         on = rows[1]
         self.assertEqual(on["basis"], "valueCode=part,term,seasonal,casual")
         self.assertIn("full-time and permanent position in Ontario", on["valueText"])
@@ -3566,6 +3568,25 @@ class MartOfferTest(unittest.TestCase):
             with self.subTest(prov=prov, noc=noc, hours=hours, term=term):
                 self.assertEqual(fn.pnp_eligible(self.judge(prov, noc, hours, term)), want_e)
                 self.assertEqual(fn.pnp_stream(self.stream_in(prov, noc, hours, term)), want_s)
+
+    def test_territory_golden(self) -> None:
+        """两领地手写金标(2026-10-15 领地批,原句见 constants 的 UNIVERSAL_DIRECT_PROVS / UNIVERSAL_COND_PROVS):育空 TEER 4-5
+        拿全职长期 offer 即可(Critical Impact Worker,直接档);西北地区 TEER 4-5 可提名但要先在提名雇主那里干满 12 个月
+        (Entry Level/Semi-Skilled,前置档,不算拿 offer 即可);两地 TEER 0-3 照通用可且直接;兼职 / 合同 / 季节过不了两地
+        offer 门槛;努纳武特任何岗都不可。用例省表里没有两领地的清单 —— 与生产一致(raw/pnp 没有 yt / nt 表)。"""
+        from mart import functions as fn
+        cases = [
+            ("YT", "65201", "full", "permanent", True, True), ("YT", "95106", "", "", True, True),
+            ("YT", "21231", "full", "permanent", True, True), ("YT", "65201", "part", "permanent", False, False),
+            ("YT", "65201", "full", "seasonal", False, False),
+            ("NT", "65201", "full", "permanent", True, False), ("NT", "95106", "", "", True, False),
+            ("NT", "21231", "full", "permanent", True, True), ("NT", "65201", "full", "term", False, False),
+            ("NU", "65201", "full", "permanent", False, False), ("NU", "21231", "full", "permanent", False, False),
+        ]
+        for prov, noc, hours, term, want_e, want_d in cases:
+            with self.subTest(prov=prov, noc=noc, hours=hours, term=term):
+                judge = self.judge(prov, noc, hours, term)
+                self.assertEqual((fn.pnp_eligible(judge), fn.pnp_direct(judge)), (want_e, want_d))
 
     def test_non_pnp_provs(self) -> None:
         """性质:QC、NU 两地穷举 职业码 × 工时 × 雇佣期 一律不可、一律不挂通道名 —— 连省表里硬塞一条它们的具名通道
