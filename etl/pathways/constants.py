@@ -558,7 +558,7 @@ PW_BC_HEALTHCARE = {
     "quote": ("British Columbia has a critical need for workers in key sectors of the care economy, particularly in healthcare, "
               "education, childcare, and veterinary care."),
     "checked": "2026-09-28",
-    "category": {"key": "bc-skills", "quote": "Skills Immigration invitations Date ITA type Selection factors Minimum score Number of invitations October 8, 2026 Care: Childcare Early childhood educators only * 99 86 Care: Health All priority health care occupations", "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply"},
+    "category": {"key": "bc-skills", "quote": "Care: Health All priority health care occupations", "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply"},
     "steps": [BCS_STEP_OFFER, BCS_STEP_REGISTER, BCS_STEP_DRAW, BCS_STEP_APPLY, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗医疗定向(2026 新政 Care 类的医疗组,清单 bc-health.json)。officialName 照抄邀请页的类别名(BC 的定向是类别轮,不是单独的 stream)。
@@ -585,7 +585,7 @@ PW_BC_CHILDCARE = {
     "quote": ("Certified early childhood educators, French-speaking elementary and secondary school teachers, and veterinarians and "
               "veterinary technologists who are working toward Canadian certification will be prioritized."),
     "checked": "2026-09-28",
-    "category": {"key": "bc-skills", "quote": "Skills Immigration invitations Date ITA type Selection factors Minimum score Number of invitations October 8, 2026 Care: Childcare Early childhood educators only", "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply"},
+    "category": {"key": "bc-skills", "quote": "Care: Childcare Early childhood educators only", "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply"},
     "steps": [BCS_STEP_OFFER, BCS_STEP_REGISTER, BCS_STEP_DRAW, BCS_STEP_APPLY, BCS_STEP_REVIEW, BCS_STEP_PR],
 }
 """卑诗幼教定向(清单 bc-childcare.json)。英文界面现显示官方原名(stream.bcChildcare = Care: Childcare)。
@@ -12916,7 +12916,7 @@ PW_QC_PSTQ_STREAM_1 = {
         },
         {
             "step": "review",
-            "dur": {"kind": "about", "unit": "month", "min": 8, "max": 8, "quote": "We are currently reviewing applications for permanent selection under the Skilled Worker Selection Program (PSTQ) received in January 2026.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/applying"},
+            "dur": {"kind": "about", "unit": "month", "min": 8, "max": 8, "quote": "We are currently reviewing applications for permanent selection under the Skilled Worker Selection Program (PSTQ) received in February and March 2026.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/applying"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -13198,7 +13198,7 @@ PW_QC_PSTQ_STREAM_2 = {
         },
         {
             "step": "review",
-            "dur": {"kind": "about", "unit": "month", "min": 8, "max": 8, "quote": "We are currently reviewing applications for permanent selection under the Skilled Worker Selection Program (PSTQ) received in January 2026.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/applying"},
+            "dur": {"kind": "about", "unit": "month", "min": 8, "max": 8, "quote": "We are currently reviewing applications for permanent selection under the Skilled Worker Selection Program (PSTQ) received in February and March 2026.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/applying"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -13489,7 +13489,7 @@ PW_QC_PSTQ_STREAM_3 = {
         },
         {
             "step": "review",
-            "dur": {"kind": "about", "unit": "month", "min": 8, "max": 8, "quote": "We are currently reviewing applications for permanent selection under the Skilled Worker Selection Program (PSTQ) received in January 2026.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/applying"},
+            "dur": {"kind": "about", "unit": "month", "min": 8, "max": 8, "quote": "We are currently reviewing applications for permanent selection under the Skilled Worker Selection Program (PSTQ) received in February and March 2026.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/applying"},
             "who": "province",
             "none": False,
             "stuck": False,
@@ -13730,7 +13730,7 @@ PW_QC_PSTQ_STREAM_4 = {
         },
         {
             "step": "review",
-            "dur": {"kind": "about", "unit": "month", "min": 8, "max": 8, "quote": "We are currently reviewing applications for permanent selection under the Skilled Worker Selection Program (PSTQ) received in January 2026.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/applying"},
+            "dur": {"kind": "about", "unit": "month", "min": 8, "max": 8, "quote": "We are currently reviewing applications for permanent selection under the Skilled Worker Selection Program (PSTQ) received in February and March 2026.", "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/applying"},
             "who": "province",
             "none": False,
             "stuck": False,
