@@ -157,6 +157,7 @@ class JobbankStoreLockTest(unittest.TestCase):
     parse_jobbank_details),被 patch 的符号(jobbank_store_lock / latest_snapshot_dir /
     cutoff_of / fetched_at_of / parse_snapshot / load_postings / write_postings /
     detail_html_index / SCRAPED_KEYS / IN_POSTINGS / OUT_DETAILS)逐个原名健在。
+    2026-10-15 漏帖修复批:列表解析不再按截止日跳行,cutoff_of 退役,⑤号用例那一行补丁随之删(语义不变)。
     2026-08-31 批K 随 gate 立域搬进 scheme(库垫片住 scheme,GateText 先例);
     跑法从 `python etl/test_jobbank_lock.py` 变成 `python etl/gate/main.py --only locktest`。
     2026-08-31 批J(并行批,clean/ 目录退役)只跟链上的说法不动语义:五个清洗步换成
@@ -292,7 +293,6 @@ class JobbankStoreLockTest(unittest.TestCase):
             row.update({"posting_id": "1", "date": "2026-08-05", "url": "https://example.invalid/jobposting/1"})
             with mock.patch.object(module, "jobbank_store_lock", real_temp_lock), \
                  mock.patch.object(module, "latest_snapshot_dir", return_value=Path(td)), \
-                 mock.patch.object(module, "cutoff_of", return_value=module.datetime.min.date()), \
                  mock.patch.object(module, "fetched_at_of", return_value="2026-08-05T00:00:00Z"), \
                  mock.patch.object(module, "parse_snapshot", return_value=[row]), \
                  mock.patch.object(module, "load_postings", return_value={}), \

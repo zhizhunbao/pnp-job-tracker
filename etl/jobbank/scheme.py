@@ -29,7 +29,7 @@ from unittest import mock
 
 from jobbank.constants import (
     K_CHECKED, K_DATE, K_DEAD, K_DIRECT, K_HOWTO_UNTIL, K_LAST_SEEN, K_POSTING_ID, K_SOURCE, K_UNTIL, K_URL,
-    TIER_NORMAL, TIER_OVERDUE, TIER_RECHECK,
+    TIER_NORMAL, TIER_OVERDUE, TIER_RECHECK, TIER_REVIVE, HOWTO_GONE, K_HOWTO_AT, K_HOWTO_STATUS,
     K_DETAIL_FETCHED, K_EMPLOYER, K_EMPLOYMENT_HOURS, K_NOC, K_TITLE, K_VALID_THROUGH, K_WHO_CAN_APPLY,
 )
 
@@ -171,6 +171,9 @@ class ProvinceIn:
     cutoff: date
     """截止日(整页都早于它 = 该省到头)。"""
 
+    sweep: bool
+    """本轮扫底这一省:不看截止日,翻到空页(或 SWEEP_MAX_PAGES)才停(2026-10-15)。"""
+
     snap_dir: Path
     """本轮快照目录。"""
 
@@ -182,6 +185,31 @@ class ProvinceIn:
 
     delay: float
     """翻页间隔。"""
+
+
+@dataclass
+class ProvinceOut:
+    """snapshot_province() 出参:存了几页 + 是不是正常翻到头(2026-10-15 扫底批起要知道后者才记台账)。"""
+
+    saved: int
+    """存下的页数。"""
+
+    clean: bool
+    """停在空页或整页早于截止日 = True;重试耗尽或翻满上限 = False。"""
+
+
+@dataclass
+class SweepPickIn:
+    """sweep_prov_of() 入参:挑本轮扫底的省。"""
+
+    provinces: list
+    """本轮要抓的省码清单(同序即并列时的先后)。"""
+
+    sweeps: dict
+    """扫底台账(省码 → 上次完整扫底的 UTC ISO 时刻)。"""
+
+    now: datetime
+    """此刻(UTC)。"""
 
 
 @dataclass
@@ -226,17 +254,6 @@ class AllOldIn:
 
 
 @dataclass
-class CutoffIn:
-    """cutoff_of() 入参:快照目录 + 回退窗口。"""
-
-    snap: Path
-    """快照目录。"""
-
-    since_days: int
-    """manifest 缺 cutoff 时的回退窗口天数。"""
-
-
-@dataclass
 class MergeIn:
     """merge_rows() 入参:本轮解析出的行往累积 store 里合。"""
 
@@ -246,25 +263,19 @@ class MergeIn:
     by_id: dict
     """累积 store(posting_id → 行;原地合并)。"""
 
-    cutoff: date
-    """截止日(早于它的行跳过)。"""
-
     fetched: str
     """本快照的抓取时刻(写进 last_seen)。"""
 
 
 @dataclass
 class MergeOut:
-    """merge_rows() 出参:四个计数。"""
+    """merge_rows() 出参:三个计数(2026-10-15 删「早于截止日跳过」一格:列表上露面的帖一律合并)。"""
 
     added: int
     """新增的帖数。"""
 
     updated: int
     """更新的帖数。"""
-
-    skipped_old: int
-    """因早于截止日跳过的行数。"""
 
     stale: int
     """已抓过详情、这轮列表标题变了的帖数(记了详情欠重抓;2026-09-25)。"""
@@ -656,6 +667,9 @@ class CandidateOut:
     recheck: int
     """候选里截止日已过完、验过仍活着、到了 12 小时复检的(TIER_RECHECK 档)。"""
 
+    revive: int
+    """候选里判死过、之后又在列表上露面、过了冷却的(TIER_REVIVE 档;2026-10-15)。"""
+
 
 @dataclass
 class UntilKnownIn:
@@ -669,6 +683,20 @@ class UntilKnownIn:
 
     pid: str
     """帖号。"""
+
+
+@dataclass
+class ReviveIn:
+    """is_revive_due() 入参:一个判死帖此刻该不该复查。"""
+
+    last_seen: str
+    """帖子行的 last_seen(UTC ISO,Z 结尾;空串 = 没在列表上露过面)。"""
+
+    dead_at: str
+    """判死时刻(UTC ISO;空串 = 台账没记时刻)。"""
+
+    now: datetime
+    """此刻。"""
 
 
 @dataclass
@@ -735,7 +763,7 @@ class VerifyIn:
 
 @dataclass
 class VerifyOut:
-    """verify_batch() 出参:本轮四个计数。"""
+    """verify_batch() 出参:本轮五个计数。"""
 
     dead: int
     """新判死。"""
@@ -748,6 +776,9 @@ class VerifyOut:
 
     extended: int
     """仍在招里帖页截止日比挑帖时知道的晚(延期了;2026-09-26 起数)。"""
+
+    revived: int
+    """仍在招里原本在判死名单上的(摘掉判死;2026-10-15 起数)。"""
 
 
 @dataclass
@@ -1303,7 +1334,7 @@ class JobbankVerifyTest(unittest.TestCase):
         state = self.state_of()
         state[K_CHECKED]["9"] = self.ago(200)
         state[K_UNTIL]["9"] = "2026-09-20"
-        out = VerifyOut(dead=0, alive=0, errs=0, extended=0)
+        out = VerifyOut(dead=0, alive=0, errs=0, extended=0, revived=0)
         alive = [
             ("1", "2026-09-25", self.page_of("2026-10-09"), "2026-10-09", 1),
             ("2", "", self.page_of(""), "", 0),
@@ -1347,7 +1378,7 @@ class JobbankVerifyTest(unittest.TestCase):
             for _key, cid, _url, until in picked.cands:
                 status, page_until = self.reply_at(script, now)
                 html = self.page_of(page_until)
-                fn.judge_page(JudgeIn(state=state, out=VerifyOut(dead=0, alive=0, errs=0, extended=0), pid=cid,
+                fn.judge_page(JudgeIn(state=state, out=VerifyOut(dead=0, alive=0, errs=0, extended=0, revived=0), pid=cid,
                                       until=until, status=status, html=html, now=now))
                 seen.append(now.strftime("%m-%d %H:%M"))
             now = now + timedelta(hours=1)
@@ -1399,6 +1430,80 @@ class JobbankVerifyTest(unittest.TestCase):
         late = [("2026-09-01 00:00", 200, ""), ("2026-10-06 00:00", 410, "")]
         self.assertEqual(self.run_rounds(old, {}, ("2026-09-26 00:00", "2026-10-08 00:00", "2026-09-24 00:00"), late),
                          ["10-01 00:00", "10-03 00:00", "10-05 00:00", "10-07 00:00"])
+
+    def test_revive_due_golden(self) -> None:
+        """复活复查金标(此刻 09-26 16:00 UTC):判死之后又在列表上露面、判死满 2 天 → 查;露面早于判死、判死不满 2 天、
+        没露过面 → 不查;台账没记判死时刻而露过面 → 查。冷却 2 天手写在用例里,改常量不改用例 = 红。"""
+        from jobbank import functions as fn
+        seen = "2026-09-26T03:00:00Z"
+        cases = [
+            (seen, self.ago(48), True),
+            (seen, self.ago(47.9), False),
+            (seen, self.ago(24 * 30), True),
+            ("2026-09-20T03:00:00Z", self.ago(24 * 3), False),
+            ("", self.ago(24 * 30), False),
+            (seen, "", True),
+            ("", "", False),
+        ]
+        for last_seen, dead_at, want in cases:
+            with self.subTest(last_seen=last_seen, dead_at=dead_at):
+                self.assertEqual(fn.is_revive_due(ReviveIn(last_seen=last_seen, dead_at=dead_at, now=self.now_of())),
+                                 want)
+
+    def test_candidates_revive(self) -> None:
+        """复活复查进候选:判死后又露面、过了冷却的排在一切之前(档内判死早的先),不看在不在板上;冷却中 / 判死后没再
+        露面的不进候选;howto 判下架、之后没验活过的同样算死(与 mart 的 dead_table 同口径),验活过的回到常规档。"""
+        from jobbank import functions as fn
+        state = self.state_of()
+        rows = []
+        gone_at = self.at("2026-09-20 00:00").isoformat()
+        specs = [
+            ("R1", "2026-09-26T03:00:00Z", self.ago(24 * 10)),
+            ("R2", "2026-09-26T03:00:00Z", self.ago(24 * 3)),
+            ("R3", "2026-09-26T03:00:00Z", self.ago(24)),
+            ("R4", "2026-09-10T00:00:00Z", self.ago(24 * 10)),
+            ("G1", "2026-09-26T03:00:00Z", ""),
+            ("G2", "2026-09-26T03:00:00Z", ""),
+            ("G3", "2026-09-01T00:00:00Z", ""),
+            ("A", "2026-09-01T00:00:00Z", ""),
+        ]
+        for pid, last_seen, dead_at in specs:
+            job = self.job_of(pid, "Job Bank", "September 1, 2026")
+            job[K_LAST_SEEN] = last_seen
+            rows.append(job)
+            if dead_at != "":
+                state[K_DEAD][pid] = dead_at
+        howto = {}
+        for pid in ("G1", "G2", "G3"):
+            howto[pid] = {K_HOWTO_STATUS: HOWTO_GONE, K_HOWTO_AT: gone_at}
+        state[K_CHECKED]["G2"] = self.at("2026-09-22 00:00").isoformat()
+        out = fn.candidates_of(CandidateIn(postings=rows, state=state, on_board={"A", "G2"}, howto=howto,
+                                           now=self.now_of()))
+        order = []
+        for _key, pid, _url, _until in out.cands:
+            order.append(pid)
+        self.assertEqual(order, ["R1", "G1", "R2", "A"])
+        self.assertEqual((out.revive, out.off_board), (3, 0))
+        self.assertEqual(out.cands[0][0][0], TIER_REVIVE)
+        self.assertLess(TIER_REVIVE, min(TIER_OVERDUE, TIER_RECHECK, TIER_NORMAL))
+
+    def test_judge_page_revive(self) -> None:
+        """复查验活:判死名单里的帖回活帖页 → 摘掉判死、记验活、计一次摘掉;再验活不重复计;回 410 → 判死时刻刷新成本轮
+        (冷却从头算),不计摘掉。"""
+        from jobbank import functions as fn
+        now = self.now_of()
+        state = self.state_of()
+        state[K_DEAD]["R"] = self.ago(24 * 10)
+        state[K_DEAD]["Z"] = self.ago(24 * 10)
+        out = VerifyOut(dead=0, alive=0, errs=0, extended=0, revived=0)
+        for _ in range(2):
+            fn.judge_page(JudgeIn(state=state, out=out, pid="R", until="", status=200, html=self.page_of("2026-10-09"),
+                                  now=now))
+        self.assertNotIn("R", state[K_DEAD])
+        self.assertEqual(state[K_CHECKED]["R"], now.isoformat())
+        fn.judge_page(JudgeIn(state=state, out=out, pid="Z", until="", status=410, html="", now=now))
+        self.assertEqual(state[K_DEAD]["Z"], now.isoformat())
+        self.assertEqual((out.alive, out.revived, out.dead), (2, 1, 1))
 
 
 class JobbankDetailParseTest(unittest.TestCase):
@@ -1572,3 +1677,119 @@ class JobbankDetailParseTest(unittest.TestCase):
         for key in keys:
             done = done and key in job
         return done is False
+
+
+class JobbankListingTest(unittest.TestCase):
+    """列表抓取与解析自测(2026-10-15 漏帖修复批立;跑法同 `--only test`):扫底挑省(到期才扫、最旧先扫、一轮一个)、
+    扫底不看截止日翻到空页、半途断掉 / 翻满上限不算翻到底、解析不按发布日跳行。不联网(HTTP 客户端是替身)、
+    只写用例自己的临时目录。间隔 24 小时手写在用例里,改常量不改用例 = 红。"""
+
+    def now_of(self) -> datetime:
+        """用例统一的「此刻」:2026-10-15 12:00 UTC。"""
+        return datetime(2026, 10, 15, 12, 0, tzinfo=timezone.utc)
+
+    def ago(self, hours: float) -> str:
+        """此刻往前 hours 小时的扫底时刻串(与扫底台账的写法一致)。"""
+        return (self.now_of() - timedelta(hours=hours)).isoformat()
+
+    def page_html(self, posts: list) -> str:
+        """造一页列表 HTML:posts = [(帖号, 列表页发布日原文)];空清单 = 翻过头的空页。"""
+        arts = ""
+        for pid, posted in posts:
+            arts += ('<article><a href="/jobsearch/jobposting/' + pid + '?source=searchresults">'
+                     '<span class="noctitle">cook</span></a><li class="date">' + posted + "</li>"
+                     '<li class="location">Location Ottawa (ON)</li></article>')
+        return "<html><body>" + arts + "</body></html>"
+
+    def site(self) -> dict:
+        """替身站点:页号 → 页 HTML(按发布日降序;第 3、4 页是挂旧发布日的转帖,第 5 页起空)。"""
+        return {1: self.page_html([("11", "October 15, 2026"), ("12", "October 14, 2026")]),
+                2: self.page_html([("21", "October 12, 2026"), ("22", "October 11, 2026")]),
+                3: self.page_html([("31", "September 25, 2026"), ("32", "September 25, 2026")]),
+                4: self.page_html([("41", "September 25, 2026")])}
+
+    def client_of(self, broken: int) -> mock.Mock:
+        """替身 HTTP 客户端:按地址里的页号回 site() 的页;broken 页一律抛错(0 = 不坏)。"""
+        self.broken = broken
+        client = mock.Mock()
+        client.get.side_effect = self.answer
+        return client
+
+    def answer(self, url: str) -> mock.Mock:
+        """client.get 的替身实现:按地址里的页号回页,第 self.broken 页抛错。"""
+        page = int(url.rsplit("page=", 1)[1])
+        if page == self.broken:
+            raise OSError("boom")
+        resp = mock.Mock()
+        resp.text = self.site().get(page, self.page_html([]))
+        return resp
+
+    def snap(self, sweep: bool, max_pages: int, broken: int) -> tuple:
+        """跑一次 snapshot_province(截止日 10-12),返回 (存页数, 翻到底, manifest 页号清单)。"""
+        from jobbank import functions as fn
+        pages: list = []
+        with tempfile.TemporaryDirectory() as td, mock.patch.object(fn.time, "sleep"), \
+                mock.patch.object(fn, "say"):
+            out = fn.snapshot_province(ProvinceIn(client=self.client_of(broken), prov="ON", cutoff=date(2026, 10, 12),
+                                                  sweep=sweep, snap_dir=Path(td), pages=pages, max_pages=max_pages,
+                                                  delay=0))
+        got = []
+        for item in pages:
+            got.append(item["page"])
+        return (out.saved, out.clean, got)
+
+    def test_snapshot_sweep(self) -> None:
+        """增量抓到整页早于截止日那页就停(第 3 页,翻到底);扫底不看截止日翻到空页(4 页,翻到底);扫底翻满上限 /
+        半途重试耗尽 → 不算翻到底(台账不记,下轮重扫);增量半途断掉同样不算。"""
+        self.assertEqual(self.snap(False, 400, 0), (3, True, [1, 2, 3]))
+        self.assertEqual(self.snap(True, 1500, 0), (4, True, [1, 2, 3, 4]))
+        self.assertEqual(self.snap(True, 2, 0), (2, False, [1, 2]))
+        self.assertEqual(self.snap(True, 1500, 3), (2, False, [1, 2]))
+        self.assertEqual(self.snap(False, 400, 2), (1, False, [1]))
+
+    def test_sweep_pick_golden(self) -> None:
+        """扫底挑省金标(省序 ON / QC / SK):没扫过的最先(并列按省序);都扫过挑满 24 小时里最旧的;差一点不到 24 小时
+        的不扫;都没到期给空串;台账里省序以外的省不管。"""
+        from jobbank import functions as fn
+        cases = [
+            ({}, "ON"),
+            ({"ON": self.ago(1)}, "QC"),
+            ({"ON": self.ago(1), "QC": self.ago(2)}, "SK"),
+            ({"ON": self.ago(30), "QC": self.ago(25), "SK": self.ago(1)}, "ON"),
+            ({"ON": self.ago(25), "QC": self.ago(30), "SK": self.ago(1)}, "QC"),
+            ({"ON": self.ago(23.9), "QC": self.ago(23), "SK": self.ago(1)}, ""),
+            ({"ON": self.ago(24), "QC": self.ago(23), "SK": self.ago(1)}, "ON"),
+            ({"ON": self.ago(1), "QC": self.ago(1), "SK": self.ago(1), "PE": self.ago(500)}, ""),
+        ]
+        for sweeps, want in cases:
+            with self.subTest(sweeps=sweeps):
+                self.assertEqual(fn.sweep_prov_of(SweepPickIn(provinces=["ON", "QC", "SK"], sweeps=sweeps,
+                                                              now=self.now_of())), want)
+
+    def test_sweep_rotation(self) -> None:
+        """逐小时一轮跑 3 天、每轮扫到底就记台账:三省各自 24 小时一扫、一轮至多一个省,首日错开成连续三轮。"""
+        from jobbank import functions as fn
+        sweeps: dict = {}
+        log = []
+        for hour in range(72):
+            now = self.now_of() + timedelta(hours=hour)
+            prov = fn.sweep_prov_of(SweepPickIn(provinces=["ON", "QC", "SK"], sweeps=sweeps, now=now))
+            if prov != "":
+                sweeps[prov] = now.isoformat()
+                log.append((hour, prov))
+        self.assertEqual(log, [(0, "ON"), (1, "QC"), (2, "SK"), (24, "ON"), (25, "QC"), (26, "SK"),
+                               (48, "ON"), (49, "QC"), (50, "SK")])
+
+    def test_merge_keeps_old_dated_rows(self) -> None:
+        """解析不按发布日跳行:挂旧发布日的新帖号照样新增,老帖照样刷新 last_seen,衍生字段不被覆盖。"""
+        from jobbank import functions as fn
+        fetched = "2026-10-15T20:39:25Z"
+        rows = fn.page_rows(self.page_html([("50404197", "September 25, 2026"), ("49928548", "July 18, 2026")]))
+        by_id = {"49928548": {K_POSTING_ID: "49928548", K_TITLE: "cook", "salaryAnnual": 50000,
+                              K_LAST_SEEN: "2026-09-01T00:00:00Z"}}
+        out = fn.merge_rows(MergeIn(rows=rows, by_id=by_id, fetched=fetched))
+        self.assertEqual((out.added, out.updated, out.stale), (1, 1, 0))
+        self.assertEqual(by_id["50404197"][K_LAST_SEEN], fetched)
+        self.assertEqual(by_id["49928548"][K_LAST_SEEN], fetched)
+        self.assertEqual(by_id["49928548"]["salaryAnnual"], 50000)
+        self.assertEqual(by_id["50404197"][K_DATE], "September 25, 2026")

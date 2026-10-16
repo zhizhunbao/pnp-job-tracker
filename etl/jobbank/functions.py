@@ -27,6 +27,8 @@ write_outputs / build_comparison 四只函数一起退役。判据:① 全仓零
 先例同款「零消费者的产出连逻辑带常量整体退役」。要考古走 git 历史。
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch)+ 本域 __init__ 的
 SINCE_DAYS(抓取与解析两步共用同一个窗口值,cutoff 才对得上)。
+2026-10-15 漏帖修复批:解析不再按截止日跳行,SINCE_DAYS 只剩抓取一步用(决定增量翻几页);另加两件 ——
+列表抓取每轮挑一个到期的省扫底(第 2 段 sweep_prov_of),验尸复查判死后又露面的帖(第 8 段 TIER_REVIVE)。
 """
 import json
 import os
@@ -54,6 +56,8 @@ from jobbank.constants import (
     BULLET_TRIM_CHARS, CAT_AIP_OUT, CAT_CITY_IS_PROV,
     CAT_DISTRICT_OUT, CAT_OTTAWA_FALSE, CAT_POSTAL_MISMATCH, CAT_PROV_MISSING, CAT_SALARY_HIGH,
     CAT_SALARY_LOW, CAT_URL_DUP, CHAIN_DELAY_S, CHAIN_MAX_PAGES, CITY_PROV_RE,
+    K_SWEEP, OUT_SWEEP, PRINT_SWEEP_SAVED_TPL, SWEEP_EVERY_H, SWEEP_MAX_PAGES, SWEEP_NONE,
+    REVIVE_RECHECK_DAYS, TIER_REVIVE,
     CLASS_ATTRIBUTE_VALUE, COMPANY_SLUG_MAX, DATE_DIR_RE, DATE_FMTS, DATE_POSTED_PREFIX,
     DETAIL_HTML_TPL, DETAIL_MD_TPL, DETAIL_SLEEP_S, DETAIL_SLUG_MAX, DETAIL_TICK, DETAIL_TIMEOUT_S,
     DIR_COMPANIES, DIR_DETAILS, DIR_JOBS, DIRECT_MARK, EDUCATION_JOIN_SEP,
@@ -97,7 +101,7 @@ from jobbank.constants import (
     SANITY_WAGE_NATIONAL, SCRAPED_KEYS, SEL_ADDRESS, SEL_ARTICLE, SEL_BUSINESS, SEL_DATE,
     SEL_DATE_POSTED, SEL_DESCRIPTION, SEL_EMPLOYMENT_TYPE, SEL_H3_TITLE, SEL_HIRING_ORG,
     SEL_JOB_SOURCE, SEL_LOCATION, SEL_NOC_NO, SEL_NOC_NO_CLASS, SEL_NOC_TITLE, SEL_ORG_LINK,
-    SEL_REQUIREMENTS, SEL_SALARY, SINCE_DAYS_FLAG, SLUG_DASH, SLUG_FALLBACK, SLUG_RE,
+    SEL_REQUIREMENTS, SEL_SALARY, SLUG_DASH, SLUG_FALLBACK, SLUG_RE,
     SNAP_PAGE_TPL, SOURCE_JOBBANK, SPACE_SEP, STEM_DUP_TPL, STEM_FALLBACK, STEM_FILE_TPL,
     STEM_JOIN, TAG_A, TAG_H4, TAG_LI, TAG_SPAN, TAG_UL,
     TEER_PRO_DIGITS, TERM_MAP, TIMESPEC_SECONDS, TITLE_TRIM_CHARS, UNCLASSIFIED, UNKNOWN_PROV,
@@ -118,14 +122,14 @@ from jobbank.constants import (
 )
 from jobbank.scheme import (
     AllOldIn, ApprenticeRowIn, ApprenticeTally, CandidateIn, CandidateOut, CategoryIn, CheckIn,
-    CompanyIn, CutoffIn, DetailMdIn, DetailTally, DupIn, EmploymentOut, FieldIn, EnrichIn, FlagIn,
+    CompanyIn, DetailMdIn, DetailTally, DupIn, EmploymentOut, FieldIn, EnrichIn, FlagIn,
     JdIndexUpdates, JdMdScan, JdMergeIn,
     FlagRowIn, HttpClientLike, JobMdIn, LabelIn, ListingIn, MergeIn, MergeOut, NeedIn, PageIn,
-    PageOut, ProvinceIn, ReqIn, SanityJudgeIn, SanityRowIn, SanityWageIn, SaveIn, ShouldParseIn,
+    PageOut, ProvinceIn, ProvinceOut, ReqIn, ReviveIn, SweepPickIn, SanityJudgeIn, SanityRowIn, SanityWageIn, SaveIn, ShouldParseIn,
     SoupNodeLike, StaleIn, StemIn, TickIn, TitleChangeIn, VerifyIn, VerifyOut,
     HowtoBatchIn, HowtoBatchOut, HowtoFlushIn, HowtoOneIn, HowtoParseIn, HowtoPickIn, HowtoPickOut,
     HowtoRecordIn, HowtoTallyIn, HttpPostClientLike,
-    JobbankDetailParseTest, JobbankVerifyTest, JudgeIn, PickIn, PickOut, TallyPickIn, UntilKnownIn,
+    JobbankDetailParseTest, JobbankListingTest, JobbankVerifyTest, JudgeIn, PickIn, PickOut, TallyPickIn, UntilKnownIn,
 )
 
 
@@ -276,38 +280,54 @@ def html_at_of(path: Path) -> datetime:
 
 
 def scrape_jobbank_postings() -> None:
-    """本域步骤入口:各省全职业按日期降序翻页,每页原始 HTML 整存进当天快照目录。"""
+    """本域步骤入口:各省全职业按日期降序翻页,每页原始 HTML 整存进当天快照目录。
+    2026-10-15 起每轮另挑一个到期的省整省翻到底(扫底,见 SWEEP_EVERY_H)。"""
     fetch_listing_snapshots(ListingIn(provinces=ALL_PROVINCES, since_days=int(SINCE_DAYS),
                                       max_pages=CHAIN_MAX_PAGES, delay=CHAIN_DELAY_S))
 
 
 def fetch_listing_snapshots(x: ListingIn) -> dict:
-    """逐省翻页存快照 + 写 manifest;返回 manifest(页内日期只用来决定翻几页)。"""
+    """逐省翻页存快照 + 写 manifest;返回 manifest(页内日期只用来决定翻几页)。
+    2026-10-15:到期扫底的那一省(sweep_prov_of)不看截止日、翻到空页,翻到底才记进扫底台账。"""
     say(PRINT_LISTING_HEAD_TPL.format(provinces=x.provinces, since_days=x.since_days))
     today = datetime.now().date()
     cutoff = today - timedelta(days=x.since_days)
     snap_dir = OUT_SNAP_ROOT / today.isoformat()
     snap_dir.mkdir(parents=True, exist_ok=True)
+    sweeps = load_sweeps()
+    sweep = sweep_prov_of(SweepPickIn(provinces=x.provinces, sweeps=sweeps, now=datetime.now(timezone.utc)))
     pages: list = []
     manifest = {K_FETCHED_AT: datetime.now().isoformat(timespec=TIMESPEC_SECONDS),
-                K_SINCE_DAYS: x.since_days, K_CUTOFF: cutoff.isoformat(), K_PAGES: pages}
+                K_SINCE_DAYS: x.since_days, K_CUTOFF: cutoff.isoformat(), K_SWEEP: sweep, K_PAGES: pages}
     with make_client(LISTING_TIMEOUT_S) as raw_client:
         client = cast(HttpClientLike, raw_client)
         for prov in x.provinces:
-            saved = snapshot_province(ProvinceIn(client=client, prov=prov, cutoff=cutoff,
-                                                 snap_dir=snap_dir, pages=pages,
-                                                 max_pages=x.max_pages, delay=x.delay))
-            say(PRINT_PROV_SAVED_TPL.format(prov=prov, saved=saved, cutoff=cutoff))
+            max_pages = x.max_pages
+            if prov == sweep:
+                max_pages = SWEEP_MAX_PAGES
+            out = snapshot_province(ProvinceIn(client=client, prov=prov, cutoff=cutoff, sweep=prov == sweep,
+                                               snap_dir=snap_dir, pages=pages,
+                                               max_pages=max_pages, delay=x.delay))
+            if prov != sweep:
+                say(PRINT_PROV_SAVED_TPL.format(prov=prov, saved=out.saved, cutoff=cutoff))
+                continue
+            say(PRINT_SWEEP_SAVED_TPL.format(prov=prov, saved=out.saved, clean=out.clean))
+            if out.clean:
+                sweeps[prov] = datetime.now(timezone.utc).isoformat()
+                write_text(WriteTextIn(path=OUT_SWEEP, text=json.dumps(sweeps, ensure_ascii=False,
+                                                                       indent=JSON_INDENT)))
     write_text(WriteTextIn(path=snap_dir / MANIFEST_FILE,
                            text=json.dumps(manifest, ensure_ascii=False, indent=JSON_INDENT)))
     say(PRINT_SNAPSHOT_TPL.format(snap_dir=snap_dir, pages=len(pages)))
     return manifest
 
 
-def snapshot_province(x: ProvinceIn) -> int:
-    """一个省翻到头:空页/整页早于截止日/重试耗尽都停;翻满上限仍没跨天 = 大声告警。"""
+def snapshot_province(x: ProvinceIn) -> ProvinceOut:
+    """一个省翻到头:空页/整页早于截止日/重试耗尽都停;翻满上限仍没跨天 = 大声告警。
+    2026-10-15:扫底(x.sweep)不看截止日,只停在空页;出参多报一格「是不是正常翻到头」(重试耗尽 / 翻满上限不算)。"""
     saved = 0
     exhausted = True
+    clean = False
     for page in range(1, x.max_pages + 1):
         out = fetch_listing_page(PageIn(client=x.client, prov=x.prov, page=page))
         if out.html == "":
@@ -317,18 +337,20 @@ def snapshot_province(x: ProvinceIn) -> int:
         rows = page_rows(out.html)
         if len(rows) == 0:
             exhausted = False
+            clean = True
             break
         name = SNAP_PAGE_TPL.format(prov=PROV_FULL.get(x.prov, x.prov.lower()), page=page)
         write_text(WriteTextIn(path=x.snap_dir / name, text=out.html))
         x.pages.append({K_PROV: x.prov, K_PAGE: page, K_FILE: name, K_ROWS: len(rows)})
         saved += 1
-        if all_rows_old(AllOldIn(rows=rows, cutoff=x.cutoff)):
+        if x.sweep is False and all_rows_old(AllOldIn(rows=rows, cutoff=x.cutoff)):
             exhausted = False
+            clean = True
             break
         time.sleep(x.delay)
     if exhausted:
         say(PRINT_MAX_PAGES_TPL.format(prov=x.prov, max_pages=x.max_pages, cutoff=x.cutoff))
-    return saved
+    return ProvinceOut(saved=saved, clean=clean)
 
 
 def fetch_listing_page(x: PageIn) -> PageOut:
@@ -344,6 +366,29 @@ def fetch_listing_page(x: PageIn) -> PageOut:
             error = ERR_PAGE_TPL.format(name=type(e).__name__, detail=e)
             time.sleep(LISTING_RETRY_BACKOFF_S * (attempt + 1))
     return PageOut(html="", error=error)
+
+
+def load_sweeps() -> dict:
+    """扫底台账(省码 → 上次完整扫底的 UTC ISO 时刻);首跑给空表。"""
+    if not OUT_SWEEP.exists():
+        return {}
+    return json.loads(OUT_SWEEP.read_text(encoding=ENC_UTF8))
+
+
+def sweep_prov_of(x: SweepPickIn) -> str:
+    """本轮扫底的省:台账里没扫过的、或上次扫底满 SWEEP_EVERY_H 小时的,挑上次最早的(没扫过的最先,并列按
+    provinces 的顺序);都没到期给 SWEEP_NONE。一轮至多一个省,十省自然错开到各轮。"""
+    best = SWEEP_NONE
+    best_at = ""
+    for prov in x.provinces:
+        at = x.sweeps.get(prov, "")
+        last = checked_at_of(at)
+        if last is not None and x.now - last < timedelta(hours=SWEEP_EVERY_H):
+            continue
+        if best == SWEEP_NONE or at < best_at:
+            best = prov
+            best_at = at
+    return best
 
 
 def all_rows_old(x: AllOldIn) -> bool:
@@ -371,27 +416,15 @@ def parse_jobbank_postings() -> None:
     if snap is None:
         say(PRINT_NO_SNAPSHOT)
         return
-    cutoff = cutoff_of(CutoffIn(snap=snap, since_days=since_days_of()))
     fetched = fetched_at_of(snap)
     rows = parse_snapshot(snap)
     with jobbank_store_lock(JOBBANK_STORE_LOCK):
         by_id = load_postings()
         base = len(by_id)
-        merged = merge_rows(MergeIn(rows=rows, by_id=by_id, cutoff=cutoff, fetched=fetched))
+        merged = merge_rows(MergeIn(rows=rows, by_id=by_id, fetched=fetched))
         write_postings(by_id)
     say(PRINT_PARSE_DONE_TPL.format(snap=snap.name, rows=len(rows), added=merged.added,
-                                    updated=merged.updated, skipped=merged.skipped_old,
-                                    cutoff=cutoff, base=base, total=len(by_id), stale=merged.stale))
-
-
-def since_days_of() -> int:
-    """本步该吃的窗口天数:进程 argv 上给了 `--since-days N` 就用它,没给退回本域
-    SINCE_DAYS 环境值 —— 与旧链子进程实参 `--since-days <SINCE_DAYS>` 逐字同义。"""
-    argv = sys.argv[1:]
-    for i, arg in enumerate(argv):
-        if arg == SINCE_DAYS_FLAG and i + 1 < len(argv):
-            return int(argv[i + 1])
-    return int(SINCE_DAYS)
+                                    updated=merged.updated, base=base, total=len(by_id), stale=merged.stale))
 
 
 def latest_snapshot_dir() -> Path | None:
@@ -411,19 +444,6 @@ def latest_snapshot_dir() -> Path | None:
 def dir_name_of(entry: Path) -> str:
     """目录排序键 = 目录名(日期目录名字典序即时间序)。"""
     return entry.name
-
-
-def cutoff_of(x: CutoffIn) -> date:
-    """优先用 manifest 里抓取时算好的 cutoff(与抓取一致);缺则按今天-since_days。"""
-    manifest_f = x.snap / MANIFEST_FILE
-    if manifest_f.exists():
-        raw = json.loads(manifest_f.read_text(encoding=ENC_UTF8)).get(K_CUTOFF)
-        if raw:
-            try:
-                return datetime.strptime(raw, ISO_DATE_FMT).date()
-            except ValueError as e:
-                err(manifest_f, e)
-    return datetime.now().date() - timedelta(days=x.since_days)
 
 
 def fetched_at_of(snap: Path) -> str:
@@ -477,16 +497,13 @@ def load_postings() -> dict:
 
 def merge_rows(x: MergeIn) -> MergeOut:
     """本轮行并进累积 store:只覆盖原始抓取字段,保留衍生字段;早于截止日的跳过。
-    2026-09-25:已抓过详情的帖列表标题变了 → 记 K_DETAIL_STALE(详情欠一次重抓,来由见常量)。"""
+    2026-09-25:已抓过详情的帖列表标题变了 → 记 K_DETAIL_STALE(详情欠一次重抓,来由见常量)。
+    2026-10-15:不再按发布日跳行 —— 列表上露面的帖一律合并、刷新 last_seen(挂旧发布日的外板转帖与扫底翻到的老帖
+    都靠这个进 store;验尸的复活复查也看 last_seen),上一行「早于截止日的跳过」作废。"""
     added = 0
     updated = 0
-    skipped_old = 0
     stale = 0
     for row in x.rows:
-        posted = listing_date_of(row[K_DATE])
-        if posted is not None and posted < x.cutoff:
-            skipped_old += 1
-            continue
         pid = pid_of(row)
         if pid == "":
             continue
@@ -501,7 +518,7 @@ def merge_rows(x: MergeIn) -> MergeOut:
             x.by_id[pid] = scraped
             added += 1
         x.by_id[pid][K_LAST_SEEN] = x.fetched
-    return MergeOut(added=added, updated=updated, skipped_old=skipped_old, stale=stale)
+    return MergeOut(added=added, updated=updated, stale=stale)
 
 
 def to_scraped_row(row: dict) -> dict:
@@ -1362,16 +1379,17 @@ def verify_jobbank_expired() -> None:
     picked = candidates_of(CandidateIn(postings=postings, state=state, on_board=on_board,
                                        howto=load_howto(), now=now))
     budget = int(os.environ.get(ENV_VERIFY_MAX, VERIFY_MAX_DEFAULT))
-    say(PRINT_VERIFY_HEAD_TPL.format(cands=len(picked.cands), overdue=picked.overdue, recheck=picked.recheck,
-                                     normal=len(picked.cands) - picked.overdue - picked.recheck,
+    say(PRINT_VERIFY_HEAD_TPL.format(cands=len(picked.cands), revive=picked.revive, overdue=picked.overdue,
+                                     recheck=picked.recheck,
+                                     normal=len(picked.cands) - picked.revive - picked.overdue - picked.recheck,
                                      off_board=picked.off_board, young=picked.young, fresh=picked.fresh,
                                      budget=min(len(picked.cands), budget)))
     if len(picked.cands) == 0:
         return
     out = verify_batch(VerifyIn(cands=picked.cands[:budget], state=state, now=now))
     write_text(WriteTextIn(path=OUT_STATE, text=json.dumps(state, ensure_ascii=False)))
-    say(PRINT_VERIFY_DONE_TPL.format(dead=out.dead, alive=out.alive, extended=out.extended, errs=out.errs,
-                                     total=len(state[K_DEAD])))
+    say(PRINT_VERIFY_DONE_TPL.format(dead=out.dead, alive=out.alive, extended=out.extended, revived=out.revived,
+                                     errs=out.errs, total=len(state[K_DEAD])))
 
 
 def load_state() -> dict:
@@ -1401,15 +1419,23 @@ def candidates_of(x: CandidateIn) -> CandidateOut:
     2026-09-26 到期即验(Frank):「距上次检查>RECHECK_DAYS」改由 pick_of 按截止日分三档判(TIER_*):截止日过完
     还没验的排最前,过完后验过还活着的 12 小时一验,其余走常规档(上面的风险键照旧,帖页没写截止日的转帖间隔 2 天,
     发布不满 3 天的新帖不进候选)。截止日用 until_known_of 取:验尸自己记的帖页截止日优先,没有退回 howto 役那份。
+    2026-10-15 复活复查(TIER_REVIVE):判死的帖(验尸判死,或 howto 判下架且之后没验活过)原本一律跳过,现在
+    last_seen 晚于判死时刻、冷却已过的进候选排最前 —— 不看「在不在板上」(判死的帖本来就不在板上)。
     """
     fresh_after = (x.now - timedelta(days=VERIFY_FRESH_DAYS)).isoformat()
-    out = CandidateOut(cands=[], off_board=0, fresh=0, young=0, overdue=0, recheck=0)
+    out = CandidateOut(cands=[], off_board=0, fresh=0, young=0, overdue=0, recheck=0, revive=0)
     for job in x.postings:
         pid = job.get(K_POSTING_ID, "")
         url = job.get(K_URL, "")
-        if pid == "" or VERIFY_HOST not in url or pid in x.state[K_DEAD]:
+        if pid == "" or VERIFY_HOST not in url:
             continue
         page_in = UntilKnownIn(state=x.state, howto=x.howto, pid=pid)
+        dead_at = dead_at_of(page_in)
+        if dead_at is not None:
+            if is_revive_due(ReviveIn(last_seen=job.get(K_LAST_SEEN) or "", dead_at=dead_at, now=x.now)):
+                out.revive += 1
+                out.cands.append(((TIER_REVIVE, dead_at, ""), pid, url, ""))
+            continue
         until = until_known_of(page_in)
         pick = pick_of(PickIn(job=job, checked=x.state[K_CHECKED].get(pid, ""), until=until,
                               no_until=is_no_until(page_in), now=x.now))
@@ -1424,6 +1450,32 @@ def candidates_of(x: CandidateIn) -> CandidateOut:
         out.cands.append((pick.key, pid, url, until))
     out.cands.sort()
     return out
+
+
+def dead_at_of(x: UntilKnownIn) -> str | None:
+    """这帖的判死时刻:验尸判死名单优先;不在名单里、howto 役判过下架且那之后没验活过的,用 howto 的检查时刻
+    (与 mart 的 dead_table 同一口径:两处都把它当死帖);都不是给 None。空串 = 判死了但台账没记时刻。"""
+    if x.pid in x.state[K_DEAD]:
+        return x.state[K_DEAD][x.pid]
+    rec = x.howto.get(x.pid)
+    if rec is None or rec.get(K_HOWTO_STATUS) != HOWTO_GONE:
+        return None
+    at = rec.get(K_HOWTO_AT) or ""
+    if x.state[K_CHECKED].get(x.pid, "") > at:
+        return None
+    return at
+
+
+def is_revive_due(x: ReviveIn) -> bool:
+    """判死的帖此刻该不该复查:last_seen 晚于判死时刻(判死之后又在列表上露面),且判死满 REVIVE_RECHECK_DAYS 天;
+    没露过面的不查,台账没记判死时刻的露面即查。时刻串都是本域写的 UTC ISO,解析借 checked_at_of。"""
+    seen = checked_at_of(x.last_seen)
+    if seen is None:
+        return False
+    dead = checked_at_of(x.dead_at)
+    if dead is None:
+        return True
+    return seen > dead and x.now - dead >= timedelta(days=REVIVE_RECHECK_DAYS)
 
 
 def until_known_of(x: UntilKnownIn) -> str:
@@ -1522,7 +1574,7 @@ def expired_date_of(text: str) -> datetime | None:
 def verify_batch(x: VerifyIn) -> VerifyOut:
     """逐帖验尸:410/404 或 <title> 含过期标记 = 判死;网络错误保留活口,下轮再验。
     2026-09-26 起判死 / 验活拆进 judge_page(纯状态更新,单测直接喂回包),验活时顺手记帖页截止日。"""
-    out = VerifyOut(dead=0, alive=0, errs=0, extended=0)
+    out = VerifyOut(dead=0, alive=0, errs=0, extended=0, revived=0)
     sleep_s = float(os.environ.get(ENV_VERIFY_SLEEP, VERIFY_SLEEP_DEFAULT))
     with httpx.Client(headers={HDR_UA: VERIFY_UA}, timeout=VERIFY_TIMEOUT_S,
                       follow_redirects=True, verify=make_tls_context()) as client:
@@ -1546,6 +1598,8 @@ def judge_page(x: JudgeIn) -> None:
     判死口径不变:410/404,或页头 VERIFY_HEAD_BYTES 字节里含过期标记;判死时摘掉这帖的截止日格。
     验活:记验活时刻 + 帖页截止日(帖页没写记空串 —— 挑帖时就不再退回 howto 那份,转帖从此进 2 天一档);
     比挑帖时知道的晚 = 延期。
+    2026-10-15:验活的帖若在判死名单上(复活复查),从名单摘掉、计数;howto 判下架的不动 howto.json,
+    验活时刻晚于它就够 —— dead_at_of 与 mart 的 dead_table 都按这个认活。
     """
     if x.status in VERIFY_DEAD_CODES or VERIFY_MARKER in x.html[:VERIFY_HEAD_BYTES]:
         x.state[K_DEAD][x.pid] = x.now.isoformat()
@@ -1553,6 +1607,9 @@ def judge_page(x: JudgeIn) -> None:
         x.out.dead += 1
         return
     x.state[K_CHECKED][x.pid] = x.now.isoformat()
+    if x.pid in x.state[K_DEAD]:
+        x.state[K_DEAD].pop(x.pid)
+        x.out.revived += 1
     page = page_until_of(x.html)
     x.state[K_UNTIL][x.pid] = page
     if x.until != "" and page > x.until:
@@ -1945,9 +2002,11 @@ def flush_howto(x: HowtoFlushIn) -> None:
 def run_tests() -> None:
     """test 步入口:跑本域自测(用例集住 scheme 的 JobbankVerifyTest,库垫片先例 gate.scheme / indexing.scheme);
     有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。
-    2026-09-27 截止日批加第二集 JobbankDetailParseTest(详情抽截止日 + 回填限额归类),两集同一趟跑(多集写法照 pnp)。"""
+    2026-09-27 截止日批加第二集 JobbankDetailParseTest(详情抽截止日 + 回填限额归类),两集同一趟跑(多集写法照 pnp)。
+    2026-10-15 漏帖修复批加第三集 JobbankListingTest(扫底挑省 / 扫底翻到空页 / 解析不按发布日跳行)。"""
     suite = unittest.TestSuite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(JobbankVerifyTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(JobbankDetailParseTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(JobbankListingTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

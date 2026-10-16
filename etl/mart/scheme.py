@@ -5652,6 +5652,29 @@ class MartOfferDrawTest(unittest.TestCase):
         self.assertEqual(fn.draw_last_day_of(""), "")
 
 
+class MartDeadTableTest(unittest.TestCase):
+    """判死台账自测(2026-10-15 漏帖修复批):验尸判死照收;howto 判下架的帖、之后被验尸验活过的(jobbank 复活复查)
+    不算死,没验活过或验活早于下架的照算死;验尸名单里已有的以验尸为准。只读用例自己的临时文件。"""
+
+    def test_golden(self) -> None:
+        """金标:D 验尸判死;G1 下架后没验过 → 死;G2 验活早于下架 → 死;G3 下架后验活 → 活;G4 没记下架时刻但验活过 → 活;
+        OK 是 howto 正常帖 → 活。"""
+        from mart import functions as fn
+        gone = "2026-10-01T00:00:00+00:00"
+        expired = {"dead": {"D": "2026-10-02T00:00:00+00:00"},
+                   "checked": {"G2": "2026-09-30T00:00:00+00:00", "G3": "2026-10-03T00:00:00+00:00",
+                               "G4": "2026-10-03T00:00:00+00:00"}}
+        howto = {"D": {"status": "gone", "checkedAt": gone}, "G1": {"status": "gone", "checkedAt": gone},
+                 "G2": {"status": "gone", "checkedAt": gone}, "G3": {"status": "gone", "checkedAt": gone},
+                 "G4": {"status": "gone"}, "OK": {"status": "ok", "checkedAt": gone}}
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "expired_ids.json"
+            path.write_text(json.dumps(expired), encoding="utf-8")
+            with mock.patch.object(fn, "IN_EXPIRED", path), mock.patch.object(fn, "load_howto_table", return_value=howto):
+                got = fn.dead_table()
+        self.assertEqual(got, {"D": "2026-10-02T00:00:00+00:00", "G1": gone, "G2": gone})
+
+
 # =========================================================================
 # 25. 跨源汇装:申请步骤时间线
 # =========================================================================

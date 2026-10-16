@@ -15,7 +15,8 @@ import os
 
 SINCE_DAYS = os.environ.get("SINCE_DAYS", "3")
 """增量窗口天数(只抓最近 N 天的新帖)。抓取与解析两步共用同一个值,cutoff 才对得上;
-2026-08-31 批F 自旧 sources/jobbank 役册顶上那行原样搬进本域。"""
+2026-08-31 批F 自旧 sources/jobbank 役册顶上那行原样搬进本域。
+2026-10-15 起解析不再按截止日跳行,这个值只决定抓取翻几页。"""
 
 METAS = [
     {

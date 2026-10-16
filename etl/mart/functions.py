@@ -110,7 +110,7 @@ from mart.constants import (
     K_BODY_EN, K_BROAD, K_BROAD_EN, K_BROAD_KO, K_BY_CATEGORY, K_BY_NOC, K_BY_PROV, K_BY_SLUG,
     K_CAPPED_SECTORS, K_CATEGORIES, K_CATEGORY, K_CELLS, K_CITIES, K_CITY, K_CITY_RAW, K_CLOSED30D,
     K_CLOSED_AT, K_COMMITMENT_LABEL, K_COMMITMENT_MONTHS, K_COMMUNITIES, K_COMMUNITY,
-    K_COMPANY_NAME, K_COMPANY_SLUG, K_COUNT, K_COUNTRY, K_DATE, K_DATE_POSTED, K_DEAD,
+    K_COMPANY_NAME, K_COMPANY_SLUG, K_COUNT, K_COUNTRY, K_DATE, K_DATE_POSTED, K_DEAD, K_VERIFY_CHECKED,
     K_DESCRIPTION, K_DISTRICT, K_DRAWS, K_ELIGIBILITY_FLAG, K_ELIGIBILITY_QUOTE, K_ELIGIBLE, K_SRC_VALID_THROUGH,
     K_VALID_THROUGH,
     K_EMPLOYER, K_EMPLOYERS, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM, K_ENHANCED_YTD, K_EOI_POOL,
@@ -312,6 +312,7 @@ from mart.constants import (  # 2026-10-11 推荐只给近 90 天抽过雇主 of
     K_DRAW_STREAMS, K_JOB_LINKED, K_OFFER_DRAW_LAST, OFFER_DAY_RE, OFFER_DAY_TPL, OFFER_MONTH_RE,
 )
 from mart.scheme import MartOfferDrawTest, OfferDrawIn  # 同上
+from mart.scheme import MartDeadTableTest  # 2026-10-15 漏帖修复批(howto 判下架后又验活的不算死)
 from mart.constants import (  # 2026-10-11 申请步骤时间线(段25)
     IN_PTIME, PTIME_MISSING_TPL, TL_APPLY_DAY_KEYS, TL_APPLY_STEPS, TL_DAY, TL_DAYS_PER_MONTH, TL_DONE_TPL, TL_DRAW_STEP,
     TL_EE_FACT, TL_EE_STEP, TL_EXACT, TL_EXP_FACTOR, TL_EXP_UNIT, TL_FACT_N, TL_FED_BASE, TL_FED_EE, TL_FED_UPDATED,
@@ -8137,13 +8138,19 @@ def dead_table() -> dict:
 
     2026-09-23 站内投递批 1:howto 逐帖取投递区,已下架的帖回包只剩截止日 —— 同样是 Job Bank 给的事实,
     不必等验尸轮到它。验尸名单里已有的以验尸为准。三处读判死台账的地方(剔 mart / 下发 closed / 流量统计)都走这里。
+    2026-10-15 漏帖修复批:howto 判下架之后验尸又验活过的(验活时刻晚于 howto 的检查时刻)不算死 —— Job Bank 会把
+    下架的帖重新挂出来,jobbank 验尸的复活复查验活了就摘判死,这里同一口径(jobbank 的 dead_at_of)。
     """
     out: dict = {}
+    checked: dict = {}
     if IN_EXPIRED.exists():
-        out.update(read_table(IN_EXPIRED).get(K_DEAD, {}))
+        table = read_table(IN_EXPIRED)
+        out.update(table.get(K_DEAD, {}))
+        checked = table.get(K_VERIFY_CHECKED, {})
     for pid, rec in load_howto_table().items():
-        if rec.get(K_HOWTO_STATUS) == HOWTO_GONE and pid not in out:
-            out[pid] = rec.get(K_HOWTO_AT) or ""
+        at = rec.get(K_HOWTO_AT) or ""
+        if rec.get(K_HOWTO_STATUS) == HOWTO_GONE and pid not in out and checked.get(pid, "") <= at:
+            out[pid] = at
     return out
 
 
@@ -8173,13 +8180,14 @@ def run_tests() -> None:
     2026-10-04 再加一组:MartCipProgramsTest(专业表源文件缺席整张不进汇装字典、留痕带 ✗;在就原样放进来)。
     2026-10-05 再加一组:MartNocDescExamplesTest(noc_descriptions 行带官方示例职称:换行拼接、没有给空串)。
     2026-10-11 再加一组:MartOfferDrawTest(省「雇主 offer 类通道最近一次抽选日」:只认 jobLinked 点名的组、按月补月末、没收录不挂)。
-    2026-10-12 再加一组:RankMonthOnlyTest(住 mart/rank 子域:只到月不进间隔、状态三档金标、合卡与省提名专场、邀请人数排前)。"""
+    2026-10-12 再加一组:RankMonthOnlyTest(住 mart/rank 子域:只到月不进间隔、状态三档金标、合卡与省提名专场、邀请人数排前)。
+    2026-10-15 再加一组:MartDeadTableTest(判死台账:howto 判下架之后又被验尸验活的不算死)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
                  MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest, MartNbNlOpsTest,
                  MartBcFunnelOpsTest, MartMbPoolTest, MartAbFederalTest,
                  MartDrawSelectionTest, MartDrawAnchorTest, MartDesignatedSplitTest, MartCipProgramsTest,
-                 MartNocDescExamplesTest, MartOfferDrawTest, RankMonthOnlyTest):
+                 MartNocDescExamplesTest, MartOfferDrawTest, RankMonthOnlyTest, MartDeadTableTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

@@ -204,6 +204,26 @@ CHAIN_MAX_PAGES = 400
 CHAIN_DELAY_S = 0.4
 """翻页之间的礼貌间隔(原 argparse --delay 默认值,链上从没覆盖过)。"""
 
+SWEEP_EVERY_H = 24
+"""整省翻到底(扫底)的间隔小时数:每轮最多扫底一个省,挑上次扫底最早的、且已满这么久的那个。
+2026-10-15 漏帖抽查:外板转进 Job Bank 的帖是新帖号、却顶着原板的旧发布日(如 50404197–50486876 挂
+「September 25, 2026」,ON 第 ~400 页),按发布日降序翻、到截止日就停的增量抓永远翻不到;抽样 425 个在架帖里
+15 个这样漏掉。sort=D 之外列表页没有别的排序可用(fage 筛的也是显示的发布日),只能定期整省翻到底。
+量(10-15 实测各省末页):十省合计约 3,000 页 / 天,每小时一轮的增量抓约 9,500 页 / 天;一轮一个省,
+最深的 ON / QC 约 800 页,一轮多 13 分钟左右,不把一天的量堆在同一轮。"""
+
+SWEEP_MAX_PAGES = 1500
+"""扫底那一省的翻页上限(失控保险;10-15 实测最深的 ON 766 页、QC 600~900 页之间,翻到空页自然停)。"""
+
+OUT_SWEEP = paths.PROCESSED_JOBBANK / "listing_sweep.json"
+"""扫底台账:省码 → 上次完整扫底(翻到空页停)的时刻(UTC ISO)。半途断掉的不记,下轮重扫。"""
+
+K_SWEEP = "sweep"
+"""manifest 键:本轮扫底的省码(空串 = 本轮没有省到期)。"""
+
+SWEEP_NONE = ""
+"""本轮没有省到期扫底。"""
+
 LISTING_TIMEOUT_S = 30.0
 """列表页请求超时。"""
 
@@ -226,7 +246,8 @@ K_SINCE_DAYS = "since_days"
 """manifest 键:本轮的增量窗口天数。"""
 
 K_CUTOFF = "cutoff"
-"""manifest 键:本轮算好的截止日(解析端复用它,保证与抓取一致)。"""
+"""manifest 键:本轮算好的截止日(解析端复用它,保证与抓取一致)。
+2026-10-15 起解析端不再按日期跳行(见 PRINT_PARSE_DONE_TPL),这格只剩记录作用。"""
 
 K_PAGES = "pages"
 """manifest 键:本轮存下的页清单。"""
@@ -257,6 +278,9 @@ PRINT_MAX_PAGES_TPL = "  ⚠ {prov}: 翻满 {max_pages} 页仍未跨过截止日
 
 PRINT_PROV_SAVED_TPL = "  · {prov}: 存 {saved} 页快照 (since {cutoff})"
 """每省收尾一行。"""
+
+PRINT_SWEEP_SAVED_TPL = "  · {prov}: 扫底存 {saved} 页快照(翻到底 {clean})"
+"""扫底那一省的收尾一行(翻到底 = 停在空页;False = 半途断掉,不记台账、下轮重扫)。"""
 
 PRINT_SNAPSHOT_TPL = "\nListing 快照 → {snap_dir} ({pages} 页)"
 """整轮收尾一行(前导空行沿用原 print)。"""
@@ -289,9 +313,6 @@ UTC_OFFSET = "+00:00"
 UTC_Z = "Z"
 """last_seen 的 UTC 记号。"""
 
-SINCE_DAYS_FLAG = "--since-days"
-"""窗口旗子名(与旧 CLI 逐字同名;门直调后仍从进程 argv 上捡它)。"""
-
 PRINT_PARSE_IN_TPL = "IN  listing : {root}/<latest date>/"
 """列表解析起手打印的输入路径。"""
 
@@ -308,8 +329,10 @@ PRINT_WROTE_TPL = "Wrote {n} postings → {out}"
 """写回 store 的一行。"""
 
 PRINT_PARSE_DONE_TPL = ("解析 {snap}: {rows} 行 → +{added} new · {updated} updated · "
-                        "{skipped} 跳过(早于 {cutoff}) · base {base} → {total} · {stale} 帖标题变了、详情待重抓")
-"""列表解析收尾一行(逐字沿用原文案;2026-09-25 尾部加标题变更计数)。"""
+                        "base {base} → {total} · {stale} 帖标题变了、详情待重抓")
+"""列表解析收尾一行(逐字沿用原文案;2026-09-25 尾部加标题变更计数)。
+2026-10-15 删「N 跳过(早于截止日)」一格:列表上露面的帖一律合并(早于截止日的正是挂旧发布日的外板转帖,
+10-15 那轮 360 行被这样扔掉),截止日只决定增量抓翻几页;连带退役 cutoff_of / since_days_of 与 --since-days 旗子。"""
 
 
 # =========================================================================
@@ -944,6 +967,17 @@ TIER_RECHECK = 1
 TIER_NORMAL = 2
 """挑帖档位:常规复检(截止日没到或没有截止日),档内照旧按 last_seen 旧→新、发布日老→新。"""
 
+TIER_REVIVE = -1
+"""挑帖档位:判死过、之后又在列表上露面的帖(复活复查)—— 排在一切之前,档内判死早的先。
+2026-10-15 漏帖抽查:Job Bank 会把下架的帖重新挂出来,抽样里还在列表上的 8 个判死帖 6 个回 200、2 个真 410
+(列表上也会挂着少数已过期的帖);判死原本是终身的,挂回来的帖永远回不了板。复查验活就摘掉判死,mart 下一轮
+把它放回 seen 集,seed 照常 upsert 转回在招。排最前:候选平时多在单轮上限以内,复活的又是用户点得到的在招岗。"""
+
+REVIVE_RECHECK_DAYS = 2
+"""复活复查的冷却天数:判死(或上次复查仍死)满这么久、且 last_seen 晚于判死时刻,才再验一次。
+列表上挂着的真死帖(上面说的 2 / 8)每小时都会刷新 last_seen,没有冷却就每轮白验一次;2 天与转帖复检同节奏
+(RECHECK_NO_UNTIL_DAYS),真挂回来的帖最多晚 2 天上板。"""
+
 VERIFY_MAX_DEFAULT = "900"
 """单轮请求上限的默认值:候选 ≈5.5 万,7 天复检周期要求 ≈8k/天;
 900/轮 × 每轮约 2h ≈ 1万/天,刚够且不拖垮 seed。
@@ -1008,14 +1042,16 @@ PAGE_UNTIL_RE = re.compile(r"property=[\"']validThrough[\"'][^>]*>\s*(\d{4}-\d{2
 VERIFY_DATE_FMTS = ("%B %d, %Y", ISO_DATE_FMT)
 """发布日的两种写法(列表页原文 / ISO);ISO 那种只取前 10 位。"""
 
-PRINT_VERIFY_HEAD_TPL = ("verify_expired: 候选 {cands} 帖(截止日过完未验 {overdue} · 过完复检 {recheck} · "
-                         "常规 {normal};已跳过不在板上的 {off_board} 个、发布不满 3 天的 {young} 个;"
+PRINT_VERIFY_HEAD_TPL = ("verify_expired: 候选 {cands} 帖(判死后又露面 {revive} · 截止日过完未验 {overdue} · "
+                         "过完复检 {recheck} · 常规 {normal};已跳过不在板上的 {off_board} 个、发布不满 3 天的 {young} 个;"
                          "常规档里 last_seen 近 3 天内的 {fresh} 个排在队尾),本轮验 {budget}")
-"""验尸起手一行(原为逐字沿用旧脚本文案;2026-09-26 到期即验批加三档计数与新帖跳过数)。"""
+"""验尸起手一行(原为逐字沿用旧脚本文案;2026-09-26 到期即验批加三档计数与新帖跳过数)。
+2026-10-15 加复活复查计数(TIER_REVIVE 档)。"""
 
-PRINT_VERIFY_DONE_TPL = ("verify_expired: 新判死 {dead} · 仍在招 {alive}(帖页截止日延后 {extended})· "
-                         "网络错误跳过 {errs} · 累计死帖 {total}")
-"""验尸收尾一行(2026-09-26 加「帖页截止日延后」数:比挑帖时知道的截止日晚 = 延期了,按新截止日重排)。"""
+PRINT_VERIFY_DONE_TPL = ("verify_expired: 新判死 {dead} · 仍在招 {alive}(帖页截止日延后 {extended} · "
+                         "摘掉判死 {revived})· 网络错误跳过 {errs} · 累计死帖 {total}")
+"""验尸收尾一行(2026-09-26 加「帖页截止日延后」数:比挑帖时知道的截止日晚 = 延期了,按新截止日重排)。
+2026-10-15 加「摘掉判死」数:判死名单里的帖复查回活帖页,从名单摘掉(TIER_REVIVE)。"""
 
 
 # =========================================================================

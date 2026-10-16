@@ -275,6 +275,10 @@ K_EMPLOYERS = "employers"
 K_DEAD = "dead"
 """验尸判死台账(posting_id → 判死时刻)。"""
 
+K_VERIFY_CHECKED = "checked"
+"""验尸台账(IN_EXPIRED)的验活格:帖号 → 上次验活时刻(UTC ISO)。2026-10-15 起 dead_table 读它:howto 判下架之后
+又被验尸验活的帖(jobbank 验尸的复活复查)不再算死。"""
+
 K_POSTING_ID = "posting_id"
 """Job Bank 帖号。"""
 
