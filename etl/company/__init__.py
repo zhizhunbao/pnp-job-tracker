@@ -53,6 +53,8 @@ METAS = [
         "seed": False,
         "ping": True,
         "only": "findsite",
+        "llm": True,              # 2026-11-04 Frank「如果连不上 先失败 可以吗」「有时候我在学校 他就连不上」:搜总部末了要盒子抽街址,盒子不通整轮白跑
+                                  # (实撞:连续 18 小时每分钟起浏览器再失败);开场先探 NEWS_LLM_BASE,不通就不起步,5 分钟后再探(sched.K_LLM)
     },
 ]
 """本域四役(2026-09-26 晚把原 company 役拆成三个 enrich_*,见文件头):

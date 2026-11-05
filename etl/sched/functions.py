@@ -37,7 +37,7 @@ from load.functions import trigger_alerts, trigger_seed
 from sched.constants import (
     ALERTS_FAIL_TPL, ALERTS_OK_TPL, ARG_ONLY, ATTR_META, ATTR_METAS, CMD_SEP, CMS_DIR,
     DEFAULT_INTERVAL_S, DEFAULT_ROLES, DEFAULT_SEED_URL, DEFAULT_SOURCE, DOM_MAIN_TPL,
-    DOM_MOD_TPL, DONE_NAME_TPL, ENC_UTF8, ENV_FILE, ENV_IOENCODING, ENV_PING_FRESH, ENV_PING_TPL,
+    DOM_MOD_TPL, DONE_NAME_TPL, ENC_UTF8, ENV_FILE, ENV_IOENCODING, ENV_LLM_BASE, ENV_PING_FRESH, ENV_PING_TPL,
     ENV_SEED_TOKEN, ENV_SEED_URL, ENV_SOURCE, ENV_UNBUFFERED, ERRORS_REPLACE, ERR_PREFIXES,
     ETL_DIR, FAIL_RETRY_S, FRESH_DATE_FMT, FRESH_K_CADENCE, FRESH_K_FILE, FRESH_K_GLOB,
     FRESH_K_KEY, FRESH_K_NOTE, FRESH_KEY_DEFAULT, FRESH_KEY_MTIME, FRESH_P_ALL_OK_TPL,
@@ -48,11 +48,12 @@ from sched.constants import (
     HC_FAIL_SUFFIX, HC_GRACE_FACTOR, HC_GRACE_MAX_S, HC_GRACE_MIN_S, HC_HDR_KEY, HC_K_CHANNELS, HC_K_DESC,
     HC_K_GRACE, HC_K_NAME, HC_K_PING_URL, HC_K_TAGS, HC_K_TIMEOUT, HC_K_UNIQUE, HC_OK_CODES, HC_REG_BODY_CLIP,
     HC_REG_ERR_TPL, HC_REG_FAIL_TPL, HC_REG_OK_TPL, HC_TAGS_TPL, HC_TIMEOUT_MIN_S, SEC_PER_MIN,
-    INIT_GLOB, K_AFTER, K_FRESH, K_INTERVAL, K_NAME, K_ONLY, K_PING, K_ROLE,
-    K_SEED, KV_SEP, LVL_ERROR, LVL_INFO, MANUAL_SEED_URL, META_FAIL_TPL, NAME_JOIN, NEWLINE,
+    INIT_GLOB, K_AFTER, K_FRESH, K_INTERVAL, K_LLM, K_NAME, K_ONLY, K_PING, K_ROLE,
+    K_SEED, KV_SEP, LLM_DOWN_RETRY_S, LLM_PROBE_PATH, LLM_PROBE_TIMEOUT_S, LVL_ERROR, LVL_INFO,
+    MANUAL_SEED_URL, META_FAIL_TPL, NAME_JOIN, NEWLINE,
     NOT_DOMAIN, NOW_END_TPL, NOW_FAIL_TPL, NOW_HEAD_TPL, NOW_OK_TPL, NO_UNIT_TPL,
     PING_FAIL_TPL, PING_FRESH_OK_MSG, PING_OK_MSG, PING_TIMEOUT_S, POLL_S, ROUNDS_DIR, ROUND_DONE_TPL,
-    ROUND_RETRY_TPL, ROUND_STAMP_TPL, ROUND_START_TPL, SEED_FAIL_TPL, SEED_OK_TPL,
+    ROUND_LLM_DOWN_TPL, ROUND_RETRY_TPL, ROUND_STAMP_TPL, ROUND_START_TPL, SEED_FAIL_TPL, SEED_OK_TPL,
     SOURCE_UNIT_TPL, STEP_FAIL_MSG, STEP_PY, STEP_RUN_TPL, TOKEN_LINE_PREFIX, UNDERSCORE,
     UNKNOWN_ROLE_TPL, U_LINE_TPL, U_MODE_CONSUMER_TPL, U_MODE_EVERY_TPL, U_SEED_SUFFIX_TPL,
     VAL_ONE,
@@ -125,6 +126,7 @@ def to_unit(x: ToUnitIn) -> Unit:
         seed=x.meta.get(K_SEED, False),
         after=x.meta.get(K_AFTER),
         ping=bool(x.meta.get(K_PING, False)),
+        llm=bool(x.meta.get(K_LLM, False)),
         next_at=0.0,
         consumed_at=0.0,
         dom=x.dom,
@@ -176,6 +178,11 @@ def watch() -> None:
     while True:
         for unit in units:
             if is_due(unit) is False:
+                continue
+            if unit.llm and llm_alive() is False:
+                # 2026-11-04 Frank「如果连不上 先失败 可以吗」:盒子不通不起步(不是失败轮:不 mark_done、不发 /fail),过会儿再探
+                unit.next_at = time.time() + LLM_DOWN_RETRY_S
+                logger.info(ROUND_LLM_DOWN_TPL.format(name=unit.name, base=llm_base(), wait=LLM_DOWN_RETRY_S))
                 continue
             logger.info(ROUND_START_TPL.format(name=unit.name))
             ok = run_once(unit)
@@ -230,6 +237,24 @@ def mark_done(name: str) -> None:
     ROUNDS_DIR.mkdir(parents=True, exist_ok=True)
     paths.write_text(paths.WriteTextIn(path=ROUNDS_DIR / DONE_NAME_TPL.format(name=name),
                                        text=ROUND_STAMP_TPL.format(t=time.time())))
+
+
+def llm_alive() -> bool:
+    """局域网 LLM 盒子通不通(K_LLM 单元开场探活,2026-11-04):没配基址 = 当通(该跳哪步是域自己的事);
+    配了就 GET /api/tags,3 秒内 2xx 才算通 —— 连接被拒 / 超时 / 非 2xx 一律不通。"""
+    base = llm_base()
+    if base == "":
+        return True
+    try:
+        r = httpx.get(httpx.URL(base).join(LLM_PROBE_PATH), timeout=LLM_PROBE_TIMEOUT_S)
+    except httpx.HTTPError:
+        return False
+    return r.is_success
+
+
+def llm_base() -> str:
+    """局域网 LLM 盒子基址(NEWS_LLM_BASE 环境变量;空 = 没配)。"""
+    return os.environ.get(ENV_LLM_BASE, "")
 
 
 # =========================================================================

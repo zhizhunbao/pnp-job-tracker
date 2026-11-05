@@ -60,6 +60,11 @@ K_PING = "ping"
 K_ONLY = "only"
 """META 键:入口同门不同 --only(METAS 一域多役用;空串 = 走默认链)。"""
 
+K_LLM = "llm"
+"""META 键:本单元离了局域网 LLM 盒子整轮白跑(2026-11-04 Frank「如果连不上 先失败 可以吗」「有时候我在学校 他就连不上」:
+findsite 每分钟起浏览器搜总部,末了抽街址连 192.168.1.150 被拒整轮作废,连续 18 小时一核 CPU + 近 1 GB 空烧)。
+True = 每轮开场先探 ENV_LLM_BASE,不通就不起步,LLM_DOWN_RETRY_S 后再探;缺省 False = 照旧(盒子没配该跳哪步是域自己的事)。"""
+
 DEFAULT_INTERVAL_S = 7200
 """META 没写 interval 时的兜底节奏(2h)。"""
 
@@ -139,6 +144,21 @@ ROUND_DONE_TPL = "===== {name}:完成 ====="
 
 ROUND_RETRY_TPL = "===== {name}:未完整完成,{wait}s 后重试 ====="
 """一轮有步骤失败的收口行(等待 = min(FAIL_RETRY_S, interval))。"""
+
+ENV_LLM_BASE = "NEWS_LLM_BASE"
+"""局域网 Ollama 基址环境键(与各域同名同义;调度层只在 K_LLM 单元开场探活时读,空 = 没配 = 不探)。"""
+
+LLM_PROBE_PATH = "/api/tags"
+"""探活路径:Ollama 列模型的轻接口,不加载模型。"""
+
+LLM_PROBE_TIMEOUT_S = 3
+"""探活放弃线:不在家时盒子根本不在网段,连接被拒是毫秒级;3 秒够。"""
+
+LLM_DOWN_RETRY_S = 300
+"""盒子不通时下一次再探的间隔(5 分钟):一次探活只是一个 GET,比 findsite 原 60s 节奏省,又不至于回家后久等。"""
+
+ROUND_LLM_DOWN_TPL = "===== {name}:LLM 盒子 {base} 不通,本轮不起步,{wait}s 后再探 ====="
+"""K_LLM 单元开场探活失败的收口行(不算失败轮:不发 /fail、不记 failing_since —— 人不在家不是故障)。"""
 
 # =========================================================================
 # 3. 单步执行(子进程 + loguru 前缀截获)

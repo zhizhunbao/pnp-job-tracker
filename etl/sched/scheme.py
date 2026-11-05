@@ -63,6 +63,9 @@ class Unit:
     ping: bool
     """本单元持不持心跳权(每角色只授一只)。"""
 
+    llm: bool
+    """本单元离了局域网 LLM 盒子整轮白跑(2026-11-04 加):True = 每轮开场先探盒子,不通就不起步(见 functions.llm_alive)。"""
+
     next_at: float
     """下次到点的时刻(epoch 秒);0 = 启动即到点(容器一起来先跑一轮)。"""
 
