@@ -521,3 +521,58 @@ export const DEL_BTN_KIND = 'secondary'
  * 投递那一条在确认框里的名字:职位与公司之间的分隔。
  */
 export const DEL_NAME_SEP = ', '
+
+/**
+ * 卡标题:最近跑完(2026-11-06 Frank「跑完的任务是不是应该有历史记录」,形态选「新增一张卡」)。
+ */
+export const SEC_RUNS_TEXT = '最近跑完'
+
+/**
+ * 最近跑完卡最多列几轮(历史表只留 7 天)。
+ */
+export const RUNS_ROWS = 100
+
+/**
+ * 最近跑完卡一条都没有(etl_unit_runs 表还没建,或容器还没带上新版上报)。
+ */
+export const EMPTY_RUNS_TEXT = '还没有跑完的记录'
+
+/**
+ * 最近跑完表的最小宽(窄屏横滚)。
+ */
+export const RUNS_MIN_W = 480
+
+/**
+ * 列头:结果。
+ */
+export const COL_RESULT_TEXT = '结果'
+
+/**
+ * 列头:跑完(多久前)。
+ */
+export const COL_DONE_TEXT = '跑完'
+
+/**
+ * 列头:用时。
+ */
+export const COL_DUR_TEXT = '用时'
+
+/**
+ * 列键:用时。
+ */
+export const COL_DUR_KEY = 'dur'
+
+/**
+ * 胶囊:这一轮成功。
+ */
+export const TAG_OK_TEXT = '成功'
+
+/**
+ * 胶囊:这一轮失败。
+ */
+export const TAG_FAILED_TEXT = '失败'
+
+/**
+ * 胶囊配色:成功。
+ */
+export const VAR_OK = 'ok'

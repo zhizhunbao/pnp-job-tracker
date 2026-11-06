@@ -7,10 +7,12 @@
  * @time 2026-11-05 23:10:00
  */
 import { SQL } from '../db'
-import { DEL_APPLY, DEL_KEY_LEN_MAX, DEL_KINDS, DEL_SITE, DEL_UNIT, NAME_LEN_MAX, NAME_RE, UNIT_STATES } from './constants'
+import {
+  DEL_APPLY, DEL_KEY_LEN_MAX, DEL_KINDS, DEL_SITE, DEL_UNIT, NAME_LEN_MAX, NAME_RE, ROUND_ERROR_MAX, UNIT_STATES,
+} from './constants'
 import type {
-  EpochJson, MaybeEpoch, MaybeRemoveFact, MaybeUnitFact, RemoveIn, RemoveJson, RemovedOut, SaveUnitIn, UnitJson,
-  WriteOut,
+  EpochJson, MaybeEpoch, MaybeRemoveFact, MaybeRoundFact, MaybeUnitFact, RemoveIn, RemoveJson, RemovedOut, RoundJson,
+  RoundOfIn, SaveUnitIn, UnitJson, WriteOut,
 } from './types'
 
 /**
@@ -33,15 +35,39 @@ export function toUnitFact(body: UnitJson): MaybeUnitFact {
   if (typeof body.lastOk === 'boolean') {
     lastOk = body.lastOk
   }
+  const startedAt = epochOrNull(body.startedAt)
+  const endedAt = epochOrNull(body.endedAt)
+  let round: RoundJson | null = null
+  if (typeof body.round === 'object') {
+    round = body.round
+  }
   return {
     name: body.name,
     intervalS: body.intervalS,
     state: body.state,
     lastOk,
-    startedAt: epochOrNull(body.startedAt),
-    endedAt: epochOrNull(body.endedAt),
+    startedAt,
+    endedAt,
     nextAt: epochOrNull(body.nextAt),
+    round: roundOf({ round, startedAt, endedAt }),
   }
+}
+
+/**
+ * 上报体里「刚跑完的这一轮」:成败是布尔、开跑跑完两个时刻都在才算一轮(否则不记历史);报错正文不是串当没有。
+ *
+ * @param x round 格与洗好的两个时刻。
+ * @returns 洗净的一轮;不全 = null。
+ */
+export function roundOf(x: RoundOfIn): MaybeRoundFact {
+  if (x.round == null || typeof x.round.ok !== 'boolean' || x.startedAt == null || x.endedAt == null) {
+    return null
+  }
+  let error: string | null = null
+  if (typeof x.round.error === 'string' && x.round.error !== '') {
+    error = x.round.error.slice(0, ROUND_ERROR_MAX)
+  }
+  return { startedAt: x.startedAt, endedAt: x.endedAt, ok: x.round.ok, error }
 }
 
 /**
@@ -58,7 +84,7 @@ export function epochOrNull(v: EpochJson): MaybeEpoch {
 }
 
 /**
- * 写一行单元现状(没行建行,有行整行改)。
+ * 写一行单元现状(没行建行,有行整行改);带了刚跑完的一轮就再记一行历史、顺手删掉 7 天前的。
  *
  * @param x 连接与洗净的一行。
  * @returns 无。
@@ -66,6 +92,11 @@ export function epochOrNull(v: EpochJson): MaybeEpoch {
 export async function saveUnit(x: SaveUnitIn): WriteOut {
   const u = x.unit
   await x.db.query(SQL.QUEUE_UNIT_PUT, [u.name, u.intervalS, u.state, u.lastOk, u.startedAt, u.endedAt, u.nextAt])
+  if (u.round == null) {
+    return
+  }
+  await x.db.query(SQL.QUEUE_RUN_PUT, [u.name, u.round.startedAt, u.round.endedAt, u.round.ok, u.round.error])
+  await x.db.query(SQL.QUEUE_RUN_PRUNE, [])
 }
 
 /**

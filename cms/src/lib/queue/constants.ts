@@ -51,6 +51,11 @@ export const DEL_SITE = 'site'
 export const DEL_KEY_LEN_MAX = 300
 
 /**
+ * 报错正文最长几个字(调度器那头已截到 3000,这里兜底再截一次)。
+ */
+export const ROUND_ERROR_MAX = 4000
+
+/**
  * 接口错误码:不是管理员。
  */
 export const E_ADMIN = 'admin'

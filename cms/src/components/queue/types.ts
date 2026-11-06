@@ -32,9 +32,9 @@ export type DelSpec = {
 export type DelAskFn = (v: DelSpec | null) => void
 
 /**
- * 胶囊配色(与 tag 桶 TagVariant 同值,本页只用这四种)。
+ * 胶囊配色(与 tag 桶 TagVariant 同值,本页只用这五种)。
  */
-export type QueueVariant = 'info' | 'gray' | 'warn' | 'bad'
+export type QueueVariant = 'info' | 'gray' | 'warn' | 'bad' | 'ok'
 
 /**
  * `SQL.QUEUE_UNITS` 回来的一行(秒数在库里按 now() 现算;int 列驱动按数交回)。
@@ -548,6 +548,121 @@ export type AliasRow = {
 }
 
 /**
+ * `SQL.QUEUE_RUNS` 回来的一行。
+ */
+export type RunDbRow = {
+  /**
+   * 历史行 id。
+   */
+  id: string | number
+
+  /**
+   * 单元名。
+   */
+  name: string
+
+  /**
+   * 这一轮成没成。
+   */
+  ok: boolean
+
+  /**
+   * 报错正文;成功 = NULL。
+   */
+  error: string | null
+
+  /**
+   * 这一轮用了几秒。
+   */
+  dur_s: number
+
+  /**
+   * 跑完到现在几秒。
+   */
+  ago_s: number
+}
+
+/**
+ * 洗净的一轮历史。
+ */
+export type RunFact = {
+  /**
+   * 历史行 id。
+   */
+  id: string
+
+  /**
+   * 单元名。
+   */
+  name: string
+
+  /**
+   * 这一轮成没成。
+   */
+  ok: boolean
+
+  /**
+   * 报错正文;没有 = 空串。
+   */
+  error: string
+
+  /**
+   * 这一轮用了几秒。
+   */
+  durS: number
+
+  /**
+   * 跑完到现在几秒。
+   */
+  agoS: number
+}
+
+/**
+ * 最近跑完卡的展示行。
+ */
+export type RunRow = {
+  /**
+   * 行身份(= 历史行 id)。
+   */
+  key: string
+
+  /**
+   * 单元名。
+   */
+  name: string
+
+  /**
+   * 结果胶囊文字。
+   */
+  tagText: string
+
+  /**
+   * 结果胶囊配色。
+   */
+  tagVariant: QueueVariant
+
+  /**
+   * 第二枚胶囊(本卡不用,恒空串;状态格与别的卡共用一只)。
+   */
+  warnText: string
+
+  /**
+   * 跑完(多久前)。
+   */
+  doneText: string
+
+  /**
+   * 用时。
+   */
+  durText: string
+
+  /**
+   * 报错正文(挂在这一行下面的跨列细行;空串 = 不挂)。
+   */
+  errorText: string
+}
+
+/**
  * `SQL.QUEUE_NOW` 回来的一行(pg 的 timestamptz 驱动交回 Date)。
  */
 export type NowDbRow = {
@@ -580,6 +695,11 @@ export type QueueBoardIn = {
    * 译名翻译。
    */
   alias: AliasFact[]
+
+  /**
+   * 最近跑完。
+   */
+  runs: RunFact[]
 
   /**
    * 此刻(ISO;查不成 = 空数组)。
@@ -630,6 +750,16 @@ export type QueueBoard = {
    * 译名翻译卡头计数。
    */
   aliasCount: string
+
+  /**
+   * 最近跑完。
+   */
+  runs: RunRow[]
+
+  /**
+   * 最近跑完卡头计数。
+   */
+  runsCount: string
 
   /**
    * 右上角更新时刻(ISO;空串 = 不渲)。

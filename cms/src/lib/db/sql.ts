@@ -3614,3 +3614,23 @@ export const QUEUE_DEL_SITE = `UPDATE employer_explore SET stage = NULL, stage_a
  */
 export const QUEUE_DEL_ALIAS = `UPDATE employer_explore SET status = 'skip', note = '管理员移出队列', done_at = now()
      WHERE key = $1 AND status = 'pending'`
+
+/**
+ * 记一轮跑完的历史(2026-11-06 Frank「跑完的任务是不是应该有历史记录」;表 docs/sql/etl-unit-runs-20261106.sql)。
+ * $1=单元名,$2=开跑时刻(epoch 秒),$3=跑完时刻(epoch 秒),$4=成没成,$5=报错正文(成功 = NULL)。
+ */
+export const QUEUE_RUN_PUT = `INSERT INTO etl_unit_runs (name, started_at, ended_at, ok, error)
+     VALUES ($1, to_timestamp($2::float8), to_timestamp($3::float8), $4, $5)`
+
+/**
+ * 历史只留 7 天(每次记一轮顺手删,走 etl_unit_runs_ended_idx)。
+ */
+export const QUEUE_RUN_PRUNE = `DELETE FROM etl_unit_runs WHERE ended_at < now() - interval '7 days'`
+
+/**
+ * 最近跑完:所有单元按跑完时刻倒序;秒数在库里按 now() 现算。$1=条数上限。
+ */
+export const QUEUE_RUNS = `SELECT id, name, ok, error,
+       extract(epoch FROM ended_at - started_at)::int AS dur_s,
+       extract(epoch FROM now() - ended_at)::int AS ago_s
+     FROM etl_unit_runs ORDER BY ended_at DESC LIMIT $1`

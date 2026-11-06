@@ -13,7 +13,15 @@ const GOOD = { name: 'findsite', intervalS: 60, state: 'run', lastOk: true, star
 
 describe('上报体收窄', () => {
   it('合规的一条原样收下', () => {
-    expect(toUnitFact(GOOD)).toEqual(GOOD)
+    expect(toUnitFact(GOOD)).toEqual({ ...GOOD, round: null })
+  })
+
+  it('跑完那次带 round 才记一轮:成败是布尔、两个时刻都在', () => {
+    const done = { ...GOOD, state: 'wait', endedAt: 1_762_400_030, round: { ok: false, error: '✗ boom' } }
+    expect(toUnitFact(done)?.round).toEqual({ startedAt: 1_762_400_000, endedAt: 1_762_400_030, ok: false, error: '✗ boom' })
+    expect(toUnitFact({ ...done, round: { ok: true, error: null } })?.round).toMatchObject({ ok: true, error: null })
+    expect(toUnitFact({ ...done, round: { ok: 'yes' } } as never)?.round).toBeNull()
+    expect(toUnitFact({ ...done, endedAt: null })?.round).toBeNull()
   })
 
   it('必填三格任一不对整条拒收', () => {
