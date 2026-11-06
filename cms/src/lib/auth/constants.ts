@@ -297,6 +297,13 @@ export const LOG_CONSENT = 'consent error: '
 export const LOG_STATE = 'state mismatch'
 
 /**
+ * 失败留痕话术：回跳时根本没带回 state cookie（与「带回来但值不符」分开记）。
+ * 2026-11-06 Frank「先查登录失败」:7 天 7 行 state mismatch,分不出是 cookie 丢了(内置浏览器 / 跨浏览器 / 过期)
+ * 还是连点两次互相覆盖,拆开记好下次直接定因。
+ */
+export const LOG_STATE_MISSING = 'state cookie missing'
+
+/**
  * 失败留痕话术：换 token 失败。
  */
 export const LOG_TOKEN = 'token exchange failed'

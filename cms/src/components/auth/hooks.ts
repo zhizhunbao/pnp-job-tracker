@@ -10,15 +10,18 @@
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import {
-  ERR_NONE, EV_MOUSEDOWN, FIELD_EMPTY, FLOW_ERR, FLOW_SENT, HISTORY_TITLE_UNUSED, KEY_ERR_CRED, KEY_ERR_EXISTS,
+  ERR_NONE, EV_MOUSEDOWN, FIELD_EMPTY, FLOW_ERR, FLOW_SENT, GOOGLE_TAP_GAP_MS, HISTORY_TITLE_UNUSED, KEY_ERR_CRED,
+  KEY_ERR_EXISTS,
   MODE_BACK_TO, MODE_LOGIN, MODE_REGISTER, OAUTH_FAIL,
   OAUTH_PARAM, QS_NONE, QS_PREFIX,
 } from './constants'
 import { finishAuth, googleHrefOf, makeImgFail, runAuthFlow } from './functions'
-import type { SessionSeed, AuthFormHookIn, AuthFormHookOut, AuthMode, ClickOutsideIn, ImgFailOut } from './types'
+import type {
+  SessionSeed, AuthFormHookIn, AuthFormHookOut, AuthMode, ClickOutsideIn, ImgFailOut, QuizDestIn,
+} from './types'
 
 /**
  * 首帧登录态上下文(照 LangProvider 先例,治 SSR 先猜后纠的抖动:二级页 SSR 恒渲
@@ -75,6 +78,30 @@ export function useOauthFail(onFail: () => void) {
 }
 
 /**
+ * Google 登录钮的整页跳转手柄,带防连点:间隔内再点直接忽略。
+ * 2026-11-06 Frank「先查登录失败」:连点两下各种一枚 state、先后覆盖,回跳报 state mismatch;
+ * 用时间间隔不用「点过就锁」,iOS 返回键从缓存还原页面时锁会留着。
+ *
+ * @param x 登录后回跳的站内路径。
+ * @returns 点击手柄。
+ */
+function useGoogleGo(x: QuizDestIn): AuthFormHookOut['goGoogle'] {
+  const last = useRef(0)
+
+  function goGoogle(e: React.MouseEvent) {
+    e.preventDefault()
+    const now = Date.now()
+    if (now - last.current < GOOGLE_TAP_GAP_MS) {
+      return
+    }
+    last.current = now
+    window.location.href = googleHrefOf(x)
+  }
+
+  return goGoogle
+}
+
+/**
  * 登录/注册/找回/重置四态机整机:六格状态 + 全部手柄。提交流本体在 functions
  * (runAuthFlow 收三种收场),这里只做状态摆布;报错文案在机器里翻好交出去。
  *
@@ -89,6 +116,7 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
   const [err, setErr] = useState(ERR_NONE)
   const [sent, setSent] = useState(false)
   const [lang] = useLang()
+  const goGoogle = useGoogleGo({ returnTo: x.returnTo })
   useOauthFail(oauthFailed)
 
   function oauthFailed() {
@@ -112,11 +140,6 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
 
   function onPw(e: React.ChangeEvent<HTMLInputElement>) {
     setPw(e.target.value)
-  }
-
-  function goGoogle(e: React.MouseEvent) {
-    e.preventDefault()
-    window.location.href = googleHrefOf({ returnTo: x.returnTo })
   }
 
   async function submit(e: React.FormEvent) {

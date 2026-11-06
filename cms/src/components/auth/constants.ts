@@ -411,6 +411,13 @@ export const OAUTH_PARAM = 'oauth'
 export const OAUTH_FAIL = 'fail'
 
 /**
+ * Google 登录钮防连点间隔(毫秒):间隔内再点不再发起第二次登录。
+ * 2026-11-06 Frank「先查登录失败」:连点两下 = 两次起跳各种一枚 state,先后覆盖 → 回跳 state mismatch。
+ * 用间隔不用「点过就锁死」:iOS 返回键从缓存还原页面时锁会留着,钮就再也点不动。
+ */
+export const GOOGLE_TAP_GAP_MS = 3000
+
+/**
  * 首字母头像的色板(由名字稳定 hash 选色,同一人恒定色)。
  */
 export const AVATAR_PALETTE = ['#2563eb', '#7c3aed', '#db2777', '#059669', '#d97706', '#dc2626', '#0891b2', '#4f46e5']

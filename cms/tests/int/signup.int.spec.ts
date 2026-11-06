@@ -152,6 +152,20 @@ describe('Google 回调:当场建号才记注册', () => {
     expect(h.create).not.toHaveBeenCalled()
     expect(h.query).not.toHaveBeenCalled()
   })
+
+  // 2026-11-06 Frank「先查登录失败」:state 失败拆两种留痕 —— cookie 没带回来 / 带回来但值不符,好在 Render 日志里直接定因
+  it('state 失败留痕分两种:没带 cookie 记 missing,值不符记 mismatch', async () => {
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => undefined)
+    const noCookie = new Request('https://offer2pr.com/api/auth/google/callback?code=c1&state=' + STATE, {
+      headers: { host: PROD_HOST },
+    })
+    const a = await googleCallbackRoute(noCookie)
+    const b = await googleCallbackRoute(callbackReq(PROD_HOST, 'forged'))
+    const lines = spy.mock.calls.map((c) => c.map(String).join(' '))
+    expect([a.headers.get('location'), b.headers.get('location')]).toEqual([SITE + FAIL_PATH, SITE + FAIL_PATH])
+    expect(lines.filter((l) => l.includes('state cookie missing'))).toHaveLength(1)
+    expect(lines.filter((l) => l.includes('state mismatch'))).toHaveLength(1)
+  })
 })
 
 describe('loginWithGoogle 交出「是否当场建号」', () => {
