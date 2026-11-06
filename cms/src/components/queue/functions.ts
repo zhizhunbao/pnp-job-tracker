@@ -8,17 +8,20 @@
  * @time 2026-11-05 23:30:00
  */
 import { count, text, textOrNull } from '@/lib/db'
+import { cssOf } from '@/components/css'
 import {
   AGO_TAIL, APPLY_QUEUED, COL_COMPANY_KEY, COL_COMPANY_TEXT, COL_EMPLOYER_TEXT, COL_EVERY_KEY, COL_EVERY_TEXT,
   COL_JOB_KEY, COL_JOB_TEXT, COL_LAST_KEY, COL_LAST_TEXT, COL_NAME_KEY, COL_NEXT_TEXT, COL_NOTE_KEY, COL_NOTE_TEXT,
   COL_OPENS_TEXT, COL_SEEN_TEXT, COL_STATE_KEY, COL_STATE_TEXT, COL_TIMES_KEY, COL_UNIT_TEXT, COL_USER_KEY,
   COL_USER_TEXT, COL_WAIT_TEXT, COL_WHEN_KEY, COL_WORKER_KEY, COL_WORKER_TEXT, COUNT_TAIL, DASH, DAY_S, EVERY_HEAD,
   HOUR_S, IN_TAIL, ISO_NONE, LATE_HEAD, LOST_S, MINUTE_S, RAN_HEAD, SHOWN_HEAD, SHOWN_MID, STAGE_QUEUED, STAGE_TEXT,
-  STUCK_S, TAG_CURATED_TEXT, TAG_FAIL_TEXT, TAG_LLM_TEXT, TAG_LOST_TEXT, TAG_QUEUED_TEXT, TAG_RUN_TEXT,
-  TAG_SENDING_TEXT, TAG_STUCK_TEXT, TAG_WAIT_TEXT, TEXT_NONE, TIMES_TAIL, UNIT_DAY_TEXT, UNIT_HOUR_TEXT, UNIT_LLM,
-  UNIT_MIN_TEXT, UNIT_RUN, UNIT_SEC_TEXT, VAR_BAD, VAR_GRAY, VAR_INFO, VAR_WARN, WORKER_FIND_TEXT, WORKER_VISIT_TEXT,
+  STUCK_S, TAG_CURATED_TEXT, TAG_FAIL_TEXT, TAG_LLM_TEXT, TAG_LOST_TEXT, TAG_OUT_POOL_TEXT, TAG_QUEUED_TEXT,
+  TAG_RUN_TEXT, TAG_SENDING_TEXT, TAG_STUCK_TEXT, TAG_WAIT_TEXT, TEXT_NONE, TIMES_TAIL, UNIT_DAY_TEXT, UNIT_HOUR_TEXT,
+  UNIT_LLM, UNIT_MIN_TEXT, UNIT_RUN, UNIT_SEC_TEXT, VAR_BAD, VAR_GRAY, VAR_INFO, VAR_WARN, WORKER_FIND_TEXT,
+  WORKER_VISIT_TEXT,
 } from './constants'
 import { TagsCell } from './tagscell'
+import css from './queue.module.css'
 import type {
   AliasDbRow, AliasFact, AliasRow, ApplyDbRow, ApplyFact, ApplyRow, CountTextIn, KeyedRow, NowDbRow, QueueBoard,
   QueueBoardIn, QueueCol, QueueVariant, SiteDbRow, SiteFact, SiteRow, TotalRow, UnitDbRow, UnitFact, UnitRow,
@@ -168,8 +171,8 @@ export function toApplyRow(a: ApplyFact): ApplyRow {
 }
 
 /**
- * 官网抓取事实行 → 展示行。排队中灰、在办(查找 / 抓取 / 整理)蓝;人工核定过的再挂一枚「已核定不取」
- * (两个工人取活都跳过它,会一直卡在队里)。工人:有官网归抓官网,没有归找官网。
+ * 官网抓取事实行 → 展示行。排队中灰、在办(查找 / 抓取 / 整理)蓝;两种取不到的再挂一枚红胶囊:
+ * 雇主出了池(「已出池不取」,先判)、人工核定过(「已核定不取」)—— 两个工人取活都跳过,会一直卡在队里。工人:有官网归抓官网,没有归找官网。
  *
  * @param s 事实行。
  * @returns 展示行。
@@ -185,7 +188,9 @@ export function toSiteRow(s: SiteFact): SiteRow {
     tagText = label
   }
   let warnText = TEXT_NONE
-  if (s.curated) {
+  if (s.inPool === false) {
+    warnText = TAG_OUT_POOL_TEXT
+  } else if (s.curated) {
     warnText = TAG_CURATED_TEXT
   }
   let workerText = WORKER_FIND_TEXT
@@ -313,9 +318,9 @@ export function unitEveryOf(r: UnitRow): string {
  */
 export function applyColsOf(): QueueCol<ApplyRow>[] {
   return [
-    { key: COL_USER_KEY, label: COL_USER_TEXT, render: applyEmailOf },
-    { key: COL_JOB_KEY, label: COL_JOB_TEXT, render: applyJobOf },
-    { key: COL_COMPANY_KEY, label: COL_COMPANY_TEXT, render: applyCompanyOf },
+    { key: COL_USER_KEY, label: COL_USER_TEXT, className: cssOf(css.wrap), render: applyEmailOf },
+    { key: COL_JOB_KEY, label: COL_JOB_TEXT, className: cssOf(css.wrap), render: applyJobOf },
+    { key: COL_COMPANY_KEY, label: COL_COMPANY_TEXT, className: cssOf(css.wrap), render: applyCompanyOf },
     { key: COL_STATE_KEY, label: COL_STATE_TEXT, nowrap: true, render: TagsCell },
     { key: COL_WHEN_KEY, label: COL_WAIT_TEXT, nowrap: true, render: applyAgeOf },
   ]
@@ -368,12 +373,12 @@ export function applyAgeOf(r: ApplyRow): string {
  */
 export function siteColsOf(): QueueCol<SiteRow>[] {
   return [
-    { key: COL_NAME_KEY, label: COL_COMPANY_TEXT, render: siteNameOf },
+    { key: COL_NAME_KEY, label: COL_COMPANY_TEXT, className: cssOf(css.wrap), render: siteNameOf },
     { key: COL_STATE_KEY, label: COL_STATE_TEXT, nowrap: true, render: TagsCell },
     { key: COL_WORKER_KEY, label: COL_WORKER_TEXT, nowrap: true, render: siteWorkerOf },
     { key: COL_TIMES_KEY, label: COL_OPENS_TEXT, nowrap: true, render: siteTimesOf },
     { key: COL_WHEN_KEY, label: COL_WAIT_TEXT, nowrap: true, render: siteAgeOf },
-    { key: COL_NOTE_KEY, label: COL_NOTE_TEXT, render: siteNoteOf },
+    { key: COL_NOTE_KEY, label: COL_NOTE_TEXT, className: cssOf(css.wrap), render: siteNoteOf },
   ]
 }
 
@@ -434,7 +439,7 @@ export function siteNoteOf(r: SiteRow): string {
  */
 export function aliasColsOf(): QueueCol<AliasRow>[] {
   return [
-    { key: COL_NAME_KEY, label: COL_EMPLOYER_TEXT, render: aliasNameOf },
+    { key: COL_NAME_KEY, label: COL_EMPLOYER_TEXT, className: cssOf(css.wrap), render: aliasNameOf },
     { key: COL_TIMES_KEY, label: COL_SEEN_TEXT, nowrap: true, render: aliasTimesOf },
     { key: COL_WHEN_KEY, label: COL_WAIT_TEXT, nowrap: true, render: aliasAgeOf },
   ]
@@ -536,6 +541,7 @@ export function toSiteFact(row: SiteDbRow): SiteFact {
     note,
     hasSite: row.has_site,
     curated: row.curated,
+    inPool: row.in_pool,
     ageS: row.age_s,
     total: count(row.total),
   }

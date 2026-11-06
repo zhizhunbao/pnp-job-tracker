@@ -3567,10 +3567,12 @@ export const QUEUE_APPLY = `SELECT a.id, a.status, a.job_title, a.company, u.ema
 
 /**
  * 公司官网抓取:真人点开过、还没办完的(queued / find / fetch / facts),先到先得(与两个工人取活同序)。
- * has_site = 公司表已有官网(决定归找官网还是抓官网那个工人);curated = 人工核定过(两个工人都不取)。$1=条数上限。
+ * has_site = 公司表已有官网(决定归找官网还是抓官网那个工人);curated = 人工核定过(两个工人都不取);
+ * in_pool = 雇主池里还有这家(两个工人取活都 JOIN employer_pool,出了池就永远取不到 —— 2026-11-05 D S Malhi 实撞卡 25 天)。$1=条数上限。
  */
 export const QUEUE_SITES = `SELECT x.key, x.name, x.stage, x.open_count, x.stage_note,
        COALESCE(c.website, '') <> '' AS has_site, COALESCE(c.website_source, '') = 'curated' AS curated,
+       p.key IS NOT NULL AS in_pool,
        extract(epoch FROM now() - x.opened_at)::int AS age_s, count(*) OVER ()::int AS total
      FROM employer_explore x LEFT JOIN employer_pool p ON p.key = x.key LEFT JOIN companies c ON c.slug = p.slug
      WHERE x.stage IN ('queued', 'find', 'fetch', 'facts')

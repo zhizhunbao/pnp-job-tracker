@@ -312,6 +312,11 @@ export const STAGE_TEXT: Record<string, string> = {
 export const STAGE_QUEUED = 'queued'
 
 /**
+ * 胶囊:雇主出了池,两个工人取活都 JOIN 雇主池,永远取不到。
+ */
+export const TAG_OUT_POOL_TEXT = '已出池不取'
+
+/**
  * 胶囊:人工核定过,两个工人都不取。
  */
 export const TAG_CURATED_TEXT = '已核定不取'

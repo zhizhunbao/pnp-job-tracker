@@ -301,6 +301,11 @@ export type SiteDbRow = {
   curated: boolean
 
   /**
+   * 雇主池里还有这家(出了池两个工人都取不到)。
+   */
+  in_pool: boolean
+
+  /**
    * 最近一次点开到现在几秒;没有 = NULL。
    */
   age_s: number | null
@@ -351,6 +356,11 @@ export type SiteFact = {
   curated: boolean
 
   /**
+   * 雇主池里还有这家。
+   */
+  inPool: boolean
+
+  /**
    * 最近一次点开到现在几秒;没有 = null。
    */
   ageS: number | null
@@ -386,7 +396,7 @@ export type SiteRow = {
   tagVariant: QueueVariant
 
   /**
-   * 第二枚胶囊(已核定不取);空串 = 不出。
+   * 第二枚胶囊(已出池不取 / 已核定不取);空串 = 不出。
    */
   warnText: string
 
@@ -644,6 +654,11 @@ export type QueueCol<T> = {
    * 单元格不换行;可省 = 允许折行。
    */
   nowrap?: boolean
+
+  /**
+   * 单元格额外类名(长串任意处可折行;可省 = 没有)。
+   */
+  className?: string
 }
 
 /**

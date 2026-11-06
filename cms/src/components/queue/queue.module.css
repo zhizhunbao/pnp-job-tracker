@@ -53,3 +53,10 @@
   display: inline-flex;
   gap: 4px;
 }
+
+/*
+ * 长文字格(邮箱、职位、公司名、由头):列宽量定后任意处可折行,不压到隔壁列(2026-11-05 Frank 截图:邮箱压住职位列)。
+ */
+.wrap {
+  overflow-wrap: anywhere;
+}
