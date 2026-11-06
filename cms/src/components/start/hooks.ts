@@ -28,7 +28,8 @@ import {
   cityPilotTablesOf, dliKindChipsOf, toCityDliRows, toCityMainRows,
   trackSecView, makeNavWatch,
   makeSponsorLoad, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, toDrawCellRows,
-  drawsOf, empPiecesOf, makeNearWatch, makePartLoad, newNearSet, newsOf, nocProvsMapOf, partUrlOf, provExtraOf,
+  drawsOf, empPiecesOf, makeNearWatch, makePartLoad, newNearSet, newsOf, nocProvsMapOf,
+  partUrlOf, provExtraOf,
 } from './functions'
 import type {
   DrawCellRow, DrawCellRowsIn,

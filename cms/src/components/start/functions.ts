@@ -75,7 +75,10 @@ TAG_FED, PROV_FED, UNIT_SELECTION, COL_DATE, COL_PROG, COL_STREAM, COL_SCORE, CO
   FORMULA_KEY, MK_ALLOC_INCL,
   YOY_YEAR_TAIL,
   PART_DRAWS, PART_EMP, PART_NEWS, PART_OCC, PART_PROV, P_LANG, P_PART, QS_AND, QS_EQ, QS_HEAD,
-  URL_PULSE_API, EMPTY_DRAWS_PART, EMPTY_PROV_EXTRA, EMPTY_SPONSOR_GROUP, NEAR_MARGIN, NEAR_SCAN_MAX, NEAR_SCAN_MS,
+  ANCHOR_LINK_SEL, ANCHOR_SEC_HEAD, EV_CLICK, EV_KEY_DOWN, EV_TOUCH_START, EV_WHEEL, HREF_ATTR,
+  SCROLL_BLOCK_START,
+  URL_PULSE_API, EMPTY_DRAWS_PART, EMPTY_PROV_EXTRA, EMPTY_SPONSOR_GROUP, NEAR_MARGIN, NEAR_PX,
+  NEAR_SCAN_MAX, NEAR_SCAN_MS,
 } from './constants'
 import { DeadCell } from './deadcell'
 import { EmpBriefCell } from './empbriefcell'
@@ -98,6 +101,7 @@ import { DliSchoolCell } from './dlischoolcell'
 import type { CityRow } from '@/lib/stats'
 import { CACHE } from './variables'
 import type {
+  HeldAboveIn, HoldListenIn, NearWatchState, ObserveBandsIn,
   HomeLoadIn,
   CityLabel, CityLabelIn,
   BandClsIn, CleanupFn,
@@ -2050,10 +2054,14 @@ export function makeNavWatch(x: NavWatchIn): () => CleanupFn {
 }
 
 /**
- * 盯分区色带进没进视口附近(useNearBands 的本体;2026-11-05 按段懒加载):进了 NEAR_MARGIN 就记下。一直盯着不撤 ——
- * 进附近那一下的状态更新若丢了(dev 双挂载 / 热更新 / 浏览器恢复滚动位置时实撞:首屏职业卡一直空白),下次进出还能补上。
- * 没有 IntersectionObserver 的环境一律记全(退回挂载即取)。挂载那一刻没找齐的色带(段还没渲出来 / 热更新)每 NEAR_SCAN_MS
- * 再找一次,至多 NEAR_SCAN_MAX 次 —— 只扫一次时漏掉的段永远不取数,首屏职业卡一直空白(2026-11-05 实撞);找不到的 id 跳过(该段条件不渲)。
+ * 盯分区色带进没进视口附近 + 跳段锁(useNearBands 的本体;2026-11-05 按段懒加载)。
+ * ① 进了 NEAR_MARGIN 就记下;一直盯着不撤 —— 进附近那一下的状态更新若丢了(dev 双挂载 / 热更新 / 浏览器恢复滚动位置
+ * 时实撞:首屏职业卡一直空白),下次进出还能补上。挂载那一刻没找齐的色带每 NEAR_SCAN_MS 再找一次,至多 NEAR_SCAN_MAX 次。
+ * ② 跳段锁:点本页分区锚点(或带 #pl-… 深链进来)后,排在目标段**上方**的段进了附近也先不取(记进待取),
+ * 页面每撑高一次就把目标段对齐回顶 —— 手机 375 点「抽选」实撞:跳过去时上方各段一段段露出、连锁加载撑高页面,
+ * 把目标段推走 1.4 万像素,最后停在省份段。只在用户自己滚(滚轮 / 触摸 / 按键)时放手,待取里此刻仍在附近的补取 ——
+ * 原定锁 20 秒自动放手,放手那一刻紧贴在上方的段正在附近、补取撑高,照样把目标推走(实测),故不设时限。
+ * 没有 IntersectionObserver 的环境一律记全(退回挂载即取)。
  *
  * @param x 要盯的分区 id 与已到集合的写口。
  * @returns effect 的本体(交回清理函数)。
@@ -2062,49 +2070,171 @@ export function makeNearWatch(x: NearWatchIn): () => CleanupFn {
   return function run(): CleanupFn {
     if (typeof IntersectionObserver === 'undefined') {
       x.setNear(new Set<string>(x.ids))
-      return function noop(): void {
-        return
+      return noopCleanup
+    }
+    const st: NearWatchState = { hold: TEXT_NONE, deferred: new Set<string>(), scanTimer: 0, tries: 0 }
+    function addHits(hit: string[]): void {
+      if (hit.length > 0) {
+        x.setNear(makeNearAdd(hit))
       }
     }
     function onSeen(entries: IntersectionObserverEntry[]): void {
       const hit: string[] = []
       for (const e of entries) {
-        if (e.isIntersecting) {
-          hit.push(e.target.id)
+        const id = e.target.id
+        if (e.isIntersecting && heldAbove({ ids: x.ids, hold: st.hold, id })) {
+          st.deferred.add(id)
+        }
+        if (e.isIntersecting && heldAbove({ ids: x.ids, hold: st.hold, id }) === false) {
+          hit.push(id)
         }
       }
-      if (hit.length > 0) {
-        x.setNear(makeNearAdd(hit))
+      addHits(hit)
+    }
+    function release(): void {
+      if (st.hold === TEXT_NONE) {
+        return
+      }
+      st.hold = TEXT_NONE
+      addHits(nearNowOf(st.deferred))
+      st.deferred.clear()
+    }
+    function grab(hash: string): void {
+      st.hold = hash.slice(ANCHOR_HEAD.length)
+    }
+    function onClick(e: MouseEvent): void {
+      const a = anchorLinkOf(e.target)
+      if (a != null) {
+        grab(a)
+      }
+    }
+    function realign(): void {
+      const el = document.getElementById(st.hold)
+      if (st.hold !== TEXT_NONE && el != null) {
+        el.scrollIntoView({ block: SCROLL_BLOCK_START })
       }
     }
     const obs = new IntersectionObserver(onSeen, { rootMargin: NEAR_MARGIN })
-    const found = new Set<string>()
-    function scan(): boolean {
-      for (const id of x.ids) {
-        const el = document.getElementById(id)
-        if (found.has(id) === false && el != null) {
-          obs.observe(el)
-          found.add(id)
-        }
-      }
-      return found.size === x.ids.length
-    }
-    let tries = 0
-    let timer = 0
-    function retry(): void {
-      tries = tries + 1
-      if (scan() === false && tries < NEAR_SCAN_MAX) {
-        timer = window.setTimeout(retry, NEAR_SCAN_MS)
+    function scan(): void {
+      st.tries = st.tries + 1
+      if (observeBands({ ids: x.ids, obs }) === false && st.tries < NEAR_SCAN_MAX) {
+        st.scanTimer = window.setTimeout(scan, NEAR_SCAN_MS)
       }
     }
-    if (scan() === false) {
-      timer = window.setTimeout(retry, NEAR_SCAN_MS)
+    if (window.location.hash.startsWith(ANCHOR_SEC_HEAD)) {
+      grab(window.location.hash)
     }
+    scan()
+    const unlisten = listenHold({ onClick, release, realign })
     return function off(): void {
       obs.disconnect()
-      window.clearTimeout(timer)
+      unlisten()
+      window.clearTimeout(st.scanTimer)
     }
   }
+}
+
+/**
+ * 把还没盯上的分区色带交给观察器(按 id 找;IntersectionObserver 对同一元素重复 observe 是空操作)。
+ *
+ * @param x 分区 id 与观察器。
+ * @returns 全部找齐了给 true。
+ */
+function observeBands(x: ObserveBandsIn): boolean {
+  let all = true
+  for (const id of x.ids) {
+    const el = document.getElementById(id)
+    if (el == null) {
+      all = false
+    }
+    if (el != null) {
+      x.obs.observe(el)
+    }
+  }
+  return all
+}
+
+/**
+ * 跳段锁的监听:点击(认锚点链接)、用户自己滚(滚轮 / 触摸 / 按键 = 放手)、页面撑高(对齐回目标段)。
+ *
+ * @param x 三只手柄。
+ * @returns 撤掉全部监听的函数。
+ */
+function listenHold(x: HoldListenIn): CleanupFn {
+  const ro = new ResizeObserver(x.realign)
+  ro.observe(document.body)
+  document.addEventListener(EV_CLICK, x.onClick, true)
+  window.addEventListener(EV_WHEEL, x.release, { passive: true })
+  window.addEventListener(EV_TOUCH_START, x.release, { passive: true })
+  window.addEventListener(EV_KEY_DOWN, x.release)
+  return function unlisten(): void {
+    ro.disconnect()
+    document.removeEventListener(EV_CLICK, x.onClick, true)
+    window.removeEventListener(EV_WHEEL, x.release)
+    window.removeEventListener(EV_TOUCH_START, x.release)
+    window.removeEventListener(EV_KEY_DOWN, x.release)
+  }
+}
+
+/**
+ * 这一段是不是排在锁住的目标段上方(锁着时先不取;没锁给 false)。
+ *
+ * @param x 分区 id 序、锁住的目标与这一段。
+ * @returns 要先压着给 true。
+ */
+function heldAbove(x: HeldAboveIn): boolean {
+  if (x.hold === TEXT_NONE) {
+    return false
+  }
+  const at = x.ids.indexOf(x.hold)
+  return at >= 0 && x.ids.indexOf(x.id) < at
+}
+
+/**
+ * 待取里此刻仍在视口附近(上下 NEAR_PX)的那几段。
+ *
+ * @param ids 待取的分区 id。
+ * @returns 此刻在附近的。
+ */
+function nearNowOf(ids: Set<string>): string[] {
+  const out: string[] = []
+  for (const id of ids) {
+    const el = document.getElementById(id)
+    if (el == null) {
+      continue
+    }
+    const r = el.getBoundingClientRect()
+    if (r.top < window.innerHeight + NEAR_PX && r.bottom > -NEAR_PX) {
+      out.push(id)
+    }
+  }
+  return out
+}
+
+/**
+ * 不用清理时的清理函数。
+ *
+ * @returns 无。
+ */
+function noopCleanup(): void {
+  return
+}
+
+/**
+ * 点中的是不是本页分区锚点链接;是给它的 href(#pl-…),不是给 null。
+ *
+ * @param t 点击目标。
+ * @returns 锚点或 null。
+ */
+function anchorLinkOf(t: EventTarget | null): string | null {
+  if (t instanceof Element === false) {
+    return null
+  }
+  const a = t.closest(ANCHOR_LINK_SEL)
+  if (a == null) {
+    return null
+  }
+  return a.getAttribute(HREF_ATTR)
 }
 
 /**

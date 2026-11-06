@@ -8,7 +8,7 @@
  * @time 2026-09-06 22:00:00
  */
 import { Table } from '@/components/table'
-import { ID_PROV_JOBS, PH_PROV } from './constants'
+import { ID_PROV_JOBS, K_LOADING, PH_PROV } from './constants'
 import { boardGapClsOf, jobsColsOf, jobsRowKeyOf } from './functions'
 import { JobsCard } from './jobscard'
 import { Placeholder } from './placeholder'
@@ -34,7 +34,7 @@ export function JobsSection({ t, loading, rows, gap }: JobsSectionIn) {
     <div id={ID_PROV_JOBS} className={css.subAnchor}>
       <div className={boardGapClsOf({ gap })}>
       <Sec title={t('pulse.s4j')} sub>
-        {loading && <Placeholder size={PH_PROV} />}
+        {loading && <Placeholder size={PH_PROV} text={t(K_LOADING)} />}
         {rows.length > 0 && (
           <div className={css.table}>
             <Table<JobsRow> rows={rows} cols={jobsColsOf({ t })} rowKey={jobsRowKeyOf} />

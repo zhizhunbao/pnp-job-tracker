@@ -97,9 +97,54 @@ export const NEAR_MARGIN = '200px 0px'
 export const NEAR_SCAN_MS = 300
 
 /**
+ * 「附近」的像素数(与 NEAR_MARGIN 同数;放手补取待取段时按它现量)。
+ */
+export const NEAR_PX = 200
+
+/**
  * 再找至多几次(300ms × 20 = 6 秒;条件不渲的段本来就找不到,找满就停)。
  */
 export const NEAR_SCAN_MAX = 20
+
+/**
+ * 本页分区锚点的前缀(二级导航与深链都是它)。
+ */
+export const ANCHOR_SEC_HEAD = '#pl-'
+
+/**
+ * 本页分区锚点链接的选择器(点它 = 跳段,开始锁目标)。
+ */
+export const ANCHOR_LINK_SEL = 'a[href^="#pl-"]'
+
+/**
+ * 点击事件名(认导航跳段)。
+ */
+export const EV_CLICK = 'click'
+
+/**
+ * 滚轮事件名(用户自己滚 = 放手)。
+ */
+export const EV_WHEEL = 'wheel'
+
+/**
+ * 触摸开始事件名(手机上用户自己滑 = 放手)。
+ */
+export const EV_TOUCH_START = 'touchstart'
+
+/**
+ * 按键事件名(键盘翻页 = 放手)。
+ */
+export const EV_KEY_DOWN = 'keydown'
+
+/**
+ * 对齐到顶(scrollIntoView 的 block;吸顶导航的让位由色带的 scroll-margin-top 管)。
+ */
+export const SCROLL_BLOCK_START = 'start'
+
+/**
+ * 链接的 href 属性名。
+ */
+export const HREF_ATTR = 'href'
 
 /**
  * 按段接口的缓存头(照城市段:浏览器 5 分钟内复用,一小时内先给旧的再后台刷)。
@@ -654,6 +699,11 @@ export const PH_PROV = 420
  * 原先四五百像素的矮占位让首屏就挨着后面两三段,一开页全进了「附近」、一起取了。
  */
 export const PH_LAZY = 900
+
+/**
+ * 占位卡左上角「加载中…」的词条(2026-11-06 Frank「这个地方点过来 应该有个加载中吧」;与站内其他加载行同一条)。
+ */
+export const K_LOADING = 'act.loadingText'
 
 /**
  * 正文轨的上内衬档(px;色带自己管上下距,轨上下都贴满)。

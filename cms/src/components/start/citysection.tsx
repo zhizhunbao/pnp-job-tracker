@@ -23,7 +23,7 @@
 import { Chip } from '@/components/chip'
 import { Table } from '@/components/table'
 import {
-  CARD_PAGE_SIZE, DLI_PAGE_SIZE, ID_CITY, ID_CITY_DLI, ID_CITY_IND, ID_CITY_MAIN, PH_LAZY,
+  CARD_PAGE_SIZE, DLI_PAGE_SIZE, ID_CITY, ID_CITY_DLI, ID_CITY_IND, ID_CITY_MAIN, K_LOADING, PH_LAZY,
 } from './constants'
 import {
   boardGapClsOf, cityAipColsOf, cityDliColsOf, cityIndColsOf, cityMainColsOf, cityPilotColsOf, cityRowKeyOf,
@@ -79,7 +79,7 @@ export function CitySection({ t, lang, on }: CitySectionIn) {
   return (
     <Band id={ID_CITY}>
       <Sec title={t('pulse.city')}>
-        {v.data == null && <Placeholder size={PH_LAZY} />}
+        {v.data == null && <Placeholder size={PH_LAZY} text={t(K_LOADING)} />}
         {v.data != null && v.mainRows.length > 0 && (
           <div id={ID_CITY_MAIN} className={css.subAnchor}>
             <Sec title={t('pulse.city.main')} sub>

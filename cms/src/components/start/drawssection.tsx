@@ -12,7 +12,7 @@
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
-import { ID_DRAWS, PH_LAZY } from './constants'
+import { ID_DRAWS, K_LOADING, PH_LAZY } from './constants'
 import { drawsOrEmpty } from './functions'
 import { useDrawRows } from './hooks'
 import { Band } from './band'
@@ -36,7 +36,7 @@ export function DrawsSection({ t, tEn, lang, draws }: DrawsSectionIn) {
   return (
     <Band id={ID_DRAWS}>
       <Sec title={t('pulse.s5')}>
-        {draws == null && <Placeholder size={PH_LAZY} />}
+        {draws == null && <Placeholder size={PH_LAZY} text={t(K_LOADING)} />}
         {draws != null && (
           <div className={css.panel}>
             <DrawBoard t={t} rows={rows} />

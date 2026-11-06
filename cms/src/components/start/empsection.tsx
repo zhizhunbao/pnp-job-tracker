@@ -12,7 +12,7 @@
  * @author Frank
  * @time 2026-09-04 22:10:00
  */
-import { ID_SE, PH_LAZY, TABLE_IND, TABLE_PILOT } from './constants'
+import { ID_SE, K_LOADING, PH_LAZY, TABLE_IND, TABLE_PILOT } from './constants'
 import { subIdOf } from './functions'
 import { Band } from './band'
 import { EmpBoardSec } from './empboardsec'
@@ -57,7 +57,7 @@ export function EmpSection({ t, secs, pilotSecs, loading }: EmpSectionIn) {
   return (
     <Band id={ID_SE}>
       <Sec title={t('pulse.nav.se')}>
-        {loading && <Placeholder size={PH_LAZY} />}
+        {loading && <Placeholder size={PH_LAZY} text={t(K_LOADING)} />}
         {items}
       </Sec>
     </Band>

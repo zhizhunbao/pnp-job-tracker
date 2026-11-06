@@ -8,7 +8,7 @@
  * @author Frank
  * @time 2026-09-04 22:10:00
  */
-import { ID_BOARDS, PH_LAZY } from './constants'
+import { ID_BOARDS, K_LOADING, PH_LAZY } from './constants'
 import { Band } from './band'
 import { OccBoardSec } from './occboardsec'
 import { subIdOf } from './functions'
@@ -47,7 +47,7 @@ export function BoardsSection({ t, lang, secs, nocProvs }: BoardsSectionIn) {
   return (
     <Band id={ID_BOARDS}>
       <Sec title={t('pulse.nav.occ')}>
-        {secs == null && <Placeholder size={PH_LAZY} />}
+        {secs == null && <Placeholder size={PH_LAZY} text={t(K_LOADING)} />}
         {items}
       </Sec>
     </Band>

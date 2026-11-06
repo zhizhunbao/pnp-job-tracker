@@ -348,6 +348,16 @@ export type HomeStatsCore = {
 }
 
 /**
+ * 进程全局对象上本域那一格的形状(2026-11-06 Frank「改成共用」:缓存挂 globalThis,页面门与 /api/stats/pulse 共用)。
+ */
+export type StartGlobal = typeof globalThis & {
+  /**
+   * 本域缓存容器;进程里第一个加载本域 variables 的模块建它,之后的都拿同一个(真可选:建之前不存在)。
+   */
+  offer2prStartCache?: StartCache
+}
+
+/**
  * 首页聚合缓存的一格。
  */
 export type HomeSlot = {
@@ -682,6 +692,86 @@ export type HomeLoadIn<D> = {
    * 现查一份聚合(server 门的 loadHomeCore)。
    */
   load: (db: D) => Promise<HomeStatsCore>
+}
+
+/**
+ * 盯色带 + 跳段锁的进行态(只活在一次 effect 的闭包里)。
+ */
+export type NearWatchState = {
+  /**
+   * 锁住的目标段 id;'' = 没锁。
+   */
+  hold: string
+
+  /**
+   * 锁着时进了附近、因排在目标段上方而先压着的段(放手时补取此刻仍在附近的)。
+   */
+  deferred: Set<string>
+
+  /**
+   * 没找齐色带时再找一次的定时器。
+   */
+  scanTimer: number
+
+  /**
+   * 已找过几次色带。
+   */
+  tries: number
+}
+
+/**
+ * `observeBands` 的入参。
+ */
+export type ObserveBandsIn = {
+  /**
+   * 分区 id。
+   */
+  ids: string[]
+
+  /**
+   * 观察器。
+   */
+  obs: IntersectionObserver
+}
+
+/**
+ * `listenHold` 的入参(三只手柄)。
+ */
+export type HoldListenIn = {
+  /**
+   * 点击(认锚点链接)。
+   */
+  onClick: (e: MouseEvent) => void
+
+  /**
+   * 放手(用户自己滚)。
+   */
+  release: () => void
+
+  /**
+   * 对齐回目标段(页面撑高时)。
+   */
+  realign: () => void
+}
+
+/**
+ * `heldAbove` 的入参。
+ */
+export type HeldAboveIn = {
+  /**
+   * 分区 id(按页面顺序)。
+   */
+  ids: string[]
+
+  /**
+   * 锁住的目标段 id;'' = 没锁。
+   */
+  hold: string
+
+  /**
+   * 这一段的 id。
+   */
+  id: string
 }
 
 /**
@@ -1706,6 +1796,11 @@ export type PlaceholderIn = {
    * 高度档。
    */
   size: PlaceholderSize
+
+  /**
+   * 卡内左上角「加载中」那句话(2026-11-06)。
+   */
+  text: string
 }
 
 /**

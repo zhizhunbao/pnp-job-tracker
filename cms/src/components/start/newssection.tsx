@@ -8,7 +8,7 @@
  * @time 2026-09-12 23:58:00
  */
 import { Table } from '@/components/table'
-import { ID_NEWS, PH_LAZY } from './constants'
+import { ID_NEWS, K_LOADING, PH_LAZY } from './constants'
 import { newsColsOf, newsRowKeyOf, toNewsCellRows } from './functions'
 import { Band } from './band'
 import { Placeholder } from './placeholder'
@@ -29,7 +29,7 @@ export function NewsSection({ t, lang, news }: NewsSectionIn) {
   return (
     <Band id={ID_NEWS}>
       <Sec title={t('home.policy')}>
-        {news == null && <Placeholder size={PH_LAZY} />}
+        {news == null && <Placeholder size={PH_LAZY} text={t(K_LOADING)} />}
         {news != null && (
           <div className={css.panel}>
             <Table<NewsCellRow> rows={toNewsCellRows({ rows: news, lang, t })}

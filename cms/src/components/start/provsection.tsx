@@ -14,7 +14,7 @@
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
-import { ID_PROV, PH_LAZY } from './constants'
+import { ID_PROV, K_LOADING, PH_LAZY } from './constants'
 import { Band } from './band'
 import { JobsSection } from './jobssection'
 import { MacroBlock } from './macroblock'
@@ -41,7 +41,7 @@ export function ProvSection({ t, indGeos, indLoading, jobsLoading, jobsRows }: M
   return (
     <Band id={ID_PROV}>
       <Sec title={t('pulse.s4')}>
-        {indLoading && <Placeholder size={PH_LAZY} />}
+        {indLoading && <Placeholder size={PH_LAZY} text={t(K_LOADING)} />}
         {blocks}
         <JobsSection t={t} loading={jobsLoading} rows={jobsRows} gap={gap} />
       </Sec>
