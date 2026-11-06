@@ -312,9 +312,10 @@ export const STAGE_TEXT: Record<string, string> = {
 export const STAGE_QUEUED = 'queued'
 
 /**
- * 胶囊:雇主出了池,两个工人取活都 JOIN 雇主池,永远取不到。
+ * 胶囊:公司已不在雇主板上(雇主池没有它了),两个工人取活都 JOIN 雇主池,永远取不到。
+ * 2026-11-06 Frank 问「这是啥意思」:原文「已出池不取」是内部叫法,改说用户看得懂的。
  */
-export const TAG_OUT_POOL_TEXT = '已出池不取'
+export const TAG_OUT_POOL_TEXT = '已不在雇主板'
 
 /**
  * 胶囊:人工核定过,两个工人都不取。
@@ -440,3 +441,83 @@ export const SITES_MIN_W = 760
  * 译名翻译表的最小宽(三列,窄屏横滚)。
  */
 export const ALIAS_MIN_W = 420
+
+/**
+ * 删除对象:调度单元(与 lib/queue 的 DEL_KINDS 同值,下同)。
+ */
+export const DEL_UNIT = 'unit'
+
+/**
+ * 删除对象:待发投递。
+ */
+export const DEL_APPLY = 'apply'
+
+/**
+ * 删除对象:官网队列。
+ */
+export const DEL_SITE = 'site'
+
+/**
+ * 删除对象:译名队列。
+ */
+export const DEL_ALIAS = 'alias'
+
+/**
+ * 删除接口(只认管理员会话)。
+ */
+export const API_REMOVE = '/api/queue/remove'
+
+/**
+ * 删除接口的请求方法。
+ */
+export const METHOD_POST = 'POST'
+
+/**
+ * 请求体类型头名。
+ */
+export const HDR_CONTENT_TYPE = 'content-type'
+
+/**
+ * 请求体类型。
+ */
+export const MIME_JSON = 'application/json'
+
+/**
+ * 列键:操作。
+ */
+export const COL_ACT_KEY = 'act'
+
+/**
+ * 列头:操作(行内按钮进最右操作列)。
+ */
+export const COL_ACT_TEXT = '操作'
+
+/**
+ * 删除钮文字。
+ */
+export const DEL_TEXT = '删除'
+
+/**
+ * 删除确认框标题(站规 2026-10-12:删除一律先弹框确认)。
+ */
+export const DEL_ASK_TEXT = '确认删除?'
+
+/**
+ * 删除确认框取消钮。
+ */
+export const CANCEL_TEXT = '取消'
+
+/**
+ * 删除没成(接口非 2xx 或网络断;标题卡上挂一枚红胶囊)。
+ */
+export const DEL_FAIL_TEXT = '删除失败'
+
+/**
+ * 删除钮的按钮档(通用 button 桶的次要小钮)。
+ */
+export const DEL_BTN_KIND = 'secondary'
+
+/**
+ * 投递那一条在确认框里的名字:职位与公司之间的分隔。
+ */
+export const DEL_NAME_SEP = ', '

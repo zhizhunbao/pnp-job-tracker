@@ -3592,3 +3592,25 @@ export const QUEUE_ALIAS = `SELECT key, name, seen_count, extract(epoch FROM now
  * 页面右上角的更新时刻(取库的 now(),与上面几条的秒数同一个钟)。
  */
 export const QUEUE_NOW = `SELECT now() AS at`
+
+/**
+ * 队列页删除:一个调度单元(容器还活着下一轮会重新报上来;用来清掉停用 / 改名的单元)。$1=单元名。
+ */
+export const QUEUE_DEL_UNIT = `DELETE FROM etl_units WHERE name = $1`
+
+/**
+ * 队列页删除:一条待发投递(只删还没发出去的)。$1=投递行 id。inbox_messages 的外键是 SET NULL,不挡。
+ */
+export const QUEUE_DEL_APPLY = `DELETE FROM applications WHERE id = $1::int AND status IN ('queued', 'sending')`
+
+/**
+ * 队列页删除:移出官网队列(阶段清空 = 回到「没被点开过」;以后再有真人点开照常重新入队)。$1=池主键。
+ */
+export const QUEUE_DEL_SITE = `UPDATE employer_explore SET stage = NULL, stage_at = now(), stage_note = NULL
+     WHERE key = $1 AND stage IN ('queued', 'find', 'fetch', 'facts')`
+
+/**
+ * 队列页删除:译名不翻了(标成 skip 带由头,板上不再出译名;工人只取 pending)。$1=池主键。
+ */
+export const QUEUE_DEL_ALIAS = `UPDATE employer_explore SET status = 'skip', note = '管理员移出队列', done_at = now()
+     WHERE key = $1 AND status = 'pending'`

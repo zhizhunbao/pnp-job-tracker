@@ -10,6 +10,8 @@
 import { count, text, textOrNull } from '@/lib/db'
 import { cssOf } from '@/components/css'
 import {
+  API_REMOVE, COL_ACT_KEY, COL_ACT_TEXT, DEL_ALIAS, DEL_APPLY, DEL_NAME_SEP, DEL_SITE, DEL_UNIT, HDR_CONTENT_TYPE,
+  METHOD_POST, MIME_JSON,
   AGO_TAIL, APPLY_QUEUED, COL_COMPANY_KEY, COL_COMPANY_TEXT, COL_EMPLOYER_TEXT, COL_EVERY_KEY, COL_EVERY_TEXT,
   COL_JOB_KEY, COL_JOB_TEXT, COL_LAST_KEY, COL_LAST_TEXT, COL_NAME_KEY, COL_NEXT_TEXT, COL_NOTE_KEY, COL_NOTE_TEXT,
   COL_OPENS_TEXT, COL_SEEN_TEXT, COL_STATE_KEY, COL_STATE_TEXT, COL_TIMES_KEY, COL_UNIT_TEXT, COL_USER_KEY,
@@ -24,7 +26,8 @@ import { TagsCell } from './tagscell'
 import css from './queue.module.css'
 import type {
   AliasDbRow, AliasFact, AliasRow, ApplyDbRow, ApplyFact, ApplyRow, CountTextIn, KeyedRow, NowDbRow, QueueBoard,
-  QueueBoardIn, QueueCol, QueueVariant, SiteDbRow, SiteFact, SiteRow, TotalRow, UnitDbRow, UnitFact, UnitRow,
+  ActRenderFn, DelAskFn, DelOkIn, DelOpenIn, QueueBoardIn, QueueCol, QueueVariant, SiteDbRow, SiteFact, SiteRow,
+  TotalRow, UnitDbRow, UnitFact, UnitRow,
 } from './types'
 
 /**
@@ -117,6 +120,7 @@ export function toUnitRow(u: UnitFact): UnitRow {
     whenText: unitWhenOf(u),
     lastText,
     everyText: EVERY_HEAD + spanTextOf(u.intervalS),
+    del: { kind: DEL_UNIT, key: u.name, name: u.name },
   }
 }
 
@@ -167,12 +171,13 @@ export function toApplyRow(a: ApplyFact): ApplyRow {
     tagVariant,
     warnText,
     ageText: spanTextOf(a.ageS),
+    del: { kind: DEL_APPLY, key: String(a.id), name: a.jobTitle + DEL_NAME_SEP + a.company },
   }
 }
 
 /**
  * 官网抓取事实行 → 展示行。排队中灰、在办(查找 / 抓取 / 整理)蓝;两种取不到的再挂一枚红胶囊:
- * 雇主出了池(「已出池不取」,先判)、人工核定过(「已核定不取」)—— 两个工人取活都跳过,会一直卡在队里。工人:有官网归抓官网,没有归找官网。
+ * 公司已不在雇主板(「已不在雇主板」,先判)、人工核定过(「已核定不取」)—— 两个工人取活都跳过,会一直卡在队里。工人:有官网归抓官网,没有归找官网。
  *
  * @param s 事实行。
  * @returns 展示行。
@@ -211,6 +216,7 @@ export function toSiteRow(s: SiteFact): SiteRow {
     timesText: s.openCount + TIMES_TAIL,
     ageText,
     noteText: dashIfEmpty(s.note),
+    del: { kind: DEL_SITE, key: s.key, name: s.name },
   }
 }
 
@@ -221,7 +227,13 @@ export function toSiteRow(s: SiteFact): SiteRow {
  * @returns 展示行。
  */
 export function toAliasRow(a: AliasFact): AliasRow {
-  return { key: a.key, name: a.name, timesText: a.seenCount + TIMES_TAIL, ageText: spanTextOf(a.ageS) }
+  return {
+    key: a.key,
+    name: a.name,
+    timesText: a.seenCount + TIMES_TAIL,
+    ageText: spanTextOf(a.ageS),
+    del: { kind: DEL_ALIAS, key: a.key, name: a.name },
+  }
 }
 
 /**
@@ -259,15 +271,17 @@ export function spanTextOf(s: number): string {
 /**
  * 调度单元表的列组。
  *
+ * @param act 操作格渲染器(删除钮;由 Queue 递进来,本文件不引组件件,免得和删除钮互相 import 成环)。
  * @returns 列声明。
  */
-export function unitColsOf(): QueueCol<UnitRow>[] {
+export function unitColsOf(act: ActRenderFn): QueueCol<UnitRow>[] {
   return [
     { key: COL_NAME_KEY, label: COL_UNIT_TEXT, nowrap: true, render: unitNameOf },
     { key: COL_STATE_KEY, label: COL_STATE_TEXT, nowrap: true, render: TagsCell },
     { key: COL_WHEN_KEY, label: COL_NEXT_TEXT, nowrap: true, render: unitWhenTextOf },
     { key: COL_LAST_KEY, label: COL_LAST_TEXT, nowrap: true, render: unitLastOf },
     { key: COL_EVERY_KEY, label: COL_EVERY_TEXT, nowrap: true, render: unitEveryOf },
+    { key: COL_ACT_KEY, label: COL_ACT_TEXT, nowrap: true, render: act },
   ]
 }
 
@@ -314,15 +328,17 @@ export function unitEveryOf(r: UnitRow): string {
 /**
  * 投递待发表的列组。
  *
+ * @param act 操作格渲染器(删除钮;由 Queue 递进来,本文件不引组件件,免得和删除钮互相 import 成环)。
  * @returns 列声明。
  */
-export function applyColsOf(): QueueCol<ApplyRow>[] {
+export function applyColsOf(act: ActRenderFn): QueueCol<ApplyRow>[] {
   return [
     { key: COL_USER_KEY, label: COL_USER_TEXT, className: cssOf(css.wrap), render: applyEmailOf },
     { key: COL_JOB_KEY, label: COL_JOB_TEXT, className: cssOf(css.wrap), render: applyJobOf },
     { key: COL_COMPANY_KEY, label: COL_COMPANY_TEXT, className: cssOf(css.wrap), render: applyCompanyOf },
     { key: COL_STATE_KEY, label: COL_STATE_TEXT, nowrap: true, render: TagsCell },
     { key: COL_WHEN_KEY, label: COL_WAIT_TEXT, nowrap: true, render: applyAgeOf },
+    { key: COL_ACT_KEY, label: COL_ACT_TEXT, nowrap: true, render: act },
   ]
 }
 
@@ -369,9 +385,10 @@ export function applyAgeOf(r: ApplyRow): string {
 /**
  * 官网抓取表的列组。
  *
+ * @param act 操作格渲染器(删除钮;由 Queue 递进来,本文件不引组件件,免得和删除钮互相 import 成环)。
  * @returns 列声明。
  */
-export function siteColsOf(): QueueCol<SiteRow>[] {
+export function siteColsOf(act: ActRenderFn): QueueCol<SiteRow>[] {
   return [
     { key: COL_NAME_KEY, label: COL_COMPANY_TEXT, className: cssOf(css.wrap), render: siteNameOf },
     { key: COL_STATE_KEY, label: COL_STATE_TEXT, nowrap: true, render: TagsCell },
@@ -379,6 +396,7 @@ export function siteColsOf(): QueueCol<SiteRow>[] {
     { key: COL_TIMES_KEY, label: COL_OPENS_TEXT, nowrap: true, render: siteTimesOf },
     { key: COL_WHEN_KEY, label: COL_WAIT_TEXT, nowrap: true, render: siteAgeOf },
     { key: COL_NOTE_KEY, label: COL_NOTE_TEXT, className: cssOf(css.wrap), render: siteNoteOf },
+    { key: COL_ACT_KEY, label: COL_ACT_TEXT, nowrap: true, render: act },
   ]
 }
 
@@ -435,13 +453,15 @@ export function siteNoteOf(r: SiteRow): string {
 /**
  * 译名翻译表的列组。
  *
+ * @param act 操作格渲染器(删除钮;由 Queue 递进来,本文件不引组件件,免得和删除钮互相 import 成环)。
  * @returns 列声明。
  */
-export function aliasColsOf(): QueueCol<AliasRow>[] {
+export function aliasColsOf(act: ActRenderFn): QueueCol<AliasRow>[] {
   return [
     { key: COL_NAME_KEY, label: COL_EMPLOYER_TEXT, className: cssOf(css.wrap), render: aliasNameOf },
     { key: COL_TIMES_KEY, label: COL_SEEN_TEXT, nowrap: true, render: aliasTimesOf },
     { key: COL_WHEN_KEY, label: COL_WAIT_TEXT, nowrap: true, render: aliasAgeOf },
+    { key: COL_ACT_KEY, label: COL_ACT_TEXT, nowrap: true, render: act },
   ]
 }
 
@@ -483,6 +503,82 @@ export function aliasAgeOf(r: AliasRow): string {
  */
 export function queueRowKeyOf(r: KeyedRow): string {
   return r.key
+}
+
+/**
+ * 造行内删除钮的点击手柄:把这一条交给确认框(站规 2026-10-12:删除一律先弹框确认)。
+ *
+ * @param x 拨框手柄与要删的那一条。
+ * @returns 点击手柄。
+ */
+export function makeDelOpen(x: DelOpenIn): () => void {
+  return function delOpen(): void {
+    if (x.setAsk != null) {
+      x.setAsk(x.del)
+    }
+  }
+}
+
+/**
+ * 造确认框「删除」:关框、调删除接口,成了重取服务端数据,没成在标题卡挂「删除失败」。
+ *
+ * @param x 等着确认的那一条与三个手柄。
+ * @returns 点击手柄。
+ */
+export function makeDelOk(x: DelOkIn): () => void {
+  return function delOk(): void {
+    const ask = x.ask
+    x.setAsk(null)
+    if (ask == null) {
+      return
+    }
+    x.setFailed(false)
+    fetch(API_REMOVE, {
+      method: METHOD_POST,
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+      body: JSON.stringify({ kind: ask.kind, key: ask.key }),
+    }).then(makeDelDone(x)).catch(makeDelFail(x))
+  }
+}
+
+/**
+ * 造删除接口回来后的手柄:2xx 重取,其余挂「删除失败」。
+ *
+ * @param x 删除确认机的手柄。
+ * @returns 响应手柄。
+ */
+export function makeDelDone(x: DelOkIn): (r: Response) => void {
+  return function delDone(r: Response): void {
+    if (r.ok) {
+      x.refresh()
+      return
+    }
+    x.setFailed(true)
+  }
+}
+
+/**
+ * 造删除接口打不通的手柄:挂「删除失败」(出错不静默)。
+ *
+ * @param x 删除确认机的手柄。
+ * @returns 失败手柄。
+ */
+export function makeDelFail(x: DelOkIn): () => void {
+  return function delFail(): void {
+    x.setFailed(true)
+  }
+}
+
+/**
+ * 造确认框「取消」:关框。
+ *
+ * @param setAsk 拨框手柄。
+ * @returns 点击手柄。
+ */
+export function makeDelClose(setAsk: DelAskFn): () => void {
+  return function delClose(): void {
+    setAsk(null)
+  }
 }
 
 /**

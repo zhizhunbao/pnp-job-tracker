@@ -5,4 +5,4 @@
  * @time 2026-11-05 23:10:00
  */
 
-export { queueUnitsRoute } from './routes'
+export { queueRemoveRoute, queueUnitsRoute } from './routes'

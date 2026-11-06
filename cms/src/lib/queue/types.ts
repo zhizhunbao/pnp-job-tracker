@@ -120,3 +120,58 @@ export type SaveUnitIn = {
  * 写库没有返回值。
  */
 export type WriteOut = Promise<void>
+
+/**
+ * 队列页 POST 来的删除体(线格式,逐格判)。
+ */
+export type RemoveJson = {
+  /**
+   * 删哪种(unit / apply / site / alias)。
+   */
+  kind?: string
+
+  /**
+   * 那一条的键(单元名 / 投递 id / 池主键)。
+   */
+  key?: string
+}
+
+/**
+ * 洗净的删除请求。
+ */
+export type RemoveFact = {
+  /**
+   * 删哪种(DEL_KINDS 之一)。
+   */
+  kind: string
+
+  /**
+   * 那一条的键。
+   */
+  key: string
+}
+
+/**
+ * 可能洗不出来的删除请求(坏体 = null)。
+ */
+export type MaybeRemoveFact = RemoveFact | null
+
+/**
+ * removeItem 的入参。
+ */
+export type RemoveIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+
+  /**
+   * 洗净的删除请求。
+   */
+  item: RemoveFact
+}
+
+/**
+ * removeItem 的结果:动了几行。
+ */
+export type RemovedOut = Promise<number>

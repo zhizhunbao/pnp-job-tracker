@@ -7,6 +7,31 @@
  */
 
 /**
+ * 删除一条要的身份(服务端洗行时备好,随展示行下发;点删除钮时交给确认框)。
+ */
+export type DelSpec = {
+  /**
+   * 删哪种(unit / apply / site / alias)。
+   */
+  kind: string
+
+  /**
+   * 那一条的键(单元名 / 投递 id / 池主键)。
+   */
+  key: string
+
+  /**
+   * 确认框正文里显示的名字。
+   */
+  name: string
+}
+
+/**
+ * 拨删除确认框的函数(null = 关)。
+ */
+export type DelAskFn = (v: DelSpec | null) => void
+
+/**
  * 胶囊配色(与 tag 桶 TagVariant 同值,本页只用这四种)。
  */
 export type QueueVariant = 'info' | 'gray' | 'warn' | 'bad'
@@ -134,6 +159,10 @@ export type UnitRow = {
    * 节奏格。
    */
   everyText: string
+  /**
+   * 删除这一条要的身份(种类、键、确认框里显示的名字)。
+   */
+  del: DelSpec
 }
 
 /**
@@ -259,6 +288,10 @@ export type ApplyRow = {
    * 等了多久。
    */
   ageText: string
+  /**
+   * 删除这一条要的身份(种类、键、确认框里显示的名字)。
+   */
+  del: DelSpec
 }
 
 /**
@@ -396,7 +429,7 @@ export type SiteRow = {
   tagVariant: QueueVariant
 
   /**
-   * 第二枚胶囊(已出池不取 / 已核定不取);空串 = 不出。
+   * 第二枚胶囊(已不在雇主板 / 已核定不取);空串 = 不出。
    */
   warnText: string
 
@@ -419,6 +452,10 @@ export type SiteRow = {
    * 由头。
    */
   noteText: string
+  /**
+   * 删除这一条要的身份(种类、键、确认框里显示的名字)。
+   */
+  del: DelSpec
 }
 
 /**
@@ -504,6 +541,10 @@ export type AliasRow = {
    * 等了多久。
    */
   ageText: string
+  /**
+   * 删除这一条要的身份(种类、键、确认框里显示的名字)。
+   */
+  del: DelSpec
 }
 
 /**
@@ -709,4 +750,99 @@ export type QueueSectionIn = {
    * 卡内容(一张表)。
    */
   children: React.ReactNode
+}
+
+/**
+ * 操作格渲染器(四张表共用一只:读展示行的 del 一格出删除钮)。
+ */
+export type ActRenderFn = (r: DelCellRow) => React.ReactNode
+
+/**
+ * 删除格要读的那一格(四种展示行都带)。
+ */
+export type DelCellRow = {
+  /**
+   * 删除这一条要的身份。
+   */
+  del: DelSpec
+}
+
+/**
+ * DelButton(行内删除钮)的 props。
+ */
+export type DelButtonIn = {
+  /**
+   * 删除这一条要的身份。
+   */
+  del: DelSpec
+}
+
+/**
+ * makeDelOpen 的入参。
+ */
+export type DelOpenIn = {
+  /**
+   * 拨确认框的函数(不在 Provider 下 = null,钮点了不响)。
+   */
+  setAsk: DelAskFn | null
+
+  /**
+   * 要删的那一条。
+   */
+  del: DelSpec
+}
+
+/**
+ * makeDelOk 的入参。
+ */
+export type DelOkIn = {
+  /**
+   * 等着确认的那一条(没有 = null)。
+   */
+  ask: DelSpec | null
+
+  /**
+   * 拨确认框。
+   */
+  setAsk: DelAskFn
+
+  /**
+   * 拨「删除失败」那枚胶囊。
+   */
+  setFailed: (v: boolean) => void
+
+  /**
+   * 删完重取服务端数据(router.refresh)。
+   */
+  refresh: () => void
+}
+
+/**
+ * 删除确认机(useQueueDel 出)。
+ */
+export type QueueDelPanel = {
+  /**
+   * 等着确认的那一条(没有 = null)。
+   */
+  ask: DelSpec | null
+
+  /**
+   * 拨确认框(经上下文下发给每颗删除钮)。
+   */
+  setAsk: DelAskFn
+
+  /**
+   * 上一次删除没成。
+   */
+  failed: boolean
+
+  /**
+   * 确认框「删除」。
+   */
+  onOk: () => void
+
+  /**
+   * 确认框「取消」。
+   */
+  onCancel: () => void
 }
