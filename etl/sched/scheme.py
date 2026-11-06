@@ -83,6 +83,18 @@ class Unit:
     """本单元从哪一刻起连续失败(epoch 秒;0 = 上一轮是成功的)。连续失败满 HC_FAIL_AFTER_S 起每轮给检查项
     发一次 /fail(2026-09-26 晚加,见 functions.fail_health)。"""
 
+    state: str
+    """现在在干嘛(2026-11-05 加,上报管理员队列页用):STATE_RUN 正在跑 / STATE_WAIT 等下一轮 / STATE_LLM 等 LLM 盒子。"""
+
+    started_at: float
+    """本轮(正在跑)或上一轮的开跑时刻(epoch 秒;0 = 容器起来后还没开跑过)。"""
+
+    ended_at: float
+    """上一轮跑完的时刻(epoch 秒;0 = 还没跑完过一轮)。"""
+
+    last_ok: bool | None
+    """上一轮成败;None = 还没跑完过一轮。"""
+
 
 # =========================================================================
 # 3. 单步执行(子进程 + loguru 前缀截获)

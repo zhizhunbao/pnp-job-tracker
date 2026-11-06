@@ -81,6 +81,11 @@ export const PATH_TIMELINE = '/timeline'
 export const PATH_ACCOUNT = '/account'
 
 /**
+ * 队列(管理员队列页;2026-11-05 Frank「我需要在 header 加一项,我能看到所有在排队的任务」「其他账号看不到」,只给 role=admin 出)。
+ */
+export const PATH_QUEUE = '/queue'
+
+/**
  * 高亮键:就业把脉。
  */
 export const A_START = 'start'
@@ -124,6 +129,11 @@ export const A_NEWS = 'news'
  * 高亮键:我的(账户页)。
  */
 export const A_ACCOUNT = 'account'
+
+/**
+ * 高亮键:队列(管理员队列页)。
+ */
+export const A_QUEUE = 'queue'
 
 /**
  * 资料库下拉的高亮键(职业清单 / 官方资源 / 常见案例三页共用;2026-08-29 立,
@@ -173,6 +183,7 @@ export const PATH_ACTIVE = [
   ['/streams', 'news'],
   ['/steps', 'news'],
   ['/account', 'account'],
+  ['/queue', 'queue'],
   ['/jobs', 'jobs'],
   ['/', 'jobs'],
 ] as const

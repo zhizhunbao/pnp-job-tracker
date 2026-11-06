@@ -461,3 +461,48 @@ NOW_OK_TPL = "✓ {role} 完成"
 
 NOW_END_TPL = "\n===== 全部结束,用时 {sec:.0f}s ====="
 """手动一轮收口行。"""
+
+
+# =========================================================================
+# 6. 上报单元现状(管理员队列页 /queue 的「ETL 调度单元」卡)
+# =========================================================================
+
+ENV_UNITS_URL = "UNITS_URL"
+"""上报端点的环境键(2026-11-05 加;compose 的 x-hc 锚点给全舰队配 https://offer2pr.com/api/queue/units,
+与 SEED_TOKEN 同行下发)。没配 = 不报(本地 dev / 手动一轮不往生产写)。"""
+
+UNITS_TIMEOUT_S = 5
+"""上报请求放弃线(一行 upsert,5 秒还没回 = 站上卡了,不等,下一次再报)。"""
+
+UNITS_FAIL_TPL = "! 单元现状没报上去({name}:{why})"
+"""上报失败行(只留痕,不影响本轮成败)。"""
+
+STATE_RUN = "run"
+"""状态:正在跑。"""
+
+STATE_WAIT = "wait"
+"""状态:等下一轮(到点或上游有新轮次就开跑)。"""
+
+STATE_LLM = "llm"
+"""状态:LLM 盒子不通,不起步,过 LLM_DOWN_RETRY_S 再探。"""
+
+UJ_NAME = "name"
+"""上报体键:单元名。"""
+
+UJ_INTERVAL = "intervalS"
+"""上报体键:节奏秒数。"""
+
+UJ_STATE = "state"
+"""上报体键:状态(STATE_ 三词之一)。"""
+
+UJ_LAST_OK = "lastOk"
+"""上报体键:上一轮成败(还没跑完过 = null)。"""
+
+UJ_STARTED = "startedAt"
+"""上报体键:开跑时刻(epoch 秒;没有 = null)。"""
+
+UJ_ENDED = "endedAt"
+"""上报体键:上一轮跑完的时刻(epoch 秒;没有 = null)。"""
+
+UJ_NEXT = "nextAt"
+"""上报体键:下一轮最早开跑的时刻(epoch 秒;没有 = null)。"""

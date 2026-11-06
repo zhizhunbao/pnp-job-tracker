@@ -14,6 +14,8 @@
  * 同日收口审查:宿主递了登录态(职位板 plan.loggedIn、详情页等服务端判的)就跟宿主走 —— 账户三态只在挂载时算一次,
  * 流程内注册完软刷后宿主的登录态会更新、三态不会,板上头像已变「我的」却不出;宿主没递才看三态。
  * 2026-10-11 批 5「提示统一 + 顶栏铃铛」:账户区左边挂通知铃铛(notify 桶 Bell),与「我的」同判 —— 只在已登录那一态出。
+ * 2026-11-05 Frank「我这个账号是管理员,我需要在 header 加一项,我能看到所有在排队的任务」「其他账号看不到」:
+ * 「我的」之后挂「队列」(/queue),只看首帧会话种子的 admin 一格 —— 不是管理员连那颗钮都不渲(页面那头另有 notFound 门禁)。
  *
  * @author Frank
  * @time 2026-08-24 08:00:00
@@ -24,6 +26,7 @@ import { usePathname } from 'next/navigation'
 import { IconMenu } from '@/components/icons'
 import { Button, LinkButton } from '@/components/button'
 
+import { useSsrSession } from '@/components/auth'
 import { useLang } from '@/components/i18n'
 import { Bell } from '@/components/notify'
 import { ACCT_IN, BRAND_MARK, PATH_HOME, PLAIN_BTN_KIND } from './constants'
@@ -62,6 +65,11 @@ export function Header({ sticky = false, accountArea, loggedIn }: HeaderIn) {
   if (logged != null) {
     mine = logged
   }
+  const ssr = useSsrSession()
+  let admin = false
+  if (ssr != null) {
+    admin = ssr.admin
+  }
   const [drawer, setDrawer] = useState(false)
   const handles = makeDrawerHandles({ setOpen: setDrawer })
   let headCls = css.header
@@ -84,7 +92,7 @@ export function Header({ sticky = false, accountArea, loggedIn }: HeaderIn) {
           <span className={css.tagline}>{t('tagline')}</span>
         </div>
         <div className={css.right}>
-          <HeaderNav t={t} active={activeIn} loggedIn={mine} />
+          <HeaderNav t={t} active={activeIn} loggedIn={mine} admin={admin} />
           <span className={css.divider} />
           <div className={css.acct}>
             <LangSwitch lang={lang} setLang={setLang} />
@@ -94,7 +102,7 @@ export function Header({ sticky = false, accountArea, loggedIn }: HeaderIn) {
         </div>
       </div>
       {drawer && <MobileDrawer t={t} active={activeIn} onClose={handles.closeDrawer} lang={lang} setLang={setLang}
-        loggedIn={mine} />}
+        loggedIn={mine} admin={admin} />}
     </header>
   )
 }

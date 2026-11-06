@@ -8,17 +8,18 @@
  * 2026-09-23 Frank「这几个模块先隐藏掉」:导航先不挂「拿 PR 评估」「PTE 刷题」「资料库」三项(路由照旧在,直链照旧能开);
  * 挂回 = 这里与 mobiledrawer.tsx 各把那三颗 LinkButton 加回来(地址与高亮键仍在 constants)。
  * 2026-10-03 付费闭环批 B1:「资讯」之后挂「我的」(/account),登录才出;抽屉同步(见 mobiledrawer.tsx)。
+ * 2026-11-05:「我的」之后挂「队列」(/queue),只给管理员出(Frank「其他账号看不到」);抽屉同步。
  *
  * @author Frank
  * @time 2026-08-24 08:00:00
  */
 import { cssOf } from '@/components/css'
-import { IconChart, IconClipboard, IconNews, IconUser, IconUsers } from '@/components/icons'
+import { IconChart, IconClipboard, IconNews, IconTable, IconUser, IconUsers } from '@/components/icons'
 import { LinkButton } from '@/components/button'
 import {
-  A_ACCOUNT, A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_RANK, A_START, A_STATS,
+  A_ACCOUNT, A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_QUEUE, A_RANK, A_START, A_STATS,
   PATH_ACCOUNT, PATH_EMPLOYERS, PATH_HOME,
-  PATH_NEWS, PATH_START,
+  PATH_NEWS, PATH_QUEUE, PATH_START,
 } from './constants'
 import { withOn } from './functions'
 import type { HeaderNavIn } from './types'
@@ -27,10 +28,10 @@ import css from './header.module.css'
 /**
  * 桌面导航排。
  *
- * @param props 翻译函数、高亮键与登录没。
+ * @param props 翻译函数、高亮键、登录没与是不是管理员。
  * @returns 导航排。
  */
-export function HeaderNav({ t, active, loggedIn }: HeaderNavIn) {
+export function HeaderNav({ t, active, loggedIn, admin }: HeaderNavIn) {
   const onStart = active === A_START || active === A_STATS || active === A_RANK
   const onJobs = active === A_JOBS || active === A_MATCH
   const onNews = active === A_NEWS
@@ -51,6 +52,11 @@ export function HeaderNav({ t, active, loggedIn }: HeaderNavIn) {
       {loggedIn && (
         <LinkButton href={PATH_ACCOUNT} className={withOn({ base: cssOf(css.navLink), on: active === A_ACCOUNT })}>
           <IconUser /> {t('nav.mine')}
+        </LinkButton>
+      )}
+      {admin && (
+        <LinkButton href={PATH_QUEUE} className={withOn({ base: cssOf(css.navLink), on: active === A_QUEUE })}>
+          <IconTable /> {t('nav.queue')}
         </LinkButton>
       )}
     </div>

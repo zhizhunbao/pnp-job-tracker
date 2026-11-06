@@ -314,6 +314,11 @@ export type SeedUser = {
    * Pro 到期日(ISO);非 Pro null。
    */
   proUntil: string | null
+
+  /**
+   * 角色(users.role:user / admin);没有 null(2026-11-05 加,首帧种子折成 admin 一格)。
+   */
+  role: string | null
 }
 
 /**
@@ -351,6 +356,10 @@ export type SessionSeed = {
    * Pro 到期日(ISO);非 Pro null。
    */
   proUntil: string | null
+  /**
+   * 是不是管理员(users.role = admin;2026-11-05 加:顶栏「队列」只给管理员出,其他账号看不到)。
+   */
+  admin: boolean
 }
 
 /**

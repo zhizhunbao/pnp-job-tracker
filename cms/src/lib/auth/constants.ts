@@ -346,6 +346,12 @@ export const SECURE_TAIL_NONE = ''
 export const EMAIL_NONE = ''
 
 /**
+ * 管理员角色(users.role)。首帧会话种子拿它折出 admin 一格(2026-11-05:顶栏「队列」只给管理员出)。
+ * 门禁值 —— 拼错不报错,只会让管理员看不到入口;各域自声明一份(funnel / queue 桶同值)。
+ */
+export const ROLE_ADMIN = 'admin'
+
+/**
  * 随机密码的 hex 片段之间不插东西:24 个字节各转两位 hex,首尾相接成 48 位的一整串。
  * 插任何分隔符都会让密码里混进非 hex 字符、长度也对不上 —— 而这串密码用户并不持有
  * (走 Google 或忘记密码自设),它唯一的作用就是别让账号留着空密码。

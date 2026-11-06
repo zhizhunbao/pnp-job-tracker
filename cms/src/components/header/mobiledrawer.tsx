@@ -11,6 +11,7 @@
  * 2026-09-23 Frank「这几个模块先隐藏掉」:导航先不挂「拿 PR 评估」「PTE 刷题」「资料库」三项(路由照旧在,直链照旧能开);
  * 与桌面导航排同步(见 headernav.tsx 文件头)。
  * 2026-10-03 付费闭环批 B1:末尾挂「我的」(/account),登录才出,与桌面导航排同步。
+ * 2026-11-05:「我的」之后挂「队列」(/queue),只给管理员出,与桌面导航排同步。
  *
  * @author Frank
  * @time 2026-08-24 08:00:00
@@ -22,8 +23,8 @@ import { IconX } from '@/components/icons'
 import { Button, LinkButton } from '@/components/button'
 
 import {
-  A_ACCOUNT, A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_RANK, A_START, A_STATS, BRAND_MARK,
-  PATH_ACCOUNT, PATH_EMPLOYERS, PATH_HOME, PATH_NEWS,
+  A_ACCOUNT, A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_QUEUE, A_RANK, A_START, A_STATS, BRAND_MARK,
+  PATH_ACCOUNT, PATH_EMPLOYERS, PATH_HOME, PATH_NEWS, PATH_QUEUE,
   PATH_START, PLAIN_BTN_KIND,
 } from './constants'
 import { stopClick, withOn } from './functions'
@@ -38,7 +39,7 @@ import css from './header.module.css'
  * @param props 翻译函数/高亮键/关闭回调/登录没。
  * @returns portal 到 body 的抽屉。
  */
-export function MobileDrawer({ t, active, onClose, lang, setLang, loggedIn }: MobileDrawerIn) {
+export function MobileDrawer({ t, active, onClose, lang, setLang, loggedIn, admin }: MobileDrawerIn) {
   useMainPush()
 
   const onStart = active === A_START || active === A_STATS || active === A_RANK
@@ -75,6 +76,12 @@ export function MobileDrawer({ t, active, onClose, lang, setLang, loggedIn }: Mo
             <LinkButton href={PATH_ACCOUNT}
               className={withOn({ base: cssOf(css.drawerItem), on: active === A_ACCOUNT })}>
               {t('nav.mine')}
+            </LinkButton>
+          )}
+          {admin && (
+            <LinkButton href={PATH_QUEUE}
+              className={withOn({ base: cssOf(css.drawerItem), on: active === A_QUEUE })}>
+              {t('nav.queue')}
             </LinkButton>
           )}
         </nav>

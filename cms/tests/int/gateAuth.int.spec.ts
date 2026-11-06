@@ -52,7 +52,7 @@ function expectAuthNotQuestions(box: HTMLElement) {
 }
 
 function anonSession(children: ReactNode) {
-  const initial = { in: false, email: '', displayName: null, avatar: null, proUntil: null }
+  const initial = { in: false, email: '', displayName: null, avatar: null, proUntil: null, admin: false }
   // eslint-disable-next-line react/no-children-prop -- SessionProviderIn 的 children 是必填属性,走 createElement 第三参过不了类型
   return createElement(SessionProvider, { initial, children })
 }

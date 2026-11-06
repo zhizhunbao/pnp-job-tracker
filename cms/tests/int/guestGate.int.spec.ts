@@ -205,7 +205,7 @@ describe('职位弹框收口 useActModal(三份入栈手柄都经 PeekStack 画�
 
 describe('进站向导整机 useEntryGate(全站骨架上的 GateSync 起)', () => {
   function seed(loggedIn: boolean, email = loggedIn ? 'a@b.c' : '') {
-    const initial = { in: loggedIn, email, displayName: null, avatar: null, proUntil: null }
+    const initial = { in: loggedIn, email, displayName: null, avatar: null, proUntil: null, admin: false }
     return function wrapSession(children: ReactNode) {
       // eslint-disable-next-line react/no-children-prop -- SessionProviderIn 的 children 是必填属性,走 createElement 第三参过不了类型
       return createElement(SessionProvider, { initial, children })

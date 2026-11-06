@@ -18,7 +18,7 @@ import {
   GOOGLE_USERINFO_URL, GRANT_AUTH_CODE, HEX_BYTE_LEN, HEX_PAD, HEX_RADIX, HEX_SEP, HTTPONLY_TAIL, HTTPS_PREFIX,
   KV_EQ, K_FAIL, K_OK, LI_PAIR, LOG_CONSENT, LOG_EMAIL, LOG_ENV_MISSING, LOG_LOGIN, LOG_NO_CODE, LOG_OK_NEW, LOG_OK_RETURNING, LOG_STATE,
   LOG_TOKEN, METHOD_POST, NAME_LEN_MAX, PARAM_CLIENT_ID, PARAM_REDIRECT, PARAM_STATE, PASSWORD_BYTE_LEN,
-  PROVIDER_GOOGLE, RETURN_RE, ROOT_PATH, SECOND_MS, SECURE_TAIL, SECURE_TAIL_NONE,
+  PROVIDER_GOOGLE, RETURN_RE, ROLE_ADMIN, ROOT_PATH, SECOND_MS, SECURE_TAIL, SECURE_TAIL_NONE,
   SESSION_COOKIE_TAIL, SITE, SSR_TOKEN_COOKIE, TOKEN_EXPIRATION_DEFAULT_S, TOKEN_NAME_TAIL, USERS
 } from './constants'
 import type {
@@ -39,13 +39,16 @@ import { HDR_CONTENT_TYPE } from '../http'
 export async function ssrSessionSeed(x: SessionSeedIn): SessionSeedOut {
   const has = await ssrHasSession()
   if (has === false) {
-    return { in: false, email: EMAIL_NONE, displayName: null, avatar: null, proUntil: null }
+    return { in: false, email: EMAIL_NONE, displayName: null, avatar: null, proUntil: null, admin: false }
   }
   const u = await x.loadUser(x.headers)
   if (u == null) {
-    return { in: true, email: EMAIL_NONE, displayName: null, avatar: null, proUntil: null }
+    return { in: true, email: EMAIL_NONE, displayName: null, avatar: null, proUntil: null, admin: false }
   }
-  return { in: true, email: u.email, displayName: u.displayName, avatar: u.avatar, proUntil: u.proUntil }
+  return {
+    in: true, email: u.email, displayName: u.displayName, avatar: u.avatar, proUntil: u.proUntil,
+    admin: u.role === ROLE_ADMIN,
+  }
 }
 
 /**

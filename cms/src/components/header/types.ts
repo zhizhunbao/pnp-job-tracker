@@ -25,6 +25,7 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
  */
 export type ActiveKey =
   'rank' | 'stats' | 'account' | 'pathways' | 'news' | 'employers' | 'start' | 'match' | 'jobs' | 'library' | 'pte'
+  | 'queue'
 
 
 /**
@@ -230,6 +231,11 @@ export type HeaderNavIn = {
    * 已登录(2026-10-03 付费闭环批 B1:登录才出「我的」;身份未知那一拍不出,免首帧闪)。
    */
   loggedIn: boolean
+
+  /**
+   * 是管理员(2026-11-05:「队列」只给管理员出,其他账号看不到)。
+   */
+  admin: boolean
 }
 
 /**
@@ -280,6 +286,11 @@ export type MobileDrawerIn = {
    * 已登录(同 HeaderNavIn.loggedIn:登录才出「我的」)。
    */
   loggedIn: boolean
+
+  /**
+   * 是管理员(同 HeaderNavIn.admin:「队列」只给管理员出)。
+   */
+  admin: boolean
 }
 
 

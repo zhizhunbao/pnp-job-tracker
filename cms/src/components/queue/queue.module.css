@@ -1,0 +1,55 @@
+/*
+ * queue 域(/queue 管理员队列页)的私有样式:标题卡的排布、分区卡卡头的灰字计数、状态格两枚胶囊的间距。
+ * 白卡壳与卡头字号走全局 .cardMd / .mcardHead,这里只补排布。
+ */
+
+/*
+ * 标题卡:左 H1,右更新时刻。
+ */
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/*
+ * 整页标题(内部页比消费页小一档,同 /funnel)。
+ */
+.h1 {
+  margin: 0;
+  margin-right: auto;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/*
+ * 分区卡卡头:标题与灰字计数横排。
+ */
+.secHead {
+  display: flex;
+  align-items: center;
+}
+
+/*
+ * 卡头灰字计数。
+ */
+.secN {
+  margin-left: 6px;
+  font-weight: 400;
+  color: var(--text2);
+}
+
+/*
+ * 分区卡的内容区(卡头下面留一点)。
+ */
+.sec {
+  margin-top: 8px;
+}
+
+/*
+ * 状态格:两枚胶囊横排、留缝。
+ */
+.tags {
+  display: inline-flex;
+  gap: 4px;
+}

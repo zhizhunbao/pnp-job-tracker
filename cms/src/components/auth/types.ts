@@ -477,6 +477,11 @@ export type SessionSeed = {
    * Pro 到期日(ISO);非 Pro null。
    */
   proUntil: string | null
+
+  /**
+   * 是不是管理员(2026-11-05 加:顶栏「队列」只给管理员出)。
+   */
+  admin: boolean
 }
 
 export type SessionProviderIn = {

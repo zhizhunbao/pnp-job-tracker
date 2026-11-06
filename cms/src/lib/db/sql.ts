@@ -3148,6 +3148,22 @@ export const MYJOBS_TOUCHED_IDS = `SELECT job_id AS id FROM applications WHERE u
      UNION SELECT job_id AS id FROM pick_dismissed WHERE user_id = $1`
 
 /**
+ * 今日推荐按「我的通道」筛要的本人两格(2026-10-13 Frank「做推荐匹配吧」):答案档里的身份 fitWho 与教育经历 fitEdu。
+ * $1=用户 id。没答 = 空串 / 空数组。
+ */
+export const MYJOBS_FIT_FILTER = `SELECT COALESCE(u.answers->'basic'->>'fitWho', '') AS who,
+       CASE WHEN jsonb_typeof(u.answers->'basic'->'fitEdu') = 'array' THEN u.answers->'basic'->'fitEdu'
+            ELSE '[]'::jsonb END AS edu
+  FROM users u WHERE u.id = $1`
+
+/**
+ * 今日推荐按「我的通道」筛要的各通道身份对照(同上批):岗的具名通道 pnp_stream 对 board_label,
+ * 没具名通道的可提名岗对本省省默认通道(is_default)。只取在开、登了对照的。
+ */
+export const MYJOBS_PATHWAY_FITS = `SELECT province, board_label, is_default, fits FROM pathways
+  WHERE status <> 'closed' AND fits IS NOT NULL`
+
+/**
  * 今日推荐「删除」:这一岗以后不再推(2026-10-12,docs/sql/myjobs-delete-20261012.sql)。$1=用户 id,$2=职位 id。
  */
 export const MYJOBS_PICK_DISMISS = `INSERT INTO pick_dismissed (user_id, job_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`
@@ -3515,3 +3531,60 @@ export const NOTIFY_LIST = `SELECT k.kind, k.ref_id, k.label, k.at, (k.at > COAL
  */
 export const NOTIFY_SEEN = `INSERT INTO notify_seen (user_id, seen_at) VALUES ($1, now())
      ON CONFLICT (user_id) DO UPDATE SET seen_at = now()`
+
+// =========================================================================
+// 38. 管理员队列页(2026-11-05 Frank「我能看到所有在排队的任务」「其他账号看不到」;页 /queue 只认 role=admin;
+//     四种排队:投递待发、公司官网抓取、雇主译名翻译、ETL 调度单元;表 docs/sql/etl-units-20261105.sql:etl_units)
+// =========================================================================
+
+/**
+ * 调度器上报一个单元的现状(没行建行,有行整行改)。时刻一律收 epoch 秒(调度器手里就是 time.time()),空 = NULL。
+ * $1=单元名,$2=节奏秒数,$3=状态(run / wait / llm),$4=上一轮成败(可空),$5=开跑时刻,$6=跑完时刻,$7=下一轮时刻。
+ */
+export const QUEUE_UNIT_PUT = `INSERT INTO etl_units (name, interval_s, state, last_ok, started_at, ended_at, next_at, reported_at)
+     VALUES ($1, $2, $3, $4, to_timestamp($5::float8), to_timestamp($6::float8), to_timestamp($7::float8), now())
+     ON CONFLICT (name) DO UPDATE SET interval_s = EXCLUDED.interval_s, state = EXCLUDED.state, last_ok = EXCLUDED.last_ok,
+       started_at = EXCLUDED.started_at, ended_at = EXCLUDED.ended_at, next_at = EXCLUDED.next_at, reported_at = now()`
+
+/**
+ * 全部调度单元:正在跑的在前(开跑早的在前),其余按下一轮先后。秒数在库里按 now() 现算,页面不再取时钟。
+ */
+export const QUEUE_UNITS = `SELECT name, interval_s, state, last_ok,
+       extract(epoch FROM now() - started_at)::int AS run_s,
+       extract(epoch FROM now() - ended_at)::int AS ago_s,
+       extract(epoch FROM next_at - now())::int AS due_s
+     FROM etl_units
+     ORDER BY (state = 'run') DESC, CASE WHEN state = 'run' THEN started_at END ASC, next_at ASC NULLS LAST, name`
+
+/**
+ * 投递待发:点了投递还没发出去的(queued 待投 / sending 正在发),等得久的在前;total = 不截断的总条数。$1=条数上限。
+ */
+export const QUEUE_APPLY = `SELECT a.id, a.status, a.job_title, a.company, u.email,
+       extract(epoch FROM now() - a.updated_at)::int AS age_s, count(*) OVER ()::int AS total
+     FROM applications a LEFT JOIN users u ON u.id = a.user_id
+     WHERE a.status IN ('queued', 'sending')
+     ORDER BY a.updated_at ASC LIMIT $1`
+
+/**
+ * 公司官网抓取:真人点开过、还没办完的(queued / find / fetch / facts),先到先得(与两个工人取活同序)。
+ * has_site = 公司表已有官网(决定归找官网还是抓官网那个工人);curated = 人工核定过(两个工人都不取)。$1=条数上限。
+ */
+export const QUEUE_SITES = `SELECT x.key, x.name, x.stage, x.open_count, x.stage_note,
+       COALESCE(c.website, '') <> '' AS has_site, COALESCE(c.website_source, '') = 'curated' AS curated,
+       extract(epoch FROM now() - x.opened_at)::int AS age_s, count(*) OVER ()::int AS total
+     FROM employer_explore x LEFT JOIN employer_pool p ON p.key = x.key LEFT JOIN companies c ON c.slug = p.slug
+     WHERE x.stage IN ('queued', 'find', 'fetch', 'facts')
+     ORDER BY x.opened_at ASC NULLS LAST LIMIT $1`
+
+/**
+ * 雇主译名翻译:雇主板列出过、还没翻的(status = pending),与工人取活同序(被列出次数多的、最近的在前)。$1=条数上限。
+ */
+export const QUEUE_ALIAS = `SELECT key, name, seen_count, extract(epoch FROM now() - first_seen)::int AS age_s,
+       count(*) OVER ()::int AS total
+     FROM employer_explore WHERE status = 'pending'
+     ORDER BY seen_count DESC, last_seen DESC LIMIT $1`
+
+/**
+ * 页面右上角的更新时刻(取库的 now(),与上面几条的秒数同一个钟)。
+ */
+export const QUEUE_NOW = `SELECT now() AS at`

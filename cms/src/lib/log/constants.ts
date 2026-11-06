@@ -894,6 +894,26 @@ export const NOTIFY_LOG = {
 } as const
 
 /**
+ * 队列域的日志字面量(2026-11-05 管理员队列页:调度器上报单元现状)。
+ */
+export const QUEUE_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'queue',
+
+  /**
+   * 单元现状没写成(后接单元名;etl_units 表没建也落这里)。
+   */
+  unitFailed: 'unit put failed name=',
+
+  /**
+   * 原因段。
+   */
+  whyFrag: ' why=',
+} as const
+
+/**
  * 档案域的日志字面量(2026-08-22 profile 定型批立)。
  */
 export const PROFILE_LOG = {

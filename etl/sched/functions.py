@@ -33,7 +33,7 @@ import httpx
 from loguru import logger
 
 import paths
-from load.functions import trigger_alerts, trigger_seed
+from load.functions import seed_headers, trigger_alerts, trigger_seed
 from sched.constants import (
     ALERTS_FAIL_TPL, ALERTS_OK_TPL, ARG_ONLY, ATTR_META, ATTR_METAS, CMD_SEP, CMS_DIR,
     DEFAULT_INTERVAL_S, DEFAULT_ROLES, DEFAULT_SEED_URL, DEFAULT_SOURCE, DOM_MAIN_TPL,
@@ -57,6 +57,8 @@ from sched.constants import (
     SOURCE_UNIT_TPL, STEP_FAIL_MSG, STEP_PY, STEP_RUN_TPL, TOKEN_LINE_PREFIX, UNDERSCORE,
     UNKNOWN_ROLE_TPL, U_LINE_TPL, U_MODE_CONSUMER_TPL, U_MODE_EVERY_TPL, U_SEED_SUFFIX_TPL,
     VAL_ONE,
+    ENV_UNITS_URL, STATE_LLM, STATE_RUN, STATE_WAIT, UJ_ENDED, UJ_INTERVAL, UJ_LAST_OK, UJ_NAME, UJ_NEXT, UJ_STARTED,
+    UJ_STATE, UNITS_FAIL_TPL, UNITS_TIMEOUT_S,
 )
 from sched.scheme import (FailHealthIn, FailPingIn, FreshStampIn, HcTiming, LogLike, MetaHit, PingIn, RegisterIn,
                           RunStepIn, RunStepOut, ToUnitIn, Unit)
@@ -132,6 +134,10 @@ def to_unit(x: ToUnitIn) -> Unit:
         dom=x.dom,
         ping_url="",
         failing_since=0.0,
+        state=STATE_WAIT,
+        started_at=0.0,
+        ended_at=0.0,
+        last_ok=None,
     )
 
 
@@ -183,14 +189,23 @@ def watch() -> None:
                 # 2026-11-04 Frank「如果连不上 先失败 可以吗」:盒子不通不起步(不是失败轮:不 mark_done、不发 /fail),过会儿再探
                 unit.next_at = time.time() + LLM_DOWN_RETRY_S
                 logger.info(ROUND_LLM_DOWN_TPL.format(name=unit.name, base=llm_base(), wait=LLM_DOWN_RETRY_S))
+                unit.state = STATE_LLM
+                report_unit(unit)
                 continue
             logger.info(ROUND_START_TPL.format(name=unit.name))
+            unit.state = STATE_RUN
+            unit.started_at = time.time()
+            report_unit(unit)
             ok = run_once(unit)
             mark_done(unit.name)
             wait = unit.interval_s
             if ok is False:
                 wait = min(FAIL_RETRY_S, unit.interval_s)
             unit.next_at = time.time() + wait
+            unit.state = STATE_WAIT
+            unit.ended_at = time.time()
+            unit.last_ok = ok
+            report_unit(unit)
             if ok is False:
                 logger.info(ROUND_RETRY_TPL.format(name=unit.name, wait=wait))
             else:
@@ -605,3 +620,43 @@ def load_env() -> None:
             if ln.startswith(TOKEN_LINE_PREFIX):
                 os.environ[ENV_SEED_TOKEN] = ln.split(KV_SEP, 1)[1].strip()
     os.environ.setdefault(ENV_SEED_URL, MANUAL_SEED_URL)
+
+
+# =========================================================================
+# 6. 上报单元现状(管理员队列页 /queue 的「ETL 调度单元」卡)
+# =========================================================================
+
+
+def report_unit(x: Unit) -> None:
+    """把本单元现状 upsert 进站上的 etl_units 表(2026-11-05 Frank「我能看到所有在排队的任务」):开跑、跑完、等盒子各报一次。
+    UNITS_URL 没配 = 不报(本地 dev / 手动一轮);打不通或非 2xx 只留一行 !,不影响本轮 —— 队列页晚一点看到,调度照跑。"""
+    url = os.environ.get(ENV_UNITS_URL, "")
+    if url == "":
+        return
+    try:
+        r = httpx.post(url, json=unit_json_of(x), headers=seed_headers(), timeout=UNITS_TIMEOUT_S)
+    except Exception as e:  # noqa: BLE001 — 上报打不通不影响本轮,留痕即可
+        logger.warning(UNITS_FAIL_TPL.format(name=x.name, why=type(e).__name__))
+        return
+    if r.is_success is False:
+        logger.warning(UNITS_FAIL_TPL.format(name=x.name, why=r.status_code))
+
+
+def unit_json_of(x: Unit) -> dict:
+    """上报体(契约键只住这里;时刻 0 = 没有,发 None)。"""
+    return {
+        UJ_NAME: x.name,
+        UJ_INTERVAL: x.interval_s,
+        UJ_STATE: x.state,
+        UJ_LAST_OK: x.last_ok,
+        UJ_STARTED: epoch_or_none(x.started_at),
+        UJ_ENDED: epoch_or_none(x.ended_at),
+        UJ_NEXT: epoch_or_none(x.next_at),
+    }
+
+
+def epoch_or_none(t: float) -> float | None:
+    """计时格出厂 0 = 还没有这一刻,上报发 None(库里落 NULL),不把 1970 年当真时刻。"""
+    if t == 0:
+        return None
+    return t
