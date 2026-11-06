@@ -1842,7 +1842,7 @@ export function useJobBody(x: JobBodyHookIn): JobBodyPanel {
       setShowOrig(showOrig === false)
     },
     onRetryFmt: fmt.onRetry,
-    showTrans: trans.showTrans,
+    showTrans: trans.showTrans && sub.show,
     trans: trans.trans,
     transStatus: trans.transStatus,
     pending: fmt.pending,
@@ -1916,6 +1916,10 @@ function jdInitStatusOf(ssrText: string): JdStatus {
  *
  * @param text 正文。
  * @returns 取数态。
+ * 2026-10-13 Frank「隐藏翻译」挪到「查看原帖」后面:开关并进本整台(useTransToggle);
+ * 同日改判「只需要隐藏正文翻译内容」:关着只藏 JD 正文译文(showTrans 一并收住),名字的译名灰字不归它管。
+ * 2026-11-05 Frank「控制这个弹框的所有翻译部分」:showSub 由宿主挂 name 桶 TransProvider,名字灰字与公司简介译文也归它管。
+ *
  */
 function jdStatusOf(text: string): JdStatus {
   if (text === TEXT_NONE) {
@@ -1924,6 +1928,7 @@ function jdStatusOf(text: string): JdStatus {
   return JD_DONE
 }
 
+  const sub = useTransToggle()
 /**
  * AI 五节整理版(J3)。2026-07-25 用户「有时候 AI 解析会失败,需要有重试按钮」:
  * 拉取抽成一次性动作,失败态(fmt = null)挂重试钮。
@@ -1952,6 +1957,9 @@ function useJdFormat(x: JdFormatHookIn): JdFormatPanel {
     setPending(storedOnly)
     const cap = window.setTimeout(function capFmtHold() {
       setPending(false)
+    hasSub: x.lang !== LANG_EN,
+    showSub: sub.show,
+    onToggleSub: sub.onToggle,
     }, HOLD_MAX_MS)
     fmtLoadOf({ url, id: jobId, storedOnly, signal: ctrl.signal })
       .then(function onStored(r: FmtLoad): Promise<FmtLoad | null> {
@@ -2487,7 +2495,8 @@ export function useImmPopup(): ImmPopupPanel {
 }
 
 /**
- * 相关职位卡「隐藏翻译 / 显示翻译」开关(2026-10-11;默认出灰字,只在本卡本次有效)。
+ * 「隐藏翻译 / 显示翻译」开关(2026-10-11 相关职位卡;默认出灰字,本次有效)。
+ * 2026-10-13 挪进 useJobBody:标题行一颗管整页灰字。
  *
  * @returns 现在出不出灰字与切换口。
  */

@@ -18,6 +18,7 @@
  * @author Frank
  * @time 2026-09-21 16:30:00
  */
+import { useShowTrans } from '@/components/name'
 import { makeT } from '@/lib/i18n'
 import { CompanyBasicCard } from './companybasiccard'
 import { LANG_EN, TEXT_NONE } from './constants'
@@ -46,6 +47,7 @@ export function CompanyInfoCard({ jobId, lang, seed }: CompanyInfoCardIn) {
     hasDesc = hasDescOf({ company: p.data.company })
   }
   const tr = useCompanyTrans({ name, slug, aiBrief: brief, hasDesc, lang })
+  const showTrans = useShowTrans()
   if (p.data == null) {
     return null
   }
@@ -55,7 +57,7 @@ export function CompanyInfoCard({ jobId, lang, seed }: CompanyInfoCardIn) {
       <CompanyBasicCard company={company}
         t={t}
         lang={lang}
-        showTrans={lang !== LANG_EN}
+        showTrans={showTrans && lang !== LANG_EN}
         trans={tr.trans}
         onBusy={ignoreFlag}
         head={t('co.info')}

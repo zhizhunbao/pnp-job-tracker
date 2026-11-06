@@ -15,16 +15,16 @@
  * 弹框里叠开另一条岗时已取的页与展开态整个重置。
  * 2026-10-09 N6b 批:行里岗名 N6 起由 name 桶 JobName 自开弹框,点一行的回调 onOpenJob 撤。
  * 2026-10-11 Frank「右边加个 隐藏翻译的按钮」:卡标题行最右挂「隐藏翻译 / 显示翻译」小字(形照 JD 的「查看原帖」),中 / 韩界面才出;关掉时两组的职位名、地点灰字都不出。
+ * 2026-10-13 Frank「这个按钮放到 查看原帖 后面」:钮挪到职位标题行(JdOrigLink);同日改判只管正文译文,本卡灰字恒出。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { Button, LinkButton } from '@/components/button'
+import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Updated } from '@/components/time'
-import { BTN_GHOST, CARD_MD_CLS, LANG_EN, REL_GROUP_CO, REL_GROUP_OCC } from './constants'
-import { relPageUrlOf, showFallbackOf, trackRelated, transToggleLabelOf } from './functions'
-import { useTransToggle } from './hooks'
+import { CARD_MD_CLS, REL_GROUP_CO, REL_GROUP_OCC } from './constants'
+import { relPageUrlOf, showFallbackOf, trackRelated } from './functions'
 import { RelatedGroup } from './relatedgroup'
 import type { JobRelatedIn } from './types'
 import css from './jobs.module.css'
@@ -38,23 +38,17 @@ import css from './jobs.module.css'
 export function JobRelated({
   head, t, updatedAt, sameCoLabel, sameOccLabel, related, jobId, fallbackHref, fallbackText, from, fromNone, lang,
 }: JobRelatedIn) {
-  const trans = useTransToggle()
   return (
     <div className={CARD_MD_CLS}>
       <div className={cssOf(css.relHead)}>
         {head}
         <Updated iso={updatedAt} t={t} />
-        {lang !== LANG_EN && (
-          <Button kind={BTN_GHOST} onClick={trans.onToggle} className={cssOf(css.relTrans)}>
-            {transToggleLabelOf({ t, show: trans.show })}
-          </Button>
-        )}
       </div>
       {related.sameCompany.length > 0 && (
         <div onClick={trackRelated(from)}>
           <RelatedGroup key={relPageUrlOf({ jobId, group: REL_GROUP_CO })}
             label={sameCoLabel} total={related.sameCompanyTotal} rows={related.sameCompany}
-            url={relPageUrlOf({ jobId, group: REL_GROUP_CO })} t={t} lang={lang} trans={trans.show} />
+            url={relPageUrlOf({ jobId, group: REL_GROUP_CO })} t={t} lang={lang} trans />
         </div>
       )}
       {related.sameCompany.length > 0 && related.sameOcc.length > 0 && <div className={cssOf(css.relSep)} />}
@@ -62,7 +56,7 @@ export function JobRelated({
         <div onClick={trackRelated(from)}>
           <RelatedGroup key={relPageUrlOf({ jobId, group: REL_GROUP_OCC })}
             label={sameOccLabel} total={related.sameOccTotal} rows={related.sameOcc}
-            url={relPageUrlOf({ jobId, group: REL_GROUP_OCC })} t={t} lang={lang} trans={trans.show} />
+            url={relPageUrlOf({ jobId, group: REL_GROUP_OCC })} t={t} lang={lang} trans />
         </div>
       )}
       {showFallbackOf({ related, fallbackHref }) && (

@@ -2120,6 +2120,22 @@ export type JobBodyPanel = {
    * 不是投递栏外跳 —— 投递栏外跳 B1(2026-10-03)已撤。
    */
   applyEmail: string
+
+  /**
+   * 标题行出不出「隐藏翻译 / 显示翻译」(中 / 韩界面才出;2026-10-13)。
+   */
+  hasSub: boolean
+
+  /**
+   * 出不出 JD 正文译文(2026-10-13 Frank「只需要隐藏正文翻译内容」;标题与卡里的译名灰字不归它管)。
+   * 2026-11-05 Frank「控制这个弹框的所有翻译部分」:宿主拿它挂 name 桶 TransProvider,标题译名、各卡灰字与公司简介译文也归它管。
+   */
+  showSub: boolean
+
+  /**
+   * 切换正文译文。
+   */
+  onToggleSub: ClickFn
 }
 
 /**

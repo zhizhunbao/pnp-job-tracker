@@ -435,11 +435,13 @@
 /*
  * 「更新中」提示:叠在表壳右上角(操作列表头上),白底垫着压在表头字上也读得清;
  * 层级压过表头与拖宽柄(2),低于字段面板(20)。
+ * 2026-11-05 Frank「这个更新中 放到左上角吧,表头下面。所有的加载中都放到 左上角」:挪到表头下面左上角
+ * (表头实测高约 38.6px,下面留 8px),叠在第一行上,照旧不占高。
  */
 .loadTip {
   position: absolute;
-  top: 8px;
-  right: 10px;
+  top: 46px;
+  left: 10px;
   z-index: 4;
   display: flex;
   align-items: center;
@@ -1785,20 +1787,6 @@
  * 2026-09-21 Frank「这两个分类灰字是不是最好和翻译的灰字区分一下」→ 效果图选 A:半粗 + 深一档灰(原与行下译名同为
  * 11.5px #9ca3af,看着像又一行翻译);字号不变,不抢卡标题「相关职位」。
  */
-/*
- * 相关职位卡标题行最右的「隐藏翻译 / 显示翻译」小字(2026-10-11;字形照 .origLink,跟在 Updated 后面 —— Updated 自带 margin-left:auto 顶右)。
- */
-.relTrans {
-  border: none;
-  background: none;
-  padding: 0;
-  color: #9ca3af;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 400;
-  white-space: nowrap;
-}
-
 .relGroup {
   font-size: 11.5px;
   font-weight: 600;
