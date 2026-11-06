@@ -10,6 +10,8 @@
  * 本桶一个 `/server` 门都不 import,浏览器照样打包得动)。
  * 🔴 桶本身与 types/constants/functions 都**不带 `'use client'`**(老坑 6):
  * 服务端页面门与客户端视图共用这几张形状与派生函数。
+ * 2026-11-05 按段懒加载:聚合取数(缓存 + 单飞)与 /api/stats/pulse 的芯住 ./server 门(照 og 两门制),
+ * 本桶 index 只给页面门首屏两件(homeStatsOf、emptyText)与视图。
  * 对应 lib 域:lib/stats、lib/employers、lib/jobs。
  *
  * @author Frank
@@ -17,11 +19,7 @@
  */
 export { CityNameCell } from './citynamecell'
 export { Pulse } from './pulse'
-export {
-  cachedHomeOf, emptyOccRows, emptyProvExtra, emptyQueryResult, emptySponsorRows,
-  emptyText,
-  homeCoreOf, homeStatsOf, nullProof, putHomeCache,
-} from './functions'
+export { emptyText, homeStatsOf } from './functions'
 export { cityLabelOf } from './functions'
-export { DRAWS_LIMIT, START_META } from './constants'
+export { START_META } from './constants'
 export type { HomeStats } from './types'

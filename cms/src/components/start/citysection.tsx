@@ -11,6 +11,7 @@
  * 子导航「行业对比」拆一业一项,行业小表各挂分表锚(subIdOf,照职业/雇主段);
  * 「这个 更新时间 应该紧贴着 table」—— 段首 Updated 撤,每张表标题行右侧一枚(照雇主板,
  * 09-03「表右上角 Updated」铁律)。
+ * 2026-11-05 Frank「把脉页面 把所有的 更新时间,都放到 banner 右下角吧」改判:每表那枚撤,整页一枚挂 banner 右下角。
  * 数据挂载后拉 /api/stats/city(读 stats_city 快照;SSR 直出的城市行同批退役);
  * 没到渲占位,五份各自独立 —— 缺一份只丢那组表,全空才整段不出。
  * 2026-09-12 Frank「这个应该加一个 大学 和 学院的 筛选吧」:留学院校表标题下一排胶囊(全部 / 大学 / 学院),
@@ -21,9 +22,8 @@
  */
 import { Chip } from '@/components/chip'
 import { Table } from '@/components/table'
-import { Updated } from '@/components/time'
 import {
-  CARD_PAGE_SIZE, DLI_PAGE_SIZE, ID_CITY, ID_CITY_DLI, ID_CITY_IND, ID_CITY_MAIN, PH_PROV,
+  CARD_PAGE_SIZE, DLI_PAGE_SIZE, ID_CITY, ID_CITY_DLI, ID_CITY_IND, ID_CITY_MAIN, PH_LAZY,
 } from './constants'
 import {
   boardGapClsOf, cityAipColsOf, cityDliColsOf, cityIndColsOf, cityMainColsOf, cityPilotColsOf, cityRowKeyOf,
@@ -41,11 +41,11 @@ import css from './start.module.css'
 /**
  * 渲染城市段(一搜四表)。
  *
- * @param props 取词函数、语言与更新时刻。
+ * @param props 取词函数与语言。
  * @returns 一条色带;数据到了而四张表全空则 null。
  */
-export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
-  const v = useCityPanel({ t, lang })
+export function CitySection({ t, lang, on }: CitySectionIn) {
+  const v = useCityPanel({ t, lang, on })
   if (v.data != null && v.mainRows.length === 0 && v.pilotTables.length === 0 && v.dliRows.length === 0) {
     return null
   }
@@ -55,7 +55,7 @@ export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
     indBlocks.push(
       <div key={tb.key} id={subIdOf({ band: ID_CITY_IND, key: tb.key })} className={css.subAnchor}>
         <div className={boardGapClsOf({ gap: true })}>
-          <Sec title={tb.label} right={<Updated iso={updatedAt} t={t} />} sub>
+          <Sec title={tb.label} sub>
             <Table<CityIndRow> rows={tb.rows}
               cols={indCols}
               rowKey={indRowKeyOf} />
@@ -73,16 +73,16 @@ export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
   const pilotBlocks = []
   for (const tb of v.pilotTables) {
     pilotBlocks.push(
-      <CityPilotBlock key={tb.key} t={t} tb={tb} pilotCols={pilotCols} aipCols={aipCols} updatedAt={updatedAt} />,
+      <CityPilotBlock key={tb.key} tb={tb} pilotCols={pilotCols} aipCols={aipCols} />,
     )
   }
   return (
     <Band id={ID_CITY}>
       <Sec title={t('pulse.city')}>
-        {v.data == null && <Placeholder size={PH_PROV} />}
+        {v.data == null && <Placeholder size={PH_LAZY} />}
         {v.data != null && v.mainRows.length > 0 && (
           <div id={ID_CITY_MAIN} className={css.subAnchor}>
-            <Sec title={t('pulse.city.main')} right={<Updated iso={updatedAt} t={t} />} sub>
+            <Sec title={t('pulse.city.main')} sub>
               <Table<CityMainRow> rows={v.mainRows}
                 cols={cityMainColsOf({ t })}
                 rowKey={cityRowKeyOf}
@@ -95,7 +95,7 @@ export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
         {v.data != null && v.data.dli.length > 0 && (
           <div id={ID_CITY_DLI} className={css.subAnchor}>
             <div className={boardGapClsOf({ gap: true })}>
-              <Sec title={t('pulse.city.dli')} right={<Updated iso={updatedAt} t={t} />} sub>
+              <Sec title={t('pulse.city.dli')} sub>
                 <div className={css.filterRow}>{dliChipEls}</div>
                 <Table<CityDliRow> rows={v.dliRows}
                   cols={cityDliColsOf({ t, kind: v.dliKind })}

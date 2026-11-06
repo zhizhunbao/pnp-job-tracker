@@ -8,7 +8,6 @@
  * @time 2026-09-12 12:55:00
  */
 import { Table } from '@/components/table'
-import { Updated } from '@/components/time'
 import { CARD_PAGE_SIZE, ID_CITY_PILOT, PILOT_AIP } from './constants'
 import { boardGapClsOf, pilotRowKeyOf, subIdOf } from './functions'
 import { Sec } from './sec'
@@ -18,10 +17,10 @@ import css from './start.module.css'
 /**
  * 渲染城市段的一张试点(或 AIP)城市/社区表。
  *
- * @param props 这张表、两套列与更新时刻。
+ * @param props 这张表与两套列。
  * @returns 锚点块。
  */
-export function CityPilotBlock({ t, tb, pilotCols, aipCols, updatedAt }: CityPilotBlockIn) {
+export function CityPilotBlock({ tb, pilotCols, aipCols }: CityPilotBlockIn) {
   let table = (
     <Table<CityPilotRow> rows={tb.rows}
       cols={pilotCols}
@@ -38,7 +37,7 @@ export function CityPilotBlock({ t, tb, pilotCols, aipCols, updatedAt }: CityPil
   return (
     <div id={subIdOf({ band: ID_CITY_PILOT, key: tb.key })} className={css.subAnchor}>
       <div className={boardGapClsOf({ gap: true })}>
-        <Sec title={tb.key} right={<Updated iso={updatedAt} t={t} />} sub>
+        <Sec title={tb.key} sub>
           {table}
         </Sec>
       </div>

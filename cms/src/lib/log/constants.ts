@@ -1154,3 +1154,18 @@ export const MAJORS_LOG = {
    */
   placesMalformed: 'places 格不成样子,整格落空:',
 } as const
+
+/**
+ * 把脉页(components/start)的日志字面量(2026-11-05 按段懒加载批立:各段滚到附近才取数,取挂了段整块不渲,但必须留痕)。
+ */
+export const START_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'start',
+
+  /**
+   * 一段数据(/api/stats/pulse 或担保雇主全量)取挂了,后面接地址与状态码 / 错误。
+   */
+  partFailed: 'pulse part fetch failed, section hidden: ',
+} as const

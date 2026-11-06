@@ -116,24 +116,23 @@ describe('② NS 的人数写「入选」,别的省照旧「邀请」', () => {
     expect(toPlanDrawRow({ t: zh, provDisp, r: { ...nsR, unit: 'invitation' } })).toMatchObject({ invCell: '671', invLabel: '邀请' })
   })
 
-  it('/start 近期抽选:桌面格写「N 人入选」、手机卡与门槛弹框的标换「入选」,日期原样到月', () => {
+  it('/start 近期抽选:桌面格写「N 人入选」、手机卡的标换「入选」,日期原样到月', () => {
     const base: PulseDraw = {
       date: '2026-07', province: 'NS', stream: 'Monthly EOI selections', streamZh: '', label: 'NSNP + AIP', score: null,
-      invitations: 671, url: '', note: '', checklist: null, unit: 'selection',
+      invitations: 671, url: '', note: '', unit: 'selection',
     }
-    const onRules = () => undefined
-    const nsRow = toStartDrawRow({ r: base, i: 0, t: zh, tEn: en, lang: 'zh', onRules })
+    const nsRow = toStartDrawRow({ r: base, i: 0, t: zh, tEn: en, lang: 'zh' })
     expect(nsRow).toMatchObject({ date: '2026-07', invCell: '671 人入选', invitations: '671', invLabel: '入选' })
     const abRow = toStartDrawRow({
       r: { ...base, province: 'AB', date: '2026-09-23', score: 58, invitations: 113, unit: 'invitation' }, i: 1, t: zh, tEn: en,
-      lang: 'zh', onRules,
+      lang: 'zh',
     })
     expect(abRow).toMatchObject({ date: '2026-09-23', invCell: '113', invitations: '113', invLabel: '邀请' })
-    expect(toStartDrawRow({ r: base, i: 0, t: en, tEn: en, lang: 'en', onRules })).toMatchObject({
+    expect(toStartDrawRow({ r: base, i: 0, t: en, tEn: en, lang: 'en' })).toMatchObject({
       invCell: '671 selected', invLabel: 'Selected',
     })
     // 探针:认的是 unit 格不是省码
-    expect(toStartDrawRow({ r: { ...base, unit: 'invitation' }, i: 0, t: zh, tEn: en, lang: 'zh', onRules })).toMatchObject({
+    expect(toStartDrawRow({ r: { ...base, unit: 'invitation' }, i: 0, t: zh, tEn: en, lang: 'zh' })).toMatchObject({
       invCell: '671', invLabel: '邀请',
     })
   })

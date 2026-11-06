@@ -1423,7 +1423,7 @@ export const siteZh = {
   'pulse.ind.business': '商务办公', 'pulse.ind.education': '教育文体',
   'pulse.col.biz': '主营业务', 'pulse.col.sector': '雇主类别', 'pulse.sector.private': '私营企业',
   'pulse.sector.public': '公立机构', 'pulse.sector.government': '省政府', 'pulse.sector.municipal': '市镇政府', 'pulse.sector.indigenous': '原住民政府', 'pulse.sector.federal': '联邦机关', 'pulse.pilot.aip': 'AIP 指定雇主', 'pulse.chain': '连锁', 'pulse.chain.tip': '按门店逐家指定,投前核对门店', 'pulse.pilot.rcip': 'RCIP 指定雇主', 'pulse.pilot.fcip': 'FCIP 指定雇主',   'pulse.id.nowp': '没工签', 'pulse.id.pgwp': '有工签',
-  'pulse.col.hiringOcc': '在招职业', 'pulse.nocMore': '等 {n} 个', 'pulse.act.jobs': '看岗位', 'pulse.act.company': '看公司', 'pulse.act.link': '官方页', 'pulse.act.rules': '门槛',
+  'pulse.col.hiringOcc': '在招职业', 'pulse.nocMore': '等 {n} 个', 'pulse.act.jobs': '看岗位', 'pulse.act.link': '官方页', 'pulse.act.rules': '门槛',
   'pulse.rules.empty': '本站未收录', 'pulse.rules.round': '本期',
   // B4 雇主省提名门槛判定(design/雇主省提名门槛判定-20260808.md):三态 + 公共部门旁路,判定≠官方认证
   'se.col.verdict': '雇主门槛', 'se.verdict.met': '达标', 'se.verdict.short': '差{items}', 'se.verdict.unknown': '待核', 'se.verdict.public': '公共部门',

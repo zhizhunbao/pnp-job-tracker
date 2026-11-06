@@ -17,6 +17,9 @@
  * 2026-08-28 换装批自 Pulse.tsx 整体重写成小写件形制;壳件(Frame / 顶栏 / 页脚)由页面门拼装。
  * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:
  * ETL 心跳(stats.checkedAt)分发给每个有表的分区,各区标题行右槽一枚。
+ * 2026-11-05 Frank「把脉页面 把所有的 更新时间,都放到 banner 右下角吧」:各区那枚全撤,心跳只交 Hero 挂 banner 右槽。
+ * 2026-11-05 Frank「用户看到哪就加载哪部分」:SSR 只出首屏(stats 只剩四格),其余各段滚到视口附近才取数,
+ * 没到前段渲色带 + 占位(色带要在,才盯得到它进没进附近)。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
@@ -47,26 +50,24 @@ export function Pulse({ stats }: PulseIn) {
     <>
       <PulseNav t={v.t} navSec={v.navSec} />
       <main className={css.main}>
-        <Hero t={v.t} cards={v.numCards} />
-        <BoardsSection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} secs={v.occSecs} nocProvs={v.nocProvs} />
+        <Hero t={v.t} cards={v.numCards} updatedAt={stats.checkedAt} />
+        <BoardsSection t={v.t} lang={v.lang} secs={v.occSecs} nocProvs={v.nocProvs} />
         <EmpSection t={v.t}
-          updatedAt={stats.checkedAt}
           secs={v.empSecs}
-          pilotSecs={v.pilotSecs} />
+          pilotSecs={v.pilotSecs}
+          loading={v.empLoading} />
         <ProvSection t={v.t}
-          updatedAt={stats.checkedAt}
           indGeos={v.indGeos}
           indLoading={v.macroLoading}
           jobsLoading={v.market == null}
           jobsRows={v.jobsRows} />
-        <CitySection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} />
-        <PrSection t={v.t} updatedAt={stats.checkedAt} prGeos={v.prGeos} loading={v.macroLoading} />
+        <CitySection t={v.t} lang={v.lang} on={v.cityOn} />
+        <PrSection t={v.t} prGeos={v.prGeos} loading={v.macroLoading} />
         <DrawsSection t={v.t}
           tEn={v.tEn}
           lang={v.lang}
-          updatedAt={stats.checkedAt}
-          draws={stats.draws} />
-        <NewsSection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} news={stats.news} />
+          draws={v.draws} />
+        <NewsSection t={v.t} lang={v.lang} news={v.news} />
         <CtaBand t={v.t} />
       </main>
     </>

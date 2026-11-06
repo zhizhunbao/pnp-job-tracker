@@ -12,19 +12,18 @@
  * @time 2026-08-28 14:20:00
  */
 import { drawStreamNote, eeKeyDisplay, streamDisplay } from '@/lib/jobs'
-import { jsonOrNull, numOrNull, text } from '@/lib/db'
-import { makeT } from '@/lib/i18n'
+import { numOrNull, text } from '@/lib/db'
+import { log, START_LOG } from '@/lib/log'
 import { PROV_NAME } from '@/lib/stats'
 import { track } from '@/lib/track'
 import { ymd } from '@/lib/time'
-import { btnClsOf } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { tagClsOf } from '@/components/tag'
 import { shortOcc } from '@/components/quiz'
 import {
   TAG_V_EASY, TAG_V_FED, TAG_V_GRAY, TAG_V_MID, TAG_V_PROV, TAG_V_TIGHT,
   ANCHOR_HEAD, BROAD_ALL, CARD_GAP,
-  CLS_CARD_HOVER, CLS_SEP, COL_DEAD, COL_HOT,
+  CLS_SEP, COL_DEAD, COL_HOT,
   COL_MOM, COL_NOC, COL_OCC, COL_OPEN, COL_PNP_PROVS, COL_PROV,
   COL_SAL, COL_SPONSOR_RATE, COL_TEER, DASH_MARK,
   DEAD_PROV_ORDER, DIFF_EASY, DIFF_MID, DIFF_TIGHT, EV_SCROLL,
@@ -35,15 +34,14 @@ import {
   PNP_SORT_SCALE, PROV_ALL_LOWER,
   RATE_DIGITS, RATE_MAX, RATE_OVER_TEXT,
   SEP_LIST, SHORT_PROV, SIGN_MINUS, SIGN_PLUS, TEER_HEAD, TEXT_NONE,
-  TIER_BOTH, TIER_FED, TRACK_CARD, TRACK_CTA, TRACK_SEC, TRACK_SUBNAV, TRACK_SERIES, TRACK_PROP_KEY, URL_MACRO_API,
-  TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_SPONSORS_API,
+  TIER_BOTH, TIER_FED, TRACK_CTA, TRACK_SEC, TRACK_SUBNAV, TRACK_SERIES, TRACK_PROP_KEY, URL_MACRO_API,
+  TRACK_OCC, URL_HOME_Q_HEAD, URL_SPONSORS_API,
   COL_EMP, ID_CITY, ID_DRAWS, ID_NEWS, IND_BROADS, IND_KEYS, NEWS_LIMIT, NEWS_TAIL_RE, TAG_IRCC, COL_NEWS_TAG,
-  COL_NEWS_TITLE, W_NEWS_TAG, URL_NEWS_HEAD, REGION_FEDERAL, W_DRAW_ACT, W_NEWS_ACT,
-  KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP,
-URL_HOME_CITY_HEAD,
+  COL_NEWS_TITLE, W_NEWS_TAG, URL_NEWS_HEAD, REGION_FEDERAL,
+  KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE,
   URL_CITY_PAGE_HEAD, URL_PATH_SEP, WAGE_MIN_OPEN,
   CITY_KIND_IND, CITY_KIND_MAIN, CITY_KIND_PILOT,
-  CITY_HOURLY_DIGITS, CITY_UTM_TAIL, CITY_PILOT_PARAM_HEAD, COL_CITY, COL_CITY_POP, COL_CITY_UNEMP, COL_CITY_WAGE_H,
+  CITY_HOURLY_DIGITS, COL_CITY, COL_CITY_POP, COL_CITY_UNEMP, COL_CITY_WAGE_H,
   COL_CITY_WAGE_L, COL_COMM, DLI_KIND_ALL, DLI_KIND_COLLEGE, DLI_KINDS, KEY_DLI_KIND_HEAD, QS_TIE_MARK,
   COL_DLI_PROV, COL_QS, COL_SCHOOL, COL_TYPE,
   COL_CITY_WAGE, ID_CITY_DLI, ID_CITY_IND, ID_CITY_MAIN, ID_CITY_PILOT, PILOT_NAME_SEP, TRACK_CITY,
@@ -52,14 +50,14 @@ WAGE_K,
   WAGE_K_MARK, WAGE_RANGE_SEP, WAGE_SIGN,
 TAG_FED, PROV_FED, UNIT_SELECTION, COL_DATE, COL_PROG, COL_STREAM, COL_SCORE, COL_INV, W_DATE,
   W_PROG, W_STREAM, W_SCORE, W_INV,
-  COL_ACT, COL_HIRING_OCC, COL_LMIA_2Q, COL_VERDICT,
+  COL_HIRING_OCC, COL_LMIA_2Q, COL_VERDICT,
   HIRING_OCC_MAX, KEY_VERDICT_FACTOR_HEAD, KEY_VERDICT_HEAD,
   PULSE_CEC, PULSE_CHECK, PULSE_OK, PULSE_RANK, PULSE_SHORT, TEER_PNP_MAX, URL_COMPANY_HEAD, VERDICT_MET,
-  VERDICT_PUBLIC, VERDICT_SHORT, MINI_BTN_KIND, W_EMP_ACT, CARD_PAGE_SIZE, COL_SECTOR, KEY_SECTOR_HEAD,
+  VERDICT_PUBLIC, VERDICT_SHORT, COL_SECTOR, KEY_SECTOR_HEAD,
   SECTOR_FEDERAL, SECTOR_GOVERNMENT, SECTOR_INDIGENOUS, SECTOR_MUNICIPAL, SECTOR_PRIVATE, SECTOR_PUBLIC,
   COL_BIZ, PILOT_AIP, PILOT_FCIP, PILOT_RCIP, KEY_PILOT_HEAD, PILOT_KEYS, PILOT_KEY_AIP, PILOT_KEY_RCIP, TABLE_PILOT,
   SPACE_SEP, ACRONYM_MAX, CORP_SUFFIXES, NON_LETTER_RE, BRIEF_TAG_RE, BRIEF_TAG_WHAT,
-  KEY_CHAIN, KEY_CHAIN_TIP, URL_AIP_TAIL, URL_PILOT_TAIL, PILOT_NONE, PILOT_KEY_FCIP, SUB_ID_SEP,
+  KEY_CHAIN, KEY_CHAIN_TIP, PILOT_NONE, PILOT_KEY_FCIP, SUB_ID_SEP,
   ID_PROV_JOBS, GEO_CA, KEY_MACRO_HEAD, KEY_MON_HEAD,
   MACRO_MORE, FREQ_Q,
   FREQ_M,
@@ -76,13 +74,13 @@ TAG_FED, PROV_FED, UNIT_SELECTION, COL_DATE, COL_PROG, COL_STREAM, COL_SCORE, CO
   IND_GEO_ORDER,
   FORMULA_KEY, MK_ALLOC_INCL,
   YOY_YEAR_TAIL,
+  PART_DRAWS, PART_EMP, PART_NEWS, PART_OCC, PART_PROV, P_LANG, P_PART, QS_AND, QS_EQ, QS_HEAD,
+  URL_PULSE_API, EMPTY_DRAWS_PART, EMPTY_PROV_EXTRA, EMPTY_SPONSOR_GROUP, NEAR_MARGIN, NEAR_SCAN_MAX, NEAR_SCAN_MS,
 } from './constants'
 import { DeadCell } from './deadcell'
-import { EmpActCell } from './empactcell'
 import { EmpBriefCell } from './empbriefcell'
 import { EmpNameCell } from './empnamecell'
 import { EmpHiringCell } from './emphiringcell'
-import { OccActCell } from './occactcell'
 import { HotCell } from './hotcell'
 import { MomCell } from './momcell'
 import { OccNameCell } from './occnamecell'
@@ -93,9 +91,6 @@ import { makeMacroYearCell } from './macroyearcell'
 import { MacroYoyCell } from './macroyoycell'
 import { ProvNameCell } from './provnamecell'
 import { StreamCell } from './streamcell'
-import { DrawActCell } from './drawactcell'
-import { NewsActCell } from './newsactcell'
-import { CityActCell } from './cityactcell'
 import { NewsTagCell } from './newstagcell'
 import { NewsTitleCell } from './newstitlecell'
 import { CityNameCell } from './citynamecell'
@@ -103,6 +98,7 @@ import { DliSchoolCell } from './dlischoolcell'
 import type { CityRow } from '@/lib/stats'
 import { CACHE } from './variables'
 import type {
+  HomeLoadIn,
   CityLabel, CityLabelIn,
   BandClsIn, CleanupFn,
   ClickFn,
@@ -123,18 +119,19 @@ import type {
   EmpCellRowIn, EmpColsIn, EmpSec, EmpSecsIn, IndOfIn,
   HiringMoreIn, IndRowsIn, OccSec, OccSecsIn, SponsorBoards,
   HiringOccIn, NocInfo, NocInfoIn, NocInfoMap, PulseIn2,
-  AliasIn, BriefOfIn, BriefTextOut, BriefsIn, CompanyBrief, SeedGroupIn, SponsorSeedIn, EmpExtra,
+  AliasIn, BriefOfIn, BriefTextOut, BriefsIn, CompanyBrief,
+  BriefsLangIn, PartLoadIn, PartUrlIn, PulsePartBody, PulsePartIn,
+  DrawsPart, EmpPieces, EmpPiecesIn, NearWatchIn, NewsPart, OccPart, ProvPart,
   CityColsIn, CityDliColsIn, CityData, CityDliRow, CityDliRowsIn, CityIndColsIn, CityIndRow, CityIndTable, IndCityCell,
   CityIndTablesIn,
   CityAipTableIn, CityLoadIn, CityMainRow, CityMainRowsIn, CityPageHrefIn, CityPilotRow, CityPilotRowsIn,
   CityPilotTable,
   CityStatsProbe,
-  NocCatMap, DesignatedIn, InPilotIn, PilotNamesIn, PilotSecsIn,
+  DesignatedIn, InPilotIn, PilotNamesIn, PilotSecsIn,
   Teer03In, VerdictTextIn,
 ValuableIn,
   EmptyQueryResult, PulseDraw, DrawsIn, PulseDrawIn, DrawCellRow, DrawCellRowIn,
-  DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang, RulesOpenIn,
-  MaybeChecklist, Checklist, ChecklistTextIn,
+  DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang,
   TFn,
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
@@ -179,6 +176,33 @@ export function cachedHomeOf(): HomeStatsCore | null {
 export function putHomeCache(v: HomeStatsCore): HomeStatsCore {
   CACHE.home = { v, ts: Date.now() }
   return v
+}
+
+/**
+ * 首页聚合的单飞取法(2026-11-05):缓存新鲜给缓存;过期时同一刻只放一个请求去查(load),其余等同一份 ——
+ * 原先过期那一刻并发进来的请求各查一遍全量,堆跟着翻倍。真去查的 load 由 server 门注进来(本文件不沾库)。
+ *
+ * @param x 连接池与现查函数。
+ * @returns 那份聚合。
+ */
+export function sharedHomeOf<D>(x: HomeLoadIn<D>): Promise<HomeStatsCore> {
+  const hit = cachedHomeOf()
+  if (hit != null) {
+    return Promise.resolve(hit)
+  }
+  if (CACHE.homeLoad == null) {
+    CACHE.homeLoad = x.load(x.db).finally(clearHomeLoad)
+  }
+  return CACHE.homeLoad
+}
+
+/**
+ * 单飞那一格清空(查完,不论成败)。
+ *
+ * @returns 无。
+ */
+function clearHomeLoad(): void {
+  CACHE.homeLoad = null
 }
 
 /**
@@ -306,13 +330,9 @@ export function homeCoreOf(x: HomeCoreIn): HomeStatsCore {
   const rcipNames = pilotNamesOf({ rows: x.pilotRows, sponsorRows: x.sponsorRows, pilot: PILOT_RCIP })
   const fcipNames = pilotNamesOf({ rows: x.pilotRows, sponsorRows: x.sponsorRows, pilot: PILOT_FCIP })
   const briefs = briefsOf({ rows: x.briefRows, sponsorRows: x.sponsorRows })
-  const extra: EmpExtra = {
-    rcip: new Set(rcipNames), fcip: new Set(fcipNames), briefs: new Map(Object.entries(briefs)),
-  }
   return {
     total,
     named,
-    sponsor: sponsorSeedOf({ boards: x.boards, nocCat, natOcc, extra }),
     pulse: pulseScalarsOf({ occ: x.occRows }),
     nocCat,
     draws: toPulseDraws({ rows: x.drawRows, limit: x.drawsLimit }),
@@ -336,68 +356,122 @@ export function homeStatsOf(x: HomeStatsOfIn): HomeStats {
   return {
     total: x.core.total,
     named: x.core.named,
-    sponsor: x.core.sponsor,
     pulse: x.core.pulse,
-    nocCat: x.core.nocCat,
-    draws: x.core.draws,
-    news: x.core.news,
-    rcipNames: x.core.rcipNames,
-    fcipNames: x.core.fcipNames,
-    briefs: x.core.briefs,
-    provExtra: x.core.provExtra,
-    natOcc: x.core.natOcc,
-    nocProvs: x.core.nocProvs,
     checkedAt: x.checkedAt,
   }
 }
 
 /**
- * #313(LCP 7.15s 真因):三表全量(16,430 行)序列化进 RSC payload 把 SSR 文档撑到 6.92MB
- * ——「全量可翻页」拍板不动,只换运输方式:SSR 只带种子 + total,挂载后 Pulse 拉
- * `/api/employers/sponsors` 换全量。种子 2026-09-05 从「每分表前 50 行」改成「每张行业表 × 两档身份
- * + 三试点表各自的第一页」(Frank「为什么会空白很长时间」:原种子按分表切,行业表在 SSR 里大多是空的);
- * 用与挂载后同一套 empSecsOf / pilotSecsOf 挑行,英文 t 只为排序不进文案,第一页与最终一致不闪。
+ * 按段切出 /api/stats/pulse 的那一份(2026-11-05 Frank「用户看到哪就加载哪部分」:各段滚到附近才取,
+ * 只取自己那一份;原先整份聚合随 SSR 进每次 HTML)。
  *
- * @param x 三分表全量、分类、全国职业行与试点集合。
- * @returns 只留各表第一页的三分表(total 照旧)。
+ * @param x 那份聚合、段名与界面语言。
+ * @returns 那一段的数据;段名不认识给 null(路由回 400)。
  */
-export function sponsorSeedOf(x: SponsorSeedIn): SponsorBoards {
-  const t = makeT(LANG_EN)
-  const nocCat: NocCatMap = new Map(Object.entries(x.nocCat))
-  const nocInfo = nocInfoOf({ natOcc: x.natOcc, lang: LANG_EN })
-  const keep = new Set<string>()
-  for (const sec of empSecsOf({ t, sponsor: x.boards, nocCat, nocInfo, extra: x.extra, lang: LANG_EN })) {
-    for (const r of sec.rows.slice(0, CARD_PAGE_SIZE)) {
-      keep.add(r.key)
+export function pulsePartOf(x: PulsePartIn): PulsePartBody | null {
+  const c = x.core
+  if (x.part === PART_OCC) {
+    return { natOcc: c.natOcc, nocCat: c.nocCat, nocProvs: c.nocProvs }
+  }
+  if (x.part === PART_EMP) {
+    return {
+      natOcc: c.natOcc,
+      nocCat: c.nocCat,
+      rcipNames: c.rcipNames,
+      fcipNames: c.fcipNames,
+      briefs: briefsInLangOf({ briefs: c.briefs, lang: x.lang }),
     }
   }
-  for (const sec of pilotSecsOf({ t, sponsor: x.boards, nocCat, nocInfo, extra: x.extra, lang: LANG_EN })) {
-    for (const r of sec.rows.slice(0, CARD_PAGE_SIZE)) {
-      keep.add(r.key)
-    }
+  if (x.part === PART_PROV) {
+    return { provExtra: c.provExtra }
   }
-  return {
-    lmia: seedGroupOf({ group: x.boards.lmia, keep }),
-    named: seedGroupOf({ group: x.boards.named, keep }),
-    aip: seedGroupOf({ group: x.boards.aip, keep }),
-    pilot: seedGroupOf({ group: x.boards.pilot, keep }),
+  if (x.part === PART_DRAWS) {
+    return { draws: c.draws }
   }
+  if (x.part === PART_NEWS) {
+    return { news: c.news }
+  }
+  return null
 }
 
 /**
- * 一张分表只留名在 keep 里的行(total 照旧,分页数不变)。
+ * 简介只留英文 + 请求语言那一份(另一门给 '';英文界面只剩英文):三语全带是 2.6MB,挑完一千来 KB。
  *
- * @param x 分表与要留的名集。
- * @returns 切好的分表。
+ * @param x 三语简介全份与要的语言。
+ * @returns 挑过的简介表。
  */
-function seedGroupOf(x: SeedGroupIn): SponsorGroup {
-  const top: SponsorRowList = []
-  for (const r of x.group.top) {
-    if (x.keep.has(r.name)) {
-      top.push(r)
+function briefsInLangOf(x: BriefsLangIn): Record<string, CompanyBrief> {
+  const out: Record<string, CompanyBrief> = {}
+  for (const [k, b] of Object.entries(x.briefs)) {
+    let zh = TEXT_NONE
+    let ko = TEXT_NONE
+    if (x.lang === LANG_ZH) {
+      zh = b.zh
+    }
+    if (x.lang === LANG_KO) {
+      ko = b.ko
+    }
+    out[k] = { en: b.en, zh, ko }
+  }
+  return out
+}
+
+/**
+ * 担保雇主名(小写,去重):公司简介 SQL 的 $1 —— 只查这些家的简介(交集下沉到库)。
+ *
+ * @param rows 担保雇主事实行。
+ * @returns 名清单。
+ */
+export function sponsorNamesOf(rows: SponsorRowList): string[] {
+  const out = new Set<string>()
+  for (const r of rows) {
+    out.add(r.name.toLowerCase())
+  }
+  return Array.from(out)
+}
+
+/**
+ * 段数据的取数地址(段名 + 界面语言)。
+ *
+ * @param x 段名与界面语言(其余格不读)。
+ * @returns 相对地址。
+ */
+export function partUrlOf(x: PartUrlIn): string {
+  return URL_PULSE_API + QS_HEAD + P_PART + QS_EQ + x.part + QS_AND + P_LANG + QS_EQ + x.lang
+}
+
+/**
+ * 造「取一段数据」的副作用(照 makeMacroLoad 的形,泛型到各段):取到写进去;接口挂了写空份 ——
+ * 段整块不渲,不永远转圈;卸载中止在途请求不写。
+ *
+ * @param x 地址、写口与空份。
+ * @returns 跑一次取数、交回中止函数的手柄。
+ */
+export function makePartLoad<T>(x: PartLoadIn<T>): () => CleanupFn {
+  return function run(): CleanupFn {
+    const ctrl = new AbortController()
+    async function pull(): Promise<void> {
+      try {
+        const res = await fetch(x.url, { signal: ctrl.signal })
+        if (res.ok === false) {
+          log({ tag: START_LOG.tag, text: START_LOG.partFailed + x.url + SPACE_SEP + String(res.status) })
+          x.set(x.empty)
+          return
+        }
+        const j: T = await res.json()
+        x.set(j)
+      } catch (e) {
+        if (ctrl.signal.aborted === false) {
+          log({ tag: START_LOG.tag, text: START_LOG.partFailed + x.url + SPACE_SEP + String(e) })
+          x.set(x.empty)
+        }
+      }
+    }
+    void pull()
+    return function abort(): void {
+      ctrl.abort()
     }
   }
-  return { top, total: x.group.total }
 }
 
 /**
@@ -540,6 +614,8 @@ export function isAllProv(p: string): boolean {
  * 职业名主文案(#309 主次对调:人话名主文案 + 官方名灰注,站规)——
  * zh/ko 界面主文案 = 界面语言人话名(zh 走 shortOcc 砍分类学尾巴);
  * en 界面主文案 = 官方英文名;缺译名的行回退官方名。
+ * 2026-11-05 Frank「是不是 英文在上,中文灰字在下啊。然后超链接加到 英文上」:表格与手机卡改由 occEnOf 打头、本函数退为灰注来源(occSubOf),
+ * 此处仍是 NOC 字典里的界面语言名(nocInfo 照用)。
  *
  * @param x 这一行与界面语言。
  * @returns 主文案。
@@ -567,20 +643,37 @@ export function occMainOf(x: OccNameIn): string {
 }
 
 /**
- * 职业名灰注 = NOC 官方英文名(引用依据);en 界面不出,与主文案同文时也不出
- * (不双份堆叠)。
+ * 职业名英文主文案 = NOC 官方英文名;缺英文名回退中文名,再缺回退 NOC 码。
+ * 2026-11-05 Frank「是不是 英文在上,中文灰字在下啊。然后超链接加到 英文上」(原「人话名主文案 + 官方英文名灰注」主次对调,照全站名字两行)。
+ *
+ * @param x 这一行与界面语言。
+ * @returns 英文主文案。
+ */
+export function occEnOf(x: OccNameIn): string {
+  if (x.o.titleEn !== TEXT_NONE) {
+    return x.o.titleEn
+  }
+  if (x.o.titleZh !== TEXT_NONE) {
+    return x.o.titleZh
+  }
+  return x.o.noc
+}
+
+/**
+ * 职业名灰注 = 界面语言名(zh 走 shortOcc 短名);en 界面不出,与英文主文案同文时也不出(不双份堆叠)。
  *
  * @param x 这一行与界面语言。
  * @returns 灰注;不出时空串。
  */
-export function occNoteOf(x: OccNameIn): string {
+export function occSubOf(x: OccNameIn): string {
   if (x.lang === LANG_EN) {
     return TEXT_NONE
   }
-  if (x.o.titleEn !== TEXT_NONE && x.o.titleEn !== occMainOf(x)) {
-    return x.o.titleEn
+  const loc = occMainOf(x)
+  if (loc === occEnOf(x)) {
+    return TEXT_NONE
   }
-  return TEXT_NONE
+  return loc
 }
 
 /**
@@ -849,8 +942,8 @@ export function toOccCellRow(x: OccCellRowIn): OccCellRow {
   return {
     key: x.o.noc,
     href: occHrefOf(x.o.noc),
-    main: occMainOf(name),
-    note: occNoteOf(name),
+    main: occEnOf(name),
+    note: occSubOf(name),
     openText: numTextOf(x.o.openJobs),
     openSort: x.o.openJobs,
     openLabel: occOpenLabelOf(x),
@@ -867,8 +960,6 @@ export function toOccCellRow(x: OccCellRowIn): OccCellRow {
     deadText: occDeadTextOf(x),
     deadSort: splitCountOf(x.o.deadProvs),
     onView: trackOccClick,
-    actJobsText: x.t('pulse.act.jobs'),
-    actBtnCls: actBtnClsOf(),
     hotPills: hotPillsOf({ o: x.o, t: x.t, provs }),
     hotNoneText: x.t('pulse.provs.none'),
     hotSort: provs.length,
@@ -1141,12 +1232,12 @@ export function numCardsOf(x: NumCardsIn): NumCardRow[] {
   const out: NumCardRow[] = []
   if (x.total != null && x.total > 0) {
     out.push({
-      label: x.t('pulse.card.total'), value: numOf(x.total), tip: x.t('pulse.card.total.tip'), href: URL_HOME,
+      label: x.t('pulse.card.total'), value: numOf(x.total), tip: x.t('pulse.card.total.tip'),
     })
   }
   if (x.pulse.new14 != null) {
     out.push({
-      label: x.t('pulse.card.new14'), value: numOf(x.pulse.new14), tip: x.t('pulse.card.new14.tip'), href: URL_HOME,
+      label: x.t('pulse.card.new14'), value: numOf(x.pulse.new14), tip: x.t('pulse.card.new14.tip'),
     })
   }
   if (x.pulse.days != null) {
@@ -1154,12 +1245,11 @@ export function numCardsOf(x: NumCardsIn): NumCardRow[] {
       label: x.t('pulse.card.days'),
       value: x.t('pulse.unit.days', { n: x.pulse.days }),
       tip: x.t('pulse.card.days.tip'),
-      href: URL_HOME,
     })
   }
   if (x.total != null && x.total > 0 && x.named != null) {
     out.push({
-      label: x.t('pulse.card.pnp'), value: numOf(x.named), tip: x.t('pulse.card.pnp.tip'), href: URL_HOME_PNP,
+      label: x.t('pulse.card.pnp'), value: numOf(x.named), tip: x.t('pulse.card.pnp.tip'),
     })
   }
   return out
@@ -1290,7 +1380,6 @@ export function occColsOf(x: OccColsIn): StartCol<OccCellRow>[] {
       render: occRateOf,
     })
   }
-  cols.push({ key: COL_ACT, label: x.t('col.actions'), nowrap: true, render: OccActCell })
   return cols
 }
 
@@ -1578,6 +1667,7 @@ export function placeholderClsOf(x: PlaceholderClsIn): string {
     380: cssOf(css.ph380),
     420: cssOf(css.ph420),
     480: cssOf(css.ph480),
+    900: cssOf(css.ph900),
   }
   return joinCls([cssOf(css.ph), bySize[x.size]])
 }
@@ -1763,15 +1853,6 @@ export function makeStreamLabel(x: StreamLabelIn): LabelFn {
 }
 
 /**
- * 一张脉象卡的类(hover 高亮走全局 .cardHover 跨页规范)。
- *
- * @returns className。
- */
-export function numCardClsOf(): string {
-  return CLS_CARD_HOVER
-}
-
-/**
  * CTA 大钮的类:基座 + 主色档。
  *
  * @returns className。
@@ -1784,6 +1865,7 @@ export function ctaBtnClsOf(): string {
 /**
  * #313:橱窗三分表挂载后拉全量换掉 SSR 那几十行(手法照 occ 大表的 /api/stats/market);
  * 拉挂 / 拉到空表就继续用 SSR 那几十行,不闪不塌。
+ * 2026-11-05 按段懒加载:SSR 种子退役,拉挂 / 拉到空表改落空三分表(雇主段整块不渲),并留痕。
  *
  * @param x 全量到手后的落格。
  * @returns effect 的本体(交回清理函数)。
@@ -1795,17 +1877,23 @@ export function makeSponsorLoad(x: SponsorLoadIn): () => CleanupFn {
       try {
         const res = await fetch(URL_SPONSORS_API, { signal: ctrl.signal })
         if (res.ok === false) {
+          log({ tag: START_LOG.tag, text: START_LOG.partFailed + URL_SPONSORS_API + SPACE_SEP + String(res.status) })
+          x.setSponsorFull(emptyBoardsOf())
           return
         }
         const j: SponsorFullProbe = await res.json()
         if (j == null || j.lmia == null || j.lmia.top.length === 0) {
+          x.setSponsorFull(emptyBoardsOf())
           return
         }
         x.setSponsorFull({
           lmia: j.lmia, named: groupOrEmpty(j.named), aip: groupOrEmpty(j.aip), pilot: groupOrEmpty(j.pilot),
         })
-      } catch {
-        return
+      } catch (e) {
+        if (ctrl.signal.aborted === false) {
+          log({ tag: START_LOG.tag, text: START_LOG.partFailed + URL_SPONSORS_API + SPACE_SEP + String(e) })
+          x.setSponsorFull(emptyBoardsOf())
+        }
       }
     }
     void pull()
@@ -1913,6 +2001,15 @@ function groupOrEmpty(g: SponsorGroup | null): SponsorGroup {
 }
 
 /**
+ * 担保雇主全量拉挂了时的空三分表(雇主段整块不渲;2026-11-05 SSR 种子退役后不再回落)。
+ *
+ * @returns 四张空分表。
+ */
+function emptyBoardsOf(): SponsorBoards {
+  return { lmia: EMPTY_SPONSOR_GROUP, named: EMPTY_SPONSOR_GROUP, aip: EMPTY_SPONSOR_GROUP, pilot: EMPTY_SPONSOR_GROUP }
+}
+
+/**
  * 二级导航的滚动跟随(2026-08-09 Frank「这个地方的高亮也不对啊」:原先五个锚点永远灰、
  * 属主永远蓝 = 看着像永远停在第一项)。当前分区 = 顶部粘条下沿(~96px)以上最后一个分区标题;
  * scroll 监听 + rAF 节流;分区可能条件不渲(榜全空),getElementById 空安全。
@@ -1953,12 +2050,178 @@ export function makeNavWatch(x: NavWatchIn): () => CleanupFn {
 }
 
 /**
- * 埋点:点了一张脉象卡。
+ * 盯分区色带进没进视口附近(useNearBands 的本体;2026-11-05 按段懒加载):进了 NEAR_MARGIN 就记下。一直盯着不撤 ——
+ * 进附近那一下的状态更新若丢了(dev 双挂载 / 热更新 / 浏览器恢复滚动位置时实撞:首屏职业卡一直空白),下次进出还能补上。
+ * 没有 IntersectionObserver 的环境一律记全(退回挂载即取)。挂载那一刻没找齐的色带(段还没渲出来 / 热更新)每 NEAR_SCAN_MS
+ * 再找一次,至多 NEAR_SCAN_MAX 次 —— 只扫一次时漏掉的段永远不取数,首屏职业卡一直空白(2026-11-05 实撞);找不到的 id 跳过(该段条件不渲)。
  *
- * @returns 无。
+ * @param x 要盯的分区 id 与已到集合的写口。
+ * @returns effect 的本体(交回清理函数)。
  */
-export function trackNumCard(): void {
-  track(TRACK_CARD)
+export function makeNearWatch(x: NearWatchIn): () => CleanupFn {
+  return function run(): CleanupFn {
+    if (typeof IntersectionObserver === 'undefined') {
+      x.setNear(new Set<string>(x.ids))
+      return function noop(): void {
+        return
+      }
+    }
+    function onSeen(entries: IntersectionObserverEntry[]): void {
+      const hit: string[] = []
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          hit.push(e.target.id)
+        }
+      }
+      if (hit.length > 0) {
+        x.setNear(makeNearAdd(hit))
+      }
+    }
+    const obs = new IntersectionObserver(onSeen, { rootMargin: NEAR_MARGIN })
+    const found = new Set<string>()
+    function scan(): boolean {
+      for (const id of x.ids) {
+        const el = document.getElementById(id)
+        if (found.has(id) === false && el != null) {
+          obs.observe(el)
+          found.add(id)
+        }
+      }
+      return found.size === x.ids.length
+    }
+    let tries = 0
+    let timer = 0
+    function retry(): void {
+      tries = tries + 1
+      if (scan() === false && tries < NEAR_SCAN_MAX) {
+        timer = window.setTimeout(retry, NEAR_SCAN_MS)
+      }
+    }
+    if (scan() === false) {
+      timer = window.setTimeout(retry, NEAR_SCAN_MS)
+    }
+    return function off(): void {
+      obs.disconnect()
+      window.clearTimeout(timer)
+    }
+  }
+}
+
+/**
+ * 造「已到集合并进这几个 id」的更新函数(只增不减;有新的才返回新集合让 React 认得变了,全是旧的原样交回不重渲)。
+ *
+ * @param hit 这一轮刚进附近的 id。
+ * @returns setState 的更新函数。
+ */
+function makeNearAdd(hit: string[]): (prev: Set<string>) => Set<string> {
+  return function addNear(prev: Set<string>): Set<string> {
+    let fresh = false
+    for (const id of hit) {
+      if (prev.has(id) === false) {
+        fresh = true
+      }
+    }
+    if (fresh === false) {
+      return prev
+    }
+    const next = new Set<string>(prev)
+    for (const id of hit) {
+      next.add(id)
+    }
+    return next
+  }
+}
+
+/**
+ * 已到集合的初值(空;useState 的惰性初值)。
+ *
+ * @returns 空集合。
+ */
+export function newNearSet(): Set<string> {
+  return new Set<string>()
+}
+
+/**
+ * 雇主段那一份 → 出表要的三样(分类映射、职业名表、试点与简介)。
+ *
+ * @param x 雇主段那一份与界面语言。
+ * @returns 三样。
+ */
+export function empPiecesOf(x: EmpPiecesIn): EmpPieces {
+  return {
+    nocCat: new Map(Object.entries(x.part.nocCat)),
+    nocInfo: nocInfoOf({ natOcc: x.part.natOcc, lang: x.lang }),
+    extra: {
+      rcip: new Set<string>(x.part.rcipNames),
+      fcip: new Set<string>(x.part.fcipNames),
+      briefs: new Map(Object.entries(x.part.briefs)),
+    },
+  }
+}
+
+/**
+ * 职业段那一份 → NOC → 紧缺省映射(还没到给空映射)。
+ *
+ * @param occ 职业段那一份;null = 还没到。
+ * @returns 映射。
+ */
+export function nocProvsMapOf(occ: OccPart | null): NocProvsMap {
+  if (occ == null) {
+    return new Map<string, string[]>()
+  }
+  return new Map(Object.entries(occ.nocProvs))
+}
+
+/**
+ * 省份段那一份 → 省卡增补(还没到给空表:省卡照出,只是少体量与难度档)。
+ *
+ * @param prov 省份段那一份;null = 还没到。
+ * @returns 省卡增补。
+ */
+export function provExtraOf(prov: ProvPart | null): ProvExtraMap {
+  if (prov == null) {
+    return EMPTY_PROV_EXTRA
+  }
+  return prov.provExtra
+}
+
+/**
+ * 抽选段那一份 → 抽选行;还没到给 null(段渲占位)。
+ *
+ * @param d 抽选段那一份。
+ * @returns 抽选行或 null。
+ */
+export function drawsOf(d: DrawsPart | null): PulseDraw[] | null {
+  if (d == null) {
+    return null
+  }
+  return d.draws
+}
+
+/**
+ * 抽选行还没到时给恒同一份空表(展示行 useMemo 按行数组身份记,别每渲染换新)。
+ *
+ * @param d 抽选行;null = 还没到。
+ * @returns 抽选行或空表。
+ */
+export function drawsOrEmpty(d: PulseDraw[] | null): PulseDraw[] {
+  if (d == null) {
+    return EMPTY_DRAWS_PART.draws
+  }
+  return d
+}
+
+/**
+ * 政策动态段那一份 → 新闻行;还没到给 null(段渲占位)。
+ *
+ * @param n 政策动态段那一份。
+ * @returns 新闻行或 null。
+ */
+export function newsOf(n: NewsPart | null): PulseNews[] | null {
+  if (n == null) {
+    return null
+  }
+  return n.news
 }
 
 /**
@@ -2177,16 +2440,6 @@ function cityPageHrefOf(x: CityPageHrefIn): string {
 }
 
 /**
- * 城市段落职位板的地址(按城市筛 + 来源标记)。
- *
- * @param city 城市英文名。
- * @returns 地址。
- */
-function cityHrefOf(city: string): string {
-  return URL_HOME_CITY_HEAD + encodeURIComponent(city) + CITY_UTM_TAIL
-}
-
-/**
  * 城市段点击埋点的手柄工厂(city-open,kind 按表;工厂体内的内嵌函数是宪法豁免形)。
  *
  * @param kind 从哪张表走的(main / industry / pilot / dli / search)。
@@ -2223,7 +2476,6 @@ export function toCityMainRows(x: CityMainRowsIn): CityMainRow[] {
       name: cityNameOf({ r, lang: x.lang }),
       note: cityNoteOf({ r, lang: x.lang }),
       href: cityPageHrefOf({ city: r.city, province: r.province }),
-      jobsHref: cityHrefOf(r.city),
       onOpen,
       open: r.openJobs,
       openText: numOrDashOf(r.openJobs),
@@ -2235,8 +2487,6 @@ export function toCityMainRows(x: CityMainRowsIn): CityMainRow[] {
       popText: numOrDashOf(r.population),
       unemp: r.unempRate,
       unempText: pctOrDashOf(r.unempRate),
-      actText: x.t('pulse.act.jobs'),
-      actBtnCls: actBtnClsOf(),
     })
   }
   return out
@@ -2272,7 +2522,6 @@ export function cityMainColsOf(x: CityColsIn): StartCol<CityMainRow>[] {
       render: cityUnempTextOf,
       className: cssOf(css.cityWide),
     },
-    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, render: CityActCell },
   ]
 }
 
@@ -2439,10 +2688,7 @@ export function cityIndTablesOf(x: CityIndTablesIn): CityIndTable[] {
         name: cityNameOf({ r: c, lang: x.lang }),
         note: cityNoteOf({ r: c, lang: x.lang }),
         href: cityPageHrefOf({ city: c.city, province: c.province }),
-        jobsHref: cityHrefOf(c.city),
         onOpen,
-        actText: x.t('pulse.act.jobs'),
-        actBtnCls: actBtnClsOf(),
         n: cell.n,
         low: cell.low,
         lowText: hourlyOrDashOf(cell.low),
@@ -2507,7 +2753,6 @@ export function cityIndColsOf(x: CityIndColsIn): StartCol<CityIndRow>[] {
       render: indWageTextOf,
       className: cssOf(css.cityWide),
     },
-    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, render: CityActCell },
   ]
 }
 
@@ -2666,20 +2911,15 @@ export function cityPilotTablesOf(x: CityPilotRowsIn): CityPilotTable[] {
       const short = pilotShortNameOf(p.name)
       const hit = byCity.get(short + KEY_SEP + p.province)
       let href = TEXT_NONE
-      let jobsHref = TEXT_NONE
       if (hit != null) {
         href = cityPageHrefOf({ city: hit.city, province: hit.province })
-        jobsHref = cityHrefOf(hit.city) + CITY_PILOT_PARAM_HEAD + p.type
       }
       rows.push({
         key: p.name + KEY_SEP + p.type,
         name: short,
         note: p.province,
         href,
-        jobsHref,
         onOpen,
-        actText: x.t('pulse.act.jobs'),
-        actBtnCls: actBtnClsOf(),
         open: p.openJobs,
         openText: numOf(p.openJobs),
         low: p.wageLowHourly,
@@ -2722,7 +2962,6 @@ export function cityPilotColsOf(x: CityColsIn): StartCol<CityPilotRow>[] {
       sort: pilotHourlySortOf,
       render: pilotHourlyTextOf,
     },
-    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, render: CityActCell },
   ]
 }
 
@@ -2752,7 +2991,6 @@ export function cityAipColsOf(x: CityColsIn): StartCol<CityPilotRow>[] {
       sort: pilotHourlySortOf,
       render: pilotHourlyTextOf,
     },
-    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, render: CityActCell },
   ]
 }
 
@@ -2834,10 +3072,7 @@ export function cityAipTableOf(x: CityAipTableIn): CityPilotTable | null {
       name: cityNameOf({ r: c, lang: x.lang }),
       note: cityNoteOf({ r: c, lang: x.lang }),
       href: cityPageHrefOf({ city: c.city, province: c.province }),
-      jobsHref: cityHrefOf(c.city) + URL_AIP_TAIL,
       onOpen,
-      actText: x.t('pulse.act.jobs'),
-      actBtnCls: actBtnClsOf(),
       open: c.aipJobs,
       openText: numOf(c.aipJobs),
       low: c.aipWageLowHourly,
@@ -3251,42 +3486,8 @@ function toPulseDraw(x: PulseDrawIn): PulseDraw {
     invitations: numOrNullOf(x.r.invitations),
     url: textOf(x.r.url),
     note: textOf(x.r.note),
-    checklist: checklistOf(x.r.checklist),
     unit,
   }
-}
-
-/**
- * 库里的门槛清单 JSON 串 → 清单;列不存在 / NULL / 坏串 / 形不对都是「没写」= null。
- *
- * @param v 库值。
- * @returns 清单;没写 null。
- */
-function checklistOf(v: string | null | undefined): MaybeChecklist {
-  if (v == null) {
-    return null
-  }
-  const parsed = jsonOrNull<Checklist>(v)
-  if (parsed == null || typeof parsed.url !== 'string' || Array.isArray(parsed.items) === false) {
-    return null
-  }
-  return { url: parsed.url, items: parsed.items }
-}
-
-/**
- * 一条门槛按界面语言取文案:中文 / 韩文(没翻回退英文)/ 其余英文。
- *
- * @param x 一条与界面语言。
- * @returns 文案。
- */
-export function checklistTextOf(x: ChecklistTextIn): string {
-  if (x.lang === LANG_ZH) {
-    return x.item.zh
-  }
-  if (x.lang === LANG_KO && x.item.ko !== TEXT_NONE) {
-    return x.item.ko
-  }
-  return x.item.en
 }
 
 /**
@@ -3326,7 +3527,7 @@ export function toDrawCellRows(x: DrawCellRowsIn): DrawCellRow[] {
   for (let i = 0; i < x.rows.length; i += 1) {
     const r = x.rows[i]
     if (r != null) {
-      out.push(toDrawCellRow({ r, i, t: x.t, tEn: x.tEn, lang: x.lang, onRules: x.onRules }))
+      out.push(toDrawCellRow({ r, i, t: x.t, tEn: x.tEn, lang: x.lang }))
     }
   }
   return out
@@ -3356,7 +3557,7 @@ export function toDrawCellRow(x: DrawCellRowIn): DrawCellRow {
       invCell = x.t('pnpfacts.selPeople', { n: x.r.invitations })
     }
   }
-  const row: DrawCellRow = {
+  return {
     key: String(x.i),
     date: ymd(x.r.date),
     prog,
@@ -3367,36 +3568,6 @@ export function toDrawCellRow(x: DrawCellRowIn): DrawCellRow {
     invCell,
     invLabel,
     href: x.r.url,
-    hasChecklist: x.r.checklist != null,
-    onRules: noop,
-    drawNote: x.r.note,
-    checklist: x.r.checklist,
-    actLinkText: x.t('pulse.act.link'),
-    actRulesText: x.t('pulse.act.rules'),
-    actBtnCls: actBtnClsOf(),
-  }
-  row.onRules = makeRulesOpen({ open: x.onRules, row })
-  return row
-}
-
-/**
- * 占位手柄:行先造出来再把自己交给点击手柄(手柄要持有整行)。
- *
- * @returns 无。
- */
-function noop(): void {
-  return
-}
-
-/**
- * 「门槛」钮的点击手柄工厂:把这一行整行交给开弹框的手柄。
- *
- * @param x 开弹框手柄与这一行。
- * @returns 点击手柄。
- */
-function makeRulesOpen(x: RulesOpenIn): ClickFn {
-  return function onRules(): void {
-    x.open(x.row)
   }
 }
 
@@ -3472,7 +3643,6 @@ export function drawColsOf(x: DrawColsIn): StartCol<DrawCellRow>[] {
     { key: COL_STREAM, label: x.t('home.dr.stream'), width: W_STREAM, render: StreamCell },
     { key: COL_SCORE, label: x.t('home.dr.score'), width: W_SCORE, render: drawScoreOf },
     { key: COL_INV, label: x.t('home.dr.inv'), width: W_INV, render: drawInvOf },
-    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, width: W_DRAW_ACT, render: DrawActCell },
   ]
 }
 
@@ -3500,9 +3670,6 @@ export function toNewsCellRows(x: NewsCellRowsIn): NewsCellRow[] {
       name: r.title,
       note,
       href: URL_NEWS_HEAD + r.slug,
-      officialHref: r.url,
-      actLinkText: x.t('pulse.act.link'),
-      actBtnCls: actBtnClsOf(),
     })
   }
   return out
@@ -3520,7 +3687,6 @@ export function newsColsOf(x: NewsColsIn): StartCol<NewsCellRow>[] {
     { key: COL_DATE, label: x.t('home.dr.date'), width: W_DATE, render: newsDateOf },
     { key: COL_NEWS_TAG, label: x.t('pulse.news.region'), width: W_NEWS_TAG, render: NewsTagCell },
     { key: COL_NEWS_TITLE, label: x.t('pulse.news.title'), render: NewsTitleCell },
-    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, width: W_NEWS_ACT, render: NewsActCell },
   ]
 }
 
@@ -3783,7 +3949,6 @@ function toEmpCellRow(x: EmpCellRowIn): EmpCellRow {
     alias: aliasOf({ r, lang: x.lang }),
     chainText: chainTextOf({ t: x.t, chain: r.chain, pick: x.pick }),
     chainTip: x.t(KEY_CHAIN_TIP),
-    jobsHref: empJobsHrefOf({ r, pick: x.pick }),
     companyHref: URL_COMPANY_HEAD + r.slug,
     open,
     openText: numOf(open),
@@ -3804,10 +3969,6 @@ function toEmpCellRow(x: EmpCellRowIn): EmpCellRow {
     verdictText: verdictTextOf({ v: r.verdict, t: x.t }),
     sectorText: x.t(KEY_SECTOR_HEAD + sectorKeyOf(r.sector)),
     pulse,
-    actJobsText: x.t('pulse.act.jobs'),
-    actCompanyText: x.t('pulse.act.company'),
-    actBtnCls: actBtnClsOf(),
-    onView: trackEmpClick,
   }
 }
 
@@ -3861,24 +4022,6 @@ function empOpenCountOf(x: PilotPickIn): number {
     return x.r.openJobsFcip
   }
   return x.r.openJobs
-}
-
-/**
- * 「看岗位」链接:职位板按雇主名搜;AIP 表的行带 AIP 筛选(点进去与「在招」同数),RCIP / FCIP 表的行带
- * 试点社区筛选(职位板没有按单个试点筛的参数,任一试点社区的岗都出),行业表全国搜。
- *
- * @param x 事实行与试点键。
- * @returns 链接。
- */
-function empJobsHrefOf(x: PilotPickIn): string {
-  const base = URL_HOME_Q_HEAD + encodeURIComponent(x.r.name)
-  if (x.pick === PILOT_KEY_AIP) {
-    return base + URL_AIP_TAIL
-  }
-  if (x.pick === PILOT_KEY_RCIP || x.pick === PILOT_KEY_FCIP) {
-    return base + URL_PILOT_TAIL
-  }
-  return base
 }
 
 /**
@@ -4050,9 +4193,6 @@ export function empColsOf(x: EmpColsIn): StartCol<EmpCellRow>[] {
   const open: StartCol<EmpCellRow> = {
     key: COL_OPEN, label: x.t('pulse.col.open'), nowrap: true, sort: empOpenSortOf, render: empOpenOf,
   }
-  const act: StartCol<EmpCellRow> = {
-    key: COL_ACT, label: x.t('col.actions'), nowrap: true, width: W_EMP_ACT, render: EmpActCell,
-  }
   const biz: StartCol<EmpCellRow> = { key: COL_BIZ, label: x.t('pulse.col.biz'), render: EmpBriefCell }
   const sector: StartCol<EmpCellRow> = {
     key: COL_SECTOR, label: x.t('pulse.col.sector'), nowrap: true, render: empSectorOf,
@@ -4064,7 +4204,6 @@ export function empColsOf(x: EmpColsIn): StartCol<EmpCellRow>[] {
       sector,
       hiring,
       open,
-      act,
     ]
   }
   return [
@@ -4075,7 +4214,6 @@ export function empColsOf(x: EmpColsIn): StartCol<EmpCellRow>[] {
     { key: COL_LMIA_2Q, label: x.t('se.col.w2'), nowrap: true, sort: empLmia2qSortOf, render: empLmia2qOf },
     hiring,
     open,
-    act,
   ]
 }
 
@@ -4157,24 +4295,6 @@ function empSectorOf(r: EmpCellRow): string {
  */
 function empVerdictOf(r: EmpCellRow): string {
   return r.verdictText
-}
-
-/**
- * 点了雇主表的「看岗位」(沿用 se-view-jobs,已在第一方白名单)。
- *
- * @returns 无。
- */
-function trackEmpClick(): void {
-  track(TRACK_EMP)
-}
-
-/**
- * 操作钮的类:button 桶 mini 档(与职位板操作列同一颗钮,2026-09-05 Frank「按钮样式不能全站统一吗」)。
- *
- * @returns 类名。
- */
-export function actBtnClsOf(): string {
-  return btnClsOf({ kind: MINI_BTN_KIND, sm: false, lg: false, xl: false, active: false, busy: false, className: null })
 }
 
 /**

@@ -252,9 +252,8 @@ export type PulseScalars = {
 }
 
 /**
- * 把脉首页的 SSR 契约(页面门取好数一次性下发)。
- * 2026-09-04 重构:抽选 / 政策动态两格撤(段撤成一行链接)、职业筛字典两格撤(筛选下拉撤),
- * 加逐日在招量(趋势段原料)。
+ * 把脉首页的 SSR 契约:只剩首屏 —— 数字卡三格 + 抓取时刻(2026-11-05 Frank「用户看到哪就加载哪部分」;
+ * 原契约带全量担保雇主简介等 4.9MB 进每次 HTML,并发几次就把生产 256MB 堆顶爆,见 HomeStatsCore)。
  */
 export type HomeStats = {
   /**
@@ -268,9 +267,32 @@ export type HomeStats = {
   named: number | null
 
   /**
-   * 担保雇主三分表(SSR 只带每表前几十行;雇主段与 LMIA 段按行业重分)。
+   * S1 中间两卡的标量。
    */
-  sponsor: SponsorBoards
+  pulse: PulseScalars
+
+  /**
+   * 数据抓取时刻。
+   */
+  checkedAt: string
+}
+
+/**
+ * 进程内缓存里那份首页聚合(原 SSR 契约全身;2026-11-05 起 SSR 只下发首屏四格(HomeStats),
+ * 其余各格由 /api/stats/pulse 按段切给挂载后、滚到附近才取数的各段 —— Frank「用户看到哪就加载哪部分」)。
+ * 2026-09-04 重构:抽选 / 政策动态两格撤(段撤成一行链接)、职业筛字典两格撤(筛选下拉撤),
+ * 加逐日在招量(趋势段原料)。
+ */
+export type HomeStatsCore = {
+  /**
+   * 全站在架岗总数(S1 命中率证据,与职位板 proof 同源);查不到给 null。
+   */
+  total: number | null
+
+  /**
+   * 命中省具名清单的岗数;查不到给 null。
+   */
+  named: number | null
 
   /**
    * S1 中间两卡的标量。
@@ -323,16 +345,7 @@ export type HomeStats = {
    */
   news: PulseNews[]
 
-  /**
-   * 数据抓取时刻。
-   */
-  checkedAt: string
 }
-
-/**
- * 进程内缓存里那份聚合(逐用户的两格不进缓存:预选省与抓取时刻)。
- */
-export type HomeStatsCore = Omit<HomeStats, 'checkedAt'>
 
 /**
  * 首页聚合缓存的一格。
@@ -357,6 +370,12 @@ export type StartCache = {
    * 首页聚合;null = 没拉过。
    */
   home: HomeSlot | null
+
+  /**
+   * 正在查的那一份首页聚合(单飞:缓存过期时同一刻只放一个请求去查,其余等它;null = 没在查)。
+   * 2026-11-05:原先过期那一刻并发进来的请求各查一遍全量,堆跟着翻倍。
+   */
+  homeLoad: Promise<HomeStatsCore> | null
 }
 
 /**
@@ -414,11 +433,6 @@ export type HomeCoreIn = {
   sponsorRows: SponsorRowList
 
   /**
-   * 已按人群建好的担保雇主三表。
-   */
-  boards: SponsorBoards
-
-  /**
    * 职业统计行(中间两卡与分类映射的原料)。
    */
   occRows: OccRowList
@@ -466,43 +480,323 @@ export type HomeStatsOfIn = {
 }
 
 /**
- * `sponsorSeedOf` 的入参。
+ * 职业段那一份(/api/stats/pulse?part=occ;2026-11-05 自 SSR 契约拆出,滚到附近才取)。
  */
-export type SponsorSeedIn = {
+export type OccPart = {
   /**
-   * 三分表全量。
-   */
-  boards: SponsorBoards
-
-  /**
-   * NOC → 分类(对象形,SSR 契约同款)。
-   */
-  nocCat: Record<string, NocCat>
-
-  /**
-   * 全国职业行(算职业名与 TEER)。
+   * 全国职业行(职业两榜与行业表的原料)。
    */
   natOcc: OccRowList
 
   /**
-   * 试点集合与简介(与挂载后同一份)。
+   * NOC → 分类。
+   */
+  nocCat: Record<string, NocCat>
+
+  /**
+   * NOC → 紧缺省清单。
+   */
+  nocProvs: Record<string, string[]>
+}
+
+/**
+ * 雇主段那一份(part=emp;担保雇主三分表另走 /api/employers/sponsors)。
+ */
+export type EmpPart = {
+  /**
+   * 全国职业行(雇主表的职业名与 TEER)。
+   */
+  natOcc: OccRowList
+
+  /**
+   * NOC → 分类(雇主归行业组)。
+   */
+  nocCat: Record<string, NocCat>
+
+  /**
+   * 担保雇主里在 RCIP 指定名单上的雇主名(小写)。
+   */
+  rcipNames: string[]
+
+  /**
+   * 担保雇主里在 FCIP 指定名单上的雇主名(小写)。
+   */
+  fcipNames: string[]
+
+  /**
+   * 担保雇主的公司简介(只带英文 + 请求语言那一份,另一门语言给 '')。
+   */
+  briefs: Record<string, CompanyBrief>
+}
+
+/**
+ * 省份段那一份(part=prov;宏观两份与职业大表另走 macro / market)。
+ */
+export type ProvPart = {
+  /**
+   * 省卡增补:IRCC 体量 + 难度档。
+   */
+  provExtra: ProvExtraMap
+}
+
+/**
+ * 抽选段那一份(part=draws)。
+ */
+export type DrawsPart = {
+  /**
+   * 抽选表(全量,前端分页)。
+   */
+  draws: PulseDraw[]
+}
+
+/**
+ * 政策动态段那一份(part=news)。
+ */
+export type NewsPart = {
+  /**
+   * 最新几条。
+   */
+  news: PulseNews[]
+}
+
+/**
+ * /api/stats/pulse 回的一份(按 part 切)。
+ */
+export type PulsePartBody = OccPart | EmpPart | ProvPart | DrawsPart | NewsPart
+
+/**
+ * `pulsePartOf` 的入参。
+ */
+export type PulsePartIn = {
+  /**
+   * 缓存里那份首页聚合。
+   */
+  core: HomeStatsCore
+
+  /**
+   * 段名(occ / emp / prov / draws / news)。
+   */
+  part: string
+
+  /**
+   * 界面语言(只有 emp 段的简介按它挑)。
+   */
+  lang: string
+}
+
+/**
+ * `briefsInLangOf` 的入参。
+ */
+export type BriefsLangIn = {
+  /**
+   * 三语简介全份。
+   */
+  briefs: Record<string, CompanyBrief>
+
+  /**
+   * 要的语言(英文恒带)。
+   */
+  lang: string
+}
+
+/**
+ * `partUrlOf` 的入参。
+ */
+export type PartUrlIn = {
+  /**
+   * 段名。
+   */
+  part: string
+
+  /**
+   * 界面语言。
+   */
+  lang: string
+}
+
+/**
+ * `makePartLoad` 的入参。
+ */
+export type PartLoadIn<T> = {
+  /**
+   * 取数地址(含 part 与 lang 参数)。
+   */
+  url: string
+
+  /**
+   * 取到后的写口;接口挂了写 empty。
+   */
+  set: (v: T) => void
+
+  /**
+   * 接口挂了时的空份(段整块不渲,不永远转圈)。
+   */
+  empty: T
+}
+
+/**
+ * `usePulsePart` 的入参。
+ */
+export type PulsePartHookIn<T> = {
+  /**
+   * 段名。
+   */
+  part: string
+
+  /**
+   * 界面语言(拼进地址;换语言重取)。
+   */
+  lang: string
+
+  /**
+   * 该段到没到视口附近(没到不取)。
+   */
+  on: boolean
+
+  /**
+   * 接口挂了时的空份。
+   */
+  empty: T
+}
+
+/**
+ * `useNearBands` 的入参。
+ */
+export type NearBandsIn = {
+  /**
+   * 要盯的分区锚点 id。
+   */
+  ids: string[]
+}
+
+/**
+ * `sharedHomeOf` 的入参(连接池的形状由 server 门定,本域不 import 库类型)。
+ */
+export type HomeLoadIn<D> = {
+  /**
+   * 连接池。
+   */
+  db: D
+
+  /**
+   * 现查一份聚合(server 门的 loadHomeCore)。
+   */
+  load: (db: D) => Promise<HomeStatsCore>
+}
+
+/**
+ * `makeNearWatch` 的入参。
+ */
+export type NearWatchIn = {
+  /**
+   * 要盯的分区 id。
+   */
+  ids: string[]
+
+  /**
+   * 已到集合的写口(收值或更新函数)。
+   */
+  setNear: (v: Set<string> | ((prev: Set<string>) => Set<string>)) => void
+}
+
+/**
+ * `empPiecesOf` 的入参。
+ */
+export type EmpPiecesIn = {
+  /**
+   * 雇主段那一份。
+   */
+  part: EmpPart
+
+  /**
+   * 界面语言(职业名挑语言)。
+   */
+  lang: StartLang
+}
+
+/**
+ * 雇主段出表要的三样。
+ */
+export type EmpPieces = {
+  /**
+   * NOC → 分类。
+   */
+  nocCat: NocCatMap
+
+  /**
+   * NOC → 职业名与 TEER。
+   */
+  nocInfo: NocInfoMap
+
+  /**
+   * 试点集合与简介。
    */
   extra: EmpExtra
 }
 
 /**
- * `seedGroupOf` 的入参。
+ * `usePulseDerived` 的入参。
  */
-export type SeedGroupIn = {
+export type PulseDerivedIn = {
   /**
-   * 一张分表全量。
+   * 取词函数。
    */
-  group: SponsorGroup
+  t: TFn
 
   /**
-   * 要留的雇主名(原样,= EmpCellRow.key)。
+   * 界面语言。
    */
-  keep: Set<string>
+  lang: StartLang
+
+  /**
+   * 职业段那一份;null = 还没到。
+   */
+  occ: OccPart | null
+
+  /**
+   * 省卡增补(还没到是空表)。
+   */
+  provExtra: ProvExtraMap
+
+  /**
+   * 宏观两份;null = 还没到。
+   */
+  macroData: MacroData | null
+
+  /**
+   * 主图四份;null = 还没到。
+   */
+  market: MarketData | null
+}
+
+/**
+ * `usePulseDerived` 的返回。
+ */
+export type PulseDerived = {
+  /**
+   * 职业段分表;null = 职业段那一份还没到。
+   */
+  occSecs: OccSec[] | null
+
+  /**
+   * NOC → 紧缺省清单。
+   */
+  nocProvs: NocProvsMap
+
+  /**
+   * 「按指标」视图的指标表。
+   */
+  indGeos: MacroGeo[]
+
+  /**
+   * PR 段每地区小表。
+   */
+  prGeos: MacroGeo[]
+
+  /**
+   * 招聘对比横表行。
+   */
+  jobsRows: JobsRow[]
 }
 
 /**
@@ -532,7 +826,7 @@ export type NocCatOfIn = {
 
 
 /**
- * `occMainOf` / `occNoteOf` 的入参。
+ * `occMainOf` / `occEnOf` / `occSubOf` 的入参。
  */
 export type OccNameIn = {
   /**
@@ -626,12 +920,12 @@ export type OccCellRow = {
   href: string
 
   /**
-   * 主文案(#309 主次对调:人话名主文案 + 官方名灰注)。
+   * 主文案 = NOC 官方英文名(2026-11-05 Frank「是不是 英文在上,中文灰字在下啊。然后超链接加到 英文上」;原 #309 人话名主文案)。
    */
   main: string
 
   /**
-   * 官方英文名灰注;空串 = 不出(英文界面,或与主文案同文)。
+   * 界面语言名灰注;空串 = 不出(英文界面,或与英文主文案同文)。
    */
   note: string
 
@@ -760,15 +1054,6 @@ export type OccCellRow = {
    */
   rateSort: number | null
 
-  /**
-   * 「看岗位」文案(操作列;2026-09-04 Frank「每个列是不是都应该加一个操作列」)。
-   */
-  actJobsText: string
-
-  /**
-   * 操作钮的类(button 桶 ghost 小号档)。
-   */
-  actBtnCls: string
 }
 
 /**
@@ -929,11 +1214,6 @@ export type NumCardRow = {
    * 悬停口径(标签虚线的那句)。
    */
   tip: string
-
-  /**
-   * 整卡的去处。
-   */
-  href: string
 }
 
 /**
@@ -1088,7 +1368,7 @@ export type SecHeadClsIn = {
 /**
  * 加载占位块的高度档(px;四处各对着自己那块内容到齐后的高度)。
  */
-export type PlaceholderSize = 320 | 380 | 420 | 480
+export type PlaceholderSize = 320 | 380 | 420 | 480 | 900
 
 /**
  * `placeholderClsOf` 的入参。
@@ -1329,6 +1609,26 @@ export type PulsePanel = {
    * 宏观两份还在路上(SSR 瘦身批:省份 / PR 两段渲占位)。
    */
   macroLoading: boolean
+
+  /**
+   * 雇主段还在路上(渲占位)。
+   */
+  empLoading: boolean
+
+  /**
+   * 抽选行;null = 还在路上。
+   */
+  draws: PulseDraw[] | null
+
+  /**
+   * 政策动态;null = 还在路上。
+   */
+  news: PulseNews[] | null
+
+  /**
+   * 城市段到没到视口附近(城市段自己取数,这一格只给开关)。
+   */
+  cityOn: boolean
 }
 
 
@@ -1436,6 +1736,15 @@ export type HeroIn = {
    * 四张脉象卡(缺数的卡在洗行时就没进来)。
    */
   cards: NumCardRow[]
+
+  /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲),挂 banner 右下角槽。
+   * 沿革:2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」→ 各区标题行右槽一枚;
+   * 09-04「每个表都应该有更新时间」→ 每表一枚;09-11「这个更新时间要紧贴在表格上面,说了多少遍」重申每表一枚。
+   * 2026-11-05 Frank「把脉页面 把所有的 更新时间,都放到 banner 右下角吧」改判:各段那些全撤,整页只这一枚
+   * (全页同一个 checkedAt,照职位板 banner 右槽)。
+   */
+  updatedAt: string
 }
 
 /**
@@ -1461,12 +1770,6 @@ export type BoardsSectionIn = {
    * 界面语言。
    */
   lang: string
-
-  /**
-   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
-   * 挂在伞标题行右槽 —— 各分表同一份数据,整区一枚,不逐表重复。
-   */
-  updatedAt: string
 
   /**
    * 分表清单;null = 主图数据还没到,出占位块。
@@ -1563,11 +1866,6 @@ export type OccBoardSecIn = {
    * 与上一表留不留间距(第一表不留)。
    */
   gap: boolean
-
-  /**
-   * 数据更新时刻(ISO;'' 不渲)—— 每张表标题行右槽各一枚(2026-09-04 Frank「每个表都应该有更新时间」)。
-   */
-  updatedAt: string
 }
 
 /**
@@ -1675,11 +1973,6 @@ export type EmpCellRow = {
   chainTip: string
 
   /**
-   * 「看岗位」:职位板按雇主名筛。
-   */
-  jobsHref: string
-
-  /**
    * 「看公司」:公司页。
    */
   companyHref: string
@@ -1781,25 +2074,6 @@ export type EmpCellRow = {
    */
   pulse: string
 
-  /**
-   * 「看岗位」文案。
-   */
-  actJobsText: string
-
-  /**
-   * 「看公司」文案。
-   */
-  actCompanyText: string
-
-  /**
-   * 操作钮的类(button 桶 ghost 小号档)。
-   */
-  actBtnCls: string
-
-  /**
-   * 点了「看岗位」的回调(埋点;形照 OccCellRow.onView,哑单元格不 import functions,免循环依赖)。
-   */
-  onView: ClickFn
 }
 
 /**
@@ -1815,6 +2089,11 @@ export type EmpSecsPanel = {
    * 三试点指定雇主表。
    */
   pilotSecs: EmpSec[]
+
+  /**
+   * 还在路上(段没到视口附近,或雇主段数据 / 担保雇主全量有一份没到;段渲占位)。
+   */
+  loading: boolean
 }
 
 /**
@@ -2034,32 +2313,6 @@ export type CityLinkRow = {
 }
 
 /**
- * 操作格读的四格 —— 主要城市 / 行业 / 试点三组表同用一枚 CityActCell(照表 1 的形;
- * 2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」)。
- */
-export type CityActRow = {
-  /**
-   * 看岗位钮落职位板的地址(TEXT_NONE 不出钮 —— 对不上城的试点社区没有落板处)。
-   */
-  jobsHref: string
-
-  /**
-   * 点击埋点。
-   */
-  onOpen: ClickFn
-
-  /**
-   * 看岗位钮文案。
-   */
-  actText: string
-
-  /**
-   * 看岗位钮的类。
-   */
-  actBtnCls: string
-}
-
-/**
  * 表 1(主要城市)的展示行。
  */
 export type CityMainRow = {
@@ -2138,20 +2391,6 @@ export type CityMainRow = {
    */
   unempText: string
 
-  /**
-   * 看岗位钮文案(2026-09-12 Frank「省份和城市也需要 这个 看岗位的功能吧」,照雇主板操作列)。
-   */
-  actText: string
-
-  /**
-   * 看岗位钮的类。
-   */
-  actBtnCls: string
-
-  /**
-   * 看岗位钮的地址(职位板按城市筛;名字链接 href 归详情页,照雇主板「名字进详情、操作进板」)。
-   */
-  jobsHref: string
 }
 
 /**
@@ -2225,24 +2464,9 @@ export type CityIndRow = {
   href: string
 
   /**
-   * 看岗位钮落职位板(按城筛;职位板只认单个大类、行业组筛不了,与表 1 同落全城)。
-   */
-  jobsHref: string
-
-  /**
    * 点击埋点。
    */
   onOpen: ClickFn
-
-  /**
-   * 看岗位钮文案。
-   */
-  actText: string
-
-  /**
-   * 看岗位钮的类。
-   */
-  actBtnCls: string
 
   /**
    * 该行业组在招数(组内大类求和)。
@@ -2401,24 +2625,9 @@ export type CityPilotRow = {
   href: string
 
   /**
-   * 看岗位钮落职位板(城 + 该制筛;对不上城 TEXT_NONE 不出钮)。
-   */
-  jobsHref: string
-
-  /**
    * 点击埋点。
    */
   onOpen: ClickFn
-
-  /**
-   * 看岗位钮文案。
-   */
-  actText: string
-
-  /**
-   * 看岗位钮的类。
-   */
-  actBtnCls: string
 
   /**
    * 在招数(排序键;0 是事实)。
@@ -2472,11 +2681,6 @@ export type CityPilotTable = {
  */
 export type CityPilotBlockIn = {
   /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
    * 这张表。
    */
   tb: CityPilotTable
@@ -2490,11 +2694,6 @@ export type CityPilotBlockIn = {
    * AIP 城市表的列集。
    */
   aipCols: StartCol<CityPilotRow>[]
-
-  /**
-   * 数据更新时刻(ISO;'' 不渲)。
-   */
-  updatedAt: string
 }
 
 /**
@@ -2621,6 +2820,11 @@ export type CityPanelIn = {
    * 界面语言。
    */
   lang: StartLang
+
+  /**
+   * 段到没到视口附近(没到不取数,渲占位;2026-11-05 按段懒加载)。
+   */
+  on: boolean
 }
 
 /**
@@ -2733,11 +2937,6 @@ export type EmpSectionIn = {
   t: TFn
 
   /**
-   * 数据更新时刻(ISO;'' 不渲)。
-   */
-  updatedAt: string
-
-  /**
    * 行业分表(两档并一张)。
    */
   secs: EmpSec[]
@@ -2746,6 +2945,11 @@ export type EmpSectionIn = {
    * 三试点指定雇主表(AIP / RCIP / FCIP,在招的;不分档不分行业)。
    */
   pilotSecs: EmpSec[]
+
+  /**
+   * 还在路上(渲占位,不藏段:懒加载要靠这条色带进视口才开取)。
+   */
+  loading: boolean
 }
 
 /**
@@ -2776,11 +2980,6 @@ export type EmpBoardSecIn = {
    * 与上一表留不留间距。
    */
   gap: boolean
-
-  /**
-   * 数据更新时刻(ISO;'' 不渲)。
-   */
-  updatedAt: string
 }
 
 /**
@@ -2840,9 +3039,9 @@ export type CitySectionIn = {
   lang: StartLang
 
   /**
-   * 数据更新时刻(ISO;'' 不渲)。
+   * 段到没到视口附近(没到不取数,渲占位;2026-11-05 按段懒加载)。
    */
-  updatedAt: string
+  on: boolean
 }
 
 
@@ -3001,69 +3200,9 @@ export type PulseDraw = {
   note: string
 
   /**
-   * 这一类别的门槛清单;null = 没写(弹框出「本站未收录」)。
-   */
-  checklist: MaybeChecklist
-
-  /**
    * 人数数的是什么(invitation / selection / application;没这一格给 '';2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」:selection 写「入选」)。
    */
   unit: string
-}
-
-/**
- * 一条人话门槛(三语;韩文没翻时空串,显示回退英文)。
- */
-export type ChecklistItem = {
-  /**
-   * 中文。
-   */
-  zh: string
-
-  /**
-   * 英文。
-   */
-  en: string
-
-  /**
-   * 韩文(空串 = 未翻)。
-   */
-  ko: string
-}
-
-/**
- * 一个抽选类别的门槛清单(人工核定表 draw_checklists.json 的一格,mart 拼进 pnp_draws.checklist)。
- */
-export type Checklist = {
-  /**
-   * 官方页。
-   */
-  url: string
-
-  /**
-   * 3~5 条人话门槛,按序。
-   */
-  items: ChecklistItem[]
-}
-
-/**
- * 门槛清单;null = 没写。
- */
-export type MaybeChecklist = Checklist | null
-
-/**
- * `checklistTextOf` 的入参。
- */
-export type ChecklistTextIn = {
-  /**
-   * 一条。
-   */
-  item: ChecklistItem
-
-  /**
-   * 界面语言。
-   */
-  lang: string
 }
 
 /**
@@ -3121,11 +3260,6 @@ export type DrawDbRow = {
    * 人数口径(pnp_draws.unit,2026-09-29 的列;DDL 没跑的库上这一格压根不存在)。
    */
   unit?: string | null
-
-  /**
-   * 门槛清单 JSON 串({url, items:[{zh,en,ko}]}) —— 2026-09-13 的列,DDL 没跑的库上这一格压根不存在;NULL = 未收录。
-   */
-  checklist?: string | null
 }
 
 /**
@@ -3204,44 +3338,10 @@ export type DrawCellRow = {
   invLabel: string
 
   /**
-   * 官方抽选页地址(操作列「官方页」钮去处;2026-09-13 Frank「列名应该叫操作,然后有两个按钮」)。
+   * 官方抽选页地址(通道名链接的去处;2026-11-05 Frank「通道名加链接再删」,原操作列「官方页」钮撤;空串 = 通道名不给链接)。
    */
   href: string
 
-  /**
-   * 有没有门槛清单(没有不出「门槛」钮 —— 落到空弹框比不出更糟)。
-   */
-  hasChecklist: boolean
-
-  /**
-   * 「门槛」钮点击:开这一期的弹框(2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」)。
-   */
-  onRules: ClickFn
-
-  /**
-   * 官方公告里这一路的附注(选择参数 / 期号);空串 = 不出。
-   */
-  drawNote: string
-
-  /**
-   * 这一类别的门槛清单(弹框 1 2 3;null = 没写)。
-   */
-  checklist: MaybeChecklist
-
-  /**
-   * 「官方页」钮文案。
-   */
-  actLinkText: string
-
-  /**
-   * 「门槛」钮文案。
-   */
-  actRulesText: string
-
-  /**
-   * 操作钮的类(哑单元格不 import functions,类随行带)。
-   */
-  actBtnCls: string
 }
 
 /**
@@ -3272,11 +3372,6 @@ export type DrawCellRowIn = {
    * 界面语言。
    */
   lang: string
-
-  /**
-   * 开门槛弹框的手柄(收省码)。
-   */
-  onRules: RulesOpenFn
 }
 
 /**
@@ -3302,81 +3397,6 @@ export type DrawCellRowsIn = {
    * 界面语言。
    */
   lang: string
-
-  /**
-   * 开门槛弹框的手柄(收省码)。
-   */
-  onRules: RulesOpenFn
-}
-
-/**
- * 开门槛弹框的手柄:收这一期的展示行(省码、类别、对照通道都在行上)。
- */
-export type RulesOpenFn = (row: DrawCellRow) => void
-
-/**
- * `makeRulesOpen` 的入参。
- */
-export type RulesOpenIn = {
-  /**
-   * 开门槛弹框的手柄。
-   */
-  open: RulesOpenFn
-
-  /**
-   * 这一行(手柄闭包里持有,点击时整行交回)。
-   */
-  row: DrawCellRow
-}
-
-/**
- * 弹框开着的那一期;null = 没开。
- */
-export type MaybeDrawCellRow = DrawCellRow | null
-
-/**
- * `useRulesModal` 的出参:门槛弹框的状态与手柄。
- */
-export type RulesPanel = {
-  /**
-   * 开着哪一期(null = 没开)。
-   */
-  row: MaybeDrawCellRow
-
-  /**
-   * 开某一期的弹框。
-   */
-  open: RulesOpenFn
-
-  /**
-   * 关弹框。
-   */
-  close: ClickFn
-}
-
-/**
- * RulesModal(抽选表「门槛」弹框)的 props。
- */
-export type RulesModalIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 界面语言(清单按它取一语;2026-10-09 N 批收窄成三字面量 —— 副标题省名两行走 name 桶,它只认三语)。
-   */
-  lang: StartLang
-
-  /**
-   * 开着的这一期。
-   */
-  row: DrawCellRow
-
-  /**
-   * 关弹框。
-   */
-  onClose: ClickFn
 }
 
 /**
@@ -3455,14 +3475,9 @@ export type NewsSectionIn = {
   lang: StartLang
 
   /**
-   * 数据更新时刻(ISO;'' 不渲)。
+   * 最新几条(已去重截断);null = 还在路上(段没到视口附近或在取,渲占位)。
    */
-  updatedAt: string
-
-  /**
-   * 最新几条(已去重截断)。
-   */
-  news: PulseNews[]
+  news: PulseNews[] | null
 }
 
 /**
@@ -3584,20 +3599,6 @@ export type NewsCellRow = {
    */
   href: string
 
-  /**
-   * 官方来源页地址(操作列「官方页」钮去处)。
-   */
-  officialHref: string
-
-  /**
-   * 「官方页」钮文案。
-   */
-  actLinkText: string
-
-  /**
-   * 操作钮的类(哑单元格不 import functions,类随行带)。
-   */
-  actBtnCls: string
 }
 
 /**
@@ -3650,16 +3651,9 @@ export type DrawsSectionIn = {
   lang: StartLang
 
   /**
-   * 数据更新时刻(ISO;'' 不渲)。
+   * 抽选行(服务端已算好冷解读三标量);null = 还在路上(渲占位)。
    */
-  updatedAt: string
-
-  /**
-   * 抽选行(服务端已算好冷解读三标量)。
-   */
-  draws: PulseDraw[]
-
-
+  draws: PulseDraw[] | null
 }
 
 
@@ -3668,9 +3662,14 @@ export type DrawsSectionIn = {
  */
 export type EmpSecsHookIn = {
   /**
-   * 页面门取好的那份 SSR 数据。
+   * 雇主段那一份(/api/stats/pulse?part=emp);null = 还没到。
    */
-  stats: HomeStats
+  part: EmpPart | null
+
+  /**
+   * 担保雇主三分表全量(/api/employers/sponsors);null = 还没到。
+   */
+  sponsor: SponsorBoards | null
 
   /**
    * 界面语言。
@@ -5296,11 +5295,6 @@ export type MacroSectionIn = {
   t: TFn
 
   /**
-   * ETL 心跳。
-   */
-  updatedAt: string
-
-  /**
    * 招聘对比:数据还没到。
    */
   jobsLoading: boolean
@@ -5331,11 +5325,6 @@ export type PrSectionIn = {
   t: TFn
 
   /**
-   * ETL 心跳。
-   */
-  updatedAt: string
-
-  /**
    * 每地区一张小表(全国 + 九省)。
    */
   prGeos: MacroGeo[]
@@ -5359,12 +5348,6 @@ export type MacroBlockIn = {
    * 地区块。
    */
   geo: MacroGeo
-
-  /**
-   * 数据更新时刻(ISO;2026-09-11 Frank「这个更新时间要紧贴在表格上面,说了多少遍」:
-   * 09-10 评估批收回段首一枚是违规,退回 09-03 铁律「表右上角 Updated」—— 每表标题行右侧一枚)。
-   */
-  updatedAt: string
 
   /**
    * 不是段内第一块时加块间距(照职业段行业表的 boardGap)。

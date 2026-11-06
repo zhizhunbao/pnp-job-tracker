@@ -11,6 +11,9 @@
  * 2026-08-28 换装批:聚合的组装、进程内缓存、预选省全部下沉 components/start 的 functions
  * (方案 A:连接池与 payload 在这里取好注进去,那个桶一个 `/server` 门都不 import);
  * 壳件(整页外框 Frame / 顶栏 / 页脚)拼装收回本门(Frank「组装只许在 (frontend) 页面门里」,样张 companies)。
+ * 2026-11-05 Frank「用户看到哪就加载哪部分」:SSR 只出首屏四格(数字卡 + 抓取时刻),其余各段滚到附近才拉
+ * /api/stats/pulse;聚合取数(缓存 + 单飞)挪进 components/start 的 server 门,本门与那条路由共用一份。
+ * 背景:原契约 4.9MB 进每次 HTML,并发几次把生产 256MB 堆顶爆(502)。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
@@ -21,17 +24,10 @@ import config from '@/payload.config'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
-import {
-  DRAWS_LIMIT, Pulse, START_META, cachedHomeOf, emptyOccRows, emptyProvExtra,
-  emptyQueryResult,
-  emptySponsorRows, emptyText, homeCoreOf, homeStatsOf, nullProof, putHomeCache,
-} from '@/components/start'
-import { SQL } from '@/lib/db'
+import { Pulse, START_META, emptyText, homeStatsOf } from '@/components/start'
+import { getHomeCore } from '@/components/start/server'
 import { dbOf } from '@/lib/db/server'
-import { buildSponsorBoards, loadSponsorEmployers } from '@/lib/employers/server'
-import { checkedAt, loadTotalAndProof } from '@/lib/jobs/server'
-import { employerVerdict } from '@/lib/ruling/server'
-import { loadOccStats, loadProvExtra } from '@/lib/stats/server'
+import { checkedAt } from '@/lib/jobs/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,37 +38,14 @@ export const metadata = START_META
  * 城市行 2026-09-11 城市段重设计批自 SSR 退役(段内挂载后拉 /api/stats/city,400 张卡不再进 HTML)。
  * 缓存口径与旧版一字未改:10 分钟内给同一份,过期现查再存;抓取时刻逐请求不进缓存
  * (lib/jobs 自带 30s 缓存)。预选省 2026-09-06 随省内职业榜退役(省份段不再切省),getUser 一并撤。
+ * 2026-11-05:取数与缓存挪进 start 的 server 门(getHomeCore,带单飞),本门只把首屏四格交给 Pulse。
  *
  * @returns 整页。
  */
 export default async function PulsePage() {
   const payload = await getPayload({ config: await config })
   const db = dbOf(payload)
-  let core = cachedHomeOf()
-  if (core == null) {
-    const [proof, provExtra, sponsorRows, occRows, drawRes, pilotRes, briefRes, newsRes] = await Promise.all([
-      loadTotalAndProof(db).catch(nullProof),
-      loadProvExtra(db).catch(emptyProvExtra),
-      loadSponsorEmployers({ db, judge: employerVerdict }).catch(emptySponsorRows),
-      loadOccStats(db).catch(emptyOccRows),
-      db.query(SQL.PNP_DRAWS_RECENT).catch(emptyQueryResult),
-      db.query(SQL.DESIGNATED_PILOT_NAMES).catch(emptyQueryResult),
-      db.query(SQL.COMPANY_BRIEFS).catch(emptyQueryResult),
-      db.query(SQL.NEWS_RECENT_80).catch(emptyQueryResult),
-    ])
-    core = putHomeCache(homeCoreOf({
-      proof,
-      provExtra,
-      sponsorRows,
-      boards: buildSponsorBoards(sponsorRows),
-      occRows,
-      drawRows: drawRes.rows,
-      drawsLimit: DRAWS_LIMIT,
-      pilotRows: pilotRes.rows,
-      briefRows: briefRes.rows,
-      newsRows: newsRes.rows,
-    }))
-  }
+  const core = await getHomeCore(db)
   const upd = await checkedAt(db).catch(emptyText)
   return (
     <Frame>

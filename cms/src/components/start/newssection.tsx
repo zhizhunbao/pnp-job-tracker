@@ -8,10 +8,10 @@
  * @time 2026-09-12 23:58:00
  */
 import { Table } from '@/components/table'
-import { Updated } from '@/components/time'
-import { ID_NEWS } from './constants'
+import { ID_NEWS, PH_LAZY } from './constants'
 import { newsColsOf, newsRowKeyOf, toNewsCellRows } from './functions'
 import { Band } from './band'
+import { Placeholder } from './placeholder'
 import { Sec } from './sec'
 import type { NewsCellRow, NewsSectionIn } from './types'
 import css from './start.module.css'
@@ -19,20 +19,24 @@ import css from './start.module.css'
 /**
  * 渲染政策动态区。
  *
- * @param props 取词函数、语言、更新时刻与新闻条。
+ * @param props 取词函数、语言与新闻条。
  * @returns 一条色带;没有新闻时 null。
  */
-export function NewsSection({ t, lang, updatedAt, news }: NewsSectionIn) {
-  if (news.length === 0) {
+export function NewsSection({ t, lang, news }: NewsSectionIn) {
+  if (news != null && news.length === 0) {
     return null
   }
-  const rows = toNewsCellRows({ rows: news, lang, t })
   return (
     <Band id={ID_NEWS}>
-      <Sec title={t('home.policy')} right={<Updated iso={updatedAt} t={t} />}>
-        <div className={css.panel}>
-          <Table<NewsCellRow> rows={rows} cols={newsColsOf({ t })} rowKey={newsRowKeyOf} />
-        </div>
+      <Sec title={t('home.policy')}>
+        {news == null && <Placeholder size={PH_LAZY} />}
+        {news != null && (
+          <div className={css.panel}>
+            <Table<NewsCellRow> rows={toNewsCellRows({ rows: news, lang, t })}
+              cols={newsColsOf({ t })}
+              rowKey={newsRowKeyOf} />
+          </div>
+        )}
       </Sec>
     </Band>
   )

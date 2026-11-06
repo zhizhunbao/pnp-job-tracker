@@ -16,35 +16,47 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useMarketStats } from '@/components/stats'
 import { makeT } from '@/lib/i18n'
-import { DLI_KIND_ALL, LANG_EN, NAV_IDS, SUB_IDS_SEP, TEXT_NONE } from './constants'
+import {
+  DLI_KIND_ALL, EMPTY_DRAWS_PART, EMPTY_EMP_PART, EMPTY_NEWS_PART, EMPTY_OCC_PART, EMPTY_PROV_PART, ID_BOARDS, ID_CITY,
+  ID_DRAWS, ID_NEWS, ID_PR_BAND, ID_PROV, ID_SE, LANG_EN, NAV_IDS, PART_DRAWS, PART_EMP, PART_NEWS, PART_OCC,
+  PART_PROV, SUB_IDS_SEP, TEXT_NONE,
+} from './constants'
 import {
   cityAipTableOf, cityIndTablesOf, empSecsOf, foldFlippedOf, indicatorGeosOf, macroPointsOf, makeCityLoad,
   makeMacroLoad,
   opsPointsOf, prGeosOf,
   cityPilotTablesOf, dliKindChipsOf, toCityDliRows, toCityMainRows,
   trackSecView, makeNavWatch,
-  makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, toDrawCellRows,
+  makeSponsorLoad, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, toDrawCellRows,
+  drawsOf, empPiecesOf, makeNearWatch, makePartLoad, newNearSet, newsOf, nocProvsMapOf, partUrlOf, provExtraOf,
 } from './functions'
 import type {
-  MaybeDrawCellRow, RulesPanel, DrawCellRow, DrawCellRowsIn,
+  DrawCellRow, DrawCellRowsIn,
   CardPageIn, CityData, CityPanel, CityPanelIn, CityPilotTable,
-  EmpExtra, EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, NocCatMap, OccBoardPanel,
+  EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, OccBoardPanel,
   NavSubIn, PulseIn, PulsePanel, SponsorBoards, TFn,
   NocProvsMap,
+  DrawsPart, EmpPart, NearBandsIn, NewsPart, OccPart, ProvPart, PulseDerived, PulseDerivedIn, PulsePartHookIn,
 } from './types'
 
 /**
  * #313:担保雇主三分表 SSR 只带每表前几十行(RSC payload 6.5MB 瘦身),挂载后拉全量换上
  * (手法照 occ 大表的 /api/stats/market);拉挂 / 拉到空表就继续用 SSR 那几十行,不闪不塌。
  *
+ * 2026-11-05 按段懒加载:雇主段到视口附近(on)才拉;SSR 不再带种子,没到手前段渲占位,拉挂给空表(段不渲)。
+ *
+ * @param on 雇主段到没到视口附近。
  * @returns 全量三分表;还没到手则 null。
  */
-export function useSponsorFull(): SponsorBoards | null {
+export function useSponsorFull(on: boolean): SponsorBoards | null {
   const [full, setFull] = useState<SponsorBoards | null>(null)
 
   useEffect(function loadSponsors() {
+    if (on === false) {
+      return
+    }
     return makeSponsorLoad({ setSponsorFull: setFull })()
-  }, [])
+  }, [on])
 
   return full
 }
@@ -59,14 +71,20 @@ export function useSponsorFull(): SponsorBoards | null {
  * HTML 撑到 5MB+、水合卡死点击 —— 照 useMarketStats 的形拆出;null = 还在路上,
  * 省份 / PR 两段渲占位)。
  *
+ * 2026-11-05 按段懒加载:省份或 PR 段到视口附近(on)才拉。
+ *
+ * @param on 省份 / PR 段有一个到了视口附近。
  * @returns 两份点;null = 加载中。
  */
-export function useMacroStats(): MacroData | null {
+export function useMacroStats(on: boolean): MacroData | null {
   const [macroData, setMacroData] = useState<MacroData | null>(null)
 
   useEffect(function loadMacro() {
+    if (on === false) {
+      return
+    }
     return makeMacroLoad({ setMacroData })()
-  }, [])
+  }, [on])
 
   return macroData
 }
@@ -75,14 +93,20 @@ export function useMacroStats(): MacroData | null {
  * 城市段五份的挂载后拉取(2026-09-11 重设计批,照 useMacroStats 的形;
  * null = 还在路上,段渲占位)。
  *
+ * 2026-11-05 按段懒加载:城市段到视口附近(on)才拉。
+ *
+ * @param on 城市段到没到视口附近。
  * @returns 五份数据;null = 加载中。
  */
-export function useCityStats(): CityData | null {
+export function useCityStats(on: boolean): CityData | null {
   const [cityData, setCityData] = useState<CityData | null>(null)
 
   useEffect(function loadCity() {
+    if (on === false) {
+      return
+    }
     return makeCityLoad({ setCityData })()
-  }, [])
+  }, [on])
 
   return cityData
 }
@@ -94,7 +118,7 @@ export function useCityStats(): CityData | null {
  * @returns 城市段面板。
  */
 export function useCityPanel(x: CityPanelIn): CityPanel {
-  const data = useCityStats()
+  const data = useCityStats(x.on)
 
   const mainRows = useMemo(function pickCityMain() {
     if (data == null) {
@@ -218,87 +242,115 @@ export function useCardPage(x: CardPageIn): OccBoardPanel {
 }
 
 /**
- * 雇主段的行业分表 + 三试点表;担保雇主全量到手前用 SSR 那几十行
- * (身份档 2026-09-12 Frank「用一张表就行了」随两档合并退役)。
+ * 雇主段的行业分表 + 三试点表(身份档 2026-09-12 Frank「用一张表就行了」随两档合并退役)。
+ * 2026-11-05 按段懒加载:原料两份 —— 雇主段那一份(试点名单、简介、职业名)与担保雇主全量,都到了才出表;
+ * 有一份没到 = loading(段渲占位)。SSR 种子随之退役。
  *
- * @param x SSR 数据、主图与语言。
- * @returns 分表。
+ * @param x 雇主段那一份、担保雇主全量与语言。
+ * @returns 分表与在途态。
  */
 export function useEmpSecs(x: EmpSecsHookIn): EmpSecsPanel {
   const [, , t] = useLang()
-  const sponsorFull = useSponsorFull()
+  const part = x.part
+  const sponsor = x.sponsor
 
-  let sponsor = x.stats.sponsor
-  if (sponsorFull != null) {
-    sponsor = sponsorFull
-  }
-
-  const nocCat: NocCatMap = useMemo(function pickNocCat() {
-    return new Map(Object.entries(x.stats.nocCat))
-  }, [x.stats.nocCat])
-
-  const nocInfo = useMemo(function pickNocInfo() {
-    return nocInfoOf({ natOcc: x.stats.natOcc, lang: x.lang })
-  }, [x.stats.natOcc, x.lang])
-
-  const extra: EmpExtra = useMemo(function pickExtra() {
-    return {
-      rcip: new Set<string>(x.stats.rcipNames),
-      fcip: new Set<string>(x.stats.fcipNames),
-      briefs: new Map(Object.entries(x.stats.briefs)),
+  const pieces = useMemo(function pickEmpPieces() {
+    if (part == null) {
+      return null
     }
-  }, [x.stats.rcipNames, x.stats.fcipNames, x.stats.briefs])
+    return empPiecesOf({ part, lang: x.lang })
+  }, [part, x.lang])
 
   const secs = useMemo(function pickEmpSecs() {
-    return empSecsOf({ t, sponsor, nocCat, nocInfo, extra, lang: x.lang })
-  }, [t, sponsor, nocCat, nocInfo, extra, x.lang])
+    if (pieces == null || sponsor == null) {
+      return []
+    }
+    return empSecsOf({ t, sponsor, nocCat: pieces.nocCat, nocInfo: pieces.nocInfo, extra: pieces.extra, lang: x.lang })
+  }, [t, sponsor, pieces, x.lang])
 
   const pilotSecs = useMemo(function pickPilotSecs() {
-    return pilotSecsOf({ t, sponsor, nocCat, nocInfo, extra, lang: x.lang })
-  }, [t, sponsor, nocCat, nocInfo, extra, x.lang])
+    if (pieces == null || sponsor == null) {
+      return []
+    }
+    return pilotSecsOf({
+      t, sponsor, nocCat: pieces.nocCat, nocInfo: pieces.nocInfo, extra: pieces.extra, lang: x.lang,
+    })
+  }, [t, sponsor, pieces, x.lang])
 
-  return { secs, pilotSecs }
+  return { secs, pilotSecs, loading: pieces == null || sponsor == null }
 }
 
 /**
- * 把脉首页的整机:界面语言、主图四份数据、切省、导航跟随,
- * 以及吃这些现值算出来的派生(职业分表 / 雇主分表 / LMIA 分表 / 省份 / 城市 / 趋势)。
+ * 盯分区色带进没进视口附近(2026-11-05 Frank「用户看到哪就加载哪部分」):挂载后按 id 找色带,
+ * 进到视口上下 NEAR_MARGIN 内就记下、不再盯(只增不减,取过的段不重取)。没有 IntersectionObserver 的
+ * 环境一律当全到了(老浏览器退回原来的挂载即取)。各段在途时照渲色带 + 占位,才盯得到。
  *
- * @param x 页面门取好的那份 SSR 数据。
+ * @param x 要盯的分区 id。
+ * @returns 已到过视口附近的分区 id 集合。
+ */
+export function useNearBands(x: NearBandsIn): Set<string> {
+  const [near, setNear] = useState<Set<string>>(newNearSet)
+  const idsKey = x.ids.join(SUB_IDS_SEP)
+
+  useEffect(function watchBands() {
+    return makeNearWatch({ ids: x.ids, setNear })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只随 id 清单变化重挂;数组引用每渲染都新,内容已折进 idsKey
+  }, [idsKey])
+
+  return near
+}
+
+/**
+ * 一段数据的取数(/api/stats/pulse?part=…):on 了才拉,换语言重拉;接口挂了给空份(段不渲)。
+ *
+ * @param x 段名、语言、开关与空份。
+ * @returns 那一段;还没到给 null。
+ */
+export function usePulsePart<T>(x: PulsePartHookIn<T>): T | null {
+  const [data, setData] = useState<T | null>(null)
+  const url = partUrlOf({ part: x.part, lang: x.lang })
+  const empty = x.empty
+
+  useEffect(function loadPart() {
+    if (x.on === false) {
+      return
+    }
+    return makePartLoad<T>({ url, set: setData, empty })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 空份是常量,不进依赖
+  }, [x.on, url])
+
+  return data
+}
+
+/**
+ * 把脉首页的整机:界面语言、各段到没到视口附近、各段数据(到了附近才取)、导航跟随,
+ * 以及吃这些现值算出来的派生(职业分表 / 雇主分表 / 省份 / PR / 抽选 / 政策)。
+ * 2026-11-05 按段懒加载:SSR 只给首屏四格,其余各段的原料全部改成到了视口附近才取。
+ *
+ * @param x 页面门取好的首屏四格。
  * @returns 整机面板。
  */
 export function usePulse(x: PulseIn): PulsePanel {
   const [lang, , t] = useLang()
-  const market = useMarketStats()
-  const macroData = useMacroStats()
-  const emp = useEmpSecs({ stats: x.stats, lang })
+  const near = useNearBands({ ids: NAV_IDS })
+  const empOn = near.has(ID_SE)
+  const provOn = near.has(ID_PROV)
+  const occ = usePulsePart<OccPart>({ part: PART_OCC, lang, on: near.has(ID_BOARDS), empty: EMPTY_OCC_PART })
+  const emp = usePulsePart<EmpPart>({ part: PART_EMP, lang, on: empOn, empty: EMPTY_EMP_PART })
+  const prov = usePulsePart<ProvPart>({ part: PART_PROV, lang, on: provOn, empty: EMPTY_PROV_PART })
+  const draws = usePulsePart<DrawsPart>({ part: PART_DRAWS, lang, on: near.has(ID_DRAWS), empty: EMPTY_DRAWS_PART })
+  const news = usePulsePart<NewsPart>({ part: PART_NEWS, lang, on: near.has(ID_NEWS), empty: EMPTY_NEWS_PART })
+  const market = useMarketStats(provOn)
+  const macroData = useMacroStats(provOn || near.has(ID_PR_BAND))
+  const sponsor = useSponsorFull(empOn)
+  const empSecs = useEmpSecs({ part: emp, sponsor, lang })
   const navSec = useNavSec()
   const tEn = useEnglishT()
-  const nocProvs: NocProvsMap = useMemo(function pickNocProvs() {
-    return new Map(Object.entries(x.stats.nocProvs))
-  }, [x.stats.nocProvs])
-
-  const occSecs = useMemo(function pickOccSecs() {
-    return occSecsOf({ t, natOcc: x.stats.natOcc })
-  }, [t, x.stats.natOcc])
+  const derived = usePulseDerived({ t, lang, occ, provExtra: provExtraOf(prov), macroData, market })
 
   const numCards = useMemo(function pickCards() {
     return numCardsOf({ t, total: x.stats.total, named: x.stats.named, pulse: x.stats.pulse })
   }, [t, x.stats.total, x.stats.named, x.stats.pulse])
-
-  const indGeos = useMemo(function pickIndGeos() {
-    return indicatorGeosOf({
-      t,
-      lang,
-      macro: macroPointsOf(macroData),
-      ops: opsPointsOf(macroData),
-      provExtra: x.stats.provExtra,
-    })
-  }, [t, lang, macroData, x.stats.provExtra])
-
-  const prGeos = useMemo(function pickPrGeos() {
-    return prGeosOf({ t, lang, macro: macroPointsOf(macroData), ops: opsPointsOf(macroData) })
-  }, [t, lang, macroData])
 
   useEffect(function trackSecChange() {
     if (navSec !== TEXT_NONE) {
@@ -306,55 +358,81 @@ export function usePulse(x: PulseIn): PulsePanel {
     }
   }, [navSec])
 
-  const jobsRows = useMemo(function pickJobsRows() {
-    return toJobsRows({ rows: provRowsOf({ market }), t, lang, extra: x.stats.provExtra })
-  }, [market, t, lang, x.stats.provExtra])
-
   return {
     t,
     lang,
     market,
     numCards,
-    occSecs,
-    empSecs: emp.secs,
-    pilotSecs: emp.pilotSecs,
-    nocProvs,
-    indGeos,
-    prGeos,
-    jobsRows,
+    occSecs: derived.occSecs,
+    empSecs: empSecs.secs,
+    pilotSecs: empSecs.pilotSecs,
+    nocProvs: derived.nocProvs,
+    indGeos: derived.indGeos,
+    prGeos: derived.prGeos,
+    jobsRows: derived.jobsRows,
     tEn,
     navSec,
     macroLoading: macroData == null,
+    empLoading: empSecs.loading,
+    draws: drawsOf(draws),
+    news: newsOf(news),
+    cityOn: near.has(ID_CITY),
   }
 }
 
 /**
- * 抽选表「门槛」弹框的机器:开着哪一期一格(清单随行带来,不取数;2026-09-13 Frank「先简化」)。关弹框把期清 null。
+ * usePulse 的派生半边(自它拆出,守函数 75 行闸):职业分表、紧缺省映射、省份 / PR 两段的指标表与招聘对比行。
+ * 派生全 useMemo,滚动跟随重渲不重算。
  *
- * @returns 开着哪省、门槛行与开关手柄。
+ * @param x 取词、语言、职业段那一份、省卡增补、宏观两份与主图数据。
+ * @returns 派生面板。
  */
-export function useRulesModal(): RulesPanel {
-  const [row, setRow] = useState<MaybeDrawCellRow>(null)
+function usePulseDerived(x: PulseDerivedIn): PulseDerived {
+  const occ = x.occ
+  const nocProvs: NocProvsMap = useMemo(function pickNocProvs() {
+    return nocProvsMapOf(occ)
+  }, [occ])
 
-  function close(): void {
-    setRow(null)
-  }
+  const occSecs = useMemo(function pickOccSecs() {
+    if (occ == null) {
+      return null
+    }
+    return occSecsOf({ t: x.t, natOcc: occ.natOcc })
+  }, [x.t, occ])
 
-  return { row, open: setRow, close }
+  const indGeos = useMemo(function pickIndGeos() {
+    return indicatorGeosOf({
+      t: x.t,
+      lang: x.lang,
+      macro: macroPointsOf(x.macroData),
+      ops: opsPointsOf(x.macroData),
+      provExtra: x.provExtra,
+    })
+  }, [x.t, x.lang, x.macroData, x.provExtra])
+
+  const prGeos = useMemo(function pickPrGeos() {
+    return prGeosOf({ t: x.t, lang: x.lang, macro: macroPointsOf(x.macroData), ops: opsPointsOf(x.macroData) })
+  }, [x.t, x.lang, x.macroData])
+
+  const jobsRows = useMemo(function pickJobsRows() {
+    return toJobsRows({ rows: provRowsOf({ market: x.market }), t: x.t, lang: x.lang, extra: x.provExtra })
+  }, [x.market, x.t, x.lang, x.provExtra])
+
+  return { occSecs, nocProvs, indGeos, prGeos, jobsRows }
 }
 
 /**
  * 近期抽选表的展示行,内容没变就是同一份(2026-09-30 Frank 选「现在修」:把脉页翻页一滚动就跳回第 1 页)。
  * 原先 DrawsSection 每次渲染现洗一份新数组,递给卡片页态(useCardPage)与桌面表格(Table 的 useRows),两边都拿行数组的身份判
  * 「换了一榜」;滚动时导航跟随重渲染整页,两边就回第一页(实测翻到 3 / 6 滚三下回 1 / 6,补在第 6 页的 NS / ON 两行手机上
- * 几乎看不到;职业榜与雇主表的行本来就记住了,不受影响)。按原始行、两套取词函数、界面语言与弹框手柄记住;弹框手柄是
- * useState 的 setter,身份不变。
+ * 几乎看不到;职业榜与雇主表的行本来就记住了,不受影响)。按原始行、两套取词函数与界面语言记住
+ * (2026-11-05 Frank「通道名加链接再删」:门槛弹框撤,弹框手柄随之不再参与)。
  *
- * @param x 抽选行、两套取词函数、界面语言与开门槛弹框的手柄。
+ * @param x 抽选行、两套取词函数与界面语言。
  * @returns 展示行。
  */
 export function useDrawRows(x: DrawCellRowsIn): DrawCellRow[] {
   return useMemo(function pickDrawRows() {
-    return toDrawCellRows({ rows: x.rows, t: x.t, tEn: x.tEn, lang: x.lang, onRules: x.onRules })
-  }, [x.rows, x.t, x.tEn, x.lang, x.onRules])
+    return toDrawCellRows({ rows: x.rows, t: x.t, tEn: x.tEn, lang: x.lang })
+  }, [x.rows, x.t, x.tEn, x.lang])
 }

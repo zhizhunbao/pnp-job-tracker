@@ -9,7 +9,6 @@
  */
 import { boardGapClsOf } from './functions'
 import { OccBoard } from './occboard'
-import { Updated } from '@/components/time'
 import { Sec } from './sec'
 import type { OccBoardSecIn } from './types'
 import css from './start.module.css'
@@ -20,11 +19,11 @@ import css from './start.module.css'
  * @param props 候选行、子标题、间距与可提名省映射。
  * @returns 子标题 + 表。
  */
-export function OccBoardSec({ t, anchor, lang, nocProvs, rows, title, gap, updatedAt }: OccBoardSecIn) {
+export function OccBoardSec({ t, anchor, lang, nocProvs, rows, title, gap }: OccBoardSecIn) {
   return (
     <div id={anchor} className={css.subAnchor}>
       <div className={boardGapClsOf({ gap })}>
-        <Sec title={title} right={<Updated iso={updatedAt} t={t} />} sub>
+        <Sec title={title} sub>
           <OccBoard rows={rows} t={t} lang={lang} nocProvs={nocProvs} />
         </Sec>
       </div>

@@ -22,4 +22,9 @@ export const CACHE: StartCache = {
    * 首页聚合;null = 没拉过。
    */
   home: null,
+
+  /**
+   * 正在查的那一份首页聚合(单飞;2026-11-05);null = 没在查。
+   */
+  homeLoad: null,
 }

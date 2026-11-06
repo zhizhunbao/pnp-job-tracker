@@ -8,33 +8,14 @@
  */
 
 /**
- * 职位板首页(脉象卡与 CTA 的去处)。
+ * 职位板首页(CTA 的去处;脉象卡原也去这里,2026-11-05 Frank「这四个卡片去掉点击」后不再跳)。
  */
 export const URL_HOME = '/'
-
-/**
- * 职位板按 PNP 可走筛选(命中率那张脉象卡的去处)。
- */
-export const URL_HOME_PNP = '/?pnp=yes'
 
 /**
  * 职位板按职业码筛选的地址头(每行可溯源:职业名点开落到按该 NOC 筛过的职位板)。
  */
 export const URL_HOME_Q_HEAD = '/?q='
-
-/**
- * 职位板 AIP 筛选参数尾巴(components/jobs URL_TO_FILTER 的 aip → fAip=yes,SQL 只留 aip=true 的岗)。
- * AIP 表「看岗位」一律带它(2026-09-05 Frank「看岗位的时候是不是也需要加上省份筛选」):AIP 岗天然只在
- * 大西洋四省且 TEER 0-4,比拼省清单准,也绕开职位板省参数只吃单省的限制;点进去的数与表里「在招」一致。
- */
-export const URL_AIP_TAIL = '&aip=yes'
-
-/**
- * 职位板试点社区筛选参数尾巴(URL_TO_FILTER 的 pilot → fPilot=yes,SQL 留 pilot 非空的岗)。
- * RCIP / FCIP 表「看岗位」带它(2026-09-06):职位板没有按单个试点筛的参数,任一试点社区的岗都出,
- * 雇主同时在两种社区有岗时会比表里「在招」多几条。
- */
-export const URL_PILOT_TAIL = '&pilot=yes'
 
 /**
  * 橱窗三分表全量接口。#313(LCP 7.15s 真因):三表全量 16,430 行序列化进 RSC payload
@@ -48,6 +29,197 @@ export const URL_SPONSORS_API = '/api/employers/sponsors'
  * 水合卡死点击 —— 照 market / sponsors 的形挂载后拉,省份 / PR 两段等它)。
  */
 export const URL_MACRO_API = '/api/stats/macro'
+
+/**
+ * 按段取数接口(2026-11-05 Frank「用户看到哪就加载哪部分」:SSR 只出首屏,其余各段滚到附近才拉自己那一份;
+ * 原 SSR 契约 4.9MB 进每次 HTML,并发几次把生产 256MB 堆顶爆 502)。
+ */
+export const URL_PULSE_API = '/api/stats/pulse'
+
+/**
+ * 取数地址的问号。
+ */
+export const QS_HEAD = '?'
+
+/**
+ * 取数地址里键与值之间。
+ */
+export const QS_EQ = '='
+
+/**
+ * 取数地址里两个参数之间。
+ */
+export const QS_AND = '&'
+
+/**
+ * 段名参数。
+ */
+export const P_PART = 'part'
+
+/**
+ * 界面语言参数(只有雇主段的简介按它挑)。
+ */
+export const P_LANG = 'lang'
+
+/**
+ * 段名:职业段(全国职业行、NOC 分类、紧缺省)。
+ */
+export const PART_OCC = 'occ'
+
+/**
+ * 段名:雇主段(试点名单、按语言挑过的简介;三分表另走 sponsors 接口)。
+ */
+export const PART_EMP = 'emp'
+
+/**
+ * 段名:省份段的省卡增补。
+ */
+export const PART_PROV = 'prov'
+
+/**
+ * 段名:抽选段。
+ */
+export const PART_DRAWS = 'draws'
+
+/**
+ * 段名:政策动态段。
+ */
+export const PART_NEWS = 'news'
+
+/**
+ * 分区提前多远开始取数(视口上下各 200px;占位一屏高 PH_LAZY,配着它首屏只取眼前那一段)。
+ */
+export const NEAR_MARGIN = '200px 0px'
+
+/**
+ * 挂载时没找齐分区色带,隔多久再找一次(ms)。
+ */
+export const NEAR_SCAN_MS = 300
+
+/**
+ * 再找至多几次(300ms × 20 = 6 秒;条件不渲的段本来就找不到,找满就停)。
+ */
+export const NEAR_SCAN_MAX = 20
+
+/**
+ * 按段接口的缓存头(照城市段:浏览器 5 分钟内复用,一小时内先给旧的再后台刷)。
+ */
+export const PULSE_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3600'
+
+/**
+ * 缓存头名。
+ */
+export const HDR_CACHE_CONTROL = 'Cache-Control'
+
+/**
+ * 段名不认识时的状态码。
+ */
+export const HTTP_BAD_REQUEST = 400
+
+/**
+ * 段名不认识时的错误体。
+ */
+export const E_BAD_PART = 'unknown part'
+
+/**
+ * 职业段取挂了的空份(段不渲)。
+ */
+export const EMPTY_OCC_PART = {
+  /**
+   * 全国职业行:空。
+   */
+  natOcc: [],
+
+  /**
+   * NOC → 分类:空。
+   */
+  nocCat: {},
+
+  /**
+   * NOC → 紧缺省:空。
+   */
+  nocProvs: {},
+}
+
+/**
+ * 雇主段取挂了的空份(段不渲)。
+ */
+export const EMPTY_EMP_PART = {
+  /**
+   * 全国职业行:空。
+   */
+  natOcc: [],
+
+  /**
+   * NOC → 分类:空。
+   */
+  nocCat: {},
+
+  /**
+   * RCIP 名单交集:空。
+   */
+  rcipNames: [],
+
+  /**
+   * FCIP 名单交集:空。
+   */
+  fcipNames: [],
+
+  /**
+   * 公司简介:空。
+   */
+  briefs: {},
+}
+
+/**
+ * 省份段增补取挂了的空份(省卡照出,少体量与难度档)。
+ */
+export const EMPTY_PROV_PART = {
+  /**
+   * 省卡增补:空。
+   */
+  provExtra: {},
+}
+
+/**
+ * 抽选段取挂了的空份(段不渲)。
+ */
+export const EMPTY_DRAWS_PART = {
+  /**
+   * 抽选行:空。
+   */
+  draws: [],
+}
+
+/**
+ * 政策动态段取挂了的空份(段不渲)。
+ */
+export const EMPTY_NEWS_PART = {
+  /**
+   * 新闻行:空。
+   */
+  news: [],
+}
+
+/**
+ * 省卡增补还没到时的空表(恒同一份:派生 useMemo 不因它每渲染重算)。
+ */
+export const EMPTY_PROV_EXTRA = {}
+
+/**
+ * 担保雇主全量拉挂了的空分表(雇主段整块不渲;2026-11-05 SSR 种子退役,不再有回落的那几十行)。
+ */
+export const EMPTY_SPONSOR_GROUP = {
+  /**
+   * 分表行:空。
+   */
+  top: [],
+
+  /**
+   * 分表总数:零。
+   */
+  total: 0,
+}
 
 /**
  * 锚点地址的头(拼上分区 id)。
@@ -251,12 +423,6 @@ export const MOM_FLAT = 0
  * 2026-09-04 Frank「默认显示 10 行,显示所有条目,加上分页」:与桌面表格同 10。
  */
 export const CARD_PAGE_SIZE = 10
-
-/**
- * 雇主表操作列的显式宽:两只 mini 钮并排在最宽的韩文(「채용 보기」「회사 보기」)下也放得下,
- * 不参与量宽也不折行(2026-09-05 Frank 韩语截图右钮被切 →「最好是不要换行」)。
- */
-export const W_EMP_ACT = '150px'
 
 /**
  * 桌面表格的每页行数。
@@ -484,6 +650,12 @@ export const PH_BOARDS = 480
 export const PH_PROV = 420
 
 /**
+ * 按段懒加载各段在途的占位高(px,约一屏;2026-11-05):还没取数的段在页上占住一屏的距离 ——
+ * 原先四五百像素的矮占位让首屏就挨着后面两三段,一开页全进了「附近」、一起取了。
+ */
+export const PH_LAZY = 900
+
+/**
  * 正文轨的上内衬档(px;色带自己管上下距,轨上下都贴满)。
  */
 export const SHELL_TOP = 0
@@ -497,11 +669,6 @@ export const SHELL_BOTTOM = 0
  * banner 的模块名(取本模块那组图)。
  */
 export const BANNER_MODULE = 'home'
-
-/**
- * 表格操作小钮走 button 桶的 mini 档(2026-09-05 Frank「按钮样式不能全站统一吗」:与职位板操作列同一颗)。
- */
-export const MINI_BTN_KIND = 'mini'
 
 /**
  * 本页的 SEO 头(英文优先 —— 88% 流量来自 Google;中文一句压在后面)。
@@ -523,19 +690,9 @@ export const START_META = {
 }
 
 /**
- * 卡片 hover 高亮的全局规范类(跨页规范,单一来源在 main.css)。
- */
-export const CLS_CARD_HOVER = 'cardHover'
-
-/**
  * 原生下拉的手机触控靶全局规范类(#300 第 38 轮体检,单一来源在 main.css)。
  */
 export const CLS_MKT_CTL = 'mktCtl'
-
-/**
- * 埋点名:点了一张脉象卡。
- */
-export const TRACK_CARD = 'pulse_card_click'
 
 /**
  * 埋点名:点了榜上的一个职业名。
@@ -654,11 +811,6 @@ export const SEC_TOP_WAGE = 'topWage'
 export const COL_EMP = 'emp'
 
 /**
- * 职位板按城市筛的地址头(城市段下钻:该市全部在招岗)。
- */
-export const URL_HOME_CITY_HEAD = '/?city='
-
-/**
  * 城市详情页地址头(2026-09-12 批三首件上线:表 1 城市名改落详情页,职位板归看岗位钮 ——
  * 照雇主板「名字进详情、操作进板」的形;行业/试点/留学三组表的名字仍落板,详情页入口一处即可)。
  * 同日晚 2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」:行业 / 试点两组表也照表 1 的形 —— 名字落详情页、落板归看岗位钮
@@ -670,17 +822,6 @@ export const URL_CITY_PAGE_HEAD = '/city/'
  * 城市详情页地址的段分隔(省码 / 城名)。
  */
 export const URL_PATH_SEP = '/'
-
-/**
- * 城市段落地职位板的来源标记尾巴(2026-09-11:旧城市卡落地不带来源,职位板侧认不出;
- * utm 由 Umami 自动收,funnel 另有 city-open 第一方计数)。
- */
-export const CITY_UTM_TAIL = '&utm_source=pulse_city'
-
-/**
- * 职位板按试点筛的参数头(城市段 RCIP / FCIP 表看岗位钮:城 + 该制;AIP 表用 URL_AIP_TAIL;2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」)。
- */
-export const CITY_PILOT_PARAM_HEAD = '&pilot='
 
 /**
  * /api/stats/city(城市段五份,挂载后拉 —— 照 macro 的形;SSR 不再直出 400 张城市卡)。
@@ -810,11 +951,6 @@ export const PILOT_NAME_SEP = ','
 export const DLI_PAGE_SIZE = 10
 
 
-/**
- * 埋点名:点了雇主表 / LMIA 表里的雇主名(沿用 2026-08-08 起就在白名单里的 se-view-jobs,不另起名)。
- */
-export const TRACK_EMP = 'se-view-jobs'
-
 
 /**
  * echarts 提示框的触发方式:按横轴(整列一起提示)。
@@ -927,21 +1063,6 @@ export const W_SCORE = '10%'
 export const W_INV = '10%'
 
 /**
- * 抽选表操作列的列宽(两枚钮:官方页 / 门槛,与雇主表操作列同宽;2026-09-13 Frank「列名应该叫操作,然后有两个按钮」)。
- */
-export const W_DRAW_ACT = '150px'
-
-/**
- * 政策动态表操作列的列宽(一枚钮:官方页;2026-09-13 Frank「政策动态 也加一个操作列」)。
- */
-export const W_NEWS_ACT = '110px'
-
-/**
- * 门槛弹框的宽档(官方原句长,取最宽)。
- */
-export const RULES_MODAL_SIZE = 'lg'
-
-/**
  * 行 hover 高亮的全局规范类(同上)。
  */
 export const CLS_ROW_HOVER = 'rowHover'
@@ -965,11 +1086,6 @@ export const COL_VERDICT = 'verdict'
  * 雇主表列键:在招职业。
  */
 export const COL_HIRING_OCC = 'hiringOcc'
-
-/**
- * 表列键:操作(看岗位 / 看公司)。
- */
-export const COL_ACT = 'act'
 
 /**
  * 公司页地址头(雇主表「看公司」)。
@@ -1199,11 +1315,6 @@ export const CORP_SUFFIXES = ['INC', 'LTD', 'CO', 'LLC', 'LLP', 'LTEE', 'LP']
  * 去掉非字母(数缩写长度时 A&W 算 2 个字母)。
  */
 export const NON_LETTER_RE = /[^A-Za-z]/g
-
-/**
- * 操作钮的打开方式:新标签页(2026-09-05 Frank「看岗位 看公司,应该跳到一个新的 tab」;把脉页是查询台,不离开)。
- */
-export const NEW_TAB = '_blank'
 
 /**
  * AI 简介里「做什么」那一段的标记(公司信息批的落库格式:[WHAT] [BASE] [SIZE] [FOUNDED] [NOTE] 五段串一行)。

@@ -12,21 +12,22 @@
  * @author Frank
  * @time 2026-09-04 22:10:00
  */
-import { ID_SE, TABLE_IND, TABLE_PILOT } from './constants'
+import { ID_SE, PH_LAZY, TABLE_IND, TABLE_PILOT } from './constants'
 import { subIdOf } from './functions'
 import { Band } from './band'
 import { EmpBoardSec } from './empboardsec'
+import { Placeholder } from './placeholder'
 import { Sec } from './sec'
 import type { EmpSectionIn } from './types'
 
 /**
  * 渲染雇主段。
  *
- * @param props 更新时刻、行业分表与试点分表。
+ * @param props 行业分表与试点分表。
  * @returns 一条色带;没有分表则 null。
  */
-export function EmpSection({ t, updatedAt, secs, pilotSecs }: EmpSectionIn) {
-  if (secs.length === 0 && pilotSecs.length === 0) {
+export function EmpSection({ t, secs, pilotSecs, loading }: EmpSectionIn) {
+  if (loading === false && secs.length === 0 && pilotSecs.length === 0) {
     return null
   }
   const items = []
@@ -39,8 +40,7 @@ export function EmpSection({ t, updatedAt, secs, pilotSecs }: EmpSectionIn) {
           anchor={subIdOf({ band: ID_SE, key: sec.key })}
           sec={sec}
           tableKind={TABLE_IND}
-          gap={i !== 0}
-          updatedAt={updatedAt} />,
+          gap={i !== 0} />,
       )
     }
   }
@@ -51,13 +51,15 @@ export function EmpSection({ t, updatedAt, secs, pilotSecs }: EmpSectionIn) {
         anchor={subIdOf({ band: ID_SE, key: sec.key })}
         sec={sec}
         tableKind={TABLE_PILOT}
-        gap
-        updatedAt={updatedAt} />,
+        gap />,
     )
   }
   return (
     <Band id={ID_SE}>
-      <Sec title={t('pulse.nav.se')}>{items}</Sec>
+      <Sec title={t('pulse.nav.se')}>
+        {loading && <Placeholder size={PH_LAZY} />}
+        {items}
+      </Sec>
     </Band>
   )
 }

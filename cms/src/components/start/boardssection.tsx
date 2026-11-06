@@ -8,7 +8,7 @@
  * @author Frank
  * @time 2026-09-04 22:10:00
  */
-import { ID_BOARDS, PH_BOARDS } from './constants'
+import { ID_BOARDS, PH_LAZY } from './constants'
 import { Band } from './band'
 import { OccBoardSec } from './occboardsec'
 import { subIdOf } from './functions'
@@ -19,10 +19,10 @@ import type { BoardsSectionIn } from './types'
 /**
  * 渲染职业段。
  *
- * @param props 分表清单、语言、更新时刻与可提名省映射。
+ * @param props 分表清单、语言与可提名省映射。
  * @returns 一条色带;到了数据却一表没有则 null。
  */
-export function BoardsSection({ t, lang, updatedAt, secs, nocProvs }: BoardsSectionIn) {
+export function BoardsSection({ t, lang, secs, nocProvs }: BoardsSectionIn) {
   if (secs != null && secs.length === 0) {
     return null
   }
@@ -39,8 +39,7 @@ export function BoardsSection({ t, lang, updatedAt, secs, nocProvs }: BoardsSect
             nocProvs={nocProvs}
             rows={sec.rows}
             title={sec.title}
-            gap={i !== 0}
-            updatedAt={updatedAt} />,
+            gap={i !== 0} />,
         )
       }
     }
@@ -48,7 +47,7 @@ export function BoardsSection({ t, lang, updatedAt, secs, nocProvs }: BoardsSect
   return (
     <Band id={ID_BOARDS}>
       <Sec title={t('pulse.nav.occ')}>
-        {secs == null && <Placeholder size={PH_BOARDS} />}
+        {secs == null && <Placeholder size={PH_LAZY} />}
         {items}
       </Sec>
     </Band>

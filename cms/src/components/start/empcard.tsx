@@ -9,11 +9,10 @@
  * @author Frank
  * @time 2026-09-04 22:10:00
  */
-import { Card, CardAction, CardKV } from '@/components/card'
+import { Card, CardKV } from '@/components/card'
 import { Name } from '@/components/name'
 import { tagClsOf } from '@/components/tag'
 import { TABLE_PILOT, TAG_V_GRAY, TEXT_NONE } from './constants'
-import { EmpActCell } from './empactcell'
 import { EmpBriefCell } from './empbriefcell'
 import { EmpHiringCell } from './emphiringcell'
 import type { EmpCardIn } from './types'
@@ -27,6 +26,7 @@ import css from './start.module.css'
  * 2026-09-06 Frank「这个卡片需要重新排版吗」:顺序改成 在招职业 → 在招 → 类别 / 门槛 → 主营业务,
  * 主信息在前,简介殿后(简介本身照同日 E 方案双语分主次,不截断)。
  * 2026-09-12 两档合并:行业卡 = 类别 / 门槛 / 近半年 LMIA(与桌面表同列集),没工签专属卡退役。
+ * 2026-11-05 Frank「公司名加链接再删」:卡底「看岗位 / 看公司」钮撤,公司名本身是链接。
  */
 export function EmpCard({ t, row, kind }: EmpCardIn) {
   const kv = []
@@ -43,13 +43,12 @@ export function EmpCard({ t, row, kind }: EmpCardIn) {
   return (
     <Card>
       <div className={css.empCardTitle}>
-        <Name en={row.name} sub={row.alias} />
+        <Name en={row.name} sub={row.alias} href={row.companyHref} />
         {row.chainText !== TEXT_NONE && (
           <span className={tagClsOf(TAG_V_GRAY)} title={row.chainTip}>{row.chainText}</span>
         )}
       </div>
       <CardKV items={kv} />
-      <CardAction>{EmpActCell(row)}</CardAction>
     </Card>
   )
 }

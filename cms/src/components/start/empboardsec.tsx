@@ -6,7 +6,6 @@
  * @author Frank
  * @time 2026-09-04 22:10:00
  */
-import { Updated } from '@/components/time'
 import { sponsorGapClsOf } from './functions'
 import { EmpBoard } from './empboard'
 import { Sec } from './sec'
@@ -16,16 +15,14 @@ import css from './start.module.css'
 /**
  * 渲染一张雇主分表。
  *
- * @param props 锚点 id、这张表、表种、间距与更新时刻。
+ * @param props 锚点 id、这张表、表种与间距。
  * @returns 子标题 + 表。
  */
-export function EmpBoardSec({ t, anchor, sec, tableKind, gap, updatedAt }: EmpBoardSecIn) {
+export function EmpBoardSec({ t, anchor, sec, tableKind, gap }: EmpBoardSecIn) {
   return (
     <div id={anchor} className={css.subAnchor}>
       <div className={sponsorGapClsOf({ gap })}>
-        <Sec title={sec.title}
-          right={<Updated iso={updatedAt} t={t} />}
-          sub>
+        <Sec title={sec.title} sub>
           <EmpBoard t={t} rows={sec.rows} kind={tableKind} />
         </Sec>
       </div>

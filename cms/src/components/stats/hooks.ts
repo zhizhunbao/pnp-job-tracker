@@ -27,14 +27,20 @@ import type {
  * 主图四份数据的客户端拉取(SSR 瘦身,手法照 /jobs 的 /api/jobs/dims):主图四份数据与用户
  * 无关、mart 日更,不该 SSR 直出(occ ~3400 行占 /start HTML 大头)。
  *
+ * 2026-11-05 把脉页按段懒加载:省份段到视口附近(on)才拉。
+ *
+ * @param on 用它的那一段到没到视口附近。
  * @returns 四份数据;null = 加载中(调用侧渲占位高度防 CLS)。
  */
-export function useMarketStats(): MarketData | null {
+export function useMarketStats(on: boolean): MarketData | null {
   const [data, setData] = useState<MarketData | null>(null)
 
   useEffect(function loadMarket() {
+    if (on === false) {
+      return
+    }
     return makeMarketLoad({ setData })()
-  }, [])
+  }, [on])
 
   return data
 }
