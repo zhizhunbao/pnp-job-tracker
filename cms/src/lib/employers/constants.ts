@@ -717,6 +717,16 @@ export const HTTP_URL_RE = /^https?:\/\/\S+$/i
 export const NOT_FOUND_RE = /NOT_FOUND/
 
 /**
+ * K 调查:模型没按规矩回 NOT_FOUND、而是在 [WHAT] 节写一句「查不到」的回答(2026-11-06 Frank 截图 Private Home:
+ * 「The provided search results do not contain information about a specific company named…」被当主营业务显示)。
+ * 这类回答一律当 NOT_FOUND 拒收,宁可留空。认的是 [WHAT] 节开头那句在说「给的材料 / 搜索结果怎样」或「没有信息 / 查不到」:
+ * The provided search results / text / input… 、The search results… 、There is no… 、No information / company… 、I cannot / could not… 、
+ * 可带「Based on the provided search results,」前缀与 [WHAT] 后的冒号。生产库 11-06 照此认出 510 条,抽查全是这类,
+ * 其中大半是人名(私人雇主);同一判据的一次性清理见 docs/sql/company-brief-refusal-clear-20261106.sql。
+ */
+export const BRIEF_REFUSAL_RE = /\[WHAT\][:\s]*(based on the (provided |available )?(web )?(search results?|text|information)[,\s]*)?(the (provided|given|available) (web )?(search results?|text|input|information|reference|sources?|content) |the (web )?search results? |there (is|are) (no|insufficient|not enough) |no (specific |relevant |public |publicly available )?(information|company|business|details|data) |i (cannot|can['’]t|could not|couldn['’]t|was unable|am unable) |unable to )/i
+
+/**
  * K 调查:五节新版缓存的识别标记(三节/散文格式的存量视为过期,当没缓存)。
  */
 export const BRIEF_V2_MARK = '[FOUNDED]'

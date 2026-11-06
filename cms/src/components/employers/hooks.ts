@@ -69,8 +69,8 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
 
   useEffect(function holdData() {
     held.current = data
-    void reportSeen({ lang, rows: data.rows, sent: sent.current })
-  }, [data, lang])
+    void reportSeen({ rows: data.rows, sent: sent.current })
+  }, [data])
 
   useEffect(function syncBoard() {
     if (first.current === true) {

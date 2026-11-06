@@ -19,7 +19,7 @@ import { friendChat, TRANS_LANGS, TRANS_KEY_SEP,
 import { hqLineOf } from '../location'
 import { EMP_LOG, log } from '../log'
 import {
-  ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_GROUP, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
+  ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_REFUSAL_RE, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_GROUP, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
   CAP_BROAD, CAP_CITY, CAP_SECTOR, EXPLORE_INDUSTRIES, EXPLORE_SKIP, EXPLORE_STATUSES, EXPLORE_TEXT_MAX,
   POOL_CATEGORIES, POOL_SECTORS,
   CAP_DIR, CAP_SORT, CAP_TEXT, CHAIN_PROVS_MIN, CMP_MAX, CMP_MIN, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL,
@@ -1062,6 +1062,8 @@ export function investigateCompany(input: InvestigateIn): InvestigateOut {
  * (Frank「你先把 AI 探索哪部分给我弄回来」),两道都撤回 —— 零出处照旧落库照旧显示,只留一行痕(EMP_LOG.noSources);
  * 零出处的简介只在「总部」行上不算数(components/companies 的 hqOf 只认有出处的简介,「所在地」节也不在简介里出)。
  * 根上的修法在网关那头(联网搜索恢复)与数据层(官网正文版简介,出处齐全),不在这里。
+ * 2026-11-06 Frank 截图 Private Home:模型没回 NOT_FOUND,在 [WHAT] 节写「The provided search results do not contain…」被当主营业务存库显示 ——
+ * 这类「查不到」的回答(BRIEF_REFUSAL_RE)与 NOT_FOUND 同样拒收不落库,宁可留空。
  *
  * @param input 连接、主键与公司名。
  * @returns 调查结果;校验不过如实回 null。
@@ -1115,7 +1117,7 @@ async function investigate(input: InvestigateIn): InvestigateOut {
   if (siteUrl != null && HTTP_URL_RE.test(siteUrl)) {
     website = siteUrl
   }
-  if (brief === '' || NOT_FOUND_RE.test(brief) || brief.length < BRIEF_MIN || brief.length > BRIEF_MAX) {
+  if (brief === '' || NOT_FOUND_RE.test(brief) || BRIEF_REFUSAL_RE.test(brief) || brief.length < BRIEF_MIN || brief.length > BRIEF_MAX) {
     return null
   }
   let websiteCell: string | null = null

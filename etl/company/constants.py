@@ -1754,8 +1754,8 @@ NOTE_CHECKED_TODAY = "checked today"
 NOTE_CMS_HTTP_TPL = "cms http {status}"
 """打 cms 接口非 2xx 的错文。"""
 
-PRINT_FINDSITE_TAKE_TPL = "  取活 {n} 家(点开过、没官网 / 官网已死 / 官网名字对不上的;上限 {limit};Google 档 {google})"
-"""findsite 步取活报数。"""
+PRINT_FINDSITE_TAKE_TPL = "  取活 {n} 家(点开过 / 板上列出过、没官网 / 官网已死 / 官网名字对不上的;上限 {limit};Google 档 {google})"
+"""findsite 步取活报数(2026-11-06 板上列出过的也入队:cms 取活 SQL 排在点开的后面,且没有点开的待办时才给一家)。"""
 
 PRINT_FINDSITE_ROW_TPL = "  {stage:<5} {name}  {site}  {note}"
 """findsite 步单家日志行。"""

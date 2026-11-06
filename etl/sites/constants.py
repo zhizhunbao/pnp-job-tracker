@@ -621,8 +621,8 @@ PROV_CODE_LEN = 2
 NOTE_NO_CMS = "SEED_URL / SEED_TOKEN 未设,visit 步跳过"
 """缺 cms 接线的提示。"""
 
-PRINT_VISIT_TAKE_TPL = "  取活 {n} 家(点开过、有官网的;上限 {limit})"
-"""visit 步取活报数。"""
+PRINT_VISIT_TAKE_TPL = "  取活 {n} 家(点开过 / 板上列出过、有官网的;上限 {limit})"
+"""visit 步取活报数(2026-11-06 板上列出过的也入队:cms 取活 SQL 排在点开的后面,且没有点开的待办时才给一家)。"""
 
 PRINT_VISIT_ROW_TPL = "  {stage:<5} {name}  {note}"
 """visit 步单家一步的日志行。"""

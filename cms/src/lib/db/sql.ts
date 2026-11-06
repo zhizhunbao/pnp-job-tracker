@@ -823,26 +823,59 @@ export const EMPLOYER_EXPLORE_STAGE = `SELECT x.stage, c.website, c.hq_address, 
     WHERE lower(c.name) = lower($1) LIMIT 1`
 
 /**
+ * 官网那条工种「板上列出过、没被点开过」的待办共同条件(2026-11-06 Frank「这个雇主应该可以自动入队吧」,
+ * 放宽「公司级数据一律懒查询」:列出过的自动入队,真人点开的永远排在前面)。
+ * 列出过 = 探索队列里有这一行(雇主板列出时入队);stage 为空 = 官网那条工种一次都没走过(点开入队必写 stage,
+ * 走过一轮也必写回 done / none —— 所以列出过的只走一轮,再被列出不重走;重走只认真人点开,冷却照 EMPLOYER_EXPLORE_OPEN)。
+ * 译名那条办完(status = 'done')才取:模型判成人名的(skip,私人雇主雇保姆 / 护工,库里五千多家)不替人名搜官网;
+ * 没有公司页的(池里四千多家历史 LMIA 雇主,slug 为空)不取 —— 工人交活写公司表,没那一行写了也落不了地。
+ */
+const SITE_LISTED = `x.stage IS NULL AND x.status = 'done' AND c.slug IS NOT NULL`
+
+/**
+ * 列出过的里该找官网的:公司表没官网。
+ */
+const SITE_LISTED_FIND = `(${SITE_LISTED} AND COALESCE(c.website, '') = '')`
+
+/**
+ * 列出过的里该抓官网的:有官网,但缺东西 —— 简介为空 / 不是五节新版 / 零出处,或总部市为空(判据同 EMPLOYER_EXPLORE_SITE_TO_COMPANIES
+ * 的简介让位条件与 EMPLOYER_EXPLORE_OPEN 的缺总部重探)。简介齐、总部在的不取:官网的定期刷新归 sites 例行轮。
+ */
+const SITE_LISTED_VISIT = `(${SITE_LISTED} AND COALESCE(c.website, '') <> ''
+       AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]')
+            OR COALESCE(c.hq_city, '') = ''))`
+
+/**
  * 找官网工人取活:被点开过、没官网的(排队中),或抓页那头判了死站转过来的(find)。$1=条数。
  * 2026-09-22 Frank「为什么会插队」:原「最近点开的在前」(LIFO)改成**先到先得**(FIFO)——
  * 卡上显示位次倒数后,后点开插队会让数字不降反升,自相矛盾;先点先办,位次才是真倒数。
  * 2026-10-01 人工核定过的(website_source = 'curated')不取 —— 定了就不再探索(入队那头已记 done,这里兜住核定前就在队里的)。
+ * 2026-11-06 加「板上列出过」的待办(SITE_LISTED_FIND):排在所有点开过的后面(opened_at 为空排最后),列出过的里做到一半的在前
+ * (stage_at 有值),再按被列出次数多、最近被列出的;且**只在没有点开过的待办时取一家** —— 工人一轮串行办完取到的几家
+ * (一家几十秒),一次拿满列出过的,真人这时点开就得干等前面几家办完;一次一家,点开的最多多等一家。
  */
-export const EMPLOYER_EXPLORE_SITE_TODO_FIND = `SELECT x.key, p.slug, x.name, c.website, p.province, x.stage, c.ai_brief FROM employer_explore x
-     JOIN employer_pool p ON p.key = x.key LEFT JOIN companies c ON c.slug = p.slug
-    WHERE (x.stage = 'find' OR (x.stage = 'queued' AND COALESCE(c.website, '') = ''))
-      AND COALESCE(c.website_source, '') <> 'curated'
-    ORDER BY x.opened_at ASC NULLS LAST LIMIT $1`
+export const EMPLOYER_EXPLORE_SITE_TODO_FIND = `SELECT t.key, t.slug, t.name, t.website, t.province, t.stage, t.ai_brief FROM (
+      SELECT x.key, p.slug, x.name, c.website, p.province, x.stage, c.ai_brief, x.opened_at,
+             row_number() OVER (ORDER BY x.opened_at ASC NULLS LAST, x.stage_at ASC NULLS LAST, x.seen_count DESC, x.last_seen DESC) AS n
+        FROM employer_explore x JOIN employer_pool p ON p.key = x.key LEFT JOIN companies c ON c.slug = p.slug
+       WHERE (x.stage = 'find' OR (x.stage = 'queued' AND COALESCE(c.website, '') = '') OR ${SITE_LISTED_FIND})
+         AND COALESCE(c.website_source, '') <> 'curated') t
+    WHERE t.n <= $1 AND (t.opened_at IS NOT NULL OR t.n = 1)
+    ORDER BY t.n`
 
 /**
  * 抓官网工人取活:被点开过、有官网的(排队中),或上一轮做到一半的(fetch / facts)。$1=条数。
  * 先到先得(2026-09-22,同 FIND;来由见那边)。人工核定过的不取(2026-10-01,同 FIND)。
+ * 2026-11-06 加「板上列出过」的待办(SITE_LISTED_VISIT),排序与「没有点开过的待办时才取一家」同 FIND(来由见那边)。
  */
-export const EMPLOYER_EXPLORE_SITE_TODO_VISIT = `SELECT x.key, p.slug, x.name, c.website, p.province, x.stage, c.ai_brief FROM employer_explore x
-     JOIN employer_pool p ON p.key = x.key LEFT JOIN companies c ON c.slug = p.slug
-    WHERE (x.stage IN ('fetch', 'facts') OR (x.stage = 'queued' AND COALESCE(c.website, '') <> ''))
-      AND COALESCE(c.website_source, '') <> 'curated'
-    ORDER BY x.opened_at ASC NULLS LAST LIMIT $1`
+export const EMPLOYER_EXPLORE_SITE_TODO_VISIT = `SELECT t.key, t.slug, t.name, t.website, t.province, t.stage, t.ai_brief FROM (
+      SELECT x.key, p.slug, x.name, c.website, p.province, x.stage, c.ai_brief, x.opened_at,
+             row_number() OVER (ORDER BY x.opened_at ASC NULLS LAST, x.stage_at ASC NULLS LAST, x.seen_count DESC, x.last_seen DESC) AS n
+        FROM employer_explore x JOIN employer_pool p ON p.key = x.key LEFT JOIN companies c ON c.slug = p.slug
+       WHERE (x.stage IN ('fetch', 'facts') OR (x.stage = 'queued' AND COALESCE(c.website, '') <> '') OR ${SITE_LISTED_VISIT})
+         AND COALESCE(c.website_source, '') <> 'curated') t
+    WHERE t.n <= $1 AND (t.opened_at IS NOT NULL OR t.n = 1)
+    ORDER BY t.n`
 
 /**
  * 工人每走一步写回进度。$1=池主键,$2=stage,$3=由头,$4=这一轮抓的官网主机名(空串不动原值)。

@@ -145,7 +145,7 @@ export type PoolRow = {
   website: string
 
   /**
-   * 进过探索队列没(没进过的,板在中 / 韩文界面下替它报一笔「被列出过」,后台随后给它翻译名)。
+   * 进过探索队列没(没进过的,板在中 / 韩文界面下替它报一笔「被列出过」,后台随后给它翻译名;2026-11-06 起英文界面也报,列出过的同时进官网队列)。
    */
   explored: boolean
 
@@ -3020,11 +3020,6 @@ export type PatchedAliasIn = {
  * reportSeen 的入参。
  */
 export type ReportSeenIn = {
-  /**
-   * 界面语言(只有中 / 韩文界面才上报 —— 英文用户用不上译名)。
-   */
-  lang: string
-
   /**
    * 现在板上列着的行。
    */

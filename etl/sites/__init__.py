@@ -14,6 +14,8 @@ sites 域:有官网的在招公司,定期把官网原文缓存到本地,再由�
 
 范围(Frank 09-19 批):有官网 且 当前有在招岗的公司(约 1.5 万家),每月一轮;在招岗多的在前。
 与「公司级数据一律懒查询,禁批量预抓」的关系:Frank 同日对**有官网的公司**改判为定期抓,没官网的仍走懒查询。
+2026-11-06 再放宽(Frank「这个雇主应该可以自动入队吧」):雇主板列出过、缺简介 / 总部的,不等点开也进 visit 役的队(没官网的进 company 域 findsite),
+排在真人点开的后面(取活 SQL 在 cms lib/db/sql.ts EMPLOYER_EXPLORE_SITE_TODO_*)。
 
 METAS = 域即役的调度声明(2026-09-20 起一域两役:sites 例行轮 + visit 点开优先):role=挂哪个角色容器(SOURCE 环境变量),
 interval=一轮的间隔秒,only=入口同门不同 --only;入口固定 etl/sites/main.py,步骤清单在 main.py 里。

@@ -3,7 +3,7 @@ explore 域:雇主探索队列的后台工人(2026-09-18 立域;Frank「雇主�
 类似于处理消息」)。
 
 回答的问题:「被用户在雇主板上看过的雇主,名字的中 / 韩文叫什么」。队列在生产库的 employer_explore 表
-(docs/sql/employer-explore-20260918.sql):雇主板在中 / 韩文界面下把列出来的雇主报进队;本域像消费消息一样
+(docs/sql/employer-explore-20260918.sql):雇主板在中 / 韩文界面下把列出来的雇主报进队(2026-11-06 起英文界面列出的也报 —— 列出过的同时自动进官网队列,见 sites 域文件头);本域像消费消息一样
 取活(GET /api/employers/explore/todo)→ 过局域网 qwen(NEWS_LLM_BASE 那台盒子;批量翻译走本地模型,不烧付费 API)
 → 交活(POST /api/employers/explore/done)。模型顺带判「这是不是一个人的名字」—— 是的标 skip(雇保姆 / 护工的
 私人雇主,音译没有信息量,板上不显示)。没人看过的雇主永远不翻(Frank 铁律:公司级数据懒查询,禁批量预抓)。

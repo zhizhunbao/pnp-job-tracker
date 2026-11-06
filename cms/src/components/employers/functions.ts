@@ -1727,14 +1727,13 @@ export async function loadBoard(x: LoadBoardIn): Promise<void> {
 /**
  * 把「板上列出过、还没进过探索队列的雇主」报给服务端(2026-09-18 Frank「用户列出过哪些雇主,就自动从那个表里翻译,
  * 类似于处理消息」):只在中 / 韩文界面报;同一会话里报过的键不重报;发出去就不管了 —— 成不成都不影响板。
+ * 2026-11-06 Frank「算,一起改」:英文界面列出的也报 —— 队列不只管译名了,列出过的还会自动进官网队列补主营业务 / 总部
+ * (英文用户同样看主营业务;流量八成多是英文),原「只在中 / 韩文界面报」作废。
  *
- * @param x 界面语言、板上的行与本会话已报过的键。
+ * @param x 板上的行与本会话已报过的键。
  * @returns 无。
  */
 export async function reportSeen(x: ReportSeenIn): Promise<void> {
-  if (x.lang !== LANG_ZH && x.lang !== LANG_KO) {
-    return
-  }
   const keys: string[] = []
   for (const r of x.rows) {
     if (r.explored === false && x.sent.has(r.key) === false) {
