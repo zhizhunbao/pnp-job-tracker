@@ -3,6 +3,7 @@
  * 四种名字各一个现成件(JobName / CompanyName / CityName / ProvName),各处一行换上;形不合的(把脉页不弹框)直接用 Name + subOf。
  * 2026-10-11 批 4:加地点一行 PlaceName(照 Indeed,表格外的职位地点唯一出口)与工时 / 雇佣期两件 HoursName / TermName
  * (自 myjobs 桶收过来,职位板 + 我的求职共用)。
+ * 2026-11-05 加译名开关 TransProvider / useShowTrans(职位弹框 / 详情页「隐藏翻译」管整片灰字与译文)。
  *
  * @author Frank
  * @time 2026-10-09 06:40:00
@@ -19,3 +20,5 @@ export { Name } from './name'
 export { PlaceName } from './placename'
 export { ProvName } from './provname'
 export { TermName } from './termname'
+export { TransProvider } from './transprovider'
+export { useShowTrans } from './hooks'

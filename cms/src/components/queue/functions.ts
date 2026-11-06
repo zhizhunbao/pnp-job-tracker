@@ -10,28 +10,31 @@
 import { count, text, textOrNull } from '@/lib/db'
 import { cssOf } from '@/components/css'
 import {
-  AGO_TAIL, APPLY_QUEUED, COL_COMPANY_KEY, COL_COMPANY_TEXT, COL_EMPLOYER_TEXT, COL_EVERY_KEY, COL_EVERY_TEXT,
-  COL_JOB_KEY, COL_JOB_TEXT, COL_LAST_KEY, COL_LAST_TEXT, COL_NAME_KEY, COL_NEXT_TEXT, COL_NOTE_KEY, COL_NOTE_TEXT,
-  COL_OPENS_TEXT, COL_SEEN_TEXT, COL_STATE_KEY, COL_STATE_TEXT, COL_TIMES_KEY, COL_UNIT_TEXT, COL_USER_KEY,
-  COL_USER_TEXT, COL_WAIT_TEXT, COL_WHEN_KEY, COL_WORKER_KEY, COL_WORKER_TEXT, COUNT_TAIL, DASH, DAY_S, EVERY_HEAD,
-  HOUR_S, IN_TAIL, ISO_NONE, LATE_HEAD, LOST_S, MINUTE_S, RAN_HEAD, SHOWN_HEAD, SHOWN_MID, STAGE_QUEUED, STAGE_TEXT,
-  STUCK_S, TAG_CURATED_TEXT, TAG_FAIL_TEXT, TAG_LLM_TEXT, TAG_LOST_TEXT, TAG_OUT_POOL_TEXT, TAG_QUEUED_TEXT,
-  TAG_RUN_TEXT, TAG_SENDING_TEXT, TAG_STUCK_TEXT, TAG_WAIT_TEXT, TEXT_NONE, TIMES_TAIL, UNIT_DAY_TEXT, UNIT_HOUR_TEXT,
-  UNIT_LLM, UNIT_MIN_TEXT, UNIT_RUN, UNIT_SEC_TEXT, VAR_BAD, VAR_GRAY, VAR_INFO, VAR_WARN, WORKER_FIND_TEXT,
-  WORKER_VISIT_TEXT,
+  AGO_TAIL, API_REMOVE, APPLY_QUEUED, COL_ACT_KEY, COL_ACT_TEXT, COL_COMPANY_KEY, COL_COMPANY_TEXT, COL_DONE_TEXT,
+  COL_DUR_KEY, COL_DUR_TEXT, COL_EMPLOYER_TEXT, COL_EVERY_KEY, COL_EVERY_TEXT, COL_JOB_KEY, COL_JOB_TEXT, COL_LAST_KEY,
+  COL_LAST_TEXT, COL_NAME_KEY, COL_NEXT_TEXT, COL_NOTE_KEY, COL_NOTE_TEXT, COL_OPENS_TEXT, COL_RESULT_TEXT,
+  COL_SEEN_TEXT, COL_STATE_KEY, COL_STATE_TEXT, COL_TIMES_KEY, COL_UNIT_TEXT, COL_USER_KEY, COL_USER_TEXT,
+  COL_WAIT_TEXT, COL_WHEN_KEY, COL_WORKER_KEY, COL_WORKER_TEXT, COUNT_TAIL, DASH, DAY_S, DEL_ALIAS, DEL_APPLY,
+  DEL_NAME_SEP, DEL_SITE, DEL_UNIT, EVERY_HEAD, HDR_CONTENT_TYPE, HOUR_S, IN_TAIL, ISO_NONE, LATE_HEAD, LOST_S,
+  METHOD_POST, MIME_JSON, MINUTE_S, RAN_HEAD, SHOWN_HEAD, SHOWN_MID, STAGE_QUEUED, STAGE_TEXT, STUCK_S,
+  TAG_CURATED_TEXT, TAG_FAILED_TEXT, TAG_FAIL_TEXT, TAG_LLM_TEXT, TAG_LOST_TEXT, TAG_OK_TEXT, TAG_OUT_POOL_TEXT,
+  TAG_QUEUED_TEXT, TAG_RUN_TEXT, TAG_SENDING_TEXT, TAG_STUCK_TEXT, TAG_WAIT_TEXT, TEXT_NONE, TIMES_TAIL, UNIT_DAY_TEXT,
+  UNIT_HOUR_TEXT, UNIT_LLM, UNIT_MIN_TEXT, UNIT_RUN, UNIT_SEC_TEXT, VAR_BAD, VAR_GRAY, VAR_INFO, VAR_OK, VAR_WARN,
+  WORKER_FIND_TEXT, WORKER_VISIT_TEXT,
 } from './constants'
 import { TagsCell } from './tagscell'
 import css from './queue.module.css'
 import type {
-  AliasDbRow, AliasFact, AliasRow, ApplyDbRow, ApplyFact, ApplyRow, CountTextIn, KeyedRow, NowDbRow, QueueBoard,
-  QueueBoardIn, QueueCol, QueueVariant, SiteDbRow, SiteFact, SiteRow, TotalRow, UnitDbRow, UnitFact, UnitRow,
+  ActRenderFn, AliasDbRow, AliasFact, AliasRow, ApplyDbRow, ApplyFact, ApplyRow, CountTextIn, DelAskFn, DelOkIn,
+  DelOpenIn, KeyedRow, NowDbRow, QueueBoard, QueueBoardIn, QueueCol, QueueVariant, RunDbRow, RunFact, RunRow, SiteDbRow,
+  SiteFact, SiteRow, TotalRow, UnitDbRow, UnitFact, UnitRow,
 } from './types'
 
 /**
- * 四条查询的事实行洗成整块看板。投递 / 官网 / 译名三张卡的总条数取首行带回的 total(不截断的数),
- * 调度单元不截断,条数就是行数。
+ * 五条查询的事实行洗成整块看板。投递 / 官网 / 译名三张卡的总条数取首行带回的 total(不截断的数),
+ * 调度单元不截断、最近跑完只取最近 RUNS_ROWS 轮,条数就是行数。
  *
- * @param x 四条查询与此刻各自洗好的事实行。
+ * @param x 五条查询与此刻各自洗好的事实行。
  * @returns 看板展示数据。
  */
 export function toQueueBoard(x: QueueBoardIn): QueueBoard {
@@ -49,6 +52,8 @@ export function toQueueBoard(x: QueueBoardIn): QueueBoard {
     sitesCount: countTextOf({ shown: x.sites.length, total: totalOf(x.sites) }),
     alias: x.alias.map(toAliasRow),
     aliasCount: countTextOf({ shown: x.alias.length, total: totalOf(x.alias) }),
+    runs: x.runs.map(toRunRow),
+    runsCount: countTextOf({ shown: x.runs.length, total: x.runs.length }),
     updatedAt,
   }
 }
@@ -117,6 +122,7 @@ export function toUnitRow(u: UnitFact): UnitRow {
     whenText: unitWhenOf(u),
     lastText,
     everyText: EVERY_HEAD + spanTextOf(u.intervalS),
+    del: { kind: DEL_UNIT, key: u.name, name: u.name },
   }
 }
 
@@ -167,12 +173,13 @@ export function toApplyRow(a: ApplyFact): ApplyRow {
     tagVariant,
     warnText,
     ageText: spanTextOf(a.ageS),
+    del: { kind: DEL_APPLY, key: String(a.id), name: a.jobTitle + DEL_NAME_SEP + a.company },
   }
 }
 
 /**
  * 官网抓取事实行 → 展示行。排队中灰、在办(查找 / 抓取 / 整理)蓝;两种取不到的再挂一枚红胶囊:
- * 雇主出了池(「已出池不取」,先判)、人工核定过(「已核定不取」)—— 两个工人取活都跳过,会一直卡在队里。工人:有官网归抓官网,没有归找官网。
+ * 公司已不在雇主板(「已不在雇主板」,先判)、人工核定过(「已核定不取」)—— 两个工人取活都跳过,会一直卡在队里。工人:有官网归抓官网,没有归找官网。
  *
  * @param s 事实行。
  * @returns 展示行。
@@ -211,6 +218,7 @@ export function toSiteRow(s: SiteFact): SiteRow {
     timesText: s.openCount + TIMES_TAIL,
     ageText,
     noteText: dashIfEmpty(s.note),
+    del: { kind: DEL_SITE, key: s.key, name: s.name },
   }
 }
 
@@ -221,7 +229,38 @@ export function toSiteRow(s: SiteFact): SiteRow {
  * @returns 展示行。
  */
 export function toAliasRow(a: AliasFact): AliasRow {
-  return { key: a.key, name: a.name, timesText: a.seenCount + TIMES_TAIL, ageText: spanTextOf(a.ageS) }
+  return {
+    key: a.key,
+    name: a.name,
+    timesText: a.seenCount + TIMES_TAIL,
+    ageText: spanTextOf(a.ageS),
+    del: { kind: DEL_ALIAS, key: a.key, name: a.name },
+  }
+}
+
+/**
+ * 一轮历史 → 展示行:成功绿胶囊、失败红胶囊,失败的报错挂在下面。
+ *
+ * @param r 事实行。
+ * @returns 展示行。
+ */
+export function toRunRow(r: RunFact): RunRow {
+  let tagText = TAG_FAILED_TEXT
+  let tagVariant: QueueVariant = VAR_BAD
+  if (r.ok) {
+    tagText = TAG_OK_TEXT
+    tagVariant = VAR_OK
+  }
+  return {
+    key: r.id,
+    name: r.name,
+    tagText,
+    tagVariant,
+    warnText: TEXT_NONE,
+    doneText: spanTextOf(r.agoS) + AGO_TAIL,
+    durText: spanTextOf(r.durS),
+    errorText: r.error,
+  }
 }
 
 /**
@@ -259,15 +298,17 @@ export function spanTextOf(s: number): string {
 /**
  * 调度单元表的列组。
  *
+ * @param act 操作格渲染器(删除钮;由 Queue 递进来,本文件不引组件件,免得和删除钮互相 import 成环)。
  * @returns 列声明。
  */
-export function unitColsOf(): QueueCol<UnitRow>[] {
+export function unitColsOf(act: ActRenderFn): QueueCol<UnitRow>[] {
   return [
     { key: COL_NAME_KEY, label: COL_UNIT_TEXT, nowrap: true, render: unitNameOf },
     { key: COL_STATE_KEY, label: COL_STATE_TEXT, nowrap: true, render: TagsCell },
     { key: COL_WHEN_KEY, label: COL_NEXT_TEXT, nowrap: true, render: unitWhenTextOf },
     { key: COL_LAST_KEY, label: COL_LAST_TEXT, nowrap: true, render: unitLastOf },
     { key: COL_EVERY_KEY, label: COL_EVERY_TEXT, nowrap: true, render: unitEveryOf },
+    { key: COL_ACT_KEY, label: COL_ACT_TEXT, nowrap: true, render: act },
   ]
 }
 
@@ -314,15 +355,17 @@ export function unitEveryOf(r: UnitRow): string {
 /**
  * 投递待发表的列组。
  *
+ * @param act 操作格渲染器(删除钮;由 Queue 递进来,本文件不引组件件,免得和删除钮互相 import 成环)。
  * @returns 列声明。
  */
-export function applyColsOf(): QueueCol<ApplyRow>[] {
+export function applyColsOf(act: ActRenderFn): QueueCol<ApplyRow>[] {
   return [
     { key: COL_USER_KEY, label: COL_USER_TEXT, className: cssOf(css.wrap), render: applyEmailOf },
     { key: COL_JOB_KEY, label: COL_JOB_TEXT, className: cssOf(css.wrap), render: applyJobOf },
     { key: COL_COMPANY_KEY, label: COL_COMPANY_TEXT, className: cssOf(css.wrap), render: applyCompanyOf },
     { key: COL_STATE_KEY, label: COL_STATE_TEXT, nowrap: true, render: TagsCell },
     { key: COL_WHEN_KEY, label: COL_WAIT_TEXT, nowrap: true, render: applyAgeOf },
+    { key: COL_ACT_KEY, label: COL_ACT_TEXT, nowrap: true, render: act },
   ]
 }
 
@@ -369,9 +412,10 @@ export function applyAgeOf(r: ApplyRow): string {
 /**
  * 官网抓取表的列组。
  *
+ * @param act 操作格渲染器(删除钮;由 Queue 递进来,本文件不引组件件,免得和删除钮互相 import 成环)。
  * @returns 列声明。
  */
-export function siteColsOf(): QueueCol<SiteRow>[] {
+export function siteColsOf(act: ActRenderFn): QueueCol<SiteRow>[] {
   return [
     { key: COL_NAME_KEY, label: COL_COMPANY_TEXT, className: cssOf(css.wrap), render: siteNameOf },
     { key: COL_STATE_KEY, label: COL_STATE_TEXT, nowrap: true, render: TagsCell },
@@ -379,6 +423,7 @@ export function siteColsOf(): QueueCol<SiteRow>[] {
     { key: COL_TIMES_KEY, label: COL_OPENS_TEXT, nowrap: true, render: siteTimesOf },
     { key: COL_WHEN_KEY, label: COL_WAIT_TEXT, nowrap: true, render: siteAgeOf },
     { key: COL_NOTE_KEY, label: COL_NOTE_TEXT, className: cssOf(css.wrap), render: siteNoteOf },
+    { key: COL_ACT_KEY, label: COL_ACT_TEXT, nowrap: true, render: act },
   ]
 }
 
@@ -435,13 +480,15 @@ export function siteNoteOf(r: SiteRow): string {
 /**
  * 译名翻译表的列组。
  *
+ * @param act 操作格渲染器(删除钮;由 Queue 递进来,本文件不引组件件,免得和删除钮互相 import 成环)。
  * @returns 列声明。
  */
-export function aliasColsOf(): QueueCol<AliasRow>[] {
+export function aliasColsOf(act: ActRenderFn): QueueCol<AliasRow>[] {
   return [
     { key: COL_NAME_KEY, label: COL_EMPLOYER_TEXT, className: cssOf(css.wrap), render: aliasNameOf },
     { key: COL_TIMES_KEY, label: COL_SEEN_TEXT, nowrap: true, render: aliasTimesOf },
     { key: COL_WHEN_KEY, label: COL_WAIT_TEXT, nowrap: true, render: aliasAgeOf },
+    { key: COL_ACT_KEY, label: COL_ACT_TEXT, nowrap: true, render: act },
   ]
 }
 
@@ -476,6 +523,50 @@ export function aliasAgeOf(r: AliasRow): string {
 }
 
 /**
+ * 最近跑完表的列组(历史不是排队的活,不出删除钮)。
+ *
+ * @returns 列声明。
+ */
+export function runColsOf(): QueueCol<RunRow>[] {
+  return [
+    { key: COL_NAME_KEY, label: COL_UNIT_TEXT, nowrap: true, render: runNameOf },
+    { key: COL_STATE_KEY, label: COL_RESULT_TEXT, nowrap: true, render: TagsCell },
+    { key: COL_WHEN_KEY, label: COL_DONE_TEXT, nowrap: true, render: runDoneOf },
+    { key: COL_DUR_KEY, label: COL_DUR_TEXT, nowrap: true, render: runDurOf },
+  ]
+}
+
+/**
+ * 最近跑完表「单元」列。
+ *
+ * @param r 展示行。
+ * @returns 单元名。
+ */
+export function runNameOf(r: RunRow): string {
+  return r.name
+}
+
+/**
+ * 最近跑完表「跑完」列。
+ *
+ * @param r 展示行。
+ * @returns 多久前跑完。
+ */
+export function runDoneOf(r: RunRow): string {
+  return r.doneText
+}
+
+/**
+ * 最近跑完表「用时」列。
+ *
+ * @param r 展示行。
+ * @returns 用时。
+ */
+export function runDurOf(r: RunRow): string {
+  return r.durText
+}
+
+/**
  * 四张表共用的行身份取值。
  *
  * @param r 带 key 的展示行。
@@ -483,6 +574,82 @@ export function aliasAgeOf(r: AliasRow): string {
  */
 export function queueRowKeyOf(r: KeyedRow): string {
   return r.key
+}
+
+/**
+ * 造行内删除钮的点击手柄:把这一条交给确认框(站规 2026-10-12:删除一律先弹框确认)。
+ *
+ * @param x 拨框手柄与要删的那一条。
+ * @returns 点击手柄。
+ */
+export function makeDelOpen(x: DelOpenIn): () => void {
+  return function delOpen(): void {
+    if (x.setAsk != null) {
+      x.setAsk(x.del)
+    }
+  }
+}
+
+/**
+ * 造确认框「删除」:关框、调删除接口,成了重取服务端数据,没成在标题卡挂「删除失败」。
+ *
+ * @param x 等着确认的那一条与三个手柄。
+ * @returns 点击手柄。
+ */
+export function makeDelOk(x: DelOkIn): () => void {
+  return function delOk(): void {
+    const ask = x.ask
+    x.setAsk(null)
+    if (ask == null) {
+      return
+    }
+    x.setFailed(false)
+    fetch(API_REMOVE, {
+      method: METHOD_POST,
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+      body: JSON.stringify({ kind: ask.kind, key: ask.key }),
+    }).then(makeDelDone(x)).catch(makeDelFail(x))
+  }
+}
+
+/**
+ * 造删除接口回来后的手柄:2xx 重取,其余挂「删除失败」。
+ *
+ * @param x 删除确认机的手柄。
+ * @returns 响应手柄。
+ */
+export function makeDelDone(x: DelOkIn): (r: Response) => void {
+  return function delDone(r: Response): void {
+    if (r.ok) {
+      x.refresh()
+      return
+    }
+    x.setFailed(true)
+  }
+}
+
+/**
+ * 造删除接口打不通的手柄:挂「删除失败」(出错不静默)。
+ *
+ * @param x 删除确认机的手柄。
+ * @returns 失败手柄。
+ */
+export function makeDelFail(x: DelOkIn): () => void {
+  return function delFail(): void {
+    x.setFailed(true)
+  }
+}
+
+/**
+ * 造确认框「取消」:关框。
+ *
+ * @param setAsk 拨框手柄。
+ * @returns 点击手柄。
+ */
+export function makeDelClose(setAsk: DelAskFn): () => void {
+  return function delClose(): void {
+    setAsk(null)
+  }
 }
 
 /**
@@ -560,6 +727,23 @@ export function toAliasFact(row: AliasDbRow): AliasFact {
     seenCount: count(row.seen_count),
     ageS: count(row.age_s),
     total: count(row.total),
+  }
+}
+
+/**
+ * `SQL.QUEUE_RUNS` 的行构造器。id 是 bigserial,驱动按串交回,统一成串;报错正文缺了落空串。
+ *
+ * @param row 库原始行。
+ * @returns 事实行。
+ */
+export function toRunFact(row: RunDbRow): RunFact {
+  return {
+    id: text(row.id),
+    name: text(row.name),
+    ok: row.ok,
+    error: text(row.error),
+    durS: count(row.dur_s),
+    agoS: count(row.ago_s),
   }
 }
 

@@ -5,6 +5,7 @@
  * 城市、省份点了新标签开 Google 地图(Frank「城市 和 省份 点击 跳 google 地图啊」),没给链接就是黑字不可点。
  * 只给 onOpen 不给链接 = 只开框没有整页(池键公司;N6 补)。
  * 全站名字两行只此一个实现(通用形态单一出口);表格格子、胶囊、下拉按 10-08 规定保留中文短名,不走它。
+ * 2026-11-05 灰字听外层 TransProvider(职位弹框 / 详情页标题行「隐藏翻译」关着就只出英文一行)。
  *
  * @author Frank
  * @time 2026-10-09 06:40:00
@@ -12,6 +13,7 @@
 import { LinkButton } from '@/components/button'
 import { LINK_CLS, TARGET_BLANK, TEXT_NONE } from './constants'
 import { makeNameClick } from './functions'
+import { useShowTrans } from './hooks'
 import type { NameIn } from './types'
 import css from './name.module.css'
 
@@ -22,6 +24,7 @@ import css from './name.module.css'
  * @returns 两行(或一行)。
  */
 export function Name({ en, sub, href, onOpen }: NameIn) {
+  const showSub = useShowTrans()
   return (
     <span className={css.name}>
       {href == null && onOpen == null && <span className={css.en}>{en}</span>}
@@ -34,7 +37,7 @@ export function Name({ en, sub, href, onOpen }: NameIn) {
       {href != null && onOpen == null && (
         <LinkButton href={href} target={TARGET_BLANK} className={LINK_CLS}>{en}</LinkButton>
       )}
-      {sub !== TEXT_NONE && <span className={css.sub}>{sub}</span>}
+      {showSub && sub !== TEXT_NONE && <span className={css.sub}>{sub}</span>}
     </span>
   )
 }

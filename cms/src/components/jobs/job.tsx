@@ -38,6 +38,9 @@
  * 2026-10-09 N6b 批:相关职位 / 公司信息卡 / 移民相关卡里的名字 N6 起由 name 桶自开弹框,本页递下去的两只手柄(useJobPeek)随之撤。
  * 2026-10-11 批 4 全站卡片字段:JD 白卡下面加「职位信息」分区卡(JobInfoCard:地址一行 / 薪资 / 工时 / 雇佣期 / 发布日期 / 截止日期,
  * 与职位框同一件);译名行右端的日期槽(.titleMeta + JobDates)撤,两个日期收进该卡(一个事实一处)。
+ * 2026-10-13 Frank「隐藏翻译」挪到「查看原帖」后面;同日改判「只需要隐藏正文翻译内容」:只藏 JD 正文译文,标题译名与相关职位灰字照出。
+ * 2026-11-05 Frank「隐藏翻译这个按钮应该放到 查看原贴 左边,然后控制这个弹框的所有翻译部分」:与弹框同一颗钮同一口径,
+ * 正文轨包 name 桶 TransProvider,关着时标题译名、正文译文、各卡灰字与公司简介译文都不出(栈上弹框不在包内,各管各的)。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -46,6 +49,7 @@ import { PeekContext } from '@/components/modal'
 import { BackButton } from '@/components/button'
 import { CompanyInfoCard } from '@/components/companies'
 import { cssOf } from '@/components/css'
+import { TransProvider } from '@/components/name'
 import { Shell } from '@/components/shell'
 import { CARD_MD_CLS, DETAIL_SHELL_TOP, TEXT_NONE, URL_BOARD_BACK } from './constants'
 import { relatedFromOf, relatedNoneFromOf, showRelatedOf } from './functions'
@@ -70,6 +74,7 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted, 
   const body = useJobBody({ job, lang: d.lang, plan, inModal: false, jdText, jdFormatted, jdTrans })
   return (
     <Shell top={DETAIL_SHELL_TOP}>
+      <TransProvider show={body.showSub}>
       <div className={cssOf(css.detail)}>
         <JobCrumbs home={d.t('detail.crumbHome')} prov={d.view.provFull} provHref={d.view.provHref}
           segs={d.view.segs} />
@@ -79,7 +84,7 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted, 
           </div>
           <h1 className={cssOf(css.title)}>{job.title}</h1>
           <div className={cssOf(css.titleRow)}>
-            {d.view.alias !== TEXT_NONE && <div className={cssOf(css.titleAlias)}>{d.view.alias}</div>}
+            {body.showSub && d.view.alias !== TEXT_NONE && <div className={cssOf(css.titleAlias)}>{d.view.alias}</div>}
             <JdOrigLink d={body} />
           </div>
           <JobBody job={job} plan={plan} d={body} />
@@ -102,6 +107,7 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted, 
             lang={d.lang} />
         )}
       </div>
+      </TransProvider>
       <PeekContext plan={plan} nocDesc={dims.nocDesc} />
     </Shell>
   )

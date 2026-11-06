@@ -506,3 +506,12 @@ UJ_ENDED = "endedAt"
 
 UJ_NEXT = "nextAt"
 """上报体键:下一轮最早开跑的时刻(epoch 秒;没有 = null)。"""
+
+UJ_ROUND = "round"
+"""上报体键:刚跑完的这一轮(只在跑完那次带;站上据此插一行历史,2026-11-06)。"""
+
+UJ_OK = "ok"
+"""round 里的键:这一轮成没成。"""
+
+UJ_ERROR = "error"
+"""round 里的键:失败时本轮最后几行出错行;成功 = null。"""

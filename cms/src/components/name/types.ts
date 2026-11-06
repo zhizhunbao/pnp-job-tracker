@@ -31,6 +31,21 @@ export type NameIn = {
 }
 
 /**
+ * TransProvider 的 props(2026-11-05「隐藏翻译」管整个弹框)。
+ */
+export type TransProviderIn = {
+  /**
+   * 出不出译名:标题行开关的当前态(关着 = 子树里的灰字与译文都不出)。
+   */
+  show: boolean
+
+  /**
+   * 子树。
+   */
+  children: React.ReactNode
+}
+
+/**
  * 点名字的手柄(链接的 onClick)。
  */
 export type NameClickFn = (e: React.MouseEvent) => void

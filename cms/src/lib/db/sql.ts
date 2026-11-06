@@ -3625,3 +3625,45 @@ export const QUEUE_ALIAS = `SELECT key, name, seen_count, extract(epoch FROM now
  * 页面右上角的更新时刻(取库的 now(),与上面几条的秒数同一个钟)。
  */
 export const QUEUE_NOW = `SELECT now() AS at`
+
+/**
+ * 队列页删除:一个调度单元(容器还活着下一轮会重新报上来;用来清掉停用 / 改名的单元)。$1=单元名。
+ */
+export const QUEUE_DEL_UNIT = `DELETE FROM etl_units WHERE name = $1`
+
+/**
+ * 队列页删除:一条待发投递(只删还没发出去的)。$1=投递行 id。inbox_messages 的外键是 SET NULL,不挡。
+ */
+export const QUEUE_DEL_APPLY = `DELETE FROM applications WHERE id = $1::int AND status IN ('queued', 'sending')`
+
+/**
+ * 队列页删除:移出官网队列(阶段清空 = 回到「没被点开过」;以后再有真人点开照常重新入队)。$1=池主键。
+ */
+export const QUEUE_DEL_SITE = `UPDATE employer_explore SET stage = NULL, stage_at = now(), stage_note = NULL
+     WHERE key = $1 AND stage IN ('queued', 'find', 'fetch', 'facts')`
+
+/**
+ * 队列页删除:译名不翻了(标成 skip 带由头,板上不再出译名;工人只取 pending)。$1=池主键。
+ */
+export const QUEUE_DEL_ALIAS = `UPDATE employer_explore SET status = 'skip', note = '管理员移出队列', done_at = now()
+     WHERE key = $1 AND status = 'pending'`
+
+/**
+ * 记一轮跑完的历史(2026-11-06 Frank「跑完的任务是不是应该有历史记录」;表 docs/sql/etl-unit-runs-20261106.sql)。
+ * $1=单元名,$2=开跑时刻(epoch 秒),$3=跑完时刻(epoch 秒),$4=成没成,$5=报错正文(成功 = NULL)。
+ */
+export const QUEUE_RUN_PUT = `INSERT INTO etl_unit_runs (name, started_at, ended_at, ok, error)
+     VALUES ($1, to_timestamp($2::float8), to_timestamp($3::float8), $4, $5)`
+
+/**
+ * 历史只留 7 天(每次记一轮顺手删,走 etl_unit_runs_ended_idx)。
+ */
+export const QUEUE_RUN_PRUNE = `DELETE FROM etl_unit_runs WHERE ended_at < now() - interval '7 days'`
+
+/**
+ * 最近跑完:所有单元按跑完时刻倒序;秒数在库里按 now() 现算。$1=条数上限。
+ */
+export const QUEUE_RUNS = `SELECT id, name, ok, error,
+       extract(epoch FROM ended_at - started_at)::int AS dur_s,
+       extract(epoch FROM now() - ended_at)::int AS ago_s
+     FROM etl_unit_runs ORDER BY ended_at DESC LIMIT $1`

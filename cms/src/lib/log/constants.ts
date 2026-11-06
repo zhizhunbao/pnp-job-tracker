@@ -908,6 +908,11 @@ export const QUEUE_LOG = {
   unitFailed: 'unit put failed name=',
 
   /**
+   * 队列页删一条没写成(后接种类)。
+   */
+  removeFailed: 'remove failed kind=',
+
+  /**
    * 原因段。
    */
   whyFrag: ' why=',

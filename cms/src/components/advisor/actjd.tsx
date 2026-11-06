@@ -13,6 +13,9 @@
  * 2026-10-09 N6b 批:正文下面两张卡里的名字 N6 起由 name 桶自开弹框,点公司名 / 相关职位两个回调撤。
  * 2026-10-11 批 4 全站卡片字段:发布 / 截止两个日期收进正文下面的「职位信息」卡(jobs 桶 JobInfoCard,经 JobModalCards),
  * 页眉 dates 槽撤(一个事实一处)。
+ * 2026-10-13 Frank「隐藏翻译」挪到「查看原帖」后面;同日改判「只需要隐藏正文翻译内容」:页眉译名与相关职位灰字照出。
+ * 2026-11-05 Frank「隐藏翻译这个按钮应该放到 查看原贴 左边,然后控制这个弹框的所有翻译部分」:整框包 name 桶 TransProvider,
+ * 开关关着时页眉译名、正文译文、下面几张卡的灰字与公司简介译文都不出。
  *
  * @author Frank
  * @time 2026-09-16 21:30:00
@@ -23,6 +26,7 @@ import { JobBody } from '@/components/jobs/jobbody'
 import { JobModalCards } from '@/components/jobs/jobmodalcards'
 import { Modal } from '@/components/modal'
 import type { FrameOut } from '@/components/modal'
+import { TransProvider } from '@/components/name'
 import { makeT } from '@/lib/i18n'
 import { JD_PANEL_H, JD_PANEL_W, JD_PREF, TEXT_NONE, URL_JOB_HEAD } from './constants'
 import { ActHead } from './acthead'
@@ -41,13 +45,18 @@ export function ActJd({ job, lang, plan, onClose, frame, sub, a }: ActJdIn) {
   const d = useJobBody({
     job, lang, plan, inModal: true, onFreeLeft: a.onFreeLeft, jdText: TEXT_NONE, jdFormatted: null,
   })
+  let headSub = TEXT_NONE
+  if (d.showSub) {
+    headSub = sub
+  }
   const head = (
     <ActHead t={t} title={firstTextOf({ list: [job.title] })}
-      sub={sub}
+      sub={headSub}
       freeLeft={a.freeLeft}
       ctl={<JdOrigLink d={d} />} />
   )
   return (
+    <TransProvider show={d.showSub}>
     <Modal onClose={onClose} frame={frame as FrameOut}
       win={{ head, memo: JD_PREF, w: JD_PANEL_W, h: JD_PANEL_H, jd: true }}
       actions={(
@@ -57,5 +66,6 @@ export function ActJd({ job, lang, plan, onClose, frame, sub, a }: ActJdIn) {
       <JobBody job={job} plan={plan} inModal d={d}
         tail={<JobModalCards job={job} lang={lang} />} />
     </Modal>
+    </TransProvider>
   )
 }

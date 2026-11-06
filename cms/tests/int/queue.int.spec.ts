@@ -7,13 +7,21 @@ import { describe, expect, it } from 'vitest'
 
 // 测试例外:内部件直接点文件(桶只走门的规矩不管测试)
 import { countTextOf, toUnitRow } from '@/components/queue/functions'
-import { toUnitFact } from '@/lib/queue/functions'
+import { toRemoveFact, toUnitFact } from '@/lib/queue/functions'
 
 const GOOD = { name: 'findsite', intervalS: 60, state: 'run', lastOk: true, startedAt: 1_762_400_000, endedAt: null, nextAt: 1_762_400_060 }
 
 describe('上报体收窄', () => {
   it('合规的一条原样收下', () => {
-    expect(toUnitFact(GOOD)).toEqual(GOOD)
+    expect(toUnitFact(GOOD)).toEqual({ ...GOOD, round: null })
+  })
+
+  it('跑完那次带 round 才记一轮:成败是布尔、两个时刻都在', () => {
+    const done = { ...GOOD, state: 'wait', endedAt: 1_762_400_030, round: { ok: false, error: '✗ boom' } }
+    expect(toUnitFact(done)?.round).toEqual({ startedAt: 1_762_400_000, endedAt: 1_762_400_030, ok: false, error: '✗ boom' })
+    expect(toUnitFact({ ...done, round: { ok: true, error: null } })?.round).toMatchObject({ ok: true, error: null })
+    expect(toUnitFact({ ...done, round: { ok: 'yes' } } as never)?.round).toBeNull()
+    expect(toUnitFact({ ...done, endedAt: null })?.round).toBeNull()
   })
 
   it('必填三格任一不对整条拒收', () => {
@@ -61,5 +69,15 @@ describe('卡头计数', () => {
     expect(countTextOf({ shown: 100, total: 230 })).toBe('前 100 条,共 230 条')
     expect(countTextOf({ shown: 12, total: 12 })).toBe('12 条')
     expect(countTextOf({ shown: 0, total: 0 })).toBe('0 条')
+  })
+})
+
+describe('删除请求收窄', () => {
+  it('四种对象与非空键才收', () => {
+    expect(toRemoveFact({ kind: 'site', key: 'd-s-malhi-transport-ltd' })).toEqual({ kind: 'site', key: 'd-s-malhi-transport-ltd' })
+    expect(toRemoveFact({ kind: 'users', key: '11' })).toBeNull()
+    expect(toRemoveFact({ kind: 'apply', key: '' })).toBeNull()
+    expect(toRemoveFact({ kind: 'alias', key: 'x'.repeat(301) })).toBeNull()
+    expect(toRemoveFact({})).toBeNull()
   })
 })

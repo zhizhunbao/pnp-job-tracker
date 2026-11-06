@@ -58,7 +58,7 @@ from sched.constants import (
     UNKNOWN_ROLE_TPL, U_LINE_TPL, U_MODE_CONSUMER_TPL, U_MODE_EVERY_TPL, U_SEED_SUFFIX_TPL,
     VAL_ONE,
     ENV_UNITS_URL, STATE_LLM, STATE_RUN, STATE_WAIT, UJ_ENDED, UJ_INTERVAL, UJ_LAST_OK, UJ_NAME, UJ_NEXT, UJ_STARTED,
-    UJ_STATE, UNITS_FAIL_TPL, UNITS_TIMEOUT_S,
+    UJ_ERROR, UJ_OK, UJ_ROUND, UJ_STATE, UNITS_FAIL_TPL, UNITS_TIMEOUT_S,
 )
 from sched.scheme import (FailHealthIn, FailPingIn, FreshStampIn, HcTiming, LogLike, MetaHit, PingIn, RegisterIn,
                           RunStepIn, RunStepOut, ToUnitIn, Unit)
@@ -138,6 +138,7 @@ def to_unit(x: ToUnitIn) -> Unit:
         started_at=0.0,
         ended_at=0.0,
         last_ok=None,
+        last_errors=[],
     )
 
 
@@ -285,6 +286,7 @@ def run_once(x: Unit) -> bool:
     """
     ulog = cast(LogLike, logger.bind(source=source_of(x)))
     errors: list[str] = []
+    x.last_errors = errors
     for step in x.steps:
         out = run_step(RunStepIn(step=step, log=ulog))
         errors.extend(out.errors)
@@ -643,8 +645,10 @@ def report_unit(x: Unit) -> None:
 
 
 def unit_json_of(x: Unit) -> dict:
-    """上报体(契约键只住这里;时刻 0 = 没有,发 None)。"""
-    return {
+    """上报体(契约键只住这里;时刻 0 = 没有,发 None)。
+    2026-11-06 Frank「跑完的任务是不是应该有历史记录」:跑完那次(状态回到等下一轮、有跑完时刻)多带 round 一格,
+    站上据此插一行历史 —— 不另开接口,一轮还是开跑 / 跑完两次请求。"""
+    body: dict = {
         UJ_NAME: x.name,
         UJ_INTERVAL: x.interval_s,
         UJ_STATE: x.state,
@@ -653,6 +657,19 @@ def unit_json_of(x: Unit) -> dict:
         UJ_ENDED: epoch_or_none(x.ended_at),
         UJ_NEXT: epoch_or_none(x.next_at),
     }
+    if x.state == STATE_WAIT and x.ended_at != 0 and x.last_ok is not None:
+        body[UJ_ROUND] = {UJ_OK: x.last_ok, UJ_ERROR: round_error_of(x)}
+    return body
+
+
+def round_error_of(x: Unit) -> str | None:
+    """这一轮的报错正文:成功 = None;失败 = 最后 HC_FAIL_LINES 行出错行(同 /fail 正文的截法),一行没截到给占位句。"""
+    if x.last_ok:
+        return None
+    lines = x.last_errors[-HC_FAIL_LINES:]
+    if len(lines) == 0:
+        return HC_FAIL_NO_LINES.format(role=current_role())
+    return NEWLINE.join(lines)[:HC_FAIL_BODY_MAX]
 
 
 def epoch_or_none(t: float) -> float | None:

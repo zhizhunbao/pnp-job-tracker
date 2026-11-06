@@ -60,3 +60,15 @@
 .wrap {
   overflow-wrap: anywhere;
 }
+
+/*
+ * 最近跑完卡失败行下面的报错:等宽、保留换行、长行折行,不撑宽表格。
+ */
+.err {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
