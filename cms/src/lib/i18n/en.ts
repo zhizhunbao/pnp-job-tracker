@@ -920,7 +920,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'ap.confirm': 'Confirm', 'ap.rewriteJob': 'Tailor to this job', 'ap.upResume': 'Upload resume', 'ap.upLetter': 'Upload cover letter',
   'ap.noLetter': 'No cover letter', 'ap.noLetterSub': 'Resume only', 'ap.draftOpt': 'Draft for this job', 'ap.modify': 'Edit',
   'ap.replyTo': 'Employer replies', 'ap.replyInbox': 'Your inbox', 'ap.mailPv': 'Email preview', 'ap.noPv': 'Word files can’t be previewed here', 'ap.soon': 'Resume tailoring is coming soon',
-  'ap.proReason': 'Tailoring to the job is a Pro feature', 'ap.rwTitle': 'Tailor cover letter', 'ap.rwBefore': 'Original', 'ap.rwJd': 'Job requirements',
+  'ap.proReason': 'Tailoring to the job is a Pro feature', 'ap.proTrialOut': 'Your 3 free jobs are used up. Upgrade for unlimited jobs', 'ap.rwTrialLeft': 'Free trial: {n} jobs left', 'ap.rwTitle': 'Tailor cover letter', 'ap.rwBefore': 'Original', 'ap.rwJd': 'Job requirements',
   'ap.rwAfter': 'Rewritten', 'ap.rwAgain': 'Try again', 'ap.rwUse': 'Use this version',
   'ap.applied': 'Applied', 'ap.resume': 'Resume', 'ap.name': 'Full name',
   'ap.letter': 'Cover letter', 'ap.to': 'To', 'ap.subject': 'Subject', 'ap.attach': 'Attachments', 'ap.next': 'Next', 'ap.back': 'Back', 'ap.send': 'Send',

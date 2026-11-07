@@ -23,6 +23,7 @@ import {
   ROLE_USER, ST_DRAFT, THINK_RE,
   LETTERS_LIMIT,
   ST_QUEUED,
+  LETTER_TRIAL_MAX, TRIAL_LETTER,
 } from './constants'
 import { LETTER_LABELS, LETTER_SYSTEM } from './prompts'
 import type {
@@ -38,6 +39,7 @@ import type {
   ApplyFileDbRow, ApplyFileFact, ApplyFileIn, ApplyFileOut, LetterBodyJson, LetterMessages, LetterPromptIn,
   LetterProvider, MaybeLetterBody,
   ApplyLetterDbRow, ApplyLetterFact, ApplyLettersIn, ApplyLettersOut,
+  LetterTrialDbRow, LetterTrialFact, LetterTrialIn, LetterTrialLeftIn, LetterTrialOut, MaybeTrialLeft,
 } from './types'
 
 // =========================================================================
@@ -1033,4 +1035,67 @@ export function toApplyLetter(r: ApplyLetterDbRow): ApplyLetterFact {
     id: count(r.id), jobId: numOrNull(r.job_id), title: text(r.job_title), company: text(r.company), status: text(r.status),
     wroteAt,
   }
+}
+
+/**
+ * 「按职位改写」试用账:用过几个职位、这一个职位用过没有(2026-11-07 恢复试用,见 LETTER_TRIAL_MAX 注)。
+ *
+ * @param x 连接、用户与职位。
+ * @returns 试用账;没记过账给 0 个、没用过。
+ */
+export async function loadLetterTrial(x: LetterTrialIn): LetterTrialOut {
+  const row = firstOf(await queryRows({
+    db: x.db, sql: SQL.TRIAL_USED, params: [x.userId, TRIAL_LETTER, x.jobId], map: toLetterTrial,
+  }))
+  if (row == null) {
+    return { used: 0, here: false }
+  }
+  return row
+}
+
+/**
+ * 试用账库行 → 试用账。
+ *
+ * @param r 库行。
+ * @returns 试用账。
+ */
+export function toLetterTrial(r: LetterTrialDbRow): LetterTrialFact {
+  return { used: count(r.used), here: r.here === true }
+}
+
+/**
+ * 记一笔试用(同一个职位只记一次;只在模型真写成时调)。
+ *
+ * @param x 连接、用户与职位。
+ * @returns 无。
+ */
+export async function markLetterTrial(x: LetterTrialIn): ApplyWriteOut {
+  await x.db.query(SQL.TRIAL_MARK, [x.userId, TRIAL_LETTER, x.jobId])
+}
+
+/**
+ * 还能不能按这一岗改写:这一岗用过的照写,没用过的看用了几个。
+ *
+ * @param t 试用账。
+ * @returns 能不能写。
+ */
+export function isLetterTrialOpen(t: LetterTrialFact): boolean {
+  return t.here || t.used < LETTER_TRIAL_MAX
+}
+
+/**
+ * 试用还剩几个职位(回包带给对照框卡头的胶囊)。
+ *
+ * @param x 试用账与这一次记没记账。
+ * @returns 还剩几个;Pro 不记账给 null。
+ */
+export function trialLeftOf(x: LetterTrialLeftIn): MaybeTrialLeft {
+  if (x.trial == null) {
+    return null
+  }
+  let used = x.trial.used
+  if (x.marked) {
+    used += 1
+  }
+  return Math.max(0, LETTER_TRIAL_MAX - used)
 }

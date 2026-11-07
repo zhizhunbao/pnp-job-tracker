@@ -885,7 +885,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'ap.confirm': '확인', 'ap.rewriteJob': '공고에 맞게 고치기', 'ap.upResume': '새 이력서 올리기', 'ap.upLetter': '자기소개서 올리기',
   'ap.noLetter': '자기소개서 없이', 'ap.noLetterSub': '이력서만 보내기', 'ap.draftOpt': '이 공고의 초안', 'ap.modify': '수정',
   'ap.replyTo': '고용주 회신', 'ap.replyInbox': '받은편지함', 'ap.mailPv': '메일 미리보기', 'ap.noPv': 'Word 파일은 여기서 미리 볼 수 없습니다', 'ap.soon': '이력서 맞춤 수정은 곧 제공됩니다',
-  'ap.proReason': '공고 맞춤 수정은 Pro 기능입니다', 'ap.rwTitle': '자기소개서 맞춤 수정', 'ap.rwBefore': '원본', 'ap.rwJd': '공고 요건',
+  'ap.proReason': '공고 맞춤 수정은 Pro 기능입니다', 'ap.proTrialOut': '무료 공고 3개를 모두 사용했습니다. 업그레이드하면 공고 수 제한이 없습니다', 'ap.rwTrialLeft': '무료 체험: 공고 {n}개 남음', 'ap.rwTitle': '자기소개서 맞춤 수정', 'ap.rwBefore': '원본', 'ap.rwJd': '공고 요건',
   'ap.rwAfter': '수정본', 'ap.rwAgain': '다시 쓰기', 'ap.rwUse': '이 버전 사용',
   'ap.applied': '지원 완료', 'ap.resume': '이력서', 'ap.name': '영문 이름', 'ap.letter': '자기소개서',
   'ap.to': '받는 곳', 'ap.subject': '제목', 'ap.attach': '첨부', 'ap.next': '다음', 'ap.back': '이전', 'ap.send': '보내기', 'ap.pdf': 'PDF 보기', 'ap.sign': '서명', 'ap.view': '열기', 'ap.edit': '편지 수정',

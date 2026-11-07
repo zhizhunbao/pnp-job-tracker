@@ -18,7 +18,7 @@ import { ApplyConfirm } from './applyconfirm'
 import { ApplyFoot } from './applyfoot'
 import { ApplyLetter } from './applyletter'
 import { ApplyResume } from './applyresume'
-import { CARD_MD_CLS, PRO_REASON_KEY, STEP_CONFIRM, STEP_DONE, STEP_LETTER, STEP_RESUME } from './constants'
+import { CARD_MD_CLS, STEP_CONFIRM, STEP_DONE, STEP_LETTER, STEP_RESUME, TEXT_NONE } from './constants'
 import { useApply } from './hooks'
 import type { ApplyPageIn } from './types'
 
@@ -37,7 +37,9 @@ export function ApplyFlow({ start, titleSub, onSent }: ApplyPageIn) {
       {p.step === STEP_CONFIRM && <ApplyConfirm p={p} />}
       {p.step === STEP_DONE && <div className={CARD_MD_CLS}><SentNotice t={p.t} company={p.job.company} /></div>}
       <ApplyFoot p={p} />
-      {p.upsell && <UpgradeModal t={p.t} onClose={p.onUpsellClose} reason={p.t(PRO_REASON_KEY)} back={p.back} />}
+      {p.upsell !== TEXT_NONE && (
+        <UpgradeModal t={p.t} onClose={p.onUpsellClose} reason={p.t(p.upsell)} back={p.back} />
+      )}
     </>
   )
 }

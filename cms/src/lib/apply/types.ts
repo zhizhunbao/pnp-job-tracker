@@ -1864,3 +1864,83 @@ export type ApplyLettersIn = {
  * `loadApplyLetters` 的返回。
  */
 export type ApplyLettersOut = Promise<ApplyLetterFact[]>
+
+/**
+ * 「按职位改写」试用账的库行(2026-11-07 恢复试用,设计稿 docs/design/我的/我的求职-20261009.md 1.10 / 2.10)。
+ */
+export type LetterTrialDbRow = {
+  /**
+   * 用过几个职位。
+   */
+  used: number | string | null
+
+  /**
+   * 这一个职位用过没有。
+   */
+  here: boolean | null
+}
+
+/**
+ * 「按职位改写」试用账(洗净)。
+ */
+export type LetterTrialFact = {
+  /**
+   * 用过几个职位。
+   */
+  used: number
+
+  /**
+   * 这一个职位用过没有(用过的职位再写不另算)。
+   */
+  here: boolean
+}
+
+/**
+ * 可能没有的试用账(Pro 不记账 = null)。
+ */
+export type MaybeLetterTrial = LetterTrialFact | null
+
+/**
+ * 取 / 记试用账的入参。
+ */
+export type LetterTrialIn = {
+  /**
+   * 数据库连接(调用方注入)。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: UserId
+
+  /**
+   * 职位 id。
+   */
+  jobId: number
+}
+
+/**
+ * `loadLetterTrial` 的返回。
+ */
+export type LetterTrialOut = Promise<LetterTrialFact>
+
+/**
+ * 算试用余量的入参。
+ */
+export type LetterTrialLeftIn = {
+  /**
+   * 试用账;Pro 不记账 = null。
+   */
+  trial: MaybeLetterTrial
+
+  /**
+   * 这一次是不是写成并记了账。
+   */
+  marked: boolean
+}
+
+/**
+ * 试用余量:还剩几个职位;Pro 不限 = null。
+ */
+export type MaybeTrialLeft = number | null

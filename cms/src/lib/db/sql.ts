@@ -3357,6 +3357,24 @@ export const APPLY_LETTERS = `SELECT id, job_id, job_title, company, status, upd
      ORDER BY COALESCE(sent_at, updated_at) DESC LIMIT $2`
 
 // =========================================================================
+// 33. AI 功能试用账(批 C 收费闸;2026-10-07 立,表 docs/sql/ai-trials-20261007.sql:ai_trials;
+//     2026-10-10 随试用撤下;2026-11-07 Frank「先改这一处」照设计稿 docs/design/我的/我的求职-20261009.md 1.10 / 2.10
+//     恢复「按职位改写」每人试用 3 个职位,读写方只有 lib/apply 的 loadLetterTrial / markLetterTrial)
+// =========================================================================
+
+/**
+ * 某人某项 AI 功能的试用用量:用过几个、这一个用过没有。$1=用户 id,$2=功能名,$3=用在哪一个(职位 id)。
+ */
+export const TRIAL_USED = `SELECT count(*)::int AS used, coalesce(bool_or(ref_id = $3), false) AS here
+     FROM ai_trials WHERE user_id = $1 AND feature = $2`
+
+/**
+ * 记一笔试用(同一个只记一次)。$1=用户 id,$2=功能名,$3=用在哪一个。
+ */
+export const TRIAL_MARK = `INSERT INTO ai_trials (user_id, feature, ref_id) VALUES ($1, $2, $3)
+     ON CONFLICT (user_id, feature, ref_id) DO NOTHING`
+
+// =========================================================================
 // 35. 新岗推送(「我的求职」末段;2026-10-10 批 2,docs/design/我的/我的求职-20261009.md 第 3 节 16b / 16d;
 //     表 docs/sql/digest-prefs-20261010.sql:digest_prefs;读写方只有 lib/alerts)
 // =========================================================================

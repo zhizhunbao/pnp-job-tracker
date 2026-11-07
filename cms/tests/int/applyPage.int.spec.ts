@@ -235,13 +235,30 @@ describe('③ 求职信页', () => {
 })
 
 describe('④ 按职位改写', () => {
-  it('免费号:不请求写信接口,弹升级框', async () => {
-    const calls = server({ [START]: { status: 200, body: start() } })
+  // 2026-11-07 恢复试用(设计稿 docs/design/我的/我的求职-20261009.md 1.10 / 2.10):免费号也请求写信接口,能不能写由接口判
+  it('免费号试用中:调写信接口,对照框卡头出「还剩 N 个职位」胶囊', async () => {
+    const calls = server({
+      [START]: { status: 200, body: start() },
+      'POST /api/apply/letter': { status: 200, body: { text: 'Dear Trial', ai: true, jd: 'Need a cook', left: 2 } },
+    })
     const el = await mount('?apply=42')
     await click(el, '下一步')
     await click(el, '按职位改写')
-    expect(calls.some((c) => c === 'POST /api/apply/letter')).toBe(false)
-    expect(document.body.textContent).toContain('按职位改写是 Pro 功能')
+    expect(calls.some((c) => c === 'POST /api/apply/letter')).toBe(true)
+    expect(document.body.textContent).toContain('Dear Trial')
+    expect(document.body.textContent).toContain('免费试用：还剩 2 个职位')
+  })
+
+  it('免费号试用用完:接口回 402,弹升级框,副标题说 3 个免费职位已用完', async () => {
+    server({
+      [START]: { status: 200, body: start() },
+      'POST /api/apply/letter': { status: 402, body: { error: 'pro' } },
+    })
+    const el = await mount('?apply=42')
+    await click(el, '下一步')
+    await click(el, '按职位改写')
+    expect(document.body.textContent).toContain('3 个免费职位已用完')
+    expect(document.body.textContent).not.toContain('原来的')
   })
 
   it('Pro:调写信接口,三栏对照框;「用这一版」成一项并选中', async () => {

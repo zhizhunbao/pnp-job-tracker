@@ -963,7 +963,7 @@ export const jobsZh = {
   'ap.confirm': '确认', 'ap.rewriteJob': '按职位改写', 'ap.upResume': '上传新简历', 'ap.upLetter': '上传求职信',
   'ap.noLetter': '不附求职信', 'ap.noLetterSub': '只发简历', 'ap.draftOpt': '这个职位的草稿', 'ap.modify': '修改',
   'ap.replyTo': '雇主回信', 'ap.replyInbox': '收件箱', 'ap.mailPv': '邮件预览', 'ap.noPv': 'Word 简历这里预览不了', 'ap.soon': '简历按职位改写即将上线',
-  'ap.proReason': '按职位改写是 Pro 功能', 'ap.rwTitle': '按职位改写求职信', 'ap.rwBefore': '原来的', 'ap.rwJd': '职位要求',
+  'ap.proReason': '按职位改写是 Pro 功能', 'ap.proTrialOut': '3 个免费职位已用完，升级后不限职位', 'ap.rwTrialLeft': '免费试用：还剩 {n} 个职位', 'ap.rwTitle': '按职位改写求职信', 'ap.rwBefore': '原来的', 'ap.rwJd': '职位要求',
   'ap.rwAfter': '改写后', 'ap.rwAgain': '再写一次', 'ap.rwUse': '用这一版',
   'ap.applied': '已投递', 'ap.resume': '简历', 'ap.name': '英文姓名', 'ap.letter': '求职信',
   'ap.to': '收件人', 'ap.subject': '主题', 'ap.attach': '附件', 'ap.next': '下一步', 'ap.back': '上一步', 'ap.send': '投出', 'ap.pdf': '查看 PDF', 'ap.sign': '署名', 'ap.view': '打开', 'ap.edit': '改信',

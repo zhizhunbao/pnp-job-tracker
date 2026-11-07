@@ -16,6 +16,17 @@
 export const E_PRO = 'pro'
 
 /**
+ * 升级框副标题:「按职位改写是 Pro 功能」(简历卡头的改写,没有试用)。同父桶 PRO_REASON_KEY。
+ */
+export const PRO_REASON_KEY = 'ap.proReason'
+
+/**
+ * 升级框副标题:免费试用的职位用完了(求职信卡头的改写回 402 时;2026-11-07 恢复试用,设计稿
+ * docs/design/我的/我的求职-20261009.md 1.10 / 2.10)。
+ */
+export const TRIAL_OUT_KEY = 'ap.proTrialOut'
+
+/**
  * 文件抽字接口(上传求职信复用简历抽字那一个,不另建表:抽出来的字就是这一岗的信)。
  */
 export const URL_EXTRACT = '/api/resume/extract'

@@ -58,7 +58,7 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
   const [letterBusy, setLetterBusy] = useState(false)
   const [input, setInput] = useState<HTMLInputElement | null>(null)
   const [letterInput, setLetterInput] = useState<HTMLInputElement | null>(null)
-  const [upsell, setUpsell] = useState(false)
+  const [upsell, setUpsell] = useState<string>(TEXT_NONE)
   const [soon, setSoon] = useState(false)
   const [rw, setRw] = useState<MaybeRewrite>(null)
   const cells: ApplyCells = {
@@ -142,7 +142,7 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
     onLetterBlur: quietSave,
     onLetterRewrite: makeLetterRewrite(cells),
     onResumeRewrite: makeResumeRewrite(cells),
-    onUpsellClose: makeSetTo({ set: setUpsell, v: false }),
+    onUpsellClose: makeSetTo<string>({ set: setUpsell, v: TEXT_NONE }),
     onRwAgain: makeLetterRewrite(cells),
     onRwUse: makeRwUse(cells),
     onRwClose: makeSetTo<MaybeRewrite>({ set: setRw, v: null }),

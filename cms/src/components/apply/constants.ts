@@ -468,6 +468,11 @@ export const WRITING_KEY = 'ap.writing'
 export const PRO_REASON_KEY = 'ap.proReason'
 
 /**
+ * 对照框卡头试用余量胶囊的变体(通用 tag 桶 info;2026-11-07 恢复试用,设计稿 docs/design/我的/我的求职-20261009.md 1.10 / 2.10)。
+ */
+export const TRIAL_TAG = 'info'
+
+/**
  * 简历的「按职位改写」Pro 点了的那一句(本批只做求职信的改写)。
  */
 export const SOON_KEY = 'ap.soon'

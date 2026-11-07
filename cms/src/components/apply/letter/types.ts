@@ -72,6 +72,11 @@ export type RewriteView = {
    * 没写成的词条键(没有 = 空串)。
    */
   err: string
+
+  /**
+   * 免费试用还剩几个职位(卡头胶囊;Pro 或还没回包 = null;2026-11-07 恢复试用)。
+   */
+  left: number | null
 }
 
 /**
@@ -184,9 +189,9 @@ export type LetterCells = {
   setLetterBusy: SetFn<boolean>
 
   /**
-   * 开 / 关升级框。
+   * 开升级框(给副标题的词条键)/ 关(空串)。2026-11-07 由开关改成词条键:试用用完与 Pro 功能两种说法。
    */
-  setUpsell: SetFn<boolean>
+  setUpsell: SetFn<string>
 
   /**
    * 出「即将上线」。
@@ -227,6 +232,11 @@ export type LetterJson = {
    * 错误码。
    */
   error?: string
+
+  /**
+   * 免费试用还剩几个职位(2026-11-07 恢复试用;Pro 回 null;缺席 = 接口没给)。
+   */
+  left?: number | null
 }
 
 /**

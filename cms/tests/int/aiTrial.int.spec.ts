@@ -12,6 +12,11 @@
 // 探针:applyLetterRoute 去掉 isPro 判 → ②第一条红。
 // 2026-10-10 Frank「删吧」(「今日待投 / 智能投递」整条撤):① 试用三判的最后消费者智能投递删了,lib/quota 的试用账函数与 TRIAL_USED /
 //       TRIAL_MARK 两条 SQL 随之删,① 用例撤;桩改按 SQL 文本认 ai_trials 读写(② 仍断言「不记账」)。
+// 2026-11-07 Frank 看过设计稿(docs/design/我的/我的求职-20261009.md 1.10 / 2.10)说「可以」:写信路由的试用恢复(读写方
+//       lib/apply 的 loadLetterTrial / markLetterTrial,TRIAL_USED / TRIAL_MARK 回 lib/db 第 33 段)。② 改验试用闸,在「用量 0–4 ×
+//       本岗用没用过」全格上:本岗用过或用量 < 3 才放行;放行时写成才记账(本岗用过不再记),回包 left = 3 − 记账后用量、不低于 0;
+//       不放行 402 pro、不调模型不记账;试用中模型挂了不记账、left 不变;Pro 照写、不记账、left = null。
+// 探针:isLetterTrialOpen 去掉 here → ②「本岗用过」格红;写成之前就 markLetterTrial → ②「模型挂了」红;trialLeftOf 不加记账 → left 格红。
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { SQL } from '@/lib/db'
@@ -73,7 +78,9 @@ vi.mock('@/lib/db/server', () => ({
 const FREE = { id: 5, email: 'zhang@test.local', role: 'user', proUntil: null }
 const PRO = { id: 6, email: 'pro@test.local', role: 'user', proUntil: '2099-01-01T00:00:00.000Z' }
 
-async function write(): Promise<{ status: number, body: { text?: string, ai?: boolean, jd?: string, error?: string } }> {
+async function write(): Promise<{
+  status: number, body: { text?: string, ai?: boolean, jd?: string, error?: string, left?: number | null },
+}> {
   const { applyLetterRoute } = await import('@/lib/apply/routes')
   const r = await applyLetterRoute(new Request('http://x/api/apply/letter', {
     method: 'POST', body: JSON.stringify({ jobId: 42, resumeId: 7, senderName: 'Zhang San' }),
@@ -96,22 +103,46 @@ afterEach(() => {
   h.user.current = null
 })
 
-describe('② 写信路由的 Pro 闸(2026-10-10 投递框三步:试用撤,不是 Pro 一律 402)', () => {
-  it('免费档(不论用量)→ 402 pro,不调模型、不记账', async () => {
+describe('② 写信路由的试用闸(2026-11-07 恢复:免费档每人 3 个职位,同岗重写不另算)', () => {
+  it('免费档全格:本岗用过或用量 < 3 放行,写成才记账,left = 3 − 记账后用量;否则 402', async () => {
     h.user.current = FREE
-    for (const used of [0, 3]) {
-      h.trial.used = used
-      h.trial.here = false
-      const r = await write()
-      expect(r.status).toBe(402)
-      expect(r.body.error).toBe('pro')
-      expect(r.body.text).toBeUndefined()
+    for (const used of [0, 1, 2, 3, 4]) {
+      for (const here of [false, true]) {
+        h.trial.used = used
+        h.trial.here = here
+        h.marks.length = 0
+        h.complete.mockClear()
+        const r = await write()
+        if (here || used < 3) {
+          const after = used + (here ? 0 : 1)
+          expect(r.status).toBe(200)
+          expect(r.body.ai).toBe(true)
+          expect(h.marks.length).toBe(here ? 0 : 1)
+          expect(r.body.left).toBe(Math.max(0, 3 - after))
+        } else {
+          expect(r.status).toBe(402)
+          expect(r.body.error).toBe('pro')
+          expect(r.body.text).toBeUndefined()
+          expect(h.complete).not.toHaveBeenCalled()
+          expect(h.marks).toEqual([])
+        }
+      }
     }
-    expect(h.complete).not.toHaveBeenCalled()
-    expect(h.marks).toEqual([])
   })
 
-  it('Pro → 照写,回包带这一岗的 JD,不再记试用账', async () => {
+  it('试用中模型挂了 → ai = false,不记账,left 不变', async () => {
+    h.user.current = FREE
+    h.trial.used = 1
+    h.trial.here = false
+    h.complete.mockRejectedValue(new Error('down'))
+    const r = await write()
+    expect(r.status).toBe(200)
+    expect(r.body.ai).toBe(false)
+    expect(h.marks).toEqual([])
+    expect(r.body.left).toBe(2)
+  })
+
+  it('Pro → 照写,回包带这一岗的 JD,不记试用账,left = null', async () => {
     h.user.current = PRO
     h.trial.used = 9
     h.trial.here = false
@@ -120,6 +151,7 @@ describe('② 写信路由的 Pro 闸(2026-10-10 投递框三步:试用撤,不�
     expect(r.body.ai).toBe(true)
     expect(r.body.jd).toContain('We need a cook')
     expect(h.marks).toEqual([])
+    expect(r.body.left).toBeNull()
   })
 
   it('Pro 模型挂了 → ai = false(前端出「没写成」),不记账', async () => {

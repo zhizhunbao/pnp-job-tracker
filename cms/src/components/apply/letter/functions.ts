@@ -1,6 +1,8 @@
 /**
  * 投递框求职信页的行为:信的单选项(这一岗的草稿、上传的、改写的、不附)、改信、
  * 上传求职信抽字、按职位改写(不是 Pro 弹升级框,Pro 开对照框)。
+ * 2026-11-07 Frank「可以」(设计稿 docs/design/我的/我的求职-20261009.md 1.10 / 2.10):求职信的改写恢复免费试用 3 个职位,
+ * 能不能写由接口判(402 才弹升级框,副标题说试用用完);简历卡头的改写照旧是 Pro 功能。
  * 2026-10-10 Frank「大于 1000 就 拆 子桶」:apply 桶首个子桶。父桶 functions.ts 超 1000 行,按关注点切出求职信页这一族
  * (信的单选项、上传求职信抽字、按职位改写);依赖只许父桶 → 子桶(经本目录 index.ts),子桶不取父桶任何东西,
  * 要用的常量各自抄、形状本桶自声明。求职信页与对照框两个 tsx 仍住父桶(它们拼父桶的分区卡、单选行与样式)。
@@ -13,8 +15,8 @@
 import { coverFileOf, coverNormOf } from '@/lib/apply'
 import {
   CRED_INCLUDE, DRAFT_SUB_KEY, ERR_CODES, ERR_KEY_HEAD, ERR_KEY_UPLOAD, ERR_KEY_WRITE, ERR_NONE, E_PRO, FIELD_FILE,
-  HDR_CONTENT_TYPE, METHOD_POST, MIME_JSON, OPT_AI, OPT_DRAFT, OPT_NONE, OPT_UP_HEAD, REWRITE_KEY,
-  TEXT_NONE, UPLOADED_KEY, URL_EXTRACT, URL_LETTER,
+  HDR_CONTENT_TYPE, METHOD_POST, MIME_JSON, OPT_AI, OPT_DRAFT, OPT_NONE, OPT_UP_HEAD, PRO_REASON_KEY, REWRITE_KEY,
+  TEXT_NONE, TRIAL_OUT_KEY, UPLOADED_KEY, URL_EXTRACT, URL_LETTER,
 } from './constants'
 import type {
   ExtractJson, LetterCells, LetterJson, LetterOpt, LetterPickOfFn, LetterStart, LetterUploadIn,
@@ -117,17 +119,14 @@ function pickOpt(x: PickOptIn): void {
 
 
 /**
- * 造求职信卡头「按职位改写」:不是 Pro 弹升级框(不设试用);Pro 开三栏对照框、按这一岗写一封。
+ * 造求职信卡头「按职位改写」:开三栏对照框、按这一岗写一封。
+ * 2026-11-07 恢复试用:不再在前端拦免费号,能不能写由接口判(试用用完回 402,rewrite 里弹升级框)。
  *
  * @param c 整机的可变格。
  * @returns 点击手柄。
  */
 export function makeLetterRewrite(c: LetterCells): () => void {
   return function onLetterRewrite(): void {
-    if (c.pro === false) {
-      c.setUpsell(true)
-      return
-    }
     void rewrite(c)
   }
 }
@@ -141,7 +140,7 @@ export function makeLetterRewrite(c: LetterCells): () => void {
 export function makeResumeRewrite(c: LetterCells): () => void {
   return function onResumeRewrite(): void {
     if (c.pro === false) {
-      c.setUpsell(true)
+      c.setUpsell(PRO_REASON_KEY)
       return
     }
     c.setSoon(true)
@@ -156,7 +155,7 @@ export function makeResumeRewrite(c: LetterCells): () => void {
  */
 async function rewrite(c: LetterCells): Promise<void> {
   const before = c.letter
-  c.setRw({ busy: true, before, jd: TEXT_NONE, after: TEXT_NONE, err: ERR_NONE })
+  c.setRw({ busy: true, before, jd: TEXT_NONE, after: TEXT_NONE, err: ERR_NONE, left: null })
   let got: LetterJson = {}
   try {
     const r = await fetch(URL_LETTER, {
@@ -171,18 +170,31 @@ async function rewrite(c: LetterCells): Promise<void> {
   }
   if (got.error === E_PRO) {
     c.setRw(null)
-    c.setUpsell(true)
+    c.setUpsell(TRIAL_OUT_KEY)
     return
   }
   if (got.ai !== true || typeof got.text !== 'string') {
-    c.setRw({ busy: false, before, jd: TEXT_NONE, after: TEXT_NONE, err: writeErrOf(got) })
+    c.setRw({ busy: false, before, jd: TEXT_NONE, after: TEXT_NONE, err: writeErrOf(got), left: trialLeftOf(got) })
     return
   }
   let jd = TEXT_NONE
   if (typeof got.jd === 'string') {
     jd = got.jd
   }
-  c.setRw({ busy: false, before, jd, after: got.text, err: ERR_NONE })
+  c.setRw({ busy: false, before, jd, after: got.text, err: ERR_NONE, left: trialLeftOf(got) })
+}
+
+/**
+ * 回包里的试用余量(卡头胶囊;Pro 或没给 = null)。
+ *
+ * @param got 写信接口回包。
+ * @returns 还剩几个职位;不显示给 null。
+ */
+function trialLeftOf(got: LetterJson): number | null {
+  if (typeof got.left === 'number') {
+    return got.left
+  }
+  return null
 }
 
 /**

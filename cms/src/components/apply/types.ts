@@ -235,6 +235,12 @@ export type RewriteView = {
    * 没写成的词条键(没有 = 空串)。
    */
   err: string
+
+  /**
+   * 免费试用还剩几个职位(卡头胶囊;Pro 或还没回包 = null;2026-11-07 恢复试用,设计稿
+   * docs/design/我的/我的求职-20261009.md 1.10 / 2.10)。
+   */
+  left: number | null
 }
 
 /**
@@ -510,9 +516,9 @@ export type ApplyPanel = {
   soon: boolean
 
   /**
-   * 升级框开着没有。
+   * 升级框副标题的词条键(空串 = 没开;2026-11-07 由开关改成词条键:试用用完与 Pro 功能两种说法)。
    */
-  upsell: boolean
+  upsell: string
 
   /**
    * 付完回哪儿(回到本岗投递框)。
@@ -900,9 +906,9 @@ export type ApplyCells = {
   setLetterBusy: SetFn<boolean>
 
   /**
-   * 开 / 关升级框。
+   * 开升级框(给副标题的词条键)/ 关(空串)。
    */
-  setUpsell: SetFn<boolean>
+  setUpsell: SetFn<string>
 
   /**
    * 出「即将上线」。

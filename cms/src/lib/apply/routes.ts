@@ -40,8 +40,9 @@ import {
   pdfBadCharsOf, recipientOf, resumeFileOf, saveApplyDraft, saveApplyPrefs, senderFromOf, toDraftBody, toSendJobId, unclaimApply, webhookEmailIdOf,
   letterCleanOf, letterMessagesOf, letterProviderOf, loadApplyFile, toLetterBody,
   loadApplyLetters,
+  isLetterTrialOpen, loadLetterTrial, markLetterTrial, trialLeftOf,
 } from './functions'
-import type { DraftBodyJson, LetterBodyJson, NameBodyJson, SendBodyJson, WebhookJson } from './types'
+import type { DraftBodyJson, LetterBodyJson, MaybeLetterTrial, NameBodyJson, SendBodyJson, WebhookJson } from './types'
 
 /**
  * GET /api/apply/cover?job=:求职信 PDF(本人预览,在浏览器里直接打开)。有草稿渲草稿;
@@ -321,9 +322,11 @@ export async function applyInboundRoute(req: Request): Promise<Response> {
  * 不存库 —— 写好的信由投递页接着存草稿。
  * 2026-10-10 投递框三步(Frank「用户只要一点击,就弹收费」):试用撤,不是 Pro 一律 402;回包带上这一岗的 JD 全文
  * (三栏对照框的「职位要求」栏,不再另取)。
+ * 2026-11-07 Frank 看过设计稿(docs/design/我的/我的求职-20261009.md 1.10 / 2.10)说「可以」:试用恢复 ——
+ * 不是 Pro 先查试用账,这一岗用过或用过不到 LETTER_TRIAL_MAX 个职位就照写,模型真写成才记账;回包加 left(还剩几个,Pro = null)。
  *
  * @param req 请求(body 是 { jobId, resumeId, senderName })。
- * @returns { text, ai, jd };未登录 401、超限 429、体不合形 400、署名不合规 422、岗不存在 404、不是 Pro 402、
+ * @returns { text, ai, jd, left };未登录 401、超限 429、体不合形 400、署名不合规 422、岗不存在 404、不是 Pro 且试用用完 402、
  *   简历不是本人的 409。
  */
 export async function applyLetterRoute(req: Request): Promise<Response> {
@@ -352,8 +355,12 @@ export async function applyLetterRoute(req: Request): Promise<Response> {
   if (job == null) {
     return Response.json({ error: E_JOB }, { status: NOT_FOUND })
   }
+  let trial: MaybeLetterTrial = null
   if (isPro(user) === false) {
-    return Response.json({ error: E_PRO }, { status: PAYMENT_REQUIRED })
+    trial = await loadLetterTrial({ db, userId: user.id, jobId: job.id })
+    if (isLetterTrialOpen(trial) === false) {
+      return Response.json({ error: E_PRO }, { status: PAYMENT_REQUIRED })
+    }
   }
   const fallback = coverFillOf({ template: COVER_DEFAULT, title: job.title, company: job.company, name: body.senderName })
   const blob = await loadApplyBlob({ db, userId: user.id, resumeId: body.resumeId })
@@ -368,7 +375,7 @@ export async function applyLetterRoute(req: Request): Promise<Response> {
   }
   if (resume.text == null || jd === TEXT_NONE) {
     log({ tag: APPLY_LOG.tag, text: APPLY_LOG.letterSkipped + user.id + APPLY_LOG.appFrag + job.id })
-    return Response.json({ text: fallback, ai: false, jd })
+    return Response.json({ text: fallback, ai: false, jd, left: trialLeftOf({ trial, marked: false }) })
   }
   let out = TEXT_NONE
   try {
@@ -383,9 +390,14 @@ export async function applyLetterRoute(req: Request): Promise<Response> {
     log({ tag: APPLY_LOG.tag, text: APPLY_LOG.letterFailed + user.id + APPLY_LOG.whyFrag + String(e) })
   }
   if (out.length < LETTER_MIN_LEN) {
-    return Response.json({ text: fallback, ai: false, jd })
+    return Response.json({ text: fallback, ai: false, jd, left: trialLeftOf({ trial, marked: false }) })
   }
-  return Response.json({ text: out, ai: true, jd })
+  let marked = false
+  if (trial != null && trial.here === false) {
+    await markLetterTrial({ db, userId: user.id, jobId: job.id })
+    marked = true
+  }
+  return Response.json({ text: out, ai: true, jd, left: trialLeftOf({ trial, marked }) })
 }
 
 /**
