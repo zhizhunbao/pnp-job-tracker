@@ -1236,7 +1236,7 @@ export const siteZh = {
   'res.cat.federal': '联邦移民', 'res.cat.pnp': '各省提名(PNP)', 'res.cat.study': '留学 DLI', 'res.cat.language': '语言考试', 'res.cat.wage': '工资与职业数据', 'res.cat.lmia': 'LMIA 与雇主担保', 'res.cat.authority': '权威与合规',
   'res.rules': '通道门槛', 'res.rules.prov': '{prov} 省提名', 'res.prog.AIP': 'AIP 大西洋移民计划', 'res.prog.RCIP': 'RCIP 偏远社区移民试点', 'res.prog.FCIP': 'FCIP 法语社区移民试点', 'res.prog.PGWP': 'PGWP 毕业工签', 'res.prog.CEC': 'CEC 加拿大经验类', 'res.prog.FSW': 'FSW 联邦技术移民', 'res.prog.FST': 'FST 联邦技工类', 'res.prog.PR-fees': '联邦申请费',
   'clear': '清除筛选',
-  'empty': '无匹配职位', 'allShown': '已全部显示 {total} 个', 'loadMore': '显示更多 {n} 条(还剩 {left} 条)',
+  'empty': '无匹配职位', 'allShown': '已全部显示 {total} 个', 'loadMore': '显示更多(还有 {n} 条)',
   'chart.back': '返回', 'chart.drillHint': '点条形可下钻', 'chart.other': '其他', 'chart.loading': '加载中…', 'nav.account': '账户', 'nav.acctTab': '我的账户',
   'menu.sect.manage': '管理',
   // 账户(E3-02)
@@ -1695,7 +1695,7 @@ export const pteZh = {
   'pte.sec.speaking': '口语', 'pte.sec.writing': '写作', 'pte.sec.reading': '阅读', 'pte.sec.listening': '听力',
   'pte.col.num': '题号', 'pte.col.text': '题面', 'pte.col.seen': '最近考过', 'pte.col.n': '考过次数', 'pte.seenToday': '今天', 'pte.seenAgo': '{n} 天前', 'pte.today': '今天', 'pte.ago': '{n} 天前', 'pte.times': '考过 {n} 次',
   'pte.col.act': '操作', 'pte.go': '练习',
-  'pte.empty': '没有符合的题', 'pte.more': '显示更多 {n} 题(还剩 {left} 题)',
+  'pte.empty': '没有符合的题', 'pte.more': '显示更多(还有 {n} 题)',
   'pte.pos': '{i} / {n}',
   'pte.inst.RA': '40 秒内自然清晰地读出来', 'pte.inst.RS': '听一遍,原样复述', 'pte.inst.ASQ': '听问题,一两个词作答', 'pte.inst.WFD': '听一遍,原样写下来',
   'pte.inst.RFIB': '每个空选一个词', 'pte.inst.RWFIB': '每个空从下拉里选', 'pte.inst.ROP': '把段落排成正确顺序',
