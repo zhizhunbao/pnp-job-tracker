@@ -721,6 +721,22 @@ export const URL_API_JOB_RELATED = '/api/jobs/related?id='
 export const URL_API_JOB_RELATED_PAGE = '/api/jobs/related/page?'
 
 /**
+ * 移民相关卡原料的接口(2026-11-07 Frank 看效果图「可以,开做」:职位弹框补移民相关卡,弹框走客户端取数;
+ * 全站一份不分岗,与职位页门 SSR 递的同一份)。
+ */
+export const URL_API_JOB_IMM = '/api/jobs/imm'
+
+/**
+ * 缓存头名。
+ */
+export const HDR_CACHE_CONTROL = 'Cache-Control'
+
+/**
+ * 移民相关卡原料的浏览器缓存头(站级数据、与用户无关,同大维度包 5 分钟 + SWR)。
+ */
+export const IMM_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3600'
+
+/**
  * 相关职位续取接口的岗位号参数名。
  */
 export const P_REL_ID = 'id'

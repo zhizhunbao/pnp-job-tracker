@@ -2,11 +2,13 @@
 /**
  * 职位页移民相关卡的一行(2026-10-02 Frank「这两个应该可以点击弹框吧」「缺灰字啊」):行名 + 主文案(可点的蓝字,点开职位板同一个弹框)
  * + 灰字小注一项一行。形照公司信息卡的 Row 行,可点的字照职位板胶囊(span 点开弹框)。
+ * 2026-11-07 Frank「隐藏翻译这部分 没控制啊」:译名灰字听外层 TransProvider,关着不出;薪资行的中位 / 低位不是翻译,照出。
  *
  * @author Frank
  * @time 2026-10-02 15:30:00
  */
 import { cssOf } from '@/components/css'
+import { useShowTrans } from '@/components/name'
 import { Row } from '@/components/row'
 import { LINK_CLS } from './constants'
 import { makeOpenImm } from './functions'
@@ -20,9 +22,12 @@ import css from './jobs.module.css'
  * @returns 一行。
  */
 export function JobImmRow({ row, open }: JobImmRowIn) {
+  const showTrans = useShowTrans()
   const subs = []
-  for (const s of row.subs) {
-    subs.push(<span key={s} className={cssOf(css.immSub)}>{s}</span>)
+  if (row.trans === false || showTrans) {
+    for (const s of row.subs) {
+      subs.push(<span key={s} className={cssOf(css.immSub)}>{s}</span>)
+    }
   }
   return (
     <Row k={row.label}>

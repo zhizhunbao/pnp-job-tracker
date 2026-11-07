@@ -38,7 +38,7 @@ import {
   TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MODE_EMAIL,
   TRACK_APPLY_CLICK, TRACK_SAVE_JOB, TRACK_SAVE_SEARCH, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UPSELL_LOCK, UPSELL_SS,
   URL_API_JD_FORMAT, URL_API_JD_TRANSLATE,
-  URL_API_JOB_RELATED,
+  URL_API_JOB_RELATED, URL_API_JOB_IMM,
   URL_API_JOBS, URL_API_JOBS_DIMS,
   URL_API_SAVED_JOBS,
   URL_API_SAVED_JOBS_LIST, URL_API_SAVED_SEARCHES,
@@ -59,7 +59,7 @@ import {
   togglableColsOf,
   toRelatedJobs, chipNocOf, occGroupsOf, occSlotOf, tableWrapOf,
   widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
-  jobDatesOf, ssrTransOf,
+  jobDatesOf, ssrTransOf, immFactsOf,
 } from './functions'
 import type {
   AccountAreaPanel, TransTogglePanel,
@@ -82,7 +82,7 @@ import type {
   SavedEntry, SavedHookIn, SavedListJson, SavedPanel, SavedPostJson, SaveSearchIn, SeedCookieIn, SortState,
   TableWidthIn, TransJson, TranslateIn, TransStatus, UnseenRowsIn, UpsellKind, UrlSettleIn, WrapWidthIn,
   JobDateCell, JobDatesIn,
-  ImmPopupPanel,
+  ImmPopupPanel, ImmJson, ImmOfHookIn, JobImmFacts,
 } from './types'
 
 /**
@@ -1753,6 +1753,19 @@ function readRelated(r: Response): Promise<RelatedJson | null> {
 }
 
 /**
+ * 2xx 才解移民相关卡原料(2026-11-07)。
+ *
+ * @param r 响应。
+ * @returns 接口回包;非 2xx / 解不开给 null。
+ */
+function readImm(r: Response): Promise<ImmJson | null> {
+  if (r.ok === false) {
+    return Promise.resolve(null)
+  }
+  return r.json().catch(nullOf)
+}
+
+/**
  * 出错时给 null(catch 的落点)。
  *
  * @returns null。
@@ -2463,6 +2476,35 @@ export function useRelatedOf(x: RelatedOfHookIn): RelatedJobs | null {
     }
   }, [id])
   return related
+}
+
+/**
+ * 职位描述弹框的移民相关卡事实(2026-11-07 Frank 看效果图「可以,开做」:弹框与职位页同一副卡组):
+ * 原料全站一份(浏览器缓存 5 分钟,开一次框取一次),到手后拿本岗现判低位门槛;没取到一直是 null(卡不出)。
+ *
+ * @param x 本岗。
+ * @returns 移民相关卡的事实;null = 还没到 / 没取到。
+ */
+export function useImmOf(x: ImmOfHookIn): JobImmFacts | null {
+  const [raw, setRaw] = useState<ImmJson | null>(null)
+  useEffect(function loadImm() {
+    let dead = false
+    fetch(URL_API_JOB_IMM)
+      .then(readImm)
+      .then(function onImm(j: ImmJson | null) {
+        if (dead === false) {
+          setRaw(j)
+        }
+      })
+      .catch(swallow)
+    return function stopImm() {
+      dead = true
+    }
+  }, [])
+  if (raw == null) {
+    return null
+  }
+  return immFactsOf({ raw, job: x.job })
 }
 
 /**

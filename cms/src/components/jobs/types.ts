@@ -14,7 +14,7 @@
  * @time 2026-08-28 19:15:06
  */
 // eslint-disable-next-line local/no-import-in-leaf -- 只 import type,理由见文件头(原样透传的外域整份行)
-import type { ColKey, Dims, FieldGroup, JobRow, MatchProfile, NocDesc, Plan } from '@/lib/jobs'
+import type { ColKey, Dims, FieldGroup, JobRow, MatchProfile, NocDesc, Plan, PnpReqRow } from '@/lib/jobs'
 // eslint-disable-next-line local/no-import-in-leaf -- 只 import type,理由见文件头(相似职位行原样透传)
 import type { RelatedJob } from '@/lib/jobs/server'
 
@@ -6175,6 +6175,11 @@ export type JobModalCardsIn = {
    * 界面语言。
    */
   lang: Lang
+
+  /**
+   * 分层态(移民相关卡点开的字段弹框要它)。
+   */
+  plan: JobPlan
 }
 
 /**
@@ -6293,6 +6298,51 @@ export type JobImmFacts = {
 }
 
 /**
+ * GET /api/jobs/imm 的回包(2026-11-07 职位弹框补移民相关卡):全站一份不分岗,本岗的低位门槛由客户端拿门槛行现判(immFactsOf)。
+ */
+export type ImmJson = {
+  /**
+   * 省提名格的事实(与职位页门里同一份 boardPnpOf)。
+   */
+  pnp: BoardPnpFacts
+
+  /**
+   * 两个字段弹框要的维度(jobImmDimsOf 压好)。
+   */
+  dims: JobDims
+
+  /**
+   * 全国门槛行(外域整行原样透传给 pnp 桶 wageLowAppliesOf)。
+   */
+  reqs: PnpReqRow[]
+}
+
+/**
+ * useImmOf 的入参。
+ */
+export type ImmOfHookIn = {
+  /**
+   * 本岗。
+   */
+  job: JobFact
+}
+
+/**
+ * immFactsOf 的入参。
+ */
+export type ImmFactsIn = {
+  /**
+   * 接口回包。
+   */
+  raw: ImmJson
+
+  /**
+   * 本岗。
+   */
+  job: JobFact
+}
+
+/**
  * 移民相关卡的一行。
  */
 export type ImmRow = {
@@ -6315,6 +6365,12 @@ export type ImmRow = {
    * 灰字小注,一项一行(界面语言译名、中位、低位)。
    */
   subs: string[]
+
+  /**
+   * 灰字是不是译名(2026-11-07 Frank「隐藏翻译这部分 没控制啊」):信号三行 true,随「隐藏翻译」收起;
+   * 薪资行 false,中位与低位是事实不是翻译,照常出。
+   */
+  trans: boolean
 
   /**
    * 点开哪一列的弹框;null = 不可点。

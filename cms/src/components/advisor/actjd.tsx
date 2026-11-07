@@ -64,7 +64,7 @@ export function ActJd({ job, lang, plan, onClose, frame, sub, a }: ActJdIn) {
           pageHref={URL_JOB_HEAD + String(job.id)} />
       )}>
       <JobBody job={job} plan={plan} inModal d={d}
-        tail={<JobModalCards job={job} lang={lang} />} />
+        tail={<JobModalCards job={job} lang={lang} plan={plan} />} />
     </Modal>
     </TransProvider>
   )

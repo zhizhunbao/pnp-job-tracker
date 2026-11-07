@@ -7,6 +7,8 @@
  * 公司信息卡点文件不走 companies 桶:advisor 的职位描述弹框点本件,companies 的桶反过来要 advisor 的弹框,走桶就成环。
  * 2026-10-09 N6b 批:两张卡里的名字 N6 起由 name 桶自开弹框,点相关职位 / 点公司名两个回调撤。
  * 2026-10-11 批 4 全站卡片字段:最前面加「职位信息」卡(JobInfoCard,与职位页同一件)。
+ * 2026-11-07 Frank「弹框 和 页面 内容是不是要保持一致」→ 看效果图「可以,开做」:职位信息卡后面补「移民相关」卡(JobImmCard,与职位页同一件),
+ * 卡组与职位页同序;原料走 /api/jobs/imm(useImmOf),职业名那一行用职位行自带的名字(jobNocDescOf),没取到卡不出。
  *
  * @author Frank
  * @time 2026-09-21 17:30:00
@@ -14,8 +16,9 @@
 import { CompanyInfoCard } from '@/components/companies/companyinfocard'
 import { makeT } from '@/lib/i18n'
 import { TEXT_NONE, TRACK_FROM_MODAL } from './constants'
-import { showRelatedOf } from './functions'
-import { useRelatedOf } from './hooks'
+import { jobNocDescOf, showRelatedOf } from './functions'
+import { useImmOf, useRelatedOf } from './hooks'
+import { JobImmCard } from './jobimmcard'
 import { JobInfoCard } from './jobinfocard'
 import { JobRelated } from './jobrelated'
 import type { JobModalCardsIn } from './types'
@@ -23,15 +26,17 @@ import type { JobModalCardsIn } from './types'
 /**
  * 渲染职位描述弹框正文下面的两张卡。
  *
- * @param props 这一岗与界面语言(逐格注释见 JobModalCardsIn)。
- * @returns 职位信息卡 + 公司信息卡 + 相关职位卡(后两张各自没取到时不出)。
+ * @param props 这一岗、界面语言与分层态(逐格注释见 JobModalCardsIn)。
+ * @returns 职位信息卡 + 移民相关卡 + 公司信息卡 + 相关职位卡(后三张各自没取到时不出)。
  */
-export function JobModalCards({ job, lang }: JobModalCardsIn) {
+export function JobModalCards({ job, lang, plan }: JobModalCardsIn) {
   const t = makeT(lang)
   const related = useRelatedOf({ id: Number(job.id) })
+  const imm = useImmOf({ job })
   return (
     <>
       <JobInfoCard job={job} lang={lang} />
+      {imm != null && <JobImmCard job={job} imm={imm} lang={lang} plan={plan} nocDesc={jobNocDescOf(job)} />}
       <CompanyInfoCard jobId={Number(job.id)} lang={lang} seed={null} />
       {related != null && showRelatedOf({ related, fallbackHref: TEXT_NONE }) && (
         <JobRelated head={t('detail.related')}

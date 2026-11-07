@@ -7,11 +7,15 @@
  * (省提名 = pnp 桶 PnpModal,EE / AIP = advisor 桶 AdvisorModal,同 BoardModals 的分流)。
  * 事实由页面门服务端取好递进来,卡直出进 HTML,爬虫看得到。一行都没有整卡不出。
  * 2026-10-09 N6b 批:字段弹框里 AIP 名单招牌与公司组的名字 N6 起由 name 桶自开弹框,点公司名的回调撤。
+ * 2026-11-07 Frank「这两部分薪职内容是不是重复了」→ 看效果图「可以,开做」:薪资行撤(薪资与中位只在「职位信息」卡出),
+ * 只在有应届生低位门槛时出「工资门槛」一行;职位弹框同挂本卡(JobModalCards),弹框与职位页同一副卡组。
+ * 同批 AdvisorModal 改点文件取(advisor/advisormodal):advisor 的职位描述弹框经 JobModalCards 点本件,
+ * 走 advisor 桶就成环(同 JobModalCards 取公司信息卡)。
  *
  * @author Frank
  * @time 2026-10-02 15:30:00
  */
-import { AdvisorModal } from '@/components/advisor'
+import { AdvisorModal } from '@/components/advisor/advisormodal'
 import { PnpModal } from '@/components/pnp'
 import { makeT } from '@/lib/i18n'
 import { CARD_HEAD_CLS, CARD_MD_CLS, COL } from './constants'

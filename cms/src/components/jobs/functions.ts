@@ -21,7 +21,7 @@
 import {
   eeIsDormant, eeLastDraw, pnpFactsIndexOf, pnpBlockedKeysOf, pnpCellActiveOf, qcCellNameOf,
   pnpBlockCellOf, pnpChannelKeyOf, pnpChannelOf,
-  pnpExcludedOf, pnpNameOf,
+  pnpExcludedOf, pnpNameOf, wageLowAppliesOf,
 } from '@/components/pnp'
 import { cssOf } from '@/components/css'
 import { lazyTitleOf, titleSubOf, untranslatedOf } from '@/components/jobtitle'
@@ -93,7 +93,7 @@ import type {
   TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellReasonIn, UserFilterIn, WantsIn, WidthsKeyIn,
   JobBodyPanel, JobDateCell, JobDatesOfIn, JdGroup, JdSubgroupsIn, PushGroupIn, RepeatItemIn, SubheadPairIn,
   CellCtx, ImmCtxIn, ImmMoneyIn, InfoWageIn, TransToggleLabelIn,
-  ImmNameEnIn, PopupState, ImmRow, ImmRowsIn, ImmSignalIn, ImmWageIn, OpenImmIn,
+  ImmNameEnIn, PopupState, ImmRow, ImmRowsIn, ImmSignalIn, ImmWageIn, OpenImmIn, ImmFactsIn, JobImmFacts,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -5405,6 +5405,43 @@ export function jobImmDimsOf(dims: JobDims): JobDims {
 }
 
 /**
+ * 职位弹框移民相关卡的事实(2026-11-07 Frank 看效果图「可以,开做」:弹框与职位页同一副卡组):
+ * 接口回包是全站一份,本岗有没有低位门槛在这里现判(与职位页门同一判据 wageLowAppliesOf)。
+ *
+ * @param x 接口回包与本岗。
+ * @returns 与职位页门递给移民相关卡的同形事实。
+ */
+export function immFactsOf(x: ImmFactsIn): JobImmFacts {
+  return { pnp: x.raw.pnp, dims: x.raw.dims, wageLow: wageLowAppliesOf({ job: x.job, reqs: x.raw.reqs }) }
+}
+
+/**
+ * 职位弹框里本岗职业那一行(2026-11-07 同批):字段弹框只拿它认职业名,职位行连表带回的三语名与短名就够,不为它另查库;
+ * 职责、要求两格弹框用不着,留空。职位页门照旧整行查(toNocDescList)。
+ *
+ * @param job 本岗。
+ * @returns 一行;本岗没有职业码给空表。
+ */
+export function jobNocDescOf(job: JobFact): NocDescFact[] {
+  if (job.noc === TEXT_NONE) {
+    return []
+  }
+  const n = job.occNames
+  return [{
+    noc: job.noc,
+    title: n.title,
+    titleZh: n.titleZh,
+    titleKo: n.titleKo,
+    titleZhShort: n.titleZhShort,
+    titleKoShort: n.titleKoShort,
+    titleEnShort: n.titleEnShort,
+    duties: TEXT_NONE,
+    requirements: TEXT_NONE,
+    fetched: TEXT_NONE,
+  }]
+}
+
+/**
  * 职位页移民相关卡的各行(2026-10-02 Frank「这两个应该可以点击弹框吧」「应该包含 EE PNP AIP 吧」「缺灰字啊」):
  * 薪资一行 + EE / PNP / AIP 三行。三行的值、可点与否都走职位板同一套格子函数(cellViewOf / cellActive),职位板上是长横的这里整行不出;
  * 主文案英文、界面语言译名做灰字(Frank「应该是英文黑字,中文灰字吧」「以后所有都这么弄」)。
@@ -5448,27 +5485,22 @@ function immCellCtxOf(x: ImmCtxIn): CellCtx {
 }
 
 /**
- * 薪资一行:主文案薪资原文;灰字中位(有就出),有低位门槛时再出低位与一句说明(2026-10-02 Frank「低位工资要显示吗」)。
+ * 工资门槛一行:有低位门槛时出低位与一句说明(2026-10-02 Frank「低位工资要显示吗」)。
+ * 2026-11-07 Frank「这两部分薪职内容是不是重复了」→ 看效果图「可以,开做」:薪资与中位只在「职位信息」卡出一处,
+ * 本卡原「薪资」行(薪资原文 + 中位灰字)撤,只剩应届生低位门槛这一条移民视角的事实,行名改「工资门槛」。
  *
  * @param x 本岗、低位门槛与取词函数。
- * @returns 这一行;没有薪资给 null。
+ * @returns 这一行;本岗没有低位门槛或缺低位数给 null。
  */
 function immWageRowOf(x: ImmWageIn): ImmRow | null {
-  if (hasText(x.job.salaryText) === false) {
+  if (x.wageLow === false) {
     return null
   }
-  const p = provName({ t: x.t, code: x.job.province, localeOnly: true })
-  const subs: string[] = []
-  const median = immMoneyOf({ job: x.job, hourly: x.job.wageMedHourly, annual: x.job.wageMedAnnual })
-  if (median !== TEXT_NONE) {
-    subs.push(x.t('imm.median', { p, v: median }))
-  }
   const low = immMoneyOf({ job: x.job, hourly: x.job.wageLowHourly, annual: x.job.wageLowAnnual })
-  if (x.wageLow && low !== TEXT_NONE) {
-    subs.push(x.t('imm.low', { p, v: low }))
-    subs.push(x.t('imm.lowNote'))
+  if (low === TEXT_NONE) {
+    return null
   }
-  return { key: COL.salary, label: x.t('col.salary'), main: x.job.salaryText, subs, col: null }
+  return { key: COL.salary, label: x.t('imm.wageGate'), main: low, subs: [x.t('imm.lowNote')], trans: false, col: null }
 }
 
 /**
@@ -5550,7 +5582,7 @@ function immSignalRowOf(x: ImmSignalIn): ImmRow | null {
   if (cellActive({ k: x.k, j: x.job, cx: x.cx })) {
     col = x.k
   }
-  return { key: x.k, label: x.cx.t(K_COL + x.k), main: en, subs, col }
+  return { key: x.k, label: x.cx.t(K_COL + x.k), main: en, subs, trans: true, col }
 }
 
 /**
