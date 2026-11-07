@@ -12,7 +12,6 @@
  * @author Frank
  * @time 2026-10-07 05:00:00
  */
-import { SentNotice } from '@/components/account'
 import { UpgradeModal } from '@/components/pricing'
 import { ApplyConfirm } from './applyconfirm'
 import { ApplyFoot } from './applyfoot'
@@ -20,6 +19,7 @@ import { ApplyLetter } from './applyletter'
 import { ApplyResume } from './applyresume'
 import { CARD_MD_CLS, STEP_CONFIRM, STEP_DONE, STEP_LETTER, STEP_RESUME, TEXT_NONE } from './constants'
 import { useApply } from './hooks'
+import { SentNotice } from './sentnotice'
 import type { ApplyPageIn } from './types'
 
 /**

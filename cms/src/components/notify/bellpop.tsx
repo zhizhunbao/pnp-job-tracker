@@ -1,10 +1,11 @@
 'use client'
 /**
- * 铃铛面板(2026-10-11 批 5):卡头「通知」,下面新的在前一条一行 + 时刻;没有通知、拉失败各一句。
+ * 铃铛面板(2026-10-11 批 5):卡头「通知」,下面新的在前一条一行;没有通知、拉失败各一句。
  * 开着才挂,开着才排进 Esc 队(不跟账户下拉、弹框抢 Esc)。
+ * 2026-11-07 自 notify 桶在新域重写(效果图 docs/design/我的/我的框架-20261107.md 1.7 / 2.6)。
  *
  * @author Frank
- * @time 2026-10-11 10:00:00
+ * @time 2026-11-07 17:00:00
  */
 import { cssOf } from '@/components/css'
 import { useEscClose } from '@/components/modal'

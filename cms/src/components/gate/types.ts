@@ -38,7 +38,7 @@ export type GateIntent = 'job' | 'apply' | 'save' | 'entry' | 'filter'
 /**
  * 访客向导走到哪一屏:四道题 + 注册屏。
  */
-export type GateStep = 'goal' | 'major' | 'job' | 'prov' | 'name' | 'reg'
+export type GateStep = 'goal' | 'major' | 'job' | 'prov' | 'who' | 'edu' | 'name' | 'reg'
 
 /**
  * 往已选职业清单上合并的更新函数(React 落格收的另一种形态;本域只整份地拨,形状照 profile 的同名件自抄,
@@ -67,6 +67,26 @@ export type GateBack = {
    */
   onClick: () => void
 } | null
+
+/**
+ * gateBackOf 的入参(2026-10-13)。
+ */
+export type GateBackOfIn = {
+  /**
+   * 走到第几步。
+   */
+  step: number
+
+  /**
+   * 读屏名(界面语)。
+   */
+  aria: string
+
+  /**
+   * 回上一题。
+   */
+  onBack: () => void
+}
 
 /**
  * 访客向导的整块面板(useGateWizard 出;顶行、各题、钮区与借来的已选标签件都读它)。
@@ -414,6 +434,26 @@ export type GateNextOffIn = {
    * 所在省那一格亮哪个(省码 / 境外;空串 = 都不亮)。
    */
   provActive: string
+
+  /**
+   * 身份词(2026-10-13 身份题没选不许往下走)。
+   */
+  who: string
+}
+
+/**
+ * makeWhoPick 的入参(2026-10-13 身份题)。
+ */
+export type WhoPickIn = {
+  /**
+   * 身份落格。
+   */
+  setWho: (v: string) => void
+
+  /**
+   * 记完往后走一步(身份题点了直接进下一题)。
+   */
+  next: () => void
 }
 
 /**
@@ -595,6 +635,196 @@ export type EditBits = {
    * 出「跳过这步」(2026-10-11:只问没答那几题的弹法里、这一题还空着时出;访客向导与「修改」恒 false)。
    */
   skip: boolean
+
+  /**
+   * 身份词;空串 = 没答(2026-10-13)。
+   */
+  who: string
+
+  /**
+   * 点身份格子:记下并直接进下一题。
+   */
+  onWho: (v: string) => void
+
+  /**
+   * 教育经历几段(至少一段,可能三格都空)。
+   */
+  edu: EduPick[]
+
+  /**
+   * 造「改某段某格」的手柄。
+   */
+  eduPickOf: (x: EduCellIn) => (v: string) => void
+
+  /**
+   * 「+ 再加一段」。
+   */
+  onEduAdd: () => void
+
+  /**
+   * 造「删第几段」的手柄。
+   */
+  eduRemoveOf: (i: number) => () => void
+}
+
+/**
+ * 教育经历题几段的整机(useEduRows 出;2026-10-13)。
+ */
+export type EduRowsPanel = {
+  /**
+   * 几段。
+   */
+  edu: EduPick[]
+
+  /**
+   * 造「改某段某格」的手柄。
+   */
+  eduPickOf: (x: EduCellIn) => (v: string) => void
+
+  /**
+   * 「+ 再加一段」。
+   */
+  onEduAdd: () => void
+
+  /**
+   * 造「删第几段」的手柄。
+   */
+  eduRemoveOf: (i: number) => () => void
+}
+
+/**
+ * 教育经历一段(界面上的三格;存档时拼成「所在地.公立私立.时长」串)。
+ */
+export type EduPick = {
+  /**
+   * 院校所在地:省码或 abroad;空串 = 没选。
+   */
+  prov: string
+
+  /**
+   * public / private;空串 = 没选。
+   */
+  kind: string
+
+  /**
+   * y1 / y2 / y3 / master;空串 = 没选。
+   */
+  len: string
+}
+
+/**
+ * 「改某段某格」(eduPickOf)的入参。
+ */
+export type EduCellIn = {
+  /**
+   * 第几段。
+   */
+  i: number
+
+  /**
+   * 哪一格:prov / kind / len。
+   */
+  f: string
+}
+
+/**
+ * makeEduPick 的入参。
+ */
+export type EduPickIn = {
+  /**
+   * 第几段与哪一格。
+   */
+  cell: EduCellIn
+
+  /**
+   * 现在的几段。
+   */
+  edu: EduPick[]
+
+  /**
+   * 写几段。
+   */
+  setEdu: (v: EduPick[]) => void
+}
+
+/**
+ * makeEduLabel 的入参。
+ */
+export type EduLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 哪一格:prov / kind / len。
+   */
+  f: string
+}
+
+/**
+ * eduCellSetOf 的入参。
+ */
+export type EduCellSetIn = {
+  /**
+   * 这一段。
+   */
+  row: EduPick
+
+  /**
+   * 哪一格:prov / kind / len。
+   */
+  f: string
+
+  /**
+   * 新值。
+   */
+  v: string
+}
+
+/**
+ * makeEduAdd / makeEduRemove 的入参。
+ */
+export type EduRowsIn = {
+  /**
+   * 现在的几段。
+   */
+  edu: EduPick[]
+
+  /**
+   * 写几段。
+   */
+  setEdu: (v: EduPick[]) => void
+
+  /**
+   * 第几段(删用;加时给 0)。
+   */
+  i: number
+}
+
+/**
+ * GateEdu 一段(EduLine)的 props。
+ */
+export type GateEduLineIn = {
+  /**
+   * 访客向导整机。
+   */
+  g: GatePanel
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 第几段。
+   */
+  i: number
+
+  /**
+   * 这一段。
+   */
+  row: EduPick
 }
 
 /**
@@ -806,6 +1036,16 @@ export type GateEditSeed = {
    * 英文姓名;空串 = 没填。
    */
   name: string
+
+  /**
+   * 身份词;空串 = 没答(2026-10-13)。
+   */
+  who: string
+
+  /**
+   * 教育经历串(「所在地.公立私立.时长」);空列 = 没答(2026-10-13)。
+   */
+  edu: string[]
 }
 
 /**
@@ -836,6 +1076,11 @@ export type GateEditIn = {
    * 只问起始答案里还空着的那几题、每题可跳(2026-10-11「进我的求职先弹五题」;不给 = 五题全问,档案页「修改」)。
    */
   missing?: boolean
+
+  /**
+   * 从哪一题开始(题键;2026-10-13「我的通道」的「去回答」直接到身份题;不给 = 第一题)。
+   */
+  start?: string
 }
 
 /**
@@ -866,6 +1111,11 @@ export type GateEditHookIn = {
    * 只问还空着的那几题、每题可跳(2026-10-11)。
    */
   missing: boolean
+
+  /**
+   * 从哪一题开始(题键;空串 = 第一题;2026-10-13)。
+   */
+  start: string
 }
 
 /**
@@ -951,6 +1201,16 @@ export type EditPatch = {
    * 处境(只有答了境外才写 overseas)。
    */
   status?: string
+
+  /**
+   * 身份词(2026-10-13)。
+   */
+  fitWho: string
+
+  /**
+   * 教育经历串,只收三格都选了的段(2026-10-13)。
+   */
+  fitEdu: string[]
 }
 
 /**
@@ -1016,4 +1276,24 @@ export type EditBlankIn = {
    * 英文姓名。
    */
   name: string
+
+  /**
+   * 身份词(2026-10-13)。
+   */
+  who: string
+}
+
+/**
+ * startStepOf 的入参(2026-10-13)。
+ */
+export type StartStepIn = {
+  /**
+   * 这一回的步序。
+   */
+  steps: GateStep[]
+
+  /**
+   * 从哪一题开始(题键;空串 = 第一题)。
+   */
+  start: string
 }

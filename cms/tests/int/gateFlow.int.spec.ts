@@ -31,7 +31,7 @@ vi.mock('next/navigation', () => ({
 const t = ((key: string) => key) as TFn
 
 // 档案编辑弹框的空档(2026-10-11 访客向导删,换题挪焦点改在 GateEdit 上验 —— 同一副顶行与题面,五题全问从目标题起)
-const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '' }
+const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [] }
 
 function reply(status: number, body: object) {
   return { status, ok: status >= 200 && status < 300, json: async () => body }

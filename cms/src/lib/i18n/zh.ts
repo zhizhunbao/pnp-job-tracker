@@ -915,6 +915,10 @@ export const jobsZh = {
   'act.noTextBlocked': '这条帖子的正文在原站({src}),该站拒绝本站自动读取。下面的链接直达原帖。',
   // 我的求职(E9-01 最小求职看板,免费)
   'sj.title': '我的求职', 'sj.empty': '还没有收藏',
+  'mj.tab.picks': '今日推荐',
+  'mj.tab.saved': '我的收藏',
+  'mj.tab.applied': '我的投递',
+  'mj.due': '截止 {d}',
   'sj.st.wish': '想投', 'sj.st.applied': '已投', 'sj.st.interview': '面试中', 'sj.st.offer': '拿到 offer',
   'sj.save': '☆ 收藏', 'sj.saved': '★ 已收藏', 'sj.view': '在职位板查看', 'sj.del': '移除', 'sj.weekly': '每周邮件摘要(收藏岗动态,可随时退订)',
   'fav.title': '我的收藏',
@@ -936,7 +940,10 @@ export const jobsZh = {
   'name.hours.full': '全职', 'name.hours.part': '兼职', 'name.placeSub': '{c},{p}',
   'name.term.permanent': '长期', 'name.term.term': '定期合同', 'name.term.seasonal': '季节性', 'name.term.casual': '临时',
   'mj.picks': '今日推荐', 'mj.picksEmpty': '今天没有新推荐',
-  'mj.upgrade': '升级 Pro',
+  // 2026-10-13 Frank「这个叫 升级 Pro 用户能明白吗」→ 选「解锁其余 N 条 + 金色」:打码行上那颗大钮说清点了得到什么
+  'mj.unlock': '解锁其余 {n} 条',
+  // 2026-10-13 Frank「这个要不要加个按钮 换一批」:今日推荐卡头右端
+  'mj.swap': '换一批',
   // 2026-10-11 Frank「可以,按你说的改」:按真发出去的投递命中的推荐理由(2026-10-12 理由胶囊换通道列,mj.why.* 与 mj.col.why、mj.more、mj.unsave 随之删)
   'mj.appliedTitle': '我的投递', 'mj.unsent': '未发出',
   'mj.push': '新岗推送', 'mj.pushRow': '把推荐和收藏动态发到邮箱', 'mj.freqOff': '不发', 'mj.freqDaily': '每天', 'mj.freqWeekly': '每周',
@@ -949,6 +956,7 @@ export const jobsZh = {
   // 2026-10-11 批 5「提示统一 + 顶栏铃铛」:右上角提示的几句与顶栏通知面板
   'mj.pushMailSent': '确认信已发出', 'ib.fwdOn': '回信会同时转到 {e}', 'ib.fwdOff': '回信不再转发',
   'nt.title': '通知', 'nt.empty': '暂无通知', 'nt.fail': '通知没拉下来,稍后再试',
+  'nt.go': '去{page}，{at}',
   'nt.reply': '{co} 回信了', 'nt.bounced': '投给 {co} 的信被退回', 'nt.sent': '已发给 {co}', 'nt.picks': '今日推荐 {n} 条已更新',
   'av.job': '职位信息', 'av.replies': '雇主回复', 'av.noReply': '还没有雇主回复', 'av.fwdTo': '回信同时转到 {e}',
   'av.content': '投递内容', 'av.sentAt': '已发出 {d}',
@@ -1157,6 +1165,14 @@ export const jobsZh = {
   'gate.majorPicked': '已选 {n}/{max}',
   'gate.city': '城市', 'gate.cityPh': '搜索城市', 'gate.save': '保存', 'gate.saveFail': '没存上,再试一次',
   'gate.q.name': '英文姓名(与简历一致)',
+  // 2026-10-13 档案加身份、教育经历两题(Frank「我的档案回答完了,自动在下面出一个 section 列出我的通道」;选项词沿用 10-11 资讯页筛选)
+  'gate.q.who': '你现在的身份', 'gate.q.edu': '在哪读的书(最近两段)',
+  'fit.who.student': '在读留学生', 'fit.who.pgwp': '毕业工签', 'fit.who.lmia': '雇主工签(LMIA)', 'fit.who.open': '开放工签',
+  'fit.who.abroad': '人在国外', 'fit.who.ee': '已有 EE 档案',
+  'fit.eduWhere': '院校所在地', 'fit.eduKind': '公立或私立', 'fit.eduLen': '课程时长',
+  'fit.kind.public': '公立', 'fit.kind.private': '私立',
+  'fit.len.y1': '一年制', 'fit.len.y2': '两年制', 'fit.len.y3': '三年以上', 'fit.len.master': '硕士及以上',
+  'fit.addRow': '+ 再加一段', 'fit.remove': '删除这一段',
   // E11-07 简历上传解析
   'ob.resume.btn': '上传简历,自动填', 'ob.resume.hint': 'PDF/DOCX,10 秒识别职业方向(不保存原件)',
   'ob.resume.busy': '解析中…约 10 秒', 'ob.resume.done': '已识别 {n} 个职业方向,后面几步已预填',
@@ -1220,7 +1236,7 @@ export const siteZh = {
   'res.cat.federal': '联邦移民', 'res.cat.pnp': '各省提名(PNP)', 'res.cat.study': '留学 DLI', 'res.cat.language': '语言考试', 'res.cat.wage': '工资与职业数据', 'res.cat.lmia': 'LMIA 与雇主担保', 'res.cat.authority': '权威与合规',
   'res.rules': '通道门槛', 'res.rules.prov': '{prov} 省提名', 'res.prog.AIP': 'AIP 大西洋移民计划', 'res.prog.RCIP': 'RCIP 偏远社区移民试点', 'res.prog.FCIP': 'FCIP 法语社区移民试点', 'res.prog.PGWP': 'PGWP 毕业工签', 'res.prog.CEC': 'CEC 加拿大经验类', 'res.prog.FSW': 'FSW 联邦技术移民', 'res.prog.FST': 'FST 联邦技工类', 'res.prog.PR-fees': '联邦申请费',
   'clear': '清除筛选',
-  'empty': '无匹配职位', 'allShown': '已全部显示 {total} 个', 'loadMore': '显示更多(还有 {n} 条)',
+  'empty': '无匹配职位', 'allShown': '已全部显示 {total} 个', 'loadMore': '显示更多 {n} 条(还剩 {left} 条)',
   'chart.back': '返回', 'chart.drillHint': '点条形可下钻', 'chart.other': '其他', 'chart.loading': '加载中…', 'nav.account': '账户', 'nav.acctTab': '我的账户',
   'menu.sect.manage': '管理',
   // 账户(E3-02)
@@ -1232,7 +1248,18 @@ export const siteZh = {
   'acct.pw.short': '太短:至少 8 位', 'acct.pw.weak': '弱', 'acct.pw.medium': '中', 'acct.pw.strong': '强', 'acct.pw.hint': '建议混合大小写、数字或符号',
   'pf.title': '我的档案', 'pf.card': '求职', 'pf.edit': '修改', 'pf.none': '还没答', 'pf.noneName': '还没填', 'pf.loadFail': '没取到,刷新再试',
   'pf.goal': '目标', 'pf.majors': '专业', 'pf.jobs': '想做的工作', 'pf.where': '所在地', 'pf.name': '英文姓名',
+  'pf.who': '身份', 'pf.edu': '教育经历',
+  // 2026-10-13「我的档案」下面的「我的通道」卡
+  'pf.paths': '我的通道', 'pf.pathsAsk': '答完身份和教育经历,这里列出你能走的通道', 'pf.pathsAskBtn': '去回答',
+  'pf.pathsEmpty': '这里没有你能走的通道', 'pf.pathsCol.name': '通道', 'pf.pathsCol.total': '全程', 'pf.pathsCol.tags': '条件',
   'acct.plan.free': '免费版', 'sub.title': '我的订阅', 'sub.renew': '续买', 'acct.plan.pro': '有效期至 {d}',
+  'rl.empty': '还没有求职信',
+  'rl.col.wrote': '写于',
+  'rf.col.size': '大小',
+  'rf.col.date': '上传日期',
+  'rf.col.name': '名称',
+  'sub.noPay': '还没有付款',
+  'sub.cur': '当前方案',
   // 2026-10-08 「我的订阅」照 AIApply 的 Billing:方案卡、付款记录
   'sub.left': '还剩 {n} 天', 'sub.price': '30 天 {a},90 天 {b}', 'sub.pay': '付款记录',
   'sub.col.date': '日期', 'sub.col.item': '内容', 'sub.col.amount': '金额', 'sub.receipt': '收据', 'sub.proDays': 'Pro {n} 天',
@@ -1668,7 +1695,7 @@ export const pteZh = {
   'pte.sec.speaking': '口语', 'pte.sec.writing': '写作', 'pte.sec.reading': '阅读', 'pte.sec.listening': '听力',
   'pte.col.num': '题号', 'pte.col.text': '题面', 'pte.col.seen': '最近考过', 'pte.col.n': '考过次数', 'pte.seenToday': '今天', 'pte.seenAgo': '{n} 天前', 'pte.today': '今天', 'pte.ago': '{n} 天前', 'pte.times': '考过 {n} 次',
   'pte.col.act': '操作', 'pte.go': '练习',
-  'pte.empty': '没有符合的题', 'pte.more': '显示更多(还有 {n} 题)',
+  'pte.empty': '没有符合的题', 'pte.more': '显示更多 {n} 题(还剩 {left} 题)',
   'pte.pos': '{i} / {n}',
   'pte.inst.RA': '40 秒内自然清晰地读出来', 'pte.inst.RS': '听一遍,原样复述', 'pte.inst.ASQ': '听问题,一两个词作答', 'pte.inst.WFD': '听一遍,原样写下来',
   'pte.inst.RFIB': '每个空选一个词', 'pte.inst.RWFIB': '每个空从下拉里选', 'pte.inst.ROP': '把段落排成正确顺序',

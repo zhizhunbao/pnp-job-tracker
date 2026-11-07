@@ -1951,7 +1951,7 @@ const localRules = {
           fn:
             'page.tsx 体内出现函数体(`{{ kind }}`)—— 门里只许一行 useXxxPage() + 拼装'
             + '(2026-08-26 Frank 看完拼装版实拍「还是有一堆函数啊」):state/effect/handler '
-            + '全部收进本页面域组件桶的 hooks.ts 状态机器,样板 components/account/hooks.ts 的 useAccountPage。',
+            + '全部收进本页面域组件桶的 hooks.ts 状态机器,样板 components/me/hooks.ts 的 useMePage(2026-11-07 account 桶退役前样板是它的 useAccountPage)。',
         },
       },
       create(context) {
@@ -2801,9 +2801,9 @@ const eslintConfig = [
       'react/forbid-elements': ['error', { forbid: [
         { element: 'a', message: '裸 <a> 禁:经 button 族的 LinkButton(钮形走 Button href/BackButton)' },
         // 2026-08-26 Frank 看 account 样张实拍「<button 这种不允许直接使用」:可点的东西
-        // 一律经 Button(定制样式钮走 kind ghost + 本域加倍类,样板 account 的 PLAIN_BTN_KIND);
+        // 一律经 Button(定制样式钮走 kind ghost + 本域加倍类,样板 account 的 PLAIN_BTN_KIND;2026-11-07 account 退役,同名同义各桶一份,如 me);
         // 唯一的裸 <button> 出口在 button/button.tsx(下面单独关闸)。存量记基线派批清零。
-        { element: 'button', message: '裸 <button> 禁:一律经 button 族的 Button(定制样式走 kind ghost + 本域加倍类,样板 account/PLAIN_BTN_KIND)' },
+        { element: 'button', message: '裸 <button> 禁:一律经 button 族的 Button(定制样式走 kind ghost + 本域加倍类,样板 me/PLAIN_BTN_KIND)' },
       ] }],
       'local/component-file-names': 'error',
       'local/component-name-match': 'error',

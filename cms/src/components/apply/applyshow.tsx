@@ -7,7 +7,7 @@
  * @author Frank
  * @time 2026-10-10 10:00:00
  */
-import { ResumePages, useResumePages } from '@/components/account'
+import { ResumePages, useResumePages } from '@/components/pdf'
 import { Loading } from '@/components/loading'
 import type { ApplyShowIn } from './types'
 import css from './apply.module.css'

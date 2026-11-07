@@ -1,0 +1,134 @@
+/*
+ * me 桶子桶 profile 的私有样式(2026-11-07 我的档案在新域重写:照 Azure Essentials 一列「标签-值」,
+ * 宽屏标签一列定宽、值一列;手机标签在上、值在下。「我的通道」卡的几样照原 account 桶搬来)。
+ */
+
+/*
+ * 卡里一句说明(取不到)。
+ */
+.note {
+  color: var(--text2);
+  font-size: 14px;
+}
+
+/*
+ * 档案几行:竖排,行间留白。
+ */
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 4px 0;
+  font-size: 14px;
+}
+
+/*
+ * 一条「标签-值」:手机一列,标签在上、值在下。
+ */
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 4px;
+}
+
+/*
+ * 宽屏:标签一列定宽、值一列,顶端对齐(多个名字的那一格更高)。
+ */
+@media (width > 640px) {
+  .item {
+    grid-template-columns: 160px minmax(0, 1fr);
+    column-gap: 16px;
+    align-items: start;
+  }
+}
+
+/*
+ * 标签:次级灰字。
+ */
+.k {
+  color: var(--text2);
+}
+
+/*
+ * 值:正文色,长值折行不撑破。
+ */
+.v {
+  min-width: 0;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 一格多个名字(专业、想做的工作、所在地的城市与省份):一个名字一组,竖排。
+ */
+.names {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/*
+ * 没答 / 没填那一格,以及「我的通道」里的灰字:浅灰。
+ */
+.none {
+  color: var(--text3);
+}
+
+/*
+ * 「教育经历」那一格:一段一行竖排(2026-10-13)。
+ */
+.edu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/*
+ * 教育经历一段:三个词并排,词间留白(不拼中点)。
+ */
+.eduLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/*
+ * 「我的通道」没答身份时的引导行:一句灰字 +「去回答」(2026-10-13)。
+ */
+.msAsk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+/*
+ * 「我的通道」省份胶囊一排(放不下折行)。
+ */
+.msChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+/*
+ * 条件格里的一排胶囊(放不下折行)。
+ */
+.msTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/*
+ * 「我的通道」手机上一条一张卡(卡间分隔线,照「我的求职」手机卡)。
+ */
+.msCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}

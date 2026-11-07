@@ -104,6 +104,16 @@ export type MoreLineIn = {
    * 点「显示更多」。
    */
   onMore: ClickFn
+
+  /**
+   * 全部显示完时换出的「收起」钮面(真可选:一次全展开的清单才给;2026-10-13 Frank「收起放边上,显示更多放中间」)。
+   */
+  foldText?: string
+
+  /**
+   * 点「收起」(与 foldText 同给;不给就照旧出 allText)。
+   */
+  onFold?: ClickFn
 }
 
 /**
@@ -119,6 +129,21 @@ export type MoreLabelIn = {
    * 平时的钮面文案。
    */
   label: string
+}
+
+/**
+ * moreCountOf 的入参。
+ */
+export type MoreCountIn = {
+  /**
+   * 还没显示的条数。
+   */
+  left: number
+
+  /**
+   * 一页几条(点一下最多多出几条)。
+   */
+  step: number
 }
 
 /**

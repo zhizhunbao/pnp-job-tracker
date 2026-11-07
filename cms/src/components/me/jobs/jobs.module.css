@@ -1,0 +1,218 @@
+/*
+ * me 桶子桶 jobs 的私有样式(2026-11-07「我的求职」在新域重写:页签卡、三张表的格子、手机一条、打码行与大钮、阶段筛选排)。
+ */
+
+/*
+ * 页签条与下面的内容拉开。
+ */
+.tabs {
+  margin-bottom: 12px;
+}
+
+/*
+ * 失败 / 空态那一句。
+ */
+.note {
+  color: var(--text2);
+  font-size: 13px;
+  padding: 12px 0;
+}
+
+/*
+ * 表上方一行(「换一批」顶到最右)。
+ */
+.bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+/*
+ * 阶段筛选排。
+ */
+.stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+/*
+ * 筛选药丸里的计数(加粗,与字隔开一点)。
+ */
+.stageN {
+  margin-left: 6px;
+  font-weight: 600;
+}
+
+/*
+ * 薪资(绿,同职位卡)。
+ */
+.pay {
+  color: #15803d;
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/*
+ * 通道格没有通道时的长横(2026-10-12 通道列)。
+ */
+.chanNone {
+  color: var(--text3);
+}
+
+/*
+ * 模糊的假字(真值不下发)。
+ * 2026-10-13 Frank「点击 显示更多 表格别变化啊」:假字不参与列宽 —— 块级、自身宽 0、最小宽撑满本格,
+ * 表格按真行定的列宽不因打码行变。
+ */
+.blur {
+  display: block;
+  width: 0;
+  min-width: 100%;
+  filter: blur(5px);
+  user-select: none;
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/*
+ * 打码行的职位名(同上 .blur):块级、自身宽 0、最小宽撑满本格,照常折行,不撑职位列。
+ */
+.lockTitle {
+  display: block;
+  width: 0;
+  min-width: 100%;
+}
+
+/*
+ * 职位格:两行名。
+ */
+.titleCell {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+/*
+ * 一排胶囊(能折行)。
+ */
+.tagList {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/*
+ * 手机一列条。
+ */
+.items {
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * 手机一条(条与条之间一道细线,不自带框;照效果图 手机端-改之后-1)。
+ */
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+}
+
+/*
+ * 第一条不要上线(页签条底线已经隔开)。
+ */
+.item:first-child {
+  border-top: 0;
+}
+
+/*
+ * 手机一条的职位(两行名)。
+ */
+.itemTitle {
+  font-size: 15px;
+}
+
+/*
+ * 公司在左、薪资在右。
+ */
+.itemMid {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+
+/*
+ * 公司那一格(长名字折行,不挤薪资)。
+ */
+.itemCo {
+  min-width: 0;
+}
+
+/*
+ * 底行:地点 + 截止在左、钮在右。
+ */
+.itemFoot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+/*
+ * 地点 + 截止(灰小字)。
+ */
+.itemMeta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  column-gap: 10px;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+/*
+ * 地点那一段(不在中间折开)。
+ */
+.itemPlace {
+  white-space: nowrap;
+}
+
+/*
+ * 今日推荐表格外框:给「解锁其余 N 条」大钮当定位框(2026-10-12 Frank「隐藏的 和 显示的 要对齐啊」)。
+ */
+.lockWrap {
+  position: relative;
+}
+
+/*
+ * 大钮的盖板:从第一条打码行上沿盖到表底,钮在正中,垫一层半透明白底。
+ */
+.lockCover {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgb(255 255 255 / 55%);
+}
+
+/*
+ * 「解锁其余 N 条」大钮(2026-10-12 Frank「这个按钮部分 也没改 看着有点单薄」):加宽、垫投影,压在打码行上要压得住。
+ * 2026-10-13 钮换付费琥珀(pro 档),投影跟着换琥珀(--warn #b45309)。
+ */
+.lockBtn {
+  min-width: 220px;
+  box-shadow: 0 8px 24px rgb(180 83 9 / 35%);
+}

@@ -1,0 +1,529 @@
+/*
+ * nav 域的私有样式(2026-11-07 立,照 Fluent 2 Nav:导航 260 宽、每项 40 高带图标、当前项浅主色底 + 左边 4px 主色竖条;
+ * 屏宽 640 及以下左栏不出,改由抽屉从左边拉出)。颜色一律走全站 main.css 的变量。
+ */
+
+/*
+ * 两栏外框:铺满整个窗口宽,左栏贴窗口左边(照 Azure 门户;2026-11-07 Frank 看实拍「左边是不是别留这么大空隙」,
+ * 原先与顶栏同宽 1320 居中,宽屏上左栏左边空出一大块)。
+ */
+.frame {
+  /*
+   * 左右并排。
+   */
+  display: flex;
+
+  /*
+   * 铺满窗口宽(外框是竖排 flex,不写宽会按内容缩窄,换节时左栏跟着左右跳)。
+   */
+  width: 100%;
+
+  /*
+   * 内容少时也撑满一屏(减去顶栏),左栏的竖线拉到底。
+   */
+  min-height: calc(100vh - 56px);
+}
+
+/*
+ * 左栏:固定 260 宽,右边一条细线与内容分开。
+ */
+.side {
+  /*
+   * Fluent 2 Nav 默认 260 宽。
+   */
+  width: 260px;
+
+  /*
+   * 不被内容挤窄。
+   */
+  flex: none;
+
+  /*
+   * 与内容之间一条细线。
+   */
+  border-right: 1px solid var(--border);
+
+  /*
+   * 上下留白,左右贴边。
+   */
+  padding: 16px 8px;
+}
+
+/*
+ * 左栏里的导航跟着页面往下滚时停在顶栏下面。
+ */
+.sideIn {
+  /*
+   * 粘住。
+   */
+  position: sticky;
+
+  /*
+   * 顶栏高约 56,再空 16。
+   */
+  top: 72px;
+}
+
+/*
+ * 右边内容。
+ */
+.main {
+  /*
+   * 占满剩下的宽。
+   */
+  flex: 1;
+
+  /*
+   * 允许被压窄(表格自己横滚,不把左栏挤走)。
+   */
+  min-width: 0;
+
+  /*
+   * 上 20、左右 28、下 40。
+   */
+  padding: 20px 28px 40px;
+}
+
+/*
+ * 各项一列。
+ */
+.list {
+  /*
+   * 去掉列表圆点。
+   */
+  list-style: none;
+
+  /*
+   * 去掉浏览器默认外距。
+   */
+  margin: 0;
+
+  /*
+   * 去掉浏览器默认缩进。
+   */
+  padding: 0;
+
+  /*
+   * 竖排。
+   */
+  display: flex;
+
+  /*
+   * 竖排。
+   */
+  flex-direction: column;
+
+  /*
+   * 项与项之间 2px。
+   */
+  gap: 2px;
+}
+
+/*
+ * 一项:整行可点,图标 + 文字 + 右边计数。加倍类压过 button 桶的底座。
+ */
+.item.item {
+  /*
+   * 占满一行。
+   */
+  width: 100%;
+
+  /*
+   * 图标、文字、计数横排。
+   */
+  display: flex;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 图标与文字之间 10px。
+   */
+  gap: 10px;
+
+  /*
+   * Fluent 2 Nav 一项 40 高。
+   */
+  height: 40px;
+
+  /*
+   * 左右 12。
+   */
+  padding: 0 12px;
+
+  /*
+   * 小圆角。
+   */
+  border-radius: 6px;
+
+  /*
+   * 次级字色(当前项再加深)。
+   */
+  color: var(--text2);
+
+  /*
+   * 正文字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+
+  /*
+   * 左对齐。
+   */
+  justify-content: flex-start;
+
+  /*
+   * 竖条的定位基准。
+   */
+  position: relative;
+
+  /*
+   * 无边框。
+   */
+  border: 0;
+
+  /*
+   * 透明底。
+   */
+  background: transparent;
+}
+
+/*
+ * 悬停:浅底。
+ */
+.item.item:hover {
+  /*
+   * 全站悬停浅主色底。
+   */
+  background: var(--hover-bg);
+}
+
+/*
+ * 当前项:浅主色底、深字、半粗。
+ */
+.itemOn.itemOn {
+  /*
+   * 浅主色底。
+   */
+  background: var(--hover-bg);
+
+  /*
+   * 正文深字。
+   */
+  color: var(--text);
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 当前项左边那条主色竖条(Fluent 2 Nav 的选中指示)。
+ */
+.itemOn.itemOn::before {
+  /*
+   * 伪元素占位。
+   */
+  content: '';
+
+  /*
+   * 贴左。
+   */
+  position: absolute;
+
+  /*
+   * 贴左沿。
+   */
+  left: 0;
+
+  /*
+   * 上下各收 10。
+   */
+  top: 10px;
+
+  /*
+   * 上下各收 10。
+   */
+  bottom: 10px;
+
+  /*
+   * 4px 宽。
+   */
+  width: 4px;
+
+  /*
+   * 两头圆。
+   */
+  border-radius: 2px;
+
+  /*
+   * 主色。
+   */
+  background: var(--primary);
+}
+
+/*
+ * 图标格:20px 见方,当前项变主色。
+ */
+.icon {
+  /*
+   * 图标居中。
+   */
+  display: inline-grid;
+
+  /*
+   * 图标居中。
+   */
+  place-items: center;
+
+  /*
+   * 图标大小(icons 桶按 1em 画)。
+   */
+  font-size: 18px;
+}
+
+/*
+ * 当前项的图标主色。
+ */
+.itemOn .icon {
+  /*
+   * 主色。
+   */
+  color: var(--primary);
+}
+
+/*
+ * 文字:一行放不下就折(Fluent 2 Nav 长标签默认折行)。
+ */
+.label {
+  /*
+   * 占满中间,把计数推到最右。
+   */
+  flex: 1;
+
+  /*
+   * 左对齐。
+   */
+  text-align: left;
+}
+
+/*
+ * 右边红色计数(未读之类)。
+ */
+.count {
+  /*
+   * 最小一个圆。
+   */
+  min-width: 18px;
+
+  /*
+   * 18 高。
+   */
+  height: 18px;
+
+  /*
+   * 左右 5。
+   */
+  padding: 0 5px;
+
+  /*
+   * 全圆。
+   */
+  border-radius: 9px;
+
+  /*
+   * 红底。
+   */
+  background: var(--danger);
+
+  /*
+   * 白字。
+   */
+  color: #fff;
+
+  /*
+   * 小字。
+   */
+  font-size: 11px;
+
+  /*
+   * 18 行高,字在圆里居中。
+   */
+  line-height: 18px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 数字居中。
+   */
+  text-align: center;
+}
+
+/*
+ * 抽屉的遮罩:盖住整屏。
+ */
+.overlay {
+  /*
+   * 盖在一切之上(比顶栏 30 高)。
+   */
+  position: fixed;
+
+  /*
+   * 铺满。
+   */
+  inset: 0;
+
+  /*
+   * 半透明黑。
+   */
+  background: rgba(17, 24, 39, 0.4);
+
+  /*
+   * 高过顶栏。
+   */
+  z-index: 60;
+}
+
+/*
+ * 抽屉本身:左边 280 宽,铺满高。
+ */
+.drawer {
+  /*
+   * 贴左。
+   */
+  position: absolute;
+
+  /*
+   * 上下铺满。
+   */
+  top: 0;
+
+  /*
+   * 上下铺满。
+   */
+  bottom: 0;
+
+  /*
+   * 贴左。
+   */
+  left: 0;
+
+  /*
+   * 280 宽,不超过屏宽的 85%。
+   */
+  width: min(280px, 85vw);
+
+  /*
+   * 页面底色。
+   */
+  background: var(--card);
+
+  /*
+   * 上下 8、左右 8。
+   */
+  padding: 8px;
+
+  /*
+   * 浮起来的阴影。
+   */
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+
+  /*
+   * 内容多了自己滚。
+   */
+  overflow-y: auto;
+}
+
+/*
+ * 抽屉顶上一行:标题 + ×。
+ */
+.drawerHead {
+  /*
+   * 横排。
+   */
+  display: flex;
+
+  /*
+   * 两头分开。
+   */
+  justify-content: space-between;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 左 12、右 4、上下 4。
+   */
+  padding: 4px 4px 8px 12px;
+}
+
+/*
+ * 抽屉标题。
+ */
+.drawerTitle {
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 比正文大一号。
+   */
+  font-size: 16px;
+}
+
+/*
+ * 抽屉的 × 钮。
+ */
+.drawerClose.drawerClose {
+  /*
+   * 36 见方。
+   */
+  width: 36px;
+
+  /*
+   * 36 见方。
+   */
+  height: 36px;
+
+  /*
+   * 次级字色。
+   */
+  color: var(--text2);
+
+  /*
+   * 图标大小。
+   */
+  font-size: 18px;
+}
+
+/*
+ * 窄屏(640 及以下):左栏不出,内容留白收窄。
+ */
+@media (max-width: 640px) {
+  /*
+   * 左栏不出(改由抽屉)。
+   */
+  .side {
+    display: none;
+  }
+
+  /*
+   * 内容上 12、左右 16、下 32。
+   */
+  .main {
+    padding: 12px 16px 32px;
+  }
+}

@@ -2522,3 +2522,13 @@ export const GATE_FACTOR_HEAD = 'gatef.'
  * 通道状态:已暂停(门槛卡只写已暂停,不列门槛;2026-10-12 Frank「已暂停 就显示已暂停」)。
  */
 export const STATUS_PAUSED = 'paused'
+
+/**
+ * 「我的通道」弹框里门槛卡的 React 键尾(接通道编号;2026-10-13)。
+ */
+export const KEY_GATE_TAIL = '-gate'
+
+/**
+ * 「我的通道」弹框里步骤卡的 React 键尾。
+ */
+export const KEY_STEPS_TAIL = '-steps'

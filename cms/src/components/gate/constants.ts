@@ -70,9 +70,126 @@ export const GATE_STEP_REG = 'reg'
 export const GATE_STEP_NAME = 'name'
 
 /**
- * 编辑模式的步序:访客四题 + 英文姓名(下标即步数;最后一题的主钮是「保存」)。
+ * 编辑模式那一题:身份(2026-10-13 Frank「我的档案回答完了,自动在下面出一个 section 列出我的通道」:档案加两题,
+ * 「我的通道」按它与教育经历筛;单选,点了直接进下一题)。
  */
-export const GATE_EDIT_STEPS = ['goal', 'major', 'job', 'prov', 'name'] as const
+export const GATE_STEP_WHO = 'who'
+
+/**
+ * 编辑模式那一题:教育经历(同上批;至多两段,一段三只下拉,选填 —— 不填 = 不按院校条件筛)。
+ */
+export const GATE_STEP_EDU = 'edu'
+
+/**
+ * 编辑模式的步序:访客四题 + 英文姓名(下标即步数;最后一题的主钮是「保存」)。
+ * 2026-10-13:所在省后面加身份、教育经历两题(只在档案页「修改」里问;进「我的求职」自动弹的那一回照旧只问五题里空着的)。
+ */
+export const GATE_EDIT_STEPS = ['goal', 'major', 'job', 'prov', 'who', 'edu', 'name'] as const
+
+/**
+ * 身份题的选项(pnp 桶 fit 子桶的身份词,与 pathways.fits 的键同;2026-10-11 资讯申请步骤筛选那一套原样搬来)。
+ */
+export const FIT_WHOS = ['student', 'pgwp', 'lmia', 'open', 'abroad', 'ee'] as const
+
+/**
+ * 身份选项词条键的前缀(后接身份词)。
+ */
+export const K_WHO_HEAD = 'fit.who.'
+
+/**
+ * 教育经历「院校所在地」的选项:十省码 + 国外(同 fit 子桶 EDU_ABROAD)。
+ */
+export const EDU_PROVS = ['ON', 'QC', 'BC', 'AB', 'SK', 'MB', 'NS', 'NB', 'NL', 'PE', 'abroad'] as const
+
+/**
+ * 院校所在地「国外」的值。
+ */
+export const EDU_ABROAD = 'abroad'
+
+/**
+ * 教育经历「公立或私立」的选项。
+ */
+export const EDU_KINDS = ['public', 'private'] as const
+
+/**
+ * 教育经历「课程时长」的选项(短到长;fit 子桶按这个序比最短时长)。
+ */
+export const EDU_LENS = ['y1', 'y2', 'y3', 'master'] as const
+
+/**
+ * 教育经历至多几段(Frank 10-11「最近两年 和 两个 最重要」)。
+ */
+export const EDU_ROWS_MAX = 2
+
+/**
+ * 答案档里一段教育经历三格的连接符(「ON.public.y1」;同 10-11 资讯页地址栏的写法)。
+ */
+export const EDU_SEP = '.'
+
+/**
+ * 教育经历一段的三格名:院校所在地。
+ */
+export const EDU_F_PROV = 'prov'
+
+/**
+ * 教育经历一段的三格名:公立或私立。
+ */
+export const EDU_F_KIND = 'kind'
+
+/**
+ * 教育经历一段的三格名:课程时长。
+ */
+export const EDU_F_LEN = 'len'
+
+/**
+ * 「公立 / 私立」词条键的前缀。
+ */
+export const K_KIND_HEAD = 'fit.kind.'
+
+/**
+ * 「课程时长」词条键的前缀。
+ */
+export const K_LEN_HEAD = 'fit.len.'
+
+/**
+ * 院校所在地下拉的占位词(占位即标签)。
+ */
+export const K_EDU_WHERE = 'fit.eduWhere'
+
+/**
+ * 公立或私立下拉的占位词。
+ */
+export const K_EDU_KIND = 'fit.eduKind'
+
+/**
+ * 课程时长下拉的占位词。
+ */
+export const K_EDU_LEN = 'fit.eduLen'
+
+/**
+ * 「+ 再加一段」的词条键。
+ */
+export const K_EDU_ADD = 'fit.addRow'
+
+/**
+ * 一段行尾 ✕ 的读屏词条键。
+ */
+export const K_EDU_REMOVE = 'fit.remove'
+
+/**
+ * 一段行尾 ✕ 的字形。
+ */
+export const EDU_REMOVE_GLYPH = '✕'
+
+/**
+ * 次要文字钮档(「+ 再加一段」、✕)。
+ */
+export const EDU_BTN_KIND = 'ghost'
+
+/**
+ * 省码 → 省名词条键的前缀(同 GATE_PROV_OPTS 的 pr.XX)。
+ */
+export const K_PROV_HEAD = 'pr.'
 
 /**
  * 「跳过这步」的词条键(2026-10-11「进我的求职先弹五题」:只问没答的那几题、每题可跳,只在这一种弹法里出;
@@ -98,6 +215,8 @@ export const GATE_QUESTIONS = [
   { step: 'major', key: 'gate.q.major' },
   { step: 'job', key: 'prof.noc' },
   { step: 'prov', key: 'gate.q.prov' },
+  { step: 'who', key: 'gate.q.who' },
+  { step: 'edu', key: 'gate.q.edu' },
   { step: 'name', key: 'gate.q.name' },
 ] as const
 

@@ -1,0 +1,104 @@
+/*
+ * me 域的私有样式(2026-11-07 立):页标题一行。导航与两栏外框的样子归 nav 桶。
+ */
+
+/*
+ * 页标题:20px 半粗(Fluent 2 Subtitle 一档),下面空 16 再接内容。
+ */
+.h1 {
+  /*
+   * 标题字号。
+   */
+  font-size: 20px;
+
+  /*
+   * 行高。
+   */
+  line-height: 28px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 外距归标题一行(.head)管。
+   */
+  margin: 0;
+}
+
+/*
+ * 窄屏的标题钮:看着还是标题,只多一个向下箭头。加倍类压过 button 桶的底座。
+ */
+.pick.pick {
+  /*
+   * 字与箭头横排。
+   */
+  display: inline-flex;
+
+  /*
+   * 竖向居中。
+   */
+  align-items: center;
+
+  /*
+   * 字与箭头之间 6。
+   */
+  gap: 6px;
+
+  /*
+   * 承接标题字号。
+   */
+  font-size: inherit;
+
+  /*
+   * 承接标题字重。
+   */
+  font-weight: inherit;
+
+  /*
+   * 承接标题字色。
+   */
+  color: inherit;
+
+  /*
+   * 无内衬,与宽屏标题左沿对齐。
+   */
+  padding: 0;
+
+  /*
+   * 无边框。
+   */
+  border: 0;
+
+  /*
+   * 透明底。
+   */
+  background: transparent;
+
+  /*
+   * 自然高。
+   */
+  height: auto;
+}
+
+/*
+ * 标题一行:左标题、右动作,下面空 16 再接内容。
+ */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0 0 16px;
+}
+
+/*
+ * 标题右边的动作:横排,间隔 8。
+ */
+.acts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

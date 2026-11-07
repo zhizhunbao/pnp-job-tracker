@@ -6,8 +6,8 @@
 import fs from 'fs'
 import path from 'path'
 import { describe, expect, it } from 'vitest'
-import { keepStreamOf } from '@/components/pnp/fit'
-import type { EduRow, FitsJson } from '@/components/pnp/fit/types'
+import { keepStreamOf } from '@/lib/pathways/fit'
+import type { EduRow, FitsJson } from '@/lib/pathways/fit/types'
 
 type Row = { key: string, province: string, fits: FitsJson | null, status: string, steps: object[] }
 const ROWS: Row[] = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../data/mart/pathways.json'), 'utf8'))

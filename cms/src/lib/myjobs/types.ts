@@ -799,6 +799,11 @@ export type PicksViewIn = {
    * 不用当天缓存、现算一份(2026-10-11:答完档案重拉推荐)。
    */
   fresh: boolean
+
+  /**
+   * 换到第几批(已按免费 / Pro 夹过;2026-10-13 换一批)。
+   */
+  batch: number
 }
 
 /**
@@ -812,6 +817,26 @@ export type PicksSplitIn = {
 
   /**
    * 是不是 Pro。
+   */
+  pro: boolean
+
+  /**
+   * 换到第几批(2026-10-13 换一批:整份推荐从第 batch × PICKS_FREE 条起转一圈)。
+   */
+  batch: number
+}
+
+/**
+ * 批号(batchOf)的入参。
+ */
+export type BatchOfIn = {
+  /**
+   * 请求地址。
+   */
+  url: string
+
+  /**
+   * 是不是 Pro(免费号夹到 PICKS_SWAP_FREE)。
    */
   pro: boolean
 }
@@ -960,3 +985,188 @@ export type TouchedOut = Promise<number[]>
  * 推荐接口回包的返回。
  */
 export type PicksJsonOut = Promise<PicksJson>
+
+/**
+ * 本人按「我的通道」筛推荐要的两格的库行(2026-10-13 Frank「做推荐匹配吧」)。
+ */
+export type FitFilterDbRow = {
+  /**
+   * 身份词(没答空串)。
+   */
+  who: string | null
+
+  /**
+   * 教育经历串(jsonb 数组;没答空数组)。
+   */
+  edu: string[] | null
+}
+
+/**
+ * 本人按「我的通道」筛推荐要的两格(洗净后)。
+ */
+export type FitFilterFact = {
+  /**
+   * 身份词;空串 = 没答(没答不筛)。
+   */
+  who: string
+
+  /**
+   * 教育经历串(「所在地.公立私立.时长」)。
+   */
+  edu: string[]
+}
+
+/**
+ * loadFitFilter 的返回。
+ */
+export type FitFilterOut = Promise<FitFilterFact>
+
+/**
+ * 一条通道的身份对照里一个身份那一格的院校条件(线格式;同 lib/pathways 的 SchoolJson,全格照抄 —— 喂它的判定)。
+ */
+export type PickSchoolJson = {
+  /**
+   * 院校所在地条件(own / other / canada …)。
+   */
+  prov: string
+
+  /**
+   * 公立私立条件(缺席 = 不限)。
+   */
+  kind?: string
+
+  /**
+   * 最短课程时长(缺席 = 不限)。
+   */
+  min?: string
+}
+
+/**
+ * 一条通道的身份对照里一个身份那一格(线格式;同 lib/pathways 的 FitJson)。
+ */
+export type PickFitJson = {
+  /**
+   * 能不能走(no = 不能)。
+   */
+  can: string
+
+  /**
+   * 院校条件(缺席 = 没有)。
+   */
+  schools?: PickSchoolJson[]
+}
+
+/**
+ * 一条通道的身份对照:身份词 → 那一格(同 lib/pathways 的 FitsJson)。
+ */
+export type PickFitsJson = Record<string, PickFitJson>
+
+/**
+ * 通道身份对照的库行(pathways)。
+ */
+export type PathwayFitDbRow = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 职位板上的通道标签(岗的 pnp_stream 对它;省默认通道没有)。
+   */
+  board_label: string | null
+
+  /**
+   * 是不是本省省默认通道。
+   */
+  is_default: boolean | null
+
+  /**
+   * 身份对照(jsonb)。
+   */
+  fits: PickFitsJson | null
+}
+
+/**
+ * 通道身份对照(洗净后)。
+ */
+export type PathwayFitFact = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 职位板上的通道标签;没有 = 空串。
+   */
+  label: string
+
+  /**
+   * 是不是本省省默认通道。
+   */
+  isDefault: boolean
+
+  /**
+   * 身份对照。
+   */
+  fits: PickFitsJson | null
+}
+
+/**
+ * 几条通道身份对照。
+ */
+export type PathwayFits = PathwayFitFact[]
+
+/**
+ * loadPathwayFits 的返回。
+ */
+export type PathwayFitsOut = Promise<PathwayFits>
+
+/**
+ * loadPathwayFits 的入参。
+ */
+export type PathwayFitsIn = {
+  /**
+   * 数据库连接(调用方注入)。
+   */
+  db: Db
+}
+
+/**
+ * fitsOfPick 的入参。
+ */
+export type PickFitsIn = {
+  /**
+   * 推荐一行。
+   */
+  row: PickRow
+
+  /**
+   * 各通道身份对照。
+   */
+  ways: PathwayFits
+}
+
+/**
+ * keepFitPicksOf 的入参。
+ */
+export type KeepFitIn = {
+  /**
+   * 推荐。
+   */
+  rows: PickRow[]
+
+  /**
+   * 各通道身份对照。
+   */
+  ways: PathwayFits
+
+  /**
+   * 本人的身份与教育经历。
+   */
+  filter: FitFilterFact
+}
+
+/**
+ * 某一行能走的通道身份对照(没有 = null,不筛)。
+ */
+export type MaybePickFits = PickFitsJson | null

@@ -12,7 +12,8 @@
 import {
   ArrowUp, Bell, Briefcase, ChartColumn, ChartLine, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, CircleX,
   ClipboardList,
-  Compass, Globe, GripVertical, IdCard, Lock, Mail, Map as LMap, MapPin, Maximize, Medal, Menu, MessageCircle, Mic,
+  Compass, CreditCard, FileText, Globe, GripVertical, IdCard, Lock, Mail, Map as LMap, MapPin, Maximize, Medal, Menu,
+  MessageCircle, Mic,
   Minimize, Minus, MoveUpRight, Newspaper, Pause, Pencil, Play, Rocket, RotateCcw, Save, Scale, Search, Settings,
   Square, Star, Plus, Table, Target, ThumbsDown, ThumbsUp, TriangleAlert, User, Users, Volume2, X,
 } from 'lucide-react'
@@ -275,3 +276,13 @@ export const IconGlobe = makeIcon(Globe)
  * 修改(「我的档案」卡头右上那颗「修改」;2026-10-09,照 Azure 卡的 Edit)。
  */
 export const IconPencil = makeIcon(Pencil)
+
+/**
+ * 简历(「我的」左侧导航「我的简历」;2026-11-07 照 Fluent 2 Nav 带图标)。
+ */
+export const IconFile = makeIcon(FileText)
+
+/**
+ * 订阅与付款(「我的」左侧导航「我的订阅」;2026-11-07 照 Fluent 2 Nav 带图标)。
+ */
+export const IconCard = makeIcon(CreditCard)

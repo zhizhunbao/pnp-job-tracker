@@ -60,35 +60,41 @@
  * 自动弹「修改」同一个弹框、只问空着的;关了今日推荐按答档案代数现算重拉。
  * 2026-10-11 批 5「提示统一 + 顶栏铃铛」(Frank「所有的消息 是不是应该统一放到一个地方显示」):右列最上面的付款成功条 PayOkNotice
  * 与「我的求职」表上方的「已发给 <公司>」成功条 SentNotice 撤,两句都改右上角提示(全站骨架上的 ToastHost)。
+ * 2026-11-07 Frank「我的」整页照 Fluent 2 / Azure 重做(docs/design/我的/我的框架-20261107.md;「不要在我老的代码上改,直接创建新域」):
+ * 框架换成新域 —— 横幅 AccountBanner、横排页签 AccountNav、窄读列 AccountColumns 与 Shell 正文轨撤,换 nav 桶两栏外框 NavFrame
+ * (左栏 me 桶 MeNav 五项带图标、收件箱红色未读数)+ me 桶页标题 MeHead;窄屏左栏不出,点标题从左边拉出抽屉 MeDrawer。
+ * 「新岗推送」Push 从「我的求职」挪到「我的订阅」。同日 Frank「全部在新域重写」:各节内容逐节换成 me 桶的新件 ——
+ * 收件箱先换(MeInbox:页标题右边转发开关、左清单右阅读区),其余几节暂借旧件,换完删旧桶。
+ * 同日收口:五节全换成 me 桶的新件(MeJobs / MeInbox / MeResume / MeProfile / MeSub),整页状态换 me 桶 useMePage、
+ * 没登录跳转换 MeRedirect、投递记录框宿主换 me 桶 AppViewHost;account / myjobs / inbox 三桶随之退役。
  *
  * @author Frank
  * @time 2026-07-02 00:00:00
  */
 import { ApplySentSync } from '@/components/apply'
-import { Inbox } from '@/components/inbox'
-import { AppliedList, AppViewHost, Picks, Push, SavedList } from '@/components/myjobs'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import {
-  AccountBanner,
-  AccountColumns,
-  AccountNav,
-  AccountRedirect,
-  CoverLetters,
-  JobsQuiz,
-  Profile,
-  ResumeFile,
-  Subscription,
+  AppViewHost,
+  MeDrawer,
+  MeInbox,
+  MeJobs,
+  MeNav,
+  MeProfile,
+  MeRedirect,
+  MeResume,
+  MeSub,
+  openAppView,
   SEC_INBOX,
   SEC_PROFILE,
   SEC_RESUME,
   SEC_SJOBS,
   SEC_SUB,
-  SHELL_BOTTOM,
-  SHELL_TOP,
-  useAccountPage,
-} from '@/components/account'
-import { Frame, Shell } from '@/components/shell'
+  useMeFrame,
+  useMePage,
+} from '@/components/me'
+import { NavFrame } from '@/components/nav'
+import { Frame } from '@/components/shell'
 
 /**
  * 账户页的门:一行状态机器 + 大写组件的拼装,没有别的。
@@ -96,32 +102,32 @@ import { Frame, Shell } from '@/components/shell'
  * @returns 整页。
  */
 export default function AccountPage() {
-  const a = useAccountPage()
+  const a = useMePage()
+  const m = useMeFrame({ onPick: a.onPick })
   return (
     <Frame>
       <Header />
 
-      <Shell top={SHELL_TOP} bottom={SHELL_BOTTOM}>
-        <AccountBanner t={a.t} sent={a.sent} />
-        {a.checked && a.me != null && (
-          <AccountColumns
-            nav={<AccountNav sec={a.sec} t={a.t} onPick={a.onPick} unread={a.unread} />}>
-            {a.sec === SEC_RESUME && <ResumeFile t={a.t} />}
-            {a.sec === SEC_RESUME && <CoverLetters t={a.t} />}
-            {a.sec === SEC_SJOBS && <Picks gen={a.appliedGen} asked={a.askedGen} t={a.t} pro={a.pro} />}
-            {a.sec === SEC_SJOBS && <SavedList t={a.t} plan={a.plan} />}
-            {a.sec === SEC_SJOBS && <AppliedList key={a.appliedGen} t={a.t} plan={a.plan} />}
-            {a.sec === SEC_SJOBS && <Push t={a.t} />}
-            {a.sec === SEC_SJOBS && <JobsQuiz t={a.t} onDone={a.onAsked} />}
-            {a.sec === SEC_INBOX && <Inbox t={a.t} />}
-            {a.sec === SEC_PROFILE && <Profile t={a.t} />}
-            {a.sec === SEC_SUB && <Subscription t={a.t} until={a.me.proUntil} />}
-          </AccountColumns>
-        )}
-        {a.checked && a.me == null && <AccountRedirect />}
-        <ApplySentSync onSent={a.onApplied} />
-        {a.checked && a.me != null && <AppViewHost t={a.t} />}
-      </Shell>
+      {a.checked && a.me != null && (
+        <NavFrame nav={<MeNav sec={a.sec} t={a.t} unread={a.unread} onPick={m.onPick} />}>
+          {a.sec === SEC_SJOBS && (
+            <MeJobs t={a.t} narrow={a.narrow} open={m.drawer} onOpen={m.onOpen} me={a.me} pro={a.pro}
+              gen={a.appliedGen} asked={a.askedGen} onAsked={a.onAsked} />
+          )}
+          {a.sec === SEC_INBOX && <MeInbox t={a.t} open={m.drawer} onOpen={m.onOpen} openApp={openAppView} />}
+          {a.sec === SEC_RESUME && <MeResume t={a.t} narrow={a.narrow} open={m.drawer} onOpen={m.onOpen} />}
+          {a.sec === SEC_PROFILE && <MeProfile t={a.t} narrow={a.narrow} open={m.drawer} onOpen={m.onOpen} />}
+          {a.sec === SEC_SUB && (
+            <MeSub t={a.t} narrow={a.narrow} open={m.drawer} onOpen={m.onOpen} until={a.until} />
+          )}
+        </NavFrame>
+      )}
+      {a.checked && a.me != null && m.drawer && (
+        <MeDrawer sec={a.sec} t={a.t} unread={a.unread} onPick={m.onPick} onClose={m.onClose} />
+      )}
+      {a.checked && a.me == null && <MeRedirect />}
+      <ApplySentSync onSent={a.onApplied} />
+      {a.checked && a.me != null && <AppViewHost t={a.t} />}
 
       <Footer />
     </Frame>

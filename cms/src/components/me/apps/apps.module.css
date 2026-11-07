@@ -1,0 +1,130 @@
+/*
+ * me 桶子桶 apps 的私有样式(2026-11-07 自 myjobs 桶与 account 桶迁来):只读投递框的几块与「已发给 <公司>」成功条。
+ */
+
+/*
+ * 框里拉失败那一句。
+ */
+.note {
+  color: var(--text2);
+  font-size: 13px;
+  padding: 12px 0;
+}
+
+/*
+ * 薪资(绿,同职位卡)。
+ */
+.pay {
+  color: #15803d;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/*
+ * 卡头一行:左标题、右胶囊(「投递内容」+「已发出 <时刻>」)。
+ */
+.avHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/*
+ * 还没有雇主回复那一行。
+ */
+.avNone {
+  color: var(--text2);
+  font-size: 13px;
+  padding: 4px 0;
+}
+
+/*
+ * 一封雇主回信(多封之间一条细线隔开)。
+ */
+.avMsg {
+  padding: 6px 0;
+}
+
+/*
+ * 第二封起上面一道细线。
+ */
+.avMsg + .avMsg {
+  border-top: 1px solid var(--border);
+}
+
+/*
+ * 回信头一行:发件人粗体在左,时刻灰字在右。
+ */
+.avMsgHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/*
+ * 回信发件人。
+ */
+.avFrom {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/*
+ * 回信时刻。
+ */
+.avAt {
+  flex: none;
+  color: var(--text2);
+  font-size: 13px;
+}
+
+/*
+ * 回信正文 / 发出那一封的正文:原样换行。
+ */
+.avText,
+.avBody {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+  margin-top: 6px;
+}
+
+/*
+ * 邮件预览的正文与上面两行拉开。
+ */
+.avBody {
+  margin-top: 10px;
+}
+
+/*
+ * 本人在站内回过的一封:左边一道浅线缩进。
+ */
+.avMine {
+  margin-top: 10px;
+  padding-left: 10px;
+  border-left: 3px solid var(--border);
+}
+
+/*
+ * 「我的回复」小字。
+ */
+.avMineTag {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+}
+
+/*
+ * 「回信同时转到 …」一行。
+ */
+.avFwd {
+  margin-top: 8px;
+  color: var(--text2);
+  font-size: 13px;
+}
+

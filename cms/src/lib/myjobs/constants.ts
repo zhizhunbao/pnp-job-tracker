@@ -74,6 +74,17 @@ export const P_FRESH = 'fresh'
 export const FRESH_ON = '1'
 
 /**
+ * 推荐接口的查询参数:换到第几批(0 = 头一批;2026-10-13 Frank「这个要不要加个按钮 换一批」)。
+ */
+export const P_BATCH = 'batch'
+
+/**
+ * 免费号一天能换几批(换满再点弹定价框;服务端把批号夹到这个数,前端改参数也只看得到这几批;
+ * 2026-10-13 Frank「比如可以换 三次 然后 再点就弹付费呢」)。Pro 不限。
+ */
+export const PICKS_SWAP_FREE = 3
+
+/**
  * 查询参数名:要删的那一条(今日推荐给职位 id,我的投递给投递 id;2026-10-12 操作列加「删除」)。
  */
 export const P_ID = 'id'

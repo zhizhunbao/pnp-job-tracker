@@ -6,6 +6,8 @@
  * 2026-10-11「进我的求职先弹五题」(Frank「一共没几个问题啊 都问不行吗」):多收 missing —— 只问档案里还空着的那几题、每题可跳;
  * 同一个弹框,不另做一套问卷。
  *
+ * 2026-10-13:收 start(从哪一题开始;「我的通道」的「去回答」直接到身份题)。
+ *
  * @author Frank
  * @time 2026-10-09 22:30:00
  */
@@ -13,7 +15,7 @@ import { cssOf } from '@/components/css'
 import { MajorPicker, useMajorPicker } from '@/components/majors'
 import { Modal } from '@/components/modal'
 import { OccRail, useOccPicker } from '@/components/quiz'
-import { GATE_MODAL_SIZE } from './constants'
+import { GATE_MODAL_SIZE, TEXT_NONE } from './constants'
 import { GateFoot } from './gatefoot'
 import { GateHead } from './gatehead'
 import { occMajorOf } from './functions'
@@ -28,8 +30,8 @@ import css from './gate.module.css'
  * @param props 取词函数、起始答案、关框、保存成功与要不要只问空着的。
  * @returns 弹框。
  */
-export function GateEdit({ t, seed, onClose, onSaved, missing }: GateEditIn) {
-  const g = useGateEdit({ t, seed, onClose, onSaved, missing: missing === true })
+export function GateEdit({ t, seed, onClose, onSaved, missing, start = TEXT_NONE }: GateEditIn) {
+  const g = useGateEdit({ t, seed, onClose, onSaved, missing: missing === true, start })
   const picker = useMajorPicker({ value: g.majors, onChange: g.onMajors })
   const occ = useOccPicker({
     t, lang: g.lang, initial: g.nocs, onChange: g.setNocs, onDone: g.onNext, majorCode: occMajorOf(g.majors),

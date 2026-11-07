@@ -38,6 +38,7 @@
  * 同日三弹框统一:AIP 弹框整块收进 AipSection(判定卡撤、清单卡挪进来),桶门撤 AipEmpCard、aipBlockOf、aipVerdictOf 三名(外部已无消费者)。
  * 2026-10-03 资讯页签四分(Frank「申请步骤应该是另一个选项卡吧」):桶门加一名 PnpProvSteps —— 一省全部现行通道的申请步骤卡,
  * 与弹框同一张步骤卡、同一份懒取整表;PnpProvStreams 随之只出门槛卡。
+ * 2026-10-13「我的档案」下面的「我的通道」:桶门加 usePnpMyStreams(一省按身份与教育经历留下的通道表行)与 PnpStreamDetail(点一行弹框的门槛 + 步骤)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
@@ -49,6 +50,7 @@ export { PnpListSection } from './pnplistsection'
 export { PnpModal } from './pnpmodal'
 export { PnpProvStreams } from './pnpprovstreams'
 export { PnpProvSteps } from './pnpprovsteps'
+export { PnpStreamDetail } from './pnpstreamdetail'
 export { SponsorLeadCard } from './sponsorleadcard'
 export { STREAM_REFORM } from './constants'
 export { VerdictPill } from './verdictpill'
@@ -58,4 +60,4 @@ export {
   qcCellNameOf,
   wageLowAppliesOf,
 } from './functions'
-export { usePnpData, usePnpGroupChips, usePnpProvCounts } from './hooks'
+export { usePnpData, usePnpGroupChips, usePnpMyStreams, usePnpProvCounts } from './hooks'

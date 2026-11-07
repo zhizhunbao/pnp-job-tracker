@@ -523,3 +523,13 @@ export const BREAK_AFTER_RE = /(?<=_)/
  * (2026-10-10 Frank「大于 1000 就 拆 子桶」:求职信页一族只有子桶 ./letter 用的常量 —— 写信 / 信清单 / 抽字三个接口、
  * 不是 Pro 的码、单选项键与「不附」那一项、写于 / 草稿小注、没写成的词条 —— 搬进 letter/constants.ts。)
  */
+
+/**
+ * 「已发给 <公司>」成功条的词条(2026-11-07 随 SentNotice 自「我的」挪来)。
+ */
+export const SENT_NOTICE_KEY = 'mj.sentTo'
+
+/**
+ * 成功条的档(notice 桶 ok:绿)。
+ */
+export const SENT_NOTICE_KIND = 'ok'

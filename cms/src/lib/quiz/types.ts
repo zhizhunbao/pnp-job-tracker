@@ -540,6 +540,19 @@ export type Answers = {
    * 线上没有 major 串的旧档,不迁移 —— 档里万一有,读取时那一格不认(normalize 只读 majors)。仍只存不判。
    */
   majors: string[]
+
+  /**
+   * 身份(2026-10-13「我的档案」加题,Frank「我的档案回答完了,自动在下面出一个 section 列出我的通道」):
+   * student / pgwp / lmia / open / abroad / ee(pnp 桶 fit 子桶的身份词,与 pathways.fits 的键同);空串 = 没答。
+   * 与 permitBand(PR 测评的工签档)不是一回事:这一格只喂「我的通道」与今日推荐的通道筛选。
+   */
+  fitWho: string
+
+  /**
+   * 教育经历(同上批):至多两段,一段一串「院校所在地.公立私立.课程时长」(如 'ON.public.y1';所在地 = 省码或 abroad,
+   * 时长 = y1 / y2 / y3 / master);空列 = 没答。
+   */
+  fitEdu: string[]
 }
 
 /**
@@ -1281,6 +1294,16 @@ export type QuizProfile = {
    * 「进我的求职先弹五题」弹过了(2026-10-11)。
    */
   asked: boolean
+
+  /**
+   * 身份词;空串 = 没答(2026-10-13)。
+   */
+  who: string
+
+  /**
+   * 教育经历(「所在地.公立私立.时长」串);空列 = 没答(2026-10-13)。
+   */
+  edu: string[]
 }
 
 /**
@@ -1321,6 +1344,16 @@ export type ProfileBasicFact = {
    * 「进我的求职先弹五题」弹过了(2026-10-11)。
    */
   asked: boolean
+
+  /**
+   * 身份词(2026-10-13)。
+   */
+  who: string
+
+  /**
+   * 教育经历串(2026-10-13)。
+   */
+  edu: string[]
 }
 
 /**
@@ -1381,6 +1414,16 @@ export type ProfileBasicJson = {
    * 「进我的求职先弹五题」弹过了(2026-10-11)。
    */
   jobsAsked?: boolean | null
+
+  /**
+   * 身份词(2026-10-13)。
+   */
+  fitWho?: string | null
+
+  /**
+   * 教育经历串(2026-10-13)。
+   */
+  fitEdu?: string[] | null
 }
 
 /**

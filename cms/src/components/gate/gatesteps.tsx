@@ -11,15 +11,21 @@
  *
  * 2026-10-09「我的档案」批:编辑模式末尾多一屏英文姓名(GateName)。
  *
+ * 2026-10-13:档案加身份(GateWho)、教育经历(GateEdu)两题。
+ *
  * @author Frank
  * @time 2026-10-04 02:10:00
  */
 import { cssOf } from '@/components/css'
-import { GATE_STEP_GOAL, GATE_STEP_JOB, GATE_STEP_MAJOR, GATE_STEP_NAME } from './constants'
+import {
+  GATE_STEP_EDU, GATE_STEP_GOAL, GATE_STEP_JOB, GATE_STEP_MAJOR, GATE_STEP_NAME, GATE_STEP_WHO,
+} from './constants'
+import { GateEdu } from './gateedu'
 import { GateGoal } from './gategoal'
 import { GateJobs } from './gatejobs'
 import { GateName } from './gatename'
 import { GateProvs } from './gateprovs'
+import { GateWho } from './gatewho'
 import type { GateStepsIn } from './types'
 import css from './gate.module.css'
 
@@ -38,6 +44,12 @@ export function GateSteps({ g, t, children, jobs }: GateStepsIn) {
   }
   if (g.cur === GATE_STEP_JOB) {
     return <GateJobs>{jobs}</GateJobs>
+  }
+  if (g.cur === GATE_STEP_WHO) {
+    return <GateWho g={g} t={t} />
+  }
+  if (g.cur === GATE_STEP_EDU) {
+    return <GateEdu g={g} t={t} />
   }
   if (g.cur === GATE_STEP_NAME) {
     return <GateName g={g} t={t} />

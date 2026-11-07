@@ -355,6 +355,52 @@
 }
 
 /*
+ * 教育经历题的几段(2026-10-13 档案加题;形照 10-11 资讯页教育经历卡):竖排,段间留白。
+ */
+.eduLines {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  gap: 10px;
+}
+
+/*
+ * 教育经历一段:三只下拉并排,放不下折行(手机上两行),行尾 ✕。
+ */
+.eduLine {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+/*
+ * 一段行尾的 ✕(灰字,点区留够手指)。
+ */
+.eduRemove {
+  min-width: 32px;
+
+  min-height: 32px;
+
+  color: #9ca3af;
+}
+
+/*
+ * 「+ 再加一段」(蓝字小号)。
+ */
+.eduAdd {
+  font-size: 13px;
+
+  color: var(--primary);
+}
+
+/*
  * 电脑宽(弹框居中 560):题面放大一档、省格子三列。放在文件末尾 —— 同权重后写的赢,得压过上面的手机值。
  */
 @media (width >= 641px) {

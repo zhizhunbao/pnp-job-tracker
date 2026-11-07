@@ -209,6 +209,11 @@ export type PicksArg = {
    * 不用当天缓存(铃铛恒 false:跟「我的求职」共用当天那一份)。
    */
   fresh: boolean
+
+  /**
+   * 换到第几批(铃铛恒 0:只数条数,不换批;2026-10-13)。
+   */
+  batch: number
 }
 
 /**

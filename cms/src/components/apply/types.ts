@@ -1346,3 +1346,18 @@ export type CvOpenView = {
    */
   onSaved: (id: number) => void
 }
+
+/**
+ * SentNotice(「已发给 <公司>」成功条)的 props。
+ */
+export type SentNoticeIn = {
+  /**
+   * 取词函数。
+   */
+  t: (key: string, vars?: Record<string, string | number>) => string
+
+  /**
+   * 发给了哪家。
+   */
+  company: string
+}

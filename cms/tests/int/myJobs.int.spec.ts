@@ -29,11 +29,19 @@
 //       投递行也有「删除」(DELETE /api/myjobs/applied?id=<投递行 id>,⑪);「已下架」从职位名下面挪进状态列胶囊(收藏表加状态列)。
 //       探针:removeOf 投递行仍打 /api/saved-jobs → ⑪ 红;tagsOf 不挂已下架 → ⑤ 红。
 // 探针:makeUnsave 失败不退回 → ⑦「失败退回」红;closedTextOf 不认下架 → ⑤ 红;byStageOf 不筛 → ⑩ 红;makeLoadMyJobs 失败不拨 failed → ③ 红。
+// 2026-11-07 「我的」新域重写(docs/design/我的/我的框架-20261107.md;myjobs / account 桶 → me 桶子桶 jobs 的 JobsBody):
+//       三张分区白卡换一条页签「今日推荐 N / 我的收藏 N / 我的投递 N」,本文件挂整页正文 JobsBody、点页签切到要验的那张表;
+//       收藏 / 投递条数从卡头挪到页签计数(收藏 ④⑤⑨ 改断言页签字);旧深链 `?sec=favs` 从「滚到收藏卡」改读作「直接落『我的收藏』页签」;
+//       一行只留一颗钮(投递:发出去的「打开」、草稿「继续」;收藏:能投的「投递」、投过的「打开」链)—— ④⑤⑥⑨ / 收藏 ④⑤⑨ / ⑧ 改断言「钮恰好那一颗」;
+//       撤掉的功能连断言一并撤:⑦ 取消收藏(含失败退回)、⑪ 投递行删除、删除确认框 mj.delAsk、投递行上的简历 / 求职信两个链接(⑤ hasCover 那条)。
+//       ① 改读作「页签不挂计数、表格区不渲」;③⑩ 照旧。探针:tabOf 还没拉到也挂计数 → ① 红;actOf 投递行回到职位页链接 → ④ 红;
+//       firstTabOf 不认 favs → 深链那条红;tabsOf 收藏计数取 applied → 收藏 ④⑤⑨ 红。
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { AppliedList, SavedList } from '@/components/myjobs'
+import { openAppView } from '@/components/me/apps'
+import { JobsBody } from '@/components/me/jobs'
 
 const BASE = {
   titleKo: '', cityKo: '', stage: 'applied', closed: false, salaryAnnual: null, companySlug: '', hasEmail: false, hasCover: true,
@@ -76,15 +84,39 @@ const t = (k: string, v?: Record<string, string | number>) => (v == null ? k : k
 // 城市 / 省份名的 Google 地图链(2026-10-09 N6 批:name 桶 CityName / ProvName,查询串走 lib/location)
 const MAP = (q: string) => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q)
 
-async function mount(comp: typeof AppliedList) {
+// 2026-11-07:挂整页正文 JobsBody(打开只读投递框注入真的 openAppView),再点页签切到要验的那张表
+type Tab = 'picks' | 'saved' | 'applied'
+
+async function mount(tab: Tab) {
   const el = document.createElement('div')
   document.body.appendChild(el)
   const root = createRoot(el)
   await act(async () => {
-    root.render(createElement(comp, { t, plan: { isPro: false, loggedIn: true } as never }))
+    root.render(createElement(JobsBody, {
+      t, pro: false, plan: { isPro: false, loggedIn: true }, gen: 0, asked: 0, onAsked: () => undefined, openApp: openAppView,
+    }))
+  })
+  await flush()
+  await act(async () => {
+    tabOf(el, tab).click()
   })
   await flush()
   return el
+}
+
+// 一枚页签(Tabs 桶 role=tab,id 尾是页签身份)
+function tabOf(el: HTMLElement, tab: Tab) {
+  return el.querySelector('[role="tab"][id$="' + tab + '"]') as HTMLButtonElement
+}
+
+// 页签下面那一块(当前页签的表 / 空态 / 失败一句)
+function panelOf(el: HTMLElement) {
+  return el.querySelector('[role="tabpanel"]') as HTMLElement
+}
+
+// 页签以外的钮(阶段筛选药丸、行上那颗钮、显示更多)
+function nonTabButtons(el: HTMLElement) {
+  return Array.from(el.querySelectorAll('button:not([role="tab"])')).map((b) => b.textContent)
 }
 
 // 一张横卡:按职位名找,往上到带 data-row 的那层;没有这一张给 null
@@ -108,52 +140,51 @@ async function click(el: HTMLElement, text: string) {
   await flush()
 }
 
-// jsdom 没有 matchMedia(弹框按它判窄屏);给一个「不是窄屏」的桩
+// jsdom 没有 matchMedia(弹框按它判窄屏;清单按它判手机条 / 网页表格);给一个「不是窄屏」的桩 → 走网页端表格
 window.matchMedia = ((q: string) => ({
   matches: false, media: q, onchange: null, addEventListener: () => undefined, removeEventListener: () => undefined,
   addListener: () => undefined, removeListener: () => undefined, dispatchEvent: () => false,
 })) as unknown as typeof window.matchMedia
 
-// jsdom 没有 scrollIntoView(旧深链 `?sec=favs` 收藏卡挂上后滚过去,2026-10-10 批 2);给一个记账的桩
-const scrolled: string[] = []
-Element.prototype.scrollIntoView = function scrollIntoView(this: Element) {
-  scrolled.push(this.id)
-}
-
 afterEach(() => {
   vi.unstubAllGlobals()
   document.body.innerHTML = ''
+  // 2026-11-07:进页落哪一枚页签读地址栏(`?sec=favs`),开投递框 / 只读投递框往地址栏推参数 —— 每条用例从干净地址起
+  window.history.replaceState(null, '', '/account')
 })
 
 describe('我的求职', () => {
-  it('① 清单没回来不渲', async () => {
+  it('① 清单没回来不渲:页签不挂计数,表格区空着', async () => {
     server({ 'GET /api/myjobs/applied': 'hang' })
-    expect((await mount(AppliedList)).textContent).toBe('')
+    const el = await mount('applied')
+    expect(tabOf(el, 'applied').textContent).toBe('mj.tab.applied')
+    expect(panelOf(el).textContent).toBe('')
   })
 
-  it('② 零条出空态,不带去职位板', async () => {
+  it('② 零条出空态,不带去职位板;页签计数 0', async () => {
     server({ 'GET /api/myjobs/applied': { status: 200, body: { items: [] } } })
-    const el = await mount(AppliedList)
-    expect(el.textContent).toContain('mj.emptyApplied')
+    const el = await mount('applied')
+    expect(tabOf(el, 'applied').textContent).toBe('mj.tab.applied0')
+    expect(panelOf(el).textContent).toContain('mj.emptyApplied')
     expect(Array.from(el.querySelectorAll('a')).find((x) => x.textContent === 'mj.toBoard')).toBeUndefined()
   })
 
   it('③ 接口失败出「刷新再试」,不冒充空态', async () => {
     server({ 'GET /api/myjobs/applied': { status: 500, body: {} } })
-    const el = await mount(AppliedList)
-    expect(el.textContent).toContain('mj.fail')
-    expect(el.textContent).not.toContain('mj.emptyApplied')
+    const el = await mount('applied')
+    expect(panelOf(el).textContent).toContain('mj.fail')
+    expect(panelOf(el).textContent).not.toContain('mj.emptyApplied')
   })
 
-  it('④⑤⑥ 表格行:职位链、公司、地址一行(地图链 + 市译名灰字)、薪资、工时 / 雇佣期、投递于、状态胶囊、打开、附件;职位已删', async () => {
+  it('④⑤⑥ 表格行:职位链、公司、地址一行(地图链 + 市译名灰字)、薪资、工时 / 雇佣期、投递于、状态胶囊、唯一一颗「打开」;职位已删', async () => {
     server({ 'GET /api/myjobs/applied': { status: 200, body: { items: [S, B] } } })
-    const el = await mount(AppliedList)
+    const el = await mount('applied')
+    expect(tabOf(el, 'applied').textContent).toBe('mj.tab.applied2')
     const a = rowOf(el, 'light duty cleaner')
     expect(a.tagName).toBe('TR')   // 2026-10-10 批 2:网页端走通用表格
+    // 2026-11-07 效果图:投递行上的简历 / 求职信两个链接撤(只读投递框里照有)
     expect(links(a)).toEqual([
       ['light duty cleaner', '/jobs/101'], ['Clean Co', '/companies/clean-co'], ['Winnipeg, MB', MAP('Winnipeg, MB')],
-      ['mj.col.resume', '/api/apply/file?id=7&kind=resume'],
-      ['mj.col.cover', '/api/apply/file?id=7&kind=cover'],
     ])
     expect(a.textContent).toContain('温尼伯')   // 地点灰字「市译名,省译名」(默认中文界面)
     expect(a.textContent).toContain('Full-time')
@@ -163,157 +194,121 @@ describe('我的求职', () => {
     expect(a.textContent).not.toContain('mj.closed')
     expect(a.textContent).toContain('$18/hr')   // 2026-10-10 批 2:投递表也出薪资列
     const b = rowOf(el, 'Cook')
-    expect(links(b)).toEqual([
-      ['Steinbach, MB', MAP('Steinbach, MB')],
-      ['mj.col.resume', '/api/apply/file?id=8&kind=resume'], ['mj.col.cover', '/api/apply/file?id=8&kind=cover'],
-    ])
+    expect(links(b)).toEqual([['Steinbach, MB', MAP('Steinbach, MB')]])
     expect(b.textContent).toContain('Cook')   // 职位删了:职位名黑字、不成链
     expect(b.textContent).toContain('mj.closed')
-    expect(buttons(b)).toContain('mj.open')
-    expect(buttons(a)).toContain('mj.open')
+    // 2026-11-07 效果图:一行一颗钮 —— 发出去的(连职位删了的)只剩「打开」,「删除」撤
+    expect(buttons(b)).toEqual(['mj.open'])
+    expect(buttons(a)).toEqual(['mj.open'])
     await act(async () => {
       Array.from(a.querySelectorAll('button')).find((x) => x.textContent === 'mj.open')?.click()
     })
     expect(new URL(window.location.href).searchParams.get('app')).toBe('7')
+    await act(async () => {
+      Array.from(b.querySelectorAll('button')).find((x) => x.textContent === 'mj.open')?.click()
+    })
+    expect(new URL(window.location.href).searchParams.get('app')).toBe('8')
   })
 
-  it('⑤ 发出时没附求职信(投递框「不附求职信」)的行只出简历链接,不出求职信链接', async () => {
-    server({ 'GET /api/myjobs/applied': { status: 200, body: { items: [{ ...S, hasCover: false }] } } })
-    const el = await mount(AppliedList)
-    const a = rowOf(el, 'light duty cleaner')
-    expect(links(a)).toContainEqual(['mj.col.resume', '/api/apply/file?id=7&kind=resume'])
-    expect(links(a).some((l) => l[0] === 'mj.col.cover')).toBe(false)
-  })
-
-  it('⑨ 草稿行:未发出、不出日期、没附件、「继续」去投递区', async () => {
+  it('⑨ 草稿行:未发出、不出日期、没附件、唯一一颗「继续」就地弹投递框', async () => {
     server({ 'GET /api/myjobs/applied': { status: 200, body: { items: [D, S] } } })
-    const el = await mount(AppliedList)
+    const el = await mount('applied')
     const d = rowOf(el, 'office manager')
     expect(d.textContent).toContain('mj.unsent')
     expect(d.textContent).not.toContain('2026-10-07')   // 未发出不出投递于 / 改于
     expect(links(d)).toEqual([['office manager', '/jobs/105'], ['Kitchener, ON', MAP('Kitchener, ON')]])
+    expect(buttons(d)).toEqual(['mj.cont'])   // 2026-11-07:一行一颗钮
     window.history.replaceState(null, '', '/account?sec=sjobs')
     await click(d, 'mj.cont')   // 2026-10-09 A 批:就地弹投递框(地址栏带上 apply,不整页跳)
     expect(new URLSearchParams(window.location.search).get('apply')).toBe('105')
+    expect(new URLSearchParams(window.location.search).get('app')).toBeNull()   // 不是只读投递框
   })
 
   it('⑩ 阶段胶囊带计数,点一枚只看那一档', async () => {
     const X = { ...S, id: 11, jobId: 111, title: 'bounced one', stage: 'bounced' }
     server({ 'GET /api/myjobs/applied': { status: 200, body: { items: [D, S, X] } } })
-    const el = await mount(AppliedList)
-    expect(buttons(el).slice(0, 3)).toEqual(['mj.all3', 'mj.unsent1', 'ap.applied1'])
-    expect(buttons(el).some((b) => b?.startsWith('mj.replied'))).toBe(false)   // 计数 0 的不出
+    const el = await mount('applied')
+    // 2026-11-07:页签也是钮,药丸从页签以外的钮里数
+    expect(nonTabButtons(el).slice(0, 4)).toEqual(['mj.all3', 'mj.unsent1', 'ap.applied1', 'mj.bounced1'])
+    expect(nonTabButtons(el).some((b) => b?.startsWith('mj.replied'))).toBe(false)   // 计数 0 的不出
     await click(el, 'mj.unsent1')
     expect(rowOf(el, 'office manager')).not.toBeNull()
     expect(rowOf(el, 'office manager').textContent).not.toContain('mj.unsent')   // 筛到单一状态,行上不再重复挂胶囊(Frank 10-08)
     expect(rowOf(el, 'light duty cleaner')).toBeNull()
     expect(rowOf(el, 'bounced one')).toBeNull()
+    expect(tabOf(el, 'applied').textContent).toBe('mj.tab.applied3')   // 页签计数是整张清单,不随筛选变
     await click(el, 'mj.all3')
     expect(rowOf(el, 'light duty cleaner')).not.toBeNull()
   })
 })
 
 describe('我的收藏', () => {
-  it('旧深链 ?sec=favs:收藏卡挂上后滚过去;别的深链不滚(2026-10-10 批 2,「我的收藏」页签撤)', async () => {
+  it('旧深链 ?sec=favs:进页直接落「我的收藏」页签;别的深链落「今日推荐」(2026-11-07 改:原「收藏卡挂上后滚过去」)', async () => {
     server({ 'GET /api/myjobs/saved': { status: 200, body: { items: [A] } } })
     window.history.replaceState(null, '', '/account?sec=favs')
-    scrolled.length = 0
-    await mount(SavedList)
-    expect(scrolled).toEqual(['mj-saved'])
+    const el = document.createElement('div')
+    document.body.appendChild(el)
+    await act(async () => {
+      createRoot(el).render(createElement(JobsBody, {
+        t, pro: false, plan: {}, gen: 0, asked: 0, onAsked: () => undefined, openApp: openAppView,
+      }))
+    })
+    await flush()
+    expect(tabOf(el, 'saved').getAttribute('aria-selected')).toBe('true')
+    expect(rowOf(el, 'light duty cleaner')).not.toBeNull()
     document.body.innerHTML = ''
     window.history.replaceState(null, '', '/account?sec=sjobs')
-    scrolled.length = 0
-    await mount(SavedList)
-    expect(scrolled).toEqual([])
+    const el2 = document.createElement('div')
+    document.body.appendChild(el2)
+    await act(async () => {
+      createRoot(el2).render(createElement(JobsBody, {
+        t, pro: false, plan: {}, gen: 0, asked: 0, onAsked: () => undefined, openApp: openAppView,
+      }))
+    })
+    await flush()
+    expect(tabOf(el2, 'picks').getAttribute('aria-selected')).toBe('true')
+    expect(tabOf(el2, 'saved').getAttribute('aria-selected')).toBe('false')
   })
 
   it('② 零条出空态', async () => {
     server({ 'GET /api/myjobs/saved': { status: 200, body: { items: [] } } })
-    expect((await mount(SavedList)).textContent).toContain('sj.empty')
+    expect(panelOf(await mount('saved')).textContent).toContain('sj.empty')
   })
 
-  it('④⑤⑨ 薪资、发布于、没投的没胶囊;有邮箱在架没投过的行「投递」,投过的「打开」,下架的没有「投递」', async () => {
+  it('④⑤⑨ 薪资、发布于、没投的没胶囊;有邮箱在架没投过的行「投递」,投过的「打开」,下架的没有钮', async () => {
     server({ 'GET /api/myjobs/saved': { status: 200, body: { items: [E, A, B] } } })
-    const el = await mount(SavedList)
-    expect(el.textContent?.startsWith('fav.title3')).toBe(true)   // 2026-10-10 批 2:计数挪到卡头
+    const el = await mount('saved')
+    expect(tabOf(el, 'saved').textContent).toBe('mj.tab.saved3')   // 2026-11-07:计数从卡头挪到页签
     const e = rowOf(el, 'truck washer')
     expect(e.textContent).toContain('$18–$21/hr')
     expect(e.textContent).toContain('2026-09-30')   // 发布日期
     expect(e.textContent).toContain('2026-10-03')   // 收藏于
     expect(e.textContent).not.toContain('ap.applied')
     expect(links(e)).toEqual([['truck washer', '/jobs/103'], ['Winnipeg, MB', MAP('Winnipeg, MB')]])
-    expect(buttons(e)).toEqual(['mj.apply', 'mj.del'])
+    expect(buttons(e)).toEqual(['mj.apply'])   // 2026-11-07:一行一颗钮,「删除」撤
     window.history.replaceState(null, '', '/account?sec=favs')
     await click(e, 'mj.apply')   // 2026-10-09 A 批:就地弹投递框
     expect(new URLSearchParams(window.location.search).get('apply')).toBe('103')
     const a = rowOf(el, 'light duty cleaner')
-    expect(buttons(a)).toEqual(['mj.del'])   // 投过的收藏行:「打开」是链、没有「投递」
+    expect(buttons(a)).toEqual([])   // 投过的收藏行:「打开」是链、没有「投递」
+    expect(a.textContent).toContain('sj.st.applied')   // 投过的有状态胶囊
     expect(links(a)).toEqual([
       ['light duty cleaner', '/jobs/101'], ['Clean Co', '/companies/clean-co'], ['Winnipeg, MB', MAP('Winnipeg, MB')],
       ['mj.open', '/jobs/101'],
     ])
     const b = rowOf(el, 'Cook')
     expect(links(b)).toEqual([['Steinbach, MB', MAP('Steinbach, MB')]])
-    expect(buttons(b)).toEqual(['mj.del'])
+    expect(buttons(b)).toEqual([])   // 下架又职位删了:没有钮(2026-11-07「删除」撤)
+    expect(b.textContent).toContain('mj.closed')
   })
 
-  it('⑦ 取消收藏发 DELETE,成功后那一张没了', async () => {
-    const calls = server({
-      'GET /api/myjobs/saved': { status: 200, body: { items: [A, C] } },
-      'DELETE /api/saved-jobs/9': { status: 200, body: {} },
-    })
-    const el = await mount(SavedList)
-    await act(async () => {
-      Array.from(rowOf(el, 'truck washer').querySelectorAll('button')).find((x) => x.textContent === 'mj.del')?.click()
-    })
-    expect(document.body.textContent).toContain('mj.delAsk')   // 2026-10-12 先弹确认框,还没删
-    expect(rowOf(el, 'truck washer')).not.toBeNull()
-    await act(async () => {
-      Array.from(document.querySelectorAll('button')).filter((x) => x.textContent === 'mj.del').pop()?.click()
-    })
-    await flush()
-    expect(calls).toContain('DELETE /api/saved-jobs/9')
-    expect(rowOf(el, 'truck washer')).toBeNull()
-    expect(rowOf(el, 'light duty cleaner')).not.toBeNull()
-  })
-
-  it('⑪ 投递行「删除」发 DELETE /api/myjobs/applied?id=,成功后那一行没了', async () => {
-    const calls = server({
-      'GET /api/myjobs/applied': { status: 200, body: { items: [A, B] } },
-      'DELETE /api/myjobs/applied?id=8': { status: 200, body: { ok: true } },
-    })
-    const el = await mount(AppliedList)
-    expect(buttons(rowOf(el, 'Cook'))).toContain('mj.del')
-    await act(async () => {
-      Array.from(rowOf(el, 'Cook').querySelectorAll('button')).find((x) => x.textContent === 'mj.del')?.click()
-    })
-    expect(document.body.textContent).toContain('mj.delAsk')   // 2026-10-12 先弹确认框,还没删
-    expect(rowOf(el, 'Cook')).not.toBeNull()
-    await act(async () => {
-      Array.from(document.querySelectorAll('button')).filter((x) => x.textContent === 'mj.del').pop()?.click()
-    })
-    await flush()
-    expect(calls).toContain('DELETE /api/myjobs/applied?id=8')
-    expect(rowOf(el, 'Cook')).toBeNull()
-    expect(rowOf(el, 'light duty cleaner')).not.toBeNull()
-  })
-
-  it('⑦ 服务端没删成就退回', async () => {
-    server({
-      'GET /api/myjobs/saved': { status: 200, body: { items: [A, C] } },
-      'DELETE /api/saved-jobs/9': { status: 403, body: {} },
-    })
-    const el = await mount(SavedList)
-    await act(async () => {
-      Array.from(rowOf(el, 'truck washer').querySelectorAll('button')).find((x) => x.textContent === 'mj.del')?.click()
-    })
-    expect(document.body.textContent).toContain('mj.delAsk')   // 2026-10-12 先弹确认框,还没删
-    expect(rowOf(el, 'truck washer')).not.toBeNull()
-    await act(async () => {
-      Array.from(document.querySelectorAll('button')).filter((x) => x.textContent === 'mj.del').pop()?.click()
-    })
-    await flush()
-    expect(rowOf(el, 'truck washer')).not.toBeNull()
+  it('⑨ 收藏行没有投递邮箱 / 已下架:不出「投递」', async () => {
+    const noMail = { ...C, id: 21, title: 'no mail job' }
+    const closed = { ...E, id: 22, jobId: 104, title: 'closed with mail', closed: true }
+    server({ 'GET /api/myjobs/saved': { status: 200, body: { items: [noMail, closed] } } })
+    const el = await mount('saved')
+    expect(buttons(rowOf(el, 'no mail job'))).toEqual([])
+    expect(buttons(rowOf(el, 'closed with mail'))).toEqual([])
   })
 
   it('⑧ 有公司页的公司名是链,点了叠开公司弹框;没有的是黑字', async () => {
@@ -321,10 +316,10 @@ describe('我的收藏', () => {
       'GET /api/myjobs/saved': { status: 200, body: { items: [A, C] } },
       'GET /api/companies/clean-co': 'hang',
     })
-    const el = await mount(SavedList)
+    const el = await mount('saved')
     // 2026-10-09 N6 批:公司名换 name 桶 CompanyName —— 有公司页的是 /companies/<slug> 链(Ctrl 点新标签开整页),原先是钮
     expect(links(rowOf(el, 'light duty cleaner'))).toContainEqual(['Clean Co', '/companies/clean-co'])
-    expect(buttons(rowOf(el, 'light duty cleaner'))).toEqual(['mj.del'])
+    expect(buttons(rowOf(el, 'light duty cleaner'))).toEqual([])   // 2026-11-07:「删除」撤,公司名不是钮
     expect(rowOf(el, 'truck washer').textContent).toContain('Wash Ltd')
     expect(links(rowOf(el, 'truck washer')).map((x) => x[0])).not.toContain('Wash Ltd')
     // 2026-10-09 N 批:公司框改由全站骨架上的 PeekHost 画,本页只往弹框总线上推一层 —— 断言推出去的那一层

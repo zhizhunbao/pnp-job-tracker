@@ -1,17 +1,17 @@
 /**
- * notify 组件桶的形状:通知清单的线格式与洗净形、铃铛整机面板、各件的 props。
+ * notify 桶 的形状:通知清单的线格式与洗净形、铃铛整机面板、各件的 props(本子桶自声明)。
  *
  * @author Frank
- * @time 2026-10-11 10:00:00
+ * @time 2026-11-07 17:00:00
  */
 
 /**
- * 界面语取词函数(与 lib/i18n 的 TFn 同形,本域自声明)。
+ * 界面语取词函数(与 lib/i18n 的 TFn 同形,本子桶自声明)。
  */
 export type TFn = (key: string, vars?: Record<string, string | number>) => string
 
 /**
- * 通知一条(与 lib/notify 的 NotifyRow 同形,本域自抄)。
+ * 通知一条(与 lib/notify 的 NotifyRow 同形,本子桶自抄)。
  */
 export type NotifyItem = {
   /**
@@ -166,6 +166,16 @@ export type BellRowIn = {
 }
 
 /**
+ * BellIcon(一条前面的种类图标)的 props。
+ */
+export type BellIconIn = {
+  /**
+   * 种类:reply / bounced / sent / picks。
+   */
+  kind: string
+}
+
+/**
  * makeLoadNotify 的入参。
  */
 export type LoadNotifyIn = {
@@ -206,7 +216,7 @@ export type BellToggleIn = {
 }
 
 /**
- * itemTextOf 的入参。
+ * itemTextOf / goTextOf 的入参。
  */
 export type ItemTextIn = {
   /**

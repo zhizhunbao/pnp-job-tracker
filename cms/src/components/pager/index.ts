@@ -9,8 +9,9 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-export { FOLD_FIRST } from './constants'
+export { FOLD_FIRST, FOLD_STEP } from './constants'
 export { FoldLine } from './foldline'
+export { moreCountOf } from './functions'
 export { useFold, usePagedFold } from './hooks'
 export { MoreLine } from './moreline'
 export { Pager } from './pager'

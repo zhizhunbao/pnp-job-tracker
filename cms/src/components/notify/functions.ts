@@ -1,15 +1,18 @@
 /**
- * notify 组件桶的行为:拉通知清单、开面板记「看过了」、每条的一句与去处、铃铛上的数字。
+ * notify 桶 的行为:拉通知清单、开面板记「看过了」、每条的一句 / 去处 / 「去哪一页,时刻」、铃铛上的数字。
  * 2026-10-11 批 5「提示统一 + 顶栏铃铛」:操作当场的结果走右上角提示(toast 桶),留底的走这里。
+ * 2026-11-07 自 notify 桶在新域重写(Frank「全部在新域重写」):拉、记看过、红色数字照旧;
+ * 每条第二行改成「去<页名>,<时刻>」,去处带上「我的」的节(`?sec=`),退信 / 已发出落「我的求职」。
  *
  * @author Frank
- * @time 2026-10-11 10:00:00
+ * @time 2026-11-07 17:00:00
  */
 import { homeProvinceOf } from '@/lib/location'
+import { fmtLocal } from '@/lib/time'
 import { cssOf } from '@/components/css'
 import {
-  BADGE_MAX, BADGE_NONE, BADGE_OVER, CLS_SEP, CRED_INCLUDE, HREF_APP_HEAD, HREF_MSG_HEAD, HREF_PICKS, KIND_PICKS,
-  KIND_REPLY, KIND_TEXT_KEY, METHOD_POST, URL_NOTIFY, URL_SEEN,
+  BADGE_MAX, BADGE_NONE, BADGE_OVER, CLS_SEP, CRED_INCLUDE, DEST_INBOX_KEY, DEST_SJOBS_KEY, GO_KEY, HREF_APP_HEAD,
+  HREF_MSG_HEAD, HREF_PICKS, KIND_PICKS, KIND_REPLY, KIND_TEXT_KEY, METHOD_POST, URL_NOTIFY, URL_SEEN,
 } from './constants'
 import type { BellToggleIn, ItemTextIn, LoadNotifyIn, NotifyFact, NotifyItem, NotifyRespJson } from './types'
 import css from './notify.module.css'
@@ -54,7 +57,7 @@ export function toNotifyFact(d: NotifyRespJson): NotifyFact {
 }
 
 /**
- * 造「开 / 关面板」:开的那一下,有没看过的就记「看过了」、红色数字当场归零(条目自己的「新」标留到下次拉)。
+ * 造「开 / 关面板」:开的那一下,有没看过的就记「看过了」、红色数字当场归零(条目自己的「新」底色留到下次拉)。
  *
  * @param x 开合、清单与它们的落格。
  * @returns 手柄。
@@ -101,7 +104,30 @@ export function itemTextOf(x: ItemTextIn): string {
 }
 
 /**
- * 一条的去处:回信去收件箱那一封;退信 / 已发出去「我的」页弹只读投递框;今日推荐去「我的」页。
+ * 一条的第二行灰字:「去<去处页名>,<时刻到分>」(效果图「去我的求职,2026-11-07 00:00」)。
+ *
+ * @param x 这一条与取词函数。
+ * @returns 一句灰字。
+ */
+export function goTextOf(x: ItemTextIn): string {
+  return x.t(GO_KEY, { page: x.t(destKeyOf(x.item.kind)), at: fmtLocal(x.item.at) })
+}
+
+/**
+ * 去处那一页页名的词条:回信 = 收件箱,其余(今日推荐、退信、已发出)= 我的求职。
+ *
+ * @param kind 种类。
+ * @returns i18n 键。
+ */
+export function destKeyOf(kind: string): string {
+  if (kind === KIND_REPLY) {
+    return DEST_INBOX_KEY
+  }
+  return DEST_SJOBS_KEY
+}
+
+/**
+ * 一条的去处:回信去收件箱那一封;退信 / 已发出去「我的求职」弹只读投递框;今日推荐去「我的求职」。
  *
  * @param item 这一条。
  * @returns 站内路径。
@@ -133,7 +159,7 @@ export function badgeOf(n: number): string {
 }
 
 /**
- * 一条的类名:基座 + 没看过的加粗底色。
+ * 一条的类名:基座 + 没看过的浅蓝底。
  *
  * @param unseen 没看过。
  * @returns 拼好的 className。

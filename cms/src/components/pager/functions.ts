@@ -11,7 +11,8 @@ import {
   K_FOLD_UP, MORE_BUSY, PAGE_QS_EQ, PAGE_QS_JOIN, P_PAGE_OFFSET,
 } from './constants'
 import type {
-  ClickFn, FoldLabelIn, FoldMoreIn, FoldT, FoldView, FoldViewIn, LoadPageIn, MoreLabelIn, PagedExtraIn, PagedMoreIn,
+  ClickFn, FoldLabelIn, FoldMoreIn, FoldT, FoldView, FoldViewIn, LoadPageIn, MoreCountIn, MoreLabelIn, PagedExtraIn,
+  PagedMoreIn,
   PagedRowsIn, PageJson, PageRowsFn, PageSetRestFn, PagerHandlesIn, PagerHandlesOut, PageUrlIn,
 } from './types'
 import css from './pager.module.css'
@@ -59,6 +60,17 @@ export function moreLabelOf(x: MoreLabelIn): string {
     return MORE_BUSY
   }
   return x.label
+}
+
+/**
+ * 「显示更多 N 条」的 N:点一下真会多出几条 —— 一页的条数,剩的不到一页就写剩的
+ * (2026-11-05 Frank「不知道 显示更多是显示多少条啊」「列一个还有 27246 条没有意义啊」)。
+ *
+ * @param x 还没显示的条数与一页几条。
+ * @returns 这一下多出的条数。
+ */
+export function moreCountOf(x: MoreCountIn): number {
+  return Math.min(x.step, Math.max(0, x.left))
 }
 
 /**

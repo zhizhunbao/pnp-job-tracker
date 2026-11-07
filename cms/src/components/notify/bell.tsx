@@ -2,9 +2,10 @@
 /**
  * 顶栏通知铃铛(2026-10-11 批 5「提示统一 + 顶栏铃铛」,照 Azure 门户的 Notifications):只在登录后出(顶栏判);
  * 铃铛右上角红色数字 = 上次打开以后的新通知;点开一张挂在钮下的面板(同账户头像下拉的形:钮下右对齐、点外面 / Esc 关)。
+ * 2026-11-07 自 notify 桶在新域重写(Frank「全部在新域重写」),props 与开合、红色数字照旧;窄屏面板铺满屏宽挂在顶栏下。
  *
  * @author Frank
- * @time 2026-10-11 10:00:00
+ * @time 2026-11-07 17:00:00
  */
 import { useRef } from 'react'
 import { Button } from '@/components/button'

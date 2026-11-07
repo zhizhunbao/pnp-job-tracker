@@ -58,7 +58,7 @@ function row(code: string, en: string, zh: string | null = null, ko: string | nu
 }
 
 // 档案编辑弹框的空档(2026-10-11 访客向导删,整机走一遍改挂 GateEdit:同一套题,五题全问从目标题起)
-const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '' }
+const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [] }
 
 const HOT: MajorRow[] = [
   row('52.0201', 'Business Administration and Management, General.', '工商管理', '경영학', ['商务', '高管']),
@@ -122,7 +122,7 @@ describe('整机与选择器接线(2026-10-05 选择器搬家后)', () => {
   it('整机:点热门里的专业 → 专业格存的就是 class 码清单;再点一个追加、再点第一个摘掉', async () => {
     majorsApi()
     const g = runHook(() => {
-      const w = useGateEdit({ t: (k: string) => k, seed: EMPTY_SEED, onClose: () => undefined, onSaved: () => undefined, missing: false })
+      const w = useGateEdit({ t: (k: string) => k, seed: EMPTY_SEED, onClose: () => undefined, onSaved: () => undefined, missing: false, start: '' })
       return { w, m: useMajorPicker({ value: w.majors, onChange: w.onMajors }) }
     })
     await vi.waitFor(() => expect(g.current?.m.hotLoaded).toBe(true))

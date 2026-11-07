@@ -1,0 +1,138 @@
+/*
+ * me 桶子桶 sub 的私有样式(2026-11-07「我的订阅」在新域重写:当前方案、Pro 包含、新岗推送、付款记录四段,
+ * 各成一张分区卡;方案卡的星标与金色描边随效果图撤)。
+ */
+
+/*
+ * 卡里一句说明(拉失败、没付过款)。
+ */
+.note {
+  color: var(--text2);
+  font-size: 13px;
+  padding: 4px 0;
+}
+
+/*
+ * 方案名一行:名字 + 灰字价格(免费)或「还剩 N 天」胶囊(Pro),窄了换行。
+ */
+.planRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+/*
+ * 方案名(免费版 / Pro)。
+ */
+.planName {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/*
+ * 方案名旁的灰字(两档价格)与 Pro 的「有效期至」一行。
+ */
+.planMeta {
+  color: var(--text2);
+  font-size: 13px;
+}
+
+/*
+ * 「有效期至」一行与名字拉开。
+ */
+.until {
+  margin-top: 4px;
+}
+
+/*
+ * 「Pro 包含」五条:网页端两列,手机一列。
+ */
+.perks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 28px;
+}
+
+/*
+ * 一条权益:对勾 + 名字。
+ */
+.perk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/*
+ * 对勾(绿)。
+ */
+.check {
+  color: var(--ok);
+  display: inline-flex;
+}
+
+/*
+ * 两档价格一行(Pro 态在五条下面)。
+ */
+.price {
+  color: var(--text2);
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+/*
+ * 新岗推送整块:上一行说明,下一行频率 / 邮箱 / 保存。
+ */
+.push {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/*
+ * 下一行:频率 / 邮箱 / 保存排一排,限宽免得网页端拉得太长。
+ */
+.pushRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  max-width: 640px;
+  font-size: 14px;
+}
+
+/*
+ * 邮箱框吃满一排里剩下的宽。
+ */
+.pushEmail {
+  flex: 1;
+  min-width: 220px;
+}
+
+/*
+ * 贴在邮箱框下面的那一句(邮箱格式不对)。
+ */
+.pushNote {
+  font-size: 13px;
+  color: var(--text2);
+}
+
+/*
+ * 手机(同 modal 桶 NARROW_BP 640):权益一列;邮箱框占满一整行。
+ */
+@media (width <= 640px) {
+  /*
+   * 权益一列。
+   */
+  .perks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /*
+   * 邮箱框占满一整行(频率与保存钮各占一行的两头)。
+   */
+  .pushEmail {
+    flex-basis: 100%;
+  }
+}

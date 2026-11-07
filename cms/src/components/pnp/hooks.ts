@@ -21,6 +21,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { usePagedFold } from '@/components/pager'
 import { makeT } from '@/lib/i18n'
+import { keepStreamOf } from '@/lib/pathways'
 import { track } from '@/lib/track'
 import {
   LANG_EN, PICK_NONE, TEXT_NONE, PROV_QC, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD,
@@ -38,7 +39,7 @@ import type { PnpGroupChip, PnpGroupChipsHookIn,
   QcChannelsPanel, AipEmpCardHookIn, AipEmpCardPanel, AipEmpData, AipEmpRowJson, AipSectionHookIn, AipSectionPanel,
   ChannelPickHookIn,
   ChannelPickPanel,
-  DrawFoldPanel, ProvCounts, ProvCountsHookIn,
+  DrawFoldPanel, ProvCounts, ProvCountsHookIn, PnpMyStreamRow, PnpMyStreamsHookIn, PnpMyStreamsPanel,
 } from './types'
 import { CACHE } from './variables'
 
@@ -420,4 +421,27 @@ export function usePnpGroupChips(x: PnpGroupChipsHookIn): PnpGroupChip[] {
     stepOps: data.stepOps,
   })
   return groupChipsOf({ items, stepsOnly: x.stepsOnly })
+}
+
+/**
+ * 「我的通道」一省的表行(2026-10-13 Frank「我的档案回答完了,自动在下面出一个 section 列出我的通道」):
+ * 与资讯页同一份懒取整表(usePnpProvStreams),按档案的身份与教育经历留通道(fit 子桶 keepStreamOf),
+ * 一条一行:官方英文名、界面语名、全程、条件胶囊。
+ *
+ * @param x 界面语言、省码与筛选条件。
+ * @returns 取词函数、取数态与表行。
+ */
+export function usePnpMyStreams(x: PnpMyStreamsHookIn): PnpMyStreamsPanel {
+  const p = usePnpProvStreams({ lang: x.lang, province: x.province })
+  const rows: PnpMyStreamRow[] = []
+  for (const it of p.items) {
+    if (keepStreamOf({ fits: it.fits, province: x.province, filter: x.filter })) {
+      let total = TEXT_NONE
+      if (it.steps != null && it.steps.timeline != null) {
+        total = it.steps.timeline.total
+      }
+      rows.push({ key: it.key, title: it.gate.title, sub: it.gate.sub, total, tags: it.gate.tags })
+    }
+  }
+  return { t: p.t, ready: p.ready, failed: p.failed, rows }
 }

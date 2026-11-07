@@ -35,7 +35,7 @@ export async function notifyRoute(req: Request): Promise<Response> {
   const db = await getDb()
   let picks = 0
   try {
-    picks = await countPicks({ arg: { db, userId: user.id, prov, pro: isPro(user), fresh: false }, getPicks })
+    picks = await countPicks({ arg: { db, userId: user.id, prov, pro: isPro(user), fresh: false, batch: 0 }, getPicks })
   } catch (e) {
     log({ tag: NOTIFY_LOG.tag, text: NOTIFY_LOG.picksFailed + user.id + NOTIFY_LOG.whyFrag + String(e) })
   }

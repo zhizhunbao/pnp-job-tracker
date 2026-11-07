@@ -24,11 +24,13 @@
  * GateSync 只剩进站即弹;题目由登录后「我的求职」首访弹框(本桶 GateEdit 只问空着的)来问。gate → majors / quiz 两条边
  * 现只为 GateEdit 而在。
  *
+ * 2026-10-13:导出教育经历两件(eduPicksOf 拆串、makeEduLabel 选项字),「我的档案」卡上那一行读同一套。
+ *
  * @author Frank
  * @time 2026-10-04 02:10:00
  */
 export { GateAuth } from './gateauth'
 export { GateEdit } from './gateedit'
-export { missingStepsOf } from './functions'
+export { eduPicksOf, makeEduLabel, missingStepsOf } from './functions'
 export { GateSync } from './gatesync'
-export type { GateEditSeed } from './types'
+export type { EduPick, GateEditSeed } from './types'

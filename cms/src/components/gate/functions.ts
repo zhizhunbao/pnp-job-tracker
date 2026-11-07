@@ -29,17 +29,21 @@ import { quizToProfile } from '@/components/quiz'
 import { isSenderName } from '@/lib/apply'
 import { markGateSignedIn } from '@/lib/guest'
 import { GUEST_LOG, log } from '@/lib/log'
+import { eduRowsOf } from '@/lib/pathways'
 import { readAnswers, saveBasics } from '@/lib/quiz'
 import {
   CITIES_BAD, CITY_HIT_MAX, CITY_HOT_N, CRED_INCLUDE, EDIT_ERR_ANSWERS, EDIT_ERR_NAME, GATE_EDIT_STEPS,
   GATE_FRAME_SEL, GATE_QUESTIONS, GATE_QUESTION_GOAL, GATE_STEP_GOAL, GATE_STEP_JOB, GATE_STEP_MAJOR, GATE_STEP_NAME,
-  GATE_STEP_PROV, GATE_STEP_REG, HDR_CONTENT_TYPE, LANG_KO, LANG_ZH, MAJOR_SEP, METHOD_PATCH, MIME_JSON,
+  EDU_ABROAD, EDU_F_KIND, EDU_F_LEN, EDU_F_PROV, EDU_SEP, GATE_ABROAD_KEY, K_KIND_HEAD, K_LEN_HEAD, K_PROV_HEAD,
+  GATE_STEP_PROV, GATE_STEP_REG, GATE_STEP_WHO, HDR_CONTENT_TYPE, LANG_KO, LANG_ZH, MAJOR_SEP, METHOD_PATCH, MIME_JSON,
   NEXT_KEY, PROV_ABROAD, SAVE_FAIL_KEY, SAVE_KEY, STATUS_OVERSEAS, TEXT_NONE, URL_CITIES_HEAD, URL_PREFS,
 } from './constants'
 import type {
   CitiesJson, CityLabelIn, CityOpt, CityOptsIn, CityPickIn, EditBlankIn, EditNextIn, EditNextKeyIn, EditPatch,
+  GateBack, GateBackOfIn,
   EditSaveIn, EditStepsIn, EntryCloseIn, EntryDoneIn, GateAuthDoneIn, GateBackIn, GateEditSeed, GateNextOffIn,
-  GateProvActiveIn, GateQuestionIn, GateStep, GateStepOfIn, GoalPickIn, LoadCitiesIn, ProvPickIn, QuestionFocusIn,
+  EduCellSetIn, EduLabelIn, EduPick, EduPickIn, EduRowsIn, GateProvActiveIn, GateQuestionIn, GateStep, GateStepOfIn,
+  GoalPickIn, LoadCitiesIn, ProvPickIn, QuestionFocusIn, StartStepIn, WhoPickIn,
 } from './types'
 
 /**
@@ -100,6 +104,19 @@ export function focusGateQuestion(x: QuestionFocusIn): void {
 }
 
 /**
+ * 弹框壳左上角返回钮的规格:第 1 题不出(2026-10-13 自 useGateEdit 拆出,整机过 75 行)。
+ *
+ * @param x 走到第几步、读屏名与返回手柄。
+ * @returns 规格;第 1 题 null。
+ */
+export function gateBackOf(x: GateBackOfIn): GateBack {
+  if (x.step > 0) {
+    return { aria: x.aria, onClick: x.onBack }
+  }
+  return null
+}
+
+/**
  * 造访客向导的「回上一题」手柄(顶行左边的返回钮;第 1 题上不出钮,这里再夹一次不走到负数)。
  * 回头不清答案、不打点 —— 答过的照旧亮着,改不改由他。
  *
@@ -122,6 +139,9 @@ export function makeGateBack(x: GateBackIn): () => void {
  * @returns 灰 = true。
  */
 export function gateNextOffOf(x: GateNextOffIn): boolean {
+  if (x.cur === GATE_STEP_WHO) {
+    return x.who === TEXT_NONE
+  }
   if (x.cur === GATE_STEP_NAME) {
     return x.nameBad
   }
@@ -149,6 +169,145 @@ export function makeGoalPick(x: GoalPickIn): (v: number) => void {
   return function pickGoal(v: number): void {
     x.setGoal(v)
     x.next()
+  }
+}
+
+/**
+ * 造身份格子的上报口(2026-10-13 档案加题):记下身份词,随即进下一题(同目标大卡)。
+ *
+ * @param x 身份落格与往后走的手柄。
+ * @returns 上报口。
+ */
+export function makeWhoPick(x: WhoPickIn): (v: string) => void {
+  return function pickWho(v: string): void {
+    x.setWho(v)
+    x.next()
+  }
+}
+
+/**
+ * 答案档里的教育经历串 → 界面上的几段(拆法走 lib/pathways 的 eduRowsOf,与服务端推荐同一把尺;一段都没有给一个空段,界面总有一行可选)。
+ *
+ * @param strs 「所在地.公立私立.时长」串。
+ * @returns 几段。
+ */
+export function eduPicksOf(strs: string[]): EduPick[] {
+  const out: EduPick[] = []
+  for (const r of eduRowsOf(strs)) {
+    out.push({ prov: r.prov, kind: r.kind, len: r.len })
+  }
+  if (out.length === 0) {
+    out.push({ prov: TEXT_NONE, kind: TEXT_NONE, len: TEXT_NONE })
+  }
+  return out
+}
+
+/**
+ * 界面上的几段 → 存档串(只收三格都选了的段;选了一半的不存)。
+ *
+ * @param rows 几段。
+ * @returns 「所在地.公立私立.时长」串。
+ */
+export function eduStrsOf(rows: EduPick[]): string[] {
+  const out: string[] = []
+  for (const r of rows) {
+    if (r.prov !== TEXT_NONE && r.kind !== TEXT_NONE && r.len !== TEXT_NONE) {
+      out.push(r.prov + EDU_SEP + r.kind + EDU_SEP + r.len)
+    }
+  }
+  return out
+}
+
+/**
+ * 造「改某段某格」的手柄。
+ *
+ * @param x 第几段哪一格、现在的几段与落格。
+ * @returns 下拉的 onChange。
+ */
+export function makeEduPick(x: EduPickIn): (v: string) => void {
+  return function pickEdu(v: string): void {
+    const out: EduPick[] = []
+    for (const [i, r] of x.edu.entries()) {
+      if (i !== x.cell.i) {
+        out.push(r)
+      } else {
+        out.push(eduCellSetOf({ row: r, f: x.cell.f, v }))
+      }
+    }
+    x.setEdu(out)
+  }
+}
+
+/**
+ * 一段改一格。
+ *
+ * @param x 这一段、哪一格与新值。
+ * @returns 改过的一段。
+ */
+function eduCellSetOf(x: EduCellSetIn): EduPick {
+  if (x.f === EDU_F_PROV) {
+    return { prov: x.v, kind: x.row.kind, len: x.row.len }
+  }
+  if (x.f === EDU_F_KIND) {
+    return { prov: x.row.prov, kind: x.v, len: x.row.len }
+  }
+  if (x.f === EDU_F_LEN) {
+    return { prov: x.row.prov, kind: x.row.kind, len: x.v }
+  }
+  return x.row
+}
+
+/**
+ * 造教育经历下拉的选项字:所在地 = 省名(国外单独一个词),公立私立 / 时长 = 各自词条。
+ *
+ * @param x 取词函数与哪一格。
+ * @returns 选项值 → 显示字。
+ */
+export function makeEduLabel(x: EduLabelIn): (v: string) => string {
+  return function eduLabel(v: string): string {
+    if (x.f === EDU_F_PROV && v === EDU_ABROAD) {
+      return x.t(GATE_ABROAD_KEY)
+    }
+    if (x.f === EDU_F_PROV) {
+      return x.t(K_PROV_HEAD + v)
+    }
+    if (x.f === EDU_F_KIND) {
+      return x.t(K_KIND_HEAD + v)
+    }
+    return x.t(K_LEN_HEAD + v)
+  }
+}
+
+/**
+ * 造「+ 再加一段」。
+ *
+ * @param x 现在的几段与落格。
+ * @returns 点击手柄。
+ */
+export function makeEduAdd(x: EduRowsIn): () => void {
+  return function addEdu(): void {
+    x.setEdu(x.edu.concat([{ prov: TEXT_NONE, kind: TEXT_NONE, len: TEXT_NONE }]))
+  }
+}
+
+/**
+ * 造「删第几段」(只剩一段时清空那一段,界面总留一行)。
+ *
+ * @param x 现在的几段、落格与第几段。
+ * @returns 点击手柄。
+ */
+export function makeEduRemove(x: EduRowsIn): () => void {
+  return function removeEdu(): void {
+    const out: EduPick[] = []
+    for (const [i, r] of x.edu.entries()) {
+      if (i !== x.i) {
+        out.push(r)
+      }
+    }
+    if (out.length === 0) {
+      out.push({ prov: TEXT_NONE, kind: TEXT_NONE, len: TEXT_NONE })
+    }
+    x.setEdu(out)
   }
 }
 
@@ -367,6 +526,21 @@ export function editStepsOf(x: EditStepsIn): GateStep[] {
 }
 
 /**
+ * 开框落在第几步(2026-10-13「我的通道」的「去回答」直接到身份题):题键在这一回的步序里就落那一步,否则第一题。
+ *
+ * @param x 步序与题键。
+ * @returns 步数。
+ */
+export function startStepOf(x: StartStepIn): number {
+  for (const [i, s] of x.steps.entries()) {
+    if (s === x.start) {
+      return i
+    }
+  }
+  return 0
+}
+
+/**
  * 档案里还空着的那几题(按五题原序):目标没答、专业 / 想做的工作一个没选、所在地没答(省与境外都没有)、英文姓名没填。
  * 「我的」页据它判进「我的求职」要不要自动弹(一题不空就不弹),弹框据它排这一回的题。
  *
@@ -406,7 +580,9 @@ export function editBlankOf(x: EditBlankIn): boolean {
   if (x.cur === GATE_STEP_NAME) {
     return x.name.trim() === TEXT_NONE
   }
-  return gateNextOffOf({ cur: x.cur, majors: x.majors, nocs: x.nocs, provActive: x.provActive, nameBad: false })
+  return gateNextOffOf({
+    cur: x.cur, majors: x.majors, nocs: x.nocs, provActive: x.provActive, nameBad: false, who: x.who,
+  })
 }
 
 /**
@@ -469,6 +645,7 @@ async function runEditSave(x: EditSaveIn): Promise<void> {
 
 /**
  * 编辑模式写进答案档的那几格:答了境外写处境 overseas、省市清空;否则写省与城市(处境不动)。
+ * 2026-10-13:身份与教育经历两格一并整格覆盖。
  *
  * @param a 这一份答案。
  * @returns 要覆盖的格。
@@ -476,10 +653,25 @@ async function runEditSave(x: EditSaveIn): Promise<void> {
 function editPatchOf(a: GateEditSeed): EditPatch {
   if (a.abroad) {
     return {
-      goalBand: a.goal, majors: a.majors, nocs: a.nocs, resProv: TEXT_NONE, resCity: TEXT_NONE, status: STATUS_OVERSEAS,
+      goalBand: a.goal,
+      majors: a.majors,
+      nocs: a.nocs,
+      resProv: TEXT_NONE,
+      resCity: TEXT_NONE,
+      status: STATUS_OVERSEAS,
+      fitWho: a.who,
+      fitEdu: a.edu,
     }
   }
-  return { goalBand: a.goal, majors: a.majors, nocs: a.nocs, resProv: a.prov, resCity: a.city }
+  return {
+    goalBand: a.goal,
+    majors: a.majors,
+    nocs: a.nocs,
+    resProv: a.prov,
+    resCity: a.city,
+    fitWho: a.who,
+    fitEdu: a.edu,
+  }
 }
 
 /**

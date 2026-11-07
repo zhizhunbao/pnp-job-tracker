@@ -24,13 +24,14 @@ import { takeEntryGate } from '@/lib/guest'
 import { track } from '@/lib/track'
 import { GATE_BACK_KEY, TEXT_NONE, TRACK_GATE_OPEN } from './constants'
 import {
-  cityOptsOf, editBlankOf, editNextKeyOf, editStepsOf, focusGateQuestion, gateNextOffOf, gateProvActiveOf, gateStepOf,
-  loadProvCities, makeCityPick, makeEditNext, makeEditSave, makeEntryClose, makeEntryDone, makeGateAuthDone,
-  makeGateBack, makeGoalPick, makeProvPick, nameBadOf,
+  cityOptsOf, editBlankOf, editNextKeyOf, editStepsOf, eduPicksOf, eduStrsOf, focusGateQuestion, gateNextOffOf,
+  gateProvActiveOf, gateStepOf, loadProvCities, makeCityPick, makeEditNext, makeEditSave, makeEduAdd, makeEduPick,
+  gateBackOf, makeEduRemove, makeEntryClose, makeEntryDone, makeGateAuthDone, makeGateBack, makeGoalPick, makeProvPick,
+  makeWhoPick, nameBadOf, startStepOf,
 } from './functions'
 import type {
-  CitiesGot, CityOpt, CityPickHookIn, CityPickOut, DeadFlag, EntryGatePanel, GateAuthHookIn, GateBack, GateEditHookIn,
-  GatePanel, GateStep, ProvCitiesIn,
+  CitiesGot, CityOpt, CityPickHookIn, CityPickOut, DeadFlag, EduCellIn, EduPick, EduRowsPanel, EntryGatePanel,
+  GateAuthHookIn, GateEditHookIn, GatePanel, GateStep, ProvCitiesIn,
 } from './types'
 
 /**
@@ -127,6 +128,7 @@ export function useProvCities(x: ProvCitiesIn): CityOpt[] {
  * 编辑模式的整机(2026-10-09「我的档案」批,Frank「答题还是之前弹框的那种干净」):档案页「修改」走访客向导同一套题、同一副样子,
  * 但从档案里的答案起头、末尾多问英文姓名、最后一题点「保存」—— 不写访客草稿、不打交接戳、不进注册屏、不记 gate-open
  * (那几样是访客注册漏斗的事,编辑的人早已登录)。
+ * 2026-10-13 档案加身份、教育经历两题(Frank「我的档案回答完了,自动在下面出一个 section 列出我的通道」):两格进整机 edit 段,保存一并覆盖。
  * 2026-10-11「进我的求职先弹五题」:x.missing 时只问起始答案里还空着的那几题(开框那一刻定下,答着答着不缩),
  * 空着的题出「跳过这步」(跳过 = 往后走,最后一题跳过 = 保存前面答的)。
  *
@@ -136,7 +138,7 @@ export function useProvCities(x: ProvCitiesIn): CityOpt[] {
 export function useGateEdit(x: GateEditHookIn): GatePanel {
   const [lang] = useLang()
   const s = x.seed
-  const [step, setStep] = useState(0)
+  const [step, setStep] = useState(startStepOf({ steps: editStepsOf({ seed: s, missing: x.missing }), start: x.start }))
   const [goal, setGoal] = useState(s.goal)
   const [majors, setMajors] = useState<string[]>(s.majors)
   const [nocs, setNocs] = useState<string[]>(s.nocs)
@@ -144,6 +146,8 @@ export function useGateEdit(x: GateEditHookIn): GatePanel {
   const [abroad, setAbroad] = useState(s.abroad)
   const c = useCityPick({ prov, lang, seed: s.city })
   const [name, setName] = useState(s.name)
+  const [who, setWho] = useState(s.who)
+  const e = useEduRows(s.edu)
   const [saving, setSaving] = useState(false)
   const [failKey, setFail] = useState(TEXT_NONE)
   const [steps] = useState(function initEditSteps(): GateStep[] {
@@ -160,18 +164,15 @@ export function useGateEdit(x: GateEditHookIn): GatePanel {
   const provActive = gateProvActiveOf({ prov, abroad })
   const nameBad = nameBadOf(name)
   const save = makeEditSave({
-    a: { goal, majors, nocs, prov, abroad, city: c.panel.city, name: name.trim() },
+    a: { goal, majors, nocs, prov, abroad, city: c.panel.city, name: name.trim(), who, edu: eduStrsOf(e.edu) },
     setSaving,
     setFail,
     onSaved: x.onSaved,
   })
   const next = makeEditNext({ step, total: steps.length, setStep, save })
-  const skip = x.missing && editBlankOf({ cur, goal, majors, nocs, provActive, name })
+  const skip = x.missing && editBlankOf({ cur, goal, majors, nocs, provActive, name, who })
   const onBack = makeGateBack({ step, setStep })
-  let back: GateBack = null
-  if (step > 0) {
-    back = { aria: x.t(GATE_BACK_KEY), onClick: onBack }
-  }
+  const back = gateBackOf({ step, aria: x.t(GATE_BACK_KEY), onBack })
   return {
     step,
     cur,
@@ -187,13 +188,42 @@ export function useGateEdit(x: GateEditHookIn): GatePanel {
     onProv: makeProvPick({ setProv, setAbroad, setCity: c.setCity }),
     cities: c.panel,
     edit: {
-      name, onName: setName, nameBad, nextKey: editNextKeyOf({ step, total: steps.length }), saving, failKey, skip,
+      name,
+      onName: setName,
+      nameBad,
+      nextKey: editNextKeyOf({ step, total: steps.length }),
+      saving,
+      failKey,
+      skip,
+      who,
+      onWho: makeWhoPick({ setWho, next }),
+      edu: e.edu,
+      eduPickOf: e.eduPickOf,
+      onEduAdd: e.onEduAdd,
+      eduRemoveOf: e.eduRemoveOf,
     },
     total: steps.length,
     onNext: next,
-    nextOff: gateNextOffOf({ cur, majors, nocs, provActive, nameBad }) || saving,
+    nextOff: gateNextOffOf({ cur, majors, nocs, provActive, nameBad, who }) || saving,
     onBack,
     back,
     onClose: x.onClose,
   }
+}
+
+/**
+ * 教育经历题的几段(2026-10-13 档案加题;自 useGateEdit 拆出 —— 几段与改格 / 加段 / 删段三个手柄自成一件)。
+ *
+ * @param seed 答案档里的教育经历串。
+ * @returns 几段与三个手柄。
+ */
+function useEduRows(seed: string[]): EduRowsPanel {
+  const [edu, setEdu] = useState<EduPick[]>(eduPicksOf(seed))
+  function eduPickOf(cell: EduCellIn): (v: string) => void {
+    return makeEduPick({ cell, edu, setEdu })
+  }
+  function eduRemoveOf(i: number): () => void {
+    return makeEduRemove({ edu, setEdu, i })
+  }
+  return { edu, eduPickOf, onEduAdd: makeEduAdd({ edu, setEdu, i: 0 }), eduRemoveOf }
 }

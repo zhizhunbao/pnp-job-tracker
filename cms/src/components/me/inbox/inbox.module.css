@@ -1,0 +1,272 @@
+/*
+ * me 桶子桶 inbox 的私有样式(2026-11-07 收件箱在新域重写:左清单右阅读区、清单一封三行、阅读区按先后排)。
+ */
+
+/*
+ * 卡里一句说明(拉失败、空态)。
+ */
+.note {
+  color: var(--text2);
+  font-size: 13px;
+  padding: 12px 0;
+}
+
+/*
+ * 收件箱卡:左右两栏贴边,不要卡的内衬(两栏自己留白)。
+ */
+.ibCard.ibCard {
+  padding: 0;
+  overflow: hidden;
+}
+
+/*
+ * 两栏:窄屏只有清单一栏;宽屏左 340 清单、右阅读区。
+ */
+.ibPanes {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+/*
+ * 宽屏两栏。
+ */
+@media (width > 640px) {
+  .ibPanes {
+    grid-template-columns: 340px 1fr;
+    min-height: 420px;
+  }
+}
+
+/*
+ * 清单一栏:竖排,右边一条细线与阅读区分开。
+ */
+.ibList {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid var(--border);
+}
+
+/*
+ * 清单里的一封:整块可点,三行竖排。加倍类压过 button 桶的底座。
+ */
+.ibRow.ibRow {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--text);
+  font-weight: 400;
+  position: relative;
+  height: auto;
+}
+
+/*
+ * 当前那封:浅主色底 + 左边 3px 主色竖条。
+ */
+.ibRowOn.ibRowOn {
+  background: var(--hover-bg);
+}
+
+/*
+ * 当前那封左边的竖条。
+ */
+.ibRowOn.ibRowOn::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--primary);
+}
+
+/*
+ * 第一行:发件人左、日期右。
+ */
+.ibTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/*
+ * 发件人:一行放不下省略。
+ */
+.ibSender {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+/*
+ * 没读的蓝点。
+ */
+.ibDot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+/*
+ * 日期:灰字。
+ */
+.ibDay {
+  flex: none;
+  color: var(--text2);
+  font-size: 12px;
+}
+
+/*
+ * 主题:一行。
+ */
+.ibSubject {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+/*
+ * 摘要:灰字一行。
+ */
+.ibSnippet {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text2);
+  font-size: 12px;
+}
+
+/*
+ * 没读的:发件人与主题加粗。
+ */
+.ibUnread .ibSender,
+.ibUnread .ibSubject {
+  font-weight: 600;
+}
+
+/*
+ * 阅读区一栏。
+ */
+.ibPane {
+  min-width: 0;
+  padding: 16px 24px;
+}
+
+/*
+ * 阅读区:竖排。
+ */
+.ibRead {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/*
+ * 阅读区标题:主题。
+ */
+.ibReadTitle {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+/*
+ * 阅读区发件人一行:灰字小号。
+ */
+.ibReadFrom {
+  color: var(--text2);
+  font-size: 12px;
+  word-break: break-all;
+  margin-bottom: 4px;
+}
+
+/*
+ * 一封信(来信或我的回信):上面一条细线隔开。
+ */
+.ibMsg {
+  padding: 12px 0;
+  border-top: 1px solid var(--hairline);
+}
+
+/*
+ * 一封信的头:谁左、时刻右。
+ */
+.ibMsgHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--text2);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+/*
+ * 谁写的:深字半粗。
+ */
+.ibMsgWho {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/*
+ * 信的正文:保留换行。
+ */
+.ibBody {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/*
+ * 阅读区与回信框底下的钮一行。
+ */
+.ibActs {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/*
+ * 回信正文框。
+ */
+.ibCompose {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.55;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+/*
+ * 回信失败那句:红字。
+ */
+.ibNote {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--danger);
+}

@@ -7861,3 +7861,98 @@ export type PnpGroupChipsHookIn = {
    */
   stepsOnly: boolean
 }
+
+/**
+ * usePnpMyStreams 的入参(2026-10-13「我的档案」下面的「我的通道」:一省按身份与教育经历留下的通道)。
+ */
+export type PnpMyStreamsHookIn = {
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 省码(联邦 FED)。
+   */
+  province: string
+
+  /**
+   * 筛选条件(档案里的身份与教育经历)。
+   */
+  filter: PnpStepsFilter
+}
+
+/**
+ * 「我的通道」表的一行(2026-10-13)。
+ */
+export type PnpMyStreamRow = {
+  /**
+   * 通道编号(行键;点开弹框按它找)。
+   */
+  key: string
+
+  /**
+   * 通道官方英文名。
+   */
+  title: string
+
+  /**
+   * 界面语言名(英文界面空串)。
+   */
+  sub: string
+
+  /**
+   * 全程(「全程约 28–41 个月」;没登步骤或算不出给空串)。
+   */
+  total: string
+
+  /**
+   * 条件胶囊(同门槛卡卡头那一排)。
+   */
+  tags: ChannelTag[]
+}
+
+/**
+ * usePnpMyStreams 交回的面板。
+ */
+export type PnpMyStreamsPanel = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 整表到了。
+   */
+  ready: boolean
+
+  /**
+   * 整表取挂了。
+   */
+  failed: boolean
+
+  /**
+   * 留下的通道。
+   */
+  rows: PnpMyStreamRow[]
+}
+
+/**
+ * PnpStreamDetail(「我的通道」点一行弹框的正文)的 props。
+ */
+export type PnpStreamDetailIn = {
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 通道编号。
+   */
+  streamKey: string
+}

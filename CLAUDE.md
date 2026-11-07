@@ -189,7 +189,7 @@ pnp-job-tracker/
 | lib 域标准形态 | `cms/src/lib/agent/` |
 | 组件桶 + 页面拼装门 | `cms/src/components/companies/` + `app/(frontend)/companies/[slug]/page.tsx` |
 | 表格列构造(洗行→展示行→哑单元格) | `cms/src/components/employers/` functions.ts 列构造段 + 任一 `*cell.tsx` |
-| 多视图 + hooks 桶 | `cms/src/components/account/` |
+| 多视图 + hooks 桶 | `cms/src/components/me/`(2026-11-07 替退役的 account 桶;父桶拼页、子桶各管一节) |
 | 挂件(懒加载/手柄工厂) | `cms/src/components/chat/` |
 | 段横幅与编号分段 | `cms/src/lib/db/sql.ts` |
 | 常量表(主题_角色、逐键 JSDoc) | `cms/src/components/chat/constants.ts` |

@@ -1,9 +1,9 @@
 'use client'
 /**
- * notify 组件桶的状态机器:顶栏铃铛(挂上拉一次清单;开合;点外面关)。
+ * notify 桶 的状态机器:顶栏铃铛(挂上拉一次清单;开合;点外面关)。2026-11-07 自 notify 桶在新域重写,行为照旧。
  *
  * @author Frank
- * @time 2026-10-11 10:00:00
+ * @time 2026-11-07 17:00:00
  */
 import { useCallback, useEffect, useState } from 'react'
 import { useClickOutside } from '@/components/auth'

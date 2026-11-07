@@ -1264,7 +1264,7 @@ export function normalize(cur: RawAnswersSource): Answers {
     fieldMatchBand: num(raw.fieldMatchBand), eduProv: str(raw.eduProv), eduYearsBand: num(raw.eduYearsBand),
     frenchBand: frenchBand, frenchV2: true,
     studyMonthsBand: num(raw.studyMonthsBand), studyLevelBand: num(raw.studyLevelBand),
-    majors: arr(raw.majors),
+    majors: arr(raw.majors), fitWho: str(raw.fitWho), fitEdu: arr(raw.fitEdu),
   }
   if (raw.done === true) {
     out.done = true
@@ -1593,7 +1593,9 @@ async function majorBroadsOf(x: MajorBroadsUnionIn): MajorBroadsUnionOut {
  */
 export async function loadQuizProfile(x: ProfileLoadIn): QuizProfileOut {
   const got = firstOf(await queryRows({ db: x.db, sql: SQL.QUIZ_USER_ANSWERS, params: [x.userId], map: toProfileBasic }))
-  let b: ProfileBasicFact = { goal: 0, majors: [], nocs: [], prov: STR_NONE, abroad: false, city: STR_NONE, asked: false }
+  let b: ProfileBasicFact = {
+    goal: 0, majors: [], nocs: [], prov: STR_NONE, abroad: false, city: STR_NONE, asked: false, who: STR_NONE, edu: [],
+  }
   if (got != null) {
     b = got
   }
@@ -1608,7 +1610,7 @@ export async function loadQuizProfile(x: ProfileLoadIn): QuizProfileOut {
   if (first != null) {
     name = first
   }
-  return { goal: b.goal, majors, nocs, prov: b.prov, abroad: b.abroad, city, name, asked: b.asked }
+  return { goal: b.goal, majors, nocs, prov: b.prov, abroad: b.abroad, city, name, asked: b.asked, who: b.who, edu: b.edu }
 }
 
 /**
@@ -1710,7 +1712,18 @@ export function toProfileBasic(r: ProfileAnswersDbRow): ProfileBasicFact {
   if (Array.isArray(b.nocs)) {
     nocs = b.nocs
   }
-  return { goal, majors: textListOf(majors), nocs: textListOf(nocs), prov, abroad, city, asked: b.jobsAsked === true }
+  let who = STR_NONE
+  if (typeof b.fitWho === 'string') {
+    who = b.fitWho
+  }
+  let edu: MaybeCodeList = null
+  if (Array.isArray(b.fitEdu)) {
+    edu = b.fitEdu
+  }
+  return {
+    goal, majors: textListOf(majors), nocs: textListOf(nocs), prov, abroad, city, asked: b.jobsAsked === true, who,
+    edu: textListOf(edu),
+  }
 }
 
 /**

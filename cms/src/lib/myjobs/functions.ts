@@ -6,16 +6,18 @@
  */
 import { count, firstOf, numOrNull, queryRows, SQL, text, vtext } from '../db'
 import { placeLineOf } from '../location'
+import { eduRowsOf, keepStreamOf } from '../pathways'
 import {
   DAY_LOCALE, DAY_ZONE, JOB_CLOSED, MYJOBS_LIMIT, PICKS_CACHE_MAX, PICKS_DRAW_DAYS, PICKS_FREE, PICKS_LOCKED_SHOW, PICKS_MAX, PROV_PNP, TEXT_NONE, TIME_NONE,
-  P_ID, WHY_AIP, WHY_APPLIED, WHY_EE, WHY_KNOWN, WHY_LMIA, WHY_OCC, WHY_PILOT, WHY_PNP,
+  P_BATCH, P_ID, PICKS_SWAP_FREE, WHY_AIP, WHY_APPLIED, WHY_EE, WHY_KNOWN, WHY_LMIA, WHY_OCC, WHY_PILOT, WHY_PNP,
   WHY_SAVED,
   WHY_WAGE,
 } from './constants'
 import { CACHE } from './variables'
 import type {
   CountDbRow, CountOut, DeleteOut, DropTouchedIn, IdDbRow, LockedPick, MaybeId, MyJobDbRow, MyJobRow, MyJobsDeleteIn, MyJobsIn,
-  MyJobsOut, PickDbRow,
+  BatchOfIn, FitFilterDbRow, FitFilterFact, FitFilterOut, KeepFitIn, MaybePickFits, MyJobsOut, PathwayFitDbRow,
+  PathwayFitFact, PathwayFitsIn, PathwayFitsOut, PickDbRow, PickFitsIn,
   PickRow, PickRows, PicksIn, PicksJson, PicksJsonOut, PicksOut, PicksSplitIn, PicksViewIn, ReasonCodes, ReasonsIn,
   TimeCell, TouchedOut,
 } from './types'
@@ -142,6 +144,23 @@ export function idOf(url: string): MaybeId {
 }
 
 /**
+ * 查询参数里的批号(2026-10-13 换一批):非负整数才认,其余给 0;免费号夹到 PICKS_SWAP_FREE(换满了只看得到这几批)。
+ *
+ * @param x 请求地址与是不是 Pro。
+ * @returns 批号。
+ */
+export function batchOf(x: BatchOfIn): number {
+  const n = Number(new URL(x.url).searchParams.get(P_BATCH))
+  if (Number.isInteger(n) === false || n < 0) {
+    return 0
+  }
+  if (x.pro === false) {
+    return Math.min(n, PICKS_SWAP_FREE)
+  }
+  return n
+}
+
+/**
  * 本人收藏的岗(我的收藏;最近收藏的在前,投过的也在)。
  *
  * @param x 数据库连接与用户 id。
@@ -154,6 +173,8 @@ export async function loadSaved(x: MyJobsIn): MyJobsOut {
 /**
  * 今日推荐(2026-10-10 批 2):当天算过就用缓存,没算过现算一次记下;再剔掉他今天新碰过的岗(投出 / 开了草稿),
  * 最后按免费 / Pro 切成看得见与锁住两份。
+ * 2026-10-13 Frank「做推荐匹配吧」:档案答了身份,再按「我的通道」筛 —— 岗的通道这个身份走不了(或院校条件对不上)就不推;
+ * 判定与「我的档案」下面的「我的通道」卡同一个(lib/pathways 的 keepStreamOf)。没答身份不筛。筛在缓存之后,改了档案当场生效。
  *
  * @param x 连接、用户 id、预选省与是不是 Pro。
  * @returns 推荐接口的回包。
@@ -172,8 +193,15 @@ export async function getPicks(x: PicksViewIn): PicksJsonOut {
     }
     CACHE.picks.set(key, { day, prov: x.prov, rows })
   }
-  const touched = await loadTouched({ db: x.db, userId: x.userId })
-  return picksViewOf({ rows: dropTouchedOf({ rows, touched }), pro: x.pro })
+  const [touched, filter] = await Promise.all([
+    loadTouched({ db: x.db, userId: x.userId }),
+    loadFitFilter({ db: x.db, userId: x.userId }),
+  ])
+  let kept = dropTouchedOf({ rows, touched })
+  if (filter.who !== TEXT_NONE) {
+    kept = keepFitPicksOf({ rows: kept, ways: await loadPathwayFits({ db: x.db }), filter })
+  }
+  return picksViewOf({ rows: kept, pro: x.pro, batch: x.batch })
 }
 
 /**
@@ -208,6 +236,90 @@ export async function loadTouched(x: MyJobsIn): TouchedOut {
 }
 
 /**
+ * 本人的身份与教育经历(按「我的通道」筛推荐用;2026-10-13)。
+ *
+ * @param x 连接与用户 id。
+ * @returns 两格;没存过档给空。
+ */
+export async function loadFitFilter(x: MyJobsIn): FitFilterOut {
+  const got = firstOf(await queryRows({ db: x.db, sql: SQL.MYJOBS_FIT_FILTER, params: [x.userId], map: toFitFilter }))
+  if (got == null) {
+    return { who: TEXT_NONE, edu: [] }
+  }
+  return got
+}
+
+/**
+ * 库行 → 本人两格(空格按没答)。
+ *
+ * @param r 库行。
+ * @returns 两格。
+ */
+export function toFitFilter(r: FitFilterDbRow): FitFilterFact {
+  let edu: string[] = []
+  if (Array.isArray(r.edu)) {
+    edu = r.edu
+  }
+  return { who: text(r.who), edu }
+}
+
+/**
+ * 在开通道的身份对照(按「我的通道」筛推荐用;2026-10-13)。
+ *
+ * @param x 连接。
+ * @returns 各通道的省码、职位板标签、是否省默认与对照。
+ */
+export async function loadPathwayFits(x: PathwayFitsIn): PathwayFitsOut {
+  return queryRows({ db: x.db, sql: SQL.MYJOBS_PATHWAY_FITS, params: [], map: toPathwayFit })
+}
+
+/**
+ * 库行 → 通道身份对照。
+ *
+ * @param r 库行。
+ * @returns 对照。
+ */
+export function toPathwayFit(r: PathwayFitDbRow): PathwayFitFact {
+  return { province: r.province, label: text(r.board_label), isDefault: r.is_default === true, fits: r.fits }
+}
+
+/**
+ * 按「我的通道」留推荐:每行找到它走的通道(fitsOfPick),这个身份 / 教育经历走不了就去掉;找不到通道的照留(不筛)。
+ *
+ * @param x 推荐、各通道对照与本人两格。
+ * @returns 留下的推荐(原序)。
+ */
+export function keepFitPicksOf(x: KeepFitIn): PickRows {
+  const edu = eduRowsOf(x.filter.edu)
+  const out: PickRow[] = []
+  for (const row of x.rows) {
+    const fits = fitsOfPick({ row, ways: x.ways })
+    if (keepStreamOf({ fits, province: row.province, filter: { who: x.filter.who, edu } })) {
+      out.push(row)
+    }
+  }
+  return out
+}
+
+/**
+ * 一行推荐走的通道的身份对照:有具名通道按职位板标签对;没有、但可提名就是本省省默认通道(同职位板通道格的判据);都不是给 null。
+ *
+ * @param x 推荐一行与各通道对照。
+ * @returns 对照;没有给 null。
+ */
+export function fitsOfPick(x: PickFitsIn): MaybePickFits {
+  for (const w of x.ways) {
+    if (x.row.pnpStream !== TEXT_NONE && w.label === x.row.pnpStream) {
+      return w.fits
+    }
+    if (x.row.pnpStream === TEXT_NONE && x.row.pnpEligible && w.isDefault && w.province === x.row.province) {
+      return w.fits
+    }
+  }
+  return null
+}
+
+/**
  * 剔掉碰过的岗。
  *
  * @param x 推荐与碰过的职位 id。
@@ -227,19 +339,36 @@ export function dropTouchedOf(x: DropTouchedIn): PickRows {
  * 推荐切成看得见与锁住两份:Pro 全给;免费号给前 PICKS_FREE 条,剩下的只报条数,再锁住给看 PICKS_LOCKED_SHOW 条
  * (锁住的只留职位名与理由 —— 公司、地址、薪资、职位号不下发,前端模糊的是假字)。
  *
- * @param x 推荐与是不是 Pro。
+ * 2026-10-13 换一批:先把整份推荐从第 batch × PICKS_FREE 条起转一圈(换过头了从头接),再切。
+ *
+ * @param x 推荐、是不是 Pro 与批号。
  * @returns 推荐接口的回包。
  */
 export function picksViewOf(x: PicksSplitIn): PicksJson {
+  const rows = rotatedPicksOf(x)
   if (x.pro) {
-    return { picks: x.rows, more: 0, locked: [] }
+    return { picks: rows, more: 0, locked: [] }
   }
-  const rest = x.rows.slice(PICKS_FREE)
+  const rest = rows.slice(PICKS_FREE)
   const locked: LockedPick[] = []
   for (const r of rest.slice(0, PICKS_LOCKED_SHOW)) {
     locked.push(toLockedPick(r))
   }
-  return { picks: x.rows.slice(0, PICKS_FREE), more: rest.length, locked }
+  return { picks: rows.slice(0, PICKS_FREE), more: rest.length, locked }
+}
+
+/**
+ * 换一批的转圈:第 batch 批打头,前面几批接到末尾(条数不变)。
+ *
+ * @param x 推荐与批号。
+ * @returns 转过的推荐。
+ */
+export function rotatedPicksOf(x: PicksSplitIn): PickRows {
+  if (x.rows.length === 0) {
+    return x.rows
+  }
+  const start = (x.batch * PICKS_FREE) % x.rows.length
+  return x.rows.slice(start).concat(x.rows.slice(0, start))
 }
 
 /**
