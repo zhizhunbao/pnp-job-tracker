@@ -2260,6 +2260,15 @@ export const fineCounts = (a1: string | number) => `SELECT fine, count(*)::int A
 export const NOC_DUTIES_BY_CODE = `SELECT duties, requirements FROM noc_descriptions WHERE noc = $1 LIMIT 1`
 
 /**
+ * 生成简历「导入职责」按职位名找职业(2026-11-07 照 Job Bank Resume Builder 的 Import job duties):
+ * 官方职业名或示例职位名里含这个词、且有职责原文的职业,排序在函数里做。$1=带 % 的 ILIKE 串,$2=最多几行。
+ */
+export const NOC_DUTY_SEARCH = `SELECT noc, COALESCE(title,'') title, COALESCE(duties,'') duties, COALESCE(examples,'') examples
+     FROM noc_descriptions
+     WHERE COALESCE(duties,'') <> '' AND (title ILIKE $1 OR examples ILIKE $1)
+     LIMIT $2`
+
+/**
  * 按职位 id 取 JD 整理稿缓存。$1=职位 id(2026-09-20 改键,原按 apply_url,见 JD_TRANS_BY_ID)。
  */
 export const JD_FORMATTED_BY_ID = `SELECT jd_formatted FROM jobs WHERE id = $1 LIMIT 1`

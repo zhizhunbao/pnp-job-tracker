@@ -585,3 +585,23 @@ export const DISP_ATTACH = 'attachment'
  * 处置头里文件名那一段的开头(RFC 5987:非 ASCII 文件名要百分号编码)。
  */
 export const DISP_NAME_HEAD = "; filename*=UTF-8''"
+
+/**
+ * 生成简历(2026-11-07):请求体里没有草稿。
+ */
+export const E_BAD_DRAFT = 'badDraft'
+
+/**
+ * 生成简历:没填英文姓名(简历顶上那一行,不能空)。
+ */
+export const E_NO_NAME = 'noName'
+
+/**
+ * 生成简历:有写不进 PDF 的字(简历是英文的,中文要改成英文),响应带上是哪几个字。
+ */
+export const E_CHARS = 'chars'
+
+/**
+ * 生成简历的文件名尾巴(「Peng Wang Resume.pdf」)。
+ */
+export const CV_FILE_TAIL = ' Resume.pdf'

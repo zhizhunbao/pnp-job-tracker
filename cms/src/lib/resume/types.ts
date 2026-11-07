@@ -697,3 +697,13 @@ export type FileNameIn = {
  * 简历 id 或没有(查询参数没带、或不是正整数)。
  */
 export type MaybeResumeId = number | null
+
+/**
+ * POST /api/resume/build 的请求体(跨边界断言目标;草稿零读格透传给 cv 域收窄,这里不透明)。
+ */
+export type BuildBody = {
+  /**
+   * 草稿(线格式)。
+   */
+  draft?: object
+}

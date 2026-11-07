@@ -7,6 +7,6 @@
  */
 
 export {
-  resumeExtractRoute, resumeFileDeleteRoute, resumeFileGetRoute, resumeFilePatchRoute, resumeFilePutRoute, resumeFilesRoute,
+  resumeBuildRoute, resumeExtractRoute, resumeFileDeleteRoute, resumeFileGetRoute, resumeFilePatchRoute, resumeFilePutRoute, resumeFilesRoute,
   resumeMatchRoute, resumeRoute,
 } from './routes'

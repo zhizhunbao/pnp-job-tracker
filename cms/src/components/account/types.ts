@@ -902,6 +902,36 @@ export type ResumeFilePanel = {
    * 关预览弹框。
    */
   onPreviewClose: () => void
+
+  /**
+   * 生成简历窗口的开关(2026-11-07;存成了重拉清单)。
+   */
+  cv: CvOpenView
+}
+
+/**
+ * 生成简历窗口的开关(形同 cv 桶 CvOpenPanel,本域自声明)。
+ */
+export type CvOpenView = {
+  /**
+   * 开着吗。
+   */
+  open: boolean
+
+  /**
+   * 开。
+   */
+  onOpen: () => void
+
+  /**
+   * 关。
+   */
+  onClose: () => void
+
+  /**
+   * 存成了。
+   */
+  onSaved: (id: number) => void
 }
 
 /**

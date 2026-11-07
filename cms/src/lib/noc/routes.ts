@@ -2,20 +2,24 @@
  * NOC 域的 HTTP 芯（第十一抽屉）：/api/noc/translate —— 官方职责/任职要求
  * 懒翻译（分类弹框「显示中文对照」）。数据层只存英文，按需逐行对位翻；
  * 一个 NOC 全站翻一次（进程缓存）—— 刻意不动 DB schema。
+ * 2026-11-07 加 /api/noc/duties(生成简历「导入职责」:按职位名找职业、带回官方职责,照 Job Bank Resume Builder)。
  * handler 的 `await req.json() as NocTransBody` 是跨边界断言：逐格判后才用。
  *
  * @author Frank
  * @time 2026-08-23 12:40:00
  */
 import { getDb } from '../db/server'
-import { BAD_GATEWAY, BAD_REQUEST, NOT_FOUND, TOO_MANY, UNAVAILABLE } from '../http'
+import { BAD_GATEWAY, BAD_REQUEST, HDR_CACHE_CONTROL, NOT_FOUND, TOO_MANY, UNAVAILABLE } from '../http'
 import {
   E_BAD_REQUEST, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, TRANS_KEY_SEP, TRANS_LANGS,
   TRANSLATE_ROUTE_TIMEOUT_MS, translatePlainLines, translateReady,
 } from '../llm'
 import { checkLimit, ipOf } from '../quota/server'
-import { NOCTR_IP_DAILY, NOCTR_LIMIT_PREFIX, PARAM_NONE, TRANS_TEXT_NONE } from './constants'
-import { loadNocDuties } from './functions'
+import {
+  DUTY_CACHE, DUTY_IP_DAILY, DUTY_LIMIT_PREFIX, DUTY_Q_MAX, DUTY_Q_MIN, NOCTR_IP_DAILY, NOCTR_LIMIT_PREFIX, P_Q, PARAM_NONE,
+  TRANS_TEXT_NONE,
+} from './constants'
+import { loadNocDuties, loadNocDutyRows, nocDutyHitsOf } from './functions'
 import { CACHE } from './variables'
 import type { NocTransBody } from './types'
 
@@ -82,3 +86,25 @@ export async function nocTranslateRoute(req: Request): Promise<Response> {
   }
 }
 
+/**
+ * GET /api/noc/duties?q=:生成简历「导入职责」—— 按职位名找职业(职业名或示例职位名里含这个词),
+ * 每个带回官方职责一条一项。公开数据不要登录;IP 日限防脚本扒表。
+ *
+ * @param req 请求(检索词在查询参数 q)。
+ * @returns { items };检索词太短给空清单,超限 429。
+ */
+export async function nocDutiesRoute(req: Request): Promise<Response> {
+  let q = PARAM_NONE
+  const got = new URL(req.url).searchParams.get(P_Q)
+  if (got != null) {
+    q = got.trim().slice(0, DUTY_Q_MAX)
+  }
+  if (q.length < DUTY_Q_MIN) {
+    return Response.json({ items: [] })
+  }
+  if (checkLimit([[DUTY_LIMIT_PREFIX + ipOf(req), DUTY_IP_DAILY]]) === false) {
+    return Response.json({ error: E_RATE_LIMITED }, { status: TOO_MANY })
+  }
+  const rows = await loadNocDutyRows({ db: await getDb(), q })
+  return Response.json({ items: nocDutyHitsOf({ rows, q }) }, { headers: { [HDR_CACHE_CONTROL]: DUTY_CACHE } })
+}

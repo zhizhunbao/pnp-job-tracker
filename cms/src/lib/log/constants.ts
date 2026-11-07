@@ -563,6 +563,11 @@ export const RESUME_LOG = {
    * 「我的简历」删掉原件一行的开头,后面接用户 id。
    */
   fileDeleted: 'file deleted user=',
+
+  /**
+   * 生成简历存成一份的开头(2026-11-07),后面接用户 id 与字节数;只记长度不记内容。
+   */
+  cvSaved: 'cv saved user=',
 } as const
 
 /**

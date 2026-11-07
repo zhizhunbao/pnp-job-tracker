@@ -38,7 +38,9 @@ const BARRELS = ['agent', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', '
   // 2026-10-11 批 5 立 notify(顶栏通知铃铛:清单与「看过了」;只有 server 门,/api/notify、/api/notify/seen)。
   'notify',
   // 2026-11-05 立 queue(管理员队列页:调度器上报单元现状;只有 server 门,/api/queue/units)。
-  'queue']
+  'queue',
+  // 2026-11-07 立 cv(生成简历:草稿排成英文简历版式、画 PDF;只有 index 桶,不连库,pdf-lib 由 resume 域路由注入)。
+  'cv']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 // jobs / points / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
 // 理由见 lib/jobs/index.ts 顶上那段:混着 payload 依赖的桶会把连接池打进浏览器包)。
@@ -106,8 +108,60 @@ const SERVER_DOOR = /(^|\/)lib\/[A-Za-z]+\/server$/
       return doc && doc.type === 'Block' && doc.value.startsWith('*') ? doc : null
     }
 
+// ── 目录名只能用学名词表里登记的(2026-11-07 Frank「在 readme 定义的模块名才能使用，不能随便起名」;
+//    照 cloud/web 的 registered-domain):app/(frontend)、app/api、lib、components 四处的一级目录名
+//    要出现在对应 README 表格第一列(反引号裹的那格)。api 的第一段与 lib 同名,所以 api 也认 lib 的表。
+//    README 一次 lint 只读一遍(进程内缓存)。
+const REGISTRY_LAYERS = [
+  { re: /\/src\/app\/\(frontend\)\/([^/]+)\/.+$/, readmes: ['src/app/README.md'] },
+  { re: /\/src\/app\/api\/([^/]+)\/.+$/, readmes: ['src/app/README.md', 'src/lib/README.md'] },
+  { re: /\/src\/lib\/([^/]+)\/.+$/, readmes: ['src/lib/README.md'] },
+  { re: /\/src\/components\/([^/]+)\/.+$/, readmes: ['src/components/README.md'] },
+]
+const REGISTRY_CACHE = new Map()
+function registeredNames(readme) {
+  if (REGISTRY_CACHE.has(readme)) return REGISTRY_CACHE.get(readme)
+  let names = null
+  if (fs.existsSync(readme)) {
+    names = [...fs.readFileSync(readme, 'utf-8').matchAll(/^\|\s*`([^`]+)`\s*\|/gm)].map((x) => x[1])
+  }
+  REGISTRY_CACHE.set(readme, names)
+  return names
+}
+
 const localRules = {
   rules: {
+    'registered-domain': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          unknown: '目录 `{{ dir }}` 不在 {{ readme }} 里。先在表里登记一行(名字 / 出处 / 公认含义),或改用表里的名字。',
+          noReadme: '{{ readme }} 不存在:这一层的目录名都要先登记在它的学名词表里。',
+        },
+      },
+      create(context) {
+        const file = context.filename.split('\\').join('/')
+        const layer = REGISTRY_LAYERS.find((l) => l.re.test(file))
+        if (layer == null) return {}
+        const dir = file.match(layer.re)[1]
+        const root = file.slice(0, file.indexOf('/src/'))
+        return {
+          Program(node) {
+            let seen = false
+            for (const rel of layer.readmes) {
+              const names = registeredNames(nodePath.join(root, rel))
+              if (names == null) {
+                context.report({ node, messageId: 'noReadme', data: { readme: rel } })
+                return
+              }
+              if (names.includes(dir)) seen = true
+            }
+            if (seen === false) context.report({ node, messageId: 'unknown', data: { dir, readme: layer.readmes.join(' 或 ') } })
+          },
+        }
+      },
+    },
     // 入参与返回值都要用**自己的具名 type**(`XxxIn` / `XxxOut`,住 `types.ts`)。
     // 内联的对象字面量类型写在签名里,等于把形状藏在函数头上:别处想复用得抄一遍,
     // 改字段时也没有一个地方能一眼看全谁在用。返回值同理,而且**必须显式写出来** ——
@@ -2828,6 +2882,12 @@ const eslintConfig = [
     // 拆法(子域形制)还没有样张,首例先问 Frank。etl 同口径住 etl/gate ⑪号规。
     files: ['src/lib/**/functions.ts', 'src/components/**/functions.{ts,tsx}'],
     rules: { 'max-lines': ['error', { max: 1000 }] },
+  },
+  {
+    // 学名词表闸(2026-11-07):app/(frontend)、app/api、lib、components 的一级目录名只许用 README 表里登记的。
+    files: ['src/**/*.{ts,tsx}'],
+    plugins: { local: localRules },
+    rules: { 'local/registered-domain': 'error' },
   },
   {
     ignores: ['.next/', 'src/payload-types.ts', 'src/payload-generated-schema.ts'],

@@ -17,7 +17,8 @@ Ruff 管不住的形制,这里当闸(判据见 docs/design/数据层/etl分域-2
   ⑤ functions 顶层下划线函数禁;⑥ functions 顶层常量禁(归 constants);
   ⑦ 零字符串令;⑧ 显式循环令(lambda/推导式/genexp 禁);⑨ 一参令(默认值参数禁)+
   内嵌函数禁;⑩ 域文件名白名单(五件套 + variables,野文件硬红,无例外表);
-  ⑪ functions.py 行数上限 1000(2026-09-28 Frank,存量名单 constants.OVERSIZE_KNOWN,硬红)。
+  ⑪ functions.py 行数上限 1000(2026-09-28 Frank,存量名单 constants.OVERSIZE_KNOWN,硬红);
+  ⑫ etl/ 下的目录名必须登记在 etl/README.md 学名词表里(2026-11-07 Frank「不能随便起名」,硬红)。
 ②③ 存量走基线 etl/gate/etl_shape_baseline.json:新增违规即红;修掉存量后跑
 `python etl/gate/main.py --only prune` 收紧基线 —— 只紧不松(同 cms suppressions 惯例)。
 """
@@ -32,7 +33,8 @@ from log.functions import say
 from paths import WriteTextIn, write_text
 from gate.constants import (
     ABOVE, ARG_OUTPUT_FORMAT, ARG_STATISTICS, BACKSLASH, BANNED_SYNTAX_TPL, BARE_PRINT_TPL,
-    BASELINE, BASELINE_INDENT, COLON, CONST_STRIP, CROSS_IMPORT_TPL,
+    BASELINE, BASELINE_INDENT, COLON, CONST_STRIP, CROSS_IMPORT_TPL, DOT, NO_REGISTRY_TPL, REGISTRY_NAME, REGISTRY_RE,
+    UNREGISTERED_TPL,
     DEFAULT_ARG_TPL, DISSOLVED, DOMAINS, DOMAIN_EXTRA_FILES, DOMAIN_FILES, ENC_UTF8,
     ERRORS_REPLACE, ETL_DIR,
     ETL_PREFIX, EXEMPT_VALUES, EXTRA_MAIN_TPL, FENCE, FIXED_TPL, FRAG_LEN, FRESH_ROW_TPL,
@@ -70,7 +72,24 @@ def scan() -> ScanOut:
             hard.extend(out.hard)
             soft.extend(out.soft)
     hard.extend(stray_tracked_of())
+    hard.extend(unregistered_of())
     return ScanOut(hard=sorted(hard), soft=sorted(soft))
+
+
+def unregistered_of() -> list[str]:
+    """⑫号规:etl/ 下每个目录(隐藏目录与字节码目录除外)都要出现在 etl/README.md 表格第一列;
+    词表缺失整条硬红。"""
+    readme = ETL_DIR / REGISTRY_NAME
+    if readme.is_file() is False:
+        return [NO_REGISTRY_TPL]
+    names = set(REGISTRY_RE.findall(readme.read_text(encoding=ENC_UTF8)))
+    hits: list[str] = []
+    for d in sorted(ETL_DIR.iterdir()):
+        if d.is_dir() is False or d.name.startswith(DOT) or d.name == PYCACHE:
+            continue
+        if d.name not in names:
+            hits.append(UNREGISTERED_TPL.format(dom=d.name))
+    return hits
 
 
 def stray_tracked_of() -> list[str]:

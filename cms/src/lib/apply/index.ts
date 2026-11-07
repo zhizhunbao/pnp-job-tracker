@@ -6,6 +6,7 @@
  * 简历清单、存署名)随之收回,域内照用。
  * 2026-10-10 批 3「收件箱」:出测试号收件人换算 recipientOf 与发件人显示 senderFromOf(收件箱的转发 / 回信由 lib/inbox 的 routes 注入用,
  * 同一个口径不复制第二份)。
+ * 2026-11-07 生成简历:出求职信 PDF 的折行 coverLinesOf 与量宽 makeMeasure(lib/cv 画简历 PDF 用同一套折行,不复制第二份)。
  *
  * @author Frank
  * @time 2026-10-07 01:30:00
@@ -13,6 +14,7 @@
 
 export { COVER_MAX } from './constants'
 export {
-  coverFileOf, coverNormOf, isSenderName, mailSubjectOf, mailTextOf, pdfBadCharsOf, recipientOf, senderFromOf,
+  coverFileOf, coverLinesOf, coverNormOf, isSenderName, mailSubjectOf, mailTextOf, makeMeasure, pdfBadCharsOf, recipientOf,
+  senderFromOf,
 } from './functions'
 export type { ApplyStart } from './types'

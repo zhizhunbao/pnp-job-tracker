@@ -631,6 +631,11 @@ export type ApplyPanel = {
   onResumeRewrite: () => void
 
   /**
+   * 生成简历窗口的开关(2026-11-07;存成了重拉清单、选中新的那份)。
+   */
+  cv: CvOpenView
+
+  /**
    * 关升级框。
    */
   onUpsellClose: () => void
@@ -1113,6 +1118,21 @@ export type UploadIn = {
 }
 
 /**
+ * `pickBuilt` 的入参(生成简历存成了,选中它)。
+ */
+export type PickBuiltIn = {
+  /**
+   * 整机的可变格。
+   */
+  cells: ApplyCells
+
+  /**
+   * 新简历 id。
+   */
+  id: number
+}
+
+/**
  * ApplyPick(单选一行)的 props(2026-10-10 起简历与求职信共用:文件名、默认小标、灰字小注)。
  */
 export type ApplyPickIn = {
@@ -1301,3 +1321,28 @@ export type ApplyShowIn = {
  * (2026-10-10 Frank「大于 1000 就 拆 子桶」:写信 / 信清单 / 抽字三个回包与求职信页几个函数的入参 —— LetterJson、LettersJson、
  * LetterItemJson、ExtractJson、LettersLoadIn、PastOptsIn、OptsTextIn、PickOptIn —— 随行为搬进子桶 letter/types.ts。)
  */
+
+/**
+ * 生成简历窗口的开关(形同 cv 桶 CvOpenPanel,本域自声明)。
+ */
+export type CvOpenView = {
+  /**
+   * 开着吗。
+   */
+  open: boolean
+
+  /**
+   * 开。
+   */
+  onOpen: () => void
+
+  /**
+   * 关。
+   */
+  onClose: () => void
+
+  /**
+   * 存成了。
+   */
+  onSaved: (id: number) => void
+}

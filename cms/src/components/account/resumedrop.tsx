@@ -2,6 +2,7 @@
 /**
  * 「我的简历」第一次来的上传区:虚线框里一个上传图标、标题、类型与大小、「选择文件」与「拖到这里也可以」。
  * 文件拖到框上方时描边变蓝。
+ * 2026-11-07 「选择文件」旁加「生成简历」(还没有简历的人最用得上;同「我的简历」那一行的入口)。
  *
  * @author Frank
  * @time 2026-10-05 22:40:18
@@ -9,7 +10,7 @@
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { IconArrowUp } from '@/components/icons'
-import { RF_PICK_KIND } from './constants'
+import { RF_GEN_KIND, RF_PICK_KIND } from './constants'
 import { dropClsOf } from './functions'
 import type { ResumeDropIn } from './types'
 import css from './account.module.css'
@@ -33,6 +34,7 @@ export function ResumeDrop({ p, t }: ResumeDropIn) {
         <Button kind={RF_PICK_KIND} onClick={p.onAdd} busy={p.busy} className={cssOf(css.rfDropBtn)}>
           {t('rf.upBtn')}
         </Button>
+        <Button kind={RF_GEN_KIND} onClick={p.cv.onOpen}>{t('cv.gen')}</Button>
         <span className={css.rfDropHint}>{t('rf.upDrag')}</span>
       </div>
     </div>

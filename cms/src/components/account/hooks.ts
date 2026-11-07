@@ -16,6 +16,7 @@
  * @time 2026-08-26 21:55:00
  */
 import { useEffect, useState } from 'react'
+import { useCvOpen } from '@/components/cv'
 import { useLang } from '@/components/i18n'
 import { useIsNarrow } from '@/components/modal'
 import { PF_LOAD_BUSY, RF_ERR_NONE, SEC_DEFAULT, ZOOM_HOME, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from './constants'
@@ -164,6 +165,7 @@ export function useResumeFile(): ResumeFilePanel {
   const upload = makeResumeUpload({ replaceId, reload, setBusy, setErr })
   const act = { reload, setErr }
   const ask = useAskDel()
+  const cv = useCvOpen({ onDone: reload })
   return {
     checked,
     items,
@@ -183,6 +185,7 @@ export function useResumeFile(): ResumeFilePanel {
     defaultOf: makeDefaultOf(act),
     previewOf: makePreviewOf({ setPreview }),
     onPreviewClose: makePreviewClose({ setPreview }),
+    cv,
   }
 }
 

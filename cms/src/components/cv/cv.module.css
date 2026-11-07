@@ -1,0 +1,410 @@
+/*
+ * 生成简历桶的私有样式(2026-11-07):分区卡之间的间距、卡头、条目、表单格、多行框、导入职责那块、预览纸面。
+ * 卡片本身用全局 cardMd / mcardHead(main.css 第 9 段),钮、胶囊、输入框、下拉都用通用桶,这里只管排布。
+ */
+
+/*
+ * 窗口正文:分区卡竖排,卡与卡之间留缝。
+ */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/*
+ * 卡头:标题在左,钮在右(照投递框分区卡)。
+ */
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/*
+ * 卡头右侧的钮与胶囊。
+ */
+.acts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/*
+ * 灰字小注(空分区、来源、查找中)。
+ */
+.note {
+  color: var(--text2);
+  font-size: 13px;
+  padding: 8px 0 0;
+}
+
+/*
+ * 错误行。
+ */
+.err {
+  font-size: 13px;
+  color: var(--danger);
+}
+
+/*
+ * 窗口底部的钮(右对齐,上方一条分隔线)。
+ */
+.foot {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/*
+ * 联系方式几行。
+ */
+.contact {
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/*
+ * 姓名粗体。
+ */
+.name {
+  font-weight: 600;
+}
+
+/*
+ * 段落与描述的一行。
+ */
+.line {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/*
+ * 要点行:左边留出记号的位。
+ */
+.bullet {
+  position: relative;
+  padding-left: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/*
+ * 要点记号。
+ */
+.bullet::before {
+  content: '\2022';
+  position: absolute;
+  left: 3px;
+}
+
+/*
+ * 条目式分区里的一条:细框圆角。
+ */
+.item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 8px;
+}
+
+/*
+ * 隐藏的条目淡一点。
+ */
+.item[data-hidden='true'] {
+  opacity: 0.6;
+}
+
+/*
+ * 一条的上半:标题与机构在左,起止在右。
+ */
+.itemTop {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/*
+ * 一条的标题。
+ */
+.itemTitle {
+  font-weight: 600;
+}
+
+/*
+ * 一条的机构、地点。
+ */
+.itemSub {
+  color: var(--text2);
+  font-size: 13px;
+}
+
+/*
+ * 一条右上的起止与胶囊。
+ */
+.itemSide {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--text2);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/*
+ * 一条的描述。
+ */
+.itemBody {
+  margin-top: 6px;
+}
+
+/*
+ * 一条底下的修改 / 隐藏 / 删除。
+ */
+.itemActs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/*
+ * 表单格:电脑上自动排几列,手机一列。
+ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0 12px;
+}
+
+/*
+ * 一格:标签在上,控件在下。
+ */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+/*
+ * 格的标签。
+ */
+.label {
+  font-size: 13px;
+  color: var(--text2);
+}
+
+/*
+ * 必填格的标签:前面一颗红星。
+ */
+.labelReq::before {
+  content: '* ';
+  color: var(--danger);
+}
+
+/*
+ * 输入框与旁边的钮同一行(职位名 + 导入职责)。
+ */
+.inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/*
+ * 多行框(长相照输入框基座)。
+ */
+.area {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 140px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #1f2937;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+/*
+ * 多行框聚焦。
+ */
+.area:focus {
+  outline: none;
+  border-color: #93c5fd;
+}
+
+/*
+ * 勾选框 + 字。
+ */
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-top: 10px;
+}
+
+/*
+ * 勾选框与第一行字对齐。
+ */
+.check input {
+  margin-top: 4px;
+}
+
+/*
+ * 导入职责那块:浅底细框。
+ */
+.dutyBox {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 12px 12px;
+  margin-top: 10px;
+}
+
+/*
+ * 搜到的职业一排。
+ */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+/*
+ * 选中职业的职业码那一行。
+ */
+.nocLine {
+  margin-top: 8px;
+}
+
+/*
+ * 导入职责底下的钮。
+ */
+.dutyActs {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/*
+ * 预览纸面外的浅底。
+ */
+.paperWrap {
+  background: var(--bg);
+  padding: 16px;
+  border-radius: 8px;
+}
+
+/*
+ * 预览纸面(照 Job Bank 传统模板:白纸、Arial 系、黑字)。
+ */
+.paper {
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  padding: 28px 32px;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #111111;
+  max-width: 612px;
+  margin: 0 auto;
+}
+
+/*
+ * 纸面:姓名居中大字。
+ */
+.pName {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/*
+ * 纸面:联系方式居中。
+ */
+.pContact {
+  text-align: center;
+  font-size: 11px;
+}
+
+/*
+ * 纸面:分区标题大写加横线。
+ */
+.pHead {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #111111;
+  margin: 14px 0 6px;
+  padding-bottom: 2px;
+}
+
+/*
+ * 纸面:一条之间留缝。
+ */
+.pItem {
+  margin-top: 6px;
+}
+
+/*
+ * 纸面:标题在左、起止在右。
+ */
+.pTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+
+/*
+ * 纸面:标题粗体。
+ */
+.pTitle {
+  font-weight: 700;
+}
+
+/*
+ * 纸面:起止不折行。
+ */
+.pWhen {
+  white-space: nowrap;
+}
+
+/*
+ * 纸面:机构与地点灰字。
+ */
+.pSub {
+  font-size: 11px;
+  color: #616161;
+}
+
+/*
+ * 纸面:正文字号。
+ */
+.pBody {
+  font-size: 11px;
+}
+
+/*
+ * 纸面里的段落与要点行改小字(与 PDF 同字号档)。
+ */
+.pBody .line,
+.pBody .bullet {
+  font-size: 11px;
+  line-height: 1.5;
+}

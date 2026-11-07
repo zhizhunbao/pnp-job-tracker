@@ -12,6 +12,7 @@
  */
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import { useCvOpen } from '@/components/cv'
 import { useLang } from '@/components/i18n'
 import { storedTitleOf, titleSubOf, useTitleTrans } from '@/components/jobtitle'
 import { isSenderName, pdfBadCharsOf } from '@/lib/apply'
@@ -19,8 +20,8 @@ import {
   ERR_NONE, EV_APPLY_NAV, EV_APPLY_OPEN, EV_APPLY_SENT, EV_PAGEHIDE, EV_POPSTATE, LOAD_BUSY, TEXT_NONE,
 } from './constants'
 import {
-  canNextOf, closeApply, loadStart, mailOf, makeAdd, makeAuthRetry, makeBack, makeFile, makeNameChange, makeNext,
-  makePickOf, makeQuietSave, makeSetTo, makeTab, nextKeyOf, noteOpened, openFromEvent,
+  canNextOf, closeApply, loadStart, mailOf, makeAdd, makeAuthRetry, makeBack, makeCvDone, makeFile, makeNameChange,
+  makeNext, makePickOf, makeQuietSave, makeSetTo, makeTab, nextKeyOf, noteOpened, openFromEvent,
   readApplyId, resumeHrefOf, resumeMimeOf, resumeNameOf, sentOfEvent, startStepOf, titledOf, upsellBackOf,
 } from './functions'
 import {
@@ -94,6 +95,7 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
   }
   const quietSave = makeQuietSave({ cells })
   useSaveOnHide(quietSave)
+  const cv = useCvOpen({ onDone: makeCvDone(cells) })
 
   const badChars = pdfBadCharsOf(letter)
   const chosen = { resumes, resumeId }
@@ -142,6 +144,7 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
     onLetterBlur: quietSave,
     onLetterRewrite: makeLetterRewrite(cells),
     onResumeRewrite: makeResumeRewrite(cells),
+    cv,
     onUpsellClose: makeSetTo<string>({ set: setUpsell, v: TEXT_NONE }),
     onRwAgain: makeLetterRewrite(cells),
     onRwUse: makeRwUse(cells),

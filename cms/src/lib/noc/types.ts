@@ -292,3 +292,133 @@ export type NocTransPair = {
    */
   requirements: string
 }
+
+/**
+ * 「导入职责」搜职业的一行(SQL.NOC_DUTY_SEARCH;缺位空串)。
+ */
+export type NocDutyRow = {
+  /**
+   * 五位职业码。
+   */
+  noc: string
+
+  /**
+   * 官方英文职业名。
+   */
+  title: string
+
+  /**
+   * 职责逐行文本。
+   */
+  duties: string
+
+  /**
+   * 示例职位名逐行文本。
+   */
+  examples: string
+}
+
+/**
+ * 「导入职责」搜到的一个职业(/api/noc/duties 回给前端的一项)。
+ */
+export type NocDutyHit = {
+  /**
+   * 五位职业码。
+   */
+  noc: string
+
+  /**
+   * 官方英文职业名。
+   */
+  title: string
+
+  /**
+   * 命中的那个名字(某个示例职位名,或职业名本身)。
+   */
+  hit: string
+
+  /**
+   * 职责,一条一项。
+   */
+  duties: string[]
+}
+
+/**
+ * 搜到的职业清单。
+ */
+export type NocDutyHits = NocDutyHit[]
+
+/**
+ * 职责各条。
+ */
+export type NocDutyLines = string[]
+
+/**
+ * `loadNocDutyRows` 的入参。
+ */
+export type NocDutySearchIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+
+  /**
+   * 检索词(已去头尾空格、已截长)。
+   */
+  q: string
+}
+
+/**
+ * `loadNocDutyRows` 的返回。
+ */
+export type NocDutySearchOut = Promise<NocDutyRow[]>
+
+/**
+ * `nocDutyHitsOf` 的入参。
+ */
+export type NocDutyHitsIn = {
+  /**
+   * 库里捞回的行。
+   */
+  rows: NocDutyRow[]
+
+  /**
+   * 检索词(已去头尾空格)。
+   */
+  q: string
+}
+
+/**
+ * 排过档的一行。
+ */
+export type NocDutyRanked = {
+  /**
+   * 原行。
+   */
+  row: NocDutyRow
+
+  /**
+   * 排名档(小的在前)。
+   */
+  rank: number
+
+  /**
+   * 命中的那个名字。
+   */
+  hit: string
+}
+
+/**
+ * `rankedOf` 的入参。
+ */
+export type NocDutyRankIn = {
+  /**
+   * 一行。
+   */
+  row: NocDutyRow
+
+  /**
+   * 小写的检索词。
+   */
+  q: string
+}

@@ -222,6 +222,21 @@ OVERSIZE_TPL = "{rel}: functions.py 超过 {max} 行(⑪号规;拆法还没有�
 OVERSIZE_STALE_TPL = "{rel}: 已降到 {max} 行以内,从 constants.OVERSIZE_KNOWN 删掉这一条(只紧不松)"
 """⑪号规存量名单过期行(硬红:拆完当批收紧名单)。"""
 
+REGISTRY_NAME = "README.md"
+"""⑫号规:etl 学名词表的文件名(住 etl/ 根上;2026-11-07 Frank「在 readme 定义的模块名才能使用，不能随便起名」)。"""
+
+REGISTRY_RE = re.compile(r"^\|\s*`([^`]+)`\s*\|", re.M)
+"""⑫号规:词表表格第一列(反引号裹的名字)。"""
+
+DOT = "."
+"""隐藏目录的开头(.browser-profile 这类不算域)。"""
+
+UNREGISTERED_TPL = "etl/{dom}: 目录名不在 etl/README.md 学名词表里(⑫号规;先登记一行 名字 / 出处 / 公认含义 再建目录)"
+"""⑫号规违规行(硬红)。"""
+
+NO_REGISTRY_TPL = "etl/README.md 不存在(⑫号规:etl 的域目录名都要先登记在学名词表里)"
+"""⑫号规:词表缺失(硬红)。"""
+
 LBL_LAMBDA = "lambda"
 """⑧号规的说法:匿名函数。"""
 

@@ -242,6 +242,11 @@ export const DASH = '—'
 export const RF_ADD_KIND = 'primary'
 
 /**
+ * 「生成简历」钮的变体(2026-11-07:次钮,挂在「添加简历」与「选择文件」旁边)。
+ */
+export const RF_GEN_KIND = 'secondary'
+
+/**
  * 「我的订阅」节 Pro 档的标(本域自抄,与 components/auth 的 PRO_LABEL 同字:产品名不翻)。
  */
 export const PRO_LABEL = 'Pro'
