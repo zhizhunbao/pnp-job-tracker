@@ -9,8 +9,9 @@
 
 /**
  * 返回钮的兜底落点(把脉页城市段锚)。
+ * 2026-11-07 就业把脉拆页:城市段搬到自己那一页,落点改 /start/cities。
  */
-export const URL_BACK = '/start#pl-city'
+export const URL_BACK = '/start/cities'
 
 /**
  * 壳的顶距(照公司详情页)。

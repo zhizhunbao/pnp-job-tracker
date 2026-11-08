@@ -13,13 +13,14 @@
  * @time 2026-08-28 14:20:00
  */
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useLang } from '@/components/i18n'
 import { useMarketStats } from '@/components/stats'
 import { makeT } from '@/lib/i18n'
 import {
   DLI_KIND_ALL, EMPTY_DRAWS_PART, EMPTY_EMP_PART, EMPTY_NEWS_PART, EMPTY_OCC_PART, EMPTY_PROV_PART, ID_BOARDS, ID_CITY,
   ID_DRAWS, ID_NEWS, ID_PR_BAND, ID_PROV, ID_SE, LANG_EN, NAV_IDS, PART_DRAWS, PART_EMP, PART_NEWS, PART_OCC,
-  PART_PROV, SUB_IDS_SEP, TEXT_NONE,
+  PART_PROV, P_SUB, TEXT_NONE,
 } from './constants'
 import {
   cityAipTableOf, cityIndTablesOf, empSecsOf, foldFlippedOf, indicatorGeosOf, macroPointsOf, makeCityLoad,
@@ -28,16 +29,18 @@ import {
   cityPilotTablesOf, dliKindChipsOf, toCityDliRows, toCityMainRows,
   trackSecView, makeNavWatch,
   makeSponsorLoad, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, toDrawCellRows,
-  drawsOf, empPiecesOf, makeNearWatch, makePartLoad, newNearSet, newsOf, nocProvsMapOf,
-  partUrlOf, provExtraOf,
+  drawsOf, empPiecesOf, makePartLoad, newsOf, nocProvsMapOf,
+  partUrlOf, provExtraOf, pageSetOf,
+  navSecOrFirstOf, navSubItemsOf, navSubOrFirstOf, pulseSideOf,
+  pickOf, makeOnlyWatch,
 } from './functions'
 import type {
   DrawCellRow, DrawCellRowsIn,
   CardPageIn, CityData, CityPanel, CityPanelIn, CityPilotTable,
   EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, OccBoardPanel,
-  NavSubIn, PulseIn, PulsePanel, SponsorBoards, TFn,
+  PulseIn, PulsePanel, PulseSideIn, PulseSideOut, SponsorBoards, TFn, PulseCardsIn, NumCardRow,
   NocProvsMap,
-  DrawsPart, EmpPart, NearBandsIn, NewsPart, OccPart, ProvPart, PulseDerived, PulseDerivedIn, PulsePartHookIn,
+  DrawsPart, EmpPart, NewsPart, OccPart, ProvPart, PulseDerived, PulseDerivedIn, PulsePartHookIn,
 } from './types'
 
 /**
@@ -194,21 +197,53 @@ export function useNavSec(): string {
 }
 
 /**
- * 子导航行的滚动跟随(2026-09-11 Frank「页面滚动时候 这部分也得亮」):跟随机同 useNavSec,
- * 锚点清单 = 当前段的子项,段切换整份换(依赖键 = 清单拼串,同段重渲不重挂监听)。
+ * 首屏四格数字卡(2026-11-07 外框进 /start/layout.tsx:数字卡随 banner 住外框,由 usePulse 挪出)。
  *
- * @param x 子锚点清单。
- * @returns 当前子分区 id;'' = 还没滚到任何子锚点。
+ * @param x 取词函数与布局门取好的四格。
+ * @returns 四张卡。
  */
-export function useNavSub(x: NavSubIn): string {
-  const [subSec, setSubSec] = useState(TEXT_NONE)
-  const key = x.ids.join(SUB_IDS_SEP)
+export function usePulseCards(x: PulseCardsIn): NumCardRow[] {
+  return useMemo(function pickCards() {
+    return numCardsOf({ t: x.t, total: x.stats.total, named: x.stats.named, pulse: x.stats.pulse })
+  }, [x.t, x.stats.total, x.stats.named, x.stats.pulse])
+}
 
-  useEffect(function watchSub() {
-    return makeNavWatch({ ids: key.split(SUB_IDS_SEP), setNavSec: setSubSec })()
-  }, [key])
+/**
+ * 侧栏当前项与手机分区条文字(2026-11-07 两排页签改左侧导航;同日拆页后 Frank「每个页面是不是只显示自己的
+ * 不要向下拉」「改成和 learn 那种」:当前子项 = 侧栏点的那一项,不再跟滚动;没点过 = 第一个子项)。
+ * 原子导航滚动跟随 useNavSub(09-11 Frank「页面滚动时候 这部分也得亮」)随一页一表撤。
+ *
+ * @param x 取词函数、这一页的分区、点过的子项。
+ * @returns 当前项的键、分区名、子项名。
+ */
+export function usePulseSide(x: PulseSideIn): PulseSideOut {
+  const sec = navSecOrFirstOf(x.navSec)
+  const subItems = navSubItemsOf({ t: x.t, navSec: sec })
+  const subOn = navSubOrFirstOf({ subSec: x.pick, items: subItems })
+  return pulseSideOf({ t: x.t, sec, subOn, subItems })
+}
 
-  return subSec
+/**
+ * 当前子项:读网址参数 `?t=<子项锚点 id>`(侧栏子项链接与分享链接都带;点了 Next 换参数并停在页顶,
+ * banner + 卡片 + 表从上往下排 —— 锚点链接会滚到表,把 banner 卷上去)。
+ *
+ * @returns 子项锚点 id;'' = 没带参数(落第一个子项)。
+ */
+export function usePick(): string {
+  return pickOf(useSearchParams().get(P_SUB))
+}
+
+/**
+ * 只显示当前子项那一块(Microsoft Learn 一篇一页的形):本页所有子块里 id 不等于 on 的藏起来,
+ * 懒加载后才挂上的子块同样处理。
+ *
+ * @param on 当前子项锚点 id。
+ * @returns 无。
+ */
+export function useOnlyBlock(on: string): void {
+  useEffect(function watchOnly() {
+    return makeOnlyWatch(on)()
+  }, [on])
 }
 
 /**
@@ -282,26 +317,6 @@ export function useEmpSecs(x: EmpSecsHookIn): EmpSecsPanel {
 }
 
 /**
- * 盯分区色带进没进视口附近(2026-11-05 Frank「用户看到哪就加载哪部分」):挂载后按 id 找色带,
- * 进到视口上下 NEAR_MARGIN 内就记下、不再盯(只增不减,取过的段不重取)。没有 IntersectionObserver 的
- * 环境一律当全到了(老浏览器退回原来的挂载即取)。各段在途时照渲色带 + 占位,才盯得到。
- *
- * @param x 要盯的分区 id。
- * @returns 已到过视口附近的分区 id 集合。
- */
-export function useNearBands(x: NearBandsIn): Set<string> {
-  const [near, setNear] = useState<Set<string>>(newNearSet)
-  const idsKey = x.ids.join(SUB_IDS_SEP)
-
-  useEffect(function watchBands() {
-    return makeNearWatch({ ids: x.ids, setNear })()
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只随 id 清单变化重挂;数组引用每渲染都新,内容已折进 idsKey
-  }, [idsKey])
-
-  return near
-}
-
-/**
  * 一段数据的取数(/api/stats/pulse?part=…):on 了才拉,换语言重拉;接口挂了给空份(段不渲)。
  *
  * @param x 段名、语言、开关与空份。
@@ -324,16 +339,18 @@ export function usePulsePart<T>(x: PulsePartHookIn<T>): T | null {
 }
 
 /**
- * 把脉首页的整机:界面语言、各段到没到视口附近、各段数据(到了附近才取)、导航跟随,
+ * 把脉首页的整机:界面语言、各段数据、导航跟随,
  * 以及吃这些现值算出来的派生(职业分表 / 雇主分表 / 省份 / PR / 抽选 / 政策)。
  * 2026-11-05 按段懒加载:SSR 只给首屏四格,其余各段的原料全部改成到了视口附近才取。
+ * 2026-11-07 拆页后 Frank「把脉页可以去掉懒加载了吧。点哪个加载哪个吧」:一页一段,进页就取这一段,
+ * 不再盯视口(原 useNearBands / makeNearWatch 一整套随之删除)。
  *
  * @param x 页面门取好的首屏四格。
  * @returns 整机面板。
  */
 export function usePulse(x: PulseIn): PulsePanel {
   const [lang, , t] = useLang()
-  const near = useNearBands({ ids: NAV_IDS })
+  const near = pageSetOf(x.sec)
   const empOn = near.has(ID_SE)
   const provOn = near.has(ID_PROV)
   const occ = usePulsePart<OccPart>({ part: PART_OCC, lang, on: near.has(ID_BOARDS), empty: EMPTY_OCC_PART })
@@ -349,10 +366,6 @@ export function usePulse(x: PulseIn): PulsePanel {
   const tEn = useEnglishT()
   const derived = usePulseDerived({ t, lang, occ, provExtra: provExtraOf(prov), macroData, market })
 
-  const numCards = useMemo(function pickCards() {
-    return numCardsOf({ t, total: x.stats.total, named: x.stats.named, pulse: x.stats.pulse })
-  }, [t, x.stats.total, x.stats.named, x.stats.pulse])
-
   useEffect(function trackSecChange() {
     if (navSec !== TEXT_NONE) {
       trackSecView(navSec)
@@ -363,7 +376,6 @@ export function usePulse(x: PulseIn): PulsePanel {
     t,
     lang,
     market,
-    numCards,
     occSecs: derived.occSecs,
     empSecs: empSecs.secs,
     pilotSecs: empSecs.pilotSecs,

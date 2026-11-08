@@ -34,6 +34,8 @@ export function MeNav({ sec, t, unread, onPick }: MeNavIn) {
       label: t(s.labelKey),
       icon: icons[s.sec],
       count: meCountOf({ sec: s.sec, unread }),
+      href: null,
+      subs: [],
     })
   }
   return <Nav items={items} value={sec} onPick={onPick} ariaLabel={t(ME_TITLE_KEY)} />

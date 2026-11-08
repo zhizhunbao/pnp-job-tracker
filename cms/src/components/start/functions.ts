@@ -34,7 +34,7 @@ import {
   PNP_SORT_SCALE, PROV_ALL_LOWER,
   RATE_DIGITS, RATE_MAX, RATE_OVER_TEXT,
   SEP_LIST, SHORT_PROV, SIGN_MINUS, SIGN_PLUS, TEER_HEAD, TEXT_NONE,
-  TIER_BOTH, TIER_FED, TRACK_CTA, TRACK_SEC, TRACK_SUBNAV, TRACK_SERIES, TRACK_PROP_KEY, URL_MACRO_API,
+  TIER_BOTH, TIER_FED, TRACK_SEC, TRACK_SUBNAV, TRACK_SERIES, TRACK_PROP_KEY, URL_MACRO_API,
   TRACK_OCC, URL_HOME_Q_HEAD, URL_SPONSORS_API,
   COL_EMP, ID_CITY, ID_DRAWS, ID_NEWS, IND_BROADS, IND_KEYS, NEWS_LIMIT, NEWS_TAIL_RE, TAG_IRCC, COL_NEWS_TAG,
   COL_NEWS_TITLE, W_NEWS_TAG, URL_NEWS_HEAD, REGION_FEDERAL,
@@ -75,10 +75,8 @@ TAG_FED, PROV_FED, UNIT_SELECTION, COL_DATE, COL_PROG, COL_STREAM, COL_SCORE, CO
   FORMULA_KEY, MK_ALLOC_INCL,
   YOY_YEAR_TAIL,
   PART_DRAWS, PART_EMP, PART_NEWS, PART_OCC, PART_PROV, P_LANG, P_PART, QS_AND, QS_EQ, QS_HEAD,
-  ANCHOR_LINK_SEL, ANCHOR_SEC_HEAD, EV_CLICK, EV_KEY_DOWN, EV_TOUCH_START, EV_WHEEL, HREF_ATTR,
-  SCROLL_BLOCK_START,
-  URL_PULSE_API, EMPTY_DRAWS_PART, EMPTY_PROV_EXTRA, EMPTY_SPONSOR_GROUP, NEAR_MARGIN, NEAR_PX,
-  NEAR_SCAN_MAX, NEAR_SCAN_MS,
+  URL_PULSE_API, EMPTY_DRAWS_PART, EMPTY_PROV_EXTRA, EMPTY_SPONSOR_GROUP, SIDE_COUNT_NONE,
+  PATH_PULSE, PATH_SEP_LEN, SEC_DESC, SEC_PATH, SEC_TITLE, SLUG_SEC, START_META, P_SUB_HEAD,
 } from './constants'
 import { DeadCell } from './deadcell'
 import { EmpBriefCell } from './empbriefcell'
@@ -101,14 +99,14 @@ import { DliSchoolCell } from './dlischoolcell'
 import type { CityRow } from '@/lib/stats'
 import { CACHE } from './variables'
 import type {
-  HeldAboveIn, HoldListenIn, NearWatchState, ObserveBandsIn,
   HomeLoadIn,
   CityLabel, CityLabelIn,
   BandClsIn, CleanupFn,
   ClickFn,
   HomeCoreIn, HomeStats, HomeStatsCore, HomeStatsOfIn, HotPillsIn, LabelFn,
   MomClsIn,
-  MarketIn, NatOccIn, NavLinkClsIn, NavSubOrFirstIn, NavWatchIn,
+  MarketIn, NatOccIn, NavSubOrFirstIn, NavWatchIn,
+  PulseSideOfIn, PulseSideOut, SideHrefIn, SideItem, SidePickIn, SideSubsIn, PulseMeta,
   NocCat, NocCatOfIn, NocProvsIn, NocProvsMap,
   GapClsIn, NavItem, NavItemsIn, NumCardRow, NumCardsIn, OccCellRow, OccCellRowIn,
   OccCellRowsIn, OccColsIn,
@@ -125,7 +123,7 @@ import type {
   HiringOccIn, NocInfo, NocInfoIn, NocInfoMap, PulseIn2,
   AliasIn, BriefOfIn, BriefTextOut, BriefsIn, CompanyBrief,
   BriefsLangIn, PartLoadIn, PartUrlIn, PulsePartBody, PulsePartIn,
-  DrawsPart, EmpPieces, EmpPiecesIn, NearWatchIn, NewsPart, OccPart, ProvPart,
+  DrawsPart, EmpPieces, EmpPiecesIn, NewsPart, OccPart, ProvPart,
   CityColsIn, CityDliColsIn, CityData, CityDliRow, CityDliRowsIn, CityIndColsIn, CityIndRow, CityIndTable, IndCityCell,
   CityIndTablesIn,
   CityAipTableIn, CityLoadIn, CityMainRow, CityMainRowsIn, CityPageHrefIn, CityPilotRow, CityPilotRowsIn,
@@ -1581,6 +1579,7 @@ function joinCls(cls: string[]): string {
 
 /**
  * 色带的类:基座 + hero 档 + CTA 档(2026-09-04 Frank「把脉页面背景都改成一样的吧」:灰白交替撤,全页一色)。
+ * 2026-11-07 CTA 档随页底职位板入口横幅撤(Frank「下面这个删掉吧」)。
  *
  * @param x 两个档位开关。
  * @returns className。
@@ -1589,9 +1588,6 @@ export function bandClsOf(x: BandClsIn): string {
   const cls = [cssOf(css.band)]
   if (x.hero) {
     cls.push(cssOf(css.hero))
-  }
-  if (x.cta) {
-    cls.push(cssOf(css.ctaBand))
   }
   return joinCls(cls)
 }
@@ -1735,73 +1731,202 @@ export function momClsOf(x: MomClsIn): string {
 }
 
 /**
- * 二级导航项的类:基座 + 当前档(蓝 + 加粗 —— 蓝色只有一个语义:你现在在哪)。
+ * 侧栏某一分区的子项(喂 nav 桶:锚点链接、不带图标、没有下一层)。
+ * 2026-11-07 两排页签改左侧导航:原二级导航条的子项行(09-06 Frank「这个应该加子项,要不然手机端没法跳转」)
+ * 搬进侧栏当类别的子项;原条尾「回到顶部」(09-13)同日 Frank「侧边栏的 就业把脉 和 回到顶部都可以删了吧」撤。
  *
- * @param x 是不是当前分区。
- * @returns className。
+ * @param x 取词函数与分区锚点 id。
+ * @returns 子项清单;没有分表的分区给空。
  */
-export function navLinkClsOf(x: NavLinkClsIn): string {
-  const cls = [cssOf(css.navLink)]
-  if (x.on) {
-    cls.push(cssOf(css.navLinkOn))
-  }
-  return joinCls(cls)
-}
-
-/**
- * 导航条尾「回到顶部」的类(普通项的形 + 推到右端;2026-09-13 Frank「加上 政策动态 title,然后在加一个回到顶部的功能 页面太长了」)。
- *
- * @returns 类名。
- */
-export function navTopClsOf(): string {
-  return joinCls([cssOf(css.navLink), cssOf(css.navTop)])
-}
-
-/**
- * 子项清单 → 锚点 id 清单(子导航滚动跟随的输入)。
- *
- * @param items 子项清单。
- * @returns 锚点 id 清单。
- */
-export function navSubIdsOf(items: NavItem[]): string[] {
-  const out: string[] = []
-  for (const it of items) {
-    out.push(it.id)
+export function sideSubsOf(x: SideSubsIn): SideItem[] {
+  const out: SideItem[] = []
+  for (const s of navSubItemsOf({ t: x.t, navSec: x.id })) {
+    const href = secPathOf(x.id) + P_SUB_HEAD + s.id
+    out.push({ key: s.id, label: s.label, icon: null, count: SIDE_COUNT_NONE, href, subs: [] })
   }
   return out
 }
 
 /**
+ * 侧栏某一分区的链接:有子项的是类别(点了只展开收起,给 null),没有的直接链到分区那一页(2026-11-07 拆页)。
+ *
+ * @param x 分区锚点 id 与它的子项。
+ * @returns 页面网址或 null。
+ */
+export function sideHrefOf(x: SideHrefIn): string | null {
+  if (x.subs.length > 0) {
+    return null
+  }
+  return secPathOf(x.id)
+}
+
+/**
+ * 分区那一页的网址(2026-11-07 拆页:职业 = /start,其余 /start/<末段>)。
+ *
+ * @param id 分区锚点 id。
+ * @returns 页面网址;表外的分区给首页。
+ */
+export function secPathOf(id: string): string {
+  const path = SEC_PATH[id]
+  if (path == null) {
+    return PATH_PULSE
+  }
+  return path
+}
+
+/**
+ * 当前网址路径 → 分区锚点 id(外框住布局门,拿不到页面门的 sec,从路径反推:/start = 职业,
+ * /start/<末段> 查 SLUG_SEC;表外的落职业)。
+ *
+ * @param path `usePathname()` 的结果。
+ * @returns 分区锚点 id。
+ */
+export function secOfPath(path: string): string {
+  const slug = path.slice(PATH_PULSE.length + PATH_SEP_LEN)
+  const id = SLUG_SEC[slug]
+  if (id == null) {
+    return ID_BOARDS
+  }
+  return id
+}
+
+/**
+ * 子页网址末段 → 分区锚点 id(`/start/[sec]` 门用)。
+ *
+ * @param slug 网址末段。
+ * @returns 分区锚点 id;表外的末段给 null(门里 404)。
+ */
+export function secIdOf(slug: string): string | null {
+  const id = SLUG_SEC[slug]
+  if (id == null) {
+    return null
+  }
+  return id
+}
+
+/**
+ * 子页的 SEO 头(`/start/[sec]` 门的 generateMetadata 一行转发)。
+ *
+ * @param slug 网址末段。
+ * @returns 标题与摘要;表外的末段给首页那份(门里随后 404,头不上屏)。
+ */
+export function secMetaOf(slug: string): PulseMeta {
+  const title = SEC_TITLE[slug]
+  const description = SEC_DESC[slug]
+  if (title == null || description == null) {
+    return START_META
+  }
+  return { title, description }
+}
+
+/**
+ * 要单独显示的子块:本页有子项 = 当前子项;没有子项(抽选、政策动态)= ''(一块不藏)。
+ *
+ * @param x 侧栏当前项与分区条文字。
+ * @returns 子块锚点 id 或 ''。
+ */
+export function onlyBlockOf(x: PulseSideOut): string {
+  if (x.sub === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  return x.value
+}
+
+/**
+ * 网址参数 `t` → 当前子项(没带给 '')。
+ *
+ * @param value `searchParams.get('t')` 的结果。
+ * @returns 子项锚点 id 或 ''。
+ */
+export function pickOf(value: string | null): string {
+  if (value == null) {
+    return TEXT_NONE
+  }
+  return value
+}
+
+/**
+ * 「只显示当前子项那一块」的副作用工厂:所有子块(都挂 subAnchor 类)里 id 不等于 on 的设 hidden;
+ * 盯 body 的子树增删,懒加载后挂上的子块同样处理(只改 hidden 属性,不触发自己)。
+ *
+ * @param on 当前子项锚点 id;'' = 本页没有子项,一块不藏。
+ * @returns 挂监听并返回卸载函数。
+ */
+export function makeOnlyWatch(on: string): () => CleanupFn {
+  return function run(): CleanupFn {
+    function apply(): void {
+      for (const el of Array.from(document.getElementsByClassName(cssOf(css.subAnchor)))) {
+        if (el instanceof HTMLElement) {
+          el.hidden = on !== TEXT_NONE && el.id !== on
+        }
+      }
+    }
+    apply()
+    const mo = new MutationObserver(apply)
+    mo.observe(document.body, { childList: true, subtree: true })
+    return function off(): void {
+      mo.disconnect()
+    }
+  }
+}
+
+/**
+ * 侧栏当前项与手机分区条的两段文字。
+ *
+ * @param x 取词函数、当前分区、当前子项与分区的子项。
+ * @returns 当前项的键、分区名、子项名。
+ */
+export function pulseSideOf(x: PulseSideOfIn): PulseSideOut {
+  let head = TEXT_NONE
+  for (const it of navItemsOf({ t: x.t })) {
+    if (it.id === x.sec) {
+      head = it.label
+    }
+  }
+  if (x.subItems.length === 0) {
+    return { value: x.sec, head, sub: TEXT_NONE }
+  }
+  let sub = TEXT_NONE
+  for (const it of x.subItems) {
+    if (it.id === x.subOn) {
+      sub = it.label
+    }
+  }
+  return { value: x.subOn, head, sub }
+}
+
+/**
+ * 侧栏点击手柄工厂:埋点(沿用原子导航的 TRACK_SUBNAV,kind = 目标锚点 id)+ 关抽屉(换子项靠链接换网址参数)。
+ *
+ * @param x 关抽屉回调。
+ * @returns 点击回调(收被点项的键)。
+ */
+export function makeSidePick(x: SidePickIn): (key: string) => void {
+  return function onSidePick(key: string): void {
+    track(TRACK_SUBNAV, { [TRACK_PROP_KEY]: key })
+    x.onClose()
+  }
+}
+
+/**
  * 要点亮的子项:跟随机有值用跟随机,还没滚过任何子锚点时点亮第一个子项
  * (2026-09-11 Frank「一级标题点过来的时候应该 第一个子标题亮吧」—— 刚落到段首不留全灰)。
+ * 2026-11-07 一页一表:「跟随机」换成侧栏点过的子项;点过的不在本页子项里(别页的锚点)也落第一个。
  *
- * @param x 跟随机的当前值与子项清单。
+ * @param x 点过的子项与本页子项清单。
  * @returns 要点亮的子项 id;子项清单为空时空串。
  */
 export function navSubOrFirstOf(x: NavSubOrFirstIn): string {
-  if (x.subSec !== TEXT_NONE) {
-    return x.subSec
+  for (const it of x.items) {
+    if (it.id === x.subSec) {
+      return it.id
+    }
   }
   const first = x.items[0]
   if (first == null) {
     return TEXT_NONE
   }
   return first.id
-}
-
-/**
- * 子导航项的类:基座 + 当前档(2026-09-11 Frank「页面滚动时候 这部分也得亮」——
- * 子行与主行同一套「蓝 = 你现在在哪」)。
- *
- * @param x 是不是当前子分区。
- * @returns className。
- */
-export function navSubLinkClsOf(x: NavLinkClsIn): string {
-  const cls = [cssOf(css.navSubLink)]
-  if (x.on) {
-    cls.push(cssOf(css.navLinkOn))
-  }
-  return joinCls(cls)
 }
 
 /**
@@ -1854,15 +1979,6 @@ export function makeStreamLabel(x: StreamLabelIn): LabelFn {
   return function streamLabel(label: string): string {
     return streamDisplay({ t: x.t, label })
   }
-}
-
-/**
- * CTA 大钮的类:基座 + 主色档。
- *
- * @returns className。
- */
-export function ctaBtnClsOf(): string {
-  return joinCls([cssOf(css.btn), cssOf(css.ctaBtn)])
 }
 
 
@@ -2054,221 +2170,13 @@ export function makeNavWatch(x: NavWatchIn): () => CleanupFn {
 }
 
 /**
- * 盯分区色带进没进视口附近 + 跳段锁(useNearBands 的本体;2026-11-05 按段懒加载)。
- * ① 进了 NEAR_MARGIN 就记下;一直盯着不撤 —— 进附近那一下的状态更新若丢了(dev 双挂载 / 热更新 / 浏览器恢复滚动位置
- * 时实撞:首屏职业卡一直空白),下次进出还能补上。挂载那一刻没找齐的色带每 NEAR_SCAN_MS 再找一次,至多 NEAR_SCAN_MAX 次。
- * ② 跳段锁:点本页分区锚点(或带 #pl-… 深链进来)后,排在目标段**上方**的段进了附近也先不取(记进待取),
- * 页面每撑高一次就把目标段对齐回顶 —— 手机 375 点「抽选」实撞:跳过去时上方各段一段段露出、连锁加载撑高页面,
- * 把目标段推走 1.4 万像素,最后停在省份段。只在用户自己滚(滚轮 / 触摸 / 按键)时放手,待取里此刻仍在附近的补取 ——
- * 原定锁 20 秒自动放手,放手那一刻紧贴在上方的段正在附近、补取撑高,照样把目标推走(实测),故不设时限。
- * 没有 IntersectionObserver 的环境一律记全(退回挂载即取)。
+ * 这一页要取的段(2026-11-07 去懒加载:一页一段,进页就取 —— 原「到了视口附近才取」的近邻集合换成只含本页分区的集合)。
  *
- * @param x 要盯的分区 id 与已到集合的写口。
- * @returns effect 的本体(交回清理函数)。
+ * @param sec 这一页的分区锚点 id。
+ * @returns 只含本页分区的集合。
  */
-export function makeNearWatch(x: NearWatchIn): () => CleanupFn {
-  return function run(): CleanupFn {
-    if (typeof IntersectionObserver === 'undefined') {
-      x.setNear(new Set<string>(x.ids))
-      return noopCleanup
-    }
-    const st: NearWatchState = { hold: TEXT_NONE, deferred: new Set<string>(), scanTimer: 0, tries: 0 }
-    function addHits(hit: string[]): void {
-      if (hit.length > 0) {
-        x.setNear(makeNearAdd(hit))
-      }
-    }
-    function onSeen(entries: IntersectionObserverEntry[]): void {
-      const hit: string[] = []
-      for (const e of entries) {
-        const id = e.target.id
-        if (e.isIntersecting && heldAbove({ ids: x.ids, hold: st.hold, id })) {
-          st.deferred.add(id)
-        }
-        if (e.isIntersecting && heldAbove({ ids: x.ids, hold: st.hold, id }) === false) {
-          hit.push(id)
-        }
-      }
-      addHits(hit)
-    }
-    function release(): void {
-      if (st.hold === TEXT_NONE) {
-        return
-      }
-      st.hold = TEXT_NONE
-      addHits(nearNowOf(st.deferred))
-      st.deferred.clear()
-    }
-    function grab(hash: string): void {
-      st.hold = hash.slice(ANCHOR_HEAD.length)
-    }
-    function onClick(e: MouseEvent): void {
-      const a = anchorLinkOf(e.target)
-      if (a != null) {
-        grab(a)
-      }
-    }
-    function realign(): void {
-      const el = document.getElementById(st.hold)
-      if (st.hold !== TEXT_NONE && el != null) {
-        el.scrollIntoView({ block: SCROLL_BLOCK_START })
-      }
-    }
-    const obs = new IntersectionObserver(onSeen, { rootMargin: NEAR_MARGIN })
-    function scan(): void {
-      st.tries = st.tries + 1
-      if (observeBands({ ids: x.ids, obs }) === false && st.tries < NEAR_SCAN_MAX) {
-        st.scanTimer = window.setTimeout(scan, NEAR_SCAN_MS)
-      }
-    }
-    if (window.location.hash.startsWith(ANCHOR_SEC_HEAD)) {
-      grab(window.location.hash)
-    }
-    scan()
-    const unlisten = listenHold({ onClick, release, realign })
-    return function off(): void {
-      obs.disconnect()
-      unlisten()
-      window.clearTimeout(st.scanTimer)
-    }
-  }
-}
-
-/**
- * 把还没盯上的分区色带交给观察器(按 id 找;IntersectionObserver 对同一元素重复 observe 是空操作)。
- *
- * @param x 分区 id 与观察器。
- * @returns 全部找齐了给 true。
- */
-function observeBands(x: ObserveBandsIn): boolean {
-  let all = true
-  for (const id of x.ids) {
-    const el = document.getElementById(id)
-    if (el == null) {
-      all = false
-    }
-    if (el != null) {
-      x.obs.observe(el)
-    }
-  }
-  return all
-}
-
-/**
- * 跳段锁的监听:点击(认锚点链接)、用户自己滚(滚轮 / 触摸 / 按键 = 放手)、页面撑高(对齐回目标段)。
- *
- * @param x 三只手柄。
- * @returns 撤掉全部监听的函数。
- */
-function listenHold(x: HoldListenIn): CleanupFn {
-  const ro = new ResizeObserver(x.realign)
-  ro.observe(document.body)
-  document.addEventListener(EV_CLICK, x.onClick, true)
-  window.addEventListener(EV_WHEEL, x.release, { passive: true })
-  window.addEventListener(EV_TOUCH_START, x.release, { passive: true })
-  window.addEventListener(EV_KEY_DOWN, x.release)
-  return function unlisten(): void {
-    ro.disconnect()
-    document.removeEventListener(EV_CLICK, x.onClick, true)
-    window.removeEventListener(EV_WHEEL, x.release)
-    window.removeEventListener(EV_TOUCH_START, x.release)
-    window.removeEventListener(EV_KEY_DOWN, x.release)
-  }
-}
-
-/**
- * 这一段是不是排在锁住的目标段上方(锁着时先不取;没锁给 false)。
- *
- * @param x 分区 id 序、锁住的目标与这一段。
- * @returns 要先压着给 true。
- */
-function heldAbove(x: HeldAboveIn): boolean {
-  if (x.hold === TEXT_NONE) {
-    return false
-  }
-  const at = x.ids.indexOf(x.hold)
-  return at >= 0 && x.ids.indexOf(x.id) < at
-}
-
-/**
- * 待取里此刻仍在视口附近(上下 NEAR_PX)的那几段。
- *
- * @param ids 待取的分区 id。
- * @returns 此刻在附近的。
- */
-function nearNowOf(ids: Set<string>): string[] {
-  const out: string[] = []
-  for (const id of ids) {
-    const el = document.getElementById(id)
-    if (el == null) {
-      continue
-    }
-    const r = el.getBoundingClientRect()
-    if (r.top < window.innerHeight + NEAR_PX && r.bottom > -NEAR_PX) {
-      out.push(id)
-    }
-  }
-  return out
-}
-
-/**
- * 不用清理时的清理函数。
- *
- * @returns 无。
- */
-function noopCleanup(): void {
-  return
-}
-
-/**
- * 点中的是不是本页分区锚点链接;是给它的 href(#pl-…),不是给 null。
- *
- * @param t 点击目标。
- * @returns 锚点或 null。
- */
-function anchorLinkOf(t: EventTarget | null): string | null {
-  if (t instanceof Element === false) {
-    return null
-  }
-  const a = t.closest(ANCHOR_LINK_SEL)
-  if (a == null) {
-    return null
-  }
-  return a.getAttribute(HREF_ATTR)
-}
-
-/**
- * 造「已到集合并进这几个 id」的更新函数(只增不减;有新的才返回新集合让 React 认得变了,全是旧的原样交回不重渲)。
- *
- * @param hit 这一轮刚进附近的 id。
- * @returns setState 的更新函数。
- */
-function makeNearAdd(hit: string[]): (prev: Set<string>) => Set<string> {
-  return function addNear(prev: Set<string>): Set<string> {
-    let fresh = false
-    for (const id of hit) {
-      if (prev.has(id) === false) {
-        fresh = true
-      }
-    }
-    if (fresh === false) {
-      return prev
-    }
-    const next = new Set<string>(prev)
-    for (const id of hit) {
-      next.add(id)
-    }
-    return next
-  }
-}
-
-/**
- * 已到集合的初值(空;useState 的惰性初值)。
- *
- * @returns 空集合。
- */
-export function newNearSet(): Set<string> {
-  return new Set<string>()
+export function pageSetOf(sec: string): Set<string> {
+  return new Set<string>([sec])
 }
 
 /**
@@ -2364,15 +2272,6 @@ export function trackOccClick(): void {
 }
 
 /**
- * 埋点:点了 S6 的职位板入口大钮。
- *
- * @returns 无。
- */
-export function trackCtaClick(): void {
-  track(TRACK_CTA)
-}
-
-/**
  * 埋点:滚到了某一段(useNavSec 的分区跟随变化时打;kind = 段锚点 id)。
  *
  * @param id 段锚点 id。
@@ -2380,18 +2279,6 @@ export function trackCtaClick(): void {
  */
 export function trackSecView(id: string): void {
   track(TRACK_SEC, { [TRACK_PROP_KEY]: id })
-}
-
-/**
- * 二级导航子项胶囊的点击埋点工厂(kind = 目标锚点 id;工厂体内的内嵌函数是宪法豁免形)。
- *
- * @param id 目标锚点 id。
- * @returns 点击回调。
- */
-export function makeSubnavTrack(id: string): ClickFn {
-  return function onSubnav() {
-    track(TRACK_SUBNAV, { [TRACK_PROP_KEY]: id })
-  }
 }
 
 /**

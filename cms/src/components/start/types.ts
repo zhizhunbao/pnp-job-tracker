@@ -670,16 +670,6 @@ export type PulsePartHookIn<T> = {
 }
 
 /**
- * `useNearBands` 的入参。
- */
-export type NearBandsIn = {
-  /**
-   * 要盯的分区锚点 id。
-   */
-  ids: string[]
-}
-
-/**
  * `sharedHomeOf` 的入参(连接池的形状由 server 门定,本域不 import 库类型)。
  */
 export type HomeLoadIn<D> = {
@@ -692,101 +682,6 @@ export type HomeLoadIn<D> = {
    * 现查一份聚合(server 门的 loadHomeCore)。
    */
   load: (db: D) => Promise<HomeStatsCore>
-}
-
-/**
- * 盯色带 + 跳段锁的进行态(只活在一次 effect 的闭包里)。
- */
-export type NearWatchState = {
-  /**
-   * 锁住的目标段 id;'' = 没锁。
-   */
-  hold: string
-
-  /**
-   * 锁着时进了附近、因排在目标段上方而先压着的段(放手时补取此刻仍在附近的)。
-   */
-  deferred: Set<string>
-
-  /**
-   * 没找齐色带时再找一次的定时器。
-   */
-  scanTimer: number
-
-  /**
-   * 已找过几次色带。
-   */
-  tries: number
-}
-
-/**
- * `observeBands` 的入参。
- */
-export type ObserveBandsIn = {
-  /**
-   * 分区 id。
-   */
-  ids: string[]
-
-  /**
-   * 观察器。
-   */
-  obs: IntersectionObserver
-}
-
-/**
- * `listenHold` 的入参(三只手柄)。
- */
-export type HoldListenIn = {
-  /**
-   * 点击(认锚点链接)。
-   */
-  onClick: (e: MouseEvent) => void
-
-  /**
-   * 放手(用户自己滚)。
-   */
-  release: () => void
-
-  /**
-   * 对齐回目标段(页面撑高时)。
-   */
-  realign: () => void
-}
-
-/**
- * `heldAbove` 的入参。
- */
-export type HeldAboveIn = {
-  /**
-   * 分区 id(按页面顺序)。
-   */
-  ids: string[]
-
-  /**
-   * 锁住的目标段 id;'' = 没锁。
-   */
-  hold: string
-
-  /**
-   * 这一段的 id。
-   */
-  id: string
-}
-
-/**
- * `makeNearWatch` 的入参。
- */
-export type NearWatchIn = {
-  /**
-   * 要盯的分区 id。
-   */
-  ids: string[]
-
-  /**
-   * 已到集合的写口(收值或更新函数)。
-   */
-  setNear: (v: Set<string> | ((prev: Set<string>) => Set<string>)) => void
 }
 
 /**
@@ -1438,11 +1333,6 @@ export type BandClsIn = {
    * hero 档。
    */
   hero: boolean
-
-  /**
-   * CTA 渐变档(全站唯一用渐变的色带,标记「这里是出口」)。
-   */
-  cta: boolean
 }
 
 /**
@@ -1483,16 +1373,6 @@ export type MomClsIn = {
    * 环比列不上红绿。
    */
   flatDelta: boolean
-}
-
-/**
- * `navLinkClsOf` 的入参。
- */
-export type NavLinkClsIn = {
-  /**
-   * 是不是当前分区。
-   */
-  on: boolean
 }
 
 /**
@@ -1559,16 +1439,6 @@ export type NavWatchIn = {
    * 当前分区的落格。
    */
   setNavSec: FilterFn
-}
-
-/**
- * `useNavSub` 的入参(子导航行的滚动跟随)。
- */
-export type NavSubIn = {
-  /**
-   * 当前段子项的锚点 id 清单(段切换时整份换)。
-   */
-  ids: string[]
 }
 
 /**
@@ -1643,10 +1513,6 @@ export type PulsePanel = {
    */
   market: MarketData | null
 
-  /**
-   * S1 三脉象卡。
-   */
-  numCards: NumCardRow[]
 
   /**
    * 职业段的分表(全职业两榜 + 行业各一表);null = 主图数据还没到。
@@ -1727,9 +1593,54 @@ export type PulsePanel = {
  */
 export type PulseIn = {
   /**
-   * 页面门取好的那份 SSR 数据。
+   * 这一页是哪个分区(锚点 id;2026-11-07 拆页:一页一个分区,/start = 职业)。
+   */
+  sec: string
+}
+
+/**
+ * PulseShell(就业把脉外框:banner + 数字卡 + 侧栏 + 手机分区条)的 props(2026-11-07 外框进 /start/layout.tsx)。
+ */
+export type PulseShellIn = {
+  /**
+   * 布局门取好的那份 SSR 数据(四格数字 + 抓取时刻)。
    */
   stats: HomeStats
+
+  /**
+   * 这一页的内容(页面门给的那一段表)。
+   */
+  children: React.ReactNode
+}
+
+/**
+ * usePulseCards 的入参。
+ */
+export type PulseCardsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 布局门取好的那份 SSR 数据。
+   */
+  stats: HomeStats
+}
+
+/**
+ * 页面 SEO 头(Next metadata 用到的两格;照 START_META 的形)。
+ */
+export type PulseMeta = {
+  /**
+   * 浏览器标签与搜索结果标题。
+   */
+  title: string
+
+  /**
+   * 搜索结果摘要。
+   */
+  description: string
 }
 
 /**
@@ -1746,11 +1657,6 @@ export type BandIn = {
    * hero 档(banner 那一段自己管上下距)。
    */
   hero?: boolean
-
-  /**
-   * CTA 渐变档。
-   */
-  cta?: boolean
 
   /**
    * 色带内容。
@@ -1804,18 +1710,189 @@ export type PlaceholderIn = {
 }
 
 /**
- * PulseNav(二级导航条)的 props。
+ * usePulseSide(侧栏当前项与手机分区条文字)的入参(2026-11-07 两排页签改左侧导航,替 PulseNav 的 props)。
  */
-export type PulseNavIn = {
+export type PulseSideIn = {
   /**
    * 取词函数。
    */
   t: TFn
 
   /**
-   * 当前所在分区的锚点 id。
+   * 这一页的分区锚点 id。
    */
   navSec: string
+
+  /**
+   * 网址参数给的子项锚点 id;'' = 没带(落第一个子项)。
+   */
+  pick: string
+}
+
+
+/**
+ * usePulseSide 的出参。
+ */
+export type PulseSideOut = {
+  /**
+   * 侧栏当前项的键:分区有子项 = 当前子项锚点 id,没有 = 分区锚点 id。
+   */
+  value: string
+
+  /**
+   * 手机分区条左边:当前分区名。
+   */
+  head: string
+
+  /**
+   * 手机分区条右边:当前子项名;分区没有子项 = ''。
+   */
+  sub: string
+}
+
+/**
+ * pulseSideOf 的入参。
+ */
+export type PulseSideOfIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 当前分区锚点 id(已兜成第一段)。
+   */
+  sec: string
+
+  /**
+   * 当前子项锚点 id(已兜成第一项;分区没有子项 = '')。
+   */
+  subOn: string
+
+  /**
+   * 当前分区的子项。
+   */
+  subItems: NavItem[]
+}
+
+/**
+ * 喂 nav 桶 Nav 的一项(全格照抄 nav 桶 NavItem;跨域形状本域自声明)。
+ */
+export type SideItem = {
+  /**
+   * 身份键 = 锚点 id。
+   */
+  key: string
+
+  /**
+   * 文字。
+   */
+  label: string
+
+  /**
+   * 图标(子项不带,给 null)。
+   */
+  icon: React.ReactNode
+
+  /**
+   * 计数(本页不用,恒 0)。
+   */
+  count: number
+
+  /**
+   * 锚点链接;类别(有子项)给 null,点了只展开收起。
+   */
+  href: string | null
+
+  /**
+   * 子项;空 = 普通一项。
+   */
+  subs: SideItem[]
+}
+
+/**
+ * PulseSideNav(侧栏导航本体)的 props。
+ */
+export type PulseSideNavIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 当前项的键。
+   */
+  value: string
+
+  /**
+   * 点了某一项(埋点 + 关抽屉)。
+   */
+  onPick: (key: string) => void
+}
+
+/**
+ * sideSubsOf 的入参。
+ */
+export type SideSubsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 分区锚点 id。
+   */
+  id: string
+}
+
+/**
+ * sideHrefOf 的入参。
+ */
+export type SideHrefIn = {
+  /**
+   * 分区锚点 id。
+   */
+  id: string
+
+  /**
+   * 这个分区的子项。
+   */
+  subs: SideItem[]
+}
+
+/**
+ * PulsePick(手机分区条)的 props。
+ */
+export type PulsePickIn = {
+  /**
+   * 当前分区名。
+   */
+  head: string
+
+  /**
+   * 当前子项名;'' = 不出。
+   */
+  sub: string
+
+  /**
+   * 抽屉开着没有。
+   */
+  open: boolean
+
+  /**
+   * 点了分区条:拉出抽屉。
+   */
+  onOpen: () => void
+}
+
+/**
+ * makeSidePick 的入参。
+ */
+export type SidePickIn = {
+  /**
+   * 关抽屉(宽屏点侧栏时抽屉本来就关着,照调无害)。
+   */
+  onClose: () => void
 }
 
 /**
@@ -1996,16 +2073,6 @@ export type KvRowIn = {
    * 值(右)。
    */
   v: React.ReactNode
-}
-
-/**
- * CtaBand(S6 职位板入口)的 props。
- */
-export type CtaBandIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
 }
 
 

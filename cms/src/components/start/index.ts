@@ -19,7 +19,8 @@
  */
 export { CityNameCell } from './citynamecell'
 export { Pulse } from './pulse'
-export { emptyText, homeStatsOf } from './functions'
+export { PulseShell } from './pulseshell'
+export { emptyText, homeStatsOf, secIdOf, secMetaOf } from './functions'
 export { cityLabelOf } from './functions'
-export { START_META } from './constants'
+export { ID_BOARDS, START_META } from './constants'
 export type { HomeStats } from './types'

@@ -78,7 +78,7 @@ export function CitySection({ t, lang, on }: CitySectionIn) {
   }
   return (
     <Band id={ID_CITY}>
-      <Sec title={t('pulse.city')}>
+      <div>
         {v.data == null && <Placeholder size={PH_LAZY} text={t(K_LOADING)} />}
         {v.data != null && v.mainRows.length > 0 && (
           <div id={ID_CITY_MAIN} className={css.subAnchor}>
@@ -105,7 +105,7 @@ export function CitySection({ t, lang, on }: CitySectionIn) {
             </div>
           </div>
         )}
-      </Sec>
+      </div>
     </Band>
   )
 }

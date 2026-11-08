@@ -17,7 +17,6 @@ import { subIdOf } from './functions'
 import { Band } from './band'
 import { EmpBoardSec } from './empboardsec'
 import { Placeholder } from './placeholder'
-import { Sec } from './sec'
 import type { EmpSectionIn } from './types'
 
 /**
@@ -56,10 +55,10 @@ export function EmpSection({ t, secs, pilotSecs, loading }: EmpSectionIn) {
   }
   return (
     <Band id={ID_SE}>
-      <Sec title={t('pulse.nav.se')}>
+      <div>
         {loading && <Placeholder size={PH_LAZY} text={t(K_LOADING)} />}
         {items}
-      </Sec>
+      </div>
     </Band>
   )
 }

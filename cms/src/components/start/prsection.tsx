@@ -13,7 +13,6 @@ import { ID_PR_BAND, K_LOADING, PH_LAZY } from './constants'
 import { Band } from './band'
 import { MacroBlock } from './macroblock'
 import { Placeholder } from './placeholder'
-import { Sec } from './sec'
 import type { PrSectionIn } from './types'
 
 /**
@@ -34,10 +33,10 @@ export function PrSection({ t, prGeos, loading }: PrSectionIn) {
   }
   return (
     <Band id={ID_PR_BAND}>
-      <Sec title={t('pulse.spr')}>
+      <div>
         {loading && <Placeholder size={PH_LAZY} text={t(K_LOADING)} />}
         {blocks}
-      </Sec>
+      </div>
     </Band>
   )
 }

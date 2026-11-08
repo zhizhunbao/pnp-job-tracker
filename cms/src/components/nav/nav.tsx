@@ -3,14 +3,16 @@
  * nav 域的结构:侧边导航(照 Fluent 2 Nav 的 Simple nav —— 一层、每项带图标、当前项左边一条主色竖条;
  * 2026-11-07 Frank「我的」整页照 Fluent / Azure 重做,docs/design/我的/我的框架-20261107.md)。
  * 宽屏常驻在 NavFrame 左栏,窄屏装进 NavDrawer;两处同一个件。
+ * 2026-11-07 就业把脉侧栏:加 Complex nav with categories —— 带子项的一项是类别(NavCat),其余照旧一行(NavRow)。
  *
  * @author Frank
  * @time 2026-11-07 15:10:00
  */
-import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { PLAIN_BTN_KIND } from './constants'
-import { isCountShown, makeNavPick, navCurrentOf, navItemClsOf } from './functions'
+import { navOpenOf } from './functions'
+import { useNavFlips } from './hooks'
+import { NavCat } from './navcat'
+import { NavRow } from './navrow'
 import type { NavIn } from './types'
 import css from './nav.module.css'
 
@@ -21,18 +23,17 @@ import css from './nav.module.css'
  * @returns nav 地标。
  */
 export function Nav({ items, value, onPick, ariaLabel }: NavIn) {
+  const f = useNavFlips({ items, value })
   const rows = []
   for (const it of items) {
-    const on = it.key === value
-    rows.push(
-      <li key={it.key} aria-current={navCurrentOf(on)}>
-        <Button kind={PLAIN_BTN_KIND} onClick={makeNavPick({ onPick, key: it.key })} className={navItemClsOf(on)}>
-          <span className={cssOf(css.icon)}>{it.icon}</span>
-          <span className={cssOf(css.label)}>{it.label}</span>
-          {isCountShown(it.count) && <span className={cssOf(css.count)}>{it.count}</span>}
-        </Button>
-      </li>,
-    )
+    if (it.subs.length === 0) {
+      rows.push(<NavRow key={it.key} item={it} value={value} onPick={onPick} sub={false} />)
+    } else {
+      rows.push(
+        <NavCat key={it.key} item={it} value={value} onPick={onPick}
+          open={navOpenOf({ item: it, value, flips: f.flips })} setFlips={f.setFlips} />,
+      )
+    }
   }
   return (
     <nav aria-label={ariaLabel}>

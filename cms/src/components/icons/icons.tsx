@@ -11,6 +11,7 @@
  */
 import {
   ArrowUp, Bell, Briefcase, ChartColumn, ChartLine, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, CircleX,
+  ChevronsLeft, ChevronsRight,
   ClipboardList,
   Compass, CreditCard, FileText, Globe, GripVertical, IdCard, Lock, Mail, Map as LMap, MapPin, Maximize, Medal, Menu,
   MessageCircle, Mic,
@@ -96,6 +97,16 @@ export const IconChevronLeft = makeIcon(ChevronLeft)
  * 下一页 / 抽屉分组的收起态(2026-08-24 替 › ▸ 字符)。
  */
 export const IconChevronRight = makeIcon(ChevronRight)
+
+/**
+ * 侧栏收起(Microsoft Learn 目录、Azure 门户停靠菜单的 «;2026-11-07 立)。
+ */
+export const IconChevronsLeft = makeIcon(ChevronsLeft)
+
+/**
+ * 侧栏展开(收起后窄边上的 »;2026-11-07 立)。
+ */
+export const IconChevronsRight = makeIcon(ChevronsRight)
 
 /**
  * 职位板与存查(清单类内容)。

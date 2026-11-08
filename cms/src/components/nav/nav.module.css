@@ -30,6 +30,18 @@
 .side {
   /*
    * Fluent 2 Nav 默认 260 宽。
+   * 2026-11-07 Frank 看就业把脉实拍「这个 sidebar 看着也太宽了」:收到 220(英文长标签照 Fluent 折行)。
+   */
+  width: 220px;
+}
+
+/*
+ * 英文界面左栏宽一些(2026-11-07 Frank 截图「英文这个宽度要宽一些吧」:220 下「Manufacturing & resources」折两行)。
+ * 中文、韩文标签短,保持 220。
+ */
+.side:lang(en) {
+  /*
+   * 英文 260(Fluent 2 Nav 默认宽)。
    */
   width: 260px;
 
@@ -60,8 +72,141 @@
 
   /*
    * 顶栏高约 56,再空 16。
+   * 2026-11-07 就业把脉侧栏改 16:顶栏不吸顶(Header 缺省 sticky=false),滚下去后贴窗口顶,原 72 会空出一截。
    */
-  top: 72px;
+  top: 16px;
+
+  /*
+   * 导航比一屏高(就业把脉类别展开后十几行)时自己滚,不被窗口底边截掉。
+   */
+  max-height: calc(100vh - 32px);
+
+  /*
+   * 自己滚。
+   */
+  overflow-y: auto;
+
+  /*
+   * 滚动条不出(2026-11-07 Frank 截图「这个竖线去掉」:Windows 常驻滚动条在左栏右边竖一条灰杠);滚轮 / 手指照样能滚。
+   * 同日 Frank「sidebar 这个竖线还是要保留的」「不是那个粗滚动条,是一个细线」:要留的是左栏右边那条分隔细线
+   * (.side 的 border-right),滚动条照旧不出。
+   */
+  scrollbar-width: none;
+}
+
+/*
+ * 老 Chromium / Safari 的滚动条同样不出。
+ */
+.sideIn::-webkit-scrollbar {
+  /*
+   * 不出。
+   */
+  display: none;
+}
+
+/*
+ * « / » 钮那一行:住导航顶上单占一行,钮靠右(照 Microsoft Learn 目录)。
+ * 2026-11-07 来回:先顶上单占一行 → Frank「这两行能不能合成一行」→ 骑边线圆钮「跑出去了」→ 放最底下
+ * (照 Azure DevOps)→ 同日 Frank「还是放上面吧」「改成和 learn 那种」,回到顶上。
+ * 同日再改 Frank「向下的箭头放到 文字后面,然后把缩放的合并成一行」:类别箭头挪到文字后面,第一行右端空出来,
+ * « 浮在那里(不再单占一行)。
+ */
+.sideFoot {
+  /*
+   * 浮在第一行右端(粘顶列 sideIn 是定位基准)。
+   */
+  position: absolute;
+
+  /*
+   * 第一行 40 高,钮 32,上下各留 4。
+   */
+  top: 4px;
+
+  /*
+   * 贴右。
+   */
+  right: 0;
+
+  /*
+   * 压在第一行之上。
+   */
+  z-index: 1;
+
+  /*
+   * 横排。
+   */
+  display: flex;
+}
+
+/*
+ * « / » 钮:32 见方,次级字色。加倍类压过 button 桶的底座。
+ */
+.collapse.collapse {
+  /*
+   * 32 见方。
+   */
+  width: 32px;
+
+  /*
+   * 32 见方。
+   */
+  height: 32px;
+
+  /*
+   * 去掉底座内衬。
+   */
+  padding: 0;
+
+  /*
+   * 次级字色。
+   */
+  color: var(--text2);
+
+  /*
+   * 图标大小。
+   */
+  font-size: 18px;
+}
+
+/*
+ * 左栏收起后:只剩一条 48 宽的窄边(32 的钮 + 两边 8),» 在顶上。
+ */
+.sideOff.sideOff {
+  /*
+   * 窄边。
+   */
+  width: 48px;
+}
+
+/*
+ * 收起后那一行:窄边里没有导航项,钮回到普通流里居中。
+ * (同日一度把 » 沉到窄边最下面,Frank 随即「这样就不用放到下面了」撤回。)
+ */
+.sideOff .sideFoot {
+  /*
+   * 回普通流。
+   */
+  position: static;
+
+  /*
+   * 居中。
+   */
+  justify-content: center;
+}
+
+/*
+ * 类别的文字:按内容宽,箭头紧跟在后面(Frank「向下的箭头放到 文字后面」)。
+ */
+.catLabel {
+  /*
+   * 按内容宽。
+   */
+  flex: none;
+
+  /*
+   * 左对齐。
+   */
+  text-align: left;
 }
 
 /*
@@ -82,6 +227,16 @@
    * 上 20、左右 28、下 40。
    */
   padding: 20px 28px 40px;
+}
+
+/*
+ * 右边内容不加内衬(内容自己带正文轨;NavFrame bare)。加倍类压过窄屏那条 .main 内衬。
+ */
+.mainBare.mainBare {
+  /*
+   * 不加内衬。
+   */
+  padding: 0;
 }
 
 /*
@@ -267,6 +422,83 @@
    * 主色。
    */
   background: var(--primary);
+}
+
+/*
+ * 链接形的一项(页内锚点):去掉下划线,悬停也不出(2026-11-07 就业把脉侧栏立)。
+ */
+a.item.item,
+a.item.item:hover {
+  /*
+   * 不要下划线。
+   */
+  text-decoration: none;
+
+  /*
+   * 挡掉全站 a:hover 的整块调暗(brightness 0.75):不挡的话浅蓝悬停底被压成一块深灰
+   * (2026-11-07 Frank 截图问「learn 鼠标 hover 是这个颜色吗」;站规 09-04 悬停一律淡蓝底 --hover-bg)。
+   */
+  filter: none;
+}
+
+/*
+ * 类别下的子项:不带图标,文字与类别文字对齐(左 12 + 图标 18 + 间距 10 = 40),矮一点(Fluent 2 Nav 子项)。
+ */
+.sub.sub {
+  /*
+   * 36 高。
+   */
+  height: 36px;
+
+  /*
+   * 与类别文字对齐。
+   */
+  padding-left: 40px;
+}
+
+/*
+ * 展开着、当前项在里面的类别:深字半粗,图标主色(选中竖条在子项上,不在类别上)。
+ */
+.catOn.catOn {
+  /*
+   * 正文深字。
+   */
+  color: var(--text);
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 展开着、当前项在里面的类别的图标主色。
+ */
+.catOn .icon {
+  /*
+   * 主色。
+   */
+  color: var(--primary);
+}
+
+/*
+ * 类别右端的箭头(Fluent 2 Nav Chevron 节:位置固定在右,不许挪)。
+ */
+.chev {
+  /*
+   * 图标居中。
+   */
+  display: inline-grid;
+
+  /*
+   * 图标居中。
+   */
+  place-items: center;
+
+  /*
+   * 比项图标小一号。
+   */
+  font-size: 14px;
 }
 
 /*

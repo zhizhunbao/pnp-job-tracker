@@ -13,7 +13,6 @@ import { Band } from './band'
 import { OccBoardSec } from './occboardsec'
 import { subIdOf } from './functions'
 import { Placeholder } from './placeholder'
-import { Sec } from './sec'
 import type { BoardsSectionIn } from './types'
 
 /**
@@ -46,10 +45,10 @@ export function BoardsSection({ t, lang, secs, nocProvs }: BoardsSectionIn) {
   }
   return (
     <Band id={ID_BOARDS}>
-      <Sec title={t('pulse.nav.occ')}>
+      <div>
         {secs == null && <Placeholder size={PH_LAZY} text={t(K_LOADING)} />}
         {items}
-      </Sec>
+      </div>
     </Band>
   )
 }

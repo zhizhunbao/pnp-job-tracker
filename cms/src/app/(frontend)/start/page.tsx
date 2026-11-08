@@ -18,16 +18,7 @@
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
-import { getPayload } from 'payload'
-
-import config from '@/payload.config'
-import { Footer } from '@/components/footer'
-import { Header } from '@/components/header'
-import { Frame } from '@/components/shell'
-import { Pulse, START_META, emptyText, homeStatsOf } from '@/components/start'
-import { getHomeCore } from '@/components/start/server'
-import { dbOf } from '@/lib/db/server'
-import { checkedAt } from '@/lib/jobs/server'
+import { ID_BOARDS, Pulse, START_META } from '@/components/start'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,19 +30,11 @@ export const metadata = START_META
  * 缓存口径与旧版一字未改:10 分钟内给同一份,过期现查再存;抓取时刻逐请求不进缓存
  * (lib/jobs 自带 30s 缓存)。预选省 2026-09-06 随省内职业榜退役(省份段不再切省),getUser 一并撤。
  * 2026-11-05:取数与缓存挪进 start 的 server 门(getHomeCore,带单飞),本门只把首屏四格交给 Pulse。
+ * 2026-11-07 拆页:本页只出职业一段(其余六段各一页,门在 `[sec]/page.tsx`)。
+ * 同日外框进 `layout.tsx`(切页不刷新):取数、顶栏、页脚、banner、侧栏都挪过去,本门只给职业这一段。
  *
  * @returns 整页。
  */
-export default async function PulsePage() {
-  const payload = await getPayload({ config: await config })
-  const db = dbOf(payload)
-  const core = await getHomeCore(db)
-  const upd = await checkedAt(db).catch(emptyText)
-  return (
-    <Frame>
-      <Header />
-      <Pulse stats={homeStatsOf({ core, checkedAt: upd })} />
-      <Footer />
-    </Frame>
-  )
+export default function PulsePage() {
+  return <Pulse sec={ID_BOARDS} />
 }

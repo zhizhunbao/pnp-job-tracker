@@ -5,6 +5,8 @@
  * 右槽放标题行右侧的控件(TopN 下拉 / 外链 / 对话导流钮);sub 档是伞标题下的子标题
  * (2026-08-08 二次拍板「二级导航和下面对不上」,字号降一档,与「政策动态」既有 h3 同 precedent)。
  * 2026-08-28 换装批自 Pulse.tsx 提出成文件。
+ * 2026-11-07 一页一表后 Frank 指着表上的「STEM」说「这个应该不需要,而且空很大高度」:子标题档不再出标题,
+ * 当前是哪张表由侧栏与手机分区条标明;分区级标题(抽选、政策动态)照旧。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
@@ -20,6 +22,9 @@ import css from './start.module.css'
  * @returns 分区。
  */
 export function Sec({ title, right, sub = false, children }: SecIn) {
+  if (sub) {
+    return <div>{children}</div>
+  }
   return (
     <div>
       <h2 className={secHeadClsOf({ sub })}>

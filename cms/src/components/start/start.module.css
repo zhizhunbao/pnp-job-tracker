@@ -744,283 +744,172 @@
 }
 
 /*
- * ── 二级导航条(2026-08-08 Frank)──────────────────────────────
- * 分区锚点直跳;粘顶,375 横向滚动。
- * 2026-08-09 Frank「这个地方的高亮也不对啊」:原先五个锚点永远灰、属主永远蓝
- * = 看着像永远停在第一项。现加滚动跟随(当前分区的锚点亮蓝),属主前缀改深色粗体
- * —— 蓝色只有一个语义:你现在在哪。
+ * ── 手机分区条(2026-11-07 两排页签改左侧导航)──────────────────
+ * 原二级导航条(2026-08-08 起:分区锚点直跳、粘顶、滚动跟随亮蓝)搬进左侧导航;窄屏只剩这一条,
+ * 写「分区 › 子项」告诉用户在哪,点了拉出导航抽屉。宽屏(641 起)不出,由左栏代。
  */
-.navBar {
+.pickBar {
   /*
-   * 粘顶。
+   * 粘顶(顶栏不吸顶,滚下去后贴窗口顶)。
    */
   position: sticky;
+
+  /*
+   * 贴顶。
+   */
   top: 0;
 
   /*
-   * 压在正文之上,但必须低于顶栏(30):2026-08-29 Frank 实拍 —— 与顶栏同 z 且
-   * DOM 在后,把账户下拉的上半截盖住了;页内粘顶条在全站阶梯里属正文层,降到 20。
+   * 压在各段内容之上。
    */
   z-index: 20;
 
   /*
-   * 白底(粘顶条不能透出正文)。
+   * 白底。
    */
-  background: #ffffff;
+  background: var(--card);
 
   /*
-   * 与正文的分界线。
+   * 底边一条细线与内容分开。
    */
   border-bottom: 1px solid var(--border);
 }
 
 /*
- * 导航项那一行。原 .plNavRow。
+ * 宽屏不出(左栏代;断点同 nav 桶左栏 640)。
  */
-.navRow {
+@media (min-width: 641px) {
   /*
-   * 手机档行高(#289 那批的触控靶由 .navLink 承担,这里只给上下留白)。
+   * 宽屏不出。
    */
-  padding: 3px 0;
+  .pickBar {
+    display: none;
+  }
+}
+
+/*
+ * 整条一个钮:字横排、箭头推到右端。加倍类压过 button 桶的底座。
+ */
+.pick.pick {
+  /*
+   * 占满一行。
+   */
+  width: 100%;
 
   /*
-   * 藏滚动条(Firefox;与子项行同款,2026-09-06)。
-   */
-  scrollbar-width: none;
-
-  /*
-   * 一行排开。
+   * 横排。
    */
   display: flex;
 
   /*
-   * 项间距。
-   */
-  gap: 16px;
-
-  /*
-   * 375 放不下就横向滚动(不折行、不换行)。
-   */
-  overflow-x: auto;
-
-  /*
-   * 导航字号。
-   */
-  font-size: 12.5px;
-
-  /*
-   * 不折行。
-   */
-  white-space: nowrap;
-
-  /*
-   * 竖直居中。
+   * 竖向居中。
    */
   align-items: center;
+
+  /*
+   * 字与分隔之间 6。
+   */
+  gap: 6px;
+
+  /*
+   * 44 高(手指好点)。
+   */
+  height: 44px;
+
+  /*
+   * 左右 16,与正文轨对齐。
+   */
+  padding: 0 16px;
+
+  /*
+   * 左对齐。
+   */
+  justify-content: flex-start;
+
+  /*
+   * 正文字号。
+   */
+  font-size: 14px;
+
+  /*
+   * 无圆角(整条贴边)。
+   */
+  border-radius: 0;
 }
 
 /*
- * 条首的属主项「就业把脉」(2026-08-08 Frank「二级标题应该只属于这个一级标题」):
- * 深色粗体,不是链接 —— 蓝色留给「你现在在哪」。
+ * 分区名:深字半粗。
  */
-/*
- * 藏滚动条(Chrome / Safari;两行导航横滑靠手势,不出灰条)。
- */
-.navRow::-webkit-scrollbar,
-.navSubRow::-webkit-scrollbar {
+.pickHead {
   /*
-   * 不画。
-   */
-  display: none;
-}
-
-.navOwner {
-  /*
-   * 加粗。
-   */
-  font-weight: 700;
-
-  /*
-   * 近黑。
+   * 正文深字。
    */
   color: var(--text);
 
   /*
-   * 横滚时不被压扁。
-   */
-  flex-shrink: 0;
-}
-
-/*
- * 属主与导航项之间的竖线。
- */
-.navSep {
-  /*
-   * 一像素竖线。
-   */
-  width: 1px;
-  height: 14px;
-
-  /*
-   * 边框灰。
-   */
-  background: var(--border);
-
-  /*
-   * 横滚时不被压扁,并在行内竖直居中。
-   */
-  flex-shrink: 0;
-  align-self: center;
-}
-
-/*
- * 导航项(锚点链接)。#289:二级导航条锚点链接同款触控靶
- * (37 轮体检 R8 实测 20px,#276 那批漏了这一族)。
- */
-.navLink {
-  /*
-   * 手机触控靶 ≥44px(桌面收回)。
-   */
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-
-  /*
-   * 未选中的中灰(gray-500)。
-   */
-  color: #6b7280;
-
-  /*
-   * 导航项不出下划线。
-   */
-  text-decoration: none;
-
-  /*
-   * 未选中半粗。
+   * 半粗。
    */
   font-weight: 600;
-
-  /*
-   * 横滚时不被压扁。
-   */
-  flex-shrink: 0;
 }
 
 /*
- * 当前所在分区的导航项:蓝 + 加粗(蓝色只有一个语义:你现在在哪)。
+ * 子项名:次级字色。
  */
-/*
- * 二级导航的子项行(2026-09-06 Frank「这个应该加子项,要不然手机端没法跳转」):当前分区的分表锚点,
- * 手机横向滑,主项行下面一行。
- */
-.navSubRow {
+.pickSub {
   /*
-   * 横向排,溢出横滑。
+   * 次级字色。
    */
-  display: flex;
-
-  /*
-   * 子项间距(比主项密一档)。
-   */
-  gap: 14px;
-
-  /*
-   * 手机档溢出横滑,不折行。
-   */
-  overflow-x: auto;
-
-  /*
-   * 藏滚动条(Firefox;滚动手势仍可用。2026-09-06 Frank 实拍:手机端出了一条灰滚动条)。
-   */
-  scrollbar-width: none;
-
-  /*
-   * 不折行。
-   */
-  white-space: nowrap;
-
-  /*
-   * 比主项小半号。
-   */
-  font-size: 12px;
-
-  /*
-   * 下沿留白,与粘条底线分开;右沿留一段空,让右缘渐隐只盖住留白不吃字
-   * (2026-09-10 实拍:375px 下子项被硬裁,后面还有一排指标看不出可横滑)。
-   */
-  padding: 0 24px 4px 0;
-
-  /*
-   * 右缘渐隐 = 「后面还有」的提示;滑到底时渐隐落在右沿留白上,末项不糊。
-   */
-  mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
-
-  /*
-   * Safari 前缀。
-   */
-  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
-}
-
-/*
- * 子项链接:比主项轻(常规字重、灰),触控靶 32px。
- */
-.navSubLink {
-  /*
-   * 行内弹性盒,文字垂直居中。
-   */
-  display: inline-flex;
-
-  /*
-   * 垂直居中。
-   */
-  align-items: center;
-
-  /*
-   * 触控靶。
-   */
-  min-height: 32px;
-
-  /*
-   * 灰字。
-   */
-  color: #6b7280;
-
-  /*
-   * 去下划线。
-   */
-  text-decoration: none;
+  color: var(--text2);
 
   /*
    * 常规字重。
    */
-  font-weight: 500;
-
-  /*
-   * 不被压缩。
-   */
-  flex-shrink: 0;
+  font-weight: 400;
 }
 
 /*
- * 导航条尾「回到顶部」:推到右端(2026-09-13 Frank「加一个回到顶部的功能 页面太长了」)。
+ * 分区与子项之间的小箭头。
  */
-.navTop {
+.pickSep {
   /*
-   * 吃掉左侧全部剩余空间。
+   * 图标居中。
    */
-  margin-left: auto;
+  display: inline-grid;
+
+  /*
+   * 次级字色。
+   */
+  color: var(--text2);
+
+  /*
+   * 小一号。
+   */
+  font-size: 12px;
 }
 
-.navLinkOn {
+/*
+ * 右端下拉箭头:推到最右。
+ */
+.pickChev {
   /*
-   * 品牌蓝。
+   * 吃掉剩余空间。
    */
-  color: var(--primary);
+  margin-left: auto;
 
   /*
-   * 加粗。
+   * 图标居中。
    */
-  font-weight: 700;
+  display: inline-grid;
+
+  /*
+   * 次级字色。
+   */
+  color: var(--text2);
+
+  /*
+   * 图标大小。
+   */
+  font-size: 18px;
 }
 
 /*
@@ -1033,8 +922,9 @@
 .grpGap {
   /*
    * 表间距。
+   * 2026-11-07 一页一表后不再有「上一张表」,24 的间距成了标题上方的空白(Frank「下面空的太多了」),归 0。
    */
-  margin-top: 24px;
+  margin-top: 0;
 }
 
 /*
@@ -1188,8 +1078,10 @@
 .boardGap {
   /*
    * 分榜间距。
+   * 2026-11-07 一页一表后 Frank「最多岗位和 最高工资 table 位置怎么不一样呢」「全按最多岗位的 距离算」:
+   * 第二张起的 28 间距让表比第一张低一截,归 0(与 .grpGap 同批)。
    */
-  margin-top: 28px;
+  margin-top: 0;
 }
 
 /*

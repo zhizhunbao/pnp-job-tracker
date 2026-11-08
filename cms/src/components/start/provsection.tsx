@@ -19,7 +19,6 @@ import { Band } from './band'
 import { JobsSection } from './jobssection'
 import { MacroBlock } from './macroblock'
 import { Placeholder } from './placeholder'
-import { Sec } from './sec'
 import type { MacroSectionIn } from './types'
 
 /**
@@ -40,11 +39,11 @@ export function ProvSection({ t, indGeos, indLoading, jobsLoading, jobsRows }: M
   }
   return (
     <Band id={ID_PROV}>
-      <Sec title={t('pulse.s4')}>
+      <div>
         {indLoading && <Placeholder size={PH_LAZY} text={t(K_LOADING)} />}
         {blocks}
         <JobsSection t={t} loading={jobsLoading} rows={jobsRows} gap={gap} />
-      </Sec>
+      </div>
     </Band>
   )
 }

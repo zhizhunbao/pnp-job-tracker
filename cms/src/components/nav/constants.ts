@@ -34,3 +34,19 @@ export const ROLE_DIALOG = 'dialog'
  * 计数格「没有要看的」的值:0 不出红点。
  */
 export const COUNT_NONE = 0
+
+/**
+ * 「没有」的键:当前项不在任何类别里 / 还没记过当前项。
+ */
+export const KEY_NONE = ''
+
+/**
+ * 左栏 « 钮的 aria-label 与悬停提示(Fluent 2 Nav Content 节定死的英文原词「Collapse navigation」;
+ * 2026-11-07 立,要不要走 i18n 跟 CLOSE_ARIA 一起定)。
+ */
+export const COLLAPSE_ARIA = 'Collapse navigation'
+
+/**
+ * 收起后 » 钮的 aria-label 与悬停提示(Fluent 2 Nav 原词「Expand navigation」)。
+ */
+export const EXPAND_ARIA = 'Expand navigation'

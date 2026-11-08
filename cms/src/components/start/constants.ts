@@ -8,11 +8,6 @@
  */
 
 /**
- * 职位板首页(CTA 的去处;脉象卡原也去这里,2026-11-05 Frank「这四个卡片去掉点击」后不再跳)。
- */
-export const URL_HOME = '/'
-
-/**
  * 职位板按职业码筛选的地址头(每行可溯源:职业名点开落到按该 NOC 筛过的职位板)。
  */
 export const URL_HOME_Q_HEAD = '/?q='
@@ -85,66 +80,6 @@ export const PART_DRAWS = 'draws'
  * 段名:政策动态段。
  */
 export const PART_NEWS = 'news'
-
-/**
- * 分区提前多远开始取数(视口上下各 200px;占位一屏高 PH_LAZY,配着它首屏只取眼前那一段)。
- */
-export const NEAR_MARGIN = '200px 0px'
-
-/**
- * 挂载时没找齐分区色带,隔多久再找一次(ms)。
- */
-export const NEAR_SCAN_MS = 300
-
-/**
- * 「附近」的像素数(与 NEAR_MARGIN 同数;放手补取待取段时按它现量)。
- */
-export const NEAR_PX = 200
-
-/**
- * 再找至多几次(300ms × 20 = 6 秒;条件不渲的段本来就找不到,找满就停)。
- */
-export const NEAR_SCAN_MAX = 20
-
-/**
- * 本页分区锚点的前缀(二级导航与深链都是它)。
- */
-export const ANCHOR_SEC_HEAD = '#pl-'
-
-/**
- * 本页分区锚点链接的选择器(点它 = 跳段,开始锁目标)。
- */
-export const ANCHOR_LINK_SEL = 'a[href^="#pl-"]'
-
-/**
- * 点击事件名(认导航跳段)。
- */
-export const EV_CLICK = 'click'
-
-/**
- * 滚轮事件名(用户自己滚 = 放手)。
- */
-export const EV_WHEEL = 'wheel'
-
-/**
- * 触摸开始事件名(手机上用户自己滑 = 放手)。
- */
-export const EV_TOUCH_START = 'touchstart'
-
-/**
- * 按键事件名(键盘翻页 = 放手)。
- */
-export const EV_KEY_DOWN = 'keydown'
-
-/**
- * 对齐到顶(scrollIntoView 的 block;吸顶导航的让位由色带的 scroll-margin-top 管)。
- */
-export const SCROLL_BLOCK_START = 'start'
-
-/**
- * 链接的 href 属性名。
- */
-export const HREF_ATTR = 'href'
 
 /**
  * 按段接口的缓存头(照城市段:浏览器 5 分钟内复用,一小时内先给旧的再后台刷)。
@@ -330,15 +265,117 @@ export const ID_DRAWS = 'pl-draws'
 export const ID_NEWS = 'pl-news'
 
 /**
+ * 就业把脉首页的网址 = 职业页(2026-11-07 Frank「是不是改成多个页面好一些」→「直接拆」:七个分区各一页;
+ * /start 是 SEO 资产不改名,留给第一个分区职业,首屏数字卡也只在这一页)。
+ */
+export const PATH_PULSE = '/start'
+
+/**
+ * 路径分隔符 `/` 的长度(从 `/start/employers` 切出末段用)。
+ */
+export const PATH_SEP_LEN = 1
+
+/**
+ * 分区 → 页面网址(侧栏链接用;子项 = 页面网址 + 锚点)。
+ */
+export const SEC_PATH: Record<string, string> = {
+  /**
+   * 职业 = 首页。
+   */
+  [ID_BOARDS]: PATH_PULSE,
+
+  /**
+   * 雇主。
+   */
+  [ID_SE]: '/start/employers',
+
+  /**
+   * 省份。
+   */
+  [ID_PROV]: '/start/provinces',
+
+  /**
+   * 城市。
+   */
+  [ID_CITY]: '/start/cities',
+
+  /**
+   * PR。
+   */
+  [ID_PR_BAND]: '/start/pr',
+
+  /**
+   * 抽选。
+   */
+  [ID_DRAWS]: '/start/draws',
+
+  /**
+   * 政策动态。
+   */
+  [ID_NEWS]: '/start/news',
+}
+
+/**
+ * 子页网址末段 → 分区(`/start/[sec]` 动态路由门用;表外的末段 404)。
+ */
+export const SLUG_SEC: Record<string, string> = {
+  /**
+   * 雇主。
+   */
+  employers: ID_SE,
+
+  /**
+   * 省份。
+   */
+  provinces: ID_PROV,
+
+  /**
+   * 城市。
+   */
+  cities: ID_CITY,
+
+  /**
+   * PR。
+   */
+  pr: ID_PR_BAND,
+
+  /**
+   * 抽选。
+   */
+  draws: ID_DRAWS,
+
+  /**
+   * 政策动态。
+   */
+  news: ID_NEWS,
+}
+
+/**
  * 政策动态区下发条数(最新几条;全量在 /news)。
  */
 export const NEWS_LIMIT = 10
 
 /**
- * 二级导航条尾「回到顶部」的地址(空锚 = 页顶;2026-09-13 Frank「加上 政策动态 title,然后在加一个回到顶部的功能 页面太长了」:把脉页太长,
- * 不另造浮钮 —— 条本来就是常驻的,右端放一枚即可,也不撞右下角的聊天气泡)。
+ * 侧栏各项的计数格:本页不出红点,恒 0(2026-11-07 两排页签改左侧导航;
+ * 原二级导航条尾「回到顶部」NAV_TOP_HREF 同日随 Frank「侧边栏的 就业把脉 和 回到顶部都可以删了吧」撤)。
  */
-export const NAV_TOP_HREF = '#'
+export const SIDE_COUNT_NONE = 0
+
+/**
+ * 手机分区条整条一个钮的底座:ghost 底最素,视觉全由本域加倍类定形(与 nav / me 桶同名同义,各家一份)。
+ */
+export const PLAIN_BTN_KIND = 'ghost'
+
+/**
+ * 当前子项的网址参数名(2026-11-07 一页一表:`/start/employers?t=pl-se-stem`;用参数不用锚点 ——
+ * 锚点链接会滚到那张表,把页顶的 banner 与卡片卷上去)。
+ */
+export const P_SUB = 't'
+
+/**
+ * 子项链接里接在页面网址后面的那段(`?t=`)。
+ */
+export const P_SUB_HEAD = '?t='
 
 /**
  * 新闻标题去重时剥掉的尾巴(括号里的省名/日期等;同题多省只出一条)。
@@ -382,12 +419,6 @@ export const NAV_IDS = [ID_BOARDS, ID_SE, ID_PROV, ID_CITY, ID_PR_BAND, ID_DRAWS
  * 职业 = 两榜 + 8 行业,雇主 = 8 行业 + 三试点,省份 = 概览 / 省内榜;城市、趋势没有分表不出。
  */
 export const SUB_ID_SEP = '-'
-
-/**
- * 子导航跟随 effect 的依赖键连接符(锚点 id 清单拼串;id 里不会出现逗号,拼串可逆)。
- * 2026-09-11 Frank「页面滚动时候 这部分也得亮」。
- */
-export const SUB_IDS_SEP = ','
 
 /**
  * 滚动跟随的判定线(px):当前分区 = 顶部粘条下沿以上最后一个分区标题。
@@ -471,8 +502,10 @@ export const CARD_PAGE_SIZE = 10
 
 /**
  * 桌面表格的每页行数。
+ * 2026-11-07 Frank「这个最好一屏能显示完整,不要在向下滚动了」「中文版本的能不能把 footer 和 table 一屏显示」:
+ * 拆页后一页一表,中文每行多一行译名(约 69px),10 行连翻页栏放不进一屏,改 8 行。
  */
-export const TABLE_PAGE_SIZE = 10
+export const TABLE_PAGE_SIZE = 8
 
 /**
  * 首页聚合的进程内缓存时长(ms)。手法照 jobs/page.tsx 的 ssrDimsCache:判决证据/抽选/
@@ -740,6 +773,82 @@ export const START_META = {
 }
 
 /**
+ * 六个子页的 SEO 标题(2026-11-07 拆页;英文优先,照 START_META)。键 = 子页网址末段。
+ */
+export const SEC_TITLE: Record<string, string> = {
+  /**
+   * 雇主页。
+   */
+  employers: 'Canadian employers hiring now with immigration signals, by industry | Offer2PR',
+
+  /**
+   * 省份页。
+   */
+  provinces: 'Canada labour market and immigration indicators by province and year | Offer2PR',
+
+  /**
+   * 城市页。
+   */
+  cities: 'Canadian cities: open jobs by industry, pilot communities and study destinations | Offer2PR',
+
+  /**
+   * PR 页。
+   */
+  pr: 'Canada permanent residence approvals and provincial nominations by region | Offer2PR',
+
+  /**
+   * 抽选页。
+   */
+  draws: 'Latest Express Entry and PNP draws: cutoffs and invitations | Offer2PR',
+
+  /**
+   * 政策动态页。
+   */
+  news: 'Canada immigration policy updates by province | Offer2PR',
+}
+
+/**
+ * 六个子页的搜索结果摘要(英文在前,中文一句压后,照 START_META)。键 = 子页网址末段。
+ */
+export const SEC_DESC: Record<string, string> = {
+  /**
+   * 雇主页。
+   */
+  employers: 'Employers with open postings and a sponsorship signal (AIP designation, recent LMIA approvals,'
+    + ' shortage-list hits), one table per industry. 就业把脉:在招且带担保信号的雇主,按行业分表。',
+
+  /**
+   * 省份页。
+   */
+  provinces: 'Federal and provincial yearly indicators side by side, plus a hiring comparison across'
+    + ' provinces. 就业把脉:全国与各省按年的宏观指标与招聘对比。',
+
+  /**
+   * 城市页。
+   */
+  cities: 'Major cities, open postings by industry, pilot communities and cities with designated'
+    + ' learning institutions. 就业把脉:主要城市、分行业在招、试点社区与留学城市。',
+
+  /**
+   * PR 页。
+   */
+  pr: 'Permanent residence approvals and the provincial nominee share, one table per region.'
+    + ' 就业把脉:各地区 PR 获批与其中省提名。',
+
+  /**
+   * 抽选页。
+   */
+  draws: 'Recent federal and provincial draws with their cutoff scores and invitation counts.'
+    + ' 就业把脉:近期联邦与各省抽选的分数线与邀请数。',
+
+  /**
+   * 政策动态页。
+   */
+  news: 'The latest federal and provincial immigration policy updates, grouped by day.'
+    + ' 就业把脉:联邦与各省最新移民政策动态,按日分组。',
+}
+
+/**
  * 原生下拉的手机触控靶全局规范类(#300 第 38 轮体检,单一来源在 main.css)。
  */
 export const CLS_MKT_CTL = 'mktCtl'
@@ -748,11 +857,6 @@ export const CLS_MKT_CTL = 'mktCtl'
  * 埋点名:点了榜上的一个职业名。
  */
 export const TRACK_OCC = 'pulse_occ_click'
-
-/**
- * 埋点名:点了 S6 的职位板入口大钮。
- */
-export const TRACK_CTA = 'landing_cta_browse'
 
 /**
  * 埋点名:滚到了某一段(2026-09-10 /fe 省份批收口:这段此前零埋点,「投还是砍」无从判;

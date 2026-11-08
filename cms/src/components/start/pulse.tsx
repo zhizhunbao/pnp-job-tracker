@@ -20,56 +20,62 @@
  * 2026-11-05 Frank「把脉页面 把所有的 更新时间,都放到 banner 右下角吧」:各区那枚全撤,心跳只交 Hero 挂 banner 右槽。
  * 2026-11-05 Frank「用户看到哪就加载哪部分」:SSR 只出首屏(stats 只剩四格),其余各段滚到视口附近才取数,
  * 没到前段渲色带 + 占位(色带要在,才盯得到它进没进附近)。
+ * 2026-11-07 Frank「就业把脉 sidebar 先改一下吧」:两排页签的二级导航条换成 nav 桶左侧导航(宽屏左栏,« 可收起)
+ * + 手机分区条拉抽屉;正文外层由 <main> 改普通块(全站外框 Frame 已有 main 地标,一页只许一个)。
+ * 同日 Frank「是不是改成多个页面好一些」→「直接拆」:七个分区各一页(/start = 职业,其余 /start/<末段>),
+ * 本件按页面门给的 sec 只渲那一段。同日 Frank「每个页面是不是只显示自己的不要向下拉」「banner 和 卡片固定」
+ * 「下面是 table」「改成和 learn 那种」:banner + 四格数字卡每页都在,下面只出侧栏当前子项那一张表。
+ * 同日 Frank「我切换的时候,其他项如果是展开就继续展开,切换的时候不要刷页面,只有中间的 table 在动」:
+ * banner、数字卡、侧栏、手机分区条、抽屉搬进 PulseShell(住 /start/layout.tsx,切页不卸载),本件只剩这一页的分区。
+ * 同日 Frank「下面这个删掉吧」:页底「全加拿大职位板 / 进职位板」横幅(CtaBand,S6 职位板入口)撤。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
 import { BoardsSection } from './boardssection'
 import { CitySection } from './citysection'
-import { CtaBand } from './ctaband'
 import { DrawsSection } from './drawssection'
 import { NewsSection } from './newssection'
 import { EmpSection } from './empsection'
-import { Hero } from './hero'
 import { PrSection } from './prsection'
 import { ProvSection } from './provsection'
-import { PulseNav } from './pulsenav'
 import { usePulse } from './hooks'
+import { ID_BOARDS, ID_CITY, ID_DRAWS, ID_NEWS, ID_PR_BAND, ID_PROV, ID_SE } from './constants'
 import type { PulseIn } from './types'
-import css from './start.module.css'
 
 /**
- * 把脉首页正文(2026-09-13 Frank「这个按钮可以去掉了」(「全部动态」那一行链接;政策动态表已回到页上))。
+ * 就业把脉这一页的分区(外框由 PulseShell 给)。
  *
- * @param props 页面门取好的那份 SSR 数据(逐格注释见 HomeStats)。
- * @returns 二级导航条 + 八个分区。
+ * @param props 这一页的分区。
+ * @returns 这一页的分区。
  */
-export function Pulse({ stats }: PulseIn) {
-  const v = usePulse({ stats })
+export function Pulse({ sec }: PulseIn) {
+  const v = usePulse({ sec })
   return (
     <>
-      <PulseNav t={v.t} navSec={v.navSec} />
-      <main className={css.main}>
-        <Hero t={v.t} cards={v.numCards} updatedAt={stats.checkedAt} />
-        <BoardsSection t={v.t} lang={v.lang} secs={v.occSecs} nocProvs={v.nocProvs} />
+      {sec === ID_BOARDS && <BoardsSection t={v.t} lang={v.lang} secs={v.occSecs} nocProvs={v.nocProvs} />}
+      {sec === ID_SE && (
         <EmpSection t={v.t}
           secs={v.empSecs}
           pilotSecs={v.pilotSecs}
           loading={v.empLoading} />
+      )}
+      {sec === ID_PROV && (
         <ProvSection t={v.t}
           indGeos={v.indGeos}
           indLoading={v.macroLoading}
           jobsLoading={v.market == null}
           jobsRows={v.jobsRows} />
-        <CitySection t={v.t} lang={v.lang} on={v.cityOn} />
-        <PrSection t={v.t} prGeos={v.prGeos} loading={v.macroLoading} />
+      )}
+      {sec === ID_CITY && <CitySection t={v.t} lang={v.lang} on={v.cityOn} />}
+      {sec === ID_PR_BAND && <PrSection t={v.t} prGeos={v.prGeos} loading={v.macroLoading} />}
+      {sec === ID_DRAWS && (
         <DrawsSection t={v.t}
           tEn={v.tEn}
           lang={v.lang}
           draws={v.draws} />
-        <NewsSection t={v.t} lang={v.lang} news={v.news} />
-        <CtaBand t={v.t} />
-      </main>
+      )}
+      {sec === ID_NEWS && <NewsSection t={v.t} lang={v.lang} news={v.news} />}
     </>
   )
 }
