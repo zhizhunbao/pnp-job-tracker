@@ -18,11 +18,11 @@ import { ActCell } from './actcell'
 import { ChanCell } from './chancell'
 import { CompanyCell } from './companycell'
 import {
-  ACT_APPLY, ACT_CONT, ACT_OPEN, CLOSED_TAG, COL_ACT, COL_APPLIED_ON, COL_CHAN, COL_COMPANY, COL_DEADLINE,
+  ACT_APPLY, ACT_CONT, ACT_DEL, ACT_OPEN, CLOSED_TAG, COL_ACT, COL_APPLIED_ON, COL_CHAN, COL_COMPANY, COL_DEADLINE,
   COL_HOURS, COL_PAY, COL_PLACE, COL_POSTED, COL_SAVED_ON, COL_STATUS, COL_TERM, COL_TITLE, COL_WHY, CRED_INCLUDE,
   DUE_KEY, JOB_HREF_HEAD, KIND_APPLIED, KIND_SAVED, LANG_EN, LANG_KO, LANG_ZH, MD_FROM,
   OPEN_KIND, PF_ERR_EMPTY, PICKS_FIRST, PLACE_SEP, PRIMARY_KIND, QP_SEC, SEC_FAVS, STAGES, STAGE_ALL, STAGE_FILTERS,
-  ST_DRAFT, TAB_APPLIED, TAB_PICKS, TAB_SAVED, TEXT_NONE, URL_PROFILE,
+  METHOD_DELETE, ST_DRAFT, TAB_APPLIED, TAB_PICKS, TAB_SAVED, TEXT_NONE, URL_PICK_DEL, URL_PROFILE,
   FILL_KEY, FILL_LABEL_FALLBACK, FILL_LABEL_KEYS, FILL_MORE_KEY, FILL_NAME_MAX, FILL_SEP_KEY,
 } from './constants'
 import { HoursCell } from './hourscell'
@@ -37,7 +37,8 @@ import type {
   JobsTabsIn, LazyCompaniesIn, ListRow, LoadMyJobsIn, MaybeStageDef, MjCol,
   MyJobItem, MyJobsRespJson, PfJson, PfLoadIn, PfSeed, PfView, PickRowIn, PickRowsIn, PillClickIn, PlaceDue, PlaceDueIn,
   FillTextIn, StagePill, StagePillsIn, SwapShownIn, TagItem, TitleSubForIn,
-  FillHideIn,
+  FillHideIn, AskOkIn, AskSetFn, DelMenuIn, PickItem, PicksFact, RemoveFn, RemoveMineIn, RemovePickIn, RowMenuItem,
+  SendDeleteIn,
 } from './types'
 
 /**
@@ -174,6 +175,8 @@ export function listRowsOf(x: CellRowsIn): ListRow[] {
   for (const item of x.items) {
     out.push(listRowOf({
       kind: x.kind,
+      ask: x.ask,
+      remove: x.remove,
       filter: x.filter,
       item,
       t: x.t,
@@ -232,6 +235,8 @@ export function listRowOf(x: CellRowIn): ListRow {
     tags,
     cardTags: tags,
     act: actOf(x),
+    menu: delMenuOf({ t: x.t, ask: x.ask, remove: x.remove, id: it.id, name: it.title }),
+    more: x.t('mj.more'),
   }
 }
 
@@ -425,7 +430,7 @@ export function makePillClick(x: PillClickIn): () => void {
 export function pickRowsOf(x: PickRowsIn): ListRow[] {
   const out: ListRow[] = []
   for (const item of x.items) {
-    out.push(pickRowOf({ item, lang: x.lang, t: x.t, titles: x.titles, cos: x.cos }))
+    out.push(pickRowOf({ item, ask: x.ask, remove: x.remove, lang: x.lang, t: x.t, titles: x.titles, cos: x.cos }))
   }
   return out
 }
@@ -487,6 +492,8 @@ export function pickRowOf(x: PickRowIn): ListRow {
     }),
     cardTags: [],
     act: { key: ACT_APPLY, text: x.t('mj.apply'), kind: PRIMARY_KIND, onClick: makeOpenApply(it.id), href: TEXT_NONE },
+    menu: delMenuOf({ t: x.t, ask: x.ask, remove: x.remove, id: it.id, name: it.title }),
+    more: x.t('mj.more'),
   }
 }
 
@@ -811,5 +818,158 @@ export function fillLabelKeyOf(step: string): string {
 export function makeFillHide(x: FillHideIn): () => void {
   return function hide(): void {
     x.setHidden(true)
+  }
+}
+
+/**
+ * 行末「⋯」菜单(2026-11-07 Frank「先做 5 条必备」:三张表加回删除;10-12 Frank「所有的操作列都应该有个删除按钮」
+ * 「所有删除按钮不要直接删,先弹框确认是否删除」;11-07 效果图一行只留一颗主钮,删除收进「⋯」,
+ * docs/design/我的/我的求职-20261009.md 2.11):只有「删除」一项,点了先开确认框。
+ *
+ * @param x 取词函数、确认与删除手柄、这一条的 id 与名字。
+ * @returns 菜单各项。
+ */
+export function delMenuOf(x: DelMenuIn): RowMenuItem[] {
+  return [{ key: ACT_DEL, text: x.t('mj.del'), danger: true, onClick: makeAskDel(x) }]
+}
+
+/**
+ * 造「删除」菜单项的手柄:开确认框,确认了才删。
+ *
+ * @param x 同 delMenuOf。
+ * @returns 点击手柄。
+ */
+export function makeAskDel(x: DelMenuIn): () => void {
+  return function askDel(): void {
+    x.ask({ name: x.name, run: makeRemoveOne(x) })
+  }
+}
+
+/**
+ * 造「真删这一条」:确认框点「删除」时调。
+ *
+ * @param x 同 delMenuOf。
+ * @returns 手柄。
+ */
+export function makeRemoveOne(x: DelMenuIn): () => void {
+  return function removeOne(): void {
+    x.remove(x.id)
+  }
+}
+
+/**
+ * 造「删掉我的收藏 / 我的投递里的一条」(10-12 旧桶 makeRemove 的同一做法):先从表里拿掉,再发删除;
+ * 服务端没删成(网络、非 2xx)把原清单放回去 —— 用户看得见这一行又回来了,不会以为删掉了。
+ *
+ * @param x 删除接口前缀、当前清单与落格。
+ * @returns 删一条的手柄(参数:行 id)。
+ */
+export function makeRemoveMine(x: RemoveMineIn): RemoveFn {
+  return function removeMine(id: number): void {
+    const before = x.items
+    if (before == null) {
+      return
+    }
+    const rest: MyJobItem[] = []
+    for (const it of before) {
+      if (it.id !== id) {
+        rest.push(it)
+      }
+    }
+    x.setItems(rest)
+    const restore = makeRestoreMine({ urlHead: x.urlHead, items: before, setItems: x.setItems })
+    void sendDelete({ url: x.urlHead + id, restore })
+  }
+}
+
+/**
+ * 造「把原清单放回去」。
+ *
+ * @param x 删之前的清单与落格。
+ * @returns 手柄。
+ */
+export function makeRestoreMine(x: RemoveMineIn): () => void {
+  return function restoreMine(): void {
+    x.setItems(x.items)
+  }
+}
+
+/**
+ * 造「删掉一条推荐」:同上,先从推荐里拿掉,没删成放回;「还有几条看不见」不动。
+ *
+ * @param x 当前推荐与落格。
+ * @returns 删一条的手柄(参数:职位 id)。
+ */
+export function makeRemovePick(x: RemovePickIn): RemoveFn {
+  return function removePick(id: number): void {
+    const before = x.data
+    if (before == null) {
+      return
+    }
+    const rest: PickItem[] = []
+    for (const it of before.picks) {
+      if (it.id !== id) {
+        rest.push(it)
+      }
+    }
+    const next: PicksFact = { picks: rest, more: before.more }
+    x.setData(next)
+    void sendDelete({ url: URL_PICK_DEL + id, restore: makeRestorePick({ data: before, setData: x.setData }) })
+  }
+}
+
+/**
+ * 造「把原推荐放回去」。
+ *
+ * @param x 删之前的推荐与落格。
+ * @returns 手柄。
+ */
+export function makeRestorePick(x: RemovePickIn): () => void {
+  return function restorePick(): void {
+    x.setData(x.data)
+  }
+}
+
+/**
+ * 发删除请求;没删成(网络断、非 2xx)调 restore。
+ *
+ * @param x 地址与放回手柄。
+ * @returns 无。
+ */
+export async function sendDelete(x: SendDeleteIn): Promise<void> {
+  try {
+    const r = await fetch(x.url, { method: METHOD_DELETE, credentials: CRED_INCLUDE })
+    if (r.ok === false) {
+      x.restore()
+    }
+  } catch {
+    x.restore()
+  }
+}
+
+/**
+ * 造删除确认框「删除」钮:真删再关框(10-12 旧桶同名件照抄)。
+ *
+ * @param x 等着确认的那一次与拨框手柄。
+ * @returns 点击手柄。
+ */
+export function makeAskOk(x: AskOkIn): () => void {
+  return function askOk(): void {
+    if (x.ask != null) {
+      x.ask.run()
+    }
+    x.setAsk(null)
+  }
+}
+
+/**
+ * 造删除确认框「取消」:关框。
+ *
+ * @param setAsk 拨框手柄。
+ * @returns 点击手柄。
+ */
+export function makeAskClose(setAsk: AskSetFn): () => void {
+  return function askClose(): void {
+    setAsk(null)
   }
 }

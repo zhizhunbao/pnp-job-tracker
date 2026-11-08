@@ -66,6 +66,11 @@ export const MIME_JSON = 'application/json'
 export const ST_UNAVAILABLE = 503
 
 /**
+ * 回信接口「今天回信次数用完」的状态码(2026-11-07:原先和发信失败同一句「再试一次」,用户会一直重试)。
+ */
+export const ST_TOO_MANY = 429
+
+/**
  * 空串(判空与清空用)。
  */
 export const TEXT_NONE = ''

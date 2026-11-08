@@ -11,8 +11,8 @@ import { toast } from '@/components/toast'
 import { fmtLocal } from '@/lib/time'
 import {
   ADDR_L, ADDR_R, CRED_INCLUDE, EV_UNREAD, HDR_CONTENT_TYPE, MD_FROM, MD_TO, METHOD_PATCH, METHOD_POST, MIME_JSON,
-  ONE_SPACE, P_MSG, SNIPPET_LEN, SNIPPET_MORE, SPACE_RUN_RE, ST_UNAVAILABLE, TEXT_NONE, TOAST_ERR, TOAST_OK,
-  URL_INBOX, URL_PREFS, URL_READ, URL_REPLY,
+  ONE_SPACE, P_MSG, SNIPPET_LEN, SNIPPET_MORE, SPACE_RUN_RE, ST_TOO_MANY, ST_UNAVAILABLE, TEXT_NONE, TOAST_ERR,
+  TOAST_OK, URL_INBOX, URL_PREFS, URL_READ, URL_REPLY,
   FILTER_UNREAD,
 } from './constants'
 import type {
@@ -306,6 +306,9 @@ export async function afterReply(y: AfterReplyIn): Promise<void> {
     let note = y.x.t('ib.e.send')
     if (y.r != null && y.r.status === ST_UNAVAILABLE) {
       note = y.x.t('ib.e.off')
+    }
+    if (y.r != null && y.r.status === ST_TOO_MANY) {
+      note = y.x.t('ib.e.limit')
     }
     y.x.setNote(note)
     return

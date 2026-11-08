@@ -1,0 +1,76 @@
+/*
+ * me 桶子桶 settings 的私有样式(2026-11-07 立;照效果图 docs/design/我的/账户设置-20261107.md)。
+ */
+
+/*
+ * 一行:名字定宽、值占满、钮靠右,行间细线。
+ */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+
+/*
+ * 左边的名字:灰字定宽。
+ */
+.label {
+  flex: 0 0 120px;
+  color: var(--text2);
+}
+
+/*
+ * 中间的值:占满剩下的宽,长邮箱断行不撑破。
+ */
+.value {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 面板里一个表单格:格名、输入框、提示竖排。
+ */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+/*
+ * 格名:粗一点。
+ */
+.fieldName {
+  font-weight: 600;
+}
+
+/*
+ * 格下灰字提示。
+ */
+.hint {
+  color: var(--text3);
+  font-size: 12px;
+}
+
+/*
+ * 报错一句:红字。
+ */
+.err {
+  color: var(--danger);
+}
+
+/*
+ * 窄屏:名字占一行,值与钮在下一行。
+ */
+@media (max-width: 640px) {
+  .row {
+    flex-wrap: wrap;
+  }
+
+  .label {
+    flex-basis: 100%;
+  }
+}

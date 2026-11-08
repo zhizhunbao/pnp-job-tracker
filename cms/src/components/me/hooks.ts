@@ -12,6 +12,7 @@ import { useIsNarrow } from '@/components/modal'
 import { SEC_DEFAULT } from './constants'
 import {
   bindUnread, makeDrawerSet, makeFill, makeGenBump, makeMePick, makeOnApplied, makeRefresh, makeSecPick, payOkToast,
+  emailBackToast,
   proOf,
   secLinkOf, untilOf,
 } from './functions'
@@ -35,6 +36,7 @@ export function useMePage(): MePagePanel {
 
   useEffect(function readPayOk() {
     payOkToast(t)
+    emailBackToast(t)
   }, [t])
 
   useEffect(function readSecLink() {

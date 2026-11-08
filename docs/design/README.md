@@ -14,7 +14,7 @@
 |---|---|---|---|---|---|
 | `职位` | Job Bank Jobs | 每日更新的全加拿大全职业职位板，带移民信号（能不能走省提名） | Job Bank 职位、雇主招聘系统（ATS）、Jobillico、Jobboom | 站内职位板（全站基准） | ✓ |
 | `雇主` | Job Bank Employers | 按职业大类看哪些雇主能走省提名：指定雇主、LMIA 获批、在招岗命中紧缺清单 | IRCC LMIA 获批名单、各省指定雇主名单、雇主官网 | 照职位板 | ✓ |
-| `我的` | Job Bank Plus account | 求职者自己的东西：我的求职、收件箱、我的简历、我的档案、我的订阅 | Job Bank Plus 账户（Resume Builder、Job Alerts、Job Match） | Azure 门户 + 站内通用组件 | ✓ |
+| `我的` | Job Bank Plus account | 求职者自己的东西：我的求职、收件箱、我的简历、我的档案、我的订阅、账户设置 | Job Bank Plus 账户（Resume Builder、Job Alerts、Job Match） | Azure 门户 + 站内通用组件 | ✓ |
 
 ## 业务名（没有标准名时才用）
 

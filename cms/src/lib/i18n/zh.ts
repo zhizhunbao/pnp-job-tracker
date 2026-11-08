@@ -923,7 +923,7 @@ export const jobsZh = {
   'sj.save': '☆ 收藏', 'sj.saved': '★ 已收藏', 'sj.view': '在职位板查看', 'sj.del': '移除', 'sj.weekly': '每周邮件摘要(收藏岗动态,可随时退订)',
   'fav.title': '我的收藏',
   // 2026-10-06 「我的求职」「我的收藏」改成 myjobs 桶的两张表;sj.note、fav.note 随旧清单撤
-  'mj.appliedAt': '投递日期', 'mj.open': '打开', 'mj.closed': '已下架', 'mj.del': '删除', 'mj.delAsk': '确认删除?', 'mj.cancel': '取消', 'mj.col.chan': '通道',
+  'mj.appliedAt': '投递日期', 'mj.open': '打开', 'mj.closed': '已下架', 'mj.del': '删除', 'mj.more': '更多操作', 'mj.delAsk': '确认删除?', 'mj.cancel': '取消', 'mj.col.chan': '通道',
   'mj.col.why': '推荐原因', 'mj.why.wage': '薪资高于中位 {n}%', 'mj.why.wagePlain': '薪资高于中位', 'mj.why.aip': 'AIP 指定雇主', 'mj.why.pilot': '{g} 指定雇主', 'mj.why.known': '知名公司', 'mj.why.ee': 'EE {e}', 'mj.why.lmia': 'LMIA {m} 个',
   'mj.why.occ': '职业对口',
   'mj.why.saved': '和你收藏的同类',
@@ -968,7 +968,7 @@ export const jobsZh = {
   'ib.pick': '选一封邮件来看',
   'ib.noHit': '没有符合的邮件',
   'ib.reply': '回复', 'ib.openApp': '打开这次投递', 'ib.noSubject': '(无主题)', 'ib.mine': '我的回复',
-  'ib.send': '发送', 'ib.cancel': '取消', 'ib.e.send': '没发出去,再试一次', 'ib.e.off': '发信还没开通',
+  'ib.send': '发送', 'ib.cancel': '取消', 'ib.e.send': '没发出去,再试一次', 'ib.e.off': '发信还没开通', 'ib.e.limit': '今天的回信次数用完了,明天再回',
   // 2026-10-11 批 5「提示统一 + 顶栏铃铛」:右上角提示的几句与顶栏通知面板
   'mj.pushMailSent': '确认信已发出', 'ib.fwdOn': '回信会同时转到 {e}', 'ib.fwdOff': '回信不再转发',
   'nt.title': '通知', 'nt.empty': '暂无通知', 'nt.fail': '通知没拉下来,稍后再试',
@@ -1077,7 +1077,7 @@ export const jobsZh = {
   'rf.default': '默认', 'rf.setDefault': '设为默认', 'rf.add': '添加简历', 'rf.full': '最多 20 份', 'rf.loading': '加载中', 'rf.pvFail': '这份预览不了,下载后查看',
   'rf.zoomIn': '放大', 'rf.zoomOut': '缩小', 'rf.zoomReset': '恢复整页',
   'rf.count': '简历 {c}',
-  'rf.err.full': '最多 5 份,先删掉一份再加',
+  'rf.err.full': '最多 20 份,先删掉一份再加',
   'rf.err.type': '只收 PDF 或 Word(.docx)文件', 'rf.err.size': '文件超过 5 MB',
   'rf.err.limit': '今天上传次数用完了,明天再试', 'rf.err.net': '没成功,稍后再试',
   // 生成简历(2026-11-07,照 Job Bank Resume Builder;cv.* 归 components/cv)
@@ -1287,6 +1287,17 @@ export const siteZh = {
   'rf.col.name': '名称',
   'sub.noPay': '还没有付款',
   'sub.cur': '当前方案',
+  // 2026-11-07 账户设置(改登录邮箱、改密码)
+  'set.title': '账户设置', 'set.login': '登录', 'set.email': '登录邮箱', 'set.pw': '密码', 'set.edit': '修改',
+  'set.google': '用 Google 登录', 'set.save': '保存', 'set.cancel': '取消',
+  'set.pwTitle': '修改密码', 'set.pwCur': '当前密码', 'set.pwNew': '新密码', 'set.pwAgain': '再输一次新密码',
+  'set.pwHint': '至少 8 位', 'set.pwOk': '密码已修改',
+  'set.emTitle': '修改登录邮箱', 'set.emNew': '新邮箱', 'set.emHint': '确认链接会发到新邮箱,点了才生效',
+  'set.emSend': '发送确认邮件', 'set.emSent': '确认邮件已发到 {e}', 'set.emOk': '登录邮箱已改好',
+  'set.emBad': '确认链接无效或已过期',
+  'set.e.wrong': '当前密码不对', 'set.e.weak': '新密码至少 8 位', 'set.e.match': '两次输入的新密码不一样',
+  'set.e.email': '邮箱格式不对', 'set.e.same': '和现在的登录邮箱一样', 'set.e.taken': '这个邮箱已经注册过了',
+  'set.e.mail': '确认邮件没发出去,稍后再试', 'set.e.net': '没成功,稍后再试',
   // 2026-10-08 「我的订阅」照 AIApply 的 Billing:方案卡、付款记录
   'sub.left': '还剩 {n} 天', 'sub.price': '30 天 {a},90 天 {b}', 'sub.pay': '付款记录',
   'sub.col.date': '日期', 'sub.col.item': '内容', 'sub.col.amount': '金额', 'sub.receipt': '收据', 'sub.proDays': 'Pro {n} 天',

@@ -1,0 +1,78 @@
+/*
+ * menu 域的私有样式(2026-11-07 立,照 Fluent 2 Menu 的弹出层:白底、圆角、阴影,贴按钮右下)。
+ */
+
+/*
+ * 根:相对定位,弹出层按它摆。
+ */
+.root {
+  position: relative;
+  display: inline-flex;
+}
+
+/*
+ * 「⋯」按钮:方形小钮,只有图标。
+ */
+.trigger {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  justify-content: center;
+  color: var(--text2);
+  border-radius: 4px;
+}
+
+/*
+ * 「⋯」按钮开着时:灰底标出是哪一行的菜单。
+ */
+.triggerOpen {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  justify-content: center;
+  color: var(--text2);
+  border-radius: 4px;
+  background: var(--hover-bg);
+}
+
+/*
+ * 弹出层:贴按钮下沿右对齐,压在表格行上面。
+ */
+.list {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 20;
+  min-width: 128px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--card);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+}
+
+/*
+ * 一项:整行可点,左对齐。
+ */
+.item {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 4px;
+  font-weight: 400;
+}
+
+/*
+ * 危险项(删除):红字,其余同一项。
+ */
+.itemDanger {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 4px;
+  font-weight: 400;
+  color: var(--danger);
+}

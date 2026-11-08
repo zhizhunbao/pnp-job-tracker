@@ -194,3 +194,13 @@
     flex-basis: 100%;
   }
 }
+
+/*
+ * 操作格:主钮 + 行末「⋯」一排,靠右(2026-11-07 加回删除)。
+ */
+.acts {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}

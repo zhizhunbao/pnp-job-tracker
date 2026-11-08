@@ -28,6 +28,16 @@ export type InputIn = {
   onChange: (v: string) => void
 
   /**
+   * 输入类型(默认文本;密码框打点、邮箱框手机弹邮箱键盘;2026-11-07 账户设置)。
+   */
+  type?: 'text' | 'email' | 'password'
+
+  /**
+   * 浏览器自动填充提示(默认关;密码框给 current-password / new-password,好让密码管理器认得出;2026-11-07)。
+   */
+  autoComplete?: 'off' | 'email' | 'current-password' | 'new-password'
+
+  /**
    * 占位提示。
    */
   placeholder?: string

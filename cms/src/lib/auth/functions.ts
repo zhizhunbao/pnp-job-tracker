@@ -12,6 +12,7 @@ import { cookies } from 'next/headers'
 import { AUTH_LOG, log } from '../log'
 import { getFieldsToSign, getPayload, jwtSign } from 'payload'
 import config from '@/payload.config'
+import { createHmac, timingSafeEqual } from 'node:crypto'
 import {
   BEARER_PREFIX, CALLBACK_PATH, CONSENT_STATIC, COOKIE_PREFIX_DEFAULT, COOKIE_RE_HEAD, COOKIE_RE_TAIL, EMAIL_NONE,
   FLOW_COOKIE_TAIL, FORM_MIME, GOOGLE_AUTH_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_TOKEN_URL,
@@ -19,9 +20,16 @@ import {
   KV_EQ, K_FAIL, K_OK, LI_PAIR, LOG_CONSENT, LOG_EMAIL, LOG_ENV_MISSING, LOG_LOGIN, LOG_NO_CODE, LOG_OK_NEW, LOG_OK_RETURNING, LOG_STATE, LOG_STATE_MISSING,
   LOG_TOKEN, METHOD_POST, NAME_LEN_MAX, PARAM_CLIENT_ID, PARAM_REDIRECT, PARAM_STATE, PASSWORD_BYTE_LEN,
   PROVIDER_GOOGLE, RETURN_RE, ROLE_ADMIN, ROOT_PATH, SECOND_MS, SECURE_TAIL, SECURE_TAIL_NONE,
-  SESSION_COOKIE_TAIL, SITE, SSR_TOKEN_COOKIE, TOKEN_EXPIRATION_DEFAULT_S, TOKEN_NAME_TAIL, USERS
+  SESSION_COOKIE_TAIL, SITE, SSR_TOKEN_COOKIE, TOKEN_EXPIRATION_DEFAULT_S, TOKEN_NAME_TAIL, USERS,
+  E_EMAIL, E_EXPIRED, E_GOOGLE, E_LINK, E_SAME, E_TAKEN, E_MAIL, E_WEAK, E_WRONG, EMAIL_CONFIRM_PATH,
+  EMAIL_CONFIRM_SUBJECT, EMAIL_RE, HEX, HMAC_KEY_NONE, HMAC_SHA256, LOG_PW_CHECK, LOGIN_EMAIL_PREFIX,
+  LOGIN_EMAIL_SEP, LOGIN_EMAIL_TOKEN_LEN, LOGIN_EMAIL_TTL_MS, P_E, P_T, P_TS, P_U, PROVIDER_EMAIL, PW_MIN_LEN,
+  E_BODY_NONE, EMAIL_BODY_HTML, EMAIL_LINK_HEAD, EMAIL_LINK_TAIL, PARAM_NONE, QS_HEAD, ST_BAD_GATEWAY,
+  ST_BAD_REQUEST, ST_CONFLICT,
 } from './constants'
 import type {
+  BoolOut, ChangePasswordIn, CheckPasswordIn, CodeOut, EmailChangeIn, EmailConfirmIn, LoginEmailTokenIn,
+  MaybeParam, MaybeQueryParam, MaybeSettingsBody, MaybeSettingsBodyJson, SettingsUserOut, UserId,
   AliveFn, CallbackOut, GoogleCallbackIn, Clock, ConfigWithPrefix, ExchangeIn, GoogleLogin, GoogleLoginIn, GoogleLoginOut, GoogleUserOut,
   HasSessionOut, MaybeCookie, SessionSeedIn, SessionSeedOut, MaybeToken, OauthCookieIn, ReadCookieIn, SessionCookieList, SessionEntry,
   TokenBody, UserinfoBody,
@@ -382,4 +390,218 @@ export async function exchangeCode(input: ExchangeIn): MaybeToken {
     return tok.access_token
   }
   return null
+}
+
+/**
+ * 改密码(登录态;2026-11-07 Frank「先做 5 条必备」第 5 条账户设置):Google 账号不改;新密码至少 8 位;当前密码对了才改。
+ * 不走 payload 自带的 PATCH /api/users/<id> —— 那个口子本人就能改密码,不核对当前密码。
+ *
+ * @param x 用户号、当前密码与新密码。
+ * @returns 结果码。
+ */
+export async function changePassword(x: ChangePasswordIn): CodeOut {
+  const u = await loadSettingsUser(x.userId)
+  if (u.loginProvider === PROVIDER_GOOGLE) {
+    return E_GOOGLE
+  }
+  if (x.next.length < PW_MIN_LEN) {
+    return E_WEAK
+  }
+  if (await checkPassword({ email: u.email, password: x.current }) === false) {
+    return E_WRONG
+  }
+  const payload = await getPayload({ config: await config })
+  await payload.update({ collection: USERS, id: x.userId, overrideAccess: true, data: { password: x.next } })
+  return K_OK
+}
+
+/**
+ * 取账户设置要读的那两格(登录邮箱、注册来路)。
+ *
+ * @param userId 用户号。
+ * @returns 两格。
+ */
+export async function loadSettingsUser(userId: UserId): SettingsUserOut {
+  const payload = await getPayload({ config: await config })
+  const u = await payload.findByID({ collection: USERS, id: userId, depth: 0, overrideAccess: true })
+  let provider = PROVIDER_EMAIL
+  if (typeof u.loginProvider === 'string' && u.loginProvider !== PARAM_NONE) {
+    provider = u.loginProvider
+  }
+  return { email: u.email, loginProvider: provider }
+}
+
+/**
+ * 核对密码:拿邮箱 + 密码走一遍 payload 登录(对就成功、错就抛)。不对与连不上都给 false,都留痕。
+ *
+ * @param x 邮箱与密码。
+ * @returns 对不对。
+ */
+export async function checkPassword(x: CheckPasswordIn): BoolOut {
+  const payload = await getPayload({ config: await config })
+  try {
+    await payload.login({ collection: USERS, data: { email: x.email, password: x.password } })
+    return true
+  } catch (e) {
+    log({ tag: AUTH_LOG.tag, text: AUTH_LOG.failed + LOG_PW_CHECK + String(e) })
+    return false
+  }
+}
+
+/**
+ * 申请改登录邮箱(2026-11-07 账户设置):格式对、和现在的不一样、没被占、当前密码对,才往新邮箱发确认信;
+ * 点了信里的链接才真改(confirmEmailChange)—— 防填错、防拿别人的邮箱。
+ *
+ * @param x 用户号、新邮箱、当前密码与发信函数。
+ * @returns 结果码。
+ */
+export async function requestEmailChange(x: EmailChangeIn): CodeOut {
+  const email = x.email.trim().toLowerCase()
+  if (EMAIL_RE.test(email) === false) {
+    return E_EMAIL
+  }
+  const u = await loadSettingsUser(x.userId)
+  if (u.loginProvider === PROVIDER_GOOGLE) {
+    return E_GOOGLE
+  }
+  if (email === u.email.toLowerCase()) {
+    return E_SAME
+  }
+  if (await isEmailTaken(email)) {
+    return E_TAKEN
+  }
+  if (await checkPassword({ email: u.email, password: x.password }) === false) {
+    return E_WRONG
+  }
+  const ts = String(Date.now())
+  const t = loginEmailToken({ userId: String(x.userId), email, ts })
+  const qs = new URLSearchParams({ [P_U]: String(x.userId), [P_E]: email, [P_TS]: ts, [P_T]: t })
+  const link = SITE + EMAIL_CONFIRM_PATH + QS_HEAD + qs.toString()
+  const sent = await x.send({ to: email, subject: EMAIL_CONFIRM_SUBJECT, html: emailConfirmHtml(link) })
+  if (sent === false) {
+    return E_MAIL
+  }
+  return K_OK
+}
+
+/**
+ * 新邮箱被别的账号占了没有。
+ *
+ * @param email 新邮箱(已收成小写)。
+ * @returns 占了就是 true。
+ */
+export async function isEmailTaken(email: string): BoolOut {
+  const payload = await getPayload({ config: await config })
+  const r = await payload.find({
+    collection: USERS, where: { email: { equals: email } }, limit: 1, depth: 0, overrideAccess: true,
+  })
+  return r.docs.length > 0
+}
+
+/**
+ * 改登录邮箱确认链接的签名:HMAC-SHA256(PAYLOAD_SECRET) 签「前缀 + 用户号 + 新邮箱 + 发出时刻」。
+ * 前缀与新岗推送的 confirmToken 不同(见 LOGIN_EMAIL_PREFIX);发出时刻入签,改不了有效期。
+ *
+ * @param x 用户号、新邮箱与发出时刻。
+ * @returns 32 位 hex。
+ */
+export function loginEmailToken(x: LoginEmailTokenIn): string {
+  let key = HMAC_KEY_NONE
+  if (process.env.PAYLOAD_SECRET != null) {
+    key = process.env.PAYLOAD_SECRET
+  }
+  const msg = LOGIN_EMAIL_PREFIX + x.userId + LOGIN_EMAIL_SEP + x.email + LOGIN_EMAIL_SEP + x.ts
+  return createHmac(HMAC_SHA256, key).update(msg).digest(HEX).slice(0, LOGIN_EMAIL_TOKEN_LEN)
+}
+
+/**
+ * 确认信正文(中英双语,一个链接;24 小时内有效)。
+ *
+ * @param link 确认链接。
+ * @returns HTML。
+ */
+export function emailConfirmHtml(link: string): string {
+  return EMAIL_BODY_HTML + EMAIL_LINK_HEAD + link + EMAIL_LINK_TAIL
+}
+
+/**
+ * 点确认链接(免登录:人可能在另一台设备上开信):签名对、没过期、新邮箱仍没被占,才把登录邮箱改过去。
+ *
+ * @param x 链接上的四个参数。
+ * @returns 结果码。
+ */
+export async function confirmEmailChange(x: EmailConfirmIn): CodeOut {
+  const sent = Number(x.ts)
+  if (x.u === PARAM_NONE || x.e === PARAM_NONE || Number.isFinite(sent) === false) {
+    return E_LINK
+  }
+  const want = Buffer.from(loginEmailToken({ userId: x.u, email: x.e, ts: x.ts }))
+  const got = Buffer.from(x.t)
+  if (got.length !== want.length || timingSafeEqual(got, want) === false) {
+    return E_LINK
+  }
+  if (Date.now() - sent > LOGIN_EMAIL_TTL_MS) {
+    return E_EXPIRED
+  }
+  if (await isEmailTaken(x.e)) {
+    return E_TAKEN
+  }
+  const payload = await getPayload({ config: await config })
+  await payload.update({ collection: USERS, id: x.u, overrideAccess: true, data: { email: x.e } })
+  return K_OK
+}
+
+/**
+ * 结果码 → HTTP 状态:邮箱被占 409;信没发出去 502;其余不过关 400(成功由路由就地回 200)。
+ *
+ * @param code 结果码。
+ * @returns 状态码。
+ */
+export function statusOfCode(code: string): number {
+  if (code === E_TAKEN) {
+    return ST_CONFLICT
+  }
+  if (code === E_MAIL) {
+    return ST_BAD_GATEWAY
+  }
+  return ST_BAD_REQUEST
+}
+
+/**
+ * 洗账户设置的请求体(行构造器:没读出 JSON 给 null;各格不是字符串当空串,交给判定函数)。
+ *
+ * @param raw 读出来的 JSON(读不出是 null)。
+ * @returns 三格都是字符串的请求体,或 null。
+ */
+export function toSettingsBody(raw: MaybeSettingsBodyJson): MaybeSettingsBody {
+  if (raw == null) {
+    return null
+  }
+  return { current: textOf(raw.current), next: textOf(raw.next), email: textOf(raw.email) }
+}
+
+/**
+ * 请求体里的一格:是字符串原样,别的(缺席、数字、对象)当空串。
+ *
+ * @param v 原值。
+ * @returns 字符串。
+ */
+function textOf(v: MaybeParam): string {
+  if (typeof v === 'string') {
+    return v
+  }
+  return E_BODY_NONE
+}
+
+/**
+ * 查询参数:没带当空串。
+ *
+ * @param v 原值。
+ * @returns 字符串。
+ */
+export function paramOf(v: MaybeQueryParam): string {
+  if (v == null) {
+    return PARAM_NONE
+  }
+  return v
 }

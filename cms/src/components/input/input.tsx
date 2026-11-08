@@ -8,7 +8,7 @@
  * @author Frank
  * @time 2026-08-24 14:00:00
  */
-import { AUTOCOMPLETE_OFF, SIZE_DEFAULT } from './constants'
+import { AUTOCOMPLETE_OFF, SIZE_DEFAULT, TYPE_DEFAULT } from './constants'
 import { inputClsOf, makeChange } from './functions'
 import type { InputIn } from './types'
 
@@ -21,6 +21,8 @@ import type { InputIn } from './types'
 export function Input({
   value,
   onChange,
+  type = TYPE_DEFAULT,
+  autoComplete = AUTOCOMPLETE_OFF,
   placeholder,
   size = SIZE_DEFAULT,
   enterKeyHint,
@@ -39,6 +41,7 @@ export function Input({
 
   return (
     <input className={inputClsOf({ size, search: false, extra })}
+      type={type}
       value={value}
       onChange={change}
       placeholder={placeholder}
@@ -47,6 +50,6 @@ export function Input({
       autoFocus={autoFocus}
       aria-label={ariaLabel}
       onKeyDown={onKeyDown}
-      autoComplete={AUTOCOMPLETE_OFF} />
+      autoComplete={autoComplete} />
   )
 }

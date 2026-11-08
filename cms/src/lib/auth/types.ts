@@ -381,3 +381,228 @@ export type SessionSeedIn = {
  * `ssrSessionSeed` 的返回。
  */
 export type SessionSeedOut = Promise<SessionSeed>
+
+/**
+ * 发一封信(由路由层注进来;lib/mail 的 sendMail 同形)。
+ */
+export type SendMailFn = (x: MailIn) => Promise<boolean>
+
+/**
+ * 一封信。
+ */
+export type MailIn = {
+  /**
+   * 收件人。
+   */
+  to: string
+
+  /**
+   * 标题。
+   */
+  subject: string
+
+  /**
+   * 正文 HTML。
+   */
+  html: string
+}
+
+/**
+ * 用户号(payload 的 id 可能是数字或字符串)。
+ */
+export type UserId = string | number
+
+/**
+ * 结果码(异步)。
+ */
+export type CodeOut = Promise<string>
+
+/**
+ * 是或否(异步)。
+ */
+export type BoolOut = Promise<boolean>
+
+/**
+ * 账户设置要读的那两格(异步)。
+ */
+export type SettingsUserOut = Promise<SettingsUser>
+
+/**
+ * 核对密码(checkPassword)的入参。
+ */
+export type CheckPasswordIn = {
+  /**
+   * 登录邮箱。
+   */
+  email: string
+
+  /**
+   * 密码。
+   */
+  password: string
+}
+
+/**
+ * 请求体里一格的原值(别人发来的 JSON:可能缺席、可能不是字符串)。
+ */
+export type MaybeParam = string | number | boolean | object | null | void
+
+/**
+ * 洗过的账户设置请求体(三格都是字符串,没填是空串)。
+ */
+export type SettingsBody = {
+  /**
+   * 当前密码。
+   */
+  current: string
+
+  /**
+   * 新密码。
+   */
+  next: string
+
+  /**
+   * 新邮箱。
+   */
+  email: string
+}
+
+/**
+ * 改密码(changePassword)的入参。
+ */
+export type ChangePasswordIn = {
+  /**
+   * 用户号。
+   */
+  userId: string | number
+
+  /**
+   * 当前密码。
+   */
+  current: string
+
+  /**
+   * 新密码。
+   */
+  next: string
+}
+
+/**
+ * 申请改登录邮箱(requestEmailChange)的入参。
+ */
+export type EmailChangeIn = {
+  /**
+   * 用户号。
+   */
+  userId: string | number
+
+  /**
+   * 新邮箱(原样,函数里收成小写去空白)。
+   */
+  email: string
+
+  /**
+   * 当前密码。
+   */
+  password: string
+
+  /**
+   * 发信。
+   */
+  send: SendMailFn
+}
+
+/**
+ * 点确认链接(confirmEmailChange)的入参(都是链接上的原样参数,没带是空串)。
+ */
+export type EmailConfirmIn = {
+  /**
+   * 用户号。
+   */
+  u: string
+
+  /**
+   * 新邮箱。
+   */
+  e: string
+
+  /**
+   * 发出时刻(毫秒)。
+   */
+  ts: string
+
+  /**
+   * 签名。
+   */
+  t: string
+}
+
+/**
+ * 签名(loginEmailToken)的入参。
+ */
+export type LoginEmailTokenIn = {
+  /**
+   * 用户号。
+   */
+  userId: string
+
+  /**
+   * 新邮箱。
+   */
+  email: string
+
+  /**
+   * 发出时刻(毫秒)。
+   */
+  ts: string
+}
+
+/**
+ * 账户设置里本域读的用户几格(payload 的用户形状由 payload 定)。
+ */
+export type SettingsUser = {
+  /**
+   * 现在的登录邮箱。
+   */
+  email: string
+
+  /**
+   * 注册来路(email / google)。
+   */
+  loginProvider: string
+}
+
+/**
+ * 账户设置请求体(改密码与改邮箱共用,各取各的格;缺席格是空串)。
+ */
+export type SettingsBodyJson = {
+  /**
+   * 当前密码。
+   */
+  current?: MaybeParam
+
+  /**
+   * 新密码。
+   */
+  next?: MaybeParam
+
+  /**
+   * 新邮箱。
+   */
+  email?: MaybeParam
+}
+
+/**
+ * 读出来的账户设置请求体(读不出是 null)。
+ */
+export type MaybeSettingsBodyJson = SettingsBodyJson | null
+
+/**
+ * 洗过的账户设置请求体(体不合形是 null)。
+ */
+export type MaybeSettingsBody = SettingsBody | null
+
+/**
+ * 一个查询参数(没带是 null)。
+ */
+export type MaybeQueryParam = string | null

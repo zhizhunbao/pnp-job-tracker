@@ -9,7 +9,8 @@ import { toast } from '@/components/toast'
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
 import type { Plan } from '@/lib/jobs'
 import {
-  COUNT_NONE, CRED_INCLUDE, EV_INBOX_UNREAD, LABEL_NONE, LOGIN_URL, ME_SECS, NEXT_SEP, PAY_OK_KEY, QP_OK, QP_OK_ON,
+  COUNT_NONE, CRED_INCLUDE, EMAIL_OK, EMAIL_TAKEN, EV_INBOX_UNREAD, QP_EMAIL, TOAST_ERR, LABEL_NONE, LOGIN_URL, ME_SECS,
+  NEXT_SEP, PAY_OK_KEY, QP_OK, QP_OK_ON,
   QP_SEC, SEC_COUNTED, SEC_DEFAULT, SEC_PROFILE, SEC_FAVS_OLD, SENT_NOTICE_KEY, TEXT_NONE, TOAST_OK, UNREAD_NONE,
   URL_INBOX_COUNT, URL_ME,
 } from './constants'
@@ -128,6 +129,30 @@ export function payOkToast(t: TFn): void {
   toast({ kind: TOAST_OK, title: t(PAY_OK_KEY) })
   const url = new URL(window.location.href)
   url.searchParams.delete(QP_OK)
+  window.history.replaceState(null, TEXT_NONE, url.pathname + url.search + url.hash)
+}
+
+/**
+ * 改登录邮箱确认链接回跳(`?email=<结果码>`,2026-11-07 账户设置):改好了说一句「已改好」,
+ * 被占了说「已经注册过了」,其余(签名不对、过期)说「链接无效或已过期」;再把参数从地址栏摘掉。
+ *
+ * @param t 取词。
+ * @returns 无。
+ */
+export function emailBackToast(t: TFn): void {
+  const v = new URLSearchParams(window.location.search).get(QP_EMAIL)
+  if (v == null) {
+    return
+  }
+  if (v === EMAIL_OK) {
+    toast({ kind: TOAST_OK, title: t('set.emOk') })
+  } else if (v === EMAIL_TAKEN) {
+    toast({ kind: TOAST_ERR, title: t('set.e.taken') })
+  } else {
+    toast({ kind: TOAST_ERR, title: t('set.emBad') })
+  }
+  const url = new URL(window.location.href)
+  url.searchParams.delete(QP_EMAIL)
   window.history.replaceState(null, TEXT_NONE, url.pathname + url.search + url.hash)
 }
 

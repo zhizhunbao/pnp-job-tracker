@@ -6,7 +6,7 @@
  * @author Frank
  * @time 2026-11-07 15:30:00
  */
-import { IconBriefcase, IconCard, IconFile, IconMail, IconUser } from '@/components/icons'
+import { IconBriefcase, IconCard, IconFile, IconKey, IconMail, IconUser } from '@/components/icons'
 import { Nav } from '@/components/nav'
 import type { NavItem } from '@/components/nav'
 import { ME_SECS, ME_TITLE_KEY } from './constants'
@@ -26,6 +26,7 @@ export function MeNav({ sec, t, unread, onPick }: MeNavIn) {
     resume: <IconFile />,
     profile: <IconUser />,
     sub: <IconCard />,
+    settings: <IconKey />,
   }
   const items: NavItem[] = []
   for (const s of ME_SECS) {

@@ -64,6 +64,17 @@ export const ME_SECS = [
      */
     labelKey: 'sub.title',
   },
+  {
+    /**
+     * 账户设置(2026-11-07 Frank「先做 5 条必备」第 5 条:改登录邮箱、改密码)。
+     */
+    sec: 'settings',
+
+    /**
+     * 「账户设置」。
+     */
+    labelKey: 'set.title',
+  },
 ] as const
 
 /**
@@ -195,3 +206,28 @@ export const SEC_PROFILE = 'profile'
  * 「我的订阅」那一节的键。
  */
 export const SEC_SUB = 'sub'
+
+/**
+ * 「账户设置」那一节的键。
+ */
+export const SEC_SETTINGS = 'settings'
+
+/**
+ * 改登录邮箱确认链接回跳带的参数(值是 lib/auth 的结果码)。
+ */
+export const QP_EMAIL = 'email'
+
+/**
+ * 确认链接回跳:改好了。
+ */
+export const EMAIL_OK = 'ok'
+
+/**
+ * 确认链接回跳:新邮箱被别人占了。
+ */
+export const EMAIL_TAKEN = 'taken'
+
+/**
+ * 右上角提示:失败档。
+ */
+export const TOAST_ERR = 'err'

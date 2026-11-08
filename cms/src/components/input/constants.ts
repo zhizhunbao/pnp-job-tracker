@@ -16,6 +16,11 @@ export const SIZE_DEFAULT = 'md'
 export const AUTOCOMPLETE_OFF = 'off'
 
 /**
+ * 输入类型默认(文本;2026-11-07 账户设置加密码框、邮箱框时立 type)。
+ */
+export const TYPE_DEFAULT = 'text'
+
+/**
  * 拼 className 时各类之间的分隔符。HTML 的 class 属性按**空白**切词,一个空格就是
  * 一次分隔 —— 分隔符写错(比如误用逗号)不会报错,只会让整串退化成一个谁也匹配不上的
  * 长类名,样式全掉光却查不出原因。本域只有 inputClsOf 用它:把基座、尺寸档、

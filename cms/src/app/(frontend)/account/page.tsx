@@ -85,11 +85,13 @@ import {
   MeProfile,
   MeRedirect,
   MeResume,
+  MeSettings,
   MeSub,
   openAppView,
   SEC_INBOX,
   SEC_PROFILE,
   SEC_RESUME,
+  SEC_SETTINGS,
   SEC_SJOBS,
   SEC_SUB,
   useMeFrame,
@@ -124,6 +126,9 @@ export default function AccountPage() {
           )}
           {a.sec === SEC_SUB && (
             <MeSub t={a.t} narrow={a.narrow} open={m.drawer} onOpen={m.onOpen} until={a.until} />
+          )}
+          {a.sec === SEC_SETTINGS && (
+            <MeSettings t={a.t} narrow={a.narrow} open={m.drawer} onOpen={m.onOpen} me={a.me} />
           )}
         </NavFrame>
       )}

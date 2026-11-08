@@ -378,3 +378,198 @@ export const RETURN_NONE = ''
  * (所以调用处一律配 `maxAge: 0`,见 oauthCookie)。
  */
 export const COOKIE_DEL_VALUE = ''
+
+/**
+ * 账户设置(2026-11-07 Frank「先做 5 条必备」第 5 条,只留改邮箱、改密码):新密码至少几位(与注册同一个下限)。
+ */
+export const PW_MIN_LEN = 8
+
+/**
+ * 注册来路:邮箱(Users 集合 loginProvider 的默认值)。
+ */
+export const PROVIDER_EMAIL = 'email'
+
+/**
+ * 账户设置核对密码没过时的日志前缀(错密码与连不上都记;成功不记)。
+ */
+export const LOG_PW_CHECK = 'settings password check: '
+
+/**
+ * 结果码:没登录。
+ */
+export const E_SIGNED_OUT = 'auth'
+
+/**
+ * 结果码:Google 登录的账号(密码是建号时随机生成的,本人不知道;登录邮箱跟 Google 账号绑着),不让在这里改。
+ */
+export const E_GOOGLE = 'google'
+
+/**
+ * 结果码:请求体不合形。
+ */
+export const E_BODY = 'body'
+
+/**
+ * 结果码:当前密码不对。
+ */
+export const E_WRONG = 'wrong'
+
+/**
+ * 结果码:新密码太短。
+ */
+export const E_WEAK = 'weak'
+
+/**
+ * 结果码:新邮箱格式不对。
+ */
+export const E_EMAIL = 'email'
+
+/**
+ * 结果码:新邮箱和现在的一样。
+ */
+export const E_SAME = 'same'
+
+/**
+ * 结果码:新邮箱已被别的账号用了。
+ */
+export const E_TAKEN = 'taken'
+
+/**
+ * 结果码:确认信没发出去。
+ */
+export const E_MAIL = 'mail'
+
+/**
+ * 结果码:确认链接签名不对(被改过、不是本站发的)。
+ */
+export const E_LINK = 'bad'
+
+/**
+ * 结果码:确认链接过期了。
+ */
+export const E_EXPIRED = 'expired'
+
+/**
+ * 邮箱格式(宽松:有 @、点号后有字,不含空白;真不真靠确认信)。
+ */
+export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/**
+ * 改登录邮箱确认链接的签名前缀:与新岗推送 confirmToken 的前缀不同 ——
+ * 两边签的都是「用户号 + 邮箱」,同一前缀会让推送确认信里的链接能拿来改登录邮箱(等于能抢号)。
+ */
+export const LOGIN_EMAIL_PREFIX = 'login-email:'
+
+/**
+ * 签名里各段之间的分隔。
+ */
+export const LOGIN_EMAIL_SEP = '|'
+
+/**
+ * 签名截取长度(32 位 hex = 128 位)。
+ */
+export const LOGIN_EMAIL_TOKEN_LEN = 32
+
+/**
+ * 确认链接有效期(24 小时)。
+ */
+export const LOGIN_EMAIL_TTL_MS = 86_400_000
+
+/**
+ * HMAC 算法(平台定值)。
+ */
+export const HMAC_SHA256 = 'sha256'
+
+/**
+ * 签名没配密钥时的占位(本地没有 PAYLOAD_SECRET 才会走到;生产必有)。
+ */
+export const HMAC_KEY_NONE = ''
+
+/**
+ * 摘要的编码(平台定值)。
+ */
+export const HEX = 'hex'
+
+/**
+ * 确认链接的路径。
+ */
+export const EMAIL_CONFIRM_PATH = '/api/auth/email/confirm'
+
+/**
+ * 确认链接参数:用户号。
+ */
+export const P_U = 'u'
+
+/**
+ * 确认链接参数:新邮箱。
+ */
+export const P_E = 'e'
+
+/**
+ * 确认链接参数:发出时刻(毫秒)。
+ */
+export const P_TS = 'ts'
+
+/**
+ * 确认链接参数:签名。
+ */
+export const P_T = 't'
+
+/**
+ * 点确认链接后回跳的页(账户设置;后接结果码,页面据此出提示)。
+ */
+export const SETTINGS_BACK_PATH = '/account?sec=settings&email='
+
+/**
+ * 确认信标题(中英双语:收信人的界面语未知)。
+ */
+export const EMAIL_CONFIRM_SUBJECT = 'Offer2PR:确认你的新登录邮箱 / Confirm your new sign-in email'
+
+/**
+ * 空参数(查询参数没带、请求体格缺席时的占位)。
+ */
+export const PARAM_NONE = ''
+
+/**
+ * 请求体格不是字符串时的占位(交给判定函数当「没填」)。
+ */
+export const E_BODY_NONE = ''
+
+/**
+ * 查询串开头。
+ */
+export const QS_HEAD = '?'
+
+/**
+ * HTTP 400(账户设置不过关;本域自抄,http 叶子同名同值)。
+ */
+export const ST_BAD_REQUEST = 400
+
+/**
+ * HTTP 409(新邮箱被占)。
+ */
+export const ST_CONFLICT = 409
+
+/**
+ * HTTP 502(确认信没发出去)。
+ */
+export const ST_BAD_GATEWAY = 502
+
+/**
+ * 确认信正文(中英双语;收信人的界面语未知)。
+ */
+export const EMAIL_BODY_HTML = '<p>点下面的链接,把 Offer2PR 的登录邮箱改成这个邮箱(24 小时内有效)。'
+  + '不是你本人操作的话,不用理会这封信。</p>'
+  + '<p>Click the link below to make this your Offer2PR sign-in email (valid for 24 hours). '
+  + 'If you did not ask for this, you can ignore this email.</p>'
+
+/**
+ * 确认链接的开头。
+ */
+export const EMAIL_LINK_HEAD = '<p><a href="'
+
+/**
+ * 确认链接的结尾(链接字)。
+ */
+export const EMAIL_LINK_TAIL = '">确认 / Confirm</a></p>'
+

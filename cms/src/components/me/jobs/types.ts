@@ -180,6 +180,11 @@ export type MyJobsHookIn = {
   url: string
 
   /**
+   * 删一条的接口前缀(后接 id)。
+   */
+  delHead: string
+
+  /**
    * 重拉代数(变了再拉一次)。
    */
   gen: number
@@ -208,6 +213,11 @@ export type MyJobsPanel = {
    * 改阶段筛选。
    */
   setStage: (s: string) => void
+
+  /**
+   * 删掉一条(行末「⋯」→ 删除 → 确认后调;2026-11-07)。
+   */
+  remove: RemoveFn
 }
 
 /**
@@ -238,6 +248,16 @@ export type CellRowsIn = {
    * 哪张清单。
    */
   kind: ListKind
+
+  /**
+   * 请删除先确认(开确认框;确认了才调 run)。
+   */
+  ask: AskFn
+
+  /**
+   * 删掉这张清单里的一条(先从表里拿掉再发删除,没删成放回)。
+   */
+  remove: RemoveFn
 
   /**
    * 当前状态筛选(收藏清单恒「全部」)。筛到单一状态时行上不再重复挂状态胶囊
@@ -284,6 +304,16 @@ export type CellRowIn = {
    * 哪张清单。
    */
   kind: ListKind
+
+  /**
+   * 请删除先确认(开确认框;确认了才调 run)。
+   */
+  ask: AskFn
+
+  /**
+   * 删掉这张清单里的一条(先从表里拿掉再发删除,没删成放回)。
+   */
+  remove: RemoveFn
 
   /**
    * 当前状态筛选(同 CellRowsIn.filter)。
@@ -591,6 +621,11 @@ export type PicksPanel = {
   data: PicksFact | null
 
   /**
+   * 删掉一条推荐(这一岗以后不再推;2026-11-07)。
+   */
+  remove: RemoveFn
+
+  /**
    * 拉失败了。
    */
   failed: boolean
@@ -661,6 +696,16 @@ export type PickRowsIn = {
   items: PickItem[]
 
   /**
+   * 请删除先确认(开确认框;确认了才调 run)。
+   */
+  ask: AskFn
+
+  /**
+   * 删掉这张清单里的一条(先从表里拿掉再发删除,没删成放回)。
+   */
+  remove: RemoveFn
+
+  /**
    * 界面语。
    */
   lang: Lang
@@ -689,6 +734,16 @@ export type PickRowIn = {
    * 这一行。
    */
   item: PickItem
+
+  /**
+   * 请删除先确认(开确认框;确认了才调 run)。
+   */
+  ask: AskFn
+
+  /**
+   * 删掉这张清单里的一条(先从表里拿掉再发删除,没删成放回)。
+   */
+  remove: RemoveFn
 
   /**
    * 界面语。
@@ -895,6 +950,206 @@ export type ListRow = {
    * 唯一那颗钮(没有 = null)。
    */
   act: ActBtn | null
+
+  /**
+   * 行末「⋯」菜单各项(2026-11-07 收进删除)。
+   */
+  menu: RowMenuItem[]
+
+  /**
+   * 「⋯」按钮的无障碍名(「更多操作」)。
+   */
+  more: string
+}
+
+/**
+ * 行末「⋯」菜单的一项(menu 桶 MenuItem 的本桶抄形)。
+ */
+export type RowMenuItem = {
+  /**
+   * 渲染键。
+   */
+  key: string
+
+  /**
+   * 显示文字。
+   */
+  text: string
+
+  /**
+   * 危险操作(红字)。
+   */
+  danger: boolean
+
+  /**
+   * 点这一项。
+   */
+  onClick: () => void
+}
+
+/**
+ * 等着确认的一次删除。
+ */
+export type AskDel = {
+  /**
+   * 删的是哪一条(确认框正文:职位名)。
+   */
+  name: string
+
+  /**
+   * 确认后真删。
+   */
+  run: () => void
+}
+
+/**
+ * 请删除先确认。
+ */
+export type AskFn = (a: AskDel) => void
+
+/**
+ * 删掉清单里的一条(参数:行身份 id)。
+ */
+export type RemoveFn = (id: number) => void
+
+/**
+ * 删除确认框整机(useAskDel)。
+ */
+export type AskPanel = {
+  /**
+   * 等着确认的那一次(没有 = null,框不出)。
+   */
+  ask: AskDel | null
+
+  /**
+   * 请删除先确认。
+   */
+  onAsk: AskFn
+
+  /**
+   * 点「删除」:真删再关框。
+   */
+  onOk: () => void
+
+  /**
+   * 点「取消」:关框。
+   */
+  onCancel: () => void
+}
+
+/**
+ * 造菜单项「删除」(delMenuOf)的入参。
+ */
+export type DelMenuIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 请删除先确认。
+   */
+  ask: AskFn
+
+  /**
+   * 删掉这条。
+   */
+  remove: RemoveFn
+
+  /**
+   * 这一条的 id。
+   */
+  id: number
+
+  /**
+   * 确认框里显示的名字(职位名)。
+   */
+  name: string
+}
+
+/**
+ * 造「删一条」(makeRemoveMine)的入参。
+ */
+export type RemoveMineIn = {
+  /**
+   * 删除接口前缀(后接 id)。
+   */
+  urlHead: string
+
+  /**
+   * 当前清单。
+   */
+  items: MyJobItem[] | null
+
+  /**
+   * 写清单。
+   */
+  setItems: (v: MyJobItem[] | null) => void
+}
+
+/**
+ * 造「删一条推荐」(makeRemovePick)的入参。
+ */
+export type RemovePickIn = {
+  /**
+   * 当前推荐。
+   */
+  data: PicksFact | null
+
+  /**
+   * 写推荐。
+   */
+  setData: (v: PicksFact | null) => void
+}
+
+/**
+ * 发删除请求(sendDelete)的入参。
+ */
+export type SendDeleteIn = {
+  /**
+   * 删除接口地址(已带 id)。
+   */
+  url: string
+
+  /**
+   * 没删成时把原样放回。
+   */
+  restore: () => void
+}
+
+/**
+ * 拨删除确认框(参数:等着确认的那一次;null = 关框)。
+ */
+export type AskSetFn = (a: AskDel | null) => void
+
+/**
+ * 造「删除」钮(makeAskOk)的入参。
+ */
+export type AskOkIn = {
+  /**
+   * 等着确认的那一次。
+   */
+  ask: AskDel | null
+
+  /**
+   * 拨框手柄。
+   */
+  setAsk: AskSetFn
+}
+
+/**
+ * 删除确认框(AskDelModal)的 props。
+ */
+export type AskDelModalIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 删除确认框整机。
+   */
+  a: AskPanel
 }
 
 /**

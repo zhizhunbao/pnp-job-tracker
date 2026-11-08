@@ -12,7 +12,8 @@ import { cssOf } from '@/components/css'
 import { useLang } from '@/components/i18n'
 import { KIND_APPLIED } from './constants'
 import { appliedColsOf, byStageOf, listRowsOf, stagePillsOf } from './functions'
-import { useLazyCompanies, useLazyTitles } from './hooks'
+import { AskDelModal } from './askdelmodal'
+import { useAskDel, useLazyCompanies, useLazyTitles } from './hooks'
 import { PagedJobList } from './pagedjoblist'
 import { StageBar } from './stagebar'
 import type { ListPaneIn } from './types'
@@ -28,6 +29,7 @@ export function AppliedPane({ t, l, openApp }: ListPaneIn) {
   const [lang] = useLang()
   const titles = useLazyTitles({ items: l.items, lang })
   const cos = useLazyCompanies({ items: l.items, lang })
+  const a = useAskDel()
   if (l.failed) {
     return <div className={cssOf(css.note)}>{t('mj.fail')}</div>
   }
@@ -35,7 +37,9 @@ export function AppliedPane({ t, l, openApp }: ListPaneIn) {
     return null
   }
   const items = byStageOf({ items: l.items, stage: l.stage })
-  const rows = listRowsOf({ kind: KIND_APPLIED, filter: l.stage, items, t, lang, titles, cos, openApp })
+  const rows = listRowsOf({
+    kind: KIND_APPLIED, ask: a.onAsk, remove: l.remove, filter: l.stage, items, t, lang, titles, cos, openApp,
+  })
   return (
     <>
       {l.items.length > 0 && (
@@ -43,6 +47,7 @@ export function AppliedPane({ t, l, openApp }: ListPaneIn) {
       )}
       <PagedJobList key={l.stage} rows={rows} cols={appliedColsOf({ t })} t={t}
         empty={<div className={cssOf(css.note)}>{t('mj.emptyApplied')}</div>} />
+      <AskDelModal t={t} a={a} />
     </>
   )
 }

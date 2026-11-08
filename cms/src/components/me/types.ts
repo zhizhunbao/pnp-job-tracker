@@ -13,7 +13,7 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
 /**
  * 「我的」的五节(与 constants 的 ME_SECS 一一对应;account 桶 Sec 同一组值)。
  */
-export type MeSec = 'sjobs' | 'inbox' | 'resume' | 'profile' | 'sub'
+export type MeSec = 'sjobs' | 'inbox' | 'resume' | 'profile' | 'sub' | 'settings'
 
 /**
  * 窄屏抽屉状态机器的入参。
@@ -310,6 +310,11 @@ export type MeUser = {
   avatar?: string | null
 
   /**
+   * 注册来路(email / google;账户设置据此决定给不给改)。
+   */
+  loginProvider?: string | null
+
+  /**
    * 界面语。
    */
   locale?: string | null
@@ -518,6 +523,16 @@ export type MeSubPageIn = MeSecPageIn & {
    * Pro 到期日;没有为 null。
    */
   until: string | null
+}
+
+/**
+ * MeSettings(账户设置一整页)的 props:框架三格 + 当前用户。
+ */
+export type MeSettingsPageIn = MeSecPageIn & {
+  /**
+   * 当前用户(登录邮箱、注册来路)。
+   */
+  me: MeUser
 }
 
 /**

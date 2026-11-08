@@ -39,6 +39,9 @@
 // 2026-11-07 Frank「现在都按 Azure 的来」:收藏 / 投递表的「地址」列(完整地址一行)改「地点」列 —— 链字「市, 省码」、链址仍按完整地址查,
 //       灰字「市译名,省译名」照旧;④ 的已投行换一个带街号的完整地址,断言链字与链址分开(列头 mj.col.place)。
 //       探针:PlaceCell 回到出 r.address 的形 → ④ 链字那条红。
+// 2026-11-07(二)Frank「先做 5 条必备」:删除收进行末「⋯」(menu 桶,无障碍名 mj.more),点了先弹确认框 mj.delAsk ——
+//       「一行一颗主钮」的断言照旧,数钮时排除「⋯」(buttons / mainButtons);撤掉的 ⑦ 取消收藏(含失败退回)、⑪ 投递行删除
+//       改走「⋯」→ 删除 → 确认接回。探针:removeOf 投递行打 /api/saved-jobs → ⑪ 红;makeRemoveMine 失败不退回 → ⑦ 退回那条红。
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -133,7 +136,17 @@ function links(row: HTMLElement) {
 }
 
 function buttons(row: HTMLElement) {
-  return Array.from(row.querySelectorAll('button')).map((b) => b.textContent)
+  return Array.from(row.querySelectorAll('button:not([aria-label="mj.more"])')).map((b) => b.textContent)
+}
+
+// 行末「⋯」→「删除」→ 确认框「删除」(2026-11-07 二)
+async function deleteRow(el: HTMLElement, row: HTMLElement) {
+  await act(async () => {
+    (row.querySelector('button[aria-label="mj.more"]') as HTMLButtonElement).click()
+  })
+  await click(row, 'mj.del')
+  expect(document.body.textContent).toContain('mj.delAsk')
+  await click(document.body, 'mj.del')
 }
 
 async function click(el: HTMLElement, text: string) {
@@ -232,6 +245,18 @@ describe('我的求职', () => {
     expect(new URLSearchParams(window.location.search).get('app')).toBeNull()   // 不是只读投递框
   })
 
+  it('⑪ 投递行「⋯」→ 删除 → 确认:打 /api/myjobs/applied?id=<投递行 id>,这一行没了', async () => {
+    const calls = server({
+      'GET /api/myjobs/applied': { status: 200, body: { items: [D, S] } },
+      'DELETE /api/myjobs/applied?id=10': { status: 200, body: { ok: true } },
+    })
+    const el = await mount('applied')
+    await deleteRow(el, rowOf(el, 'office manager'))
+    expect(calls).toContain('DELETE /api/myjobs/applied?id=10')
+    expect(rowOf(el, 'office manager')).toBeNull()
+    expect(rowOf(el, 'light duty cleaner')).not.toBeNull()
+  })
+
   it('⑩ 阶段胶囊带计数,点一枚只看那一档', async () => {
     const X = { ...S, id: 11, jobId: 111, title: 'bounced one', stage: 'bounced' }
     server({ 'GET /api/myjobs/applied': { status: 200, body: { items: [D, S, X] } } })
@@ -308,6 +333,21 @@ describe('我的收藏', () => {
     expect(links(b)).toEqual([['Steinbach, MB', MAP('Steinbach, MB')]])
     expect(buttons(b)).toEqual([])   // 下架又职位删了:没有钮(2026-11-07「删除」撤)
     expect(b.textContent).toContain('mj.closed')
+  })
+
+  it('⑦ 收藏行「⋯」→ 删除 → 确认:删的是收藏记录(/api/saved-jobs/<收藏 id>),行没了;服务端没删成退回原样', async () => {
+    const calls = server({
+      'GET /api/myjobs/saved': { status: 200, body: { items: [E, A] } },
+      'DELETE /api/saved-jobs/9': { status: 200, body: {} },
+      'DELETE /api/saved-jobs/7': { status: 500, body: {} },
+    })
+    const el = await mount('saved')
+    await deleteRow(el, rowOf(el, 'truck washer'))
+    expect(calls).toContain('DELETE /api/saved-jobs/9')
+    expect(rowOf(el, 'truck washer')).toBeNull()
+    await deleteRow(el, rowOf(el, 'light duty cleaner'))
+    expect(calls).toContain('DELETE /api/saved-jobs/7')
+    expect(rowOf(el, 'light duty cleaner')).not.toBeNull()   // 500:退回
   })
 
   it('⑨ 收藏行没有投递邮箱 / 已下架:不出「投递」', async () => {

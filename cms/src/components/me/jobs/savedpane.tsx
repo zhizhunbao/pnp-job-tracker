@@ -4,15 +4,17 @@
  * 「收藏之后,下一步就是准备投递了」并进「我的求职」):收藏的岗一张表(手机一岗一条),能投的「投递」、投过的「打开」;
  * 空态一行「还没有收藏」(10-09 Frank「去职位板 删掉吧」)。2026-10-13 Frank「每个 table 都有分页吧」:分页壳。
  * 2026-11-07 效果图:分区白卡换成页签,条数挂到页签上;「删除」钮撤。
+ * 同日 Frank「先做 5 条必备」:删除收进行末「⋯」,先弹确认框。
  *
  * @author Frank
  * @time 2026-11-07 18:00:00
  */
 import { cssOf } from '@/components/css'
 import { useLang } from '@/components/i18n'
+import { AskDelModal } from './askdelmodal'
 import { KIND_SAVED, STAGE_ALL } from './constants'
 import { listRowsOf, savedColsOf } from './functions'
-import { useLazyCompanies, useLazyTitles } from './hooks'
+import { useAskDel, useLazyCompanies, useLazyTitles } from './hooks'
 import { PagedJobList } from './pagedjoblist'
 import type { ListPaneIn } from './types'
 import css from './jobs.module.css'
@@ -27,15 +29,21 @@ export function SavedPane({ t, l, openApp }: ListPaneIn) {
   const [lang] = useLang()
   const titles = useLazyTitles({ items: l.items, lang })
   const cos = useLazyCompanies({ items: l.items, lang })
+  const a = useAskDel()
   if (l.failed) {
     return <div className={cssOf(css.note)}>{t('mj.fail')}</div>
   }
   if (l.items == null) {
     return null
   }
-  const rows = listRowsOf({ kind: KIND_SAVED, filter: STAGE_ALL, items: l.items, t, lang, titles, cos, openApp })
+  const rows = listRowsOf({
+    kind: KIND_SAVED, ask: a.onAsk, remove: l.remove, filter: STAGE_ALL, items: l.items, t, lang, titles, cos, openApp,
+  })
   return (
-    <PagedJobList rows={rows} cols={savedColsOf({ t })} t={t}
-      empty={<div className={cssOf(css.note)}>{t('sj.empty')}</div>} />
+    <>
+      <PagedJobList rows={rows} cols={savedColsOf({ t })} t={t}
+        empty={<div className={cssOf(css.note)}>{t('sj.empty')}</div>} />
+      <AskDelModal t={t} a={a} />
+    </>
   )
 }

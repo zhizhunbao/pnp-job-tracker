@@ -393,7 +393,8 @@ describe('今日推荐卡', () => {
     // 看得见的只有 1 条,没有没列出来的真行:不出「显示更多」(锁住的不再算进去)
     expect(Array.from(el.querySelectorAll('button')).some((x) => x.textContent?.startsWith('loadMore'))).toBe(false)
     expect(panelOf(el).textContent).toContain('mj.lockLine{"n":7}')
-    expect(Array.from(panelOf(el).querySelectorAll('button')).map((b) => b.textContent)).toEqual(['mj.apply', 'mj.unlock{"n":7}'])
+    expect(Array.from(panelOf(el).querySelectorAll('button:not([aria-label="mj.more"])')).map((b) => b.textContent))
+      .toEqual(['mj.apply', 'mj.unlock{"n":7}'])   // 2026-11-07(二):行末「⋯」不算主钮
     // 「地址」列改「地点」列:链字「市, 省码」,链址仍按完整地址查
     expect(el.textContent).toContain('mj.col.place')
     expect(el.textContent).not.toContain('mj.col.addr')
@@ -441,11 +442,12 @@ describe('今日推荐卡', () => {
     expect(pro.textContent).not.toContain('mj.unlock')
   })
 
-  it('⑥ 一行只有一颗「投递」,点了就地弹投递框;「删除」(不再推)撤(2026-11-07)', async () => {
+  it('⑥ 一行只有一颗主钮「投递」,点了就地弹投递框;删除(不再推)收进行末「⋯」(2026-11-07 二)', async () => {
     stub({ status: 200, body: { picks: [PICK], more: 0, locked: [] } })
     const el = await mount(false)
     const row = Array.from(el.querySelectorAll('tr')).find((r) => r.textContent?.includes(PICK.title)) as HTMLElement
-    expect(Array.from(row.querySelectorAll('button')).map((b) => b.textContent)).toEqual(['mj.apply'])
+    expect(Array.from(row.querySelectorAll('button:not([aria-label="mj.more"])')).map((b) => b.textContent)).toEqual(['mj.apply'])
+    expect(row.querySelectorAll('button[aria-label="mj.more"]').length).toBe(1)
     expect(el.textContent).not.toContain('mj.lockLine')   // 2026-11-07:没有锁住的(more 0)不出「解锁」一行
     await act(async () => {
       row.querySelector('button')?.click()

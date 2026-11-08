@@ -23,7 +23,8 @@ import { useLang } from '@/components/i18n'
 import { MoreLine } from '@/components/pager'
 import { TEXT_NONE, UPGRADE_KIND } from './constants'
 import { pickColsOf, pickRowsOf } from './functions'
-import { useLazyCompanies, useLazyTitles } from './hooks'
+import { AskDelModal } from './askdelmodal'
+import { useAskDel, useLazyCompanies, useLazyTitles } from './hooks'
 import { JobList } from './joblist'
 import { hiddenPicksOf, picksOf, shownPicksOf, titledPicksOf, unlockNOf } from './recommend'
 import type { PicksPaneIn } from './types'
@@ -39,13 +40,15 @@ export function PicksPane({ t, pro, p }: PicksPaneIn) {
   const [lang] = useLang()
   const titles = useLazyTitles({ items: titledPicksOf(p.data), lang })
   const cos = useLazyCompanies({ items: picksOf(p.data), lang })
+  const a = useAskDel()
   if (p.failed) {
     return <div className={cssOf(css.note)}>{t('mj.fail')}</div>
   }
   if (p.data == null) {
     return null
   }
-  const rows = pickRowsOf({ items: shownPicksOf({ items: p.data.picks, expanded: p.expanded }), lang, t, titles, cos })
+  const shown = shownPicksOf({ items: p.data.picks, expanded: p.expanded })
+  const rows = pickRowsOf({ items: shown, ask: a.onAsk, remove: p.remove, lang, t, titles, cos })
   const hidden = hiddenPicksOf({ data: p.data, expanded: p.expanded })
   const locked = unlockNOf({ pro, data: p.data })
   return (
@@ -63,6 +66,7 @@ export function PicksPane({ t, pro, p }: PicksPaneIn) {
           <Button kind={UPGRADE_KIND} onClick={p.onUpsell}>{t('mj.unlock', { n: locked })}</Button>
         </div>
       )}
+      <AskDelModal t={t} a={a} />
     </>
   )
 }

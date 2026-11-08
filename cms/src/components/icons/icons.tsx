@@ -13,10 +13,11 @@ import {
   ArrowUp, Bell, Briefcase, ChartColumn, ChartLine, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, CircleX,
   ChevronsLeft, ChevronsRight,
   ClipboardList,
-  Compass, CreditCard, FileText, Globe, GripVertical, IdCard, Lock, Mail, Map as LMap, MapPin, Maximize, Medal, Menu,
+  Compass, CreditCard, Ellipsis, FileText, Globe, GripVertical, IdCard, KeyRound, Lock, Mail, Map as LMap, MapPin,
+  Maximize, Medal, Menu,
   MessageCircle, Mic,
   Minimize, Minus, MoveUpRight, Newspaper, Pause, Pencil, Play, Rocket, RotateCcw, Save, Scale, Search, Settings,
-  Square, Star, Plus, Table, Target, ThumbsDown, ThumbsUp, TriangleAlert, User, Users, Volume2, X,
+  Square, Star, Plus, Table, Target, ThumbsDown, ThumbsUp, Trash2, TriangleAlert, User, Users, Volume2, X,
 } from 'lucide-react'
 
 import { makeIcon } from './functions'
@@ -157,6 +158,21 @@ export const IconMenu = makeIcon(Menu)
  * 挂件面板还原。
  */
 export const IconMinimize = makeIcon(Minimize)
+
+/**
+ * 更多操作「⋯」(2026-11-07「我的求职」三张表行末菜单,照 Azure 门户资源列表一行的 More actions)。
+ */
+export const IconMore = makeIcon(Ellipsis)
+
+/**
+ * 删除(菜单里「删除」一项的前标;2026-11-07)。
+ */
+export const IconTrash = makeIcon(Trash2)
+
+/**
+ * 账户设置(「我的」左侧导航「账户设置」一项;2026-11-07)。
+ */
+export const IconKey = makeIcon(KeyRound)
 
 /**
  * 挂件最小化(收成一条)。

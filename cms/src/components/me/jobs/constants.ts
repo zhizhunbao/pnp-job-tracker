@@ -20,6 +20,26 @@ export const URL_APPLIED = '/api/myjobs/applied'
 export const URL_SAVED = '/api/myjobs/saved'
 
 /**
+ * 我的投递「删除」接口前缀(后接投递 id;草稿真删、已发出的只藏起,服务端分辨;2026-11-07 行末「⋯」菜单接回)。
+ */
+export const URL_APPLIED_DEL = '/api/myjobs/applied?id='
+
+/**
+ * 我的收藏「删除」接口前缀(后接收藏记录 id;删的是收藏记录,职位不动)。
+ */
+export const URL_SAVED_DEL = '/api/saved-jobs/'
+
+/**
+ * 今日推荐「删除」接口前缀(后接职位 id;这一岗以后不再推)。
+ */
+export const URL_PICK_DEL = '/api/myjobs/picks?id='
+
+/**
+ * 删除请求的方法。
+ */
+export const METHOD_DELETE = 'DELETE'
+
+/**
  * 职位页地址前缀(后接职位 id)。
  */
 export const JOB_HREF_HEAD = '/jobs/'
@@ -289,6 +309,11 @@ export const ACT_APPLY = 'apply'
  * 钮身份:打开。
  */
 export const ACT_OPEN = 'open'
+
+/**
+ * 菜单项身份:删除(2026-11-07 收进行末「⋯」;10-12 Frank「所有的操作列都应该有个删除按钮」)。
+ */
+export const ACT_DEL = 'del'
 
 /**
  * 网页端表格的最小宽(列多,窄了横滚不挤成竖排)。

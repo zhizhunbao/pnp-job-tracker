@@ -12,14 +12,16 @@
 import { useEffect, useState } from 'react'
 import { makeLoadAlias } from '@/components/companies'
 import { untranslatedOf, useTitleMap } from '@/components/jobtitle'
-import { CO_SEP, GEN_NONE, STAGE_ALL, TEXT_NONE, URL_APPLIED, URL_SAVED } from './constants'
 import {
-  firstTabOf, loadProfile, makeCoLand, makeFillHide, makeFlag, makeLoadMyJobs,
-  untranslatedCosOf,
+  CO_SEP, GEN_NONE, STAGE_ALL, TEXT_NONE, URL_APPLIED, URL_APPLIED_DEL, URL_SAVED, URL_SAVED_DEL,
+} from './constants'
+import {
+  firstTabOf, loadProfile, makeAskClose, makeAskOk, makeCoLand, makeFillHide, makeFlag, makeLoadMyJobs,
+  makeRemoveMine, makeRemovePick, untranslatedCosOf,
 } from './functions'
 import { makeLoadPicks, makeSwap } from './recommend'
 import type {
-  FillPanel, JobsHookIn, JobsPanel, LazyCompaniesIn, LazyTitlesIn,
+  AskDel, AskPanel, FillPanel, JobsHookIn, JobsPanel, LazyCompaniesIn, LazyTitlesIn,
   MyJobItem, MyJobsHookIn, MyJobsPanel, PfView, PicksFact, PicksHookIn, PicksPanel, TitledItem,
 } from './types'
 
@@ -33,8 +35,8 @@ import type {
 export function useJobs(x: JobsHookIn): JobsPanel {
   const [tab, setTab] = useState(firstTabOf)
   const picks = usePicks({ gen: x.gen, asked: x.asked, pro: x.pro })
-  const saved = useMyJobs({ url: URL_SAVED, gen: GEN_NONE })
-  const applied = useMyJobs({ url: URL_APPLIED, gen: x.gen })
+  const saved = useMyJobs({ url: URL_SAVED, delHead: URL_SAVED_DEL, gen: GEN_NONE })
+  const applied = useMyJobs({ url: URL_APPLIED, delHead: URL_APPLIED_DEL, gen: x.gen })
   return { tab, onTab: setTab, picks, saved, applied }
 }
 
@@ -53,7 +55,17 @@ export function useMyJobs(x: MyJobsHookIn): MyJobsPanel {
     void makeLoadMyJobs({ url: x.url, setItems, setFailed })()
   }, [x.url, x.gen])
 
-  return { items, failed, stage, setStage }
+  return { items, failed, stage, setStage, remove: makeRemoveMine({ urlHead: x.delHead, items, setItems }) }
+}
+
+/**
+ * 删除确认框整机(10-12 旧桶 useAskDel 照抄):等着确认的那一次、请确认、确认、取消。
+ *
+ * @returns 删除确认框整机。
+ */
+export function useAskDel(): AskPanel {
+  const [ask, setAsk] = useState<AskDel | null>(null)
+  return { ask, onAsk: setAsk, onOk: makeAskOk({ ask, setAsk }), onCancel: makeAskClose(setAsk) }
 }
 
 /**
@@ -76,6 +88,7 @@ export function usePicks(x: PicksHookIn): PicksPanel {
 
   return {
     data,
+    remove: makeRemovePick({ data, setData }),
     failed,
     upsell,
     onUpsell: makeFlag({ set: setUpsell, v: true }),
