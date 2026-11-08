@@ -36,6 +36,9 @@
 //       撤掉的功能连断言一并撤:⑦ 取消收藏(含失败退回)、⑪ 投递行删除、删除确认框 mj.delAsk、投递行上的简历 / 求职信两个链接(⑤ hasCover 那条)。
 //       ① 改读作「页签不挂计数、表格区不渲」;③⑩ 照旧。探针:tabOf 还没拉到也挂计数 → ① 红;actOf 投递行回到职位页链接 → ④ 红;
 //       firstTabOf 不认 favs → 深链那条红;tabsOf 收藏计数取 applied → 收藏 ④⑤⑨ 红。
+// 2026-11-07 Frank「现在都按 Azure 的来」:收藏 / 投递表的「地址」列(完整地址一行)改「地点」列 —— 链字「市, 省码」、链址仍按完整地址查,
+//       灰字「市译名,省译名」照旧;④ 的已投行换一个带街号的完整地址,断言链字与链址分开(列头 mj.col.place)。
+//       探针:PlaceCell 回到出 r.address 的形 → ④ 链字那条红。
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -52,7 +55,7 @@ const B = { ...BASE, id: 8, jobId: null, address: 'Steinbach, MB', title: 'Cook'
 const C = { ...BASE, id: 9, jobId: 103, salaryAnnual: 40040, address: 'Winnipeg, MB', title: 'truck washer', titleZh: '', company: 'Wash Ltd', city: 'Winnipeg', cityZh: '温尼伯', province: 'MB', salary: '$18–$21/hr', datePosted: '2026-09-30T00:00:00.000Z', updatedAt: '2026-09-30T15:00:00.000Z', stage: '' }
 const D = { ...BASE, id: 10, jobId: 105, address: 'Kitchener, ON', title: 'office manager', titleZh: '', company: 'Anurag Homes Team', city: 'Kitchener', cityZh: '基奇纳', province: 'ON', salary: '$80K/yr', datePosted: '2026-10-05T00:00:00.000Z', updatedAt: '2026-10-07T10:00:00.000Z', stage: 'draft' }
 const E = { ...C, hasEmail: true }
-const S = { ...A, stage: 'sent' }
+const S = { ...A, stage: 'sent', address: '393 Portage Ave, Winnipeg, MB R3B 3H6' }
 
 type Reply = { status: number, body: object }
 
@@ -93,7 +96,7 @@ async function mount(tab: Tab) {
   const root = createRoot(el)
   await act(async () => {
     root.render(createElement(JobsBody, {
-      t, pro: false, plan: { isPro: false, loggedIn: true }, gen: 0, asked: 0, onAsked: () => undefined, openApp: openAppView,
+      t, pro: false, plan: { isPro: false, loggedIn: true }, gen: 0, asked: 0, onFill: () => undefined, openApp: openAppView,
     }))
   })
   await flush()
@@ -176,16 +179,21 @@ describe('我的求职', () => {
     expect(panelOf(el).textContent).not.toContain('mj.emptyApplied')
   })
 
-  it('④⑤⑥ 表格行:职位链、公司、地址一行(地图链 + 市译名灰字)、薪资、工时 / 雇佣期、投递于、状态胶囊、唯一一颗「打开」;职位已删', async () => {
+  it('④⑤⑥ 表格行:职位链、公司、地点「市, 省码」(完整地址的地图链 + 市译名灰字)、薪资、工时 / 雇佣期、投递于、状态胶囊、唯一一颗「打开」;职位已删', async () => {
     server({ 'GET /api/myjobs/applied': { status: 200, body: { items: [S, B] } } })
     const el = await mount('applied')
     expect(tabOf(el, 'applied').textContent).toBe('mj.tab.applied2')
     const a = rowOf(el, 'light duty cleaner')
     expect(a.tagName).toBe('TR')   // 2026-10-10 批 2:网页端走通用表格
     // 2026-11-07 效果图:投递行上的简历 / 求职信两个链接撤(只读投递框里照有)
+    // 2026-11-07:「地址」列改「地点」列 —— 链字「市, 省码」,链址仍按完整地址一行查;完整地址不上屏
     expect(links(a)).toEqual([
-      ['light duty cleaner', '/jobs/101'], ['Clean Co', '/companies/clean-co'], ['Winnipeg, MB', MAP('Winnipeg, MB')],
+      ['light duty cleaner', '/jobs/101'], ['Clean Co', '/companies/clean-co'],
+      ['Winnipeg, MB', MAP('393 Portage Ave, Winnipeg, MB R3B 3H6')],
     ])
+    expect(a.textContent).not.toContain('393 Portage Ave')
+    expect(panelOf(el).textContent).toContain('mj.col.place')
+    expect(panelOf(el).textContent).not.toContain('mj.col.addr')
     expect(a.textContent).toContain('温尼伯')   // 地点灰字「市译名,省译名」(默认中文界面)
     expect(a.textContent).toContain('Full-time')
     expect(a.textContent).toContain('Permanent')
@@ -250,7 +258,7 @@ describe('我的收藏', () => {
     document.body.appendChild(el)
     await act(async () => {
       createRoot(el).render(createElement(JobsBody, {
-        t, pro: false, plan: {}, gen: 0, asked: 0, onAsked: () => undefined, openApp: openAppView,
+        t, pro: false, plan: {}, gen: 0, asked: 0, onFill: () => undefined, openApp: openAppView,
       }))
     })
     await flush()
@@ -262,7 +270,7 @@ describe('我的收藏', () => {
     document.body.appendChild(el2)
     await act(async () => {
       createRoot(el2).render(createElement(JobsBody, {
-        t, pro: false, plan: {}, gen: 0, asked: 0, onAsked: () => undefined, openApp: openAppView,
+        t, pro: false, plan: {}, gen: 0, asked: 0, onFill: () => undefined, openApp: openAppView,
       }))
     })
     await flush()

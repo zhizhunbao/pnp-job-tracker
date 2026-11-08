@@ -518,6 +518,36 @@ export type InboxPanel = {
    * 发信框底下那句失败说明;没有为空串。
    */
   replyNote: string
+
+  /**
+   * 清单搜索框里的字。
+   */
+  q: string
+
+  /**
+   * 改搜索字。
+   */
+  onQ: (v: string) => void
+
+  /**
+   * 清单筛选(全部 / 未读)。
+   */
+  filter: string
+
+  /**
+   * 换筛选。
+   */
+  onFilter: (v: string) => void
+
+  /**
+   * 按搜索与筛选留下的信,新的在前。
+   */
+  shown: InboxItem[]
+
+  /**
+   * 没读的封数(筛选页签上的数)。
+   */
+  unreadN: number
 }
 
 /**
@@ -570,6 +600,11 @@ export type InboxReadIn = {
   p: InboxPanel
 
   /**
+   * 装在窄屏读信弹框里(弹框标题已是主题,阅读区不再出大字主题)。
+   */
+  inModal?: boolean
+
+  /**
    * 那一封。
    */
   m: InboxItem
@@ -593,4 +628,54 @@ export type InboxRowClsIn = {
    * 没读过。
    */
   unread: boolean
+}
+
+/**
+ * 清单按搜索与筛选留哪几封的入参。
+ */
+export type ShownIn = {
+  /**
+   * 回包;还没回为 null。
+   */
+  data: InboxView | null
+
+  /**
+   * 搜索字(不分大小写,搜发件人、地址、主题、正文、职位名)。
+   */
+  q: string
+
+  /**
+   * 筛选(全部 / 未读)。
+   */
+  filter: string
+}
+
+/**
+ * 阅读区里一封信卡片(InboxMsg)的 props。
+ */
+export type InboxMsgIn = {
+  /**
+   * 卡上写谁(来信是发件人,回信是「我」)。
+   */
+  who: string
+
+  /**
+   * 头像按这个名字取首字与底色。
+   */
+  avatarName: string
+
+  /**
+   * 谁发给谁那一行。
+   */
+  toLine: string
+
+  /**
+   * 时刻。
+   */
+  at: string
+
+  /**
+   * 正文。
+   */
+  text: string
 }

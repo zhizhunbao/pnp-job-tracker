@@ -7,6 +7,6 @@
  * @time 2026-11-07 18:00:00
  */
 export {
-  chanNameOf, hiddenPicksOf, lockTopOf, makeLoadPicks, makeSwap, picksLockedN, picksOf, picksTotalOf, shownPicksOf,
-  titledPicksOf, whyTagsOf,
+  chanNameOf, hiddenPicksOf, makeLoadPicks, makeSwap, picksOf, picksTotalOf, shownPicksOf, titledPicksOf, unlockNOf,
+  whyTagsOf,
 } from './functions'

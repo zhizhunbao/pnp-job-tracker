@@ -13,30 +13,31 @@ import { missingStepsOf } from '@/components/gate'
 import { lazyTitleOf, titleSubOf } from '@/components/jobtitle'
 import { hoursNameOf, placeHrefOf, placeSubOf, termNameOf } from '@/components/name'
 import { log, PROFILE_LOG } from '@/lib/log'
-import { saveBasics } from '@/lib/quiz'
 import { ymd } from '@/lib/time'
 import { ActCell } from './actcell'
-import { AddrCell } from './addrcell'
 import { ChanCell } from './chancell'
 import { CompanyCell } from './companycell'
 import {
-  ACT_APPLY, ACT_CONT, ACT_OPEN, CLOSED_TAG, COL_ACT, COL_ADDR, COL_APPLIED_ON, COL_CHAN, COL_COMPANY, COL_DEADLINE,
-  COL_HOURS, COL_PAY, COL_POSTED, COL_SAVED_ON, COL_STATUS, COL_TERM, COL_TITLE, COL_WHY, CRED_INCLUDE, DUE_KEY,
-  JOB_HREF_HEAD, KIND_APPLIED, KIND_SAVED, LANG_EN, LANG_KO, LANG_ZH, LOCK_FILL, LOCK_FILL_N, LOCK_KEY_HEAD, MD_FROM,
-  OPEN_KIND, PF_ERR_ASKED, PF_ERR_EMPTY, PLACE_SEP, PRIMARY_KIND, QP_SEC, SEC_FAVS, STAGES, STAGE_ALL, STAGE_FILTERS,
+  ACT_APPLY, ACT_CONT, ACT_OPEN, CLOSED_TAG, COL_ACT, COL_APPLIED_ON, COL_CHAN, COL_COMPANY, COL_DEADLINE,
+  COL_HOURS, COL_PAY, COL_PLACE, COL_POSTED, COL_SAVED_ON, COL_STATUS, COL_TERM, COL_TITLE, COL_WHY, CRED_INCLUDE,
+  DUE_KEY, JOB_HREF_HEAD, KIND_APPLIED, KIND_SAVED, LANG_EN, LANG_KO, LANG_ZH, MD_FROM,
+  OPEN_KIND, PF_ERR_EMPTY, PICKS_FIRST, PLACE_SEP, PRIMARY_KIND, QP_SEC, SEC_FAVS, STAGES, STAGE_ALL, STAGE_FILTERS,
   ST_DRAFT, TAB_APPLIED, TAB_PICKS, TAB_SAVED, TEXT_NONE, URL_PROFILE,
+  FILL_KEY, FILL_LABEL_FALLBACK, FILL_LABEL_KEYS, FILL_MORE_KEY, FILL_NAME_MAX, FILL_SEP_KEY,
 } from './constants'
 import { HoursCell } from './hourscell'
 import { PayCell } from './paycell'
+import { PlaceCell } from './placecell'
 import { chanNameOf, picksTotalOf, whyTagsOf } from './recommend'
 import { TagsCell } from './tagscell'
 import { TermCell } from './termcell'
 import { TitleCell } from './titlecell'
 import type {
-  ActBtn, AskedDoneIn, ByStageIn, CellRowIn, CellRowsIn, CoAliasForIn, CoLandIn, ColsIn, FlagIn, JobsTab, JobsTabIn,
-  JobsTabsIn, LazyCompaniesIn, ListRow, LoadMyJobsIn, LockedRowIn, LockedRowsIn, LockFill, MaybeStageDef, MjCol,
+  ActBtn, ByStageIn, CellRowIn, CellRowsIn, CoAliasForIn, CoLandIn, ColsIn, FlagIn, JobsTab, JobsTabIn,
+  JobsTabsIn, LazyCompaniesIn, ListRow, LoadMyJobsIn, MaybeStageDef, MjCol,
   MyJobItem, MyJobsRespJson, PfJson, PfLoadIn, PfSeed, PfView, PickRowIn, PickRowsIn, PillClickIn, PlaceDue, PlaceDueIn,
-  QuizOpenIn, StagePill, StagePillsIn, TagItem, TitleSubForIn,
+  FillTextIn, StagePill, StagePillsIn, SwapShownIn, TagItem, TitleSubForIn,
+  FillHideIn,
 } from './types'
 
 /**
@@ -134,6 +135,20 @@ export function countOrNull(items: MyJobItem[] | null): number | null {
 }
 
 /**
+ * 页签那一行右端出不出「换一批」(2026-11-07 Frank「现在都按 Azure 的来」:钮从推荐表上方挪到页签行):
+ * 当前是「今日推荐」、且推荐总条数(看得见 + 锁住)多于先列的 PICKS_FIRST 条(同原先的出钮条件)。
+ *
+ * @param x 当前页签与推荐。
+ * @returns 出钮。
+ */
+export function swapShownOf(x: SwapShownIn): boolean {
+  if (x.tab !== TAB_PICKS || x.data == null) {
+    return false
+  }
+  return picksTotalOf(x.data) > PICKS_FIRST
+}
+
+/**
  * 进页先落哪一枚页签:旧深链 `?sec=favs`(「我的收藏」页签 10-10 撤了,落「我的求职」)直接切到「我的收藏」,其余落「今日推荐」。
  *
  * @returns 页签身份。
@@ -203,7 +218,6 @@ export function listRowOf(x: CellRowIn): ListRow {
     companyZh: coAliasFor({ own: it.companyZh, name: it.company, cos: x.cos, want: LANG_ZH, lang: x.lang }),
     companyKo: coAliasFor({ own: it.companyKo, name: it.company, cos: x.cos, want: LANG_KO, lang: x.lang }),
     companySlug: it.companySlug,
-    address: it.address,
     addressHref: placeHrefOf(it.address),
     addressSub: placeSubOf({ cityZh: it.cityZh, cityKo: it.cityKo, province: it.province, lang: x.lang, t: x.t }),
     place: pd.place,
@@ -218,7 +232,6 @@ export function listRowOf(x: CellRowIn): ListRow {
     tags,
     cardTags: tags,
     act: actOf(x),
-    locked: false,
   }
 }
 
@@ -453,7 +466,6 @@ export function pickRowOf(x: PickRowIn): ListRow {
     companyZh: coAliasFor({ own: it.companyZh, name: it.company, cos: x.cos, want: LANG_ZH, lang: x.lang }),
     companyKo: coAliasFor({ own: it.companyKo, name: it.company, cos: x.cos, want: LANG_KO, lang: x.lang }),
     companySlug: it.companySlug,
-    address: it.address,
     addressHref: placeHrefOf(it.address),
     addressSub: placeSubOf({ cityZh: it.cityZh, cityKo: it.cityKo, province: it.province, lang: x.lang, t: x.t }),
     place: pd.place,
@@ -475,97 +487,13 @@ export function pickRowOf(x: PickRowIn): ListRow {
     }),
     cardTags: [],
     act: { key: ACT_APPLY, text: x.t('mj.apply'), kind: PRIMARY_KIND, onClick: makeOpenApply(it.id), href: TEXT_NONE },
-    locked: false,
   }
-}
-
-/**
- * 打码行(2026-10-12 Frank「隐藏的 和 显示的 要对齐啊」「上下要对齐。有 中文 灰字的 要加上」):免费号「显示更多」后锁住的推荐,
- * 并进同一张表 —— 职位名(带灰字)与通道照常出,公司 / 地址 / 薪资是模糊假字(真值不下发;地址 = 假街址 + 这一行的省码),没有钮。
- *
- * @param x 锁住的一条、第几条、界面语、取词函数与懒翻表。
- * @returns 展示行。
- */
-export function lockedRowOf(x: LockedRowIn): ListRow {
-  const it = x.item
-  const fill = lockFillOf(x.i)
-  const chan = chanNameOf({
-    province: it.province,
-    pnpStream: it.pnpStream,
-    pnpEligible: it.pnpEligible,
-    provDefault: it.provDefault,
-    lang: x.lang,
-    t: x.t,
-  })
-  return {
-    key: LOCK_KEY_HEAD + String(x.i),
-    jobId: null,
-    title: it.title,
-    titleSub: titleSubFor({
-      title: it.title,
-      titleZh: it.titleZh,
-      titleKo: it.titleKo,
-      titles: x.titles,
-      lang: x.lang,
-    }),
-    chanEn: chan.en,
-    chanSub: chan.sub,
-    company: fill.company,
-    companyZh: TEXT_NONE,
-    companyKo: TEXT_NONE,
-    companySlug: TEXT_NONE,
-    address: fill.street + it.province,
-    addressHref: TEXT_NONE,
-    addressSub: TEXT_NONE,
-    place: TEXT_NONE,
-    due: TEXT_NONE,
-    salary: fill.salary,
-    hoursEn: TEXT_NONE,
-    termEn: TEXT_NONE,
-    posted: TEXT_NONE,
-    deadline: TEXT_NONE,
-    savedOn: TEXT_NONE,
-    appliedOn: TEXT_NONE,
-    tags: [],
-    cardTags: [],
-    act: null,
-    locked: true,
-  }
-}
-
-/**
- * 打码行(只在免费号点了「显示更多」时出)。
- *
- * @param x 推荐整包、出不出、界面语、取词函数与懒翻表。
- * @returns 展示行;不出给空列。
- */
-export function lockedRowsOf(x: LockedRowsIn): ListRow[] {
-  const out: ListRow[] = []
-  if (x.show === false) {
-    return out
-  }
-  for (const [i, item] of x.data.locked.entries()) {
-    out.push(lockedRowOf({ item, i, lang: x.lang, t: x.t, titles: x.titles }))
-  }
-  return out
-}
-
-/**
- * 锁住那条用哪份假字纹理(两份轮着用)。
- *
- * @param i 第几条。
- * @returns 一份纹理。
- */
-export function lockFillOf(i: number): LockFill {
-  if (i % LOCK_FILL_N === 0) {
-    return LOCK_FILL.even
-  }
-  return LOCK_FILL.odd
 }
 
 /**
  * 网页端「今日推荐」的列(2026-11-07 效果图):职位 / 公司 / 地址 / 薪资 / 截止日期 / 通道 / 推荐原因 / 操作。
  * 2026-10-12 Frank「bullets 显示 全职 长期。这两个字段就没必要显示了吧」:推荐表不出工时 / 雇佣期两列;效果图连发布日期也不出。
+ * 2026-11-07 Frank「现在都按 Azure 的来」:「地址」列(完整地址一行)改「地点」列(「市, 省码」+ 译名灰字,同一个地图链)。
  *
  * @param x 取词函数。
  * @returns 列。
@@ -574,7 +502,7 @@ export function pickColsOf(x: ColsIn): MjCol<ListRow>[] {
   return [
     { key: COL_TITLE, label: x.t('mj.col.title'), render: TitleCell },
     { key: COL_COMPANY, label: x.t('mj.col.company'), render: CompanyCell },
-    { key: COL_ADDR, label: x.t('mj.col.addr'), render: AddrCell },
+    { key: COL_PLACE, label: x.t('mj.col.place'), render: PlaceCell },
     { key: COL_PAY, label: x.t('mj.col.pay'), render: PayCell, nowrap: true },
     { key: COL_DEADLINE, label: x.t('mj.col.deadline'), render: deadlineOf, nowrap: true },
     { key: COL_CHAN, label: x.t('mj.col.chan'), render: ChanCell },
@@ -613,6 +541,7 @@ export function appliedColsOf(x: ColsIn): MjCol<ListRow>[] {
 
 /**
  * 我的收藏 / 我的投递共用的前八列(照职位板)。
+ * 2026-11-07 Frank「现在都按 Azure 的来」:「地址」列同今日推荐改「地点」列(「市, 省码」)。
  *
  * @param x 取词函数。
  * @returns 列。
@@ -621,7 +550,7 @@ export function baseColsOf(x: ColsIn): MjCol<ListRow>[] {
   return [
     { key: COL_TITLE, label: x.t('mj.col.title'), render: TitleCell },
     { key: COL_COMPANY, label: x.t('mj.col.company'), render: CompanyCell },
-    { key: COL_ADDR, label: x.t('mj.col.addr'), render: AddrCell },
+    { key: COL_PLACE, label: x.t('mj.col.place'), render: PlaceCell },
     { key: COL_PAY, label: x.t('mj.col.pay'), render: PayCell, nowrap: true },
     { key: COL_HOURS, label: x.t('mj.col.hours'), render: HoursCell, nowrap: true },
     { key: COL_TERM, label: x.t('mj.col.term'), render: TermCell, nowrap: true },
@@ -695,6 +624,7 @@ export function ymdOf(iso: string): string {
 
 /**
  * 手机一条底行的两段(2026-11-07 效果图「Calgary, AB,截止 11-19」):「市, 省码」与「截止 月-日」,各自没有给空串。
+ * 同日 Frank「现在都按 Azure 的来」:网页端三张表的「地点」列也出这一段「市, 省码」。
  *
  * @param x 城市、省码、截止日与取词函数。
  * @returns 两段。
@@ -832,44 +762,54 @@ export function profileSeedOf(v: PfView): PfSeed {
 }
 
 /**
- * 进「我的求职」该不该弹五题(2026-10-11 Frank「一共没几个问题啊 都问不行吗」):档案取回来了、这一页还没关过、
- * 这个账号没弹过、五样里还有空着的(判空与弹框排题同一把尺:gate 桶 missingStepsOf)。
+ * 「补全档案」那条提示的字(2026-11-07 Frank「按 Azure 的改」:代替进页自动弹五题):档案还空着的几样,点名前两样,
+ * 多于两样再说一共几项;一样都不空(或档案没取回来)不出。判空与原先弹题同一把尺:gate 桶 missingStepsOf。
  *
- * @param x 档案与「这一页关过了」。
- * @returns 弹。
+ * @param x 档案与取词。
+ * @returns 提示字;不出为 null。
  */
-export function jobsQuizOpenOf(x: QuizOpenIn): boolean {
-  if (x.view == null || x.closed || x.view.asked) {
-    return false
+export function fillTextOf(x: FillTextIn): string | null {
+  if (x.view == null) {
+    return null
   }
-  return missingStepsOf(profileSeedOf(x.view)).length > 0
+  const steps = missingStepsOf(profileSeedOf(x.view))
+  if (steps.length === 0) {
+    return null
+  }
+  const names: string[] = []
+  for (const st of steps.slice(0, FILL_NAME_MAX)) {
+    names.push(x.t(fillLabelKeyOf(st)))
+  }
+  const fields = names.join(x.t(FILL_SEP_KEY))
+  if (steps.length > FILL_NAME_MAX) {
+    return x.t(FILL_MORE_KEY, { fields, n: steps.length })
+  }
+  return x.t(FILL_KEY, { fields })
 }
 
 /**
- * 记「五题弹过了」(写进答案档 jobsAsked 立刻推,随账号走、换设备不再弹)。没记上留痕 —— 下次进来会再弹一次,不拦这一次。
+ * 档案里空着的那一样 → 它在档案页上的名字的词条(与「我的档案」左列同一组词)。
  *
- * @returns 无。
+ * @param step gate 桶的题键。
+ * @returns 词条键。
  */
-export async function markJobsAsked(): Promise<void> {
-  try {
-    const ok = await saveBasics({ jobsAsked: true })
-    if (ok === false) {
-      throw new Error(PF_ERR_ASKED)
+export function fillLabelKeyOf(step: string): string {
+  for (const row of FILL_LABEL_KEYS) {
+    if (row.step === step) {
+      return row.key
     }
-  } catch (e) {
-    log({ tag: PROFILE_LOG.tag, text: PROFILE_LOG.askedMark + String(e) })
   }
+  return FILL_LABEL_FALLBACK
 }
 
 /**
- * 造五题弹框的「关了」:记这一页关过、交还调用方(重拉今日推荐)。
+ * 「这一页不再出」的手柄(提示条上的 ✕)。
  *
- * @param x 「关过了」落格与交还口。
- * @returns 手柄。
+ * @param x 落格。
+ * @returns 无参手柄。
  */
-export function makeAskedDone(x: AskedDoneIn): () => void {
-  return function askedDone(): void {
-    x.setClosed(true)
-    x.onDone()
+export function makeFillHide(x: FillHideIn): () => void {
+  return function hide(): void {
+    x.setHidden(true)
   }
 }

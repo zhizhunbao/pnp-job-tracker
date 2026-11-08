@@ -164,3 +164,38 @@ export const REPLY_ROWS = 8
  * 回信最长字数(与回信接口的上限一致)。
  */
 export const REPLY_MAX = 10000
+
+/**
+ * 清单筛选:全部(2026-11-07 照 Outlook 清单上方「重点 / 其他」那一排,本站换成 全部 / 未读)。
+ */
+export const FILTER_ALL = 'all'
+
+/**
+ * 清单筛选:只看没读的。
+ */
+export const FILTER_UNREAD = 'unread'
+
+/**
+ * 筛选页签的 id 前缀(拼 aria id)。
+ */
+export const FILTER_TABS_ID = 'ib-filter'
+
+/**
+ * 清单里头像的直径(Outlook 清单头像 32~36)。
+ */
+export const AVATAR_LIST = 36
+
+/**
+ * 阅读区每封信卡片上头像的直径。
+ */
+export const AVATAR_CARD = 32
+
+/**
+ * 筛选页签条的无障碍名词条。
+ */
+export const FILTER_ARIA_KEY = 'ib.title'
+
+/**
+ * 来信卡上「地址」与「发给 我」之间的空格。
+ */
+export const ADDR_GAP = ' '

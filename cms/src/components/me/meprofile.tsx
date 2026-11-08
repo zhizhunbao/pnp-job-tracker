@@ -9,16 +9,16 @@
 import { SEC_PROFILE } from './constants'
 import { MeHead } from './mehead'
 import { ProfileActs, ProfileBody, useProfile } from './profile'
-import type { MeSecPageIn } from './types'
+import type { MeProfilePageIn } from './types'
 
 /**
  * 我的档案一页。
  *
- * @param props 取词、窄屏否、导航抽屉开没开与拉开抽屉。
+ * @param props 取词、窄屏否、导航抽屉开没开、拉开抽屉与一进页就开修改面板否。
  * @returns 页标题 + 正文。
  */
-export function MeProfile({ t, narrow, open, onOpen }: MeSecPageIn) {
-  const p = useProfile({ t })
+export function MeProfile({ t, narrow, open, onOpen, autoEdit, onChanged }: MeProfilePageIn) {
+  const p = useProfile({ t, autoEdit, onChanged })
   return (
     <>
       <MeHead sec={SEC_PROFILE} t={t} narrow={narrow} open={open} onOpen={onOpen} acts={<ProfileActs p={p} t={t} />} />

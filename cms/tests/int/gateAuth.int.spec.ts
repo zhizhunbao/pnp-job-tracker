@@ -3,6 +3,8 @@
 //       动雇主板筛选(Employers)—— 弹出来的都是注册 / 登录框(有邮箱格),不是档案题(没有题目进度条、没有题面);
 //       ② 注册框登录完:先记「这个页面里刚登录过」(软刷回来之前不再起弹),再交还调用方;开框记一笔 gate-open(kind = 由头)。
 // 探针:任一入口换回档案题弹框(GateEdit)→ ①那一条红;makeGateAuthDone 去掉 markGateSignedIn → ②红。
+// 2026-11-07 Frank「删了吧」:GateEdit(连它顶行 GateHead 的题目进度条)删,档案改由一页表单 GateForm 修改 ——
+//       ① 的「没有题目进度条」那一断言没有可防的东西了,撤;① 只认「有邮箱格」(换成档案表单 GateForm 也没有邮箱格,照红)。
 import { act, createElement, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -45,10 +47,9 @@ function mount(el: ReactNode): HTMLDivElement {
   return host
 }
 
-// 注册 / 登录框:有邮箱格;档案题弹框:有题目进度条(GateHead 的 progressbar)
+// 注册 / 登录框:有邮箱格(档案题弹框原有题目进度条,2026-11-07 随 GateEdit 删,那一条断言撤)
 function expectAuthNotQuestions(box: HTMLElement) {
   expect(box.querySelector('input[type="email"]')).not.toBeNull()
-  expect(box.querySelector('[role="progressbar"]')).toBeNull()
 }
 
 function anonSession(children: ReactNode) {

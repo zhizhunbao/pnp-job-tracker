@@ -31,9 +31,10 @@
 
 /*
  * 正文轨(与 Header 头轨同宽)。
+ * 2026-11-07 Frank「按 Azure 的来」:顶栏与正文轨一律铺满全宽(上限撤),左右内衬照旧;读长文的页各自另有读宽。
  */
 .main {
-  max-width: 1320px;
+  max-width: none;
   margin: 0 auto;
   padding: 1rem 1.25rem 1.5rem;
   width: 100%;

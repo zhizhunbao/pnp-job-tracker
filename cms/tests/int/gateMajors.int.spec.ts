@@ -32,14 +32,18 @@
 //       ⑩ 大号档搜索在途从「一小排大号占位」改成加载中那一行,两栏整块收起。
 // 2026-10-11 Frank「我应该先注册 再问问题吧」→「需要改」:访客不再答题 —— ⑤ ⑨(注册完回职位板)随 gateBoardGo 删;
 //       整机与「整机走一遍」两处从访客向导换成档案编辑弹框 GateEdit(同一套专业 / 职业题),草稿断言改成断言整机专业格。
+// 2026-11-07 Frank「删了吧」:一题一屏的 GateEdit 换成一页表单 GateForm 后删 —— 整机改挂 useGateForm;两条「整机走一遍」改挂 GateForm:
+//       点专业 / 想做的工作那一格的「修改」(pf.edit)叠开选择器、选完点「选好了」(pf.pickDone)关框,那一格显示「已选 N 个」
+//       (pf.picked);没有「下一步」了,原先断言下一步亮 / 灰的几处改断言选择器里的选中态与收框后那一格的字;
+//       职业选择器照旧按选好的专业取热门(?major=<码>&n=24)。
 import React, { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
-import { GateEdit } from '@/components/gate'
+import { GateForm } from '@/components/gate'
 import { occMajorOf } from '@/components/gate/functions'
-import { useGateEdit } from '@/components/gate/hooks'
+import { useGateForm } from '@/components/gate/hooks'
 import { useMajorPicker } from '@/components/majors'
 import type { MajorRow } from '@/components/majors/types'
 import { OccPicker } from '@/components/quiz'
@@ -57,7 +61,7 @@ function row(code: string, en: string, zh: string | null = null, ko: string | nu
   return { code, titleEn: en, titleEnShort: '', titleZh: zh, titleKo: ko, broads }
 }
 
-// 档案编辑弹框的空档(2026-10-11 访客向导删,整机走一遍改挂 GateEdit:同一套题,五题全问从目标题起)
+// 档案编辑弹框的空档(2026-10-11 访客向导删,整机走一遍改挂 GateEdit:同一套题,五题全问从目标题起;2026-11-07 改挂一页表单 GateForm)
 const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [] }
 
 const HOT: MajorRow[] = [
@@ -122,7 +126,7 @@ describe('整机与选择器接线(2026-10-05 选择器搬家后)', () => {
   it('整机:点热门里的专业 → 专业格存的就是 class 码清单;再点一个追加、再点第一个摘掉', async () => {
     majorsApi()
     const g = runHook(() => {
-      const w = useGateEdit({ t: (k: string) => k, seed: EMPTY_SEED, onClose: () => undefined, onSaved: () => undefined, missing: false, start: '' })
+      const w = useGateForm({ seed: EMPTY_SEED, onClose: () => undefined, onSaved: () => undefined })
       return { w, m: useMajorPicker({ value: w.majors, onChange: w.onMajors }) }
     })
     await vi.waitFor(() => expect(g.current?.m.hotLoaded).toBe(true))
@@ -278,8 +282,8 @@ function railApi() {
 }
 
 describe('④ 整机走一遍(原 gateMajorRail ④,2026-10-05 随选择器搬家挪来;同日多选)', () => {
-  it('左栏竖排 tablist(界面中文);点大类出专业类白卡(头行 aria-expanded + 个数);点开、点专业 → 选中、下一步亮;'
-    + '再点一个两个都亮、已选一行两枚;再点第一个摘掉', async () => {
+  it('点专业那一格的「修改」叠开选择器:左栏竖排 tablist(界面中文);点大类出专业类白卡(头行 aria-expanded + 个数);点开、点专业 → 选中;'
+    + '再点一个两个都亮、已选一行两枚;再点第一个摘掉;「选好了」收框,那一格显示已选 1 个', async () => {
     railApi()
     const tk = ((key: string, vars?: Record<string, string | number>) => key + (vars == null ? '' : JSON.stringify(vars))) as TFn
     vi.stubGlobal('matchMedia', () => ({
@@ -290,9 +294,11 @@ describe('④ 整机走一遍(原 gateMajorRail ④,2026-10-05 随选择器搬�
     document.body.appendChild(host)
     const root = createRoot(host)
     act(() => {
-      root.render(createElement(GateEdit, { t: tk, seed: EMPTY_SEED, onClose: () => undefined, onSaved: () => undefined }))
+      root.render(createElement(GateForm, { t: tk, seed: EMPTY_SEED, onClose: () => undefined, onSaved: () => undefined }))
     })
-    act(() => (host.querySelector('button[aria-pressed]') as HTMLButtonElement).click())
+    const edits = () => Array.from(host.querySelectorAll('button')).filter((b) => b.textContent === 'pf.edit')
+    expect(host.textContent).toContain('pf.none')
+    act(() => edits()[0]?.click())
     const list = host.querySelector('[role="tablist"][aria-orientation="vertical"]') as HTMLElement
     expect(list).not.toBeNull()
     await vi.waitFor(() => expect(list.querySelectorAll('[role="tab"]').length).toBe(3))
@@ -305,15 +311,12 @@ describe('④ 整机走一遍(原 gateMajorRail ④,2026-10-05 随选择器搬�
     const heads = Array.from(host.querySelectorAll('button[aria-expanded]'))
     expect(heads[0]?.textContent).toContain('gate.majorN{"n":2}')
     expect(heads[0]?.getAttribute('aria-expanded')).toBe('false')
-    const next = () => Array.from(host.querySelectorAll('button')).find((b) => b.textContent === 'ob.next') as HTMLButtonElement
-    expect(next().disabled).toBe(true)
     act(() => (heads[0] as HTMLButtonElement).click())
     expect(host.querySelector('button[aria-expanded="true"]')).not.toBeNull()
     const lineOf = (label: string) =>
       Array.from(host.querySelectorAll('button[aria-pressed]')).find((b) => b.textContent === label) as HTMLButtonElement
     act(() => lineOf('会计').click())
     expect(lineOf('会计').getAttribute('aria-pressed')).toBe('true')
-    expect(next().disabled).toBe(false)
     act(() => lineOf('会计技术与簿记').click())
     expect(lineOf('会计').getAttribute('aria-pressed')).toBe('true')
     expect(lineOf('会计技术与簿记').getAttribute('aria-pressed')).toBe('true')
@@ -322,7 +325,10 @@ describe('④ 整机走一遍(原 gateMajorRail ④,2026-10-05 随选择器搬�
       .toEqual(['ob.tagDel{"name":"会计"}', 'ob.tagDel{"name":"会计技术与簿记"}'])
     act(() => lineOf('会计').click())
     expect(lineOf('会计').getAttribute('aria-pressed')).toBe('false')
-    expect(next().disabled).toBe(false)
+    const done = () => Array.from(host.querySelectorAll('button')).find((b) => b.textContent === 'pf.pickDone') as HTMLButtonElement
+    act(() => done().click())
+    expect(host.querySelector('[role="tablist"]')).toBeNull()
+    expect(host.textContent).toContain('pf.picked{"n":1}')
     act(() => root.unmount())
     host.remove()
   })
@@ -330,6 +336,8 @@ describe('④ 整机走一遍(原 gateMajorRail ④,2026-10-05 随选择器搬�
 
 // 2026-10-05 第 3 题改成与第 2 题同一副左右两栏(Frank「也改成左右 两部分吗?」「改啊」):访客向导整机走到第 3 题 ——
 // 左栏 推荐 + 全站大类;点一行 → 下一步亮、已选一行一颗;× 摘掉 → 下一步回灰。两栏本身的性质见 occPicker.int.spec.ts。
+// 2026-11-07 改挂一页表单 GateForm:专业那一格「修改」选一个专业、「选好了」;再点想做的工作那一格「修改」,职业选择器按选好的专业取热门;
+// 「下一步亮 / 回灰」改成选中态与收框后那一格的「已选 N 个」。
 const Q3_TOP = [
   { noc: '21232', title: 'Software developers and programmers', titleZh: '软件开发人员和程序员', titleZhShort: '软件开发',
     titleEnShort: 'Software developers', open: 22 },
@@ -338,8 +346,11 @@ const Q3_TOP = [
 ]
 
 describe('第 3 题整机走一遍(2026-10-05 改左右两栏)', () => {
-  it('第 2 题选一个专业 → 下一步 → 第 3 题左栏 推荐 + 大类、右边按专业取的职业;点一行下一步亮、已选一颗;× 摘掉下一步回灰', async () => {
+  it('专业格选一个专业 → 选好了 → 想做的工作格「修改」:左栏 推荐 + 大类、右边按专业取的职业;点一行选中、已选一颗;× 摘掉;'
+    + '再选一个、选好了 → 那一格已选 1 个', async () => {
+    const urls: string[] = []
     vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      urls.push(String(url))
       if (url === '/api/majors?top=1') {
         return reply({ majors: [HOT[1]] })
       }
@@ -360,30 +371,35 @@ describe('第 3 题整机走一遍(2026-10-05 改左右两栏)', () => {
     document.body.appendChild(host)
     const root = createRoot(host)
     await act(async () => {
-      root.render(createElement(GateEdit, { t: tk, seed: EMPTY_SEED, onClose: () => undefined, onSaved: () => undefined }))
+      root.render(createElement(GateForm, { t: tk, seed: EMPTY_SEED, onClose: () => undefined, onSaved: () => undefined }))
     })
-    await act(async () => (host.querySelector('button[aria-pressed]') as HTMLButtonElement).click())
+    const edits = () => Array.from(host.querySelectorAll('button')).filter((b) => b.textContent === 'pf.edit')
+    const done = () => Array.from(host.querySelectorAll('button')).find((b) => b.textContent === 'pf.pickDone') as HTMLButtonElement
+    await act(async () => edits()[0]?.click())
     const lineOf = (label: string) =>
       Array.from(host.querySelectorAll('button[aria-pressed]')).find((b) => b.textContent === label) as HTMLButtonElement
     expect(lineOf('计算机科学')).not.toBeUndefined()
     act(() => lineOf('计算机科学').click())
-    const next = () => Array.from(host.querySelectorAll('button')).find((b) => b.textContent === 'ob.next') as HTMLButtonElement
-    await act(async () => next().click())
-    expect(host.querySelector('[tabindex="-1"]')?.textContent).toBe('prof.noc')
+    await act(async () => done().click())
+    expect(host.textContent).toContain('pf.picked{"n":1}')
+    await act(async () => edits()[1]?.click())
+    await vi.waitFor(() => expect(lineOf('软件开发')).not.toBeUndefined())
+    expect(urls).toContain('/api/quiz?major=11.0701&n=24')
     const tabs = () => Array.from(host.querySelectorAll('[role="tablist"][aria-orientation="vertical"] [role="tab"]'))
     expect(tabs().map((b) => b.textContent)[0]).toBe('occ.cat.rec')
     expect(tabs()).toHaveLength(24)
-    expect(lineOf('软件开发')).not.toBeUndefined()
-    expect(next().disabled).toBe(true)
+    expect(lineOf('软件开发').getAttribute('aria-pressed')).toBe('false')
     act(() => lineOf('软件开发').click())
     expect(lineOf('软件开发').getAttribute('aria-pressed')).toBe('true')
-    expect(next().disabled).toBe(false)
     const dels = () => Array.from(host.querySelectorAll('button[aria-label^="ob.tagDel"]')) as HTMLButtonElement[]
     expect(dels().map((b) => b.getAttribute('aria-label'))).toEqual(['ob.tagDel{"name":"软件开发"}'])
     act(() => dels()[0]?.click())
     expect(dels()).toHaveLength(0)
     expect(lineOf('软件开发').getAttribute('aria-pressed')).toBe('false')
-    expect(next().disabled).toBe(true)
+    act(() => lineOf('软件开发').click())
+    await act(async () => done().click())
+    expect(host.querySelector('[role="tablist"]')).toBeNull()
+    expect(String(host.textContent).match(/pf\.picked\{"n":1\}/g)).toHaveLength(2)
     act(() => root.unmount())
     host.remove()
   })

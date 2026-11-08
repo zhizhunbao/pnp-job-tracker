@@ -13,6 +13,10 @@
  * 同日专业改多选,多一枚 MAJOR_SEP(给第 3 题选职业控件递专业码清单)。
  * 2026-10-11 Frank「我应该先注册 再问问题吧」→「需要改」:访客不再答题,访客向导步序 GATE_STEPS、离开一步的埋点 TRACK_GATE_STEP、
  * 回职位板的地址拼法(路径、地址头、八个参数名、三张「设了谁撤谁」表、职业分隔符、由头表)随之删;余下的是档案编辑弹框在用。
+ * 2026-11-07 Frank「删了吧」:一题一屏的档案编辑弹框 GateEdit 换成一页表单 GateForm 后删 —— 只为它而在的目标大卡形名
+ * TILE_CARD、注册屏 / 身份 / 教育经历三枚步名、编辑步序 GATE_EDIT_STEPS、题面键两枚(GATE_QUESTION_GOAL / GATE_QUESTIONS)、
+ * 换题滚回顶的卡片选择器 GATE_FRAME_SEL、进度条角色 ROLE_PROGRESS、返回钮读屏名 GATE_BACK_KEY、主钮字两枚(NEXT_KEY / SAVE_KEY)、
+ * 「跳过这步」两枚(SKIP_KEY / SKIP_BTN_KIND)随之删;余下五枚步名只给「补全档案」提示条判空(missingStepsOf)。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
@@ -25,13 +29,9 @@
 export const TEXT_NONE = ''
 
 /**
- * 选择格的大卡形名(chip 桶 ChipTile 的 shape 取值,目标题两张大卡用;与 chip 域同名同义,各家一份)。
- */
-export const TILE_CARD = 'card'
-
-/**
  * 访客向导(2026-10-03 付费闭环批 A1)的弹框宽度档:modal 桶为它扩的 card 档 ——
  * 电脑中号 560 居中(Frank「框能不能大一些」),手机居中卡片(背后的职位板看得见,不整屏)。
+ * 2026-11-07 GateEdit 删:只剩一页表单叠开的选择器框(GatePick)用这一档。
  */
 export const GATE_MODAL_SIZE = 'card'
 
@@ -58,33 +58,9 @@ export const GATE_STEP_JOB = 'job'
 export const GATE_STEP_PROV = 'prov'
 
 /**
- * 访客向导第五屏:注册(不计步数 —— 注册屏不出顶行与钮区,注册不可跳过)。
- * 2026-10-04 改版:「第 N 步 · 共 4 步」那行字撤了,进度只剩顶行的四段条。
- * 2026-10-11 访客向导撤、注册屏随之没了:这一枚只剩 gateStepOf 步数越界时的兜底值(编辑模式走不到)。
- */
-export const GATE_STEP_REG = 'reg'
-
-/**
  * 编辑模式那一题:英文姓名(2026-10-09「我的档案」批:档案页「修改」走同一套题,末尾多问一句投递署名;访客向导不问)。
  */
 export const GATE_STEP_NAME = 'name'
-
-/**
- * 编辑模式那一题:身份(2026-10-13 Frank「我的档案回答完了,自动在下面出一个 section 列出我的通道」:档案加两题,
- * 「我的通道」按它与教育经历筛;单选,点了直接进下一题)。
- */
-export const GATE_STEP_WHO = 'who'
-
-/**
- * 编辑模式那一题:教育经历(同上批;至多两段,一段三只下拉,选填 —— 不填 = 不按院校条件筛)。
- */
-export const GATE_STEP_EDU = 'edu'
-
-/**
- * 编辑模式的步序:访客四题 + 英文姓名(下标即步数;最后一题的主钮是「保存」)。
- * 2026-10-13:所在省后面加身份、教育经历两题(只在档案页「修改」里问;进「我的求职」自动弹的那一回照旧只问五题里空着的)。
- */
-export const GATE_EDIT_STEPS = ['goal', 'major', 'job', 'prov', 'who', 'edu', 'name'] as const
 
 /**
  * 身份题的选项(pnp 桶 fit 子桶的身份词,与 pathways.fits 的键同;2026-10-11 资讯申请步骤筛选那一套原样搬来)。
@@ -192,41 +168,6 @@ export const EDU_BTN_KIND = 'ghost'
 export const K_PROV_HEAD = 'pr.'
 
 /**
- * 「跳过这步」的词条键(2026-10-11「进我的求职先弹五题」:只问没答的那几题、每题可跳,只在这一种弹法里出;
- * 访客向导与档案页「修改」照旧不出,10-04「跳过这步 去掉」的判定不变)。
- */
-export const SKIP_KEY = 'ob.skip'
-
-/**
- * 「跳过这步」的钮形(ghost 底 + 本域类定形,同 account 桶 PLAIN_BTN_KIND 的口径)。
- */
-export const SKIP_BTN_KIND = 'ghost'
-
-/**
- * 访客向导第一问的题面键。单独起名是因为它同时是取题面时的兜底(同 profile 的 OB_QUESTION_STATUS 的理由)。
- */
-export const GATE_QUESTION_GOAL = 'gate.q.goal'
-
-/**
- * 访客向导每一步的题面键(「想做什么工作」与首访向导同一句,借 prof.noc)。
- */
-export const GATE_QUESTIONS = [
-  { step: 'goal', key: GATE_QUESTION_GOAL },
-  { step: 'major', key: 'gate.q.major' },
-  { step: 'job', key: 'prof.noc' },
-  { step: 'prov', key: 'gate.q.prov' },
-  { step: 'who', key: 'gate.q.who' },
-  { step: 'edu', key: 'gate.q.edu' },
-  { step: 'name', key: 'gate.q.name' },
-] as const
-
-/**
- * 弹框卡片(滚动的那一层)的选择器 —— modal 桶给卡片挂的 data-frame(同 modal 桶 FRAME_SEL,本域自抄)。
- * 2026-10-04 收口:换了题把卡片滚回顶(英文第 2 题比卡片高,滚下去选完点下一步,第 3 题原先开在半截:进度条与搜索框在上面看不见)。
- */
-export const GATE_FRAME_SEL = '[data-frame]'
-
-/**
  * 目标题「找工作」那张大卡的值(答案档 goalBand 的档位,以 lib/quiz 的 FIELD_SPECS.goalBand 为准:2 = 先找到工作)。
  * 2026-10-04 改版:目标题从一排胶囊换成两张带图标的大卡(图标各不相同,两张逐张写),原两枚的值表 GOAL_OPTS 拆成两对值 + 面键。
  */
@@ -282,11 +223,6 @@ export const GATE_PROV_OPTS = [
 export const GATE_AUTH_MODE = 'register'
 
 /**
- * 进度条的无障碍角色(撤掉「第 N 步 · 共 4 步」那行字后,读屏靠它与 ob.step 那句标签报进度)。
- */
-export const ROLE_PROGRESS = 'progressbar'
-
-/**
  * 埋点:访客向导弹出(kind 记由头 job|apply|save)。进第一方漏斗白名单(lib/funnel)。
  * 2026-10-04 kind 加 entry(进站即弹)。
  * 2026-10-11 访客不再答题:弹的是注册框(GateAuth),同一个埋点照记(漏斗前后可比);离开某一步的 gate-step 随访客向导撤。
@@ -303,21 +239,6 @@ export const GATE_INTENT_ENTRY = 'entry'
  * 与 lib/quiz 的 /api/quiz?major= 多值约定同)。
  */
 export const MAJOR_SEP = ','
-
-/**
- * 返回钮读屏名的词条键(2026-10-05 返回钮收进弹框壳,读屏名由整机交给壳;词条沿用首访向导那一条)。
- */
-export const GATE_BACK_KEY = 'ob.back'
-
-/**
- * 钮区主钮的词条键:下一步(访客向导每一题、编辑模式前四题)。
- */
-export const NEXT_KEY = 'ob.next'
-
-/**
- * 钮区主钮的词条键:保存(编辑模式最后一题)。
- */
-export const SAVE_KEY = 'gate.save'
 
 /**
  * 编辑模式保存失败那一行的词条键。
@@ -420,3 +341,47 @@ export const MIME_JSON = 'application/json'
  */
 export const CRED_INCLUDE = 'include'
 
+/**
+ * 一页表单:没叠开选择器。
+ */
+export const FORM_PICK_NONE = ''
+
+/**
+ * 一页表单:叠开专业选择器。
+ */
+export const FORM_PICK_MAJOR = 'major'
+
+/**
+ * 一页表单:叠开职业选择器。
+ */
+export const FORM_PICK_JOB = 'job'
+
+/**
+ * 一页表单「目标」两段钮的钮形(button 桶分段钮)。
+ */
+export const FORM_SEG_KIND = 'seg'
+
+/**
+ * 一页表单主钮(保存、选好了)。
+ */
+export const FORM_PRIMARY_KIND = 'primary'
+
+/**
+ * 一页表单次钮(取消、修改)。
+ */
+export const FORM_SECONDARY_KIND = 'secondary'
+
+/**
+ * 一页表单下拉框「还没选」那一项的词条。
+ */
+export const FORM_NONE_KEY = 'pf.none'
+
+/**
+ * 一页表单面板标题的词条。
+ */
+export const FORM_TITLE_KEY = 'pf.editTitle'
+
+/**
+ * 一页表单「已选 N 个」的词条。
+ */
+export const FORM_PICKED_KEY = 'pf.picked'

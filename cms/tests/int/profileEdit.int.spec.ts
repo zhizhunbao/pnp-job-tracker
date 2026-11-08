@@ -2,15 +2,19 @@
  * 「我的档案」批(2026-10-09)的判定件:城市区摆哪些城市、英文姓名合不合规、编辑模式主钮的字、
  * 档案取数把答案档洗成五格。金标 + 性质,不拍快照。
  * 2026-11-07 「我的」在 me 桶重写:进「我的求职」弹五题的判定 jobsQuizOpenOf 随「我的求职」归子桶 me/jobs,口径不变。
+ * 同日 Frank「按 Azure 的改」:进页弹五题撤,换顶上「补全档案」提示条 —— 最后一条改验 fillTextOf(判空同一把尺 missingStepsOf)。
+ * 同日 Frank「删了吧」:一题一屏的 GateEdit 删,只为它而在的判定件随之删 —— 主钮的字(editNextKeyOf)、这一回问哪几题
+ * (editStepsOf)、「跳过这步」出不出(editBlankOf)、主钮灰不灰(gateNextOffOf)四样的用例一并撤;missingStepsOf、fillTextOf、
+ * 城市区、英文姓名、档案取数、教育经历拆拼照验。
  *
  * @author Frank
  * @time 2026-10-09 23:50:00
  */
 import { describe, expect, it } from 'vitest'
 import fc from 'fast-check'
-import { jobsQuizOpenOf } from '@/components/me/jobs/functions'
+import { fillTextOf } from '@/components/me/jobs/functions'
 import {
-  cityOptsOf, editBlankOf, editNextKeyOf, editStepsOf, eduPicksOf, eduStrsOf, gateNextOffOf, missingStepsOf, nameBadOf,
+  cityOptsOf, eduPicksOf, eduStrsOf, missingStepsOf, nameBadOf,
 } from '@/components/gate/functions'
 import { toProfileBasic } from '@/lib/quiz/functions'
 
@@ -58,7 +62,7 @@ describe('城市区摆哪些城市', () => {
   })
 })
 
-describe('英文姓名与主钮', () => {
+describe('英文姓名', () => {
   it('金标:没填不算不合规(选填);合规的英文名过;中文、数字、单个字母、超长不过;首尾空白不算', () => {
     expect(nameBadOf('')).toBe(false)
     expect(nameBadOf('   ')).toBe(false)
@@ -68,17 +72,6 @@ describe('英文姓名与主钮', () => {
     expect(nameBadOf('Li Wei 2')).toBe(true)
     expect(nameBadOf('L')).toBe(true)
     expect(nameBadOf('a'.repeat(61))).toBe(true)
-  })
-
-  it('金标:编辑模式五题,前四题主钮「下一步」,最后一题「保存」', () => {
-    expect([0, 1, 2, 3].map((step) => editNextKeyOf({ step, total: 5 }))).toEqual(['ob.next', 'ob.next', 'ob.next', 'ob.next'])
-    expect(editNextKeyOf({ step: 4, total: 5 })).toBe('gate.save')
-  })
-
-  it('金标(2026-10-11):只问两题时第 2 题就是「保存」;只问一题第 1 题就是「保存」', () => {
-    expect(editNextKeyOf({ step: 0, total: 2 })).toBe('ob.next')
-    expect(editNextKeyOf({ step: 1, total: 2 })).toBe('gate.save')
-    expect(editNextKeyOf({ step: 0, total: 1 })).toBe('gate.save')
   })
 })
 
@@ -123,39 +116,16 @@ describe('进我的求职先弹五题(2026-10-11)', () => {
     expect(missingStepsOf({ ...FULL, who: '', edu: [] })).toEqual([])
   })
 
-  it('性质:missing 弹法只排空着的题且保序;不 missing 恒七题(2026-10-13 加身份、教育经历)', () => {
-    const ALL = ['goal', 'major', 'job', 'prov', 'name']
-    const EDIT_ALL = ['goal', 'major', 'job', 'prov', 'who', 'edu', 'name']
-    fc.assert(fc.property(fc.boolean(), fc.boolean(), fc.boolean(), fc.boolean(), fc.boolean(), (g, m, j, p, n) => {
-      const seed = {
-        goal: g ? 1 : 0, majors: m ? ['11.0701'] : [], nocs: j ? ['21220'] : [], prov: p ? 'BC' : '', abroad: false, city: '',
-        name: n ? 'Ann Lee' : '', who: '', edu: [],
-      }
-      const steps = editStepsOf({ seed, missing: true })
-      const want = ALL.filter((_, i) => [g, m, j, p, n][i] === false)
-      expect(steps).toEqual(want)
-      expect(editStepsOf({ seed, missing: false })).toEqual(EDIT_ALL)
-    }))
-  })
-
-  it('金标:「跳过这步」只在这一题空着时出', () => {
-    const v = { goal: 0, majors: [], nocs: [], provActive: '', name: '', who: '' }
-    expect(editBlankOf({ ...v, cur: 'goal' })).toBe(true)
-    expect(editBlankOf({ ...v, cur: 'goal', goal: 1 })).toBe(false)
-    expect(editBlankOf({ ...v, cur: 'major' })).toBe(true)
-    expect(editBlankOf({ ...v, cur: 'major', majors: ['11.0701'] })).toBe(false)
-    expect(editBlankOf({ ...v, cur: 'prov', provActive: 'ON' })).toBe(false)
-    expect(editBlankOf({ ...v, cur: 'name', name: '  ' })).toBe(true)
-    expect(editBlankOf({ ...v, cur: 'name', name: 'Li' })).toBe(false)
-  })
-
-  it('金标:只在有空着的、没弹过、这一页没关过时弹 —— 一人一次', () => {
-    expect(jobsQuizOpenOf({ view: null, closed: false })).toBe(false)
-    expect(jobsQuizOpenOf({ view: PF_FULL, closed: false })).toBe(false)
-    const noName = { ...PF_FULL, name: '' }
-    expect(jobsQuizOpenOf({ view: noName, closed: false })).toBe(true)
-    expect(jobsQuizOpenOf({ view: noName, closed: true })).toBe(false)
-    expect(jobsQuizOpenOf({ view: { ...noName, asked: true }, closed: false })).toBe(false)
+  it('金标(2026-11-07 补全提示条代替弹五题):档案没回来、都填了不出;空两样点名两样;空多于两样点名前两样再报总数', () => {
+    const t = (k: string, v?: Record<string, string | number>) => (v == null ? k : k + JSON.stringify(v))
+    expect(fillTextOf({ view: null, t })).toBe(null)
+    expect(fillTextOf({ view: PF_FULL, t })).toBe(null)
+    expect(fillTextOf({ view: { ...PF_FULL, name: '' }, t })).toBe('mj.fill{"fields":"pf.name"}')
+    expect(fillTextOf({ view: { ...PF_FULL, name: '', goal: 0 }, t })).toBe('mj.fill{"fields":"pf.goalmj.fillSeppf.name"}')
+    expect(fillTextOf({ view: { ...PF_FULL, name: '', goal: 0, prov: '', abroad: false }, t }))
+      .toBe('mj.fillMore{"fields":"pf.goalmj.fillSeppf.where","n":3}')
+    // 「这个账号弹过了」不再拦:提示条每次进页都按档案现状出(✕ 只管这一页)
+    expect(fillTextOf({ view: { ...PF_FULL, name: '', asked: true }, t })).toBe('mj.fill{"fields":"pf.name"}')
   })
 })
 
@@ -178,13 +148,9 @@ describe('档案加身份、教育经历(2026-10-13)', () => {
     }))
   })
 
-  it('金标:格数不对的串按没有;身份没选不许往下走,教育经历选填', () => {
+  it('金标:格数不对的串按没有', () => {
     expect(eduPicksOf(['ON.public', 'bad', ''])).toEqual([{ prov: '', kind: '', len: '' }])
     expect(eduPicksOf(['ON.public.y1'])).toEqual([{ prov: 'ON', kind: 'public', len: 'y1' }])
-    const v = { majors: [], nocs: [], provActive: '', nameBad: false }
-    expect(gateNextOffOf({ ...v, cur: 'who', who: '' })).toBe(true)
-    expect(gateNextOffOf({ ...v, cur: 'who', who: 'pgwp' })).toBe(false)
-    expect(gateNextOffOf({ ...v, cur: 'edu', who: '' })).toBe(false)
   })
 
   it('金标:库里的身份、教育经历读得回来,错型按没答', () => {

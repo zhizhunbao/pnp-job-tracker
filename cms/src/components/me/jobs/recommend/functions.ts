@@ -3,6 +3,8 @@
  * 2026-10-12 Frank「你分的那些都不算子领域」「recommend 吧」:推荐原因、通道名、显示更多 / 打码行、推荐取数是「今日推荐」这一节,
  * 并成一个子桶。2026-11-07 随「我的求职」在新域重写(父桶 functions 过 1000 行闸,照旧切出这一族;「删除」(不再推)撤)。
  * 依赖只许父桶 → 子桶,子桶不取父桶,常量各自抄、形状本桶自声明。
+ * 2026-11-07 Frank「现在都按 Azure 的来」:打码行与盖在上面的大钮撤(量位跟着撤),免费号锁住的条数改在表下一行说
+ * (「还有 N 条推荐」+「解锁其余 N 条」主钮);「显示更多」只管没列出来的真行。
  *
  * @author Frank
  * @time 2026-11-07 18:00:00
@@ -12,12 +14,12 @@ import { makeT } from '@/lib/i18n'
 import { eeDisplay } from '@/lib/jobs'
 import { homeProvinceOf } from '@/lib/location'
 import {
-  CRED_INCLUDE, LANG_EN, LOCK_SEL, PICKS_FIRST, PICKS_SWAP_FREE, ROW_SEL, TEXT_NONE, URL_PICKS, URL_PICKS_BATCH,
+  CRED_INCLUDE, LANG_EN, PICKS_FIRST, PICKS_SWAP_FREE, TEXT_NONE, URL_PICKS, URL_PICKS_BATCH,
   URL_PICKS_FRESH, WHY_KEYS, WHY_TAG, WHY_WAGE, WHY_WAGE_PLAIN_KEY,
 } from './constants'
 import type {
-  ChanName, ChanNameIn, HiddenPicksIn, LoadPicksIn, LockedItem, PickItem, PicksFact, PicksRespJson, ShownPicksIn,
-  SwapIn, TitledItem, WhyTag, WhyTextsIn,
+  ChanName, ChanNameIn, HiddenPicksIn, LoadPicksIn, PickItem, PicksFact, PicksRespJson, ShownPicksIn,
+  SwapIn, TitledItem, UnlockNIn, WhyTag, WhyTextsIn,
 } from './types'
 
 /**
@@ -51,7 +53,7 @@ export function makeLoadPicks(x: LoadPicksIn): () => Promise<void> {
 }
 
 /**
- * 推荐回包 → 推荐(行构造器:缺席按空读)。
+ * 推荐回包 → 推荐(行构造器:缺席按空读)。2026-11-07 回包里锁住给看的那几条(locked)不再读 —— 打码行撤了。
  *
  * @param d 回包。
  * @returns 推荐。
@@ -65,11 +67,7 @@ export function toPicksFact(d: PicksRespJson): PicksFact {
   if (d.more != null) {
     more = d.more
   }
-  let locked: LockedItem[] = []
-  if (d.locked != null) {
-    locked = d.locked
-  }
-  return { picks, more, locked }
+  return { picks, more }
 }
 
 /**
@@ -201,7 +199,8 @@ export function shownPicksOf<T>(x: ShownPicksIn<T>): T[] {
 }
 
 /**
- * 「显示更多」后面的条数:没点过 = 表里没列的真行 + 锁住的;点过 = 0。
+ * 「显示更多」后面的条数:没点过 = 表里没列的真行;点过 = 0。
+ * 2026-11-07 Frank「现在都按 Azure 的来」:锁住的不再算进来(改在表下「解锁」那一行说)。
  *
  * @param x 推荐整包与点没点过。
  * @returns 条数。
@@ -210,24 +209,25 @@ export function hiddenPicksOf(x: HiddenPicksIn): number {
   if (x.expanded) {
     return 0
   }
-  return Math.max(0, x.data.picks.length - PICKS_FIRST) + x.data.more
+  return Math.max(0, x.data.picks.length - PICKS_FIRST)
 }
 
 /**
- * 锁住几条(还没拉到给 0)。
+ * 表下「解锁」那一行的条数(2026-11-07 代替打码行):免费号锁住的全部条数(回包 more:看得见的几条以外的全部;
+ * 回包 locked 只是锁住给看的头几条,不是总数);Pro 或还没拉到给 0(不出那一行)。
  *
- * @param data 推荐整包。
+ * @param x 是不是 Pro 与推荐整包。
  * @returns 条数。
  */
-export function picksLockedN(data: PicksFact | null): number {
-  if (data == null) {
+export function unlockNOf(x: UnlockNIn): number {
+  if (x.pro || x.data == null) {
     return 0
   }
-  return data.locked.length
+  return x.data.more
 }
 
 /**
- * 懒翻职位名要看的行:看得见的推荐 + 锁住的(打码行职位名也出灰字;还没拉到给 null)。
+ * 懒翻职位名要看的行:看得见的推荐(还没拉到给 null)。2026-11-07 打码行撤,锁住的不再翻。
  *
  * @param data 推荐整包。
  * @returns 带职位名的行。
@@ -239,9 +239,6 @@ export function titledPicksOf(data: PicksFact | null): TitledItem[] | null {
   const out: TitledItem[] = []
   for (const p of data.picks) {
     out.push({ title: p.title, titleZh: p.titleZh, titleKo: p.titleKo })
-  }
-  for (const l of data.locked) {
-    out.push({ title: l.title, titleZh: l.titleZh, titleKo: l.titleKo })
   }
   return out
 }
@@ -257,25 +254,4 @@ export function picksOf(data: PicksFact | null): PickItem[] | null {
     return null
   }
   return data.picks
-}
-
-/**
- * 第一条打码行相对表格外框的上沿(「解锁其余 N 条」大钮从这里往下盖住打码行)。
- *
- * @param box 表格外框。
- * @returns 像素;没有打码行给 null。
- */
-export function lockTopOf(box: HTMLDivElement | null): number | null {
-  if (box == null) {
-    return null
-  }
-  const mark = box.querySelector(LOCK_SEL)
-  if (mark == null) {
-    return null
-  }
-  const row = mark.closest(ROW_SEL)
-  if (row == null) {
-    return null
-  }
-  return row.getBoundingClientRect().top - box.getBoundingClientRect().top
 }

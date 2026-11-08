@@ -24,6 +24,13 @@
 //       ②c 夹具对上现行 PathwayFits(原数组字面量推成联合,tsc 7 红)。lib 层(①~⑤⑧)不动。
 //       探针:usePicks 依赖里漏 gen → ⑨ 红;useJobs 把 gen 也递给我的收藏 → ⑨ 红;pickColsOf 加回发布日期列 → ⑥ 红;
 //       pickRowOf 的 act 拿 jobId 以外的号 → ⑥「投递」那条红。
+// 2026-11-07 Frank「现在都按 Azure 的来」(me 桶子桶 jobs 五处改):
+//       ⑥ 打码行与盖在上面的大钮撤 —— 免费号锁住的不再并进表、「显示更多」不再算锁住的,改在表下一行出「mj.lockLine」+ 常规主钮
+//          「mj.unlock」(N = 回包 more,锁住的全部条数;点了开定价框);Pro 两样都不出(⑥ 免费 / Pro 两条改断言,⑥c 新加);
+//       ⑥b 推荐原因四码(occ / saved / applied / pnp)进表:原断言「mj.why.occ / mj.why.pnp 不出」反过来,新加一条按码出胶囊;
+//       ⑥「换一批」从表上方挪到页签那一行(只在今日推荐页签出);「地址」列改「地点」列 —— 链字「市, 省码」、链址仍按完整地址查。
+//       探针:unlockNOf 取 locked.length 而非 more → ⑥c「N = 7」红;hiddenPicksOf 加回 more → ⑥「没有显示更多」红;
+//       WHY_KEYS 漏 occ → ⑥b 红;swapShownOf 不看页签 → ⑥「切到我的收藏不出换一批」红。
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -310,7 +317,7 @@ type BodyProps = { pro: boolean, gen: number, asked: number }
 
 function body(p: BodyProps) {
   return createElement(JobsBody, {
-    t, pro: p.pro, plan: {}, gen: p.gen, asked: p.asked, onAsked: () => undefined, openApp: () => undefined,
+    t, pro: p.pro, plan: {}, gen: p.gen, asked: p.asked, onFill: () => undefined, openApp: () => undefined,
   })
 }
 
@@ -328,6 +335,16 @@ async function mount(pro: boolean) {
 // 今日推荐那一枚页签(Tabs 桶 role=tab,id 尾是页签身份)
 function picksTab(el: HTMLElement) {
   return el.querySelector('[role="tab"][id$="picks"]') as HTMLElement
+}
+
+// 任一枚页签(2026-11-07:验「换一批」只在今日推荐页签出)
+function tabOf(el: HTMLElement, tab: 'picks' | 'saved' | 'applied') {
+  return el.querySelector('[role="tab"][id$="' + tab + '"]') as HTMLElement
+}
+
+// 页签下面那一块(当前页签的表、显示更多、解锁一行)
+function panelOf(el: HTMLElement) {
+  return el.querySelector('[role="tabpanel"]') as HTMLElement
 }
 
 const PICK = {
@@ -350,7 +367,7 @@ afterEach(() => {
 })
 
 describe('今日推荐卡', () => {
-  it('⑥ 免费号:推荐行 + 通道列 + 「显示更多」点开出锁住的(职位名看得见)', async () => {
+  it('⑥ 免费号:推荐行 + 通道列 + 原因胶囊;锁住的不进表,表下一行说「还有 N 条」+「解锁」钮;「换一批」在页签行(2026-11-07 改)', async () => {
     stub({ status: 200, body: { picks: [PICK], more: 7, locked: [LOCKED] } })
     const el = await mount(false)
     // 2026-11-07:卡头撤,标题与数字挂到页签上(数字 = 看得见的 1 + 锁住的 7),进页默认落这一枚
@@ -363,26 +380,65 @@ describe('今日推荐卡', () => {
     expect(el.textContent).not.toContain('Part-time')   // 2026-10-12 推荐表不出工时 / 雇佣期两列
     expect(el.textContent).not.toContain('Seasonal')
     expect(el.textContent).toContain('pnp.gen.ON')   // 通道列:可提名 + 本省有省默认通道 = 那条省默认通道(取词桩原样回键)
-    expect(el.textContent).not.toContain('mj.why.occ')   // 2026-10-12 Frank「职业对口 也是废话」:不出
-    expect(el.textContent).not.toContain('mj.why.pnp')   // 2026-10-12 项目总名不是通道名、与通道列重复:不出
+    // 2026-11-07 Frank「现在都按 Azure 的来」:原「职业对口 / 能走省提名不出」(2026-10-12)反过来 —— 每条推荐都看得到为什么推
+    expect(el.textContent).toContain('mj.why.occ')
+    expect(el.textContent).toContain('mj.why.pnp')
     expect(el.textContent).not.toContain('nope')
-    expect(el.textContent).not.toContain('medical office assistant')   // 没点「显示更多」锁住的不出
-    expect(el.textContent).toContain('mj.swap')   // 推荐总条数(看得见 + 锁住)多于先列的 3 条:出「换一批」
-    expect(el.textContent).toContain('loadMore{"n":7,"left":7}')
+    expect(el.textContent).not.toContain('medical office assistant')   // 锁住的不进表(回包照发 locked,前端不读)
+    expect(el.querySelector('[data-lock]')).toBeNull()   // 打码行撤
+    // 推荐总条数(看得见 + 锁住)多于先列的 3 条:出「换一批」—— 2026-11-07 挪到页签那一行,不在页签面板里
+    const swap = Array.from(el.querySelectorAll('button')).find((x) => x.textContent === 'mj.swap') as HTMLElement
+    expect(swap.parentElement?.contains(picksTab(el))).toBe(true)
+    expect(panelOf(el).contains(swap)).toBe(false)
+    // 看得见的只有 1 条,没有没列出来的真行:不出「显示更多」(锁住的不再算进去)
+    expect(Array.from(el.querySelectorAll('button')).some((x) => x.textContent?.startsWith('loadMore'))).toBe(false)
+    expect(panelOf(el).textContent).toContain('mj.lockLine{"n":7}')
+    expect(Array.from(panelOf(el).querySelectorAll('button')).map((b) => b.textContent)).toEqual(['mj.apply', 'mj.unlock{"n":7}'])
+    // 「地址」列改「地点」列:链字「市, 省码」,链址仍按完整地址查
+    expect(el.textContent).toContain('mj.col.place')
+    expect(el.textContent).not.toContain('mj.col.addr')
+    expect(el.textContent).not.toContain(PICK.address)
+    const place = Array.from(el.querySelectorAll('a')).find((a) => a.textContent === 'Concord, ON')
+    expect(place?.getAttribute('href')).toBe('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(PICK.address))
+    // 切到「我的收藏」:「换一批」不出
     await act(async () => {
-      Array.from(el.querySelectorAll('button')).find((x) => x.textContent === 'loadMore{"n":7,"left":7}')?.click()
+      tabOf(el, 'saved').click()
     })
-    expect(el.textContent).toContain('medical office assistant')
-    expect(el.textContent).toContain('mj.unlock')
-    // 2026-10-13 展开着「显示更多」的位置换成「收起」,点了回到先列的那几条
-    expect(el.textContent).not.toContain('loadMore{"n":7,"left":7}')
+    expect(Array.from(el.querySelectorAll('button')).some((x) => x.textContent === 'mj.swap')).toBe(false)
+  })
+
+  it('⑥b 推荐原因四码进表(2026-11-07):原因 [occ, pnp] 出 mj.why.occ / mj.why.pnp 两枚胶囊,按回包顺序', async () => {
+    stub({ status: 200, body: { picks: [{ ...PICK, reasons: ['occ', 'pnp'] }], more: 0, locked: [] } })
+    const el = await mount(false)
+    const row = Array.from(el.querySelectorAll('tr')).find((r) => r.textContent?.includes(PICK.title)) as HTMLElement
+    const cells = Array.from(row.querySelectorAll('td'))
+    const why = cells.find((c) => c.textContent?.includes('mj.why.')) as HTMLElement
+    // 取词桩把插值变量接在键后面(`键{…}`),只比键
+    const chips = Array.from((why.firstElementChild as HTMLElement).children).map((c) => String(c.textContent).split('{')[0])
+    expect(chips).toEqual(['mj.why.occ', 'mj.why.pnp'])
+    for (const code of ['saved', 'applied']) {
+      document.body.innerHTML = ''
+      stub({ status: 200, body: { picks: [{ ...PICK, reasons: [code] }], more: 0, locked: [] } })
+      expect((await mount(false)).textContent).toContain('mj.why.' + code)
+    }
+  })
+
+  it('⑥c 免费号「解锁」一行:N = 锁住的全部条数 more(不是回包 locked 的条数);点钮开定价框;Pro 不出', async () => {
+    stub({ status: 200, body: { picks: [PICK], more: 7, locked: [LOCKED, LOCKED] } })
+    const el = await mount(false)
+    expect(el.textContent).toContain('mj.lockLine{"n":7}')
+    const unlock = Array.from(el.querySelectorAll('button')).find((x) => x.textContent === 'mj.unlock{"n":7}') as HTMLElement
+    // 定价框(pricing 桶 PricingModal,标题 price.title)可能经 modal 桶挂到 body 上,按整页找
+    expect(document.body.textContent).not.toContain('price.title')
     await act(async () => {
-      Array.from(el.querySelectorAll('button')).find((x) => x.textContent === 'fold.up')?.click()
+      unlock.click()
     })
-    expect(el.textContent).not.toContain('medical office assistant')
-    expect(el.textContent).toContain('loadMore{"n":7,"left":7}')
-    const addr = Array.from(el.querySelectorAll('a')).find((a) => a.textContent === PICK.address)
-    expect(addr?.getAttribute('href')).toBe('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(PICK.address))
+    expect(document.body.textContent).toContain('price.title')
+    document.body.innerHTML = ''
+    stub({ status: 200, body: { picks: [PICK], more: 7, locked: [LOCKED] } })
+    const pro = await mount(true)
+    expect(pro.textContent).not.toContain('mj.lockLine')
+    expect(pro.textContent).not.toContain('mj.unlock')
   })
 
   it('⑥ 一行只有一颗「投递」,点了就地弹投递框;「删除」(不再推)撤(2026-11-07)', async () => {
@@ -390,6 +446,7 @@ describe('今日推荐卡', () => {
     const el = await mount(false)
     const row = Array.from(el.querySelectorAll('tr')).find((r) => r.textContent?.includes(PICK.title)) as HTMLElement
     expect(Array.from(row.querySelectorAll('button')).map((b) => b.textContent)).toEqual(['mj.apply'])
+    expect(el.textContent).not.toContain('mj.lockLine')   // 2026-11-07:没有锁住的(more 0)不出「解锁」一行
     await act(async () => {
       row.querySelector('button')?.click()
     })
@@ -409,6 +466,7 @@ describe('今日推荐卡', () => {
     })
     expect(el.textContent).toContain('job 5')
     expect(el.textContent).not.toContain('mj.unlock')
+    expect(el.textContent).not.toContain('mj.lockLine')
   })
 
   it('⑥ 零条出一行空态;失败出刷新再试', async () => {
@@ -416,6 +474,7 @@ describe('今日推荐卡', () => {
     const empty = await mount(false)
     expect(empty.textContent).toContain('mj.picksEmpty')
     expect(empty.textContent).not.toContain('mj.swap')   // 不多于先列的 3 条:不出「换一批」
+    expect(empty.textContent).not.toContain('mj.lockLine')
     document.body.innerHTML = ''
     stub({ status: 500, body: {} })
     const el = await mount(false)

@@ -2,51 +2,55 @@
 /**
  * me 桶子桶 inbox 的结构:收件箱阅读区(照效果图:主题、发件人一行、来信与我的回信按先后排,最下面一颗「回复」;
  * 对得上投递的多一颗「打开这次投递」)。宽屏住右边一栏,窄屏装进弹框。
+ * 2026-11-07 照 Outlook 网页版(Frank「和 outlook 一致就行」):顶上一排命令(回复、打开这次投递);大字主题,
+ * 对得上投递的下面一行「关于你投的 <职位>」;来信与回信各一张卡片(InboxMsg);会话底部「回复」点了原地展开写信框(InboxCompose)。
  *
  * @author Frank
  * @time 2026-11-07 16:30:00
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { PRIMARY_KIND, SECONDARY_KIND } from './constants'
-import { minuteOf, senderLineOf, senderOf, subjectOf } from './functions'
+import { IconBriefcase, IconMail } from '@/components/icons'
+import { ADDR_GAP, PLAIN_BTN_KIND, TEXT_NONE } from './constants'
+import { minuteOf, senderOf, subjectOf } from './functions'
+import { InboxCompose } from './inboxcompose'
+import { InboxMsg } from './inboxmsg'
 import type { InboxReadIn } from './types'
 import css from './inbox.module.css'
 
 /**
  * 阅读区。
  *
- * @param props 收件箱状态、那一封与取词。
- * @returns 一封信的往来。
+ * @param props 收件箱状态、那一封、取词与装在弹框里否。
+ * @returns 命令栏 + 一封信的往来 + 回信区。
  */
-export function InboxRead({ p, m, t }: InboxReadIn) {
+export function InboxRead({ p, m, t, inModal = false }: InboxReadIn) {
   const mine = []
   for (const r of m.replies) {
     mine.push(
-      <div key={r.id} className={cssOf(css.ibMsg)}>
-        <div className={cssOf(css.ibMsgHead)}>
-          <span className={cssOf(css.ibMsgWho)}>{t('ib.mine')}</span>
-          <span>{minuteOf(r.at)}</span>
-        </div>
-        <div className={cssOf(css.ibBody)}>{r.text}</div>
-      </div>,
+      <InboxMsg key={r.id} who={t('ib.me')} avatarName={t('ib.me')} toLine={t('ib.toThem', { e: m.fromAddr })}
+        at={minuteOf(r.at)} text={r.text} />,
     )
   }
   return (
     <div className={cssOf(css.ibRead)}>
-      <div className={cssOf(css.ibReadTitle)}>{subjectOf({ m, t })}</div>
-      <div className={cssOf(css.ibReadFrom)}>{senderLineOf(m)}</div>
-      <div className={cssOf(css.ibMsg)}>
-        <div className={cssOf(css.ibMsgHead)}>
-          <span className={cssOf(css.ibMsgWho)}>{senderOf(m)}</span>
-          <span>{minuteOf(m.at)}</span>
-        </div>
-        <div className={cssOf(css.ibBody)}>{m.text}</div>
+      <div className={cssOf(css.ibCmd)}>
+        <Button kind={PLAIN_BTN_KIND} onClick={p.onReply} className={cssOf(css.ibCmdBtn)}>
+          <IconMail />{t('ib.reply')}
+        </Button>
+        {m.appId != null && (
+          <Button kind={PLAIN_BTN_KIND} onClick={p.onOpenApp} className={cssOf(css.ibCmdBtn)}>
+            <IconBriefcase />{t('ib.openApp')}
+          </Button>
+        )}
       </div>
-      {mine}
-      <div className={cssOf(css.ibActs)}>
-        <Button kind={PRIMARY_KIND} onClick={p.onReply}>{t('ib.reply')}</Button>
-        {m.appId != null && <Button kind={SECONDARY_KIND} onClick={p.onOpenApp}>{t('ib.openApp')}</Button>}
+      <div className={cssOf(css.ibConv)}>
+        {inModal === false && <h2 className={cssOf(css.ibReadTitle)}>{subjectOf({ m, t })}</h2>}
+        {m.jobTitle !== TEXT_NONE && <div className={cssOf(css.ibAbout)}>{t('ib.about', { job: m.jobTitle })}</div>}
+        <InboxMsg who={senderOf(m)} avatarName={senderOf(m)} toLine={m.fromAddr + ADDR_GAP + t('ib.toMe')}
+          at={minuteOf(m.at)} text={m.text} />
+        {mine}
+        <InboxCompose p={p} m={m} t={t} />
       </div>
     </div>
   )

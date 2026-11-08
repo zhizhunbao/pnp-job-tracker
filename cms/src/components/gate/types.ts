@@ -18,6 +18,9 @@
  * 2026-10-11 访客不再答题(Frank「我应该先注册 再问问题吧」):草稿、访客向导整机入参、向导 props、走步 / 关闭 / 交接 /
  * 补交 / 回职位板各入参与「动过了」落格随访客向导删;整机面板的 onRegistered 一格撤(只剩编辑模式,没有注册屏);
  * 新增访客注册框 GateAuth 的 props、钩子与回调入参。
+ * 2026-11-07 Frank「删了吧」:一题一屏的 GateEdit 换成一页表单 GateForm 后删 —— 返回钮规格、题目分派 / 职业题 props、
+ * 步序 / 题面 / 挪焦点 / 返回 / 主钮灰 / 目标与身份上报口 / 下一题 / 主钮字 / 编辑步序 / 跳过 / 起始题各入参与 GateEdit 的 props 删;
+ * 整机入参 GateEditHookIn 瘦成 GateFormHookIn,整机面板与 edit 格撤掉没人读的格,步名收窄。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
@@ -37,8 +40,9 @@ export type GateIntent = 'job' | 'apply' | 'save' | 'entry' | 'filter'
 
 /**
  * 访客向导走到哪一屏:四道题 + 注册屏。
+ * 2026-11-07 一题一屏的 GateEdit 删:只剩 missingStepsOf 报「档案里哪几样还空着」,收窄成它报得出的五样(身份、教育经历、注册屏撤)。
  */
-export type GateStep = 'goal' | 'major' | 'job' | 'prov' | 'who' | 'edu' | 'name' | 'reg'
+export type GateStep = 'goal' | 'major' | 'job' | 'prov' | 'name'
 
 /**
  * 往已选职业清单上合并的更新函数(React 落格收的另一种形态;本域只整份地拨,形状照 profile 的同名件自抄,
@@ -54,71 +58,17 @@ export type NocsMergeFn = (prev: string[]) => string[]
 export type SetNocsFn = (v: string[] | NocsMergeFn) => void
 
 /**
- * 弹框壳左上角返回钮的规格(与 modal 桶 back 位同形,本域自抄;null = 此刻不出 —— 第 1 题与注册屏)。2026-10-05 立。
- */
-export type GateBack = {
-  /**
-   * 读屏名(界面语)。
-   */
-  aria: string
-
-  /**
-   * 回上一题。
-   */
-  onClick: () => void
-} | null
-
-/**
- * gateBackOf 的入参(2026-10-13)。
- */
-export type GateBackOfIn = {
-  /**
-   * 走到第几步。
-   */
-  step: number
-
-  /**
-   * 读屏名(界面语)。
-   */
-  aria: string
-
-  /**
-   * 回上一题。
-   */
-  onBack: () => void
-}
-
-/**
  * 访客向导的整块面板(useGateWizard 出;顶行、各题、钮区与借来的已选标签件都读它)。
  * 2026-10-04 改版:钮组改成本域自己的粘底钮区,原为共用首访向导钮组凑的三格(saving / isLast / apply 恒 false)随之撤。
  * 2026-10-11 访客向导撤:只剩档案编辑整机 useGateEdit 出它(GateEdit 的顶行、各题、钮区读它)。
+ * 2026-11-07 GateEdit 删:出它的是 useGateForm,读它的是一页表单(GateForm、七格与城市 / 教育经历 / 姓名三件);
+ * 步数、当前题、题面 id、点了就翻页的目标上报口、一共几题、下一步、主钮灰、返回与返回钮规格九格随之撤。
  */
 export type GatePanel = {
-  /**
-   * 走到第几步(0~3 是四道题,4 是注册屏)。
-   */
-  step: number
-
-  /**
-   * 当前这一屏。
-   */
-  cur: GateStep
-
-  /**
-   * 题面那一格的元素 id(2026-10-04 收口审查:每换一题焦点挪到题面上 —— 点目标大卡、点下一步时被点的钮跟着这一屏卸掉,
-   * 焦点原先掉回 body,读屏不知道换了题;本整机给一枚 useId,题面挂它、换题的 effect 按它找)。
-   */
-  qid: string
-
   /**
    * 目标档;0 = 没答。
    */
   goal: number
-
-  /**
-   * 点目标大卡:记下这一档并直接进下一题(目标题没有「下一步」钮)。
-   */
-  onGoal: (v: number) => void
 
   /**
    * 专业的 CIP 2021 class 码清单(至多 3 个,选的先后序);空列 = 没答。
@@ -169,32 +119,6 @@ export type GatePanel = {
   edit: EditBits
 
   /**
-   * 一共几题(顶行进度条的分母:访客向导 4,编辑模式 5)。
-   */
-  total: number
-
-  /**
-   * 下一步(打离开这一步的点;走过第四步进注册屏)。
-   */
-  onNext: () => void
-
-  /**
-   * 主钮灰着(这一题还没答;2026-10-04「跳过这步」撤了以后,没答就不许往下走 —— 判定见 functions 的 gateNextOffOf)。
-   */
-  nextOff: boolean
-
-  /**
-   * 回上一题(顶行左边的返回钮;第 1 题不出)。
-   * 2026-10-05 起钮由弹框壳在左上角出(modal 桶 back 位,与 × 镜像),这里只交动作。
-   */
-  onBack: () => void
-
-  /**
-   * 弹框壳左上角返回钮的规格(第 1 题与注册屏 null)。2026-10-05 返回钮收进弹框壳时立。
-   */
-  back: GateBack
-
-  /**
    * 关掉向导(×、Esc、点遮罩):撤交接戳再交还调用方 —— 关掉了就不许 Google 回跳以外的登录替他交草稿。
    */
   onClose: () => void
@@ -213,42 +137,6 @@ export type GatePartIn = {
    * 取词函数。
    */
   t: TFn
-}
-
-/**
- * GateSteps(题目分派)的 props(2026-10-05 立):整机面板 + 取词函数 + 专业题那一屏。
- */
-export type GateStepsIn = {
-  /**
-   * 访客向导整机。
-   */
-  g: GatePanel
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 专业题那一屏(majors 桶的选择器,向导件 GateWizard 挂好机器递进来;走到专业题才渲)。
-   */
-  children: React.ReactNode
-
-  /**
-   * 职业题那一屏(quiz 桶的 OccRail,向导件 GateWizard 开屏就挂好选职业机器递进来;走到职业题才渲)。
-   * 2026-10-05 Frank「点过来的时候 有一个闪 的过程」立。
-   */
-  jobs: React.ReactNode
-}
-
-/**
- * GateJobs 的 props(2026-10-05 起只是职业题那一屏的宿主格,机器由向导件挂)。
- */
-export type GateJobsIn = {
-  /**
-   * 职业题那一屏。
-   */
-  children: React.ReactNode
 }
 
 /**
@@ -334,141 +222,6 @@ export type EntryGatePanel = {
    * 注册成功、草稿交出去之后:收起向导、软刷让页面拿到登录态。
    */
   onDone: () => void
-}
-
-/**
- * gateStepOf 的入参。
- */
-export type GateStepOfIn = {
-  /**
-   * 走到第几步。
-   */
-  step: number
-
-  /**
-   * 这一套题的步序(访客向导 GATE_STEPS,编辑模式 GATE_EDIT_STEPS)。
-   */
-  steps: readonly GateStep[]
-}
-
-/**
- * gateQuestionKeyOf 的入参。
- */
-export type GateQuestionIn = {
-  /**
-   * 当前这一屏。
-   */
-  step: GateStep
-}
-
-/**
- * 「焦点上次挪到哪一步」的记号(useRef 那一格;本域自抄形,types 不许 import React)。
- */
-export type StepRef = {
-  /**
-   * 上次挪焦点(或开屏)时的步数。
-   */
-  current: number
-}
-
-/**
- * focusGateQuestion 的入参(2026-10-04 收口审查)。
- */
-export type QuestionFocusIn = {
-  /**
-   * 题面那一格的元素 id。
-   */
-  id: string
-
-  /**
-   * 现在走到第几步。
-   */
-  step: number
-
-  /**
-   * 上次挪焦点时的步数(开屏记的是第一题 —— 开屏不挪,只有换了题才挪)。
-   */
-  last: StepRef
-}
-
-/**
- * makeGateBack 的入参。
- */
-export type GateBackIn = {
-  /**
-   * 走到第几步。
-   */
-  step: number
-
-  /**
-   * 步数落格。
-   */
-  setStep: (v: number) => void
-}
-
-/**
- * gateNextOffOf 的入参:当前这一屏与三道题的现值(2026-10-04「跳过这步」撤时立,替掉 makeGateSkip 的入参)。
- */
-export type GateNextOffIn = {
-  /**
-   * 英文姓名填了但不合规(只编辑模式那一题看它)。
-   */
-  nameBad: boolean
-
-  /**
-   * 当前这一屏。
-   */
-  cur: GateStep
-
-  /**
-   * 选中的专业码(空列 = 没选;2026-10-05 多选前是一个码、空串 = 没选)。
-   */
-  majors: string[]
-
-  /**
-   * 已选职业码。
-   */
-  nocs: string[]
-
-  /**
-   * 所在省那一格亮哪个(省码 / 境外;空串 = 都不亮)。
-   */
-  provActive: string
-
-  /**
-   * 身份词(2026-10-13 身份题没选不许往下走)。
-   */
-  who: string
-}
-
-/**
- * makeWhoPick 的入参(2026-10-13 身份题)。
- */
-export type WhoPickIn = {
-  /**
-   * 身份落格。
-   */
-  setWho: (v: string) => void
-
-  /**
-   * 记完往后走一步(身份题点了直接进下一题)。
-   */
-  next: () => void
-}
-
-/**
- * makeGoalPick 的入参。
- */
-export type GoalPickIn = {
-  /**
-   * 目标档落格。
-   */
-  setGoal: (v: number) => void
-
-  /**
-   * 记完往后走一步(2026-10-04 改版:目标题点了直接进下一题)。
-   */
-  next: () => void
 }
 
 /**
@@ -599,6 +352,7 @@ export type CityPickOut = {
 
 /**
  * 编辑模式才用得上的几格(整机的 edit 格)。
+ * 2026-11-07 GateEdit 删:主钮字(nextKey)、「跳过这步」(skip)、点了就翻页的身份上报口(onWho)三格撤。
  */
 export type EditBits = {
   /**
@@ -617,11 +371,6 @@ export type EditBits = {
   nameBad: boolean
 
   /**
-   * 钮区主钮的词条键(访客向导恒「下一步」;编辑模式最后一题是「保存」)。
-   */
-  nextKey: string
-
-  /**
    * 正在保存(主钮禁用)。
    */
   saving: boolean
@@ -632,19 +381,9 @@ export type EditBits = {
   failKey: string
 
   /**
-   * 出「跳过这步」(2026-10-11:只问没答那几题的弹法里、这一题还空着时出;访客向导与「修改」恒 false)。
-   */
-  skip: boolean
-
-  /**
    * 身份词;空串 = 没答(2026-10-13)。
    */
   who: string
-
-  /**
-   * 点身份格子:记下并直接进下一题。
-   */
-  onWho: (v: string) => void
 
   /**
    * 教育经历几段(至少一段,可能三格都空)。
@@ -665,6 +404,21 @@ export type EditBits = {
    * 造「删第几段」的手柄。
    */
   eduRemoveOf: (i: number) => () => void
+
+  /**
+   * 直接改目标(一页表单用;向导里的 onGoal 点了顺手翻下一题,表单不翻)。
+   */
+  setGoal: (v: number) => void
+
+  /**
+   * 直接改身份(同上,表单不翻页)。
+   */
+  setWho: (v: string) => void
+
+  /**
+   * 直接保存(一页表单的「保存」;向导走 onNext 翻到最后一题才存)。
+   */
+  onSave: () => void
 }
 
 /**
@@ -1049,49 +803,9 @@ export type GateEditSeed = {
 }
 
 /**
- * GateEdit 的 props。
+ * useGateForm 的入参(2026-11-07 自 useGateEdit 的入参 GateEditHookIn 瘦来:取词函数、只问空着的、从哪题开始三格撤)。
  */
-export type GateEditIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 起始答案。
-   */
-  seed: GateEditSeed
-
-  /**
-   * 关框(没保存)。
-   */
-  onClose: () => void
-
-  /**
-   * 保存成功(调用方关框并重取档案)。
-   */
-  onSaved: () => void
-
-  /**
-   * 只问起始答案里还空着的那几题、每题可跳(2026-10-11「进我的求职先弹五题」;不给 = 五题全问,档案页「修改」)。
-   */
-  missing?: boolean
-
-  /**
-   * 从哪一题开始(题键;2026-10-13「我的通道」的「去回答」直接到身份题;不给 = 第一题)。
-   */
-  start?: string
-}
-
-/**
- * useGateEdit 的入参(GateEditIn 去掉 seed 以外原样)。
- */
-export type GateEditHookIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
+export type GateFormHookIn = {
   /**
    * 起始答案。
    */
@@ -1106,41 +820,6 @@ export type GateEditHookIn = {
    * 保存成功。
    */
   onSaved: () => void
-
-  /**
-   * 只问还空着的那几题、每题可跳(2026-10-11)。
-   */
-  missing: boolean
-
-  /**
-   * 从哪一题开始(题键;空串 = 第一题;2026-10-13)。
-   */
-  start: string
-}
-
-/**
- * makeEditNext 的入参。
- */
-export type EditNextIn = {
-  /**
-   * 走到第几步。
-   */
-  step: number
-
-  /**
-   * 这一回一共几题(2026-10-11:只问没答那几题时少于五题)。
-   */
-  total: number
-
-  /**
-   * 步数落格。
-   */
-  setStep: (v: number) => void
-
-  /**
-   * 最后一题点了 = 保存。
-   */
-  save: () => void
 }
 
 /**
@@ -1214,86 +893,156 @@ export type EditPatch = {
 }
 
 /**
- * editNextKeyOf 的入参(2026-10-11:原只收步数,只问没答那几题起要带一共几题)。
+ * GateForm(「我的档案」修改的一页表单;2026-11-07 照 Azure 编辑面板)的 props。
  */
-export type EditNextKeyIn = {
+export type GateFormIn = {
   /**
-   * 走到第几步。
+   * 取词。
    */
-  step: number
+  t: TFn
 
   /**
-   * 一共几题。
-   */
-  total: number
-}
-
-/**
- * editStepsOf 的入参。
- */
-export type EditStepsIn = {
-  /**
-   * 起始答案。
+   * 档案现值。
    */
   seed: GateEditSeed
 
   /**
-   * 只问还空着的那几题。
+   * 关面板。
    */
-  missing: boolean
+  onClose: () => void
+
+  /**
+   * 存好了。
+   */
+  onSaved: () => void
 }
 
 /**
- * editBlankOf(这一题还空着没有)的入参。
+ * 表单里「专业」「想做的工作」两格叠开的选择器状态。
  */
-export type EditBlankIn = {
+export type GatePickPanel = {
   /**
-   * 当前这一屏。
+   * 叠开着哪一个(专业 / 职业);没开为空串。
    */
-  cur: GateStep
+  picking: string
 
   /**
-   * 目标档;0 = 没答。
+   * 开专业选择器。
    */
-  goal: number
+  onMajor: () => void
 
   /**
-   * 专业码清单。
+   * 开职业选择器。
    */
-  majors: string[]
+  onJob: () => void
 
   /**
-   * 已选职业码。
+   * 关选择器(选好了)。
    */
-  nocs: string[]
-
-  /**
-   * 所在省那一格亮哪个(空串 = 都不亮)。
-   */
-  provActive: string
-
-  /**
-   * 英文姓名。
-   */
-  name: string
-
-  /**
-   * 身份词(2026-10-13)。
-   */
-  who: string
+  onDone: () => void
 }
 
 /**
- * startStepOf 的入参(2026-10-13)。
+ * 「开 / 关选择器」手柄工厂的入参。
  */
-export type StartStepIn = {
+export type GatePickSetIn = {
   /**
-   * 这一回的步序。
+   * setter。
    */
-  steps: GateStep[]
+  setPicking: (v: string) => void
 
   /**
-   * 从哪一题开始(题键;空串 = 第一题)。
+   * 按下后叠开哪一个(空串 = 关)。
    */
-  start: string
+  v: string
+}
+
+/**
+ * 表单下拉框显示字的取法入参。
+ */
+export type GateLabelOfIn = {
+  /**
+   * 取词。
+   */
+  t: TFn
+}
+
+/**
+ * 「已选几个」一行的取法入参。
+ */
+export type GatePickedIn = {
+  /**
+   * 取词。
+   */
+  t: TFn
+
+  /**
+   * 已选几个。
+   */
+  n: number
+}
+
+/**
+ * GateField(一页表单的一格)的 props。
+ */
+export type GateFieldIn = {
+  /**
+   * 标签。
+   */
+  label: string
+
+  /**
+   * 标签后面的灰字说明(选填、用途);没有不出。
+   */
+  hint?: string
+
+  /**
+   * 控件。
+   */
+  children: React.ReactNode
+}
+
+/**
+ * GatePick(叠开的选择器框)的 props。
+ */
+export type GatePickBoxIn = {
+  /**
+   * 标题。
+   */
+  title: string
+
+  /**
+   * 「选好了」那颗钮的字。
+   */
+  doneText: string
+
+  /**
+   * 关框。
+   */
+  onDone: () => void
+
+  /**
+   * 选择器本体。
+   */
+  children: React.ReactNode
+}
+
+/**
+ * GateFormFields(一页表单七格)的 props。
+ */
+export type GateFormFieldsIn = {
+  /**
+   * 表单状态(useGateEdit 同一台;2026-11-07 起改名 useGateForm)。
+   */
+  g: GatePanel
+
+  /**
+   * 叠开选择器的手柄。
+   */
+  k: GatePickPanel
+
+  /**
+   * 取词。
+   */
+  t: TFn
 }

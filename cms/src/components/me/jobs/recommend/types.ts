@@ -141,46 +141,6 @@ export type PickItem = {
 }
 
 /**
- * 「显示更多」里锁住的一条(线格式:职位名与通道)。
- */
-export type LockedItem = {
-  /**
-   * 职位名英文原文。
-   */
-  title: string
-
-  /**
-   * 职位名中文译名。
-   */
-  titleZh: string
-
-  /**
-   * 职位名韩文译名。
-   */
-  titleKo: string
-
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 具名省提名通道(没有 = 空串)。
-   */
-  pnpStream: string
-
-  /**
-   * 能走省提名。
-   */
-  pnpEligible: boolean
-
-  /**
-   * 本省有省默认通道。
-   */
-  provDefault: boolean
-}
-
-/**
  * 推荐(洗净)。
  */
 export type PicksFact = {
@@ -193,15 +153,10 @@ export type PicksFact = {
    * 还有几条看不见。
    */
   more: number
-
-  /**
-   * 锁住给看的几条。
-   */
-  locked: LockedItem[]
 }
 
 /**
- * 带职位名与两语库存译名的一行(MyJobItem / PickItem / LockedItem 都合这个形)。
+ * 带职位名与两语库存译名的一行(MyJobItem / PickItem 都合这个形)。
  */
 export type TitledItem = {
   /**
@@ -233,11 +188,6 @@ export type PicksRespJson = {
    * 还有几条看不见。
    */
   more?: number
-
-  /**
-   * 锁住给看的几条。
-   */
-  locked?: LockedItem[]
 }
 
 /**
@@ -323,6 +273,21 @@ export type HiddenPicksIn = {
    * 点过「显示更多」。
    */
   expanded: boolean
+}
+
+/**
+ * unlockNOf(表下「解锁」那一行的条数)的入参。
+ */
+export type UnlockNIn = {
+  /**
+   * 是不是 Pro。
+   */
+  pro: boolean
+
+  /**
+   * 推荐整包(还没拉到 = null)。
+   */
+  data: PicksFact | null
 }
 
 /**

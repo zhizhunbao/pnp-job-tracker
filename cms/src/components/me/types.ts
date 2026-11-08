@@ -470,9 +470,19 @@ export type MePagePanel = {
   askedGen: number
 
   /**
-   * 五题答完了。
+   * 档案存好了(「我的档案」修改面板;档案代数 +1)。
    */
   onAsked: () => void
+
+  /**
+   * 一进「我的档案」就开着修改面板(「我的求职」的「去补全」点过来;换节就清)。
+   */
+  autoEdit: boolean
+
+  /**
+   * 「我的求职」顶上「补全档案」的「去补全」:切到「我的档案」并开修改面板。
+   */
+  onFill: () => void
 }
 
 /**
@@ -535,7 +545,37 @@ export type MeJobsPageIn = MeSecPageIn & {
   asked: number
 
   /**
-   * 五题答完了。
+   * 点「补全档案」的「去补全」。
    */
-  onAsked: () => void
+  onFill: () => void
+}
+
+/**
+ * MeProfile(我的档案一整页)的 props:框架三格 + 一进页就开修改面板否。
+ */
+export type MeProfilePageIn = MeSecPageIn & {
+  /**
+   * 一进页就开着修改面板(从「我的求职」顶上「补全档案」的「去补全」过来)。
+   */
+  autoEdit: boolean
+
+  /**
+   * 档案存好了(页面把档案代数 +1)。
+   */
+  onChanged: () => void
+}
+
+/**
+ * 换节手柄工厂的入参。
+ */
+export type SecPickIn = {
+  /**
+   * 换节。
+   */
+  setSec: (s: MeSec) => void
+
+  /**
+   * 开不开修改面板。
+   */
+  setAutoEdit: (v: boolean) => void
 }

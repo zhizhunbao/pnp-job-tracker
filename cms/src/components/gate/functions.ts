@@ -21,6 +21,10 @@
  * 访客向导独有的走步(makeGateNext)、上报口的「动过了」(makeMajorsPick / makeTouchedNocs)、关闭与交接(makeGateClose /
  * dropGateHandoff / makeGateDone / runGateSync)、回职位板一整段(gateBoardGo 及其拼地址的四个私件)随之删;
  * 新增注册框登录完的回调 makeGateAuthDone。余下的题面、上报口、城市与编辑模式是档案编辑弹框(GateEdit)在用。
+ * 2026-11-07 Frank「删了吧」:GateEdit 换成一页表单 GateForm 后删 —— 只为一题一屏而在的步序与题面(gateStepOf /
+ * gateQuestionKeyOf / editStepsOf / startStepOf)、换题挪焦点(focusGateQuestion)、返回(gateBackOf / makeGateBack)、
+ * 主钮灰与主钮字(gateNextOffOf / editNextKeyOf)、跳过(editBlankOf)、下一题(makeEditNext)、点了就翻页的目标与身份
+ * 上报口(makeGoalPick / makeWhoPick)随之删;missingStepsOf 留着(「我的求职」补全档案提示条按它判空)。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
@@ -32,158 +36,17 @@ import { GUEST_LOG, log } from '@/lib/log'
 import { eduRowsOf } from '@/lib/pathways'
 import { readAnswers, saveBasics } from '@/lib/quiz'
 import {
-  CITIES_BAD, CITY_HIT_MAX, CITY_HOT_N, CRED_INCLUDE, EDIT_ERR_ANSWERS, EDIT_ERR_NAME, GATE_EDIT_STEPS,
-  GATE_FRAME_SEL, GATE_QUESTIONS, GATE_QUESTION_GOAL, GATE_STEP_GOAL, GATE_STEP_JOB, GATE_STEP_MAJOR, GATE_STEP_NAME,
-  EDU_ABROAD, EDU_F_KIND, EDU_F_LEN, EDU_F_PROV, EDU_SEP, GATE_ABROAD_KEY, K_KIND_HEAD, K_LEN_HEAD, K_PROV_HEAD,
-  GATE_STEP_PROV, GATE_STEP_REG, GATE_STEP_WHO, HDR_CONTENT_TYPE, LANG_KO, LANG_ZH, MAJOR_SEP, METHOD_PATCH, MIME_JSON,
-  NEXT_KEY, PROV_ABROAD, SAVE_FAIL_KEY, SAVE_KEY, STATUS_OVERSEAS, TEXT_NONE, URL_CITIES_HEAD, URL_PREFS,
+  CITIES_BAD, CITY_HIT_MAX, CITY_HOT_N, CRED_INCLUDE, EDIT_ERR_ANSWERS, EDIT_ERR_NAME, EDU_ABROAD, EDU_F_KIND,
+  EDU_F_LEN, EDU_F_PROV, EDU_SEP, FORM_NONE_KEY, FORM_PICKED_KEY, GATE_ABROAD_KEY, GATE_PROV_OPTS, GATE_STEP_GOAL,
+  GATE_STEP_JOB, GATE_STEP_MAJOR, GATE_STEP_NAME, GATE_STEP_PROV, HDR_CONTENT_TYPE, K_KIND_HEAD, K_LEN_HEAD,
+  K_PROV_HEAD, K_WHO_HEAD, LANG_KO, LANG_ZH, MAJOR_SEP, METHOD_PATCH, MIME_JSON, PROV_ABROAD, SAVE_FAIL_KEY,
+  STATUS_OVERSEAS, TEXT_NONE, URL_CITIES_HEAD, URL_PREFS,
 } from './constants'
 import type {
-  CitiesJson, CityLabelIn, CityOpt, CityOptsIn, CityPickIn, EditBlankIn, EditNextIn, EditNextKeyIn, EditPatch,
-  GateBack, GateBackOfIn,
-  EditSaveIn, EditStepsIn, EntryCloseIn, EntryDoneIn, GateAuthDoneIn, GateBackIn, GateEditSeed, GateNextOffIn,
-  EduCellSetIn, EduLabelIn, EduPick, EduPickIn, EduRowsIn, GateProvActiveIn, GateQuestionIn, GateStep, GateStepOfIn,
-  GoalPickIn, LoadCitiesIn, ProvPickIn, QuestionFocusIn, StartStepIn, WhoPickIn,
+  CitiesJson, CityLabelIn, CityOpt, CityOptsIn, CityPickIn, EditPatch, EditSaveIn, EduCellSetIn, EduLabelIn, EduPick,
+  EduPickIn, EduRowsIn, EntryCloseIn, EntryDoneIn, GateAuthDoneIn, GateEditSeed, GateLabelOfIn, GatePickSetIn,
+  GatePickedIn, GateProvActiveIn, GateStep, LoadCitiesIn, ProvPickIn,
 } from './types'
-
-/**
- * 访客向导走到第几步 → 这一屏是什么(2026-10-03 付费闭环批 A1):四道题按 GATE_STEPS 取,走过最后一道是注册屏。
- *
- * @param x 走到第几步。
- * @returns 这一屏。
- */
-export function gateStepOf(x: GateStepOfIn): GateStep {
-  const s = x.steps[x.step]
-  if (s == null) {
-    return GATE_STEP_REG
-  }
-  return s
-}
-
-/**
- * 访客向导这一屏的题面键;对不上题面表时退回第一问,不让题面开天窗(同 profile 的 obQuestionKeyOf)。
- *
- * @param x 当前这一屏。
- * @returns 题面的文案键。
- */
-export function gateQuestionKeyOf(x: GateQuestionIn): string {
-  let key: string = GATE_QUESTION_GOAL
-  for (const q of GATE_QUESTIONS) {
-    if (q.step === x.step) {
-      key = q.key
-    }
-  }
-  return key
-}
-
-/**
- * 换了题就把焦点挪到题面上(2026-10-04 收口审查):点目标大卡、点下一步 / 跳过 / 返回时,被点的钮跟着这一屏卸掉,
- * 焦点原先掉回 body —— 读屏不知道换了题,键盘用户得从页首重新 Tab。开屏不挪(还是开屏那一步):进站即弹时页面刚载完,
- * 抢焦点会让背后的页面滚动、冒出一圈焦点框;挪的时候也不滚(preventScroll)。指针点进来的,浏览器不给题面画焦点框
- * (:focus-visible 不中),键盘走过来的照画。走到注册屏没有题面(找不到那一格)就不挪。
- * 同日收口:挪焦点前先把弹框卡片滚回顶 —— 上一题比卡片高、滚下去才点的下一步,新题原先开在半截(进度条与题面在上面看不见);
- * 只动卡片自己(GATE_FRAME_SEL),背后的页面不动。
- *
- * @param x 题面 id、现在的步数与上次挪焦点时的步数。
- * @returns 无。
- */
-export function focusGateQuestion(x: QuestionFocusIn): void {
-  if (x.last.current === x.step) {
-    return
-  }
-  x.last.current = x.step
-  const el = document.getElementById(x.id)
-  if (el == null) {
-    return
-  }
-  const card = el.closest(GATE_FRAME_SEL)
-  if (card != null) {
-    card.scrollTop = 0
-  }
-  el.focus({ preventScroll: true })
-}
-
-/**
- * 弹框壳左上角返回钮的规格:第 1 题不出(2026-10-13 自 useGateEdit 拆出,整机过 75 行)。
- *
- * @param x 走到第几步、读屏名与返回手柄。
- * @returns 规格;第 1 题 null。
- */
-export function gateBackOf(x: GateBackOfIn): GateBack {
-  if (x.step > 0) {
-    return { aria: x.aria, onClick: x.onBack }
-  }
-  return null
-}
-
-/**
- * 造访客向导的「回上一题」手柄(顶行左边的返回钮;第 1 题上不出钮,这里再夹一次不走到负数)。
- * 回头不清答案、不打点 —— 答过的照旧亮着,改不改由他。
- *
- * @param x 位置与步数落格。
- * @returns 返回手柄。
- */
-export function makeGateBack(x: GateBackIn): () => void {
-  return function gateBack(): void {
-    x.setStep(Math.max(0, x.step - 1))
-  }
-}
-
-/**
- * 这一题的主钮该不该灰着(2026-10-04 Frank「跳过这步 去掉」:跳过撤了,没答就不许往下走):
- * 专业题没选专业、职业题一个没选、所在省题省与境外都没亮,灰;目标题没有主钮(大卡点了就走),不灰。
- * 预选的职业(刚看过的职位)、按时区预选的省算答了 —— 那一屏亮着他看得见,点下一步就是收下。
- * 2026-10-05 专业改多选:专业题一个都没选才灰(至少选 1 个才能往下走)。
- *
- * @param x 当前这一屏与三道题的现值。
- * @returns 灰 = true。
- */
-export function gateNextOffOf(x: GateNextOffIn): boolean {
-  if (x.cur === GATE_STEP_WHO) {
-    return x.who === TEXT_NONE
-  }
-  if (x.cur === GATE_STEP_NAME) {
-    return x.nameBad
-  }
-  if (x.cur === GATE_STEP_MAJOR) {
-    return x.majors.length === 0
-  }
-  if (x.cur === GATE_STEP_JOB) {
-    return x.nocs.length === 0
-  }
-  if (x.cur === GATE_STEP_PROV) {
-    return x.provActive === TEXT_NONE
-  }
-  return false
-}
-
-/**
- * 造目标大卡的上报口:记「动过了」、记下这一档,随即进下一题(2026-10-04 改版:目标题只有两张大卡,
- * 点了就是答了,不再要「下一步」;原先报 number | null 是借区间单选行的形,大卡不会报 null,收窄成数)。
- * 2026-10-11 访客不再答题(Frank「我应该先注册 再问问题吧」):「动过了」只为写访客草稿,随访客向导撤,这里只剩记档与往后走。
- *
- * @param x 目标档落格,外加往后走的手柄。
- * @returns 上报口。
- */
-export function makeGoalPick(x: GoalPickIn): (v: number) => void {
-  return function pickGoal(v: number): void {
-    x.setGoal(v)
-    x.next()
-  }
-}
-
-/**
- * 造身份格子的上报口(2026-10-13 档案加题):记下身份词,随即进下一题(同目标大卡)。
- *
- * @param x 身份落格与往后走的手柄。
- * @returns 上报口。
- */
-export function makeWhoPick(x: WhoPickIn): (v: string) => void {
-  return function pickWho(v: string): void {
-    x.setWho(v)
-    x.next()
-  }
-}
 
 /**
  * 答案档里的教育经历串 → 界面上的几段(拆法走 lib/pathways 的 eduRowsOf,与服务端推荐同一把尺;一段都没有给一个空段,界面总有一行可选)。
@@ -494,55 +357,9 @@ export function nameBadOf(name: string): boolean {
 }
 
 /**
- * 编辑模式钮区主钮的词条键:最后一题是「保存」,其余「下一步」。
- * 2026-10-11:「最后一题」按这一回一共几题算(只问没答那几题时不是五题);原只收步数、按 GATE_EDIT_STEPS 的长度算。
- *
- * @param x 走到第几步与一共几题。
- * @returns 词条键。
- */
-export function editNextKeyOf(x: EditNextKeyIn): string {
-  if (x.step + 1 >= x.total) {
-    return SAVE_KEY
-  }
-  return NEXT_KEY
-}
-
-/**
- * 编辑模式这一回问哪几题(2026-10-11「进我的求职先弹五题」,Frank「一共没几个问题啊 都问不行吗」):
- * 五题全问(档案页「修改」),或只问起始答案里还空着的那几题、按原序(进「我的求职」自动弹)。
- *
- * @param x 起始答案与要不要只问空着的。
- * @returns 步序。
- */
-export function editStepsOf(x: EditStepsIn): GateStep[] {
-  if (x.missing) {
-    return missingStepsOf(x.seed)
-  }
-  const out: GateStep[] = []
-  for (const s of GATE_EDIT_STEPS) {
-    out.push(s)
-  }
-  return out
-}
-
-/**
- * 开框落在第几步(2026-10-13「我的通道」的「去回答」直接到身份题):题键在这一回的步序里就落那一步,否则第一题。
- *
- * @param x 步序与题键。
- * @returns 步数。
- */
-export function startStepOf(x: StartStepIn): number {
-  for (const [i, s] of x.steps.entries()) {
-    if (s === x.start) {
-      return i
-    }
-  }
-  return 0
-}
-
-/**
  * 档案里还空着的那几题(按五题原序):目标没答、专业 / 想做的工作一个没选、所在地没答(省与境外都没有)、英文姓名没填。
  * 「我的」页据它判进「我的求职」要不要自动弹(一题不空就不弹),弹框据它排这一回的题。
+ * 2026-11-07 弹五题与一题一屏的弹框(GateEdit)都已撤:只剩「我的求职」顶上「补全档案」提示条据它点名空着的几样(me/jobs fillTextOf)。
  *
  * @param s 档案的起始答案。
  * @returns 空着的题;都答了给空列。
@@ -565,41 +382,6 @@ export function missingStepsOf(s: GateEditSeed): GateStep[] {
     out.push(GATE_STEP_NAME)
   }
   return out
-}
-
-/**
- * 这一题眼下还空着没有(「跳过这步」只在空着时出;答了就点主钮)。
- *
- * @param x 当前这一屏与各题的值。
- * @returns 空着 true。
- */
-export function editBlankOf(x: EditBlankIn): boolean {
-  if (x.cur === GATE_STEP_GOAL) {
-    return x.goal === 0
-  }
-  if (x.cur === GATE_STEP_NAME) {
-    return x.name.trim() === TEXT_NONE
-  }
-  return gateNextOffOf({
-    cur: x.cur, majors: x.majors, nocs: x.nocs, provActive: x.provActive, nameBad: false, who: x.who,
-  })
-}
-
-/**
- * 造编辑模式的「下一题」:没到最后一题往后走;最后一题 = 保存(不打交接戳、不进注册屏,与访客向导分开)。
- * 2026-10-11:最后一题按这一回一共几题算(x.total);「跳过这步」也是它(跳过的那题本来就空着,往后走即可)。
- *
- * @param x 步数、落格与保存。
- * @returns 点击手柄。
- */
-export function makeEditNext(x: EditNextIn): () => void {
-  return function editNext(): void {
-    if (x.step + 1 >= x.total) {
-      x.save()
-      return
-    }
-    x.setStep(x.step + 1)
-  }
 }
 
 /**
@@ -708,4 +490,75 @@ async function saveEditName(name: string): Promise<void> {
   if (r.ok === false) {
     throw new Error(EDIT_ERR_NAME + String(r.status))
   }
+}
+
+/**
+ * 一页表单:开 / 关叠在上面的选择器。
+ *
+ * @param x setter 与按下后叠开哪一个。
+ * @returns 无参手柄。
+ */
+export function makePickSet(x: GatePickSetIn): () => void {
+  return function set(): void {
+    x.setPicking(x.v)
+  }
+}
+
+/**
+ * 一页表单「所在地」下拉的取值:十个省加「加拿大境外」。
+ *
+ * @returns 取值清单。
+ */
+export function formProvOptsOf(): string[] {
+  const out: string[] = []
+  for (const o of GATE_PROV_OPTS) {
+    out.push(o.value)
+  }
+  out.push(PROV_ABROAD)
+  return out
+}
+
+/**
+ * 一页表单「所在地」下拉每一项的字。
+ *
+ * @param x 取词。
+ * @returns 取值 → 字。
+ */
+export function makeProvLabel(x: GateLabelOfIn): (v: string) => string {
+  return function provLabel(v: string): string {
+    if (v === PROV_ABROAD) {
+      return x.t(GATE_ABROAD_KEY)
+    }
+    for (const o of GATE_PROV_OPTS) {
+      if (o.value === v) {
+        return x.t(o.key)
+      }
+    }
+    return v
+  }
+}
+
+/**
+ * 一页表单「身份」下拉每一项的字。
+ *
+ * @param x 取词。
+ * @returns 取值 → 字。
+ */
+export function makeWhoLabel(x: GateLabelOfIn): (v: string) => string {
+  return function whoLabel(v: string): string {
+    return x.t(K_WHO_HEAD + v)
+  }
+}
+
+/**
+ * 一页表单「专业」「想做的工作」那一格的字:已选几个,一个没选说「还没答」。
+ *
+ * @param x 取词与个数。
+ * @returns 字。
+ */
+export function pickedTextOf(x: GatePickedIn): string {
+  if (x.n === 0) {
+    return x.t(FORM_NONE_KEY)
+  }
+  return x.t(FORM_PICKED_KEY, { n: x.n })
 }

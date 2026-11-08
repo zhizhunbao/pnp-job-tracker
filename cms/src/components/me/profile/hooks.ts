@@ -16,6 +16,7 @@ import type { MyStreamsHookIn, MyStreamsPanel, PfView, ProfileHookIn, ProfilePan
 
 /**
  * 我的档案整机(2026-10-09「我的档案」批):挂上取一次档案;「修改」开访客向导同款的编辑弹框,保存成功关框并换一代重取。
+ * 2026-11-07 多一格 autoEdit:从「我的求职」顶上那条「补全档案」点「去补全」过来,一进页就开着修改面板。
  *
  * @param x 取词函数。
  * @returns 我的档案的面板。
@@ -24,7 +25,7 @@ export function useProfile(x: ProfileHookIn): ProfilePanel {
   const [lang] = useLang()
   const [view, setView] = useState<PfView | null>(null)
   const [load, setLoad] = useState(PF_LOAD_BUSY)
-  const [editing, setEditing] = useState(false)
+  const [editing, setEditing] = useState(x.autoEdit)
   const [start, setStart] = useState(TEXT_NONE)
   const [gen, setGen] = useState(0)
   useEffect(function loadOnGen() {
@@ -40,7 +41,7 @@ export function useProfile(x: ProfileHookIn): ProfilePanel {
     onEdit: makeEditOpen({ setStart, setEditing, start: TEXT_NONE }),
     onAsk: makeEditOpen({ setStart, setEditing, start: PF_START_WHO }),
     onClose: makeFlagSet({ set: setEditing, v: false }),
-    onSaved: makeProfileSaved({ setEditing, setGen, gen }),
+    onSaved: makeProfileSaved({ setEditing, setGen, gen, onChanged: x.onChanged }),
   }
 }
 

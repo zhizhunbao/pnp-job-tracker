@@ -67,6 +67,8 @@
  * 收件箱先换(MeInbox:页标题右边转发开关、左清单右阅读区),其余几节暂借旧件,换完删旧桶。
  * 同日收口:五节全换成 me 桶的新件(MeJobs / MeInbox / MeResume / MeProfile / MeSub),整页状态换 me 桶 useMePage、
  * 没登录跳转换 MeRedirect、投递记录框宿主换 me 桶 AppViewHost;account / myjobs / inbox 三桶随之退役。
+ * 同日 Frank「按 Azure 的改」:「我的求职」进页自动弹五题撤,换顶上「补全档案」提示条(去补全 = 切我的档案并开修改面板);
+ * 「我的档案」修改换右侧一页表单(gate 桶 GateForm 装进通用 drawer 桶)。
  *
  * @author Frank
  * @time 2026-07-02 00:00:00
@@ -112,11 +114,14 @@ export default function AccountPage() {
         <NavFrame nav={<MeNav sec={a.sec} t={a.t} unread={a.unread} onPick={m.onPick} />}>
           {a.sec === SEC_SJOBS && (
             <MeJobs t={a.t} narrow={a.narrow} open={m.drawer} onOpen={m.onOpen} me={a.me} pro={a.pro}
-              gen={a.appliedGen} asked={a.askedGen} onAsked={a.onAsked} />
+              gen={a.appliedGen} asked={a.askedGen} onFill={a.onFill} />
           )}
           {a.sec === SEC_INBOX && <MeInbox t={a.t} open={m.drawer} onOpen={m.onOpen} openApp={openAppView} />}
           {a.sec === SEC_RESUME && <MeResume t={a.t} narrow={a.narrow} open={m.drawer} onOpen={m.onOpen} />}
-          {a.sec === SEC_PROFILE && <MeProfile t={a.t} narrow={a.narrow} open={m.drawer} onOpen={m.onOpen} />}
+          {a.sec === SEC_PROFILE && (
+            <MeProfile t={a.t} narrow={a.narrow} open={m.drawer} onOpen={m.onOpen} autoEdit={a.autoEdit}
+              onChanged={a.onAsked} />
+          )}
           {a.sec === SEC_SUB && (
             <MeSub t={a.t} narrow={a.narrow} open={m.drawer} onOpen={m.onOpen} until={a.until} />
           )}

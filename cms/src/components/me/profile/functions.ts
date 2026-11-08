@@ -2,6 +2,7 @@
  * me 桶子桶 profile 的行为:取档案、档案 → 编辑弹框的起始答案、开 / 关 / 保存编辑弹框、名字折叠、「我的通道」的省份与弹框手柄。
  * 2026-11-07 自 account 桶在新域重写(Frank「全部在新域重写」):接口、编辑弹框(gate 桶 GateEdit)、「我的通道」照旧;
  * 「修改」从卡头挪到页标题右边一颗主按钮,一格多个名字先摆 3 个(效果图)。
+ * 同日 Frank「按 Azure 的改」→「删了吧」:编辑弹框换成 gate 桶一页表单 GateForm,GateEdit 已删(上面「编辑弹框(gate 桶 GateEdit)」现指 GateForm)。
  *
  * @author Frank
  * @time 2026-11-07 16:05:00
@@ -75,6 +76,7 @@ export function makeProfileSaved(x: PfSavedIn): () => void {
   return function profileSaved(): void {
     x.setEditing(false)
     x.setGen(x.gen + 1)
+    x.onChanged()
   }
 }
 

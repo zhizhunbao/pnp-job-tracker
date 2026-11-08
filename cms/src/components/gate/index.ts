@@ -26,11 +26,16 @@
  *
  * 2026-10-13:导出教育经历两件(eduPicksOf 拆串、makeEduLabel 选项字),「我的档案」卡上那一行读同一套。
  *
+ * 2026-11-07 Frank「删了吧」:「我的档案」的「修改」换成一页表单 GateForm(右侧面板,七格同页)后,一题一屏的 GateEdit 与只给它用的
+ * 顶行、题目分派、目标 / 专业宿主 / 职业 / 省 / 身份各题件、钮区一并删,GateEdit 的导出撤;上面「题目由……GateEdit 只问空着的来问」
+ * 「gate → majors / quiz 两条边现只为 GateEdit 而在」两句作废 —— 那两条边现为 GateForm 的两个叠开选择器而在;
+ * missingStepsOf 留着给「我的求职」补全档案提示条判空。
+ *
  * @author Frank
  * @time 2026-10-04 02:10:00
  */
 export { GateAuth } from './gateauth'
-export { GateEdit } from './gateedit'
+export { GateForm } from './gateform'
 export { eduPicksOf, makeEduLabel, missingStepsOf } from './functions'
 export { GateSync } from './gatesync'
 export type { EduPick, GateEditSeed } from './types'

@@ -11,7 +11,8 @@ import { useLang } from '@/components/i18n'
 import { useIsNarrow } from '@/components/modal'
 import { SEC_DEFAULT } from './constants'
 import {
-  bindUnread, makeDrawerSet, makeGenBump, makeMePick, makeOnApplied, makeRefresh, payOkToast, proOf,
+  bindUnread, makeDrawerSet, makeFill, makeGenBump, makeMePick, makeOnApplied, makeRefresh, makeSecPick, payOkToast,
+  proOf,
   secLinkOf, untilOf,
 } from './functions'
 import type { MeFrameIn, MeFrameOut, MePagePanel, MeSec, MeUser } from './types'
@@ -30,6 +31,7 @@ export function useMePage(): MePagePanel {
   const [appliedGen, setAppliedGen] = useState(0)
   const [unread, setUnread] = useState(0)
   const [askedGen, setAskedGen] = useState(0)
+  const [autoEdit, setAutoEdit] = useState(false)
 
   useEffect(function readPayOk() {
     payOkToast(t)
@@ -58,7 +60,7 @@ export function useMePage(): MePagePanel {
     sec,
     me,
     checked,
-    onPick: setSec,
+    onPick: makeSecPick({ setSec, setAutoEdit }),
     pro: proOf({ until }),
     until,
     appliedGen,
@@ -66,6 +68,8 @@ export function useMePage(): MePagePanel {
     unread,
     askedGen,
     onAsked: makeGenBump({ setGen: setAskedGen }),
+    autoEdit,
+    onFill: makeFill({ setSec, setAutoEdit }),
   }
 }
 

@@ -16,9 +16,10 @@
 /*
  * 内轨:轨宽 1320 定死 —— 与头轨/全站容器同宽(2026-07-30 Frank「每个页面宽度一样」);
  * 单行回绕。
+ * 2026-11-07 Frank「按 Azure 的来」:顶栏与正文轨一律铺满全宽(上限撤),左右内衬照旧;读长文的页各自另有读宽。
  */
 .inner {
-  max-width: 1320px;
+  max-width: none;
   margin: 0 auto;
   padding: 14px 1.25rem;
   display: flex;

@@ -21,7 +21,7 @@ export function InboxModal({ p, m, t }: InboxReadIn) {
   const head = <ModalHead kicker={t('ib.title')} title={subjectOf({ m, t })} sub={TEXT_NONE} ctl={null} />
   return (
     <Modal onClose={p.onUnpick} win={{ head, memo: IB_MODAL_PREF, w: IB_MODAL_W, h: IB_MODAL_H, jd: false }}>
-      <InboxRead p={p} m={m} t={t} />
+      <InboxRead p={p} m={m} t={t} inModal />
     </Modal>
   )
 }

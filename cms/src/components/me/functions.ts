@@ -10,12 +10,12 @@ import { hasProfile, normalizeProfile } from '@/lib/jobs'
 import type { Plan } from '@/lib/jobs'
 import {
   COUNT_NONE, CRED_INCLUDE, EV_INBOX_UNREAD, LABEL_NONE, LOGIN_URL, ME_SECS, NEXT_SEP, PAY_OK_KEY, QP_OK, QP_OK_ON,
-  QP_SEC, SEC_COUNTED, SEC_DEFAULT, SEC_FAVS_OLD, SENT_NOTICE_KEY, TEXT_NONE, TOAST_OK, UNREAD_NONE, URL_INBOX_COUNT,
-  URL_ME,
+  QP_SEC, SEC_COUNTED, SEC_DEFAULT, SEC_PROFILE, SEC_FAVS_OLD, SENT_NOTICE_KEY, TEXT_NONE, TOAST_OK, UNREAD_NONE,
+  URL_INBOX_COUNT, URL_ME,
 } from './constants'
 import type {
   AppliedSentIn, GenBumpIn, MeCountIn, MeDrawerSetIn, MeLabelIn, MePickIn, MeRespJson, MeSec, MeUser, OnAppliedIn,
-  ProOfIn, RefreshIn, TFn, UnreadLoadIn, UnreadRespJson,
+  ProOfIn, RefreshIn, SecPickIn, TFn, UnreadLoadIn, UnreadRespJson,
 } from './types'
 
 /**
@@ -273,4 +273,30 @@ export function makeGenBump(x: GenBumpIn): () => void {
  */
 export function loginLinkOf(): string {
   return LOGIN_URL + NEXT_SEP + encodeURIComponent(window.location.pathname + window.location.search)
+}
+
+/**
+ * 换节手柄:换到哪节都先清「一进档案就开修改面板」(只有「去补全」那一下开)。
+ *
+ * @param x 换节与开面板两个 setter。
+ * @returns 收节的手柄。
+ */
+export function makeSecPick(x: SecPickIn): (sec: MeSec) => void {
+  return function pickSec(sec: MeSec): void {
+    x.setAutoEdit(false)
+    x.setSec(sec)
+  }
+}
+
+/**
+ * 「去补全」手柄:切到「我的档案」并开修改面板。
+ *
+ * @param x 换节与开面板两个 setter。
+ * @returns 无参手柄。
+ */
+export function makeFill(x: SecPickIn): () => void {
+  return function fill(): void {
+    x.setAutoEdit(true)
+    x.setSec(SEC_PROFILE)
+  }
 }

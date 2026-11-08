@@ -26,26 +26,6 @@ export type JobsPlan = object
 export type OpenAppFn = (appId: number) => void
 
 /**
- * 锁住那条的一份假字纹理。
- */
-export type LockFill = {
-  /**
-   * 假公司名。
-   */
-  company: string
-
-  /**
-   * 假街址(后接这一行的省码)。
-   */
-  street: string
-
-  /**
-   * 假薪资。
-   */
-  salary: string
-}
-
-/**
  * 哪张清单:我的投递 / 我的收藏。
  */
 export type ListKind = 'applied' | 'saved'
@@ -587,46 +567,6 @@ export type PickItem = {
 }
 
 /**
- * 「显示更多」里锁住的一条(线格式:职位名与通道)。
- */
-export type LockedItem = {
-  /**
-   * 职位名英文原文。
-   */
-  title: string
-
-  /**
-   * 职位名中文译名。
-   */
-  titleZh: string
-
-  /**
-   * 职位名韩文译名。
-   */
-  titleKo: string
-
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 具名省提名通道(没有 = 空串)。
-   */
-  pnpStream: string
-
-  /**
-   * 能走省提名。
-   */
-  pnpEligible: boolean
-
-  /**
-   * 本省有省默认通道。
-   */
-  provDefault: boolean
-}
-
-/**
  * 推荐(洗净)。
  */
 export type PicksFact = {
@@ -639,11 +579,6 @@ export type PicksFact = {
    * 还有几条看不见。
    */
   more: number
-
-  /**
-   * 锁住给看的几条。
-   */
-  locked: LockedItem[]
 }
 
 /**
@@ -777,66 +712,6 @@ export type PickRowIn = {
 }
 
 /**
- * 打码行(lockedRowOf)的入参。
- */
-export type LockedRowIn = {
-  /**
-   * 锁住的一条。
-   */
-  item: LockedItem
-
-  /**
-   * 第几条(挑假字纹理)。
-   */
-  i: number
-
-  /**
-   * 界面语。
-   */
-  lang: Lang
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 懒翻回来的职位名译名表。
-   */
-  titles: Record<string, string>
-}
-
-/**
- * 打码行们(lockedRowsOf)的入参。
- */
-export type LockedRowsIn = {
-  /**
-   * 推荐整包。
-   */
-  data: PicksFact
-
-  /**
-   * 出不出(免费号点了「显示更多」才出)。
-   */
-  show: boolean
-
-  /**
-   * 界面语。
-   */
-  lang: Lang
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 懒翻回来的职位名译名表。
-   */
-  titles: Record<string, string>
-}
-
-/**
  * 拨一个开关(makeFlag)的入参。
  */
 export type FlagIn = {
@@ -906,7 +781,7 @@ export type ListRow = {
   key: string
 
   /**
-   * 职位 id(职位删了 / 打码行 = null,职位名黑字不可点)。
+   * 职位 id(职位删了 = null,职位名黑字不可点;2026-11-07 打码行撤)。
    */
   jobId: number | null
 
@@ -951,12 +826,8 @@ export type ListRow = {
   companySlug: string
 
   /**
-   * 地点一行(照 Indeed)。
-   */
-  address: string
-
-  /**
-   * 地点的 Google 地图链接(没有地点 = 空串)。
+   * 地点的 Google 地图链接(按完整地址一行查;没有地点 = 空串)。2026-11-07 网页端「地址」列改「地点」列,
+   * 完整地址一行不再上屏,只留这一条链接。
    */
   addressHref: string
 
@@ -966,7 +837,7 @@ export type ListRow = {
   addressSub: string
 
   /**
-   * 手机一条底行的地点「市, 省码」(打码行 = 空串,假街址不在明处露)。
+   * 地点「市, 省码」(手机一条底行;2026-11-07 起网页端「地点」列也出它;没有城市只写省码,都没有 = 空串)。
    */
   place: string
 
@@ -1024,11 +895,6 @@ export type ListRow = {
    * 唯一那颗钮(没有 = null)。
    */
   act: ActBtn | null
-
-  /**
-   * 打码行(免费号「显示更多」后锁住的推荐;公司 / 地址 / 薪资是模糊假字)。
-   */
-  locked: boolean
 }
 
 /**
@@ -1132,7 +998,7 @@ export type TagListIn = {
 }
 
 /**
- * 带职位名与两语库存译名的一行(MyJobItem / PickItem / LockedItem 都合这个形)。
+ * 带职位名与两语库存译名的一行(MyJobItem / PickItem 都合这个形)。
  */
 export type TitledItem = {
   /**
@@ -1317,36 +1183,6 @@ export type PlaceDue = {
 }
 
 /**
- * useLockTop 的入参。
- */
-export type LockTopIn = {
-  /**
-   * 有没有打码行。
-   */
-  on: boolean
-
-  /**
-   * 行数(变了重量)。
-   */
-  n: number
-}
-
-/**
- * 打码行上沿位置(useLockTop 出)。
- */
-export type LockTopPanel = {
-  /**
-   * 表格外框。
-   */
-  ref: React.RefObject<HTMLDivElement | null>
-
-  /**
-   * 第一条打码行相对外框的上沿(px;没有打码行 = null)。
-   */
-  top: number | null
-}
-
-/**
  * 一枚页签(tabs 桶 TabItem 的本桶抄形;badge 缺席 = 不出计数)。
  */
 export type JobsTab = {
@@ -1409,6 +1245,21 @@ export type JobsTabIn = {
    * 条数(还没拉到 = null)。
    */
   n: number | null
+}
+
+/**
+ * swapShownOf(页签那一行右端出不出「换一批」)的入参。
+ */
+export type SwapShownIn = {
+  /**
+   * 当前页签。
+   */
+  tab: string
+
+  /**
+   * 推荐(还没拉到 = null)。
+   */
+  data: PicksFact | null
 }
 
 /**
@@ -1486,14 +1337,14 @@ export type JobsBodyIn = {
   gen: number
 
   /**
-   * 答档案代数(五题弹框关了加一,推荐跟着重拉、且不用服务端当天缓存;页面门递来)。
+   * 档案代数(「我的档案」修改面板存好了加一,推荐跟着重拉、且不用服务端当天缓存;页面门递来)。
    */
   asked: number
 
   /**
-   * 五题弹框关了(页面门把答档案代数加一)。
+   * 点「补全档案」的「去补全」(页面门切到「我的档案」并开修改面板)。
    */
-  onAsked: () => void
+  onFill: () => void
 
   /**
    * 打开只读投递框(父桶注入:子桶 apps 的 openAppView)。
@@ -1692,76 +1543,61 @@ export type PfLoadIn = {
 }
 
 /**
- * JobsQuiz(进「我的求职」先弹五题)的 props。
+ * FillBar(「补全档案」提示条)的 props。
  */
-export type JobsQuizIn = {
+export type FillBarIn = {
   /**
    * 取词函数。
    */
   t: TFn
 
   /**
-   * 弹框关了(调用方重拉今日推荐)。
+   * 点「去补全」。
    */
-  onDone: () => void
+  onFill: () => void
 }
 
 /**
- * useJobsQuiz 的入参。
+ * 提示条整机交回的面板。
  */
-export type JobsQuizHookIn = {
-  /**
-   * 弹框关了。
-   */
-  onDone: () => void
-}
-
-/**
- * 五题整机交回的面板。
- */
-export type JobsQuizPanel = {
+export type FillPanel = {
   /**
    * 档案(没取回来 null)。
    */
   view: PfView | null
 
   /**
-   * 弹着。
+   * 这一页点过 ✕。
    */
-  open: boolean
+  hidden: boolean
 
   /**
-   * 关框(保存成功也走它)。
+   * ✕。
    */
-  onClose: () => void
+  onHide: () => void
 }
 
 /**
- * jobsQuizOpenOf 的入参。
+ * fillTextOf 的入参。
  */
-export type QuizOpenIn = {
+export type FillTextIn = {
   /**
    * 档案(没取回来 null)。
    */
   view: PfView | null
 
   /**
-   * 这一页已经关过。
+   * 取词函数。
    */
-  closed: boolean
+  t: TFn
 }
 
 /**
- * makeAskedDone 的入参。
+ * makeFillHide 的入参。
  */
-export type AskedDoneIn = {
+export type FillHideIn = {
   /**
-   * 「关过了」落格。
+   * 「这一页不再出」落格。
    */
-  setClosed: (v: boolean) => void
-
-  /**
-   * 交还调用方。
-   */
-  onDone: () => void
+  setHidden: (v: boolean) => void
 }

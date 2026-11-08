@@ -4,13 +4,15 @@
  * 一张分区卡装档案几行(照 Azure Essentials 左标签右值,手机标签在上值在下;不另放卡头,页标题已写「我的档案」),
  * 下面接「我的通道」卡(2026-10-13 Frank「我的档案回答完了,自动在下面出一个 section 列出我的通道」)。
  * 「修改」与「去回答」弹访客向导同一个弹框(gate 桶 GateEdit:一屏一题,末尾英文姓名,最后一题保存;Frank「答题还是之前弹框的那种干净」)。
+ * 2026-11-07 Frank「按 Azure 的改」:换成右侧一页表单(gate 桶 GateForm,七格同在一页、改哪格改哪格、底部一次保存)。
+ * 同日 Frank「删了吧」:gate 桶 GateEdit 已删,上面「弹访客向导同一个弹框」那句只剩来历。
  * 取的时候一个加载占位,取不到一句。
  *
  * @author Frank
  * @time 2026-11-07 16:05:00
  */
 import { cssOf } from '@/components/css'
-import { GateEdit } from '@/components/gate'
+import { GateForm } from '@/components/gate'
 import { Loading } from '@/components/loading'
 import { CARD_MD_CLS, PF_FAIL_KEY, PF_LOAD_FAIL, PF_LOAD_OK, PF_LOADING_KEY } from './constants'
 import { profileSeedOf } from './functions'
@@ -40,7 +42,7 @@ export function ProfileBody({ p, t }: ProfilePartIn) {
       </section>
       <MyStreams key={v.who + v.edu.join()} v={v} lang={p.lang} t={t} onEdit={p.onAsk} />
       {p.editing && (
-        <GateEdit t={t} seed={profileSeedOf(v)} start={p.start} onClose={p.onClose} onSaved={p.onSaved} />
+        <GateForm t={t} seed={profileSeedOf(v)} onClose={p.onClose} onSaved={p.onSaved} />
       )}
     </>
   )

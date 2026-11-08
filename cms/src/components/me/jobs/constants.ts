@@ -179,45 +179,6 @@ export const CO_SEP = '\n'
 export const CHAN_NONE = '—'
 
 /**
- * 锁住那条的假字纹理(模糊着看不清,真的公司 / 地址 / 薪资不下发;两份轮着用)。
- * 2026-10-12 Frank「隐藏的 和 显示的 要对齐啊」「上下要对齐。有 中文 灰字的 要加上」:地址只留假街址,后接这一行的省码。
- */
-export const LOCK_FILL = {
-  /**
-   * 第 1、3、5… 条。
-   */
-  even: {
-    company: 'Scarborough Health Network',
-    street: '1280 Main St, ',
-    salary: '$23/hr',
-  },
-
-  /**
-   * 第 2、4、6… 条。
-   */
-  odd: {
-    company: 'Humber River Health',
-    street: '2111 Finch Ave W, ',
-    salary: '$24/hr',
-  },
-} as const
-
-/**
- * 假字纹理有几份(按条数取模轮着用)。
- */
-export const LOCK_FILL_N = 2
-
-/**
- * 打码行的行键头(后接第几条)。
- */
-export const LOCK_KEY_HEAD = 'lock-'
-
-/**
- * 打码行职位格 data-lock 的值。
- */
-export const LOCK_MARK = '1'
-
-/**
  * 旧深链的查询参数名(`?sec=favs`:「我的收藏」页签撤了,落「我的求职」后直接切到「我的收藏」页签)。
  */
 export const QP_SEC = 'sec'
@@ -235,11 +196,12 @@ export const CARD_MD_CLS = 'cardMd'
 /**
  * 「解锁其余 N 条」的钮档。
  * 2026-10-13 Frank「换个颜色比较火的」→ 付费琥珀实底(button 桶 pro 档,全站付费同一色)。
+ * 2026-11-07 Frank「现在都按 Azure 的来」:盖在打码行上的大钮撤,换表下一行里的常规大小主钮(蓝底主行动)。
  */
-export const UPGRADE_KIND = 'pro'
+export const UPGRADE_KIND = 'primary'
 
 /**
- * 「换一批」的钮档(白底描边次要钮;2026-10-13)。
+ * 「换一批」的钮档(白底描边次要钮;2026-10-13)。2026-11-07 Frank「现在都按 Azure 的来」:钮从表上方挪到页签那一行右端。
  */
 export const SWAP_KIND = 'secondary'
 
@@ -254,9 +216,9 @@ export const COL_TITLE = 'title'
 export const COL_COMPANY = 'company'
 
 /**
- * 列身份:地址。
+ * 列身份:地点(2026-11-07 Frank「现在都按 Azure 的来」:原「地址」列(完整地址一行)改「市, 省码」)。
  */
-export const COL_ADDR = 'addr'
+export const COL_PLACE = 'place'
 
 /**
  * 列身份:薪资。
@@ -388,7 +350,109 @@ export const URL_PROFILE = '/api/quiz/profile'
  */
 export const PF_ERR_EMPTY = 'no profile'
 
+
 /**
- * 「五题弹过了」没记上时抛的错文。
+ * 「补全档案」提示条:空着两样以内的那句(2026-11-07 照 Azure 的 MessageBar,代替进页自动弹五题)。
  */
-export const PF_ERR_ASKED = 'not synced'
+export const FILL_KEY = 'mj.fill'
+
+/**
+ * 「补全档案」提示条:空着多于两样的那句(点名前两样,再说一共几项)。
+ */
+export const FILL_MORE_KEY = 'mj.fillMore'
+
+/**
+ * 「补全档案」提示条上「去补全」的词条。
+ */
+export const FILL_GO_KEY = 'mj.fillGo'
+
+/**
+ * 提示条里几样名字之间的分隔词条(中文顿号、英韩逗号)。
+ */
+export const FILL_SEP_KEY = 'mj.fillSep'
+
+/**
+ * 提示条最多点名几样。
+ */
+export const FILL_NAME_MAX = 2
+
+/**
+ * 档案里空着的那一样 → 「我的档案」左列名字的词条(题键与 gate 桶 GATE_STEP_* 同值)。
+ */
+export const FILL_LABEL_KEYS = [
+  {
+    /**
+     * 目标。
+     */
+    step: 'goal',
+
+    /**
+     * 「目标」。
+     */
+    key: 'pf.goal',
+  },
+  {
+    /**
+     * 专业。
+     */
+    step: 'major',
+
+    /**
+     * 「专业」。
+     */
+    key: 'pf.majors',
+  },
+  {
+    /**
+     * 想做的工作。
+     */
+    step: 'job',
+
+    /**
+     * 「想做的工作」。
+     */
+    key: 'pf.jobs',
+  },
+  {
+    /**
+     * 所在地。
+     */
+    step: 'prov',
+
+    /**
+     * 「所在地」。
+     */
+    key: 'pf.where',
+  },
+  {
+    /**
+     * 英文姓名。
+     */
+    step: 'name',
+
+    /**
+     * 「英文姓名」。
+     */
+    key: 'pf.name',
+  },
+] as const
+
+/**
+ * 认不出的题键按「我的档案」整页的名字说(走不到;留一格兜住类型)。
+ */
+export const FILL_LABEL_FALLBACK = 'pf.title'
+
+/**
+ * 提示条的档(notice 桶 info:浅蓝)。
+ */
+export const FILL_NOTICE_KIND = 'info'
+
+/**
+ * 提示条 ✕ 的 aria-label(照 modal 桶 CLOSE_ARIA:英文死值)。
+ */
+export const FILL_CLOSE_ARIA = 'close'
+
+/**
+ * 定制样式钮的统一底座:ghost 底最素(提示条上「去补全」与 ✕;与 nav / tag 桶同名同义,各家一份)。
+ */
+export const PLAIN_BTN_KIND = 'ghost'

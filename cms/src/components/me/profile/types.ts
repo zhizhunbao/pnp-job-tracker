@@ -168,6 +168,16 @@ export type ProfileHookIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 一进页就开着修改面板(从「我的求职」的「去补全」过来)。
+   */
+  autoEdit: boolean
+
+  /**
+   * 档案存好了(交给页面:回「我的求职」时推荐按新档案重算)。
+   */
+  onChanged: () => void
 }
 
 /**
@@ -308,6 +318,11 @@ export type PfSavedIn = {
    * 当前代数。
    */
   gen: number
+
+  /**
+   * 档案存好了的交还口(页面把档案代数 +1)。
+   */
+  onChanged: () => void
 }
 
 /**

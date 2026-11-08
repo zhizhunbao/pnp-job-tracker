@@ -1,16 +1,17 @@
 'use client'
 /**
  * me 桶子桶 inbox 的状态机器:拉清单、深链 `?msg=` 直开那封、点信标已读、转发开关、站内回信。
+ * 2026-11-07 照 Outlook 网页版:多 搜索 / 全部 / 未读 筛选 / 未读数;回信改在阅读区里就地展开(状态照旧,只是不再走弹框)。
  *
  * @author Frank
  * @time 2026-11-07 16:30:00
  */
 import { useEffect, useState } from 'react'
 import { useIsNarrow } from '@/components/modal'
-import { TEXT_NONE } from './constants'
+import { FILTER_ALL, TEXT_NONE } from './constants'
 import {
   curOf, makeFlagSet, makeForward, makeLoadInbox, makeOpenApp, makePickOf, makeReplySend, makeTextSet, makeUnpick,
-  msgLinkOf,
+  msgLinkOf, shownOf, unreadNOf,
 } from './functions'
 import type { InboxIn, InboxPanel, InboxView } from './types'
 
@@ -29,6 +30,8 @@ export function useInbox(x: InboxIn): InboxPanel {
   const [replyText, setReplyText] = useState(TEXT_NONE)
   const [replyBusy, setReplyBusy] = useState(false)
   const [replyNote, setReplyNote] = useState(TEXT_NONE)
+  const [q, setQ] = useState(TEXT_NONE)
+  const [filter, setFilter] = useState(FILTER_ALL)
 
   useEffect(function firstLoad() {
     void makeLoadInbox({ setData, setFailed })()
@@ -72,5 +75,11 @@ export function useInbox(x: InboxIn): InboxPanel {
     }),
     replyBusy,
     replyNote,
+    q,
+    onQ: setQ,
+    filter,
+    onFilter: setFilter,
+    shown: shownOf({ data, q, filter }),
+    unreadN: unreadNOf(data),
   }
 }

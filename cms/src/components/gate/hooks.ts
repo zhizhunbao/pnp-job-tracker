@@ -12,26 +12,26 @@
  * 开屏挂上(照旧开屏就取热门);同日专业改多选,整机的专业格换成码清单。
  * 2026-10-11 Frank「我应该先注册 再问问题吧」→「需要改」:访客不再答题,访客向导整机 useGateWizard 与草稿补交钩子 useGateSync 删;
  * 新增访客注册框钩子 useGateAuth;进站整机 useEntryGate 照旧判弹不弹,弹的换成注册框。编辑整机的「动过了」凑数格随之撤。
+ * 2026-11-07 Frank「删了吧」:一题一屏的档案编辑弹框 GateEdit 换成一页表单 GateForm 后删 —— 编辑整机 useGateEdit 瘦成
+ * useGateForm(只留值、校验与保存;步数、换题、返回、跳过、主钮字那一套没人读了,一并撤),换题挪焦点的 useQuestionFocus 删。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
  */
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useSsrSession } from '@/components/auth'
 import { useLang } from '@/components/i18n'
 import { takeEntryGate } from '@/lib/guest'
 import { track } from '@/lib/track'
-import { GATE_BACK_KEY, TEXT_NONE, TRACK_GATE_OPEN } from './constants'
+import { FORM_PICK_JOB, FORM_PICK_MAJOR, FORM_PICK_NONE, TEXT_NONE, TRACK_GATE_OPEN } from './constants'
 import {
-  cityOptsOf, editBlankOf, editNextKeyOf, editStepsOf, eduPicksOf, eduStrsOf, focusGateQuestion, gateNextOffOf,
-  gateProvActiveOf, gateStepOf, loadProvCities, makeCityPick, makeEditNext, makeEditSave, makeEduAdd, makeEduPick,
-  gateBackOf, makeEduRemove, makeEntryClose, makeEntryDone, makeGateAuthDone, makeGateBack, makeGoalPick, makeProvPick,
-  makeWhoPick, nameBadOf, startStepOf,
+  cityOptsOf, eduPicksOf, eduStrsOf, gateProvActiveOf, loadProvCities, makeCityPick, makeEditSave, makeEduAdd,
+  makeEduPick, makeEduRemove, makeEntryClose, makeEntryDone, makeGateAuthDone, makePickSet, makeProvPick, nameBadOf,
 } from './functions'
 import type {
   CitiesGot, CityOpt, CityPickHookIn, CityPickOut, DeadFlag, EduCellIn, EduPick, EduRowsPanel, EntryGatePanel,
-  GateAuthHookIn, GateEditHookIn, GatePanel, GateStep, ProvCitiesIn,
+  GateAuthHookIn, GateFormHookIn, GatePanel, GatePickPanel, ProvCitiesIn,
 } from './types'
 
 /**
@@ -131,14 +131,16 @@ export function useProvCities(x: ProvCitiesIn): CityOpt[] {
  * 2026-10-13 档案加身份、教育经历两题(Frank「我的档案回答完了,自动在下面出一个 section 列出我的通道」):两格进整机 edit 段,保存一并覆盖。
  * 2026-10-11「进我的求职先弹五题」:x.missing 时只问起始答案里还空着的那几题(开框那一刻定下,答着答着不缩),
  * 空着的题出「跳过这步」(跳过 = 往后走,最后一题跳过 = 保存前面答的)。
+ * 2026-11-07 Frank「删了吧」:一题一屏的 GateEdit 删,只剩一页表单 GateForm 读它 —— 改名 useGateForm;
+ * 步数 / 当前题 / 题面 id / 一共几题 / 下一步 / 主钮灰 / 返回 / 跳过 / 主钮字、点了就翻页的目标与身份上报口、
+ * 只问空着的(missing)与从哪题开始(start)随之撤,取词函数也不再收(只给返回钮读屏名用)。
  *
- * @param x 取词函数、起始答案、关框与保存成功。
- * @returns 与访客向导同形的整机面板(顶行、各题、钮区原样读它)。
+ * @param x 档案现值、关面板与存好了。
+ * @returns 表单面板(七格、城市区、教育经历与保存原样读它)。
  */
-export function useGateEdit(x: GateEditHookIn): GatePanel {
+export function useGateForm(x: GateFormHookIn): GatePanel {
   const [lang] = useLang()
   const s = x.seed
-  const [step, setStep] = useState(startStepOf({ steps: editStepsOf({ seed: s, missing: x.missing }), start: x.start }))
   const [goal, setGoal] = useState(s.goal)
   const [majors, setMajors] = useState<string[]>(s.majors)
   const [nocs, setNocs] = useState<string[]>(s.nocs)
@@ -150,63 +152,37 @@ export function useGateEdit(x: GateEditHookIn): GatePanel {
   const e = useEduRows(s.edu)
   const [saving, setSaving] = useState(false)
   const [failKey, setFail] = useState(TEXT_NONE)
-  const [steps] = useState(function initEditSteps(): GateStep[] {
-    return editStepsOf({ seed: s, missing: x.missing })
-  })
-  const qid = useId()
-  const lastStep = useRef(0)
-
-  useEffect(function focusQuestionOnStep() {
-    focusGateQuestion({ id: qid, step, last: lastStep })
-  }, [qid, step])
-
-  const cur = gateStepOf({ step, steps })
-  const provActive = gateProvActiveOf({ prov, abroad })
-  const nameBad = nameBadOf(name)
   const save = makeEditSave({
     a: { goal, majors, nocs, prov, abroad, city: c.panel.city, name: name.trim(), who, edu: eduStrsOf(e.edu) },
     setSaving,
     setFail,
     onSaved: x.onSaved,
   })
-  const next = makeEditNext({ step, total: steps.length, setStep, save })
-  const skip = x.missing && editBlankOf({ cur, goal, majors, nocs, provActive, name, who })
-  const onBack = makeGateBack({ step, setStep })
-  const back = gateBackOf({ step, aria: x.t(GATE_BACK_KEY), onBack })
   return {
-    step,
-    cur,
-    qid,
     goal,
-    onGoal: makeGoalPick({ setGoal, next }),
     majors,
     onMajors: setMajors,
     lang,
     nocs,
     setNocs,
-    provActive,
+    provActive: gateProvActiveOf({ prov, abroad }),
     onProv: makeProvPick({ setProv, setAbroad, setCity: c.setCity }),
     cities: c.panel,
     edit: {
       name,
       onName: setName,
-      nameBad,
-      nextKey: editNextKeyOf({ step, total: steps.length }),
+      nameBad: nameBadOf(name),
       saving,
       failKey,
-      skip,
       who,
-      onWho: makeWhoPick({ setWho, next }),
       edu: e.edu,
       eduPickOf: e.eduPickOf,
       onEduAdd: e.onEduAdd,
       eduRemoveOf: e.eduRemoveOf,
+      setGoal,
+      setWho,
+      onSave: save,
     },
-    total: steps.length,
-    onNext: next,
-    nextOff: gateNextOffOf({ cur, majors, nocs, provActive, nameBad, who }) || saving,
-    onBack,
-    back,
     onClose: x.onClose,
   }
 }
@@ -226,4 +202,19 @@ function useEduRows(seed: string[]): EduRowsPanel {
     return makeEduRemove({ edu, setEdu, i })
   }
   return { edu, eduPickOf, onEduAdd: makeEduAdd({ edu, setEdu, i: 0 }), eduRemoveOf }
+}
+
+/**
+ * 一页表单里「专业」「想做的工作」两格叠开哪个选择器(2026-11-07 照 Azure 编辑面板:长清单不铺在面板里,点「修改」叠一层)。
+ *
+ * @returns 叠开哪个与三个手柄。
+ */
+export function useGatePick(): GatePickPanel {
+  const [picking, setPicking] = useState<string>(FORM_PICK_NONE)
+  return {
+    picking,
+    onMajor: makePickSet({ setPicking, v: FORM_PICK_MAJOR }),
+    onJob: makePickSet({ setPicking, v: FORM_PICK_JOB }),
+    onDone: makePickSet({ setPicking, v: FORM_PICK_NONE }),
+  }
 }

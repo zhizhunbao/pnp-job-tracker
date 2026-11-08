@@ -12,12 +12,20 @@
 //       ② ③ 里对它的断言删(③ 原先拿它等补交那一跑交成,交成的证据改由随后的戳 / 草稿 / 地址栏断言给)。
 // 2026-10-11 Frank「我应该先注册 再问问题吧」→「需要改」:访客不再答题,访客向导与交接戳整套删 —— ①②③ 随之删;
 //       ④ 换题挪焦点照验,挂的件从访客向导换成档案编辑弹框 GateEdit(同一个 focusGateQuestion)。
+// 2026-11-07 Frank「删了吧」:一题一屏的 GateEdit 换成一页表单 GateForm(右侧面板)后删,没有「换题」了 ——
+//       ④ 换题挪焦点(连 focusGateQuestion、返回钮、没答下一步灰)整条撤;改验一页表单上还活着的三样(挂 GateForm):
+//       ⑤ 保存:七格的值一次推进答案档(目标、所在地 + 城市、身份、教育经历),填了英文姓名另存署名,存成交还 onSaved;
+//          没登录(答案档 401)框不关、摆一行 gate.saveFail、不交还;
+//       ⑥ 城市:选了省才出城市区(按省取、在招多的在前),点一个亮、再点取消;改选「加拿大境外」城市区收起;
+//       ⑦ 教育经历:「+ 再加一段」加到两段为止(钮收起),✕ 删一段;只剩一段时 ✕ 清空那一段、界面总留一行。
+// 探针:editPatchOf 漏 fitEdu → ⑤「fitEdu」红;makeProvPick 不清城市 → ⑥「换境外再换回城市没亮」红;
+//       makeEduRemove 去掉「只剩一段补空段」→ ⑦「总留一行」红。
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // 测试例外:域内件直接点文件(桶只走门的规矩不管测试)
-import { GateEdit } from '@/components/gate/gateedit'
+import { GateForm } from '@/components/gate/gateform'
 import type { TFn } from '@/lib/i18n'
 import { resetAnswersMemory } from '@/lib/quiz'
 
@@ -30,30 +38,101 @@ vi.mock('next/navigation', () => ({
 
 const t = ((key: string) => key) as TFn
 
-// 档案编辑弹框的空档(2026-10-11 访客向导删,换题挪焦点改在 GateEdit 上验 —— 同一副顶行与题面,五题全问从目标题起)
+// 档案全空(GateForm 七格从这里起)
 const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [] }
+
+const ON_CITIES = [
+  { name: 'Toronto', zh: '', ko: '', jobs: 900 },
+  { name: 'Ottawa', zh: '', ko: '', jobs: 280 },
+]
 
 function reply(status: number, body: object) {
   return { status, ok: status >= 200 && status < 300, json: async () => body }
 }
 
-// 假服务端:PUT(推答案档)记下来;其余 GET 一律回空档(取热门专业那一发读不出清单 = 空热门,无妨)
-function server(status = 200) {
-  const puts: string[] = []
-  vi.stubGlobal('fetch', vi.fn(async (_url: string, init?: RequestInit) => {
-    if (init != null && init.method === 'PUT') {
-      puts.push(String(init.body))
-      return reply(status, { ok: status === 200 })
+type Sent = { url: string, method: string, body: string }
+
+// 假服务端:答案档 GET 回 answersStatus(200 = 已登录、档空;401 = 会话没了);按省取城市回 ON_CITIES;
+// 其余(推答案档、改署名、读当前用户、取热门专业 / 职业)一律 200 空对象;每一发非 GET 都记下来
+function server(answersStatus = 200): Sent[] {
+  const sent: Sent[] = []
+  vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+    const method = init != null && init.method != null ? init.method : 'GET'
+    if (method !== 'GET') {
+      sent.push({ url: String(url), method, body: String(init?.body) })
+      return reply(200, { ok: true })
     }
-    return reply(status, { answers: null })
+    if (String(url) === '/api/quiz/answers') {
+      return reply(answersStatus, { answers: null })
+    }
+    if (String(url).startsWith('/api/stats/cities?prov=')) {
+      return reply(200, { cities: ON_CITIES })
+    }
+    return reply(200, {})
   }))
-  return puts
+  return sent
+}
+
+function mount(onSaved: () => void = () => undefined) {
+  // jsdom 没有 matchMedia(modal / drawer 判窄屏要它):按宽屏答,不挂监听
+  vi.stubGlobal('matchMedia', () => ({
+    matches: false, addEventListener: () => undefined, removeEventListener: () => undefined,
+    addListener: () => undefined, removeListener: () => undefined,
+  }))
+  const host = document.createElement('div')
+  document.body.appendChild(host)
+  const root = createRoot(host)
+  act(() => {
+    root.render(createElement(GateForm, { t, seed: EMPTY_SEED, onClose: () => undefined, onSaved }))
+  })
+  return { host, root }
+}
+
+function buttonOf(host: HTMLElement, text: string): HTMLButtonElement | undefined {
+  return Array.from(host.querySelectorAll('button')).find((b) => b.textContent === text)
+}
+
+// 首项是 pf.none、含某个取值的那只下拉(所在地含 ON,身份含 pgwp;教育经历的三只首项是 fit.edu*)
+function selectWith(host: HTMLElement, value: string): HTMLSelectElement {
+  const el = Array.from(host.querySelectorAll('select')).find((s) =>
+    s.options[0]?.textContent === 'pf.none' && Array.from(s.options).some((o) => o.value === value))
+  if (el == null) {
+    throw new Error('select not rendered: ' + value)
+  }
+  return el
+}
+
+function pick(el: HTMLSelectElement, value: string) {
+  const setValue = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set
+  act(() => {
+    setValue?.call(el, value)
+    el.dispatchEvent(new Event('change', { bubbles: true }))
+  })
+}
+
+function type(el: HTMLInputElement, value: string) {
+  const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+  act(() => {
+    setValue?.call(el, value)
+    el.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+}
+
+// 教育经历一段 = 三只下拉(所在地 / 公立私立 / 时长,DOM 里挨着),按序三只一组
+function eduLines(host: HTMLElement): HTMLSelectElement[][] {
+  const edu = Array.from(host.querySelectorAll('select')).filter((s) => s.options[0]?.textContent !== 'pf.none')
+  const out: HTMLSelectElement[][] = []
+  for (let i = 0; i < edu.length; i += 3) {
+    out.push(edu.slice(i, i + 3))
+  }
+  return out
 }
 
 beforeEach(() => {
   ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
   localStorage.clear()
   sessionStorage.clear()
+  document.cookie = 'o2p_li=; path=/; max-age=0'
   resetAnswersMemory()
   PATH.current = '/'
   ROUTER.replace.mockReset()
@@ -62,107 +141,94 @@ beforeEach(() => {
 afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
+  document.cookie = 'o2p_li=; path=/; max-age=0'
   document.body.innerHTML = ''
 })
 
-describe('换题挪焦点(收口审查)', () => {
-  function mountWizard(withMajors = false) {
-    server()
-    if (withMajors) {
-      // 热门专业一枚(向导一开就预取热门,得在挂载前换好假服务端;2026-10-04 撤跳过后要先选专业才点得动下一步)
-      vi.stubGlobal('fetch', vi.fn(async (url: string) => {
-        if (String(url).includes('/api/majors')) {
-          return reply(200, { majors: [{ code: '52.0301', titleEn: 'Accounting', titleZh: 'Accounting', titleKo: 'Accounting',
-            series: '52', grouping: '05', broads: [], popular: 1 }] })
-        }
-        return reply(200, { answers: null })
-      }))
-    }
-    // jsdom 没有 matchMedia(modal 桶判窄屏要它):按宽屏答,不挂监听
-    vi.stubGlobal('matchMedia', () => ({
-      matches: false, addEventListener: () => undefined, removeEventListener: () => undefined,
-      addListener: () => undefined, removeListener: () => undefined,
-    }))
-    const host = document.createElement('div')
-    document.body.appendChild(host)
-    const root = createRoot(host)
-    act(() => {
-      root.render(createElement(GateEdit, { t, seed: EMPTY_SEED, onClose: () => undefined, onSaved: () => undefined }))
-    })
-    return { host, root }
-  }
-
-  function question(host: HTMLElement): HTMLElement {
-    const el = host.querySelector('[tabindex="-1"]')
-    if (el == null) {
-      throw new Error('question not rendered')
-    }
-    return el as HTMLElement
-  }
-
-  it('④ 开屏不挪焦点;点目标大卡进第 2 题 → 焦点在题面(id 与 tabIndex -1);返回第 1 题再挪一次', () => {
-    const m = mountWizard()
-    const q1 = question(m.host)
-    expect(q1.id).not.toBe('')
-    expect(document.activeElement).not.toBe(q1)
-    expect(q1.textContent).toBe('gate.q.goal')
-
-    const card = m.host.querySelector('button[aria-pressed]') as HTMLButtonElement
-    act(() => card.click())
-    const q2 = question(m.host)
-    expect(q2.textContent).toBe('gate.q.major')
-    expect(document.activeElement).toBe(q2)
-
-    const back = m.host.querySelector('button[aria-label="ob.back"]') as HTMLButtonElement
-    act(() => back.click())
-    const again = question(m.host)
-    expect(again.textContent).toBe('gate.q.goal')
-    expect(document.activeElement).toBe(again)
+describe('⑤ 一页表单保存(2026-11-07 GateForm)', () => {
+  it('七格一次推进答案档;填了英文姓名另存署名;存成交还 onSaved', async () => {
+    const sent = server()
+    const onSaved = vi.fn()
+    const m = mount(onSaved)
+    act(() => (buttonOf(m.host, 'home.g.pr') as HTMLButtonElement).click())
+    pick(selectWith(m.host, 'ON'), 'ON')
+    await vi.waitFor(() => expect(buttonOf(m.host, 'Toronto')).not.toBeUndefined())
+    act(() => (buttonOf(m.host, 'Toronto') as HTMLButtonElement).click())
+    pick(selectWith(m.host, 'pgwp'), 'pgwp')
+    const [line] = eduLines(m.host)
+    pick(line?.[0] as HTMLSelectElement, 'ON')
+    pick(line?.[1] as HTMLSelectElement, 'public')
+    pick(line?.[2] as HTMLSelectElement, 'y1')
+    type(m.host.querySelector('input[placeholder="Li Wei"]') as HTMLInputElement, ' Li Wei ')
+    act(() => (buttonOf(m.host, 'gate.save') as HTMLButtonElement).click())
+    await vi.waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
+    const puts = sent.filter((s) => s.method === 'PUT' && s.url === '/api/quiz/answers')
+    expect(puts.length).toBeGreaterThan(0)
+    const basic = JSON.parse(puts[puts.length - 1]?.body as string).basic
+    expect(basic.goalBand).toBe(1)
+    expect(basic.resProv).toBe('ON')
+    expect(basic.resCity).toBe('Toronto')
+    expect(basic.fitWho).toBe('pgwp')
+    expect(basic.fitEdu).toEqual(['ON.public.y1'])
+    const names = sent.filter((s) => s.url === '/api/apply/name')
+    expect(names.map((s) => s.method)).toEqual(['PATCH'])
+    expect(JSON.parse(names[0]?.body as string)).toEqual({ senderName: 'Li Wei' })
     act(() => m.root.unmount())
   })
 
-  it('④ 下一步换题也挪;没答的题下一步点不动、没有「跳过这步」(2026-10-04 撤);同一题里重渲(打字、点专业)不挪', async () => {
-    const m = mountWizard(true)
-    const next = () => {
-      const buttons = Array.from(m.host.querySelectorAll('button'))
-      const b = buttons.find((x) => x.textContent === 'ob.next')
-      if (b == null) {
-        throw new Error('next not rendered')
-      }
-      return b
-    }
-    act(() => (m.host.querySelector('button[aria-pressed]') as HTMLButtonElement).click())
-    expect(Array.from(m.host.querySelectorAll('button')).some((x) => x.textContent === 'ob.skip')).toBe(false)
-    expect(next().disabled).toBe(true)
-    const q2 = question(m.host)
-    expect(q2.textContent).toBe('gate.q.major')
-    expect(document.activeElement).toBe(q2)
-    const other = document.createElement('input')
-    document.body.appendChild(other)
-    other.focus()
-    const input = m.host.querySelector('input') as HTMLInputElement
-    const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
-    act(() => {
-      setValue?.call(input, 'nu')
-      input.dispatchEvent(new Event('input', { bubbles: true }))
-    })
-    expect(input.value).toBe('nu')
-    expect(document.activeElement).toBe(other)
-    act(() => {
-      setValue?.call(input, '')
-      input.dispatchEvent(new Event('input', { bubbles: true }))
-    })
-    await vi.waitFor(() => {
-      const chip = Array.from(m.host.querySelectorAll('button[aria-pressed]')).find((x) => x.textContent === 'Accounting')
-      expect(chip).not.toBeUndefined()
-    })
-    const chip = Array.from(m.host.querySelectorAll('button[aria-pressed]')).find((x) => x.textContent === 'Accounting')
-    act(() => (chip as HTMLButtonElement).click())
-    expect(document.activeElement).toBe(other)
-    expect(next().disabled).toBe(false)
-    act(() => next().click())
-    expect(document.activeElement).toBe(question(m.host))
-    expect(question(m.host).textContent).toBe('prof.noc')
+  it('没登录(答案档 401):框不关、摆一行 gate.saveFail、不交还', async () => {
+    server(401)
+    const onSaved = vi.fn()
+    const m = mount(onSaved)
+    act(() => (buttonOf(m.host, 'home.g.jobs') as HTMLButtonElement).click())
+    act(() => (buttonOf(m.host, 'gate.save') as HTMLButtonElement).click())
+    await vi.waitFor(() => expect(m.host.textContent).toContain('gate.saveFail'))
+    expect(onSaved).not.toHaveBeenCalled()
+    expect(buttonOf(m.host, 'gate.save')).not.toBeUndefined()
+    act(() => m.root.unmount())
+  })
+})
+
+describe('⑥ 城市区(2026-11-07 改挂 GateForm)', () => {
+  it('选了省才出;点一个亮、再点取消;改选境外收起,再选回省城市没亮', async () => {
+    server()
+    const m = mount()
+    expect(m.host.textContent).not.toContain('gate.city')
+    const prov = selectWith(m.host, 'ON')
+    pick(prov, 'ON')
+    await vi.waitFor(() => expect(buttonOf(m.host, 'Toronto')).not.toBeUndefined())
+    expect(Array.from(m.host.querySelectorAll('button[aria-pressed]')).map((b) => b.textContent))
+      .toEqual(expect.arrayContaining(['Toronto', 'Ottawa']))
+    act(() => (buttonOf(m.host, 'Toronto') as HTMLButtonElement).click())
+    expect(buttonOf(m.host, 'Toronto')?.getAttribute('aria-pressed')).toBe('true')
+    act(() => (buttonOf(m.host, 'Toronto') as HTMLButtonElement).click())
+    expect(buttonOf(m.host, 'Toronto')?.getAttribute('aria-pressed')).toBe('false')
+    act(() => (buttonOf(m.host, 'Toronto') as HTMLButtonElement).click())
+    pick(prov, 'abroad')
+    expect(buttonOf(m.host, 'Toronto')).toBeUndefined()
+    pick(prov, 'ON')
+    await vi.waitFor(() => expect(buttonOf(m.host, 'Toronto')).not.toBeUndefined())
+    expect(buttonOf(m.host, 'Toronto')?.getAttribute('aria-pressed')).toBe('false')
+    act(() => m.root.unmount())
+  })
+})
+
+describe('⑦ 教育经历几段(2026-11-07 改挂 GateForm)', () => {
+  it('加到两段为止;✕ 删一段;只剩一段时 ✕ 清空那一段、总留一行', () => {
+    server()
+    const m = mount()
+    expect(eduLines(m.host)).toHaveLength(1)
+    act(() => (buttonOf(m.host, 'fit.addRow') as HTMLButtonElement).click())
+    expect(eduLines(m.host)).toHaveLength(2)
+    expect(buttonOf(m.host, 'fit.addRow')).toBeUndefined()
+    const removes = () => Array.from(m.host.querySelectorAll('button[title="fit.remove"]')) as HTMLButtonElement[]
+    act(() => removes()[1]?.click())
+    expect(eduLines(m.host)).toHaveLength(1)
+    pick(eduLines(m.host)[0]?.[0] as HTMLSelectElement, 'BC')
+    expect(eduLines(m.host)[0]?.[0]?.value).toBe('BC')
+    act(() => removes()[0]?.click())
+    expect(eduLines(m.host)).toHaveLength(1)
+    expect(eduLines(m.host)[0]?.[0]?.value).toBe('')
     act(() => m.root.unmount())
   })
 })

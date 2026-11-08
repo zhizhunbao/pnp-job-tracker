@@ -1,62 +1,70 @@
 /*
  * me 桶子桶 inbox 的私有样式(2026-11-07 收件箱在新域重写:左清单右阅读区、清单一封三行、阅读区按先后排)。
+ * 同日照 Outlook 网页版(Frank「和 outlook 一致就行」)整份重写:卡高随窗口、两栏各自滚;清单带头像、搜索、全部 / 未读;
+ * 阅读区灰底上一封一张白卡,顶上命令栏,底部回信就地展开。
  */
 
 /*
- * 卡里一句说明(拉失败、空态)。
+ * 卡里一句说明(拉失败、空态、搜不到)。
  */
 .note {
   color: var(--text2);
   font-size: 13px;
-  padding: 12px 0;
+  padding: 12px 16px;
 }
 
 /*
- * 收件箱卡:左右两栏贴边,不要卡的内衬(两栏自己留白)。
+ * 整张卡:左右两栏,高度随窗口(顶栏 + 页标题之外都给它),两栏各自滚。
  */
-.ibCard.ibCard {
-  padding: 0;
+.ibCard {
+  display: flex;
+  height: calc(100vh - 150px);
+  min-height: 480px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
   overflow: hidden;
 }
 
 /*
- * 两栏:窄屏只有清单一栏;宽屏左 340 清单、右阅读区。
- */
-.ibPanes {
-  display: grid;
-  grid-template-columns: 1fr;
-}
-
-/*
- * 宽屏两栏。
- */
-@media (width > 640px) {
-  .ibPanes {
-    grid-template-columns: 340px 1fr;
-    min-height: 420px;
-  }
-}
-
-/*
- * 清单一栏:竖排,右边一条细线与阅读区分开。
+ * 清单一栏:360 宽,头部(搜索 + 筛选)不动,下面清单自己滚。
  */
 .ibList {
+  width: 360px;
+  flex: none;
   display: flex;
   flex-direction: column;
-  min-width: 0;
   border-right: 1px solid var(--border);
+  min-width: 0;
 }
 
 /*
- * 清单里的一封:整块可点,三行竖排。加倍类压过 button 桶的底座。
+ * 清单头部:搜索框 + 「全部 / 未读」页签。
+ */
+.ibListHead {
+  padding: 12px 12px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+/*
+ * 清单本体:自己滚。
+ */
+.ibRows {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/*
+ * 清单里的一封:头像 + 三行,整块可点。加倍类压过 button 桶的底座。
  */
 .ibRow.ibRow {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 2px;
+  align-items: flex-start;
+  gap: 10px;
   width: 100%;
-  padding: 12px 14px;
+  height: auto;
+  padding: 12px 14px 12px 16px;
   border: 0;
   border-bottom: 1px solid var(--hairline);
   border-radius: 0;
@@ -65,20 +73,27 @@
   color: var(--text);
   font-weight: 400;
   position: relative;
-  height: auto;
 }
 
 /*
- * 当前那封:浅主色底 + 左边 3px 主色竖条。
+ * 悬停:浅底。
  */
-.ibRowOn.ibRowOn {
+.ibRow.ibRow:hover {
+  background: var(--bg);
+}
+
+/*
+ * 当前那封:浅主色底(2026-11-07 照 Outlook 改:选中只铺底,竖条归没读的)。
+ */
+.ibRowOn.ibRowOn,
+.ibRowOn.ibRowOn:hover {
   background: var(--hover-bg);
 }
 
 /*
- * 当前那封左边的竖条。
+ * 没读的那封左边一条 3px 主色竖条(Outlook 未读标记;原先选中项的竖条与未读小蓝点同日撤)。
  */
-.ibRowOn.ibRowOn::before {
+.ibUnread.ibUnread::before {
   content: '';
   position: absolute;
   left: 0;
@@ -89,42 +104,40 @@
 }
 
 /*
+ * 头像右边三行。
+ */
+.ibRowMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/*
  * 第一行:发件人左、日期右。
  */
 .ibTop {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
   gap: 8px;
 }
 
 /*
- * 发件人:一行放不下省略。
+ * 发件人:占满剩下的宽,放不下省略。
  */
 .ibSender {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 14px;
+  font-weight: 600;
 }
 
 /*
- * 没读的蓝点。
- */
-.ibDot {
-  flex: none;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--primary);
-}
-
-/*
- * 日期:灰字。
+ * 日期:灰字,不缩。
  */
 .ibDay {
   flex: none;
@@ -154,77 +167,157 @@
 }
 
 /*
- * 没读的:发件人与主题加粗。
+ * 没读的:发件人与主题主色(Outlook 未读)。
  */
 .ibUnread .ibSender,
 .ibUnread .ibSubject {
+  color: var(--primary);
   font-weight: 600;
 }
 
 /*
- * 阅读区一栏。
+ * 阅读区一栏:灰底,竖排(命令栏不动,会话自己滚)。
  */
 .ibPane {
+  flex: 1;
   min-width: 0;
-  padding: 16px 24px;
-}
-
-/*
- * 阅读区:竖排。
- */
-.ibRead {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  background: var(--bg);
 }
 
 /*
- * 阅读区标题:主题。
+ * 没选中时的一句。
+ */
+.ibPick {
+  margin: auto;
+  color: var(--text2);
+  font-size: 14px;
+}
+
+/*
+ * 阅读区:命令栏 + 会话。
+ */
+.ibRead {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * 命令栏:白底一行,下面一条细线。
+ */
+.ibCmd {
+  display: flex;
+  gap: 4px;
+  padding: 6px 12px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+/*
+ * 命令栏上的钮:图标 + 字。加倍类压过 button 桶的底座。
+ */
+.ibCmdBtn.ibCmdBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+/*
+ * 命令栏钮悬停。
+ */
+.ibCmdBtn.ibCmdBtn:hover {
+  background: var(--hover-bg);
+}
+
+/*
+ * 会话:自己滚,灰底上一封一张卡。
+ */
+.ibConv {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px 24px;
+}
+
+/*
+ * 主题大字。
  */
 .ibReadTitle {
-  font-size: 18px;
-  line-height: 24px;
+  margin: 0 0 4px;
+  font-size: 20px;
+  line-height: 28px;
   font-weight: 600;
   word-break: break-word;
 }
 
 /*
- * 阅读区发件人一行:灰字小号。
+ * 「关于你投的 <职位>」一行灰字。
  */
-.ibReadFrom {
+.ibAbout {
   color: var(--text2);
   font-size: 12px;
-  word-break: break-all;
-  margin-bottom: 4px;
+  margin-bottom: 12px;
 }
 
 /*
- * 一封信(来信或我的回信):上面一条细线隔开。
+ * 一封信卡片:白卡细边。
  */
 .ibMsg {
-  padding: 12px 0;
-  border-top: 1px solid var(--hairline);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
 }
 
 /*
- * 一封信的头:谁左、时刻右。
+ * 卡头:头像、谁、时刻一行。
  */
 .ibMsgHead {
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  color: var(--text2);
-  font-size: 12px;
-  margin-bottom: 6px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 /*
- * 谁写的:深字半粗。
+ * 谁 + 发给谁两行。
  */
 .ibMsgWho {
-  color: var(--text);
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
   font-size: 14px;
-  font-weight: 600;
+}
+
+/*
+ * 「发给 谁」灰字小号。
+ */
+.ibMsgTo {
+  color: var(--text2);
+  font-size: 12px;
+  word-break: break-all;
+}
+
+/*
+ * 时刻灰字。
+ */
+.ibMsgAt {
+  flex: none;
+  color: var(--text2);
+  font-size: 12px;
 }
 
 /*
@@ -238,28 +331,44 @@
 }
 
 /*
- * 阅读区与回信框底下的钮一行。
+ * 会话底部「回复」一行。
  */
-.ibActs {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
+.ibReplyRow {
+  margin-top: 4px;
 }
 
 /*
- * 回信正文框。
+ * 展开的写信框:白卡。
  */
 .ibCompose {
-  width: 100%;
-  margin-top: 8px;
-  padding: 10px 12px;
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 4px;
+}
+
+/*
+ * 写信的字框:无边,占满卡宽。
+ */
+.ibComposeText {
+  width: 100%;
+  border: 0;
+  outline: none;
+  resize: vertical;
   font: inherit;
   font-size: 14px;
   line-height: 1.55;
-  resize: vertical;
   box-sizing: border-box;
+}
+
+/*
+ * 写信框下一行钮:发送在前(Outlook 主钮在左)。
+ */
+.ibComposeActs {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 /*
@@ -269,4 +378,62 @@
   margin-top: 6px;
   font-size: 13px;
   color: var(--danger);
+}
+
+/*
+ * 窄屏(640 及以下):卡高随内容,清单铺满(读信走弹框)。
+ */
+@media (max-width: 640px) {
+  .ibCard {
+    height: auto;
+    min-height: 0;
+  }
+
+  .ibList {
+    width: 100%;
+    border-right: 0;
+  }
+}
+
+/*
+ * 会话底部「回复」钮:图标与字之间留 6(2026-11-07 截图验收:贴在一起)。
+ */
+.ibReplyBtn.ibReplyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/*
+ * 卡上发件人名:一行放不下省略(手机上不再折成三行,照 Outlook)。
+ */
+.ibMsgWho b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * 窄屏读信卡头:头像占两行,时刻挪到发件人下面一行(2026-11-07 截图验收:时刻与名字抢一行,名字只剩半截)。
+ */
+@media (max-width: 640px) {
+  .ibMsgHead {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 10px;
+    row-gap: 2px;
+    align-items: start;
+  }
+
+  .ibMsgHead > :first-child {
+    grid-row: span 2;
+  }
+
+  .ibMsgAt {
+    grid-column: 2;
+  }
+
+  .ibConv {
+    padding: 12px 4px 16px;
+  }
 }

@@ -14,6 +14,8 @@
  * 同住 pane.module.css),上面「竖排、块间距与左栏宽见 quiz.module.css 的 .rail」现只剩左栏宽(.rail 当 railCls 递过去);
  * 在不在搜改读整机的 d.searchOn(原本件与常规档 OccBody 各写一遍「去空白后够 QUERY_MIN 个字」,判定收回整机一处);
  * 已选一行 OccTags 只收它真读的取词函数与整机(不递界面语言码)。
+ * 2026-11-07 gate 桶 GateEdit(连钮区 GateFoot)删:本件的宿主现为 gate 桶一页表单叠开的选择器框 GatePick(「选好了」在那边),
+ * 上面「钮区照旧归宿主(访客向导 GateFoot)」只剩来历。
  *
  * @author Frank
  * @time 2026-10-05 14:11:12

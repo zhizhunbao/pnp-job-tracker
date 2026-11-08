@@ -1,0 +1,91 @@
+/*
+ * drawer 域的私有样式(2026-11-07 立,照 Fluent 2 Drawer:overlay、position end;宽屏 480 贴右边,640 及以下铺满)。
+ */
+
+/*
+ * 遮罩:盖满整屏,高过顶栏(30),低过 modal 桶的弹框(49)—— 面板里点开的弹框(选专业、选职业)要叠在面板上面。
+ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.3);
+  z-index: 45;
+}
+
+/*
+ * 面板:贴右边、铺满高,标题 / 正文 / 底栏三段竖排。
+ */
+.panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 480px;
+  max-width: 100vw;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+}
+
+/*
+ * 标题一行:标题左、× 右,下面一条细线。
+ */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+/*
+ * 标题字:18 半粗。
+ */
+.title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+/*
+ * × 钮:36 见方。加倍类压过 button 桶的底座。
+ */
+.close.close {
+  width: 36px;
+  height: 36px;
+  color: var(--text2);
+  font-size: 18px;
+}
+
+/*
+ * 正文:占满中间,内容多了自己滚。
+ */
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+/*
+ * 底栏:一行钮靠左(Fluent 2 Drawer 的 footer 主钮在前),上面一条细线。
+ */
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+}
+
+/*
+ * 窄屏(640 及以下):面板铺满整屏。
+ */
+@media (max-width: 640px) {
+  .panel {
+    width: 100vw;
+  }
+}

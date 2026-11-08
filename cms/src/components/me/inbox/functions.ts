@@ -13,10 +13,11 @@ import {
   ADDR_L, ADDR_R, CRED_INCLUDE, EV_UNREAD, HDR_CONTENT_TYPE, MD_FROM, MD_TO, METHOD_PATCH, METHOD_POST, MIME_JSON,
   ONE_SPACE, P_MSG, SNIPPET_LEN, SNIPPET_MORE, SPACE_RUN_RE, ST_UNAVAILABLE, TEXT_NONE, TOAST_ERR, TOAST_OK,
   URL_INBOX, URL_PREFS, URL_READ, URL_REPLY,
+  FILTER_UNREAD,
 } from './constants'
 import type {
   AfterReplyIn, CurIn, FlagSetIn, ForwardMakeIn, ForwardSavedIn, InboxItem, InboxRowClsIn, InboxView, LoadInboxIn,
-  OpenAppIn,
+  OpenAppIn, ShownIn,
   PickMakeIn, PickOfFn, ReplyPostIn, ReplyRespJson, ReplySendIn, SubjectIn, TextSetIn, UnpickIn, WithForwardIn,
   WithReadIn, WithReplyIn,
 } from './types'
@@ -464,4 +465,57 @@ export function inboxRowClsOf(x: InboxRowClsIn): string {
     cls = `${cls} ${cssOf(css.ibUnread)}`
   }
   return cls
+}
+
+/**
+ * 清单按搜索与筛选留哪几封(搜索不分大小写,搜发件人名、地址、主题、正文、职位名;「未读」只留没读的)。
+ *
+ * @param x 回包、搜索字与筛选。
+ * @returns 留下的信;回包还没到为空清单。
+ */
+export function shownOf(x: ShownIn): InboxItem[] {
+  if (x.data == null) {
+    return []
+  }
+  const needle = x.q.trim().toLowerCase()
+  const out: InboxItem[] = []
+  for (const m of x.data.items) {
+    if (x.filter === FILTER_UNREAD && m.read) {
+      continue
+    }
+    if (needle !== TEXT_NONE && hayOf(m).includes(needle) === false) {
+      continue
+    }
+    out.push(m)
+  }
+  return out
+}
+
+/**
+ * 一封信供搜索的整段字(小写)。
+ *
+ * @param m 那一封。
+ * @returns 拼好的字。
+ */
+export function hayOf(m: InboxItem): string {
+  return [m.fromName, m.fromAddr, m.subject, m.text, m.jobTitle].join(ONE_SPACE).toLowerCase()
+}
+
+/**
+ * 没读的封数。
+ *
+ * @param data 回包;还没回为 null。
+ * @returns 封数。
+ */
+export function unreadNOf(data: InboxView | null): number {
+  if (data == null) {
+    return 0
+  }
+  let n = 0
+  for (const m of data.items) {
+    if (m.read === false) {
+      n += 1
+    }
+  }
+  return n
 }

@@ -20,11 +20,11 @@ import type { MeJobsPageIn } from './types'
  * @param props 框架三格、当前用户、Pro 否与两个代数。
  * @returns 页标题 + 正文。
  */
-export function MeJobs({ t, narrow, open, onOpen, me, pro, gen, asked, onAsked }: MeJobsPageIn) {
+export function MeJobs({ t, narrow, open, onOpen, me, pro, gen, asked, onFill }: MeJobsPageIn) {
   return (
     <>
       <MeHead sec={SEC_SJOBS} t={t} narrow={narrow} open={open} onOpen={onOpen} />
-      <JobsBody t={t} pro={pro} plan={planOf(me)} gen={gen} asked={asked} onAsked={onAsked} openApp={openAppView} />
+      <JobsBody t={t} pro={pro} plan={planOf(me)} gen={gen} asked={asked} onFill={onFill} openApp={openAppView} />
     </>
   )
 }

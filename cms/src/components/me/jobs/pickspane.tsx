@@ -10,6 +10,9 @@
  * 2026-10-13 Frank「显示更多之后点开,还需要有收起功能」「收起放边上,显示更多放中间」:展开着同一位置换「收起 ▴」。
  * 2026-11-07 效果图(docs/design/我的/我的框架-20261107.md 2.1):卡头撤(条数挂页签上),「换一批」挪到表上方右端;
  * 一行只留「投递」,「删除」(这一岗以后不再推)撤。
+ * 2026-11-07 Frank「现在都按 Azure 的来」:打码行与盖在上面的大钮撤 —— 免费号锁住的在表下一行说「还有 N 条推荐」+
+ * 常规大小主钮「解锁其余 N 条」(开定价框;N 仍是锁住的全部条数 more);「显示更多 / 收起」只管没列出来的真行;
+ * 「换一批」再挪到页签那一行右端(JobsBody)。
  *
  * @author Frank
  * @time 2026-11-07 18:00:00
@@ -18,11 +21,11 @@ import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { useLang } from '@/components/i18n'
 import { MoreLine } from '@/components/pager'
-import { PICKS_FIRST, SWAP_KIND, TEXT_NONE, UPGRADE_KIND } from './constants'
-import { lockedRowsOf, pickColsOf, pickRowsOf } from './functions'
-import { useLazyCompanies, useLazyTitles, useLockTop } from './hooks'
+import { TEXT_NONE, UPGRADE_KIND } from './constants'
+import { pickColsOf, pickRowsOf } from './functions'
+import { useLazyCompanies, useLazyTitles } from './hooks'
 import { JobList } from './joblist'
-import { hiddenPicksOf, picksLockedN, picksOf, picksTotalOf, shownPicksOf, titledPicksOf } from './recommend'
+import { hiddenPicksOf, picksOf, shownPicksOf, titledPicksOf, unlockNOf } from './recommend'
 import type { PicksPaneIn } from './types'
 import css from './jobs.module.css'
 
@@ -30,13 +33,12 @@ import css from './jobs.module.css'
  * 「今日推荐」页签。
  *
  * @param props 取词函数、是不是 Pro 与推荐整机。
- * @returns 换一批 + 表 + 显示更多(或失败一句);还没拉到不渲。
+ * @returns 表 + 显示更多 + (免费号)解锁一行(或失败一句);还没拉到不渲。
  */
 export function PicksPane({ t, pro, p }: PicksPaneIn) {
   const [lang] = useLang()
   const titles = useLazyTitles({ items: titledPicksOf(p.data), lang })
   const cos = useLazyCompanies({ items: picksOf(p.data), lang })
-  const lock = useLockTop({ on: p.expanded && pro === false && picksLockedN(p.data) > 0, n: picksLockedN(p.data) })
   if (p.failed) {
     return <div className={cssOf(css.note)}>{t('mj.fail')}</div>
   }
@@ -44,32 +46,22 @@ export function PicksPane({ t, pro, p }: PicksPaneIn) {
     return null
   }
   const rows = pickRowsOf({ items: shownPicksOf({ items: p.data.picks, expanded: p.expanded }), lang, t, titles, cos })
-  const locked = lockedRowsOf({ data: p.data, show: p.expanded && pro === false, lang, t, titles })
   const hidden = hiddenPicksOf({ data: p.data, expanded: p.expanded })
+  const locked = unlockNOf({ pro, data: p.data })
   return (
     <>
-      {picksTotalOf(p.data) > PICKS_FIRST && (
-        <div className={cssOf(css.bar)}><Button kind={SWAP_KIND} sm onClick={p.onSwap}>{t('mj.swap')}</Button></div>
-      )}
-      {/* eslint-disable-next-line react-hooks/refs -- ref 对象只递给 DOM 挂载,渲染时不读 current */}
-      <div className={cssOf(css.lockWrap)} ref={lock.ref}>
-        <JobList rows={rows.concat(locked)} cols={pickColsOf({ t })}
-          empty={<div className={cssOf(css.note)}>{t('mj.picksEmpty')}</div>} />
-        {/* eslint-disable-next-line react-hooks/refs -- top 是 state(useLockTop 量完落的格),不是 ref.current */}
-        {lock.top != null && (
-          <div className={cssOf(css.lockCover)}
-            // eslint-disable-next-line react/forbid-dom-props, react-hooks/refs -- 打码行上沿:量出来的运行时像素(是 state)
-            style={{ top: lock.top }}>
-            <Button kind={UPGRADE_KIND} xl onClick={p.onUpsell} className={cssOf(css.lockBtn)}>
-              {t('mj.unlock', { n: p.data.more })}
-            </Button>
-          </div>
-        )}
-      </div>
+      <JobList rows={rows} cols={pickColsOf({ t })}
+        empty={<div className={cssOf(css.note)}>{t('mj.picksEmpty')}</div>} />
       {(hidden > 0 || p.expanded) && (
         <MoreLine shown={rows.length} total={rows.length + hidden} loading={false}
           moreText={t('loadMore', { n: hidden, left: hidden })} allText={TEXT_NONE} onMore={p.onExpand}
           foldText={t('fold.up')} onFold={p.onFold} />
+      )}
+      {locked > 0 && (
+        <div className={cssOf(css.lockLine)}>
+          <span>{t('mj.lockLine', { n: locked })}</span>
+          <Button kind={UPGRADE_KIND} onClick={p.onUpsell}>{t('mj.unlock', { n: locked })}</Button>
+        </div>
       )}
     </>
   )
