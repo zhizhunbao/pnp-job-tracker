@@ -13,7 +13,8 @@ import {
   ERR_DEFAULT, FRIEND_CODE, FRIEND_MSG, GATEWAY_MSG, LLM_MSG, TRANSLATE_CODE, TRANSLATE_TIMEOUT,
   UPSTREAM_HEAD, gatewayError, gatewayErrorOf, isGatewayError, llmError, translateError,
 } from '@/lib/error'
-import { LLM_FN, LLM_LOG, LOG_MSG_MAX, log } from '@/lib/log'
+import { LEDGER_LOG, LLM_FN, LLM_LOG, LOG_MSG_MAX, log } from '@/lib/log'
+import { STATE, fateOf, inputBytesOf, inputCharsOf, record, reserve, settle, usageCostOf } from './ledger'
 import {
   ALPHA_BASE, ALPHA_LEN, ALPHA_ZERO, ANSWER_NONE, ANTHROPIC_MODEL, BACKEND, BLOCK_TEXT, BULLET_PREFIX, BULLET_RE,
   BYTE_MASK, BYTE_SHIFT, CACHE_HIT, CONTENT_TYPE_NONE, DELTA_NONE, DETAIL_NONE, E_TRANSLATE_UNAVAILABLE, FNV_PRIME,
@@ -28,9 +29,9 @@ import {
   UPSTREAM_TEXT_NONE, VIA, WEB_FETCH, WHY_NONE, CJK_RE, HANGUL_RE, TRANS_LANG_KO, TRANS_LEN_RATIO_MAX, TRANS_LEN_SLACK,
 } from './constants'
 import type {
-  Alpha7In, Alpha7Out, AnthropicMessage, AnthropicParams, AnthropicStreamIn, AnthropicStreamParams, ArmOut,
+  Alpha7In, Alpha7Out, AnthropicMessage, AnthropicParams, AnthropicSendOut, AnthropicStreamIn, AnthropicStreamParams, ArmOut,
   BackendStreamIn, BackendStreamOut, CharCountIn, CharCountOut, CompleteBackendIn, CompleteBackendOut,
-  CompleteFriendIn, CompleteTextIn, CompleteTextOut, ContentTagIn, ContentTagOut, EmptyTextOut, Fnv1aIn, Fnv1aOut,
+  CompleteFreeIn, CompleteFriendIn, CompleteTextIn, CompleteTextOut, ContentTagIn, ContentTagOut, EmptyTextOut, Fnv1aIn, Fnv1aOut,
   FriendChatIn, FriendChatMaybeOut, FriendChatOut, FriendLlmReadyOut, FriendResult, GatewayMessage,
   GatewayMessagesIn, GatewayMessagesOut, IgnoreOut, LegacyRequest, LegacyResponse, MakeWatchIn, MakeWatchOut,
   MaybeV1Choice, MaybeV1Response, NullJsonOut, NumberLinesIn, NumberLinesOut, OllamaRequest, OllamaResponse,
@@ -40,7 +41,7 @@ import type {
   SplitMessagesIn, SplitMessagesOut, StreamChatIn, StreamChatOut, StripMdIn, StripMdOut, SummarizeNewsIn,
   SummarizeNewsOut, SystemOfIn, SystemOfOut, TextOfIn, TextOfOut, TranslateChunkIn, TranslateChunkOut,
   TranslateLinesIn, TranslateLinesOut, TranslateReadyOut, TranslateResponse, TurnsOfIn, TurnsOfOut, V1AnswerOfIn,
-  V1AnswerOfOut, V1LogMeta, V1Request, V1Response, WatchWhy, WebFetchToolIn, WebFetchToolOut, TranslationOkIn,
+  V1AnswerOfOut, V1LogMeta, V1Request, V1Response, WatchWhy, WebFetchToolIn, WebFetchToolOut, TranslationOkIn, UsageTokens,
 } from './types'
 
 // =========================================================================
@@ -465,7 +466,37 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
       + `${LLM_LOG.slash}${meta.complTok}`
       + `${LLM_LOG.finish}${meta.finish}`,
   })
-  return { answer, sources: [], cached: xCache === CACHE_HIT, via: VIA.v1, xCache }
+  const tokens = v1TokensOf(body)
+  return {
+    answer,
+    sources: [],
+    cached: xCache === CACHE_HIT,
+    via: VIA.v1,
+    xCache,
+    inputTokens: tokens.inputTokens,
+    outputTokens: tokens.outputTokens,
+  }
+}
+
+/**
+ * 回包里的 token 用量。流式回包不带,是 null。
+ *
+ * @param body 解析好的回包;没有 null。
+ * @returns 用量。
+ */
+function v1TokensOf(body: MaybeV1Response): UsageTokens {
+  if (body == null || body.usage == null) {
+    return { inputTokens: null, outputTokens: null }
+  }
+  let inputTokens: number | null = null
+  let outputTokens: number | null = null
+  if (body.usage.prompt_tokens != null) {
+    inputTokens = body.usage.prompt_tokens
+  }
+  if (body.usage.completion_tokens != null) {
+    outputTokens = body.usage.completion_tokens
+  }
+  return { inputTokens, outputTokens }
 }
 
 /**
@@ -647,7 +678,7 @@ async function chatLegacy(input: FriendChatIn): FriendChatOut {
     text: `${LLM_LOG.legacyOk}${cached}${LLM_LOG.in}${input.prompt.length}${LLM_LOG.ch}`
       + `${LLM_LOG.out}${answer.length}${LLM_LOG.ch}${LLM_LOG.webSearch}${webUsed}`,
   })
-  return { answer, sources, cached: cached, via: VIA.legacy, xCache: null }
+  return { answer, sources, cached: cached, via: VIA.legacy, xCache: null, inputTokens: null, outputTokens: null }
 }
 
 /**
@@ -697,6 +728,7 @@ function textOf(input: TextOfIn): TextOfOut {
 }
 
 /**
+ * 🔴 2026-11-08 本函数的 anthropic 分支没过额度闸:现在没有调用方,接调用方之前必须先接 ledger。
  * fetchUrl(E6-03):给 anthropic 后端声明服务端 web_fetch 工具,让模型现场抓该 URL(公司官网)做 grounding。
  * 只在 anthropic 生效(ollama 无此能力,忽略);域名白名单锁定到该 URL 自己的 host,输入侧 max_content_tokens 封顶。
  *
@@ -937,19 +969,139 @@ function splitMessages(input: SplitMessagesIn): SplitMessagesOut {
  * 要一整段答案,不需要流。简历解析这类「一次调用抽结构化 JSON」的活走它。
  *
  * 走哪个后端由 input.provider 定,不传就跟全局 LLM_PROVIDER;三条通道的差别对调用方不可见。
+ * 2026-11-08 Frank「Claude API 额度绝不能超」:付费通道先过额度闸,其余通道只记账。
  *
- * @param input 整轮消息、输出上限,以及各调用点自己的通道与回调。
+ * @param input 功能名、连接、整轮消息、输出上限,以及各调用点自己的通道与回调。
  * @returns 整段答案。
  */
 export function completeText(input: CompleteTextIn): CompleteTextOut {
   const prov = input.provider || PROVIDER
-  if (prov === BACKEND.friend) {
-    return completeFriend(input)
-  }
   if (prov === BACKEND.anthropic) {
-    return completeAnthropic({ messages: input.messages, maxTokens: input.maxTokens })
+    return completeGated(input)
   }
-  return completeOllama({ messages: input.messages, maxTokens: input.maxTokens })
+  return completeFree({ call: input, prov: prov, degradedFrom: null })
+}
+
+/**
+ * 付费通道:先预扣最坏成本,花不起或上游失败就换免费通道(降级留痕),成功按真实用量结算。
+ *
+ * @param input 这次调用。
+ * @returns 整段答案。请求本身有问题或模型拒答时抛 LlmFailure。
+ */
+async function completeGated(input: CompleteTextIn): CompleteBackendOut {
+  const hold = await reserve({
+    db: input.db, feature: input.feature, model: ANTHROPIC_MODEL, maxTokens: input.maxTokens,
+    inputChars: inputCharsOf({ messages: input.messages }), inputBytes: inputBytesOf({ messages: input.messages }),
+  })
+  if (hold == null) {
+    return degradeToFriend(input)
+  }
+  const started = Date.now()
+  let res: AnthropicMessage
+  try {
+    res = await sendAnthropic({ messages: input.messages, maxTokens: input.maxTokens })
+  } catch (e) {
+    let status: number | null = null
+    if (e instanceof Anthropic.APIError && e.status != null) {
+      status = e.status
+    }
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    const fate = fateOf({ status: status, message: why })
+    let lost = 0
+    if (fate.keepHold) {
+      lost = hold.reservedUsd
+    }
+    await settle({
+      db: input.db, hold: hold, state: fate.state, costUsd: lost, usage: null, ms: Date.now() - started, error: why,
+      outputChars: 0,
+    })
+    if (fate.degrade) {
+      return degradeToFriend(input)
+    }
+    throw llmError({ msg: `${LLM_MSG.anthropicHead}${why}`, code: null })
+  }
+  const text = textOf({ blocks: res.content })
+  let cost = usageCostOf({ model: ANTHROPIC_MODEL, usage: res.usage })
+  if (cost == null) {
+    cost = hold.reservedUsd
+  }
+  await settle({
+    db: input.db, hold: hold, state: STATE.ok, costUsd: cost, usage: res.usage, ms: Date.now() - started, error: null,
+    outputChars: text.length,
+  })
+  if (res.stop_reason === STOP_REFUSAL) {
+    throw llmError({ msg: LLM_MSG.refusal, code: null })
+  }
+  return text
+}
+
+/**
+ * 换到免费的朋友网关,留一行痕。
+ *
+ * @param input 这次调用。
+ * @returns 整段答案。
+ */
+function degradeToFriend(input: CompleteTextIn): CompleteBackendOut {
+  log({ tag: LEDGER_LOG.tag, text: LEDGER_LOG.degraded + input.feature })
+  return completeFree({ call: input, prov: BACKEND.friend, degradedFrom: BACKEND.anthropic })
+}
+
+/**
+ * 免费通道:照常调用,成败都记一行账。
+ *
+ * @param x 这次调用、通道、从哪降级来。
+ * @returns 整段答案。
+ */
+async function completeFree(x: CompleteFreeIn): CompleteBackendOut {
+  const started = Date.now()
+  const inputChars = inputCharsOf({ messages: x.call.messages })
+  const model = freeModelOf(x.prov)
+  let usage: UsageTokens = { inputTokens: null, outputTokens: null }
+  function keepUsage(u: UsageTokens): void {
+    usage = u
+  }
+  x.call.onUsage = keepUsage
+  let text = ANSWER_NONE
+  try {
+    if (x.prov === BACKEND.friend) {
+      text = await completeFriend(x.call)
+    } else {
+      text = await completeOllama({ messages: x.call.messages, maxTokens: x.call.maxTokens })
+    }
+  } catch (e) {
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    await record({
+      db: x.call.db, feature: x.call.feature, channel: x.prov, model: model, degradedFrom: x.degradedFrom,
+      inputChars: inputChars, state: STATE.failed, outputChars: 0, ms: Date.now() - started, error: why,
+      inputTokens: null, outputTokens: null,
+    })
+    throw e
+  }
+  await record({
+    db: x.call.db, feature: x.call.feature, channel: x.prov, model: model, degradedFrom: x.degradedFrom,
+    inputChars: inputChars, state: STATE.ok, outputChars: text.length, ms: Date.now() - started, error: null,
+    inputTokens: usage.inputTokens, outputTokens: usage.outputTokens,
+  })
+  return text
+}
+
+/**
+ * 免费通道用的模型名。
+ *
+ * @param prov 通道。
+ * @returns 模型名。
+ */
+function freeModelOf(prov: string): string {
+  if (prov === BACKEND.friend) {
+    return GATEWAY_MODEL
+  }
+  return OLLAMA_MODEL
 }
 
 /**
@@ -983,15 +1135,16 @@ async function completeOllama(input: CompleteBackendIn): CompleteBackendOut {
 }
 
 /**
- * anthropic 通道用 SDK 一次性补全,只取回包里的文本块。
+ * anthropic 通道用 SDK 一次性补全,整个回包交给调用方结算。
  *
  * ANTHROPIC_API_KEY 由 SDK 自己从 env 解析。
+ * 🔴 maxRetries 0:SDK 默认自动重试,一次预扣不能对应多次真实请求。
  *
  * @param input 整轮消息与输出上限。
- * @returns 整段答案。SDK 报错或模型拒答时抛 LlmFailure。
+ * @returns 回包。失败原样抛出,由 completeGated 判怎么收场。
  */
-async function completeAnthropic(input: CompleteBackendIn): CompleteBackendOut {
-  const client = new Anthropic()
+function sendAnthropic(input: CompleteBackendIn): AnthropicSendOut {
+  const client = new Anthropic({ maxRetries: 0 })
   const system = systemOf({ messages: input.messages })
   const params: AnthropicParams = {
     model: ANTHROPIC_MODEL,
@@ -1001,20 +1154,7 @@ async function completeAnthropic(input: CompleteBackendIn): CompleteBackendOut {
   if (system) {
     params.system = system
   }
-  let res: AnthropicMessage
-  try {
-    res = await client.messages.create(params)
-  } catch (e) {
-    let why = String(e)
-    if (e instanceof Error) {
-      why = e.message
-    }
-    throw llmError({ msg: `${LLM_MSG.anthropicHead}${why}`, code: null })
-  }
-  if (res.stop_reason === STOP_REFUSAL) {
-    throw llmError({ msg: LLM_MSG.refusal, code: null })
-  }
-  return textOf({ blocks: res.content })
+  return client.messages.create(params)
 }
 
 /**
@@ -1048,6 +1188,9 @@ async function completeFriend(input: CompleteFriendIn): CompleteBackendOut {
   }
   if (input.onMeta != null) {
     input.onMeta({ cached: r.cached, via: r.via, xCache: r.xCache })
+  }
+  if (input.onUsage != null) {
+    input.onUsage({ inputTokens: r.inputTokens, outputTokens: r.outputTokens })
   }
   return r.answer
 }

@@ -42,6 +42,7 @@
 | `companies` | 业务名 | 公司详情页 | ✓ |
 | `funnel` | 业务名 | 转化漏斗五个数，只给管理员 | ✓ |
 | `plan` | 业务名 | 决策页：答题后三项判定 | ✓ |
+| `ops` | SWEBOK 第 6 章 Software Engineering Operations | 全称 operations(运维)。管理员运维页 | ✓ |
 | `queue` | 业务名 | 管理员队列页 | ✓ |
 | `rankings` | 业务名 | 榜单 | ✓ |
 | `start` | 业务名 | 就业把脉首页 | ✓ |

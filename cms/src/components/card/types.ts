@@ -291,3 +291,28 @@ export type ListCardIn = {
    */
   children: React.ReactNode
 }
+
+/**
+ * 一格数字。
+ */
+export type NumCardItem = {
+  /**
+   * 数字。
+   */
+  value: string
+
+  /**
+   * 标题。
+   */
+  label: string
+}
+
+/**
+ * NumCards 的 props。
+ */
+export type NumCardsIn = {
+  /**
+   * 各格。
+   */
+  cards: NumCardItem[]
+}

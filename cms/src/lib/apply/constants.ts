@@ -811,13 +811,7 @@ export const ST_QUEUED = 'queued'
  */
 export const ST_DECLINED = 'declined'
 
-
-
-
-
-
-
-
-
-
-
+/**
+ * 用量账本里的功能名:AI 写求职信(2026-11-08)。
+ */
+export const LETTER_FEATURE = 'apply.letter'

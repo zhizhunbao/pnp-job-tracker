@@ -605,3 +605,13 @@ export const E_CHARS = 'chars'
  * 生成简历的文件名尾巴(「Peng Wang Resume.pdf」)。
  */
 export const CV_FILE_TAIL = ' Resume.pdf'
+
+/**
+ * 用量账本里的功能名:上传简历解析(2026-11-08)。
+ */
+export const EXTRACT_FEATURE = 'resume.extract'
+
+/**
+ * 用量账本里的功能名:简历对照职位(2026-11-08)。
+ */
+export const MATCH_FEATURE = 'resume.match'

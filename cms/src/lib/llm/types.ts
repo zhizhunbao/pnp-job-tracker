@@ -9,6 +9,7 @@
 import type {
   ContentBlock, Message, MessageCreateParamsNonStreaming, MessageStreamParams, WebFetchTool20250910,
 } from '@anthropic-ai/sdk/resources/messages/messages'
+import type { Db } from '../db'
 
 // =========================================================================
 // 1. 库形状的本地名字
@@ -55,6 +56,11 @@ export type AnthropicTurn = {
  */
 export type AnthropicMessage = Message
 
+/**
+ * sendAnthropic 的出参:整个回包,结算要读 usage。
+ */
+export type AnthropicSendOut = Promise<AnthropicMessage>
+
 // =========================================================================
 // 2. 对外的形状
 // =========================================================================
@@ -83,6 +89,16 @@ export type Provider = 'friend' | 'anthropic' | 'ollama'
  * 网关一次调用的结果:答案本身,加上这一趟是怎么走的。
  */
 export type FriendResult = {
+  /**
+   * 输入 token;上游没报是 null。
+   */
+  inputTokens: number | null
+
+  /**
+   * 输出 token;上游没报是 null。
+   */
+  outputTokens: number | null
+
   /**
    * 整段答案,已 trim;空答案走不到这儿(上一层就抛了)
    */
@@ -470,6 +486,16 @@ export type StreamChatOut = Promise<ReadableStream<Uint8Array>>
  */
 export type CompleteTextIn = {
   /**
+   * 功能名,进用量账本(2026-11-08)。按功能看用量、定通道都靠它。
+   */
+  feature: string
+
+  /**
+   * 记账用的连接,由路由注入。
+   */
+  db: Db
+
+  /**
    * 整轮消息,system 混在里面
    */
   messages: ChatMessage[]
@@ -500,6 +526,11 @@ export type CompleteTextIn = {
    * via 记的是这次走了新端点还是回退到了旧 /api/chat。
    */
   onMeta?: (meta: ResultMeta) => void
+
+  /**
+   * 把这一趟的 token 用量回传给账本。只有 friend 主通道的非流式回包带用量。
+   */
+  onUsage?: (usage: UsageTokens) => void
 
   /**
    * 流式增量。只有 friend 通道支持,传了就让网关发 `stream:true`。
@@ -924,7 +955,42 @@ export type BackendStreamOut = Promise<ReadableStream<Uint8Array>>
 export type CompleteFriendIn = CompleteTextIn
 
 /**
- * completeAnthropic 与 completeOllama 的入参。这两条通道没有回调。
+ * 一趟的 token 用量;上游没报是 null。
+ */
+export type UsageTokens = {
+  /**
+   * 输入 token。
+   */
+  inputTokens: number | null
+
+  /**
+   * 输出 token。
+   */
+  outputTokens: number | null
+}
+
+/**
+ * completeFree 的入参。
+ */
+export type CompleteFreeIn = {
+  /**
+   * 这次调用
+   */
+  call: CompleteTextIn
+
+  /**
+   * 走哪条免费通道
+   */
+  prov: string
+
+  /**
+   * 从哪个通道降级来的;没降级是 null
+   */
+  degradedFrom: string | null
+}
+
+/**
+ * sendAnthropic 与 completeOllama 的入参。这两条通道没有回调。
  */
 export type CompleteBackendIn = {
   /**

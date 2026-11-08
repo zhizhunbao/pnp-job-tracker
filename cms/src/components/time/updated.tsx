@@ -12,7 +12,7 @@
  * @author Frank
  * @time 2026-09-03 16:00:00
  */
-import { fmtLocal, fmtLocalShort } from '@/lib/time'
+import { fmtLocal, fmtLocalSec, fmtLocalShort } from '@/lib/time'
 import { EMPTY_ISO, KEY_UPDATED } from './constants'
 import type { UpdatedIn } from './types'
 import css from './time.module.css'
@@ -26,9 +26,12 @@ import css from './time.module.css'
  * @param props ISO 串、取词函数、窄屏短写开没开与是否放进横幅。
  * @returns 一行文本;还没拿到时间时不渲。
  */
-export function Updated({ iso, t, narrowShort = false, inBanner = false }: UpdatedIn) {
+export function Updated({ iso, t, narrowShort = false, inBanner = false, seconds = false }: UpdatedIn) {
   if (iso === EMPTY_ISO) {
     return null
+  }
+  if (seconds) {
+    return <div className={css.updated} suppressHydrationWarning>{t(KEY_UPDATED, { t: fmtLocalSec(iso) })}</div>
   }
   const full = t(KEY_UPDATED, { t: fmtLocal(iso) })
   if (inBanner) {

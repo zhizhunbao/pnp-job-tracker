@@ -3694,3 +3694,166 @@ export const QUEUE_RUNS = `SELECT id, name, ok, error,
        extract(epoch FROM ended_at - started_at)::int AS dur_s,
        extract(epoch FROM now() - ended_at)::int AS ago_s
      FROM etl_unit_runs ORDER BY ended_at DESC LIMIT $1`
+
+// =========================================================================
+// 39. AI 额度闸与用量账本(2026-11-08;表 docs/sql/ai-ledger-20261108.sql)
+// =========================================================================
+
+/**
+ * 预扣最坏成本:一条语句里判线、记账、落一行。🔴 靠 UPDATE 的行锁防并发冲线:READ COMMITTED 下
+ * 排在后面的 UPDATE 拿到锁后按最新行重判 WHERE,所以不能拆成「先查再写」。
+ * 没有在期的额度、总线或日线放不下 = 零行(调用方按花不起处理)。
+ * $1=最坏成本(美元),$2=功能名,$3=通道,$4=模型,$5=送进去的字符数。
+ */
+export const AI_RESERVE = `WITH b AS (
+       UPDATE ai_budgets
+          SET used_usd = used_usd + $1::numeric,
+              day_used_usd = CASE WHEN day_key = (now() AT TIME ZONE 'utc')::date
+                                  THEN day_used_usd + $1::numeric ELSE $1::numeric END,
+              day_key = (now() AT TIME ZONE 'utc')::date
+        WHERE active AND now() >= starts_at AND now() < expires_at
+          AND used_usd + $1::numeric <= limit_usd
+          AND CASE WHEN day_key = (now() AT TIME ZONE 'utc')::date
+                   THEN day_used_usd ELSE 0 END + $1::numeric <= day_limit_usd
+       RETURNING id)
+     INSERT INTO ai_usage (budget_id, feature, channel, model, state, reserved_usd, input_chars)
+     SELECT b.id, $2, $3, $4, 'reserved', $1::numeric, $5::int FROM b
+     RETURNING id`
+
+/**
+ * 结算一次预扣:用量行收尾,额度行退回「预扣 - 实际」。只认 state='reserved',重复结算不会退两次。
+ * 换了 UTC 日的不动日线。
+ * $1=用量行 id,$2=终态,$3=实际成本,$4=输入 token,$5=输出 token,$6=缓存读 token,$7=缓存写 token,
+ * $8=耗时毫秒,$9=失败原因,$10=拿回来的字符数,$11=从哪降级。
+ */
+export const AI_SETTLE = `WITH u AS (
+       UPDATE ai_usage
+          SET state = $2, cost_usd = $3::numeric, input_tokens = $4::int, output_tokens = $5::int,
+              cache_read_tokens = $6::int, cache_write_tokens = $7::int, ms = $8::int, error = $9,
+              output_chars = $10::int, degraded_from = $11, settled_at = now()
+        WHERE id = $1::bigint AND state = 'reserved'
+       RETURNING budget_id, reserved_usd, created_at)
+     UPDATE ai_budgets b
+        SET used_usd = GREATEST(0, b.used_usd - u.reserved_usd + $3::numeric),
+            day_used_usd = CASE WHEN b.day_key = (u.created_at AT TIME ZONE 'utc')::date
+                                THEN GREATEST(0, b.day_used_usd - u.reserved_usd + $3::numeric)
+                                ELSE b.day_used_usd END
+       FROM u WHERE b.id = u.budget_id`
+
+/**
+ * 记一次不走预扣的调用(免费通道、被闸拦下)。
+ * $1=功能名,$2=通道,$3=模型,$4=状态,$5=从哪降级,$6=送进去的字符数,$7=拿回来的字符数,$8=耗时毫秒,$9=失败原因,
+ * $10=输入 token,$11=输出 token。
+ */
+export const AI_RECORD = `INSERT INTO ai_usage (feature, channel, model, state, degraded_from, input_chars, output_chars, ms, error, settled_at, input_tokens, output_tokens)
+     VALUES ($1, $2, $3, $4, $5, $6::int, $7::int, $8::int, $9, now(), $10::int, $11::int)`
+
+// =========================================================================
+// 40. 运维页(2026-11-08;lib/ops)
+// =========================================================================
+
+/**
+ * 全部调度单元,带最后一轮的时长与报错。排序同队列页。
+ */
+export const OPS_UNITS = `SELECT u.name, u.interval_s, u.state, u.last_ok,
+       extract(epoch FROM now() - u.started_at)::int AS run_s,
+       extract(epoch FROM now() - u.ended_at)::int AS ago_s,
+       extract(epoch FROM u.next_at - now())::int AS due_s,
+       extract(epoch FROM r.ended_at - r.started_at)::int AS last_dur_s,
+       to_char(u.started_at AT TIME ZONE 'America/Toronto', 'YYYY-MM-DD HH24:MI:SS') AS started_text,
+       r.error
+     FROM etl_units u
+     LEFT JOIN (SELECT DISTINCT ON (name) name, started_at, ended_at, error FROM etl_unit_runs ORDER BY name, ended_at DESC) r ON r.name = u.name
+     ORDER BY (u.state = 'run') DESC, CASE WHEN u.state = 'run' THEN u.started_at END ASC, u.next_at ASC NULLS LAST, u.name`
+
+/**
+ * 运行历史:最近跑完的在前。$1=条数上限。
+ */
+export const OPS_RUNS = `SELECT id, name, ok, error,
+       extract(epoch FROM ended_at - started_at)::int AS dur_s,
+       to_char(started_at AT TIME ZONE 'America/Toronto', 'YYYY-MM-DD HH24:MI:SS') AS started_text,
+       to_char(ended_at AT TIME ZONE 'America/Toronto', 'YYYY-MM-DD HH24:MI:SS') AS ended_text
+     FROM etl_unit_runs ORDER BY ended_at DESC LIMIT $1`
+
+/**
+ * 已处理完的投递,最近的在前。$1=条数上限。
+ */
+export const OPS_APPLY_DONE = `SELECT a.id, a.status, a.job_title, a.company, u.email,
+       to_char(a.updated_at AT TIME ZONE 'America/Toronto', 'YYYY-MM-DD HH24:MI:SS') AS done_text, count(*) OVER ()::int AS total
+     FROM applications a LEFT JOIN users u ON u.id = a.user_id
+     WHERE a.status IN ('sent', 'replied', 'bounced', 'declined')
+     ORDER BY a.updated_at DESC LIMIT $1`
+
+/**
+ * 投递四格。
+ */
+export const OPS_APPLY_STATS = `SELECT count(*) FILTER (WHERE status = 'queued')::int AS waiting,
+       count(*) FILTER (WHERE status = 'sending')::int AS working,
+       count(*) FILTER (WHERE status IN ('sent', 'replied', 'bounced') AND sent_at >= date_trunc('day', now() AT TIME ZONE 'America/Toronto') AT TIME ZONE 'America/Toronto')::int AS done_today,
+       extract(epoch FROM now() - min(updated_at) FILTER (WHERE status IN ('queued', 'sending')))::int AS oldest_s
+     FROM applications`
+
+/**
+ * 官网抓取历史,最近的在前。$1=条数上限。
+ */
+export const OPS_SITES_DONE = `SELECT key, name, stage, open_count, stage_note,
+       to_char(stage_at AT TIME ZONE 'America/Toronto', 'YYYY-MM-DD HH24:MI:SS') AS done_text, count(*) OVER ()::int AS total
+     FROM employer_explore WHERE stage IN ('done', 'none')
+     ORDER BY stage_at DESC NULLS LAST LIMIT $1`
+
+/**
+ * 官网抓取四格。
+ */
+export const OPS_SITES_STATS = `SELECT count(*) FILTER (WHERE stage = 'queued')::int AS waiting,
+       count(*) FILTER (WHERE stage IN ('find', 'fetch', 'facts'))::int AS working,
+       count(*) FILTER (WHERE stage IN ('done', 'none') AND stage_at >= date_trunc('day', now() AT TIME ZONE 'America/Toronto') AT TIME ZONE 'America/Toronto')::int AS done_today,
+       extract(epoch FROM now() - min(opened_at) FILTER (WHERE stage IN ('queued', 'find', 'fetch', 'facts')))::int AS oldest_s
+     FROM employer_explore`
+
+/**
+ * 译名历史,最近的在前。$1=条数上限。
+ */
+export const OPS_ALIAS_DONE = `SELECT key, name, status, seen_count,
+       to_char(done_at AT TIME ZONE 'America/Toronto', 'YYYY-MM-DD HH24:MI:SS') AS done_text, count(*) OVER ()::int AS total
+     FROM employer_explore WHERE status IN ('done', 'skip')
+     ORDER BY done_at DESC NULLS LAST LIMIT $1`
+
+/**
+ * 译名四格。译名没有「处理中」这一态,恒为 0。
+ */
+export const OPS_ALIAS_STATS = `SELECT count(*) FILTER (WHERE status = 'pending')::int AS waiting, 0 AS working,
+       count(*) FILTER (WHERE status IN ('done', 'skip') AND done_at >= date_trunc('day', now() AT TIME ZONE 'America/Toronto') AT TIME ZONE 'America/Toronto')::int AS done_today,
+       extract(epoch FROM now() - min(first_seen) FILTER (WHERE status = 'pending'))::int AS oldest_s
+     FROM employer_explore`
+
+/**
+ * 最近 30 天用量,按功能、模型、通道。被闸拦下的没发请求,不算。
+ */
+export const OPS_USAGE = `SELECT feature, model, channel, sum(input_tokens)::int AS input_tokens, sum(output_tokens)::int AS output_tokens,
+       sum(cache_read_tokens)::int AS cache_read, count(*)::int AS requests
+     FROM ai_usage WHERE created_at >= now() - interval '30 days' AND state <> 'blocked'
+     GROUP BY feature, model, channel ORDER BY requests DESC`
+
+/**
+ * 最近 30 天成本,按天、功能、模型。$1=条数上限。
+ */
+export const OPS_COST = `SELECT to_char(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS day, feature, model, sum(cost_usd)::float8 AS cost, count(*)::int AS requests
+     FROM ai_usage WHERE created_at >= now() - interval '30 days' AND state <> 'blocked'
+     GROUP BY 1, feature, model ORDER BY day DESC, cost DESC LIMIT $1`
+
+/**
+ * 成本四格:30 天合计与今天(UTC,与官方账单同口径)。
+ */
+export const OPS_COST_STATS = `SELECT COALESCE(sum(cost_usd), 0)::float8 AS total,
+       COALESCE(sum(cost_usd) FILTER (WHERE created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'), 0)::float8 AS today
+     FROM ai_usage WHERE created_at >= now() - interval '30 days'`
+
+/**
+ * 全部额度,正在生效的在前。
+ */
+export const OPS_BUDGETS = `SELECT name, limit_usd::float8 AS limit_usd, used_usd::float8 AS used_usd,
+       to_char(starts_at AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS') AS starts_text,
+       to_char(expires_at AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS') AS expires_text,
+       (active AND now() < expires_at) AS live,
+       GREATEST(0, ceil(extract(epoch FROM expires_at - now()) / 86400))::int AS days_left
+     FROM ai_budgets ORDER BY (active AND now() < expires_at) DESC, expires_at DESC`

@@ -1357,7 +1357,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'origin.hireac': 'HireAC', 'origin.gcjobs': 'GC Jobs',
   'origin.jobillico': 'Jobillico', 'origin.jobboom': 'Jobboom', 'origin.careerbeacon': 'CareerBeacon',
   // 2026-10-12 Frank「通道 改成 申请门槛」:资讯第三个页签改名(页里是各通道的门槛卡)
-  'nav.queue': 'Queue', 'nav.library': 'Library', 'nav.employers': 'Employers', 'nav.jobs': 'Jobs', 'nav.mine': 'My jobs', 'nav.pte': 'PTE practice', 'tl.tabNews': 'Updates', 'tl.tabStreams': 'Requirements',
+  'nav.ops': 'Operations', 'nav.queue': 'Queue', 'nav.library': 'Library', 'nav.employers': 'Employers', 'nav.jobs': 'Jobs', 'nav.mine': 'My jobs', 'nav.pte': 'PTE practice', 'tl.tabNews': 'Updates', 'tl.tabStreams': 'Requirements',
   'tl.tabDraws': 'Draws', 'tl.tabSteps': 'Pathways',
   'rank.bnSub': 'Ranked by immigration-value score', 'rank.bnRows': '{n} jobs on board',
   'acct.hero.login': 'Welcome back', 'acct.hero.reg': 'Sign up',

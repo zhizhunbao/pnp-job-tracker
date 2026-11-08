@@ -1,0 +1,92 @@
+/*
+ * ops 域的私有样式(2026-11-08;白卡、卡头、胶囊、表格都走全站通用件)。
+ */
+
+/*
+ * 外框右侧撑满。
+ */
+.main {
+  flex: 1 0 auto;
+  padding-bottom: 16px;
+}
+
+/*
+ * banner 上下距(同就业把脉 hero)。
+ */
+.hero {
+  padding-top: 16px;
+}
+
+/*
+ * 四格下面到第一张表的距离。
+ */
+.tables {
+  margin-top: 16px;
+}
+
+/*
+ * 卡头:标题加灰字条数。
+ */
+.secHead {
+  display: flex;
+  align-items: center;
+}
+
+/*
+ * 灰字条数。
+ */
+.secN {
+  margin-left: 6px;
+  font-weight: 400;
+  color: var(--text2);
+}
+
+/*
+ * 胶囊一排。
+ */
+.tags {
+  display: inline-flex;
+  gap: 4px;
+}
+
+/*
+ * 长文字列允许折行。
+ */
+.wrap {
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 手机卡片的空态。
+ */
+.empty {
+  padding: 18px 12px;
+  color: var(--text3);
+  font-size: 13px;
+  text-align: center;
+}
+
+/*
+ * 手机出卡片,桌面出表格。
+ */
+.desk {
+  display: none;
+  margin-top: 8px;
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+@media (width >= 641px) {
+  .desk {
+    display: block;
+  }
+
+  .cards {
+    display: none;
+  }
+}

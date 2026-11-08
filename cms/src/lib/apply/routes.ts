@@ -31,7 +31,7 @@ import {
   HDR_SVIX_SIG, HDR_SVIX_TS, MIME_PDF, MS_PER_S, NOSNIFF, P_JOB, SEND_IP_DAILY, SEND_IP_PREFIX, SEND_LIMIT_DAILY,
   SEND_LIMIT_PREFIX, SITE_DAY_MAX, ST_DRAFT, ST_QUEUED, ST_SENDING, TEXT_NONE, USER_DAY_MAX, WEBHOOK_SECRET,
   COVER_DEFAULT, KIND_COVER, LETTER_LIMIT_DAILY, LETTER_LIMIT_PREFIX, LETTER_MIN_LEN, LETTER_PROVIDER_ENV,
-  LETTER_TEMPERATURE, LETTER_TOKENS_MAX, P_ID, P_KIND, EV_RECEIVED,
+  LETTER_FEATURE, LETTER_TEMPERATURE, LETTER_TOKENS_MAX, P_ID, P_KIND, EV_RECEIVED,
 } from './constants'
 import {
   bounceKindOf, claimApply, coverFileOf, coverFillOf, coverPdfOf, idemKeyOf, isBouncedEmail,
@@ -380,6 +380,7 @@ export async function applyLetterRoute(req: Request): Promise<Response> {
   let out = TEXT_NONE
   try {
     out = letterCleanOf(await completeText({
+      feature: LETTER_FEATURE, db: db,
       messages: letterMessagesOf({
         title: job.title, company: job.company, city: job.city, province: job.province, jd, resume: resume.text,
         name: body.senderName,

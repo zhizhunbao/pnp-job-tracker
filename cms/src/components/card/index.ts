@@ -14,7 +14,8 @@ export { FoldCard } from './foldcard'
 export { JobCard } from './jobcard'
 export { ListCard } from './listcard'
 export { LockedRows } from './lockedrows'
+export { NumCards } from './numcards'
 export { ProCard } from './procard'
 export type {
-  CardIn, CardKvIn, CardKvItem, CardLink, FoldCardIn, JobCardIn, ListCardIn, LockedRowsIn, ProCardIn,
+  CardIn, CardKvIn, CardKvItem, CardLink, FoldCardIn, JobCardIn, ListCardIn, LockedRowsIn, NumCardItem, NumCardsIn, ProCardIn,
 } from './types'

@@ -17,9 +17,9 @@ import { cssOf } from '@/components/css'
 import { IconChart, IconClipboard, IconNews, IconTable, IconUser, IconUsers } from '@/components/icons'
 import { LinkButton } from '@/components/button'
 import {
-  A_ACCOUNT, A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_QUEUE, A_RANK, A_START, A_STATS,
+  A_ACCOUNT, A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_OPS, A_RANK, A_START, A_STATS,
   PATH_ACCOUNT, PATH_EMPLOYERS, PATH_HOME,
-  PATH_NEWS, PATH_QUEUE, PATH_START,
+  PATH_NEWS, PATH_OPS, PATH_START,
 } from './constants'
 import { withOn } from './functions'
 import type { HeaderNavIn } from './types'
@@ -55,8 +55,8 @@ export function HeaderNav({ t, active, loggedIn, admin }: HeaderNavIn) {
         </LinkButton>
       )}
       {admin && (
-        <LinkButton href={PATH_QUEUE} className={withOn({ base: cssOf(css.navLink), on: active === A_QUEUE })}>
-          <IconTable /> {t('nav.queue')}
+        <LinkButton href={PATH_OPS} className={withOn({ base: cssOf(css.navLink), on: active === A_OPS })}>
+          <IconTable /> {t('nav.ops')}
         </LinkButton>
       )}
     </div>

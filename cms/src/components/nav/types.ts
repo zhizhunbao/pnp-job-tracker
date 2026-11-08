@@ -390,3 +390,28 @@ export type NavDrawerOut = {
    */
   onClose: () => void
 }
+
+/**
+ * NavPick 手机分区条的 props。
+ */
+export type NavPickBarIn = {
+  /**
+   * 当前分类。
+   */
+  head: string
+
+  /**
+   * 当前子项;没有是空串。
+   */
+  sub: string
+
+  /**
+   * 抽屉开着没有。
+   */
+  open: boolean
+
+  /**
+   * 拉开抽屉。
+   */
+  onOpen: () => void
+}

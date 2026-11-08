@@ -8,5 +8,6 @@
 export { Nav } from './nav'
 export { NavDrawer } from './navdrawer'
 export { NavFrame } from './navframe'
+export { NavPick } from './navpick'
 export { useNavDrawer } from './hooks'
-export type { NavDrawerIn, NavDrawerOut, NavFrameIn, NavIn, NavItem } from './types'
+export type { NavDrawerIn, NavDrawerOut, NavFrameIn, NavIn, NavItem, NavPickBarIn } from './types'

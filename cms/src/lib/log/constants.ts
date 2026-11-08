@@ -1179,3 +1179,63 @@ export const START_LOG = {
    */
   partFailed: 'pulse part fetch failed, section hidden: ',
 } as const
+
+
+// =========================================================================
+// AI 额度闸与用量账本(lib/llm/ledger,2026-11-08)
+// =========================================================================
+
+/**
+ * `lib/llm/ledger` 写出去的全部字面量。
+ */
+export const LEDGER_LOG = {
+  /**
+   * 这个子桶每一行日志的来源标签。
+   */
+  tag: 'aiLedger',
+
+  /**
+   * 模型不在价表或输入超线,后面接功能名。
+   */
+  unpriced: 'not sent, cannot price feature=',
+
+  /**
+   * 后面接模型 id。
+   */
+  modelFrag: ' model=',
+
+  /**
+   * 预扣失败,后面接功能名。
+   */
+  reserveFailed: 'reserve failed, treated as no budget feature=',
+
+  /**
+   * 后面接失败原因。
+   */
+  whyFrag: ' why=',
+
+  /**
+   * 额度线拦下,后面接功能名。
+   */
+  blocked: 'blocked by budget feature=',
+
+  /**
+   * 后面接这次的最坏成本。
+   */
+  costFrag: ' worst_usd=',
+
+  /**
+   * 结算失败,后面接用量行 id。
+   */
+  settleFailed: 'settle failed id=',
+
+  /**
+   * 记账失败,后面接功能名。
+   */
+  recordFailed: 'record failed feature=',
+
+  /**
+   * 换通道,后面接功能名。
+   */
+  degraded: 'degraded to friend feature=',
+}

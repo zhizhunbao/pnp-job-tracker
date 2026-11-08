@@ -87,6 +87,11 @@ export type UpdatedIn = {
    * 出一行行内块,字色跟横幅走、不靠右,不再是右上角那枚灰字。
    */
   inBanner?: boolean
+
+  /**
+   * 显示到秒(可省 = 否;2026-11-08 运维页 Frank「所有时间改成年月日时分秒」)。
+   */
+  seconds?: boolean
 }
 
 /**

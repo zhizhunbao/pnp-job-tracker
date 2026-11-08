@@ -876,3 +876,65 @@
    */
   border-top: 1px solid var(--hairline);
 }
+
+/*
+ * 数字卡一排(2026-11-08 运维页立,形照就业把脉的四格;就业把脉改用它放换装批)。
+ */
+.nums {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.nums > div {
+  min-width: 0;
+  overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 12px;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  justify-content: center;
+}
+
+.nums b {
+  font-size: 24px;
+  line-height: 1.15;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.nums span {
+  max-width: 100%;
+  font-size: 12px;
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (width >= 900px) {
+  .nums {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .nums > div {
+    padding: 22px 14px;
+  }
+
+  .nums b {
+    font-size: 32px;
+  }
+
+  .nums span {
+    font-size: 12.5px;
+  }
+}

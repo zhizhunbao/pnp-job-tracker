@@ -657,3 +657,8 @@ export const REPLY_KEY = {
    */
   say: 'say',
 }
+
+/**
+ * 用量账本里的功能名:站内向导(2026-11-08)。
+ */
+export const LLM_FEATURE = 'guide'

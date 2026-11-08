@@ -17,7 +17,7 @@ import { searchNocByTitle } from '../jobs/server'
 import { completeText } from '../llm'
 import { checkLimit, freeGate, getUserOrNull, isPro } from '../quota/server'
 import { PRO_CHAT_DAILY } from '../quota'
-import { E_BAD, E_LIMIT, PRO_LIMIT_PREFIX, PROVIDER, TEMPERATURE, TEXT_NONE } from './constants'
+import { E_BAD, E_LIMIT, LLM_FEATURE, PRO_LIMIT_PREFIX, PROVIDER, TEMPERATURE, TEXT_NONE } from './constants'
 import { attachEmail, guide, toEmailInput, toInput } from './functions'
 import type { CompleteIn, EmailBody, GuideBody, NocPick } from './types'
 
@@ -49,7 +49,7 @@ export async function guideRoute(req: Request): Promise<Response> {
   }
   const db = await getDb()
   async function complete(input: CompleteIn): Promise<string> {
-    return completeText({ messages: input.messages, maxTokens: input.maxTokens, temperature: TEMPERATURE, provider: PROVIDER })
+    return completeText({ feature: LLM_FEATURE, db: db, messages: input.messages, maxTokens: input.maxTokens, temperature: TEMPERATURE, provider: PROVIDER })
   }
   async function resolveNoc(q: string): Promise<NocPick[]> {
     return searchNocByTitle({ db: db, q: q })

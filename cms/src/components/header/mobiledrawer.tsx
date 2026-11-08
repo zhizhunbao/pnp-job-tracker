@@ -23,8 +23,8 @@ import { IconX } from '@/components/icons'
 import { Button, LinkButton } from '@/components/button'
 
 import {
-  A_ACCOUNT, A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_QUEUE, A_RANK, A_START, A_STATS, BRAND_MARK,
-  PATH_ACCOUNT, PATH_EMPLOYERS, PATH_HOME, PATH_NEWS, PATH_QUEUE,
+  A_ACCOUNT, A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_OPS, A_RANK, A_START, A_STATS, BRAND_MARK,
+  PATH_ACCOUNT, PATH_EMPLOYERS, PATH_HOME, PATH_NEWS, PATH_OPS,
   PATH_START, PLAIN_BTN_KIND,
 } from './constants'
 import { stopClick, withOn } from './functions'
@@ -79,9 +79,9 @@ export function MobileDrawer({ t, active, onClose, lang, setLang, loggedIn, admi
             </LinkButton>
           )}
           {admin && (
-            <LinkButton href={PATH_QUEUE}
-              className={withOn({ base: cssOf(css.drawerItem), on: active === A_QUEUE })}>
-              {t('nav.queue')}
+            <LinkButton href={PATH_OPS}
+              className={withOn({ base: cssOf(css.drawerItem), on: active === A_OPS })}>
+              {t('nav.ops')}
             </LinkButton>
           )}
         </nav>

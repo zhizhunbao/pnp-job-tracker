@@ -86,6 +86,11 @@ export const PATH_ACCOUNT = '/account'
 export const PATH_QUEUE = '/queue'
 
 /**
+ * 运维页路径(2026-11-08 替换 /queue)。
+ */
+export const PATH_OPS = '/ops'
+
+/**
  * 高亮键:就业把脉。
  */
 export const A_START = 'start'
@@ -136,6 +141,11 @@ export const A_ACCOUNT = 'account'
 export const A_QUEUE = 'queue'
 
 /**
+ * 顶栏高亮:运维。
+ */
+export const A_OPS = 'ops'
+
+/**
  * 资料库下拉的高亮键(职业清单 / 官方资源 / 常见案例三页共用;2026-08-29 立,
  * 此前清单页借用 employers 高亮是历史遗留)。
  */
@@ -184,6 +194,7 @@ export const PATH_ACTIVE = [
   ['/steps', 'news'],
   ['/account', 'account'],
   ['/queue', 'queue'],
+  ['/ops', 'ops'],
   ['/jobs', 'jobs'],
   ['/', 'jobs'],
 ] as const

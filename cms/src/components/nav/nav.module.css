@@ -759,3 +759,54 @@ a.item.item:hover {
     padding: 12px 16px 32px;
   }
 }
+
+/*
+ * 手机分区条(2026-11-08 运维页立,形照就业把脉;就业把脉改用它放换装批)。
+ */
+.pickBar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+@media (min-width: 641px) {
+  .pickBar {
+    display: none;
+  }
+}
+
+.pick.pick {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 16px;
+  justify-content: flex-start;
+  font-size: 14px;
+  border-radius: 0;
+}
+
+.pickHead {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.pickSub {
+  color: var(--text2);
+  font-weight: 400;
+}
+
+.pickSep {
+  display: inline-grid;
+  color: var(--text2);
+  font-size: 12px;
+}
+
+.pickChev {
+  margin-left: auto;
+  display: inline-grid;
+  color: var(--text2);
+}
