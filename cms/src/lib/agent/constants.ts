@@ -28,7 +28,7 @@ export const TIMEOUT_MS = 12000
  * 2026-08-19 判定「不合并两个域」(理由见 docs/implementation/文案收拢/14_lib-llm域重构.md §1)。两边读同一个 env key:
  * 换模型请设 `ANTHROPIC_MODEL`(两边同时生效);真要改默认值,两处一起改。
  */
-export const MODEL_ID = 'claude-haiku-4-5'
+export const MODEL_ID = 'claude-haiku-5-5'
 
 /**
  * 日志与调试里认的短名。
@@ -63,22 +63,22 @@ export const MODEL_CONTEXT_WINDOW = 200000
 /**
  * 每百万 token 的价:进。
  */
-export const COST_INPUT = 1
+export const COST_INPUT = 0.1
 
 /**
  * 每百万 token 的价:出。
  */
-export const COST_OUTPUT = 5
+export const COST_OUTPUT = 0.5
 
 /**
  * 每百万 token 的价:读缓存。
  */
-export const COST_CACHE_READ = 0.1
+export const COST_CACHE_READ = 0.01
 
 /**
  * 每百万 token 的价:写缓存。
  */
-export const COST_CACHE_WRITE = 1.25
+export const COST_CACHE_WRITE = 0.125
 
 // =========================================================================
 // 2. 截断上限

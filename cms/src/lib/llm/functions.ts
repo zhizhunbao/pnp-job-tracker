@@ -17,6 +17,7 @@ import { LEDGER_LOG, LLM_FN, LLM_LOG, LOG_MSG_MAX, log } from '@/lib/log'
 import { STATE, fateOf, inputBytesOf, inputCharsOf, record, reserve, settle, usageCostOf } from './ledger'
 import {
   ALPHA_BASE, ALPHA_LEN, ALPHA_ZERO, ANSWER_NONE, ANTHROPIC_MODEL, BACKEND, BLOCK_TEXT, BULLET_PREFIX, BULLET_RE,
+  ANTHROPIC_THINKING,
   BYTE_MASK, BYTE_SHIFT, CACHE_HIT, CONTENT_TYPE_NONE, DELTA_NONE, DETAIL_NONE, E_TRANSLATE_UNAVAILABLE, FNV_PRIME,
   FNV_SEED_A, FNV_SEED_B, FRIEND_CALL_TIMEOUT_MS, FRIEND_INPUT_MAX, FRIEND_MAX_TOKENS, FRIEND_STREAM_TEMP,
   GATEWAY_BASE, GATEWAY_KEY, GATEWAY_MODEL, GATEWAY_TIMEOUT_MS, HEADER, KEEP_GROUP1, LEGACY_SOURCE_MAX, MD_BOLD,
@@ -1150,6 +1151,7 @@ function sendAnthropic(input: CompleteBackendIn): AnthropicSendOut {
     model: ANTHROPIC_MODEL,
     max_tokens: input.maxTokens,
     messages: turnsOf({ messages: input.messages }),
+    thinking: ANTHROPIC_THINKING,
   }
   if (system) {
     params.system = system

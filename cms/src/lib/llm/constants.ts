@@ -27,13 +27,25 @@ export const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434'
 export const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3:4b'
 
 /**
- * 云后端:Claude Haiku 4.5(单次 1-2k in + ≤500 out ≈ $0.004)。
+ * 云后端:Claude Haiku 5.5(2026-11-08 Frank「代码改成使用 5.5」,单价是 4.5 的十分之一)。
+ * 原为 Claude Haiku 4.5(单次 1-2k in + ≤500 out ≈ $0.004)。
  * 🔴 **这一行与 `lib/agent/constants.ts` 的 MODEL_ID 是全站仅有的一处重合**(2026-08-19 判定,理由见
  * docs/implementation/文案收拢/14_lib-llm域重构.md §1)。两边读的是**同一个 env key**,`ANTHROPIC_MODEL` 才是单一来源;
  * 只有 env 没设时才各自回落到这个字面量 —— 换模型请在 Render 上设 `ANTHROPIC_MODEL`(两边同时生效),
  * 真要改默认值就两处一起改。不做跨域 import:域之间不互相取常量,为一个字符串新建共享叶子是盖房子。
  */
-export const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5'
+export const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-5-5'
+
+/**
+ * 关思考(2026-11-08)。Haiku 5.5 不传就默认开,思考占 max_tokens,向导只给 300 会把回答挤没。
+ * 🔴 换 Sonnet 5.5 / Opus 5.5 要去掉这一项:它们收到 disabled 报 400。
+ */
+export const ANTHROPIC_THINKING = {
+  /**
+   * 不思考,与 Haiku 4.5 时的行为一致。
+   */
+  type: 'disabled',
+} as const
 
 // =========================================================================
 // 2. 朋友网关:地址、上限、端点
