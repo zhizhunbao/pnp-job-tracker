@@ -655,6 +655,16 @@ export type CvPanel = {
   onPreview: ActFn
 
   /**
+   * 从档案导入(2026-11-08 清单第 8 条)。
+   */
+  onImport: ActFn
+
+  /**
+   * 正在导入。
+   */
+  importing: boolean
+
+  /**
    * 关预览。
    */
   onPreviewClose: ActFn
@@ -1358,4 +1368,84 @@ export type MeUserJson = {
    * 邮箱。
    */
   email?: string
+}
+
+/**
+ * 登录人(取不到的格空串)。
+ */
+export type MeView = {
+  /**
+   * 用户 id;取不到是空串。
+   */
+  owner: string
+
+  /**
+   * 邮箱;取不到是空串。
+   */
+  email: string
+}
+
+/**
+ * `writeDraft` 的入参。
+ */
+export type WriteDraftIn = {
+  /**
+   * 登录人 id;空串不存。
+   */
+  owner: string
+
+  /**
+   * 草稿。
+   */
+  d: CvDraft
+}
+
+/**
+ * 并入档案的入参。
+ */
+export type ProfileMergeIn = {
+  /**
+   * 现有草稿。
+   */
+  d: CvDraft
+
+  /**
+   * 档案的联系方式。
+   */
+  c: CvContact
+
+  /**
+   * 档案的两张清单;拉不到为 null。
+   */
+  lists: ProfileLists | null
+}
+
+/**
+ * 并入档案的结果。
+ */
+export type ProfileMergeOut = {
+  /**
+   * 新草稿。
+   */
+  draft: CvDraft
+
+  /**
+   * 新加了几条。
+   */
+  added: number
+}
+
+/**
+ * 档案的两张清单(与子桶 prefill 同形,各家一份)。
+ */
+export type ProfileLists = {
+  /**
+   * 做过的工作。
+   */
+  works: string[]
+
+  /**
+   * 专业。
+   */
+  majors: string[]
 }

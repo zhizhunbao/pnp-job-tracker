@@ -130,6 +130,21 @@ export const PF_ROW_KEYS = {
    * 教育经历(2026-10-13 档案加题;一段一行)。
    */
   edu: 'pf.edu',
+
+  /**
+   * 做过的工作(2026-11-08)。
+   */
+  work: 'pf.work',
+
+  /**
+   * 匹配依据。
+   */
+  matchBy: 'pf.matchBy',
+
+  /**
+   * 匹配模式。
+   */
+  matchMode: 'pf.matchMode',
 }
 
 /**
@@ -281,3 +296,33 @@ export const MS_COL_TAGS = 'tags'
  * 「我的通道」手机卡的断点:窄于 768 一条一张卡(同「我的求职」的 NARROW_MAX)。
  */
 export const MS_NARROW_MAX = 767
+
+/**
+ * 匹配依据的「学历」值(与 gate 桶同一个值,各家一份)。
+ */
+export const PF_MATCH_EDU = 'edu'
+
+/**
+ * 匹配模式的「严格」值。
+ */
+export const PF_MODE_STRICT = 'strict'
+
+/**
+ * 「工作经历」词条。
+ */
+export const PF_BY_WORK_KEY = 'pf.byWork'
+
+/**
+ * 「学历」词条。
+ */
+export const PF_BY_EDU_KEY = 'pf.byEdu'
+
+/**
+ * 「默认」词条。
+ */
+export const PF_MODE_DEFAULT_KEY = 'pf.modeDefault'
+
+/**
+ * 「严格」词条。
+ */
+export const PF_MODE_STRICT_KEY = 'pf.modeStrict'

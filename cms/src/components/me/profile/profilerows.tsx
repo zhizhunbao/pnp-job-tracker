@@ -11,7 +11,7 @@
  */
 import { cssOf } from '@/components/css'
 import { PF_NONE_KEY, PF_NONE_NAME_KEY, PF_ROW_KEYS, PF_WHO_HEAD, TEXT_NONE } from './constants'
-import { pfGoalKeyOf } from './functions'
+import { pfGoalKeyOf, pfMatchByKeyOf, pfMatchModeKeyOf } from './functions'
 import { ProfileEdu } from './profileedu'
 import { ProfileItem } from './profileitem'
 import { ProfileNames } from './profilenames'
@@ -42,6 +42,10 @@ export function ProfileRows({ v, lang, t }: PfRowsIn) {
         {v.nocs.length === 0 && none}
         {v.nocs.length > 0 && <ProfileNames names={v.nocs} lang={lang} t={t} />}
       </ProfileItem>
+      <ProfileItem k={t(PF_ROW_KEYS.work)}>
+        {v.works.length === 0 && none}
+        {v.works.length > 0 && <ProfileNames names={v.works} lang={lang} t={t} />}
+      </ProfileItem>
       <ProfileItem k={t(PF_ROW_KEYS.where)}>
         {v.prov === TEXT_NONE && v.abroad === false && none}
         {(v.prov !== TEXT_NONE || v.abroad) && <ProfileWhere v={v} t={t} />}
@@ -54,6 +58,8 @@ export function ProfileRows({ v, lang, t }: PfRowsIn) {
         {v.edu.length === 0 && none}
         {v.edu.length > 0 && <ProfileEdu edu={v.edu} t={t} />}
       </ProfileItem>
+      <ProfileItem k={t(PF_ROW_KEYS.matchBy)}>{t(pfMatchByKeyOf(v.matchBy))}</ProfileItem>
+      <ProfileItem k={t(PF_ROW_KEYS.matchMode)}>{t(pfMatchModeKeyOf(v.matchMode))}</ProfileItem>
       <ProfileItem k={t(PF_ROW_KEYS.name)}>
         {v.name === TEXT_NONE && <span className={cssOf(css.none)}>{t(PF_NONE_NAME_KEY)}</span>}
         {v.name !== TEXT_NONE && v.name}

@@ -204,3 +204,10 @@
   justify-content: flex-end;
   gap: 4px;
 }
+
+/* 导出求职记录钮(2026-11-08 清单第 7 条)。 */
+.exportRow {
+  display: flex;
+  justify-content: flex-end;
+  margin: 8px 0;
+}

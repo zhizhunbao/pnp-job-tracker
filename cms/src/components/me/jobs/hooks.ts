@@ -14,15 +14,20 @@ import { makeLoadAlias } from '@/components/companies'
 import { untranslatedOf, useTitleMap } from '@/components/jobtitle'
 import {
   CO_SEP, GEN_NONE, STAGE_ALL, TEXT_NONE, URL_APPLIED, URL_APPLIED_DEL, URL_SAVED, URL_SAVED_DEL,
+  ST_DRAFT,
 } from './constants'
 import {
   firstTabOf, loadProfile, makeAskClose, makeAskOk, makeCoLand, makeFillHide, makeFlag, makeLoadMyJobs,
   makeRemoveMine, makeRemovePick, untranslatedCosOf,
+  stageDefOf, ymdOf,
 } from './functions'
 import { makeLoadPicks, makeSwap } from './recommend'
+import { downloadRecord, recordCsvOf } from './record'
+import type { RecordRow } from './record'
 import type {
   AskDel, AskPanel, FillPanel, JobsHookIn, JobsPanel, LazyCompaniesIn, LazyTitlesIn,
   MyJobItem, MyJobsHookIn, MyJobsPanel, PfView, PicksFact, PicksHookIn, PicksPanel, TitledItem,
+  RecordExportIn,
 } from './types'
 
 /**
@@ -166,4 +171,36 @@ export function useFill(): FillPanel {
     void loadProfile({ setView })
   }, [])
   return { view, hidden, onHide: makeFillHide({ setHidden }) }
+}
+
+/**
+ * 「导出求职记录」的手柄(2026-11-08 清单第 7 条):发出过的投递,一行一条(草稿不算求职活动)。
+ *
+ * @param x 投递清单与取词函数。
+ * @returns 点击手柄。
+ */
+export function useRecordExport(x: RecordExportIn): () => void {
+  return function onExport(): void {
+    const rows: RecordRow[] = []
+    if (x.items == null) {
+      return
+    }
+    for (const it of x.items) {
+      if (it.stage !== ST_DRAFT) {
+        const def = stageDefOf(it.stage)
+        let status = it.stage
+        if (def != null) {
+          status = x.t(def.labelKey)
+        }
+        rows.push({ date: ymdOf(it.updatedAt), title: it.title, company: it.company, status })
+      }
+    }
+    const head = {
+      date: x.t('mj.col.appliedOn'),
+      title: x.t('mj.col.title'),
+      company: x.t('mj.col.company'),
+      status: x.t('mj.col.status'),
+    }
+    downloadRecord({ csv: recordCsvOf({ head, rows }), day: ymdOf(new Date().toISOString()) })
+  }
 }

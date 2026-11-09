@@ -1725,6 +1725,21 @@ export type PfView = {
    * 教育经历串(「所在地.公立私立.时长」);空列 = 没答。
    */
   edu: string[]
+
+  /**
+   * 做过的工作(码与译名,2026-11-08)。
+   */
+  works: PfName[]
+
+  /**
+   * 匹配依据;空串 = 没选。
+   */
+  matchBy: string
+
+  /**
+   * 匹配模式;空串 = 没选。
+   */
+  matchMode: string
 }
 
 /**
@@ -1785,6 +1800,21 @@ export type PfSeed = {
    * 教育经历串。
    */
   edu: string[]
+
+  /**
+   * 做过的工作(职业码,2026-11-08)。
+   */
+  workNocs: string[]
+
+  /**
+   * 匹配依据;空串 = 没选。
+   */
+  matchBy: string
+
+  /**
+   * 匹配模式;空串 = 没选。
+   */
+  matchMode: string
 }
 
 /**
@@ -1855,4 +1885,19 @@ export type FillHideIn = {
    * 「这一页不再出」落格。
    */
   setHidden: (v: boolean) => void
+}
+
+/**
+ * useRecordExport 的入参。
+ */
+export type RecordExportIn = {
+  /**
+   * 投递清单;还没拉回来为 null。
+   */
+  items: MyJobItem[] | null
+
+  /**
+   * 取词函数。
+   */
+  t: (key: string, vars?: Record<string, string | number>) => string
 }

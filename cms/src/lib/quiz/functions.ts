@@ -1265,6 +1265,7 @@ export function normalize(cur: RawAnswersSource): Answers {
     frenchBand: frenchBand, frenchV2: true,
     studyMonthsBand: num(raw.studyMonthsBand), studyLevelBand: num(raw.studyLevelBand),
     majors: arr(raw.majors), fitWho: str(raw.fitWho), fitEdu: arr(raw.fitEdu),
+    workNocs: arr(raw.workNocs), matchBy: str(raw.matchBy), matchMode: str(raw.matchMode),
   }
   if (raw.done === true) {
     out.done = true
@@ -1595,13 +1596,15 @@ export async function loadQuizProfile(x: ProfileLoadIn): QuizProfileOut {
   const got = firstOf(await queryRows({ db: x.db, sql: SQL.QUIZ_USER_ANSWERS, params: [x.userId], map: toProfileBasic }))
   let b: ProfileBasicFact = {
     goal: 0, majors: [], nocs: [], prov: STR_NONE, abroad: false, city: STR_NONE, asked: false, who: STR_NONE, edu: [],
+    workNocs: [], matchBy: STR_NONE, matchMode: STR_NONE,
   }
   if (got != null) {
     b = got
   }
-  const [majors, nocs, city, sender] = await Promise.all([
+  const [majors, nocs, works, city, sender] = await Promise.all([
     loadMajorNames({ db: x.db, codes: b.majors }),
     loadNocNames({ db: x.db, codes: b.nocs }),
+    loadNocNames({ db: x.db, codes: b.workNocs }),
     loadCityNames({ db: x.db, city: b.city, prov: b.prov }),
     queryRows({ db: x.db, sql: SQL.APPLY_PREFS_GET, params: [x.userId], map: toSenderName }),
   ])
@@ -1610,7 +1613,10 @@ export async function loadQuizProfile(x: ProfileLoadIn): QuizProfileOut {
   if (first != null) {
     name = first
   }
-  return { goal: b.goal, majors, nocs, prov: b.prov, abroad: b.abroad, city, name, asked: b.asked, who: b.who, edu: b.edu }
+  return {
+    goal: b.goal, majors, nocs, prov: b.prov, abroad: b.abroad, city, name, asked: b.asked, who: b.who, edu: b.edu,
+    works, matchBy: b.matchBy, matchMode: b.matchMode,
+  }
 }
 
 /**
@@ -1716,13 +1722,25 @@ export function toProfileBasic(r: ProfileAnswersDbRow): ProfileBasicFact {
   if (typeof b.fitWho === 'string') {
     who = b.fitWho
   }
+  let workNocs: MaybeCodeList = null
+  if (Array.isArray(b.workNocs)) {
+    workNocs = b.workNocs
+  }
+  let matchBy = STR_NONE
+  if (typeof b.matchBy === 'string') {
+    matchBy = b.matchBy
+  }
+  let matchMode = STR_NONE
+  if (typeof b.matchMode === 'string') {
+    matchMode = b.matchMode
+  }
   let edu: MaybeCodeList = null
   if (Array.isArray(b.fitEdu)) {
     edu = b.fitEdu
   }
   return {
     goal, majors: textListOf(majors), nocs: textListOf(nocs), prov, abroad, city, asked: b.jobsAsked === true, who,
-    edu: textListOf(edu),
+    edu: textListOf(edu), workNocs: textListOf(workNocs), matchBy, matchMode,
   }
 }
 

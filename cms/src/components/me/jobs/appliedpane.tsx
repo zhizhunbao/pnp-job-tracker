@@ -8,12 +8,14 @@
  * @author Frank
  * @time 2026-11-07 18:00:00
  */
+import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { useLang } from '@/components/i18n'
-import { KIND_APPLIED } from './constants'
+import { KIND_APPLIED, OPEN_KIND, ST_DRAFT } from './constants'
 import { appliedColsOf, byStageOf, listRowsOf, stagePillsOf } from './functions'
 import { AskDelModal } from './askdelmodal'
-import { useAskDel, useLazyCompanies, useLazyTitles } from './hooks'
+import { useAskDel, useLazyCompanies, useLazyTitles, useRecordExport } from './hooks'
+import { hasSentOf } from './record'
 import { PagedJobList } from './pagedjoblist'
 import { StageBar } from './stagebar'
 import type { ListPaneIn } from './types'
@@ -30,6 +32,7 @@ export function AppliedPane({ t, l, openApp }: ListPaneIn) {
   const titles = useLazyTitles({ items: l.items, lang })
   const cos = useLazyCompanies({ items: l.items, lang })
   const a = useAskDel()
+  const onExport = useRecordExport({ items: l.items, t })
   if (l.failed) {
     return <div className={cssOf(css.note)}>{t('mj.fail')}</div>
   }
@@ -44,6 +47,11 @@ export function AppliedPane({ t, l, openApp }: ListPaneIn) {
     <>
       {l.items.length > 0 && (
         <StageBar pills={stagePillsOf({ items: l.items, stage: l.stage, t })} setStage={l.setStage} />
+      )}
+      {hasSentOf({ items: l.items, draft: ST_DRAFT }) && (
+        <div className={cssOf(css.exportRow)}>
+          <Button kind={OPEN_KIND} sm onClick={onExport}>{t('mj.exportRecord')}</Button>
+        </div>
       )}
       <PagedJobList key={l.stage} rows={rows} cols={appliedColsOf({ t })} t={t}
         empty={<div className={cssOf(css.note)}>{t('mj.emptyApplied')}</div>} />

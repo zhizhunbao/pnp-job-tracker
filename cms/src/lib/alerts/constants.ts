@@ -127,8 +127,9 @@ export const OPEN_BOARD = 'Open job board'
 
 /**
  * A/B 信的退订说明(saved search 在账户页删除即停)。
+ * 2026-11-08 清单第 16 条:账户页那一节早撤了,信里改成真的退订链接,这里是链接上的字。
  */
-export const UNSUB_SAVED = 'Delete the saved search on your account page to stop alerts'
+export const UNSUB_SAVED = 'Unsubscribe'
 
 /**
  * 岗位表一行(链接落本站详情页 —— 2026-08-03 Frank:直跳 Job Bank 原帖=流量白送)。
@@ -158,7 +159,7 @@ export const EMAIL_SHELL = `<div style="font-family:system-ui,sans-serif;color:#
     {draws}
     <p>{hi}</p>{table}
     <p style="margin-top:14px"><a href="{site}" style="color:#2563eb">{open}</a></p>
-    <p style="color:#9ca3af;font-size:12px">{unsub}</p></div>`
+    <p style="color:#9ca3af;font-size:12px"><a href="{unsubUrl}" style="color:#9ca3af">{unsub}</a></p></div>`
 
 /**
  * C 收藏版周报:一行(标题/公司/状态)。
@@ -614,7 +615,7 @@ export const UNSUB_MSG_INVALID = '<p>链接无效。<br/>Invalid link.</p>'
 /**
  * 退订页三态:已退订。
  */
-export const UNSUB_MSG_DONE = '<p><strong>已退订每周摘要。</strong><br/>You have been unsubscribed from the weekly digest.</p><p style="font-size:13px;color:#9ca3af">可在账户页随时重新开启 / Re-enable anytime on your account page.</p>'
+export const UNSUB_MSG_DONE = '<p><strong>已退订新岗提醒。</strong><br/>You have been unsubscribed from job alerts.</p><p style="font-size:13px;color:#9ca3af">可在账户页随时重新开启 / Re-enable anytime on your account page.</p>'
 
 /**
  * 退订页三态:操作失败。

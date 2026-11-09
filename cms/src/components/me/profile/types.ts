@@ -98,6 +98,21 @@ export type PfView = {
    * 教育经历串(「所在地.公立私立.时长」);空列 = 没答(2026-10-13)。
    */
   edu: string[]
+
+  /**
+   * 做过的工作(码与译名,2026-11-08)。
+   */
+  works: PfNames
+
+  /**
+   * 匹配依据;空串 = 没选。
+   */
+  matchBy: string
+
+  /**
+   * 匹配模式;空串 = 没选。
+   */
+  matchMode: string
 }
 
 /**
@@ -158,6 +173,21 @@ export type PfSeed = {
    * 教育经历串(2026-10-13)。
    */
   edu: string[]
+
+  /**
+   * 做过的工作(职业码,2026-11-08)。
+   */
+  workNocs: string[]
+
+  /**
+   * 匹配依据;空串 = 没选。
+   */
+  matchBy: string
+
+  /**
+   * 匹配模式;空串 = 没选。
+   */
+  matchMode: string
 }
 
 /**

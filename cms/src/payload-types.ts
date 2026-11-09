@@ -2640,6 +2640,10 @@ export interface SavedSearch {
    */
   lang?: string | null;
   /**
+   * 提醒频率:off / daily / weekly(2026-11-08;DDL docs/sql/alerts-freq-20261108.sql)
+   */
+  freq?: string | null;
+  /**
    * 上次发信游标(alerts run 回写,防重复通知)
    */
   lastNotifiedAt?: string | null;
@@ -4094,6 +4098,7 @@ export interface SavedSearchesSelect<T extends boolean = true> {
   name?: T;
   filters?: T;
   lang?: T;
+  freq?: T;
   lastNotifiedAt?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -39,7 +39,7 @@ vi.mock('next/navigation', () => ({
 const t = ((key: string) => key) as TFn
 
 // 档案全空(GateForm 七格从这里起)
-const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [] }
+const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [], workNocs: [], matchBy: '', matchMode: '' }
 
 const ON_CITIES = [
   { name: 'Toronto', zh: '', ko: '', jobs: 900 },

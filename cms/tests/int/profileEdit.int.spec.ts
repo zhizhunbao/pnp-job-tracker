@@ -80,40 +80,54 @@ describe('档案取数:答案档 → 五格', () => {
     const basic = { goalBand: 2, majors: ['11.0701', '52.0201'], nocs: ['21220'], resProv: 'ON', resCity: 'Mississauga' }
     const want = {
       goal: 2, majors: ['11.0701', '52.0201'], nocs: ['21220'], prov: 'ON', abroad: false, city: 'Mississauga', asked: false,
-      who: '', edu: [],
-    }
+      who: '', edu: [], workNocs: [], matchBy: '', matchMode: '' }
     expect(toProfileBasic({ answers: { basic } })).toEqual(want)
     expect(toProfileBasic({ answers: JSON.stringify({ basic }) })).toEqual(want)
   })
 
   it('金标:在境外不算省市;没省不留城市;格缺 / 错型按没答;没存过档全空', () => {
     expect(toProfileBasic({ answers: { basic: { status: 'overseas', resProv: 'ON', resCity: 'Toronto' } } }))
-      .toEqual({ goal: 0, majors: [], nocs: [], prov: '', abroad: true, city: '', asked: false, who: '', edu: [] })
+      .toEqual({
+        goal: 0, majors: [], nocs: [], prov: '', abroad: true, city: '', asked: false, who: '', edu: [],
+        workNocs: [], matchBy: '', matchMode: '',
+      })
     expect(toProfileBasic({ answers: { basic: { resCity: 'Toronto' } } }).city).toBe('')
     expect(toProfileBasic({ answers: { basic: { goalBand: null, majors: null, nocs: [7, '', '21220'] as unknown as string[] } } }))
-      .toEqual({ goal: 0, majors: [], nocs: ['21220'], prov: '', abroad: false, city: '', asked: false, who: '', edu: [] })
-    expect(toProfileBasic({ answers: null })).toEqual({ goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', asked: false, who: '', edu: [] })
+      .toEqual({
+        goal: 0, majors: [], nocs: ['21220'], prov: '', abroad: false, city: '', asked: false, who: '', edu: [],
+        workNocs: [], matchBy: '', matchMode: '',
+      })
+    expect(toProfileBasic({ answers: null })).toEqual({
+      goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', asked: false, who: '', edu: [],
+      workNocs: [], matchBy: '', matchMode: '',
+    })
     expect(toProfileBasic({ answers: { basic: { jobsAsked: true } } }).asked).toBe(true)
   })
 })
 
 const FULL = {
-  goal: 2, majors: ['11.0701'], nocs: ['21220'], prov: 'ON', abroad: false, city: 'Toronto', name: 'Li Wei', who: '', edu: [],
+  goal: 2, majors: ['11.0701'], nocs: ['21220'], prov: 'ON', abroad: false, city: 'Toronto', name: 'Li Wei', who: 'student', edu: ['ON|public|y2'],
+  workNocs: ['21220'], matchBy: '', matchMode: '',
 }
-const EMPTY = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [] }
+const EMPTY = {
+  goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [],
+  workNocs: [], matchBy: '', matchMode: '',
+}
 const PF_FULL = {
   goal: 2, majors: [{ code: '11.0701', en: 'CS', zh: '', ko: '' }], nocs: [{ code: '21220', en: 'Dev', zh: '', ko: '' }],
-  prov: 'ON', abroad: false, city: { code: '', en: 'Toronto', zh: '', ko: '' }, name: 'Li Wei', asked: false, who: '', edu: [],
+  prov: 'ON', abroad: false, city: { code: '', en: 'Toronto', zh: '', ko: '' }, name: 'Li Wei', asked: false, who: 'student',
+  edu: ['ON|public|y2'], works: [{ code: '21220', en: 'Dev', zh: '', ko: '' }], matchBy: '', matchMode: '',
 }
 
 describe('进我的求职先弹五题(2026-10-11)', () => {
   it('金标:都答了 → 没有空着的;全空 → 五题按原序;境外算答了所在地;姓名只有空白算没填', () => {
     expect(missingStepsOf(FULL)).toEqual([])
-    expect(missingStepsOf(EMPTY)).toEqual(['goal', 'major', 'job', 'prov', 'name'])
+    expect(missingStepsOf(EMPTY)).toEqual(['goal', 'major', 'job', 'work', 'prov', 'name', 'who', 'edu'])
     expect(missingStepsOf({ ...FULL, prov: '', abroad: true })).toEqual([])
     expect(missingStepsOf({ ...FULL, name: '   ', majors: [] })).toEqual(['major', 'name'])
     // 2026-10-13 身份、教育经历只在「修改」里问:没答也不算空着(老用户进「我的求职」不因加题再弹一次)
-    expect(missingStepsOf({ ...FULL, who: '', edu: [] })).toEqual([])
+    // 2026-11-08 清单第 3 条改判:进页弹题早撤了,身份和教育经历是推荐过滤的输入(151 人 0 人填),进「补全档案」提示条
+    expect(missingStepsOf({ ...FULL, who: '', edu: [] })).toEqual(['who', 'edu'])
   })
 
   it('金标(2026-11-07 补全提示条代替弹五题):档案没回来、都填了不出;空两样点名两样;空多于两样点名前两样再报总数', () => {

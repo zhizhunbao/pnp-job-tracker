@@ -38,6 +38,7 @@ export function CvBody({ p }: CvPartIn) {
         {p.err !== ERR_NONE && <div className={css.err}>{p.t(p.err, { c: p.chars.join(CHARS_SEP) })}</div>}
       </div>
       <div className={css.foot}>
+        <Button kind={BTN_SECONDARY} onClick={p.onImport} busy={p.importing}>{p.t('cv.import')}</Button>
         <Button kind={BTN_SECONDARY} onClick={p.onPreview}>{p.t('cv.preview')}</Button>
         <Button onClick={p.onSave} busy={p.saving}>{p.t('cv.save')}</Button>
       </div>

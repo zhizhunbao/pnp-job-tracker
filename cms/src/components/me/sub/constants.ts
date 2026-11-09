@@ -214,3 +214,68 @@ export const TOAST_WARN = 'warn'
  * 右上角提示:出错档(没存上;邮箱格式不对那句照旧贴在邮箱框下面)。
  */
 export const TOAST_ERR = 'err'
+
+/**
+ * 按筛选条件的提醒接口(2026-11-08 清单第 5、6 条;Payload 集合,本人 + 上限由集合自己管)。
+ */
+export const URL_ALERTS = '/api/saved-searches'
+
+/**
+ * 拉提醒清单的查询串。
+ */
+export const ALERTS_QUERY = '?limit=20&depth=0&sort=-createdAt'
+
+/**
+ * 接口路径分隔。
+ */
+export const PATH_SEP = '/'
+
+/**
+ * 职位板地址。
+ */
+export const URL_BOARD = '/jobs'
+
+/**
+ * 改频率用的方法。
+ */
+export const METHOD_PATCH = 'PATCH'
+
+/**
+ * 删除用的方法。
+ */
+export const METHOD_DELETE = 'DELETE'
+
+/**
+ * 按档案推荐那一行的身份。
+ */
+export const ALERT_KEY_PROFILE = 'profile'
+
+/**
+ * 删除菜单项的键。
+ */
+export const ACT_DEL = 'del'
+
+/**
+ * 提醒表:条件列键。
+ */
+export const AL_COL_NAME = 'name'
+
+/**
+ * 提醒表:频率列键。
+ */
+export const AL_COL_FREQ = 'freq'
+
+/**
+ * 提醒表:操作列键。
+ */
+export const AL_COL_ACT = 'act'
+
+/**
+ * 钮的档:次要。
+ */
+export const AL_BTN_KIND = 'secondary'
+
+/**
+ * 没选频率时按每天(与建表默认同)。
+ */
+export const FREQ_DAILY = 'daily'

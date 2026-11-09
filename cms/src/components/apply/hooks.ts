@@ -23,6 +23,7 @@ import {
   canNextOf, closeApply, loadStart, mailOf, makeAdd, makeAuthRetry, makeBack, makeCvDone, makeFile, makeNameChange,
   makeNext, makePickOf, makeQuietSave, makeSetTo, makeTab, nextKeyOf, noteOpened, openFromEvent,
   readApplyId, resumeHrefOf, resumeMimeOf, resumeNameOf, sentOfEvent, startStepOf, titledOf, upsellBackOf,
+  loadPushOffer, makePushOn,
 } from './functions'
 import {
   draftOptsOf, firstPickOf, makeLetterChange, makeLetterPickOf, makeLetterRewrite, makeResumeRewrite,
@@ -31,6 +32,7 @@ import {
 import type {
   ApplyCells, ApplyHostPanel, ApplyPageIn, ApplyPanel, ApplyResumeView, ApplyStartPanel, ApplyStartView,
   LetterOpt, MaybeRewrite, SentFn,
+  PushOfferIn, PushOfferPanel,
 } from './types'
 
 /**
@@ -266,4 +268,19 @@ export function useApplySent(fn: SentFn): void {
     }
     return off
   }, [fn])
+}
+
+/**
+ * 投出后一键开启推送那张卡的状态(进已投递一步时拉一次设置)。
+ *
+ * @param t 取词函数。
+ * @returns 收件邮箱、正在开与点击手柄。
+ */
+export function usePushOffer(t: PushOfferIn['t']): PushOfferPanel {
+  const [email, setEmail] = useState(TEXT_NONE)
+  const [busy, setBusy] = useState(false)
+  useEffect(function firstLoad() {
+    void loadPushOffer({ setEmail })
+  }, [])
+  return { email, busy, onOn: makePushOn({ email, t, setEmail, setBusy }) }
 }

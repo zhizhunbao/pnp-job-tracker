@@ -954,7 +954,7 @@ export const jobsZh = {
   'mj.appliedTitle': '我的投递', 'mj.unsent': '未发出',
   'mj.push': '新岗推送', 'mj.pushRow': '把推荐和收藏动态发到邮箱', 'mj.freqOff': '不发', 'mj.freqDaily': '每天', 'mj.freqWeekly': '每周',
   'mj.pushTo': '发到', 'mj.pushSave': '保存', 'mj.pushSaved': '已保存', 'mj.pushPending': '点 {e} 收到的链接后生效',
-  'mj.pushBad': '邮箱格式不对', 'mj.pushFail': '没保存上,再试一次', 'mj.pushMailFail': '确认信没发出去,再试一次',
+  'mj.pushDaily': '每天发给我', 'mj.pushOn': '新岗推送已开启', 'mj.pushBad': '邮箱格式不对', 'mj.pushFail': '没保存上,再试一次', 'mj.pushMailFail': '确认信没发出去,再试一次',
   // 2026-10-10 批 3「收件箱」(专属投递邮箱、雇主回信、站内回信)与「打开」一条投递的只读框
   'ib.title': '收件箱', 'ib.forward': '同时转到 {e}', 'ib.empty': '还没有雇主回信',
   'ib.search': '搜索邮件',
@@ -1098,7 +1098,7 @@ export const jobsZh = {
   'cv.m.7': '7 月', 'cv.m.8': '8 月', 'cv.m.9': '9 月', 'cv.m.10': '10 月',
   'cv.m.11': '11 月', 'cv.m.12': '12 月', 'cv.add': '添加', 'cv.edit': '修改',
   'cv.hide': '隐藏', 'cv.show': '显示', 'cv.del': '删除', 'cv.hidden': '已隐藏',
-  'cv.empty': '留空就不出现在简历上', 'cv.fromPf': '从我的档案带过来', 'cv.preview': '预览', 'cv.save': '保存为简历',
+  'cv.empty': '留空就不出现在简历上', 'cv.fromPf': '从我的档案带过来', 'cv.import': '从档案导入', 'cv.importDone': '已从档案导入 {n} 条', 'cv.importNone': '档案里没有新内容', 'mj.exportRecord': '导出求职记录', 'cv.preview': '预览', 'cv.save': '保存为简历',
   'cv.back': '返回修改', 'cv.cancel': '取消', 'cv.ok': '保存', 'cv.pv': '简历预览',
   'cv.en': '英文', 'cv.form.add': '添加{s}', 'cv.form.edit': '修改{s}', 'cv.form.contact': '修改联系方式',
   'cv.duty.open': '导入职责', 'cv.duty.find': '选职业', 'cv.duty.ph': '输入职位名,如 data engineer', 'cv.duty.loading': '查找中',
@@ -1194,7 +1194,7 @@ export const jobsZh = {
   'ob.resume.busy': '解析中…约 10 秒', 'ob.resume.done': '已识别 {n} 个职业方向,后面几步已预填',
   'ob.resume.fail': '解析没成——手动点选也很快', 'ob.resume.scan': '这份读不到文字(可能是扫描件),换个文件或手动填',
   'ob.resume.limit': '今天的解析次数用完了(5 次/天),明天再来或手动填', 'ob.resume.from': '从你的简历识别到:',
-  'ss.save': '保存此筛选', 'ss.name': '给这个筛选起个名字:', 'ss.saved': '已保存,可在账户页管理', 'ss.err': '保存失败(可能已达上限)', 'ss.pro': '免费可存 2 个筛选,Pro 可存 5 个', 'ss.title': '已保存的筛选', 'ss.none': '还没有保存的筛选 —— 在职位板设好筛选后点「保存此筛选」', 'ss.del': '删除', 'ss.note': '保存的筛选可随时在这里管理;有新职位命中时会发邮件提醒',
+  'al.profile': '按档案推荐', 'al.col.name': '提醒条件', 'al.col.freq': '频率', 'al.edit': '改条件', 'al.new': '建新提醒', 'al.delAsk': '删除这条提醒?', 'al.del': '删除', 'al.cancel': '取消', 'ss.alert': '创建提醒', 'ss.update': '更新提醒', 'ss.savedOk': '提醒已创建', 'ss.updated': '提醒已更新', 'ss.allJobs': '所有新岗', 'ss.save': '保存此筛选', 'ss.name': '给这个筛选起个名字:', 'ss.saved': '已保存,可在账户页管理', 'ss.err': '保存失败(可能已达上限)', 'ss.pro': '免费可存 2 个筛选,Pro 可存 5 个', 'ss.title': '已保存的筛选', 'ss.none': '还没有保存的筛选 —— 在职位板设好筛选后点「保存此筛选」', 'ss.del': '删除', 'ss.note': '保存的筛选可随时在这里管理;有新职位命中时会发邮件提醒',
   // 批A #134 通道直判+薪资三卡(文案铁律:一行放下,无废话)
   'fact.verdict': '判定', 'act.channel': '移民通道', 'eelist.listTitle': '类别清单',
   'ch.title': '这个岗能走哪条通道', 'ch.pnpRow': '省提名 PNP', 'ch.list': '清单',
@@ -1275,7 +1275,7 @@ export const siteZh = {
   'mj.fillGo': '去补全',
   'mj.fillSep': '、',
   'pf.goal': '目标', 'pf.majors': '专业', 'pf.jobs': '想做的工作', 'pf.where': '所在地', 'pf.name': '英文姓名',
-  'pf.who': '身份', 'pf.edu': '教育经历',
+  'pf.who': '身份', 'pf.edu': '教育经历', 'pf.work': '做过的工作', 'pf.matchBy': '匹配依据', 'pf.byWork': '工作经历', 'pf.byEdu': '学历', 'pf.matchMode': '匹配模式', 'pf.modeDefault': '默认', 'pf.modeStrict': '严格',
   // 2026-10-13「我的档案」下面的「我的通道」卡
   'pf.paths': '我的通道', 'pf.pathsAsk': '答完身份和教育经历,这里列出你能走的通道', 'pf.pathsAskBtn': '去回答',
   'pf.pathsEmpty': '这里没有你能走的通道', 'pf.pathsCol.name': '通道', 'pf.pathsCol.total': '全程', 'pf.pathsCol.tags': '条件',

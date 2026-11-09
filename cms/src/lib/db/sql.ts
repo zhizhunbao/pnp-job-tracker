@@ -3127,21 +3127,36 @@ export const MYJOBS_SAVED = `SELECT ${MYJOBS_FROM}
  * 同日「整点有吸引力的 bullets」:再取雇主 LMIA 外劳名额(companies.lmia_positions)、EE 定向类别、AIP 指定雇主、本省雇主 offer 类最近抽选日(draw_last)。
  * 2026-10-12 Frank「这个是 我的 推荐模块」「改吧」:推荐只推全职长期的岗(工时 full 且雇佣期 permanent;没标的也不推 —— 各省雇主担保类通道基本都要全职长期 offer)。
  * 同日「这个雇主愿不愿意帮忙弄 pr」「知名公司也算一个」:再取社区试点指定雇主(pilot / pilot_employer)与「有维基词条」(known = companies.wiki_url 非空)。
+ * 2026-11-08 清单第 2、4 条:匹配依据 matchBy(work = 想做的 + 做过的工作;edu = 专业落的本站大类);
+ * 严格模式 matchMode = strict:不拿收藏 / 投过的兜底,只看本省(抽选过期的省也照出本省岗,不跨省替换;实测安省不这样就一条都没有)。
+ * want、me 必须 MATERIALIZED:内联后这两段的子查询随每个候选岗重算,生产实测从 0.9 秒变成 40 秒超时。
  */
-export const MYJOBS_PICKS = `WITH want AS (
-       SELECT ARRAY(SELECT DISTINCT w FROM jsonb_array_elements_text(
+export const MYJOBS_PICKS = `WITH want AS MATERIALIZED (
+       SELECT CASE WHEN u.answers->'basic'->>'matchBy' = 'edu' THEN ARRAY[]::text[]
+                   ELSE ARRAY(SELECT DISTINCT w FROM jsonb_array_elements_text(
                       CASE WHEN jsonb_typeof(u.answers->'basic'->'nocs') = 'array' THEN u.answers->'basic'->'nocs'
-                           ELSE '[]'::jsonb END) w
-                    WHERE length(w) = 5) AS g
+                           ELSE '[]'::jsonb END
+                      || CASE WHEN jsonb_typeof(u.answers->'basic'->'workNocs') = 'array' THEN u.answers->'basic'->'workNocs'
+                              ELSE '[]'::jsonb END) w
+                    WHERE length(w) = 5) END AS g,
+              CASE WHEN u.answers->'basic'->>'matchBy' <> 'edu' OR u.answers->'basic'->>'matchBy' IS NULL THEN ARRAY[]::text[]
+                   ELSE ARRAY(SELECT DISTINCT br FROM cip_programs p
+                      CROSS JOIN LATERAL jsonb_array_elements_text(
+                        CASE WHEN jsonb_typeof(p.broads) = 'array' THEN p.broads ELSE '[]'::jsonb END) br
+                      WHERE p.code IN (SELECT jsonb_array_elements_text(
+                        CASE WHEN jsonb_typeof(u.answers->'basic'->'majors') = 'array' THEN u.answers->'basic'->'majors'
+                             ELSE '[]'::jsonb END))) END AS b,
+              COALESCE(u.answers->'basic'->>'matchMode' = 'strict', false) AS strict
          FROM users u WHERE u.id = $1),
-     me AS (
+     me AS MATERIALIZED (
        SELECT COALESCE(NULLIF(u.answers->'basic'->>'resProv', ''), $2::text) AS prov,
               ARRAY(SELECT DISTINCT sj.noc FROM saved_jobs s JOIN jobs sj ON sj.id = s.job_id
-                    WHERE s.user_id = $1 AND length(sj.noc) = 5 AND cardinality(want.g) = 0) AS saved_g,
+                    WHERE s.user_id = $1 AND length(sj.noc) = 5
+                      AND cardinality(want.g) + cardinality(want.b) = 0 AND want.strict = false) AS saved_g,
               ARRAY(SELECT DISTINCT aj.noc FROM applications a JOIN jobs aj ON aj.id = a.job_id
                     WHERE a.user_id = $1 AND a.status IN ('sent', 'replied') AND length(aj.noc) = 5
-                      AND cardinality(want.g) = 0) AS applied_g,
-              want.g AS want_g
+                      AND cardinality(want.g) + cardinality(want.b) = 0 AND want.strict = false) AS applied_g,
+              want.g AS want_g, want.b AS want_b, want.strict AS strict
          FROM users u CROSS JOIN want WHERE u.id = $1),
      stale AS (
        SELECT code FROM provinces
@@ -3158,7 +3173,7 @@ export const MYJOBS_PICKS = `WITH want AS (
             j.pilot, j.pilot_employer, (COALESCE(c.wiki_url, '') <> '') AS known,
             pr.info->>'offerDrawLast' AS draw_last,
             (j.noc = ANY(me.applied_g)) AS occ_applied, (j.noc = ANY(me.saved_g)) AS occ_saved,
-            (j.noc = ANY(me.want_g)) AS occ_want, (st.code IS NULL) AS offer_active, j.pnp_stream,
+            (j.noc = ANY(me.want_g) OR j.broad = ANY(me.want_b)) AS occ_want, (st.code IS NULL) AS offer_active, j.pnp_stream,
             EXISTS (SELECT 1 FROM pathways p WHERE p.province = j.province AND p.is_default AND p.status <> 'closed') AS prov_default
        FROM me CROSS JOIN jobs j
        LEFT JOIN companies c ON c.id = j.company_id
@@ -3167,12 +3182,12 @@ export const MYJOBS_PICKS = `WITH want AS (
        LEFT JOIN provinces pr ON pr.code = j.province
       WHERE j.status = 'open' AND COALESCE(j.apply_email, '') <> '' AND j.is_dup IS NOT TRUE
         AND j.employment_hours = 'full' AND j.employment_term = 'permanent'
-        AND NOT EXISTS (SELECT 1 FROM stale s WHERE s.code = j.province)
+        AND (me.strict OR NOT EXISTS (SELECT 1 FROM stale s WHERE s.code = j.province))
         AND (me.prov = '' OR j.province = me.prov
-             OR (EXISTS (SELECT 1 FROM stale s WHERE s.code = me.prov) AND j.pnp_eligible
+             OR (me.strict = false AND EXISTS (SELECT 1 FROM stale s WHERE s.code = me.prov) AND j.pnp_eligible
                  AND j.province IN (SELECT code FROM fresh)))
-        AND (cardinality(me.saved_g) + cardinality(me.applied_g) + cardinality(me.want_g) = 0
-             OR j.noc = ANY(me.saved_g || me.applied_g || me.want_g))
+        AND (cardinality(me.saved_g) + cardinality(me.applied_g) + cardinality(me.want_g) + cardinality(me.want_b) = 0
+             OR j.noc = ANY(me.saved_g || me.applied_g || me.want_g) OR j.broad = ANY(me.want_b))
         AND NOT EXISTS (SELECT 1 FROM applications a WHERE a.user_id = $1 AND a.job_id = j.id)
         AND NOT EXISTS (SELECT 1 FROM pick_dismissed pd WHERE pd.user_id = $1 AND pd.job_id = j.id)
         AND NOT EXISTS (SELECT 1 FROM bounced_emails b WHERE b.email = lower(j.apply_email))
@@ -3426,6 +3441,11 @@ export const DIGEST_PREFS_OFF = `INSERT INTO digest_prefs (user_id, freq) VALUES
 export const DIGEST_USERS = `SELECT p.user_id, COALESCE(NULLIF(p.email, ''), u.email) AS email, u.locale, u.pro_until, p.last_daily_at
      FROM digest_prefs p JOIN users u ON u.id = p.user_id
      WHERE p.freq = $1 LIMIT $2`
+
+/**
+ * 邮件退订时把这个人的按条件提醒全停(2026-11-08 清单第 16 条)。$1=用户 id。
+ */
+export const SAVED_SEARCHES_OFF = `UPDATE saved_searches SET freq = 'off' WHERE user_id = $1`
 
 /**
  * 记这个人今天的每日推送发过了。$1=用户 id。

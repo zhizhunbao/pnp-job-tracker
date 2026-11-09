@@ -385,3 +385,43 @@ export const FORM_TITLE_KEY = 'pf.editTitle'
  * 一页表单「已选 N 个」的词条。
  */
 export const FORM_PICKED_KEY = 'pf.picked'
+
+/**
+ * 选择器:做过的工作(2026-11-08 清单第 2 条)。
+ */
+export const FORM_PICK_WORK = 'work'
+
+/**
+ * 题键:做过的工作。
+ */
+export const GATE_STEP_WORK = 'work'
+
+/**
+ * 题键:身份(清单第 3 条:「我的通道」筛推荐的输入,进「补全档案」提示)。
+ */
+export const GATE_STEP_WHO = 'who'
+
+/**
+ * 题键:教育经历(同上)。
+ */
+export const GATE_STEP_EDU = 'edu'
+
+/**
+ * 匹配依据:工作经历。
+ */
+export const MATCH_WORK = 'work'
+
+/**
+ * 匹配依据:学历。
+ */
+export const MATCH_EDU = 'edu'
+
+/**
+ * 匹配模式:默认。
+ */
+export const MODE_DEFAULT = 'default'
+
+/**
+ * 匹配模式:严格。
+ */
+export const MODE_STRICT = 'strict'

@@ -13,12 +13,13 @@ import {
   blankContactOf, closedDutyOf, loadDuties, loadFirst, makeAddOf, makeContactEdit, makeContactFieldOf, makeContactSave,
   makeDelOf, makeDelOk, makeDescArea, makeDutyCheckOf, makeDutyImport, makeDutyPickOf, makeDutyQ, makeDutyToggle,
   makeEditOf, makeEntryFieldOf, makeEntryNow, makeEntrySave, makeFormClose, makeHideOf, makeSave, makeTextArea,
-  makeTextEditOf, makeTextSave, newDraftOf, writeDraft, makeAskClose, makeCvSaved, makeFlagSet,
+  makeTextEditOf, makeTextSave, newDraftOf, writeDraft, makeAskClose, makeCvSaved, makeFlagSet, mergeProfileInto,
 } from './functions'
 import type {
   CvBuilderIn, CvCells, CvContact, CvDraft, CvOpenIn, CvOpenPanel, CvPanel, DutySearchIn, DutyState, EntryAt, EntryEdit,
   TextEdit,
 } from './types'
+import { makeProfileImport } from './prefill'
 
 /**
  * 生成简历窗口整机。
@@ -38,6 +39,7 @@ export function useCvBuilder(x: CvBuilderIn): CvPanel {
   const [duty, setDuty] = useState<DutyState>(closedDutyOf())
   const [preview, setPreview] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [importing, setImporting] = useState(false)
   const [err, setErr] = useState(ERR_NONE)
   const [formErr, setFormErr] = useState(ERR_NONE)
   const [chars, setChars] = useState<string[]>([])
@@ -108,6 +110,8 @@ onSaved: x.onSaved,
     dutyCheckOf: makeDutyCheckOf(cells),
     onDutyImport: makeDutyImport(cells),
     onPreview: makeFlagSet({ set: setPreview, v: true }),
+    onImport: makeProfileImport({ load: makeProfileLoad(draft), t, setDraft, setImporting }),
+    importing,
     onPreviewClose: makeFlagSet({ set: setPreview, v: false }),
     onSave: makeSave(cells),
   }
@@ -151,5 +155,17 @@ export function useCvOpen(x: CvOpenIn): CvOpenPanel {
     onOpen: makeFlagSet({ set: setOpen, v: true }),
     onClose: makeFlagSet({ set: setOpen, v: false }),
     onSaved: makeCvSaved({ setOpen, onDone: x.onDone }),
+  }
+}
+
+/**
+ * 造「拉档案并并入这份草稿」。
+ *
+ * @param d 现有草稿。
+ * @returns 无参函数。
+ */
+function makeProfileLoad(d: CvDraft): () => ReturnType<typeof mergeProfileInto> {
+  return function loadMerge() {
+    return mergeProfileInto(d)
   }
 }

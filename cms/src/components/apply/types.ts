@@ -1361,3 +1361,83 @@ export type SentNoticeIn = {
    */
   company: string
 }
+
+/**
+ * PushOffer(投出后一键开启推送)的 props。
+ */
+export type PushOfferIn = {
+  /**
+   * 取词函数。
+   */
+  t: (key: string, vars?: Record<string, string | number>) => string
+}
+
+/**
+ * 一键开启那张卡的状态。
+ */
+export type PushOfferPanel = {
+  /**
+   * 收件邮箱;空串 = 这张卡不出。
+   */
+  email: string
+
+  /**
+   * 正在开。
+   */
+  busy: boolean
+
+  /**
+   * 点「每天发给我」。
+   */
+  onOn: () => void
+}
+
+/**
+ * /api/alerts/prefs GET 的回包(线格式,取值前收窄)。
+ */
+export type PushPrefsJson = {
+  /**
+   * 实际收件邮箱。
+   */
+  email?: string | null
+
+  /**
+   * 设过没有。
+   */
+  asked?: boolean | null
+}
+
+/**
+ * 拉推送设置的入参。
+ */
+export type PushLoadIn = {
+  /**
+   * 落收件邮箱。
+   */
+  setEmail: (email: string) => void
+}
+
+/**
+ * 造「点开启」的入参。
+ */
+export type PushOnIn = {
+  /**
+   * 收件邮箱。
+   */
+  email: string
+
+  /**
+   * 取词函数。
+   */
+  t: (key: string, vars?: Record<string, string | number>) => string
+
+  /**
+   * 落收件邮箱(开成后清空,卡收起)。
+   */
+  setEmail: (email: string) => void
+
+  /**
+   * 落「正在开」。
+   */
+  setBusy: (busy: boolean) => void
+}

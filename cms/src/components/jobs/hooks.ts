@@ -21,6 +21,7 @@ import { JOBS_LOG, log } from '@/lib/log'
 import { isGateSignedIn } from '@/lib/guest'
 import { registerCatLabels } from '@/lib/noc'
 import { ymd } from '@/lib/time'
+import { toast } from '@/components/toast'
 import { track } from '@/lib/track'
 import {
   APPLY_AUTH, APPLY_IDLE, APPLY_RESUME_KEY,
@@ -44,6 +45,7 @@ import {
   URL_API_SAVED_JOBS_LIST, URL_API_SAVED_SEARCHES,
   URL_API_USERS_ME, URL_BOARD, URL_TO_FILTER, VAL_ON, WIDTH_FULL,
   TITLE_TRANS_GEN, WINDOW_FEATURES,
+  ALERT_ALL_KEY, ALERT_FAIL_KEY, ALERT_METHOD_PATCH, ALERT_PATH_SEP, ALERT_TOAST_ERR, ALERT_TOAST_OK,
 } from './constants'
 import {
   allocateColWidths, anyFilterOf, applyEmailOf, applyFiltersTo, applyHomeProvince, authFromUrl, blockedSetsOf,
@@ -60,6 +62,7 @@ import {
   toRelatedJobs, chipNocOf, occGroupsOf, occSlotOf, tableWrapOf,
   widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
   jobDatesOf, ssrTransOf, immFactsOf,
+  alertLinkOf, alertNameOf, alertOkKeyOf,
 } from './functions'
 import type {
   AccountAreaPanel, TransTogglePanel,
@@ -83,6 +86,7 @@ import type {
   TableWidthIn, TransJson, TranslateIn, TransStatus, UnseenRowsIn, UpsellKind, UrlSettleIn, WrapWidthIn,
   JobDateCell, JobDatesIn,
   ImmPopupPanel, ImmJson, ImmOfHookIn, JobImmFacts,
+  SaveAlertMakeIn,
 } from './types'
 
 /**
@@ -710,26 +714,8 @@ function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
   }, [dims])
   const anyFilter = anyFilterOf({ fState })
   const nocLabel = nocLabelOf({ fNoc: chipNocOf({ fState, groups }), nameOf, lang: x.lang, t: x.t })
-  const t = x.t
-  const onLimit = x.onLimit
-  const lang = x.lang
-  async function onSaveSearch(): Promise<void> {
-    const name = window.prompt(t('ss.name'))
-    if (name == null || name === TEXT_NONE) {
-      return
-    }
-    track(TRACK_SAVE_SEARCH)
-    const hit = await postSavedSearch({ name, filters: saveFiltersOf({ fState }), lang })
-    if (hit === SAVE_OK) {
-      window.alert(t('ss.saved'))
-      return
-    }
-    if (hit === SAVE_LIMIT && x.plan.isPro === false) {
-      onLimit()
-      return
-    }
-    window.alert(t('ss.err'))
-  }
+  const alertId = useAlertLink()
+  const onSaveSearch = makeSaveAlert({ x, fState, alertId })
   return {
     panel: {
       fState: gated,
@@ -754,6 +740,7 @@ function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
         clearFiltersIn({ fState })
       },
       onSaveSearch,
+      alertId,
     },
     rawFState: fState,
     q,
@@ -765,14 +752,63 @@ function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
 }
 
 /**
+ * 地址栏带来的提醒号(「改条件」进来的;2026-11-08 清单第 6 条)。
+ *
+ * @returns 提醒号;没带为空串。
+ */
+function useAlertLink(): string {
+  const [alertId, setAlertId] = useState(TEXT_NONE)
+  useEffect(function readAlertLink() {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 地址栏参数只有浏览器里读得到,服务端首帧没有
+    setAlertId(alertLinkOf())
+  }, [])
+  return alertId
+}
+
+/**
+ * 造「创建提醒 / 更新提醒」:没登录先弹注册;免费位用满弹升级框;其余结果右上角说一句。
+ *
+ * @param y 筛选面板入参、筛选各格与提醒号。
+ * @returns 点击手柄。
+ */
+function makeSaveAlert(y: SaveAlertMakeIn): () => Promise<void> {
+  return async function onSaveSearch(): Promise<void> {
+    const x = y.x
+    if (x.plan.loggedIn === false) {
+      x.onGate()
+      return
+    }
+    track(TRACK_SAVE_SEARCH)
+    const filters = saveFiltersOf({ fState: y.fState })
+    const name = alertNameOf({ filters, all: x.t(ALERT_ALL_KEY) })
+    const hit = await postSavedSearch({ id: y.alertId, name, filters, lang: x.lang })
+    if (hit === SAVE_OK) {
+      toast({ kind: ALERT_TOAST_OK, title: x.t(alertOkKeyOf(y.alertId)) })
+      return
+    }
+    if (hit === SAVE_LIMIT && x.plan.isPro === false) {
+      x.onLimit()
+      return
+    }
+    toast({ kind: ALERT_TOAST_ERR, title: x.t(ALERT_FAIL_KEY) })
+  }
+}
+
+/**
  * 存一套筛选。免费位用满时服务端回一个带 limit 字样的错 —— 那时才弹升级框「Pro 可存 5 个」。
  *
  * @param x 名字、条件与界面语言。
  * @returns 成 / 触上限 / 其它失败。
  */
 async function postSavedSearch(x: SaveSearchIn): Promise<string> {
-  const res = await fetch(URL_API_SAVED_SEARCHES, {
-    method: METHOD_POST,
+  let url = URL_API_SAVED_SEARCHES
+  let method = METHOD_POST
+  if (x.id !== TEXT_NONE) {
+    url = URL_API_SAVED_SEARCHES + ALERT_PATH_SEP + x.id
+    method = ALERT_METHOD_PATCH
+  }
+  const res = await fetch(url, {
+    method,
     credentials: CREDENTIALS_INCLUDE,
     headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
     body: JSON.stringify({ name: x.name, filters: x.filters, lang: x.lang }),

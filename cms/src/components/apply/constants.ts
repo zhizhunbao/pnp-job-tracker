@@ -533,3 +533,73 @@ export const SENT_NOTICE_KEY = 'mj.sentTo'
  * 成功条的档(notice 桶 ok:绿)。
  */
 export const SENT_NOTICE_KIND = 'ok'
+
+/**
+ * 新岗推送设置接口(2026-11-08 投出后一键开启;清单第 1 条,出处 Job Bank Job Match)。
+ */
+export const URL_PUSH = '/api/alerts/prefs'
+
+/**
+ * 一键开启落的频率:每天(Job Match 是有匹配就发,每天档最接近)。
+ */
+export const PUSH_FREQ_DAILY = 'daily'
+
+/**
+ * 开启推送的统计事件名(与「我的订阅」存设置同一个)。
+ */
+export const EV_PUSH = 'weekly-optin'
+
+/**
+ * 统计事件「开了」的值。
+ */
+export const PUSH_ON_VALUE = 'true'
+
+/**
+ * 卡头词条。
+ */
+export const PUSH_HEAD_KEY = 'mj.push'
+
+/**
+ * 说明词条(与「我的订阅」同一句)。
+ */
+export const PUSH_ROW_KEY = 'mj.pushRow'
+
+/**
+ * 「发到」词条。
+ */
+export const PUSH_TO_KEY = 'mj.pushTo'
+
+/**
+ * 按钮词条。
+ */
+export const PUSH_BTN_KEY = 'mj.pushDaily'
+
+/**
+ * 开启成功的提示词条。
+ */
+export const PUSH_ON_KEY = 'mj.pushOn'
+
+/**
+ * 没开成的提示词条。
+ */
+export const PUSH_FAIL_KEY = 'mj.pushFail'
+
+/**
+ * 按钮的档。
+ */
+export const PUSH_BTN_KIND = 'primary'
+
+/**
+ * 右上角提示:成功档。
+ */
+export const PUSH_TOAST_OK = 'ok'
+
+/**
+ * 右上角提示:失败档。
+ */
+export const PUSH_TOAST_ERR = 'err'
+
+/**
+ * 「发到」与邮箱之间的空格。
+ */
+export const PUSH_TO_GAP = ' '

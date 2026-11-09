@@ -763,8 +763,23 @@ export function profileSeedOf(v: PfView): PfSeed {
   for (const n of v.nocs) {
     nocs.push(n.code)
   }
+  const workNocs: string[] = []
+  for (const n of v.works) {
+    workNocs.push(n.code)
+  }
   return {
-    goal: v.goal, majors, nocs, prov: v.prov, abroad: v.abroad, city: v.city.en, name: v.name, who: v.who, edu: v.edu,
+    workNocs,
+    matchBy: v.matchBy,
+    matchMode: v.matchMode,
+    goal: v.goal,
+majors,
+nocs,
+prov: v.prov,
+abroad: v.abroad,
+city: v.city.en,
+name: v.name,
+who: v.who,
+edu: v.edu,
   }
 }
 

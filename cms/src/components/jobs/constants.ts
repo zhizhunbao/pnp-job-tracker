@@ -3094,3 +3094,78 @@ export const IMM_COLS: JobColKey[] = ['ee', 'pnp', 'aip']
  * 站内蓝链的全局类(main.css 的 link;移民相关卡可点的那几行字;2026-10-02)。
  */
 export const LINK_CLS = 'link'
+
+/**
+ * 「改条件」带来的提醒号的地址参数(2026-11-08 清单第 6 条:按这条提醒的条件打开职位板,改完点更新)。
+ */
+export const QP_ALERT = 'alert'
+
+/**
+ * 提醒名里各条件之间的分隔。
+ */
+export const ALERT_NAME_SEP = ', '
+
+/**
+ * 提醒名最长几个字。
+ */
+export const ALERT_NAME_MAX = 80
+
+/**
+ * 更新提醒用的方法。
+ */
+export const ALERT_METHOD_PATCH = 'PATCH'
+
+/**
+ * 接口路径分隔。
+ */
+export const ALERT_PATH_SEP = '/'
+
+/**
+ * 右上角提示:成功档。
+ */
+export const ALERT_TOAST_OK = 'ok'
+
+/**
+ * 右上角提示:失败档。
+ */
+export const ALERT_TOAST_ERR = 'err'
+
+/**
+ * 按钮词条:创建提醒。
+ */
+export const ALERT_CREATE_KEY = 'ss.alert'
+
+/**
+ * 按钮词条:更新提醒。
+ */
+export const ALERT_UPDATE_KEY = 'ss.update'
+
+/**
+ * 提示词条:提醒已创建。
+ */
+export const ALERT_CREATED_KEY = 'ss.savedOk'
+
+/**
+ * 提示词条:提醒已更新。
+ */
+export const ALERT_UPDATED_KEY = 'ss.updated'
+
+/**
+ * 提示词条:没存上。
+ */
+export const ALERT_FAIL_KEY = 'ss.err'
+
+/**
+ * 没有条件时的提醒名词条。
+ */
+export const ALERT_ALL_KEY = 'ss.allJobs'
+
+/**
+ * 职位板路径(「改条件」的链接)。
+ */
+export const ALERT_BOARD_PATH = '/jobs'
+
+/**
+ * 查询串开头。
+ */
+export const ALERT_QUERY_HEAD = '?'

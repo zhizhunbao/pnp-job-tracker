@@ -24,7 +24,7 @@ import { useSsrSession } from '@/components/auth'
 import { useLang } from '@/components/i18n'
 import { takeEntryGate } from '@/lib/guest'
 import { track } from '@/lib/track'
-import { FORM_PICK_JOB, FORM_PICK_MAJOR, FORM_PICK_NONE, TEXT_NONE, TRACK_GATE_OPEN } from './constants'
+import { FORM_PICK_JOB, FORM_PICK_MAJOR, FORM_PICK_NONE, FORM_PICK_WORK, TEXT_NONE, TRACK_GATE_OPEN } from './constants'
 import {
   cityOptsOf, eduPicksOf, eduStrsOf, gateProvActiveOf, loadProvCities, makeCityPick, makeEditSave, makeEduAdd,
   makeEduPick, makeEduRemove, makeEntryClose, makeEntryDone, makeGateAuthDone, makePickSet, makeProvPick, nameBadOf,
@@ -149,11 +149,25 @@ export function useGateForm(x: GateFormHookIn): GatePanel {
   const c = useCityPick({ prov, lang, seed: s.city })
   const [name, setName] = useState(s.name)
   const [who, setWho] = useState(s.who)
+  const [workNocs, setWorkNocs] = useState<string[]>(s.workNocs)
+  const [matchBy, setMatchBy] = useState(s.matchBy)
+  const [matchMode, setMatchMode] = useState(s.matchMode)
   const e = useEduRows(s.edu)
   const [saving, setSaving] = useState(false)
   const [failKey, setFail] = useState(TEXT_NONE)
   const save = makeEditSave({
-    a: { goal, majors, nocs, prov, abroad, city: c.panel.city, name: name.trim(), who, edu: eduStrsOf(e.edu) },
+    a: { goal,
+majors,
+nocs,
+prov,
+abroad,
+city: c.panel.city,
+name: name.trim(),
+who,
+edu: eduStrsOf(e.edu),
+      workNocs,
+matchBy,
+matchMode },
     setSaving,
     setFail,
     onSaved: x.onSaved,
@@ -165,6 +179,8 @@ export function useGateForm(x: GateFormHookIn): GatePanel {
     lang,
     nocs,
     setNocs,
+    workNocs,
+    setWorkNocs,
     provActive: gateProvActiveOf({ prov, abroad }),
     onProv: makeProvPick({ setProv, setAbroad, setCity: c.setCity }),
     cities: c.panel,
@@ -181,6 +197,10 @@ export function useGateForm(x: GateFormHookIn): GatePanel {
       eduRemoveOf: e.eduRemoveOf,
       setGoal,
       setWho,
+      matchBy,
+      setMatchBy,
+      matchMode,
+      setMatchMode,
       onSave: save,
     },
     onClose: x.onClose,
@@ -215,6 +235,7 @@ export function useGatePick(): GatePickPanel {
     picking,
     onMajor: makePickSet({ setPicking, v: FORM_PICK_MAJOR }),
     onJob: makePickSet({ setPicking, v: FORM_PICK_JOB }),
+    onWork: makePickSet({ setPicking, v: FORM_PICK_WORK }),
     onDone: makePickSet({ setPicking, v: FORM_PICK_NONE }),
   }
 }

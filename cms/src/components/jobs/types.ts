@@ -876,6 +876,11 @@ export type BoardFiltersPanel = {
    * 保存这套筛选(登录才出)。
    */
   onSaveSearch: ClickFn
+
+  /**
+   * 从「改条件」进来时的提醒号;空串 = 新建。
+   */
+  alertId: string
 }
 
 /**
@@ -4464,6 +4469,11 @@ export type SaveSearchIn = {
   filters: Record<string, string | boolean>
 
   /**
+   * 提醒号;空串 = 新建。
+   */
+  id: string
+
+  /**
    * 界面语言(邮件提醒按它发)。
    */
   lang: Lang
@@ -6776,4 +6786,54 @@ export type BelowMedIn = {
    * 本省本职业中位年薪(没有是 null)。
    */
   med: number | null
+}
+
+/**
+ * alertNameOf 的入参。
+ */
+export type AlertNameIn = {
+  /**
+   * 这套筛选。
+   */
+  filters: Record<string, string | boolean>
+
+  /**
+   * 没有条件时的字。
+   */
+  all: string
+}
+
+/**
+ * alertHrefOf 的入参。
+ */
+export type AlertHrefIn = {
+  /**
+   * 提醒号。
+   */
+  id: string
+
+  /**
+   * 这套筛选(键是筛选格的键)。
+   */
+  filters: Record<string, string | boolean>
+}
+
+/**
+ * makeSaveAlert 的入参。
+ */
+export type SaveAlertMakeIn = {
+  /**
+   * 筛选面板的入参(分层态、取词、语言、两个去向)。
+   */
+  x: BoardFiltersHookIn
+
+  /**
+   * 筛选各格。
+   */
+  fState: FilterCountIn['fState']
+
+  /**
+   * 提醒号;空串 = 新建。
+   */
+  alertId: string
 }

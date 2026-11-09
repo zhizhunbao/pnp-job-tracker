@@ -599,6 +599,11 @@ export type SavedFilters = Record<string, FilterCell>
  */
 export type EmailHtmlIn = {
   /**
+   * 退订链接(2026-11-08 清单第 16 条)。
+   */
+  unsubUrl: string
+
+  /**
    * 命中的岗。
    */
   rows: MailJobRow[]
@@ -1037,6 +1042,11 @@ export type DigestPrefs = {
    * 待确认的新邮箱(没有 = 空串)。
    */
   pending: string
+
+  /**
+   * 设过没有(2026-11-08 投出后一键开启:关过的人不再问;没行 = 没设过)。
+   */
+  asked: boolean
 }
 
 /**

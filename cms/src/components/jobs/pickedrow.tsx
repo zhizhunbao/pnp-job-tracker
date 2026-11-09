@@ -18,7 +18,8 @@
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { BTN_GHOST, CROSS, TEXT_NONE } from './constants'
+import { BTN_GHOST, BTN_SECONDARY, CROSS, TEXT_NONE } from './constants'
+import { alertBtnKeyOf } from './functions'
 import type { BoardPanelIn } from './types'
 import css from './jobs.module.css'
 
@@ -41,6 +42,7 @@ export function PickedRow({ b }: BoardPanelIn) {
           </Button>
         </span>
       )}
+      {f.anyFilter && <Button kind={BTN_SECONDARY} sm onClick={f.onSaveSearch}>{b.t(alertBtnKeyOf(f.alertId))}</Button>}
     </div>
   )
 }

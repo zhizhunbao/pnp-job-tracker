@@ -7,11 +7,13 @@
  * @time 2026-11-07 18:00:00
  */
 import { useEffect, useState } from 'react'
+import { useIsNarrow } from '@/components/modal'
 import { TEXT_NONE } from './constants'
 import {
-  makeFlagSet, makeLoadPush, makePaymentsLoad, makeSavePush, proOf, untilOf, untilTextOf,
+  alertRowsOf, makeAlertAskClose, makeAlertAskOk, makeFlagSet, makeLoadAlerts, makeLoadPush, makePaymentsLoad,
+  makeProfileFreq, makeSavePush, proOf, untilOf, untilTextOf,
 } from './functions'
-import type { PaymentRows, SubIn, SubPanel } from './types'
+import type { AlertAsk, AlertDoc, PaymentRows, SubIn, SubPanel } from './types'
 
 /**
  * 「我的订阅」一页的状态机器。
@@ -29,10 +31,15 @@ export function useSub(x: SubIn): SubPanel {
   const [email, setEmail] = useState(TEXT_NONE)
   const [note, setNote] = useState(TEXT_NONE)
   const [busy, setBusy] = useState(false)
+  const [docs, setDocs] = useState<AlertDoc[]>([])
+  const [alertsFailed, setAlertsFailed] = useState(false)
+  const [ask, setAsk] = useState<AlertAsk | null>(null)
+  const narrow = useIsNarrow()
 
   useEffect(function firstLoad() {
     void makePaymentsLoad({ setItems: setPayments, setFailed: setPayFailed })()
     void makeLoadPush({ setFreq, setEmail, setReady, setFailed })()
+    void makeLoadAlerts({ setDocs, setFailed: setAlertsFailed })()
   }, [])
 
   const until = untilOf(x)
@@ -44,6 +51,21 @@ export function useSub(x: SubIn): SubPanel {
     onClose: makeFlagSet({ set: setOpen, v: false }),
     payments,
     payFailed,
+    alerts: {
+      narrow,
+      failed: alertsFailed,
+      rows: alertRowsOf({
+        docs,
+        profileFreq: freq,
+        onProfileFreq: makeProfileFreq({ email, t: x.t, setFreq, setNote, setBusy }),
+        t: x.t,
+        setDocs,
+        setAsk,
+      }),
+      ask,
+      onAskOk: makeAlertAskOk({ ask, setAsk }),
+      onAskClose: makeAlertAskClose(setAsk),
+    },
     push: {
       ready,
       failed,

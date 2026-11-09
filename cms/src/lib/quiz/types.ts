@@ -553,6 +553,21 @@ export type Answers = {
    * 时长 = y1 / y2 / y3 / master);空列 = 没答。
    */
   fitEdu: string[]
+
+  /**
+   * 做过的工作(2026-11-08 清单第 2 条,出处 Job Bank Job seeker profile):职业码,空列 = 没答。
+   */
+  workNocs: string[]
+
+  /**
+   * 匹配依据(清单第 4 条,出处 Job Bank Matching algorithms):work / edu;空串 = 没选,按 work。
+   */
+  matchBy: string
+
+  /**
+   * 匹配模式(清单第 4 条,出处 Job Bank Matching mode):default / strict;空串 = 没选,按 default。
+   */
+  matchMode: string
 }
 
 /**
@@ -1304,6 +1319,21 @@ export type QuizProfile = {
    * 教育经历(「所在地.公立私立.时长」串);空列 = 没答(2026-10-13)。
    */
   edu: string[]
+
+  /**
+   * 做过的工作(码与译名,2026-11-08)。
+   */
+  works: ProfileNames
+
+  /**
+   * 匹配依据;空串 = 没选。
+   */
+  matchBy: string
+
+  /**
+   * 匹配模式;空串 = 没选。
+   */
+  matchMode: string
 }
 
 /**
@@ -1354,6 +1384,21 @@ export type ProfileBasicFact = {
    * 教育经历串(2026-10-13)。
    */
   edu: string[]
+
+  /**
+   * 做过的工作(2026-11-08 清单第 2 条,出处 Job Bank Job seeker profile):职业码,空列 = 没答。
+   */
+  workNocs: string[]
+
+  /**
+   * 匹配依据(清单第 4 条,出处 Job Bank Matching algorithms):work / edu;空串 = 没选,按 work。
+   */
+  matchBy: string
+
+  /**
+   * 匹配模式(清单第 4 条,出处 Job Bank Matching mode):default / strict;空串 = 没选,按 default。
+   */
+  matchMode: string
 }
 
 /**
@@ -1424,6 +1469,21 @@ export type ProfileBasicJson = {
    * 教育经历串(2026-10-13)。
    */
   fitEdu?: string[] | null
+
+  /**
+   * 做过的工作(2026-11-08)。
+   */
+  workNocs?: string[] | null
+
+  /**
+   * 匹配依据(2026-11-08)。
+   */
+  matchBy?: string | null
+
+  /**
+   * 匹配模式(2026-11-08)。
+   */
+  matchMode?: string | null
 }
 
 /**

@@ -17,7 +17,9 @@ import type {
   CvSavedIn, CvTextKey, DraftContactIn, DraftListIn, DraftTextIn, DutiesJson, DutyState, DutyWithIn, EntryAt,
   EntryErrIn, EntryWithIn, FlagSetIn, FormTitleIn, LoadDutiesIn, LoadFirstIn, MeJson, PeriodIn, PfJson, SaveErrIn,
   SaveJson, SetFn, TextFn, TFn, WithDescIn, YmIn,
+  ProfileMergeIn, ProfileMergeOut,
 } from './types'
+import { contactFilledOf, entriesWithNamesOf, loadProfileLists } from './prefill'
 
 /**
  * 空的联系方式。
@@ -217,7 +219,8 @@ export async function loadFirst(x: LoadFirstIn): Promise<void> {
   if (saved != null) {
     x.setDraft(saved)
   } else {
-    x.setDraft(newDraftOf(await prefillOf()))
+    const [c, lists] = await Promise.all([prefillOf(), loadProfileLists()])
+    x.setDraft(draftWithProfile({ d: newDraftOf(c), c, lists }).draft)
   }
   x.setLoaded(true)
 }
@@ -924,4 +927,46 @@ function saveErrOf(x: SaveErrIn): string {
     return ERR_CHARS
   }
   return ERR_NET
+}
+
+/**
+ * 草稿并入档案(2026-11-08 清单第 8 条):做过的工作进工作经历、专业进教育经历,已有的不重复;档案拉不到草稿不动。
+ *
+ * @param x 草稿、档案的联系方式与两张清单。
+ * @returns 新草稿与新加条数。
+ */
+export function draftWithProfile(x: ProfileMergeIn): ProfileMergeOut {
+  if (x.lists == null) {
+    return { draft: x.d, added: 0 }
+  }
+  const work = entriesWithNamesOf({ names: x.lists.works, have: x.d.work, blank: blankEntryOf })
+  const edu = entriesWithNamesOf({ names: x.lists.majors, have: x.d.edu, blank: blankEntryOf })
+  return {
+    draft: {
+      contact: contactFilledOf({ have: x.d.contact, from: x.c }),
+      summary: x.d.summary,
+      work: work.list,
+      edu: edu.list,
+      skills: x.d.skills,
+      creds: x.d.creds,
+      volunteer: x.d.volunteer,
+      awards: x.d.awards,
+      extra: x.d.extra,
+    },
+    added: work.added + edu.added,
+  }
+}
+
+/**
+ * 拉档案并把草稿并进去(「从档案导入」用);档案拉不到为 null。
+ *
+ * @param d 现有草稿。
+ * @returns 结果或 null。
+ */
+export async function mergeProfileInto(d: CvDraft): Promise<ProfileMergeOut | null> {
+  const [c, lists] = await Promise.all([prefillOf(), loadProfileLists()])
+  if (lists == null) {
+    return null
+  }
+  return draftWithProfile({ d, c, lists })
 }

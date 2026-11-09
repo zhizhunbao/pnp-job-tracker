@@ -11,6 +11,7 @@ import { log, PROFILE_LOG } from '@/lib/log'
 import {
   CRED_INCLUDE, MS_PROV_FED, MS_PROVS, PF_ERR_EMPTY, PF_FOLD_N, PF_GOAL_JOBS, PF_GOAL_JOBS_KEY, PF_GOAL_PR,
   PF_GOAL_PR_KEY, PF_LOAD_FAIL, PF_LOAD_OK, TEXT_NONE, URL_PROFILE,
+  PF_BY_EDU_KEY, PF_BY_WORK_KEY, PF_MATCH_EDU, PF_MODE_DEFAULT_KEY, PF_MODE_STRICT, PF_MODE_STRICT_KEY,
 } from './constants'
 import type {
   MsOpenIn, MsProvPickIn, MyStreamCellRow, PfEditOpenIn, PfFlagSetIn, PfJson, PfLoadIn, PfNames, PfSavedIn, PfSeed,
@@ -95,8 +96,23 @@ export function profileSeedOf(v: PfView): PfSeed {
   for (const n of v.nocs) {
     nocs.push(n.code)
   }
+  const workNocs: string[] = []
+  for (const n of v.works) {
+    workNocs.push(n.code)
+  }
   return {
-    goal: v.goal, majors, nocs, prov: v.prov, abroad: v.abroad, city: v.city.en, name: v.name, who: v.who, edu: v.edu,
+    workNocs,
+    matchBy: v.matchBy,
+    matchMode: v.matchMode,
+    goal: v.goal,
+majors,
+nocs,
+prov: v.prov,
+abroad: v.abroad,
+city: v.city.en,
+name: v.name,
+who: v.who,
+edu: v.edu,
   }
 }
 
@@ -211,4 +227,30 @@ export function msRowKeyOf(r: MyStreamCellRow): string {
  */
 export function msTotalOf(r: MyStreamCellRow): string {
   return r.total
+}
+
+/**
+ * 匹配依据那一格的词条键(没选按工作经历)。
+ *
+ * @param by 匹配依据。
+ * @returns 词条键。
+ */
+export function pfMatchByKeyOf(by: string): string {
+  if (by === PF_MATCH_EDU) {
+    return PF_BY_EDU_KEY
+  }
+  return PF_BY_WORK_KEY
+}
+
+/**
+ * 匹配模式那一格的词条键(没选按默认)。
+ *
+ * @param mode 匹配模式。
+ * @returns 词条键。
+ */
+export function pfMatchModeKeyOf(mode: string): string {
+  if (mode === PF_MODE_STRICT) {
+    return PF_MODE_STRICT_KEY
+  }
+  return PF_MODE_DEFAULT_KEY
 }

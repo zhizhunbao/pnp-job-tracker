@@ -15,7 +15,7 @@ import { Drawer } from '@/components/drawer'
 import { MajorPicker, useMajorPicker } from '@/components/majors'
 import { OccRail, useOccPicker } from '@/components/quiz'
 import {
-  FORM_PICK_JOB, FORM_PICK_MAJOR, FORM_PRIMARY_KIND, FORM_SECONDARY_KIND, FORM_TITLE_KEY, TEXT_NONE,
+  FORM_PICK_JOB, FORM_PICK_MAJOR, FORM_PICK_WORK, FORM_PRIMARY_KIND, FORM_SECONDARY_KIND, FORM_TITLE_KEY, TEXT_NONE,
 } from './constants'
 import { occMajorOf } from './functions'
 import { GateFormFields } from './gateformfields'
@@ -36,6 +36,9 @@ export function GateForm({ t, seed, onClose, onSaved }: GateFormIn) {
   const picker = useMajorPicker({ value: g.majors, onChange: g.onMajors })
   const occ = useOccPicker({
     t, lang: g.lang, initial: g.nocs, onChange: g.setNocs, onDone: k.onDone, majorCode: occMajorOf(g.majors),
+  })
+  const work = useOccPicker({
+    t, lang: g.lang, initial: g.workNocs, onChange: g.setWorkNocs, onDone: k.onDone, majorCode: occMajorOf(g.majors),
   })
   const foot = (
     <>
@@ -59,6 +62,11 @@ export function GateForm({ t, seed, onClose, onSaved }: GateFormIn) {
       {k.picking === FORM_PICK_JOB && (
         <GatePick title={t('pf.jobs')} doneText={t('pf.pickDone')} onDone={k.onDone}>
           <OccRail t={t} lang={g.lang} d={occ} />
+        </GatePick>
+      )}
+      {k.picking === FORM_PICK_WORK && (
+        <GatePick title={t('pf.work')} doneText={t('pf.pickDone')} onDone={k.onDone}>
+          <OccRail t={t} lang={g.lang} d={work} />
         </GatePick>
       )}
     </>

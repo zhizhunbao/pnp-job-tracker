@@ -11,6 +11,7 @@
  * @time 2026-10-07 03:00:00
  */
 import { COVER_MAX, coverFileOf, isSenderName, mailSubjectOf, mailTextOf } from '@/lib/apply'
+import { toast } from '@/components/toast'
 import { track } from '@/lib/track'
 import {
   CLOSED_KEY, CRED_INCLUDE, DATE_LEN, ERR_CODES, ERR_FALLBACK, ERR_KEY_FULL, ERR_KEY_HEAD, ERR_KEY_NAME,
@@ -22,6 +23,7 @@ import {
   UPLOADED_KEY, URL_BACK_HEAD, URL_COVER_HEAD, URL_DRAFT, URL_RESUME_FILE, URL_RESUME_FILES, URL_SEND,
   URL_START_HEAD, BREAK_AFTER_RE,
   Q_ID_HEAD, EV_APPLY_NAV, EV_APPLY_SENT, PATH_ACCOUNT, P_APPLY,
+  EV_PUSH, PUSH_FAIL_KEY, PUSH_FREQ_DAILY, PUSH_ON_KEY, PUSH_ON_VALUE, PUSH_TOAST_ERR, PUSH_TOAST_OK, URL_PUSH,
 } from './constants'
 import type {
   ApplyCells, ApplyResumeView, ApplyStartView, CanNextIn, DraftIn, DraftOfIn, ErrJson, ErrOut, FileMakeIn,
@@ -31,6 +33,7 @@ import type {
   ApplySentOut,
   ApplyIdIn, ApplyOpenDetail, OpenedIn,
   ApplyTitled, AuthRetryIn,
+  PushLoadIn, PushOnIn, PushPrefsJson,
 } from './types'
 import { uploadLetter } from './letter'
 import { CACHE } from './variables'
@@ -800,4 +803,75 @@ export function makeQuietSave(x: PageHideIn): () => void {
       void saveDraft(draftOf({ cells: c, keepalive: true })).then(c.setErr)
     }
   }
+}
+
+/**
+ * 投出后一键开启新岗推送(2026-11-08 清单第 1 条:投出的 20 人开推送 0 人):这个人该不该问,
+ * 只问没设过的(关过的不再问);该问给收件邮箱。
+ *
+ * @param d 设置回包。
+ * @returns 收件邮箱;不该问为空串。
+ */
+export function pushOfferEmailOf(d: PushPrefsJson): string {
+  if (d.asked !== false || d.email == null) {
+    return TEXT_NONE
+  }
+  return d.email
+}
+
+/**
+ * 拉推送设置:拉不到就不出这张卡(可选的邀请,点名的静默,不影响已经投出的结果)。
+ *
+ * @param x 落格。
+ * @returns 无。
+ */
+export async function loadPushOffer(x: PushLoadIn): Promise<void> {
+  try {
+    const r = await fetch(URL_PUSH, { credentials: CRED_INCLUDE })
+    if (r.ok) {
+      x.setEmail(pushOfferEmailOf(await r.json() as PushPrefsJson))
+    }
+  } catch {
+    x.setEmail(TEXT_NONE)
+  }
+}
+
+/**
+ * 造「每天发给我」:用账户邮箱存成每天档,开成后卡收起;没开成卡留着可再点,右上角说一句。
+ *
+ * @param x 邮箱、取词与落格。
+ * @returns 点击手柄。
+ */
+export function makePushOn(x: PushOnIn): () => void {
+  return function onPushOn(): void {
+    void sendPushOn(x)
+  }
+}
+
+/**
+ * 发开启请求并落结果。
+ *
+ * @param x 邮箱、取词与落格。
+ * @returns 无。
+ */
+export async function sendPushOn(x: PushOnIn): Promise<void> {
+  x.setBusy(true)
+  try {
+    const r = await fetch(URL_PUSH, {
+      method: METHOD_POST,
+      credentials: CRED_INCLUDE,
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+      body: JSON.stringify({ freq: PUSH_FREQ_DAILY, email: x.email }),
+    })
+    if (r.ok === false) {
+      toast({ kind: PUSH_TOAST_ERR, title: x.t(PUSH_FAIL_KEY) })
+    } else {
+      toast({ kind: PUSH_TOAST_OK, title: x.t(PUSH_ON_KEY) })
+      track(EV_PUSH, { on: PUSH_ON_VALUE })
+      x.setEmail(TEXT_NONE)
+    }
+  } catch {
+    toast({ kind: PUSH_TOAST_ERR, title: x.t(PUSH_FAIL_KEY) })
+  }
+  x.setBusy(false)
 }

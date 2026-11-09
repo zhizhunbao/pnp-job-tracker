@@ -15,9 +15,8 @@
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Input } from '@/components/input'
-import { Select } from '@/components/select'
-import { EMAIL_MAX, PUSH_FREQS, SAVE_KIND, TEXT_NONE } from './constants'
-import { makeFreqLabel } from './functions'
+import { AlertList } from './alertlist'
+import { AL_BTN_KIND, EMAIL_MAX, SAVE_KIND, TEXT_NONE, URL_BOARD } from './constants'
 import { SubSec } from './subsec'
 import type { SubPartIn } from './types'
 import css from './sub.module.css'
@@ -37,13 +36,13 @@ export function SubPush({ s, t }: SubPartIn) {
         <div className={cssOf(css.push)}>
           <div>{t('mj.pushRow')}</div>
           <div className={cssOf(css.pushRow)}>
-            <Select value={p.freq} onChange={p.setFreq} opts={PUSH_FREQS} all={t('mj.freqOff')}
-              labelOf={makeFreqLabel(t)} />
             <Input value={p.email} onChange={p.setEmail} maxLength={EMAIL_MAX} ariaLabel={t('mj.pushTo')}
               className={cssOf(css.pushEmail)} />
             <Button kind={SAVE_KIND} onClick={p.onSave} disabled={p.busy}>{t('mj.pushSave')}</Button>
           </div>
           {p.note !== TEXT_NONE && <div className={cssOf(css.pushNote)}>{p.note}</div>}
+          <AlertList a={s.alerts} t={t} />
+          <div><Button kind={AL_BTN_KIND} sm href={URL_BOARD}>{t('al.new')}</Button></div>
         </div>
       )}
     </SubSec>

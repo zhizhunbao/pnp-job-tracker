@@ -249,13 +249,17 @@ describe('推荐 SQL', () => {
     expect(q).not.toContain('left(')
     expect(q).toContain('WHERE length(w) = 5')
     const saved = q.slice(q.indexOf('FROM saved_jobs'), q.indexOf('AS saved_g'))
-    expect(saved).toContain('cardinality(want.g) = 0')
+    expect(saved).toContain('cardinality(want.g) + cardinality(want.b) = 0 AND want.strict = false')
     const applied = q.slice(q.indexOf('FROM applications a JOIN jobs aj'), q.indexOf('AS applied_g'))
     expect(applied).toContain("a.status IN ('sent', 'replied')")
-    expect(applied).toContain('cardinality(want.g) = 0')
+    expect(applied).toContain('cardinality(want.g) + cardinality(want.b) = 0 AND want.strict = false')
     expect(applied).not.toContain('draft')
     expect(q).toContain('j.noc = ANY(me.saved_g || me.applied_g || me.want_g)')
-    expect(q).toContain('(j.noc = ANY(me.want_g)) AS occ_want')
+    // 2026-11-08 清单第 4 条:按学历走专业落的大类;严格模式不跨省替换
+    expect(q).toContain('OR j.broad = ANY(me.want_b))')
+    expect(q).toContain('me.strict = false AND EXISTS (SELECT 1 FROM stale s WHERE s.code = me.prov)')
+    expect(q).toContain("u.answers->'basic'->'workNocs'")
+    expect(q).toContain('(j.noc = ANY(me.want_g) OR j.broad = ANY(me.want_b)) AS occ_want')
   })
 
   it('⑧ 金标:三种理由各自命中(档案 = 职业对口、收藏 = 和你收藏的同类、投递 = 和你投过的同类)', () => {
@@ -541,9 +545,7 @@ describe('新岗推送卡', () => {
       sel.value = ''
       sel.dispatchEvent(new Event('change', { bubbles: true }))
     })
-    await act(async () => {
-      Array.from(el.querySelectorAll('button')).find((b) => b.textContent === 'mj.pushSave')?.click()
-    })
+    // 2026-11-08 提醒列表:频率在表里选,选了立刻存,不用再点保存
     await flush()
     expect(posts).toEqual([JSON.stringify({ freq: 'off', email: 'me@x.com' })])
     expect(toasts).toEqual([{ kind: 'ok', title: 'mj.pushMailSent', detail: 'mj.pushPending{"e":"me@x.com"}' }])

@@ -105,7 +105,7 @@ export async function runAlerts(input: RunIn): RunOut {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload 生成型接缝(读的格见文件头)
   for (const u of users.docs as any[]) {
     const profile = normalizeProfile(u.profile)
-    if (u.email == null || u.email === '' || hasProfile(profile) === false) {
+    if (u.email == null || u.email === '' || hasProfile(profile) === false || u.weeklyOptOut === true) {
       continue
     }
     out.usersChecked++
@@ -151,7 +151,7 @@ export async function runAlerts(input: RunIn): RunOut {
       }
       continue
     }
-    const ok = await sendMail({ to: u.email, subject: fill({ tpl: SUBJ_MATCH, params: { n: top.length } }), html: emailHtml({ rows: top, drawLines: drawLines }) })
+    const ok = await sendMail({ to: u.email, subject: fill({ tpl: SUBJ_MATCH, params: { n: top.length } }), html: emailHtml({ unsubUrl: unsubUrlOf(u.id), rows: top, drawLines: drawLines }) })
     if (ok) {
       out.matchEmails++
       await payload.update({ collection: COL_USERS, id: u.id, overrideAccess: true, data: { lastAlertAt: now } })
@@ -170,13 +170,13 @@ export async function runAlerts(input: RunIn): RunOut {
       ownerEmail = sdoc.user.email
       ownerId = sdoc.user.id
     }
-    if (ownerEmail === '' || ownerId == null) {
+    if (ownerEmail === '' || ownerId == null || sdoc.freq === FREQ_OFF) {
       continue
     }
     let since: string = new Date(Date.now() - LOOKBACK_MS).toISOString()
     if (typeof sdoc.lastNotifiedAt === 'string' && sdoc.lastNotifiedAt !== '') {
       since = sdoc.lastNotifiedAt
-      if (Date.now() - new Date(sdoc.lastNotifiedAt).getTime() < ALERT_MIN_GAP_MS) {
+      if (Date.now() - new Date(sdoc.lastNotifiedAt).getTime() < searchGapOf(String(sdoc.freq))) {
         continue
       }
     }
@@ -193,7 +193,8 @@ export async function runAlerts(input: RunIn): RunOut {
       out.searchEmails++
       continue
     }
-    const ok = await sendMail({ to: ownerEmail, subject: fill({ tpl: SUBJ_SEARCH, params: { n: rows.length } }), html: emailHtml({ rows: rows, drawLines: [] }) })
+    const prefs = await loadDigestPrefs({ db: input.db, userId: ownerId, account: ownerEmail })
+    const ok = await sendMail({ to: prefs.email, subject: fill({ tpl: SUBJ_SEARCH, params: { n: rows.length } }), html: emailHtml({ unsubUrl: unsubUrlOf(ownerId), rows: rows, drawLines: [] }) })
     if (ok) {
       out.searchEmails++
       await payload.update({ collection: COL_SEARCHES, id: sdoc.id, overrideAccess: true, data: { lastNotifiedAt: now } })
@@ -415,7 +416,7 @@ export async function runAlerts(input: RunIn): RunOut {
  */
 export function emailHtml(input: EmailHtmlIn): string {
   const draws = input.drawLines.map(drawP).join(HTML_SEP)
-  return fill({ tpl: EMAIL_SHELL, params: { draws: draws, hi: HI_LINE, table: jobsTable(input.rows), site: SITE, open: OPEN_BOARD, unsub: UNSUB_SAVED } })
+  return fill({ tpl: EMAIL_SHELL, params: { draws: draws, hi: HI_LINE, table: jobsTable(input.rows), site: SITE, open: OPEN_BOARD, unsub: UNSUB_SAVED, unsubUrl: input.unsubUrl } })
 }
 
 /**
@@ -635,6 +636,7 @@ export async function unsubApply(input: UnsubIn): UnsubOut {
   try {
     await input.payload.update({ collection: USERS_WEEKLY_OPT, id: input.u, overrideAccess: true, data: { weeklyOptOut: true } })
     await input.db.query(SQL.DIGEST_PREFS_OFF, [input.u])
+    await input.db.query(SQL.SAVED_SEARCHES_OFF, [input.u])
     return US_DONE
   } catch {
     return US_FAIL
@@ -806,10 +808,10 @@ export async function saveDigestPrefs(x: PrefsPutIn): PrefsPutOut {
 export async function loadDigestPrefs(x: PrefsLoadIn): DigestPrefsOut {
   const first = firstOf(await queryRows({ db: x.db, sql: SQL.DIGEST_PREFS_ONE, params: [x.userId], map: toDigestPrefs }))
   if (first == null) {
-    return { freq: FREQ_OFF, email: x.account, pending: FIELD_NONE }
+    return { freq: FREQ_OFF, email: x.account, pending: FIELD_NONE, asked: false }
   }
   if (first.email === '') {
-    return { freq: first.freq, email: x.account, pending: first.pending }
+    return { freq: first.freq, email: x.account, pending: first.pending, asked: true }
   }
   return first
 }
@@ -934,5 +936,18 @@ export function toDigestPrefs(r: DigestPrefsDbRow): DigestPrefs {
   if (r.freq === FREQ_DAILY || r.freq === FREQ_WEEKLY) {
     freq = r.freq
   }
-  return { freq, email: text(r.email), pending: text(r.pending_email) }
+  return { freq, email: text(r.email), pending: text(r.pending_email), asked: true }
+}
+
+/**
+ * 按条件提醒两封信之间的最短间隔(2026-11-08 清单第 5 条:每条提醒自己选每天或每周)。
+ *
+ * @param freq 这条提醒的频率。
+ * @returns 毫秒。
+ */
+export function searchGapOf(freq: string): number {
+  if (freq === FREQ_WEEKLY) {
+    return WEEK_MS
+  }
+  return ALERT_MIN_GAP_MS
 }

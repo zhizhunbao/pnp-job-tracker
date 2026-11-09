@@ -13,6 +13,7 @@ import { makeOptPick } from '@/components/profile'
 import { Select } from '@/components/select'
 import {
   FIT_WHOS, FORM_NONE_KEY, FORM_SECONDARY_KIND, FORM_SEG_KIND, GOAL_JOBS, GOAL_JOBS_KEY, GOAL_PR, GOAL_PR_KEY,
+  MATCH_EDU, MATCH_WORK, MODE_DEFAULT, MODE_STRICT,
 } from './constants'
 import { formProvOptsOf, makeProvLabel, makeWhoLabel, pickedTextOf } from './functions'
 import { GateCities } from './gatecities'
@@ -51,6 +52,12 @@ export function GateFormFields({ g, k, t }: GateFormFieldsIn) {
           <Button kind={FORM_SECONDARY_KIND} sm onClick={k.onJob}>{t('pf.edit')}</Button>
         </div>
       </GateField>
+      <GateField label={t('pf.work')}>
+        <div className={cssOf(css.pickRow)}>
+          <span>{pickedTextOf({ t, n: g.workNocs.length })}</span>
+          <Button kind={FORM_SECONDARY_KIND} sm onClick={k.onWork}>{t('pf.edit')}</Button>
+        </div>
+      </GateField>
       <GateField label={t('pf.where')}>
         <Select value={g.provActive} onChange={g.onProv} opts={formProvOptsOf()} all={t(FORM_NONE_KEY)}
           labelOf={makeProvLabel({ t })} />
@@ -62,6 +69,22 @@ export function GateFormFields({ g, k, t }: GateFormFieldsIn) {
       </GateField>
       <GateField label={t('pf.edu')} hint={t('pf.optEdu')}>
         <GateEdu g={g} t={t} />
+      </GateField>
+      <GateField label={t('pf.matchBy')}>
+        <SegGroup>
+          <Button kind={FORM_SEG_KIND} active={g.edit.matchBy !== MATCH_EDU}
+            onClick={makeOptPick({ value: MATCH_WORK, onPick: g.edit.setMatchBy })}>{t('pf.byWork')}</Button>
+          <Button kind={FORM_SEG_KIND} active={g.edit.matchBy === MATCH_EDU}
+            onClick={makeOptPick({ value: MATCH_EDU, onPick: g.edit.setMatchBy })}>{t('pf.byEdu')}</Button>
+        </SegGroup>
+      </GateField>
+      <GateField label={t('pf.matchMode')}>
+        <SegGroup>
+          <Button kind={FORM_SEG_KIND} active={g.edit.matchMode !== MODE_STRICT}
+            onClick={makeOptPick({ value: MODE_DEFAULT, onPick: g.edit.setMatchMode })}>{t('pf.modeDefault')}</Button>
+          <Button kind={FORM_SEG_KIND} active={g.edit.matchMode === MODE_STRICT}
+            onClick={makeOptPick({ value: MODE_STRICT, onPick: g.edit.setMatchMode })}>{t('pf.modeStrict')}</Button>
+        </SegGroup>
       </GateField>
       <GateField label={t('pf.name')} hint={t('pf.optName')}>
         <GateName g={g} t={t} />

@@ -8,6 +8,7 @@
  * 2026-10-10 投递框三步(docs/design/我的/我的求职-20261009.md 16d):「职位信息」分区撤(框头已写职位名,Frank「点投递
  * 还需要再显示一遍 职位信息吗?」);步数行换成每张卡里的三个页签;第 3 步「预览」改「确认」;钮组挪到卡外、框底;
  * 「按职位改写」免费号弹的升级框挂在这里(简历页、求职信页共用)。
+ * 2026-11-08 清单第 1 条:已投递一步多一张「新岗推送」卡(PushOffer)。
  *
  * @author Frank
  * @time 2026-10-07 05:00:00
@@ -19,6 +20,7 @@ import { ApplyLetter } from './applyletter'
 import { ApplyResume } from './applyresume'
 import { CARD_MD_CLS, STEP_CONFIRM, STEP_DONE, STEP_LETTER, STEP_RESUME, TEXT_NONE } from './constants'
 import { useApply } from './hooks'
+import { PushOffer } from './pushoffer'
 import { SentNotice } from './sentnotice'
 import type { ApplyPageIn } from './types'
 
@@ -36,6 +38,7 @@ export function ApplyFlow({ start, titleSub, onSent }: ApplyPageIn) {
       {p.step === STEP_LETTER && <ApplyLetter p={p} />}
       {p.step === STEP_CONFIRM && <ApplyConfirm p={p} />}
       {p.step === STEP_DONE && <div className={CARD_MD_CLS}><SentNotice t={p.t} company={p.job.company} /></div>}
+      {p.step === STEP_DONE && <PushOffer t={p.t} />}
       <ApplyFoot p={p} />
       {p.upsell !== TEXT_NONE && (
         <UpgradeModal t={p.t} onClose={p.onUpsellClose} reason={p.t(p.upsell)} back={p.back} />

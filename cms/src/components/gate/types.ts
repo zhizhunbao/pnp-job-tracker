@@ -42,7 +42,7 @@ export type GateIntent = 'job' | 'apply' | 'save' | 'entry' | 'filter'
  * 访客向导走到哪一屏:四道题 + 注册屏。
  * 2026-11-07 一题一屏的 GateEdit 删:只剩 missingStepsOf 报「档案里哪几样还空着」,收窄成它报得出的五样(身份、教育经历、注册屏撤)。
  */
-export type GateStep = 'goal' | 'major' | 'job' | 'prov' | 'name'
+export type GateStep = 'goal' | 'major' | 'job' | 'work' | 'prov' | 'name' | 'who' | 'edu'
 
 /**
  * 往已选职业清单上合并的更新函数(React 落格收的另一种形态;本域只整份地拨,形状照 profile 的同名件自抄,
@@ -97,6 +97,16 @@ export type GatePanel = {
    * 拨已选职业码(职业题的胶囊与标签 × 都走它)。
    */
   setNocs: SetNocsFn
+
+  /**
+   * 做过的工作(职业码)。
+   */
+  workNocs: string[]
+
+  /**
+   * 改做过的工作。
+   */
+  setWorkNocs: SetNocsFn
 
   /**
    * 所在省那一格亮哪个(省码;境外 = PROV_ABROAD;空串 = 都不亮)。
@@ -414,6 +424,26 @@ export type EditBits = {
    * 直接改身份(同上,表单不翻页)。
    */
   setWho: (v: string) => void
+
+  /**
+   * 匹配依据;空串 = 没选。
+   */
+  matchBy: string
+
+  /**
+   * 选匹配依据。
+   */
+  setMatchBy: (v: string) => void
+
+  /**
+   * 匹配模式;空串 = 没选。
+   */
+  matchMode: string
+
+  /**
+   * 选匹配模式。
+   */
+  setMatchMode: (v: string) => void
 
   /**
    * 直接保存(一页表单的「保存」;向导走 onNext 翻到最后一题才存)。
@@ -800,6 +830,21 @@ export type GateEditSeed = {
    * 教育经历串(「所在地.公立私立.时长」);空列 = 没答(2026-10-13)。
    */
   edu: string[]
+
+  /**
+   * 做过的工作(职业码)。
+   */
+  workNocs: string[]
+
+  /**
+   * 匹配依据;空串 = 没选。
+   */
+  matchBy: string
+
+  /**
+   * 匹配模式;空串 = 没选。
+   */
+  matchMode: string
 }
 
 /**
@@ -890,6 +935,21 @@ export type EditPatch = {
    * 教育经历串,只收三格都选了的段(2026-10-13)。
    */
   fitEdu: string[]
+
+  /**
+   * 做过的工作(职业码)。
+   */
+  workNocs: string[]
+
+  /**
+   * 匹配依据;空串 = 没选。
+   */
+  matchBy: string
+
+  /**
+   * 匹配模式;空串 = 没选。
+   */
+  matchMode: string
 }
 
 /**
@@ -935,6 +995,11 @@ export type GatePickPanel = {
    * 开职业选择器。
    */
   onJob: () => void
+
+  /**
+   * 开「做过的工作」选择器。
+   */
+  onWork: () => void
 
   /**
    * 关选择器(选好了)。

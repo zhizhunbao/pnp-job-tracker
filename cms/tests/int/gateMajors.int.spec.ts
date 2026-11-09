@@ -62,7 +62,7 @@ function row(code: string, en: string, zh: string | null = null, ko: string | nu
 }
 
 // 档案编辑弹框的空档(2026-10-11 访客向导删,整机走一遍改挂 GateEdit:同一套题,五题全问从目标题起;2026-11-07 改挂一页表单 GateForm)
-const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [] }
+const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [], workNocs: [], matchBy: '', matchMode: '' }
 
 const HOT: MajorRow[] = [
   row('52.0201', 'Business Administration and Management, General.', '工商管理', '경영학', ['商务', '高管']),

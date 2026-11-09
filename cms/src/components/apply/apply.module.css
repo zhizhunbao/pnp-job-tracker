@@ -339,3 +339,19 @@
 .sentOk {
   margin-bottom: 12px;
 }
+
+/* 投出后一键开启推送:宽屏左字右钮,窄屏钮落到字下面。 */
+.pushRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pushTo {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--text3);
+  overflow-wrap: anywhere;
+}

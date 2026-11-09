@@ -38,7 +38,8 @@ import { readAnswers, saveBasics } from '@/lib/quiz'
 import {
   CITIES_BAD, CITY_HIT_MAX, CITY_HOT_N, CRED_INCLUDE, EDIT_ERR_ANSWERS, EDIT_ERR_NAME, EDU_ABROAD, EDU_F_KIND,
   EDU_F_LEN, EDU_F_PROV, EDU_SEP, FORM_NONE_KEY, FORM_PICKED_KEY, GATE_ABROAD_KEY, GATE_PROV_OPTS, GATE_STEP_GOAL,
-  GATE_STEP_JOB, GATE_STEP_MAJOR, GATE_STEP_NAME, GATE_STEP_PROV, HDR_CONTENT_TYPE, K_KIND_HEAD, K_LEN_HEAD,
+  GATE_STEP_JOB, GATE_STEP_MAJOR, GATE_STEP_NAME, GATE_STEP_WORK, GATE_STEP_WHO, GATE_STEP_EDU, GATE_STEP_PROV,
+  HDR_CONTENT_TYPE, K_KIND_HEAD, K_LEN_HEAD,
   K_PROV_HEAD, K_WHO_HEAD, LANG_KO, LANG_ZH, MAJOR_SEP, METHOD_PATCH, MIME_JSON, PROV_ABROAD, SAVE_FAIL_KEY,
   STATUS_OVERSEAS, TEXT_NONE, URL_CITIES_HEAD, URL_PREFS,
 } from './constants'
@@ -375,11 +376,20 @@ export function missingStepsOf(s: GateEditSeed): GateStep[] {
   if (s.nocs.length === 0) {
     out.push(GATE_STEP_JOB)
   }
+  if (s.workNocs.length === 0) {
+    out.push(GATE_STEP_WORK)
+  }
   if (s.prov === TEXT_NONE && s.abroad === false) {
     out.push(GATE_STEP_PROV)
   }
   if (s.name.trim() === TEXT_NONE) {
     out.push(GATE_STEP_NAME)
+  }
+  if (s.who === TEXT_NONE) {
+    out.push(GATE_STEP_WHO)
+  }
+  if (s.edu.length === 0) {
+    out.push(GATE_STEP_EDU)
   }
   return out
 }
@@ -443,6 +453,9 @@ function editPatchOf(a: GateEditSeed): EditPatch {
       status: STATUS_OVERSEAS,
       fitWho: a.who,
       fitEdu: a.edu,
+      workNocs: a.workNocs,
+      matchBy: a.matchBy,
+      matchMode: a.matchMode,
     }
   }
   return {
@@ -453,6 +466,9 @@ function editPatchOf(a: GateEditSeed): EditPatch {
     resCity: a.city,
     fitWho: a.who,
     fitEdu: a.edu,
+    workNocs: a.workNocs,
+    matchBy: a.matchBy,
+    matchMode: a.matchMode,
   }
 }
 

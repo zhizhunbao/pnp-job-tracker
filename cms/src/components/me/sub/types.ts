@@ -68,6 +68,11 @@ export type SubPanel = {
    * 新岗推送的状态。
    */
   push: PushPanel
+
+  /**
+   * 提醒列表(2026-11-08)。
+   */
+  alerts: AlertsPanel
 }
 
 /**
@@ -453,4 +458,389 @@ export type PushToast = {
    * 灰字副行(空串 = 没有)。
    */
   detail: string
+}
+
+/**
+ * 按筛选条件的一条提醒(洗净后)。
+ */
+export type AlertDoc = {
+  /**
+   * 提醒号。
+   */
+  id: string
+
+  /**
+   * 提醒名。
+   */
+  name: string
+
+  /**
+   * 这套筛选。
+   */
+  filters: Record<string, string | boolean>
+
+  /**
+   * 频率:off / daily / weekly。
+   */
+  freq: string
+}
+
+/**
+ * /api/saved-searches 的一行(线格式,取值前收窄)。
+ */
+export type AlertDocJson = {
+  /**
+   * 提醒号。
+   */
+  id: number | string
+
+  /**
+   * 提醒名。
+   */
+  name?: string | null
+
+  /**
+   * 筛选。
+   */
+  filters?: Record<string, string | boolean> | null
+
+  /**
+   * 频率。
+   */
+  freq?: string | null
+}
+
+/**
+ * /api/saved-searches 的回包。
+ */
+export type AlertsRespJson = {
+  /**
+   * 各行。
+   */
+  docs: AlertDocJson[]
+}
+
+/**
+ * 菜单一项。
+ */
+export type AlertMenuItem = {
+  /**
+   * 身份。
+   */
+  key: string
+
+  /**
+   * 字。
+   */
+  text: string
+
+  /**
+   * 危险操作。
+   */
+  danger: boolean
+
+  /**
+   * 点击。
+   */
+  onClick: () => void
+}
+
+/**
+ * 提醒表一行(展示)。
+ */
+export type AlertRow = {
+  /**
+   * 行身份。
+   */
+  key: string
+
+  /**
+   * 提醒名。
+   */
+  name: string
+
+  /**
+   * 下拉的值;空串 = 不发。
+   */
+  freq: string
+
+  /**
+   * 选频率。
+   */
+  onFreq: (v: string) => void
+
+  /**
+   * 下拉选项的字。
+   */
+  labelOf: FreqLabelFn
+
+  /**
+   * 「不发」的字。
+   */
+  offText: string
+
+  /**
+   * 改条件的地址;空串 = 这一行不能改。
+   */
+  href: string
+
+  /**
+   * 「改条件」的字。
+   */
+  editText: string
+
+  /**
+   * 行末菜单。
+   */
+  menu: AlertMenuItem[]
+
+  /**
+   * 菜单钮的字。
+   */
+  more: string
+}
+
+/**
+ * 提醒表一列。
+ */
+export type AlertCol = {
+  /**
+   * 列身份。
+   */
+  key: string
+
+  /**
+   * 列头。
+   */
+  label: string
+
+  /**
+   * 单元格。
+   */
+  render: (r: AlertRow) => React.ReactNode
+}
+
+/**
+ * 待确认的删除。
+ */
+export type AlertAsk = {
+  /**
+   * 提醒名。
+   */
+  name: string
+
+  /**
+   * 确认后跑。
+   */
+  run: () => void
+}
+
+/**
+ * 提醒列表的状态。
+ */
+export type AlertsPanel = {
+  /**
+   * 窄屏。
+   */
+  narrow: boolean
+
+  /**
+   * 提醒清单拉失败。
+   */
+  failed: boolean
+
+  /**
+   * 各行(第一行恒为按档案推荐)。
+   */
+  rows: AlertRow[]
+
+  /**
+   * 待确认的删除;没有为 null。
+   */
+  ask: AlertAsk | null
+
+  /**
+   * 确认删除。
+   */
+  onAskOk: () => void
+
+  /**
+   * 取消删除。
+   */
+  onAskClose: () => void
+}
+
+/**
+ * 拉提醒清单的入参。
+ */
+export type LoadAlertsIn = {
+  /**
+   * 落清单。
+   */
+  setDocs: (docs: AlertDoc[]) => void
+
+  /**
+   * 落失败。
+   */
+  setFailed: (v: boolean) => void
+}
+
+/**
+ * 洗提醒表行的入参。
+ */
+export type AlertRowsIn = {
+  /**
+   * 提醒清单。
+   */
+  docs: AlertDoc[]
+
+  /**
+   * 按档案推荐那一行的频率(下拉的值)。
+   */
+  profileFreq: string
+
+  /**
+   * 选按档案推荐的频率。
+   */
+  onProfileFreq: (v: string) => void
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 落清单。
+   */
+  setDocs: (docs: AlertDoc[]) => void
+
+  /**
+   * 落待确认的删除。
+   */
+  setAsk: (a: AlertAsk | null) => void
+}
+
+/**
+ * 改频率 / 删除一条的入参。
+ */
+export type AlertActIn = {
+  /**
+   * 这一条。
+   */
+  doc: AlertDoc
+
+  /**
+   * 全部清单。
+   */
+  docs: AlertDoc[]
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 落清单。
+   */
+  setDocs: (docs: AlertDoc[]) => void
+}
+
+/**
+ * 确认手柄的入参。
+ */
+export type AlertAskOkIn = {
+  /**
+   * 待确认的删除。
+   */
+  ask: AlertAsk | null
+
+  /**
+   * 落待确认的删除。
+   */
+  setAsk: (a: AlertAsk | null) => void
+}
+
+/**
+ * 按档案推荐选频率的入参。
+ */
+export type ProfileFreqIn = {
+  /**
+   * 收件邮箱。
+   */
+  email: string
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 落频率。
+   */
+  setFreq: (v: string) => void
+
+  /**
+   * 落提示。
+   */
+  setNote: (v: string) => void
+
+  /**
+   * 落忙。
+   */
+  setBusy: (v: boolean) => void
+}
+
+/**
+ * AlertList 的 props。
+ */
+export type AlertListIn = {
+  /**
+   * 提醒列表。
+   */
+  a: AlertsPanel
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * AlertItem 的 props。
+ */
+export type AlertItemIn = {
+  /**
+   * 这一行。
+   */
+  row: AlertRow
+}
+
+/**
+ * 存一条提醒频率的入参。
+ */
+export type AlertFreqSendIn = {
+  /**
+   * 这一条的手柄入参。
+   */
+  x: AlertActIn
+
+  /**
+   * 新频率。
+   */
+  freq: string
+}
+
+/**
+ * 造「点删除」的入参。
+ */
+export type AlertAskMakeIn = {
+  /**
+   * 待确认的删除。
+   */
+  ask: AlertAsk
+
+  /**
+   * 落待确认的删除。
+   */
+  setAsk: (a: AlertAsk | null) => void
 }

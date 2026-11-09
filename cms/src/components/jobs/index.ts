@@ -32,6 +32,7 @@ export {
   boardDimsOf, boardPnpOf, colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, toCatLabelList,
   toJobPlan, toNocDescList, toSearchParams, jobImmDimsOf,
 } from './functions'
+export { alertHrefOf } from './functions'
 export type {
   ColWidthSeed, JobFact, JobFilters, JobPageDims, JobsIn, NocCategoryDoc, NocDescDoc, RelatedJobs, SessionUser,
 } from './types'
