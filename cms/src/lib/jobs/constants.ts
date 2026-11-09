@@ -1163,12 +1163,6 @@ export const PNP_BLOCK_SEP = ','
 export const DOLLAR = '$'
 
 /**
- * 邮件提醒那条 SQL 的 WHERE 从第几个占位符起编号:$1 被 since(时间下限)占了,
- * 筛选条件只能从 $2 开始 —— 列表页那条没有 since,照旧从 $1 起。
- */
-export const ALERT_WHERE_START = 2
-
-/**
  * 排序兜底:最新发现在前(#159:date_posted 只有日期没时间,当天最早抓的那批会钉在榜首一整天;
  * first_seen DESC 让榜单随每小时抓取真正滚动;仍是纯时间序不掺分数,#127 意图不变)。
  */

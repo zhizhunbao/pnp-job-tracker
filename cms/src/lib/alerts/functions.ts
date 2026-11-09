@@ -7,6 +7,7 @@
  * 游标语义:发成功才回写 lastAlertAt/lastNotifiedAt/lastWeeklyAt;静默窗口整轮不发不回写,
  * 下一个白天窗口自然补发,一封不丢。payload 文档是生成型,体内 `as` 特批牌同一个接缝:
  * 本域只读点名的几格。
+ * 2026-11-09 Frank「照着档案推送不就完事了吗」:B 轮 saved-search 撤,按条件提醒不再发信。
  *
  * @author Frank
  * @time 2026-08-23 02:00:00
@@ -24,8 +25,8 @@ import {
   NOC_RE, OPEN_BOARD, PAIR_KEY_SEP, PREVIEW_WEEKLY,
   PROFILE_HEAD_DIM, PROFILE_HEAD_P, PROFILE_HEAD_STYLE_NONE, PROFILE_SHELL, PROV_CODE_LEN, PROV_COND, PROV_COND_NONE,
   QUIET_END_DEF, QUIET_START_DEF,
-  SAL_K, SAL_NONE, SAVED_LIMIT, SAVED_SHOW, SCAN_LIMIT, SITE, ST_OPEN, SUBJ_MATCH, SUBJ_SAVED, SUBJ_SEARCH, SUBJ_WK, TABLE_JOBS,
-  COL_SAVED_JOBS, COL_SEARCHES, COL_USERS, ET_LOCALE, HOUR_NUMERIC, K_COUNTS, K_PREVIEW, LEVEL_HIGH,
+  SAL_K, SAL_NONE, SAVED_LIMIT, SAVED_SHOW, SCAN_LIMIT, SITE, ST_OPEN, SUBJ_MATCH, SUBJ_SAVED, SUBJ_WK, TABLE_JOBS,
+  COL_SAVED_JOBS, COL_USERS, ET_LOCALE, HOUR_NUMERIC, K_COUNTS, K_PREVIEW, LEVEL_HIGH,
   LEVEL_MID, SEP_LOC,
   TITLE_NONE, TR_JOB, TR_PROFILE, TR_WEEKLY, UNSUB_MSG_DONE, UNSUB_MSG_FAIL, UNSUB_MSG_INVALID, UNSUB_PAGE,
   US_DONE, US_FAIL, US_INVALID,
@@ -38,7 +39,7 @@ import {
 import type {
   AlertCounts, AlertJobRow, EngineJob, MaybeWeeklyStatRow, SampleDbRow, DimsOfFn, MailLang, MailUserId, QuietInfo, RunIn, RunOut, SampleRow,
   DimsOfMakeIn, DrawCat, EmailHtmlIn, MailJobList, MaybeMoney, MaybeParam, NocNameRow, ProfileHtmlIn,
-  ProvBroadPair, ProvCodes, SavedFilters, SavedJobStatusRow, TargetFirstFn, UnsubIn,
+  ProvBroadPair, ProvCodes, SavedJobStatusRow, TargetFirstFn, UnsubIn,
   UnsubOut, UnsubState,
   WeeklyHtmlIn, WeeklyItem, WeeklyStat,
   ConfirmIn, ConfirmOut, DailyHtmlIn, DailyRoundIn, DailyRoundOut, DigestPrefs, DigestPrefsDbRow, DigestUser, DigestUserDbRow,
@@ -86,8 +87,8 @@ export async function runAlerts(input: RunIn): RunOut {
   const payload = input.payload
   const now = new Date().toISOString()
   const out: AlertCounts = {
-    dryRun: input.dry, matchEmails: 0, searchEmails: 0, weeklyEmails: 0, sendFails: 0,
-    usersChecked: 0, searchesChecked: 0, weeklyChecked: 0, skippedFilters: [], dailyEmails: 0, dailyChecked: 0,
+    dryRun: input.dry, matchEmails: 0, weeklyEmails: 0, sendFails: 0,
+    usersChecked: 0, weeklyChecked: 0, dailyEmails: 0, dailyChecked: 0,
   }
 
   const cut = new Date(Date.now() - DRAW_WINDOW_MS).toISOString().slice(0, ISO_DATE_LEN)
@@ -155,49 +156,6 @@ export async function runAlerts(input: RunIn): RunOut {
     if (ok) {
       out.matchEmails++
       await payload.update({ collection: COL_USERS, id: u.id, overrideAccess: true, data: { lastAlertAt: now } })
-    } else {
-      out.sendFails++
-    }
-  }
-
-  const searches = await payload.find({ collection: COL_SEARCHES, limit: SCAN_LIMIT, depth: 1, overrideAccess: true })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload 生成型接缝(读的格见文件头)
-  for (const sdoc of searches.docs as any[]) {
-    out.searchesChecked++
-    let ownerEmail = FIELD_NONE
-    let ownerId: string | number | null = null
-    if (sdoc.user != null && typeof sdoc.user === 'object' && typeof sdoc.user.email === 'string') {
-      ownerEmail = sdoc.user.email
-      ownerId = sdoc.user.id
-    }
-    if (ownerEmail === '' || ownerId == null || sdoc.freq === FREQ_OFF) {
-      continue
-    }
-    let since: string = new Date(Date.now() - LOOKBACK_MS).toISOString()
-    if (typeof sdoc.lastNotifiedAt === 'string' && sdoc.lastNotifiedAt !== '') {
-      since = sdoc.lastNotifiedAt
-      if (Date.now() - new Date(sdoc.lastNotifiedAt).getTime() < searchGapOf(String(sdoc.freq))) {
-        continue
-      }
-    }
-    let filters: SavedFilters = {}
-    if (sdoc.filters != null && typeof sdoc.filters === 'object') {
-      filters = sdoc.filters as SavedFilters
-    }
-    const { rows, skipped } = await input.fetchHits({ filters: filters, since: since })
-    out.skippedFilters.push(...skipped)
-    if (rows.length === 0) {
-      continue
-    }
-    if (input.dry) {
-      out.searchEmails++
-      continue
-    }
-    const prefs = await loadDigestPrefs({ db: input.db, userId: ownerId, account: ownerEmail })
-    const ok = await sendMail({ to: prefs.email, subject: fill({ tpl: SUBJ_SEARCH, params: { n: rows.length } }), html: emailHtml({ unsubUrl: unsubUrlOf(ownerId), rows: rows, drawLines: [] }) })
-    if (ok) {
-      out.searchEmails++
-      await payload.update({ collection: COL_SEARCHES, id: sdoc.id, overrideAccess: true, data: { lastNotifiedAt: now } })
     } else {
       out.sendFails++
     }
@@ -636,7 +594,6 @@ export async function unsubApply(input: UnsubIn): UnsubOut {
   try {
     await input.payload.update({ collection: USERS_WEEKLY_OPT, id: input.u, overrideAccess: true, data: { weeklyOptOut: true } })
     await input.db.query(SQL.DIGEST_PREFS_OFF, [input.u])
-    await input.db.query(SQL.SAVED_SEARCHES_OFF, [input.u])
     return US_DONE
   } catch {
     return US_FAIL
@@ -937,17 +894,4 @@ export function toDigestPrefs(r: DigestPrefsDbRow): DigestPrefs {
     freq = r.freq
   }
   return { freq, email: text(r.email), pending: text(r.pending_email), asked: true }
-}
-
-/**
- * 按条件提醒两封信之间的最短间隔(2026-11-08 清单第 5 条:每条提醒自己选每天或每周)。
- *
- * @param freq 这条提醒的频率。
- * @returns 毫秒。
- */
-export function searchGapOf(freq: string): number {
-  if (freq === FREQ_WEEKLY) {
-    return WEEK_MS
-  }
-  return ALERT_MIN_GAP_MS
 }

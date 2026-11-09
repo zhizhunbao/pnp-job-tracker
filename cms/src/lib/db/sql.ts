@@ -446,18 +446,6 @@ export const ETL_HEARTBEAT = `SELECT last_seed FROM etl_heartbeat WHERE id = 1`
  */
 export const JOBS_MAX_LAST_SEEN = `SELECT max(last_seen) AS upd FROM jobs`
 
-/**
- * 邮件提醒命中:上次发信之后新出现的岗
- *
- * @param where 订阅条件片段($1=上次发信时刻)。
- * @returns 命中岗 SELECT 语句。
- */
-export const alertHits = (where: string) =>
-  `SELECT j.id, j.title, j.city, j.province, j.salary_text, c.name AS company_name
-     ${JOB_FROM}
-     WHERE j.status = 'open' AND j.first_seen > $1 AND ${where}
-     ORDER BY j.grade_channel DESC NULLS LAST, j.date_posted DESC NULLS LAST LIMIT 20`
-
 // =========================================================================
 // 7. 答题三问的事实数(某职业:在架量 / 可提名量 / 具名通道 / 中位薪资 / 省分布)
 // =========================================================================
@@ -3445,11 +3433,6 @@ export const DIGEST_PREFS_OFF = `INSERT INTO digest_prefs (user_id, freq) VALUES
 export const DIGEST_USERS = `SELECT p.user_id, COALESCE(NULLIF(p.email, ''), u.email) AS email, u.locale, u.pro_until, p.last_daily_at
      FROM digest_prefs p JOIN users u ON u.id = p.user_id
      WHERE p.freq = $1 LIMIT $2`
-
-/**
- * 邮件退订时把这个人的按条件提醒全停(2026-11-08 清单第 16 条)。$1=用户 id。
- */
-export const SAVED_SEARCHES_OFF = `UPDATE saved_searches SET freq = 'off' WHERE user_id = $1`
 
 /**
  * 记这个人今天的每日推送发过了。$1=用户 id。

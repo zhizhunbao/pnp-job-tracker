@@ -545,7 +545,9 @@ describe('新岗推送卡', () => {
       sel.value = ''
       sel.dispatchEvent(new Event('change', { bubbles: true }))
     })
-    // 2026-11-08 提醒列表:频率在表里选,选了立刻存,不用再点保存
+    await act(async () => {
+      Array.from(el.querySelectorAll('button')).find((b) => b.textContent === 'mj.pushSave')?.click()
+    })
     await flush()
     expect(posts).toEqual([JSON.stringify({ freq: 'off', email: 'me@x.com' })])
     expect(toasts).toEqual([{ kind: 'ok', title: 'mj.pushMailSent', detail: 'mj.pushPending{"e":"me@x.com"}' }])

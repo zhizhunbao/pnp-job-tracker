@@ -1194,7 +1194,7 @@ export const jobsZh = {
   'ob.resume.busy': '解析中…约 10 秒', 'ob.resume.done': '已识别 {n} 个职业方向,后面几步已预填',
   'ob.resume.fail': '解析没成——手动点选也很快', 'ob.resume.scan': '这份读不到文字(可能是扫描件),换个文件或手动填',
   'ob.resume.limit': '今天的解析次数用完了(5 次/天),明天再来或手动填', 'ob.resume.from': '从你的简历识别到:',
-  'al.profile': '按档案推荐', 'al.col.name': '提醒条件', 'al.col.freq': '频率', 'al.edit': '改条件', 'al.new': '建新提醒', 'al.delAsk': '删除这条提醒?', 'al.del': '删除', 'al.cancel': '取消', 'ss.alert': '创建提醒', 'ss.update': '更新提醒', 'ss.savedOk': '提醒已创建', 'ss.updated': '提醒已更新', 'ss.allJobs': '所有新岗', 'ss.save': '保存此筛选', 'ss.name': '给这个筛选起个名字:', 'ss.saved': '已保存,可在账户页管理', 'ss.err': '保存失败(可能已达上限)', 'ss.pro': '免费可存 2 个筛选,Pro 可存 5 个', 'ss.title': '已保存的筛选', 'ss.none': '还没有保存的筛选 —— 在职位板设好筛选后点「保存此筛选」', 'ss.del': '删除', 'ss.note': '保存的筛选可随时在这里管理;有新职位命中时会发邮件提醒',
+  'ss.save': '保存此筛选', 'ss.name': '给这个筛选起个名字:', 'ss.saved': '已保存,可在账户页管理', 'ss.err': '保存失败(可能已达上限)', 'ss.pro': '免费可存 2 个筛选,Pro 可存 5 个', 'ss.title': '已保存的筛选', 'ss.none': '还没有保存的筛选 —— 在职位板设好筛选后点「保存此筛选」', 'ss.del': '删除', 'ss.note': '保存的筛选可随时在这里管理;有新职位命中时会发邮件提醒',
   // 批A #134 通道直判+薪资三卡(文案铁律:一行放下,无废话)
   'fact.verdict': '判定', 'act.channel': '移民通道', 'eelist.listTitle': '类别清单',
   'ch.title': '这个岗能走哪条通道', 'ch.pnpRow': '省提名 PNP', 'ch.list': '清单',

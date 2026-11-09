@@ -23,7 +23,7 @@ import { fill } from '../template'
 import { fmtLocal, ymd } from '../time'
 import {
   DESIGNATED_PLACE_GAP, DESIGNATED_PLACE_SEP,
-  ACCEPT_HTML, ALERT_WHERE_START, BLOCKED_SRC,
+  ACCEPT_HTML, BLOCKED_SRC,
   BLOCKED_SRC_NONE, BROAD_NOCS_MAX, CAT_LEVEL, CELL_NONE, CNT_SEP, COLON_END_RE, COL_PROVINCE, COMMA,
   COMPANY_SLUG_COND, COMP_KEY, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES,
   DATE_LEN, DIGIT_PICK_RE, DIMS_TTL_MS, DIR_ASC, DIR_DESC, DOLLAR, DRAW_STREAM_L10N, EE_KEY_L10N, EE_L10N, EE_SPLIT,
@@ -64,7 +64,7 @@ import {
 } from './prompts'
 import { CACHE } from './variables'
 import type {
-  AlertHit, AlertHitsIn, AlertHitsOut, ApplyUrlIn, BigDimsIn, BigDimsOut, BroadNoc, BroadNocsIn, BroadNocsOut, MajorNocsIn, MajorNocsOut, BuildWhereIn, CaughtError, Cell,
+  ApplyUrlIn, BigDimsIn, BigDimsOut, BroadNoc, BroadNocsIn, BroadNocsOut, MajorNocsIn, MajorNocsOut, BuildWhereIn, CaughtError, Cell,
   CheckedAtOut, CityDim, CompanyByJobIn, CompanyByPoolKeyIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow,
   CompanyJsonIn, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DesignatedIn, DesignatedOut,
   DistrictDim, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim, EeBroad, EeDisplayIn,
@@ -1755,23 +1755,6 @@ export async function loadSimilarEmployersPage(x: SimilarPageIn): SimilarOut {
   })
 }
 
-/**
- * 邮件提醒命中(E5-03):某条保存筛选自 since 起的新岗($1 留给 since,WHERE 从 $2 起)。
- *
- * @param input 连接、保存筛选与时间下限。
- * @returns 命中行与被跳过的筛选键。
- */
-export async function loadAlertHits(input: AlertHitsIn): AlertHitsOut {
-  const w = buildJobsWhere({ filters: await resolveQCompanyIds({ db: input.db, filters: input.filters }),
-    startIndex: ALERT_WHERE_START })
-  const params: WhereParam[] = [input.since]
-  for (const p of w.params) {
-    params.push(p)
-  }
-  const rows = await queryRows({ db: input.db, sql: SQL.alertHits(w.sql), params: params, map: toAlertHit })
-  return { rows: rows, skipped: w.skipped }
-}
-
 // =========================================================================
 // 8. 入口三问(免费结果;铁律:毫秒级、纯库内聚合、不碰 AI)
 // =========================================================================
@@ -3409,19 +3392,6 @@ export function toSimilar(r: Row): SimilarEmployer {
     sponsorGrade: numOrNull(r.sponsor_grade), openCount: count(r.open_count),
     aliasZh: vtext({ v: r.trans_v, cell: r.alias_zh }), aliasKo: vtext({ v: r.trans_v, cell: r.alias_ko }),
     city: text(r.city), province: text(r.province), total: count(r.total), anchor: text(r.anchor),
-  }
-}
-
-/**
- * 提醒命中一行 → AlertHit(列名保持 snake_case,邮件模板按它渲)。
- *
- * @param r 原始行。
- * @returns 命中行。
- */
-export function toAlertHit(r: Row): AlertHit {
-  return {
-    id: count(r.id), title: text(r.title), city: text(r.city), province: text(r.province),
-    salary_text: text(r.salary_text), company_name: text(r.company_name),
   }
 }
 

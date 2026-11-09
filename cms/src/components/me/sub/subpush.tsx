@@ -8,6 +8,7 @@
  * 2026-11-07 效果图里各段一律靠左、正文字号,居中撤(排一排与主钮「保存」照旧)。效果图画的是一颗开关,
  * 开关只有开 / 关,装不下每天 / 每周两档,下拉留着。
  * 设置没拉回来时卡里先空着(卡头占位),拉失败出一句。
+ * 2026-11-09 Frank「照着档案推送不就完事了吗」:11-08 的提醒列表(按条件提醒)撤,这一段回到一个频率下拉 + 邮箱。
  *
  * @author Frank
  * @time 2026-11-07 18:00:00
@@ -15,8 +16,9 @@
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Input } from '@/components/input'
-import { AlertList } from './alertlist'
-import { AL_BTN_KIND, EMAIL_MAX, SAVE_KIND, TEXT_NONE, URL_BOARD } from './constants'
+import { Select } from '@/components/select'
+import { EMAIL_MAX, PUSH_FREQS, SAVE_KIND, TEXT_NONE } from './constants'
+import { makeFreqLabel } from './functions'
 import { SubSec } from './subsec'
 import type { SubPartIn } from './types'
 import css from './sub.module.css'
@@ -36,13 +38,13 @@ export function SubPush({ s, t }: SubPartIn) {
         <div className={cssOf(css.push)}>
           <div>{t('mj.pushRow')}</div>
           <div className={cssOf(css.pushRow)}>
+            <Select value={p.freq} onChange={p.setFreq} opts={PUSH_FREQS} all={t('mj.freqOff')}
+              labelOf={makeFreqLabel(t)} />
             <Input value={p.email} onChange={p.setEmail} maxLength={EMAIL_MAX} ariaLabel={t('mj.pushTo')}
               className={cssOf(css.pushEmail)} />
             <Button kind={SAVE_KIND} onClick={p.onSave} disabled={p.busy}>{t('mj.pushSave')}</Button>
           </div>
           {p.note !== TEXT_NONE && <div className={cssOf(css.pushNote)}>{p.note}</div>}
-          <AlertList a={s.alerts} t={t} />
-          <div><Button kind={AL_BTN_KIND} sm href={URL_BOARD}>{t('al.new')}</Button></div>
         </div>
       )}
     </SubSec>

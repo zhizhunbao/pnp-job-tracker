@@ -96,11 +96,6 @@ export const QUIET_END_DEF = 8
 export const ET_ZONE = 'America/Toronto'
 
 /**
- * B saved-search 信的标题模板。
- */
-export const SUBJ_SEARCH = '{n} new jobs match your saved search — Offer2PR'
-
-/**
  * A 档案匹配信的标题模板。
  */
 export const SUBJ_MATCH = '{n} new jobs match your immigration path — Offer2PR'
@@ -651,11 +646,6 @@ export const US_FAIL = 'fail'
  * 用户表 collection 名（选人/回写游标/退订共用）。
  */
 export const COL_USERS = 'users'
-
-/**
- * saved-searches collection 名。
- */
-export const COL_SEARCHES = 'saved-searches'
 
 /**
  * saved-jobs collection 名。

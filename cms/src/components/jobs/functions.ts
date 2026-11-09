@@ -68,8 +68,6 @@ import {
   URL_LEVEL_AMP, URL_TO_FILTER, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
   YEAR_MONTH_LEN, ZEBRA_MOD, DATE_CELL, P_REL_GROUP, P_REL_ID, URL_API_JOB_RELATED_PAGE,
   IMM_COLS, LANG_EN, DISPOSITION_MAP, GROUP_PNP,
-  ALERT_BOARD_PATH, ALERT_QUERY_HEAD, ALERT_CREATE_KEY, ALERT_CREATED_KEY, ALERT_NAME_MAX, ALERT_NAME_SEP,
-  ALERT_UPDATE_KEY, ALERT_UPDATED_KEY, QP_ALERT,
 } from './constants'
 import type {
   DragPointIn, ScreenPoint,
@@ -97,7 +95,6 @@ import type {
   JobBodyPanel, JobDateCell, JobDatesOfIn, JdGroup, JdSubgroupsIn, PushGroupIn, RepeatItemIn, SubheadPairIn,
   CellCtx, ImmCtxIn, ImmMoneyIn, InfoWageIn, TransToggleLabelIn,
   ImmNameEnIn, PopupState, ImmRow, ImmRowsIn, ImmSignalIn, ImmWageIn, OpenImmIn, ImmFactsIn, JobImmFacts,
-  AlertHrefIn, AlertNameIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -5744,82 +5741,4 @@ export function ssrTransOf(x: SsrTransIn): string | null {
     return null
   }
   return got
-}
-
-/**
- * 提醒的名字:各条件的值用逗号连起来(2026-11-08 清单第 5 条,Job Bank 建提醒不用起名);一个条件都没有用「所有新岗」。
- *
- * @param x 这套筛选与没条件时的字。
- * @returns 提醒名。
- */
-export function alertNameOf(x: AlertNameIn): string {
-  const parts: string[] = []
-  for (const v of Object.values(x.filters)) {
-    if (typeof v === 'string' && v !== TEXT_NONE) {
-      parts.push(v)
-    }
-  }
-  if (parts.length === 0) {
-    return x.all
-  }
-  return parts.join(ALERT_NAME_SEP).slice(0, ALERT_NAME_MAX)
-}
-
-/**
- * 按钮的词条:从「改条件」进来是更新,否则是创建。
- *
- * @param alertId 提醒号;空串 = 新建。
- * @returns 词条键。
- */
-export function alertBtnKeyOf(alertId: string): string {
-  if (alertId === TEXT_NONE) {
-    return ALERT_CREATE_KEY
-  }
-  return ALERT_UPDATE_KEY
-}
-
-/**
- * 成功提示的词条。
- *
- * @param alertId 提醒号;空串 = 新建。
- * @returns 词条键。
- */
-export function alertOkKeyOf(alertId: string): string {
-  if (alertId === TEXT_NONE) {
-    return ALERT_CREATED_KEY
-  }
-  return ALERT_UPDATED_KEY
-}
-
-/**
- * 地址栏带来的提醒号。
- *
- * @returns 提醒号;没带为空串。
- */
-export function alertLinkOf(): string {
-  const id = new URLSearchParams(window.location.search).get(QP_ALERT)
-  if (id == null) {
-    return TEXT_NONE
-  }
-  return id
-}
-
-/**
- * 「改条件」的地址(2026-11-08 清单第 6 条):存的是筛选格的键,进地址栏要翻回 URL 参数名,职位板才读得出;带上提醒号。
- *
- * @param x 提醒号与这套筛选。
- * @returns 地址。
- */
-export function alertHrefOf(x: AlertHrefIn): string {
-  const sp = new URLSearchParams()
-  sp.set(QP_ALERT, x.id)
-  for (const [urlKey, fKey] of Object.entries(URL_TO_FILTER)) {
-    const v = x.filters[fKey]
-    if (v === true) {
-      sp.set(urlKey, VAL_ON)
-    } else if (typeof v === 'string' && v !== TEXT_NONE) {
-      sp.set(urlKey, v)
-    }
-  }
-  return ALERT_BOARD_PATH + ALERT_QUERY_HEAD + sp.toString()
 }

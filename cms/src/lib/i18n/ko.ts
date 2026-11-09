@@ -1097,7 +1097,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'ob.resume.busy': '분석 중… 약 10초', 'ob.resume.done': '직종 {n}개 감지 — 다음 단계 자동 입력됨',
   'ob.resume.fail': '분석 실패 — 수동 선택도 빠릅니다', 'ob.resume.scan': '텍스트 인식 불가 (스캔본?) — 다른 파일 사용 또는 수동 입력',
   'ob.resume.limit': '일일 분석 한도 초과 (하루 5회) — 내일 시도하거나 수동 입력', 'ob.resume.from': '이력서에서 감지된 직종:',
-  'al.profile': '내 프로필 기준', 'al.col.name': '알림 조건', 'al.col.freq': '빈도', 'al.edit': '조건 수정', 'al.new': '새 알림', 'al.delAsk': '이 알림을 삭제할까요?', 'al.del': '삭제', 'al.cancel': '취소', 'ss.alert': '알림 만들기', 'ss.update': '알림 수정', 'ss.savedOk': '알림을 만들었습니다', 'ss.updated': '알림을 수정했습니다', 'ss.allJobs': '모든 새 공고', 'ss.save': '이 필터 저장', 'ss.name': '필터 이름:', 'ss.saved': '저장됨 — 계정 페이지에서 관리', 'ss.err': '저장 실패(상한 도달 가능)', 'ss.pro': '무료는 필터 2개, Pro는 5개 저장', 'ss.title': '저장된 필터', 'ss.none': '저장된 필터가 없습니다 — 채용 보드에서 필터 설정 후 「이 필터 저장」', 'ss.del': '삭제', 'ss.note': '저장된 필터는 언제든 여기서 관리; 새 공고가 있으면 이메일로 알려 드립니다',
+  'ss.save': '이 필터 저장', 'ss.name': '필터 이름:', 'ss.saved': '저장됨 — 계정 페이지에서 관리', 'ss.err': '저장 실패(상한 도달 가능)', 'ss.pro': '무료는 필터 2개, Pro는 5개 저장', 'ss.title': '저장된 필터', 'ss.none': '저장된 필터가 없습니다 — 채용 보드에서 필터 설정 후 「이 필터 저장」', 'ss.del': '삭제', 'ss.note': '저장된 필터는 언제든 여기서 관리; 새 공고가 있으면 이메일로 알려 드립니다',
   'fact.verdict': '판정', 'act.channel': '이민 경로', 'eelist.listTitle': '카테고리 목록',
   'ch.title': '이 포지션이 갈 수 있는 경로', 'ch.pnpRow': 'PNP(주정부)', 'ch.list': '목록',
   'pnpdraws.on.k1': '스트림', 'pnpdraws.on.v1': 'Ontario Workforce Priority(2026-06-25 시행)',

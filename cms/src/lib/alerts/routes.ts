@@ -3,8 +3,6 @@
  * 2026-10-10 批 2「新岗推送」:加 /api/alerts/confirm(换收件邮箱的确认链接)与 /api/alerts/prefs(GET 读 / POST 存推送设置);
  * run 往编排里注入今日推荐取数(lib/myjobs 的 loadPicks + picksViewOf,每日推送用)。
  * 顶层只有 handler（闸 routes-shape）；本文件是域内边缘，唯一允许借别域 server 门取数。
- * fetchHits 内联闭包里的 `as JobsFilters` 是跨边界断言：保存的筛选是 payload 里的
- * 自由 json，loadAlertHits 自己按白名单收。
  *
  * @author Frank
  * @time 2026-08-23 01:30:00
@@ -13,10 +11,9 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { headers } from 'next/headers'
 import { getDb } from '../db/server'
-import { loadAlertHits, loadMatchDims } from '../jobs/server'
+import { loadMatchDims } from '../jobs/server'
 import { loadPicks, picksViewOf } from '../myjobs/server'
 import { getUserOrNull } from '../quota/server'
-import type { JobsFilters } from '../jobs/server'
 import {
   BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE_LC, HDR_SEED_TOKEN, MIME_HTML, TEXT_UNAUTHORIZED, UNAUTHORIZED,
 } from '../http'
@@ -28,7 +25,7 @@ import {
 import {
   confirmApply, confirmPageHtml, isDryRun, loadDigestPrefs, quietInfo, runAlerts, saveDigestPrefs, unsubApply, unsubPageHtml,
 } from './functions'
-import type { LoadHitsFn, LoadPicksFn, MailPick, PicksForIn, PrefsBodyJson } from './types'
+import type { LoadPicksFn, MailPick, PicksForIn, PrefsBodyJson } from './types'
 
 /**
  * GET /api/alerts/confirm:换收件邮箱的确认链接(免登录;u=用户 id,t=token)。判定与落库在 functions 的 confirmApply。
@@ -126,16 +123,13 @@ export async function alertsRunRoute(req: Request): Promise<Response> {
   if (langParam != null) {
     previewLang = langParam
   }
-  const fetchHits: LoadHitsFn = function fetchHits(input) {
-    return loadAlertHits({ db: pool, filters: input.filters as JobsFilters, since: input.since })
-  }
   const loadPicksFor: LoadPicksFn = async function loadPicksFor(x: PicksForIn): Promise<MailPick[]> {
     const rows = await loadPicks({ db: pool, userId: x.userId, prov: PARAM_NONE })
     return picksViewOf({ rows, pro: x.pro, batch: 0 }).picks
   }
   const result = await runAlerts({
     db: pool, dry: dry, preview: preview, previewLang: previewLang,
-    dims: await loadMatchDims(pool), fetchHits: fetchHits, payload: payload, loadPicks: loadPicksFor,
+    dims: await loadMatchDims(pool), payload: payload, loadPicks: loadPicksFor,
   })
   if (result.kind === K_PREVIEW) {
     return new Response(result.html, { headers: { [HDR_CONTENT_TYPE_LC]: MIME_HTML } })

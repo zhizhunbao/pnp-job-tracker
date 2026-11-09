@@ -9,7 +9,7 @@
 
 export { PROV_NAME } from './constants'
 export {
-  buildJobsWhere, checkedAt, companyJsonOf, loadAlertHits, loadBroadNocs, loadCompanyByJobId, loadCompanyBySlug,
+  buildJobsWhere, checkedAt, companyJsonOf, loadBroadNocs, loadCompanyByJobId, loadCompanyBySlug,
   loadJobById, loadJobRows, loadJobsPage, loadNocOpenCounts, loadQuizFacts,
   loadOccCompetition, loadRelatedJobs, loadSimilarEmployers, loadSsrDims, loadTopNocs,
   getTopNocs, getSsrDims, loadTotalAndProof, jobDescription, jobPostingJsonOf, loadJdSsrById, loadJdTrans, getPnpReqs,
@@ -19,7 +19,7 @@ export {
 } from './functions'
 export { loadMajorNocs } from './functions'
 export { toEeCat, toPnpOcc } from './functions'
-export type { AlertHit, CompanyDetail, JobsFilters, RelatedJob, SimilarEmployer, SsrDims, TopNoc } from './types'
+export type { CompanyDetail, JobsFilters, RelatedJob, SimilarEmployer, SsrDims, TopNoc } from './types'
 
 export {
   jobsIdMetaRoute, jobsJdformatRoute, jobsJdTranslateRoute, jobsCompanyRoute, jobsCompetitionRoute, jobsDimsRoute,

@@ -157,7 +157,7 @@ export type MailLang = 'zh' | 'en' | 'ko'
 export type DimsOfFn = (lang: MailLang) => string
 
 /**
- * 邮件展示用的岗位行（A 轮的 AlertJobRow 与 B 轮 jobs 域的 AlertHit 都宽度兼容它 ——
+ * 邮件展示用的岗位行（A 轮的 AlertJobRow 宽度兼容它 ——
  * 拼信只读这六格）。
  */
 export type MailJobRow = {
@@ -191,32 +191,6 @@ export type MailJobRow = {
    */
   salary_text: string | null
 }
-
-/**
- * saved-search 取命中函数的形状(取数函数由路由注入 —— 域之间不互相借取数函数,
- * 样板:路由把 resolveByAgent 注给 orchestrate)。
- */
-export type LoadHitsFn = (input: {
-  /**
-   * 保存的筛选(payload 文档里的 json)。
-   */
-  filters: SavedFilters
-
-  /**
-   * 游标:只取 first_seen 晚于它的岗。
-   */
-  since: string
-}) => Promise<{
-  /**
-   * 命中的岗(emailHtml 直接排版)。
-   */
-  rows: MailJobRow[]
-
-  /**
-   * 认不出的筛选键(照实上报进响应)。
-   */
-  skipped: string[]
-}>
 
 /**
  * `runAlerts` 的入参。
@@ -253,11 +227,6 @@ export type RunIn = {
   payload: PayloadHandle
 
   /**
-   * saved-search 命中取数(路由注入 loadAlertHits)。
-   */
-  fetchHits: LoadHitsFn
-
-  /**
    * 每日推送取今日推荐(路由注入 lib/myjobs 的 loadPicks + picksViewOf;2026-10-10 批 2)。
    */
   loadPicks: LoadPicksFn
@@ -278,11 +247,6 @@ export type AlertCounts = {
   matchEmails: number
 
   /**
-   * B saved-search 信封数。
-   */
-  searchEmails: number
-
-  /**
    * C 周报封数。
    */
   weeklyEmails: number
@@ -298,19 +262,9 @@ export type AlertCounts = {
   usersChecked: number
 
   /**
-   * B 轮核对的 saved-search 数。
-   */
-  searchesChecked: number
-
-  /**
    * C 轮真正产出内容的用户数。
    */
   weeklyChecked: number
-
-  /**
-   * 认不出的筛选键(fetchHits 上报的并集)。
-   */
-  skippedFilters: string[]
 
   /**
    * 每日推送发出几封(2026-10-10 批 2;键追加在末尾,老键序不动)。
@@ -582,17 +536,6 @@ export type UnsubIn = {
    */
   t: string
 }
-
-/**
- * 保存的筛选里一格的取值（payload 自由 json 的信任边界；真正的白名单收窄在
- * loadAlertHits，这里只把 unknown 换成显式联合）。
- */
-export type FilterCell = string | number | boolean | string[] | null
-
-/**
- * 保存的筛选（键任意）。
- */
-export type SavedFilters = Record<string, FilterCell>
 
 /**
  * `emailHtml` 的入参。
