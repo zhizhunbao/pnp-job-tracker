@@ -1,10 +1,10 @@
 /**
- * 队列域(lib/queue)的形状:调度器上报体(线格式)→ 洗净的一行,与写库的入参。
+ * ops 子桶 write 的形状:调度器上报体(线格式)→ 洗净的一行,与写库的入参。
  *
  * @author Frank
  * @time 2026-11-05 23:10:00
  */
-import type { Db } from '../db'
+import type { Db } from '@/lib/db'
 
 /**
  * 调度器 POST 来的上报体(线格式:网络来的,每格都可能缺席或类型不对,收下后逐格判)。

@@ -88,7 +88,6 @@
 | `profile` | 业务名 | 移民档案：档案表单、建档向导与点选项表 | ✓ |
 | `pte` | 业务名 | 全称 Pearson Test of English。PTE 刷题的题单页、单题页与取数 | ✓ |
 | `ops` | SWEBOK 第 6 章 Software Engineering Operations | 全称 operations(运维)。管理员运维页:调度、队列、费用 | ✓ |
-| `queue` | 业务名 | 管理员队列页：调度单元、待发投递、官网抓取与译名翻译 | ✓ |
 | `quiz` | 业务名 | 答题公共件：答案读写、职业与省份挑选器、答题卡原件 | ✓ |
 | `rankings` | 业务名 | 榜单页正文 | ✓ |
 | `resources` | 业务名 | 官方资料索引页正文 | ✓ |

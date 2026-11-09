@@ -51,6 +51,41 @@ export const SEC_COST = 'cost'
 export const SEC_BUDGET = 'budget'
 
 /**
+ * 事件页(SWEBOK 4.1)。
+ */
+export const SEC_INCIDENTS = 'incidents'
+
+/**
+ * 报警规则页(Azure Monitor alerts)。
+ */
+export const SEC_RULES = 'rules'
+
+/**
+ * 数据新鲜度页(dbt freshness)。
+ */
+export const SEC_FRESH = 'fresh'
+
+/**
+ * 通道状态页(Google SRE 四个黄金信号)。
+ */
+export const SEC_CHANNELS = 'channels'
+
+/**
+ * 功能通道页(Frank 第 2 条要求)。
+ */
+export const SEC_ROUTES = 'routes'
+
+/**
+ * 通道实测页(Claude 文档成功标准)。
+ */
+export const SEC_EVALS = 'evals'
+
+/**
+ * Workspace 和 Key 页(Console)。
+ */
+export const SEC_KEYS = 'keys'
+
+/**
  * 进 /ops 默认看哪一页。
  */
 export const SEC_DEFAULT = SEC_REPORT
@@ -58,7 +93,10 @@ export const SEC_DEFAULT = SEC_REPORT
 /**
  * 全部已上线的页面。
  */
-export const SECS: readonly string[] = [SEC_REPORT, SEC_SCHEDULE, SEC_APPLY, SEC_SITES, SEC_ALIAS, SEC_USAGE, SEC_COST, SEC_BUDGET]
+export const SECS: readonly string[] = [
+  SEC_REPORT, SEC_INCIDENTS, SEC_RULES, SEC_SCHEDULE, SEC_APPLY, SEC_SITES, SEC_ALIAS, SEC_FRESH, SEC_CHANNELS, SEC_ROUTES, SEC_EVALS,
+  SEC_USAGE, SEC_COST, SEC_BUDGET, SEC_KEYS,
+]
 
 /**
  * 每页在 banner 上的页名。
@@ -103,6 +141,41 @@ export const SEC_NAME: Record<string, string> = {
    * 额度。
    */
   budget: '额度',
+
+  /**
+   * 事件。
+   */
+  incidents: '事件',
+
+  /**
+   * 报警规则。
+   */
+  rules: '报警规则',
+
+  /**
+   * 数据新鲜度。
+   */
+  fresh: '数据新鲜度',
+
+  /**
+   * 通道状态。
+   */
+  channels: '通道状态',
+
+  /**
+   * 功能通道。
+   */
+  routes: '功能通道',
+
+  /**
+   * 通道实测。
+   */
+  evals: '通道实测',
+
+  /**
+   * Workspace 和 Key。
+   */
+  keys: 'Workspace 和 Key',
 }
 
 // =========================================================================
@@ -915,16 +988,6 @@ export const DEL_SITE = 'site'
  * 删除种类:译名翻译。
  */
 export const DEL_ALIAS = 'alias'
-
-/**
- * 认得的删除种类。
- */
-export const DEL_KINDS: readonly string[] = [DEL_APPLY, DEL_SITE, DEL_ALIAS]
-
-/**
- * 删除键的长度上限。
- */
-export const DEL_KEY_LEN_MAX = 300
 
 /**
  * 删除时显示名的分隔。

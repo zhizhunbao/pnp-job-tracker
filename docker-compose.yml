@@ -665,6 +665,17 @@ services:
       GOOGLE_INDEXING_KEY_FILE: ${GOOGLE_INDEXING_KEY_FILE:-secrets/google-indexing.json}   # 服务账号 JSON 密钥路径(相对仓库根,/secrets/ 已 gitignore);默认这条路径 = 文件一放下下一轮自动开推,不用改 .env、不用重建容器;文件不在 = 每轮一行警告跳过
       TZ: EST5EDT
 
+  ops_watch:                           # 运维页探活与报警节拍(2026-11-08 立域;Frank「一气呵成弄完运维」):每 5 分钟探活局域网 Ollama,报给 /api/ops/tick,站点探其余通道并判定报警;不产 mart
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: opswatch
+      HEALTHCHECK_PING_OPSWATCH: ${HEALTHCHECK_PING_OPSWATCH:-}   # 未配 = ping_health 自然跳过
+      NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 jdformat / explore 同一台盒子)
+      SEED_URL: ${SEED_URL:-https://offer2pr.com/api/seed}       # 只用它反推站点根
+      SEED_TOKEN: ${SEED_TOKEN:-}                 # 节拍的钥匙(与上传 mart 同一把);空=本域跳过
+      TZ: EST5EDT
+
   ops_backup:                          # 每日 pg_dump 生产库 → backups/(E7-01;家里机=运维盒)
     <<: *etl
     environment:

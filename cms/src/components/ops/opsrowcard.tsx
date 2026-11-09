@@ -6,7 +6,8 @@
  * @time 2026-11-08 18:00:00
  */
 import { JobCard } from '@/components/card'
-import { CELL_COPY, CELL_DEL, CELL_TAGS } from './constants'
+import { AlertButton } from './alertbutton'
+import { CELL_ACT, CELL_COPY, CELL_DEL, CELL_TAGS } from './constants'
 import { CopyError } from './copyerror'
 import { DelButton } from './delbutton'
 import { rowCardPartsOf } from './functions'
@@ -29,6 +30,9 @@ export function OpsRowCard({ row }: OpsRowCardIn) {
     }
     if (c.kind === CELL_COPY) {
       chips.push(<CopyError key={chips.length} text={c.text} />)
+    }
+    if (c.kind === CELL_ACT) {
+      action = <AlertButton act={c.act} />
     }
     if (c.kind === CELL_DEL) {
       action = <DelButton del={c.del} />

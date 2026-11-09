@@ -3857,3 +3857,108 @@ export const OPS_BUDGETS = `SELECT name, limit_usd::float8 AS limit_usd, used_us
        (active AND now() < expires_at) AS live,
        GREATEST(0, ceil(extract(epoch FROM expires_at - now()) / 86400))::int AS days_left
      FROM ai_budgets ORDER BY (active AND now() < expires_at) DESC, expires_at DESC`
+
+// =========================================================================
+// 41. 运维:事件与报警、探活、通道实测(2026-11-08 Frank「一气呵成弄完运维」)
+// =========================================================================
+
+/**
+ * 触发一条规则;同一规则已有未恢复的一行就什么也不做(唯一索引保证只开一行)。$1=规则 $2=条件。
+ */
+export const OPS_ALERT_FIRE = `INSERT INTO ops_alerts (rule, condition) VALUES ($1, $2)
+     ON CONFLICT (rule) WHERE resolved_at IS NULL DO NOTHING RETURNING id`
+
+/**
+ * 还在触发的规则刷新条件明细。$1=规则 $2=条件。
+ */
+export const OPS_ALERT_TOUCH = `UPDATE ops_alerts SET condition = $2 WHERE rule = $1 AND resolved_at IS NULL`
+
+/**
+ * 条件消失,标恢复。$1=规则。
+ */
+export const OPS_ALERT_RESOLVE = `UPDATE ops_alerts SET resolved_at = now() WHERE rule = $1 AND resolved_at IS NULL`
+
+/**
+ * 改用户响应。$1=事件 id $2=新状态。
+ */
+export const OPS_ALERT_STATE = `UPDATE ops_alerts SET user_state = $2, user_state_at = now() WHERE id = $1`
+
+/**
+ * 删 30 天前已恢复的事件(Azure alerts 保留 30 天)。
+ */
+export const OPS_ALERT_PRUNE = `DELETE FROM ops_alerts WHERE resolved_at IS NOT NULL AND fired_at < now() - interval '30 days'`
+
+/**
+ * 事件,最近的在前。$1=条数上限。
+ */
+export const OPS_ALERTS = `SELECT id::int AS id, rule, condition, user_state, cause, action,
+       to_char(fired_at AT TIME ZONE 'America/Toronto', 'YYYY-MM-DD HH24:MI:SS') AS fired_text,
+       to_char(resolved_at AT TIME ZONE 'America/Toronto', 'YYYY-MM-DD HH24:MI:SS') AS resolved_text,
+       count(*) OVER ()::int AS total
+     FROM ops_alerts ORDER BY fired_at DESC LIMIT $1`
+
+/**
+ * 管理员邮箱:报警收件人。
+ */
+export const OPS_ADMIN_EMAILS = `SELECT email FROM users WHERE role = 'admin'`
+
+/**
+ * 写一条探活。$1=通道 $2=成败 $3=耗时 $4=原因。
+ */
+export const OPS_PROBE_PUT = `INSERT INTO ops_probes (channel, ok, ms, error) VALUES ($1, $2, $3, $4)`
+
+/**
+ * 删 30 天前的探活。
+ */
+export const OPS_PROBE_PRUNE = `DELETE FROM ops_probes WHERE probed_at < now() - interval '30 days'`
+
+/**
+ * 各通道最近 24 小时的探活汇总:最近一次的成败、耗时、原因,与成功次数。
+ */
+export const OPS_PROBE_STATS = `SELECT channel,
+       (array_agg(ok ORDER BY probed_at DESC))[1] AS ok,
+       (array_agg(ms ORDER BY probed_at DESC))[1] AS ms,
+       (array_agg(error ORDER BY probed_at DESC))[1] AS error,
+       count(*)::int AS n, count(*) FILTER (WHERE ok)::int AS n_ok
+     FROM ops_probes WHERE probed_at > now() - interval '24 hours' GROUP BY channel`
+
+/**
+ * 各通道最近 24 小时的请求数与失败数。被闸拦下的没发请求,不算。
+ */
+export const OPS_CHANNEL_TRAFFIC = `SELECT channel, count(*)::int AS requests, count(*) FILTER (WHERE state = 'failed')::int AS errors
+     FROM ai_usage WHERE created_at > now() - interval '24 hours' AND state <> 'blocked' GROUP BY channel`
+
+/**
+ * 最近若干秒的降级数。$1=秒。
+ */
+export const OPS_DEGRADED_SINCE = `SELECT count(*)::int AS n FROM ai_usage
+     WHERE degraded_from IS NOT NULL AND created_at > now() - make_interval(secs => $1)`
+
+/**
+ * 今天(UTC,与额度同口径)的降级数。
+ */
+export const OPS_DEGRADED_TODAY = `SELECT count(*)::int AS n FROM ai_usage
+     WHERE degraded_from IS NOT NULL AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`
+
+/**
+ * 每个功能最近一次用的模型。
+ */
+export const OPS_ROUTE_MODELS = `SELECT DISTINCT ON (feature) feature, model FROM ai_usage
+     WHERE state <> 'blocked' ORDER BY feature, created_at DESC`
+
+/**
+ * 通道实测,最近的在前。$1=条数上限。
+ */
+export const OPS_EVALS = `SELECT id::int AS id, feature, model, state, accuracy::float8 AS accuracy, consistency::float8 AS consistency, tone::float8 AS tone,
+       privacy::float8 AS privacy, method, samples, latency_ms, cost_usd::float8 AS cost_usd,
+       to_char(started_at AT TIME ZONE 'America/Toronto', 'YYYY-MM-DD HH24:MI:SS') AS started_text
+     FROM ai_evals ORDER BY started_at DESC LIMIT $1`
+
+/**
+ * 各调度单元最近一次成功的时刻(运行历史保留 7 天,超过 7 天没成功的时刻为空)。
+ */
+export const OPS_FRESH = `SELECT u.name,
+       to_char(r.ended_at AT TIME ZONE 'America/Toronto', 'YYYY-MM-DD HH24:MI:SS') AS last_text,
+       extract(epoch FROM now() - r.ended_at)::int AS age_s
+     FROM etl_units u LEFT JOIN (SELECT name, max(ended_at) AS ended_at FROM etl_unit_runs WHERE ok GROUP BY name) r ON r.name = u.name
+     ORDER BY u.name`

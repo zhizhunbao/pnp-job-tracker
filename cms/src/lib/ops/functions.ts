@@ -1,5 +1,5 @@
 /**
- * ops 域的行为:按页取数并洗成一页看板(四格加一到两张表),以及运维页的删除。
+ * ops 域的行为:按页取数并洗成一页看板(四格加一到两张表)。写入在子桶 write,报警与 AI 通道在子桶 watch。
  * 新增观察维度:constants 加页面与列,这里加一段取数,浏览器端的模板不用动。
  * 连接由页面门与路由注入,本文件不 import payload。
  *
@@ -12,16 +12,18 @@ import {
 } from './cell'
 import {
   ALIAS_COLS, ALIAS_DONE_COLS, APPLY_COLS, APPLY_DONE_COLS, APPLY_QUEUED, BUDGET_COLS, BUDGET_NOTE, CARD, CELL, CHANNEL_NAME, COST_COLS, DASH,
-  DEL_ALIAS, DEL_APPLY, DEL_KEY_LEN_MAX, DEL_KINDS, DEL_NAME_SEP, DEL_SITE, FEATURE_NAME, ISO_NONE, LOST_S,
-  REPORT, REPORT_COLS, ROWS_MAX, RUN_COLS, SEC_ALIAS, SEC_APPLY, SEC_BUDGET, SEC_COST, SEC_SCHEDULE,
-  SEC_SITES, SEC_USAGE, SITE_COLS,
+  DEL_ALIAS, DEL_APPLY, DEL_NAME_SEP, DEL_SITE, FEATURE_NAME, ISO_NONE, LOST_S,
+  REPORT, REPORT_COLS, ROWS_MAX, RUN_COLS, SEC_ALIAS, SEC_APPLY, SEC_BUDGET, SEC_CHANNELS, SEC_COST, SEC_EVALS, SEC_FRESH, SEC_INCIDENTS,
+  SEC_KEYS, SEC_ROUTES, SEC_RULES, SEC_SCHEDULE, SEC_SITES, SEC_USAGE, SITE_COLS,
   SITE_DONE_COLS, STAGE_QUEUED, STUCK_S, TAG, TEXT, TEXT_NONE,   UNIT_COLS, UNIT_LLM, UNIT_RUN, USAGE_COLS,
   USD_DIGITS_CARD, USD_DIGITS_TABLE, VAR, WORKER,
 } from './constants'
+import { evalsBoard, keysBoard, routesBoard } from './route'
+import { channelsBoard, freshBoard, incidentsBoard, rulesBoard } from './watch'
 import type {
   AliasDbRow, AliasDoneDbRow, ApplyDbRow, ApplyDoneDbRow, BudgetDbRow, BudgetNoteTable, CostDbRow, CostStatsDbRow,
-  LoadBoardIn, MaybeInt, MaybeQueueStats, MaybeRemoveFact, MaybeText, NowDbRow, OpsBoardOut, OpsCards, OpsCell, OpsRow, OpsTable,
-  OpsTag, QueueReportIn, QueueStatsDbRow, RemoveIn, RemoveJson, RemovedOut, ReportRow, ReportRowIn, RunDbRow,
+  LoadBoardIn, MaybeInt, MaybeQueueStats, MaybeText, NowDbRow, OpsBoardOut, OpsCards, OpsCell, OpsRow, OpsTable,
+  OpsTag, QueueReportIn, QueueStatsDbRow, ReportRow, ReportRowIn, RunDbRow,
   SecIn, SiteDbRow, SiteDoneDbRow, StatsOfIn, StatsOut, TableOfIn, TotalRows, UnitDbRow, UsageDbRow, 
 } from './types'
 
@@ -63,6 +65,27 @@ export async function loadOpsBoard(x: LoadBoardIn): OpsBoardOut {
   }
   if (x.sec === SEC_BUDGET) {
     return budgetBoard(input)
+  }
+  if (x.sec === SEC_INCIDENTS) {
+    return incidentsBoard(input)
+  }
+  if (x.sec === SEC_RULES) {
+    return rulesBoard(input)
+  }
+  if (x.sec === SEC_FRESH) {
+    return freshBoard(input)
+  }
+  if (x.sec === SEC_CHANNELS) {
+    return channelsBoard(input)
+  }
+  if (x.sec === SEC_ROUTES) {
+    return routesBoard(input)
+  }
+  if (x.sec === SEC_EVALS) {
+    return evalsBoard(input)
+  }
+  if (x.sec === SEC_KEYS) {
+    return keysBoard(input)
   }
   return reportBoard(input)
 }
@@ -943,44 +966,4 @@ function reportRowOf(x: ReportRowIn): ReportRow {
     met: x.met,
     incidents: x.incidents,
   }
-}
-
-// =========================================================================
-// 7. 删除
-// =========================================================================
-
-/**
- * 删除体 → 洗净的删除请求。
- *
- * @param body 网络来的删除体。
- * @returns 洗净的请求;不对是 null。
- */
-export function toRemoveFact(body: RemoveJson): MaybeRemoveFact {
-  if (typeof body.kind !== 'string' || DEL_KINDS.includes(body.kind) === false) {
-    return null
-  }
-  if (typeof body.key !== 'string' || body.key === '' || body.key.length > DEL_KEY_LEN_MAX) {
-    return null
-  }
-  return { kind: body.kind, key: body.key }
-}
-
-/**
- * 删一条。
- *
- * @param x 连接与洗净的删除请求。
- * @returns 动了几行。
- */
-export async function removeItem(x: RemoveIn): RemovedOut {
-  let sql = SQL.QUEUE_DEL_ALIAS
-  if (x.item.kind === DEL_APPLY) {
-    sql = SQL.QUEUE_DEL_APPLY
-  } else if (x.item.kind === DEL_SITE) {
-    sql = SQL.QUEUE_DEL_SITE
-  }
-  const res = await x.db.query(sql, [x.item.key])
-  if (res.rowCount == null) {
-    return 0
-  }
-  return res.rowCount
 }

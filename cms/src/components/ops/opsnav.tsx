@@ -5,7 +5,9 @@
  * @author Frank
  * @time 2026-11-08 18:00:00
  */
-import { IconCard, IconChart, IconRefresh, IconTable } from '@/components/icons'
+import {
+  IconBell, IconCard, IconChart, IconClipboard, IconKey, IconMore, IconRefresh, IconTable,
+} from '@/components/icons'
 import { Nav } from '@/components/nav'
 import { NAV_ARIA } from './constants'
 import { opsNavItemsOf } from './functions'
@@ -23,6 +25,10 @@ export function OpsNav({ value, onPick }: OpsNavIn) {
     schedule: <IconRefresh />,
     queue: <IconTable />,
     fee: <IconCard />,
+    incident: <IconBell />,
+    fresh: <IconClipboard />,
+    channel: <IconMore />,
+    access: <IconKey />,
   })
   return <Nav items={items} value={value} onPick={onPick} ariaLabel={NAV_ARIA} />
 }

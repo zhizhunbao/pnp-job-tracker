@@ -43,7 +43,7 @@
 | `funnel` | 业务名 | 转化漏斗五个数，只给管理员 | ✓ |
 | `plan` | 业务名 | 决策页：答题后三项判定 | ✓ |
 | `ops` | SWEBOK 第 6 章 Software Engineering Operations | 全称 operations(运维)。管理员运维页 | ✓ |
-| `queue` | 业务名 | 管理员队列页 | ✓ |
+| `queue` | 业务名 | 调度器上报接口的旧路径(`api/queue/units`,61 个容器在用) | ✓ |
 | `rankings` | 业务名 | 榜单 | ✓ |
 | `start` | 业务名 | 就业把脉首页 | ✓ |
 | `steps` | 业务名 | 资讯里的「申请步骤」 | ✓ |

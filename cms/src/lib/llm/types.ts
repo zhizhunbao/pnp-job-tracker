@@ -1401,3 +1401,37 @@ export type TranslationOkIn = {
    */
   lang: string
 }
+
+// =========================================================================
+// 探活
+// =========================================================================
+
+/**
+ * 一次探活的结果。
+ */
+export type ProbeResult = {
+  /**
+   * 通道代码。
+   */
+  channel: string
+
+  /**
+   * 是否可用。
+   */
+  ok: boolean
+
+  /**
+   * 耗时。
+   */
+  ms: number
+
+  /**
+   * 失败原因;成功是 null。
+   */
+  error: string | null
+}
+
+/**
+ * 探活的出参。
+ */
+export type ProbeOut = Promise<ProbeResult>

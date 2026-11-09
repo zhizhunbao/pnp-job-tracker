@@ -16,6 +16,7 @@
  */
 
 export { completeText, streamChat } from './functions'
+export { probeClaude, probeFriend } from './functions'
 export { contentTag, friendChat, friendChatOrThrow, friendLlmReady, refPrompt } from './functions'
 export {
   summarizeNews, translateLinesAligned, translateParasStrict, translatePlainLines, translateReady, translateSectioned,

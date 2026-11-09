@@ -5,13 +5,15 @@
  * @time 2026-11-08 18:00:00
  */
 import {
-  SECS, SEC_ALIAS, SEC_APPLY, SEC_BUDGET, SEC_COST, SEC_DEFAULT, SEC_NAME, SEC_REPORT, SEC_SCHEDULE, SEC_SITES,
-  SEC_USAGE,
+  SECS, SEC_ALIAS, SEC_APPLY, SEC_BUDGET, SEC_CHANNELS, SEC_COST, SEC_DEFAULT, SEC_EVALS, SEC_FRESH, SEC_INCIDENTS,
+  SEC_KEYS, SEC_NAME, SEC_REPORT,
+  SEC_ROUTES, SEC_RULES, SEC_SCHEDULE, SEC_SITES, SEC_USAGE,
 } from '@/lib/ops'
 import { cssOf } from '@/components/css'
 import { toast } from '@/components/toast'
 import {
-  API_REMOVE, COPY_FAIL_TEXT, COPY_OK_TEXT, TOAST_ERR, TOAST_OK, CAT_FEE, CAT_FEE_TEXT, CAT_QUEUE,
+  ACT_FAIL_TEXT, API_ALERT, API_REMOVE, CAT_CHANNEL, CAT_CHANNEL_TEXT, CAT_INCIDENT, CAT_INCIDENT_TEXT,
+  COPY_FAIL_TEXT, COPY_OK_TEXT, TOAST_ERR, TOAST_OK, CAT_FEE, CAT_FEE_TEXT, CAT_QUEUE,
   CAT_QUEUE_TEXT, CAT_REPORT_TEXT, CELL_NAMED, CELL_TEXT, HDR_CONTENT_TYPE,
   METHOD_POST,
   MIME_JSON,
@@ -20,6 +22,7 @@ import {
 } from './constants'
 import css from './ops.module.css'
 import type {
+  AlertActIn,
   DelAskFn, DelOkIn, DelOpenIn, OpsCellMakeIn, OpsColsIn, OpsNavIcons, OpsNavItem, OpsRow, OpsTableCol, PickText,
   RowCardParts,
 } from './types'
@@ -79,6 +82,12 @@ export function pickTextOf(sec: string): PickText {
   if (sec === SEC_USAGE || sec === SEC_COST || sec === SEC_BUDGET) {
     return { head: CAT_FEE_TEXT, sub: secNameOf(sec) }
   }
+  if (sec === SEC_INCIDENTS || sec === SEC_RULES) {
+    return { head: CAT_INCIDENT_TEXT, sub: secNameOf(sec) }
+  }
+  if (sec === SEC_CHANNELS || sec === SEC_ROUTES || sec === SEC_EVALS) {
+    return { head: CAT_CHANNEL_TEXT, sub: secNameOf(sec) }
+  }
   if (sec === SEC_REPORT) {
     return { head: CAT_REPORT_TEXT, sub: TEXT_NONE }
   }
@@ -137,6 +146,14 @@ export function opsNavItemsOf(icons: OpsNavIcons): OpsNavItem[] {
       subs: [],
     },
     {
+      key: CAT_INCIDENT,
+      label: CAT_INCIDENT_TEXT,
+      icon: icons.incident,
+      count: NAV_COUNT_NONE,
+      href: null,
+      subs: [subOf(SEC_INCIDENTS), subOf(SEC_RULES)],
+    },
+    {
       key: SEC_SCHEDULE,
       label: secNameOf(SEC_SCHEDULE),
       icon: icons.schedule,
@@ -153,12 +170,36 @@ export function opsNavItemsOf(icons: OpsNavIcons): OpsNavItem[] {
       subs: [subOf(SEC_APPLY), subOf(SEC_SITES), subOf(SEC_ALIAS)],
     },
     {
+      key: SEC_FRESH,
+      label: secNameOf(SEC_FRESH),
+      icon: icons.fresh,
+      count: NAV_COUNT_NONE,
+      href: hrefOf(SEC_FRESH),
+      subs: [],
+    },
+    {
+      key: CAT_CHANNEL,
+      label: CAT_CHANNEL_TEXT,
+      icon: icons.channel,
+      count: NAV_COUNT_NONE,
+      href: null,
+      subs: [subOf(SEC_CHANNELS), subOf(SEC_ROUTES), subOf(SEC_EVALS)],
+    },
+    {
       key: CAT_FEE,
       label: CAT_FEE_TEXT,
       icon: icons.fee,
       count: NAV_COUNT_NONE,
       href: null,
       subs: [subOf(SEC_USAGE), subOf(SEC_COST), subOf(SEC_BUDGET)],
+    },
+    {
+      key: SEC_KEYS,
+      label: secNameOf(SEC_KEYS),
+      icon: icons.access,
+      count: NAV_COUNT_NONE,
+      href: hrefOf(SEC_KEYS),
+      subs: [],
     },
   ]
 }
@@ -307,4 +348,43 @@ export function makeDelClose(setAsk: DelAskFn): () => void {
   return function delClose(): void {
     setAsk(null)
   }
+}
+
+/**
+ * 造事件操作钮的点击手柄:调接口,成了重取,没成给提示。
+ *
+ * @param x 操作与重取手柄。
+ * @returns 点击手柄。
+ */
+export function makeAlertAct(x: AlertActIn): () => void {
+  return function alertAct(): void {
+    fetch(API_ALERT, {
+      method: METHOD_POST,
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+      body: JSON.stringify({ id: x.act.id, state: x.act.to }),
+    }).then(makeAlertDone(x)).catch(alertFail)
+  }
+}
+
+/**
+ * 造事件接口回来后的手柄。
+ *
+ * @param x 操作与重取手柄。
+ * @returns 响应手柄。
+ */
+function makeAlertDone(x: AlertActIn): (r: Response) => void {
+  return function alertDone(r: Response): void {
+    if (r.ok) {
+      x.refresh()
+      return
+    }
+    alertFail()
+  }
+}
+
+/**
+ * 事件操作失败的提示(出错不静默)。
+ */
+function alertFail(): void {
+  toast({ kind: TOAST_ERR, title: ACT_FAIL_TEXT })
 }

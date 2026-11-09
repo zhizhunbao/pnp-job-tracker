@@ -1313,7 +1313,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'origin.hireac': 'HireAC', 'origin.gcjobs': 'GC Jobs',
   'origin.jobillico': 'Jobillico', 'origin.jobboom': 'Jobboom', 'origin.careerbeacon': 'CareerBeacon',
   // 2026-10-12 Frank「通道 改成 申请门槛」:资讯第三个页签改名(页里是各通道的门槛卡)
-  'nav.ops': '운영', 'nav.queue': '대기열', 'nav.library': '자료실', 'nav.employers': '고용주', 'nav.jobs': '채용공고', 'nav.mine': '마이페이지', 'nav.pte': 'PTE 문제풀이', 'tl.tabNews': '최신 공지', 'tl.tabStreams': '신청 요건',
+  'nav.ops': '운영', 'nav.library': '자료실', 'nav.employers': '고용주', 'nav.jobs': '채용공고', 'nav.mine': '마이페이지', 'nav.pte': 'PTE 문제풀이', 'tl.tabNews': '최신 공지', 'tl.tabStreams': '신청 요건',
   'tl.tabDraws': '추첨', 'tl.tabSteps': '신청 경로',
   'rank.bnSub': '이민 가치 점수순', 'rank.bnRows': '이 랭킹 공고 {n}건',
   'acct.hero.login': '다시 오신 것을 환영합니다', 'acct.hero.reg': '회원가입',

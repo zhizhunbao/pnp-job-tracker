@@ -918,6 +918,16 @@ export const QUEUE_LOG = {
   removeFailed: 'remove failed kind=',
 
   /**
+   * 事件操作没写成(后接事件 id)。
+   */
+  alertFailed: 'alert update failed id=',
+
+  /**
+   * 探活与报警一轮没跑完(后接原因)。
+   */
+  tickFailed: 'ops tick failed: ',
+
+  /**
    * 原因段。
    */
   whyFrag: ' why=',

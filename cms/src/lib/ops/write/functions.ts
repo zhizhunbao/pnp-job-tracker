@@ -1,14 +1,14 @@
 /**
- * 队列域(lib/queue)的行为:把调度器上报的一个单元现状洗净、upsert 进 etl_units(一单元一行,只留现状);
- * 管理员在队列页删一条(2026-11-06 Frank「全都加一个删除按钮」:四种排队各有各的「删」,见 removeItem)。
- * 管理员队列页 /queue 的读取在页面门里直接走 SQL(同 /funnel 先例),本域只管写。池由调用方注进来(方案 A)。
+ * ops 子桶 write 的行为:把调度器上报的一个单元现状洗净、upsert 进 etl_units(一单元一行,只留现状);
+ * 管理员在运维页删一条(2026-11-06 Frank「全都加一个删除按钮」:各种排队各有各的「删」,见 removeItem)。
+ * 由 lib/queue 搬来(2026-11-08 替换域)。池由调用方注进来(方案 A)。
  *
  * @author Frank
  * @time 2026-11-05 23:10:00
  */
-import { SQL } from '../db'
+import { SQL } from '../../db'
 import {
-  DEL_APPLY, DEL_KEY_LEN_MAX, DEL_KINDS, DEL_SITE, DEL_UNIT, NAME_LEN_MAX, NAME_RE, ROUND_ERROR_MAX, UNIT_STATES,
+  DEL_APPLY, DEL_KEY_LEN_MAX, DEL_KINDS, DEL_SITE, NAME_LEN_MAX, NAME_RE, ROUND_ERROR_MAX, UNIT_STATES,
 } from './constants'
 import type {
   EpochJson, MaybeEpoch, MaybeRemoveFact, MaybeRoundFact, MaybeUnitFact, RemoveIn, RemoveJson, RemovedOut, RoundJson,
@@ -100,7 +100,7 @@ export async function saveUnit(x: SaveUnitIn): WriteOut {
 }
 
 /**
- * 删除体 → 洗净的删除请求:种类必须是四种之一,键非空且不超长。
+ * 删除体 → 洗净的删除请求:种类必须是三种之一,键非空且不超长。
  *
  * @param body 网络来的删除体。
  * @returns 洗净的请求;不对 = null(路由回 400)。
@@ -116,16 +116,14 @@ export function toRemoveFact(body: RemoveJson): MaybeRemoveFact {
 }
 
 /**
- * 删一条:调度单元删行(容器活着下一轮会重报)、待发投递删行、官网队列清阶段、译名队列标跳过。
+ * 删一条:待发投递删行、官网队列清阶段、译名队列标跳过。
  *
  * @param x 连接与洗净的删除请求。
  * @returns 动了几行(0 = 那一条已经不在队里了)。
  */
 export async function removeItem(x: RemoveIn): RemovedOut {
   let sql = SQL.QUEUE_DEL_ALIAS
-  if (x.item.kind === DEL_UNIT) {
-    sql = SQL.QUEUE_DEL_UNIT
-  } else if (x.item.kind === DEL_APPLY) {
+  if (x.item.kind === DEL_APPLY) {
     sql = SQL.QUEUE_DEL_APPLY
   } else if (x.item.kind === DEL_SITE) {
     sql = SQL.QUEUE_DEL_SITE

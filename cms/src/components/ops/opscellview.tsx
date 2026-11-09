@@ -6,7 +6,8 @@
  * @time 2026-11-08 18:00:00
  */
 import { Name } from '@/components/name'
-import { CELL_COPY, CELL_DEL, CELL_NAMED, CELL_TAGS } from './constants'
+import { AlertButton } from './alertbutton'
+import { CELL_ACT, CELL_COPY, CELL_DEL, CELL_NAMED, CELL_TAGS } from './constants'
 import { CopyError } from './copyerror'
 import { DelButton } from './delbutton'
 import { OpsTags } from './opstags'
@@ -24,6 +25,9 @@ export function OpsCellView({ cell }: OpsCellViewIn) {
   }
   if (cell.kind === CELL_DEL) {
     return <DelButton del={cell.del} />
+  }
+  if (cell.kind === CELL_ACT) {
+    return <AlertButton act={cell.act} />
   }
   if (cell.kind === CELL_COPY) {
     return <CopyError text={cell.text} />

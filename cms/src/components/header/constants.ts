@@ -81,11 +81,6 @@ export const PATH_TIMELINE = '/timeline'
 export const PATH_ACCOUNT = '/account'
 
 /**
- * 队列(管理员队列页;2026-11-05 Frank「我需要在 header 加一项,我能看到所有在排队的任务」「其他账号看不到」,只给 role=admin 出)。
- */
-export const PATH_QUEUE = '/queue'
-
-/**
  * 运维页路径(2026-11-08 替换 /queue)。
  */
 export const PATH_OPS = '/ops'
@@ -134,11 +129,6 @@ export const A_NEWS = 'news'
  * 高亮键:我的(账户页)。
  */
 export const A_ACCOUNT = 'account'
-
-/**
- * 高亮键:队列(管理员队列页)。
- */
-export const A_QUEUE = 'queue'
 
 /**
  * 顶栏高亮:运维。
@@ -193,7 +183,6 @@ export const PATH_ACTIVE = [
   ['/streams', 'news'],
   ['/steps', 'news'],
   ['/account', 'account'],
-  ['/queue', 'queue'],
   ['/ops', 'ops'],
   ['/jobs', 'jobs'],
   ['/', 'jobs'],

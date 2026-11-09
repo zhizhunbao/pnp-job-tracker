@@ -109,6 +109,32 @@ export type OpsCell =
      */
     sub: string
   }
+  | {
+    /**
+     * 事件操作格。
+     */
+    kind: 'act'
+
+    /**
+     * 操作。
+     */
+    act: {
+      /**
+       * 事件 id。
+       */
+      id: number
+
+      /**
+       * 改成哪个用户响应。
+       */
+      to: string
+
+      /**
+       * 钮上的字。
+       */
+      text: string
+    }
+  }
 
 /**
  * 一行。
@@ -972,58 +998,3 @@ export type BudgetDbRow = {
 // =========================================================================
 // 3. 删除
 // =========================================================================
-
-/**
- * 网络来的删除体。
- */
-export type RemoveJson = {
-  /**
-   * 种类。
-   */
-  kind?: string
-
-  /**
-   * 键。
-   */
-  key?: string
-}
-
-/**
- * 洗净的删除请求。
- */
-export type RemoveFact = {
-  /**
-   * 种类。
-   */
-  kind: string
-
-  /**
-   * 键。
-   */
-  key: string
-}
-
-/**
- * 洗不出来是 null。
- */
-export type MaybeRemoveFact = RemoveFact | null
-
-/**
- * removeItem 的入参。
- */
-export type RemoveIn = {
-  /**
-   * 连接。
-   */
-  db: Db
-
-  /**
-   * 洗净的删除请求。
-   */
-  item: RemoveFact
-}
-
-/**
- * 动了几行。
- */
-export type RemovedOut = Promise<number>

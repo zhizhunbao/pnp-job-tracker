@@ -715,3 +715,42 @@ export const TRANS_LEN_SLACK = 20
  * 韩文语种码(写入闸按它选谚文检查)。
  */
 export const TRANS_LANG_KO = 'ko'
+
+// =========================================================================
+// 探活(2026-11-08 运维页通道状态)
+// =========================================================================
+
+/**
+ * 探活的超时(毫秒)。
+ */
+export const PROBE_TIMEOUT_MS = 10000
+
+/**
+ * 网关的模型列表路径:不消耗 token,2026-11-08 实测返回 200。
+ */
+export const PATH_MODELS = '/v1/models'
+
+/**
+ * 探活失败的原因:网关没配。
+ */
+export const PROBE_UNCONFIGURED = 'not configured'
+
+/**
+ * 探活失败的原因:HTTP 状态前缀。
+ */
+export const PROBE_HTTP = 'HTTP '
+
+/**
+ * 探活失败的原因:连不上或超时。
+ */
+export const PROBE_NETWORK = 'network error'
+
+/**
+ * 通道代码:Claude。
+ */
+export const PROBE_CH_CLAUDE = 'anthropic'
+
+/**
+ * 通道代码:朋友网关。
+ */
+export const PROBE_CH_FRIEND = 'friend'

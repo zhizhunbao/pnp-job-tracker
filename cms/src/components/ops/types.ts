@@ -104,6 +104,32 @@ export type OpsCell =
      */
     sub: string
   }
+  | {
+    /**
+     * 事件操作格。
+     */
+    kind: 'act'
+
+    /**
+     * 操作。
+     */
+    act: {
+      /**
+       * 事件 id。
+       */
+      id: number
+
+      /**
+       * 改成哪个用户响应。
+       */
+      to: string
+
+      /**
+       * 钮上的字。
+       */
+      text: string
+    }
+  }
 
 /**
  * 一行。
@@ -313,6 +339,26 @@ export type OpsNavIcons = {
    * 费用。
    */
   fee: React.ReactNode
+
+  /**
+   * 事件。
+   */
+  incident: React.ReactNode
+
+  /**
+   * 数据新鲜度。
+   */
+  fresh: React.ReactNode
+
+  /**
+   * AI 通道。
+   */
+  channel: React.ReactNode
+
+  /**
+   * 访问。
+   */
+  access: React.ReactNode
 }
 
 /**
@@ -558,4 +604,49 @@ export type PickText = {
    * 子项。
    */
   sub: string
+}
+
+/**
+ * 一个事件操作。
+ */
+export type OpsAct = {
+  /**
+   * 事件 id。
+   */
+  id: number
+
+  /**
+   * 改成哪个用户响应。
+   */
+  to: string
+
+  /**
+   * 钮上的字。
+   */
+  text: string
+}
+
+/**
+ * makeAlertAct 的入参。
+ */
+export type AlertActIn = {
+  /**
+   * 操作。
+   */
+  act: OpsAct
+
+  /**
+   * 重取。
+   */
+  refresh: () => void
+}
+
+/**
+ * AlertButton 的 props。
+ */
+export type AlertButtonIn = {
+  /**
+   * 操作。
+   */
+  act: OpsAct
 }

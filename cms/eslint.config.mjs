@@ -37,8 +37,6 @@ const BARRELS = ['agent', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', '
   'inbox',
   // 2026-10-11 批 5 立 notify(顶栏通知铃铛:清单与「看过了」;只有 server 门,/api/notify、/api/notify/seen)。
   'notify',
-  // 2026-11-05 立 queue(管理员队列页:调度器上报单元现状;只有 server 门,/api/queue/units)。
-  'queue',
   // 2026-11-08 立 ops(管理员运维页:页面清单、按页取数、线格式;index 与 server 两门,替换 queue)。
   'ops',
   // 2026-11-07 立 cv(生成简历:草稿排成英文简历版式、画 PDF;只有 index 桶,不连库,pdf-lib 由 resume 域路由注入)。
@@ -81,7 +79,6 @@ const ALLOW = [
   '!**/lib/apply/server', '!./apply/server', '!../apply/server',
   '!**/lib/inbox/server', '!./inbox/server', '!../inbox/server',
   '!**/lib/notify/server', '!./notify/server', '!../notify/server',
-  '!**/lib/queue/server', '!./queue/server', '!../queue/server',
   '!**/lib/ops/server', '!./ops/server', '!../ops/server',
 ]
 const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])

@@ -1,5 +1,5 @@
 /**
- * 队列域(lib/queue)的常量:调度单元上报的口径(2026-11-05 Frank「我能看到所有在排队的任务」「其他账号看不到」)。
+ * ops 子桶 write 的常量:调度单元上报与运维页删除的口径,由 lib/queue 搬来(2026-11-05 Frank「我能看到所有在排队的任务」「其他账号看不到」)。
  *
  * @author Frank
  * @time 2026-11-05 23:10:00
@@ -21,19 +21,9 @@ export const NAME_LEN_MAX = 64
 export const NAME_RE = /^[a-z0-9_]+$/
 
 /**
- * 能看队列页、能删队列条目的角色(users.role;各域自声明一份,同 components/queue)。
+ * 删除的三种对象:待发投递 / 官网队列 / 译名队列。
  */
-export const ROLE_ADMIN = 'admin'
-
-/**
- * 删除的四种对象:调度单元 / 待发投递 / 官网队列 / 译名队列(与 components/queue 的 DEL_ 四词同值)。
- */
-export const DEL_KINDS = ['unit', 'apply', 'site', 'alias'] as const
-
-/**
- * 删除对象:调度单元。
- */
-export const DEL_UNIT = 'unit'
+export const DEL_KINDS = ['apply', 'site', 'alias'] as const
 
 /**
  * 删除对象:待发投递。
@@ -54,8 +44,3 @@ export const DEL_KEY_LEN_MAX = 300
  * 报错正文最长几个字(调度器那头已截到 3000,这里兜底再截一次)。
  */
 export const ROUND_ERROR_MAX = 4000
-
-/**
- * 接口错误码:不是管理员。
- */
-export const E_ADMIN = 'admin'

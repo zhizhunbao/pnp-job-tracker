@@ -219,3 +219,43 @@ export const CAT_QUEUE_TEXT = '队列'
  * 费用分类名。
  */
 export const CAT_FEE_TEXT = '费用'
+
+/**
+ * 事件操作接口。
+ */
+export const API_ALERT = '/api/ops/alert'
+
+/**
+ * 单元格种类:事件操作。
+ */
+export const CELL_ACT = 'act'
+
+/**
+ * 事件操作失败的提示。
+ */
+export const ACT_FAIL_TEXT = '操作失败'
+
+/**
+ * 操作钮的样式档。
+ */
+export const ACT_BTN_KIND = 'secondary'
+
+/**
+ * 侧栏分类:事件。
+ */
+export const CAT_INCIDENT = 'incident'
+
+/**
+ * 事件分类名。
+ */
+export const CAT_INCIDENT_TEXT = '事件'
+
+/**
+ * 侧栏分类:AI 通道。
+ */
+export const CAT_CHANNEL = 'channel'
+
+/**
+ * AI 通道分类名。
+ */
+export const CAT_CHANNEL_TEXT = 'AI 通道'

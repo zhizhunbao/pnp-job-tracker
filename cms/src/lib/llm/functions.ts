@@ -18,6 +18,7 @@ import { STATE, fateOf, inputBytesOf, inputCharsOf, record, reserve, settle, usa
 import {
   ALPHA_BASE, ALPHA_LEN, ALPHA_ZERO, ANSWER_NONE, ANTHROPIC_MODEL, BACKEND, BLOCK_TEXT, BULLET_PREFIX, BULLET_RE,
   ANTHROPIC_THINKING,
+  PATH_MODELS, PROBE_CH_CLAUDE, PROBE_CH_FRIEND, PROBE_HTTP, PROBE_NETWORK, PROBE_TIMEOUT_MS, PROBE_UNCONFIGURED,
   BYTE_MASK, BYTE_SHIFT, CACHE_HIT, CONTENT_TYPE_NONE, DELTA_NONE, DETAIL_NONE, E_TRANSLATE_UNAVAILABLE, FNV_PRIME,
   FNV_SEED_A, FNV_SEED_B, FRIEND_CALL_TIMEOUT_MS, FRIEND_INPUT_MAX, FRIEND_MAX_TOKENS, FRIEND_STREAM_TEMP,
   GATEWAY_BASE, GATEWAY_KEY, GATEWAY_MODEL, GATEWAY_TIMEOUT_MS, HEADER, KEEP_GROUP1, LEGACY_SOURCE_MAX, MD_BOLD,
@@ -30,6 +31,7 @@ import {
   UPSTREAM_TEXT_NONE, VIA, WEB_FETCH, WHY_NONE, CJK_RE, HANGUL_RE, TRANS_LANG_KO, TRANS_LEN_RATIO_MAX, TRANS_LEN_SLACK,
 } from './constants'
 import type {
+  ProbeOut,
   Alpha7In, Alpha7Out, AnthropicMessage, AnthropicParams, AnthropicSendOut, AnthropicStreamIn, AnthropicStreamParams, ArmOut,
   BackendStreamIn, BackendStreamOut, CharCountIn, CharCountOut, CompleteBackendIn, CompleteBackendOut,
   CompleteFreeIn, CompleteFriendIn, CompleteTextIn, CompleteTextOut, ContentTagIn, ContentTagOut, EmptyTextOut, Fnv1aIn, Fnv1aOut,
@@ -1520,4 +1522,51 @@ export function translationOk(x: TranslationOkIn): boolean {
     return HANGUL_RE.test(out)
   }
   return CJK_RE.test(out)
+}
+
+// =========================================================================
+// 探活
+// =========================================================================
+
+/**
+ * 探活 Claude:列模型,不消耗 token。失败只报状态码,不带上游原文。
+ *
+ * @returns 探活结果。
+ */
+export async function probeClaude(): ProbeOut {
+  const started = Date.now()
+  try {
+    const client = new Anthropic({ maxRetries: 0, timeout: PROBE_TIMEOUT_MS })
+    await client.models.list({ limit: 1 })
+    return { channel: PROBE_CH_CLAUDE, ok: true, ms: Date.now() - started, error: null }
+  } catch (e) {
+    let error = PROBE_NETWORK
+    if (e instanceof Anthropic.APIError && e.status != null) {
+      error = PROBE_HTTP + String(e.status)
+    }
+    return { channel: PROBE_CH_CLAUDE, ok: false, ms: Date.now() - started, error }
+  }
+}
+
+/**
+ * 探活朋友网关:列模型。
+ *
+ * @returns 探活结果。
+ */
+export async function probeFriend(): ProbeOut {
+  const started = Date.now()
+  if (friendLlmReady() === false) {
+    return { channel: PROBE_CH_FRIEND, ok: false, ms: 0, error: PROBE_UNCONFIGURED }
+  }
+  try {
+    const r = await fetch(GATEWAY_BASE + PATH_MODELS, {
+      headers: { [HEADER.auth]: HEADER.bearer + GATEWAY_KEY }, signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+    })
+    if (r.ok) {
+      return { channel: PROBE_CH_FRIEND, ok: true, ms: Date.now() - started, error: null }
+    }
+    return { channel: PROBE_CH_FRIEND, ok: false, ms: Date.now() - started, error: PROBE_HTTP + String(r.status) }
+  } catch {
+    return { channel: PROBE_CH_FRIEND, ok: false, ms: Date.now() - started, error: PROBE_NETWORK }
+  }
 }

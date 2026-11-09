@@ -62,7 +62,6 @@
 | `points` | 业务名 | 分值：按各省官方分值表给档案算分 | ✓ |
 | `profile` | 业务名 | 档案：改写账号档案 | ✓ |
 | `ops` | SWEBOK 第 6 章 Software Engineering Operations | 全称 operations(运维)。运维页的页面清单、按页取数与删除 | ✓ |
-| `queue` | 业务名 | 管理员队列：数据更新单元的状态与移除 | ✓ |
 | `quiz` | 业务名 | 答题：答案的读写与服务端同步 | ✓ |
 | `quota` | 业务名 | 配额：免费与 Pro 的各项上限、限流 | ✓ |
 | `rankings` | 业务名 | 榜单：榜单清单与行 | ✓ |
