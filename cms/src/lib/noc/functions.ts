@@ -16,11 +16,12 @@
 import { firstOf, queryRows, SQL, text } from '../db'
 import {
   BROAD_COLOR, DUTY_HITS_MAX, DUTY_SCAN_ROWS, KEY_BROAD, KEY_CAT, LANG_KO, LANG_ZH, LIKE_ANY, LIKE_ESCAPE, LIKE_SPECIAL_RE,
-  LINE_SEP, NA, NAME_NONE, RANK_EXACT, RANK_EXAMPLE, RANK_START, RANK_TITLE,
+  LINE_SEP, NA, NAME_NONE, RANK_EXACT, RANK_EXAMPLE, RANK_START, RANK_TITLE, RANK_WORDS, DUTY_WORD_MIN,
+  DUTY_WORDS_MAX, WORD_SPLIT_RE,
 } from './constants'
 import { CACHE } from './variables'
 import type {
-  Cat, CatLabelRows, CatNameIn, MaybeBroad, NocDutiesIn, NocDutiesOut, NocDutiesRow, NocDutyHits, NocDutyHitsIn, NocDutyLines, NocDutyRankIn,
+  BestExampleIn, Cat, CatLabelRows, CatNameIn, MaybeBroad, NocDutiesIn, NocDutiesOut, NocDutiesRow, NocDutyHits, NocDutyHitsIn, NocDutyLines, NocDutyRankIn,
   NocDutyRanked, NocDutyRow, NocDutySearchIn, NocDutySearchOut, NocLocalTitleIn, PickNameIn, Row,
 } from './types'
 
@@ -151,14 +152,47 @@ export async function loadNocDuties(input: NocDutiesIn): NocDutiesOut {
 }
 
 /**
- * 生成简历「导入职责」:按职位名找职业(职业名或示例职位名里含这个词、且有职责原文的;排序另做)。
+ * 生成简历「导入职责」:按职位名找职业(职业名与示例职位名里每个词都出现、且有职责原文的;整句都在的先捞,细排另做)。
  *
  * @param input 连接与检索词。
- * @returns 命中的行(未排序)。
+ * @returns 命中的行(未细排)。
  */
 export async function loadNocDutyRows(input: NocDutySearchIn): NocDutySearchOut {
-  const like = LIKE_ANY + input.q.replace(LIKE_SPECIAL_RE, LIKE_ESCAPE) + LIKE_ANY
-  return queryRows({ db: input.db, sql: SQL.NOC_DUTY_SEARCH, params: [like, DUTY_SCAN_ROWS], map: toNocDutyRow })
+  const phrase = likeOf(input.q)
+  const likes: NocDutyLines = []
+  for (const w of dutyWordsOf(input.q)) {
+    likes.push(likeOf(w))
+  }
+  if (likes.length === 0) {
+    likes.push(phrase)
+  }
+  return queryRows({ db: input.db, sql: SQL.NOC_DUTY_SEARCH, params: [likes, phrase, DUTY_SCAN_ROWS], map: toNocDutyRow })
+}
+
+/**
+ * 子串匹配的 ILIKE 串(元字符转义)。
+ *
+ * @param s 一段字。
+ * @returns `%…%`。
+ */
+function likeOf(s: string): string {
+  return LIKE_ANY + s.replace(LIKE_SPECIAL_RE, LIKE_ESCAPE) + LIKE_ANY
+}
+
+/**
+ * 检索词拆成小写的词(太短的丢掉,最多几个)。
+ *
+ * @param q 检索词。
+ * @returns 各个词。
+ */
+export function dutyWordsOf(q: string): NocDutyLines {
+  const out: NocDutyLines = []
+  for (const w of q.toLowerCase().split(WORD_SPLIT_RE)) {
+    if (w.length >= DUTY_WORD_MIN && out.length < DUTY_WORDS_MAX) {
+      out.push(w)
+    }
+  }
+  return out
 }
 
 /**
@@ -169,9 +203,10 @@ export async function loadNocDutyRows(input: NocDutySearchIn): NocDutySearchOut 
  */
 export function nocDutyHitsOf(x: NocDutyHitsIn): NocDutyHits {
   const q = x.q.toLowerCase()
+  const words = dutyWordsOf(x.q)
   const ranked: NocDutyRanked[] = []
   for (const row of x.rows) {
-    ranked.push(rankedOf({ row, q }))
+    ranked.push(rankedOf({ row, q, words }))
   }
   ranked.sort(byDutyRank)
   const out: NocDutyHits = []
@@ -215,7 +250,35 @@ function rankedOf(x: NocDutyRankIn): NocDutyRanked {
   if (best.rank === RANK_EXAMPLE && firstExample !== NAME_NONE) {
     best = { row: x.row, rank: RANK_EXAMPLE, hit: firstExample }
   }
+  if (best.rank === RANK_EXAMPLE && firstExample === NAME_NONE) {
+    best = { row: x.row, rank: RANK_WORDS, hit: bestExampleOf({ row: x.row, words: x.words }) }
+  }
   return best
+}
+
+/**
+ * 只按词命中时报哪个名字:含词最多的示例职位名(同数取先出现的);一个都不含报职业名。
+ *
+ * @param x 一行与各个词。
+ * @returns 命中的名字。
+ */
+function bestExampleOf(x: BestExampleIn): string {
+  let hit = x.row.title
+  let most = 0
+  for (const raw of x.row.examples.split(LINE_SEP)) {
+    const low = raw.trim().toLowerCase()
+    let n = 0
+    for (const w of x.words) {
+      if (low.includes(w)) {
+        n += 1
+      }
+    }
+    if (n > most) {
+      most = n
+      hit = raw.trim()
+    }
+  }
+  return hit
 }
 
 /**

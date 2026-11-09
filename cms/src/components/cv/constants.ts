@@ -47,9 +47,15 @@ export const HDR_CONTENT_TYPE = 'Content-Type'
 export const MIME_JSON = 'application/json'
 
 /**
- * 草稿的本地存储键(关了窗口、刷了页面再开还在;存成简历后也留着,改一改再生成一份)。
+ * 草稿的本地存储键开头,后面接登录人 id(关了窗口、刷了页面再开还在;存成简历后也留着,改一改再生成一份)。
+ * 2026-11-07 Frank 本地实测撞见:原先一个浏览器一份草稿,换号登录看到上一个人的简历内容 —— 改成一人一份。
  */
-export const DRAFT_KEY = 'cv_draft_v1'
+export const DRAFT_KEY_HEAD = 'cv_draft:'
+
+/**
+ * 不知道登录人是谁(没拿到 id):草稿不读不存,只活在这一次打开里。
+ */
+export const OWNER_NONE = ''
 
 /**
  * 「导入职责」边打边搜的停顿(ms)。

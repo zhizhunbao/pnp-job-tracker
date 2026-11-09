@@ -154,9 +154,10 @@ export const LIKE_ESCAPE = '\\$&'
 export const LINE_SEP = '\n'
 
 /**
- * 搜职业的响应缓存(官方职业数据,一天内不变)。
+ * 搜职业的响应缓存(五分钟)。
+ * 2026-11-07 本地实测撞见:原先给一天,浏览器把改搜法前的「没找到」留了一整天 —— 搜法一改,用户要等一天才看到。
  */
-export const DUTY_CACHE = 'public, max-age=86400'
+export const DUTY_CACHE = 'public, max-age=300'
 
 /**
  * 排名档:职业名或某个示例职位名与检索词一字不差。
@@ -177,3 +178,23 @@ export const RANK_TITLE = 2
  * 排名档:只有示例职位名里含检索词。
  */
 export const RANK_EXAMPLE = 3
+
+/**
+ * 排名档:整句哪儿都没有,只是每个词都出现(「Big data architect」→ 示例名里有 data architect、big data analyst)。
+ */
+export const RANK_WORDS = 4
+
+/**
+ * 检索词按空白拆成词。
+ */
+export const WORD_SPLIT_RE = /\s+/
+
+/**
+ * 一个词最短几个字(更短的不参与按词搜)。
+ */
+export const DUTY_WORD_MIN = 2
+
+/**
+ * 最多按几个词搜。
+ */
+export const DUTY_WORDS_MAX = 5

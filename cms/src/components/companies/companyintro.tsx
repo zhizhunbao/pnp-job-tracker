@@ -14,6 +14,8 @@
  * 厚简介与缓存简介两岔直渲内容,重探时卡上没动静。探索进行中三岔都出进度行(CompanySteps)。
  * 同日 Frank「排队中这个位置是不是不合适,如果下面之前有主营业务」:铺着内容的两岔进度行挪到内容**下方**当状态行,
  * 不打断简介阅读;懒查岔照旧(简介位本来空着)。
+ * 2026-10-13 Frank「这个主营业务那几个字怎么没了」:官网简介那一岔也挂「主营业务」小标题(与 K 调查五节第一节同一个类),
+ * 正文照旧整段保留换行。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -22,8 +24,8 @@ import { CompanyAiSection } from './companyaisection'
 import { CompanySteps } from './companysteps'
 import { CompanyZhLine } from './companyzhline'
 import { CompanyBriefCards } from './companybriefcards'
-import { TEXT_NONE } from './constants'
-import { hasDescOf, isSiteActive } from './functions'
+import { CO_SEC_WHAT, TEXT_NONE } from './constants'
+import { hasDescOf, isSiteActive, secClsOf, secHeadClsOf, secKeyOf } from './functions'
 import { useCompanyDescTrans } from './hooks'
 import type { CompanyIntroIn } from './types'
 import css from './companies.module.css'
@@ -45,8 +47,11 @@ export function CompanyIntro({
   if (hasDescOf({ company })) {
     return (
       <div className={css.descWrap}>
-        <div className={css.desc}>{company.description}</div>
-        {showTrans === true && descZh !== TEXT_NONE && <CompanyZhLine text={descZh} prose />}
+        <div className={secClsOf({ flat: false })}>
+          <div className={secHeadClsOf({ flat: false })}>{t(secKeyOf({ mark: CO_SEC_WHAT }))}</div>
+          <div className={css.desc}>{company.description}</div>
+          {showTrans === true && descZh !== TEXT_NONE && <CompanyZhLine text={descZh} prose />}
+        </div>
         {steps}
       </div>
     )

@@ -448,11 +448,6 @@ export type NewsChipsIn = {
    * 点某个地区药丸(工厂按地区码给手柄)。
    */
   pickOf: (code: string) => ClickFn
-
-  /**
-   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
-   */
-  updatedAt: string
 }
 
 /**

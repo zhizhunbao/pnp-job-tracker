@@ -8,7 +8,7 @@
  */
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
-import { DUTY_DEBOUNCE_MS, DUTY_Q_MIN, ERR_NONE } from './constants'
+import { DUTY_DEBOUNCE_MS, DUTY_Q_MIN, ERR_NONE, OWNER_NONE } from './constants'
 import {
   blankContactOf, closedDutyOf, loadDuties, loadFirst, makeAddOf, makeContactEdit, makeContactFieldOf, makeContactSave,
   makeDelOf, makeDelOk, makeDescArea, makeDutyCheckOf, makeDutyImport, makeDutyPickOf, makeDutyQ, makeDutyToggle,
@@ -31,6 +31,7 @@ import { makeProfileImport } from './prefill'
 export function useCvBuilder(x: CvBuilderIn): CvPanel {
   const [, , t] = useLang()
   const [loaded, setLoaded] = useState(false)
+  const [owner, setOwner] = useState(OWNER_NONE)
   const [draft, setDraft] = useState<CvDraft>(newDraftOf(blankContactOf()))
   const [entry, setEntry] = useState<EntryEdit | null>(null)
   const [contact, setContact] = useState<CvContact | null>(null)
@@ -44,13 +45,13 @@ export function useCvBuilder(x: CvBuilderIn): CvPanel {
   const [formErr, setFormErr] = useState(ERR_NONE)
   const [chars, setChars] = useState<string[]>([])
   useEffect(function first() {
-    void loadFirst({ setDraft, setLoaded })
+    void loadFirst({ setDraft, setOwner, setLoaded })
   }, [])
   useEffect(function persist() {
     if (loaded) {
-      writeDraft(draft)
+      writeDraft({ owner, d: draft })
     }
-  }, [draft, loaded])
+  }, [draft, loaded, owner])
   useDutySearch({ duty, setDuty })
   const cells: CvCells = {
     draft,

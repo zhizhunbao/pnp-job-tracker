@@ -166,7 +166,10 @@ export function useColWidths<T>(x: ColWidthsIn<T>): ColWidthsOut<T> {
 /**
  * 量一遍列宽:各列真实内容宽 → 占总宽的百分比(百分比而非 px:容器变窄仍按比例缩)。
  * 表还没上屏(总宽 0)或哪一列的表头还没挂上 → 给 null,这一轮不锁,下一帧再来。
- * 显式列宽不参与量宽(调用方已定死版式),原样带过。
+ * ~~显式列宽不参与量宽(调用方已定死版式),原样带过。~~ 2026-11-05 改:只要有一列要量(本函数才会被调),显式列也照
+ * auto 布局里的实宽一起量 —— 原样带过时显式列各占给定的百分比,加上量出来的列合计超 100%,锁成 fixed 后浏览器整表等比压回,
+ * 按内容定宽的列被压窄、格距挤没(Frank「所有的缝隙」;雇主板实测 50% + 50% + 量出 23.4% = 123.4%,「雇主类型」要 90px 只剩 74px)。
+ * auto 布局本就按给定百分比摆显式列,量实宽 = 锁住浏览器已经摆好的样子,合计恒为 100%。全显式的表不走这里(首帧即锁)。
  *
  * @param x 列声明、表元素与表头元素表。
  * @returns 列 key → 百分比串;null = 这轮量不了。
@@ -181,10 +184,6 @@ function measureCols<T>(x: MeasureIn<T>): Record<string, string> | null {
   }
   const m: Record<string, string> = {}
   for (const c of x.cols) {
-    if (c.width != null) {
-      m[c.key] = c.width
-      continue
-    }
     const el = x.ths[c.key]
     if (el == null) {
       return null

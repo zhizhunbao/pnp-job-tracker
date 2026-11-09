@@ -421,4 +421,24 @@ export type NocDutyRankIn = {
    * 小写的检索词。
    */
   q: string
+
+  /**
+   * 小写的各个词。
+   */
+  words: NocDutyLines
+}
+
+/**
+ * `bestExampleOf` 的入参。
+ */
+export type BestExampleIn = {
+  /**
+   * 一行。
+   */
+  row: NocDutyRow
+
+  /**
+   * 小写的各个词。
+   */
+  words: NocDutyLines
 }

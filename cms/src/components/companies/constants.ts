@@ -222,6 +222,11 @@ export const CO_SEC_HAS_RE = /\[(WHAT|BASE|SIZE|FOUNDED|NOTE|OFFICES|NEWCOMERS|B
 export const CO_SEC_BASE = 'BASE'
 
 /**
+ * 「主营业务」那一节的标记(2026-10-13:整段没有节标记的散文简介挂这一节的小标题出)。
+ */
+export const CO_SEC_WHAT = 'WHAT'
+
+/**
  * 模型答「查不到」的那族句子(2026-09-14 Frank「没查到的不要显示说 没查到」「啥也没查到吗」):
  * 「not provided / stated / mentioned / available in the (available) search results」「no information / details」
  * 「do not contain information」「unknown / unavailable / N/A」—— 命中的节整节不出;整篇都是这族 = 简介卡不出。

@@ -538,6 +538,15 @@
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   overflow-x: auto;
+  scrollbar-width: none;
+}
+
+/*
+ * 横条藏起(2026-11-05 Frank「这个删掉吧」→「鼠标放到 标准位置非 文字部分可以左右滑动」):
+ * 照样能横滑 —— 鼠标按住非文字处拖(useDragScroll)、触控板 / Shift + 滚轮、触屏手指;操作列横滑时贴右(actStickyOf)。
+ */
+.tableWrap::-webkit-scrollbar {
+  display: none;
 }
 
 /*

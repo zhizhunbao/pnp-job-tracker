@@ -1135,6 +1135,11 @@ export type LoadFirstIn = {
   setDraft: SetFn<CvDraft>
 
   /**
+   * 设登录人 id(草稿按它存)。
+   */
+  setOwner: SetFn<string>
+
+  /**
    * 设拿到了。
    */
   setLoaded: SetFn<boolean>
@@ -1364,6 +1369,11 @@ export type MeJson = {
  * 登录人(只读邮箱)。
  */
 export type MeUserJson = {
+  /**
+   * 用户 id(草稿按它存)。
+   */
+  id?: number | string
+
   /**
    * 邮箱。
    */

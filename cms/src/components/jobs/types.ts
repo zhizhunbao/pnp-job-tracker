@@ -2578,6 +2578,106 @@ export type FrozenStyleIn = {
 }
 
 /**
+ * dragStartOk / dragSpotOk 的入参(拖表横滑的起拖判据)。
+ */
+export type DragPointIn = {
+  /**
+   * 指针事件。
+   */
+  e: PointerEvent
+
+  /**
+   * 表格外框(横滚容器)。
+   */
+  wrap: HTMLElement
+}
+
+/**
+ * 屏幕坐标(判断指针压没压在文字上)。
+ */
+export type ScreenPoint = {
+  /**
+   * 横坐标(clientX)。
+   */
+  x: number
+
+  /**
+   * 纵坐标(clientY)。
+   */
+  y: number
+}
+
+/**
+ * 拖表横滑的进行态(只活在一次 effect 的闭包里,不出 hooks)。
+ */
+export type DragState = {
+  /**
+   * 按下了没。
+   */
+  on: boolean
+
+  /**
+   * 这次按下真挪过没(挪过 = 拖,松手那下点击要吞掉)。
+   */
+  moved: boolean
+
+  /**
+   * 按下时的横坐标。
+   */
+  x0: number
+
+  /**
+   * 按下时表格已横滑的距离。
+   */
+  left0: number
+
+  /**
+   * 按下的指针号(挪动后捕获它,拖出表外照样跟)。
+   */
+  id: number
+}
+
+/**
+ * dragMove 的入参。
+ */
+export type DragMoveIn = {
+  /**
+   * 指针事件。
+   */
+  e: PointerEvent
+
+  /**
+   * 表格外框(横滚容器)。
+   */
+  wrap: HTMLElement
+
+  /**
+   * 拖动进行态(就地改)。
+   */
+  st: DragState
+}
+
+/**
+ * dragCursor 的入参。
+ */
+export type DragCursorIn = {
+  /**
+   * 表格外框(横滚容器)。
+   */
+  wrap: HTMLElement
+
+  /**
+   * 手形(空串 = 还给样式表)。
+   */
+  cursor: string
+
+  /**
+   * 选字开关(空串 = 还给样式表)。
+   */
+  select: string
+}
+
+/**
  * 取词 + 库行的通用入参(算 chip 文案、算兜底句这类)。
  */
 export type JobTextIn = {

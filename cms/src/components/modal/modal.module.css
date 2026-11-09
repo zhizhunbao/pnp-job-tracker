@@ -12,15 +12,30 @@
 /*
  * 遮罩层(2026-08-24 Frank 拍板改名 scrim → overlay:与本域 useOverlayClose
  * 同一个词,说的是同一层东西 —— 弹框背后那层半透黑,点它关框)。
+ * 2026-11-07 Frank「多个弹框后 背景颜色不用 加深吧」:遮罩本身透明(仍负责点它关框),
+ * 那层半透黑改由下面 body 上的一层统一给 —— 开几个弹框都只暗一层,底下的弹框不被盖暗。
  */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgb(17 24 39 / 50%);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
+}
+
+/*
+ * 全站只一层半透黑:页面上有任意一个弹框开着,就在 body 上铺一层,层级紧贴最低弹框之下(Z_MODAL 50 减 1)。
+ * 弹框不管叠几层、挂在 DOM 哪里(嵌在别的弹框里、挂在不同宿主下)都只暗这一次。
+ */
+:global(body):has(.overlay)::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgb(17 24 39 / 50%);
+  z-index: 49;
+  pointer-events: none;
 }
 
 /*

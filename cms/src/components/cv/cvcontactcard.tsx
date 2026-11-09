@@ -1,6 +1,6 @@
 'use client'
 /**
- * 「联系方式」分区卡:姓名粗体、邮箱、电话、「城市, 省份」;卡头「修改」;卡底一句来源(从我的档案带过来)。
+ * 「联系方式」分区卡:姓名粗体、邮箱、电话、「城市, 省份」;卡头「修改」(首开从我的档案带过来;2026-11-07 Frank 嫌解释句不专业,卡底那句来源撤)。
  *
  * @author Frank
  * @time 2026-11-07 16:00:00
@@ -31,7 +31,6 @@ export function CvContactCard({ p }: CvPartIn) {
         {c.phone !== TEXT_NONE && <div>{c.phone}</div>}
         {place !== TEXT_NONE && <div>{place}</div>}
       </div>
-      <div className={css.note}>{p.t('cv.fromPf')}</div>
     </CvCard>
   )
 }

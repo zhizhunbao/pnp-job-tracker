@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation'
 import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { useLang } from '@/components/i18n'
 import { usePeekBus } from '@/components/modal'
+import { moreCountOf } from '@/components/pager'
 import { quizToProfile, readQuiz } from '@/components/quiz'
 import { makeT } from '@/lib/i18n'
 import { mapQuery, mapsUrl } from '@/lib/location'
@@ -31,8 +32,9 @@ import {
   HOME_GATE_OFF,
   FILTER_Q, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
   HOLD_MAX_MS, HTTP_NOT_FOUND, HTTP_TOO_MANY, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ENTER,
-  LANG_EN, LIMIT_RE, METHOD_DELETE,
-  METHOD_POST, MIME_JSON, P_BACK, P_OAUTH,
+  LANG_EN, LIMIT_RE, METHOD_DELETE, CURSOR_GRAB, CURSOR_GRABBING, DRAG_MIN_PX, EV_CLICK, EV_POINTER_CANCEL,
+  EV_POINTER_DOWN, EV_POINTER_MOVE, EV_POINTER_UP, POINTER_MOUSE, SELECT_NONE, STYLE_RESET,
+  METHOD_POST, MORE_ROWS, MIME_JSON, P_BACK, P_OAUTH,
   QS_HEAD, Q_URL_SETTLE_MS, SAVED_STATUS_WISH,
   SAVE_ERR, SAVE_LIMIT, SAVE_OK, SAVE_RESUME_KEY, SAVE_RESUME_TTL_MS, SLASH, SORT_DEFAULT, TARGET_BLANK, TEXT_NONE,
   TEXT_STATUS, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
@@ -59,13 +61,13 @@ import {
   measureColWidths, nextSortOf, nocLabelOf, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
   saveFiltersOf, seedFilter, setterOf, shownColsOf, slotOf, squeezableOf, stickyOffsetsOf, strOf, strOrNull,
   togglableColsOf,
-  toRelatedJobs, chipNocOf, occGroupsOf, occSlotOf, tableWrapOf,
+  toRelatedJobs, chipNocOf, occGroupsOf, occSlotOf, tableWrapOf, dragSpotOk, dragStartOk,
   widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
   jobDatesOf, ssrTransOf, immFactsOf,
   alertLinkOf, alertNameOf, alertOkKeyOf,
 } from './functions'
 import type {
-  AccountAreaPanel, TransTogglePanel,
+  AccountAreaPanel, TransTogglePanel, DragCursorIn, DragMoveIn, DragState,
   Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyOpenDetail, ApplyResumeIn,
   ApplyStage, AuthDoneIn,
   BlockedKeys, BoardColsHookIn, BoardColsOut, BoardColsPanel,
@@ -222,6 +224,106 @@ function useWrapWidth(headRowRef: HeadRowRef, x: WrapWidthIn): void {
       ro.disconnect()
     }
   }, [headRowRef, setWrapW, x.keysKey])
+}
+
+/**
+ * 拖表横滑(2026-11-05 Frank「鼠标放到 标准位置非 文字部分可以左右滑动」,横条随之藏起):表能横滑时,
+ * 鼠标停在非文字、非可点处出手形,按住左右拖即滑;挪过 DRAG_MIN_PX 才算拖,拖完松手那一下点击吞掉(不开格子弹框)。
+ * 触屏不接管(本来就能滑);链接、钮照常点;文字照常选。外框从表头锚点取(与 useWrapWidth 同一个)。
+ *
+ * @param headRowRef 表头锚点(单独一格收,理由见 types.ts 的 `HeadRowRef`)。
+ * @returns 无。
+ */
+function useDragScroll(headRowRef: HeadRowRef): void {
+  useEffect(function watchDrag() {
+    const head = headRowRef.current
+    if (head == null) {
+      return
+    }
+    const found = tableWrapOf(head)
+    if (found == null) {
+      return
+    }
+    const wrap: HTMLElement = found
+    const st: DragState = { on: false, moved: false, x0: 0, left0: 0, id: 0 }
+    function down(e: PointerEvent): void {
+      st.moved = false
+      if (dragStartOk({ e, wrap }) === false) {
+        return
+      }
+      st.on = true
+      st.x0 = e.clientX
+      st.left0 = wrap.scrollLeft
+      st.id = e.pointerId
+    }
+    function move(e: PointerEvent): void {
+      dragMove({ e, wrap, st })
+    }
+    function up(): void {
+      if (st.on === false) {
+        return
+      }
+      st.on = false
+      dragCursor({ wrap, cursor: STYLE_RESET, select: STYLE_RESET })
+    }
+    function swallow(e: MouseEvent): void {
+      if (st.moved) {
+        e.stopPropagation()
+        e.preventDefault()
+        st.moved = false
+      }
+    }
+    wrap.addEventListener(EV_POINTER_DOWN, down)
+    wrap.addEventListener(EV_POINTER_MOVE, move)
+    wrap.addEventListener(EV_POINTER_UP, up)
+    wrap.addEventListener(EV_POINTER_CANCEL, up)
+    wrap.addEventListener(EV_CLICK, swallow, true)
+    return function stopDrag() {
+      wrap.removeEventListener(EV_POINTER_DOWN, down)
+      wrap.removeEventListener(EV_POINTER_MOVE, move)
+      wrap.removeEventListener(EV_POINTER_UP, up)
+      wrap.removeEventListener(EV_POINTER_CANCEL, up)
+      wrap.removeEventListener(EV_CLICK, swallow, true)
+    }
+  }, [headRowRef])
+}
+
+/**
+ * 拖表横滑的移动一步:没按下时只换手形(可拖处出 grab);按下后挪够 DRAG_MIN_PX 起拖,捕获指针、关选字,跟手滑。
+ *
+ * @param x 指针事件、表格外框与进行态(就地改)。
+ * @returns 无。
+ */
+function dragMove(x: DragMoveIn): void {
+  if (x.st.on === false) {
+    let cursor = STYLE_RESET
+    if (x.e.pointerType === POINTER_MOUSE && dragSpotOk({ e: x.e, wrap: x.wrap })) {
+      cursor = CURSOR_GRAB
+    }
+    x.wrap.style.cursor = cursor
+    return
+  }
+  const dx = x.e.clientX - x.st.x0
+  if (x.st.moved === false) {
+    if (Math.abs(dx) < DRAG_MIN_PX) {
+      return
+    }
+    x.st.moved = true
+    x.wrap.setPointerCapture(x.st.id)
+    dragCursor({ wrap: x.wrap, cursor: CURSOR_GRABBING, select: SELECT_NONE })
+  }
+  x.wrap.scrollLeft = x.st.left0 - dx
+}
+
+/**
+ * 拖动时外框的手形与选字开关(拖中 grabbing + 不许选字;松手全还给样式表)。
+ *
+ * @param x 表格外框、手形与选字值。
+ * @returns 无。
+ */
+function dragCursor(x: DragCursorIn): void {
+  x.wrap.style.cursor = x.cursor
+  x.wrap.style.userSelect = x.select
 }
 
 /**
@@ -873,6 +975,7 @@ function useBoardCols(x: BoardColsHookIn): BoardColsOut {
     seed: x.initialColW,
   })
   const frozen = useFrozenCols(headRowRef, { shown, cw, shownKey })
+  useDragScroll(headRowRef)
   const panel: BoardColsPanel = {
     shown,
     visible,
@@ -1409,7 +1512,9 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     onQCommit,
     onQKey: makeQKey(onQCommit),
     allShownText: t('allShown', { total: data.total }),
-    moreText: t('loadMore', { n: data.total - data.rows.length }),
+    moreText: t('loadMore', {
+      n: moreCountOf({ left: data.total - data.rows.length, step: MORE_ROWS }), left: data.total - data.rows.length,
+    }),
     proof: proofOf(props),
     hydrating,
   }

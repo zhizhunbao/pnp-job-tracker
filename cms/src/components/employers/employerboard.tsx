@@ -12,8 +12,9 @@
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
-import { MoreLine } from '@/components/pager'
+import { MoreLine, moreCountOf } from '@/components/pager'
 import { Table } from '@/components/table'
+import { MORE_ROWS } from './constants'
 import { emptyTextOf, empRowKeyOf, listClsOf, toEmployerCellRows } from './functions'
 import { EmployerCards } from './employercards'
 import { EmployerLoading } from './employerloading'
@@ -49,7 +50,10 @@ export function EmployerBoard({ p }: EmployerPanelIn) {
         <MoreLine shown={p.data.rows.length}
           total={p.data.total}
           loading={p.loading}
-          moreText={p.t('loadMore', { n: p.data.total - p.data.rows.length })}
+          moreText={p.t('loadMore', {
+            n: moreCountOf({ left: p.data.total - p.data.rows.length, step: MORE_ROWS }),
+            left: p.data.total - p.data.rows.length,
+          })}
           allText={p.t('allShown', { total: p.data.total })}
           onMore={p.onMore} />
       </div>

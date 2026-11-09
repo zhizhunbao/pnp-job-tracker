@@ -2261,12 +2261,16 @@ export const NOC_DUTIES_BY_CODE = `SELECT duties, requirements FROM noc_descript
 
 /**
  * 生成简历「导入职责」按职位名找职业(2026-11-07 照 Job Bank Resume Builder 的 Import job duties):
- * 官方职业名或示例职位名里含这个词、且有职责原文的职业,排序在函数里做。$1=带 % 的 ILIKE 串,$2=最多几行。
+ * 官方职业名与示例职位名里每个词都出现、且有职责原文的职业;整句都在的排前面(LIMIT 截不掉它们),细排在函数里做。
+ * 2026-11-07 Frank 本地实测「Big data architect」整句搜不到(官方只有 data architect、big data analyst)→ 改成按词都在。
+ * $1=各词的 ILIKE 串(text[]),$2=整句的 ILIKE 串,$3=最多几行。
  */
 export const NOC_DUTY_SEARCH = `SELECT noc, COALESCE(title,'') title, COALESCE(duties,'') duties, COALESCE(examples,'') examples
      FROM noc_descriptions
-     WHERE COALESCE(duties,'') <> '' AND (title ILIKE $1 OR examples ILIKE $1)
-     LIMIT $2`
+     WHERE COALESCE(duties,'') <> ''
+       AND (SELECT bool_and((COALESCE(title,'') || E'\\n' || COALESCE(examples,'')) ILIKE p) FROM unnest($1::text[]) p)
+     ORDER BY ((COALESCE(title,'') || E'\\n' || COALESCE(examples,'')) ILIKE $2) DESC, noc
+     LIMIT $3`
 
 /**
  * 按职位 id 取 JD 整理稿缓存。$1=职位 id(2026-09-20 改键,原按 apply_url,见 JD_TRANS_BY_ID)。

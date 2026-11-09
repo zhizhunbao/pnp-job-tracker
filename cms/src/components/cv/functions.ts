@@ -7,16 +7,16 @@
  */
 import { CV_TEXT_MAX, cvBadCharsOf, cvLayoutOf, toCvDraft } from '@/lib/cv'
 import {
-  BULLET_HEAD, CRED_INCLUDE, CV_LIST, DATES_NONE, DATES_ONE, DRAFT_KEY, E_CHARS, ERR_AUTH, ERR_CHARS, ERR_FULL,
+  BULLET_HEAD, CRED_INCLUDE, CV_LIST, DATES_NONE, DATES_ONE, DRAFT_KEY_HEAD, E_CHARS, ERR_AUTH, ERR_CHARS, ERR_FULL,
   ERR_LIMIT, ERR_NAME, ERR_NET, ERR_NONE, ERR_REQ, ERR_YEAR, HDR_CONTENT_TYPE, HTTP_CONFLICT, HTTP_TOO_MANY,
   HTTP_UNAUTHORIZED, KEY_DESC, LINE_SEP, METHOD_POST, MIME_JSON, MONTH_KEY_HEAD, MONTH_PAD, NEW_INDEX, PAD_CHAR,
-  PLACE_SEP, TEXT_NONE, URL_BUILD, URL_DUTIES, URL_ME, URL_PROFILE, YEAR_RE, YM_SEP,
+  OWNER_NONE, PLACE_SEP, TEXT_NONE, URL_BUILD, URL_DUTIES, URL_ME, URL_PROFILE, YEAR_RE, YM_SEP,
 } from './constants'
 import type {
   ActFn, AreaFn, ContactWithIn, CvCells, CvContact, CvContactKey, CvDraft, CvEntry, CvEntryKey, CvListKey,
   CvSavedIn, CvTextKey, DraftContactIn, DraftListIn, DraftTextIn, DutiesJson, DutyState, DutyWithIn, EntryAt,
-  EntryErrIn, EntryWithIn, FlagSetIn, FormTitleIn, LoadDutiesIn, LoadFirstIn, MeJson, PeriodIn, PfJson, SaveErrIn,
-  SaveJson, SetFn, TextFn, TFn, WithDescIn, YmIn,
+  EntryErrIn, EntryWithIn, FlagSetIn, FormTitleIn, LoadDutiesIn, LoadFirstIn, MeJson, MeView, PeriodIn, PfJson,
+  SaveErrIn, SaveJson, SetFn, TextFn, TFn, WithDescIn, WriteDraftIn, YmIn,
   ProfileMergeIn, ProfileMergeOut,
 } from './types'
 import { contactFilledOf, entriesWithNamesOf, loadProfileLists } from './prefill'
@@ -174,13 +174,17 @@ function draftWithContact(x: DraftContactIn): CvDraft {
 }
 
 /**
- * 读本地存的草稿(逐格收窄,与服务端同一个行构造器);没有、坏了、存储不让读都给 null。
+ * 读这个人本地存的草稿(逐格收窄,与服务端同一个行构造器);不知道是谁、没有、坏了、存储不让读都给 null。
  *
+ * @param owner 登录人 id。
  * @returns 草稿或 null。
  */
-function readDraft(): CvDraft | null {
+function readDraft(owner: string): CvDraft | null {
+  if (owner === OWNER_NONE) {
+    return null
+  }
   try {
-    const raw = localStorage.getItem(DRAFT_KEY)
+    const raw = localStorage.getItem(DRAFT_KEY_HEAD + owner)
     if (raw == null) {
       return null
     }
@@ -195,38 +199,69 @@ function readDraft(): CvDraft | null {
 }
 
 /**
- * 草稿存到本地(关了窗口、刷了页面再开还在)。存储不让写(隐私模式)就不存:草稿照样在窗口里,只是关了不留。
+ * 草稿按登录人存到本地(关了窗口、刷了页面再开还在;换号登录看不到别人的)。不知道是谁、存储不让写(隐私模式)
+ * 就不存:草稿照样在窗口里,只是关了不留。
  *
- * @param d 草稿。
+ * @param x 登录人 id 与草稿。
  * @returns 无。
  */
-export function writeDraft(d: CvDraft): void {
+export function writeDraft(x: WriteDraftIn): void {
+  if (x.owner === OWNER_NONE) {
+    return
+  }
   try {
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(d))
+    localStorage.setItem(DRAFT_KEY_HEAD + x.owner, JSON.stringify(x.d))
   } catch {
     return
   }
 }
 
 /**
- * 首开:本地有草稿用草稿,没有就从我的档案(英文姓名、城市、省份)与账号(邮箱)带联系方式起一份新的。
+ * 首开:先认登录人;这个人本地有草稿用草稿,没有就从我的档案(英文姓名、城市、省份)与账号(邮箱)带联系方式起一份新的。
  *
- * @param x 设草稿与设拿到了。
+ * @param x 设草稿、设登录人与设拿到了。
  * @returns 无。
  */
 export async function loadFirst(x: LoadFirstIn): Promise<void> {
-  const saved = readDraft()
+  const me = await meOf()
+  x.setOwner(me.owner)
+  const saved = readDraft(me.owner)
   if (saved != null) {
     x.setDraft(saved)
   } else {
     const [c, lists] = await Promise.all([prefillOf(), loadProfileLists()])
+    c.email = me.email
     x.setDraft(draftWithProfile({ d: newDraftOf(c), c, lists }).draft)
   }
   x.setLoaded(true)
 }
 
 /**
- * 从我的档案与账号带联系方式;取不到的格空着(用户在窗口里看得见、自己填)。
+ * 登录人的 id 与邮箱;取不到的格空串(草稿就不读不存,邮箱让用户自己填)。
+ *
+ * @returns 登录人。
+ */
+async function meOf(): Promise<MeView> {
+  const me: MeView = { owner: OWNER_NONE, email: TEXT_NONE }
+  try {
+    const r = await fetch(URL_ME, { credentials: CRED_INCLUDE })
+    const j = await r.json() as MeJson
+    if (j.user != null) {
+      if (typeof j.user.id === 'number' || typeof j.user.id === 'string') {
+        me.owner = String(j.user.id)
+      }
+      if (typeof j.user.email === 'string') {
+        me.email = j.user.email
+      }
+    }
+  } catch {
+    me.owner = OWNER_NONE
+  }
+  return me
+}
+
+/**
+ * 从我的档案带联系方式(邮箱由调用方从账号填);取不到的格空着(用户在窗口里看得见、自己填)。
  *
  * @returns 联系方式。
  */
@@ -248,15 +283,6 @@ async function prefillOf(): Promise<CvContact> {
     }
   } catch {
     c.name = TEXT_NONE
-  }
-  try {
-    const r = await fetch(URL_ME, { credentials: CRED_INCLUDE })
-    const j = await r.json() as MeJson
-    if (j.user != null && typeof j.user.email === 'string') {
-      c.email = j.user.email
-    }
-  } catch {
-    c.email = TEXT_NONE
   }
   return c
 }

@@ -8,6 +8,7 @@
  * 2026-09-18 Frank「这个弹一个新窗口出来吧」:两只钮都开新标签 —— 板上筛到一半、「显示更多」接出来的行不因为点出去而丢。
  * 2026-09-19 Frank「在操作列加一个按钮官网,如果有的话」:加「官网」钮(新标签;没有官网不出),雇主名不再去官网;
  * 同日「这时候看公司就可以去掉了吧」:「看公司」钮撤 —— 点雇主名就开公司弹框,两个入口重复。现在是 看岗位 / 官网 两只。
+ * 2026-11-05 Frank「都删了,只保留官网按钮」:「看岗位」钮撤,操作格只剩「官网」(没有官网就是空格)。
  *
  * @author Frank
  * @time 2026-09-13 18:00:00
@@ -21,16 +22,11 @@ import css from './employers.module.css'
  * 渲染操作格。
  *
  * @param r 这一行的展示行。
- * @returns 零到两只钮。
+ * @returns 「官网」钮,或空格。
  */
 export function ActCell(r: EmployerCellRow) {
   return (
     <span className={css.acts}>
-      {r.jobsHref !== TEXT_NONE && (
-        <LinkButton href={r.jobsHref} target={TARGET_BLANK} onClick={r.onView} className={r.actBtnCls}>
-          {r.actJobsText}
-        </LinkButton>
-      )}
       {r.siteHref !== TEXT_NONE && (
         <LinkButton href={r.siteHref} target={TARGET_BLANK} onClick={r.onView} className={r.actBtnCls}>
           {r.actSiteText}

@@ -6,14 +6,17 @@
  * 2026-09-14 Frank「AI 探索的所在地不对啊」「不能不一致就直接给删了」:「所在地」节可被 baseOverride 换成官方招聘地点
  * (AI 总部与招聘省不一致时),节还在,只是内容换成有依据的那句。
  * 同日晚 Frank「如果和上面的不一致,可以不显示吗」:改成对不上就整节不出(skipBase),基本信息卡的省 / 市已是官方地点。
+ * 2026-10-13 Frank「这个主营业务那几个字怎么没了」:散文简介(整段没有节标记)也挂「主营业务」小标题,正文照旧整段渲。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
 import { CompanyBriefSec } from './companybriefsec'
 import { CompanyZhLine } from './companyzhline'
-import { CLS_SEP, CO_SEC_BASE, CO_SEC_HAS_RE, CO_SEC_MARKS, TEXT_NONE } from './constants'
-import { briefSecsOf, hasSecOf, secBodyClsOf, secKeyOf, secTextOf, secZhOf } from './functions'
+import { CLS_SEP, CO_SEC_BASE, CO_SEC_HAS_RE, CO_SEC_MARKS, CO_SEC_WHAT, TEXT_NONE } from './constants'
+import {
+  briefSecsOf, hasSecOf, secBodyClsOf, secClsOf, secHeadClsOf, secKeyOf, secTextOf, secZhOf,
+} from './functions'
 import type { CompanyBriefBodyIn } from './types'
 import css from './companies.module.css'
 import { cssOf } from '@/components/css'
@@ -33,9 +36,12 @@ export function CompanyBriefBody({
       zh = trans.trim()
     }
     return (
-      <div className={secBodyClsOf({ flat }) + CLS_SEP + cssOf(css.desc)}>
-        {brief}
-        {zh !== TEXT_NONE && <CompanyZhLine text={zh} prose />}
+      <div className={secClsOf({ flat })}>
+        <div className={secHeadClsOf({ flat })}>{t(secKeyOf({ mark: CO_SEC_WHAT }))}</div>
+        <div className={secBodyClsOf({ flat }) + CLS_SEP + cssOf(css.desc)}>
+          {brief}
+          {zh !== TEXT_NONE && <CompanyZhLine text={zh} prose />}
+        </div>
       </div>
     )
   }

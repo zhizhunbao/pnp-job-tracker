@@ -28,6 +28,8 @@ cms/dev.log
 /data/processed/company_brief.json
 /data/processed/company_wiki_hq.json
 /data/raw/companies/
+# 第三方 GitHub 名单仓库(浅克隆,别人的内容不入 git)
+/data/raw/github/
 # 人读导出视图(csv)
 /data/**/*.csv
 # 公司名录导出视图(保留 .json)

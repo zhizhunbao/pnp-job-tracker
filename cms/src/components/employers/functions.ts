@@ -37,18 +37,17 @@ import { PoolDistrictCell } from './pooldistrictcell'
 import { PoolHqCell } from './poolhqcell'
 import { PoolEeCell } from './pooleecell'
 import { PoolLmiaCell } from './poollmiacell'
-import { PoolLocsCell } from './poollocscell'
 import { PoolProvCell } from './poolprovcell'
 import { SectorCell } from './sectorcell'
 import {
-  AIP_MARK, ALIGN_RIGHT, BRIEF_LEN_MAX, BRIEF_TAIL, BROAD_KEY_HEAD, BROAD_SHOW_MAX, CLS_SEP, COL_ACT_KEY,
+  AIP_MARK, POOL_FLEX_KEYS,
+  ALIGN_RIGHT, BRIEF_LEN_MAX, BRIEF_TAIL, BROAD_KEY_HEAD, BROAD_SHOW_MAX, CLS_SEP, COL_ACT_KEY,
   COL_DESIGNATED_KEY,
   COL_LMIA_KEY, COL_NAME_KEY, COL_OPEN_KEY, COL_SKILLED_KEY, COL_VERDICT_KEY, COL_W1_KEY, COL_W2_KEY,
   COL_W4_KEY,
   CATEGORIES_GOV, CATEGORIES_PRIVATE, CATEGORIES_PUBLIC, COL_CATEGORY_KEY, EV_PROP_CATEGORY, KEY_CATEGORY_HEAD,
-  P_CATEGORY, SECTOR_CATEGORIES, W_POOL_CATEGORY,
-  K_LOCS_UNIT,
-  COLS_STORE_KEY, COL_CITY_KEY, COL_DISTRICT_KEY, COL_EE_KEY, COL_HQ_KEY, COL_LOCS_KEY, COL_PROV_KEY, COL_SECTOR_KEY,
+  P_CATEGORY, SECTOR_CATEGORIES,
+  COLS_STORE_KEY, COL_CITY_KEY, COL_DISTRICT_KEY, COL_EE_KEY, COL_HQ_KEY, COL_PROV_KEY, COL_SECTOR_KEY,
   COL_WHERE_KEY,
   COMPARE_NAME_SEP,
   DASH_MARK,
@@ -58,7 +57,7 @@ import {
   DEMO_PROV_A, DEMO_PROV_B, DEMO_PROV_C, DEMO_SKILLED_A, DEMO_SKILLED_B, DEMO_SKILLED_C, DIFF_KEY_HEAD,
   DIFF_TAG, DIFF_VARIANT_NONE, DIM_AIP_KEY, DIM_AVG_KEY, DIM_BRIEF_KEY, DIM_INDUSTRY_KEY, DIM_LMIA_KEY,
   DIM_MATCH_KEY, DIM_NAMED_KEY, DIM_OPEN_KEY, DIM_PROV_KEY, DIM_QUARTER_KEY, DIM_SAL_KEY, DIM_SKILLED_KEY,
-  CARET_DOWN, CARET_UP, KEY_FIELDS, PCT_FULL, W_PCT_DECIMALS, W_PCT_UNIT, W_POOL_LMIA,
+  CARET_DOWN, CARET_UP, KEY_FIELDS, PCT_FULL, W_PCT_DECIMALS, W_PCT_UNIT,
   CTL_CLS, DIR_ASC, DIR_DESC, EMP_API_URL, EMP_URL, EMPLOYERS_DESC, EMPLOYERS_TITLE_TAIL, ENTRY_ON, EV_FILTER,
   EV_KIND_NONE, EV_KIND_SEARCH, EV_PAGE, EV_PROP_ENTRY, EV_PROP_KEY, EV_PROP_LMIA, EV_PROP_PROV,
   EV_PROP_CITY, EV_PROP_DISTRICT, EV_PROP_EE, EV_PROP_SECTOR, EV_PROP_SORT, EXPLORE_API_URL,
@@ -66,7 +65,7 @@ import {
   HDR_CONTENT_TYPE,
   METHOD_POST, MIME_JSON,
   EV_ROW, EV_SEARCH,
-  EV_VIEW_JOBS, HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SECTOR_HEAD, KEY_SEP, KIND_AIP,
+  EV_VIEW_JOBS, HOME_SEARCH_HEAD, KEY_SECTOR_HEAD, KEY_SEP, KIND_AIP,
   KIND_LMIA, KIND_NAMED, LANG_KO, LANG_ZH, LAYER_CO, LINK_SELECTOR, MAP_COUNTRY,
   META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND,
   MONEY_DIV, MONEY_HEAD,
@@ -76,8 +75,7 @@ import {
   TAG_REGION,
   TEXT_NONE, TONE_DIM, TONE_NG, TONE_OK,
   URL_COMPANY_HEAD, VERDICT_FACTOR_KEY, VERDICT_MET, VERDICT_NG_HEAD, VERDICT_OK_HEAD, VERDICT_PUBLIC, VERDICT_RANK,
-  VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_DESIGNATED,
-  W_POOL_CITY, W_POOL_DISTRICT, W_POOL_EE, W_POOL_HQ, W_POOL_LOCS, W_POOL_NAME, W_POOL_OPEN, W_POOL_PROV, W_POOL_SECTOR,
+  VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP,
 } from './constants'
 import { IndustryCell } from './industrycell'
 import { LmiaCell } from './lmiacell'
@@ -195,10 +193,6 @@ export function toEmployerCellRows(x: EmployerCellRowsIn): EmployerCellRow[] {
  */
 export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
   const r = x.r
-  let jobsHref = TEXT_NONE
-  if (r.openJobsTotal > 0) {
-    jobsHref = JOBS_SEARCH_HEAD + encodeURIComponent(r.name)
-  }
   let companyHref = TEXT_NONE
   let slug = TEXT_NONE
   if (r.slug != null) {
@@ -231,17 +225,12 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     districtText: r.district,
     hqText: r.hq,
     hqHref: hqHrefOf(r.hq),
-    locs: r.locations,
-    locsT: x.t,
-    locsUnit: x.t(K_LOCS_UNIT),
     provText,
     cityText,
     openText: String(r.openJobs),
     designatedLines: designatedLinesOf({ t: x.t, r }),
     designatedChip: designatedChipOf({ t: x.t, r }),
-    jobsHref,
     companyHref,
-    actJobsText: x.t('pulse.act.jobs'),
     actSiteText: x.t('act.site'),
     actBtnCls: actBtnClsOf(),
     cardSalary: x.t('dp.planJobsN', { n: r.openJobs }),
@@ -460,6 +449,8 @@ export function empRowKeyOf(r: EmployerCellRow): string {
  * 2026-09-13 晚 /fe 雇主页 Frank 拍板星级退成纯排序键不占列:5★ 只 423 家、2★ 占 75.8%,默认降序首屏 14 页清一色
  * 五星,作列零信息量;默认排序仍是 star desc(lib/employers POOL_SORT_DEFAULT),表头无对应列就不出排序标记。
  * 列 key = 排序主键(表头点列直接发给服务端);排序在服务端,列上不给取值器,只标 sortable。
+ * 2026-11-05 Frank「你先把这个删了吧」「总部 改成 地址」「地址放到雇主列后面」:在招地点列撤,总部列改叫地址、挪到雇主之后;
+ * 列宽改成短值列按内容定宽、雇主与地址平分余下(POOL_FLEX_KEYS)。现默认 = 雇主 / 地址 / 雇主类型 / 公司分类 / 在招 / 操作。
  *
  * @param x 取词函数。
  * @returns 列组。
@@ -469,35 +460,41 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
     {
       key: COL_NAME_KEY,
       label: x.t('de.colName'),
-      width: poolWidthOf({ key: COL_NAME_KEY, shown: x.shown }),
+      width: poolWidthOf({ shown: x.shown }),
       sortable: true,
       fixed: true,
       render: NameCell,
     },
     {
+      key: COL_HQ_KEY,
+      label: x.t('de.colHq'),
+      width: poolWidthOf({ shown: x.shown }),
+      render: PoolHqCell,
+    },
+    {
       key: COL_EE_KEY,
       label: x.t('de.colEe'),
-      width: poolWidthOf({ key: COL_EE_KEY, shown: x.shown }),
+      nowrap: true,
       optional: true,
       render: PoolEeCell,
     },
     {
       key: COL_SECTOR_KEY,
       label: x.t('de.colSector'),
-      width: poolWidthOf({ key: COL_SECTOR_KEY, shown: x.shown }),
+      nowrap: true,
       sortable: true,
       render: SectorCell,
     },
     {
       key: COL_CATEGORY_KEY,
       label: x.t('de.colCategory'),
-      width: poolWidthOf({ key: COL_CATEGORY_KEY, shown: x.shown }),
+      nowrap: true,
       render: PoolCategoryCell,
     },
     {
       key: COL_PROV_KEY,
       label: x.t('de.colProv'),
-      width: poolWidthOf({ key: COL_PROV_KEY, shown: x.shown }),
+      nowrap: true,
       sortable: true,
       optional: true,
       render: PoolProvCell,
@@ -505,27 +502,15 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
     {
       key: COL_CITY_KEY,
       label: x.t('de.colCity'),
-      width: poolWidthOf({ key: COL_CITY_KEY, shown: x.shown }),
+      nowrap: true,
       sortable: true,
       optional: true,
       render: PoolCityCell,
     },
     {
-      key: COL_HQ_KEY,
-      label: x.t('de.colHq'),
-      width: poolWidthOf({ key: COL_HQ_KEY, shown: x.shown }),
-      render: PoolHqCell,
-    },
-    {
-      key: COL_LOCS_KEY,
-      label: x.t('de.colLocs'),
-      width: poolWidthOf({ key: COL_LOCS_KEY, shown: x.shown }),
-      render: PoolLocsCell,
-    },
-    {
       key: COL_DISTRICT_KEY,
       label: x.t('de.colDistrict'),
-      width: poolWidthOf({ key: COL_DISTRICT_KEY, shown: x.shown }),
+      nowrap: true,
       optional: true,
       render: PoolDistrictCell,
     },
@@ -545,7 +530,6 @@ function poolTailColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
     {
       key: COL_OPEN_KEY,
       label: x.t('de.colOpen'),
-      width: poolWidthOf({ key: COL_OPEN_KEY, shown: x.shown }),
       nowrap: true,
       align: ALIGN_RIGHT,
       sortable: true,
@@ -554,7 +538,7 @@ function poolTailColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
     {
       key: COL_DESIGNATED_KEY,
       label: x.t('de.colDesignated'),
-      width: poolWidthOf({ key: COL_DESIGNATED_KEY, shown: x.shown }),
+      nowrap: true,
       sortable: true,
       optional: true,
       render: DesignatedCell,
@@ -562,7 +546,6 @@ function poolTailColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
     {
       key: COL_LMIA_KEY,
       label: x.t('de.colLmia'),
-      width: poolWidthOf({ key: COL_LMIA_KEY, shown: x.shown }),
       nowrap: true,
       align: ALIGN_RIGHT,
       sortable: true,
@@ -572,7 +555,6 @@ function poolTailColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
     {
       key: COL_ACT_KEY,
       label: x.t('col.actions'),
-      width: poolWidthOf({ key: COL_ACT_KEY, shown: x.shown }),
       nowrap: true,
       fixed: true,
       render: ActCell,
@@ -600,70 +582,23 @@ function keepShownOf(x: KeepShownIn): EmpCol<EmployerCellRow>[] {
 }
 
 /**
- * 各列的宽份(W_POOL_* 一族;不在表里的 key 回 0)。
+ * 自适应列(雇主名、地址)的宽度百分比:现在显示着的自适应列平分(2026-11-05 改判,原「宽份 ÷ 宽份和」随 W_POOL_* 退役)。
+ * 其余列不给宽,由内容定宽(见 POOL_FLEX_KEYS)。还没选列(shown 空)时给空串 —— 那一份列声明只拿去给字段面板列名,不上屏。
  *
- * @param key 列 key。
- * @returns 宽份。
- */
-function poolShareOf(key: string): number {
-  if (key === COL_NAME_KEY) {
-    return W_POOL_NAME
-  }
-  if (key === COL_EE_KEY) {
-    return W_POOL_EE
-  }
-  if (key === COL_SECTOR_KEY) {
-    return W_POOL_SECTOR
-  }
-  if (key === COL_PROV_KEY) {
-    return W_POOL_PROV
-  }
-  if (key === COL_CITY_KEY) {
-    return W_POOL_CITY
-  }
-  if (key === COL_CATEGORY_KEY) {
-    return W_POOL_CATEGORY
-  }
-  if (key === COL_HQ_KEY) {
-    return W_POOL_HQ
-  }
-  if (key === COL_LOCS_KEY) {
-    return W_POOL_LOCS
-  }
-  if (key === COL_DISTRICT_KEY) {
-    return W_POOL_DISTRICT
-  }
-  if (key === COL_OPEN_KEY) {
-    return W_POOL_OPEN
-  }
-  if (key === COL_DESIGNATED_KEY) {
-    return W_POOL_DESIGNATED
-  }
-  if (key === COL_LMIA_KEY) {
-    return W_POOL_LMIA
-  }
-  if (key === COL_ACT_KEY) {
-    return W_POOL_ACT
-  }
-  return 0
-}
-
-/**
- * 一列的宽度百分比:它的宽份 ÷ 现在显示着的各列宽份之和(字段面板让列可增减,写死百分比凑不成 100)。
- * 还没选列(shown 空)时给空串 —— 那一份列声明只拿去给字段面板列名,不上屏。
- *
- * @param x 这一列的 key 与现在显示着的列 key。
+ * @param x 现在显示着的列 key。
  * @returns 百分比字符串,或空串。
  */
 function poolWidthOf(x: PoolWidthIn): string {
-  let sum = 0
+  let n = 0
   for (const k of x.shown) {
-    sum += poolShareOf(k)
+    if (POOL_FLEX_KEYS.includes(k)) {
+      n = n + 1
+    }
   }
-  if (sum === 0) {
+  if (n === 0) {
     return TEXT_NONE
   }
-  return (poolShareOf(x.key) / sum * PCT_FULL).toFixed(W_PCT_DECIMALS) + W_PCT_UNIT
+  return (PCT_FULL / n).toFixed(W_PCT_DECIMALS) + W_PCT_UNIT
 }
 
 /**

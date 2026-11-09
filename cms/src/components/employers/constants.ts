@@ -71,12 +71,6 @@ export const EMP_API_URL = '/api/employers'
 export const EMP_URL = '/employers'
 
 /**
- * 「看岗位」的落点前缀:职位板按雇主名搜(2026-09-13 雇主板批二:雇主名改落公司详情页,看岗位归操作列钮 ——
- * 雇主板「名字进详情、操作进板」形,照城市段先例;此前 2026-08-10「雇主名即直达、不另开列」的判定随之作废)。
- */
-export const JOBS_SEARCH_HEAD = '/jobs?q='
-
-/**
  * 担保雇主卡/表里「看在招岗」的落点前缀:首页按雇主名搜(橱窗一族沿用首页搜)。
  */
 export const HOME_SEARCH_HEAD = '/?q='
@@ -359,11 +353,6 @@ export const BTN_PRO = 'pro'
  * 弱操作幽灵钮的变体(「清空对比」)。
  */
 export const BTN_GHOST = 'ghost'
-
-/**
- * 在招地点格展开钮的量词词条(「个」;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」)。
- */
-export const K_LOCS_UNIT = 'fold.u.item'
 
 /**
  * 雇主板搜索框的尺寸档(sm,与职位板 filterrow 的搜索框同档;2026-09-13 Frank「宽度和 jobs 那个保持一致」)。
@@ -657,11 +646,6 @@ export const PLACE_SEP = '|'
 export const PLACE_GAP = ' '
 
 /**
- * 雇主板列 key:在招地点(胶囊;不排序)。
- */
-export const COL_LOCS_KEY = 'locs'
-
-/**
  * 雇主板列 key:区(可选列,默认不显;不排序 —— 近半雇主没有区,排出来大半是空)。
  */
 export const COL_DISTRICT_KEY = 'district'
@@ -685,65 +669,6 @@ export const COL_DESIGNATED_KEY = 'designated'
 export const COL_ACT_KEY = 'act'
 
 /**
- * 雇主板六列的宽(2026-09-13 雇主板批二;名字吃最大一份,数字列窄,操作列按两只 mini 钮的韩文宽度给;
- * 同日工资水位列撤 —— Frank「工资水位 有必要吗」:全量榜算不出,全是横杠;技能类 LMIA 列撤成开关 ——
- * 「这一列删掉,筛选加一个 LMIA 的筛选」;地点一列放三枚胶囊)。
- * 2026-09-13 晚 /fe 雇主页星级列撤(退成纯排序键),11% 分给五列:名字 / 地点各 +2、在招 / 指定各 +2、操作 +3。
- */
-export const W_POOL_NAME = 27
-
-/**
- * 雇主板类别列的宽(2026-09-18 雇主板换版:地点一列撤,换成 类别 / 省 / 市 三列;原 W_POOL_WHERE 26% 随之退役 ——
- * 它是 09-13 晚 CityNameCell 双行形 +「另 N 地」的宽,Frank 09-18「招聘地点去掉吧」「英文 城市 也去掉」)。
- */
-export const W_POOL_SECTOR = 12
-
-/**
- * 雇主板省列的宽(界面语言省全名)。
- */
-export const W_POOL_PROV = 13
-
-/**
- * 雇主板市列的宽(界面语言城市名,一行)。
- */
-export const W_POOL_CITY = 13
-
-/**
- * 雇主板公司分类列的宽(一个分类名,最长「公园与自然资源」七个字)。
- */
-export const W_POOL_CATEGORY = 12
-
-/**
- * 雇主板类别(EE)列的宽(两个 EE 类别名顿号连)。
- */
-export const W_POOL_EE = 12
-
-/**
- * 雇主板在招地点列的宽(至多三枚「市, 省码」胶囊,格内折行)。
- */
-export const W_POOL_LOCS = 17
-
-/**
- * 雇主板区列的宽(可选列;区名一行,与市同宽)。
- */
-export const W_POOL_DISTRICT = 13
-
-/**
- * 雇主板总部列的宽(「区, 市, 省码」一行,比市列宽一档)。
- */
-export const W_POOL_HQ = 21
-
-/**
- * 雇主板在招列的宽(数字 + 入门占比灰注)。
- */
-export const W_POOL_OPEN = 9
-
-/**
- * 雇主板指定雇主列的宽(胶囊 + 项目灰注)。
- */
-export const W_POOL_DESIGNATED = 12
-
-/**
  * 职位描述弹框的 NOC 描述表占位(弹框契约上的透传格,雇主板没有这张表;弹框自己不读它)。
  */
 export const NOC_DESC_NONE = []
@@ -760,19 +685,14 @@ export const LAYER_CO = 'company'
 export const GATE_INTENT_FILTER = 'filter'
 
 /**
- * 雇主板操作列的宽(两只 mini 钮并排;2026-09-19「看公司」换成「官网」,仍是两只,宽不动)。
+ * 雇主板自适应宽的列:雇主名、地址 —— 平分其余各列按内容定宽后剩下的宽(2026-11-05 Frank「雇主类型 公司分类 在招 操作
+ * 这些列都可以判断宽度,就把列的宽度固定 内容的宽度,剩下的宽度其他剩下的列自适应」)。其余列不给宽、单元格不折行,
+ * 首帧 auto 布局把它们收到内容宽,通用 table 桶量完锁成百分比。原 W_POOL_* 一族宽份(2026-09-13~09-19 逐列定的份数)随之退役。
  */
-export const W_POOL_ACT = 14
+export const POOL_FLEX_KEYS: string[] = [COL_NAME_KEY, COL_HQ_KEY]
 
 /**
- * 雇主板 LMIA 列的宽份(字段面板里的可选列)。
- * 🔵 2026-09-18 起这一族 W_POOL_* 是**宽份**不是百分比:字段面板让列可增减,百分比写死就凑不成 100;
- * 显示哪几列就按那几列的宽份和归一成百分比(functions 的 poolWidthOf)。
- */
-export const W_POOL_LMIA = 10
-
-/**
- * 百分之百(宽份归一成百分比用)。
+ * 百分之百(自适应列平分用)。
  */
 export const PCT_FULL = 100
 
@@ -1047,6 +967,11 @@ export const P_Q = 'q'
  * 查询参数名:页码。
  */
 export const P_PAGE = 'page'
+
+/**
+ * 「显示更多」一次接几行(与 `lib/employers` 的 EMP_PAGE_SIZE 同数;钮面写「显示更多 N 条」用,2026-11-05)。
+ */
+export const MORE_ROWS = 50
 
 /**
  * 拼 query 时第一个参数前的问号。

@@ -660,26 +660,6 @@ export type EmployerCellRow = {
   cityHref: string
 
   /**
-   * 在招地点格:该雇主在招岗所在的「市, 省码」,岗多的在前,至多三处(数据层 locations),各出一枚胶囊
-   * (2026-09-19 Frank「是不是需要加一列,在招岗位所在地」「用胶囊框一下」:省 / 市两列只是岗最多的那一处,
-   * Englobe 显示 Toronto、指定却在新不伦瑞克 / 新斯科舍 / Sudbury,不把在招地点摆出来会把人带错)。
-   * 09-13 撤过一版三枚胶囊(挤爆列宽压进邻列),这一版格内折行、不出列。空表 = 没有在招(渲横杠)。
-   * 2026-09-20 起是全部在招地点(岗多的在前),格里默认露前三枚,其余展开才出。
-   */
-  locs: string[]
-
-  /**
-   * 在招地点格展开 / 收起钮的取词函数(钮面由 pager 桶 FoldLine 现拼;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」,
-   * 原两枚现成钮面 locsMoreText / locsLessText 撤)。
-   */
-  locsT: TFn
-
-  /**
-   * 在招地点格展开钮的量词(「个」)。
-   */
-  locsUnit: string
-
-  /**
    * 区格:区名原样,一行(2026-09-18 Frank「区的字段没有啊」;默认不显,字段面板里勾);空串 = 岗都没带区(渲横杠)。
    */
   districtText: string
@@ -729,19 +709,9 @@ export type EmployerCellRow = {
   designatedChip: string
 
   /**
-   * 「看岗位」的落点(职位板按雇主名搜);空串 = 无在招,钮不出(2026-09-13 晚 /fe 雇主页:空表不给链)。
-   */
-  jobsHref: string
-
-  /**
    * 「看公司」的落点;空串 = 没有公司页,钮不出。
    */
   companyHref: string
-
-  /**
-   * 「看岗位」钮面。
-   */
-  actJobsText: string
 
   /**
    * 操作钮的类(button 桶 mini 档;哑单元格不 import functions,类随行带来)。
@@ -1459,11 +1429,6 @@ export type PickWordsIn = {
  * poolWidthOf 的入参。
  */
 export type PoolWidthIn = {
-  /**
-   * 这一列的 key。
-   */
-  key: string
-
   /**
    * 现在显示着的列 key。
    */

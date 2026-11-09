@@ -1098,7 +1098,7 @@ export const jobsZh = {
   'cv.m.7': '7 月', 'cv.m.8': '8 月', 'cv.m.9': '9 月', 'cv.m.10': '10 月',
   'cv.m.11': '11 月', 'cv.m.12': '12 月', 'cv.add': '添加', 'cv.edit': '修改',
   'cv.hide': '隐藏', 'cv.show': '显示', 'cv.del': '删除', 'cv.hidden': '已隐藏',
-  'cv.empty': '留空就不出现在简历上', 'cv.fromPf': '从我的档案带过来', 'cv.import': '从档案导入', 'cv.importDone': '已从档案导入 {n} 条', 'cv.importNone': '档案里没有新内容', 'mj.exportRecord': '导出求职记录', 'cv.preview': '预览', 'cv.save': '保存为简历',
+  'cv.import': '从档案导入', 'cv.importDone': '已从档案导入 {n} 条', 'cv.importNone': '档案里没有新内容', 'mj.exportRecord': '导出求职记录', 'cv.preview': '预览', 'cv.save': '保存为简历',
   'cv.back': '返回修改', 'cv.cancel': '取消', 'cv.ok': '保存', 'cv.pv': '简历预览',
   'cv.en': '英文', 'cv.form.add': '添加{s}', 'cv.form.edit': '修改{s}', 'cv.form.contact': '修改联系方式',
   'cv.duty.open': '导入职责', 'cv.duty.find': '选职业', 'cv.duty.ph': '输入职位名,如 data engineer', 'cv.duty.loading': '查找中',
@@ -1252,7 +1252,7 @@ export const siteZh = {
   'res.cat.federal': '联邦移民', 'res.cat.pnp': '各省提名(PNP)', 'res.cat.study': '留学 DLI', 'res.cat.language': '语言考试', 'res.cat.wage': '工资与职业数据', 'res.cat.lmia': 'LMIA 与雇主担保', 'res.cat.authority': '权威与合规',
   'res.rules': '通道门槛', 'res.rules.prov': '{prov} 省提名', 'res.prog.AIP': 'AIP 大西洋移民计划', 'res.prog.RCIP': 'RCIP 偏远社区移民试点', 'res.prog.FCIP': 'FCIP 法语社区移民试点', 'res.prog.PGWP': 'PGWP 毕业工签', 'res.prog.CEC': 'CEC 加拿大经验类', 'res.prog.FSW': 'FSW 联邦技术移民', 'res.prog.FST': 'FST 联邦技工类', 'res.prog.PR-fees': '联邦申请费',
   'clear': '清除筛选',
-  'empty': '无匹配职位', 'allShown': '已全部显示 {total} 个', 'loadMore': '显示更多(还有 {n} 条)',
+  'empty': '无匹配职位', 'allShown': '已全部显示 {total} 个', 'loadMore': '显示更多 {n} 条(还剩 {left} 条)',
   'chart.back': '返回', 'chart.drillHint': '点条形可下钻', 'chart.other': '其他', 'chart.loading': '加载中…', 'nav.account': '账户', 'nav.acctTab': '我的账户',
   'menu.sect.manage': '管理',
   // 账户(E3-02)
@@ -1379,7 +1379,7 @@ export const siteZh = {
   'pulse.s6.t': '全加拿大职位板', 'pulse.s6.s': '全职业收录,每日更新',
   // 雇主板(2026-08-16 照职位板重做;2026-09-13 批二读雇主池:行业组 × 省切面、星级、指定 / LMIA 排序列)
   'de.title': '雇主', 'de.count': '{n} 家雇主', 'de.hits': '命中 {n} 家',
-  'de.colName': '雇主', 'de.colEe': 'EE 类别', 'de.colSector': '雇主类型', 'de.colLmia': 'LMIA', 'de.colProv': '省', 'de.colCity': '市', 'de.colLocs': '在招地点', 'de.colHq': '总部', 'de.colDistrict': '区', 'de.allSector': '全部类型', 'de.colWhere': '地点', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
+  'de.colName': '雇主', 'de.colEe': 'EE 类别', 'de.colSector': '雇主类型', 'de.colLmia': 'LMIA', 'de.colProv': '省', 'de.colCity': '市', 'de.colHq': '地址', 'de.colDistrict': '区', 'de.allSector': '全部类型', 'de.colWhere': '地点', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
   // 公司分类(2026-09-19 晚 Frank「应该单独弄一个公司的分类。和雇主类型联动」):列名、下拉首项与 33 个分类名 —— 私营 15 类 / 公立机构 9 类 / 政府按职能 9 类;键 = cocat. + 数据层的分类键。
   'de.colCategory': '公司分类', 'de.allCategory': '全部分类', 'cocat.tech': '科技',
   'cocat.health': '医疗健康', 'cocat.education': '教育', 'cocat.finance': '金融保险',
@@ -1733,7 +1733,7 @@ export const pteZh = {
   'pte.sec.speaking': '口语', 'pte.sec.writing': '写作', 'pte.sec.reading': '阅读', 'pte.sec.listening': '听力',
   'pte.col.num': '题号', 'pte.col.text': '题面', 'pte.col.seen': '最近考过', 'pte.col.n': '考过次数', 'pte.seenToday': '今天', 'pte.seenAgo': '{n} 天前', 'pte.today': '今天', 'pte.ago': '{n} 天前', 'pte.times': '考过 {n} 次',
   'pte.col.act': '操作', 'pte.go': '练习',
-  'pte.empty': '没有符合的题', 'pte.more': '显示更多(还有 {n} 题)',
+  'pte.empty': '没有符合的题', 'pte.more': '显示更多 {n} 题(还剩 {left} 题)',
   'pte.pos': '{i} / {n}',
   'pte.inst.RA': '40 秒内自然清晰地读出来', 'pte.inst.RS': '听一遍,原样复述', 'pte.inst.ASQ': '听问题,一两个词作答', 'pte.inst.WFD': '听一遍,原样写下来',
   'pte.inst.RFIB': '每个空选一个词', 'pte.inst.RWFIB': '每个空从下拉里选', 'pte.inst.ROP': '把段落排成正确顺序',

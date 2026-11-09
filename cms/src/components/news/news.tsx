@@ -15,6 +15,7 @@
  * hooks.ts、样式迁 news.module.css。
  * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:
  * 列表区上方那一行地区筛选药丸的行尾挂 Updated(time 桶),更新时刻由页面门 SSR 取好递进来。
+ * 2026-10-10 Frank「手机端 这个更新时间放到 banner 右下角」:Updated 挪进 Banner 右下角槽(同职位板 / 雇主板一种形)。
  * 2026-09-30 通道与门槛批 2:二级导航加第三个页签「通道与门槛」(/streams)。
  * 2026-10-03 资讯页签四分:二级导航改四个短名页签 —— 最新公告 | 抽选 | 通道 | 申请步骤(/steps)。
  *
@@ -25,6 +26,7 @@ import { BANNER_IMGS, Banner } from '@/components/banner'
 import { IconNews } from '@/components/icons'
 import { Shell } from '@/components/shell'
 import { SectionTabs } from '@/components/tabs'
+import { Updated } from '@/components/time'
 import {
   BANNER_MODULE, SHELL_TOP_LIST, TABS_TONE, TEXT_NONE, URL_NEWS, URL_STEPS, URL_STREAMS, URL_TIMELINE,
 } from './constants'
@@ -56,7 +58,8 @@ export function News({ items, hero, cmtCounts, updatedAt }: NewsIn) {
         icon={<IconNews />}
         title={f.t('news.title')}
         sub={f.t('news.bnSub')}
-        images={BANNER_IMGS.news} />
+        images={BANNER_IMGS.news}
+        right={<Updated iso={updatedAt} t={f.t} />} />
       <SectionTabs tone={TABS_TONE}
         tabs={[
           { href: URL_NEWS, label: f.t('tl.tabNews'), active: true },
@@ -68,8 +71,7 @@ export function News({ items, hero, cmtCounts, updatedAt }: NewsIn) {
         regions={presentRegionsOf({ items })}
         region={f.region}
         onAll={f.onAll}
-        pickOf={f.pickOf}
-        updatedAt={updatedAt} />
+        pickOf={f.pickOf} />
       {f.region === TEXT_NONE && <FeaturedGrid t={f.t} lang={f.lang} slides={hero} />}
       {shown.length === 0 && <div className={css.empty}>{f.t('news.empty')}</div>}
       {groups}

@@ -78,6 +78,7 @@ export interface Config {
     'pnp-ops-stats': PnpOpsStat;
     pathways: Pathway;
     'qc-noc-streams': QcNocStream;
+    'draw-rank': DrawRank;
     'cip-programs': CipProgram;
     dli: Dli;
     'ee-categories': EeCategory;
@@ -130,6 +131,7 @@ export interface Config {
     'pnp-ops-stats': PnpOpsStatsSelect<false> | PnpOpsStatsSelect<true>;
     pathways: PathwaysSelect<false> | PathwaysSelect<true>;
     'qc-noc-streams': QcNocStreamsSelect<false> | QcNocStreamsSelect<true>;
+    'draw-rank': DrawRankSelect<false> | DrawRankSelect<true>;
     'cip-programs': CipProgramsSelect<false> | CipProgramsSelect<true>;
     dli: DliSelect<false> | DliSelect<true>;
     'ee-categories': EeCategoriesSelect<false> | EeCategoriesSelect<true>;
@@ -1290,8 +1292,6 @@ export interface Pathway {
     | number
     | boolean
     | null;
-  updatedAt: string;
-  createdAt: string;
   /**
    * 申请门槛 [{factor, text{zh,en,ko}, quote, url}](补全通道:门槛表没有行的通道人工核定、原句对 crawl 缓存自校,2026-10-12);DDL docs/sql/pathways-gate-20261012.sql
    */
@@ -1304,6 +1304,20 @@ export interface Pathway {
     | number
     | boolean
     | null;
+  /**
+   * 本省官方分类 {key, en, zh, ko}(资讯两页按它出组头;官网原句自校在 etl,2026-10-12);DDL docs/sql/pathways-category-20261012.sql
+   */
+  category?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1331,6 +1345,119 @@ export interface QcNocStream {
     | number
     | boolean
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "draw-rank".
+ */
+export interface DrawRank {
+  id: number;
+  /**
+   * 卡片稳定键(通道键 / 省码:流名族 / ee-类别键 / 省码)
+   */
+  key?: string | null;
+  /**
+   * quota 配额卡 / cadence 抽选节奏卡
+   */
+  kind?: string | null;
+  /**
+   * 名次(两种卡各排各的,1 起)
+   */
+  rank?: number | null;
+  /**
+   * 综合分(0~1)
+   */
+  score?: number | null;
+  /**
+   * 省码(联邦 = FED)
+   */
+  province?: string | null;
+  /**
+   * 联邦 EE 类别键(前端查 ee.* 词条出中 / 韩名);其余空串
+   */
+  label?: string | null;
+  /**
+   * 英文名(配额卡空串,前端按省码出省名)
+   */
+  nameEn?: string | null;
+  /**
+   * 中文名(空串 = 没有;合卡看 covers)
+   */
+  nameZh?: string | null;
+  /**
+   * 韩文名(同上)
+   */
+  nameKo?: string | null;
+  /**
+   * 一次抽选覆盖的几条通道 [{en, zh, ko}](只有合卡才有)
+   */
+  covers?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 这张卡统计的抽选流名(点卡片按它筛事件流)
+   */
+  streams?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 最近一期的分制
+   */
+  scale?: string | null;
+  /**
+   * 最近一期抽选日期(到日;NS 只到月)
+   */
+  lastDate?: string | null;
+  /**
+   * 平均间隔天数(NULL = 算不出)
+   */
+  avgGapDays?: number | null;
+  /**
+   * ok 正常 / late 比平常晚 / idle 久未抽选
+   */
+  status?: string | null;
+  /**
+   * 今年抽选次数
+   */
+  drawsYtd?: number | null;
+  /**
+   * 今年邀请人数(NULL = 没公布)
+   */
+  invitationsYtd?: number | null;
+  /**
+   * 人数口径 invitation / selection / application
+   */
+  inviteUnit?: string | null;
+  /**
+   * 今年已发提名(NULL = 没有 / 本站未收录)
+   */
+  nominationsYtd?: number | null;
+  /**
+   * 配额卡:2026 配额 / 联邦永居目标(NULL = 本站未收录)
+   */
+  allocation?: number | null;
+  /**
+   * quota 省配额 / prTarget 联邦永居目标
+   */
+  allocationKind?: string | null;
+  /**
+   * 统计日(汇装当天)
+   */
+  asOf?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2636,13 +2763,13 @@ export interface SavedSearch {
     | boolean
     | null;
   /**
-   * 存时的界面语言(zh/en/ko),发信用
-   */
-  lang?: string | null;
-  /**
    * 提醒频率:off / daily / weekly(2026-11-08;DDL docs/sql/alerts-freq-20261108.sql)
    */
   freq?: string | null;
+  /**
+   * 存时的界面语言(zh/en/ko),发信用
+   */
+  lang?: string | null;
   /**
    * 上次发信游标(alerts run 回写,防重复通知)
    */
@@ -3011,6 +3138,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'qc-noc-streams';
         value: number | QcNocStream;
+      } | null)
+    | ({
+        relationTo: 'draw-rank';
+        value: number | DrawRank;
       } | null)
     | ({
         relationTo: 'cip-programs';
@@ -3534,6 +3665,8 @@ export interface PathwaysSelect<T extends boolean = true> {
   steps?: T;
   timeline?: T;
   fits?: T;
+  gate?: T;
+  category?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3545,6 +3678,36 @@ export interface QcNocStreamsSelect<T extends boolean = true> {
   noc?: T;
   name?: T;
   channels?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "draw-rank_select".
+ */
+export interface DrawRankSelect<T extends boolean = true> {
+  key?: T;
+  kind?: T;
+  rank?: T;
+  score?: T;
+  province?: T;
+  label?: T;
+  nameEn?: T;
+  nameZh?: T;
+  nameKo?: T;
+  covers?: T;
+  streams?: T;
+  scale?: T;
+  lastDate?: T;
+  avgGapDays?: T;
+  status?: T;
+  drawsYtd?: T;
+  invitationsYtd?: T;
+  inviteUnit?: T;
+  nominationsYtd?: T;
+  allocation?: T;
+  allocationKind?: T;
+  asOf?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3653,7 +3816,6 @@ export interface NocDescriptionsSelect<T extends boolean = true> {
  */
 export interface NocOpeningsSelect<T extends boolean = true> {
   noc?: T;
-  gate?: T;
   open?: T;
   eligible?: T;
   medianSalary?: T;
@@ -4097,8 +4259,8 @@ export interface SavedSearchesSelect<T extends boolean = true> {
   user?: T;
   name?: T;
   filters?: T;
-  lang?: T;
   freq?: T;
+  lang?: T;
   lastNotifiedAt?: T;
   updatedAt?: T;
   createdAt?: T;

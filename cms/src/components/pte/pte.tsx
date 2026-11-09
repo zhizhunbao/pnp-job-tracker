@@ -15,11 +15,12 @@
 import { useMemo } from 'react'
 import { Button } from '@/components/button'
 import { useLang } from '@/components/i18n'
+import { moreCountOf } from '@/components/pager'
 import { Shell } from '@/components/shell'
 import { SectionTabs } from '@/components/tabs'
 import { Updated } from '@/components/time'
 import {
-  KIND_SECONDARY, SHELL_TOP, URL_PTE_MOCK, URL_PTE_RECALL, URL_PTE_SCORING, URL_PTE_TIPS, URL_PTE_WORDS,
+  KIND_SECONDARY, PAGE_STEP, SHELL_TOP, URL_PTE_MOCK, URL_PTE_RECALL, URL_PTE_SCORING, URL_PTE_TIPS, URL_PTE_WORDS,
 } from './constants'
 import { cellRowsOf, listHrefOf } from './functions'
 import { usePteBoard, usePteDict } from './hooks'
@@ -69,7 +70,9 @@ export function Pte({ types, type, rows, loggedIn, updatedAt, tiers }: PteIn) {
           <PteCards t={t} rows={cells} />
           {b.rest > 0 && (
             <div className={css.moreRow}>
-              <Button kind={KIND_SECONDARY} onClick={b.onMore}>{t('pte.more', { n: b.rest })}</Button>
+              <Button kind={KIND_SECONDARY} onClick={b.onMore}>
+                {t('pte.more', { n: moreCountOf({ left: b.rest, step: PAGE_STEP }), left: b.rest })}
+              </Button>
             </div>
           )}
         </div>

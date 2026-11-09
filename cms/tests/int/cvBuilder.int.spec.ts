@@ -150,6 +150,17 @@ describe('导入职责排序', () => {
     expect(hits[0]?.hit).toBe('data engineer')
     expect(hits[0]?.duties).toEqual(['Do A', 'Do B'])
   })
+  it('⑦ 整句哪儿都没有时按词:排在整句命中之后,命中名报含词最多的示例名', () => {
+    const hits = nocDutyHitsOf({
+      q: 'Big data architect',
+      rows: [
+        row('21211', 'Data scientists', ['big data analyst', 'data architect']),
+        row('21223', 'Database analysts and data administrators', ['big data architect']),
+      ],
+    })
+    expect(hits.map((h) => h.noc)).toEqual(['21223', '21211'])
+    expect(hits[1]?.hit).toBe('big data analyst')
+  })
   it('⑦ LIKE 元字符转义', () => {
     expect('50%_off\\'.replace(LIKE_SPECIAL_RE, LIKE_ESCAPE)).toBe('50\\%\\_off\\\\')
   })

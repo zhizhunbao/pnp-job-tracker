@@ -36,7 +36,7 @@ import { makeT } from '@/lib/i18n'
 import { fmtLocal, fmtLocalSec, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
-  ACC_UNKNOWN, APPLY_MAIL_RE, AT, AUTH_LOGIN,
+  ACC_UNKNOWN, ACT_EDGE_SHADOW, ACT_LINE_SHADOW, APPLY_MAIL_RE, AT, AUTH_LOGIN, DRAG_SKIP_SEL, POINTER_MOUSE,
   AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BROAD_ORDER_LAST, CANADA_MAIL_SUFFIX, CARET_CLOSED, CARET_OPEN,
   CELL_TONE_CLS, CHIP, CHIP_TONE_CLS, COL, COLS_COOKIE, COLS_MAX_AGE_S,
   COLS_SHOWN_MAX, COLUMNS, COLW_COOKIE, COLW_MAX_AGE_S, COL_FLOOR,
@@ -71,6 +71,7 @@ import {
   ALERT_BOARD_PATH, ALERT_QUERY_HEAD, ALERT_CREATE_KEY, ALERT_CREATED_KEY, ALERT_NAME_MAX, ALERT_NAME_SEP, ALERT_UPDATE_KEY, ALERT_UPDATED_KEY, QP_ALERT,
 } from './constants'
 import type {
+  DragPointIn, ScreenPoint,
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, BelowMedIn, SsrTransIn,
   AuthFromUrlOut, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, BoardPnpFacts, CardTitlesIn,
   CardsClsIn, HomeGate, LoadTipIn, PnpChipIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone,
@@ -402,6 +403,9 @@ export function frozenKeysOf(shown: ColSpec[]): JobColKey[] {
  * @returns 贴边样式;不该固定时给 null。
  */
 export function frozenStyleOf(x: FrozenStyleIn): React.CSSProperties | null {
+  if (x.overflow && x.k === COL.actions) {
+    return actStickyOf(x)
+  }
   const left = x.stickyLeft[x.k]
   if (x.overflow === false || x.frozenSet.has(x.k) === false || left == null) {
     return null
@@ -418,6 +422,79 @@ export function frozenStyleOf(x: FrozenStyleIn): React.CSSProperties | null {
     borderRight: CSS_BORDER_NONE,
     boxShadow: shadow,
   }
+}
+
+/**
+ * 横滑时操作列贴右边(2026-11-05 Frank「这个 操作列固定,如果其他列过多或过宽应该是嵌入到 操作列里面去」):
+ * sticky 右 0 + 不透明底色,滚动内容从它下面滑过;左侧竖线与投影走阴影(sticky 下边框 Chromium 不画)。
+ *
+ * @param x 列键、横滚态与两个色(只读底色与竖线色)。
+ * @returns 贴右样式。
+ */
+function actStickyOf(x: FrozenStyleIn): React.CSSProperties {
+  return {
+    position: CSS_STICKY,
+    right: 0,
+    zIndex: FROZEN_Z,
+    background: x.bg,
+    boxShadow: ACT_LINE_SHADOW + x.line + ACT_EDGE_SHADOW,
+  }
+}
+
+/**
+ * 按下这一点能不能起拖表横滑:鼠标左键、表真能横滑、不在链接 / 钮 / 输入框上、不在文字上
+ * (2026-11-05 Frank「鼠标放到 标准位置非 文字部分可以左右滑动」)。
+ *
+ * @param x 指针事件与表格外框。
+ * @returns 能起拖给 true。
+ */
+export function dragStartOk(x: DragPointIn): boolean {
+  if (x.e.pointerType !== POINTER_MOUSE || x.e.button !== 0) {
+    return false
+  }
+  return dragSpotOk(x)
+}
+
+/**
+ * 指针这一点是不是「可拖处」:表能横滑、不在可点元素上、不在文字上(换手形与起拖同一判据)。
+ *
+ * @param x 指针事件与表格外框。
+ * @returns 是可拖处给 true。
+ */
+export function dragSpotOk(x: DragPointIn): boolean {
+  if (x.wrap.scrollWidth <= x.wrap.clientWidth + 1) {
+    return false
+  }
+  const el = x.e.target
+  if (el instanceof Element && el.closest(DRAG_SKIP_SEL) != null) {
+    return false
+  }
+  return overTextOf({ x: x.e.clientX, y: x.e.clientY }) === false
+}
+
+/**
+ * 屏幕上这一点是不是压在文字上:取该点的文本节点,看它各行的框是否罩住这一点。
+ * 浏览器不支持按点取字(caretPositionFromPoint)时一律当文字处 —— 不起拖,宁可少拖不误吞选字。
+ *
+ * @param p 屏幕坐标。
+ * @returns 压在文字上给 true。
+ */
+function overTextOf(p: ScreenPoint): boolean {
+  if (typeof document.caretPositionFromPoint !== 'function') {
+    return true
+  }
+  const pos = document.caretPositionFromPoint(p.x, p.y)
+  if (pos == null || pos.offsetNode.nodeType !== Node.TEXT_NODE) {
+    return false
+  }
+  const range = document.createRange()
+  range.selectNodeContents(pos.offsetNode)
+  for (const r of Array.from(range.getClientRects())) {
+    if (p.x >= r.left && p.x <= r.right && p.y >= r.top && p.y <= r.bottom) {
+      return true
+    }
+  }
+  return false
 }
 
 /**
@@ -804,6 +881,7 @@ function jobCellOf(x: CellIn): CellView | null {
  * 颜色跟 salaryText 走,不跟 salary(原文)走:护栏判定源头填错的行(如「$295,000.00 daily」)
  * 原文有值但我们不敢显示 —— 标成绿色等于说「这条有可信薪资」,是误导。2026-08-05 拍板。
  * 2026-10-12 Frank「低于中位 不要显示 绿色」:帖面薪资低于本省本职业中位的不上绿(belowMedOf),高于、持平或没有中位照旧绿。
+ * 2026-11-05 Frank「如果都是小于中位数 应该都改成和 最右面一样的颜色」:折算年薪低于中位时用 vs 中位列的琥珀(vsDown)。
  *
  * @param x 列键、库行、上下文。
  * @returns 展示行;不是本族给 null。
@@ -820,7 +898,11 @@ function salaryCellOf(x: CellIn): CellView | null {
     return blankView({ text: x.j.salaryText, tone, title: x.j.salary })
   }
   if (x.k === COL.salaryYr) {
-    return kMoneyOf({ v: x.j.salaryAnnual, tone: TONE.money })
+    let tone: CellTone = TONE.money
+    if (belowMedOf({ annual: x.j.salaryAnnual, med: x.j.wageMedAnnual })) {
+      tone = TONE.vsDown
+    }
+    return kMoneyOf({ v: x.j.salaryAnnual, tone })
   }
   if (x.k === COL.wageMedYr) {
     return kMoneyOf({ v: x.j.wageMedAnnual, tone: TONE.slate })

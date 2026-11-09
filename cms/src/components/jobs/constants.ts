@@ -1141,6 +1141,11 @@ export const OPTS_ORIGIN: string[] = ['jobbank', 'jobillico', 'jobboom', 'career
 export const P_PAGE = 'page'
 
 /**
+ * 「显示更多」一次接几行(与 `lib/jobs` 的 JOBS_PAGE_SIZE 同数;钮面写「显示更多 N 条」用,2026-11-05)。
+ */
+export const MORE_ROWS = 50
+
+/**
  * 排序列参数名。
  */
 export const P_SORT = 'sort'
@@ -1930,6 +1935,76 @@ export const EV_MOUSE_DOWN = 'mousedown'
  * 窗口尺寸变化事件名(固定列偏移要重量)。
  */
 export const EV_RESIZE = 'resize'
+
+/**
+ * 拖表横滑的按下事件名(2026-11-05 Frank「鼠标放到 标准位置非 文字部分可以左右滑动」)。
+ */
+export const EV_POINTER_DOWN = 'pointerdown'
+
+/**
+ * 拖表横滑的移动事件名(没按下时也走它,用来换「可拖」手形)。
+ */
+export const EV_POINTER_MOVE = 'pointermove'
+
+/**
+ * 拖表横滑的松开事件名。
+ */
+export const EV_POINTER_UP = 'pointerup'
+
+/**
+ * 拖表横滑被系统打断的事件名(与松开同处理)。
+ */
+export const EV_POINTER_CANCEL = 'pointercancel'
+
+/**
+ * 拖过之后吞掉那一下点击的事件名(不然松手会开格子弹框)。
+ */
+export const EV_CLICK = 'click'
+
+/**
+ * 只有鼠标拖表横滑(触屏本来就能滑,不接管)。
+ */
+export const POINTER_MOUSE = 'mouse'
+
+/**
+ * 按下后挪过这么多像素才算拖(少于它当点击)。
+ */
+export const DRAG_MIN_PX = 4
+
+/**
+ * 按在这些元素上不起拖(链接、钮、输入框照常点)。
+ */
+export const DRAG_SKIP_SEL = 'a, button, input, select, textarea, label, [role="button"]'
+
+/**
+ * 表格能横滑、指针在非文字处时的手形。
+ */
+export const CURSOR_GRAB = 'grab'
+
+/**
+ * 拖动中的手形。
+ */
+export const CURSOR_GRABBING = 'grabbing'
+
+/**
+ * 拖动中不许选字(拖过文字不出选区)。
+ */
+export const SELECT_NONE = 'none'
+
+/**
+ * 内联样式清空(还给样式表)。
+ */
+export const STYLE_RESET = ''
+
+/**
+ * 横滑时操作列贴右边:左侧竖线(inset 阴影画,sticky 下边框 Chromium 不画)。
+ */
+export const ACT_LINE_SHADOW = 'inset 1px 0 0 '
+
+/**
+ * 横滑时操作列左边那道投影(滚动内容从它下面滑过;2026-11-05 Frank「操作列固定,其他列过多或过宽应该是嵌入到 操作列里面去」)。
+ */
+export const ACT_EDGE_SHADOW = ', -3px 0 5px -3px rgba(0, 0, 0, .18)'
 
 /**
  * 回车键名(搜索框回车 = 当场把关键词写回地址栏,不等停手)。
