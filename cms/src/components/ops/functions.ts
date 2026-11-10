@@ -7,7 +7,7 @@
 import {
   SECS, SEC_ALIAS, SEC_APPLY, SEC_BUDGET, SEC_CHANNELS, SEC_COST, SEC_DEFAULT, SEC_EVALS, SEC_FRESH, SEC_INCIDENTS,
   SEC_KEYS, SEC_NAME, SEC_REPORT,
-  SEC_ROUTES, SEC_RULES, SEC_SCHEDULE, SEC_SITES, SEC_USAGE,
+  SEC_ROUTES, SEC_RULES, SEC_SAVED, SEC_SCHEDULE, SEC_SITES, SEC_USAGE,
 } from '@/lib/ops'
 import { cssOf } from '@/components/css'
 import { toast } from '@/components/toast'
@@ -23,8 +23,8 @@ import {
 import css from './ops.module.css'
 import type {
   AlertActIn,
-  DelAskFn, DelOkIn, DelOpenIn, OpsCellMakeIn, OpsColsIn, OpsNavIcons, OpsNavItem, OpsRow, OpsTableCol, PickText,
-  RowCardParts,
+  DelAskFn, DelOkIn, DelOpenIn, OpsCellMakeIn, OpsColsIn, OpsNavIcons, OpsNavItem, OpsRow, OpsSoloIn, OpsTableCol,
+  PickText, RowCardParts,
 } from './types'
 
 /**
@@ -201,7 +201,18 @@ export function opsNavItemsOf(icons: OpsNavIcons): OpsNavItem[] {
       href: hrefOf(SEC_KEYS),
       subs: [],
     },
+    soloOf({ sec: SEC_SAVED, icon: icons.saved }),
   ]
+}
+
+/**
+ * 一个不带子项的顶层项。
+ *
+ * @param x 页面 id 与图标。
+ * @returns 导航项。
+ */
+function soloOf(x: OpsSoloIn): OpsNavItem {
+  return { key: x.sec, label: secNameOf(x.sec), icon: x.icon, count: NAV_COUNT_NONE, href: hrefOf(x.sec), subs: [] }
 }
 
 /**

@@ -86,6 +86,11 @@ export const SEC_EVALS = 'evals'
 export const SEC_KEYS = 'keys'
 
 /**
+ * 用户收藏页(2026-11-10 Frank「应该在运维模块能看到全部」)。
+ */
+export const SEC_SAVED = 'saved'
+
+/**
  * 进 /ops 默认看哪一页。
  */
 export const SEC_DEFAULT = SEC_REPORT
@@ -95,7 +100,7 @@ export const SEC_DEFAULT = SEC_REPORT
  */
 export const SECS: readonly string[] = [
   SEC_REPORT, SEC_INCIDENTS, SEC_RULES, SEC_SCHEDULE, SEC_APPLY, SEC_SITES, SEC_ALIAS, SEC_FRESH, SEC_CHANNELS, SEC_ROUTES, SEC_EVALS,
-  SEC_USAGE, SEC_COST, SEC_BUDGET, SEC_KEYS,
+  SEC_USAGE, SEC_COST, SEC_BUDGET, SEC_KEYS, SEC_SAVED,
 ]
 
 /**
@@ -176,6 +181,11 @@ export const SEC_NAME: Record<string, string> = {
    * Workspace 和 Key。
    */
   keys: 'Workspace 和 Key',
+
+  /**
+   * 用户收藏。
+   */
+  saved: '用户收藏',
 }
 
 // =========================================================================

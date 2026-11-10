@@ -14,11 +14,12 @@ import {
   ALIAS_COLS, ALIAS_DONE_COLS, APPLY_COLS, APPLY_DONE_COLS, APPLY_QUEUED, BUDGET_COLS, BUDGET_NOTE, CARD, CELL, CHANNEL_NAME, COST_COLS, DASH,
   DEL_ALIAS, DEL_APPLY, DEL_NAME_SEP, DEL_SITE, FEATURE_NAME, ISO_NONE, LOST_S,
   REPORT, REPORT_COLS, ROWS_MAX, RUN_COLS, SEC_ALIAS, SEC_APPLY, SEC_BUDGET, SEC_CHANNELS, SEC_COST, SEC_EVALS, SEC_FRESH, SEC_INCIDENTS,
-  SEC_KEYS, SEC_ROUTES, SEC_RULES, SEC_SCHEDULE, SEC_SITES, SEC_USAGE, SITE_COLS,
+  SEC_KEYS, SEC_ROUTES, SEC_RULES, SEC_SAVED, SEC_SCHEDULE, SEC_SITES, SEC_USAGE, SITE_COLS,
   SITE_DONE_COLS, STAGE_QUEUED, STUCK_S, TAG, TEXT, TEXT_NONE,   UNIT_COLS, UNIT_LLM, UNIT_RUN, USAGE_COLS,
   USD_DIGITS_CARD, USD_DIGITS_TABLE, VAR, WORKER,
 } from './constants'
 import { evalsBoard, keysBoard, routesBoard } from './route'
+import { savedBoard } from './saved'
 import { channelsBoard, freshBoard, incidentsBoard, rulesBoard } from './watch'
 import type {
   AliasDbRow, AliasDoneDbRow, ApplyDbRow, ApplyDoneDbRow, BudgetDbRow, BudgetNoteTable, CostDbRow, CostStatsDbRow,
@@ -86,6 +87,9 @@ export async function loadOpsBoard(x: LoadBoardIn): OpsBoardOut {
   }
   if (x.sec === SEC_KEYS) {
     return keysBoard(input)
+  }
+  if (x.sec === SEC_SAVED) {
+    return savedBoard(input)
   }
   return reportBoard(input)
 }

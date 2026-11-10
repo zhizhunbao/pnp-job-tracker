@@ -6,7 +6,7 @@
  * @time 2026-11-08 18:00:00
  */
 import {
-  IconBell, IconCard, IconChart, IconClipboard, IconKey, IconMore, IconRefresh, IconTable,
+  IconBell, IconCard, IconChart, IconClipboard, IconKey, IconMore, IconRefresh, IconStar, IconTable,
 } from '@/components/icons'
 import { Nav } from '@/components/nav'
 import { NAV_ARIA } from './constants'
@@ -29,6 +29,7 @@ export function OpsNav({ value, onPick }: OpsNavIn) {
     fresh: <IconClipboard />,
     channel: <IconMore />,
     access: <IconKey />,
+    saved: <IconStar />,
   })
   return <Nav items={items} value={value} onPick={onPick} ariaLabel={NAV_ARIA} />
 }

@@ -359,6 +359,26 @@ export type OpsNavIcons = {
    * 访问。
    */
   access: React.ReactNode
+
+  /**
+   * 用户收藏。
+   */
+  saved: React.ReactNode
+}
+
+/**
+ * 造一个不带子项的顶层项要的东西。
+ */
+export type OpsSoloIn = {
+  /**
+   * 页面 id。
+   */
+  sec: string
+
+  /**
+   * 图标。
+   */
+  icon: React.ReactNode
 }
 
 /**

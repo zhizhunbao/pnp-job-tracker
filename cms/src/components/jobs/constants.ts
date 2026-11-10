@@ -692,7 +692,7 @@ export const URL_API_SAVED_JOBS = '/api/saved-jobs'
 /**
  * 收藏列表的查询串(只要 200 条、不展开关联)。
  */
-export const URL_API_SAVED_JOBS_LIST = '/api/saved-jobs?limit=200&depth=0'
+export const URL_API_SAVED_JOBS_LIST = '/api/saved-jobs?limit=200&depth=0&mine=1'
 
 /**
  * 已保存筛选(E5-03)。

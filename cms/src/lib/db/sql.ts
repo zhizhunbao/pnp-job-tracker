@@ -3961,6 +3961,21 @@ export const OPS_BUDGETS = `SELECT name, limit_usd::float8 AS limit_usd, used_us
        GREATEST(0, ceil(extract(epoch FROM expires_at - now()) / 86400))::int AS days_left
      FROM ai_budgets ORDER BY (active AND now() < expires_at) DESC, expires_at DESC`
 
+/**
+ * 全站用户收藏,最近收藏的在前(2026-11-10 Frank「应该在运维模块能看到全部」)。$1=条数上限。
+ */
+export const OPS_SAVED = `SELECT s.id::int AS id, s.job_id::int AS job_id, s.title, s.company, s.status, u.email,
+       to_char(s.created_at AT TIME ZONE 'America/Toronto', 'YYYY-MM-DD HH24:MI:SS') AS saved_text
+     FROM saved_jobs s LEFT JOIN users u ON u.id = s.user_id
+     ORDER BY s.created_at DESC LIMIT $1`
+
+/**
+ * 用户收藏四格:总条数、收藏过的用户数、被收藏的职位数、今天新增(按多伦多的今天)。
+ */
+export const OPS_SAVED_STATS = `SELECT count(*)::int AS total, count(DISTINCT user_id)::int AS users, count(DISTINCT job_id)::int AS jobs,
+       count(*) FILTER (WHERE created_at >= date_trunc('day', now() AT TIME ZONE 'America/Toronto') AT TIME ZONE 'America/Toronto')::int AS today
+     FROM saved_jobs`
+
 // =========================================================================
 // 41. 运维:事件与报警、探活、通道实测(2026-11-08 Frank「一气呵成弄完运维」)
 // =========================================================================

@@ -10,13 +10,20 @@ const ownOrAdmin: Access = ({ req }) => {
   if (isAdmin(req)) return true
   return { user: { equals: req.user.id } }
 }
+// 2026-11-10 Frank「应该在运维模块能看到全部」:站上拉收藏清单带 mine=1,管理员也只拿自己的
+// (原先管理员拿到全站的,别人收藏过的岗在他这边显示已收藏,再点一下删的是别人的记录);全部收藏看运维页与后台。
+const readOwnOrAdmin: Access = (args) => {
+  const { req } = args
+  if (req.user && req.query.mine === '1') return { user: { equals: req.user.id } }
+  return ownOrAdmin(args)
+}
 
 export const SavedJobs: CollectionConfig = {
   slug: 'saved-jobs',
   admin: { useAsTitle: 'title', defaultColumns: ['title', 'company', 'status', 'user'], group: 'Users' },
   access: {
     create: ({ req }) => !!req.user,   // 登录即可(免费留存钩子)
-    read: ownOrAdmin,
+    read: readOwnOrAdmin,
     update: ownOrAdmin,
     delete: ownOrAdmin,
   },
@@ -26,6 +33,10 @@ export const SavedJobs: CollectionConfig = {
         data.user = req.user.id  // 只能存给自己
         const mine = await req.payload.count({ collection: 'saved-jobs', where: { user: { equals: req.user.id } } })
         if (mine.totalDocs >= SAVED_JOBS_CAP) throw new Error(`saved-jobs limit (${SAVED_JOBS_CAP}) reached`)
+      }
+      // 2026-11-10 线上走查:管理员在站上点收藏不带 user,必填校验回 400;没指定收藏人就记给自己(后台代人建的照旧)。
+      if (operation === 'create' && req.user && isAdmin(req) && data.user == null) {
+        data.user = req.user.id
       }
       return data
     }],
