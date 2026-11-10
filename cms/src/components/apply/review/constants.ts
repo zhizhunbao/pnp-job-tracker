@@ -367,6 +367,11 @@ export const TAG_BAD = 'bad'
 export const TAG_WARN = 'warn'
 
 /**
+ * 胶囊:提示(底行的剩余额度)。
+ */
+export const TAG_INFO = 'info'
+
+/**
  * 按钮:次要。
  */
 export const BTN_SECONDARY = 'secondary'

@@ -77,8 +77,11 @@
 .mailName { margin-bottom: 6px; color: var(--text2); }
 .mailBody { white-space: pre-line; padding: 10px 12px; border-radius: 8px; background: var(--bg); color: var(--text); line-height: 1.5; }
 .nameInput { width: 100%; max-width: 260px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; }
+/* 姓名框焦点(2026-11-10 Frank「这个大黑框去掉吧」):浏览器默认黑环换成主色细边加浅蓝外圈,焦点仍看得见。 */
+.nameInput:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--hover-bg); }
 .footRow { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hairline); }
 .saved { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 12.5px; color: var(--text2); }
+.footActs { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; margin-left: auto; }
 .failAct { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 13px; color: var(--text2); }
 
 /* 右侧栏。 */
