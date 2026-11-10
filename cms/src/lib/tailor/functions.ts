@@ -7,7 +7,7 @@
  */
 import { count, firstOf, queryRows, SQL, text } from '../db'
 import {
-  B64, BASE_CHARS_MAX, COVER_MIN_LEN, COVER_TOKENS_MAX, AUDIT_TOKENS_MAX, E_LLM, E_NONE, E_RESUME_BAD, E_SENT, FACT_CHARS_MAX,
+  B64, BASE_CHARS_MAX, COVER_MIN_LEN, COVER_TOKENS_MAX, AUDIT_TOKENS_MAX, E_LLM, E_NONE, E_RESUME_BAD, E_SENT, EXTRA_CHARS_MAX, KEY_EXTRA,
   FACT_SEP, FEATURE_AUDIT, FEATURE_COVER, FEATURE_PLAN, FEATURE_RESUME, FIELD_RETRY_COVER, FIELD_RETRY_RESUME, JD_CHARS_MAX,
   KEY_BASIS, KEY_COVER, KEY_ID, KEY_ITEMS, KEY_LABEL, KEY_QUOTE, KEY_REQS, KEY_RESUME, KEY_UNSUPPORTED, LABEL_MAX, LINE_SEP,
   MSG_SEP, NUM_SEP, NUMBER_RE, NUMBER_TAIL_RE, ONE_SPACE, PLAN_TOKENS_MAX, REQ_MAX, RESUME_TOKENS_MAX, RETRY_MAX, SCORE_COVER,
@@ -16,7 +16,6 @@ import {
   YEAR_RE,
   BAD_PDF, DURATION_RE,
   CONTACT_FIELDS, CRED_FIELDS, EDU_FIELDS, PLAN_FIELDS, WORK_FIELDS,
-  KEY_ASK,
   AUDIT_ITEM_FIELDS, AUDIT_TOP_FIELDS, PLAN_TOP_FIELDS, SCHEMA_ARRAY, SCHEMA_BOOLEAN, SCHEMA_INTEGER, SCHEMA_OBJECT, SCHEMA_STRING,
 } from './constants'
 import {
@@ -32,6 +31,7 @@ import type {
   ResumeBadIn,
   DurationDropFn,
   KeepFactsIn,
+  ExtraDbRow, ExtraIn, ExtraOut, SaveExtraIn,
 } from './types'
 
 // =========================================================================
@@ -50,26 +50,20 @@ export function toStepBody(raw: StepBodyJson): MaybeStepBody {
   if (Number.isInteger(jobId) === false || jobId <= 0 || raw.step == null || steps.includes(raw.step) === false) {
     return null
   }
-  return { jobId, step: raw.step, facts: factsOf(raw), both: raw.both === true, regen: raw.regen === true, fill: raw.fill === true }
+  return { jobId, step: raw.step, extra: extraOf(raw), both: raw.both === true, regen: raw.regen === true, fill: raw.fill === true }
 }
 
 /**
- * 用户补充收窄:只收字符串,截断,空的不要。
+ * 补充经历收窄:只收字符串,去首尾空白,截到上限。
  *
  * @param raw 请求体。
- * @returns 用户补充。
+ * @returns 补充经历全文;没带给空串。
  */
-function factsOf(raw: StepBodyJson): FactMap {
-  const out: FactMap = {}
-  if (raw.facts == null) {
-    return out
+function extraOf(raw: StepBodyJson): string {
+  if (typeof raw.extra !== 'string') {
+    return TEXT_NONE
   }
-  for (const [k, v] of Object.entries(raw.facts)) {
-    if (typeof v === 'string' && v.trim() !== TEXT_NONE) {
-      out[k] = v.trim().slice(0, FACT_CHARS_MAX)
-    }
-  }
-  return out
+  return raw.extra.trim().slice(0, EXTRA_CHARS_MAX)
 }
 
 /**
@@ -100,7 +94,7 @@ export function reqsOf(x: ReqsOfIn): TailorReqs {
     const label = strOf(cellOf({ obj: item, key: KEY_LABEL })).slice(0, LABEL_MAX)
     if (quote !== TEXT_NONE && label !== TEXT_NONE && jd.includes(quote) && out.length < REQ_MAX) {
       out.push({
-        id: out.length + 1, label, jd: quote, ask: strOf(cellOf({ obj: item, key: KEY_ASK })), basis: false, resume: TEXT_NONE, cover: TEXT_NONE,
+        id: out.length + 1, label, jd: quote, basis: false, resume: TEXT_NONE, cover: TEXT_NONE,
       })
     }
   }
@@ -169,7 +163,7 @@ export function auditOf(x: AuditOfIn): TailorReview {
     }
     const basis = cellOf({ obj: hit, key: KEY_BASIS }) === true
     reqs.push({
-      id: r.id, label: r.label, jd: r.jd, ask: r.ask, basis,
+      id: r.id, label: r.label, jd: r.jd, basis,
       resume: quotedOf({ quote: strOf(cellOf({ obj: hit, key: KEY_RESUME })), text: resume, basis }),
       cover: quotedOf({ quote: strOf(cellOf({ obj: hit, key: KEY_COVER })), text: cover, basis }),
     })
@@ -395,7 +389,7 @@ function reqLinesOf(reqs: TailorReqs): string {
 }
 
 /**
- * 用户补充逐行(按要求编号带上要求原文)。
+ * 用户补充逐行(按要求编号带上要求原文;补充经历全文殿后)。
  *
  * @param x 要求与用户补充。
  * @returns 文字。
@@ -407,6 +401,10 @@ function factLinesOf(x: UserMsgIn): string {
     if (f != null) {
       out.push(r.jd + FACT_SEP + f)
     }
+  }
+  const extra = x.facts[KEY_EXTRA]
+  if (extra != null) {
+    out.push(extra)
   }
   return out.join(LINE_SEP)
 }
@@ -742,6 +740,40 @@ export async function loadTailorRow(x: TailorKeyIn): TailorRowOut {
 }
 
 /**
+ * 本人补充的经历(跟着基础简历,换职位照用)。
+ *
+ * @param x 连接与用户。
+ * @returns 补充经历全文;没有给空串。
+ */
+export async function loadExtra(x: ExtraIn): ExtraOut {
+  const got = firstOf(await queryRows({ db: x.db, sql: SQL.TAILOR_EXTRA, params: [x.userId], map: toExtra }))
+  if (got == null) {
+    return TEXT_NONE
+  }
+  return got
+}
+
+/**
+ * 存本人补充的经历。
+ *
+ * @param x 连接、用户与全文。
+ * @returns 无。
+ */
+export async function saveExtra(x: SaveExtraIn): TailorWriteOut {
+  await x.db.query(SQL.TAILOR_EXTRA_SAVE, [x.userId, x.extra])
+}
+
+/**
+ * 库行 → 补充经历全文。
+ *
+ * @param r 库行。
+ * @returns 全文。
+ */
+export function toExtra(r: ExtraDbRow): string {
+  return text(r.extra_text)
+}
+
+/**
  * 建行并存要求。
  *
  * @param x 行键、快照、要求与补充。
@@ -757,7 +789,7 @@ async function savePlan(x: SavePlanIn): TailorWriteOut {
  * @param x 行键、草稿、PDF 与结果。
  * @returns 无。
  */
-async function saveResume(x: SaveResumeIn): TailorWriteOut {
+export async function saveResume(x: SaveResumeIn): TailorWriteOut {
   await x.db.query(SQL.TAILOR_RESUME, [x.userId, x.jobId, JSON.stringify(x.cv), x.pdfB64, JSON.stringify(x.review)])
 }
 
@@ -792,5 +824,5 @@ export function toTailorRow(r: TailorDbRow): TailorRow {
   if (r.tailor_facts != null) {
     facts = r.tailor_facts
   }
-  return { id: count(r.id), status: text(r.status), cover: text(r.cover_text), pdfB64: text(r.tailor_pdf_b64), review: r.tailor_review, facts, cvName: text(r.cv_name) }
+  return { id: count(r.id), status: text(r.status), cover: text(r.cover_text), pdfB64: text(r.tailor_pdf_b64), review: r.tailor_review, facts, cvName: text(r.cv_name), cv: r.tailor_cv }
 }

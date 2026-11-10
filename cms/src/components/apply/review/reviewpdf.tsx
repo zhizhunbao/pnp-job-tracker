@@ -7,6 +7,7 @@
  */
 import { cssOf } from '@/components/css'
 import { DATA_CV_ON, SHEET_LEFT_PAD } from './constants'
+import { sheetZoomOf } from './functions'
 import { useReviewPdf } from './hooks'
 import { ReviewHl } from './reviewhl'
 import type { ReviewPdfIn } from './types'
@@ -32,6 +33,7 @@ export function ReviewPdf(props: ReviewPdfIn) {
       <div className={cssOf(css.sheet)}
         // eslint-disable-next-line react/forbid-dom-props -- 尺寸来自 PDF 内容,只能行内写
         style={{
+          zoom: sheetZoomOf({ size, zoomed: props.zoomed }),
           width: size.w,
           height: size.h,
           marginLeft: SHEET_LEFT_PAD - size.left,

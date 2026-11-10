@@ -3309,7 +3309,7 @@ export const APPLY_ROW = `SELECT id, status, cover_text, resume_id, sent_at, tai
 /**
  * 按职位改写:本人这一岗的行(2026-11-09,docs/sql/apply-tailor-20261109.sql)。$1=用户 id,$2=职位 id。
  */
-export const TAILOR_ROW = `SELECT id, status, cover_text, tailor_pdf_b64, tailor_review, tailor_facts, tailor_cv->'contact'->>'name' AS cv_name
+export const TAILOR_ROW = `SELECT id, status, cover_text, tailor_pdf_b64, tailor_review, tailor_facts, tailor_cv, tailor_cv->'contact'->>'name' AS cv_name
      FROM applications WHERE user_id = $1 AND job_id = $2`
 
 /**
@@ -3344,6 +3344,17 @@ export const TAILOR_FACTS = `UPDATE applications SET tailor_facts = $3::jsonb, u
  */
 export const TAILOR_REVIEW = `UPDATE applications SET tailor_review = $3::jsonb, updated_at = now()
      WHERE user_id = $1 AND job_id = $2 AND status IN ('draft', 'queued')`
+
+/**
+ * 按职位改写:本人补充的经历(跟着默认那份基础简历,换职位照用;2026-11-10 任务书第 37 条)。$1=用户。没有基础简历 = 0 行。
+ */
+export const TAILOR_EXTRA = `SELECT extra_text FROM user_resumes WHERE user_id = $1 ORDER BY is_default DESC, uploaded_at DESC LIMIT 1`
+
+/**
+ * 按职位改写:存本人补充的经历到默认那份基础简历的行上。$1=用户,$2=补充全文。
+ */
+export const TAILOR_EXTRA_SAVE = `UPDATE user_resumes SET extra_text = $2
+     WHERE id = (SELECT id FROM user_resumes WHERE user_id = $1 ORDER BY is_default DESC, uploaded_at DESC LIMIT 1)`
 
 /**
  * 存草稿:没有就建一行 draft;已有且还是 draft 就改信与简历;已经在发 / 发过的不动(返回 0 行)。

@@ -1988,6 +1988,17 @@ export async function loadJdSsrById(input: JdByIdIn): JdSsrOut {
  * @returns 脱敏正文;没有空串。
  */
 export async function jobDescription(input: JdIn): JdOut {
+  return jdPlainOf(await jobDescriptionMarked(input))
+}
+
+/**
+ * 同 jobDescription,但留着数据层给的行首节头标记「## 」(2026-11-10 投递三屏框的职位描述要把小标题加粗)。
+ * 只给要画节头的出口用;喂模型、进 JSON-LD 的照旧走 jobDescription。
+ *
+ * @param input 连接与投递 URL。
+ * @returns 脱敏、带节头标记的正文;没有空串。
+ */
+export async function jobDescriptionMarked(input: JdIn): JdOut {
   if (input.applyUrl === '') {
     return JD_NONE
   }
@@ -1999,9 +2010,9 @@ export async function jobDescription(input: JdIn): JdOut {
   }
   const first = rows[0]
   if (first != null && first.description != null && first.description !== '') {
-    return scrubPii(jdPlainOf(String(first.description)))
+    return scrubPii(String(first.description))
   }
-  return scrubPii(jdPlainOf(await lazyFetchJd(input)))
+  return scrubPii(await lazyFetchJd(input))
 }
 
 /**

@@ -96,9 +96,14 @@ export const JD_CHARS_MAX = 8000
 export const BASE_CHARS_MAX = 12000
 
 /**
- * 用户补充的一条经历上限(字符)。
+ * 用户补充的经历全文上限(字符)。
  */
-export const FACT_CHARS_MAX = 500
+export const EXTRA_CHARS_MAX = 4000
+
+/**
+ * 用户补充表里「补充经历全文」那一格的键(2026-11-10 起补充经历是一整段文字、写回基础简历;按要求编号的旧格照读)。
+ */
+export const KEY_EXTRA = 'extra'
 
 /**
  * 一个职位最多拆几条要求。
@@ -383,7 +388,7 @@ export const BAD_PDF = 'pdf'
 /**
  * 拆要求一条的字段。
  */
-export const PLAN_FIELDS = ['label', 'quote', 'ask']
+export const PLAN_FIELDS = ['label', 'quote']
 
 /**
  * 联系方式的字段。
@@ -414,11 +419,6 @@ export const FILL_PREFIX = 'tailor-fill:'
  * 每人每个职位每天补充经历后重写的上限(一次填完所有红叉,不用反复)。
  */
 export const FILL_DAILY = 3
-
-/**
- * 模型回包里骨架的键。
- */
-export const KEY_ASK = 'ask'
 
 /**
  * 结构种类:对象。

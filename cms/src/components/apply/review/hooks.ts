@@ -6,13 +6,16 @@
  * @time 2026-11-09 20:00:00
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { withDescOf } from './cv'
 import {
   BLOCK_NEAREST, NARROW_W, PANE_COVER, SEL_N_HEAD, SEL_N_TAIL,
   STEP_COVER, STEP_PLAN, STEP_RESUME, TEXT_NONE,
 } from './constants'
-import { filledFactsOf, drawPdf, needRunOf, reloadState, runSteps, saveCoverEdit, sendReview } from './functions'
+import {
+  drawPdf, needRunOf, openCountOf, regenRun, reloadState, runSteps, saveCoverEdit, saveResumeEdit, sendReview,
+} from './functions'
 import type {
-  HlRect, Review, ReviewCells, ReviewFlowIn, ReviewPanel, ReviewPdfIn, ReviewPdfPanel, SheetSize, ToggledIn,
+  HlRect, Review, ReviewCells, ReviewCv, ReviewFlowIn, ReviewPanel, ReviewPdfIn, ReviewPdfPanel, SheetSize, ToggledIn,
 } from './types'
 
 /**
@@ -32,7 +35,12 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
   const [active, setActive] = useState(0)
   const [focus, setFocus] = useState(TEXT_NONE)
   const [fillOpen, setFillOpen] = useState(false)
-  const [facts, setFacts] = useState<Record<string, string>>({})
+  const [extra, setExtra] = useState(TEXT_NONE)
+  const [saved, setSaved] = useState(TEXT_NONE)
+  const [same, setSame] = useState(false)
+  const [cv, setCv] = useState<ReviewCv | null>(null)
+  const [cvDraft, setCvDraft] = useState<ReviewCv | null>(null)
+  const [cvOpen, setCvOpen] = useState(false)
   const [editing, setEditing] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
   const [opening, setOpening] = useState(true)
@@ -41,7 +49,17 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
     setGen(Date.now())
   }
   const c: ReviewCells = {
-    jobId: x.jobId, setStage, setErr, setReview, setCover, setJd, bumpGen, onUpsell: x.onUpsell, setOpening,
+    jobId: x.jobId,
+    setStage,
+    setErr,
+    setReview,
+    setCover,
+    setJd,
+    setSaved,
+    setCv,
+    bumpGen,
+    onUpsell: x.onUpsell,
+    setOpening,
   }
   const cells = useRef(c)
   useEffect(function keepCells() {
@@ -74,12 +92,22 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
       if (pane === PANE_COVER) {
         step = STEP_COVER
       }
-      void runSteps({ c: cells.current, start: { step, facts: {}, both: false, regen: true, fill: false } })
+      let before = 0
+      if (review != null) {
+        before = openCountOf(review.reqs)
+      }
+      setSame(false)
+      void regenRun({
+        c: cells.current, start: { step, extra: TEXT_NONE, both: false, regen: true, fill: false }, before, setSame,
+      })
     }
   }
   function openFill(): void {
     if (review == null) {
       return
+    }
+    if (extra === TEXT_NONE) {
+      setExtra(saved)
     }
     setFillOpen(true)
   }
@@ -87,29 +115,21 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
     setFillOpen(false)
   }
   function saveFill(): void {
-    if (review == null) {
-      return
-    }
-    const filled = filledFactsOf({ reqs: review.reqs, facts })
-    if (Object.keys(filled).length === 0) {
+    const text = extra.trim()
+    if (review == null || text === TEXT_NONE || text === saved) {
       return
     }
     setFillOpen(false)
+    setSame(false)
     void runSteps({
-      c: cells.current, start: { step: STEP_RESUME, facts: filled, both: true, regen: false, fill: true },
+      c: cells.current, start: { step: STEP_RESUME, extra: text, both: true, regen: false, fill: true },
     })
   }
-  function factOf(id: number): React.ChangeEventHandler<HTMLTextAreaElement> {
-    return function onFact(e: React.ChangeEvent<HTMLTextAreaElement>): void {
-      const next: Record<string, string> = {}
-      for (const [k, v] of Object.entries(facts)) {
-        next[k] = v
-      }
-      next[String(id)] = e.target.value
-      setFacts(next)
-    }
+  function extraChange(e: React.ChangeEvent<HTMLTextAreaElement>): void {
+    setExtra(e.target.value)
   }
   function openCover(): void {
+    setErr(TEXT_NONE)
     setEditing(cover)
   }
   function closeCover(): void {
@@ -118,6 +138,45 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
   function saveCover(): void {
     if (editing != null) {
       void saveCoverEdit({ c: cells.current, text: editing, close: closeCover })
+    }
+  }
+  function openCv(): void {
+    if (cv == null) {
+      return
+    }
+    if (cvDraft == null) {
+      setCvDraft(cv)
+    }
+    setErr(TEXT_NONE)
+    setCvOpen(true)
+  }
+  function closeCv(): void {
+    setCvOpen(false)
+  }
+  function dropCv(): void {
+    setCvOpen(false)
+    setCvDraft(null)
+  }
+  function saveCv(): void {
+    if (cvDraft != null && cvDraft !== cv) {
+      void saveResumeEdit({ c: cells.current, cv: cvDraft, close: dropCv })
+    }
+  }
+  function cvSummaryChange(e: React.ChangeEvent<HTMLTextAreaElement>): void {
+    if (cvDraft != null) {
+      setCvDraft({ summary: e.target.value, skills: cvDraft.skills, work: cvDraft.work })
+    }
+  }
+  function cvSkillsChange(e: React.ChangeEvent<HTMLTextAreaElement>): void {
+    if (cvDraft != null) {
+      setCvDraft({ summary: cvDraft.summary, skills: e.target.value, work: cvDraft.work })
+    }
+  }
+  function cvDescOf(i: number): React.ChangeEventHandler<HTMLTextAreaElement> {
+    return function onDesc(e: React.ChangeEvent<HTMLTextAreaElement>): void {
+      if (cvDraft != null) {
+        setCvDraft(withDescOf({ cv: cvDraft, i, desc: e.target.value }))
+      }
     }
   }
   function send(): void {
@@ -137,15 +196,26 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
     active,
     focus,
     fillOpen,
-    facts,
+    extra,
+    saved,
+    same,
     editing,
+    cv,
+    cvDraft,
+    cvOpen,
+    onResumeEdit: openCv,
+    onResumeClose: closeCv,
+    onResumeSave: saveCv,
+    onCvSummary: cvSummaryChange,
+    onCvSkills: cvSkillsChange,
+    cvDescOf,
     sending,
     pickOf,
     setActive,
     focusOf,
     regenOf,
     onFillOpen: openFill,
-    factOf,
+    onExtraText: extraChange,
     onFillClose: closeFill,
     onFillSave: saveFill,
     onCoverEdit: openCover,
@@ -166,12 +236,12 @@ async function startReview(c: ReviewCells): Promise<void> {
   try {
     const d = await reloadState(c)
     if (needRunOf(d)) {
-      await runSteps({ c, start: { step: STEP_PLAN, facts: {}, both: false, regen: false, fill: false } })
+      await runSteps({ c, start: { step: STEP_PLAN, extra: TEXT_NONE, both: false, regen: false, fill: false } })
     } else {
       c.setStage(TEXT_NONE)
     }
   } catch {
-    await runSteps({ c, start: { step: STEP_PLAN, facts: {}, both: false, regen: false, fill: false } })
+    await runSteps({ c, start: { step: STEP_PLAN, extra: TEXT_NONE, both: false, regen: false, fill: false } })
   }
   c.setOpening(false)
 }
@@ -198,7 +268,7 @@ function toggled(y: ToggledIn): number {
 export function useReviewPdf(x: ReviewPdfIn): ReviewPdfPanel {
   const box = useRef<HTMLDivElement>(null)
   const [rects, setRects] = useState<HlRect[]>([])
-  const [size, setSize] = useState<SheetSize>({ w: 0, h: 0, left: 0, top: 0 })
+  const [size, setSize] = useState<SheetSize>({ w: 0, h: 0, left: 0, top: 0, fit: 0 })
   const [failed, setFailed] = useState(false)
   const key = useMemo(function quoteKey(): string {
     return JSON.stringify(x.quotes)

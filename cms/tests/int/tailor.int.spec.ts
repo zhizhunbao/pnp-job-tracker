@@ -9,7 +9,7 @@ import { auditOf, droppedYearsOf, newNumbersOf, reqsOf, runStep, scoreOf } from 
 import type { TailorReq, TailorReview } from '@/lib/tailor/types'
 
 function req(id: number, resume: string, cover: string, basis = true): TailorReq {
-  return { id, label: 'L' + id, jd: 'J' + id, ask: '', basis, resume, cover }
+  return { id, label: 'L' + id, jd: 'J' + id, basis, resume, cover }
 }
 
 function review(reqs: TailorReq[], retryResume = 0, retryCover = 0): TailorReview {

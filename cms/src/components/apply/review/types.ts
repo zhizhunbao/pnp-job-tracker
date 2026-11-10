@@ -30,11 +30,6 @@ export type ReviewReq = {
   jd: string
 
   /**
-   * 补充时的句子骨架(空格写成 ___)。
-   */
-  ask: string
-
-  /**
    * 有没有依据。
    */
   basis: boolean
@@ -98,6 +93,66 @@ export type StateJson = {
    * 职位描述全文。
    */
   jd: string
+
+  /**
+   * 本人补充的经历(存在基础简历上)。
+   */
+  extra: string
+
+  /**
+   * 本岗简历能手改的部分;还没写 = null。
+   */
+  cv: ReviewCv | null
+}
+
+/**
+ * 本岗简历里能手改的部分(只声明真读的格)。
+ */
+export type ReviewCv = {
+  /**
+   * 简介。
+   */
+  summary: string
+
+  /**
+   * 技能。
+   */
+  skills: string
+
+  /**
+   * 各段工作。
+   */
+  work: ReviewCvWork[]
+}
+
+/**
+ * 本岗简历的一段工作(职位、公司和年份只显示不能改)。
+ */
+export type ReviewCvWork = {
+  /**
+   * 职位。
+   */
+  title: string
+
+  /**
+   * 公司。
+   */
+  org: string
+
+  /**
+   * 起始年。
+   */
+  fromY: string
+
+  /**
+   * 结束年;至今 = 空串。
+   */
+  toY: string
+
+  /**
+   * 要点,一行一条。
+   */
+  desc: string
 }
 
 /**
@@ -130,9 +185,9 @@ export type RunStart = {
   step: string
 
   /**
-   * 用户补充。
+   * 补充经历全文;这一轮不带 = 空串。
    */
-  facts: Record<string, string>
+  extra: string
 
   /**
    * 简历写完也重写求职信。
@@ -188,6 +243,16 @@ export type ReviewCells = {
    * 落职位描述。
    */
   setJd: (v: string) => void
+
+  /**
+   * 落已存的补充经历。
+   */
+  setSaved: (v: string) => void
+
+  /**
+   * 落本岗简历能手改的部分。
+   */
+  setCv: (v: ReviewCv | null) => void
 
   /**
    * 文件换了一份。
@@ -340,19 +405,74 @@ export type ReviewPanel = {
   focus: string
 
   /**
-   * 正在补哪条要求;没有 = null。
+   * 补充经历的右侧栏开着吗。
    */
   fillOpen: boolean
 
   /**
-   * 补充的文字。
+   * 补充经历的草稿(关了右侧栏也留着)。
    */
-  facts: Record<string, string>
+  extra: string
+
+  /**
+   * 已存在基础简历上的补充经历。
+   */
+  saved: string
+
+  /**
+   * 刚才那次重新生成后没覆盖的要求一条没少。
+   */
+  same: boolean
 
   /**
    * 求职信的修改草稿;没在改 = null。
    */
   editing: string | null
+
+  /**
+   * 本岗简历能手改的部分;还没写 = null。
+   */
+  cv: ReviewCv | null
+
+  /**
+   * 简历的修改草稿(关了右侧栏也留着);没改过 = null。
+   */
+  cvDraft: ReviewCv | null
+
+  /**
+   * 修改简历的右侧栏开着吗。
+   */
+  cvOpen: boolean
+
+  /**
+   * 打开简历修改。
+   */
+  onResumeEdit: () => void
+
+  /**
+   * 关闭简历修改。
+   */
+  onResumeClose: () => void
+
+  /**
+   * 保存简历。
+   */
+  onResumeSave: () => void
+
+  /**
+   * 改简介。
+   */
+  onCvSummary: React.ChangeEventHandler<HTMLTextAreaElement>
+
+  /**
+   * 改技能。
+   */
+  onCvSkills: React.ChangeEventHandler<HTMLTextAreaElement>
+
+  /**
+   * 改某一段工作的要点。
+   */
+  cvDescOf: (i: number) => React.ChangeEventHandler<HTMLTextAreaElement>
 
   /**
    * 正在发。
@@ -387,7 +507,7 @@ export type ReviewPanel = {
   /**
    * 改补充文字。
    */
-  factOf: (id: number) => React.ChangeEventHandler<HTMLTextAreaElement>
+  onExtraText: React.ChangeEventHandler<HTMLTextAreaElement>
 
   /**
    * 关闭补充。
@@ -498,6 +618,26 @@ export type SheetSize = {
    * 裁掉的上边。
    */
   top: number
+
+  /**
+   * 画的时候容器的宽(给序号让位后比它宽的,预览整体缩一点,不出横向滚动条)。
+   */
+  fit: number
+}
+
+/**
+ * 算预览整体缩放的入参。
+ */
+export type SheetZoomIn = {
+  /**
+   * 尺寸。
+   */
+  size: SheetSize
+
+  /**
+   * 放大了吗(放大时不缩,照旧横向滚)。
+   */
+  zoomed: boolean
 }
 
 /**
@@ -683,6 +823,16 @@ export type JdLineIn = {
    * 这一行。
    */
   line: string
+
+  /**
+   * 是小标题(加粗)。
+   */
+  head: boolean
+
+  /**
+   * 前面补一个圆点。
+   */
+  bullet: boolean
 
   /**
    * 要求。
@@ -1251,57 +1401,301 @@ export type ReviewPdfPanel = {
 }
 
 /**
- * ReviewFillRow 的 props。
+ * 重新生成并看有没有变化的入参。
  */
-export type ReviewFillRowIn = {
+export type RegenRunIn = RunIn & {
   /**
-   * 这条要求。
+   * 重新生成之前没覆盖的要求数。
    */
-  r: ReviewReq
+  before: number
 
   /**
-   * 现在的文字。
+   * 落「内容没变」。
    */
-  value: string
-
-  /**
-   * 空着时框里的提示:这一格该写什么。
-   */
-  hint: string
-
-  /**
-   * 改动手柄。
-   */
-  onChange: React.ChangeEventHandler<HTMLTextAreaElement>
+  setSame: (v: boolean) => void
 }
 
 /**
- * filledFactsOf 的入参。
+ * 一轮跑完的核对结果;失败 = null。
  */
-export type FilledFactsIn = {
+export type MaybeReview = Review | null
+
+/**
+ * 算高亮的结果。
+ */
+export type RectsOut = {
+  /**
+   * 高亮块。
+   */
+  rects: HlRect[]
+
+  /**
+   * 这一页没找到的引文。
+   */
+  rest: Quote[]
+}
+
+/**
+ * 一页的全文与逐字位置。
+ */
+export type TextMap = {
+  /**
+   * 拼接全文。
+   */
+  full: string
+
+  /**
+   * 全文里每个字的位置。
+   */
+  map: CharAt[]
+}
+
+/**
+ * 算一句引文高亮块的入参。
+ */
+export type QuoteRectsIn = {
+  /**
+   * 这一页的入参。
+   */
+  y: RectsIn
+
+  /**
+   * 全文与逐字位置。
+   */
+  tm: TextMap
+
+  /**
+   * 量字宽的画笔。
+   */
+  ctx: CanvasRenderingContext2D
+
+  /**
+   * 全文里已被别的引文占了的字。
+   */
+  claimed: boolean[]
+
+  /**
+   * 这一页里只放序号的块(整句被占的引文各一块;每多一块往左多让一档,序号不叠)。
+   */
+  ghosts: HlRect[]
+
+  /**
+   * 这句引文。
+   */
+  q: Quote
+
+  /**
+   * 引文在全文里的起点。
+   */
+  at: number
+}
+
+/**
+ * 算一块高亮的入参。
+ */
+export type RunRectIn = {
+  /**
+   * 这句引文的入参。
+   */
+  z: QuoteRectsIn
+
+  /**
+   * 起点(全文下标)。
+   */
+  from: number
+
+  /**
+   * 终点(全文下标,含)。
+   */
+  to: number
+
+  /**
+   * 是这句的第一块。
+   */
+  first: boolean
+}
+
+/**
+ * 画整份 PDF 时的累计。
+ */
+export type DrawSum = {
+  /**
+   * 缩放;还没定 = 0。
+   */
+  scale: number
+
+  /**
+   * 裁掉的左边。
+   */
+  left: number
+
+  /**
+   * 各页内容最右(页面坐标)。
+   */
+  maxX: number
+
+  /**
+   * 下一页的上边在整份里的位置。
+   */
+  top: number
+
+  /**
+   * 给序号让位多出的宽。
+   */
+  extra: number
+
+  /**
+   * 高亮块。
+   */
+  rects: HlRect[]
+
+  /**
+   * 各页画布。
+   */
+  canvases: HTMLCanvasElement[]
+
+  /**
+   * 还没找到的引文。
+   */
+  rest: Quote[]
+}
+
+/**
+ * 把一页并进整份的入参。
+ */
+export type AddPageIn = {
+  /**
+   * 整份的累计。
+   */
+  sum: DrawSum
+
+  /**
+   * 这一页的文字项。
+   */
+  items: PdfItem[]
+
+  /**
+   * 矩阵相乘。
+   */
+  tr: MatrixFn
+
+  /**
+   * 页面变换矩阵。
+   */
+  vt: number[]
+
+  /**
+   * 画好的画布。
+   */
+  cv: HTMLCanvasElement
+
+  /**
+   * 视口(只读宽)。
+   */
+  vp: ViewportWidth
+
+  /**
+   * 像素比。
+   */
+  dpr: number
+
+  /**
+   * 内容的边界。
+   */
+  box: ContentBox
+}
+
+/**
+ * 裁画布的入参。
+ */
+export type CropIn = {
+  /**
+   * 画布。
+   */
+  canvas: HTMLCanvasElement
+
+  /**
+   * 上界(屏幕像素)。
+   */
+  y0: number
+
+  /**
+   * 下界(屏幕像素)。
+   */
+  y1: number
+
+  /**
+   * 像素比。
+   */
+  dpr: number
+}
+
+/**
+ * 存手改简历的入参。
+ */
+export type ResumeSaveIn = {
+  /**
+   * 落格。
+   */
+  c: ReviewCells
+
+  /**
+   * 改好的简历。
+   */
+  cv: ReviewCv
+
+  /**
+   * 收起修改栏并丢掉草稿。
+   */
+  close: () => void
+}
+
+/**
+ * 职位描述排好的一行。
+ */
+export type JdRow = {
+  /**
+   * 这一行的字(小标题已去掉标记)。
+   */
+  text: string
+
+  /**
+   * 是小标题。
+   */
+  head: boolean
+
+  /**
+   * 前面补一个圆点。
+   */
+  bullet: boolean
+}
+
+/**
+ * 排职位描述各行的入参。
+ */
+export type JdRowsIn = {
+  /**
+   * 职位描述全文(小标题行首带标记)。
+   */
+  jd: string
+
   /**
    * 要求。
    */
   reqs: ReviewReq[]
-
-  /**
-   * 编号 → 现在的文字。
-   */
-  facts: Record<string, string>
 }
 
-
 /**
- * factTextOf 的入参。
+ * 拆一行里各句的入参。
  */
-export type FactTextIn = {
+export type JdSentsIn = {
   /**
-   * 编号 → 文字。
+   * 这一行。
    */
-  facts: Record<string, string>
+  line: string
 
   /**
-   * 要求编号。
+   * 要求。
    */
-  id: number
+  reqs: ReviewReq[]
 }

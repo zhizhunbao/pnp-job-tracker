@@ -51,6 +51,16 @@ export const URL_NAME = '/api/apply/name'
 export const URL_COVER = '/api/tailor/cover'
 
 /**
+ * 存手改简历的接口。
+ */
+export const URL_RESUME = '/api/tailor/resume'
+
+/**
+ * 修改简历里一格输入框的行数。
+ */
+export const CV_ROWS = 5
+
+/**
  * POST。
  */
 export const METHOD_POST = 'POST'
@@ -181,6 +191,16 @@ export const ERR_KEYS: Record<string, string> = {
 export const ERR_DEFAULT = 'tr.errLlm'
 
 /**
+ * 手改的内容里有写不进 PDF 的字的词条。
+ */
+export const ERR_CHARS = 'tr.errChars'
+
+/**
+ * 接口回「内容不合格」的状态码。
+ */
+export const HTTP_UNPROCESSABLE = 422
+
+/**
  * 试用用完的错误码。
  */
 export const ERR_PRO = 'pro'
@@ -241,9 +261,15 @@ export const SCALE_MAX = 1.3
 export const ZOOM_NARROW = 2.1
 
 /**
- * 手机断点。
+ * 三屏改竖排的断点(2026-11-10 Frank「这两个字太小了吧」:窗口不够宽时三栏并排,每份 PDF 只剩两百来像素、字没法看;
+ * 原先只在手机 640 以下才竖排。和样式里的 1100 一致)。
  */
-export const NARROW_W = 640
+export const NARROW_W = 1100
+
+/**
+ * 竖排时没放大的最大缩放(平板和半屏窗口上占满宽度会大得过头)。
+ */
+export const STACK_SCALE_MAX = 1.5
 
 /**
  * 页面内容四周留白。
@@ -286,6 +312,21 @@ export const PX = 'px'
 export const NEWLINE = '\n'
 
 /**
+ * 职位描述里一条的圆点(原文自带的也是它)。
+ */
+export const JD_BULLET = '•'
+
+/**
+ * 一行里句子之间的断点:句末标点后面跟着空白和大写字母。
+ */
+export const JD_SENT_SPLIT_RE = /(?<=[.!?])\s+(?=[A-Z])/
+
+/**
+ * 职位描述里小标题那一行的行首标记(数据层给的)。
+ */
+export const JD_HEAD_MARK = '## '
+
+/**
  * 空白折叠。
  */
 export const WS_RE = /\s+/g
@@ -321,6 +362,11 @@ export const NUM_BAD = '!'
 export const TAG_BAD = 'bad'
 
 /**
+ * 标签:提醒。
+ */
+export const TAG_WARN = 'warn'
+
+/**
  * 按钮:次要。
  */
 export const BTN_SECONDARY = 'secondary'
@@ -334,6 +380,26 @@ export const BTN_GHOST = 'ghost'
  * 提示:失败。
  */
 export const NOTICE_ERR = 'err'
+
+/**
+ * 提示:说明。
+ */
+export const NOTICE_INFO = 'info'
+
+/**
+ * 胶囊小注的词条:简历没写到。
+ */
+export const NEED_RESUME = 'tr.needResume'
+
+/**
+ * 胶囊小注的词条:求职信没写到。
+ */
+export const NEED_COVER = 'tr.needCover'
+
+/**
+ * 胶囊小注的词条:两份都没写到。
+ */
+export const NEED_BOTH = 'tr.needBoth'
 
 /**
  * 读屏:进度。
@@ -368,7 +434,7 @@ export const CLS_MCARD_HEAD = 'mcardHead'
 /**
  * 补充经历输入框的行数。
  */
-export const FILL_ROWS = 3
+export const FILL_ROWS = 10
 
 /**
  * 修改求职信输入框的行数。
@@ -454,6 +520,16 @@ export const BOX_DOWN = 4
  * 判断句头在不在左边时的容差。
  */
 export const RECT_EPS = 0.5
+
+/**
+ * 整句都被别的引文占了时,只放序号的那一块往左让几个容差(排在占它的那句的句头前面)。
+ */
+export const HEAD_ONLY_NUDGE = 2
+
+/**
+ * 两页之间的缝(屏幕像素;和样式里画布之间的上边距一致)。
+ */
+export const PAGE_GAP = 8
 
 /**
  * PDF 变换矩阵里竖向缩放的第一格。

@@ -36,11 +36,6 @@ export type TailorReq = {
   jd: string
 
   /**
-   * 让用户补充时的句子骨架(空格写成 ___)。
-   */
-  ask: string
-
-  /**
    * 基础简历或用户补充里有没有依据。
    */
   basis: boolean
@@ -126,6 +121,11 @@ export type TailorDbRow = {
   tailor_facts: FactMap | null
 
   /**
+   * 本岗简历的草稿。
+   */
+  tailor_cv: JsonCell
+
+  /**
    * 本岗简历上的姓名。
    */
   cv_name: string | null
@@ -169,6 +169,11 @@ export type TailorRow = {
    * 本岗简历上的姓名;没有 = 空串。
    */
   cvName: string
+
+  /**
+   * 本岗简历的草稿;还没写 = null。
+   */
+  cv: JsonCell
 }
 
 /**
@@ -581,9 +586,9 @@ export type StepBodyJson = {
   step?: string
 
   /**
-   * 用户补充。
+   * 补充经历全文(只在补充后重写的第一步带)。
    */
-  facts?: FactMap
+  extra?: string
 
   /**
    * 写完简历后也重写求职信。
@@ -616,9 +621,9 @@ export type StepBody = {
   step: string
 
   /**
-   * 用户补充。
+   * 补充经历全文;没带 = 空串。
    */
-  facts: FactMap
+  extra: string
 
   /**
    * 写完简历后也重写求职信。
@@ -669,6 +674,31 @@ export type CoverBodyJson = {
    * 求职信。
    */
   cover?: string
+}
+
+/**
+ * 存手改简历的请求体(只收能改的三处:简介、技能、每段工作的要点;雇主、职位和日期不收)。
+ */
+export type ResumeBodyJson = {
+  /**
+   * 职位 id。
+   */
+  jobId?: number | string
+
+  /**
+   * 简介。
+   */
+  summary?: string
+
+  /**
+   * 技能。
+   */
+  skills?: string
+
+  /**
+   * 每段工作的要点,顺序同本岗简历。
+   */
+  work?: string[]
 }
 
 /**
@@ -909,6 +939,46 @@ export type SaveFactsIn = TailorKeyIn & {
    * 用户补充。
    */
   facts: FactMap
+}
+
+/**
+ * 补充经历的库行。
+ */
+export type ExtraDbRow = {
+  /**
+   * 补充经历全文。
+   */
+  extra_text: string | null
+}
+
+/**
+ * 取补充经历的入参。
+ */
+export type ExtraIn = {
+  /**
+   * 连接。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: UserId
+}
+
+/**
+ * 取补充经历的返回。
+ */
+export type ExtraOut = Promise<string>
+
+/**
+ * 存补充经历的入参。
+ */
+export type SaveExtraIn = ExtraIn & {
+  /**
+   * 补充经历全文。
+   */
+  extra: string
 }
 
 /**

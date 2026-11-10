@@ -5,4 +5,4 @@
  * @time 2026-11-09 18:00:00
  */
 
-export { tailorCoverRoute, tailorFileRoute, tailorStateRoute, tailorStepRoute } from './routes'
+export { tailorCoverRoute, tailorFileRoute, tailorResumeRoute, tailorStateRoute, tailorStepRoute } from './routes'

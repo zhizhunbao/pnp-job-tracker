@@ -17,21 +17,22 @@ import {
   BAD_GATEWAY, BAD_REQUEST, CONFLICT, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, NOT_FOUND, PAYMENT_REQUIRED, TOO_MANY, UNAUTHORIZED, UNPROCESSABLE,
 } from '../http'
 import { isLlmError } from '../error'
-import { jobDescription, loadApplyUrlById } from '../jobs/server'
+import { jobDescription, jobDescriptionMarked, loadApplyUrlById } from '../jobs/server'
 import { completeText } from '../llm'
 import { APPLY_LOG, log } from '../log'
 import { checkLimit, getUserOrNull } from '../quota/server'
 import { extractText, parseLlmJson } from '../resume'
 import {
   B64, CACHE_PRIVATE, E_AUTH, E_BASE, E_BODY, E_JOB, E_LIMIT, E_LLM, E_NONE, E_NO_JD, E_PRO, E_RESUME_BAD, E_SENT, KEY_SEP, KIND_COVER, MIME_PDF,
-  P_JOB, P_KIND, PDF_NAME, FILL_DAILY, FILL_PREFIX, ROLE_SYSTEM, ROLE_USER, STEP_USER_DAILY, STEP_USER_PREFIX, TAILOR_MODEL, TAILOR_PROVIDER, THINKING_ROOM, TEXT_NONE,
+  KEY_EXTRA, P_JOB, P_KIND, STATUS_DRAFT, STATUS_QUEUED, PDF_NAME, FILL_DAILY, FILL_PREFIX, ROLE_SYSTEM, ROLE_USER, STEP_USER_DAILY, STEP_USER_PREFIX, TAILOR_MODEL, TAILOR_PROVIDER, THINKING_ROOM, TEXT_NONE,
 } from './constants'
-import { loadTailorRow, runStep, saveCover, toStepBody } from './functions'
-import type { CompleteIn, CoverBodyJson, CvPdfFact, JsonCell, StepBodyJson, StepDeps } from './types'
+import { loadExtra, loadTailorRow, runStep, saveCover, saveExtra, saveResume, toStepBody } from './functions'
+import type { CompleteIn, CoverBodyJson, CvPdfFact, FactMap, JsonCell, ResumeBodyJson, StepBodyJson, StepDeps } from './types'
 
 /**
  * POST /api/tailor/step:跑一步(拆要求、写简历、写求职信、核对);回包的 next 告诉前端下一步。
  * 基础简历读不出文字按没有基础简历算。
+ * 2026-11-10 补充经历写回基础简历:补充后重写的那一步先把全文存到基础简历行上,之后每一步、每个职位都把它当用户补充带上。
  * 2026-11-09 Frank 定额度:免费和会员都查额度账(lib/apply/credit),这一岗记过账的照跑不再扣,用完 402 并带额度档与恢复时刻;
  * 手动重新生成的每日次数记在库里(免费每份文件 1 次、会员 5 次,不耗额度)。
  *
@@ -93,6 +94,14 @@ export async function tailorStepRoute(req: Request): Promise<Response> {
   if (blob == null || base === TEXT_NONE) {
     return Response.json({ error: E_BASE }, { status: CONFLICT })
   }
+  if (body.fill && body.extra !== TEXT_NONE) {
+    await saveExtra({ db, userId: user.id, extra: body.extra })
+  }
+  const newFacts: FactMap = {}
+  const extra = await loadExtra({ db, userId: user.id })
+  if (extra !== TEXT_NONE) {
+    newFacts[KEY_EXTRA] = extra
+  }
   const applyUrl = await loadApplyUrlById({ db, jobId: job.id })
   let jd = TEXT_NONE
   if (applyUrl != null) {
@@ -142,7 +151,7 @@ export async function tailorStepRoute(req: Request): Promise<Response> {
   try {
     const out = await runStep({
       db, userId: user.id, jobId: job.id, step: body.step, title: job.title, company: job.company, name: prefs.senderName, jd,
-      resumeId: first.id, base, newFacts: body.facts, both: body.both, regen: body.regen || body.fill, deps,
+      resumeId: first.id, base, newFacts, both: body.both, regen: body.regen || body.fill, deps,
     })
     if (out.error === E_SENT) {
       return Response.json(out, { status: CONFLICT })
@@ -168,9 +177,10 @@ export async function tailorStepRoute(req: Request): Promise<Response> {
 
 /**
  * GET /api/tailor/state?job=:这一岗的现状(核对结果、有没有简历和求职信)。
+ * 2026-11-10:职位描述带着行首节头标记「## 」给出去,前端按它把小标题加粗。
  *
  * @param req 请求。
- * @returns { review, hasResume, hasCover, status };未登录 401、id 不合形 400。
+ * @returns { review, hasResume, hasCover, status, cover, jd, extra, cv };未登录 401、id 不合形 400。
  */
 export async function tailorStateRoute(req: Request): Promise<Response> {
   const user = await getUserOrNull(await headers())
@@ -183,16 +193,21 @@ export async function tailorStateRoute(req: Request): Promise<Response> {
   }
   const db = await getDb()
   const row = await loadTailorRow({ db, userId: user.id, jobId })
+  const extra = await loadExtra({ db, userId: user.id })
   const applyUrl = await loadApplyUrlById({ db, jobId })
   let jd = TEXT_NONE
   if (applyUrl != null) {
-    jd = (await jobDescription({ db, applyUrl, id: jobId })).trim()
+    jd = (await jobDescriptionMarked({ db, applyUrl, id: jobId })).trim()
   }
   if (row == null) {
-    return Response.json({ review: null, hasResume: false, hasCover: false, status: TEXT_NONE, cover: TEXT_NONE, jd }, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
+    return Response.json({ review: null, hasResume: false, hasCover: false, status: TEXT_NONE, cover: TEXT_NONE, jd, extra, cv: null }, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
+  }
+  let cv: object | null = null
+  if (row.cv != null && typeof row.cv === 'object') {
+    cv = toCvDraft(row.cv as object)
   }
   return Response.json(
-    { review: row.review, hasResume: row.pdfB64 !== TEXT_NONE, hasCover: row.cover !== TEXT_NONE, status: row.status, cover: row.cover, jd },
+    { review: row.review, hasResume: row.pdfB64 !== TEXT_NONE, hasCover: row.cover !== TEXT_NONE, status: row.status, cover: row.cover, jd, extra, cv },
     { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } },
   )
 }
@@ -227,6 +242,55 @@ export async function tailorCoverRoute(req: Request): Promise<Response> {
     return Response.json({ error: E_NONE }, { status: NOT_FOUND })
   }
   await saveCover({ db, userId: user.id, jobId, cover: raw.cover, review: row.review })
+  return Response.json({ ok: true })
+}
+
+/**
+ * PUT /api/tailor/resume:存用户手改的本岗简历(2026-11-10 任务书第 33 条),重排将发出的 PDF(之后前端再跑一次核对)。
+ * 只改简介、技能和每段工作的要点;雇主、职位和日期照本岗简历原样,改这些等于改时间线。
+ *
+ * @param req 请求(body 是 { jobId, summary, skills, work })。
+ * @returns { ok };未登录 401、体不合形 400、有写不进 PDF 的字 422、还没生成 404、已发出 409。
+ */
+export async function tailorResumeRoute(req: Request): Promise<Response> {
+  const user = await getUserOrNull(await headers())
+  if (user == null) {
+    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  let raw: ResumeBodyJson = {}
+  try {
+    raw = await req.json() as ResumeBodyJson
+  } catch {
+    return Response.json({ error: E_BODY }, { status: BAD_REQUEST })
+  }
+  const jobId = Number(raw.jobId)
+  if (Number.isInteger(jobId) === false || jobId <= 0 || typeof raw.summary !== 'string' || typeof raw.skills !== 'string' || Array.isArray(raw.work) === false) {
+    return Response.json({ error: E_BODY }, { status: BAD_REQUEST })
+  }
+  const db = await getDb()
+  const row = await loadTailorRow({ db, userId: user.id, jobId })
+  if (row == null || row.review == null || row.cv == null || typeof row.cv !== 'object') {
+    return Response.json({ error: E_NONE }, { status: NOT_FOUND })
+  }
+  if (row.status !== STATUS_DRAFT && row.status !== STATUS_QUEUED) {
+    return Response.json({ error: E_SENT }, { status: CONFLICT })
+  }
+  const draft = toCvDraft(row.cv as object)
+  draft.summary = raw.summary
+  draft.skills = raw.skills
+  for (const [i, w] of draft.work.entries()) {
+    const desc = raw.work[i]
+    if (typeof desc === 'string') {
+      w.desc = desc
+    }
+  }
+  const cv = toCvDraft(draft)
+  const layout = cvLayoutOf(cv)
+  if (layout.name === TEXT_NONE || cvBadCharsOf(layout).length > 0) {
+    return Response.json({ error: E_BODY }, { status: UNPROCESSABLE })
+  }
+  const bytes = await cvPdfOf({ pdf: PdfLib, layout })
+  await saveResume({ db, userId: user.id, jobId, cv, pdfB64: Buffer.from(bytes).toString(B64), review: row.review })
   return Response.json({ ok: true })
 }
 

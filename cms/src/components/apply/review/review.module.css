@@ -14,7 +14,10 @@
 .req { display: inline-flex; align-items: center; min-height: 26px; border: 1px solid transparent; border-radius: 13px; padding: 2px 10px 2px 4px; font-size: 12.5px; font-weight: 600; color: var(--text); cursor: pointer; }
 .reqOn { border-color: var(--text); }
 .reqMiss { display: inline-flex; align-items: center; min-height: 26px; border: 1px solid var(--danger); border-radius: 13px; padding: 2px 10px; font-size: 12.5px; font-weight: 600; color: var(--danger); background: var(--card); }
-.reqMiss::before { content: "✕"; margin-right: 4px; font-size: 11px; }
+.reqMiss::before { content: "✕"; margin-right: 6px; font-size: 11px; }
+.reqHalf { display: inline-flex; align-items: center; min-height: 26px; border: 1px solid var(--warn); border-radius: 13px; padding: 2px 10px; font-size: 12.5px; font-weight: 600; color: var(--warn); background: var(--card); }
+.need { margin-left: 6px; font-size: 11.5px; font-weight: 400; color: var(--text2); }
+.scoreSub { font-size: 12.5px; color: var(--text2); }
 
 /* 序号:行内圆点,和文字之间留白(2026-11-09 Frank「注意一下序号和文字的间距」)。 */
 .num { display: inline-block; min-width: 15px; height: 15px; line-height: 15px; margin-right: 5px; border-radius: 8px; background: var(--text); color: var(--card); font-size: 10.5px; font-weight: 700; text-align: center; vertical-align: 1px; }
@@ -30,11 +33,14 @@
 .zoomable { cursor: zoom-in; }
 .gone { display: none; }
 .line { margin: 0 0 6px; }
+.lineHead { margin-top: 12px; font-weight: 700; }
+.lineHead:first-child { margin-top: 0; }
 
 /* 将发出的 PDF。 */
 .pdfBox { overflow-x: auto; }
-.sheet { position: relative; overflow: hidden; }
+.sheet { position: relative; overflow: hidden; background: var(--border); }
 .sheet canvas { display: block; }
+.sheet canvas + canvas { margin-top: 8px; }
 .hl { position: absolute; display: block; mix-blend-mode: multiply; border-radius: 2px; cursor: pointer; }
 .hlDim { opacity: 0.12; }
 .hlBad { background: #fdba74; }
@@ -43,7 +49,8 @@
 /* 职位描述。 */
 .mark { color: inherit; border-radius: 3px; padding: 1px 3px; cursor: pointer; }
 .dim { background: transparent; opacity: 0.55; }
-.miss { border-left: 3px solid var(--danger); padding-left: 6px; }
+.miss { background: #fee2e2; border-radius: 3px; padding: 1px 3px; }
+.half { background: #fef3c7; border-radius: 3px; padding: 1px 3px; }
 
 /* 十二种颜色,按要求编号循环。 */
 .c1 { background: #bfdbfe; }
@@ -60,24 +67,39 @@
 .c12 { background: #e5e7eb; }
 
 /* 底部一行。 */
-.foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
-.sendTo { font-size: 12.5px; color: var(--text2); min-width: 0; overflow-wrap: anywhere; }
-.mailMore summary { cursor: pointer; color: var(--primary); }
-.mailBody { white-space: pre-line; margin: 4px 0; color: var(--text); }
-.nameInput { margin-top: 6px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; }
-.saved { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 6px; }
+.foot { margin-top: 12px; }
+.footCard { margin-bottom: 0; }
+.mailCols { display: flex; flex-wrap: wrap; gap: 12px 32px; }
+.mailGrid { flex: 1 1 300px; min-width: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 16px; align-items: center; align-content: start; align-self: flex-start; margin: 0; font-size: 13.5px; }
+.mailGrid dt { color: var(--text2); }
+.mailGrid dd { margin: 0; color: var(--text); overflow-wrap: anywhere; }
+.mailMore { flex: 1 1 300px; min-width: 0; font-size: 13.5px; }
+.mailName { margin-bottom: 6px; color: var(--text2); }
+.mailBody { white-space: pre-line; padding: 10px 12px; border-radius: 8px; background: var(--bg); color: var(--text); line-height: 1.5; }
+.nameInput { width: 100%; max-width: 260px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; }
+.footRow { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hairline); }
+.saved { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 12.5px; color: var(--text2); }
 .failAct { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 13px; color: var(--text2); }
 
 /* 右侧栏。 */
 .fillHint { margin-bottom: 12px; font-size: 13px; color: var(--text2); }
-.fillRow { margin-bottom: 14px; }
-.fillReq { margin-bottom: 8px; font-weight: 600; color: var(--text); }
+.fillList { margin: 0 0 12px; padding-left: 18px; font-size: 13px; color: var(--text); }
+.fillList li { margin-bottom: 4px; }
 .area { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font: inherit; }
+.field { display: block; margin-bottom: 14px; }
+.fieldName { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--text); }
 
-@media (max-width: 640px) {
+/* 宽屏底栏贴在框底(2026-11-10:窗口矮时底栏原先被框的下沿裁掉,要滚到底才看得到发送钮)。 */
+@media (min-width: 1101px) {
+  .foot { position: sticky; bottom: -20px; z-index: 2; padding-bottom: 20px; background: var(--card); }
+}
+
+/* 窗口不够宽就三份竖排,每份占满宽度(2026-11-10 Frank「这两个字太小了吧」;原先 640 以下才竖排)。 */
+@media (max-width: 1100px) {
   .grid { display: block; }
   .pane { margin-bottom: 12px; }
   .gone { display: flex; }
   .zoomHint { display: block; }
   .paper { height: auto; overflow: visible; }
 }
+

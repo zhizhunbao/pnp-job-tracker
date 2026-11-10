@@ -5,7 +5,7 @@
  * @author Frank
  * @time 2026-11-09 20:00:00
  */
-import { NEWLINE, TEXT_NONE } from './constants'
+import { jdRowsOf } from './functions'
 import { ReviewJdLine } from './reviewjdline'
 import type { ReviewJdIn } from './types'
 
@@ -17,10 +17,17 @@ import type { ReviewJdIn } from './types'
  */
 export function ReviewJd({ p, review, t }: ReviewJdIn) {
   const out = []
-  for (const [i, line] of p.jd.split(NEWLINE).entries()) {
-    if (line.trim() !== TEXT_NONE) {
-      out.push(<ReviewJdLine key={i} line={line} reqs={review.reqs} active={p.active} setActive={p.setActive} t={t} />)
-    }
+  for (const [i, row] of jdRowsOf({ jd: p.jd, reqs: review.reqs }).entries()) {
+    out.push(
+      <ReviewJdLine key={i}
+        line={row.text}
+        head={row.head}
+        bullet={row.bullet}
+        reqs={review.reqs}
+        active={p.active}
+        setActive={p.setActive}
+        t={t} />,
+    )
   }
   return <>{out}</>
 }
