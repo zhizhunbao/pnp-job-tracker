@@ -26,6 +26,23 @@
 }
 
 /*
+ * 定价页里装升级框正文的那张卡(2026-11-09 全站卖会员只留升级框一种形态):与弹框同宽,居中。
+ */
+.pageCard {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/*
+ * 权益一条下面的说明(只有定价页出;弹框只出标题):另起一行的灰色小字。
+ */
+.upPerkMore {
+  display: block;
+  font-size: 12.5px;
+  color: #6b7280;
+}
+
+/*
  * 页标题(整页 H1;main.css 的 h1 元素档是 64px/40px 外边距,这里按定价页收窄)。
  */
 .h1 {
@@ -70,46 +87,7 @@
   margin: 8px 0 24px;
 }
 
-/*
- * 营销截图的外链(B3,蓝图 §2):第一卖点 price.pA「担保雇主名单」配真图;
- * 货架页 2026-08-08 下架 → 点图落把脉页橱窗。
- */
-.shotLink {
-  /*
-   * 独占一行(<a> 默认行内,不撑开就裹不住整幅图)。
-   */
-  display: block;
 
-  /*
-   * 上 0、左右 0、下 24(下面是价卡)。
-   */
-  margin: 0 0 24px;
-}
-
-/*
- * 营销截图本体。
- */
-.shot {
-  /*
-   * 吃满内容轨宽。
-   */
-  width: 100%;
-
-  /*
-   * 图圆角(与全站白卡同一档)。
-   */
-  border-radius: 12px;
-
-  /*
-   * 描边(colors 域变量 —— 原内联 #e5e7eb 就是它;浅色图与白底之间要有一道边)。
-   */
-  border: 1px solid var(--border);
-
-  /*
-   * 块级(图底下不留行内基线的那几像素缝)。
-   */
-  display: block;
-}
 
 /*
  * 2026-08-28 换装批第二波:价卡三件(PricingCard / UpgradeModal / Lock)的内联样式
@@ -118,28 +96,6 @@
  * 要稳赢 button 域 .btn/.ghost 的同权重声明,且不赌打包顺序(先例 account 的 .buyBtn)。
  */
 
-/*
- * 三卡栅格(#64 定价卡片式 v3:免费 / Pro90 / Pro30 三卡取代旧的 10 行对照表)。
- * 2026-10-07 免费卡撤,剩两卡,auto-fit 照旧(放得下两列排两列)。
- * 第 22 轮 dd 抓的当晚回归:useIsNarrow 时序下三卡会挤成三窄列 —— 改纯 CSS auto-fit,
- * 容器窄到单卡宽以下就自然堆叠,不依赖 JS 宽度探测。
- */
-.grid {
-  /*
-   * 栅格。
-   */
-  display: grid;
-
-  /*
-   * 每列至少 240,窄到装不下一列就退成整宽单列;放得下几列就排几列。
-   */
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-
-  /*
-   * 卡间距。
-   */
-  gap: 12px;
-}
 
 /*
  * 一张价卡。E5-07:卡序 = 免费 → 90 天 → 30 天。主推 90 天靠**版式**
@@ -227,261 +183,15 @@
   color: #374151;
 }
 
-/*
- * Pro 卡的标题(付费琥珀,与免费卡拉开)。
- */
-.headPro {
-  /*
-   * 卡标题字号。
-   */
-  font-size: 14px;
 
-  /*
-   * 粗体。
-   */
-  font-weight: 700;
 
-  /*
-   * 付费琥珀。
-   */
-  color: var(--warn);
-}
 
-/*
- * 价格行的大字那半:档价。第 22 轮 dd 抓的当晚回归:nowrap 的价格行在 375px 把页面
- * 撑出横向溢出 —— 价格行改为允许换行,所以这里不设 white-space。
- */
-.amount {
-  /*
-   * 价格字号(整张卡最大的字)。
-   */
-  font-size: 22px;
 
-  /*
-   * 粗体。
-   */
-  font-weight: 700;
 
-  /*
-   * 正文黑。
-   */
-  color: var(--text);
-}
 
-/*
- * 价格行的灰字那半:计价口径与每天单价。
- */
-.per {
-  /*
-   * 小注字号。
-   */
-  font-size: 11.5px;
 
-  /*
-   * 浅灰字。
-   */
-  color: var(--text3);
-}
 
-/*
- * 两卡下面那份权益清单的标题(2026-10-07 清单挪出卡外)。
- */
-.perksHead {
-  /*
-   * 与两卡拉开。
-   */
-  margin-top: 18px;
 
-  /*
-   * 与清单拉开。
-   */
-  margin-bottom: 10px;
-
-  /*
-   * 小标题字号。
-   */
-  font-size: 14px;
-
-  /*
-   * 加粗。
-   */
-  font-weight: 700;
-}
-
-/*
- * 权益清单:放得下两列排两列,窄屏一列。
- */
-.perks {
-  /*
-   * 去掉项目符号(每行自己带对勾)。
-   */
-  list-style: none;
-
-  /*
-   * 外边距清零。
-   */
-  margin: 0;
-
-  /*
-   * 内衬清零(ul 默认有左内衬)。
-   */
-  padding: 0;
-
-  /*
-   * 栅格。
-   */
-  display: grid;
-
-  /*
-   * 每列至少 260,窄到装不下一列就整宽单列。
-   */
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-
-  /*
-   * 行距 10、列距 24。
-   */
-  gap: 10px 24px;
-}
-
-/*
- * 清单一行的对勾。
- */
-.itemIcon {
-  /*
-   * 通过色(对勾是「给你」的意思)。
-   */
-  color: var(--ok);
-
-  /*
-   * 压到与首行文字的视觉中线齐平。
-   */
-  margin-top: 4px;
-
-  /*
-   * 文字再长也不许把对勾压扁。
-   */
-  flex-shrink: 0;
-}
-
-/*
- * Pro 卖点一行:一句结论 + 底下小字写清具体给什么(标题不许只喊口号,小字是可核对的东西)。
- */
-.sell {
-  /*
-   * 对勾与文字并排。
-   */
-  display: flex;
-
-  /*
-   * 对勾与文字之间。
-   */
-  gap: 7px;
-
-  /*
-   * 对勾贴首行。
-   */
-  align-items: flex-start;
-
-  /*
-   * 行高(两行文字,比单行清单紧一点)。
-   */
-  line-height: 1.5;
-}
-
-/*
- * 卖点的结论那一句。
- */
-.sellHead {
-  /*
-   * 清单字号。
-   */
-  font-size: 12.8px;
-
-  /*
-   * 深灰字。
-   */
-  color: #374151;
-
-  /*
-   * 半粗(比小字重一档)。
-   */
-  font-weight: 600;
-}
-
-/*
- * 卖点底下的小字:具体给什么。
- */
-.sellDetail {
-  /*
-   * 独占一行(在 span 里也要断到下一行)。
-   */
-  display: block;
-
-  /*
-   * 小注字号。
-   */
-  font-size: 11.5px;
-
-  /*
-   * 浅灰字。
-   */
-  color: var(--text3);
-}
-
-/*
- * 90 天卡的省 N% 徽标(#64:百分数随 env 的展示价动态算,改价零代码)。
- */
-.badge {
-  /*
-   * 挂在卡角上。
-   */
-  position: absolute;
-
-  /*
-   * 骑在卡的上边线上。
-   */
-  top: -10px;
-
-  /*
-   * 靠右。
-   */
-  right: 12px;
-
-  /*
-   * 琥珀底。
-   */
-  background: #f59e0b;
-
-  /*
-   * 白字。
-   */
-  color: #ffffff;
-
-  /*
-   * 胶囊。
-   */
-  border-radius: 999px;
-
-  /*
-   * 上下 2、左右 10。
-   */
-  padding: 2px 10px;
-
-  /*
-   * 徽标字号。
-   */
-  font-size: 11px;
-
-  /*
-   * 粗体。
-   */
-  font-weight: 700;
-
-  /*
-   * 徽标不折行(折了就不成胶囊)。
-   */
-  white-space: nowrap;
-}
 
 /*
  * 价卡购买钮的基座(经 Button ghost 渲染,故类名写两遍抬权重)。
@@ -605,55 +315,7 @@
   text-decoration: none;
 }
 
-/*
- * 定价弹窗的标题。
- */
-.modalTitle {
-  /*
-   * 外边距清零(与副题的距离由副题自己的上边距给)。
-   */
-  margin: 0;
 
-  /*
-   * 弹窗标题字号。
-   */
-  font-size: 18px;
-
-  /*
-   * 正文黑。
-   */
-  color: var(--text);
-
-  /*
-   * 居中。
-   */
-  text-align: center;
-}
-
-/*
- * 定价弹窗标题下的副题一行。
- */
-.modalSub {
-  /*
-   * 小注字号。
-   */
-  font-size: 13px;
-
-  /*
-   * 灰字。
-   */
-  color: var(--text2);
-
-  /*
-   * 居中。
-   */
-  text-align: center;
-
-  /*
-   * 上 4、左右 0、下 10(下面就是三卡)。
-   */
-  margin: 4px 0 10px;
-}
 
 /*
  * 升级弹框的标题。
@@ -1022,4 +684,14 @@
   display: flex;
   align-items: center;
   color: #374151;
+}
+
+/*
+ * 币种说明一行(2026-11-09 Frank「金额只写 $,货币单位只在一处说明一次」):付款钮 / 两张价卡下面的灰色小字。
+ */
+.cadNote {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
 }

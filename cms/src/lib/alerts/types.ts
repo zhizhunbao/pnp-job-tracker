@@ -860,6 +860,11 @@ export type DigestUserDbRow = {
    * 上次每日推送的时刻。
    */
   last_daily_at: Date | string | null
+
+  /**
+   * 推荐有没有职业依据(SQL.DIGEST_USERS 算好)。
+   */
+  has_occ: boolean | null
 }
 
 /**
@@ -890,6 +895,11 @@ export type DigestUser = {
    * 上次每日推送的时刻(ISO;没发过 = 空串)。
    */
   lastDailyAt: string
+
+  /**
+   * 推荐有没有职业依据(没有 = 每日推送跳过,2026-11-09)。
+   */
+  hasOcc: boolean
 }
 
 /**

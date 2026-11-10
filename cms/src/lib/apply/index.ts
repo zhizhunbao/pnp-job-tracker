@@ -14,7 +14,7 @@
 
 export { COVER_MAX } from './constants'
 export {
-  coverFileOf, coverLinesOf, coverNormOf, isSenderName, mailSubjectOf, mailTextOf, makeMeasure, pdfBadCharsOf, recipientOf,
+  coverFileOf, coverLinesOf, coverNormOf, coverPdfOf, isSenderName, letterCleanOf, letterSystemOf, mailSubjectOf, mailTextOf, makeMeasure, pdfBadCharsOf, recipientOf,
   senderFromOf,
 } from './functions'
 export type { ApplyStart } from './types'

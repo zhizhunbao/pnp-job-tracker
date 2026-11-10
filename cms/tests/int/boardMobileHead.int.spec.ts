@@ -196,11 +196,11 @@ describe('homeProvPickOf ⇔ applyHomeProvince', () => {
     expect(homeProvPickOf({})).toBe('Alberta')
   })
 
-  it('地址栏带了省或搜索词:不预选', () => {
+  it('地址栏带了省或搜索词:不预选;没带也不按时区预选(2026-11-09 Frank「默认选全国」)', () => {
     device('America/Toronto', 'en-CA')
     expect(homeProvPickOf({ fProv: 'Quebec' })).toBe('')
     expect(homeProvPickOf({ q: 'Parks Canada' })).toBe('')
-    expect(homeProvPickOf({})).toBe('Ontario')
+    expect(homeProvPickOf({})).toBe('')
   })
 })
 

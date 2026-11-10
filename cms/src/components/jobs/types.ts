@@ -2363,13 +2363,34 @@ export type ApplyBarIn = {
  * 投递流程的三段:闲置 → 注册闸 → 求职意向。
  * 2026-10-04 收口审查:点了投递没拿到邮箱不再无声作罢,多三段 —— 重新登录(401)/ 今天次数用完(429)/ 没拿到(其余)。
  * 2026-10-09 A 批投递搬进弹框:求职意向一段撤(投一条岗不再先答六步意向表,设计稿故事 2),只剩闲置与注册闸。
+ * 2026-11-09 多一段 save:没登录点了投递栏的「收藏」,弹注册框。
  */
-export type ApplyStage = 'idle' | 'auth'
+export type ApplyStage = 'idle' | 'auth' | 'save'
 
 /**
  * ApplyBar 状态机交回的面板。
  */
 export type ApplyBarPanel = {
+  /**
+   * 这一岗收藏了没有。
+   */
+  saved: boolean
+
+  /**
+   * 点「收藏 / 已收藏」(收藏与取消;没登录先弹注册框)。
+   */
+  onSave: ClickFn
+
+  /**
+   * 关掉收藏的注册框(撤掉落地的收藏意图)。
+   */
+  onSaveAuthClose: ClickFn
+
+  /**
+   * 收藏的注册框登录完了:接着收藏。
+   */
+  onSaveAuthDone: ClickFn
+
   /**
    * 当前段。
    */

@@ -9,7 +9,7 @@ import { placeLineOf } from '../location'
 import { eduRowsOf, keepStreamOf } from '../pathways'
 import {
   DAY_LOCALE, DAY_ZONE, JOB_CLOSED, MYJOBS_LIMIT, PICKS_CACHE_MAX, PICKS_DRAW_DAYS, PICKS_FREE, PICKS_LOCKED_SHOW, PICKS_MAX, PROV_PNP, TEXT_NONE, TIME_NONE,
-  P_BATCH, P_ID, PICKS_SWAP_FREE, WHY_AIP, WHY_APPLIED, WHY_EE, WHY_KNOWN, WHY_LMIA, WHY_OCC, WHY_PILOT, WHY_PNP,
+  AFTER_MAX, P_AFTER, P_BATCH, P_ID, PICKS_SWAP_FREE, WHY_AIP, WHY_APPLIED, WHY_EE, WHY_KNOWN, WHY_LMIA, WHY_OCC, WHY_PILOT, WHY_PNP,
   WHY_SAVED,
   WHY_WAGE,
 } from './constants'
@@ -18,7 +18,7 @@ import type {
   CountDbRow, CountOut, DeleteOut, DropTouchedIn, IdDbRow, LockedPick, MaybeId, MyJobDbRow, MyJobRow, MyJobsDeleteIn, MyJobsIn,
   BatchOfIn, FitFilterDbRow, FitFilterFact, FitFilterOut, KeepFitIn, MaybePickFits, MyJobsOut, PathwayFitDbRow,
   PathwayFitFact, PathwayFitsIn, PathwayFitsOut, PickDbRow, PickFitsIn,
-  PickRow, PickRows, PicksIn, PicksJson, PicksJsonOut, PicksOut, PicksSplitIn, PicksViewIn, ReasonCodes, ReasonsIn,
+  PickRow, PickRows, PicksAfterIn, PicksIn, PicksJson, PicksJsonOut, PicksOut, PicksSplitIn, PicksViewIn, ReasonCodes, ReasonsIn,
   TimeCell, TouchedOut,
 } from './types'
 
@@ -223,6 +223,30 @@ export async function loadPicks(x: PicksIn): PicksOut {
   return queryRows({
     db: x.db, sql: SQL.MYJOBS_PICKS, params: [x.userId, x.prov, PICKS_MAX, PICKS_DRAW_DAYS], map: toPickRow,
   })
+}
+
+/**
+ * 发出一封之后接着投的同类岗(2026-11-09 Frank:同省、同职业、有投递邮箱、没投过,按新旧排;不走缓存、不分免费与会员)。
+ *
+ * @param x 连接、用户 id 与刚投的职位 id。
+ * @returns 同类岗,最多 AFTER_MAX 条。
+ */
+export async function loadPicksAfter(x: PicksAfterIn): PicksOut {
+  return queryRows({ db: x.db, sql: SQL.MYJOBS_AFTER, params: [x.userId, x.jobId, AFTER_MAX], map: toPickRow })
+}
+
+/**
+ * 查询参数里「刚投的职位 id」(`?after=`):正整数才认。
+ *
+ * @param url 请求地址。
+ * @returns 职位 id;没带或不合形给 null。
+ */
+export function afterOf(url: string): MaybeId {
+  const n = Number(new URL(url).searchParams.get(P_AFTER))
+  if (Number.isInteger(n) && n > 0) {
+    return n
+  }
+  return null
 }
 
 /**
@@ -485,6 +509,7 @@ export function toPickRow(r: PickDbRow): PickRow {
       pilot: r.pilot_employer === true && text(r.pilot) !== TEXT_NONE, known: r.known === true,
     }),
     abovePct: numOrNull(r.above_pct),
+    wageMedHourly: numOrNull(r.wage_med_hourly),
     lmiaPositions: count(r.lmia_positions),
     eeCategory: text(r.ee_category),
     drawLast: text(r.draw_last),

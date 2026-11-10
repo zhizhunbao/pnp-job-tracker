@@ -11,5 +11,6 @@
  * @author Frank
  * @time 2026-10-05 12:24:22
  */
+export { majorNameOf } from './functions'
 export { useMajorPicker } from './hooks'
 export { MajorPicker } from './majorpicker'

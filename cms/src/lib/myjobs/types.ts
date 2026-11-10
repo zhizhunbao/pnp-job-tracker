@@ -456,6 +456,11 @@ export type PickDbRow = {
   above_pct: number | string | null
 
   /**
+   * 本省同职业时薪中位(没有是 NULL;2026-11-09 Frank「这部分加进 table 吧」「这个地方都显示 时薪吧」)。
+   */
+  wage_med_hourly: number | string | null
+
+  /**
    * 雇主办过的 LMIA 外劳名额(没有是 NULL;2026-10-12 Frank「整点有吸引力的 bullets」)。
    */
   lmia_positions: number | string | null
@@ -626,6 +631,11 @@ export type PickRow = {
   abovePct: number | null
 
   /**
+   * 本省同职业时薪中位(没有是 null;表格「中位时薪」列写它)。
+   */
+  wageMedHourly: number | null
+
+  /**
    * 雇主办过的 LMIA 外劳名额(理由里有 lmia 时 bullet 写它;没有是 0)。
    */
   lmiaPositions: number
@@ -769,6 +779,26 @@ export type PicksIn = {
    * 浏览器按时区预选的省码(空串 = 不知道;答过所在省时不用它)。
    */
   prov: string
+}
+
+/**
+ * 取「接着投的同类岗」(loadPicksAfter)的入参。
+ */
+export type PicksAfterIn = {
+  /**
+   * 数据库连接(调用方注入)。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: UserId
+
+  /**
+   * 刚投的职位 id。
+   */
+  jobId: number
 }
 
 /**

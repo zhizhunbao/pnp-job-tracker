@@ -382,9 +382,9 @@ export const FORM_NONE_KEY = 'pf.none'
 export const FORM_TITLE_KEY = 'pf.editTitle'
 
 /**
- * 一页表单「已选 N 个」的词条。
+ * 已选那一行名字还没取到时的占位(2026-11-09 原「已选 N 个」词条换成名字本身)。
  */
-export const FORM_PICKED_KEY = 'pf.picked'
+export const FORM_NAME_WAIT = '…'
 
 /**
  * 选择器:做过的工作(2026-11-08 清单第 2 条)。
@@ -425,3 +425,113 @@ export const MODE_DEFAULT = 'default'
  * 匹配模式:严格。
  */
 export const MODE_STRICT = 'strict'
+
+/**
+ * 从简历提取档案建议的接口(2026-11-09「我的」第一批)。
+ */
+export const URL_PREFILL = '/api/resume/prefill'
+
+/**
+ * POST。
+ */
+export const METHOD_POST = 'POST'
+
+/**
+ * 来自简历标记里字段与值的分隔。
+ */
+export const FROM_SEP = ':'
+
+/**
+ * 来自简历标记的字段:做过的工作。
+ */
+export const FROM_WORK = 'workNocs'
+
+/**
+ * 来自简历标记的字段:专业。
+ */
+export const FROM_MAJORS = 'majors'
+
+/**
+ * 来自简历标记的字段:英文姓名。
+ */
+export const FROM_NAME = 'name'
+
+/**
+ * 来自简历胶囊的变体。
+ */
+export const FROM_TAG_V = 'info'
+
+/**
+ * 来自简历胶囊的词条。
+ */
+export const FROM_TAG_KEY = 'pf.fromResume'
+
+/**
+ * 已选名字先摆几个(多了折起,同「我的档案」)。
+ */
+export const PICK_FOLD_N = 3
+
+/**
+ * 折叠行的量词词条。
+ */
+export const PICK_FOLD_UNIT_KEY = 'fold.u.item'
+
+/**
+ * 接口错误码 → 提示词条。
+ */
+export const FILL_ERR_KEYS: Record<string, string> = {
+  /**
+   * 还没有简历。
+   */
+  noResume: 'pf.fillNoResume',
+
+  /**
+   * 扫描件。
+   */
+  scan: 'pf.fillScan',
+
+  /**
+   * 文件读不出。
+   */
+  parse: 'pf.fillParse',
+
+  /**
+   * 超过每日次数。
+   */
+  limit: 'pf.fillLimit',
+}
+
+/**
+ * 其余失败(模型层、网络)的提示词条。
+ */
+export const FILL_ERR_DEFAULT = 'pf.fillLlm'
+
+/**
+ * 填上了几项的提示词条。
+ */
+export const FILL_OK_KEY = 'pf.fillOk'
+
+/**
+ * 什么也没填上的提示词条。
+ */
+export const FILL_NONE_KEY = 'pf.fillNone'
+
+/**
+ * 提示:成功的颜色。
+ */
+export const FILL_KIND_OK = 'ok'
+
+/**
+ * 提示:普通的颜色。
+ */
+export const FILL_KIND_INFO = 'info'
+
+/**
+ * 提示:失败的颜色。
+ */
+export const FILL_KIND_ERR = 'err'
+
+/**
+ * 结果提示那一格的读屏角色(内容变了会念)。
+ */
+export const FILL_ROLE = 'status'

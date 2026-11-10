@@ -9,10 +9,6 @@
  * @time 2026-08-28 12:45:00
  */
 
-/**
- * 界面语言(三字面量各域自抄;营销截图分两门那一格要读它)。
- */
-export type PricingLang = 'zh' | 'en' | 'ko'
 
 /**
  * 界面语取词函数(与 lib/i18n 的 TFn 同形:键 + 可选插值 —— 本域自声明,
@@ -25,22 +21,6 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
  */
 export type ClickFn = () => void
 
-/**
- * 免费与 Pro 的档位数(服务端 lib/quota 读 env 算好后随 props 下来 ——
- * 客户端直接 import 拿到的是**构建期**的默认值,改 env 就不准了)。
- * 2026-09-28 AI 顾问删(Frank「残留也删了吧」):顾问两格(advisor 免费试用、proAdvisor Pro 日上限)撤,剩免费档两格。
- */
-export type PriceCaps = {
-  /**
-   * 免费用户的岗位文本解析总试用次数。
-   */
-  jobtext: number
-
-  /**
-   * 免费用户每天可匹配的岗位数。
-   */
-  match: number
-}
 
 /**
  * Pricing(定价页正文)的 props。
@@ -55,62 +35,19 @@ export type PricingIn = {
    * 是不是 Pro(CTA 三态之二:已 Pro → 去账户页续期,不再卖一遍)。
    */
   pro: boolean
-
-  /**
-   * 档位数两格。
-   */
-  caps: PriceCaps
 }
 
 /**
  * usePricingPage 交给视图的整块面板:语言、注册弹框的开关态与四只手柄。
+ * 2026-11-09 定价页并进升级框一种形态:只剩取词函数(营销截图与注册弹框那几格随旧卡撤)。
  */
 export type PricingPanel = {
   /**
    * 取词函数。
    */
   t: TFn
-
-  /**
-   * 当前界面语言(营销截图选哪一门靠它)。
-   */
-  lang: PricingLang
-
-  /**
-   * 注册弹框开着没有。
-   */
-  authOpen: boolean
-
-  /**
-   * 点营销截图(埋点后照常走链接去把脉页 —— 不拦导航)。
-   */
-  onShot: ClickFn
-
-  /**
-   * 未登录点付费:开注册弹框。
-   */
-  onRegister: ClickFn
-
-  /**
-   * 关掉注册弹框。
-   */
-  onAuthClose: ClickFn
-
-  /**
-   * 注册完成:整页重载,让服务端重新认人(登录态与 Pro 态都由服务端下发)。
-   */
-  onAuthDone: ClickFn
 }
 
-/**
- * pricingShotOf 的入参:界面语言。
- */
-export type PricingShotOfIn = {
-  /**
-   * 当前界面语言。
-   */
-  lang: PricingLang
-}
 
 /**
  * fromKindOf 的入参:地址栏里读到的来路原文。
@@ -315,27 +252,6 @@ export type PlanPickIn = {
   onBuy: BuyFn
 }
 
-/**
- * makePricingBuy 的入参:价卡那条购买流要用的登录态、注册出口与忙态落格。
- */
-export type PricingBuyIn = {
-  /**
-   * 登录没登录(未登录点付费 → 不发请求,先开注册弹框)。
-   */
-  loggedIn: boolean
-
-  /**
-   * 未登录时的出口:开注册弹框。
-   */
-  onRegister: ClickFn
-
-  /**
-   * 忙态的落格(等 Checkout URL 期间两枚钮都禁用)。
-   * 2026-10-12 Frank「这个为什么点击左边的 按钮,右边的也跟着变颜色」:忙态改记「正在买哪一档」,
-   * 只压暗被点的那一枚;null = 没有在飞的请求。
-   */
-  setBusy: (v: MaybePricePlan) => void
-}
 
 /**
  * 正在发起购买的档;null = 没有在飞的 Checkout 请求。
@@ -442,177 +358,13 @@ export type PerLabelIn = {
   perDay: string
 }
 
-/**
- * PricingCard(对照三卡 + CTA 三态)的 props。页面版与弹窗版共用同一份代码,不许 fork。
- */
-export type PricingCardIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
 
-  /**
-   * 登录没登录。
-   */
-  loggedIn: boolean
 
-  /**
-   * 是不是 Pro。
-   */
-  pro: boolean
 
-  /**
-   * 档位数两格。价卡本身不读它,是调用方一直在传的对外契约:定价页由服务端下发真值,
-   * 弹窗版给构建期默认值(哪天分层数字改走 env,读的就是这一格而不是 import 来的常量)。
-   */
-  caps: PriceCaps
 
-  /**
-   * 未登录点付费时的出口:开注册弹框。
-   */
-  onRegister: ClickFn
-}
 
-/**
- * PricingPro90(90 天主推卡)的 props。
- */
-export type PricingPro90In = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
 
-  /**
-   * 是不是正在等 Checkout URL(购买钮禁用并压暗)。
-   */
-  busy: boolean
 
-  /**
-   * 点购买。
-   */
-  onBuy: BuyFn
-}
-
-/**
- * PricingPro30(30 天试水卡)的 props。
- */
-export type PricingPro30In = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 是不是正在等 Checkout URL。
-   */
-  busy: boolean
-
-  /**
-   * 点购买。
-   */
-  onBuy: BuyFn
-}
-
-/**
- * PriceAmount(价格行:大字档价 + 灰字小注)的 props。
- */
-export type PriceAmountIn = {
-  /**
-   * 大字那半:档价(免费卡放免费那两个字)。
-   */
-  amount: string
-
-  /**
-   * 灰字那半:计价口径与每天单价;空串 = 只出大字。
-   */
-  per: string
-}
-
-/**
- * PriceSell(Pro 卖点一行:一句结论 + 底下小字)的 props。
- * 标题不许只喊口号,小字是可核对的东西。
- */
-export type PriceSellIn = {
-  /**
-   * 结论那一句。
-   */
-  head: string
-
-  /**
-   * 底下写清具体给什么的小字。
-   */
-  detail: string
-}
-
-/**
- * PricingModal(定价弹窗)的 props。
- */
-export type PricingModalIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 登录没登录。
-   */
-  loggedIn: boolean
-
-  /**
-   * 是不是 Pro。
-   */
-  pro: boolean
-
-  /**
-   * 关闭回调。
-   */
-  onClose: ClickFn
-
-  /**
-   * 层级;可省 = 普通页面上那一层。叠在别的弹框之上时由调用方抬。
-   */
-  z?: number
-}
-
-/**
- * usePricingModal 交给视图的面板:注册弹框的开关态与三只手柄。
- */
-export type PricingModalPanel = {
-  /**
-   * 注册弹框开着没有。
-   */
-  authOpen: boolean
-
-  /**
-   * 未登录点付费:开注册弹框。
-   */
-  onRegister: ClickFn
-
-  /**
-   * 关掉注册弹框。
-   */
-  onAuthClose: ClickFn
-
-  /**
-   * 注册完成:整页重载,让服务端重新认人。
-   */
-  onAuthDone: ClickFn
-}
-
-/**
- * usePricingBuy 的入参。
- */
-export type PricingBuyHookIn = {
-  /**
-   * 登录没登录。
-   */
-  loggedIn: boolean
-
-  /**
-   * 未登录时的出口:开注册弹框。
-   */
-  onRegister: ClickFn
-}
 
 /**
  * useUpgradeModal 的入参。
@@ -627,22 +379,13 @@ export type UpgradeModalHookIn = {
    * 付完回哪儿;空串 = 回账户页。
    */
   back: string
-}
-
-/**
- * usePricingBuy 交给视图的面板:购买流的忙态与手柄。
- */
-export type PricingBuyPanel = {
-  /**
-   * 正在等 Checkout URL 的是哪一档(2026-10-12 起按档记,只压暗被点的那一枚);null = 没有。
-   */
-  busy: MaybePricePlan
 
   /**
-   * 发起一档购买。
+   * 登录了没有(没登录点「确认支付」先弹注册框;2026-11-09 定价页与雇主对比也用这一框)。
    */
-  onBuy: BuyFn
+  loggedIn: boolean
 }
+
 
 /**
  * UpgradeModal(升级 Pro 专用弹框)的 props。
@@ -668,6 +411,71 @@ export type UpgradeModalIn = {
    * 2026-10-09 A 批投递搬进弹框:投递那一处改成 `/account?sec=sjobs&apply=…`(回来弹投递框)。
    */
   back?: string
+
+  /**
+   * 点「不改写,直接投基础简历」(2026-11-09 Frank:没额度弹升级框,框里除了购买必须有这一颗);可省 = 不出这颗钮。
+   */
+  onBase?: ClickFn
+
+  /**
+   * 只出「不改写,直接投基础简历」、不出购买卡(会员当期额度用完:再买也不加额度);可省 = 照常出购买卡。
+   */
+  baseOnly?: boolean
+
+  /**
+   * 登录了没有;可省 = 已登录(没登录点「确认支付」先弹注册框)。
+   */
+  loggedIn?: boolean
+
+  /**
+   * 层级;可省 = 升级框默认那一层(叠在别的弹框上的调用方自己给)。
+   */
+  z?: number
+}
+
+/**
+ * UpgradeBody(升级框的正文:两张价卡、支付钮、币种说明、权益清单;弹框与定价页共用)的 props。
+ */
+export type UpgradeBodyIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 为什么弹这一下;可省 = 不出这一行。
+   */
+  reason?: string
+
+  /**
+   * 付完回哪儿;可省 = 回账户页。
+   */
+  back?: string
+
+  /**
+   * 点「不改写,直接投基础简历」;可省 = 不出这颗钮。
+   */
+  onBase?: ClickFn
+
+  /**
+   * 只出「不改写,直接投基础简历」;可省 = 照常出购买卡。
+   */
+  baseOnly?: boolean
+
+  /**
+   * 登录了没有;可省 = 已登录。
+   */
+  loggedIn?: boolean
+
+  /**
+   * 权益清单带不带说明那一行(定价页带,弹框只出标题);可省 = 不带。
+   */
+  detail?: boolean
+
+  /**
+   * 注册框的层级;可省 = 升级框上面一层。
+   */
+  authZ?: number
 }
 
 /**
@@ -715,9 +523,24 @@ export type UpgradeModalPanel = {
   pickOf: (plan: PricePlan) => () => void
 
   /**
-   * 「确认支付」:按选中档去 Checkout。
+   * 「确认支付」:按选中档去 Checkout;没登录先开注册框。
    */
   onPay: () => void
+
+  /**
+   * 注册框开着没有。
+   */
+  authOpen: boolean
+
+  /**
+   * 关注册框。
+   */
+  onAuthClose: ClickFn
+
+  /**
+   * 注册完了:整页重载(登录态进来,再点一次就去付款)。
+   */
+  onAuthDone: ClickFn
 }
 
 /**

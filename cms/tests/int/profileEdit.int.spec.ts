@@ -80,7 +80,7 @@ describe('档案取数:答案档 → 五格', () => {
     const basic = { goalBand: 2, majors: ['11.0701', '52.0201'], nocs: ['21220'], resProv: 'ON', resCity: 'Mississauga' }
     const want = {
       goal: 2, majors: ['11.0701', '52.0201'], nocs: ['21220'], prov: 'ON', abroad: false, city: 'Mississauga', asked: false,
-      who: '', edu: [], workNocs: [], matchBy: '', matchMode: '' }
+      who: '', edu: [], workNocs: [], matchBy: '', matchMode: '', fromResume: [] }
     expect(toProfileBasic({ answers: { basic } })).toEqual(want)
     expect(toProfileBasic({ answers: JSON.stringify({ basic }) })).toEqual(want)
   })
@@ -89,17 +89,17 @@ describe('档案取数:答案档 → 五格', () => {
     expect(toProfileBasic({ answers: { basic: { status: 'overseas', resProv: 'ON', resCity: 'Toronto' } } }))
       .toEqual({
         goal: 0, majors: [], nocs: [], prov: '', abroad: true, city: '', asked: false, who: '', edu: [],
-        workNocs: [], matchBy: '', matchMode: '',
+        workNocs: [], matchBy: '', matchMode: '', fromResume: [],
       })
     expect(toProfileBasic({ answers: { basic: { resCity: 'Toronto' } } }).city).toBe('')
     expect(toProfileBasic({ answers: { basic: { goalBand: null, majors: null, nocs: [7, '', '21220'] as unknown as string[] } } }))
       .toEqual({
         goal: 0, majors: [], nocs: ['21220'], prov: '', abroad: false, city: '', asked: false, who: '', edu: [],
-        workNocs: [], matchBy: '', matchMode: '',
+        workNocs: [], matchBy: '', matchMode: '', fromResume: [],
       })
     expect(toProfileBasic({ answers: null })).toEqual({
       goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', asked: false, who: '', edu: [],
-      workNocs: [], matchBy: '', matchMode: '',
+      workNocs: [], matchBy: '', matchMode: '', fromResume: [],
     })
     expect(toProfileBasic({ answers: { basic: { jobsAsked: true } } }).asked).toBe(true)
   })
@@ -107,16 +107,16 @@ describe('档案取数:答案档 → 五格', () => {
 
 const FULL = {
   goal: 2, majors: ['11.0701'], nocs: ['21220'], prov: 'ON', abroad: false, city: 'Toronto', name: 'Li Wei', who: 'student', edu: ['ON|public|y2'],
-  workNocs: ['21220'], matchBy: '', matchMode: '',
+  workNocs: ['21220'], matchBy: '', matchMode: '', fromResume: [],
 }
 const EMPTY = {
   goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [],
-  workNocs: [], matchBy: '', matchMode: '',
+  workNocs: [], matchBy: '', matchMode: '', fromResume: [],
 }
 const PF_FULL = {
   goal: 2, majors: [{ code: '11.0701', en: 'CS', zh: '', ko: '' }], nocs: [{ code: '21220', en: 'Dev', zh: '', ko: '' }],
   prov: 'ON', abroad: false, city: { code: '', en: 'Toronto', zh: '', ko: '' }, name: 'Li Wei', asked: false, who: 'student',
-  edu: ['ON|public|y2'], works: [{ code: '21220', en: 'Dev', zh: '', ko: '' }], matchBy: '', matchMode: '',
+  edu: ['ON|public|y2'], works: [{ code: '21220', en: 'Dev', zh: '', ko: '' }], matchBy: '', matchMode: '', fromResume: [],
 }
 
 describe('进我的求职先弹五题(2026-10-11)', () => {

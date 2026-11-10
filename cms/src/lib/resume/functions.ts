@@ -10,14 +10,15 @@
  * @time 2026-08-22 16:00:00
  */
 
-import { count, firstOf, queryRows, SQL, text } from '../db'
+import { count, firstOf, numOrNull, queryRows, SQL, text } from '../db'
 import { fill } from '../template'
 import { log, RESUME_LOG } from '../log'
 import {
   CLAMP, ERR_SLICE, ERR_UNSUPPORTED, EXT_DOCX, EXT_PDF, EXT_SEP, FREE_ROWS, IELTS_CLB, NOC_CAND_MAX, ROLE_SYSTEM,
   ROLE_USER, BRACE_CLOSE, BRACE_OPEN, NOTE_MAX, REQ_MAX, RGBA_BYTES, ROWS_MAX, ROWS_MIN, ERR_NONE, REWRITE_NONE,
   TITLE_PENDING, B64, DISP_ATTACH, DISP_INLINE, DISP_NAME_HEAD, DOCX_MAGIC, FILE_NAME_DOCX, FILE_NAME_MAX, FILE_NAME_PDF,
-  FILE_NAME_NONE, MIME_DOCX, MIME_PDF, P_ID, PDF_MAGIC, TIME_NONE,
+  FILE_NAME_NONE, MIME_DOCX, MIME_PDF, P_ID, PDF_MAGIC, TIME_NONE, E_NO_RESUME, E_PARSE, E_SCAN, EXTRACT_TEXT_MIN, ONE_SPACE,
+  PREFILL_MAJORS_MAX, PREFILL_NONE, PREFILL_SIM_MIN, TITLES_N_MAX, WS_ALL_RE,
 } from './constants'
 import { MATCH_REWRITE, MATCH_SYSTEM, MATCH_USER, OUT_LANG, OUT_LANG_DEFAULT } from './prompts'
 import type {
@@ -26,6 +27,7 @@ import type {
   NocTitleDbRow, NocTitleRow, ParsedJson, DispositionIn, FileMimeIn, FileNameIn, MaybeMime, ResumeBlob, ResumeBlobDbRow,
   ResumeBlobOut, ResumeDeleteOut, ResumeFileDbRow, ResumeFileMeta, ResumeListOut, ResumeSaveIn, ResumeSaveOut, ResumeUserIn,
   CountDbRow, MaybeResumeId, ResumeCountOut, ResumeIdDbRow, ResumeIdFact, ResumeOneIn, ResumeSetDefaultOut, TimeCell,
+  CellTextsIn, NocSimFact, PrefillCodes, PrefillData, PrefillFact, PrefillMajorsIn, PrefillTextOut, PrefillWorksIn, PrefillWorksOut,
 } from './types'
 
 /**
@@ -271,6 +273,120 @@ export async function nocCandidatesOf(input: NocCandidatesIn): NocCandidatesOut 
 }
 
 // =========================================================================
+// 从简历填档案(2026-11-09「我的」第一批;/api/resume/prefill,结果先填表单,用户保存后才入档案)
+// =========================================================================
+
+/**
+ * 读本人默认简历的文字(清单第一份就是默认那份)。
+ *
+ * @param x 连接与用户 id。
+ * @returns 文字或错误码。
+ */
+export async function loadPrefillText(x: ResumeUserIn): PrefillTextOut {
+  const first = firstOf(await loadResumeList(x))
+  if (first == null) {
+    return { text: PREFILL_NONE, error: E_NO_RESUME }
+  }
+  const blob = await loadResumeBlob({ db: x.db, userId: x.userId, id: first.id })
+  if (blob == null) {
+    return { text: PREFILL_NONE, error: E_NO_RESUME }
+  }
+  const got = await extractText({ name: blob.fileName, buf: Buffer.from(blob.bytes) })
+  if (got.text == null) {
+    return { text: PREFILL_NONE, error: E_PARSE }
+  }
+  const text = got.text.replace(WS_ALL_RE, ONE_SPACE).trim()
+  if (text.length < EXTRACT_TEXT_MIN) {
+    return { text: PREFILL_NONE, error: E_SCAN }
+  }
+  return { text, error: PREFILL_NONE }
+}
+
+/**
+ * 模型回的 JSON → 洗净的提取结果(非字符串项丢掉,坏格按没有)。
+ *
+ * @param d 模型回的 JSON。
+ * @returns 提取结果。
+ */
+export function prefillFactOf(d: PrefillData): PrefillFact {
+  let name: string = PREFILL_NONE
+  if (typeof d.name === 'string') {
+    name = d.name.trim()
+  }
+  return {
+    name,
+    titles: cellTextsOf({ cell: d.titles, max: TITLES_N_MAX }),
+    majors: cellTextsOf({ cell: d.majors, max: PREFILL_MAJORS_MAX }),
+  }
+}
+
+/**
+ * 模型回的一格清单 → 字符串清单。
+ *
+ * @param x 原格与上限。
+ * @returns 字符串清单;不是数组给空列。
+ */
+function cellTextsOf(x: CellTextsIn): PrefillCodes {
+  const out: string[] = []
+  if (Array.isArray(x.cell)) {
+    for (const c of x.cell) {
+      if (typeof c === 'string' && c.trim() !== PREFILL_NONE && out.length < x.max) {
+        out.push(c.trim())
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * 职业名 → 职业码:每个名字只取相似度最高的那一个,够 PREFILL_SIM_MIN 才收,且必须是库内有名字的码;映射不上留空。
+ *
+ * @param x 连接与职业名。
+ * @returns 职业码(去重)。
+ */
+export async function prefillWorksOf(x: PrefillWorksIn): PrefillWorksOut {
+  const codes: string[] = []
+  for (const q of x.titles) {
+    const top = firstOf(await queryRows({ db: x.db, sql: SQL.NOC_BY_TITLE_SIM, params: [q], map: toNocSim }))
+    if (top != null && top.sim >= PREFILL_SIM_MIN && codes.includes(top.noc) === false) {
+      codes.push(top.noc)
+    }
+  }
+  if (codes.length === 0) {
+    return codes
+  }
+  const known = await queryRows({ db: x.db, sql: SQL.NOC_TITLES_BY_CODES, params: [codes], map: toNocTitleRow })
+  const has = new Set<string>()
+  for (const k of known) {
+    has.add(k.noc)
+  }
+  const out: string[] = []
+  for (const c of codes) {
+    if (has.has(c)) {
+      out.push(c)
+    }
+  }
+  return out
+}
+
+/**
+ * 专业名 → 专业码:每个名字取搜索第一名。
+ *
+ * @param x 专业名与搜索函数。
+ * @returns 专业码(去重)。
+ */
+export function prefillMajorsOf(x: PrefillMajorsIn): PrefillCodes {
+  const out: string[] = []
+  for (const q of x.names) {
+    const top = firstOf(x.hitsOf(q))
+    if (top != null && out.includes(top) === false) {
+      out.push(top)
+    }
+  }
+  return out
+}
+
+// =========================================================================
 // 行构造器(rows 抽屉 2026-08-23 撤编后的固定尾段;体内只许词汇表 + 纯拼装)
 // =========================================================================
 
@@ -393,6 +509,21 @@ export function outLangOf(lang: string): string {
  */
 export function toNocCodeCell(r: NocSimDbRow): string {
   return text(r.noc)
+}
+
+/**
+ * 一行 trgm 命中 → 职业码与相似度(从简历填档案要按相似度卡线)。
+ *
+ * @param r 库里的一行。
+ * @returns 码与相似度;相似度缺位按 0。
+ */
+export function toNocSim(r: NocSimDbRow): NocSimFact {
+  let sim = 0
+  const n = numOrNull(r.sim)
+  if (n != null) {
+    sim = n
+  }
+  return { noc: text(r.noc), sim }
 }
 
 /**

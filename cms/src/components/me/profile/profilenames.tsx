@@ -6,14 +6,17 @@
  * 2026-10-12 Frank「还有 11 个 改成 展开 / 收起,和其他地方一致」:那一行换成全站清单卡的 pager 桶 FoldLine + useFold
  * (「展开其余 N 个 ▾」/「收起 ▴」)。
  * 2026-11-07 照 Fluent 效果图先摆 3 个(原 5 个)。
+ * 2026-11-09「我的」第一批:从简历提取、用户保存过的名字后面挂「来自简历」胶囊(值改掉胶囊就没了)。
  *
  * @author Frank
  * @time 2026-11-07 16:05:00
  */
 import { cssOf } from '@/components/css'
+import { isFromResume } from '@/components/gate'
 import { Name, subOf } from '@/components/name'
 import { FoldLine, useFold } from '@/components/pager'
-import { PF_FOLD_UNIT_KEY } from './constants'
+import { Tag } from '@/components/tag'
+import { PF_FOLD_UNIT_KEY, PF_FROM_NONE, PF_FROM_TAG_KEY, PF_FROM_TAG_V } from './constants'
 import { pfHiddenOf, pfShownOf } from './functions'
 import type { PfNamesIn } from './types'
 import css from './profile.module.css'
@@ -24,12 +27,19 @@ import css from './profile.module.css'
  * @param props 名字、界面语与取词函数。
  * @returns 竖排的名字(多于 PF_FOLD_N 个时带展开 / 收起一行)。
  */
-export function ProfileNames({ names, lang, t }: PfNamesIn) {
+export function ProfileNames({ names, marks, field, lang, t }: PfNamesIn) {
   const hidden = pfHiddenOf(names)
   const f = useFold({ hidden })
   const out = []
   for (const n of pfShownOf({ names, extra: f.extra })) {
-    out.push(<Name key={n.code} en={n.en} sub={subOf({ lang, zh: n.zh, ko: n.ko })} />)
+    out.push(
+      <div key={n.code} className={cssOf(css.nameMark)}>
+        <Name en={n.en} sub={subOf({ lang, zh: n.zh, ko: n.ko })} />
+        {field !== PF_FROM_NONE && isFromResume({ marks, field, value: n.code }) && (
+          <Tag variant={PF_FROM_TAG_V}>{t(PF_FROM_TAG_KEY)}</Tag>
+        )}
+      </div>,
+    )
   }
   return (
     <div className={cssOf(css.names)}>

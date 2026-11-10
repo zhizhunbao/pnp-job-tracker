@@ -37,6 +37,21 @@ export const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3:4b'
 export const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-5-5'
 
 /**
+ * 指定了模型(Sonnet 5.5 这类不收 thinking disabled)的调用用的思考力度(2026-11-09 实测 medium 够按职位改写)。
+ */
+export const ANTHROPIC_OUTPUT_CONFIG = {
+  /**
+   * 力度。
+   */
+  effort: 'medium',
+} as const
+
+/**
+ * 结构化输出的格式种类。
+ */
+export const FORMAT_JSON_SCHEMA = 'json_schema'
+
+/**
  * 关思考(2026-11-08)。Haiku 5.5 不传就默认开,思考占 max_tokens,向导只给 300 会把回答挤没。
  * 🔴 换 Sonnet 5.5 / Opus 5.5 要去掉这一项:它们收到 disabled 报 400。
  */

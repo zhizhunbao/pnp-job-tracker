@@ -30,30 +30,10 @@ export const KIND_DIRECT = 'direct'
  */
 export const EVENT_PRICING_OPEN = 'pricing-open'
 
-/**
- * 点营销截图的埋点事件名(B3 第一卖点那张图的点击量)。
- */
-export const EVENT_SHOT_CLICK = 'pricing-se-img'
 
-/**
- * 中文界面的语言码(营销截图分两门,按界面语言选)。
- */
-export const LANG_ZH = 'zh'
 
-/**
- * 中文版营销截图的地址(担保雇主名单的真图)。
- */
-export const URL_SHOT_ZH = '/pricing-se-zh.webp'
 
-/**
- * 英文版营销截图的地址(默认档 —— 英/韩界面都走它)。
- */
-export const URL_SHOT_EN = '/pricing-se-en.webp'
 
-/**
- * 营销截图的去处:把脉页橱窗(货架页 2026-08-08 下架后,第一卖点的落点改成这里)。
- */
-export const URL_START = '/start'
 
 /**
  * 正文轨的上内衬档(px;Shell 的档位之一,定价页首屏留白 40)。
@@ -83,10 +63,6 @@ export const CLS_SEP = ' '
  */
 export const ICON_GAP = ' '
 
-/**
- * 大字档价与它右边灰字小注之间的半角空格。
- */
-export const PER_GAP = ' '
 
 /**
  * 钮上「档名」与「价格」之间、计价口径与每天单价之间的**全角**空格。
@@ -103,18 +79,16 @@ export const ARROW_NEXT = '→'
 /**
  * 展示价(2026-09-04 Frank 拍板 5/13 两档,env 覆盖退役 —— Render 上老 env 会把展示价压回 19/39)。改价 = 换 Stripe Price
  * 与 env,零代码 —— 这两个数字只是「env 没配」时的最后一道保底,不是真价。
+ * 2026-11-09 Frank「站内会员价格金额只写 $,不出现 CA$;货币单位只在一处说明一次」:前缀从 CA$ 改成 $,
+ * 加元由付款钮下那一行(词条 price.cad)说明;价格和扣款币种不变。
  */
-export const PRICE_DISPLAY_DEFAULT = 'CA$5,CA$13'
+export const PRICE_DISPLAY_DEFAULT = '$5,$13'
 
 /**
  * 展示价 env 里两档之间的分隔符(`"CA$19,CA$39"` 前 30 天档、后 90 天档)。
  */
 export const PRICE_SEP = ','
 
-/**
- * 90 天档的兜底展示价(env 只写了一档时用它;30 天档的兜底就是 env 原文本身)。
- */
-export const PRICE_P90_DEFAULT = 'CA$39'
 
 /**
  * 从展示价里剥掉非数字的正则(`"CA$19"` → `"19"`),留小数点以支持 `CA$19.90` 这类。
@@ -161,13 +135,12 @@ export const PLAN_DEFAULT = '90'
  * AI 写信(lib/apply 本批,免费试用 3 个职位)、简历对照全条 + 改写建议(lib/resume gateMatch)、每天盯梢邮件(lib/alerts,
  * 免费档只有周报)、通道报告付费行(lib/ruling TIER_OF.paid)、担保雇主 CSV 导出(lib/employers export,浏览免费)。
  * 定价卡与升级框同读这一份;加减一条只改这里与三语词条。
+ * 2026-11-09 Frank「升级框的权益清单按 B 节重写,不再出现旧的几条」:旧五条(AI 写信不限次、简历对照、岗位盯梢、
+ * 通道报告、导出名单)撤,换成额度规则的两条 —— 每 30 天 60 个按职位改写额度、重新生成每份文件每天 5 次。
  */
 export const PRO_PERKS: [string, string][] = [
-  ['price.perk.letter', 'price.perk.letter.d'],
-  ['price.perk.match', 'price.perk.match.d'],
-  ['price.perk.alert', 'price.perk.alert.d'],
-  ['price.perk.path', 'price.perk.path.d'],
-  ['price.perk.export', 'price.perk.export.d'],
+  ['price.perk.tailor', 'price.perk.tailor.d'],
+  ['price.perk.regen', 'price.perk.regen.d'],
 ]
 
 /**
@@ -239,10 +212,6 @@ export const EVENT_CHECKOUT = 'checkout'
  */
 export const EVENT_UPGRADE_OPEN = 'upgrade-open'
 
-/**
- * 定价弹窗的默认层级(普通页面上开一层)。
- */
-export const Z_PRICING = 50
 
 /**
  * 注册弹框压在定价弹窗之上要加的层级差(定价弹窗里点「注册」会再开一层)。
@@ -254,15 +223,7 @@ export const Z_AUTH_STEP = 10
  */
 export const Z_UPGRADE = 60
 
-/**
- * 升级弹框里点「对比」再开的定价弹窗层级(要压住升级弹框自己)。
- */
-export const Z_COMPARE = 70
 
-/**
- * 定价弹窗的宽档(对照三卡是站内最宽的弹框内容)。
- */
-export const MODAL_SIZE_LG = 'lg'
 
 /**
  * 升级弹框的宽档(两档钮 + 一行注脚,窄档够用)。
@@ -279,3 +240,13 @@ export const NOTICE_KIND_ERR = 'err'
  * 之后,自定义配色的钮一律经 Button 的 ghost 档 + 本域加倍类,样张 account 的 PLAIN_BTN_KIND)。
  */
 export const PLAIN_BTN_KIND = 'ghost'
+
+/**
+ * 白卡分区的全局类名(main.css 第 9 段;定价页把升级框正文装在这张卡里,各域自抄)。
+ */
+export const CARD_MD_CLS = 'cardMd'
+
+/**
+ * 次要钮的变体(升级框里「不改写,直接投基础简历」)。
+ */
+export const BTN_SECONDARY = 'secondary'

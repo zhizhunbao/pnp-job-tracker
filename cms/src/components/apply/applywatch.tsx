@@ -6,7 +6,7 @@
  * @author Frank
  * @time 2026-10-09 02:10:00
  */
-import { ApplyModal } from './applymodal'
+import { ApplyGate } from './applygate'
 import { useApplyHost } from './hooks'
 
 /**
@@ -19,5 +19,5 @@ export function ApplyWatch() {
   if (h.jobId == null) {
     return null
   }
-  return <ApplyModal key={h.jobId} jobId={h.jobId} onClose={h.onClose} />
+  return <ApplyGate key={h.jobId} jobId={h.jobId} onClose={h.onClose} />
 }

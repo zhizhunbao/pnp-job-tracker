@@ -29,7 +29,7 @@ import { hoursNameOf, placeHrefOf, placeSubOf, termNameOf } from '@/components/n
 import { BROAD_SLUGS } from '@/lib/stats'
 import { eeDisplay, isDirect, isExpiredJob, isJdNone, sourceLabel } from '@/lib/jobs'
 import {
-  PROV_NAMES, homeGateJsOf, homeProvinceOf, mapQuery, mapsUrl, parseLoc, placeLineOf, provName,
+  PROV_NAMES, homeGateJsOf, mapQuery, mapsUrl, parseLoc, placeLineOf, provName,
 } from '@/lib/location'
 import { catName, colorOf, nocLocalTitle, pickName } from '@/lib/noc'
 import { makeT } from '@/lib/i18n'
@@ -4861,6 +4861,8 @@ export function applyHomeProvince(x: HomeProvinceIn): boolean {
 /**
  * 进板时预选哪一省(applyHomeProvince 落格与板上记预选值共用;口径与沿革见 applyHomeProvince):地址栏带了省或搜索词 = 不预选;
  * 上次亲手选过具体省 = 那一省;否则按设备时区(对不上加拿大、海洋三省分不出 = 不预选)。
+ * 2026-11-09 Frank「这个默认不要选 安省了,默认选全国」改判:不再按设备时区猜省,没亲手选过的一律全国;
+ * 「选了具体省才记住」(2026-09-17)照旧。首屏本省闸的首帧脚本随之改成只认「上次所选省」那一格 cookie(lib/location)。
  *
  * @param initial 首屏筛选(URL 带来的)。
  * @returns 省全名;'' = 不预选。
@@ -4869,19 +4871,7 @@ export function homeProvPickOf(initial: JobFilters): string {
   if (homeGivenOf(initial)) {
     return TEXT_NONE
   }
-  const picked = pickedProvOf()
-  if (picked !== TEXT_NONE) {
-    return picked
-  }
-  const prov = homeProvinceOf()
-  if (prov === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  const full = PROV_NAMES[prov]
-  if (full == null) {
-    return TEXT_NONE
-  }
-  return full
+  return pickedProvOf()
 }
 
 /**
@@ -4916,11 +4906,12 @@ export function homeGateInitOf(initial: JobFilters): HomeGate {
 
 /**
  * 首屏本省闸的首帧脚本(HomeGate 原样内联):设备时区对得上省(lib/location 的时区表)就把闸的两个开关置上。
+ * 2026-11-09 不再按时区预选:带着「上次亲手选的省」那一格 cookie 才置。
  *
  * @returns 一段自执行脚本的源码。
  */
 export function homeGateScriptOf(): string {
-  return homeGateJsOf(HOME_GATE_CSS)
+  return homeGateJsOf({ css: HOME_GATE_CSS, cookie: PROV_PICK_COOKIE })
 }
 
 /**

@@ -1292,6 +1292,11 @@ export type OccPickerHookIn = {
  */
 export type OccPanel = {
   /**
+   * 外部整份换掉已选的码(「从简历填写」用;2026-11-09)。
+   */
+  onReplace: (codes: string[]) => void
+
+  /**
    * 已选的职业(已选码按组键收拢:同组的几个码算一个;2026-10-05 自已选码改 —— 码本身照旧整份回传给宿主)。
    */
   picked: OccGroup[]

@@ -8,12 +8,12 @@
  * 2026-08-28 换装批:页面改造成「纯拼装门」(闸 local/page-compose-only + page-no-logic)
  * —— 排版全部下沉进 components/pricing/,壳件(整页外框 Frame / 顶栏 / 页脚)拼装收回
  * 本门(Frank「组装只许在 (frontend) 页面门里」,样张 account/companies/news)。
+ * 2026-11-09 定价页并进升级框一种形态(Frank「可以」):对照表早撤,档位数已无人读,不再下发。
  *
  * @author Frank
  * @time 2026-08-28 12:45:00
  */
 import { headers } from 'next/headers'
-import { FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY } from '@/lib/quota'
 import { getUser, isPro } from '@/lib/quota/server'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
@@ -32,12 +32,7 @@ export default async function PricingPage() {
   return (
     <Frame>
       <Header />
-      <Pricing loggedIn={user != null}
-        pro={isPro(user)}
-        caps={{
-          jobtext: FREE_JOBTEXT_TRIES,
-          match: FREE_MATCH_JOBS_PER_DAY,
-        }} />
+      <Pricing loggedIn={user != null} pro={isPro(user)} />
       <Footer />
     </Frame>
   )

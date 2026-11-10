@@ -17,7 +17,7 @@ import { LEDGER_LOG, LLM_FN, LLM_LOG, LOG_MSG_MAX, log } from '@/lib/log'
 import { STATE, fateOf, inputBytesOf, inputCharsOf, record, reserve, settle, usageCostOf } from './ledger'
 import {
   ALPHA_BASE, ALPHA_LEN, ALPHA_ZERO, ANSWER_NONE, ANTHROPIC_MODEL, BACKEND, BLOCK_TEXT, BULLET_PREFIX, BULLET_RE,
-  ANTHROPIC_THINKING,
+  ANTHROPIC_OUTPUT_CONFIG, ANTHROPIC_THINKING, FORMAT_JSON_SCHEMA,
   PATH_MODELS, PROBE_CH_CLAUDE, PROBE_CH_FRIEND, PROBE_HTTP, PROBE_NETWORK, PROBE_TIMEOUT_MS, PROBE_UNCONFIGURED,
   BYTE_MASK, BYTE_SHIFT, CACHE_HIT, CONTENT_TYPE_NONE, DELTA_NONE, DETAIL_NONE, E_TRANSLATE_UNAVAILABLE, FNV_PRIME,
   FNV_SEED_A, FNV_SEED_B, FRIEND_CALL_TIMEOUT_MS, FRIEND_INPUT_MAX, FRIEND_MAX_TOKENS, FRIEND_STREAM_TEMP,
@@ -45,6 +45,7 @@ import type {
   SummarizeNewsOut, SystemOfIn, SystemOfOut, TextOfIn, TextOfOut, TranslateChunkIn, TranslateChunkOut,
   TranslateLinesIn, TranslateLinesOut, TranslateReadyOut, TranslateResponse, TurnsOfIn, TurnsOfOut, V1AnswerOfIn,
   V1AnswerOfOut, V1LogMeta, V1Request, V1Response, WatchWhy, WebFetchToolIn, WebFetchToolOut, TranslationOkIn, UsageTokens,
+  AnthropicModelIn,
 } from './types'
 
 // =========================================================================
@@ -993,7 +994,7 @@ export function completeText(input: CompleteTextIn): CompleteTextOut {
  */
 async function completeGated(input: CompleteTextIn): CompleteBackendOut {
   const hold = await reserve({
-    db: input.db, feature: input.feature, model: ANTHROPIC_MODEL, maxTokens: input.maxTokens,
+    db: input.db, feature: input.feature, model: modelOf(input), maxTokens: input.maxTokens,
     inputChars: inputCharsOf({ messages: input.messages }), inputBytes: inputBytesOf({ messages: input.messages }),
   })
   if (hold == null) {
@@ -1002,7 +1003,9 @@ async function completeGated(input: CompleteTextIn): CompleteBackendOut {
   const started = Date.now()
   let res: AnthropicMessage
   try {
-    res = await sendAnthropic({ messages: input.messages, maxTokens: input.maxTokens })
+    res = await sendAnthropic({
+      messages: input.messages, maxTokens: input.maxTokens, anthropicModel: input.anthropicModel, anthropicSchema: input.anthropicSchema,
+    })
   } catch (e) {
     let status: number | null = null
     if (e instanceof Anthropic.APIError && e.status != null) {
@@ -1027,7 +1030,7 @@ async function completeGated(input: CompleteTextIn): CompleteBackendOut {
     throw llmError({ msg: `${LLM_MSG.anthropicHead}${why}`, code: null })
   }
   const text = textOf({ blocks: res.content })
-  let cost = usageCostOf({ model: ANTHROPIC_MODEL, usage: res.usage })
+  let cost = usageCostOf({ model: modelOf(input), usage: res.usage })
   if (cost == null) {
     cost = hold.reservedUsd
   }
@@ -1150,15 +1153,48 @@ function sendAnthropic(input: CompleteBackendIn): AnthropicSendOut {
   const client = new Anthropic({ maxRetries: 0 })
   const system = systemOf({ messages: input.messages })
   const params: AnthropicParams = {
-    model: ANTHROPIC_MODEL,
+    model: modelOf(input),
     max_tokens: input.maxTokens,
     messages: turnsOf({ messages: input.messages }),
-    thinking: ANTHROPIC_THINKING,
+  }
+  if (input.anthropicModel == null) {
+    params.thinking = ANTHROPIC_THINKING
+  } else {
+    params.output_config = outputConfigOf(input)
   }
   if (system) {
     params.system = system
   }
   return client.messages.create(params)
+}
+
+/**
+ * 指定模型的调用的输出配置:有 Schema 就要求按结构返回。
+ *
+ * @param x 调用入参。
+ * @returns 输出配置。
+ */
+function outputConfigOf(x: CompleteBackendIn): NonNullable<AnthropicParams['output_config']> {
+  if (x.anthropicSchema == null) {
+    return ANTHROPIC_OUTPUT_CONFIG
+  }
+  return {
+    effort: ANTHROPIC_OUTPUT_CONFIG.effort,
+    format: { type: FORMAT_JSON_SCHEMA, schema: x.anthropicSchema as Record<string, never> },
+  }
+}
+
+/**
+ * 这次调用用哪个付费模型。
+ *
+ * @param x 调用入参。
+ * @returns 模型名。
+ */
+function modelOf(x: AnthropicModelIn): string {
+  if (x.anthropicModel != null) {
+    return x.anthropicModel
+  }
+  return ANTHROPIC_MODEL
 }
 
 /**

@@ -29,6 +29,7 @@
  * 2026-10-09 A 批投递搬进弹框(docs/design/我的/我的求职-20261009.md 故事 1、2):投递钮不再跳页,弹全站骨架上的投递框;
  * 匿名点投递不再弹访客向导(四道题),只弹登录框的注册档(auth 桶 AuthModal,框内照旧能切登录),登录完直接弹投递框;
  * 六步意向表(profile 桶 OnboardingWizard)那一段撤;钮的 busy 随跳页一起撤(弹框是同步的)。
+ * 2026-11-09 Frank「邮箱投递旁放次要钮 收藏,点了变 已收藏,不关框」:投递钮左边加一颗次要钮,与职位板的收藏同一份数据。
  * 原判(2026-08-03,随 `.btnClosed` 类一起撤,原文照录):「已下架岗:主钮还写「前往投递」等于继续把人往死链上送 ——
  * 降级成灰色的「查看官方页」。不直接禁掉:closed 有一部分来自「本次未见+30天」的推断(非逐帖实测),留个口子让用户自己核。」
  *
@@ -41,7 +42,7 @@ import { AuthModal } from '@/components/auth'
 import { Modal } from '@/components/modal'
 import { ResumeMatchModal } from '@/components/resume'
 import {
-  APPLY_AUTH, AUTH_REGISTER, BTN_GHOST, MODAL_SM, MODAL_Z_STACKED, TEXT_NONE, URL_JOB,
+  APPLY_AUTH, APPLY_SAVE, AUTH_REGISTER, BTN_GHOST, BTN_SECONDARY, MODAL_SM, MODAL_Z_STACKED, TEXT_NONE, URL_JOB,
 } from './constants'
 import { applyBarShownOf, barClsOf } from './functions'
 import { useApplyBar } from './hooks'
@@ -63,6 +64,10 @@ export function ApplyBar({ job, t, plan, onPage }: ApplyBarIn) {
     <>
       {onPage && <div className={cssOf(css.barPad)} />}
       <div className={barClsOf(onPage)}>
+        <Button kind={BTN_SECONDARY} onClick={a.onSave}>
+          {a.saved && t('sj.saved')}
+          {a.saved === false && t('sj.save')}
+        </Button>
         <Button kind={BTN_GHOST} onClick={a.onApply} className={cssOf(css.btnApply)}>
           {t('apply.plain')}
         </Button>
@@ -79,6 +84,10 @@ export function ApplyBar({ job, t, plan, onPage }: ApplyBarIn) {
       {a.stage === APPLY_AUTH && (
         <AuthModal t={t} mode={AUTH_REGISTER} z={MODAL_Z_STACKED}
           returnTo={URL_JOB + String(job.id)} onClose={a.onAuthClose} onDone={a.onAuthDone} />
+      )}
+      {a.stage === APPLY_SAVE && (
+        <AuthModal t={t} mode={AUTH_REGISTER} z={MODAL_Z_STACKED}
+          returnTo={URL_JOB + String(job.id)} onClose={a.onSaveAuthClose} onDone={a.onSaveAuthDone} />
       )}
     </>
   )

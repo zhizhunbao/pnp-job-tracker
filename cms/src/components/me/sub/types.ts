@@ -65,9 +65,94 @@ export type SubPanel = {
   payFailed: boolean
 
   /**
+   * 按职位改写的额度;null = 还没拉回来或拉失败(那一行不出)。
+   */
+  credit: MaybeSubCredit
+
+  /**
    * 新岗推送的状态。
    */
   push: PushPanel
+}
+
+/**
+ * 按职位改写的额度。
+ */
+export type SubCredit = {
+  /**
+   * 额度档(free / pro)。
+   */
+  plan: string
+
+  /**
+   * 还剩几个。
+   */
+  left: number
+
+  /**
+   * 一共几个。
+   */
+  max: number
+
+  /**
+   * 额度哪一刻恢复(ISO);免费额度没有恢复日。
+   */
+  resetAt: string | null
+}
+
+/**
+ * 可能还没有的额度。
+ */
+export type MaybeSubCredit = SubCredit | null
+
+/**
+ * 额度接口的回包(信任边界:逐格可缺)。
+ */
+export type CreditRespJson = {
+  /**
+   * 额度档。
+   */
+  plan?: string
+
+  /**
+   * 还剩几个。
+   */
+  left?: number
+
+  /**
+   * 一共几个。
+   */
+  max?: number
+
+  /**
+   * 恢复时刻。
+   */
+  resetAt?: string | null
+}
+
+/**
+ * `makeCreditLoad` 的入参。
+ */
+export type CreditLoadIn = {
+  /**
+   * 额度落格。
+   */
+  setCredit: (v: MaybeSubCredit) => void
+}
+
+/**
+ * `creditTextOf` 的入参。
+ */
+export type CreditTextIn = {
+  /**
+   * 额度。
+   */
+  credit: SubCredit
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
 }
 
 /**

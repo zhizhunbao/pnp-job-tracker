@@ -9,9 +9,9 @@
 import { useEffect, useState } from 'react'
 import { TEXT_NONE } from './constants'
 import {
-  makeFlagSet, makeLoadPush, makePaymentsLoad, makeSavePush, proOf, untilOf, untilTextOf,
+  makeCreditLoad, makeFlagSet, makeLoadPush, makePaymentsLoad, makeSavePush, proOf, untilOf, untilTextOf,
 } from './functions'
-import type { PaymentRows, SubIn, SubPanel } from './types'
+import type { MaybeSubCredit, PaymentRows, SubIn, SubPanel } from './types'
 
 /**
  * 「我的订阅」一页的状态机器。
@@ -29,8 +29,10 @@ export function useSub(x: SubIn): SubPanel {
   const [email, setEmail] = useState(TEXT_NONE)
   const [note, setNote] = useState(TEXT_NONE)
   const [busy, setBusy] = useState(false)
+  const [credit, setCredit] = useState<MaybeSubCredit>(null)
 
   useEffect(function firstLoad() {
+    void makeCreditLoad({ setCredit })()
     void makePaymentsLoad({ setItems: setPayments, setFailed: setPayFailed })()
     void makeLoadPush({ setFreq, setEmail, setReady, setFailed })()
   }, [])
@@ -44,6 +46,7 @@ export function useSub(x: SubIn): SubPanel {
     onClose: makeFlagSet({ set: setOpen, v: false }),
     payments,
     payFailed,
+    credit,
     push: {
       ready,
       failed,

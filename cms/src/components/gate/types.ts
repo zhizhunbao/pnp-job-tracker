@@ -124,6 +124,16 @@ export type GatePanel = {
   cities: CityPanel
 
   /**
+   * 来自简历的标记(「字段:值」串)。
+   */
+  fromResume: string[]
+
+  /**
+   * 改来自简历的标记。
+   */
+  setFromResume: (v: string[]) => void
+
+  /**
    * 编辑模式才用得上的几格(英文姓名那一题、主钮的字、保存态;访客向导给定值)。
    */
   edit: EditBits
@@ -845,6 +855,11 @@ export type GateEditSeed = {
    * 匹配模式;空串 = 没选。
    */
   matchMode: string
+
+  /**
+   * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
+   */
+  fromResume: string[]
 }
 
 /**
@@ -950,6 +965,11 @@ export type EditPatch = {
    * 匹配模式;空串 = 没选。
    */
   matchMode: string
+
+  /**
+   * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
+   */
+  fromResume: string[]
 }
 
 /**
@@ -1033,18 +1053,43 @@ export type GateLabelOfIn = {
 }
 
 /**
- * 「已选几个」一行的取法入参。
+ * 已选名字的一行。
+ */
+export type PickedLine = {
+  /**
+   * React key。
+   */
+  key: string
+
+  /**
+   * 显示名(界面语短名;还没取到是占位)。
+   */
+  name: string
+
+  /**
+   * 来自简历。
+   */
+  from: boolean
+}
+
+/**
+ * GatePicked(一格已选名字 + 修改钮)的 props。
  */
 export type GatePickedIn = {
+  /**
+   * 已选的几行。
+   */
+  lines: PickedLine[]
+
+  /**
+   * 点「修改」。
+   */
+  onEdit: () => void
+
   /**
    * 取词。
    */
   t: TFn
-
-  /**
-   * 已选几个。
-   */
-  n: number
 }
 
 /**
@@ -1102,6 +1147,16 @@ export type GateFormFieldsIn = {
   g: GatePanel
 
   /**
+   * 专业、想做的工作、做过的工作三格的已选名字。
+   */
+  n: GatePickLines
+
+  /**
+   * 从简历填写的面板。
+   */
+  f: ResumeFillPanel
+
+  /**
    * 叠开选择器的手柄。
    */
   k: GatePickPanel
@@ -1110,4 +1165,314 @@ export type GateFormFieldsIn = {
    * 取词。
    */
   t: TFn
+}
+
+/**
+ * 三格已选名字。
+ */
+export type GatePickLines = {
+  /**
+   * 专业。
+   */
+  majors: PickedLine[]
+
+  /**
+   * 想做的工作。
+   */
+  jobs: PickedLine[]
+
+  /**
+   * 做过的工作。
+   */
+  works: PickedLine[]
+}
+
+/**
+ * 从简历填写后的一行提示。
+ */
+export type FillMsg = {
+  /**
+   * 词条键;没有提示 = 空串。
+   */
+  key: string
+
+  /**
+   * 填上了几项。
+   */
+  n: number
+
+  /**
+   * 提示的颜色。
+   */
+  kind: 'ok' | 'info' | 'err'
+}
+
+/**
+ * useResumeFill 的入参。
+ */
+export type ResumeFillHookIn = {
+  /**
+   * 表单状态。
+   */
+  g: GatePanel
+
+  /**
+   * 把提取到的做过的工作同步给选择器。
+   */
+  onWork: (codes: string[]) => void
+}
+
+/**
+ * makeResumeFill 的入参。
+ */
+export type ResumeFillIn = ResumeFillHookIn & {
+  /**
+   * 落「取数中」。
+   */
+  setBusy: (v: boolean) => void
+
+  /**
+   * 落提示。
+   */
+  setMsg: (v: FillMsg) => void
+}
+
+/**
+ * useResumeFill 交出的面板。
+ */
+export type ResumeFillPanel = {
+  /**
+   * 取数中。
+   */
+  busy: boolean
+
+  /**
+   * 提示。
+   */
+  msg: FillMsg
+
+  /**
+   * 点「从简历填写」。
+   */
+  onFill: () => void
+}
+
+/**
+ * GateResumeFill 的 props。
+ */
+export type GateResumeFillIn = {
+  /**
+   * 从简历填写的面板。
+   */
+  f: ResumeFillPanel
+
+  /**
+   * 取词。
+   */
+  t: TFn
+}
+
+/**
+ * 接口回包(缺席按空读)。
+ */
+export type PrefillJson = {
+  /**
+   * 错误码。
+   */
+  error?: string
+
+  /**
+   * 做过的工作。
+   */
+  works?: string[]
+
+  /**
+   * 专业。
+   */
+  majors?: string[]
+
+  /**
+   * 英文姓名。
+   */
+  name?: string
+}
+
+/**
+ * 洗净的提取结果。
+ */
+export type PrefillFact = {
+  /**
+   * 做过的工作。
+   */
+  works: string[]
+
+  /**
+   * 专业。
+   */
+  majors: string[]
+
+  /**
+   * 英文姓名;没有 = 空串。
+   */
+  name: string
+}
+
+/**
+ * isFromResume 的入参。
+ */
+export type FromResumeIn = {
+  /**
+   * 标记(「字段:值」串)。
+   */
+  marks: string[]
+
+  /**
+   * 字段。
+   */
+  field: string
+
+  /**
+   * 值。
+   */
+  value: string
+}
+
+/**
+ * fromKeptOf 的入参。
+ */
+export type FromKeptIn = {
+  /**
+   * 现有标记。
+   */
+  marks: string[]
+
+  /**
+   * 现在的专业。
+   */
+  majors: string[]
+
+  /**
+   * 现在做过的工作。
+   */
+  workNocs: string[]
+
+  /**
+   * 现在的英文姓名。
+   */
+  name: string
+}
+
+/**
+ * occLinesOf 的入参。
+ */
+export type OccLinesIn = {
+  /**
+   * 已选的组(同组几个码算一行)。
+   */
+  picked: OccLineGroup[]
+
+  /**
+   * 码 → 显示名。
+   */
+  titles: Record<string, string>
+
+  /**
+   * 标记;想做的工作传空列。
+   */
+  marks: string[]
+}
+
+/**
+ * occLinesOf 读的一组已选职业(只声明真读的格)。
+ */
+export type OccLineGroup = {
+  /**
+   * 组键。
+   */
+  key: string
+
+  /**
+   * 组里打头的码。
+   */
+  head: string
+
+  /**
+   * 组里全部的码。
+   */
+  nocs: string[]
+}
+
+/**
+ * majorLinesOf 的入参。
+ */
+export type MajorLinesIn = {
+  /**
+   * 已选专业码。
+   */
+  codes: string[]
+
+  /**
+   * 已取到名字的专业行。
+   */
+  rows: MajorLineRow[]
+
+  /**
+   * 界面语。
+   */
+  lang: string
+
+  /**
+   * 标记。
+   */
+  marks: string[]
+}
+
+/**
+ * majorLinesOf 读的专业行(形同 majors 桶的 MajorRow,喂 majorNameOf 全格照抄)。
+ */
+export type MajorLineRow = {
+  /**
+   * 专业码。
+   */
+  code: string
+
+  /**
+   * 英文名。
+   */
+  titleEn: string
+
+  /**
+   * 英文短名。
+   */
+  titleEnShort: string
+
+  /**
+   * 中文名。
+   */
+  titleZh: string | null
+
+  /**
+   * 韩文名。
+   */
+  titleKo: string | null
+
+  /**
+   * 落的本站大类。
+   */
+  broads: string[]
+}
+
+/**
+ * applyPrefill 的入参。
+ */
+export type ApplyPrefillIn = {
+  /**
+   * 手柄。
+   */
+  x: ResumeFillIn
+
+  /**
+   * 提取结果。
+   */
+  d: PrefillFact
 }

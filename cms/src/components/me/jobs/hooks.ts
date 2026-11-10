@@ -17,7 +17,7 @@ import {
   ST_DRAFT,
 } from './constants'
 import {
-  firstTabOf, loadProfile, makeAskClose, makeAskOk, makeCoLand, makeFillHide, makeFlag, makeLoadMyJobs,
+  loadProfile, makeAskClose, makeAskOk, makeCoLand, makeFillHide, makeFlag, makeLoadMyJobs,
   makeRemoveMine, makeRemovePick, untranslatedCosOf,
   stageDefOf, ymdOf,
 } from './functions'
@@ -31,18 +31,17 @@ import type {
 } from './types'
 
 /**
- * 「我的求职」一页整机:当前页签(旧深链 `?sec=favs` 先落「我的收藏」)+ 三张清单。
+ * 「我的求职」一页整机:三张清单(2026-11-09 页签挪到侧边栏,当前出哪一张由页面递来,不在这里记)。
  * 投出一封(重拉代数)推荐与我的投递重拉;我的收藏只拉一次(旧件只重挂投递表)。
  *
  * @param x 重拉代数、答档案代数与是不是 Pro。
  * @returns 页签与三张清单。
  */
 export function useJobs(x: JobsHookIn): JobsPanel {
-  const [tab, setTab] = useState(firstTabOf)
   const picks = usePicks({ gen: x.gen, asked: x.asked, pro: x.pro })
   const saved = useMyJobs({ url: URL_SAVED, delHead: URL_SAVED_DEL, gen: GEN_NONE })
   const applied = useMyJobs({ url: URL_APPLIED, delHead: URL_APPLIED_DEL, gen: x.gen })
-  return { tab, onTab: setTab, picks, saved, applied }
+  return { picks, saved, applied }
 }
 
 /**

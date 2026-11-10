@@ -333,6 +333,27 @@
 }
 
 /*
+ * Google 钮悬停(2026-11-09 Frank「这个灰色的 hover 是不是换个颜色」):原先落到通用钮的深灰底,换成主色描边加浅蓝底;
+ * 加倍类压过通用钮的悬停规则。
+ */
+.googleBtn.googleBtn:hover {
+  /*
+   * 全站悬停底色(main.css 的 --hover-bg,2026-09-04 Frank「所有 hover 背景变化都改成淡蓝色」)。
+   */
+  background: var(--hover-bg);
+
+  /*
+   * 主色描边。
+   */
+  border-color: var(--primary);
+
+  /*
+   * 字色不变。
+   */
+  color: #374151;
+}
+
+/*
  * 「或用邮箱」分隔行:两条细线夹一句小字。
  */
 .orRow {

@@ -47,6 +47,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { openAppView } from '@/components/me/apps'
+import { secLinkOf } from '@/components/me/functions'
 import { JobsBody } from '@/components/me/jobs'
 
 const BASE = {
@@ -91,6 +92,7 @@ const t = (k: string, v?: Record<string, string | number>) => (v == null ? k : k
 const MAP = (q: string) => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q)
 
 // 2026-11-07:挂整页正文 JobsBody(打开只读投递框注入真的 openAppView),再点页签切到要验的那张表
+// 2026-11-09 Frank「这三个是不是都放到侧边栏比较好」:页签条撤,出哪一张表由 tab 这个 prop 定(侧边栏点的,页面递来)
 type Tab = 'picks' | 'saved' | 'applied'
 
 async function mount(tab: Tab) {
@@ -99,25 +101,17 @@ async function mount(tab: Tab) {
   const root = createRoot(el)
   await act(async () => {
     root.render(createElement(JobsBody, {
-      t, pro: false, plan: { isPro: false, loggedIn: true }, gen: 0, asked: 0, onFill: () => undefined, openApp: openAppView,
+      t, tab, pro: false, plan: { isPro: false, loggedIn: true }, gen: 0, asked: 0, onFill: () => undefined,
+      openApp: openAppView,
     }))
-  })
-  await flush()
-  await act(async () => {
-    tabOf(el, tab).click()
   })
   await flush()
   return el
 }
 
-// 一枚页签(Tabs 桶 role=tab,id 尾是页签身份)
-function tabOf(el: HTMLElement, tab: Tab) {
-  return el.querySelector('[role="tab"][id$="' + tab + '"]') as HTMLButtonElement
-}
-
-// 页签下面那一块(当前页签的表 / 空态 / 失败一句)
+// 那张白卡(当前这一项的表 / 空态 / 失败一句)
 function panelOf(el: HTMLElement) {
-  return el.querySelector('[role="tabpanel"]') as HTMLElement
+  return el.querySelector('section') as HTMLElement
 }
 
 // 页签以外的钮(阶段筛选药丸、行上那颗钮、显示更多)
@@ -170,17 +164,15 @@ afterEach(() => {
 })
 
 describe('我的求职', () => {
-  it('① 清单没回来不渲:页签不挂计数,表格区空着', async () => {
+  it('① 清单没回来不渲:表格区空着', async () => {
     server({ 'GET /api/myjobs/applied': 'hang' })
     const el = await mount('applied')
-    expect(tabOf(el, 'applied').textContent).toBe('mj.tab.applied')
     expect(panelOf(el).textContent).toBe('')
   })
 
-  it('② 零条出空态,不带去职位板;页签计数 0', async () => {
+  it('② 零条出空态,不带去职位板', async () => {
     server({ 'GET /api/myjobs/applied': { status: 200, body: { items: [] } } })
     const el = await mount('applied')
-    expect(tabOf(el, 'applied').textContent).toBe('mj.tab.applied0')
     expect(panelOf(el).textContent).toContain('mj.emptyApplied')
     expect(Array.from(el.querySelectorAll('a')).find((x) => x.textContent === 'mj.toBoard')).toBeUndefined()
   })
@@ -195,7 +187,6 @@ describe('我的求职', () => {
   it('④⑤⑥ 表格行:职位链、公司、地点「市, 省码」(完整地址的地图链 + 市译名灰字)、薪资、工时 / 雇佣期、投递于、状态胶囊、唯一一颗「打开」;职位已删', async () => {
     server({ 'GET /api/myjobs/applied': { status: 200, body: { items: [S, B] } } })
     const el = await mount('applied')
-    expect(tabOf(el, 'applied').textContent).toBe('mj.tab.applied2')
     const a = rowOf(el, 'light duty cleaner')
     expect(a.tagName).toBe('TR')   // 2026-10-10 批 2:网页端走通用表格
     // 2026-11-07 效果图:投递行上的简历 / 求职信两个链接撤(只读投递框里照有)
@@ -269,38 +260,25 @@ describe('我的求职', () => {
     expect(rowOf(el, 'office manager').textContent).not.toContain('mj.unsent')   // 筛到单一状态,行上不再重复挂胶囊(Frank 10-08)
     expect(rowOf(el, 'light duty cleaner')).toBeNull()
     expect(rowOf(el, 'bounced one')).toBeNull()
-    expect(tabOf(el, 'applied').textContent).toBe('mj.tab.applied3')   // 页签计数是整张清单,不随筛选变
     await click(el, 'mj.all3')
     expect(rowOf(el, 'light duty cleaner')).not.toBeNull()
   })
 })
 
 describe('我的收藏', () => {
-  it('旧深链 ?sec=favs:进页直接落「我的收藏」页签;别的深链落「今日推荐」(2026-11-07 改:原「收藏卡挂上后滚过去」)', async () => {
-    server({ 'GET /api/myjobs/saved': { status: 200, body: { items: [A] } } })
+  it('旧深链 ?sec=favs 落侧边栏的「我的收藏」子项;?sec=sjobs 落「我的求职」;子项的键也认(2026-11-09 改:原「落我的收藏页签」)', async () => {
     window.history.replaceState(null, '', '/account?sec=favs')
-    const el = document.createElement('div')
-    document.body.appendChild(el)
-    await act(async () => {
-      createRoot(el).render(createElement(JobsBody, {
-        t, pro: false, plan: {}, gen: 0, asked: 0, onFill: () => undefined, openApp: openAppView,
-      }))
-    })
-    await flush()
-    expect(tabOf(el, 'saved').getAttribute('aria-selected')).toBe('true')
-    expect(rowOf(el, 'light duty cleaner')).not.toBeNull()
-    document.body.innerHTML = ''
+    expect(secLinkOf()).toBe('saved')
     window.history.replaceState(null, '', '/account?sec=sjobs')
-    const el2 = document.createElement('div')
-    document.body.appendChild(el2)
-    await act(async () => {
-      createRoot(el2).render(createElement(JobsBody, {
-        t, pro: false, plan: {}, gen: 0, asked: 0, onFill: () => undefined, openApp: openAppView,
-      }))
-    })
-    await flush()
-    expect(tabOf(el2, 'picks').getAttribute('aria-selected')).toBe('true')
-    expect(tabOf(el2, 'saved').getAttribute('aria-selected')).toBe('false')
+    expect(secLinkOf()).toBe('sjobs')
+    window.history.replaceState(null, '', '/account?sec=applied')
+    expect(secLinkOf()).toBe('applied')
+    window.history.replaceState(null, '', '/account?sec=nope')
+    expect(secLinkOf()).toBeNull()
+    server({ 'GET /api/myjobs/saved': { status: 200, body: { items: [A] } } })
+    const el = await mount('saved')
+    expect(rowOf(el, 'light duty cleaner')).not.toBeNull()
+    expect(el.querySelector('[role="tab"]')).toBeNull()   // 页签条撤了
   })
 
   it('② 零条出空态', async () => {
@@ -311,7 +289,6 @@ describe('我的收藏', () => {
   it('④⑤⑨ 薪资、发布于、没投的没胶囊;有邮箱在架没投过的行「投递」,投过的「打开」,下架的没有钮', async () => {
     server({ 'GET /api/myjobs/saved': { status: 200, body: { items: [E, A, B] } } })
     const el = await mount('saved')
-    expect(tabOf(el, 'saved').textContent).toBe('mj.tab.saved3')   // 2026-11-07:计数从卡头挪到页签
     const e = rowOf(el, 'truck washer')
     expect(e.textContent).toContain('$18–$21/hr')
     expect(e.textContent).toContain('2026-09-30')   // 发布日期

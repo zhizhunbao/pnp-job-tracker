@@ -29,7 +29,7 @@ import css from './apply.module.css'
  * @param props 投递区取数面板。
  * @returns 四步本体,或原因 / 失败 / 已投递一行,或登录框,或加载占位;没带职位给空。
  */
-export function ApplySection({ s }: ApplySectionIn) {
+export function ApplySection({ s, base }: ApplySectionIn) {
   if (s.load === LOAD_NONE) {
     return null
   }
@@ -52,5 +52,5 @@ export function ApplySection({ s }: ApplySectionIn) {
   if (block !== TEXT_NONE) {
     return <div className={css.note}>{s.t(block)}</div>
   }
-  return <ApplyFlow start={s.start} titleSub={s.titleSub} onSent={announceSent} />
+  return <ApplyFlow start={s.start} titleSub={s.titleSub} onSent={announceSent} base={base} />
 }

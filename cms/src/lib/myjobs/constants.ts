@@ -74,6 +74,16 @@ export const P_FRESH = 'fresh'
 export const FRESH_ON = '1'
 
 /**
+ * 推荐接口的查询参数:刚投的职位 id(带了就改回「接着投的同类岗」;2026-11-09 Frank:同省、同职业、没投过,按新旧排)。
+ */
+export const P_AFTER = 'after'
+
+/**
+ * 「接着投的同类岗」最多几条(第一条是主按钮「下一个」)。
+ */
+export const AFTER_MAX = 3
+
+/**
  * 推荐接口的查询参数:换到第几批(0 = 头一批;2026-10-13 Frank「这个要不要加个按钮 换一批」)。
  */
 export const P_BATCH = 'batch'

@@ -78,6 +78,56 @@ export const ME_SECS = [
 ] as const
 
 /**
+ * 「我的求职」类别下的三个子项,按显示顺序(2026-11-09 Frank「这三个是不是都放到侧边栏比较好」「因为功能 和 需要的 字段都不一样,
+ * 放到一起容易忽略吧」;Fluent 2 Nav「带类别的复杂导航」,知识库 ui-ux/fluent-2/components-react/6-26-nav.md)。
+ */
+export const ME_JOB_TABS = [
+  {
+    /**
+     * 今日推荐。
+     */
+    tab: 'picks',
+
+    /**
+     * 「今日推荐」。
+     */
+    labelKey: 'mj.tab.picks',
+  },
+  {
+    /**
+     * 我的收藏。
+     */
+    tab: 'saved',
+
+    /**
+     * 「我的收藏」。
+     */
+    labelKey: 'mj.tab.saved',
+  },
+  {
+    /**
+     * 我的投递。
+     */
+    tab: 'applied',
+
+    /**
+     * 「我的投递」。
+     */
+    labelKey: 'mj.tab.applied',
+  },
+] as const
+
+/**
+ * 进「我的求职」默认落的子项(今日推荐)。
+ */
+export const JOB_TAB_DEFAULT = 'picks'
+
+/**
+ * 「我的收藏」那个子项的键(旧深链 `?sec=favs` 落这里)。
+ */
+export const JOB_TAB_SAVED = 'saved'
+
+/**
  * 带红色未读数的那一项(收件箱:雇主回信没读的封数)。
  */
 export const SEC_COUNTED = 'inbox'
@@ -114,6 +164,7 @@ export const SEC_DEFAULT = 'sjobs'
 
 /**
  * 旧深链里「我的收藏」的节键:收藏表已并进「我的求职」,带它来的落「我的求职」。
+ * 2026-11-09 三枚页签挪到侧边栏后:落「我的求职」下的「我的收藏」子项。
  */
 export const SEC_FAVS_OLD = 'favs'
 

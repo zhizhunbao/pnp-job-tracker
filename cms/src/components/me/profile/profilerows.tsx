@@ -10,7 +10,12 @@
  * @time 2026-11-07 16:05:00
  */
 import { cssOf } from '@/components/css'
-import { PF_NONE_KEY, PF_NONE_NAME_KEY, PF_ROW_KEYS, PF_WHO_HEAD, TEXT_NONE } from './constants'
+import { isFromResume } from '@/components/gate'
+import { Tag } from '@/components/tag'
+import {
+  PF_FROM_MAJORS, PF_FROM_NAME, PF_FROM_NONE, PF_FROM_TAG_KEY, PF_FROM_TAG_V, PF_FROM_WORK, PF_NONE_KEY,
+  PF_NONE_NAME_KEY, PF_ROW_KEYS, PF_WHO_HEAD, TEXT_NONE,
+} from './constants'
 import { pfGoalKeyOf, pfMatchByKeyOf, pfMatchModeKeyOf } from './functions'
 import { ProfileEdu } from './profileedu'
 import { ProfileItem } from './profileitem'
@@ -36,15 +41,19 @@ export function ProfileRows({ v, lang, t }: PfRowsIn) {
       </ProfileItem>
       <ProfileItem k={t(PF_ROW_KEYS.majors)}>
         {v.majors.length === 0 && none}
-        {v.majors.length > 0 && <ProfileNames names={v.majors} lang={lang} t={t} />}
+        {v.majors.length > 0 && (
+          <ProfileNames names={v.majors} marks={v.fromResume} field={PF_FROM_MAJORS} lang={lang} t={t} />
+        )}
       </ProfileItem>
       <ProfileItem k={t(PF_ROW_KEYS.jobs)}>
         {v.nocs.length === 0 && none}
-        {v.nocs.length > 0 && <ProfileNames names={v.nocs} lang={lang} t={t} />}
+        {v.nocs.length > 0 && <ProfileNames names={v.nocs} marks={[]} field={PF_FROM_NONE} lang={lang} t={t} />}
       </ProfileItem>
       <ProfileItem k={t(PF_ROW_KEYS.work)}>
         {v.works.length === 0 && none}
-        {v.works.length > 0 && <ProfileNames names={v.works} lang={lang} t={t} />}
+        {v.works.length > 0 && (
+          <ProfileNames names={v.works} marks={v.fromResume} field={PF_FROM_WORK} lang={lang} t={t} />
+        )}
       </ProfileItem>
       <ProfileItem k={t(PF_ROW_KEYS.where)}>
         {v.prov === TEXT_NONE && v.abroad === false && none}
@@ -62,7 +71,14 @@ export function ProfileRows({ v, lang, t }: PfRowsIn) {
       <ProfileItem k={t(PF_ROW_KEYS.matchMode)}>{t(pfMatchModeKeyOf(v.matchMode))}</ProfileItem>
       <ProfileItem k={t(PF_ROW_KEYS.name)}>
         {v.name === TEXT_NONE && <span className={cssOf(css.none)}>{t(PF_NONE_NAME_KEY)}</span>}
-        {v.name !== TEXT_NONE && v.name}
+        {v.name !== TEXT_NONE && (
+          <div className={cssOf(css.nameMark)}>
+            {v.name}
+            {isFromResume({ marks: v.fromResume, field: PF_FROM_NAME, value: v.name }) && (
+              <Tag variant={PF_FROM_TAG_V}>{t(PF_FROM_TAG_KEY)}</Tag>
+            )}
+          </div>
+        )}
       </ProfileItem>
     </div>
   )

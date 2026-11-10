@@ -104,6 +104,7 @@ export function profileSeedOf(v: PfView): PfSeed {
     workNocs,
     matchBy: v.matchBy,
     matchMode: v.matchMode,
+    fromResume: v.fromResume,
     goal: v.goal,
 majors,
 nocs,

@@ -8,5 +8,5 @@
  */
 export {
   chanNameOf, hiddenPicksOf, makeLoadPicks, makeSwap, picksOf, picksTotalOf, shownPicksOf, titledPicksOf, unlockNOf,
-  whyTagsOf,
+  wageViewOf,
 } from './functions'

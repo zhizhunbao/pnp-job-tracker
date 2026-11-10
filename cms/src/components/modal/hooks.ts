@@ -15,6 +15,7 @@ import {
   PEEK_POP, PEEK_PUSH, PEEK_SWAP,
 } from './constants'
 import {
+  overflowBoxOf,
   downOf, fitKeyOf, frameInitOf, frameStyleOf, heightDroppedOf, isTopEsc, joinEsc, leaveEsc, makeDragStart,
   makeResizeStart, memoOf, minSizeOf,
   openCountOf, peekCtxOf, peekMsgOf, sendPeek, sendPeekCtx, zOf,
@@ -153,6 +154,14 @@ export function useFrame(x: FrameIn): FrameOut {
   const [box, setBox] = useState<FrameBox | null>(function initBox(): FrameBox | null {
     return frameInitOf({ win: x.win })
   })
+  useEffect(function fitOnMount() {
+    const fit = overflowBoxOf(box)
+    if (fit != null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 视口只有挂载后才量得到,一次性收进屏内
+      setBox(fit)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只在挂载时量一次视口;之后的尺寸由拖拽管
+  }, [])
   const fitKey = fitKeyOf(x)
   const [fit, setFit] = useState(fitKey)
   if (fit !== fitKey) {

@@ -320,3 +320,44 @@
   font-weight: 600;
   margin: 12px 0 6px;
 }
+
+/*
+ * 已选名字竖排(修改钮在右)。
+ */
+.pickNames {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/*
+ * 一个已选名字与它的「来自简历」胶囊。
+ */
+.pickName {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/*
+ * 「从简历填写」一行:说明在左,按钮在右。
+ */
+.fillRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/*
+ * 「从简历填写」的灰字说明。
+ */
+.fillHint {
+  flex: 1 1 200px;
+  font-size: 13px;
+  color: var(--text3);
+}

@@ -1,0 +1,83 @@
+/* 等待卡。 */
+.wait { min-height: 160px; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+.stage { margin-bottom: 10px; }
+.note { color: var(--text2); font-size: 13px; }
+
+/* 分数卡。 */
+.score { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.big { font-size: 40px; font-weight: 700; line-height: 1; color: var(--text); }
+.of { font-size: 15px; font-weight: 400; color: var(--text2); margin-left: 2px; }
+.scoreText { min-width: 0; }
+.scoreName { font-weight: 700; color: var(--text); }
+.fillAll { margin-left: auto; }
+.strip { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; padding-top: 10px; border-top: 1px solid var(--hairline); }
+.req { display: inline-flex; align-items: center; min-height: 26px; border: 1px solid transparent; border-radius: 13px; padding: 2px 10px 2px 4px; font-size: 12.5px; font-weight: 600; color: var(--text); cursor: pointer; }
+.reqOn { border-color: var(--text); }
+.reqMiss { display: inline-flex; align-items: center; min-height: 26px; border: 1px solid var(--danger); border-radius: 13px; padding: 2px 10px; font-size: 12.5px; font-weight: 600; color: var(--danger); background: var(--card); }
+.reqMiss::before { content: "✕"; margin-right: 4px; font-size: 11px; }
+
+/* 序号:行内圆点,和文字之间留白(2026-11-09 Frank「注意一下序号和文字的间距」)。 */
+.num { display: inline-block; min-width: 15px; height: 15px; line-height: 15px; margin-right: 5px; border-radius: 8px; background: var(--text); color: var(--card); font-size: 10.5px; font-weight: 700; text-align: center; vertical-align: 1px; }
+
+/* 三屏。 */
+.grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1.55fr) minmax(0, 1fr); gap: 12px; }
+.gridFocus { grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr); }
+.pane { margin-bottom: 0; min-width: 0; display: flex; flex-direction: column; }
+.paneHead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.acts { display: inline-flex; gap: 6px; flex-shrink: 0; }
+.zoomHint { display: none; margin-bottom: 6px; font-size: 12.5px; color: var(--text2); }
+.paper { height: max(320px, calc(100vh - 400px)); overflow-y: auto; font-size: 12.5px; line-height: 1.45; color: var(--text); padding-right: 4px; }
+.zoomable { cursor: zoom-in; }
+.gone { display: none; }
+.line { margin: 0 0 6px; }
+
+/* 将发出的 PDF。 */
+.pdfBox { overflow-x: auto; }
+.sheet { position: relative; overflow: hidden; }
+.sheet canvas { display: block; }
+.hl { position: absolute; display: block; mix-blend-mode: multiply; border-radius: 2px; cursor: pointer; }
+.hlDim { opacity: 0.12; }
+.hlBad { background: #fdba74; }
+.hlNum { position: absolute; border-radius: 50%; background: #111827; color: #fff; font-weight: 700; text-align: center; pointer-events: none; }
+
+/* 职位描述。 */
+.mark { color: inherit; border-radius: 3px; padding: 1px 3px; cursor: pointer; }
+.dim { background: transparent; opacity: 0.55; }
+.miss { border-left: 3px solid var(--danger); padding-left: 6px; }
+
+/* 十二种颜色,按要求编号循环。 */
+.c1 { background: #bfdbfe; }
+.c2 { background: #bbf7d0; }
+.c3 { background: #fde68a; }
+.c4 { background: #e9d5ff; }
+.c5 { background: #a5f3fc; }
+.c6 { background: #fecdd3; }
+.c7 { background: #d9f99d; }
+.c8 { background: #fed7aa; }
+.c9 { background: #c7d2fe; }
+.c10 { background: #99f6e4; }
+.c11 { background: #f5d0fe; }
+.c12 { background: #e5e7eb; }
+
+/* 底部一行。 */
+.foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.sendTo { font-size: 12.5px; color: var(--text2); min-width: 0; overflow-wrap: anywhere; }
+.mailMore summary { cursor: pointer; color: var(--primary); }
+.mailBody { white-space: pre-line; margin: 4px 0; color: var(--text); }
+.nameInput { margin-top: 6px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; }
+.saved { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 6px; }
+.failAct { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 13px; color: var(--text2); }
+
+/* 右侧栏。 */
+.fillHint { margin-bottom: 12px; font-size: 13px; color: var(--text2); }
+.fillRow { margin-bottom: 14px; }
+.fillReq { margin-bottom: 8px; font-weight: 600; color: var(--text); }
+.area { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font: inherit; }
+
+@media (max-width: 640px) {
+  .grid { display: block; }
+  .pane { margin-bottom: 12px; }
+  .gone { display: flex; }
+  .zoomHint { display: block; }
+  .paper { height: auto; overflow: visible; }
+}

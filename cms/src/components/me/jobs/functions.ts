@@ -19,22 +19,24 @@ import { ChanCell } from './chancell'
 import { CompanyCell } from './companycell'
 import {
   ACT_APPLY, ACT_CONT, ACT_DEL, ACT_OPEN, CLOSED_TAG, COL_ACT, COL_APPLIED_ON, COL_CHAN, COL_COMPANY, COL_DEADLINE,
-  COL_HOURS, COL_PAY, COL_PLACE, COL_POSTED, COL_SAVED_ON, COL_STATUS, COL_TERM, COL_TITLE, COL_WHY, CRED_INCLUDE,
+  COL_HOURS, COL_PAY, COL_PLACE, COL_POSTED, COL_SAVED_ON, COL_STATUS, COL_TERM, COL_TITLE, CRED_INCLUDE,
   DUE_KEY, JOB_HREF_HEAD, KIND_APPLIED, KIND_SAVED, LANG_EN, LANG_KO, LANG_ZH, MD_FROM,
-  OPEN_KIND, PF_ERR_EMPTY, PICKS_FIRST, PLACE_SEP, PRIMARY_KIND, QP_SEC, SEC_FAVS, STAGES, STAGE_ALL, STAGE_FILTERS,
-  METHOD_DELETE, ST_DRAFT, TAB_APPLIED, TAB_PICKS, TAB_SAVED, TEXT_NONE, URL_PICK_DEL, URL_PROFILE,
-  FILL_KEY, FILL_LABEL_FALLBACK, FILL_LABEL_KEYS, FILL_MORE_KEY, FILL_NAME_MAX, FILL_SEP_KEY,
+  OPEN_KIND, PF_ERR_EMPTY, PICKS_FIRST, PLACE_SEP, PRIMARY_KIND, STAGES, STAGE_ALL, STAGE_FILTERS,
+  METHOD_DELETE, ST_DRAFT, TAB_PICKS, TEXT_NONE, URL_PICK_DEL, URL_PROFILE,
+  FILL_KEY, FILL_LABEL_FALLBACK, FILL_LABEL_KEYS, FILL_MORE_KEY, FILL_NAME_MAX, FILL_SEP_KEY, COL_MED, COL_VS,
 } from './constants'
 import { HoursCell } from './hourscell'
+import { MedCell } from './medcell'
 import { PayCell } from './paycell'
 import { PlaceCell } from './placecell'
-import { chanNameOf, picksTotalOf, whyTagsOf } from './recommend'
+import { chanNameOf, picksTotalOf, wageViewOf } from './recommend'
 import { TagsCell } from './tagscell'
 import { TermCell } from './termcell'
+import { VsCell } from './vscell'
 import { TitleCell } from './titlecell'
 import type {
-  ActBtn, ByStageIn, CellRowIn, CellRowsIn, CoAliasForIn, CoLandIn, ColsIn, FlagIn, JobsTab, JobsTabIn,
-  JobsTabsIn, LazyCompaniesIn, ListRow, LoadMyJobsIn, MaybeStageDef, MjCol,
+  ActBtn, ByStageIn, CellRowIn, CellRowsIn, CoAliasForIn, CoLandIn, ColsIn, FlagIn,
+  LazyCompaniesIn, ListRow, LoadMyJobsIn, MaybeStageDef, MjCol,
   MyJobItem, MyJobsRespJson, PfJson, PfLoadIn, PfSeed, PfView, PickRowIn, PickRowsIn, PillClickIn, PlaceDue, PlaceDueIn,
   FillTextIn, StagePill, StagePillsIn, SwapShownIn, TagItem, TitleSubForIn,
   FillHideIn, AskOkIn, AskSetFn, DelMenuIn, PickItem, PicksFact, RemoveFn, RemoveMineIn, RemovePickIn, RowMenuItem,
@@ -91,51 +93,6 @@ export function makeFlag(x: FlagIn): () => void {
 }
 
 /**
- * 三枚页签(2026-11-07 效果图:计数挂在页签字后面;还没拉到不出计数)。页签字用短词条 mj.tab.*(同日截图验收:
- * 英文「My saved jobs」「My applications」在 375 宽排不下,第三枚被截)。
- *
- * @param x 取词函数与三张清单。
- * @returns 页签。
- */
-export function tabsOf(x: JobsTabsIn): JobsTab[] {
-  let picks: number | null = null
-  if (x.picks != null) {
-    picks = picksTotalOf(x.picks)
-  }
-  return [
-    tabOf({ key: TAB_PICKS, label: x.t('mj.tab.picks'), n: picks }),
-    tabOf({ key: TAB_SAVED, label: x.t('mj.tab.saved'), n: countOrNull(x.saved) }),
-    tabOf({ key: TAB_APPLIED, label: x.t('mj.tab.applied'), n: countOrNull(x.applied) }),
-  ]
-}
-
-/**
- * 一枚页签:有条数挂计数,没有不挂(tabs 桶 badge 缺席 = 不出)。
- *
- * @param x 身份、字与条数。
- * @returns 页签。
- */
-export function tabOf(x: JobsTabIn): JobsTab {
-  if (x.n == null) {
-    return { key: x.key, label: x.label }
-  }
-  return { key: x.key, label: x.label, badge: x.n }
-}
-
-/**
- * 清单条数(还没拉到给 null)。
- *
- * @param items 清单。
- * @returns 条数或 null。
- */
-export function countOrNull(items: MyJobItem[] | null): number | null {
-  if (items == null) {
-    return null
-  }
-  return items.length
-}
-
-/**
  * 页签那一行右端出不出「换一批」(2026-11-07 Frank「现在都按 Azure 的来」:钮从推荐表上方挪到页签行):
  * 当前是「今日推荐」、且推荐总条数(看得见 + 锁住)多于先列的 PICKS_FIRST 条(同原先的出钮条件)。
  *
@@ -147,21 +104,6 @@ export function swapShownOf(x: SwapShownIn): boolean {
     return false
   }
   return picksTotalOf(x.data) > PICKS_FIRST
-}
-
-/**
- * 进页先落哪一枚页签:旧深链 `?sec=favs`(「我的收藏」页签 10-10 撤了,落「我的求职」)直接切到「我的收藏」,其余落「今日推荐」。
- *
- * @returns 页签身份。
- */
-export function firstTabOf(): string {
-  if (typeof window === 'undefined') {
-    return TAB_PICKS
-  }
-  if (new URLSearchParams(window.location.search).get(QP_SEC) === SEC_FAVS) {
-    return TAB_SAVED
-  }
-  return TAB_PICKS
 }
 
 /**
@@ -226,6 +168,7 @@ export function listRowOf(x: CellRowIn): ListRow {
     place: pd.place,
     due: pd.due,
     salary: it.salary,
+    wage: wageViewOf({ hourly: null, pct: null }),
     hoursEn: hoursNameOf({ v: it.hours, lang: x.lang, t: x.t }).en,
     termEn: termNameOf({ v: it.term, lang: x.lang, t: x.t }).en,
     posted: ymdOf(it.datePosted),
@@ -476,20 +419,14 @@ export function pickRowOf(x: PickRowIn): ListRow {
     place: pd.place,
     due: pd.due,
     salary: it.salary,
+    wage: wageViewOf({ hourly: it.wageMedHourly, pct: it.abovePct }),
     hoursEn: TEXT_NONE,
     termEn: TEXT_NONE,
     posted: ymdOf(it.datePosted),
     deadline: ymdOf(it.validThrough),
     savedOn: TEXT_NONE,
     appliedOn: TEXT_NONE,
-    tags: whyTagsOf({
-      reasons: it.reasons,
-      abovePct: it.abovePct,
-      lmiaPositions: it.lmiaPositions,
-      eeCategory: it.eeCategory,
-      pilot: it.pilot,
-      t: x.t,
-    }),
+    tags: [],
     cardTags: [],
     act: { key: ACT_APPLY, text: x.t('mj.apply'), kind: PRIMARY_KIND, onClick: makeOpenApply(it.id), href: TEXT_NONE },
     menu: delMenuOf({ t: x.t, ask: x.ask, remove: x.remove, id: it.id, name: it.title }),
@@ -501,6 +438,7 @@ export function pickRowOf(x: PickRowIn): ListRow {
  * 网页端「今日推荐」的列(2026-11-07 效果图):职位 / 公司 / 地址 / 薪资 / 截止日期 / 通道 / 推荐原因 / 操作。
  * 2026-10-12 Frank「bullets 显示 全职 长期。这两个字段就没必要显示了吧」:推荐表不出工时 / 雇佣期两列;效果图连发布日期也不出。
  * 2026-11-07 Frank「现在都按 Azure 的来」:「地址」列(完整地址一行)改「地点」列(「市, 省码」+ 译名灰字,同一个地图链)。
+ * 2026-11-09 Frank「推荐原因删掉」「这部分加进 table 吧」:推荐原因列撤,薪资后面加职位板的「中位时薪」「vs 中位」两列(列名用职位板同一份词条;同日「这个地方都显示 时薪吧」,中位不出年薪)。
  *
  * @param x 取词函数。
  * @returns 列。
@@ -511,9 +449,10 @@ export function pickColsOf(x: ColsIn): MjCol<ListRow>[] {
     { key: COL_COMPANY, label: x.t('mj.col.company'), render: CompanyCell },
     { key: COL_PLACE, label: x.t('mj.col.place'), render: PlaceCell },
     { key: COL_PAY, label: x.t('mj.col.pay'), render: PayCell, nowrap: true },
+    { key: COL_MED, label: x.t('col.wageMedHr'), render: MedCell, nowrap: true },
+    { key: COL_VS, label: x.t('col.vsMedian'), render: VsCell, nowrap: true },
     { key: COL_DEADLINE, label: x.t('mj.col.deadline'), render: deadlineOf, nowrap: true },
     { key: COL_CHAN, label: x.t('mj.col.chan'), render: ChanCell },
-    { key: COL_WHY, label: x.t('mj.col.why'), render: TagsCell },
     { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true },
   ]
 }
@@ -771,6 +710,7 @@ export function profileSeedOf(v: PfView): PfSeed {
     workNocs,
     matchBy: v.matchBy,
     matchMode: v.matchMode,
+    fromResume: v.fromResume,
     goal: v.goal,
 majors,
 nocs,

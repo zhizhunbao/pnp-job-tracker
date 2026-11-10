@@ -17,7 +17,7 @@
  */
 import { CMP_KEY, POOL_SORT_DEFAULT, POOL_SORT_DIR, POOL_SORTS } from '@/lib/employers'
 import { eeDisplay } from '@/lib/jobs'
-import { PROV_NAMES, homeProvinceOf, mapsUrl } from '@/lib/location'
+import { PROV_NAMES, mapsUrl, provName } from '@/lib/location'
 import { track } from '@/lib/track'
 import { pickCookieNameOf } from '@/components/table'
 import { btnClsOf } from '@/components/button'
@@ -2271,25 +2271,6 @@ export function employersColsCookieOf(jar: CookieJarLike): string {
 }
 
 /**
- * 首屏预选本省(2026-09-18 Frank「默认是当前省份,当前城市吧」):与职位板同一把尺子 —— 设备时区(东部时区看浏览器语言),
- * 不用 IP;对不上加拿大就维持全国。只在进来时一格筛选都没带(地址栏干净)才做:带着搜索词 / 行业 / 制度进来的是
- * 从别处点过来查一件具体的事,再套一个省会把要找的那家筛掉。市不预选 —— 时区分不出市,板上也还没有市筛选。
- *
- * @param x 进来时的筛选与落格。
- * @returns 无。
- */
-export function applyHomeProv(x: MoreIn): void {
-  if (anyFilterOf({ f: x.f }) || x.f.group !== TEXT_NONE || x.f.page > 0) {
-    return
-  }
-  const prov = homeProvinceOf()
-  if (prov === TEXT_NONE) {
-    return
-  }
-  x.setF(withOf({ f: x.f, prov, city: TEXT_NONE, district: TEXT_NONE, page: 0 }))
-}
-
-/**
  * 造「显示更多」的手柄:页码加一(2026-09-18 Frank「分页改成和 job table 一样的」:‹ 1 / 240 › 翻页器撤,
  * 换成职位板那种点一下往下接一批;新一批由 loadBoard 接在手上的行后面)。
  *
@@ -2481,12 +2462,16 @@ export function emptyTextOf(x: EmptyTextIn): string {
 /**
  * 造一枚省下拉的选项显示名取值器(2026-09-18 Frank「这个都改成英文全称」:下拉与省列同形,一律英文全名;
  * 原先按界面语言取名,NT / YT 没有译名就裸露成代码)。
+ * 2026-11-09 Frank「如果选的语言是中文,都改成中文」改判:下拉选项出界面语言的省名(与职位板的省下拉同一个 provName,
+ * 三个地区的译名早已补齐);筛选值仍是省码。同日 Frank「默认不要选 安省了,默认选全国」:按时区预选本省(applyHomeProv,
+ * 2026-09-18 立)撤,进板不带省。
  *
- * @returns 省码 → 英文省名。
+ * @param x 取词函数。
+ * @returns 省码 → 界面语言的省名。
  */
-export function makeProvLabel(): NocNameFn {
+export function makeProvLabel(x: WordsIn): NocNameFn {
   function provLabel(code: string): string {
-    return provEnOf(code)
+    return provName({ t: x.t, code, localeOnly: true })
   }
   return provLabel
 }

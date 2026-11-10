@@ -25,14 +25,14 @@ import {
 } from './constants'
 import {
   boardUrlOf, colKeysOf, employerColsOf, forceKeysOf, loadBoard, makeClear, makeEe, makeEntryPick, makeFoldToggle,
-  addrQsOf, aliasPollKeysOf, applyHomeProv, foldCountOf, loadAliasPatch, makeCategory, reportSeen,
+  addrQsOf, aliasPollKeysOf, foldCountOf, loadAliasPatch, makeCategory, reportSeen,
   makeCity, makeDistrict, makeFilterGateDone, makeFilterGateFlag, makeGatedPick,
   makeLmiaPick, makeMore, makeProv, makePushCoLayer,
   makeQCommit, makeSector, makeSort,
   qsOf, sortStateOf,
 } from './functions'
 import type {
-  AliasPatch, AliasPollIn, EmployersIn, EmployersPanel, EmpPeekPanel, MoreIn, PeekLayer, PickGate, PoolFilters,
+  AliasPatch, AliasPollIn, EmployersIn, EmployersPanel, EmpPeekPanel, PeekLayer, PickGate, PoolFilters,
   PoolPage, QCommitIn,
 } from './types'
 
@@ -64,8 +64,6 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
   })
 
   useQDebounce({ f, q: qDraft, setF })
-
-  useHomeProv({ f: x.initialFilters, setF })
 
   useEffect(function holdData() {
     held.current = data
@@ -206,15 +204,3 @@ function useEmpPeek(x: EmployersIn): EmpPeekPanel {
   }
 }
 
-/**
- * 首屏预选本省:只在挂载时按进来那一刻的筛选判一次(判据见 applyHomeProv)。
- *
- * @param x 进来时的筛选与落格。
- * @returns 无。
- */
-function useHomeProv(x: MoreIn): void {
-  useEffect(function presetHomeProv() {
-    applyHomeProv(x)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只在挂载时按进来那一刻的筛选判一次
-  }, [])
-}

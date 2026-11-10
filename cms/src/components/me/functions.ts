@@ -11,12 +11,13 @@ import type { Plan } from '@/lib/jobs'
 import {
   COUNT_NONE, CRED_INCLUDE, EMAIL_OK, EMAIL_TAKEN, EV_INBOX_UNREAD, QP_EMAIL, TOAST_ERR, LABEL_NONE, LOGIN_URL, ME_SECS,
   NEXT_SEP, PAY_OK_KEY, QP_OK, QP_OK_ON,
-  QP_SEC, SEC_COUNTED, SEC_DEFAULT, SEC_PROFILE, SEC_FAVS_OLD, SENT_NOTICE_KEY, TEXT_NONE, TOAST_OK, UNREAD_NONE,
+  JOB_TAB_SAVED, ME_JOB_TABS, QP_SEC, SEC_COUNTED, SEC_DEFAULT, SEC_PROFILE, SEC_FAVS_OLD, SENT_NOTICE_KEY,
+  TEXT_NONE, TOAST_OK, UNREAD_NONE,
   URL_INBOX_COUNT, URL_ME,
 } from './constants'
 import type {
-  AppliedSentIn, GenBumpIn, MeCountIn, MeDrawerSetIn, MeLabelIn, MePickIn, MeRespJson, MeSec, MeUser, OnAppliedIn,
-  ProOfIn, RefreshIn, SecPickIn, TFn, UnreadLoadIn, UnreadRespJson,
+  AppliedSentIn, GenBumpIn, MeCountIn, MeDrawerSetIn, MeJobTab, MeKey, MeLabelIn, MePickIn, MeRespJson, MeSec,
+  MeUser, NavKeyIn, OnAppliedIn, ProOfIn, RefreshIn, SecPickIn, TFn, UnreadLoadIn, UnreadRespJson,
 } from './types'
 
 /**
@@ -35,6 +36,48 @@ export function meSecOf(key: string): MeSec | null {
 }
 
 /**
+ * 导航给的键 →「我的求职」的子项;不是这三个的认不出(2026-11-09 三枚页签挪到侧边栏)。
+ *
+ * @param key 导航项的键。
+ * @returns 对应的子项;认不出为 null。
+ */
+export function meJobTabOf(key: string): MeJobTab | null {
+  for (const j of ME_JOB_TABS) {
+    if (j.tab === key) {
+      return j.tab
+    }
+  }
+  return null
+}
+
+/**
+ * 导航给的键 → 点得到的键(先认子项,再认节);都认不出为 null。
+ *
+ * @param key 导航项的键。
+ * @returns 子项或节;认不出为 null。
+ */
+export function meKeyOf(key: string): MeKey | null {
+  const tab = meJobTabOf(key)
+  if (tab != null) {
+    return tab
+  }
+  return meSecOf(key)
+}
+
+/**
+ * 导航里亮哪一项:在「我的求职」时亮当前子项(类别自己不亮),其余亮节。
+ *
+ * @param x 当前节与当前子项。
+ * @returns 亮的那一项的键。
+ */
+export function navKeyOf(x: NavKeyIn): MeKey {
+  if (x.sec === SEC_DEFAULT) {
+    return x.jobTab
+  }
+  return x.sec
+}
+
+/**
  * 导航点击手柄:换节 + 关抽屉(宽屏没有抽屉,关一下无妨)。
  *
  * @param x 换节回调与抽屉开关。
@@ -42,9 +85,9 @@ export function meSecOf(key: string): MeSec | null {
  */
 export function makeMePick(x: MePickIn): (key: string) => void {
   function onPick(key: string) {
-    const sec = meSecOf(key)
-    if (sec != null) {
-      x.onPick(sec)
+    const k = meKeyOf(key)
+    if (k != null) {
+      x.onPick(k)
     }
     x.setDrawer(false)
   }
@@ -65,12 +108,17 @@ export function makeDrawerSet(x: MeDrawerSetIn): () => void {
 }
 
 /**
- * 某一节的文字(导航项与页标题同一个词)。
+ * 某一节的文字(导航项与页标题同一个词);「我的求职」的三个子项也在这里取(页标题写子项名)。
  *
  * @param x 节键与取词。
  * @returns 文字;认不出的节为空串。
  */
 export function meLabelOf(x: MeLabelIn): string {
+  for (const j of ME_JOB_TABS) {
+    if (j.tab === x.sec) {
+      return x.t(j.labelKey)
+    }
+  }
   for (const s of ME_SECS) {
     if (s.sec === x.sec) {
       return x.t(s.labelKey)
@@ -158,18 +206,19 @@ export function emailBackToast(t: TFn): void {
 
 /**
  * 地址栏 `?sec=` 指的节;旧的「我的收藏」落「我的求职」,认不出的不认。
+ * 2026-11-09 三枚页签挪到侧边栏:旧的「我的收藏」落「我的求职」下的「我的收藏」子项;子项的键也认。
  *
- * @returns 节;没带或认不出为 null。
+ * @returns 节或子项;没带或认不出为 null。
  */
-export function secLinkOf(): MeSec | null {
+export function secLinkOf(): MeKey | null {
   const s = new URLSearchParams(window.location.search).get(QP_SEC)
   if (s == null) {
     return null
   }
   if (s === SEC_FAVS_OLD) {
-    return SEC_DEFAULT
+    return JOB_TAB_SAVED
   }
-  return meSecOf(s)
+  return meKeyOf(s)
 }
 
 /**
@@ -303,13 +352,24 @@ export function loginLinkOf(): string {
 /**
  * 换节手柄:换到哪节都先清「一进档案就开修改面板」(只有「去补全」那一下开)。
  *
- * @param x 换节与开面板两个 setter。
- * @returns 收节的手柄。
+ * 2026-11-09 三枚页签挪到侧边栏:点的是「我的求职」的子项时,换到「我的求职」并换子项。
+ *
+ * @param x 换节、开面板与换子项三个 setter。
+ * @returns 收键的手柄。
  */
-export function makeSecPick(x: SecPickIn): (sec: MeSec) => void {
-  return function pickSec(sec: MeSec): void {
+export function makeSecPick(x: SecPickIn): (key: MeKey) => void {
+  return function pickSec(key: MeKey): void {
     x.setAutoEdit(false)
-    x.setSec(sec)
+    const tab = meJobTabOf(key)
+    if (tab != null) {
+      x.setJobTab(tab)
+      x.setSec(SEC_DEFAULT)
+      return
+    }
+    const sec = meSecOf(key)
+    if (sec != null) {
+      x.setSec(sec)
+    }
   }
 }
 

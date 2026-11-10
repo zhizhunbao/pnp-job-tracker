@@ -291,6 +291,11 @@ export type NocSimDbRow = {
    * 五位职业码；库里可空。
    */
   noc: string | null
+
+  /**
+   * 相似度(float4 回来是数字;只有从简历填档案读它)。
+   */
+  sim: number | string | null
 }
 
 /**
@@ -706,4 +711,139 @@ export type BuildBody = {
    * 草稿(线格式)。
    */
   draft?: object
+}
+
+/**
+ * 从简历填档案时模型回的 JSON(先按声明形状收下,逐格判后才用)。
+ */
+export type PrefillData = {
+  /**
+   * 英文姓名;简历没写是 null。
+   */
+  name: JsonCell
+
+  /**
+   * 做过的工作(英文职业名)。
+   */
+  titles: JsonCell
+
+  /**
+   * 专业(英文)。
+   */
+  majors: JsonCell
+}
+
+/**
+ * 洗净的提取结果(全是字符串;没有 = 空)。
+ */
+export type PrefillFact = {
+  /**
+   * 英文姓名;没有 = 空串。
+   */
+  name: string
+
+  /**
+   * 做过的工作。
+   */
+  titles: string[]
+
+  /**
+   * 专业。
+   */
+  majors: string[]
+}
+
+/**
+ * 一串码或一串字。
+ */
+export type PrefillCodes = string[]
+
+/**
+ * 取默认简历文字的结果。
+ */
+export type PrefillTextFact = {
+  /**
+   * 简历文字;取不到 = 空串。
+   */
+  text: string
+
+  /**
+   * 错误码;成功 = 空串。
+   */
+  error: string
+}
+
+/**
+ * 取默认简历文字的返回。
+ */
+export type PrefillTextOut = Promise<PrefillTextFact>
+
+/**
+ * 职业名映射职业码的入参。
+ */
+export type PrefillWorksIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+
+  /**
+   * 英文职业名。
+   */
+  titles: string[]
+}
+
+/**
+ * 职业名映射职业码的返回。
+ */
+export type PrefillWorksOut = Promise<PrefillCodes>
+
+/**
+ * 按专业名搜专业码的函数(路由注入 lib/majors 的搜索)。
+ */
+export type PrefillHitsFn = (q: string) => PrefillCodes
+
+/**
+ * 专业名映射专业码的入参。
+ */
+export type PrefillMajorsIn = {
+  /**
+   * 英文专业名。
+   */
+  names: string[]
+
+  /**
+   * 按名搜码。
+   */
+  hitsOf: PrefillHitsFn
+}
+
+/**
+ * 模型回的一格清单收成字符串清单的入参。
+ */
+export type CellTextsIn = {
+  /**
+   * 原格。
+   */
+  cell: JsonCell
+
+  /**
+   * 最多几个。
+   */
+  max: number
+}
+
+/**
+ * 一行 trgm 命中的职业码与相似度(洗净)。
+ */
+export type NocSimFact = {
+  /**
+   * 职业码;缺位空串。
+   */
+  noc: string
+
+  /**
+   * 相似度(0 到 1)。
+   */
+  sim: number
 }

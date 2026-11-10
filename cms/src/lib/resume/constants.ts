@@ -615,3 +615,59 @@ export const EXTRACT_FEATURE = 'resume.extract'
  * 用量账本里的功能名:简历对照职位(2026-11-08)。
  */
 export const MATCH_FEATURE = 'resume.match'
+
+/**
+ * 用量账本里的功能名:从简历填档案(2026-11-09「我的」第一批)。
+ */
+export const PREFILL_FEATURE = 'resume.prefill'
+
+/**
+ * 从简历填档案走哪个模型通道:写死 Claude(2026-11-09 Frank「从简历填写 也走 claude 吧」),不跟全局 LLM_PROVIDER。
+ * 模型用全站默认的 ANTHROPIC_MODEL(Haiku 5.5),过用量账本。
+ */
+export const PREFILL_PROVIDER = 'anthropic'
+
+/**
+ * 从简历填档案的输出 token 上限(姓名、三个职业、两个专业的 JSON;比 EXTRACT_TOKENS_MAX 宽,防长职名被截成坏 JSON)。
+ */
+export const PREFILL_TOKENS_MAX = 800
+
+/**
+ * 从简历填档案的限流计数键前缀(按人)。走独立计数、不占每日免费次数(2026-11-09 Frank「照此做」:这一步是为了让推荐变准)。
+ */
+export const PREFILL_USER_PREFIX = 'rp:'
+
+/**
+ * 每人每天从简历填档案的上限(正常人填一两次;只拦脚本刷模型)。
+ */
+export const PREFILL_USER_DAILY = 10
+
+/**
+ * 从简历填档案的限流计数键前缀(按 IP)。
+ */
+export const PREFILL_IP_PREFIX = 'rpip:'
+
+/**
+ * 每个 IP 每天从简历填档案的上限。
+ */
+export const PREFILL_IP_DAILY = 30
+
+/**
+ * 职名映射职业码的最低相似度:低于它留空不填(写入做过的工作后投递兜底关闭,抽错比不抽更糟;2026-11-09 生产实测常见职名第一名都是 1.00)。
+ */
+export const PREFILL_SIM_MIN = 0.6
+
+/**
+ * 从简历取几个专业。
+ */
+export const PREFILL_MAJORS_MAX = 2
+
+/**
+ * 错误码:还没有简历可读。
+ */
+export const E_NO_RESUME = 'noResume'
+
+/**
+ * 从简历填档案里「没有」的空值(文字、错误码、姓名)。
+ */
+export const PREFILL_NONE = ''

@@ -153,16 +153,18 @@ export const PROV_QC = 'QC'
  * 首帧脚本的模板(homeGateJsOf 填两个槽):设备时区在清单里,就往 `<head>` 插一段样式;
  * 浏览器 API 拿不到(老环境)就什么都不做。2026-09-26 /fe 首页 Frank「首屏整表替换」立。
  * 🔴 这是浏览器直接执行的源码(页面 JS 到之前就跑,没有打包器替它转译):只许 ES5 写法,改它等于改线上脚本。
+ * 2026-11-09 Frank「默认不要选 安省了,默认选全国」:不再按时区预选省,只有「上次亲手选过具体省」的人首屏才会被换表 ——
+ * 判据从「设备时区在清单里」改成「带着调用方给的那一格 cookie」。
  */
-export const HOME_GATE_JS = '(function(){try{var z=__ZONES__;'
-  + 'if(z.indexOf(Intl.DateTimeFormat().resolvedOptions().timeZone)<0){return}'
+export const HOME_GATE_JS = '(function(){try{'
+  + "if(document.cookie.indexOf(__COOKIE__+'=')<0){return}"
   + "var s=document.createElement('style');s.textContent=__CSS__;document.head.appendChild(s)"
   + '}catch(e){}})()'
 
 /**
- * 首帧脚本模板里「时区清单」那个槽(填 TZ_PROVINCE 的键,JSON 数组)。
+ * 首帧脚本模板里「cookie 名」那个槽(填调用方给的名字,JSON 字符串)。
  */
-export const HOME_GATE_ZONES_SLOT = '__ZONES__'
+export const HOME_GATE_COOKIE_SLOT = '__COOKIE__'
 
 /**
  * 首帧脚本模板里「命中时插的样式」那个槽(填调用方给的样式,JSON 字符串)。

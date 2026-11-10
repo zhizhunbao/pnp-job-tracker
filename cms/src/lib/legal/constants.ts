@@ -12,6 +12,7 @@ import type { LangCode, LegalDoc, LegalPage } from './types'
  * 法务四页正文。一页正文是一个整体,不摊进 i18n 的扁平 key 空间:拆成几十个键只会让
  * 「这一段在哪」变成一次全站 grep。四篇同型,`Record<Lang, LegalDoc>` 保证加一门语言时
  * 四篇一起报红。文案为模板级自拟,不构成法律意见(收入后请专业审阅,backlog)。
+ * 2026-11-09 隐私政策写明「从简历填写」:默认简历文本发大模型服务提取三项,保存后才入档案;生效日期随之更新(「我的」第一批)。
  * 2026-09-28 AI 顾问删(Frank「法律页也改了吧」):隐私 / 条款 / 免责三篇撤掉顾问条目;对话记录与 AI 处理两条改指站内向导
  * (09-05 起它接替对话:问题连同前几轮发 Anthropic,主动留邮箱时那一轮存邮箱);AI 生成内容改写成向导回答与 JD 摘录、翻译;
  * 三篇生效日期改 2026-09-28。
@@ -24,7 +25,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
   privacy: {
     zh: {
       title: '隐私政策',
-      updated: '生效日期:2026-10-05',
+      updated: '生效日期:2026-11-09',
       sections: [
         {
           h: '1. 我们收集什么',
@@ -32,7 +33,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
             '账户信息:邮箱地址与密码(密码以加密哈希存储,我们无法看到原文)。',
             '移民档案(可选、全部自报):NOC 码、语言 CLB、CRS 分、目标省、PGWP 剩余月数。仅用于计算「与我的匹配」等个人化功能,只存在你的账户里,可随时修改或清空。',
             'Pro 状态:到期日与 Stripe 客户标识(用于对账)。',
-            '简历:你在「我的简历」上传的原件(PDF、DOCX)存进你的账户,只给你本人查看,只用于你自己发起的投递,可随时替换或删除。在其他地方上传的简历文件只在内存里解析,解析完即弃,不落盘也不入库;只有你主动选择存档时,简历文本才会存进你的账户(上限 20,000 字符)。在「我的简历」删除简历时,原件与存档的文本一并删除。',
+            '简历:你在「我的简历」上传的原件(PDF、DOCX)存进你的账户,只给你本人查看,用于你自己发起的投递;你在「我的档案」点「从简历填写」时,也用于提取做过的工作、专业和英文姓名。可随时替换或删除。在其他地方上传的简历文件只在内存里解析,解析完即弃,不落盘也不入库;只有你主动选择存档时,简历文本才会存进你的账户(上限 20,000 字符)。在「我的简历」删除简历时,原件与存档的文本一并删除。',
             '技术数据:为防滥用,API 按 IP 与账户做进程内当日计数(不落库、每日清零);简历对照的当日次数存在你的账户档案里(只有日期与次数),跨日归零。浏览器 localStorage/Cookie 存语言、列偏好与登录会话。',
             '访问统计:使用 umami(无 Cookie 的匿名统计)记录页面浏览与转化漏斗事件(注册、打开升级/定价弹窗、发起购买),不含个人身份,不跨站追踪。'
           + '同样的漏斗事件我们也在自己的数据库里按天计数(只有「哪天、哪个事件、多少次」,不含 IP、设备信息、账户或会话标识)。',
@@ -56,6 +57,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
           body: [
             '使用站内问答时,你输入的内容会发送给大模型服务处理,不用于训练模型。',
             '使用简历对照时,你的简历文本与该职位的描述文本会发送给本站使用的大模型服务做比对,不用于训练模型。服务端日志只记文本长度与耗时,不记内容。',
+            '在「我的档案」点「从简历填写」时,你默认简历的文本会发送给本站使用的大模型服务,提取做过的工作、专业和英文姓名;结果先填进表单,你保存后才写入档案。服务端日志只记数量,不记内容。',
           ],
         },
         {
@@ -80,7 +82,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
     },
     en: {
       title: 'Privacy Policy',
-      updated: 'Effective date: 2026-10-05',
+      updated: 'Effective date: 2026-11-09',
       sections: [
         {
           h: '1. What we collect',
@@ -88,7 +90,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
             'Account: email address and password (stored as a cryptographic hash — we cannot see the original).',
             'Immigration profile (optional, entirely self-reported): NOC codes, language CLB, CRS score, target provinces, PGWP months left. Used only for personalised features such as "Match for me"; stored only on your account; editable or clearable anytime.',
             'Pro status: expiry date and Stripe customer identifier (for reconciliation).',
-            'Resume: the file you upload under My jobs > Resume (PDF or DOCX) is stored on your account, visible only to you, and used only for applications you choose to send. You can replace or delete it anytime. Resume files uploaded anywhere else are parsed in memory and discarded immediately, never written to disk or to our database; your resume text is stored on your account (up to 20,000 characters) only if you choose to save it. Deleting your resume under My jobs > Resume removes both the file and any saved text.',
+            'Resume: the file you upload under My jobs > Resume (PDF or DOCX) is stored on your account, visible only to you, and used for applications you choose to send and, when you click "Fill from resume" in My profile, to suggest your past jobs, field of study and English name. You can replace or delete it anytime. Resume files uploaded anywhere else are parsed in memory and discarded immediately, never written to disk or to our database; your resume text is stored on your account (up to 20,000 characters) only if you choose to save it. Deleting your resume under My jobs > Resume removes both the file and any saved text.',
             'Technical data: to prevent abuse, APIs keep in-process daily counters per IP and per account (not persisted, reset daily); the resume match daily count is stored on your account profile (date and count only) and resets each day. Browser localStorage/cookies store language, column preferences and the login session.',
             'Analytics: we use umami (cookie-less, anonymous) to record page views and conversion-funnel events (sign-up, opening the upgrade/pricing dialogs, checkout initiation); no personal identity, no cross-site tracking.'
           + ' The same funnel events are also counted per day in our own database — only "which day, which event, how many times", with no IP, device, account or session identifier.',
@@ -112,6 +114,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
           body: [
             'When you use the on-site Q&A, what you type is sent to an LLM service for processing and is not used to train models.',
             'When you run a resume match, your resume text and that job’s description are sent to the LLM service we use for the comparison, and are not used to train models. Server logs record only text length and duration, never the content.',
+            'When you click "Fill from resume" in My profile, the text of your default resume is sent to the LLM service we use to extract your past jobs, field of study and English name. The results fill the form first and are written to your profile only after you save. Server logs record counts only, never the content.',
           ],
         },
         {
@@ -136,7 +139,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
     },
     ko: {
       title: '개인정보 처리방침',
-      updated: '시행일: 2026-10-05',
+      updated: '시행일: 2026-11-09',
       sections: [
         {
           h: '1. 수집 항목',
@@ -144,7 +147,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
             '계정: 이메일 주소와 비밀번호(암호화 해시로 저장되며 원문은 볼 수 없습니다).',
             '이민 프로필(선택, 전부 자가 보고): NOC 코드, 언어 CLB, CRS 점수, 목표 주, PGWP 잔여 개월. "나와의 매칭" 등 개인화 기능에만 사용되며 내 계정에만 저장, 언제든 수정·삭제 가능합니다.',
             'Pro 상태: 만료일과 Stripe 고객 식별자(대사용).',
-            '이력서: 「내 이력서」에 업로드한 원본(PDF, DOCX)은 계정에 저장되며 본인만 볼 수 있고, 본인이 직접 보내는 지원에만 사용됩니다. 언제든 교체하거나 삭제할 수 있습니다. 그 밖의 곳에서 업로드한 이력서 파일은 메모리에서만 분석한 뒤 즉시 폐기하며 디스크나 데이터베이스에 저장하지 않습니다. 직접 저장을 선택한 경우에만 이력서 텍스트가 계정에 저장됩니다(최대 20,000자). 「내 이력서」에서 이력서를 삭제하면 원본과 저장된 텍스트가 함께 삭제됩니다.',
+            '이력서: 「내 이력서」에 업로드한 원본(PDF, DOCX)은 계정에 저장되며 본인만 볼 수 있고, 본인이 직접 보내는 지원에 사용되며, 「내 프로필」에서 「이력서로 채우기」를 누르면 해 본 일, 전공, 영문 이름을 추출하는 데에도 사용됩니다. 언제든 교체하거나 삭제할 수 있습니다. 그 밖의 곳에서 업로드한 이력서 파일은 메모리에서만 분석한 뒤 즉시 폐기하며 디스크나 데이터베이스에 저장하지 않습니다. 직접 저장을 선택한 경우에만 이력서 텍스트가 계정에 저장됩니다(최대 20,000자). 「내 이력서」에서 이력서를 삭제하면 원본과 저장된 텍스트가 함께 삭제됩니다.',
             '기술 데이터: 남용 방지를 위해 API는 IP·계정별 당일 카운터를 프로세스 내에서만 유지(저장 안 함, 매일 초기화)하며, 이력서 대조의 당일 횟수는 계정 프로필에 저장합니다(날짜와 횟수만, 매일 초기화). 브라우저 localStorage/쿠키에 언어·열 설정·로그인 세션을 저장합니다.',
             '방문 통계: umami(쿠키 없는 익명 통계)로 페이지 조회와 전환 퍼널 이벤트(가입, 업그레이드/요금제 창 열기, 결제 시작)를 기록합니다. 개인 식별 정보 없음, 사이트 간 추적 없음.'
           + ' 동일한 퍼널 이벤트는 자체 데이터베이스에도 일자별 횟수로만 집계합니다(날짜·이벤트·횟수만, IP·기기·계정·세션 식별자 없음).',
@@ -168,6 +171,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
           body: [
             '사이트 내 질문·답변을 이용하면 입력하신 내용이 LLM 서비스로 전송되어 처리되며, 모델 학습에는 사용되지 않습니다.',
             '이력서 대조를 실행하면 이력서 텍스트와 해당 공고의 설명 텍스트가 당사가 사용하는 LLM 서비스로 전송되어 비교되며, 모델 학습에는 사용되지 않습니다. 서버 로그에는 텍스트 길이와 처리 시간만 기록하고 내용은 기록하지 않습니다.',
+            '「내 프로필」에서 「이력서로 채우기」를 누르면 기본 이력서의 텍스트가 당사가 사용하는 LLM 서비스로 전송되어 해 본 일, 전공, 영문 이름을 추출합니다. 결과는 먼저 입력란에 채워지며, 저장해야 프로필에 기록됩니다. 서버 로그에는 개수만 기록하고 내용은 기록하지 않습니다.',
           ],
         },
         {
@@ -211,7 +215,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
         {
           h: '3. 付费:一次性时长包',
           body: [
-            'Pro 以一次性时长包出售:30 天 CA$19、90 天 CA$39(价格可能调整,以购买页显示为准)。购买即时生效;未到期续买时长顺延。到期后自动回到免费版——没有订阅,没有自动扣款。',
+            'Pro 以一次性时长包出售:30 天 $5、90 天 $13(加元;价格可能调整,以购买页显示为准)。购买即时生效;未到期续买时长顺延。到期后自动回到免费版——没有订阅,没有自动扣款。',
             '支付由 Stripe 安全处理;具体可用的支付方式以结账页实际显示为准。',
           ],
         },
@@ -268,7 +272,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
         {
           h: '3. Payment: one-time passes',
           body: [
-            'Pro is sold as one-time passes: 30 days CA$19, 90 days CA$39 (prices may change; the checkout page governs). Passes take effect immediately; buying again before expiry extends the date. When a pass expires you simply return to the free plan — there is no subscription and no automatic charge.',
+            'Pro is sold as one-time passes: 30 days $5, 90 days $13 (Canadian dollars; prices may change; the checkout page governs). Passes take effect immediately; buying again before expiry extends the date. When a pass expires you simply return to the free plan — there is no subscription and no automatic charge.',
             'Payments are processed securely by Stripe; available payment methods are as shown at checkout.',
           ],
         },
@@ -325,7 +329,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
         {
           h: '3. 결제: 일회성 기간권',
           body: [
-            'Pro는 일회성 기간권으로 판매합니다: 30일 CA$19, 90일 CA$39(가격은 변경될 수 있으며 결제 페이지 기준). 구매 즉시 적용되며 만료 전 재구매 시 기간이 연장됩니다. 만료 후에는 무료 플랜으로 돌아갑니다 — 구독도 자동 결제도 없습니다.',
+            'Pro는 일회성 기간권으로 판매합니다: 30일 $5, 90일 $13(캐나다 달러, 가격은 변경될 수 있으며 결제 페이지 기준). 구매 즉시 적용되며 만료 전 재구매 시 기간이 연장됩니다. 만료 후에는 무료 플랜으로 돌아갑니다 — 구독도 자동 결제도 없습니다.',
             '결제는 Stripe가 안전하게 처리하며, 사용 가능한 결제 수단은 결제 페이지에 표시된 것을 기준으로 합니다.',
           ],
         },

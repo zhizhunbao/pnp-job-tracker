@@ -514,6 +514,16 @@ export type CompleteTextIn = {
   provider?: Provider
 
   /**
+   * 付费通道用哪个模型(2026-11-09 按职位改写用 Sonnet 5.5);不传走 ANTHROPIC_MODEL。
+   */
+  anthropicModel?: string
+
+  /**
+   * 要求模型按这个 JSON Schema 返回(2026-11-09;只有指定了 anthropicModel 的调用生效)。
+   */
+  anthropicSchema?: object | null
+
+  /**
    * 要确定性的调用点(抽 JSON、对照打分)显式压低;不传走上游默认 0.4
    */
   temperature?: number
@@ -994,6 +1004,16 @@ export type CompleteFreeIn = {
  */
 export type CompleteBackendIn = {
   /**
+   * 付费通道用哪个模型;不传走 ANTHROPIC_MODEL。
+   */
+  anthropicModel?: string
+
+  /**
+   * 要求模型按这个 JSON Schema 返回(2026-11-09;只有指定了 anthropicModel 的调用生效)。
+   */
+  anthropicSchema?: object | null
+
+  /**
    * 整轮消息
    */
   messages: ChatMessage[]
@@ -1435,3 +1455,13 @@ export type ProbeResult = {
  * 探活的出参。
  */
 export type ProbeOut = Promise<ProbeResult>
+
+/**
+ * modelOf 读的格。
+ */
+export type AnthropicModelIn = {
+  /**
+   * 付费通道用哪个模型。
+   */
+  anthropicModel?: string
+}

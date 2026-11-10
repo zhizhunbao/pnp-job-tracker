@@ -14,7 +14,7 @@ import { BAD_REQUEST, HDR_CACHE_CONTROL, UNAUTHORIZED } from '../http'
 import { getUserOrNull, isPro } from '../quota/server'
 import { CACHE_PRIVATE, E_AUTH, E_NO_ID, FRESH_ON, P_FRESH, P_PROV, PROV_RE, TEXT_NONE } from './constants'
 import {
-  batchOf, deleteApplied, dismissPick, getPicks, idOf, loadApplied, loadSaved, loadSentCount,
+  afterOf, batchOf, deleteApplied, dismissPick, getPicks, idOf, loadApplied, loadPicksAfter, loadSaved, loadSentCount,
 } from './functions'
 
 /**
@@ -71,6 +71,8 @@ export async function myjobsCountRoute(_req: Request): Promise<Response> {
  * `?prov=` = 浏览器按时区预选的省码(他没答所在省时用;不合形当没给)。
  * 2026-10-11 `?fresh=1` = 不用当天缓存、现算一份(「进我的求职先弹五题」答完重拉推荐要按新答案推;只算他自己的一份)。
  * 2026-10-13 `?batch=` = 换到第几批(免费号夹到 PICKS_SWAP_FREE)。
+ * 2026-11-09 `?after=<刚投的职位 id>` = 发出一封之后接着投的同类岗(同省、同职业、有投递邮箱、没投过,按新旧排);
+ * 不走缓存、不分免费与会员,最多 AFTER_MAX 条。
  *
  * @param req 请求。
  * @returns { picks, more, locked };未登录 401。
@@ -79,6 +81,11 @@ export async function myjobsPicksGetRoute(req: Request): Promise<Response> {
   const user = await getUserOrNull(await headers())
   if (user == null) {
     return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  const after = afterOf(req.url)
+  if (after != null) {
+    const picks = await loadPicksAfter({ db: await getDb(), userId: user.id, jobId: after })
+    return Response.json({ picks, more: 0, locked: [] }, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
   }
   let prov = TEXT_NONE
   const q = new URL(req.url).searchParams

@@ -29,7 +29,8 @@
  * @author Frank
  * @time 2026-10-04 02:10:00
  */
-import { quizToProfile } from '@/components/quiz'
+import { majorNameOf } from '@/components/majors'
+import { quizToProfile, shortOcc } from '@/components/quiz'
 import { isSenderName } from '@/lib/apply'
 import { markGateSignedIn } from '@/lib/guest'
 import { GUEST_LOG, log } from '@/lib/log'
@@ -37,16 +38,20 @@ import { eduRowsOf } from '@/lib/pathways'
 import { readAnswers, saveBasics } from '@/lib/quiz'
 import {
   CITIES_BAD, CITY_HIT_MAX, CITY_HOT_N, CRED_INCLUDE, EDIT_ERR_ANSWERS, EDIT_ERR_NAME, EDU_ABROAD, EDU_F_KIND,
-  EDU_F_LEN, EDU_F_PROV, EDU_SEP, FORM_NONE_KEY, FORM_PICKED_KEY, GATE_ABROAD_KEY, GATE_PROV_OPTS, GATE_STEP_GOAL,
+  EDU_F_LEN, EDU_F_PROV, EDU_SEP, FORM_NAME_WAIT, GATE_ABROAD_KEY, GATE_PROV_OPTS, GATE_STEP_GOAL,
   GATE_STEP_JOB, GATE_STEP_MAJOR, GATE_STEP_NAME, GATE_STEP_WORK, GATE_STEP_WHO, GATE_STEP_EDU, GATE_STEP_PROV,
   HDR_CONTENT_TYPE, K_KIND_HEAD, K_LEN_HEAD,
   K_PROV_HEAD, K_WHO_HEAD, LANG_KO, LANG_ZH, MAJOR_SEP, METHOD_PATCH, MIME_JSON, PROV_ABROAD, SAVE_FAIL_KEY,
   STATUS_OVERSEAS, TEXT_NONE, URL_CITIES_HEAD, URL_PREFS,
+  FILL_ERR_DEFAULT, FILL_ERR_KEYS, FILL_KIND_ERR, FILL_KIND_INFO, FILL_KIND_OK, FILL_NONE_KEY, FILL_OK_KEY, FROM_MAJORS,
+  FROM_NAME, FROM_SEP,
+  FROM_WORK, METHOD_POST, URL_PREFILL,
 } from './constants'
 import type {
   CitiesJson, CityLabelIn, CityOpt, CityOptsIn, CityPickIn, EditPatch, EditSaveIn, EduCellSetIn, EduLabelIn, EduPick,
   EduPickIn, EduRowsIn, EntryCloseIn, EntryDoneIn, GateAuthDoneIn, GateEditSeed, GateLabelOfIn, GatePickSetIn,
-  GatePickedIn, GateProvActiveIn, GateStep, LoadCitiesIn, ProvPickIn,
+  ApplyPrefillIn, FillMsg, FromKeptIn, FromResumeIn, MajorLinesIn, OccLinesIn, PickedLine, PrefillFact, PrefillJson,
+  ResumeFillIn, GateProvActiveIn, GateStep, LoadCitiesIn, ProvPickIn,
 } from './types'
 
 /**
@@ -456,6 +461,7 @@ function editPatchOf(a: GateEditSeed): EditPatch {
       workNocs: a.workNocs,
       matchBy: a.matchBy,
       matchMode: a.matchMode,
+      fromResume: a.fromResume,
     }
   }
   return {
@@ -469,6 +475,7 @@ function editPatchOf(a: GateEditSeed): EditPatch {
     workNocs: a.workNocs,
     matchBy: a.matchBy,
     matchMode: a.matchMode,
+    fromResume: a.fromResume,
   }
 }
 
@@ -567,14 +574,200 @@ export function makeWhoLabel(x: GateLabelOfIn): (v: string) => string {
 }
 
 /**
- * 一页表单「专业」「想做的工作」那一格的字:已选几个,一个没选说「还没答」。
+ * 这个值是不是来自简历(档案页与修改面板同一把尺)。
  *
- * @param x 取词与个数。
- * @returns 字。
+ * @param x 标记、字段与值。
+ * @returns 来自简历 true。
  */
-export function pickedTextOf(x: GatePickedIn): string {
-  if (x.n === 0) {
-    return x.t(FORM_NONE_KEY)
+export function isFromResume(x: FromResumeIn): boolean {
+  return x.marks.includes(x.field + FROM_SEP + x.value)
+}
+
+/**
+ * 保存时留下的标记:值还在的才留(值被改掉或摘掉,胶囊随之消失;没改的再存一次仍在)。
+ *
+ * @param x 现有标记与现在的三格值。
+ * @returns 留下的标记。
+ */
+export function fromKeptOf(x: FromKeptIn): string[] {
+  const live: string[] = []
+  for (const code of x.workNocs) {
+    live.push(FROM_WORK + FROM_SEP + code)
   }
-  return x.t(FORM_PICKED_KEY, { n: x.n })
+  for (const code of x.majors) {
+    live.push(FROM_MAJORS + FROM_SEP + code)
+  }
+  live.push(FROM_NAME + FROM_SEP + x.name)
+  const out: string[] = []
+  for (const m of x.marks) {
+    if (live.includes(m)) {
+      out.push(m)
+    }
+  }
+  return out
+}
+
+/**
+ * 已选职业 → 名字行。
+ *
+ * @param x 已选的组、名字表与标记。
+ * @returns 名字行。
+ */
+export function occLinesOf(x: OccLinesIn): PickedLine[] {
+  const out: PickedLine[] = []
+  for (const g of x.picked) {
+    let name: string = FORM_NAME_WAIT
+    const got = x.titles[g.head]
+    if (got != null && got !== TEXT_NONE) {
+      name = shortOcc(got)
+    }
+    let from = false
+    for (const n of g.nocs) {
+      if (isFromResume({ marks: x.marks, field: FROM_WORK, value: n })) {
+        from = true
+      }
+    }
+    out.push({ key: g.key, name, from })
+  }
+  return out
+}
+
+/**
+ * 已选专业 → 名字行(按码排,名字还没取到的先占位,不闪「没选」)。
+ *
+ * @param x 已选码、已取到的行、界面语与标记。
+ * @returns 名字行。
+ */
+export function majorLinesOf(x: MajorLinesIn): PickedLine[] {
+  const out: PickedLine[] = []
+  for (const code of x.codes) {
+    let name: string = FORM_NAME_WAIT
+    for (const row of x.rows) {
+      if (row.code === code) {
+        name = majorNameOf({ row, lang: x.lang })
+      }
+    }
+    out.push({ key: code, name, from: isFromResume({ marks: x.marks, field: FROM_MAJORS, value: code }) })
+  }
+  return out
+}
+
+/**
+ * 造「从简历填写」的点击手柄。
+ *
+ * @param x 表单状态、选择器同步口与两个落格。
+ * @returns 点击手柄。
+ */
+export function makeResumeFill(x: ResumeFillIn): () => void {
+  return function onResumeFill(): void {
+    x.setBusy(true)
+    x.setMsg({ key: TEXT_NONE, n: 0, kind: FILL_KIND_INFO })
+    void runResumeFill(x)
+  }
+}
+
+/**
+ * 取提取结果并填表;失败摆一行提示并留痕。
+ *
+ * @param x 同 makeResumeFill。
+ * @returns 无。
+ */
+async function runResumeFill(x: ResumeFillIn): Promise<void> {
+  try {
+    const r = await fetch(URL_PREFILL, { method: METHOD_POST, credentials: CRED_INCLUDE })
+    const body = await r.json() as PrefillJson
+    if (r.ok === false) {
+      x.setMsg(fillErrOf(body.error))
+    } else {
+      x.setMsg(fillMsgOf(applyPrefill({ x, d: toPrefill(body) })))
+    }
+  } catch (e) {
+    log({ tag: GUEST_LOG.tag, text: GUEST_LOG.editSave + String(e) })
+    x.setMsg({ key: FILL_ERR_DEFAULT, n: 0, kind: FILL_KIND_ERR })
+  }
+  x.setBusy(false)
+}
+
+/**
+ * 接口错误码 → 提示。
+ *
+ * @param code 错误码。
+ * @returns 提示。
+ */
+function fillErrOf(code: string | undefined): FillMsg {
+  let key = FILL_ERR_DEFAULT
+  if (code != null && FILL_ERR_KEYS[code] != null) {
+    key = FILL_ERR_KEYS[code]
+  }
+  return { key, n: 0, kind: FILL_KIND_ERR }
+}
+
+/**
+ * 填上了几项 → 提示。
+ *
+ * @param n 填上了几项。
+ * @returns 提示。
+ */
+function fillMsgOf(n: number): FillMsg {
+  if (n === 0) {
+    return { key: FILL_NONE_KEY, n, kind: FILL_KIND_INFO }
+  }
+  return { key: FILL_OK_KEY, n, kind: FILL_KIND_OK }
+}
+
+/**
+ * 回包 → 提取结果(缺席按空读)。
+ *
+ * @param b 回包。
+ * @returns 提取结果。
+ */
+function toPrefill(b: PrefillJson): PrefillFact {
+  let works: string[] = []
+  if (b.works != null) {
+    works = b.works
+  }
+  let majors: string[] = []
+  if (b.majors != null) {
+    majors = b.majors
+  }
+  let name: string = TEXT_NONE
+  if (b.name != null) {
+    name = b.name
+  }
+  return { works, majors, name }
+}
+
+/**
+ * 把提取结果填进表单:只填空着的格,不动用户已经选的;填上的值打「来自简历」。
+ *
+ * @param y 手柄与提取结果。
+ * @returns 填上了几项。
+ */
+function applyPrefill(y: ApplyPrefillIn): number {
+  const x = y.x
+  const d = y.d
+  const marks = x.g.fromResume.slice()
+  let n = 0
+  if (x.g.workNocs.length === 0 && d.works.length > 0) {
+    x.g.setWorkNocs(d.works)
+    x.onWork(d.works)
+    for (const c of d.works) {
+      marks.push(FROM_WORK + FROM_SEP + c)
+    }
+    n++
+  }
+  if (x.g.majors.length === 0 && d.majors.length > 0) {
+    x.g.onMajors(d.majors)
+    for (const c of d.majors) {
+      marks.push(FROM_MAJORS + FROM_SEP + c)
+    }
+    n++
+  }
+  if (x.g.edit.name.trim() === TEXT_NONE && d.name !== TEXT_NONE) {
+    x.g.edit.onName(d.name)
+    marks.push(FROM_NAME + FROM_SEP + d.name)
+    n++
+  }
+  x.g.setFromResume(marks)
+  return n
 }

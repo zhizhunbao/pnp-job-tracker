@@ -430,6 +430,16 @@ export const RESUME_LOG = {
   tag: 'resume',
 
   /**
+   * 从简历填档案成功(后接用户 id、职业数、专业数;不记内容)。
+   */
+  prefillOk: 'prefill ok: ',
+
+  /**
+   * 从简历填档案失败(模型层或坏 JSON)。
+   */
+  prefillFail: 'prefill failed: ',
+
+  /**
    * 取字失败(加密 PDF/损坏文件/引擎错;text 落 null,路由给用户报回退)。
    */
   extractFailed: 'resume extract failed: ',
@@ -774,6 +784,21 @@ export const APPLY_LOG = {
    * 这个域每一行日志的来源标签。
    */
   tag: 'apply',
+
+  /**
+   * 投出后取推荐失败。
+   */
+  nextFail: 'next picks failed: ',
+
+  /**
+   * 「我的订阅」取改写额度失败。
+   */
+  creditFail: 'credit load failed: ',
+
+  /**
+   * 按职位改写的模型调用失败(后接用户 id 与步骤)。
+   */
+  tailorFail: 'tailor failed user=',
 
   /**
    * 发出去了(后接用户 id 与投递行 id)。

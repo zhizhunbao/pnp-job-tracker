@@ -24,7 +24,7 @@ import { registerCatLabels } from '@/lib/noc'
 import { ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
-  APPLY_AUTH, APPLY_IDLE, APPLY_RESUME_KEY,
+  APPLY_AUTH, APPLY_IDLE, APPLY_RESUME_KEY, APPLY_SAVE,
   APPLY_RESUME_SEP, APPLY_RESUME_TTL_MS, AUTH_LOGIN, AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA,
   CREDENTIALS_INCLUDE,
   DIR_DESC, DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_APPLY_OPEN, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK,
@@ -2311,6 +2311,8 @@ async function postTranslate(x: TranslateIn): Promise<string> {
  * 2026-10-09 A 批投递搬进弹框(docs/design/我的/我的求职-20261009.md 故事 1、2):launch 不再跳页,广播「要投这一岗」由全站骨架上的
  * 投递框宿主弹框;未登录只弹注册 / 登录框(访客四题撤),已登录不再先过六步意向表(needIntent / 意向表单一段撤);
  * 跳页时代的在途闸 busy 随之撤(弹框是同步的)。
+ * 2026-11-09 Frank「邮箱投递旁放次要钮 收藏,点了变 已收藏,不关框」:收藏与职位板同一台 useSavedJobs(同一份取存与续办);
+ * 没登录点收藏弹注册框(stage = save),登录完接着收藏,不触发投递。
  *
  * @param x 本岗、取词函数、分层态与在不在整页里。
  * @returns 投递栏面板。
@@ -2337,7 +2339,21 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
     launch()
   }
   useApplyResume({ job, plan, launch })
+  function askSaveAuth(): void {
+    setStage(APPLY_SAVE)
+  }
+  function closeSaveAuth(): void {
+    clearSaveIntent()
+    setStage(APPLY_IDLE)
+  }
+  const sv = useSavedJobs({ plan, onAnon: askSaveAuth, gate: job, onGateClose: closeSaveAuth })
   return {
+    saved: sv.saved[String(job.id)] != null,
+    onSave: function toggleSave(): void {
+      sv.onSave(job)
+    },
+    onSaveAuthClose: closeSaveAuth,
+    onSaveAuthDone: sv.onGateDone,
     stage,
     matchJd,
     onMatch: makeOpenMatch({ job, setMatchJd }),

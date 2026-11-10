@@ -12,13 +12,13 @@
  * (Frank「组装只许在 (frontend) 页面门里」,样张 account)—— 整页外框走 shell 桶的
  * 通用件 Frame,顶栏与页脚由 page.tsx 直接拼,Pricing 只出正文。
  * 对应 lib 域:lib/quota(免费额度)、lib/stripe。
+ * 2026-11-09 Frank「现在有两个定价页,是不是合成一个」→「可以」:全站卖会员只留升级框一种形态 ——
+ * 价卡 PricingCard、定价弹窗 PricingModal 与它们的小件(两张 Pro 卡、价格行、卖点行)整族撤,
+ * 定价页改铺升级框的正文;原来弹定价弹窗的入口都弹 UpgradeModal。
  *
  * @author Frank
  * @time 2026-08-28 12:45:00
  */
 export { Pricing } from './pricing'
-export { PricingCard } from './pricingcard'
-export { PricingModal } from './pricingmodal'
-export type { PriceCaps } from './types'
 export { UpgradeModal } from './upgrademodal'
 export { PRICE } from './variables'

@@ -47,7 +47,7 @@ export function AppView({ appId, t, onClose }: AppViewIn) {
     return <Modal onClose={onClose} win={win}><div className={cssOf(css.note)}>{t('mj.fail')}</div></Modal>
   }
   if (v.item == null || v.thread == null) {
-    return <Modal onClose={onClose} win={win}><Loading text={t('rf.loading')} /></Modal>
+    return <Modal onClose={onClose} win={win}><Loading text={t('rf.loading')} fill /></Modal>
   }
   const j = avJobOf({ item: v.item, t, lang })
   const th = v.thread

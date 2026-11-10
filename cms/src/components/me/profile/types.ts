@@ -113,6 +113,11 @@ export type PfView = {
    * 匹配模式;空串 = 没选。
    */
   matchMode: string
+
+  /**
+   * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
+   */
+  fromResume: string[]
 }
 
 /**
@@ -188,6 +193,11 @@ export type PfSeed = {
    * 匹配模式;空串 = 没选。
    */
   matchMode: string
+
+  /**
+   * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
+   */
+  fromResume: string[]
 }
 
 /**
@@ -413,6 +423,16 @@ export type PfNamesIn = {
    * 名字。
    */
   names: PfNames
+
+  /**
+   * 来自简历的标记。
+   */
+  marks: string[]
+
+  /**
+   * 这一格在标记里的字段名;空串 = 不打胶囊。
+   */
+  field: string
 
   /**
    * 界面语。

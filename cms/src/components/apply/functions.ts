@@ -12,6 +12,7 @@
  */
 import { COVER_MAX, coverFileOf, isSenderName, mailSubjectOf, mailTextOf } from '@/lib/apply'
 import { toast } from '@/components/toast'
+import { APPLY_LOG, log } from '@/lib/log'
 import { track } from '@/lib/track'
 import {
   CLOSED_KEY, CRED_INCLUDE, DATE_LEN, ERR_CODES, ERR_FALLBACK, ERR_KEY_FULL, ERR_KEY_HEAD, ERR_KEY_NAME,
@@ -23,9 +24,11 @@ import {
   UPLOADED_KEY, URL_BACK_HEAD, URL_COVER_HEAD, URL_DRAFT, URL_RESUME_FILE, URL_RESUME_FILES, URL_SEND,
   URL_START_HEAD, BREAK_AFTER_RE,
   Q_ID_HEAD, EV_APPLY_NAV, EV_APPLY_SENT, PATH_ACCOUNT, P_APPLY,
+  UPSELL_KEY, TRACK_APPLY_NEXT, URL_NEXT_AFTER,
   EV_PUSH, PUSH_FAIL_KEY, PUSH_FREQ_DAILY, PUSH_ON_KEY, PUSH_ON_VALUE, PUSH_TOAST_ERR, PUSH_TOAST_OK, URL_PUSH,
 } from './constants'
 import type {
+  NextLoadIn, NextPicksJson,
   ApplyCells, ApplyResumeView, ApplyStartView, CanNextIn, DraftIn, DraftOfIn, ErrJson, ErrOut, FileMakeIn,
   GoStepIn, LoadStartIn, MailIn, MailView,
   PageHideIn, PickBuiltIn, PickIn, PickOfFn, ResumeFilesJson, ResumeNameIn, SetFn, SetToIn,
@@ -33,7 +36,7 @@ import type {
   ApplySentOut,
   ApplyIdIn, ApplyOpenDetail, OpenedIn,
   ApplyTitled, AuthRetryIn,
-  PushLoadIn, PushOnIn, PushPrefsJson,
+  PushLoadIn, PushOnIn, PushPrefsJson, SendIn,
 } from './types'
 import { uploadLetter } from './letter'
 import { CACHE } from './variables'
@@ -129,6 +132,55 @@ export function openApply(jobId: number): void {
     CACHE.pushed = true
   }
   window.dispatchEvent(new Event(EV_APPLY_NAV))
+}
+
+/**
+ * 接着投下一岗:换掉地址栏里的职位号(不往历史里加一笔,关框一次就回到原页),通知宿主重读。
+ *
+ * @param jobId 职位 id。
+ * @returns 无。
+ */
+export function swapApply(jobId: number): void {
+  const url = new URL(window.location.href)
+  url.searchParams.set(P_APPLY, String(jobId))
+  window.history.replaceState(window.history.state, TEXT_NONE, url.pathname + url.search + url.hash)
+  window.dispatchEvent(new Event(EV_APPLY_NAV))
+}
+
+/**
+ * 造「投递」手柄(投出后接下一岗)。
+ *
+ * @param jobId 职位 id。
+ * @returns 点击手柄。
+ */
+export function makeNextApply(jobId: number): () => void {
+  return function onNextApply(): void {
+    track(TRACK_APPLY_NEXT)
+    swapApply(jobId)
+  }
+}
+
+/**
+ * 取「接着投这几个」:现算今日推荐(刚投的这岗已被剔掉,且按它的职业推),取前几条。
+ * 2026-11-09 Frank 定:改取与刚投那一岗同省、同职业、有投递邮箱、没投过的岗,按新旧排(接口按 `?after=` 给,条数由它定)。
+ *
+ * @param x 刚投的职位 id 与两个落格。
+ * @returns 无;取不到整卡不出,留痕。
+ */
+export async function loadNextPicks(x: NextLoadIn): Promise<void> {
+  try {
+    const r = await fetch(URL_NEXT_AFTER + String(x.jobId), { credentials: CRED_INCLUDE })
+    if (r.ok === false) {
+      throw new Error(String(r.status))
+    }
+    const body = await r.json() as NextPicksJson
+    if (body.picks != null) {
+      x.setRows(body.picks)
+    }
+  } catch (e) {
+    log({ tag: APPLY_LOG.tag, text: APPLY_LOG.nextFail + String(e) })
+  }
+  x.setDone(true)
 }
 
 /**
@@ -448,7 +500,7 @@ export function makeNext(c: ApplyCells): () => void {
     } else if (c.step === STEP_LETTER) {
       goStep({ cells: c, step: STEP_CONFIRM })
     } else if (c.step === STEP_CONFIRM) {
-      void send(c)
+      void send({ cells: c, base: false })
     }
   }
 }
@@ -733,10 +785,13 @@ function draftOf(x: DraftOfIn): DraftIn {
  * 发信:成功落「已投递」并通知外面;失败把原因摆在钮上方(没配发信 = 本地 dev 的 503,不算发出)。
  * 2026-10-10 投递框三步:档案里没有英文姓名的,先核「确认」页现填的、随草稿存回档案(draft 接口顺带写 apply_prefs),再发。
  *
- * @param c 整机的可变格。
+ * 2026-11-09 直接投基础简历(base):先把这一屏的信存成草稿,再告诉接口附原件(哪怕生成过本岗简历)。
+ *
+ * @param x 整机的可变格与是不是投基础简历。
  * @returns 无。
  */
-async function send(c: ApplyCells): Promise<void> {
+async function send(x: SendIn): Promise<void> {
+  const c = x.cells
   if (c.askName && isSenderName(c.name.trim()) === false) {
     c.setErr(ERR_KEY_NAME)
     return
@@ -744,7 +799,7 @@ async function send(c: ApplyCells): Promise<void> {
   c.setBusy(true)
   c.setErr(ERR_NONE)
   let err = ERR_NONE
-  if (c.askName) {
+  if (c.askName || x.base) {
     err = await saveDraft(draftOf({ cells: c, keepalive: false }))
   }
   try {
@@ -753,7 +808,7 @@ async function send(c: ApplyCells): Promise<void> {
         method: METHOD_POST,
         credentials: CRED_INCLUDE,
         headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-        body: JSON.stringify({ jobId: c.job.id }),
+        body: JSON.stringify({ jobId: c.job.id, base: x.base }),
       })
       if (r.ok === false) {
         err = errKeyOf(await r.json() as ErrJson)
@@ -770,6 +825,43 @@ async function send(c: ApplyCells): Promise<void> {
   track(TRACK_APPLY_SENT)
   c.setStep(STEP_DONE)
   c.onSent({ company: c.job.company })
+}
+
+/**
+ * 造基础简历投递屏的「发送投递」手柄。
+ *
+ * @param c 整机的可变格。
+ * @returns 点击手柄。
+ */
+export function makeBaseSend(c: ApplyCells): () => void {
+  return function onBaseSend(): void {
+    void send({ cells: c, base: true })
+  }
+}
+
+/**
+ * 造三屏发出后的手柄:落「已投递」并通知外面。
+ *
+ * @param c 整机的可变格。
+ * @returns 手柄。
+ */
+export function makeReviewSent(c: ApplyCells): () => void {
+  return function onReviewSent(): void {
+    c.setStep(STEP_DONE)
+    c.onSent({ company: c.job.company })
+  }
+}
+
+/**
+ * 造三屏试用用完的手柄:弹升级框。
+ *
+ * @param c 整机的可变格。
+ * @returns 手柄。
+ */
+export function makeReviewUpsell(c: ApplyCells): () => void {
+  return function onReviewUpsell(): void {
+    c.setUpsell(UPSELL_KEY)
+  }
 }
 
 /**

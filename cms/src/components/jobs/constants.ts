@@ -2909,6 +2909,11 @@ export const APPLY_IDLE = 'idle'
  */
 export const APPLY_AUTH = 'auth'
 
+/**
+ * 投递栏:没登录点了「收藏」的注册闸(2026-11-09;登录完接着收藏,不触发投递)。
+ */
+export const APPLY_SAVE = 'save'
+
 
 /**
  * 整理版一节的渲染档:「怎么投」整节缺又有邮箱 / 整节缺只出官方短链 / 有内容且逐行链官方 /

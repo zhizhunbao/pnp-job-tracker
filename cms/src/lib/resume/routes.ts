@@ -13,12 +13,14 @@
  * 2026-10-06 一人多份(最多 5 份、一份默认;Frank「这个可以上传多份简历吧」):file 四个方法都按 `?id=` 指明哪一份
  * (PUT 不带 id = 新加,PATCH = 设默认),元信息口换成清单口 /api/resume/files。
  * 2026-11-07 加 /api/resume/build(生成简历:填好的草稿排成英文 PDF 存成一份,照 Job Bank Resume Builder;免费,限流同上传)。
+ * 2026-11-09 加 /api/resume/prefill(「我的档案」从默认简历提取做过的工作、专业、英文姓名;不占免费次数,限流独立)。
  *
  * @author Frank
  * @time 2026-08-23 10:30:00
  */
 import { headers } from 'next/headers'
 import * as PdfLib from 'pdf-lib'
+import { isSenderName } from '../apply'
 import { cvBadCharsOf, cvLayoutOf, cvPdfOf, toCvDraft } from '../cv'
 import { getDb } from '../db/server'
 import { isLlmError } from '../error'
@@ -30,6 +32,8 @@ import { jobDescription, loadApplyUrlById } from '../jobs/server'
 import { completeText } from '../llm'
 import type { ResultMeta } from '../llm'
 import { log, RESUME_LOG } from '../log'
+import { searchMajorsOf } from '../majors'
+import { getMajors } from '../majors/server'
 import { patchProfile } from '../profile/server'
 import type { ProfilePatch } from '../profile/server'
 import { FREE_DAILY_TRIES } from '../quota'
@@ -38,14 +42,15 @@ import {
   EXTRACT_FEATURE, MATCH_FEATURE, BLANKS2, BLANKS3_RE, BODY_TEXT_NONE, CLB_MAX, CLB_MIN, CODE_TIMEOUT, CODE_TOO_LONG, CR_DROP, CR_RE, DAILY_FREE, DATE_LEN, DETAIL_CAP, ERR_LOG_CAP, EXTRACT_CHARS_MAX, EXTRACT_OUT_MAX, EXTRACT_TEXT_MIN, EXTRACT_TOKENS_MAX, E_AUTH, E_BUSY, E_LIMIT, E_LLM, E_LOGIN, E_NOFILE, E_NO_JD, E_PARSE, E_SCAN, E_SIZE, E_TOO_LONG, E_TOO_SHORT, FIELD_FILE, JD_DB_NONE, JD_LEN_MIN, LANG_FALLBACK_EN, LLM_TEXT_NONE, LOG_DASH, MATCH_PROVIDER, MATCH_TEMPERATURE, MATCH_TOKENS_FREE, MATCH_TOKENS_PRO, META_VIA_LEGACY, MIN_RESUME, ONE_SPACE, RESUME_MAX_BYTES, RESUME_SAVE_CAP, REWRITE_CAP, ROLE_SYSTEM, ROLE_USER, SPACES_RE, TEST_MAIL_SUFFIX, TITLES_N_MAX, TITLE_Q_LEN_MAX, TITLE_Q_LEN_MIN, USES_CELL_NONE, USES_SEP, WS_ALL_RE,
   B64, CACHE_PRIVATE, E_FULL, E_NO_ID, E_NOT_FOUND, E_TYPE, RESUME_FILES_MAX, HDR_NOSNIFF, MAGIC_ENC, MAGIC_LEN, NOSNIFF, P_DOWNLOAD, RF_IP_DAILY,
   RF_IP_PREFIX, RF_USER_DAILY, RF_USER_PREFIX, CV_FILE_TAIL, E_BAD_DRAFT, E_CHARS, E_NO_NAME, MIME_PDF,
+  E_NO_RESUME, PREFILL_FEATURE, PREFILL_NONE, PREFILL_IP_DAILY, PREFILL_IP_PREFIX, PREFILL_PROVIDER, PREFILL_TOKENS_MAX, PREFILL_USER_DAILY, PREFILL_USER_PREFIX,
 } from './constants'
 import {
-  deleteResumeFile, dispositionOf, extractText, fileMimeOf, fileNameOf, gateMatch, ieltsToClb, loadResumeBlob,
-  loadResumeCount, loadResumeList, matchPrompt, nocCandidatesOf, normalizeRows, parseLlmJson, resumeIdOf, saveResumeFile,
-  setDefaultResume,
+  deleteResumeFile, dispositionOf, extractText, fileMimeOf, fileNameOf, gateMatch, ieltsToClb, loadPrefillText, loadResumeBlob,
+  loadResumeCount, loadResumeList, matchPrompt, nocCandidatesOf, normalizeRows, parseLlmJson, prefillFactOf, prefillMajorsOf, prefillWorksOf,
+  resumeIdOf, saveResumeFile, setDefaultResume,
 } from './functions'
-import { EXTRACT_SYSTEM } from './prompts'
-import type { BuildBody, ExtractData, MatchBody, MatchUsesProfile, MaybeNum } from './types'
+import { EXTRACT_SYSTEM, PREFILL_SYSTEM } from './prompts'
+import type { BuildBody, ExtractData, MatchBody, MatchUsesProfile, MaybeNum, PrefillCodes, PrefillData, PrefillHitsFn } from './types'
 
 /**
  * POST /api/resume:简历上传解析(E11-07)—— PDF/DOCX → 文本 → LLM 抽取(职名/语言)→
@@ -135,6 +140,70 @@ export async function resumeRoute(req: Request): Promise<Response> {
     clb = ieltsToClb(data.ielts)
   }
   return Response.json({ nocCandidates, clb, freeLeft })
+}
+
+/**
+ * POST /api/resume/prefill:读本人默认简历,提取做过的工作、专业、英文姓名,回给「我的档案」的修改面板当建议(用户保存后才入档案)。
+ * 不走免费池,限流两道:每人每天、每 IP 每天。只回库内认得的码;映射不上、姓名不合规都留空。日志只记数量,不记内容。
+ *
+ * @param req 请求。
+ * @returns { works, majors, name };未登录 401、超限 429、没简历 404、读不出 422、模型失败 502。
+ */
+export async function resumePrefillRoute(req: Request): Promise<Response> {
+  const user = await getUserOrNull(await headers())
+  if (user == null) {
+    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  if (checkLimit([[PREFILL_USER_PREFIX + String(user.id), PREFILL_USER_DAILY], [PREFILL_IP_PREFIX + ipOf(req), PREFILL_IP_DAILY]]) === false) {
+    return Response.json({ error: E_LIMIT }, { status: TOO_MANY })
+  }
+  const db = await getDb()
+  const got = await loadPrefillText({ db, userId: user.id })
+  if (got.error === E_NO_RESUME) {
+    return Response.json({ error: got.error }, { status: NOT_FOUND })
+  }
+  if (got.error !== PREFILL_NONE) {
+    return Response.json({ error: got.error }, { status: UNPROCESSABLE })
+  }
+  let raw = LLM_TEXT_NONE
+  try {
+    raw = await completeText({
+      feature: PREFILL_FEATURE, db,
+      messages: [
+        { role: ROLE_SYSTEM, content: PREFILL_SYSTEM },
+        { role: ROLE_USER, content: got.text.slice(0, EXTRACT_CHARS_MAX) },
+      ],
+      maxTokens: PREFILL_TOKENS_MAX, provider: PREFILL_PROVIDER,
+    })
+  } catch (e) {
+    if (e instanceof Error && isLlmError(e)) {
+      log({ tag: RESUME_LOG.tag, text: RESUME_LOG.prefillFail + user.id + RESUME_LOG.errSep + e.message.slice(0, ERR_LOG_CAP) })
+      return Response.json({ error: E_LLM }, { status: BAD_GATEWAY })
+    }
+    throw e
+  }
+  const data = parseLlmJson(raw) as PrefillData | null
+  if (data == null) {
+    log({ tag: RESUME_LOG.tag, text: RESUME_LOG.prefillFail + user.id + RESUME_LOG.errSep + E_PARSE })
+    return Response.json({ error: E_LLM }, { status: BAD_GATEWAY })
+  }
+  const fact = prefillFactOf(data)
+  const rows = await getMajors(db)
+  const hitsOf: PrefillHitsFn = function hitsOf(q: string): PrefillCodes {
+    const codes: string[] = []
+    for (const m of searchMajorsOf({ rows, q })) {
+      codes.push(m.code)
+    }
+    return codes
+  }
+  const works = await prefillWorksOf({ db, titles: fact.titles })
+  const majors = prefillMajorsOf({ names: fact.majors, hitsOf })
+  let name = PREFILL_NONE
+  if (isSenderName(fact.name)) {
+    name = fact.name
+  }
+  log({ tag: RESUME_LOG.tag, text: RESUME_LOG.prefillOk + user.id + RESUME_LOG.errSep + works.length + RESUME_LOG.errSep + majors.length })
+  return Response.json({ works, majors, name })
 }
 
 /**

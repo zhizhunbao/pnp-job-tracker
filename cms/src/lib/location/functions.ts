@@ -9,10 +9,10 @@
 
 import {
   ALL_PROVS, COUNTRY_CANADA, F_CITY, F_COUNTRY, F_DISTRICT, F_PROVINCE, LOC_NONE, MAPS_URL, NOTE_L, NOTE_R,
-  HOME_GATE_CSS_SLOT, HOME_GATE_JS, HOME_GATE_ZONES_SLOT,
+  HOME_GATE_COOKIE_SLOT, HOME_GATE_CSS_SLOT, HOME_GATE_JS,
   LANG_FR_HEAD, PROV_KEY, PROV_NAMES, PROV_QC, SEP_COMMA, TZ_EASTERN, TZ_PROVINCE,
 } from './constants'
-import type { CleanProvsIn, HqLineIn, LocJob, MapQueryIn, ParsedLoc, PlaceLineIn, ProvList, ProvNameIn } from './types'
+import type { CleanProvsIn, HomeGateJsIn, HqLineIn, LocJob, MapQueryIn, ParsedLoc, PlaceLineIn, ProvList, ProvNameIn } from './types'
 
 /**
  * #146 显示用省名(Frank「中韩用户只看英文难理解」,拍板英文在前):中韩界面出
@@ -194,11 +194,13 @@ export function homeProvinceOf(): string {
  * 没带省的首屏只能先渲全国;这段脚本在浏览器解析到它时当场判、早于首帧绘制,让职位板把「马上要被换成本省」的全国列表压住。
  * 它只问「会不会预选」,不分省 —— 选哪一省仍归 homeProvinceOf(东部时区还要看语言分安省 / 魁省)。
  * 脚本是另一种介质(页面 JS 到之前就得跑),所以是模板串;时区清单由 TZ_PROVINCE 现拼,不另抄一份。
+ * 2026-11-09 Frank「默认不要选 安省了,默认选全国」:不再按时区预选,脚本改成只认调用方给的那一格 cookie
+ * (职位板记「上次亲手选的省」的那一格):带着它的人首屏才会被换成那一省。
  *
- * @param css 命中时插入的样式(调用方给;本函数不认识任何类名)。
+ * @param x 命中时插入的样式与要认的 cookie 名(调用方给;本函数不认识任何类名与业务 cookie)。
  * @returns 一段自执行脚本的源码。
  */
-export function homeGateJsOf(css: string): string {
-  return HOME_GATE_JS.split(HOME_GATE_ZONES_SLOT).join(JSON.stringify(Object.keys(TZ_PROVINCE)))
-    .split(HOME_GATE_CSS_SLOT).join(JSON.stringify(css))
+export function homeGateJsOf(x: HomeGateJsIn): string {
+  return HOME_GATE_JS.split(HOME_GATE_COOKIE_SLOT).join(JSON.stringify(x.cookie))
+    .split(HOME_GATE_CSS_SLOT).join(JSON.stringify(x.css))
 }

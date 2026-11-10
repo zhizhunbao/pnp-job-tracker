@@ -133,12 +133,12 @@ export const APPLY_MODAL_PREF = 'adv_modal_pref'
 /**
  * 投递框没有记忆时的宽(px;照公司弹框)。
  */
-export const APPLY_MODAL_W = 900
+export const APPLY_MODAL_W = 1880
 
 /**
  * 投递框没有记忆时的高(px;照公司弹框)。
  */
-export const APPLY_MODAL_H = 760
+export const APPLY_MODAL_H = 1040
 
 
 /**
@@ -603,3 +603,49 @@ export const PUSH_TOAST_ERR = 'err'
  * 「发到」与邮箱之间的空格。
  */
 export const PUSH_TO_GAP = ' '
+
+/**
+ * 投出后「接着投这几个」的接口(后接刚投的职位 id;2026-11-09 Frank 定:同省、同职业、有投递邮箱、没投过,按新旧排。
+ * 原先取的是今日推荐,按省码与 fresh=1 取、前端截 3 条)。
+ */
+export const URL_NEXT_AFTER = '/api/myjobs/picks?after='
+
+/**
+ * 第一条的按钮样式:主按钮「下一个:职位名」。
+ */
+export const NEXT_KIND_MAIN = 'primary'
+
+/**
+ * 卡头词条。
+ */
+export const NEXT_HEAD_KEY = 'ap.nextHead'
+
+/**
+ * 按钮词条。
+ */
+export const NEXT_BTN_KEY = 'mj.apply'
+
+/**
+ * 按钮样式。
+ */
+export const NEXT_BTN_KIND = 'secondary'
+
+/**
+ * 点了接下一个的埋点。
+ */
+export const TRACK_APPLY_NEXT = 'apply-next'
+
+/**
+ * 三屏试用用完时升级框的原因词条。
+ */
+export const UPSELL_KEY = 'tr.errPro'
+
+/**
+ * 投递框窗口的记忆键(2026-11-09 三屏要接近全屏,换键不沿用旧尺寸)。
+ */
+export const APPLY_MODAL_PREF_V2 = 'adv_modal_pref_v2'
+
+/**
+ * ARIA 角色:状态播报(开框前那块加载)。
+ */
+export const ROLE_STATUS = 'status'

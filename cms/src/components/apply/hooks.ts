@@ -20,6 +20,12 @@ import {
   ERR_NONE, EV_APPLY_NAV, EV_APPLY_OPEN, EV_APPLY_SENT, EV_PAGEHIDE, EV_POPSTATE, LOAD_BUSY, TEXT_NONE,
 } from './constants'
 import {
+  baseLetterOf, baseStepOf, isMemberOf, isOutOf, leftAfterOf, makeMode, MODE_BASE, MODE_TAILOR, outReasonOf,
+  startModeOf,
+} from './entry'
+import {
+  makeBaseSend, makeReviewSent, makeReviewUpsell,
+  loadNextPicks,
   canNextOf, closeApply, loadStart, mailOf, makeAdd, makeAuthRetry, makeBack, makeCvDone, makeFile, makeNameChange,
   makeNext, makePickOf, makeQuietSave, makeSetTo, makeTab, nextKeyOf, noteOpened, openFromEvent,
   readApplyId, resumeHrefOf, resumeMimeOf, resumeNameOf, sentOfEvent, startStepOf, titledOf, upsellBackOf,
@@ -30,10 +36,33 @@ import {
   makeRwUse, OPT_NONE_ITEM,
 } from './letter'
 import type {
+  NextPick, NextPicksPanel, ApplyGatePanel, Letter0In,
   ApplyCells, ApplyHostPanel, ApplyPageIn, ApplyPanel, ApplyResumeView, ApplyStartPanel, ApplyStartView,
   LetterOpt, MaybeRewrite, SentFn,
   PushOfferIn, PushOfferPanel,
 } from './types'
+
+/**
+ * 投递框外壳之前的那一道(2026-11-09 Frank「先在服务端查基础简历和额度,再决定开什么;不许先开空的投递框再盖弹框」):
+ * 取起始态,没额度的直接出升级框,用户在升级框里点「不改写,直接投基础简历」才开投递框。
+ *
+ * @param jobId 要投的职位 id。
+ * @returns 面板。
+ */
+export function useApplyGate(jobId: number): ApplyGatePanel {
+  const s = useApplyStart(jobId)
+  const [base, setBase] = useState(false)
+  const why = outReasonOf(s.start)
+  return {
+    s,
+    out: isOutOf(s.start) && base === false,
+    base,
+    reason: s.t(why.key, { d: why.d }),
+    member: isMemberOf(s.start),
+    back: upsellBackOf(jobId),
+    onBase: makeSetTo({ set: setBase, v: true }),
+  }
+}
 
 /**
  * 投递区整机。
@@ -45,11 +74,13 @@ import type {
 export function useApply(x: ApplyPageIn): ApplyPanel {
   const s = x.start
   const [, , t] = useLang()
-  const [step, setStep] = useState(startStepOf(s.status))
+  const mode0 = startModeOf({ start: s, base: x.base })
+  const [mode, setMode] = useState(mode0)
+  const [step, setStep] = useState(baseStepOf({ step: startStepOf(s.status), mode: mode0, tailored: s.tailored }))
   const [reached, setReached] = useState(0)
   const [name, setName] = useState(s.senderName)
   const [askName] = useState(isSenderName(s.senderName) === false)
-  const [letter, setLetter] = useState(s.cover)
+  const [letter, setLetter] = useState(letter0Of({ start: s, mode: mode0 }))
   const [mine, setMine] = useState<LetterOpt[]>(draftOptsOf(s))
   const [pick, setPick] = useState(firstPickOf(s.cover))
   const [editing, setEditing] = useState(false)
@@ -94,6 +125,11 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
     setSoon,
     setRw,
     onSent: x.onSent,
+    mode,
+    setMode,
+    tailored: s.tailored,
+    baseCover: s.baseCover,
+    draftCover: s.cover,
   }
   const quietSave = makeQuietSave({ cells })
   useSaveOnHide(quietSave)
@@ -153,7 +189,30 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
     onRwClose: makeSetTo<MaybeRewrite>({ set: setRw, v: null }),
     onNext: makeNext(cells),
     onBack: makeBack(cells),
+    onReviewSent: makeReviewSent(cells),
+    onReviewUpsell: makeReviewUpsell(cells),
+    mode,
+    creditLeft: s.credit.left,
+    tailored: s.tailored,
+    onTailor: makeMode({ cells, mode: MODE_TAILOR }),
+    onBase: makeMode({ cells, mode: MODE_BASE }),
+    onBaseSend: makeBaseSend(cells),
+    onBaseBlur: quietSave,
+    leftText: t(leftAfterOf(s).key, { n: leftAfterOf(s).n }),
   }
+}
+
+/**
+ * 进框时的信:落在基础简历投递屏的用那一屏的信,其余照旧用这一岗的草稿。
+ *
+ * @param x 起始态与进框时的屏。
+ * @returns 信。
+ */
+function letter0Of(x: Letter0In): string {
+  if (x.mode === MODE_BASE) {
+    return baseLetterOf({ draftCover: x.start.cover, baseCover: x.start.baseCover, tailored: x.start.tailored })
+  }
+  return x.start.cover
 }
 
 /**
@@ -283,4 +342,20 @@ export function usePushOffer(t: PushOfferIn['t']): PushOfferPanel {
     void loadPushOffer({ setEmail })
   }, [])
   return { email, busy, onOn: makePushOn({ email, t, setEmail, setBusy }) }
+}
+
+/**
+ * 投出后「接着投这几个」(2026-11-09「我的」第一批):开屏取一次。
+ *
+ * @param jobId 刚投的职位 id。
+ * @returns 几行、取完没有与界面语。
+ */
+export function useNextPicks(jobId: number): NextPicksPanel {
+  const [lang] = useLang()
+  const [rows, setRows] = useState<NextPick[]>([])
+  const [done, setDone] = useState(false)
+  useEffect(function firstLoad() {
+    void loadNextPicks({ jobId, setRows, setDone })
+  }, [jobId])
+  return { rows, done, lang }
 }

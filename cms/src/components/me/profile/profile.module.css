@@ -69,6 +69,16 @@
 }
 
 /*
+ * 一个名字与它的「来自简历」胶囊。
+ */
+.nameMark {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/*
  * 没答 / 没填那一格,以及「我的通道」里的灰字:浅灰。
  */
 .none {

@@ -125,6 +125,11 @@ export type PickItem = {
   abovePct: number | null
 
   /**
+   * 本省同职业时薪中位(没有是 null)。
+   */
+  wageMedHourly: number | null
+
+  /**
    * 雇主办过的 LMIA 外劳名额(没有是 0)。
    */
   lmiaPositions: number
@@ -341,51 +346,36 @@ export type ChanName = {
 }
 
 /**
- * 推荐原因(whyTagsOf)的入参。
+ * 中位时薪与 vs 中位两格(wageViewOf)的入参。
  */
-export type WhyTextsIn = {
+export type WageViewIn = {
   /**
-   * 理由码。
+   * 本省同职业时薪中位(没有是 null)。
    */
-  reasons: string[]
+  hourly: number | null
 
   /**
    * 薪资高出中位的百分比(没有是 null)。
    */
-  abovePct: number | null
-
-  /**
-   * LMIA 名额。
-   */
-  lmiaPositions: number
-
-  /**
-   * EE 定向类别。
-   */
-  eeCategory: string
-
-  /**
-   * 社区试点名。
-   */
-  pilot: string
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
+  pct: number | null
 }
 
 /**
- * 一枚推荐原因胶囊。
+ * 中位时薪与 vs 中位两格的显示(wageViewOf 的产出)。
  */
-export type WhyTag = {
+export type WageView = {
   /**
-   * 字。
+   * 中位时薪显示串(「$N/hr」;没有 = 空串)。
    */
-  text: string
+  med: string
 
   /**
-   * tag 桶的档(绿)。
+   * vs 中位显示串(「+N%」「-N%」;没有 = 空串)。
    */
-  variant: 'ok'
+  vs: string
+
+  /**
+   * 薪资低于中位(vs 中位格用琥珀;否则绿)。
+   */
+  down: boolean
 }

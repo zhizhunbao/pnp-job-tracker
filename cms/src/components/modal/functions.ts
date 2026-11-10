@@ -361,6 +361,25 @@ export function frameInitOf(x: FrameInitIn): FrameBox | null {
 }
 
 /**
+ * 服务端渲染出来的窗口(深链 `?apply=` 首屏)没量过视口,挂载后比视口大就重新居中收进屏内(2026-11-09 三屏投递框实撞)。
+ *
+ * @param box 现在的位置与尺寸。
+ * @returns 收好的;放得下给 null。
+ */
+export function overflowBoxOf(box: FrameBox | null): FrameBox | null {
+  if (box == null || box.w == null || box.h == null) {
+    return null
+  }
+  if (box.w <= window.innerWidth - VIEWPORT_GAP && box.h <= window.innerHeight - VIEWPORT_GAP) {
+    return null
+  }
+  return centeredBoxOf({
+    w: Math.min(box.w, window.innerWidth - VIEWPORT_GAP),
+    h: Math.min(box.h, window.innerHeight - VIEWPORT_GAP),
+  })
+}
+
+/**
  * 按下那一刻白卡的位置:钉过就用钉住的,还没动过就量一下白卡此刻在视口里的位置(宽高照旧跟档位走)。
  *
  * @param x 钉住的位置与白卡元素。

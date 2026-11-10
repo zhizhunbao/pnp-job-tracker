@@ -62,7 +62,7 @@ function row(code: string, en: string, zh: string | null = null, ko: string | nu
 }
 
 // 档案编辑弹框的空档(2026-10-11 访客向导删,整机走一遍改挂 GateEdit:同一套题,五题全问从目标题起;2026-11-07 改挂一页表单 GateForm)
-const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [], workNocs: [], matchBy: '', matchMode: '' }
+const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [], workNocs: [], matchBy: '', matchMode: '', fromResume: [] }
 
 const HOT: MajorRow[] = [
   row('52.0201', 'Business Administration and Management, General.', '工商管理', '경영학', ['商务', '高管']),
@@ -328,7 +328,7 @@ describe('④ 整机走一遍(原 gateMajorRail ④,2026-10-05 随选择器搬�
     const done = () => Array.from(host.querySelectorAll('button')).find((b) => b.textContent === 'pf.pickDone') as HTMLButtonElement
     act(() => done().click())
     expect(host.querySelector('[role="tablist"]')).toBeNull()
-    expect(host.textContent).toContain('pf.picked{"n":1}')
+    expect(host.textContent).toContain('会计技术与簿记')
     act(() => root.unmount())
     host.remove()
   })
@@ -381,7 +381,7 @@ describe('第 3 题整机走一遍(2026-10-05 改左右两栏)', () => {
     expect(lineOf('计算机科学')).not.toBeUndefined()
     act(() => lineOf('计算机科学').click())
     await act(async () => done().click())
-    expect(host.textContent).toContain('pf.picked{"n":1}')
+    expect(host.textContent).toContain('计算机科学')
     await act(async () => edits()[1]?.click())
     await vi.waitFor(() => expect(lineOf('软件开发')).not.toBeUndefined())
     expect(urls).toContain('/api/quiz?major=11.0701&n=24')
@@ -399,7 +399,8 @@ describe('第 3 题整机走一遍(2026-10-05 改左右两栏)', () => {
     act(() => lineOf('软件开发').click())
     await act(async () => done().click())
     expect(host.querySelector('[role="tablist"]')).toBeNull()
-    expect(String(host.textContent).match(/pf\.picked\{"n":1\}/g)).toHaveLength(2)
+    expect(host.textContent).toContain('计算机科学')
+    expect(host.textContent).toContain('软件开发')
     act(() => root.unmount())
     host.remove()
   })

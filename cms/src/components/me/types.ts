@@ -16,13 +16,23 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
 export type MeSec = 'sjobs' | 'inbox' | 'resume' | 'profile' | 'sub' | 'settings'
 
 /**
+ * 「我的求职」类别下的三个子项(2026-11-09 Frank「这三个是不是都放到侧边栏比较好」:原卡片里的三枚页签挪到侧边栏)。
+ */
+export type MeJobTab = 'picks' | 'saved' | 'applied'
+
+/**
+ * 导航里点得到的键:一节,或「我的求职」下的一个子项。
+ */
+export type MeKey = MeSec | MeJobTab
+
+/**
  * 窄屏抽屉状态机器的入参。
  */
 export type MeFrameIn = {
   /**
    * 换节(页面状态机器给的;抽屉里点了一项 = 换节 + 关抽屉)。
    */
-  onPick: (sec: MeSec) => void
+  onPick: (key: MeKey) => void
 }
 
 /**
@@ -57,7 +67,7 @@ export type MePickIn = {
   /**
    * 换节。
    */
-  onPick: (sec: MeSec) => void
+  onPick: (key: MeKey) => void
 
   /**
    * 开关抽屉。
@@ -430,6 +440,16 @@ export type MePagePanel = {
   sec: MeSec
 
   /**
+   * 「我的求职」当前的子项(今日推荐 / 我的收藏 / 我的投递)。
+   */
+  jobTab: MeJobTab
+
+  /**
+   * 导航里亮哪一项(在「我的求职」时是子项,其余是节)。
+   */
+  nav: MeKey
+
+  /**
    * 当前用户;没登录为 null。
    */
   me: MeUser | null
@@ -440,9 +460,9 @@ export type MePagePanel = {
   checked: boolean
 
   /**
-   * 换节。
+   * 换节(或换「我的求职」的子项)。
    */
-  onPick: (sec: MeSec) => void
+  onPick: (key: MeKey) => void
 
   /**
    * 是 Pro。
@@ -540,6 +560,11 @@ export type MeSettingsPageIn = MeSecPageIn & {
  */
 export type MeJobsPageIn = MeSecPageIn & {
   /**
+   * 当前子项(今日推荐 / 我的收藏 / 我的投递;侧边栏点的)。
+   */
+  tab: MeJobTab
+
+  /**
    * 当前用户(拼分层态用)。
    */
   me: MeUser | null
@@ -590,7 +615,27 @@ export type SecPickIn = {
   setSec: (s: MeSec) => void
 
   /**
+   * 换「我的求职」的子项。
+   */
+  setJobTab: (v: MeJobTab) => void
+
+  /**
    * 开不开修改面板。
    */
   setAutoEdit: (v: boolean) => void
+}
+
+/**
+ * 导航亮哪一项(navKeyOf)的入参。
+ */
+export type NavKeyIn = {
+  /**
+   * 当前节。
+   */
+  sec: MeSec
+
+  /**
+   * 「我的求职」当前的子项。
+   */
+  jobTab: MeJobTab
 }

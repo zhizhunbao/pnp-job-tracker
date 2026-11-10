@@ -10,26 +10,24 @@
  */
 import { Modal, ModalHead } from '@/components/modal'
 import { ApplySection } from './applysection'
-import { APPLY_MODAL_H, APPLY_MODAL_PREF, APPLY_MODAL_W, KICKER_KEY } from './constants'
+import { APPLY_MODAL_H, APPLY_MODAL_PREF_V2, APPLY_MODAL_W, KICKER_KEY } from './constants'
 import { modalTitleOf } from './functions'
-import { useApplyStart } from './hooks'
 import type { ApplyModalIn } from './types'
 
 /**
- * 投递框。
+ * 投递框。2026-11-09:取数挪到外壳之前的 ApplyGate(先查额度再定开什么),本件只收取好的面板。
  *
- * @param props 要投的职位 id 与关框。
+ * @param props 取数面板、是不是直接落在基础简历投递屏与关框。
  * @returns 窗口形弹框。
  */
-export function ApplyModal({ jobId, onClose }: ApplyModalIn) {
-  const s = useApplyStart(jobId)
+export function ApplyModal({ s, base, onClose }: ApplyModalIn) {
   const head = (
     <ModalHead kicker={s.t(KICKER_KEY)} title={modalTitleOf(s.start)} sub={s.titleSub} ctl={null} />
   )
   return (
     <Modal onClose={onClose}
-      win={{ head, memo: APPLY_MODAL_PREF, w: APPLY_MODAL_W, h: APPLY_MODAL_H, jd: false }}>
-      <ApplySection s={s} />
+      win={{ head, memo: APPLY_MODAL_PREF_V2, w: APPLY_MODAL_W, h: APPLY_MODAL_H, jd: false }}>
+      <ApplySection s={s} base={base} />
     </Modal>
   )
 }

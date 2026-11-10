@@ -924,11 +924,6 @@ export const jobsZh = {
   'fav.title': '我的收藏',
   // 2026-10-06 「我的求职」「我的收藏」改成 myjobs 桶的两张表;sj.note、fav.note 随旧清单撤
   'mj.appliedAt': '投递日期', 'mj.open': '打开', 'mj.closed': '已下架', 'mj.del': '删除', 'mj.more': '更多操作', 'mj.delAsk': '确认删除?', 'mj.cancel': '取消', 'mj.col.chan': '通道',
-  'mj.col.why': '推荐原因', 'mj.why.wage': '薪资高于中位 {n}%', 'mj.why.wagePlain': '薪资高于中位', 'mj.why.aip': 'AIP 指定雇主', 'mj.why.pilot': '{g} 指定雇主', 'mj.why.known': '知名公司', 'mj.why.ee': 'EE {e}', 'mj.why.lmia': 'LMIA {m} 个',
-  'mj.why.occ': '职业对口',
-  'mj.why.saved': '和你收藏的同类',
-  'mj.why.applied': '和你投过的同类',
-  'mj.why.pnp': '能走省提名',
   'mj.lockLine': '还有 {n} 条推荐,Pro 可看全部',
   'mj.col.place': '地点',
   'mj.live': '在架', 'mj.col.stage': '投递状态', 'mj.col.listing': '职位状态',
@@ -989,9 +984,14 @@ export const jobsZh = {
   'ap.replyTo': '雇主回信', 'ap.replyInbox': '收件箱', 'ap.mailPv': '邮件预览', 'ap.noPv': 'Word 简历这里预览不了', 'ap.soon': '简历按职位改写即将上线',
   'ap.proReason': '按职位改写是 Pro 功能', 'ap.proTrialOut': '3 个免费职位已用完，升级后不限职位', 'ap.rwTrialLeft': '免费试用：还剩 {n} 个职位', 'ap.rwTitle': '按职位改写求职信', 'ap.rwBefore': '原来的', 'ap.rwJd': '职位要求',
   'ap.rwAfter': '改写后', 'ap.rwAgain': '再写一次', 'ap.rwUse': '用这一版',
+  'tr.stagePlan': '正在读职位要求', 'tr.stageResume': '正在按职位改写简历', 'tr.stageCover': '正在写求职信', 'tr.stageAudit': '正在逐条核对',
+  'tr.errPro': '免费额度已用完', 'tr.errBase': '先上传一份基础简历', 'tr.errJd': '这个职位没有职位描述', 'tr.errLimit': '今天的次数已用完', 'tr.errResume': '简历改写未通过核对,请重新生成', 'tr.errLlm': '生成失败,请重试', 'tr.errSend': '发送失败,请重试', 'tr.errName': '英文姓名不合规',
+  'tr.score': '匹配分', 'tr.of100': '/100', 'tr.fillAll': '补充经历,修复 {n} 条', 'tr.regen': '重新生成', 'tr.tapZoom': '点击放大', 'tr.notCovered': '未覆盖', 'tr.fillHead': '补充真实经历', 'tr.fillSave': '保存并改写', 'tr.fillHint': '只写真实做过的,没做过的留空', 'tr.fillWhat': '在哪家公司、什么时候、具体做了什么、规模或数量', 'tr.editCover': '修改求职信', 'tr.to': '发到', 'tr.subject': '主题', 'tr.mailBody': '邮件正文', 'tr.send': '发送投递', 'tr.resume': '本职位简历', 'tr.cover': '求职信', 'tr.jd': '职位描述', 'tr.pdfFail': '预览失败',
+  'ap.nextHead': '接着投这几个', 'ap.nextOne': '下一个:{title}',
   'ap.applied': '已投递', 'ap.resume': '简历', 'ap.name': '英文姓名', 'ap.letter': '求职信',
   'ap.to': '收件人', 'ap.subject': '主题', 'ap.attach': '附件', 'ap.next': '下一步', 'ap.back': '上一步', 'ap.send': '投出', 'ap.pdf': '查看 PDF', 'ap.sign': '署名', 'ap.view': '打开', 'ap.edit': '改信',
   'ap.badChars': '这些字写不进 PDF:', 'ap.sending': '发送中', 'ap.e.name': '英文姓名只能用英文字母、空格、点、撇号和连字符,2 到 60 个字',
+  'ap.chHead': '怎么投这个职位', 'ap.chTailor': '按这个职位改写', 'ap.chTailorSub': '用 1 个额度,免费额度还剩 {n} 个', 'ap.chBase': '直接投基础简历', 'ap.chBaseSub': '附基础简历原件,求职信用模板,不耗额度', 'ap.baseSend': '不改写,直接投基础简历', 'ap.toBase': '改投基础简历', 'ap.creditOut': '免费额度已用完', 'ap.creditOutPro': '本期额度已用完,{d} 恢复', 'ap.autoSaved': '已自动保存,可在我的投递里继续', 'ap.baseResume': '基础简历', 'ap.needBase': '先传一份基础简历,之后每个职位都以它为准', 'tr.failBase': '没写成,这次不扣额度',
   'ap.e.resume': '先上传一份简历', 'ap.e.chars': '信里有写不进 PDF 的字', 'ap.e.long': '求职信太长了,最多 4000 个字',
   'ap.e.sent': '这个职位已经投过了', 'ap.e.draft': '先写好求职信', 'ap.e.sameEmail': '30 天内已经给这个雇主投过别的职位',
   'ap.e.bounced': '这个雇主的邮箱退过信,投不了', 'ap.e.closed': '职位已下架', 'ap.e.noEmail': '这个职位没有投递邮箱',
@@ -1264,7 +1264,7 @@ export const siteZh = {
   'acct.pw.short': '太短:至少 8 位', 'acct.pw.weak': '弱', 'acct.pw.medium': '中', 'acct.pw.strong': '强', 'acct.pw.hint': '建议混合大小写、数字或符号',
   'pf.title': '我的档案', 'pf.card': '求职', 'pf.edit': '修改', 'pf.none': '还没答', 'pf.noneName': '还没填', 'pf.loadFail': '没取到,刷新再试',
   'pf.editTitle': '修改档案',
-  'pf.picked': '已选 {n} 个',
+  'pf.fill': '从简历填写', 'pf.fillHint': '读取默认简历,只填空着的做过的工作、专业和英文姓名,保存前可改', 'pf.fromResume': '来自简历', 'pf.fillOk': '已填 {n} 项,确认后点保存', 'pf.fillNone': '没有可填的内容', 'pf.fillNoResume': '还没有简历,先到「我的简历」上传', 'pf.fillScan': '这份简历是扫描件,读不出文字', 'pf.fillParse': '这份简历读不出来', 'pf.fillLlm': '提取失败,请稍后再试', 'pf.fillLimit': '今天的提取次数已用完',
   'pf.optWho': '选填,用来算「我的通道」',
   'pf.optEdu': '选填,最近两段',
   'pf.optName': '与简历一致',
@@ -1430,7 +1430,7 @@ export const siteZh = {
  
   'tl.min': '最低分 {n}', 'tl.inv': '邀请 {n} 人', 'tl.src': '官方来源',
   'tl.entry': '抽选与政策时间线', 'tl.empty': '没有匹配的事件',
-  'loading': '更新中…',
+  'loading': '加载中…',
   'origin.hireac': 'HireAC', 'origin.gcjobs': 'GC Jobs',
   'origin.jobillico': 'Jobillico', 'origin.jobboom': 'Jobboom', 'origin.careerbeacon': 'CareerBeacon',
   // 2026-10-12 Frank「通道 改成 申请门槛」:资讯第三个页签改名(页里是各通道的门槛卡)
@@ -1474,7 +1474,6 @@ export const siteZh = {
   'news.trOn': '显示中文对照', 'news.trOff': '收起中文对照', 'news.trBusy': '翻译中…约 15 秒', 'news.sumBusy': '速读生成中…', 'news.aiGen': 'AI 生成 · 以原文为准', 'news.trErr': '翻译暂不可用,请稍后再试',
   // 定价页 + 横幅(E5-01)
   'price.title': '定价', 'price.sub': '一次性时长包,无自动续费',
-  'price.pro': 'Pro',
   'price.per30': '30 天', 'price.per90': '90 天',
   'price.f2': 'PNP、EE 类别、AIP 标记',
   'price.f6': '工资中位对比(vs 中位、中位列)',
@@ -1485,12 +1484,9 @@ export const siteZh = {
   'price.incl': 'Pro 包含',
   // E5-07 收费面按「事实免费、结论收费」重写:免费列摆事实,Pro 三条摆结论(标题=一句结论,小字=具体给什么)
   // 2026-10-07 Frank「这些功能要重新盘点,重新写一下」:Pro 权益按代码里真锁的重盘成五条(price.perk.*);免费卡连同清单撤
-  'price.perk.letter': 'AI 按职位写求职信', 'price.perk.letter.d': '照职位描述和你的简历写,不限次', 'price.perk.match': '简历对照',
-  'price.perk.match.d': '逐条列出缺项,附改写建议', 'price.perk.alert': '岗位盯梢', 'price.perk.alert.d': '按你的条件匹配新岗,每天发到邮箱',
-  'price.perk.path': '我的通道报告', 'price.perk.path.d': '离门槛差多少分、先补哪一项最值钱', 'price.perk.export': '导出担保雇主名单',
-  'price.perk.export.d': '按筛选导出 CSV,带 ESDC LMIA 记录',
+  'price.perk.tailor': '每 30 天 60 个按职位改写额度', 'price.perk.tailor.d': '简历和求职信一起改写,当期用不完清零', 'price.perk.regen': '重新生成每份文件每天 5 次', 'price.perk.regen.d': '不耗额度,免费用户每天 1 次', 'price.cad': '价格以加元(CAD)计', 'sub.creditFree': '免费额度还剩 {n} 个,共 {m} 个', 'sub.creditPro': '本期还剩 {n} 个,共 {m} 个,{d} 恢复', 'ap.leftFree': '免费额度还剩 {n} 个', 'ap.leftPro': '本期额度还剩 {n} 个',
   'price.save': '更划算,省 {p}%', 'price.perDay': '≈ {v}/天',
-  'price.cta.reg': '注册后购买', 'price.cta.buy30': '购买 30 天', 'price.cta.buy90': '购买 90 天', 'price.cta.acct': '已是 Pro · 去账户页',
+  'price.cta.reg': '注册后购买', 'price.cta.acct': '已是 Pro · 去账户页',
   // B1 在招担保雇主:弹框雇主线入口(凭证行有据才出,负断言不上台面)
   // B2 在招担保雇主页(se.*;凭证措辞与 B1 弹框 spl.* 同源)
   'se.title': '在招担保雇主',

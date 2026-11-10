@@ -6,20 +6,12 @@
 /*
  * 页签条与下面的内容拉开。
  * 2026-11-07 Frank「现在都按 Azure 的来」:页签与「换一批」同一行 —— 页签条吃满剩下的宽(窄了自己横滚),钮顶到最右。
+ * 2026-11-09 页签挪到侧边栏:这一行只剩「换一批」,靠右。
  */
-.tabs {
+.bar {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  justify-content: flex-end;
   margin-bottom: 12px;
-}
-
-/*
- * 页签条(tabs 桶 Tabs 的外层,这一行的第一个孩子):吃满剩下的宽,允许被压窄(横滚)。
- */
-.tabs > :first-child {
-  flex: 1;
-  min-width: 0;
 }
 
 /*
@@ -52,11 +44,38 @@
 /*
  * 薪资(绿,同职位卡)。
  * 2026-11-07 Frank「现在都按 Azure 的来」:改正文色(半粗照旧),网页表格与手机一条同一类。
+ * 2026-11-09 Frank「薪资 去掉 加粗」:半粗撤。
  */
 .pay {
   color: var(--text);
-  font-weight: 600;
   font-size: 13px;
+  white-space: nowrap;
+}
+
+/*
+ * 中位时薪(灰字,同职位板中位列)。2026-11-09 Frank「这部分加进 table 吧」「这个地方都显示 时薪吧」。
+ */
+.med {
+  color: var(--text2);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/*
+ * vs 中位:高于或持平(绿粗,同职位板 vsUp)。2026-11-09 Frank「这部分加进 table 吧」。
+ */
+.vsUp {
+  color: #15803d;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/*
+ * vs 中位:低于中位(琥珀粗,同职位板 vsDown)。
+ */
+.vsDown {
+  color: #b45309;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -179,20 +198,6 @@
   padding: 12px 0 4px;
   font-size: 13px;
   color: var(--text2);
-}
-
-/*
- * 窄屏(640 及以下):页签条占满一整行,「换一批」折到页签下面一行靠右(2026-11-07 截图验收:375 宽时挤掉第三枚页签)。
- */
-@media (max-width: 640px) {
-  .tabs {
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-
-  .tabs > :first-child {
-    flex-basis: 100%;
-  }
 }
 
 /*

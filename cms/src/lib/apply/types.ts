@@ -843,6 +843,11 @@ export type ApplyPrefs = {
  */
 export type ApplyRowDbRow = {
   /**
+   * 本岗简历 PDF(2026-11-09 按职位改写)。
+   */
+  tailor_pdf_b64: string | null
+
+  /**
    * 投递行 id。
    */
   id: number | string | null
@@ -872,6 +877,11 @@ export type ApplyRowDbRow = {
  * 本人这一岗的投递行(洗净)。
  */
 export type ApplyRowFact = {
+  /**
+   * 本岗简历 PDF;没有 = 空串,发信用基础简历。
+   */
+  tailorB64: string
+
   /**
    * 投递行 id。
    */
@@ -1012,6 +1022,36 @@ export type ApplyStartIn = {
    * 回复邮箱(用户注册邮箱;「确认」页摆给本人看)。
    */
   replyTo: string
+
+  /**
+   * 这个人对这一岗的额度(路由先读好递进来)。
+   */
+  credit: ApplyCredit
+}
+
+/**
+ * 起始态里的额度(2026-11-09 Frank:点「邮箱投递」先在服务端查基础简历和额度,再决定开什么)。
+ */
+export type ApplyCredit = {
+  /**
+   * 额度档。
+   */
+  plan: 'free' | 'pro'
+
+  /**
+   * 还剩几个。
+   */
+  left: number
+
+  /**
+   * 一共几个。
+   */
+  max: number
+
+  /**
+   * 额度哪一刻恢复(ISO);免费额度终身一次,没有恢复日。
+   */
+  resetAt: string | null
 }
 
 /**
@@ -1328,6 +1368,21 @@ export type ApplyStart = {
    * 回复邮箱(用户注册邮箱;「确认」页摆给本人看)。
    */
   replyTo: string
+
+  /**
+   * 这个人对这一岗的额度。
+   */
+  credit: ApplyCredit
+
+  /**
+   * 这一岗生成过本岗简历没有(生成过的重开直接看保存的那一版,不再扣额度)。
+   */
+  tailored: boolean
+
+  /**
+   * 直接投基础简历时的求职信:固定模板填好职位名、公司名、姓名,不调模型(用户可改)。
+   */
+  baseCover: string
 }
 
 /**
@@ -1479,6 +1534,11 @@ export type SendBodyJson = {
    * 职位 id。
    */
   jobId?: number | string | boolean | null
+
+  /**
+   * 是不是投基础简历原件(true 时哪怕生成过本岗简历也附原件;2026-11-09)。
+   */
+  base?: number | string | boolean | null
 }
 
 /**
@@ -1864,83 +1924,3 @@ export type ApplyLettersIn = {
  * `loadApplyLetters` 的返回。
  */
 export type ApplyLettersOut = Promise<ApplyLetterFact[]>
-
-/**
- * 「按职位改写」试用账的库行(2026-11-07 恢复试用,设计稿 docs/design/我的/我的求职-20261009.md 1.10 / 2.10)。
- */
-export type LetterTrialDbRow = {
-  /**
-   * 用过几个职位。
-   */
-  used: number | string | null
-
-  /**
-   * 这一个职位用过没有。
-   */
-  here: boolean | null
-}
-
-/**
- * 「按职位改写」试用账(洗净)。
- */
-export type LetterTrialFact = {
-  /**
-   * 用过几个职位。
-   */
-  used: number
-
-  /**
-   * 这一个职位用过没有(用过的职位再写不另算)。
-   */
-  here: boolean
-}
-
-/**
- * 可能没有的试用账(Pro 不记账 = null)。
- */
-export type MaybeLetterTrial = LetterTrialFact | null
-
-/**
- * 取 / 记试用账的入参。
- */
-export type LetterTrialIn = {
-  /**
-   * 数据库连接(调用方注入)。
-   */
-  db: Db
-
-  /**
-   * 用户 id。
-   */
-  userId: UserId
-
-  /**
-   * 职位 id。
-   */
-  jobId: number
-}
-
-/**
- * `loadLetterTrial` 的返回。
- */
-export type LetterTrialOut = Promise<LetterTrialFact>
-
-/**
- * 算试用余量的入参。
- */
-export type LetterTrialLeftIn = {
-  /**
-   * 试用账;Pro 不记账 = null。
-   */
-  trial: MaybeLetterTrial
-
-  /**
-   * 这一次是不是写成并记了账。
-   */
-  marked: boolean
-}
-
-/**
- * 试用余量:还剩几个职位;Pro 不限 = null。
- */
-export type MaybeTrialLeft = number | null

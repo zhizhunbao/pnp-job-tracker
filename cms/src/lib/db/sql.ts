@@ -689,8 +689,10 @@ export const PNP_OCCUPATIONS_ALL = `SELECT province, stream, label, type, noc, n
 
 /**
  * 雇主池省下拉的选项:池里雇主的主省分布(2026-09-13 雇主板批二;lib/employers 进程内 TTL 缓存)。
+ * 2026-11-09 Frank 截图实撞:下拉里混着「Ottawa · Kanata North (ON)」「Ottawa (ON)」—— 池里有省格写成了地点串的脏行。
+ * 这里只收两位省码当护栏;脏行要在数据层(etl 汇装雇主池那一段)改,改完本条件可留可撤。
  */
-export const EMPLOYER_POOL_PROVS = `SELECT province FROM employer_pool WHERE COALESCE(province, '') <> '' GROUP BY province ORDER BY province`
+export const EMPLOYER_POOL_PROVS = `SELECT province FROM employer_pool WHERE province ~ '^[A-Z]{2}$' GROUP BY province ORDER BY province`
 
 /**
  * 探索队列入队(2026-09-18 Frank「用户列出过哪些雇主,就自动从那个表里翻译,类似于处理消息」):板上给用户列出过的雇主
@@ -3121,6 +3123,7 @@ export const MYJOBS_SAVED = `SELECT ${MYJOBS_FROM}
  * 同日「这个雇主愿不愿意帮忙弄 pr」「知名公司也算一个」:再取社区试点指定雇主(pilot / pilot_employer)与「有维基词条」(known = companies.wiki_url 非空)。
  * 2026-11-08 清单第 2、4 条:匹配依据 matchBy(work = 想做的 + 做过的工作;edu = 专业落的本站大类);
  * 严格模式 matchMode = strict:不拿收藏 / 投过的兜底,只看本省(抽选过期的省也照出本省岗,不跨省替换;实测安省不这样就一条都没有)。
+ * 2026-11-09 Frank「这部分加进 table 吧」(职位板的中位年薪、vs 中位两列):多取本省同职业时薪中位 wage_med_hourly(同日「这个地方都显示 时薪吧」);推荐原因列同日撤。
  * want、me 必须 MATERIALIZED:内联后这两段的子查询随每个候选岗重算,生产实测从 0.9 秒变成 40 秒超时。
  */
 export const MYJOBS_PICKS = `WITH want AS MATERIALIZED (
@@ -3161,6 +3164,7 @@ export const MYJOBS_PICKS = `WITH want AS MATERIALIZED (
             j.salary_text, j.date_posted, j.pnp_eligible, (j.salary_annual > j.wage_med_annual) AS above_med,
             CASE WHEN j.salary_annual > 0 AND j.wage_med_annual > 0
               THEN round((j.salary_annual / j.wage_med_annual - 1) * 100)::int END AS above_pct,
+            j.wage_med_hourly,
             j.employment_hours, j.employment_term, j.valid_through, c.lmia_positions, j.ee_category, j.aip,
             j.pilot, j.pilot_employer, (COALESCE(c.wiki_url, '') <> '') AS known,
             pr.info->>'offerDrawLast' AS draw_last,
@@ -3188,6 +3192,29 @@ export const MYJOBS_PICKS = `WITH want AS MATERIALIZED (
       ORDER BY (j.pnp_eligible AND st.code IS NULL) DESC NULLS LAST,
                CASE WHEN st.code IS NULL THEN j.grade_channel END DESC NULLS LAST, j.date_posted DESC NULLS LAST,
                (j.salary_annual > j.wage_med_annual) DESC NULLS LAST, j.id DESC
+      LIMIT $3`
+
+/**
+ * 发出一封之后接着投的同类岗(2026-11-09 Frank:同省、同职业、有投递邮箱、没投过,按新旧排):以刚投的那一岗为准,
+ * 取同省同 5 位职业码的在架岗;投递表里有的(任何状态)、退过信的邮箱、30 天内给同一雇主邮箱发过的不出。
+ * 列名与 MYJOBS_PICKS 对齐(同一个行构造器 toPickRow),推荐理由那几格这里不算。$1=用户 id,$2=刚投的职位 id,$3=条数。
+ * idx_jobs_noc / idx_jobs_province 管连接。
+ */
+export const MYJOBS_AFTER = `SELECT j.id, j.title, j.title_zh, j.title_ko, j.trans_v, c.name AS company_name, c.alias_zh, c.alias_ko,
+            c.slug AS company_slug, j.address, j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province,
+            j.salary_text, j.date_posted, j.pnp_eligible, j.wage_med_hourly, j.employment_hours, j.employment_term,
+            j.valid_through, c.lmia_positions, j.ee_category, j.aip, j.pilot, j.pilot_employer, j.pnp_stream
+       FROM jobs ref
+       JOIN jobs j ON j.noc = ref.noc AND j.province = ref.province AND j.id <> ref.id
+       LEFT JOIN companies c ON c.id = j.company_id
+       LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
+      WHERE ref.id = $2 AND length(ref.noc) = 5
+        AND j.status = 'open' AND COALESCE(j.apply_email, '') <> '' AND j.is_dup IS NOT TRUE
+        AND NOT EXISTS (SELECT 1 FROM applications a WHERE a.user_id = $1 AND a.job_id = j.id)
+        AND NOT EXISTS (SELECT 1 FROM bounced_emails b WHERE b.email = lower(j.apply_email))
+        AND NOT EXISTS (SELECT 1 FROM applications a2 WHERE a2.user_id = $1 AND lower(a2.employer_email) = lower(j.apply_email)
+                        AND a2.status IN ('sending', 'sent', 'replied') AND a2.updated_at > now() - interval '30 days')
+      ORDER BY j.date_posted DESC NULLS LAST, j.id DESC
       LIMIT $3`
 
 /**
@@ -3277,7 +3304,46 @@ export const APPLY_PREFS_PUT = `INSERT INTO apply_prefs (user_id, sender_name, c
  * 本人这一岗的投递行(草稿或已发)。$1=用户 id,$2=职位 id。没有 = 0 行。
  * 2026-10-07 起草稿里的信是这一岗按 JD 写的那一封(「我的模板」撤),回到这一岗直接接着用。
  */
-export const APPLY_ROW = `SELECT id, status, cover_text, resume_id, sent_at FROM applications WHERE user_id = $1 AND job_id = $2`
+export const APPLY_ROW = `SELECT id, status, cover_text, resume_id, sent_at, tailor_pdf_b64 FROM applications WHERE user_id = $1 AND job_id = $2`
+
+/**
+ * 按职位改写:本人这一岗的行(2026-11-09,docs/sql/apply-tailor-20261109.sql)。$1=用户 id,$2=职位 id。
+ */
+export const TAILOR_ROW = `SELECT id, status, cover_text, tailor_pdf_b64, tailor_review, tailor_facts, tailor_cv->'contact'->>'name' AS cv_name
+     FROM applications WHERE user_id = $1 AND job_id = $2`
+
+/**
+ * 按职位改写:建草稿行并存要求与用户补充。已发出的行不动。$1=用户,$2=职位,$3=职位名,$4=公司,$5=基础简历 id,$6=核对结果,$7=用户补充。
+ */
+export const TAILOR_PLAN = `INSERT INTO applications (user_id, job_id, job_title, company, status, cover_text, resume_id, tailor_review, tailor_facts)
+     VALUES ($1, $2, $3, $4, 'draft', '', $5, $6::jsonb, $7::jsonb)
+     ON CONFLICT (user_id, job_id) DO UPDATE SET resume_id = EXCLUDED.resume_id, tailor_review = EXCLUDED.tailor_review,
+       tailor_facts = EXCLUDED.tailor_facts, updated_at = now()
+     WHERE applications.status IN ('draft', 'queued')`
+
+/**
+ * 按职位改写:存本岗简历。$1=用户,$2=职位,$3=草稿,$4=PDF,$5=核对结果。
+ */
+export const TAILOR_RESUME = `UPDATE applications SET tailor_cv = $3::jsonb, tailor_pdf_b64 = $4, tailor_review = $5::jsonb, updated_at = now()
+     WHERE user_id = $1 AND job_id = $2 AND status IN ('draft', 'queued')`
+
+/**
+ * 按职位改写:存求职信。$1=用户,$2=职位,$3=信,$4=核对结果。
+ */
+export const TAILOR_COVER = `UPDATE applications SET cover_text = $3, tailor_review = $4::jsonb, updated_at = now()
+     WHERE user_id = $1 AND job_id = $2 AND status IN ('draft', 'queued')`
+
+/**
+ * 按职位改写:存用户补充的真实经历。$1=用户,$2=职位,$3=用户补充。
+ */
+export const TAILOR_FACTS = `UPDATE applications SET tailor_facts = $3::jsonb, updated_at = now()
+     WHERE user_id = $1 AND job_id = $2 AND status IN ('draft', 'queued')`
+
+/**
+ * 按职位改写:存核对结果。$1=用户,$2=职位,$3=核对结果。
+ */
+export const TAILOR_REVIEW = `UPDATE applications SET tailor_review = $3::jsonb, updated_at = now()
+     WHERE user_id = $1 AND job_id = $2 AND status IN ('draft', 'queued')`
 
 /**
  * 存草稿:没有就建一行 draft;已有且还是 draft 就改信与简历;已经在发 / 发过的不动(返回 0 行)。
@@ -3375,20 +3441,34 @@ export const APPLY_LETTERS = `SELECT id, job_id, job_title, company, status, upd
 // =========================================================================
 // 33. AI 功能试用账(批 C 收费闸;2026-10-07 立,表 docs/sql/ai-trials-20261007.sql:ai_trials;
 //     2026-10-10 随试用撤下;2026-11-07 Frank「先改这一处」照设计稿 docs/design/我的/我的求职-20261009.md 1.10 / 2.10
-//     恢复「按职位改写」每人试用 3 个职位,读写方只有 lib/apply 的 loadLetterTrial / markLetterTrial)
+//     恢复「按职位改写」每人试用 3 个职位,读写方只有 lib/apply 的 loadLetterTrial / markLetterTrial;
+//     2026-11-09 Frank 定额度:免费每人 3 个终身一次、会员每期 60 个,老的试用用量不算 —— 同表换功能名分两档记,
+//     读写方改成 lib/apply/credit 的 loadCredit / markCredit / takeRegen;重新生成计数表 docs/sql/apply-credit-20261109.sql)
 // =========================================================================
 
 /**
- * 某人某项 AI 功能的试用用量:用过几个、这一个用过没有。$1=用户 id,$2=功能名,$3=用在哪一个(职位 id)。
+ * 某人的额度用量:免费档累计几个、会员当期几个、这一个职位记过账没有。
+ * $1=用户 id,$2=免费档功能名,$3=会员档功能名,$4=职位 id,$5=会员当期开始(不是会员传 NULL,会员档按 0 个算)。
  */
-export const TRIAL_USED = `SELECT count(*)::int AS used, coalesce(bool_or(ref_id = $3), false) AS here
-     FROM ai_trials WHERE user_id = $1 AND feature = $2`
+export const CREDIT_USED = `SELECT count(*) FILTER (WHERE feature = $2)::int AS free_used,
+       count(*) FILTER (WHERE feature = $3 AND created_at >= $5::timestamptz)::int AS pro_used,
+       coalesce(bool_or(ref_id = $4), false) AS here
+     FROM ai_trials WHERE user_id = $1 AND feature IN ($2, $3)`
 
 /**
- * 记一笔试用(同一个只记一次)。$1=用户 id,$2=功能名,$3=用在哪一个。
+ * 记一笔额度(同一个职位在同一档名下只记一次)。$1=用户 id,$2=功能名,$3=职位 id。
  */
-export const TRIAL_MARK = `INSERT INTO ai_trials (user_id, feature, ref_id) VALUES ($1, $2, $3)
+export const CREDIT_MARK = `INSERT INTO ai_trials (user_id, feature, ref_id) VALUES ($1, $2, $3)
      ON CONFLICT (user_id, feature, ref_id) DO NOTHING`
+
+/**
+ * 占一次手动重新生成:今天没到上限才加一并回行,到了上限零行(查和加一条语句,并发不超)。
+ * $1=用户 id,$2=职位 id,$3=哪一份文件,$4=今天的上限。日界按 UTC。
+ */
+export const REGEN_TAKE = `INSERT INTO ai_regens AS r (user_id, job_id, step, day, n)
+     VALUES ($1, $2, $3, (now() AT TIME ZONE 'utc')::date, 1)
+     ON CONFLICT (user_id, job_id, step, day) DO UPDATE SET n = r.n + 1 WHERE r.n < $4
+     RETURNING n`
 
 // =========================================================================
 // 35. 新岗推送(「我的求职」末段;2026-10-10 批 2,docs/design/我的/我的求职-20261009.md 第 3 节 16b / 16d;
@@ -3429,8 +3509,24 @@ export const DIGEST_PREFS_OFF = `INSERT INTO digest_prefs (user_id, freq) VALUES
 /**
  * 某一档频率的收件人:用户 id、收件邮箱(设了用设的,没设用账户邮箱)、界面语、Pro 到期日、上次每日推送时刻。$1=频率,$2=人数上限。
  * digest_prefs_freq_idx 管这条。
+ * 2026-11-09「我的」第一批:多取 has_occ(推荐有没有职业依据,口径与 MYJOBS_PICKS 的 want / saved_g / applied_g 同):
+ * 档案没职业、又没投递收藏可兜底时,推荐不按职业过滤,发出去是全国无关的岗,每日推送跳过这种人。
  */
-export const DIGEST_USERS = `SELECT p.user_id, COALESCE(NULLIF(p.email, ''), u.email) AS email, u.locale, u.pro_until, p.last_daily_at
+export const DIGEST_USERS = `SELECT p.user_id, COALESCE(NULLIF(p.email, ''), u.email) AS email, u.locale, u.pro_until, p.last_daily_at,
+            (CASE WHEN u.answers->'basic'->>'matchBy' = 'edu'
+                  THEN EXISTS (SELECT 1 FROM cip_programs c
+                                WHERE jsonb_typeof(c.broads) = 'array' AND jsonb_array_length(c.broads) > 0
+                                  AND c.code IN (SELECT jsonb_array_elements_text(
+                                    CASE WHEN jsonb_typeof(u.answers->'basic'->'majors') = 'array' THEN u.answers->'basic'->'majors'
+                                         ELSE '[]'::jsonb END)))
+                  ELSE EXISTS (SELECT 1 FROM jsonb_array_elements_text(
+                         CASE WHEN jsonb_typeof(u.answers->'basic'->'nocs') = 'array' THEN u.answers->'basic'->'nocs' ELSE '[]'::jsonb END
+                         || CASE WHEN jsonb_typeof(u.answers->'basic'->'workNocs') = 'array' THEN u.answers->'basic'->'workNocs' ELSE '[]'::jsonb END) w
+                       WHERE length(w) = 5) END
+             OR (COALESCE(u.answers->'basic'->>'matchMode' = 'strict', false) = false
+                 AND (EXISTS (SELECT 1 FROM saved_jobs s JOIN jobs sj ON sj.id = s.job_id WHERE s.user_id = p.user_id AND length(sj.noc) = 5)
+                      OR EXISTS (SELECT 1 FROM applications a JOIN jobs aj ON aj.id = a.job_id
+                                  WHERE a.user_id = p.user_id AND a.status IN ('sent', 'replied') AND length(aj.noc) = 5)))) AS has_occ
      FROM digest_prefs p JOIN users u ON u.id = p.user_id
      WHERE p.freq = $1 LIMIT $2`
 

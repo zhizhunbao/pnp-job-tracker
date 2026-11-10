@@ -54,15 +54,24 @@ export const LEFT_TAG = 'ok'
 /**
  * 「Pro 包含」五条(2026-10-08;与定价框 PRO_PERKS 同一套词条,各域各抄一份;只出名字不出说明句 ——
  * Frank 10-07「不需要解释性文字」)。
+ * 2026-11-09 Frank 权益清单按额度规则重写:旧五条撤,换成两条(与定价框 PRO_PERKS 同步)。
  */
-export const PERK_KEYS = [
-  'price.perk.letter', 'price.perk.match', 'price.perk.alert', 'price.perk.path', 'price.perk.export',
-]
+export const PERK_KEYS = ['price.perk.tailor', 'price.perk.regen']
 
 /**
  * 付款记录接口(按本人的 Stripe 客户 id 懒查,不落库;2026-10-08)。
  */
 export const URL_PAYMENTS = '/api/stripe/payments'
+
+/**
+ * 按职位改写额度的接口(2026-11-09 Frank「我的订阅 显示剩余额度」)。
+ */
+export const URL_CREDIT = '/api/apply/credit'
+
+/**
+ * 额度档:会员(与 lib/apply/credit 的 PLAN_PRO 同值,各域自抄)。
+ */
+export const PLAN_PRO = 'pro'
 
 /**
  * 付款记录表:日期列键。
@@ -94,9 +103,9 @@ export const AMOUNT_DIGITS = 2
  */
 export const CUR_SIGN: Record<string, string> = {
   /**
-   * 加元。
+   * 加元(2026-11-09 Frank:站内会员价格金额只写 $,不出现 CA$)。
    */
-  cad: 'CA$',
+  cad: '$',
 
   /**
    * 美元。

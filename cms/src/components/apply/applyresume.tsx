@@ -7,6 +7,8 @@
  * 下面左列简历单选、右列(手机在下面)选中那份的首页预览;英文姓名一行撤(档案里没有才在「确认」页问,Frank「这两个有必要吗」)。
  * 2026-11-07 卡头三颗钮:按职位改写、生成简历、上传新简历(设计稿 docs/design/我的/我的简历-20261007.md 1.3 / 2.3);
  * 生成简历窗口(cv 桶)挂在本卡,存成了重拉清单、选中新的那份。
+ * 2026-11-09 Frank 定的投递动线:本卡只在没有基础简历时出(先上传或生成,做完接着投这个职位),卡头的「按职位改写」撤 ——
+ * 改不改写在有了基础简历之后的那一屏选。
  *
  * @author Frank
  * @time 2026-10-07 03:00:00
@@ -18,8 +20,7 @@ import { ApplyFileInput } from './applyfileinput'
 import { ApplyPick } from './applypick'
 import { ApplyShow } from './applyshow'
 import {
-  ADD_KEY, BTN_SECONDARY, DEFAULT_KEY, ERR_KEY_RESUME, MIME_PDF, RADIO_NAME, RESUME_ACCEPT, REWRITE_KEY, SOON_KEY,
-  TEXT_NONE,
+  ADD_KEY, BTN_SECONDARY, DEFAULT_KEY, MIME_PDF, RADIO_NAME, RESUME_ACCEPT, SOON_KEY, TEXT_NONE,
 } from './constants'
 import { uploadedTextOf } from './functions'
 import type { ApplyStepIn } from './types'
@@ -50,7 +51,6 @@ export function ApplyResume({ p }: ApplyStepIn) {
   }
   const acts = (
     <>
-      <Button kind={BTN_SECONDARY} sm onClick={p.onResumeRewrite}>{p.t(REWRITE_KEY)}</Button>
       <Button kind={BTN_SECONDARY} sm onClick={p.cv.onOpen}>{p.t('cv.gen')}</Button>
       <Button kind={BTN_SECONDARY} sm onClick={p.onAdd} busy={p.uploading}>{p.t(ADD_KEY)}</Button>
       <ApplyFileInput onMount={p.onInputMount} onPick={p.onFile} accept={RESUME_ACCEPT} />
@@ -62,7 +62,7 @@ export function ApplyResume({ p }: ApplyStepIn) {
       <div className={css.split}>
         <div className={css.picks}>
           {rows}
-          {rows.length === 0 && <div className={css.note}>{p.t(ERR_KEY_RESUME)}</div>}
+          {rows.length === 0 && <div className={css.note}>{p.t('ap.needBase')}</div>}
         </div>
         {p.resumeSrc !== TEXT_NONE && p.resumeMime === MIME_PDF && (
           <ApplyShow key={p.resumeSrc} src={p.resumeSrc} t={p.t} />

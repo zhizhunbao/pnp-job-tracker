@@ -581,6 +581,11 @@ export type PickItem = {
   abovePct: number | null
 
   /**
+   * 本省同职业时薪中位(没有是 null)。
+   */
+  wageMedHourly: number | null
+
+  /**
    * 雇主办过的 LMIA 外劳名额(没有是 0)。
    */
   lmiaPositions: number
@@ -907,6 +912,11 @@ export type ListRow = {
   salary: string
 
   /**
+   * 中位时薪与 vs 中位两格(不是推荐清单 = 两格空串)。
+   */
+  wage: WageView
+
+  /**
    * 工时英文名(没标 = 空串)。
    */
   hoursEn: string
@@ -937,7 +947,7 @@ export type ListRow = {
   appliedOn: string
 
   /**
-   * 表格胶囊格(推荐 = 理由、收藏 / 投递 = 状态)。
+   * 表格胶囊格(收藏 / 投递 = 状态;推荐原因列 2026-11-09 撤,推荐行给空)。
    */
   tags: TagItem[]
 
@@ -1438,71 +1448,6 @@ export type PlaceDue = {
 }
 
 /**
- * 一枚页签(tabs 桶 TabItem 的本桶抄形;badge 缺席 = 不出计数)。
- */
-export type JobsTab = {
-  /**
-   * 页签身份键。
-   */
-  key: string
-
-  /**
-   * 页签文字。
-   */
-  label: string
-
-  /**
-   * 右边的计数(还没拉到 = 缺席)。
-   */
-  badge?: number
-}
-
-/**
- * tabsOf 的入参。
- */
-export type JobsTabsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 推荐(还没拉到 = null)。
-   */
-  picks: PicksFact | null
-
-  /**
-   * 我的收藏(还没拉到 = null)。
-   */
-  saved: MyJobItem[] | null
-
-  /**
-   * 我的投递(还没拉到 = null)。
-   */
-  applied: MyJobItem[] | null
-}
-
-/**
- * tabOf 的入参:一枚页签的身份、字与条数。
- */
-export type JobsTabIn = {
-  /**
-   * 页签身份键。
-   */
-  key: string
-
-  /**
-   * 页签文字。
-   */
-  label: string
-
-  /**
-   * 条数(还没拉到 = null)。
-   */
-  n: number | null
-}
-
-/**
  * swapShownOf(页签那一行右端出不出「换一批」)的入参。
  */
 export type SwapShownIn = {
@@ -1542,16 +1487,6 @@ export type JobsHookIn = {
  */
 export type JobsPanel = {
   /**
-   * 当前页签。
-   */
-  tab: string
-
-  /**
-   * 切页签。
-   */
-  onTab: (key: string) => void
-
-  /**
    * 今日推荐。
    */
   picks: PicksPanel
@@ -1575,6 +1510,11 @@ export type JobsBodyIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 当前出哪一张表(picks / saved / applied;2026-11-09 页签挪到侧边栏,由页面递来)。
+   */
+  tab: string
 
   /**
    * 是不是 Pro(推荐的条数上限与换一批次数;服务端另有自己的判定)。
@@ -1740,6 +1680,11 @@ export type PfView = {
    * 匹配模式;空串 = 没选。
    */
   matchMode: string
+
+  /**
+   * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
+   */
+  fromResume: string[]
 }
 
 /**
@@ -1815,6 +1760,11 @@ export type PfSeed = {
    * 匹配模式;空串 = 没选。
    */
   matchMode: string
+
+  /**
+   * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
+   */
+  fromResume: string[]
 }
 
 /**
@@ -1900,4 +1850,24 @@ export type RecordExportIn = {
    * 取词函数。
    */
   t: (key: string, vars?: Record<string, string | number>) => string
+}
+
+/**
+ * 中位时薪与 vs 中位两格的显示(2026-11-09;子桶 recommend 的 wageViewOf 产出,同形自声明)。
+ */
+export type WageView = {
+  /**
+   * 中位时薪显示串(「$N/hr」;没有 = 空串)。
+   */
+  med: string
+
+  /**
+   * vs 中位显示串(「+N%」「-N%」;没有 = 空串)。
+   */
+  vs: string
+
+  /**
+   * 薪资低于中位(vs 中位格用琥珀;否则绿)。
+   */
+  down: boolean
 }

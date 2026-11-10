@@ -199,16 +199,6 @@ export const CO_SEP = '\n'
 export const CHAN_NONE = '—'
 
 /**
- * 旧深链的查询参数名(`?sec=favs`:「我的收藏」页签撤了,落「我的求职」后直接切到「我的收藏」页签)。
- */
-export const QP_SEC = 'sec'
-
-/**
- * 旧深链「我的收藏」的值。
- */
-export const SEC_FAVS = 'favs'
-
-/**
  * 分区白卡的全局类(main.css 的 cardMd)。
  */
 export const CARD_MD_CLS = 'cardMd'
@@ -271,9 +261,14 @@ export const COL_DEADLINE = 'deadline'
 export const COL_CHAN = 'chan'
 
 /**
- * 列身份:推荐原因。
+ * 列身份:中位时薪(2026-11-09 Frank「这部分加进 table 吧」,同职位板那一列)。
  */
-export const COL_WHY = 'why'
+export const COL_MED = 'med'
+
+/**
+ * 列身份:vs 中位(同上批)。
+ */
+export const COL_VS = 'vs'
 
 /**
  * 列身份:状态。
@@ -335,15 +330,6 @@ export const TAB_SAVED = 'saved'
  */
 export const TAB_APPLIED = 'applied'
 
-/**
- * 页签条与面板的 id 前缀(aria 对应用)。
- */
-export const TABS_ID = 'mj-tabs'
-
-/**
- * 页签条的无障碍名词条(「我的求职」)。
- */
-export const TABS_ARIA_KEY = 'sj.title'
 
 /**
  * 我的收藏不跟着「投出一封」重拉(旧件只重挂投递表;收藏清单拉一次就够)。

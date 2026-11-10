@@ -568,6 +568,11 @@ export type Answers = {
    * 匹配模式(清单第 4 条,出处 Job Bank Matching mode):default / strict;空串 = 没选,按 default。
    */
   matchMode: string
+
+  /**
+   * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
+   */
+  fromResume: string[]
 }
 
 /**
@@ -1334,6 +1339,11 @@ export type QuizProfile = {
    * 匹配模式;空串 = 没选。
    */
   matchMode: string
+
+  /**
+   * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
+   */
+  fromResume: string[]
 }
 
 /**
@@ -1399,6 +1409,11 @@ export type ProfileBasicFact = {
    * 匹配模式(清单第 4 条,出处 Job Bank Matching mode):default / strict;空串 = 没选,按 default。
    */
   matchMode: string
+
+  /**
+   * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
+   */
+  fromResume: string[]
 }
 
 /**
@@ -1484,6 +1499,11 @@ export type ProfileBasicJson = {
    * 匹配模式(2026-11-08)。
    */
   matchMode?: string | null
+
+  /**
+   * 来自简历的标记(2026-11-09)。
+   */
+  fromResume?: string[] | null
 }
 
 /**

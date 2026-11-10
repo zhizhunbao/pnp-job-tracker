@@ -87,8 +87,9 @@ export const CRLF_RE = /\r\n?/g
 
 /**
  * 每人 24 小时最多发几封(防刷;Resend 免费档每天 100 封全站共用)。
+ * 2026-11-09 Frank:投基础简历不耗额度,另设防滥用上限每天 30 封 —— 原 20 封抬到 30(改写的和投基础简历的合计)。
  */
-export const USER_DAY_MAX = 20
+export const USER_DAY_MAX = 30
 
 /**
  * 全站 24 小时最多发几封(给提醒信与找回密码留出余量:Resend 免费档每天 100 封)。
@@ -728,18 +729,6 @@ export const LETTER_LIMIT_PREFIX = 'apply-letter:'
  * 写信接口每人每日上限。
  */
 export const LETTER_LIMIT_DAILY = 40
-
-/**
- * 「按职位改写」每人免费试用的职位数(一辈子;同一个职位「再写一次」不另算;只在模型真写成时记账)。
- * 2026-10-07 批 C 立 3 个;2026-10-10 Frank「用户只要一点击,就弹收费」撤;2026-11-07 Frank 看过设计稿
- * docs/design/我的/我的求职-20261009.md 1.10 / 2.10 说「可以」恢复(30 天里 5 人点开升级框、0 人付费:没用过就要钱)。
- */
-export const LETTER_TRIAL_MAX = 3
-
-/**
- * 试用账 ai_trials 里「按职位改写」的功能名(与 2026-10-07 起记下的老账同名,老账照算)。
- */
-export const TRIAL_LETTER = 'letter'
 
 /**
  * 消息角色:系统。

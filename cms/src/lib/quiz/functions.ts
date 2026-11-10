@@ -1265,7 +1265,7 @@ export function normalize(cur: RawAnswersSource): Answers {
     frenchBand: frenchBand, frenchV2: true,
     studyMonthsBand: num(raw.studyMonthsBand), studyLevelBand: num(raw.studyLevelBand),
     majors: arr(raw.majors), fitWho: str(raw.fitWho), fitEdu: arr(raw.fitEdu),
-    workNocs: arr(raw.workNocs), matchBy: str(raw.matchBy), matchMode: str(raw.matchMode),
+    workNocs: arr(raw.workNocs), matchBy: str(raw.matchBy), matchMode: str(raw.matchMode), fromResume: arr(raw.fromResume),
   }
   if (raw.done === true) {
     out.done = true
@@ -1596,7 +1596,7 @@ export async function loadQuizProfile(x: ProfileLoadIn): QuizProfileOut {
   const got = firstOf(await queryRows({ db: x.db, sql: SQL.QUIZ_USER_ANSWERS, params: [x.userId], map: toProfileBasic }))
   let b: ProfileBasicFact = {
     goal: 0, majors: [], nocs: [], prov: STR_NONE, abroad: false, city: STR_NONE, asked: false, who: STR_NONE, edu: [],
-    workNocs: [], matchBy: STR_NONE, matchMode: STR_NONE,
+    workNocs: [], matchBy: STR_NONE, matchMode: STR_NONE, fromResume: [],
   }
   if (got != null) {
     b = got
@@ -1615,7 +1615,7 @@ export async function loadQuizProfile(x: ProfileLoadIn): QuizProfileOut {
   }
   return {
     goal: b.goal, majors, nocs, prov: b.prov, abroad: b.abroad, city, name, asked: b.asked, who: b.who, edu: b.edu,
-    works, matchBy: b.matchBy, matchMode: b.matchMode,
+    works, matchBy: b.matchBy, matchMode: b.matchMode, fromResume: b.fromResume,
   }
 }
 
@@ -1738,9 +1738,13 @@ export function toProfileBasic(r: ProfileAnswersDbRow): ProfileBasicFact {
   if (Array.isArray(b.fitEdu)) {
     edu = b.fitEdu
   }
+  let fromResume: MaybeCodeList = null
+  if (Array.isArray(b.fromResume)) {
+    fromResume = b.fromResume
+  }
   return {
     goal, majors: textListOf(majors), nocs: textListOf(nocs), prov, abroad, city, asked: b.jobsAsked === true, who,
-    edu: textListOf(edu), workNocs: textListOf(workNocs), matchBy, matchMode,
+    edu: textListOf(edu), workNocs: textListOf(workNocs), matchBy, matchMode, fromResume: textListOf(fromResume),
   }
 }
 

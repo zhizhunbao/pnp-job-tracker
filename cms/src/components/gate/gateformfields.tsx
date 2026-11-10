@@ -8,20 +8,22 @@
  * @time 2026-11-07 19:00:00
  */
 import { Button, SegGroup } from '@/components/button'
-import { cssOf } from '@/components/css'
 import { makeOptPick } from '@/components/profile'
 import { Select } from '@/components/select'
+import { Tag } from '@/components/tag'
 import {
-  FIT_WHOS, FORM_NONE_KEY, FORM_SECONDARY_KIND, FORM_SEG_KIND, GOAL_JOBS, GOAL_JOBS_KEY, GOAL_PR, GOAL_PR_KEY,
+  FIT_WHOS, FORM_NONE_KEY, FORM_SEG_KIND, FROM_NAME, FROM_TAG_KEY, FROM_TAG_V, GOAL_JOBS, GOAL_JOBS_KEY, GOAL_PR,
+  GOAL_PR_KEY,
   MATCH_EDU, MATCH_WORK, MODE_DEFAULT, MODE_STRICT,
 } from './constants'
-import { formProvOptsOf, makeProvLabel, makeWhoLabel, pickedTextOf } from './functions'
+import { formProvOptsOf, isFromResume, makeProvLabel, makeWhoLabel } from './functions'
 import { GateCities } from './gatecities'
 import { GateEdu } from './gateedu'
 import { GateField } from './gatefield'
 import { GateName } from './gatename'
+import { GatePicked } from './gatepicked'
+import { GateResumeFill } from './gateresumefill'
 import type { GateFormFieldsIn } from './types'
-import css from './gate.module.css'
 
 /**
  * 一页表单的七格。
@@ -29,9 +31,10 @@ import css from './gate.module.css'
  * @param props 表单状态、叠开选择器的手柄与取词。
  * @returns 七格。
  */
-export function GateFormFields({ g, k, t }: GateFormFieldsIn) {
+export function GateFormFields({ g, k, t, n, f }: GateFormFieldsIn) {
   return (
     <>
+      <GateResumeFill f={f} t={t} />
       <GateField label={t('pf.goal')}>
         <SegGroup>
           <Button kind={FORM_SEG_KIND} active={g.goal === GOAL_JOBS}
@@ -41,22 +44,13 @@ export function GateFormFields({ g, k, t }: GateFormFieldsIn) {
         </SegGroup>
       </GateField>
       <GateField label={t('pf.majors')}>
-        <div className={cssOf(css.pickRow)}>
-          <span>{pickedTextOf({ t, n: g.majors.length })}</span>
-          <Button kind={FORM_SECONDARY_KIND} sm onClick={k.onMajor}>{t('pf.edit')}</Button>
-        </div>
+        <GatePicked lines={n.majors} onEdit={k.onMajor} t={t} />
       </GateField>
       <GateField label={t('pf.jobs')}>
-        <div className={cssOf(css.pickRow)}>
-          <span>{pickedTextOf({ t, n: g.nocs.length })}</span>
-          <Button kind={FORM_SECONDARY_KIND} sm onClick={k.onJob}>{t('pf.edit')}</Button>
-        </div>
+        <GatePicked lines={n.jobs} onEdit={k.onJob} t={t} />
       </GateField>
       <GateField label={t('pf.work')}>
-        <div className={cssOf(css.pickRow)}>
-          <span>{pickedTextOf({ t, n: g.workNocs.length })}</span>
-          <Button kind={FORM_SECONDARY_KIND} sm onClick={k.onWork}>{t('pf.edit')}</Button>
-        </div>
+        <GatePicked lines={n.works} onEdit={k.onWork} t={t} />
       </GateField>
       <GateField label={t('pf.where')}>
         <Select value={g.provActive} onChange={g.onProv} opts={formProvOptsOf()} all={t(FORM_NONE_KEY)}
@@ -88,6 +82,9 @@ export function GateFormFields({ g, k, t }: GateFormFieldsIn) {
       </GateField>
       <GateField label={t('pf.name')} hint={t('pf.optName')}>
         <GateName g={g} t={t} />
+        {isFromResume({ marks: g.fromResume, field: FROM_NAME, value: g.edit.name.trim() }) && (
+          <Tag variant={FROM_TAG_V}>{t(FROM_TAG_KEY)}</Tag>
+        )}
       </GateField>
     </>
   )

@@ -159,11 +159,13 @@ describe('makeGatedPick(过闸的筛选手柄)', () => {
 })
 
 describe('雇主板整机 useEmployersPage', () => {
-  it('访客:首屏预选本省照落、不开向导;动任何一格筛选 / 搜索都开向导、值不动、不记埋点、地址栏不动', () => {
+  // 2026-11-09 Frank「默认不要选 安省了,默认选全国」:首屏不再按时区预选本省(原 ③ 的「预选照落」随之撤),进板省格是空的。
+  it('访客:首屏不预选省(默认全国)、不开向导;动任何一格筛选 / 搜索都开向导、值不动、不记埋点、地址栏不动', () => {
     const b = runBoard(false)
-    expect(cur(b).f.prov).toBe('ON')
+    expect(cur(b).f.prov).toBe('')
     expect(cur(b).peek.filterGate).toBe(false)
-    expect(window.location.search).toBe('?prov=ON')
+    const search0 = window.location.search
+    expect(search0).not.toContain('prov=')
     const before = JSON.stringify(cur(b).f)
     for (const [name, , v] of userPicks(cur(b))) {
       track.mockClear()
@@ -175,7 +177,7 @@ describe('雇主板整机 useEmployersPage', () => {
       expect(JSON.stringify(cur(b).f), name).toBe(before)
       expect(cur(b).qDraft, name).toBe('')
       expect(track, name).not.toHaveBeenCalled()
-      expect(window.location.search, name).toBe('?prov=ON')
+      expect(window.location.search, name).toBe(search0)
       act(() => cur(b).peek.onFilterGateClose())
       expect(cur(b).peek.filterGate, name).toBe(false)
       expect(JSON.stringify(cur(b).f), name).toBe(before)
@@ -184,7 +186,7 @@ describe('雇主板整机 useEmployersPage', () => {
 
   it('访客:清除筛选只放宽条件,照清、不开向导', () => {
     const b = runBoard(false)
-    expect(cur(b).f.prov).toBe('ON')
+    expect(cur(b).f.prov).toBe('')
     act(() => cur(b).onClear())
     expect(cur(b).f.prov).toBe('')
     expect(cur(b).peek.filterGate).toBe(false)

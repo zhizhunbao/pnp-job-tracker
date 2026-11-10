@@ -40,9 +40,9 @@ import {
   pdfBadCharsOf, recipientOf, resumeFileOf, saveApplyDraft, saveApplyPrefs, senderFromOf, toDraftBody, toSendJobId, unclaimApply, webhookEmailIdOf,
   letterCleanOf, letterMessagesOf, letterProviderOf, loadApplyFile, toLetterBody,
   loadApplyLetters,
-  isLetterTrialOpen, loadLetterTrial, markLetterTrial, trialLeftOf,
 } from './functions'
-import type { DraftBodyJson, LetterBodyJson, MaybeLetterTrial, NameBodyJson, SendBodyJson, WebhookJson } from './types'
+import { creditLeftOf, isCreditOpen, loadCredit, markCredit } from './credit'
+import type { DraftBodyJson, LetterBodyJson, NameBodyJson, SendBodyJson, WebhookJson } from './types'
 
 /**
  * GET /api/apply/cover?job=:求职信 PDF(本人预览,在浏览器里直接打开)。有草稿渲草稿;
@@ -144,11 +144,32 @@ export async function applyDraftRoute(req: Request): Promise<Response> {
 }
 
 /**
+ * GET /api/apply/credit:本人的按职位改写额度(2026-11-09 Frank「投递框第一屏和 我的订阅 显示剩余额度」)。
+ * 不针对某一岗,所以不回「这一岗记过账没有」。
+ *
+ * @param _req 请求。
+ * @returns { plan, left, max, resetAt };未登录 401。
+ */
+export async function applyCreditRoute(_req: Request): Promise<Response> {
+  const user = await getUserOrNull(await headers())
+  if (user == null) {
+    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  const credit = await loadCredit({ db: await getDb(), userId: user.id, jobId: 0, proUntil: user.proUntil, nowMs: Date.now() })
+  return Response.json(
+    { plan: credit.plan, left: credit.left, max: credit.max, resetAt: credit.resetAt },
+    { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } },
+  )
+}
+
+/**
  * GET /api/apply/start?job=:投递一节的起始态(2026-10-07 Frank「投递不应该跳到我的投递页面吗」→ 投递整个放进「我的」:
  * 原先由 /apply/<id> 的页面门 SSR 取,页面撤了改由「我的」页的投递一节来取)。本岗(不带雇主邮箱)、简历清单、署名、模板、状态。
  * 2026-10-10 投递框三步:试用余量两格撤,换成是不是 Pro 与回复邮箱(「确认」页摆)。
  * 2026-10-10 批 3「收件箱」:收件箱开通了,回复邮箱 = 本人专属投递邮箱(第一次要用时懒建),没开通照旧注册邮箱。
  * 2026-10-11 Frank「用户看到投递邮箱,脑袋不会疼吗」:确认页不露专属地址 —— 收件箱开通了这一格回空串(前端写「收件箱」),没开通照旧回账户邮箱;专属地址仍懒建,发信时才用。
+ *
+ * 2026-11-09 Frank「点邮箱投递先在服务端查基础简历和额度,再决定开什么」:起始态多带额度、这一岗生成过没有、固定模板填好的信。
  *
  * @param req 请求(职位 id 在查询参数)。
  * @returns 起始态;未登录 401、id 不合形 400、岗不存在 404。
@@ -167,7 +188,11 @@ export async function applyStartRoute(req: Request): Promise<Response> {
   if (await inboxAddressOf({ db, userId: user.id, appId: null }) !== TEXT_NONE) {
     replyTo = TEXT_NONE
   }
-  const start = await loadApplyStart({ db, userId: user.id, jobId, pro: isPro(user), replyTo })
+  const credit = await loadCredit({ db, userId: user.id, jobId, proUntil: user.proUntil, nowMs: Date.now() })
+  const start = await loadApplyStart({
+    db, userId: user.id, jobId, pro: isPro(user), replyTo,
+    credit: { plan: credit.plan, left: credit.left, max: credit.max, resetAt: credit.resetAt },
+  })
   if (start == null) {
     return Response.json({ error: E_JOB }, { status: NOT_FOUND })
   }
@@ -324,9 +349,11 @@ export async function applyInboundRoute(req: Request): Promise<Response> {
  * (三栏对照框的「职位要求」栏,不再另取)。
  * 2026-11-07 Frank 看过设计稿(docs/design/我的/我的求职-20261009.md 1.10 / 2.10)说「可以」:试用恢复 ——
  * 不是 Pro 先查试用账,这一岗用过或用过不到 LETTER_TRIAL_MAX 个职位就照写,模型真写成才记账;回包加 left(还剩几个,Pro = null)。
+ * 2026-11-09 Frank 定额度(各入口同一个限额):改读 lib/apply/credit 的额度账 —— 免费每人 3 个终身一次,会员每期 60 个,
+ * 这一岗记过账的照写不再扣;用完 402 并带额度档与恢复时刻;left 对会员也是数字(当期还剩几个)。
  *
  * @param req 请求(body 是 { jobId, resumeId, senderName })。
- * @returns { text, ai, jd, left };未登录 401、超限 429、体不合形 400、署名不合规 422、岗不存在 404、不是 Pro 且试用用完 402、
+ * @returns { text, ai, jd, left };未登录 401、超限 429、体不合形 400、署名不合规 422、岗不存在 404、额度用完 402、
  *   简历不是本人的 409。
  */
 export async function applyLetterRoute(req: Request): Promise<Response> {
@@ -355,12 +382,9 @@ export async function applyLetterRoute(req: Request): Promise<Response> {
   if (job == null) {
     return Response.json({ error: E_JOB }, { status: NOT_FOUND })
   }
-  let trial: MaybeLetterTrial = null
-  if (isPro(user) === false) {
-    trial = await loadLetterTrial({ db, userId: user.id, jobId: job.id })
-    if (isLetterTrialOpen(trial) === false) {
-      return Response.json({ error: E_PRO }, { status: PAYMENT_REQUIRED })
-    }
+  const credit = await loadCredit({ db, userId: user.id, jobId: job.id, proUntil: user.proUntil, nowMs: Date.now() })
+  if (isCreditOpen(credit) === false) {
+    return Response.json({ error: E_PRO, plan: credit.plan, resetAt: credit.resetAt }, { status: PAYMENT_REQUIRED })
   }
   const fallback = coverFillOf({ template: COVER_DEFAULT, title: job.title, company: job.company, name: body.senderName })
   const blob = await loadApplyBlob({ db, userId: user.id, resumeId: body.resumeId })
@@ -375,7 +399,7 @@ export async function applyLetterRoute(req: Request): Promise<Response> {
   }
   if (resume.text == null || jd === TEXT_NONE) {
     log({ tag: APPLY_LOG.tag, text: APPLY_LOG.letterSkipped + user.id + APPLY_LOG.appFrag + job.id })
-    return Response.json({ text: fallback, ai: false, jd, left: trialLeftOf({ trial, marked: false }) })
+    return Response.json({ text: fallback, ai: false, jd, left: creditLeftOf({ credit, marked: false }) })
   }
   let out = TEXT_NONE
   try {
@@ -391,14 +415,14 @@ export async function applyLetterRoute(req: Request): Promise<Response> {
     log({ tag: APPLY_LOG.tag, text: APPLY_LOG.letterFailed + user.id + APPLY_LOG.whyFrag + String(e) })
   }
   if (out.length < LETTER_MIN_LEN) {
-    return Response.json({ text: fallback, ai: false, jd, left: trialLeftOf({ trial, marked: false }) })
+    return Response.json({ text: fallback, ai: false, jd, left: creditLeftOf({ credit, marked: false }) })
   }
   let marked = false
-  if (trial != null && trial.here === false) {
-    await markLetterTrial({ db, userId: user.id, jobId: job.id })
+  if (credit.here === false) {
+    await markCredit({ db, userId: user.id, jobId: job.id, plan: credit.plan })
     marked = true
   }
-  return Response.json({ text: out, ai: true, jd, left: trialLeftOf({ trial, marked }) })
+  return Response.json({ text: out, ai: true, jd, left: creditLeftOf({ credit, marked }) })
 }
 
 /**
@@ -409,6 +433,7 @@ export async function applyLetterRoute(req: Request): Promise<Response> {
  * 2026-10-10 投递框三步:草稿里的信是空串(「不附求职信」)时只附简历,正文换不提求职信的一版,求职信附件名记空串。
  * 2026-10-10 批 3「收件箱」:回复地址 = 本人专属投递邮箱 + 这一条投递的标记(alias+a<投递行 id>,雇主一回就对得上);
  * 收件箱没开通(没配 INBOUND_DOMAIN)照旧用注册邮箱。
+ * 2026-11-09 高质量投递:这一岗有本岗简历就发它(预览看到的那份字节),没有才发基础简历。
  *
  * @param req 请求(body 是 { jobId })。
  * @returns { ok, id };错误码见设计稿接口表(401 / 400 / 404 / 409 / 410 / 422 / 429 / 502 / 503)。
@@ -489,22 +514,28 @@ export async function applySendRoute(req: Request): Promise<Response> {
   const subject = mailSubjectOf(parts)
   const bodyText = mailTextOf({ title: job.title, city: job.city, province: job.province, name: prefs.senderName, cover: withCover })
   const to = recipientOf({ userEmail: user.email, employerEmail: job.email })
-  const resumeFile = resumeFileOf({ name: prefs.senderName, mime: blob.mime })
+  let resumeB64 = blob.b64
+  let resumeMime = blob.mime
+  if (row.tailorB64 !== TEXT_NONE && raw.base !== true) {
+    resumeB64 = row.tailorB64
+    resumeMime = MIME_PDF
+  }
+  const resumeFile = resumeFileOf({ name: prefs.senderName, mime: resumeMime })
   let coverFile = TEXT_NONE
   if (withCover) {
     coverFile = coverFileOf(job.company)
   }
   const idemKey = await idemKeyOf({
-    appId: row.id, parts: [to, subject, bodyText, row.cover, String(blob.id), blob.uploadedAt],
+    appId: row.id, parts: [to, subject, bodyText, row.cover, String(blob.id), blob.uploadedAt, resumeB64],
   })
   const appId = await claimApply({
     db, userId: user.id, jobId, employerEmail: job.email, replyTo, subject, bodyText, resumeFile,
-    resumeUploadedAt: blob.uploadedAt, coverFile, idemKey, resumeB64: blob.b64, resumeMime: blob.mime,
+    resumeUploadedAt: blob.uploadedAt, coverFile, idemKey, resumeB64, resumeMime,
   })
   if (appId == null) {
     return Response.json({ error: E_SENT }, { status: CONFLICT })
   }
-  const attachments = [{ filename: resumeFile, content: blob.b64 }]
+  const attachments = [{ filename: resumeFile, content: resumeB64 }]
   try {
     if (withCover) {
       attachments.push({ filename: coverFile, content: Buffer.from(await coverPdfOf({ pdf: PdfLib, text: row.cover })).toString(B64) })

@@ -24,12 +24,16 @@ import { useSsrSession } from '@/components/auth'
 import { useLang } from '@/components/i18n'
 import { takeEntryGate } from '@/lib/guest'
 import { track } from '@/lib/track'
-import { FORM_PICK_JOB, FORM_PICK_MAJOR, FORM_PICK_NONE, FORM_PICK_WORK, TEXT_NONE, TRACK_GATE_OPEN } from './constants'
 import {
+  FILL_KIND_INFO, FORM_PICK_JOB, FORM_PICK_MAJOR, FORM_PICK_NONE, FORM_PICK_WORK, TEXT_NONE, TRACK_GATE_OPEN,
+} from './constants'
+import {
+  fromKeptOf, makeResumeFill,
   cityOptsOf, eduPicksOf, eduStrsOf, gateProvActiveOf, loadProvCities, makeCityPick, makeEditSave, makeEduAdd,
   makeEduPick, makeEduRemove, makeEntryClose, makeEntryDone, makeGateAuthDone, makePickSet, makeProvPick, nameBadOf,
 } from './functions'
 import type {
+  FillMsg, ResumeFillHookIn, ResumeFillPanel,
   CitiesGot, CityOpt, CityPickHookIn, CityPickOut, DeadFlag, EduCellIn, EduPick, EduRowsPanel, EntryGatePanel,
   GateAuthHookIn, GateFormHookIn, GatePanel, GatePickPanel, ProvCitiesIn,
 } from './types'
@@ -152,6 +156,7 @@ export function useGateForm(x: GateFormHookIn): GatePanel {
   const [workNocs, setWorkNocs] = useState<string[]>(s.workNocs)
   const [matchBy, setMatchBy] = useState(s.matchBy)
   const [matchMode, setMatchMode] = useState(s.matchMode)
+  const [fromResume, setFromResume] = useState<string[]>(s.fromResume)
   const e = useEduRows(s.edu)
   const [saving, setSaving] = useState(false)
   const [failKey, setFail] = useState(TEXT_NONE)
@@ -167,7 +172,8 @@ who,
 edu: eduStrsOf(e.edu),
       workNocs,
 matchBy,
-matchMode },
+matchMode,
+      fromResume: fromKeptOf({ marks: fromResume, majors, workNocs, name: name.trim() }) },
     setSaving,
     setFail,
     onSaved: x.onSaved,
@@ -184,6 +190,8 @@ matchMode },
     provActive: gateProvActiveOf({ prov, abroad }),
     onProv: makeProvPick({ setProv, setAbroad, setCity: c.setCity }),
     cities: c.panel,
+    fromResume,
+    setFromResume,
     edit: {
       name,
       onName: setName,
@@ -222,6 +230,18 @@ function useEduRows(seed: string[]): EduRowsPanel {
     return makeEduRemove({ edu, setEdu, i })
   }
   return { edu, eduPickOf, onEduAdd: makeEduAdd({ edu, setEdu, i: 0 }), eduRemoveOf }
+}
+
+/**
+ * 「从简历填写」的状态(2026-11-09「我的」第一批):取数中与一行提示。
+ *
+ * @param x 表单状态与选择器同步口。
+ * @returns 面板。
+ */
+export function useResumeFill(x: ResumeFillHookIn): ResumeFillPanel {
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState<FillMsg>({ key: TEXT_NONE, n: 0, kind: FILL_KIND_INFO })
+  return { busy, msg, onFill: makeResumeFill({ g: x.g, onWork: x.onWork, setBusy, setMsg }) }
 }
 
 /**

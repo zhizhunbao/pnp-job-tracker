@@ -5,21 +5,21 @@
  * 依赖只许父桶 → 子桶,子桶不取父桶,常量各自抄、形状本桶自声明。
  * 2026-11-07 Frank「现在都按 Azure 的来」:打码行与盖在上面的大钮撤(量位跟着撤),免费号锁住的条数改在表下一行说
  * (「还有 N 条推荐」+「解锁其余 N 条」主钮);「显示更多」只管没列出来的真行。
+ * 2026-11-09 Frank「推荐原因删掉」:推荐原因胶囊那一族撤(表格改出中位时薪、vs 中位两列,显示串在本桶 wageViewOf)。
  *
  * @author Frank
  * @time 2026-11-07 18:00:00
  */
 import { pnpChannelKeyOf, pnpNameOf } from '@/components/pnp'
 import { makeT } from '@/lib/i18n'
-import { eeDisplay } from '@/lib/jobs'
 import { homeProvinceOf } from '@/lib/location'
 import {
   CRED_INCLUDE, LANG_EN, PICKS_FIRST, PICKS_SWAP_FREE, TEXT_NONE, URL_PICKS, URL_PICKS_BATCH,
-  URL_PICKS_FRESH, WHY_KEYS, WHY_TAG, WHY_WAGE, WHY_WAGE_PLAIN_KEY,
+  URL_PICKS_FRESH, MED_HEAD, MED_TAIL, VS_PCT, VS_PLUS,
 } from './constants'
 import type {
   ChanName, ChanNameIn, HiddenPicksIn, LoadPicksIn, PickItem, PicksFact, PicksRespJson, ShownPicksIn,
-  SwapIn, TitledItem, UnlockNIn, WhyTag, WhyTextsIn,
+  SwapIn, TitledItem, UnlockNIn, WageView, WageViewIn,
 } from './types'
 
 /**
@@ -89,58 +89,42 @@ export function makeSwap(x: SwapIn): () => void {
 }
 
 /**
- * 推荐原因胶囊(2026-10-12 Frank「bullets 都改成 简洁的胶囊呢? 最好是 别换行」):一个好处一枚,tag 桶 ok 档。
+ * 中位时薪与 vs 中位两格的显示(2026-11-09 Frank「这部分加进 table 吧」「这个地方都显示 时薪吧」;同职位板那两列的形)。
  *
- * @param x 理由码、百分比、LMIA 名额、EE 类别、试点名与取词函数。
- * @returns 胶囊。
+ * @param x 时薪中位与高出中位的百分比。
+ * @returns 两格显示串与是不是低于中位。
  */
-export function whyTagsOf(x: WhyTextsIn): WhyTag[] {
-  const out: WhyTag[] = []
-  for (const text of whyTextsOf(x)) {
-    out.push({ text, variant: WHY_TAG })
-  }
-  return out
+export function wageViewOf(x: WageViewIn): WageView {
+  return { med: medTextOf(x.hourly), vs: vsTextOf(x.pct), down: x.pct != null && x.pct < 0 }
 }
 
 /**
- * 推荐原因一枚一条:理由码按表取词,薪资那条带高出的百分比(没有百分比换不带数的那句)、LMIA 那条带名额、EE 那条带类别名;
- * 认不得的码不出(2026-10-12 Frank「整点有吸引力的 bullets」)。
+ * 中位时薪显示串(「$N/hr」);没有中位给空串。
  *
- * @param x 理由码、百分比、LMIA 名额、EE 类别、试点名与取词函数。
- * @returns 一枚一条的字。
+ * @param n 本省同职业时薪中位。
+ * @returns 显示串。
  */
-export function whyTextsOf(x: WhyTextsIn): string[] {
-  const out: string[] = []
-  for (const code of x.reasons) {
-    const key = WHY_KEYS[code]
-    if (key == null) {
-      continue
-    }
-    if (code === WHY_WAGE && x.abovePct == null) {
-      out.push(x.t(WHY_WAGE_PLAIN_KEY))
-      continue
-    }
-    out.push(x.t(key, {
-      n: whyPctOf(x.abovePct),
-      m: x.lmiaPositions,
-      e: eeDisplay({ t: x.t, label: x.eeCategory }),
-      g: x.pilot,
-    }))
+export function medTextOf(n: number | null): string {
+  if (n == null || n <= 0) {
+    return TEXT_NONE
   }
-  return out
+  return MED_HEAD + String(n) + MED_TAIL
 }
 
 /**
- * 百分比的显示数(没有给 0;只在有百分比时才会被取词用到)。
+ * vs 中位显示串(高于或持平带加号,低于自带减号);没有百分比给空串。
  *
- * @param n 百分比。
- * @returns 数。
+ * @param n 薪资高出中位的百分比。
+ * @returns 显示串。
  */
-export function whyPctOf(n: number | null): number {
+export function vsTextOf(n: number | null): string {
   if (n == null) {
-    return 0
+    return TEXT_NONE
   }
-  return n
+  if (n >= 0) {
+    return VS_PLUS + String(n) + VS_PCT
+  }
+  return String(n) + VS_PCT
 }
 
 /**

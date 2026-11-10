@@ -5,11 +5,14 @@
 // 性质:① 任意时区 × 浏览器语言:脚本插不插样式 ⇔ homeProvinceOf 预选得出省;② 脚本里没有能提前闭合 script 的串;
 //       ③ 闸的初值:地址栏带省 / 带搜索词 → 放开,否则待定;④ applyHomeProvince 交回「预选了没」与它真写没写省格一致,
 //       预选了闸落 on、没预选落 off。
+// 2026-11-09 Frank「这个默认不要选 安省了,默认选全国」:不再按设备时区预选省,只有上次亲手选过具体省(cookie 那一格)才预选;
+//       首帧脚本的判据随之从「时区在清单里」改成「带着那一格 cookie」。① 改验:任意时区 × 语言 × 选没选过,插样式 ⇔ 选过 ⇔ 预选。
+// 探针:homeProvPickOf 加回按时区猜 → ①与金标红;脚本不看 cookie 恒插 → ①红。
 import fc from 'fast-check'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
-import { homeGateJsOf, homeProvinceOf } from '@/lib/location'
+import { homeGateJsOf } from '@/lib/location'
 import { HOME_GATE_CSS, PROV_PICK_COOKIE } from '@/components/jobs/constants'
 import { applyHomeProvince, homeGateAfterOf, homeGateInitOf, homeGateScriptOf } from '@/components/jobs/functions'
 
@@ -30,7 +33,7 @@ function runGate(css: string): string[] {
   for (const s of Array.from(document.head.querySelectorAll('style'))) {
     s.remove()
   }
-  new Function(homeGateJsOf(css))()
+  new Function(homeGateJsOf({ css, cookie: PROV_PICK_COOKIE }))()
   return Array.from(document.head.querySelectorAll('style')).map((s) => s.textContent ?? '')
 }
 
@@ -53,37 +56,37 @@ afterEach(() => {
   document.cookie = PROV_PICK_COOKIE + '=; max-age=0; path=/'
 })
 
-describe('首帧脚本 ⇔ homeProvinceOf', () => {
-  it('任意时区 × 浏览器语言:插不插样式 ⇔ 预选得出省', () => {
-    fc.assert(fc.property(fc.constantFrom(...ZONES), fc.constantFrom(...LANGS), (tz, lang) => {
-      device(tz, lang)
-      const styles = runGate(HOME_GATE_CSS)
-      expect(styles.length === 1).toBe(homeProvinceOf() !== '')
-      if (styles.length === 1) {
-        expect(styles[0]).toBe(HOME_GATE_CSS)
-      }
-      vi.restoreAllMocks()
-    }), { numRuns: 400 })
+describe('首帧脚本 ⇔ 上次亲手选过省(2026-11-09 起不再按时区预选)', () => {
+  it('任意时区 × 浏览器语言 × 选没选过省:插不插样式 ⇔ 选过;进板预选 ⇔ 选过,与时区无关', () => {
+    fc.assert(fc.property(fc.constantFrom(...ZONES), fc.constantFrom(...LANGS), fc.constantFrom('', 'Alberta', 'Ontario'),
+      (tz, lang, picked) => {
+        device(tz, lang)
+        document.cookie = PROV_PICK_COOKIE + '=; max-age=0; path=/'
+        if (picked !== '') {
+          document.cookie = PROV_PICK_COOKIE + '=' + encodeURIComponent(picked) + '; path=/'
+        }
+        const styles = runGate(HOME_GATE_CSS)
+        expect(styles.length === 1).toBe(picked !== '')
+        if (styles.length === 1) {
+          expect(styles[0]).toBe(HOME_GATE_CSS)
+        }
+        const s = slots('')
+        expect(applyHomeProvince({ fState: s.fState, initial: {} })).toBe(picked !== '')
+        if (picked !== '') {
+          expect(s.seen).toEqual([picked])
+        }
+        vi.restoreAllMocks()
+      }), { numRuns: 400 })
   })
 
-  it('金标:安省设备插、法语东部(魁省)也插、哈利法克斯与上海不插', () => {
+  it('金标:安省设备没选过省 → 不插样式、不预选(默认全国);选过阿尔伯塔 → 插、预选阿尔伯塔', () => {
     device('America/Toronto', 'en-CA')
+    expect(runGate(HOME_GATE_CSS)).toEqual([])
+    const none = slots('')
+    expect(applyHomeProvince({ fState: none.fState, initial: {} })).toBe(false)
+    expect(none.seen).toEqual([])
+    document.cookie = PROV_PICK_COOKIE + '=' + encodeURIComponent('Alberta') + '; path=/'
     expect(runGate(HOME_GATE_CSS)).toEqual([HOME_GATE_CSS])
-    device('America/Toronto', 'fr-CA')
-    expect(homeProvinceOf()).toBe('QC')
-    expect(runGate(HOME_GATE_CSS)).toEqual([HOME_GATE_CSS])
-    device('America/Halifax', 'en-CA')
-    expect(runGate(HOME_GATE_CSS)).toEqual([])
-    device('Asia/Shanghai', 'zh-CN')
-    expect(runGate(HOME_GATE_CSS)).toEqual([])
-  })
-
-  it('浏览器 API 抛错时什么都不做(与 homeProvinceOf 拿不到时区给空同口径)', () => {
-    vi.spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions').mockImplementation(() => {
-      throw new Error('old browser')
-    })
-    expect(homeProvinceOf()).toBe('')
-    expect(runGate(HOME_GATE_CSS)).toEqual([])
   })
 
   it('脚本内联进 HTML 安全:没有能提前闭合 script 的串', () => {

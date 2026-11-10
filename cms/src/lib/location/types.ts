@@ -11,6 +11,21 @@
 export type TransFn = (key: string) => string
 
 /**
+ * `homeGateJsOf` 的入参。
+ */
+export type HomeGateJsIn = {
+  /**
+   * 命中时插入的样式。
+   */
+  css: string
+
+  /**
+   * 要认的 cookie 名(带着它才插样式)。
+   */
+  cookie: string
+}
+
+/**
  * `provName` 的入参。
  */
 export type ProvNameIn = {

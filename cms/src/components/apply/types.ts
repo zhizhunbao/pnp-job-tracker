@@ -174,6 +174,131 @@ export type ApplyStartView = {
    * 回复邮箱(用户注册邮箱;「确认」页摆)。
    */
   replyTo: string
+
+  /**
+   * 这个人对这一岗的额度(2026-11-09:开框前服务端查好)。
+   */
+  credit: ApplyCreditView
+
+  /**
+   * 这一岗生成过本岗简历没有(生成过的重开直接进三屏框,不再扣额度)。
+   */
+  tailored: boolean
+
+  /**
+   * 直接投基础简历时的求职信:固定模板填好的,用户可改。
+   */
+  baseCover: string
+}
+
+/**
+ * 起始态里的额度。
+ */
+export type ApplyCreditView = {
+  /**
+   * 额度档。
+   */
+  plan: 'free' | 'pro'
+
+  /**
+   * 还剩几个。
+   */
+  left: number
+
+  /**
+   * 一共几个。
+   */
+  max: number
+
+  /**
+   * 额度哪一刻恢复(ISO);免费额度没有恢复日。
+   */
+  resetAt: string | null
+}
+
+/**
+ * 投递框外壳之前的那一道(useApplyGate 交出):先取起始态,再定开升级框还是投递框。
+ */
+export type ApplyGatePanel = {
+  /**
+   * 取数面板。
+   */
+  s: ApplyStartPanel
+
+  /**
+   * 是不是没额度、该直接出升级框。
+   */
+  out: boolean
+
+  /**
+   * 用户在升级框里点了「不改写,直接投基础简历」。
+   */
+  base: boolean
+
+  /**
+   * 升级框上的说明(免费:额度用完;会员:本期用完与恢复日)。
+   */
+  reason: string
+
+  /**
+   * 是不是会员(会员的升级框不出购买卡)。
+   */
+  member: boolean
+
+  /**
+   * 付完回哪儿。
+   */
+  back: string
+
+  /**
+   * 点「不改写,直接投基础简历」。
+   */
+  onBase: () => void
+}
+
+/**
+ * `letter0Of` 的入参。
+ */
+export type Letter0In = {
+  /**
+   * 起始态。
+   */
+  start: ApplyStartView
+
+  /**
+   * 进框时的屏。
+   */
+  mode: string
+}
+
+/**
+ * `send` 的入参。
+ */
+export type SendIn = {
+  /**
+   * 整机的可变格。
+   */
+  cells: ApplyCells
+
+  /**
+   * 是不是投基础简历原件。
+   */
+  base: boolean
+}
+
+/**
+ * ApplyGate 的 props。
+ */
+export type ApplyGateIn = {
+  /**
+   * 要投的职位 id。
+   */
+  jobId: number
+
+  /**
+   * 关框。
+   */
+  onClose: () => void
 }
 
 /**
@@ -307,6 +432,11 @@ export type ApplyPageIn = {
    * 2026-10-09 A 批:投递框切到已投递一步,并广播给「我的」页刷新投递表、出成功条。
    */
   onSent: SentFn
+
+  /**
+   * 是不是从升级框点「不改写,直接投基础简历」进来的(进来就落在基础简历投递屏)。
+   */
+  base: boolean
 }
 
 /**
@@ -318,6 +448,11 @@ export type ApplySectionIn = {
    * 投递区取数面板。
    */
   s: ApplyStartPanel
+
+  /**
+   * 是不是直接落在基础简历投递屏。
+   */
+  base: boolean
 }
 
 /**
@@ -395,9 +530,14 @@ export type ApplyHostPanel = {
  */
 export type ApplyModalIn = {
   /**
-   * 要投的职位 id。
+   * 取数面板(2026-11-09:取数挪到外壳之前的 ApplyGate,先查额度再定开什么)。
    */
-  jobId: number
+  s: ApplyStartPanel
+
+  /**
+   * 是不是直接落在基础简历投递屏。
+   */
+  base: boolean
 
   /**
    * 关框。
@@ -410,6 +550,56 @@ export type ApplyModalIn = {
  * 2026-10-10 投递框三步:步数行换页签、求职信改单选 + 预览、AI 试用撤、第 3 步改「确认」。
  */
 export type ApplyPanel = {
+  /**
+   * 三屏发出后(2026-11-09)。
+   */
+  onReviewSent: () => void
+
+  /**
+   * 三屏试用用完。
+   */
+  onReviewUpsell: () => void
+
+  /**
+   * 现在在哪一屏(choose 两个选择 / tailor 三屏框 / base 基础简历投递屏;2026-11-09)。
+   */
+  mode: string
+
+  /**
+   * 免费额度还剩几个(两个选择那一屏写在「按这个职位改写」下面)。
+   */
+  creditLeft: number
+
+  /**
+   * 这一岗生成过本岗简历没有。
+   */
+  tailored: boolean
+
+  /**
+   * 点「按这个职位改写」。
+   */
+  onTailor: () => void
+
+  /**
+   * 点「直接投基础简历」/「改投基础简历」。
+   */
+  onBase: () => void
+
+  /**
+   * 基础简历投递屏点「发送投递」。
+   */
+  onBaseSend: () => void
+
+  /**
+   * 基础简历投递屏的信离手(没生成过本岗版本的才存草稿,免得盖掉生成的那封)。
+   */
+  onBaseBlur: () => void
+
+  /**
+   * 三屏框页脚那一句「还剩几个额度」(已取好词)。
+   */
+  leftText: string
+
   /**
    * 取词函数。
    */
@@ -929,6 +1119,31 @@ export type ApplyCells = {
    * 发出去了的回调。
    */
   onSent: SentFn
+
+  /**
+   * 现在在哪一屏。
+   */
+  mode: string
+
+  /**
+   * 换屏。
+   */
+  setMode: SetFn<string>
+
+  /**
+   * 这一岗生成过本岗简历没有。
+   */
+  tailored: boolean
+
+  /**
+   * 固定模板填好的信。
+   */
+  baseCover: string
+
+  /**
+   * 这一岗存着的草稿信(没有 = 空串)。
+   */
+  draftCover: string
 }
 
 /**
@@ -1440,4 +1655,164 @@ export type PushOnIn = {
    * 落「正在开」。
    */
   setBusy: (busy: boolean) => void
+}
+
+/**
+ * 「接着投这几个」一行(只声明真读的格;接口 /api/myjobs/picks)。
+ */
+export type NextPick = {
+  /**
+   * 职位号。
+   */
+  id: number
+
+  /**
+   * 职位名英文。
+   */
+  title: string
+
+  /**
+   * 职位名中文。
+   */
+  titleZh: string
+
+  /**
+   * 职位名韩文。
+   */
+  titleKo: string
+
+  /**
+   * 公司英文名。
+   */
+  company: string
+
+  /**
+   * 公司中文名。
+   */
+  companyZh: string
+
+  /**
+   * 公司韩文名。
+   */
+  companyKo: string
+
+  /**
+   * 公司页 slug。
+   */
+  companySlug: string
+
+  /**
+   * 街道地址。
+   */
+  address: string
+
+  /**
+   * 城市。
+   */
+  city: string
+
+  /**
+   * 城市中文名。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文名。
+   */
+  cityKo: string
+
+  /**
+   * 两位省码。
+   */
+  province: string
+}
+
+/**
+ * 接口回包(缺席按空读)。
+ */
+export type NextPicksJson = {
+  /**
+   * 看得见的推荐。
+   */
+  picks?: NextPick[]
+}
+
+/**
+ * loadNextPicks 的入参。
+ */
+export type NextLoadIn = {
+  /**
+   * 刚投的职位 id(按它取同省同职业的岗)。
+   */
+  jobId: number
+
+  /**
+   * 落几行。
+   */
+  setRows: (rows: NextPick[]) => void
+
+  /**
+   * 落「取完了」。
+   */
+  setDone: (v: boolean) => void
+}
+
+/**
+ * useNextPicks 交出的面板。
+ */
+export type NextPicksPanel = {
+  /**
+   * 几行。
+   */
+  rows: NextPick[]
+
+  /**
+   * 取完了。
+   */
+  done: boolean
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+}
+
+/**
+ * NextPicks 的 props。
+ */
+export type NextPicksIn = {
+  /**
+   * 取词。
+   */
+  t: PushOfferIn['t']
+
+  /**
+   * 刚投的职位 id。
+   */
+  jobId: number
+}
+
+/**
+ * NextPickRow 的 props。
+ */
+export type NextPickRowIn = {
+  /**
+   * 这一行。
+   */
+  p: NextPick
+
+  /**
+   * 界面语。
+   */
+  lang: Lang
+
+  /**
+   * 是不是第一条(第一条是主按钮「下一个:职位名」)。
+   */
+  first: boolean
+
+  /**
+   * 取词。
+   */
+  t: PushOfferIn['t']
 }

@@ -8,37 +8,22 @@
  * @time 2026-08-28 12:45:00
  */
 import { cssOf } from '@/components/css'
-import { FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY } from '@/lib/quota'
 import { track } from '@/lib/track'
 import {
-  CLS_SEP, CRED_INCLUDE, DAYS_30, DAYS_90, EVENT_CHECKOUT, EVENT_PAY_CLICK, EVENT_PRICING_OPEN, EVENT_SHOT_CLICK,
-  EVENT_UPGRADE_OPEN, FROM_RE, HDR_CONTENT_TYPE, KIND_DIRECT, LANG_ZH, METHOD_POST,
+  CLS_SEP, CRED_INCLUDE, DAYS_30, DAYS_90, EVENT_CHECKOUT, EVENT_PAY_CLICK, EVENT_PRICING_OPEN,
+  EVENT_UPGRADE_OPEN, FROM_RE, HDR_CONTENT_TYPE, KIND_DIRECT, METHOD_POST,
   MIME_JSON, PCT_FULL, PER_30_DIV, PLAN_30, PLAN_90, PRICE_CURRENCY_RE, PRICE_DECIMALS, PRICE_DIGITS_RE,
-  PRICE_DISPLAY_DEFAULT, PRICE_SEP, P_FROM, TAB_BLANK, TEXT_NONE, URL_BLANK, URL_CHECKOUT, URL_SHOT_EN,
-  URL_SHOT_ZH, WIDE_GAP,
+  PRICE_DISPLAY_DEFAULT, PRICE_SEP, P_FROM, TAB_BLANK, TEXT_NONE, URL_BLANK, URL_CHECKOUT, WIDE_GAP,
 } from './constants'
 import type {
   CardPickIn,
   BuyClsIn, BuyFn, CardClsIn, CheckoutRespJson, CheckoutUrlOfIn, ClickFn,
   FlagSetIn, FromKindOfIn, LandCheckoutIn, MaybeTab, Per30In, PerDayOfIn, PerLabelIn, PickedPriceIn, PlanPickIn,
-  PlanSelectIn, Price, PriceAmountOfIn, PriceCaps, PriceCurrencyOfIn, PricePlan, PriceTexts, PricingBuyIn,
-  PricingShotOfIn, SavePctOfIn, TrackCheckoutIn, TrackPayClickIn, UpBuyClsIn, UpCardClsIn, UpgradeBuyIn,
+  PlanSelectIn, Price, PriceAmountOfIn, PriceCurrencyOfIn, PricePlan, PriceTexts, SavePctOfIn, TrackCheckoutIn,
+  TrackPayClickIn, UpBuyClsIn, UpCardClsIn, UpgradeBuyIn,
 } from './types'
 import css from './pricing.module.css'
 
-/**
- * 第一卖点(price.pA「担保雇主名单」)配的真图走哪一门:中文界面出中文那张,
- * 英/韩界面出英文那张(蓝图 §2 的 B3;图里是界面截图,语言错了就读不懂)。
- *
- * @param x 界面语言。
- * @returns 该出的截图地址。
- */
-export function pricingShotOf(x: PricingShotOfIn): string {
-  if (x.lang === LANG_ZH) {
-    return URL_SHOT_ZH
-  }
-  return URL_SHOT_EN
-}
 
 /**
  * 来路归档:白名单认得的原样记,认不得的与没带参数的一律记成直达。
@@ -70,12 +55,6 @@ export function trackPricingOpen(): void {
   track(EVENT_PRICING_OPEN, { kind: fromKindOf({ raw }) })
 }
 
-/**
- * 点营销截图那一下的埋点。只记一笔,不拦导航 —— 点完照常走链接去把脉页橱窗。
- */
-export function trackShotClick(): void {
-  track(EVENT_SHOT_CLICK)
-}
 
 /**
  * 造一枚「把一格布尔拨成定值」的小手柄:注册弹框的开与关、对比弹窗的开与关都是它 ——
@@ -194,53 +173,7 @@ export function priceCurrencyOf(x: PriceCurrencyOfIn): string {
   return x.text.replace(PRICE_CURRENCY_RE, TEXT_NONE)
 }
 
-/**
- * 弹窗版价卡的档位数:客户端直接 import lib/quota 拿到的是**构建期**的默认值。
- * 页面版由服务端读 env 算好随 props 下发,弹窗版没有服务端这一手,只能用默认值 ——
- * 哪天真用 env 改分层数字,这几个常量要么 NEXT_PUBLIC 化,要么改由调用方传进来。
- *
- * 2026-09-28 AI 顾问删(Frank「残留也删了吧」):顾问两格(免费试用、Pro 日上限)随之撤,剩免费档两格。
- *
- * @returns 免费档的档位数两格。
- */
-export function clientCapsOf(): PriceCaps {
-  return {
-    jobtext: FREE_JOBTEXT_TRIES,
-    match: FREE_MATCH_JOBS_PER_DAY,
-  }
-}
 
-/**
- * 造价卡上那条购买流:埋点 → 认人 → 发 Checkout → 跳转。
- * E5-07 §3.4 漏斗第 4 步:pay-click 必须在登录判断**之前**发 —— 未登录点了也是付费意向,
- * 放到后面等于把「点了但没注册」这段整个漏掉(checkout 只在已登录时发,两个事件不重复)。
- * 未登录就此打住,先开注册弹框;已登录才进忙态发请求,拿到 url 就跳,拿不到就退出忙态。
- * 2026-10-12 Frank「这个为什么点击左边的 按钮,右边的也跟着变颜色」:忙态记成被点的那一档,只压暗那一枚;
- * 同日「应该新 弹个 tab 出来」:点击当下先开空白标签,拿到 url 给它换地址,拿不到关掉它;本页不走,所以跳完退出忙态。
- *
- * @param x 登录态、注册出口与忙态落格。
- * @returns 发起一档购买的手柄。
- */
-export function makePricingBuy(x: PricingBuyIn): BuyFn {
-  return async function buy(plan: PricePlan): Promise<void> {
-    trackPayClick({ plan, loggedIn: x.loggedIn })
-    if (x.loggedIn === false) {
-      x.onRegister()
-      return
-    }
-    const tab = openCheckoutTab()
-    x.setBusy(plan)
-    trackCheckout({ plan })
-    const url = await checkoutUrlOf({ plan, back: TEXT_NONE })
-    if (url === TEXT_NONE) {
-      closeCheckoutTab(tab)
-      x.setBusy(null)
-      return
-    }
-    landCheckout({ tab, url })
-    x.setBusy(null)
-  }
-}
 
 /**
  * 造升级弹框里那条购买流。本弹框只出现在**已登录**上下文(未登录的升级入口先走注册框),
@@ -355,13 +288,6 @@ export function trackCheckout(x: TrackCheckoutIn): void {
   track(EVENT_CHECKOUT, { plan: x.plan })
 }
 
-/**
- * 定价弹窗被看到那一下的埋点。与 upgrade-open 同理记「定价被看到」;
- * /pricing 直链页不走这里(那一页的 pageview 已经覆盖,另有带来路的 trackPricingOpen)。
- */
-export function trackPricingModalOpen(): void {
-  track(EVENT_PRICING_OPEN)
-}
 
 /**
  * 升级弹框被看到那一下的埋点。漏斗补洞:访客 →(此事件)→ checkout → 付款之间

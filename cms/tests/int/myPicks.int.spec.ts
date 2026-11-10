@@ -52,7 +52,7 @@ function row(id: number): PickRow {
     companySlug: 'secret-co-' + id, address: '1 Hidden St ' + id, city: 'Toronto', cityZh: '', cityKo: '', province: 'ON',
     salary: '$' + id + '/hr', datePosted: '2026-10-10T00:00:00.000Z', reasons: ['pnp'], program: 'OINP', hours: 'full',
     term: 'permanent', validThrough: '', pnpStream: '', pnpEligible: true, provDefault: true, abovePct: null,
-    lmiaPositions: 0, eeCategory: '', drawLast: '', pilot: '',
+    wageMedHourly: null, lmiaPositions: 0, eeCategory: '', drawLast: '', pilot: '',
   }
 }
 
@@ -317,38 +317,28 @@ async function flush() {
 }
 
 // 2026-11-07「我的」新域重写:今日推荐不再是单独一张卡(Picks),是「我的求职」整页正文 JobsBody 的默认页签
-type BodyProps = { pro: boolean, gen: number, asked: number }
+type BodyProps = { pro: boolean, gen: number, asked: number, tab: string }
 
 function body(p: BodyProps) {
   return createElement(JobsBody, {
-    t, pro: p.pro, plan: {}, gen: p.gen, asked: p.asked, onFill: () => undefined, openApp: () => undefined,
+    t, tab: p.tab, pro: p.pro, plan: {}, gen: p.gen, asked: p.asked, onFill: () => undefined, openApp: () => undefined,
   })
 }
 
-async function mount(pro: boolean) {
+async function mount(pro: boolean, tab = 'picks') {
   const el = document.createElement('div')
   document.body.appendChild(el)
   const root = createRoot(el)
   await act(async () => {
-    root.render(body({ pro, gen: 0, asked: 0 }))
+    root.render(body({ pro, gen: 0, asked: 0, tab }))
   })
   await flush()
   return el
 }
 
-// 今日推荐那一枚页签(Tabs 桶 role=tab,id 尾是页签身份)
-function picksTab(el: HTMLElement) {
-  return el.querySelector('[role="tab"][id$="picks"]') as HTMLElement
-}
-
-// 任一枚页签(2026-11-07:验「换一批」只在今日推荐页签出)
-function tabOf(el: HTMLElement, tab: 'picks' | 'saved' | 'applied') {
-  return el.querySelector('[role="tab"][id$="' + tab + '"]') as HTMLElement
-}
-
-// 页签下面那一块(当前页签的表、显示更多、解锁一行)
+// 那张白卡(当前这一项的表、显示更多、解锁一行;2026-11-09 页签挪到侧边栏)
 function panelOf(el: HTMLElement) {
-  return el.querySelector('[role="tabpanel"]') as HTMLElement
+  return el.querySelector('section') as HTMLElement
 }
 
 const PICK = {
@@ -356,7 +346,8 @@ const PICK = {
   companyKo: '', companySlug: '', address: '1 Bowes Rd, Concord, ON L4K 1H4', city: 'Concord', cityZh: '', cityKo: '', province: 'ON',
   salary: '$24/hr', datePosted: '2026-10-10T00:00:00.000Z', reasons: ['occ', 'pnp', 'nope'], program: 'OINP',
   hours: 'part', term: 'seasonal', validThrough: '2026-11-09T00:00:00.000Z',
-  pnpStream: '', pnpEligible: true, provDefault: true, abovePct: null, lmiaPositions: 0, eeCategory: '', drawLast: '', pilot: '',
+  pnpStream: '', pnpEligible: true, provDefault: true, abovePct: null, wageMedHourly: null, lmiaPositions: 0, eeCategory: '',
+  drawLast: '', pilot: '',
 }
 const LOCKED = {
   title: 'medical office assistant', titleZh: '', titleKo: '', reasons: ['pnp', 'wage'], program: 'OINP', province: 'ON',
@@ -375,8 +366,7 @@ describe('今日推荐卡', () => {
     stub({ status: 200, body: { picks: [PICK], more: 7, locked: [LOCKED] } })
     const el = await mount(false)
     // 2026-11-07:卡头撤,标题与数字挂到页签上(数字 = 看得见的 1 + 锁住的 7),进页默认落这一枚
-    expect(picksTab(el).textContent).toBe('mj.tab.picks8')
-    expect(picksTab(el).getAttribute('aria-selected')).toBe('true')
+    expect(el.querySelector('[role="tab"]')).toBeNull()   // 2026-11-09:页签条撤,三项在侧边栏
     expect(el.textContent).toContain('administrative assistant')
     expect(el.textContent).toContain('$24/hr')
     expect(el.textContent).not.toContain('2026-10-10')   // 2026-11-07 效果图:推荐表撤发布日期列
@@ -384,48 +374,50 @@ describe('今日推荐卡', () => {
     expect(el.textContent).not.toContain('Part-time')   // 2026-10-12 推荐表不出工时 / 雇佣期两列
     expect(el.textContent).not.toContain('Seasonal')
     expect(el.textContent).toContain('pnp.gen.ON')   // 通道列:可提名 + 本省有省默认通道 = 那条省默认通道(取词桩原样回键)
-    // 2026-11-07 Frank「现在都按 Azure 的来」:原「职业对口 / 能走省提名不出」(2026-10-12)反过来 —— 每条推荐都看得到为什么推
-    expect(el.textContent).toContain('mj.why.occ')
-    expect(el.textContent).toContain('mj.why.pnp')
+    // 2026-11-09 Frank「推荐原因删掉」「这部分加进 table 吧」:推荐原因列撤,换职位板的「中位时薪」「vs 中位」两列
+    expect(el.textContent).not.toContain('mj.why.')
+    expect(el.textContent).not.toContain('mj.col.why')
+    expect(el.textContent).toContain('col.wageMedHr')
+    expect(el.textContent).toContain('col.vsMedian')
     expect(el.textContent).not.toContain('nope')
     expect(el.textContent).not.toContain('medical office assistant')   // 锁住的不进表(回包照发 locked,前端不读)
     expect(el.querySelector('[data-lock]')).toBeNull()   // 打码行撤
     // 推荐总条数(看得见 + 锁住)多于先列的 3 条:出「换一批」—— 2026-11-07 挪到页签那一行,不在页签面板里
     const swap = Array.from(el.querySelectorAll('button')).find((x) => x.textContent === 'mj.swap') as HTMLElement
-    expect(swap.parentElement?.contains(picksTab(el))).toBe(true)
-    expect(panelOf(el).contains(swap)).toBe(false)
+    expect(panelOf(el).contains(swap)).toBe(true)   // 2026-11-09:页签条撤,「换一批」留在表上方右端
     // 看得见的只有 1 条,没有没列出来的真行:不出「显示更多」(锁住的不再算进去)
     expect(Array.from(el.querySelectorAll('button')).some((x) => x.textContent?.startsWith('loadMore'))).toBe(false)
     expect(panelOf(el).textContent).toContain('mj.lockLine{"n":7}')
     expect(Array.from(panelOf(el).querySelectorAll('button:not([aria-label="mj.more"])')).map((b) => b.textContent))
-      .toEqual(['mj.apply', 'mj.unlock{"n":7}'])   // 2026-11-07(二):行末「⋯」不算主钮
+      .toEqual(['mj.swap', 'mj.apply', 'mj.unlock{"n":7}'])   // 2026-11-07(二):行末「⋯」不算主钮
     // 「地址」列改「地点」列:链字「市, 省码」,链址仍按完整地址查
     expect(el.textContent).toContain('mj.col.place')
     expect(el.textContent).not.toContain('mj.col.addr')
     expect(el.textContent).not.toContain(PICK.address)
     const place = Array.from(el.querySelectorAll('a')).find((a) => a.textContent === 'Concord, ON')
     expect(place?.getAttribute('href')).toBe('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(PICK.address))
-    // 切到「我的收藏」:「换一批」不出
-    await act(async () => {
-      tabOf(el, 'saved').click()
-    })
-    expect(Array.from(el.querySelectorAll('button')).some((x) => x.textContent === 'mj.swap')).toBe(false)
+    // 出「我的收藏」那一项时:「换一批」不出
+    document.body.innerHTML = ''
+    const saved = await mount(false, 'saved')
+    expect(Array.from(saved.querySelectorAll('button')).some((x) => x.textContent === 'mj.swap')).toBe(false)
   })
 
-  it('⑥b 推荐原因四码进表(2026-11-07):原因 [occ, pnp] 出 mj.why.occ / mj.why.pnp 两枚胶囊,按回包顺序', async () => {
-    stub({ status: 200, body: { picks: [{ ...PICK, reasons: ['occ', 'pnp'] }], more: 0, locked: [] } })
-    const el = await mount(false)
-    const row = Array.from(el.querySelectorAll('tr')).find((r) => r.textContent?.includes(PICK.title)) as HTMLElement
-    const cells = Array.from(row.querySelectorAll('td'))
-    const why = cells.find((c) => c.textContent?.includes('mj.why.')) as HTMLElement
-    // 取词桩把插值变量接在键后面(`键{…}`),只比键
-    const chips = Array.from((why.firstElementChild as HTMLElement).children).map((c) => String(c.textContent).split('{')[0])
-    expect(chips).toEqual(['mj.why.occ', 'mj.why.pnp'])
-    for (const code of ['saved', 'applied']) {
-      document.body.innerHTML = ''
-      stub({ status: 200, body: { picks: [{ ...PICK, reasons: [code] }], more: 0, locked: [] } })
-      expect((await mount(false)).textContent).toContain('mj.why.' + code)
+  it('⑥b 中位时薪与 vs 中位两列(2026-11-09):高于中位出「$31.73/hr」「+16%」,低于出减号,没有中位两格都空', async () => {
+    const cellsOf = (el: HTMLElement) => {
+      const row = Array.from(el.querySelectorAll('tr')).find((r) => r.textContent?.includes(PICK.title)) as HTMLElement
+      return Array.from(row.querySelectorAll('td')).map((c) => c.textContent)
     }
+    stub({ status: 200, body: { picks: [{ ...PICK, wageMedHourly: 31.73, abovePct: 16 }], more: 0, locked: [] } })
+    const up = cellsOf(await mount(false))
+    expect([up[4], up[5]]).toEqual(['$31.73/hr', '+16%'])
+    document.body.innerHTML = ''
+    stub({ status: 200, body: { picks: [{ ...PICK, wageMedHourly: 45, abovePct: -40 }], more: 0, locked: [] } })
+    const down = cellsOf(await mount(false))
+    expect([down[4], down[5]]).toEqual(['$45/hr', '-40%'])
+    document.body.innerHTML = ''
+    stub({ status: 200, body: { picks: [PICK], more: 0, locked: [] } })
+    const none = cellsOf(await mount(false))
+    expect([none[4], none[5]]).toEqual(['', ''])
   })
 
   it('⑥c 免费号「解锁」一行:N = 锁住的全部条数 more(不是回包 locked 的条数);点钮开定价框;Pro 不出', async () => {
@@ -434,11 +426,13 @@ describe('今日推荐卡', () => {
     expect(el.textContent).toContain('mj.lockLine{"n":7}')
     const unlock = Array.from(el.querySelectorAll('button')).find((x) => x.textContent === 'mj.unlock{"n":7}') as HTMLElement
     // 定价框(pricing 桶 PricingModal,标题 price.title)可能经 modal 桶挂到 body 上,按整页找
-    expect(document.body.textContent).not.toContain('price.title')
+    // 2026-11-09 全站卖会员只留升级框一种形态:点钮开的是 UpgradeModal(标题 acct.buyTitle),定价框撤
+    expect(document.body.textContent).not.toContain('acct.buyTitle')
     await act(async () => {
       unlock.click()
     })
-    expect(document.body.textContent).toContain('price.title')
+    expect(document.body.textContent).toContain('acct.buyTitle')
+    expect(document.body.textContent).not.toContain('price.title')
     document.body.innerHTML = ''
     stub({ status: 200, body: { picks: [PICK], more: 7, locked: [LOCKED] } })
     const pro = await mount(true)
@@ -463,7 +457,6 @@ describe('今日推荐卡', () => {
     const many = [1, 2, 3, 4, 5].map((i) => ({ ...PICK, id: i, title: 'job ' + i }))
     stub({ status: 200, body: { picks: many, more: 0, locked: [] } })
     const el = await mount(true)
-    expect(picksTab(el).textContent).toBe('mj.tab.picks5')
     expect(el.textContent).toContain('job 3')
     expect(el.textContent).not.toContain('job 4')
     expect(el.textContent).toContain('mj.swap')   // 多于先列的 3 条才出「换一批」
@@ -486,7 +479,6 @@ describe('今日推荐卡', () => {
     const el = await mount(false)
     expect(el.textContent).toContain('mj.fail')
     expect(el.textContent).not.toContain('mj.picksEmpty')
-    expect(picksTab(el).textContent).toBe('mj.tab.picks')   // 没拉到不挂计数
   })
 })
 
@@ -583,10 +575,10 @@ describe('答完档案重拉', () => {
     document.body.appendChild(el)
     const root = createRoot(el)
     await act(async () => {
-      root.render(body({ pro: false, gen: 0, asked: 0 }))
+      root.render(body({ pro: false, gen: 0, asked: 0, tab: 'picks' }))
     })
     await act(async () => {
-      root.render(body({ pro: false, gen: 0, asked: 1 }))
+      root.render(body({ pro: false, gen: 0, asked: 1, tab: 'picks' }))
     })
     const picks = urls.filter((u) => u.startsWith('/api/myjobs/picks'))
     expect(picks).toHaveLength(2)
@@ -604,10 +596,10 @@ describe('答完档案重拉', () => {
     document.body.appendChild(el)
     const root = createRoot(el)
     await act(async () => {
-      root.render(body({ pro: false, gen: 0, asked: 0 }))
+      root.render(body({ pro: false, gen: 0, asked: 0, tab: 'picks' }))
     })
     await act(async () => {
-      root.render(body({ pro: false, gen: 1, asked: 0 }))
+      root.render(body({ pro: false, gen: 1, asked: 0, tab: 'picks' }))
     })
     function count(head: string) {
       return urls.filter((u) => u.startsWith(head)).length

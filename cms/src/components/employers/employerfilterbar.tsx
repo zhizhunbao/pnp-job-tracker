@@ -52,7 +52,7 @@ export function EmployerFilterBar({ p }: EmployerPanelIn) {
           onChange={p.onProv}
           opts={p.data.provs}
           all={p.t('all.prov')}
-          labelOf={makeProvLabel()} />
+          labelOf={makeProvLabel({ t: p.t })} />
         {p.f.prov !== TEXT_NONE && (
           <Select value={p.f.city} onChange={p.onCity} opts={p.data.cities} all={p.t('all.city')} />
         )}

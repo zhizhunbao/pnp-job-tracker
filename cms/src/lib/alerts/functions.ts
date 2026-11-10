@@ -623,6 +623,7 @@ export function unsubPageHtml(state: UnsubState): string {
 /**
  * 每日推送一轮:「每天」档的人各取今日推荐(路由注入),一天一封;preview=daily 时只渲第一封返回,别的 preview 整轮不跑
  * (不在走查时真发信)。
+ * 2026-11-09「我的」第一批:没有职业依据的人跳过(has_occ,见 SQL.DIGEST_USERS)。
  *
  * @param x 整轮入参与计数。
  * @returns preview 时那封 HTML;否则空串。
@@ -634,7 +635,7 @@ async function dailyRound(x: DailyRoundIn): DailyRoundOut {
   }
   const users = await loadDigestUsers({ db: x.run.db, freq: FREQ_DAILY })
   for (const u of users) {
-    if (u.email === '' || (preview === false && isDailyTooSoon(u.lastDailyAt))) {
+    if (u.email === '' || u.hasOcc === false || (preview === false && isDailyTooSoon(u.lastDailyAt))) {
       continue
     }
     x.out.dailyChecked++
@@ -879,7 +880,7 @@ export function toDigestUser(r: DigestUserDbRow): DigestUser {
   if (r.last_daily_at != null) {
     lastDailyAt = new Date(r.last_daily_at).toISOString()
   }
-  return { userId: count(r.user_id), email: text(r.email), locale: text(r.locale), pro, lastDailyAt }
+  return { userId: count(r.user_id), email: text(r.email), locale: text(r.locale), pro, lastDailyAt, hasOcc: r.has_occ === true }
 }
 
 /**

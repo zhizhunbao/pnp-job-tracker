@@ -8,15 +8,17 @@
  * @time 2026-11-07 18:00:00
  */
 import { toast } from '@/components/toast'
+import { APPLY_LOG, log } from '@/lib/log'
 import { DAY_MS, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   AMOUNT_DIGITS, CRED_INCLUDE, CUR_GAP, CUR_SIGN, EMAIL_MAX, EV_PUSH, E_EMAIL, FREQ_KEYS, FREQ_OFF, HDR_CONTENT_TYPE,
-  METHOD_POST, MIME_JSON, PAY_COL_ACT, PAY_COL_AMOUNT, PAY_COL_DATE, PAY_COL_ITEM, PUT_MAIL, PUT_PENDING, TEXT_NONE,
-  TOAST_ERR, TOAST_OK, TOAST_WARN, URL_PAYMENTS, URL_PUSH,
+  METHOD_POST, MIME_JSON, PAY_COL_ACT, PAY_COL_AMOUNT, PAY_COL_DATE, PAY_COL_ITEM, PLAN_PRO, PUT_MAIL, PUT_PENDING,
+  TEXT_NONE, TOAST_ERR, TOAST_OK, TOAST_WARN, URL_CREDIT, URL_PAYMENTS, URL_PUSH,
 } from './constants'
 import { PayReceiptCell } from './payreceiptcell'
 import type {
+  CreditLoadIn, CreditRespJson, CreditTextIn, MaybeSubCredit,
   FlagSetIn, FreqLabelFn, LoadPushIn, PayCellRow, PayCellRowsIn, PayCol, PaymentRow, PaymentRows, PaymentsLoadIn,
   PaymentsRespJson, ProOfIn, PushNoteIn, PushPrefsJson, PushSaveJson, PushToast, SavePushIn, SubIn, TFn,
 } from './types'
@@ -106,6 +108,57 @@ export function makePaymentsLoad(x: PaymentsLoadIn): () => Promise<void> {
       x.setFailed(true)
     }
   }
+}
+
+/**
+ * 造「拉额度」(2026-11-09):拉不到就不出那一行,不编数字。
+ *
+ * @param x 额度落格。
+ * @returns 拉的函数。
+ */
+export function makeCreditLoad(x: CreditLoadIn): () => Promise<void> {
+  return async function loadCredit(): Promise<void> {
+    try {
+      const r = await fetch(URL_CREDIT, { credentials: CRED_INCLUDE })
+      if (r.ok === false) {
+        return
+      }
+      x.setCredit(toSubCredit(await r.json() as CreditRespJson))
+    } catch (e) {
+      log({ tag: APPLY_LOG.tag, text: APPLY_LOG.creditFail + String(e) })
+    }
+  }
+}
+
+/**
+ * 回包 → 额度;缺格按没有读。
+ *
+ * @param d 回包。
+ * @returns 额度或 null。
+ */
+export function toSubCredit(d: CreditRespJson): MaybeSubCredit {
+  if (typeof d.plan !== 'string' || typeof d.left !== 'number' || typeof d.max !== 'number') {
+    return null
+  }
+  let resetAt: string | null = null
+  if (typeof d.resetAt === 'string') {
+    resetAt = d.resetAt
+  }
+  return { plan: d.plan, left: d.left, max: d.max, resetAt }
+}
+
+/**
+ * 额度那一行的字:会员写本期还剩几个与恢复日,免费写终身额度还剩几个。
+ *
+ * @param x 额度与取词函数。
+ * @returns 一行字。
+ */
+export function creditTextOf(x: CreditTextIn): string {
+  const c = x.credit
+  if (c.plan === PLAN_PRO && c.resetAt != null) {
+    return x.t('sub.creditPro', { n: c.left, m: c.max, d: ymd(c.resetAt) })
+  }
+  return x.t('sub.creditFree', { n: c.left, m: c.max })
 }
 
 /**

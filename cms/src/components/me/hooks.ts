@@ -9,22 +9,25 @@
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useIsNarrow } from '@/components/modal'
-import { SEC_DEFAULT } from './constants'
+import { JOB_TAB_DEFAULT, SEC_DEFAULT } from './constants'
 import {
   bindUnread, makeDrawerSet, makeFill, makeGenBump, makeMePick, makeOnApplied, makeRefresh, makeSecPick, payOkToast,
+  navKeyOf,
   emailBackToast,
   proOf,
   secLinkOf, untilOf,
 } from './functions'
-import type { MeFrameIn, MeFrameOut, MePagePanel, MeSec, MeUser } from './types'
+import type { MeFrameIn, MeFrameOut, MeJobTab, MePagePanel, MeSec, MeUser } from './types'
 
 /**
- * 「我的」整页的状态机器。
+ * 「我的」整页的状态机器。深链 `?sec=` 故意分两步读:地址栏参数只有浏览器里读得到,服务端画首帧时没有,活过来后再补。
+ * 2026-11-09 三枚页签挪到侧边栏:多记「我的求职」当前的子项,导航亮的那一项由节与子项合出。
  *
  * @returns 整页状态与手柄。
  */
 export function useMePage(): MePagePanel {
   const [sec, setSec] = useState<MeSec>(SEC_DEFAULT)
+  const [jobTab, setJobTab] = useState<MeJobTab>(JOB_TAB_DEFAULT)
   const narrow = useIsNarrow()
   const [, , t] = useLang()
   const [me, setMe] = useState<MeUser | null>(null)
@@ -42,8 +45,7 @@ export function useMePage(): MePagePanel {
   useEffect(function readSecLink() {
     const s = secLinkOf()
     if (s != null) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- 故意分两步:地址栏参数只有浏览器里读得到,服务端画首帧时没有,活过来后再补
-      setSec(s)
+      makeSecPick({ setSec, setAutoEdit, setJobTab })(s)
     }
   }, [])
 
@@ -60,9 +62,11 @@ export function useMePage(): MePagePanel {
     t,
     narrow,
     sec,
+    jobTab,
+    nav: navKeyOf({ sec, jobTab }),
     me,
     checked,
-    onPick: makeSecPick({ setSec, setAutoEdit }),
+    onPick: makeSecPick({ setSec, setAutoEdit, setJobTab }),
     pro: proOf({ until }),
     until,
     appliedGen,
@@ -71,7 +75,7 @@ export function useMePage(): MePagePanel {
     askedGen,
     onAsked: makeGenBump({ setGen: setAskedGen }),
     autoEdit,
-    onFill: makeFill({ setSec, setAutoEdit }),
+    onFill: makeFill({ setSec, setAutoEdit, setJobTab }),
   }
 }
 

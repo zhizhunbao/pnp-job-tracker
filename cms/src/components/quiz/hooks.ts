@@ -78,7 +78,6 @@ export function useOccPicker(x: OccPickerHookIn): OccPanel {
   }, [cat, catalogByCat])
 
   useOccSearch({ q, setCands, setSearching })
-
   useEffect(function fillTitles() {
     return makeTitlesFill({ nocs, titles, keys: known, lang: x.lang, setTitles, setKeys })()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- titles 是这个 effect 的产物,进依赖会自己触发自己
@@ -92,6 +91,7 @@ export function useOccPicker(x: OccPickerHookIn): OccPanel {
   const pick: PickOfIn = { nocs, keys: known, setNocs, setTitles, setKeys, onChange: x.onChange, setQ, setCands }
 
   return {
+    onReplace: setNocs,
     picked,
     titles,
     q,

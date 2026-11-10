@@ -9,52 +9,44 @@
  * constants、状态与埋点进 hooks、语言分支与手柄进 functions);壳件(整页外框 Frame /
  * 顶栏 / 页脚)拼装归页面门(Frank「组装只许在 (frontend) 页面门里」,样张 account),
  * 本件只出 Shell 轨往下的视图。
+ * 2026-11-09 Frank「现在有两个定价页,是不是合成一个」→ 看图后「可以」:全站卖会员只留升级框那一种形态 ——
+ * 本页的营销截图与 PricingCard 那套大卡撤,换成一张分区卡里铺升级框的正文 UpgradeBody(权益带说明那一行);
+ * 网址照旧(外链与收录)。档位数 caps 随对照表早撤后已无人读,这一格一并撤。
  *
  * @author Frank
  * @time 2026-08-28 12:45:00
  */
-import { AuthModal } from '@/components/auth'
 import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { PricingCard } from './pricingcard'
 import { Shell } from '@/components/shell'
-import { AUTH_MODE_REGISTER, SHELL_TOP, URL_START } from './constants'
-import { pricingShotOf } from './functions'
+import { CARD_MD_CLS, SHELL_TOP, URL_ACCOUNT } from './constants'
 import { usePricingPage } from './hooks'
 import type { PricingIn } from './types'
+import { UpgradeBody } from './upgradebody'
 import css from './pricing.module.css'
 
 /**
  * 定价页正文。
  *
- * @param props 登录态、Pro 态与档位数(逐格注释见 PricingIn)。
- * @returns 正文(Shell 轨 + 标题两行 + 营销截图 + 三卡价卡)与注册弹框。
+ * @param props 登录态与 Pro 态(逐格注释见 PricingIn)。
+ * @returns 正文(Shell 轨 + 标题两行 + 一张卡里的升级框正文);已是 Pro 时多一个账户页入口。
  */
-export function Pricing({ loggedIn, pro, caps }: PricingIn) {
+export function Pricing({ loggedIn, pro }: PricingIn) {
   const page = usePricingPage()
   return (
-    <>
-      <Shell top={SHELL_TOP}>
-        <div className={css.track}>
-          <h1 className={css.h1}>{page.t('price.title')}</h1>
-          <p className={css.sub}>{page.t('price.sub')}</p>
-          <LinkButton href={URL_START} onClick={page.onShot} className={cssOf(css.shotLink)}>
-            {/* eslint-disable-next-line @next/next/no-img-element -- 营销截图,换 next/image 需定尺寸与视觉验收,待拍板项(2026-08-27) */}
-            <img src={pricingShotOf({ lang: page.lang })}
-              alt={page.t('se.title')}
-              className={cssOf(css.shot)} />
-          </LinkButton>
-          <PricingCard t={page.t}
-            loggedIn={loggedIn}
-            pro={pro}
-            caps={caps}
-            onRegister={page.onRegister} />
+    <Shell top={SHELL_TOP}>
+      <div className={css.track}>
+        <h1 className={css.h1}>{page.t('price.title')}</h1>
+        <p className={css.sub}>{page.t('price.sub')}</p>
+        <div className={`${CARD_MD_CLS} ${css.pageCard}`}>
+          <UpgradeBody t={page.t} loggedIn={loggedIn} detail />
         </div>
-      </Shell>
-      {page.authOpen && <AuthModal t={page.t}
-        mode={AUTH_MODE_REGISTER}
-        onClose={page.onAuthClose}
-        onDone={page.onAuthDone} />}
-    </>
+        {pro && (
+          <div className={css.acct}>
+            <LinkButton href={URL_ACCOUNT} className={cssOf(css.acctLink)}>{page.t('price.cta.acct')}</LinkButton>
+          </div>
+        )}
+      </div>
+    </Shell>
   )
 }

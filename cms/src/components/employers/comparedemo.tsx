@@ -7,6 +7,7 @@
  * 2026-08-27 换装批自 Compare.tsx 的免费分支提出成文件。
  * 2026-09-03 Frank「所有的 table 右上角都应该有一个更新时间」:样例表也是一张表,
  * 卡正上方单独一行挂 Updated(time 桶)—— 时刻是真的(ETL 心跳),糊掉的只有表里的假值。
+ * 2026-11-09 全站卖会员只留升级框一种形态(Frank「可以」):升级钮原先弹定价弹窗,改弹 UpgradeModal。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -15,7 +16,7 @@ import { useState } from 'react'
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { IconStar } from '@/components/icons'
-import { PricingModal } from '@/components/pricing'
+import { UpgradeModal } from '@/components/pricing'
 import { Table } from '@/components/table'
 import { Updated } from '@/components/time'
 import { BTN_PRO, CARD_CLS, CLS_SEP, PRICING_Z } from './constants'
@@ -52,11 +53,7 @@ export function CompareDemo({ t, loggedIn, updatedAt }: CompareDemoIn) {
         </div>
       </div>
       {pricing && (
-        <PricingModal t={t}
-          loggedIn={loggedIn}
-          pro={false}
-          z={PRICING_Z}
-          onClose={makePricingSet({ setPricing, open: false })} />
+        <UpgradeModal t={t} loggedIn={loggedIn} z={PRICING_Z} onClose={makePricingSet({ setPricing, open: false })} />
       )}
     </>
   )

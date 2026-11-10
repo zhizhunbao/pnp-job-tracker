@@ -135,8 +135,16 @@ describe('① 求职信页签', () => {
 
 describe('② 我的订阅', () => {
   it('免费态:免费版 + 两档价格 + 升级 Pro;没买过出「还没有付款」(2026-11-07 改)', async () => {
-    const calls = server({ 'GET /api/stripe/payments': { status: 200, body: { items: [] } } })
+    const calls = server({
+      'GET /api/stripe/payments': { status: 200, body: { items: [] } },
+      'GET /api/apply/credit': { status: 200, body: { plan: 'free', left: 2, max: 3, resetAt: null } },
+    })
     const el = await mount(MeSub, { ...FRAME, until: null })
+    // 2026-11-09 Frank「我的订阅 显示剩余额度」、权益清单按额度规则重写(旧五条撤)
+    expect(el.textContent).toContain('sub.creditFree{"n":2,"m":3}')
+    expect(el.textContent).toContain('price.perk.tailor')
+    expect(el.textContent).toContain('price.perk.regen')
+    expect(el.textContent).not.toContain('price.perk.tailor.d')
     expect(el.textContent).toContain('acct.plan.free')
     expect(el.textContent).toContain('sub.price')
     expect(el.textContent).toContain('up.cta2')
@@ -145,15 +153,20 @@ describe('② 我的订阅', () => {
     expect(el.textContent).toContain('sub.pay')
     expect(el.textContent).toContain('sub.noPay')
     expect(el.querySelector('table')).toBeNull()
-    expect(el.textContent).toContain('price.perk.letter')
-    expect(el.textContent).not.toContain('price.perk.letter.d')
+    expect(el.textContent).not.toContain('price.perk.letter')
     expect(calls).toContain('GET /api/stripe/payments')
   })
 
   it('Pro 态:还剩 N 天 + 有效期至 + 续买;付款记录出表', async () => {
     const until = new Date(Date.now() + 10 * 24 * 3600 * 1000).toISOString()
-    server({ 'GET /api/stripe/payments': { status: 200, body: { items: [PAY] } } })
+    server({
+      'GET /api/stripe/payments': { status: 200, body: { items: [PAY] } },
+      'GET /api/apply/credit': { status: 200, body: { plan: 'pro', left: 57, max: 60, resetAt: '2026-12-01T12:00:00.000Z' } },
+    })
     const el = await mount(MeSub, { ...FRAME, until })
+    // 2026-11-09:会员写本期还剩几个与恢复日;金额只写 $,不出现 CA$
+    expect(el.textContent).toContain('sub.creditPro{"n":57,"m":60,"d":"2026-12-01"}')
+    expect(el.textContent).not.toContain('CA$')
     expect(el.textContent).toContain('Pro')
     expect(el.textContent).toContain('sub.left{"n":10}')
     expect(el.textContent).toContain('acct.plan.pro')
@@ -164,7 +177,7 @@ describe('② 我的订阅', () => {
     expect(el.textContent).not.toContain('sub.noPay')
     expect(el.textContent).toContain('2026-10-07')
     expect(el.textContent).toContain('sub.proDays{"n":90}')
-    expect(el.textContent).toContain('CA$14.69')
+    expect(el.textContent).toContain('$14.69')
     expect(hrefs(el, 'sub.receipt')).toEqual(['https://pay.stripe.com/r/1'])
   })
 

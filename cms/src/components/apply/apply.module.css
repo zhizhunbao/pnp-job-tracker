@@ -355,3 +355,142 @@
   color: var(--text3);
   overflow-wrap: anywhere;
 }
+
+/*
+ * 「接着投这几个」一行:职位、公司、地点在左,投递钮在右。
+ */
+.nextRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+/*
+ * 一行的左边。
+ */
+.nextMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/*
+ * 「接着投」的第一条(2026-11-09):公司与地点在上,主按钮「下一个:职位名」单占一行铺满。
+ */
+.nextRowMain {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/*
+ * 开框前那块加载(2026-11-09:先查额度再定开什么,查的这一下不出投递框):整屏半透明底,中间一小块白卡。
+ * 层级与升级框同档,盖过职位弹框。
+ */
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, .35);
+}
+
+.veilBox {
+  padding: 16px 22px;
+  border-radius: 12px;
+  background: var(--card);
+}
+
+/*
+ * 第一屏的两张选择卡:手机竖排,宽屏并排。
+ */
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.choice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  padding: 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  text-align: left;
+}
+
+.choiceMain {
+  border-color: var(--primary);
+  background: #eff6ff;
+}
+
+.choiceName {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.choiceSub {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text2);
+}
+
+/*
+ * 基础简历投递屏:简历原件与求职信两张卡,手机竖排,宽屏并排。
+ */
+.baseGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.baseLetter {
+  min-height: 360px;
+}
+
+/*
+ * 基础简历投递屏的原件预览(2026-11-09 Frank「现在直接显示 pdf,看着字很小」):预览框按高定缩放,通用的 440 高在宽屏上
+ * 只画出半卡宽;宽屏把框拉高到一页铺满卡宽,字跟着变大。
+ */
+.basePv {
+  min-width: 0;
+}
+
+/*
+ * 框底「已自动保存」一行(灰字,靠左)。
+ */
+.saved {
+  margin-right: auto;
+  font-size: 12.5px;
+  color: var(--text2);
+}
+
+@media (min-width: 768px) {
+  .choices {
+    flex-direction: row;
+  }
+
+  .baseGrid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .basePv .show {
+    height: 760px;
+  }
+
+  .baseLetter {
+    min-height: 720px;
+  }
+}
