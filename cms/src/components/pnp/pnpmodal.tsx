@@ -37,7 +37,7 @@ export function PnpModal({ job, lang, title, field, nocDesc, onClose }: PnpModal
   return (
     <Modal onClose={onClose} win={{ head, memo: PNP_MODAL_PREF, w: PNP_MODAL_W, h: PNP_MODAL_H, jd: false }}>
       {(p.data.ready === false || p.qc.ready === false) && p.data.failed === false && p.qc.failed === false && (
-        <Loading text={p.t(K_LOADING)} />
+        <Loading text={p.t(K_LOADING)} fill />
       )}
       {(p.data.failed || p.qc.failed) && <Notice kind={NOTICE_ERR}>{p.t(K_LOAD_FAILED)}</Notice>}
       {p.data.ready && p.qc.ready && (

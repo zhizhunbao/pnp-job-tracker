@@ -438,11 +438,13 @@
  * 层级压过表头与拖宽柄(2),低于字段面板(20)。
  * 2026-11-05 Frank「这个更新中 放到左上角吧,表头下面。所有的加载中都放到 左上角」:挪到表头下面左上角
  * (表头实测高约 38.6px,下面留 8px),叠在第一行上,照旧不占高。
+ * 2026-11-09 Frank「所有的 加载中 都放到 正中间」:改叠在屏幕正中间(表比一屏长,按表算中间会落到屏幕外),照旧不占高。
  */
 .loadTip {
-  position: absolute;
-  top: 46px;
-  left: 10px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 4;
   display: flex;
   align-items: center;

@@ -6,6 +6,7 @@
  * 2026-08-28 换装批自 Pulse.tsx 的四处占位 div 收成一件。
  * 2026-11-06 Frank「这个地方点过来 应该有个加载中吧 不然空白页 用户以为有问题」「所有的加载中都放到 左上角」:
  * 白卡左上角放通用 loading 桶的 Loading(转圈 + 一句话),高度照旧占住。
+ * 2026-11-09 Frank「所有的 加载中 都放到 正中间」:改放白卡正中间。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
@@ -23,7 +24,7 @@ import type { PlaceholderIn } from './types'
 export function Placeholder({ size, text }: PlaceholderIn) {
   return (
     <div className={placeholderClsOf({ size })}>
-      <Loading text={text} />
+      <Loading text={text} fill />
     </div>
   )
 }

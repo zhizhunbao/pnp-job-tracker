@@ -3,7 +3,7 @@
  */
 
 /*
- * 一行:蓝小字 + 转圈,左对齐。
+ * 一行:蓝小字 + 转圈。立域时左对齐;2026-11-09 Frank「所有的 加载中 都放到 正中间」改居中。
  */
 .loading {
   font-size: 12.5px;
@@ -11,7 +11,16 @@
   padding: 4px 2px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+}
+
+/*
+ * 撑满定高的外框(占位卡、窗口形弹框的正文),这样上下也居中(2026-11-09)。
+ */
+.fill {
+  height: 100%;
+  box-sizing: border-box;
 }
 
 /*

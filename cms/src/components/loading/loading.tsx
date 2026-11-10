@@ -7,6 +7,7 @@
  * @time 2026-09-14 14:30:00
  */
 import { cssOf } from '@/components/css'
+import { loadingClsOf } from './functions'
 import type { LoadingIn } from './types'
 import css from './loading.module.css'
 
@@ -16,9 +17,9 @@ import css from './loading.module.css'
  * @param props 转圈旁的一句话。
  * @returns 转圈 + 一句话。
  */
-export function Loading({ text }: LoadingIn) {
+export function Loading({ text, fill }: LoadingIn) {
   return (
-    <div className={cssOf(css.loading)}>
+    <div className={loadingClsOf({ fill: fill === true })}>
       <span className={cssOf(css.spin)} />
       {text}
     </div>

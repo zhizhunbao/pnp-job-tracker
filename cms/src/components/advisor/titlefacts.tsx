@@ -12,6 +12,7 @@
  */
 import { cssOf } from '@/components/css'
 import { JdTextView } from '@/components/jobs/jdtextview'
+import { Loading } from '@/components/loading'
 import { Row } from '@/components/row'
 import { makeT } from '@/lib/i18n'
 import { K_EMP_HEAD, K_TERM_HEAD, TEXT_NONE } from './constants'
@@ -53,7 +54,7 @@ export function TitleFacts({ job, lang }: TitleFactsIn) {
       <Row k={t('fact.cert')}>{certRows}</Row>
       <div className={excerptHeadClsOf({ gap })}>{t('fact.jdExcerpt')}</div>
       {jd.limited && <div className={cssOf(css.excerpt)}>{t('jd.busy')}</div>}
-      {jd.limited === false && jd.text == null && <div className={cssOf(css.excerpt)}>{t('act.loadingText')}</div>}
+      {jd.limited === false && jd.text == null && <Loading text={t('act.loadingText')} />}
       {jd.limited === false && jd.text != null && jd.text !== TEXT_NONE && <JdTextView text={jd.text} />}
       {jd.limited === false && jd.text === TEXT_NONE && (
         <div className={cssOf(css.excerpt)}>{noTextOf({ t, job })}</div>
