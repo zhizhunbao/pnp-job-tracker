@@ -22,6 +22,11 @@ import type { Db } from '../db'
 export type AnthropicParams = MessageCreateParamsNonStreaming
 
 /**
+ * 一次性补全入参里的输出配置(思考力度与结构化输出的格式)。
+ */
+export type AnthropicOutputConfig = NonNullable<AnthropicParams['output_config']>
+
+/**
  * 流式的入参(SDK 自己多带一层 parse 能力,形状同上)。
  */
 export type AnthropicStreamParams = MessageStreamParams

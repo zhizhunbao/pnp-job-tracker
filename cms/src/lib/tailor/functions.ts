@@ -25,7 +25,7 @@ import {
 } from './prompts'
 import type {
   AuditMsgIn, AuditOfIn, BumpOfIn, CellOfIn, FactMap, FailOfIn, JsonCell, MaybeScore, MaybeStepBody, MergedFactsIn,
-  NewNumbersIn, NormText, QuotedOfIn, ReqsOfIn, RetryValueIn, RunDocIn, RunPlanIn, SaveCoverIn, SavePlanIn,
+  NewNumbersIn, NormText, SchemaNode, QuotedOfIn, ReqsOfIn, RetryValueIn, RunDocIn, RunPlanIn, SaveCoverIn, SavePlanIn,
   SaveResumeIn, SaveReviewIn, ScoreOfIn, SignerOfIn, StepBodyJson, StepFact, StepOut, StepRunIn, TailorBool, TailorDbRow,
   TailorKeyIn, TailorReq, TailorReqs, TailorReview, TailorRow, TailorRowOut, TailorWriteOut, TextList, UnsupportedOfIn,
   UserMsgIn,
@@ -662,12 +662,21 @@ async function runAudit(y: RunDocIn): StepOut {
 }
 
 /**
+ * 拆要求的返回结构。
+ *
+ * @returns JSON Schema。
+ */
+function planSchemaOf(): SchemaNode {
+  return { type: SCHEMA_OBJECT, additionalProperties: false, required: PLAN_TOP_FIELDS, properties: { reqs: arrayOf(strObjectOf(PLAN_FIELDS)) } }
+}
+
+/**
  * 全是字符串字段的对象结构。
  *
  * @param fields 字段名。
  * @returns JSON Schema。
  */
-function strObjectOf(fields: string[]): object {
+function strObjectOf(fields: TextList): SchemaNode {
   const properties: Record<string, object> = {}
   for (const f of fields) {
     properties[f] = { type: SCHEMA_STRING }
@@ -681,17 +690,8 @@ function strObjectOf(fields: string[]): object {
  * @param items 元素结构。
  * @returns JSON Schema。
  */
-function arrayOf(items: object): object {
+function arrayOf(items: SchemaNode): SchemaNode {
   return { type: SCHEMA_ARRAY, items }
-}
-
-/**
- * 拆要求的返回结构。
- *
- * @returns JSON Schema。
- */
-function planSchemaOf(): object {
-  return { type: SCHEMA_OBJECT, additionalProperties: false, required: PLAN_TOP_FIELDS, properties: { reqs: arrayOf(strObjectOf(PLAN_FIELDS)) } }
 }
 
 /**
@@ -699,7 +699,7 @@ function planSchemaOf(): object {
  *
  * @returns JSON Schema。
  */
-function resumeSchemaOf(): object {
+function resumeSchemaOf(): SchemaNode {
   const properties = {
     contact: strObjectOf(CONTACT_FIELDS),
     summary: { type: SCHEMA_STRING },
@@ -716,7 +716,7 @@ function resumeSchemaOf(): object {
  *
  * @returns JSON Schema。
  */
-function auditSchemaOf(): object {
+function auditSchemaOf(): SchemaNode {
   const item = {
     type: SCHEMA_OBJECT, additionalProperties: false, required: AUDIT_ITEM_FIELDS,
     properties: { id: { type: SCHEMA_INTEGER }, basis: { type: SCHEMA_BOOLEAN }, resume: { type: SCHEMA_STRING }, cover: { type: SCHEMA_STRING } },

@@ -12,8 +12,7 @@ import {
 } from './constants'
 import { filledFactsOf, drawPdf, needRunOf, reloadState, runSteps, saveCoverEdit, sendReview } from './functions'
 import type {
-  HlRect, Review, ReviewCells, ReviewFlowIn, ReviewPanel, ReviewPdfIn, ReviewPdfPanel, ReviewReq, SheetSize,
-  ToggledIn,
+  HlRect, Review, ReviewCells, ReviewFlowIn, ReviewPanel, ReviewPdfIn, ReviewPdfPanel, SheetSize, ToggledIn,
 } from './types'
 
 /**
@@ -96,7 +95,9 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
       return
     }
     setFillOpen(false)
-    void runSteps({ c: cells.current, start: { step: STEP_RESUME, facts: filled, both: true, regen: false, fill: true } })
+    void runSteps({
+      c: cells.current, start: { step: STEP_RESUME, facts: filled, both: true, regen: false, fill: true },
+    })
   }
   function factOf(id: number): React.ChangeEventHandler<HTMLTextAreaElement> {
     return function onFact(e: React.ChangeEvent<HTMLTextAreaElement>): void {

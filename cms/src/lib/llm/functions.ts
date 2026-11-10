@@ -32,7 +32,7 @@ import {
 } from './constants'
 import type {
   ProbeOut,
-  Alpha7In, Alpha7Out, AnthropicMessage, AnthropicParams, AnthropicSendOut, AnthropicStreamIn, AnthropicStreamParams, ArmOut,
+  Alpha7In, Alpha7Out, AnthropicMessage, AnthropicOutputConfig, AnthropicParams, AnthropicSendOut, AnthropicStreamIn, AnthropicStreamParams, ArmOut,
   BackendStreamIn, BackendStreamOut, CharCountIn, CharCountOut, CompleteBackendIn, CompleteBackendOut,
   CompleteFreeIn, CompleteFriendIn, CompleteTextIn, CompleteTextOut, ContentTagIn, ContentTagOut, EmptyTextOut, Fnv1aIn, Fnv1aOut,
   FriendChatIn, FriendChatMaybeOut, FriendChatOut, FriendLlmReadyOut, FriendResult, GatewayMessage,
@@ -1174,7 +1174,7 @@ function sendAnthropic(input: CompleteBackendIn): AnthropicSendOut {
  * @param x 调用入参。
  * @returns 输出配置。
  */
-function outputConfigOf(x: CompleteBackendIn): NonNullable<AnthropicParams['output_config']> {
+function outputConfigOf(x: CompleteBackendIn): AnthropicOutputConfig {
   if (x.anthropicSchema == null) {
     return ANTHROPIC_OUTPUT_CONFIG
   }

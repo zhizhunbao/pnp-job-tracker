@@ -342,6 +342,11 @@ export type NewNumbersIn = {
 export type TextList = string[]
 
 /**
+ * 一段 JSON Schema(交给模型的结构化输出定义;本域只拼不读,不展开它的格)。
+ */
+export type SchemaNode = object
+
+/**
  * 拼用户消息的入参。
  */
 export type UserMsgIn = {
