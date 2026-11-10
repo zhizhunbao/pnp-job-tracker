@@ -17,7 +17,7 @@ import { useLang } from '@/components/i18n'
 import { storedTitleOf, titleSubOf, useTitleTrans } from '@/components/jobtitle'
 import { isSenderName, pdfBadCharsOf } from '@/lib/apply'
 import {
-  ERR_NONE, EV_APPLY_NAV, EV_APPLY_OPEN, EV_APPLY_SENT, EV_PAGEHIDE, EV_POPSTATE, LOAD_BUSY, TEXT_NONE,
+  ERR_NONE, EV_APPLY_NAV, EV_APPLY_OPEN, EV_APPLY_SENT, EV_PAGEHIDE, EV_POPSTATE, LOAD_BUSY, STEP_DONE, TEXT_NONE,
 } from './constants'
 import {
   baseLetterOf, baseStepOf, isMemberOf, isOutOf, leftAfterOf, makeMode, MODE_BASE, MODE_TAILOR, outReasonOf,
@@ -36,7 +36,7 @@ import {
   makeRwUse, OPT_NONE_ITEM,
 } from './letter'
 import type {
-  NextPick, NextPicksPanel, ApplyGatePanel, Letter0In,
+  NextPick, NextPicksPanel, ApplyGatePanel, ApplyScreenIn, ApplyScreenPanel, Letter0In,
   ApplyCells, ApplyHostPanel, ApplyPageIn, ApplyPanel, ApplyResumeView, ApplyStartPanel, ApplyStartView,
   LetterOpt, MaybeRewrite, SentFn,
   PushOfferIn, PushOfferPanel,
@@ -133,6 +133,11 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
   }
   const quietSave = makeQuietSave({ cells })
   useSaveOnHide(quietSave)
+  const big = step !== STEP_DONE && resumes.length > 0 && mode === MODE_TAILOR
+  const onBig = x.onBig
+  useEffect(function reportBig() {
+    onBig(big)
+  }, [big, onBig])
   const cv = useCvOpen({ onDone: makeCvDone(cells) })
 
   const badChars = pdfBadCharsOf(letter)
@@ -200,6 +205,36 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
     onBaseBlur: quietSave,
     leftText: t(leftAfterOf(s).key, { n: leftAfterOf(s).n }),
   }
+}
+
+/**
+ * 投递框外壳的大小窗机器(2026-11-10 Frank「选择屏用小窗口;点按这个职位改写后同一个框放大成三屏的尺寸」):
+ * 首帧按起始态算(进来就落在三屏的直接开大窗,不先小后大),之后里面换屏时报上来。
+ *
+ * @param x 起始态与是不是直接落在基础简历投递屏。
+ * @returns 是不是小窗与报屏回调。
+ */
+export function useApplyScreen(x: ApplyScreenIn): ApplyScreenPanel {
+  const [big, setBig] = useState(function initBig(): boolean {
+    return bigAtStartOf(x)
+  })
+  return { small: big === false, onBig: setBig }
+}
+
+/**
+ * 进框那一刻是不是三屏对照:取到了起始态、有基础简历、没发出、开在改写屏。
+ *
+ * @param x 起始态与是不是直接落在基础简历投递屏。
+ * @returns 是不是三屏对照。
+ */
+function bigAtStartOf(x: ApplyScreenIn): boolean {
+  if (x.start == null) {
+    return false
+  }
+  if (x.start.resumes.length === 0 || startStepOf(x.start.status) === STEP_DONE) {
+    return false
+  }
+  return startModeOf({ start: x.start, base: x.base }) === MODE_TAILOR
 }
 
 /**

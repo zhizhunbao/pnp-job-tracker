@@ -33,11 +33,11 @@ import type { ApplyPageIn } from './types'
 /**
  * 三步本体(2026-10-10 起:当前这一步的分区卡 + 框底钮组;发出后摆已投递一步的成功条)。
  *
- * @param props 起始态、职位名灰字与发出后的回调。
+ * @param props 起始态、职位名灰字、发出后的回调与报屏回调。
  * @returns 当前步的分区卡与钮组;发出后成功条。
  */
-export function ApplyFlow({ start, titleSub, onSent, base }: ApplyPageIn) {
-  const p = useApply({ start, titleSub, onSent, base })
+export function ApplyFlow({ start, titleSub, onSent, base, onBig }: ApplyPageIn) {
+  const p = useApply({ start, titleSub, onSent, base, onBig })
   const ready = p.step !== STEP_DONE && p.resumes.length > 0
   return (
     <>

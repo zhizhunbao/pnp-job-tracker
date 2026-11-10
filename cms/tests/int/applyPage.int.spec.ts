@@ -78,7 +78,7 @@ async function flush() {
 
 // 照投递框外壳拼的探针件:取数(按职位 id)→ 投递区正文
 function Section({ jobId }: { jobId: number }) {
-  return createElement(ApplySection, { s: useApplyStart(jobId), base: false })
+  return createElement(ApplySection, { s: useApplyStart(jobId), base: false, onBig: () => {} })
 }
 
 async function mount(search: string) {

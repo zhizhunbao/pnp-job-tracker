@@ -16,9 +16,9 @@ import {
 } from './constants'
 import {
   overflowBoxOf,
-  downOf, fitKeyOf, frameInitOf, frameStyleOf, heightDroppedOf, isTopEsc, joinEsc, leaveEsc, makeDragStart,
+  downOf, fitKeyOf, fitWOf, frameInitOf, frameStyleOf, heightDroppedOf, isTopEsc, joinEsc, leaveEsc, makeDragStart,
   makeResizeStart, memoOf, minSizeOf,
-  openCountOf, peekCtxOf, peekMsgOf, sendPeek, sendPeekCtx, zOf,
+  openCountOf, peekCtxOf, peekMsgOf, sendPeek, sendPeekCtx, switchedBoxOf, zOf,
 } from './functions'
 import type {
   FrameBox, FrameIn, FrameOut, LayerStackOut, OverlayHandlers, PeekCtx, PeekInboxIn, PointerHandlerFn, ResizeEdge,
@@ -142,6 +142,8 @@ export function useLayerStack<L>(): LayerStackOut<L> {
  * 2026-09-23 Frank「这个带全屏的都去掉吧」:全屏钮撤,全屏态只剩窄屏强制那一种。
  * 2026-10-05 Frank「这个也是很多空白」:多收一个换屏键(fitKey)—— 键一变(访客向导换了一题),拉出来的高撤掉回到随内容,
  * 位置与宽不动;在渲染里比对上一次的键(React 文档「props 变了调整 state」的写法),不另起 effect,不多闪一帧。
+ * 2026-11-10 Frank「选择屏用小窗口」:窗口形多一档小窗(fitW)—— 宽取它、高随内容、照遮罩居中,不读不写记忆;
+ * 小窗与记忆尺寸来回切(投递框点「按这个职位改写」)时同一个框重新居中换尺寸,同样在渲染里比对。
  *
  * 外层也可以自己起一台交给 Modal(frame):职位描述弹框重新翻译后整块重挂内容,位置尺寸跟着外层走不丢
  * (原浮层壳的 useFloatPanel 就是外层起的,同一个理由)。
@@ -168,6 +170,12 @@ export function useFrame(x: FrameIn): FrameOut {
     setFit(fitKey)
     setBox(heightDroppedOf(box))
   }
+  const fitW = fitWOf({ win: x.win })
+  const [wasFitW, setWasFitW] = useState(fitW)
+  if (wasFitW !== fitW) {
+    setWasFitW(fitW)
+    setBox(switchedBoxOf({ win: x.win }))
+  }
   const win = x.win != null
   const live = narrow === false
   const canDrag = live && (win || x.draggable)
@@ -182,7 +190,7 @@ export function useFrame(x: FrameIn): FrameOut {
 
   return {
     narrow,
-    style: frameStyleOf({ narrow, box }),
+    style: frameStyleOf({ narrow, box, fitW }),
     onCardDown: downOf({ on: win === false, fn: onDrag }),
     onBarDown: downOf({ on: win, fn: onDrag }),
     startOf,

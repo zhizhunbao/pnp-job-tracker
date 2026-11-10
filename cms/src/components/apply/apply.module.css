@@ -430,6 +430,14 @@
   text-align: left;
 }
 
+/*
+ * 选择卡里的字放不下就折行(2026-11-10 Frank「这不是超出去了吗」:小窗里英文说明被通用钮的不折行裁掉);
+ * 加倍类压过通用钮的 nowrap。
+ */
+.choice.choice {
+  white-space: normal;
+}
+
 .choiceMain {
   border-color: var(--primary);
   background: #eff6ff;
@@ -482,15 +490,11 @@
     flex-direction: row;
   }
 
-  .baseGrid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-
+  /*
+   * 2026-11-10 Frank「选择屏和直接投基础简历屏用小窗口」:基础简历屏住进 720 宽的小窗,简历预览与求职信不再并排
+   * (并排每张只剩 330 宽,预览看不清),原先宽屏的两列与 720 高的信框随之撤;预览框的加高留着。
+   */
   .basePv .show {
     height: 760px;
-  }
-
-  .baseLetter {
-    min-height: 720px;
   }
 }

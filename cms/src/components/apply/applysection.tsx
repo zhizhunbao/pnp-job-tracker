@@ -26,10 +26,10 @@ import css from './apply.module.css'
 /**
  * 投递区。
  *
- * @param props 投递区取数面板。
+ * @param props 投递区取数面板、是不是直接落在基础简历投递屏与报屏回调。
  * @returns 四步本体,或原因 / 失败 / 已投递一行,或登录框,或加载占位;没带职位给空。
  */
-export function ApplySection({ s, base }: ApplySectionIn) {
+export function ApplySection({ s, base, onBig }: ApplySectionIn) {
   if (s.load === LOAD_NONE) {
     return null
   }
@@ -52,5 +52,5 @@ export function ApplySection({ s, base }: ApplySectionIn) {
   if (block !== TEXT_NONE) {
     return <div className={css.note}>{s.t(block)}</div>
   }
-  return <ApplyFlow start={s.start} titleSub={s.titleSub} onSent={announceSent} base={base} />
+  return <ApplyFlow start={s.start} titleSub={s.titleSub} onSent={announceSent} base={base} onBig={onBig} />
 }

@@ -414,6 +414,41 @@ export type ApplySentOut = {
 export type SentFn = (x: ApplySentOut) => void
 
 /**
+ * 报给投递框外壳「现在是不是三屏对照」的回调(2026-11-10:三屏用记忆尺寸的大窗,其余各屏用小窗)。
+ */
+export type BigFn = (big: boolean) => void
+
+/**
+ * 投递框外壳的大小窗机器(useApplyScreen 交出)。
+ */
+export type ApplyScreenPanel = {
+  /**
+   * 现在是不是小窗(三屏对照以外的各屏)。
+   */
+  small: boolean
+
+  /**
+   * 里面换屏时报上来。
+   */
+  onBig: BigFn
+}
+
+/**
+ * useApplyScreen 的入参。
+ */
+export type ApplyScreenIn = {
+  /**
+   * 起始态;null = 还没取到或取不到(小窗)。
+   */
+  start: ApplyStartView | null
+
+  /**
+   * 是不是直接落在基础简历投递屏。
+   */
+  base: boolean
+}
+
+/**
  * ApplyFlow(四步本体)的 props;useApply 同收这一份。
  */
 export type ApplyPageIn = {
@@ -437,6 +472,11 @@ export type ApplyPageIn = {
    * 是不是从升级框点「不改写,直接投基础简历」进来的(进来就落在基础简历投递屏)。
    */
   base: boolean
+
+  /**
+   * 换屏时报给外壳:现在是不是三屏对照(外壳据此切大小窗)。
+   */
+  onBig: BigFn
 }
 
 /**
@@ -453,6 +493,11 @@ export type ApplySectionIn = {
    * 是不是直接落在基础简历投递屏。
    */
   base: boolean
+
+  /**
+   * 换屏时报给外壳:现在是不是三屏对照。
+   */
+  onBig: BigFn
 }
 
 /**

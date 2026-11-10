@@ -20,13 +20,14 @@
  * style 白名单里的「拖拽 transform」随之换成「钉住的位置与尺寸」;关闭钮与窗口钮一律 ModalBtn,把手一律 ResizeHandles。
  * 2026-10-05 Frank「左边那个按钮 和 右边的 关闭 按钮不对称啊」:普通弹框多一个左上角返回钮位(back,ModalBack),
  * 与右上角关闭钮同一颗 ModalBtn、左右镜像;访客向导的返回钮从向导顶行收进来。
+ * 2026-11-10 Frank「选择屏用小窗口」:窗口形多一档小窗(win.fitW:宽取它、高随内容、居中、不读不写记忆),给与不给来回切时同框换尺寸。
  * 2026-10-09 N 批:没给 z 的弹框不再一律 50,按打开先后往上叠(useStackZ)—— 投递框、职位框、公司框都挂全站骨架,后开的在上。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
 import { SIZE_DEFAULT } from './constants'
-import { bodyClsOf, clsOf, frameOf, stopClick } from './functions'
+import { bodyClsOf, clsOf, fitWOf, frameOf, stopClick } from './functions'
 import { useEscClose, useFrame, useOverlayClose, useStackZ } from './hooks'
 import { ModalActs } from './modalacts'
 import { ModalBack } from './modalback'
@@ -64,7 +65,7 @@ export function Modal({
   const own = useFrame({ win, draggable, edgeResize, fitKey })
   const f = frameOf({ ext: frame, own })
   const narrow = f.narrow
-  const cls = clsOf({ narrow, size, draggable, pad, tall, win: win != null })
+  const cls = clsOf({ narrow, size, draggable, pad, tall, win: win != null, fit: fitWOf({ win }) != null })
 
   return (
     // eslint-disable-next-line react/forbid-dom-props -- 层级是调用方传的运行时数据(有 z+10 算术叠层)

@@ -32,6 +32,12 @@ export type FrameSize = {
    * 没有记忆时的高(px)。
    */
   h: number
+
+  /**
+   * 小窗宽(px;2026-11-10 Frank「选择屏用小窗口」):给了 = 这一屏按内容定尺寸 —— 宽取它、高随内容、照遮罩居中,
+   * 不读也不写尺寸记忆;缺席 = 照记忆尺寸(没有记忆用 w / h)。给与不给来回切时,同一个框重新居中换尺寸。
+   */
+  fitW?: number
 }
 
 /**
@@ -62,6 +68,12 @@ export type ModalWin = {
    * 正文走职位描述档(底内衬归零、纵向弹性列,投递栏贴底;字号行高照 JD 正文)。
    */
   jd: boolean
+
+  /**
+   * 小窗宽(px;2026-11-10 Frank「选择屏用小窗口」):给了 = 这一屏按内容定尺寸 —— 宽取它、高随内容、照遮罩居中,
+   * 不读也不写尺寸记忆;缺席 = 照记忆尺寸(没有记忆用 w / h)。给与不给来回切时,同一个框重新居中换尺寸。
+   */
+  fitW?: number
 }
 
 /**
@@ -444,6 +456,11 @@ export type ClsIn = {
    * 是否窗口形。
    */
   win: boolean
+
+  /**
+   * 窗口形是不是小窗档(按内容定尺寸,见 FrameSize.fitW)。
+   */
+  fit: boolean
 }
 
 /**
@@ -474,6 +491,11 @@ export type FrameStyleIn = {
    * 钉住的位置与尺寸;null = 还没动过,照遮罩居中。
    */
   box: FrameBox | null
+
+  /**
+   * 小窗宽(px);null = 不是小窗档。
+   */
+  fitW: number | null
 }
 
 /**

@@ -646,6 +646,11 @@ export const UPSELL_KEY = 'tr.errPro'
 export const APPLY_MODAL_PREF_V2 = 'adv_modal_pref_v2'
 
 /**
+ * 投递框小窗的宽(px;2026-11-10 Frank「选择屏用小窗口,约 720 宽」):三屏对照以外的各屏都用它,高随内容。
+ */
+export const APPLY_FIT_W = 720
+
+/**
  * ARIA 角色:状态播报(开框前那块加载)。
  */
 export const ROLE_STATUS = 'status'

@@ -160,6 +160,16 @@
 }
 
 /*
+ * 窗口形的小窗档(2026-11-10 Frank「选择屏用小窗口」):不钉在视口上,照遮罩居中;宽由 style 给,
+ * 高随内容、上限 85vh(超了正文内滚)。拖过之后 style 里的 position: fixed 压过这里。
+ */
+.winFit {
+  position: relative;
+  max-width: 100%;
+  max-height: 85vh;
+}
+
+/*
  * 窗口形的全屏态(窄屏强制走这一档):贴四边、去圆角。
  */
 .full {

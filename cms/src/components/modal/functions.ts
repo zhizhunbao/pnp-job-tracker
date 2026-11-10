@@ -58,6 +58,8 @@ export function clsOf(x: ClsIn): ClsOut {
     const card = [css.card, css.win]
     if (x.narrow) {
       card.push(css.full)
+    } else if (x.fit) {
+      card.push(css.winFit)
     }
     return { card: card.join(CLS_SEP), overlay: cssOf(css.overlay) }
   }
@@ -134,17 +136,26 @@ export function heightDroppedOf(box: FrameBox | null): FrameBox | null {
 /**
  * 白卡的运行时样式:拖过 / 拉过 / 窗口形才有值 —— 钉在视口上的位置与尺寸是每帧连续变化的像素,
  * 类是有限枚举装不下它。没动过的普通弹框与窄屏全屏样式全在类里,返回空对象。
+ * 2026-11-10 小窗档:没动过只给宽(高随内容、位置照遮罩居中);拖过没拉过的宽仍用小窗宽。
  *
- * @param x 窄屏态与钉住的位置尺寸。
+ * @param x 窄屏态、钉住的位置尺寸与小窗宽。
  * @returns 白卡的 style。
  */
 export function frameStyleOf(x: FrameStyleIn): React.CSSProperties {
-  if (x.narrow || x.box == null) {
+  if (x.narrow) {
     return {}
+  }
+  if (x.box == null) {
+    if (x.fitW == null) {
+      return {}
+    }
+    return { width: x.fitW }
   }
   const style: React.CSSProperties = { position: POS_FIXED, left: x.box.x, top: x.box.y, margin: 0 }
   if (x.box.w != null) {
     style.width = x.box.w
+  } else if (x.fitW != null) {
+    style.width = x.fitW
   }
   if (x.box.h != null) {
     style.height = x.box.h
@@ -336,15 +347,29 @@ export function savePrefOf(x: SavePrefIn): void {
 }
 
 /**
+ * 小窗宽(缺席折成 null;2026-11-10 立,见 FrameSize.fitW)。
+ *
+ * @param x 弹框形态。
+ * @returns 小窗宽;null = 不是小窗档(普通弹框也是 null)。
+ */
+export function fitWOf(x: FrameInitIn): number | null {
+  if (x.win == null || x.win.fitW == null) {
+    return null
+  }
+  return x.win.fitW
+}
+
+/**
  * 首帧的位置与尺寸:窗口形直接按记忆(读不到照旧默认尺寸)居中钉住 —— 2026-09-21 Frank「会出现 先一个小框，然后在放大」:
  * 记忆原先在挂载后的 effect 里补,先按默认尺寸画一帧再跳;弹框都是用户点了才开、只在浏览器里画,首帧就按记忆算,那一跳没了。
  * 服务端给固定初值。普通弹框给 null(照遮罩居中,动过才钉)。
+ * 2026-11-10:窗口形的小窗档同样给 null,不读记忆(宽由 frameStyleOf 给,高随内容)。
  *
  * @param x 弹框形态。
- * @returns 首帧的位置与尺寸;null = 普通弹框还没动过。
+ * @returns 首帧的位置与尺寸;null = 普通弹框或小窗档还没动过。
  */
 export function frameInitOf(x: FrameInitIn): FrameBox | null {
-  if (x.win == null) {
+  if (x.win == null || x.win.fitW != null) {
     return null
   }
   const p = readPrefOf(x.win.memo)
@@ -377,6 +402,22 @@ export function overflowBoxOf(box: FrameBox | null): FrameBox | null {
     w: Math.min(box.w, window.innerWidth - VIEWPORT_GAP),
     h: Math.min(box.h, window.innerHeight - VIEWPORT_GAP),
   })
+}
+
+/**
+ * 小窗档与记忆尺寸来回切时白卡的位置尺寸(2026-11-10):切到小窗给 null(回到照遮罩居中、高随内容);
+ * 切回大窗按记忆尺寸重新居中,比视口大就收进屏内。只在浏览器里调(用户点了才切)。
+ *
+ * @param x 切过去之后的弹框形态。
+ * @returns 位置与尺寸;null = 小窗档。
+ */
+export function switchedBoxOf(x: FrameInitIn): FrameBox | null {
+  const next = frameInitOf(x)
+  const fit = overflowBoxOf(next)
+  if (fit != null) {
+    return fit
+  }
+  return next
 }
 
 /**
@@ -525,12 +566,13 @@ export function downOf(x: DownPickIn): PointerHandlerFn {
 
 /**
  * 记忆键:窗口形用它自己的,普通弹框不记(空串)。
+ * 2026-11-10:小窗档也不记 —— 在小窗里拉出来的尺寸不许盖掉职位 / 公司弹框共用的那份记忆。
  *
  * @param x 弹框形态。
  * @returns 记忆键。
  */
 export function memoOf(x: FrameIn): string {
-  if (x.win == null) {
+  if (x.win == null || x.win.fitW != null) {
     return TEXT_NONE
   }
   return x.win.memo
