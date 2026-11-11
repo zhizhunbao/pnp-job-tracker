@@ -16,6 +16,8 @@
  * 2026-10-09 N6b 批:行里岗名 N6 起由 name 桶 JobName 自开弹框,点一行的回调 onOpenJob 撤。
  * 2026-10-11 Frank「右边加个 隐藏翻译的按钮」:卡标题行最右挂「隐藏翻译 / 显示翻译」小字(形照 JD 的「查看原帖」),中 / 韩界面才出;关掉时两组的职位名、地点灰字都不出。
  * 2026-10-13 Frank「这个按钮放到 查看原帖 后面」:钮挪到职位标题行(JdOrigLink);同日改判只管正文译文,本卡灰字恒出。
+ * 2026-11-11 Frank「这个改成两个卡片吧」:同公司、同省同职业各一张白卡,卡头 = 组名 + 总数,右端各挂更新时间;
+ * 组内小标题与两组之间那条分隔线撤。两组都没有时仍是一张「相关职位」卡带兜底链。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -23,7 +25,7 @@
 import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Updated } from '@/components/time'
-import { CARD_MD_CLS, REL_GROUP_CO, REL_GROUP_OCC } from './constants'
+import { CARD_MD_CLS, PAREN_L, PAREN_R, REL_GROUP_CO, REL_GROUP_OCC } from './constants'
 import { relPageUrlOf, showFallbackOf, trackRelated } from './functions'
 import { RelatedGroup } from './relatedgroup'
 import type { JobRelatedIn } from './types'
@@ -33,38 +35,53 @@ import css from './jobs.module.css'
  * 渲染相似职位卡。
  *
  * @param props 卡标题、取词函数、更新时刻、两组小标题、相似职位、本岗号、兜底链、两个埋点来源格与界面语言。
- * @returns 一张白卡。
+ * @returns 同公司、同省同职业各一张白卡(有行才出);都没有时一张带兜底链的白卡。
  */
 export function JobRelated({
   head, t, updatedAt, sameCoLabel, sameOccLabel, related, jobId, fallbackHref, fallbackText, from, fromNone, lang,
 }: JobRelatedIn) {
   return (
-    <div className={CARD_MD_CLS}>
-      <div className={cssOf(css.relHead)}>
-        {head}
-        <Updated iso={updatedAt} t={t} />
-      </div>
+    <>
       {related.sameCompany.length > 0 && (
-        <div onClick={trackRelated(from)}>
+        <div className={CARD_MD_CLS} onClick={trackRelated(from)}>
+          <div className={cssOf(css.relHead)}>
+            <span>
+              {sameCoLabel}
+              {related.sameCompanyTotal > 0 && <span> {PAREN_L}{related.sameCompanyTotal}{PAREN_R}</span>}
+            </span>
+            <Updated iso={updatedAt} t={t} />
+          </div>
           <RelatedGroup key={relPageUrlOf({ jobId, group: REL_GROUP_CO })}
-            label={sameCoLabel} total={related.sameCompanyTotal} rows={related.sameCompany}
+            total={related.sameCompanyTotal} rows={related.sameCompany}
             url={relPageUrlOf({ jobId, group: REL_GROUP_CO })} t={t} lang={lang} trans />
         </div>
       )}
-      {related.sameCompany.length > 0 && related.sameOcc.length > 0 && <div className={cssOf(css.relSep)} />}
       {related.sameOcc.length > 0 && (
-        <div onClick={trackRelated(from)}>
+        <div className={CARD_MD_CLS} onClick={trackRelated(from)}>
+          <div className={cssOf(css.relHead)}>
+            <span>
+              {sameOccLabel}
+              {related.sameOccTotal > 0 && <span> {PAREN_L}{related.sameOccTotal}{PAREN_R}</span>}
+            </span>
+            <Updated iso={updatedAt} t={t} />
+          </div>
           <RelatedGroup key={relPageUrlOf({ jobId, group: REL_GROUP_OCC })}
-            label={sameOccLabel} total={related.sameOccTotal} rows={related.sameOcc}
+            total={related.sameOccTotal} rows={related.sameOcc}
             url={relPageUrlOf({ jobId, group: REL_GROUP_OCC })} t={t} lang={lang} trans />
         </div>
       )}
       {showFallbackOf({ related, fallbackHref }) && (
-        <LinkButton href={fallbackHref} onClick={trackRelated(fromNone)}
-          className={cssOf(css.relFallback)}>
-          {fallbackText}
-        </LinkButton>
+        <div className={CARD_MD_CLS}>
+          <div className={cssOf(css.relHead)}>
+            {head}
+            <Updated iso={updatedAt} t={t} />
+          </div>
+          <LinkButton href={fallbackHref} onClick={trackRelated(fromNone)}
+            className={cssOf(css.relFallback)}>
+            {fallbackText}
+          </LinkButton>
+        </div>
       )}
-    </div>
+    </>
   )
 }

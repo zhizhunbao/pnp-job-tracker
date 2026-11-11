@@ -15,31 +15,26 @@
  * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:两组都按页取(首屏只带露出来的几条,同公司组也接接口),组底两枚钮换成 pager 桶 FoldLine
  * (展开 20 个 → 再展开 20 个 → 展开其余 N 个 → 收起),取页机走 usePagedFold;useRelatedPages 那一套撤。
  * 2026-10-09 N6b 批:行里岗名 N6 起由 name 桶 JobName 自开弹框,点一行的回调 onOpenJob 撤。
+ * 2026-11-11 Frank「这个改成两个卡片吧」:一组一张卡,组名与总数挪到卡头(JobRelated),本件不再出小标题。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { JobMiniList } from '@/components/companies/jobminilist'
-import { cssOf } from '@/components/css'
 import { FoldLine, usePagedFold } from '@/components/pager'
-import { K_REL_UNIT, PAREN_L, PAREN_R } from './constants'
+import { K_REL_UNIT } from './constants'
 import type { RelatedGroupIn, RelatedJobFact } from './types'
-import css from './jobs.module.css'
 
 /**
  * 渲染相似职位的一组。
  *
- * @param props 组小标题、总数、首屏这几行、取一页的接口地址、取词函数与界面语言。
- * @returns 小标题 + 若干行 + 展开 / 收起钮。
+ * @param props 总数、首屏这几行、取一页的接口地址、取词函数与界面语言。
+ * @returns 若干行 + 展开 / 收起钮。
  */
-export function RelatedGroup({ label, total, rows, url, t, lang, trans }: RelatedGroupIn) {
+export function RelatedGroup({ total, rows, url, t, lang, trans }: RelatedGroupIn) {
   const paged = usePagedFold<RelatedJobFact>({ top: rows, total, url, skip: rows.length })
   return (
     <div>
-      <div className={cssOf(css.relGroup)}>
-        {label}
-        {total > 0 && <span> {PAREN_L}{total}{PAREN_R}</span>}
-      </div>
       <JobMiniList rows={paged.rows} lang={lang} trans={trans} />
       <FoldLine t={t}
         unit={t(K_REL_UNIT)}

@@ -1777,11 +1777,6 @@ export type RelPageUrlIn = {
  */
 export type RelatedGroupIn = {
   /**
-   * 组小标题。
-   */
-  label: string
-
-  /**
    * 这一组的行。
    */
   rows: RelatedJob[]
