@@ -848,7 +848,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'sj.st.wish': '지원 예정', 'sj.st.applied': '지원함', 'sj.st.interview': '면접 중', 'sj.st.offer': '오퍼 받음',
   'sj.save': '☆ 저장', 'sj.saved': '★ 저장됨', 'sj.view': '공고 목록에서 보기', 'sj.del': '삭제', 'sj.weekly': '주간 이메일 요약(저장 공고, 언제든 구독 취소)',
   'fav.title': '내 저장 공고',
-  'mj.appliedAt': '지원일', 'mj.open': '열기', 'mj.closed': '마감', 'mj.del': '삭제', 'mj.more': '더 보기', 'mj.delAsk': '삭제할까요?', 'mj.cancel': '취소', 'mj.col.chan': '이민 경로',
+  'mj.appliedAt': '지원일', 'mj.open': '열기', 'mj.closed': '마감', 'mj.del': '삭제', 'mj.more': '더 보기', 'mj.delAsk': '삭제할까요?', 'mj.cancel': '취소',
   'mj.seeAll': '비슷한 채용 모두 보기',
   'mj.col.place': '위치',
   'mj.live': '게시 중', 'mj.col.stage': '지원 상태', 'mj.col.listing': '공고 상태',

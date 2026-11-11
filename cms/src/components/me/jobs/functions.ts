@@ -15,10 +15,9 @@ import { hoursNameOf, placeHrefOf, placeSubOf, termNameOf } from '@/components/n
 import { log, PROFILE_LOG } from '@/lib/log'
 import { ymd } from '@/lib/time'
 import { ActCell } from './actcell'
-import { ChanCell } from './chancell'
 import { CompanyCell } from './companycell'
 import {
-  ACT_APPLY, ACT_CONT, ACT_DEL, ACT_OPEN, CLOSED_TAG, COL_ACT, COL_APPLIED_ON, COL_CHAN, COL_COMPANY, COL_DEADLINE,
+  ACT_APPLY, ACT_CONT, ACT_DEL, ACT_OPEN, CLOSED_TAG, COL_ACT, COL_APPLIED_ON, COL_COMPANY, COL_DEADLINE,
   COL_HOURS, COL_PAY, COL_PLACE, COL_POSTED, COL_SAVED_ON, COL_STATUS, COL_TERM, COL_TITLE, CRED_INCLUDE,
   DUE_KEY, JOB_HREF_HEAD, KIND_APPLIED, KIND_SAVED, LANG_EN, LANG_KO, LANG_ZH, MD_FROM,
   OPEN_KIND, PF_ERR_EMPTY, PLACE_SEP, PRIMARY_KIND, STAGES, STAGE_ALL, STAGE_FILTERS,
@@ -33,7 +32,7 @@ import { MedCell } from './medcell'
 import { PayCell } from './paycell'
 import { PlaceCell } from './placecell'
 import { ResumeCell } from './resumecell'
-import { chanNameOf, wageViewOf } from './recommend'
+import { wageViewOf } from './recommend'
 import { TagsCell } from './tagscell'
 import { TermCell } from './termcell'
 import { VsCell } from './vscell'
@@ -136,8 +135,6 @@ export function listRowOf(x: CellRowIn): ListRow {
       titles: x.titles,
       lang: x.lang,
     }),
-    chanEn: TEXT_NONE,
-    chanSub: TEXT_NONE,
     company: it.company,
     companyZh: coAliasFor({ own: it.companyZh, name: it.company, cos: x.cos, want: LANG_ZH, lang: x.lang }),
     companyKo: coAliasFor({ own: it.companyKo, name: it.company, cos: x.cos, want: LANG_KO, lang: x.lang }),
@@ -437,14 +434,6 @@ export function pickRowsOf(x: PickRowsIn): ListRow[] {
  */
 export function pickRowOf(x: PickRowIn): ListRow {
   const it = x.item
-  const chan = chanNameOf({
-    province: it.province,
-    pnpStream: it.pnpStream,
-    pnpEligible: it.pnpEligible,
-    provDefault: it.provDefault,
-    lang: x.lang,
-    t: x.t,
-  })
   const pd = placeDueOf({ city: it.city, province: it.province, validThrough: it.validThrough, t: x.t })
   return {
     key: String(it.id),
@@ -457,8 +446,6 @@ export function pickRowOf(x: PickRowIn): ListRow {
       titles: x.titles,
       lang: x.lang,
     }),
-    chanEn: chan.en,
-    chanSub: chan.sub,
     company: it.company,
     companyZh: coAliasFor({ own: it.companyZh, name: it.company, cos: x.cos, want: LANG_ZH, lang: x.lang }),
     companyKo: coAliasFor({ own: it.companyKo, name: it.company, cos: x.cos, want: LANG_KO, lang: x.lang }),
@@ -492,6 +479,7 @@ export function pickRowOf(x: PickRowIn): ListRow {
  * 2026-11-07 Frank「现在都按 Azure 的来」:「地址」列(完整地址一行)改「地点」列(「市, 省码」+ 译名灰字,同一个地图链)。
  * 2026-11-09 Frank「推荐原因删掉」「这部分加进 table 吧」:推荐原因列撤,薪资后面加职位板的「中位时薪」「vs 中位」两列(列名用职位板同一份词条;同日「这个地方都显示 时薪吧」,中位不出年薪)。
  * 2026-11-11 任务书第 47 条:补回「发布日期」列(截止日期前面)。
+ * 同日 Frank 看着满列「Accelerated Tech Pathway」说「删掉」:通道列撤(连同通道两行名的算法、格子与词条)。
  *
  * @param x 取词函数。
  * @returns 列。
@@ -506,7 +494,6 @@ export function pickColsOf(x: ColsIn): MjCol<ListRow>[] {
     { key: COL_VS, label: x.t('col.vsMedian'), render: VsCell, nowrap: true },
     { key: COL_POSTED, label: x.t('mj.col.posted'), render: postedOf, nowrap: true },
     { key: COL_DEADLINE, label: x.t('mj.col.deadline'), render: deadlineOf, nowrap: true },
-    { key: COL_CHAN, label: x.t('mj.col.chan'), render: ChanCell },
     { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true },
   ]
 }

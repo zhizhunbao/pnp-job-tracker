@@ -211,56 +211,6 @@ export type LoadPicksIn = {
 }
 
 /**
- * 通道两行名(chanNameOf)的入参。
- */
-export type ChanNameIn = {
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 具名省提名通道。
-   */
-  pnpStream: string
-
-  /**
-   * 能走省提名。
-   */
-  pnpEligible: boolean
-
-  /**
-   * 本省有省默认通道。
-   */
-  provDefault: boolean
-
-  /**
-   * 界面语。
-   */
-  lang: Lang
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
-/**
- * 通道两行名。
- */
-export type ChanName = {
-  /**
-   * 英文名(不走省提名 = 空串)。
-   */
-  en: string
-
-  /**
-   * 界面语名(英文界面、与英文同字或没有 = 空串)。
-   */
-  sub: string
-}
-
-/**
  * 中位时薪与 vs 中位两格(wageViewOf)的入参。
  */
 export type WageViewIn = {

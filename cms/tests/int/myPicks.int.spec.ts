@@ -330,7 +330,8 @@ describe('今日推荐卡', () => {
     expect(el.textContent).toContain('2026-11-09')   // 截止日期列
     expect(el.textContent).not.toContain('Part-time')   // 2026-10-12 推荐表不出工时 / 雇佣期两列
     expect(el.textContent).not.toContain('Seasonal')
-    expect(el.textContent).toContain('pnp.gen.ON')   // 通道列:可提名 + 本省有省默认通道 = 那条省默认通道(取词桩原样回键)
+    expect(el.textContent).not.toContain('pnp.gen.ON')   // 2026-11-11 Frank「删掉」:通道列撤
+    expect(el.textContent).not.toContain('mj.col.chan')
     // 2026-11-09 Frank「推荐原因删掉」「这部分加进 table 吧」:推荐原因列撤,换职位板的「中位时薪」「vs 中位」两列
     expect(el.textContent).not.toContain('mj.why.')
     expect(el.textContent).not.toContain('mj.col.why')

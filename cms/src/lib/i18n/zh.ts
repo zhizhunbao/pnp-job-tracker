@@ -923,7 +923,7 @@ export const jobsZh = {
   'sj.save': '☆ 收藏', 'sj.saved': '★ 已收藏', 'sj.view': '在职位板查看', 'sj.del': '移除', 'sj.weekly': '每周邮件摘要(收藏岗动态,可随时退订)',
   'fav.title': '我的收藏',
   // 2026-10-06 「我的求职」「我的收藏」改成 myjobs 桶的两张表;sj.note、fav.note 随旧清单撤
-  'mj.appliedAt': '投递日期', 'mj.open': '打开', 'mj.closed': '已下架', 'mj.del': '删除', 'mj.more': '更多操作', 'mj.delAsk': '确认删除?', 'mj.cancel': '取消', 'mj.col.chan': '通道',
+  'mj.appliedAt': '投递日期', 'mj.open': '打开', 'mj.closed': '已下架', 'mj.del': '删除', 'mj.more': '更多操作', 'mj.delAsk': '确认删除?', 'mj.cancel': '取消',
   // 2026-11-11 任务书第 47 条:今日推荐每天 10 条全免费,mj.lockLine、mj.unlock、mj.swap 随之删;表下加去职位板的链接
   'mj.seeAll': '看全部同类职位',
   'mj.col.place': '地点',

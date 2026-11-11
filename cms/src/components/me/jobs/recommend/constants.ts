@@ -14,11 +14,6 @@
 export const TEXT_NONE = ''
 
 /**
- * 英文界面语(通道名英文行取词用)。
- */
-export const LANG_EN = 'en'
-
-/**
  * 今日推荐接口(2026-10-10 批 2;后接 `?prov=` 浏览器按时区预选的省码)。
  */
 export const URL_PICKS = '/api/myjobs/picks?prov='

@@ -7,5 +7,5 @@
  * @time 2026-11-07 18:00:00
  */
 export {
-  boardHrefOf, chanNameOf, makeLoadPicks, picksOf, titledPicksOf, wageViewOf,
+  boardHrefOf, makeLoadPicks, picksOf, titledPicksOf, wageViewOf,
 } from './functions'

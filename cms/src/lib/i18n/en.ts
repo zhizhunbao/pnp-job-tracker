@@ -883,7 +883,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'sj.st.wish': 'To apply', 'sj.st.applied': 'Applied', 'sj.st.interview': 'Interviewing', 'sj.st.offer': 'Offer',
   'sj.save': '☆ Save', 'sj.saved': '★ Saved', 'sj.view': 'View on board', 'sj.del': 'Remove', 'sj.weekly': 'Weekly email digest (saved jobs; unsubscribe anytime)',
   'fav.title': 'My saved jobs',
-  'mj.appliedAt': 'Applied', 'mj.open': 'Open', 'mj.closed': 'Closed', 'mj.del': 'Delete', 'mj.more': 'More actions', 'mj.delAsk': 'Delete this?', 'mj.cancel': 'Cancel', 'mj.col.chan': 'Pathway',
+  'mj.appliedAt': 'Applied', 'mj.open': 'Open', 'mj.closed': 'Closed', 'mj.del': 'Delete', 'mj.more': 'More actions', 'mj.delAsk': 'Delete this?', 'mj.cancel': 'Cancel',
   'mj.seeAll': 'See all similar jobs',
   'mj.col.place': 'Location',
   'mj.live': 'Open', 'mj.col.stage': 'Application', 'mj.col.listing': 'Listing',

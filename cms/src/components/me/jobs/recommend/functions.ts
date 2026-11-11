@@ -12,15 +12,13 @@
  * @author Frank
  * @time 2026-11-07 18:00:00
  */
-import { pnpChannelKeyOf, pnpNameOf } from '@/components/pnp'
-import { makeT } from '@/lib/i18n'
 import { homeProvinceOf } from '@/lib/location'
 import {
-  CRED_INCLUDE, LANG_EN, NOC_SEP, PARAM_NOC, TEXT_NONE, URL_BOARD_PROV, URL_PICKS,
+  CRED_INCLUDE, NOC_SEP, PARAM_NOC, TEXT_NONE, URL_BOARD_PROV, URL_PICKS,
   URL_PICKS_FRESH, MED_HEAD, MED_TAIL, VS_PCT, VS_PLUS,
 } from './constants'
 import type {
-  ChanName, ChanNameIn, LoadPicksIn, PickItem, PicksFact, PicksRespJson,
+  LoadPicksIn, PickItem, PicksFact, PicksRespJson,
   TitledItem, WageView, WageViewIn,
 } from './types'
 
@@ -129,38 +127,6 @@ export function vsTextOf(n: number | null): string {
     return VS_PLUS + String(n) + VS_PCT
   }
   return String(n) + VS_PCT
-}
-
-/**
- * 通道两行名(2026-10-12 通道列):照职位板省提名格同一判据(pnp 桶 pnpChannelKeyOf:具名通道,否则可提名且本省有省默认通道
- * 就是那条省默认通道),英文名黑字、界面语名灰字;不走省提名两格都空。
- * 同日 Frank「明确是关闭了的吗」→ 查官网后改「改推正在抽签的省」(SQL.MYJOBS_PICKS):没在抽的省的岗不再推。
- *
- * @param x 省码、通道三格、界面语与取词函数。
- * @returns 两行名。
- */
-export function chanNameOf(x: ChanNameIn): ChanName {
-  let defaults: string[] = []
-  if (x.provDefault) {
-    defaults = [x.province]
-  }
-  const job = {
-    province: x.province,
-    noc: TEXT_NONE,
-    pnpStream: x.pnpStream,
-    pnpBlocks: [],
-    pnpEligible: x.pnpEligible,
-  }
-  const key = pnpChannelKeyOf({ job, defaults })
-  if (key === TEXT_NONE) {
-    return { en: TEXT_NONE, sub: TEXT_NONE }
-  }
-  const en = pnpNameOf({ key, t: makeT(LANG_EN) })
-  const local = pnpNameOf({ key, t: x.t })
-  if (x.lang === LANG_EN || local === en) {
-    return { en, sub: TEXT_NONE }
-  }
-  return { en, sub: local }
 }
 
 /**

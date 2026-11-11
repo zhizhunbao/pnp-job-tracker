@@ -926,16 +926,6 @@ export type ListRow = {
   titleSub: string
 
   /**
-   * 通道英文名(只有今日推荐有;不走省提名 = 空串)。
-   */
-  chanEn: string
-
-  /**
-   * 通道界面语名(灰字)。
-   */
-  chanSub: string
-
-  /**
    * 公司英文名。
    */
   company: string

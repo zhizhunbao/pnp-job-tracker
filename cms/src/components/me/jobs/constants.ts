@@ -299,11 +299,6 @@ export const COL_POSTED = 'posted'
 export const COL_DEADLINE = 'deadline'
 
 /**
- * 列身份:通道(2026-10-12 Frank「这个为什么推荐?也没有吸引力?要不改成通道列吧」)。
- */
-export const COL_CHAN = 'chan'
-
-/**
  * 列身份:中位时薪(2026-11-09 Frank「这部分加进 table 吧」,同职位板那一列)。
  */
 export const COL_MED = 'med'
