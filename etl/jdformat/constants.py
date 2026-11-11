@@ -130,17 +130,29 @@ GEN_TRIES = 2
 PROMPT_HEAD = """You are reorganizing a job posting into fixed sections. STRICT RULES:
 - Only move and lightly condense sentences from the posting. NEVER invent facts, numbers, requirements or benefits not present in it.
 - Output plain text with EXACTLY these section markers, each on its own line: [ROLE] [REQS] [PAY] [WORKHOURS] [APPLY]
-- Under [ROLE]: 1-2 sentences on what the job does, then up to 6 "- " bullet lines condensing the key responsibilities (skip the bullets if the posting lists none).
-- Under [REQS]: bullet lines starting with "- ", required qualifications first; only if the posting explicitly marks some items as preferred, an asset or nice-to-have, end with a line exactly "- Preferred:" followed by those bullets. Never write "- Preferred:" with nothing under it or with a placeholder such as "None", and never repeat under it an item already listed above.
-- Under [PAY]: bullet lines for pay figures and notable benefits (vacation, retirement plans, insurance). Under [WORKHOURS]: bullet lines for schedule, employment type, location type.
-- Under [APPLY]: 1 line how to apply. If the posting says nothing for a section, write exactly: (not stated)
-- Keep the posting's original language. No markdown besides "- " bullets. No section other than the five.
+- Under [ROLE]: 1-2 sentences on what the job does, then up to 8 "- " bullet lines condensing the key responsibilities, always keeping any supervising, coaching or training duty (skip the bullets if the posting lists none).
+- Under [REQS]: bullet lines starting with "- ", required qualifications first. Never drop these when the posting states them, each as its own bullet: language of work, education, years of experience, licences and certificates, areas of specialization, own tools or equipment, security checks, travel or transportation needs, physical work conditions. After them, only if the posting explicitly marks some items as preferred, an asset or nice-to-have, end with a line exactly "- Preferred:" followed by those bullets. Never write "- Preferred:" with nothing under it or with a placeholder such as "None", and never repeat under it an item already listed above. If the posting says the requirements may be relaxed (for example an equivalent combination of training and experience is accepted) or that an eligibility list will be kept for future vacancies, add each as one bullet among the required bullets, before any "- Preferred:" line.
+- Under [PAY]: bullet lines for pay figures and notable benefits (vacation, paid or unpaid leave, retirement plans, insurance, union representation). Under [WORKHOURS]: bullet lines for schedule, employment type, location type and, when the posting states them, union status, the number of positions and the competition or reference number.
+- Only if the posting contains text in which the employer describes itself (what the organization does, its mission, vision, values or culture), add one optional section [COMPANY] on its own line right after the [WORKHOURS] section, holding at most 3 sentences taken from that text. Benefits stay under [PAY]; equal-opportunity, accommodation and privacy statements are not company information. If the posting has no such text, do not output [COMPANY] at all.
+- Under [APPLY]: 1 line how to apply, including the application deadline and the contact person's name when the posting gives them. If the posting says nothing for one of the five required sections, write exactly: (not stated) as the whole content of that section. Never put (not stated) inside or after a line that has other content; when an optional detail (deadline, contact name, union status, number of positions, reference number) is not in the posting, simply leave it out.
+- Keep the posting's original language. No markdown besides "- " bullets. No section other than the five and the optional [COMPANY].
 - Finally, on two extra lines output: [TERM]=permanent|term|casual|seasonal|unknown and [HRS]=full|part|unknown (from the posting).
 Posting follows:
 """
 """整理提示词头(正文接在后面)。2026-09-22 Frank「不会漏掉重要信息吧」:ROLE 带 ≤6 条职责要点、
 REQS 尾接「- Preferred:」加分项、PAY 点名要福利要点(与 cms lib/jobs/prompts.ts 逐字镜像,改必同改)。
-2026-10-02 Frank「没有就不加这一项」:Preferred 收紧成原帖明标才写、不留空不占位不重抄(空 / 占位 / 重抄存量上千条)。"""
+2026-10-02 Frank「没有就不加这一项」:Preferred 收紧成原帖明标才写、不留空不占位不重抄(空 / 占位 / 重抄存量上千条)。
+2026-11-10 Frank「描述里有包含公司的信息,整理的时候也要加一项公司简介」「包含公司的远景和价值观之类的」:
+多一节可选的 [COMPANY](排在 [WORKHOURS] 之后),原帖有雇主自述才出、最多 3 句、没有就整节不出;五节仍是必有。
+同日 Frank 问「还有其他信息我漏的吗」→「可以」(NB Power 样帖对照):工会 / 招聘人数 / 职位编号进 WORKHOURS,
+条件可放宽与候补名单进 REQS,请假与工会代表进 PAY,截止日期与联系人姓名进 APPLY;不另加节。
+同日 30 条 qwen 对 Haiku 对比后 Frank「专长领域、带学徒、语言要求 这些内容很重要啊」:职责上限 6 → 8 条且带人 / 培训的职责必留;
+REQS 点名不许丢语言、学历、年限、证照、专长领域、自带工具、安全审查、出行、体力条件;(not stated) 只许当整节内容,不许夹在句子里。"""
+
+PROMPT_V = 3
+"""提示词版本(2026-11-10 Frank「我不是有运维队列模块吗,是不是可以加到队列慢慢跑」):换提示词就加一。
+记录里的版本比它小的 ok 整理版算旧版,排在新帖后面、每轮用剩下的名额慢慢重跑(不单开脚本,不抢新帖);
+没带版本的存量记录按 1 算。v2 = 加可选节 [COMPANY] + 工会 / 职位编号 / 条件可放宽 / 候补名单 / 联系人。"""
 
 RETRY_TAIL = """
 (Reminder: copy every number, date and amount exactly as written in the posting, character for character.)"""
@@ -189,7 +201,7 @@ OUT_MAX_RATIO = 1.5
 DIGITS_RE = re.compile(r"\d{2,}")
 """多位数字(防幻觉校验:输出里的必须在原文出现)。"""
 
-MARK_INLINE_RE = re.compile(r"\s*(\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\])")
+MARK_INLINE_RE = re.compile(r"\s*(\[(?:ROLE|REQS|PAY|WORKHOURS|COMPANY|APPLY)\])")
 """节标记前的空白(含挤在同一行的情形):一律换成换行,标记顶到行首(镜像 cms JD_MARK_INLINE_RE)。"""
 
 MARK_LINE_REPL = "\n\\1"
@@ -231,9 +243,10 @@ NOTE_BLANK = "blank"
 (not stated),这份空整理版却过了校验入库,详情页拿它盖掉了原文。实测(存量 8,741 条 ok):全空只出现在原文 < 400 字的岗
 (436 条里 48 条),≥ 400 字零条;但 < 400 字里近九成整理得出内容,所以不按长度一刀切,按**结果**拦。"""
 
-BLANK_STRIP_RE = re.compile(r"\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\]|\(\s*not stated\s*\)|[\s\-•*]", re.I)
+BLANK_STRIP_RE = re.compile(r"\[COMPANY\][^\[]*|\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\]|\(\s*not stated\s*\)|[\s\-•*]", re.I)
 """判「五节全空」时先抹掉的东西:节标记、缺节短语、空白与子弹符;抹完什么都不剩 = 全空
-(与 cms lib/jobs 的 JD_EMPTY_STRIP_RE 同一把尺子,域间不互取常量,各抄一份)。"""
+(与 cms lib/jobs 的 JD_EMPTY_STRIP_RE 同一把尺子,域间不互取常量,各抄一份)。
+2026-11-10 加可选节 [COMPANY]:公司简介整节连内容一起抹 —— 只有公司套话、五节全空的帖照旧算全空,不让一段公司简介盖掉原文。"""
 
 NOTE_DIGITS = "digits"
 """失败由头:输出里出现原文没有的多位数字(幻觉)。"""
@@ -251,7 +264,8 @@ NET_ERRORS = ("ConnectError", "ConnectTimeout", "ReadTimeout", "WriteTimeout", "
 PRINT_ABORT_TPL = "✗ format: 盒子连不上({note}),本轮中止;已做成的照常落盘,没做的不记失败,下一轮重试"
 """盒子掉线时的中止报数。"""
 
-PRINT_TARGETS_TPL = "format: 在招有正文 {jobs} 条,已有整理版 {done} 条,剪掉不在列 {pruned} 条,本轮 {todo} 条(上限 {limit},模型 {model})"
+PRINT_TARGETS_TPL = ("format: 在招有正文 {jobs} 条,已有整理版 {done} 条(其中旧版提示词待重跑 {stale} 条),剪掉不在列 {pruned} 条,"
+                     "本轮 {todo} 条(上限 {limit},模型 {model})")
 """开工报数。"""
 
 PRINT_ROW_TPL = "  {status} {ext} src={src_len} out={out_len} {note}"

@@ -49,7 +49,7 @@ import {
   JD_GUESS_NEXT_PARA_LEN, JD_HEAD_MARK, JD_DASH_PREFIX_RE, JD_ITEM_TAIL_RE, JD_PREFERRED_HEAD, JD_SUBHEAD_COLON_RE,
   JD_LONG_LINE_LEN, JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_ESC_RE,
   JD_ESC_TO, JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS, JD_HR_LINE_TO, JD_HR_LINE_TPL, JD_INLINE_LABELS, JD_INLINE_TPL,
-  JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY,
+  JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_COMPANY,
   JD_SEC_PAY, JD_SEC_ROLE, JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE,
   JD_SUB_HEADS, JD_TOP_HEADS, JD_TPL_SLOT, JD_DONE, JD_EMPTY, JD_LIMITED, KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG,
   K_LOCK_TIP, K_ORIGIN, K_PROV, K_SPONSOR_GRADE, K_TEER, K_UNCAT, K_WHO, LANG_KO,
@@ -3557,6 +3557,9 @@ export function jdSectionViewsOf(x: JdSectionsIn): JdSectionView[] {
   const out: JdSectionView[] = []
   for (const [m, key] of JD_SECS) {
     let pairs = jdSubgroupsOf({ t: x.t, pairs: jdPairsOf({ body: strOf(secs[m]), trans: strOf(tSecs[m]) }) })
+    if (m === JD_SEC_COMPANY && pairs.length === 0) {
+      continue
+    }
     if (m === JD_SEC_PAY && paired) {
       pairs = payPairsZhOf({ t: x.t, pairs })
     }

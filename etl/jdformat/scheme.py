@@ -69,6 +69,9 @@ class FormatRecord(BaseModel):
     src_len: int = 0
     """喂给模型的原文长度(报数与复盘用)。"""
 
+    v: int = 1
+    """生成这份整理版用的提示词版本(constants.PROMPT_V;2026-11-10 立,此前的存量记录没有这格 = 1)。"""
+
 
 @dataclass
 class LlmCfg:

@@ -2296,6 +2296,7 @@ export const DIMS_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3
 
 /**
  * JD 整理版必须齐全的五节标记（校验用；口径主人是 prompts 的 JD_FORMAT_PROMPT_HEAD）。
+ * 2026-11-10 起另有一节可选的 [COMPANY](公司简介),有才出,不在必齐之列。
  */
 export const JD_SECTION_MARKS: string[] = ['ROLE', 'REQS', 'PAY', 'WORKHOURS', 'APPLY']
 
@@ -2354,7 +2355,7 @@ export const MARK_TAIL = ']'
  * JD 整理版五节标记行的剖分（翻译时标记与正文可同行，#180 教训；
  * 口径主人是 prompts 的 JD_FORMAT_PROMPT_HEAD）。
  */
-export const JD_TRANS_MARKS_RE = /^(\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\]\s*)(.*)$/
+export const JD_TRANS_MARKS_RE = /^(\[(?:ROLE|REQS|PAY|WORKHOURS|COMPANY|APPLY)\]\s*)(.*)$/
 
 /**
  * 公司页 slug 的形(小写字母数字与连字符,1~160 位;`/api/jobs/company` 的 { slug } 先过它再进库)。
@@ -2370,15 +2371,16 @@ export const POOL_KEY_RE = /^n:.{1,198}$/
  * 整理版里贴在上一节正文尾巴上的节标记(2026-09-14 Frank「跑偏了」实撞:模型把五节挤在一行,翻译按行对位就把整篇
  * 连标记一起塞进首节一行,标记还被译成「[要求]」;库里 310 条整理版没有换行)。读侧与写侧都按它把标记顶到行首。
  */
-export const JD_MARK_INLINE_RE = /\s*(\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\])/g
+export const JD_MARK_INLINE_RE = /\s*(\[(?:ROLE|REQS|PAY|WORKHOURS|COMPANY|APPLY)\])/g
 
 /**
  * 判「五节全空」时先抹掉的东西:节标记、模型写的缺节短语「(not stated)」、空白与子弹符。抹完什么都不剩 = 这份整理版
  * 一个字的内容都没有(2026-09-18 Frank 实拍「这个整理完变成这样了」:Jobillico 一条岗原文只抓到 335 字公司文化套话,
  * 模型老实地五节全答 (not stated),页面却把这份空整理版当成有效结果渲出来,盖掉了原文,只剩兜底的「工作地点」;
  * 在招岗里这样的整理版 106 条)。
+ * 2026-11-10 加可选节 [COMPANY]:公司简介整节连内容一起抹 —— 只有公司套话、五节全空的帖照旧算全空。
  */
-export const JD_EMPTY_STRIP_RE = /\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\]|\(\s*not stated\s*\)|[\s\-•*]/gi
+export const JD_EMPTY_STRIP_RE = /\[COMPANY\][^[]*|\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\]|\(\s*not stated\s*\)|[\s\-•*]/gi
 
 /**
  * 顶到行首的节标记:换行 + 标记本身。

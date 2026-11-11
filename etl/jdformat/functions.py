@@ -25,7 +25,7 @@ from jdformat.constants import (
     OUT_MAX_BASE, OUT_MAX_RATIO, OUT_MIN_LEN, P_MODEL, P_NUM_PREDICT, P_OPTIONS, P_PROMPT, P_RESPONSE,
     P_STREAM, P_TEMPERATURE, P_THINK, PATH_OLLAMA_GENERATE, PII_EMAIL_RE, PII_MASK, PII_PHONE_RE, PRINT_ABORT_TPL,
     PRINT_DONE_TPL, PRINT_ROW_TPL, PRINT_SCRUB_TPL, PRINT_TARGETS_TPL,
-    PROMPT_HEAD, RETRY_FAILED_DAYS, RETRY_TAIL, SECTION_MARKS, ST_FAIL, ST_OK, STRIP_REPL, TAIL_STRIP_RE, TERM_RE,
+    PROMPT_HEAD, PROMPT_V, RETRY_FAILED_DAYS, RETRY_TAIL, SECTION_MARKS, ST_FAIL, ST_OK, STRIP_REPL, TAIL_STRIP_RE, TERM_RE,
     TERM_VALUES, TEXT_ENCODING, THINK_RE, URL_TAIL_SLASH,
 )
 from jdformat.scheme import (
@@ -60,7 +60,7 @@ def build_formatted() -> None:
         say(PRINT_SCRUB_TPL.format(n=scrubbed))
     pruned = prune_cache(PruneIn(cache=cache, jobs=jobs))
     todo = pick_todo(PickIn(jobs=jobs, cache=cache, limit=int(FORMAT_LIMIT)))
-    say(PRINT_TARGETS_TPL.format(jobs=len(jobs), done=count_ok(cache), pruned=pruned, todo=len(todo),
+    say(PRINT_TARGETS_TPL.format(jobs=len(jobs), done=count_ok(cache), stale=count_stale(cache), pruned=pruned, todo=len(todo),
                                  limit=FORMAT_LIMIT, model=cfg.model))
     ok = 0
     fail = 0
@@ -71,10 +71,17 @@ def build_formatted() -> None:
             if rec.note in NET_ERRORS:
                 say(PRINT_ABORT_TPL.format(note=rec.note))
                 break
-            cache[ext] = rec
-            if rec.status == ST_OK:
+            old = cache.get(ext)
+            if rec.status != ST_OK and old is not None and old.status == ST_OK:
+                # 旧版重跑没过校验:留着旧整理版不丢,只把版本记成当前(不然每轮都重打这一条)
+                old.v = PROMPT_V
+                rec = old
+                fail += 1
+            elif rec.status == ST_OK:
+                cache[ext] = rec
                 ok += 1
             else:
+                cache[ext] = rec
                 fail += 1
             say(PRINT_ROW_TPL.format(status=rec.status, ext=ext, src_len=rec.src_len, out_len=len(rec.formatted),
                                      note=rec.note))
@@ -128,6 +135,15 @@ def write_cache(cache: dict[str, FormatRecord]) -> int:
     return total
 
 
+def count_stale(cache: dict[str, FormatRecord]) -> int:
+    """旧版提示词做的 ok 整理版条数(报数用:还剩多少待重跑)。"""
+    n = 0
+    for rec in cache.values():
+        if rec.status == ST_OK and rec.v < PROMPT_V:
+            n += 1
+    return n
+
+
 def count_ok(cache: dict[str, FormatRecord]) -> int:
     """已做成的条数(报数用)。"""
     n = 0
@@ -178,7 +194,8 @@ def scrub_cache(cache: dict[str, FormatRecord]) -> int:
 
 
 def pick_todo(x: PickIn) -> list[str]:
-    """还没做成 ok 的岗(失败冷却 RETRY_FAILED_DAYS),按发布时间新→旧,凑够 limit 即止。"""
+    """还没做成 ok 的岗(失败冷却 RETRY_FAILED_DAYS),按发布时间新→旧,凑够 limit 即止。
+    2026-11-10:新帖排完还有名额,再排旧版提示词做的 ok 整理版(同样新→旧)—— 换提示词后存量随每轮慢慢重跑。"""
     pairs: list[tuple[str, str]] = []
     for ext, r in x.jobs.items():
         pairs.append((str(r.get(K_DATE_POSTED) or FIELD_NONE), ext))
@@ -195,6 +212,12 @@ def pick_todo(x: PickIn) -> list[str]:
             if days_since(c.at) <= RETRY_FAILED_DAYS:
                 continue
         todo.append(ext)
+    for pair in pairs:
+        if len(todo) >= x.limit:
+            break
+        c = x.cache.get(pair[1])
+        if c is not None and c.status == ST_OK and c.v < PROMPT_V:
+            todo.append(pair[1])
     return todo
 
 
@@ -212,7 +235,7 @@ def format_one(x: FormatOneIn) -> FormatRecord:
     """一岗:第一次没过(多半是数字被改写)再打一次,第二次提示尾加一句照抄数字;过校验即 ok,
     都没过记最后一次由头;盒子掉线 / 超时转数据记异常类名(留痕在记录里,不炸整轮)。"""
     body = x.src[:BODY_MAX_LEN]
-    rec = FormatRecord(model=x.cfg.model, at=now_iso(), src_len=len(body))
+    rec = FormatRecord(model=x.cfg.model, at=now_iso(), src_len=len(body), v=PROMPT_V)
     for attempt in range(1, GEN_TRIES + 1):
         prompt = PROMPT_HEAD + body
         if attempt > 1:

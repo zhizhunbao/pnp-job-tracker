@@ -2407,18 +2407,26 @@ export const COLON = ':'
 /**
  * 五节整理版的节标记(J3,2026-07-19 Frank 批)。
  */
-export const JD_SEC_SPLIT_RE = /\[(ROLE|REQS|PAY|WORKHOURS|APPLY)\]/
+export const JD_SEC_SPLIT_RE = /\[(ROLE|REQS|PAY|WORKHOURS|COMPANY|APPLY)\]/
 
 /**
  * 五节的节键与它们的取词键(顺序即渲染顺序)。
+ * 2026-11-10 Frank「整理的时候也要加一项公司简介」:多一节可选的 COMPANY(原帖里雇主自述),排在工作形式之后、怎么投之前;
+ * 原帖没有就整节不渲(见 JD_SEC_COMPANY)。
  */
 export const JD_SECS: [string, string][] = [
   ['ROLE', 'act.f.role'],
   ['REQS', 'act.f.reqs'],
   ['PAY', 'act.f.pay'],
   ['WORKHOURS', 'act.f.hours'],
+  ['COMPANY', 'act.f.company'],
   ['APPLY', 'act.f.apply'],
 ]
+
+/**
+ * 可选节的节键:公司简介(没有内容时整节不渲,不摆「原帖未提及」)。
+ */
+export const JD_SEC_COMPANY = 'COMPANY'
 
 /**
  * 首节键(#155:它的小标题紧贴大标题「职位描述」,两行说同一件事 —— 详情页省略它)。

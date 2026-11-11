@@ -15,15 +15,22 @@
  * 节标记不变,存量整理版不强制重跑(随保鲜换血)。⚠ 改这段必同改 etl/jdformat/constants.py 第 4 段(逐字镜像)。
  * 2026-10-02 Frank「没有就不加这一项」「Experience 这叫什么 preferred」:全库 2.67 万条带「- Preferred:」,4688 条底下空、
  * 上千条只挂「None stated」或把「Experience an asset」又抄成「Experience」—— 收紧成原帖明标才写、不留空不占位不重抄。
+ * 2026-11-10 Frank「描述里有包含公司的信息,整理的时候也要加一项公司简介」「包含公司的远景和价值观之类的」:
+ * 多一节可选的 [COMPANY](排在 [WORKHOURS] 之后),原帖有雇主自述才出、最多 3 句、没有就整节不出;五节仍是必有。
+ * 同日 Frank 问「还有其他信息我漏的吗」→「可以」(NB Power 样帖对照):工会 / 招聘人数 / 职位编号进 WORKHOURS,
+ * 条件可放宽与候补名单进 REQS,请假与工会代表进 PAY,截止日期与联系人姓名进 APPLY;不另加节。
+ * 同日 30 条 qwen 对 Haiku 对比后 Frank「专长领域、带学徒、语言要求 这些内容很重要啊」:职责上限 6 → 8 条且带人 / 培训的职责必留;
+ * REQS 点名不许丢语言、学历、年限、证照、专长领域、自带工具、安全审查、出行、体力条件;(not stated) 只许当整节内容,不许夹在句子里。
  */
 export const JD_FORMAT_PROMPT_HEAD = `You are reorganizing a job posting into fixed sections. STRICT RULES:
 - Only move and lightly condense sentences from the posting. NEVER invent facts, numbers, requirements or benefits not present in it.
 - Output plain text with EXACTLY these section markers, each on its own line: [ROLE] [REQS] [PAY] [WORKHOURS] [APPLY]
-- Under [ROLE]: 1-2 sentences on what the job does, then up to 6 "- " bullet lines condensing the key responsibilities (skip the bullets if the posting lists none).
-- Under [REQS]: bullet lines starting with "- ", required qualifications first; only if the posting explicitly marks some items as preferred, an asset or nice-to-have, end with a line exactly "- Preferred:" followed by those bullets. Never write "- Preferred:" with nothing under it or with a placeholder such as "None", and never repeat under it an item already listed above.
-- Under [PAY]: bullet lines for pay figures and notable benefits (vacation, retirement plans, insurance). Under [WORKHOURS]: bullet lines for schedule, employment type, location type.
-- Under [APPLY]: 1 line how to apply. If the posting says nothing for a section, write exactly: (not stated)
-- Keep the posting's original language. No markdown besides "- " bullets. No section other than the five.
+- Under [ROLE]: 1-2 sentences on what the job does, then up to 8 "- " bullet lines condensing the key responsibilities, always keeping any supervising, coaching or training duty (skip the bullets if the posting lists none).
+- Under [REQS]: bullet lines starting with "- ", required qualifications first. Never drop these when the posting states them, each as its own bullet: language of work, education, years of experience, licences and certificates, areas of specialization, own tools or equipment, security checks, travel or transportation needs, physical work conditions. After them, only if the posting explicitly marks some items as preferred, an asset or nice-to-have, end with a line exactly "- Preferred:" followed by those bullets. Never write "- Preferred:" with nothing under it or with a placeholder such as "None", and never repeat under it an item already listed above. If the posting says the requirements may be relaxed (for example an equivalent combination of training and experience is accepted) or that an eligibility list will be kept for future vacancies, add each as one bullet among the required bullets, before any "- Preferred:" line.
+- Under [PAY]: bullet lines for pay figures and notable benefits (vacation, paid or unpaid leave, retirement plans, insurance, union representation). Under [WORKHOURS]: bullet lines for schedule, employment type, location type and, when the posting states them, union status, the number of positions and the competition or reference number.
+- Only if the posting contains text in which the employer describes itself (what the organization does, its mission, vision, values or culture), add one optional section [COMPANY] on its own line right after the [WORKHOURS] section, holding at most 3 sentences taken from that text. Benefits stay under [PAY]; equal-opportunity, accommodation and privacy statements are not company information. If the posting has no such text, do not output [COMPANY] at all.
+- Under [APPLY]: 1 line how to apply, including the application deadline and the contact person's name when the posting gives them. If the posting says nothing for one of the five required sections, write exactly: (not stated) as the whole content of that section. Never put (not stated) inside or after a line that has other content; when an optional detail (deadline, contact name, union status, number of positions, reference number) is not in the posting, simply leave it out.
+- Keep the posting's original language. No markdown besides "- " bullets. No section other than the five and the optional [COMPANY].
 - Finally, on two extra lines output: [TERM]=permanent|term|casual|seasonal|unknown and [HRS]=full|part|unknown (from the posting).
 Posting follows:
 `
