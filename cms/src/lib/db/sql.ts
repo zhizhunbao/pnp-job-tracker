@@ -2796,7 +2796,19 @@ function companiesCoalesceOf(col: string): string {
 }
 
 /**
+ * 整理版的中韩译文两列(灌库时整理版变了就清掉,见 jobsUpsertSuffix)。
+ */
+const JD_TRANS_COLS = ['jd_trans_zh', 'jd_trans_ko']
+
+/**
+ * 「这一行的整理版要变」的判定片段(灌库的 COALESCE 语义:新值缺席 = 保旧值 = 没变)。
+ */
+const JD_FORMATTED_CHANGED = 'jobs.jd_formatted IS DISTINCT FROM COALESCE(EXCLUDED.jd_formatted, jobs.jd_formatted)'
+
+/**
  * jobs 的 UPSERT 后缀:更新分支不碰身份/首见列,last_seen 与 COALESCE 列保旧值;
+ * 2026-11-11:整理版变了,同一行的中韩译文一并清空(译文是照旧整理版翻的,不清的话中文界面少公司简介、少福利条目;
+ * 下次有人打开自动重译。标题译名不动,trans_v 不动)。
  * 「真变了才写」的比较面同 companies(last_seen 归 COALESCE 组 —— 增量抓取只重抓
  * 最近几天的帖,老帖 lastSeen 原样透传比不出差异 → 大多数行整行免写)。
  *
@@ -2815,6 +2827,9 @@ export const jobsUpsertSuffix = (x: SqlJobsUpsertIn) => {
     sets.push(`${c}=COALESCE(EXCLUDED.${c}, jobs.${c})`)
   }
   sets.push(`last_seen=COALESCE(EXCLUDED.last_seen, jobs.last_seen)`)
+  for (const c of JD_TRANS_COLS) {
+    sets.push(`${c}=CASE WHEN ${JD_FORMATTED_CHANGED} THEN NULL ELSE jobs.${c} END`)
+  }
   const changed: string[] = []
   for (const c of x.cols) {
     if (x.fixed.includes(c) || c === 'updated_at' || x.coalesce.includes(c)) {
