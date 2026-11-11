@@ -26,7 +26,7 @@ export function PagedJobList({ rows, cols, empty, t }: PagedJobListIn) {
     <>
       <JobList rows={shown} cols={cols} empty={empty} />
       {rows.length > FOLD_FIRST && (
-        <MoreLine shown={shown.length} total={rows.length} loading={false}
+        <MoreLine shown={shown.length} total={rows.length} loading={false} busyText={TEXT_NONE}
           moreText={t('loadMore', { n: left, left })}
           allText={TEXT_NONE} onMore={f.onMore}
           foldText={t('fold.up')} onFold={f.onFold} />

@@ -5690,26 +5690,6 @@ export type CellClickIn = {
 }
 
 /**
- * moreLabelOf 的入参。
- */
-export type MoreLabelIn = {
-  /**
-   * 在途没。
-   */
-  loading: boolean
-
-  /**
-   * 钮面文案。
-   */
-  label: string
-
-  /**
-   * 在途占位。
-   */
-  busy: string
-}
-
-/**
  * 手机卡一张的展示行。
  * 2026-10-09 N6 批:市 / 省的地图链接与显示值四格撤(卡上地点换 name 桶 CityName / ProvName,链接与显示由它们自己算)。
  */

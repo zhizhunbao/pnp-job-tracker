@@ -50,6 +50,7 @@ export function EmployerBoard({ p }: EmployerPanelIn) {
         <MoreLine shown={p.data.rows.length}
           total={p.data.total}
           loading={p.loading}
+          busyText={p.t('loading')}
           moreText={p.t('loadMore', {
             n: moreCountOf({ left: p.data.total - p.data.rows.length, step: MORE_ROWS }),
             left: p.data.total - p.data.rows.length,

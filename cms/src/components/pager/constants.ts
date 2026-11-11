@@ -40,11 +40,6 @@ export const PLAIN_BTN_KIND = 'ghost'
 export const MORE_BTN_KIND = 'secondary'
 
 /**
- * 「显示更多」在途时的钮面占位。
- */
-export const MORE_BUSY = '…'
-
-/**
  * 不加类(「显示更多」钮平时不带附加类)。
  */
 export const CLS_NONE = ''

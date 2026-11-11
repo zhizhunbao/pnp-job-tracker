@@ -2651,11 +2651,6 @@ export const STAR_OFF = '☆'
 export const CROSS = '×'
 
 /**
- * 「更多」按钮在途时的占位。
- */
-export const ELLIPSIS = '…'
-
-/**
  * AI 整理版的星标。
  */
 export const SPARKLE = '✨ '

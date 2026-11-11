@@ -87,8 +87,14 @@ export type MoreLineIn = {
 
   /**
    * 下一批在途没(在途时钮禁用、钮面换占位)。
+   * 2026-11-11:在途时钮换成转圈 + busyText。
    */
   loading: boolean
+
+  /**
+   * 在途时转圈旁的那一句(如「加载中…」)。
+   */
+  busyText: string
 
   /**
    * 钮面文案(如「显示更多(还有 N 条)」)。
@@ -114,21 +120,6 @@ export type MoreLineIn = {
    * 点「收起」(与 foldText 同给;不给就照旧出 allText)。
    */
   onFold?: ClickFn
-}
-
-/**
- * moreLabelOf 的入参。
- */
-export type MoreLabelIn = {
-  /**
-   * 在途没。
-   */
-  loading: boolean
-
-  /**
-   * 平时的钮面文案。
-   */
-  label: string
 }
 
 /**

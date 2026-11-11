@@ -84,7 +84,7 @@ import type {
   JdPair, JdPairsIn, JdPayIn, JdReIn, JdSecHeadIn, JdSecModeIn, JdSectionMode,
   JdSectionView, JdSectionsIn, JobColKey, JobDetailIn, JobDetailView, JobDims, JobFact, JobFilters, JobPlan, JobPlanIn,
   JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn, MapHrefIn, MatchProfileFact, MeasureIn,
-  MeasureOut, MeasurePassIn, MeasureWordIn, MoreLabelIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, OrigLinkLabelIn,
+  MeasureOut, MeasurePassIn, MeasureWordIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, OrigLinkLabelIn,
   NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, OccCellIn, OccNameIn,
   OccOptsIn, OccSlotIn, PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PeekStackRef, PickedShownIn,
   PlanProfileIn, PrefixLabelIn, ProvFullIn, ProvWordIn, RankOfIn, RelJsonTotalIn, RelPageUrlIn,
@@ -4526,32 +4526,6 @@ export function tableClsOf(x: TableClsIn): string {
     return cls + SPACE + cssOf(css.tableTight)
   }
   return cls
-}
-
-/**
- * 「显示更多」在途时的加倍类。
- *
- * @param loading 在途没。
- * @returns 类名;不在途给空串。
- */
-export function moreBtnClsOf(loading: boolean): string {
-  if (loading) {
-    return cssOf(css.moreBusy)
-  }
-  return TEXT_NONE
-}
-
-/**
- * 「显示更多」的钮面文案:在途时只出省略号。
- *
- * @param x 在途没、钮面文案与在途占位。
- * @returns 钮面文案。
- */
-export function moreLabelOf(x: MoreLabelIn): string {
-  if (x.loading) {
-    return x.busy
-  }
-  return x.label
 }
 
 /**

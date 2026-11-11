@@ -5,17 +5,15 @@
  * @author Frank
  * @time 2026-08-26 16:00:00
  */
-import { cssOf } from '@/components/css'
 import {
   CLS_NONE, FOLD_KEYS, FOLD_MORE_FIRST, FOLD_MORE_NEXT, FOLD_MORE_NONE, FOLD_MORE_REST, FOLD_STEP, K_FOLD_BUSY,
-  K_FOLD_UP, MORE_BUSY, PAGE_QS_EQ, PAGE_QS_JOIN, P_PAGE_OFFSET,
+  K_FOLD_UP, PAGE_QS_EQ, PAGE_QS_JOIN, P_PAGE_OFFSET,
 } from './constants'
 import type {
-  ClickFn, FoldLabelIn, FoldMoreIn, FoldT, FoldView, FoldViewIn, LoadPageIn, MoreCountIn, MoreLabelIn, PagedExtraIn,
+  ClickFn, FoldLabelIn, FoldMoreIn, FoldT, FoldView, FoldViewIn, LoadPageIn, MoreCountIn, PagedExtraIn,
   PagedMoreIn,
   PagedRowsIn, PageJson, PageRowsFn, PageSetRestFn, PagerHandlesIn, PagerHandlesOut, PageUrlIn,
 } from './types'
-import css from './pager.module.css'
 
 /**
  * 造翻页行的前后两枚手柄(自 Pager 体内迁出)。两枚都在写同一格页码,
@@ -34,32 +32,6 @@ export function makePagerHandles(x: PagerHandlesIn): PagerHandlesOut {
   }
 
   return { prev, next }
-}
-
-/**
- * 「显示更多」钮的类:在途时压淡。
- *
- * @param loading 在途没。
- * @returns 类名或空串。
- */
-export function moreBtnClsOf(loading: boolean): string {
-  if (loading) {
-    return cssOf(css.moreBusy)
-  }
-  return CLS_NONE
-}
-
-/**
- * 「显示更多」的钮面文案:在途时只出占位。
- *
- * @param x 在途没与平时的钮面文案。
- * @returns 钮面文案。
- */
-export function moreLabelOf(x: MoreLabelIn): string {
-  if (x.loading) {
-    return MORE_BUSY
-  }
-  return x.label
 }
 
 /**
