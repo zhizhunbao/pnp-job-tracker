@@ -924,7 +924,8 @@ export const jobsZh = {
   'fav.title': '我的收藏',
   // 2026-10-06 「我的求职」「我的收藏」改成 myjobs 桶的两张表;sj.note、fav.note 随旧清单撤
   'mj.appliedAt': '投递日期', 'mj.open': '打开', 'mj.closed': '已下架', 'mj.del': '删除', 'mj.more': '更多操作', 'mj.delAsk': '确认删除?', 'mj.cancel': '取消', 'mj.col.chan': '通道',
-  'mj.lockLine': '还有 {n} 条推荐,Pro 可看全部',
+  // 2026-11-11 任务书第 47 条:今日推荐每天 10 条全免费,mj.lockLine、mj.unlock、mj.swap 随之删;表下加去职位板的链接
+  'mj.seeAll': '看全部同类职位',
   'mj.col.place': '地点',
   'mj.live': '在架', 'mj.col.stage': '投递状态', 'mj.col.listing': '职位状态',
   'mj.bounced': '退信',
@@ -941,10 +942,6 @@ export const jobsZh = {
   'name.hours.full': '全职', 'name.hours.part': '兼职', 'name.placeSub': '{c},{p}',
   'name.term.permanent': '长期', 'name.term.term': '定期合同', 'name.term.seasonal': '季节性', 'name.term.casual': '临时',
   'mj.picks': '今日推荐', 'mj.picksEmpty': '今天没有新推荐',
-  // 2026-10-13 Frank「这个叫 升级 Pro 用户能明白吗」→ 选「解锁其余 N 条 + 金色」:打码行上那颗大钮说清点了得到什么
-  'mj.unlock': '解锁其余 {n} 条',
-  // 2026-10-13 Frank「这个要不要加个按钮 换一批」:今日推荐卡头右端
-  'mj.swap': '换一批',
   // 2026-10-11 Frank「可以,按你说的改」:按真发出去的投递命中的推荐理由(2026-10-12 理由胶囊换通道列,mj.why.* 与 mj.col.why、mj.more、mj.unsave 随之删)
   'mj.appliedTitle': '我的投递', 'mj.unsent': '未发出',
   'mj.push': '新岗推送', 'mj.pushRow': '把推荐和收藏动态发到邮箱', 'mj.freqOff': '不发', 'mj.freqDaily': '每天', 'mj.freqWeekly': '每周',

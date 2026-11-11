@@ -13,6 +13,8 @@
  * 2026-11-07 Frank「现在都按 Azure 的来」:打码行与盖在上面的大钮撤 —— 免费号锁住的在表下一行说「还有 N 条推荐」+
  * 常规大小主钮「解锁其余 N 条」(开定价框;N 仍是锁住的全部条数 more);「显示更多 / 收起」只管没列出来的真行;
  * 「换一批」再挪到页签那一行右端(JobsBody)。
+ * 2026-11-11 Frank「别一次性推荐 50 个」「不需要解锁其余」(任务书第 47 条):每天 10 条全列、全免费;显示更多、解锁那一行、
+ * 换一批、行上的删除都撤;表下加一颗「看全部同类职位」去职位板(带省与这批推荐的职业码)。
  *
  * @author Frank
  * @time 2026-11-07 18:00:00
@@ -20,53 +22,41 @@
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { useLang } from '@/components/i18n'
-import { MoreLine } from '@/components/pager'
-import { TEXT_NONE, UPGRADE_KIND } from './constants'
+import { SEE_ALL_KIND, TEXT_NONE } from './constants'
 import { pickColsOf, pickRowsOf } from './functions'
-import { AskDelModal } from './askdelmodal'
-import { useAskDel, useLazyCompanies, useLazyTitles } from './hooks'
+import { useLazyCompanies, useLazyTitles } from './hooks'
 import { JobList } from './joblist'
-import { hiddenPicksOf, picksOf, shownPicksOf, titledPicksOf, unlockNOf } from './recommend'
+import { boardHrefOf, picksOf, titledPicksOf } from './recommend'
 import type { PicksPaneIn } from './types'
 import css from './jobs.module.css'
 
 /**
  * 「今日推荐」页签。
  *
- * @param props 取词函数、是不是 Pro 与推荐整机。
- * @returns 表 + 显示更多 + (免费号)解锁一行(或失败一句);还没拉到不渲。
+ * @param props 取词函数与推荐整机。
+ * @returns 表 + 「看全部同类职位」一行(或失败一句);还没拉到不渲。
  */
-export function PicksPane({ t, pro, p }: PicksPaneIn) {
+export function PicksPane({ t, p }: PicksPaneIn) {
   const [lang] = useLang()
   const titles = useLazyTitles({ items: titledPicksOf(p.data), lang })
   const cos = useLazyCompanies({ items: picksOf(p.data), lang })
-  const a = useAskDel()
   if (p.failed) {
     return <div className={cssOf(css.note)}>{t('mj.fail')}</div>
   }
   if (p.data == null) {
     return null
   }
-  const shown = shownPicksOf({ items: p.data.picks, expanded: p.expanded })
-  const rows = pickRowsOf({ items: shown, ask: a.onAsk, remove: p.remove, lang, t, titles, cos })
-  const hidden = hiddenPicksOf({ data: p.data, expanded: p.expanded })
-  const locked = unlockNOf({ pro, data: p.data })
+  const rows = pickRowsOf({ items: p.data.picks, lang, t, titles, cos })
+  const board = boardHrefOf(p.data)
   return (
     <>
       <JobList rows={rows} cols={pickColsOf({ t })}
         empty={<div className={cssOf(css.note)}>{t('mj.picksEmpty')}</div>} />
-      {(hidden > 0 || p.expanded) && (
-        <MoreLine shown={rows.length} total={rows.length + hidden} loading={false}
-          moreText={t('loadMore', { n: hidden, left: hidden })} allText={TEXT_NONE} onMore={p.onExpand}
-          foldText={t('fold.up')} onFold={p.onFold} />
-      )}
-      {locked > 0 && (
-        <div className={cssOf(css.lockLine)}>
-          <span>{t('mj.lockLine', { n: locked })}</span>
-          <Button kind={UPGRADE_KIND} onClick={p.onUpsell}>{t('mj.unlock', { n: locked })}</Button>
+      {board !== TEXT_NONE && (
+        <div className={cssOf(css.seeAll)}>
+          <Button kind={SEE_ALL_KIND} sm href={board}>{t('mj.seeAll')}</Button>
         </div>
       )}
-      <AskDelModal t={t} a={a} />
     </>
   )
 }

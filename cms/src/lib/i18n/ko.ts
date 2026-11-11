@@ -849,7 +849,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'sj.save': '☆ 저장', 'sj.saved': '★ 저장됨', 'sj.view': '공고 목록에서 보기', 'sj.del': '삭제', 'sj.weekly': '주간 이메일 요약(저장 공고, 언제든 구독 취소)',
   'fav.title': '내 저장 공고',
   'mj.appliedAt': '지원일', 'mj.open': '열기', 'mj.closed': '마감', 'mj.del': '삭제', 'mj.more': '더 보기', 'mj.delAsk': '삭제할까요?', 'mj.cancel': '취소', 'mj.col.chan': '이민 경로',
-  'mj.lockLine': '추천 {n}개 더, Pro에서 모두 보기',
+  'mj.seeAll': '비슷한 채용 모두 보기',
   'mj.col.place': '위치',
   'mj.live': '게시 중', 'mj.col.stage': '지원 상태', 'mj.col.listing': '공고 상태',
   'mj.bounced': '반송됨',
@@ -864,8 +864,6 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'name.hours.full': '정규직', 'name.hours.part': '파트타임', 'name.placeSub': '{c}, {p}',
   'name.term.permanent': '상시', 'name.term.term': '계약직', 'name.term.seasonal': '계절직', 'name.term.casual': '임시직',
   'mj.picks': '오늘의 추천', 'mj.picksEmpty': '오늘은 추천이 없습니다',
-  'mj.unlock': '나머지 {n}개 잠금 해제',
-  'mj.swap': '다른 추천 보기',
   // 2026-10-11 Frank「可以,按你说的改」:按真发出去的投递命中的推荐理由(2026-10-12 理由胶囊换通道列,mj.why.* 与 mj.col.why、mj.more、mj.unsave 随之删)
   'mj.appliedTitle': '내 지원', 'mj.unsent': '미발송',
   'mj.push': '새 공고 알림', 'mj.pushRow': '추천과 저장 공고 소식을 이메일로 받기', 'mj.freqOff': '받지 않음', 'mj.freqDaily': '매일', 'mj.freqWeekly': '매주',

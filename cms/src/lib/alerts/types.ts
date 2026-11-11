@@ -707,11 +707,6 @@ export type PicksForIn = {
    * 用户 id。
    */
   userId: number
-
-  /**
-   * 是不是 Pro(免费号只给 3 条)。
-   */
-  pro: boolean
 }
 
 /**

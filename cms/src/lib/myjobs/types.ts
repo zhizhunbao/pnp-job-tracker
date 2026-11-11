@@ -461,6 +461,11 @@ export type PickDbRow = {
   wage_med_hourly: number | string | null
 
   /**
+   * 5 位职业码(2026-11-11:表下「看全部同类职位」按它去职位板)。
+   */
+  noc: string | null
+
+  /**
    * 雇主办过的 LMIA 外劳名额(没有是 NULL;2026-10-12 Frank「整点有吸引力的 bullets」)。
    */
   lmia_positions: number | string | null
@@ -636,6 +641,11 @@ export type PickRow = {
   wageMedHourly: number | null
 
   /**
+   * 5 位职业码(没有 = 空串;表下「看全部同类职位」按它去职位板)。
+   */
+  noc: string
+
+  /**
    * 雇主办过的 LMIA 外劳名额(理由里有 lmia 时 bullet 写它;没有是 0)。
    */
   lmiaPositions: number
@@ -692,73 +702,13 @@ export type PickRow = {
 }
 
 /**
- * 「更多推荐」里锁住的一条:只给职位名与理由,公司 / 地址 / 薪资 / 职位号一概不下发。
- */
-export type LockedPick = {
-  /**
-   * 职位名英文原文。
-   */
-  title: string
-
-  /**
-   * 推荐理由码。
-   */
-  reasons: string[]
-
-  /**
-   * 省提名项目简称(没有 = 空串)。
-   */
-  program: string
-
-  /**
-   * 省码(通道列判省默认通道用;2026-10-12)。
-   */
-  province: string
-
-  /**
-   * 具名省提名通道(没有 = 空串;2026-10-12 通道列)。
-   */
-  pnpStream: string
-
-  /**
-   * 能走省提名。
-   */
-  pnpEligible: boolean
-
-  /**
-   * 本省有省默认通道。
-   */
-  provDefault: boolean
-
-  /**
-   * 职位名中文译名(过期当没有 = 空串;2026-10-12 Frank「隐藏的 和 显示的 要对齐啊」「上下要对齐。有 中文 灰字的 要加上」:打码行职位名也出灰字)。
-   */
-  titleZh: string
-
-  /**
-   * 职位名韩文译名。
-   */
-  titleKo: string
-}
-
-/**
  * 推荐接口的回包。
  */
 export type PicksJson = {
   /**
-   * 看得见的推荐(免费号最多 PICKS_FREE 条,Pro 全给)。
+   * 今天的推荐(最多 PICKS_DAY 条,不分免费与会员;2026-11-11)。
    */
   picks: PickRow[]
-
-  /**
-   * 免费号还有几条看不见(Pro 恒 0)。
-   */
-  more: number
-
-  /**
-   * 锁住给看的几条(免费号、more 大于 0 才有)。
-   */
-  locked: LockedPick[]
 }
 
 /**
@@ -802,7 +752,7 @@ export type PicksAfterIn = {
 }
 
 /**
- * 取推荐(getPicks)的入参:算推荐的入参 + 是不是 Pro。
+ * 取推荐(getPicks)的入参:算推荐的入参 + 要不要现算。
  */
 export type PicksViewIn = {
   /**
@@ -821,54 +771,19 @@ export type PicksViewIn = {
   prov: string
 
   /**
-   * 是不是 Pro(Pro 看全部,免费号看 PICKS_FREE 条)。
-   */
-  pro: boolean
-
-  /**
    * 不用当天缓存、现算一份(2026-10-11:答完档案重拉推荐)。
    */
   fresh: boolean
-
-  /**
-   * 换到第几批(已按免费 / Pro 夹过;2026-10-13 换一批)。
-   */
-  batch: number
 }
 
 /**
- * 推荐切成「看得见 / 锁住」(picksViewOf)的入参。
+ * 取当天给看的那几条(picksViewOf)的入参。
  */
 export type PicksSplitIn = {
   /**
    * 当天算好的全部推荐(已剔掉今天新碰过的岗)。
    */
   rows: PickRow[]
-
-  /**
-   * 是不是 Pro。
-   */
-  pro: boolean
-
-  /**
-   * 换到第几批(2026-10-13 换一批:整份推荐从第 batch × PICKS_FREE 条起转一圈)。
-   */
-  batch: number
-}
-
-/**
- * 批号(batchOf)的入参。
- */
-export type BatchOfIn = {
-  /**
-   * 请求地址。
-   */
-  url: string
-
-  /**
-   * 是不是 Pro(免费号夹到 PICKS_SWAP_FREE)。
-   */
-  pro: boolean
 }
 
 /**

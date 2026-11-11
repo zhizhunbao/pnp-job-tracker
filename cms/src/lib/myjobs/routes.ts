@@ -4,6 +4,7 @@
  * 2026-10-10 批 2:加 GET /api/myjobs/picks(今日推荐;按人按天缓存在域里,响应照旧不让任何一层存)。
  * 2026-10-13 GET /api/myjobs/picks 加 `?batch=`(换一批)。
  * 2026-10-12 操作列加「删除」:DELETE /api/myjobs/applied?id=、DELETE /api/myjobs/picks?id=(两条 GET 随之带方法词)。
+ * 2026-11-11 任务书第 47 条:今日推荐每天 10 条全免费,`?batch=` 与 DELETE /api/myjobs/picks 撤(pick_dismissed 的过滤留着)。
  *
  * @author Frank
  * @time 2026-10-06 23:00:00
@@ -11,10 +12,10 @@
 import { headers } from 'next/headers'
 import { getDb } from '../db/server'
 import { BAD_REQUEST, HDR_CACHE_CONTROL, UNAUTHORIZED } from '../http'
-import { getUserOrNull, isPro } from '../quota/server'
+import { getUserOrNull } from '../quota/server'
 import { CACHE_PRIVATE, E_AUTH, E_NO_ID, FRESH_ON, P_FRESH, P_PROV, PROV_RE, TEXT_NONE } from './constants'
 import {
-  afterOf, batchOf, deleteApplied, dismissPick, getPicks, idOf, loadApplied, loadPicksAfter, loadSaved, loadSentCount,
+  afterOf, deleteApplied, getPicks, idOf, loadApplied, loadPicksAfter, loadSaved, loadSentCount,
 } from './functions'
 
 /**
@@ -75,7 +76,7 @@ export async function myjobsCountRoute(_req: Request): Promise<Response> {
  * 不走缓存、不分免费与会员,最多 AFTER_MAX 条。
  *
  * @param req 请求。
- * @returns { picks, more, locked };未登录 401。
+ * @returns { picks };未登录 401。
  */
 export async function myjobsPicksGetRoute(req: Request): Promise<Response> {
   const user = await getUserOrNull(await headers())
@@ -85,7 +86,7 @@ export async function myjobsPicksGetRoute(req: Request): Promise<Response> {
   const after = afterOf(req.url)
   if (after != null) {
     const picks = await loadPicksAfter({ db: await getDb(), userId: user.id, jobId: after })
-    return Response.json({ picks, more: 0, locked: [] }, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
+    return Response.json({ picks }, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
   }
   let prov = TEXT_NONE
   const q = new URL(req.url).searchParams
@@ -94,29 +95,8 @@ export async function myjobsPicksGetRoute(req: Request): Promise<Response> {
     prov = p
   }
   const fresh = q.get(P_FRESH) === FRESH_ON
-  const pro = isPro(user)
-  const batch = batchOf({ url: req.url, pro })
-  const body = await getPicks({ db: await getDb(), userId: user.id, prov, pro, fresh, batch })
+  const body = await getPicks({ db: await getDb(), userId: user.id, prov, fresh })
   return Response.json(body, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
-}
-
-/**
- * DELETE /api/myjobs/picks?id=:今日推荐「删除」,这一岗以后不再推。
- *
- * @param req 请求(职位 id 在查询参数)。
- * @returns { ok };未登录 401、没带 id 400。
- */
-export async function myjobsPicksDeleteRoute(req: Request): Promise<Response> {
-  const user = await getUserOrNull(await headers())
-  if (user == null) {
-    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
-  }
-  const id = idOf(req.url)
-  if (id == null) {
-    return Response.json({ error: E_NO_ID }, { status: BAD_REQUEST })
-  }
-  await dismissPick({ db: await getDb(), userId: user.id, id })
-  return Response.json({ ok: true })
 }
 
 /**

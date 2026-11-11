@@ -556,7 +556,7 @@ export type MeSettingsPageIn = MeSecPageIn & {
 }
 
 /**
- * MeJobs(我的求职一整页)的 props:框架三格 + 当前用户、Pro 否与两个代数。
+ * MeJobs(我的求职一整页)的 props:框架三格 + 当前用户与两个代数(2026-11-11 今日推荐不分免费与会员,「是 Pro」撤)。
  */
 export type MeJobsPageIn = MeSecPageIn & {
   /**
@@ -568,11 +568,6 @@ export type MeJobsPageIn = MeSecPageIn & {
    * 当前用户(拼分层态用)。
    */
   me: MeUser | null
-
-  /**
-   * 是 Pro。
-   */
-  pro: boolean
 
   /**
    * 投递代数(发出一封 +1:推荐与我的投递重拉)。

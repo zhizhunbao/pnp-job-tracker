@@ -505,7 +505,7 @@ async function dailyRound(x: DailyRoundIn): DailyRoundOut {
       continue
     }
     x.out.dailyChecked++
-    const picks = (await x.run.loadPicks({ userId: u.userId, pro: u.pro })).slice(0, DAILY_MAIL_MAX)
+    const picks = (await x.run.loadPicks({ userId: u.userId })).slice(0, DAILY_MAIL_MAX)
     if (picks.length === 0) {
       continue
     }

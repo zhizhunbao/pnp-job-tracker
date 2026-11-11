@@ -101,7 +101,7 @@ async function mount(tab: Tab) {
   const root = createRoot(el)
   await act(async () => {
     root.render(createElement(JobsBody, {
-      t, tab, pro: false, plan: { isPro: false, loggedIn: true }, gen: 0, asked: 0, onFill: () => undefined,
+      t, tab, plan: { isPro: false, loggedIn: true }, gen: 0, asked: 0, onFill: () => undefined,
       openApp: openAppView,
     }))
   })

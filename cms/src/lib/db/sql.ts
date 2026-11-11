@@ -3180,7 +3180,7 @@ export const MYJOBS_PICKS = `WITH want AS MATERIALIZED (
             j.salary_text, j.date_posted, j.pnp_eligible, (j.salary_annual > j.wage_med_annual) AS above_med,
             CASE WHEN j.salary_annual > 0 AND j.wage_med_annual > 0
               THEN round((j.salary_annual / j.wage_med_annual - 1) * 100)::int END AS above_pct,
-            j.wage_med_hourly,
+            j.wage_med_hourly, j.noc,
             j.employment_hours, j.employment_term, j.valid_through, c.lmia_positions, j.ee_category, j.aip,
             j.pilot, j.pilot_employer, (COALESCE(c.wiki_url, '') <> '') AS known,
             pr.info->>'offerDrawLast' AS draw_last,
@@ -3218,7 +3218,7 @@ export const MYJOBS_PICKS = `WITH want AS MATERIALIZED (
  */
 export const MYJOBS_AFTER = `SELECT j.id, j.title, j.title_zh, j.title_ko, j.trans_v, c.name AS company_name, c.alias_zh, c.alias_ko,
             c.slug AS company_slug, j.address, j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province,
-            j.salary_text, j.date_posted, j.pnp_eligible, j.wage_med_hourly, j.employment_hours, j.employment_term,
+            j.salary_text, j.date_posted, j.pnp_eligible, j.wage_med_hourly, j.noc, j.employment_hours, j.employment_term,
             j.valid_through, c.lmia_positions, j.ee_category, j.aip, j.pilot, j.pilot_employer, j.pnp_stream
        FROM jobs ref
        JOIN jobs j ON j.noc = ref.noc AND j.province = ref.province AND j.id <> ref.id
@@ -3256,11 +3256,6 @@ export const MYJOBS_FIT_FILTER = `SELECT COALESCE(u.answers->'basic'->>'fitWho',
  */
 export const MYJOBS_PATHWAY_FITS = `SELECT province, board_label, is_default, fits FROM pathways
   WHERE status <> 'closed' AND fits IS NOT NULL`
-
-/**
- * 今日推荐「删除」:这一岗以后不再推(2026-10-12,docs/sql/myjobs-delete-20261012.sql)。$1=用户 id,$2=职位 id。
- */
-export const MYJOBS_PICK_DISMISS = `INSERT INTO pick_dismissed (user_id, job_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`
 
 /**
  * 我的投递「删除」(2026-10-12 Frank 选「各删各的」):草稿真删;已发出的只藏起(投递记录与雇主回信留库)。

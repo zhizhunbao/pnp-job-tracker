@@ -17,14 +17,14 @@ import type { MeJobsPageIn } from './types'
 /**
  * 我的求职一页。
  *
- * @param props 框架三格、当前用户、Pro 否与两个代数。
+ * @param props 框架三格、当前用户与两个代数。
  * @returns 页标题 + 正文。
  */
-export function MeJobs({ t, narrow, open, onOpen, tab, me, pro, gen, asked, onFill }: MeJobsPageIn) {
+export function MeJobs({ t, narrow, open, onOpen, tab, me, gen, asked, onFill }: MeJobsPageIn) {
   return (
     <>
       <MeHead sec={tab} t={t} narrow={narrow} open={open} onOpen={onOpen} />
-      <JobsBody t={t} tab={tab} pro={pro} plan={planOf(me)} gen={gen} asked={asked} onFill={onFill}
+      <JobsBody t={t} tab={tab} plan={planOf(me)} gen={gen} asked={asked} onFill={onFill}
         openApp={openAppView} />
     </>
   )

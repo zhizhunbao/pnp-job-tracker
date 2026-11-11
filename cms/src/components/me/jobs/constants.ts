@@ -30,11 +30,6 @@ export const URL_APPLIED_DEL = '/api/myjobs/applied?id='
 export const URL_SAVED_DEL = '/api/saved-jobs/'
 
 /**
- * 今日推荐「删除」接口前缀(后接职位 id;这一岗以后不再推)。
- */
-export const URL_PICK_DEL = '/api/myjobs/picks?id='
-
-/**
  * 删除请求的方法。
  */
 export const METHOD_DELETE = 'DELETE'
@@ -168,12 +163,6 @@ export const TEXT_NONE = ''
 export const NOC_DESC_NONE = []
 
 /**
- * 今日推荐先列几条,其余点「显示更多」再列(2026-10-12 Frank「这两个要不要合成一个 然后点击显示更多,列出来这个收费部分」;
- * 与免费号每天看得见的条数同数)。
- */
-export const PICKS_FIRST = 3
-
-/**
  * 英文界面语(通道名英文行取词用)。
  */
 export const LANG_EN = 'en'
@@ -204,16 +193,10 @@ export const CHAN_NONE = '—'
 export const CARD_MD_CLS = 'cardMd'
 
 /**
- * 「解锁其余 N 条」的钮档。
- * 2026-10-13 Frank「换个颜色比较火的」→ 付费琥珀实底(button 桶 pro 档,全站付费同一色)。
- * 2026-11-07 Frank「现在都按 Azure 的来」:盖在打码行上的大钮撤,换表下一行里的常规大小主钮(蓝底主行动)。
- */
-export const UPGRADE_KIND = 'primary'
-
-/**
  * 「换一批」的钮档(白底描边次要钮;2026-10-13)。2026-11-07 Frank「现在都按 Azure 的来」:钮从表上方挪到页签那一行右端。
+ * 2026-11-11 任务书第 47 条:「换一批」撤,这一档改给表下「看全部同类职位」用。
  */
-export const SWAP_KIND = 'secondary'
+export const SEE_ALL_KIND = 'secondary'
 
 /**
  * 列身份:职位。

@@ -73,14 +73,14 @@ export function notifyJsonOf(x: NotifyJsonIn): NotifyJson {
 }
 
 /**
- * 今日推荐几条(看得见的 + 锁住的;跟「我的求职」共用当天那一份缓存)。
+ * 今日推荐几条(跟「我的求职」共用当天那一份缓存;2026-11-11 起没有锁住的)。
  *
  * @param x 取数函数与它的入参。
  * @returns 条数。
  */
 export async function countPicks(x: CountPicksIn): CountOut {
   const v = await x.getPicks(x.arg)
-  return v.picks.length + v.more
+  return v.picks.length
 }
 
 /**

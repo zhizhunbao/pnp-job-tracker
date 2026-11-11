@@ -115,7 +115,7 @@ export default function AccountPage() {
       {a.checked && a.me != null && (
         <NavFrame nav={<MeNav sec={a.nav} t={a.t} unread={a.unread} onPick={m.onPick} />}>
           {a.sec === SEC_SJOBS && (
-            <MeJobs t={a.t} narrow={a.narrow} open={m.drawer} onOpen={m.onOpen} tab={a.jobTab} me={a.me} pro={a.pro}
+            <MeJobs t={a.t} narrow={a.narrow} open={m.drawer} onOpen={m.onOpen} tab={a.jobTab} me={a.me}
               gen={a.appliedGen} asked={a.askedGen} onFill={a.onFill} />
           )}
           {a.sec === SEC_INBOX && <MeInbox t={a.t} open={m.drawer} onOpen={m.onOpen} openApp={openAppView} />}

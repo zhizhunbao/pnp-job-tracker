@@ -21,25 +21,25 @@ import {
   ACT_APPLY, ACT_CONT, ACT_DEL, ACT_OPEN, CLOSED_TAG, COL_ACT, COL_APPLIED_ON, COL_CHAN, COL_COMPANY, COL_DEADLINE,
   COL_HOURS, COL_PAY, COL_PLACE, COL_POSTED, COL_SAVED_ON, COL_STATUS, COL_TERM, COL_TITLE, CRED_INCLUDE,
   DUE_KEY, JOB_HREF_HEAD, KIND_APPLIED, KIND_SAVED, LANG_EN, LANG_KO, LANG_ZH, MD_FROM,
-  OPEN_KIND, PF_ERR_EMPTY, PICKS_FIRST, PLACE_SEP, PRIMARY_KIND, STAGES, STAGE_ALL, STAGE_FILTERS,
-  METHOD_DELETE, ST_DRAFT, TAB_PICKS, TEXT_NONE, URL_PICK_DEL, URL_PROFILE,
+  OPEN_KIND, PF_ERR_EMPTY, PLACE_SEP, PRIMARY_KIND, STAGES, STAGE_ALL, STAGE_FILTERS,
+  METHOD_DELETE, ST_DRAFT, TEXT_NONE, URL_PROFILE,
   FILL_KEY, FILL_LABEL_FALLBACK, FILL_LABEL_KEYS, FILL_MORE_KEY, FILL_NAME_MAX, FILL_SEP_KEY, COL_MED, COL_VS,
 } from './constants'
 import { HoursCell } from './hourscell'
 import { MedCell } from './medcell'
 import { PayCell } from './paycell'
 import { PlaceCell } from './placecell'
-import { chanNameOf, picksTotalOf, wageViewOf } from './recommend'
+import { chanNameOf, wageViewOf } from './recommend'
 import { TagsCell } from './tagscell'
 import { TermCell } from './termcell'
 import { VsCell } from './vscell'
 import { TitleCell } from './titlecell'
 import type {
-  ActBtn, ByStageIn, CellRowIn, CellRowsIn, CoAliasForIn, CoLandIn, ColsIn, FlagIn,
+  ActBtn, ByStageIn, CellRowIn, CellRowsIn, CoAliasForIn, CoLandIn, ColsIn,
   LazyCompaniesIn, ListRow, LoadMyJobsIn, MaybeStageDef, MjCol,
   MyJobItem, MyJobsRespJson, PfJson, PfLoadIn, PfSeed, PfView, PickRowIn, PickRowsIn, PillClickIn, PlaceDue, PlaceDueIn,
-  FillTextIn, StagePill, StagePillsIn, SwapShownIn, TagItem, TitleSubForIn,
-  FillHideIn, AskOkIn, AskSetFn, DelMenuIn, PickItem, PicksFact, RemoveFn, RemoveMineIn, RemovePickIn, RowMenuItem,
+  FillTextIn, StagePill, StagePillsIn, TagItem, TitleSubForIn,
+  FillHideIn, AskOkIn, AskSetFn, DelMenuIn, RemoveFn, RemoveMineIn, RowMenuItem,
   SendDeleteIn,
 } from './types'
 
@@ -78,32 +78,6 @@ export function makeLoadMyJobs(x: LoadMyJobsIn): () => Promise<void> {
       x.setItems([])
     }
   }
-}
-
-/**
- * 造「拨一个开关」(开 / 关定价框、显示更多 / 收起)。
- *
- * @param x 落格与拨成什么。
- * @returns 点击手柄。
- */
-export function makeFlag(x: FlagIn): () => void {
-  return function flag(): void {
-    x.set(x.v)
-  }
-}
-
-/**
- * 页签那一行右端出不出「换一批」(2026-11-07 Frank「现在都按 Azure 的来」:钮从推荐表上方挪到页签行):
- * 当前是「今日推荐」、且推荐总条数(看得见 + 锁住)多于先列的 PICKS_FIRST 条(同原先的出钮条件)。
- *
- * @param x 当前页签与推荐。
- * @returns 出钮。
- */
-export function swapShownOf(x: SwapShownIn): boolean {
-  if (x.tab !== TAB_PICKS || x.data == null) {
-    return false
-  }
-  return picksTotalOf(x.data) > PICKS_FIRST
 }
 
 /**
@@ -373,7 +347,7 @@ export function makePillClick(x: PillClickIn): () => void {
 export function pickRowsOf(x: PickRowsIn): ListRow[] {
   const out: ListRow[] = []
   for (const item of x.items) {
-    out.push(pickRowOf({ item, ask: x.ask, remove: x.remove, lang: x.lang, t: x.t, titles: x.titles, cos: x.cos }))
+    out.push(pickRowOf({ item, lang: x.lang, t: x.t, titles: x.titles, cos: x.cos }))
   }
   return out
 }
@@ -382,6 +356,7 @@ export function pickRowsOf(x: PickRowsIn): ListRow[] {
  * 一行推荐的展示行:同收藏 / 投递的展示行,表格胶囊是推荐原因(手机一条不出,照效果图),唯一那颗钮「投递」(就地弹投递框)。
  * 2026-10-12 Frank「这个是 我的 推荐模块」「改吧」:推荐只推全职长期的岗,工时 / 雇佣期两格不带。
  * 2026-11-07 效果图:「删除」(这一岗以后不再推)撤。
+ * 2026-11-11 任务书第 47 条:行末「⋯」里的删除再撤(连同删除接口;已删过的岗照旧不推)。
  *
  * @param x 这一行、界面语、取词函数与懒翻表。
  * @returns 展示行。
@@ -429,7 +404,7 @@ export function pickRowOf(x: PickRowIn): ListRow {
     tags: [],
     cardTags: [],
     act: { key: ACT_APPLY, text: x.t('mj.apply'), kind: PRIMARY_KIND, onClick: makeOpenApply(it.id), href: TEXT_NONE },
-    menu: delMenuOf({ t: x.t, ask: x.ask, remove: x.remove, id: it.id, name: it.title }),
+    menu: [],
     more: x.t('mj.more'),
   }
 }
@@ -439,6 +414,7 @@ export function pickRowOf(x: PickRowIn): ListRow {
  * 2026-10-12 Frank「bullets 显示 全职 长期。这两个字段就没必要显示了吧」:推荐表不出工时 / 雇佣期两列;效果图连发布日期也不出。
  * 2026-11-07 Frank「现在都按 Azure 的来」:「地址」列(完整地址一行)改「地点」列(「市, 省码」+ 译名灰字,同一个地图链)。
  * 2026-11-09 Frank「推荐原因删掉」「这部分加进 table 吧」:推荐原因列撤,薪资后面加职位板的「中位时薪」「vs 中位」两列(列名用职位板同一份词条;同日「这个地方都显示 时薪吧」,中位不出年薪)。
+ * 2026-11-11 任务书第 47 条:补回「发布日期」列(截止日期前面)。
  *
  * @param x 取词函数。
  * @returns 列。
@@ -451,6 +427,7 @@ export function pickColsOf(x: ColsIn): MjCol<ListRow>[] {
     { key: COL_PAY, label: x.t('mj.col.pay'), render: PayCell, nowrap: true },
     { key: COL_MED, label: x.t('col.wageMedHr'), render: MedCell, nowrap: true },
     { key: COL_VS, label: x.t('col.vsMedian'), render: VsCell, nowrap: true },
+    { key: COL_POSTED, label: x.t('mj.col.posted'), render: postedOf, nowrap: true },
     { key: COL_DEADLINE, label: x.t('mj.col.deadline'), render: deadlineOf, nowrap: true },
     { key: COL_CHAN, label: x.t('mj.col.chan'), render: ChanCell },
     { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true },
@@ -846,42 +823,6 @@ export function makeRemoveMine(x: RemoveMineIn): RemoveFn {
 export function makeRestoreMine(x: RemoveMineIn): () => void {
   return function restoreMine(): void {
     x.setItems(x.items)
-  }
-}
-
-/**
- * 造「删掉一条推荐」:同上,先从推荐里拿掉,没删成放回;「还有几条看不见」不动。
- *
- * @param x 当前推荐与落格。
- * @returns 删一条的手柄(参数:职位 id)。
- */
-export function makeRemovePick(x: RemovePickIn): RemoveFn {
-  return function removePick(id: number): void {
-    const before = x.data
-    if (before == null) {
-      return
-    }
-    const rest: PickItem[] = []
-    for (const it of before.picks) {
-      if (it.id !== id) {
-        rest.push(it)
-      }
-    }
-    const next: PicksFact = { picks: rest, more: before.more }
-    x.setData(next)
-    void sendDelete({ url: URL_PICK_DEL + id, restore: makeRestorePick({ data: before, setData: x.setData }) })
-  }
-}
-
-/**
- * 造「把原推荐放回去」。
- *
- * @param x 删之前的推荐与落格。
- * @returns 手柄。
- */
-export function makeRestorePick(x: RemovePickIn): () => void {
-  return function restorePick(): void {
-    x.setData(x.data)
   }
 }
 

@@ -17,11 +17,11 @@ import {
   ST_DRAFT,
 } from './constants'
 import {
-  loadProfile, makeAskClose, makeAskOk, makeCoLand, makeFillHide, makeFlag, makeLoadMyJobs,
-  makeRemoveMine, makeRemovePick, untranslatedCosOf,
+  loadProfile, makeAskClose, makeAskOk, makeCoLand, makeFillHide, makeLoadMyJobs,
+  makeRemoveMine, untranslatedCosOf,
   stageDefOf, ymdOf,
 } from './functions'
-import { makeLoadPicks, makeSwap } from './recommend'
+import { makeLoadPicks } from './recommend'
 import { downloadRecord, recordCsvOf } from './record'
 import type { RecordRow } from './record'
 import type {
@@ -38,7 +38,7 @@ import type {
  * @returns 页签与三张清单。
  */
 export function useJobs(x: JobsHookIn): JobsPanel {
-  const picks = usePicks({ gen: x.gen, asked: x.asked, pro: x.pro })
+  const picks = usePicks({ gen: x.gen, asked: x.asked })
   const saved = useMyJobs({ url: URL_SAVED, delHead: URL_SAVED_DEL, gen: GEN_NONE })
   const applied = useMyJobs({ url: URL_APPLIED, delHead: URL_APPLIED_DEL, gen: x.gen })
   return { picks, saved, applied }
@@ -75,33 +75,20 @@ export function useAskDel(): AskPanel {
 /**
  * 今日推荐整机:挂上拉一次、重拉代数变了再拉(刚投出的岗从推荐里下去);答档案代数变了也重拉(五题答完按新答案推)。
  * 先列 PICKS_FIRST 条,点「显示更多」再列(expanded),展开着可「收起」;「换一批」批号变了重拉,免费号换满开定价框。
+ * 2026-11-11 任务书第 47 条:每天 10 条全列,显示更多、换一批、定价框、删除一条都撤。
  *
- * @param x 重拉代数、答档案代数与是不是 Pro。
- * @returns 推荐、拉失败了没、定价框开关与几个手柄。
+ * @param x 重拉代数与答档案代数。
+ * @returns 推荐与拉失败了没。
  */
 export function usePicks(x: PicksHookIn): PicksPanel {
   const [data, setData] = useState<PicksFact | null>(null)
   const [failed, setFailed] = useState(false)
-  const [upsell, setUpsell] = useState(false)
-  const [expanded, setExpanded] = useState(false)
-  const [batch, setBatch] = useState(0)
 
   useEffect(function firstLoad() {
-    void makeLoadPicks({ setData, setFailed, fresh: x.asked > 0, batch })()
-  }, [x.gen, x.asked, batch])
+    void makeLoadPicks({ setData, setFailed, fresh: x.asked > 0 })()
+  }, [x.gen, x.asked])
 
-  return {
-    data,
-    remove: makeRemovePick({ data, setData }),
-    failed,
-    upsell,
-    onUpsell: makeFlag({ set: setUpsell, v: true }),
-    onUpsellClose: makeFlag({ set: setUpsell, v: false }),
-    expanded,
-    onExpand: makeFlag({ set: setExpanded, v: true }),
-    onFold: makeFlag({ set: setExpanded, v: false }),
-    onSwap: makeSwap({ pro: x.pro, batch, setBatch, setExpanded, setUpsell }),
-  }
+  return { data, failed }
 }
 
 /**

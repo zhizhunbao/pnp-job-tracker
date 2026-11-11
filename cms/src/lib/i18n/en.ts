@@ -884,7 +884,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'sj.save': '☆ Save', 'sj.saved': '★ Saved', 'sj.view': 'View on board', 'sj.del': 'Remove', 'sj.weekly': 'Weekly email digest (saved jobs; unsubscribe anytime)',
   'fav.title': 'My saved jobs',
   'mj.appliedAt': 'Applied', 'mj.open': 'Open', 'mj.closed': 'Closed', 'mj.del': 'Delete', 'mj.more': 'More actions', 'mj.delAsk': 'Delete this?', 'mj.cancel': 'Cancel', 'mj.col.chan': 'Pathway',
-  'mj.lockLine': '{n} more picks, all visible with Pro',
+  'mj.seeAll': 'See all similar jobs',
   'mj.col.place': 'Location',
   'mj.live': 'Open', 'mj.col.stage': 'Application', 'mj.col.listing': 'Listing',
   'mj.bounced': 'Bounced',
@@ -899,8 +899,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'name.hours.full': 'Full-time', 'name.hours.part': 'Part-time', 'name.placeSub': '{c}, {p}',
   'name.term.permanent': 'Permanent', 'name.term.term': 'Fixed-term', 'name.term.seasonal': 'Seasonal', 'name.term.casual': 'Casual',
   'mj.picks': 'Today’s picks', 'mj.picksEmpty': 'No picks today',
-  'mj.unlock': 'Unlock {n} more',
-  'mj.swap': 'Show different picks',
   // 2026-10-11 Frank「可以,按你说的改」:按真发出去的投递命中的推荐理由(2026-10-12 理由胶囊换通道列,mj.why.* 与 mj.col.why、mj.more、mj.unsave 随之删)
   'mj.appliedTitle': 'My applications', 'mj.unsent': 'Not sent',
   'mj.push': 'Job alerts', 'mj.pushRow': 'Email me picks and saved-job updates', 'mj.freqOff': 'Off', 'mj.freqDaily': 'Daily', 'mj.freqWeekly': 'Weekly',

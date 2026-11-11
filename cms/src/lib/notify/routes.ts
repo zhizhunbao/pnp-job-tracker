@@ -12,7 +12,7 @@ import { getDb } from '../db/server'
 import { HDR_CACHE_CONTROL, SERVER_ERROR, UNAUTHORIZED } from '../http'
 import { log, NOTIFY_LOG } from '../log'
 import { getPicks } from '../myjobs/server'
-import { getUserOrNull, isPro } from '../quota/server'
+import { getUserOrNull } from '../quota/server'
 import { CACHE_PRIVATE, E_AUTH, E_LOAD, P_PROV, PROV_RE, TEXT_NONE } from './constants'
 import { countPicks, loadNotify, markSeen } from './functions'
 
@@ -35,7 +35,7 @@ export async function notifyRoute(req: Request): Promise<Response> {
   const db = await getDb()
   let picks = 0
   try {
-    picks = await countPicks({ arg: { db, userId: user.id, prov, pro: isPro(user), fresh: false, batch: 0 }, getPicks })
+    picks = await countPicks({ arg: { db, userId: user.id, prov, fresh: false }, getPicks })
   } catch (e) {
     log({ tag: NOTIFY_LOG.tag, text: NOTIFY_LOG.picksFailed + user.id + NOTIFY_LOG.whyFrag + String(e) })
   }

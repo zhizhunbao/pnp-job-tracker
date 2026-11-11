@@ -201,34 +201,19 @@ export type PicksArg = {
   prov: string
 
   /**
-   * 是不是 Pro。
-   */
-  pro: boolean
-
-  /**
    * 不用当天缓存(铃铛恒 false:跟「我的求职」共用当天那一份)。
    */
   fresh: boolean
-
-  /**
-   * 换到第几批(铃铛恒 0:只数条数,不换批;2026-10-13)。
-   */
-  batch: number
 }
 
 /**
- * 今日推荐取数函数的回包(只读两格:看得见的条与还有几条)。
+ * 今日推荐取数函数的回包(只读一格:今天的推荐)。
  */
 export type PicksView = {
   /**
    * 看得见的推荐(只数条数,形状不读)。
    */
   picks: object[]
-
-  /**
-   * 还有几条(免费号锁住的)。
-   */
-  more: number
 }
 
 /**

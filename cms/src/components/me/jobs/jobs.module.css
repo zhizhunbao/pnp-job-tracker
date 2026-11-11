@@ -4,17 +4,6 @@
  */
 
 /*
- * 页签条与下面的内容拉开。
- * 2026-11-07 Frank「现在都按 Azure 的来」:页签与「换一批」同一行 —— 页签条吃满剩下的宽(窄了自己横滚),钮顶到最右。
- * 2026-11-09 页签挪到侧边栏:这一行只剩「换一批」,靠右。
- */
-.bar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 12px;
-}
-
-/*
  * 失败 / 空态那一句。
  */
 .note {
@@ -187,17 +176,10 @@
 }
 
 /*
- * 表下「解锁」那一行(2026-11-07 Frank「现在都按 Azure 的来」,代替打码行与盖在上面的大钮):
- * 「还有 N 条推荐」灰字 +「解锁其余 N 条」常规主钮,一行排开,窄了折行。
+ * 表下「看全部同类职位」那一行(2026-11-11 任务书第 47 条,代替「解锁」那一行;「换一批」那一行也撤)。
  */
-.lockLine {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
+.seeAll {
   padding: 12px 0 4px;
-  font-size: 13px;
-  color: var(--text2);
 }
 
 /*

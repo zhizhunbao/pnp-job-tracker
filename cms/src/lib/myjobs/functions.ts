@@ -8,15 +8,15 @@ import { count, firstOf, numOrNull, queryRows, SQL, text, vtext } from '../db'
 import { placeLineOf } from '../location'
 import { eduRowsOf, keepStreamOf } from '../pathways'
 import {
-  DAY_LOCALE, DAY_ZONE, JOB_CLOSED, MYJOBS_LIMIT, PICKS_CACHE_MAX, PICKS_DRAW_DAYS, PICKS_FREE, PICKS_LOCKED_SHOW, PICKS_MAX, PROV_PNP, TEXT_NONE, TIME_NONE,
-  AFTER_MAX, P_AFTER, P_BATCH, P_ID, PICKS_SWAP_FREE, WHY_AIP, WHY_APPLIED, WHY_EE, WHY_KNOWN, WHY_LMIA, WHY_OCC, WHY_PILOT, WHY_PNP,
+  DAY_LOCALE, DAY_ZONE, JOB_CLOSED, MYJOBS_LIMIT, PICKS_CACHE_MAX, PICKS_DAY, PICKS_DRAW_DAYS, PICKS_MAX, PROV_PNP, TEXT_NONE, TIME_NONE,
+  AFTER_MAX, P_AFTER, P_ID, WHY_AIP, WHY_APPLIED, WHY_EE, WHY_KNOWN, WHY_LMIA, WHY_OCC, WHY_PILOT, WHY_PNP,
   WHY_SAVED,
   WHY_WAGE,
 } from './constants'
 import { CACHE } from './variables'
 import type {
-  CountDbRow, CountOut, DeleteOut, DropTouchedIn, IdDbRow, LockedPick, MaybeId, MyJobDbRow, MyJobRow, MyJobsDeleteIn, MyJobsIn,
-  BatchOfIn, FitFilterDbRow, FitFilterFact, FitFilterOut, KeepFitIn, MaybePickFits, MyJobsOut, PathwayFitDbRow,
+  CountDbRow, CountOut, DeleteOut, DropTouchedIn, IdDbRow, MaybeId, MyJobDbRow, MyJobRow, MyJobsDeleteIn, MyJobsIn,
+  FitFilterDbRow, FitFilterFact, FitFilterOut, KeepFitIn, MaybePickFits, MyJobsOut, PathwayFitDbRow,
   PathwayFitFact, PathwayFitsIn, PathwayFitsOut, PickDbRow, PickFitsIn,
   PickRow, PickRows, PicksAfterIn, PicksIn, PicksJson, PicksJsonOut, PicksOut, PicksSplitIn, PicksViewIn, ReasonCodes, ReasonsIn,
   TimeCell, TouchedOut,
@@ -120,16 +120,6 @@ export async function deleteApplied(x: MyJobsDeleteIn): DeleteOut {
 }
 
 /**
- * 今日推荐「删除」:这一岗以后不再推(当天缓存不用清 —— 取推荐时剔「碰过的岗」已含删过的)。
- *
- * @param x 连接、用户 id 与职位 id。
- * @returns 写完。
- */
-export async function dismissPick(x: MyJobsDeleteIn): DeleteOut {
-  await x.db.query(SQL.MYJOBS_PICK_DISMISS, [x.userId, x.id])
-}
-
-/**
  * 查询参数里的 id:正整数才认,其余(缺席、乱填)给 null。
  *
  * @param url 请求地址。
@@ -144,23 +134,6 @@ export function idOf(url: string): MaybeId {
 }
 
 /**
- * 查询参数里的批号(2026-10-13 换一批):非负整数才认,其余给 0;免费号夹到 PICKS_SWAP_FREE(换满了只看得到这几批)。
- *
- * @param x 请求地址与是不是 Pro。
- * @returns 批号。
- */
-export function batchOf(x: BatchOfIn): number {
-  const n = Number(new URL(x.url).searchParams.get(P_BATCH))
-  if (Number.isInteger(n) === false || n < 0) {
-    return 0
-  }
-  if (x.pro === false) {
-    return Math.min(n, PICKS_SWAP_FREE)
-  }
-  return n
-}
-
-/**
  * 本人收藏的岗(我的收藏;最近收藏的在前,投过的也在)。
  *
  * @param x 数据库连接与用户 id。
@@ -172,11 +145,11 @@ export async function loadSaved(x: MyJobsIn): MyJobsOut {
 
 /**
  * 今日推荐(2026-10-10 批 2):当天算过就用缓存,没算过现算一次记下;再剔掉他今天新碰过的岗(投出 / 开了草稿),
- * 最后按免费 / Pro 切成看得见与锁住两份。
+ * 最后按免费 / Pro 切成看得见与锁住两份(2026-11-11 起不分免费与会员,只取前 PICKS_DAY 条)。
  * 2026-10-13 Frank「做推荐匹配吧」:档案答了身份,再按「我的通道」筛 —— 岗的通道这个身份走不了(或院校条件对不上)就不推;
  * 判定与「我的档案」下面的「我的通道」卡同一个(lib/pathways 的 keepStreamOf)。没答身份不筛。筛在缓存之后,改了档案当场生效。
  *
- * @param x 连接、用户 id、预选省与是不是 Pro。
+ * @param x 连接、用户 id、预选省与要不要现算。
  * @returns 推荐接口的回包。
  */
 export async function getPicks(x: PicksViewIn): PicksJsonOut {
@@ -201,7 +174,7 @@ export async function getPicks(x: PicksViewIn): PicksJsonOut {
   if (filter.who !== TEXT_NONE) {
     kept = keepFitPicksOf({ rows: kept, ways: await loadPathwayFits({ db: x.db }), filter })
   }
-  return picksViewOf({ rows: kept, pro: x.pro, batch: x.batch })
+  return picksViewOf({ rows: kept })
 }
 
 /**
@@ -364,48 +337,14 @@ export function dropTouchedOf(x: DropTouchedIn): PickRows {
  * (锁住的只留职位名与理由 —— 公司、地址、薪资、职位号不下发,前端模糊的是假字)。
  *
  * 2026-10-13 换一批:先把整份推荐从第 batch × PICKS_FREE 条起转一圈(换过头了从头接),再切。
+ * 2026-11-11 Frank「别一次性推荐 50 个」「不需要解锁其余」(任务书第 47 条):不分免费与会员,每天只给前 PICKS_DAY 条,
+ * 全部看得见;换一批、锁住行随之撤。
  *
- * @param x 推荐、是不是 Pro 与批号。
+ * @param x 推荐。
  * @returns 推荐接口的回包。
  */
 export function picksViewOf(x: PicksSplitIn): PicksJson {
-  const rows = rotatedPicksOf(x)
-  if (x.pro) {
-    return { picks: rows, more: 0, locked: [] }
-  }
-  const rest = rows.slice(PICKS_FREE)
-  const locked: LockedPick[] = []
-  for (const r of rest.slice(0, PICKS_LOCKED_SHOW)) {
-    locked.push(toLockedPick(r))
-  }
-  return { picks: rows.slice(0, PICKS_FREE), more: rest.length, locked }
-}
-
-/**
- * 换一批的转圈:第 batch 批打头,前面几批接到末尾(条数不变)。
- *
- * @param x 推荐与批号。
- * @returns 转过的推荐。
- */
-export function rotatedPicksOf(x: PicksSplitIn): PickRows {
-  if (x.rows.length === 0) {
-    return x.rows
-  }
-  const start = (x.batch * PICKS_FREE) % x.rows.length
-  return x.rows.slice(start).concat(x.rows.slice(0, start))
-}
-
-/**
- * 推荐一行 → 锁住的一条(只抄职位名、理由、项目简称;2026-10-12 再抄省码与通道三格,通道列要写通道名)。
- *
- * @param r 推荐一行。
- * @returns 锁住的一条。
- */
-export function toLockedPick(r: PickRow): LockedPick {
-  return {
-    title: r.title, titleZh: r.titleZh, titleKo: r.titleKo, reasons: r.reasons, program: r.program, province: r.province,
-    pnpStream: r.pnpStream, pnpEligible: r.pnpEligible, provDefault: r.provDefault,
-  }
+  return { picks: x.rows.slice(0, PICKS_DAY) }
 }
 
 /**
@@ -510,6 +449,7 @@ export function toPickRow(r: PickDbRow): PickRow {
     }),
     abovePct: numOrNull(r.above_pct),
     wageMedHourly: numOrNull(r.wage_med_hourly),
+    noc: text(r.noc),
     lmiaPositions: count(r.lmia_positions),
     eeCategory: text(r.ee_category),
     drawLast: text(r.draw_last),

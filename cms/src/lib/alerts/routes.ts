@@ -121,7 +121,7 @@ export async function alertsRunRoute(req: Request): Promise<Response> {
   const pool = await getDb()
   const loadPicksFor: LoadPicksFn = async function loadPicksFor(x: PicksForIn): Promise<MailPick[]> {
     const rows = await loadPicks({ db: pool, userId: x.userId, prov: PARAM_NONE })
-    return picksViewOf({ rows, pro: x.pro, batch: 0 }).picks
+    return picksViewOf({ rows }).picks
   }
   const result = await runAlerts({
     db: pool, dry: dry, preview: preview,

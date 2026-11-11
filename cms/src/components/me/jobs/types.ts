@@ -586,6 +586,11 @@ export type PickItem = {
   wageMedHourly: number | null
 
   /**
+   * 5 位职业码(没有 = 空串)。
+   */
+  noc: string
+
+  /**
    * 雇主办过的 LMIA 外劳名额(没有是 0)。
    */
   lmiaPositions: number
@@ -606,14 +611,9 @@ export type PickItem = {
  */
 export type PicksFact = {
   /**
-   * 看得见的推荐。
+   * 今天的推荐。
    */
   picks: PickItem[]
-
-  /**
-   * 还有几条看不见。
-   */
-  more: number
 }
 
 /**
@@ -626,49 +626,9 @@ export type PicksPanel = {
   data: PicksFact | null
 
   /**
-   * 删掉一条推荐(这一岗以后不再推;2026-11-07)。
-   */
-  remove: RemoveFn
-
-  /**
    * 拉失败了。
    */
   failed: boolean
-
-  /**
-   * 定价框开着没有。
-   */
-  upsell: boolean
-
-  /**
-   * 开定价框。
-   */
-  onUpsell: () => void
-
-  /**
-   * 关定价框。
-   */
-  onUpsellClose: () => void
-
-  /**
-   * 点过「显示更多」。
-   */
-  expanded: boolean
-
-  /**
-   * 点「显示更多」。
-   */
-  onExpand: () => void
-
-  /**
-   * 点「收起」(2026-10-13 Frank「显示更多之后点开,还需要有收起功能」)。
-   */
-  onFold: () => void
-
-  /**
-   * 点「换一批」(2026-10-13;免费号换满开定价框)。
-   */
-  onSwap: () => void
 }
 
 /**
@@ -684,11 +644,6 @@ export type PicksHookIn = {
    * 答档案代数(大于 0 = 这一页答过,重拉时现算)。
    */
   asked: number
-
-  /**
-   * 是不是 Pro(换一批不限次)。
-   */
-  pro: boolean
 }
 
 /**
@@ -699,16 +654,6 @@ export type PickRowsIn = {
    * 推荐。
    */
   items: PickItem[]
-
-  /**
-   * 请删除先确认(开确认框;确认了才调 run)。
-   */
-  ask: AskFn
-
-  /**
-   * 删掉这张清单里的一条(先从表里拿掉再发删除,没删成放回)。
-   */
-  remove: RemoveFn
 
   /**
    * 界面语。
@@ -741,16 +686,6 @@ export type PickRowIn = {
   item: PickItem
 
   /**
-   * 请删除先确认(开确认框;确认了才调 run)。
-   */
-  ask: AskFn
-
-  /**
-   * 删掉这张清单里的一条(先从表里拿掉再发删除,没删成放回)。
-   */
-  remove: RemoveFn
-
-  /**
    * 界面语。
    */
   lang: Lang
@@ -769,21 +704,6 @@ export type PickRowIn = {
    * 懒翻回来的公司名译名表。
    */
   cos: Record<string, string>
-}
-
-/**
- * 拨一个开关(makeFlag)的入参。
- */
-export type FlagIn = {
-  /**
-   * 落格。
-   */
-  set: (v: boolean) => void
-
-  /**
-   * 拨成什么。
-   */
-  v: boolean
 }
 
 /**
@@ -1095,21 +1015,6 @@ export type RemoveMineIn = {
    * 写清单。
    */
   setItems: (v: MyJobItem[] | null) => void
-}
-
-/**
- * 造「删一条推荐」(makeRemovePick)的入参。
- */
-export type RemovePickIn = {
-  /**
-   * 当前推荐。
-   */
-  data: PicksFact | null
-
-  /**
-   * 写推荐。
-   */
-  setData: (v: PicksFact | null) => void
 }
 
 /**
@@ -1448,21 +1353,6 @@ export type PlaceDue = {
 }
 
 /**
- * swapShownOf(页签那一行右端出不出「换一批」)的入参。
- */
-export type SwapShownIn = {
-  /**
-   * 当前页签。
-   */
-  tab: string
-
-  /**
-   * 推荐(还没拉到 = null)。
-   */
-  data: PicksFact | null
-}
-
-/**
  * useJobs 的入参。
  */
 export type JobsHookIn = {
@@ -1475,11 +1365,6 @@ export type JobsHookIn = {
    * 答档案代数(五题关了加一:推荐按新答案现算)。
    */
   asked: number
-
-  /**
-   * 是不是 Pro。
-   */
-  pro: boolean
 }
 
 /**
@@ -1517,11 +1402,6 @@ export type JobsBodyIn = {
   tab: string
 
   /**
-   * 是不是 Pro(推荐的条数上限与换一批次数;服务端另有自己的判定)。
-   */
-  pro: boolean
-
-  /**
    * 分层态(公司 / 职位弹框要它;页面门递来)。
    */
   plan: JobsPlan
@@ -1555,11 +1435,6 @@ export type PicksPaneIn = {
    * 取词函数。
    */
   t: TFn
-
-  /**
-   * 是不是 Pro。
-   */
-  pro: boolean
 
   /**
    * 推荐整机。

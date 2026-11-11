@@ -9,11 +9,6 @@
  */
 
 /**
- * 今日推荐先列几条,其余点「显示更多」再列(同父桶 PICKS_FIRST)。
- */
-export const PICKS_FIRST = 3
-
-/**
  * 空串。
  */
 export const TEXT_NONE = ''
@@ -34,15 +29,19 @@ export const URL_PICKS = '/api/myjobs/picks?prov='
 export const URL_PICKS_FRESH = '&fresh=1'
 
 /**
- * 今日推荐接口「换到第几批」的尾巴(后接批号;2026-10-13 换一批)。
+ * 职位板按省筛选的地址头(表下「看全部同类职位」;后接省码)。
  */
-export const URL_PICKS_BATCH = '&batch='
+export const URL_BOARD_PROV = '/jobs?prov='
 
 /**
- * 免费号一天能换几批(同服务端 lib/myjobs 的 PICKS_SWAP_FREE;换满再点弹定价框;
- * 2026-10-13 Frank「比如可以换 三次 然后 再点就弹付费呢」)。
+ * 职位板的职业筛选参数(后接职业码,多个用 NOC_SEP 隔开)。
  */
-export const PICKS_SWAP_FREE = 3
+export const PARAM_NOC = '&noc='
+
+/**
+ * 多个职业码之间的分隔(职位板的多值参数口径)。
+ */
+export const NOC_SEP = ','
 
 /**
  * 请求带 cookie(登录态)。

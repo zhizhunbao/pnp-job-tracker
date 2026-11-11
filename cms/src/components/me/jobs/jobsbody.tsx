@@ -12,44 +12,33 @@
  * @author Frank
  * @time 2026-11-07 18:00:00
  */
-import { Button } from '@/components/button'
-import { cssOf } from '@/components/css'
 import { PeekContext } from '@/components/modal'
-import { UpgradeModal } from '@/components/pricing'
 import { AppliedPane } from './appliedpane'
 import {
-  CARD_MD_CLS, NOC_DESC_NONE, SWAP_KIND, TAB_APPLIED, TAB_PICKS, TAB_SAVED,
+  CARD_MD_CLS, NOC_DESC_NONE, TAB_APPLIED, TAB_PICKS, TAB_SAVED,
 } from './constants'
-import { swapShownOf } from './functions'
 import { useJobs } from './hooks'
 import { FillBar } from './fillbar'
 import { PicksPane } from './pickspane'
 import { SavedPane } from './savedpane'
 import type { JobsBodyIn } from './types'
-import css from './jobs.module.css'
 
 /**
  * 「我的求职」正文。
  *
- * @param props 取词函数、是不是 Pro、分层态、重拉代数、答档案代数、五题关了的交还口与开投递框。
- * @returns 页签卡 + 定价框 + 报件 + 五题弹框。
+ * @param props 取词函数、当前子项、分层态、重拉代数、答档案代数、五题关了的交还口与开投递框。
+ * @returns 页签卡 + 报件。
  */
-export function JobsBody({ t, tab, pro, plan, gen, asked, onFill, openApp }: JobsBodyIn) {
-  const j = useJobs({ gen, asked, pro })
+export function JobsBody({ t, tab, plan, gen, asked, onFill, openApp }: JobsBodyIn) {
+  const j = useJobs({ gen, asked })
   return (
     <>
       <FillBar t={t} onFill={onFill} />
       <section className={CARD_MD_CLS}>
-        {swapShownOf({ tab, data: j.picks.data }) && (
-          <div className={cssOf(css.bar)}>
-            <Button kind={SWAP_KIND} sm onClick={j.picks.onSwap}>{t('mj.swap')}</Button>
-          </div>
-        )}
-        {tab === TAB_PICKS && <PicksPane t={t} pro={pro} p={j.picks} />}
+        {tab === TAB_PICKS && <PicksPane t={t} p={j.picks} />}
         {tab === TAB_SAVED && <SavedPane t={t} l={j.saved} openApp={openApp} />}
         {tab === TAB_APPLIED && <AppliedPane t={t} l={j.applied} openApp={openApp} />}
       </section>
-      {j.picks.upsell && <UpgradeModal t={t} onClose={j.picks.onUpsellClose} />}
       <PeekContext plan={plan} nocDesc={NOC_DESC_NONE} />
     </>
   )

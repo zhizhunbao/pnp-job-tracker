@@ -130,6 +130,11 @@ export type PickItem = {
   wageMedHourly: number | null
 
   /**
+   * 5 位职业码(没有 = 空串)。
+   */
+  noc: string
+
+  /**
    * 雇主办过的 LMIA 外劳名额(没有是 0)。
    */
   lmiaPositions: number
@@ -150,14 +155,9 @@ export type PickItem = {
  */
 export type PicksFact = {
   /**
-   * 看得见的推荐。
+   * 今天的推荐。
    */
   picks: PickItem[]
-
-  /**
-   * 还有几条看不见。
-   */
-  more: number
 }
 
 /**
@@ -185,14 +185,9 @@ export type TitledItem = {
  */
 export type PicksRespJson = {
   /**
-   * 看得见的推荐。
+   * 今天的推荐。
    */
   picks?: PickItem[]
-
-  /**
-   * 还有几条看不见。
-   */
-  more?: number
 }
 
 /**
@@ -213,86 +208,6 @@ export type LoadPicksIn = {
    * 这一页答过档案,让服务端现算(不用当天缓存)。
    */
   fresh: boolean
-
-  /**
-   * 第几批(0 = 当天第一批)。
-   */
-  batch: number
-}
-
-/**
- * 「换一批」(makeSwap)的入参。
- */
-export type SwapIn = {
-  /**
-   * 是不是 Pro。
-   */
-  pro: boolean
-
-  /**
-   * 现在的批号。
-   */
-  batch: number
-
-  /**
-   * 改批号。
-   */
-  setBatch: (v: number) => void
-
-  /**
-   * 收起「显示更多」。
-   */
-  setExpanded: (v: boolean) => void
-
-  /**
-   * 开定价框。
-   */
-  setUpsell: (v: boolean) => void
-}
-
-/**
- * shownPicksOf 的入参。
- */
-export type ShownPicksIn<T> = {
-  /**
-   * 看得见的推荐。
-   */
-  items: T[]
-
-  /**
-   * 点过「显示更多」。
-   */
-  expanded: boolean
-}
-
-/**
- * hiddenPicksOf 的入参。
- */
-export type HiddenPicksIn = {
-  /**
-   * 推荐整包。
-   */
-  data: PicksFact
-
-  /**
-   * 点过「显示更多」。
-   */
-  expanded: boolean
-}
-
-/**
- * unlockNOf(表下「解锁」那一行的条数)的入参。
- */
-export type UnlockNIn = {
-  /**
-   * 是不是 Pro。
-   */
-  pro: boolean
-
-  /**
-   * 推荐整包(还没拉到 = null)。
-   */
-  data: PicksFact | null
 }
 
 /**
