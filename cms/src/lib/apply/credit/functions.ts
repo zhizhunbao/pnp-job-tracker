@@ -8,12 +8,11 @@
  */
 import { count, queryRows, SQL } from '../../db'
 import {
-  CREDIT_FREE_MAX, CREDIT_PERIOD_MS, CREDIT_PRO_MAX, FEATURE_FREE, FEATURE_PRO, PLAN_FREE, PLAN_PRO, REGEN_FREE_DAILY,
-  REGEN_PRO_DAILY, RESET_NONE,
+  CREDIT_FREE_MAX, CREDIT_PERIOD_MS, CREDIT_PRO_MAX, FEATURE_FREE, FEATURE_PRO, PLAN_FREE, PLAN_PRO, RESET_NONE,
 } from './constants'
 import type {
   CreditDbRow, CreditFact, CreditIn, CreditLeftIn, CreditMarkIn, CreditOfIn, CreditOut, CreditUse, MaybeIso, MaybePeriod,
-  PeriodIn, RegenDbRow, RegenIn, RegenMaxIn, RegenOut, WriteOut,
+  PeriodIn, WriteOut,
 } from './types'
 
 // =========================================================================
@@ -126,45 +125,4 @@ export function creditLeftOf(x: CreditLeftIn): number {
     return Math.max(0, x.credit.left - 1)
   }
   return x.credit.left
-}
-
-// =========================================================================
-// 2. 重新生成
-// =========================================================================
-
-/**
- * 手动重新生成每份文件每天几次。
- *
- * @param x 额度档。
- * @returns 次数上限。
- */
-export function regenMaxOf(x: RegenMaxIn): number {
-  if (x.plan === PLAN_PRO) {
-    return REGEN_PRO_DAILY
-  }
-  return REGEN_FREE_DAILY
-}
-
-/**
- * 占一次手动重新生成(按 用户 + 职位 + 文件 + UTC 日 计,记在库里,换版和多实例都不丢)。
- * 查和加在一条语句里:没到上限才加一并回行,到了上限零行。
- *
- * @param x 连接、用户、职位、文件与今天的上限。
- * @returns 占到了 true;今天用完了 false。
- */
-export async function takeRegen(x: RegenIn): RegenOut {
-  const rows = await queryRows({
-    db: x.db, sql: SQL.REGEN_TAKE, params: [x.userId, x.jobId, x.step, x.max], map: toRegenCount,
-  })
-  return rows.length > 0
-}
-
-/**
- * 重新生成计数库行 → 今天第几次。
- *
- * @param r 库行。
- * @returns 第几次。
- */
-function toRegenCount(r: RegenDbRow): number {
-  return count(r.n)
 }

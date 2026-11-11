@@ -6,11 +6,11 @@
  * @time 2026-11-10 12:00:00
  */
 import { queryRowsOrEmpty, SQL } from '../../db'
-import { cardOf, dashOf, tagsCell, textCell } from '../cell'
+import { cardOf, dashOf, sayOf, tagsCell, textCell } from '../cell'
 import {
-  CARD, CELL, ROWS_MAX, ROWS_TAIL, SAVED_COLS, STATUS_NAME, STATUS_WISH, TEXT_NONE, TITLE_SAVED, VAR,
+  CARD, CELL, ROWS_KEY, ROWS_MAX, SAVED_COLS, STATUS_NAME, STATUS_WISH, TEXT_NONE, TITLE_SAVED, VAR,
 } from './constants'
-import type { BoardIn, BoardOut, MaybeText, SavedDbRow, SavedRow, SavedStatsDbRow, SavedTag } from './types'
+import type { BoardIn, BoardOut, MaybeText, OpsText, SavedDbRow, SavedRow, SavedStatsDbRow, SavedTag } from './types'
 
 /**
  * 用户收藏页。
@@ -31,7 +31,7 @@ export async function savedBoard(x: BoardIn): BoardOut {
       cardOf({ value: s.total, label: CARD.total }), cardOf({ value: s.users, label: CARD.users }),
       cardOf({ value: s.jobs, label: CARD.jobs }), cardOf({ value: s.today, label: CARD.today }),
     ],
-    tables: [{ title: TITLE_SAVED, count: s.total + ROWS_TAIL, cols: SAVED_COLS, rows }],
+    tables: [{ title: TITLE_SAVED, count: { key: ROWS_KEY, vars: { n: s.total } }, cols: SAVED_COLS, rows }],
     updatedAt: x.updatedAt,
   }
 }
@@ -77,7 +77,7 @@ function toSavedRow(row: SavedDbRow): SavedRow {
  * @param s 状态码。
  * @returns 显示词。
  */
-function statusTextOf(s: MaybeText): string {
+function statusTextOf(s: MaybeText): OpsText {
   let code = STATUS_WISH
   if (s != null && s !== TEXT_NONE) {
     code = s
@@ -86,5 +86,5 @@ function statusTextOf(s: MaybeText): string {
   if (name == null) {
     return code
   }
-  return name
+  return sayOf(name)
 }

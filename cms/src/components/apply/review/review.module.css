@@ -93,8 +93,11 @@
 .fieldName { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--text); }
 
 /* 宽屏底栏贴在框底(2026-11-10:窗口矮时底栏原先被框的下沿裁掉,要滚到底才看得到发送钮)。 */
+/* 同日 Frank「邮件区不能一直占住半屏」:贴底的从整张邮件卡收成只有按钮行 .bar,邮件卡随正文滚动;
+   三栏高度的扣减数随之从 400 改 460(多扣底栏一行,1707×932 下底栏不再盖住三栏)。 */
 @media (min-width: 1101px) {
-  .foot { position: sticky; bottom: -20px; z-index: 2; padding-bottom: 20px; background: var(--card); }
+  .bar { position: sticky; bottom: -20px; z-index: 2; padding-bottom: 20px; background: var(--card); }
+  .paper { height: max(320px, calc(100vh - 460px)); }
 }
 
 /* 窗口不够宽就三份竖排,每份占满宽度(2026-11-10 Frank「这两个字太小了吧」;原先 640 以下才竖排)。 */

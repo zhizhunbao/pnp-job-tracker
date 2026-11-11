@@ -56,28 +56,53 @@ export const TEXT = {
 }
 
 /**
- * 时长单位。
+ * 带时长的句子的键头,后接 UNIT 的一格成词条键(时长的数走插值 d)。
+ */
+export const SPAN = {
+  /**
+   * 只有时长。
+   */
+  dur: 'ops.dur.',
+
+  /**
+   * 每隔多久。
+   */
+  every: 'ops.every.',
+
+  /**
+   * 过点多久。
+   */
+  late: 'ops.late.',
+
+  /**
+   * 多久之后。
+   */
+  after: 'ops.after.',
+}
+
+/**
+ * 时长单位(词条键的末段)。
  */
 export const UNIT = {
   /**
    * 秒。
    */
-  sec: ' 秒',
+  sec: 'sec',
 
   /**
    * 分钟。
    */
-  min: ' 分钟',
+  min: 'min',
 
   /**
    * 小时。
    */
-  hour: ' 小时',
+  hour: 'hour',
 
   /**
    * 天。
    */
-  day: ' 天',
+  day: 'day',
 }
 
 /**
@@ -112,32 +137,32 @@ export const STAGE_TEXT: Record<string, string> = {
   /**
    * 排队中。
    */
-  queued: '排队中',
+  queued: 'ops.stage.queued',
 
   /**
    * 查找官网。
    */
-  find: '查找官网',
+  find: 'ops.stage.find',
 
   /**
    * 抓取。
    */
-  fetch: '抓取',
+  fetch: 'ops.stage.fetch',
 
   /**
    * 整理。
    */
-  facts: '整理',
+  facts: 'ops.stage.facts',
 
   /**
    * 办完。
    */
-  done: '完成',
+  done: 'ops.stage.done',
 
   /**
    * 办完但什么也没有。
    */
-  none: '未找到',
+  none: 'ops.stage.none',
 }
 
 /**
@@ -147,30 +172,30 @@ export const DONE_TEXT: Record<string, string> = {
   /**
    * 已发。
    */
-  sent: '已发出',
+  sent: 'ops.done.sent',
 
   /**
    * 已回复。
    */
-  replied: '已回复',
+  replied: 'ops.done.replied',
 
   /**
    * 退信。
    */
-  bounced: '退信',
+  bounced: 'ops.done.bounced',
 
   /**
    * 拒绝。
    */
-  declined: '已拒绝',
+  declined: 'ops.done.declined',
 
   /**
    * 译名完成。
    */
-  done: '完成',
+  done: 'ops.done.done',
 
   /**
    * 译名跳过。
    */
-  skip: '跳过',
+  skip: 'ops.done.skip',
 }

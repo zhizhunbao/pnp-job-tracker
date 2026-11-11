@@ -8,6 +8,6 @@
  * @time 2026-11-09 21:00:00
  */
 
-export { creditLeftOf, creditOf, isCreditOpen, loadCredit, markCredit, periodOf, regenMaxOf, takeRegen } from './functions'
+export { creditLeftOf, creditOf, isCreditOpen, loadCredit, markCredit, periodOf } from './functions'
 export { CREDIT_FREE_MAX, CREDIT_PRO_MAX, PLAN_FREE, PLAN_PRO } from './constants'
 export type { CreditFact, CreditPlan } from './types'

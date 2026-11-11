@@ -6200,3 +6200,23 @@ export type ResetJdTransIn = {
    */
   title: string
 }
+
+/**
+ * `sectionInto` 的入参:把攒好的一节写进输出。
+ */
+export type SecIntoIn = {
+  /**
+   * 输出的各行(就地追加)。
+   */
+  out: string[]
+
+  /**
+   * 这一节的节标记(如 `[REQS]`);还没遇到节标记是空串。
+   */
+  head: string
+
+  /**
+   * 这一节的正文各行。
+   */
+  body: string[]
+}

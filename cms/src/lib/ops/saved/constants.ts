@@ -39,7 +39,7 @@ export const TEXT_NONE = ''
 /**
  * 条数的单位。
  */
-export const ROWS_TAIL = ' 条'
+export const ROWS_KEY = 'ops.rows'
 
 /**
  * 表的条数上限。
@@ -49,7 +49,7 @@ export const ROWS_MAX = 200
 /**
  * 表头标题。
  */
-export const TITLE_SAVED = '全部收藏'
+export const TITLE_SAVED = 'ops.tt.saved'
 
 /**
  * 四格的标题。
@@ -58,30 +58,30 @@ export const CARD = {
   /**
    * 总条数。
    */
-  total: '收藏总数',
+  total: 'ops.card.savedTotal',
 
   /**
    * 收藏过的用户数。
    */
-  users: '收藏过的用户',
+  users: 'ops.card.savedUsers',
 
   /**
    * 被收藏的职位数。
    */
-  jobs: '被收藏的职位',
+  jobs: 'ops.card.savedJobs',
 
   /**
    * 今天新增。
    */
-  today: '今天新增',
+  today: 'ops.card.savedToday',
 } as const
 
 /**
  * 用户收藏表。
  */
 export const SAVED_COLS = [
-  { label: '收藏时间', wrap: false }, { label: '用户', wrap: false }, { label: '职位', wrap: true }, { label: '职位号', wrap: false },
-  { label: '状态', wrap: false },
+  { label: 'ops.col.savedAt', wrap: false }, { label: 'ops.col.user', wrap: false }, { label: 'ops.col.job', wrap: true }, { label: 'ops.col.jobId', wrap: false },
+  { label: 'ops.col.status', wrap: false },
 ]
 
 /**
@@ -96,17 +96,17 @@ export const STATUS_NAME: Record<string, string> = {
   /**
    * 想投。
    */
-  wish: '想投',
+  wish: 'ops.saved.wish',
 
   /**
    * 已投。
    */
-  applied: '已投',
+  applied: 'ops.saved.applied',
 
   /**
    * 面试中。
    */
-  interview: '面试中',
+  interview: 'ops.saved.interview',
 
   /**
    * 拿到 offer。

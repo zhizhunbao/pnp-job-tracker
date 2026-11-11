@@ -1,5 +1,6 @@
 /**
  * ops 组件域的死值:侧栏结构、路径、删除文案与样式类名(内部页,文案只有中文,同 funnel)。
+ * 2026-11-10 Frank「内部页也要三语,界面字不进 lib」撤上一句:带 `_TEXT` 与 NAV_ARIA 的值都是词条键,文字住 lib/i18n 三语文件。
  *
  * @author Frank
  * @time 2026-11-08 18:00:00
@@ -18,12 +19,12 @@ export const PATH_SEP = '/'
 /**
  * 运维页标题。
  */
-export const TITLE_TEXT = '运维'
+export const TITLE_TEXT = 'ops.title'
 
 /**
  * 侧栏的无障碍名。
  */
-export const NAV_ARIA = '运维'
+export const NAV_ARIA = 'ops.title'
 
 /**
  * 没有文字。
@@ -38,7 +39,7 @@ export const ISO_NONE = ''
 /**
  * 表的空态。
  */
-export const EMPTY_TEXT = '暂无数据'
+export const EMPTY_TEXT = 'ops.empty'
 
 /**
  * 全站白卡的类名。
@@ -118,22 +119,22 @@ export const DEL_BTN_KIND = 'secondary'
 /**
  * 删除钮文字。
  */
-export const DEL_TEXT = '删除'
+export const DEL_TEXT = 'ops.del'
 
 /**
  * 取消钮文字。
  */
-export const CANCEL_TEXT = '取消'
+export const CANCEL_TEXT = 'ops.cancel'
 
 /**
  * 确认框标题。
  */
-export const DEL_ASK_TEXT = '确认删除这一条?'
+export const DEL_ASK_TEXT = 'ops.delAsk'
 
 /**
  * 删除失败的胶囊。
  */
-export const DEL_FAIL_TEXT = '删除失败'
+export const DEL_FAIL_TEXT = 'ops.delFail'
 
 /**
  * 删除失败胶囊的变体。
@@ -158,17 +159,17 @@ export const CELL_COPY = 'copy'
 /**
  * 复制报错钮文字。
  */
-export const COPY_TEXT = '复制报错'
+export const COPY_TEXT = 'ops.copy'
 
 /**
  * 复制成功提示。
  */
-export const COPY_OK_TEXT = '已复制报错'
+export const COPY_OK_TEXT = 'ops.copyOk'
 
 /**
  * 复制失败提示。
  */
-export const COPY_FAIL_TEXT = '复制失败'
+export const COPY_FAIL_TEXT = 'ops.copyFail'
 
 /**
  * 提示档:成功。
@@ -193,7 +194,7 @@ export const CELL_TEXT = 'text'
 /**
  * 总览的侧栏名。
  */
-export const CAT_REPORT_TEXT = '总览'
+export const CAT_REPORT_TEXT = 'ops.cat.report'
 
 /**
  * 侧栏分类:调度。
@@ -213,12 +214,12 @@ export const CAT_FEE = 'fee'
 /**
  * 队列分类名。
  */
-export const CAT_QUEUE_TEXT = '队列'
+export const CAT_QUEUE_TEXT = 'ops.cat.queue'
 
 /**
  * 费用分类名。
  */
-export const CAT_FEE_TEXT = '费用'
+export const CAT_FEE_TEXT = 'ops.cat.fee'
 
 /**
  * 事件操作接口。
@@ -233,7 +234,7 @@ export const CELL_ACT = 'act'
 /**
  * 事件操作失败的提示。
  */
-export const ACT_FAIL_TEXT = '操作失败'
+export const ACT_FAIL_TEXT = 'ops.actFail'
 
 /**
  * 操作钮的样式档。
@@ -248,7 +249,7 @@ export const CAT_INCIDENT = 'incident'
 /**
  * 事件分类名。
  */
-export const CAT_INCIDENT_TEXT = '事件'
+export const CAT_INCIDENT_TEXT = 'ops.cat.incident'
 
 /**
  * 侧栏分类:AI 通道。
@@ -258,4 +259,4 @@ export const CAT_CHANNEL = 'channel'
 /**
  * AI 通道分类名。
  */
-export const CAT_CHANNEL_TEXT = 'AI 通道'
+export const CAT_CHANNEL_TEXT = 'ops.cat.channel'

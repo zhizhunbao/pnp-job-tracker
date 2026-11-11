@@ -23,6 +23,8 @@ import css from './review.module.css'
  * 2026-11-10 Frank「这部分是不是也用个卡片」:收发信息与发送钮收进一张分区卡,卡头「邮件」,和上面三张卡同形。
  * 2026-11-10 Frank「三样挤在一行」:左边只留额度与自动保存两句灰字;「改投基础简历」挪到右边、发送钮左侧,做成次要钮。
  * 同日 Frank「这个免费额度是不是在哪高亮显示一下」:剩余额度那一句改成胶囊(站规:小信号一律胶囊)。
+ * 同日 Frank「邮件区不能一直占住半屏」:按钮行提出邮件卡单独成底栏,宽屏只有它贴框底;邮件卡留在正文里随三栏滚动
+ * (Fluent 2 Dialog Scrolling:贴住不动的只有标题与带按钮的页脚)。出错提示跟着底栏,发送失败时不用滚就看得到。
  *
  * @param props 整机与收发信息。
  * @returns 一行。
@@ -32,32 +34,36 @@ export function ReviewFoot({ p, x }: ReviewFootIn) {
   const mailText = mailTextOf({ title: x.title, city: x.city, province: x.province, name: x.name, cover: true })
   const nameBad = x.askName && isSenderName(x.name.trim()) === false
   return (
-    <div className={cssOf(css.foot)}>
-      {p.err !== TEXT_NONE && <Notice kind={NOTICE_ERR}>{x.t(p.err)}</Notice>}
-      <section className={CLS_CARD_MD + ONE_SPACE + cssOf(css.footCard)}>
-        <div className={CLS_MCARD_HEAD}>{x.t('tr.mailHead')}</div>
-        <div className={cssOf(css.mailCols)}>
-          <dl className={cssOf(css.mailGrid)}>
-            <dt>{x.t('tr.to')}</dt>
-            <dd>{x.to}</dd>
-            <dt>{x.t('tr.subject')}</dt>
-            <dd>{mailSubjectOf(parts)}</dd>
-            {x.askName && <dt>{x.t('ap.name')}</dt>}
-            {x.askName && (
-              <dd>
-                <input className={cssOf(css.nameInput)}
-                  value={x.name}
-                  onChange={x.onName}
-                  aria-label={x.t('ap.name')}
-                  placeholder={x.t('ap.name')} />
-              </dd>
-            )}
-          </dl>
-          <div className={cssOf(css.mailMore)}>
-            <div className={cssOf(css.mailName)}>{x.t('tr.mailBody')}</div>
-            <div className={cssOf(css.mailBody)}>{mailText}</div>
+    <>
+      <div className={cssOf(css.foot)}>
+        <section className={CLS_CARD_MD + ONE_SPACE + cssOf(css.footCard)}>
+          <div className={CLS_MCARD_HEAD}>{x.t('tr.mailHead')}</div>
+          <div className={cssOf(css.mailCols)}>
+            <dl className={cssOf(css.mailGrid)}>
+              <dt>{x.t('tr.to')}</dt>
+              <dd>{x.to}</dd>
+              <dt>{x.t('tr.subject')}</dt>
+              <dd>{mailSubjectOf(parts)}</dd>
+              {x.askName && <dt>{x.t('ap.name')}</dt>}
+              {x.askName && (
+                <dd>
+                  <input className={cssOf(css.nameInput)}
+                    value={x.name}
+                    onChange={x.onName}
+                    aria-label={x.t('ap.name')}
+                    placeholder={x.t('ap.name')} />
+                </dd>
+              )}
+            </dl>
+            <div className={cssOf(css.mailMore)}>
+              <div className={cssOf(css.mailName)}>{x.t('tr.mailBody')}</div>
+              <div className={cssOf(css.mailBody)}>{mailText}</div>
+            </div>
           </div>
-        </div>
+        </section>
+      </div>
+      <div className={cssOf(css.bar)}>
+        {p.err !== TEXT_NONE && <Notice kind={NOTICE_ERR}>{x.t(p.err)}</Notice>}
         <div className={cssOf(css.footRow)}>
           <div className={cssOf(css.saved)}>
             <Tag variant={TAG_INFO}>{x.leftText}</Tag>
@@ -70,7 +76,7 @@ export function ReviewFoot({ p, x }: ReviewFootIn) {
             </Button>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </>
   )
 }

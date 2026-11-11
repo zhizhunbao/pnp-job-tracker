@@ -8,7 +8,8 @@
  */
 import { queryRowsOrEmpty, SQL } from '../db'
 import {
-  addIntOf, cardOf, dashOf, doneTextOf, intOf, pctOf, spanOf, spanOrDashOf, stageTextOf, tagsCell, textCell, usdOf,
+  addIntOf, afterOf, cardOf, dashOf, doneTextOf, everyOf, intOf, lateOf, pctOf, sayOf, spanAsOf, spanOf, spanOrDashOf, stageTextOf, tagsCell,
+  textCell, usdOf,
 } from './cell'
 import {
   ALIAS_COLS, ALIAS_DONE_COLS, APPLY_COLS, APPLY_DONE_COLS, APPLY_QUEUED, BUDGET_COLS, BUDGET_NOTE, CARD, CELL, CHANNEL_NAME, COST_COLS, DASH,
@@ -24,7 +25,7 @@ import { channelsBoard, freshBoard, incidentsBoard, rulesBoard } from './watch'
 import type {
   AliasDbRow, AliasDoneDbRow, ApplyDbRow, ApplyDoneDbRow, BudgetDbRow, BudgetNoteTable, CostDbRow, CostStatsDbRow,
   LoadBoardIn, MaybeInt, MaybeQueueStats, MaybeText, NowDbRow, OpsBoardOut, OpsCards, OpsCell, OpsRow, OpsTable,
-  OpsTag, QueueReportIn, QueueStatsDbRow, ReportRow, ReportRowIn, RunDbRow,
+  OpsTag, OpsText, QueueReportIn, QueueStatsDbRow, ReportRow, ReportRowIn, RunDbRow,
   SecIn, SiteDbRow, SiteDoneDbRow, StatsOfIn, StatsOut, TableOfIn, TotalRows, UnitDbRow, UsageDbRow, 
 } from './types'
 
@@ -111,7 +112,7 @@ function toNowIso(row: NowDbRow): string {
  * @returns 表。
  */
 function tableOf(x: TableOfIn): OpsTable {
-  return { title: x.title, count: x.total + TEXT.rowsTail, cols: x.cols, rows: x.rows }
+  return { title: x.title, count: { key: TEXT.rows, vars: { n: x.total } }, cols: x.cols, rows: x.rows }
 }
 
 // =========================================================================
@@ -178,7 +179,7 @@ function toUnitRow(u: UnitDbRow): OpsRow {
     key: u.name,
     cells: [
       textCell(u.name), unitTagsOf(u), textCell(dashOf(u.started_text)), textCell(unitDurOf(u)), textCell(unitNextOf(u)),
-      textCell(TEXT.every + spanOf(u.interval_s)), errorCellOf(u.error),
+      textCell(everyOf(u.interval_s)), errorCellOf(u.error),
     ],
   }
 }
@@ -202,11 +203,11 @@ function unitTagsOf(u: UnitDbRow): OpsCell {
     text = TAG.lost
     variant = VAR.bad
   }
-  let warn = TEXT_NONE
+  let warn: OpsText = TEXT_NONE
   if (u.last_ok === false) {
-    warn = TAG.lastFail
+    warn = sayOf(TAG.lastFail)
   }
-  return tagsCell({ text, variant, warn })
+  return tagsCell({ text: sayOf(text), variant, warn })
 }
 
 /**
@@ -215,14 +216,14 @@ function unitTagsOf(u: UnitDbRow): OpsCell {
  * @param u 库原始行。
  * @returns 文字。
  */
-function unitNextOf(u: UnitDbRow): string {
+function unitNextOf(u: UnitDbRow): OpsText {
   if (u.state === UNIT_RUN || u.due_s == null) {
     return DASH
   }
   if (u.due_s < 0) {
-    return TEXT.late + spanOf(-u.due_s)
+    return lateOf(-u.due_s)
   }
-  return spanOf(u.due_s) + TEXT.after
+  return afterOf(u.due_s)
 }
 
 /**
@@ -231,7 +232,7 @@ function unitNextOf(u: UnitDbRow): string {
  * @param u 库原始行。
  * @returns 文字。
  */
-function unitDurOf(u: UnitDbRow): string {
+function unitDurOf(u: UnitDbRow): OpsText {
   if (u.state === UNIT_RUN) {
     return spanOrDashOf(u.run_s)
   }
@@ -268,7 +269,7 @@ function toRunRow(r: RunDbRow): OpsRow {
     key: String(r.id),
     cells: [
       textCell(r.name), textCell(r.started_text), textCell(r.ended_text), textCell(spanOf(r.dur_s)),
-      tagsCell({ text, variant, warn: TEXT_NONE }), errorCellOf(r.error), textCell(String(r.id)),
+      tagsCell({ text: sayOf(text), variant, warn: TEXT_NONE }), errorCellOf(r.error), textCell(String(r.id)),
     ],
   }
 }
@@ -312,7 +313,7 @@ function queueCardsOf(s: MaybeQueueStats): OpsCards {
   let waiting = 0
   let working = 0
   let done = 0
-  let oldest = DASH
+  let oldest: OpsText = DASH
   if (s != null) {
     waiting = s.waiting
     working = s.working
@@ -380,17 +381,17 @@ function toApplyDoneRaw(row: ApplyDoneDbRow): ApplyDoneDbRow {
 function toApplyRow(a: ApplyDbRow): OpsRow {
   let text = TAG.sending
   let variant: OpsTag['variant'] = VAR.info
-  let warn = TEXT_NONE
+  let warn: OpsText = TEXT_NONE
   if (a.status === APPLY_QUEUED) {
     text = TAG.queued
     variant = VAR.gray
   } else if (a.age_s > STUCK_S) {
-    warn = TAG.stuck
+    warn = sayOf(TAG.stuck)
   }
   return {
     key: String(a.id),
     cells: [
-      textCell(dashOf(a.email)), textCell(dashOf(a.job_title)), textCell(dashOf(a.company)), tagsCell({ text, variant, warn }),
+      textCell(dashOf(a.email)), textCell(dashOf(a.job_title)), textCell(dashOf(a.company)), tagsCell({ text: sayOf(text), variant, warn }),
       textCell(spanOf(a.age_s)),
       {
         kind: CELL.del,
@@ -472,11 +473,11 @@ function toSiteRow(s: SiteDbRow): OpsRow {
   if (s.stage === STAGE_QUEUED) {
     variant = VAR.gray
   }
-  let warn = TEXT_NONE
+  let warn: OpsText = TEXT_NONE
   if (s.in_pool === false) {
-    warn = TAG.outPool
+    warn = sayOf(TAG.outPool)
   } else if (s.curated) {
-    warn = TAG.curated
+    warn = sayOf(TAG.curated)
   }
   let worker = WORKER.find
   if (s.has_site) {
@@ -485,7 +486,7 @@ function toSiteRow(s: SiteDbRow): OpsRow {
   return {
     key: s.key,
     cells: [
-      textCell(s.name), tagsCell({ text: stageTextOf(s.stage), variant, warn }), textCell(worker), textCell(String(s.open_count)),
+      textCell(s.name), tagsCell({ text: stageTextOf(s.stage), variant, warn }), textCell(sayOf(worker)), textCell(String(s.open_count)),
       textCell(spanOrDashOf(s.age_s)), textCell(dashOf(s.stage_note)),
       { kind: CELL.del, del: { kind: DEL_SITE, key: s.key, name: s.name } },
     ],
@@ -758,12 +759,12 @@ async function budgetBoard(x: SecIn): OpsBoardOut {
   }
   let used = 0
   let limit = 0
-  let daysText = DASH
+  let daysText: OpsText = DASH
   const cur = live[0]
   if (cur != null) {
     used = cur.used_usd
     limit = cur.limit_usd
-    daysText = cur.days_left + TEXT.daysTail
+    daysText = { key: TEXT.days, vars: { n: cur.days_left } }
   }
   return {
     cards: [
@@ -846,11 +847,11 @@ async function reportBoard(x: SecIn): OpsBoardOut {
   const items: ReportRow[] = [
     reportRowOf({
       name: REPORT.schedule,
-      actual: units.length + REPORT.unitsTail + failed + REPORT.failedTail,
-      target: REPORT.noTarget,
+      actual: { key: REPORT.units, vars: { n: units.length, f: failed } },
+      target: sayOf(REPORT.noTarget),
       met: null,
       incidents: failed,
-      usage: units.length - failed + REPORT.okTail,
+      usage: { key: REPORT.ok, vars: { n: units.length - failed } },
     }),
     queueReportRowOf({
       name: REPORT.apply,
@@ -866,8 +867,8 @@ async function reportBoard(x: SecIn): OpsBoardOut {
     }),
     reportRowOf({
       name: REPORT.fee,
-      actual: REPORT.used + usdOf({ n: used, digits: USD_DIGITS_CARD }),
-      target: REPORT.targetFee + usdOf({ n: limit, digits: USD_DIGITS_CARD }),
+      actual: { key: REPORT.used, vars: { v: usdOf({ n: used, digits: USD_DIGITS_CARD }) } },
+      target: { key: REPORT.targetFee, vars: { v: usdOf({ n: limit, digits: USD_DIGITS_CARD }) } },
       met: used <= limit,
       incidents: 0,
       usage: pctOf({ used, limit }),
@@ -929,17 +930,17 @@ function queueReportRowOf(x: QueueReportIn): ReportRow {
     done = x.stats.done_today
     oldest = x.stats.oldest_s
   }
-  let actual = REPORT.waiting + waiting + REPORT.waitingTail
+  let actual: OpsText = { key: REPORT.wait, vars: { n: waiting } }
   if (oldest != null) {
-    actual = actual + REPORT.oldest + spanOf(oldest)
+    actual = spanAsOf({ s: oldest, head: REPORT.waitOld, vars: { n: waiting } })
   }
   return reportRowOf({
     name: x.name,
     actual,
-    target: REPORT.noTarget,
+    target: sayOf(REPORT.noTarget),
     met: null,
     incidents: 0,
-    usage: REPORT.doneToday + done,
+    usage: { key: REPORT.doneToday, vars: { n: done } },
   })
 }
 
@@ -963,7 +964,7 @@ function reportRowOf(x: ReportRowIn): ReportRow {
     row: {
       key: x.name,
       cells: [
-        textCell(x.name), textCell(x.actual), textCell(x.target), tagsCell({ text, variant, warn: TEXT_NONE }),
+        textCell(sayOf(x.name)), textCell(x.actual), textCell(x.target), tagsCell({ text: sayOf(text), variant, warn: TEXT_NONE }),
         textCell(String(x.incidents)), textCell(x.usage), textCell(DASH),
       ],
     },

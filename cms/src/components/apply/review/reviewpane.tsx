@@ -1,13 +1,15 @@
 'use client'
 /**
  * apply 桶子桶 review 的分块:一块面板。
+ * 2026-11-11 Frank「这个按钮应该去掉吧」「可以删吧」:卡头的「重新生成」撤(整份重写、缺的经历补不上;
+ * 要补走分数卡的「补充经历」,要改字走「修改」),卡头只剩「修改」。
  *
  * @author Frank
  * @time 2026-11-09 20:00:00
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { BTN_GHOST, BTN_SECONDARY, CLS_CARD_MD, CLS_MCARD_HEAD, ONE_SPACE, PANE_JD, TEXT_NONE } from './constants'
+import { BTN_GHOST, CLS_CARD_MD, CLS_MCARD_HEAD, ONE_SPACE, PANE_JD, TEXT_NONE } from './constants'
 import { clsIf } from './functions'
 import type { ReviewPaneIn } from './types'
 import css from './review.module.css'
@@ -26,12 +28,9 @@ export function ReviewPane({ pane, head, p, t, onEdit, children }: ReviewPaneIn)
     <section className={[CLS_CARD_MD, cssOf(css.pane), gone].join(ONE_SPACE)}>
       <div className={CLS_MCARD_HEAD + ONE_SPACE + cssOf(css.paneHead)}>
         <span>{head}</span>
-        {isPdf && (
+        {isPdf && onEdit != null && (
           <span className={cssOf(css.acts)}>
-            <Button kind={BTN_SECONDARY} sm onClick={p.regenOf(pane)} disabled={p.stage !== TEXT_NONE}>
-              {t('tr.regen')}
-            </Button>
-            {onEdit != null && <Button kind={BTN_GHOST} sm onClick={onEdit}>{t('pf.edit')}</Button>}
+            <Button kind={BTN_GHOST} sm onClick={onEdit}>{t('pf.edit')}</Button>
           </span>
         )}
       </div>

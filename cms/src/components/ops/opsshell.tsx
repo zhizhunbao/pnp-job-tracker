@@ -29,7 +29,7 @@ import css from './ops.module.css'
 export function OpsShell({ children }: OpsShellIn) {
   const [, , t] = useLang()
   const sec = secOfPath(usePathname())
-  const pick = pickTextOf(sec)
+  const pick = pickTextOf({ sec, t })
   const d = useNavDrawer()
   const [updated, setUpdated] = useState(ISO_NONE)
   const Ctx = updatedCtxOf()
@@ -40,7 +40,7 @@ export function OpsShell({ children }: OpsShellIn) {
         <div className={css.main}>
           <div className={css.hero}>
             <Shell top={SHELL_TOP} bottom={SHELL_BOTTOM}>
-              <Banner module={BANNER_MODULE} icon={<IconTable />} title={TITLE_TEXT} sub={secNameOf(sec)}
+              <Banner module={BANNER_MODULE} icon={<IconTable />} title={t(TITLE_TEXT)} sub={t(secNameOf(sec))}
                 images={BANNER_IMGS.home}
                 right={<Updated iso={updated} t={t} seconds />} />
             </Shell>
@@ -49,7 +49,7 @@ export function OpsShell({ children }: OpsShellIn) {
         </div>
       </NavFrame>
       {d.open && (
-        <NavDrawer title={NAV_ARIA} onClose={d.onClose}>
+        <NavDrawer title={t(NAV_ARIA)} onClose={d.onClose}>
           <OpsNav value={sec} onPick={d.onClose} />
         </NavDrawer>
       )}

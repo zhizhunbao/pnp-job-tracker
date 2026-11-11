@@ -7,7 +7,7 @@
  */
 import { cssOf } from '@/components/css'
 import { JD_BULLET, ONE_SPACE } from './constants'
-import { clsIf, jdSegsOf } from './functions'
+import { clsIf, headTextOf, jdSegsOf } from './functions'
 import { ReviewJdSeg } from './reviewjdseg'
 import type { JdLineIn } from './types'
 import css from './review.module.css'
@@ -24,7 +24,7 @@ export function ReviewJdLine({ line, head, bullet, reqs, active, setActive, t }:
   if (bullet) {
     out.push(<span key={JD_BULLET}>{JD_BULLET}{ONE_SPACE}</span>)
   }
-  for (const [i, s] of jdSegsOf({ line, reqs }).entries()) {
+  for (const [i, s] of jdSegsOf({ line: headTextOf({ line, head, t }), reqs }).entries()) {
     out.push(<ReviewJdSeg key={i} text={s.text} req={s.req} active={active} setActive={setActive} t={t} />)
   }
   return <p className={cssOf(css.line) + ONE_SPACE + clsIf({ on: head, cls: cssOf(css.lineHead) })}>{out}</p>

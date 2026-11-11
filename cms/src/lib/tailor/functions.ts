@@ -24,7 +24,7 @@ import {
 } from './prompts'
 import type {
   AuditMsgIn, AuditOfIn, BumpOfIn, CellOfIn, FactMap, FailOfIn, JsonCell, MaybeScore, MaybeStepBody, MergedFactsIn,
-  NewNumbersIn, NormText, SchemaNode, QuotedOfIn, ReqsOfIn, RetryValueIn, RunDocIn, RunPlanIn, SaveCoverIn, SavePlanIn,
+  NewNumbersIn, NormText, PickJdIn, SchemaNode, QuotedOfIn, ReqsOfIn, RetryValueIn, RunDocIn, RunPlanIn, SaveCoverIn, SavePlanIn,
   SaveResumeIn, SaveReviewIn, ScoreOfIn, SignerOfIn, StepBodyJson, StepFact, StepOut, StepRunIn, TailorBool, TailorDbRow,
   TailorKeyIn, TailorReq, TailorReqs, TailorReview, TailorRow, TailorRowOut, TailorWriteOut, TextList, UnsupportedOfIn,
   UserMsgIn,
@@ -728,6 +728,29 @@ function auditSchemaOf(): SchemaNode {
 // =========================================================================
 // 3. 库行与取数
 // =========================================================================
+
+/**
+ * 这一岗的职位描述用哪一份:有整理版就用整理版,没有回落原帖(2026-11-11 Frank「用整理版 测试一下」)。
+ * 已经改写过的岗例外:要求里的原文引句是照当时读的那一份摘的,换一份高亮就对不上,
+ * 所以引句一条都不在整理版里的老记录继续用原帖。
+ *
+ * @param x 两份正文与已有的核对结果。
+ * @returns 选中的正文(带节头标记)。
+ */
+export function pickJdOf(x: PickJdIn): string {
+  if (x.formatted === TEXT_NONE) {
+    return x.original
+  }
+  if (x.review == null || x.review.reqs.length === 0 || x.original === TEXT_NONE) {
+    return x.formatted
+  }
+  for (const r of x.review.reqs) {
+    if (r.jd !== TEXT_NONE && x.formatted.includes(r.jd)) {
+      return x.formatted
+    }
+  }
+  return x.original
+}
 
 /**
  * 本人这一岗的投递行。

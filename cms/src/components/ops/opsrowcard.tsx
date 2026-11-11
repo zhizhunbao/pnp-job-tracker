@@ -6,6 +6,7 @@
  * @time 2026-11-08 18:00:00
  */
 import { JobCard } from '@/components/card'
+import { useLang } from '@/components/i18n'
 import { AlertButton } from './alertbutton'
 import { CELL_ACT, CELL_COPY, CELL_DEL, CELL_TAGS } from './constants'
 import { CopyError } from './copyerror'
@@ -21,7 +22,8 @@ import type { OpsRowCardIn } from './types'
  * @returns 卡片。
  */
 export function OpsRowCard({ row }: OpsRowCardIn) {
-  const parts = rowCardPartsOf(row)
+  const [, , t] = useLang()
+  const parts = rowCardPartsOf({ row, t })
   const chips = []
   let action = null
   for (const c of row.cells) {

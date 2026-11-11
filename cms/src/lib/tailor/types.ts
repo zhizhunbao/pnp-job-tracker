@@ -995,3 +995,23 @@ export type KeepFactsIn = {
    */
   row: TailorRow
 }
+
+/**
+ * `pickJdOf` 的入参。
+ */
+export type PickJdIn = {
+  /**
+   * 整理版(带节头标记);没有是空串。
+   */
+  formatted: string
+
+  /**
+   * 原帖正文(带节头标记);没有是空串。
+   */
+  original: string
+
+  /**
+   * 这一岗已有的核对结果;还没改写过是 null。
+   */
+  review: TailorReview | null
+}

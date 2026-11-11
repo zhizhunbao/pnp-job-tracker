@@ -6,5 +6,6 @@
  */
 
 export {
-  addIntOf, cardOf, dashOf, doneTextOf, intOf, pctOf, spanOf, spanOrDashOf, stageTextOf, tagsCell, textCell, usdOf,
+  addIntOf, afterOf, cardOf, dashOf, doneTextOf, everyOf, intOf, lateOf, pctOf, sayOf, spanAsOf, spanOf, spanOrDashOf, stageTextOf, tagsCell,
+  textCell, usdOf,
 } from './functions'

@@ -6,6 +6,31 @@
  */
 
 /**
+ * 词条的插值表({k} → 值)。
+ */
+export type OpsVars = Record<string, string | number>
+
+/**
+ * 一条界面文字:词条键加插值,由组件桶取词(2026-11-10 Frank:内部页也要三语,界面字不进 lib)。
+ */
+export type OpsMsg = {
+  /**
+   * 词条键(`ops.` 开头,文字住 lib/i18n)。
+   */
+  key: string
+
+  /**
+   * 插值;没有是空表。
+   */
+  vars: OpsVars
+}
+
+/**
+ * 一段要显示的文字:字符串是数据原文(原样显示,不翻译),OpsMsg 是界面文字(取词后显示)。
+ */
+export type OpsText = string | OpsMsg
+
+/**
  * 一枚胶囊。
  */
 export type OpsTag = {
@@ -17,7 +42,7 @@ export type OpsTag = {
   /**
    * 文字。
    */
-  text: string
+  text: OpsText
 }
 
 /**
@@ -53,7 +78,7 @@ export type OpsCell =
     /**
      * 文字。
      */
-    text: string
+    text: OpsText
   }
   | {
     /**
@@ -97,7 +122,7 @@ export type OpsCell =
     /**
      * 主名。
      */
-    main: string
+    main: OpsText
 
     /**
      * 灰字。
@@ -173,7 +198,7 @@ export type OpsTable = {
   /**
    * 灰字条数。
    */
-  count: string
+  count: OpsText
 
   /**
    * 列。
@@ -193,7 +218,7 @@ export type OpsCard = {
   /**
    * 数字。
    */
-  value: string
+  value: OpsText
 
   /**
    * 标题。
@@ -229,6 +254,11 @@ export type OpsCellViewIn = {
    * 这个单元格。
    */
   cell: OpsCell
+
+  /**
+   * 取词。
+   */
+  t: TFn
 }
 
 /**
@@ -269,6 +299,11 @@ export type OpsColsIn = {
    * 单元格渲染件。由 tsx 递进来,本文件不引组件,免得成环。
    */
   Cell: OpsCellFn
+
+  /**
+   * 取词。
+   */
+  t: TFn
 }
 
 /**
@@ -284,6 +319,11 @@ export type OpsCellMakeIn = {
    * 单元格渲染件。
    */
   Cell: OpsCellFn
+
+  /**
+   * 取词。
+   */
+  t: TFn
 }
 
 /**
@@ -659,6 +699,11 @@ export type AlertActIn = {
    * 重取。
    */
   refresh: () => void
+
+  /**
+   * 取词。
+   */
+  t: TFn
 }
 
 /**
@@ -669,4 +714,114 @@ export type AlertButtonIn = {
    * 操作。
    */
   act: OpsAct
+}
+
+/**
+ * 取词函数(与 lib/i18n 的 TFn 同形:键加可选插值;types 自声明)。
+ */
+export type TFn = (key: string, vars?: OpsVars) => string
+
+/**
+ * sayOf 的入参。
+ */
+export type SayIn = {
+  /**
+   * 取词。
+   */
+  t: TFn
+
+  /**
+   * 数据原文或界面文字。
+   */
+  s: OpsText
+}
+
+/**
+ * pickTextOf 的入参。
+ */
+export type PickIn = {
+  /**
+   * 当前页。
+   */
+  sec: string
+
+  /**
+   * 取词。
+   */
+  t: TFn
+}
+
+/**
+ * navSayOf 的入参。
+ */
+export type NavSayIn = {
+  /**
+   * 文字还是词条键的导航项。
+   */
+  items: OpsNavItem[]
+
+  /**
+   * 取词。
+   */
+  t: TFn
+}
+
+/**
+ * cardsSayOf 的入参。
+ */
+export type CardsSayIn = {
+  /**
+   * 四格。
+   */
+  cards: OpsCard[]
+
+  /**
+   * 取词。
+   */
+  t: TFn
+}
+
+/**
+ * 取词后的一格数字。
+ */
+export type OpsCardView = {
+  /**
+   * 数字。
+   */
+  value: string
+
+  /**
+   * 标题。
+   */
+  label: string
+}
+
+/**
+ * rowCardPartsOf 的入参。
+ */
+export type RowPartsIn = {
+  /**
+   * 这一行。
+   */
+  row: OpsRow
+
+  /**
+   * 取词。
+   */
+  t: TFn
+}
+
+/**
+ * makeCopyError 的入参。
+ */
+export type CopyMakeIn = {
+  /**
+   * 报错全文。
+   */
+  text: string
+
+  /**
+   * 取词。
+   */
+  t: TFn
 }

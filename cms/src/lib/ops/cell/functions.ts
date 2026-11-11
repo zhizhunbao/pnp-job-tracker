@@ -5,19 +5,29 @@
  * @time 2026-11-08 18:00:00
  */
 import {
-  CELL, DASH, DAY_S, DONE_TEXT, HOUR_S, MINUTE_S, NUM_LOCALE, PCT_BASE, STAGE_TEXT, TEXT, TEXT_NONE, UNIT, VAR,
+  CELL, DASH, DAY_S, DONE_TEXT, HOUR_S, MINUTE_S, NUM_LOCALE, PCT_BASE, SPAN, STAGE_TEXT, TEXT, TEXT_NONE, UNIT, VAR,
 } from './constants'
 import type {
-  AddIntIn, CardOfIn, MaybeInt, MaybeText, OpsCard, OpsCell, OpsTag, PctOfIn, TagsOfIn, UsdOfIn,
+  AddIntIn, CardOfIn, MaybeInt, MaybeText, OpsCard, OpsCell, OpsMsg, OpsTag, OpsText, PctOfIn, SpanAsIn, TagsOfIn, UsdOfIn,
 } from './types'
+
+/**
+ * 一条不带插值的界面文字。
+ *
+ * @param key 词条键。
+ * @returns 界面文字。
+ */
+export function sayOf(key: string): OpsMsg {
+  return { key, vars: {} }
+}
 
 /**
  * 文字格。
  *
- * @param text 文字。
+ * @param text 数据原文或界面文字。
  * @returns 单元格。
  */
-export function textCell(text: string): OpsCell {
+export function textCell(text: OpsText): OpsCell {
   return { kind: CELL.text, text }
 }
 
@@ -42,7 +52,10 @@ export function tagsCell(x: TagsOfIn): OpsCell {
  * @returns 四格之一。
  */
 export function cardOf(x: CardOfIn): OpsCard {
-  return { value: String(x.value), label: x.label }
+  if (typeof x.value === 'number') {
+    return { value: String(x.value), label: x.label }
+  }
+  return { value: x.value, label: x.label }
 }
 
 /**
@@ -64,7 +77,7 @@ export function dashOf(s: MaybeText): string {
  * @param s 秒数。
  * @returns 时长或横线。
  */
-export function spanOrDashOf(s: MaybeInt): string {
+export function spanOrDashOf(s: MaybeInt): OpsText {
   if (s == null) {
     return DASH
   }
@@ -77,17 +90,68 @@ export function spanOrDashOf(s: MaybeInt): string {
  * @param s 秒数。
  * @returns 时长文字。
  */
-export function spanOf(s: number): string {
-  if (s >= DAY_S) {
-    return Math.floor(s / DAY_S) + UNIT.day
+export function spanOf(s: number): OpsMsg {
+  return spanAsOf({ s, head: SPAN.dur, vars: {} })
+}
+
+/**
+ * 秒数 → 「每隔多久」。
+ *
+ * @param s 秒数。
+ * @returns 节奏文字。
+ */
+export function everyOf(s: number): OpsMsg {
+  return spanAsOf({ s, head: SPAN.every, vars: {} })
+}
+
+/**
+ * 秒数 → 「过点多久」。
+ *
+ * @param s 秒数。
+ * @returns 超期文字。
+ */
+export function lateOf(s: number): OpsMsg {
+  return spanAsOf({ s, head: SPAN.late, vars: {} })
+}
+
+/**
+ * 秒数 → 「多久之后」。
+ *
+ * @param s 秒数。
+ * @returns 倒计时文字。
+ */
+export function afterOf(s: number): OpsMsg {
+  return spanAsOf({ s, head: SPAN.after, vars: {} })
+}
+
+/**
+ * 秒数 → 带时长的一句:键 = 键头 + 时长单位,时长的数放进插值 d,另带调用方给的插值。
+ * 一句一条词条,不拿「前缀 + 时长」拼接(各语言语序不同)。
+ *
+ * @param x 秒数、键头与其余插值。
+ * @returns 界面文字。
+ */
+export function spanAsOf(x: SpanAsIn): OpsMsg {
+  let unit: string = UNIT.sec
+  let d = Math.max(0, Math.floor(x.s))
+  if (x.s >= DAY_S) {
+    unit = UNIT.day
+    d = Math.floor(x.s / DAY_S)
+  } else if (x.s >= HOUR_S) {
+    unit = UNIT.hour
+    d = Math.floor(x.s / HOUR_S)
+  } else if (x.s >= MINUTE_S) {
+    unit = UNIT.min
+    d = Math.floor(x.s / MINUTE_S)
   }
-  if (s >= HOUR_S) {
-    return Math.floor(s / HOUR_S) + UNIT.hour
+  const vars: OpsMsg['vars'] = { d }
+  for (const k of Object.keys(x.vars)) {
+    const v = x.vars[k]
+    if (v != null) {
+      vars[k] = v
+    }
   }
-  if (s >= MINUTE_S) {
-    return Math.floor(s / MINUTE_S) + UNIT.min
-  }
-  return Math.max(0, Math.floor(s)) + UNIT.sec
+  return { key: x.head + unit, vars }
 }
 
 /**
@@ -119,12 +183,12 @@ export function intOf(n: MaybeInt): string {
  * @param s 状态码。
  * @returns 显示词;表外的原样。
  */
-export function doneTextOf(s: string): string {
+export function doneTextOf(s: string): OpsText {
   const label = DONE_TEXT[s]
   if (label == null) {
     return s
   }
-  return label
+  return sayOf(label)
 }
 
 /**
@@ -133,12 +197,12 @@ export function doneTextOf(s: string): string {
  * @param s 阶段码。
  * @returns 显示词;表外的原样。
  */
-export function stageTextOf(s: string): string {
+export function stageTextOf(s: string): OpsText {
   const label = STAGE_TEXT[s]
   if (label == null) {
     return s
   }
-  return label
+  return sayOf(label)
 }
 
 /**

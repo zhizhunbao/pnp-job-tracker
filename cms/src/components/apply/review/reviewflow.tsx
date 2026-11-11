@@ -11,7 +11,7 @@ import { cssOf } from '@/components/css'
 import { Loading } from '@/components/loading'
 import { Notice } from '@/components/notice'
 import {
-  BTN_SECONDARY, CLS_CARD_MD, NOTICE_ERR, NOTICE_INFO,
+  BTN_SECONDARY, CLS_CARD_MD, NOTICE_ERR,
   ONE_SPACE, PANE_COVER, PANE_JD, PANE_RESUME, ROLE_STATUS, STAGE_KEYS,
   TEXT_NONE, URL_FILE, URL_GEN, URL_KIND,
 } from './constants'
@@ -59,7 +59,6 @@ export function ReviewFlow(props: ReviewFlowIn) {
   return (
     <>
       <ReviewScore p={p} review={p.review} t={t} />
-      {p.same && <Notice kind={NOTICE_INFO}>{t('tr.same')}</Notice>}
       {stageKey != null && <div role={ROLE_STATUS} className={cssOf(css.stage)}><Loading text={t(stageKey)} /></div>}
       <div className={columns}>
         <ReviewPane pane={PANE_RESUME} head={t('tr.resume')} p={p} t={t} onEdit={p.onResumeEdit}>

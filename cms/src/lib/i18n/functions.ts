@@ -10,9 +10,9 @@
  * @author Frank
  * @time 2026-08-24 03:30:00
  */
-import { caseZh, consultZh, jobsZh, legalZh, pteZh, quizZh, reportZh, siteZh } from './zh'
-import { caseEn, consultEn, jobsEn, legalEn, pteEn, quizEn, reportEn, siteEn } from './en'
-import { caseKo, consultKo, jobsKo, legalKo, pteKo, quizKo, reportKo, siteKo } from './ko'
+import { caseZh, consultZh, jobsZh, legalZh, opsZh, pteZh, quizZh, reportZh, siteZh } from './zh'
+import { caseEn, consultEn, jobsEn, legalEn, opsEn, pteEn, quizEn, reportEn, siteEn } from './en'
+import { caseKo, consultKo, jobsKo, legalKo, opsKo, pteKo, quizKo, reportKo, siteKo } from './ko'
 import { nocLabels } from '@/lib/jobs'
 import { pathwayNames } from '@/lib/pathways'
 import { ACCEPT_NONE, COOKIE_EQ, COOKIE_PATH_AGE, COOKIE_SAMESITE, LANG_COOKIE, LANG_COOKIE_MAX_AGE_S, LANG_EN, LANG_KEY, LANG_KO, LANG_ZH, LANGS, VAR_L, VAR_R } from './constants'
@@ -128,7 +128,7 @@ export function makeT(lang: Lang): TFn {
 /**
  * 合并词表单件:首调装配一次进 CACHE,之后直接给。
  * 三个语言文件的同名块装配回「域 × 语言」的一组表;合并顺序与 08-22 改版前逐字一致
- * (report → pathwayNames → caseCopy → jobs → nocLabels → site → consult → quiz → legal),
+ * (report → pathwayNames → caseCopy → jobs → nocLabels → site → consult → quiz → legal;其后 pte、ops 顺次追加),
  * 后并的块同键覆盖先并的 —— 与旧版展开一致。
  *
  * @returns 每语言一张合并后的扁平表。
@@ -145,7 +145,8 @@ function messagesOf(): Messages {
   const legal: Record<Lang, Dict> = { zh: legalZh, en: legalEn, ko: legalKo }
   const caseCopy: Record<Lang, Dict> = { zh: caseZh, en: caseEn, ko: caseKo }
   const pte: Record<Lang, Dict> = { zh: pteZh, en: pteEn, ko: pteKo }
-  const parts: Record<Lang, Dict>[] = [report, pathwayNames, caseCopy, jobs, nocLabels, site, consult, quiz, legal, pte]
+  const ops: Record<Lang, Dict> = { zh: opsZh, en: opsEn, ko: opsKo }
+  const parts: Record<Lang, Dict>[] = [report, pathwayNames, caseCopy, jobs, nocLabels, site, consult, quiz, legal, pte, ops]
   const merged: Messages = { zh: {}, en: {}, ko: {} }
   for (const part of parts) {
     for (const one of LANGS) {

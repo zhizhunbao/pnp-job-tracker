@@ -44,7 +44,7 @@ export const TEXT_NONE = ''
 /**
  * 条数的单位。
  */
-export const ROWS_TAIL = ' 条'
+export const ROWS_KEY = 'ops.rows'
 
 /**
  * 表的条数上限。
@@ -54,7 +54,7 @@ export const ROWS_MAX = 100
 /**
  * 毫秒的单位。
  */
-export const MS_TAIL = ' 毫秒'
+export const MS_KEY = 'ops.ms'
 
 /**
  * 通道代码:Claude。
@@ -88,22 +88,22 @@ export const TITLE = {
   /**
    * 功能通道表。
    */
-  routes: '各功能',
+  routes: 'ops.tt.routes',
 
   /**
    * 实测上表。
    */
-  evalRun: '正在运行',
+  evalRun: 'ops.tt.running',
 
   /**
    * 实测下表。
    */
-  evalDone: '历史',
+  evalDone: 'ops.tt.history',
 
   /**
    * Key 表。
    */
-  keys: '全部 Key',
+  keys: 'ops.tt.keys',
 }
 
 /**
@@ -113,62 +113,62 @@ export const CARD = {
   /**
    * 功能总数。
    */
-  features: '功能总数',
+  features: 'ops.card.features',
 
   /**
    * 有备用。
    */
-  backup: '有备用',
+  backup: 'ops.card.backup',
 
   /**
    * 无备用。
    */
-  noBackup: '无备用',
+  noBackup: 'ops.card.noBackup',
 
   /**
    * 今日降级。
    */
-  degraded: '今日降级',
+  degraded: 'ops.card.degraded',
 
   /**
    * 已测功能。
    */
-  tested: '已测功能',
+  tested: 'ops.card.tested',
 
   /**
    * 未测功能。
    */
-  untested: '未测功能',
+  untested: 'ops.card.untested',
 
   /**
    * 样本数。
    */
-  samples: '样本数',
+  samples: 'ops.card.samples',
 
   /**
    * 实测花费。
    */
-  spent: '实测花费',
+  spent: 'ops.card.spent',
 
   /**
    * Workspace 数。
    */
-  workspaces: 'Workspace 数',
+  workspaces: 'ops.card.workspaces',
 
   /**
    * 启用。
    */
-  active: '启用',
+  active: 'ops.card.active',
 
   /**
    * 停用。
    */
-  disabled: '停用',
+  disabled: 'ops.card.disabled',
 
   /**
    * 30 天内到期。
    */
-  expiring: '30 天内到期',
+  expiring: 'ops.card.expiring',
 }
 
 /**
@@ -188,12 +188,12 @@ export const BACKUP_TEXT = '朋友网关'
 /**
  * 都不通时的现状:Claude 通道先降级再报错。
  */
-export const GIVE_UP_DEGRADE = '降级后仍不通则报错'
+export const GIVE_UP_DEGRADE = 'ops.giveUp.degrade'
 
 /**
  * 都不通时的现状:其余通道直接报错。
  */
-export const GIVE_UP_ERROR = '报错'
+export const GIVE_UP_ERROR = 'ops.giveUp.error'
 
 /**
  * 实测状态:进行中。
@@ -208,12 +208,12 @@ export const WORKSPACES: readonly string[] = ['Default', 'offer2pr']
 /**
  * Key 状态:启用。
  */
-export const KEY_ACTIVE = '启用'
+export const KEY_ACTIVE = 'ops.key.active'
 
 /**
  * Key 状态:停用。
  */
-export const KEY_DISABLED = '停用'
+export const KEY_DISABLED = 'ops.key.disabled'
 
 /**
  * Key 列表,2026-11-08 取自 Console。只登记名字和末四位,密钥本身不入库、不输出。
@@ -229,32 +229,32 @@ export const API_KEYS = [
  * 功能通道表。
  */
 export const ROUTE_COLS = [
-  { label: '功能', wrap: false }, { label: '主通道', wrap: false }, { label: '模型', wrap: false }, { label: '备用通道', wrap: false },
-  { label: '都不通时', wrap: false },
+  { label: 'ops.col.feature', wrap: false }, { label: 'ops.col.mainCh', wrap: false }, { label: 'ops.col.model', wrap: false }, { label: 'ops.col.backupCh', wrap: false },
+  { label: 'ops.col.giveUp', wrap: false },
 ]
 
 /**
  * 通道实测上表:正在跑的批次。
  */
 export const EVAL_RUN_COLS = [
-  { label: '功能', wrap: false }, { label: '模型', wrap: false }, { label: '样本数', wrap: false }, { label: '开始', wrap: false },
+  { label: 'ops.col.feature', wrap: false }, { label: 'ops.col.model', wrap: false }, { label: 'ops.col.samples', wrap: false }, { label: 'ops.col.start', wrap: false },
 ]
 
 /**
  * 通道实测下表。
  */
 export const EVAL_COLS = [
-  { label: '功能', wrap: false }, { label: '模型', wrap: false }, { label: '任务准确度', wrap: false }, { label: '一致性', wrap: false },
-  { label: '语气', wrap: false }, { label: '隐私', wrap: false }, { label: '延迟', wrap: false }, { label: '价格', wrap: false },
-  { label: '评分方式', wrap: false }, { label: '样本数', wrap: false },
+  { label: 'ops.col.feature', wrap: false }, { label: 'ops.col.model', wrap: false }, { label: 'ops.col.accuracy', wrap: false }, { label: 'ops.col.consistency', wrap: false },
+  { label: 'ops.col.tone', wrap: false }, { label: 'ops.col.privacy', wrap: false }, { label: 'ops.col.latency', wrap: false }, { label: 'ops.col.price', wrap: false },
+  { label: 'ops.col.method', wrap: false }, { label: 'ops.col.samples', wrap: false },
 ]
 
 /**
  * Workspace 和 Key 表。
  */
 export const KEY_COLS = [
-  { label: 'Key', wrap: false }, { label: 'Workspace', wrap: false }, { label: '关联账号', wrap: false }, { label: '状态', wrap: false },
-  { label: '到期', wrap: false }, { label: '创建', wrap: false }, { label: '成本', wrap: false },
+  { label: 'ops.col.key', wrap: false }, { label: 'ops.col.workspace', wrap: false }, { label: 'ops.col.account', wrap: false }, { label: 'ops.col.status', wrap: false },
+  { label: 'ops.col.expires', wrap: false }, { label: 'ops.col.created', wrap: false }, { label: 'ops.col.cost', wrap: false },
 ]
 
 /**

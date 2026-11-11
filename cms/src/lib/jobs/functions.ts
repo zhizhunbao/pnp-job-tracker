@@ -53,7 +53,8 @@ import {
   SEO_PAREN_L, SEO_PAREN_R, SEP_KEY, SITE_ENV, SITE_FALLBACK, SITE_NAME, SITE_TAIL_RE, SORT_COLUMNS,
   SORT_NONE, SPACE, SPACES_RE, SQL_SEG_NONE, SRC_DASH, SRC_JOB_BANK, SSR_DIMS_TTL_MS, STAMP_NONE, STATUS_CLOSED_WORD,
   STREAM_L10N, STREAM_NOTE_NONE, STRIP_REPL, COND_MONTHS, T45_DIRECT_PROVS, T45_NL, TEER_GENERAL_MAX, TEER_LOW_MIN, TERM_PERMANENT,
-  JD_HEAD_MARK_RE, JD_ROLE_SECTION_RE, TITLE_AMBIGUOUS, TITLE_BATCH_MAX, TITLE_CTX_CLEAN_RE, TITLE_CTX_MAX_LEN, TITLE_CTX_PREFIX,
+  JD_DASH_HEAD, JD_DOT_HEAD, JD_HEAD_MARK, JD_HEAD_MARK_RE, JD_NOT_STATED_RE, JD_ROLE_SECTION_RE, JD_SEC_LINE_RE,
+  TITLE_AMBIGUOUS, TITLE_BATCH_MAX, TITLE_CTX_CLEAN_RE, TITLE_CTX_MAX_LEN, TITLE_CTX_PREFIX,
   TITLE_CTX_STRIP_RE, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE,
   TITLE_MAX_LEN, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS,
   TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, TYPE_PRIORITY, UNCAT, VD, W, WAGE_NEAR_PCT_MIN,
@@ -69,7 +70,7 @@ import type {
   CompanyJsonIn, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DesignatedIn, DesignatedOut,
   DistrictDim, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim, EeBroad, EeDisplayIn,
   EeKeyDisplayIn, EeOcc, ExpiredJobIn, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft, JobIdWire,
-  MaybeJobId, JdFormattedIn, JdIn, JdOut, JdSsr, JdSsrOut, JdStateOut, JdStateRow, JdTransCellIn, JdTransFact,
+  MaybeJobId, JdFormattedIn, JdIn, JdOut, SecIntoIn, JdSsr, JdSsrOut, JdStateOut, JdStateRow, JdTransCellIn, JdTransFact,
   JdTransIn, JdTransOut, JobByIdIn, JobByIdOut, JobDbRow, JobMeta, JobMetaFact, JobMetaLoadIn, JobMetaOut, JobMetaOutIn,
   JobOgDbRow, JobOgFact, JobOgLoadIn, JobOgOut, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn,
   JobsPageOut, JobsWhere, JsonCell, JsonObj, JsonRow, LdPutIn, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims,
@@ -2013,6 +2014,68 @@ export async function jobDescriptionMarked(input: JdIn): JdOut {
     return scrubPii(String(first.description))
   }
   return scrubPii(await lazyFetchJd(input))
+}
+
+/**
+ * 整理版正文,节标记改写成行首节头标记(2026-11-11 Frank「用整理版 测试一下」:投递三屏框的职位描述改读整理版,
+ * 和职位详情页一致)。节头留着标记本身(如「## [REQS]」),显示的那一端按界面语言换成节名;
+ * 原帖没写的节整节不出。还没整理的岗给空串,调用方回落原帖。
+ *
+ * @param input 连接与岗位号。
+ * @returns 脱敏、带节头标记的整理版;没有是空串。
+ */
+export async function jobFormattedMarked(input: JdFormattedIn): JdOut {
+  const cell = await loadJdFormatted(input)
+  if (cell == null) {
+    return JD_NONE
+  }
+  return formattedMarkedOf(scrubPii(cell))
+}
+
+/**
+ * 整理版全文 → 带节头标记的正文:节标记行变节头,圆点行换成圆点,「没写」的行与空节丢掉。
+ *
+ * @param s 整理版全文(节标记各占一行)。
+ * @returns 带节头标记的正文。
+ */
+export function formattedMarkedOf(s: string): string {
+  const out: string[] = []
+  let head = PARAM_NONE
+  let body: string[] = []
+  for (const raw of s.split(NL)) {
+    const line = raw.trim()
+    if (JD_SEC_LINE_RE.test(line)) {
+      sectionInto({ out, head, body })
+      head = line
+      body = []
+    } else if (line !== PARAM_NONE && JD_NOT_STATED_RE.test(line) === false) {
+      if (line.startsWith(JD_DASH_HEAD)) {
+        body.push(JD_DOT_HEAD + line.slice(JD_DASH_HEAD.length))
+      } else {
+        body.push(line)
+      }
+    }
+  }
+  sectionInto({ out, head, body })
+  return out.join(NL)
+}
+
+/**
+ * 把攒好的一节写进输出:正文空的节不写;有节标记的先写节头。
+ *
+ * @param x 输出、节标记与正文。
+ * @returns 无。
+ */
+function sectionInto(x: SecIntoIn): void {
+  if (x.body.length === 0) {
+    return
+  }
+  if (x.head !== PARAM_NONE) {
+    x.out.push(JD_HEAD_MARK + x.head)
+  }
+  for (const line of x.body) {
+    x.out.push(line)
+  }
 }
 
 /**

@@ -22,10 +22,23 @@ import {
 } from './constants'
 import css from './ops.module.css'
 import type {
-  AlertActIn,
-  DelAskFn, DelOkIn, DelOpenIn, OpsCellMakeIn, OpsColsIn, OpsNavIcons, OpsNavItem, OpsRow, OpsSoloIn, OpsTableCol,
-  PickText, RowCardParts,
+  AlertActIn, CardsSayIn, CopyMakeIn,
+  DelAskFn, DelOkIn, DelOpenIn, NavSayIn, OpsCardView, OpsCellMakeIn, OpsColsIn, OpsNavIcons, OpsNavItem, OpsRow,
+  OpsSoloIn, OpsTableCol, PickIn, PickText, RowPartsIn, RowCardParts, SayIn, TFn,
 } from './types'
+
+/**
+ * 一段要显示的文字取成当前语言:数据原文原样给,界面文字按词条键取词。
+ *
+ * @param x 取词与文字。
+ * @returns 显示的文字。
+ */
+export function sayOf(x: SayIn): string {
+  if (typeof x.s === 'string') {
+    return x.s
+  }
+  return x.t(x.s.key, x.s.vars)
+}
 
 /**
  * 从路径认出当前页。
@@ -75,23 +88,25 @@ export function secNameOf(sec: string): string {
  * @param sec 页面 id。
  * @returns 分类与子项。
  */
-export function pickTextOf(sec: string): PickText {
+export function pickTextOf(x: PickIn): PickText {
+  const sec = x.sec
+  const name = x.t(secNameOf(sec))
   if (sec === SEC_APPLY || sec === SEC_SITES || sec === SEC_ALIAS) {
-    return { head: CAT_QUEUE_TEXT, sub: secNameOf(sec) }
+    return { head: x.t(CAT_QUEUE_TEXT), sub: name }
   }
   if (sec === SEC_USAGE || sec === SEC_COST || sec === SEC_BUDGET) {
-    return { head: CAT_FEE_TEXT, sub: secNameOf(sec) }
+    return { head: x.t(CAT_FEE_TEXT), sub: name }
   }
   if (sec === SEC_INCIDENTS || sec === SEC_RULES) {
-    return { head: CAT_INCIDENT_TEXT, sub: secNameOf(sec) }
+    return { head: x.t(CAT_INCIDENT_TEXT), sub: name }
   }
   if (sec === SEC_CHANNELS || sec === SEC_ROUTES || sec === SEC_EVALS) {
-    return { head: CAT_CHANNEL_TEXT, sub: secNameOf(sec) }
+    return { head: x.t(CAT_CHANNEL_TEXT), sub: name }
   }
   if (sec === SEC_REPORT) {
-    return { head: CAT_REPORT_TEXT, sub: TEXT_NONE }
+    return { head: x.t(CAT_REPORT_TEXT), sub: TEXT_NONE }
   }
-  return { head: secNameOf(sec), sub: TEXT_NONE }
+  return { head: name, sub: TEXT_NONE }
 }
 
 /**
@@ -103,11 +118,11 @@ export function pickTextOf(sec: string): PickText {
 export function opsColsOf(x: OpsColsIn): OpsTableCol[] {
   const cols: OpsTableCol[] = []
   for (const [index, c] of x.table.cols.entries()) {
-    const render = makeOpsCell({ index, Cell: x.Cell })
+    const render = makeOpsCell({ index, Cell: x.Cell, t: x.t })
     if (c.wrap) {
-      cols.push({ key: String(index), label: c.label, className: cssOf(css.wrap), render })
+      cols.push({ key: String(index), label: x.t(c.label), className: cssOf(css.wrap), render })
     } else {
-      cols.push({ key: String(index), label: c.label, nowrap: true, render })
+      cols.push({ key: String(index), label: x.t(c.label), nowrap: true, render })
     }
   }
   return cols
@@ -125,7 +140,7 @@ function makeOpsCell(x: OpsCellMakeIn): OpsTableCol['render'] {
     if (cell == null) {
       return null
     }
-    return x.Cell({ cell })
+    return x.Cell({ cell, t: x.t })
   }
 }
 
@@ -241,14 +256,14 @@ export function opsRowKeyOf(r: OpsRow): string {
  * @param r 行。
  * @returns 标题与正文。
  */
-export function rowCardPartsOf(r: OpsRow): RowCardParts {
+export function rowCardPartsOf(x: RowPartsIn): RowCardParts {
   const texts: string[] = []
-  for (const c of r.cells) {
+  for (const c of x.row.cells) {
     if (c.kind === CELL_TEXT) {
-      texts.push(c.text)
+      texts.push(sayOf({ t: x.t, s: c.text }))
     }
     if (c.kind === CELL_NAMED) {
-      texts.push(c.main)
+      texts.push(sayOf({ t: x.t, s: c.main }))
     }
   }
   let title = TEXT_NONE
@@ -265,24 +280,28 @@ export function rowCardPartsOf(r: OpsRow): RowCardParts {
  * @param text 报错全文。
  * @returns 点击手柄。
  */
-export function makeCopyError(text: string): () => void {
+export function makeCopyError(x: CopyMakeIn): () => void {
   return function copyError(): void {
-    navigator.clipboard.writeText(text).then(copyDone).catch(copyFail)
+    navigator.clipboard.writeText(x.text).then(makeCopyDone(x.t)).catch(makeCopyFail(x.t))
   }
 }
 
 /**
  * 复制成功的提示。
  */
-function copyDone(): void {
-  toast({ kind: TOAST_OK, title: COPY_OK_TEXT })
+function makeCopyDone(t: TFn): () => void {
+  return function copyDone(): void {
+    toast({ kind: TOAST_OK, title: t(COPY_OK_TEXT) })
+  }
 }
 
 /**
  * 复制失败的提示(出错不静默)。
  */
-function copyFail(): void {
-  toast({ kind: TOAST_ERR, title: COPY_FAIL_TEXT })
+function makeCopyFail(t: TFn): () => void {
+  return function copyFail(): void {
+    toast({ kind: TOAST_ERR, title: t(COPY_FAIL_TEXT) })
+  }
 }
 
 /**
@@ -373,7 +392,7 @@ export function makeAlertAct(x: AlertActIn): () => void {
       method: METHOD_POST,
       headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
       body: JSON.stringify({ id: x.act.id, state: x.act.to }),
-    }).then(makeAlertDone(x)).catch(alertFail)
+    }).then(makeAlertDone(x)).catch(makeAlertFail(x.t))
   }
 }
 
@@ -389,13 +408,47 @@ function makeAlertDone(x: AlertActIn): (r: Response) => void {
       x.refresh()
       return
     }
-    alertFail()
+    makeAlertFail(x.t)()
   }
 }
 
 /**
  * 事件操作失败的提示(出错不静默)。
  */
-function alertFail(): void {
-  toast({ kind: TOAST_ERR, title: ACT_FAIL_TEXT })
+function makeAlertFail(t: TFn): () => void {
+  return function alertFail(): void {
+    toast({ kind: TOAST_ERR, title: t(ACT_FAIL_TEXT) })
+  }
+}
+
+/**
+ * 导航项的文字取成当前语言(opsNavItemsOf 给的 label 是词条键)。
+ *
+ * @param x 导航项与取词。
+ * @returns 文字已取好的导航项。
+ */
+export function navSayOf(x: NavSayIn): OpsNavItem[] {
+  const out: OpsNavItem[] = []
+  for (const it of x.items) {
+    const subs: OpsNavItem[] = []
+    for (const s of it.subs) {
+      subs.push({ key: s.key, label: x.t(s.label), icon: s.icon, count: s.count, href: s.href, subs: [] })
+    }
+    out.push({ key: it.key, label: x.t(it.label), icon: it.icon, count: it.count, href: it.href, subs })
+  }
+  return out
+}
+
+/**
+ * 四格的文字取成当前语言。
+ *
+ * @param x 四格与取词。
+ * @returns 取词后的四格。
+ */
+export function cardsSayOf(x: CardsSayIn): OpsCardView[] {
+  const out: OpsCardView[] = []
+  for (const c of x.cards) {
+    out.push({ value: sayOf({ t: x.t, s: c.value }), label: x.t(c.label) })
+  }
+  return out
 }

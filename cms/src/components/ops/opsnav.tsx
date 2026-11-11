@@ -8,9 +8,10 @@
 import {
   IconBell, IconCard, IconChart, IconClipboard, IconKey, IconMore, IconRefresh, IconStar, IconTable,
 } from '@/components/icons'
+import { useLang } from '@/components/i18n'
 import { Nav } from '@/components/nav'
 import { NAV_ARIA } from './constants'
-import { opsNavItemsOf } from './functions'
+import { navSayOf, opsNavItemsOf } from './functions'
 import type { OpsNavIn } from './types'
 
 /**
@@ -20,7 +21,8 @@ import type { OpsNavIn } from './types'
  * @returns 导航。
  */
 export function OpsNav({ value, onPick }: OpsNavIn) {
-  const items = opsNavItemsOf({
+  const [, , t] = useLang()
+  const keyed = opsNavItemsOf({
     report: <IconChart />,
     schedule: <IconRefresh />,
     queue: <IconTable />,
@@ -31,5 +33,5 @@ export function OpsNav({ value, onPick }: OpsNavIn) {
     access: <IconKey />,
     saved: <IconStar />,
   })
-  return <Nav items={items} value={value} onPick={onPick} ariaLabel={NAV_ARIA} />
+  return <Nav items={navSayOf({ items: keyed, t })} value={value} onPick={onPick} ariaLabel={t(NAV_ARIA)} />
 }

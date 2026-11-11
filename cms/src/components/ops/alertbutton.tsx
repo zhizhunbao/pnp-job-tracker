@@ -7,6 +7,7 @@
  */
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/button'
+import { useLang } from '@/components/i18n'
 import { ACT_BTN_KIND } from './constants'
 import { makeAlertAct } from './functions'
 import type { AlertButtonIn } from './types'
@@ -19,5 +20,7 @@ import type { AlertButtonIn } from './types'
  */
 export function AlertButton({ act }: AlertButtonIn) {
   const router = useRouter()
-  return <Button kind={ACT_BTN_KIND} sm onClick={makeAlertAct({ act, refresh: router.refresh })}>{act.text}</Button>
+  const [, , t] = useLang()
+  const onAct = makeAlertAct({ act, refresh: router.refresh, t })
+  return <Button kind={ACT_BTN_KIND} sm onClick={onAct}>{t(act.text)}</Button>
 }

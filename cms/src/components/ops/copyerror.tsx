@@ -6,6 +6,7 @@
  * @time 2026-11-08 19:00:00
  */
 import { Button } from '@/components/button'
+import { useLang } from '@/components/i18n'
 import { COPY_TEXT, DEL_BTN_KIND } from './constants'
 import { makeCopyError } from './functions'
 import type { CopyErrorIn } from './types'
@@ -17,5 +18,6 @@ import type { CopyErrorIn } from './types'
  * @returns 次要小钮。
  */
 export function CopyError({ text }: CopyErrorIn) {
-  return <Button kind={DEL_BTN_KIND} sm onClick={makeCopyError(text)}>{COPY_TEXT}</Button>
+  const [, , t] = useLang()
+  return <Button kind={DEL_BTN_KIND} sm onClick={makeCopyError({ text, t })}>{t(COPY_TEXT)}</Button>
 }

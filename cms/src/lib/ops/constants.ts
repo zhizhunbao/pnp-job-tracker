@@ -1,6 +1,8 @@
 /**
  * ops 域的参数:运维页的页面清单、分区标题、列头、条数上限与状态词(2026-11-08 Frank「把管理员队列页重构成运维页」)。
  * 模块、页面、列与四格的出处逐条见对话定稿清单;加一个观察维度 = 这里加一行 + functions 加一段取数,不用新建页面。
+ * 2026-11-10 Frank「内部页也要三语,界面字不进 lib」:页名、列头、标题、四格、胶囊的值都是词条键(`ops.` 开头,
+ * 文字住 lib/i18n 三语文件),由 components/ops 取词;功能名、通道名、额度配置是数据,原样显示不翻译。
  *
  * @author Frank
  * @time 2026-11-08 18:00:00
@@ -110,82 +112,82 @@ export const SEC_NAME: Record<string, string> = {
   /**
    * 总览。
    */
-  report: '服务报告',
+  report: 'ops.sec.report',
 
   /**
    * 调度。
    */
-  schedule: '调度',
+  schedule: 'ops.sec.schedule',
 
   /**
    * 投递待发。
    */
-  apply: '投递待发',
+  apply: 'ops.sec.apply',
 
   /**
    * 官网抓取。
    */
-  sites: '官网抓取',
+  sites: 'ops.sec.sites',
 
   /**
    * 译名翻译。
    */
-  alias: '译名翻译',
+  alias: 'ops.sec.alias',
 
   /**
    * 用量。
    */
-  usage: '用量',
+  usage: 'ops.sec.usage',
 
   /**
    * 成本。
    */
-  cost: '成本',
+  cost: 'ops.sec.cost',
 
   /**
    * 额度。
    */
-  budget: '额度',
+  budget: 'ops.sec.budget',
 
   /**
    * 事件。
    */
-  incidents: '事件',
+  incidents: 'ops.sec.incidents',
 
   /**
    * 报警规则。
    */
-  rules: '报警规则',
+  rules: 'ops.sec.rules',
 
   /**
    * 数据新鲜度。
    */
-  fresh: '数据新鲜度',
+  fresh: 'ops.sec.fresh',
 
   /**
    * 通道状态。
    */
-  channels: '通道状态',
+  channels: 'ops.sec.channels',
 
   /**
    * 功能通道。
    */
-  routes: '功能通道',
+  routes: 'ops.sec.routes',
 
   /**
    * 通道实测。
    */
-  evals: '通道实测',
+  evals: 'ops.sec.evals',
 
   /**
    * Workspace 和 Key。
    */
-  keys: 'Workspace 和 Key',
+  keys: 'ops.sec.keys',
 
   /**
    * 用户收藏。
    */
-  saved: '用户收藏',
+  saved: 'ops.sec.saved',
 }
 
 // =========================================================================
@@ -320,96 +322,96 @@ export const ISO_NONE = ''
  * 服务报告表:SWEBOK 4.5(对比服务目标、事件和失败、用量、趋势)。
  */
 export const REPORT_COLS = [
-  { label: '领域', wrap: false }, { label: '实际', wrap: true }, { label: '目标', wrap: true }, { label: '是否达标', wrap: false },
-  { label: '事件和失败', wrap: false }, { label: '用量', wrap: true }, { label: '趋势', wrap: false },
+  { label: 'ops.col.area', wrap: false }, { label: 'ops.col.actual', wrap: true }, { label: 'ops.col.target', wrap: true }, { label: 'ops.col.met', wrap: false },
+  { label: 'ops.col.incidents', wrap: false }, { label: 'ops.col.usage', wrap: true }, { label: 'ops.col.trend', wrap: false },
 ]
 
 /**
  * 调度上表:Azure Data Factory 运行列表的列。
  */
 export const UNIT_COLS = [
-  { label: '单元', wrap: false }, { label: '状态', wrap: false }, { label: '开始', wrap: false },
-  { label: '时长', wrap: false }, { label: '下一轮', wrap: false }, { label: '触发方式', wrap: false },
-  { label: '报错', wrap: false },
+  { label: 'ops.col.unit', wrap: false }, { label: 'ops.col.status', wrap: false }, { label: 'ops.col.start', wrap: false },
+  { label: 'ops.col.dur', wrap: false }, { label: 'ops.col.next', wrap: false }, { label: 'ops.col.trigger', wrap: false },
+  { label: 'ops.col.error', wrap: false },
 ]
 
 /**
  * 调度下表:同上。
  */
 export const RUN_COLS = [
-  { label: '单元', wrap: false }, { label: '开始', wrap: false }, { label: '结束', wrap: false },
-  { label: '时长', wrap: false }, { label: '状态', wrap: false }, { label: '报错', wrap: false },
-  { label: '运行 ID', wrap: false },
+  { label: 'ops.col.unit', wrap: false }, { label: 'ops.col.start', wrap: false }, { label: 'ops.col.end', wrap: false },
+  { label: 'ops.col.dur', wrap: false }, { label: 'ops.col.status', wrap: false }, { label: 'ops.col.error', wrap: false },
+  { label: 'ops.col.runId', wrap: false },
 ]
 
 /**
  * 投递上表:沿用队列页的列。
  */
 export const APPLY_COLS = [
-  { label: '用户', wrap: true }, { label: '职位', wrap: true }, { label: '公司', wrap: true },
-  { label: '状态', wrap: false }, { label: '等了', wrap: false }, { label: '操作', wrap: false },
+  { label: 'ops.col.user', wrap: true }, { label: 'ops.col.job', wrap: true }, { label: 'ops.col.company', wrap: true },
+  { label: 'ops.col.status', wrap: false }, { label: 'ops.col.waited', wrap: false }, { label: 'ops.col.action', wrap: false },
 ]
 
 /**
  * 投递下表:上表加完成时间。
  */
 export const APPLY_DONE_COLS = [
-  { label: '用户', wrap: true }, { label: '职位', wrap: true }, { label: '公司', wrap: true },
-  { label: '状态', wrap: false }, { label: '完成', wrap: false },
+  { label: 'ops.col.user', wrap: true }, { label: 'ops.col.job', wrap: true }, { label: 'ops.col.company', wrap: true },
+  { label: 'ops.col.status', wrap: false }, { label: 'ops.col.done', wrap: false },
 ]
 
 /**
  * 官网抓取上表:沿用队列页的列。
  */
 export const SITE_COLS = [
-  { label: '公司', wrap: true }, { label: '状态', wrap: false }, { label: '工人', wrap: false },
-  { label: '点开', wrap: false }, { label: '等了', wrap: false }, { label: '由头', wrap: true }, { label: '操作', wrap: false },
+  { label: 'ops.col.company', wrap: true }, { label: 'ops.col.status', wrap: false }, { label: 'ops.col.worker', wrap: false },
+  { label: 'ops.col.opens', wrap: false }, { label: 'ops.col.waited', wrap: false }, { label: 'ops.col.reason', wrap: true }, { label: 'ops.col.action', wrap: false },
 ]
 
 /**
  * 官网抓取下表:上表加完成时间。
  */
 export const SITE_DONE_COLS = [
-  { label: '公司', wrap: true }, { label: '状态', wrap: false }, { label: '点开', wrap: false },
-  { label: '由头', wrap: true }, { label: '完成', wrap: false },
+  { label: 'ops.col.company', wrap: true }, { label: 'ops.col.status', wrap: false }, { label: 'ops.col.opens', wrap: false },
+  { label: 'ops.col.reason', wrap: true }, { label: 'ops.col.done', wrap: false },
 ]
 
 /**
  * 译名上表:沿用队列页的列。
  */
 export const ALIAS_COLS = [
-  { label: '雇主', wrap: true }, { label: '被列出', wrap: false }, { label: '等了', wrap: false }, { label: '操作', wrap: false },
+  { label: 'ops.col.employer', wrap: true }, { label: 'ops.col.listed', wrap: false }, { label: 'ops.col.waited', wrap: false }, { label: 'ops.col.action', wrap: false },
 ]
 
 /**
  * 译名下表:上表加完成时间。
  */
 export const ALIAS_DONE_COLS = [
-  { label: '雇主', wrap: true }, { label: '状态', wrap: false }, { label: '被列出', wrap: false }, { label: '完成', wrap: false },
+  { label: 'ops.col.employer', wrap: true }, { label: 'ops.col.status', wrap: false }, { label: 'ops.col.listed', wrap: false }, { label: 'ops.col.done', wrap: false },
 ]
 
 /**
  * 用量表:Console Usage 页与 Usage and Cost Analytics API。
  */
 export const USAGE_COLS = [
-  { label: '功能', wrap: false }, { label: '模型', wrap: false }, { label: '通道', wrap: false }, { label: '输入 token', wrap: false },
-  { label: '输出 token', wrap: false }, { label: '缓存读取', wrap: false }, { label: '请求数', wrap: false },
+  { label: 'ops.col.feature', wrap: false }, { label: 'ops.col.model', wrap: false }, { label: 'ops.col.channel', wrap: false }, { label: 'ops.col.tokensIn', wrap: false },
+  { label: 'ops.col.tokensOut', wrap: false }, { label: 'ops.col.cacheRead', wrap: false }, { label: 'ops.col.requests', wrap: false },
 ]
 
 /**
  * 成本表:Console Cost 页。
  */
 export const COST_COLS = [
-  { label: '日期', wrap: false }, { label: '功能', wrap: false }, { label: '模型', wrap: false }, { label: 'token 成本', wrap: false },
-  { label: '联网搜索成本', wrap: false }, { label: '请求数', wrap: false }, { label: '合计', wrap: false },
+  { label: 'ops.col.date', wrap: false }, { label: 'ops.col.feature', wrap: false }, { label: 'ops.col.model', wrap: false }, { label: 'ops.col.tokenCost', wrap: false },
+  { label: 'ops.col.webCost', wrap: false }, { label: 'ops.col.requests', wrap: false }, { label: 'ops.col.total', wrap: false },
 ]
 
 /**
  * 额度表:Console Spend limits 与 Promotional credits。
  */
 export const BUDGET_COLS = [
-  { label: '额度', wrap: false }, { label: '上限', wrap: false }, { label: '已用', wrap: false }, { label: '已用比例', wrap: false },
-  { label: '通知阈值', wrap: false }, { label: '适用范围', wrap: true }, { label: '发放日', wrap: false }, { label: '到期', wrap: false },
+  { label: 'ops.col.budget', wrap: false }, { label: 'ops.col.limit', wrap: false }, { label: 'ops.col.used', wrap: false }, { label: 'ops.col.usedPct', wrap: false },
+  { label: 'ops.col.alerts', wrap: false }, { label: 'ops.col.scope', wrap: true }, { label: 'ops.col.granted', wrap: false }, { label: 'ops.col.expires', wrap: false },
 ]
 
 // =========================================================================
@@ -423,52 +425,47 @@ export const TEXT = {
   /**
    * 调度上表(定稿清单的原词)。
    */
-  unitsNow: '各单元现状',
+  unitsNow: 'ops.tt.unitsNow',
 
   /**
    * 通用上表。
    */
-  running: '正在运行',
+  running: 'ops.tt.running',
 
   /**
    * 通用下表。
    */
-  history: '历史',
+  history: 'ops.tt.history',
 
   /**
    * 总览表标题。
    */
-  reportTitle: '各领域对比目标',
-
-  /**
-   * 通用空态。
-   */
-  empty: '暂无数据',
+  reportTitle: 'ops.tt.report',
 
   /**
    * 用量表标题。
    */
-  usageTitle: '最近 30 天',
+  usageTitle: 'ops.tt.last30',
 
   /**
    * 生效中的额度。
    */
-  budgetLive: '生效中',
+  budgetLive: 'ops.tt.budgetLive',
 
   /**
    * 已到期的额度。
    */
-  budgetDone: '已到期',
+  budgetDone: 'ops.tt.budgetDone',
 
   /**
    * 条数的单位。
    */
-  rowsTail: ' 条',
+  rows: 'ops.rows',
 
   /**
    * 天的单位。
    */
-  daysTail: ' 天',
+  days: 'ops.days',
 
   /**
    * 百分号。
@@ -479,26 +476,6 @@ export const TEXT = {
    * 美元符号。
    */
   usd: '$',
-
-  /**
-   * 之前。
-   */
-  ago: '前',
-
-  /**
-   * 之后。
-   */
-  after: '后',
-
-  /**
-   * 超期多久的前缀。
-   */
-  late: '过点 ',
-
-  /**
-   * 节奏的前缀。
-   */
-  every: '每 ',
 }
 
 /**
@@ -508,122 +485,122 @@ export const CARD = {
   /**
    * 服务报告:达标的领域。
    */
-  met: '达标',
+  met: 'ops.card.met',
 
   /**
    * 服务报告:未达标的领域。
    */
-  missed: '未达标',
+  missed: 'ops.card.missed',
 
   /**
    * 服务报告:事件和失败。
    */
-  incidents: '事件和失败',
+  incidents: 'ops.card.incidents',
 
   /**
    * 服务报告:Claude 已用。
    */
-  claudeUsed: 'Claude 已用',
+  claudeUsed: 'ops.card.claudeUsed',
 
   /**
    * ADF 状态 In Progress。
    */
-  running: '运行中',
+  running: 'ops.card.running',
 
   /**
    * ADF 状态 Queued。
    */
-  queued: '排队',
+  queued: 'ops.card.queued',
 
   /**
    * ADF 状态 Failed。
    */
-  failed: '失败',
+  failed: 'ops.card.failed',
 
   /**
    * ADF 状态 Succeeded。
    */
-  succeeded: '成功',
+  succeeded: 'ops.card.succeeded',
 
   /**
    * SQS Visible。
    */
-  waiting: '待处理',
+  waiting: 'ops.card.waiting',
 
   /**
    * SQS NotVisible。
    */
-  working: '处理中',
+  working: 'ops.card.working',
 
   /**
    * SQS Deleted。
    */
-  doneToday: '今日完成',
+  doneToday: 'ops.card.doneToday',
 
   /**
    * SQS AgeOfOldestMessage。
    */
-  oldest: '最久等待',
+  oldest: 'ops.card.oldest',
 
   /**
    * Console Total tokens in。
    */
-  tokensIn: '输入 token',
+  tokensIn: 'ops.card.tokensIn',
 
   /**
    * Console Total tokens out。
    */
-  tokensOut: '输出 token',
+  tokensOut: 'ops.card.tokensOut',
 
   /**
    * API requests。
    */
-  requests: '请求数',
+  requests: 'ops.card.requests',
 
   /**
    * API cache_read_input_tokens。
    */
-  cacheRead: '缓存读取',
+  cacheRead: 'ops.card.cacheRead',
 
   /**
    * Console Total cost。
    */
-  totalCost: '总成本',
+  totalCost: 'ops.card.totalCost',
 
   /**
    * Console Total token cost。
    */
-  tokenCost: 'token 成本',
+  tokenCost: 'ops.card.tokenCost',
 
   /**
    * Console Total web search cost。
    */
-  webCost: '联网搜索成本',
+  webCost: 'ops.card.webCost',
 
   /**
    * Console Daily token cost。
    */
-  todayCost: '今日 token 成本',
+  todayCost: 'ops.card.todayCost',
 
   /**
    * Console spent。
    */
-  used: '已用',
+  used: 'ops.card.used',
 
   /**
    * Console % used。
    */
-  usedPct: '已用比例',
+  usedPct: 'ops.card.usedPct',
 
   /**
    * Console Remaining balance。
    */
-  remaining: '剩余',
+  remaining: 'ops.card.remaining',
 
   /**
    * Console Expires on。
    */
-  daysLeft: '距到期',
+  daysLeft: 'ops.card.daysLeft',
 }
 
 /**
@@ -633,77 +610,77 @@ export const TAG = {
   /**
    * 达标。
    */
-  met: '达标',
+  met: 'ops.tag.met',
 
   /**
    * 未达标。
    */
-  missed: '未达标',
+  missed: 'ops.tag.missed',
 
   /**
    * 没有约定目标,不判达标。
    */
-  noTarget: '未约定',
+  noTarget: 'ops.notAgreed',
 
   /**
    * 运行中。
    */
-  run: '运行中',
+  run: 'ops.tag.run',
 
   /**
    * 等盒子。
    */
-  llm: '等模型',
+  llm: 'ops.tag.llm',
 
   /**
    * 排队。
    */
-  wait: '排队',
+  wait: 'ops.tag.wait',
 
   /**
    * 过点太久没开跑。
    */
-  lost: '失联',
+  lost: 'ops.tag.lost',
 
   /**
    * 上一轮失败。
    */
-  lastFail: '上轮失败',
+  lastFail: 'ops.tag.lastFail',
 
   /**
    * 成功。
    */
-  ok: '成功',
+  ok: 'ops.tag.ok',
 
   /**
    * 失败。
    */
-  failed: '失败',
+  failed: 'ops.tag.failed',
 
   /**
    * 投递待投。
    */
-  queued: '待投',
+  queued: 'ops.tag.queued',
 
   /**
    * 投递正在发。
    */
-  sending: '正在发',
+  sending: 'ops.tag.sending',
 
   /**
    * 正在发太久。
    */
-  stuck: '卡住',
+  stuck: 'ops.tag.stuck',
 
   /**
    * 已不在雇主板。
    */
-  outPool: '已不在雇主板',
+  outPool: 'ops.tag.outPool',
 
   /**
    * 人工核定过。
    */
-  curated: '已核定不取',
+  curated: 'ops.tag.curated',
 }
 
 /**
@@ -713,22 +690,22 @@ export const UNIT = {
   /**
    * 秒。
    */
-  sec: ' 秒',
+  sec: 'sec',
 
   /**
    * 分钟。
    */
-  min: ' 分钟',
+  min: 'min',
 
   /**
    * 小时。
    */
-  hour: ' 小时',
+  hour: 'hour',
 
   /**
    * 天。
    */
-  day: ' 天',
+  day: 'day',
 }
 
 /**
@@ -738,12 +715,12 @@ export const WORKER = {
   /**
    * 还没有官网。
    */
-  find: '找官网',
+  find: 'ops.worker.find',
 
   /**
    * 已有官网。
    */
-  visit: '抓官网',
+  visit: 'ops.worker.visit',
 }
 
 /**
@@ -753,32 +730,32 @@ export const STAGE_TEXT: Record<string, string> = {
   /**
    * 排队中。
    */
-  queued: '排队中',
+  queued: 'ops.stage.queued',
 
   /**
    * 查找官网。
    */
-  find: '查找官网',
+  find: 'ops.stage.find',
 
   /**
    * 抓取。
    */
-  fetch: '抓取',
+  fetch: 'ops.stage.fetch',
 
   /**
    * 整理。
    */
-  facts: '整理',
+  facts: 'ops.stage.facts',
 
   /**
    * 办完。
    */
-  done: '完成',
+  done: 'ops.stage.done',
 
   /**
    * 办完但什么也没有。
    */
-  none: '未找到',
+  none: 'ops.stage.none',
 }
 
 /**
@@ -788,32 +765,32 @@ export const DONE_TEXT: Record<string, string> = {
   /**
    * 已发。
    */
-  sent: '已发出',
+  sent: 'ops.done.sent',
 
   /**
    * 已回复。
    */
-  replied: '已回复',
+  replied: 'ops.done.replied',
 
   /**
    * 退信。
    */
-  bounced: '退信',
+  bounced: 'ops.done.bounced',
 
   /**
    * 拒绝。
    */
-  declined: '已拒绝',
+  declined: 'ops.done.declined',
 
   /**
    * 译名完成。
    */
-  done: '完成',
+  done: 'ops.done.done',
 
   /**
    * 译名跳过。
    */
-  skip: '跳过',
+  skip: 'ops.done.skip',
 }
 
 /**
@@ -847,77 +824,67 @@ export const REPORT = {
   /**
    * 调度领域名。
    */
-  schedule: '调度',
+  schedule: 'ops.rep.schedule',
 
   /**
    * 投递领域名。
    */
-  apply: '投递',
+  apply: 'ops.rep.apply',
 
   /**
    * 官网抓取领域名。
    */
-  sites: '官网抓取',
+  sites: 'ops.rep.sites',
 
   /**
    * 译名翻译领域名。
    */
-  alias: '译名翻译',
+  alias: 'ops.rep.alias',
 
   /**
    * 费用领域名。
    */
-  fee: '费用',
+  fee: 'ops.rep.fee',
 
   /**
    * 没有约定服务目标(SWEBOK 4.5 要求目标是约定的,不替 Frank 拟)。
    */
-  noTarget: '未约定',
+  noTarget: 'ops.notAgreed',
 
   /**
    * 费用目标的前缀(上限 Frank 定)。
    */
-  targetFee: '不超过 ',
+  targetFee: 'ops.rep.targetFee',
 
   /**
-   * 单元数的单位。
+   * 单元数与失败数一句(插值 n、f)。
    */
-  unitsTail: ' 个单元,',
+  units: 'ops.rep.units',
 
   /**
-   * 失败数的单位。
+   * 待处理条数一句(插值 n)。
    */
-  failedTail: ' 个失败',
+  wait: 'ops.rep.wait',
 
   /**
-   * 待处理的前缀。
+   * 待处理条数加最久等待一句的键头,后接时长单位(插值 n、d)。
    */
-  waiting: '待处理 ',
+  waitOld: 'ops.rep.waitOld.',
 
   /**
-   * 待处理的单位。
+   * 今日完成一句(插值 n)。
    */
-  waitingTail: ' 条',
+  doneToday: 'ops.rep.doneToday',
 
   /**
-   * 最久等待的连接。
+   * 已用一句(插值 v)。
    */
-  oldest: ',最久 ',
+  used: 'ops.rep.used',
 
   /**
-   * 今日完成的前缀。
+   * 成功数一句(插值 n)。
    */
-  doneToday: '今日完成 ',
-
-  /**
-   * 已用的前缀。
-   */
-  used: '已用 ',
-
-  /**
-   * 成功的单位。
-   */
-  okTail: ' 个成功',
+  ok: 'ops.rep.ok',
 }
 
 /**

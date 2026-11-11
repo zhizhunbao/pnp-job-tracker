@@ -555,3 +555,39 @@ export const MAT_E = 4
  * PDF 变换矩阵里的纵坐标格。
  */
 export const MAT_F = 5
+
+/**
+ * 整理版的节标记 → 节名词条(与职位详情页整理版同一套词条;各桶各抄一份)。
+ * 2026-11-11 Frank「用整理版 测试一下」:职位描述面板改读整理版,节头按界面语言显示。
+ */
+export const JD_SEC_KEYS: Record<string, string> = {
+  /**
+   * 工作内容。
+   */
+  '[ROLE]': 'act.f.role',
+
+  /**
+   * 硬性要求。
+   */
+  '[REQS]': 'act.f.reqs',
+
+  /**
+   * 薪资福利。
+   */
+  '[PAY]': 'act.f.pay',
+
+  /**
+   * 工作形式。
+   */
+  '[WORKHOURS]': 'act.f.hours',
+
+  /**
+   * 公司简介。
+   */
+  '[COMPANY]': 'act.f.company',
+
+  /**
+   * 怎么申请。
+   */
+  '[APPLY]': 'act.f.apply',
+}

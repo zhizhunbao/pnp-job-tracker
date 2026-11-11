@@ -3472,15 +3472,6 @@ export const CREDIT_USED = `SELECT count(*) FILTER (WHERE feature = $2)::int AS 
 export const CREDIT_MARK = `INSERT INTO ai_trials (user_id, feature, ref_id) VALUES ($1, $2, $3)
      ON CONFLICT (user_id, feature, ref_id) DO NOTHING`
 
-/**
- * 占一次手动重新生成:今天没到上限才加一并回行,到了上限零行(查和加一条语句,并发不超)。
- * $1=用户 id,$2=职位 id,$3=哪一份文件,$4=今天的上限。日界按 UTC。
- */
-export const REGEN_TAKE = `INSERT INTO ai_regens AS r (user_id, job_id, step, day, n)
-     VALUES ($1, $2, $3, (now() AT TIME ZONE 'utc')::date, 1)
-     ON CONFLICT (user_id, job_id, step, day) DO UPDATE SET n = r.n + 1 WHERE r.n < $4
-     RETURNING n`
-
 // =========================================================================
 // 35. 新岗推送(「我的求职」末段;2026-10-10 批 2,docs/design/我的/我的求职-20261009.md 第 3 节 16b / 16d;
 //     表 docs/sql/digest-prefs-20261010.sql:digest_prefs;读写方只有 lib/alerts)

@@ -75,12 +75,12 @@ export const TEXT_NONE = ''
 /**
  * 没有来源的值:不替 Frank 拟。
  */
-export const NOT_AGREED = '未约定'
+export const NOT_AGREED = 'ops.notAgreed'
 
 /**
  * 条数的单位。
  */
-export const ROWS_TAIL = ' 条'
+export const ROWS_KEY = 'ops.rows'
 
 /**
  * 表的条数上限。
@@ -94,7 +94,7 @@ export const ROWS_MAX = 100
 /**
  * 通知方式(Azure alerts 的 Action group,这里只有邮件)。
  */
-export const NOTIFY_MAIL = '邮件'
+export const NOTIFY_MAIL = 'ops.notify.mail'
 
 /**
  * 规则:Claude 被降级。
@@ -125,6 +125,41 @@ export const R_FRESH = 'fresh.warn'
  * 通道规则的前缀(后接通道代码)。
  */
 export const R_CHANNEL = 'channel.'
+
+/**
+ * 规则界面文字的键头(后接规则号与 RULE_PART 的一格,文字住 lib/i18n)。
+ */
+export const RULE_KEY = 'ops.rule.'
+
+/**
+ * 规则界面文字的键尾:哪一格。
+ */
+export const RULE_PART = {
+  /**
+   * 规则名。
+   */
+  name: '.name',
+
+  /**
+   * 监控对象。
+   */
+  target: '.target',
+
+  /**
+   * 信号。
+   */
+  signal: '.signal',
+
+  /**
+   * 条件。
+   */
+  cond: '.cond',
+
+  /**
+   * 业务影响。
+   */
+  impact: '.impact',
+}
 
 /**
  * 额度通知线,与 Console 设的三档邮件同值。
@@ -264,38 +299,38 @@ export const US_TEXT: Record<string, string> = {
   /**
    * Azure New。
    */
-  new: '新建',
+  new: 'ops.us.new',
 
   /**
    * Azure Acknowledged。
    */
-  ack: '已确认',
+  ack: 'ops.us.ack',
 
   /**
    * Azure Closed。
    */
-  closed: '已关闭',
+  closed: 'ops.us.closed',
 }
 
 /**
  * 操作钮文字:确认。
  */
-export const ACT_ACK = '确认'
+export const ACT_ACK = 'ops.act.ack'
 
 /**
  * 操作钮文字:关闭。
  */
-export const ACT_CLOSE = '关闭'
+export const ACT_CLOSE = 'ops.act.close'
 
 /**
  * 监视状态:触发中(Azure fired)。
  */
-export const TAG_FIRED = '触发中'
+export const TAG_FIRED = 'ops.tag.fired'
 
 /**
  * 监视状态:已恢复(Azure resolved)。
  */
-export const TAG_RESOLVED = '已恢复'
+export const TAG_RESOLVED = 'ops.tag.resolved'
 
 // =========================================================================
 // 3. 数据新鲜度
@@ -331,12 +366,12 @@ export const FRESH_MARGIN_S = 3600
 /**
  * 状态:正常。
  */
-export const FRESH_OK = '正常'
+export const FRESH_OK = 'ops.fresh.ok'
 
 /**
  * 状态:警告。
  */
-export const FRESH_WARN = '警告'
+export const FRESH_WARN = 'ops.fresh.warn'
 
 // =========================================================================
 // 4. AI 通道与访问
@@ -395,55 +430,55 @@ export const PROBE_ERROR_MAX = 200
  * 事件上表。
  */
 export const INCIDENT_COLS = [
-  { label: '事件', wrap: false }, { label: '优先级', wrap: false }, { label: '业务影响', wrap: true }, { label: '用户响应', wrap: false },
-  { label: '条件', wrap: true }, { label: '发生', wrap: false }, { label: '恢复', wrap: false }, { label: '操作', wrap: false },
+  { label: 'ops.col.incident', wrap: false }, { label: 'ops.col.priority', wrap: false }, { label: 'ops.col.impact', wrap: true }, { label: 'ops.col.userState', wrap: false },
+  { label: 'ops.col.cond', wrap: true }, { label: 'ops.col.fired', wrap: false }, { label: 'ops.col.resolved', wrap: false }, { label: 'ops.col.action', wrap: false },
 ]
 
 /**
  * 事件下表:再加根因和对策。
  */
 export const INCIDENT_DONE_COLS = [
-  { label: '事件', wrap: false }, { label: '优先级', wrap: false }, { label: '业务影响', wrap: true }, { label: '用户响应', wrap: false },
-  { label: '条件', wrap: true }, { label: '发生', wrap: false }, { label: '恢复', wrap: false }, { label: '根因', wrap: true },
-  { label: '对策', wrap: true },
+  { label: 'ops.col.incident', wrap: false }, { label: 'ops.col.priority', wrap: false }, { label: 'ops.col.impact', wrap: true }, { label: 'ops.col.userState', wrap: false },
+  { label: 'ops.col.cond', wrap: true }, { label: 'ops.col.fired', wrap: false }, { label: 'ops.col.resolved', wrap: false }, { label: 'ops.col.cause', wrap: true },
+  { label: 'ops.col.remedy', wrap: true },
 ]
 
 /**
  * 报警规则上表。
  */
 export const RULE_COLS = [
-  { label: '规则名', wrap: false }, { label: '严重级别', wrap: false }, { label: '监控对象', wrap: false }, { label: '信号', wrap: false },
-  { label: '条件', wrap: true }, { label: '通知方式', wrap: false },
+  { label: 'ops.col.ruleName', wrap: false }, { label: 'ops.col.severity', wrap: false }, { label: 'ops.col.monitored', wrap: false }, { label: 'ops.col.signal', wrap: false },
+  { label: 'ops.col.cond', wrap: true }, { label: 'ops.col.notify', wrap: false },
 ]
 
 /**
  * 报警规则下表:最近 30 天的触发。
  */
 export const FIRE_COLS = [
-  { label: '规则', wrap: false }, { label: '条件', wrap: true }, { label: '用户响应', wrap: false }, { label: '时间', wrap: false },
+  { label: 'ops.col.rule', wrap: false }, { label: 'ops.col.cond', wrap: true }, { label: 'ops.col.userState', wrap: false }, { label: 'ops.col.time', wrap: false },
 ]
 
 /**
  * 数据新鲜度表。
  */
 export const FRESH_COLS = [
-  { label: '数据集', wrap: false }, { label: '最新数据时间', wrap: false }, { label: '警告线', wrap: false },
-  { label: '错误线', wrap: false }, { label: '状态', wrap: false },
+  { label: 'ops.col.dataset', wrap: false }, { label: 'ops.col.lastData', wrap: false }, { label: 'ops.col.warnLine', wrap: false },
+  { label: 'ops.col.errorLine', wrap: false }, { label: 'ops.col.status', wrap: false },
 ]
 
 /**
  * 通道状态上表:四个黄金信号。
  */
 export const CHANNEL_COLS = [
-  { label: '通道', wrap: false }, { label: '可用性', wrap: false }, { label: '延迟', wrap: false }, { label: '流量', wrap: false },
-  { label: '错误率', wrap: false }, { label: '饱和度', wrap: false },
+  { label: 'ops.col.channel', wrap: false }, { label: 'ops.col.availability', wrap: false }, { label: 'ops.col.latency', wrap: false }, { label: 'ops.col.traffic', wrap: false },
+  { label: 'ops.col.errorRate', wrap: false }, { label: 'ops.col.saturation', wrap: false },
 ]
 
 /**
  * 通道状态下表:不可用记录。
  */
 export const OUTAGE_COLS = [
-  { label: '通道', wrap: false }, { label: '开始', wrap: false }, { label: '结束', wrap: false }, { label: '条件', wrap: true },
+  { label: 'ops.col.channel', wrap: false }, { label: 'ops.col.start', wrap: false }, { label: 'ops.col.end', wrap: false }, { label: 'ops.col.cond', wrap: true },
 ]
 
 // =========================================================================
@@ -457,37 +492,37 @@ export const TITLE = {
   /**
    * 事件上表。
    */
-  open: '未关闭',
+  open: 'ops.tt.open',
 
   /**
    * 事件下表。
    */
-  closed: '已关闭',
+  closed: 'ops.tt.closed',
 
   /**
    * 规则上表。
    */
-  rules: '全部规则',
+  rules: 'ops.tt.rules',
 
   /**
    * 规则下表。
    */
-  fires: '最近 30 天触发',
+  fires: 'ops.tt.fires',
 
   /**
    * 新鲜度表。
    */
-  fresh: '各数据集',
+  fresh: 'ops.tt.fresh',
 
   /**
    * 通道上表。
    */
-  channels: '最近 24 小时',
+  channels: 'ops.tt.last24',
 
   /**
    * 通道下表。
    */
-  outages: '不可用记录',
+  outages: 'ops.tt.outages',
 }
 
 /**
@@ -497,78 +532,78 @@ export const CARD = {
   /**
    * Azure New。
    */
-  fresh: '新建',
+  fresh: 'ops.card.fresh',
 
   /**
    * Azure Acknowledged。
    */
-  ack: '已确认',
+  ack: 'ops.card.ack',
 
   /**
    * Azure fired。
    */
-  fired: '触发中',
+  fired: 'ops.card.fired',
 
   /**
    * Azure resolved。
    */
-  resolved: '已恢复',
+  resolved: 'ops.card.resolved',
 
   /**
    * 规则总数。
    */
-  rules: '规则总数',
+  rules: 'ops.card.rules',
 
   /**
    * 未确认。
    */
-  unacked: '未确认',
+  unacked: 'ops.card.unacked',
 
   /**
    * 数据集总数。
    */
-  sets: '数据集总数',
+  sets: 'ops.card.sets',
 
   /**
    * 正常。
    */
-  ok: '正常',
+  ok: 'ops.card.ok',
 
   /**
    * 警告。
    */
-  warn: '警告',
+  warn: 'ops.card.warn',
 
   /**
    * 错误。
    */
-  error: '错误',
+  error: 'ops.card.error',
 
   /**
    * 黄金信号:延迟。
    */
-  latency: '延迟',
+  latency: 'ops.card.latency',
 
   /**
    * 黄金信号:流量。
    */
-  traffic: '流量',
+  traffic: 'ops.card.traffic',
 
   /**
    * 黄金信号:错误率。
    */
-  errors: '错误率',
+  errors: 'ops.card.errors',
 
   /**
    * 黄金信号:饱和度。
    */
-  saturation: '饱和度',
+  saturation: 'ops.card.saturation',
 }
 
 /**
  * 毫秒的单位。
  */
-export const MS_TAIL = ' 毫秒'
+export const MS_KEY = 'ops.ms'
 
 /**
  * 百分号。
@@ -588,7 +623,7 @@ export const PCT_DIGITS = 1
 /**
  * 警告线的后缀。
  */
-export const LINE_HOURS_TAIL = ' 小时'
+export const LINE_HOURS_KEY = 'ops.dur.hour'
 
 /**
  * 一小时的秒数。

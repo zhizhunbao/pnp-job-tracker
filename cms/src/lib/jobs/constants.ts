@@ -2849,6 +2849,31 @@ export const JD_ROLE_SECTION_RE = /\[ROLE\]\s*(?<role>[\s\S]*?)(?=\n\s*\[[A-Z]+\
 export const JD_HEAD_MARK_RE = /^##[ \t]+/gm
 
 /**
+ * 写出去的节头标记(与 JD_HEAD_MARK_RE 认的是同一个记号)。
+ */
+export const JD_HEAD_MARK = '## '
+
+/**
+ * 整理版里独占一行的节标记(五节加可选的 [COMPANY])。
+ */
+export const JD_SEC_LINE_RE = /^\[(?:ROLE|REQS|PAY|WORKHOURS|COMPANY|APPLY)\]$/
+
+/**
+ * 整理版里表示「原帖没写」的那一行(带不带圆点、括号都算)。
+ */
+export const JD_NOT_STATED_RE = /^[-•*\s]*\(?\s*not stated\s*\)?$/i
+
+/**
+ * 整理版的圆点行行首。
+ */
+export const JD_DASH_HEAD = '- '
+
+/**
+ * 写出去的圆点行行首(投递三屏框认这个圆点,不再补一个)。
+ */
+export const JD_DOT_HEAD = '• '
+
+/**
  * 语境摘句里要抹成空格的字符:冒号(半角 / 全角)、方括号与换行。
  */
 export const TITLE_CTX_CLEAN_RE = /[:：[\]\n\r]+/g

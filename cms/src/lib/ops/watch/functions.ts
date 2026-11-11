@@ -6,19 +6,19 @@
  * @time 2026-11-08 23:59:00
  */
 import { queryRows, queryRowsOrEmpty, SQL } from '../../db'
-import { cardOf, dashOf, intOf, pctOf, tagsCell, textCell } from '../cell'
+import { cardOf, dashOf, intOf, pctOf, sayOf, tagsCell, textCell } from '../cell'
 import {
   ACT_ACK, ACT_CLOSE, APPLY_SENDING, BUDGET_LINES, CARD, CELL, CH_ANTHROPIC, CH_OLLAMA, CHANNEL_COLS, CHANNEL_NAME, CHANNELS, COND_SEP, DASH, ESC_AMP,
   ESC_AMP_RE, ESC_GT, ESC_GT_RE, ESC_LT, ESC_LT_RE, FIRE_COLS, FRESH_COLS, FRESH_DAY_S, FRESH_JOB_S, FRESH_JOB_UNITS, FRESH_MARGIN_S, FRESH_OK,
-  FRESH_SKIP_UNITS, FRESH_WARN, HOUR_S, INCIDENT_COLS, INCIDENT_DONE_COLS, LINE_HOURS_TAIL, LOST_S, MAIL_COND, MAIL_HTML, MAIL_SUBJECT, MS_TAIL,
+  FRESH_SKIP_UNITS, FRESH_WARN, HOUR_S, INCIDENT_COLS, INCIDENT_DONE_COLS, LINE_HOURS_KEY, LOST_S, MAIL_COND, MAIL_HTML, MAIL_SUBJECT, MS_KEY,
   NAME_SEP, NAMES_MAX, NOT_AGREED, NOTIFY_MAIL, OUTAGE_COLS, PCT, PCT_BASE, PCT_DIGITS, PROBE_ERROR_MAX, R_APPLY_STUCK, R_CHANNEL, R_DEGRADED, R_FRESH,
-  R_UNIT_FAILED, R_UNIT_LOST, ROWS_MAX, ROWS_TAIL, RULE_COLS, RULES, STUCK_S, TAG_FIRED, TAG_RESOLVED, TEXT_NONE, TICK_S, TITLE, UNIT_WAIT, US_ACK,
+  R_UNIT_FAILED, R_UNIT_LOST, ROWS_KEY, ROWS_MAX, RULE_COLS, RULE_KEY, RULE_PART, RULES, STUCK_S, TAG_FIRED, TEXT_NONE, TICK_S, TITLE, UNIT_WAIT, US_ACK,
   US_CLOSED, US_NEW, US_TEXT, USER_STATES, VAR,
 } from './constants'
 import type {
   AdminDbRow, AlertActJson, AlertDbRow, ApplyDbRow, BoardCards, BoardIn, BoardOut, BudgetDbRow, ChannelRowIn, ChannelSignalIn, CondIn, CountDbRow,
   CountRows, FireOneIn, FireOneOut, FreshDbRow, FreshFact, FreshRows, GoldenIn, MailNotifyIn, MaybeAlertAct, MaybeProbe, MaybeProbeStat, MaybeTraffic,
-  NotifyFn, ProbeStatDbRow, RatioIn, RuleInfo, RunRulesIn, RunRulesOut, SaveProbesIn, SetAlertIn, SetAlertOut, Signal, SignalFacts, SignalFactsOut,
+  NotifyFn, OpsText, ProbeStatDbRow, RatioIn, RuleInfo, RuleTextIn, RunRulesIn, RunRulesOut, SaveProbesIn, SetAlertIn, SetAlertOut, Signal, SignalFacts, SignalFactsOut,
   Signals, TextList, TickJson, TrafficDbRow, TrafficForIn, UnitDbRow, UnitNamesIn, WatchCell, WatchCells, WatchRow, WatchTable, WatchTableIn, WatchTag,
   WriteOut,
 } from './types'
@@ -380,7 +380,7 @@ export async function saveProbes(x: SaveProbesIn): WriteOut {
  * @returns 表。
  */
 function tableOf(x: WatchTableIn): WatchTable {
-  return { title: x.title, count: x.rows.length + ROWS_TAIL, cols: x.cols, rows: x.rows }
+  return { title: x.title, count: { key: ROWS_KEY, vars: { n: x.rows.length } }, cols: x.cols, rows: x.rows }
 }
 
 /**
@@ -444,11 +444,49 @@ export async function incidentsBoard(x: BoardIn): BoardOut {
  * @returns 单元格。
  */
 function alertCellsOf(a: AlertDbRow): WatchCells {
-  const rule = ruleOf(a.rule)
   return [
-    { kind: CELL.named, main: rule.name, sub: a.rule }, textCell(NOT_AGREED), textCell(rule.impact), userTagsOf(a), textCell(a.condition),
+    { kind: CELL.named, main: ruleTextOf({ rule: a.rule, part: RULE_PART.name }), sub: a.rule }, textCell(sayOf(NOT_AGREED)),
+    textCell(ruleTextOf({ rule: a.rule, part: RULE_PART.impact })), userTagsOf(a), condCellOf(a),
     textCell(a.fired_text), textCell(dashOf(a.resolved_text)),
   ]
+}
+
+/**
+ * 规则的一格界面文字:表内规则给词条键(`ops.rule.<规则号>.<哪一格>`),表外规则名字给规则号、其余给横线。
+ * RULES 里的中文只用于报警邮件和落库的条件原句,页面不读它。
+ *
+ * @param x 规则号与哪一格。
+ * @returns 界面文字或原文。
+ */
+function ruleTextOf(x: RuleTextIn): OpsText {
+  for (const r of RULES) {
+    if (r.id === x.rule) {
+      return sayOf(RULE_KEY + x.rule + x.part)
+    }
+  }
+  if (x.part === RULE_PART.name) {
+    return x.rule
+  }
+  return DASH
+}
+
+/**
+ * 事件的条件格:库里存的是「条件原句:明细」(触发时写入)。条件按规则号取词,冒号后的明细(单元名、报错)是数据,
+ * 放灰字原样显示;存的原句对不上现在的规则(规则改过或表外规则)就整句原样显示。
+ *
+ * @param a 一条事件。
+ * @returns 单元格。
+ */
+function condCellOf(a: AlertDbRow): WatchCell {
+  const base = ruleOf(a.rule).condition
+  const main = ruleTextOf({ rule: a.rule, part: RULE_PART.cond })
+  if (a.condition === base) {
+    return textCell(main)
+  }
+  if (a.condition.startsWith(base + COND_SEP)) {
+    return { kind: CELL.named, main, sub: a.condition.slice(base.length + COND_SEP.length) }
+  }
+  return textCell(a.condition)
 }
 
 /**
@@ -458,10 +496,10 @@ function alertCellsOf(a: AlertDbRow): WatchCells {
  * @returns 单元格。
  */
 function userTagsOf(a: AlertDbRow): WatchCell {
-  let text: string = a.user_state
+  let text: OpsText = a.user_state
   const known = US_TEXT[a.user_state]
   if (known != null) {
-    text = known
+    text = sayOf(known)
   }
   let variant: WatchTag['variant'] = VAR.gray
   if (a.user_state === US_ACK) {
@@ -469,9 +507,9 @@ function userTagsOf(a: AlertDbRow): WatchCell {
   } else if (a.user_state === US_NEW) {
     variant = VAR.warn
   }
-  let warn = TEXT_NONE
+  let warn: OpsText = TEXT_NONE
   if (a.resolved_text == null) {
-    warn = TAG_FIRED
+    warn = sayOf(TAG_FIRED)
   }
   return tagsCell({ text, variant, warn })
 }
@@ -546,7 +584,11 @@ export async function rulesBoard(x: BoardIn): BoardOut {
 function toRuleRow(r: RuleInfo): WatchRow {
   return {
     key: r.id,
-    cells: [textCell(r.name), textCell(NOT_AGREED), textCell(r.target), textCell(r.signal), textCell(r.condition), textCell(NOTIFY_MAIL)],
+    cells: [
+      textCell(ruleTextOf({ rule: r.id, part: RULE_PART.name })), textCell(sayOf(NOT_AGREED)),
+      textCell(ruleTextOf({ rule: r.id, part: RULE_PART.target })), textCell(ruleTextOf({ rule: r.id, part: RULE_PART.signal })),
+      textCell(ruleTextOf({ rule: r.id, part: RULE_PART.cond })), textCell(sayOf(NOTIFY_MAIL)),
+    ],
   }
 }
 
@@ -557,7 +599,10 @@ function toRuleRow(r: RuleInfo): WatchRow {
  * @returns 表格行。
  */
 function toFireRow(a: AlertDbRow): WatchRow {
-  return { key: String(a.id), cells: [textCell(ruleOf(a.rule).name), textCell(a.condition), userTagsOf(a), textCell(a.fired_text)] }
+  return {
+    key: String(a.id),
+    cells: [textCell(ruleTextOf({ rule: a.rule, part: RULE_PART.name })), condCellOf(a), userTagsOf(a), textCell(a.fired_text)],
+  }
 }
 
 // =========================================================================
@@ -634,7 +679,7 @@ export async function freshBoard(x: BoardIn): BoardOut {
   return {
     cards: [
       cardOf({ value: facts.length, label: CARD.sets }), cardOf({ value: facts.length - warn, label: CARD.ok }),
-      cardOf({ value: warn, label: CARD.warn }), cardOf({ value: NOT_AGREED, label: CARD.error }),
+      cardOf({ value: warn, label: CARD.warn }), cardOf({ value: sayOf(NOT_AGREED), label: CARD.error }),
     ],
     tables: [tableOf({ title: TITLE.fresh, cols: FRESH_COLS, rows: facts.map(toFreshRow) })],
     updatedAt: x.updatedAt,
@@ -657,8 +702,8 @@ function toFreshRow(f: FreshFact): WatchRow {
   return {
     key: f.name,
     cells: [
-      textCell(f.name), textCell(f.lastText), textCell(f.lineS / HOUR_S + LINE_HOURS_TAIL), textCell(NOT_AGREED),
-      tagsCell({ text, variant, warn: TEXT_NONE }),
+      textCell(f.name), textCell(f.lastText), textCell({ key: LINE_HOURS_KEY, vars: { d: f.lineS / HOUR_S } }), textCell(sayOf(NOT_AGREED)),
+      tagsCell({ text: sayOf(text), variant, warn: TEXT_NONE }),
     ],
   }
 }
@@ -811,11 +856,11 @@ function availabilityOf(p: MaybeProbeStat): WatchCell {
  * @param p 探活汇总。
  * @returns 文字。
  */
-function latencyOf(p: MaybeProbeStat): string {
+function latencyOf(p: MaybeProbeStat): OpsText {
   if (p == null || p.ms == null) {
     return DASH
   }
-  return p.ms + MS_TAIL
+  return { key: MS_KEY, vars: { n: p.ms } }
 }
 
 /**
@@ -833,9 +878,9 @@ function goldenCardsOf(x: GoldenIn): BoardCards {
       countMs += 1
     }
   }
-  let latency = DASH
+  let latency: OpsText = DASH
   if (countMs > 0) {
-    latency = Math.round(sumMs / countMs) + MS_TAIL
+    latency = { key: MS_KEY, vars: { n: Math.round(sumMs / countMs) } }
   }
   let requests = 0
   let errors = 0
@@ -866,13 +911,12 @@ function isChannelAlert(a: AlertDbRow): boolean {
  * @returns 表格行。
  */
 function toOutageRow(a: AlertDbRow): WatchRow {
-  let main = TAG_RESOLVED
-  if (a.resolved_text == null) {
-    main = TAG_FIRED
-  }
-  let end = main
+  let end: OpsText = sayOf(TAG_FIRED)
   if (a.resolved_text != null) {
     end = a.resolved_text
   }
-  return { key: String(a.id), cells: [textCell(ruleOf(a.rule).target), textCell(a.fired_text), textCell(end), textCell(a.condition)] }
+  return {
+    key: String(a.id),
+    cells: [textCell(ruleTextOf({ rule: a.rule, part: RULE_PART.target })), textCell(a.fired_text), textCell(end), condCellOf(a)],
+  }
 }

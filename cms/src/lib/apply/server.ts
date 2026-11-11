@@ -7,7 +7,7 @@
  */
 
 export { loadApplyBlob, loadApplyJob, loadApplyPrefs, loadApplyResumes } from './functions'
-export { isCreditOpen, loadCredit, markCredit, regenMaxOf, takeRegen } from './credit'
+export { isCreditOpen, loadCredit, markCredit } from './credit'
 export {
   applyCoverRoute, applyCreditRoute, applyDraftRoute, applyFileRoute, applyInboundRoute, applyLetterRoute, applyLettersRoute, applyNameRoute,
   applySendRoute,

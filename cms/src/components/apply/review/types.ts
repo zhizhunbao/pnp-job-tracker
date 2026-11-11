@@ -420,11 +420,6 @@ export type ReviewPanel = {
   saved: string
 
   /**
-   * 刚才那次重新生成后没覆盖的要求一条没少。
-   */
-  same: boolean
-
-  /**
    * 求职信的修改草稿;没在改 = null。
    */
   editing: string | null
@@ -493,11 +488,6 @@ export type ReviewPanel = {
    * 点放大。
    */
   focusOf: (pane: string) => () => void
-
-  /**
-   * 重新生成。
-   */
-  regenOf: (pane: string) => () => void
 
   /**
    * 打开补充。
@@ -1401,21 +1391,6 @@ export type ReviewPdfPanel = {
 }
 
 /**
- * 重新生成并看有没有变化的入参。
- */
-export type RegenRunIn = RunIn & {
-  /**
-   * 重新生成之前没覆盖的要求数。
-   */
-  before: number
-
-  /**
-   * 落「内容没变」。
-   */
-  setSame: (v: boolean) => void
-}
-
-/**
  * 一轮跑完的核对结果;失败 = null。
  */
 export type MaybeReview = Review | null
@@ -1698,4 +1673,24 @@ export type JdSentsIn = {
    * 要求。
    */
   reqs: ReviewReq[]
+}
+
+/**
+ * headTextOf 的入参。
+ */
+export type HeadTextIn = {
+  /**
+   * 这一行的字。
+   */
+  line: string
+
+  /**
+   * 是不是小标题。
+   */
+  head: boolean
+
+  /**
+   * 取词。
+   */
+  t: TFn
 }

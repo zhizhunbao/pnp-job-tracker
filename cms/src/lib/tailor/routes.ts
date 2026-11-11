@@ -9,7 +9,7 @@ import { headers } from 'next/headers'
 import * as PdfLib from 'pdf-lib'
 import { COVER_MAX, coverPdfOf, letterCleanOf, letterSystemOf, pdfBadCharsOf } from '../apply'
 import {
-  isCreditOpen, loadApplyBlob, loadApplyJob, loadApplyPrefs, loadApplyResumes, loadCredit, markCredit, regenMaxOf, takeRegen,
+  isCreditOpen, loadApplyBlob, loadApplyJob, loadApplyPrefs, loadApplyResumes, loadCredit, markCredit,
 } from '../apply/server'
 import { cvBadCharsOf, cvLayoutOf, cvPdfOf, toCvDraft } from '../cv'
 import { getDb } from '../db/server'
@@ -17,7 +17,7 @@ import {
   BAD_GATEWAY, BAD_REQUEST, CONFLICT, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, NOT_FOUND, PAYMENT_REQUIRED, TOO_MANY, UNAUTHORIZED, UNPROCESSABLE,
 } from '../http'
 import { isLlmError } from '../error'
-import { jobDescription, jobDescriptionMarked, loadApplyUrlById } from '../jobs/server'
+import { jdPlainOf, jobDescriptionMarked, jobFormattedMarked, loadApplyUrlById } from '../jobs/server'
 import { completeText } from '../llm'
 import { APPLY_LOG, log } from '../log'
 import { checkLimit, getUserOrNull } from '../quota/server'
@@ -26,7 +26,7 @@ import {
   B64, CACHE_PRIVATE, E_AUTH, E_BASE, E_BODY, E_JOB, E_LIMIT, E_LLM, E_NONE, E_NO_JD, E_PRO, E_RESUME_BAD, E_SENT, KEY_SEP, KIND_COVER, MIME_PDF,
   KEY_EXTRA, P_JOB, P_KIND, STATUS_DRAFT, STATUS_QUEUED, PDF_NAME, FILL_DAILY, FILL_PREFIX, ROLE_SYSTEM, ROLE_USER, STEP_USER_DAILY, STEP_USER_PREFIX, TAILOR_MODEL, TAILOR_PROVIDER, THINKING_ROOM, TEXT_NONE,
 } from './constants'
-import { loadExtra, loadTailorRow, runStep, saveCover, saveExtra, saveResume, toStepBody } from './functions'
+import { loadExtra, loadTailorRow, pickJdOf, runStep, saveCover, saveExtra, saveResume, toStepBody } from './functions'
 import type { CompleteIn, CoverBodyJson, CvPdfFact, FactMap, JsonCell, ResumeBodyJson, StepBodyJson, StepDeps } from './types'
 
 /**
@@ -72,12 +72,6 @@ export async function tailorStepRoute(req: Request): Promise<Response> {
     return Response.json({ error: E_PRO, plan: credit.plan, resetAt: credit.resetAt }, { status: PAYMENT_REQUIRED })
   }
   const needMark = credit.here === false
-  if (body.regen) {
-    const took = await takeRegen({ db, userId: user.id, jobId: job.id, step: body.step, max: regenMaxOf({ plan: credit.plan }) })
-    if (took === false) {
-      return Response.json({ error: E_LIMIT }, { status: TOO_MANY })
-    }
-  }
   const resumes = await loadApplyResumes({ db, userId: user.id })
   const first = resumes[0]
   if (first == null) {
@@ -103,10 +97,17 @@ export async function tailorStepRoute(req: Request): Promise<Response> {
     newFacts[KEY_EXTRA] = extra
   }
   const applyUrl = await loadApplyUrlById({ db, jobId: job.id })
-  let jd = TEXT_NONE
+  let original = TEXT_NONE
   if (applyUrl != null) {
-    jd = (await jobDescription({ db, applyUrl, id: job.id })).trim()
+    original = (await jobDescriptionMarked({ db, applyUrl, id: job.id })).trim()
   }
+  const formatted = await jobFormattedMarked({ db, id: job.id })
+  const prior = await loadTailorRow({ db, userId: user.id, jobId: job.id })
+  let priorReview = null
+  if (prior != null) {
+    priorReview = prior.review
+  }
+  const jd = jdPlainOf(pickJdOf({ formatted, original, review: priorReview })).trim()
   if (jd === TEXT_NONE) {
     return Response.json({ error: E_NO_JD }, { status: UNPROCESSABLE })
   }
@@ -195,10 +196,16 @@ export async function tailorStateRoute(req: Request): Promise<Response> {
   const row = await loadTailorRow({ db, userId: user.id, jobId })
   const extra = await loadExtra({ db, userId: user.id })
   const applyUrl = await loadApplyUrlById({ db, jobId })
-  let jd = TEXT_NONE
+  let original = TEXT_NONE
   if (applyUrl != null) {
-    jd = (await jobDescriptionMarked({ db, applyUrl, id: jobId })).trim()
+    original = (await jobDescriptionMarked({ db, applyUrl, id: jobId })).trim()
   }
+  const formatted = await jobFormattedMarked({ db, id: jobId })
+  let rowReview = null
+  if (row != null) {
+    rowReview = row.review
+  }
+  const jd = pickJdOf({ formatted, original, review: rowReview }).trim()
   if (row == null) {
     return Response.json({ review: null, hasResume: false, hasCover: false, status: TEXT_NONE, cover: TEXT_NONE, jd, extra, cv: null }, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
   }

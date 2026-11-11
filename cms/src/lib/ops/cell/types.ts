@@ -6,6 +6,31 @@
  */
 
 /**
+ * 词条的插值表({k} → 值)。
+ */
+export type OpsVars = Record<string, string | number>
+
+/**
+ * 一条界面文字:词条键加插值,由组件桶取词(2026-11-10 Frank:内部页也要三语,界面字不进 lib)。
+ */
+export type OpsMsg = {
+  /**
+   * 词条键(`ops.` 开头,文字住 lib/i18n)。
+   */
+  key: string
+
+  /**
+   * 插值;没有是空表。
+   */
+  vars: OpsVars
+}
+
+/**
+ * 一段要显示的文字:字符串是数据原文(原样显示,不翻译),OpsMsg 是界面文字(取词后显示)。
+ */
+export type OpsText = string | OpsMsg
+
+/**
  * 可能为空的整数。
  */
 export type MaybeInt = number | null
@@ -42,7 +67,7 @@ export type OpsTag = {
   /**
    * 文字。
    */
-  text: string
+  text: OpsText
 }
 
 /**
@@ -58,7 +83,7 @@ export type OpsCell =
     /**
      * 文字。
      */
-    text: string
+    text: OpsText
   }
   | {
     /**
@@ -79,7 +104,7 @@ export type OpsCard = {
   /**
    * 数字。
    */
-  value: string
+  value: OpsText
 
   /**
    * 标题。
@@ -94,7 +119,7 @@ export type CardOfIn = {
   /**
    * 数字。
    */
-  value: string | number
+  value: OpsText | number
 
   /**
    * 标题。
@@ -109,7 +134,7 @@ export type TagsOfIn = {
   /**
    * 主胶囊的文字。
    */
-  text: string
+  text: OpsText
 
   /**
    * 主胶囊的变体。
@@ -119,7 +144,7 @@ export type TagsOfIn = {
   /**
    * 红胶囊的文字;没有是空串。
    */
-  warn: string
+  warn: OpsText
 }
 
 /**
@@ -150,4 +175,24 @@ export type PctOfIn = {
    * 上限。
    */
   limit: number
+}
+
+/**
+ * spanAsOf 的入参。
+ */
+export type SpanAsIn = {
+  /**
+   * 秒数。
+   */
+  s: number
+
+  /**
+   * 键头(后接时长单位)。
+   */
+  head: string
+
+  /**
+   * 这一句其余的插值;没有是空表。
+   */
+  vars: OpsVars
 }

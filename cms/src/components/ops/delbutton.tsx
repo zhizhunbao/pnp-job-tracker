@@ -6,6 +6,7 @@
  * @time 2026-11-08 18:00:00
  */
 import { Button } from '@/components/button'
+import { useLang } from '@/components/i18n'
 import { DEL_BTN_KIND, DEL_TEXT } from './constants'
 import { makeDelOpen } from './functions'
 import { useDelAsk } from './hooks'
@@ -19,5 +20,6 @@ import type { DelButtonIn } from './types'
  */
 export function DelButton({ del }: DelButtonIn) {
   const setAsk = useDelAsk()
-  return <Button kind={DEL_BTN_KIND} sm onClick={makeDelOpen({ setAsk, del })}>{DEL_TEXT}</Button>
+  const [, , t] = useLang()
+  return <Button kind={DEL_BTN_KIND} sm onClick={makeDelOpen({ setAsk, del })}>{t(DEL_TEXT)}</Button>
 }

@@ -10,7 +10,7 @@ import { cssOf } from '@/components/css'
 import { track } from '@/lib/track'
 import {
   ERR_CHARS, HEAD_ONLY_NUDGE, HTTP_UNPROCESSABLE, PAGE_GAP,
-  JD_BULLET, JD_HEAD_MARK, JD_SENT_SPLIT_RE, NEWLINE,
+  JD_BULLET, JD_HEAD_MARK, JD_SEC_KEYS, JD_SENT_SPLIT_RE, NEWLINE,
   AVAIL_GAP, BOX_DOWN, BOX_UP, CANVAS_TAG, COLOR_HEAD, COLOR_N, CRED_INCLUDE, CTX_2D, ERR_DEFAULT, ERR_KEYS, ERR_NAME,
   ERR_PRO, ERR_SEND, HDR_CONTENT_TYPE, HL_H_RATIO, HL_UP_RATIO, KEY_STR, MAT_C, MAT_D, MAT_E, MAT_F, MEASURE_FONT,
   METHOD_PATCH, METHOD_POST, METHOD_PUT, MIME_JSON, NARROW_W, NUM_GAP, NUM_GAP_BASE, NUM_MAX, NUM_NONE, NUM_RATIO,
@@ -25,8 +25,8 @@ import type {
   CharAt, ClsIfIn, ContentBox, ContentBoxIn, CoverSaveIn, DrawIn, DrawOut, ErrJson, FailRunIn, HlPickFn, HlRect, JdHit,
   JdSeg, JdSegsIn, MoveRectsIn, PaintLineIn, PdfItem, PickActiveIn, Quote, RectsIn, Review, ReviewCells, ReviewReq,
   RunIn, ScaleOfIn, SendIn, ShiftedIn, ShiftedOut, StateJson, StepBodyIn, StepJson,
-  JdRow, JdRowsIn, JdSentsIn, SheetZoomIn,
-  MaybeReview, QuoteRectsIn, RectsOut, RegenRunIn, ResumeSaveIn, RunRectIn, TextMap,
+  HeadTextIn, JdRow, JdRowsIn, JdSentsIn, SheetZoomIn,
+  MaybeReview, QuoteRectsIn, RectsOut, ResumeSaveIn, RunRectIn, TextMap,
 } from './types'
 import css from './review.module.css'
 
@@ -95,35 +95,6 @@ export async function runSteps(x: RunIn): Promise<MaybeReview> {
   }
   x.c.setStage(TEXT_NONE)
   return null
-}
-
-/**
- * 手动重新生成:跑完还有红叉、没覆盖的要求也一条没少,就提示去补充经历(2026-11-10)。
- *
- * @param x 落格、起点、之前没覆盖的条数与落「没变」。
- * @returns 无。
- */
-export async function regenRun(x: RegenRunIn): Promise<void> {
-  const after = await runSteps({ c: x.c, start: x.start })
-  if (after != null && missingReqsOf(after.reqs).length > 0 && openCountOf(after.reqs) >= x.before) {
-    x.setSame(true)
-  }
-}
-
-/**
- * 没覆盖的要求数(简历和求职信有一份没写到就算)。
- *
- * @param reqs 要求。
- * @returns 条数。
- */
-export function openCountOf(reqs: ReviewReq[]): number {
-  let n = 0
-  for (const r of reqs) {
-    if (isCovered(r) === false) {
-      n += 1
-    }
-  }
-  return n
 }
 
 /**
@@ -984,4 +955,21 @@ export function needKeyOf(r: ReviewReq): string {
     return NEED_RESUME
   }
   return NEED_COVER
+}
+
+/**
+ * 小标题显示的字:整理版的节标记(如 `[REQS]`)按界面语言换成节名,别的行原样。
+ *
+ * @param x 这一行、是不是小标题与取词。
+ * @returns 显示的字。
+ */
+export function headTextOf(x: HeadTextIn): string {
+  if (x.head === false) {
+    return x.line
+  }
+  const key = JD_SEC_KEYS[x.line.trim()]
+  if (key == null) {
+    return x.line
+  }
+  return x.t(key)
 }

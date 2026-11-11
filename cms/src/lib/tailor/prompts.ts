@@ -13,10 +13,15 @@ const YEARS_RULE = 'State years of experience only for the field or role they we
 
 /**
  * 从职位描述拆要求。
+ * 2026-11-11 职位描述改读整理版后实撞:模型只从 [REQS] 那一节挑,挑到的多是通用软技能(独立工作、抗压、注重细节),
+ * [ROLE] 里的具体职责一条不取,红叉一片。加两条:职责那一节也算要求;性格类的泛泛要求最多留 3 条,先挑简历里能拿事实对上的。
  */
 export const PLAN_SYSTEM = 'You split a job posting into the concrete requirements an applicant must meet. Reply with ONLY JSON, no prose:\n'
   + '{"reqs":[{"label":"<2 to 4 word English name>","quote":"<exact text copied from the posting>"}]}\n'
   + 'Rules: up to 12 items, covering experience, education, duties, skills, certificates and licences. '
+  + 'The posting may be divided into sections marked [ROLE], [REQS], [PAY], [WORKHOURS], [COMPANY] and [APPLY]. Take requirements from both [ROLE] (the concrete duties) and [REQS]; when [ROLE] lists duties, about half of the items should be duties. Never use a section marker as a quote. '
+  + 'Prefer requirements a resume can prove with a fact: a duty performed, a tool or software, a credential, years of experience. '
+  + 'Generic personal traits (for example "team player", "attention to detail", "work under pressure", "flexibility", "initiative") come last: include at most 3 of them, and only when there is room left after the concrete requirements. '
   + 'Leave out the plain language line of a posting such as "English"; keep a language only if it names a level, a test or a second language. '
   + 'Leave out work conditions and employer facts that an applicant cannot show on a resume: work location, on-site work, shifts, hours, pay, benefits, restaurant type, cuisine lists, company description. '
   + '"quote" must be copied character for character from the posting. Do not add anything the posting does not ask for. '

@@ -8,11 +8,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { withDescOf } from './cv'
 import {
-  BLOCK_NEAREST, NARROW_W, PANE_COVER, SEL_N_HEAD, SEL_N_TAIL,
-  STEP_COVER, STEP_PLAN, STEP_RESUME, TEXT_NONE,
+  BLOCK_NEAREST, NARROW_W, SEL_N_HEAD, SEL_N_TAIL,
+  STEP_PLAN, STEP_RESUME, TEXT_NONE,
 } from './constants'
 import {
-  drawPdf, needRunOf, openCountOf, regenRun, reloadState, runSteps, saveCoverEdit, saveResumeEdit, sendReview,
+  drawPdf, needRunOf, reloadState, runSteps, saveCoverEdit, saveResumeEdit, sendReview,
 } from './functions'
 import type {
   HlRect, Review, ReviewCells, ReviewCv, ReviewFlowIn, ReviewPanel, ReviewPdfIn, ReviewPdfPanel, SheetSize, ToggledIn,
@@ -37,7 +37,6 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
   const [fillOpen, setFillOpen] = useState(false)
   const [extra, setExtra] = useState(TEXT_NONE)
   const [saved, setSaved] = useState(TEXT_NONE)
-  const [same, setSame] = useState(false)
   const [cv, setCv] = useState<ReviewCv | null>(null)
   const [cvDraft, setCvDraft] = useState<ReviewCv | null>(null)
   const [cvOpen, setCvOpen] = useState(false)
@@ -86,22 +85,6 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
       }
     }
   }
-  function regenOf(pane: string): () => void {
-    return function onRegen(): void {
-      let step = STEP_RESUME
-      if (pane === PANE_COVER) {
-        step = STEP_COVER
-      }
-      let before = 0
-      if (review != null) {
-        before = openCountOf(review.reqs)
-      }
-      setSame(false)
-      void regenRun({
-        c: cells.current, start: { step, extra: TEXT_NONE, both: false, regen: true, fill: false }, before, setSame,
-      })
-    }
-  }
   function openFill(): void {
     if (review == null) {
       return
@@ -120,7 +103,6 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
       return
     }
     setFillOpen(false)
-    setSame(false)
     void runSteps({
       c: cells.current, start: { step: STEP_RESUME, extra: text, both: true, regen: false, fill: true },
     })
@@ -198,7 +180,6 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
     fillOpen,
     extra,
     saved,
-    same,
     editing,
     cv,
     cvDraft,
@@ -213,7 +194,6 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
     pickOf,
     setActive,
     focusOf,
-    regenOf,
     onFillOpen: openFill,
     onExtraText: extraChange,
     onFillClose: closeFill,

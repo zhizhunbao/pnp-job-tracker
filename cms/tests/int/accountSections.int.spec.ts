@@ -143,7 +143,7 @@ describe('② 我的订阅', () => {
     // 2026-11-09 Frank「我的订阅 显示剩余额度」、权益清单按额度规则重写(旧五条撤)
     expect(el.textContent).toContain('sub.creditFree{"n":2,"m":3}')
     expect(el.textContent).toContain('price.perk.tailor')
-    expect(el.textContent).toContain('price.perk.regen')
+    expect(el.textContent).not.toContain('price.perk.regen')
     expect(el.textContent).not.toContain('price.perk.tailor.d')
     expect(el.textContent).toContain('acct.plan.free')
     expect(el.textContent).toContain('sub.price')

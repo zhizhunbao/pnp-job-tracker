@@ -140,7 +140,6 @@ export const PLAN_DEFAULT = '90'
  */
 export const PRO_PERKS: [string, string][] = [
   ['price.perk.tailor', 'price.perk.tailor.d'],
-  ['price.perk.regen', 'price.perk.regen.d'],
 ]
 
 /**

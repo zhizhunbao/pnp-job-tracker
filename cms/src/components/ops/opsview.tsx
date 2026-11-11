@@ -7,10 +7,12 @@
  * @time 2026-11-08 18:00:00
  */
 import { NumCards } from '@/components/card'
+import { useLang } from '@/components/i18n'
 import { ConfirmModal } from '@/components/modal'
 import { Shell } from '@/components/shell'
 import { Tag } from '@/components/tag'
 import { CANCEL_TEXT, DEL_ASK_TEXT, DEL_FAIL_TEXT, DEL_TEXT, SHELL_BOTTOM, SHELL_TOP, VAR_BAD } from './constants'
+import { cardsSayOf } from './functions'
 import { delCtxOf, useOpsDel, useReportUpdated } from './hooks'
 import { OpsTableCard } from './opstablecard'
 import type { OpsViewIn } from './types'
@@ -24,6 +26,7 @@ import css from './ops.module.css'
  */
 export function OpsView({ board }: OpsViewIn) {
   useReportUpdated(board.updatedAt)
+  const [, , t] = useLang()
   const del = useOpsDel()
   const Ctx = delCtxOf()
   const tables = []
@@ -33,14 +36,14 @@ export function OpsView({ board }: OpsViewIn) {
   return (
     <Shell top={SHELL_TOP} bottom={SHELL_BOTTOM}>
       <Ctx.Provider value={del.setAsk}>
-        <NumCards cards={board.cards} />
+        <NumCards cards={cardsSayOf({ cards: board.cards, t })} />
         <div className={css.tables}>
-          {del.failed && <Tag variant={VAR_BAD}>{DEL_FAIL_TEXT}</Tag>}
+          {del.failed && <Tag variant={VAR_BAD}>{t(DEL_FAIL_TEXT)}</Tag>}
           {tables}
         </div>
       </Ctx.Provider>
       {del.ask != null && (
-        <ConfirmModal title={DEL_ASK_TEXT} body={del.ask.name} okText={DEL_TEXT} cancelText={CANCEL_TEXT}
+        <ConfirmModal title={t(DEL_ASK_TEXT)} body={del.ask.name} okText={t(DEL_TEXT)} cancelText={t(CANCEL_TEXT)}
           onOk={del.onOk} onCancel={del.onCancel} />
       )}
     </Shell>

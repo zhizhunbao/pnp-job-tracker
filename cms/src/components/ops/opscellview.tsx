@@ -10,16 +10,17 @@ import { AlertButton } from './alertbutton'
 import { CELL_ACT, CELL_COPY, CELL_DEL, CELL_NAMED, CELL_TAGS } from './constants'
 import { CopyError } from './copyerror'
 import { DelButton } from './delbutton'
+import { sayOf } from './functions'
 import { OpsTags } from './opstags'
 import type { OpsCellViewIn } from './types'
 
 /**
  * 画一个单元格。
  *
- * @param props 这个单元格。
+ * @param props 这个单元格与取词(这件被表格当函数调,不能自己用 hook 取词)。
  * @returns 节点。
  */
-export function OpsCellView({ cell }: OpsCellViewIn) {
+export function OpsCellView({ cell, t }: OpsCellViewIn) {
   if (cell.kind === CELL_TAGS) {
     return <OpsTags tags={cell.tags} />
   }
@@ -33,7 +34,7 @@ export function OpsCellView({ cell }: OpsCellViewIn) {
     return <CopyError text={cell.text} />
   }
   if (cell.kind === CELL_NAMED) {
-    return <Name en={cell.main} sub={cell.sub} />
+    return <Name en={sayOf({ t, s: cell.main })} sub={cell.sub} />
   }
-  return cell.text
+  return sayOf({ t, s: cell.text })
 }

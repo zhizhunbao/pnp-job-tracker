@@ -5,13 +5,13 @@
  * @time 2026-11-08 23:59:00
  */
 import { queryRowsOrEmpty, SQL } from '../../db'
-import { cardOf, dashOf, intOf, tagsCell, textCell, usdOf } from '../cell'
+import { cardOf, dashOf, intOf, sayOf, tagsCell, textCell, usdOf } from '../cell'
 import {
   API_KEYS, BACKUP_TEXT, CARD, CELL, CH_ANTHROPIC, CHANNEL_NAME, DASH, EVAL_COLS, EVAL_RUN_COLS, EVAL_RUNNING, GIVE_UP_DEGRADE, GIVE_UP_ERROR,
-  KEY_ACTIVE, KEY_COLS, KEY_DISABLED, MS_TAIL, ROUTE_COLS, ROUTES, ROWS_MAX, ROWS_TAIL, SCORE_DIGITS, TEXT_NONE, TITLE, USD_DIGITS, VAR, WORKSPACES,
+  KEY_ACTIVE, KEY_COLS, KEY_DISABLED, MS_KEY, ROUTE_COLS, ROUTES, ROWS_KEY, ROWS_MAX, SCORE_DIGITS, TEXT_NONE, TITLE, USD_DIGITS, VAR, WORKSPACES,
 } from './constants'
 import type {
-  BoardIn, BoardOut, CountDbRow, EvalDbRow, KeyInfo, MaybeNumber, RouteInfo, RouteModelDbRow, RouteRowIn, RouteTable, RouteTableIn, RouteTag, RouteRow,
+  BoardIn, BoardOut, CountDbRow, EvalDbRow, KeyInfo, MaybeNumber, OpsText, RouteInfo, RouteModelDbRow, RouteRowIn, RouteTable, RouteTableIn, RouteTag, RouteRow,
 } from './types'
 
 /**
@@ -21,7 +21,7 @@ import type {
  * @returns 表。
  */
 function tableOf(x: RouteTableIn): RouteTable {
-  return { title: x.title, count: x.rows.length + ROWS_TAIL, cols: x.cols, rows: x.rows }
+  return { title: x.title, count: { key: ROWS_KEY, vars: { n: x.rows.length } }, cols: x.cols, rows: x.rows }
 }
 
 /**
@@ -121,7 +121,7 @@ function routeRowOf(x: RouteRowIn): RouteRow {
   return {
     key: x.route.feature,
     cells: [
-      { kind: CELL.named, main: x.route.name, sub: x.route.feature }, textCell(channel), textCell(model), textCell(backup), textCell(giveUp),
+      { kind: CELL.named, main: x.route.name, sub: x.route.feature }, textCell(channel), textCell(model), textCell(backup), textCell(sayOf(giveUp)),
     ],
   }
 }
@@ -189,9 +189,9 @@ function toEvalRunRow(e: EvalDbRow): RouteRow {
  * @returns 表格行。
  */
 function toEvalRow(e: EvalDbRow): RouteRow {
-  let latency = DASH
+  let latency: OpsText = DASH
   if (e.latency_ms != null) {
-    latency = e.latency_ms + MS_TAIL
+    latency = { key: MS_KEY, vars: { n: e.latency_ms } }
   }
   return {
     key: String(e.id),
@@ -255,7 +255,7 @@ function toKeyRow(k: KeyInfo): RouteRow {
   return {
     key: k.name,
     cells: [
-      { kind: CELL.named, main: k.name, sub: k.last4 }, textCell(k.workspace), textCell(k.account), tagsCell({ text, variant, warn: TEXT_NONE }),
+      { kind: CELL.named, main: k.name, sub: k.last4 }, textCell(k.workspace), textCell(k.account), tagsCell({ text: sayOf(text), variant, warn: TEXT_NONE }),
       textCell(DASH), textCell(k.created), textCell(DASH),
     ],
   }
