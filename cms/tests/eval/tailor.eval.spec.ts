@@ -26,6 +26,8 @@ import { auditOf, droppedYearsOf, newNumbersOf, runStep } from '@/lib/tailor/fun
 
 const N = Number(process.env.EVAL_N ?? 10)
 const ARMS = (process.env.EVAL_ARMS ?? 'AB').split('')
+const LOCAL_MODEL = process.env.EVAL_LOCAL_MODEL ?? ''
+const LOCAL_URL = process.env.EVAL_LOCAL_URL ?? 'http://192.168.1.150:11434'
 const SONNET = 'claude-sonnet-5-5'
 const HAIKU = 'claude-haiku-5-5'
 const OUT = path.resolve(process.cwd(), 'reports', 'tailor-eval')
@@ -202,6 +204,26 @@ function depsOf(model: string) {
   }
 }
 
+// L = 盒子上的本地模型(EVAL_LOCAL_MODEL 点名)四步全跑,直接打 Ollama,带结构约束;不走账本、不花钱
+function localDepsOf(calls: { n: number }) {
+  const deps = depsOf(SONNET)
+  return {
+    ...deps,
+    complete: async (x: { feature: string, system: string, user: string, maxTokens: number, schema: object | null }) => {
+      calls.n += 1
+      const body = {
+        model: LOCAL_MODEL, think: false, stream: false, options: { temperature: 0.2, num_predict: x.maxTokens, num_ctx: 16384 },
+        messages: [{ role: 'system', content: x.system }, { role: 'user', content: x.user }], ...(x.schema == null ? {} : { format: x.schema }),
+      }
+      const r = await fetch(LOCAL_URL + '/api/chat', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+      if (!r.ok) {
+        throw new Error('ollama ' + r.status + ' ' + (await r.text()).slice(0, 200))
+      }
+      return String(((await r.json()) as { message?: { content?: string } }).message?.content ?? '')
+    },
+  }
+}
+
 async function usageSince(id: number): Promise<Usage[]> {
   const r = await pool.query(
     `SELECT feature, model, channel, state, cost_usd, input_tokens, output_tokens, ms FROM ai_usage WHERE id > $1 AND feature LIKE 'tailor.%' ORDER BY id`, [id],
@@ -249,14 +271,15 @@ async function runArm(arm: string, job: Job): Promise<ArmOut> {
   const mark = await maxUsageId()
   const started = Date.now()
   const model = arm === 'A' ? SONNET : HAIKU
+  const localCalls = { n: 0 }
   // 步骤函数用空串表示「跑完了」(STEP_DONE);B 在该进核对时停下,换成 Sonnet 定稿那一步
-  const stop = arm === 'A' ? '' : 'audit'
+  const stop = arm === 'B' ? 'audit' : ''
   try {
     let step = 'plan'
     for (let i = 0; i < 14 && step !== '' && step !== stop; i++) {
       const r = await runStep({
         db: db as never, userId: 1, jobId: job.id, step, title: job.title, company: job.company, name: NAME, jd: job.jd, resumeId: 1, base: BASE,
-        newFacts: {}, both: false, regen: false, deps: depsOf(model) as never,
+        newFacts: {}, both: false, regen: false, deps: (arm === 'L' ? localDepsOf(localCalls) : depsOf(model)) as never,
       })
       if (r.error !== '') {
         out.error = 'step ' + step + ': ' + r.error
@@ -299,7 +322,7 @@ async function runArm(arm: string, job: Job): Promise<ArmOut> {
   }
   out.ms = Date.now() - started
   out.usage = await usageSince(mark)
-  out.calls = out.usage.length
+  out.calls = arm === 'L' ? localCalls.n : out.usage.length
   out.cost = out.usage.reduce((s, u) => s + u.cost, 0)
   if (out.resumeText !== '') {
     out.newNumbers = newNumbersOf({ text: out.resumeText, base: BASE }) as string[]
@@ -370,7 +393,7 @@ function armHtml(a: ArmOut): string {
     a.droppedYears.length > 0 ? '丢了的年份:' + esc(a.droppedYears.join(',')) : '',
     (a.review?.unsupported.length ?? 0) > 0 ? '求职信里没依据的句子:' + esc((a.review?.unsupported ?? []).join(' / ')) : '',
   ].filter(Boolean).map((w) => `<p class="warn">${w}</p>`).join('')
-  return `<div class="arm"><h3>${a.arm === 'A' ? 'A 全 Sonnet(现在)' : 'B Haiku 写 + Sonnet 定稿(新分工)'}</h3>
+  return `<div class="arm"><h3>${a.arm === 'A' ? 'A 全 Sonnet(现在)' : a.arm === 'L' ? 'L 本地模型 ' + esc(LOCAL_MODEL) : 'B Haiku 写 + Sonnet 定稿(新分工)'}</h3>
     <p><b>匹配分 ${s.score ?? '无'}</b>,要求 ${s.total} 条:两份都写到 ${s.both},只有一份 ${s.resumeOnly + s.coverOnly},有依据但没写 ${s.none},无依据 ${s.noBasis}</p>
     <p>花费 $${a.cost.toFixed(4)},调用 ${a.calls} 次,用时 ${(a.ms / 1000).toFixed(0)} 秒</p><p class="small">${esc(usage)}</p>${change}${warn}
     <table>${reqs}</table><h4>简历定稿</h4><pre>${esc(a.resumeText)}</pre><h4>求职信定稿</h4><pre>${esc(a.cover)}</pre></div>`
@@ -399,7 +422,7 @@ function reportHtml(rows: { job: Job, arms: ArmOut[] }[]): string {
     <h1>按职位改写:全 Sonnet 与新分工对比</h1>
     <p>同一份基础简历(虚构的 ${NAME},五年厨房经验),${rows.length} 个职位,两种分工各跑一遍。花费取自账本 ai_usage。</p>
     <table><tr><th>分工</th><th>职位数</th><th>每个职位花费</th><th>调用次数</th><th>用时</th><th>匹配分</th><th>两份都写到 / 有依据</th><th>有依据但没写</th><th>没依据的句子</th><th>没出定稿</th></tr>
-    ${line('A')}${line('B')}</table>${body}</body></html>`
+    ${line('A')}${line('B')}${line('L')}</table>${body}</body></html>`
 }
 
 describe('按职位改写:全 Sonnet 与新分工对比(真模型,花钱)', () => {
