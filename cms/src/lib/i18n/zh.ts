@@ -994,7 +994,7 @@ export const jobsZh = {
   'ap.applied': '已投递', 'ap.resume': '简历', 'ap.name': '英文姓名', 'ap.letter': '求职信',
   'ap.to': '收件人', 'ap.subject': '主题', 'ap.attach': '附件', 'ap.next': '下一步', 'ap.back': '上一步', 'ap.send': '投出', 'ap.pdf': '查看 PDF', 'ap.sign': '署名', 'ap.view': '打开', 'ap.edit': '改信',
   'ap.badChars': '这些字写不进 PDF:', 'ap.sending': '发送中', 'ap.e.name': '英文姓名只能用英文字母、空格、点、撇号和连字符,2 到 60 个字',
-  'ap.chHead': '怎么投这个职位', 'ap.chTailor': '按这个职位改写', 'ap.chTailorSub': '用 1 个额度,免费额度还剩 {n} 个', 'ap.chBase': '直接投基础简历', 'ap.chBaseSub': '附基础简历原件,求职信用模板,不耗额度', 'ap.baseSend': '不改写,直接投基础简历', 'ap.toBase': '改投基础简历', 'ap.creditOut': '免费额度已用完', 'ap.creditOutPro': '本期额度已用完,{d} 恢复', 'ap.autoSaved': '已自动保存,可在我的投递里继续', 'ap.baseResume': '基础简历', 'ap.needBase': '先传一份基础简历,之后每个职位都以它为准', 'tr.failBase': '没写成,这次不扣额度',
+  'ap.chHead': '怎么投这个职位', 'ap.chTailor': '按这个职位改写', 'ap.chTailorSub': '用 1 个额度,免费额度还剩 {n} 个', 'ap.chBase': '直接投基础简历', 'ap.chBaseSub': '附基础简历原件,不耗额度', 'ap.baseSend': '不改写,直接投基础简历', 'ap.toBase': '改投基础简历', 'ap.creditOut': '免费额度已用完', 'ap.creditOutPro': '本期额度已用完,{d} 恢复', 'ap.autoSaved': '已自动保存,可在我的投递里继续', 'ap.baseResume': '基础简历', 'ap.needBase': '先传一份基础简历,之后每个职位都以它为准', 'tr.failBase': '没写成,这次不扣额度',
   'ap.e.resume': '先上传一份简历', 'ap.e.chars': '信里有写不进 PDF 的字', 'ap.e.long': '求职信太长了,最多 4000 个字',
   'ap.e.sent': '这个职位已经投过了', 'ap.e.draft': '先写好求职信', 'ap.e.sameEmail': '30 天内已经给这个雇主投过别的职位',
   'ap.e.bounced': '这个雇主的邮箱退过信,投不了', 'ap.e.closed': '职位已下架', 'ap.e.noEmail': '这个职位没有投递邮箱',
