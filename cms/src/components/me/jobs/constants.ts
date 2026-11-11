@@ -153,24 +153,24 @@ export const PRIMARY_KIND = 'primary'
 export const OPEN_KIND = 'secondary'
 
 /**
- * 我的投递「简历」「求职信」两格里「查看」的钮档(白底描边小钮;2026-11-11)。
+ * 查看附件弹框里「下载」的钮档(白底描边小钮;2026-11-11)。
  */
 export const FILE_KIND = 'secondary'
 
 /**
- * 列身份:地址(2026-11-11 Frank「我的投递 地点改成地址」:完整地址一行)。
+ * 列身份:地址(2026-11-11 Frank「我的投递 地点改成地址」:完整地址一行;同日「是不是统一成地址」:三张表都用它)。
  */
 export const COL_ADDR = 'addr'
 
 /**
- * 列身份:发出去的那份简历。
+ * 菜单项身份:查看发出去的那份简历(行末「⋯」;2026-11-11)。
  */
-export const COL_RESUME = 'resume'
+export const ACT_RESUME = 'resume'
 
 /**
- * 列身份:发出去的那封求职信。
+ * 菜单项身份:查看发出去的那封求职信(行末「⋯」;2026-11-11)。
  */
-export const COL_COVER = 'cover'
+export const ACT_COVER = 'cover'
 
 /**
  * 发出去的附件接口头(后接投递行 id 与种类;只给本人、只给发出去了的;同子桶 apps 的 URL_FILE_HEAD)。
@@ -253,12 +253,6 @@ export const CHAN_NONE = '—'
 export const CARD_MD_CLS = 'cardMd'
 
 /**
- * 「换一批」的钮档(白底描边次要钮;2026-10-13)。2026-11-07 Frank「现在都按 Azure 的来」:钮从表上方挪到页签那一行右端。
- * 2026-11-11 任务书第 47 条:「换一批」撤,这一档改给表下「看全部同类职位」用。
- */
-export const SEE_ALL_KIND = 'secondary'
-
-/**
  * 列身份:职位。
  */
 export const COL_TITLE = 'title'
@@ -267,11 +261,6 @@ export const COL_TITLE = 'title'
  * 列身份:公司。
  */
 export const COL_COMPANY = 'company'
-
-/**
- * 列身份:地点(2026-11-07 Frank「现在都按 Azure 的来」:原「地址」列(完整地址一行)改「市, 省码」)。
- */
-export const COL_PLACE = 'place'
 
 /**
  * 列身份:薪资。

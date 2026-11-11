@@ -18,20 +18,17 @@ import { ActCell } from './actcell'
 import { CompanyCell } from './companycell'
 import {
   ACT_APPLY, ACT_CONT, ACT_DEL, ACT_OPEN, CLOSED_TAG, COL_ACT, COL_APPLIED_ON, COL_COMPANY, COL_DEADLINE,
-  COL_HOURS, COL_PAY, COL_PLACE, COL_POSTED, COL_SAVED_ON, COL_STATUS, COL_TERM, COL_TITLE, CRED_INCLUDE,
+  COL_HOURS, COL_PAY, COL_POSTED, COL_SAVED_ON, COL_STATUS, COL_TERM, COL_TITLE, CRED_INCLUDE,
   DUE_KEY, JOB_HREF_HEAD, KIND_APPLIED, KIND_SAVED, LANG_EN, LANG_KO, LANG_ZH, MD_FROM,
   OPEN_KIND, PF_ERR_EMPTY, PLACE_SEP, PRIMARY_KIND, STAGES, STAGE_ALL, STAGE_FILTERS,
   METHOD_DELETE, ST_DRAFT, TEXT_NONE, URL_PROFILE,
-  COL_ADDR, COL_COVER, COL_RESUME, FILE_COVER_TAIL, FILE_RESUME_TAIL, MIME_PDF, URL_FILE_HEAD, URL_TAILOR_FILE_HEAD,
+  ACT_COVER, ACT_RESUME, COL_ADDR, FILE_COVER_TAIL, FILE_RESUME_TAIL, MIME_PDF, URL_FILE_HEAD, URL_TAILOR_FILE_HEAD,
   FILL_KEY, FILL_LABEL_FALLBACK, FILL_LABEL_KEYS, FILL_MORE_KEY, FILL_NAME_MAX, FILL_SEP_KEY, COL_MED, COL_VS,
 } from './constants'
 import { AddrCell } from './addrcell'
-import { CoverCell } from './covercell'
 import { HoursCell } from './hourscell'
 import { MedCell } from './medcell'
 import { PayCell } from './paycell'
-import { PlaceCell } from './placecell'
-import { ResumeCell } from './resumecell'
 import { wageViewOf } from './recommend'
 import { TagsCell } from './tagscell'
 import { TermCell } from './termcell'
@@ -43,7 +40,7 @@ import type {
   MyJobItem, MyJobsRespJson, PfJson, PfLoadIn, PfSeed, PfView, PickRowIn, PickRowsIn, PillClickIn, PlaceDue, PlaceDueIn,
   FillTextIn, StagePill, StagePillsIn, TagItem, TitleSubForIn,
   FillHideIn, AskOkIn, AskSetFn, DelMenuIn, RemoveFn, RemoveMineIn, RowMenuItem,
-  SendDeleteIn, FileBtn, FileBtnIn, FileOpenIn, FileSetFn, FileView,
+  SendDeleteIn, FileBtnIn, FileOpenIn, FileSetFn, FileView,
 } from './types'
 
 /**
@@ -152,12 +149,10 @@ export function listRowOf(x: CellRowIn): ListRow {
     savedOn,
     appliedOn: appliedDateOf(x),
     address: it.address,
-    resume: fileBtnOf({ row: x, cover: false }),
-    cover: fileBtnOf({ row: x, cover: true }),
     tags,
     cardTags: tags,
     act: actOf(x),
-    menu: delMenuOf({ t: x.t, ask: x.ask, remove: x.remove, id: it.id, name: it.title }),
+    menu: fileMenuOf(x).concat(delMenuOf({ t: x.t, ask: x.ask, remove: x.remove, id: it.id, name: it.title })),
     more: x.t('mj.more'),
   }
 }
@@ -177,29 +172,50 @@ export function appliedDateOf(x: CellRowIn): string {
 }
 
 /**
- * 「简历」「求职信」格里的「查看」钮(2026-11-11 Frank「要包含我投递出去的简历 和 介绍信 列,用户可以随时查看」):
- * 有文件地址才出;简历只有 PDF 能就地预览(草稿行的那份一定是 PDF),求职信一律是 PDF。
+ * 行末「⋯」里的「查看简历」「查看求职信」两项(有文件才出;排在「删除」前面)。
+ * 2026-11-11 Frank「要包含我投递出去的简历 和 介绍信 列,用户可以随时查看」先做成两列,同日看着大半空格问
+ * 「这两个是不是放到后面三个点 比较好」:两列撤,收进「⋯」;手机一条上的那一排钮也跟着撤。
+ *
+ * @param x 这一行与它的清单上下文。
+ * @returns 菜单项(零到两项)。
+ */
+export function fileMenuOf(x: CellRowIn): RowMenuItem[] {
+  const out: RowMenuItem[] = []
+  const resume = fileItemOf({ row: x, cover: false })
+  if (resume != null) {
+    out.push(resume)
+  }
+  const cover = fileItemOf({ row: x, cover: true })
+  if (cover != null) {
+    out.push(cover)
+  }
+  return out
+}
+
+/**
+ * 「查看简历」或「查看求职信」一项:有文件地址才出;简历只有 PDF 能就地预览(草稿行的那份一定是 PDF),求职信一律是 PDF。
  *
  * @param x 这一行与要哪一种。
- * @returns 钮;没有文件给 null。
+ * @returns 菜单项;没有文件给 null。
  */
-export function fileBtnOf(x: FileBtnIn): FileBtn | null {
+export function fileItemOf(x: FileBtnIn): RowMenuItem | null {
   const src = fileSrcOf(x)
   if (src === TEXT_NONE) {
     return null
   }
   const it = x.row.item
-  let label = x.row.t('mj.col.resume')
+  let key = ACT_RESUME
+  let text = x.row.t('mj.viewResume')
+  let kicker = x.row.t('mj.col.resume')
   let pdf = it.stage === ST_DRAFT || it.resumeMime === MIME_PDF
   if (x.cover) {
-    label = x.row.t('mj.col.cover')
+    key = ACT_COVER
+    text = x.row.t('mj.viewCover')
+    kicker = x.row.t('mj.col.cover')
     pdf = true
   }
-  return {
-    text: x.row.t('mj.view'),
-    label,
-    onClick: makeFileOpen({ view: x.row.view, file: { kicker: label, title: it.title, src, pdf } }),
-  }
+  const onClick = makeFileOpen({ view: x.row.view, file: { kicker, title: it.title, src, pdf } })
+  return { key, text, danger: false, onClick }
 }
 
 /**
@@ -260,6 +276,7 @@ export function stageDefOf(stage: string): MaybeStageDef {
 /**
  * 胶囊:投递状态一枚(筛到单一状态时不再重复挂;只收藏没投的没有)+ 已下架一枚。
  * 2026-10-12 Frank「已下架这个应该有个状态列」:「已下架」从职位名下面挪进状态列。
+ * 2026-11-11 Frank 筛到「未发出」时看着整列空白说「状态列是空的啊」:筛到单一状态也照挂,状态列不留空。
  *
  * @param x 这一行、当前筛选与取词函数。
  * @returns 胶囊。
@@ -267,7 +284,7 @@ export function stageDefOf(stage: string): MaybeStageDef {
 export function tagsOf(x: CellRowIn): TagItem[] {
   const out: TagItem[] = []
   const def = stageDefOf(x.item.stage)
-  if (def != null && x.filter === STAGE_ALL) {
+  if (def != null) {
     out.push({ text: x.t(def.labelKey), variant: def.tag })
   }
   if (x.item.closed) {
@@ -462,9 +479,7 @@ export function pickRowOf(x: PickRowIn): ListRow {
     deadline: ymdOf(it.validThrough),
     savedOn: TEXT_NONE,
     appliedOn: TEXT_NONE,
-    address: TEXT_NONE,
-    resume: null,
-    cover: null,
+    address: it.address,
     tags: [],
     cardTags: [],
     act: { key: ACT_APPLY, text: x.t('mj.apply'), kind: PRIMARY_KIND, onClick: makeOpenApply(it.id), href: TEXT_NONE },
@@ -488,7 +503,7 @@ export function pickColsOf(x: ColsIn): MjCol<ListRow>[] {
   return [
     { key: COL_TITLE, label: x.t('mj.col.title'), render: TitleCell },
     { key: COL_COMPANY, label: x.t('mj.col.company'), render: CompanyCell },
-    { key: COL_PLACE, label: x.t('mj.col.place'), render: PlaceCell },
+    { key: COL_ADDR, label: x.t('mj.col.addr'), render: AddrCell },
     { key: COL_PAY, label: x.t('mj.col.pay'), render: PayCell, nowrap: true },
     { key: COL_MED, label: x.t('col.wageMedHr'), render: MedCell, nowrap: true },
     { key: COL_VS, label: x.t('col.vsMedian'), render: VsCell, nowrap: true },
@@ -516,24 +531,15 @@ export function savedColsOf(x: ColsIn): MjCol<ListRow>[] {
  * 网页端「我的投递」的列:职位 / 公司 / 地址 / 薪资 / 工时 / 雇佣期 / 发布日期 / 截止日期 / 状态 / 投递于 / 操作。
  * 2026-11-11 Frank「我的投递 地点改成地址,然后要包含我投递出去的简历 和 介绍信 列,用户可以随时查看」:
  * 共用列里的「地点」在这张表换成「地址」(完整地址一行);操作前面加「简历」「求职信」两列,各一颗「查看」。
+ * 同日 Frank「这两个是不是放到后面三个点 比较好」:两列撤,「查看简历」「查看求职信」收进行末「⋯」(fileMenuOf)。
  *
  * @param x 取词函数。
  * @returns 列。
  */
 export function appliedColsOf(x: ColsIn): MjCol<ListRow>[] {
-  const cols: MjCol<ListRow>[] = []
-  for (const c of baseColsOf(x)) {
-    if (c.key === COL_PLACE) {
-      cols.push({ key: COL_ADDR, label: x.t('mj.col.addr'), render: AddrCell })
-    } else {
-      cols.push(c)
-    }
-  }
-  return cols.concat([
+  return baseColsOf(x).concat([
     { key: COL_STATUS, label: x.t('mj.col.status'), render: TagsCell },
     { key: COL_APPLIED_ON, label: x.t('mj.col.appliedOn'), render: appliedOnOf, nowrap: true },
-    { key: COL_RESUME, label: x.t('mj.col.resume'), render: ResumeCell, nowrap: true },
-    { key: COL_COVER, label: x.t('mj.col.cover'), render: CoverCell, nowrap: true },
     { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true },
   ])
 }
@@ -541,6 +547,8 @@ export function appliedColsOf(x: ColsIn): MjCol<ListRow>[] {
 /**
  * 我的收藏 / 我的投递共用的前八列(照职位板)。
  * 2026-11-07 Frank「现在都按 Azure 的来」:「地址」列同今日推荐改「地点」列(「市, 省码」)。
+ * 2026-11-11 Frank 对着我的投递的「地址」与今日推荐的「地点」问「是不是统一成地址」:三张表都改回「地址」列
+ * (完整地址一行,AddrCell);「地点」格 PlaceCell 撤。手机一条的底行仍写「市, 省码」。
  *
  * @param x 取词函数。
  * @returns 列。
@@ -549,7 +557,7 @@ export function baseColsOf(x: ColsIn): MjCol<ListRow>[] {
   return [
     { key: COL_TITLE, label: x.t('mj.col.title'), render: TitleCell },
     { key: COL_COMPANY, label: x.t('mj.col.company'), render: CompanyCell },
-    { key: COL_PLACE, label: x.t('mj.col.place'), render: PlaceCell },
+    { key: COL_ADDR, label: x.t('mj.col.addr'), render: AddrCell },
     { key: COL_PAY, label: x.t('mj.col.pay'), render: PayCell, nowrap: true },
     { key: COL_HOURS, label: x.t('mj.col.hours'), render: HoursCell, nowrap: true },
     { key: COL_TERM, label: x.t('mj.col.term'), render: TermCell, nowrap: true },

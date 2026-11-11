@@ -130,11 +130,6 @@ export type PickItem = {
   wageMedHourly: number | null
 
   /**
-   * 5 位职业码(没有 = 空串)。
-   */
-  noc: string
-
-  /**
    * 雇主办过的 LMIA 外劳名额(没有是 0)。
    */
   lmiaPositions: number

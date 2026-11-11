@@ -43,6 +43,7 @@
 //       「一行一颗主钮」的断言照旧,数钮时排除「⋯」(buttons / mainButtons);撤掉的 ⑦ 取消收藏(含失败退回)、⑪ 投递行删除
 //       改走「⋯」→ 删除 → 确认接回。探针:removeOf 投递行打 /api/saved-jobs → ⑪ 红;makeRemoveMine 失败不退回 → ⑦ 退回那条红。
 // 2026-11-11 Frank「我的投递 地点改成地址,然后要包含我投递出去的简历 和 介绍信 列」:④⑤⑥ 改断言地址列、两列「查看」与点开的弹框;
+//       同日改判「放到后面三个点」:两列撤,④⑤⑥ 改断言「⋯」里的「查看简历」「查看求职信」排在「删除」前面。
 //       ⑨ 没改写过的草稿行照旧只有「继续」。探针:fileSrcOf 草稿不看 hasTailor → ⑨ 红;appliedColsOf 不换地址列 → ④⑤⑥ 红。
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -201,8 +202,8 @@ describe('我的求职', () => {
     ])
     expect(panelOf(el).textContent).toContain('mj.col.addr')
     expect(panelOf(el).textContent).not.toContain('mj.col.place')
-    expect(panelOf(el).textContent).toContain('mj.col.resume')
-    expect(panelOf(el).textContent).toContain('mj.col.cover')
+    expect(panelOf(el).textContent).not.toContain('mj.col.resume')   // 同日改判:两列撤,收进行末「⋯」
+    expect(panelOf(el).textContent).not.toContain('mj.col.cover')
     expect(a.textContent).toContain('温尼伯')   // 地点灰字「市译名,省译名」(默认中文界面)
     expect(a.textContent).toContain('Full-time')
     expect(a.textContent).toContain('Permanent')
@@ -215,13 +216,19 @@ describe('我的求职', () => {
     expect(b.textContent).toContain('Cook')   // 职位删了:职位名黑字、不成链
     expect(b.textContent).toContain('mj.closed')
     // 2026-11-07 效果图:一行一颗钮 —— 发出去的(连职位删了的)只剩「打开」,「删除」撤
-    // 2026-11-11:发出去的行多两颗「查看」(简历、求职信)
-    expect(buttons(b)).toEqual(['mj.view', 'mj.view', 'mj.open'])
-    expect(buttons(a)).toEqual(['mj.view', 'mj.view', 'mj.open'])
-    // 点「简历」那颗:就地开弹框、网址不变;这份不是 PDF(夹具没给类型),框里出一句改下载 + 下载链(发出那份的附件接口)
+    // 2026-11-11 Frank「这两个是不是放到后面三个点 比较好」:行上仍只一颗「打开」,「查看简历」「查看求职信」在行末「⋯」里、「删除」前面
+    expect(buttons(b)).toEqual(['mj.open'])
+    expect(buttons(a)).toEqual(['mj.open'])
+    await act(async () => {
+      (a.querySelector('button[aria-label="mj.more"]') as HTMLButtonElement).click()
+    })
+    const menu = Array.from(document.body.querySelectorAll('button')).map((x) => x.textContent)
+    expect(menu.filter((x) => x === 'mj.viewResume' || x === 'mj.viewCover' || x === 'mj.del'))
+      .toEqual(['mj.viewResume', 'mj.viewCover', 'mj.del'])
+    // 点「查看简历」:就地开弹框、网址不变;这份不是 PDF(夹具没给类型),框里出一句改下载 + 下载链(发出那份的附件接口)
     const before = window.location.href
     await act(async () => {
-      Array.from(a.querySelectorAll('button')).find((x) => x.textContent === 'mj.view')?.click()
+      Array.from(document.body.querySelectorAll('button')).find((x) => x.textContent === 'mj.viewResume')?.click()
     })
     expect(window.location.href).toBe(before)
     expect(document.body.textContent).toContain('rf.pvFail')
@@ -272,7 +279,8 @@ describe('我的求职', () => {
     expect(nonTabButtons(el).some((b) => b?.startsWith('mj.replied'))).toBe(false)   // 计数 0 的不出
     await click(el, 'mj.unsent1')
     expect(rowOf(el, 'office manager')).not.toBeNull()
-    expect(rowOf(el, 'office manager').textContent).not.toContain('mj.unsent')   // 筛到单一状态,行上不再重复挂胶囊(Frank 10-08)
+    // 2026-11-11 Frank「状态列是空的啊」:筛到单一状态也照挂胶囊(原 10-08「不再重复挂」撤),状态列不留空
+    expect(rowOf(el, 'office manager').textContent).toContain('mj.unsent')
     expect(rowOf(el, 'light duty cleaner')).toBeNull()
     expect(rowOf(el, 'bounced one')).toBeNull()
     await click(el, 'mj.all3')

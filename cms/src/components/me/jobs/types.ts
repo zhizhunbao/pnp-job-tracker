@@ -201,27 +201,7 @@ export type FileView = {
 export type FileViewFn = (v: FileView) => void
 
 /**
- * 「简历」「求职信」格里的那颗钮。
- */
-export type FileBtn = {
-  /**
-   * 表格里的钮面(「查看」)。
-   */
-  text: string
-
-  /**
-   * 手机一条里的钮面(列名:简历 / 求职信)。
-   */
-  label: string
-
-  /**
-   * 点了开弹框。
-   */
-  onClick: () => void
-}
-
-/**
- * fileBtnOf / fileSrcOf 的入参。
+ * fileItemOf / fileSrcOf 的入参。
  */
 export type FileBtnIn = {
   /**
@@ -436,7 +416,7 @@ export type CellRowsIn = {
   openApp: OpenAppFn
 
   /**
-   * 开查看附件弹框(我的投递的「简历」「求职信」两格;收藏清单给个空手柄)。
+   * 开查看附件弹框(我的投递行末「⋯」里的「查看简历」「查看求职信」;收藏清单给个空手柄)。
    */
   view: FileViewFn
 }
@@ -496,7 +476,7 @@ export type CellRowIn = {
   openApp: OpenAppFn
 
   /**
-   * 开查看附件弹框(我的投递的「简历」「求职信」两格;收藏清单给个空手柄)。
+   * 开查看附件弹框(我的投递行末「⋯」里的「查看简历」「查看求职信」;收藏清单给个空手柄)。
    */
   view: FileViewFn
 }
@@ -734,11 +714,6 @@ export type PickItem = {
    * 本省同职业时薪中位(没有是 null)。
    */
   wageMedHourly: number | null
-
-  /**
-   * 5 位职业码(没有 = 空串)。
-   */
-  noc: string
 
   /**
    * 雇主办过的 LMIA 外劳名额(没有是 0)。
@@ -1010,16 +985,6 @@ export type ListRow = {
    * 完整地址一行(我的投递「地址」列;没有 = 空串;2026-11-11)。
    */
   address: string
-
-  /**
-   * 发出去的那份简历的「查看」钮(没有 = null:收藏 / 推荐行、还没改写的草稿)。
-   */
-  resume: FileBtn | null
-
-  /**
-   * 发出去的那封求职信的「查看」钮(没有 = null:没附求职信、收藏 / 推荐行)。
-   */
-  cover: FileBtn | null
 
   /**
    * 表格胶囊格(收藏 / 投递 = 状态;推荐原因列 2026-11-09 撤,推荐行给空)。

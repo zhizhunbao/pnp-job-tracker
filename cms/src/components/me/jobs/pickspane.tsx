@@ -15,18 +15,17 @@
  * 「换一批」再挪到页签那一行右端(JobsBody)。
  * 2026-11-11 Frank「别一次性推荐 50 个」「不需要解锁其余」(任务书第 47 条):每天 10 条全列、全免费;显示更多、解锁那一行、
  * 换一批、行上的删除都撤;表下加一颗「看全部同类职位」去职位板(带省与这批推荐的职业码)。
+ * 同日 Frank 指着那颗钮说「这个也删掉」:「看全部同类职位」撤(连同去处的算法、职业码下发、钮档与词条)。
  *
  * @author Frank
  * @time 2026-11-07 18:00:00
  */
-import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { useLang } from '@/components/i18n'
-import { SEE_ALL_KIND, TEXT_NONE } from './constants'
 import { pickColsOf, pickRowsOf } from './functions'
 import { useLazyCompanies, useLazyTitles } from './hooks'
 import { JobList } from './joblist'
-import { boardHrefOf, picksOf, titledPicksOf } from './recommend'
+import { picksOf, titledPicksOf } from './recommend'
 import type { PicksPaneIn } from './types'
 import css from './jobs.module.css'
 
@@ -34,7 +33,7 @@ import css from './jobs.module.css'
  * 「今日推荐」页签。
  *
  * @param props 取词函数与推荐整机。
- * @returns 表 + 「看全部同类职位」一行(或失败一句);还没拉到不渲。
+ * @returns 表(或失败一句);还没拉到不渲。
  */
 export function PicksPane({ t, p }: PicksPaneIn) {
   const [lang] = useLang()
@@ -47,16 +46,8 @@ export function PicksPane({ t, p }: PicksPaneIn) {
     return null
   }
   const rows = pickRowsOf({ items: p.data.picks, lang, t, titles, cos })
-  const board = boardHrefOf(p.data)
   return (
-    <>
-      <JobList rows={rows} cols={pickColsOf({ t })}
-        empty={<div className={cssOf(css.note)}>{t('mj.picksEmpty')}</div>} />
-      {board !== TEXT_NONE && (
-        <div className={cssOf(css.seeAll)}>
-          <Button kind={SEE_ALL_KIND} sm href={board}>{t('mj.seeAll')}</Button>
-        </div>
-      )}
-    </>
+    <JobList rows={rows} cols={pickColsOf({ t })}
+      empty={<div className={cssOf(css.note)}>{t('mj.picksEmpty')}</div>} />
   )
 }

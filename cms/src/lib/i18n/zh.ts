@@ -924,12 +924,10 @@ export const jobsZh = {
   'fav.title': '我的收藏',
   // 2026-10-06 「我的求职」「我的收藏」改成 myjobs 桶的两张表;sj.note、fav.note 随旧清单撤
   'mj.appliedAt': '投递日期', 'mj.open': '打开', 'mj.closed': '已下架', 'mj.del': '删除', 'mj.more': '更多操作', 'mj.delAsk': '确认删除?', 'mj.cancel': '取消',
-  // 2026-11-11 任务书第 47 条:今日推荐每天 10 条全免费,mj.lockLine、mj.unlock、mj.swap 随之删;表下加去职位板的链接
-  'mj.seeAll': '看全部同类职位',
-  'mj.col.place': '地点',
+  // 2026-11-11 任务书第 47 条:今日推荐每天 10 条全免费,mj.lockLine、mj.unlock、mj.swap 随之删;表下去职位板的链接 mj.seeAll 同日加了又撤
   'mj.live': '在架', 'mj.col.stage': '投递状态', 'mj.col.listing': '职位状态',
   'mj.bounced': '退信',
-  'mj.col.resume': '简历', 'mj.col.cover': '求职信', 'mj.view': '查看',
+  'mj.viewResume': '查看简历', 'mj.viewCover': '查看求职信', 'mj.col.resume': '简历', 'mj.col.cover': '求职信', 'mj.view': '查看',
   'mj.emptyApplied': '还没有投递', 'mj.fail': '没加载出来,刷新页面再试。',
   // 2026-10-08 照 AIApply 重设计:草稿入表、继续、收藏行投递、空态引导、成功条、求职信段
   'mj.draft': '草稿', 'mj.queued': '待投', 'mj.replied': '雇主回复', 'mj.all': '全部', 'mj.savedCount': '{n} 个收藏',

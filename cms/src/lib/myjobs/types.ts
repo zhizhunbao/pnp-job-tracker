@@ -481,11 +481,6 @@ export type PickDbRow = {
   wage_med_hourly: number | string | null
 
   /**
-   * 5 位职业码(2026-11-11:表下「看全部同类职位」按它去职位板)。
-   */
-  noc: string | null
-
-  /**
    * 雇主办过的 LMIA 外劳名额(没有是 NULL;2026-10-12 Frank「整点有吸引力的 bullets」)。
    */
   lmia_positions: number | string | null
@@ -659,11 +654,6 @@ export type PickRow = {
    * 本省同职业时薪中位(没有是 null;表格「中位时薪」列写它)。
    */
   wageMedHourly: number | null
-
-  /**
-   * 5 位职业码(没有 = 空串;表下「看全部同类职位」按它去职位板)。
-   */
-  noc: string
 
   /**
    * 雇主办过的 LMIA 外劳名额(理由里有 lmia 时 bullet 写它;没有是 0)。

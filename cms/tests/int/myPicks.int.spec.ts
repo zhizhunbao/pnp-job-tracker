@@ -55,7 +55,7 @@ function row(id: number): PickRow {
     companySlug: 'secret-co-' + id, address: '1 Hidden St ' + id, city: 'Toronto', cityZh: '', cityKo: '', province: 'ON',
     salary: '$' + id + '/hr', datePosted: '2026-10-10T00:00:00.000Z', reasons: ['pnp'], program: 'OINP', hours: 'full',
     term: 'permanent', validThrough: '', pnpStream: '', pnpEligible: true, provDefault: true, abovePct: null,
-    wageMedHourly: null, noc: '13110', lmiaPositions: 0, eeCategory: '', drawLast: '', pilot: '',
+    wageMedHourly: null, lmiaPositions: 0, eeCategory: '', drawLast: '', pilot: '',
   }
 }
 
@@ -307,7 +307,7 @@ const PICK = {
   salary: '$24/hr', datePosted: '2026-10-10T00:00:00.000Z', reasons: ['occ', 'pnp', 'nope'], program: 'OINP',
   hours: 'part', term: 'seasonal', validThrough: '2026-11-09T00:00:00.000Z',
   pnpStream: '', pnpEligible: true, provDefault: true, abovePct: null, wageMedHourly: null, lmiaPositions: 0, eeCategory: '',
-  drawLast: '', pilot: '', noc: '13110',
+  drawLast: '', pilot: '',
 }
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -319,7 +319,7 @@ afterEach(() => {
 describe('今日推荐卡', () => {
   it('⑥ 推荐行 + 通道列 + 发布日期列;10 条全列,没有换一批、显示更多、解锁;表下「看全部同类职位」(2026-11-11 任务书第 47 条)', async () => {
     const many = Array.from({ length: 8 }, (_, i) => ({ ...PICK, id: i + 20, title: 'job ' + (i + 2) }))
-    stub({ status: 200, body: { picks: [PICK].concat(many).concat([{ ...PICK, id: 40, title: 'job 10', noc: '14100' }]) } })
+    stub({ status: 200, body: { picks: [PICK].concat(many).concat([{ ...PICK, id: 40, title: 'job 10' }]) } })
     const el = await mount()
     expect(el.querySelector('[role="tab"]')).toBeNull()   // 2026-11-09:页签条撤,三项在侧边栏
     expect(el.textContent).toContain('administrative assistant')
@@ -346,14 +346,12 @@ describe('今日推荐卡', () => {
     expect(Array.from(el.querySelectorAll('button')).some((x) => x.textContent?.startsWith('loadMore'))).toBe(false)
     expect(el.querySelectorAll('button[aria-label="mj.more"]').length).toBe(0)
     expect(Array.from(panelOf(el).querySelectorAll('button')).map((b) => b.textContent)).toEqual(Array(10).fill('mj.apply'))
-    // 表下「看全部同类职位」:去职位板,带头一条的省与这批推荐的职业码(去重)
-    const all = Array.from(panelOf(el).querySelectorAll('a')).find((a) => a.textContent === 'mj.seeAll')
-    expect(all?.getAttribute('href')).toBe('/jobs?prov=ON&noc=13110,14100')
-    // 「地址」列改「地点」列:链字「市, 省码」,链址仍按完整地址查
-    expect(el.textContent).toContain('mj.col.place')
-    expect(el.textContent).not.toContain('mj.col.addr')
-    expect(el.textContent).not.toContain(PICK.address)
-    const place = Array.from(el.querySelectorAll('a')).find((a) => a.textContent === 'Concord, ON')
+    // 同日 Frank「这个也删掉」:表下「看全部同类职位」撤
+    expect(el.textContent).not.toContain('mj.seeAll')
+    // 2026-11-11 Frank「是不是统一成地址」:「地点」列改回「地址」列 —— 链字是完整地址一行,链址按它查
+    expect(el.textContent).toContain('mj.col.addr')
+    expect(el.textContent).not.toContain('mj.col.place')
+    const place = Array.from(el.querySelectorAll('a')).find((a) => a.textContent === PICK.address)
     expect(place?.getAttribute('href')).toBe('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(PICK.address))
   })
 
@@ -386,15 +384,10 @@ describe('今日推荐卡', () => {
     expect(new URLSearchParams(window.location.search).get('apply')).toBe('7')
   })
 
-  it('⑥ 零条出一行空态、不出「看全部同类职位」;没有职业码也不出;失败出刷新再试', async () => {
+  it('⑥ 零条出一行空态;失败出刷新再试', async () => {
     stub({ status: 200, body: { picks: [] } })
     const empty = await mount()
     expect(empty.textContent).toContain('mj.picksEmpty')
-    expect(empty.textContent).not.toContain('mj.seeAll')
-    document.body.innerHTML = ''
-    stub({ status: 200, body: { picks: [{ ...PICK, noc: '' }] } })
-    const noNoc = await mount()
-    expect(noNoc.textContent).not.toContain('mj.seeAll')
     document.body.innerHTML = ''
     stub({ status: 500, body: {} })
     const el = await mount()

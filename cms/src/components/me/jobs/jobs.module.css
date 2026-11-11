@@ -176,13 +176,6 @@
 }
 
 /*
- * 表下「看全部同类职位」那一行(2026-11-11 任务书第 47 条,代替「解锁」那一行;「换一批」那一行也撤)。
- */
-.seeAll {
-  padding: 12px 0 4px;
-}
-
-/*
  * 操作格:主钮 + 行末「⋯」一排,靠右(2026-11-07 加回删除)。
  */
 .acts {
@@ -190,16 +183,6 @@
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
-}
-
-/*
- * 手机一条里「简历」「求职信」两颗钮那一排(2026-11-11 我的投递:发出去的那两份随时能看)。
- */
-.itemFiles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 6px;
 }
 
 /*

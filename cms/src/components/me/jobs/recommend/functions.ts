@@ -7,14 +7,14 @@
  * (「还有 N 条推荐」+「解锁其余 N 条」主钮);「显示更多」只管没列出来的真行。
  * 2026-11-09 Frank「推荐原因删掉」:推荐原因胶囊那一族撤(表格改出中位时薪、vs 中位两列,显示串在本桶 wageViewOf)。
  * 2026-11-11 Frank「别一次性推荐 50 个」「不需要解锁其余」(任务书第 47 条):每天 10 条全给,换一批、显示更多、解锁那一行撤;
- * 加表下「看全部同类职位」的去处 boardHrefOf。
+ * 加表下「看全部同类职位」的去处 boardHrefOf(同日 Frank「这个也删掉」,又撤)。
  *
  * @author Frank
  * @time 2026-11-07 18:00:00
  */
 import { homeProvinceOf } from '@/lib/location'
 import {
-  CRED_INCLUDE, NOC_SEP, PARAM_NOC, TEXT_NONE, URL_BOARD_PROV, URL_PICKS,
+  CRED_INCLUDE, TEXT_NONE, URL_PICKS,
   URL_PICKS_FRESH, MED_HEAD, MED_TAIL, VS_PCT, VS_PLUS,
 } from './constants'
 import type {
@@ -61,33 +61,6 @@ export function toPicksFact(d: PicksRespJson): PicksFact {
     picks = d.picks
   }
   return { picks }
-}
-
-/**
- * 表下「看全部同类职位」的去处(2026-11-11 任务书第 47 条):职位板带上头一条推荐的省与这批推荐的全部职业码;
- * 没有推荐或都没有职业码给空串(不出那一行)。
- *
- * @param data 推荐整包(还没拉到给 null)。
- * @returns 职位板地址;没有给空串。
- */
-export function boardHrefOf(data: PicksFact | null): string {
-  if (data == null || data.picks.length === 0) {
-    return TEXT_NONE
-  }
-  const nocs: string[] = []
-  let prov = TEXT_NONE
-  for (const p of data.picks) {
-    if (prov === TEXT_NONE) {
-      prov = p.province
-    }
-    if (p.noc !== TEXT_NONE && nocs.includes(p.noc) === false) {
-      nocs.push(p.noc)
-    }
-  }
-  if (nocs.length === 0) {
-    return TEXT_NONE
-  }
-  return URL_BOARD_PROV + prov + PARAM_NOC + nocs.join(NOC_SEP)
 }
 
 /**

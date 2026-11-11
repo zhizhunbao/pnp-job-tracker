@@ -7,11 +7,10 @@
  * @author Frank
  * @time 2026-11-07 18:00:00
  */
-import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { ActCell } from './actcell'
 import { CompanyCell } from './companycell'
-import { FILE_KIND, TEXT_NONE } from './constants'
+import { TEXT_NONE } from './constants'
 import { PayCell } from './paycell'
 import { TagList } from './taglist'
 import { TitleCell } from './titlecell'
@@ -33,12 +32,6 @@ export function JobCard({ r }: JobCardIn) {
         {PayCell(r)}
       </div>
       <TagList tags={r.cardTags} />
-      {(r.resume != null || r.cover != null) && (
-        <div className={cssOf(css.itemFiles)}>
-          {r.resume != null && <Button kind={FILE_KIND} sm onClick={r.resume.onClick}>{r.resume.label}</Button>}
-          {r.cover != null && <Button kind={FILE_KIND} sm onClick={r.cover.onClick}>{r.cover.label}</Button>}
-        </div>
-      )}
       <div className={cssOf(css.itemFoot)}>
         <span className={cssOf(css.itemMeta)}>
           {r.place !== TEXT_NONE && <span className={cssOf(css.itemPlace)}>{r.place}</span>}

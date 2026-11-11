@@ -451,7 +451,6 @@ export function toPickRow(r: PickDbRow): PickRow {
     }),
     abovePct: numOrNull(r.above_pct),
     wageMedHourly: numOrNull(r.wage_med_hourly),
-    noc: text(r.noc),
     lmiaPositions: count(r.lmia_positions),
     eeCategory: text(r.ee_category),
     drawLast: text(r.draw_last),

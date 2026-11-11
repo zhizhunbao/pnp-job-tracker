@@ -24,21 +24,6 @@ export const URL_PICKS = '/api/myjobs/picks?prov='
 export const URL_PICKS_FRESH = '&fresh=1'
 
 /**
- * 职位板按省筛选的地址头(表下「看全部同类职位」;后接省码)。
- */
-export const URL_BOARD_PROV = '/jobs?prov='
-
-/**
- * 职位板的职业筛选参数(后接职业码,多个用 NOC_SEP 隔开)。
- */
-export const PARAM_NOC = '&noc='
-
-/**
- * 多个职业码之间的分隔(职位板的多值参数口径)。
- */
-export const NOC_SEP = ','
-
-/**
  * 请求带 cookie(登录态)。
  */
 export const CRED_INCLUDE = 'include'
