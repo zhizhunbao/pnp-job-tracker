@@ -684,9 +684,14 @@ export type MailPick = {
   company: string
 
   /**
-   * 地点一行。
+   * 城市英文名(没有 = 空串)。
    */
-  address: string
+  city: string
+
+  /**
+   * 省码。
+   */
+  province: string
 
   /**
    * 薪资显示串(没有 = 空串)。

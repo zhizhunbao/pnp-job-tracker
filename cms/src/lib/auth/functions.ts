@@ -10,6 +10,7 @@
 
 import { cookies } from 'next/headers'
 import { AUTH_LOG, log } from '../log'
+import { noticeHtmlOf } from '../mail'
 import { getFieldsToSign, getPayload, jwtSign } from 'payload'
 import config from '@/payload.config'
 import { createHmac, timingSafeEqual } from 'node:crypto'
@@ -24,7 +25,7 @@ import {
   E_EMAIL, E_EXPIRED, E_GOOGLE, E_LINK, E_SAME, E_TAKEN, E_MAIL, E_WEAK, E_WRONG, EMAIL_CONFIRM_PATH,
   EMAIL_CONFIRM_SUBJECT, EMAIL_RE, HEX, HMAC_KEY_NONE, HMAC_SHA256, LOG_PW_CHECK, LOGIN_EMAIL_PREFIX,
   LOGIN_EMAIL_SEP, LOGIN_EMAIL_TOKEN_LEN, LOGIN_EMAIL_TTL_MS, P_E, P_T, P_TS, P_U, PROVIDER_EMAIL, PW_MIN_LEN,
-  E_BODY_NONE, EMAIL_BODY_HTML, EMAIL_LINK_HEAD, EMAIL_LINK_TAIL, PARAM_NONE, QS_HEAD, ST_BAD_GATEWAY,
+  E_BODY_NONE, EMAIL_CTA, EMAIL_HEAD, EMAIL_KICKER, EMAIL_TEXT, PARAM_NONE, QS_HEAD, ST_BAD_GATEWAY,
   ST_BAD_REQUEST, ST_CONFLICT,
 } from './constants'
 import type {
@@ -516,12 +517,13 @@ export function loginEmailToken(x: LoginEmailTokenIn): string {
 
 /**
  * 确认信正文(中英双语,一个链接;24 小时内有效)。
+ * 2026-11-11:改成英文,套 lib/mail 的通知信外壳。
  *
  * @param link 确认链接。
  * @returns HTML。
  */
 export function emailConfirmHtml(link: string): string {
-  return EMAIL_BODY_HTML + EMAIL_LINK_HEAD + link + EMAIL_LINK_TAIL
+  return noticeHtmlOf({ site: SITE, kicker: EMAIL_KICKER, head: EMAIL_HEAD, text: EMAIL_TEXT, cta: EMAIL_CTA, href: link })
 }
 
 /**

@@ -4,17 +4,17 @@
  * @author Frank
  * @time 2026-11-11 03:00:00
  */
+import { MAIL_BTN, MAIL_H1, MAIL_P, noticeHtmlOf, noticeTextOf, shellOf } from '../../mail'
 import { fill } from '../../template'
 import {
   ACCOUNT_PATH, BADGE_CLOSED, BADGE_OPEN, CONFIRM_CTA, CONFIRM_HEAD, CONFIRM_TEXT, DAILY_CTA, DAILY_HEAD, DRAW_P,
   FIELD_NONE, HI_LINE, HTML_SEP, JOB_BLOCK, JOB_LINE, JOB_LIST, JOB_PATH, JOB_TITLE_LINK, JOB_TITLE_PLAIN, KICKER,
-  MAIL_BTN, MAIL_H1, MAIL_LINKS_ALERT, MAIL_LINKS_SITE, MAIL_P, MAIL_REASON_ALERT, MAIL_REASON_CONFIRM, MAIL_SHELL,
-  MAIL_SUB, MAIL_TEXT_ALERT, MAIL_TEXT_CONFIRM, OPEN_BOARD, SAVED_CTA, SAVED_HEAD, SEP_LOC, SITE, TAG_PNP,
-  TEXT_JOB_BULLET, TEXT_JOB_HREF, TEXT_JOB_SEP, TEXT_JOB_TAG, TEXT_NL, TEXT_TAG_CLOSED, TEXT_TAG_OPEN, TEXT_TAG_PNP,
-  TEXT_WEEKLY_NEW, TITLE_SMALL, TITLE_WORD_RE, WEEKLY_NEW_NONE, WEEKLY_NEW_P, WK_CTA, WK_HEAD, WK_SUB,
+  MAIL_LINKS_ALERT, MAIL_REASON_ALERT, MAIL_SUB, MAIL_TEXT_ALERT, OPEN_BOARD, SAVED_CTA, SAVED_HEAD, SEP_LOC, SITE,
+  TAG_PNP, TEXT_JOB_BULLET, TEXT_JOB_HREF, TEXT_JOB_SEP, TEXT_JOB_TAG, TEXT_NL, TEXT_TAG_CLOSED, TEXT_TAG_OPEN,
+  TEXT_TAG_PNP, TEXT_WEEKLY_NEW, TITLE_SMALL, TITLE_WORD_RE, WEEKLY_NEW_NONE, WEEKLY_NEW_P, WK_CTA, WK_HEAD, WK_SUB,
 } from './constants'
 import type {
-  AlertShellIn, AlertTextIn, DailyHtmlIn, EmailHtmlIn, JobBlockIn, MailJobList, MailJobRow, ProfileHtmlIn,
+  AlertShellIn, AlertTextIn, DailyHtmlIn, EmailHtmlIn, JobBlockIn, MailJobList, MailJobRow, MailPick, ProfileHtmlIn,
   WeeklyHtmlIn,
 } from './types'
 
@@ -208,7 +208,7 @@ export function dailyHtml(x: DailyHtmlIn): string {
   const blocks: string[] = []
   for (const p of x.picks) {
     blocks.push(jobBlockOf({
-      href: SITE + JOB_PATH + p.id, title: p.title, company: p.company, where: p.address, salary: p.salary, tag: FIELD_NONE,
+      href: SITE + JOB_PATH + p.id, title: p.title, company: p.company, where: pickPlaceOf(p), salary: p.salary, tag: FIELD_NONE,
     }))
   }
   const body = fill({ tpl: MAIL_H1, params: { text: fill({ tpl: DAILY_HEAD, params: { n: x.picks.length } }) } })
@@ -227,13 +227,23 @@ export function dailyText(x: DailyHtmlIn): string {
   const lines: string[] = []
   for (const p of x.picks) {
     lines.push(jobLineOf({
-      href: SITE + JOB_PATH + p.id, title: p.title, company: p.company, where: p.address, salary: p.salary, tag: FIELD_NONE,
+      href: SITE + JOB_PATH + p.id, title: p.title, company: p.company, where: pickPlaceOf(p), salary: p.salary, tag: FIELD_NONE,
     }))
   }
   return alertTextOf({
     head: fill({ tpl: DAILY_HEAD, params: { n: x.picks.length } }), lines: lines, cta: DAILY_CTA, href: SITE + ACCOUNT_PATH,
     unsubUrl: x.unsubUrl,
   })
+}
+
+/**
+ * 每日推送一条的地点:只写「市, 省码」(2026-11-11 Frank:完整门牌会被 Gmail 自动加半截链接,留给职位页)。
+ *
+ * @param p 推荐的一条。
+ * @returns 地点一行;市与省都没有 = 空串。
+ */
+function pickPlaceOf(p: MailPick): string {
+  return [p.city, p.province].filter(Boolean).join(SEP_LOC)
 }
 
 // =========================================================================
@@ -247,15 +257,7 @@ export function dailyText(x: DailyHtmlIn): string {
  * @returns 整封 HTML。
  */
 export function confirmMailHtml(url: string): string {
-  const body = fill({ tpl: MAIL_H1, params: { text: CONFIRM_HEAD } }) + fill({ tpl: MAIL_P, params: { text: CONFIRM_TEXT } })
-    + fill({ tpl: MAIL_BTN, params: { href: url, label: CONFIRM_CTA } })
-  return fill({
-    tpl: MAIL_SHELL,
-    params: {
-      site: SITE, kicker: KICKER.confirm, body: body, reason: MAIL_REASON_CONFIRM,
-      links: fill({ tpl: MAIL_LINKS_SITE, params: { site: SITE } }),
-    },
-  })
+  return noticeHtmlOf({ site: SITE, kicker: KICKER.confirm, head: CONFIRM_HEAD, text: CONFIRM_TEXT, cta: CONFIRM_CTA, href: url })
 }
 
 /**
@@ -265,7 +267,7 @@ export function confirmMailHtml(url: string): string {
  * @returns 纯文本正文。
  */
 export function confirmMailText(url: string): string {
-  return fill({ tpl: MAIL_TEXT_CONFIRM, params: { head: CONFIRM_HEAD, text: CONFIRM_TEXT, cta: CONFIRM_CTA, href: url, site: SITE } })
+  return noticeTextOf({ site: SITE, kicker: KICKER.confirm, head: CONFIRM_HEAD, text: CONFIRM_TEXT, cta: CONFIRM_CTA, href: url })
 }
 
 // =========================================================================
@@ -279,12 +281,9 @@ export function confirmMailText(url: string): string {
  * @returns 整封 HTML。
  */
 function alertShellOf(x: AlertShellIn): string {
-  return fill({
-    tpl: MAIL_SHELL,
-    params: {
-      site: SITE, kicker: x.kicker, body: x.body, reason: MAIL_REASON_ALERT,
-      links: fill({ tpl: MAIL_LINKS_ALERT, params: { unsubUrl: x.unsubUrl, site: SITE } }),
-    },
+  return shellOf({
+    site: SITE, kicker: x.kicker, body: x.body, reason: MAIL_REASON_ALERT,
+    links: fill({ tpl: MAIL_LINKS_ALERT, params: { unsubUrl: x.unsubUrl, site: SITE } }),
   })
 }
 

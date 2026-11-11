@@ -4,6 +4,8 @@
  * @author Frank
  * @time 2026-08-23 02:00:00
  */
-export { MAIL_ENABLED, WHY_DISABLED } from './constants'
-export { confirmToken, postMail, sendMail, unsubToken } from './functions'
-export type { ConfirmTokenIn, MailAttachment, MailUserId, PostMailFact, PostMailIn, SendMailIn, SentOut } from './types'
+export { MAIL_BTN, MAIL_ENABLED, MAIL_H1, MAIL_P, WHY_DISABLED } from './constants'
+export { confirmToken, noticeHtmlOf, noticeTextOf, postMail, sendMail, shellOf, unsubToken } from './functions'
+export type {
+  ConfirmTokenIn, MailAttachment, MailUserId, NoticeIn, PostMailFact, PostMailIn, SendMailIn, SentOut, ShellIn,
+} from './types'

@@ -9,12 +9,15 @@
 
 import crypto from 'crypto'
 import { log, MAIL_LOG } from '../log'
+import { fill } from '../template'
 import {
   BEARER_PREFIX, CONFIRM_PREFIX, CONFIRM_SEP, ERR_BODY_LEN, FROM, HDR_IDEMPOTENCY, HEX_ENC, HMAC_ALGO, HMAC_KEY_NONE, ID_NONE, JSON_MIME,
   MAIL_ENABLED, METHOD_POST, RESEND_URL, UNSUB_PREFIX, UNSUB_TOKEN_LEN, WHY_DISABLED, WHY_THROWN,
+  MAIL_BTN, MAIL_H1, MAIL_LINKS_SITE, MAIL_P, MAIL_REASON_CONFIRM, MAIL_SHELL, MAIL_TEXT_CONFIRM,
 } from './constants'
 import type {
-  ConfirmTokenIn, MailUserId, PostMailIn, PostMailOut, ResendBodyJson, ResendHeaders, ResendRespJson, SendMailIn, SentOut,
+  ConfirmTokenIn, MailUserId, NoticeIn, PostMailIn, PostMailOut, ResendBodyJson, ResendHeaders, ResendRespJson, SendMailIn, SentOut,
+  ShellIn,
 } from './types'
 import { HDR_CONTENT_TYPE } from '../http'
 
@@ -140,4 +143,40 @@ export function confirmToken(x: ConfirmTokenIn): string {
   }
   return crypto.createHmac(HMAC_ALGO, key).update(CONFIRM_PREFIX + String(x.userId) + CONFIRM_SEP + x.email)
     .digest(HEX_ENC).slice(0, UNSUB_TOKEN_LEN)
+}
+
+/**
+ * 通知信整封 HTML:一个标题、一段话、一颗按钮,页脚写「不是你要的可以不理」加站点链接
+ * (换收件邮箱的确认信、改登录邮箱的确认信、忘记密码信同此形)。
+ *
+ * @param x 站点、信的种类、标题、一段话与按钮。
+ * @returns 整封 HTML。
+ */
+export function noticeHtmlOf(x: NoticeIn): string {
+  const body = fill({ tpl: MAIL_H1, params: { text: x.head } }) + fill({ tpl: MAIL_P, params: { text: x.text } })
+    + fill({ tpl: MAIL_BTN, params: { href: x.href, label: x.cta } })
+  return shellOf({
+    site: x.site, kicker: x.kicker, body: body, reason: MAIL_REASON_CONFIRM,
+    links: fill({ tpl: MAIL_LINKS_SITE, params: { site: x.site } }),
+  })
+}
+
+/**
+ * 通知信的纯文本版。
+ *
+ * @param x 站点、标题、一段话与按钮。
+ * @returns 纯文本正文。
+ */
+export function noticeTextOf(x: NoticeIn): string {
+  return fill({ tpl: MAIL_TEXT_CONFIRM, params: { head: x.head, text: x.text, cta: x.cta, href: x.href, site: x.site } })
+}
+
+/**
+ * 信的外壳:灰底上一张白卡,顶上站名加信的种类,中间正文,底下页脚(2026-11-11 自 lib/alerts/body 搬来,三处共用)。
+ *
+ * @param x 站点、信的种类、正文与页脚两段。
+ * @returns 整封 HTML。
+ */
+export function shellOf(x: ShellIn): string {
+  return fill({ tpl: MAIL_SHELL, params: { site: x.site, kicker: x.kicker, body: x.body, reason: x.reason, links: x.links } })
 }

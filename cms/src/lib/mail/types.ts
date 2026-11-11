@@ -200,3 +200,67 @@ export type ResendBodyJson = {
  */
 export type ResendHeaders = Record<string, string>
 
+/**
+ * 信的外壳(shellOf)的入参。
+ */
+export type ShellIn = {
+  /**
+   * 站点根地址(抬头的站名链到这里)。
+   */
+  site: string
+
+  /**
+   * 右上角的小字:这是哪一种信。
+   */
+  kicker: string
+
+  /**
+   * 正文 HTML。
+   */
+  body: string
+
+  /**
+   * 页脚第一段:为什么收到这封信。
+   */
+  reason: string
+
+  /**
+   * 页脚的链接 HTML。
+   */
+  links: string
+}
+
+/**
+ * 通知信(noticeHtmlOf / noticeTextOf)的入参:一个标题、一段话、一颗按钮。
+ */
+export type NoticeIn = {
+  /**
+   * 站点根地址。
+   */
+  site: string
+
+  /**
+   * 右上角的小字:这是哪一种信。
+   */
+  kicker: string
+
+  /**
+   * 大标题。
+   */
+  head: string
+
+  /**
+   * 标题下的一段话。
+   */
+  text: string
+
+  /**
+   * 按钮上的字。
+   */
+  cta: string
+
+  /**
+   * 按钮的链接。
+   */
+  href: string
+}

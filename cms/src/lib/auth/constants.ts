@@ -522,8 +522,9 @@ export const SETTINGS_BACK_PATH = '/account?sec=settings&email='
 
 /**
  * 确认信标题(中英双语:收信人的界面语未知)。
+ * 2026-11-11 Frank「按建议」:站上的信统一成英文一种语言、套同一个外壳(同 lib/alerts 的提醒信)。
  */
-export const EMAIL_CONFIRM_SUBJECT = 'Offer2PR:确认你的新登录邮箱 / Confirm your new sign-in email'
+export const EMAIL_CONFIRM_SUBJECT = 'Confirm your new sign-in email — Offer2PR'
 
 /**
  * 空参数(查询参数没带、请求体格缺席时的占位)。
@@ -557,19 +558,22 @@ export const ST_BAD_GATEWAY = 502
 
 /**
  * 确认信正文(中英双语;收信人的界面语未知)。
+ * 2026-11-11 改成英文一种语言,套 lib/mail 的通知信外壳(「不是你本人操作可以不理」由外壳页脚统一写)。
  */
-export const EMAIL_BODY_HTML = '<p>点下面的链接,把 Offer2PR 的登录邮箱改成这个邮箱(24 小时内有效)。'
-  + '不是你本人操作的话,不用理会这封信。</p>'
-  + '<p>Click the link below to make this your Offer2PR sign-in email (valid for 24 hours). '
-  + 'If you did not ask for this, you can ignore this email.</p>'
+export const EMAIL_TEXT = 'Select the button below to make this your Offer2PR sign-in email. The link is valid for 24 hours.'
 
 /**
- * 确认链接的开头。
+ * 确认信右上角的小字:这是哪一种信。
  */
-export const EMAIL_LINK_HEAD = '<p><a href="'
+export const EMAIL_KICKER = 'Email confirmation'
 
 /**
- * 确认链接的结尾(链接字)。
+ * 确认信的大标题。
  */
-export const EMAIL_LINK_TAIL = '">确认 / Confirm</a></p>'
+export const EMAIL_HEAD = 'Confirm your new sign-in email'
+
+/**
+ * 确认信的按钮。
+ */
+export const EMAIL_CTA = 'Confirm email'
 

@@ -30,7 +30,7 @@ const PROFILE_IN = {
   unsubUrl: UNSUB,
 }
 const DAILY_IN = {
-  picks: [{ id: 21, title: 'line cook', company: 'Golden Wok', address: 'Ottawa, ON', salary: '$19 an hour' }] as never,
+  picks: [{ id: 21, title: 'line cook', company: 'Golden Wok', city: 'Ottawa', province: 'ON', salary: '$19 an hour' }] as never,
   unsubUrl: UNSUB,
 }
 const SAVED_IN = {
