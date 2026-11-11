@@ -13,7 +13,7 @@ import { cssOf } from '@/components/css'
 import { useLang } from '@/components/i18n'
 import { AskDelModal } from './askdelmodal'
 import { KIND_SAVED, STAGE_ALL } from './constants'
-import { listRowsOf, savedColsOf } from './functions'
+import { listRowsOf, savedColsOf, skipFile } from './functions'
 import { useAskDel, useLazyCompanies, useLazyTitles } from './hooks'
 import { PagedJobList } from './pagedjoblist'
 import type { ListPaneIn } from './types'
@@ -37,7 +37,17 @@ export function SavedPane({ t, l, openApp }: ListPaneIn) {
     return null
   }
   const rows = listRowsOf({
-    kind: KIND_SAVED, ask: a.onAsk, remove: l.remove, filter: STAGE_ALL, items: l.items, t, lang, titles, cos, openApp,
+    kind: KIND_SAVED,
+    ask: a.onAsk,
+    remove: l.remove,
+    filter: STAGE_ALL,
+    items: l.items,
+    t,
+    lang,
+    titles,
+    cos,
+    openApp,
+    view: skipFile,
   })
   return (
     <>

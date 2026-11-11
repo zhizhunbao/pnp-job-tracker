@@ -101,6 +101,16 @@ export type MyJobDbRow = {
   has_cover: boolean | null
 
   /**
+   * 发出那份简历的文件类型(没有是 NULL;收藏那条 SQL 给空串;2026-11-11)。
+   */
+  resume_mime: string | null
+
+  /**
+   * 这一岗有按职位改写的那份 PDF(收藏那条 SQL 给 false;2026-11-11)。
+   */
+  has_tailor: boolean | null
+
+  /**
    * 职位名中文译文(2026-10-10 批 2;版本号对不上当没有)。
    */
   title_zh: string | null
@@ -254,6 +264,16 @@ export type MyJobRow = {
    * 发出时附了求职信(我的求职表上出「求职信」链接的前提;2026-10-10 Frank「两处都改吧」)。
    */
   hasCover: boolean
+
+  /**
+   * 发出那份简历的文件类型(没有 = 空串;我的投递「简历」列判能不能就地预览;2026-11-11)。
+   */
+  resumeMime: string
+
+  /**
+   * 这一岗有按职位改写的那份 PDF(草稿行靠它出「查看」;2026-11-11)。
+   */
+  hasTailor: boolean
 
   /**
    * 职位名中文译文(没有 = 空串;2026-10-10 批 2)。

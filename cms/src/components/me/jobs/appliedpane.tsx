@@ -14,9 +14,10 @@ import { useLang } from '@/components/i18n'
 import { KIND_APPLIED, OPEN_KIND, ST_DRAFT } from './constants'
 import { appliedColsOf, byStageOf, listRowsOf, stagePillsOf } from './functions'
 import { AskDelModal } from './askdelmodal'
-import { useAskDel, useLazyCompanies, useLazyTitles, useRecordExport } from './hooks'
+import { useAskDel, useFileView, useLazyCompanies, useLazyTitles, useRecordExport } from './hooks'
 import { hasSentOf } from './record'
 import { PagedJobList } from './pagedjoblist'
+import { FileViewModal } from './fileviewmodal'
 import { StageBar } from './stagebar'
 import type { ListPaneIn } from './types'
 import css from './jobs.module.css'
@@ -32,6 +33,7 @@ export function AppliedPane({ t, l, openApp }: ListPaneIn) {
   const titles = useLazyTitles({ items: l.items, lang })
   const cos = useLazyCompanies({ items: l.items, lang })
   const a = useAskDel()
+  const f = useFileView()
   const onExport = useRecordExport({ items: l.items, t })
   if (l.failed) {
     return <div className={cssOf(css.note)}>{t('mj.fail')}</div>
@@ -41,7 +43,17 @@ export function AppliedPane({ t, l, openApp }: ListPaneIn) {
   }
   const items = byStageOf({ items: l.items, stage: l.stage })
   const rows = listRowsOf({
-    kind: KIND_APPLIED, ask: a.onAsk, remove: l.remove, filter: l.stage, items, t, lang, titles, cos, openApp,
+    kind: KIND_APPLIED,
+    ask: a.onAsk,
+    remove: l.remove,
+    filter: l.stage,
+    items,
+    t,
+    lang,
+    titles,
+    cos,
+    openApp,
+    view: f.onView,
   })
   return (
     <>
@@ -56,6 +68,7 @@ export function AppliedPane({ t, l, openApp }: ListPaneIn) {
       <PagedJobList key={l.stage} rows={rows} cols={appliedColsOf({ t })} t={t}
         empty={<div className={cssOf(css.note)}>{t('mj.emptyApplied')}</div>} />
       <AskDelModal t={t} a={a} />
+      {f.file != null && <FileViewModal t={t} file={f.file} onClose={f.onClose} />}
     </>
   )
 }

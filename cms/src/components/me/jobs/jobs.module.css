@@ -192,6 +192,26 @@
   gap: 4px;
 }
 
+/*
+ * 手机一条里「简历」「求职信」两颗钮那一排(2026-11-11 我的投递:发出去的那两份随时能看)。
+ */
+.itemFiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/*
+ * 查看附件弹框的正文(预览区撑满;预览不了时那一句与下载钮竖排)。
+ */
+.fv {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
 /* 导出求职记录钮(2026-11-08 清单第 7 条)。 */
 .exportRow {
   display: flex;

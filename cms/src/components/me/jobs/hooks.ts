@@ -17,7 +17,7 @@ import {
   ST_DRAFT,
 } from './constants'
 import {
-  loadProfile, makeAskClose, makeAskOk, makeCoLand, makeFillHide, makeLoadMyJobs,
+  loadProfile, makeAskClose, makeAskOk, makeCoLand, makeFileClose, makeFillHide, makeLoadMyJobs,
   makeRemoveMine, untranslatedCosOf,
   stageDefOf, ymdOf,
 } from './functions'
@@ -25,7 +25,7 @@ import { makeLoadPicks } from './recommend'
 import { downloadRecord, recordCsvOf } from './record'
 import type { RecordRow } from './record'
 import type {
-  AskDel, AskPanel, FillPanel, JobsHookIn, JobsPanel, LazyCompaniesIn, LazyTitlesIn,
+  AskDel, AskPanel, FileView, FileViewPanel, FillPanel, JobsHookIn, JobsPanel, LazyCompaniesIn, LazyTitlesIn,
   MyJobItem, MyJobsHookIn, MyJobsPanel, PfView, PicksFact, PicksHookIn, PicksPanel, TitledItem,
   RecordExportIn,
 } from './types'
@@ -70,6 +70,16 @@ export function useMyJobs(x: MyJobsHookIn): MyJobsPanel {
 export function useAskDel(): AskPanel {
   const [ask, setAsk] = useState<AskDel | null>(null)
   return { ask, onAsk: setAsk, onOk: makeAskOk({ ask, setAsk }), onCancel: makeAskClose(setAsk) }
+}
+
+/**
+ * 查看附件整机(2026-11-11 我的投递「简历」「求职信」两格):开着哪一份、开与关。
+ *
+ * @returns 开着的那一份与两个手柄。
+ */
+export function useFileView(): FileViewPanel {
+  const [file, setFile] = useState<FileView | null>(null)
+  return { file, onView: setFile, onClose: makeFileClose(setFile) }
 }
 
 /**

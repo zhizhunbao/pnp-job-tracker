@@ -23,12 +23,16 @@ import {
   DUE_KEY, JOB_HREF_HEAD, KIND_APPLIED, KIND_SAVED, LANG_EN, LANG_KO, LANG_ZH, MD_FROM,
   OPEN_KIND, PF_ERR_EMPTY, PLACE_SEP, PRIMARY_KIND, STAGES, STAGE_ALL, STAGE_FILTERS,
   METHOD_DELETE, ST_DRAFT, TEXT_NONE, URL_PROFILE,
+  COL_ADDR, COL_COVER, COL_RESUME, FILE_COVER_TAIL, FILE_RESUME_TAIL, MIME_PDF, URL_FILE_HEAD, URL_TAILOR_FILE_HEAD,
   FILL_KEY, FILL_LABEL_FALLBACK, FILL_LABEL_KEYS, FILL_MORE_KEY, FILL_NAME_MAX, FILL_SEP_KEY, COL_MED, COL_VS,
 } from './constants'
+import { AddrCell } from './addrcell'
+import { CoverCell } from './covercell'
 import { HoursCell } from './hourscell'
 import { MedCell } from './medcell'
 import { PayCell } from './paycell'
 import { PlaceCell } from './placecell'
+import { ResumeCell } from './resumecell'
 import { chanNameOf, wageViewOf } from './recommend'
 import { TagsCell } from './tagscell'
 import { TermCell } from './termcell'
@@ -40,7 +44,7 @@ import type {
   MyJobItem, MyJobsRespJson, PfJson, PfLoadIn, PfSeed, PfView, PickRowIn, PickRowsIn, PillClickIn, PlaceDue, PlaceDueIn,
   FillTextIn, StagePill, StagePillsIn, TagItem, TitleSubForIn,
   FillHideIn, AskOkIn, AskSetFn, DelMenuIn, RemoveFn, RemoveMineIn, RowMenuItem,
-  SendDeleteIn,
+  SendDeleteIn, FileBtn, FileBtnIn, FileOpenIn, FileSetFn, FileView,
 } from './types'
 
 /**
@@ -100,6 +104,7 @@ export function listRowsOf(x: CellRowsIn): ListRow[] {
       titles: x.titles,
       cos: x.cos,
       openApp: x.openApp,
+      view: x.view,
     }))
   }
   return out
@@ -149,6 +154,9 @@ export function listRowOf(x: CellRowIn): ListRow {
     deadline: ymdOf(it.validThrough),
     savedOn,
     appliedOn: appliedDateOf(x),
+    address: it.address,
+    resume: fileBtnOf({ row: x, cover: false }),
+    cover: fileBtnOf({ row: x, cover: true }),
     tags,
     cardTags: tags,
     act: actOf(x),
@@ -169,6 +177,72 @@ export function appliedDateOf(x: CellRowIn): string {
     return TEXT_NONE
   }
   return ymdOf(x.item.updatedAt)
+}
+
+/**
+ * 「简历」「求职信」格里的「查看」钮(2026-11-11 Frank「要包含我投递出去的简历 和 介绍信 列,用户可以随时查看」):
+ * 有文件地址才出;简历只有 PDF 能就地预览(草稿行的那份一定是 PDF),求职信一律是 PDF。
+ *
+ * @param x 这一行与要哪一种。
+ * @returns 钮;没有文件给 null。
+ */
+export function fileBtnOf(x: FileBtnIn): FileBtn | null {
+  const src = fileSrcOf(x)
+  if (src === TEXT_NONE) {
+    return null
+  }
+  const it = x.row.item
+  let label = x.row.t('mj.col.resume')
+  let pdf = it.stage === ST_DRAFT || it.resumeMime === MIME_PDF
+  if (x.cover) {
+    label = x.row.t('mj.col.cover')
+    pdf = true
+  }
+  return {
+    text: x.row.t('mj.view'),
+    label,
+    onClick: makeFileOpen({ view: x.row.view, file: { kicker: label, title: it.title, src, pdf } }),
+  }
+}
+
+/**
+ * 附件地址:只有我的投递有。发出去了的行给 /api/apply/file(没附求职信的求职信格给空串);
+ * 草稿行只有按职位改写过的才有(/api/tailor/file,将发出的那份 PDF),没改写过给空串。
+ *
+ * @param x 这一行与要哪一种。
+ * @returns 地址或空串。
+ */
+export function fileSrcOf(x: FileBtnIn): string {
+  const it = x.row.item
+  if (x.row.kind !== KIND_APPLIED) {
+    return TEXT_NONE
+  }
+  let tail = FILE_RESUME_TAIL
+  if (x.cover) {
+    tail = FILE_COVER_TAIL
+  }
+  if (it.stage === ST_DRAFT) {
+    if (it.hasTailor !== true || it.jobId == null) {
+      return TEXT_NONE
+    }
+    return URL_TAILOR_FILE_HEAD + String(it.jobId) + tail
+  }
+  if (x.cover && it.hasCover !== true) {
+    return TEXT_NONE
+  }
+  return URL_FILE_HEAD + String(it.id) + tail
+}
+
+/**
+ * 造「开查看附件弹框」。
+ *
+ * @param x 开弹框的手柄与要看的那一份。
+ * @returns 点击手柄。
+ */
+export function makeFileOpen(x: FileOpenIn): () => void {
+  return function openFile(): void {
+    x.view(x.file)
+  }
 }
 
 /**
@@ -401,6 +475,9 @@ export function pickRowOf(x: PickRowIn): ListRow {
     deadline: ymdOf(it.validThrough),
     savedOn: TEXT_NONE,
     appliedOn: TEXT_NONE,
+    address: TEXT_NONE,
+    resume: null,
+    cover: null,
     tags: [],
     cardTags: [],
     act: { key: ACT_APPLY, text: x.t('mj.apply'), kind: PRIMARY_KIND, onClick: makeOpenApply(it.id), href: TEXT_NONE },
@@ -450,14 +527,26 @@ export function savedColsOf(x: ColsIn): MjCol<ListRow>[] {
 
 /**
  * 网页端「我的投递」的列:职位 / 公司 / 地址 / 薪资 / 工时 / 雇佣期 / 发布日期 / 截止日期 / 状态 / 投递于 / 操作。
+ * 2026-11-11 Frank「我的投递 地点改成地址,然后要包含我投递出去的简历 和 介绍信 列,用户可以随时查看」:
+ * 共用列里的「地点」在这张表换成「地址」(完整地址一行);操作前面加「简历」「求职信」两列,各一颗「查看」。
  *
  * @param x 取词函数。
  * @returns 列。
  */
 export function appliedColsOf(x: ColsIn): MjCol<ListRow>[] {
-  return baseColsOf(x).concat([
+  const cols: MjCol<ListRow>[] = []
+  for (const c of baseColsOf(x)) {
+    if (c.key === COL_PLACE) {
+      cols.push({ key: COL_ADDR, label: x.t('mj.col.addr'), render: AddrCell })
+    } else {
+      cols.push(c)
+    }
+  }
+  return cols.concat([
     { key: COL_STATUS, label: x.t('mj.col.status'), render: TagsCell },
     { key: COL_APPLIED_ON, label: x.t('mj.col.appliedOn'), render: appliedOnOf, nowrap: true },
+    { key: COL_RESUME, label: x.t('mj.col.resume'), render: ResumeCell, nowrap: true },
+    { key: COL_COVER, label: x.t('mj.col.cover'), render: CoverCell, nowrap: true },
     { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true },
   ])
 }
@@ -868,4 +957,26 @@ export function makeAskClose(setAsk: AskSetFn): () => void {
   return function askClose(): void {
     setAsk(null)
   }
+}
+
+/**
+ * 造「关查看附件弹框」。
+ *
+ * @param setFile 改「开着的那份附件」。
+ * @returns 点击手柄。
+ */
+export function makeFileClose(setFile: FileSetFn): () => void {
+  return function closeFile(): void {
+    setFile(null)
+  }
+}
+
+/**
+ * 我的收藏清单给展示行递的空手柄:收藏行没有附件,「查看」钮不出,这只手柄不会被点到。
+ *
+ * @param _file 要看的那一份(不用)。
+ * @returns 无。
+ */
+export function skipFile(_file: FileView): void {
+  return
 }

@@ -42,6 +42,8 @@
 // 2026-11-07(二)Frank「先做 5 条必备」:删除收进行末「⋯」(menu 桶,无障碍名 mj.more),点了先弹确认框 mj.delAsk ——
 //       「一行一颗主钮」的断言照旧,数钮时排除「⋯」(buttons / mainButtons);撤掉的 ⑦ 取消收藏(含失败退回)、⑪ 投递行删除
 //       改走「⋯」→ 删除 → 确认接回。探针:removeOf 投递行打 /api/saved-jobs → ⑪ 红;makeRemoveMine 失败不退回 → ⑦ 退回那条红。
+// 2026-11-11 Frank「我的投递 地点改成地址,然后要包含我投递出去的简历 和 介绍信 列」:④⑤⑥ 改断言地址列、两列「查看」与点开的弹框;
+//       ⑨ 没改写过的草稿行照旧只有「继续」。探针:fileSrcOf 草稿不看 hasTailor → ⑨ 红;appliedColsOf 不换地址列 → ④⑤⑥ 红。
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -191,13 +193,16 @@ describe('我的求职', () => {
     expect(a.tagName).toBe('TR')   // 2026-10-10 批 2:网页端走通用表格
     // 2026-11-07 效果图:投递行上的简历 / 求职信两个链接撤(只读投递框里照有)
     // 2026-11-07:「地址」列改「地点」列 —— 链字「市, 省码」,链址仍按完整地址一行查;完整地址不上屏
+    // 2026-11-11 Frank「我的投递 地点改成地址,然后要包含我投递出去的简历 和 介绍信 列,用户可以随时查看」:
+    //       这张表的「地点」列换回「地址」列(完整地址一行),操作前面加「简历」「求职信」两列,各一颗「查看」就地开弹框
     expect(links(a)).toEqual([
       ['light duty cleaner', '/jobs/101'], ['Clean Co', '/companies/clean-co'],
-      ['Winnipeg, MB', MAP('393 Portage Ave, Winnipeg, MB R3B 3H6')],
+      ['393 Portage Ave, Winnipeg, MB R3B 3H6', MAP('393 Portage Ave, Winnipeg, MB R3B 3H6')],
     ])
-    expect(a.textContent).not.toContain('393 Portage Ave')
-    expect(panelOf(el).textContent).toContain('mj.col.place')
-    expect(panelOf(el).textContent).not.toContain('mj.col.addr')
+    expect(panelOf(el).textContent).toContain('mj.col.addr')
+    expect(panelOf(el).textContent).not.toContain('mj.col.place')
+    expect(panelOf(el).textContent).toContain('mj.col.resume')
+    expect(panelOf(el).textContent).toContain('mj.col.cover')
     expect(a.textContent).toContain('温尼伯')   // 地点灰字「市译名,省译名」(默认中文界面)
     expect(a.textContent).toContain('Full-time')
     expect(a.textContent).toContain('Permanent')
@@ -210,8 +215,18 @@ describe('我的求职', () => {
     expect(b.textContent).toContain('Cook')   // 职位删了:职位名黑字、不成链
     expect(b.textContent).toContain('mj.closed')
     // 2026-11-07 效果图:一行一颗钮 —— 发出去的(连职位删了的)只剩「打开」,「删除」撤
-    expect(buttons(b)).toEqual(['mj.open'])
-    expect(buttons(a)).toEqual(['mj.open'])
+    // 2026-11-11:发出去的行多两颗「查看」(简历、求职信)
+    expect(buttons(b)).toEqual(['mj.view', 'mj.view', 'mj.open'])
+    expect(buttons(a)).toEqual(['mj.view', 'mj.view', 'mj.open'])
+    // 点「简历」那颗:就地开弹框、网址不变;这份不是 PDF(夹具没给类型),框里出一句改下载 + 下载链(发出那份的附件接口)
+    const before = window.location.href
+    await act(async () => {
+      Array.from(a.querySelectorAll('button')).find((x) => x.textContent === 'mj.view')?.click()
+    })
+    expect(window.location.href).toBe(before)
+    expect(document.body.textContent).toContain('rf.pvFail')
+    const dl = Array.from(document.body.querySelectorAll('a')).find((x) => x.textContent === 'rf.download')
+    expect(dl?.getAttribute('href')).toBe('/api/apply/file?id=7&kind=resume')
     await act(async () => {
       Array.from(a.querySelectorAll('button')).find((x) => x.textContent === 'mj.open')?.click()
     })

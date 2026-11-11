@@ -153,6 +153,146 @@ export type MyJobItem = {
    * 库里有投递邮箱(我的收藏:出「投递」钮的前提)。
    */
   hasEmail: boolean
+
+  /**
+   * 发出时附了求职信(我的投递「求职信」格出「查看」的前提;2026-11-11)。
+   */
+  hasCover: boolean
+
+  /**
+   * 发出那份简历的文件类型(没有 = 空串;PDF 才就地预览)。
+   */
+  resumeMime: string
+
+  /**
+   * 这一岗有按职位改写的那份 PDF(草稿行出「查看」的前提)。
+   */
+  hasTailor: boolean
+}
+
+/**
+ * 弹框里看的一份附件(发出去的简历 / 求职信;2026-11-11 Frank「用户可以随时查看」)。
+ */
+export type FileView = {
+  /**
+   * 是哪一种(列名:简历 / 求职信;弹框标题上面那行小字)。
+   */
+  kicker: string
+
+  /**
+   * 哪个职位的(弹框标题)。
+   */
+  title: string
+
+  /**
+   * 文件地址。
+   */
+  src: string
+
+  /**
+   * 是 PDF(能就地预览;不是就出一句改下载)。
+   */
+  pdf: boolean
+}
+
+/**
+ * 开查看附件弹框。
+ */
+export type FileViewFn = (v: FileView) => void
+
+/**
+ * 「简历」「求职信」格里的那颗钮。
+ */
+export type FileBtn = {
+  /**
+   * 表格里的钮面(「查看」)。
+   */
+  text: string
+
+  /**
+   * 手机一条里的钮面(列名:简历 / 求职信)。
+   */
+  label: string
+
+  /**
+   * 点了开弹框。
+   */
+  onClick: () => void
+}
+
+/**
+ * fileBtnOf / fileSrcOf 的入参。
+ */
+export type FileBtnIn = {
+  /**
+   * 这一行与它的清单上下文。
+   */
+  row: CellRowIn
+
+  /**
+   * 要的是求职信(否 = 简历)。
+   */
+  cover: boolean
+}
+
+/**
+ * makeFileOpen 的入参。
+ */
+export type FileOpenIn = {
+  /**
+   * 开弹框。
+   */
+  view: FileViewFn
+
+  /**
+   * 要看的那一份。
+   */
+  file: FileView
+}
+
+/**
+ * 改「开着的那份附件」。
+ */
+export type FileSetFn = (v: FileView | null) => void
+
+/**
+ * 查看附件整机(useFileView 出)。
+ */
+export type FileViewPanel = {
+  /**
+   * 开着的那一份(没开 = null)。
+   */
+  file: FileView | null
+
+  /**
+   * 开弹框。
+   */
+  onView: FileViewFn
+
+  /**
+   * 关弹框。
+   */
+  onClose: () => void
+}
+
+/**
+ * FileViewModal(查看附件弹框)的 props。
+ */
+export type FileViewModalIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 开着的那一份。
+   */
+  file: FileView
+
+  /**
+   * 关弹框。
+   */
+  onClose: () => void
 }
 
 /**
@@ -294,6 +434,11 @@ export type CellRowsIn = {
    * 打开只读投递框。
    */
   openApp: OpenAppFn
+
+  /**
+   * 开查看附件弹框(我的投递的「简历」「求职信」两格;收藏清单给个空手柄)。
+   */
+  view: FileViewFn
 }
 
 /**
@@ -349,6 +494,11 @@ export type CellRowIn = {
    * 打开只读投递框。
    */
   openApp: OpenAppFn
+
+  /**
+   * 开查看附件弹框(我的投递的「简历」「求职信」两格;收藏清单给个空手柄)。
+   */
+  view: FileViewFn
 }
 
 /**
@@ -865,6 +1015,21 @@ export type ListRow = {
    * 投递于(年-月-日;只有发出去的行有)。
    */
   appliedOn: string
+
+  /**
+   * 完整地址一行(我的投递「地址」列;没有 = 空串;2026-11-11)。
+   */
+  address: string
+
+  /**
+   * 发出去的那份简历的「查看」钮(没有 = null:收藏 / 推荐行、还没改写的草稿)。
+   */
+  resume: FileBtn | null
+
+  /**
+   * 发出去的那封求职信的「查看」钮(没有 = null:没附求职信、收藏 / 推荐行)。
+   */
+  cover: FileBtn | null
 
   /**
    * 表格胶囊格(收藏 / 投递 = 状态;推荐原因列 2026-11-09 撤,推荐行给空)。

@@ -153,6 +153,66 @@ export const PRIMARY_KIND = 'primary'
 export const OPEN_KIND = 'secondary'
 
 /**
+ * 我的投递「简历」「求职信」两格里「查看」的钮档(白底描边小钮;2026-11-11)。
+ */
+export const FILE_KIND = 'secondary'
+
+/**
+ * 列身份:地址(2026-11-11 Frank「我的投递 地点改成地址」:完整地址一行)。
+ */
+export const COL_ADDR = 'addr'
+
+/**
+ * 列身份:发出去的那份简历。
+ */
+export const COL_RESUME = 'resume'
+
+/**
+ * 列身份:发出去的那封求职信。
+ */
+export const COL_COVER = 'cover'
+
+/**
+ * 发出去的附件接口头(后接投递行 id 与种类;只给本人、只给发出去了的;同子桶 apps 的 URL_FILE_HEAD)。
+ */
+export const URL_FILE_HEAD = '/api/apply/file?id='
+
+/**
+ * 草稿行的附件接口头(后接职位 id 与种类:按职位改写、将发出的那份 PDF)。
+ */
+export const URL_TAILOR_FILE_HEAD = '/api/tailor/file?job='
+
+/**
+ * 附件种类尾:简历。
+ */
+export const FILE_RESUME_TAIL = '&kind=resume'
+
+/**
+ * 附件种类尾:求职信(PDF)。
+ */
+export const FILE_COVER_TAIL = '&kind=cover'
+
+/**
+ * PDF 的文件类型(这种才能就地预览,别的出一句改下载)。
+ */
+export const MIME_PDF = 'application/pdf'
+
+/**
+ * 查看附件弹框记尺寸的键。
+ */
+export const FV_MODAL_PREF = 'sent_file_pref'
+
+/**
+ * 查看附件弹框默认宽(同「我的简历」预览框)。
+ */
+export const FV_MODAL_W = 760
+
+/**
+ * 查看附件弹框默认高(装得下一页 Letter + 翻页条)。
+ */
+export const FV_MODAL_H = 900
+
+/**
  * 空串(没有链接 / 没有字样)。
  */
 export const TEXT_NONE = ''

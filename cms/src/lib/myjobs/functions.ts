@@ -48,6 +48,8 @@ export function toMyJobRow(r: MyJobDbRow): MyJobRow {
     closed: r.job_status === JOB_CLOSED,
     hasEmail: r.has_email === true,
     hasCover: r.has_cover === true,
+    resumeMime: text(r.resume_mime),
+    hasTailor: r.has_tailor === true,
     titleZh: vtext({ v: r.trans_v, cell: r.title_zh }),
     titleKo: vtext({ v: r.trans_v, cell: r.title_ko }),
     companyZh: text(r.alias_zh),

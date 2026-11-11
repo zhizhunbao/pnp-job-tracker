@@ -3064,7 +3064,7 @@ const MYJOBS_FROM = `s.id, s.job_id, s.title, s.company, s.status, s.created_at,
        j.valid_through,
        j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province,
        j.salary_text, j.salary_annual, j.date_posted, j.status::text AS job_status, c.slug AS company_slug,
-       (COALESCE(j.apply_email, '') <> '') AS has_email, false AS has_cover
+       (COALESCE(j.apply_email, '') <> '') AS has_email, false AS has_cover, '' AS resume_mime, false AS has_tailor
      FROM saved_jobs s LEFT JOIN jobs j ON j.id = s.job_id
      LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
      LEFT JOIN companies c ON c.id = j.company_id`
@@ -3083,6 +3083,8 @@ const MYJOBS_FROM = `s.id, s.job_id, s.title, s.company, s.status, s.created_at,
  * 2026-10-10 批 2:同 MYJOBS_FROM 再带译名、地址、工时、雇佣期、截止日。
  * 2026-10-10 Frank「删吧」(「今日待投 / 智能投递」整条撤):queued 行(后台提前写好、没人碰过的待投)不再列;
  * 用户点开过、已变成 draft 的照常列成「未发出」。库里的 queued 行不删。
+ * 2026-11-11 Frank「要包含我投递出去的简历 和 介绍信 列,用户可以随时查看」:加 resume_mime(发出那份简历的类型,判能不能就地预览)
+ * 与 has_tailor(这一岗有没有按职位改写的那份 PDF,草稿行靠它出「查看」);收藏那份(MYJOBS_FROM)给空串与 false。
  */
 export const MYJOBS_APPLIED = `SELECT a.id, a.job_id, a.job_title AS title, a.company, a.status, a.created_at,
        COALESCE(a.sent_at, a.updated_at) AS updated_at,
@@ -3090,7 +3092,8 @@ export const MYJOBS_APPLIED = `SELECT a.id, a.job_id, a.job_title AS title, a.co
        j.valid_through,
        j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province,
        j.salary_text, j.salary_annual, j.date_posted, j.status::text AS job_status, c.slug AS company_slug,
-       false AS has_email, (COALESCE(a.cover_file, '') <> '') AS has_cover
+       false AS has_email, (COALESCE(a.cover_file, '') <> '') AS has_cover,
+       COALESCE(a.resume_mime, '') AS resume_mime, (a.tailor_pdf_b64 IS NOT NULL) AS has_tailor
      FROM applications a LEFT JOIN jobs j ON j.id = a.job_id
      LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
      LEFT JOIN companies c ON c.id = j.company_id
