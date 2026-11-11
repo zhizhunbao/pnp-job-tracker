@@ -638,7 +638,8 @@ services:
       SOURCE: jdformat
       HEALTHCHECK_PING_JDFORMAT: ${HEALTHCHECK_PING_JDFORMAT:-}
       NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 news / company 同一台盒子同一个变量);空=format 步跳过
-      NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
+      # 整理单独点名模型(2026-11-10 Frank「可以」:30 条实测 qwen3.8:27b 不差于 qwen3.6、快一倍、整个进显存);没设就跟全站的 NEWS_LLM_MODEL
+      NEWS_LLM_MODEL: ${JDFORMAT_LLM_MODEL:-${NEWS_LLM_MODEL:-qwen3.6:latest}}
       JDFORMAT_LIMIT: ${JDFORMAT_LIMIT:-400}      # 每轮上限(盒子约 11 秒一条,400 ≈ 一个 interval)
       TZ: EST5EDT
 
