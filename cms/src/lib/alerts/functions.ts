@@ -15,39 +15,31 @@
 import crypto from 'crypto'
 import { fill } from '../template'
 import { count, firstOf, numOrNull, queryRows, SQL, text } from '../db'
-import { confirmToken, MAIL_ENABLED, sendMail, unsubToken } from '../mail'
+import { confirmToken, MAIL_ENABLED, postMail, unsubToken } from '../mail'
 import { hasProfile, match, normalizeProfile } from '../jobs'
 import { ALERT_MATCH_LEVEL } from '../quota'
 import {
-  ALERT_MIN_GAP_MS, BADGE_CLOSED, BADGE_OPEN, DIMS_FALLBACK, DIMS_LIST_SEP, DIMS_NATION, DIMS_PROVS, DIMS_SEP,
-  DIM_JOIN, DIM_PAIRS, DRAW_ABOVE, DRAW_BELOW, DRAW_P, DRAW_WINDOW_MS, DRY_ON, EMAIL_SHELL, ET_ZONE, FIELD_NONE,
-  HI_LINE, HTML_SEP, ISO_DATE_LEN, JOB_PATH, K_DIV, LOCALE_NONE, LOOKBACK_MS, L_EN, L_KO, L_ZH, MATCH_TOP,
-  NOC_RE, OPEN_BOARD, PAIR_KEY_SEP, PREVIEW_WEEKLY,
-  PROFILE_HEAD_DIM, PROFILE_HEAD_P, PROFILE_HEAD_STYLE_NONE, PROFILE_SHELL, PROV_CODE_LEN, PROV_COND, PROV_COND_NONE,
-  QUIET_END_DEF, QUIET_START_DEF,
-  SAL_K, SAL_NONE, SAVED_LIMIT, SAVED_SHOW, SCAN_LIMIT, SITE, ST_OPEN, SUBJ_MATCH, SUBJ_SAVED, SUBJ_WK, TABLE_JOBS,
-  COL_SAVED_JOBS, COL_USERS, ET_LOCALE, HOUR_NUMERIC, K_COUNTS, K_PREVIEW, LEVEL_HIGH,
-  LEVEL_MID, SEP_LOC,
-  TITLE_NONE, TR_JOB, TR_PROFILE, TR_WEEKLY, UNSUB_MSG_DONE, UNSUB_MSG_FAIL, UNSUB_MSG_INVALID, UNSUB_PAGE,
-  US_DONE, US_FAIL, US_INVALID,
-  UNSUB_PREVIEW, UNSUB_SAVED, UNSUB_URL, USERS_WEEKLY_OPT, WEEKLY_CAP,
-  WEEKLY_NEW_NONE, WEEKLY_NEW_P, WEEKLY_SHELL, WEEK_MS, WK_CTA, WK_FOOT, WK_HEAD, WK_SETTINGS, WK_UNSUB,
-  CONFIRM_HTML, CONFIRM_MSG_DONE, CONFIRM_MSG_INVALID, CONFIRM_SUBJ, CONFIRM_URL, DAILY_CTA, DAILY_GAP_MS, DAILY_HEAD,
-  DAILY_MAIL_MAX, DAILY_SHELL, DIGEST_USERS_MAX, E_MAIL, FREQ_DAILY, FREQ_OFF, FREQ_WEEKLY, PREVIEW_DAILY, PUT_PENDING,
-  PUT_SAVED, SUBJ_DAILY, TR_PICK, USER_ID_RE,
+  confirmMailHtml, confirmMailText, dailyHtml, dailyText, emailHtml, emailText, weeklyHtml, weeklyProfileHtml,
+  weeklyProfileText, weeklyText,
+} from './body'
+import {
+  ALERT_MIN_GAP_MS, COL_SAVED_JOBS, COL_USERS, CONFIRM_MSG_DONE, CONFIRM_MSG_INVALID, CONFIRM_SUBJ, CONFIRM_URL,
+  DAILY_GAP_MS, DAILY_MAIL_MAX, DIGEST_USERS_MAX, DIMS_FALLBACK, DIMS_NATION, DIMS_PROVS, DIMS_SEP, DRAW_ABOVE,
+  DRAW_BELOW, DRAW_WINDOW_MS, DRY_ON, ET_LOCALE, ET_ZONE, E_MAIL, FIELD_NONE, FREQ_DAILY, FREQ_OFF, FREQ_WEEKLY,
+  HDR_LIST_UNSUB, HDR_LIST_UNSUB_POST, HOUR_NUMERIC, ISO_DATE_LEN, K_COUNTS, K_PREVIEW, LEVEL_HIGH, LEVEL_MID,
+  LIST_UNSUB_POST_VALUE, LIST_UNSUB_VALUE, LOOKBACK_MS, MATCH_TOP, NOC_RE, PAIR_KEY_SEP, PREVIEW_DAILY,
+  PREVIEW_WEEKLY, PROV_CODE_LEN, PROV_COND, PROV_COND_NONE, PUT_PENDING, PUT_SAVED, QUIET_END_DEF, QUIET_START_DEF,
+  SAVED_LIMIT, SAVED_SHOW, SCAN_LIMIT, SEP_LOC, SITE, ST_OPEN, SUBJ_DAILY, SUBJ_MATCH, SUBJ_SAVED, SUBJ_WK,
+  TITLE_NONE, UNSUB_MSG_DONE, UNSUB_MSG_FAIL, UNSUB_MSG_INVALID, UNSUB_PAGE, UNSUB_PREVIEW, UNSUB_URL,
+  USERS_WEEKLY_OPT, USER_ID_RE, US_DONE, US_FAIL, US_INVALID, WEEKLY_CAP, WEEK_MS,
 } from './constants'
 import type {
-  AlertCounts, AlertJobRow, EngineJob, MaybeWeeklyStatRow, SampleDbRow, DimsOfFn, MailLang, MailUserId, QuietInfo, RunIn, RunOut, SampleRow,
-  DimsOfMakeIn, DrawCat, EmailHtmlIn, MailJobList, MaybeMoney, MaybeParam, NocNameRow, ProfileHtmlIn,
-  ProvBroadPair, ProvCodes, SavedJobStatusRow, TargetFirstFn, UnsubIn,
-  UnsubOut, UnsubState,
-  WeeklyHtmlIn, WeeklyItem, WeeklyStat,
-  ConfirmIn, ConfirmOut, DailyHtmlIn, DailyRoundIn, DailyRoundOut, DigestPrefs, DigestPrefsDbRow, DigestUser, DigestUserDbRow,
-  DigestPrefsOut, DigestUsersIn, DigestUsersOut, PrefsLoadIn, PrefsPutIn, PrefsPutOut,
+  AlertCounts, AlertJobRow, ConfirmIn, ConfirmOut, DailyRoundIn, DailyRoundOut, DigestPrefs, DigestPrefsDbRow,
+  DigestPrefsOut, DigestUser, DigestUserDbRow, DigestUsersIn, DigestUsersOut, DimsOfFn, DimsOfMakeIn, DrawCat,
+  EngineJob, MailHeaders, MailUserId, MaybeParam, MaybeWeeklyStatRow, NocNameRow, PrefsLoadIn, PrefsPutIn,
+  PrefsPutOut, ProvBroadPair, ProvCodes, QuietInfo, RunIn, RunOut, SampleDbRow, SampleRow, SavedJobStatusRow,
+  SendAlertIn, SendAlertOut, TargetFirstFn, UnsubIn, UnsubOut, UnsubState, WeeklyItem, WeeklyStat,
 } from './types'
-
-
-
 
 /**
  * 静默时段判定(多伦多时间;窗口可用 ALERT_QUIET_START/END 覆盖)。
@@ -152,7 +144,11 @@ export async function runAlerts(input: RunIn): RunOut {
       }
       continue
     }
-    const ok = await sendMail({ to: u.email, subject: fill({ tpl: SUBJ_MATCH, params: { n: top.length } }), html: emailHtml({ unsubUrl: unsubUrlOf(u.id), rows: top, drawLines: drawLines }) })
+    const matchIn = { unsubUrl: unsubUrlOf(u.id), rows: top, drawLines: drawLines }
+    const ok = await sendAlert({
+      to: u.email, subject: fill({ tpl: SUBJ_MATCH, params: { n: top.length } }), html: emailHtml(matchIn), text: emailText(matchIn),
+      unsubUrl: matchIn.unsubUrl,
+    })
     if (ok) {
       out.matchEmails++
       await payload.update({ collection: COL_USERS, id: u.id, overrideAccess: true, data: { lastAlertAt: now } })
@@ -236,28 +232,19 @@ export async function runAlerts(input: RunIn): RunOut {
       const nameRes = await input.db.query(SQL.ALERT_NOC_TITLE, [nocs])
       const nameRows = nameRes.rows as NocNameRow[]
       const dimsOf = makeDimsOf({ nameRows: nameRows, nocs: nocs, provs: provs })
-      let uLoc = LOCALE_NONE
-      if (typeof u.locale === 'string') {
-        uLoc = u.locale
-      }
-      let subjKey: MailLang = L_ZH
-      if (uLoc === L_EN || uLoc === L_KO) {
-        subjKey = uLoc
-      }
-      const subject = fill({ tpl: SUBJ_WK[subjKey], params: { n: st.newN, e: st.eligN } })
+      const subject = fill({ tpl: SUBJ_WK, params: { n: st.newN } })
       if (input.preview === PREVIEW_WEEKLY) {
-        let lang = uLoc
-        if (input.previewLang !== '') {
-          lang = input.previewLang
-        }
-        const html = weeklyProfileHtml({ rows: top3, stat: st, dimsOf: dimsOf, unsubUrl: fill({ tpl: UNSUB_PREVIEW, params: { site: SITE } }), locale: lang })
+        const html = weeklyProfileHtml({ rows: top3, stat: st, dimsOf: dimsOf, unsubUrl: fill({ tpl: UNSUB_PREVIEW, params: { site: SITE } }) })
         return { kind: K_PREVIEW, html: html }
       }
       if (input.dry) {
         out.weeklyEmails++
         continue
       }
-      const ok = await sendMail({ to: u.email, subject: subject, html: weeklyProfileHtml({ rows: top3, stat: st, dimsOf: dimsOf, unsubUrl: unsubUrlOf(u.id), locale: uLoc }) })
+      const profileIn = { rows: top3, stat: st, dimsOf: dimsOf, unsubUrl: unsubUrlOf(u.id) }
+      const ok = await sendAlert({
+        to: u.email, subject: subject, html: weeklyProfileHtml(profileIn), text: weeklyProfileText(profileIn), unsubUrl: profileIn.unsubUrl,
+      })
       if (ok) {
         out.weeklyEmails++
         await payload.update({ collection: COL_USERS, id: u.id, overrideAccess: true, data: { lastWeeklyAt: now } })
@@ -337,24 +324,13 @@ export async function runAlerts(input: RunIn): RunOut {
         openN++
       }
     }
-    const dimPieces: string[] = []
-    for (const r of pairs.slice(0, DIM_PAIRS)) {
-      dimPieces.push(r.province + DIM_JOIN + r.broad)
-    }
-    let savedLoc = LOCALE_NONE
-    if (typeof u.locale === 'string') {
-      savedLoc = u.locale
-    }
-    let savedKey: MailLang = L_ZH
-    if (savedLoc === L_EN || savedLoc === L_KO) {
-      savedKey = savedLoc
-    }
-    const subject = fill({ tpl: SUBJ_SAVED[savedKey], params: { total: sj.docs.length, open: openN, closed: items.length - openN } })
+    const subject = fill({ tpl: SUBJ_SAVED, params: { total: sj.docs.length, open: openN, closed: items.length - openN } })
     if (input.dry) {
       out.weeklyEmails++
       continue
     }
-    const ok = await sendMail({ to: u.email, subject: subject, html: weeklyHtml({ items: items, newN: newN, dims: dimPieces.join(DIMS_LIST_SEP), unsubUrl: unsubUrlOf(u.id) }) })
+    const savedIn = { items: items, newN: newN, unsubUrl: unsubUrlOf(u.id) }
+    const ok = await sendAlert({ to: u.email, subject: subject, html: weeklyHtml(savedIn), text: weeklyText(savedIn), unsubUrl: savedIn.unsubUrl })
     if (ok) {
       out.weeklyEmails++
       await payload.update({ collection: COL_USERS, id: u.id, overrideAccess: true, data: { lastWeeklyAt: now } })
@@ -367,136 +343,31 @@ export async function runAlerts(input: RunIn): RunOut {
 }
 
 /**
- * A/B 信整封 HTML。
+ * 发一封提醒类的信(2026-11-11):带纯文本版正文与一键退订邮件头;确认信不走这里。
  *
- * @param input 岗与抽选段。
- * @returns 整封 HTML。
+ * @param x 收件人、标题、两版正文与退订链接。
+ * @returns 发出去了 true。
  */
-export function emailHtml(input: EmailHtmlIn): string {
-  const draws = input.drawLines.map(drawP).join(HTML_SEP)
-  return fill({ tpl: EMAIL_SHELL, params: { draws: draws, hi: HI_LINE, table: jobsTable(input.rows), site: SITE, open: OPEN_BOARD, unsub: UNSUB_SAVED, unsubUrl: input.unsubUrl } })
-}
-
-/**
- * A/B 信的岗位表(链接落本站详情页 —— 直跳 Job Bank 原帖=流量白送)。
- *
- * @param rows 命中的岗。
- * @returns 表格 HTML。
- */
-export function jobsTable(rows: MailJobList): string {
-  const trs: string[] = []
-  for (const j of rows) {
-    let href = SITE
-    if (j.id != null) {
-      href = SITE + JOB_PATH + j.id
-    }
-    let title = FIELD_NONE
-    if (j.title != null) {
-      title = j.title
-    }
-    let company = FIELD_NONE
-    if (j.company_name != null) {
-      company = j.company_name
-    }
-    const where = [j.city, j.province].filter(Boolean).join(SEP_LOC)
-    let salary = FIELD_NONE
-    if (j.salary_text != null) {
-      salary = j.salary_text
-    }
-    trs.push(fill({ tpl: TR_JOB, params: { href: href, title: title, company: company, where: where, salary: salary } }))
-  }
-  return fill({ tpl: TABLE_JOBS, params: { rows: trs.join(HTML_SEP) } })
-}
-
-/**
- * 一条抽选段落(map 传具名函数)。
- *
- * @param line 段文案。
- * @returns 段 HTML。
- */
-function drawP(line: string): string {
-  return fill({ tpl: DRAW_P, params: { line: line } })
-}
-
-/**
- * C 收藏版周报整封 HTML(zh+en 双语一封)。
- *
- * @param input 收藏条目、当周新增数、方向描述、退订链接。
- * @returns 整封 HTML。
- */
-export function weeklyHtml(input: WeeklyHtmlIn): string {
-  const trs: string[] = []
-  for (const r of input.items) {
-    let status = BADGE_CLOSED
-    if (r.open) {
-      status = BADGE_OPEN
-    }
-    trs.push(fill({ tpl: TR_WEEKLY, params: { title: r.title, company: r.company, status: status } }))
-  }
-  let newp = WEEKLY_NEW_NONE
-  if (input.newN > 0) {
-    newp = fill({ tpl: WEEKLY_NEW_P, params: { dims: input.dims, n: input.newN, site: SITE } })
-  }
-  return fill({
-    tpl: WEEKLY_SHELL,
-    params: { rows: trs.join(HTML_SEP), newp: newp, site: SITE, unsubUrl: input.unsubUrl },
+async function sendAlert(x: SendAlertIn): SendAlertOut {
+  const r = await postMail({
+    to: x.to, subject: x.subject, html: x.html, text: x.text, from: FIELD_NONE, replyTo: FIELD_NONE,
+    attachments: [], idemKey: FIELD_NONE, headers: alertHeadersOf(x.unsubUrl),
   })
+  return r.ok
 }
 
 /**
- * C2 档案版周报整封 HTML(头行按 locale 出单语;空 locale 回 zh+en 双语)。
+ * 一键退订的两个邮件头(知识库 ui-ux/gmail/email-sender-guidelines.md 的 One-Click Unsubscribe):
+ * 收件人在邮箱界面点退订,邮箱往这个网址发 POST(alertsUnsubPostRoute 接)。
  *
- * @param input 样例岗、当周事实数、按语取范围、退订链接、用户 locale。
- * @returns 整封 HTML。
+ * @param unsubUrl 退订链接。
+ * @returns 两个邮件头。
  */
-export function weeklyProfileHtml(input: ProfileHtmlIn): string {
-  const trs: string[] = []
-  for (const r of input.rows) {
-    trs.push(fill({ tpl: TR_PROFILE, params: { title: r.title, company: r.company, sal: r.sal } }))
+export function alertHeadersOf(unsubUrl: string): MailHeaders {
+  return {
+    [HDR_LIST_UNSUB]: fill({ tpl: LIST_UNSUB_VALUE, params: { url: unsubUrl } }),
+    [HDR_LIST_UNSUB_POST]: LIST_UNSUB_POST_VALUE,
   }
-  let langs: MailLang[] = [L_ZH, L_EN]
-  if (input.locale === L_EN) {
-    langs = [L_EN]
-  } else if (input.locale === L_KO) {
-    langs = [L_KO]
-  } else if (input.locale === L_ZH) {
-    langs = [L_ZH]
-  }
-  const heads: string[] = []
-  for (const [i, L] of langs.entries()) {
-    let style = PROFILE_HEAD_STYLE_NONE
-    if (i > 0) {
-      style = PROFILE_HEAD_DIM
-    }
-    const head = fill({ tpl: WK_HEAD[L], params: { d: input.dimsOf(L), n: input.stat.newN, e: input.stat.eligN, m: kSal(input.stat.medSal) } })
-    heads.push(fill({ tpl: PROFILE_HEAD_P, params: { style: style, head: head } }))
-  }
-  let F: MailLang = L_EN
-  const langsFirst = langs[0]
-  if (langsFirst != null) {
-    F = langsFirst
-  }
-  return fill({
-    tpl: PROFILE_SHELL,
-    params: {
-      heads: heads.join(HTML_SEP), rows: trs.join(HTML_SEP), site: SITE,
-      cta: fill({ tpl: WK_CTA[F], params: { n: input.stat.newN } }),
-      foot: WK_FOOT[F], unsub: WK_UNSUB[F], settings: WK_SETTINGS[F], unsubUrl: input.unsubUrl,
-    },
-  })
-}
-
-/**
- * 中位年薪的显示(null 出「—」,不编数)。
- *
- * @param n 年薪;没有 null。
- * @returns 千位串或占位。
- */
-function kSal(n: MaybeMoney): string {
-  if (n == null) {
-    return SAL_NONE
-  }
-  return fill({ tpl: SAL_K, params: { k: Math.round(n / K_DIV) } })
 }
 
 /**
@@ -553,27 +424,22 @@ function makeTargetFirst(targets: ProvCodes): TargetFirstFn {
  * @returns 按语取范围函数。
  */
 export function makeDimsOf(input: DimsOfMakeIn): DimsOfFn {
-  return function dimsOf(L: MailLang): string {
+  return function dimsOf(): string {
     const names: string[] = []
     for (const r of input.nameRows) {
-      let name = FIELD_NONE
-      if (L === L_ZH) {
-        name = r.zh || r.en
-      } else {
-        name = r.en || r.zh
-      }
+      const name = r.en || r.zh
       if (name !== '') {
         names.push(name)
       }
     }
-    let occ = names.join(DIMS_SEP[L])
+    let occ = names.join(DIMS_SEP)
     if (occ === '') {
-      occ = fill({ tpl: DIMS_FALLBACK[L], params: { n: input.nocs.length } })
+      occ = fill({ tpl: DIMS_FALLBACK, params: { n: input.nocs.length } })
     }
     if (input.provs.length > 0) {
-      return fill({ tpl: DIMS_PROVS[L], params: { occ: occ, provs: input.provs.join(DIMS_SEP[L]) } })
+      return fill({ tpl: DIMS_PROVS, params: { occ: occ, provs: input.provs.join(DIMS_SEP) } })
     }
-    return fill({ tpl: DIMS_NATION[L], params: { occ: occ } })
+    return fill({ tpl: DIMS_NATION, params: { occ: occ } })
   }
 }
 
@@ -643,19 +509,18 @@ async function dailyRound(x: DailyRoundIn): DailyRoundOut {
     if (picks.length === 0) {
       continue
     }
-    let lang = mailLangOf(u.locale)
     if (preview) {
-      if (x.run.previewLang !== '') {
-        lang = mailLangOf(x.run.previewLang)
-      }
-      return dailyHtml({ picks, lang, unsubUrl: fill({ tpl: UNSUB_PREVIEW, params: { site: SITE } }) })
+      return dailyHtml({ picks, unsubUrl: fill({ tpl: UNSUB_PREVIEW, params: { site: SITE } }) })
     }
     if (x.run.dry) {
       x.out.dailyEmails++
       continue
     }
-    const html = dailyHtml({ picks, lang, unsubUrl: unsubUrlOf(u.userId) })
-    const ok = await sendMail({ to: u.email, subject: fill({ tpl: SUBJ_DAILY[lang], params: { n: picks.length } }), html })
+    const dailyIn = { picks, unsubUrl: unsubUrlOf(u.userId) }
+    const ok = await sendAlert({
+      to: u.email, subject: fill({ tpl: SUBJ_DAILY, params: { n: picks.length } }), html: dailyHtml(dailyIn), text: dailyText(dailyIn),
+      unsubUrl: dailyIn.unsubUrl,
+    })
     if (ok) {
       x.out.dailyEmails++
       await x.run.db.query(SQL.DIGEST_DAILY_MARK, [u.userId])
@@ -677,42 +542,6 @@ function isDailyTooSoon(last: string): boolean {
     return false
   }
   return Date.now() - new Date(last).getTime() < DAILY_GAP_MS
-}
-
-/**
- * 界面语 → 邮件语言(认不得的按中文,同周报)。
- *
- * @param locale 界面语。
- * @returns 邮件语言。
- */
-function mailLangOf(locale: string): MailLang {
-  if (locale === L_EN || locale === L_KO) {
-    return locale
-  }
-  return L_ZH
-}
-
-/**
- * 每日推送整封 HTML。
- *
- * @param x 推荐、语言与退订链接。
- * @returns 整封 HTML。
- */
-export function dailyHtml(x: DailyHtmlIn): string {
-  const trs: string[] = []
-  for (const p of x.picks) {
-    trs.push(fill({
-      tpl: TR_PICK,
-      params: { href: SITE + JOB_PATH + p.id, title: p.title, company: p.company, address: p.address, salary: p.salary },
-    }))
-  }
-  return fill({
-    tpl: DAILY_SHELL,
-    params: {
-      head: fill({ tpl: DAILY_HEAD[x.lang], params: { n: x.picks.length } }), rows: trs.join(HTML_SEP), site: SITE,
-      cta: DAILY_CTA[x.lang], unsub: WK_UNSUB[x.lang], unsubUrl: x.unsubUrl,
-    },
-  })
 }
 
 /**
@@ -748,8 +577,11 @@ export async function saveDigestPrefs(x: PrefsPutIn): PrefsPutOut {
     return PUT_SAVED
   }
   const url = fill({ tpl: CONFIRM_URL, params: { site: SITE, u: x.userId, t: confirmToken({ userId: x.userId, email: x.email }) } })
-  const sent = await sendMail({ to: x.email, subject: CONFIRM_SUBJ, html: fill({ tpl: CONFIRM_HTML, params: { url } }) })
-  if (sent === false) {
+  const sent = await postMail({
+    to: x.email, subject: CONFIRM_SUBJ, html: confirmMailHtml(url), text: confirmMailText(url), from: FIELD_NONE, replyTo: FIELD_NONE,
+    attachments: [], idemKey: FIELD_NONE, headers: {},
+  })
+  if (sent.ok === false) {
     await x.db.query(SQL.DIGEST_PREFS_PUT, [x.userId, x.freq, keep])
     return E_MAIL
   }
@@ -836,23 +668,20 @@ export function toEngineJob(j: AlertJobRow): EngineJob {
 /**
  * C2 统计行(SQL.alertOccStats 的唯一一行)→ 当周事实数。
  * 🔴 medSal 必须保 null:官方可空的数值折 0 = 替官方编数(词汇表铁律)。
+ * 2026-11-11:信里只写新职位数,可提名数与中位年薪两格删掉(连同查询里的两列)。
  *
  * @param r 库里的一行;查空给 null 时产全零(newN=0 会被「没内容不硬发」拦住)。
  * @returns 事实数。
  */
 export function toWeeklyStat(r: MaybeWeeklyStatRow): WeeklyStat {
   if (r == null) {
-    return { newN: 0, eligN: 0, medSal: null }
+    return { newN: 0 }
   }
   let newN = 0
   if (r.n != null) {
     newN = r.n
   }
-  let eligN = 0
-  if (r.elig != null) {
-    eligN = r.elig
-  }
-  return { newN: newN, eligN: eligN, medSal: numOrNull(r.med) }
+  return { newN: newN }
 }
 
 /**
@@ -862,7 +691,10 @@ export function toWeeklyStat(r: MaybeWeeklyStatRow): WeeklyStat {
  * @returns 样例岗。
  */
 export function toSampleRow(r: SampleDbRow): SampleRow {
-  return { title: text(r.title), company: text(r.company), sal: text(r.sal) }
+  return {
+    id: numOrNull(r.id), title: text(r.title), company: text(r.company), sal: text(r.sal),
+    where: [text(r.city), text(r.province)].filter(Boolean).join(SEP_LOC), pnp: r.pnp_eligible === true,
+  }
 }
 
 /**
@@ -880,7 +712,7 @@ export function toDigestUser(r: DigestUserDbRow): DigestUser {
   if (r.last_daily_at != null) {
     lastDailyAt = new Date(r.last_daily_at).toISOString()
   }
-  return { userId: count(r.user_id), email: text(r.email), locale: text(r.locale), pro, lastDailyAt, hasOcc: r.has_occ === true }
+  return { userId: count(r.user_id), email: text(r.email), pro, lastDailyAt, hasOcc: r.has_occ === true }
 }
 
 /**

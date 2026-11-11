@@ -15,12 +15,13 @@ import { loadMatchDims } from '../jobs/server'
 import { loadPicks, picksViewOf } from '../myjobs/server'
 import { getUserOrNull } from '../quota/server'
 import {
-  BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE_LC, HDR_SEED_TOKEN, MIME_HTML, TEXT_UNAUTHORIZED, UNAUTHORIZED,
+  BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE_LC, HDR_SEED_TOKEN, MIME_HTML, MIME_TEXT, SERVER_ERROR, TEXT_UNAUTHORIZED,
+  UNAUTHORIZED,
 } from '../http'
 import { fill } from '../template'
 import {
-  CACHE_PRIVATE, EMAIL_MAX_LEN, EMAIL_RE, E_AUTH, E_BODY, E_EMAIL, FREQS, K_PREVIEW, PARAM_NONE, P_DRY, P_FORCE, P_LANG, P_PREVIEW,
-  P_TOKEN, P_USER, QUIET_RANGE, SWITCH_ON,
+  CACHE_PRIVATE, EMAIL_MAX_LEN, EMAIL_RE, E_AUTH, E_BODY, E_EMAIL, FREQS, K_PREVIEW, PARAM_NONE, P_DRY, P_FORCE, P_PREVIEW,
+  P_TOKEN, P_USER, QUIET_RANGE, SWITCH_ON, UNSUB_POST_DONE, UNSUB_POST_FAIL, UNSUB_POST_INVALID, US_DONE, US_FAIL,
 } from './constants'
 import {
   confirmApply, confirmPageHtml, isDryRun, loadDigestPrefs, quietInfo, runAlerts, saveDigestPrefs, unsubApply, unsubPageHtml,
@@ -118,17 +119,12 @@ export async function alertsRunRoute(req: Request): Promise<Response> {
   }
   const payload = await getPayload({ config: await config })
   const pool = await getDb()
-  let previewLang = PARAM_NONE
-  const langParam = sp.get(P_LANG)
-  if (langParam != null) {
-    previewLang = langParam
-  }
   const loadPicksFor: LoadPicksFn = async function loadPicksFor(x: PicksForIn): Promise<MailPick[]> {
     const rows = await loadPicks({ db: pool, userId: x.userId, prov: PARAM_NONE })
     return picksViewOf({ rows, pro: x.pro, batch: 0 }).picks
   }
   const result = await runAlerts({
-    db: pool, dry: dry, preview: preview, previewLang: previewLang,
+    db: pool, dry: dry, preview: preview,
     dims: await loadMatchDims(pool), payload: payload, loadPicks: loadPicksFor,
   })
   if (result.kind === K_PREVIEW) {
@@ -138,13 +134,13 @@ export async function alertsRunRoute(req: Request): Promise<Response> {
 }
 
 /**
- * GET /api/alerts/unsub：周报一键退订。判定与落库在 functions 的 unsubApply，
+ * GET /api/alerts/unsub：周报一键退订(信里的退订链接;邮箱界面的一键退订走下面的 POST)。判定与落库在 functions 的 unsubApply，
  * 页面文案在 constants；这里只取参、拼 text/html 响应。
  *
  * @param req 退订请求（u=用户 id，t=token）。
  * @returns 双语确认页。
  */
-export async function alertsUnsubRoute(req: Request): Promise<Response> {
+export async function alertsUnsubGetRoute(req: Request): Promise<Response> {
   const sp = new URL(req.url).searchParams
   let u = PARAM_NONE
   const uParam = sp.get(P_USER)
@@ -159,4 +155,35 @@ export async function alertsUnsubRoute(req: Request): Promise<Response> {
   const payload = await getPayload({ config: await config })
   const state = await unsubApply({ payload: payload, db: await getDb(), u: u, t: t })
   return new Response(unsubPageHtml(state), { headers: { [HDR_CONTENT_TYPE_LC]: MIME_HTML } })
+}
+
+/**
+ * POST /api/alerts/unsub:邮箱界面的一键退订(2026-11-11;提醒类的信带 List-Unsubscribe 与 List-Unsubscribe-Post 两个头,
+ * 收件人点了,邮箱往同一个网址发 POST)。判定与落库同 GET,走 unsubApply;只回一行字,不给页面
+ * (知识库 ui-ux/gmail/email-sender-guidelines-faq.md 的 Landing Page:一键退订打开落地页不合 RFC 8058)。
+ *
+ * @param req 退订请求（u=用户 id，t=token，都在网址上）。
+ * @returns 200 已退订;400 链接不对;500 写库失败。
+ */
+export async function alertsUnsubPostRoute(req: Request): Promise<Response> {
+  const sp = new URL(req.url).searchParams
+  let u = PARAM_NONE
+  const uParam = sp.get(P_USER)
+  if (uParam != null) {
+    u = uParam
+  }
+  let t = PARAM_NONE
+  const tParam = sp.get(P_TOKEN)
+  if (tParam != null) {
+    t = tParam
+  }
+  const payload = await getPayload({ config: await config })
+  const state = await unsubApply({ payload: payload, db: await getDb(), u: u, t: t })
+  if (state === US_DONE) {
+    return new Response(UNSUB_POST_DONE, { headers: { [HDR_CONTENT_TYPE_LC]: MIME_TEXT } })
+  }
+  if (state === US_FAIL) {
+    return new Response(UNSUB_POST_FAIL, { status: SERVER_ERROR, headers: { [HDR_CONTENT_TYPE_LC]: MIME_TEXT } })
+  }
+  return new Response(UNSUB_POST_INVALID, { status: BAD_REQUEST, headers: { [HDR_CONTENT_TYPE_LC]: MIME_TEXT } })
 }

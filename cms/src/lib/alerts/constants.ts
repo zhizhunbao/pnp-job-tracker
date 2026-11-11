@@ -43,11 +43,6 @@ export const WEEKLY_CAP = 200
 export const SAVED_SHOW = 20
 
 /**
- * 收藏画像的 (省, 大类) 对最多进标题几组。
- */
-export const DIM_PAIRS = 3
-
-/**
  * 一轮提醒里每次 payload.find 的扫描上限(用户、saved-search、免费用户三处同一口径):
  * 一轮跑不完剩下的靠游标语义下一轮自然续,不在单轮里无限翻页把整批拖超时。
  */
@@ -63,11 +58,6 @@ export const SAVED_LIMIT = 200
  * 库里 date_posted 是 date 列,比较基准要日不要时分秒。
  */
 export const ISO_DATE_LEN = 10
-
-/**
- * 中位年薪折成「多少 K」的除数(1 K = 1000 加元),配 `SAL_K` 模板用。
- */
-export const K_DIV = 1000
 
 /**
  * 档案 NOC 码的合法形状(五位数字)。
@@ -101,11 +91,6 @@ export const ET_ZONE = 'America/Toronto'
 export const SUBJ_MATCH = '{n} new jobs match your immigration path — Offer2PR'
 
 /**
- * 信首句。
- */
-export const HI_LINE = 'New jobs relevant to you (click a title for details):'
-
-/**
  * 抽选段:你的 CRS 高于分数线。
  */
 export const DRAW_ABOVE = 'New draw: "{c}" cutoff {dr} — your CRS {crs} is {d} above'
@@ -116,265 +101,50 @@ export const DRAW_ABOVE = 'New draw: "{c}" cutoff {dr} — your CRS {crs} is {d}
 export const DRAW_BELOW = 'New draw: "{c}" cutoff {dr} — your CRS {crs} is {d} below'
 
 /**
- * 尾部「去职位板」链接文案。
+ * 一键退订邮件头的头名(2026-11-11;知识库 ui-ux/gmail/email-sender-guidelines.md 的 One-Click Unsubscribe:
+ * 两个头一起带,收件人点了,发件方在那个 HTTPS 网址上收到一个 POST)。只有提醒类的信带,确认信不带。
  */
-export const OPEN_BOARD = 'Open job board'
+export const HDR_LIST_UNSUB = 'List-Unsubscribe'
 
 /**
- * A/B 信的退订说明(saved search 在账户页删除即停)。
- * 2026-11-08 清单第 16 条:账户页那一节早撤了,信里改成真的退订链接,这里是链接上的字。
+ * 一键退订邮件头的值模板:尖括号里一个 HTTPS 网址(不带 mailto;知识库 gmail FAQ 的 Mailto Link:mailto 不算一键)。
  */
-export const UNSUB_SAVED = 'Unsubscribe'
+export const LIST_UNSUB_VALUE = '<{url}>'
 
 /**
- * 岗位表一行(链接落本站详情页 —— 2026-08-03 Frank:直跳 Job Bank 原帖=流量白送)。
+ * 一键退订的第二个头名。
  */
-export const TR_JOB = `<tr>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee"><a href="{href}" style="color:#2563eb;text-decoration:none">{title}</a></td>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee">{company}</td>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee">{where}</td>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee">{salary}</td>
-  </tr>`
+export const HDR_LIST_UNSUB_POST = 'List-Unsubscribe-Post'
 
 /**
- * 岗位表外壳。
+ * 一键退订第二个头的固定值。
  */
-export const TABLE_JOBS = '<table style="border-collapse:collapse;font-size:13px;font-family:system-ui,sans-serif">{rows}</table>'
+export const LIST_UNSUB_POST_VALUE = 'List-Unsubscribe=One-Click'
 
 /**
- * 抽选段落(黄底)。
+ * 一键退订 POST 的应答:已退订(只回一行字,不给落地页 —— 知识库 gmail FAQ 的 Landing Page)。
  */
-export const DRAW_P = '<p style="background:#fef3c7;padding:8px 12px;border-radius:8px">{line}</p>'
+export const UNSUB_POST_DONE = 'unsubscribed'
 
 /**
- * A/B 信外壳。
+ * 一键退订 POST 的应答:链接不对。
  */
-export const EMAIL_SHELL = `<div style="font-family:system-ui,sans-serif;color:#1f2937;font-size:14px">
-    <p>🍁 <strong>Offer2PR</strong></p>
-    {draws}
-    <p>{hi}</p>{table}
-    <p style="margin-top:14px"><a href="{site}" style="color:#2563eb">{open}</a></p>
-    <p style="color:#9ca3af;font-size:12px"><a href="{unsubUrl}" style="color:#9ca3af">{unsub}</a></p></div>`
+export const UNSUB_POST_INVALID = 'invalid link'
 
 /**
- * C 收藏版周报:一行(标题/公司/状态)。
+ * 一键退订 POST 的应答:写库失败。
  */
-export const TR_WEEKLY = `<tr>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee">{title}</td>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee;color:#6b7280">{company}</td>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee">{status}</td>
-  </tr>`
+export const UNSUB_POST_FAIL = 'failed'
 
 /**
- * 在招徽标。
+ * C2 档案版周报标题。
  */
-export const BADGE_OPEN = '<span style="color:#15803d">在招 open</span>'
+export const SUBJ_WK = '{n} new jobs for you this week — Offer2PR'
 
 /**
- * 已下架徽标。
+ * C 收藏版周报标题(Open / Closed 与正文标签用词一致)。
  */
-export const BADGE_CLOSED = '<span style="color:#9ca3af">已下架 closed</span>'
-
-/**
- * C 收藏版周报外壳(zh+en 双语一封:免费用户多无档案语言偏好,不猜)。
- */
-export const WEEKLY_SHELL = `<div style="font-family:system-ui,sans-serif;color:#1f2937;font-size:14px">
-    <p>🍁 <strong>Offer2PR</strong> · 每周求职看板摘要 / Weekly saved-jobs digest</p>
-    <table style="border-collapse:collapse;font-size:13px">{rows}</table>
-    {newp}
-    <p><a href="{site}/account" style="color:#2563eb">建档案,看每岗与你的匹配度 / Build a profile for per-job match</a></p>
-    <p style="color:#9ca3af;font-size:12px">状态以官方原帖为准 · Status per official posting ·
-      <a href="{unsubUrl}" style="color:#9ca3af">退订本摘要 Unsubscribe</a> · <a href="{site}/account" style="color:#9ca3af">账户设置 Settings</a></p></div>`
-
-/**
- * C 收藏版周报「本周新增」段(newN>0 才出)。
- */
-export const WEEKLY_NEW_P = '<p>你的方向({dims})近 7 天新增 <strong>{n}</strong> 岗 / {n} new jobs this week in your saved directions — <a href="{site}" style="color:#2563eb">看新岗 View →</a></p>'
-
-/**
- * C 收藏版周报「本周新增」段的**不出**态:newN=0 时这一格填空串,
- * 整段从信里消失 —— 不写「本周新增 0 岗」,那是把「没有新岗」这件事
- * 再念一遍给用户听,收件人只会更想退订。
- */
-export const WEEKLY_NEW_NONE = ''
-
-/**
- * C2 档案版周报(E5-07):一行(标题/公司/薪资)。
- */
-export const TR_PROFILE = `<tr>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee">{title}</td>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee;color:#6b7280">{company}</td>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee;color:#15803d">{sal}</td>
-  </tr>`
-
-/**
- * C2 档案版周报的头行三语模板(一个字都不编:数字全来自库内当周真实新增)。
- */
-export const WK_HEAD = {
-  /**
-   * 中文头行。
-   */
-  zh: '{d} 本周新增 <strong>{n}</strong> 个岗,其中 <strong>{e}</strong> 个可提名,中位年薪 <strong>{m}</strong>',
-
-  /**
-   * 英文头行。
-   */
-  en: '<strong>{n}</strong> new jobs this week in {d} · <strong>{e}</strong> PNP-eligible · median <strong>{m}</strong>',
-
-  /**
-   * 韩文头行。
-   */
-  ko: '{d} 이번 주 신규 <strong>{n}</strong>건 · 지명 가능 <strong>{e}</strong>건 · 중위 연봉 <strong>{m}</strong>',
-} as const
-
-/**
- * C2 档案版周报的 CTA 三语模板。
- */
-export const WK_CTA = {
-  /**
-   * 中文 CTA。
-   */
-  zh: '看这 {n} 个新岗',
-
-  /**
-   * 英文 CTA。
-   */
-  en: 'View these {n} jobs',
-
-  /**
-   * 韩文 CTA。
-   */
-  ko: '신규 {n}건 보기',
-} as const
-
-/**
- * C2 档案版周报的脚注三语。
- */
-export const WK_FOOT = {
-  /**
-   * 中文脚注。
-   */
-  zh: '数据来自官方公开发布,状态以原帖为准',
-
-  /**
-   * 英文脚注。
-   */
-  en: 'Official public data; status per the original posting',
-
-  /**
-   * 韩文脚注。
-   */
-  ko: '공식 공개 데이터이며 상태는 원문 공고 기준입니다',
-} as const
-
-/**
- * 退订词三语。
- */
-export const WK_UNSUB = {
-  /**
-   * 中文。
-   */
-  zh: '退订本摘要',
-
-  /**
-   * 英文。
-   */
-  en: 'Unsubscribe',
-
-  /**
-   * 韩文。
-   */
-  ko: '수신 거부',
-} as const
-
-/**
- * 账户设置词三语。
- */
-export const WK_SETTINGS = {
-  /**
-   * 中文。
-   */
-  zh: '账户设置',
-
-  /**
-   * 英文。
-   */
-  en: 'Settings',
-
-  /**
-   * 韩文。
-   */
-  ko: '계정 설정',
-} as const
-
-/**
- * C2 档案版周报外壳(头行按 locale 出单语;空 locale 回 zh+en —— 不猜语言,
- * 也不让人读半篇看不懂的字)。
- */
-export const PROFILE_SHELL = `<div style="font-family:system-ui,sans-serif;color:#1f2937;font-size:14px">
-    <p>🍁 <strong>Offer2PR</strong></p>
-    {heads}
-    <table style="border-collapse:collapse;font-size:13px">{rows}</table>
-    <p style="margin-top:14px"><a href="{site}" style="color:#2563eb">{cta}</a></p>
-    <p style="color:#9ca3af;font-size:12px">{foot} ·
-      <a href="{unsubUrl}" style="color:#9ca3af">{unsub}</a> · <a href="{site}/account" style="color:#9ca3af">{settings}</a></p></div>`
-
-/**
- * C2 头行段落(第二语言压灰上提)。
- */
-export const PROFILE_HEAD_P = '<p style="{style}">{head}</p>'
-
-/**
- * C2 头行第二语言的压灰样式。
- */
-export const PROFILE_HEAD_DIM = 'color:#6b7280;margin-top:-6px'
-
-/**
- * C2 头行**第一门**语言的样式位:留空 = 不加任何额外样式,走 `PROFILE_HEAD_P`
- * 模板自带的常规字色。第二门起才换成 `PROFILE_HEAD_DIM` 压灰 ——
- * 一封信里两门语言并排,主次要靠字色分,不能两行一样重。
- */
-export const PROFILE_HEAD_STYLE_NONE = ''
-
-/**
- * C2 档案版周报标题三 locale 模板(空/未知 locale 用 zh)。
- */
-export const SUBJ_WK = {
-  /**
-   * 中文标题。
-   */
-  zh: '你的方向本周新增 {n} 个岗({e} 个可提名) — Offer2PR',
-
-  /**
-   * 英文标题。
-   */
-  en: '{n} new jobs in your direction ({e} PNP-eligible) — Offer2PR',
-
-  /**
-   * 韩文标题。
-   */
-  ko: '이번 주 신규 {n}건(지명 가능 {e}건) — Offer2PR',
-} as const
-
-/**
- * C 收藏版周报标题模板(中文站语;收藏数/在招/下架)。
- */
-export const SUBJ_SAVED = {
-  /**
-   * 中文标题（原串原样；空/未知 locale 用它 —— 与 C2 的 SUBJ_WK 同口径）。
-   */
-  zh: '你收藏的 {total} 个岗:{open} 在招 · {closed} 已下架 — Offer2PR',
-
-  /**
-   * 英文标题（open/closed 与正文徽标术语一致）。
-   */
-  en: 'Your {total} saved jobs: {open} open · {closed} closed — Offer2PR',
-
-  /**
-   * 韩文标题。
-   */
-  ko: '저장한 공고 {total}건: 모집 중 {open}건 · 마감 {closed}건 — Offer2PR',
-} as const
+export const SUBJ_SAVED = 'Your {total} saved jobs: {open} open, {closed} closed — Offer2PR'
 
 /**
  * 退订链接模板。
@@ -387,16 +157,6 @@ export const UNSUB_URL = '{site}/api/alerts/unsub?u={u}&t={t}'
 export const UNSUB_PREVIEW = '{site}/api/alerts/unsub?u=0&t=preview'
 
 /**
- * 中位年薪的占位(没有数据不编数)。
- */
-export const SAL_NONE = '—'
-
-/**
- * 中位年薪的千位表示模板。
- */
-export const SAL_K = '${k}K'
-
-/**
  * 收藏条目缺标题时的占位。
  */
 export const TITLE_NONE = '—'
@@ -405,11 +165,6 @@ export const TITLE_NONE = '—'
  * 岗状态:在招。
  */
 export const ST_OPEN = 'open'
-
-/**
- * 详情页路径段(邮件链接 = SITE + 它 + id)。
- */
-export const JOB_PATH = '/jobs/'
 
 /**
  * C2 档案版的省筛选片段(有目标省时拼进 SQL 模板参数位)。
@@ -429,16 +184,6 @@ export const PROV_COND_NONE = ''
 export const PAIR_KEY_SEP = '|'
 
 /**
- * 收藏画像对在标题里的省·类连接符。
- */
-export const DIM_JOIN = '\u00b7'
-
-/**
- * 多个画像对之间的分隔。
- */
-export const DIMS_LIST_SEP = ' / '
-
-/**
  * ?preview 的周报档取值。
  */
 export const PREVIEW_WEEKLY = 'weekly'
@@ -449,99 +194,24 @@ export const PREVIEW_WEEKLY = 'weekly'
 export const DRY_ON = '1'
 
 /**
- * 邮件语言码:中文。
+ * 范围描述里职业名、省码之间的分隔。
  */
-export const L_ZH = 'zh'
+export const DIMS_SEP = ', '
 
 /**
- * 邮件语言码:英文。
+ * 职业名查不到时的范围描述。
  */
-export const L_EN = 'en'
+export const DIMS_FALLBACK = '{n} occupations'
 
 /**
- * 邮件语言码:韩文。
+ * 范围描述:职业加省份。
  */
-export const L_KO = 'ko'
+export const DIMS_PROVS = '{occ} ({provs})'
 
 /**
- * 职业名列表的分隔(按邮件语言)。
+ * 范围描述:职业,全国。
  */
-export const DIMS_SEP = {
-  /**
-   * 中文用顿号。
-   */
-  zh: '\u3001',
-
-  /**
-   * 英文用逗号。
-   */
-  en: ', ',
-
-  /**
-   * 韩文同英文。
-   */
-  ko: ', ',
-} as const
-
-/**
- * 职业名一个都没有时的兜底(码数说话)。
- */
-export const DIMS_FALLBACK = {
-  /**
-   * 中文。
-   */
-  zh: '{n} \u4e2a\u804c\u4e1a',
-
-  /**
-   * 英文。
-   */
-  en: '{n} occupations',
-
-  /**
-   * 韩文(沿用英文口径 —— 与老实现一致)。
-   */
-  ko: '{n} occupations',
-} as const
-
-/**
- * 带目标省的范围描述。
- */
-export const DIMS_PROVS = {
-  /**
-   * 中文。
-   */
-  zh: '{provs} \u7684{occ}',
-
-  /**
-   * 英文。
-   */
-  en: '{occ} ({provs})',
-
-  /**
-   * 韩文(沿用英文口径 —— 与老实现一致)。
-   */
-  ko: '{occ} ({provs})',
-} as const
-
-/**
- * 不限省(全国)的范围描述。
- */
-export const DIMS_NATION = {
-  /**
-   * 中文。
-   */
-  zh: '{occ}\uff08\u5168\u56fd\uff09',
-
-  /**
-   * 英文。
-   */
-  en: '{occ} (Canada-wide)',
-
-  /**
-   * 韩文。
-   */
-  ko: '{occ}\uff08\uc804\uad6d\uff09',
-} as const
+export const DIMS_NATION = '{occ} (Canada-wide)'
 
 /**
  * A/B 信的最小发信间隔（2026-08-23 Frank「邮件提醒发得也太频繁了」：
@@ -561,11 +231,6 @@ export const P_DRY = 'dry'
  * ?preview 参数名。
  */
 export const P_PREVIEW = 'preview'
-
-/**
- * ?lang 参数名(preview 语言覆盖)。
- */
-export const P_LANG = 'lang'
 
 /**
  * ?force 参数名(无视静默窗口,走查用)。
@@ -598,24 +263,24 @@ export const P_TOKEN = 't'
 export const USERS_WEEKLY_OPT = 'users'
 
 /**
- * 退订确认页外壳(双语一页)。
+ * 退订与确认结果页的外壳。
  */
-export const UNSUB_PAGE = '<!doctype html><meta charset="utf-8"><body style="font-family:system-ui,sans-serif;color:#1f2937;max-width:480px;margin:80px auto;text-align:center"><p style="font-size:28px">🍁</p>{body}</body>'
+export const UNSUB_PAGE = '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Offer2PR</title><body style="font-family:system-ui,sans-serif;color:#1f2937;max-width:480px;margin:80px auto;padding:0 16px;text-align:center"><p style="font-size:20px;font-weight:700">Offer2PR</p>{body}</body></html>'
 
 /**
  * 退订页三态:链接无效。
  */
-export const UNSUB_MSG_INVALID = '<p>链接无效。<br/>Invalid link.</p>'
+export const UNSUB_MSG_INVALID = '<p>This link is not valid.</p>'
 
 /**
  * 退订页三态:已退订。
  */
-export const UNSUB_MSG_DONE = '<p><strong>已退订新岗提醒。</strong><br/>You have been unsubscribed from job alerts.</p><p style="font-size:13px;color:#9ca3af">可在账户页随时重新开启 / Re-enable anytime on your account page.</p>'
+export const UNSUB_MSG_DONE = '<p><strong>You have been unsubscribed from job alerts.</strong></p><p style="font-size:13px;color:#6b7280">You can turn them back on anytime on your account page.</p>'
 
 /**
  * 退订页三态:操作失败。
  */
-export const UNSUB_MSG_FAIL = '<p>操作失败,请稍后再试。<br/>Something went wrong, please try again later.</p>'
+export const UNSUB_MSG_FAIL = '<p>Something went wrong. Please try again later.</p>'
 
 /**
  * runAlerts 产物的 kind：计数。
@@ -684,21 +349,6 @@ export const SEP_LOC = ', '
  * 那两个是明说「这项没有」,这个是整格不出现(公司名缺了就不占一行,不摆个横线在那儿)。
  */
 export const FIELD_NONE = ''
-
-/**
- * 用户没设界面语言时的 locale 值。它不是错,是**大多数账号的常态**(注册流程不强制选语言),
- * 所以拿到空串一律回落 `L_ZH`,不当异常报;`SUBJ_WK` / `WK_HEAD` 这些三语表的取值全靠它兜底。
- */
-export const LOCALE_NONE = ''
-
-/**
- * 拼 HTML 片段时 `join` 的分隔符:一个字都不插。
- * 被 join 的每一片都是 `fill()` 出来的**完整块级标签**(`<tr>` / `<p>`),
- * 首尾相接就已经是最终正文;塞任何分隔符都会落在两个兄弟标签**之间**,
- * 那个位置的字符不是标记而是裸文本,会跟着正文一起渲染出来。
- * 用在 `emailHtml` 的抽选行、`jobsTable` 与 `weeklyHtml` 的表行、`weeklyProfileHtml` 的头行与表行。
- */
-export const HTML_SEP = ''
 
 /**
  * 查询参数没带时的值:`searchParams.get()` 取不到返回 null,统一收成空串再往下走
@@ -818,105 +468,21 @@ export const PUT_PENDING = 'pending'
 export const CONFIRM_URL = '{site}/api/alerts/confirm?u={u}&t={t}'
 
 /**
- * 确认信标题(三语一行;收信人这时还没选语言,照退订页双语的老规矩)。
+ * 确认信标题。
  */
-export const CONFIRM_SUBJ = '确认收件邮箱 / Confirm your email — Offer2PR'
+export const CONFIRM_SUBJ = 'Confirm your email — Offer2PR'
 
 /**
- * 确认信正文。
+ * 确认页:已确认。
  */
-export const CONFIRM_HTML = `<div style="font-family:system-ui,sans-serif;color:#1f2937;font-size:14px">
-    <p>🍁 <strong>Offer2PR</strong></p>
-    <p>点下面的链接,新岗推送就发到这个邮箱。<br/>Click the link below to receive job alerts at this address.</p>
-    <p><a href="{url}" style="color:#2563eb">确认 / Confirm →</a></p>
-    <p style="color:#9ca3af;font-size:12px">不是你本人操作的,忽略这封信即可。/ If this wasn't you, ignore this email.</p></div>`
+export const CONFIRM_MSG_DONE = '<p><strong>Your email is confirmed.</strong></p><p><a href="{site}/account" style="color:#2563eb">Back to my account</a></p>'
 
 /**
- * 确认页:换上了。
+ * 确认页:链接无效。
  */
-export const CONFIRM_MSG_DONE = '<p><strong>收件邮箱已确认。</strong><br/>Your email is confirmed.</p><p><a href="{site}/account" style="color:#2563eb">回到我的 / Back to my account →</a></p>'
+export const CONFIRM_MSG_INVALID = '<p>This link is not valid or has expired.</p>'
 
 /**
- * 确认页:链接无效或过期。
+ * 每日推送标题。
  */
-export const CONFIRM_MSG_INVALID = '<p>链接无效或已过期。<br/>This link is invalid or has expired.</p>'
-
-/**
- * 每日推送:一行(职位名链到本站职位页 + 公司 + 地点一行 + 薪资)。
- */
-export const TR_PICK = `<tr>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee"><a href="{href}" style="color:#2563eb;text-decoration:none">{title}</a></td>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee;color:#6b7280">{company}</td>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee;color:#6b7280">{address}</td>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee;color:#15803d">{salary}</td>
-  </tr>`
-
-/**
- * 每日推送外壳。
- */
-export const DAILY_SHELL = `<div style="font-family:system-ui,sans-serif;color:#1f2937;font-size:14px">
-    <p>🍁 <strong>Offer2PR</strong></p>
-    <p>{head}</p>
-    <table style="border-collapse:collapse;font-size:13px">{rows}</table>
-    <p style="margin-top:14px"><a href="{site}/account" style="color:#2563eb">{cta}</a></p>
-    <p style="color:#9ca3af;font-size:12px"><a href="{unsubUrl}" style="color:#9ca3af">{unsub}</a></p></div>`
-
-/**
- * 每日推送头行三语。
- */
-export const DAILY_HEAD = {
-  /**
-   * 中文。
-   */
-  zh: '今日推荐 {n} 个岗',
-
-  /**
-   * 英文。
-   */
-  en: "Today's picks: {n} jobs",
-
-  /**
-   * 韩文。
-   */
-  ko: '오늘의 추천 {n}건',
-} as const
-
-/**
- * 每日推送 CTA 三语。
- */
-export const DAILY_CTA = {
-  /**
-   * 中文。
-   */
-  zh: '去投递',
-
-  /**
-   * 英文。
-   */
-  en: 'Apply now',
-
-  /**
-   * 韩文。
-   */
-  ko: '지원하러 가기',
-} as const
-
-/**
- * 每日推送标题三语。
- */
-export const SUBJ_DAILY = {
-  /**
-   * 中文。
-   */
-  zh: '今日推荐 {n} 个岗 — Offer2PR',
-
-  /**
-   * 英文。
-   */
-  en: "Today's picks: {n} jobs — Offer2PR",
-
-  /**
-   * 韩文。
-   */
-  ko: '오늘의 추천 {n}건 — Offer2PR',
-} as const
+export const SUBJ_DAILY = "Today's picks: {n} jobs — Offer2PR"

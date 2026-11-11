@@ -1686,12 +1686,12 @@ export const ALERT_JOBS = `SELECT j.id, j.title, j.city, j.province, j.salary_te
 
 /**
  * 提醒邮件里的职业事实数(量/可提名/中位)。$1=起始日,$2=码数组,a1=省筛选片段。
+ * 2026-11-11:信里只写新职位数,可提名数与中位年薪两列删掉。
  *
  * @param a1 省筛选片段(全国时空串)。
  * @returns 职业事实数 SELECT 语句。
  */
-export const alertOccStats = (a1: string) => `SELECT count(*)::int n, count(*) FILTER (WHERE j.pnp_eligible)::int elig,
-                percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) med
+export const alertOccStats = (a1: string) => `SELECT count(*)::int n
          FROM jobs j WHERE j.status = 'open' AND j.date_posted >= $1 AND j.noc = ANY($2)${a1}`
 
 /**
@@ -1700,7 +1700,8 @@ export const alertOccStats = (a1: string) => `SELECT count(*)::int n, count(*) F
  * @param a1 省筛选片段(全国时空串)。
  * @returns 样例岗 SELECT 语句。
  */
-export const alertSampleJobs = (a1: string) => `SELECT j.title, COALESCE(c.name,'') company, COALESCE(j.salary_text,'') sal
+export const alertSampleJobs = (a1: string) => `SELECT j.id, j.title, COALESCE(c.name,'') company, COALESCE(j.salary_text,'') sal,
+                j.city, j.province, j.pnp_eligible
          FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
          WHERE j.status = 'open' AND j.date_posted >= $1 AND j.noc = ANY($2)${a1}
          ORDER BY j.salary_annual DESC NULLS LAST LIMIT 3`

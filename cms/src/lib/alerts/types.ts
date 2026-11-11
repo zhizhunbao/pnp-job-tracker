@@ -90,9 +90,24 @@ export type AlertJobRow = {
  */
 export type SampleRow = {
   /**
+   * 职位 id(信里的链接落本站详情页);没有 null。
+   */
+  id: number | null
+
+  /**
    * 职位名。
    */
   title: string
+
+  /**
+   * 地点「市, 省码」;都没有 = 空串。
+   */
+  where: string
+
+  /**
+   * 是不是可提名(只决定这一行挂不挂小标签)。
+   */
+  pnp: boolean
 
   /**
    * 公司名。
@@ -113,16 +128,6 @@ export type WeeklyStat = {
    * 本周新增岗数。
    */
   newN: number
-
-  /**
-   * 其中可提名岗数。
-   */
-  eligN: number
-
-  /**
-   * 中位年薪;库里没有是 null(不编数)。
-   */
-  medSal: number | null
 }
 
 /**
@@ -146,51 +151,9 @@ export type WeeklyItem = {
 }
 
 /**
- * 邮件语言键(周报三语;A/B 信恒英文)。
+ * 「取范围描述」的函数形状(职业名加省范围,英文)。
  */
-export type MailLang = 'zh' | 'en' | 'ko'
-
-/**
- * 「按邮件语言取范围描述”的函数形状(职业名与省范围按邮件语言取 —— 英文/韩文邮件里
- * 塞中文职业名,与 #216 是同一类漏)。
- */
-export type DimsOfFn = (lang: MailLang) => string
-
-/**
- * 邮件展示用的岗位行（A 轮的 AlertJobRow 宽度兼容它 ——
- * 拼信只读这六格）。
- */
-export type MailJobRow = {
-  /**
-   * 岗 id（详情页链接；可空防御老行）。
-   */
-  id: number | null
-
-  /**
-   * 职位名。
-   */
-  title: string | null
-
-  /**
-   * 公司名。
-   */
-  company_name: string | null
-
-  /**
-   * 城市。
-   */
-  city: string | null
-
-  /**
-   * 省码。
-   */
-  province: string | null
-
-  /**
-   * 薪资原文。
-   */
-  salary_text: string | null
-}
+export type DimsOfFn = () => string
 
 /**
  * `runAlerts` 的入参。
@@ -210,11 +173,6 @@ export type RunIn = {
    * ?preview=weekly:只渲染第一封档案版周报的 HTML 返回,不发信不写库(走查用)。
    */
   preview: string
-
-  /**
-   * preview 时的语言覆盖(?lang=;空串=按用户 locale)。
-   */
-  previewLang: string
 
   /**
    * 匹配维度表(路由 loadMatchDims 预载注入)。
@@ -495,7 +453,6 @@ export type MatchJob = {
  */
 export type EngineJob = MatchJob
 
-
 /**
  * 退订 token 的主体(payload 主键,数字或串)。
  */
@@ -535,81 +492,6 @@ export type UnsubIn = {
    * 链接里的 token（原料）。
    */
   t: string
-}
-
-/**
- * `emailHtml` 的入参。
- */
-export type EmailHtmlIn = {
-  /**
-   * 退订链接(2026-11-08 清单第 16 条)。
-   */
-  unsubUrl: string
-
-  /**
-   * 命中的岗。
-   */
-  rows: MailJobRow[]
-
-  /**
-   * 抽选段文案（可空数组）。
-   */
-  drawLines: string[]
-}
-
-/**
- * `weeklyHtml` 的入参。
- */
-export type WeeklyHtmlIn = {
-  /**
-   * 收藏条目。
-   */
-  items: WeeklyItem[]
-
-  /**
-   * 当周新增数。
-   */
-  newN: number
-
-  /**
-   * 方向描述（省·大类对串）。
-   */
-  dims: string
-
-  /**
-   * 退订链接。
-   */
-  unsubUrl: string
-}
-
-/**
- * `weeklyProfileHtml` 的入参。
- */
-export type ProfileHtmlIn = {
-  /**
-   * 样例岗三条。
-   */
-  rows: SampleRow[]
-
-  /**
-   * 当周事实数。
-   */
-  stat: WeeklyStat
-
-  /**
-   * 按邮件语言取范围描述。
-   */
-  dimsOf: DimsOfFn
-
-  /**
-   * 退订链接。
-   */
-  unsubUrl: string
-
-  /**
-   * 用户 locale（空串=双语）。
-   */
-  locale: string
 }
 
 /**
@@ -655,16 +537,6 @@ export type WeeklyStatRow = {
    * 新增数。
    */
   n: number | null
-
-  /**
-   * 可提名数。
-   */
-  elig: number | null
-
-  /**
-   * 中位年薪（pg 可能按字符串交回）。
-   */
-  med: string | number | null
 }
 
 /**
@@ -677,9 +549,29 @@ export type MaybeWeeklyStatRow = WeeklyStatRow | null
  */
 export type SampleDbRow = {
   /**
+   * 职位 id。
+   */
+  id: number | string | null
+
+  /**
    * 职位名。
    */
   title: string | null
+
+  /**
+   * 城市。
+   */
+  city: string | null
+
+  /**
+   * 省码。
+   */
+  province: string | null
+
+  /**
+   * 是不是可提名。
+   */
+  pnp_eligible: boolean | null
 
   /**
    * 公司名。
@@ -691,16 +583,6 @@ export type SampleDbRow = {
    */
   sal: string | null
 }
-
-/**
- * 年薪或没有（kSal 的入参；不编数）。
- */
-export type MaybeMoney = number | null
-
-/**
- * 邮件展示行的复数（jobsTable/emailHtml 共用）。
- */
-export type MailJobList = MailJobRow[]
 
 /**
  * 当日新抽选的一条（dims.eeCategories 里本域读的三格）。
@@ -847,11 +729,6 @@ export type DigestUserDbRow = {
   email: string | null
 
   /**
-   * 界面语。
-   */
-  locale: string | null
-
-  /**
    * Pro 到期日。
    */
   pro_until: Date | string | null
@@ -880,11 +757,6 @@ export type DigestUser = {
    * 收件邮箱(没有 = 空串)。
    */
   email: string
-
-  /**
-   * 界面语(没有 = 空串)。
-   */
-  locale: string
 
   /**
    * 是不是 Pro。
@@ -936,26 +808,6 @@ export type DailyRoundIn = {
  * 每日推送那一轮的返回:preview 时是那封 HTML,否则空串。
  */
 export type DailyRoundOut = Promise<string>
-
-/**
- * 每日推送整封 HTML(dailyHtml)的入参。
- */
-export type DailyHtmlIn = {
-  /**
-   * 推荐。
-   */
-  picks: MailPick[]
-
-  /**
-   * 邮件语言。
-   */
-  lang: MailLang
-
-  /**
-   * 退订链接。
-   */
-  unsubUrl: string
-}
 
 /**
  * SQL.DIGEST_PREFS_ONE 的一行。
@@ -1106,3 +958,43 @@ export type ConfirmIn = {
  * 点确认链接的结果:done 换上了 / invalid 链接不对或过期。
  */
 export type ConfirmOut = Promise<string>
+
+/**
+ * 发一封提醒类的信(sendAlert)的入参。
+ */
+export type SendAlertIn = {
+  /**
+   * 收件地址。
+   */
+  to: string
+
+  /**
+   * 标题。
+   */
+  subject: string
+
+  /**
+   * 正文 HTML。
+   */
+  html: string
+
+  /**
+   * 纯文本版正文。
+   */
+  text: string
+
+  /**
+   * 退订链接(同时写进一键退订邮件头)。
+   */
+  unsubUrl: string
+}
+
+/**
+ * 发一封提醒类的信的结果:发出去了 true。
+ */
+export type SendAlertOut = Promise<boolean>
+
+/**
+ * 邮件头(头名 → 值)。
+ */
+export type MailHeaders = Record<string, string>

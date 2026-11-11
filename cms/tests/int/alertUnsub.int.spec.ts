@@ -6,7 +6,7 @@
  */
 import { describe, expect, it, vi } from 'vitest'
 
-import { EMAIL_SHELL, UNSUB_SAVED } from '@/lib/alerts/constants'
+import { MAIL_LINKS_ALERT, MAIL_REASON_ALERT } from '@/lib/alerts/body/constants'
 import { SQL } from '@/lib/db'
 import type { Db } from '@/lib/db'
 
@@ -55,7 +55,8 @@ describe('退订', () => {
 
 describe('匹配信', () => {
   it('金标:底部是真的退订链接,不让人去账户页找', () => {
-    expect(EMAIL_SHELL).toContain('<a href="{unsubUrl}"')
-    expect(UNSUB_SAVED).toBe('Unsubscribe')
+    expect(MAIL_LINKS_ALERT).toContain('<a href="{unsubUrl}"')
+    expect(MAIL_LINKS_ALERT).toContain('>Unsubscribe</a>')
+    expect(MAIL_REASON_ALERT).toContain('You are receiving this email because')
   })
 })

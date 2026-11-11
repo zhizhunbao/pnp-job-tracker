@@ -1,5 +1,5 @@
 // 「我的求职」新岗推送设置(2026-10-10 批 2,16b / 16d;lib/alerts 的 saveDigestPrefs / confirmApply / toDigestPrefs)。
-// 连接是桩(记下每条 SQL 与参数),发信 sendMail 打桩,不碰生产库、不真发信。
+// 连接是桩(记下每条 SQL 与参数),发信 postMail 打桩(2026-11-11 确认信带纯文本版,改走 postMail),不碰生产库、不真发信。
 // 性质:① 存成账户邮箱 = 直接生效、收件邮箱列写 NULL;存成已确认的那个 = 直接生效、原样留着;
 //       ② 换成新邮箱:先给新邮箱发确认信(信里的链接带 HMAC token),发出去了才记成待确认、收件邮箱不动;没发出去回 mail、频率照存、邮箱不动;
 //       ③ 确认链接:用户 id 非数字 / 没有待确认 / token 对不上 → invalid,且不写库;对得上 → 换上,done;
@@ -16,9 +16,9 @@ vi.mock('@/lib/mail', async (orig) => {
   const real = await orig<typeof import('@/lib/mail')>()
   return {
     ...real,
-    sendMail: async (x: { to: string, html: string }) => {
+    postMail: async (x: { to: string, html: string }) => {
       sent.push({ to: x.to, html: x.html })
-      return mailOk
+      return { ok: mailOk, id: '', why: '' }
     },
   }
 })
