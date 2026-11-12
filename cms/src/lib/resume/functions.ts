@@ -21,6 +21,7 @@ import {
   FILE_NAME_NONE, MIME_DOCX, MIME_PDF, P_ID, PDF_MAGIC, TIME_NONE, E_NO_RESUME, E_PARSE, E_SCAN, EXTRACT_TEXT_MIN, ONE_SPACE,
   PREFILL_MAJORS_MAX, PREFILL_NONE, PREFILL_SIM_MIN, TITLES_N_MAX, WS_ALL_RE,
   PREFILL_CRED_LEN, PREFILL_EDU_MAX, PREFILL_SCHOOL_LEN, PREFILL_YEAR_LEN, PREFILL_YEAR_RE,
+  PREFILL_EDU_KINDS, PREFILL_EDU_LENS, PREFILL_EDU_PROVS, PREFILL_OPT_LEN,
 } from './constants'
 import { MATCH_REWRITE, MATCH_SYSTEM, MATCH_USER, OUT_LANG, OUT_LANG_DEFAULT } from './prompts'
 import type {
@@ -31,6 +32,7 @@ import type {
   ResumeBlobOut, ResumeDeleteOut, ResumeFileDbRow, ResumeFileMeta, ResumeListOut, ResumeSaveIn, ResumeSaveOut, ResumeUserIn,
   CountDbRow, MaybeResumeId, ResumeCountOut, ResumeIdDbRow, ResumeIdFact, ResumeOneIn, TimeCell,
   CellTextsIn, JsonCell, MaybePrefillEdu, NocSimFact, PrefillCellIn, PrefillCodes, PrefillEdus, PrefillData, PrefillFact, PrefillMajorsIn, PrefillTextOut, PrefillWorksIn, PrefillWorksOut,
+  PrefillOptIn,
 } from './types'
 
 /**
@@ -368,6 +370,8 @@ function toPrefillEdus(cell: JsonCell): PrefillEdus {
 
 /**
  * 模型回的一项 → 一条教育经历:名称与学校去首尾空白、截到上限;年份只认四位数字(模型给成数字的也认),别的清空。
+ * 2026-11-12 Frank「简历里能抽出来吧」:多洗三格 —— 院校所在地、公立私立、课程时长,不是档案表单那三只下拉的取值一律空串
+ * (见 prefillOptOf);这三格不算进「四格全空就丢」。
  *
  * @param c 模型回的一项。
  * @returns 一条;不是对象或四格全空 null。
@@ -389,7 +393,29 @@ function toPrefillEdu(c: JsonCell): MaybePrefillEdu {
   if (credential === PREFILL_NONE && school === PREFILL_NONE && from === PREFILL_NONE && to === PREFILL_NONE) {
     return null
   }
-  return { credential, school, from, to }
+  return {
+    credential,
+    school,
+    from,
+    to,
+    prov: prefillOptOf({ cell: c.prov, opts: PREFILL_EDU_PROVS }),
+    kind: prefillOptOf({ cell: c.kind, opts: PREFILL_EDU_KINDS }),
+    len: prefillOptOf({ cell: c.len, opts: PREFILL_EDU_LENS }),
+  }
+}
+
+/**
+ * 模型回的一格 → 只认给定取值的一格(2026-11-12):去首尾空白后一字不差是其中之一才留(大小写也要对),别的给空串。
+ *
+ * @param x 模型回的一格与只认的取值。
+ * @returns 取值或空串。
+ */
+function prefillOptOf(x: PrefillOptIn): string {
+  const v = prefillCellOf({ cell: x.cell, max: PREFILL_OPT_LEN })
+  if (x.opts.includes(v)) {
+    return v
+  }
+  return PREFILL_NONE
 }
 
 /**

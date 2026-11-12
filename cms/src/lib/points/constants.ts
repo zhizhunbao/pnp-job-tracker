@@ -541,8 +541,19 @@ export const EE_FACTOR = {
 
   /**
    * CRS 的加拿大工作经验。
+   *
+   * 2026-11-12:官方页 2026-11-03 改版,A 节新立「Labour Market Integration factor」,
+   * 这张年数表的因素名从「Canadian work experience」改成「Length of Canadian work experience」
+   * (分值没变);旧名对不上行,估分器把这一项静默落成「缺信息」。旧名留在 crsCanadaExpOld。
    */
-  crsCanadaExp: 'Canadian work experience',
+  crsCanadaExp: 'Length of Canadian work experience',
+
+  /**
+   * CRS 的加拿大工作经验,官方页 2026-11-03 改版前的因素名。
+   *
+   * 2026-11-12:代码换版与灌库不同步,库里还是旧版行时照样认;库换成新版后这个名字不再命中任何行。
+   */
+  crsCanadaExpOld: 'Canadian work experience',
 
   /**
    * CRS 组合分:学历 × 语言。

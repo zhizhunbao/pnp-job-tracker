@@ -760,6 +760,7 @@ export type PrefillFact = {
 
 /**
  * 从简历提取的一条教育经历(2026-11-12;四格都是字符串,简历没写 = 空串)。
+ * 同日 Frank「简历里能抽出来吧」:多三格 —— 院校所在地、公立私立、课程时长,只认档案表单三只下拉的取值,别的一律空串。
  */
 export type PrefillEdu = {
   /**
@@ -781,6 +782,21 @@ export type PrefillEdu = {
    * 结束年份(四位数字);没写或在读 = 空串。
    */
   to: string
+
+  /**
+   * 院校所在地:省码或 abroad;看不出 = 空串。
+   */
+  prov: string
+
+  /**
+   * public / private;看不出 = 空串。
+   */
+  kind: string
+
+  /**
+   * y1 / y2 / y3 / master;看不出 = 空串。
+   */
+  len: string
 }
 
 /**
@@ -806,6 +822,21 @@ export type PrefillCellIn = {
    * 至多几个字。
    */
   max: number
+}
+
+/**
+ * prefillOptOf 的入参(2026-11-12)。
+ */
+export type PrefillOptIn = {
+  /**
+   * 模型回的一格(模型可能漏掉这一格:缺席按没有读)。
+   */
+  cell?: JsonCell
+
+  /**
+   * 这一格只认的取值。
+   */
+  opts: string[]
 }
 
 /**

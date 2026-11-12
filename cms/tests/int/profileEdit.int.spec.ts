@@ -9,6 +9,8 @@
  * 2026-11-12:匹配依据、匹配模式并成一只「匹配规则」下拉(四项 ↔ 两格的对照,表单与档案卡同一套);
  * 教育经历加明细 eduList(证书或学历名称、学校、起止年份):表单几段与明细互转、教育经历串由明细派生、
  * 档案取数没有明细时按老串现补、档案卡一条两行(年份名称都没有时第一行退回原先那一句)。
+ * 同日 Frank「有年份 还需要时长吗」「简历里能抽出来吧」:档案卡有年份的那一条第二行不出课程时长;手填名称或年份时,
+ * 时长下拉空着就替他推一个(推法的对照表;下拉有值后不再自动改)。教育经历几段这一族搬去 gate 桶子桶 edu,用例改从那边取。
  *
  * @author Frank
  * @time 2026-10-09 23:50:00
@@ -16,11 +18,81 @@
 import { describe, expect, it } from 'vitest'
 import fc from 'fast-check'
 import { fillTextOf } from '@/components/me/jobs/functions'
-import {
-  cityOptsOf, eduFormRowsOf, eduListOf, eduPicksOf, eduStrsOf, makeRulePick, missingStepsOf, nameBadOf, ruleOf,
-} from '@/components/gate/functions'
+import { eduFormRowsOf, eduListOf, eduPicksOf, eduStrsOf, makeEduPick } from '@/components/gate/edu/functions'
+import { cityOptsOf, makeRulePick, missingStepsOf, nameBadOf, ruleOf } from '@/components/gate/functions'
 import { pfEduLinesOf, pfRuleKeyOf } from '@/components/me/profile/functions'
 import { eduKeysOf, toProfileBasic } from '@/lib/quiz/functions'
+
+describe('手填名称或年份时替他推课程时长(2026-11-12「简历里能抽出来吧」)', () => {
+  const BLANK = { prov: '', kind: '', len: '', cred: '', school: '', from: '', to: '' }
+  type Row = typeof BLANK
+
+  // 在只有一段的表单上改一格,回改过的那一段(走的就是表单的 makeEduPick)
+  function edit(row: Row, f: string, v: string): Row {
+    let out: Row[] = []
+    makeEduPick({ cell: { i: 0, f }, edu: [row], setEdu: (rows) => { out = rows } })(v)
+    return out[0] as Row
+  }
+
+  it('金标(名称):有 master / mba / phd / doctor / doctorate 这样的整词(不分大小写)→ master;不是整词不算', () => {
+    for (const cred of ['Master of Science', 'master', 'MBA', 'Executive mba', 'PhD in Physics', 'Doctor of Medicine', 'Doctorate', "Master's degree"]) {
+      expect(edit(BLANK, 'cred', cred).len).toBe('master')
+    }
+    for (const cred of ['Bachelor of Engineering', 'Graduate Certificate', 'Masterclass', 'Postmaster', 'Doctoral studies', 'Diploma', '']) {
+      expect(edit(BLANK, 'cred', cred).len).toBe('')
+    }
+    // 名称说是硕士,年份怎么填都按 master
+    expect(edit({ ...BLANK, from: '2020', to: '2021' }, 'cred', 'MBA').len).toBe('master')
+  })
+
+  it('金标(年份):两个都是四位数字才推 —— 差 0 或 1 → y1,差 2 → y2,差 3 及以上 → y3;没填全、结束早于开始不推', () => {
+    const table = [
+      { from: '2025', to: '2025', len: 'y1' },
+      { from: '2025', to: '2026', len: 'y1' },
+      { from: '2024', to: '2026', len: 'y2' },
+      { from: '2023', to: '2026', len: 'y3' },
+      { from: '2014', to: '2018', len: 'y3' },
+      { from: '2010', to: '2020', len: 'y3' },
+      { from: '2026', to: '2025', len: '' },
+      { from: '202', to: '2026', len: '' },
+      { from: '', to: '2026', len: '' },
+      { from: '2025', to: '', len: '' },
+      { from: '2025', to: '202', len: '' },
+    ]
+    for (const c of table) {
+      // 先有开始再填结束,与先有结束再填开始,结果一样
+      expect(edit({ ...BLANK, from: c.from }, 'to', c.to).len).toBe(c.len)
+      expect(edit({ ...BLANK, to: c.to }, 'from', c.from).len).toBe(c.len)
+      // 名称不是硕士类时,改名称也按年份推
+      expect(edit({ ...BLANK, from: c.from, to: c.to }, 'cred', 'Diploma').len).toBe(c.len)
+    }
+  })
+
+  it('性质:时长下拉一旦有值(推出来的或他选的)就再也不自动改;别的格(学校、所在地、公立私立)不触发', () => {
+    for (const len of ['y1', 'y2', 'y3', 'master']) {
+      const row = { ...BLANK, len, from: '2020', to: '2021' }
+      expect(edit(row, 'cred', 'Master of Science').len).toBe(len)
+      expect(edit(row, 'cred', 'Diploma').len).toBe(len)
+      expect(edit(row, 'to', '2029').len).toBe(len)
+      expect(edit(row, 'from', '2000').len).toBe(len)
+    }
+    // 推出来的 y1,之后把结束年份改到四年后、名称改成硕士,都不再变
+    const auto = edit({ ...BLANK, from: '2025' }, 'to', '2026')
+    expect(auto.len).toBe('y1')
+    expect(edit(auto, 'to', '2029').len).toBe('y1')
+    expect(edit(auto, 'cred', 'Master of Science').len).toBe('y1')
+    // 改学校、所在地、公立私立不推
+    const ready = { ...BLANK, cred: 'MBA', from: '2020', to: '2022' }
+    expect(edit(ready, 'school', 'Ivey').len).toBe('')
+    expect(edit(ready, 'prov', 'ON').len).toBe('')
+    expect(edit(ready, 'kind', 'public').len).toBe('')
+    // 他自己清回「没选」之后,下一次改名称或年份照规矩再推
+    expect(edit(edit(auto, 'len', ''), 'to', '2028').len).toBe('y3')
+    // 只动时长这一格;别的格原样
+    expect(edit({ ...BLANK, prov: 'ON', kind: 'public', school: 'S', from: '2024' }, 'to', '2026'))
+      .toEqual({ prov: 'ON', kind: 'public', len: 'y2', cred: '', school: 'S', from: '2024', to: '2026' })
+  })
+})
 
 const ROW = (name: string, zh = '', ko = '', jobs = 1) => ({ name, zh, ko, jobs })
 const ON = [
@@ -258,7 +330,7 @@ describe('教育经历明细 eduList(2026-11-12)', () => {
     ])
   })
 
-  it('金标(档案卡):第一行年份 + 名称,第二行学校再接原先三个词(逗号连,不用中点)', () => {
+  it('金标(档案卡;2026-11-12「有年份 还需要时长吗」):第一行年份 + 名称,第二行学校再接所在地、公立私立(逗号连,不用中点);有年份不出时长', () => {
     const lines = pfEduLinesOf({
       t,
       list: [
@@ -269,12 +341,23 @@ describe('教育经历明细 eduList(2026-11-12)', () => {
       ],
     })
     expect(lines).toEqual([
-      { main: ['2025 – 2026', 'Graduate Certificate'], sub: 'Algonquin College, pr.ON, fit.kind.public, fit.len.y1' },
+      { main: ['2025 – 2026', 'Graduate Certificate'], sub: 'Algonquin College, pr.ON, fit.kind.public' },
       { main: ['2014 –', 'Bachelor of Engineering'], sub: 'Wuhan University' },
       { main: ['2010', 'Diploma'], sub: '' },
-      { main: ['2001 – 2003'], sub: 'gate.abroad, fit.kind.private, fit.len.master' },
+      { main: ['2001 – 2003'], sub: 'gate.abroad, fit.kind.private' },
     ])
     expect(JSON.stringify(lines)).not.toContain('·')
+  })
+
+  it('金标(档案卡):同一条明细,有年份(只有开始、只有结束也算)第二行没有时长;没有年份第二行照旧带时长', () => {
+    const e = { key: 'ON.public.y2', cred: 'Diploma', school: 'Seneca', from: '', to: '' }
+    expect(pfEduLinesOf({ t, list: [e] })).toEqual([{ main: ['Diploma'], sub: 'Seneca, pr.ON, fit.kind.public, fit.len.y2' }])
+    expect(pfEduLinesOf({ t, list: [{ ...e, from: '2020' }] })).toEqual([{ main: ['2020 –', 'Diploma'], sub: 'Seneca, pr.ON, fit.kind.public' }])
+    expect(pfEduLinesOf({ t, list: [{ ...e, to: '2022' }] })).toEqual([{ main: ['2022', 'Diploma'], sub: 'Seneca, pr.ON, fit.kind.public' }])
+    expect(pfEduLinesOf({ t, list: [{ ...e, from: '2020', to: '2022' }] }))
+      .toEqual([{ main: ['2020 – 2022', 'Diploma'], sub: 'Seneca, pr.ON, fit.kind.public' }])
+    const all = pfEduLinesOf({ t, list: [e, { ...e, from: '2020', to: '2022' }] })
+    expect(JSON.stringify(all)).not.toContain('·')
   })
 
   it('金标(档案卡退回):年份和名称都没有 → 第一行是原先那一句,第二行只剩学校、不重复那三个词;只有学校时学校上第一行', () => {

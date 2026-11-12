@@ -36,14 +36,22 @@ const martPath = path.resolve(__dirname, '../../../data/mart/ee_points_grid.json
 const allRows: EeGridRow[] = JSON.parse(fs.readFileSync(martPath, 'utf8'))
 
 describe('ee_points_grid 实况(改版会先在这里炸,而不是在金标断言里猜)', () => {
-  it('380 行,CRS 186 + FSW67 194', () => {
-    expect(allRows).toHaveLength(380)
-    expect(allRows.filter((r) => r.grid === 'CRS')).toHaveLength(186)
+  // 2026-11-12 金标追平:官方 CRS 页 2026-11-03 改版(crawl 缓存 fed-ee 的 crs-criteria.html,raw/ee/crs-grid.json 的
+  // pageUpdated 2026-06-22 → 2026-11-03),A 节新立「Labour Market Integration factor」:原「Canadian work experience」年数表
+  // 改名「Length of Canadian work experience」(12 行分值没变),新增「Qualifying high-wage Canadian work experience」6 行与
+  //「High-wage job offer category」4 行;速览表两行并成一行。CRS 186 → 196,合计 380 → 390,FSW67 没动。
+  it('390 行,CRS 196 + FSW67 194', () => {
+    expect(allRows).toHaveLength(390)
+    expect(allRows.filter((r) => r.grid === 'CRS')).toHaveLength(196)
     expect(allRows.filter((r) => r.grid === 'FSW67')).toHaveLength(194)
   })
-  it('CRS section A 四个因子齐活', () => {
+  // 2026-11-12:四个 → 六个(同上改版)。新加的两个高薪因子估分器还没接,这里只钉「官方表里有」。
+  it('CRS section A 六个因子齐活', () => {
     const facs = new Set(allRows.filter((r) => r.grid === 'CRS' && r.section === 'A' && r.kind === 'detail').map((r) => r.factor))
-    expect(facs).toEqual(new Set(['Age', 'Canadian Language Benchmark (CLB) level per ability', 'Canadian work experience', 'Level of Education']))
+    expect(facs).toEqual(new Set([
+      'Age', 'Canadian Language Benchmark (CLB) level per ability', 'Level of Education',
+      'Length of Canadian work experience', 'Qualifying high-wage Canadian work experience', 'High-wage job offer category',
+    ]))
   })
   it('每一行都挂着 url + fetched(evidence 铁律 ①)', () => {
     for (const r of allRows) { expect(r.url).toBeTruthy(); expect(r.fetched).toBeTruthy() }
@@ -96,6 +104,33 @@ describe('estimateCrs · CRS 排名分', () => {
     expect(p.points).toBe(0)
     expect(p.status).toBe('zero')
     expect(p.evidence?.url).toBeTruthy()
+  })
+
+  // 2026-11-12 补:原先只有 0 个月一例,因素名对不上时非零档一分不给也没有用例会红。金标对官方「Length of Canadian
+  // work experience」表手抄:1 年 35 / 40、2 年 46 / 53、5 年及以上 70 / 80(有配偶 / 无配偶)。
+  it('加拿大工作经验 12 / 24 / 60 个月 → 命中官方年数表对应档,有无配偶各取各的列', () => {
+    const gold = [
+      { months: 12, withSpouse: 35, single: 40 },
+      { months: 24, withSpouse: 46, single: 53 },
+      { months: 60, withSpouse: 70, single: 80 },
+    ]
+    for (const g of gold) {
+      const a = part(estimateCrs({ ...goldBase(true), expCanadaMonths: g.months }, allRows), 'expCanada')
+      const b = part(estimateCrs({ ...goldBase(false), expCanadaMonths: g.months }, allRows), 'expCanada')
+      expect(a.points, `${g.months} 个月,有配偶`).toBe(g.withSpouse)
+      expect(b.points, `${g.months} 个月,无配偶`).toBe(g.single)
+      expect(a.status).not.toBe('needs-info')
+      expect(a.evidence?.url).toBeTruthy()
+    }
+  })
+
+  // 2026-11-12 变异探针:把这张表的因素名换回改版前的「Canadian work experience」(库还没灌新版时的样子),
+  // 分数必须一样;换成一个不存在的名字,必须落 needs-info(证明上面的金标确实是按因素名查出来的)。
+  it('因素名新旧两版都认;名字对不上才是 needs-info', () => {
+    const renamed = (to: string) => allRows.map((r) => (r.factor === 'Length of Canadian work experience' ? { ...r, factor: to } : r))
+    const p12 = { ...goldBase(false), expCanadaMonths: 12 }
+    expect(part(estimateCrs(p12, renamed('Canadian work experience')), 'expCanada').points).toBe(40)
+    expect(part(estimateCrs(p12, renamed('No such factor')), 'expCanada').status).toBe('needs-info')
   })
 
   it('技能可转移性(Section C)组合在 0 经验 / CLB6<7 时全部落零,不污染总分', () => {

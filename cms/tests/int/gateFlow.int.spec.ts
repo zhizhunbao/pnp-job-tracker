@@ -26,6 +26,10 @@
 //       ⑨ 从简历填写:提取到的教育经历并进几段(先填明细全空的那一段、再往后加),再点一次不重复。
 // 探针:makeRulePick 不落 matchMode → ⑧「workStrict」红;editPatchOf 漏 eduList → ⑤「eduList」红;
 //       eduMergedOf 不查重 → ⑨「再点一次」红。
+// 2026-11-12 Frank「有年份 还需要时长吗」「简历里能抽出来吧」:
+//       ⑨ 加验提取到的院校所在地、公立私立、课程时长只填还空着的下拉(选过的那一段三只照留,新加的一段用简历的);
+//       ⑩ 手填年份或名称时,时长下拉空着就替他推一个;有值之后(推的或他选的)不再自动改。
+// 探针:eduSelOf 不看 have → ⑨「第一段三只照留」红;eduCellSetOf 不看 row.len → ⑩「改到四年后还是 y2」红。
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -51,8 +55,8 @@ const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, cit
 const PREFILL = {
   works: [], majors: [], name: '',
   education: [
-    { credential: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' },
-    { credential: 'Bachelor of Engineering', school: 'Wuhan University', from: '2014', to: '2018' },
+    { credential: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026', prov: 'BC', kind: 'private', len: 'y2' },
+    { credential: 'Bachelor of Engineering', school: 'Wuhan University', from: '2014', to: '2018', prov: 'abroad', kind: 'public', len: 'y3' },
   ],
 }
 
@@ -276,7 +280,7 @@ describe('⑧ 匹配规则一只下拉(2026-11-12)', () => {
 })
 
 describe('⑨ 从简历填写教育经历(2026-11-12)', () => {
-  it('先填明细全空的那一段(三只下拉照留)、再往后加一段;再点一次不重复;保存后 fitEdu 只有选全三格的那段', async () => {
+  it('先填明细全空的那一段(选过的三只下拉照留)、再往后加一段(三只下拉用简历的);再点一次不重复;保存后 fitEdu 是选全三格的段', async () => {
     const sent = server()
     const onSaved = vi.fn()
     const m = mount(onSaved)
@@ -290,7 +294,7 @@ describe('⑨ 从简历填写教育经历(2026-11-12)', () => {
     expect(eduInputs(m.host, 'pf.eduSchool').map((i) => i.value)).toEqual(['Algonquin College', 'Wuhan University'])
     expect(eduInputs(m.host, 'pf.eduFrom').map((i) => i.value)).toEqual(['2025', '2014'])
     expect(eduLines(m.host)[0]?.map((s) => s.value)).toEqual(['ON', 'public', 'y1'])
-    expect(eduLines(m.host)[1]?.map((s) => s.value)).toEqual(['', '', ''])
+    expect(eduLines(m.host)[1]?.map((s) => s.value)).toEqual(['abroad', 'public', 'y3'])
     await vi.waitFor(() => expect(m.host.textContent).toContain('pf.fillOk'))
     act(() => (buttonOf(m.host, 'pf.fill') as HTMLButtonElement).click())
     await vi.waitFor(() => expect(m.host.textContent).toContain('pf.fillNone'))
@@ -298,9 +302,39 @@ describe('⑨ 从简历填写教育经历(2026-11-12)', () => {
     const basic = await saveAndReadBasic(m, sent, onSaved, 1)
     expect(basic.eduList).toEqual([
       { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' },
-      { key: '', cred: 'Bachelor of Engineering', school: 'Wuhan University', from: '2014', to: '2018' },
+      { key: 'abroad.public.y3', cred: 'Bachelor of Engineering', school: 'Wuhan University', from: '2014', to: '2018' },
     ])
-    expect(basic.fitEdu).toEqual(['ON.public.y1'])
+    expect(basic.fitEdu).toEqual(['ON.public.y1', 'abroad.public.y3'])
+    act(() => m.root.unmount())
+  })
+})
+
+describe('⑩ 手填时替他推课程时长(2026-11-12)', () => {
+  it('填了起止年份时长下拉自己亮;之后再改年份、名称不动它;他自己改选照他的', () => {
+    server()
+    const m = mount()
+    const lenOf = () => eduLines(m.host)[0]?.[2]?.value
+    expect(lenOf()).toBe('')
+    type(eduInputs(m.host, 'pf.eduFrom')[0] as HTMLInputElement, '2024')
+    expect(lenOf()).toBe('')
+    type(eduInputs(m.host, 'pf.eduTo')[0] as HTMLInputElement, '2026')
+    expect(lenOf()).toBe('y2')
+    type(eduInputs(m.host, 'pf.eduTo')[0] as HTMLInputElement, '2028')
+    expect(lenOf()).toBe('y2')
+    type(eduInputs(m.host, 'pf.eduCred')[0] as HTMLInputElement, 'Master of Science')
+    expect(lenOf()).toBe('y2')
+    pick(eduLines(m.host)[0]?.[2] as HTMLSelectElement, 'master')
+    type(eduInputs(m.host, 'pf.eduCred')[0] as HTMLInputElement, 'Diploma')
+    expect(lenOf()).toBe('master')
+    expect(eduLines(m.host)[0]?.slice(0, 2).map((s) => s.value)).toEqual(['', ''])
+    act(() => m.root.unmount())
+  })
+
+  it('名称写明是硕士类:时长下拉亮 master', () => {
+    server()
+    const m = mount()
+    type(eduInputs(m.host, 'pf.eduCred')[0] as HTMLInputElement, 'MBA')
+    expect(eduLines(m.host)[0]?.[2]?.value).toBe('master')
     act(() => m.root.unmount())
   })
 })

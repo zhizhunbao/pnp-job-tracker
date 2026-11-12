@@ -307,9 +307,11 @@ function pfEduLineOf(x: PfEduLineIn): PfEduLine {
 
 /**
  * 一条明细的 key → 三个词(院校所在地、公立私立、课程时长,字与修改面板的下拉同一套);key 空给空列。
+ * 2026-11-12 Frank「有年份 还需要时长吗」「简历里能抽出来吧」:这一条有年份(开始或结束有一个)就不出课程时长那个词,
+ * 只剩所在地、公立私立两个;没有年份照旧三个词。
  *
  * @param x 一条明细与取词函数。
- * @returns 三个词或空列。
+ * @returns 三个词(有年份两个)或空列。
  */
 function pfEduPartsOf(x: PfEduLineIn): string[] {
   const out: string[] = []
@@ -317,7 +319,9 @@ function pfEduPartsOf(x: PfEduLineIn): string[] {
     if (p.prov !== TEXT_NONE) {
       out.push(makeEduLabel({ t: x.t, f: EDU_F_PROV })(p.prov))
       out.push(makeEduLabel({ t: x.t, f: EDU_F_KIND })(p.kind))
-      out.push(makeEduLabel({ t: x.t, f: EDU_F_LEN })(p.len))
+      if (x.e.from === TEXT_NONE && x.e.to === TEXT_NONE) {
+        out.push(makeEduLabel({ t: x.t, f: EDU_F_LEN })(p.len))
+      }
     }
   }
   return out

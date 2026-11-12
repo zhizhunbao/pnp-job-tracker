@@ -18,7 +18,7 @@ import {
   EDU_CRED_LEN, EDU_F_CRED, EDU_F_FROM, EDU_F_SCHOOL, EDU_F_TO, EDU_SCHOOL_LEN, EDU_YEAR_LEN, EDU_YEAR_MODE, K_EDU_CRED,
   K_EDU_FROM, K_EDU_SCHOOL, K_EDU_TO,
 } from './constants'
-import { makeEduLabel } from './functions'
+import { makeEduLabel } from './edu'
 import type { GateEduLineIn } from './types'
 import css from './gate.module.css'
 

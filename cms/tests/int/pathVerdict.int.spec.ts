@@ -144,7 +144,9 @@ describe('mart 实况', () => {
     // 2026-09-30 通道与门槛批 1:阿省机会通道补身份两行(status,判定引擎不读)、持 PGWP 一档(experienceAlt,不读)→ 569
     // 2026-10-12 金标追平(按省对 eecddca8 → HEAD 的 raw/pnp 门槛文件):ON 自雇医生补两条执照行(CPSO 注册证、OHIP 计费号)+2、
     // NB 32 → 33(快速通道「近 10 年同一职业码连续 12 个月」经验行入表;法语远程工作者居住行改字)+1 → 572
-    expect(data.requirements).toHaveLength(572)
+    // 2026-11-12 金标追平:9103c5c4(10-16 领地批)在 etl/mart 的 PROV_OFFER_QUOTE 加了 YT、NT,汇装各出一行雇主 offer 形态
+    //(subject='offer'、factor='offerForm',判定引擎不读);十八份门槛原表合计 563 行没变,offer 形态行 9 → 11 → 574
+    expect(data.requirements).toHaveLength(574)
     expect(data.requirements.filter((r) => r.appliesCondition === 'ab-local-experience')).toHaveLength(1)
     // 2026-09-11 FCIP 3 → 25:eligibility 域立域后两试点各自全量抄门槛(offer 三态 / 工时 /
     // 语言 / 学历等整套),同门槛跨试点重复行随 2a8dcf07 退役 —— 25 行全为 FCIP 自己的。
@@ -162,7 +164,11 @@ describe('mart 实况', () => {
     // 当日分布 SK 257 / MB 158 / AB 105 / BC 103 / NB 68 / NS 38 / PE 9。
     // 2026-10-02 738 → 753:NL 优先处理职位挂上能一一对上的码进清单表(Frank「做吧,按你说的来」)—— NL +15(参考信号,不进评分),
     // 其余各省不变;当日分布 SK 257 / MB 158 / AB 105 / BC 103 / NB 68 / NS 38 / NL 15 / PE 9。
-    expect(data.occupations).toHaveLength(753)
+    // 2026-11-12 753 → 763:按省对 raw/pnp 清单文件(工作区对 HEAD),只有两份动了 —— NS 紧缺空缺 14 → 22(官方 critical-vacancies 页
+    // 加八个医疗职业:31120 / 31200 / 31202 / 31203 / 31301 / 31302 / 32103 / 32121,crawl 缓存 ns-root 当日页逐个核过)、
+    // NB 优先职业 33 → 35(官方 PDF 加 31102 家庭医生、41300 社工,crawl 缓存 files-www.gnb.ca 当日 PDF 核过);两张都是参考信号,
+    // 不进评分;当日分布 SK 257 / MB 158 / AB 105 / BC 103 / NB 70 / NS 46 / NL 15 / PE 9。
+    expect(data.occupations).toHaveLength(763)
     // 分值表**按省钉**,不钉总数:钉总数时加一个省(2026-08-10 接纽省)只会报「164 变 192」,
     // 看不出是哪张表动了,红了也没人认领。按省钉,失败信息自己说出是哪个省的官方表变了。
     const byProvince: Record<string, number> = {}
@@ -171,7 +177,8 @@ describe('mart 实况', () => {
     // 2026-10-12 ON 51 → 52:安省 10-07 通告改 Workforce Priority EOI 的收入分档 —— 加「$80k 及以上 10 分」一档(原顶档 $70k+ 8 分改为
     // $70k–79,999 8 分),收入一项满分 8 → 10
     expect(byProvince).toEqual({ AB: 30, BC: 32, MB: 44, NL: 28, ON: 52, SK: 37 })
-    expect(data.eeGrid).toHaveLength(380)
+    // 2026-11-12 380 → 390:官方 CRS 页 2026-11-03 改版,A 节新立「Labour Market Integration factor」(逐行见 crsEstimate.int.spec.ts 的实况段)
+    expect(data.eeGrid).toHaveLength(390)
     // 抽选表与指定雇主名录**按周增长**(抽选每轮一行、名录每次抓取补差)——钉死行数是纯脆断言,
     // 只守「不许倒退」;门槛/清单/分值表那四张是政策表,改版要炸得出来,继续钉死。
     // 只守**抽选**不许倒退(kind='draw' 是历史,已发生的轮次不会消失;2026-08-12 起 ETL 并回历史)。

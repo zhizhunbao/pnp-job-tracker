@@ -21,6 +21,9 @@
  * 2026-11-07 Frank「删了吧」:一题一屏的 GateEdit 换成一页表单 GateForm 后删 —— 返回钮规格、题目分派 / 职业题 props、
  * 步序 / 题面 / 挪焦点 / 返回 / 主钮灰 / 目标与身份上报口 / 下一题 / 主钮字 / 编辑步序 / 跳过 / 起始题各入参与 GateEdit 的 props 删;
  * 整机入参 GateEditHookIn 瘦成 GateFormHookIn,整机面板与 edit 格撤掉没人读的格,步名收窄。
+ * 2026-11-12 按「大于 1000 就拆子桶」:教育经历几段这一族的函数搬去子桶 ./edu,只有它们在用的七个入参 / 返回形状
+ * (EduMergeIn / EduMergeOut / EduItemIn / EduPickIn / EduLabelIn / EduCellSetIn / EduRowsIn)连注释搬去子桶的 types;
+ * 整机与件还在读的(EduPick / EduEntry / EduSeedIn / EduCellIn / PrefillEdu)留在这里,子桶自声明一份同形的。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
@@ -574,6 +577,7 @@ export type EduSeedIn = {
 
 /**
  * 从简历提取的一条教育经历(/api/resume/prefill 的 education 一项)。
+ * 2026-11-12 Frank「简历里能抽出来吧」:多三格 —— 院校所在地、公立私立、课程时长(并进一段时只填还空着的下拉,并法在子桶 edu)。
  */
 export type PrefillEdu = {
   /**
@@ -595,51 +599,21 @@ export type PrefillEdu = {
    * 结束年份或空串。
    */
   to: string
-}
-
-/**
- * eduMergedOf 的入参。
- */
-export type EduMergeIn = {
-  /**
-   * 表单里现在的几段。
-   */
-  rows: EduPick[]
 
   /**
-   * 从简历提取的几条。
+   * 院校所在地:省码或 abroad;简历看不出 = 空串。
    */
-  items: PrefillEdu[]
-}
-
-/**
- * eduMergedOf 的返回。
- */
-export type EduMergeOut = {
-  /**
-   * 并进去之后的几段。
-   */
-  rows: EduPick[]
+  prov: string
 
   /**
-   * 并进去了几条。
+   * public / private;简历看不出 = 空串。
    */
-  n: number
-}
-
-/**
- * isEduKnown / eduPlacedOf 的入参。
- */
-export type EduItemIn = {
-  /**
-   * 现在的几段。
-   */
-  rows: EduPick[]
+  kind: string
 
   /**
-   * 从简历提取的一条。
+   * y1 / y2 / y3 / master;简历看不出 = 空串。
    */
-  it: PrefillEdu
+  len: string
 }
 
 /**
@@ -685,81 +659,6 @@ export type EduCellIn = {
    * 哪一格:prov / kind / len;2026-11-12 起还有 cred / school / from / to。
    */
   f: string
-}
-
-/**
- * makeEduPick 的入参。
- */
-export type EduPickIn = {
-  /**
-   * 第几段与哪一格。
-   */
-  cell: EduCellIn
-
-  /**
-   * 现在的几段。
-   */
-  edu: EduPick[]
-
-  /**
-   * 写几段。
-   */
-  setEdu: (v: EduPick[]) => void
-}
-
-/**
- * makeEduLabel 的入参。
- */
-export type EduLabelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 哪一格:prov / kind / len。
-   */
-  f: string
-}
-
-/**
- * eduCellSetOf 的入参。
- */
-export type EduCellSetIn = {
-  /**
-   * 这一段。
-   */
-  row: EduPick
-
-  /**
-   * 哪一格:prov / kind / len。
-   */
-  f: string
-
-  /**
-   * 新值。
-   */
-  v: string
-}
-
-/**
- * makeEduAdd / makeEduRemove 的入参。
- */
-export type EduRowsIn = {
-  /**
-   * 现在的几段。
-   */
-  edu: EduPick[]
-
-  /**
-   * 写几段。
-   */
-  setEdu: (v: EduPick[]) => void
-
-  /**
-   * 第几段(删用;加时给 0)。
-   */
-  i: number
 }
 
 /**

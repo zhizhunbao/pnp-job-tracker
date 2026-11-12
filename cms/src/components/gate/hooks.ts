@@ -31,11 +31,12 @@ import { track } from '@/lib/track'
 import {
   FILL_KIND_INFO, FORM_PICK_JOB, FORM_PICK_MAJOR, FORM_PICK_NONE, FORM_PICK_WORK, TEXT_NONE, TRACK_GATE_OPEN,
 } from './constants'
+import { eduFormRowsOf, eduListOf, eduStrsOf, makeEduAdd, makeEduPick, makeEduRemove } from './edu'
 import {
   fromKeptOf, makeResumeFill,
-  cityOptsOf, eduFormRowsOf, eduListOf, eduStrsOf, gateProvActiveOf, loadProvCities, makeCityPick, makeEditSave,
-  makeEduAdd, makeRulePick, ruleOf,
-  makeEduPick, makeEduRemove, makeEntryClose, makeEntryDone, makeGateAuthDone, makePickSet, makeProvPick, nameBadOf,
+  cityOptsOf, gateProvActiveOf, loadProvCities, makeCityPick, makeEditSave,
+  makeRulePick, ruleOf,
+  makeEntryClose, makeEntryDone, makeGateAuthDone, makePickSet, makeProvPick, nameBadOf,
 } from './functions'
 import type {
   FillMsg, ResumeFillHookIn, ResumeFillPanel,

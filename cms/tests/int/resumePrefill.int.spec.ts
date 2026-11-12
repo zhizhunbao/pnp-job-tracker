@@ -2,12 +2,15 @@
  * 「我的」第一批(2026-11-09):从简历填档案的洗数与映射、「来自简历」标记的去留、每日推送跳过没有职业依据的人。
  * 2026-11-12:提取结果多一格教育经历(证书或学历名称、学校、起止年份):洗数,以及并进表单几段的规矩
  * (同名称同学校跳过、先填第一段明细全空的、再往后加;用户填过的不动)。
+ * 同日 Frank「简历里能抽出来吧」:教育经历每条多三格(院校所在地、公立私立、课程时长):服务端只认表单下拉的取值、别的清空;
+ * 并进一段时只填那一段还空着的下拉,选过的不动。教育经历几段这一族搬去 gate 桶子桶 edu,用例改从那边取。
  *
  * @author Frank
  * @time 2026-11-09 16:00:00
  */
 import { describe, expect, it } from 'vitest'
-import { eduMergedOf, fromKeptOf, isFromResume } from '@/components/gate/functions'
+import { eduMergedOf } from '@/components/gate/edu/functions'
+import { fromKeptOf, isFromResume } from '@/components/gate/functions'
 import { toDigestUser } from '@/lib/alerts/functions'
 import { prefillFactOf, prefillMajorsOf, prefillWorksOf } from '@/lib/resume/functions'
 import type { Db } from '@/lib/db'
@@ -26,6 +29,9 @@ describe('来自简历的标记', () => {
     expect(fromKeptOf({ marks: MARKS, majors: [], workNocs: ['63200'], name: 'Pat Q Testuser' })).toEqual(['workNocs:63200'])
   })
 })
+
+// 教育经历三只下拉都看不出(三格空串)
+const NO_SEL = { prov: '', kind: '', len: '' }
 
 describe('模型回包洗数', () => {
   it('非字符串丢掉、超量截断、坏格按没有', () => {
@@ -49,11 +55,38 @@ describe('模型回包洗数', () => {
       ],
     }).education
     expect(got).toEqual([
-      { credential: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' },
-      { credential: 'Bachelor of Engineering', school: '', from: '', to: '' },
-      { credential: 'c'.repeat(80), school: 's'.repeat(120), from: '', to: '' },
-      { credential: 'Fourth', school: 'D', from: '', to: '' },
+      { credential: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026', ...NO_SEL },
+      { credential: 'Bachelor of Engineering', school: '', from: '', to: '', ...NO_SEL },
+      { credential: 'c'.repeat(80), school: 's'.repeat(120), from: '', to: '', ...NO_SEL },
+      { credential: 'Fourth', school: 'D', from: '', to: '', ...NO_SEL },
     ])
+  })
+
+  it('教育经历三只下拉的值(2026-11-12「简历里能抽出来吧」):一字不差是下拉的取值才留(去首尾空白),别的一律空串', () => {
+    function selOf(x: { prov?: unknown, kind?: unknown, len?: unknown }) {
+      const [row] = prefillFactOf({ name: null, titles: [], majors: [], education: [{ credential: 'Diploma', ...x }] } as never).education
+      return { prov: row?.prov, kind: row?.kind, len: row?.len }
+    }
+    expect(selOf({ prov: 'ON', kind: 'public', len: 'y2' })).toEqual({ prov: 'ON', kind: 'public', len: 'y2' })
+    expect(selOf({ prov: ' abroad ', kind: 'private', len: 'master' })).toEqual({ prov: 'abroad', kind: 'private', len: 'master' })
+    for (const prov of ['ON', 'QC', 'BC', 'AB', 'SK', 'MB', 'NS', 'NB', 'NL', 'PE', 'abroad']) {
+      expect(selOf({ prov }).prov).toBe(prov)
+    }
+    for (const len of ['y1', 'y2', 'y3', 'master']) {
+      expect(selOf({ len }).len).toBe(len)
+    }
+    // 坏值:大小写不对、全名、表外的地区、别的格的取值、数字、对象、null、缺席
+    for (const bad of ['on', 'Ontario', 'YT', 'NT', 'NU', 'US', 'Abroad', 'public', 'y1', 'ON.public.y1', 'ON, Canada', 2, { v: 'ON' }, ['ON'], null, undefined, '']) {
+      expect(selOf({ prov: bad }).prov).toBe('')
+    }
+    for (const bad of ['Public', 'PRIVATE', 'public college', 'privately', 'ON', 'y1', true, 1, null, undefined, '']) {
+      expect(selOf({ kind: bad }).kind).toBe('')
+    }
+    for (const bad of ['Y1', 'y4', 'y0', '1', 1, '2 years', 'Master', 'masters', 'phd', 'public', null, undefined, '']) {
+      expect(selOf({ len: bad }).len).toBe('')
+    }
+    // 只有这三格、四格明细全空的一项照旧丢
+    expect(prefillFactOf({ name: null, titles: [], majors: [], education: [{ prov: 'ON', kind: 'public', len: 'y1' }] } as never).education).toEqual([])
   })
 
   it('专业只取搜索第一名,去重,搜不到留空', () => {
@@ -69,8 +102,8 @@ describe('模型回包洗数', () => {
 
 describe('简历里的教育经历并进表单几段(2026-11-12)', () => {
   const BLANK = { prov: '', kind: '', len: '', cred: '', school: '', from: '', to: '' }
-  const CERT = { credential: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' }
-  const BENG = { credential: 'Bachelor of Engineering', school: 'Wuhan University', from: '2014', to: '2018' }
+  const CERT = { credential: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026', ...NO_SEL }
+  const BENG = { credential: 'Bachelor of Engineering', school: 'Wuhan University', from: '2014', to: '2018', ...NO_SEL }
 
   it('先填第一段明细全空的(三只下拉照留),放不下的往后加一段(三只下拉空着)', () => {
     const rows = [{ ...BLANK, prov: 'ON', kind: 'public', len: 'y1' }]
@@ -83,22 +116,48 @@ describe('简历里的教育经历并进表单几段(2026-11-12)', () => {
     })
   })
 
-  it('同名称同学校的跳过(不分大小写、不看空白);用户填过的明细一格不动', () => {
+  it('同名称同学校的不再加一段(不分大小写、不看空白);填过的明细一格不动,空着的年份补上', () => {
     const mine = { ...BLANK, cred: 'graduate certificate', school: ' ALGONQUIN COLLEGE', from: '2024', to: '' }
     const typed = { ...BLANK, cred: '', school: '', from: '2010', to: '' }
     const out = eduMergedOf({ rows: [mine, typed], items: [CERT, BENG] })
-    expect(out.n).toBe(1)
-    expect(out.rows).toEqual([mine, typed, { ...BLANK, cred: 'Bachelor of Engineering', school: 'Wuhan University', from: '2014', to: '2018' }])
+    expect(out.n).toBe(2)
+    expect(out.rows).toEqual([{ ...mine, to: '2026' }, typed, { ...BLANK, cred: 'Bachelor of Engineering', school: 'Wuhan University', from: '2014', to: '2018' }])
     expect(eduMergedOf({ rows: out.rows, items: [CERT, BENG] })).toEqual({ rows: out.rows, n: 0 })
   })
 
   it('名称和学校都没有的不要;年份不是四位数字的不带;到 6 段为止不再加', () => {
-    expect(eduMergedOf({ rows: [BLANK], items: [{ credential: ' ', school: '', from: '2020', to: '2021' }] }))
+    expect(eduMergedOf({ rows: [BLANK], items: [{ credential: ' ', school: '', from: '2020', to: '2021', ...NO_SEL }] }))
       .toEqual({ rows: [BLANK], n: 0 })
-    expect(eduMergedOf({ rows: [BLANK], items: [{ credential: 'Diploma', school: '', from: '20', to: 'now' }] }).rows)
+    expect(eduMergedOf({ rows: [BLANK], items: [{ credential: 'Diploma', school: '', from: '20', to: 'now', ...NO_SEL }] }).rows)
       .toEqual([{ ...BLANK, cred: 'Diploma' }])
     const full = Array.from({ length: 6 }, (_, i) => ({ ...BLANK, cred: 'C' + i }))
     expect(eduMergedOf({ rows: full, items: [CERT] })).toEqual({ rows: full, n: 0 })
+  })
+
+  it('三只下拉(2026-11-12「简历里能抽出来吧」):并进一段时只填还空着的下拉,选过的一只不动;新加的一段整份用简历的', () => {
+    const cert = { ...CERT, prov: 'ON', kind: 'public', len: 'y1' }
+    const beng = { ...BENG, prov: 'abroad', kind: 'public', len: 'y3' }
+    // 第一段他只选了所在地 BC:所在地照留,公立私立与时长填上;第二段是新加的
+    expect(eduMergedOf({ rows: [{ ...BLANK, prov: 'BC' }], items: [cert, beng] })).toEqual({
+      rows: [
+        { prov: 'BC', kind: 'public', len: 'y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' },
+        { prov: 'abroad', kind: 'public', len: 'y3', cred: 'Bachelor of Engineering', school: 'Wuhan University', from: '2014', to: '2018' },
+      ],
+      n: 2,
+    })
+    // 三只都选过:一只不动
+    const picked = { ...BLANK, prov: 'QC', kind: 'private', len: 'master' }
+    expect(eduMergedOf({ rows: [picked], items: [cert] }).rows[0])
+      .toEqual({ ...picked, cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' })
+    // 简历看不出的那只(空串)留空;不是下拉取值的当没有
+    expect(eduMergedOf({ rows: [BLANK], items: [{ ...CERT, prov: 'ON', kind: '', len: 'y9' }] }).rows[0])
+      .toEqual({ ...BLANK, prov: 'ON', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' })
+    // 同名称同学校的不算新填的一段,但那一段空着的下拉和年份补上,选过的照留
+    const mine = { ...BLANK, kind: 'private', cred: 'Graduate Certificate', school: 'Algonquin College' }
+    expect(eduMergedOf({ rows: [mine], items: [cert] })).toEqual({
+      rows: [{ ...mine, prov: 'ON', len: 'y1', from: '2025', to: '2026' }],
+      n: 1,
+    })
   })
 })
 

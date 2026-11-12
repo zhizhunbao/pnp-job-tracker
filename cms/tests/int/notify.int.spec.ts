@@ -106,13 +106,18 @@ describe('/api/notify', () => {
     expect(d.calls.filter((c) => c.sql === SQL.NOTIFY_SEEN).map((c) => c.params[0])).toEqual([7])
   })
 
-  it('③ 今日推荐:0 条不出;有条数时带「看得见 + 锁住」;算不成只少那一条', async () => {
+  // 2026-11-12:04a274f2(11-11)今日推荐每人每天 10 条全免费,锁住行连同回包的 more 一格删了,铃铛只数今天的推荐。
+  // 原断言 3 + 4 = 7 是「看得见 + 锁住」;more 留在桩里不动,钉住「回包多带一格也不许再加进去」。
+  it('③ 今日推荐:0 条不出;有条数时就是今天的推荐条数(没有锁住的);算不成只少那一条', async () => {
     dbNow = db().conn
     sessionUser = { id: 8, email: 'b@test.local' }
+    picksNow = { picks: [], more: 4 }
+    const none = await list()
+    expect(none.body.items.map((x) => x.kind)).toEqual(['bounced'])
     picksNow = { picks: [{}, {}, {}], more: 4 }
     const b = await list()
     const p = b.body.items.find((x) => x.kind === 'picks')
-    expect(p?.n).toBe(7)
+    expect(p?.n).toBe(3)
     expect(b.body.unseen).toBe(2)
     picksNow = 'throw'
     const c = await list()

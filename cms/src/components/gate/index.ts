@@ -32,12 +32,14 @@
  * missingStepsOf 留着给「我的求职」补全档案提示条判空。
  *
  * 2026-11-12:教育经历加明细(名称、学校、起止年份):档案卡改读明细,key 那一格仍用 eduPicksOf 拆、makeEduLabel 出字,导出不变。
+ * 同日按「大于 1000 就拆子桶」:教育经历几段这一族搬去子桶 ./edu,那两件改从子桶转出,外面照旧只从本桶取。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
  */
 export { GateAuth } from './gateauth'
 export { GateForm } from './gateform'
-export { eduPicksOf, isFromResume, makeEduLabel, missingStepsOf } from './functions'
+export { eduPicksOf, makeEduLabel } from './edu'
+export { isFromResume, missingStepsOf } from './functions'
 export { GateSync } from './gatesync'
 export type { EduPick, GateEditSeed } from './types'

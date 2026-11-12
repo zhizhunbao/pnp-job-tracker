@@ -677,6 +677,27 @@ export const PREFILL_YEAR_RE = /^\d{4}$/
 export const PREFILL_YEAR_LEN = 4
 
 /**
+ * 院校所在地只认这几个值(2026-11-12 Frank「简历里能抽出来吧」):十省码 + 国外。与答案档教育经历串的第一格同一套
+ * (lib/quiz EDU_KEY_RE、档案表单 gate 桶 EDU_PROVS;域之间不互取常量,本域自抄,改那边要同步这里)。
+ */
+export const PREFILL_EDU_PROVS = ['ON', 'QC', 'BC', 'AB', 'SK', 'MB', 'NS', 'NB', 'NL', 'PE', 'abroad']
+
+/**
+ * 公立私立只认这两个值(同 lib/quiz EDU_KEY_RE 的第二格、gate 桶 EDU_KINDS)。
+ */
+export const PREFILL_EDU_KINDS = ['public', 'private']
+
+/**
+ * 课程时长只认这几个值(同 lib/quiz EDU_KEY_RE 的第三格、gate 桶 EDU_LENS)。
+ */
+export const PREFILL_EDU_LENS = ['y1', 'y2', 'y3', 'master']
+
+/**
+ * 院校所在地、公立私立、课程时长一格至多看几个字(最长的取值是 private / abroad;多了就不是合法取值)。
+ */
+export const PREFILL_OPT_LEN = 8
+
+/**
  * 错误码:还没有简历可读。
  */
 export const E_NO_RESUME = 'noResume'

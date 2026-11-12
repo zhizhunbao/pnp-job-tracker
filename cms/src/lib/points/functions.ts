@@ -1145,7 +1145,8 @@ function pickCanadaExpCrs(input: PickerIn): EstimateItemOut {
   }
   const cand: EeGridRow[] = []
   for (const r of input.rows) {
-    if (r.section === EE_SECTION.core && r.factor === EE_FACTOR.crsCanadaExp
+    if (r.section === EE_SECTION.core
+      && (r.factor === EE_FACTOR.crsCanadaExp || r.factor === EE_FACTOR.crsCanadaExpOld)
       && r.kind === EE_KIND_DETAIL && input.spouseCol.test(r.columnLabel)) {
       cand.push(r)
     }

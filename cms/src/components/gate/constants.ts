@@ -17,6 +17,9 @@
  * TILE_CARD、注册屏 / 身份 / 教育经历三枚步名、编辑步序 GATE_EDIT_STEPS、题面键两枚(GATE_QUESTION_GOAL / GATE_QUESTIONS)、
  * 换题滚回顶的卡片选择器 GATE_FRAME_SEL、进度条角色 ROLE_PROGRESS、返回钮读屏名 GATE_BACK_KEY、主钮字两枚(NEXT_KEY / SAVE_KEY)、
  * 「跳过这步」两枚(SKIP_KEY / SKIP_BTN_KIND)随之删;余下五枚步名只给「补全档案」提示条判空(missingStepsOf)。
+ * 2026-11-12 按「大于 1000 就拆子桶」:教育经历几段这一族的函数搬去子桶 ./edu,只有它们在用的八枚(EDU_ABROAD、EDU_SEP、
+ * EDU_LIST_MAX、EDU_YEAR_RE、EDU_NON_DIGIT_RE、K_KIND_HEAD、K_LEN_HEAD、K_PROV_HEAD)连注释搬去子桶的 constants;
+ * 教育经历一段的件(GateEduLine)还在用的格名、选项与上限留在这里,子桶自抄一份。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
@@ -78,11 +81,6 @@ export const K_WHO_HEAD = 'fit.who.'
 export const EDU_PROVS = ['ON', 'QC', 'BC', 'AB', 'SK', 'MB', 'NS', 'NB', 'NL', 'PE', 'abroad'] as const
 
 /**
- * 院校所在地「国外」的值。
- */
-export const EDU_ABROAD = 'abroad'
-
-/**
  * 教育经历「公立或私立」的选项。
  */
 export const EDU_KINDS = ['public', 'private'] as const
@@ -96,11 +94,6 @@ export const EDU_LENS = ['y1', 'y2', 'y3', 'master'] as const
  * 教育经历至多几段(Frank 10-11「最近两年 和 两个 最重要」)。
  */
 export const EDU_ROWS_MAX = 2
-
-/**
- * 答案档里一段教育经历三格的连接符(「ON.public.y1」;同 10-11 资讯页地址栏的写法)。
- */
-export const EDU_SEP = '.'
 
 /**
  * 教育经历一段的三格名:院校所在地。
@@ -158,11 +151,6 @@ export const K_EDU_FROM = 'pf.eduFrom'
 export const K_EDU_TO = 'pf.eduTo'
 
 /**
- * 答案档里教育经历明细至多几条(同 lib/quiz EDU_LIST_MAX;「+ 再加一段」仍到 EDU_ROWS_MAX 为止,多出来的只会来自「从简历填写」)。
- */
-export const EDU_LIST_MAX = 6
-
-/**
  * 证书或学历名称至多几个字(同 lib/quiz)。
  */
 export const EDU_CRED_LEN = 80
@@ -178,29 +166,9 @@ export const EDU_SCHOOL_LEN = 120
 export const EDU_YEAR_LEN = 4
 
 /**
- * 年份:四位数字(不是的存档时清空)。
- */
-export const EDU_YEAR_RE = /^\d{4}$/
-
-/**
- * 年份输入框里要去掉的字:数字以外的。
- */
-export const EDU_NON_DIGIT_RE = /\D/g
-
-/**
  * 年份输入框的手机键位:数字。
  */
 export const EDU_YEAR_MODE = 'numeric'
-
-/**
- * 「公立 / 私立」词条键的前缀。
- */
-export const K_KIND_HEAD = 'fit.kind.'
-
-/**
- * 「课程时长」词条键的前缀。
- */
-export const K_LEN_HEAD = 'fit.len.'
 
 /**
  * 院校所在地下拉的占位词(占位即标签)。
@@ -236,11 +204,6 @@ export const EDU_REMOVE_GLYPH = '✕'
  * 次要文字钮档(「+ 再加一段」、✕)。
  */
 export const EDU_BTN_KIND = 'ghost'
-
-/**
- * 省码 → 省名词条键的前缀(同 GATE_PROV_OPTS 的 pr.XX)。
- */
-export const K_PROV_HEAD = 'pr.'
 
 /**
  * 目标题「找工作」那张大卡的值(答案档 goalBand 的档位,以 lib/quiz 的 FIELD_SPECS.goalBand 为准:2 = 先找到工作)。

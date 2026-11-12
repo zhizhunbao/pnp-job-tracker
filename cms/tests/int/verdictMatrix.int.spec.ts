@@ -580,6 +580,9 @@ describe('#319 tierBasis:等待期的起算点', () => {
 // ── fast-check:摇整个空间,失败自动收缩成最小反例 ──────────────────────────
 
 describe('随机性质(fast-check,失败会 shrink 出最小反例)', () => {
+  // 2026-11-12:下面三条(任何档案 / 单调性 / 无关输入)单跑 2.4 ~ 3.3 秒,全量并行时被挤过 vitest 默认的 5 秒,
+  // 报的是「Test timed out in 5000ms」不是反例(六份并跑实撞一次,八轮随机种子无一反例)。只放宽时限,轮数与断言不动。
+  const PROP_TIMEOUT_MS = 30_000
   const arbProfile: fc.Arbitrary<VerdictProfile> = fc.record({
     age: fc.constantFrom<number | null>(22, 30, 40, 47, null),
     married: fc.constantFrom<boolean | null>(true, false, null),
@@ -619,7 +622,7 @@ describe('随机性质(fast-check,失败会 shrink 出最小反例)', () => {
         }
       }
     }), { numRuns: 400 })
-  })
+  }, PROP_TIMEOUT_MS)
 
   it('单调性:把某道闸的答案改成「达标」,该闸必转 met,且判定不许变差', () => {
     // metamorphic relation:不需要知道正确答案,只需要「补上一项达标的信息不许让结论更糟」。
@@ -642,7 +645,7 @@ describe('随机性质(fast-check,失败会 shrink 出最小反例)', () => {
           .toBeLessThanOrEqual(rank[v0.verdict])
       }
     }), { numRuns: 300 })
-  })
+  }, PROP_TIMEOUT_MS)
 
   it('tierBasis:随机档案下也守「在读 + 经验型等待期」这一条', () => {
     fc.assert(fc.property(arbProfile, (p) => {
@@ -663,7 +666,7 @@ describe('随机性质(fast-check,失败会 shrink 出最小反例)', () => {
           .toBe(fingerprint(byKey(a, spec.key)))
       }
     }), { numRuns: 300 })
-  })
+  }, PROP_TIMEOUT_MS)
 })
 
 // ── 金标:唯一写「期望答案」的地方,每条对着官方条文或当晚实拍的 bug 核过 ─────────
