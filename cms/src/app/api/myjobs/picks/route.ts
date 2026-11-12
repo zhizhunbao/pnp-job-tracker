@@ -8,3 +8,8 @@
  */
 
 export { myjobsPicksGetRoute as GET } from '@/lib/myjobs/server'
+
+/**
+ * POST /api/myjobs/picks —— 上报「点了今天推的这一岗」(2026-11-11 任务书第 48 条)。
+ */
+export { myjobsPicksPostRoute as POST } from '@/lib/myjobs/server'

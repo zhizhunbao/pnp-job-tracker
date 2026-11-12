@@ -486,3 +486,8 @@ export const CONFIRM_MSG_INVALID = '<p>This link is not valid or has expired.</p
  * 每日推送标题。
  */
 export const SUBJ_DAILY = "Today's picks: {n} jobs — Offer2PR"
+
+/**
+ * 每日推送取今日推荐时记推荐记录的来源(2026-11-11 任务书第 48 条;lib/myjobs 的 via,本域自抄)。
+ */
+export const PICKS_VIA_MAIL = 'mail'

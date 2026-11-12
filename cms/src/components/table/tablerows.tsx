@@ -30,6 +30,7 @@ export function TableRows<T>({ cols, rows, rowKey, detailOf }: TableRowsIn<T>) {
             cssOf(css.td),
             c.align === ALIGN_RIGHT && css.right,
             c.nowrap === true && css.nowrap,
+            c.pin === true && css.pin,
             c.className,
           )}>
           {cellOf({ row, col: c })}

@@ -13,3 +13,4 @@
 export { ApplyHost } from './applyhost'
 export { ApplySentSync } from './applysentsync'
 export { openApply } from './functions'
+export { rememberFrom } from './from'

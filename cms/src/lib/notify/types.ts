@@ -204,6 +204,11 @@ export type PicksArg = {
    * 不用当天缓存(铃铛恒 false:跟「我的求职」共用当天那一份)。
    */
   fresh: boolean
+
+  /**
+   * 从哪推的(铃铛恒空串 = 不记推荐记录)。
+   */
+  via: string
 }
 
 /**

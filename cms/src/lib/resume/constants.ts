@@ -671,3 +671,8 @@ export const E_NO_RESUME = 'noResume'
  * 从简历填档案里「没有」的空值(文字、错误码、姓名)。
  */
 export const PREFILL_NONE = ''
+
+/**
+ * 入库的简历正文最多留多少字符(简历匹配只切词干,不用全文;2026-11-11 任务书第 44 条)。
+ */
+export const BODY_MAX = 20000

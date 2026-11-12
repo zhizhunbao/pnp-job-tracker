@@ -739,6 +739,31 @@ export type PicksFact = {
    * 今天的推荐。
    */
   picks: PickItem[]
+
+  /**
+   * 各行的推荐指数(与 picks 同序)。
+   */
+  fits: FitFact[]
+
+  /**
+   * 目标(pr / job)。
+   */
+  goal: string
+
+  /**
+   * 有没有职业依据。
+   */
+  basis: boolean
+
+  /**
+   * 拿 PR 要补的档案项。
+   */
+  need: string[]
+
+  /**
+   * 出的是低档。
+   */
+  lowOnly: boolean
 }
 
 /**
@@ -799,6 +824,16 @@ export type PickRowsIn = {
    * 懒翻回来的公司名译名表。
    */
   cos: Record<string, string>
+
+  /**
+   * 推荐指数要点的展开状态与落格。
+   */
+  fold: FitFold
+
+  /**
+   * 各行的推荐指数(与 items 同序)。
+   */
+  fits: FitFact[]
 }
 
 /**
@@ -829,6 +864,16 @@ export type PickRowIn = {
    * 懒翻回来的公司名译名表。
    */
   cos: Record<string, string>
+
+  /**
+   * 推荐指数要点的展开状态与落格。
+   */
+  fold: FitFold
+
+  /**
+   * 这一行的推荐指数(回包没带 = null,不出胶囊)。
+   */
+  fit: FitFact | null
 }
 
 /**
@@ -1010,6 +1055,16 @@ export type ListRow = {
    * 「⋯」按钮的无障碍名(「更多操作」)。
    */
   more: string
+
+  /**
+   * 推荐指数(今日推荐才有;收藏 / 投递 = null)。
+   */
+  fit: FitView | null
+
+  /**
+   * 点推荐指数胶囊:展开 / 收起这一行的要点(今日推荐才有;收藏 / 投递 = null)。
+   */
+  fitToggle: (() => void) | null
 }
 
 /**
@@ -1205,6 +1260,11 @@ export type MjCol<T> = {
    * 单元格。
    */
   render: (r: T) => React.ReactNode
+
+  /**
+   * 这一列贴在表格右边不随横向滚动走(通用 Table 的 pin;操作列用)。
+   */
+  pin?: boolean
 
   /**
    * 单元格不换行。
@@ -1557,6 +1617,11 @@ export type PicksPaneIn = {
   t: TFn
 
   /**
+   * 去补全档案(没职业依据、拿 PR 缺档案项时那颗钮点它)。
+   */
+  onFill: () => void
+
+  /**
    * 推荐整机。
    */
   p: PicksPanel
@@ -1865,4 +1930,129 @@ export type WageView = {
    * 薪资低于中位(vs 中位格用琥珀;否则绿)。
    */
   down: boolean
+}
+
+/**
+ * 推荐指数胶囊的色档(tag 桶变体里用到的四个,本桶自抄)。
+ */
+export type FitVariant = 'ok' | 'info' | 'gray' | 'warn'
+
+/**
+ * 推荐指数里的一项结论(服务端下发的形:词条键尾与填词)。
+ */
+export type FitLine = {
+  /**
+   * 项的身份(who / edu / lang / work / term / draw / occ / pay / place / emp)。
+   */
+  key: string
+
+  /**
+   * 结论胶囊的词条键尾(pass / check / high / mid / low / none)。
+   */
+  tag: string
+
+  /**
+   * 说明一句的词条键尾。
+   */
+  note: string
+
+  /**
+   * 说明一句的填词。
+   */
+  vars: Record<string, string>
+}
+
+/**
+ * 一行推荐的推荐指数(服务端下发的形)。
+ */
+export type FitFact = {
+  /**
+   * 档(high / mid / low)。
+   */
+  level: string
+
+  /**
+   * 目标(pr / job)。
+   */
+  goal: string
+
+  /**
+   * 硬性条件各项(找工作 = 空)。
+   */
+  hard: FitLine[]
+
+  /**
+   * 匹配情况各项。
+   */
+  soft: FitLine[]
+}
+
+/**
+ * PicksNote(今日推荐表上方或代替表的一句提示)的 props。
+ */
+export type PicksNoteIn = {
+  /**
+   * 提示一句。
+   */
+  text: string
+
+  /**
+   * 钮上的字(空串 = 不出钮)。
+   */
+  go: string
+
+  /**
+   * 点钮。
+   */
+  onGo: () => void
+}
+
+/**
+ * 一行推荐的推荐指数显示(同子桶 recommend 的 FitView,本桶自声明):一枚胶囊加几条要点。
+ */
+export type FitView = {
+  /**
+   * 档的字(高 / 中 / 低)。
+   */
+  levelText: string
+
+  /**
+   * 胶囊色档。
+   */
+  variant: FitVariant
+
+  /**
+   * 几条要点(一行一条)。
+   */
+  bullets: string[]
+
+  /**
+   * 要点展开着(默认收着,点胶囊展开;2026-11-11 Frank「bullets 要不点击 high 那个按钮时候才显示」)。
+   */
+  open: boolean
+
+  /**
+   * 胶囊上档字后面的箭头(收着向下、展开向上)。
+   */
+  mark: string
+
+  /**
+   * 胶囊钮的无障碍名。
+   */
+  aria: string
+}
+
+/**
+ * 推荐指数要点的展开状态(哪几行展开着)与改它的落格。
+ */
+export type FitFold = {
+  /**
+   * 展开着的行(行身份)。
+   */
+  open: string[]
+
+  /**
+   * 写展开着的行。
+   */
+  setOpen: (v: string[]) => void
 }

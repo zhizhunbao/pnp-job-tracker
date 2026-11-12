@@ -371,3 +371,24 @@
   color: #9ca3af;
   cursor: default;
 }
+
+/*
+ * 贴右的列(列声明 pin;2026-11-12):不随横向滚动走,左边一道细阴影把它和滚过去的内容分开。
+ * 底色要实的(表头同表头色、数据格白),不然滚过去的字会透出来;行内「⋯」菜单开着时抬一层,不被下一行的贴右格盖住。
+ */
+.pin {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background: #ffffff;
+  box-shadow: -6px 0 6px -6px rgb(0 0 0 / 14%);
+}
+
+.th.pin {
+  background: #fafafa;
+}
+
+.pin:hover,
+.pin:focus-within {
+  z-index: 2;
+}

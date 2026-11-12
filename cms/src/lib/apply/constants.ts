@@ -804,3 +804,13 @@ export const ST_DECLINED = 'declined'
  * 用量账本里的功能名:AI 写求职信(2026-11-08)。
  */
 export const LETTER_FEATURE = 'apply.letter'
+
+/**
+ * 请求头:cookie。
+ */
+export const HDR_COOKIE = 'cookie'
+
+/**
+ * 投递入口的 cookie(前端开投递框时写:`apply_from=<职位 id>.<入口>`;2026-11-11 任务书第 48 条):取职位 id 与入口两段。
+ */
+export const ENTRY_COOKIE_RE = /(?:^|;\s*)apply_from=(?<job>\d+)\.(?<entry>[a-z]{1,16})(?:;|$)/

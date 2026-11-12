@@ -35,7 +35,7 @@ export function JobsBody({ t, tab, plan, gen, asked, onFill, openApp }: JobsBody
     <>
       <FillBar t={t} onFill={onFill} />
       <section className={CARD_MD_CLS}>
-        {tab === TAB_PICKS && <PicksPane t={t} p={j.picks} />}
+        {tab === TAB_PICKS && <PicksPane t={t} p={j.picks} onFill={onFill} />}
         {tab === TAB_SAVED && <SavedPane t={t} l={j.saved} openApp={openApp} />}
         {tab === TAB_APPLIED && <AppliedPane t={t} l={j.applied} openApp={openApp} />}
       </section>

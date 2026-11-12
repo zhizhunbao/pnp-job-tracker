@@ -421,6 +421,26 @@ export const STRIPE_LOG = {
 } as const
 
 /**
+ * 我的岗位域的日志字面量(2026-11-11 任务书第 48 条立)。
+ */
+export const MYJOBS_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'myjobs',
+
+  /**
+   * 记推荐记录失败(后接用户 id 与原因;推荐照常回,只少这一天的记录)。
+   */
+  pickLogFailed: 'pick log failed: ',
+
+  /**
+   * 用户 id 与原因之间的分隔。
+   */
+  sep: ': ',
+}
+
+/**
  * 简历域的日志字面量(2026-08-22 resume 定型批立)。
  */
 export const RESUME_LOG = {

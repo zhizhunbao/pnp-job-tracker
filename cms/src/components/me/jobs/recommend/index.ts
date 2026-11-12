@@ -7,5 +7,8 @@
  * @time 2026-11-07 18:00:00
  */
 export {
-  makeLoadPicks, picksOf, titledPicksOf, wageViewOf,
+  fitViewOf, makeFitToggle, makeLoadPicks, makeOpenApply, needTextOf, onPickListClick, picksOf,
+  reportPickClick,
+  titledPicksOf, wageViewOf,
 } from './functions'
+export type { FitView } from './types'

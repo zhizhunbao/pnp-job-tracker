@@ -51,6 +51,11 @@ export const PICKS_DAY = 10
 export const PICKS_MAX = 50
 
 /**
+ * 今日推荐的候选池条数(2026-11-11 任务书第 41 到 46 条):库里先取这么多,再判硬性条件、打分、分档,最后取前 PICKS_DAY 条。
+ */
+export const PICKS_POOL = 200
+
+/**
  * 推荐缓存最多记多少人(到了整个清空重来;一人一天一份)。
  */
 export const PICKS_CACHE_MAX = 5000
@@ -211,3 +216,28 @@ export const PROV_PNP: Record<string, string> = {
    */
   NL: 'NLPNP',
 }
+
+/**
+ * 今日推荐从页面拉(记推荐记录时的 via;2026-11-11 任务书第 48 条)。
+ */
+export const VIA_PAGE = 'page'
+
+/**
+ * 不记推荐记录(顶栏铃铛只数条数,用户没看到推荐)。
+ */
+export const VIA_NONE = ''
+
+/**
+ * 上报「点了今天推的这一岗」的动作词。
+ */
+export const ACT_CLICK = 'click'
+
+/**
+ * 错误体:请求体不对。
+ */
+export const E_BAD_BODY = 'bad body'
+
+/**
+ * 推荐记录里位次从几数起。
+ */
+export const RANK_FIRST = 1

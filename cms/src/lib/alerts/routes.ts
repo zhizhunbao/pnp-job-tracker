@@ -2,6 +2,7 @@
  * 提醒域的 HTTP 芯（第十一抽屉）：/api/alerts/run 与 /api/alerts/unsub。
  * 2026-10-10 批 2「新岗推送」:加 /api/alerts/confirm(换收件邮箱的确认链接)与 /api/alerts/prefs(GET 读 / POST 存推送设置);
  * run 往编排里注入今日推荐取数(lib/myjobs 的 loadPicks + picksViewOf,每日推送用)。
+ * 2026-11-11 任务书第 41 到 46 条:改注入 getPicks(不吃缓存),信和页面同一份排序与硬性条件。
  * 顶层只有 handler（闸 routes-shape）；本文件是域内边缘，唯一允许借别域 server 门取数。
  *
  * @author Frank
@@ -12,7 +13,8 @@ import config from '@/payload.config'
 import { headers } from 'next/headers'
 import { getDb } from '../db/server'
 import { loadMatchDims } from '../jobs/server'
-import { loadPicks, picksViewOf } from '../myjobs/server'
+import { getPicks } from '../myjobs/server'
+import { ensureResumeBody } from '../resume/server'
 import { getUserOrNull } from '../quota/server'
 import {
   BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE_LC, HDR_SEED_TOKEN, MIME_HTML, MIME_TEXT, SERVER_ERROR, TEXT_UNAUTHORIZED,
@@ -20,6 +22,7 @@ import {
 } from '../http'
 import { fill } from '../template'
 import {
+  PICKS_VIA_MAIL,
   CACHE_PRIVATE, EMAIL_MAX_LEN, EMAIL_RE, E_AUTH, E_BODY, E_EMAIL, FREQS, K_PREVIEW, PARAM_NONE, P_DRY, P_FORCE, P_PREVIEW,
   P_TOKEN, P_USER, QUIET_RANGE, SWITCH_ON, UNSUB_POST_DONE, UNSUB_POST_FAIL, UNSUB_POST_INVALID, US_DONE, US_FAIL,
 } from './constants'
@@ -120,8 +123,8 @@ export async function alertsRunRoute(req: Request): Promise<Response> {
   const payload = await getPayload({ config: await config })
   const pool = await getDb()
   const loadPicksFor: LoadPicksFn = async function loadPicksFor(x: PicksForIn): Promise<MailPick[]> {
-    const rows = await loadPicks({ db: pool, userId: x.userId, prov: PARAM_NONE })
-    return picksViewOf({ rows }).picks
+    await ensureResumeBody({ db: pool, userId: x.userId })
+    return (await getPicks({ db: pool, userId: x.userId, prov: PARAM_NONE, fresh: true, via: PICKS_VIA_MAIL })).picks
   }
   const result = await runAlerts({
     db: pool, dry: dry, preview: preview,

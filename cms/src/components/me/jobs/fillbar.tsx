@@ -8,12 +8,14 @@
  * @time 2026-11-07 19:30:00
  */
 import { Button } from '@/components/button'
+import { cssOf } from '@/components/css'
 import { IconX } from '@/components/icons'
 import { Notice } from '@/components/notice'
 import { FILL_CLOSE_ARIA, FILL_GO_KEY, FILL_NOTICE_KIND, PLAIN_BTN_KIND } from './constants'
 import { fillTextOf } from './functions'
 import { useFill } from './hooks'
 import type { FillBarIn } from './types'
+import css from './jobs.module.css'
 
 /**
  * 「补全档案」提示条。
@@ -33,5 +35,9 @@ export function FillBar({ t, onFill }: FillBarIn) {
       <Button kind={PLAIN_BTN_KIND} sm onClick={f.onHide} ariaLabel={FILL_CLOSE_ARIA}><IconX /></Button>
     </>
   )
-  return <Notice kind={FILL_NOTICE_KIND} action={action}>{text}</Notice>
+  return (
+    <div className={cssOf(css.fillGap)}>
+      <Notice kind={FILL_NOTICE_KIND} action={action}>{text}</Notice>
+    </div>
+  )
 }

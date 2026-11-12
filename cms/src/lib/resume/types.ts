@@ -847,3 +847,8 @@ export type NocSimFact = {
    */
   sim: number
 }
+
+/**
+ * 补提简历正文(ensureResumeBody)的返回。
+ */
+export type ResumeBodyOut = Promise<void>

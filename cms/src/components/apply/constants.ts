@@ -654,3 +654,8 @@ export const APPLY_FIT_W = 720
  * ARIA 角色:状态播报(开框前那块加载)。
  */
 export const ROLE_STATUS = 'status'
+
+/**
+ * 点「发送」的埋点事件名(名字校验过了才算;2026-11-11 任务书第 48 条:「进三屏」「点发送」之间原先没有埋点)。
+ */
+export const TRACK_SEND_CLICK = 'apply-send-click'

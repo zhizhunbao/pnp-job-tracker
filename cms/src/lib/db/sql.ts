@@ -3024,11 +3024,24 @@ export const RESUME_FILE_INSERT = `INSERT INTO user_resumes (user_id, file_b64, 
 
 /**
  * 替换本人某一份(原地覆盖,默认与否不变)。$1=用户 id,$2=简历 id,$3=base64,$4=文件名,$5=MIME,$6=字节数,
- * $7=上传时刻。不是本人的 = 0 行。
+ * $7=上传时刻。不是本人的 = 0 行。2026-11-11:换了文件,旧正文与提取时刻清掉(下次用到时重新提取)。
  */
 export const RESUME_FILE_REPLACE = `UPDATE user_resumes SET file_b64 = $3, file_name = $4, mime = $5, size_bytes = $6,
-       uploaded_at = $7::timestamptz, updated_at = now()
+       uploaded_at = $7::timestamptz, updated_at = now(), body_text = NULL, body_at = NULL
      WHERE user_id = $1 AND id = $2 RETURNING id, is_default`
+
+/**
+ * 本人默认那份简历还没提取正文的话,回它的 id(2026-11-11 任务书第 44 条:简历匹配拿正文对职位描述;
+ * 列在 docs/sql/picks-rank-20261111.sql)。提取过(成没成都记了 body_at)就 0 行。$1=用户 id。
+ */
+export const RESUME_BODY_PENDING = `SELECT id, is_default FROM user_resumes
+     WHERE user_id = $1 AND is_default AND body_at IS NULL LIMIT 1`
+
+/**
+ * 记这份简历的正文与提取时刻(提取不出来记空串,不再重试;换了文件由 RESUME_FILE_REPLACE 清回 NULL)。
+ * $1=用户 id,$2=简历 id,$3=正文。
+ */
+export const RESUME_BODY_SET = `UPDATE user_resumes SET body_text = $3, body_at = now() WHERE user_id = $1 AND id = $2`
 
 /**
  * 删本人某一份。$1=用户 id,$2=简历 id。
@@ -3144,6 +3157,12 @@ export const MYJOBS_SAVED = `SELECT ${MYJOBS_FROM}
  * 严格模式 matchMode = strict:不拿收藏 / 投过的兜底,只看本省(抽选过期的省也照出本省岗,不跨省替换;实测安省不这样就一条都没有)。
  * 2026-11-09 Frank「这部分加进 table 吧」(职位板的中位年薪、vs 中位两列):多取本省同职业时薪中位 wage_med_hourly(同日「这个地方都显示 时薪吧」);推荐原因列同日撤。
  * want、me 必须 MATERIALIZED:内联后这两段的子查询随每个候选岗重算,生产实测从 0.9 秒变成 40 秒超时。
+ * 2026-11-11 任务书第 41 到 43 条(目标是第一优先级):$5 = 目标是不是「拿 PR」。
+ * 拿 PR:只取全职长期、能走省提名、所在省雇主 offer 类通道近 $4 天抽过的岗(没收录到抽选日的省也不取,第 42 条字面);
+ * 他所在省不在近 $4 天抽过的省里时,改取抽过的省里的岗(原只对过期省这样,现连没收录的省一起)。严格模式不再放过过期省。
+ * 找工作:不限全职长期、不看省提名与抽选,只取本省。两种目标都不取标了「限公民或 PR」的岗(eligibility_flag = pr_required)。
+ * 这里只出候选池($3 条,档案职业命中的在前、越新越前);打分、分档、排序在 lib/myjobs 的 rankPicksOf,所以多取 teer、noc 两列。
+ * 上面「排序:能走省提名在前 → 通道档高在前 → …」与「没挂这一格的省照旧加分」两处作废。
  */
 export const MYJOBS_PICKS = `WITH want AS MATERIALIZED (
        SELECT CASE WHEN u.answers->'basic'->>'matchBy' = 'edu' THEN ARRAY[]::text[]
@@ -3183,7 +3202,7 @@ export const MYJOBS_PICKS = `WITH want AS MATERIALIZED (
             j.salary_text, j.date_posted, j.pnp_eligible, (j.salary_annual > j.wage_med_annual) AS above_med,
             CASE WHEN j.salary_annual > 0 AND j.wage_med_annual > 0
               THEN round((j.salary_annual / j.wage_med_annual - 1) * 100)::int END AS above_pct,
-            j.wage_med_hourly,
+            j.wage_med_hourly, j.teer, j.noc,
             j.employment_hours, j.employment_term, j.valid_through, c.lmia_positions, j.ee_category, j.aip,
             j.pilot, j.pilot_employer, (COALESCE(c.wiki_url, '') <> '') AS known,
             pr.info->>'offerDrawLast' AS draw_last,
@@ -3196,11 +3215,11 @@ export const MYJOBS_PICKS = `WITH want AS MATERIALIZED (
        LEFT JOIN stale st ON st.code = j.province
        LEFT JOIN provinces pr ON pr.code = j.province
       WHERE j.status = 'open' AND COALESCE(j.apply_email, '') <> '' AND j.is_dup IS NOT TRUE
-        AND j.employment_hours = 'full' AND j.employment_term = 'permanent'
-        AND (me.strict OR NOT EXISTS (SELECT 1 FROM stale s WHERE s.code = j.province))
+        AND ($5::boolean = false OR (j.employment_hours = 'full' AND j.employment_term = 'permanent'
+             AND j.pnp_eligible AND j.province IN (SELECT code FROM fresh)))
+        AND j.eligibility_flag::text IS DISTINCT FROM 'pr_required'
         AND (me.prov = '' OR j.province = me.prov
-             OR (me.strict = false AND EXISTS (SELECT 1 FROM stale s WHERE s.code = me.prov) AND j.pnp_eligible
-                 AND j.province IN (SELECT code FROM fresh)))
+             OR ($5::boolean AND me.strict = false AND me.prov NOT IN (SELECT code FROM fresh)))
         AND (cardinality(me.saved_g) + cardinality(me.applied_g) + cardinality(me.want_g) + cardinality(me.want_b) = 0
              OR j.noc = ANY(me.saved_g || me.applied_g || me.want_g) OR j.broad = ANY(me.want_b))
         AND NOT EXISTS (SELECT 1 FROM applications a WHERE a.user_id = $1 AND a.job_id = j.id)
@@ -3208,10 +3227,86 @@ export const MYJOBS_PICKS = `WITH want AS MATERIALIZED (
         AND NOT EXISTS (SELECT 1 FROM bounced_emails b WHERE b.email = lower(j.apply_email))
         AND NOT EXISTS (SELECT 1 FROM applications a2 WHERE a2.user_id = $1 AND lower(a2.employer_email) = lower(j.apply_email)
                         AND a2.status IN ('sending', 'sent', 'replied') AND a2.updated_at > now() - interval '30 days')
-      ORDER BY (j.pnp_eligible AND st.code IS NULL) DESC NULLS LAST,
-               CASE WHEN st.code IS NULL THEN j.grade_channel END DESC NULLS LAST, j.date_posted DESC NULLS LAST,
-               (j.salary_annual > j.wage_med_annual) DESC NULLS LAST, j.id DESC
+      ORDER BY (j.noc = ANY(me.want_g) OR j.broad = ANY(me.want_b)) DESC NULLS LAST,
+               j.date_posted DESC NULLS LAST, j.id DESC
       LIMIT $3`
+
+/**
+ * 今日推荐要的本人档案几格(2026-11-11 任务书第 41、42、45 条):身份 fitWho、教育经历 fitEdu、目标 goalBand、
+ * 语言档 clbBand、同职业总经验档 totalExpBand、所在省与城市,以及有没有职业依据 has_occ(口径同 DIGEST_USERS:
+ * 按专业匹配看专业落不落本站大类,否则看想做的 / 做过的工作;非严格模式再拿收藏、真发出去的投递兜底)。$1=用户 id。
+ * 没答 = 空串 / 空数组 / 0。原 MYJOBS_FIT_FILTER(只取身份与教育经历)并进这一条。
+ */
+export const MYJOBS_PICK_PROFILE = `SELECT COALESCE(u.answers->'basic'->>'fitWho', '') AS who,
+       CASE WHEN jsonb_typeof(u.answers->'basic'->'fitEdu') = 'array' THEN u.answers->'basic'->'fitEdu'
+            ELSE '[]'::jsonb END AS edu,
+       COALESCE((u.answers->'basic'->>'goalBand')::int, 0) AS goal,
+       COALESCE((u.answers->'basic'->>'clbBand')::int, 0) AS clb,
+       COALESCE((u.answers->'basic'->>'totalExpBand')::int, 0) AS total_exp,
+       COALESCE(u.answers->'basic'->>'resProv', '') AS res_prov,
+       COALESCE(u.answers->'basic'->>'resCity', '') AS res_city,
+       (CASE WHEN u.answers->'basic'->>'matchBy' = 'edu'
+             THEN EXISTS (SELECT 1 FROM cip_programs c
+                           WHERE jsonb_typeof(c.broads) = 'array' AND jsonb_array_length(c.broads) > 0
+                             AND c.code IN (SELECT jsonb_array_elements_text(
+                               CASE WHEN jsonb_typeof(u.answers->'basic'->'majors') = 'array' THEN u.answers->'basic'->'majors'
+                                    ELSE '[]'::jsonb END)))
+             ELSE EXISTS (SELECT 1 FROM jsonb_array_elements_text(
+                    CASE WHEN jsonb_typeof(u.answers->'basic'->'nocs') = 'array' THEN u.answers->'basic'->'nocs' ELSE '[]'::jsonb END
+                    || CASE WHEN jsonb_typeof(u.answers->'basic'->'workNocs') = 'array' THEN u.answers->'basic'->'workNocs' ELSE '[]'::jsonb END) w
+                  WHERE length(w) = 5) END
+        OR (COALESCE(u.answers->'basic'->>'matchMode' = 'strict', false) = false
+            AND (EXISTS (SELECT 1 FROM saved_jobs s JOIN jobs sj ON sj.id = s.job_id WHERE s.user_id = u.id AND length(sj.noc) = 5)
+                 OR EXISTS (SELECT 1 FROM applications a JOIN jobs aj ON aj.id = a.job_id
+                             WHERE a.user_id = u.id AND a.status IN ('sent', 'replied') AND length(aj.noc) = 5)))) AS has_occ
+  FROM users u WHERE u.id = $1`
+
+/**
+ * 简历匹配(2026-11-11 任务书第 44 条;第一版用 Postgres 全文检索,不调模型):本人默认简历的正文切成词干,
+ * 逐岗数「职位名加描述的词干(jobs.jd_tsv,触发器维护,只有在架岗有)里有多少个出现在简历里」。只认字面:
+ * 中文简历切不出英文词干(不到 $3 个就一行不回,调用方退回按职业判);法语岗按英语词干切,不准。
+ * 不按候选池去掉常见词 —— 同职业的岗描述很像,去掉后每岗只剩几个词,实测更乱。
+ * $1=用户 id,$2=候选岗的 id 数组,$3=简历至少要切出多少个词干。实测 200 岗约 100 毫秒。
+ */
+export const MYJOBS_RESUME_MATCH = `WITH r AS MATERIALIZED (
+       SELECT tsvector_to_array(to_tsvector('english', body_text)) AS lex FROM user_resumes
+        WHERE user_id = $1 AND is_default AND COALESCE(body_text, '') <> '' LIMIT 1)
+     SELECT j.id, cardinality(tsvector_to_array(j.jd_tsv))::int AS total,
+            (SELECT count(*)::int FROM unnest(tsvector_to_array(j.jd_tsv)) w WHERE w = ANY(r.lex)) AS hit
+       FROM jobs j CROSS JOIN r
+      WHERE j.id = ANY($2::int[]) AND j.jd_tsv IS NOT NULL AND cardinality(r.lex) >= $3`
+
+/**
+ * 记今天推了哪些(2026-11-11 任务书第 48 条;表 docs/sql/picks-rank-20261111.sql 的 pick_log,一人一天一岗一行):
+ * 第几位、什么档、多少分、各项结论;当天再拉不重记(主键挡)。$1=用户 id,$2=哪一天(多伦多时间 YYYY-MM-DD),$3=目标,
+ * $4=从哪推的(page / mail),$5~$9=逐岗的职位 id、位次、档、分、各项结论(JSON 串)五个等长数组。
+ */
+export const PICK_LOG_ADD = `INSERT INTO pick_log (user_id, day, job_id, rank, goal, level, score, parts, via)
+     SELECT $1, $2::date, t.job_id, t.rank, $3, t.level, t.score, t.parts::jsonb, $4
+       FROM unnest($5::int[], $6::smallint[], $7::text[], $8::smallint[], $9::text[]) AS t(job_id, rank, level, score, parts)
+     ON CONFLICT DO NOTHING`
+
+/**
+ * 记点了今天推的这一岗(点职位名或点投递;只记第一次)。$1=用户 id,$2=职位 id,$3=哪一天。
+ */
+export const PICK_LOG_CLICK = `UPDATE pick_log SET clicked_at = now()
+     WHERE user_id = $1 AND job_id = $2 AND day = $3::date AND clicked_at IS NULL`
+
+/**
+ * 记投出了推过的这一岗(哪一天推的都算;只记第一次)。$1=用户 id,$2=职位 id。
+ */
+export const PICK_LOG_SENT = `UPDATE pick_log SET applied_at = now()
+     WHERE user_id = $1 AND job_id = $2 AND applied_at IS NULL`
+
+/**
+ * 今日推荐判硬性条件要的门槛行(2026-11-11 任务书第 42 条):申请人侧的语言与工作经验两类,带数值或写明「不要求」的。
+ * 通道经 pathways.req_streams 里的流名对上 stream。法语口语 / 书面那几行(basis 非空的语言行,魁北克)不取。
+ */
+export const MYJOBS_REQS = `SELECT province, stream, factor, op, value, unit, applies_teer, applies_noc, applies_condition, basis, label
+  FROM pnp_requirements
+ WHERE subject = 'applicant' AND op IN ('>=', 'none')
+   AND ((factor = 'language' AND COALESCE(basis, '') = '') OR factor IN ('experience', 'experienceAlt'))
+ ORDER BY seq`
 
 /**
  * 发出一封之后接着投的同类岗(2026-11-09 Frank:同省、同职业、有投递邮箱、没投过,按新旧排):以刚投的那一岗为准,
@@ -3245,19 +3340,11 @@ export const MYJOBS_TOUCHED_IDS = `SELECT job_id AS id FROM applications WHERE u
      UNION SELECT job_id AS id FROM pick_dismissed WHERE user_id = $1`
 
 /**
- * 今日推荐按「我的通道」筛要的本人两格(2026-10-13 Frank「做推荐匹配吧」):答案档里的身份 fitWho 与教育经历 fitEdu。
- * $1=用户 id。没答 = 空串 / 空数组。
- */
-export const MYJOBS_FIT_FILTER = `SELECT COALESCE(u.answers->'basic'->>'fitWho', '') AS who,
-       CASE WHEN jsonb_typeof(u.answers->'basic'->'fitEdu') = 'array' THEN u.answers->'basic'->'fitEdu'
-            ELSE '[]'::jsonb END AS edu
-  FROM users u WHERE u.id = $1`
-
-/**
  * 今日推荐按「我的通道」筛要的各通道身份对照(同上批):岗的具名通道 pnp_stream 对 board_label,
  * 没具名通道的可提名岗对本省省默认通道(is_default)。只取在开、登了对照的。
+ * 2026-11-11 任务书第 42 条:多取通道键 key 与门槛流名 req_streams(对门槛表 pnp_requirements 的 stream)。
  */
-export const MYJOBS_PATHWAY_FITS = `SELECT province, board_label, is_default, fits FROM pathways
+export const MYJOBS_PATHWAY_FITS = `SELECT key, province, board_label, is_default, fits, req_streams FROM pathways
   WHERE status <> 'closed' AND fits IS NOT NULL`
 
 /**
@@ -3398,6 +3485,13 @@ export const APPLY_CLAIM = `UPDATE applications SET status = 'sending', employer
      WHERE user_id = $1 AND job_id = $2
        AND (status IN ('draft', 'queued') OR (status = 'sending' AND updated_at < now() - interval '10 minutes'))
      RETURNING id`
+
+/**
+ * 记这一封投递是从哪个页面发起的(2026-11-11 任务书第 48 条;列在 docs/sql/picks-rank-20261111.sql):只记第一次
+ * (存草稿时记过,发出时不改)。$1=用户 id,$2=职位 id,$3=入口(picks / saved / draft / jobs …)。
+ */
+export const APPLY_ENTRY_SET = `UPDATE applications SET entry = $3
+     WHERE user_id = $1 AND job_id = $2 AND entry IS NULL`
 
 /**
  * 发出去了:记 Resend id 与发出时刻。$1=投递行 id,$2=Resend 邮件 id。

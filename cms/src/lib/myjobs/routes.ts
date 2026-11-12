@@ -13,10 +13,14 @@ import { headers } from 'next/headers'
 import { getDb } from '../db/server'
 import { BAD_REQUEST, HDR_CACHE_CONTROL, UNAUTHORIZED } from '../http'
 import { getUserOrNull } from '../quota/server'
-import { CACHE_PRIVATE, E_AUTH, E_NO_ID, FRESH_ON, P_FRESH, P_PROV, PROV_RE, TEXT_NONE } from './constants'
 import {
-  afterOf, deleteApplied, getPicks, idOf, loadApplied, loadPicksAfter, loadSaved, loadSentCount,
+  ACT_CLICK, CACHE_PRIVATE, E_AUTH, E_BAD_BODY, E_NO_ID, FRESH_ON, P_FRESH, P_PROV, PROV_RE, TEXT_NONE, VIA_PAGE,
+} from './constants'
+import type { PickActJson } from './types'
+import {
+  afterOf, deleteApplied, getPicks, idOf, loadApplied, loadPicksAfter, loadSaved, loadSentCount, markPickClick,
 } from './functions'
+import { ensureResumeBody } from '../resume/server'
 
 /**
  * DELETE /api/myjobs/applied?id=:我的投递「删除」(草稿真删,已发出的只藏起;不是本人的那条什么也不改)。
@@ -95,8 +99,36 @@ export async function myjobsPicksGetRoute(req: Request): Promise<Response> {
     prov = p
   }
   const fresh = q.get(P_FRESH) === FRESH_ON
-  const body = await getPicks({ db: await getDb(), userId: user.id, prov, fresh })
+  const db = await getDb()
+  await ensureResumeBody({ db, userId: user.id })
+  const body = await getPicks({ db, userId: user.id, prov, fresh, via: VIA_PAGE })
   return Response.json(body, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
+}
+
+/**
+ * POST /api/myjobs/picks:上报「点了今天推的这一岗」(2026-11-11 任务书第 48 条;体 { jobId, act: 'click' })。
+ * 只记进推荐记录,不回数据;不是今天推的岗不改任何行。
+ *
+ * @param req 请求。
+ * @returns { ok };未登录 401、体不对 400。
+ */
+export async function myjobsPicksPostRoute(req: Request): Promise<Response> {
+  const user = await getUserOrNull(await headers())
+  if (user == null) {
+    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  let body: PickActJson = {}
+  try {
+    body = await req.json() as PickActJson
+  } catch {
+    body = {}
+  }
+  const jobId = Number(body.jobId)
+  if (body.act !== ACT_CLICK || Number.isInteger(jobId) === false || jobId <= 0) {
+    return Response.json({ error: E_BAD_BODY }, { status: BAD_REQUEST })
+  }
+  await markPickClick({ db: await getDb(), userId: user.id, jobId })
+  return Response.json({ ok: true })
 }
 
 /**

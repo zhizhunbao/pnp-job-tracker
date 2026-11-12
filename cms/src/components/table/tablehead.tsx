@@ -43,6 +43,7 @@ export function TableHead<T>({ cols, sort, toggleSort, widths }: TableHeadIn<T>)
           sortable && css.sortable,
           c.thTip != null && css.tip,
           c.align === ALIGN_RIGHT && css.right,
+          c.pin === true && css.pin,
           c.className,
         )}
         onClick={clickHead}

@@ -14,6 +14,7 @@ import { count, firstOf, numOrNull, queryRows, SQL, text } from '../db'
 import { fill } from '../template'
 import { log, RESUME_LOG } from '../log'
 import {
+  BODY_MAX,
   CLAMP, ERR_SLICE, ERR_UNSUPPORTED, EXT_DOCX, EXT_PDF, EXT_SEP, FREE_ROWS, IELTS_CLB, NOC_CAND_MAX, ROLE_SYSTEM,
   ROLE_USER, BRACE_CLOSE, BRACE_OPEN, NOTE_MAX, REQ_MAX, RGBA_BYTES, ROWS_MAX, ROWS_MIN, ERR_NONE, REWRITE_NONE,
   TITLE_PENDING, B64, DISP_ATTACH, DISP_INLINE, DISP_NAME_HEAD, DOCX_MAGIC, FILE_NAME_DOCX, FILE_NAME_MAX, FILE_NAME_PDF,
@@ -22,6 +23,7 @@ import {
 } from './constants'
 import { MATCH_REWRITE, MATCH_SYSTEM, MATCH_USER, OUT_LANG, OUT_LANG_DEFAULT } from './prompts'
 import type {
+  ResumeBodyOut,
   CaughtError, ExtractIn, ExtractOut, GateMatchIn, Gated, MatchMessages, MatchPromptIn, MatchRows,
   MaybeIelts, MaybeNum, NocCandidate, NocCandidatesIn, NocCandidatesOut, JsonObj, MaybeMatchRows, NocSimDbRow,
   NocTitleDbRow, NocTitleRow, ParsedJson, DispositionIn, FileMimeIn, FileNameIn, MaybeMime, ResumeBlob, ResumeBlobDbRow,
@@ -300,6 +302,29 @@ export async function loadPrefillText(x: ResumeUserIn): PrefillTextOut {
     return { text: PREFILL_NONE, error: E_SCAN }
   }
   return { text, error: PREFILL_NONE }
+}
+
+/**
+ * 本人默认那份简历还没提取过正文就提取一次、记进库(2026-11-11 任务书第 44 条:今日推荐的简历匹配要它)。
+ * 用到时才提(已有的简历不批量回填);提取不出来(扫描件、加密、坏文件)记空串,不再重试 —— 换了文件库里会清回未提取。
+ *
+ * @param x 连接与用户 id。
+ * @returns 无。
+ */
+export async function ensureResumeBody(x: ResumeUserIn): ResumeBodyOut {
+  const pending = firstOf(await queryRows({ db: x.db, sql: SQL.RESUME_BODY_PENDING, params: [x.userId], map: toResumeId }))
+  if (pending == null) {
+    return
+  }
+  let body = PREFILL_NONE
+  const blob = await loadResumeBlob({ db: x.db, userId: x.userId, id: pending.id })
+  if (blob != null) {
+    const got = await extractText({ name: blob.fileName, buf: Buffer.from(blob.bytes) })
+    if (got.text != null) {
+      body = got.text.replace(WS_ALL_RE, ONE_SPACE).trim().slice(0, BODY_MAX)
+    }
+  }
+  await x.db.query(SQL.RESUME_BODY_SET, [x.userId, pending.id, body])
 }
 
 /**

@@ -1924,3 +1924,48 @@ export type ApplyLettersIn = {
  * `loadApplyLetters` 的返回。
  */
 export type ApplyLettersOut = Promise<ApplyLetterFact[]>
+
+/**
+ * 从 cookie 里取投递入口(entryOfCookie)的入参。
+ */
+export type EntryCookieIn = {
+  /**
+   * 请求的 cookie 头(没有 = null)。
+   */
+  cookie: string | null
+
+  /**
+   * 这一封投的职位 id(cookie 里记的不是这一岗就不认)。
+   */
+  jobId: number
+}
+
+/**
+ * 记投递入口(markApplyEntry)的入参。
+ */
+export type ApplyEntryIn = {
+  /**
+   * 数据库连接(调用方注入)。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: UserId
+
+  /**
+   * 职位 id。
+   */
+  jobId: number
+
+  /**
+   * 入口(空串 = 不知道,不记)。
+   */
+  entry: string
+
+  /**
+   * 这一封真发出去了(连带把推荐记录里这一岗记成投了)。
+   */
+  sent: boolean
+}

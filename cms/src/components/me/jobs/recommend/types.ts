@@ -153,6 +153,31 @@ export type PicksFact = {
    * 今天的推荐。
    */
   picks: PickItem[]
+
+  /**
+   * 各行的推荐指数(与 picks 同序)。
+   */
+  fits: FitFact[]
+
+  /**
+   * 目标(pr / job)。
+   */
+  goal: string
+
+  /**
+   * 有没有职业依据。
+   */
+  basis: boolean
+
+  /**
+   * 拿 PR 要补的档案项。
+   */
+  need: string[]
+
+  /**
+   * 出的是低档。
+   */
+  lowOnly: boolean
 }
 
 /**
@@ -183,6 +208,31 @@ export type PicksRespJson = {
    * 今天的推荐。
    */
   picks?: PickItem[]
+
+  /**
+   * 各行的推荐指数(与 picks 同序;2026-11-11 任务书第 46 条)。
+   */
+  fits?: FitFact[]
+
+  /**
+   * 目标(pr / job)。
+   */
+  goal?: string
+
+  /**
+   * 有没有职业依据(没有 = 不出推荐,出引导去填)。
+   */
+  basis?: boolean
+
+  /**
+   * 拿 PR 要补的档案项(who / clb / exp)。
+   */
+  need?: string[]
+
+  /**
+   * 高、中档一条都没有,出的是低档。
+   */
+  lowOnly?: boolean
 }
 
 /**
@@ -238,4 +288,194 @@ export type WageView = {
    * 薪资低于中位(vs 中位格用琥珀;否则绿)。
    */
   down: boolean
+}
+
+/**
+ * 推荐指数胶囊的色档(tag 桶变体里用到的四个,本桶自抄)。
+ */
+export type FitVariant = 'ok' | 'info' | 'gray' | 'warn'
+
+/**
+ * 取词函数(本桶自声明)。
+ */
+export type FitTFn = (key: string, vars?: Record<string, string>) => string
+
+/**
+ * 推荐指数里的一项结论(服务端下发的形:词条键尾与填词)。
+ */
+export type FitLine = {
+  /**
+   * 项的身份(who / edu / lang / work / term / draw / occ / pay / place / emp)。
+   */
+  key: string
+
+  /**
+   * 结论胶囊的词条键尾(pass / check / high / mid / low / none)。
+   */
+  tag: string
+
+  /**
+   * 说明一句的词条键尾。
+   */
+  note: string
+
+  /**
+   * 说明一句的填词。
+   */
+  vars: Record<string, string>
+}
+
+/**
+ * 一行推荐的推荐指数(服务端下发的形)。
+ */
+export type FitFact = {
+  /**
+   * 档(high / mid / low)。
+   */
+  level: string
+
+  /**
+   * 目标(pr / job)。
+   */
+  goal: string
+
+  /**
+   * 硬性条件各项(找工作 = 空)。
+   */
+  hard: FitLine[]
+
+  /**
+   * 匹配情况各项。
+   */
+  soft: FitLine[]
+}
+
+/**
+ * needTextOf 的入参。
+ */
+export type NeedTextIn = {
+  /**
+   * 要补的档案项。
+   */
+  need: string[]
+
+  /**
+   * 取词函数。
+   */
+  t: FitTFn
+}
+
+/**
+ * 推荐表上的点击事件里本桶真读的一格。
+ */
+export type PickClickEvent = {
+  /**
+   * 点到的元素。
+   */
+  target: EventTarget | null
+}
+
+/**
+ * makeOpenApply 的入参。
+ */
+export type OpenApplyIn = {
+  /**
+   * 职位号。
+   */
+  jobId: number
+
+  /**
+   * 投递入口(picks / saved / draft)。
+   */
+  from: string
+}
+
+/**
+ * 一行推荐的推荐指数显示(2026-11-11 Frank「不要弹框了」「直接那一列,列 bullets」:一枚胶囊加几条要点)。
+ */
+export type FitView = {
+  /**
+   * 档的字(高 / 中 / 低)。
+   */
+  levelText: string
+
+  /**
+   * 胶囊色档。
+   */
+  variant: FitVariant
+
+  /**
+   * 几条要点(一行一条)。
+   */
+  bullets: string[]
+
+  /**
+   * 要点展开着(默认收着,点胶囊展开;2026-11-11 Frank「bullets 要不点击 high 那个按钮时候才显示」)。
+   */
+  open: boolean
+
+  /**
+   * 胶囊上档字后面的箭头(收着向下、展开向上)。
+   */
+  mark: string
+
+  /**
+   * 胶囊钮的无障碍名。
+   */
+  aria: string
+}
+
+/**
+ * fitViewOf 的入参。
+ */
+export type FitViewIn = {
+  /**
+   * 服务端下发的推荐指数。
+   */
+  fact: FitFact
+
+  /**
+   * 取词函数。
+   */
+  t: FitTFn
+
+  /**
+   * 这一行的要点展开着。
+   */
+  open: boolean
+}
+
+/**
+ * 几条要点。
+ */
+export type Bullets = string[]
+
+/**
+ * 推荐指数要点的展开状态(哪几行展开着)与改它的落格。
+ */
+export type FitFold = {
+  /**
+   * 展开着的行(行身份)。
+   */
+  open: string[]
+
+  /**
+   * 写展开着的行。
+   */
+  setOpen: (v: string[]) => void
+}
+
+/**
+ * makeFitToggle 的入参。
+ */
+export type FitToggleIn = {
+  /**
+   * 行身份。
+   */
+  key: string
+
+  /**
+   * 展开状态与落格。
+   */
+  fold: FitFold
 }

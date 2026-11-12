@@ -25,7 +25,7 @@ import { makeLoadPicks } from './recommend'
 import { downloadRecord, recordCsvOf } from './record'
 import type { RecordRow } from './record'
 import type {
-  AskDel, AskPanel, FileView, FileViewPanel, FillPanel, JobsHookIn, JobsPanel, LazyCompaniesIn, LazyTitlesIn,
+  AskDel, AskPanel, FileView, FileViewPanel, FillPanel, FitFold, JobsHookIn, JobsPanel, LazyCompaniesIn, LazyTitlesIn,
   MyJobItem, MyJobsHookIn, MyJobsPanel, PfView, PicksFact, PicksHookIn, PicksPanel, TitledItem,
   RecordExportIn,
 } from './types'
@@ -80,6 +80,16 @@ export function useAskDel(): AskPanel {
 export function useFileView(): FileViewPanel {
   const [file, setFile] = useState<FileView | null>(null)
   return { file, onView: setFile, onClose: makeFileClose(setFile) }
+}
+
+/**
+ * 推荐指数要点的展开状态(2026-11-11 Frank「bullets 要不点击 high 那个按钮时候才显示」):默认都收着,点哪一行的胶囊展开哪一行。
+ *
+ * @returns 展开着的行与落格。
+ */
+export function useFitFold(): FitFold {
+  const [open, setOpen] = useState<string[]>([])
+  return { open, setOpen }
 }
 
 /**

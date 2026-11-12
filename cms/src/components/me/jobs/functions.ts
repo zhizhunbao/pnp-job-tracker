@@ -8,7 +8,6 @@
  * @author Frank
  * @time 2026-11-07 18:00:00
  */
-import { openApply } from '@/components/apply'
 import { missingStepsOf } from '@/components/gate'
 import { lazyTitleOf, titleSubOf } from '@/components/jobtitle'
 import { hoursNameOf, placeHrefOf, placeSubOf, termNameOf } from '@/components/name'
@@ -23,13 +22,15 @@ import {
   OPEN_KIND, PF_ERR_EMPTY, PLACE_SEP, PRIMARY_KIND, STAGES, STAGE_ALL, STAGE_FILTERS,
   METHOD_DELETE, ST_DRAFT, TEXT_NONE, URL_PROFILE,
   ACT_COVER, ACT_RESUME, COL_ADDR, FILE_COVER_TAIL, FILE_RESUME_TAIL, MIME_PDF, URL_FILE_HEAD, URL_TAILOR_FILE_HEAD,
-  FILL_KEY, FILL_LABEL_FALLBACK, FILL_LABEL_KEYS, FILL_MORE_KEY, FILL_NAME_MAX, FILL_SEP_KEY, COL_MED, COL_VS,
+  FILL_KEY, FILL_LABEL_FALLBACK, FILL_LABEL_KEYS, FILL_MORE_KEY, FILL_NAME_MAX, FILL_SEP_KEY, COL_MED, COL_VS, COL_FIT,
+  FROM_DRAFT, FROM_PICKS, FROM_SAVED,
 } from './constants'
 import { AddrCell } from './addrcell'
 import { HoursCell } from './hourscell'
 import { MedCell } from './medcell'
 import { PayCell } from './paycell'
-import { wageViewOf } from './recommend'
+import { fitViewOf, makeFitToggle, makeOpenApply, wageViewOf } from './recommend'
+import { FitTag } from './fittag'
 import { TagsCell } from './tagscell'
 import { TermCell } from './termcell'
 import { VsCell } from './vscell'
@@ -40,7 +41,7 @@ import type {
   MyJobItem, MyJobsRespJson, PfJson, PfLoadIn, PfSeed, PfView, PickRowIn, PickRowsIn, PillClickIn, PlaceDue, PlaceDueIn,
   FillTextIn, StagePill, StagePillsIn, TagItem, TitleSubForIn,
   FillHideIn, AskOkIn, AskSetFn, DelMenuIn, RemoveFn, RemoveMineIn, RowMenuItem,
-  SendDeleteIn, FileBtnIn, FileOpenIn, FileSetFn, FileView,
+  SendDeleteIn, FileBtnIn, FileOpenIn, FileSetFn, FileView, FitFact, FitView,
 } from './types'
 
 /**
@@ -154,6 +155,8 @@ export function listRowOf(x: CellRowIn): ListRow {
     act: actOf(x),
     menu: fileMenuOf(x).concat(delMenuOf({ t: x.t, ask: x.ask, remove: x.remove, id: it.id, name: it.title })),
     more: x.t('mj.more'),
+    fit: null,
+    fitToggle: null,
   }
 }
 
@@ -308,7 +311,7 @@ export function actOf(x: CellRowIn): ActBtn | null {
       key: ACT_CONT,
       text: x.t('mj.cont'),
       kind: PRIMARY_KIND,
-      onClick: makeOpenApply(it.jobId),
+      onClick: makeOpenApply({ jobId: it.jobId, from: FROM_DRAFT }),
       href: TEXT_NONE,
     }
   }
@@ -317,7 +320,7 @@ export function actOf(x: CellRowIn): ActBtn | null {
       key: ACT_APPLY,
       text: x.t('mj.apply'),
       kind: PRIMARY_KIND,
-      onClick: makeOpenApply(it.jobId),
+      onClick: makeOpenApply({ jobId: it.jobId, from: FROM_SAVED }),
       href: TEXT_NONE,
     }
   }
@@ -351,18 +354,6 @@ export function canApply(x: CellRowIn): boolean {
     return false
   }
   return x.item.jobId != null
-}
-
-/**
- * 造「点投递 / 继续」:就地弹投递框(2026-10-09 A 批;原先是去「我的求职」投递区的链接)。
- *
- * @param jobId 职位号。
- * @returns 点击手柄。
- */
-export function makeOpenApply(jobId: number): () => void {
-  return function openIt(): void {
-    openApply(jobId)
-  }
 }
 
 /**
@@ -435,7 +426,12 @@ export function makePillClick(x: PillClickIn): () => void {
 export function pickRowsOf(x: PickRowsIn): ListRow[] {
   const out: ListRow[] = []
   for (const item of x.items) {
-    out.push(pickRowOf({ item, lang: x.lang, t: x.t, titles: x.titles, cos: x.cos }))
+    let fit: FitFact | null = null
+    const got = x.fits[out.length]
+    if (got != null) {
+      fit = got
+    }
+    out.push(pickRowOf({ item, lang: x.lang, t: x.t, titles: x.titles, cos: x.cos, fold: x.fold, fit }))
   }
   return out
 }
@@ -452,17 +448,23 @@ export function pickRowsOf(x: PickRowsIn): ListRow[] {
 export function pickRowOf(x: PickRowIn): ListRow {
   const it = x.item
   const pd = placeDueOf({ city: it.city, province: it.province, validThrough: it.validThrough, t: x.t })
+  const titleSub = titleSubFor({
+    title: it.title, titleZh: it.titleZh, titleKo: it.titleKo, titles: x.titles, lang: x.lang,
+  })
+  const key = String(it.id)
+  let fit: FitView | null = null
+  let fitToggle: (() => void) | null = null
+  if (x.fit != null) {
+    fit = fitViewOf({ fact: x.fit, t: x.t, open: x.fold.open.includes(key) })
+    fitToggle = makeFitToggle({ key, fold: x.fold })
+  }
   return {
-    key: String(it.id),
+    key,
     jobId: it.id,
     title: it.title,
-    titleSub: titleSubFor({
-      title: it.title,
-      titleZh: it.titleZh,
-      titleKo: it.titleKo,
-      titles: x.titles,
-      lang: x.lang,
-    }),
+    titleSub,
+    fit,
+    fitToggle,
     company: it.company,
     companyZh: coAliasFor({ own: it.companyZh, name: it.company, cos: x.cos, want: LANG_ZH, lang: x.lang }),
     companyKo: coAliasFor({ own: it.companyKo, name: it.company, cos: x.cos, want: LANG_KO, lang: x.lang }),
@@ -482,7 +484,13 @@ export function pickRowOf(x: PickRowIn): ListRow {
     address: it.address,
     tags: [],
     cardTags: [],
-    act: { key: ACT_APPLY, text: x.t('mj.apply'), kind: PRIMARY_KIND, onClick: makeOpenApply(it.id), href: TEXT_NONE },
+    act: {
+      key: ACT_APPLY,
+      text: x.t('mj.apply'),
+      kind: PRIMARY_KIND,
+      href: TEXT_NONE,
+      onClick: makeOpenApply({ jobId: it.id, from: FROM_PICKS }),
+    },
     menu: [],
     more: x.t('mj.more'),
   }
@@ -502,6 +510,7 @@ export function pickRowOf(x: PickRowIn): ListRow {
 export function pickColsOf(x: ColsIn): MjCol<ListRow>[] {
   return [
     { key: COL_TITLE, label: x.t('mj.col.title'), render: TitleCell },
+    { key: COL_FIT, label: x.t('mj.col.fit'), render: FitTag, nowrap: true },
     { key: COL_COMPANY, label: x.t('mj.col.company'), render: CompanyCell },
     { key: COL_ADDR, label: x.t('mj.col.addr'), render: AddrCell },
     { key: COL_PAY, label: x.t('mj.col.pay'), render: PayCell, nowrap: true },
@@ -509,7 +518,7 @@ export function pickColsOf(x: ColsIn): MjCol<ListRow>[] {
     { key: COL_VS, label: x.t('col.vsMedian'), render: VsCell, nowrap: true },
     { key: COL_POSTED, label: x.t('mj.col.posted'), render: postedOf, nowrap: true },
     { key: COL_DEADLINE, label: x.t('mj.col.deadline'), render: deadlineOf, nowrap: true },
-    { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true },
+    { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true, pin: true },
   ]
 }
 
@@ -523,7 +532,7 @@ export function savedColsOf(x: ColsIn): MjCol<ListRow>[] {
   return baseColsOf(x).concat([
     { key: COL_STATUS, label: x.t('mj.col.status'), render: TagsCell },
     { key: COL_SAVED_ON, label: x.t('mj.col.savedOn'), render: savedOnOf, nowrap: true },
-    { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true },
+    { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true, pin: true },
   ])
 }
 
@@ -540,7 +549,7 @@ export function appliedColsOf(x: ColsIn): MjCol<ListRow>[] {
   return baseColsOf(x).concat([
     { key: COL_STATUS, label: x.t('mj.col.status'), render: TagsCell },
     { key: COL_APPLIED_ON, label: x.t('mj.col.appliedOn'), render: appliedOnOf, nowrap: true },
-    { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true },
+    { key: COL_ACT, label: x.t('mj.col.act'), render: ActCell, nowrap: true, pin: true },
   ])
 }
 

@@ -591,3 +591,13 @@ export const JD_SEC_KEYS: Record<string, string> = {
    */
   '[APPLY]': 'act.f.apply',
 }
+
+/**
+ * 进三屏(按职位改写的核对屏)的埋点事件名(2026-11-11 任务书第 48 条)。
+ */
+export const TRACK_REVIEW = 'apply-review'
+
+/**
+ * 在三屏里点「发送」的埋点事件名(与父桶的 TRACK_SEND_CLICK 同值,各自抄)。
+ */
+export const TRACK_SEND_CLICK = 'apply-send-click'

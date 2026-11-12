@@ -10,6 +10,8 @@
 import { cssOf } from '@/components/css'
 import { ActCell } from './actcell'
 import { CompanyCell } from './companycell'
+import { FitBullets } from './fitbullets'
+import { FitTag } from './fittag'
 import { TEXT_NONE } from './constants'
 import { PayCell } from './paycell'
 import { TagList } from './taglist'
@@ -26,11 +28,15 @@ import css from './jobs.module.css'
 export function JobCard({ r }: JobCardIn) {
   return (
     <div className={cssOf(css.item)} data-row={r.key}>
-      <div className={cssOf(css.itemTitle)}>{TitleCell(r)}</div>
+      <div className={cssOf(css.itemTitle)}>
+        {TitleCell(r)}
+        {FitTag(r)}
+      </div>
       <div className={cssOf(css.itemMid)}>
         <span className={cssOf(css.itemCo)}>{CompanyCell(r)}</span>
         {PayCell(r)}
       </div>
+      {FitBullets(r)}
       <TagList tags={r.cardTags} />
       <div className={cssOf(css.itemFoot)}>
         <span className={cssOf(css.itemMeta)}>

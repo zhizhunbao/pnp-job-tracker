@@ -15,6 +15,7 @@ import { toast } from '@/components/toast'
 import { APPLY_LOG, log } from '@/lib/log'
 import { track } from '@/lib/track'
 import {
+  TRACK_SEND_CLICK,
   CLOSED_KEY, CRED_INCLUDE, DATE_LEN, ERR_CODES, ERR_FALLBACK, ERR_KEY_FULL, ERR_KEY_HEAD, ERR_KEY_NAME,
   ERR_KEY_RESUME, ERR_KEY_UPLOAD, ERR_NONE, FIELD_FILE, HDR_CONTENT_TYPE,
   HTTP_CONFLICT, HTTP_UNAUTH, LOAD_AUTH, LOAD_BUSY, LOAD_FAIL, LOAD_NONE, LOAD_OK, METHOD_POST, METHOD_PUT, MIME_JSON,
@@ -38,6 +39,7 @@ import type {
   ApplyTitled, AuthRetryIn,
   PushLoadIn, PushOnIn, PushPrefsJson, SendIn,
 } from './types'
+import { FROM_JOBS, rememberFrom } from './from'
 import { uploadLetter } from './letter'
 import { CACHE } from './variables'
 
@@ -237,7 +239,9 @@ export function modalTitleOf(start: ApplyStartView | null): string {
  * @returns 无。
  */
 export function openFromEvent(e: Event): void {
-  openApply((e as CustomEvent<ApplyOpenDetail>).detail.jobId)
+  const jobId = (e as CustomEvent<ApplyOpenDetail>).detail.jobId
+  rememberFrom({ jobId, from: FROM_JOBS })
+  openApply(jobId)
 }
 
 /**
@@ -796,6 +800,7 @@ async function send(x: SendIn): Promise<void> {
     c.setErr(ERR_KEY_NAME)
     return
   }
+  track(TRACK_SEND_CLICK)
   c.setBusy(true)
   c.setErr(ERR_NONE)
   let err = ERR_NONE

@@ -25,6 +25,7 @@ import { checkLimit, getUserOrNull, ipOf, isPro } from '../quota/server'
 import { inboxAddressOf, receiveInbound, RECV_FETCH } from '../inbox/server'
 import { extractText } from '../resume'
 import {
+  HDR_COOKIE,
   B64, CACHE_PRIVATE, COVER_LIMIT_DAILY, COVER_LIMIT_PREFIX, COVER_MAX, DISPOSITION_INLINE, DISPOSITION_TAIL,
   DRAFT_LIMIT_DAILY, DRAFT_LIMIT_PREFIX, E_AUTH, E_BODY, E_BOUNCED, E_BUSY, E_CHARS, E_CLOSED, E_DRAFT, E_JOB, E_LIMIT,
   E_LONG, E_MAIL, E_MAIL_OFF, E_NAME, E_PRO, E_NO_EMAIL, E_RESUME, E_SAME_EMAIL, E_SENT, E_SIG, HDR_NOSNIFF, HDR_SVIX_ID,
@@ -34,6 +35,7 @@ import {
   LETTER_FEATURE, LETTER_TEMPERATURE, LETTER_TOKENS_MAX, P_ID, P_KIND, EV_RECEIVED,
 } from './constants'
 import {
+  entryOfCookie, markApplyEntry,
   bounceKindOf, claimApply, coverFileOf, coverFillOf, coverPdfOf, idemKeyOf, isBouncedEmail,
   isSameEmailRecent, isSenderName, isSvixValid, loadApplyBlob, loadApplyJob, loadApplyPrefs, loadApplyRow, loadApplyStart,
   loadSiteDayCount, loadUserDayCount, mailHtmlOf, mailSubjectOf, mailTextOf, markApplyBounced, markApplySent,
@@ -140,6 +142,8 @@ export async function applyDraftRoute(req: Request): Promise<Response> {
   if (saved === false) {
     return Response.json({ error: E_SENT }, { status: CONFLICT })
   }
+  const entry = entryOfCookie({ cookie: req.headers.get(HDR_COOKIE), jobId: job.id })
+  await markApplyEntry({ db, userId: user.id, jobId: job.id, entry, sent: false })
   return Response.json({ ok: true })
 }
 
@@ -560,6 +564,8 @@ export async function applySendRoute(req: Request): Promise<Response> {
     return Response.json({ error: E_MAIL }, { status: BAD_GATEWAY })
   }
   await markApplySent({ db, id: appId, resendId: sent.id })
+  const entry = entryOfCookie({ cookie: req.headers.get(HDR_COOKIE), jobId })
+  await markApplyEntry({ db, userId: user.id, jobId, entry, sent: true })
   log({ tag: APPLY_LOG.tag, text: APPLY_LOG.sent + user.id + APPLY_LOG.appFrag + appId })
   return Response.json({ ok: true, id: appId })
 }

@@ -527,3 +527,23 @@ export const FILL_CLOSE_ARIA = 'close'
  * 定制样式钮的统一底座:ghost 底最素(提示条上「去补全」与 ✕;与 nav / tag 桶同名同义,各家一份)。
  */
 export const PLAIN_BTN_KIND = 'ghost'
+
+/**
+ * 「推荐指数」列的键(2026-11-11 任务书第 46 条)。
+ */
+export const COL_FIT = 'fit'
+
+/**
+ * 投递入口:今日推荐(2026-11-11 任务书第 48 条;apply 桶子桶 from 记成 cookie,服务端落 applications.entry)。
+ */
+export const FROM_PICKS = 'picks'
+
+/**
+ * 投递入口:我的收藏。
+ */
+export const FROM_SAVED = 'saved'
+
+/**
+ * 投递入口:我的投递里的草稿「继续」。
+ */
+export const FROM_DRAFT = 'draft'

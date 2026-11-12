@@ -126,6 +126,10 @@
  */
 .itemTitle {
   font-size: 15px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 /*
@@ -200,4 +204,42 @@
   display: flex;
   justify-content: flex-end;
   margin: 8px 0;
+}
+
+/* 推荐指数胶囊钮(点了展开 / 收起要点):钮本身不占边距,只留胶囊;手机一条里不被职位名挤扁。 */
+.fitBtn {
+  padding: 0;
+  min-height: 0;
+  flex: none;
+}
+
+/* 推荐指数的几条要点(一行一条,灰字小号;手机一条里也用)。 */
+.fitBullets {
+  margin: 0;
+  padding-left: 16px;
+  list-style: disc;
+  color: var(--text2);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* 今日推荐的一句提示(没职业依据的引导、要补哪几项、只有低档的说明):句子在左,钮跟在后面,窄屏折行。 */
+.picksNote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  color: var(--text2);
+  font-size: 13px;
+  padding: 12px 0;
+}
+
+/* 「补全档案」提示条和下面那张卡之间的缝(2026-11-11 Frank「加点缝隙」)。 */
+.fillGap {
+  margin-bottom: 12px;
+}
+
+/* 网页端推荐表一行下面的要点细行(2026-11-12 Frank「这个竖着列呢」:原先横着排,改回一行一条竖着列)。 */
+.fitDetail .fitBullets {
+  font-size: 13px;
 }

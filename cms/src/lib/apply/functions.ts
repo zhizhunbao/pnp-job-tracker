@@ -10,6 +10,7 @@
 import { count, firstOf, numOrNull, queryRows, SQL, text, vtext } from '../db'
 import type { Db } from '../db'
 import {
+  ENTRY_COOKIE_RE,
   APPLY_FROM_ADDR, B64, BOUNCE_PERMANENT, COMBINING_RE, COVER_DEFAULT, COVER_FILE_FALLBACK, COVER_FILE_HEAD, CRLF_RE,
   DOT, EV_BOUNCED, EV_COMPLAINED, EV_SUPPRESSED, EXT_DOCX, EXT_PDF, FILE_SAFE_RE, FILE_SLUG_MAX, FONT_SIZE, FROM_GT,
   FROM_LT, FROM_UNSAFE_RE, FROM_VIA, HASH_SEP, HEX, HMAC_NAME, HTML_BR, HTML_ESC, HTML_ESC_RE, IDEM_HASH_LEN,
@@ -26,6 +27,7 @@ import {
 } from './constants'
 import { LETTER_LABELS, LETTER_SYSTEM } from './prompts'
 import type {
+  ApplyEntryIn, EntryCookieIn,
   ApplyBlob, ApplyBlobDbRow, ApplyBlobIn, ApplyBlobOut, ApplyBounceIn, ApplyBounceOut, ApplyClaimIn, ApplyClaimOut,
   ApplyCountOut, ApplyDoneOut, ApplyDraftSaveIn, ApplyEmailIn, ApplyIdIn, ApplyJobDbRow, ApplyJobFact, ApplyJobIn,
   ApplyJobOut, ApplyJobRow, ApplyPrefs, ApplyPrefsDbRow, ApplyPrefsOut, ApplyPrefsSaveIn, ApplyResume, ApplyResumeDbRow,
@@ -794,6 +796,43 @@ export async function claimApply(x: ApplyClaimIn): ApplyClaimOut {
     ],
     map: toId,
   }))
+}
+
+/**
+ * 请求带的 cookie 里记的投递入口(2026-11-11 任务书第 48 条):前端开投递框时写 `apply_from=<职位 id>.<入口>`,
+ * 记的是这一岗才认。
+ *
+ * @param x cookie 头与这一封投的职位 id。
+ * @returns 入口;没带或不是这一岗给空串。
+ */
+export function entryOfCookie(x: EntryCookieIn): string {
+  if (x.cookie == null) {
+    return TEXT_NONE
+  }
+  const m = ENTRY_COOKIE_RE.exec(x.cookie)
+  if (m == null || m.groups == null) {
+    return TEXT_NONE
+  }
+  const g = m.groups
+  if (g.job !== String(x.jobId) || g.entry == null) {
+    return TEXT_NONE
+  }
+  return g.entry
+}
+
+/**
+ * 记这一封投递从哪个页面发起(只记第一次);真发出去了再把推荐记录里这一岗记成投了(任务书第 48 条)。
+ *
+ * @param x 连接、用户 id、职位 id、入口与发没发出。
+ * @returns 无。
+ */
+export async function markApplyEntry(x: ApplyEntryIn): ApplyWriteOut {
+  if (x.entry !== TEXT_NONE) {
+    await x.db.query(SQL.APPLY_ENTRY_SET, [x.userId, x.jobId, x.entry])
+  }
+  if (x.sent) {
+    await x.db.query(SQL.PICK_LOG_SENT, [x.userId, x.jobId])
+  }
 }
 
 /**

@@ -16,16 +16,21 @@
  * 2026-11-11 Frank「别一次性推荐 50 个」「不需要解锁其余」(任务书第 47 条):每天 10 条全列、全免费;显示更多、解锁那一行、
  * 换一批、行上的删除都撤;表下加一颗「看全部同类职位」去职位板(带省与这批推荐的职业码)。
  * 同日 Frank 指着那颗钮说「这个也删掉」:「看全部同类职位」撤(连同去处的算法、职业码下发、钮档与词条)。
+ * 2026-11-11 任务书第 41 到 46 条:表里加「推荐指数」列(一枚胶囊;原「点胶囊开弹框」同日 Frank「不要弹框了」
+ * 「直接那一列,列 bullets」撤,再改「点击 high 那个按钮时候才显示」:点胶囊在原地展开几条要点);没有职业依据不出表、出引导去填;目标「拿 PR」
+ * 而身份、语言成绩、工作年限有没答的,不出表、提示先补哪几项;高中档都没有时出低档,表上方说明一句。
  *
  * @author Frank
  * @time 2026-11-07 18:00:00
  */
 import { cssOf } from '@/components/css'
 import { useLang } from '@/components/i18n'
+import { TEXT_NONE } from './constants'
 import { pickColsOf, pickRowsOf } from './functions'
-import { useLazyCompanies, useLazyTitles } from './hooks'
+import { useFitFold, useLazyCompanies, useLazyTitles } from './hooks'
 import { JobList } from './joblist'
-import { picksOf, titledPicksOf } from './recommend'
+import { PicksNote } from './picksnote'
+import { needTextOf, onPickListClick, picksOf, titledPicksOf } from './recommend'
 import type { PicksPaneIn } from './types'
 import css from './jobs.module.css'
 
@@ -35,19 +40,32 @@ import css from './jobs.module.css'
  * @param props 取词函数与推荐整机。
  * @returns 表(或失败一句);还没拉到不渲。
  */
-export function PicksPane({ t, p }: PicksPaneIn) {
+export function PicksPane({ t, p, onFill }: PicksPaneIn) {
   const [lang] = useLang()
   const titles = useLazyTitles({ items: titledPicksOf(p.data), lang })
   const cos = useLazyCompanies({ items: picksOf(p.data), lang })
+  const fold = useFitFold()
   if (p.failed) {
     return <div className={cssOf(css.note)}>{t('mj.fail')}</div>
   }
   if (p.data == null) {
     return null
   }
-  const rows = pickRowsOf({ items: p.data.picks, lang, t, titles, cos })
+  if (p.data.basis === false) {
+    return <PicksNote text={t('mj.picksNoBasis')} go={t('mj.fillGo')} onGo={onFill} />
+  }
+  if (p.data.need.length > 0) {
+    const fields = needTextOf({ need: p.data.need, t })
+    return <PicksNote text={t('mj.picksNeed', { fields })} go={t('mj.fillGo')} onGo={onFill} />
+  }
+  const rows = pickRowsOf({ items: p.data.picks, fits: p.data.fits, lang, t, titles, cos, fold })
   return (
-    <JobList rows={rows} cols={pickColsOf({ t })}
-      empty={<div className={cssOf(css.note)}>{t('mj.picksEmpty')}</div>} />
+    <>
+      {p.data.lowOnly && <PicksNote text={t('mj.picksLowOnly')} go={TEXT_NONE} onGo={onFill} />}
+      <div onClick={onPickListClick}>
+        <JobList rows={rows} cols={pickColsOf({ t })}
+          empty={<div className={cssOf(css.note)}>{t('mj.picksEmpty')}</div>} />
+      </div>
+    </>
   )
 }

@@ -559,6 +559,16 @@ export type PickDbRow = {
    * 截止日(发帖方写的;Job Bank 帖多为 NULL)。
    */
   valid_through: TimeCell
+
+  /**
+   * 职业的 TEER(numeric,pg 回字符串;没分类 NULL;2026-11-11 判语言 / 经验门槛按它挑行)。
+   */
+  teer: number | string | null
+
+  /**
+   * 5 位职业码(没分类 NULL)。
+   */
+  noc: string | null
 }
 
 /**
@@ -709,6 +719,86 @@ export type PickRow = {
    * 本省有省默认通道。
    */
   provDefault: boolean
+
+  /**
+   * 职业的 TEER(没分类 = null)。
+   */
+  teer: number | null
+
+  /**
+   * 5 位职业码(没分类 = 空串)。
+   */
+  noc: string
+
+  /**
+   * 档案想做 / 做过的工作同职业(没有简历时的匹配依据;2026-11-11)。
+   */
+  occWant: boolean
+
+  /**
+   * 和收藏或真发出去的投递同职业。
+   */
+  occSimilar: boolean
+
+  /**
+   * 雇主是 AIP 或社区试点的指定雇主。
+   */
+  designated: boolean
+}
+
+/**
+ * 推荐指数里的一项结论(线格式:词条键尾与填词,字在前端取)。
+ */
+export type FitLine = {
+  /**
+   * 项的身份(who / edu / lang / work / term / draw / occ / pay / place / emp)。
+   */
+  key: string
+
+  /**
+   * 结论胶囊(pass / check / high / mid / low / none;fail 只在服务端用,不下发)。
+   */
+  tag: string
+
+  /**
+   * 说明一句的键尾。
+   */
+  note: string
+
+  /**
+   * 说明一句的填词。
+   */
+  vars: Record<string, string>
+}
+
+/**
+ * 一行推荐的推荐指数。
+ */
+export type PickFit = {
+  /**
+   * 档(high / mid / low)。
+   */
+  level: string
+
+  /**
+   * 目标(pr / job)。
+   */
+  goal: string
+
+  /**
+   * 总分(0 到 100)。
+   */
+  score: number
+
+  /**
+   * 硬性条件各项(找工作 = 空)。
+   */
+  hard: FitLine[]
+
+  /**
+   * 匹配情况各项。
+   */
+  soft: FitLine[]
 }
 
 /**
@@ -719,6 +809,31 @@ export type PicksJson = {
    * 今天的推荐(最多 PICKS_DAY 条,不分免费与会员;2026-11-11)。
    */
   picks: PickRow[]
+
+  /**
+   * 各行的推荐指数(与 picks 同序同长;2026-11-11 任务书第 46 条)。
+   */
+  fits: PickFit[]
+
+  /**
+   * 目标(pr / job;2026-11-11 任务书第 41 条)。
+   */
+  goal: string
+
+  /**
+   * 有没有职业依据(没有 = 不出推荐,页面出引导去填;任务书第 45 条)。
+   */
+  basis: boolean
+
+  /**
+   * 拿 PR 要补的档案项(who / clb / exp;非空 = 判不了、不推,提示补这几项;任务书第 42 条)。
+   */
+  need: string[]
+
+  /**
+   * 高、中档一条都没有,出的是低档(页面说明一句;任务书第 46 条)。
+   */
+  lowOnly: boolean
 }
 
 /**
@@ -739,6 +854,11 @@ export type PicksIn = {
    * 浏览器按时区预选的省码(空串 = 不知道;答过所在省时不用它)。
    */
   prov: string
+
+  /**
+   * 目标是不是拿 PR(2026-11-11:两种目标取的候选池不同)。
+   */
+  pr: boolean
 }
 
 /**
@@ -784,16 +904,11 @@ export type PicksViewIn = {
    * 不用当天缓存、现算一份(2026-10-11:答完档案重拉推荐)。
    */
   fresh: boolean
-}
 
-/**
- * 取当天给看的那几条(picksViewOf)的入参。
- */
-export type PicksSplitIn = {
   /**
-   * 当天算好的全部推荐(已剔掉今天新碰过的岗)。
+   * 从哪推的(page / mail;空串 = 不记推荐记录;2026-11-11 任务书第 48 条)。
    */
-  rows: PickRow[]
+  via: string
 }
 
 /**
@@ -901,6 +1016,11 @@ export type PicksEntry = {
   prov: string
 
   /**
+   * 按哪个目标取的候选池(改了目标就重算)。
+   */
+  pr: boolean
+
+  /**
    * 算好的推荐。
    */
   rows: PickRow[]
@@ -942,186 +1062,106 @@ export type TouchedOut = Promise<number[]>
 export type PicksJsonOut = Promise<PicksJson>
 
 /**
- * 本人按「我的通道」筛推荐要的两格的库行(2026-10-13 Frank「做推荐匹配吧」)。
+ * 拼推荐接口回包(picksViewOf)的入参。
  */
-export type FitFilterDbRow = {
+export type PicksJsonIn = {
   /**
-   * 身份词(没答空串)。
-   */
-  who: string | null
-
-  /**
-   * 教育经历串(jsonb 数组;没答空数组)。
-   */
-  edu: string[] | null
-}
-
-/**
- * 本人按「我的通道」筛推荐要的两格(洗净后)。
- */
-export type FitFilterFact = {
-  /**
-   * 身份词;空串 = 没答(没答不筛)。
-   */
-  who: string
-
-  /**
-   * 教育经历串(「所在地.公立私立.时长」)。
-   */
-  edu: string[]
-}
-
-/**
- * loadFitFilter 的返回。
- */
-export type FitFilterOut = Promise<FitFilterFact>
-
-/**
- * 一条通道的身份对照里一个身份那一格的院校条件(线格式;同 lib/pathways 的 SchoolJson,全格照抄 —— 喂它的判定)。
- */
-export type PickSchoolJson = {
-  /**
-   * 院校所在地条件(own / other / canada …)。
-   */
-  prov: string
-
-  /**
-   * 公立私立条件(缺席 = 不限)。
-   */
-  kind?: string
-
-  /**
-   * 最短课程时长(缺席 = 不限)。
-   */
-  min?: string
-}
-
-/**
- * 一条通道的身份对照里一个身份那一格(线格式;同 lib/pathways 的 FitJson)。
- */
-export type PickFitJson = {
-  /**
-   * 能不能走(no = 不能)。
-   */
-  can: string
-
-  /**
-   * 院校条件(缺席 = 没有)。
-   */
-  schools?: PickSchoolJson[]
-}
-
-/**
- * 一条通道的身份对照:身份词 → 那一格(同 lib/pathways 的 FitsJson)。
- */
-export type PickFitsJson = Record<string, PickFitJson>
-
-/**
- * 通道身份对照的库行(pathways)。
- */
-export type PathwayFitDbRow = {
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 职位板上的通道标签(岗的 pnp_stream 对它;省默认通道没有)。
-   */
-  board_label: string | null
-
-  /**
-   * 是不是本省省默认通道。
-   */
-  is_default: boolean | null
-
-  /**
-   * 身份对照(jsonb)。
-   */
-  fits: PickFitsJson | null
-}
-
-/**
- * 通道身份对照(洗净后)。
- */
-export type PathwayFitFact = {
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 职位板上的通道标签;没有 = 空串。
-   */
-  label: string
-
-  /**
-   * 是不是本省省默认通道。
-   */
-  isDefault: boolean
-
-  /**
-   * 身份对照。
-   */
-  fits: PickFitsJson | null
-}
-
-/**
- * 几条通道身份对照。
- */
-export type PathwayFits = PathwayFitFact[]
-
-/**
- * loadPathwayFits 的返回。
- */
-export type PathwayFitsOut = Promise<PathwayFits>
-
-/**
- * loadPathwayFits 的入参。
- */
-export type PathwayFitsIn = {
-  /**
-   * 数据库连接(调用方注入)。
-   */
-  db: Db
-}
-
-/**
- * fitsOfPick 的入参。
- */
-export type PickFitsIn = {
-  /**
-   * 推荐一行。
-   */
-  row: PickRow
-
-  /**
-   * 各通道身份对照。
-   */
-  ways: PathwayFits
-}
-
-/**
- * keepFitPicksOf 的入参。
- */
-export type KeepFitIn = {
-  /**
-   * 推荐。
+   * 排好的推荐。
    */
   rows: PickRow[]
 
   /**
-   * 各通道身份对照。
+   * 各行的推荐指数(与 rows 同序同长)。
    */
-  ways: PathwayFits
+  fits: PickFit[]
 
   /**
-   * 本人的身份与教育经历。
+   * 目标。
    */
-  filter: FitFilterFact
+  goal: string
+
+  /**
+   * 有没有职业依据。
+   */
+  basis: boolean
+
+  /**
+   * 拿 PR 要补的档案项。
+   */
+  need: string[]
+
+  /**
+   * 出的是低档。
+   */
+  lowOnly: boolean
 }
 
 /**
- * 某一行能走的通道身份对照(没有 = null,不筛)。
+ * 记今天推了哪些(logPicks)的入参。
  */
-export type MaybePickFits = PickFitsJson | null
+export type LogPicksIn = {
+  /**
+   * 数据库连接(调用方注入)。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: UserId
+
+  /**
+   * 从哪推的(page / mail)。
+   */
+  via: string
+
+  /**
+   * 推荐接口的回包(记其中今天给看的那几条)。
+   */
+  json: PicksJson
+}
+
+/**
+ * 记推荐记录的返回。
+ */
+export type LogOut = Promise<void>
+
+/**
+ * 记点了今天推的这一岗(markPickClick)的入参。
+ */
+export type PickClickIn = {
+  /**
+   * 数据库连接(调用方注入)。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: UserId
+
+  /**
+   * 职位 id。
+   */
+  jobId: number
+}
+
+/**
+ * 上报点击的请求体(线格式,缺席按没给)。
+ */
+export type PickActJson = {
+  /**
+   * 职位 id。
+   */
+  jobId?: number | string | null
+
+  /**
+   * 动作词(click)。
+   */
+  act?: string | null
+}
+
+/**
+ * 捕到的错误。
+ */
+export type CaughtError = Error

@@ -5,21 +5,25 @@
  * @time 2026-10-06 23:00:00
  */
 import { count, firstOf, numOrNull, queryRows, SQL, text, vtext } from '../db'
+import { log, MYJOBS_LOG } from '../log'
 import { placeLineOf } from '../location'
-import { eduRowsOf, keepStreamOf } from '../pathways'
 import {
-  DAY_LOCALE, DAY_ZONE, JOB_CLOSED, MYJOBS_LIMIT, PICKS_CACHE_MAX, PICKS_DAY, PICKS_DRAW_DAYS, PICKS_MAX, PROV_PNP, TEXT_NONE, TIME_NONE,
+  DAY_LOCALE, DAY_ZONE, JOB_CLOSED, MYJOBS_LIMIT, PICKS_CACHE_MAX, PICKS_DAY, PICKS_DRAW_DAYS, PICKS_POOL, PROV_PNP,
+  TEXT_NONE, TIME_NONE, RANK_FIRST, VIA_NONE,
   AFTER_MAX, P_AFTER, P_ID, WHY_AIP, WHY_APPLIED, WHY_EE, WHY_KNOWN, WHY_LMIA, WHY_OCC, WHY_PILOT, WHY_PNP,
   WHY_SAVED,
   WHY_WAGE,
 } from './constants'
+import {
+  goalOf, isPrGoal, loadMatches, loadPathwayFits, loadPickProfile, loadReqs, needOf, rankPicksOf,
+} from './recommend'
 import { CACHE } from './variables'
 import type {
   CountDbRow, CountOut, DeleteOut, DropTouchedIn, IdDbRow, MaybeId, MyJobDbRow, MyJobRow, MyJobsDeleteIn, MyJobsIn,
-  FitFilterDbRow, FitFilterFact, FitFilterOut, KeepFitIn, MaybePickFits, MyJobsOut, PathwayFitDbRow,
-  PathwayFitFact, PathwayFitsIn, PathwayFitsOut, PickDbRow, PickFitsIn,
-  PickRow, PickRows, PicksAfterIn, PicksIn, PicksJson, PicksJsonOut, PicksOut, PicksSplitIn, PicksViewIn, ReasonCodes, ReasonsIn,
+  MyJobsOut, PickDbRow,
+  PickRow, PickRows, PicksAfterIn, PicksIn, PicksJson, PicksJsonOut, PicksOut, PicksViewIn, ReasonCodes, ReasonsIn,
   TimeCell, TouchedOut,
+  PickFit, PicksJsonIn, CaughtError, LogOut, LogPicksIn, PickClickIn,
 } from './types'
 
 /**
@@ -150,33 +154,114 @@ export async function loadSaved(x: MyJobsIn): MyJobsOut {
  * 最后按免费 / Pro 切成看得见与锁住两份(2026-11-11 起不分免费与会员,只取前 PICKS_DAY 条)。
  * 2026-10-13 Frank「做推荐匹配吧」:档案答了身份,再按「我的通道」筛 —— 岗的通道这个身份走不了(或院校条件对不上)就不推;
  * 判定与「我的档案」下面的「我的通道」卡同一个(lib/pathways 的 keepStreamOf)。没答身份不筛。筛在缓存之后,改了档案当场生效。
+ * 2026-11-11 任务书第 41 到 46 条(目标是第一优先级):先读档案 —— 没有任何职业依据不出推荐(basis = false);目标「拿 PR」而身份、
+ * 语言、工作年限有没答的也不出,回 need 报要补哪几项;否则按目标取候选池(缓存按天、预选省、目标记),剔掉碰过的,
+ * 再判硬性条件、打分、分档、排序(rankPicksOf);匹配项有可用的简历正文按简历对职位描述(loadMatches,第 44 条),没有退回按职业。上面「没答身份不筛」只对找工作成立(找工作不看省提名);每日推送信也走这一个函数。
  *
  * @param x 连接、用户 id、预选省与要不要现算。
  * @returns 推荐接口的回包。
  */
 export async function getPicks(x: PicksViewIn): PicksJsonOut {
+  const profile = await loadPickProfile({ db: x.db, userId: x.userId })
+  const goal = goalOf(profile.goal)
+  const pr = isPrGoal(goal)
+  if (profile.hasOcc === false) {
+    return picksViewOf({ rows: [], fits: [], goal, basis: false, need: [], lowOnly: false })
+  }
+  let need: string[] = []
+  if (pr) {
+    need = needOf(profile)
+  }
+  if (need.length > 0) {
+    return picksViewOf({ rows: [], fits: [], goal, basis: true, need, lowOnly: false })
+  }
   const key = String(x.userId)
   const day = dayOf()
   const hit = CACHE.picks.get(key)
   let rows: PickRow[] = []
-  if (x.fresh === false && hit != null && hit.day === day && hit.prov === x.prov) {
+  if (x.fresh === false && hit != null && hit.day === day && hit.prov === x.prov && hit.pr === pr) {
     rows = hit.rows
   } else {
-    rows = await loadPicks({ db: x.db, userId: x.userId, prov: x.prov })
+    rows = await loadPicks({ db: x.db, userId: x.userId, prov: x.prov, pr })
     if (CACHE.picks.size >= PICKS_CACHE_MAX) {
       CACHE.picks.clear()
     }
-    CACHE.picks.set(key, { day, prov: x.prov, rows })
+    CACHE.picks.set(key, { day, prov: x.prov, pr, rows })
   }
-  const [touched, filter] = await Promise.all([
-    loadTouched({ db: x.db, userId: x.userId }),
-    loadFitFilter({ db: x.db, userId: x.userId }),
+  const [touched, ways, reqs] = await Promise.all([
+    loadTouched({ db: x.db, userId: x.userId }), loadPathwayFits({ db: x.db }), loadReqs({ db: x.db }),
   ])
-  let kept = dropTouchedOf({ rows, touched })
-  if (filter.who !== TEXT_NONE) {
-    kept = keepFitPicksOf({ rows: kept, ways: await loadPathwayFits({ db: x.db }), filter })
+  let prov = profile.prov
+  if (prov === TEXT_NONE) {
+    prov = x.prov
   }
-  return picksViewOf({ rows: kept })
+  const kept = dropTouchedOf({ rows, touched })
+  const ids: number[] = []
+  for (const r of kept) {
+    ids.push(r.id)
+  }
+  const matches = await loadMatches({ db: x.db, userId: x.userId, ids })
+  const ranked = rankPicksOf({ rows: kept, ways, reqs, profile, goal, matches, prov })
+  const picks: PickRow[] = []
+  const fits: PickFit[] = []
+  for (const r of ranked.rows) {
+    const row = kept[r.at]
+    if (row != null) {
+      picks.push(row)
+      fits.push(r.fit)
+    }
+  }
+  const json = picksViewOf({
+    rows: picks, fits, goal, basis: true, need: [], lowOnly: ranked.lowOnly,
+  })
+  if (x.via !== VIA_NONE) {
+    await logPicks({ db: x.db, userId: x.userId, via: x.via, json })
+  }
+  return json
+}
+
+/**
+ * 记今天推了哪些(2026-11-11 任务书第 48 条):今天给看的那几条各一行 —— 第几位、什么档、多少分、各项结论。
+ * 当天再拉不重记;写失败只留痕,推荐照常回。
+ *
+ * @param x 连接、用户 id、从哪推的与推荐接口的回包。
+ * @returns 无。
+ */
+export async function logPicks(x: LogPicksIn): LogOut {
+  const ids: number[] = []
+  const ranks: number[] = []
+  const levels: string[] = []
+  const scores: number[] = []
+  const parts: string[] = []
+  for (const row of x.json.picks) {
+    const fit = x.json.fits[ids.length]
+    if (fit == null) {
+      continue
+    }
+    ids.push(row.id)
+    ranks.push(ids.length - 1 + RANK_FIRST)
+    levels.push(fit.level)
+    scores.push(fit.score)
+    parts.push(JSON.stringify({ hard: fit.hard, soft: fit.soft }))
+  }
+  if (ids.length === 0) {
+    return
+  }
+  try {
+    await x.db.query(SQL.PICK_LOG_ADD, [x.userId, dayOf(), x.json.goal, x.via, ids, ranks, levels, scores, parts])
+  } catch (e) {
+    log({ tag: MYJOBS_LOG.tag, text: MYJOBS_LOG.pickLogFailed + String(x.userId) + MYJOBS_LOG.sep + (e as CaughtError).message })
+  }
+}
+
+/**
+ * 记点了今天推的这一岗(点职位名或点投递;不是今天推的岗这条语句改 0 行)。
+ *
+ * @param x 连接、用户 id 与职位 id。
+ * @returns 无。
+ */
+export async function markPickClick(x: PickClickIn): LogOut {
+  await x.db.query(SQL.PICK_LOG_CLICK, [x.userId, x.jobId, dayOf()])
 }
 
 /**
@@ -190,13 +275,14 @@ export function dayOf(): string {
 
 /**
  * 连库现算今日推荐(不走缓存;每日推送邮件也用它)。
+ * 2026-11-11:只出候选池(PICKS_POOL 条,按目标取),每日推送信改走 getPicks(和页面同一份排序)。
  *
- * @param x 连接、用户 id 与预选省。
- * @returns 推荐,最多 PICKS_MAX 条。
+ * @param x 连接、用户 id、预选省与目标是不是拿 PR。
+ * @returns 候选池,最多 PICKS_POOL 条。
  */
 export async function loadPicks(x: PicksIn): PicksOut {
   return queryRows({
-    db: x.db, sql: SQL.MYJOBS_PICKS, params: [x.userId, x.prov, PICKS_MAX, PICKS_DRAW_DAYS], map: toPickRow,
+    db: x.db, sql: SQL.MYJOBS_PICKS, params: [x.userId, x.prov, PICKS_POOL, PICKS_DRAW_DAYS, x.pr], map: toPickRow,
   })
 }
 
@@ -235,90 +321,6 @@ export async function loadTouched(x: MyJobsIn): TouchedOut {
 }
 
 /**
- * 本人的身份与教育经历(按「我的通道」筛推荐用;2026-10-13)。
- *
- * @param x 连接与用户 id。
- * @returns 两格;没存过档给空。
- */
-export async function loadFitFilter(x: MyJobsIn): FitFilterOut {
-  const got = firstOf(await queryRows({ db: x.db, sql: SQL.MYJOBS_FIT_FILTER, params: [x.userId], map: toFitFilter }))
-  if (got == null) {
-    return { who: TEXT_NONE, edu: [] }
-  }
-  return got
-}
-
-/**
- * 库行 → 本人两格(空格按没答)。
- *
- * @param r 库行。
- * @returns 两格。
- */
-export function toFitFilter(r: FitFilterDbRow): FitFilterFact {
-  let edu: string[] = []
-  if (Array.isArray(r.edu)) {
-    edu = r.edu
-  }
-  return { who: text(r.who), edu }
-}
-
-/**
- * 在开通道的身份对照(按「我的通道」筛推荐用;2026-10-13)。
- *
- * @param x 连接。
- * @returns 各通道的省码、职位板标签、是否省默认与对照。
- */
-export async function loadPathwayFits(x: PathwayFitsIn): PathwayFitsOut {
-  return queryRows({ db: x.db, sql: SQL.MYJOBS_PATHWAY_FITS, params: [], map: toPathwayFit })
-}
-
-/**
- * 库行 → 通道身份对照。
- *
- * @param r 库行。
- * @returns 对照。
- */
-export function toPathwayFit(r: PathwayFitDbRow): PathwayFitFact {
-  return { province: r.province, label: text(r.board_label), isDefault: r.is_default === true, fits: r.fits }
-}
-
-/**
- * 按「我的通道」留推荐:每行找到它走的通道(fitsOfPick),这个身份 / 教育经历走不了就去掉;找不到通道的照留(不筛)。
- *
- * @param x 推荐、各通道对照与本人两格。
- * @returns 留下的推荐(原序)。
- */
-export function keepFitPicksOf(x: KeepFitIn): PickRows {
-  const edu = eduRowsOf(x.filter.edu)
-  const out: PickRow[] = []
-  for (const row of x.rows) {
-    const fits = fitsOfPick({ row, ways: x.ways })
-    if (keepStreamOf({ fits, province: row.province, filter: { who: x.filter.who, edu } })) {
-      out.push(row)
-    }
-  }
-  return out
-}
-
-/**
- * 一行推荐走的通道的身份对照:有具名通道按职位板标签对;没有、但可提名就是本省省默认通道(同职位板通道格的判据);都不是给 null。
- *
- * @param x 推荐一行与各通道对照。
- * @returns 对照;没有给 null。
- */
-export function fitsOfPick(x: PickFitsIn): MaybePickFits {
-  for (const w of x.ways) {
-    if (x.row.pnpStream !== TEXT_NONE && w.label === x.row.pnpStream) {
-      return w.fits
-    }
-    if (x.row.pnpStream === TEXT_NONE && x.row.pnpEligible && w.isDefault && w.province === x.row.province) {
-      return w.fits
-    }
-  }
-  return null
-}
-
-/**
  * 剔掉碰过的岗。
  *
  * @param x 推荐与碰过的职位 id。
@@ -342,11 +344,17 @@ export function dropTouchedOf(x: DropTouchedIn): PickRows {
  * 2026-11-11 Frank「别一次性推荐 50 个」「不需要解锁其余」(任务书第 47 条):不分免费与会员,每天只给前 PICKS_DAY 条,
  * 全部看得见;换一批、锁住行随之撤。
  *
- * @param x 推荐。
+ * 2026-11-11 任务书第 41 到 46 条:收的是排好序、带推荐指数的行;回包多带各行推荐指数 fits(与 picks 同序)、目标、
+ * 有没有职业依据、拿 PR 要补的档案项、出的是不是低档。
+ *
+ * @param x 排好的推荐与回包其余几格。
  * @returns 推荐接口的回包。
  */
-export function picksViewOf(x: PicksSplitIn): PicksJson {
-  return { picks: x.rows.slice(0, PICKS_DAY) }
+export function picksViewOf(x: PicksJsonIn): PicksJson {
+  return {
+    picks: x.rows.slice(0, PICKS_DAY), fits: x.fits.slice(0, PICKS_DAY), goal: x.goal, basis: x.basis, need: x.need,
+    lowOnly: x.lowOnly,
+  }
 }
 
 /**
@@ -462,6 +470,11 @@ export function toPickRow(r: PickDbRow): PickRow {
     pnpStream: text(r.pnp_stream),
     pnpEligible: r.pnp_eligible === true,
     provDefault: r.prov_default === true,
+    teer: numOrNull(r.teer),
+    noc: text(r.noc),
+    occWant: r.occ_want === true,
+    occSimilar: r.occ_saved === true || r.occ_applied === true,
+    designated: r.aip === true || (r.pilot_employer === true && text(r.pilot) !== TEXT_NONE),
   }
 }
 

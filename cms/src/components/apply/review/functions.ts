@@ -9,6 +9,7 @@
 import { cssOf } from '@/components/css'
 import { track } from '@/lib/track'
 import {
+  TRACK_SEND_CLICK,
   ERR_CHARS, HEAD_ONLY_NUDGE, HTTP_UNPROCESSABLE, PAGE_GAP,
   JD_BULLET, JD_HEAD_MARK, JD_SEC_KEYS, JD_SENT_SPLIT_RE, NEWLINE,
   AVAIL_GAP, BOX_DOWN, BOX_UP, CANVAS_TAG, COLOR_HEAD, COLOR_N, CRED_INCLUDE, CTX_2D, ERR_DEFAULT, ERR_KEYS, ERR_NAME,
@@ -750,6 +751,7 @@ function moveRects(y: MoveRectsIn): void {
 export async function sendReview(x: SendIn): Promise<void> {
   x.setSending(true)
   x.setErr(TEXT_NONE)
+  track(TRACK_SEND_CLICK)
   try {
     if (x.askName) {
       const named = await fetch(URL_NAME, {

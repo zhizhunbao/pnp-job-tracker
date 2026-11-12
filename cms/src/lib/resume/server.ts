@@ -10,3 +10,4 @@ export {
   resumeBuildRoute, resumeExtractRoute, resumeFileDeleteRoute, resumeFileGetRoute, resumeFilePatchRoute, resumeFilePutRoute, resumeFilesRoute,
   resumeMatchRoute, resumePrefillRoute, resumeRoute,
 } from './routes'
+export { ensureResumeBody } from './functions'

@@ -12,14 +12,24 @@
  * @author Frank
  * @time 2026-11-07 18:00:00
  */
+import { openApply, rememberFrom } from '@/components/apply'
 import { homeProvinceOf } from '@/lib/location'
 import {
+  FROM_PICKS,
+  ACT_CLICK, ATTR_HREF, HDR_CONTENT_TYPE, JOB_HREF_HEAD, JOB_LINK_SEL, METHOD_POST, MIME_JSON, URL_PICK_ACT,
   CRED_INCLUDE, TEXT_NONE, URL_PICKS,
   URL_PICKS_FRESH, MED_HEAD, MED_TAIL, VS_PCT, VS_PLUS,
+  FIT_CHECK_KEY, FIT_HARD_KEY, FIT_KEY_SEP, FIT_LABEL_KEY, FIT_LEVEL_KEY, FIT_NOTE_KEY, FIT_TAG_VARIANT,
+  FIT_VARIANT_NONE,
+  FIT_MARK_CLOSED, FIT_MARK_OPEN, GOAL_PR, NOTE_NONE, TAG_CHECK,
+  GOAL_DEFAULT, NEED_KEY, NEED_SEP_KEY,
 } from './constants'
 import type {
+  OpenApplyIn,
+  PickClickEvent,
   LoadPicksIn, PickItem, PicksFact, PicksRespJson,
   TitledItem, WageView, WageViewIn,
+  Bullets, FitFact, FitToggleIn, FitVariant, FitView, FitViewIn, NeedTextIn,
 } from './types'
 
 /**
@@ -51,6 +61,7 @@ export function makeLoadPicks(x: LoadPicksIn): () => Promise<void> {
 
 /**
  * 推荐回包 → 推荐(行构造器:缺席按空读)。2026-11-07 回包里锁住给看的那几条(locked)不再读 —— 打码行撤了。
+ * 2026-11-11 任务书第 41 到 46 条:多读各行推荐指数、目标、有没有职业依据(缺席按有)、要补的档案项、出的是不是低档。
  *
  * @param d 回包。
  * @returns 推荐。
@@ -60,7 +71,33 @@ export function toPicksFact(d: PicksRespJson): PicksFact {
   if (d.picks != null) {
     picks = d.picks
   }
-  return { picks }
+  let fits: FitFact[] = []
+  if (d.fits != null) {
+    fits = d.fits
+  }
+  let goal = GOAL_DEFAULT
+  if (d.goal != null) {
+    goal = d.goal
+  }
+  let need: string[] = []
+  if (d.need != null) {
+    need = d.need
+  }
+  return { picks, fits, goal, basis: d.basis !== false, need, lowOnly: d.lowOnly === true }
+}
+
+/**
+ * 「要补哪几项」那一句里的项名(身份、语言成绩、工作年限,按界面语,用同补全档案提示条的分隔符连起来)。
+ *
+ * @param x 要补的档案项与取词函数。
+ * @returns 连好的项名。
+ */
+export function needTextOf(x: NeedTextIn): string {
+  const names: string[] = []
+  for (const k of x.need) {
+    names.push(x.t(NEED_KEY + k))
+  }
+  return names.join(x.t(NEED_SEP_KEY))
 }
 
 /**
@@ -130,4 +167,150 @@ export function picksOf(data: PicksFact | null): PickItem[] | null {
     return null
   }
   return data.picks
+}
+
+/**
+ * 推荐指数的显示(2026-11-11 Frank「不要弹框了」「直接那一列,列 bullets」):档的字与色,加几条要点。
+ * 同日「bullets 要不点击 high 那个按钮时候才显示」:要点默认收着,点胶囊在原地展开,胶囊上带一个箭头。
+ *
+ * @param x 服务端下发的推荐指数与取词函数。
+ * @returns 显示。
+ */
+export function fitViewOf(x: FitViewIn): FitView {
+  const levelText = x.t(FIT_LEVEL_KEY + x.fact.level)
+  let mark = FIT_MARK_CLOSED
+  if (x.open) {
+    mark = FIT_MARK_OPEN
+  }
+  return {
+    levelText,
+    variant: fitVariantOf(x.fact.level),
+    bullets: bulletsOf(x),
+    open: x.open,
+    mark,
+    aria: x.t('mj.fit.aria', { lv: levelText }),
+  }
+}
+
+/**
+ * 造「点推荐指数胶囊」:这一行的要点展开着就收起,收着就展开(别的行不动)。
+ *
+ * @param x 行身份与展开状态。
+ * @returns 点击手柄。
+ */
+export function makeFitToggle(x: FitToggleIn): () => void {
+  return function toggleFit(): void {
+    const next: string[] = []
+    for (const k of x.fold.open) {
+      if (k !== x.key) {
+        next.push(k)
+      }
+    }
+    if (next.length === x.fold.open.length) {
+      next.push(x.key)
+    }
+    x.fold.setOpen(next)
+  }
+}
+
+/**
+ * 档 → 胶囊色档(表里没有的给灰)。
+ *
+ * @param level 档。
+ * @returns 色档。
+ */
+export function fitVariantOf(level: string): FitVariant {
+  const v = FIT_TAG_VARIANT[level]
+  if (v == null) {
+    return FIT_VARIANT_NONE
+  }
+  return v
+}
+
+/**
+ * 几条要点:拿 PR 先写一条「硬性条件符合」,需自行核对的硬性条件各一条;再是匹配情况各项的说明(缺数据的不列)。
+ *
+ * @param x 服务端下发的推荐指数与取词函数。
+ * @returns 要点,一行一条。
+ */
+export function bulletsOf(x: FitViewIn): Bullets {
+  const out: Bullets = []
+  if (x.fact.goal === GOAL_PR) {
+    out.push(x.t(FIT_HARD_KEY))
+  }
+  for (const l of x.fact.hard) {
+    if (l.tag === TAG_CHECK) {
+      out.push(x.t(FIT_CHECK_KEY, { k: x.t(FIT_LABEL_KEY + l.key) }))
+    }
+  }
+  for (const l of x.fact.soft) {
+    if (l.note !== NOTE_NONE) {
+      out.push(x.t(FIT_NOTE_KEY + l.key + FIT_KEY_SEP + l.note, l.vars))
+    }
+  }
+  return out
+}
+
+/**
+ * 上报「点了今天推的这一岗」(点职位名或点投递;2026-11-11 任务书第 48 条)。只为记录,失败不挡用户。
+ *
+ * @param jobId 职位 id。
+ * @returns 无。
+ */
+export function reportPickClick(jobId: number): void {
+  void fetch(URL_PICK_ACT, {
+    method: METHOD_POST,
+    credentials: CRED_INCLUDE,
+    keepalive: true,
+    headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+    body: JSON.stringify({ jobId, act: ACT_CLICK }),
+  }).catch(skipReportFailure)
+}
+
+/**
+ * 上报失败的吞错:推荐记录少一次点击,不打扰用户(同 lib/track 的 ignoreTrackFailure)。
+ *
+ * @param _e 捕到的错误(不用)。
+ * @returns 无。
+ */
+export function skipReportFailure(_e: Error): void {
+  return
+}
+
+/**
+ * 推荐表上点到职位名链接就上报一次点击(链接照常叠开职位框;点别处不报)。
+ *
+ * @param e 点击事件。
+ * @returns 无。
+ */
+export function onPickListClick(e: PickClickEvent): void {
+  if ((e.target instanceof Element) === false) {
+    return
+  }
+  const a = e.target.closest(JOB_LINK_SEL)
+  if (a == null) {
+    return
+  }
+  const id = Number(String(a.getAttribute(ATTR_HREF)).slice(JOB_HREF_HEAD.length))
+  if (Number.isInteger(id) && id > 0) {
+    reportPickClick(id)
+  }
+}
+
+/**
+ * 造「点投递 / 继续」:就地弹投递框(2026-10-09 A 批;原先是去「我的求职」投递区的链接)。
+ *
+ * 2026-11-11 任务书第 48 条:开框前记下投递入口;从今日推荐点的再上报一次「点了这一岗」。
+ *
+ * @param x 职位号与投递入口。
+ * @returns 点击手柄。
+ */
+export function makeOpenApply(x: OpenApplyIn): () => void {
+  return function openIt(): void {
+    rememberFrom({ jobId: x.jobId, from: x.from })
+    if (x.from === FROM_PICKS) {
+      reportPickClick(x.jobId)
+    }
+    openApply(x.jobId)
+  }
 }

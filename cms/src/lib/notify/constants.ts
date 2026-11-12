@@ -50,3 +50,8 @@ export const P_PROV = 'prov'
  * 省码形(只认两位大写字母,别的当没给)。
  */
 export const PROV_RE = /^[A-Z]{2}$/
+
+/**
+ * 铃铛数今日推荐条数时不记推荐记录(用户没看到推荐;lib/myjobs 的 via 空串,本域自抄;2026-11-11 任务书第 48 条)。
+ */
+export const PICKS_VIA_NONE = ''

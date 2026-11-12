@@ -6,8 +6,10 @@
  * @time 2026-11-09 20:00:00
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { track } from '@/lib/track'
 import { withDescOf } from './cv'
 import {
+  TRACK_REVIEW,
   BLOCK_NEAREST, NARROW_W, SEL_N_HEAD, SEL_N_TAIL,
   STEP_PLAN, STEP_RESUME, TEXT_NONE,
 } from './constants'
@@ -69,6 +71,7 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
       return
     }
     started.current = true
+    track(TRACK_REVIEW)
     void startReview(cells.current)
   }, [])
   function pickOf(n: number): () => void {

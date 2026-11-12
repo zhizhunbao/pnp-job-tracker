@@ -11,6 +11,7 @@ import { useIsNarrow } from '@/components/modal'
 import { Table } from '@/components/table'
 import { TABLE_MIN_W } from './constants'
 import { rowKeyOf } from './functions'
+import { FitDetail } from './fitdetail'
 import { JobCard } from './jobcard'
 import type { JobListIn, ListRow } from './types'
 import css from './jobs.module.css'
@@ -27,7 +28,7 @@ export function JobList({ rows, cols, empty }: JobListIn) {
     return <>{empty}</>
   }
   if (narrow === false) {
-    return <Table<ListRow> cols={cols} rows={rows} rowKey={rowKeyOf} bare minWidth={TABLE_MIN_W} />
+    return <Table<ListRow> cols={cols} rows={rows} rowKey={rowKeyOf} detailOf={FitDetail} bare minWidth={TABLE_MIN_W} />
   }
   const items = []
   for (const r of rows) {
