@@ -430,6 +430,36 @@ export const FORM_NAME_WAIT = '…'
 export const FORM_PICK_WORK = 'work'
 
 /**
+ * 选择器:所在地(省与城市;2026-11-12 Frank「这个也需要弹框吧」)。
+ */
+export const FORM_PICK_WHERE = 'where'
+
+/**
+ * 选择器:教育经历(2026-11-12 Frank「这个也弹框修改」)。
+ */
+export const FORM_PICK_EDU = 'edu'
+
+/**
+ * 所在地摘要里省那一行的 key。
+ */
+export const LINE_KEY_PROV = 'prov'
+
+/**
+ * 所在地摘要里城市那一行的 key。
+ */
+export const LINE_KEY_CITY = 'city'
+
+/**
+ * 教育经历摘要一行里各项之间的分隔(学校、证书或学历名称、年份)。
+ */
+export const EDU_SUM_SEP = ', '
+
+/**
+ * 教育经历摘要里开始年份与结束年份之间的连接号。
+ */
+export const EDU_YEAR_SEP = '–'
+
+/**
  * 题键:做过的工作。
  */
 export const GATE_STEP_WORK = 'work'

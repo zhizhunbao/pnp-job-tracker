@@ -5,6 +5,7 @@
  * 状态与保存照旧走 useGateEdit(值、校验、保存链与向导同一份),只是不翻页:目标 / 身份改用直设、保存直接存。
  * 「专业」「想做的工作」两格的长清单叠一层弹框选(MajorPicker / OccRail,同向导那两屏)。
  * 同日 Frank「删了吧」:向导 GateEdit 删,整机瘦成只给本件用的 useGateForm(上面「照旧走 useGateEdit」现指它)。
+ * 2026-11-12 Frank「这个也需要弹框吧」「这个也弹框修改」:所在地、教育经历两格同样叠一层弹框改(GateWhere / GateEdu)。
  * 2026-11-09「我的」第一批:面板顶上多「从简历填写」(只填空着的,保存才入档案);长清单三格显示已选的名字,不再是「已选 N 个」。
  *
  * @author Frank
@@ -16,11 +17,14 @@ import { Drawer } from '@/components/drawer'
 import { MajorPicker, useMajorPicker } from '@/components/majors'
 import { OccRail, useOccPicker } from '@/components/quiz'
 import {
-  FORM_PICK_JOB, FORM_PICK_MAJOR, FORM_PICK_WORK, FORM_PRIMARY_KIND, FORM_SECONDARY_KIND, FORM_TITLE_KEY, TEXT_NONE,
+  FORM_PICK_EDU, FORM_PICK_JOB, FORM_PICK_MAJOR, FORM_PICK_WHERE, FORM_PICK_WORK, FORM_PRIMARY_KIND,
+  FORM_SECONDARY_KIND, FORM_TITLE_KEY, TEXT_NONE,
 } from './constants'
-import { majorLinesOf, occLinesOf, occMajorOf } from './functions'
+import { eduLinesOf, majorLinesOf, occLinesOf, occMajorOf, whereLinesOf } from './functions'
+import { GateEdu } from './gateedu'
 import { GateFormFields } from './gateformfields'
 import { GatePick } from './gatepick'
+import { GateWhere } from './gatewhere'
 import { useGateForm, useGatePick, useResumeFill } from './hooks'
 import type { GateFormIn } from './types'
 import css from './gate.module.css'
@@ -46,6 +50,8 @@ export function GateForm({ t, seed, onClose, onSaved }: GateFormIn) {
     majors: majorLinesOf({ codes: g.majors, rows: picker.picked, lang: g.lang, marks: g.fromResume }),
     jobs: occLinesOf({ picked: occ.picked, titles: occ.titles, marks: [] }),
     works: occLinesOf({ picked: work.picked, titles: work.titles, marks: g.fromResume }),
+    where: whereLinesOf({ prov: g.provActive, city: g.cities.city, opts: g.cities.opts, t }),
+    edu: eduLinesOf({ rows: g.edit.edu, t }),
   }
   const foot = (
     <>
@@ -74,6 +80,16 @@ export function GateForm({ t, seed, onClose, onSaved }: GateFormIn) {
       {k.picking === FORM_PICK_WORK && (
         <GatePick title={t('pf.work')} doneText={t('pf.pickDone')} onDone={k.onDone}>
           <OccRail t={t} lang={g.lang} d={work} />
+        </GatePick>
+      )}
+      {k.picking === FORM_PICK_WHERE && (
+        <GatePick title={t('pf.where')} doneText={t('pf.pickDone')} onDone={k.onDone}>
+          <GateWhere g={g} t={t} />
+        </GatePick>
+      )}
+      {k.picking === FORM_PICK_EDU && (
+        <GatePick title={t('pf.edu')} doneText={t('pf.pickDone')} onDone={k.onDone}>
+          <GateEdu g={g} t={t} />
         </GatePick>
       )}
     </>

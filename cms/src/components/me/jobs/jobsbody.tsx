@@ -25,15 +25,19 @@ import type { JobsBodyIn } from './types'
 
 /**
  * 「我的求职」正文。
+ * 2026-11-12 Frank「这有两个重复的去补全」:今日推荐因为档案没填、出的是那张带「去补全」的提示卡时(noteOn),
+ * 上面的补全横幅不再出,一屏只留一个「去补全」。
  *
  * @param props 取词函数、当前子项、分层态、重拉代数、答档案代数、五题关了的交还口与开投递框。
  * @returns 页签卡 + 报件。
  */
 export function JobsBody({ t, tab, plan, gen, asked, onFill, openApp }: JobsBodyIn) {
   const j = useJobs({ gen, asked })
+  const d = j.picks.data
+  const noteOn = tab === TAB_PICKS && d != null && (d.basis === false || d.need.length > 0)
   return (
     <>
-      <FillBar t={t} onFill={onFill} />
+      {noteOn === false && <FillBar t={t} onFill={onFill} />}
       <section className={CARD_MD_CLS}>
         {tab === TAB_PICKS && <PicksPane t={t} p={j.picks} l={j.saved} onFill={onFill} />}
         {tab === TAB_SAVED && <SavedPane t={t} l={j.saved} openApp={openApp} />}

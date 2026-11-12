@@ -114,6 +114,23 @@ function buttonOf(host: HTMLElement, text: string): HTMLButtonElement | undefine
   return Array.from(host.querySelectorAll('button')).find((b) => b.textContent === text)
 }
 
+// 2026-11-12 Frank「这个也需要弹框吧」「这个也弹框修改」:所在地、教育经历两格改成摘要加「修改」,省下拉 / 城市 / 教育经历几段
+// 挪进叠开的弹框 —— 先点那一格的「修改」(面板里自上而下:专业 0、想做的工作 1、做过的工作 2、所在地 3、教育经历 4),
+// 改完点「选好了」收起
+const EDIT_WHERE = 3
+const EDIT_EDU = 4
+function openEdit(host: HTMLElement, at: number) {
+  const btn = Array.from(host.querySelectorAll('button')).filter((b) => b.textContent === 'pf.edit')[at]
+  if (btn == null) {
+    throw new Error('edit button not rendered: ' + at)
+  }
+  act(() => btn.click())
+}
+
+function closePick(host: HTMLElement) {
+  act(() => (buttonOf(host, 'pf.pickDone') as HTMLButtonElement).click())
+}
+
 // 首项是 pf.none、含某个取值的那只下拉(所在地含 ON,身份含 pgwp;教育经历的三只首项是 fit.edu*)
 function selectWith(host: HTMLElement, value: string): HTMLSelectElement {
   const el = Array.from(host.querySelectorAll('select')).find((s) =>
@@ -195,10 +212,13 @@ describe('⑤ 一页表单保存(2026-11-07 GateForm)', () => {
     const onSaved = vi.fn()
     const m = mount(onSaved)
     act(() => (buttonOf(m.host, 'home.g.pr') as HTMLButtonElement).click())
+    openEdit(m.host, EDIT_WHERE)
     pick(selectWith(m.host, 'ON'), 'ON')
     await vi.waitFor(() => expect(buttonOf(m.host, 'Toronto')).not.toBeUndefined())
     act(() => (buttonOf(m.host, 'Toronto') as HTMLButtonElement).click())
+    closePick(m.host)
     pick(selectWith(m.host, 'pgwp'), 'pgwp')
+    openEdit(m.host, EDIT_EDU)
     const [line] = eduLines(m.host)
     pick(line?.[0] as HTMLSelectElement, 'ON')
     pick(line?.[1] as HTMLSelectElement, 'public')
@@ -209,6 +229,7 @@ describe('⑤ 一页表单保存(2026-11-07 GateForm)', () => {
     type(eduInputs(m.host, 'pf.eduTo')[0] as HTMLInputElement, '20261')
     expect(eduInputs(m.host, 'pf.eduFrom')[0]?.value).toBe('2025')
     expect(eduInputs(m.host, 'pf.eduTo')[0]?.value).toBe('2026')
+    closePick(m.host)
     type(m.host.querySelector('input[placeholder="Li Wei"]') as HTMLInputElement, ' Li Wei ')
     act(() => (buttonOf(m.host, 'gate.save') as HTMLButtonElement).click())
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
@@ -284,6 +305,7 @@ describe('⑨ 从简历填写教育经历(2026-11-12)', () => {
     const sent = server()
     const onSaved = vi.fn()
     const m = mount(onSaved)
+    openEdit(m.host, EDIT_EDU)
     const [line] = eduLines(m.host)
     pick(line?.[0] as HTMLSelectElement, 'ON')
     pick(line?.[1] as HTMLSelectElement, 'public')
@@ -313,6 +335,7 @@ describe('⑩ 手填时替他推课程时长(2026-11-12)', () => {
   it('填了起止年份时长下拉自己亮;之后再改年份、名称不动它;他自己改选照他的', () => {
     server()
     const m = mount()
+    openEdit(m.host, EDIT_EDU)
     const lenOf = () => eduLines(m.host)[0]?.[2]?.value
     expect(lenOf()).toBe('')
     type(eduInputs(m.host, 'pf.eduFrom')[0] as HTMLInputElement, '2024')
@@ -333,6 +356,7 @@ describe('⑩ 手填时替他推课程时长(2026-11-12)', () => {
   it('名称写明是硕士类:时长下拉亮 master', () => {
     server()
     const m = mount()
+    openEdit(m.host, EDIT_EDU)
     type(eduInputs(m.host, 'pf.eduCred')[0] as HTMLInputElement, 'MBA')
     expect(eduLines(m.host)[0]?.[2]?.value).toBe('master')
     act(() => m.root.unmount())
@@ -343,6 +367,8 @@ describe('⑥ 城市区(2026-11-07 改挂 GateForm)', () => {
   it('选了省才出;点一个亮、再点取消;改选境外收起,再选回省城市没亮', async () => {
     server()
     const m = mount()
+    expect(m.host.textContent).not.toContain('gate.city')
+    openEdit(m.host, EDIT_WHERE)
     expect(m.host.textContent).not.toContain('gate.city')
     const prov = selectWith(m.host, 'ON')
     pick(prov, 'ON')
@@ -367,6 +393,7 @@ describe('⑦ 教育经历几段(2026-11-07 改挂 GateForm)', () => {
   it('加到两段为止;✕ 删一段;只剩一段时 ✕ 清空那一段、总留一行', () => {
     server()
     const m = mount()
+    openEdit(m.host, EDIT_EDU)
     expect(eduLines(m.host)).toHaveLength(1)
     act(() => (buttonOf(m.host, 'fit.addRow') as HTMLButtonElement).click())
     expect(eduLines(m.host)).toHaveLength(2)

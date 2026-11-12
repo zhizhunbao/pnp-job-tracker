@@ -92,12 +92,37 @@
 /*
  * Chrome 用保存的账号自动填充时,给填进来的字套自己的字体(上一条管不到,圆点照旧散;同日 Frank「之前有保存的 账号 password 太分开」),
  * 自动填充态的首行再指一遍。
+ * 2026-11-12 实测(Frank「这个密码为什么分这么开 有时候」→ 查清后「不修,留着」):这一条和上一条都够不着那个时刻 ——
+ * Chrome 打开页面自动填好、用户还没在页面上点过任何地方时,遮罩圆点由 Chrome 用系统界面字体画(中文 Windows 是微软雅黑,
+ * 圆点全角),网页的 font-family 不起作用;在页面任意处点一下就恢复。只有 letter-spacing 能影响它,但各系统圆点宽度不同,
+ * 压字距会让英文 Windows / Mac 上的圆点叠在一起,所以不修。别再往字体上试。
  */
 .input[type='password']:-webkit-autofill::first-line {
   /*
    * 西文字体(圆点半角)。
    */
   font-family: Arial, sans-serif;
+}
+
+/*
+ * 浏览器自动填充态不换底色(2026-11-12 Frank「正常有默认值 也不用变颜色吧」):Chrome 给自动填进来的框套一层浅蓝底,
+ * 它的样式带 !important,background 改不动;用一层铺满的内阴影盖回本来的浅灰底。
+ */
+.input:-webkit-autofill {
+  /*
+   * 内阴影当底色(同 .input 的浅灰底)。
+   */
+  box-shadow: 0 0 0 1000px #fafafa inset;
+}
+
+/*
+ * 自动填充态又聚焦:内阴影换白底(同 :focus 的白底),外面照旧一圈蓝晕。
+ */
+.input:-webkit-autofill:focus {
+  /*
+   * 白底 + 蓝晕。
+   */
+  box-shadow: 0 0 0 1000px #ffffff inset, 0 0 0 3px rgb(59 130 246 / 12%);
 }
 
 /*

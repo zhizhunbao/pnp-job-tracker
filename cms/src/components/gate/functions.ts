@@ -52,13 +52,15 @@ import {
   FROM_NAME, FROM_SEP,
   FROM_WORK, METHOD_POST, URL_PREFILL,
   K_RULE_HEAD, MATCH_EDU, MATCH_WORK, MODE_DEFAULT, MODE_STRICT, RULE_EDU, RULE_EDU_STRICT,
+  EDU_F_KIND, EDU_F_LEN, EDU_F_PROV, EDU_SUM_SEP, EDU_YEAR_SEP, LINE_KEY_CITY, LINE_KEY_PROV,
   RULE_WORK_STRICT,
 } from './constants'
-import { eduMergedOf } from './edu'
+import { eduMergedOf, makeEduLabel } from './edu'
 import type {
   CitiesJson, CityLabelIn, CityOpt, CityOptsIn, CityPickIn, EditPatch, EditSaveIn,
   EntryCloseIn, EntryDoneIn, GateAuthDoneIn, GateEditSeed, GateLabelOfIn, GatePickSetIn,
-  ApplyPrefillIn, FillMsg, FromKeptIn, FromResumeIn, MajorLinesIn, OccLinesIn, PickedLine, PrefillFact, PrefillJson,
+  ApplyPrefillIn, EduLinesIn, EduSumIn, FillMsg, FromKeptIn, FromResumeIn, MajorLinesIn, OccLinesIn, PickedLine,
+  PrefillFact, PrefillJson, WhereLinesIn,
   ResumeFillIn, GateProvActiveIn, GateStep, LoadCitiesIn, ProvPickIn,
   RuleOfIn, RulePickIn,
 } from './types'
@@ -589,6 +591,85 @@ export function majorLinesOf(x: MajorLinesIn): PickedLine[] {
     out.push({ key: code, name, from: isFromResume({ marks: x.marks, field: FROM_MAJORS, value: code }) })
   }
   return out
+}
+
+/**
+ * 所在地 → 摘要行:省一行、城市一行(2026-11-12 Frank「这个也需要弹框吧」:所在地改成摘要框加「修改」)。
+ * 城市名用这一刻摆着的那批里的界面语名字,不在里面(搜索换了一批)就用英文名。
+ *
+ * @param x 选中的省与城市、摆着的城市与取词。
+ * @returns 摘要行;省没选 = 空列。
+ */
+export function whereLinesOf(x: WhereLinesIn): PickedLine[] {
+  const out: PickedLine[] = []
+  if (x.prov === TEXT_NONE) {
+    return out
+  }
+  const provLabel = makeProvLabel({ t: x.t })
+  out.push({ key: LINE_KEY_PROV, name: provLabel(x.prov), from: false })
+  if (x.city === TEXT_NONE) {
+    return out
+  }
+  let name = x.city
+  for (const o of x.opts) {
+    if (o.name === x.city) {
+      name = o.label
+    }
+  }
+  out.push({ key: LINE_KEY_CITY, name, from: false })
+  return out
+}
+
+/**
+ * 教育经历 → 摘要行:一段一行,什么都没填的段不出(2026-11-12 Frank「这个也弹框修改」)。
+ *
+ * @param x 现在的几段与取词。
+ * @returns 摘要行。
+ */
+export function eduLinesOf(x: EduLinesIn): PickedLine[] {
+  const out: PickedLine[] = []
+  for (const [i, row] of x.rows.entries()) {
+    const name = eduSumOf({ row, t: x.t })
+    if (name !== TEXT_NONE) {
+      out.push({ key: String(i), name, from: false })
+    }
+  }
+  return out
+}
+
+/**
+ * 一段教育经历的摘要:学校、证书或学历名称、年份里填了的连成一行;这三样都没填,用三只下拉选了的字
+ * (所在地、公立私立、学制)。
+ *
+ * @param x 这一段与取词。
+ * @returns 摘要;什么都没填 = 空串。
+ */
+function eduSumOf(x: EduSumIn): string {
+  const r = x.row
+  let years = r.from.trim()
+  if (years !== TEXT_NONE && r.to.trim() !== TEXT_NONE) {
+    years = years + EDU_YEAR_SEP + r.to.trim()
+  }
+  const named: string[] = []
+  for (const v of [r.school.trim(), r.cred.trim(), years]) {
+    if (v !== TEXT_NONE) {
+      named.push(v)
+    }
+  }
+  if (named.length > 0) {
+    return named.join(EDU_SUM_SEP)
+  }
+  const picked: string[] = []
+  if (r.prov !== TEXT_NONE) {
+    picked.push(makeEduLabel({ t: x.t, f: EDU_F_PROV })(r.prov))
+  }
+  if (r.kind !== TEXT_NONE) {
+    picked.push(makeEduLabel({ t: x.t, f: EDU_F_KIND })(r.kind))
+  }
+  if (r.len !== TEXT_NONE) {
+    picked.push(makeEduLabel({ t: x.t, f: EDU_F_LEN })(r.len))
+  }
+  return picked.join(EDU_SUM_SEP)
 }
 
 /**

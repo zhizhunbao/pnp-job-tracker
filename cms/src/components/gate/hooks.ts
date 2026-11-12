@@ -29,7 +29,8 @@ import { useLang } from '@/components/i18n'
 import { takeEntryGate } from '@/lib/guest'
 import { track } from '@/lib/track'
 import {
-  FILL_KIND_INFO, FORM_PICK_JOB, FORM_PICK_MAJOR, FORM_PICK_NONE, FORM_PICK_WORK, TEXT_NONE, TRACK_GATE_OPEN,
+  FILL_KIND_INFO, FORM_PICK_EDU, FORM_PICK_JOB, FORM_PICK_MAJOR, FORM_PICK_NONE, FORM_PICK_WHERE, FORM_PICK_WORK,
+  TEXT_NONE, TRACK_GATE_OPEN,
 } from './constants'
 import { eduFormRowsOf, eduListOf, eduStrsOf, makeEduAdd, makeEduPick, makeEduRemove } from './edu'
 import {
@@ -262,6 +263,8 @@ export function useGatePick(): GatePickPanel {
     onMajor: makePickSet({ setPicking, v: FORM_PICK_MAJOR }),
     onJob: makePickSet({ setPicking, v: FORM_PICK_JOB }),
     onWork: makePickSet({ setPicking, v: FORM_PICK_WORK }),
+    onWhere: makePickSet({ setPicking, v: FORM_PICK_WHERE }),
+    onEdu: makePickSet({ setPicking, v: FORM_PICK_EDU }),
     onDone: makePickSet({ setPicking, v: FORM_PICK_NONE }),
   }
 }

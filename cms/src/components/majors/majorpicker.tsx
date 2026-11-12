@@ -71,7 +71,7 @@ export function MajorPicker({ picker, t, lang }: MajorPickerIn) {
         <Pane list belowTags={m.picked.length > 0} live={ARIA_LIVE_POLITE}>
           <MajorLines rows={majorHitsOf({ searchOn: m.searchOn, searching: m.searching, hits: m.hits })}
             mark={m.q} codes={m.codes} lang={lang} pickOf={m.pickOf} />
-          {m.searching && <Loading text={t(MAJOR_LOADING_KEY)} />}
+          {m.searching && <Loading text={t(MAJOR_LOADING_KEY)} fill />}
         </Pane>
       )}
       {m.searchOn === false && (

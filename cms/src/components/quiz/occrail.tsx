@@ -48,7 +48,7 @@ export function OccRail({ t, lang, d }: OccRailIn) {
       {d.searchOn && (
         <Pane list belowTags={tagged} live={ARIA_LIVE_POLITE}>
           <OccLines items={d.hits} mark={d.q} picked={d.picked} lang={lang} pickOf={d.candPickOf} />
-          {d.searching && <Loading text={t(OCC_LOADING_KEY)} />}
+          {d.searching && <Loading text={t(OCC_LOADING_KEY)} fill />}
           {d.searching === false && d.hits.length === LEN_ZERO && (
             <div className={css.noResult}>{t('occ.noResult')}</div>
           )}

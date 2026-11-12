@@ -1097,6 +1097,16 @@ export type GatePickPanel = {
   onWork: () => void
 
   /**
+   * 开所在地的弹框(2026-11-12)。
+   */
+  onWhere: () => void
+
+  /**
+   * 开教育经历的弹框(2026-11-12)。
+   */
+  onEdu: () => void
+
+  /**
    * 关选择器(选好了)。
    */
   onDone: () => void
@@ -1260,6 +1270,71 @@ export type GatePickLines = {
    * 做过的工作。
    */
   works: PickedLine[]
+
+  /**
+   * 所在地:省一行、城市一行(2026-11-12)。
+   */
+  where: PickedLine[]
+
+  /**
+   * 教育经历:一段一行(2026-11-12)。
+   */
+  edu: PickedLine[]
+}
+
+/**
+ * 所在地摘要行(whereLinesOf)的入参。
+ */
+export type WhereLinesIn = {
+  /**
+   * 选中的省码或境外;空串 = 没选。
+   */
+  prov: string
+
+  /**
+   * 选中的城市英文名;空串 = 没选。
+   */
+  city: string
+
+  /**
+   * 这一刻摆着的城市(取界面语的城市名用)。
+   */
+  opts: CityOpt[]
+
+  /**
+   * 取词。
+   */
+  t: TFn
+}
+
+/**
+ * 教育经历摘要行(eduLinesOf)的入参。
+ */
+export type EduLinesIn = {
+  /**
+   * 现在的几段。
+   */
+  rows: EduPick[]
+
+  /**
+   * 取词。
+   */
+  t: TFn
+}
+
+/**
+ * 一段教育经历的摘要(eduSumOf)的入参。
+ */
+export type EduSumIn = {
+  /**
+   * 这一段。
+   */
+  row: EduPick
+
+  /**
+   * 取词。
+   */
+  t: TFn
 }
 
 /**

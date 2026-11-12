@@ -5,6 +5,8 @@
  * 城市、教育经历、英文姓名三格直接用向导里同一个件(GateCities / GateEdu / GateName),值与校验同一份。
  * 2026-11-12 Frank「这两个不能合并成一个吗?比如匹配规则 是 按专业,还是按什么其他的一个下拉选」:匹配依据、匹配模式两排两段钮
  * 并成一只「匹配规则」下拉(与所在地同一个下拉件,四项),存的还是那两格。
+ * 2026-11-12 Frank「这个也需要弹框吧」「这个也弹框修改」:所在地、教育经历两格也改成和专业同形 —— 面板里只摆摘要加「修改」,
+ * 省下拉加城市区(GateWhere)、教育经历几段(GateEdu)挪进叠开的弹框(见 gateform.tsx)。
  *
  * @author Frank
  * @time 2026-11-07 19:00:00
@@ -18,9 +20,7 @@ import {
   GOAL_PR_KEY,
   RULE_OPTS,
 } from './constants'
-import { formProvOptsOf, isFromResume, makeProvLabel, makeRuleLabel, makeWhoLabel } from './functions'
-import { GateCities } from './gatecities'
-import { GateEdu } from './gateedu'
+import { isFromResume, makeRuleLabel, makeWhoLabel } from './functions'
 import { GateField } from './gatefield'
 import { GateName } from './gatename'
 import { GatePicked } from './gatepicked'
@@ -55,16 +55,14 @@ export function GateFormFields({ g, k, t, n, f }: GateFormFieldsIn) {
         <GatePicked lines={n.works} onEdit={k.onWork} t={t} />
       </GateField>
       <GateField label={t('pf.where')}>
-        <Select value={g.provActive} onChange={g.onProv} opts={formProvOptsOf()} all={t(FORM_NONE_KEY)}
-          labelOf={makeProvLabel({ t })} />
-        <GateCities g={g} t={t} />
+        <GatePicked lines={n.where} onEdit={k.onWhere} t={t} />
       </GateField>
       <GateField label={t('pf.who')} hint={t('pf.optWho')}>
         <Select value={g.edit.who} onChange={g.edit.setWho} opts={FIT_WHOS} all={t(FORM_NONE_KEY)}
           labelOf={makeWhoLabel({ t })} />
       </GateField>
       <GateField label={t('pf.edu')} hint={t('pf.optEdu')}>
-        <GateEdu g={g} t={t} />
+        <GatePicked lines={n.edu} onEdit={k.onEdu} t={t} />
       </GateField>
       <GateField label={t('pf.rule')}>
         <Select value={g.edit.rule} onChange={g.edit.onRule} opts={RULE_OPTS} all={t('pf.rule.work')}
