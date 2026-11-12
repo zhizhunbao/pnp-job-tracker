@@ -11,5 +11,5 @@
  * @time 2026-08-22 12:10:00
  */
 
-export { getScoreTables } from './functions'
+export { getScoreTables } from './tables'
 export { pointsFactorsRoute } from './routes'

@@ -72,6 +72,20 @@
 | `track` | 业务名 | 埋点：功能事件上报 | ✓ |
 | `traffic` | 业务名 | 流量：出站流量记账 | ✓ |
 
+## 域内子目录
+
+一个域里有多个同类机制时,在域下按机制分子目录(形照 LlamaIndex:`core` 加每个机制一个同形目录)。子目录名同样先登记再建,只在所属域下用;第一列写「域/子目录」。省份目录一律用两位省码小写。
+
+| 名字 | 出处 | 公认含义 | 在用 |
+|---|---|---|---|
+| `points/core` | LlamaIndex `llama-index-core` 的叫法 | 各打分机制共用的部分:读官方标签里的数字、挑档、通用省算分、估分对抽选线 | ✓ |
+| `points/federal` | IRCC 联邦经济类移民项目 | 联邦两套打分表共用的部分:区间解析、学历档 | ✓ |
+| `points/federal/crs` | IRCC Comprehensive Ranking System(CRS) | 全称 Comprehensive Ranking System(综合排名系统)。快速通道排名分的估分 | ✓ |
+| `points/federal/fsw` | IRCC Federal Skilled Worker Program | 全称 Federal Skilled Worker(联邦技术工人)。67 分资格分的估分 | ✓ |
+| `points/provinces` | 通用叫法 | 省级打分机制,一省一个省码目录;通用省表装不下、要手写时才开 | ✓ |
+| `points/provinces/mb` | 省码 MB(Manitoba) | 曼尼托巴 MPNP EOI 的估分 | ✓ |
+| `points/tables` | 通用叫法 | 官方分值表与抽选记录的取数、缓存与行构造 | ✓ |
+
 ## References
 
 - Employment and Social Development Canada. (n.d.). *Job Bank: Job search*. <https://www.jobbank.gc.ca/jobsearch/>
@@ -81,3 +95,4 @@
 - Pearson. (n.d.). *PTE Academic*. <https://www.pearsonpte.com/>
 - World Wide Web Consortium. (n.d.). *W3C Internationalization (i18n)*. <https://www.w3.org/International/>
 - Stripe. (n.d.). *Stripe API reference*. <https://docs.stripe.com/api>
+- LlamaIndex. (n.d.). *llama_index* [Source code]. GitHub. <https://github.com/run-llama/llama_index>

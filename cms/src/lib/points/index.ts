@@ -8,16 +8,14 @@
  */
 
 export {
-  EDU_KEYS,
-} from './constants'
-
-export {
-  bonusPoints, defaultProfile, estimateCrs, estimateFsw67, estimateMbEoi, gridStreamOf, isAboveLine,
-  isBelowLine, lineStateOf, marginOf, scoreProvince, streamMatches, systemShort,
-} from './functions'
-
+  EDU_KEYS, bonusPoints, defaultProfile, gridStreamOf, isAboveLine, isBelowLine, lineStateOf, marginOf, scoreProvince,
+  streamMatches, systemShort,
+} from './core'
 export type {
-  CrsProfile, DrawRow, EduKey, EeGridRow, EstimateItem, EstimateResult, LineState, OverviewDraw, ProvCompetition,
-  MbEduKey, MbEoiScore, MbProfile, ProvinceScore, ScoreVsLine,
-  ScoreFactor, ScoreOverride, ScorePart, ScoreSource, SelfProfile,
-} from './types'
+  EduKey, LineState, ProvinceScore, ScoreFactor, ScoreOverride, ScorePart, ScoreSource, ScoreVsLine, SelfProfile,
+} from './core'
+export { estimateCrs, estimateFsw67 } from './federal'
+export type { CrsProfile, EeGridRow, EstimateItem, EstimateResult } from './federal'
+export { estimateMbEoi } from './provinces'
+export type { MbEduKey, MbEoiScore, MbProfile } from './provinces'
+export type { DrawRow, OverviewDraw, ProvCompetition } from './tables'

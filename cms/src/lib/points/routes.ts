@@ -8,8 +8,7 @@
  * @time 2026-08-23 03:30:00
  */
 import { getDb } from '../db/server'
-import { P_PROVS, PROVS_NONE, PROV_CODE_RE, PROV_SEP } from './constants'
-import { getScoreTables, makeProvHit } from './functions'
+import { PROVS_NONE, PROV_CODE_RE, PROV_SEP, P_PROVS, getScoreTables, makeProvHit } from './tables'
 
 /**
  * GET /api/points/factors?provs=BC,ON:这些省的官方分值表与抽选锚点。

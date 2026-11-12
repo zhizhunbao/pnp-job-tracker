@@ -1827,19 +1827,21 @@
       "count": 2
     }
   },
-  "src/lib/points/functions.ts": {
+  "src/lib/points/core/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 4
-    },
-    "local/no-bare-strings": {
-      "count": 1
-    },
-    "max-lines": {
       "count": 1
     }
   },
-  "src/lib/points/types.ts": {
+  "src/lib/points/core/types.ts": {
     "local/no-undefined-type": {
+      "count": 1
+    }
+  },
+  "src/lib/points/tables/functions.ts": {
+    "@typescript-eslint/no-unnecessary-condition": {
+      "count": 3
+    },
+    "local/no-bare-strings": {
       "count": 1
     }
   },
