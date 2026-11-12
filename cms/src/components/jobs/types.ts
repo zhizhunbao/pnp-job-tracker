@@ -1687,14 +1687,9 @@ export type JobRelatedIn = {
   head: string
 
   /**
-   * 取词函数(卡标题行右端那句「更新时间 …」由 time 桶的 Updated 自己拼)。
+   * 取词函数(递给两组的行;2026-11-12 卡头右端的更新时间撤)。
    */
   t: TFn
-
-  /**
-   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO);'' = 还没拿到,整行不出。
-   */
-  updatedAt: string
 
   /**
    * 同公司组的小标题。

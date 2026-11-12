@@ -95,7 +95,6 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted, 
         {showRelatedOf({ related, fallbackHref: d.view.fallbackHref }) && (
           <JobRelated head={d.t('detail.related')}
             t={d.t}
-            updatedAt={updatedAt}
             sameCoLabel={d.t('detail.sameCo')}
             sameOccLabel={d.t('detail.sameOcc')}
             related={related}

@@ -41,7 +41,6 @@ export function JobModalCards({ job, lang, plan }: JobModalCardsIn) {
       {related != null && showRelatedOf({ related, fallbackHref: TEXT_NONE }) && (
         <JobRelated head={t('detail.related')}
           t={t}
-          updatedAt={TEXT_NONE}
           sameCoLabel={t('detail.sameCo')}
           sameOccLabel={t('detail.sameOcc')}
           related={related}

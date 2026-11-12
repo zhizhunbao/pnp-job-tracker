@@ -18,13 +18,13 @@
  * 2026-10-13 Frank「这个按钮放到 查看原帖 后面」:钮挪到职位标题行(JdOrigLink);同日改判只管正文译文,本卡灰字恒出。
  * 2026-11-11 Frank「这个改成两个卡片吧」:同公司、同省同职业各一张白卡,卡头 = 组名 + 总数,右端各挂更新时间;
  * 组内小标题与两组之间那条分隔线撤。两组都没有时仍是一张「相关职位」卡带兜底链。
+ * 2026-11-12 Frank「这个右边的 更新时间都删了吧」:三张卡卡头右端的更新时间撤(09-03、11-11 两条里挂更新时间的部分是历史),updatedAt 一格随之不收。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { Updated } from '@/components/time'
 import { CARD_MD_CLS, PAREN_L, PAREN_R, REL_GROUP_CO, REL_GROUP_OCC } from './constants'
 import { relPageUrlOf, showFallbackOf, trackRelated } from './functions'
 import { RelatedGroup } from './relatedgroup'
@@ -34,11 +34,11 @@ import css from './jobs.module.css'
 /**
  * 渲染相似职位卡。
  *
- * @param props 卡标题、取词函数、更新时刻、两组小标题、相似职位、本岗号、兜底链、两个埋点来源格与界面语言。
+ * @param props 卡标题、取词函数、两组小标题、相似职位、本岗号、兜底链、两个埋点来源格与界面语言。
  * @returns 同公司、同省同职业各一张白卡(有行才出);都没有时一张带兜底链的白卡。
  */
 export function JobRelated({
-  head, t, updatedAt, sameCoLabel, sameOccLabel, related, jobId, fallbackHref, fallbackText, from, fromNone, lang,
+  head, t, sameCoLabel, sameOccLabel, related, jobId, fallbackHref, fallbackText, from, fromNone, lang,
 }: JobRelatedIn) {
   return (
     <>
@@ -49,7 +49,6 @@ export function JobRelated({
               {sameCoLabel}
               {related.sameCompanyTotal > 0 && <span> {PAREN_L}{related.sameCompanyTotal}{PAREN_R}</span>}
             </span>
-            <Updated iso={updatedAt} t={t} />
           </div>
           <RelatedGroup key={relPageUrlOf({ jobId, group: REL_GROUP_CO })}
             total={related.sameCompanyTotal} rows={related.sameCompany}
@@ -63,7 +62,6 @@ export function JobRelated({
               {sameOccLabel}
               {related.sameOccTotal > 0 && <span> {PAREN_L}{related.sameOccTotal}{PAREN_R}</span>}
             </span>
-            <Updated iso={updatedAt} t={t} />
           </div>
           <RelatedGroup key={relPageUrlOf({ jobId, group: REL_GROUP_OCC })}
             total={related.sameOccTotal} rows={related.sameOcc}
@@ -74,7 +72,6 @@ export function JobRelated({
         <div className={CARD_MD_CLS}>
           <div className={cssOf(css.relHead)}>
             {head}
-            <Updated iso={updatedAt} t={t} />
           </div>
           <LinkButton href={fallbackHref} onClick={trackRelated(fromNone)}
             className={cssOf(css.relFallback)}>
