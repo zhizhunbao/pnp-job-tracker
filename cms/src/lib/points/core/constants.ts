@@ -436,8 +436,3 @@ export const SEP = {
    */
   timesAbilitiesSlash: ' × 4 abilities / ',
 } as const
-
-/**
- * 通道名切词后,实词最少要有几个才算数得上一次比对。
- */
-export const STREAM_MIN_WORDS = 1

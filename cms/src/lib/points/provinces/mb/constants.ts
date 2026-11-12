@@ -271,11 +271,6 @@ export const MB_LABEL_NONE = ''
 export const MB_CTX_SEP = ':'
 
 /**
- * 曼省语言按四项算 —— 单一数字表示四项同档。
- */
-export const MB_LANG_BANDS = 4
-
-/**
  * 曼省在读年数档:读满两年。
  */
 export const MB_EDU_TWO_YEARS = 2

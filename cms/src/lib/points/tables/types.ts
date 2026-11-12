@@ -567,11 +567,6 @@ export type DifficultyDbRow = {
 }
 
 /**
- * 难度行的复数。
- */
-export type DifficultyDbRows = DifficultyDbRow[]
-
-/**
  * info json 里的新发学签流量格(IRCC 月度表,scrape_ircc_stats 产)。
  */
 export type StudyFlowJson = {
@@ -707,11 +702,6 @@ export type ProvInfoDbRow = {
 }
 
 /**
- * 省份维度行的复数。
- */
-export type ProvInfoDbRows = ProvInfoDbRow[]
-
-/**
  * 一行各省难度洗净后的事实 —— json 解析与拆格都在 rows 做完,functions 拿到即有效
  * (2026-08-22 Frank:值级清洗不进 functions)。
  */
@@ -771,11 +761,6 @@ export type DifficultyFact = {
    */
   source: string
 }
-
-/**
- * 难度事实的复数。
- */
-export type DifficultyFacts = DifficultyFact[]
 
 /**
  * 一行省份维度洗净后的事实 —— json 解析与 flow/series 拼装都在 rows 做完。

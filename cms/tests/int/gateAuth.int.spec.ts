@@ -48,8 +48,9 @@ function mount(el: ReactNode): HTMLDivElement {
 }
 
 // 注册 / 登录框:有邮箱格(档案题弹框原有题目进度条,2026-11-07 随 GateEdit 删,那一条断言撤)
+// 2026-11-12:登录框改挂到 body 上(portal,6cab5e40「登录框挂到 body 上」),不在挂载的那个容器里了 —— 改到整个文档里找。
 function expectAuthNotQuestions(box: HTMLElement) {
-  expect(box.querySelector('input[type="email"]')).not.toBeNull()
+  expect(box.ownerDocument.body.querySelector('input[type="email"]')).not.toBeNull()
 }
 
 function anonSession(children: ReactNode) {
@@ -149,7 +150,7 @@ describe('访客入口一律只弹注册框(2026-10-11)', () => {
       plan: { loggedIn: false, isPro: false, profileOk: true, profile: null } as unknown as EmpPlan,
     }
     const box = mount(createElement(Employers, props))
-    expect(box.querySelector('input[type="email"]')).toBeNull()
+    expect(document.body.querySelector('input[type="email"]')).toBeNull()
     const q = box.querySelector('input') as HTMLInputElement | null
     expect(q).not.toBeNull()
     const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
