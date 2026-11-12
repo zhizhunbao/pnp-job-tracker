@@ -2040,6 +2040,10 @@ MART_DUP_NOTE = (
 I18N_NOC_FILE = "noc_titles_i18n.json"
 """NOC 职业名的中/韩译名缓存(#147,clean/04f 产;**固定参考集翻一次永久用**)。"""
 
+I18N_EXAMPLES_ZH_FILE = "noc_examples_zh.json"
+"""官方示例职称的中译缓存({英文小写: 中文};noc 域 examples_zh 步产,2026-11-12)。缺文件 / 缺条目 = 那一条不出,
+noc_descriptions.examplesZh 只拼已译的。"""
+
 I18N_CITY_FILE = "city_names_i18n.json"
 """城市名的中/韩译名缓存(#151,clean/04g 产)。缺条目=留空,前端回退只显英文
 (宁可留空也不瞎猜;小镇本来就没有通行译名,不硬音译)。"""

@@ -1,0 +1,25 @@
+-- noc_descriptions 加一列 examples_zh(2026-11-12 Frank 截图:职业搜索打「大数据」「架构」出「没有找到匹配职业」)。
+-- 病根:职业搜索(cms lib/db/sql.ts NOC_BY_TITLE_LIKE)比的是官方职业名 title / 中文名 title_zh / 英文示例职称 examples;
+-- 「大数据」在 21211 的 big data engineer、「架构」在 21231 的 cloud architect,示例职称没有中文,中文词搜不到
+-- (搜 big data、architect 能搜到)。
+-- 惯例(db-push-minefield):加列一律手写 SQL 先行,别让 DB_PUSH 猜;只新增、不改旧数据;IF NOT EXISTS,重跑无害。
+--
+-- examples_zh:这个 NOC 的示例职称的中文(换行拼接,顺序同 examples;只有已译的,一条都没译给空串)。
+--    数据层 etl/noc 的 examples_zh 步(本地模型批译,缓存 data/processed/noc_examples_zh.json,只补没有的),mart 汇装拼成本列。
+--    只给搜索用,页面不显示。列型照同表 examples / duties 两列(varchar)。
+--
+-- 🔴 跑法(生产,顺序不能倒;同 noc-descriptions-examples-20261005.sql):
+--   ① 跑本文件(只加列;线上旧代码不 SELECT 这一列,加了没影响)。
+--      ⚠ 必须在 cms 新代码上线之前:新代码的 seed 列清单带 examples_zh、搜索 SQL 读 d.examples_zh,列不在 = seed 撞 42703
+--      整事务回滚、职业搜索 500。
+--   ② cms 推上线,等 /api/version 换版。
+--   ③ 换版之后再清哈希:DELETE FROM seed_state WHERE name = 'noc_descriptions';
+--      (见 seed-hash-poisoning-on-column-add:加列窗口期旧代码会偷记新文件的哈希,不清就每轮静默跳过。)
+--   ④ 在连得上本地模型盒子的机器上跑翻译(约 2.5 万条,几个小时,可断点续跑):
+--        python etl/noc/main.py --only examples_zh
+--      跑完由 ops_build 的下一轮汇装带上去,或手动整套重传 mart + seed。
+--   ⑤ 抽查:SELECT count(*) FROM noc_descriptions WHERE COALESCE(examples_zh, '') <> '';
+--          SELECT noc, title FROM noc_descriptions WHERE examples_zh ILIKE '%大数据%';   -- 期望含 21211
+--          curl 'https://offer2pr.com/api/quiz?q=架构'                                     -- 候选里有 21231
+
+ALTER TABLE noc_descriptions ADD COLUMN IF NOT EXISTS examples_zh varchar;

@@ -1373,7 +1373,8 @@ def translate_title_todo(todo: dict) -> TitleTodoOut:
             titles: list = []
             for pid in batch:
                 titles.append(todo[pid])
-            got = translate_split(TitleBatchIn(client=client, titles=titles))
+            got = translate_split(TitleBatchIn(client=client, titles=titles, prompt_tpl=EN_TITLE_PROMPT_TPL,
+                                               model=EN_TITLE_MODEL, max_len=EN_TITLE_MAX_LEN, gateway=""))
             for pid, name in zip(batch, got):
                 if name == "":
                     fail += 1
@@ -1392,17 +1393,23 @@ def translate_split(x: TitleBatchIn) -> list:
     if len(x.titles) == 1:
         return [""]
     mid = len(x.titles) // 2
-    head = translate_split(TitleBatchIn(client=x.client, titles=x.titles[:mid]))
-    tail = translate_split(TitleBatchIn(client=x.client, titles=x.titles[mid:]))
+    head = translate_split(TitleBatchIn(client=x.client, titles=x.titles[:mid], prompt_tpl=x.prompt_tpl,
+                                        model=x.model, max_len=x.max_len, gateway=x.gateway))
+    tail = translate_split(TitleBatchIn(client=x.client, titles=x.titles[mid:], prompt_tpl=x.prompt_tpl,
+                                        model=x.model, max_len=x.max_len, gateway=x.gateway))
     return head + tail
 
 
 def translate_titles(x: TitleBatchIn) -> list:
-    """一批标题编号送模型,按编号解析回来;行数、编号或长度对不上给空清单(调用方二分重试)。"""
+    """一批标题编号送模型,按编号解析回来;行数、编号或长度对不上给空清单(调用方二分重试)。
+    2026-11-12 提示模板、模型与长度上限改由入参给(原先写死法文标题英译那一套):示例职称中译(段 12)共用这套批译。
+    同日:入参带网关地址时改走盒子的外网网关(gateway_titles),出参约定不变。"""
+    if x.gateway != "":
+        return gateway_titles(x)
     lines: list = []
     for i, name in enumerate(x.titles):
         lines.append(EN_TITLE_LINE_TPL.format(n=i + 1, text=name))
-    body = {K_MODEL: EN_TITLE_MODEL, K_PROMPT: EN_TITLE_PROMPT_TPL.format(lines=NL.join(lines)),
+    body = {K_MODEL: x.model, K_PROMPT: x.prompt_tpl.format(lines=NL.join(lines)),
             K_STREAM: False, K_THINK: False, K_OPTIONS: {K_TEMPERATURE: 0}}
     raw: object = None
     try:
@@ -1423,7 +1430,7 @@ def translate_titles(x: TitleBatchIn) -> list:
     out: list = []
     for i in range(len(x.titles)):
         name = got.get(i + 1, "")
-        if name == "" or len(name) > EN_TITLE_MAX_LEN:
+        if name == "" or len(name) > x.max_len:
             return []
         out.append(name)
     return out
@@ -1505,3 +1512,127 @@ def run_tests() -> None:
     suite = unittest.TestLoader().loadTestsFromTestCase(NocExamplesTest)
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)
+
+
+# =========================================================================
+# 12. examples_zh 步(官方示例职称 → 中文;职业搜索用中文词也能搜到,2026-11-12)
+# =========================================================================
+from noc.constants import (  # noqa: E402 — 段12 常量单列一块(主块按字母序排满,同 pnp 域先例)
+    EXZH_BATCH, EXZH_DONE_TPL, EXZH_IN_TPL, EXZH_MAX_LEN, EXZH_MODEL, EXZH_OUT_TPL, EXZH_PROMPT_TPL,
+    EXZH_SAVE_BATCHES, EXZH_TICK_TPL, EXZH_TIMEOUT_S, EXZH_TODO_TPL, OUT_EXAMPLES_ZH,
+)
+from noc.constants import (  # noqa: E402 — 同上(外网网关通道)
+    EXZH_GW_BASE_ENV, EXZH_GW_DST, EXZH_GW_HDR_KEY, EXZH_GW_HDR_SKIP, EXZH_GW_HDR_SKIP_ON, EXZH_GW_K_DST,
+    EXZH_GW_K_OUT, EXZH_GW_K_SRC, EXZH_GW_K_TEXT, EXZH_GW_KEY_ENV, EXZH_GW_LINE_RE, EXZH_GW_LINE_TPL, EXZH_GW_PATH,
+    EXZH_GW_SRC, EXZH_GW_TRIM, EXZH_VIA_GW_TPL, EXZH_VIA_LAN,
+)
+
+
+def translate_noc_examples() -> None:
+    """官方示例职称 → 中文(幂等续跑;手动件 `--only examples_zh`,可跟 `--limit N` 只翻前 N 条)。
+
+    IN : mart/noc_descriptions.json(每行的 examples = 换行拼接的英文示例职称)
+    OUT: processed/noc_examples_zh.json({英文小写: 中文};已有的跳过)
+    批译走段 9 那一套(编号行协议 + 译不齐二分到单条);每条再过校验(含中文、不超长),不过的留空下次再试。
+    通道两条:环境里有 TRANSLATE_API_BASE 走盒子的外网网关(人不在家里局域网时用),没有走局域网 Ollama;是同一台盒子。
+    每 EXZH_SAVE_BATCHES 批落一次盘 —— 两万多条要跑几个小时,中途断了接着翻。
+    """
+    limit = 0
+    if ARG_LIMIT in sys.argv:
+        limit = int(sys.argv[sys.argv.index(ARG_LIMIT) + 1])
+    say(EXZH_IN_TPL.format(path=IN_DESCR))
+    say(EXZH_OUT_TPL.format(path=OUT_EXAMPLES_ZH))
+    done = load_examples_zh()
+    every = examples_all_of(json.loads(IN_DESCR.read_text(encoding=ENC_UTF8)))
+    todo: list = []
+    for name in every:
+        if name.lower() not in done:
+            todo.append(name)
+    if limit:
+        todo = todo[:limit]
+    say(EXZH_TODO_TPL.format(all=len(every), n=len(todo), have=len(done), model=EXZH_MODEL, base=ollama_base()))
+    n_ok = 0
+    n_skip = 0
+    gateway = os.environ.get(EXZH_GW_BASE_ENV, "").rstrip(EXZH_GW_TRIM)
+    headers: dict = {}
+    if gateway == "":
+        say(EXZH_VIA_LAN)
+    else:
+        say(EXZH_VIA_GW_TPL.format(base=gateway))
+        headers = {EXZH_GW_HDR_KEY: os.environ.get(EXZH_GW_KEY_ENV, ""), EXZH_GW_HDR_SKIP: EXZH_GW_HDR_SKIP_ON}
+    with httpx.Client(timeout=EXZH_TIMEOUT_S, headers=headers) as raw_client:
+        client = cast(HttpJsonClientLike, raw_client)
+        for at in range(0, len(todo), EXZH_BATCH):
+            batch = todo[at:at + EXZH_BATCH]
+            got = translate_split(TitleBatchIn(client=client, titles=batch, prompt_tpl=EXZH_PROMPT_TPL,
+                                               model=EXZH_MODEL, max_len=EXZH_MAX_LEN, gateway=gateway))
+            for name, zh in zip(batch, got):
+                if CJK_RE.search(zh) is None:
+                    n_skip += 1
+                    continue
+                done[name.lower()] = fix_terms(zh)
+                n_ok += 1
+            if (at // EXZH_BATCH + 1) % EXZH_SAVE_BATCHES == 0:
+                write_examples_zh(done)
+                say(EXZH_TICK_TPL.format(done=min(at + EXZH_BATCH, len(todo)), todo=len(todo), ok=n_ok, skip=n_skip))
+    write_examples_zh(done)
+    say(EXZH_DONE_TPL.format(path=OUT_EXAMPLES_ZH, have=len(done), ok=n_ok, skip=n_skip))
+
+
+def examples_all_of(rows: list) -> list:
+    """mart 的职业说明行 → 全部示例职称(按小写去重,保留首次出现的写法与顺序)。"""
+    seen: set = set()
+    out: list = []
+    for row in rows:
+        for raw in str(row.get(K_EXAMPLES) or "").split(NL):
+            name = raw.strip()
+            if name == "" or name.lower() in seen:
+                continue
+            seen.add(name.lower())
+            out.append(name)
+    return out
+
+
+def load_examples_zh() -> dict:
+    """中译缓存当前态(首跑没有文件 = 空表)。"""
+    if OUT_EXAMPLES_ZH.exists() is False:
+        return {}
+    return json.loads(OUT_EXAMPLES_ZH.read_text(encoding=ENC_UTF8))
+
+
+def write_examples_zh(done: dict) -> None:
+    """中译缓存落盘。"""
+    OUT_EXAMPLES_ZH.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_EXAMPLES_ZH, payload=done, indent=1))
+
+
+def gateway_titles(x: TitleBatchIn) -> list:
+    """一批示例职称经盒子的外网网关译成中文(2026-11-12):方括号编号行送过去、按编号解析回来;
+    行数、编号或长度对不上给空清单(调用方二分重试),与 translate_titles 同一个出参约定。密钥在客户端的默认请求头里。"""
+    lines: list = []
+    for i, name in enumerate(x.titles):
+        lines.append(EXZH_GW_LINE_TPL.format(n=i + 1, text=name))
+    body = {EXZH_GW_K_TEXT: NL.join(lines), EXZH_GW_K_SRC: EXZH_GW_SRC, EXZH_GW_K_DST: EXZH_GW_DST}
+    raw: object = None
+    try:
+        data = x.client.post(x.gateway + EXZH_GW_PATH, json=body).json()
+        if isinstance(data, dict):
+            raw = data.get(EXZH_GW_K_OUT)
+    except Exception as e:  # noqa: BLE001 — 网络 / 解析失败留痕,整批不中止
+        err(x.gateway + EXZH_GW_PATH, e)
+        return []
+    text = ""
+    if isinstance(raw, str):
+        text = raw
+    got: dict = {}
+    for line in text.split(NL):
+        m = re.match(EXZH_GW_LINE_RE, line)
+        if m is not None:
+            got[int(m.group(1))] = m.group(2).strip()
+    out: list = []
+    for i in range(len(x.titles)):
+        name = got.get(i + 1, "")
+        if name == "" or len(name) > x.max_len:
+            return []
+        out.append(name)
+    return out

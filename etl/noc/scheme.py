@@ -491,6 +491,18 @@ class TitleBatchIn:
     titles: list
     """待译标题(≤ EN_TITLE_BATCH 条,顺序即编号)。"""
 
+    prompt_tpl: str
+    """翻译提示模板(带 {lines};2026-11-12 起由调用方给 —— 法文标题英译与示例职称中译共用这套批译)。"""
+
+    model: str
+    """用哪只本地模型。"""
+
+    max_len: int
+    """一条译文的长度上限(超过整批弃)。"""
+
+    gateway: str
+    """盒子外网网关的地址;空串 = 走局域网 Ollama(2026-11-12:人不在家里局域网时示例职称中译走网关)。"""
+
 
 @dataclass
 class TitleTodoOut:

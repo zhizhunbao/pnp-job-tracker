@@ -88,7 +88,7 @@ from mart.constants import (
     FLAG_NO_SPONSORSHIP, FLAG_PR_REQUIRED, FLOW_14D, FLOW_28D, FLOW_30D, FLOW_60D, FLOW_BLANK,
     FLOW_COUNT_TPL, FLOW_IN_TPL, FLOW_NO_POSTINGS_TPL, FLOW_SERIES_YEARS,
     FSA_DISTRICT, FSA_PREFIX_LEN, GLOB_JSON, GRADE_1, GRADE_2, GRADE_3,
-    GRADE_4, GRADE_5, GRID_CRS, GRID_FSW67, HYPHEN, I18N_BLANK, I18N_CITY_FILE, I18N_NOC_FILE,
+    GRADE_4, GRADE_5, GRID_CRS, GRID_FSW67, HYPHEN, I18N_BLANK, I18N_CITY_FILE, I18N_EXAMPLES_ZH_FILE, I18N_NOC_FILE,
     INDEMAND2, INDENT_2, IN_AIP, IN_ATS_COMPANIES, IN_COMPANY_FACTS, IN_DIFFICULTY,
     CIP_MISSING_TPL, IN_CIP_PROGRAMS, IN_DLI, IN_DRAW_CHECKLISTS, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS,
     IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG, IN_QS, TABLE_CIP_PROGRAMS,
@@ -5238,7 +5238,7 @@ def build_noc_descriptions(x: NocDescIn) -> list:
     for n, v in nd.get(K_BY_NOC, {}).items():
         if n in used:
             rows.append(to_noc_description_row(NocDescRowIn(noc=n, entry=v, fetched=fetched,
-                                                            i18n=x.i18n.get(n, {}))))
+                                                            i18n=x.i18n.get(n, {}), examples_zh=x.examples_zh)))
     return rows
 
 
@@ -5367,7 +5367,14 @@ def to_noc_description_row(x: NocDescRowIn) -> dict:
     完整译名 —— 官方英文 title 一个字不动,短名是**另一列**。
     2026-10-05 加 examples:官方示例职称(noc 域 descriptions 步已去重排好)换行拼接,没有给空串;职业搜索按它也能搜到
     (访客第 3 题打「cloud」原本搜不到 21231)。
+    2026-11-12 加 examplesZh:示例职称的中文(noc 域 examples_zh 步的缓存),只拼已译的、按 examples 的顺序换行拼接,
+    一条都没译给空串;职业搜索用中文词(「大数据」「架构」)也能搜到。
     """
+    zh: list = []
+    for name in x.entry.get("examples", []):
+        got = x.examples_zh.get(str(name).lower())
+        if got:
+            zh.append(got)
     return {"noc": x.noc, "title": x.entry.get("title", ""),
             "titleZhShort": x.i18n.get("zhShort", ""), "titleKoShort": x.i18n.get("koShort", ""),
             "titleEnShort": x.i18n.get("enShort", ""),
@@ -5375,6 +5382,7 @@ def to_noc_description_row(x: NocDescRowIn) -> dict:
             "duties": NL.join(x.entry.get("duties", [])),
             "requirements": NL.join(x.entry.get("requirements", [])),
             "examples": NL.join(x.entry.get("examples", [])),
+            "examplesZh": NL.join(zh),
             "fetched": x.fetched}
 
 
@@ -5491,7 +5499,8 @@ def to_mart_tables() -> dict:
     noc_i18n = load_i18n(I18N_NOC_FILE)
     city_i18n = load_i18n(I18N_CITY_FILE)
     ee_draws = load_ee_draws()
-    descriptions = build_noc_descriptions(NocDescIn(jobs=ctx.jobs, i18n=noc_i18n))
+    descriptions = build_noc_descriptions(NocDescIn(jobs=ctx.jobs, i18n=noc_i18n,
+                                                    examples_zh=load_i18n(I18N_EXAMPLES_ZH_FILE)))
     universe = load_noc_universe()
     draws = pnp_draws_of(ee_draws)
     reqs = pnp_requirements_of()

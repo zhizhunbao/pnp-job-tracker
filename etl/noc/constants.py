@@ -1800,3 +1800,99 @@ MAJOR_OK_TPL = "✓ majors: 对照表 {keys} 个键,{n} 个专业全部落到大
 
 TEST_VERBOSITY = 2
 """unittest 运行档:逐条打用例名与结果(同 door / indexing / mart 自测)。"""
+
+# =========================================================================
+# 12. examples_zh 步(官方示例职称 → 中文;职业搜索用中文词也能搜到,2026-11-12)
+# =========================================================================
+
+OUT_EXAMPLES_ZH = paths.PROCESSED / "noc_examples_zh.json"
+"""示例职称中译缓存:{英文示例职称(小写): 中文}。翻一次永久复用,只补没有的;mart 汇装拼成 noc_descriptions.examplesZh。
+2026-11-12 Frank 截图:职业搜索打「大数据」「架构」出「没有找到匹配职业」—— 搜索只比官方职业名(英 / 中)与英文示例职称,
+21211 的 big data engineer、21231 的 cloud architect 没有中文,中文词搜不到。"""
+
+EXZH_MODEL = "qwen3.8:27b"
+"""翻译模型(2026-11-11 Frank 口述:本地盒子上 qwen3.8:27b 已全面替代 qwen3.6)。"""
+
+EXZH_BATCH = 30
+"""一次送多少条(编号行协议,同段 9;职称短)。"""
+
+EXZH_TIMEOUT_S = 240.0
+"""一批的超时。"""
+
+EXZH_MAX_LEN = 40
+"""一条中文职称的长度上限(超过 = 模型在解释不是在译,整批弃后二分重试)。"""
+
+EXZH_SAVE_BATCHES = 10
+"""每 N 批落一次盘、报一行进度(中途断了下次接着翻)。"""
+
+EXZH_PROMPT_TPL = ("把下面每一条加拿大官方职业分类(NOC)的英文示例职称译成简体中文里招聘网站常用的叫法。"
+                   "每条只给一个简短的职称,不加解释、不加括号注释;专有名词与缩写(如 AI、DBA、IT)保留原样。"
+                   "严格一行一条,格式为「编号. 中文职称」,不要输出别的内容。\n\n{lines}")
+"""翻译提示(编号行协议,解析用段 9 的 EN_TITLE_LINE_RE)。"""
+
+EXZH_IN_TPL = "IN : {path}"
+"""入口报数:读哪份。"""
+
+EXZH_OUT_TPL = "OUT: {path}"
+"""入口报数:写哪份。"""
+
+EXZH_TODO_TPL = "示例职称去重后 {all} 条,待翻 {n} 条(已有 {have} 条);模型 {model} @ {base}"
+"""入口报数:待翻量。"""
+
+EXZH_TICK_TPL = "  [{done}/{todo}] 本轮成功 {ok} 留空 {skip}"
+"""进度(每 EXZH_SAVE_BATCHES 批一行)。"""
+
+EXZH_DONE_TPL = "✓ {path}  共 {have} 条;本轮成功 {ok} 留空 {skip}(留空的下次重跑再试)"
+"""收尾报数。"""
+
+EXZH_GW_BASE_ENV = "TRANSLATE_API_BASE"
+"""环境变量:盒子外网网关的地址(与站上懒翻译同一个,cms/.env 里那格)。设了就走网关,没设走局域网 Ollama。
+2026-11-12 Frank 在学校、连不上家里局域网的盒子(「你用 grok 也可以翻译吧」):网关是同一台盒子对外的门,外网可达。"""
+
+EXZH_GW_KEY_ENV = "TRANSLATE_API_KEY"
+"""环境变量:网关的访问密钥(只从环境读,不落盘不打印)。"""
+
+EXZH_GW_TRIM = "/"
+"""网关地址末尾要去掉的斜杠(拼端点时不出双斜杠)。"""
+
+EXZH_GW_PATH = "/api/translate"
+"""网关的翻译端点({text, source_lang, target_lang} → translated_text;编号行原样带回)。"""
+
+EXZH_GW_HDR_KEY = "X-API-Key"
+"""网关的密钥请求头。"""
+
+EXZH_GW_HDR_SKIP = "ngrok-skip-browser-warning"
+"""ngrok 免费档的浏览器提示页开关头(带上才直接回接口内容)。"""
+
+EXZH_GW_HDR_SKIP_ON = "1"
+"""上面那个头的取值。"""
+
+EXZH_GW_LINE_TPL = "[{n}] {text}"
+"""网关的编号行(方括号编号,网关保证原样带回)。"""
+
+EXZH_GW_LINE_RE = r"^\s*\[(\d+)\]\s*(.+?)\s*$"
+"""解析网关回来的一行:编号 + 译文。"""
+
+EXZH_GW_K_TEXT = "text"
+"""网关请求体:原文。"""
+
+EXZH_GW_K_SRC = "source_lang"
+"""网关请求体:源语言。"""
+
+EXZH_GW_K_DST = "target_lang"
+"""网关请求体:目标语言。"""
+
+EXZH_GW_SRC = "en"
+"""源语言:英文。"""
+
+EXZH_GW_DST = "zh"
+"""目标语言:中文。"""
+
+EXZH_GW_K_OUT = "translated_text"
+"""网关响应体:译文。"""
+
+EXZH_VIA_GW_TPL = "通道: 外网网关 {base}"
+"""入口报数:这一轮走网关。"""
+
+EXZH_VIA_LAN = "通道: 局域网 Ollama"
+"""入口报数:这一轮走局域网。"""

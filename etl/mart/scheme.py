@@ -2203,6 +2203,9 @@ class NocDescIn:
     i18n: dict
     """NOC 译名表。"""
 
+    examples_zh: dict
+    """示例职称中译表({英文小写: 中文};2026-11-12)。"""
+
 @dataclass
 class NocDescRowIn:
     """to_noc_description_row() 入参。"""
@@ -2218,6 +2221,9 @@ class NocDescRowIn:
 
     i18n: dict
     """该 NOC 的译名格。"""
+
+    examples_zh: dict
+    """示例职称中译表({英文小写: 中文};2026-11-12)。"""
 
 @dataclass
 class NocOpeningsIn:
@@ -5621,7 +5627,8 @@ class MartNocDescExamplesTest(unittest.TestCase):
     def row(self, entry: dict) -> dict:
         """用一份条目造一行(译名给空:本组只看 examples 与职责格)。"""
         from mart import functions as fn
-        return fn.to_noc_description_row(NocDescRowIn(noc="21231", entry=entry, fetched="2026-10-05", i18n={}))
+        return fn.to_noc_description_row(NocDescRowIn(noc="21231", entry=entry, fetched="2026-10-05", i18n={},
+                                                              examples_zh={}))
 
     def test_examples_joined(self) -> None:
         """金标:两条示例按原序换行拼接;职责格照旧;行键 = 原十格 + examples。"""

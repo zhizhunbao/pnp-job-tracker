@@ -29,7 +29,7 @@ from log.functions import say
 from door.functions import run_steps
 from noc.functions import (
     audit_majors, audit_noc_classes, build_descriptions, build_structure,
-    run_tests, shorten_noc_titles, translate_noc_titles,
+    run_tests, shorten_noc_titles, translate_noc_examples, translate_noc_titles,
 )
 
 SCHEDULED = []
@@ -44,6 +44,7 @@ TOOLS = {
     "audit": audit_noc_classes,
     "titles": translate_noc_titles,
     "short": shorten_noc_titles,
+    "examples_zh": translate_noc_examples,
     "majors": audit_majors,
     "test": run_tests,
 }
@@ -54,6 +55,7 @@ TOOLS = {
   audit         逐职业体检本站分类 vs 官方组(2026-08-31 批D 从 ops 拆入;只读,产 TSV)
   titles        NOC 官方职业名 → 中/韩译名(本地 qwen 逐条翻,不过校验留空;原 clean/04f)
   short         NOC 职业名 → 中/韩/英窄位短名,补进同一张 i18n 表(原 clean/04g_short_noc_titles)
+  examples_zh   官方示例职称 → 中文(本地模型批译,只补没有的;2026-11-12,职业搜索用中文词也能搜到)
   majors        专业 → 本站大类对照表(MAJOR_SERIES_BROADS)体检:值域 ⊂ BROADS、raw/statcan/cip2021.json 全部 class 都落得到、
                 没有死键(2026-10-04 访客四题第 2 题立;只读,与五个既有键逐对核过互不含)
   test          自测 NocExamplesTest(2026-10-05 示例职称批立):examples_of 性质 / 金标、小 CSV 金标 + 变异探针、
