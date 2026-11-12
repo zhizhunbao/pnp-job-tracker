@@ -401,3 +401,46 @@
   font-size: 13px;
   color: var(--text3);
 }
+
+/*
+ * 叠开弹框里不是两栏选择器的正文(所在地、教育经历;2026-11-12 Frank「这个有 bug」:教育经历段数多时正文比弹框高,
+ * 「选好了」盖在最后一段上):正文吃掉剩下的高、自己上下滚,钮区留在底下。
+ */
+.pickBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/*
+ * 弹框里教育经历一段一个框(同日 Frank「这部分应该分个类吧」:几段连着排,分不清哪几格是一段)。
+ */
+.pickBody .eduRow {
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+/*
+ * 所在地弹框的两个小标题(省份、城市)同一档字(同日 Frank「这个看着也别扭」:原先省下拉没有标题、城市标题是大字)。
+ */
+.pickBody .cityHead {
+  margin: 12px 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/*
+ * 所在地弹框:第一个小标题顶上不留白。
+ */
+.pickBody > .cityHead:first-child {
+  margin-top: 0;
+}
+
+/*
+ * 所在地弹框:城市区紧跟省下拉(面板里那份留 20px,弹框里两个小标题各带上边距,不再叠加)。
+ */
+.pickBody .cities {
+  margin-top: 0;
+}

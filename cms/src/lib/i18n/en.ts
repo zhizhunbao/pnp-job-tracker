@@ -1134,7 +1134,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   // 2026-10-05 访客第 2 题照掌上高考:左栏第一项、左栏读屏名、专业类头行个数
   'gate.hot': 'Popular', 'gate.majorCats': 'Major categories', 'gate.majorN': '{n} majors',
   'gate.majorPicked': '{n}/{max} selected',
-  'gate.city': 'City', 'gate.cityPh': 'Search city', 'gate.save': 'Save', 'gate.saveFail': 'Not saved. Try again.',
+  'gate.prov': 'Province', 'gate.city': 'City', 'gate.cityPh': 'Search city', 'gate.save': 'Save', 'gate.saveFail': 'Not saved. Try again.',
   'gate.q.name': 'Your name as on your resume',
   'gate.q.who': 'Your current status', 'gate.q.edu': 'Where you studied (last two programs)',
   'fit.who.student': 'Current student', 'fit.who.pgwp': 'PGWP', 'fit.who.lmia': 'LMIA work permit',

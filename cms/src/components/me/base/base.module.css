@@ -36,9 +36,23 @@
 }
 
 /*
+ * 整张卡竖排(2026-11-12 Frank「这个两个改成一样高吧」「这个地方如果够长,也自动展开」):档案页两张卡拉成一样高之后,
+ * 这张卡比内容高时,多出来的高交给卡身(预览区或上传区),不在卡底下留一截空白。
+ */
+.card {
+  display: flex;
+  flex-direction: column;
+}
+
+/*
  * 有简历时的卡身(整块是拖放区):平时无边框,拖到上方时亮描边(.dropOn)。
+ * 2026-11-12:吃掉卡里剩下的高,自己再竖排(三行信息在上、预览区撑满)。
  */
 .body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   margin-top: 8px;
   border: 2px solid transparent;
   border-radius: 10px;
@@ -49,6 +63,13 @@
  * 还没有简历时的上传区:虚线框、居中(拖放区的通行长相)。
  */
 .drop {
+  /*
+   * 撑满卡身,里面的图标、字与钮上下居中(2026-11-12)。
+   */
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   margin-top: 12px;
   border: 2px dashed #cbd5e1;
   border-radius: 14px;
@@ -182,8 +203,13 @@
  * 这里只是普通的一块,最高到 min(80vh, 900px),更长的在这一块里上下滚。
  */
 .view {
+  /*
+   * 2026-11-12 Frank「这个地方如果够长,也自动展开」:起步高照旧是 min(80vh, 900px),卡被旁边那张拉高时跟着长
+   * (原先用最高高度封顶,卡再高预览区也不长,底下空一截)。
+   */
+  flex: 1 1 min(80vh, 900px);
   min-width: 0;
-  max-height: min(80vh, 900px);
+  min-height: 0;
   overflow-y: auto;
 }
 
@@ -218,7 +244,7 @@
  */
 @media (max-width: 640px) {
   .view {
-    max-height: none;
+    flex: none;
     overflow-y: visible;
   }
 }

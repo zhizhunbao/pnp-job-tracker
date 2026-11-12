@@ -16,7 +16,7 @@ import { BaseDrop } from './basedrop'
 import { BaseFile } from './basefile'
 import { BaseHead } from './basehead'
 import { BaseInput } from './baseinput'
-import { CARD_MD_CLS, TEXT_NONE } from './constants'
+import { CARD_MD_CLS, CLS_SEP, TEXT_NONE } from './constants'
 import { bodyClsOf } from './functions'
 import type { BasePartIn } from './types'
 import css from './base.module.css'
@@ -30,7 +30,7 @@ import css from './base.module.css'
 export function BaseCard({ b, t }: BasePartIn) {
   return (
     <>
-      <section className={CARD_MD_CLS}>
+      <section className={CARD_MD_CLS + CLS_SEP + cssOf(css.card)}>
         <BaseHead b={b} t={t} />
         {b.checked === false && <div className={cssOf(css.skel)} />}
         {b.checked && (

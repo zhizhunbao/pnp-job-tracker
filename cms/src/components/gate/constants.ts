@@ -440,6 +440,11 @@ export const FORM_PICK_WHERE = 'where'
 export const FORM_PICK_EDU = 'edu'
 
 /**
+ * 所在地弹框里「省份」小标题的词条键(2026-11-12)。
+ */
+export const GATE_PROV_KEY = 'gate.prov'
+
+/**
  * 所在地摘要里省那一行的 key。
  */
 export const LINE_KEY_PROV = 'prov'

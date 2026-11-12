@@ -89,7 +89,9 @@ export function GateForm({ t, seed, onClose, onSaved }: GateFormIn) {
       )}
       {k.picking === FORM_PICK_EDU && (
         <GatePick title={t('pf.edu')} doneText={t('pf.pickDone')} onDone={k.onDone}>
-          <GateEdu g={g} t={t} />
+          <div className={cssOf(css.pickBody)}>
+            <GateEdu g={g} t={t} />
+          </div>
         </GatePick>
       )}
     </>

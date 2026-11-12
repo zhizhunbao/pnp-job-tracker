@@ -1189,7 +1189,7 @@ export const jobsZh = {
   // 2026-10-05 访客第 2 题照掌上高考:左栏第一项、左栏读屏名、专业类头行个数
   'gate.hot': '热门', 'gate.majorCats': '专业分类', 'gate.majorN': '{n}个专业',
   'gate.majorPicked': '已选 {n}/{max}',
-  'gate.city': '城市', 'gate.cityPh': '搜索城市', 'gate.save': '保存', 'gate.saveFail': '没存上,再试一次',
+  'gate.prov': '省份', 'gate.city': '城市', 'gate.cityPh': '搜索城市', 'gate.save': '保存', 'gate.saveFail': '没存上,再试一次',
   'gate.q.name': '英文姓名(与简历一致)',
   // 2026-10-13 档案加身份、教育经历两题(Frank「我的档案回答完了,自动在下面出一个 section 列出我的通道」;选项词沿用 10-11 资讯页筛选)
   'gate.q.who': '你现在的身份', 'gate.q.edu': '在哪读的书(最近两段)',

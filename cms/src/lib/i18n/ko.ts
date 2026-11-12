@@ -1095,7 +1095,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   // 2026-10-05 访客第 2 题照掌上高考:左栏第一项、左栏读屏名、专业类头行个数
   'gate.hot': '인기', 'gate.majorCats': '전공 분류', 'gate.majorN': '전공 {n}개',
   'gate.majorPicked': '{n}/{max} 선택',
-  'gate.city': '도시', 'gate.cityPh': '도시 검색', 'gate.save': '저장', 'gate.saveFail': '저장하지 못했어요. 다시 시도해 주세요.',
+  'gate.prov': '주', 'gate.city': '도시', 'gate.cityPh': '도시 검색', 'gate.save': '저장', 'gate.saveFail': '저장하지 못했어요. 다시 시도해 주세요.',
   'gate.q.name': '이력서와 같은 영문 이름',
   'gate.q.who': '현재 신분', 'gate.q.edu': '학력 (최근 두 과정)',
   'fit.who.student': '재학 중인 유학생', 'fit.who.pgwp': '졸업 후 취업비자(PGWP)', 'fit.who.lmia': '고용주 지정 비자(LMIA)',
