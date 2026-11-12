@@ -34,7 +34,8 @@ METAS = [
           "note": "人工核对表(官方公告后手改,Frank 抽查制)"},
          {"file": "raw/pnp/ab-eoi-points.json", "cadence_days": 60,
           "note": "人工核对表(AAIP Worker EOI 分值,161be8be 竞争卡批一次性核入,无生产者;"
-                  "分值表极少变,变了随 AB 公告手改)"},
+                  "分值表极少变,变了随 AB 公告手改)。2026-11-12 起 pnp_ab 单元的 ab_eoi 步每轮重抓官方 PDF、"
+                  "文本没变才刷 fetched,变了报红等人核对"},
      ]},
     {"name": "pnp_bc", "role": "pnp_bc", "only": "pnp_bc", "method": "httpx", "interval": 3600, "seed": False,
      "ping": True},

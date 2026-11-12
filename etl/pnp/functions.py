@@ -16,6 +16,7 @@ docs/design/数据层/etl分域-20260829.md §4)。
 库类型(bs4 节点 / pymupdf 页表 / httpx 客户端)经 scheme 的 Protocol 自声明只真用的格,
 `cast` 只住装配点(2026-08-31 批G,照 company/ee 样张;裸 object 会让检查器判不动)。
 """
+import hashlib
 import json
 import re
 import sys
@@ -33,7 +34,7 @@ from bs4 import BeautifulSoup
 import paths
 from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, PARSER_HTML, POLITE_UA, WS_RE
-from crawl.functions import convert_md, get_cached_page, put_cached_file, put_cached_page
+from crawl.functions import convert_md, get_cached_file, get_cached_page, put_cached_file, put_cached_page
 from crawl.scheme import CacheFilePutIn, CachePutIn, ConvertIn
 from pnp.constants import (
     ABR_BASIS_FISCAL, ABR_BASIS_WINDOW_TPL, ABR_COND_LOCAL, ABR_EMPLOYER_URL, ABR_EMP_REVENUE_LABEL_TPL,
@@ -86,6 +87,7 @@ from pnp.constants import (
     DRAWS_PRINT_OK_TPL, DRAWS_PRINT_ON_FAIL_TPL, DRAWS_PRINT_ON_INV_FAIL_TPL, DRAWS_PRINT_ON_NO_ENTRY,
     DRAWS_PRINT_ON_OK_TPL, DRAWS_PRINT_PE_NO_CACHE_TPL, DRAWS_PRINT_PE_OK_TPL,
     DRAWS_SOURCE, DRAWS_STREAM_CLIP, DRAWS_TIMEOUT_S, DROP_TAGS, EMPTY_JOIN, ENC_UTF8, ERRORS_REPLACE, FETCH_HTTP_OK,
+    PDF_CACHE_MISS_TPL, PDF_MAGIC,
     FACTOR_AGE, FACTOR_EDUCATION, FACTOR_EMP_REVENUE, FACTOR_EMP_STAFF, FACTOR_EMP_YEARS, FACTOR_EXPERIENCE,
     FACTOR_EXPERIENCE_ALT,
     FACTOR_EXPERIENCE_EXCLUDED,
@@ -166,7 +168,7 @@ from pnp.constants import (
     NLP_CONNECTION_KEY, NLP_CONN_LABELS, NLP_CONN_MAX, NLP_CONN_START, NLP_DASH_EM, NLP_DASH_EN, NLP_DASH_PLAIN,
     NLP_EDUCATION_KEY, NLP_EDU_END, NLP_EDU_LABELS, NLP_EDU_MAX, NLP_EDU_START, NLP_EXPECTED, NLP_FAIL_BULLET,
     NLP_FAIL_HEADER, NLP_LANGUAGE_KEY, NLP_LANG_MAX, NLP_LANG_START, NLP_MARK_RE, NLP_MAX_TOTAL, NLP_NUM_RE,
-    NLP_OR_TAIL_RE, NLP_PAGE_TIMEOUT_S, NLP_PAGE_URL, NLP_PASS_MARK, NLP_PDF_MAGIC, NLP_PDF_TIMEOUT_S, NLP_PDF_URL,
+    NLP_OR_TAIL_RE, NLP_PAGE_TIMEOUT_S, NLP_PAGE_URL, NLP_PASS_MARK, NLP_PDF_TIMEOUT_S, NLP_PDF_URL,
     NLP_PRINT_DONE_TPL, NLP_PROBLEM_NOT_PDF, NLP_PROBLEM_PASS_TPL, NLP_PROBLEM_ROWS_TPL, NLP_PROBLEM_TOTAL,
     NLP_QUOTE_LEFT, NLP_QUOTE_PLAIN, NLP_QUOTE_RIGHT, NLP_SOFT_HYPHEN, NLP_SOURCE, NLP_SYSTEM, NLP_TAG_RE,
     NLP_TEXT_MODE, NLP_WORK5_KEY, NLP_WORK5_MAX, NLP_WORK5_START, NLP_WORK610_KEY, NLP_WORK610_MAX,
@@ -482,6 +484,24 @@ def fetch_bytes(x: FetchHtmlIn) -> bytes:
     if r.status_code == FETCH_HTTP_OK:
         put_cached_file(CacheFilePutIn(url=x.url, data=r.content))
     return r.content
+
+
+def fetch_cached_pdf(x: FetchHtmlIn) -> bytes | None:
+    """取一份官方 PDF 并经 crawl 层交回:下载 → 认字节头 → 原件写门落盘 → 读门取回(解析只吃缓存里那一份)。
+
+    2026-11-12 立(Frank「下载改走 crawl 域的写门和读门」「解析改成从缓存读」;NL Annex A 与 AB Worker EOI 两张
+    分值表共用)。与 fetch_bytes 的差别两处:HTTP 非 200 直接抛(不拿缓存里的旧件顶当天的数);回来的不是 PDF
+    (官方维护期给 HTML)→ None、不进缓存,怎么报由调用方定。
+    """
+    r = httpx.get(x.url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=x.timeout_s)
+    r.raise_for_status()
+    if not r.content.startswith(PDF_MAGIC):
+        return None
+    put_cached_file(CacheFilePutIn(url=x.url, data=r.content))
+    data = get_cached_file(x.url)
+    if data is None:
+        raise RuntimeError(PDF_CACHE_MISS_TPL.format(url=x.url))
+    return data
 
 
 def drop_junk_tags(soup: SoupNodeLike) -> None:
@@ -8190,13 +8210,12 @@ def nlp_language_rows(text: str) -> list:
 
 
 def nlp_annex_text() -> str:
-    """Annex A PDF 全文(官方 URL 维护期会返回 HTML,先认字节)。"""
-    pdf_res = httpx.get(NLP_PDF_URL, headers={HDR_UA: BROWSER_UA}, follow_redirects=True,
-                        timeout=NLP_PDF_TIMEOUT_S)
-    pdf_res.raise_for_status()
-    if not pdf_res.content.startswith(NLP_PDF_MAGIC):
+    """Annex A PDF 全文(官方 URL 维护期会返回 HTML,先认字节)。
+    2026-11-12 起原件先落 crawl 层、解析从缓存读(fetch_cached_pdf;此前 httpx 下完即解析,原文不落盘)。"""
+    data = fetch_cached_pdf(FetchHtmlIn(url=NLP_PDF_URL, timeout_s=NLP_PDF_TIMEOUT_S))
+    if data is None:
         fail_nlp([NLP_PROBLEM_NOT_PDF])
-    with pymupdf.open(stream=pdf_res.content, filetype=FILETYPE_PDF) as doc:
+    with pymupdf.open(stream=data, filetype=FILETYPE_PDF) as doc:
         parts: list = []
         for page in doc:
             parts.append(page.get_text(NLP_TEXT_MODE))
@@ -9928,3 +9947,43 @@ def nl_nominated_row_of(x: NlReportIn) -> dict | None:
         row[K_UNIT] = NLS_UNIT_PEOPLE
         return row
     return None
+
+
+# =========================================================================
+# 42. AB Worker EOI 分值表守望(官方 PDF 文本没变 → 刷人工核对表的日期;2026-11-12)
+# =========================================================================
+from pnp.constants import (  # noqa: E402 — 段42 常量单列一块(同段35–41 先例)
+    AB_EOI_BAD_TABLE_TPL, AB_EOI_CHANGED_TPL, AB_EOI_NOT_PDF_TPL, AB_EOI_PDF_URL, AB_EOI_PRINT_OK_TPL,
+    AB_EOI_PRINT_SAME_TPL, AB_EOI_TABLE, AB_EOI_TEXT_SHA, AB_EOI_TIMEOUT_S,
+)
+
+
+def watch_ab_eoi() -> None:
+    """AB Worker EOI 分值表守望入口(每轮一次):官方 PDF 重抓进 crawl 层 → 缓存里那份的文本指纹对上人工核对时那一版
+    → 只替换人工表里 fetched 那一格日期(按字节读写,换行照旧;同 ON 劳动力优先表守望)。
+
+    指纹对不上 = 官方改了版:抛错(本单元报红),人工表一个字节不动 —— 分值是人逐格核进去的,不让程序覆盖;
+    下载失败、回来的不是 PDF 同样抛错(下一轮重试)。排在 pnp_ab 单元最后一步,抛错不拦前面的步。
+    """
+    data = fetch_cached_pdf(FetchHtmlIn(url=AB_EOI_PDF_URL, timeout_s=AB_EOI_TIMEOUT_S))
+    if data is None:
+        raise RuntimeError(AB_EOI_NOT_PDF_TPL.format(url=AB_EOI_PDF_URL))
+    sha = text_sha_of(pdf_text(data))
+    if sha != AB_EOI_TEXT_SHA:
+        raise RuntimeError(AB_EOI_CHANGED_TPL.format(got=sha, want=AB_EOI_TEXT_SHA, url=AB_EOI_PDF_URL,
+                                                     path=AB_EOI_TABLE))
+    text = AB_EOI_TABLE.read_bytes().decode(ENC_UTF8)
+    new = owp_refreshed_of(OwpRefreshIn(text=text, date=today_iso()))
+    m = OWP_FETCHED_RE.search(text)
+    if new is None or m is None:
+        raise RuntimeError(AB_EOI_BAD_TABLE_TPL.format(path=AB_EOI_TABLE, n=len(OWP_FETCHED_RE.findall(text))))
+    if new == text:
+        say(AB_EOI_PRINT_SAME_TPL.format(old=m.group(1)))
+        return
+    paths.write_text(paths.WriteTextIn(path=AB_EOI_TABLE, text=new, newline=EMPTY_JOIN))
+    say(AB_EOI_PRINT_OK_TPL.format(old=m.group(1), new=today_iso()))
+
+
+def text_sha_of(text: str) -> str:
+    """一段文本的指纹:去掉全部空白转小写(squashed_of)后的 sha256 十六进制串 —— 排版换行、空格多少不算改版。"""
+    return hashlib.sha256(squashed_of(text).encode(ENC_UTF8)).hexdigest()

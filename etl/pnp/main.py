@@ -41,7 +41,7 @@ from pnp.functions import (
     fetch_bc_draw_archive,
     build_sk_points, build_sk_req, build_sk_stats, gate_quotes, run_tests,
     scrape_bc_nominations, scrape_ns_allocations, scrape_ns_stats, scrape_pe_iidi, translate_draw_streams,
-    watch_on_workforce, watch_prov_allocations,
+    watch_ab_eoi, watch_on_workforce, watch_prov_allocations,
     scrape_nb_stats, scrape_nl_stats,
 )
 # 2026-09-29 魁省拆成 pnp/qc 子域(按省拆首例),本门从子域取步骤
@@ -51,7 +51,7 @@ from pnp.qc.functions import (
 )
 
 UNITS = {
-    "pnp_ab": [("ab", build_ab), ("ab_req", build_ab_req), ("ab_stats", build_ab_stats)],
+    "pnp_ab": [("ab", build_ab), ("ab_req", build_ab_req), ("ab_stats", build_ab_stats), ("ab_eoi", watch_ab_eoi)],
     "pnp_bc": [("bc", build_bc), ("bc_req", build_bc_req), ("bc_sirs", build_bc_sirs), ("bc_stats", build_bc_stats),
                ("bc_nominations", scrape_bc_nominations)],
     "pnp_sk": [("sk", build_sk), ("sk_joboffer", build_sk_joboffer), ("sk_points", build_sk_points),
@@ -228,6 +228,7 @@ TOOLS = {
     "mb_stats": build_mb_stats,
     "mb_points": build_mb_points,
     "nl_points": build_nl_points,
+    "ab_eoi": watch_ab_eoi,
     "nl_employers": build_nl_employers,
     "sk_joboffer": build_sk_joboffer,
     "draw_streams_zh": translate_draw_streams,

@@ -2401,6 +2401,8 @@ BC=SIRS 200 分制(pnp 域 build_bc_sirs 从官方 PDF 抓)/ SK=SINP Points Grid
 (build_sk_points 抓官网表)/
 AB=AAIP Worker EOI Points Grid 100 分制(2026-08-14 加,官方 PDF 人工核对:
 data/crawl/ab-aaip/im-worker-stream-expression-of-interest-points-grid.pdf)。
+2026-11-12:那份 PDF 改由 pnp 域 watch_ab_eoi 每轮重抓进 crawl 原件缓存(files-www.alberta.ca/file_cache/),
+文本没变只刷人工表的 fetched,变了报红等人逐格核对;分值仍是人工核入,程序不覆盖。
 ⚠ NL 只对 Express Entry Skilled Worker 使用 Annex A 100 分表(67 分门槛);普通 NL EOI 仍按
 公开优先标准择优,没有数值权重。两者不能混成「整个纽省都按 67 分」。"""
 

@@ -56,7 +56,9 @@ SEED_AB_AAIP = {
 """AB 扁平站 keyword 限域。2026-08-14 keywords 放宽:AAIP 的 Worker EOI 打分材料 URL 不带 aaip
 (实撞:/system/files/im-worker-stream-expression-of-interest-points-grid.pdf 被限域滤掉,
 差点把「AB 有没有打分制」答成没有)。PDF 本体 crawler 不收(SKIP_EXTENSIONS 设计如此),
-这里放的是让 EOI 相关 HTML 页此后能进地图/政策雷达;分值表 PDF 走 raw 落盘。"""
+这里放的是让 EOI 相关 HTML 页此后能进地图/政策雷达;分值表 PDF 走 raw 落盘。
+2026-11-12:那份分值表 PDF 进了原件缓存 —— pnp 域 watch_ab_eoi 每轮下载后过原件写门
+(files-www.alberta.ca/file_cache/,manifest 按网址可查);BFS 照旧不收二进制。"""
 
 SEED_ON_OINP = {
     "slug": "on-oinp",

@@ -26,6 +26,13 @@ ERRORS_REPLACE = "replace"
 FETCH_HTTP_OK = 200
 """取二进制原件时只把这个 HTTP 状态的响应落 crawl 层(错误页不进缓存;2026-09-29 官方 PDF 先落缓存再解析)。"""
 
+PDF_MAGIC = b"%PDF"
+"""PDF 魔数(官方 URL 维护期会返回 HTML,先认字节)。2026-11-12 自 NL 分值表段的 NLP_PDF_MAGIC 提到共享段:
+fetch_cached_pdf 认字节头用,NL Annex A 与 AB Worker EOI 两张分值表共用。"""
+
+PDF_CACHE_MISS_TPL = "原件刚过 crawl 写门、读门却取不回:{url}"
+"""fetch_cached_pdf 写门落盘后读门取不到时的抛错文案(不该发生;发生 = crawl 层写读对不上,不拿内存里的字节顶)。"""
+
 PARSER_LXML = "lxml"
 """bs4 的 lxml 解析器 —— **只有 NL 抽选表用**(2026-08-03 接入时那张表没有 <th>,
 html.parser 拆出来的行矩阵对不上;其余各处一律 fetch.constants.PARSER_HTML)。"""
@@ -6465,8 +6472,14 @@ must demonstrate they meet the NOC code employment requirements;」。记 factor
 requirements, according to the National Occupational Classification」的先例(NBR_PAGE_RULES);门槛卡「其他」行据此出
 「职业所需执照或注册」。2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补。"""
 
-NLR_EMP_YEARS_RE = re.compile(r"Operated under current management for at least (\d+) years?", re.I)
-"""「Operated under current management for at least 2 years (or 1 year in special cases)」。"""
+NLR_EMP_YEARS_RE = re.compile(r"in active business under current ownership and management, in Newfoundland and Labrador, "
+                              r"for at least \w+ \((\d+)\) consecutive years?", re.I)
+"""「Operated under current management for at least 2 years (or 1 year in special cases)」。
+2026-11-12 官方雇主资格页换了说法(数字没变,仍是 2 年、特殊情形 1 年),旧句认不出 → nl_req 自校不过、pnp_nl 单元
+每轮中止在这一步,后面的 nl_points / nl_employers / nl_stats 两周没跑(Frank「修」)。现行原句:
+「The employer must demonstrate they have been in active business under current ownership and management, in
+Newfoundland and Labrador, for at least two (2) consecutive years. In exceptional circumstances, one (1) year may be
+accepted.」—— 取括号里的数字。"""
 
 NLR_STAFF_SJ_RE = re.compile(r"In St\.?\s*John.{0,3}s area:? at least (\d+) full-?time local employees?", re.I)
 """「In St. John's area: at least 2 full-time local employees」(弯引号在 page_text 已压成空白无碍)。"""
@@ -6553,9 +6566,10 @@ NLR_LICENCE_LABEL = ("Have the qualifications, training, skills and/or accredita
                      "code employment requirements")
 """Skilled Worker 资格 / 执照条文的 label(原句整条进 valueText,见 NLR_LICENCE_RE)。"""
 
-NLR_EMP_YEARS_LABEL_TPL = ("Employer must be permanently based in NL, registered with Service NL, and operated "
-                           "under current management for at least {years} years (1 year in special cases)")
-"""雇主经营年限的 label。"""
+NLR_EMP_YEARS_LABEL_TPL = ("Employer must be permanently established in NL and in active business under current "
+                           "ownership and management, in NL, for at least {years} consecutive years "
+                           "(1 year may be accepted in exceptional circumstances)")
+"""雇主经营年限的 label。2026-11-12 跟官方现行说法改写(旧 label 里的「registered with Service NL」现页已无此句)。"""
 
 NLR_STAFF_SJ_LABEL_TPL = "In the St. John's area: at least {n} full-time local employees"
 """圣约翰斯区雇员数的 label。"""
@@ -7788,9 +7802,6 @@ NLP_PDF_TIMEOUT_S = 60
 
 NLP_PAGE_TIMEOUT_S = 40
 """通道页抓取超时。"""
-
-NLP_PDF_MAGIC = b"%PDF"
-"""PDF 魔数(官方 URL 维护期会返回 HTML,先认字节)。"""
 
 NLP_TEXT_MODE = "text"
 """pymupdf 取文的模式参数。"""
@@ -9332,3 +9343,43 @@ REPORT_DIR_EMPTY_TPL = "  ✗ {prov} 年报目录页一份年报都没认出: {u
 REPORT_DIR_KEEP_TPL = "  ✗ {prov} 年报目录页不可用,旧表里有已核实清单以外的年报 {urls} —— 照清单跑会抹掉那几期,保留旧表"
 """目录页不可用、旧表里又有目录页先前发现的新一期时的留痕(2026-09-29 立):那一期还没补进已核实清单,照清单跑写出来的表
 就少那几年 —— 不拿少一期的新表盖旧表(同 scrape_ns_stats 的整份保留旧表口径)。"""
+
+
+# =========================================================================
+# 42. AB Worker EOI 分值表守望(官方 PDF 文本没变 → 刷人工核对表的日期;2026-11-12)
+# =========================================================================
+
+AB_EOI_PDF_URL = "https://www.alberta.ca/system/files/im-worker-stream-expression-of-interest-points-grid.pdf"
+"""AAIP Worker Expression of Interest (EOI) Points Grid 官方 PDF(100 分制)。
+2026-11-12 进抓取清单(Frank「让这份 PDF 进抓取清单并随 crawl 役定期重抓」):此前只有 2026-08-14 人工下载的一份
+躺在 data/crawl/ab-aaip/ 目录里、没进 manifest、三个月没对过。BFS 不收二进制(crawl 的 SKIP_EXTENSIONS 设计如此),
+官方 PDF 一律由省单元下载后过 crawl 原件写门(files-www.alberta.ca/file_cache/,同 BC SIRS 指南的做法)。"""
+
+AB_EOI_TABLE = paths.PNP / "ab-eoi-points.json"
+"""被守望的人工核对表(2026-08-14 对官方 PDF 逐格核入,无解析器;mart 的 IN_SCORE_TABLES 读它)。
+守望只替换 fetched 那一格日期,其余字节不动(手排版表)。"""
+
+AB_EOI_TIMEOUT_S = 60
+"""分值表 PDF 抓取超时。"""
+
+AB_EOI_TEXT_SHA = "c65046fcee450d7b8e38cfe4fb1b9ebaa9d4fd16c4729970e28f7a9920661336"
+"""人工核对时那一版 PDF 的文本指纹:全文去掉全部空白转小写后的 sha256(text_sha_of)。
+2026-11-12 核:官方 2026-09-28 版(页脚日期;上一版 2025-08-07)对人工表 30 格分值与 12 个 Maximum Points 逐格相符,
+两版文本只差页脚日期与家庭成员一节删掉的过渡说明(2025-01-29 前已提交者可继续认祖父母 / 叔姨 / 侄甥那段)。
+官方再改版 → 指纹对不上 → 守望抛错;人工逐格核对、改表之后把新指纹填到这里(报错文案里带着)。"""
+
+AB_EOI_NOT_PDF_TPL = "AB Worker EOI 分值表:官方网址回来的不是 PDF(维护页或换了地址),人工表不动:{url}"
+"""下载回来不是 PDF 时的抛错文案。"""
+
+AB_EOI_CHANGED_TPL = ("AB Worker EOI 分值表:官方 PDF 文本变了(现 {got},核对时 {want}),人工表不动 —— "
+                      "对 {url} 逐格核对 {path},改完把 AB_EOI_TEXT_SHA 换成现值")
+"""文本指纹对不上时的抛错文案(本单元报红,等人核对)。"""
+
+AB_EOI_BAD_TABLE_TPL = "AB Worker EOI 分值表守望:{path} 里 fetched 格不是恰好一处(命中 {n} 处)—— 不动表"
+"""人工表形状不对时的抛错文案。"""
+
+AB_EOI_PRINT_OK_TPL = "  ✓ AB Worker EOI 分值表:官方 PDF 文本与核对时一致,fetched {old} → {new}"
+"""收尾留痕:日期刷了。"""
+
+AB_EOI_PRINT_SAME_TPL = "  ✓ AB Worker EOI 分值表:官方 PDF 文本与核对时一致,fetched 已是 {old},不动"
+"""收尾留痕:当天已刷过。"""
