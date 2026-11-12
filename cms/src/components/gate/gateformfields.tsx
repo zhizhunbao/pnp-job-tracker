@@ -3,6 +3,8 @@
  * gate 域的结构:一页表单的七格(docs/design/我的/我的框架-20261107.md 2.8):目标(两段钮)、专业与想做的工作(已选几个 +
  * 「修改」叠开选择器)、所在地(省下拉 + 城市)、身份(下拉,选填)、教育经历(最近两段,选填)、英文姓名。
  * 城市、教育经历、英文姓名三格直接用向导里同一个件(GateCities / GateEdu / GateName),值与校验同一份。
+ * 2026-11-12 Frank「这两个不能合并成一个吗?比如匹配规则 是 按专业,还是按什么其他的一个下拉选」:匹配依据、匹配模式两排两段钮
+ * 并成一只「匹配规则」下拉(与所在地同一个下拉件,四项),存的还是那两格。
  *
  * @author Frank
  * @time 2026-11-07 19:00:00
@@ -14,9 +16,9 @@ import { Tag } from '@/components/tag'
 import {
   FIT_WHOS, FORM_NONE_KEY, FORM_SEG_KIND, FROM_NAME, FROM_TAG_KEY, FROM_TAG_V, GOAL_JOBS, GOAL_JOBS_KEY, GOAL_PR,
   GOAL_PR_KEY,
-  MATCH_EDU, MATCH_WORK, MODE_DEFAULT, MODE_STRICT,
+  RULE_OPTS,
 } from './constants'
-import { formProvOptsOf, isFromResume, makeProvLabel, makeWhoLabel } from './functions'
+import { formProvOptsOf, isFromResume, makeProvLabel, makeRuleLabel, makeWhoLabel } from './functions'
 import { GateCities } from './gatecities'
 import { GateEdu } from './gateedu'
 import { GateField } from './gatefield'
@@ -64,21 +66,9 @@ export function GateFormFields({ g, k, t, n, f }: GateFormFieldsIn) {
       <GateField label={t('pf.edu')} hint={t('pf.optEdu')}>
         <GateEdu g={g} t={t} />
       </GateField>
-      <GateField label={t('pf.matchBy')}>
-        <SegGroup>
-          <Button kind={FORM_SEG_KIND} active={g.edit.matchBy !== MATCH_EDU}
-            onClick={makeOptPick({ value: MATCH_WORK, onPick: g.edit.setMatchBy })}>{t('pf.byWork')}</Button>
-          <Button kind={FORM_SEG_KIND} active={g.edit.matchBy === MATCH_EDU}
-            onClick={makeOptPick({ value: MATCH_EDU, onPick: g.edit.setMatchBy })}>{t('pf.byEdu')}</Button>
-        </SegGroup>
-      </GateField>
-      <GateField label={t('pf.matchMode')}>
-        <SegGroup>
-          <Button kind={FORM_SEG_KIND} active={g.edit.matchMode !== MODE_STRICT}
-            onClick={makeOptPick({ value: MODE_DEFAULT, onPick: g.edit.setMatchMode })}>{t('pf.modeDefault')}</Button>
-          <Button kind={FORM_SEG_KIND} active={g.edit.matchMode === MODE_STRICT}
-            onClick={makeOptPick({ value: MODE_STRICT, onPick: g.edit.setMatchMode })}>{t('pf.modeStrict')}</Button>
-        </SegGroup>
+      <GateField label={t('pf.rule')}>
+        <Select value={g.edit.rule} onChange={g.edit.onRule} opts={RULE_OPTS} all={t('pf.rule.work')}
+          labelOf={makeRuleLabel({ t })} />
       </GateField>
       <GateField label={t('pf.name')} hint={t('pf.optName')}>
         <GateName g={g} t={t} />

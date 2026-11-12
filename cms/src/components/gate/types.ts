@@ -436,24 +436,19 @@ export type EditBits = {
   setWho: (v: string) => void
 
   /**
-   * 匹配依据;空串 = 没选。
+   * 整份写教育经历几段(「从简历填写」并进来用;2026-11-12)。
    */
-  matchBy: string
+  setEdu: (v: EduPick[]) => void
 
   /**
-   * 选匹配依据。
+   * 「匹配规则」下拉现在的值(2026-11-12 匹配依据、匹配模式并成一只下拉):空串 = 按做过的工作,其余见 RULE_OPTS。
    */
-  setMatchBy: (v: string) => void
+  rule: string
 
   /**
-   * 匹配模式;空串 = 没选。
+   * 选匹配规则(落匹配依据、匹配模式两格)。
    */
-  matchMode: string
-
-  /**
-   * 选匹配模式。
-   */
-  setMatchMode: (v: string) => void
+  onRule: (v: string) => void
 
   /**
    * 直接保存(一页表单的「保存」;向导走 onNext 翻到最后一题才存)。
@@ -469,6 +464,11 @@ export type EduRowsPanel = {
    * 几段。
    */
   edu: EduPick[]
+
+  /**
+   * 整份写几段(2026-11-12)。
+   */
+  setEdu: (v: EduPick[]) => void
 
   /**
    * 造「改某段某格」的手柄。
@@ -488,6 +488,7 @@ export type EduRowsPanel = {
 
 /**
  * 教育经历一段(界面上的三格;存档时拼成「所在地.公立私立.时长」串)。
+ * 2026-11-12 Frank「这部分不能直接显示具体的年份和学历 证书吗?」:多四格明细(名称、学校、起止年份),都选填。
  */
 export type EduPick = {
   /**
@@ -504,6 +505,171 @@ export type EduPick = {
    * y1 / y2 / y3 / master;空串 = 没选。
    */
   len: string
+
+  /**
+   * 证书或学历名称;空串 = 没填。
+   */
+  cred: string
+
+  /**
+   * 学校;空串 = 没填。
+   */
+  school: string
+
+  /**
+   * 开始年份(输入中可能不足四位);空串 = 没填。
+   */
+  from: string
+
+  /**
+   * 结束年份;空串 = 没填或在读。
+   */
+  to: string
+}
+
+/**
+ * 答案档里教育经历明细的一条(形同 lib/quiz EduItem,本域自声明)。
+ */
+export type EduEntry = {
+  /**
+   * 「所在地.公立私立.时长」串;三只下拉没选全 = 空串。
+   */
+  key: string
+
+  /**
+   * 证书或学历名称。
+   */
+  cred: string
+
+  /**
+   * 学校。
+   */
+  school: string
+
+  /**
+   * 开始年份(四位数字)或空串。
+   */
+  from: string
+
+  /**
+   * 结束年份(四位数字)或空串。
+   */
+  to: string
+}
+
+/**
+ * eduFormRowsOf 的入参:档案里的教育经历明细与老的教育经历串。
+ */
+export type EduSeedIn = {
+  /**
+   * 教育经历明细;空列 = 还没存过明细。
+   */
+  list: EduEntry[]
+
+  /**
+   * 教育经历串(没有明细时按它起头)。
+   */
+  strs: string[]
+}
+
+/**
+ * 从简历提取的一条教育经历(/api/resume/prefill 的 education 一项)。
+ */
+export type PrefillEdu = {
+  /**
+   * 证书或学历名称。
+   */
+  credential: string
+
+  /**
+   * 学校。
+   */
+  school: string
+
+  /**
+   * 开始年份或空串。
+   */
+  from: string
+
+  /**
+   * 结束年份或空串。
+   */
+  to: string
+}
+
+/**
+ * eduMergedOf 的入参。
+ */
+export type EduMergeIn = {
+  /**
+   * 表单里现在的几段。
+   */
+  rows: EduPick[]
+
+  /**
+   * 从简历提取的几条。
+   */
+  items: PrefillEdu[]
+}
+
+/**
+ * eduMergedOf 的返回。
+ */
+export type EduMergeOut = {
+  /**
+   * 并进去之后的几段。
+   */
+  rows: EduPick[]
+
+  /**
+   * 并进去了几条。
+   */
+  n: number
+}
+
+/**
+ * isEduKnown / eduPlacedOf 的入参。
+ */
+export type EduItemIn = {
+  /**
+   * 现在的几段。
+   */
+  rows: EduPick[]
+
+  /**
+   * 从简历提取的一条。
+   */
+  it: PrefillEdu
+}
+
+/**
+ * ruleOf 的入参。
+ */
+export type RuleOfIn = {
+  /**
+   * 匹配依据;空串 = 没选。
+   */
+  matchBy: string
+
+  /**
+   * 匹配模式;空串 = 没选。
+   */
+  matchMode: string
+}
+
+/**
+ * makeRulePick 的入参。
+ */
+export type RulePickIn = {
+  /**
+   * 落匹配依据。
+   */
+  setMatchBy: (v: string) => void
+
+  /**
+   * 落匹配模式。
+   */
+  setMatchMode: (v: string) => void
 }
 
 /**
@@ -516,7 +682,7 @@ export type EduCellIn = {
   i: number
 
   /**
-   * 哪一格:prov / kind / len。
+   * 哪一格:prov / kind / len;2026-11-12 起还有 cred / school / from / to。
    */
   f: string
 }
@@ -842,6 +1008,11 @@ export type GateEditSeed = {
   edu: string[]
 
   /**
+   * 教育经历明细(2026-11-12);起始答案里空列 = 还没存过明细(表单按 edu 起头),保存时 edu 由它派生。
+   */
+  eduList: EduEntry[]
+
+  /**
    * 做过的工作(职业码)。
    */
   workNocs: string[]
@@ -947,9 +1118,14 @@ export type EditPatch = {
   fitWho: string
 
   /**
-   * 教育经历串,只收三格都选了的段(2026-10-13)。
+   * 教育经历串,只收三格都选了的段(2026-10-13)。2026-11-12 起 = eduList 里不空的 key,按序。
    */
   fitEdu: string[]
+
+  /**
+   * 教育经历明细(2026-11-12)。
+   */
+  eduList: EduEntry[]
 
   /**
    * 做过的工作(职业码)。
@@ -1295,6 +1471,11 @@ export type PrefillJson = {
    * 英文姓名。
    */
   name?: string
+
+  /**
+   * 教育经历(2026-11-12)。
+   */
+  education?: PrefillEdu[]
 }
 
 /**
@@ -1315,6 +1496,11 @@ export type PrefillFact = {
    * 英文姓名;没有 = 空串。
    */
   name: string
+
+  /**
+   * 教育经历(2026-11-12);没有 = 空列。
+   */
+  education: PrefillEdu[]
 }
 
 /**

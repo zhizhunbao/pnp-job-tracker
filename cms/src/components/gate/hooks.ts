@@ -14,6 +14,10 @@
  * 新增访客注册框钩子 useGateAuth;进站整机 useEntryGate 照旧判弹不弹,弹的换成注册框。编辑整机的「动过了」凑数格随之撤。
  * 2026-11-07 Frank「删了吧」:一题一屏的档案编辑弹框 GateEdit 换成一页表单 GateForm 后删 —— 编辑整机 useGateEdit 瘦成
  * useGateForm(只留值、校验与保存;步数、换题、返回、跳过、主钮字那一套没人读了,一并撤),换题挪焦点的 useQuestionFocus 删。
+ * 2026-11-12 Frank「这两个不能合并成一个吗?比如匹配规则 是 按专业,还是按什么其他的一个下拉选」:整机交出去的匹配依据、匹配模式
+ * 两对值与落格换成一对「匹配规则」(rule / onRule),存的还是那两格。
+ * 同日 Frank「这部分不能直接显示具体的年份和学历 证书吗?」:教育经历几段从档案的明细 eduList 起头(没有就按老的教育经历串),
+ * 保存时明细与由它派生的教育经历串一并交;多交一个整份写几段的落格(「从简历填写」用)。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
@@ -29,13 +33,14 @@ import {
 } from './constants'
 import {
   fromKeptOf, makeResumeFill,
-  cityOptsOf, eduPicksOf, eduStrsOf, gateProvActiveOf, loadProvCities, makeCityPick, makeEditSave, makeEduAdd,
+  cityOptsOf, eduFormRowsOf, eduListOf, eduStrsOf, gateProvActiveOf, loadProvCities, makeCityPick, makeEditSave,
+  makeEduAdd, makeRulePick, ruleOf,
   makeEduPick, makeEduRemove, makeEntryClose, makeEntryDone, makeGateAuthDone, makePickSet, makeProvPick, nameBadOf,
 } from './functions'
 import type {
   FillMsg, ResumeFillHookIn, ResumeFillPanel,
   CitiesGot, CityOpt, CityPickHookIn, CityPickOut, DeadFlag, EduCellIn, EduPick, EduRowsPanel, EntryGatePanel,
-  GateAuthHookIn, GateFormHookIn, GatePanel, GatePickPanel, ProvCitiesIn,
+  GateAuthHookIn, GateFormHookIn, GatePanel, GatePickPanel, ProvCitiesIn, EduSeedIn,
 } from './types'
 
 /**
@@ -157,7 +162,7 @@ export function useGateForm(x: GateFormHookIn): GatePanel {
   const [matchBy, setMatchBy] = useState(s.matchBy)
   const [matchMode, setMatchMode] = useState(s.matchMode)
   const [fromResume, setFromResume] = useState<string[]>(s.fromResume)
-  const e = useEduRows(s.edu)
+  const e = useEduRows({ list: s.eduList, strs: s.edu })
   const [saving, setSaving] = useState(false)
   const [failKey, setFail] = useState(TEXT_NONE)
   const save = makeEditSave({
@@ -170,6 +175,7 @@ city: c.panel.city,
 name: name.trim(),
 who,
 edu: eduStrsOf(e.edu),
+eduList: eduListOf(e.edu),
       workNocs,
 matchBy,
 matchMode,
@@ -203,12 +209,11 @@ matchMode,
       eduPickOf: e.eduPickOf,
       onEduAdd: e.onEduAdd,
       eduRemoveOf: e.eduRemoveOf,
+      setEdu: e.setEdu,
       setGoal,
       setWho,
-      matchBy,
-      setMatchBy,
-      matchMode,
-      setMatchMode,
+      rule: ruleOf({ matchBy, matchMode }),
+      onRule: makeRulePick({ setMatchBy, setMatchMode }),
       onSave: save,
     },
     onClose: x.onClose,
@@ -218,18 +223,18 @@ matchMode,
 /**
  * 教育经历题的几段(2026-10-13 档案加题;自 useGateEdit 拆出 —— 几段与改格 / 加段 / 删段三个手柄自成一件)。
  *
- * @param seed 答案档里的教育经历串。
- * @returns 几段与三个手柄。
+ * @param seed 档案里的教育经历明细与教育经历串(2026-11-12:有明细按明细起头)。
+ * @returns 几段、整份写几段的落格与三个手柄。
  */
-function useEduRows(seed: string[]): EduRowsPanel {
-  const [edu, setEdu] = useState<EduPick[]>(eduPicksOf(seed))
+function useEduRows(seed: EduSeedIn): EduRowsPanel {
+  const [edu, setEdu] = useState<EduPick[]>(eduFormRowsOf(seed))
   function eduPickOf(cell: EduCellIn): (v: string) => void {
     return makeEduPick({ cell, edu, setEdu })
   }
   function eduRemoveOf(i: number): () => void {
     return makeEduRemove({ edu, setEdu, i })
   }
-  return { edu, eduPickOf, onEduAdd: makeEduAdd({ edu, setEdu, i: 0 }), eduRemoveOf }
+  return { edu, setEdu, eduPickOf, onEduAdd: makeEduAdd({ edu, setEdu, i: 0 }), eduRemoveOf }
 }
 
 /**

@@ -104,6 +104,23 @@
 }
 
 /*
+ * 教育经历一条(2026-11-12):第一行年份与名称,第二行灰字;条与条之间留一点白。
+ */
+.eduItem {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 4px;
+}
+
+/*
+ * 教育经历一条的第二行:学校与院校所在地等,灰字小一号(灰同 .none)。
+ */
+.eduSub {
+  font-size: 13px;
+  color: var(--text3);
+}
+
+/*
  * 「我的通道」没答身份时的引导行:一句灰字 +「去回答」(2026-10-13)。
  */
 .msAsk {

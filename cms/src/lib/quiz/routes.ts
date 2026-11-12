@@ -19,7 +19,7 @@ import { loadBroadNocs, loadMajorNocs, loadNocOpenCounts, loadQuizFacts, loadTop
 import { getMajorBroads } from '../majors/server'
 import {
   getMajorNocsCached, getTopNocsCached, loadAnswers, loadQuizProfile, majorCodesOf, majorNOf, makeFactsStore,
-  saveAnswers, swallowFactsError,
+  saveAnswers, swallowFactsError, toStoredBasic,
 } from './functions'
 import { getUserOrNull } from '../quota/server'
 import {
@@ -179,6 +179,8 @@ export async function quizAnswersGetRoute(_req: Request): Promise<Response> {
  * (2026-08-16:sendBeacon 只能 POST,送的和 PUT 一模一样;没有它「答完最后一题就
  * 关页面」那一下会丢)—— 壳里同一 handler 挂两个方法。
  *
+ * 2026-11-12:基础段里的教育经历明细 eduList 是服务端要读的格,落库前过 toStoredBasic 洗(不合形的丢);其余格照旧透传。
+ *
  * @param req 请求(body 是两份答案档)。
  * @returns { ok, updatedAt };未登录 401、形状不对 400、超 64KB 413。
  */
@@ -211,6 +213,6 @@ export async function quizAnswersPutRoute(req: Request): Promise<Response> {
   }
   const updatedAt = new Date().toISOString()
   const payload = await getPayload({ config: await config })
-  await saveAnswers({ payload: payload, userId: user.id, basic: basic, score: score, updatedAt: updatedAt })
+  await saveAnswers({ payload: payload, userId: user.id, basic: toStoredBasic(basic), score: score, updatedAt: updatedAt })
   return Response.json({ ok: true, updatedAt })
 }

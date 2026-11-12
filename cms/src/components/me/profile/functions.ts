@@ -3,19 +3,25 @@
  * 2026-11-07 自 account 桶在新域重写(Frank「全部在新域重写」):接口、编辑弹框(gate 桶 GateEdit)、「我的通道」照旧;
  * 「修改」从卡头挪到页标题右边一颗主按钮,一格多个名字先摆 3 个(效果图)。
  * 同日 Frank「按 Azure 的改」→「删了吧」:编辑弹框换成 gate 桶一页表单 GateForm,GateEdit 已删(上面「编辑弹框(gate 桶 GateEdit)」现指 GateForm)。
+ * 2026-11-12 Frank「这两个不能合并成一个吗?比如匹配规则 是 按专业,还是按什么其他的一个下拉选」:匹配依据、匹配模式两行的词条键
+ * (pfMatchByKeyOf / pfMatchModeKeyOf)并成一行「匹配规则」的 pfRuleKeyOf。
+ * 同日 Frank「这部分不能直接显示具体的年份和学历 证书吗?」:教育经历每条两行(年份 + 名称;学校与原先三个词),pfEduLinesOf 出。
  *
  * @author Frank
  * @time 2026-11-07 16:05:00
  */
+import { eduPicksOf, makeEduLabel } from '@/components/gate'
 import { log, PROFILE_LOG } from '@/lib/log'
 import {
   CRED_INCLUDE, MS_PROV_FED, MS_PROVS, PF_ERR_EMPTY, PF_FOLD_N, PF_GOAL_JOBS, PF_GOAL_JOBS_KEY, PF_GOAL_PR,
   PF_GOAL_PR_KEY, PF_LOAD_FAIL, PF_LOAD_OK, TEXT_NONE, URL_PROFILE,
-  PF_BY_EDU_KEY, PF_BY_WORK_KEY, PF_MATCH_EDU, PF_MODE_DEFAULT_KEY, PF_MODE_STRICT, PF_MODE_STRICT_KEY,
+  EDU_F_KIND, EDU_F_LEN, EDU_F_PROV, PF_LIST_SEP, PF_MATCH_EDU, PF_MODE_STRICT, PF_RULE_EDU_KEY, PF_RULE_EDU_STRICT_KEY,
+  PF_RULE_WORK_KEY, PF_RULE_WORK_STRICT_KEY, PF_YEAR_OPEN, PF_YEAR_SEP,
 } from './constants'
 import type {
   MsOpenIn, MsProvPickIn, MyStreamCellRow, PfEditOpenIn, PfFlagSetIn, PfJson, PfLoadIn, PfNames, PfSavedIn, PfSeed,
   PfShownIn, PfTextSetIn, PfView,
+  PfEduItem, PfEduLine, PfEduLineIn, PfEduLinesIn, PfRuleIn,
 } from './types'
 
 /**
@@ -114,6 +120,7 @@ city: v.city.en,
 name: v.name,
 who: v.who,
 edu: v.edu,
+eduList: v.eduList,
   }
 }
 
@@ -231,27 +238,103 @@ export function msTotalOf(r: MyStreamCellRow): string {
 }
 
 /**
- * 匹配依据那一格的词条键(没选按工作经历)。
+ * 「匹配规则」那一行的词条键(2026-11-12 匹配依据、匹配模式并成一行;没选按做过的工作、默认)。
  *
- * @param by 匹配依据。
+ * @param x 匹配依据与匹配模式。
  * @returns 词条键。
  */
-export function pfMatchByKeyOf(by: string): string {
-  if (by === PF_MATCH_EDU) {
-    return PF_BY_EDU_KEY
+export function pfRuleKeyOf(x: PfRuleIn): string {
+  const strict = x.matchMode === PF_MODE_STRICT
+  if (x.matchBy === PF_MATCH_EDU && strict) {
+    return PF_RULE_EDU_STRICT_KEY
   }
-  return PF_BY_WORK_KEY
+  if (x.matchBy === PF_MATCH_EDU) {
+    return PF_RULE_EDU_KEY
+  }
+  if (strict) {
+    return PF_RULE_WORK_STRICT_KEY
+  }
+  return PF_RULE_WORK_KEY
 }
 
 /**
- * 匹配模式那一格的词条键(没选按默认)。
+ * 教育经历明细 → 档案卡上的几条(2026-11-12),一条两行。
  *
- * @param mode 匹配模式。
- * @returns 词条键。
+ * @param x 教育经历明细与取词函数。
+ * @returns 几条。
  */
-export function pfMatchModeKeyOf(mode: string): string {
-  if (mode === PF_MODE_STRICT) {
-    return PF_MODE_STRICT_KEY
+export function pfEduLinesOf(x: PfEduLinesIn): PfEduLine[] {
+  const out: PfEduLine[] = []
+  for (const e of x.list) {
+    out.push(pfEduLineOf({ e, t: x.t }))
   }
-  return PF_MODE_DEFAULT_KEY
+  return out
+}
+
+/**
+ * 一条明细 → 两行:第一行年份在前、证书或学历名称在后;两样都没有就退回原先那一句(所在地、公立私立、时长,逗号连)。
+ * 第二行灰字:学校,再接 key 的三个词(第一行已经用了那一句就不再重复);没有就不出。只有学校时学校上第一行。
+ *
+ * @param x 一条明细与取词函数。
+ * @returns 两行。
+ */
+function pfEduLineOf(x: PfEduLineIn): PfEduLine {
+  const parts = pfEduPartsOf(x)
+  const main: string[] = []
+  const years = pfEduYearsOf(x.e)
+  if (years !== TEXT_NONE) {
+    main.push(years)
+  }
+  if (x.e.cred !== TEXT_NONE) {
+    main.push(x.e.cred)
+  }
+  const sub: string[] = []
+  if (x.e.school !== TEXT_NONE) {
+    sub.push(x.e.school)
+  }
+  if (main.length === 0 && parts.length > 0) {
+    main.push(parts.join(PF_LIST_SEP))
+  } else {
+    for (const p of parts) {
+      sub.push(p)
+    }
+  }
+  if (main.length === 0) {
+    return { main: sub, sub: TEXT_NONE }
+  }
+  return { main, sub: sub.join(PF_LIST_SEP) }
+}
+
+/**
+ * 一条明细的 key → 三个词(院校所在地、公立私立、课程时长,字与修改面板的下拉同一套);key 空给空列。
+ *
+ * @param x 一条明细与取词函数。
+ * @returns 三个词或空列。
+ */
+function pfEduPartsOf(x: PfEduLineIn): string[] {
+  const out: string[] = []
+  for (const p of eduPicksOf([x.e.key])) {
+    if (p.prov !== TEXT_NONE) {
+      out.push(makeEduLabel({ t: x.t, f: EDU_F_PROV })(p.prov))
+      out.push(makeEduLabel({ t: x.t, f: EDU_F_KIND })(p.kind))
+      out.push(makeEduLabel({ t: x.t, f: EDU_F_LEN })(p.len))
+    }
+  }
+  return out
+}
+
+/**
+ * 一条明细的年份那一段:起止都有「2025 – 2026」;只有开始「2025 –」;只有结束就那一个;都没有空串。
+ *
+ * @param e 一条明细。
+ * @returns 年份那一段。
+ */
+function pfEduYearsOf(e: PfEduItem): string {
+  if (e.from !== TEXT_NONE && e.to !== TEXT_NONE) {
+    return e.from + PF_YEAR_SEP + e.to
+  }
+  if (e.from !== TEXT_NONE) {
+    return e.from + PF_YEAR_OPEN
+  }
+  return e.to
 }

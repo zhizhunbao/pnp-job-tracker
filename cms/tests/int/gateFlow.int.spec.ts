@@ -20,6 +20,12 @@
 //       ⑦ 教育经历:「+ 再加一段」加到两段为止(钮收起),✕ 删一段;只剩一段时 ✕ 清空那一段、界面总留一行。
 // 探针:editPatchOf 漏 fitEdu → ⑤「fitEdu」红;makeProvPick 不清城市 → ⑥「换境外再换回城市没亮」红;
 //       makeEduRemove 去掉「只剩一段补空段」→ ⑦「总留一行」红。
+// 2026-11-12 Frank「这两个不能合并成一个吗?比如匹配规则 是 按专业,还是按什么其他的一个下拉选」「这部分不能直接显示具体的年份和学历 证书吗?」:
+//       ⑤ 加验教育经历明细(名称、学校、起止年份)进答案档 eduList,fitEdu 由它派生;
+//       ⑧ 匹配规则:一只下拉四项,选哪项存哪一对(matchBy, matchMode);档案里的那一对开面板时亮对应那一项;
+//       ⑨ 从简历填写:提取到的教育经历并进几段(先填明细全空的那一段、再往后加),再点一次不重复。
+// 探针:makeRulePick 不落 matchMode → ⑧「workStrict」红;editPatchOf 漏 eduList → ⑤「eduList」红;
+//       eduMergedOf 不查重 → ⑨「再点一次」红。
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -39,7 +45,16 @@ vi.mock('next/navigation', () => ({
 const t = ((key: string) => key) as TFn
 
 // 档案全空(GateForm 七格从这里起)
-const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [], workNocs: [], matchBy: '', matchMode: '', fromResume: [] }
+const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [], eduList: [], workNocs: [], matchBy: '', matchMode: '', fromResume: [] }
+
+// 从简历提取的回包(⑨ 用;别的用例不点「从简历填写」)
+const PREFILL = {
+  works: [], majors: [], name: '',
+  education: [
+    { credential: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' },
+    { credential: 'Bachelor of Engineering', school: 'Wuhan University', from: '2014', to: '2018' },
+  ],
+}
 
 const ON_CITIES = [
   { name: 'Toronto', zh: '', ko: '', jobs: 900 },
@@ -60,6 +75,9 @@ function server(answersStatus = 200): Sent[] {
     const method = init != null && init.method != null ? init.method : 'GET'
     if (method !== 'GET') {
       sent.push({ url: String(url), method, body: String(init?.body) })
+      if (String(url) === '/api/resume/prefill') {
+        return reply(200, PREFILL)
+      }
       return reply(200, { ok: true })
     }
     if (String(url) === '/api/quiz/answers') {
@@ -73,7 +91,7 @@ function server(answersStatus = 200): Sent[] {
   return sent
 }
 
-function mount(onSaved: () => void = () => undefined) {
+function mount(onSaved: () => void = () => undefined, seed: typeof EMPTY_SEED = EMPTY_SEED) {
   // jsdom 没有 matchMedia(modal / drawer 判窄屏要它):按宽屏答,不挂监听
   vi.stubGlobal('matchMedia', () => ({
     matches: false, addEventListener: () => undefined, removeEventListener: () => undefined,
@@ -83,7 +101,7 @@ function mount(onSaved: () => void = () => undefined) {
   document.body.appendChild(host)
   const root = createRoot(host)
   act(() => {
-    root.render(createElement(GateForm, { t, seed: EMPTY_SEED, onClose: () => undefined, onSaved }))
+    root.render(createElement(GateForm, { t, seed, onClose: () => undefined, onSaved }))
   })
   return { host, root }
 }
@@ -119,13 +137,35 @@ function type(el: HTMLInputElement, value: string) {
 }
 
 // 教育经历一段 = 三只下拉(所在地 / 公立私立 / 时长,DOM 里挨着),按序三只一组
+// (2026-11-12 多了一只首项是 pf.rule.work 的「匹配规则」下拉:改按首项是 fit.edu* 认)
 function eduLines(host: HTMLElement): HTMLSelectElement[][] {
-  const edu = Array.from(host.querySelectorAll('select')).filter((s) => s.options[0]?.textContent !== 'pf.none')
+  const edu = Array.from(host.querySelectorAll('select')).filter((s) => String(s.options[0]?.textContent).startsWith('fit.edu'))
   const out: HTMLSelectElement[][] = []
   for (let i = 0; i < edu.length; i += 3) {
     out.push(edu.slice(i, i + 3))
   }
   return out
+}
+
+// 教育经历明细的输入框:按占位词认(pf.eduCred / pf.eduSchool / pf.eduFrom / pf.eduTo),一段一个,按序
+function eduInputs(host: HTMLElement, key: string): HTMLInputElement[] {
+  return Array.from(host.querySelectorAll('input[placeholder="' + key + '"]')) as HTMLInputElement[]
+}
+
+// 「匹配规则」那只下拉:首项是 pf.rule.work
+function ruleSelect(host: HTMLElement): HTMLSelectElement {
+  const el = Array.from(host.querySelectorAll('select')).find((s) => s.options[0]?.textContent === 'pf.rule.work')
+  if (el == null) {
+    throw new Error('rule select not rendered')
+  }
+  return el
+}
+
+async function saveAndReadBasic(m: { host: HTMLElement }, sent: Sent[], onSaved: ReturnType<typeof vi.fn>, n: number) {
+  act(() => (buttonOf(m.host, 'gate.save') as HTMLButtonElement).click())
+  await vi.waitFor(() => expect(onSaved).toHaveBeenCalledTimes(n))
+  const puts = sent.filter((s) => s.method === 'PUT' && s.url === '/api/quiz/answers')
+  return JSON.parse(puts[puts.length - 1]?.body as string).basic
 }
 
 beforeEach(() => {
@@ -159,6 +199,12 @@ describe('⑤ 一页表单保存(2026-11-07 GateForm)', () => {
     pick(line?.[0] as HTMLSelectElement, 'ON')
     pick(line?.[1] as HTMLSelectElement, 'public')
     pick(line?.[2] as HTMLSelectElement, 'y1')
+    type(eduInputs(m.host, 'pf.eduCred')[0] as HTMLInputElement, ' Graduate Certificate ')
+    type(eduInputs(m.host, 'pf.eduSchool')[0] as HTMLInputElement, 'Algonquin College')
+    type(eduInputs(m.host, 'pf.eduFrom')[0] as HTMLInputElement, '2025x')
+    type(eduInputs(m.host, 'pf.eduTo')[0] as HTMLInputElement, '20261')
+    expect(eduInputs(m.host, 'pf.eduFrom')[0]?.value).toBe('2025')
+    expect(eduInputs(m.host, 'pf.eduTo')[0]?.value).toBe('2026')
     type(m.host.querySelector('input[placeholder="Li Wei"]') as HTMLInputElement, ' Li Wei ')
     act(() => (buttonOf(m.host, 'gate.save') as HTMLButtonElement).click())
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
@@ -170,6 +216,11 @@ describe('⑤ 一页表单保存(2026-11-07 GateForm)', () => {
     expect(basic.resCity).toBe('Toronto')
     expect(basic.fitWho).toBe('pgwp')
     expect(basic.fitEdu).toEqual(['ON.public.y1'])
+    expect(basic.eduList).toEqual([
+      { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' },
+    ])
+    expect(basic.matchBy).toBe('')
+    expect(basic.matchMode).toBe('')
     const names = sent.filter((s) => s.url === '/api/apply/name')
     expect(names.map((s) => s.method)).toEqual(['PATCH'])
     expect(JSON.parse(names[0]?.body as string)).toEqual({ senderName: 'Li Wei' })
@@ -185,6 +236,71 @@ describe('⑤ 一页表单保存(2026-11-07 GateForm)', () => {
     await vi.waitFor(() => expect(m.host.textContent).toContain('gate.saveFail'))
     expect(onSaved).not.toHaveBeenCalled()
     expect(buttonOf(m.host, 'gate.save')).not.toBeUndefined()
+    act(() => m.root.unmount())
+  })
+})
+
+describe('⑧ 匹配规则一只下拉(2026-11-12)', () => {
+  it('四项;选哪项存哪一对 (matchBy, matchMode);原先那两排两段钮不在了', async () => {
+    const sent = server()
+    const onSaved = vi.fn()
+    const m = mount(onSaved)
+    const rule = ruleSelect(m.host)
+    expect(Array.from(rule.options).map((o) => o.textContent))
+      .toEqual(['pf.rule.work', 'pf.rule.workStrict', 'pf.rule.edu', 'pf.rule.eduStrict'])
+    expect(rule.value).toBe('')
+    expect(m.host.textContent).toContain('pf.rule')
+    expect(m.host.textContent).not.toContain('pf.matchBy')
+    expect(m.host.textContent).not.toContain('pf.matchMode')
+    const want = [
+      { v: 'workStrict', matchBy: 'work', matchMode: 'strict' },
+      { v: 'edu', matchBy: 'edu', matchMode: 'default' },
+      { v: 'eduStrict', matchBy: 'edu', matchMode: 'strict' },
+      { v: '', matchBy: 'work', matchMode: 'default' },
+    ]
+    for (const [i, w] of want.entries()) {
+      pick(ruleSelect(m.host), w.v)
+      expect(ruleSelect(m.host).value).toBe(w.v)
+      const basic = await saveAndReadBasic(m, sent, onSaved, i + 1)
+      expect({ matchBy: basic.matchBy, matchMode: basic.matchMode }).toEqual({ matchBy: w.matchBy, matchMode: w.matchMode })
+    }
+    act(() => m.root.unmount())
+  })
+
+  it('档案里的那一对开面板时亮对应那一项', () => {
+    server()
+    const m = mount(() => undefined, { ...EMPTY_SEED, matchBy: 'edu', matchMode: 'strict' })
+    expect(ruleSelect(m.host).value).toBe('eduStrict')
+    act(() => m.root.unmount())
+  })
+})
+
+describe('⑨ 从简历填写教育经历(2026-11-12)', () => {
+  it('先填明细全空的那一段(三只下拉照留)、再往后加一段;再点一次不重复;保存后 fitEdu 只有选全三格的那段', async () => {
+    const sent = server()
+    const onSaved = vi.fn()
+    const m = mount(onSaved)
+    const [line] = eduLines(m.host)
+    pick(line?.[0] as HTMLSelectElement, 'ON')
+    pick(line?.[1] as HTMLSelectElement, 'public')
+    pick(line?.[2] as HTMLSelectElement, 'y1')
+    act(() => (buttonOf(m.host, 'pf.fill') as HTMLButtonElement).click())
+    await vi.waitFor(() => expect(eduInputs(m.host, 'pf.eduCred')).toHaveLength(2))
+    expect(eduInputs(m.host, 'pf.eduCred').map((i) => i.value)).toEqual(['Graduate Certificate', 'Bachelor of Engineering'])
+    expect(eduInputs(m.host, 'pf.eduSchool').map((i) => i.value)).toEqual(['Algonquin College', 'Wuhan University'])
+    expect(eduInputs(m.host, 'pf.eduFrom').map((i) => i.value)).toEqual(['2025', '2014'])
+    expect(eduLines(m.host)[0]?.map((s) => s.value)).toEqual(['ON', 'public', 'y1'])
+    expect(eduLines(m.host)[1]?.map((s) => s.value)).toEqual(['', '', ''])
+    await vi.waitFor(() => expect(m.host.textContent).toContain('pf.fillOk'))
+    act(() => (buttonOf(m.host, 'pf.fill') as HTMLButtonElement).click())
+    await vi.waitFor(() => expect(m.host.textContent).toContain('pf.fillNone'))
+    expect(eduInputs(m.host, 'pf.eduCred')).toHaveLength(2)
+    const basic = await saveAndReadBasic(m, sent, onSaved, 1)
+    expect(basic.eduList).toEqual([
+      { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' },
+      { key: '', cred: 'Bachelor of Engineering', school: 'Wuhan University', from: '2014', to: '2018' },
+    ])
+    expect(basic.fitEdu).toEqual(['ON.public.y1'])
     act(() => m.root.unmount())
   })
 })

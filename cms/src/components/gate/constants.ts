@@ -118,6 +118,81 @@ export const EDU_F_KIND = 'kind'
 export const EDU_F_LEN = 'len'
 
 /**
+ * 教育经历一段的明细格名(2026-11-12 Frank「这部分不能直接显示具体的年份和学历 证书吗?」):证书或学历名称。
+ */
+export const EDU_F_CRED = 'cred'
+
+/**
+ * 教育经历一段的明细格名:学校。
+ */
+export const EDU_F_SCHOOL = 'school'
+
+/**
+ * 教育经历一段的明细格名:开始年份。
+ */
+export const EDU_F_FROM = 'from'
+
+/**
+ * 教育经历一段的明细格名:结束年份。
+ */
+export const EDU_F_TO = 'to'
+
+/**
+ * 证书或学历名称输入框的占位词(占位即标签)。
+ */
+export const K_EDU_CRED = 'pf.eduCred'
+
+/**
+ * 学校输入框的占位词。
+ */
+export const K_EDU_SCHOOL = 'pf.eduSchool'
+
+/**
+ * 开始年份输入框的占位词。
+ */
+export const K_EDU_FROM = 'pf.eduFrom'
+
+/**
+ * 结束年份输入框的占位词。
+ */
+export const K_EDU_TO = 'pf.eduTo'
+
+/**
+ * 答案档里教育经历明细至多几条(同 lib/quiz EDU_LIST_MAX;「+ 再加一段」仍到 EDU_ROWS_MAX 为止,多出来的只会来自「从简历填写」)。
+ */
+export const EDU_LIST_MAX = 6
+
+/**
+ * 证书或学历名称至多几个字(同 lib/quiz)。
+ */
+export const EDU_CRED_LEN = 80
+
+/**
+ * 学校名至多几个字(同 lib/quiz)。
+ */
+export const EDU_SCHOOL_LEN = 120
+
+/**
+ * 年份几位数字。
+ */
+export const EDU_YEAR_LEN = 4
+
+/**
+ * 年份:四位数字(不是的存档时清空)。
+ */
+export const EDU_YEAR_RE = /^\d{4}$/
+
+/**
+ * 年份输入框里要去掉的字:数字以外的。
+ */
+export const EDU_NON_DIGIT_RE = /\D/g
+
+/**
+ * 年份输入框的手机键位:数字。
+ */
+export const EDU_YEAR_MODE = 'numeric'
+
+/**
  * 「公立 / 私立」词条键的前缀。
  */
 export const K_KIND_HEAD = 'fit.kind.'
@@ -425,6 +500,32 @@ export const MODE_DEFAULT = 'default'
  * 匹配模式:严格。
  */
 export const MODE_STRICT = 'strict'
+
+/**
+ * 「匹配规则」下拉的取值(2026-11-12 Frank「这两个不能合并成一个吗?比如匹配规则 是 按专业,还是按什么其他的一个下拉选」:
+ * 匹配依据、匹配模式两格并成一只下拉,存的还是那两格):按做过的工作、只推很接近的。按做过的工作(默认档)是下拉的空值档,不在表里。
+ */
+export const RULE_WORK_STRICT = 'workStrict'
+
+/**
+ * 「匹配规则」下拉的取值:按我的专业。
+ */
+export const RULE_EDU = 'edu'
+
+/**
+ * 「匹配规则」下拉的取值:按我的专业、只推很接近的。
+ */
+export const RULE_EDU_STRICT = 'eduStrict'
+
+/**
+ * 「匹配规则」下拉空值档以外的三项(顺序即下拉里的顺序)。
+ */
+export const RULE_OPTS = ['workStrict', 'edu', 'eduStrict'] as const
+
+/**
+ * 「匹配规则」各项词条键的前缀(后接取值)。
+ */
+export const K_RULE_HEAD = 'pf.rule.'
 
 /**
  * 从简历提取档案建议的接口(2026-11-09「我的」第一批)。

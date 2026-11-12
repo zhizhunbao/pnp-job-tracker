@@ -20,6 +20,7 @@ import {
   TITLE_PENDING, B64, DISP_ATTACH, DISP_INLINE, DISP_NAME_HEAD, DOCX_MAGIC, FILE_NAME_DOCX, FILE_NAME_MAX, FILE_NAME_PDF,
   FILE_NAME_NONE, MIME_DOCX, MIME_PDF, P_ID, PDF_MAGIC, TIME_NONE, E_NO_RESUME, E_PARSE, E_SCAN, EXTRACT_TEXT_MIN, ONE_SPACE,
   PREFILL_MAJORS_MAX, PREFILL_NONE, PREFILL_SIM_MIN, TITLES_N_MAX, WS_ALL_RE,
+  PREFILL_CRED_LEN, PREFILL_EDU_MAX, PREFILL_SCHOOL_LEN, PREFILL_YEAR_LEN, PREFILL_YEAR_RE,
 } from './constants'
 import { MATCH_REWRITE, MATCH_SYSTEM, MATCH_USER, OUT_LANG, OUT_LANG_DEFAULT } from './prompts'
 import type {
@@ -29,7 +30,7 @@ import type {
   NocTitleDbRow, NocTitleRow, ParsedJson, DispositionIn, FileMimeIn, FileNameIn, MaybeMime, ResumeBlob, ResumeBlobDbRow,
   ResumeBlobOut, ResumeDeleteOut, ResumeFileDbRow, ResumeFileMeta, ResumeListOut, ResumeSaveIn, ResumeSaveOut, ResumeUserIn,
   CountDbRow, MaybeResumeId, ResumeCountOut, ResumeIdDbRow, ResumeIdFact, ResumeOneIn, TimeCell,
-  CellTextsIn, NocSimFact, PrefillCodes, PrefillData, PrefillFact, PrefillMajorsIn, PrefillTextOut, PrefillWorksIn, PrefillWorksOut,
+  CellTextsIn, JsonCell, MaybePrefillEdu, NocSimFact, PrefillCellIn, PrefillCodes, PrefillEdus, PrefillData, PrefillFact, PrefillMajorsIn, PrefillTextOut, PrefillWorksIn, PrefillWorksOut,
 } from './types'
 
 /**
@@ -342,7 +343,69 @@ export function prefillFactOf(d: PrefillData): PrefillFact {
     name,
     titles: cellTextsOf({ cell: d.titles, max: TITLES_N_MAX }),
     majors: cellTextsOf({ cell: d.majors, max: PREFILL_MAJORS_MAX }),
+    education: toPrefillEdus(d.education),
   }
+}
+
+/**
+ * 模型回的教育经历一格 → 洗净的清单(2026-11-12):不是数组给空列;不合形或四格全空的项丢掉;至多 PREFILL_EDU_MAX 条。
+ *
+ * @param cell 模型回的一格。
+ * @returns 教育经历清单。
+ */
+function toPrefillEdus(cell: JsonCell): PrefillEdus {
+  const out: PrefillEdus = []
+  if (Array.isArray(cell)) {
+    for (const c of cell) {
+      const row = toPrefillEdu(c)
+      if (row != null && out.length < PREFILL_EDU_MAX) {
+        out.push(row)
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * 模型回的一项 → 一条教育经历:名称与学校去首尾空白、截到上限;年份只认四位数字(模型给成数字的也认),别的清空。
+ *
+ * @param c 模型回的一项。
+ * @returns 一条;不是对象或四格全空 null。
+ */
+function toPrefillEdu(c: JsonCell): MaybePrefillEdu {
+  if (c == null || typeof c !== 'object' || Array.isArray(c)) {
+    return null
+  }
+  const credential = prefillCellOf({ cell: c.credential, max: PREFILL_CRED_LEN })
+  const school = prefillCellOf({ cell: c.school, max: PREFILL_SCHOOL_LEN })
+  let from = prefillCellOf({ cell: c.from, max: PREFILL_YEAR_LEN + 1 })
+  if (PREFILL_YEAR_RE.test(from) === false) {
+    from = PREFILL_NONE
+  }
+  let to = prefillCellOf({ cell: c.to, max: PREFILL_YEAR_LEN + 1 })
+  if (PREFILL_YEAR_RE.test(to) === false) {
+    to = PREFILL_NONE
+  }
+  if (credential === PREFILL_NONE && school === PREFILL_NONE && from === PREFILL_NONE && to === PREFILL_NONE) {
+    return null
+  }
+  return { credential, school, from, to }
+}
+
+/**
+ * 模型回的一格 → 一段字:字符串去首尾空白后截到上限;数字转成字;别的(null、对象、缺席)给空串。
+ *
+ * @param x 模型回的一格与上限。
+ * @returns 一段字。
+ */
+function prefillCellOf(x: PrefillCellIn): string {
+  if (typeof x.cell === 'string') {
+    return x.cell.trim().slice(0, x.max)
+  }
+  if (typeof x.cell === 'number' && Number.isFinite(x.cell)) {
+    return String(x.cell).slice(0, x.max)
+  }
+  return PREFILL_NONE
 }
 
 /**

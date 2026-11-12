@@ -155,7 +155,7 @@ export const EMPTY: Answers = {
   clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0,
   eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, goalBand: 0, canadaEduBand: 0,
   permitBand: 0, resProv: '', resCity: '', fieldMatchBand: 0, eduProv: '', eduYearsBand: 0, frenchBand: 0,
-  studyMonthsBand: 0, studyLevelBand: 0, majors: [], fitWho: '', fitEdu: [], workNocs: [], matchBy: '', matchMode: '', fromResume: [], bandsV2: true,
+  studyMonthsBand: 0, studyLevelBand: 0, majors: [], fitWho: '', fitEdu: [], eduList: [], workNocs: [], matchBy: '', matchMode: '', fromResume: [], bandsV2: true,
 }
 
 /**
@@ -446,6 +446,41 @@ export const COUNTS_SEP = ','
  * 不让人往 users 表塞大对象)。
  */
 export const ANSWERS_LEN_MAX = 64_000
+
+/**
+ * 答案档基础段里教育经历明细那一格的键(2026-11-12;服务端收答案时只洗这一格)。
+ */
+export const F_EDU_LIST = 'eduList'
+
+/**
+ * 答案档基础段里教育经历串那一格的键(由 eduList 派生)。
+ */
+export const F_FIT_EDU = 'fitEdu'
+
+/**
+ * 教育经历明细至多几条。
+ */
+export const EDU_LIST_MAX = 6
+
+/**
+ * 证书或学历名称至多几个字。
+ */
+export const EDU_CRED_LEN = 80
+
+/**
+ * 学校名至多几个字。
+ */
+export const EDU_SCHOOL_LEN = 120
+
+/**
+ * 年份:四位数字。
+ */
+export const EDU_YEAR_RE = /^\d{4}$/
+
+/**
+ * 教育经历串的合法形状:「院校所在地.公立私立.课程时长」,三格取值同档案表单的三只下拉(gate 桶 EDU_PROVS / EDU_KINDS / EDU_LENS)。
+ */
+export const EDU_KEY_RE = /^(?:ON|QC|BC|AB|SK|MB|NS|NB|NL|PE|abroad)\.(?:public|private)\.(?:y1|y2|y3|master)$/
 
 /**
  * 用户表的 collection 名(答案档存取用)。

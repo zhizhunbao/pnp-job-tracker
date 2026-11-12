@@ -652,6 +652,31 @@ export const PREFILL_SIM_MIN = 0.6
 export const PREFILL_MAJORS_MAX = 2
 
 /**
+ * 从简历取几条教育经历(2026-11-12)。
+ */
+export const PREFILL_EDU_MAX = 4
+
+/**
+ * 证书或学历名称至多几个字(与答案档 eduList 同一个上限)。
+ */
+export const PREFILL_CRED_LEN = 80
+
+/**
+ * 学校名至多几个字(与答案档 eduList 同一个上限)。
+ */
+export const PREFILL_SCHOOL_LEN = 120
+
+/**
+ * 年份:四位数字。
+ */
+export const PREFILL_YEAR_RE = /^\d{4}$/
+
+/**
+ * 年份一格至多看几个字(四位数字,多了就不是年份)。
+ */
+export const PREFILL_YEAR_LEN = 4
+
+/**
  * 错误码:还没有简历可读。
  */
 export const E_NO_RESUME = 'noResume'

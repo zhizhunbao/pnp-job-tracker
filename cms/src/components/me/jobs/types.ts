@@ -1752,6 +1752,11 @@ export type PfView = {
   edu: string[]
 
   /**
+   * 教育经历明细(2026-11-12;gate 桶 GateEditSeed 多了这一格,照抄)。
+   */
+  eduList: PfEduItem[]
+
+  /**
    * 做过的工作(码与译名,2026-11-08)。
    */
   works: PfName[]
@@ -1770,6 +1775,36 @@ export type PfView = {
    * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
    */
   fromResume: string[]
+}
+
+/**
+ * 教育经历明细的一条(形同 quiz 域 EduItem,本桶自声明;2026-11-12,只为照抄进起始答案)。
+ */
+export type PfEduItem = {
+  /**
+   * 「所在地.公立私立.时长」串;没选全 = 空串。
+   */
+  key: string
+
+  /**
+   * 证书或学历名称;没填 = 空串。
+   */
+  cred: string
+
+  /**
+   * 学校;没填 = 空串。
+   */
+  school: string
+
+  /**
+   * 开始年份(四位数字);没填 = 空串。
+   */
+  from: string
+
+  /**
+   * 结束年份(四位数字);没填或在读 = 空串。
+   */
+  to: string
 }
 
 /**
@@ -1830,6 +1865,11 @@ export type PfSeed = {
    * 教育经历串。
    */
   edu: string[]
+
+  /**
+   * 教育经历明细(2026-11-12)。
+   */
+  eduList: PfEduItem[]
 
   /**
    * 做过的工作(职业码,2026-11-08)。

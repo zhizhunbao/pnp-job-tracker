@@ -25,6 +25,8 @@
  * gateQuestionKeyOf / editStepsOf / startStepOf)、换题挪焦点(focusGateQuestion)、返回(gateBackOf / makeGateBack)、
  * 主钮灰与主钮字(gateNextOffOf / editNextKeyOf)、跳过(editBlankOf)、下一题(makeEditNext)、点了就翻页的目标与身份
  * 上报口(makeGoalPick / makeWhoPick)随之删;missingStepsOf 留着(「我的求职」补全档案提示条按它判空)。
+ * 2026-11-12 Frank「这两个不能合并成一个吗?比如匹配规则 是 按专业,还是按什么其他的一个下拉选」:匹配依据、匹配模式并成一只「匹配规则」下拉。
+ * 同日 Frank「这部分不能直接显示具体的年份和学历 证书吗?」:教育经历一段多四格明细,存进答案档 eduList,fitEdu 由它派生;简历里的教育经历能并进来。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
@@ -35,7 +37,7 @@ import { isSenderName } from '@/lib/apply'
 import { markGateSignedIn } from '@/lib/guest'
 import { GUEST_LOG, log } from '@/lib/log'
 import { eduRowsOf } from '@/lib/pathways'
-import { readAnswers, saveBasics } from '@/lib/quiz'
+import { eduKeysOf, readAnswers, saveBasics } from '@/lib/quiz'
 import {
   CITIES_BAD, CITY_HIT_MAX, CITY_HOT_N, CRED_INCLUDE, EDIT_ERR_ANSWERS, EDIT_ERR_NAME, EDU_ABROAD, EDU_F_KIND,
   EDU_F_LEN, EDU_F_PROV, EDU_SEP, FORM_NAME_WAIT, GATE_ABROAD_KEY, GATE_PROV_OPTS, GATE_STEP_GOAL,
@@ -46,12 +48,16 @@ import {
   FILL_ERR_DEFAULT, FILL_ERR_KEYS, FILL_KIND_ERR, FILL_KIND_INFO, FILL_KIND_OK, FILL_NONE_KEY, FILL_OK_KEY, FROM_MAJORS,
   FROM_NAME, FROM_SEP,
   FROM_WORK, METHOD_POST, URL_PREFILL,
+  EDU_CRED_LEN, EDU_F_CRED, EDU_F_FROM, EDU_F_SCHOOL, EDU_F_TO, EDU_LIST_MAX, EDU_NON_DIGIT_RE, EDU_SCHOOL_LEN,
+  EDU_YEAR_LEN, EDU_YEAR_RE, K_RULE_HEAD, MATCH_EDU, MATCH_WORK, MODE_DEFAULT, MODE_STRICT, RULE_EDU, RULE_EDU_STRICT,
+  RULE_WORK_STRICT,
 } from './constants'
 import type {
   CitiesJson, CityLabelIn, CityOpt, CityOptsIn, CityPickIn, EditPatch, EditSaveIn, EduCellSetIn, EduLabelIn, EduPick,
   EduPickIn, EduRowsIn, EntryCloseIn, EntryDoneIn, GateAuthDoneIn, GateEditSeed, GateLabelOfIn, GatePickSetIn,
   ApplyPrefillIn, FillMsg, FromKeptIn, FromResumeIn, MajorLinesIn, OccLinesIn, PickedLine, PrefillFact, PrefillJson,
   ResumeFillIn, GateProvActiveIn, GateStep, LoadCitiesIn, ProvPickIn,
+  EduEntry, EduItemIn, EduMergeIn, EduMergeOut, EduSeedIn, RuleOfIn, RulePickIn,
 } from './types'
 
 /**
@@ -63,12 +69,72 @@ import type {
 export function eduPicksOf(strs: string[]): EduPick[] {
   const out: EduPick[] = []
   for (const r of eduRowsOf(strs)) {
-    out.push({ prov: r.prov, kind: r.kind, len: r.len })
+    out.push(Object.assign(eduBlankOf(), { prov: r.prov, kind: r.kind, len: r.len }))
   }
   if (out.length === 0) {
-    out.push({ prov: TEXT_NONE, kind: TEXT_NONE, len: TEXT_NONE })
+    out.push(eduBlankOf())
   }
   return out
+}
+
+/**
+ * 空的一段(三只下拉没选、四格明细没填)。
+ *
+ * @returns 空段。
+ */
+function eduBlankOf(): EduPick {
+  const s = TEXT_NONE
+  return { prov: s, kind: s, len: s, cred: s, school: s, from: s, to: s }
+}
+
+/**
+ * 档案里的教育经历 → 表单起头的几段(2026-11-12):有明细按明细(key 拆回三只下拉);只有老的教育经历串就按串起头、明细全空。
+ *
+ * @param x 教育经历明细与教育经历串。
+ * @returns 几段。
+ */
+export function eduFormRowsOf(x: EduSeedIn): EduPick[] {
+  const out: EduPick[] = []
+  for (const e of x.list) {
+    for (const p of eduPicksOf([e.key])) {
+      out.push({ prov: p.prov, kind: p.kind, len: p.len, cred: e.cred, school: e.school, from: e.from, to: e.to })
+    }
+  }
+  if (out.length === 0) {
+    return eduPicksOf(x.strs)
+  }
+  return out
+}
+
+/**
+ * 界面上的几段 → 答案档的教育经历明细(2026-11-12):三只下拉选全了才有 key;年份不是四位数字的不存;全空的段不存;至多 EDU_LIST_MAX 条。
+ *
+ * @param rows 几段。
+ * @returns 教育经历明细。
+ */
+export function eduListOf(rows: EduPick[]): EduEntry[] {
+  const out: EduEntry[] = []
+  for (const r of rows) {
+    const key = eduStrsOf([r]).join(TEXT_NONE)
+    const e = { key, cred: r.cred.trim(), school: r.school.trim(), from: eduYearOf(r.from), to: eduYearOf(r.to) }
+    if (e.key + e.cred + e.school + e.from + e.to !== TEXT_NONE && out.length < EDU_LIST_MAX) {
+      out.push(e)
+    }
+  }
+  return out
+}
+
+/**
+ * 存档时的年份:四位数字才留,否则空串。
+ *
+ * @param v 输入框里的字。
+ * @returns 年份或空串。
+ */
+function eduYearOf(v: string): string {
+  if (EDU_YEAR_RE.test(v)) {
+    return v
+  }
+  return TEXT_NONE
 }
 
 /**
@@ -114,16 +180,29 @@ export function makeEduPick(x: EduPickIn): (v: string) => void {
  * @returns 改过的一段。
  */
 function eduCellSetOf(x: EduCellSetIn): EduPick {
+  const out: EduPick = Object.assign({}, x.row)
   if (x.f === EDU_F_PROV) {
-    return { prov: x.v, kind: x.row.kind, len: x.row.len }
+    out.prov = x.v
   }
   if (x.f === EDU_F_KIND) {
-    return { prov: x.row.prov, kind: x.v, len: x.row.len }
+    out.kind = x.v
   }
   if (x.f === EDU_F_LEN) {
-    return { prov: x.row.prov, kind: x.row.kind, len: x.v }
+    out.len = x.v
   }
-  return x.row
+  if (x.f === EDU_F_CRED) {
+    out.cred = x.v.slice(0, EDU_CRED_LEN)
+  }
+  if (x.f === EDU_F_SCHOOL) {
+    out.school = x.v.slice(0, EDU_SCHOOL_LEN)
+  }
+  if (x.f === EDU_F_FROM) {
+    out.from = x.v.replace(EDU_NON_DIGIT_RE, TEXT_NONE).slice(0, EDU_YEAR_LEN)
+  }
+  if (x.f === EDU_F_TO) {
+    out.to = x.v.replace(EDU_NON_DIGIT_RE, TEXT_NONE).slice(0, EDU_YEAR_LEN)
+  }
+  return out
 }
 
 /**
@@ -155,7 +234,7 @@ export function makeEduLabel(x: EduLabelIn): (v: string) => string {
  */
 export function makeEduAdd(x: EduRowsIn): () => void {
   return function addEdu(): void {
-    x.setEdu(x.edu.concat([{ prov: TEXT_NONE, kind: TEXT_NONE, len: TEXT_NONE }]))
+    x.setEdu(x.edu.concat([eduBlankOf()]))
   }
 }
 
@@ -174,7 +253,7 @@ export function makeEduRemove(x: EduRowsIn): () => void {
       }
     }
     if (out.length === 0) {
-      out.push({ prov: TEXT_NONE, kind: TEXT_NONE, len: TEXT_NONE })
+      out.push(eduBlankOf())
     }
     x.setEdu(out)
   }
@@ -443,6 +522,7 @@ async function runEditSave(x: EditSaveIn): Promise<void> {
 /**
  * 编辑模式写进答案档的那几格:答了境外写处境 overseas、省市清空;否则写省与城市(处境不动)。
  * 2026-10-13:身份与教育经历两格一并整格覆盖。
+ * 2026-11-12:教育经历明细 eduList 一并整格覆盖;fitEdu 不再直接取表单,改由 eduList 派生(不空的 key,按序)。
  *
  * @param a 这一份答案。
  * @returns 要覆盖的格。
@@ -457,7 +537,8 @@ function editPatchOf(a: GateEditSeed): EditPatch {
       resCity: TEXT_NONE,
       status: STATUS_OVERSEAS,
       fitWho: a.who,
-      fitEdu: a.edu,
+      fitEdu: eduKeysOf(a.eduList),
+      eduList: a.eduList,
       workNocs: a.workNocs,
       matchBy: a.matchBy,
       matchMode: a.matchMode,
@@ -471,7 +552,8 @@ function editPatchOf(a: GateEditSeed): EditPatch {
     resProv: a.prov,
     resCity: a.city,
     fitWho: a.who,
-    fitEdu: a.edu,
+    fitEdu: eduKeysOf(a.eduList),
+    eduList: a.eduList,
     workNocs: a.workNocs,
     matchBy: a.matchBy,
     matchMode: a.matchMode,
@@ -570,6 +652,59 @@ export function makeProvLabel(x: GateLabelOfIn): (v: string) => string {
 export function makeWhoLabel(x: GateLabelOfIn): (v: string) => string {
   return function whoLabel(v: string): string {
     return x.t(K_WHO_HEAD + v)
+  }
+}
+
+/**
+ * 匹配依据、匹配模式两格 → 「匹配规则」下拉的值(2026-11-12 两格并成一只下拉):按做过的工作(没选也算)是空值档,给空串。
+ *
+ * @param x 匹配依据与匹配模式。
+ * @returns 下拉的值。
+ */
+export function ruleOf(x: RuleOfIn): string {
+  const strict = x.matchMode === MODE_STRICT
+  if (x.matchBy === MATCH_EDU && strict) {
+    return RULE_EDU_STRICT
+  }
+  if (x.matchBy === MATCH_EDU) {
+    return RULE_EDU
+  }
+  if (strict) {
+    return RULE_WORK_STRICT
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 造「选匹配规则」:下拉的一项拆回匹配依据、匹配模式两格落下(空值档 = 按做过的工作、默认)。
+ *
+ * @param x 两个落格。
+ * @returns 下拉的 onChange。
+ */
+export function makeRulePick(x: RulePickIn): (v: string) => void {
+  return function pickRule(v: string): void {
+    if (v === RULE_EDU || v === RULE_EDU_STRICT) {
+      x.setMatchBy(MATCH_EDU)
+    } else {
+      x.setMatchBy(MATCH_WORK)
+    }
+    if (v === RULE_WORK_STRICT || v === RULE_EDU_STRICT) {
+      x.setMatchMode(MODE_STRICT)
+    } else {
+      x.setMatchMode(MODE_DEFAULT)
+    }
+  }
+}
+
+/**
+ * 「匹配规则」下拉每一项的字。
+ *
+ * @param x 取词。
+ * @returns 取值 → 字。
+ */
+export function makeRuleLabel(x: GateLabelOfIn): (v: string) => string {
+  return function ruleLabel(v: string): string {
+    return x.t(K_RULE_HEAD + v)
   }
 }
 
@@ -734,11 +869,16 @@ function toPrefill(b: PrefillJson): PrefillFact {
   if (b.name != null) {
     name = b.name
   }
-  return { works, majors, name }
+  let education: PrefillFact['education'] = []
+  if (b.education != null) {
+    education = b.education
+  }
+  return { works, majors, name, education }
 }
 
 /**
  * 把提取结果填进表单:只填空着的格,不动用户已经选的;填上的值打「来自简历」。
+ * 2026-11-12:提取到的教育经历并进教育经历几段(规矩见 eduMergedOf),并进去一条以上算填上一项;教育经历不打「来自简历」。
  *
  * @param y 手柄与提取结果。
  * @returns 填上了几项。
@@ -768,6 +908,73 @@ function applyPrefill(y: ApplyPrefillIn): number {
     marks.push(FROM_NAME + FROM_SEP + d.name)
     n++
   }
+  const merged = eduMergedOf({ rows: x.g.edit.edu, items: d.education })
+  if (merged.n > 0) {
+    x.g.edit.setEdu(merged.rows)
+    n++
+  }
   x.g.setFromResume(marks)
   return n
+}
+
+/**
+ * 从简历提取的教育经历并进表单的几段(2026-11-12):名称和学校都没有的不要;已有同名称同学校的一段(不分大小写)跳过;
+ * 否则放进第一段四格明细全空的(三只下拉照留),没有就在末尾加一段(到 EDU_LIST_MAX 段为止)。用户填过明细的段一格不动。
+ *
+ * @param x 现在的几段与提取到的几条。
+ * @returns 并进去之后的几段与并进去了几条。
+ */
+export function eduMergedOf(x: EduMergeIn): EduMergeOut {
+  let rows = x.rows
+  let n = 0
+  for (const it of x.items) {
+    const named = it.credential.trim() !== TEXT_NONE || it.school.trim() !== TEXT_NONE
+    if (named && isEduKnown({ rows, it }) === false) {
+      rows = eduPlacedOf({ rows, it })
+      if (isEduKnown({ rows, it })) {
+        n++
+      }
+    }
+  }
+  return { rows, n }
+}
+
+/**
+ * 表单里是不是已有同名称同学校的一段(去首尾空白、不分大小写)。
+ *
+ * @param x 现在的几段与提取到的一条。
+ * @returns 已有 true。
+ */
+function isEduKnown(x: EduItemIn): boolean {
+  const cred = x.it.credential.trim().toLowerCase()
+  const school = x.it.school.trim().toLowerCase()
+  for (const r of x.rows) {
+    if (r.cred.trim().toLowerCase() === cred && r.school.trim().toLowerCase() === school) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * 把提取到的一条放进几段:第一段四格明细全空的接住它(末尾先备一段空的,没用上不留;已到 EDU_LIST_MAX 段则不备)。
+ *
+ * @param x 现在的几段与提取到的一条。
+ * @returns 放过之后的几段。
+ */
+function eduPlacedOf(x: EduItemIn): EduPick[] {
+  const out: EduPick[] = []
+  let done = false
+  for (const [i, r] of x.rows.concat([eduBlankOf()]).slice(0, EDU_LIST_MAX).entries()) {
+    if (done === false && r.cred + r.school + r.from + r.to === TEXT_NONE) {
+      done = true
+      const cred = x.it.credential.trim().slice(0, EDU_CRED_LEN)
+      const school = x.it.school.trim().slice(0, EDU_SCHOOL_LEN)
+      const from = eduYearOf(x.it.from)
+      out.push({ prov: r.prov, kind: r.kind, len: r.len, cred, school, from, to: eduYearOf(x.it.to) })
+    } else if (i < x.rows.length) {
+      out.push(r)
+    }
+  }
+  return out
 }

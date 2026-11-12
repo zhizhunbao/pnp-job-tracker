@@ -40,6 +40,7 @@ import {
   STATUS_UNSURE, STR_NONE, STUDY_LEVEL, STUDY_MONTHS, SYNC_DEBOUNCE_MS, TIER_FREE,
   TOTAL_EXP, TOTAL_V2_MAP, TTL, UNSURE_BAND, URL_ANSWERS, MAJOR_CACHE_MAX, MAJOR_KEY_SEP, MAJOR_N_MAX, TOP_N_DEFAULT,
   MAJOR_CODE_RE, MAJOR_PICK_MAX, MAJOR_SEP,
+  EDU_CRED_LEN, EDU_KEY_RE, EDU_LIST_MAX, EDU_SCHOOL_LEN, EDU_YEAR_RE, F_EDU_LIST, F_FIT_EDU,
 } from './constants'
 import { firstOf, jsonOrNull, queryRows, SQL, text } from '../db'
 import { CACHE } from './variables'
@@ -53,6 +54,7 @@ import type {
   CityNamesDbRow, CityNamesIn, CityNamesOut, CodeList, MajorNameDbRow, MaybeCodeList, NamesByCodesIn, NocNameDbRow, OrderNamesIn, ProfileAnswersDbRow,
   ProfileAnswersJson, ProfileBasicFact, ProfileBasicJson, ProfileLoadIn, ProfileName, ProfileNames, ProfileNamesOut,
   QuizProfileOut, SenderDbRow,
+  EduItem, EduItems, EduTextIn, Json, MaybeEduItem, MaybeEduItems,
 } from './types'
 import { HDR_CONTENT_TYPE, UNAUTHORIZED } from '../http'
 
@@ -728,6 +730,53 @@ export async function saveAnswers(input: SaveAnswersIn): SaveAnswersOut {
   })
 }
 
+/**
+ * 客户端送来的基础段 → 要落库的基础段(2026-11-12 信任边界):教育经历明细 eduList 过 toEduList 洗过才存(不合形的丢,
+ * 绝不原样落库);洗完不空时教育经历串 fitEdu 改由它派生(不空的 key,按序),空的时候 fitEdu 照客户端送的留着
+ * (只有老 fitEdu、还没存过明细的人,别的题一保存不能把它冲掉)。没带 eduList 的档(旧页面)原样过;其余格不读不动。
+ *
+ * @param basic 路由验过是对象的基础段。
+ * @returns 要落库的基础段。
+ */
+export function toStoredBasic(basic: Json): Json {
+  if (basic == null || typeof basic !== 'object' || Array.isArray(basic)) {
+    return basic
+  }
+  const out: { [key: string]: Json } = {}
+  let list: MaybeEduItems = null
+  for (const [k, v] of Object.entries(basic)) {
+    if (k === F_EDU_LIST) {
+      list = toEduList(v)
+    } else {
+      out[k] = v
+    }
+  }
+  if (list == null) {
+    return out
+  }
+  out[F_EDU_LIST] = list
+  if (list.length > 0) {
+    out[F_FIT_EDU] = eduKeysOf(list)
+  }
+  return out
+}
+
+/**
+ * 教育经历明细 → 教育经历串(不空的 key,按序;筛通道、判定、推荐读的那一格)。
+ *
+ * @param list 教育经历明细。
+ * @returns 教育经历串。
+ */
+export function eduKeysOf(list: EduItems): CodeList {
+  const out: CodeList = []
+  for (const e of list) {
+    if (e.key !== STR_NONE) {
+      out.push(e.key)
+    }
+  }
+  return out
+}
+
 // =========================================================================
 // 行构造器(rows 抽屉 2026-08-23 撤编后的固定尾段;体内只许词汇表 + 纯拼装)
 // =========================================================================
@@ -756,6 +805,74 @@ export function arr(v: RawField): ProvList {
     return v.filter(isStr)
   }
   return []
+}
+
+/**
+ * 档里的一格 → 教育经历明细(2026-11-12;信任边界的值级清洗全在这里):不是数组给空列;一项不是对象、或五格里有一格
+ * 不是字符串,整项丢;至多 EDU_LIST_MAX 条。
+ *
+ * @param v 原料格。
+ * @returns 洗净的教育经历明细。
+ */
+export function toEduList(v: RawField): EduItems {
+  const out: EduItems = []
+  if (Array.isArray(v)) {
+    for (const c of v) {
+      const item = toEduItem(c)
+      if (item != null && out.length < EDU_LIST_MAX) {
+        out.push(item)
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * 明细里的一项 → 教育经历一条:五格去首尾空白;名称与学校截到上限;年份不是四位数字的清空;key 不是认得的
+ * 「所在地.公立私立.时长」串的清空;五格全空的整项丢。
+ *
+ * @param c 原料项。
+ * @returns 一条;不合形 null。
+ */
+function toEduItem(c: RawCell): MaybeEduItem {
+  if (c == null || typeof c !== 'object' || Array.isArray(c)) {
+    return null
+  }
+  const key = c.key
+  const cred = c.cred
+  const school = c.school
+  const from = c.from
+  const to = c.to
+  if (typeof key !== 'string' || typeof cred !== 'string' || typeof school !== 'string'
+    || typeof from !== 'string' || typeof to !== 'string') {
+    return null
+  }
+  const out: EduItem = {
+    key: eduTextOf({ v: key, re: EDU_KEY_RE }),
+    cred: cred.trim().slice(0, EDU_CRED_LEN),
+    school: school.trim().slice(0, EDU_SCHOOL_LEN),
+    from: eduTextOf({ v: from, re: EDU_YEAR_RE }),
+    to: eduTextOf({ v: to, re: EDU_YEAR_RE }),
+  }
+  if (out.key === STR_NONE && out.cred === STR_NONE && out.school === STR_NONE && out.from === STR_NONE
+    && out.to === STR_NONE) {
+    return null
+  }
+  return out
+}
+
+/**
+ * 一格字去首尾空白后合不合形:合就留,不合给空串(年份、教育经历串用)。
+ *
+ * @param x 字与它该有的形状。
+ * @returns 合形的字或空串。
+ */
+function eduTextOf(x: EduTextIn): string {
+  const s = x.v.trim()
+  if (x.re.test(s)) {
+    return s
+  }
+  return STR_NONE
 }
 
 /**
@@ -1264,7 +1381,7 @@ export function normalize(cur: RawAnswersSource): Answers {
     fieldMatchBand: num(raw.fieldMatchBand), eduProv: str(raw.eduProv), eduYearsBand: num(raw.eduYearsBand),
     frenchBand: frenchBand, frenchV2: true,
     studyMonthsBand: num(raw.studyMonthsBand), studyLevelBand: num(raw.studyLevelBand),
-    majors: arr(raw.majors), fitWho: str(raw.fitWho), fitEdu: arr(raw.fitEdu),
+    majors: arr(raw.majors), fitWho: str(raw.fitWho), fitEdu: arr(raw.fitEdu), eduList: toEduList(raw.eduList),
     workNocs: arr(raw.workNocs), matchBy: str(raw.matchBy), matchMode: str(raw.matchMode), fromResume: arr(raw.fromResume),
   }
   if (raw.done === true) {
@@ -1596,7 +1713,7 @@ export async function loadQuizProfile(x: ProfileLoadIn): QuizProfileOut {
   const got = firstOf(await queryRows({ db: x.db, sql: SQL.QUIZ_USER_ANSWERS, params: [x.userId], map: toProfileBasic }))
   let b: ProfileBasicFact = {
     goal: 0, majors: [], nocs: [], prov: STR_NONE, abroad: false, city: STR_NONE, asked: false, who: STR_NONE, edu: [],
-    workNocs: [], matchBy: STR_NONE, matchMode: STR_NONE, fromResume: [],
+    eduList: [], workNocs: [], matchBy: STR_NONE, matchMode: STR_NONE, fromResume: [],
   }
   if (got != null) {
     b = got
@@ -1615,6 +1732,7 @@ export async function loadQuizProfile(x: ProfileLoadIn): QuizProfileOut {
   }
   return {
     goal: b.goal, majors, nocs, prov: b.prov, abroad: b.abroad, city, name, asked: b.asked, who: b.who, edu: b.edu,
+    eduList: b.eduList,
     works, matchBy: b.matchBy, matchMode: b.matchMode, fromResume: b.fromResume,
   }
 }
@@ -1742,10 +1860,29 @@ export function toProfileBasic(r: ProfileAnswersDbRow): ProfileBasicFact {
   if (Array.isArray(b.fromResume)) {
     fromResume = b.fromResume
   }
+  const eduStrs = textListOf(edu)
+  let eduList = toEduList(b.eduList)
+  if (eduList.length === 0) {
+    eduList = eduListFromKeys(eduStrs)
+  }
   return {
     goal, majors: textListOf(majors), nocs: textListOf(nocs), prov, abroad, city, asked: b.jobsAsked === true, who,
-    edu: textListOf(edu), workNocs: textListOf(workNocs), matchBy, matchMode, fromResume: textListOf(fromResume),
+    edu: eduStrs, eduList, workNocs: textListOf(workNocs), matchBy, matchMode, fromResume: textListOf(fromResume),
   }
+}
+
+/**
+ * 只有老的教育经历串、没有明细的档 → 明细(2026-11-12:不迁移,读的时候现补;一串一条,明细四格全空)。
+ *
+ * @param keys 教育经历串。
+ * @returns 明细。
+ */
+function eduListFromKeys(keys: CodeList): EduItems {
+  const out: EduItems = []
+  for (const key of keys) {
+    out.push({ key, cred: STR_NONE, school: STR_NONE, from: STR_NONE, to: STR_NONE })
+  }
+  return out
 }
 
 /**

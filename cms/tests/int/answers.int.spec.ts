@@ -5,11 +5,12 @@ import { afterEach, describe, it, expect, beforeEach, vi } from 'vitest'
 import { DECISIONS, getFields, KNOWN_NO_FREE_LEAD, answeredBasics, batchLeadsFree, fieldsOf, pullAndMerge, readAnswers, readScoreAnswers, resetAnswersMemory, toEngineAnswers, writeAnswers, type Answers } from '@/lib/quiz'
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
 import { finishAuth } from '@/components/auth/functions'
+import { eduKeysOf, normalize, toEduList, toStoredBasic } from '@/lib/quiz/functions'
 
 const OLD_QUIZ = 'jobs_quiz_v1'
 const OLD_PR = 'plan_pr_v1'
 const base = (p: Partial<Answers> = {}): Answers =>
-  ({ fromResume: [], status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0, eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, goalBand: 0, canadaEduBand: 0, permitBand: 0, resProv: '', resCity: '', fieldMatchBand: 0, eduProv: '', eduYearsBand: 0, frenchBand: 0, studyMonthsBand: 0, studyLevelBand: 0, majors: [], fitWho: '', fitEdu: [], workNocs: [], matchBy: '', matchMode: '', bandsV2: true, ...p })
+  ({ fromResume: [], status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0, eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, goalBand: 0, canadaEduBand: 0, permitBand: 0, resProv: '', resCity: '', fieldMatchBand: 0, eduProv: '', eduYearsBand: 0, frenchBand: 0, studyMonthsBand: 0, studyLevelBand: 0, majors: [], fitWho: '', fitEdu: [], eduList: [], workNocs: [], matchBy: '', matchMode: '', bandsV2: true, ...p })
 
 beforeEach(() => { localStorage.clear(); resetAnswersMemory() })
 
@@ -301,6 +302,67 @@ describe('服务端答案档同步', () => {
     vi.stubGlobal('fetch', vi.fn(async () => res(401, {})))
     expect(await pullAndMerge()).toBe(false)
     expect(readAnswers().status).toBe('working')
+  })
+})
+
+// 2026-11-12 教育经历明细 eduList(Frank「这部分不能直接显示具体的年份和学历 证书吗?」):服务端收答案时只洗这一格,
+// 教育经历串 fitEdu 由它派生。探针:toEduItem 不验 key → 「key 不认得的清空」红;toStoredBasic 不派生 → 「fitEdu 由明细派生」红。
+describe('教育经历明细 eduList(2026-11-12)', () => {
+  const GOOD = { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' }
+
+  it('金标:合形的原样过(去首尾空白);教育经历串 = 不空的 key,按序', () => {
+    const list = toEduList([
+      { key: ' ON.public.y1 ', cred: ' Graduate Certificate ', school: ' Algonquin College ', from: ' 2025 ', to: '2026' },
+      { key: '', cred: 'Bachelor of Engineering', school: '', from: '2014', to: '' },
+      { key: 'abroad.public.master', cred: '', school: '', from: '', to: '' },
+    ])
+    expect(list).toEqual([
+      GOOD,
+      { key: '', cred: 'Bachelor of Engineering', school: '', from: '2014', to: '' },
+      { key: 'abroad.public.master', cred: '', school: '', from: '', to: '' },
+    ])
+    expect(eduKeysOf(list)).toEqual(['ON.public.y1', 'abroad.public.master'])
+  })
+
+  it('金标(信任边界):不是数组给空列;不是对象、缺格、错型的项整项丢;年份与 key 不合形的清空;全空的项丢;超长截断;至多 6 条', () => {
+    expect(toEduList('x')).toEqual([])
+    expect(toEduList(null)).toEqual([])
+    expect(toEduList({ key: 'ON.public.y1' })).toEqual([])
+    expect(toEduList([
+      'ON.public.y1', 7, null, ['a'],
+      { key: 'ON.public.y1', cred: 'A' },
+      { key: 'ON.public.y1', cred: 5, school: '', from: '', to: '' },
+      { key: 'ON.public.y1', cred: 'A', school: '', from: 2025, to: '' },
+      { key: '', cred: '', school: '', from: '', to: '' },
+      { key: 'XX.public.y1', cred: '', school: '', from: '25', to: 'now' },
+      { key: 'ON.public.y1.extra', cred: 'Kept', school: 'S', from: '20255', to: '2026-05' },
+      { key: '<script>', cred: 'c'.repeat(200), school: 's'.repeat(300), from: '1999', to: '2003' },
+    ])).toEqual([
+      { key: '', cred: 'Kept', school: 'S', from: '', to: '' },
+      { key: '', cred: 'c'.repeat(80), school: 's'.repeat(120), from: '1999', to: '2003' },
+    ])
+    expect(toEduList(Array.from({ length: 9 }, () => GOOD))).toHaveLength(6)
+  })
+
+  it('金标(落库前):eduList 洗过才存,fitEdu 由明细派生;明细洗完是空的 fitEdu 照送来的留;没带 eduList 的档原样过', () => {
+    const stored = toStoredBasic({
+      goalBand: 2, fitEdu: ['BC.private.y2'],
+      eduList: [GOOD, { key: 'bad', cred: 'B', school: '', from: 'x', to: '' }, 'junk', { key: 'QC.private.y3', cred: '', school: '', from: '', to: '' }],
+    })
+    expect(stored).toEqual({
+      goalBand: 2, fitEdu: ['ON.public.y1', 'QC.private.y3'],
+      eduList: [GOOD, { key: '', cred: 'B', school: '', from: '', to: '' }, { key: 'QC.private.y3', cred: '', school: '', from: '', to: '' }],
+    })
+    expect(toStoredBasic({ fitEdu: ['BC.private.y2'], eduList: 'junk' })).toEqual({ fitEdu: ['BC.private.y2'], eduList: [] })
+    expect(toStoredBasic({ fitEdu: ['BC.private.y2'], eduList: [] })).toEqual({ fitEdu: ['BC.private.y2'], eduList: [] })
+    const old = { goalBand: 1, fitEdu: ['BC.private.y2'] }
+    expect(toStoredBasic(old)).toEqual(old)
+  })
+
+  it('金标(读档):老档没有 eduList 读成空列、fitEdu 不动;有的洗过再用', () => {
+    expect(normalize({ fitEdu: ['ON.public.y1'] }).eduList).toEqual([])
+    expect(normalize({ fitEdu: ['ON.public.y1'] }).fitEdu).toEqual(['ON.public.y1'])
+    expect(normalize({ eduList: [GOOD, 3] }).eduList).toEqual([GOOD])
   })
 })
 

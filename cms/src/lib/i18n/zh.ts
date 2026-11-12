@@ -1274,7 +1274,7 @@ export const siteZh = {
   'acct.pw.short': '太短:至少 8 位', 'acct.pw.weak': '弱', 'acct.pw.medium': '中', 'acct.pw.strong': '强', 'acct.pw.hint': '建议混合大小写、数字或符号',
   'pf.title': '我的档案', 'pf.pageTitle': '档案与简历', 'pf.card': '求职', 'pf.edit': '修改', 'pf.none': '还没答', 'pf.noneName': '还没填', 'pf.loadFail': '没取到,刷新再试',
   'pf.editTitle': '修改档案',
-  'pf.fill': '从简历填写', 'pf.fillHint': '读取默认简历,只填空着的做过的工作、专业和英文姓名,保存前可改', 'pf.fromResume': '来自简历', 'pf.fillOk': '已填 {n} 项,确认后点保存', 'pf.fillNone': '没有可填的内容', 'pf.fillNoResume': '还没有简历,先到「我的简历」上传', 'pf.fillScan': '这份简历是扫描件,读不出文字', 'pf.fillParse': '这份简历读不出来', 'pf.fillLlm': '提取失败,请稍后再试', 'pf.fillLimit': '今天的提取次数已用完',
+  'pf.fill': '从简历填写', 'pf.fillHint': '读取你的简历,只填空着的做过的工作、专业、教育经历和英文姓名,保存前可改', 'pf.fromResume': '来自简历', 'pf.fillOk': '已填 {n} 项,确认后点保存', 'pf.fillNone': '没有可填的内容', 'pf.fillNoResume': '还没有简历,先到「我的简历」上传', 'pf.fillScan': '这份简历是扫描件,读不出文字', 'pf.fillParse': '这份简历读不出来', 'pf.fillLlm': '提取失败,请稍后再试', 'pf.fillLimit': '今天的提取次数已用完',
   'pf.optWho': '选填,用来算「我的通道」',
   'pf.optEdu': '选填,最近两段',
   'pf.optName': '与简历一致',
@@ -1285,7 +1285,7 @@ export const siteZh = {
   'mj.fillGo': '去补全',
   'mj.fillSep': '、',
   'pf.goal': '目标', 'pf.majors': '专业', 'pf.jobs': '想做的工作', 'pf.where': '所在地', 'pf.name': '英文姓名',
-  'pf.who': '身份', 'pf.edu': '教育经历', 'pf.work': '做过的工作', 'pf.matchBy': '匹配依据', 'pf.byWork': '工作经历', 'pf.byEdu': '学历', 'pf.matchMode': '匹配模式', 'pf.modeDefault': '默认', 'pf.modeStrict': '严格',
+  'pf.who': '身份', 'pf.edu': '教育经历', 'pf.work': '做过的工作', 'pf.rule': '匹配规则', 'pf.rule.work': '按做过的工作', 'pf.rule.workStrict': '按做过的工作,只推很接近的', 'pf.rule.edu': '按我的专业', 'pf.rule.eduStrict': '按我的专业,只推很接近的', 'pf.eduCred': '证书或学历名称', 'pf.eduSchool': '学校', 'pf.eduFrom': '开始年份', 'pf.eduTo': '结束年份',
   // 2026-10-13「我的档案」下面的「我的通道」卡
   'pf.paths': '我的通道', 'pf.pathsAsk': '答完身份和教育经历,这里列出你能走的通道', 'pf.pathsAskBtn': '去回答',
   'pf.pathsEmpty': '这里没有你能走的通道', 'pf.pathsCol.name': '通道', 'pf.pathsCol.total': '全程', 'pf.pathsCol.tags': '条件',

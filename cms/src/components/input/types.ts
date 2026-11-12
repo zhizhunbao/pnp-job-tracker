@@ -58,6 +58,11 @@ export type InputIn = {
   maxLength?: number
 
   /**
+   * 手机虚拟键盘的键位(年份这类只收数字的文本框传 'numeric';2026-11-12「我的档案」教育经历年份)。
+   */
+  inputMode?: 'numeric'
+
+  /**
    * 挂载即聚焦。
    */
   autoFocus?: boolean

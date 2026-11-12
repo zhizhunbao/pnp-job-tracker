@@ -31,6 +31,8 @@
  * 「gate → majors / quiz 两条边现只为 GateEdit 而在」两句作废 —— 那两条边现为 GateForm 的两个叠开选择器而在;
  * missingStepsOf 留着给「我的求职」补全档案提示条判空。
  *
+ * 2026-11-12:教育经历加明细(名称、学校、起止年份):档案卡改读明细,key 那一格仍用 eduPicksOf 拆、makeEduLabel 出字,导出不变。
+ *
  * @author Frank
  * @time 2026-10-04 02:10:00
  */

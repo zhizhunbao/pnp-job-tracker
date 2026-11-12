@@ -124,6 +124,46 @@
 }
 
 /*
+ * 教育经历一段(2026-11-12 加明细):上面一排明细输入框、下面一排三只下拉,占满面板宽。
+ */
+.eduRow {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+
+  width: 100%;
+}
+
+/*
+ * 明细那一排:名称、学校两格平分余下的宽,年份两格定宽;放不下折行。
+ */
+.eduDetail {
+  display: grid;
+
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+  gap: 8px;
+}
+
+/*
+ * 名称 / 学校输入框的位子(输入框自己吃满它)。
+ */
+.eduText {
+  grid-column: 1 / -1;
+
+  min-width: 0;
+}
+
+/*
+ * 年份输入框的位子:够放四位数字和占位词。
+ */
+.eduYear {
+  min-width: 0;
+}
+
+/*
  * 教育经历一段:三只下拉并排,放不下折行(手机上两行),行尾 ✕。
  */
 .eduLine {

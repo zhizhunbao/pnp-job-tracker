@@ -792,6 +792,7 @@ city: v.city.en,
 name: v.name,
 who: v.who,
 edu: v.edu,
+eduList: v.eduList,
   }
 }
 

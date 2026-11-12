@@ -726,6 +726,11 @@ export type PrefillData = {
    * 专业(英文)。
    */
   majors: JsonCell
+
+  /**
+   * 教育经历(2026-11-12;证书或学历名称、学校、起止年份)。
+   */
+  education: JsonCell
 }
 
 /**
@@ -746,6 +751,61 @@ export type PrefillFact = {
    * 专业。
    */
   majors: string[]
+
+  /**
+   * 教育经历(2026-11-12;洗净的,至多 PREFILL_EDU_MAX 条)。
+   */
+  education: PrefillEdus
+}
+
+/**
+ * 从简历提取的一条教育经历(2026-11-12;四格都是字符串,简历没写 = 空串)。
+ */
+export type PrefillEdu = {
+  /**
+   * 证书或学历名称,照简历原文。
+   */
+  credential: string
+
+  /**
+   * 学校。
+   */
+  school: string
+
+  /**
+   * 开始年份(四位数字);没写 = 空串。
+   */
+  from: string
+
+  /**
+   * 结束年份(四位数字);没写或在读 = 空串。
+   */
+  to: string
+}
+
+/**
+ * 从简历提取的教育经历清单。
+ */
+export type PrefillEdus = PrefillEdu[]
+
+/**
+ * 一条教育经历或没有(toPrefillEdu:这一项不合形或四格全空就丢)。
+ */
+export type MaybePrefillEdu = PrefillEdu | null
+
+/**
+ * prefillCellOf 的入参。
+ */
+export type PrefillCellIn = {
+  /**
+   * 模型回的一格(模型可能漏掉这一格:缺席按没有读)。
+   */
+  cell?: JsonCell
+
+  /**
+   * 至多几个字。
+   */
+  max: number
 }
 
 /**

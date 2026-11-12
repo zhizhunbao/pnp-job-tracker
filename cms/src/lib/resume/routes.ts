@@ -146,9 +146,10 @@ export async function resumeRoute(req: Request): Promise<Response> {
 /**
  * POST /api/resume/prefill:读本人默认简历,提取做过的工作、专业、英文姓名,回给「我的档案」的修改面板当建议(用户保存后才入档案)。
  * 不走免费池,限流两道:每人每天、每 IP 每天。只回库内认得的码;映射不上、姓名不合规都留空。日志只记数量,不记内容。
+ * 2026-11-12:多回 education(证书或学历名称、学校、起止年份,照简历原文,洗过、至多 4 条)。
  *
  * @param req 请求。
- * @returns { works, majors, name };未登录 401、超限 429、没简历 404、读不出 422、模型失败 502。
+ * @returns { works, majors, name, education };未登录 401、超限 429、没简历 404、读不出 422、模型失败 502。
  */
 export async function resumePrefillRoute(req: Request): Promise<Response> {
   const user = await getUserOrNull(await headers())
@@ -204,7 +205,7 @@ export async function resumePrefillRoute(req: Request): Promise<Response> {
     name = fact.name
   }
   log({ tag: RESUME_LOG.tag, text: RESUME_LOG.prefillOk + user.id + RESUME_LOG.errSep + works.length + RESUME_LOG.errSep + majors.length })
-  return Response.json({ works, majors, name })
+  return Response.json({ works, majors, name, education: fact.education })
 }
 
 /**

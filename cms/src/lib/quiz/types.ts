@@ -551,8 +551,15 @@ export type Answers = {
   /**
    * 教育经历(同上批):至多两段,一段一串「院校所在地.公立私立.课程时长」(如 'ON.public.y1';所在地 = 省码或 abroad,
    * 时长 = y1 / y2 / y3 / master);空列 = 没答。
+   * 2026-11-12 起由 eduList 派生:保存时取 eduList 里不空的 key,按序;筛通道、判定、推荐照旧只读这一格。
    */
   fitEdu: string[]
+
+  /**
+   * 教育经历明细(2026-11-12 Frank「这部分不能直接显示具体的年份和学历 证书吗?」):至多 6 条,表单与档案卡以它为准;
+   * 空列 = 没答,或只有老的 fitEdu(读的时候按 fitEdu 现补,明细全空,不迁移)。
+   */
+  eduList: EduItems
 
   /**
    * 做过的工作(2026-11-08 清单第 2 条,出处 Job Bank Job seeker profile):职业码,空列 = 没答。
@@ -574,6 +581,66 @@ export type Answers = {
    */
   fromResume: string[]
 }
+
+/**
+ * 教育经历一条(2026-11-12;答案档 eduList 的一项,五格都是字符串,没有 = 空串)。
+ */
+export type EduItem = {
+  /**
+   * 「院校所在地.公立私立.课程时长」串(同 fitEdu 的一项);三只下拉没选全 = 空串。
+   */
+  key: string
+
+  /**
+   * 证书或学历名称,照简历上写的(如 Graduate Certificate);至多 80 字。
+   */
+  cred: string
+
+  /**
+   * 学校;至多 120 字。
+   */
+  school: string
+
+  /**
+   * 开始年份(四位数字);没填 = 空串。
+   */
+  from: string
+
+  /**
+   * 结束年份(四位数字);没填或在读 = 空串。
+   */
+  to: string
+}
+
+/**
+ * 教育经历清单。
+ */
+export type EduItems = EduItem[]
+
+/**
+ * eduTextOf 的入参。
+ */
+export type EduTextIn = {
+  /**
+   * 一格字。
+   */
+  v: string
+
+  /**
+   * 它该有的形状。
+   */
+  re: RegExp
+}
+
+/**
+ * 教育经历一条或没有(toEduItem:这一项不合形就丢)。
+ */
+export type MaybeEduItem = EduItem | null
+
+/**
+ * 教育经历清单或没有(toStoredBasic:答案档里没带 eduList 这一格)。
+ */
+export type MaybeEduItems = EduItems | null
 
 /**
  * 分值卡答案(2026-08-15 Frank「学历以下的字段都有这个问题」:勾选/逐题答案只活在
@@ -1326,6 +1393,11 @@ export type QuizProfile = {
   edu: string[]
 
   /**
+   * 教育经历明细(2026-11-12):档里有 eduList 用它;没有就按 edu 现补(明细全空)。空列 = 没答。
+   */
+  eduList: EduItems
+
+  /**
    * 做过的工作(码与译名,2026-11-08)。
    */
   works: ProfileNames
@@ -1394,6 +1466,11 @@ export type ProfileBasicFact = {
    * 教育经历串(2026-10-13)。
    */
   edu: string[]
+
+  /**
+   * 教育经历明细(2026-11-12;洗净的;档里没有就按 edu 现补)。
+   */
+  eduList: EduItems
 
   /**
    * 做过的工作(2026-11-08 清单第 2 条,出处 Job Bank Job seeker profile):职业码,空列 = 没答。
@@ -1484,6 +1561,11 @@ export type ProfileBasicJson = {
    * 教育经历串(2026-10-13)。
    */
   fitEdu?: string[] | null
+
+  /**
+   * 教育经历明细(2026-11-12;形状不可信,过 toEduList 才用)。
+   */
+  eduList?: RawCell | null
 
   /**
    * 做过的工作(2026-11-08)。

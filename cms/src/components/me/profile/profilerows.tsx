@@ -5,6 +5,8 @@
  * 2026-10-11:英文姓名是填的不是答的,没填写「还没填」;另外几行照旧「还没答」。
  * 2026-10-13 档案加身份、教育经历两行(所在地之后、英文姓名之前,与弹框题序同)。
  * 2026-11-07 照 Fluent 效果图在新域重写:原先电脑两列并排的 Row 换成一列「标签-值」(ProfileItem),手机标签在上、值在下。
+ * 2026-11-12 Frank「这两个不能合并成一个吗?比如匹配规则 是 按专业,还是按什么其他的一个下拉选」:「匹配依据」「匹配模式」两行并成
+ * 一行「匹配规则」;同日教育经历那一行改读明细(年份、证书或学历名称、学校)。
  *
  * @author Frank
  * @time 2026-11-07 16:05:00
@@ -16,7 +18,7 @@ import {
   PF_FROM_MAJORS, PF_FROM_NAME, PF_FROM_NONE, PF_FROM_TAG_KEY, PF_FROM_TAG_V, PF_FROM_WORK, PF_NONE_KEY,
   PF_NONE_NAME_KEY, PF_ROW_KEYS, PF_WHO_HEAD, TEXT_NONE,
 } from './constants'
-import { pfGoalKeyOf, pfMatchByKeyOf, pfMatchModeKeyOf } from './functions'
+import { pfGoalKeyOf, pfRuleKeyOf } from './functions'
 import { ProfileEdu } from './profileedu'
 import { ProfileItem } from './profileitem'
 import { ProfileNames } from './profilenames'
@@ -64,11 +66,12 @@ export function ProfileRows({ v, lang, t }: PfRowsIn) {
         {v.who !== TEXT_NONE && t(PF_WHO_HEAD + v.who)}
       </ProfileItem>
       <ProfileItem k={t(PF_ROW_KEYS.edu)}>
-        {v.edu.length === 0 && none}
-        {v.edu.length > 0 && <ProfileEdu edu={v.edu} t={t} />}
+        {v.eduList.length === 0 && none}
+        {v.eduList.length > 0 && <ProfileEdu list={v.eduList} t={t} />}
       </ProfileItem>
-      <ProfileItem k={t(PF_ROW_KEYS.matchBy)}>{t(pfMatchByKeyOf(v.matchBy))}</ProfileItem>
-      <ProfileItem k={t(PF_ROW_KEYS.matchMode)}>{t(pfMatchModeKeyOf(v.matchMode))}</ProfileItem>
+      <ProfileItem k={t(PF_ROW_KEYS.rule)}>
+        {t(pfRuleKeyOf({ matchBy: v.matchBy, matchMode: v.matchMode }))}
+      </ProfileItem>
       <ProfileItem k={t(PF_ROW_KEYS.name)}>
         {v.name === TEXT_NONE && <span className={cssOf(css.none)}>{t(PF_NONE_NAME_KEY)}</span>}
         {v.name !== TEXT_NONE && (

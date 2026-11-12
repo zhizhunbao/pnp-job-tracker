@@ -100,6 +100,11 @@ export type PfView = {
   edu: string[]
 
   /**
+   * 教育经历明细(2026-11-12;服务端已洗,没存过明细的按 edu 现补);空列 = 没答。档案卡与修改面板以它为准。
+   */
+  eduList: PfEduItem[]
+
+  /**
    * 做过的工作(码与译名,2026-11-08)。
    */
   works: PfNames
@@ -118,6 +123,36 @@ export type PfView = {
    * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
    */
   fromResume: string[]
+}
+
+/**
+ * 教育经历明细的一条(形同 quiz 域 EduItem,本桶自声明;2026-11-12)。
+ */
+export type PfEduItem = {
+  /**
+   * 「所在地.公立私立.时长」串;没选全 = 空串。
+   */
+  key: string
+
+  /**
+   * 证书或学历名称;没填 = 空串。
+   */
+  cred: string
+
+  /**
+   * 学校;没填 = 空串。
+   */
+  school: string
+
+  /**
+   * 开始年份(四位数字);没填 = 空串。
+   */
+  from: string
+
+  /**
+   * 结束年份(四位数字);没填或在读 = 空串。
+   */
+  to: string
 }
 
 /**
@@ -178,6 +213,11 @@ export type PfSeed = {
    * 教育经历串(2026-10-13)。
    */
   edu: string[]
+
+  /**
+   * 教育经历明细(2026-11-12)。
+   */
+  eduList: PfEduItem[]
 
   /**
    * 做过的工作(职业码,2026-11-08)。
@@ -465,14 +505,74 @@ export type PfWhereIn = {
  */
 export type PfEduIn = {
   /**
-   * 教育经历串。
+   * 教育经历明细(2026-11-12 起读明细,原先读教育经历串)。
    */
-  edu: string[]
+  list: PfEduItem[]
 
   /**
    * 取词函数。
    */
   t: TFn
+}
+
+/**
+ * 档案卡上教育经历的一条(两行;pfEduLinesOf 出)。
+ */
+export type PfEduLine = {
+  /**
+   * 第一行的几个词(年份、证书或学历名称;两样都没有时是「所在地, 公立私立, 时长」一句)。
+   */
+  main: string[]
+
+  /**
+   * 第二行灰字(学校,再加 key 的三个词);没有 = 空串。
+   */
+  sub: string
+}
+
+/**
+ * pfEduLinesOf 的入参。
+ */
+export type PfEduLinesIn = {
+  /**
+   * 教育经历明细。
+   */
+  list: PfEduItem[]
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * pfEduLineOf / pfEduPartsOf 的入参。
+ */
+export type PfEduLineIn = {
+  /**
+   * 一条明细。
+   */
+  e: PfEduItem
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * pfRuleKeyOf 的入参。
+ */
+export type PfRuleIn = {
+  /**
+   * 匹配依据;空串 = 没选。
+   */
+  matchBy: string
+
+  /**
+   * 匹配模式;空串 = 没选。
+   */
+  matchMode: string
 }
 
 /**

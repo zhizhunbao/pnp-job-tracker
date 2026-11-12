@@ -15,7 +15,7 @@
 
 export type { Answers, L, ScoreAnswers, Stage } from './types'
 export { ANSWERS_KEY, CLB, DECISIONS, EMPTY, KNOWN_NO_FREE_LEAD, NCLC } from './constants'
-export { getFields, toEngineAnswers } from './functions'
+export { eduKeysOf, getFields, toEngineAnswers } from './functions'
 export {
   answeredBasics, batchLeadsFree, clearAnswers, fieldsOf, missingFields, pullAndMerge,
   readAnswers, readScoreAnswers, resetAnswersMemory, saveBasics, writeAnswers, writeScoreAnswers,

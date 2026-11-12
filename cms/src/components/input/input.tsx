@@ -27,6 +27,7 @@ export function Input({
   size = SIZE_DEFAULT,
   enterKeyHint,
   maxLength,
+  inputMode,
   autoFocus = false,
   ariaLabel,
   onKeyDown,
@@ -47,6 +48,7 @@ export function Input({
       placeholder={placeholder}
       enterKeyHint={enterKeyHint}
       maxLength={maxLength}
+      inputMode={inputMode}
       autoFocus={autoFocus}
       aria-label={ariaLabel}
       onKeyDown={onKeyDown}

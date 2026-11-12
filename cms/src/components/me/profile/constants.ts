@@ -167,14 +167,10 @@ export const PF_ROW_KEYS = {
   work: 'pf.work',
 
   /**
-   * 匹配依据。
+   * 匹配规则(2026-11-12 Frank「这两个不能合并成一个吗?比如匹配规则 是 按专业,还是按什么其他的一个下拉选」:
+   * 原先「匹配依据」「匹配模式」两行并成一行)。
    */
-  matchBy: 'pf.matchBy',
-
-  /**
-   * 匹配模式。
-   */
-  matchMode: 'pf.matchMode',
+  rule: 'pf.rule',
 }
 
 /**
@@ -348,24 +344,39 @@ export const PF_MATCH_EDU = 'edu'
 export const PF_MODE_STRICT = 'strict'
 
 /**
- * 「工作经历」词条。
+ * 匹配规则四项的词条(2026-11-12,与修改面板那只下拉同一套字):按做过的工作。
  */
-export const PF_BY_WORK_KEY = 'pf.byWork'
+export const PF_RULE_WORK_KEY = 'pf.rule.work'
 
 /**
- * 「学历」词条。
+ * 按做过的工作,只推很接近的。
  */
-export const PF_BY_EDU_KEY = 'pf.byEdu'
+export const PF_RULE_WORK_STRICT_KEY = 'pf.rule.workStrict'
 
 /**
- * 「默认」词条。
+ * 按我的专业。
  */
-export const PF_MODE_DEFAULT_KEY = 'pf.modeDefault'
+export const PF_RULE_EDU_KEY = 'pf.rule.edu'
 
 /**
- * 「严格」词条。
+ * 按我的专业,只推很接近的。
  */
-export const PF_MODE_STRICT_KEY = 'pf.modeStrict'
+export const PF_RULE_EDU_STRICT_KEY = 'pf.rule.eduStrict'
+
+/**
+ * 教育经历一行里几个词的连接符(不用中点)。
+ */
+export const PF_LIST_SEP = ', '
+
+/**
+ * 起止年份之间的连接符(2025 – 2026)。
+ */
+export const PF_YEAR_SEP = ' – '
+
+/**
+ * 只有开始年份时跟在后面的记号(2025 –)。
+ */
+export const PF_YEAR_OPEN = ' –'
 
 /**
  * 正在取数(aria-busy 的「是」)。
