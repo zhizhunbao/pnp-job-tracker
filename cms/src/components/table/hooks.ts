@@ -93,6 +93,9 @@ export function useRows<T>(x: RowsIn<T>): RowsOut<T> {
  * 仍按比例缩,不横滚);只有数据本身换了(切筛选/换页大小)才重量 —— 重量的解锁
  * 在渲染中对比签名完成(同 useRows 的回页形态,2026-08-26 由 layout effect 改写)。
  * 拖列宽写的是像素,压过量出来的百分比。
+ * 2026-11-12 Frank「中英 切换的时候会有这种问题,是不是检查一下所有 table」:切界面语言时列 key 与行数都不变,
+ * 签名不变就不重量,中文下量出来的列宽锁着给英文用,表头与格子互相压(「Median $/hr」被截、「Medium」压到公司列、
+ * 截止日期压到收藏钮)。签名加上表头文案(labelSigOf)—— 换了语言文案就变,重量一次;全站的表都走这一个出口。
  * 表元素 ref 由挂 table 的组件持有并经 x 传进来(2026-08-26:原先住返回面板里,
  * 混装 ref 的面板会被 react-hooks/refs 整体判成「渲染期读 ref」)。
  *
@@ -107,7 +110,7 @@ export function useColWidths<T>(x: ColWidthsIn<T>): ColWidthsOut<T> {
   function keyOf(c: Col<T>): string {
     return c.key
   }
-  const sig = x.cols.map(keyOf).join(SIG_SEP) + SIG_TAIL + x.rowCount
+  const sig = x.cols.map(keyOf).join(SIG_SEP) + SIG_TAIL + x.rowCount + SIG_TAIL + labelSigOf({ cols: x.cols })
   const [prevSig, setPrevSig] = useState(sig)
 
   if (prevSig !== sig) {
@@ -207,6 +210,23 @@ function allExplicitOf<T>(x: AllExplicitIn<T>): boolean {
     }
   }
   return true
+}
+
+/**
+ * 表头文案拼成的串(量宽签名的一段,2026-11-12):界面语言一换文案就变,量宽跟着重来一次。
+ * 只收字符串文案;表头是别的节点的列不参与(它们不随语言变,或变了也由同表的字符串列带着重量)。
+ *
+ * @param x 列声明。
+ * @returns 各列字符串文案用签名分隔符连起来。
+ */
+function labelSigOf<T>(x: AllExplicitIn<T>): string {
+  const out: string[] = []
+  for (const c of x.cols) {
+    if (typeof c.label === 'string') {
+      out.push(c.label)
+    }
+  }
+  return out.join(SIG_SEP)
 }
 
 /**

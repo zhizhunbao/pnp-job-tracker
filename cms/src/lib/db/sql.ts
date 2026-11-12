@@ -3221,6 +3221,8 @@ export const MYJOBS_PICKS = `WITH want AS MATERIALIZED (
        LEFT JOIN stale st ON st.code = j.province
        LEFT JOIN provinces pr ON pr.code = j.province
       WHERE j.status = 'open' AND COALESCE(j.apply_email, '') <> '' AND j.is_dup IS NOT TRUE
+        AND (j.valid_through IS NULL
+             OR (j.valid_through AT TIME ZONE 'UTC')::date >= (now() AT TIME ZONE 'America/Toronto')::date)
         AND ($5::boolean = false OR (j.employment_hours = 'full' AND j.employment_term = 'permanent'
              AND j.pnp_eligible AND j.province IN (SELECT code FROM fresh)))
         AND j.eligibility_flag::text IS DISTINCT FROM 'pr_required'
@@ -3330,6 +3332,8 @@ export const MYJOBS_AFTER = `SELECT j.id, j.title, j.title_zh, j.title_ko, j.tra
        LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
       WHERE ref.id = $2 AND length(ref.noc) = 5
         AND j.status = 'open' AND COALESCE(j.apply_email, '') <> '' AND j.is_dup IS NOT TRUE
+        AND (j.valid_through IS NULL
+             OR (j.valid_through AT TIME ZONE 'UTC')::date >= (now() AT TIME ZONE 'America/Toronto')::date)
         AND NOT EXISTS (SELECT 1 FROM applications a WHERE a.user_id = $1 AND a.job_id = j.id)
         AND NOT EXISTS (SELECT 1 FROM bounced_emails b WHERE b.email = lower(j.apply_email))
         AND NOT EXISTS (SELECT 1 FROM applications a2 WHERE a2.user_id = $1 AND lower(a2.employer_email) = lower(j.apply_email)
@@ -3344,6 +3348,16 @@ export const MYJOBS_AFTER = `SELECT j.id, j.title, j.title_zh, j.title_ko, j.tra
  */
 export const MYJOBS_TOUCHED_IDS = `SELECT job_id AS id FROM applications WHERE user_id = $1 AND job_id IS NOT NULL
      UNION SELECT job_id AS id FROM pick_dismissed WHERE user_id = $1`
+
+/**
+ * 这批岗里已经没了的(2026-11-12 Frank「岗位下架了 怎么也推荐过来了」):已关闭,或截止日期已过(按多伦多的今天)。
+ * 今日推荐按人按天缓存,早上取进来的岗白天关了、过了截止日还留在缓存里 —— 每次回包前现查一遍剔掉。
+ * 截止日期的判法同 SEO_JOB_OK 那一句;MYJOBS_PICKS / MYJOBS_AFTER 的取数条件同日也加了这一句(过期的不占候选名额)。
+ * 主键查,$1=职位 id 数组。
+ */
+export const MYJOBS_GONE_IDS = `SELECT id FROM jobs WHERE id = ANY($1::int[])
+     AND (status <> 'open' OR (valid_through IS NOT NULL
+          AND (valid_through AT TIME ZONE 'UTC')::date < (now() AT TIME ZONE 'America/Toronto')::date))`
 
 /**
  * 今日推荐按「我的通道」筛要的各通道身份对照(同上批):岗的具名通道 pnp_stream 对 board_label,

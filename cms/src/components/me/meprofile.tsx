@@ -5,6 +5,7 @@
  * 2026-11-11 Frank「只留一份上传的吧。因为之后都可以按岗位改写」「左边我的档案,右面我的简历。然后我的通道拿出来」(投递走顺第 4 批):
  * 「我的简历」并进这一页成右栏;「修改」从页标题挪进档案卡的卡头(一页两张卡,页标题上的「修改」指向不明);
  * 「我的通道」拿出去单独成页(mestreams.tsx)。
+ * 2026-11-12 Frank「我觉得这两个先换个位置」:两栏对调,左边我的简历、右边我的档案(窄屏上简历在上)。
  *
  * @author Frank
  * @time 2026-11-07 17:30:00
@@ -30,8 +31,8 @@ export function MeProfile({ t, narrow, open, onOpen, autoEdit, onChanged }: MePr
     <>
       <MeHead sec={SEC_PROFILE} t={t} narrow={narrow} open={open} onOpen={onOpen} />
       <div className={cssOf(css.cols)}>
-        <ProfileBody p={p} t={t} />
         <BaseCard b={b} t={t} />
+        <ProfileBody p={p} t={t} />
       </div>
     </>
   )

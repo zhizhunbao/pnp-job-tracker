@@ -19,7 +19,7 @@ import {
 } from './recommend'
 import { CACHE } from './variables'
 import type {
-  CountDbRow, CountOut, DeleteOut, DropTouchedIn, IdDbRow, MaybeId, MyJobDbRow, MyJobRow, MyJobsDeleteIn, MyJobsIn,
+  CountDbRow, CountOut, DeleteOut, DropTouchedIn, GoneIn, IdDbRow, JobIds, MaybeId, MyJobDbRow, MyJobRow, MyJobsDeleteIn, MyJobsIn,
   MyJobsOut, PickDbRow,
   PickRow, PickRows, PicksAfterIn, PicksIn, PicksJson, PicksJsonOut, PicksOut, PicksViewIn, ReasonCodes, ReasonsIn,
   TimeCell, TouchedOut,
@@ -195,11 +195,9 @@ export async function getPicks(x: PicksViewIn): PicksJsonOut {
   if (prov === TEXT_NONE) {
     prov = x.prov
   }
-  const kept = dropTouchedOf({ rows, touched })
-  const ids: number[] = []
-  for (const r of kept) {
-    ids.push(r.id)
-  }
+  const open = dropTouchedOf({ rows, touched })
+  const kept = dropTouchedOf({ rows: open, touched: await loadGone({ db: x.db, ids: idsOf(open) }) })
+  const ids = idsOf(kept)
   const matches = await loadMatches({ db: x.db, userId: x.userId, ids })
   const ranked = rankPicksOf({ rows: kept, ways, reqs, profile, goal, matches, prov })
   const picks: PickRow[] = []
@@ -308,6 +306,31 @@ export function afterOf(url: string): MaybeId {
     return n
   }
   return null
+}
+
+/**
+ * 这批岗里已经没了的(已关闭,或截止日期已过;2026-11-12 Frank「岗位下架了 怎么也推荐过来了」)。
+ * 今日推荐按人按天缓存,当天关掉 / 过期的岗每次回包前现查一遍剔掉。
+ *
+ * @param x 连接与要查的职位 id。
+ * @returns 已经没了的职位 id。
+ */
+async function loadGone(x: GoneIn): TouchedOut {
+  return queryRows({ db: x.db, sql: SQL.MYJOBS_GONE_IDS, params: [x.ids], map: toId })
+}
+
+/**
+ * 一批推荐的职位 id。
+ *
+ * @param rows 推荐。
+ * @returns 职位 id,顺序照旧。
+ */
+function idsOf(rows: PickRows): JobIds {
+  const out: number[] = []
+  for (const r of rows) {
+    out.push(r.id)
+  }
+  return out
 }
 
 /**

@@ -1057,6 +1057,26 @@ export type ReasonCodes = string[]
 export type TouchedOut = Promise<number[]>
 
 /**
+ * 一批职位 id(idsOf 的返回)。
+ */
+export type JobIds = number[]
+
+/**
+ * 查这批岗里哪些已经没了(loadGone)的入参。
+ */
+export type GoneIn = {
+  /**
+   * 数据库连接(调用方注入,本域不自己连库)。
+   */
+  db: Db
+
+  /**
+   * 要查的职位 id。
+   */
+  ids: number[]
+}
+
+/**
  * 推荐接口回包的返回。
  */
 export type PicksJsonOut = Promise<PicksJson>
