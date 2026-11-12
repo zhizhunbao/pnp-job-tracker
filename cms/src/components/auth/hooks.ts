@@ -10,7 +10,7 @@
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useLang } from '@/components/i18n'
 import {
   ERR_NONE, EV_MOUSEDOWN, FIELD_EMPTY, FLOW_ERR, FLOW_SENT, GOOGLE_TAP_GAP_MS, HISTORY_TITLE_UNUSED, KEY_ERR_CRED,
@@ -18,7 +18,9 @@ import {
   MODE_BACK_TO, MODE_LOGIN, MODE_REGISTER, OAUTH_FAIL,
   OAUTH_PARAM, QS_NONE, QS_PREFIX,
 } from './constants'
-import { finishAuth, googleHrefOf, makeImgFail, runAuthFlow } from './functions'
+import {
+  finishAuth, googleHrefOf, makeImgFail, noPortalHostOf, portalHostOf, runAuthFlow, subscribeNever,
+} from './functions'
 import type {
   SessionSeed, AuthFormHookIn, AuthFormHookOut, AuthMode, ClickOutsideIn, ImgFailOut, QuizDestIn,
 } from './types'
@@ -215,4 +217,13 @@ export function useClickOutside(x: ClickOutsideIn) {
 export function useImgFail(): ImgFailOut {
   const [failed, setFailed] = useState(false)
   return { failed, onError: makeImgFail({ setFailed }) }
+}
+
+/**
+ * 登录框挂到哪:客户端给 body(跳出顶栏的层级,不被全站那层暗色盖住),服务端渲与水合那一遍给 null(就地渲)。
+ *
+ * @returns 挂载点;null = 就地渲。
+ */
+export function usePortalHost(): HTMLElement | null {
+  return useSyncExternalStore(subscribeNever, portalHostOf, noPortalHostOf)
 }

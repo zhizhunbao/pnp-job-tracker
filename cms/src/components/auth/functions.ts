@@ -323,3 +323,41 @@ export function makeImgFail(x: ImgFailIn): () => void {
     x.setFailed(true)
   }
 }
+
+/**
+ * 「弹框挂到哪」这份外部状态的订阅(useSyncExternalStore 要一只):它不会再变,交回空退订(同 jobs 桶 subscribeNever 的形)。
+ *
+ * @param _onChange 状态变了叫醒 React 的回调(用不上:这份状态不会变)。
+ * @returns 退订手柄。
+ */
+export function subscribeNever(_onChange: () => void): () => void {
+  return stayPut
+}
+
+/**
+ * 空退订(什么都不用做)。
+ *
+ * @returns 无。
+ */
+function stayPut(): void {
+  return
+}
+
+/**
+ * 客户端快照:登录框挂到 body 上(2026-11-12 Frank「登录框怎么也变成灰色」:框挂在顶栏里,顶栏层级 30,
+ * 整个框落到全站那层暗色 49 的下面)。
+ *
+ * @returns body。
+ */
+export function portalHostOf(): HTMLElement | null {
+  return document.body
+}
+
+/**
+ * 服务端快照:服务端渲与水合那一遍没有 body 可挂,就地渲。
+ *
+ * @returns null。
+ */
+export function noPortalHostOf(): HTMLElement | null {
+  return null
+}

@@ -7,13 +7,16 @@
  * 2026-08-29 Frank 实拍:右上角只留关闭 × —— 登录框是定尺寸的短表单,放大/全屏没有内容可放开,
  * 走 Modal 壳现成的 `resizable` 开关关掉(壳不必改;别的弹框不受影响)。
  * 2026-09-23 全屏钮全站撤(Frank「这个带全屏的都去掉吧」),这个开关随壳一起删。
+ * 2026-11-12 Frank「登录框怎么也变成灰色」:框挂在顶栏里(层级 30),落到全站那层暗色(49)下面;改挂到 body 上(portal)。
  *
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
+import { createPortal } from 'react-dom'
 import { Modal } from '@/components/modal'
 import { AuthForm } from './authform'
 import { MODAL_SIZE_SM } from './constants'
+import { usePortalHost } from './hooks'
 import type { AuthModalIn } from './types'
 
 /**
@@ -23,9 +26,14 @@ import type { AuthModalIn } from './types'
  * @returns 弹框。
  */
 export function AuthModal({ t, onClose, onDone, mode, resetToken, z, returnTo, hero }: AuthModalIn) {
-  return (
+  const host = usePortalHost()
+  const modal = (
     <Modal onClose={onClose} size={MODAL_SIZE_SM} z={z} draggable={false}>
       <AuthForm t={t} onDone={onDone} initialMode={mode} resetToken={resetToken} returnTo={returnTo} hero={hero} />
     </Modal>
   )
+  if (host == null) {
+    return modal
+  }
+  return createPortal(modal, host)
 }
