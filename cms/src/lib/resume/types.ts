@@ -418,7 +418,7 @@ export type TimeCell = Date | string | null
  */
 export type ResumeFileMeta = {
   /**
-   * 简历 id(取原件、替换、删除、设默认时指明是哪一份)。
+   * 简历 id(取原件、替换、删除时指明是哪一份)。
    */
   id: number
 
@@ -569,7 +569,7 @@ export type ResumeIdFact = {
 }
 
 /**
- * 按人按份取 / 删 / 设默认(`loadResumeBlob` / `deleteResumeFile` / `setDefaultResume`)的入参。
+ * 按人按份取 / 删(`loadResumeBlob` / `deleteResumeFile`)的入参。
  */
 export type ResumeOneIn = {
   /**
@@ -587,11 +587,6 @@ export type ResumeOneIn = {
    */
   id: number
 }
-
-/**
- * 设默认的返回:那一份是不是本人的(不是 = 什么都没改)。
- */
-export type ResumeSetDefaultOut = Promise<boolean>
 
 /**
  * 取原件的返回。

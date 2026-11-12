@@ -1,22 +1,22 @@
 // @vitest-environment node
 // 「我的简历」原件存取(2026-10-05 Frank「先做我的简历吧」;10-06 改一人多份、最多 5 份、一份默认;
 // 设计稿 docs/design/我的模块v2-20261005.md「定稿」)。
-// 性质:① 五个接口未登录一律 401、不碰库;② 类型按文件头判,不信扩展名:PDF 文件头 → 收;zip 文件头 + .docx → 收;
+// 性质:① 四个接口未登录一律 401、不碰库;② 类型按文件头判,不信扩展名:PDF 文件头 → 收;zip 文件头 + .docx → 收;
 //       zip 文件头 + 别的扩展名、改了后缀的文本 → 400 且不写库;空文件 400、超 5 MB 413;
 //       ③ 存下的原件逐字节取回,取原件带防嗅探、不许缓存,默认在浏览器打开、带 dl 按下载,中文文件名百分号编码;
 //          别人的那一份取不到(404),不带 id 400;
 //       ④ 限流两位:同一人每天 20 次到顶 429;同一 IP 轮换新号到 100 次 429,换个 IP 照常;
-//       ⑤ 多份:第一份自动默认;第 6 份 409;替换原地覆盖、默认不变;设默认只留一份默认;删掉默认那份,最新的补成默认;
+//       ⑤ 只留一份(2026-11-11):第一份自动默认;再传是替换它;替换原地覆盖、默认不变;删掉默认那份,最新的补成默认(2026-11-12 份数上限与设默认随「我的简历」并页撤);
 //       ⑥ 删到一份不剩,简历对照存档的文字一起清空(隐私条款「删除时原件与存档文本一并删除」);还剩的时候不清。
 // 探针:路由去掉 user == null 闸 → ①红;fileMimeOf 改成只看扩展名 → ②「改了后缀」红;dispositionOf 去掉
-//       encodeURIComponent → ③中文名红;限流去掉每 IP 那一位 → ④ IP 那条红;PUT 去掉份数判断 → ⑤第 6 份红;
+//       encodeURIComponent → ③中文名红;限流去掉每 IP 那一位 → ④ IP 那条红;
 //       删除路由去掉「一份不剩才清」的判断 → ⑥红。
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { RF_IP_DAILY, RF_USER_DAILY, RESUME_FILES_MAX, RESUME_MAX_BYTES } from '@/lib/resume/constants'
+import { RF_IP_DAILY, RF_USER_DAILY, RESUME_MAX_BYTES } from '@/lib/resume/constants'
 import { dispositionOf, fileMimeOf, fileNameOf } from '@/lib/resume/functions'
 import {
-  resumeFileDeleteRoute, resumeFileGetRoute, resumeFilePatchRoute, resumeFilePutRoute, resumeFilesRoute,
+  resumeFileDeleteRoute, resumeFileGetRoute, resumeFilePutRoute, resumeFilesRoute,
 } from '@/lib/resume/server'
 import { CACHE as QUOTA } from '@/lib/quota/variables'
 import { SQL } from '@/lib/db'
@@ -52,9 +52,12 @@ function mine(uid: string) {
 const query = vi.fn(async (sql: string, p: SqlParam[] = []): Promise<QueryResult> => {
   const uid = String(p[0])
   const ok = (rows: object[], n = rows.length) => ({ rows, rowCount: n }) as QueryResult
+  // 2026-11-11 只留一份:清单只给默认那一份;没指明替换哪一份的上传先查本人那份基础简历的 id
   if (sql === SQL.RESUME_FILE_LIST) {
-    const list = mine(uid).sort((a, b) => Number(b.is_default) - Number(a.is_default) || b.uploaded_at.localeCompare(a.uploaded_at))
-    return ok(list)
+    return ok(mine(uid).filter((r) => r.is_default))
+  }
+  if (sql === SQL.RESUME_FILE_BASE_ID) {
+    return ok(mine(uid).filter((r) => r.is_default).map((r) => ({ id: r.id, is_default: r.is_default })))
   }
   if (sql === SQL.RESUME_FILE_COUNT) {
     return ok([{ n: mine(uid).length }])
@@ -96,16 +99,6 @@ const query = vi.fn(async (sql: string, p: SqlParam[] = []): Promise<QueryResult
     }
     return ok([])
   }
-  if (sql === SQL.RESUME_FILE_SET_DEFAULT) {
-    const list = mine(uid)
-    if (list.some((r) => r.id === Number(p[1])) === false) {
-      return ok([], 0)
-    }
-    for (const r of list) {
-      r.is_default = r.id === Number(p[1])
-    }
-    return ok([], list.length)
-  }
   throw new Error('unexpected sql: ' + sql)
 })
 vi.mock('@/lib/db/server', () => ({ getDb: async () => ({ query }) }))
@@ -139,11 +132,10 @@ beforeEach(() => {
 })
 
 describe('① 未登录', () => {
-  it('五个接口都 401,一条语句都不发', async () => {
+  it('四个接口都 401,一条语句都不发', async () => {
     expect((await resumeFileGetRoute(new Request(URL_FILE + '?id=1'))).status).toBe(401)
     expect((await put(PDF, 'a.pdf')).status).toBe(401)
     expect((await resumeFileDeleteRoute(new Request(URL_FILE + '?id=1', { method: 'DELETE' }))).status).toBe(401)
-    expect((await resumeFilePatchRoute(new Request(URL_FILE + '?id=1', { method: 'PATCH' }))).status).toBe(401)
     expect((await resumeFilesRoute(new Request('https://offer2pr.com/api/resume/files'))).status).toBe(401)
     expect(query).not.toHaveBeenCalled()
   })
@@ -203,7 +195,6 @@ describe('③ 取原件', () => {
     expect((await resumeFileGetRoute(new Request(URL_FILE + '?id=' + meta.id))).status).toBe(404)
     expect((await resumeFileGetRoute(new Request(URL_FILE))).status).toBe(400)
     expect((await resumeFileGetRoute(new Request(URL_FILE + '?id=abc'))).status).toBe(400)
-    expect((await resumeFilePatchRoute(new Request(URL_FILE + '?id=' + meta.id, { method: 'PATCH' }))).status).toBe(404)
   })
 })
 
@@ -228,51 +219,58 @@ describe('④ 限流两位', () => {
   })
 })
 
-describe('⑤ 多份', () => {
-  it('第一份自动默认;满了(RESUME_FILES_MAX,10-07 起 20 份)再加 409;替换原地覆盖、默认不变', async () => {
+// 以前传过多份的人,库里还留着的旧行(2026-11-11 之后清单不再列出它们)
+function seedOld(uid: number, names: string[]) {
+  names.forEach((name, i) => {
+    h.seq.n += 1
+    h.rows.push({
+      id: h.seq.n, user_id: String(uid), file_b64: '', file_name: name, mime: 'application/pdf', size_bytes: 1,
+      uploaded_at: '2026-10-0' + String(i + 1), is_default: i === 0,
+    })
+  })
+}
+
+describe('⑤ 只留一份(2026-11-11 Frank「只留一份上传的吧」)', () => {
+  it('第一份自动成基础简历;再传(不指明替换哪一份)是替换它,不会多出第二份;指明 id 的替换照旧', async () => {
     login(7)
-    for (let i = 1; i <= RESUME_FILES_MAX; i++) {
-      expect((await put(PDF, `cv${i}.pdf`)).status).toBe(200)
-    }
-    const full = await put(PDF, 'cv-extra.pdf')
-    expect(full.status).toBe(409)
-    expect(await full.json()).toEqual({ error: 'full' })
+    expect((await put(PDF, 'cv1.pdf')).status).toBe(200)
+    const first = (await list())[0]?.id ?? 0
+    expect((await put(PDF, 'cv2.pdf')).status).toBe(200)
+    expect((await put(PDF, 'cv3.pdf')).status).toBe(200)
     let items = await list()
-    expect(items.length).toBe(RESUME_FILES_MAX)
-    expect(items.filter((x) => x.isDefault).map((x) => x.fileName)).toEqual(['cv1.pdf'])
-    const first = items[0]?.id ?? 0
+    expect(items.length).toBe(1)
+    expect(h.rows.filter((r) => r.user_id === '7').length).toBe(1)
+    expect(items[0]?.id).toBe(first)
+    expect(items[0]?.fileName).toBe('cv3.pdf')
+    expect(items[0]?.isDefault).toBe(true)
     expect((await put(ZIP, 'new.docx', '1.1.1.1', first)).status).toBe(200)
     items = await list()
-    expect(items.length).toBe(RESUME_FILES_MAX)
-    expect(items[0]?.id).toBe(first)
+    expect(items.length).toBe(1)
     expect(items[0]?.fileName).toBe('new.docx')
-    expect(items[0]?.isDefault).toBe(true)
   })
 
-  it('设默认只留一份默认;删掉默认那份,最新的补成默认', async () => {
+  it('以前传过多份的:清单只列默认那一份;再传替换的是它,旧的几份不动;删掉它,剩下最新的一份补成基础简历', async () => {
     login(8)
-    await put(PDF, 'a.pdf')
-    await put(PDF, 'b.pdf')
-    await put(PDF, 'c.pdf')
-    const b = (await list()).find((x) => x.fileName === 'b.pdf')
-    expect((await resumeFilePatchRoute(new Request(URL_FILE + '?id=' + b?.id, { method: 'PATCH' }))).status).toBe(200)
-    let items = await list()
-    expect(items.filter((x) => x.isDefault).map((x) => x.fileName)).toEqual(['b.pdf'])
-    expect(items[0]?.fileName).toBe('b.pdf')
-    await resumeFileDeleteRoute(new Request(URL_FILE + '?id=' + b?.id, { method: 'DELETE' }))
-    items = await list()
-    expect(items.filter((x) => x.isDefault).map((x) => x.fileName)).toEqual(['c.pdf'])
+    seedOld(8, ['a.pdf', 'b.pdf', 'c.pdf'])
+    expect((await list()).map((x) => x.fileName)).toEqual(['a.pdf'])
+    expect((await put(PDF, 'a2.pdf')).status).toBe(200)
+    expect((await list()).map((x) => x.fileName)).toEqual(['a2.pdf'])
+    expect(h.rows.filter((r) => r.user_id === '8').length).toBe(3)
+    const base = (await list())[0]
+    await resumeFileDeleteRoute(new Request(URL_FILE + '?id=' + base?.id, { method: 'DELETE' }))
+    expect((await list()).map((x) => x.fileName)).toEqual(['c.pdf'])
   })
 })
 
 describe('⑥ 删除连带清文字存档', () => {
-  it('还剩的时候不清;删到一份不剩才清', async () => {
+  it('库里还剩别的份时不清;删到一份不剩才清', async () => {
     login(9)
-    await put(PDF, 'a.pdf')
-    await put(PDF, 'b.pdf')
-    const [x, y] = await list()
+    seedOld(9, ['a.pdf', 'b.pdf'])
+    const x = (await list())[0]
     await resumeFileDeleteRoute(new Request(URL_FILE + '?id=' + x?.id, { method: 'DELETE' }))
     expect(h.patches).toEqual([])
+    const y = (await list())[0]
+    expect(y?.fileName).toBe('b.pdf')
     await resumeFileDeleteRoute(new Request(URL_FILE + '?id=' + y?.id, { method: 'DELETE' }))
     expect(h.patches).toEqual([{ userId: 9, patch: { resumeText: null, resumeSavedAt: null } }])
     expect(await list()).toEqual([])

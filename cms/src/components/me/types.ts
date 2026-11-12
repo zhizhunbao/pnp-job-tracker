@@ -13,7 +13,7 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
 /**
  * 「我的」的五节(与 constants 的 ME_SECS 一一对应;account 桶 Sec 同一组值)。
  */
-export type MeSec = 'sjobs' | 'inbox' | 'resume' | 'profile' | 'sub' | 'settings'
+export type MeSec = 'sjobs' | 'inbox' | 'profile' | 'streams' | 'sub' | 'settings'
 
 /**
  * 「我的求职」类别下的三个子项(2026-11-09 Frank「这三个是不是都放到侧边栏比较好」:原卡片里的三枚页签挪到侧边栏)。

@@ -3007,12 +3007,18 @@ export const GUIDE_LMIA_EMPLOYERS = `SELECT c.name, c.lmia_positions, c.lmia_pos
 
 /**
  * 本人的简历清单(不带原件):默认那份在最前,其余按上传时刻新到旧。$1=用户 id。
+ * 2026-11-11 Frank「只留一份上传的吧。因为之后都可以按岗位改写」:只取默认那一份(基础简历);以前多传的几份不再列出来。
  */
 export const RESUME_FILE_LIST = `SELECT id, file_name, mime, size_bytes, uploaded_at, is_default
-     FROM user_resumes WHERE user_id = $1 ORDER BY is_default DESC, uploaded_at DESC`
+     FROM user_resumes WHERE user_id = $1 AND is_default ORDER BY uploaded_at DESC`
 
 /**
- * 本人有几份简历(上传前判是否到 5 份上限)。$1=用户 id。
+ * 本人那一份基础简历的 id(2026-11-11 只留一份:再上传、再生成都是替换它)。$1=用户 id。还没有 = 0 行。
+ */
+export const RESUME_FILE_BASE_ID = `SELECT id, is_default FROM user_resumes WHERE user_id = $1 AND is_default LIMIT 1`
+
+/**
+ * 本人有几份简历(删完判是否一份不剩;2026-11-12 上传前的份数上限随「我的简历」并页撤)。$1=用户 id。
  */
 export const RESUME_FILE_COUNT = `SELECT count(*)::int AS n FROM user_resumes WHERE user_id = $1`
 
@@ -3061,13 +3067,6 @@ export const RESUME_FILE_DELETE = `DELETE FROM user_resumes WHERE user_id = $1 A
 export const RESUME_FILE_PROMOTE = `UPDATE user_resumes SET is_default = true
      WHERE id = (SELECT id FROM user_resumes WHERE user_id = $1 ORDER BY uploaded_at DESC LIMIT 1)
        AND NOT EXISTS (SELECT 1 FROM user_resumes WHERE user_id = $1 AND is_default)`
-
-/**
- * 把本人某一份设为默认,其余全部取消默认(一条语句,不会出现两份默认)。$1=用户 id,$2=简历 id。
- * 那一份不是本人的 = 0 行(别人的默认不动)。
- */
-export const RESUME_FILE_SET_DEFAULT = `UPDATE user_resumes SET is_default = (id = $2)
-     WHERE user_id = $1 AND EXISTS (SELECT 1 FROM user_resumes WHERE user_id = $1 AND id = $2)`
 
 // =========================================================================
 // 31. 我的岗位(「我的」页两张岗位表;2026-10-06 立,Frank「先做我的求职」「也重新改一下」;
@@ -3385,9 +3384,10 @@ export const APPLY_JOB = `SELECT j.id, j.title, c.name AS company_name, j.city, 
 
 /**
  * 本人的简历清单(投递第 1 步选用哪一份;默认那份在最前)。$1=用户 id。
+ * 2026-11-11 Frank「只留一份上传的吧。因为之后都可以按岗位改写」:只取默认那一份(基础简历);以前多传的几份不再列出来。
  */
 export const APPLY_RESUMES = `SELECT id, file_name, mime, uploaded_at, is_default
-     FROM user_resumes WHERE user_id = $1 ORDER BY is_default DESC, uploaded_at DESC`
+     FROM user_resumes WHERE user_id = $1 AND is_default ORDER BY uploaded_at DESC`
 
 /**
  * 本人某一份简历的原件(发信附件用)。$1=用户 id,$2=简历 id。不是本人的 = 0 行。
@@ -3571,15 +3571,6 @@ export const APPLY_BOUNCE_MARK = `UPDATE applications SET status = 'bounced', up
  */
 export const APPLY_BOUNCE_LIST = `INSERT INTO bounced_emails (email, kind) VALUES (lower($1), $2)
      ON CONFLICT (email) DO UPDATE SET hits = bounced_emails.hits + 1, last_at = now()`
-
-/**
- * 本人写过的求职信清单(「我的简历」页签下的「求职信」段;2026-10-08 照 AIApply 的 My Cover Letters):投递表里有信的行,
- * 草稿与发出去的都列,最近的在前;信的正文不下发(打开走 /api/apply/file 现渲 PDF)。$1=用户 id,$2=条数上限。
- * 2026-10-10 Frank「删吧」(「今日待投 / 智能投递」整条撤):queued 行(后台提前写好、没人碰过的信)不再列,与投递表同口径。
- */
-export const APPLY_LETTERS = `SELECT id, job_id, job_title, company, status, updated_at, sent_at FROM applications
-     WHERE user_id = $1 AND cover_text <> '' AND status IN ('draft', 'sent', 'replied', 'bounced')
-     ORDER BY COALESCE(sent_at, updated_at) DESC LIMIT $2`
 
 // =========================================================================
 // 33. AI 功能试用账(批 C 收费闸;2026-10-07 立,表 docs/sql/ai-trials-20261007.sql:ai_trials;

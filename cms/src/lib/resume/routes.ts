@@ -12,6 +12,7 @@
  * 新增 /api/resume/file(GET 取原件、PUT 上传或替换、DELETE 删)与 /api/resume/file/meta(元信息)。
  * 2026-10-06 一人多份(最多 5 份、一份默认;Frank「这个可以上传多份简历吧」):file 四个方法都按 `?id=` 指明哪一份
  * (PUT 不带 id = 新加,PATCH = 设默认),元信息口换成清单口 /api/resume/files。
+ * 2026-11-12 PATCH(设默认)与份数上限随「我的简历」并页撤(11-11 只留一份:不带 id 的上传、生成都是替换本人那一份)。
  * 2026-11-07 加 /api/resume/build(生成简历:填好的草稿排成英文 PDF 存成一份,照 Job Bank Resume Builder;免费,限流同上传)。
  * 2026-11-09 加 /api/resume/prefill(「我的档案」从默认简历提取做过的工作、专业、英文姓名;不占免费次数,限流独立)。
  *
@@ -25,7 +26,7 @@ import { cvBadCharsOf, cvLayoutOf, cvPdfOf, toCvDraft } from '../cv'
 import { getDb } from '../db/server'
 import { isLlmError } from '../error'
 import {
-  BAD_GATEWAY, BAD_REQUEST, CONFLICT, GATEWAY_TIMEOUT, HDR_CACHE_CONTROL, HDR_CONTENT_DISPOSITION, HDR_CONTENT_TYPE, NOT_FOUND,
+  BAD_GATEWAY, BAD_REQUEST, GATEWAY_TIMEOUT, HDR_CACHE_CONTROL, HDR_CONTENT_DISPOSITION, HDR_CONTENT_TYPE, NOT_FOUND,
   TOO_LARGE, TOO_MANY, UNAUTHORIZED, UNPROCESSABLE,
 } from '../http'
 import { jobDescription, loadApplyUrlById } from '../jobs/server'
@@ -40,14 +41,14 @@ import { FREE_DAILY_TRIES } from '../quota'
 import { checkLimit, freeGate, getUser, getUserOrNull, ipOf, isPro } from '../quota/server'
 import {
   EXTRACT_FEATURE, MATCH_FEATURE, BLANKS2, BLANKS3_RE, BODY_TEXT_NONE, CLB_MAX, CLB_MIN, CODE_TIMEOUT, CODE_TOO_LONG, CR_DROP, CR_RE, DAILY_FREE, DATE_LEN, DETAIL_CAP, ERR_LOG_CAP, EXTRACT_CHARS_MAX, EXTRACT_OUT_MAX, EXTRACT_TEXT_MIN, EXTRACT_TOKENS_MAX, E_AUTH, E_BUSY, E_LIMIT, E_LLM, E_LOGIN, E_NOFILE, E_NO_JD, E_PARSE, E_SCAN, E_SIZE, E_TOO_LONG, E_TOO_SHORT, FIELD_FILE, JD_DB_NONE, JD_LEN_MIN, LANG_FALLBACK_EN, LLM_TEXT_NONE, LOG_DASH, MATCH_PROVIDER, MATCH_TEMPERATURE, MATCH_TOKENS_FREE, MATCH_TOKENS_PRO, META_VIA_LEGACY, MIN_RESUME, ONE_SPACE, RESUME_MAX_BYTES, RESUME_SAVE_CAP, REWRITE_CAP, ROLE_SYSTEM, ROLE_USER, SPACES_RE, TEST_MAIL_SUFFIX, TITLES_N_MAX, TITLE_Q_LEN_MAX, TITLE_Q_LEN_MIN, USES_CELL_NONE, USES_SEP, WS_ALL_RE,
-  B64, CACHE_PRIVATE, E_FULL, E_NO_ID, E_NOT_FOUND, E_TYPE, RESUME_FILES_MAX, HDR_NOSNIFF, MAGIC_ENC, MAGIC_LEN, NOSNIFF, P_DOWNLOAD, RF_IP_DAILY,
+  B64, CACHE_PRIVATE, E_NO_ID, E_NOT_FOUND, E_TYPE, HDR_NOSNIFF, MAGIC_ENC, MAGIC_LEN, NOSNIFF, P_DOWNLOAD, RF_IP_DAILY,
   RF_IP_PREFIX, RF_USER_DAILY, RF_USER_PREFIX, CV_FILE_TAIL, E_BAD_DRAFT, E_CHARS, E_NO_NAME, MIME_PDF,
   E_NO_RESUME, PREFILL_FEATURE, PREFILL_NONE, PREFILL_IP_DAILY, PREFILL_IP_PREFIX, PREFILL_PROVIDER, PREFILL_TOKENS_MAX, PREFILL_USER_DAILY, PREFILL_USER_PREFIX,
 } from './constants'
 import {
   deleteResumeFile, dispositionOf, extractText, fileMimeOf, fileNameOf, gateMatch, ieltsToClb, loadPrefillText, loadResumeBlob,
   loadResumeCount, loadResumeList, matchPrompt, nocCandidatesOf, normalizeRows, parseLlmJson, prefillFactOf, prefillMajorsOf, prefillWorksOf,
-  resumeIdOf, saveResumeFile, setDefaultResume,
+  resumeIdOf, saveResumeFile,
 } from './functions'
 import { EXTRACT_SYSTEM, PREFILL_SYSTEM } from './prompts'
 import type { BuildBody, ExtractData, MatchBody, MatchUsesProfile, MaybeNum, PrefillCodes, PrefillData, PrefillHitsFn } from './types'
@@ -212,7 +213,7 @@ export async function resumePrefillRoute(req: Request): Promise<Response> {
  * 草稿逐格收窄在 cv 域(行构造器),字先查坏字(Helvetica 只认西文),坏字回给前端标出来。
  *
  * @param req 请求(body 是 { draft })。
- * @returns { meta };未登录 401、超限 429、没草稿 / 没姓名 / 有坏字 400、满了 409。
+ * @returns { meta };未登录 401、超限 429、没草稿 / 没姓名 / 有坏字 400。
  */
 export async function resumeBuildRoute(req: Request): Promise<Response> {
   const user = await getUserOrNull(await headers())
@@ -240,9 +241,6 @@ export async function resumeBuildRoute(req: Request): Promise<Response> {
     return Response.json({ error: E_CHARS, chars }, { status: BAD_REQUEST })
   }
   const db = await getDb()
-  if (await loadResumeCount({ db, userId: user.id }) >= RESUME_FILES_MAX) {
-    return Response.json({ error: E_FULL }, { status: CONFLICT })
-  }
   const buf = Buffer.from(await cvPdfOf({ pdf: PdfLib, layout }))
   const meta = await saveResumeFile({
     db, userId: user.id, replaceId: null, b64: buf.toString(B64), fileName: fileNameOf({ name: layout.name + CV_FILE_TAIL, mime: MIME_PDF }),
@@ -357,33 +355,12 @@ export async function resumeFileGetRoute(req: Request): Promise<Response> {
 }
 
 /**
- * PATCH /api/resume/file?id=:把本人某一份设为默认(其余取消)。
- *
- * @param req 请求(id 在查询参数)。
- * @returns { ok };未登录 401、没带 id 400、不是本人的 404。
- */
-export async function resumeFilePatchRoute(req: Request): Promise<Response> {
-  const user = await getUserOrNull(await headers())
-  if (user == null) {
-    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
-  }
-  const id = resumeIdOf(req.url)
-  if (id == null) {
-    return Response.json({ error: E_NO_ID }, { status: BAD_REQUEST })
-  }
-  if (await setDefaultResume({ db: await getDb(), userId: user.id, id }) === false) {
-    return Response.json({ error: E_NOT_FOUND }, { status: NOT_FOUND })
-  }
-  return Response.json({ ok: true })
-}
-
-/**
- * PUT /api/resume/file[?id=]:不带 id 新加一份(到 5 份回 409),带 id 原地替换那一份。
+ * PUT /api/resume/file[?id=]:不带 id 新加一份(本人已有基础简历的是替换它;2026-11-12 份数上限随「我的简历」并页撤),带 id 原地替换那一份。
  * 类型按文件头判,不信扩展名;扫描件也收(审查 #17:不挡投递),所以这里不抽文字。
  * 限流两道:每人每天、每 IP 每天(防脚本反复覆盖刷库)。
  *
  * @param req 请求(multipart,file 字段;替换时 id 在查询参数)。
- * @returns { meta };未登录 401、超限 429、没文件 400、不是 PDF / .docx 400、超大 413、满 5 份 409、替换的不是本人的 404。
+ * @returns { meta };未登录 401、超限 429、没文件 400、不是 PDF / .docx 400、超大 413、替换的不是本人的 404。
  */
 export async function resumeFilePutRoute(req: Request): Promise<Response> {
   const user = await getUserOrNull(await headers())
@@ -416,9 +393,6 @@ export async function resumeFilePutRoute(req: Request): Promise<Response> {
   }
   const db = await getDb()
   const replaceId = resumeIdOf(req.url)
-  if (replaceId == null && await loadResumeCount({ db, userId: user.id }) >= RESUME_FILES_MAX) {
-    return Response.json({ error: E_FULL }, { status: CONFLICT })
-  }
   const meta = await saveResumeFile({
     db, userId: user.id, replaceId, b64: buf.toString(B64), fileName: fileNameOf({ name: file.name, mime }), mime,
     sizeBytes: buf.byteLength,

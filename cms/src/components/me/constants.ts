@@ -33,25 +33,26 @@ export const ME_SECS = [
   },
   {
     /**
-     * 我的简历。
-     */
-    sec: 'resume',
-
-    /**
-     * 「我的简历」。
-     */
-    labelKey: 'rm.arch.title',
-  },
-  {
-    /**
      * 我的档案。
      */
     sec: 'profile',
 
     /**
-     * 「我的档案」。
+     * 「档案与简历」(2026-11-11 Frank「只留一份上传的吧」「左边我的档案,右面我的简历。然后我的通道拿出来」「可以 继续吧」(投递走顺第 4 批):
+     * 简历并进这一页,侧栏的「我的简历」一项撤)。
      */
-    labelKey: 'pf.title',
+    labelKey: 'pf.pageTitle',
+  },
+  {
+    /**
+     * 我的通道(同日:从「我的档案」页底下拿出来,单独成一页)。
+     */
+    sec: 'streams',
+
+    /**
+     * 「我的通道」。
+     */
+    labelKey: 'pf.paths',
   },
   {
     /**
@@ -244,9 +245,14 @@ export const UNREAD_NONE = 0
 export const SEC_SJOBS = 'sjobs'
 
 /**
- * 「我的简历」那一节的键。
+ * 节键:我的通道(2026-11-11 单独成页)。
  */
-export const SEC_RESUME = 'resume'
+export const SEC_STREAMS = 'streams'
+
+/**
+ * 旧节键「我的简历」(2026-11-11 并进「我的档案」页;老链接 `?sec=resume` 落到那一页)。
+ */
+export const SEC_RESUME_OLD = 'resume'
 
 /**
  * 「我的档案」那一节的键。

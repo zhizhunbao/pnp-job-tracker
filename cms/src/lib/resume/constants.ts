@@ -531,23 +531,12 @@ export const E_TYPE = 'type'
 export const E_NOT_FOUND = 'notFound'
 
 /**
- * 错误码:已经 5 份了,再加先删一份(2026-10-06 一人多份)。
- */
-export const E_FULL = 'full'
-
-/**
- * 错误码:没带简历 id 或 id 不是正整数(取 / 删 / 设默认都要指明是哪一份)。
+ * 错误码:没带简历 id 或 id 不是正整数(取 / 删都要指明是哪一份)。
  */
 export const E_NO_ID = 'noId'
 
 /**
- * 每人最多几份简历(Frank 10-06 选「支持,最多 5 份」)。
- * 2026-10-07 Frank「我觉得可能超过 5 个简历」(投递按岗选简历后,一人多份更常见):上限提到 20 份。
- */
-export const RESUME_FILES_MAX = 20
-
-/**
- * 指明是哪一份简历的查询参数(取原件、替换、删除、设默认都用它;上传不带 = 新加一份)。
+ * 指明是哪一份简历的查询参数(取原件、替换、删除都用它;上传不带 = 新加一份)。
  */
 export const P_ID = 'id'
 

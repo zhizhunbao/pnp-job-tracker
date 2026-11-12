@@ -228,9 +228,19 @@ export const PF_LOAD_FAIL = 'fail'
 export const PF_START_WHO = 'who'
 
 /**
- * 「我的通道」卡卡头的词条键。
+ * 档案卡卡头的词条键(「我的档案」;2026-11-11 档案页成两栏后每张卡自带卡头)。
  */
-export const MS_TITLE_KEY = 'pf.paths'
+export const PF_TITLE_KEY = 'pf.title'
+
+/**
+ * 卡头里「修改」的钮档(带框次钮)。
+ */
+export const SECONDARY_KIND = 'secondary'
+
+/**
+ * 一个空格(拼类名)。
+ */
+export const ONE_SPACE = ' '
 
 /**
  * 「我的通道」没答身份时那一句引导的词条键。
@@ -356,3 +366,8 @@ export const PF_MODE_DEFAULT_KEY = 'pf.modeDefault'
  * 「严格」词条。
  */
 export const PF_MODE_STRICT_KEY = 'pf.modeStrict'
+
+/**
+ * 正在取数(aria-busy 的「是」)。
+ */
+export const BUSY_ON = 'true'

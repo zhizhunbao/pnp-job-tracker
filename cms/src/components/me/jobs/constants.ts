@@ -208,7 +208,7 @@ export const FV_MODAL_PREF = 'sent_file_pref'
 export const FV_MODAL_W = 760
 
 /**
- * 查看附件弹框默认高(装得下一页 Letter + 翻页条)。
+ * 查看附件弹框默认高(装得下一页 Letter(2026-11-12 预览改成连着排、上下滚,翻页条撤))。
  */
 export const FV_MODAL_H = 900
 

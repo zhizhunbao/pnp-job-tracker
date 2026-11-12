@@ -249,28 +249,15 @@
 }
 
 /*
- * 选中那份简历的首页预览框(pdf.js 按框的宽高缩放整页)。
+ * 选中那份简历的预览框(pdf.js 按框的宽高缩放整页)。
+ * 2026-11-12 Frank「这个不嵌入一个框呢?」「也别翻页」:不再是带边的灰底框,只是定高的竖排框 ——
+ * pdf 桶的预览区住在里面,每页铺满框的宽、从上到下排,比 440 高的部分在预览区里上下滚。
  */
 .show {
-  position: relative;
-  height: 440px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #f9fafb;
-  overflow: hidden;
-}
-
-/*
- * 预览画完前 / 画不了时的那一句(盖在框中间)。
- */
-.showPh {
-  position: absolute;
-  inset: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text2);
-  font-size: 13px;
+  flex-direction: column;
+  height: 440px;
+  min-width: 0;
 }
 
 /*
@@ -465,16 +452,13 @@
 }
 
 /*
- * 基础简历投递屏的原件预览:铺满左栏的高(通用的预览框是 440 高;竖排时栏高随内容,留 440 的底)。
+ * 基础简历投递屏的原件预览(通用的预览框是 440 高、一页按高缩放)。
+ * 2026-11-12 Frank「全站的简历都应该是默认铺满当前的吧」:框的高跟着宽走(信纸 17 比 22),一页铺满左栏的宽,
+ * 比栏高的部分在栏里上下滚。
+ * 同日 Frank「也别翻页」:不定高,整份原件摊开(每页铺满左栏的宽),由所在的栏上下滚。
  */
-.baseShow {
-  height: 100%;
-  min-height: 440px;
-}
-
 .baseShow .show {
-  height: 100%;
-  min-height: 440px;
+  height: auto;
 }
 
 /*

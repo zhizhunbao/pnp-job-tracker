@@ -22,7 +22,6 @@ import {
   TEST_SUFFIX, TEST_TO, TEXT_NONE, UNDERSCORE, WINANSI_EXTRA,
   BLANK_LINE, BLANKS_RE, CLOSING_GAP_RE, CLOSING_TIGHT, COVER_MAX, LETTER_JD_MAX, LETTER_PROVIDERS, LETTER_RESUME_MAX, MD_MARK_RE, ROLE_SYSTEM,
   ROLE_USER, ST_DRAFT, THINK_RE,
-  LETTERS_LIMIT,
   ST_QUEUED,
 } from './constants'
 import { LETTER_LABELS, LETTER_SYSTEM } from './prompts'
@@ -39,7 +38,6 @@ import type {
   SvixIn, SvixOut, TextList, TimeCell, WebhookJson, WordLinesIn,
   ApplyFileDbRow, ApplyFileFact, ApplyFileIn, ApplyFileOut, LetterBodyJson, LetterMessages, LetterPromptIn,
   LetterProvider, MaybeLetterBody,
-  ApplyLetterDbRow, ApplyLetterFact, ApplyLettersIn, ApplyLettersOut,
   BoxDayIn, MailBodyJson, MailBodySaved, MailBodySaveIn, MaybeMailBody, VariantTextIn,
 } from './types'
 
@@ -1067,33 +1065,6 @@ export function toApplyFile(r: ApplyFileDbRow): ApplyFileFact {
   return {
     resumeB64: text(r.resume_b64), resumeMime: text(r.resume_mime), resumeFile: text(r.resume_file),
     cover: text(r.cover_text), coverFile: text(r.cover_file),
-  }
-}
-
-/**
- * 本人写过的求职信清单(「我的简历」页签的「求职信」段;2026-10-08):草稿与发出去的都列,最近的在前。
- *
- * @param x 连接与用户 id。
- * @returns 清单;一封没有给空清单。
- */
-export async function loadApplyLetters(x: ApplyLettersIn): ApplyLettersOut {
-  return queryRows({ db: x.db, sql: SQL.APPLY_LETTERS, params: [x.userId, LETTERS_LIMIT], map: toApplyLetter })
-}
-
-/**
- * 求职信库行 → 一封求职信(写于:发出去的取发出时刻,草稿取最近改动时刻)。
- *
- * @param r 库行。
- * @returns 一封求职信。
- */
-export function toApplyLetter(r: ApplyLetterDbRow): ApplyLetterFact {
-  let wroteAt = isoOf(r.sent_at)
-  if (wroteAt === TEXT_NONE) {
-    wroteAt = isoOf(r.updated_at)
-  }
-  return {
-    id: count(r.id), jobId: numOrNull(r.job_id), title: text(r.job_title), company: text(r.company), status: text(r.status),
-    wroteAt,
   }
 }
 

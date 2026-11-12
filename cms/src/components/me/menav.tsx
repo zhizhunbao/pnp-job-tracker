@@ -2,12 +2,13 @@
 /**
  * me 域的结构:「我的」左侧导航五项(nav 桶 Nav;每项一个图标,收件箱带红色未读数)。
  * 宽屏放在 NavFrame 左栏,窄屏放进抽屉,两处同一个件。
+ * 2026-11-11 第 4 批:「我的简历」一项撤(并进「档案与简历」),加「我的通道」一项。
  * 2026-11-09 Frank「这三个是不是都放到侧边栏比较好」:「我的求职」变成类别,下面三个子项(今日推荐 / 我的收藏 / 我的投递)。
  *
  * @author Frank
  * @time 2026-11-07 15:30:00
  */
-import { IconBriefcase, IconCard, IconFile, IconKey, IconMail, IconUser } from '@/components/icons'
+import { IconBriefcase, IconCard, IconKey, IconMail, IconMap, IconUser } from '@/components/icons'
 import { Nav } from '@/components/nav'
 import type { NavItem } from '@/components/nav'
 import { COUNT_NONE, ME_JOB_TABS, ME_SECS, ME_TITLE_KEY, SEC_DEFAULT } from './constants'
@@ -24,8 +25,8 @@ export function MeNav({ sec, t, unread, onPick }: MeNavIn) {
   const icons: Record<string, React.ReactNode> = {
     sjobs: <IconBriefcase />,
     inbox: <IconMail />,
-    resume: <IconFile />,
     profile: <IconUser />,
+    streams: <IconMap />,
     sub: <IconCard />,
     settings: <IconKey />,
   }

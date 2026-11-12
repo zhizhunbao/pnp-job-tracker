@@ -6,5 +6,5 @@
  * @time 2026-11-07 16:05:00
  */
 export { useProfile } from './hooks'
-export { ProfileActs } from './profileacts'
 export { ProfileBody } from './profilebody'
+export { ProfileStreams } from './profilestreams'

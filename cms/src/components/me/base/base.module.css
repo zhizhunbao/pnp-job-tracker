@@ -1,0 +1,224 @@
+/*
+ * me 桶子桶 base 的私有样式(2026-11-12「基础简历」卡,自子桶 resume 裁出重写,为档案与简历并页 ——
+ * 2026-11-11 Frank「只留一份上传的吧。因为之后都可以按岗位改写」「左边我的档案,右面我的简历」:
+ * 卡头一行、空态虚线上传区、拖放描边、文件名与灰字、操作排、卡里的 PDF 预览区;上传区与报错的值照抄 resume)。
+ */
+
+/*
+ * 隐藏的文件框(浏览器自带的长相统一不了,由钮替用户去点)。
+ */
+.input {
+  display: none;
+}
+
+/*
+ * 卡头一行:标题在左、钮在右,窄屏放不下折行(全局 .mcardHead 只管字号字重,排布由本类补)。
+ */
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 34px;
+  margin-bottom: 10px;
+}
+
+
+/*
+ * 清单拉回来之前的占位块:拉回来后不整块跳。
+ */
+.skel {
+  height: 220px;
+  margin-top: 12px;
+  background: var(--hairline);
+  border-radius: 12px;
+}
+
+/*
+ * 有简历时的卡身(整块是拖放区):平时无边框,拖到上方时亮描边(.dropOn)。
+ */
+.body {
+  margin-top: 8px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+/*
+ * 还没有简历时的上传区:虚线框、居中(拖放区的通行长相)。
+ */
+.drop {
+  margin-top: 12px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  background: #f8fafc;
+  text-align: center;
+  padding: 36px 16px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+/*
+ * 文件悬在卡身 / 上传区上方:描边变主蓝、底色变浅蓝。
+ */
+.body.dropOn,
+.drop.dropOn {
+  border-color: var(--primary);
+  background: var(--hover-bg);
+}
+
+/*
+ * 上传区顶上的圆形图标底。
+ */
+.dropIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--hover-bg);
+  color: var(--primary);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/*
+ * 上传区标题「上传简历」。
+ */
+.dropTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 10px;
+}
+
+/*
+ * 上传区的类型与大小一行。
+ */
+.dropSub {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+
+/*
+ * 「选择文件」「生成简历」与「拖到这里也可以」一行(窄屏放不下折行)。
+ */
+.dropActs {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/*
+ * 「选择文件」钮:比默认宽一点,手机上好点中(加倍类压过 button 桶的底座)。
+ */
+.dropBtn.dropBtn {
+  min-width: 140px;
+}
+
+/*
+ * 灰色小字(「拖到这里也可以」)。
+ */
+.hint {
+  font-size: 13px;
+  color: var(--text2);
+}
+
+/*
+ * 卡身顶上的三行「标签-值」(文件、上传日期、大小):标签灰字一列定宽,值一列,长文件名能断行。
+ */
+.facts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+
+/*
+ * 一行「标签-值」。
+ */
+.fact {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  column-gap: 16px;
+}
+
+/*
+ * 标签:灰字。
+ */
+.fact dt {
+  color: var(--text2);
+}
+
+/*
+ * 值:正文色,长值折行不撑破。
+ */
+.fact dd {
+  margin: 0;
+  min-width: 0;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 操作排:一排钮,窄屏放不下折行。
+ */
+.acts {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/*
+ * 卡里的 PDF 预览区:竖排框(pdf 桶的预览区吃满它),不把两栏里的这一栏撑宽。
+ * 2026-11-12 Frank「全站的简历都应该是默认铺满当前的吧」:原先固定 560 高,一页按高缩放、两边留一大条灰;
+ * 改成框的高跟着宽走(信纸 17 比 22,再加底下翻页缩放那一行的高),一页正好铺满这一栏的宽。
+ * 同日 Frank「这个不嵌入一个框呢?」「也别翻页」:pdf 桶的预览区改成每页铺满宽、从上到下排,没有翻页缩放那一行了;
+ * 这里只是普通的一块,最高到 min(80vh, 900px),更长的在这一块里上下滚。
+ */
+.view {
+  min-width: 0;
+  max-height: min(80vh, 900px);
+  overflow-y: auto;
+}
+
+/*
+ * Word 预览不了时那一句:灰底框里居中。
+ */
+.none {
+  flex: 1;
+  min-height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: var(--hairline);
+  font-size: 13px;
+  color: var(--text2);
+  text-align: center;
+}
+
+/*
+ * 报错一行(上传、替换、删除失败)。
+ */
+.err {
+  font-size: 13px;
+  color: var(--danger);
+  margin-top: 10px;
+}
+
+/*
+ * 手机(同 modal 桶 NARROW_BP 640):不限高,整份摊开跟着页面滚(2026-11-12 起;原先是按栏宽把框调高一点)。
+ */
+@media (max-width: 640px) {
+  .view {
+    max-height: none;
+    overflow-y: visible;
+  }
+}

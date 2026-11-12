@@ -403,11 +403,6 @@ export const INPUT_RADIO = 'radio'
 export const RADIO_NAME = 'apply-resume'
 
 /**
- * 上传满了(到上限)回的状态码。
- */
-export const HTTP_CONFLICT = 409
-
-/**
  * 没登录回的状态码。
  */
 export const HTTP_UNAUTH = 401
@@ -436,11 +431,6 @@ export const ADD_KEY = 'ap.upResume'
 /**
  * (文件要求一行 UP_SUB_KEY 2026-10-10 随「添加简历」一行撤:钮挪到卡头右侧,不带小注。)
  */
-
-/**
- * 满了的词条(同「我的简历」)。
- */
-export const ERR_KEY_FULL = 'rf.full'
 
 /**
  * 上传没成的词条。

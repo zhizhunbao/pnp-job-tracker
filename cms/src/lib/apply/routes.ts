@@ -42,7 +42,6 @@ import {
   loadSiteDayCount, loadUserDayCount, mailHtmlOf, mailSubjectOf, mailTextOf, markApplyBounced, markApplySent,
   pdfBadCharsOf, recipientOf, resumeFileOf, saveApplyDraft, saveApplyPrefs, senderFromOf, toDraftBody, toSendJobId, unclaimApply, webhookEmailIdOf,
   letterCleanOf, letterMessagesOf, letterProviderOf, loadApplyFile, toLetterBody,
-  loadApplyLetters,
   loadBoxDayCount, saveMailBody, toMailBody,
 } from './functions'
 import { creditLeftOf, isCreditOpen, loadCredit, markCredit } from './credit'
@@ -308,22 +307,6 @@ export async function applyMailRoute(req: Request): Promise<Response> {
     return Response.json({ error: E_DRAFT }, { status: CONFLICT })
   }
   return Response.json({ ok: true })
-}
-
-/**
- * GET /api/apply/letters:本人写过的求职信清单(「我的简历」页签的「求职信」段;2026-10-08 照 AIApply 的 My Cover Letters)。
- * 只给本人、不缓存;信的正文不下发。
- *
- * @param _req 请求。
- * @returns { items };未登录 401。
- */
-export async function applyLettersRoute(_req: Request): Promise<Response> {
-  const user = await getUserOrNull(await headers())
-  if (user == null) {
-    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
-  }
-  const items = await loadApplyLetters({ db: await getDb(), userId: user.id })
-  return Response.json({ items }, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
 }
 
 /**

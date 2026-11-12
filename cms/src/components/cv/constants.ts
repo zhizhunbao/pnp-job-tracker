@@ -68,11 +68,6 @@ export const DUTY_DEBOUNCE_MS = 300
 export const DUTY_Q_MIN = 2
 
 /**
- * 冲突(简历满了)。
- */
-export const HTTP_CONFLICT = 409
-
-/**
  * 超限。
  */
 export const HTTP_TOO_MANY = 429
@@ -367,11 +362,6 @@ export const ERR_NONE = ''
  * 网络或服务端出错。
  */
 export const ERR_NET = 'cv.err.net'
-
-/**
- * 简历满了。
- */
-export const ERR_FULL = 'cv.err.full'
 
 /**
  * 今天次数用完了。

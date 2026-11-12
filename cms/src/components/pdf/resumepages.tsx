@@ -1,7 +1,7 @@
 'use client'
 /**
  * 放页的容器(pdf.js 往里逐页追加画布;回调逐格收,理由同 me 桶 resume 的 resumeinput.tsx)。
- * 「我的简历」预览弹框与投递框的首页预览共用。2026-11-07 自 account 桶在新域重写,props 同原件。
+ * 2026-11-07 自 account 桶在新域重写,props 同原件。2026-11-12 起只给本桶的 ResumeViewer 用(投递框改用整台 ResumeViewer)。
  *
  * @author Frank
  * @time 2026-11-07 18:00:00

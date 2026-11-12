@@ -209,7 +209,7 @@ describe('① 投递区出不出、开在哪一屏(2026-11-09 投递动线)', ()
 
 describe('② 直接投基础简历:附原件、模板信可改、不调模型', () => {
   it('点「直接投基础简历」:信是模板填好的那一封,不调生成接口;发送先存草稿再带 base 发,成功切已投递并广播一次', async () => {
-    const calls = server({ [START]: { status: 200, body: start() } })
+    const calls = server({ [START]: { status: 200, body: start() }, [STATE]: NO_STATE })
     const el = await mount('?apply=42')
     await click(el, btnHas(el, '直接投基础简历').textContent ?? '')
     const area = el.querySelector('textarea') as HTMLTextAreaElement
@@ -222,7 +222,8 @@ describe('② 直接投基础简历:附原件、模板信可改、不调模型',
     const heard = listenSent()
     await click(el, '发送投递')
     heard.off()
-    expect(tailorCalls(calls)).toEqual([])
+    // 2026-11-11 基础简历屏并进三栏外框:右栏的职位描述要取一次现状(只读);生成接口照旧一次不调
+    expect(tailorCalls(calls).filter((c) => c !== STATE)).toEqual([])
     const drafts = callsTo('/api/apply/draft')
     const draft = bodyOf(drafts[drafts.length - 1]![1])
     expect(draft.cover).toBe(LETTER + '\nP.S. Available now.')

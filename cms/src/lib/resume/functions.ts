@@ -28,7 +28,7 @@ import type {
   MaybeIelts, MaybeNum, NocCandidate, NocCandidatesIn, NocCandidatesOut, JsonObj, MaybeMatchRows, NocSimDbRow,
   NocTitleDbRow, NocTitleRow, ParsedJson, DispositionIn, FileMimeIn, FileNameIn, MaybeMime, ResumeBlob, ResumeBlobDbRow,
   ResumeBlobOut, ResumeDeleteOut, ResumeFileDbRow, ResumeFileMeta, ResumeListOut, ResumeSaveIn, ResumeSaveOut, ResumeUserIn,
-  CountDbRow, MaybeResumeId, ResumeCountOut, ResumeIdDbRow, ResumeIdFact, ResumeOneIn, ResumeSetDefaultOut, TimeCell,
+  CountDbRow, MaybeResumeId, ResumeCountOut, ResumeIdDbRow, ResumeIdFact, ResumeOneIn, TimeCell,
   CellTextsIn, NocSimFact, PrefillCodes, PrefillData, PrefillFact, PrefillMajorsIn, PrefillTextOut, PrefillWorksIn, PrefillWorksOut,
 } from './types'
 
@@ -656,6 +656,8 @@ export async function loadResumeBlob(x: ResumeOneIn): ResumeBlobOut {
 
 /**
  * 新加一份(这个人第一份自动成默认),或原地替换某一份(默认与否不变)。上传时刻在这里取一次。
+ * 2026-11-11 Frank「只留一份上传的吧」:没指明替换哪一份而本人已经有基础简历的,替换那一份 —— 上传和生成简历都走这里,
+ * 所以一个人不会再多出第二份。
  *
  * @param x 连接、用户 id、替换哪一份与已判过类型的原件。
  * @returns 写好的元信息;替换的那一份不是本人的给 null。
@@ -663,7 +665,14 @@ export async function loadResumeBlob(x: ResumeOneIn): ResumeBlobOut {
 export async function saveResumeFile(x: ResumeSaveIn): ResumeSaveOut {
   const uploadedAt = new Date().toISOString()
   let rows: ResumeIdFact[] = []
-  if (x.replaceId == null) {
+  let replaceId = x.replaceId
+  if (replaceId == null) {
+    const base = firstOf(await queryRows({ db: x.db, sql: SQL.RESUME_FILE_BASE_ID, params: [x.userId], map: toResumeId }))
+    if (base != null) {
+      replaceId = base.id
+    }
+  }
+  if (replaceId == null) {
     rows = await queryRows({
       db: x.db, sql: SQL.RESUME_FILE_INSERT, params: [x.userId, x.b64, x.fileName, x.mime, x.sizeBytes, uploadedAt],
       map: toResumeId,
@@ -671,7 +680,7 @@ export async function saveResumeFile(x: ResumeSaveIn): ResumeSaveOut {
   } else {
     rows = await queryRows({
       db: x.db, sql: SQL.RESUME_FILE_REPLACE,
-      params: [x.userId, x.replaceId, x.b64, x.fileName, x.mime, x.sizeBytes, uploadedAt], map: toResumeId,
+      params: [x.userId, replaceId, x.b64, x.fileName, x.mime, x.sizeBytes, uploadedAt], map: toResumeId,
     })
   }
   const row = firstOf(rows)
@@ -690,17 +699,6 @@ export async function saveResumeFile(x: ResumeSaveIn): ResumeSaveOut {
 export async function deleteResumeFile(x: ResumeOneIn): ResumeDeleteOut {
   await x.db.query(SQL.RESUME_FILE_DELETE, [x.userId, x.id])
   await x.db.query(SQL.RESUME_FILE_PROMOTE, [x.userId])
-}
-
-/**
- * 把本人某一份设为默认(其余取消)。
- *
- * @param x 连接、用户 id 与简历 id。
- * @returns 那一份是本人的、改成了 true;不是本人的 false(什么都没改)。
- */
-export async function setDefaultResume(x: ResumeOneIn): ResumeSetDefaultOut {
-  const r = await x.db.query(SQL.RESUME_FILE_SET_DEFAULT, [x.userId, x.id])
-  return r.rowCount != null && r.rowCount > 0
 }
 
 /**

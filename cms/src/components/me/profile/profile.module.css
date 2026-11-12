@@ -142,3 +142,24 @@
   padding: 12px 0;
   border-top: 1px solid var(--border);
 }
+
+/*
+ * 档案卡的卡头(2026-11-11):标题在左、「修改」在右。全局 .mcardHead 只管字号字重,排布由本类补。
+ */
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 34px;
+  margin-bottom: 10px;
+}
+
+/*
+ * 档案取回来之前的占位块(不出字;取回来后不整块跳)。
+ */
+.skel {
+  height: 320px;
+  background: var(--hairline);
+  border-radius: 12px;
+}

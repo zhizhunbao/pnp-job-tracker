@@ -930,7 +930,7 @@ export const jobsZh = {
   'mj.viewResume': '查看简历', 'mj.viewCover': '查看求职信', 'mj.col.resume': '简历', 'mj.col.cover': '求职信', 'mj.view': '查看',
   'mj.emptyApplied': '还没有投递', 'mj.fail': '没加载出来,刷新页面再试。',
   // 2026-10-08 照 AIApply 重设计:草稿入表、继续、收藏行投递、空态引导、成功条、求职信段
-  'mj.draft': '草稿', 'mj.queued': '待投', 'mj.replied': '雇主回复', 'mj.all': '全部', 'mj.savedCount': '{n} 个收藏',
+  'mj.queued': '待投', 'mj.replied': '雇主回复', 'mj.all': '全部', 'mj.savedCount': '{n} 个收藏',
   'mj.appliedOn': '投递于 {d}', 'mj.editedOn': '最近改于 {d}', 'mj.postedOn': '发布于 {d}', 'mj.cont': '继续', 'mj.apply': '投递', 'mj.toBoard': '去职位板', 'mj.sentTo': '已发给 {co}',
   // 2026-10-10 批 2「我的求职」四段(今日推荐 / 更多推荐 / 我的收藏 / 我的投递 + 新岗推送):草稿改叫「未发出」,待投并进未发出
   'mj.col.title': '职位', 'mj.col.company': '公司', 'mj.col.addr': '地址', 'mj.col.pay': '薪资', 'mj.col.hours': '工时',
@@ -980,7 +980,7 @@ export const jobsZh = {
   'av.job': '职位信息', 'av.replies': '雇主回复', 'av.noReply': '还没有雇主回复', 'av.fwdTo': '回信同时转到 {e}',
   'av.content': '投递内容', 'av.sentAt': '已发出 {d}',
   'ap.sentOn': '这个职位已于 {d} 投递',
-  'rl.title': '求职信', 'rl.wrote': '写于 {d}',
+  'rl.wrote': '写于 {d}',
   // 2026-10-07 站内投递页 /apply/<id>(B2:简历 → 求职信 → 预览 → 已投递;错误码与 lib/apply 接口一一对应)
   'ap.writing': '正在按这个职位的要求写求职信,大约半分钟',
   'ap.e.write': '求职信没写成,点「再写一次」',
@@ -1084,11 +1084,10 @@ export const jobsZh = {
   'rm.arch.title': '我的简历',
   'rf.upTitle': '上传简历', 'rf.upSub': 'PDF 或 Word,5 MB 以内', 'rf.upBtn': '选择文件', 'rf.upDrag': '拖到这里也可以',
   'rf.uploaded': '上传于 {d}', 'rf.preview': '预览', 'rf.replace': '替换文件', 'rf.download': '下载', 'rf.delete': '删除',
-  'rf.delAsk': '确认删除?', 'rf.cancel': '取消',
-  'rf.default': '默认', 'rf.setDefault': '设为默认', 'rf.add': '添加简历', 'rf.full': '最多 20 份', 'rf.loading': '加载中', 'rf.pvFail': '这份预览不了,下载后查看',
-  'rf.zoomIn': '放大', 'rf.zoomOut': '缩小', 'rf.zoomReset': '恢复整页',
+  'rf.delAsk': '确认删除?', 'rf.replaceAsk': '替换这份简历?', 'rf.kName': '文件', 'rf.kDate': '上传日期', 'rf.kSize': '大小', 'rf.cancel': '取消',
+  'rf.default': '默认', 'rf.add': '添加简历', 'rf.loading': '加载中', 'rf.pvFail': '这份预览不了,下载后查看',
+ 
   'rf.count': '简历 {c}',
-  'rf.err.full': '最多 20 份,先删掉一份再加',
   'rf.err.type': '只收 PDF 或 Word(.docx)文件', 'rf.err.size': '文件超过 5 MB',
   'rf.err.limit': '今天上传次数用完了,明天再试', 'rf.err.net': '没成功,稍后再试',
   // 生成简历(2026-11-07,照 Job Bank Resume Builder;cv.* 归 components/cv)
@@ -1115,7 +1114,7 @@ export const jobsZh = {
   'cv.duty.open': '导入职责', 'cv.duty.find': '选职业', 'cv.duty.ph': '输入职位名,如 data engineer', 'cv.duty.loading': '查找中',
   'cv.duty.none': '没找到这个职位,换个说法试试', 'cv.duty.noc': 'NOC {c}', 'cv.duty.import': '导入 {n} 条', 'cv.duty.close': '关闭',
   'cv.left': '还能写 {n} 字', 'cv.to': ' 至 ', 'cv.now': '至今', 'cv.ph.summary': '3 到 5 句,写给你要投的这类职位',
-  'cv.ph.skills': '5 到 7 条,一行一条', 'cv.err.net': '没成功,稍后再试', 'cv.err.full': '简历满了,先删掉一份再生成', 'cv.err.limit': '今天次数用完了,明天再试',
+  'cv.ph.skills': '5 到 7 条,一行一条', 'cv.err.net': '没成功,稍后再试', 'cv.err.limit': '今天次数用完了,明天再试',
   'cv.err.name': '先在联系方式里填英文姓名', 'cv.err.chars': '简历要用英文写,这些字写不进:{c}', 'cv.err.req': '带 * 的要填', 'cv.err.year': '年份写四位数字,如 2015',
   'cv.err.auth': '登录过期了,重新登录再试',
   // cw.* = 全站右下角对话挂件的**壳**(ChatLauncher);面板标题复用 chat.title,不另开一份
@@ -1273,7 +1272,7 @@ export const siteZh = {
   'acct.toReg': '免费注册', 'acct.toLogin': '已有账号?',   // 2026-09-14 Frank「改成免费注册」「把登录两个字删了」
   'acct.err.cred': '邮箱或密码不正确', 'acct.err.exists': '该邮箱已注册,请直接登录', 'acct.err.weakPw': '密码不够强:至少 8 位', 'acct.err.generic': '操作失败,请稍后再试', 'acct.err.oauth': 'Google 登录没成功,请重试或用邮箱登录',
   'acct.pw.short': '太短:至少 8 位', 'acct.pw.weak': '弱', 'acct.pw.medium': '中', 'acct.pw.strong': '强', 'acct.pw.hint': '建议混合大小写、数字或符号',
-  'pf.title': '我的档案', 'pf.card': '求职', 'pf.edit': '修改', 'pf.none': '还没答', 'pf.noneName': '还没填', 'pf.loadFail': '没取到,刷新再试',
+  'pf.title': '我的档案', 'pf.pageTitle': '档案与简历', 'pf.card': '求职', 'pf.edit': '修改', 'pf.none': '还没答', 'pf.noneName': '还没填', 'pf.loadFail': '没取到,刷新再试',
   'pf.editTitle': '修改档案',
   'pf.fill': '从简历填写', 'pf.fillHint': '读取默认简历,只填空着的做过的工作、专业和英文姓名,保存前可改', 'pf.fromResume': '来自简历', 'pf.fillOk': '已填 {n} 项,确认后点保存', 'pf.fillNone': '没有可填的内容', 'pf.fillNoResume': '还没有简历,先到「我的简历」上传', 'pf.fillScan': '这份简历是扫描件,读不出文字', 'pf.fillParse': '这份简历读不出来', 'pf.fillLlm': '提取失败,请稍后再试', 'pf.fillLimit': '今天的提取次数已用完',
   'pf.optWho': '选填,用来算「我的通道」',
@@ -1291,11 +1290,6 @@ export const siteZh = {
   'pf.paths': '我的通道', 'pf.pathsAsk': '答完身份和教育经历,这里列出你能走的通道', 'pf.pathsAskBtn': '去回答',
   'pf.pathsEmpty': '这里没有你能走的通道', 'pf.pathsCol.name': '通道', 'pf.pathsCol.total': '全程', 'pf.pathsCol.tags': '条件',
   'acct.plan.free': '免费版', 'sub.title': '我的订阅', 'sub.renew': '续买', 'acct.plan.pro': '有效期至 {d}',
-  'rl.empty': '还没有求职信',
-  'rl.col.wrote': '写于',
-  'rf.col.size': '大小',
-  'rf.col.date': '上传日期',
-  'rf.col.name': '名称',
   'sub.noPay': '还没有付款',
   'sub.cur': '当前方案',
   // 2026-11-07 账户设置(改登录邮箱、改密码)

@@ -109,3 +109,21 @@
   align-items: center;
   gap: 8px;
 }
+
+/*
+ * 「档案与简历」一页的两栏(2026-11-11 Frank「左边我的档案,右面我的简历」):宽屏左右各一张卡、顶对齐;
+ * 窄于 900 竖排(档案在上、简历在下)。
+ */
+.cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .cols {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+}

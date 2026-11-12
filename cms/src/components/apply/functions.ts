@@ -16,9 +16,9 @@ import { APPLY_LOG, log } from '@/lib/log'
 import { track } from '@/lib/track'
 import {
   TRACK_SEND_CLICK,
-  CLOSED_KEY, CRED_INCLUDE, DATE_LEN, ERR_CODES, ERR_FALLBACK, ERR_KEY_FULL, ERR_KEY_HEAD, ERR_KEY_NAME,
+  CLOSED_KEY, CRED_INCLUDE, DATE_LEN, ERR_CODES, ERR_FALLBACK, ERR_KEY_HEAD, ERR_KEY_NAME,
   ERR_KEY_RESUME, ERR_KEY_UPLOAD, ERR_NONE, FIELD_FILE, HDR_CONTENT_TYPE,
-  HTTP_CONFLICT, HTTP_UNAUTH, LOAD_AUTH, LOAD_BUSY, LOAD_FAIL, LOAD_NONE, LOAD_OK, METHOD_POST, METHOD_PUT, MIME_JSON,
+  HTTP_UNAUTH, LOAD_AUTH, LOAD_BUSY, LOAD_FAIL, LOAD_NONE, LOAD_OK, METHOD_POST, METHOD_PUT, MIME_JSON,
   NEXT_KEY, NO_EMAIL_KEY, P_JOB,
   SENT_STATUSES, STEP_CONFIRM, STEP_DONE, STEP_LETTER, STEP_ORDER, STEP_RESUME, TEXT_NONE,
   TRACK_APPLY_SENT,
@@ -653,8 +653,6 @@ async function upload(x: UploadIn): Promise<void> {
       if (body.meta != null && typeof body.meta.id === 'number') {
         newId = body.meta.id
       }
-    } else if (r.status === HTTP_CONFLICT) {
-      err = ERR_KEY_FULL
     } else {
       err = ERR_KEY_UPLOAD
     }
