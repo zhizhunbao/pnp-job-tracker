@@ -1036,7 +1036,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'rm.arch.save': 'Save to my profile for next time', 'rm.arch.used': 'Using the resume you saved on {d}', 'rm.arch.done': 'Saved to your profile',
   'rm.arch.title': 'My resume',
   'rf.upTitle': 'Upload your resume', 'rf.upSub': 'PDF or Word, up to 5 MB', 'rf.upBtn': 'Choose file', 'rf.upDrag': 'or drop it here',
-  'rf.uploaded': 'Uploaded {d}', 'rf.preview': 'Preview', 'rf.replace': 'Replace file', 'rf.download': 'Download', 'rf.delete': 'Delete',
+  'rf.uploaded': 'Uploaded {d}', 'rf.preview': 'Preview', 'rf.replace': 'Replace', 'rf.download': 'Download', 'rf.delete': 'Delete',
   'rf.delAsk': 'Delete this?', 'rf.replaceAsk': 'Replace this resume?', 'rf.kName': 'File', 'rf.kDate': 'Uploaded', 'rf.kSize': 'Size', 'rf.cancel': 'Cancel',
   'rf.default': 'Default', 'rf.add': 'Add resume', 'rf.loading': 'Loading', 'rf.pvFail': 'Can’t preview this file. Download it to view.',
  

@@ -801,3 +801,48 @@ a.btn.secondary {
    */
   left: 14px;
 }
+
+/*
+ * 悬停统一(2026-11-12 Frank「所有的 hover 颜色都检查一下 统一一下」,实拍「下载」悬停一块深灰、旁边「替换」几乎不变):
+ * 链接形的行动钮原先吃全站 a:hover 的整块调暗(brightness 0.75),按钮形的只暗 6% —— 同一种钮两种悬停。
+ * 这里只管 filter 一格:链接形与按钮形同为 0.94。写成 a.btn 是为了稳压 main.css 的 a:hover(不靠文件先后)。
+ */
+a.btn:hover {
+  /*
+   * 与 button 形同一档轻微变暗。
+   */
+  filter: brightness(0.94);
+}
+
+/*
+ * 白底钮(次要钮、小号行内钮)悬停换全站悬停底色,不再整块变暗(2026-09-04 Frank「所有 hover 背景变化都改成淡蓝色」);
+ * 实心钮(主色 / 付费 / 危险)与 AI 钮有自己的颜色语义,照旧只轻微变暗。
+ * 权重故意高过各桶的单类 / 加倍类:白底钮全站一种悬停;要别的悬停的钮不该用这两个变体。
+ */
+.btn.secondary:not(:disabled):hover,
+.btn.mini:not(:disabled):hover {
+  /*
+   * 全站悬停底色(main.css 的 --hover-bg)。
+   */
+  background: var(--hover-bg);
+
+  /*
+   * 不再整块变暗(挡掉全站 button / a 的 filter)。
+   */
+  filter: none;
+}
+
+/*
+ * 返回钮悬停:同白底钮。
+ */
+.backButton.backButton:not(:disabled):hover {
+  /*
+   * 全站悬停底色。
+   */
+  background: var(--hover-bg);
+
+  /*
+   * 不再整块变暗。
+   */
+  filter: none;
+}

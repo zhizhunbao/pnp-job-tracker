@@ -997,7 +997,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'rm.arch.save': '내 프로필에 저장, 다음에 바로 사용', 'rm.arch.used': '{d}에 저장한 이력서 사용 중', 'rm.arch.done': '프로필에 저장됨',
   'rm.arch.title': '내 이력서',
   'rf.upTitle': '이력서 업로드', 'rf.upSub': 'PDF 또는 Word, 5MB 이하', 'rf.upBtn': '파일 선택', 'rf.upDrag': '여기로 끌어와도 됩니다',
-  'rf.uploaded': '{d} 업로드', 'rf.preview': '미리보기', 'rf.replace': '파일 교체', 'rf.download': '다운로드', 'rf.delete': '삭제',
+  'rf.uploaded': '{d} 업로드', 'rf.preview': '미리보기', 'rf.replace': '교체', 'rf.download': '다운로드', 'rf.delete': '삭제',
   'rf.delAsk': '삭제할까요?', 'rf.replaceAsk': '이 이력서를 교체할까요?', 'rf.kName': '파일', 'rf.kDate': '업로드일', 'rf.kSize': '크기', 'rf.cancel': '취소',
   'rf.default': '기본', 'rf.add': '이력서 추가', 'rf.loading': '불러오는 중', 'rf.pvFail': '미리 볼 수 없습니다. 다운로드해서 확인하세요.',
  

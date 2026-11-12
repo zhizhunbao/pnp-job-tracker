@@ -28,10 +28,10 @@
 }
 
 /*
- * 铃铛悬停:浅灰底、字深一档。
+ * 铃铛悬停:浅灰底、字深一档(2026-11-12 Frank「所有的 hover 颜色都检查一下 统一一下」:灰底换全站悬停底色)。
  */
 .bell:hover {
-  background: var(--hairline);
+  background: var(--hover-bg);
   color: var(--text);
 }
 

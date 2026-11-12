@@ -1083,7 +1083,7 @@ export const jobsZh = {
   'rm.arch.save': '存进档案,下次直接用', 'rm.arch.used': '用的是你 {d} 存的简历', 'rm.arch.done': '已存进档案',
   'rm.arch.title': '我的简历',
   'rf.upTitle': '上传简历', 'rf.upSub': 'PDF 或 Word,5 MB 以内', 'rf.upBtn': '选择文件', 'rf.upDrag': '拖到这里也可以',
-  'rf.uploaded': '上传于 {d}', 'rf.preview': '预览', 'rf.replace': '替换文件', 'rf.download': '下载', 'rf.delete': '删除',
+  'rf.uploaded': '上传于 {d}', 'rf.preview': '预览', 'rf.replace': '替换', 'rf.download': '下载', 'rf.delete': '删除',
   'rf.delAsk': '确认删除?', 'rf.replaceAsk': '替换这份简历?', 'rf.kName': '文件', 'rf.kDate': '上传日期', 'rf.kSize': '大小', 'rf.cancel': '取消',
   'rf.default': '默认', 'rf.add': '添加简历', 'rf.loading': '加载中', 'rf.pvFail': '这份预览不了,下载后查看',
  

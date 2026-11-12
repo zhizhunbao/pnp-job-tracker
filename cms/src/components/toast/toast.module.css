@@ -328,9 +328,9 @@
   color: var(--text);
 
   /*
-   * 浅灰底。
+   * 全站悬停底色(2026-11-12 Frank「所有的 hover 颜色都检查一下 统一一下」:原浅灰底)。
    */
-  background: var(--hairline);
+  background: var(--hover-bg);
 }
 
 /*

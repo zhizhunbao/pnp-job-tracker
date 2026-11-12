@@ -76,10 +76,10 @@
 }
 
 /*
- * 悬停:浅底。
+ * 悬停:浅底(2026-11-12 Frank「所有的 hover 颜色都检查一下 统一一下」:灰底换全站悬停底色)。
  */
 .ibRow.ibRow:hover {
-  background: var(--bg);
+  background: var(--hover-bg);
 }
 
 /*
