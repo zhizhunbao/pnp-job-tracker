@@ -23,6 +23,9 @@ export function ActCell(r: ListRow) {
   const a = r.act
   return (
     <div className={cssOf(css.acts)}>
+      {r.save != null && r.save.onClick != null && (
+        <Button kind={r.save.kind} sm onClick={r.save.onClick}>{r.save.text}</Button>
+      )}
       {a != null && a.onClick != null && <Button kind={a.kind} sm onClick={a.onClick}>{a.text}</Button>}
       {a != null && a.onClick == null && <Button kind={a.kind} sm href={a.href}>{a.text}</Button>}
       {r.menu.length > 0 && <Menu label={r.more} items={r.menu} />}

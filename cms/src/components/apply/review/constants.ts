@@ -58,7 +58,7 @@ export const URL_RESUME = '/api/tailor/resume'
 /**
  * 修改简历里一格输入框的行数。
  */
-export const CV_ROWS = 5
+export const CV_ROWS = 8
 
 /**
  * POST。
@@ -129,6 +129,11 @@ export const PANE_COVER = 'cover'
  * 面板:职位描述。
  */
 export const PANE_JD = 'jd'
+
+/**
+ * 面板:邮件(2026-11-11 第四张卡;不是 PDF,不参与点一下放大)。
+ */
+export const PANE_MAIL = 'mail'
 
 /**
  * 进度词条:各步。
@@ -259,6 +264,12 @@ export const SCALE_MAX = 1.3
  * 手机放大倍数。
  */
 export const ZOOM_NARROW = 2.1
+
+/**
+ * 预览区够这么宽(像素)放大就只铺满宽度、不再超出去(2026-11-11 Frank「下面的横线去掉」:平板和半屏窗口上放大后
+ * 预览下面出横向滚动条);比它窄的是手机,放大后照旧超出、用手指左右拖。
+ */
+export const ZOOM_PAN_W = 560
 
 /**
  * 三屏改竖排的断点(2026-11-10 Frank「这两个字太小了吧」:窗口不够宽时三栏并排,每份 PDF 只剩两百来像素、字没法看;
@@ -532,9 +543,9 @@ export const RECT_EPS = 0.5
 export const HEAD_ONLY_NUDGE = 2
 
 /**
- * 两页之间的缝(屏幕像素;和样式里画布之间的上边距一致)。
+ * 两页之间的缝(屏幕像素;和样式里画布之间的上边距一致)。2026-11-11 Frank「还是有一根线啊」:不留缝,两页接着排。
  */
-export const PAGE_GAP = 8
+export const PAGE_GAP = 0
 
 /**
  * PDF 变换矩阵里竖向缩放的第一格。
@@ -601,3 +612,73 @@ export const TRACK_REVIEW = 'apply-review'
  * 在三屏里点「发送」的埋点事件名(与父桶的 TRACK_SEND_CLICK 同值,各自抄)。
  */
 export const TRACK_SEND_CLICK = 'apply-send-click'
+
+/**
+ * 改写各步的先后(等待画面按它列进度;2026-11-11)。
+ */
+export const STAGE_ORDER = ['plan', 'resume', 'cover', 'audit']
+
+/**
+ * 等待画面上一步的状态:做完了。
+ */
+export const WAIT_DONE = 'done'
+
+/**
+ * 等待画面上一步的状态:正在做。
+ */
+export const WAIT_ON = 'on'
+
+/**
+ * 等待画面上一步的状态:没到。
+ */
+export const WAIT_TODO = 'todo'
+
+/**
+ * 布尔属性的「是」(aria-hidden 之类)。
+ */
+export const DATA_ON = 'true'
+
+/**
+ * 邮件正文里段与段之间的分隔(一个空行)。
+ */
+export const PARA_SEP = '\n\n'
+
+/**
+ * 逐条补充时,要求原话与写的字之间的分隔。
+ */
+export const FILL_SEP = ': '
+
+/**
+ * 逐条补充时每个框的行数。
+ */
+export const FILL_ONE_ROWS = 3
+
+/**
+ * 修改简历栏顶上「求职信里是这样写的」的词条。
+ */
+export const NEED_IN_COVER = 'tr.needInCover'
+
+/**
+ * 修改求职信栏顶上「简历里是这样写的」的词条。
+ */
+export const NEED_IN_RESUME = 'tr.needInResume'
+
+/**
+ * 接口回「这个雇主邮箱今天收到的本站投递已满」的错误码。
+ */
+export const ERR_BOX_CODE = 'boxBusy'
+
+/**
+ * 上面那个错误码的词条。
+ */
+export const ERR_BOX = 'tr.errBox'
+
+/**
+ * 邮件正文最多多少字符(和服务端 MAIL_BODY_MAX 一致;输入框上限)。
+ */
+export const MAIL_MAX = 1200
+
+/**
+ * 修改邮件正文输入框的行数。
+ */
+export const MAIL_ROWS = 12

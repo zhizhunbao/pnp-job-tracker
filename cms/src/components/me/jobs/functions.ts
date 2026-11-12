@@ -29,7 +29,7 @@ import { AddrCell } from './addrcell'
 import { HoursCell } from './hourscell'
 import { MedCell } from './medcell'
 import { PayCell } from './paycell'
-import { fitViewOf, makeFitToggle, makeOpenApply, wageViewOf } from './recommend'
+import { fitViewOf, makeFitToggle, makeOpenApply, saveBtnOf, wageViewOf } from './recommend'
 import { FitTag } from './fittag'
 import { TagsCell } from './tagscell'
 import { TermCell } from './termcell'
@@ -153,6 +153,7 @@ export function listRowOf(x: CellRowIn): ListRow {
     tags,
     cardTags: tags,
     act: actOf(x),
+    save: null,
     menu: fileMenuOf(x).concat(delMenuOf({ t: x.t, ask: x.ask, remove: x.remove, id: it.id, name: it.title })),
     more: x.t('mj.more'),
     fit: null,
@@ -431,7 +432,7 @@ export function pickRowsOf(x: PickRowsIn): ListRow[] {
     if (got != null) {
       fit = got
     }
-    out.push(pickRowOf({ item, lang: x.lang, t: x.t, titles: x.titles, cos: x.cos, fold: x.fold, fit }))
+    out.push(pickRowOf({ item, lang: x.lang, t: x.t, titles: x.titles, cos: x.cos, fold: x.fold, fit, saved: x.saved }))
   }
   return out
 }
@@ -491,6 +492,7 @@ export function pickRowOf(x: PickRowIn): ListRow {
       href: TEXT_NONE,
       onClick: makeOpenApply({ jobId: it.id, from: FROM_PICKS }),
     },
+    save: saveBtnOf({ jobId: it.id, title: it.title, company: it.company, saved: x.saved, t: x.t }),
     menu: [],
     more: x.t('mj.more'),
   }

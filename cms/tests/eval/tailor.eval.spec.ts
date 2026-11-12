@@ -279,7 +279,7 @@ async function runArm(arm: string, job: Job): Promise<ArmOut> {
     for (let i = 0; i < 14 && step !== '' && step !== stop; i++) {
       const r = await runStep({
         db: db as never, userId: 1, jobId: job.id, step, title: job.title, company: job.company, name: NAME, jd: job.jd, resumeId: 1, base: BASE,
-        newFacts: {}, both: false, regen: false, deps: (arm === 'L' ? localDepsOf(localCalls) : depsOf(model)) as never,
+        newFacts: {}, both: false, regen: false, fix: 0, deps: (arm === 'L' ? localDepsOf(localCalls) : depsOf(model)) as never,
       })
       if (r.error !== '') {
         out.error = 'step ' + step + ': ' + r.error

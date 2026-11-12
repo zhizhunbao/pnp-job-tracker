@@ -26,6 +26,7 @@ export function ReviewJd({ p, review, t }: ReviewJdIn) {
         reqs={review.reqs}
         active={p.active}
         setActive={p.setActive}
+        fixOf={p.fixOf}
         t={t} />,
     )
   }

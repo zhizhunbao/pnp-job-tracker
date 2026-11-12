@@ -319,7 +319,7 @@ export const ERR_KEY_HEAD = 'ap.e.'
  */
 export const ERR_CODES = [
   'name', 'resume', 'chars', 'long', 'sent', 'draft', 'sameEmail', 'bounced', 'closed', 'noEmail', 'limit', 'busy',
-  'mailOff', 'mail',
+  'mailOff', 'mail', 'boxBusy',
 ]
 
 /**

@@ -178,8 +178,11 @@ export function useFrame(x: FrameIn): FrameOut {
   }
   const win = x.win != null
   const live = narrow === false
-  const canDrag = live && (win || x.draggable)
-  const canSize = live && (win || x.edgeResize)
+  const [maxOn, setMaxOn] = useState(x.win != null && x.win.max === true)
+  const canMax = live && win && fitW == null
+  const maxed = canMax && maxOn
+  const canDrag = live && (win || x.draggable) && maxed === false
+  const canSize = live && (win || x.edgeResize) && maxed === false
   const memo = memoOf(x)
   const min = minSizeOf({ win })
   const onDrag = makeDragStart({ enabled: canDrag, box, setBox })
@@ -188,13 +191,24 @@ export function useFrame(x: FrameIn): FrameOut {
     return makeResizeStart({ enabled: canSize, box, setBox, edge, memo, min })
   }
 
+  function toggleMax(): void {
+    setMaxOn(maxOn === false)
+  }
+
+  let onMax: (() => void) | null = null
+  if (canMax) {
+    onMax = toggleMax
+  }
+
   return {
     narrow,
-    style: frameStyleOf({ narrow, box, fitW }),
+    style: frameStyleOf({ narrow, box, fitW, maxed }),
     onCardDown: downOf({ on: win === false, fn: onDrag }),
     onBarDown: downOf({ on: win, fn: onDrag }),
     startOf,
     resizable: canSize,
+    maxed,
+    onMax,
   }
 }
 

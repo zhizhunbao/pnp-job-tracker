@@ -1,5 +1,27 @@
 /* 等待卡。 */
-.wait { min-height: 160px; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+/* 2026-11-11 Frank「这个运行的时候,是不是太大了」:等待卡从整宽收成居中一小块;里面是动画圈、一句话、四步进度与一条来回走的进度条。 */
+.wait { max-width: 440px; margin: 8vh auto 0; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+.waitBox { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 12px 8px 4px; }
+.waitArt { position: relative; width: 56px; height: 56px; border-radius: 50%; background: conic-gradient(var(--primary) 0 28%, var(--hover-bg) 28% 100%); animation: waitTurn 1.1s linear infinite; }
+.waitArt::before { content: ""; position: absolute; inset: 5px; border-radius: 50%; background: var(--card); }
+.waitArt::after { content: ""; position: absolute; inset: 20px; border-radius: 50%; background: var(--primary); animation: waitPulse 1.1s ease-in-out infinite; }
+.waitTitle { font-size: 16px; font-weight: 700; color: var(--text); }
+.waitSteps { align-self: stretch; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; }
+.waitSteps li { display: flex; align-items: center; gap: 10px; color: var(--text2); }
+.waitSteps li::before { content: ""; flex-shrink: 0; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border); box-sizing: border-box; }
+.waitSteps li[data-st="done"] { color: var(--text); }
+.waitSteps li[data-st="done"]::before { content: "✓"; border: 0; background: var(--primary); color: var(--card); font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; }
+.waitSteps li[data-st="on"] { color: var(--primary); font-weight: 600; }
+.waitSteps li[data-st="on"]::before { border-color: var(--primary); animation: waitPulse 1.1s ease-in-out infinite; }
+.waitBar { position: relative; align-self: stretch; height: 4px; border-radius: 2px; background: var(--hover-bg); overflow: hidden; }
+.waitBar::before { content: ""; position: absolute; top: 0; bottom: 0; width: 35%; border-radius: 2px; background: var(--primary); animation: waitSlide 1.4s ease-in-out infinite; }
+@keyframes waitTurn { to { transform: rotate(360deg); } }
+@keyframes waitPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(0.8); } }
+@keyframes waitSlide { 0% { left: -35%; } 100% { left: 100%; } }
+@media (prefers-reduced-motion: reduce) {
+  .waitArt, .waitArt::after, .waitSteps li[data-st="on"]::before, .waitBar::before { animation: none; }
+  .waitBar::before { left: 0; width: 100%; opacity: 0.4; }
+}
 .stage { margin-bottom: 10px; }
 .note { color: var(--text2); font-size: 13px; }
 
@@ -14,6 +36,8 @@
 .req { display: inline-flex; align-items: center; min-height: 26px; border: 1px solid transparent; border-radius: 13px; padding: 2px 10px 2px 4px; font-size: 12.5px; font-weight: 600; color: var(--text); cursor: pointer; }
 .reqOn { border-color: var(--text); }
 .reqMiss { display: inline-flex; align-items: center; min-height: 26px; border: 1px solid var(--danger); border-radius: 13px; padding: 2px 10px; font-size: 12.5px; font-weight: 600; color: var(--danger); background: var(--card); }
+/* 2026-11-11 红叉与黄色胶囊能点了:手形光标。 */
+.reqMiss, .reqHalf { cursor: pointer; }
 .reqMiss::before { content: "✕"; margin-right: 6px; font-size: 11px; }
 .reqHalf { display: inline-flex; align-items: center; min-height: 26px; border: 1px solid var(--warn); border-radius: 13px; padding: 2px 10px; font-size: 12.5px; font-weight: 600; color: var(--warn); background: var(--card); }
 .need { margin-left: 6px; font-size: 11.5px; font-weight: 400; color: var(--text2); }
@@ -24,6 +48,11 @@
 
 /* 三屏。 */
 .grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1.55fr) minmax(0, 1fr); gap: 12px; }
+/* 右栏上下两张卡(2026-11-11 Frank「一共四个卡片」,排法照 Fluent 2 Layout「最重要的内容占最大的格」:简历与求职信各占一栏,
+   内容最少的邮件卡按自身高度排在右栏下面,职位描述占右栏剩下的高度;同日 Frank「这两个要不换个位置」:
+   职位描述在上、邮件在下)。 */
+.side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.frameNote { margin-bottom: 6px; color: var(--text2); font-size: 13px; overflow-wrap: anywhere; }
 .gridFocus { grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr); }
 .pane { margin-bottom: 0; min-width: 0; display: flex; flex-direction: column; }
 .paneHead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
@@ -37,10 +66,11 @@
 .lineHead:first-child { margin-top: 0; }
 
 /* 将发出的 PDF。 */
-.pdfBox { overflow-x: auto; }
-.sheet { position: relative; overflow: hidden; background: var(--border); }
+/* 2026-11-11 Frank「放大之后跑偏了」:放大后这一栏比纸宽,纸居中放(放不下时照旧从左边起,能滚到头)。 */
+.pdfBox { display: flex; justify-content: safe center; overflow-x: auto; }
+.sheet { position: relative; flex-shrink: 0; overflow: hidden; background: var(--border); }
 .sheet canvas { display: block; }
-.sheet canvas + canvas { margin-top: 8px; }
+/* 两页之间不留缝(2026-11-11 Frank「这个怎么多了一个框」「还是有一根线啊」:原先 8px 的灰条、后来的一条细线都撤,两页接着排)。 */
 .hl { position: absolute; display: block; mix-blend-mode: multiply; border-radius: 2px; cursor: pointer; }
 .hlDim { opacity: 0.12; }
 .hlBad { background: #fdba74; }
@@ -49,6 +79,8 @@
 /* 职位描述。 */
 .mark { color: inherit; border-radius: 3px; padding: 1px 3px; cursor: pointer; }
 .dim { background: transparent; opacity: 0.55; }
+/* 没覆盖的要求后面那枚能点的胶囊:钮壳不占地方,只留胶囊本身。 */
+.tagBtn.tagBtn { padding: 0; min-height: 0; border: 0; background: none; vertical-align: baseline; }
 .miss { background: #fee2e2; border-radius: 3px; padding: 1px 3px; }
 .half { background: #fef3c7; border-radius: 3px; padding: 1px 3px; }
 
@@ -66,16 +98,15 @@
 .c11 { background: #f5d0fe; }
 .c12 { background: #e5e7eb; }
 
-/* 底部一行。 */
-.foot { margin-top: 12px; }
-.footCard { margin-bottom: 0; }
-.mailCols { display: flex; flex-wrap: wrap; gap: 12px 32px; }
-.mailGrid { flex: 1 1 300px; min-width: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 16px; align-items: center; align-content: start; align-self: flex-start; margin: 0; font-size: 13.5px; }
+/* 邮件卡的内容(2026-11-11 自三栏下面挪上来,和三栏并排成第四张卡)与底部按钮行。 */
+.mailStack { display: flex; flex-direction: column; gap: 12px; }
+.mailGrid { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; align-items: baseline; margin: 0; font-size: 13.5px; }
 .mailGrid dt { color: var(--text2); }
 .mailGrid dd { margin: 0; color: var(--text); overflow-wrap: anywhere; }
-.mailMore { flex: 1 1 300px; min-width: 0; font-size: 13.5px; }
-.mailName { margin-bottom: 6px; color: var(--text2); }
-.mailBody { white-space: pre-line; padding: 10px 12px; border-radius: 8px; background: var(--bg); color: var(--text); line-height: 1.5; }
+.mailBody { grid-column: 1 / -1; padding: 8px 10px; border-radius: 8px; background: var(--bg); line-height: 1.35; font-size: 13px; }
+/* 2026-11-11 Frank「这个格式不对」:段与段之间留一行空(称呼、正文、落款分开),和实际发出去的信一样。 */
+.mailBody p { margin: 0 0 1.35em; white-space: pre-line; }
+.mailBody p:last-child { margin-bottom: 0; }
 .nameInput { width: 100%; max-width: 260px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; }
 /* 姓名框焦点(2026-11-10 Frank「这个大黑框去掉吧」):浏览器默认黑环换成主色细边加浅蓝外圈,焦点仍看得见。 */
 .nameInput:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--hover-bg); }
@@ -85,10 +116,15 @@
 .failAct { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 13px; color: var(--text2); }
 
 /* 右侧栏。 */
+/* 修改栏顶上「差在哪」那一块(浅黄底,和黄色胶囊同一个意思)。 */
+.needBox { margin-bottom: 14px; padding: 10px 12px; border-radius: 8px; background: #fef3c7; font-size: 13px; color: var(--text); }
+.needHead { margin: 6px 0 2px; font-weight: 600; }
+.needHead:first-child { margin-top: 0; }
+.needAct { margin-top: 10px; }
 .fillHint { margin-bottom: 12px; font-size: 13px; color: var(--text2); }
-.fillList { margin: 0 0 12px; padding-left: 18px; font-size: 13px; color: var(--text); }
-.fillList li { margin-bottom: 4px; }
-.area { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font: inherit; }
+/* 2026-11-11 Frank「这怎么还能改成这样」:文本框只许上下拉,不许横着拉(拉窄拉宽都会把右侧栏排乱);焦点边同姓名框。 */
+.area { display: block; width: 100%; max-width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font: inherit; resize: vertical; }
+.area:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--hover-bg); }
 .field { display: block; margin-bottom: 14px; }
 .fieldName { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--text); }
 
@@ -98,12 +134,24 @@
 @media (min-width: 1101px) {
   .bar { position: sticky; bottom: -20px; z-index: 2; padding-bottom: 20px; background: var(--card); }
   .paper { height: max(320px, calc(100vh - 460px)); }
+  /* 2026-11-11 弹框最大化时(modal 桶在白卡上标 data-max)框四边没有留白,多出来的高度给三栏。 */
+  :global([data-max="true"]) .paper { height: max(320px, calc(100vh - 430px)); }
+  /* 不带核对的三栏外框(基础简历投递屏):上面没有匹配分那张卡,多出来的高度给三栏。 */
+  .frame .paper { height: max(320px, calc(100vh - 325px)); }
+  :global([data-max="true"]) .frame .paper { height: max(320px, calc(100vh - 295px)); }
+  /* 右栏不撑高这一行:行高由简历、求职信两栏定,右栏照这个高度铺,职位描述在里面自己滚。 */
+  .side { contain: size; }
+  .side .pane:first-child { flex: 1; min-height: 0; }
+  /* 邮件卡最多占右栏四成高(放不下在卡里滚),其余给职位描述(2026-11-11 实测:窄栏里正文折行多,邮件卡比职位描述还高)。 */
+  .side .pane:last-child { max-height: 40%; overflow-y: auto; }
+  .side .paper, :global([data-max="true"]) .side .paper { flex: 1; min-height: 0; height: auto; }
 }
 
 /* 窗口不够宽就三份竖排,每份占满宽度(2026-11-10 Frank「这两个字太小了吧」;原先 640 以下才竖排)。 */
 @media (max-width: 1100px) {
   .grid { display: block; }
   .pane { margin-bottom: 12px; }
+  .side { gap: 0; }
   .gone { display: flex; }
   .zoomHint { display: block; }
   .paper { height: auto; overflow: visible; }

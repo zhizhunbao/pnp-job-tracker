@@ -459,3 +459,53 @@ export const AUDIT_TOP_FIELDS = ['items', 'unsupported']
  * 核对一条的字段。
  */
 export const AUDIT_ITEM_FIELDS = ['id', 'basis', 'resume', 'cover']
+
+/**
+ * 功能名:针对一条要求补写一句(2026-11-11 Frank「帮我写进简历」「这部分是不是可以用我的盒子模型」:这一步只写一句,交给盒子上的模型)。
+ */
+export const FEATURE_FIX = 'tailor.fix'
+
+/**
+ * 补写一句的输出上限(token)。
+ */
+export const FIX_TOKENS_MAX = 400
+
+/**
+ * 补写的那一句最多多少字符(超了当没写好,退回整份重写)。
+ */
+export const FIX_LINE_MAX = 320
+
+/**
+ * 同一条要求每人每天最多补写几次的限额键前缀。
+ */
+export const FIX_PREFIX = 'tailor-fix:'
+
+/**
+ * 同一条要求每人每天最多补写几次。
+ */
+export const FIX_DAILY = 2
+
+/**
+ * 盒子上的模型走哪个通道:配了网关走网关(线上经它连到盒子)。
+ */
+export const BOX_VIA_GATEWAY = 'friend' as const
+
+/**
+ * 盒子上的模型走哪个通道:没配网关直连(本地开发)。
+ */
+export const BOX_DIRECT = 'ollama' as const
+
+/**
+ * 模型回包里「加到第几段工作」的键。
+ */
+export const KEY_FIX_WORK = 'work'
+
+/**
+ * 模型回包里「写的那一句」的键。
+ */
+export const KEY_FIX_LINE = 'line'
+
+/**
+ * 换行。
+ */
+export const LINE_BREAK = '\n'

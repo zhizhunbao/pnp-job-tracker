@@ -103,6 +103,11 @@ export type StateJson = {
    * 本岗简历能手改的部分;还没写 = null。
    */
   cv: ReviewCv | null
+
+  /**
+   * 本人改过的邮件正文(没改过 = 空串)。
+   */
+  mail: string
 }
 
 /**
@@ -200,6 +205,11 @@ export type RunStart = {
   regen: boolean
 
   /**
+   * 针对哪一条要求补写一句(要求序号;0 = 不是补写;2026-11-11「帮我写进去」)。
+   */
+  fix: number
+
+  /**
    * 用户补了真实经历后的重写。
    */
   fill: boolean
@@ -258,6 +268,11 @@ export type ReviewCells = {
    * 文件换了一份。
    */
   bumpGen: () => void
+
+  /**
+   * 写本人改过的邮件正文。
+   */
+  setMail: (v: string) => void
 
   /**
    * 试用用完,弹升级框。
@@ -418,6 +433,66 @@ export type ReviewPanel = {
    * 已存在基础简历上的补充经历。
    */
   saved: string
+
+  /**
+   * 这一次逐条补的草稿:要求序号 → 写的字(2026-11-11 每条要求一个框)。
+   */
+  fills: Record<string, string>
+
+  /**
+   * 造「改某一条要求下面那个框」的手柄。
+   */
+  fillChangeOf: (id: number) => React.ChangeEventHandler<HTMLTextAreaElement>
+
+  /**
+   * 本人改过的邮件正文(没改过 = 空串,照默认正文显示与发送;2026-11-11)。
+   */
+  mail: string
+
+  /**
+   * 修改邮件正文右侧栏里的草稿(没开 = null)。
+   */
+  mailDraft: string | null
+
+  /**
+   * 开修改邮件正文。
+   */
+  onMailEdit: () => void
+
+  /**
+   * 改草稿。
+   */
+  onMailText: React.ChangeEventHandler<HTMLTextAreaElement>
+
+  /**
+   * 存草稿。
+   */
+  onMailSave: () => void
+
+  /**
+   * 恢复默认正文。
+   */
+  onMailReset: () => void
+
+  /**
+   * 关修改邮件正文。
+   */
+  onMailClose: () => void
+
+  /**
+   * 从哪条没覆盖的要求点进修改栏的(栏顶上说明差在哪;直接点「修改」进来的 = null)。
+   */
+  need: ReviewReq | null
+
+  /**
+   * 修改栏顶上「帮我写进去」:让模型把点进来的那条要求补进简历或求职信,然后重新核对。
+   */
+  onAiFix: () => void
+
+  /**
+   * 造「点一条没覆盖的要求」的手柄:没依据的开补充经历,缺求职信的开修改求职信,其余开修改简历。
+   */
+  fixOf: (r: ReviewReq) => () => void
 
   /**
    * 求职信的修改草稿;没在改 = null。
@@ -843,6 +918,11 @@ export type JdLineIn = {
    * 取词。
    */
   t: TFn
+
+  /**
+   * 造「点没覆盖的那条要求后面的胶囊」的手柄(开对应的修改栏)。
+   */
+  fixOf: (r: ReviewReq) => () => void
 }
 
 /**
@@ -1038,6 +1118,11 @@ export type JdSegIn = {
    * 取词。
    */
   t: TFn
+
+  /**
+   * 造「点没覆盖的那条要求后面的胶囊」的手柄(开对应的修改栏)。
+   */
+  fixOf: (r: ReviewReq) => () => void
 }
 
 /**
@@ -1148,6 +1233,11 @@ export type ScaleOfIn = {
    * 放大了吗。
    */
   zoomed: boolean
+
+  /**
+   * 预览区的宽度(像素)。
+   */
+  hostW: number
 }
 
 /**
@@ -1693,4 +1783,164 @@ export type HeadTextIn = {
    * 取词。
    */
   t: TFn
+}
+
+/**
+ * ReviewWait(等待画面)的 props。
+ */
+export type ReviewWaitIn = {
+  /**
+   * 正在做的那一步(plan / resume / cover / audit;不在清单里的按都没开始)。
+   */
+  stage: string
+
+  /**
+   * 取词。
+   */
+  t: TFn
+}
+
+/**
+ * waitStepsOf 的入参。
+ */
+export type WaitStepsIn = {
+  /**
+   * 正在做的那一步。
+   */
+  stage: string
+
+  /**
+   * 取词。
+   */
+  t: TFn
+}
+
+/**
+ * 等待画面上的一步。
+ */
+export type WaitStep = {
+  /**
+   * 步骤键。
+   */
+  key: string
+
+  /**
+   * 这一步的字。
+   */
+  text: string
+
+  /**
+   * 做完了 / 正在做 / 没到。
+   */
+  state: 'done' | 'on' | 'todo'
+}
+
+/**
+ * filledTextOf 的入参。
+ */
+export type FilledTextIn = {
+  /**
+   * 之前补充过的全文(可能被改过)。
+   */
+  base: string
+
+  /**
+   * 这一次逐条补的草稿:要求序号 → 写的字。
+   */
+  fills: Record<string, string>
+
+  /**
+   * 各条要求。
+   */
+  reqs: ReviewReq[]
+}
+
+/**
+ * ReviewNeed(修改栏顶上「差在哪」那一块)的 props。
+ */
+export type ReviewNeedIn = {
+  /**
+   * 点进来的那条要求。
+   */
+  r: ReviewReq
+
+  /**
+   * 另一份里已经写到它的那句话(没有 = 空串)。
+   */
+  other: string
+
+  /**
+   * 那句话上面一行说明的词条。
+   */
+  otherKey: string
+
+  /**
+   * 点「帮我写进去」。
+   */
+  onAi: () => void
+
+  /**
+   * 正在跑(钮先禁用)。
+   */
+  busy: boolean
+
+  /**
+   * 取词。
+   */
+  t: TFn
+}
+
+/**
+ * ReviewFrame(三栏外框,不带核对;基础简历投递屏用)的 props。
+ */
+export type ReviewFrameIn = {
+  /**
+   * 取词。
+   */
+  t: TFn
+
+  /**
+   * 职位 id(右栏的职位描述按它取)。
+   */
+  jobId: number
+
+  /**
+   * 左栏卡头。
+   */
+  resumeHead: string
+
+  /**
+   * 左栏卡头下面一行灰字(文件名;没有 = 空串)。
+   */
+  resumeNote: string
+
+  /**
+   * 左栏内容(简历预览)。
+   */
+  resume: React.ReactNode
+
+  /**
+   * 中栏卡头。
+   */
+  coverHead: string
+
+  /**
+   * 中栏内容(求职信)。
+   */
+  cover: React.ReactNode
+
+  /**
+   * 右栏下面那张卡的卡头。
+   */
+  mailHead: string
+
+  /**
+   * 右栏下面那张卡的内容(邮件信息)。
+   */
+  mail: React.ReactNode
+
+  /**
+   * 底部按钮行的内容。
+   */
+  bar: React.ReactNode
 }

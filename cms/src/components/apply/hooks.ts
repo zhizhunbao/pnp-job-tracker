@@ -133,7 +133,7 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
   }
   const quietSave = makeQuietSave({ cells })
   useSaveOnHide(quietSave)
-  const big = step !== STEP_DONE && resumes.length > 0 && mode === MODE_TAILOR
+  const big = step !== STEP_DONE && resumes.length > 0 && (mode === MODE_TAILOR || mode === MODE_BASE)
   const onBig = x.onBig
   useEffect(function reportBig() {
     onBig(big)
@@ -210,6 +210,7 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
 /**
  * 投递框外壳的大小窗机器(2026-11-10 Frank「选择屏用小窗口;点按这个职位改写后同一个框放大成三屏的尺寸」):
  * 首帧按起始态算(进来就落在三屏的直接开大窗,不先小后大),之后里面换屏时报上来。
+ * 2026-11-11 基础简历投递屏并进三栏外框,它也开大窗;小窗只剩选择屏和没有简历时的上传。
  *
  * @param x 起始态与是不是直接落在基础简历投递屏。
  * @returns 是不是小窗与报屏回调。
@@ -234,7 +235,8 @@ function bigAtStartOf(x: ApplyScreenIn): boolean {
   if (x.start.resumes.length === 0 || startStepOf(x.start.status) === STEP_DONE) {
     return false
   }
-  return startModeOf({ start: x.start, base: x.base }) === MODE_TAILOR
+  const mode = startModeOf({ start: x.start, base: x.base })
+  return mode === MODE_TAILOR || mode === MODE_BASE
 }
 
 /**

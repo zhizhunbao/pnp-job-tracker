@@ -476,6 +476,16 @@ export type StepDeps = {
   coverClean: (raw: string) => string
 
   /**
+   * 调盒子上的模型(2026-11-11 补写一句用);连不上或出错给空串,由调用方退回整份重写。
+   */
+  box: (x: CompleteIn) => Promise<string>
+
+  /**
+   * 写不进 PDF 的字(求职信加一句之前查)。
+   */
+  badChars: (text: string) => string[]
+
+  /**
    * 第一次核对成功时记试用账。
    */
   markTrial: () => Promise<void>
@@ -534,6 +544,11 @@ export type StepRunIn = TailorKeyIn & {
    * 手动重新生成(清掉这一份的重试计数)。
    */
   regen: boolean
+
+  /**
+   * 针对哪一条要求补写一句(要求序号;0 = 不是补写)。
+   */
+  fix: number
 
   /**
    * 跨域能力。
@@ -599,6 +614,11 @@ export type StepBodyJson = {
    * 手动重新生成。
    */
   regen?: boolean
+
+  /**
+   * 针对哪一条要求补写一句(要求序号)。
+   */
+  fix?: number | string
 }
 
 /**
@@ -634,6 +654,11 @@ export type StepBody = {
    * 手动重新生成。
    */
   regen: boolean
+
+  /**
+   * 针对哪一条要求补写一句(要求序号;0 = 不是补写)。
+   */
+  fix: number
 }
 
 /**
@@ -1014,4 +1039,44 @@ export type PickJdIn = {
    * 这一岗已有的核对结果;还没改写过是 null。
    */
   review: TailorReview | null
+}
+
+/**
+ * 补写一句的出参:接下来去核对的回包;没补成(盒子没回应、写得不合格)给 null,由调用方退回整份重写。
+ */
+export type FixOut = Promise<StepFact | null>
+
+/**
+ * 可能没有的一条要求。
+ */
+export type MaybeReq = TailorReq | null
+
+/**
+ * reqByIdOf 的入参。
+ */
+export type ReqByIdIn = {
+  /**
+   * 各条要求。
+   */
+  reqs: TailorReqs
+
+  /**
+   * 要求序号。
+   */
+  id: number
+}
+
+/**
+ * isLineOk 的入参。
+ */
+export type LineOkIn = {
+  /**
+   * 模型写的那一句。
+   */
+  line: string
+
+  /**
+   * 能当依据的全文(基础简历加用户补充)。
+   */
+  base: string
 }

@@ -277,3 +277,23 @@ export const PEEK_JOB_ID = 'jobId'
  * 栈操作:全关。
  */
 export const PEEK_CLEAR = 'clear'
+
+/**
+ * 最大化钮的 aria-label(同关闭钮,英文死值)。
+ */
+export const MAX_ARIA = 'maximize'
+
+/**
+ * 还原钮的 aria-label(同关闭钮,英文死值)。
+ */
+export const RESTORE_ARIA = 'restore'
+
+/**
+ * 最大化时白卡的宽高(四边贴住视口,宽高交给浏览器算,不盖住页面滚动条)。
+ */
+export const MAX_AUTO = 'auto'
+
+/**
+ * 最大化时去掉白卡的宽高上限。
+ */
+export const MAX_NONE = 'none'

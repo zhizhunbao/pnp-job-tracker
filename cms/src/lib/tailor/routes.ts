@@ -9,7 +9,7 @@ import { headers } from 'next/headers'
 import * as PdfLib from 'pdf-lib'
 import { COVER_MAX, coverPdfOf, letterCleanOf, letterSystemOf, pdfBadCharsOf } from '../apply'
 import {
-  isCreditOpen, loadApplyBlob, loadApplyJob, loadApplyPrefs, loadApplyResumes, loadCredit, markCredit,
+  isCreditOpen, loadApplyBlob, loadApplyJob, loadApplyPrefs, loadApplyResumes, loadApplyRow, loadCredit, markCredit,
 } from '../apply/server'
 import { cvBadCharsOf, cvLayoutOf, cvPdfOf, toCvDraft } from '../cv'
 import { getDb } from '../db/server'
@@ -18,13 +18,14 @@ import {
 } from '../http'
 import { isLlmError } from '../error'
 import { jdPlainOf, jobDescriptionMarked, jobFormattedMarked, loadApplyUrlById } from '../jobs/server'
-import { completeText } from '../llm'
+import { completeText, friendLlmReady } from '../llm'
 import { APPLY_LOG, log } from '../log'
 import { checkLimit, getUserOrNull } from '../quota/server'
 import { extractText, parseLlmJson } from '../resume'
 import {
   B64, CACHE_PRIVATE, E_AUTH, E_BASE, E_BODY, E_JOB, E_LIMIT, E_LLM, E_NONE, E_NO_JD, E_PRO, E_RESUME_BAD, E_SENT, KEY_SEP, KIND_COVER, MIME_PDF,
   KEY_EXTRA, P_JOB, P_KIND, STATUS_DRAFT, STATUS_QUEUED, PDF_NAME, FILL_DAILY, FILL_PREFIX, ROLE_SYSTEM, ROLE_USER, STEP_USER_DAILY, STEP_USER_PREFIX, TAILOR_MODEL, TAILOR_PROVIDER, THINKING_ROOM, TEXT_NONE,
+  BOX_DIRECT, BOX_VIA_GATEWAY, FIX_DAILY, FIX_PREFIX, ONE_SPACE,
 } from './constants'
 import { loadExtra, loadTailorRow, pickJdOf, runStep, saveCover, saveExtra, saveResume, toStepBody } from './functions'
 import type { CompleteIn, CoverBodyJson, CvPdfFact, FactMap, JsonCell, ResumeBodyJson, StepBodyJson, StepDeps } from './types'
@@ -58,6 +59,9 @@ export async function tailorStepRoute(req: Request): Promise<Response> {
   const limits: [string, number][] = [[STEP_USER_PREFIX + String(user.id), STEP_USER_DAILY]]
   if (body.fill) {
     limits.push([FILL_PREFIX + String(user.id) + KEY_SEP + String(body.jobId), FILL_DAILY])
+  }
+  if (body.fix > 0) {
+    limits.push([FIX_PREFIX + String(user.id) + KEY_SEP + String(body.jobId) + KEY_SEP + String(body.fix), FIX_DAILY])
   }
   if (checkLimit(limits) === false) {
     return Response.json({ error: E_LIMIT }, { status: TOO_MANY })
@@ -143,6 +147,22 @@ export async function tailorStepRoute(req: Request): Promise<Response> {
       return letterSystemOf(name)
     },
     coverClean: letterCleanOf,
+    box: async function box(x: CompleteIn): Promise<string> {
+      let provider: typeof BOX_DIRECT | typeof BOX_VIA_GATEWAY = BOX_DIRECT
+      if (friendLlmReady()) {
+        provider = BOX_VIA_GATEWAY
+      }
+      try {
+        return await completeText({
+          feature: x.feature, db, maxTokens: x.maxTokens, provider,
+          messages: [{ role: ROLE_SYSTEM, content: x.system }, { role: ROLE_USER, content: x.user }],
+        })
+      } catch (e) {
+        log({ tag: APPLY_LOG.tag, text: APPLY_LOG.tailorFail + user.id + APPLY_LOG.whyFrag + x.feature + ONE_SPACE + String(e) })
+        return TEXT_NONE
+      }
+    },
+    badChars: pdfBadCharsOf,
     markTrial: async function markTrial(): Promise<void> {
       if (needMark) {
         await markCredit({ db, userId: user.id, jobId: job.id, plan: credit.plan })
@@ -152,7 +172,7 @@ export async function tailorStepRoute(req: Request): Promise<Response> {
   try {
     const out = await runStep({
       db, userId: user.id, jobId: job.id, step: body.step, title: job.title, company: job.company, name: prefs.senderName, jd,
-      resumeId: first.id, base, newFacts, both: body.both, regen: body.regen || body.fill, deps,
+      resumeId: first.id, base, newFacts, both: body.both, regen: body.regen || body.fill, fix: body.fix, deps,
     })
     if (out.error === E_SENT) {
       return Response.json(out, { status: CONFLICT })
@@ -206,15 +226,20 @@ export async function tailorStateRoute(req: Request): Promise<Response> {
     rowReview = row.review
   }
   const jd = pickJdOf({ formatted, original, review: rowReview }).trim()
+  const applyRow = await loadApplyRow({ db, userId: user.id, jobId })
+  let mail = TEXT_NONE
+  if (applyRow != null) {
+    mail = applyRow.mailBody
+  }
   if (row == null) {
-    return Response.json({ review: null, hasResume: false, hasCover: false, status: TEXT_NONE, cover: TEXT_NONE, jd, extra, cv: null }, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
+    return Response.json({ review: null, hasResume: false, hasCover: false, status: TEXT_NONE, cover: TEXT_NONE, jd, extra, cv: null, mail }, { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
   }
   let cv: object | null = null
   if (row.cv != null && typeof row.cv === 'object') {
     cv = toCvDraft(row.cv as object)
   }
   return Response.json(
-    { review: row.review, hasResume: row.pdfB64 !== TEXT_NONE, hasCover: row.cover !== TEXT_NONE, status: row.status, cover: row.cover, jd, extra, cv },
+    { review: row.review, hasResume: row.pdfB64 !== TEXT_NONE, hasCover: row.cover !== TEXT_NONE, status: row.status, cover: row.cover, jd, extra, cv, mail },
     { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } },
   )
 }

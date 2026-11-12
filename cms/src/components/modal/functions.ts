@@ -11,7 +11,8 @@
 import { cssOf } from '@/components/css'
 import {
   CENTER_DIV, CLS_SEP, DRAG_IGNORE_SEL, EDGE_E, EDGE_N, EDGE_NE, EDGE_NW, EDGE_S, EDGE_SE, EDGE_SW, EDGE_W,
-  EV_POINTERMOVE, EV_POINTERUP, FIT_NONE, FRAME_SEL, POS_FIXED, POS_MIN, POS_X0, POS_Y0, RESIZE_MIN_H, RESIZE_MIN_W,
+  EV_POINTERMOVE, EV_POINTERUP, FIT_NONE, FRAME_SEL, MAX_AUTO, MAX_NONE, POS_FIXED, POS_MIN, POS_X0, POS_Y0,
+  RESIZE_MIN_H, RESIZE_MIN_W,
   TEXT_NONE, VIEWPORT_GAP, WIN_MIN_H, WIN_MIN_W, EV_PEEK, EV_PEEK_CTX, PEEK_JOB_ID, Z_MODAL, Z_STEP,
 } from './constants'
 import type {
@@ -137,6 +138,7 @@ export function heightDroppedOf(box: FrameBox | null): FrameBox | null {
  * 白卡的运行时样式:拖过 / 拉过 / 窗口形才有值 —— 钉在视口上的位置与尺寸是每帧连续变化的像素,
  * 类是有限枚举装不下它。没动过的普通弹框与窄屏全屏样式全在类里,返回空对象。
  * 2026-11-10 小窗档:没动过只给宽(高随内容、位置照遮罩居中);拖过没拉过的宽仍用小窗宽。
+ * 2026-11-11 Frank「这个右上角也需要一个最大化的按钮吧」:最大化着的铺满视口(钉住的位置尺寸留着,还原时照旧)。
  *
  * @param x 窄屏态、钉住的位置尺寸与小窗宽。
  * @returns 白卡的 style。
@@ -144,6 +146,21 @@ export function heightDroppedOf(box: FrameBox | null): FrameBox | null {
 export function frameStyleOf(x: FrameStyleIn): React.CSSProperties {
   if (x.narrow) {
     return {}
+  }
+  if (x.maxed) {
+    return {
+      position: POS_FIXED,
+      left: 0,
+      top: 0,
+      right: 0,
+      bottom: 0,
+      margin: 0,
+      width: MAX_AUTO,
+      height: MAX_AUTO,
+      maxWidth: MAX_NONE,
+      maxHeight: MAX_NONE,
+      borderRadius: 0,
+    }
   }
   if (x.box == null) {
     if (x.fitW == null) {

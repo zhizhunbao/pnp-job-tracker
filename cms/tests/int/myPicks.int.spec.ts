@@ -507,13 +507,14 @@ describe('今日推荐卡', () => {
     expect(el.textContent).toContain('col.vsMedian')
     expect(el.textContent).not.toContain('nope')
     expect(el.querySelector('[data-lock]')).toBeNull()   // 打码行撤
-    // 2026-11-11:换一批、显示更多、解锁那一行、行末「⋯」都撤;全页的钮只剩每行一颗「投递」
+    // 2026-11-11:换一批、显示更多、解锁那一行、行末「⋯」都撤;全页的钮只剩每行的「收藏」「投递」两颗
+    // (同日 Frank「这个应该加一个收藏按钮」:投递左边多一颗收藏)
     expect(el.textContent).not.toContain('mj.swap')
     expect(el.textContent).not.toContain('mj.lockLine')
     expect(el.textContent).not.toContain('mj.unlock')
     expect(Array.from(el.querySelectorAll('button')).some((x) => x.textContent?.startsWith('loadMore'))).toBe(false)
     expect(el.querySelectorAll('button[aria-label="mj.more"]').length).toBe(0)
-    expect(Array.from(panelOf(el).querySelectorAll('button')).map((b) => b.textContent)).toEqual(Array(10).fill('mj.apply'))
+    expect(Array.from(panelOf(el).querySelectorAll('button')).map((b) => b.textContent)).toEqual(Array(10).fill(['sj.save', 'mj.apply']).flat())
     // 同日 Frank「这个也删掉」:表下「看全部同类职位」撤
     expect(el.textContent).not.toContain('mj.seeAll')
     // 2026-11-11 Frank「是不是统一成地址」:「地点」列改回「地址」列 —— 链字是完整地址一行,链址按它查
@@ -612,13 +613,14 @@ describe('今日推荐卡', () => {
     expect([none[5], none[6]]).toEqual(['', ''])
   })
 
-  it('⑥ 一行只有一颗钮「投递」,点了就地弹投递框;行末没有「⋯」(2026-11-11 删除钮撤)', async () => {
+  it('⑥ 一行两颗钮「收藏」「投递」,点投递就地弹投递框;行末没有「⋯」(2026-11-11 删除钮撤,同日加收藏)', async () => {
     stub({ status: 200, body: { picks: [PICK] } })
     const el = await mount()
     const row = Array.from(el.querySelectorAll('tr')).find((r) => r.textContent?.includes(PICK.title)) as HTMLElement
-    expect(Array.from(row.querySelectorAll('button')).map((b) => b.textContent)).toEqual(['mj.apply'])
+    const btns = Array.from(row.querySelectorAll('button'))
+    expect(btns.map((b) => b.textContent)).toEqual(['sj.save', 'mj.apply'])
     await act(async () => {
-      row.querySelector('button')?.click()
+      btns[1]?.click()
     })
     expect(new URLSearchParams(window.location.search).get('apply')).toBe('7')
   })

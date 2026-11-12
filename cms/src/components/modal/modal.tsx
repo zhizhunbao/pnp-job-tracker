@@ -21,6 +21,8 @@
  * 2026-10-05 Frank「左边那个按钮 和 右边的 关闭 按钮不对称啊」:普通弹框多一个左上角返回钮位(back,ModalBack),
  * 与右上角关闭钮同一颗 ModalBtn、左右镜像;访客向导的返回钮从向导顶行收进来。
  * 2026-11-10 Frank「选择屏用小窗口」:窗口形多一档小窗(win.fitW:宽取它、高随内容、居中、不读不写记忆),给与不给来回切时同框换尺寸。
+ * 2026-11-11 Frank「这个右上角也需要一个最大化的按钮吧」:窗口形的窗口钮排在关闭钮左边加回最大化 / 还原
+ * (09-23 撤的是整套全屏功能;这次只给宽屏上的窗口形,铺满视口,还原后位置尺寸照旧;手机本来就全屏,不出)。
  * 2026-10-09 N 批:没给 z 的弹框不再一律 50,按打开先后往上叠(useStackZ)—— 投递框、职位框、公司框都挂全站骨架,后开的在上。
  *
  * @author Frank
@@ -72,16 +74,23 @@ export function Modal({
     <div onMouseDown={ov.onMouseDown} onClick={ov.onClick} className={cls.overlay} style={{ zIndex: zi }}>
       <div onClick={stopClick}
         data-frame
+        data-max={String(f.maxed)}
         onPointerDown={f.onCardDown}
         className={cls.card}
         // eslint-disable-next-line react/forbid-dom-props -- 拖过 / 拉过 / 窗口形钉住的位置与尺寸是每帧连续变化的运行时像素(frameStyleOf)
         style={f.style}>
         {win != null && (
-          <ModalBar head={win.head} actions={actions} onClose={onClose} onDown={f.onBarDown} narrow={narrow} />
+          <ModalBar head={win.head}
+            actions={actions}
+            onClose={onClose}
+            onDown={f.onBarDown}
+            narrow={narrow}
+            maxed={f.maxed}
+            onMax={f.onMax} />
         )}
         {win != null && <div className={bodyClsOf({ jd: win.jd })}>{children}</div>}
         {win == null && back != null && <ModalBack aria={back.aria} onClick={back.onClick} />}
-        {win == null && <ModalActs actions={actions} onClose={onClose} bar={false} />}
+        {win == null && <ModalActs actions={actions} onClose={onClose} bar={false} maxed={false} onMax={null} />}
         {win == null && children}
         {f.resizable && <ResizeHandles startOf={f.startOf} />}
       </div>

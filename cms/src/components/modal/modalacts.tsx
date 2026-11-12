@@ -7,8 +7,8 @@
  * @author Frank
  * @time 2026-09-28 04:40:00
  */
-import { IconX } from '@/components/icons'
-import { CLOSE_ARIA } from './constants'
+import { IconMaximize, IconMinimize, IconX } from '@/components/icons'
+import { CLOSE_ARIA, MAX_ARIA, RESTORE_ARIA } from './constants'
 import { actsClsOf, stopClick } from './functions'
 import { ModalBtn } from './modalbtn'
 import type { ModalActsIn } from './types'
@@ -16,13 +16,15 @@ import type { ModalActsIn } from './types'
 /**
  * 渲染窗口钮排。
  *
- * @param props 额外钮、关闭回调与排在哪。
+ * @param props 额外钮、关闭回调、排在哪与最大化。
  * @returns 钮排。
  */
-export function ModalActs({ actions, onClose, bar }: ModalActsIn) {
+export function ModalActs({ actions, onClose, bar, maxed, onMax }: ModalActsIn) {
   return (
     <div className={actsClsOf(bar)} onClick={stopClick} data-nodrag>
       {actions}
+      {onMax != null && maxed === false && <ModalBtn aria={MAX_ARIA} onClick={onMax}><IconMaximize /></ModalBtn>}
+      {onMax != null && maxed && <ModalBtn aria={RESTORE_ARIA} onClick={onMax}><IconMinimize /></ModalBtn>}
       <ModalBtn aria={CLOSE_ARIA} onClick={onClose}><IconX /></ModalBtn>
     </div>
   )

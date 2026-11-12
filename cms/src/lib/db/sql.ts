@@ -3411,8 +3411,10 @@ export const APPLY_PREFS_PUT = `INSERT INTO apply_prefs (user_id, sender_name, c
 /**
  * 本人这一岗的投递行(草稿或已发)。$1=用户 id,$2=职位 id。没有 = 0 行。
  * 2026-10-07 起草稿里的信是这一岗按 JD 写的那一封(「我的模板」撤),回到这一岗直接接着用。
+ * 2026-11-11 多带 body_text:还没发时它是本人改过的邮件正文(没改过是 NULL),发信时优先用它。
  */
-export const APPLY_ROW = `SELECT id, status, cover_text, resume_id, sent_at, tailor_pdf_b64 FROM applications WHERE user_id = $1 AND job_id = $2`
+export const APPLY_ROW = `SELECT id, status, cover_text, resume_id, sent_at, tailor_pdf_b64, body_text
+     FROM applications WHERE user_id = $1 AND job_id = $2`
 
 /**
  * 按职位改写:本人这一岗的行(2026-11-09,docs/sql/apply-tailor-20261109.sql)。$1=用户 id,$2=职位 id。
@@ -3530,6 +3532,21 @@ export const APPLY_SAME_EMAIL = `SELECT 1 AS hit FROM applications
      WHERE user_id = $1 AND lower(employer_email) = lower($2) AND job_id IS DISTINCT FROM $3
        AND status IN ('sending', 'sent', 'replied') AND updated_at > now() - ($4::int * interval '1 day')
      LIMIT 1`
+
+/**
+ * 这个雇主邮箱近 24 小时收了本站几封投递(不分用户;2026-11-11 Frank「做」:同一个邮箱一天收到一串同一地址发来的信像群发,
+ * 每天最多收 BOX_DAY_MAX 封)。$1=雇主邮箱。
+ */
+export const APPLY_BOX_DAY = `SELECT count(*)::int AS n FROM applications
+     WHERE lower(employer_email) = lower($1) AND status IN ('sending', 'sent', 'replied')
+       AND updated_at > now() - interval '24 hours'`
+
+/**
+ * 存这一封的邮件正文(只在还没发时;传 NULL = 恢复默认;2026-11-11 邮件正文可改)。$1=用户 id,$2=职位 id,$3=正文。
+ * 发过的或没有这一行 = 0 行。
+ */
+export const APPLY_BODY_PUT = `UPDATE applications SET body_text = $3, updated_at = now()
+     WHERE user_id = $1 AND job_id = $2 AND status IN ('draft', 'queued') RETURNING id`
 
 /**
  * 雇主邮箱在不在退信名单里(发送前拦)。$1=邮箱。

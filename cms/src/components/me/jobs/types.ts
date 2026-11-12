@@ -338,6 +338,11 @@ export type MyJobsPanel = {
    * 删掉一条(行末「⋯」→ 删除 → 确认后调;2026-11-07)。
    */
   remove: RemoveFn
+
+  /**
+   * 重拉清单(2026-11-11 今日推荐点了收藏后调)。
+   */
+  reload: () => Promise<void>
 }
 
 /**
@@ -831,6 +836,11 @@ export type PickRowsIn = {
   fold: FitFold
 
   /**
+   * 我的收藏整机里收藏钮要用的三格。
+   */
+  saved: SavedBook
+
+  /**
    * 各行的推荐指数(与 items 同序)。
    */
   fits: FitFact[]
@@ -869,6 +879,11 @@ export type PickRowIn = {
    * 推荐指数要点的展开状态与落格。
    */
   fold: FitFold
+
+  /**
+   * 我的收藏整机里收藏钮要用的三格。
+   */
+  saved: SavedBook
 
   /**
    * 这一行的推荐指数(回包没带 = null,不出胶囊)。
@@ -1045,6 +1060,11 @@ export type ListRow = {
    * 唯一那颗钮(没有 = null)。
    */
   act: ActBtn | null
+
+  /**
+   * 主钮左边的收藏钮(只有今日推荐有;2026-11-11 Frank「这个应该加一个收藏按钮」),没有 = null。
+   */
+  save: ActBtn | null
 
   /**
    * 行末「⋯」菜单各项(2026-11-07 收进删除)。
@@ -1625,6 +1645,11 @@ export type PicksPaneIn = {
    * 推荐整机。
    */
   p: PicksPanel
+
+  /**
+   * 我的收藏整机(行上的收藏钮读它、改它)。
+   */
+  l: MyJobsPanel
 }
 
 /**
@@ -2055,4 +2080,24 @@ export type FitFold = {
    * 写展开着的行。
    */
   setOpen: (v: string[]) => void
+}
+
+/**
+ * 我的收藏整机里收藏钮要用的三格(2026-11-11 今日推荐加收藏钮;与子桶 recommend 的同名形状同形,各自声明)。
+ */
+export type SavedBook = {
+  /**
+   * 清单(还没拉到 = null)。
+   */
+  items: MyJobItem[] | null
+
+  /**
+   * 删掉一条(参数:收藏记录 id)。
+   */
+  remove: RemoveFn
+
+  /**
+   * 重拉清单。
+   */
+  reload: () => Promise<void>
 }

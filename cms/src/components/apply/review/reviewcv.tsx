@@ -10,7 +10,8 @@ import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Drawer } from '@/components/drawer'
 import { Notice } from '@/components/notice'
-import { BTN_SECONDARY, CV_ROWS, NOTICE_ERR, TEXT_NONE } from './constants'
+import { BTN_SECONDARY, CV_ROWS, NEED_IN_COVER, NOTICE_ERR, TEXT_NONE } from './constants'
+import { ReviewNeed } from './reviewneed'
 import { cvHeadOf } from './cv'
 import type { ReviewDrawerIn } from './types'
 import css from './review.module.css'
@@ -44,6 +45,14 @@ export function ReviewCv({ p, t }: ReviewDrawerIn) {
         </>
       )}>
       {p.err !== TEXT_NONE && <Notice kind={NOTICE_ERR}>{t(p.err)}</Notice>}
+      {p.need != null && (
+        <ReviewNeed r={p.need}
+          other={p.need.cover}
+          otherKey={NEED_IN_COVER}
+          onAi={p.onAiFix}
+          busy={p.stage !== TEXT_NONE}
+          t={t} />
+      )}
       <div className={cssOf(css.fillHint)}>{t('tr.cvHint')}</div>
       <label className={cssOf(css.field)}>
         <span className={cssOf(css.fieldName)}>{t('tr.cvSummary')}</span>

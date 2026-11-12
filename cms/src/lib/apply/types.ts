@@ -871,6 +871,11 @@ export type ApplyRowDbRow = {
    * 发出时刻。
    */
   sent_at: TimeCell
+
+  /**
+   * 邮件正文(还没发:本人改过的,没改过是 NULL;发过:发出去的那一份)。
+   */
+  body_text: string | null
 }
 
 /**
@@ -906,6 +911,11 @@ export type ApplyRowFact = {
    * 发出时刻(ISO;没发 = 空串)。
    */
   sentAt: string
+
+  /**
+   * 邮件正文(还没发:本人改过的,没改过 = 空串;发过:发出去的那一份)。
+   */
+  mailBody: string
 }
 
 /**
@@ -1969,3 +1979,98 @@ export type ApplyEntryIn = {
    */
   sent: boolean
 }
+
+/**
+ * variantTextOf 的入参。
+ */
+export type VariantTextIn = {
+  /**
+   * 几种写法。
+   */
+  list: string[]
+
+  /**
+   * 取第几种。
+   */
+  at: number
+}
+
+/**
+ * 邮件正文请求体原样(PUT /api/apply/mail;线格式,每格都可能缺席或类型不对;2026-11-11)。
+ */
+export type MailBodyJson = {
+  /**
+   * 职位 id。
+   */
+  jobId?: number | string | boolean | null
+
+  /**
+   * 正文;null 或缺席 = 恢复默认。
+   */
+  body?: string | number | boolean | null
+}
+
+/**
+ * saveMailBody 的入参。
+ */
+export type MailBodySaveIn = {
+  /**
+   * 数据库连接(调用方注入)。
+   */
+  db: Db
+
+  /**
+   * 用户 id。
+   */
+  userId: UserId
+
+  /**
+   * 职位 id。
+   */
+  jobId: number
+
+  /**
+   * 正文;null = 恢复默认。
+   */
+  body: string | null
+}
+
+/**
+ * loadBoxDayCount 的入参。
+ */
+export type BoxDayIn = {
+  /**
+   * 数据库连接(调用方注入)。
+   */
+  db: Db
+
+  /**
+   * 雇主邮箱。
+   */
+  email: string
+}
+
+/**
+ * 邮件正文请求体(洗净)。
+ */
+export type MailBodyFact = {
+  /**
+   * 职位 id。
+   */
+  jobId: number
+
+  /**
+   * 正文(已去首尾空白、换行归一);null = 恢复默认。
+   */
+  body: string | null
+}
+
+/**
+ * saveMailBody 的出参:存上了没有。
+ */
+export type MailBodySaved = Promise<boolean>
+
+/**
+ * 可能不合形的邮件正文请求体。
+ */
+export type MaybeMailBody = MailBodyFact | null

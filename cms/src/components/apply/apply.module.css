@@ -455,25 +455,34 @@
 }
 
 /*
- * 基础简历投递屏:简历原件与求职信两张卡,手机竖排,宽屏并排。
+ * 基础简历投递屏的求职信框(2026-11-11 住进三栏外框的中栏:铺满那一栏的高,不许拉手)。
  */
-.baseGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
 .baseLetter {
-  min-height: 360px;
+  display: block;
+  height: calc(100% - 6px);
+  min-height: 300px;
+  resize: none;
 }
 
 /*
- * 基础简历投递屏的原件预览(2026-11-09 Frank「现在直接显示 pdf,看着字很小」):预览框按高定缩放,通用的 440 高在宽屏上
- * 只画出半卡宽;宽屏把框拉高到一页铺满卡宽,字跟着变大。
+ * 基础简历投递屏的原件预览:铺满左栏的高(通用的预览框是 440 高;竖排时栏高随内容,留 440 的底)。
  */
-.basePv {
-  min-width: 0;
+.baseShow {
+  height: 100%;
+  min-height: 440px;
+}
+
+.baseShow .show {
+  height: 100%;
+  min-height: 440px;
+}
+
+/*
+ * 底部按钮行左边的报错(红字)。
+ */
+.barErr {
+  color: var(--danger);
+  font-size: 13px;
 }
 
 /*
@@ -488,13 +497,5 @@
 @media (min-width: 768px) {
   .choices {
     flex-direction: row;
-  }
-
-  /*
-   * 2026-11-10 Frank「选择屏和直接投基础简历屏用小窗口」:基础简历屏住进 720 宽的小窗,简历预览与求职信不再并排
-   * (并排每张只剩 330 宽,预览看不清),原先宽屏的两列与 720 高的信框随之撤;预览框的加高留着。
-   */
-  .basePv .show {
-    height: 760px;
   }
 }

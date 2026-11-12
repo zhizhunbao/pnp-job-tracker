@@ -7,17 +7,23 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { track } from '@/lib/track'
+import { mailTextOf } from '@/lib/apply'
 import { withDescOf } from './cv'
 import {
   TRACK_REVIEW,
   BLOCK_NEAREST, NARROW_W, SEL_N_HEAD, SEL_N_TAIL,
   STEP_PLAN, STEP_RESUME, TEXT_NONE,
+  NEED_COVER,
+  STEP_COVER,
 } from './constants'
 import {
-  drawPdf, needRunOf, reloadState, runSteps, saveCoverEdit, saveResumeEdit, sendReview,
+  drawPdf, filledTextOf, needKeyOf, needRunOf, reloadState, runSteps, saveCoverEdit, saveResumeEdit, sendReview,
 } from './functions'
+import { loadJdOnly } from './jdonly'
+import { saveMailEdit } from './mail'
 import type {
-  HlRect, Review, ReviewCells, ReviewCv, ReviewFlowIn, ReviewPanel, ReviewPdfIn, ReviewPdfPanel, SheetSize, ToggledIn,
+  HlRect, Review, ReviewCells, ReviewCv, ReviewFlowIn, ReviewPanel, ReviewPdfIn, ReviewPdfPanel, ReviewReq, SheetSize,
+  ToggledIn,
 } from './types'
 
 /**
@@ -39,6 +45,10 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
   const [fillOpen, setFillOpen] = useState(false)
   const [extra, setExtra] = useState(TEXT_NONE)
   const [saved, setSaved] = useState(TEXT_NONE)
+  const [fills, setFills] = useState<Record<string, string>>({})
+  const [need, setNeed] = useState<ReviewReq | null>(null)
+  const [mail, setMail] = useState(TEXT_NONE)
+  const [mailDraft, setMailDraft] = useState<string | null>(null)
   const [cv, setCv] = useState<ReviewCv | null>(null)
   const [cvDraft, setCvDraft] = useState<ReviewCv | null>(null)
   const [cvOpen, setCvOpen] = useState(false)
@@ -59,6 +69,7 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
     setSaved,
     setCv,
     bumpGen,
+    setMail,
     onUpsell: x.onUpsell,
     setOpening,
   }
@@ -101,14 +112,24 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
     setFillOpen(false)
   }
   function saveFill(): void {
-    const text = extra.trim()
-    if (review == null || text === TEXT_NONE || text === saved) {
+    if (review == null) {
+      return
+    }
+    const text = filledTextOf({ base: extra, fills, reqs: review.reqs })
+    if (text === TEXT_NONE || text === saved) {
       return
     }
     setFillOpen(false)
+    setExtra(text)
+    setFills({})
     void runSteps({
-      c: cells.current, start: { step: STEP_RESUME, extra: text, both: true, regen: false, fill: true },
+      c: cells.current, start: { step: STEP_RESUME, extra: text, both: true, regen: false, fill: true, fix: 0 },
     })
+  }
+  function fillChangeOf(id: number): React.ChangeEventHandler<HTMLTextAreaElement> {
+    return function onFillText(e: React.ChangeEvent<HTMLTextAreaElement>): void {
+      setFills(Object.assign({}, fills, { [String(id)]: e.target.value }))
+    }
   }
   function extraChange(e: React.ChangeEvent<HTMLTextAreaElement>): void {
     setExtra(e.target.value)
@@ -119,6 +140,7 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
   }
   function closeCover(): void {
     setEditing(null)
+    setNeed(null)
   }
   function saveCover(): void {
     if (editing != null) {
@@ -137,10 +159,62 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
   }
   function closeCv(): void {
     setCvOpen(false)
+    setNeed(null)
   }
   function dropCv(): void {
     setCvOpen(false)
     setCvDraft(null)
+    setNeed(null)
+  }
+  function aiFix(): void {
+    if (need == null) {
+      return
+    }
+    let step = STEP_RESUME
+    if (needKeyOf(need) === NEED_COVER) {
+      step = STEP_COVER
+    }
+    const start = { step, extra: TEXT_NONE, both: false, regen: true, fill: false, fix: need.id }
+    setCvOpen(false)
+    setEditing(null)
+    setNeed(null)
+    void runSteps({ c: cells.current, start })
+  }
+  function openMail(): void {
+    setErr(TEXT_NONE)
+    if (mail !== TEXT_NONE) {
+      setMailDraft(mail)
+      return
+    }
+    setMailDraft(mailTextOf({ title: x.title, city: x.city, province: x.province, name: x.name, cover: true }))
+  }
+  function closeMail(): void {
+    setMailDraft(null)
+  }
+  function mailChange(e: React.ChangeEvent<HTMLTextAreaElement>): void {
+    setMailDraft(e.target.value)
+  }
+  function saveMail(): void {
+    if (mailDraft != null && mailDraft.trim() !== TEXT_NONE) {
+      void saveMailEdit({ jobId: x.jobId, body: mailDraft.trim(), setMail, setErr, close: closeMail })
+    }
+  }
+  function resetMail(): void {
+    void saveMailEdit({ jobId: x.jobId, body: null, setMail, setErr, close: closeMail })
+  }
+  function fixOf(r: ReviewReq): () => void {
+    return function onFix(): void {
+      if (r.basis === false) {
+        openFill()
+        return
+      }
+      setNeed(r)
+      if (needKeyOf(r) === NEED_COVER) {
+        openCover()
+      } else {
+        openCv()
+      }
+    }
   }
   function saveCv(): void {
     if (cvDraft != null && cvDraft !== cv) {
@@ -183,6 +257,18 @@ export function useReview(x: ReviewFlowIn): ReviewPanel {
     fillOpen,
     extra,
     saved,
+    fills,
+    fillChangeOf,
+    need,
+    fixOf,
+    onAiFix: aiFix,
+    mail,
+    mailDraft,
+    onMailEdit: openMail,
+    onMailText: mailChange,
+    onMailSave: saveMail,
+    onMailReset: resetMail,
+    onMailClose: closeMail,
     editing,
     cv,
     cvDraft,
@@ -219,12 +305,14 @@ async function startReview(c: ReviewCells): Promise<void> {
   try {
     const d = await reloadState(c)
     if (needRunOf(d)) {
-      await runSteps({ c, start: { step: STEP_PLAN, extra: TEXT_NONE, both: false, regen: false, fill: false } })
+      await runSteps({
+        c, start: { step: STEP_PLAN, extra: TEXT_NONE, both: false, regen: false, fill: false, fix: 0 },
+      })
     } else {
       c.setStage(TEXT_NONE)
     }
   } catch {
-    await runSteps({ c, start: { step: STEP_PLAN, extra: TEXT_NONE, both: false, regen: false, fill: false } })
+    await runSteps({ c, start: { step: STEP_PLAN, extra: TEXT_NONE, both: false, regen: false, fill: false, fix: 0 } })
   }
   c.setOpening(false)
 }
@@ -290,4 +378,18 @@ export function useReviewPdf(x: ReviewPdfIn): ReviewPdfPanel {
     }
   }, [x.active, rects])
   return { box, rects, size, failed }
+}
+
+/**
+ * 只取职位描述(三栏外框不带核对时右栏用;2026-11-11 基础简历投递屏并进三栏外框)。
+ *
+ * @param jobId 职位 id。
+ * @returns 职位描述;没取到是空串。
+ */
+export function useJdOnly(jobId: number): string {
+  const [jd, setJd] = useState(TEXT_NONE)
+  useEffect(function loadJd() {
+    void loadJdOnly({ jobId, setJd })
+  }, [jobId])
+  return jd
 }

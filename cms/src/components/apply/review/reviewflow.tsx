@@ -12,17 +12,19 @@ import { Loading } from '@/components/loading'
 import { Notice } from '@/components/notice'
 import {
   BTN_SECONDARY, CLS_CARD_MD, NOTICE_ERR,
-  ONE_SPACE, PANE_COVER, PANE_JD, PANE_RESUME, ROLE_STATUS, STAGE_KEYS,
+  ONE_SPACE, PANE_COVER, PANE_JD, PANE_MAIL, PANE_RESUME, ROLE_STATUS, STAGE_KEYS,
   TEXT_NONE, URL_FILE, URL_GEN, URL_KIND,
 } from './constants'
 import { coverQuotesOf, resumeQuotesOf } from './functions'
 import { useReview } from './hooks'
 import { ReviewDrawers } from './reviewdrawers'
 import { ReviewFoot } from './reviewfoot'
+import { ReviewMail } from './reviewmail'
 import { ReviewJd } from './reviewjd'
 import { ReviewPane } from './reviewpane'
 import { ReviewPdf } from './reviewpdf'
 import { ReviewScore } from './reviewscore'
+import { ReviewWait } from './reviewwait'
 import type { ReviewFlowIn } from './types'
 import css from './review.module.css'
 
@@ -36,10 +38,13 @@ export function ReviewFlow(props: ReviewFlowIn) {
   const p = useReview(props)
   const t = props.t
   const stageKey = STAGE_KEYS[p.stage]
+  if (p.opening && p.err === TEXT_NONE) {
+    return null
+  }
   if (p.opening || p.review == null || p.review.score == null) {
     return (
       <div className={CLS_CARD_MD + ONE_SPACE + cssOf(css.wait)} role={ROLE_STATUS}>
-        {stageKey != null && <Loading text={t(stageKey)} />}
+        {p.err === TEXT_NONE && p.opening === false && <ReviewWait stage={p.stage} t={t} />}
         {p.err !== TEXT_NONE && <Notice kind={NOTICE_ERR}>{t(p.err)}</Notice>}
         {p.err !== TEXT_NONE && (
           <div className={cssOf(css.failAct)}>
@@ -79,9 +84,14 @@ export function ReviewFlow(props: ReviewFlowIn) {
             setActive={p.setActive}
             t={t} />
         </ReviewPane>
-        <ReviewPane pane={PANE_JD} head={t('tr.jd')} p={p} t={t} onEdit={null}>
-          <ReviewJd p={p} review={p.review} t={t} />
-        </ReviewPane>
+        <div className={cssOf(css.side)}>
+          <ReviewPane pane={PANE_JD} head={t('tr.jd')} p={p} t={t} onEdit={null}>
+            <ReviewJd p={p} review={p.review} t={t} />
+          </ReviewPane>
+          <ReviewPane pane={PANE_MAIL} head={t('tr.mailHead')} p={p} t={t} onEdit={p.onMailEdit}>
+            <ReviewMail p={p} x={props} />
+          </ReviewPane>
+        </div>
       </div>
       <ReviewFoot p={p} x={props} />
       <ReviewDrawers p={p} t={t} />

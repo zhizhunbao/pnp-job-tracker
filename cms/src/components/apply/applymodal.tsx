@@ -31,14 +31,16 @@ export function ApplyModal({ s, base, onClose }: ApplyModalIn) {
   if (sc.small) {
     return (
       <Modal onClose={onClose}
-        win={{ head, memo: APPLY_MODAL_PREF_V2, w: APPLY_MODAL_W, h: APPLY_MODAL_H, jd: false, fitW: APPLY_FIT_W }}>
+        win={{
+          head, memo: APPLY_MODAL_PREF_V2, w: APPLY_MODAL_W, h: APPLY_MODAL_H, jd: false, fitW: APPLY_FIT_W, max: true,
+        }}>
         <ApplySection s={s} base={base} onBig={sc.onBig} />
       </Modal>
     )
   }
   return (
     <Modal onClose={onClose}
-      win={{ head, memo: APPLY_MODAL_PREF_V2, w: APPLY_MODAL_W, h: APPLY_MODAL_H, jd: false }}>
+      win={{ head, memo: APPLY_MODAL_PREF_V2, w: APPLY_MODAL_W, h: APPLY_MODAL_H, jd: false, max: true }}>
       <ApplySection s={s} base={base} onBig={sc.onBig} />
     </Modal>
   )

@@ -7,10 +7,10 @@
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { isSenderName, mailSubjectOf, mailTextOf } from '@/lib/apply'
+import { isSenderName } from '@/lib/apply'
 import { Notice } from '@/components/notice'
 import { Tag } from '@/components/tag'
-import { BTN_SECONDARY, CLS_CARD_MD, CLS_MCARD_HEAD, NOTICE_ERR, ONE_SPACE, TAG_INFO, TEXT_NONE } from './constants'
+import { BTN_SECONDARY, NOTICE_ERR, TAG_INFO, TEXT_NONE } from './constants'
 import type { ReviewFootIn } from './types'
 import css from './review.module.css'
 
@@ -25,43 +25,15 @@ import css from './review.module.css'
  * 同日 Frank「这个免费额度是不是在哪高亮显示一下」:剩余额度那一句改成胶囊(站规:小信号一律胶囊)。
  * 同日 Frank「邮件区不能一直占住半屏」:按钮行提出邮件卡单独成底栏,宽屏只有它贴框底;邮件卡留在正文里随三栏滚动
  * (Fluent 2 Dialog Scrolling:贴住不动的只有标题与带按钮的页脚)。出错提示跟着底栏,发送失败时不用滚就看得到。
+ * 2026-11-11 Frank「放到最上面,合并一下内容」:邮件卡挪到三栏上面成一行(reviewmail.tsx),这里只剩按钮行。
  *
  * @param props 整机与收发信息。
  * @returns 一行。
  */
 export function ReviewFoot({ p, x }: ReviewFootIn) {
-  const parts = { title: x.title, city: x.city, province: x.province, name: x.name }
-  const mailText = mailTextOf({ title: x.title, city: x.city, province: x.province, name: x.name, cover: true })
   const nameBad = x.askName && isSenderName(x.name.trim()) === false
   return (
     <>
-      <div className={cssOf(css.foot)}>
-        <section className={CLS_CARD_MD + ONE_SPACE + cssOf(css.footCard)}>
-          <div className={CLS_MCARD_HEAD}>{x.t('tr.mailHead')}</div>
-          <div className={cssOf(css.mailCols)}>
-            <dl className={cssOf(css.mailGrid)}>
-              <dt>{x.t('tr.to')}</dt>
-              <dd>{x.to}</dd>
-              <dt>{x.t('tr.subject')}</dt>
-              <dd>{mailSubjectOf(parts)}</dd>
-              {x.askName && <dt>{x.t('ap.name')}</dt>}
-              {x.askName && (
-                <dd>
-                  <input className={cssOf(css.nameInput)}
-                    value={x.name}
-                    onChange={x.onName}
-                    aria-label={x.t('ap.name')}
-                    placeholder={x.t('ap.name')} />
-                </dd>
-              )}
-            </dl>
-            <div className={cssOf(css.mailMore)}>
-              <div className={cssOf(css.mailName)}>{x.t('tr.mailBody')}</div>
-              <div className={cssOf(css.mailBody)}>{mailText}</div>
-            </div>
-          </div>
-        </section>
-      </div>
       <div className={cssOf(css.bar)}>
         {p.err !== TEXT_NONE && <Notice kind={NOTICE_ERR}>{x.t(p.err)}</Notice>}
         <div className={cssOf(css.footRow)}>

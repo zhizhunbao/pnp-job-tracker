@@ -15,8 +15,8 @@ import {
   DOT, EV_BOUNCED, EV_COMPLAINED, EV_SUPPRESSED, EXT_DOCX, EXT_PDF, FILE_SAFE_RE, FILE_SLUG_MAX, FONT_SIZE, FROM_GT,
   FROM_LT, FROM_UNSAFE_RE, FROM_VIA, HASH_SEP, HEX, HMAC_NAME, HTML_BR, HTML_ESC, HTML_ESC_RE, IDEM_HASH_LEN,
   IDEM_HEAD, IDEM_SEP, JOB_CLOSED, KEY_RAW, KEY_USAGE_VERIFY, KIND_BOUNCED, KIND_SUPPRESSED, LEADING, LOC_SEP,
-  MAIL_ATTACH, MAIL_ATTACH_RESUME, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN, MAIL_BODY_QUOTE, MAIL_HELLO,
-  MAIL_REGARDS, MARGIN, MIME_DOCX, NAME_RE, NEWLINE, NFKD, NON_ASCII_RE, PAGE_H, PAGE_W, PH_NAME, PH_TITLE,
+  MAIL_ATTACHES, MAIL_ATTACHES_RESUME, MAIL_BODY_DOT, MAIL_BODY_HEADS, MAIL_BODY_IN, MAIL_BODY_QUOTE, MAIL_HELLOS,
+  MAIL_REGARDS_ALL, MARGIN, MIME_DOCX, NAME_RE, NEWLINE, NFKD, NON_ASCII_RE, PAGE_H, PAGE_W, PH_NAME, PH_TITLE,
   PLACEHOLDERS, RESUME_FILE_FALLBACK, RESUME_FILE_TAIL, SAME_EMAIL_DAYS, SHA_256, SPACE, SPAN_COMPANY, SPAN_NAME,
   SPAN_TITLE, SUBJECT_TPL, SVIX_SECRET_HEAD, SVIX_TOLERANCE_S, SVIX_V1, TAB_RE, TEST_BOUNCE_MARK, TEST_BOUNCE_TO,
   TEST_SUFFIX, TEST_TO, TEXT_NONE, UNDERSCORE, WINANSI_EXTRA,
@@ -40,6 +40,7 @@ import type {
   ApplyFileDbRow, ApplyFileFact, ApplyFileIn, ApplyFileOut, LetterBodyJson, LetterMessages, LetterPromptIn,
   LetterProvider, MaybeLetterBody,
   ApplyLetterDbRow, ApplyLetterFact, ApplyLettersIn, ApplyLettersOut,
+  BoxDayIn, MailBodyJson, MailBodySaved, MailBodySaveIn, MaybeMailBody, VariantTextIn,
 } from './types'
 
 // =========================================================================
@@ -173,6 +174,8 @@ export function mailSubjectOf(x: MailPartsIn): string {
  * 投递信正文(纯文本;2026-10-07 自 components/jobs 的 mailto 正文搬来,改成附简历与求职信、英文署名落款)。
  * 2026-10-10 投递框三步:「不附求职信」只发简历,附件那一句与来源说明换不提求职信的一版。
  * 2026-10-12 Frank 拍「去掉」:末尾「Sent via Offer2PR」来源说明撤(雇主看到代发字样怕降回复率)。
+ * 2026-11-11 Frank「做」:默认正文不再人人一字不差 —— 称呼、起手、附件那句、落款各有三种写法,按姓名与职位名的字数取一套
+ * (前端预览与发信算出来的是同一套;本人改过正文的不走这里)。
  *
  * @param x 本岗、署名与附不附求职信。
  * @returns 正文。
@@ -183,25 +186,32 @@ export function mailTextOf(x: MailTextIn): string {
   if (loc.length > 0) {
     inLoc = MAIL_BODY_IN + loc.join(LOC_SEP)
   }
+  const at = (x.name.length + x.title.length) % MAIL_HELLOS.length
+  let attach = variantTextOf({ list: MAIL_ATTACHES_RESUME, at })
+  if (x.cover) {
+    attach = variantTextOf({ list: MAIL_ATTACHES, at })
+  }
+  const head = variantTextOf({ list: MAIL_BODY_HEADS, at })
   const lines = [
-    MAIL_HELLO, TEXT_NONE,
-    MAIL_BODY_HEAD + x.title + MAIL_BODY_QUOTE + inLoc + MAIL_BODY_DOT + SPACE + mailAttachOf(x.cover), TEXT_NONE,
-    MAIL_REGARDS, x.name,
+    variantTextOf({ list: MAIL_HELLOS, at }), TEXT_NONE,
+    head + x.title + MAIL_BODY_QUOTE + inLoc + MAIL_BODY_DOT + SPACE + attach, TEXT_NONE,
+    variantTextOf({ list: MAIL_REGARDS_ALL, at }), x.name,
   ]
   return lines.join(NEWLINE)
 }
 
 /**
- * 正文里附件那一句(附不附求职信两版)。
+ * 几种写法里取一种(序号越界给空串;序号是对写法条数取余算的,不会越界)。
  *
- * @param cover 附求职信。
- * @returns 那一句。
+ * @param x 几种写法与取第几种。
+ * @returns 那一种。
  */
-function mailAttachOf(cover: boolean): string {
-  if (cover) {
-    return MAIL_ATTACH
+function variantTextOf(x: VariantTextIn): string {
+  const got = x.list[x.at]
+  if (got == null) {
+    return TEXT_NONE
   }
-  return MAIL_ATTACH_RESUME
+  return got
 }
 
 /**
@@ -699,7 +709,7 @@ export async function loadApplyRow(x: ApplyUserJobIn): ApplyRowOut {
 export function toApplyRow(r: ApplyRowDbRow): ApplyRowFact {
   return {
     id: count(r.id), status: text(r.status), cover: text(r.cover_text), resumeId: numOrNull(r.resume_id),
-    sentAt: isoOf(r.sent_at), tailorB64: text(r.tailor_pdf_b64),
+    sentAt: isoOf(r.sent_at), tailorB64: text(r.tailor_pdf_b64), mailBody: text(r.body_text),
   }
 }
 
@@ -1085,4 +1095,45 @@ export function toApplyLetter(r: ApplyLetterDbRow): ApplyLetterFact {
     id: count(r.id), jobId: numOrNull(r.job_id), title: text(r.job_title), company: text(r.company), status: text(r.status),
     wroteAt,
   }
+}
+
+/**
+ * 这个雇主邮箱近 24 小时收了本站几封投递(不分用户;2026-11-11)。
+ *
+ * @param x 连接与雇主邮箱。
+ * @returns 封数。
+ */
+export async function loadBoxDayCount(x: BoxDayIn): ApplyCountOut {
+  return firstOrZero(await queryRows({ db: x.db, sql: SQL.APPLY_BOX_DAY, params: [x.email], map: toCount }))
+}
+
+/**
+ * 存这一封的邮件正文(只在还没发时;null = 恢复默认;2026-11-11)。
+ *
+ * @param x 连接、用户 id、职位 id 与正文。
+ * @returns 存上了 true;没有这一行或已经发过 false。
+ */
+export async function saveMailBody(x: MailBodySaveIn): MailBodySaved {
+  const rows = await queryRows({ db: x.db, sql: SQL.APPLY_BODY_PUT, params: [x.userId, x.jobId, x.body], map: toId })
+  return rows.length > 0
+}
+
+/**
+ * 邮件正文请求体原样 → 洗净(行构造器):职位 id 要是正整数;正文缺席或 null 当恢复默认,给了就得是字符串,换行归一、去首尾空白。
+ *
+ * @param raw 请求体原样。
+ * @returns 洗净的请求体;不合形给 null。
+ */
+export function toMailBody(raw: MailBodyJson): MaybeMailBody {
+  const jobId = toSendJobId({ jobId: raw.jobId })
+  if (jobId == null) {
+    return null
+  }
+  if (raw.body == null) {
+    return { jobId, body: null }
+  }
+  if (typeof raw.body !== 'string') {
+    return null
+  }
+  return { jobId, body: raw.body.replace(CRLF_RE, NEWLINE).trim() }
 }

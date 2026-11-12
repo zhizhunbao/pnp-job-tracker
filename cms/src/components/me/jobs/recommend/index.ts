@@ -8,7 +8,7 @@
  */
 export {
   fitViewOf, makeFitToggle, makeLoadPicks, makeOpenApply, needTextOf, onPickListClick, picksOf,
-  reportPickClick,
+  reportPickClick, saveBtnOf,
   titledPicksOf, wageViewOf,
 } from './functions'
 export type { FitView } from './types'

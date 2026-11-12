@@ -15,14 +15,14 @@ import type { ModalBarIn } from './types'
 /**
  * 渲染标题栏。
  *
- * @param props 左块、额外窗口钮、关闭回调、拖动起手与窄屏态。
+ * @param props 左块、额外窗口钮、关闭回调、拖动起手、窄屏态与最大化。
  * @returns 标题栏。
  */
-export function ModalBar({ head, actions, onClose, onDown, narrow }: ModalBarIn) {
+export function ModalBar({ head, actions, onClose, onDown, narrow, maxed, onMax }: ModalBarIn) {
   return (
     <div onPointerDown={onDown} className={barClsOf({ narrow })}>
       {head}
-      <ModalActs actions={actions} onClose={onClose} bar />
+      <ModalActs actions={actions} onClose={onClose} bar maxed={maxed} onMax={onMax} />
     </div>
   )
 }

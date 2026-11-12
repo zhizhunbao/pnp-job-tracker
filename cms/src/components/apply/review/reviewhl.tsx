@@ -10,7 +10,8 @@ import {
   NUM_BAD, NUM_CENTER_DIV, NUM_FONT_MAX, NUM_FONT_RATIO, NUM_LEFT_NUDGE, NUM_NONE,
   ONE_SPACE, PX,
 } from './constants'
-import { clsIf, colorOf, hlDataOf, makeHlPick, numSizeOf } from './functions'
+import { clsIf, colorOf, numSizeOf } from './functions'
+import { hlDataOf, makeHlPick } from './pick'
 import type { ReviewHlIn } from './types'
 import css from './review.module.css'
 
@@ -34,6 +35,7 @@ export function ReviewHl({ r, active, setActive }: ReviewHlIn) {
   return (
     <>
       <i data-n={hlDataOf(r)}
+        data-q={r.n}
         className={[cssOf(css.hl), color, dim].join(ONE_SPACE)}
         // eslint-disable-next-line react/forbid-dom-props -- 位置来自 PDF 文字层,只能行内写
         style={{ left: r.x, top: r.y, width: r.w, height: r.h }}

@@ -6,10 +6,10 @@
  * @time 2026-10-07 01:30:00
  */
 
-export { loadApplyBlob, loadApplyJob, loadApplyPrefs, loadApplyResumes } from './functions'
+export { loadApplyBlob, loadApplyJob, loadApplyPrefs, loadApplyResumes, loadApplyRow } from './functions'
 export { isCreditOpen, loadCredit, markCredit } from './credit'
 export {
-  applyCoverRoute, applyCreditRoute, applyDraftRoute, applyFileRoute, applyInboundRoute, applyLetterRoute, applyLettersRoute, applyNameRoute,
+  applyCoverRoute, applyCreditRoute, applyDraftRoute, applyFileRoute, applyInboundRoute, applyLetterRoute, applyLettersRoute, applyMailRoute, applyNameRoute,
   applySendRoute,
   applyStartRoute,
 } from './routes'

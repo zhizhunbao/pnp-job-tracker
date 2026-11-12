@@ -28,6 +28,7 @@ import {
   HDR_COOKIE,
   B64, CACHE_PRIVATE, COVER_LIMIT_DAILY, COVER_LIMIT_PREFIX, COVER_MAX, DISPOSITION_INLINE, DISPOSITION_TAIL,
   DRAFT_LIMIT_DAILY, DRAFT_LIMIT_PREFIX, E_AUTH, E_BODY, E_BOUNCED, E_BUSY, E_CHARS, E_CLOSED, E_DRAFT, E_JOB, E_LIMIT,
+  E_BOX, E_MAIL_BODY, BOX_DAY_MAX, MAIL_BODY_MAX,
   E_LONG, E_MAIL, E_MAIL_OFF, E_NAME, E_PRO, E_NO_EMAIL, E_RESUME, E_SAME_EMAIL, E_SENT, E_SIG, HDR_NOSNIFF, HDR_SVIX_ID,
   HDR_SVIX_SIG, HDR_SVIX_TS, MIME_PDF, MS_PER_S, NOSNIFF, P_JOB, SEND_IP_DAILY, SEND_IP_PREFIX, SEND_LIMIT_DAILY,
   SEND_LIMIT_PREFIX, SITE_DAY_MAX, ST_DRAFT, ST_QUEUED, ST_SENDING, TEXT_NONE, USER_DAY_MAX, WEBHOOK_SECRET,
@@ -42,9 +43,10 @@ import {
   pdfBadCharsOf, recipientOf, resumeFileOf, saveApplyDraft, saveApplyPrefs, senderFromOf, toDraftBody, toSendJobId, unclaimApply, webhookEmailIdOf,
   letterCleanOf, letterMessagesOf, letterProviderOf, loadApplyFile, toLetterBody,
   loadApplyLetters,
+  loadBoxDayCount, saveMailBody, toMailBody,
 } from './functions'
 import { creditLeftOf, isCreditOpen, loadCredit, markCredit } from './credit'
-import type { DraftBodyJson, LetterBodyJson, NameBodyJson, SendBodyJson, WebhookJson } from './types'
+import type { DraftBodyJson, LetterBodyJson, MailBodyJson, NameBodyJson, SendBodyJson, WebhookJson } from './types'
 
 /**
  * GET /api/apply/cover?job=:求职信 PDF(本人预览,在浏览器里直接打开)。有草稿渲草稿;
@@ -277,6 +279,38 @@ export async function applyNameRoute(req: Request): Promise<Response> {
 }
 
 /**
+ * PUT /api/apply/mail {jobId, body}:存这一封的邮件正文(2026-11-11 邮件正文可改;只在还没发时;body 给 null = 恢复默认)。
+ * 纯文本,不能为空,最多 MAIL_BODY_MAX 个字符(信从本站地址发给雇主,上限挡住拿它发长文)。
+ *
+ * @param req 请求。
+ * @returns { ok };未登录 401、体不合形 400、空的或超长 422、没有这一封草稿或已经发过 409。
+ */
+export async function applyMailRoute(req: Request): Promise<Response> {
+  const user = await getUserOrNull(await headers())
+  if (user == null) {
+    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  let raw: MailBodyJson = {}
+  try {
+    raw = await req.json() as MailBodyJson
+  } catch {
+    return Response.json({ error: E_BODY }, { status: BAD_REQUEST })
+  }
+  const body = toMailBody(raw)
+  if (body == null) {
+    return Response.json({ error: E_BODY }, { status: BAD_REQUEST })
+  }
+  if (body.body != null && (body.body === TEXT_NONE || body.body.length > MAIL_BODY_MAX)) {
+    return Response.json({ error: E_MAIL_BODY }, { status: UNPROCESSABLE })
+  }
+  const saved = await saveMailBody({ db: await getDb(), userId: user.id, jobId: body.jobId, body: body.body })
+  if (saved === false) {
+    return Response.json({ error: E_DRAFT }, { status: CONFLICT })
+  }
+  return Response.json({ ok: true })
+}
+
+/**
  * GET /api/apply/letters:本人写过的求职信清单(「我的简历」页签的「求职信」段;2026-10-08 照 AIApply 的 My Cover Letters)。
  * 只给本人、不缓存;信的正文不下发。
  *
@@ -505,6 +539,9 @@ export async function applySendRoute(req: Request): Promise<Response> {
   if (await isSameEmailRecent({ db, userId: user.id, email: job.email, jobId })) {
     return Response.json({ error: E_SAME_EMAIL }, { status: CONFLICT })
   }
+  if (await loadBoxDayCount({ db, email: job.email }) >= BOX_DAY_MAX) {
+    return Response.json({ error: E_BOX }, { status: TOO_MANY })
+  }
   const chars = pdfBadCharsOf(row.cover)
   if (chars.length > 0) {
     return Response.json({ error: E_CHARS, chars }, { status: UNPROCESSABLE })
@@ -516,7 +553,10 @@ export async function applySendRoute(req: Request): Promise<Response> {
   const withCover = row.cover.trim() !== TEXT_NONE
   const parts = { title: job.title, city: job.city, province: job.province, name: prefs.senderName }
   const subject = mailSubjectOf(parts)
-  const bodyText = mailTextOf({ title: job.title, city: job.city, province: job.province, name: prefs.senderName, cover: withCover })
+  let bodyText = mailTextOf({ title: job.title, city: job.city, province: job.province, name: prefs.senderName, cover: withCover })
+  if (row.mailBody.trim() !== TEXT_NONE) {
+    bodyText = row.mailBody
+  }
   const to = recipientOf({ userEmail: user.email, employerEmail: job.email })
   let resumeB64 = blob.b64
   let resumeMime = blob.mime

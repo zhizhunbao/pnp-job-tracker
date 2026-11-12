@@ -524,15 +524,20 @@ export const ST_SENDING = 'sending'
 export const ST_BOUNCED = 'bounced'
 
 /**
- * 投递信正文:称呼。
+ * 投递信正文:称呼,三种写法(2026-11-11 Frank「做」:所有人的正文一字不差像群发,默认正文按姓名与职位名在三种写法里取一种;
+ * 下面起手、附件、落款各三条,同一个序号是一套)。
  */
-export const MAIL_HELLO = 'Dear Hiring Manager,'
+export const MAIL_HELLOS = ['Dear Hiring Manager,', 'Hello,', 'Dear Hiring Team,']
 
 /**
  * 投递信正文:第一段起手(后接职位名;2026-10-07 自 components/jobs 的 mailto 正文搬来,改成附简历与求职信;
  * 公司名不进这句 —— 收件的就是这家公司,且公司名常以「Inc.」收尾,接句号成「Inc..」)。
  */
-export const MAIL_BODY_HEAD = 'I would like to apply for your "'
+export const MAIL_BODY_HEADS = [
+  'I would like to apply for your "',
+  'I am writing to apply for the "',
+  'Please accept my application for the "',
+]
 
 /**
  * 职位名之后的引号与名词。
@@ -550,19 +555,47 @@ export const MAIL_BODY_IN = ' in '
 export const MAIL_BODY_DOT = '.'
 
 /**
- * 附件那一句。
+ * 附件那一句(三种写法)。
  */
-export const MAIL_ATTACH = 'Please find my resume and cover letter attached.'
+export const MAIL_ATTACHES = [
+  'Please find my resume and cover letter attached.',
+  'My resume and cover letter are attached for your review.',
+  'I have attached my resume and cover letter.',
+]
 
 /**
  * 不附求职信时附件那一句(2026-10-10 投递框三步)。
  */
-export const MAIL_ATTACH_RESUME = 'Please find my resume attached.'
+export const MAIL_ATTACHES_RESUME = [
+  'Please find my resume attached.',
+  'My resume is attached for your review.',
+  'I have attached my resume.',
+]
 
 /**
- * 落款。
+ * 落款(三种写法)。
  */
-export const MAIL_REGARDS = 'Best regards,'
+export const MAIL_REGARDS_ALL = ['Best regards,', 'Sincerely,', 'Kind regards,']
+
+/**
+ * 本人改过的邮件正文最多多少字符(2026-11-11 邮件正文可改;信从本站地址发给雇主,上限挡住拿它群发长文)。
+ */
+export const MAIL_BODY_MAX = 1200
+
+/**
+ * 同一个雇主邮箱 24 小时最多收本站几封投递(不分用户)。
+ */
+export const BOX_DAY_MAX = 3
+
+/**
+ * 错误码:这个雇主邮箱今天收到的本站投递已满,明天再发。
+ */
+export const E_BOX = 'boxBusy'
+
+/**
+ * 错误码:邮件正文是空的或超长。
+ */
+export const E_MAIL_BODY = 'mailBody'
 
 /**
  * 地点两段之间的分隔(城市, 省)。

@@ -59,7 +59,14 @@ export function useMyJobs(x: MyJobsHookIn): MyJobsPanel {
     void makeLoadMyJobs({ url: x.url, setItems, setFailed })()
   }, [x.url, x.gen])
 
-  return { items, failed, stage, setStage, remove: makeRemoveMine({ urlHead: x.delHead, items, setItems }) }
+  return {
+    items,
+    failed,
+    stage,
+    setStage,
+    remove: makeRemoveMine({ urlHead: x.delHead, items, setItems }),
+    reload: makeLoadMyJobs({ url: x.url, setItems, setFailed }),
+  }
 }
 
 /**

@@ -6,3 +6,4 @@
  */
 
 export { ReviewFlow } from './reviewflow'
+export { ReviewFrame } from './reviewframe'

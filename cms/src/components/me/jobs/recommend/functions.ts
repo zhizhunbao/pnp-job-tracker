@@ -23,6 +23,7 @@ import {
   FIT_VARIANT_NONE,
   FIT_MARK_CLOSED, FIT_MARK_OPEN, GOAL_PR, NOTE_NONE, TAG_CHECK,
   GOAL_DEFAULT, NEED_KEY, NEED_SEP_KEY,
+  ACT_SAVE, SAVE_BTN_KIND, SAVE_KEY, SAVE_STATUS_WISH, SAVED_KEY, URL_SAVE_ADD,
 } from './constants'
 import type {
   OpenApplyIn,
@@ -30,6 +31,7 @@ import type {
   LoadPicksIn, PickItem, PicksFact, PicksRespJson,
   TitledItem, WageView, WageViewIn,
   Bullets, FitFact, FitToggleIn, FitVariant, FitView, FitViewIn, NeedTextIn,
+  SaveBtn, SaveBtnIn, SavedIdIn,
 } from './types'
 
 /**
@@ -313,4 +315,70 @@ export function makeOpenApply(x: OpenApplyIn): () => void {
     }
     openApply(x.jobId)
   }
+}
+
+/**
+ * 一行推荐上的收藏钮(2026-11-11 Frank「这个应该加一个收藏按钮」;字与职位板的收藏钮同词条):没收藏点了收藏,
+ * 收藏了再点取消。
+ *
+ * @param x 这一岗、我的收藏整机与取词函数。
+ * @returns 收藏钮。
+ */
+export function saveBtnOf(x: SaveBtnIn): SaveBtn {
+  let key = SAVE_KEY
+  if (savedIdOf({ items: x.saved.items, jobId: x.jobId }) != null) {
+    key = SAVED_KEY
+  }
+  return { key: ACT_SAVE, text: x.t(key), kind: SAVE_BTN_KIND, href: TEXT_NONE, onClick: makePickSave(x) }
+}
+
+/**
+ * 这一岗在我的收藏里的那条记录的 id。
+ *
+ * @param x 我的收藏清单与职位号。
+ * @returns 收藏记录 id;没收藏(或清单还没拉到)给 null。
+ */
+export function savedIdOf(x: SavedIdIn): number | null {
+  if (x.items == null) {
+    return null
+  }
+  for (const it of x.items) {
+    if (it.jobId === x.jobId) {
+      return it.id
+    }
+  }
+  return null
+}
+
+/**
+ * 造「点收藏钮」:收藏了的取消(走我的收藏那张表的删一条),没收藏的新建一条。
+ *
+ * @param x 这一岗、我的收藏整机与取词函数。
+ * @returns 点击手柄。
+ */
+export function makePickSave(x: SaveBtnIn): () => void {
+  return function pickSave(): void {
+    const id = savedIdOf({ items: x.saved.items, jobId: x.jobId })
+    if (id != null) {
+      x.saved.remove(id)
+      return
+    }
+    void addSave(x)
+  }
+}
+
+/**
+ * 新建一条收藏,再重拉我的收藏清单(钮上的字跟着清单走;没建成清单里没有它,钮照旧是「收藏」)。
+ *
+ * @param x 这一岗、我的收藏整机与取词函数。
+ * @returns 无。
+ */
+async function addSave(x: SaveBtnIn): Promise<void> {
+  await fetch(URL_SAVE_ADD, {
+    method: METHOD_POST,
+    credentials: CRED_INCLUDE,
+    headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+    body: JSON.stringify({ job: x.jobId, title: x.title, company: x.company, status: SAVE_STATUS_WISH }),
+  }).catch(skipReportFailure)
+  await x.saved.reload()
 }

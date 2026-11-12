@@ -17,11 +17,14 @@ import {
   BAD_PDF, DURATION_RE,
   CONTACT_FIELDS, CRED_FIELDS, EDU_FIELDS, PLAN_FIELDS, WORK_FIELDS,
   AUDIT_ITEM_FIELDS, AUDIT_TOP_FIELDS, PLAN_TOP_FIELDS, SCHEMA_ARRAY, SCHEMA_BOOLEAN, SCHEMA_INTEGER, SCHEMA_OBJECT, SCHEMA_STRING,
+  FEATURE_FIX, FIX_LINE_MAX, FIX_TOKENS_MAX, KEY_FIX_LINE, KEY_FIX_WORK, LINE_BREAK,
 } from './constants'
 import {
   AUDIT_SYSTEM, COVER_EXTRA, LABEL_BASE, LABEL_COVER, LABEL_FACTS, LABEL_JD, LABEL_MISSING, LABEL_REQS, LABEL_TAILORED,
   PLAN_SYSTEM, RESUME_SYSTEM,
+  FIX_COVER_SYSTEM, FIX_RESUME_SYSTEM,
 } from './prompts'
+import { fixMsgOf, intOf, withLineOf, withSentenceOf, worksOf } from './fix'
 import type {
   AuditMsgIn, AuditOfIn, BumpOfIn, CellOfIn, FactMap, FailOfIn, JsonCell, MaybeScore, MaybeStepBody, MergedFactsIn,
   NewNumbersIn, NormText, PickJdIn, SchemaNode, QuotedOfIn, ReqsOfIn, RetryValueIn, RunDocIn, RunPlanIn, SaveCoverIn, SavePlanIn,
@@ -32,6 +35,7 @@ import type {
   DurationDropFn,
   KeepFactsIn,
   ExtraDbRow, ExtraIn, ExtraOut, SaveExtraIn,
+  FixOut, LineOkIn, MaybeReq, ReqByIdIn,
 } from './types'
 
 // =========================================================================
@@ -50,7 +54,24 @@ export function toStepBody(raw: StepBodyJson): MaybeStepBody {
   if (Number.isInteger(jobId) === false || jobId <= 0 || raw.step == null || steps.includes(raw.step) === false) {
     return null
   }
-  return { jobId, step: raw.step, extra: extraOf(raw), both: raw.both === true, regen: raw.regen === true, fill: raw.fill === true }
+  return {
+    jobId, step: raw.step, extra: extraOf(raw), both: raw.both === true, regen: raw.regen === true, fill: raw.fill === true,
+    fix: fixIdOf(raw),
+  }
+}
+
+/**
+ * 「针对哪一条要求补写」收窄:正整数才算,别的一律 0(不是补写)。
+ *
+ * @param raw 请求体。
+ * @returns 要求序号;没带或不合形给 0。
+ */
+function fixIdOf(raw: StepBodyJson): number {
+  const n = Number(raw.fix)
+  if (raw.fix == null || raw.fix === TEXT_NONE || Number.isInteger(n) === false || n < 0) {
+    return 0
+  }
+  return n
 }
 
 /**
@@ -415,6 +436,8 @@ function factLinesOf(x: UserMsgIn): string {
 
 /**
  * 跑一步:每步最多调一次模型,回包告诉前端下一步。
+ * 2026-11-11「帮我写进简历 / 求职信」:带了要求序号的先让盒子上的模型只补一句(runFixResume / runFixCover),补成了直接去核对;
+ * 没补成(盒子没回应、写得不合格)照旧整份重写,所以每步最多调一次付费模型这一点不变。
  *
  * @param x 一步的全部入参。
  * @returns 下一步与核对结果。
@@ -432,9 +455,17 @@ export async function runStep(x: StepRunIn): StepOut {
   }
   await keepNewFacts({ x, row })
   if (x.step === STEP_RESUME) {
+    const fixed = await runFixResume({ x, row, review: row.review })
+    if (fixed != null) {
+      return fixed
+    }
     return runResume({ x, row, review: row.review })
   }
   if (x.step === STEP_COVER) {
+    const fixed = await runFixCover({ x, row, review: row.review })
+    if (fixed != null) {
+      return fixed
+    }
     return runCover({ x, row, review: row.review })
   }
   return runAudit({ x, row, review: row.review })
@@ -848,4 +879,105 @@ export function toTailorRow(r: TailorDbRow): TailorRow {
     facts = r.tailor_facts
   }
   return { id: count(r.id), status: text(r.status), cover: text(r.cover_text), pdfB64: text(r.tailor_pdf_b64), review: r.tailor_review, facts, cvName: text(r.cv_name), cv: r.tailor_cv }
+}
+
+/**
+ * 针对一条要求给本岗简历补一句要点(2026-11-11 Frank「帮我写进简历」,用盒子上的模型):模型只回「加到第几段工作」和那一句,
+ * 程序把它加进草稿、重排 PDF、存下,然后去核对。那条要求没有依据、盒子没回应、回的不合形、带了新数字、排不成 PDF,
+ * 都当没补成,给 null。
+ *
+ * @param y 入参、现有行与结果。
+ * @returns 去核对的回包;没补成给 null。
+ */
+async function runFixResume(y: RunDocIn): FixOut {
+  const x = y.x
+  const req = reqByIdOf({ reqs: y.review.reqs, id: x.fix })
+  const works = worksOf(y.row.cv)
+  if (x.fix <= 0 || req == null || req.basis === false || works.length === 0) {
+    return null
+  }
+  const facts = mergedFactsOf({ row: y.row, added: x.newFacts })
+  const raw = await x.deps.box({
+    feature: FEATURE_FIX, system: FIX_RESUME_SYSTEM, maxTokens: FIX_TOKENS_MAX, schema: null,
+    user: fixMsgOf({ req, works, base: x.base, facts }),
+  })
+  if (raw === TEXT_NONE) {
+    return null
+  }
+  const parsed = x.deps.parse(raw)
+  const at = intOf(cellOf({ obj: parsed, key: KEY_FIX_WORK }))
+  const line = strOf(cellOf({ obj: parsed, key: KEY_FIX_LINE }))
+  const base = x.base + ONE_SPACE + Object.values(facts).join(ONE_SPACE)
+  if (at < 0 || at >= works.length || isLineOk({ line, base }) === false) {
+    return null
+  }
+  const cv = withLineOf({ cv: y.row.cv, at, line })
+  const pdf = await x.deps.cvPdf(cv)
+  if (pdf.bytes == null) {
+    return null
+  }
+  await saveResume({ db: x.db, userId: x.userId, jobId: x.jobId, cv, pdfB64: Buffer.from(pdf.bytes).toString(B64), review: y.review })
+  return { error: TEXT_NONE, next: STEP_AUDIT, review: y.review }
+}
+
+/**
+ * 针对一条要求给求职信补一句(2026-11-11,用盒子上的模型):模型只回那一句,程序接在最后一段正文后面、存下,然后去核对。
+ * 没补成的情形同 runFixResume,再加两种:信的段数不够、那一句里有写不进 PDF 的字。
+ *
+ * @param y 入参、现有行与结果。
+ * @returns 去核对的回包;没补成给 null。
+ */
+async function runFixCover(y: RunDocIn): FixOut {
+  const x = y.x
+  const req = reqByIdOf({ reqs: y.review.reqs, id: x.fix })
+  if (x.fix <= 0 || req == null || req.basis === false || y.row.cover === TEXT_NONE) {
+    return null
+  }
+  const facts = mergedFactsOf({ row: y.row, added: x.newFacts })
+  const raw = await x.deps.box({
+    feature: FEATURE_FIX, system: FIX_COVER_SYSTEM, maxTokens: FIX_TOKENS_MAX, schema: null,
+    user: fixMsgOf({ req, works: [], base: x.base, facts }),
+  })
+  if (raw === TEXT_NONE) {
+    return null
+  }
+  const line = strOf(cellOf({ obj: x.deps.parse(raw), key: KEY_FIX_LINE }))
+  const base = x.base + ONE_SPACE + Object.values(facts).join(ONE_SPACE)
+  if (isLineOk({ line, base }) === false || x.deps.badChars(line).length > 0) {
+    return null
+  }
+  const cover = withSentenceOf({ cover: y.row.cover, line })
+  if (cover === TEXT_NONE) {
+    return null
+  }
+  await saveCover({ db: x.db, userId: x.userId, jobId: x.jobId, cover, review: y.review })
+  return { error: TEXT_NONE, next: STEP_AUDIT, review: y.review }
+}
+
+/**
+ * 按序号找一条要求。
+ *
+ * @param x 各条要求与序号。
+ * @returns 那一条;没有给 null。
+ */
+function reqByIdOf(x: ReqByIdIn): MaybeReq {
+  for (const r of x.reqs) {
+    if (r.id === x.id) {
+      return r
+    }
+  }
+  return null
+}
+
+/**
+ * 模型写的那一句能不能用:不空、一行、不超长,而且没有基础简历和用户补充里找不到的数字。
+ *
+ * @param x 那一句与能当依据的全文。
+ * @returns 能用 true。
+ */
+function isLineOk(x: LineOkIn): TailorBool {
+  if (x.line === TEXT_NONE || x.line.length > FIX_LINE_MAX || x.line.includes(LINE_BREAK)) {
+    return false
+  }
+  return newNumbersOf({ text: x.line, base: x.base }).length === 0
 }

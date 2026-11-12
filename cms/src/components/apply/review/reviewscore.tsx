@@ -19,6 +19,9 @@ import css from './review.module.css'
  * 2026-11-10 任务书第 34 条:胶囊三态 —— 两份都写到是彩色对勾;有依据但有一份没写到是黄色并注明缺哪份(重新生成那一份能修);
  * 没有依据是红叉(只有补充经历能修)。同日 Frank「为什么缺 1 号」:三态都带序号,编号不断档。分数旁一行「已覆盖几条 / 共几条」;「补充经历」钮只数红叉。
  *
+ * 2026-11-11 Frank「这个按钮不能点吗」:红叉与黄色两种胶囊也能点 —— 红叉开补充经历,「缺求职信」开修改求职信,
+ * 「缺简历」或两份都缺开修改简历(11-09「红叉别点了」随之作废;和职位描述里那两种胶囊同一套去处)。
+ *
  * @param props 面板、结果与取词。
  * @returns 分数卡。
  */
@@ -41,13 +44,15 @@ export function ReviewScore({ p, review, t }: ReviewScoreIn) {
       )
     } else if (r.basis) {
       chips.push(
-        <span key={r.id} className={cssOf(css.reqHalf)}>
+        <Button key={r.id} kind={BTN_GHOST} type={TYPE_BUTTON} className={cssOf(css.reqHalf)} onClick={p.fixOf(r)}>
           <b className={cssOf(css.num)}>{r.id}</b>{r.label}<small className={cssOf(css.need)}>{t(needKeyOf(r))}</small>
-        </span>,
+        </Button>,
       )
     } else {
       chips.push(
-        <span key={r.id} className={cssOf(css.reqMiss)}><b className={cssOf(css.num)}>{r.id}</b>{r.label}</span>,
+        <Button key={r.id} kind={BTN_GHOST} type={TYPE_BUTTON} className={cssOf(css.reqMiss)} onClick={p.fixOf(r)}>
+          <b className={cssOf(css.num)}>{r.id}</b>{r.label}
+        </Button>,
       )
     }
   }

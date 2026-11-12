@@ -992,7 +992,7 @@ export const jobsZh = {
   'ap.replyTo': '雇主回信', 'ap.replyInbox': '收件箱', 'ap.mailPv': '邮件预览', 'ap.noPv': 'Word 简历这里预览不了', 'ap.soon': '简历按职位改写即将上线',
   'ap.proReason': '按职位改写是 Pro 功能', 'ap.proTrialOut': '3 个免费职位已用完，升级后不限职位', 'ap.rwTrialLeft': '免费试用：还剩 {n} 个职位', 'ap.rwTitle': '按职位改写求职信', 'ap.rwBefore': '原来的', 'ap.rwJd': '职位要求',
   'ap.rwAfter': '改写后', 'ap.rwAgain': '再写一次', 'ap.rwUse': '用这一版',
-  'tr.stagePlan': '正在读职位要求', 'tr.stageResume': '正在按职位改写简历', 'tr.stageCover': '正在写求职信', 'tr.stageAudit': '正在逐条核对',
+  'tr.stagePlan': '正在读职位要求', 'tr.stageResume': '正在按职位改写简历', 'tr.stageCover': '正在写求职信', 'tr.stageAudit': '正在逐条核对', 'tr.waitTitle': '努力匹配中', 'tr.fillOld': '之前补充过的经历', 'tr.editMail': '修改邮件正文', 'tr.mailReset': '恢复默认', 'tr.errBox': '这家雇主今天收到的本站投递已满,明天再发。草稿已保存', 'tr.errMail': '邮件正文没存上,请重试', 'tr.needHead': '这条要求还没写进去', 'tr.needAi': '帮我写进去', 'tr.needInCover': '求职信里是这样写的,可以照着加进对应的那段工作', 'tr.needInResume': '简历里是这样写的,可以照着加一句',
   'tr.errPro': '免费额度已用完', 'tr.errBase': '先上传一份基础简历', 'tr.errJd': '这个职位没有职位描述', 'tr.errLimit': '今天的次数已用完', 'tr.errResume': '简历改写未通过核对,请重新生成', 'tr.errLlm': '生成失败,请重试', 'tr.errSend': '发送失败,请重试', 'tr.errName': '英文姓名不合规',
   'tr.covered': '已覆盖 {a} / {b}', 'tr.needResume': '缺简历', 'tr.needCover': '缺求职信', 'tr.needBoth': '两份都缺', 
   'tr.editResume': '修改简历', 'tr.cvSummary': '个人简介', 'tr.cvSkills': '技能', 'tr.cvHint': '每行一条。公司、职位和日期以基础简历为准,这里不能改',
@@ -1004,7 +1004,7 @@ export const jobsZh = {
   'ap.badChars': '这些字写不进 PDF:', 'ap.sending': '发送中', 'ap.e.name': '英文姓名只能用英文字母、空格、点、撇号和连字符,2 到 60 个字',
   'ap.chHead': '怎么投这个职位', 'ap.chTailor': '按这个职位改写', 'ap.chTailorSub': '用 1 个额度,免费额度还剩 {n} 个', 'ap.chBase': '直接投基础简历', 'ap.chBaseSub': '附基础简历原件,不耗额度', 'ap.baseSend': '不改写,直接投基础简历', 'ap.toBase': '改投基础简历', 'ap.creditOut': '免费额度已用完', 'ap.creditOutPro': '本期额度已用完,{d} 恢复', 'ap.autoSaved': '已自动保存,可在我的投递里继续', 'ap.baseResume': '基础简历', 'ap.needBase': '先传一份基础简历,之后每个职位都以它为准', 'tr.failBase': '没写成,这次不扣额度',
   'ap.e.resume': '先上传一份简历', 'ap.e.chars': '信里有写不进 PDF 的字', 'ap.e.long': '求职信太长了,最多 4000 个字',
-  'ap.e.sent': '这个职位已经投过了', 'ap.e.draft': '先写好求职信', 'ap.e.sameEmail': '30 天内已经给这个雇主投过别的职位',
+  'ap.e.sent': '这个职位已经投过了', 'ap.e.draft': '先写好求职信', 'ap.e.sameEmail': '30 天内已经给这个雇主投过别的职位', 'ap.e.boxBusy': '这家雇主今天收到的本站投递已满,明天再发。草稿已保存',
   'ap.e.bounced': '这个雇主的邮箱退过信,投不了', 'ap.e.closed': '职位已下架', 'ap.e.noEmail': '这个职位没有投递邮箱',
   'ap.e.limit': '今天投得太多了,明天再来', 'ap.e.busy': '今天的发信名额用完了,明天再来', 'ap.e.mailOff': '发信服务没有开启', 'ap.e.mail': '没发出去,稍后再试',
   // 大分类(数据值→显示)。单一来源 = etl/noc_buckets.py 的 BROADS + I18N,改那边要同步这里。 2026-09-14 Frank「管理层改成管理,生活服务改成生活,社会服务改成社会」:只改中文显示名,键与 en/ko 不动。

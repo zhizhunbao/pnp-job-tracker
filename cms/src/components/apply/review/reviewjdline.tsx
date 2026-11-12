@@ -19,13 +19,15 @@ import css from './review.module.css'
  * @param props 这一行、是不是小标题、要不要补圆点、要求、选中项、手柄与取词。
  * @returns 一行。
  */
-export function ReviewJdLine({ line, head, bullet, reqs, active, setActive, t }: JdLineIn) {
+export function ReviewJdLine({ line, head, bullet, reqs, active, setActive, fixOf, t }: JdLineIn) {
   const out = []
   if (bullet) {
     out.push(<span key={JD_BULLET}>{JD_BULLET}{ONE_SPACE}</span>)
   }
   for (const [i, s] of jdSegsOf({ line: headTextOf({ line, head, t }), reqs }).entries()) {
-    out.push(<ReviewJdSeg key={i} text={s.text} req={s.req} active={active} setActive={setActive} t={t} />)
+    out.push(
+      <ReviewJdSeg key={i} text={s.text} req={s.req} active={active} setActive={setActive} fixOf={fixOf} t={t} />,
+    )
   }
   return <p className={cssOf(css.line) + ONE_SPACE + clsIf({ on: head, cls: cssOf(css.lineHead) })}>{out}</p>
 }

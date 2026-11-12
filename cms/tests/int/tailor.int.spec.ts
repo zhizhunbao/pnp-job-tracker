@@ -89,7 +89,7 @@ describe('核对完不自动打回', () => {
     }
     const out = await runStep({
       db: db as never, userId: 1, jobId: 42, step: 'audit', title: 'Cook', company: 'Pie Wood', name: 'Li Wei', jd: 'J1 J2', resumeId: 1,
-      base: 'Li Wei. Line cook.', newFacts: {}, both: false, regen: false, deps: deps as never,
+      base: 'Li Wei. Line cook.', newFacts: {}, both: false, regen: false, fix: 0, deps: deps as never,
     })
     expect(out.error).toBe('')
     expect(out.next).toBe('')

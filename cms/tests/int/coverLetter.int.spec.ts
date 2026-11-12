@@ -112,9 +112,10 @@ describe('代发', () => {
     expect(coverFileOf('Pie Wood Ltd.')).toBe('Cover_Letter_Pie_Wood_Ltd.pdf')
     expect(coverFileOf('饺子馆')).toBe('Cover_Letter.pdf')
     const body = mailTextOf({ title: 'Cook', city: 'Steinbach', province: 'MB', name: 'Zhang San', cover: true })
-    expect(body).toContain('apply for your "Cook" position in Steinbach, MB. Please find')
-    expect(mailTextOf({ title: 'Cook', city: '', province: '', name: 'Z Q', cover: true })).toContain('"Cook" position. Please')
-    expect(body).toContain('Best regards,\nZhang San')
+    // 2026-11-11 默认正文有三种写法(按姓名与职位名的字数取一套),这里只断言三种写法都有的部分
+    expect(body).toContain('"Cook" position in Steinbach, MB. ')
+    expect(mailTextOf({ title: 'Cook', city: '', province: '', name: 'Z Q', cover: true })).toContain('"Cook" position. ')
+    expect(body.endsWith(',\nZhang San')).toBe(true)
     // 2026-10-10 投递框三步:「不附求职信」只发简历,正文与来源说明都不提求职信
     expect(body).toContain('cover letter')
     expect(mailTextOf({ title: 'Cook', city: '', province: '', name: 'Z Q', cover: false })).not.toContain('cover letter')

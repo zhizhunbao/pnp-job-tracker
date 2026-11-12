@@ -187,3 +187,33 @@ export const FIT_MARK_CLOSED = ' ▾'
  * 胶囊上的箭头:要点展开着。
  */
 export const FIT_MARK_OPEN = ' ▴'
+
+/**
+ * 新建收藏的接口(同职位板的收藏钮;2026-11-11 Frank「这个应该加一个收藏按钮」)。
+ */
+export const URL_SAVE_ADD = '/api/saved-jobs'
+
+/**
+ * 收藏的初始状态(心愿单;同职位板)。
+ */
+export const SAVE_STATUS_WISH = 'wish'
+
+/**
+ * 收藏钮的身份。
+ */
+export const ACT_SAVE = 'save'
+
+/**
+ * 收藏钮的钮档(带框次钮,主钮只留「投递」)。
+ */
+export const SAVE_BTN_KIND = 'secondary'
+
+/**
+ * 没收藏时钮上的字的词条(「☆ 收藏」,同职位板)。
+ */
+export const SAVE_KEY = 'sj.save'
+
+/**
+ * 收藏了时钮上的字的词条(「★ 已收藏」,同职位板)。
+ */
+export const SAVED_KEY = 'sj.saved'

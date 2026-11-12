@@ -9,7 +9,7 @@
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { BTN_GHOST, CLS_CARD_MD, CLS_MCARD_HEAD, ONE_SPACE, PANE_JD, TEXT_NONE } from './constants'
+import { BTN_GHOST, CLS_CARD_MD, CLS_MCARD_HEAD, ONE_SPACE, PANE_JD, PANE_MAIL, TEXT_NONE } from './constants'
 import { clsIf } from './functions'
 import type { ReviewPaneIn } from './types'
 import css from './review.module.css'
@@ -22,13 +22,13 @@ import css from './review.module.css'
  */
 export function ReviewPane({ pane, head, p, t, onEdit, children }: ReviewPaneIn) {
   const hidden = p.focus !== TEXT_NONE && p.focus !== pane && pane !== PANE_JD
-  const isPdf = pane !== PANE_JD
+  const isPdf = pane !== PANE_JD && pane !== PANE_MAIL
   const gone = clsIf({ on: hidden, cls: cssOf(css.gone) })
   return (
     <section className={[CLS_CARD_MD, cssOf(css.pane), gone].join(ONE_SPACE)}>
       <div className={CLS_MCARD_HEAD + ONE_SPACE + cssOf(css.paneHead)}>
         <span>{head}</span>
-        {isPdf && onEdit != null && (
+        {onEdit != null && (
           <span className={cssOf(css.acts)}>
             <Button kind={BTN_GHOST} sm onClick={onEdit}>{t('pf.edit')}</Button>
           </span>
@@ -42,7 +42,8 @@ export function ReviewPane({ pane, head, p, t, onEdit, children }: ReviewPaneIn)
           {children}
         </div>
       )}
-      {isPdf === false && <div className={cssOf(css.paper)}>{children}</div>}
+      {pane === PANE_JD && <div className={cssOf(css.paper)}>{children}</div>}
+      {pane === PANE_MAIL && children}
     </section>
   )
 }

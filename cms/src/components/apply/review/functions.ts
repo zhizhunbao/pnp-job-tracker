@@ -14,20 +14,22 @@ import {
   JD_BULLET, JD_HEAD_MARK, JD_SEC_KEYS, JD_SENT_SPLIT_RE, NEWLINE,
   AVAIL_GAP, BOX_DOWN, BOX_UP, CANVAS_TAG, COLOR_HEAD, COLOR_N, CRED_INCLUDE, CTX_2D, ERR_DEFAULT, ERR_KEYS, ERR_NAME,
   ERR_PRO, ERR_SEND, HDR_CONTENT_TYPE, HL_H_RATIO, HL_UP_RATIO, KEY_STR, MAT_C, MAT_D, MAT_E, MAT_F, MEASURE_FONT,
-  METHOD_PATCH, METHOD_POST, METHOD_PUT, MIME_JSON, NARROW_W, NUM_GAP, NUM_GAP_BASE, NUM_MAX, NUM_NONE, NUM_RATIO,
+  METHOD_PATCH, METHOD_POST, METHOD_PUT, MIME_JSON, NARROW_W, NUM_GAP, NUM_GAP_BASE, NUM_MAX, NUM_RATIO,
   NEED_BOTH, NEED_COVER, NEED_RESUME,
   ONE_SPACE, PAD_SIDES, PAGE_PAD, PAPER_WHITE, PX, RECT_EPS, SCALE_MAX, SEL_CV, STEP_AUDIT, STEP_LOOP_MAX, TEXT_NONE,
   SHEET_LEFT_PAD,
   TRACK_SENT, URL_COVER, URL_RESUME, URL_NAME, URL_SEND, URL_STATE, URL_STEP,
-  STACK_SCALE_MAX, WS_RE, ZOOM_NARROW,
+  STACK_SCALE_MAX, WS_RE, ZOOM_NARROW, ZOOM_PAN_W,
+  ERR_BOX, ERR_BOX_CODE, FILL_SEP, STAGE_KEYS, STAGE_ORDER, WAIT_DONE, WAIT_ON, WAIT_TODO,
 } from './constants'
 import type {
   AddPageIn, CropIn, DrawSum,
-  CharAt, ClsIfIn, ContentBox, ContentBoxIn, CoverSaveIn, DrawIn, DrawOut, ErrJson, FailRunIn, HlPickFn, HlRect, JdHit,
-  JdSeg, JdSegsIn, MoveRectsIn, PaintLineIn, PdfItem, PickActiveIn, Quote, RectsIn, Review, ReviewCells, ReviewReq,
+  CharAt, ClsIfIn, ContentBox, ContentBoxIn, CoverSaveIn, DrawIn, DrawOut, ErrJson, FailRunIn, HlRect, JdHit,
+  JdSeg, JdSegsIn, MoveRectsIn, PaintLineIn, PdfItem, Quote, RectsIn, Review, ReviewCells, ReviewReq,
   RunIn, ScaleOfIn, SendIn, ShiftedIn, ShiftedOut, StateJson, StepBodyIn, StepJson,
   HeadTextIn, JdRow, JdRowsIn, JdSentsIn, SheetZoomIn,
   MaybeReview, QuoteRectsIn, RectsOut, ResumeSaveIn, RunRectIn, TextMap,
+  FilledTextIn, WaitStep, WaitStepsIn,
 } from './types'
 import css from './review.module.css'
 
@@ -113,6 +115,7 @@ function stepBodyOf(y: StepBodyIn): string {
       both: y.x.start.both,
       regen: y.x.start.regen,
       fill: y.x.start.fill,
+      fix: y.x.start.fix,
     })
   }
   return JSON.stringify({
@@ -180,6 +183,7 @@ export async function reloadState(c: ReviewCells): Promise<StateJson> {
   c.setJd(d.jd)
   c.setSaved(d.extra)
   c.setCv(d.cv)
+  c.setMail(d.mail)
   c.bumpGen()
   return d
 }
@@ -375,7 +379,7 @@ export async function drawPdf(x: DrawIn): DrawOut {
       const box = contentBoxOf({ items, tr: pdfjs.Util.transform, vt: page.getViewport({ scale: 1 }).transform })
       if (sum.scale === 0) {
         const fit = (x.host.clientWidth - AVAIL_GAP) / (box.maxX - box.minX + PAGE_PAD * PAD_SIDES)
-        sum.scale = scaleOf({ fit, zoomed: x.zoomed })
+        sum.scale = scaleOf({ fit, zoomed: x.zoomed, hostW: x.host.clientWidth })
         sum.left = Math.floor(box.minX * sum.scale - PAGE_PAD)
       }
       const vp = page.getViewport({ scale: sum.scale })
@@ -411,14 +415,15 @@ export async function drawPdf(x: DrawIn): DrawOut {
 
 /**
  * 预览整体的缩放:给序号让位后比容器宽的,缩到刚好放下(2026-11-10 Frank「不要有这个」:预览下面不出横向滚动条);
- * 手机上点了放大的不缩。
+ * 手机上点了放大的不缩。2026-11-11 Frank「下面的横线去掉」:只有手机(预览区比 ZOOM_PAN_W 窄)放大后不缩,
+ * 平板、半屏窗口与宽屏放大后照样缩到放得下。
  *
  * @param x 尺寸与放大了吗。
  * @returns 缩放,不用缩给 1。
  */
 export function sheetZoomOf(x: SheetZoomIn): number {
   const need = x.size.w - x.size.left + SHEET_LEFT_PAD
-  if (x.zoomed || x.size.fit === 0 || need <= x.size.fit) {
+  if ((x.zoomed && x.size.fit < ZOOM_PAN_W) || x.size.fit === 0 || need <= x.size.fit) {
     return 1
   }
   return x.size.fit / need
@@ -477,6 +482,7 @@ function isTextItem(i: object): boolean {
 
 /**
  * 缩放:宽屏贴合宽度;竖排(窗口不够宽)默认整页、不超过上限,点一下放大。
+ * 2026-11-11:竖排时预览区够宽(不是手机)的,放大只铺满宽度,不超出去。
  *
  * @param y 贴合缩放与放大了吗。
  * @returns 缩放。
@@ -484,6 +490,9 @@ function isTextItem(i: object): boolean {
 function scaleOf(y: ScaleOfIn): number {
   if (window.innerWidth > NARROW_W) {
     return Math.min(y.fit, SCALE_MAX)
+  }
+  if (y.zoomed && y.hostW >= ZOOM_PAN_W) {
+    return y.fit
   }
   if (y.zoomed) {
     return y.fit * ZOOM_NARROW
@@ -773,8 +782,12 @@ export async function sendReview(x: SendIn): Promise<void> {
       body: JSON.stringify({ jobId: x.jobId }),
     })
     if (r.ok === false) {
-      await (r.json() as Promise<ErrJson>)
-      x.setErr(ERR_SEND)
+      const bad = await (r.json() as Promise<ErrJson>)
+      if (bad.error === ERR_BOX_CODE) {
+        x.setErr(ERR_BOX)
+      } else {
+        x.setErr(ERR_SEND)
+      }
       x.setSending(false)
       return
     }
@@ -811,7 +824,9 @@ export async function saveCoverEdit(x: CoverSaveIn): Promise<void> {
     return
   }
   x.close()
-  await runSteps({ c: x.c, start: { step: STEP_AUDIT, extra: TEXT_NONE, both: false, regen: false, fill: false } })
+  await runSteps({
+    c: x.c, start: { step: STEP_AUDIT, extra: TEXT_NONE, both: false, regen: false, fill: false, fix: 0 },
+  })
 }
 
 /**
@@ -854,7 +869,9 @@ export async function saveResumeEdit(x: ResumeSaveIn): Promise<void> {
     return
   }
   x.close()
-  await runSteps({ c: x.c, start: { step: STEP_AUDIT, extra: TEXT_NONE, both: false, regen: false, fill: false } })
+  await runSteps({
+    c: x.c, start: { step: STEP_AUDIT, extra: TEXT_NONE, both: false, regen: false, fill: false, fix: 0 },
+  })
 }
 
 /**
@@ -878,52 +895,6 @@ export function clsIf(x: ClsIfIn): string {
     return x.cls
   }
   return TEXT_NONE
-}
-
-/**
- * 高亮块上的序号标记:只有句头那块带。
- *
- * @param r 这一块。
- * @returns 序号;不是句头给 null(React 不写这个属性)。
- */
-export function hlDataOf(r: HlRect): number | null {
-  if (r.first) {
-    return r.n
-  }
-  return null
-}
-
-/**
- * 造「点一条要求」手柄:点同一条取消选中。
- *
- * @param x 选中项、这一条与手柄。
- * @returns 点击手柄。
- */
-export function makePickActive(x: PickActiveIn): () => void {
-  return function onPick(): void {
-    if (x.active === x.n) {
-      x.setActive(NUM_NONE)
-    } else {
-      x.setActive(x.n)
-    }
-  }
-}
-
-/**
- * 造「点高亮」手柄:不冒泡给面板(面板点击是放大)。
- *
- * @param x 选中项、这一条与手柄。
- * @returns 点击手柄。
- */
-export function makeHlPick(x: PickActiveIn): HlPickFn {
-  return function onHlPick(e: React.MouseEvent): void {
-    e.stopPropagation()
-    if (x.active === x.n) {
-      x.setActive(NUM_NONE)
-    } else {
-      x.setActive(x.n)
-    }
-  }
 }
 
 /**
@@ -974,4 +945,51 @@ export function headTextOf(x: HeadTextIn): string {
     return x.line
   }
   return x.t(key)
+}
+
+/**
+ * 等待画面的各步:排在正在做的那一步前面的算做完,它自己是正在做,后面的没到(2026-11-11)。
+ *
+ * @param x 正在做的那一步与取词。
+ * @returns 各步。
+ */
+export function waitStepsOf(x: WaitStepsIn): WaitStep[] {
+  const at = STAGE_ORDER.indexOf(x.stage)
+  const out: WaitStep[] = []
+  for (const [i, key] of STAGE_ORDER.entries()) {
+    let state: WaitStep['state'] = WAIT_TODO
+    if (i < at) {
+      state = WAIT_DONE
+    }
+    if (i === at) {
+      state = WAIT_ON
+    }
+    const label = STAGE_KEYS[key]
+    if (label != null) {
+      out.push({ key, text: x.t(label), state })
+    }
+  }
+  return out
+}
+
+/**
+ * 要存的补充经历全文:之前补充过的在前,这一次逐条写的接在后面,一条一行、带上那条要求的原话
+ * (2026-11-11 Frank「这个是不是每个问题下面一个框」;模型据此知道哪句话对哪条要求)。没写的条不带。
+ *
+ * @param x 之前的全文、这一次的草稿与各条要求。
+ * @returns 全文;什么都没有给空串。
+ */
+export function filledTextOf(x: FilledTextIn): string {
+  const lines: string[] = []
+  const base = x.base.trim()
+  if (base !== TEXT_NONE) {
+    lines.push(base)
+  }
+  for (const r of missingReqsOf(x.reqs)) {
+    const got = x.fills[String(r.id)]
+    if (got != null && got.trim() !== TEXT_NONE) {
+      lines.push(r.jd + FILL_SEP + got.trim())
+    }
+  }
+  return lines.join(NEWLINE)
 }

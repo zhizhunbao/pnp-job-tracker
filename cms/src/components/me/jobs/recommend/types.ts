@@ -479,3 +479,113 @@ export type FitToggleIn = {
    */
   fold: FitFold
 }
+
+/**
+ * 我的收藏清单的一行里本桶真读的两格(2026-11-11 今日推荐加收藏钮)。
+ */
+export type SavedLite = {
+  /**
+   * 收藏记录 id。
+   */
+  id: number
+
+  /**
+   * 职位 id(职位删了 = null)。
+   */
+  jobId: number | null
+}
+
+/**
+ * 我的收藏整机里本桶真用的三格:清单、删一条、重拉。
+ */
+export type SavedBook = {
+  /**
+   * 清单(还没拉到 = null)。
+   */
+  items: SavedLite[] | null
+
+  /**
+   * 删掉一条(参数:收藏记录 id)。
+   */
+  remove: (id: number) => void
+
+  /**
+   * 重拉清单。
+   */
+  reload: () => Promise<void>
+}
+
+/**
+ * savedIdOf 的入参。
+ */
+export type SavedIdIn = {
+  /**
+   * 我的收藏清单(还没拉到 = null)。
+   */
+  items: SavedLite[] | null
+
+  /**
+   * 职位号。
+   */
+  jobId: number
+}
+
+/**
+ * saveBtnOf / makePickSave / addSave 的入参。
+ */
+export type SaveBtnIn = {
+  /**
+   * 职位号。
+   */
+  jobId: number
+
+  /**
+   * 职位名(落收藏行的快照)。
+   */
+  title: string
+
+  /**
+   * 公司名(落收藏行的快照)。
+   */
+  company: string
+
+  /**
+   * 我的收藏整机。
+   */
+  saved: SavedBook
+
+  /**
+   * 取词函数。
+   */
+  t: FitTFn
+}
+
+/**
+ * 一行推荐上的收藏钮(与父桶展示行的钮同形)。
+ */
+export type SaveBtn = {
+  /**
+   * 身份。
+   */
+  key: string
+
+  /**
+   * 字。
+   */
+  text: string
+
+  /**
+   * 钮档:带框次钮。
+   */
+  kind: 'secondary'
+
+  /**
+   * 点了做什么。
+   */
+  onClick: (() => void) | null
+
+  /**
+   * 链接(按钮给空串)。
+   */
+  href: string
+}

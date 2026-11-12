@@ -40,7 +40,7 @@ import css from './jobs.module.css'
  * @param props 取词函数与推荐整机。
  * @returns 表(或失败一句);还没拉到不渲。
  */
-export function PicksPane({ t, p, onFill }: PicksPaneIn) {
+export function PicksPane({ t, p, l, onFill }: PicksPaneIn) {
   const [lang] = useLang()
   const titles = useLazyTitles({ items: titledPicksOf(p.data), lang })
   const cos = useLazyCompanies({ items: picksOf(p.data), lang })
@@ -58,7 +58,8 @@ export function PicksPane({ t, p, onFill }: PicksPaneIn) {
     const fields = needTextOf({ need: p.data.need, t })
     return <PicksNote text={t('mj.picksNeed', { fields })} go={t('mj.fillGo')} onGo={onFill} />
   }
-  const rows = pickRowsOf({ items: p.data.picks, fits: p.data.fits, lang, t, titles, cos, fold })
+  const saved = { items: l.items, remove: l.remove, reload: l.reload }
+  const rows = pickRowsOf({ items: p.data.picks, fits: p.data.fits, lang, t, titles, cos, fold, saved })
   return (
     <>
       {p.data.lowOnly && <PicksNote text={t('mj.picksLowOnly')} go={TEXT_NONE} onGo={onFill} />}
