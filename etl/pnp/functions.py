@@ -9676,6 +9676,7 @@ from pnp.constants import (  # noqa: E402 — 段41 常量单列一块(同段35�
     NLS_NO_QUOTE_TPL, NLS_NOMINATED_RES, NLS_NOTE, NLS_PRINT_FAIL_TPL, NLS_PRINT_OK_TPL, NLS_REPORTS, NLS_SECTION_TPL,
     NLS_SOURCE, NLS_TIMEOUT_S, NLS_UNIT_PEOPLE, OUT_NB_STATS, OUT_NL_STATS,
 )
+from pnp.constants import NLS_REPORTS_NO_COUNT  # noqa: E402 — 同上(2026-11-12 核过、没有提名人数的年报)
 from pnp.constants import (  # noqa: E402 — 同上(2026-09-29 年报目录页发现新一期)
     NBS_FY_TPL, NBS_INDEX_URLS, NBS_REPORT_HREF_RE, NBS_SITE_BASE, NLS_FY_TPL, NLS_INDEX_URLS, NLS_REPORT_HREF_RE,
     NLS_SITE_BASE, REPORT_DIR_EMPTY_TPL, REPORT_DIR_FAIL_TPL, REPORT_DIR_KEEP_TPL, REPORT_DIR_NEW_TPL,
@@ -9894,6 +9895,8 @@ def scrape_nl_stats() -> None:
     2026-09-29 同日改判(Frank「只抓取然后取数」):要读的年报 = 已核实清单 NLS_REPORTS ∪ 目录页(当前年报页 + 往年页)认出的
     新一期(report_list_of,同 scrape_nb_stats);目录页取不到 / 认不出打 ✗、照已核实清单跑,旧表里已有还没补进清单的新一期时
     保留旧表(lost_urls_of)。新一期换了措辞照上面的口径抛错保留旧表,不猜。
+
+    2026-11-12:核过、里面没有省提名人数的年报(NLS_REPORTS_NO_COUNT,2025-26 版)算已核实但跳过不读。
     """
     say(PRINT_OUT_TPL.format(path=OUT_NL_STATS))
     by_year: dict = {}
@@ -9901,13 +9904,15 @@ def scrape_nl_stats() -> None:
     last_fy = ""
     try:
         todo = report_list_of(ReportDirIn(prov=PROV_NL, index_urls=NLS_INDEX_URLS, href_re=NLS_REPORT_HREF_RE,
-                                          site_base=NLS_SITE_BASE, fy_tpl=NLS_FY_TPL, known=NLS_REPORTS,
-                                          timeout_s=NLS_TIMEOUT_S))
+                                          site_base=NLS_SITE_BASE, fy_tpl=NLS_FY_TPL,
+                                          known=NLS_REPORTS + NLS_REPORTS_NO_COUNT, timeout_s=NLS_TIMEOUT_S))
         lost = lost_urls_of(LostUrlsIn(todo=todo, path=OUT_NL_STATS, key=K_NOMINATED_INDIVIDUALS))
         if len(lost) > 0:
             say(REPORT_DIR_KEEP_TPL.format(prov=PROV_NL, urls=lost))
             return
         for url, fy in todo.reports:
+            if (url, fy) in NLS_REPORTS_NO_COUNT:
+                continue
             text = pdf_text(fetch_bytes(FetchHtmlIn(url=url, timeout_s=NLS_TIMEOUT_S)))
             row = nl_nominated_row_of(NlReportIn(text=text, url=url, fy=fy))
             if row is None:

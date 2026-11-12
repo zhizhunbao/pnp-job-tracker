@@ -3715,9 +3715,16 @@ class ReportDirTest(unittest.TestCase):
         self.assertEqual(got[1][0], "https://www.gov.nl.ca/jgrd/files/IPGSAnnualReport2021-22.pdf")
 
     def test_links_probes(self) -> None:
-        """变异探针:部门改名换了文件名前缀(IPGS → JGRD)/ NB 路径换了部门目录 / 链接不是 .pdf → 一份都不认。"""
+        """变异探针:部门改名换了文件名前缀(IPGS → JGRD)/ NB 路径换了部门目录 / 链接不是 .pdf → 一份都不认。
+        2026-11-12:JGRD 成了真前缀(省政府改组后当前页那份就叫 JGRDAnnualReport2025-26.pdf,认法已加认),
+        探针改用没见过的前缀 XYZD;JGRD 那一条反过来断言认得出。"""
         from pnp import functions as fn
-        renamed = self.nl_current().replace("IPGSAnnualReport", "JGRDAnnualReport")
+        renamed = self.nl_current().replace("IPGSAnnualReport", "XYZDAnnualReport")
+        jgrd = self.nl_current().replace("IPGSAnnualReport2024-2025", "JGRDAnnualReport2025-26")
+        self.assertEqual(
+            fn.report_links_of(ReportLinksIn(html=jgrd, href_re=NLS_REPORT_HREF_RE, site_base=NLS_SITE_BASE,
+                                             fy_tpl=NLS_FY_TPL)),
+            [("https://www.gov.nl.ca/jgrd/files/JGRDAnnualReport2025-26.pdf", "2025-26")])
         moved = self.nb_page().replace("/petl-epft/", "/jgr-emc/")
         not_pdf = self.nb_page().replace(".pdf", ".html")
         for html, rx, base, tpl in ((renamed, NLS_REPORT_HREF_RE, NLS_SITE_BASE, NLS_FY_TPL),
@@ -3762,7 +3769,7 @@ class ReportDirTest(unittest.TestCase):
         """目录页取不到(第二页网络错)/ 当前页认不出(改名)/ 往年页认不出 → 只交回已核实清单、dir_ok=False,各留痕一行。"""
         from pnp import functions as fn
         known = (("gov-2024", "2024-25"),)
-        renamed = self.nl_current().replace("IPGSAnnualReport", "JGRDAnnualReport")
+        renamed = self.nl_current().replace("IPGSAnnualReport", "XYZDAnnualReport")
         cases = (([self.nl_current(), fn.httpx.ConnectError("offline")], "取不到"),
                  ([renamed, self.nl_archive()], "没认出"),
                  ([self.nl_current(), "<html></html>"], "没认出"))

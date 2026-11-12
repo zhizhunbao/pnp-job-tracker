@@ -9264,10 +9264,21 @@ NLS_INDEX_URLS = ("https://www.gov.nl.ca/jgrd/publications/annual/",
 新一期挂出来时上一期挪进 ②,两页都读,认过的那期不会因为挪页而掉。① 一份都认不出 = 当前那份的命名变了(部门 2025 年
 改过名,网站如今叫 Jobs, Growth and Rural Development,下一份很可能不叫 IPGS…)→ 打 ✗ 照已核实清单跑,不猜新名字。"""
 
-NLS_REPORT_HREF_RE = re.compile(r'href="(https://www\.gov\.nl\.ca/jgrd/files/IPGSAnnualReport(\d{4})-(\d{2}|\d{4})\.pdf)"')
+NLS_REPORT_HREF_RE = re.compile(r'href="(https://www\.gov\.nl\.ca/jgrd/files/(?:IPGS|JGRD)AnnualReport(\d{4})-(\d{2}|\d{4})\.pdf)"')
 """目录页里部门年报链接的形(2026-09-29 两页实见:「IPGSAnnualReport2024-2025.pdf」「IPGSAnnualReport2021-22.pdf」,
 结束年四位两位都有)。只认 IPGS 这个前缀:② 页上别的机构的年报(「PACBAnnualReport2023-24.pdf」学徒委员会等)与改名前的
-部门年报(ISL / AES,在 assembly.nl.ca 或旧文件名)都不是这个形 —— 前者不是本部门,后者比已核实清单早,本来也不读。"""
+部门年报(ISL / AES,在 assembly.nl.ca 或旧文件名)都不是这个形 —— 前者不是本部门,后者比已核实清单早,本来也不读。
+2026-11-12 加认 JGRD 前缀(Frank「三件都修」):2025-10-29 省政府改组,移民并入 Department of Jobs, Growth and Rural
+Development,当前页那份改叫「JGRDAnnualReport2025-26.pdf」,只认 IPGS 时当前页一份都认不出、每轮打 ✗。"""
+
+NLS_REPORTS_NO_COUNT = (
+    ("https://www.gov.nl.ca/jgrd/files/JGRDAnnualReport2025-26.pdf", "2025-26"),
+)
+"""核过、里面没有省提名人数的年报,一份一对(网址, 年报财年),升序(2026-11-12 立):算已核实(不再当新一期报、
+财年基线跟着往后挪),但不读、不出行。
+2025-26 版(改组后 JGRD 的第一份,38 页):全文没有 nominee / nominated / endorsed 字样,移民一节只给新永久居民总数
+(「The province welcomed 5,485 new permanent residents in 2023 … approximately 5,755 new permanent residents」in 2024),
+那是 IRCC 登陆口径、不是省提名人数,不填进提名人数行。以后哪一期又写了提名人数:挪进 NLS_REPORTS 并补措辞。"""
 
 NLS_SITE_BASE = ""
 """目录页链接的站根:两页的年报链接都是完整网址,不用补(NB 的是站内相对路径,见 NBS_SITE_BASE)。"""
