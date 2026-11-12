@@ -205,19 +205,19 @@
  },
  "Greater Sudbury|ON": {
   "zh": "大萨德伯里",
-  "ko": ""
+  "ko": "그레이터서드베리"
  },
  "Timmins|ON": {
   "zh": "蒂明斯",
-  "ko": ""
+  "ko": "티민스"
  },
  "Sault Ste. Marie|ON": {
   "zh": "苏圣玛丽",
-  "ko": ""
+  "ko": "수세인트마리"
  },
  "North Bay|ON": {
   "zh": "北湾",
-  "ko": ""
+  "ko": "노스베이"
  },
  "Barrie|ON": {
   "zh": "巴里",
@@ -253,11 +253,11 @@
  },
  "Concord|ON": {
   "zh": "康山",
-  "ko": ""
+  "ko": "콩코드"
  },
  "Stouffville|ON": {
   "zh": "斯托夫维尔",
-  "ko": ""
+  "ko": "스토프빌"
  },
  "Cambridge|ON": {
   "zh": "剑桥",
@@ -265,71 +265,71 @@
  },
  "St. Catharines|ON": {
   "zh": "圣凯瑟琳斯",
-  "ko": ""
+  "ko": "세인트캐서린스"
  },
  "Brantford|ON": {
   "zh": "布兰特福德",
-  "ko": ""
+  "ko": "브랜트퍼드"
  },
  "Belleville|ON": {
   "zh": "贝尔维尔",
-  "ko": ""
+  "ko": "벨빌"
  },
  "Peterborough|ON": {
   "zh": "彼得伯勒",
-  "ko": ""
+  "ko": "피터버러"
  },
  "Sarnia|ON": {
   "zh": "萨尼亚",
-  "ko": ""
+  "ko": "사니아"
  },
  "Cornwall|ON": {
   "zh": "康沃尔",
-  "ko": ""
+  "ko": "콘월"
  },
  "Woodstock|ON": {
   "zh": "伍德斯托克",
-  "ko": ""
+  "ko": "우드스톡"
  },
  "Leamington|ON": {
   "zh": "利明顿",
-  "ko": ""
+  "ko": "레밍턴"
  },
  "Welland|ON": {
   "zh": "韦兰",
-  "ko": ""
+  "ko": "웰랜드"
  },
  "Georgetown|ON": {
   "zh": "乔治敦",
-  "ko": ""
+  "ko": "조지타운"
  },
  "Collingwood|ON": {
   "zh": "科林伍德",
-  "ko": ""
+  "ko": "콜링우드"
  },
  "Stratford|ON": {
   "zh": "斯特拉特福",
-  "ko": ""
+  "ko": "스트랫퍼드"
  },
  "Orillia|ON": {
   "zh": "奥里利亚",
-  "ko": ""
+  "ko": "오릴리아"
  },
  "Niagara-on-the-Lake|ON": {
   "zh": "滨湖尼亚加拉",
-  "ko": ""
+  "ko": "나이아가라온더레이크"
  },
  "York|ON": {
   "zh": "约克",
-  "ko": ""
+  "ko": "요크"
  },
  "East York|ON": {
   "zh": "东约克",
-  "ko": ""
+  "ko": "이스트요크"
  },
  "Nepean|ON": {
   "zh": "尼皮恩",
-  "ko": ""
+  "ko": "네피언"
  },
  "North Vancouver|BC": {
   "zh": "北温哥华",
@@ -361,7 +361,7 @@
  },
  "Mission|BC": {
   "zh": "米逊",
-  "ko": ""
+  "ko": "미션"
  },
  "Chilliwack|BC": {
   "zh": "奇利瓦克",
@@ -373,15 +373,15 @@
  },
  "Prince George|BC": {
   "zh": "乔治王子城",
-  "ko": ""
+  "ko": "프린스조지"
  },
  "Vernon|BC": {
   "zh": "弗农",
-  "ko": ""
+  "ko": "버넌"
  },
  "Penticton|BC": {
   "zh": "彭蒂克顿",
-  "ko": ""
+  "ko": "펜틱턴"
  },
  "Whistler|BC": {
   "zh": "惠斯勒",
@@ -389,71 +389,71 @@
  },
  "Squamish|BC": {
   "zh": "斯阔米什",
-  "ko": ""
+  "ko": "스쿼미시"
  },
  "Campbell River|BC": {
   "zh": "坎贝尔里弗",
-  "ko": ""
+  "ko": "캠벨리버"
  },
  "Courtenay|BC": {
   "zh": "考特尼",
-  "ko": ""
+  "ko": "코트니"
  },
  "Duncan|BC": {
   "zh": "邓肯",
-  "ko": ""
+  "ko": "덩컨"
  },
  "Langford|BC": {
   "zh": "兰福德",
-  "ko": ""
+  "ko": "랭퍼드"
  },
  "Sidney|BC": {
   "zh": "西德尼",
-  "ko": ""
+  "ko": "시드니"
  },
  "Fernie|BC": {
   "zh": "弗尼",
-  "ko": ""
+  "ko": "퍼니"
  },
  "Cranbrook|BC": {
   "zh": "克兰布鲁克",
-  "ko": ""
+  "ko": "크랜브룩"
  },
  "Revelstoke|BC": {
   "zh": "雷夫尔斯托克",
-  "ko": ""
+  "ko": "레벨스토크"
  },
  "Prince Rupert|BC": {
   "zh": "鲁珀特王子港",
-  "ko": ""
+  "ko": "프린스루퍼트"
  },
  "Fort St. John|BC": {
   "zh": "圣约翰堡",
-  "ko": ""
+  "ko": "포트세인트존"
  },
  "Dawson Creek|BC": {
   "zh": "道森克里克",
-  "ko": ""
+  "ko": "도슨크리크"
  },
  "Fort McMurray|AB": {
   "zh": "麦克默里堡",
-  "ko": ""
+  "ko": "포트맥머리"
  },
  "Grande Prairie|AB": {
   "zh": "大草原城",
-  "ko": ""
+  "ko": "그랜드프레리"
  },
  "Medicine Hat|AB": {
   "zh": "梅迪辛哈特",
-  "ko": ""
+  "ko": "메디신햇"
  },
  "St. Albert|AB": {
   "zh": "圣艾伯特",
-  "ko": ""
+  "ko": "세인트앨버트"
  },
  "Sherwood Park|AB": {
   "zh": "舍伍德公园",
-  "ko": ""
+  "ko": "셔우드파크"
  },
  "Banff|AB": {
   "zh": "班夫",
@@ -461,91 +461,91 @@
  },
  "Canmore|AB": {
   "zh": "坎莫尔",
-  "ko": ""
+  "ko": "캔모어"
  },
  "Cold Lake|AB": {
   "zh": "冷湖",
-  "ko": ""
+  "ko": "콜드레이크"
  },
  "Moose Jaw|SK": {
   "zh": "穆斯乔",
-  "ko": ""
+  "ko": "무스조"
  },
  "Prince Albert|SK": {
   "zh": "阿尔伯特王子城",
-  "ko": ""
+  "ko": "프린스앨버트"
  },
  "Brandon|MB": {
   "zh": "布兰登",
-  "ko": ""
+  "ko": "브랜든"
  },
  "Steinbach|MB": {
   "zh": "斯坦巴克",
-  "ko": ""
+  "ko": "스타인바크"
  },
  "Altona|MB": {
   "zh": "阿尔托纳",
-  "ko": ""
+  "ko": "알토나"
  },
  "Lévis|QC": {
   "zh": "莱维斯",
-  "ko": ""
+  "ko": "레비"
  },
  "Trois-Rivières|QC": {
   "zh": "三河市",
-  "ko": ""
+  "ko": "트루아리비에르"
  },
  "Saguenay|QC": {
   "zh": "萨格奈",
-  "ko": ""
+  "ko": "사그네"
  },
  "Chicoutimi|QC": {
   "zh": "希库蒂米",
-  "ko": ""
+  "ko": "시쿠티미"
  },
  "Longueuil|QC": {
   "zh": "隆格伊",
-  "ko": ""
+  "ko": "롱괴유"
  },
  "Brossard|QC": {
   "zh": "布罗萨尔",
-  "ko": ""
+  "ko": "브로사르"
  },
  "Saint-Laurent|QC": {
   "zh": "圣洛朗",
-  "ko": ""
+  "ko": "생로랑"
  },
  "Westmount|QC": {
   "zh": "西山",
-  "ko": ""
+  "ko": "웨스트마운트"
  },
  "Mont-Royal|QC": {
   "zh": "皇家山",
-  "ko": ""
+  "ko": "몽루아얄"
  },
  "Dorval|QC": {
   "zh": "多瓦尔",
-  "ko": ""
+  "ko": "도르발"
  },
  "LaSalle|QC": {
   "zh": "拉萨尔",
-  "ko": ""
+  "ko": "라살"
  },
  "Granby|QC": {
   "zh": "格兰比",
-  "ko": ""
+  "ko": "그랜비"
  },
  "Rimouski|QC": {
   "zh": "里穆斯基",
-  "ko": ""
+  "ko": "리무스키"
  },
  "Sept-Îles|QC": {
   "zh": "七岛市",
-  "ko": ""
+  "ko": "세틸"
  },
  "Mirabel|QC": {
   "zh": "米拉贝尔",
-  "ko": ""
+  "ko": "미라벨"
  },
  "Quebec City|QC": {
   "zh": "魁北克市",
@@ -553,38 +553,8866 @@
  },
  "Dartmouth|NS": {
   "zh": "达特茅斯",
-  "ko": ""
+  "ko": "다트머스"
  },
  "Sydney|NS": {
   "zh": "悉尼",
-  "ko": ""
+  "ko": "시드니"
  },
  "Bedford|NS": {
   "zh": "贝德福德",
-  "ko": ""
+  "ko": "베드퍼드"
  },
  "Truro|NS": {
   "zh": "特鲁罗",
-  "ko": ""
+  "ko": "트루로"
  },
  "Saint John|NB": {
   "zh": "圣约翰",
-  "ko": ""
+  "ko": "세인트존"
  },
  "Bathurst|NB": {
   "zh": "巴瑟斯特",
-  "ko": ""
+  "ko": "배서스트"
  },
  "Corner Brook|NL": {
   "zh": "科纳布鲁克",
-  "ko": ""
+  "ko": "코너브룩"
  },
  "Gander|NL": {
   "zh": "甘德",
-  "ko": ""
+  "ko": "갠더"
  },
  "Summerside|PE": {
   "zh": "萨默塞德",
-  "ko": ""
+  "ko": "서머사이드"
+ },
+ "Woodbridge|ON": {
+  "zh": "活桥",
+  "ko": "우드브리지"
+ },
+ "Lloydminster|AB": {
+  "zh": "劳埃德明斯特",
+  "ko": "로이드민스터"
+ },
+ "Rocky View|AB": {
+  "zh": "落基维尤",
+  "ko": "로키뷰"
+ },
+ "Drummondville|QC": {
+  "zh": "德拉蒙德维尔",
+  "ko": "드러먼드빌"
+ },
+ "Cote-Saint-Luc|QC": {
+  "zh": "科特圣吕克",
+  "ko": "코트생뤼크"
+ },
+ "Saint-Georges|QC": {
+  "zh": "圣乔治",
+  "ko": "생조르주"
+ },
+ "Val-d'Or|QC": {
+  "zh": "瓦尔多尔",
+  "ko": "발도르"
+ },
+ "Victoriaville|QC": {
+  "zh": "维多利亚维尔",
+  "ko": "빅토리아빌"
+ },
+ "Bolton|ON": {
+  "zh": "博尔顿",
+  "ko": "볼턴"
+ },
+ "Terrebonne|QC": {
+  "zh": "泰勒博纳",
+  "ko": "테르본"
+ },
+ "Airdrie|AB": {
+  "zh": "艾尔德里",
+  "ko": "에어드리"
+ },
+ "Rouyn-Noranda|QC": {
+  "zh": "鲁安诺兰达",
+  "ko": "루앵노랑다"
+ },
+ "Hampstead|QC": {
+  "zh": "汉普斯特德",
+  "ko": "햄프스테드"
+ },
+ "Saint-Hyacinthe|QC": {
+  "zh": "圣亚森特",
+  "ko": "생이아생트"
+ },
+ "Rivière-du-Loup|QC": {
+  "zh": "里维耶尔迪卢",
+  "ko": "리비에르뒤루"
+ },
+ "Salaberry-de-Valleyfield|QC": {
+  "zh": "萨拉贝里德瓦利菲尔德",
+  "ko": "살라베리드밸리필드"
+ },
+ "Terrace|BC": {
+  "zh": "特勒斯",
+  "ko": "테라스"
+ },
+ "Aldergrove|BC": {
+  "zh": "奥尔德格罗夫",
+  "ko": "올더그로브"
+ },
+ "Williams Lake|BC": {
+  "zh": "威廉斯湖",
+  "ko": "윌리엄스레이크"
+ },
+ "Okotoks|AB": {
+  "zh": "奥科托克斯",
+  "ko": "오코톡스"
+ },
+ "Leduc|AB": {
+  "zh": "勒杜克",
+  "ko": "르두크"
+ },
+ "Saint-Augustin-de-Desmaures|QC": {
+  "zh": "圣奥古斯丁德德莫尔",
+  "ko": "생토귀스탱드데모르"
+ },
+ "Stoney Creek|ON": {
+  "zh": "石溪",
+  "ko": "스토니크리크"
+ },
+ "Thetford Mines|QC": {
+  "zh": "塞特福德迈恩斯",
+  "ko": "세트퍼드마인스"
+ },
+ "Yorkton|SK": {
+  "zh": "约克顿",
+  "ko": "요크턴"
+ },
+ "Pitt Meadows|BC": {
+  "zh": "匹特草原",
+  "ko": "핏메도스"
+ },
+ "Smithers|BC": {
+  "zh": "史密瑟斯",
+  "ko": "스미더스"
+ },
+ "Hinton|AB": {
+  "zh": "欣顿",
+  "ko": "힌턴"
+ },
+ "Maple|ON": {
+  "zh": "梅普尔",
+  "ko": "메이플"
+ },
+ "Golden|BC": {
+  "zh": "戈尔登",
+  "ko": "골든"
+ },
+ "Edson|AB": {
+  "zh": "埃德森",
+  "ko": "에드슨"
+ },
+ "Saint-Léonard|QC": {
+  "zh": "圣莱昂纳尔",
+  "ko": "생레오나르"
+ },
+ "Chestermere|AB": {
+  "zh": "切斯特米尔",
+  "ko": "체스터미어"
+ },
+ "Vaudreuil-Dorion|QC": {
+  "zh": "沃德勒伊多里翁",
+  "ko": "보드뢰유도리옹"
+ },
+ "Magog|QC": {
+  "zh": "马戈格",
+  "ko": "마고그"
+ },
+ "Whitecourt|AB": {
+  "zh": "怀特科特",
+  "ko": "화이트코트"
+ },
+ "West St. Paul|MB": {
+  "zh": "西圣保罗",
+  "ko": "웨스트세인트폴"
+ },
+ "Sechelt|BC": {
+  "zh": "锡谢尔特",
+  "ko": "시셸트"
+ },
+ "Nisku|AB": {
+  "zh": "尼斯库",
+  "ko": "니스쿠"
+ },
+ "Saanichton|BC": {
+  "zh": "萨尼奇顿",
+  "ko": "사니치턴"
+ },
+ "Wetaskiwin|AB": {
+  "zh": "韦塔斯基温",
+  "ko": "웨타스키윈"
+ },
+ "Camrose|AB": {
+  "zh": "卡姆罗斯",
+  "ko": "캠로즈"
+ },
+ "Sainte-Marie|QC": {
+  "zh": "圣玛丽",
+  "ko": "생트마리"
+ },
+ "Slave Lake|AB": {
+  "zh": "斯莱夫湖",
+  "ko": "슬레이브레이크"
+ },
+ "Clarenville|NL": {
+  "zh": "克拉伦维尔",
+  "ko": "클래런빌"
+ },
+ "Lacombe|AB": {
+  "zh": "拉科姆",
+  "ko": "라콤"
+ },
+ "Merritt|BC": {
+  "zh": "梅里特",
+  "ko": "메릿"
+ },
+ "Thompson|MB": {
+  "zh": "汤普森",
+  "ko": "톰프슨"
+ },
+ "Saint-Jean-sur-Richelieu|QC": {
+  "zh": "黎塞留河畔圣让",
+  "ko": "생장쉬르리슐리외"
+ },
+ "Dieppe|NB": {
+  "zh": "迪耶普",
+  "ko": "디에프"
+ },
+ "Rosser|MB": {
+  "zh": "罗瑟",
+  "ko": "로서"
+ },
+ "Parksville|BC": {
+  "zh": "帕克斯维尔",
+  "ko": "파크스빌"
+ },
+ "Joliette|QC": {
+  "zh": "若列特",
+  "ko": "졸리에트"
+ },
+ "Swift Current|SK": {
+  "zh": "斯威夫特卡伦特",
+  "ko": "스위프트커런트"
+ },
+ "Invermere|BC": {
+  "zh": "因弗米尔",
+  "ko": "인버미어"
+ },
+ "Boucherville|QC": {
+  "zh": "布歇维尔",
+  "ko": "부셰르빌"
+ },
+ "Bracebridge|ON": {
+  "zh": "布雷斯布里奇",
+  "ko": "브레이스브리지"
+ },
+ "Amos|QC": {
+  "zh": "阿莫斯",
+  "ko": "아모스"
+ },
+ "Strathmore|AB": {
+  "zh": "斯特拉思莫尔",
+  "ko": "스트래스모어"
+ },
+ "Tofino|BC": {
+  "zh": "托菲诺",
+  "ko": "토피노"
+ },
+ "White Rock|BC": {
+  "zh": "白石镇",
+  "ko": "화이트록"
+ },
+ "Kingsville|ON": {
+  "zh": "金斯维尔",
+  "ko": "킹스빌"
+ },
+ "Mont-Tremblant|QC": {
+  "zh": "蒙特朗布朗",
+  "ko": "몽트랑블랑"
+ },
+ "Spruce Grove|AB": {
+  "zh": "斯普鲁斯格罗夫",
+  "ko": "스프루스그로브"
+ },
+ "Jonquière|QC": {
+  "zh": "容基耶尔",
+  "ko": "종키에르"
+ },
+ "La Baie|QC": {
+  "zh": "拉拜",
+  "ko": "라베"
+ },
+ "Osoyoos|BC": {
+  "zh": "奥索尤斯",
+  "ko": "오소유스"
+ },
+ "Beloeil|QC": {
+  "zh": "贝卢伊",
+  "ko": "벨뢰유"
+ },
+ "Ponoka|AB": {
+  "zh": "波诺卡",
+  "ko": "포노카"
+ },
+ "Sainte-Agathe-des-Monts|QC": {
+  "zh": "圣阿加特德蒙",
+  "ko": "생타가트데몽"
+ },
+ "Saint-Jérôme|QC": {
+  "zh": "圣热罗姆",
+  "ko": "생제롬"
+ },
+ "Shawinigan|QC": {
+  "zh": "沙威尼根",
+  "ko": "샤위니간"
+ },
+ "Powell River|BC": {
+  "zh": "鲍威尔里弗",
+  "ko": "파월리버"
+ },
+ "Estevan|SK": {
+  "zh": "埃斯特万",
+  "ko": "에스테반"
+ },
+ "Salmon Arm|BC": {
+  "zh": "萨蒙阿姆",
+  "ko": "새먼암"
+ },
+ "Bonnyville|AB": {
+  "zh": "邦尼维尔",
+  "ko": "보니빌"
+ },
+ "New Minas|NS": {
+  "zh": "新迈纳斯",
+  "ko": "뉴마이너스"
+ },
+ "Amherst|NS": {
+  "zh": "阿默斯特",
+  "ko": "애머스트"
+ },
+ "Portage la Prairie|MB": {
+  "zh": "波蒂奇拉普雷里",
+  "ko": "포티지라프레리"
+ },
+ "Lower Sackville|NS": {
+  "zh": "下萨克维尔",
+  "ko": "로어색빌"
+ },
+ "Hope|BC": {
+  "zh": "霍普",
+  "ko": "호프"
+ },
+ "Caledon|ON": {
+  "zh": "卡利登",
+  "ko": "캘리던"
+ },
+ "Drayton Valley|AB": {
+  "zh": "德雷顿瓦利",
+  "ko": "드레이턴밸리"
+ },
+ "Chambly|QC": {
+  "zh": "尚布利",
+  "ko": "샹블리"
+ },
+ "Saint-Bruno|QC": {
+  "zh": "圣布鲁诺",
+  "ko": "생브뤼노"
+ },
+ "Nelson|BC": {
+  "zh": "纳尔逊",
+  "ko": "넬슨"
+ },
+ "Sherrington|QC": {
+  "zh": "谢灵顿",
+  "ko": "셰링턴"
+ },
+ "Grand Falls-Windsor|NL": {
+  "zh": "格兰德福尔斯温莎",
+  "ko": "그랜드폴스윈저"
+ },
+ "Fort Frances|ON": {
+  "zh": "弗朗西斯堡",
+  "ko": "포트프랜시스"
+ },
+ "Rocky Mountain House|AB": {
+  "zh": "落基山豪斯",
+  "ko": "로키마운틴하우스"
+ },
+ "North Battleford|SK": {
+  "zh": "北巴特尔福德",
+  "ko": "노스배틀퍼드"
+ },
+ "Simcoe|ON": {
+  "zh": "锡姆科",
+  "ko": "심코"
+ },
+ "Saint-Hubert|QC": {
+  "zh": "圣于贝尔",
+  "ko": "생위베르"
+ },
+ "Port Alberni|BC": {
+  "zh": "艾伯尼港",
+  "ko": "포트앨버니"
+ },
+ "Miramichi|NB": {
+  "zh": "米拉米希",
+  "ko": "미라미시"
+ },
+ "Boisbriand|QC": {
+  "zh": "布瓦布里昂",
+  "ko": "부아브리앙"
+ },
+ "Oliver|BC": {
+  "zh": "奥利弗",
+  "ko": "올리버"
+ },
+ "Westside|BC": {
+  "zh": "韦斯特赛德",
+  "ko": "웨스트사이드"
+ },
+ "Morinville|AB": {
+  "zh": "莫林维尔",
+  "ko": "모린빌"
+ },
+ "Quesnel|BC": {
+  "zh": "奎斯内尔",
+  "ko": "퀘넬"
+ },
+ "Kleinburg|ON": {
+  "zh": "克兰堡",
+  "ko": "클라인버그"
+ },
+ "Cache Creek|BC": {
+  "zh": "卡什克里克",
+  "ko": "캐시크리크"
+ },
+ "Beaumont|AB": {
+  "zh": "博蒙特",
+  "ko": "보몬트"
+ },
+ "Dollard-des-Ormeaux|QC": {
+  "zh": "多拉德奥莫",
+  "ko": "돌라르데조르모"
+ },
+ "Creston|BC": {
+  "zh": "克雷斯顿",
+  "ko": "크레스턴"
+ },
+ "Alma|QC": {
+  "zh": "阿尔马",
+  "ko": "알마"
+ },
+ "Mont-Laurier|QC": {
+  "zh": "蒙洛里耶",
+  "ko": "몽로리에"
+ },
+ "Kindersley|SK": {
+  "zh": "金德斯利",
+  "ko": "킨더슬리"
+ },
+ "Cochrane|AB": {
+  "zh": "科克伦",
+  "ko": "코크런"
+ },
+ "Dauphin|MB": {
+  "zh": "多芬",
+  "ko": "도팽"
+ },
+ "Stony Plain|AB": {
+  "zh": "斯托尼普莱恩",
+  "ko": "스토니플레인"
+ },
+ "Gibsons|BC": {
+  "zh": "吉布森斯",
+  "ko": "깁슨스"
+ },
+ "Kirkland|QC": {
+  "zh": "柯克兰",
+  "ko": "커클랜드"
+ },
+ "Outremont|QC": {
+  "zh": "乌特勒蒙",
+  "ko": "우트르몽"
+ },
+ "Huntsville|ON": {
+  "zh": "亨茨维尔",
+  "ko": "헌츠빌"
+ },
+ "Kincardine|ON": {
+  "zh": "金卡丁",
+  "ko": "킨카딘"
+ },
+ "Pointe-Claire|QC": {
+  "zh": "普安特克莱尔",
+  "ko": "푸앵트클레르"
+ },
+ "Wabasca-Desmarais|AB": {
+  "zh": "瓦巴斯卡德马雷",
+  "ko": "와바스카데마레"
+ },
+ "Westbank|BC": {
+  "zh": "韦斯特班克",
+  "ko": "웨스트뱅크"
+ },
+ "Saint-Eustache|QC": {
+  "zh": "圣厄斯塔什",
+  "ko": "생퇴스타슈"
+ },
+ "Olds|AB": {
+  "zh": "奥尔兹",
+  "ko": "올즈"
+ },
+ "Sooke|BC": {
+  "zh": "苏克",
+  "ko": "수크"
+ },
+ "Claresholm|AB": {
+  "zh": "克拉雷斯霍姆",
+  "ko": "클레어스홈"
+ },
+ "Kentville|NS": {
+  "zh": "肯特维尔",
+  "ko": "켄트빌"
+ },
+ "Brooks|AB": {
+  "zh": "布鲁克斯",
+  "ko": "브룩스"
+ },
+ "Sylvan Lake|AB": {
+  "zh": "西尔万湖",
+  "ko": "실번레이크"
+ },
+ "Antigonish|NS": {
+  "zh": "安蒂戈尼什",
+  "ko": "앤티고니시"
+ },
+ "Selkirk|MB": {
+  "zh": "塞尔扣克",
+  "ko": "셀커크"
+ },
+ "Ladysmith|BC": {
+  "zh": "莱迪史密斯",
+  "ko": "레이디스미스"
+ },
+ "Montmagny|QC": {
+  "zh": "蒙马尼",
+  "ko": "몽마니"
+ },
+ "Westlock|AB": {
+  "zh": "韦斯特洛克",
+  "ko": "웨스트록"
+ },
+ "Kitimat|BC": {
+  "zh": "基蒂马特",
+  "ko": "키티맷"
+ },
+ "Fox Creek|AB": {
+  "zh": "福克斯克里克",
+  "ko": "폭스크리크"
+ },
+ "Grand Falls|NB": {
+  "zh": "格兰德福尔斯",
+  "ko": "그랜드폴스"
+ },
+ "Vanderhoof|BC": {
+  "zh": "范德胡夫",
+  "ko": "밴더후프"
+ },
+ "Port Elgin|ON": {
+  "zh": "埃尔金港",
+  "ko": "포트엘긴"
+ },
+ "Dryden|ON": {
+  "zh": "德赖登",
+  "ko": "드라이든"
+ },
+ "Mount Pearl|NL": {
+  "zh": "芒特珀尔",
+  "ko": "마운트펄"
+ },
+ "Bécancour|QC": {
+  "zh": "贝坎库尔",
+  "ko": "베캉쿠르"
+ },
+ "Saint-Henri-de-Lévis|QC": {
+  "zh": "圣亨利德莱维",
+  "ko": "생탕리드레비"
+ },
+ "Châteauguay|QC": {
+  "zh": "沙托盖",
+  "ko": "샤토게"
+ },
+ "Ancaster|ON": {
+  "zh": "安卡斯特",
+  "ko": "앤캐스터"
+ },
+ "Chatham|ON": {
+  "zh": "查塔姆",
+  "ko": "채텀"
+ },
+ "Drumheller|AB": {
+  "zh": "德拉姆黑勒",
+  "ko": "드럼헬러"
+ },
+ "Caledon East|ON": {
+  "zh": "东卡利登",
+  "ko": "캘리던이스트"
+ },
+ "Wainwright|AB": {
+  "zh": "温赖特",
+  "ko": "웨인라이트"
+ },
+ "Orangeville|ON": {
+  "zh": "奥兰治维尔",
+  "ko": "오렌지빌"
+ },
+ "Sorel|QC": {
+  "zh": "索雷尔",
+  "ko": "소렐"
+ },
+ "Saint-Sauveur|QC": {
+  "zh": "圣索沃尔",
+  "ko": "생소뵈르"
+ },
+ "Lac La Biche|AB": {
+  "zh": "拉比什湖",
+  "ko": "라크라비시"
+ },
+ "Yarmouth|NS": {
+  "zh": "雅茅斯",
+  "ko": "야머스"
+ },
+ "Lachine|QC": {
+  "zh": "拉欣",
+  "ko": "라신"
+ },
+ "Sainte-Adèle|QC": {
+  "zh": "圣阿代尔",
+  "ko": "생타델"
+ },
+ "Winfield|BC": {
+  "zh": "温菲尔德",
+  "ko": "윈필드"
+ },
+ "Bradford|ON": {
+  "zh": "布拉德福德",
+  "ko": "브래드퍼드"
+ },
+ "Baie-Saint-Paul|QC": {
+  "zh": "拜圣保罗",
+  "ko": "베생폴"
+ },
+ "Brockville|ON": {
+  "zh": "布罗克维尔",
+  "ko": "브록빌"
+ },
+ "High River|AB": {
+  "zh": "海里弗",
+  "ko": "하이리버"
+ },
+ "Repentigny|QC": {
+  "zh": "勒庞蒂尼",
+  "ko": "르팡티니"
+ },
+ "Jasper|AB": {
+  "zh": "贾斯珀",
+  "ko": "재스퍼"
+ },
+ "Matane|QC": {
+  "zh": "马塔讷",
+  "ko": "마탄"
+ },
+ "Conception Bay South|NL": {
+  "zh": "南康塞普申湾",
+  "ko": "콘셉션베이사우스"
+ },
+ "Sackville|NB": {
+  "zh": "萨克维尔",
+  "ko": "색빌"
+ },
+ "Meadow Lake|SK": {
+  "zh": "梅多湖",
+  "ko": "메도레이크"
+ },
+ "Innisfail|AB": {
+  "zh": "因尼斯费尔",
+  "ko": "이니스페일"
+ },
+ "Midland|ON": {
+  "zh": "米德兰",
+  "ko": "미들랜드"
+ },
+ "Gravenhurst|ON": {
+  "zh": "格雷文赫斯特",
+  "ko": "그레이븐허스트"
+ },
+ "Sioux Lookout|ON": {
+  "zh": "苏卢考特",
+  "ko": "수룩아웃"
+ },
+ "Gaspé|QC": {
+  "zh": "加斯佩",
+  "ko": "가스페"
+ },
+ "Valleyview|AB": {
+  "zh": "瓦利维尤",
+  "ko": "밸리뷰"
+ },
+ "St. Paul|AB": {
+  "zh": "圣保罗",
+  "ko": "세인트폴"
+ },
+ "La Sarre|QC": {
+  "zh": "拉萨尔",
+  "ko": "라사르"
+ },
+ "Paradise|NL": {
+  "zh": "帕拉代斯",
+  "ko": "패러다이스"
+ },
+ "Verdun|QC": {
+  "zh": "凡尔登",
+  "ko": "베르됭"
+ },
+ "Anjou|QC": {
+  "zh": "安茹",
+  "ko": "앙주"
+ },
+ "Conway|NS": {
+  "zh": "康韦",
+  "ko": "콘웨이"
+ },
+ "Wasaga Beach|ON": {
+  "zh": "瓦萨加海滩",
+  "ko": "와사가비치"
+ },
+ "Swan River|MB": {
+  "zh": "斯旺里弗",
+  "ko": "스완리버"
+ },
+ "King City|ON": {
+  "zh": "金城",
+  "ko": "킹시티"
+ },
+ "Montréal-Nord|QC": {
+  "zh": "北蒙特利尔",
+  "ko": "몽레알노르"
+ },
+ "High Level|AB": {
+  "zh": "海莱维尔",
+  "ko": "하이레벨"
+ },
+ "Plessisville|QC": {
+  "zh": "普莱西维尔",
+  "ko": "플레시빌"
+ },
+ "Acheson|AB": {
+  "zh": "艾奇逊",
+  "ko": "애치슨"
+ },
+ "Donnacona|QC": {
+  "zh": "多纳科纳",
+  "ko": "도나코나"
+ },
+ "Labrador City|NL": {
+  "zh": "拉布拉多城",
+  "ko": "래브라도시티"
+ },
+ "Trail|BC": {
+  "zh": "特雷尔",
+  "ko": "트레일"
+ },
+ "New Glasgow|NS": {
+  "zh": "新格拉斯哥",
+  "ko": "뉴글래스고"
+ },
+ "Bromont|QC": {
+  "zh": "布罗蒙",
+  "ko": "브로몽"
+ },
+ "Parry Sound|ON": {
+  "zh": "帕里桑德",
+  "ko": "패리사운드"
+ },
+ "Fort Nelson|BC": {
+  "zh": "纳尔逊堡",
+  "ko": "포트넬슨"
+ },
+ "Windsor|NS": {
+  "zh": "温莎",
+  "ko": "윈저"
+ },
+ "Marieville|QC": {
+  "zh": "马里维尔",
+  "ko": "마리빌"
+ },
+ "Baie-Comeau|QC": {
+  "zh": "拜科莫",
+  "ko": "베코모"
+ },
+ "Contrecoeur|QC": {
+  "zh": "孔特勒克尔",
+  "ko": "콩트르쾨르"
+ },
+ "Neepawa|MB": {
+  "zh": "尼帕瓦",
+  "ko": "니파와"
+ },
+ "Shediac|NB": {
+  "zh": "谢迪亚克",
+  "ko": "셰디악"
+ },
+ "Smoky Lake|AB": {
+  "zh": "斯莫基湖",
+  "ko": "스모키레이크"
+ },
+ "Port Hawkesbury|NS": {
+  "zh": "霍克斯伯里港",
+  "ko": "포트혹스버리"
+ },
+ "Esquimalt|BC": {
+  "zh": "埃斯奎莫尔特",
+  "ko": "에스퀴몰트"
+ },
+ "Cobourg|ON": {
+  "zh": "科堡",
+  "ko": "코버그"
+ },
+ "Taber|AB": {
+  "zh": "泰伯",
+  "ko": "테이버"
+ },
+ "Waterdown|ON": {
+  "zh": "沃特当",
+  "ko": "워터다운"
+ },
+ "Happy Valley-Goose Bay|NL": {
+  "zh": "哈皮瓦利古斯贝",
+  "ko": "해피밸리구스베이"
+ },
+ "Bridgewater|NS": {
+  "zh": "布里奇沃特",
+  "ko": "브리지워터"
+ },
+ "Wolfville|NS": {
+  "zh": "沃尔夫维尔",
+  "ko": "울프빌"
+ },
+ "Thornhill|BC": {
+  "zh": "桑希尔",
+  "ko": "손힐"
+ },
+ "Mascouche|QC": {
+  "zh": "马斯库什",
+  "ko": "마스쿠슈"
+ },
+ "Témiscouata-sur-le-Lac|QC": {
+  "zh": "泰米斯夸塔湖畔",
+  "ko": "테미스쿠아타쉬르르라크"
+ },
+ "Beauceville|QC": {
+  "zh": "博斯维尔",
+  "ko": "보스빌"
+ },
+ "Saint-Jean-Port-Joli|QC": {
+  "zh": "圣让波尔若利",
+  "ko": "생장포르졸리"
+ },
+ "Louiseville|QC": {
+  "zh": "路易斯维尔",
+  "ko": "루이즈빌"
+ },
+ "Unionville|ON": {
+  "zh": "于人镇",
+  "ko": "유니언빌"
+ },
+ "Saint-Germain-de-Grantham|QC": {
+  "zh": "圣热尔曼德格兰瑟姆",
+  "ko": "생제르맹드그랜섬"
+ },
+ "Barrhead|AB": {
+  "zh": "巴尔黑德",
+  "ko": "배헤드"
+ },
+ "Armstrong|BC": {
+  "zh": "阿姆斯特朗",
+  "ko": "암스트롱"
+ },
+ "Peace River|AB": {
+  "zh": "皮斯里弗",
+  "ko": "피스리버"
+ },
+ "Moosomin|SK": {
+  "zh": "穆索明",
+  "ko": "무소민"
+ },
+ "Grand Forks|BC": {
+  "zh": "大福克斯",
+  "ko": "그랜드포크스"
+ },
+ "Nicolet|QC": {
+  "zh": "尼科莱",
+  "ko": "니콜레"
+ },
+ "Weyburn|SK": {
+  "zh": "韦本",
+  "ko": "웨이번"
+ },
+ "Gloucester|ON": {
+  "zh": "格洛斯特",
+  "ko": "글로스터"
+ },
+ "Saint-Joseph-de-Beauce|QC": {
+  "zh": "圣约瑟夫德博斯",
+  "ko": "생조제프드보스"
+ },
+ "Saint-Félicien|QC": {
+  "zh": "圣费利西安",
+  "ko": "생펠리시앵"
+ },
+ "Goderich|ON": {
+  "zh": "戈德里奇",
+  "ko": "고더리치"
+ },
+ "Red Lake|ON": {
+  "zh": "雷德湖",
+  "ko": "레드레이크"
+ },
+ "Normandin|QC": {
+  "zh": "诺曼丹",
+  "ko": "노르망댕"
+ },
+ "Salt Spring Island|BC": {
+  "zh": "盐泉岛",
+  "ko": "솔트스프링아일랜드"
+ },
+ "La Tuque|QC": {
+  "zh": "拉蒂克",
+  "ko": "라튀크"
+ },
+ "Tsawwassen|BC": {
+  "zh": "卓华臣",
+  "ko": "차와센"
+ },
+ "Beechville|NS": {
+  "zh": "比奇维尔",
+  "ko": "비치빌"
+ },
+ "Cochrane|ON": {
+  "zh": "科克伦",
+  "ko": "코크런"
+ },
+ "Petawawa|ON": {
+  "zh": "佩塔瓦瓦",
+  "ko": "페타와와"
+ },
+ "Emerald Park|SK": {
+  "zh": "埃默勒尔德帕克",
+  "ko": "에메랄드파크"
+ },
+ "Berwick|NS": {
+  "zh": "贝里克",
+  "ko": "버윅"
+ },
+ "Castlegar|BC": {
+  "zh": "卡斯尔加",
+  "ko": "캐슬가"
+ },
+ "Saint-Lambert-de-Lauzon|QC": {
+  "zh": "圣朗贝尔德洛宗",
+  "ko": "생랑베르드로종"
+ },
+ "Saint-Thomas|QC": {
+  "zh": "圣托马",
+  "ko": "생토마"
+ },
+ "Saint-Lambert|QC": {
+  "zh": "圣朗贝尔",
+  "ko": "생랑베르"
+ },
+ "Martensville|SK": {
+  "zh": "马滕斯维尔",
+  "ko": "마텐스빌"
+ },
+ "Owen Sound|ON": {
+  "zh": "欧文桑德",
+  "ko": "오언사운드"
+ },
+ "Vegreville|AB": {
+  "zh": "维格勒维尔",
+  "ko": "베그레빌"
+ },
+ "Roberval|QC": {
+  "zh": "罗贝瓦尔",
+  "ko": "로베르발"
+ },
+ "Pembroke|ON": {
+  "zh": "彭布罗克",
+  "ko": "펨브로크"
+ },
+ "Carleton Place|ON": {
+  "zh": "卡尔顿普莱斯",
+  "ko": "칼턴플레이스"
+ },
+ "Vermilion|AB": {
+  "zh": "弗米利恩",
+  "ko": "버밀리언"
+ },
+ "100 Mile House|BC": {
+  "zh": "百里屋",
+  "ko": "100마일하우스"
+ },
+ "Morden|MB": {
+  "zh": "莫登",
+  "ko": "모든"
+ },
+ "Pointe-aux-Trembles|QC": {
+  "zh": "普安特奥特朗布勒",
+  "ko": "푸앵토트랑블"
+ },
+ "Candiac|QC": {
+  "zh": "康迪亚克",
+  "ko": "캉디아크"
+ },
+ "Nipawin|SK": {
+  "zh": "尼帕温",
+  "ko": "니퍼윈"
+ },
+ "Chetwynd|BC": {
+  "zh": "切特温德",
+  "ko": "체트윈드"
+ },
+ "Headingley|MB": {
+  "zh": "海丁利",
+  "ko": "헤딩리"
+ },
+ "Lachute|QC": {
+  "zh": "拉许特",
+  "ko": "라쉬트"
+ },
+ "Sussex|NB": {
+  "zh": "萨塞克斯",
+  "ko": "서식스"
+ },
+ "Dundas|ON": {
+  "zh": "邓达斯",
+  "ko": "던다스"
+ },
+ "Garibaldi Highlands|BC": {
+  "zh": "加里波第高地",
+  "ko": "개리볼디하일랜즈"
+ },
+ "Sainte-Hélène-de-Bagot|QC": {
+  "zh": "圣埃莱娜德巴戈",
+  "ko": "생텔렌드바고"
+ },
+ "Pincher Creek|AB": {
+  "zh": "平彻克里克",
+  "ko": "핀처크리크"
+ },
+ "Sicamous|BC": {
+  "zh": "锡卡默斯",
+  "ko": "시카무스"
+ },
+ "Clearwater|BC": {
+  "zh": "克利尔沃特",
+  "ko": "클리어워터"
+ },
+ "Rothesay|NB": {
+  "zh": "罗西赛",
+  "ko": "로스시"
+ },
+ "Port Carling|ON": {
+  "zh": "卡灵港",
+  "ko": "포트칼링"
+ },
+ "Cobble Hill|BC": {
+  "zh": "科布尔希尔",
+  "ko": "코블힐"
+ },
+ "Russell|MB": {
+  "zh": "拉塞尔",
+  "ko": "러셀"
+ },
+ "Tadoussac|QC": {
+  "zh": "塔杜萨克",
+  "ko": "타두사크"
+ },
+ "The Pas|MB": {
+  "zh": "帕斯",
+  "ko": "더파"
+ },
+ "Kenora|ON": {
+  "zh": "凯诺拉",
+  "ko": "케노라"
+ },
+ "Fort Macleod|AB": {
+  "zh": "麦克劳德堡",
+  "ko": "포트매클라우드"
+ },
+ "Saint-Bruno-de-Montarville|QC": {
+  "zh": "圣布鲁诺德蒙塔维尔",
+  "ko": "생브뤼노드몽타르빌"
+ },
+ "Athabasca|AB": {
+  "zh": "阿萨巴斯卡",
+  "ko": "애서배스카"
+ },
+ "Coaticook|QC": {
+  "zh": "科阿蒂库克",
+  "ko": "코아티쿡"
+ },
+ "Warwick|QC": {
+  "zh": "沃里克",
+  "ko": "워릭"
+ },
+ "Saint-Marc-des-Carrières|QC": {
+  "zh": "圣马克德卡里埃",
+  "ko": "생마르크데카리에르"
+ },
+ "Qualicum Beach|BC": {
+  "zh": "夸利库姆海滩",
+  "ko": "퀄리컴비치"
+ },
+ "Hawkesbury|ON": {
+  "zh": "霍克斯伯里",
+  "ko": "혹스버리"
+ },
+ "Cowansville|QC": {
+  "zh": "考恩斯维尔",
+  "ko": "코완스빌"
+ },
+ "Campbellton|NB": {
+  "zh": "坎贝尔顿",
+  "ko": "캠벨턴"
+ },
+ "Stephenville|NL": {
+  "zh": "斯蒂芬维尔",
+  "ko": "스티븐빌"
+ },
+ "Lincoln|ON": {
+  "zh": "林肯",
+  "ko": "링컨"
+ },
+ "Baie-d'Urfé|QC": {
+  "zh": "拜迪尔菲",
+  "ko": "베뒤르페"
+ },
+ "Port Perry|ON": {
+  "zh": "佩里港",
+  "ko": "포트페리"
+ },
+ "Lunenburg|NS": {
+  "zh": "卢嫩堡",
+  "ko": "루넌버그"
+ },
+ "Dolbeau-Mistassini|QC": {
+  "zh": "多尔博米斯塔西尼",
+  "ko": "돌보미스타시니"
+ },
+ "Sainte-Julie|QC": {
+  "zh": "圣朱莉",
+  "ko": "생트쥘리"
+ },
+ "Saint-Michel|QC": {
+  "zh": "圣米歇尔",
+  "ko": "생미셸"
+ },
+ "Saint-Benoît-Labre|QC": {
+  "zh": "圣伯努瓦拉布尔",
+  "ko": "생브누아라브르"
+ },
+ "Woodstock|NB": {
+  "zh": "伍德斯托克",
+  "ko": "우드스톡"
+ },
+ "Wickham|QC": {
+  "zh": "威克姆",
+  "ko": "위컴"
+ },
+ "Saint-Quentin|NB": {
+  "zh": "圣康坦",
+  "ko": "생캉탱"
+ },
+ "L'Ancienne-Lorette|QC": {
+  "zh": "朗西安洛雷特",
+  "ko": "랑시엔로레트"
+ },
+ "Canyon|BC": {
+  "zh": "坎宁",
+  "ko": "캐니언"
+ },
+ "New Liskeard|ON": {
+  "zh": "新利斯卡德",
+  "ko": "뉴리스커드"
+ },
+ "Newcastle|ON": {
+  "zh": "纽卡斯尔",
+  "ko": "뉴캐슬"
+ },
+ "Shelburne|ON": {
+  "zh": "谢尔本",
+  "ko": "셸번"
+ },
+ "Radium Hot Springs|BC": {
+  "zh": "镭温泉",
+  "ko": "레이디엄핫스프링스"
+ },
+ "Foothills|AB": {
+  "zh": "富西尔斯",
+  "ko": "풋힐스"
+ },
+ "Bedford|QC": {
+  "zh": "贝德福德",
+  "ko": "베드퍼드"
+ },
+ "Lindsay|ON": {
+  "zh": "林赛",
+  "ko": "린지"
+ },
+ "Fort Erie|ON": {
+  "zh": "伊利堡",
+  "ko": "포트이리"
+ },
+ "Port Dover|ON": {
+  "zh": "多佛港",
+  "ko": "포트도버"
+ },
+ "Napanee|ON": {
+  "zh": "纳帕尼",
+  "ko": "내퍼니"
+ },
+ "Ingonish Beach|NS": {
+  "zh": "英戈尼什海滩",
+  "ko": "잉고니시비치"
+ },
+ "Blackfalds|AB": {
+  "zh": "布莱克福尔兹",
+  "ko": "블랙폴즈"
+ },
+ "Marathon|ON": {
+  "zh": "马拉松",
+  "ko": "매러선"
+ },
+ "Rosetown|SK": {
+  "zh": "罗斯敦",
+  "ko": "로즈타운"
+ },
+ "Richmond|QC": {
+  "zh": "里士满",
+  "ko": "리치먼드"
+ },
+ "La Malbaie|QC": {
+  "zh": "拉马尔拜",
+  "ko": "라말베"
+ },
+ "Delson|QC": {
+  "zh": "德尔森",
+  "ko": "델슨"
+ },
+ "Saint-Apollinaire|QC": {
+  "zh": "圣阿波利奈尔",
+  "ko": "생타폴리네르"
+ },
+ "Adstock|QC": {
+  "zh": "阿德斯托克",
+  "ko": "애드스톡"
+ },
+ "Parc-Bon-Air|QC": {
+  "zh": "帕克邦艾尔",
+  "ko": "파르크봉에르"
+ },
+ "Princeton|BC": {
+  "zh": "普林斯顿",
+  "ko": "프린스턴"
+ },
+ "Strathroy|ON": {
+  "zh": "斯特拉思罗伊",
+  "ko": "스트래스로이"
+ },
+ "Grimsby|ON": {
+  "zh": "格里姆斯比",
+  "ko": "그림즈비"
+ },
+ "High Prairie|AB": {
+  "zh": "海普雷里",
+  "ko": "하이프레리"
+ },
+ "Field|BC": {
+  "zh": "菲尔德",
+  "ko": "필드"
+ },
+ "Comox|BC": {
+  "zh": "科莫克斯",
+  "ko": "코목스"
+ },
+ "Beresford|NB": {
+  "zh": "贝雷斯福德",
+  "ko": "베리스퍼드"
+ },
+ "Sainte-Sophie|QC": {
+  "zh": "圣索菲",
+  "ko": "생트소피"
+ },
+ "Walkerton|ON": {
+  "zh": "沃克顿",
+  "ko": "워커턴"
+ },
+ "Mill Bay|BC": {
+  "zh": "米尔贝",
+  "ko": "밀베이"
+ },
+ "Listowel|ON": {
+  "zh": "利斯托尔",
+  "ko": "리스토얼"
+ },
+ "La Prairie|QC": {
+  "zh": "拉普雷里",
+  "ko": "라프레리"
+ },
+ "Grand Manan|NB": {
+  "zh": "大马南",
+  "ko": "그랜드매넌"
+ },
+ "Oakbank|MB": {
+  "zh": "奥克班克",
+  "ko": "오크뱅크"
+ },
+ "Sparwood|BC": {
+  "zh": "斯帕伍德",
+  "ko": "스파우드"
+ },
+ "Les Bergeronnes|QC": {
+  "zh": "莱贝热罗讷",
+  "ko": "레베르주론"
+ },
+ "Rosedale|BC": {
+  "zh": "罗斯代尔",
+  "ko": "로즈데일"
+ },
+ "Burns Lake|BC": {
+  "zh": "伯恩斯湖",
+  "ko": "번스레이크"
+ },
+ "Lillooet|BC": {
+  "zh": "利卢埃特",
+  "ko": "릴루엣"
+ },
+ "Ucluelet|BC": {
+  "zh": "尤克卢利特",
+  "ko": "유클루릿"
+ },
+ "Blenheim|ON": {
+  "zh": "布伦海姆",
+  "ko": "블레넘"
+ },
+ "Orléans|ON": {
+  "zh": "奥尔良",
+  "ko": "오를레앙"
+ },
+ "Tecumseh|ON": {
+  "zh": "特库姆塞",
+  "ko": "테컴세"
+ },
+ "La Crête|AB": {
+  "zh": "拉克雷特",
+  "ko": "라크레트"
+ },
+ "Lavaltrie|QC": {
+  "zh": "拉瓦尔特里",
+  "ko": "라발트리"
+ },
+ "Prescott|ON": {
+  "zh": "普雷斯科特",
+  "ko": "프레스콧"
+ },
+ "Notre-Dame-du-Nord|QC": {
+  "zh": "诺特尔达姆迪诺尔",
+  "ko": "노트르담뒤노르"
+ },
+ "Blainville|QC": {
+  "zh": "布兰维尔",
+  "ko": "블랭빌"
+ },
+ "Haliburton|ON": {
+  "zh": "哈利伯顿",
+  "ko": "핼리버턴"
+ },
+ "Blacks Harbour|NB": {
+  "zh": "布莱克斯港",
+  "ko": "블랙스하버"
+ },
+ "Dunnville|ON": {
+  "zh": "邓维尔",
+  "ko": "던빌"
+ },
+ "Acton|ON": {
+  "zh": "阿克顿",
+  "ko": "액턴"
+ },
+ "Saint-Raymond|QC": {
+  "zh": "圣雷蒙",
+  "ko": "생레몽"
+ },
+ "RM of Sherwood|SK": {
+  "zh": "舍伍德乡",
+  "ko": "셔우드"
+ },
+ "Tillsonburg|ON": {
+  "zh": "蒂尔森堡",
+  "ko": "틸슨버그"
+ },
+ "St. Thomas|ON": {
+  "zh": "圣托马斯",
+  "ko": "세인트토머스"
+ },
+ "Chéticamp|NS": {
+  "zh": "谢蒂坎",
+  "ko": "셰티캉"
+ },
+ "Lake Louise|AB": {
+  "zh": "路易斯湖",
+  "ko": "레이크루이스"
+ },
+ "Sainte-Claire|QC": {
+  "zh": "圣克莱尔",
+  "ko": "생트클레르"
+ },
+ "Maple Creek|SK": {
+  "zh": "梅普尔克里克",
+  "ko": "메이플크리크"
+ },
+ "Kensington|PE": {
+  "zh": "肯辛顿",
+  "ko": "켄싱턴"
+ },
+ "Debert|NS": {
+  "zh": "德伯特",
+  "ko": "디버트"
+ },
+ "Edmundston|NB": {
+  "zh": "埃德门兹顿",
+  "ko": "에드먼즈턴"
+ },
+ "Winkler|MB": {
+  "zh": "温克勒",
+  "ko": "윙클러"
+ },
+ "Ignace|ON": {
+  "zh": "伊格纳斯",
+  "ko": "이그너스"
+ },
+ "Prévost|QC": {
+  "zh": "普雷沃",
+  "ko": "프레보"
+ },
+ "Centreville|NS": {
+  "zh": "森特维尔",
+  "ko": "센터빌"
+ },
+ "Meteghan|NS": {
+  "zh": "梅特根",
+  "ko": "메티건"
+ },
+ "Malakwa|BC": {
+  "zh": "马拉夸",
+  "ko": "말라콰"
+ },
+ "Montague|PE": {
+  "zh": "蒙塔古",
+  "ko": "몬터규"
+ },
+ "Humboldt|SK": {
+  "zh": "洪堡",
+  "ko": "험볼트"
+ },
+ "Thedford|ON": {
+  "zh": "西德福德",
+  "ko": "세드퍼드"
+ },
+ "Stratford|PE": {
+  "zh": "斯特拉特福",
+  "ko": "스트랫퍼드"
+ },
+ "Port Colborne|ON": {
+  "zh": "科尔伯恩港",
+  "ko": "포트콜번"
+ },
+ "Sundre|AB": {
+  "zh": "森德雷",
+  "ko": "선드리"
+ },
+ "Saint-Rémi|QC": {
+  "zh": "圣雷米",
+  "ko": "생레미"
+ },
+ "Uxbridge|ON": {
+  "zh": "阿克斯布里奇",
+  "ko": "억스브리지"
+ },
+ "Exeter|ON": {
+  "zh": "埃克塞特",
+  "ko": "엑서터"
+ },
+ "Acton Vale|QC": {
+  "zh": "阿克顿韦尔",
+  "ko": "액턴베일"
+ },
+ "Saint-Alexandre-de-Kamouraska|QC": {
+  "zh": "圣亚历山大德卡穆拉斯卡",
+  "ko": "생탈렉상드르드카무라스카"
+ },
+ "Iron Springs|AB": {
+  "zh": "艾恩斯普林斯",
+  "ko": "아이언스프링스"
+ },
+ "Fort Qu'Appelle|SK": {
+  "zh": "卡佩勒堡",
+  "ko": "포트쿼펠"
+ },
+ "Cookshire-Eaton|QC": {
+  "zh": "库克夏伊顿",
+  "ko": "쿡셔이턴"
+ },
+ "L'Assomption|QC": {
+  "zh": "拉松普雄",
+  "ko": "라솜숑"
+ },
+ "Chemainus|BC": {
+  "zh": "舍梅纳斯",
+  "ko": "셰메이너스"
+ },
+ "Greenwood|NS": {
+  "zh": "格林伍德",
+  "ko": "그린우드"
+ },
+ "Red Deer County|AB": {
+  "zh": "红鹿县",
+  "ko": "레드디어카운티"
+ },
+ "North Saanich|BC": {
+  "zh": "北萨尼奇",
+  "ko": "노스사니치"
+ },
+ "Asbestos|QC": {
+  "zh": "阿斯贝斯托斯",
+  "ko": "아스베스토스"
+ },
+ "Oxford|NS": {
+  "zh": "牛津",
+  "ko": "옥스퍼드"
+ },
+ "Summerland|BC": {
+  "zh": "萨默兰",
+  "ko": "서머랜드"
+ },
+ "Lively|ON": {
+  "zh": "莱夫利",
+  "ko": "라이블리"
+ },
+ "Upper Tantallon|NS": {
+  "zh": "上坦塔隆",
+  "ko": "어퍼탠탈런"
+ },
+ "Valemount|BC": {
+  "zh": "韦尔芒特",
+  "ko": "베일마운트"
+ },
+ "Malartic|QC": {
+  "zh": "马拉蒂克",
+  "ko": "말라르티크"
+ },
+ "Chibougamau|QC": {
+  "zh": "希布加莫",
+  "ko": "시부가모"
+ },
+ "Beaconsfield|QC": {
+  "zh": "比肯斯菲尔德",
+  "ko": "비컨스필드"
+ },
+ "Glovertown|NL": {
+  "zh": "格洛弗敦",
+  "ko": "글러버타운"
+ },
+ "Esterhazy|SK": {
+  "zh": "埃斯特黑齐",
+  "ko": "에스터하지"
+ },
+ "Pasadena|NL": {
+  "zh": "帕萨迪纳",
+  "ko": "패서디나"
+ },
+ "Stanstead|QC": {
+  "zh": "斯坦斯特德",
+  "ko": "스탠스테드"
+ },
+ "Kingston|NS": {
+  "zh": "金斯顿",
+  "ko": "킹스턴"
+ },
+ "Trenton|ON": {
+  "zh": "特伦顿",
+  "ko": "트렌턴"
+ },
+ "Mono|ON": {
+  "zh": "莫诺",
+  "ko": "모노"
+ },
+ "Hanover|ON": {
+  "zh": "汉诺威",
+  "ko": "하노버"
+ },
+ "St. Pauls|NL": {
+  "zh": "圣保罗斯",
+  "ko": "세인트폴스"
+ },
+ "Montréal-Est|QC": {
+  "zh": "东蒙特利尔",
+  "ko": "몽레알에스트"
+ },
+ "Harrison Hot Springs|BC": {
+  "zh": "哈里森温泉",
+  "ko": "해리슨핫스프링스"
+ },
+ "Ange-Gardien|QC": {
+  "zh": "昂日加尔迪安",
+  "ko": "앙주가르디앵"
+ },
+ "Fort Saskatchewan|AB": {
+  "zh": "萨斯喀彻温堡",
+  "ko": "포트서스캐처원"
+ },
+ "Blue Mountains|ON": {
+  "zh": "蓝山",
+  "ko": "블루마운틴스"
+ },
+ "St. Andrews|MB": {
+  "zh": "圣安德鲁斯",
+  "ko": "세인트앤드루스"
+ },
+ "Wildcat|AB": {
+  "zh": "怀尔德卡特",
+  "ko": "와일드캣"
+ },
+ "Innisfil|ON": {
+  "zh": "因尼斯菲尔",
+  "ko": "이니스필"
+ },
+ "Fergus|ON": {
+  "zh": "弗格斯",
+  "ko": "퍼거스"
+ },
+ "New Richmond|QC": {
+  "zh": "新里士满",
+  "ko": "뉴리치먼드"
+ },
+ "Ayr|ON": {
+  "zh": "艾尔",
+  "ko": "에어"
+ },
+ "Bowmanville|ON": {
+  "zh": "鲍曼维尔",
+  "ko": "보먼빌"
+ },
+ "Tottenham|ON": {
+  "zh": "托特纳姆",
+  "ko": "토트넘"
+ },
+ "Wingham|ON": {
+  "zh": "温厄姆",
+  "ko": "윙엄"
+ },
+ "St. Marys|ON": {
+  "zh": "圣玛丽斯",
+  "ko": "세인트메리스"
+ },
+ "Saint-Léonard-d'Aston|QC": {
+  "zh": "圣莱昂纳尔达斯通",
+  "ko": "생레오나르다스통"
+ },
+ "Cheltenham|ON": {
+  "zh": "切尔滕纳姆",
+  "ko": "첼트넘"
+ },
+ "Little Current|ON": {
+  "zh": "利特尔卡伦特",
+  "ko": "리틀커런트"
+ },
+ "Picton|ON": {
+  "zh": "皮克顿",
+  "ko": "픽턴"
+ },
+ "Vineland Station|ON": {
+  "zh": "瓦恩兰斯泰申",
+  "ko": "바인랜드스테이션"
+ },
+ "La Guadeloupe|QC": {
+  "zh": "拉瓜德罗普",
+  "ko": "라과들루프"
+ },
+ "Cap-Pele|NB": {
+  "zh": "卡佩莱",
+  "ko": "카프펠레"
+ },
+ "Puslinch|ON": {
+  "zh": "帕斯林奇",
+  "ko": "퍼슬린치"
+ },
+ "Daveluyville|QC": {
+  "zh": "达夫吕维尔",
+  "ko": "다블뤼빌"
+ },
+ "Princeville|QC": {
+  "zh": "普林斯维尔",
+  "ko": "프랭스빌"
+ },
+ "Orford|QC": {
+  "zh": "奥福德",
+  "ko": "오르포르"
+ },
+ "Saint-Antonin|QC": {
+  "zh": "圣安托南",
+  "ko": "생탕토냉"
+ },
+ "Warman|SK": {
+  "zh": "沃曼",
+  "ko": "워먼"
+ },
+ "St. Anthony|NL": {
+  "zh": "圣安东尼",
+  "ko": "세인트앤서니"
+ },
+ "Gananoque|ON": {
+  "zh": "加纳诺克",
+  "ko": "개너녹"
+ },
+ "Redwater|AB": {
+  "zh": "雷德沃特",
+  "ko": "레드워터"
+ },
+ "Hearst|ON": {
+  "zh": "赫斯特",
+  "ko": "허스트"
+ },
+ "Oak Bluff|MB": {
+  "zh": "奥克布拉夫",
+  "ko": "오크블러프"
+ },
+ "Chandler|QC": {
+  "zh": "钱德勒",
+  "ko": "챈들러"
+ },
+ "Grimshaw|AB": {
+  "zh": "格里姆肖",
+  "ko": "그림쇼"
+ },
+ "Lloydminster|SK": {
+  "zh": "劳埃德明斯特",
+  "ko": "로이드민스터"
+ },
+ "Lac-Mégantic|QC": {
+  "zh": "拉克梅甘蒂克",
+  "ko": "라크메간티크"
+ },
+ "Saint-Lin-Laurentides|QC": {
+  "zh": "圣兰洛朗蒂德",
+  "ko": "생랭로랑티드"
+ },
+ "Grande Cache|AB": {
+  "zh": "格兰德卡什",
+  "ko": "그랜드캐시"
+ },
+ "Carp|ON": {
+  "zh": "卡普",
+  "ko": "카프"
+ },
+ "La Salette|ON": {
+  "zh": "拉萨莱特",
+  "ko": "라살레트"
+ },
+ "Stayner|ON": {
+  "zh": "斯泰纳",
+  "ko": "스테이너"
+ },
+ "Fairview|AB": {
+  "zh": "费尔维尤",
+  "ko": "페어뷰"
+ },
+ "Brackendale|BC": {
+  "zh": "布拉肯代尔",
+  "ko": "브래컨데일"
+ },
+ "Riverview|NB": {
+  "zh": "里弗维尤",
+  "ko": "리버뷰"
+ },
+ "Pierrefonds|QC": {
+  "zh": "皮埃尔丰",
+  "ko": "피에르퐁"
+ },
+ "Wonowon|BC": {
+  "zh": "沃诺旺",
+  "ko": "워노원"
+ },
+ "Redcliff|AB": {
+  "zh": "雷德克利夫",
+  "ko": "레드클리프"
+ },
+ "Peachland|BC": {
+  "zh": "皮奇兰",
+  "ko": "피치랜드"
+ },
+ "Caraquet|NB": {
+  "zh": "卡拉凯",
+  "ko": "카라케"
+ },
+ "Keene|ON": {
+  "zh": "基恩",
+  "ko": "킨"
+ },
+ "Timberlea|NS": {
+  "zh": "廷伯利",
+  "ko": "팀벌리"
+ },
+ "Saint-Gabriel|QC": {
+  "zh": "圣加布里埃尔",
+  "ko": "생가브리엘"
+ },
+ "Fall River|NS": {
+  "zh": "福尔里弗",
+  "ko": "폴리버"
+ },
+ "Marystown|NL": {
+  "zh": "玛丽斯敦",
+  "ko": "메리스타운"
+ },
+ "Montebello|QC": {
+  "zh": "蒙特贝洛",
+  "ko": "몬테벨로"
+ },
+ "St. Stephen|NB": {
+  "zh": "圣斯蒂芬",
+  "ko": "세인트스티븐"
+ },
+ "Millbrook|NS": {
+  "zh": "米尔布鲁克",
+  "ko": "밀브룩"
+ },
+ "Paspébiac|QC": {
+  "zh": "帕斯佩比亚克",
+  "ko": "파스페비아크"
+ },
+ "Hammonds Plains|NS": {
+  "zh": "哈蒙兹普莱恩斯",
+  "ko": "해먼즈플레인스"
+ },
+ "Scotland|ON": {
+  "zh": "斯科特兰",
+  "ko": "스코틀랜드"
+ },
+ "Laterrière|QC": {
+  "zh": "拉特里耶尔",
+  "ko": "라테리에르"
+ },
+ "Saulnierville|NS": {
+  "zh": "索尼耶维尔",
+  "ko": "솔니에빌"
+ },
+ "Enchant|AB": {
+  "zh": "恩钱特",
+  "ko": "인챈트"
+ },
+ "Fraser Lake|BC": {
+  "zh": "弗雷泽湖",
+  "ko": "프레이저레이크"
+ },
+ "Stettler|AB": {
+  "zh": "斯泰特勒",
+  "ko": "스테틀러"
+ },
+ "Saint-André-de-Shédiac|NB": {
+  "zh": "圣安德烈德谢迪亚克",
+  "ko": "생탕드레드셰디아크"
+ },
+ "Trois-Pistoles|QC": {
+  "zh": "特鲁瓦皮斯托勒",
+  "ko": "트루아피스톨"
+ },
+ "Lac-Etchemin|QC": {
+  "zh": "拉克埃切曼",
+  "ko": "라크에치맹"
+ },
+ "Caledonia|NS": {
+  "zh": "喀里多尼亚",
+  "ko": "칼레도니아"
+ },
+ "Eston|SK": {
+  "zh": "伊斯顿",
+  "ko": "이스턴"
+ },
+ "Niverville|MB": {
+  "zh": "尼弗维尔",
+  "ko": "니버빌"
+ },
+ "Vanier|ON": {
+  "zh": "瓦尼耶",
+  "ko": "바니에"
+ },
+ "Bienfait|SK": {
+  "zh": "比恩费特",
+  "ko": "비엔페이트"
+ },
+ "North West River|NL": {
+  "zh": "诺斯韦斯特里弗",
+  "ko": "노스웨스트리버"
+ },
+ "Sainte-Clotilde-de-Châteauguay|QC": {
+  "zh": "圣克洛蒂尔德德沙托盖",
+  "ko": "생트클로틸드드샤토게"
+ },
+ "Saint-Roch-de-l'Achigan|QC": {
+  "zh": "圣罗克德拉希冈",
+  "ko": "생로크드라시강"
+ },
+ "Laurier-Station|QC": {
+  "zh": "洛里耶斯塔西翁",
+  "ko": "로리에스타시옹"
+ },
+ "Schomberg|ON": {
+  "zh": "肖姆伯格",
+  "ko": "숌버그"
+ },
+ "Burford|ON": {
+  "zh": "伯福德",
+  "ko": "버퍼드"
+ },
+ "Arborg|MB": {
+  "zh": "阿博格",
+  "ko": "아보그"
+ },
+ "St-Eugène|ON": {
+  "zh": "圣欧仁",
+  "ko": "생외젠"
+ },
+ "Cap-aux-Meules|QC": {
+  "zh": "卡波默勒",
+  "ko": "카포묄"
+ },
+ "Sutton West|ON": {
+  "zh": "西萨顿",
+  "ko": "서턴웨스트"
+ },
+ "Paris|ON": {
+  "zh": "巴黎",
+  "ko": "패리스"
+ },
+ "Saint-Bernard|QC": {
+  "zh": "圣贝尔纳",
+  "ko": "생베르나르"
+ },
+ "Inglewood|ON": {
+  "zh": "英格尔伍德",
+  "ko": "잉글우드"
+ },
+ "Holland Landing|ON": {
+  "zh": "霍兰兰丁",
+  "ko": "홀랜드랜딩"
+ },
+ "Arthur|ON": {
+  "zh": "阿瑟",
+  "ko": "아서"
+ },
+ "Port-Cartier|QC": {
+  "zh": "卡蒂埃港",
+  "ko": "포르카르티에"
+ },
+ "Clarke's Beach|NL": {
+  "zh": "克拉克斯比奇",
+  "ko": "클라크스비치"
+ },
+ "Manitou Beach|SK": {
+  "zh": "马尼图比奇",
+  "ko": "매니토비치"
+ },
+ "Blue River|BC": {
+  "zh": "布卢里弗",
+  "ko": "블루리버"
+ },
+ "Sainte-Anne-des-Monts|QC": {
+  "zh": "圣安德蒙",
+  "ko": "생탄데몽"
+ },
+ "Saint-Urbain-de-Charlevoix|QC": {
+  "zh": "圣于尔班德沙勒沃瓦",
+  "ko": "생튀르뱅드샤를부아"
+ },
+ "Perth|ON": {
+  "zh": "珀斯",
+  "ko": "퍼스"
+ },
+ "Ingersoll|ON": {
+  "zh": "英格索尔",
+  "ko": "잉거솔"
+ },
+ "Morley|AB": {
+  "zh": "莫利",
+  "ko": "몰리"
+ },
+ "Beaverton|ON": {
+  "zh": "比弗顿",
+  "ko": "비버턴"
+ },
+ "Calmar|AB": {
+  "zh": "卡尔马",
+  "ko": "캘마"
+ },
+ "Saint-Évariste-de-Forsyth|QC": {
+  "zh": "圣埃瓦里斯特德福赛斯",
+  "ko": "생테바리스트드포시스"
+ },
+ "Tracadie-Sheila|NB": {
+  "zh": "特拉卡迪希拉",
+  "ko": "트라카디실라"
+ },
+ "Havre-Saint-Pierre|QC": {
+  "zh": "阿夫尔圣皮埃尔",
+  "ko": "아브르생피에르"
+ },
+ "Les Coteaux|QC": {
+  "zh": "莱科托",
+  "ko": "레코토"
+ },
+ "Lakeside|NS": {
+  "zh": "莱克赛德",
+  "ko": "레이크사이드"
+ },
+ "Sainte-Thérèse|QC": {
+  "zh": "圣泰雷兹",
+  "ko": "생트테레즈"
+ },
+ "Scotsburn|NS": {
+  "zh": "斯科茨伯恩",
+  "ko": "스코츠번"
+ },
+ "Chester|NS": {
+  "zh": "切斯特",
+  "ko": "체스터"
+ },
+ "Saint-Romain|QC": {
+  "zh": "圣罗曼",
+  "ko": "생로맹"
+ },
+ "Les Cèdres|QC": {
+  "zh": "莱塞德尔",
+  "ko": "레세드르"
+ },
+ "Brentwood Bay|BC": {
+  "zh": "布伦特伍德湾",
+  "ko": "브렌트우드베이"
+ },
+ "Kimberley|BC": {
+  "zh": "金伯利",
+  "ko": "킴벌리"
+ },
+ "Mount Hope|ON": {
+  "zh": "芒特霍普",
+  "ko": "마운트호프"
+ },
+ "Ashcroft|BC": {
+  "zh": "阿什克罗夫特",
+  "ko": "애시크로프트"
+ },
+ "Saint-Gilles|QC": {
+  "zh": "圣吉尔",
+  "ko": "생질"
+ },
+ "Ville-Marie|QC": {
+  "zh": "维尔玛丽",
+  "ko": "빌마리"
+ },
+ "Coaldale|AB": {
+  "zh": "科尔代尔",
+  "ko": "콜데일"
+ },
+ "Norwich|ON": {
+  "zh": "诺威奇",
+  "ko": "노리치"
+ },
+ "Chapais|QC": {
+  "zh": "沙佩",
+  "ko": "샤페"
+ },
+ "Alliston|ON": {
+  "zh": "阿利斯顿",
+  "ko": "앨리스턴"
+ },
+ "Brussels|ON": {
+  "zh": "布鲁塞尔斯",
+  "ko": "브러설스"
+ },
+ "Hilden|NS": {
+  "zh": "希尔登",
+  "ko": "힐든"
+ },
+ "Rimbey|AB": {
+  "zh": "林比",
+  "ko": "림비"
+ },
+ "King|ON": {
+  "zh": "金镇",
+  "ko": "킹"
+ },
+ "L'Islet|QC": {
+  "zh": "利莱",
+  "ko": "릴레"
+ },
+ "Lamont|AB": {
+  "zh": "拉蒙特",
+  "ko": "래먼트"
+ },
+ "Carman|MB": {
+  "zh": "卡曼",
+  "ko": "카먼"
+ },
+ "Wallaceburg|ON": {
+  "zh": "华莱士堡",
+  "ko": "월리스버그"
+ },
+ "Saint-Pie|QC": {
+  "zh": "圣皮",
+  "ko": "생피"
+ },
+ "Fairmont Hot Springs|BC": {
+  "zh": "费尔蒙特温泉",
+  "ko": "페어몬트핫스프링스"
+ },
+ "Farnham|QC": {
+  "zh": "法纳姆",
+  "ko": "파넘"
+ },
+ "Edmonton International Airport|AB": {
+  "zh": "埃德蒙顿国际机场",
+  "ko": "에드먼턴국제공항"
+ },
+ "Blumenort|MB": {
+  "zh": "布卢门诺特",
+  "ko": "블루메노르트"
+ },
+ "Saint-Alphonse-de-Granby|QC": {
+  "zh": "圣阿方斯德格兰比",
+  "ko": "생탈퐁스드그랜비"
+ },
+ "Hebron|NS": {
+  "zh": "希伯伦",
+  "ko": "헤브론"
+ },
+ "Sainte-Catherine|QC": {
+  "zh": "圣卡特琳",
+  "ko": "생트카트린"
+ },
+ "St George|NB": {
+  "zh": "圣乔治",
+  "ko": "세인트조지"
+ },
+ "Wedgeport|NS": {
+  "zh": "韦奇波特",
+  "ko": "웨지포트"
+ },
+ "Mayfield|PE": {
+  "zh": "梅菲尔德",
+  "ko": "메이필드"
+ },
+ "Bois-des-Filion|QC": {
+  "zh": "布瓦德菲利翁",
+  "ko": "부아데필리옹"
+ },
+ "Three Hills|AB": {
+  "zh": "斯里希尔斯",
+  "ko": "스리힐스"
+ },
+ "Outlook|SK": {
+  "zh": "奥特卢克",
+  "ko": "아웃룩"
+ },
+ "Clairmont|AB": {
+  "zh": "克莱蒙特",
+  "ko": "클레어몬트"
+ },
+ "Mackenzie|BC": {
+  "zh": "麦肯齐",
+  "ko": "매켄지"
+ },
+ "Scoudouc|NB": {
+  "zh": "斯库杜克",
+  "ko": "스쿠덕"
+ },
+ "Sainte-Anne-des-Plaines|QC": {
+  "zh": "圣安德普莱讷",
+  "ko": "생탄데플렌"
+ },
+ "Onanole|MB": {
+  "zh": "奥纳诺尔",
+  "ko": "오나놀"
+ },
+ "Long Harbour|BC": {
+  "zh": "朗港",
+  "ko": "롱하버"
+ },
+ "Waterloo|QC": {
+  "zh": "滑铁卢",
+  "ko": "워털루"
+ },
+ "Pickardville|AB": {
+  "zh": "皮卡德维尔",
+  "ko": "피카드빌"
+ },
+ "Lac-Beauport|QC": {
+  "zh": "博波尔湖",
+  "ko": "라크보포르"
+ },
+ "Battleford|SK": {
+  "zh": "巴特尔福德",
+  "ko": "배틀퍼드"
+ },
+ "Blairmore|AB": {
+  "zh": "布莱尔莫尔",
+  "ko": "블레어모어"
+ },
+ "Riverton|MB": {
+  "zh": "里弗顿",
+  "ko": "리버턴"
+ },
+ "Osler|SK": {
+  "zh": "奥斯勒",
+  "ko": "오슬러"
+ },
+ "Saint-Césaire|QC": {
+  "zh": "圣塞泽尔",
+  "ko": "생세제르"
+ },
+ "Longue-Pointe-de-Mingan|QC": {
+  "zh": "隆格普安特德曼甘",
+  "ko": "롱그푸앵트드맹강"
+ },
+ "Weedon|QC": {
+  "zh": "威登",
+  "ko": "위던"
+ },
+ "Jordan Station|ON": {
+  "zh": "乔丹站",
+  "ko": "조던스테이션"
+ },
+ "Ryley|AB": {
+  "zh": "赖利",
+  "ko": "라일리"
+ },
+ "Saint-Charles-Borromée|QC": {
+  "zh": "圣夏尔博罗梅",
+  "ko": "생샤를보로메"
+ },
+ "Stony Mountain|MB": {
+  "zh": "斯托尼芒廷",
+  "ko": "스토니마운틴"
+ },
+ "Kingsport|NS": {
+  "zh": "金斯波特",
+  "ko": "킹스포트"
+ },
+ "Muncho Lake|BC": {
+  "zh": "芒乔湖",
+  "ko": "먼초레이크"
+ },
+ "Sun Peaks|BC": {
+  "zh": "太阳峰",
+  "ko": "선피크스"
+ },
+ "Sexsmith|AB": {
+  "zh": "塞克史密斯",
+  "ko": "섹스미스"
+ },
+ "Melfort|SK": {
+  "zh": "梅尔福特",
+  "ko": "멜포트"
+ },
+ "Stonewall|MB": {
+  "zh": "斯通沃尔",
+  "ko": "스톤월"
+ },
+ "Port Williams|NS": {
+  "zh": "威廉斯港",
+  "ko": "포트윌리엄스"
+ },
+ "Minnedosa|MB": {
+  "zh": "明尼多萨",
+  "ko": "미네도사"
+ },
+ "Oldcastle|ON": {
+  "zh": "奥尔德卡斯尔",
+  "ko": "올드캐슬"
+ },
+ "Rockwood|ON": {
+  "zh": "罗克伍德",
+  "ko": "록우드"
+ },
+ "Sunnyside|MB": {
+  "zh": "森尼赛德",
+  "ko": "서니사이드"
+ },
+ "Melita|MB": {
+  "zh": "梅利塔",
+  "ko": "멜리타"
+ },
+ "Windsor|QC": {
+  "zh": "温莎",
+  "ko": "윈저"
+ },
+ "Sainte-Madeleine|QC": {
+  "zh": "圣马德莱娜",
+  "ko": "생트마들렌"
+ },
+ "Saint-Louis-de-Blandford|QC": {
+  "zh": "圣路易德布兰福德",
+  "ko": "생루이드블랜퍼드"
+ },
+ "Hadashville|MB": {
+  "zh": "哈达什维尔",
+  "ko": "해더시빌"
+ },
+ "Gimli|MB": {
+  "zh": "吉姆利",
+  "ko": "김리"
+ },
+ "Langton|ON": {
+  "zh": "兰顿",
+  "ko": "랭턴"
+ },
+ "Hanna|AB": {
+  "zh": "汉纳",
+  "ko": "해나"
+ },
+ "Lockhartville|NS": {
+  "zh": "洛克哈特维尔",
+  "ko": "록하트빌"
+ },
+ "East St. Paul|MB": {
+  "zh": "东圣保罗",
+  "ko": "이스트세인트폴"
+ },
+ "L'Ange-Gardien|QC": {
+  "zh": "朗日加尔迪安",
+  "ko": "랑주가르디앵"
+ },
+ "Oromocto|NB": {
+  "zh": "奥罗莫克托",
+  "ko": "오로목토"
+ },
+ "Bridgetown|NS": {
+  "zh": "布里奇敦",
+  "ko": "브리지타운"
+ },
+ "Keremeos|BC": {
+  "zh": "克里米奥斯",
+  "ko": "케레미오스"
+ },
+ "Rexton|NB": {
+  "zh": "雷克斯顿",
+  "ko": "렉스턴"
+ },
+ "Knowlton|QC": {
+  "zh": "诺尔顿",
+  "ko": "놀턴"
+ },
+ "Beaumont|QC": {
+  "zh": "博蒙",
+  "ko": "보몽"
+ },
+ "New Ross|NS": {
+  "zh": "新罗斯",
+  "ko": "뉴로스"
+ },
+ "Beaverlodge|AB": {
+  "zh": "比弗洛奇",
+  "ko": "비버로지"
+ },
+ "Hythe|AB": {
+  "zh": "海思",
+  "ko": "하이스"
+ },
+ "Barrière|BC": {
+  "zh": "巴里尔",
+  "ko": "배리어"
+ },
+ "L'Île-Bizard|QC": {
+  "zh": "比扎尔岛",
+  "ko": "릴비자르"
+ },
+ "Enderby|BC": {
+  "zh": "恩德比",
+  "ko": "엔더비"
+ },
+ "Coteau-du-Lac|QC": {
+  "zh": "科托迪拉克",
+  "ko": "코토뒤라크"
+ },
+ "Albright|AB": {
+  "zh": "奥尔布赖特",
+  "ko": "올브라이트"
+ },
+ "Saint-Vallier|QC": {
+  "zh": "圣瓦利耶",
+  "ko": "생발리에"
+ },
+ "Thamesville|ON": {
+  "zh": "泰晤士维尔",
+  "ko": "템스빌"
+ },
+ "Pictou|NS": {
+  "zh": "皮克图",
+  "ko": "픽토"
+ },
+ "Saint-Cuthbert|QC": {
+  "zh": "圣卡斯伯特",
+  "ko": "생퀴트베르"
+ },
+ "Coldstream|BC": {
+  "zh": "科尔德斯特里姆",
+  "ko": "콜드스트림"
+ },
+ "Dorchester|ON": {
+  "zh": "多切斯特",
+  "ko": "도체스터"
+ },
+ "Amaranth|MB": {
+  "zh": "阿马兰斯",
+  "ko": "애머랜스"
+ },
+ "Chester Basin|NS": {
+  "zh": "切斯特贝森",
+  "ko": "체스터베이슨"
+ },
+ "Amherstburg|ON": {
+  "zh": "阿默斯特堡",
+  "ko": "앰허스트버그"
+ },
+ "Clark's Harbour|NS": {
+  "zh": "克拉克斯港",
+  "ko": "클라크스하버"
+ },
+ "Lanoraie|QC": {
+  "zh": "拉诺雷",
+  "ko": "라노레"
+ },
+ "Forteau|NL": {
+  "zh": "福托",
+  "ko": "포토"
+ },
+ "Queensville|ON": {
+  "zh": "昆斯维尔",
+  "ko": "퀸스빌"
+ },
+ "Tumbler Ridge|BC": {
+  "zh": "坦布勒岭",
+  "ko": "텀블러리지"
+ },
+ "Campbellville|ON": {
+  "zh": "坎贝尔维尔",
+  "ko": "캠벨빌"
+ },
+ "Westville|NS": {
+  "zh": "韦斯特维尔",
+  "ko": "웨스트빌"
+ },
+ "Echo Bay|ON": {
+  "zh": "埃科湾",
+  "ko": "에코베이"
+ },
+ "Southampton|ON": {
+  "zh": "南安普敦",
+  "ko": "사우샘프턴"
+ },
+ "Tring-Jonction|QC": {
+  "zh": "特兰容克雄",
+  "ko": "트랭종크시옹"
+ },
+ "Ogden|QC": {
+  "zh": "奥格登",
+  "ko": "오그던"
+ },
+ "Fonthill|ON": {
+  "zh": "方特希尔",
+  "ko": "폰트힐"
+ },
+ "Windham Centre|ON": {
+  "zh": "温德姆森特",
+  "ko": "윈덤센터"
+ },
+ "Saint-Paul-de-l'Île-aux-Noix|QC": {
+  "zh": "圣保罗德利奥努瓦",
+  "ko": "생폴드릴오누아"
+ },
+ "Drayton|ON": {
+  "zh": "德雷顿",
+  "ko": "드레이턴"
+ },
+ "Langenburg|SK": {
+  "zh": "兰根堡",
+  "ko": "랭건버그"
+ },
+ "Roblin|MB": {
+  "zh": "罗布林",
+  "ko": "로블린"
+ },
+ "Lac-Drolet|QC": {
+  "zh": "德罗莱湖",
+  "ko": "라크드롤레"
+ },
+ "Geraldton|ON": {
+  "zh": "杰拉尔德顿",
+  "ko": "제럴드턴"
+ },
+ "Legal|AB": {
+  "zh": "利格尔",
+  "ko": "리걸"
+ },
+ "Smiths Falls|ON": {
+  "zh": "史密斯福尔斯",
+  "ko": "스미스폴스"
+ },
+ "Halton Hills|ON": {
+  "zh": "荷顿山",
+  "ko": "홀턴힐스"
+ },
+ "Keswick|ON": {
+  "zh": "基斯威克",
+  "ko": "케직"
+ },
+ "Terrace Bay|ON": {
+  "zh": "特勒斯湾",
+  "ko": "테라스베이"
+ },
+ "Provost|AB": {
+  "zh": "普罗沃斯特",
+  "ko": "프로보스트"
+ },
+ "Pemberton|BC": {
+  "zh": "彭伯顿",
+  "ko": "펨버턴"
+ },
+ "Elmira|ON": {
+  "zh": "埃尔迈拉",
+  "ko": "엘마이라"
+ },
+ "Saint-Michel-des-Saints|QC": {
+  "zh": "圣米歇尔德桑",
+  "ko": "생미셸데생"
+ },
+ "Summerford|NL": {
+  "zh": "萨默福德",
+  "ko": "서머퍼드"
+ },
+ "Maniwaki|QC": {
+  "zh": "马尼瓦基",
+  "ko": "매니와키"
+ },
+ "Murray Harbour|PE": {
+  "zh": "默里港",
+  "ko": "머리하버"
+ },
+ "Baddeck|NS": {
+  "zh": "巴德克",
+  "ko": "배덱"
+ },
+ "Elora|ON": {
+  "zh": "埃洛拉",
+  "ko": "엘로라"
+ },
+ "Eckville|AB": {
+  "zh": "埃克维尔",
+  "ko": "에크빌"
+ },
+ "Saint-Gilbert|QC": {
+  "zh": "圣吉尔贝",
+  "ko": "생질베르"
+ },
+ "Saint-Ferdinand|QC": {
+  "zh": "圣费迪南",
+  "ko": "생페르디낭"
+ },
+ "Flin Flon|MB": {
+  "zh": "弗林弗伦",
+  "ko": "플린플론"
+ },
+ "Saint-Guillaume|QC": {
+  "zh": "圣纪尧姆",
+  "ko": "생기욤"
+ },
+ "Ridgetown|ON": {
+  "zh": "里奇敦",
+  "ko": "리지타운"
+ },
+ "Pointe-Lebel|QC": {
+  "zh": "普安特勒贝尔",
+  "ko": "푸앵트르벨"
+ },
+ "Cowichan Bay|BC": {
+  "zh": "考伊琴湾",
+  "ko": "카우천베이"
+ },
+ "Oka|QC": {
+  "zh": "奥卡",
+  "ko": "오카"
+ },
+ "Neuville|QC": {
+  "zh": "讷维尔",
+  "ko": "뇌빌"
+ },
+ "Greenfield Park|QC": {
+  "zh": "格林菲尔德帕克",
+  "ko": "그린필드파크"
+ },
+ "Scott|QC": {
+  "zh": "斯科特",
+  "ko": "스콧"
+ },
+ "Northampton|NB": {
+  "zh": "北安普敦",
+  "ko": "노샘프턴"
+ },
+ "Virden|MB": {
+  "zh": "弗登",
+  "ko": "버든"
+ },
+ "Notre Dame de Lourdes|MB": {
+  "zh": "诺特丹德卢尔德",
+  "ko": "노트르담드루르드"
+ },
+ "Penetanguishene|ON": {
+  "zh": "佩内坦吉申",
+  "ko": "페니탱귀신"
+ },
+ "Torbay|NL": {
+  "zh": "托贝",
+  "ko": "토베이"
+ },
+ "Cardigan|PE": {
+  "zh": "卡迪根",
+  "ko": "카디건"
+ },
+ "Sainte-Julienne|QC": {
+  "zh": "圣朱利安",
+  "ko": "생트쥘리엔"
+ },
+ "Saint-Valérien-de-Milton|QC": {
+  "zh": "圣瓦莱里安德米尔顿",
+  "ko": "생발레리앵드밀턴"
+ },
+ "La Pocatière|QC": {
+  "zh": "拉波卡蒂埃",
+  "ko": "라포카티에르"
+ },
+ "Melville|SK": {
+  "zh": "梅尔维尔",
+  "ko": "멜빌"
+ },
+ "Lac-Bouchette|QC": {
+  "zh": "布谢特湖",
+  "ko": "라크부셰트"
+ },
+ "Grunthal|MB": {
+  "zh": "格伦塔尔",
+  "ko": "그런솔"
+ },
+ "Killarney|MB": {
+  "zh": "基拉尼",
+  "ko": "킬라니"
+ },
+ "North Rustico|PE": {
+  "zh": "北拉斯蒂科",
+  "ko": "노스러스티코"
+ },
+ "Bay Roberts|NL": {
+  "zh": "贝罗伯茨",
+  "ko": "베이로버츠"
+ },
+ "Tisdale|SK": {
+  "zh": "蒂斯代尔",
+  "ko": "티즈데일"
+ },
+ "Chase|BC": {
+  "zh": "蔡斯",
+  "ko": "체이스"
+ },
+ "Saint-Victor|QC": {
+  "zh": "圣维克托",
+  "ko": "생빅토르"
+ },
+ "Vanessa|ON": {
+  "zh": "瓦内莎",
+  "ko": "버네사"
+ },
+ "Alma|NB": {
+  "zh": "阿尔马",
+  "ko": "앨마"
+ },
+ "Lower West Pubnico|NS": {
+  "zh": "下西帕布尼科",
+  "ko": "로어웨스트퍼브니코"
+ },
+ "Florence|ON": {
+  "zh": "弗洛伦斯",
+  "ko": "플로렌스"
+ },
+ "Saint Andrews|NB": {
+  "zh": "圣安德鲁斯",
+  "ko": "세인트앤드루스"
+ },
+ "Fort St. James|BC": {
+  "zh": "圣詹姆斯堡",
+  "ko": "포트세인트제임스"
+ },
+ "Okanagan Falls|BC": {
+  "zh": "奥肯那根福尔斯",
+  "ko": "오커나건폴스"
+ },
+ "South Porcupine|ON": {
+  "zh": "南波丘派恩",
+  "ko": "사우스포큐파인"
+ },
+ "Rocanville|SK": {
+  "zh": "罗坎维尔",
+  "ko": "로컨빌"
+ },
+ "Didsbury|AB": {
+  "zh": "迪兹伯里",
+  "ko": "디즈버리"
+ },
+ "Foremost|AB": {
+  "zh": "福尔莫斯特",
+  "ko": "포모스트"
+ },
+ "Beauval|SK": {
+  "zh": "博瓦尔",
+  "ko": "보발"
+ },
+ "Saint-Alexis-de-Montcalm|QC": {
+  "zh": "圣阿莱克西德蒙卡尔姆",
+  "ko": "생탈렉시드몽칼름"
+ },
+ "Saint-Paul|QC": {
+  "zh": "圣保罗",
+  "ko": "생폴"
+ },
+ "Grenville|QC": {
+  "zh": "格伦维尔",
+  "ko": "그렌빌"
+ },
+ "Arnprior|ON": {
+  "zh": "阿恩普赖尔",
+  "ko": "안프라이어"
+ },
+ "Pickle Lake|ON": {
+  "zh": "皮克尔湖",
+  "ko": "피클레이크"
+ },
+ "Saint-Polycarpe|QC": {
+  "zh": "圣波利卡尔普",
+  "ko": "생폴리카르프"
+ },
+ "Rivière-Héva|QC": {
+  "zh": "里维耶尔埃瓦",
+  "ko": "리비에르에바"
+ },
+ "Devon|AB": {
+  "zh": "德文",
+  "ko": "데번"
+ },
+ "Beausejour|MB": {
+  "zh": "博塞茹尔",
+  "ko": "보세주르"
+ },
+ "Inverness|NS": {
+  "zh": "因弗内斯",
+  "ko": "인버네스"
+ },
+ "Baie Verte|NL": {
+  "zh": "贝韦尔特",
+  "ko": "베이버트"
+ },
+ "Aylmer|ON": {
+  "zh": "艾尔默",
+  "ko": "에일머"
+ },
+ "Carbonear|NL": {
+  "zh": "卡博尼尔",
+  "ko": "카보니어"
+ },
+ "Westerose|AB": {
+  "zh": "韦斯特罗斯",
+  "ko": "웨스터로즈"
+ },
+ "Sainte-Anne-de-Bellevue|QC": {
+  "zh": "圣安德贝尔维",
+  "ko": "생탄드벨뷔"
+ },
+ "Montréal-Ouest|QC": {
+  "zh": "西蒙特利尔",
+  "ko": "몬트리올웨스트"
+ },
+ "Fisher Branch|MB": {
+  "zh": "费希尔布兰奇",
+  "ko": "피셔브랜치"
+ },
+ "Holyrood|NL": {
+  "zh": "霍利鲁德",
+  "ko": "홀리루드"
+ },
+ "Saint-Philippe-de-Néri|QC": {
+  "zh": "圣菲利普德内里",
+  "ko": "생필리프드네리"
+ },
+ "Oyen|AB": {
+  "zh": "奥扬",
+  "ko": "오이언"
+ },
+ "Waterville|NS": {
+  "zh": "沃特维尔",
+  "ko": "워터빌"
+ },
+ "Saint-Malachie|QC": {
+  "zh": "圣马拉希",
+  "ko": "생말라시"
+ },
+ "South Bar|NS": {
+  "zh": "南巴尔",
+  "ko": "사우스바"
+ },
+ "Deer Lake|NL": {
+  "zh": "迪尔湖",
+  "ko": "디어레이크"
+ },
+ "Balgonie|SK": {
+  "zh": "巴尔戈尼",
+  "ko": "밸고니"
+ },
+ "Barrington Passage|NS": {
+  "zh": "巴林顿帕塞奇",
+  "ko": "배링턴패시지"
+ },
+ "Picture Butte|AB": {
+  "zh": "皮克彻比尤特",
+  "ko": "픽처뷰트"
+ },
+ "Ruthven|ON": {
+  "zh": "拉斯文",
+  "ko": "루스벤"
+ },
+ "Portneuf|QC": {
+  "zh": "波尔讷夫",
+  "ko": "포르뇌프"
+ },
+ "Mountain House|AB": {
+  "zh": "芒廷豪斯",
+  "ko": "마운틴하우스"
+ },
+ "Grande-Digue|NB": {
+  "zh": "格朗迪格",
+  "ko": "그랑디그"
+ },
+ "Saint-Esprit|QC": {
+  "zh": "圣埃斯普里",
+  "ko": "생테스프리"
+ },
+ "Indian Head|SK": {
+  "zh": "印第安黑德",
+  "ko": "인디언헤드"
+ },
+ "Springdale|NL": {
+  "zh": "斯普林代尔",
+  "ko": "스프링데일"
+ },
+ "Upper Letang|NB": {
+  "zh": "上莱唐",
+  "ko": "어퍼레탱"
+ },
+ "Dubreuilville|ON": {
+  "zh": "迪布勒伊维尔",
+  "ko": "뒤브뢰유빌"
+ },
+ "Hillsburgh|ON": {
+  "zh": "希尔斯伯勒",
+  "ko": "힐스버러"
+ },
+ "Manseau|QC": {
+  "zh": "芒索",
+  "ko": "망소"
+ },
+ "Millgrove|ON": {
+  "zh": "米尔格罗夫",
+  "ko": "밀그로브"
+ },
+ "Gogama|ON": {
+  "zh": "戈加马",
+  "ko": "고가마"
+ },
+ "Kaslo|BC": {
+  "zh": "卡斯洛",
+  "ko": "캐즐로"
+ },
+ "Havre Boucher|NS": {
+  "zh": "阿夫尔布谢",
+  "ko": "아브르부셰"
+ },
+ "Racine|QC": {
+  "zh": "拉辛",
+  "ko": "라신"
+ },
+ "Saint-Amable|QC": {
+  "zh": "圣阿马布勒",
+  "ko": "생타마블"
+ },
+ "Placentia|NL": {
+  "zh": "普拉森舍",
+  "ko": "플러센샤"
+ },
+ "La Ronge|SK": {
+  "zh": "拉朗日",
+  "ko": "라롱주"
+ },
+ "Cudworth|SK": {
+  "zh": "卡德沃思",
+  "ko": "커드워스"
+ },
+ "Shellbrook|SK": {
+  "zh": "谢尔布鲁克",
+  "ko": "셸브룩"
+ },
+ "Dead Man's Flats|AB": {
+  "zh": "德德曼斯弗拉茨",
+  "ko": "데드맨스플래츠"
+ },
+ "Port McNeill|BC": {
+  "zh": "麦克尼尔港",
+  "ko": "포트맥닐"
+ },
+ "Rosemère|QC": {
+  "zh": "罗斯梅尔",
+  "ko": "로즈메르"
+ },
+ "Saint-Eugène-de-Guigues|QC": {
+  "zh": "圣欧仁德吉格",
+  "ko": "생퇴젠드기그"
+ },
+ "Casselman|ON": {
+  "zh": "卡塞尔曼",
+  "ko": "캐슬먼"
+ },
+ "Nobleton|ON": {
+  "zh": "诺布尔顿",
+  "ko": "노블턴"
+ },
+ "Saint-Ambroise|QC": {
+  "zh": "圣安布鲁瓦斯",
+  "ko": "생탕브루아즈"
+ },
+ "Matagami|QC": {
+  "zh": "马塔加米",
+  "ko": "마타가미"
+ },
+ "Sedgewick|AB": {
+  "zh": "塞奇威克",
+  "ko": "세지윅"
+ },
+ "Canora|SK": {
+  "zh": "卡诺拉",
+  "ko": "커노라"
+ },
+ "Kemptville|ON": {
+  "zh": "肯普特维尔",
+  "ko": "켐프트빌"
+ },
+ "Maxville|ON": {
+  "zh": "马克斯维尔",
+  "ko": "맥스빌"
+ },
+ "Amqui|QC": {
+  "zh": "阿姆基",
+  "ko": "암키"
+ },
+ "Espanola|ON": {
+  "zh": "埃斯帕诺拉",
+  "ko": "에스파뇰라"
+ },
+ "Sacré-Coeur-Saguenay|QC": {
+  "zh": "萨克雷克尔萨格奈",
+  "ko": "사크레쾨르사그네"
+ },
+ "Two Hills|AB": {
+  "zh": "图希尔斯",
+  "ko": "투힐스"
+ },
+ "Harrow|ON": {
+  "zh": "哈罗",
+  "ko": "해로"
+ },
+ "Ilderton|ON": {
+  "zh": "伊尔德顿",
+  "ko": "일더턴"
+ },
+ "Thorold|ON": {
+  "zh": "索罗尔德",
+  "ko": "소럴드"
+ },
+ "Coldbrook|NS": {
+  "zh": "科尔德布鲁克",
+  "ko": "콜드브룩"
+ },
+ "West Kelowna|BC": {
+  "zh": "西基洛纳",
+  "ko": "웨스트켈로나"
+ },
+ "Delhi|ON": {
+  "zh": "德尔海",
+  "ko": "델하이"
+ },
+ "Sainte-Sabine|QC": {
+  "zh": "圣萨宾",
+  "ko": "생트사빈"
+ },
+ "Essex|ON": {
+  "zh": "埃塞克斯",
+  "ko": "에식스"
+ },
+ "Cookstown|ON": {
+  "zh": "库克斯敦",
+  "ko": "쿡스타운"
+ },
+ "Caledon Village|ON": {
+  "zh": "卡利登村",
+  "ko": "캘리던빌리지"
+ },
+ "Porters Lake|NS": {
+  "zh": "波特斯湖",
+  "ko": "포터스레이크"
+ },
+ "Varennes|QC": {
+  "zh": "瓦雷讷",
+  "ko": "바렌"
+ },
+ "Vernon Bridge|PE": {
+  "zh": "弗农布里奇",
+  "ko": "버넌브리지"
+ },
+ "Iroquois|ON": {
+  "zh": "易洛魁",
+  "ko": "이러쿼이"
+ },
+ "Maskinongé|QC": {
+  "zh": "马斯基农热",
+  "ko": "마스키농제"
+ },
+ "Berthierville|QC": {
+  "zh": "贝蒂耶维尔",
+  "ko": "베르티에빌"
+ },
+ "Saints-Anges|QC": {
+  "zh": "圣昂日",
+  "ko": "생장주"
+ },
+ "Smithville|ON": {
+  "zh": "史密斯维尔",
+  "ko": "스미스빌"
+ },
+ "Quispamsis|NB": {
+  "zh": "奎斯帕姆西斯",
+  "ko": "퀴스팜시스"
+ },
+ "Hudson's Hope|BC": {
+  "zh": "哈德孙霍普",
+  "ko": "허드슨스호프"
+ },
+ "Elie|MB": {
+  "zh": "埃利",
+  "ko": "엘리"
+ },
+ "Petrolia|ON": {
+  "zh": "佩特罗利亚",
+  "ko": "페트롤리아"
+ },
+ "Millet|AB": {
+  "zh": "米勒特",
+  "ko": "밀릿"
+ },
+ "Saint-Théodore-d'Acton|QC": {
+  "zh": "圣泰奥多尔达克通",
+  "ko": "생테오도르닥통"
+ },
+ "Renfrew|ON": {
+  "zh": "伦弗鲁",
+  "ko": "렌프루"
+ },
+ "Westphal|NS": {
+  "zh": "韦斯特法尔",
+  "ko": "웨스트팔"
+ },
+ "Sainte-Geneviève|QC": {
+  "zh": "圣热纳维耶芙",
+  "ko": "생트주느비에브"
+ },
+ "Thornton|ON": {
+  "zh": "桑顿",
+  "ko": "손턴"
+ },
+ "Central Bedeque|PE": {
+  "zh": "中贝德克",
+  "ko": "센트럴베덱"
+ },
+ "Bassano|AB": {
+  "zh": "巴萨诺",
+  "ko": "버사노"
+ },
+ "Bon-Conseil|QC": {
+  "zh": "邦孔塞伊",
+  "ko": "봉콩세유"
+ },
+ "Saint-Pascal|QC": {
+  "zh": "圣帕斯卡尔",
+  "ko": "생파스칼"
+ },
+ "Maria|QC": {
+  "zh": "玛丽亚",
+  "ko": "마리아"
+ },
+ "Cardston|AB": {
+  "zh": "卡兹顿",
+  "ko": "카즈턴"
+ },
+ "Falkland|BC": {
+  "zh": "福克兰",
+  "ko": "포클랜드"
+ },
+ "Saint-Jacques|NB": {
+  "zh": "圣雅克",
+  "ko": "생자크"
+ },
+ "Chapleau|ON": {
+  "zh": "沙普洛",
+  "ko": "채플로"
+ },
+ "Saint-Ambroise-de-Kildare|QC": {
+  "zh": "圣安布鲁瓦斯德基尔代尔",
+  "ko": "생탕브루아즈드킬데어"
+ },
+ "Middle Sackville|NS": {
+  "zh": "中萨克维尔",
+  "ko": "미들색빌"
+ },
+ "Fenwick|ON": {
+  "zh": "芬威克",
+  "ko": "펜윅"
+ },
+ "Sturgeon Falls|ON": {
+  "zh": "斯特金福尔斯",
+  "ko": "스터전폴스"
+ },
+ "Carignan|QC": {
+  "zh": "卡里尼昂",
+  "ko": "카리냥"
+ },
+ "Saint-François-Station|QC": {
+  "zh": "圣弗朗索瓦站",
+  "ko": "생프랑수아스타시옹"
+ },
+ "Black Diamond|AB": {
+  "zh": "布莱克戴蒙德",
+  "ko": "블랙다이아몬드"
+ },
+ "Rougemont|QC": {
+  "zh": "鲁日蒙",
+  "ko": "루주몽"
+ },
+ "St. Laurent|MB": {
+  "zh": "圣洛朗",
+  "ko": "생로랑"
+ },
+ "Nakusp|BC": {
+  "zh": "纳卡斯普",
+  "ko": "나커스프"
+ },
+ "Napierville|QC": {
+  "zh": "纳皮耶维尔",
+  "ko": "나피에빌"
+ },
+ "Unity|SK": {
+  "zh": "尤尼蒂",
+  "ko": "유니티"
+ },
+ "Ulverton|QC": {
+  "zh": "厄尔弗顿",
+  "ko": "얼버턴"
+ },
+ "Saint-Elzéar|QC": {
+  "zh": "圣埃尔泽阿尔",
+  "ko": "생텔제아르"
+ },
+ "Thornbury|ON": {
+  "zh": "桑伯里",
+  "ko": "손버리"
+ },
+ "Houston|BC": {
+  "zh": "休斯敦",
+  "ko": "휴스턴"
+ },
+ "East Gwillimbury|ON": {
+  "zh": "东格威林伯里",
+  "ko": "이스트그윌림버리"
+ },
+ "Saint-Bernard-de-Lacolle|QC": {
+  "zh": "圣贝尔纳德拉科勒",
+  "ko": "생베르나르드라콜"
+ },
+ "Richibouctou-Village|NB": {
+  "zh": "里希布克图村",
+  "ko": "리시부크투빌라주"
+ },
+ "Loon Lake|SK": {
+  "zh": "卢恩湖",
+  "ko": "룬레이크"
+ },
+ "Sainte-Anne-de-Kent|NB": {
+  "zh": "圣安德肯特",
+  "ko": "생탄드켄트"
+ },
+ "Caledonia|ON": {
+  "zh": "喀里多尼亚",
+  "ko": "칼레도니아"
+ },
+ "La Broquerie|MB": {
+  "zh": "拉布罗克里",
+  "ko": "라브로크리"
+ },
+ "Virgil|ON": {
+  "zh": "弗吉尔",
+  "ko": "버질"
+ },
+ "Saint-Martin|QC": {
+  "zh": "圣马丹",
+  "ko": "생마르탱"
+ },
+ "Saint-Liguori|QC": {
+  "zh": "圣利古奥里",
+  "ko": "생리구오리"
+ },
+ "Dashwood|ON": {
+  "zh": "达什伍德",
+  "ko": "대시우드"
+ },
+ "Meaford|ON": {
+  "zh": "米福德",
+  "ko": "미퍼드"
+ },
+ "Salt Springs|NS": {
+  "zh": "索尔特斯普林斯",
+  "ko": "솔트스프링스"
+ },
+ "Grassland|AB": {
+  "zh": "格拉斯兰",
+  "ko": "그래슬랜드"
+ },
+ "Salisbury|NB": {
+  "zh": "索尔兹伯里",
+  "ko": "솔즈베리"
+ },
+ "Tawatinaw|AB": {
+  "zh": "塔瓦蒂瑙",
+  "ko": "타와티노"
+ },
+ "Beauharnois|QC": {
+  "zh": "博阿尔努瓦",
+  "ko": "보아르누아"
+ },
+ "Vermilion Bay|ON": {
+  "zh": "弗米利恩湾",
+  "ko": "버밀리언베이"
+ },
+ "Warren|MB": {
+  "zh": "沃伦",
+  "ko": "워런"
+ },
+ "Saint-Pamphile|QC": {
+  "zh": "圣庞菲勒",
+  "ko": "생팡필"
+ },
+ "Elk Point|AB": {
+  "zh": "埃尔克波因特",
+  "ko": "엘크포인트"
+ },
+ "Matachewan|ON": {
+  "zh": "马塔切万",
+  "ko": "마타체완"
+ },
+ "Evansburg|AB": {
+  "zh": "埃文斯堡",
+  "ko": "에번스버그"
+ },
+ "Noëlville|ON": {
+  "zh": "诺埃尔维尔",
+  "ko": "노엘빌"
+ },
+ "Saint-Tite|QC": {
+  "zh": "圣蒂特",
+  "ko": "생티트"
+ },
+ "Kipling|SK": {
+  "zh": "基普林",
+  "ko": "키플링"
+ },
+ "Erie Beach|ON": {
+  "zh": "伊利比奇",
+  "ko": "이리비치"
+ },
+ "Madoc|ON": {
+  "zh": "马多克",
+  "ko": "메이독"
+ },
+ "Villeroy|QC": {
+  "zh": "维勒鲁瓦",
+  "ko": "빌루아"
+ },
+ "Notre-Dame-des-Prairies|QC": {
+  "zh": "诺特丹德普雷里",
+  "ko": "노트르담데프레리"
+ },
+ "Pont-Rouge|QC": {
+  "zh": "蓬鲁日",
+  "ko": "퐁루주"
+ },
+ "Carstairs|AB": {
+  "zh": "卡斯泰尔斯",
+  "ko": "카스테어스"
+ },
+ "Greenfield|NS": {
+  "zh": "格林菲尔德",
+  "ko": "그린필드"
+ },
+ "Fillmore|SK": {
+  "zh": "菲尔莫尔",
+  "ko": "필모어"
+ },
+ "Whitewood|SK": {
+  "zh": "怀特伍德",
+  "ko": "화이트우드"
+ },
+ "Saint-Bruno-Lac-Saint-Jean|QC": {
+  "zh": "圣布鲁诺拉克圣让",
+  "ko": "생브뤼노라크생장"
+ },
+ "Perryvale|AB": {
+  "zh": "佩里韦尔",
+  "ko": "페리베일"
+ },
+ "Hafford|SK": {
+  "zh": "哈福德",
+  "ko": "해퍼드"
+ },
+ "Lakeville|NB": {
+  "zh": "莱克维尔",
+  "ko": "레이크빌"
+ },
+ "Snow Lake|MB": {
+  "zh": "斯诺湖",
+  "ko": "스노레이크"
+ },
+ "Rigaud|QC": {
+  "zh": "里戈",
+  "ko": "리고"
+ },
+ "L'Île-Perrot|QC": {
+  "zh": "佩罗岛",
+  "ko": "릴페로"
+ },
+ "Barrington West|NS": {
+  "zh": "西巴林顿",
+  "ko": "배링턴웨스트"
+ },
+ "Tantallon|NS": {
+  "zh": "坦塔隆",
+  "ko": "탠탈런"
+ },
+ "Cardinal|ON": {
+  "zh": "卡迪纳尔",
+  "ko": "카디널"
+ },
+ "Innisfree|AB": {
+  "zh": "因尼斯弗里",
+  "ko": "이니스프리"
+ },
+ "Northern Bay|NL": {
+  "zh": "诺森湾",
+  "ko": "노던베이"
+ },
+ "Lockport|MB": {
+  "zh": "洛克波特",
+  "ko": "록포트"
+ },
+ "Camperville|MB": {
+  "zh": "坎珀维尔",
+  "ko": "캠퍼빌"
+ },
+ "Trenton|NS": {
+  "zh": "特伦顿",
+  "ko": "트렌턴"
+ },
+ "Saint-Rosaire|QC": {
+  "zh": "圣罗赛尔",
+  "ko": "생로제르"
+ },
+ "Crossfield|AB": {
+  "zh": "克罗斯菲尔德",
+  "ko": "크로스필드"
+ },
+ "Seaforth|ON": {
+  "zh": "锡福斯",
+  "ko": "시포스"
+ },
+ "Beachburg|ON": {
+  "zh": "比奇堡",
+  "ko": "비치버그"
+ },
+ "Verchères|QC": {
+  "zh": "韦尔谢尔",
+  "ko": "베르셰르"
+ },
+ "Forestville|QC": {
+  "zh": "福雷斯特维尔",
+  "ko": "포레스트빌"
+ },
+ "Melancthon|ON": {
+  "zh": "梅兰克森",
+  "ko": "멜랑크턴"
+ },
+ "Franklin|QC": {
+  "zh": "富兰克林",
+  "ko": "프랭클린"
+ },
+ "Saint-Paul-d'Abbotsford|QC": {
+  "zh": "圣保罗达博茨福德",
+  "ko": "생폴다보츠퍼드"
+ },
+ "Alexandria|ON": {
+  "zh": "亚历山德里亚",
+  "ko": "알렉산드리아"
+ },
+ "Cumberland|BC": {
+  "zh": "坎伯兰",
+  "ko": "컴벌랜드"
+ },
+ "Giroux|MB": {
+  "zh": "吉鲁",
+  "ko": "지루"
+ },
+ "Watford|ON": {
+  "zh": "沃特福德",
+  "ko": "왓퍼드"
+ },
+ "L'Anse-Saint-Jean|QC": {
+  "zh": "朗斯圣让",
+  "ko": "랑스생장"
+ },
+ "Glen Haven|NS": {
+  "zh": "格伦黑文",
+  "ko": "글렌헤이븐"
+ },
+ "Harley|ON": {
+  "zh": "哈利",
+  "ko": "할리"
+ },
+ "Oak Bay|BC": {
+  "zh": "橡树湾",
+  "ko": "오크베이"
+ },
+ "Liverpool|NS": {
+  "zh": "利物浦",
+  "ko": "리버풀"
+ },
+ "Harbour Grace|NL": {
+  "zh": "格雷斯港",
+  "ko": "하버그레이스"
+ },
+ "Souris West|PE": {
+  "zh": "西苏里",
+  "ko": "수리웨스트"
+ },
+ "Hampton|NB": {
+  "zh": "汉普顿",
+  "ko": "햄프턴"
+ },
+ "Onoway|AB": {
+  "zh": "奥诺韦",
+  "ko": "오노웨이"
+ },
+ "Bayfield|ON": {
+  "zh": "贝菲尔德",
+  "ko": "베이필드"
+ },
+ "Nictaux|NS": {
+  "zh": "尼克托",
+  "ko": "닉토"
+ },
+ "Coalhurst|AB": {
+  "zh": "科尔赫斯特",
+  "ko": "콜허스트"
+ },
+ "Rainbow Lake|AB": {
+  "zh": "雷恩博湖",
+  "ko": "레인보레이크"
+ },
+ "Grenville-sur-la-Rouge|QC": {
+  "zh": "格伦维尔叙尔拉鲁日",
+  "ko": "그랑빌쉬르라루주"
+ },
+ "Hartland|NB": {
+  "zh": "哈特兰",
+  "ko": "하틀랜드"
+ },
+ "Kirriemuir|AB": {
+  "zh": "基里缪尔",
+  "ko": "키리뮤어"
+ },
+ "Scandia|AB": {
+  "zh": "斯坎迪亚",
+  "ko": "스칸디아"
+ },
+ "Waterville|QC": {
+  "zh": "沃特维尔",
+  "ko": "워터빌"
+ },
+ "Channel-Port aux Basques|NL": {
+  "zh": "钱纳尔巴斯克港",
+  "ko": "채널포트오바스크"
+ },
+ "Killam|AB": {
+  "zh": "基拉姆",
+  "ko": "킬럼"
+ },
+ "Nanoose Bay|BC": {
+  "zh": "纳努斯湾",
+  "ko": "나누스베이"
+ },
+ "Lewisporte|NL": {
+  "zh": "刘易斯波特",
+  "ko": "루이스포트"
+ },
+ "Saint-Ludger-de-Milot|QC": {
+  "zh": "圣吕德热德米洛",
+  "ko": "생뤼드제드밀로"
+ },
+ "North Hatley|QC": {
+  "zh": "北哈特利",
+  "ko": "노스해틀리"
+ },
+ "Upper Kingsclear|NB": {
+  "zh": "上金斯克利尔",
+  "ko": "어퍼킹스클리어"
+ },
+ "Les Escoumins|QC": {
+  "zh": "莱斯库曼",
+  "ko": "레제스쿠맹"
+ },
+ "Wadena|SK": {
+  "zh": "瓦迪纳",
+  "ko": "와디나"
+ },
+ "Sainte-Angèle-de-Prémont|QC": {
+  "zh": "圣安热勒德普雷蒙",
+  "ko": "생탕젤드프레몽"
+ },
+ "Saint-Nazaire|QC": {
+  "zh": "圣纳泽尔",
+  "ko": "생나제르"
+ },
+ "Rivière-Ouelle|QC": {
+  "zh": "里维耶尔韦勒",
+  "ko": "리비에르웰"
+ },
+ "Wellington Station|PE": {
+  "zh": "惠灵顿站",
+  "ko": "웰링턴스테이션"
+ },
+ "Sainte-Anne-des-Lacs|QC": {
+  "zh": "圣安德拉克",
+  "ko": "생탄데라크"
+ },
+ "Sainte-Clotilde-de-Beauce|QC": {
+  "zh": "圣克洛蒂尔德德博斯",
+  "ko": "생트클로틸드드보스"
+ },
+ "Riverton|NS": {
+  "zh": "里弗顿",
+  "ko": "리버턴"
+ },
+ "Milford|NS": {
+  "zh": "米尔福德",
+  "ko": "밀퍼드"
+ },
+ "Oxbow|SK": {
+  "zh": "奥克斯博",
+  "ko": "옥스보"
+ },
+ "Petit-Cap|NB": {
+  "zh": "珀蒂卡普",
+  "ko": "프티카프"
+ },
+ "Hunts Point|NS": {
+  "zh": "亨茨波因特",
+  "ko": "헌츠포인트"
+ },
+ "Saint-Prime|QC": {
+  "zh": "圣普里姆",
+  "ko": "생프림"
+ },
+ "Canfield|ON": {
+  "zh": "坎菲尔德",
+  "ko": "캔필드"
+ },
+ "Klemtu|BC": {
+  "zh": "克莱姆图",
+  "ko": "클렘투"
+ },
+ "Otterville|ON": {
+  "zh": "奥特维尔",
+  "ko": "오터빌"
+ },
+ "Tofield|AB": {
+  "zh": "托菲尔德",
+  "ko": "토필드"
+ },
+ "Crooked Creek|AB": {
+  "zh": "克鲁克德克里克",
+  "ko": "크룩트크리크"
+ },
+ "Goffs|NS": {
+  "zh": "戈夫斯",
+  "ko": "고프스"
+ },
+ "Lanigan|SK": {
+  "zh": "拉尼根",
+  "ko": "래니건"
+ },
+ "Norquay|SK": {
+  "zh": "诺凯",
+  "ko": "노퀘이"
+ },
+ "Anzac|AB": {
+  "zh": "安扎克",
+  "ko": "앤잭"
+ },
+ "Fortune|NL": {
+  "zh": "福琼",
+  "ko": "포천"
+ },
+ "Senneville|QC": {
+  "zh": "塞讷维尔",
+  "ko": "센빌"
+ },
+ "Saint-Omer|QC": {
+  "zh": "圣奥梅尔",
+  "ko": "생토메르"
+ },
+ "Pierreville|QC": {
+  "zh": "皮埃尔维尔",
+  "ko": "피에르빌"
+ },
+ "Saint-Jean-Baptiste|QC": {
+  "zh": "圣让巴蒂斯特",
+  "ko": "생장바티스트"
+ },
+ "St. Lawrence|NL": {
+  "zh": "圣劳伦斯",
+  "ko": "세인트로렌스"
+ },
+ "Winterton|NL": {
+  "zh": "温特顿",
+  "ko": "윈터턴"
+ },
+ "Exshaw|AB": {
+  "zh": "埃克斯肖",
+  "ko": "엑쇼"
+ },
+ "Lethbridge|NL": {
+  "zh": "莱斯布里奇",
+  "ko": "레스브리지"
+ },
+ "Benoit's Cove|NL": {
+  "zh": "贝努瓦湾",
+  "ko": "베누아츠코브"
+ },
+ "L'Anse-au-Loup|NL": {
+  "zh": "朗索卢",
+  "ko": "랑소루"
+ },
+ "Bonavista|NL": {
+  "zh": "博纳维斯塔",
+  "ko": "보나비스타"
+ },
+ "Arnold's Cove|NL": {
+  "zh": "阿诺兹湾",
+  "ko": "아널즈코브"
+ },
+ "Wakefield|QC": {
+  "zh": "韦克菲尔德",
+  "ko": "웨이크필드"
+ },
+ "Windermere|BC": {
+  "zh": "温德米尔",
+  "ko": "윈더미어"
+ },
+ "Brighton|ON": {
+  "zh": "布赖顿",
+  "ko": "브라이턴"
+ },
+ "Gull Lake|SK": {
+  "zh": "加尔湖",
+  "ko": "걸레이크"
+ },
+ "Sarsfield|ON": {
+  "zh": "萨斯菲尔德",
+  "ko": "사스필드"
+ },
+ "Melbourne|QC": {
+  "zh": "墨尔本",
+  "ko": "멜버른"
+ },
+ "Afton Station|NS": {
+  "zh": "阿夫顿站",
+  "ko": "애프턴스테이션"
+ },
+ "Maricourt|QC": {
+  "zh": "马里库尔",
+  "ko": "마리쿠르"
+ },
+ "Saint-Charles-sur-Richelieu|QC": {
+  "zh": "圣夏尔叙尔黎塞留",
+  "ko": "생샤를쉬르리슐리외"
+ },
+ "Mont-Saint-Hilaire|QC": {
+  "zh": "蒙圣伊莱尔",
+  "ko": "몽생틸레르"
+ },
+ "Ste. Rose du Lac|MB": {
+  "zh": "圣罗斯迪拉克",
+  "ko": "생트로즈뒤라크"
+ },
+ "Chesterville|ON": {
+  "zh": "切斯特维尔",
+  "ko": "체스터빌"
+ },
+ "Ashville|MB": {
+  "zh": "阿什维尔",
+  "ko": "애시빌"
+ },
+ "Morris|MB": {
+  "zh": "莫里斯",
+  "ko": "모리스"
+ },
+ "Princeton|ON": {
+  "zh": "普林斯顿",
+  "ko": "프린스턴"
+ },
+ "White River|ON": {
+  "zh": "怀特里弗",
+  "ko": "화이트리버"
+ },
+ "Lac la Hache|BC": {
+  "zh": "拉克拉阿什",
+  "ko": "라클라아슈"
+ },
+ "Kirkland Lake|ON": {
+  "zh": "柯克兰湖",
+  "ko": "커클랜드레이크"
+ },
+ "Saint-André-Avellin|QC": {
+  "zh": "圣安德烈阿韦兰",
+  "ko": "생탕드레아벨랭"
+ },
+ "Iskut|BC": {
+  "zh": "伊斯库特",
+  "ko": "이스컷"
+ },
+ "Gillies Bay|BC": {
+  "zh": "吉利斯湾",
+  "ko": "길리스베이"
+ },
+ "Boissevain|MB": {
+  "zh": "博伊斯文",
+  "ko": "보이스베인"
+ },
+ "Alton|ON": {
+  "zh": "奥尔顿",
+  "ko": "올턴"
+ },
+ "Boyle|AB": {
+  "zh": "博伊尔",
+  "ko": "보일"
+ },
+ "Oakville|MB": {
+  "zh": "奥克维尔",
+  "ko": "오크빌"
+ },
+ "Nipigon|ON": {
+  "zh": "尼皮贡",
+  "ko": "니피곤"
+ },
+ "Bancroft|ON": {
+  "zh": "班克罗夫特",
+  "ko": "밴크로프트"
+ },
+ "Britannia Beach|BC": {
+  "zh": "不列颠尼亚比奇",
+  "ko": "브리태니아비치"
+ },
+ "Saint-Dominique|QC": {
+  "zh": "圣多米尼克",
+  "ko": "생도미니크"
+ },
+ "Saint-Isidore|QC": {
+  "zh": "圣伊西多尔",
+  "ko": "생티지도르"
+ },
+ "Rivière-Beaudette|QC": {
+  "zh": "里维耶尔博代特",
+  "ko": "리비에르보데트"
+ },
+ "Lyster|QC": {
+  "zh": "莱斯特",
+  "ko": "리스터"
+ },
+ "Saint-Flavien|QC": {
+  "zh": "圣弗拉维安",
+  "ko": "생플라비앵"
+ },
+ "Mount Forest|ON": {
+  "zh": "芒特福里斯特",
+  "ko": "마운트포리스트"
+ },
+ "Hannon|ON": {
+  "zh": "汉农",
+  "ko": "해넌"
+ },
+ "Bright|ON": {
+  "zh": "布赖特",
+  "ko": "브라이트"
+ },
+ "Saint-Édouard-de-Lotbinière|QC": {
+  "zh": "圣爱德华德洛特比尼埃",
+  "ko": "생에두아르드로트비니에르"
+ },
+ "Saint-Ubalde|QC": {
+  "zh": "圣于巴尔德",
+  "ko": "생위발드"
+ },
+ "Saint-Ignace-de-Stanbridge|QC": {
+  "zh": "圣伊尼亚斯德斯坦布里奇",
+  "ko": "생이냐스드스탠브리지"
+ },
+ "Trois-Rives|QC": {
+  "zh": "特鲁瓦里夫",
+  "ko": "트루아리브"
+ },
+ "Massueville|QC": {
+  "zh": "马叙维尔",
+  "ko": "마쉬빌"
+ },
+ "Saint-Félix-de-Dalquier|QC": {
+  "zh": "圣费利克斯德达尔基耶",
+  "ko": "생펠릭스드달키에"
+ },
+ "Fermont|QC": {
+  "zh": "费尔蒙",
+  "ko": "페르몽"
+ },
+ "Pennfield|NB": {
+  "zh": "彭菲尔德",
+  "ko": "펜필드"
+ },
+ "North Alton|NS": {
+  "zh": "北奥尔顿",
+  "ko": "노스올턴"
+ },
+ "Saint-Félix-de-Kingsey|QC": {
+  "zh": "圣费利克斯德金西",
+  "ko": "생펠릭스드킹시"
+ },
+ "L'Étang-du-Nord|QC": {
+  "zh": "莱唐迪诺尔",
+  "ko": "레탕뒤노르"
+ },
+ "Manning|AB": {
+  "zh": "曼宁",
+  "ko": "매닝"
+ },
+ "Shag Harbour|NS": {
+  "zh": "沙格港",
+  "ko": "섀그하버"
+ },
+ "Kimberley|ON": {
+  "zh": "金伯利",
+  "ko": "킴벌리"
+ },
+ "Wallacetown|ON": {
+  "zh": "华莱士敦",
+  "ko": "월리스타운"
+ },
+ "Wynyard|SK": {
+  "zh": "温亚德",
+  "ko": "와이니어드"
+ },
+ "Argyle|NS": {
+  "zh": "阿盖尔",
+  "ko": "아가일"
+ },
+ "Consecon|ON": {
+  "zh": "康塞康",
+  "ko": "콘세콘"
+ },
+ "Longview|AB": {
+  "zh": "朗维尤",
+  "ko": "롱뷰"
+ },
+ "Austin|MB": {
+  "zh": "奥斯汀",
+  "ko": "오스틴"
+ },
+ "Coronation|AB": {
+  "zh": "科罗内申",
+  "ko": "코로네이션"
+ },
+ "Henryville|QC": {
+  "zh": "亨利维尔",
+  "ko": "헨리빌"
+ },
+ "LaSalle|ON": {
+  "zh": "拉萨尔",
+  "ko": "라살"
+ },
+ "Stephenville Crossing|NL": {
+  "zh": "斯蒂芬维尔克罗辛",
+  "ko": "스티븐빌크로싱"
+ },
+ "Lucan|ON": {
+  "zh": "卢肯",
+  "ko": "루컨"
+ },
+ "East Broughton|QC": {
+  "zh": "东布劳顿",
+  "ko": "이스트브로턴"
+ },
+ "Port Hope|ON": {
+  "zh": "霍普港",
+  "ko": "포트호프"
+ },
+ "Elmsdale|NS": {
+  "zh": "埃尔姆斯代尔",
+  "ko": "엘름스데일"
+ },
+ "Beeton|ON": {
+  "zh": "比顿",
+  "ko": "비턴"
+ },
+ "Saint-Mathieu-d'Harricana|QC": {
+  "zh": "圣马蒂厄达里卡纳",
+  "ko": "생마티외다리카나"
+ },
+ "Springhill|NS": {
+  "zh": "斯普林希尔",
+  "ko": "스프링힐"
+ },
+ "Sainte-Marthe|QC": {
+  "zh": "圣玛尔特",
+  "ko": "생트마르트"
+ },
+ "Shaunavon|SK": {
+  "zh": "肖纳文",
+  "ko": "쇼너번"
+ },
+ "Ganges|BC": {
+  "zh": "甘吉斯",
+  "ko": "갠지스"
+ },
+ "Arcadia|NS": {
+  "zh": "阿卡迪亚",
+  "ko": "아카디아"
+ },
+ "Saint-Chrysostome|QC": {
+  "zh": "圣克里索斯托姆",
+  "ko": "생크리소스톰"
+ },
+ "St. Williams|ON": {
+  "zh": "圣威廉斯",
+  "ko": "세인트윌리엄스"
+ },
+ "Summerstown|ON": {
+  "zh": "萨默斯敦",
+  "ko": "서머스타운"
+ },
+ "Sainte-Élisabeth|QC": {
+  "zh": "圣伊丽莎白",
+  "ko": "생트엘리자베트"
+ },
+ "Saint-Anselme|QC": {
+  "zh": "圣安塞尔姆",
+  "ko": "생탕셀름"
+ },
+ "Cookville|NS": {
+  "zh": "库克维尔",
+  "ko": "쿡빌"
+ },
+ "Saint-Joseph-du-Lac|QC": {
+  "zh": "圣约瑟夫迪拉克",
+  "ko": "생조제프뒤라크"
+ },
+ "Petitcodiac|NB": {
+  "zh": "珀蒂科迪亚克",
+  "ko": "퍼티코디액"
+ },
+ "Bouctouche|NB": {
+  "zh": "布克图什",
+  "ko": "북투슈"
+ },
+ "South Slocan|BC": {
+  "zh": "南斯洛肯",
+  "ko": "사우스슬로컨"
+ },
+ "Oakland|ON": {
+  "zh": "奥克兰",
+  "ko": "오클랜드"
+ },
+ "Dundurn|SK": {
+  "zh": "邓德恩",
+  "ko": "던던"
+ },
+ "Eriksdale|MB": {
+  "zh": "埃里克斯代尔",
+  "ko": "에릭스데일"
+ },
+ "Barrington|NS": {
+  "zh": "巴灵顿",
+  "ko": "배링턴"
+ },
+ "Shawnigan Lake|BC": {
+  "zh": "肖尼根湖",
+  "ko": "쇼니건레이크"
+ },
+ "Thorhild|AB": {
+  "zh": "索希尔德",
+  "ko": "소힐드"
+ },
+ "Kirkton|ON": {
+  "zh": "柯克顿",
+  "ko": "커크턴"
+ },
+ "St. Walburg|SK": {
+  "zh": "圣沃尔堡",
+  "ko": "세인트월버그"
+ },
+ "Anse-Bleue|NB": {
+  "zh": "昂斯布勒",
+  "ko": "앙스블뢰"
+ },
+ "Cambridge|NS": {
+  "zh": "剑桥",
+  "ko": "케임브리지"
+ },
+ "Grand Bay-Westfield|NB": {
+  "zh": "格兰德贝韦斯特菲尔德",
+  "ko": "그랜드베이웨스트필드"
+ },
+ "Murillo|ON": {
+  "zh": "默里洛",
+  "ko": "머릴로"
+ },
+ "Saint-Zotique|QC": {
+  "zh": "圣佐蒂克",
+  "ko": "생조티크"
+ },
+ "Notre-Dame-des-Pins|QC": {
+  "zh": "诺特尔达姆德潘",
+  "ko": "노트르담데팽"
+ },
+ "Estérel|QC": {
+  "zh": "埃斯泰雷尔",
+  "ko": "에스테렐"
+ },
+ "Lincoln|NB": {
+  "zh": "林肯",
+  "ko": "링컨"
+ },
+ "Garson|ON": {
+  "zh": "加森",
+  "ko": "가슨"
+ },
+ "Springside|SK": {
+  "zh": "斯普林赛德",
+  "ko": "스프링사이드"
+ },
+ "Tomahawk|AB": {
+  "zh": "托马霍克",
+  "ko": "토마호크"
+ },
+ "Grassy Lake|AB": {
+  "zh": "格拉西湖",
+  "ko": "그래시레이크"
+ },
+ "Waterville|NB": {
+  "zh": "沃特维尔",
+  "ko": "워터빌"
+ },
+ "Ahmic Harbour|ON": {
+  "zh": "阿米克港",
+  "ko": "아믹하버"
+ },
+ "Russell|ON": {
+  "zh": "拉塞尔",
+  "ko": "러셀"
+ },
+ "Kingsey Falls|QC": {
+  "zh": "金西福尔斯",
+  "ko": "킹시폴스"
+ },
+ "Acme|AB": {
+  "zh": "阿克米",
+  "ko": "애크미"
+ },
+ "Red Earth Creek|AB": {
+  "zh": "雷德厄斯克里克",
+  "ko": "레드어스크리크"
+ },
+ "Parkland|AB": {
+  "zh": "帕克兰",
+  "ko": "파클랜드"
+ },
+ "Heffley Creek|BC": {
+  "zh": "赫夫利克里克",
+  "ko": "헤플리크리크"
+ },
+ "Gilbert Plains|MB": {
+  "zh": "吉尔伯特普莱恩斯",
+  "ko": "길버트플레인스"
+ },
+ "Heritage Pointe|AB": {
+  "zh": "赫里蒂奇波因特",
+  "ko": "헤리티지포인트"
+ },
+ "Old Ridge|NB": {
+  "zh": "奥尔德里奇",
+  "ko": "올드리지"
+ },
+ "Lockeport|NS": {
+  "zh": "洛克波特",
+  "ko": "로크포트"
+ },
+ "Tyne Valley|PE": {
+  "zh": "泰恩瓦利",
+  "ko": "타인밸리"
+ },
+ "Deschambault|QC": {
+  "zh": "德尚博",
+  "ko": "데샹보"
+ },
+ "Lowe Farm|MB": {
+  "zh": "洛法姆",
+  "ko": "로팜"
+ },
+ "Harbour Breton|NL": {
+  "zh": "哈伯布雷顿",
+  "ko": "하버브레턴"
+ },
+ "Petersburg|ON": {
+  "zh": "彼得斯堡",
+  "ko": "피터즈버그"
+ },
+ "McLean|SK": {
+  "zh": "麦克莱恩",
+  "ko": "매클레인"
+ },
+ "St. George|ON": {
+  "zh": "圣乔治",
+  "ko": "세인트조지"
+ },
+ "Mactaquac|NB": {
+  "zh": "麦克塔奎克",
+  "ko": "맥타퀘크"
+ },
+ "Innerkip|ON": {
+  "zh": "因纳基普",
+  "ko": "이너킵"
+ },
+ "Saint-Sulpice|QC": {
+  "zh": "圣叙尔皮斯",
+  "ko": "생쉴피스"
+ },
+ "Mount Brydges|ON": {
+  "zh": "芒特布里奇斯",
+  "ko": "마운트브리지스"
+ },
+ "Hudson|QC": {
+  "zh": "哈德逊",
+  "ko": "허드슨"
+ },
+ "Lambton|QC": {
+  "zh": "兰布顿",
+  "ko": "램턴"
+ },
+ "Plaisance|QC": {
+  "zh": "普莱桑斯",
+  "ko": "플레장스"
+ },
+ "Chelsea|QC": {
+  "zh": "切尔西",
+  "ko": "첼시"
+ },
+ "Millicent|AB": {
+  "zh": "米利森特",
+  "ko": "밀리센트"
+ },
+ "Masset|BC": {
+  "zh": "马西特",
+  "ko": "매싯"
+ },
+ "Miniota|MB": {
+  "zh": "米尼奥塔",
+  "ko": "미니오타"
+ },
+ "Elkhorn|MB": {
+  "zh": "埃尔克霍恩",
+  "ko": "엘크혼"
+ },
+ "Big River|SK": {
+  "zh": "比格里弗",
+  "ko": "빅리버"
+ },
+ "Caissie Cape|NB": {
+  "zh": "凯西角",
+  "ko": "케이시케이프"
+ },
+ "Caplan|QC": {
+  "zh": "卡普兰",
+  "ko": "카플랑"
+ },
+ "Sutton|QC": {
+  "zh": "萨顿",
+  "ko": "서턴"
+ },
+ "Lyn|ON": {
+  "zh": "林恩",
+  "ko": "린"
+ },
+ "Raymond|AB": {
+  "zh": "雷蒙德",
+  "ko": "레이먼드"
+ },
+ "Pilot Mound|MB": {
+  "zh": "派洛特芒德",
+  "ko": "파일럿마운드"
+ },
+ "Dugald|MB": {
+  "zh": "杜格尔德",
+  "ko": "더골드"
+ },
+ "Macamic|QC": {
+  "zh": "马卡米克",
+  "ko": "마카미크"
+ },
+ "Beamsville|ON": {
+  "zh": "比姆斯维尔",
+  "ko": "빔즈빌"
+ },
+ "Wapella|SK": {
+  "zh": "瓦佩拉",
+  "ko": "와펠라"
+ },
+ "Souris|MB": {
+  "zh": "苏里斯",
+  "ko": "수리스"
+ },
+ "New Hamburg|ON": {
+  "zh": "新汉堡",
+  "ko": "뉴햄버그"
+ },
+ "Rockland|ON": {
+  "zh": "罗克兰",
+  "ko": "록랜드"
+ },
+ "Deux-Montagnes|QC": {
+  "zh": "德蒙塔涅",
+  "ko": "되몽타뉴"
+ },
+ "Agassiz|BC": {
+  "zh": "阿加西",
+  "ko": "애거시"
+ },
+ "Mount Uniacke|NS": {
+  "zh": "芒特尤尼亚克",
+  "ko": "마운트유니액"
+ },
+ "Florenceville-Bristol|NB": {
+  "zh": "弗洛伦斯维尔布里斯托尔",
+  "ko": "플로렌스빌브리스틀"
+ },
+ "Rosseau|ON": {
+  "zh": "罗索",
+  "ko": "로소"
+ },
+ "Halfmoon Bay|BC": {
+  "zh": "半月湾",
+  "ko": "하프문베이"
+ },
+ "Sainte-Martine|QC": {
+  "zh": "圣马蒂娜",
+  "ko": "생트마르틴"
+ },
+ "Tees|AB": {
+  "zh": "蒂斯",
+  "ko": "티스"
+ },
+ "Grand Bend|ON": {
+  "zh": "格兰德本德",
+  "ko": "그랜드벤드"
+ },
+ "Bengough|SK": {
+  "zh": "本古",
+  "ko": "벤고"
+ },
+ "Cap-Santé|QC": {
+  "zh": "卡普桑泰",
+  "ko": "카프상테"
+ },
+ "Saint-Marc-du-Lac-Long|QC": {
+  "zh": "圣马克迪拉克隆",
+  "ko": "생마르크뒤라크롱"
+ },
+ "Campbellford|ON": {
+  "zh": "坎贝尔福德",
+  "ko": "캠벨퍼드"
+ },
+ "Kyle|SK": {
+  "zh": "凯尔",
+  "ko": "카일"
+ },
+ "Trochu|AB": {
+  "zh": "特罗舒",
+  "ko": "트로슈"
+ },
+ "Staples|ON": {
+  "zh": "斯泰普尔斯",
+  "ko": "스테이플스"
+ },
+ "Grand Valley|ON": {
+  "zh": "格兰德瓦利",
+  "ko": "그랜드밸리"
+ },
+ "Saint-Étienne-des-Grès|QC": {
+  "zh": "圣艾蒂安德格雷",
+  "ko": "생테티엔데그레"
+ },
+ "Seldom|NL": {
+  "zh": "塞尔登",
+  "ko": "셀덤"
+ },
+ "L'Isle-aux-Grues|QC": {
+  "zh": "利勒奥格吕",
+  "ko": "릴오그뤼"
+ },
+ "Wilsonville|ON": {
+  "zh": "威尔逊维尔",
+  "ko": "윌슨빌"
+ },
+ "Clarksburg|ON": {
+  "zh": "克拉克斯堡",
+  "ko": "클락스버그"
+ },
+ "Mount Albert|ON": {
+  "zh": "芒特艾伯特",
+  "ko": "마운트앨버트"
+ },
+ "Roxton Pond|QC": {
+  "zh": "罗克斯顿庞德",
+  "ko": "록스턴폰드"
+ },
+ "Saint-Ludger|QC": {
+  "zh": "圣吕德热",
+  "ko": "생뤼드제"
+ },
+ "Marsville|ON": {
+  "zh": "马斯维尔",
+  "ko": "마스빌"
+ },
+ "Davidson|SK": {
+  "zh": "戴维森",
+  "ko": "데이비드슨"
+ },
+ "Carlyle|SK": {
+  "zh": "卡莱尔",
+  "ko": "칼라일"
+ },
+ "Bolton-Ouest|QC": {
+  "zh": "西博尔顿",
+  "ko": "볼턴우에스트"
+ },
+ "Havelock|QC": {
+  "zh": "哈夫洛克",
+  "ko": "해블록"
+ },
+ "Centreville-Wareham-Trinity|NL": {
+  "zh": "森特维尔韦勒姆特里尼蒂",
+  "ko": "센터빌웨어럼트리니티"
+ },
+ "Saint-Cléophas-de-Brandon|QC": {
+  "zh": "圣克莱奥法斯德布朗东",
+  "ko": "생클레오파스드브랑동"
+ },
+ "Island Lake|MB": {
+  "zh": "艾兰湖",
+  "ko": "아일랜드레이크"
+ },
+ "Hanmer|ON": {
+  "zh": "汉默",
+  "ko": "핸머"
+ },
+ "Ashern|MB": {
+  "zh": "阿舍恩",
+  "ko": "애션"
+ },
+ "Mozart|SK": {
+  "zh": "莫扎特",
+  "ko": "모차르트"
+ },
+ "Mitchell|ON": {
+  "zh": "米切尔",
+  "ko": "미첼"
+ },
+ "Cocagne|NB": {
+  "zh": "科卡涅",
+  "ko": "코카뉴"
+ },
+ "Gibbons|AB": {
+  "zh": "吉本斯",
+  "ko": "기번스"
+ },
+ "Mont-Saint-Grégoire|QC": {
+  "zh": "蒙圣格雷瓜尔",
+  "ko": "몽생그레구아르"
+ },
+ "Hodgson|MB": {
+  "zh": "霍奇森",
+  "ko": "호지슨"
+ },
+ "Falher|AB": {
+  "zh": "法莱尔",
+  "ko": "팔레르"
+ },
+ "Biggar|SK": {
+  "zh": "比格",
+  "ko": "비거"
+ },
+ "Leask|SK": {
+  "zh": "利斯克",
+  "ko": "리스크"
+ },
+ "Erin|ON": {
+  "zh": "埃林",
+  "ko": "에린"
+ },
+ "Kerrobert|SK": {
+  "zh": "克罗伯特",
+  "ko": "케로버트"
+ },
+ "Nanton|AB": {
+  "zh": "南顿",
+  "ko": "낸턴"
+ },
+ "Blind Bay|BC": {
+  "zh": "布莱恩德贝",
+  "ko": "블라인드베이"
+ },
+ "Binbrook|ON": {
+  "zh": "宾布鲁克",
+  "ko": "빈브룩"
+ },
+ "Entwistle|AB": {
+  "zh": "恩特威斯尔",
+  "ko": "엔트위슬"
+ },
+ "Cayuga|ON": {
+  "zh": "卡尤加",
+  "ko": "카유가"
+ },
+ "Alberton|PE": {
+  "zh": "艾伯顿",
+  "ko": "앨버턴"
+ },
+ "Saint-Agapit|QC": {
+  "zh": "圣阿加皮",
+  "ko": "생타가피"
+ },
+ "Saint-Joseph-de-Lepage|QC": {
+  "zh": "圣约瑟夫德勒帕热",
+  "ko": "생조제프드르파주"
+ },
+ "Bruderheim|AB": {
+  "zh": "布鲁德海姆",
+  "ko": "브루더하임"
+ },
+ "Great Village|NS": {
+  "zh": "格雷特维利奇",
+  "ko": "그레이트빌리지"
+ },
+ "Haute-Aboujagane|NB": {
+  "zh": "奥特阿布贾甘",
+  "ko": "오트아부자간"
+ },
+ "Miami|MB": {
+  "zh": "迈阿密",
+  "ko": "마이애미"
+ },
+ "Baie-Trinité|QC": {
+  "zh": "贝特里尼泰",
+  "ko": "베트리니테"
+ },
+ "Hagensborg|BC": {
+  "zh": "哈根斯堡",
+  "ko": "헤이건스보그"
+ },
+ "Boischatel|QC": {
+  "zh": "布瓦沙泰勒",
+  "ko": "부아샤텔"
+ },
+ "Weagamow Lake|ON": {
+  "zh": "威加莫湖",
+  "ko": "위가모레이크"
+ },
+ "Cormier-Village|NB": {
+  "zh": "科尔米耶维拉日",
+  "ko": "코르미에빌라주"
+ },
+ "Norton|NB": {
+  "zh": "诺顿",
+  "ko": "노턴"
+ },
+ "Alix|AB": {
+  "zh": "阿利克斯",
+  "ko": "앨릭스"
+ },
+ "Saint-Sébastien-de-Frontenac|QC": {
+  "zh": "圣塞巴斯蒂安德弗龙特纳克",
+  "ko": "생세바스티앵드프롱트나크"
+ },
+ "Bowen Island|BC": {
+  "zh": "鲍恩岛",
+  "ko": "보언아일랜드"
+ },
+ "Grafton|ON": {
+  "zh": "格拉夫顿",
+  "ko": "그래프턴"
+ },
+ "Foster|QC": {
+  "zh": "福斯特",
+  "ko": "포스터"
+ },
+ "Kapuskasing|ON": {
+  "zh": "卡普斯卡辛",
+  "ko": "카푸스카싱"
+ },
+ "Plamondon|AB": {
+  "zh": "普拉蒙东",
+  "ko": "플라몽동"
+ },
+ "Saint-Damien-de-Buckland|QC": {
+  "zh": "圣达米安德巴克兰",
+  "ko": "생다미앵드버클랜드"
+ },
+ "Sainte-Famille|QC": {
+  "zh": "圣法米耶",
+  "ko": "생트파미유"
+ },
+ "Plantagenet|ON": {
+  "zh": "普朗塔热内",
+  "ko": "플랑타주네"
+ },
+ "Calixa-Lavallée|QC": {
+  "zh": "卡利克萨拉瓦莱",
+  "ko": "칼릭사라발레"
+ },
+ "Saint-Éphrem-de-Beauce|QC": {
+  "zh": "圣埃弗朗德博斯",
+  "ko": "생테프렘드보스"
+ },
+ "Hornepayne|ON": {
+  "zh": "霍恩佩恩",
+  "ko": "혼페인"
+ },
+ "Saint-Antoine-de-Tilly|QC": {
+  "zh": "圣安托万德蒂伊",
+  "ko": "생앙투안드티이"
+ },
+ "Port Burwell|ON": {
+  "zh": "伯韦尔港",
+  "ko": "포트버웰"
+ },
+ "Saint-Hilarion|QC": {
+  "zh": "圣伊拉里翁",
+  "ko": "생틸라리옹"
+ },
+ "Wellington|ON": {
+  "zh": "惠灵顿",
+  "ko": "웰링턴"
+ },
+ "Rockyford|AB": {
+  "zh": "罗基福德",
+  "ko": "로키퍼드"
+ },
+ "Irishtown|NB": {
+  "zh": "艾里什敦",
+  "ko": "아이리시타운"
+ },
+ "Genesee|AB": {
+  "zh": "杰纳西",
+  "ko": "제니시"
+ },
+ "Stewart|BC": {
+  "zh": "斯图尔特",
+  "ko": "스튜어트"
+ },
+ "Saint-Odilon|QC": {
+  "zh": "圣奥迪隆",
+  "ko": "생토딜롱"
+ },
+ "Consort|AB": {
+  "zh": "康索特",
+  "ko": "콘소트"
+ },
+ "Hensall|ON": {
+  "zh": "汉索尔",
+  "ko": "헨솔"
+ },
+ "Vallée-Jonction|QC": {
+  "zh": "瓦莱容克西永",
+  "ko": "발레종크시옹"
+ },
+ "Breton|AB": {
+  "zh": "布雷顿",
+  "ko": "브리턴"
+ },
+ "Saint-Eugène-de-Grantham|QC": {
+  "zh": "圣欧仁德格兰瑟姆",
+  "ko": "생퇴젠드그랜섬"
+ },
+ "Lower Nicola|BC": {
+  "zh": "下尼古拉",
+  "ko": "로어니콜라"
+ },
+ "Elliot Lake|ON": {
+  "zh": "埃利奥特湖",
+  "ko": "엘리엇레이크"
+ },
+ "Porcupine|ON": {
+  "zh": "波丘派恩",
+  "ko": "포큐파인"
+ },
+ "Saint-Isidore-de-Laprairie|QC": {
+  "zh": "圣伊西多尔德拉普雷里",
+  "ko": "생티지도르드라프레리"
+ },
+ "Sainte-Justine|QC": {
+  "zh": "圣朱斯蒂娜",
+  "ko": "생트쥐스틴"
+ },
+ "Pierrefonds-Roxboro|QC": {
+  "zh": "皮埃尔丰罗克斯伯勒",
+  "ko": "피에르퐁록스버러"
+ },
+ "Lower Woods Harbour|NS": {
+  "zh": "下伍兹港",
+  "ko": "로어우즈하버"
+ },
+ "Lafleche|SK": {
+  "zh": "拉弗莱什",
+  "ko": "라플레시"
+ },
+ "Shediac Bridge|NB": {
+  "zh": "谢迪亚克布里奇",
+  "ko": "셰디액브리지"
+ },
+ "Stanhope|PE": {
+  "zh": "斯坦诺普",
+  "ko": "스탠호프"
+ },
+ "Metcalfe|ON": {
+  "zh": "梅特卡夫",
+  "ko": "멧커프"
+ },
+ "Baie de Bouctouche|NB": {
+  "zh": "布克图什湾",
+  "ko": "베드북투슈"
+ },
+ "Vega|AB": {
+  "zh": "维加",
+  "ko": "베가"
+ },
+ "Morell|PE": {
+  "zh": "莫雷尔",
+  "ko": "모렐"
+ },
+ "Sainte-Croix|QC": {
+  "zh": "圣克鲁瓦",
+  "ko": "생트크루아"
+ },
+ "Sainte-Catherine-de-Hatley|QC": {
+  "zh": "圣卡特琳德哈特利",
+  "ko": "생트카트린드해틀리"
+ },
+ "Boston Bar|BC": {
+  "zh": "波士顿巴",
+  "ko": "보스턴바"
+ },
+ "Navin|MB": {
+  "zh": "纳文",
+  "ko": "내빈"
+ },
+ "Brantville|NB": {
+  "zh": "布兰特维尔",
+  "ko": "브랜트빌"
+ },
+ "Buffalo Narrows|SK": {
+  "zh": "巴弗洛纳罗斯",
+  "ko": "버펄로내로스"
+ },
+ "Rivers|MB": {
+  "zh": "里弗斯",
+  "ko": "리버스"
+ },
+ "Lac-Supérieur|QC": {
+  "zh": "拉克叙佩里厄",
+  "ko": "라크쉬페리외르"
+ },
+ "Dégelis|QC": {
+  "zh": "德热利",
+  "ko": "데젤리"
+ },
+ "Saint-Patrice-de-Beaurivage|QC": {
+  "zh": "圣帕特里斯德博里瓦日",
+  "ko": "생파트리스드보리바주"
+ },
+ "Tiny|ON": {
+  "zh": "泰尼",
+  "ko": "타이니"
+ },
+ "Canyon Creek|AB": {
+  "zh": "坎宁克里克",
+  "ko": "캐니언크리크"
+ },
+ "Kinkora|PE": {
+  "zh": "金科拉",
+  "ko": "킨코라"
+ },
+ "Whitelaw|AB": {
+  "zh": "怀特洛",
+  "ko": "화이트로"
+ },
+ "Ashburn|ON": {
+  "zh": "阿什本",
+  "ko": "애시번"
+ },
+ "Saint-Philibert|QC": {
+  "zh": "圣菲利贝尔",
+  "ko": "생필리베르"
+ },
+ "Mansonville|QC": {
+  "zh": "曼森维尔",
+  "ko": "맨슨빌"
+ },
+ "Buckland|QC": {
+  "zh": "巴克兰",
+  "ko": "버클랜드"
+ },
+ "Viking|AB": {
+  "zh": "维京",
+  "ko": "바이킹"
+ },
+ "Shubenacadie|NS": {
+  "zh": "舒本纳卡迪",
+  "ko": "슈베나카디"
+ },
+ "Demorestville|ON": {
+  "zh": "德莫雷斯特维尔",
+  "ko": "디모레스트빌"
+ },
+ "Lombardy|ON": {
+  "zh": "伦巴第",
+  "ko": "롬바디"
+ },
+ "Mount Elgin|ON": {
+  "zh": "芒特埃尔金",
+  "ko": "마운트엘긴"
+ },
+ "Kuujjuaq|QC": {
+  "zh": "库朱瓦克",
+  "ko": "쿠주아크"
+ },
+ "Zenon Park|SK": {
+  "zh": "泽农帕克",
+  "ko": "제넌파크"
+ },
+ "Air Ronge|SK": {
+  "zh": "艾尔朗格",
+  "ko": "에어론지"
+ },
+ "LeMoyne|QC": {
+  "zh": "勒穆瓦纳",
+  "ko": "르무안"
+ },
+ "Brookside|NS": {
+  "zh": "布鲁克赛德",
+  "ko": "브룩사이드"
+ },
+ "Whitchurch-Stouffville|ON": {
+  "zh": "惠特彻奇斯托夫维尔",
+  "ko": "휘트처치스투프빌"
+ },
+ "McKerrow|ON": {
+  "zh": "麦克罗",
+  "ko": "매커로"
+ },
+ "Enoch Cree Nation 135|AB": {
+  "zh": "伊诺克克里族135",
+  "ko": "이노크크리네이션135"
+ },
+ "Saint-Valère|QC": {
+  "zh": "圣瓦莱尔",
+  "ko": "생발레르"
+ },
+ "Percé|QC": {
+  "zh": "佩尔塞",
+  "ko": "페르세"
+ },
+ "Girardville|QC": {
+  "zh": "吉拉尔维尔",
+  "ko": "지라르빌"
+ },
+ "Grande-Rivière|QC": {
+  "zh": "格朗德里维耶尔",
+  "ko": "그랑드리비에르"
+ },
+ "Mountain Road|MB": {
+  "zh": "芒廷罗德",
+  "ko": "마운틴로드"
+ },
+ "Welshpool|NB": {
+  "zh": "韦尔什普尔",
+  "ko": "웰시풀"
+ },
+ "Bobcaygeon|ON": {
+  "zh": "博布凯金",
+  "ko": "밥케이전"
+ },
+ "Gladstone|MB": {
+  "zh": "格拉德斯通",
+  "ko": "글래드스턴"
+ },
+ "Putnam|ON": {
+  "zh": "帕特南",
+  "ko": "퍼트넘"
+ },
+ "Caroline|AB": {
+  "zh": "卡罗琳",
+  "ko": "캐롤라인"
+ },
+ "Lilydale|NS": {
+  "zh": "莉莉代尔",
+  "ko": "릴리데일"
+ },
+ "Oro|ON": {
+  "zh": "奥罗",
+  "ko": "오로"
+ },
+ "Rochebaucourt|QC": {
+  "zh": "罗什博库尔",
+  "ko": "로슈보쿠르"
+ },
+ "Sable River|NS": {
+  "zh": "萨布尔里弗",
+  "ko": "세이블리버"
+ },
+ "Marshall|SK": {
+  "zh": "马歇尔",
+  "ko": "마셜"
+ },
+ "Marquette|MB": {
+  "zh": "马凯特",
+  "ko": "마켓"
+ },
+ "Maidstone|SK": {
+  "zh": "梅德斯通",
+  "ko": "메이드스톤"
+ },
+ "Zama City|AB": {
+  "zh": "扎马城",
+  "ko": "자마시티"
+ },
+ "Petit Rocher|NB": {
+  "zh": "珀蒂罗谢",
+  "ko": "프티로셰"
+ },
+ "Steeves Mountain|NB": {
+  "zh": "斯蒂夫斯山",
+  "ko": "스티브스마운틴"
+ },
+ "Sainte-Praxède|QC": {
+  "zh": "圣普拉克塞德",
+  "ko": "생트프락세드"
+ },
+ "Hague|SK": {
+  "zh": "黑格",
+  "ko": "헤이그"
+ },
+ "Beaver County|AB": {
+  "zh": "比弗县",
+  "ko": "비버카운티"
+ },
+ "Lower Coverdale|NB": {
+  "zh": "下科弗代尔",
+  "ko": "로어커버데일"
+ },
+ "Lower Norton|NB": {
+  "zh": "下诺顿",
+  "ko": "로어노턴"
+ },
+ "Charlottetown|NL": {
+  "zh": "夏洛特敦",
+  "ko": "샬럿타운"
+ },
+ "Mary's Harbour|NL": {
+  "zh": "玛丽斯港",
+  "ko": "메리스하버"
+ },
+ "Norris Arm|NL": {
+  "zh": "诺里斯阿姆",
+  "ko": "노리스암"
+ },
+ "St. Andrews|PE": {
+  "zh": "圣安德鲁斯",
+  "ko": "세인트앤드루스"
+ },
+ "Ripley|ON": {
+  "zh": "里普利",
+  "ko": "리플리"
+ },
+ "Dayspring|NS": {
+  "zh": "戴斯普林",
+  "ko": "데이스프링"
+ },
+ "Glencoe|ON": {
+  "zh": "格伦科",
+  "ko": "글렌코"
+ },
+ "Waldheim|SK": {
+  "zh": "瓦尔德海姆",
+  "ko": "월드하임"
+ },
+ "Logan Lake|BC": {
+  "zh": "洛根湖",
+  "ko": "로건레이크"
+ },
+ "Cape St. George|NL": {
+  "zh": "圣乔治角",
+  "ko": "케이프세인트조지"
+ },
+ "Mahone Bay|NS": {
+  "zh": "马洪湾",
+  "ko": "머혼베이"
+ },
+ "Havre-aux-Maisons|QC": {
+  "zh": "阿夫尔奥迈松",
+  "ko": "아브르오메종"
+ },
+ "Falardeau|QC": {
+  "zh": "法拉尔多",
+  "ko": "팔라르도"
+ },
+ "Palmarolle|QC": {
+  "zh": "帕尔马罗勒",
+  "ko": "팔마롤"
+ },
+ "Fabreville|QC": {
+  "zh": "法布勒维尔",
+  "ko": "파브르빌"
+ },
+ "Saint-Just-de-Bretenières|QC": {
+  "zh": "圣朱斯特德布勒特尼埃",
+  "ko": "생쥐스트드브르트니에르"
+ },
+ "Saint-Michel-de-Bellechasse|QC": {
+  "zh": "圣米歇尔德贝勒沙斯",
+  "ko": "생미셸드벨샤스"
+ },
+ "St. Lina|AB": {
+  "zh": "圣莉娜",
+  "ko": "세인트라이나"
+ },
+ "Brule Shore|NS": {
+  "zh": "布鲁尔肖尔",
+  "ko": "브룰쇼어"
+ },
+ "West Brome|QC": {
+  "zh": "西布罗姆",
+  "ko": "웨스트브롬"
+ },
+ "Woodville|ON": {
+  "zh": "伍德维尔",
+  "ko": "우드빌"
+ },
+ "Meacham|SK": {
+  "zh": "米彻姆",
+  "ko": "미첨"
+ },
+ "Lac des Arcs|AB": {
+  "zh": "拉克德扎尔克",
+  "ko": "라크데자르크"
+ },
+ "Walton|ON": {
+  "zh": "沃尔顿",
+  "ko": "월턴"
+ },
+ "Saint-Paulin|QC": {
+  "zh": "圣波兰",
+  "ko": "생폴랭"
+ },
+ "Nobleford|AB": {
+  "zh": "诺布尔福德",
+  "ko": "노블퍼드"
+ },
+ "New Waterford|NS": {
+  "zh": "新沃特福德",
+  "ko": "뉴워터퍼드"
+ },
+ "Delia|AB": {
+  "zh": "迪莉娅",
+  "ko": "딜리아"
+ },
+ "Calais|AB": {
+  "zh": "卡莱",
+  "ko": "칼레"
+ },
+ "Coronach|SK": {
+  "zh": "科罗纳克",
+  "ko": "코로나크"
+ },
+ "Brigus|NL": {
+  "zh": "布里格斯",
+  "ko": "브리거스"
+ },
+ "Lorraine|QC": {
+  "zh": "洛兰",
+  "ko": "로렌"
+ },
+ "Reserve Mines|NS": {
+  "zh": "里泽夫迈恩斯",
+  "ko": "리저브마인스"
+ },
+ "Stoke|QC": {
+  "zh": "斯托克",
+  "ko": "스토크"
+ },
+ "South Tetagouche|NB": {
+  "zh": "南泰塔古什",
+  "ko": "사우스테타구시"
+ },
+ "Salmon Cove|NL": {
+  "zh": "萨蒙湾",
+  "ko": "새먼코브"
+ },
+ "Heart's Desire|NL": {
+  "zh": "哈茨迪扎尔",
+  "ko": "하츠디자이어"
+ },
+ "Heart's Content|NL": {
+  "zh": "哈茨康滕特",
+  "ko": "하츠콘텐트"
+ },
+ "Upper Island Cove|NL": {
+  "zh": "上艾兰湾",
+  "ko": "어퍼아일랜드코브"
+ },
+ "Whitbourne|NL": {
+  "zh": "惠特本",
+  "ko": "휘트본"
+ },
+ "Spaniard's Bay|NL": {
+  "zh": "斯潘尼亚兹湾",
+  "ko": "스패니어즈베이"
+ },
+ "Saint-Jean-de-Dieu|QC": {
+  "zh": "圣让德迪厄",
+  "ko": "생장드디외"
+ },
+ "Pugwash|NS": {
+  "zh": "帕格沃什",
+  "ko": "퍼그워시"
+ },
+ "Orangedale|NS": {
+  "zh": "奥兰治代尔",
+  "ko": "오렌지데일"
+ },
+ "East Farnham|QC": {
+  "zh": "东法纳姆",
+  "ko": "이스트파넘"
+ },
+ "Alameda|SK": {
+  "zh": "阿拉米达",
+  "ko": "알라메다"
+ },
+ "Saint-Joseph-de-Madawaska|NB": {
+  "zh": "圣约瑟夫德马达瓦斯卡",
+  "ko": "생조제프드마다와스카"
+ },
+ "Massey Drive|NL": {
+  "zh": "梅西德赖夫",
+  "ko": "매시드라이브"
+ },
+ "Lewin's Cove|NL": {
+  "zh": "卢因斯湾",
+  "ko": "루인스코브"
+ },
+ "Creston|NL": {
+  "zh": "克雷斯顿",
+  "ko": "크레스턴"
+ },
+ "Burin|NL": {
+  "zh": "布林",
+  "ko": "뷰린"
+ },
+ "Grand Bank|NL": {
+  "zh": "格兰德班克",
+  "ko": "그랜드뱅크"
+ },
+ "Western Bay|NL": {
+  "zh": "韦斯滕湾",
+  "ko": "웨스턴베이"
+ },
+ "Roxboro|QC": {
+  "zh": "罗克斯伯勒",
+  "ko": "록스버러"
+ },
+ "Musgravetown|NL": {
+  "zh": "马斯格雷夫敦",
+  "ko": "머스그레이브타운"
+ },
+ "Glenwood|NL": {
+  "zh": "格伦伍德",
+  "ko": "글렌우드"
+ },
+ "Horwood|NL": {
+  "zh": "霍伍德",
+  "ko": "호우드"
+ },
+ "Hare Bay|NL": {
+  "zh": "黑尔湾",
+  "ko": "헤어베이"
+ },
+ "Gillams|NL": {
+  "zh": "吉勒姆斯",
+  "ko": "길럼스"
+ },
+ "Gambo|NL": {
+  "zh": "甘博",
+  "ko": "갬보"
+ },
+ "Outer Cove|NL": {
+  "zh": "奥特湾",
+  "ko": "아우터코브"
+ },
+ "Bide Arm|NL": {
+  "zh": "拜德阿姆",
+  "ko": "바이드암"
+ },
+ "Cook's Harbour|NL": {
+  "zh": "库克斯港",
+  "ko": "쿡스하버"
+ },
+ "Goulds|NL": {
+  "zh": "古尔兹",
+  "ko": "굴즈"
+ },
+ "Howley|NL": {
+  "zh": "豪利",
+  "ko": "하울리"
+ },
+ "Cormack|NL": {
+  "zh": "科马克",
+  "ko": "코맥"
+ },
+ "Bonne Bay Pond|NL": {
+  "zh": "邦尼湾庞德",
+  "ko": "본베이폰드"
+ },
+ "Reidville|NL": {
+  "zh": "里德维尔",
+  "ko": "리드빌"
+ },
+ "Comfort Cove-Newstead|NL": {
+  "zh": "康福特湾纽斯特德",
+  "ko": "컴퍼트코브뉴스테드"
+ },
+ "Campbellton|NL": {
+  "zh": "坎贝尔顿",
+  "ko": "캠벨턴"
+ },
+ "Botwood|NL": {
+  "zh": "博特伍德",
+  "ko": "보트우드"
+ },
+ "Badger|NL": {
+  "zh": "巴杰",
+  "ko": "배저"
+ },
+ "George's Brook-Milton|NL": {
+  "zh": "乔治斯布鲁克米尔顿",
+  "ko": "조지스브룩밀턴"
+ },
+ "Garden Cove|NL": {
+  "zh": "加登湾",
+  "ko": "가든코브"
+ },
+ "Gerald|SK": {
+  "zh": "杰拉尔德",
+  "ko": "제럴드"
+ },
+ "Alberta Beach|AB": {
+  "zh": "艾伯塔比奇",
+  "ko": "앨버타비치"
+ },
+ "Harbour Main|NL": {
+  "zh": "哈伯梅恩",
+  "ko": "하버메인"
+ },
+ "Midale|SK": {
+  "zh": "米代尔",
+  "ko": "미데일"
+ },
+ "Staffa|ON": {
+  "zh": "斯塔法",
+  "ko": "스타파"
+ },
+ "Limehouse|ON": {
+  "zh": "莱姆豪斯",
+  "ko": "라임하우스"
+ },
+ "New Hazelton|BC": {
+  "zh": "新黑兹尔顿",
+  "ko": "뉴헤이즐턴"
+ },
+ "Seven Persons|AB": {
+  "zh": "塞文珀森斯",
+  "ko": "세븐퍼슨스"
+ },
+ "Grenfell|SK": {
+  "zh": "格伦费尔",
+  "ko": "그렌펠"
+ },
+ "Ascot Corner|QC": {
+  "zh": "阿斯科特角",
+  "ko": "애스컷코너"
+ },
+ "Belliveaus Cove|NS": {
+  "zh": "贝利沃湾",
+  "ko": "벨리보코브"
+ },
+ "Albanel|QC": {
+  "zh": "阿尔巴内尔",
+  "ko": "알바넬"
+ },
+ "Sydney Mines|NS": {
+  "zh": "悉尼迈恩斯",
+  "ko": "시드니마인스"
+ },
+ "Ragueneau|QC": {
+  "zh": "拉格诺",
+  "ko": "라그노"
+ },
+ "Saint-Wenceslas|QC": {
+  "zh": "圣文策斯拉斯",
+  "ko": "생방세슬라"
+ },
+ "Wiltondale|NL": {
+  "zh": "威尔顿代尔",
+  "ko": "윌턴데일"
+ },
+ "Drumbo|ON": {
+  "zh": "德拉姆博",
+  "ko": "드럼보"
+ },
+ "Ware|ON": {
+  "zh": "韦尔",
+  "ko": "웨어"
+ },
+ "Frankford|ON": {
+  "zh": "弗兰克福德",
+  "ko": "프랭크퍼드"
+ },
+ "Rama Road|ON": {
+  "zh": "拉马罗德",
+  "ko": "라마로드"
+ },
+ "Saint-Marc-de-Figuery|QC": {
+  "zh": "圣马克德菲格里",
+  "ko": "생마르크드피게리"
+ },
+ "Kelvington|SK": {
+  "zh": "凯尔文顿",
+  "ko": "켈빙턴"
+ },
+ "Coleville|SK": {
+  "zh": "科尔维尔",
+  "ko": "콜빌"
+ },
+ "Bella Bella|BC": {
+  "zh": "贝拉贝拉",
+  "ko": "벨라벨라"
+ },
+ "Sifton|MB": {
+  "zh": "西夫顿",
+  "ko": "시프턴"
+ },
+ "Wellandport|ON": {
+  "zh": "韦兰波特",
+  "ko": "웰랜드포트"
+ },
+ "Pennant|SK": {
+  "zh": "彭南特",
+  "ko": "페넌트"
+ },
+ "Louisdale|NS": {
+  "zh": "路易斯代尔",
+  "ko": "루이스데일"
+ },
+ "Paradise Hill|SK": {
+  "zh": "帕拉代斯希尔",
+  "ko": "패러다이스힐"
+ },
+ "Hampton|ON": {
+  "zh": "汉普顿",
+  "ko": "햄프턴"
+ },
+ "Carberry|MB": {
+  "zh": "卡伯里",
+  "ko": "카버리"
+ },
+ "Saturna|BC": {
+  "zh": "萨图纳",
+  "ko": "새터나"
+ },
+ "St. André|NB": {
+  "zh": "圣安德烈",
+  "ko": "생탕드레"
+ },
+ "Brookdale|NS": {
+  "zh": "布鲁克代尔",
+  "ko": "브룩데일"
+ },
+ "McLellans Brook|NS": {
+  "zh": "麦克莱兰斯布鲁克",
+  "ko": "매클렐런스브룩"
+ },
+ "Red Sucker Lake|MB": {
+  "zh": "雷德萨克湖",
+  "ko": "레드서커레이크"
+ },
+ "Berry Mills|NB": {
+  "zh": "贝里米尔斯",
+  "ko": "베리밀스"
+ },
+ "Camrose County|AB": {
+  "zh": "卡姆罗斯县",
+  "ko": "캠로즈카운티"
+ },
+ "Victoire|SK": {
+  "zh": "维克图瓦尔",
+  "ko": "빅투아르"
+ },
+ "Glenburnie|ON": {
+  "zh": "格伦伯尼",
+  "ko": "글렌버니"
+ },
+ "Gowanstown|ON": {
+  "zh": "高恩斯敦",
+  "ko": "가우언스타운"
+ },
+ "Hawkestone|ON": {
+  "zh": "霍克斯通",
+  "ko": "호크스톤"
+ },
+ "Bentley|AB": {
+  "zh": "本特利",
+  "ko": "벤틀리"
+ },
+ "Black Creek|BC": {
+  "zh": "布莱克克里克",
+  "ko": "블랙크리크"
+ },
+ "70 Mile House|BC": {
+  "zh": "70英里屋",
+  "ko": "70마일하우스"
+ },
+ "McAdam|NB": {
+  "zh": "麦克亚当",
+  "ko": "매캐덤"
+ },
+ "Cochin|SK": {
+  "zh": "科钦",
+  "ko": "코친"
+ },
+ "Steady Brook|NL": {
+  "zh": "斯特迪布鲁克",
+  "ko": "스테디브룩"
+ },
+ "Rocky Harbour|NL": {
+  "zh": "罗基港",
+  "ko": "로키하버"
+ },
+ "Richelieu|QC": {
+  "zh": "黎塞留",
+  "ko": "리슐리외"
+ },
+ "Cap-Saint-Ignace|QC": {
+  "zh": "卡普圣伊尼亚斯",
+  "ko": "카프생티냐스"
+ },
+ "Brierly Brook|NS": {
+  "zh": "布赖尔利布鲁克",
+  "ko": "브라이얼리브룩"
+ },
+ "Middle Musquodoboit|NS": {
+  "zh": "中马斯阔多博伊特",
+  "ko": "미들머스쿼도보잇"
+ },
+ "Saint-Côme|QC": {
+  "zh": "圣科姆",
+  "ko": "생콤"
+ },
+ "La Salle|MB": {
+  "zh": "拉萨尔",
+  "ko": "라살"
+ },
+ "West River|NS": {
+  "zh": "韦斯特里弗",
+  "ko": "웨스트리버"
+ },
+ "St. Louis|SK": {
+  "zh": "圣路易斯",
+  "ko": "세인트루이스"
+ },
+ "Somerville|NB": {
+  "zh": "萨默维尔",
+  "ko": "서머빌"
+ },
+ "Sardis|BC": {
+  "zh": "萨迪斯",
+  "ko": "사디스"
+ },
+ "Bear Lake|BC": {
+  "zh": "贝尔湖",
+  "ko": "베어레이크"
+ },
+ "Fordwich|ON": {
+  "zh": "福德威奇",
+  "ko": "포드위치"
+ },
+ "Bainsville|ON": {
+  "zh": "贝恩斯维尔",
+  "ko": "베인스빌"
+ },
+ "North Gower|ON": {
+  "zh": "北高尔",
+  "ko": "노스가워"
+ },
+ "Vulcan|AB": {
+  "zh": "瓦肯",
+  "ko": "벌컨"
+ },
+ "Curran|ON": {
+  "zh": "柯伦",
+  "ko": "커런"
+ },
+ "Milford|ON": {
+  "zh": "米尔福德",
+  "ko": "밀퍼드"
+ },
+ "Elbow|SK": {
+  "zh": "埃尔博",
+  "ko": "엘보"
+ },
+ "Swan Hills|AB": {
+  "zh": "斯旺希尔斯",
+  "ko": "스완힐스"
+ },
+ "Cawston|BC": {
+  "zh": "考斯顿",
+  "ko": "코스턴"
+ },
+ "Oyster Bed Bridge|PE": {
+  "zh": "奥伊斯特贝德布里奇",
+  "ko": "오이스터베드브리지"
+ },
+ "Sunderland|ON": {
+  "zh": "桑德兰",
+  "ko": "선덜랜드"
+ },
+ "Hubley|NS": {
+  "zh": "哈布利",
+  "ko": "허블리"
+ },
+ "Château-Richer|QC": {
+  "zh": "沙托里歇",
+  "ko": "샤토리셰"
+ },
+ "Spirit River|AB": {
+  "zh": "斯皮里特里弗",
+  "ko": "스피릿리버"
+ },
+ "Palmer Rapids|ON": {
+  "zh": "帕尔默拉皮兹",
+  "ko": "파머래피즈"
+ },
+ "Pilot Butte|SK": {
+  "zh": "派洛特比尤特",
+  "ko": "파일럿뷰트"
+ },
+ "Sainte-Marie-Saint-Raphaël|NB": {
+  "zh": "圣玛丽圣拉斐尔",
+  "ko": "생트마리생라파엘"
+ },
+ "Métis-sur-Mer|QC": {
+  "zh": "梅蒂叙尔梅尔",
+  "ko": "메티쉬르메르"
+ },
+ "Saint-Stanislas-de-Champlain|QC": {
+  "zh": "圣斯坦尼斯拉斯德尚普兰",
+  "ko": "생스타니슬라스드샹플랭"
+ },
+ "Leroy|SK": {
+  "zh": "勒罗伊",
+  "ko": "리로이"
+ },
+ "Keswick|NB": {
+  "zh": "凯西克",
+  "ko": "케직"
+ },
+ "Embrun|ON": {
+  "zh": "昂布兰",
+  "ko": "앙브룅"
+ },
+ "Keewatin|ON": {
+  "zh": "基瓦廷",
+  "ko": "키와틴"
+ },
+ "Saint-Benoît-du-Lac|QC": {
+  "zh": "圣伯努瓦迪拉克",
+  "ko": "생브누아뒤라크"
+ },
+ "Odessa|ON": {
+  "zh": "敖德萨",
+  "ko": "오데사"
+ },
+ "Val-Morin|QC": {
+  "zh": "瓦尔莫兰",
+  "ko": "발모랭"
+ },
+ "Sangudo|AB": {
+  "zh": "桑古多",
+  "ko": "생구도"
+ },
+ "Grand Rapids|MB": {
+  "zh": "格兰德拉皮兹",
+  "ko": "그랜드래피즈"
+ },
+ "Wyoming|ON": {
+  "zh": "怀俄明",
+  "ko": "와이오밍"
+ },
+ "Neilburg|SK": {
+  "zh": "尼尔堡",
+  "ko": "닐버그"
+ },
+ "Dease Lake|BC": {
+  "zh": "迪斯湖",
+  "ko": "디스레이크"
+ },
+ "North Noel Road|NS": {
+  "zh": "北诺埃尔罗德",
+  "ko": "노스노엘로드"
+ },
+ "Cole Harbour|NS": {
+  "zh": "科尔港",
+  "ko": "콜하버"
+ },
+ "Saint-Jules|QC": {
+  "zh": "圣朱尔",
+  "ko": "생쥘"
+ },
+ "Denholm|QC": {
+  "zh": "登霍姆",
+  "ko": "덴홈"
+ },
+ "St. Jacobs|ON": {
+  "zh": "圣雅各布斯",
+  "ko": "세인트제이컵스"
+ },
+ "Vilna|AB": {
+  "zh": "维尔纳",
+  "ko": "빌나"
+ },
+ "Plattsville|ON": {
+  "zh": "普拉茨维尔",
+  "ko": "플래츠빌"
+ },
+ "Fort MacKay|AB": {
+  "zh": "麦凯堡",
+  "ko": "포트매케이"
+ },
+ "Lansdowne|NB": {
+  "zh": "兰斯当",
+  "ko": "랜즈다운"
+ },
+ "St. Hilaire|NB": {
+  "zh": "圣伊莱尔",
+  "ko": "생틸레르"
+ },
+ "New Dundee|ON": {
+  "zh": "新邓迪",
+  "ko": "뉴던디"
+ },
+ "Malahat|BC": {
+  "zh": "马拉哈特",
+  "ko": "맬러햇"
+ },
+ "Middle West Pubnico|NS": {
+  "zh": "中西帕布尼科",
+  "ko": "미들웨스트퍼브니코"
+ },
+ "Maidstone|ON": {
+  "zh": "梅德斯通",
+  "ko": "메이드스톤"
+ },
+ "Christopher Lake|SK": {
+  "zh": "克里斯托弗湖",
+  "ko": "크리스토퍼레이크"
+ },
+ "Clinton|BC": {
+  "zh": "克林顿",
+  "ko": "클린턴"
+ },
+ "Apohaqui|NB": {
+  "zh": "阿波哈奎",
+  "ko": "아포하퀴"
+ },
+ "Carlsbad Springs|ON": {
+  "zh": "卡尔斯巴德斯普林斯",
+  "ko": "칼즈배드스프링스"
+ },
+ "Domaine-Mont-Blanc|QC": {
+  "zh": "多梅纳蒙布朗",
+  "ko": "도멘몽블랑"
+ },
+ "Sainte-Mélanie|QC": {
+  "zh": "圣梅拉妮",
+  "ko": "생트멜라니"
+ },
+ "Rogersville|NB": {
+  "zh": "罗杰斯维尔",
+  "ko": "로저스빌"
+ },
+ "North Seguin|ON": {
+  "zh": "北西甘",
+  "ko": "노스세귄"
+ },
+ "Churchill|ON": {
+  "zh": "丘吉尔",
+  "ko": "처칠"
+ },
+ "Creighton|SK": {
+  "zh": "克赖顿",
+  "ko": "크레이턴"
+ },
+ "Hay Lakes|AB": {
+  "zh": "海伊湖",
+  "ko": "헤이레이크스"
+ },
+ "Lone Butte|BC": {
+  "zh": "隆比尤特",
+  "ko": "론뷰트"
+ },
+ "McLeod Lake|BC": {
+  "zh": "麦克劳德湖",
+  "ko": "매클라우드레이크"
+ },
+ "Seagrave|ON": {
+  "zh": "西格雷夫",
+  "ko": "시그레이브"
+ },
+ "Almonte|ON": {
+  "zh": "阿尔蒙特",
+  "ko": "알몬테"
+ },
+ "Minden|ON": {
+  "zh": "明登",
+  "ko": "민든"
+ },
+ "Zehner|SK": {
+  "zh": "泽纳",
+  "ko": "제너"
+ },
+ "Shoal Lake|MB": {
+  "zh": "肖尔湖",
+  "ko": "숄레이크"
+ },
+ "Anola|MB": {
+  "zh": "阿诺拉",
+  "ko": "어놀라"
+ },
+ "Aldersyde|AB": {
+  "zh": "奥尔德赛德",
+  "ko": "올더사이드"
+ },
+ "Carlisle|ON": {
+  "zh": "卡莱尔",
+  "ko": "칼라일"
+ },
+ "Kingston|NB": {
+  "zh": "金斯顿",
+  "ko": "킹스턴"
+ },
+ "Whitefish Falls|ON": {
+  "zh": "怀特菲什福尔斯",
+  "ko": "화이트피시폴스"
+ },
+ "Saint-Pierre-de-l'Île-d'Orléans|QC": {
+  "zh": "奥尔良岛圣皮埃尔",
+  "ko": "생피에르드릴도를레앙"
+ },
+ "Maliotenam|QC": {
+  "zh": "马利奥特南",
+  "ko": "말리오테남"
+ },
+ "Sherbrooke|NS": {
+  "zh": "舍布鲁克",
+  "ko": "셔브룩"
+ },
+ "Wanham|AB": {
+  "zh": "万纳姆",
+  "ko": "워넘"
+ },
+ "Lakefield|ON": {
+  "zh": "莱克菲尔德",
+  "ko": "레이크필드"
+ },
+ "East Angus|QC": {
+  "zh": "伊斯特安格斯",
+  "ko": "이스트앵거스"
+ },
+ "Foxboro|ON": {
+  "zh": "福克斯伯勒",
+  "ko": "폭스버러"
+ },
+ "Wroxeter|ON": {
+  "zh": "罗克斯特",
+  "ko": "록시터"
+ },
+ "Saint-Philippe|QC": {
+  "zh": "圣菲利普",
+  "ko": "생필리프"
+ },
+ "Saint-Donat-de-Montcalm|QC": {
+  "zh": "圣多纳德蒙卡尔姆",
+  "ko": "생도나드몽칼름"
+ },
+ "Redvers|SK": {
+  "zh": "雷德弗斯",
+  "ko": "레드버스"
+ },
+ "Mountain View|AB": {
+  "zh": "芒廷维尤",
+  "ko": "마운틴뷰"
+ },
+ "East Braintree|MB": {
+  "zh": "东布伦特里",
+  "ko": "이스트브레인트리"
+ },
+ "Vienna|ON": {
+  "zh": "维也纳",
+  "ko": "비엔나"
+ },
+ "Bracken|SK": {
+  "zh": "布拉肯",
+  "ko": "브래컨"
+ },
+ "McGregor|ON": {
+  "zh": "麦格雷戈",
+  "ko": "맥그리거"
+ },
+ "Porcupine Plain|SK": {
+  "zh": "波丘派恩普莱恩",
+  "ko": "포큐파인플레인"
+ },
+ "Witless Bay|NL": {
+  "zh": "威特利斯湾",
+  "ko": "위틀리스베이"
+ },
+ "Mercier|QC": {
+  "zh": "梅西耶",
+  "ko": "메르시에"
+ },
+ "Pine Falls|MB": {
+  "zh": "派恩福尔斯",
+  "ko": "파인폴스"
+ },
+ "Sainte-Hénédine|QC": {
+  "zh": "圣埃内迪讷",
+  "ko": "생트에네딘"
+ },
+ "Frampton|QC": {
+  "zh": "弗兰普顿",
+  "ko": "프램프턴"
+ },
+ "Chambord|QC": {
+  "zh": "尚博尔",
+  "ko": "샹보르"
+ },
+ "Halkirk|AB": {
+  "zh": "霍尔柯克",
+  "ko": "홀커크"
+ },
+ "Bragg Creek|AB": {
+  "zh": "布拉格溪",
+  "ko": "브래그크리크"
+ },
+ "Wynndel|BC": {
+  "zh": "温德尔",
+  "ko": "윈델"
+ },
+ "Benito|MB": {
+  "zh": "贝尼托",
+  "ko": "베니토"
+ },
+ "Red Bank|NB": {
+  "zh": "雷德班克",
+  "ko": "레드뱅크"
+ },
+ "Ingomar|NS": {
+  "zh": "英戈马",
+  "ko": "잉고마"
+ },
+ "Enfield|NS": {
+  "zh": "恩菲尔德",
+  "ko": "엔필드"
+ },
+ "Fullarton|ON": {
+  "zh": "富勒顿",
+  "ko": "풀러턴"
+ },
+ "Errington|BC": {
+  "zh": "埃林顿",
+  "ko": "에링턴"
+ },
+ "Stittsville|ON": {
+  "zh": "斯蒂茨维尔",
+  "ko": "스티츠빌"
+ },
+ "St. Claude|MB": {
+  "zh": "圣克洛德",
+  "ko": "생클로드"
+ },
+ "Lower East Pubnico|NS": {
+  "zh": "下东帕布尼科",
+  "ko": "로어이스트퍼브니코"
+ },
+ "Cleardale|AB": {
+  "zh": "克利尔代尔",
+  "ko": "클리어데일"
+ },
+ "Plenty|SK": {
+  "zh": "普伦蒂",
+  "ko": "플렌티"
+ },
+ "Emyvale|PE": {
+  "zh": "埃米韦尔",
+  "ko": "에미베일"
+ },
+ "Saint-Fulgence|QC": {
+  "zh": "圣菲尔让斯",
+  "ko": "생퓔장스"
+ },
+ "Balfour|BC": {
+  "zh": "鲍尔弗",
+  "ko": "밸포어"
+ },
+ "Tobermory|ON": {
+  "zh": "托伯莫里",
+  "ko": "토버모리"
+ },
+ "Sainte-Marie-de-Blandford|QC": {
+  "zh": "圣玛丽德布朗福尔",
+  "ko": "생트마리드블랑포르"
+ },
+ "Notre-Dame|NB": {
+  "zh": "诺特尔达姆",
+  "ko": "노트르담"
+ },
+ "Lantz|NS": {
+  "zh": "兰茨",
+  "ko": "랜츠"
+ },
+ "Chelmsford|ON": {
+  "zh": "切姆斯福德",
+  "ko": "첼름스퍼드"
+ },
+ "Belle River|ON": {
+  "zh": "贝尔里弗",
+  "ko": "벨리버"
+ },
+ "Bagot|MB": {
+  "zh": "巴戈特",
+  "ko": "배곳"
+ },
+ "Elm Creek|MB": {
+  "zh": "埃尔姆克里克",
+  "ko": "엘름크리크"
+ },
+ "Cut Knife|SK": {
+  "zh": "卡特奈夫",
+  "ko": "컷나이프"
+ },
+ "Shenley|QC": {
+  "zh": "申利",
+  "ko": "셴리"
+ },
+ "Qu'Appelle|SK": {
+  "zh": "卡佩勒",
+  "ko": "카펠"
+ },
+ "Saint-Célestin|QC": {
+  "zh": "圣塞莱斯坦",
+  "ko": "생셀레스탱"
+ },
+ "Hillier|ON": {
+  "zh": "希利尔",
+  "ko": "힐리어"
+ },
+ "Rivière-à-Pierre|QC": {
+  "zh": "里维耶尔阿皮埃尔",
+  "ko": "리비에르아피에르"
+ },
+ "Saint-François-du-Lac|QC": {
+  "zh": "圣弗朗索瓦迪拉克",
+  "ko": "생프랑수아뒤라크"
+ },
+ "Lower Wedgeport|NS": {
+  "zh": "下韦奇波特",
+  "ko": "로어웨지포트"
+ },
+ "Saint-Fabien|QC": {
+  "zh": "圣法比安",
+  "ko": "생파비앵"
+ },
+ "Tweed|ON": {
+  "zh": "特威德",
+  "ko": "트위드"
+ },
+ "Landmark|MB": {
+  "zh": "兰德马克",
+  "ko": "랜드마크"
+ },
+ "Saint-Gérard-Majella|QC": {
+  "zh": "圣热拉尔马耶拉",
+  "ko": "생제라르마젤라"
+ },
+ "Westwold|BC": {
+  "zh": "韦斯特沃尔德",
+  "ko": "웨스트월드"
+ },
+ "Hamiota|MB": {
+  "zh": "哈米奥塔",
+  "ko": "해미오타"
+ },
+ "South Ohio|NS": {
+  "zh": "南俄亥俄",
+  "ko": "사우스오하이오"
+ },
+ "Navan|ON": {
+  "zh": "纳文",
+  "ko": "내번"
+ },
+ "Fenelon Falls|ON": {
+  "zh": "费内隆福尔斯",
+  "ko": "페널런폴스"
+ },
+ "Saint-Denis-sur-Richelieu|QC": {
+  "zh": "黎塞留河畔圣德尼",
+  "ko": "생드니쉬르리슐리외"
+ },
+ "Sauble Beach|ON": {
+  "zh": "索布尔海滩",
+  "ko": "소블비치"
+ },
+ "Waubaushene|ON": {
+  "zh": "沃鲍申",
+  "ko": "워바신"
+ },
+ "Killarney Road|NB": {
+  "zh": "基拉尼路",
+  "ko": "킬라니로드"
+ },
+ "East Bay|NS": {
+  "zh": "伊斯特贝",
+  "ko": "이스트베이"
+ },
+ "Bruce Mines|ON": {
+  "zh": "布鲁斯迈恩斯",
+  "ko": "브루스마인스"
+ },
+ "Laurel|ON": {
+  "zh": "劳雷尔",
+  "ko": "로럴"
+ },
+ "Fanny Bay|BC": {
+  "zh": "范妮湾",
+  "ko": "패니베이"
+ },
+ "Nouvelle-Ouest|QC": {
+  "zh": "西努韦勒",
+  "ko": "누벨우에스트"
+ },
+ "Barthel|SK": {
+  "zh": "巴塞尔",
+  "ko": "바설"
+ },
+ "Aylesford|NS": {
+  "zh": "艾尔斯福德",
+  "ko": "에일즈퍼드"
+ },
+ "Woodham|ON": {
+  "zh": "伍德姆",
+  "ko": "우덤"
+ },
+ "Haileybury|ON": {
+  "zh": "黑利伯里",
+  "ko": "헤일리버리"
+ },
+ "Linwood|ON": {
+  "zh": "林伍德",
+  "ko": "린우드"
+ },
+ "Rathwell|MB": {
+  "zh": "拉思韦尔",
+  "ko": "래스웰"
+ },
+ "Cartier|MB": {
+  "zh": "卡蒂埃",
+  "ko": "카르티에"
+ },
+ "Mount Albion|PE": {
+  "zh": "阿尔比恩山",
+  "ko": "마운트앨비언"
+ },
+ "Chalk River|ON": {
+  "zh": "乔克里弗",
+  "ko": "초크리버"
+ },
+ "Glace Bay|NS": {
+  "zh": "格莱斯贝",
+  "ko": "글레이스베이"
+ },
+ "Aquaforte|NL": {
+  "zh": "阿夸福特",
+  "ko": "아쿠아포트"
+ },
+ "Tiverton|ON": {
+  "zh": "蒂弗顿",
+  "ko": "티버턴"
+ },
+ "Wendover|ON": {
+  "zh": "温多弗",
+  "ko": "웬도버"
+ },
+ "Papineauville|QC": {
+  "zh": "帕皮诺维尔",
+  "ko": "파피노빌"
+ },
+ "Bas-Cap-Pelé|NB": {
+  "zh": "下卡佩莱",
+  "ko": "바카펠레"
+ },
+ "Atholville|NB": {
+  "zh": "阿索尔维尔",
+  "ko": "애솔빌"
+ },
+ "Bath|NB": {
+  "zh": "巴斯",
+  "ko": "배스"
+ },
+ "Waverley|NS": {
+  "zh": "韦弗利",
+  "ko": "웨이벌리"
+ },
+ "Port au Choix|NL": {
+  "zh": "波托舒瓦",
+  "ko": "포토슈아"
+ },
+ "Oujé-Bougoumou|QC": {
+  "zh": "乌热布古穆",
+  "ko": "우제부구무"
+ },
+ "Auclair|QC": {
+  "zh": "奥克莱尔",
+  "ko": "오클레르"
+ },
+ "Rolphton|ON": {
+  "zh": "罗尔夫顿",
+  "ko": "롤프턴"
+ },
+ "Belmont|ON": {
+  "zh": "贝尔蒙特",
+  "ko": "벨몬트"
+ },
+ "Lucasville|NS": {
+  "zh": "卢卡斯维尔",
+  "ko": "루커스빌"
+ },
+ "Kenaston|SK": {
+  "zh": "肯纳斯顿",
+  "ko": "케너스턴"
+ },
+ "Mattawa|ON": {
+  "zh": "马塔瓦",
+  "ko": "매터와"
+ },
+ "Saint-Basile-le-Grand|QC": {
+  "zh": "大圣巴西勒",
+  "ko": "생바질르그랑"
+ },
+ "Esprit-Saint|QC": {
+  "zh": "埃斯普里圣",
+  "ko": "에스프리생"
+ },
+ "Lumby|BC": {
+  "zh": "兰比",
+  "ko": "럼비"
+ },
+ "Star City|SK": {
+  "zh": "斯塔城",
+  "ko": "스타시티"
+ },
+ "Coleman|PE": {
+  "zh": "科尔曼",
+  "ko": "콜먼"
+ },
+ "Notre-Dame-de-l'Île-Perrot|QC": {
+  "zh": "佩罗岛诺特尔达姆",
+  "ko": "노트르담드릴페로"
+ },
+ "Richer|MB": {
+  "zh": "里歇",
+  "ko": "리셰"
+ },
+ "Wheatley|ON": {
+  "zh": "惠特利",
+  "ko": "휘틀리"
+ },
+ "Elmwood|ON": {
+  "zh": "埃尔姆伍德",
+  "ko": "엘름우드"
+ },
+ "Emeryville|ON": {
+  "zh": "埃默里维尔",
+  "ko": "에머리빌"
+ },
+ "Feversham|ON": {
+  "zh": "费弗沙姆",
+  "ko": "페버샴"
+ },
+ "Anmore|BC": {
+  "zh": "安莫尔",
+  "ko": "앤모어"
+ },
+ "Saint-Damase-de-Matapédia|QC": {
+  "zh": "圣达马斯德马塔佩迪亚",
+  "ko": "생다마스드마타페디아"
+ },
+ "Saint-Tite-des-Caps|QC": {
+  "zh": "圣蒂特代卡",
+  "ko": "생티트데카"
+ },
+ "Vibank|SK": {
+  "zh": "维班克",
+  "ko": "바이뱅크"
+ },
+ "Barry's Bay|ON": {
+  "zh": "巴里斯贝",
+  "ko": "배리스베이"
+ },
+ "Millgrove|AB": {
+  "zh": "米尔格罗夫",
+  "ko": "밀그로브"
+ },
+ "Laterrière-Bassin|QC": {
+  "zh": "拉泰里耶尔巴桑",
+  "ko": "라테리에르바생"
+ },
+ "Auburn|ON": {
+  "zh": "奥本",
+  "ko": "오번"
+ },
+ "Dresden|ON": {
+  "zh": "德累斯顿",
+  "ko": "드레스덴"
+ },
+ "Gilford|ON": {
+  "zh": "吉尔福德",
+  "ko": "길퍼드"
+ },
+ "MacGregor|MB": {
+  "zh": "麦格雷戈",
+  "ko": "맥그리거"
+ },
+ "La Durantaye|QC": {
+  "zh": "拉迪朗泰",
+  "ko": "라뒤랑테"
+ },
+ "Blue Ridge|AB": {
+  "zh": "布卢里奇",
+  "ko": "블루리지"
+ },
+ "Trois-Ruisseaux|NB": {
+  "zh": "特鲁瓦吕索",
+  "ko": "트루아뤼소"
+ },
+ "Blockhouse|NS": {
+  "zh": "布洛克豪斯",
+  "ko": "블록하우스"
+ },
+ "Everett|ON": {
+  "zh": "埃弗里特",
+  "ko": "에버렛"
+ },
+ "Port Hardy|BC": {
+  "zh": "哈迪港",
+  "ko": "포트하디"
+ },
+ "Middlewood|NS": {
+  "zh": "米德尔伍德",
+  "ko": "미들우드"
+ },
+ "Pefferlaw|ON": {
+  "zh": "佩弗洛",
+  "ko": "페퍼로"
+ },
+ "Rosthern|SK": {
+  "zh": "罗斯森",
+  "ko": "로스선"
+ },
+ "Canal Flats|BC": {
+  "zh": "卡纳尔弗拉茨",
+  "ko": "커낼플래츠"
+ },
+ "Rapid City|MB": {
+  "zh": "拉皮德城",
+  "ko": "래피드시티"
+ },
+ "Watrous|SK": {
+  "zh": "沃特勒斯",
+  "ko": "워트러스"
+ },
+ "Sainte-Rose|QC": {
+  "zh": "圣罗斯",
+  "ko": "생트로즈"
+ },
+ "Sharbot Lake|ON": {
+  "zh": "沙博特湖",
+  "ko": "샤벗레이크"
+ },
+ "Hawkesville|ON": {
+  "zh": "霍克斯维尔",
+  "ko": "호크스빌"
+ },
+ "Wildwood|AB": {
+  "zh": "怀尔德伍德",
+  "ko": "와일드우드"
+ },
+ "Shaughnessy|AB": {
+  "zh": "肖内西",
+  "ko": "쇼너시"
+ },
+ "Duhamel|QC": {
+  "zh": "迪阿梅尔",
+  "ko": "뒤아멜"
+ },
+ "Vaudreuil-sur-le-Lac|QC": {
+  "zh": "湖畔沃德勒伊",
+  "ko": "보드뢰유쉬르르라크"
+ },
+ "Choiceland|SK": {
+  "zh": "乔伊斯兰",
+  "ko": "초이스랜드"
+ },
+ "Whitemouth|MB": {
+  "zh": "怀特茅斯",
+  "ko": "화이트마우스"
+ },
+ "Petit-de-Grat|NS": {
+  "zh": "珀蒂德格拉",
+  "ko": "프티드그라"
+ },
+ "Lower L'Ardoise|NS": {
+  "zh": "下拉杜瓦兹",
+  "ko": "로어라르두아즈"
+ },
+ "Kitwanga|BC": {
+  "zh": "基特旺加",
+  "ko": "키트왕가"
+ },
+ "Blumenheim|SK": {
+  "zh": "布卢门海姆",
+  "ko": "블루멘하임"
+ },
+ "Delacour|AB": {
+  "zh": "德拉库尔",
+  "ko": "들라쿠르"
+ },
+ "Silverton|BC": {
+  "zh": "锡尔弗顿",
+  "ko": "실버턴"
+ },
+ "Lucknow|ON": {
+  "zh": "勒克瑙",
+  "ko": "럭나우"
+ },
+ "Maskwacis|AB": {
+  "zh": "马斯夸奇斯",
+  "ko": "마스콰치스"
+ },
+ "Ile des Chênes|MB": {
+  "zh": "伊勒德谢讷",
+  "ko": "일데셴"
+ },
+ "Saint-Juste-du-Lac|QC": {
+  "zh": "圣朱斯特迪拉克",
+  "ko": "생쥐스트뒤라크"
+ },
+ "Perth-Andover|NB": {
+  "zh": "珀斯安多弗",
+  "ko": "퍼스앤도버"
+ },
+ "Meductic|NB": {
+  "zh": "梅达克蒂克",
+  "ko": "메덕틱"
+ },
+ "Nackawic|NB": {
+  "zh": "纳卡威克",
+  "ko": "내커윅"
+ },
+ "Minto|NB": {
+  "zh": "明托",
+  "ko": "민토"
+ },
+ "Hanwell|NB": {
+  "zh": "汉韦尔",
+  "ko": "핸웰"
+ },
+ "Doaktown|NB": {
+  "zh": "多克敦",
+  "ko": "도크타운"
+ },
+ "Eastern Passage|NS": {
+  "zh": "伊斯顿帕西奇",
+  "ko": "이스턴패시지"
+ },
+ "King's Point|NL": {
+  "zh": "金斯波因特",
+  "ko": "킹스포인트"
+ },
+ "Sabrevois|QC": {
+  "zh": "萨布勒瓦",
+  "ko": "사브르부아"
+ },
+ "Huntingdon|QC": {
+  "zh": "亨廷登",
+  "ko": "헌팅던"
+ },
+ "Morse|SK": {
+  "zh": "莫尔斯",
+  "ko": "모스"
+ },
+ "Authier-Nord|QC": {
+  "zh": "北奥蒂耶",
+  "ko": "오티에노르"
+ },
+ "Holland|MB": {
+  "zh": "霍兰",
+  "ko": "홀랜드"
+ },
+ "Saint-François de Madawaska|NB": {
+  "zh": "圣弗朗索瓦德马达瓦斯卡",
+  "ko": "생프랑수아드마다와스카"
+ },
+ "Macklin|SK": {
+  "zh": "麦克林",
+  "ko": "매클린"
+ },
+ "Georgetown|PE": {
+  "zh": "乔治敦",
+  "ko": "조지타운"
+ },
+ "Sainte-Luce|QC": {
+  "zh": "圣吕斯",
+  "ko": "생트뤼스"
+ },
+ "Stoneham-et-Tewkesbury|QC": {
+  "zh": "斯通汉姆图克斯伯里",
+  "ko": "스토넘튜크스베리"
+ },
+ "Roxton Falls|QC": {
+  "zh": "罗克斯顿福尔斯",
+  "ko": "록스턴폴스"
+ },
+ "Reids Hill|NS": {
+  "zh": "里兹希尔",
+  "ko": "리즈힐"
+ },
+ "New Denver|BC": {
+  "zh": "新丹佛",
+  "ko": "뉴덴버"
+ },
+ "Haywood|MB": {
+  "zh": "海伍德",
+  "ko": "헤이우드"
+ },
+ "Madeira Park|BC": {
+  "zh": "马德拉帕克",
+  "ko": "머데이라파크"
+ },
+ "Matheson|ON": {
+  "zh": "马西森",
+  "ko": "매시슨"
+ },
+ "Englehart|ON": {
+  "zh": "英格尔哈特",
+  "ko": "잉글하트"
+ },
+ "Ridgeway|ON": {
+  "zh": "里奇韦",
+  "ko": "리지웨이"
+ },
+ "Saint-Lazare|QC": {
+  "zh": "圣拉扎尔",
+  "ko": "생라자르"
+ },
+ "Beaverdell|BC": {
+  "zh": "比弗德尔",
+  "ko": "비버델"
+ },
+ "Buick|BC": {
+  "zh": "比尤伊克",
+  "ko": "뷰익"
+ },
+ "Blandford|NS": {
+  "zh": "布兰德福德",
+  "ko": "블랜드퍼드"
+ },
+ "Borden-Carleton|PE": {
+  "zh": "博登卡尔顿",
+  "ko": "보든칼턴"
+ },
+ "East Broughton Station|QC": {
+  "zh": "东布劳顿站",
+  "ko": "이스트브로턴스테이션"
+ },
+ "Louis Creek|BC": {
+  "zh": "路易斯溪",
+  "ko": "루이스크리크"
+ },
+ "Ituna|SK": {
+  "zh": "伊图纳",
+  "ko": "이투나"
+ },
+ "Cantley|QC": {
+  "zh": "坎特利",
+  "ko": "캔틀리"
+ },
+ "Rocky Rapids|AB": {
+  "zh": "洛基拉皮兹",
+  "ko": "로키래피즈"
+ },
+ "Rossland|BC": {
+  "zh": "罗斯兰",
+  "ko": "로슬랜드"
+ },
+ "Daysland|AB": {
+  "zh": "戴斯兰",
+  "ko": "데이슬랜드"
+ },
+ "Dalhousie|NB": {
+  "zh": "达尔豪斯",
+  "ko": "댈하우지"
+ },
+ "West Montrose|ON": {
+  "zh": "西蒙特罗斯",
+  "ko": "웨스트몬트로즈"
+ },
+ "Carleton|QC": {
+  "zh": "卡尔顿",
+  "ko": "칼턴"
+ },
+ "Saint-Constant|QC": {
+  "zh": "圣康斯坦",
+  "ko": "생콩스탕"
+ },
+ "De Winton|AB": {
+  "zh": "德温顿",
+  "ko": "드윈턴"
+ },
+ "Greenwood|BC": {
+  "zh": "格林伍德",
+  "ko": "그린우드"
+ },
+ "Windsor Junction|NS": {
+  "zh": "温莎章克申",
+  "ko": "윈저정크션"
+ },
+ "Coombs|BC": {
+  "zh": "库姆斯",
+  "ko": "쿰스"
+ },
+ "Bothwell|ON": {
+  "zh": "博思韦尔",
+  "ko": "보스웰"
+ },
+ "Saint-Barnabé-Nord|QC": {
+  "zh": "北圣巴纳贝",
+  "ko": "생바르나베노르"
+ },
+ "Watson|SK": {
+  "zh": "沃森",
+  "ko": "왓슨"
+ },
+ "Berwyn|AB": {
+  "zh": "伯温",
+  "ko": "버윈"
+ },
+ "Triton|NL": {
+  "zh": "特里顿",
+  "ko": "트라이턴"
+ },
+ "Zealandia|SK": {
+  "zh": "西兰迪亚",
+  "ko": "질랜디아"
+ },
+ "Breslau|ON": {
+  "zh": "布雷斯劳",
+  "ko": "브레슬라우"
+ },
+ "Grasmere|BC": {
+  "zh": "格拉斯米尔",
+  "ko": "그래스미어"
+ },
+ "Brownsburg-Chatham|QC": {
+  "zh": "布朗斯堡查塔姆",
+  "ko": "브라운스버그채텀"
+ },
+ "Milverton|ON": {
+  "zh": "米尔弗顿",
+  "ko": "밀버턴"
+ },
+ "Cumberland|ON": {
+  "zh": "坎伯兰",
+  "ko": "컴벌랜드"
+ },
+ "Hemmingford|QC": {
+  "zh": "海明福德",
+  "ko": "헤밍퍼드"
+ },
+ "Long Sault|ON": {
+  "zh": "朗苏",
+  "ko": "롱수"
+ },
+ "Lake George|NB": {
+  "zh": "乔治湖",
+  "ko": "레이크조지"
+ },
+ "Baie-Sainte-Anne|NB": {
+  "zh": "圣安娜湾",
+  "ko": "베생탄"
+ },
+ "Bashaw|AB": {
+  "zh": "巴肖",
+  "ko": "배쇼"
+ },
+ "North Wallace|NS": {
+  "zh": "北华莱士",
+  "ko": "노스월리스"
+ },
+ "Champion|AB": {
+  "zh": "钱皮恩",
+  "ko": "챔피언"
+ },
+ "Cornwall|PE": {
+  "zh": "康沃尔",
+  "ko": "콘월"
+ },
+ "Fulford|QC": {
+  "zh": "富尔福德",
+  "ko": "풀퍼드"
+ },
+ "Gormley|ON": {
+  "zh": "戈姆利",
+  "ko": "곰리"
+ },
+ "Wawanesa|MB": {
+  "zh": "沃瓦尼萨",
+  "ko": "와워니사"
+ },
+ "Haut-Saint-Antoine|NB": {
+  "zh": "上圣安托万",
+  "ko": "오생앙투안"
+ },
+ "Lac-Sainte-Marie|QC": {
+  "zh": "圣玛丽湖",
+  "ko": "라크생트마리"
+ },
+ "Eganville|ON": {
+  "zh": "伊根维尔",
+  "ko": "이건빌"
+ },
+ "Geary|NB": {
+  "zh": "吉尔里",
+  "ko": "기어리"
+ },
+ "Hopewell Cape|NB": {
+  "zh": "霍普韦尔角",
+  "ko": "호프웰케이프"
+ },
+ "Saint-Antoine|NB": {
+  "zh": "圣安托万",
+  "ko": "생앙투안"
+ },
+ "Arkona|ON": {
+  "zh": "阿科纳",
+  "ko": "아코나"
+ },
+ "Treherne|MB": {
+  "zh": "特雷赫恩",
+  "ko": "트레헌"
+ },
+ "Bloomingdale|ON": {
+  "zh": "布卢明代尔",
+  "ko": "블루밍데일"
+ },
+ "East Preston|NS": {
+  "zh": "东普雷斯顿",
+  "ko": "이스트프레스턴"
+ },
+ "Mount Pleasant|ON": {
+  "zh": "芒特普莱森特",
+  "ko": "마운트플레전트"
+ },
+ "Atlin|BC": {
+  "zh": "阿特林",
+  "ko": "애틀린"
+ },
+ "Kahnawake|QC": {
+  "zh": "卡纳瓦基",
+  "ko": "카너와기"
+ },
+ "Point Edward|ON": {
+  "zh": "波因特爱德华",
+  "ko": "포인트에드워드"
+ },
+ "Saint-Louis-de-Gonzague|QC": {
+  "zh": "圣路易德贡扎格",
+  "ko": "생루이드곤자그"
+ },
+ "East Lake Ainslie|NS": {
+  "zh": "东安斯利湖",
+  "ko": "이스트레이크에인즐리"
+ },
+ "Tilbury|ON": {
+  "zh": "蒂尔伯里",
+  "ko": "틸버리"
+ },
+ "Saint-Jacques-le-Mineur|QC": {
+  "zh": "圣雅克勒米讷尔",
+  "ko": "생자크르미뇌르"
+ },
+ "Chertsey|QC": {
+  "zh": "彻特西",
+  "ko": "처트시"
+ },
+ "Saint-Luc-de-Vincennes|QC": {
+  "zh": "圣吕克德万塞讷",
+  "ko": "생뤼크드뱅센"
+ },
+ "Noyan|QC": {
+  "zh": "努瓦扬",
+  "ko": "누아양"
+ },
+ "Sundridge|ON": {
+  "zh": "森德里奇",
+  "ko": "선드리지"
+ },
+ "South Mountain|ON": {
+  "zh": "南芒廷",
+  "ko": "사우스마운틴"
+ },
+ "Assiniboia|SK": {
+  "zh": "阿西尼博亚",
+  "ko": "어시니보이아"
+ },
+ "Corunna|ON": {
+  "zh": "科伦纳",
+  "ko": "코러나"
+ },
+ "Hébertville|QC": {
+  "zh": "埃贝尔维尔",
+  "ko": "에베르빌"
+ },
+ "Buttermilk Falls|ON": {
+  "zh": "巴特米尔克福尔斯",
+  "ko": "버터밀크폴스"
+ },
+ "Rawdon|QC": {
+  "zh": "罗登",
+  "ko": "로던"
+ },
+ "Semans|SK": {
+  "zh": "西曼斯",
+  "ko": "시먼스"
+ },
+ "Nordegg|AB": {
+  "zh": "诺德格",
+  "ko": "노데그"
+ },
+ "Paradise Valley|AB": {
+  "zh": "帕拉代斯谷",
+  "ko": "패러다이스밸리"
+ },
+ "Iroquois Falls|ON": {
+  "zh": "易洛魁福尔斯",
+  "ko": "이러쿼이폴스"
+ },
+ "Pakenham|ON": {
+  "zh": "帕克南",
+  "ko": "패컨엄"
+ },
+ "Longlac|ON": {
+  "zh": "朗拉克",
+  "ko": "롱락"
+ },
+ "Lion's Head|ON": {
+  "zh": "莱恩斯黑德",
+  "ko": "라이언스헤드"
+ },
+ "Lutes Mountain|NB": {
+  "zh": "卢茨山",
+  "ko": "루츠마운틴"
+ },
+ "Elgin|QC": {
+  "zh": "埃尔金",
+  "ko": "엘긴"
+ },
+ "Dunchurch|ON": {
+  "zh": "邓彻奇",
+  "ko": "던처치"
+ },
+ "Sainte-Rita|QC": {
+  "zh": "圣丽塔",
+  "ko": "생트리타"
+ },
+ "Monarch|AB": {
+  "zh": "莫纳克",
+  "ko": "모나크"
+ },
+ "Roberts Creek|BC": {
+  "zh": "罗伯茨溪",
+  "ko": "로버츠크리크"
+ },
+ "Hudson Bay|SK": {
+  "zh": "哈德逊贝",
+  "ko": "허드슨베이"
+ },
+ "Wells|BC": {
+  "zh": "韦尔斯",
+  "ko": "웰스"
+ },
+ "Parkhill|ON": {
+  "zh": "帕克希尔",
+  "ko": "파크힐"
+ },
+ "Thamesford|ON": {
+  "zh": "泰晤士福德",
+  "ko": "템스퍼드"
+ },
+ "Hagersville|ON": {
+  "zh": "黑格斯维尔",
+  "ko": "헤이거스빌"
+ },
+ "White Bear|SK": {
+  "zh": "怀特贝尔",
+  "ko": "화이트베어"
+ },
+ "Ameliasburg|ON": {
+  "zh": "阿米莉亚斯堡",
+  "ko": "어밀리아스버그"
+ },
+ "Saint-Narcisse|QC": {
+  "zh": "圣纳西斯",
+  "ko": "생나르시스"
+ },
+ "Milk River|AB": {
+  "zh": "米尔克里弗",
+  "ko": "밀크리버"
+ },
+ "Lynn Lake|MB": {
+  "zh": "林恩湖",
+  "ko": "린레이크"
+ },
+ "Rosenort|MB": {
+  "zh": "罗森诺特",
+  "ko": "로즈노트"
+ },
+ "Utopia|ON": {
+  "zh": "尤托皮亚",
+  "ko": "유토피아"
+ },
+ "Little River|NS": {
+  "zh": "利特尔里弗",
+  "ko": "리틀리버"
+ },
+ "Lebel-sur-Quévillon|QC": {
+  "zh": "勒贝尔叙尔凯维永",
+  "ko": "르벨쉬르케비용"
+ },
+ "Warwick|ON": {
+  "zh": "沃里克",
+  "ko": "워릭"
+ },
+ "Robichaud|NB": {
+  "zh": "罗比肖",
+  "ko": "로비쇼"
+ },
+ "Sambro|NS": {
+  "zh": "桑布罗",
+  "ko": "샘브로"
+ },
+ "Sainte-Monique|QC": {
+  "zh": "圣莫妮克",
+  "ko": "생트모니크"
+ },
+ "Harriston|ON": {
+  "zh": "哈里斯顿",
+  "ko": "해리스턴"
+ },
+ "Thessalon|ON": {
+  "zh": "塞萨隆",
+  "ko": "세설론"
+ },
+ "Arras|BC": {
+  "zh": "阿拉斯",
+  "ko": "애러스"
+ },
+ "Saint-Adolphe-d'Howard|QC": {
+  "zh": "圣阿道夫德霍华德",
+  "ko": "생아돌프도와르"
+ },
+ "Saint-Marc-sur-Richelieu|QC": {
+  "zh": "黎塞留河畔圣马克",
+  "ko": "생마르크쉬르리슐리외"
+ },
+ "Cremona|AB": {
+  "zh": "克雷莫纳",
+  "ko": "크리모나"
+ },
+ "Delisle|SK": {
+  "zh": "德莱尔",
+  "ko": "딜라일"
+ },
+ "Nantes|QC": {
+  "zh": "南特",
+  "ko": "낭트"
+ },
+ "Langham|SK": {
+  "zh": "兰厄姆",
+  "ko": "랭엄"
+ },
+ "Hope Town|QC": {
+  "zh": "霍普敦",
+  "ko": "호프타운"
+ },
+ "Taylor|BC": {
+  "zh": "泰勒",
+  "ko": "테일러"
+ },
+ "Dunham|QC": {
+  "zh": "达纳姆",
+  "ko": "더넘"
+ },
+ "Saint-Liboire|QC": {
+  "zh": "圣利布瓦尔",
+  "ko": "생리부아르"
+ },
+ "Bowser|BC": {
+  "zh": "鲍泽",
+  "ko": "바우저"
+ },
+ "Carnduff|SK": {
+  "zh": "卡恩达夫",
+  "ko": "칸더프"
+ },
+ "Heriot Bay|BC": {
+  "zh": "赫里奥特湾",
+  "ko": "헤리엇베이"
+ },
+ "108 Mile Ranch|BC": {
+  "zh": "108英里牧场",
+  "ko": "108마일랜치"
+ },
+ "Fort Fraser|BC": {
+  "zh": "弗雷泽堡",
+  "ko": "포트프레이저"
+ },
+ "Grand Barachois|NB": {
+  "zh": "大巴拉舒瓦",
+  "ko": "그랑바라슈아"
+ },
+ "Straffordville|ON": {
+  "zh": "斯特拉福德维尔",
+  "ko": "스트래퍼드빌"
+ },
+ "Bay Tree|AB": {
+  "zh": "贝特里",
+  "ko": "베이트리"
+ },
+ "St. Isidore|ON": {
+  "zh": "圣伊西多尔",
+  "ko": "생이지도르"
+ },
+ "Strasbourg|SK": {
+  "zh": "斯特拉斯堡",
+  "ko": "스트라스버그"
+ },
+ "Arelee|SK": {
+  "zh": "阿雷利",
+  "ko": "어릴리"
+ },
+ "Bruce|AB": {
+  "zh": "布鲁斯",
+  "ko": "브루스"
+ },
+ "Midhurst|ON": {
+  "zh": "米德赫斯特",
+  "ko": "미드허스트"
+ },
+ "Mont-Joli|QC": {
+  "zh": "蒙若利",
+  "ko": "몽졸리"
+ },
+ "Saint-René|QC": {
+  "zh": "圣勒内",
+  "ko": "생르네"
+ },
+ "Shemogue|NB": {
+  "zh": "谢莫格",
+  "ko": "셰모그"
+ },
+ "St. Andrews|NS": {
+  "zh": "圣安德鲁斯",
+  "ko": "세인트앤드루스"
+ },
+ "Saint-Côme-Linière|QC": {
+  "zh": "圣科姆利尼耶尔",
+  "ko": "생콤리니에르"
+ },
+ "Morrisburg|ON": {
+  "zh": "莫里斯堡",
+  "ko": "모리스버그"
+ },
+ "Saint-Nazaire-d'Acton|QC": {
+  "zh": "圣纳泽尔达克顿",
+  "ko": "생나제르닥통"
+ },
+ "Saint-Sylvestre|QC": {
+  "zh": "圣西尔韦斯特",
+  "ko": "생실베스트르"
+ },
+ "Spruce View|AB": {
+  "zh": "斯普鲁斯维尤",
+  "ko": "스프루스뷰"
+ },
+ "Waterford|ON": {
+  "zh": "沃特福德",
+  "ko": "워터퍼드"
+ },
+ "Charlie Lake|BC": {
+  "zh": "查理湖",
+  "ko": "찰리레이크"
+ },
+ "Tobiano|BC": {
+  "zh": "托比亚诺",
+  "ko": "토비아노"
+ },
+ "Grassie|ON": {
+  "zh": "格拉西",
+  "ko": "그래시"
+ },
+ "Deroche|BC": {
+  "zh": "德罗什",
+  "ko": "더로시"
+ },
+ "Englefeld|SK": {
+  "zh": "恩格尔费尔德",
+  "ko": "엥글펠드"
+ },
+ "Slate River Valley|ON": {
+  "zh": "斯莱特河谷",
+  "ko": "슬레이트리버밸리"
+ },
+ "Youngstown|AB": {
+  "zh": "扬斯敦",
+  "ko": "영스타운"
+ },
+ "Alert Bay|BC": {
+  "zh": "阿勒特湾",
+  "ko": "얼러트베이"
+ },
+ "Castor|AB": {
+  "zh": "卡斯特",
+  "ko": "캐스터"
+ },
+ "Ardrossan|AB": {
+  "zh": "阿德罗森",
+  "ko": "아드로산"
+ },
+ "Nigadoo|NB": {
+  "zh": "尼加杜",
+  "ko": "니가두"
+ },
+ "Saint-Frédéric|QC": {
+  "zh": "圣弗雷德里克",
+  "ko": "생프레데리크"
+ },
+ "Dunrea|MB": {
+  "zh": "邓雷亚",
+  "ko": "던레이"
+ },
+ "Saint-Mathieu-du-Parc|QC": {
+  "zh": "圣马蒂厄迪帕克",
+  "ko": "생마티외뒤파르크"
+ },
+ "Alma|ON": {
+  "zh": "阿尔马",
+  "ko": "알마"
+ },
+ "Darwell|AB": {
+  "zh": "达韦尔",
+  "ko": "다웰"
+ },
+ "Schefferville|QC": {
+  "zh": "谢弗维尔",
+  "ko": "셰페르빌"
+ },
+ "Aulac|NB": {
+  "zh": "奥拉克",
+  "ko": "올락"
+ },
+ "Sainte-Victoire-de-Sorel|QC": {
+  "zh": "圣维克托瓦尔德索雷尔",
+  "ko": "생트빅투아르드소렐"
+ },
+ "Italy Cross|NS": {
+  "zh": "伊塔利克罗斯",
+  "ko": "이털리크로스"
+ },
+ "Whites Lake|NS": {
+  "zh": "怀茨湖",
+  "ko": "화이츠레이크"
+ },
+ "Saint-Pierre-les-Becquets|QC": {
+  "zh": "圣皮埃尔莱贝凯",
+  "ko": "생피에르레베케"
+ },
+ "Springfield|ON": {
+  "zh": "斯普林菲尔德",
+  "ko": "스프링필드"
+ },
+ "Cacouna|QC": {
+  "zh": "卡库纳",
+  "ko": "카쿠나"
+ },
+ "Preeceville|SK": {
+  "zh": "普里斯维尔",
+  "ko": "프리스빌"
+ },
+ "North East Point|NS": {
+  "zh": "诺斯伊斯特波因特",
+  "ko": "노스이스트포인트"
+ },
+ "Spiritwood|SK": {
+  "zh": "斯皮里特伍德",
+  "ko": "스피릿우드"
+ },
+ "Petit-Saguenay|QC": {
+  "zh": "小萨格奈",
+  "ko": "프티사그네"
+ },
+ "Yamaska|QC": {
+  "zh": "亚马斯卡",
+  "ko": "야마스카"
+ },
+ "Mulmur|ON": {
+  "zh": "默尔默",
+  "ko": "멀머"
+ },
+ "Havelock|ON": {
+  "zh": "哈夫洛克",
+  "ko": "해블록"
+ },
+ "Lakehurst|ON": {
+  "zh": "莱克赫斯特",
+  "ko": "레이크허스트"
+ },
+ "Memramcook|NB": {
+  "zh": "梅姆拉姆库克",
+  "ko": "멤람쿡"
+ },
+ "Alder Flats|AB": {
+  "zh": "奥尔德弗拉茨",
+  "ko": "올더플래츠"
+ },
+ "Balmertown|ON": {
+  "zh": "巴尔默敦",
+  "ko": "발머타운"
+ },
+ "Crystal City|MB": {
+  "zh": "克里斯特尔城",
+  "ko": "크리스털시티"
+ },
+ "Zephyr|ON": {
+  "zh": "泽弗",
+  "ko": "제퍼"
+ },
+ "Gore|QC": {
+  "zh": "戈尔",
+  "ko": "고어"
+ },
+ "Jerseyville|ON": {
+  "zh": "泽西维尔",
+  "ko": "저지빌"
+ },
+ "Neguac|NB": {
+  "zh": "内瓜克",
+  "ko": "네구악"
+ },
+ "Crysler|ON": {
+  "zh": "克莱斯勒",
+  "ko": "크라이슬러"
+ },
+ "Pointe-Sapin|NB": {
+  "zh": "普安特萨潘",
+  "ko": "푸앵트사팽"
+ },
+ "Richibucto|NB": {
+  "zh": "里奇巴克托",
+  "ko": "리치벅토"
+ },
+ "Chipman|NB": {
+  "zh": "奇普曼",
+  "ko": "치프먼"
+ },
+ "Centreville|NB": {
+  "zh": "森特维尔",
+  "ko": "센터빌"
+ },
+ "Stanley|NB": {
+  "zh": "斯坦利",
+  "ko": "스탠리"
+ },
+ "Berwick|NB": {
+  "zh": "伯威克",
+  "ko": "버윅"
+ },
+ "Plaster Rock|NB": {
+  "zh": "普拉斯特罗克",
+  "ko": "플래스터록"
+ },
+ "Boiestown|NB": {
+  "zh": "博伊斯敦",
+  "ko": "보이스타운"
+ },
+ "Erindale|SK": {
+  "zh": "埃林代尔",
+  "ko": "에린데일"
+ },
+ "Capreol|ON": {
+  "zh": "卡普雷奥尔",
+  "ko": "캐프리올"
+ },
+ "Kaleden|BC": {
+  "zh": "卡莱登",
+  "ko": "컬레이든"
+ },
+ "Marsden|SK": {
+  "zh": "马斯登",
+  "ko": "마스던"
+ },
+ "Severn|ON": {
+  "zh": "塞文",
+  "ko": "세번"
+ },
+ "Borden|SK": {
+  "zh": "博登",
+  "ko": "보든"
+ },
+ "Willow Grove|NB": {
+  "zh": "威洛格罗夫",
+  "ko": "윌로그로브"
+ },
+ "Madawaska Maliseet Frst Nation|NB": {
+  "zh": "马达瓦斯卡马利西特原住民保留地",
+  "ko": "마다와스카말리시트퍼스트네이션"
+ },
+ "Windermere|ON": {
+  "zh": "温德米尔",
+  "ko": "윈더미어"
+ },
+ "Mitchell|MB": {
+  "zh": "米切尔",
+  "ko": "미첼"
+ },
+ "Stand Off|AB": {
+  "zh": "斯坦德奥夫",
+  "ko": "스탠드오프"
+ },
+ "Valcourt|QC": {
+  "zh": "瓦尔库尔",
+  "ko": "발쿠르"
+ },
+ "Ballinafad|ON": {
+  "zh": "巴利纳法德",
+  "ko": "밸리너패드"
+ },
+ "La Corey|AB": {
+  "zh": "拉科里",
+  "ko": "라코리"
+ },
+ "Elkford|BC": {
+  "zh": "埃尔克福德",
+  "ko": "엘크퍼드"
+ },
+ "Campbell's Bay|QC": {
+  "zh": "坎贝尔斯贝",
+  "ko": "캠벨스베이"
+ },
+ "Wolseley|SK": {
+  "zh": "沃尔斯利",
+  "ko": "울즐리"
+ },
+ "Lake Cowichan|BC": {
+  "zh": "考伊琴湖",
+  "ko": "레이크카우신"
+ },
+ "L'Isle-Verte|QC": {
+  "zh": "利勒韦尔特",
+  "ko": "릴베르트"
+ },
+ "Turner Valley|AB": {
+  "zh": "特纳谷",
+  "ko": "터너밸리"
+ },
+ "Lac Le Jeune|BC": {
+  "zh": "勒热纳湖",
+  "ko": "라크르죈"
+ },
+ "Otterburne|MB": {
+  "zh": "奥特伯恩",
+  "ko": "오터번"
+ },
+ "Bushell Park|SK": {
+  "zh": "布谢尔帕克",
+  "ko": "부셸파크"
+ },
+ "Fort Chipewyan|AB": {
+  "zh": "奇普怀恩堡",
+  "ko": "포트치퓨언"
+ },
+ "Saint-Lazare-de-Bellechasse|QC": {
+  "zh": "圣拉扎尔德贝勒沙斯",
+  "ko": "생라자르드벨샤스"
+ },
+ "Village Green|PE": {
+  "zh": "维利奇格林",
+  "ko": "빌리지그린"
+ },
+ "Dwight|ON": {
+  "zh": "德怀特",
+  "ko": "드와이트"
+ },
+ "Amherstview|ON": {
+  "zh": "阿默斯特维尤",
+  "ko": "애머스트뷰"
+ },
+ "New Lowell|ON": {
+  "zh": "新洛厄尔",
+  "ko": "뉴로웰"
+ },
+ "Brechin|ON": {
+  "zh": "布雷欣",
+  "ko": "브레킨"
+ },
+ "Birds Hill|MB": {
+  "zh": "伯兹希尔",
+  "ko": "버즈힐"
+ },
+ "Lumsden|SK": {
+  "zh": "拉姆斯登",
+  "ko": "럼즈던"
+ },
+ "Toad River|BC": {
+  "zh": "托德河",
+  "ko": "토드리버"
+ },
+ "L'Orignal|ON": {
+  "zh": "洛里尼亚尔",
+  "ko": "로리냘"
+ },
+ "Saint-Roch-de-Richelieu|QC": {
+  "zh": "圣罗克德黎塞留",
+  "ko": "생로크드리슐리외"
+ },
+ "Sorrento|BC": {
+  "zh": "索伦托",
+  "ko": "소렌토"
+ },
+ "Saint-Théophile|QC": {
+  "zh": "圣泰奥菲勒",
+  "ko": "생테오필"
+ },
+ "Emo|ON": {
+  "zh": "埃莫",
+  "ko": "이모"
+ },
+ "Washago|ON": {
+  "zh": "沃沙戈",
+  "ko": "워셔고"
+ },
+ "Saint-Prosper-de-Dorchester|QC": {
+  "zh": "圣普罗斯珀德多切斯特",
+  "ko": "생프로스페르드도체스터"
+ },
+ "Gallivan|SK": {
+  "zh": "加利文",
+  "ko": "갤리번"
+ },
+ "Tignish|PE": {
+  "zh": "蒂格尼什",
+  "ko": "티그니시"
+ },
+ "Saint-Joachim-de-Shefford|QC": {
+  "zh": "圣若阿基姆德谢福德",
+  "ko": "생조아킴드셰퍼드"
+ },
+ "Harcourt|ON": {
+  "zh": "哈考特",
+  "ko": "하코트"
+ },
+ "Sainte-Sophie-de-Lévrard|QC": {
+  "zh": "圣索菲德莱弗拉尔",
+  "ko": "생트소피드레브라르"
+ },
+ "Teulon|MB": {
+  "zh": "蒂朗",
+  "ko": "툴론"
+ },
+ "Batiscan|QC": {
+  "zh": "巴蒂斯坎",
+  "ko": "바티스캉"
+ },
+ "Cupar|SK": {
+  "zh": "库珀",
+  "ko": "쿠퍼"
+ },
+ "Wilsons Beach|NB": {
+  "zh": "威尔逊斯海滩",
+  "ko": "윌슨스비치"
+ },
+ "Eatonia|SK": {
+  "zh": "伊顿尼亚",
+  "ko": "이토니아"
+ },
+ "Langdon|AB": {
+  "zh": "兰登",
+  "ko": "랭던"
+ },
+ "Mount Currie|BC": {
+  "zh": "柯里山",
+  "ko": "마운트커리"
+ },
+ "Zurich|ON": {
+  "zh": "苏黎世",
+  "ko": "취리히"
+ },
+ "Radisson|SK": {
+  "zh": "拉迪森",
+  "ko": "래디슨"
+ },
+ "Linden|AB": {
+  "zh": "林登",
+  "ko": "린든"
+ },
+ "Lamarche|QC": {
+  "zh": "拉马什",
+  "ko": "라마르슈"
+ },
+ "Lantzville|BC": {
+  "zh": "兰茨维尔",
+  "ko": "랜츠빌"
+ },
+ "Saint-Siméon|QC": {
+  "zh": "圣西梅翁",
+  "ko": "생시메옹"
+ },
+ "Lac-des-Aigles|QC": {
+  "zh": "艾格勒湖",
+  "ko": "라크데제글"
+ },
+ "Saint-Jacques-de-Leeds|QC": {
+  "zh": "圣雅克德利兹",
+  "ko": "생자크드리즈"
+ },
+ "Cassidy|BC": {
+  "zh": "卡西迪",
+  "ko": "캐시디"
+ },
+ "Upper Hammonds Plains|NS": {
+  "zh": "上哈蒙兹普莱恩斯",
+  "ko": "어퍼해먼즈플레인스"
+ },
+ "Meteghan Centre|NS": {
+  "zh": "梅蒂根森特",
+  "ko": "메티건센터"
+ },
+ "Centralia|ON": {
+  "zh": "森特勒利亚",
+  "ko": "센트레일리아"
+ },
+ "Elkwater|AB": {
+  "zh": "埃尔克沃特",
+  "ko": "엘크워터"
+ },
+ "Scotch Creek|BC": {
+  "zh": "斯科奇溪",
+  "ko": "스카치크리크"
+ },
+ "Belle Plaine|SK": {
+  "zh": "贝尔普莱恩",
+  "ko": "벨플레인"
+ },
+ "Head of Chezzetcook|NS": {
+  "zh": "海德奥夫切泽特库克",
+  "ko": "헤드오브체제트쿡"
+ },
+ "Wabush|NL": {
+  "zh": "瓦布什",
+  "ko": "워부시"
+ },
+ "Ayer's Cliff|QC": {
+  "zh": "艾尔斯克利夫",
+  "ko": "에이어스클리프"
+ },
+ "Lampman|SK": {
+  "zh": "兰普曼",
+  "ko": "램프먼"
+ },
+ "Granum|AB": {
+  "zh": "格拉纳姆",
+  "ko": "그래넘"
+ },
+ "Paynton|SK": {
+  "zh": "佩恩顿",
+  "ko": "페인턴"
+ },
+ "Irricana|AB": {
+  "zh": "伊里卡纳",
+  "ko": "이리카나"
+ },
+ "Timber River|NB": {
+  "zh": "廷伯里弗",
+  "ko": "팀버리버"
+ },
+ "Hacketts Cove|NS": {
+  "zh": "哈克茨湾",
+  "ko": "해키츠코브"
+ },
+ "Sainte-Anne-de-Beaupré|QC": {
+  "zh": "圣安妮德博普雷",
+  "ko": "생탄드보프레"
+ },
+ "Howden|MB": {
+  "zh": "豪登",
+  "ko": "하우든"
+ },
+ "Port Elgin|NB": {
+  "zh": "埃尔金港",
+  "ko": "포트엘긴"
+ },
+ "Saint-Alban|QC": {
+  "zh": "圣阿尔邦",
+  "ko": "생알방"
+ },
+ "Roland|MB": {
+  "zh": "罗兰",
+  "ko": "롤런드"
+ },
+ "Kamsack|SK": {
+  "zh": "卡姆萨克",
+  "ko": "캠색"
+ },
+ "Pokemouche|NB": {
+  "zh": "波克穆什",
+  "ko": "포크무슈"
+ },
+ "Stewiacke|NS": {
+  "zh": "斯图亚克",
+  "ko": "스튜이액"
+ },
+ "Saint-Modeste|QC": {
+  "zh": "圣莫德斯特",
+  "ko": "생모데스트"
+ },
+ "Chesterville|QC": {
+  "zh": "切斯特维尔",
+  "ko": "체스터빌"
+ },
+ "Ham-Nord|QC": {
+  "zh": "北哈姆",
+  "ko": "암노르"
+ },
+ "Disraeli|QC": {
+  "zh": "迪斯雷利",
+  "ko": "디즈레일리"
+ },
+ "Danville|QC": {
+  "zh": "丹维尔",
+  "ko": "댄빌"
+ },
+ "Saint-Arsene|QC": {
+  "zh": "圣阿尔塞纳",
+  "ko": "생아르센"
+ },
+ "Wendake|QC": {
+  "zh": "文达克",
+  "ko": "웬다케"
+ },
+ "Standon|QC": {
+  "zh": "斯坦登",
+  "ko": "스탠던"
+ },
+ "Saint-Denis-de-Brompton|QC": {
+  "zh": "圣德尼德布朗普顿",
+  "ko": "생드니드브롬프턴"
+ },
+ "Saint-Bernard-sur-Mer|QC": {
+  "zh": "滨海圣贝尔纳",
+  "ko": "생베르나르쉬르메르"
+ },
+ "Verdun-Île-des-Sœurs|QC": {
+  "zh": "凡尔登修女岛",
+  "ko": "베르됭일데쇠르"
+ },
+ "Saint-Colomban|QC": {
+  "zh": "圣科隆邦",
+  "ko": "생콜롱방"
+ },
+ "New-Wes-Valley|NL": {
+  "zh": "纽韦斯瓦利",
+  "ko": "뉴웨스밸리"
+ },
+ "Alhambra|AB": {
+  "zh": "阿尔罕布拉",
+  "ko": "알람브라"
+ },
+ "Arrowwood|AB": {
+  "zh": "阿罗伍德",
+  "ko": "애로우드"
+ },
+ "Beiseker|AB": {
+  "zh": "拜泽克",
+  "ko": "바이저커"
+ },
+ "Bezanson|AB": {
+  "zh": "贝赞森",
+  "ko": "베잰슨"
+ },
+ "Bowden|AB": {
+  "zh": "鲍登",
+  "ko": "보든"
+ },
+ "Bow Island|AB": {
+  "zh": "弓岛",
+  "ko": "보아일랜드"
+ },
+ "Brocket|AB": {
+  "zh": "布罗基特",
+  "ko": "브로켓"
+ },
+ "Brownfield|AB": {
+  "zh": "布朗菲尔德",
+  "ko": "브라운필드"
+ },
+ "Brownvale|AB": {
+  "zh": "布朗韦尔",
+  "ko": "브라운베일"
+ },
+ "Clive|AB": {
+  "zh": "克莱夫",
+  "ko": "클라이브"
+ },
+ "Coleman|AB": {
+  "zh": "科尔曼",
+  "ko": "콜먼"
+ },
+ "Delburne|AB": {
+  "zh": "德尔本",
+  "ko": "델번"
+ },
+ "Duffield|AB": {
+  "zh": "达菲尔德",
+  "ko": "더필드"
+ },
+ "Fort Vermilion|AB": {
+  "zh": "弗米利恩堡",
+  "ko": "포트버밀리언"
+ },
+ "Gadsby|AB": {
+  "zh": "加兹比",
+  "ko": "개즈비"
+ },
+ "Hines Creek|AB": {
+  "zh": "海因斯溪",
+  "ko": "하인스크리크"
+ },
+ "Irma|AB": {
+  "zh": "艾尔玛",
+  "ko": "어마"
+ },
+ "Lancaster Park|AB": {
+  "zh": "兰开斯特帕克",
+  "ko": "랭커스터파크"
+ },
+ "Lavoy|AB": {
+  "zh": "拉沃伊",
+  "ko": "라보이"
+ },
+ "Little Smoky|AB": {
+  "zh": "小斯莫基",
+  "ko": "리틀스모키"
+ },
+ "Lomond|AB": {
+  "zh": "洛蒙德",
+  "ko": "로먼드"
+ },
+ "Looma|AB": {
+  "zh": "卢马",
+  "ko": "루마"
+ },
+ "Mulhurst Bay|AB": {
+  "zh": "马尔赫斯特湾",
+  "ko": "멀허스트베이"
+ },
+ "Rochester|AB": {
+  "zh": "罗切斯特",
+  "ko": "로체스터"
+ },
+ "Rolling Hills|AB": {
+  "zh": "罗灵希尔斯",
+  "ko": "롤링힐스"
+ },
+ "Rycroft|AB": {
+  "zh": "赖克罗夫特",
+  "ko": "라이크로프트"
+ },
+ "Standard|AB": {
+  "zh": "斯坦达德",
+  "ko": "스탠더드"
+ },
+ "Tsuu t'ina|AB": {
+  "zh": "苏提纳",
+  "ko": "추티나"
+ },
+ "Tulliby Lake|AB": {
+  "zh": "塔利比湖",
+  "ko": "툴리비레이크"
+ },
+ "Vauxhall|AB": {
+  "zh": "沃克斯豪尔",
+  "ko": "복스홀"
+ },
+ "Wandering River|AB": {
+  "zh": "旺德灵河",
+  "ko": "원더링리버"
+ },
+ "Watino|AB": {
+  "zh": "瓦蒂诺",
+  "ko": "와티노"
+ },
+ "Christina Lake|BC": {
+  "zh": "克里斯蒂娜湖",
+  "ko": "크리스티나레이크"
+ },
+ "Colwood|BC": {
+  "zh": "科尔伍德",
+  "ko": "콜우드"
+ },
+ "Crofton|BC": {
+  "zh": "克罗夫顿",
+  "ko": "크로프턴"
+ },
+ "Daajing Giids|BC": {
+  "zh": "达京吉兹",
+  "ko": "다징기즈"
+ },
+ "Dewdney|BC": {
+  "zh": "杜德尼",
+  "ko": "듀드니"
+ },
+ "Fort Steele|BC": {
+  "zh": "斯蒂尔堡",
+  "ko": "포트스틸"
+ },
+ "Garden Bay|BC": {
+  "zh": "加登湾",
+  "ko": "가든베이"
+ },
+ "Gold River|BC": {
+  "zh": "戈尔德里弗",
+  "ko": "골드리버"
+ },
+ "Hixon|BC": {
+  "zh": "希克森",
+  "ko": "힉슨"
+ },
+ "Iskatewizaagegan|BC": {
+  "zh": "伊斯卡特维扎格甘",
+  "ko": "이스카테위자게간"
+ },
+ "Lax Kw'alaams|BC": {
+  "zh": "拉克斯夸拉姆斯",
+  "ko": "랙스콸람스"
+ },
+ "Lytton|BC": {
+  "zh": "利顿",
+  "ko": "리턴"
+ },
+ "Mara|BC": {
+  "zh": "马拉",
+  "ko": "마라"
+ },
+ "Salmo|BC": {
+  "zh": "萨尔莫",
+  "ko": "살모"
+ },
+ "Spallumcheen|BC": {
+  "zh": "斯帕勒姆钦",
+  "ko": "스팰럼친"
+ },
+ "Tahsis|BC": {
+  "zh": "塔西斯",
+  "ko": "타시스"
+ },
+ "Tappen|BC": {
+  "zh": "塔彭",
+  "ko": "태펀"
+ },
+ "Thetis Island|BC": {
+  "zh": "西蒂斯岛",
+  "ko": "시티스아일랜드"
+ },
+ "Topley Landing|BC": {
+  "zh": "托普利兰丁",
+  "ko": "토플리랜딩"
+ },
+ "Youbou|BC": {
+  "zh": "尤博",
+  "ko": "유보"
+ },
+ "Argyle|MB": {
+  "zh": "阿盖尔",
+  "ko": "아가일"
+ },
+ "Bowsman|MB": {
+  "zh": "鲍斯曼",
+  "ko": "보스먼"
+ },
+ "Cartwright|MB": {
+  "zh": "卡特赖特",
+  "ko": "카트라이트"
+ },
+ "East Selkirk|MB": {
+  "zh": "东塞尔扣克",
+  "ko": "이스트셀커크"
+ },
+ "Eden|MB": {
+  "zh": "伊登",
+  "ko": "이든"
+ },
+ "Ethelbert|MB": {
+  "zh": "埃塞尔伯特",
+  "ko": "에설버트"
+ },
+ "Franklin|MB": {
+  "zh": "富兰克林",
+  "ko": "프랭클린"
+ },
+ "Grande Pointe|MB": {
+  "zh": "格兰德波因特",
+  "ko": "그랜드포인트"
+ },
+ "Kenton|MB": {
+  "zh": "肯顿",
+  "ko": "켄턴"
+ },
+ "Kleefeld|MB": {
+  "zh": "克利菲尔德",
+  "ko": "클리펠드"
+ },
+ "Lac du Bonnet|MB": {
+  "zh": "拉克迪博内",
+  "ko": "라크뒤보네"
+ },
+ "Lorette|MB": {
+  "zh": "洛雷特",
+  "ko": "로렛"
+ },
+ "Macdonald|MB": {
+  "zh": "麦克唐纳",
+  "ko": "맥도널드"
+ },
+ "McAuley|MB": {
+  "zh": "麦考利",
+  "ko": "매콜리"
+ },
+ "Plum Coulee|MB": {
+  "zh": "普拉姆库利",
+  "ko": "플럼쿨리"
+ },
+ "Ste. Agathe|MB": {
+  "zh": "圣阿加特",
+  "ko": "생트아가트"
+ },
+ "St. Jean Baptiste|MB": {
+  "zh": "圣让巴蒂斯特",
+  "ko": "생장바티스트"
+ },
+ "Traverse Bay|MB": {
+  "zh": "特拉弗斯湾",
+  "ko": "트래버스베이"
+ },
+ "Wabowden|MB": {
+  "zh": "沃博登",
+  "ko": "와보든"
+ },
+ "Bas-Caraquet|NB": {
+  "zh": "下卡拉凯特",
+  "ko": "바카라케"
+ },
+ "Belledune|NB": {
+  "zh": "贝勒迪讷",
+  "ko": "벨듄"
+ },
+ "Belleisle Creek|NB": {
+  "zh": "贝尔艾尔溪",
+  "ko": "벨아일크리크"
+ },
+ "Boundary Creek|NB": {
+  "zh": "邦德里溪",
+  "ko": "바운더리크리크"
+ },
+ "Browns Flat|NB": {
+  "zh": "布朗斯弗拉特",
+  "ko": "브라운스플랫"
+ },
+ "California Settlement|NB": {
+  "zh": "加利福尼亚塞特尔门特",
+  "ko": "캘리포니아세틀먼트"
+ },
+ "Centre Village|NB": {
+  "zh": "森特维利奇",
+  "ko": "센터빌리지"
+ },
+ "Drummond|NB": {
+  "zh": "德拉蒙德",
+  "ko": "드러먼드"
+ },
+ "Dsl de Drummond|NB": {
+  "zh": "德拉蒙德地方服务区",
+  "ko": "디에스엘드드러먼드"
+ },
+ "Edgetts Landing|NB": {
+  "zh": "埃杰茨兰丁",
+  "ko": "에지츠랜딩"
+ },
+ "Evandale|NB": {
+  "zh": "埃文代尔",
+  "ko": "에번데일"
+ },
+ "Grande-Anse|NB": {
+  "zh": "格朗当斯",
+  "ko": "그랑당스"
+ },
+ "Hillsborough|NB": {
+  "zh": "希尔斯伯勒",
+  "ko": "힐스버러"
+ },
+ "Jacksonville|NB": {
+  "zh": "杰克逊维尔",
+  "ko": "잭슨빌"
+ },
+ "Kouchibouguac|NB": {
+  "zh": "库希布瓜克",
+  "ko": "쿠시부과크"
+ },
+ "Little Lepreau|NB": {
+  "zh": "小莱普罗",
+  "ko": "리틀레프로"
+ },
+ "Maugerville|NB": {
+  "zh": "梅杰维尔",
+  "ko": "메이저빌"
+ },
+ "Midland|NB": {
+  "zh": "米德兰",
+  "ko": "미들랜드"
+ },
+ "Murray Corner|NB": {
+  "zh": "默里科纳",
+  "ko": "머리코너"
+ },
+ "Richibucto Road|NB": {
+  "zh": "里奇巴克托路",
+  "ko": "리치벅토로드"
+ },
+ "Saint-Basile|NB": {
+  "zh": "圣巴西勒",
+  "ko": "생바질"
+ },
+ "Saint-Louis de Kent|NB": {
+  "zh": "肯特圣路易",
+  "ko": "생루이드켄트"
+ },
+ "Second North River|NB": {
+  "zh": "第二北河",
+  "ko": "세컨드노스리버"
+ },
+ "St. Leonard|NB": {
+  "zh": "圣伦纳德",
+  "ko": "세인트레너드"
+ },
+ "Waterborough|NB": {
+  "zh": "沃特伯勒",
+  "ko": "워터버러"
+ },
+ "Wickham|NB": {
+  "zh": "威克姆",
+  "ko": "위컴"
+ },
+ "Bishop's Falls|NL": {
+  "zh": "毕晓普斯福尔斯",
+  "ko": "비숍스폴스"
+ },
+ "Blaketown|NL": {
+  "zh": "布莱克敦",
+  "ko": "블레이크타운"
+ },
+ "Bloomfield|NL": {
+  "zh": "布卢姆菲尔德",
+  "ko": "블룸필드"
+ },
+ "Cavendish|NL": {
+  "zh": "卡文迪什",
+  "ko": "캐번디시"
+ },
+ "Dover|NL": {
+  "zh": "多佛",
+  "ko": "도버"
+ },
+ "Epworth|NL": {
+  "zh": "埃普沃思",
+  "ko": "엡워스"
+ },
+ "Flatrock|NL": {
+  "zh": "弗拉特罗克",
+  "ko": "플랫록"
+ },
+ "Hare Harbour|NL": {
+  "zh": "黑尔港",
+  "ko": "헤어하버"
+ },
+ "Hickman's Harbour|NL": {
+  "zh": "希克曼斯港",
+  "ko": "히크먼스하버"
+ },
+ "L'Anse-au-Clair|NL": {
+  "zh": "朗索克莱尔",
+  "ko": "랑스오클레어"
+ },
+ "Topsail|NL": {
+  "zh": "托普塞尔",
+  "ko": "톱세일"
+ },
+ "Victoria|NL": {
+  "zh": "维多利亚",
+  "ko": "빅토리아"
+ },
+ "Arichat|NS": {
+  "zh": "阿里沙特",
+  "ko": "아리샤트"
+ },
+ "Beaver Brook|NS": {
+  "zh": "比弗布鲁克",
+  "ko": "비버브룩"
+ },
+ "Beaver River|NS": {
+  "zh": "比弗河",
+  "ko": "비버리버"
+ },
+ "Boularderie East|NS": {
+  "zh": "东布拉德里",
+  "ko": "불라더리이스트"
+ },
+ "Cherry Brook|NS": {
+  "zh": "切里布鲁克",
+  "ko": "체리브룩"
+ },
+ "Digby|NS": {
+  "zh": "迪格比",
+  "ko": "디그비"
+ },
+ "Edwardsville|NS": {
+  "zh": "爱德华兹维尔",
+  "ko": "에드워즈빌"
+ },
+ "Falmouth|NS": {
+  "zh": "法尔茅斯",
+  "ko": "팰머스"
+ },
+ "Forest Hill|NS": {
+  "zh": "福里斯特希尔",
+  "ko": "포레스트힐"
+ },
+ "Goodwood|NS": {
+  "zh": "古德伍德",
+  "ko": "굿우드"
+ },
+ "Green Oaks|NS": {
+  "zh": "格林奥克斯",
+  "ko": "그린오크스"
+ },
+ "Greenwich|NS": {
+  "zh": "格林尼治",
+  "ko": "그리니치"
+ },
+ "Harrietsfield|NS": {
+  "zh": "哈里茨菲尔德",
+  "ko": "해리츠필드"
+ },
+ "Herring Cove|NS": {
+  "zh": "赫灵湾",
+  "ko": "헤링코브"
+ },
+ "Lanark|NS": {
+  "zh": "拉纳克",
+  "ko": "래너크"
+ },
+ "Lequille|NS": {
+  "zh": "勒基尔",
+  "ko": "르퀼"
+ },
+ "Louisbourg|NS": {
+  "zh": "路易斯堡",
+  "ko": "루이스버그"
+ },
+ "Millville Boularderie|NS": {
+  "zh": "布拉德里米尔维尔",
+  "ko": "밀빌불라더리"
+ },
+ "Mineville|NS": {
+  "zh": "迈恩维尔",
+  "ko": "마인빌"
+ },
+ "New Germany|NS": {
+  "zh": "新日耳曼",
+  "ko": "뉴저머니"
+ },
+ "Newport|NS": {
+  "zh": "纽波特",
+  "ko": "뉴포트"
+ },
+ "Parrsboro|NS": {
+  "zh": "帕斯伯勒",
+  "ko": "파스버러"
+ },
+ "Port Greville|NS": {
+  "zh": "格雷维尔港",
+  "ko": "포트그레빌"
+ },
+ "Port Hood|NS": {
+  "zh": "胡德港",
+  "ko": "포트후드"
+ },
+ "Selma|NS": {
+  "zh": "塞尔马",
+  "ko": "셀마"
+ },
+ "Stellarton|NS": {
+  "zh": "斯特拉顿",
+  "ko": "스텔라턴"
+ },
+ "Truro Heights|NS": {
+  "zh": "特鲁罗高地",
+  "ko": "트루로하이츠"
+ },
+ "Tusket|NS": {
+  "zh": "塔斯基特",
+  "ko": "터스킷"
+ },
+ "Upper Malagash|NS": {
+  "zh": "上马拉加什",
+  "ko": "어퍼맬러개시"
+ },
+ "Wilmot|NS": {
+  "zh": "威尔莫特",
+  "ko": "윌멋"
+ },
+ "Wolfville Ridge|NS": {
+  "zh": "沃尔夫维尔岭",
+  "ko": "울프빌리지"
+ },
+ "Behchoko|NT": {
+  "zh": "贝乔科",
+  "ko": "베초코"
+ },
+ "Fort Simpson|NT": {
+  "zh": "辛普森堡",
+  "ko": "포트심슨"
+ },
+ "Fort Smith|NT": {
+  "zh": "史密斯堡",
+  "ko": "포트스미스"
+ },
+ "Hay River|NT": {
+  "zh": "海里弗",
+  "ko": "헤이리버"
+ },
+ "Inuvik|NT": {
+  "zh": "伊努维克",
+  "ko": "이누빅"
+ },
+ "Yellowknife|NT": {
+  "zh": "黄刀镇",
+  "ko": "옐로나이프"
+ },
+ "Iqaluit|NU": {
+  "zh": "伊卡卢伊特",
+  "ko": "이칼루이트"
+ },
+ "Rankin Inlet|NU": {
+  "zh": "兰金因莱特",
+  "ko": "랭킨인렛"
+ },
+ "Athens|ON": {
+  "zh": "阿森斯",
+  "ko": "애선스"
+ },
+ "Baden|ON": {
+  "zh": "巴登",
+  "ko": "베이든"
+ },
+ "Belgrave|ON": {
+  "zh": "贝尔格雷夫",
+  "ko": "벨그레이브"
+ },
+ "Big Bay Point|ON": {
+  "zh": "大湾角",
+  "ko": "빅베이포인트"
+ },
+ "Blind River|ON": {
+  "zh": "布莱恩德里弗",
+  "ko": "블라인드리버"
+ },
+ "Burgessville|ON": {
+  "zh": "伯吉斯维尔",
+  "ko": "버지스빌"
+ },
+ "Caistor Centre|ON": {
+  "zh": "凯斯特森特",
+  "ko": "케이스터센터"
+ },
+ "Campbellcroft|ON": {
+  "zh": "坎贝尔克罗夫特",
+  "ko": "캠벨크로프트"
+ },
+ "Chatham-Kent|ON": {
+  "zh": "查塔姆肯特",
+  "ko": "채텀켄트"
+ },
+ "Clarington|ON": {
+  "zh": "克拉灵顿",
+  "ko": "클래링턴"
+ },
+ "Colborne|ON": {
+  "zh": "科尔本",
+  "ko": "콜본"
+ },
+ "Cottam|ON": {
+  "zh": "科塔姆",
+  "ko": "코텀"
+ },
+ "Courtice|ON": {
+  "zh": "考蒂斯",
+  "ko": "커티스"
+ },
+ "Dalkeith|ON": {
+  "zh": "达尔基斯",
+  "ko": "댈키스"
+ },
+ "Dobbinton|ON": {
+  "zh": "多宾顿",
+  "ko": "도빈턴"
+ },
+ "Dorion|ON": {
+  "zh": "多里翁",
+  "ko": "도리언"
+ },
+ "Dover Centre|ON": {
+  "zh": "多佛森特",
+  "ko": "도버센터"
+ },
+ "Dundalk|ON": {
+  "zh": "邓多克",
+  "ko": "던독"
+ },
+ "Durham|ON": {
+  "zh": "达勒姆",
+  "ko": "더럼"
+ },
+ "Ear Falls|ON": {
+  "zh": "伊尔福尔斯",
+  "ko": "이어폴스"
+ },
+ "Elmvale|ON": {
+  "zh": "埃尔姆韦尔",
+  "ko": "엘름베일"
+ },
+ "Grande Pointe|ON": {
+  "zh": "格兰德波因特",
+  "ko": "그랜드포인트"
+ },
+ "Kendal|ON": {
+  "zh": "肯德尔",
+  "ko": "켄들"
+ },
+ "Lakeside|ON": {
+  "zh": "莱克赛德",
+  "ko": "레이크사이드"
+ },
+ "Lefroy|ON": {
+  "zh": "勒弗罗伊",
+  "ko": "르프로이"
+ },
+ "Limoges|ON": {
+  "zh": "利摩日",
+  "ko": "리모주"
+ },
+ "Longbow Lake|ON": {
+  "zh": "长弓湖",
+  "ko": "롱보레이크"
+ },
+ "Manitouwadge|ON": {
+  "zh": "马尼图瓦奇",
+  "ko": "매니투와지"
+ },
+ "Marysville|ON": {
+  "zh": "玛丽斯维尔",
+  "ko": "메리스빌"
+ },
+ "Moose Creek|ON": {
+  "zh": "穆斯溪",
+  "ko": "무스크리크"
+ },
+ "Muirkirk|ON": {
+  "zh": "缪尔柯克",
+  "ko": "뮤어커크"
+ },
+ "Newburgh|ON": {
+  "zh": "纽堡",
+  "ko": "뉴버그"
+ },
+ "Pelee Island|ON": {
+  "zh": "皮利岛",
+  "ko": "필리아일랜드"
+ },
+ "Pikwàkanagàn|ON": {
+  "zh": "皮克瓦卡纳甘",
+  "ko": "피콰카나간"
+ },
+ "Powassan|ON": {
+  "zh": "波瓦森",
+  "ko": "포와산"
+ },
+ "Priceville|ON": {
+  "zh": "普赖斯维尔",
+  "ko": "프라이스빌"
+ },
+ "Richmond|ON": {
+  "zh": "里士满",
+  "ko": "리치먼드"
+ },
+ "Rockcliffe|ON": {
+  "zh": "罗克克利夫",
+  "ko": "록클리프"
+ },
+ "Rodney|ON": {
+  "zh": "罗德尼",
+  "ko": "로드니"
+ },
+ "Schreiber|ON": {
+  "zh": "施赖伯",
+  "ko": "슈라이버"
+ },
+ "Seeleys Bay|ON": {
+  "zh": "西利斯湾",
+  "ko": "실리스베이"
+ },
+ "Severn Bridge|ON": {
+  "zh": "塞文布里奇",
+  "ko": "세번브리지"
+ },
+ "Sharon|ON": {
+  "zh": "沙伦",
+  "ko": "샤론"
+ },
+ "Sombra|ON": {
+  "zh": "松布拉",
+  "ko": "솜브라"
+ },
+ "South Bruce Peninsula|ON": {
+  "zh": "南布鲁斯半岛",
+  "ko": "사우스브루스페닌슐라"
+ },
+ "Tavistock|ON": {
+  "zh": "塔维斯托克",
+  "ko": "태비스톡"
+ },
+ "Terra Cotta|ON": {
+  "zh": "特拉科塔",
+  "ko": "테라코타"
+ },
+ "Thorndale|ON": {
+  "zh": "索恩代尔",
+  "ko": "손데일"
+ },
+ "Thornloe|ON": {
+  "zh": "索恩洛",
+  "ko": "손로"
+ },
+ "Tupperville|ON": {
+  "zh": "塔珀维尔",
+  "ko": "터퍼빌"
+ },
+ "Val Caron|ON": {
+  "zh": "瓦尔卡龙",
+  "ko": "발캐런"
+ },
+ "Wallenstein|ON": {
+  "zh": "沃伦斯坦",
+  "ko": "월렌스타인"
+ },
+ "Walsingham|ON": {
+  "zh": "沃尔辛厄姆",
+  "ko": "월싱엄"
+ },
+ "Wawa|ON": {
+  "zh": "瓦瓦",
+  "ko": "와와"
+ },
+ "Woodlawn|ON": {
+  "zh": "伍德劳恩",
+  "ko": "우드론"
+ },
+ "Albany|PE": {
+  "zh": "奥尔巴尼",
+  "ko": "올버니"
+ },
+ "Belle River|PE": {
+  "zh": "贝尔河",
+  "ko": "벨리버"
+ },
+ "Bloomfield Station|PE": {
+  "zh": "布卢姆菲尔德站",
+  "ko": "블룸필드스테이션"
+ },
+ "Brackley|PE": {
+  "zh": "布拉克利",
+  "ko": "브래클리"
+ },
+ "Cavendish|PE": {
+  "zh": "卡文迪什",
+  "ko": "캐번디시"
+ },
+ "Milton Station|PE": {
+  "zh": "米尔顿站",
+  "ko": "밀턴스테이션"
+ },
+ "Miscouche|PE": {
+  "zh": "米斯库什",
+  "ko": "미스쿠시"
+ },
+ "Warren Grove|PE": {
+  "zh": "沃伦格罗夫",
+  "ko": "워런그로브"
+ },
+ "Winsloe|PE": {
+  "zh": "温斯洛",
+  "ko": "윈슬로"
+ },
+ "Arundel|QC": {
+  "zh": "阿伦德尔",
+  "ko": "애런들"
+ },
+ "Austin|QC": {
+  "zh": "奥斯汀",
+  "ko": "오스틴"
+ },
+ "Baie-Sainte-Catherine|QC": {
+  "zh": "圣凯瑟琳湾",
+  "ko": "베생트카트린"
+ },
+ "Berthier-sur-Mer|QC": {
+  "zh": "滨海贝尔蒂耶",
+  "ko": "베르티에쉬르메르"
+ },
+ "Bonaventure|QC": {
+  "zh": "博纳旺蒂尔",
+  "ko": "보나방튀르"
+ },
+ "Clermont|QC": {
+  "zh": "克莱蒙",
+  "ko": "클레르몽"
+ },
+ "Courcelles|QC": {
+  "zh": "库尔塞勒",
+  "ko": "쿠르셀"
+ },
+ "Dixville|QC": {
+  "zh": "迪克斯维尔",
+  "ko": "딕스빌"
+ },
+ "Havre-Aubert|QC": {
+  "zh": "阿弗尔奥贝尔",
+  "ko": "아브르오베르"
+ },
+ "Lac-au-Saumon|QC": {
+  "zh": "拉克欧索蒙",
+  "ko": "라크오소몽"
+ },
+ "Lacolle|QC": {
+  "zh": "拉科勒",
+  "ko": "라콜"
+ },
+ "La Présentation|QC": {
+  "zh": "拉普雷桑塔西翁",
+  "ko": "라프레장타시옹"
+ },
+ "Les Éboulements|QC": {
+  "zh": "莱塞布勒芒",
+  "ko": "레제불망"
+ },
+ "Lots-Renverses|QC": {
+  "zh": "洛朗韦尔塞",
+  "ko": "로랑베르세"
+ },
+ "Manawan|QC": {
+  "zh": "马纳万",
+  "ko": "마나완"
+ },
+ "Métabetchouan|QC": {
+  "zh": "梅塔贝乔安",
+  "ko": "메타베추앙"
+ },
+ "Métabetchouan–Lac-à-la-Croix|QC": {
+  "zh": "梅塔贝乔安拉克阿拉克鲁瓦",
+  "ko": "메타베추앙라크아라크루아"
+ },
+ "Mistissini|QC": {
+  "zh": "米斯蒂西尼",
+  "ko": "미스티시니"
+ },
+ "Mont-Louis|QC": {
+  "zh": "蒙路易",
+  "ko": "몽루이"
+ },
+ "Namur|QC": {
+  "zh": "那慕尔",
+  "ko": "나뮈르"
+ },
+ "Nemiscau|QC": {
+  "zh": "内米斯考",
+  "ko": "네미스카우"
+ },
+ "Notre-Dame-du-Laus|QC": {
+  "zh": "诺特尔达姆迪洛",
+  "ko": "노트르담뒤로"
+ },
+ "Notre-Dame-du-Portage|QC": {
+  "zh": "诺特尔达姆迪波尔塔日",
+  "ko": "노트르담뒤포르타주"
+ },
+ "Péribonka|QC": {
+  "zh": "佩里邦卡",
+  "ko": "페리봉카"
+ },
+ "Petite-Rivière-Saint-François|QC": {
+  "zh": "圣弗朗索瓦小河",
+  "ko": "프티트리비에르생프랑수아"
+ },
+ "Pit-chez-Gosselin|QC": {
+  "zh": "皮特谢戈瑟兰",
+  "ko": "피셰고슬랭"
+ },
+ "Pointe-aux-Outardes|QC": {
+  "zh": "乌塔尔德角",
+  "ko": "푸앵토우타르드"
+ },
+ "Preissac|QC": {
+  "zh": "普雷萨克",
+  "ko": "프레사크"
+ },
+ "Price|QC": {
+  "zh": "普赖斯",
+  "ko": "프라이스"
+ },
+ "Quyon|QC": {
+  "zh": "基永",
+  "ko": "퀴용"
+ },
+ "Riviere-Rouge|QC": {
+  "zh": "里维耶尔鲁日",
+  "ko": "리비에르루주"
+ },
+ "Saint-Alexandre-d'Iberville|QC": {
+  "zh": "圣亚历山大迪贝维尔",
+  "ko": "생탈렉상드르디베르빌"
+ },
+ "Saint-Anaclet|QC": {
+  "zh": "圣阿纳克莱",
+  "ko": "생타나클레"
+ },
+ "Saint-Aubert|QC": {
+  "zh": "圣奥贝尔",
+  "ko": "생토베르"
+ },
+ "Saint-Charles-de-Bellechasse|QC": {
+  "zh": "圣夏尔德贝勒沙斯",
+  "ko": "생샤를드벨샤스"
+ },
+ "Saint-Christophe-d'Arthabaska|QC": {
+  "zh": "圣克里斯托夫达塔巴斯卡",
+  "ko": "생크리스토프다르타바스카"
+ },
+ "Saint-Cyrille-de-Lessard|QC": {
+  "zh": "圣西里尔德莱萨尔",
+  "ko": "생시릴드레사르"
+ },
+ "Sainte-Cécile-de-Milton|QC": {
+  "zh": "圣塞西尔德米尔顿",
+  "ko": "생트세실드밀턴"
+ },
+ "Saint-Édouard-de-Napierville|QC": {
+  "zh": "圣爱德华德纳皮耶维尔",
+  "ko": "생테두아르드나피에르빌"
+ },
+ "Sainte-Justine-de-Newton|QC": {
+  "zh": "圣朱斯蒂娜德牛顿",
+  "ko": "생트쥐스틴드뉴턴"
+ },
+ "Sainte-Marguerite-du-Lac-Masson|QC": {
+  "zh": "圣玛格丽特迪拉克马松",
+  "ko": "생트마르그리트뒤라크마송"
+ },
+ "Sainte-Marthe-sur-le-Lac|QC": {
+  "zh": "湖畔圣玛尔特",
+  "ko": "생트마르트쉬르르라크"
+ },
+ "Saint-Étienne-de-Beauharnois|QC": {
+  "zh": "圣艾蒂安德博阿努瓦",
+  "ko": "생테티엔드보아르누아"
+ },
+ "Saint-Félix-de-Valois|QC": {
+  "zh": "圣费利克斯德瓦卢瓦",
+  "ko": "생펠릭스드발루아"
+ },
+ "Saint-Ferréol-les-Neiges|QC": {
+  "zh": "圣费雷奥莱内日",
+  "ko": "생페레올레네주"
+ },
+ "Saint-Gédéon-de-Beauce|QC": {
+  "zh": "圣热代翁德博斯",
+  "ko": "생제데옹드보스"
+ },
+ "Saint-Honoré-de-Chicoutimi|QC": {
+  "zh": "圣奥诺雷德希库蒂米",
+  "ko": "생토노레드시쿠티미"
+ },
+ "Saint-Jacques|QC": {
+  "zh": "圣雅克",
+  "ko": "생자크"
+ },
+ "Saint-Jean-de-Matha|QC": {
+  "zh": "圣让德马塔",
+  "ko": "생장드마타"
+ },
+ "Saint-Jean-d'Orléans|QC": {
+  "zh": "圣让多尔良",
+  "ko": "생장도를레앙"
+ },
+ "Saint-Joseph-de-Kamouraska|QC": {
+  "zh": "圣约瑟夫德卡穆拉斯卡",
+  "ko": "생조제프드카무라스카"
+ },
+ "Saint-Joseph-de-Sorel|QC": {
+  "zh": "圣约瑟夫德索雷尔",
+  "ko": "생조제프드소렐"
+ },
+ "Saint-Mathias-sur-Richelieu|QC": {
+  "zh": "黎塞留河畔圣马蒂亚斯",
+  "ko": "생마티아스쉬르리슐리외"
+ },
+ "Saint-Mathieu|QC": {
+  "zh": "圣马蒂厄",
+  "ko": "생마티외"
+ },
+ "Saint-Mathieu-de-Beloeil|QC": {
+  "zh": "圣马蒂厄德贝勒伊",
+  "ko": "생마티외드벨뢰유"
+ },
+ "Saint-Narcisse-de-Beaurivage|QC": {
+  "zh": "圣纳西斯德博里瓦日",
+  "ko": "생나르시스드보리바주"
+ },
+ "Saint-Norbert|QC": {
+  "zh": "圣诺贝尔",
+  "ko": "생노르베르"
+ },
+ "Saint-Ours|QC": {
+  "zh": "圣乌尔斯",
+  "ko": "생투르스"
+ },
+ "Saint-Pacôme|QC": {
+  "zh": "圣帕科姆",
+  "ko": "생파콤"
+ },
+ "Saint-Pierre-Baptiste|QC": {
+  "zh": "圣皮埃尔巴蒂斯特",
+  "ko": "생피에르바티스트"
+ },
+ "Saint-Robert|QC": {
+  "zh": "圣罗贝尔",
+  "ko": "생로베르"
+ },
+ "Saint-Télesphore|QC": {
+  "zh": "圣泰莱斯福尔",
+  "ko": "생텔레스포르"
+ },
+ "Saint-Urbain-Premier|QC": {
+  "zh": "圣于尔班普勒米耶",
+  "ko": "생튀르뱅프르미에"
+ },
+ "Shefford|QC": {
+  "zh": "谢福德",
+  "ko": "셰퍼드"
+ },
+ "Upton|QC": {
+  "zh": "厄普顿",
+  "ko": "업턴"
+ },
+ "Val-Alain|QC": {
+  "zh": "瓦尔阿兰",
+  "ko": "발알랭"
+ },
+ "Wotton|QC": {
+  "zh": "沃顿",
+  "ko": "워턴"
+ },
+ "Aylsham|SK": {
+  "zh": "艾尔舍姆",
+  "ko": "에일셤"
+ },
+ "Beechy|SK": {
+  "zh": "比奇",
+  "ko": "비치"
+ },
+ "Bladworth|SK": {
+  "zh": "布拉德沃思",
+  "ko": "블래드워스"
+ },
+ "Candle Lake|SK": {
+  "zh": "坎德尔湖",
+  "ko": "캔들레이크"
+ },
+ "Carrot River|SK": {
+  "zh": "卡罗特里弗",
+  "ko": "캐럿리버"
+ },
+ "Central Butte|SK": {
+  "zh": "森特勒尔比尤特",
+  "ko": "센트럴뷰트"
+ },
+ "Clavet|SK": {
+  "zh": "克拉韦特",
+  "ko": "클래벳"
+ },
+ "Duck Lake|SK": {
+  "zh": "达克湖",
+  "ko": "덕레이크"
+ },
+ "Ebenezer|SK": {
+  "zh": "埃比尼泽",
+  "ko": "에버니저"
+ },
+ "Galilee|SK": {
+  "zh": "加利利",
+  "ko": "갈릴리"
+ },
+ "Glenavon|SK": {
+  "zh": "格莱纳文",
+  "ko": "글레나본"
+ },
+ "Gravelbourg|SK": {
+  "zh": "格拉沃尔堡",
+  "ko": "그래블버그"
+ },
+ "Mazenod|SK": {
+  "zh": "马泽诺德",
+  "ko": "매저노드"
+ },
+ "Mendham|SK": {
+  "zh": "门德姆",
+  "ko": "멘덤"
+ },
+ "Montreal Lake|SK": {
+  "zh": "蒙特利尔湖",
+  "ko": "몬트리올레이크"
+ },
+ "Richardson|SK": {
+  "zh": "理查森",
+  "ko": "리처드슨"
+ },
+ "Ridgedale|SK": {
+  "zh": "里奇代尔",
+  "ko": "리지데일"
+ },
+ "Riverhurst|SK": {
+  "zh": "里弗赫斯特",
+  "ko": "리버허스트"
+ },
+ "Sceptre|SK": {
+  "zh": "塞普特",
+  "ko": "셉터"
+ },
+ "Turtleford|SK": {
+  "zh": "特特尔福德",
+  "ko": "터틀퍼드"
+ },
+ "Wainwright|SK": {
+  "zh": "韦恩赖特",
+  "ko": "웨인라이트"
+ },
+ "Wakaw|SK": {
+  "zh": "瓦科",
+  "ko": "와코"
+ },
+ "Wilkie|SK": {
+  "zh": "威尔基",
+  "ko": "윌키"
+ },
+ "Willow Bunch|SK": {
+  "zh": "威洛邦奇",
+  "ko": "윌로번치"
+ },
+ "Wymark|SK": {
+  "zh": "怀马克",
+  "ko": "와이마크"
+ },
+ "Beaver Creek|YT": {
+  "zh": "比弗溪",
+  "ko": "비버크리크"
+ },
+ "Burwash Landing|YT": {
+  "zh": "伯沃什兰丁",
+  "ko": "버워시랜딩"
+ },
+ "Carcross|YT": {
+  "zh": "卡克罗斯",
+  "ko": "카크로스"
+ },
+ "Carmacks|YT": {
+  "zh": "卡马克斯",
+  "ko": "카맥스"
+ },
+ "Dawson|YT": {
+  "zh": "道森",
+  "ko": "도슨"
+ },
+ "Destruction Bay|YT": {
+  "zh": "迪斯特拉克申湾",
+  "ko": "디스트럭션베이"
+ },
+ "Haines Junction|YT": {
+  "zh": "海恩斯章克申",
+  "ko": "헤인스정션"
+ },
+ "Mayo|YT": {
+  "zh": "梅奥",
+  "ko": "메이오"
+ },
+ "Ross River|YT": {
+  "zh": "罗斯里弗",
+  "ko": "로스리버"
+ },
+ "Teslin|YT": {
+  "zh": "特斯林",
+  "ko": "테슬린"
+ },
+ "Watson Lake|YT": {
+  "zh": "沃森湖",
+  "ko": "왓슨레이크"
+ },
+ "Whitehorse|YT": {
+  "zh": "白马市",
+  "ko": "화이트호스"
  }
 }

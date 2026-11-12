@@ -49,7 +49,7 @@ export function EmployerFacts({ t, lang, job, wire }: EmployerFactsIn) {
         <NameTile label={t('tv.f.employer')}><Name en={job.company} sub={TEXT_NONE} /></NameTile>
         <NameTile label={t('tv.f.place')}>
           <PlaceName line={placeLineOf({ address: TEXT_NONE, city: job.city, province: job.province })}
-            cityZh={TEXT_NONE} cityKo={TEXT_NONE} province={job.province} />
+            cityZh={job.cityZh} cityKo={job.cityKo} province={job.province} />
         </NameTile>
         <VerdictRows t={t} lang={lang} rows={empRowsOf({ wire })} />
       </div>

@@ -51,6 +51,7 @@ export function toRankRow(r: RankDbRow): RankRow {
   return {
     rank: Number(r.rank), kind: kind, externalId: text(r.external_id),
     title: text(r.title), company: text(r.company), city: text(r.city), province: text(r.province),
+    cityZh: text(r.city_zh), cityKo: text(r.city_ko),
     noc: text(r.noc), teer: numOrNull(r.teer), score: numOrNull(r.score),
     salaryText: text(r.salary_text), salaryAnnual: numOrNull(r.salary_annual),
     pnpStream: text(r.pnp_stream), eeCategory: text(r.ee_category), datePosted: text(r.date_posted),

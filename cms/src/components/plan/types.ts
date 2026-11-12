@@ -188,6 +188,16 @@ export type TvJob = {
   noc: string
 
   /**
+   * 城市中文译名(cities 表;2026-11-11 Frank「有的缺城市」);'' = 没有。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名(同上);'' = 没有。
+   */
+  cityKo: string
+
+  /**
    * TEER 档;null = 未分类的岗(不硬塞)。
    */
   teer: number | null

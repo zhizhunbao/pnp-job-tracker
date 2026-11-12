@@ -79,6 +79,7 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
         id: Number(r.id), title: String(r.title ?? ''), noc: String(r.noc ?? ''),
         teer: Number.isFinite(teer) ? teer : null, pnpStream: String(r.pnp_stream ?? ''),
         company: String(r.company ?? ''), city: String(r.city ?? ''), province: String(r.province ?? ''),
+        cityZh: String(r.city_zh ?? ''), cityKo: String(r.city_ko ?? ''),
       }
     }
   }

@@ -512,6 +512,8 @@ export function toRankJobCellRow(x: JobCellRowIn): RankJobCellRow {
     citySort: emptyToNullOf(x.r.city),
     city: x.r.city,
     province: x.r.province,
+    cityZh: x.r.cityZh,
+    cityKo: x.r.cityKo,
     salaryText,
     cardSalary: x.r.salaryText,
     salarySort: x.r.salaryAnnual,

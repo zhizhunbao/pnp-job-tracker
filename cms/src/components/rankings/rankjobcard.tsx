@@ -36,7 +36,7 @@ export function RankJobCard({ r }: RankJobCardIn) {
     location = (
       <span className={css.cardWhere}>
         <PlaceName line={placeLineOf({ address: TEXT_NONE, city: r.city, province: r.province })}
-          cityZh={TEXT_NONE} cityKo={TEXT_NONE} province={r.province} />
+          cityZh={r.cityZh} cityKo={r.cityKo} province={r.province} />
       </span>
     )
   }

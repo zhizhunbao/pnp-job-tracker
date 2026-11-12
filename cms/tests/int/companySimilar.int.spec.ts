@@ -36,7 +36,7 @@ const FIRST = 10
 function emp(i: number, total: number): SimilarEmployer {
   return {
     slug: 'co-' + i, name: 'Co ' + i, sponsorGrade: null, openCount: 1, aliasZh: '', aliasKo: '', city: '', province: 'ON',
-    total, anchor: 'acme',
+    cityZh: '', cityKo: '', total, anchor: 'acme',
   }
 }
 

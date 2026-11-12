@@ -321,16 +321,18 @@ export const COMPANY_LMIA_NOCS = `SELECT lmia_nocs::text FROM companies WHERE id
  * 2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」「全站统一 都改成 展开 20 和 收起」:改服务器分页 ——
  * $2 = 跳过几家、$3 = 取几家(首屏 6 家,「展开 20 家」每页 20 家往后接,直到总数);上面「取数封顶 20」是历史。
  * 每行多带锚 anchor(= $1,卡上取下一页带它);排序末键补 slug,同名同数时翻页不串行。
+ * 2026-11-11 Frank「地址翻译都按这种风格,有的缺城市」:左连 cities 带回主市译名 city_zh / city_ko(行右灰字「市译名,省译名」)。
  */
 export const SIMILAR_EMPLOYERS = `WITH a AS (
        SELECT p.key, p.sector, ARRAY(SELECT jsonb_array_elements_text(p.loc_provs)) AS provs,
               CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END AS category
        FROM employer_pool p LEFT JOIN employer_explore x ON x.key = p.key WHERE p.key = $1)
      SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v, p.open_jobs_total::int open_count,
-       p.city, p.province, count(*) OVER ()::int AS total, a.key AS anchor
+       p.city, p.province, ci.name_zh AS city_zh, ci.name_ko AS city_ko, count(*) OVER ()::int AS total, a.key AS anchor
      FROM a JOIN employer_pool p ON p.key <> a.key AND p.sector IS NOT DISTINCT FROM a.sector
        JOIN companies c ON c.slug = p.slug
        LEFT JOIN employer_explore x ON x.key = p.key
+       LEFT JOIN cities ci ON ci.name = p.city AND ci.province = p.province
      WHERE CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END = a.category
        AND p.open_jobs_total > 0 AND c.slug <> ''
      ORDER BY (p.loc_provs ?| a.provs) DESC NULLS LAST, p.open_jobs_total DESC, c.sponsor_grade DESC NULLS LAST, c.name, c.slug
@@ -1328,11 +1330,13 @@ export const RANKING_SLUGS_ALL = `SELECT DISTINCT slug FROM rankings`
 
 /**
  * 一张榜单的全部行。$1=slug。
+ * 2026-11-11 Frank「地址翻译都按这种风格,有的缺城市」:左连 cities 带回市译名 city_zh / city_ko(手机卡地点灰字)。
  */
-export const RANKING_ROWS = `SELECT slug, rank, kind, external_id, title, company, company_slug, city, province, noc, teer, score,
-            salary_text, salary_annual, pnp_stream, ee_category, date_posted, apply_url, official_url,
-            open_jobs, named_jobs, avg_score, lmia_positions, lmia_quarter
-     FROM rankings WHERE slug = $1 ORDER BY rank ASC`
+export const RANKING_ROWS = `SELECT r.slug, r.rank, r.kind, r.external_id, r.title, r.company, r.company_slug, r.city, r.province, r.noc, r.teer, r.score,
+            r.salary_text, r.salary_annual, r.pnp_stream, r.ee_category, r.date_posted, r.apply_url, r.official_url,
+            r.open_jobs, r.named_jobs, r.avg_score, r.lmia_positions, r.lmia_quarter, ci.name_zh AS city_zh, ci.name_ko AS city_ko
+     FROM rankings r LEFT JOIN cities ci ON ci.name = r.city AND ci.province = r.province
+     WHERE r.slug = $1 ORDER BY r.rank ASC`
 
 // =========================================================================
 // 12. 判定与案例
@@ -2145,10 +2149,13 @@ export const JOB_OG_BY_ID = `SELECT j.title, c.name AS company, j.city, j.provin
 
 /**
  * /plan/pr 页的职位锚点行。$1=职位 id。
+ * 2026-11-11 Frank「地址翻译都按这种风格,有的缺城市」:左连 cities 带回市译名 city_zh / city_ko(雇主资质卡地点灰字)。
  */
 export const PR_PLAN_JOBS = `SELECT j.id, j.title, j.noc, j.teer, COALESCE(j.pnp_stream,'') AS pnp_stream,
-                COALESCE(c.name,'') AS company, COALESCE(j.city,'') AS city, COALESCE(j.province,'') AS province
-         FROM jobs j LEFT JOIN companies c ON c.id = j.company_id WHERE j.id = $1 LIMIT 1`
+                COALESCE(c.name,'') AS company, COALESCE(j.city,'') AS city, COALESCE(j.province,'') AS province,
+                COALESCE(ci.name_zh,'') AS city_zh, COALESCE(ci.name_ko,'') AS city_ko
+         FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
+           LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province WHERE j.id = $1 LIMIT 1`
 
 /**
  * 起步页的职业全清单(选职业下拉)。

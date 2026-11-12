@@ -55,7 +55,7 @@ export function CompanySimilarRow({ employer, t, lang, showTrans }: CompanySimil
         {employer.city !== TEXT_NONE && (
           <span className={css.simCity}>
             <PlaceName line={placeLineOf({ address: TEXT_NONE, city: employer.city, province: employer.province })}
-              cityZh={TEXT_NONE} cityKo={TEXT_NONE} province={employer.province} />
+              cityZh={employer.cityZh} cityKo={employer.cityKo} province={employer.province} />
           </span>
         )}
       </span>

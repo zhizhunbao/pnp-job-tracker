@@ -54,6 +54,16 @@ export type RankRow = {
   province: string
 
   /**
+   * 城市中文译名(cities 表;2026-11-11 Frank「有的缺城市」);'' = 没有。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名(同上);'' = 没有。
+   */
+  cityKo: string
+
+  /**
    * 移民价值评分;null = 没算过。
    */
   score: number | null
@@ -416,6 +426,16 @@ export type RankJobCellRow = {
    * 两位省码(手机卡地点行的省名,点了新标签开 Google 地图);空串 = 没记省。
    */
   province: string
+
+  /**
+   * 城市中文译名(cities 表;2026-11-11 Frank「有的缺城市」);'' = 没有。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名(同上);'' = 没有。
+   */
+  cityKo: string
 
   /**
    * 薪资文本(表格);缺数时是横杠。

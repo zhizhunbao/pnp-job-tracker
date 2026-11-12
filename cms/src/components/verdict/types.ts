@@ -295,6 +295,16 @@ export type VerdictJob = {
    * 两位省码。
    */
   province: string
+
+  /**
+   * 城市中文译名(cities 表;2026-11-11 Frank「有的缺城市」);'' = 没有。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名(同上);'' = 没有。
+   */
+  cityKo: string
 }
 
 /**
