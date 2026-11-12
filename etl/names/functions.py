@@ -13,7 +13,7 @@ company.norm_company_name(Wikidata facts 缓存键,已落盘改不起)各有设�
 """
 from fetch.constants import SPACE_SEP, WS_RE
 from names.constants import (
-    ALIAS_RE, ALIAS_SPLIT_MARK_RE, ALIAS_SPLIT_RE, ALIAS_TAIL_RE, ALIAS_TRIM, APOSTROPHE_RE, CATEGORY_GOV_ADMIN, CATEGORY_GOV_RULES, CATEGORY_GOV_SECTORS, CATEGORY_NONE,
+    ALIAS_RE, ALIAS_SPLIT_MARK_RE, ALIAS_SPLIT_RE, ALIAS_TAIL_RE, ALIAS_TRIM, APOSTROPHE_RE, CATEGORY_GOV_ADMIN, HOUSEHOLD_RE, CATEGORY_GOV_RULES, CATEGORY_GOV_SECTORS, CATEGORY_NONE,
     CATEGORY_PUBLIC_OTHER, CATEGORY_PUBLIC_RULES, KEEP_RE, SECTOR_CORP_RE, SECTOR_FEDERAL, SECTOR_FEDERAL_RE, SECTOR_GOVERNMENT,
     SECTOR_GOV_RE, SECTOR_INDIGENOUS, SECTOR_INDIGENOUS_RE, SECTOR_MUNICIPAL, SECTOR_MUNI_RE, SECTOR_PUBLIC,
     SECTOR_PUBLIC_RE, SECTOR_VET_RE, SUFFIX_RE, DASH_SPLIT, LEGAL_HINT_RE, PAREN_HEAD, PAREN_INNER, PAREN_TAIL_RE,
@@ -111,3 +111,9 @@ def alias_split(raw: str) -> list:
         if part:
             out.append(part)
     return out
+
+
+def is_household(name: str) -> bool:
+    """这个雇主名是不是私人家庭(不是公司;判据见 HOUSEHOLD_RE)。是的话没有官网、简介、总部可言:
+    找官网的不搜它,汇装不给它带这几样(2026-11-12 Frank「这个不对吧」)。"""
+    return HOUSEHOLD_RE.search(name.strip()) is not None

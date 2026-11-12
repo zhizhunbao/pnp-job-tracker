@@ -44,6 +44,7 @@ from crawl.constants import HTML_CACHE_DIR, K_HTML, K_PAGES, K_URL, MANIFEST_FIL
 from crawl.functions import discover_urls
 from crawl.scheme import CachePutIn, DiscoverIn, PageLike, SeedSpec
 from fetch.functions import cms_config, host_resolves, make_client, make_polite_client
+from names.functions import is_household
 from company.constants import (
     B64_BLOCK, B64_PAD, BEAT_FRESH_S, BING_REDIRECT_PARAM, BING_REDIRECT_PATH, BING_REDIRECT_PREFIX, BING_SEARCH_URL, DDG_BROWSER_URL,
     ENV_FINDSITE_GOOGLE, IN_SEEN, K_SEEN_LAST, K_SEEN_OPENED, FINDSITE_GOOGLE_ON, FINDSITE_HTTP_TIMEOUT_S, FINDSITE_TAKE, FOUND_BING, FOUND_DDG, FOUND_GOOGLE, GOOGLE_POLL_MS,
@@ -866,7 +867,8 @@ def extract_meta(page: str) -> MetaOut:
 
 
 def company_targets() -> tuple[dict[str, SiteLead], dict[str, NositeLead]]:
-    """postings → (有官网 targets, 无官网 nosite),均排除 ATS(自带 profile)。"""
+    """postings → (有官网 targets, 无官网 nosite),均排除 ATS(自带 profile)。
+    2026-11-12 私人家庭雇主(names 叶 is_household)两张表都不进:不是公司,没有官网可找可抓(「Private Household」被搜成 private.com)。"""
     targets: dict[str, SiteLead] = {}
     nosite: dict[str, NositeLead] = {}
     if not IN_ENRICH_POSTINGS.exists():
@@ -877,7 +879,7 @@ def company_targets() -> tuple[dict[str, SiteLead], dict[str, NositeLead]]:
             ats_slugs.add(entry.name)
     for j in json.loads(IN_ENRICH_POSTINGS.read_text(encoding=TEXT_ENCODING)):
         lead = PostingLead.model_validate(j)
-        if not lead.employer:
+        if not lead.employer or is_household(lead.employer):
             continue
         sl = slugify(lead.employer)
         if sl in ats_slugs:
@@ -1667,10 +1669,11 @@ def sponsor_nosite_of(cands: list[PlaceTarget]) -> dict[str, NositeLead]:
     原口径(原文保留):候选里缺官网**且在本大类前 PULSE_RANK_MAX 名**的。
     2026-09-15 Frank「1 推荐」扩母集后去掉名次闸:尾段雇主排不进搜索就永远没官网,后面的正文、简介、
     行业分类全断在这一步。名次仍进 NositeLead —— 搜索按 nosite_priority_of 先头部后尾段,每轮预算不变。
+    2026-11-12 私人家庭雇主(names 叶 is_household)不进:不是公司,拿占位名去搜只会搜到别人的站。
     """
     nosite: dict[str, NositeLead] = {}
     for t in cands:
-        if t.website == "":
+        if t.website == "" and not is_household(t.name):
             nosite[t.slug] = NositeLead(name=t.name, province=t.region, jobs=t.open_jobs, rank=t.rank,
                                         designated=t.designated)
     return nosite

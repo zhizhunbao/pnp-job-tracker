@@ -51,7 +51,7 @@ from crawl.scheme import CacheLookupIn
 from log.functions import err, say
 from richtext.functions import md_head_of
 from names.constants import ALIAS_LEAD_RE, DASH_SPLIT, LEGAL_HINT_RE, PAREN_HEAD, PAREN_INNER, PAREN_TAIL_RE
-from names.functions import aip_name_forms, alias_split, norm_name, sector_of
+from names.functions import aip_name_forms, alias_split, is_household, norm_name, sector_of
 from noc.constants import SLUGS as NOC_BROAD_SLUG
 from noc.functions import broad_of, bucket_broad_of, classify, group_of, noc_of_title, teer_of
 from mart.constants import (
@@ -1708,6 +1708,9 @@ def add_company(x: CompanyExtraIn) -> None:
     """
     if x.slug in x.ctx.companies:
         return
+    if is_household(x.name):
+        add_household(x)
+        return
     en = x.ctx.enrich.get(x.slug, {})
     fix_site(x)
     for k in ENRICH_KEYS:
@@ -1733,6 +1736,16 @@ def add_company(x: CompanyExtraIn) -> None:
     fill_site_secs(x)
     fill_hq(x)
     fill_curated(x)
+    x.extra[K_SECTOR] = sector_of(x.name)
+    x.ctx.companies[x.slug] = to_company_row(CompanyRowIn(name=x.name, slug=x.slug, extra=x.extra))
+
+
+def add_household(x: CompanyExtraIn) -> None:
+    """私人家庭雇主进 companies(2026-11-12 Frank「这个不对吧」:「Private Household」被配成 private.com):
+    不是公司,来源侧带的官网摘掉,富化、Places、职位入口、简介、官网三节、总部、人工核定一样都不填;
+    官网来路记 curated —— cms 点开探索与家里两个工人见它就不再找官网(现成的「定了就不再探索」锁)。"""
+    x.extra.pop(K_WEBSITE, None)
+    x.extra[K_WEBSITE_SOURCE] = FOUND_CURATED
     x.extra[K_SECTOR] = sector_of(x.name)
     x.ctx.companies[x.slug] = to_company_row(CompanyRowIn(name=x.name, slug=x.slug, extra=x.extra))
 

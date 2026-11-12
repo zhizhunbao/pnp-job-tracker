@@ -232,3 +232,15 @@ LEGAL_HINT_RE = re.compile(r"\b(?:inc|ltd|lt[ée]e|limited|corp|corporation|hold
 """括号里那段像法定名(带公司后缀,或编号公司的数字)才单收;括号里是地点(Saint John、Head Office)的不收,免得「saint john」被当成
 雇主名(2026-10-01)。
 2026-10-02 Frank「这个 拆的对么」:补 LP(有限合伙,「Silverbirch Hotels & Resorts o/a Leadon Operations LP dba Hotel Halifax」中间那段是法人不是招牌)。"""
+
+HOUSEHOLD_RE = re.compile(
+    r"\bprivate\s+(households?|homes?|residences?|famil(y|ies)|employers?)\b"
+    r"|\bhouseholds?$"
+    r"|(?<!& )(?<!and )(?<!of )\bfamily(\s+(home|caregiver))?$"
+    r"|^(private|confidential)$", re.I)
+"""私人家庭雇主的名字(不是公司:Job Bank 上保姆、看护这类岗的雇主栏写的占位名或「某某 Family」「某某 Household」)。
+2026-11-12 Frank「这个不对吧」:「Private Household」被找官网那步配成 private.com(成人站),抓官网、写简介、填总部全跟着错;
+同类「Private Home」配成 thekey.ca、「Lee Family」配成家谱网站。四条:① Private + household / home / residence / family / employer
+出现在任何位置;② 以 Household 结尾;③ 以 Family(或 Family Home / Family Caregiver)结尾;④ 整个名字就是 Private / Confidential。
+以 Family 开头或居中的真公司不命中(Family Pizza、Family Dental、Family Foods、Family Services、Family Trust);
+「& Family」「and Family」「of Family」结尾的也不命中(Youth & Family 是真机构,清库预览时撞到)。"""
