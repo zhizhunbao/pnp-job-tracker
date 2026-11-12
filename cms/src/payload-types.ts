@@ -1727,6 +1727,10 @@ export interface NocDescription {
    * 官方示例职称(All examples,换行分隔;职业搜索也搜这一格)
    */
   examples?: string | null;
+  /**
+   * 示例职称的中文(换行分隔;只给职业搜索用,不显示)
+   */
+  examplesZh?: string | null;
   fetched?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -3806,6 +3810,7 @@ export interface NocDescriptionsSelect<T extends boolean = true> {
   duties?: T;
   requirements?: T;
   examples?: T;
+  examplesZh?: T;
   fetched?: T;
   updatedAt?: T;
   createdAt?: T;

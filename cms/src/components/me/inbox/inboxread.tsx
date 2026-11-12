@@ -4,13 +4,15 @@
  * 对得上投递的多一颗「打开这次投递」)。宽屏住右边一栏,窄屏装进弹框。
  * 2026-11-07 照 Outlook 网页版(Frank「和 outlook 一致就行」):顶上一排命令(回复、打开这次投递);大字主题,
  * 对得上投递的下面一行「关于你投的 <职位>」;来信与回信各一张卡片(InboxMsg);会话底部「回复」点了原地展开写信框(InboxCompose)。
+ * 2026-11-12 Frank「这有两个回复也修一下」:顶上命令栏的「回复」撤掉,只留会话底部那一颗(点了原地展开写信框);
+ * 命令栏只剩「打开这次投递」,对不上投递的信不出命令栏。
  *
  * @author Frank
  * @time 2026-11-07 16:30:00
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { IconBriefcase, IconMail } from '@/components/icons'
+import { IconBriefcase } from '@/components/icons'
 import { ADDR_GAP, PLAIN_BTN_KIND, TEXT_NONE } from './constants'
 import { minuteOf, senderOf, subjectOf } from './functions'
 import { InboxCompose } from './inboxcompose'
@@ -22,7 +24,7 @@ import css from './inbox.module.css'
  * 阅读区。
  *
  * @param props 收件箱状态、那一封、取词与装在弹框里否。
- * @returns 命令栏 + 一封信的往来 + 回信区。
+ * @returns 命令栏(对得上投递才有)+ 一封信的往来 + 回信区。
  */
 export function InboxRead({ p, m, t, inModal = false }: InboxReadIn) {
   const mine = []
@@ -34,16 +36,13 @@ export function InboxRead({ p, m, t, inModal = false }: InboxReadIn) {
   }
   return (
     <div className={cssOf(css.ibRead)}>
-      <div className={cssOf(css.ibCmd)}>
-        <Button kind={PLAIN_BTN_KIND} onClick={p.onReply} className={cssOf(css.ibCmdBtn)}>
-          <IconMail />{t('ib.reply')}
-        </Button>
-        {m.appId != null && (
+      {m.appId != null && (
+        <div className={cssOf(css.ibCmd)}>
           <Button kind={PLAIN_BTN_KIND} onClick={p.onOpenApp} className={cssOf(css.ibCmdBtn)}>
             <IconBriefcase />{t('ib.openApp')}
           </Button>
-        )}
-      </div>
+        </div>
+      )}
       <div className={cssOf(css.ibConv)}>
         {inModal === false && <h2 className={cssOf(css.ibReadTitle)}>{subjectOf({ m, t })}</h2>}
         {m.jobTitle !== TEXT_NONE && <div className={cssOf(css.ibAbout)}>{t('ib.about', { job: m.jobTitle })}</div>}

@@ -3570,7 +3570,7 @@ export function jdSectionViewsOf(x: JdSectionsIn): JdSectionView[] {
     }
     out.push({
       m,
-      head: jdSecHeadOf({ m, key, t: x.t, underTitle: x.underTitle }),
+      head: jdSecHeadOf({ m, key, t: x.t, underTitle: x.underTitle, first: out.length === 0 }),
       mode: jdSecModeOf({
         m,
         none: pairs.length === 0,
@@ -3644,12 +3644,14 @@ function jdTransSecsOf(trans: string): Record<string, string> {
 
 /**
  * 这一节出不出小标题。
+ * 2026-11-12:公司简介挪到最上面之后,「工作内容」只有真排在第一节(这帖没有公司简介)时才省小标题;
+ * 前面有公司简介时照常出,不然工作内容的正文就接在公司简介后面没有标题。
  *
- * @param x 节键、取词键、取词函数与「紧跟大标题」。
+ * @param x 节键、取词键、取词函数、「紧跟大标题」与是不是第一节。
  * @returns 小标题;不出给空串。
  */
 function jdSecHeadOf(x: JdSecHeadIn): string {
-  if (x.m === JD_SEC_ROLE && x.underTitle) {
+  if (x.m === JD_SEC_ROLE && x.underTitle && x.first) {
     return TEXT_NONE
   }
   return x.t(x.key)

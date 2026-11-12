@@ -674,6 +674,7 @@ function toEePointsGrid(r: MartRow): MartRow {
 /**
  * noc_descriptions 行。
  * 2026-10-05 加 examples(官方示例职称,原样进库;旧 mart 文件没有这格 = null)。
+ * 2026-11-12 加 examples_zh(示例职称的中文;旧 mart 文件没有这格 = null,还没译的职业 = 空串)。
  *
  * @param r mart 行。
  * @returns 库行。
@@ -682,7 +683,8 @@ function toNocDescription(r: MartRow): MartRow {
   return {
     noc: cellOf(r.noc), title: cellOf(r.title), title_zh: cellOf(r.titleZh), title_zh_short: cellOf(r.titleZhShort),
     title_ko: cellOf(r.titleKo), title_ko_short: cellOf(r.titleKoShort), title_en_short: cellOf(r.titleEnShort),
-    duties: cellOf(r.duties), requirements: cellOf(r.requirements), examples: cellOf(r.examples), fetched: cellOf(r.fetched),
+    duties: cellOf(r.duties), requirements: cellOf(r.requirements), examples: cellOf(r.examples),
+    examples_zh: cellOf(r.examplesZh), fetched: cellOf(r.fetched),
   }
 }
 

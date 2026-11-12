@@ -1299,6 +1299,17 @@
 }
 
 /*
+ * 菜单条目悬停(2026-11-12 Frank「鼠标 hover 在 退出登录那里没有变化」):换全站悬停底色(同白底钮的悬停)。
+ * 类名加倍写抬权重:条目是 Button 的 ghost 档,基座 .btn 在另一个 css module 里,单类互撞看 chunk 先后。
+ */
+.menuItem.menuItem:hover {
+  /*
+   * 全站悬停底色(main.css 的 --hover-bg)。
+   */
+  background: var(--hover-bg);
+}
+
+/*
  * 登出条目(弱化灰)。
  */
 .menuItemDim {

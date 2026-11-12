@@ -21,6 +21,10 @@ export const NocDescriptions: CollectionConfig = {
     // 2026-10-05 访客第 3 题职业搜索打「cloud」搜不到:官方名里没有这个词,示例职称里有(21231 cloud engineer);
     // 生产列由 docs/sql/noc-descriptions-examples-20261005.sql 手写加(examples varchar),别靠 DB_PUSH 推
     { name: 'examples', type: 'textarea', admin: { description: '官方示例职称(All examples,换行分隔;职业搜索也搜这一格)' } },
+    // 2026-11-12 职业搜索打「大数据」「架构」搜不到:示例职称只有英文(21211 big data engineer、21231 cloud architect);
+    // 数据层 noc 域 examples_zh 步把示例职称译成中文,mart 拼成这一列。
+    // 生产列由 docs/sql/noc-descriptions-examples-zh-20261112.sql 手写加(examples_zh varchar),别靠 DB_PUSH 推
+    { name: 'examplesZh', type: 'textarea', admin: { description: '示例职称的中文(换行分隔;只给职业搜索用,不显示)' } },
     { name: 'fetched', type: 'text' },
   ],
 }

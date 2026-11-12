@@ -1,5 +1,7 @@
 // 整理版的可选节「公司简介」(2026-11-10 Frank「描述里有包含公司的信息,整理的时候也要加一项公司简介」):
 // ① 有 [COMPANY] → 展示多一节,排在工作形式之后、怎么投之前;② 没有 → 仍是五节,不摆「原帖未提及」;
+// (2026-11-12 Frank「这个应该放到最上面吧」:① 的位置改成排在最上面;紧跟大标题时,前面有公司简介「工作内容」照常出小标题,
+//  没有公司简介才省。)
 // ③ 标记挤在一行时 [COMPANY] 也顶到行首;④ 只有公司套话、五节全空的整理版照旧算全空(不许盖掉原文)。
 import { describe, expect, it } from 'vitest'
 import { jdSectionViewsOf } from '@/components/jobs/functions'
@@ -21,8 +23,16 @@ function marksOf(text: string): string[] {
 }
 
 describe('整理版可选节:公司简介', () => {
-  it('有 [COMPANY] 就多一节,排在工作形式之后、怎么投之前', () => {
-    expect(marksOf(FIVE + COMPANY + APPLY)).toEqual(['ROLE', 'REQS', 'PAY', 'WORKHOURS', 'COMPANY', 'APPLY'])
+  it('有 [COMPANY] 就多一节,排在最上面', () => {
+    expect(marksOf(FIVE + COMPANY + APPLY)).toEqual(['COMPANY', 'ROLE', 'REQS', 'PAY', 'WORKHOURS', 'APPLY'])
+  })
+
+  it('紧跟大标题时:有公司简介,「工作内容」照常出小标题;没有公司简介才省', () => {
+    const headOf = (text: string) => jdSectionViewsOf({
+      text, t, trans: '', fallbackPay: '', applyUrl: '', applyEmail: '', underTitle: true,
+    }).find((v) => v.m === 'ROLE')?.head
+    expect(headOf(FIVE + COMPANY + APPLY)).toBe('act.f.role')
+    expect(headOf(FIVE + APPLY)).toBe('')
   })
 
   it('公司简介一节带着原帖句子', () => {

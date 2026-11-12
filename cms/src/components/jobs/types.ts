@@ -5151,6 +5151,11 @@ export type JdSecHeadIn = {
    * 紧跟大标题(详情页)。
    */
   underTitle: boolean
+
+  /**
+   * 是不是渲出来的第一节(2026-11-12:公司简介挪到最上面之后,「工作内容」不一定是第一节)。
+   */
+  first: boolean
 }
 
 /**

@@ -2413,13 +2413,15 @@ export const JD_SEC_SPLIT_RE = /\[(ROLE|REQS|PAY|WORKHOURS|COMPANY|APPLY)\]/
  * 五节的节键与它们的取词键(顺序即渲染顺序)。
  * 2026-11-10 Frank「整理的时候也要加一项公司简介」:多一节可选的 COMPANY(原帖里雇主自述),排在工作形式之后、怎么投之前;
  * 原帖没有就整节不渲(见 JD_SEC_COMPANY)。
+ * 2026-11-12 Frank「这个应该放到最上面吧」:公司简介挪到第一节(先知道是什么公司,再看工作内容);整理版原文里它仍排在
+ * 工作形式之后,这里只改渲染顺序。
  */
 export const JD_SECS: [string, string][] = [
+  ['COMPANY', 'act.f.company'],
   ['ROLE', 'act.f.role'],
   ['REQS', 'act.f.reqs'],
   ['PAY', 'act.f.pay'],
   ['WORKHOURS', 'act.f.hours'],
-  ['COMPANY', 'act.f.company'],
   ['APPLY', 'act.f.apply'],
 ]
 

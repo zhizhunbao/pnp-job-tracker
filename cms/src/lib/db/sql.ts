@@ -415,11 +415,13 @@ export const NOC_SEARCH_FALLBACK = `SELECT j.noc, COALESCE(d.title, '') title, C
  * 职业名模糊搜(中英同查),短名优先
  * 2026-10-05 访客第 3 题打「cloud」出「没有找到匹配职业」:官方名里没有这个词。再搜官方示例职称 examples 一格
  * (21231 cloud engineer / 21232 cloud developer),名字命中的排前面、只命中示例职称的排后面,同档短名优先;上限 8 → 12。
+ * 2026-11-12 Frank 截图:打「大数据」「架构」出「没有找到匹配职业」—— 示例职称只有英文。再搜示例职称的中文 examples_zh 一格
+ * (数据层本地模型译的,21211 大数据工程师 / 21231 云架构师),排法不变:名字命中在前,只命中示例职称(中英都算)在后。
  */
 export const NOC_BY_TITLE_LIKE = `SELECT d.noc, COALESCE(d.title,'') title, COALESCE(d.title_zh,'') title_zh, COALESCE(d.title_zh_short,'') title_zh_short,
             COALESCE(d.title_ko_short,'') title_ko_short, COALESCE(d.title_en_short,'') title_en_short
      FROM noc_descriptions d
-     WHERE d.title ILIKE $1 OR d.title_zh ILIKE $1 OR d.examples ILIKE $1
+     WHERE d.title ILIKE $1 OR d.title_zh ILIKE $1 OR d.examples ILIKE $1 OR d.examples_zh ILIKE $1
      ORDER BY CASE WHEN d.title ILIKE $1 OR d.title_zh ILIKE $1 THEN 0 ELSE 1 END, length(COALESCE(d.title,'')), d.noc LIMIT 12`
 
 // =========================================================================

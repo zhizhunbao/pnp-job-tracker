@@ -13,3 +13,11 @@
  * **壳宽**档(量宽机制决定它的上限宽),两个默认值各判各的。
  */
 export const BOX_SIZE_DEFAULT = 'sm'
+
+/**
+ * 展开列表里每一项右边垫的一格(U+2003 全角空格,约一个字宽;2026-11-12 Frank「这个右边要有空隙」)。
+ * 原生 select 的展开列表由浏览器画,宽度正好贴着最长那一项的末字,网页样式给不了右边距(Chrome 不认 option 的 padding);
+ * 垫在 option 的 label 属性末尾 —— 浏览器拿 label 当显示字,列表就宽出这一格;option 的文本内容不动。
+ * 普通空格会被浏览器收掉,所以用全角空格。
+ */
+export const OPTION_PAD = ' '

@@ -734,8 +734,10 @@ export const COLS_EE_POINTS_GRID = ['grid', 'section', 'section_label', 'kind', 
  * noc_descriptions 列。
  * 2026-10-05 加 examples(官方示例职称,换行拼接;职业搜索也搜这一格)。⚠️ 先在生产跑 docs/sql/noc-descriptions-examples-20261005.sql,
  * 否则 seed 撞 42703 整事务回滚。
+ * 2026-11-12 加 examples_zh(示例职称的中文,换行拼接;职业搜索用中文词也能搜到)。⚠️ 同样先在生产跑
+ * docs/sql/noc-descriptions-examples-zh-20261112.sql 再上线。
  */
-export const COLS_NOC_DESCRIPTIONS = ['noc', 'title', 'title_zh', 'title_zh_short', 'title_ko', 'title_ko_short', 'title_en_short', 'duties', 'requirements', 'examples', 'fetched']
+export const COLS_NOC_DESCRIPTIONS = ['noc', 'title', 'title_zh', 'title_zh_short', 'title_ko', 'title_ko_short', 'title_en_short', 'duties', 'requirements', 'examples', 'examples_zh', 'fetched']
 
 /**
  * dli 列。

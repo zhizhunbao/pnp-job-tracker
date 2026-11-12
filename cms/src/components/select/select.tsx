@@ -20,13 +20,15 @@
  * 壳宽与「列表不伸出」只能二选一,取壳宽与同排一致。
  * 2026-09-26 /fe 首页 Frank 看效果图点头(手机筛选行压成两行):壳可追加宿主给的类(className),只作排版定位 ——
  * 职位板手机端按格定宽、把 EE 类别收进更多筛选,靠的就是它;不传照旧。
+ * 2026-11-12 Frank「这个右边要有空隙」(匹配规则下拉展开后,最长那项的末字贴着列表右边):每个 option 加 label 属性,
+ * 值 = 显示字 + 一格全角空格(OPTION_PAD),展开列表右边就留出一格;全站下拉走这一个件,一起生效。
  *
  * @author Frank
  * @time 2026-08-24 10:00:00
  */
 import { cssOf } from '@/components/css'
 import { inputClsOf, SIZE_DEFAULT } from '@/components/input'
-import { BOX_SIZE_DEFAULT } from './constants'
+import { BOX_SIZE_DEFAULT, OPTION_PAD } from './constants'
 import { listOf, makeSelectChange, optionLabelOf, shownOf } from './functions'
 import type { SelectIn, SelectSize } from './types'
 import css from './select.module.css'
@@ -63,7 +65,8 @@ export function Select({
   }
   const opels = []
   for (const o of list) {
-    opels.push(<option key={o} value={o}>{optionLabelOf({ labelOf: labelIn, o })}</option>)
+    const text = optionLabelOf({ labelOf: labelIn, o })
+    opels.push(<option key={o} value={o} label={text + OPTION_PAD}>{text}</option>)
   }
   return (
     <span className={boxCls}>
@@ -72,7 +75,7 @@ export function Select({
         <span className={css.measureLine}>{shown}</span>
       </span>
       <select value={value} onChange={makeSelectChange(onChange)} className={selCls}>
-        <option value="">{all}</option>
+        <option value="" label={all + OPTION_PAD}>{all}</option>
         {opels}
       </select>
     </span>
