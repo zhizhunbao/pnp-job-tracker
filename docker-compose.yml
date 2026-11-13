@@ -481,18 +481,20 @@ services:
       GOOGLE_CSE_CX: ${GOOGLE_CSE_CX:-}           # 根 .env;Programmable Search 引擎 ID
       TZ: EST5EDT
 
-  co_enrich_about:                    # 雇主官网正文 → 五节简介(company 域 about + brief 两步;about 403 / JS 壳走浏览器兜底,留重镜像)
-    <<: *etl
-    build:
-      context: .
-      dockerfile: etl/crawl/Dockerfile
-    environment:
-      <<: *hc
-      SOURCE: enrich_about
-      HEALTHCHECK_PING_ENRICH_ABOUT: ${HEALTHCHECK_PING_ENRICH_ABOUT:-}
-      NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 news 同一台盒子同一个变量);空=brief 步跳过
-      NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
-      TZ: EST5EDT
+  # 2026-11-13 co_enrich_about 停用(同 co_sites 那条:公司简介只留点开时现查);company 域批量写五节简介这一役不再跑,
+  # 汇装同日起也不再把它的产出写进 companies.ai_brief(etl/mart 的 enrich_company)。代码与已有产出都留着。原 service 逐字留档:
+  #   co_enrich_about:                    # 雇主官网正文 → 五节简介(company 域 about + brief 两步;about 403 / JS 壳走浏览器兜底,留重镜像)
+  #     <<: *etl
+  #     build:
+  #       context: .
+  #       dockerfile: etl/crawl/Dockerfile
+  #     environment:
+  #       <<: *hc
+  #       SOURCE: enrich_about
+  #       HEALTHCHECK_PING_ENRICH_ABOUT: ${HEALTHCHECK_PING_ENRICH_ABOUT:-}
+  #       NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 news 同一台盒子同一个变量);空=brief 步跳过
+  #       NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
+  #       TZ: EST5EDT
 
   co_findsite:                        # 点开优先的查找官网(2026-09-20;company 域第二役):被真人点开过、没官网 / 官网已死 / 官网名字对不上的公司,帖内线索 → Wikidata → Bing → DDG(有头浏览器);Google 那一档只在本机跑(python etl/company/main.py --only findsite,FINDSITE_GOOGLE=1),本机开着时本容器让活
     <<: *etl
@@ -599,21 +601,23 @@ services:
       EXPLORE_LIMIT: ${EXPLORE_LIMIT:-100}        # 每轮上限(一个名字 2~3 秒,100 条约 5 分钟)
       TZ: EST5EDT
 
-  co_sites:                           # 公司官网定期抓取(2026-09-19 立域;有官网且在招的公司每家抓首页 + Contact + About 进 crawl 层,局域网 qwen 只凭页面文字整理七节、每节附页面原句核对;只刷 crawl/ 与 processed/sites/)
-    <<: *etl
-    build:                         # 2026-09-20 起抓页一律走 crawl 域有头浏览器(Frank「crawl 不是用有头的吗」「httpx curl 都删了」):用带 Playwright + Xvfb 的重镜像
-      context: .
-      dockerfile: etl/crawl/Dockerfile
-    environment:
-      <<: *hc
-      SOURCE: sites
-      BROWSER_COOKIES: sites-cookies.json         # cookie 模式 = 干净的有头浏览器、不开持久 profile(那份 profile 同一时刻只许一个进程开,company / crawl 在用;公司官网不要登录态);文件不在 fetch 步自己建一只空罐
-      HEALTHCHECK_PING_SITES: ${HEALTHCHECK_PING_SITES:-}       # 未配 = ping_health 自然跳过
-      NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 jdformat / explore / classify / company 同一台盒子);空=facts 步跳过
-      NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
-      SITES_FETCH_LIMIT: ${SITES_FETCH_LIMIT:-200}  # 每轮抓多少家官网(一家 3 页走有头浏览器,实测约 40 秒一家:200 家 ≈ 两小时多,一轮接一轮连着跑)
-      SITES_FACTS_LIMIT: ${SITES_FACTS_LIMIT:-200}  # 每轮整理多少家(盒子一家 4~11 秒)
-      TZ: EST5EDT
+  # 2026-11-13 co_sites 停用(Frank「点开哪个公司跑哪个公司呗」「这三个功能要合并,不要新抓把旧的对的信息改错了」):公司简介只留点开时现查
+  # (co_visit,带官网归属闸 / 逐句核对 / 新旧判优),定时批量抓官网这一役不再跑;代码与已有产出都留着,观察没缺数据再删。原 service 逐字留档:
+  #   co_sites:                           # 公司官网定期抓取(2026-09-19 立域;有官网且在招的公司每家抓首页 + Contact + About 进 crawl 层,局域网 qwen 只凭页面文字整理七节、每节附页面原句核对;只刷 crawl/ 与 processed/sites/)
+  #     <<: *etl
+  #     build:                         # 2026-09-20 起抓页一律走 crawl 域有头浏览器(Frank「crawl 不是用有头的吗」「httpx curl 都删了」):用带 Playwright + Xvfb 的重镜像
+  #       context: .
+  #       dockerfile: etl/crawl/Dockerfile
+  #     environment:
+  #       <<: *hc
+  #       SOURCE: sites
+  #       BROWSER_COOKIES: sites-cookies.json         # cookie 模式 = 干净的有头浏览器、不开持久 profile(那份 profile 同一时刻只许一个进程开,company / crawl 在用;公司官网不要登录态);文件不在 fetch 步自己建一只空罐
+  #       HEALTHCHECK_PING_SITES: ${HEALTHCHECK_PING_SITES:-}       # 未配 = ping_health 自然跳过
+  #       NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 jdformat / explore / classify / company 同一台盒子);空=facts 步跳过
+  #       NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
+  #       SITES_FETCH_LIMIT: ${SITES_FETCH_LIMIT:-200}  # 每轮抓多少家官网(一家 3 页走有头浏览器,实测约 40 秒一家:200 家 ≈ 两小时多,一轮接一轮连着跑)
+  #       SITES_FACTS_LIMIT: ${SITES_FACTS_LIMIT:-200}  # 每轮整理多少家(盒子一家 4~11 秒)
+  #       TZ: EST5EDT
 
   co_visit:                           # 点开优先(2026-09-20;sites 域第二役):被真人点开过的公司插队抓官网 → 整理总部 / 简介 → 交活直接上页面,每步把进度写回队列表(公司卡 15 秒来问一次);设计稿 docs/design/点开优先抓取与纠错-20260920.md
     <<: *etl

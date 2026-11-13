@@ -1738,8 +1738,11 @@ def add_company(x: CompanyExtraIn) -> None:
     fill_careers(x)
     move_portal_site(x)
     drop_unofficial_sites(x)
-    fill_brief(x)
-    fill_site_secs(x)
+    # 2026-11-13 Frank「这三个功能要合并,不要新抓把旧的对的信息改错了」「可以」(先让灌库不碰简介):原先这里接着调 fill_brief / fill_site_secs,
+    # 把 company 域批量写的五节简介(company_brief.json)拼上官网三节后落进 aiBrief 四列,每小时灌库拿它与库里那份逐节合并 ——
+    # 批量文件里写了的节会盖掉「点开时现查」(sites 域 visit 役,带归属闸 / 逐句核对 / 判优)刚写进库的同一节。
+    # 现在汇装不再给简介:库里已有的原样留着(灌库这几列 COALESCE,mart 没给就保旧值),之后只有点开时现查与人工核定(fill_curated)能改。
+    # 两个函数先留着没删,等批量代码一起撤。
     fill_hq(x)
     fill_curated(x)
     x.extra[K_SECTOR] = sector_of(x.name)
