@@ -3,7 +3,8 @@
 // 链路:/api/quiz?q= → quizRoute 原样转 searchNocByTitle({ db, q }) → SQL.NOC_BY_TITLE_LIKE → toNocHit → { candidates }。
 // 这里钉住两件事,不连库(跑得起 SQL 的验证在本批交付时拿真数据跑过:一次性本地 postgres 灌 426 行,
 // 「cloud」出 21222 / 21231 / 21232 / 20012 四行;「cook」名字命中的 63200 排第一、其余 11 行只命中示例):
-// ① SQL 的形状:WHERE 三格同一个 $1(title / title_zh / examples);ORDER BY 第一键是「名字命中 = 0、只命中示例 = 1」,
+// ① SQL 的形状:WHERE 四格同一个 $1(title / title_zh / examples / examples_zh;2026-11-12 多搜示例职称的中文,
+//    Frank 截图打「大数据」「架构」搜不到);ORDER BY 第一键是「名字命中 = 0、只命中示例 = 1」,
 //    第二键短名优先;上限 12;SELECT 不带 examples(候选报文不背上万字的示例清单)。
 // ② 函数是纯透传:不在 TS 里重排、不截断;出参每行只有 NocHit 六格,库里多给的格(examples)不漏出去。
 // 变异探针(交付时手跑过一遍):把 WHERE 里 `OR d.examples ILIKE $1` 删掉,第一组当场红;恢复后 sha256 与改前一致。
@@ -52,9 +53,11 @@ function between(sql: string, from: string, to: string): string {
 describe('① NOC_BY_TITLE_LIKE 的形状', () => {
   const sql = SQL.NOC_BY_TITLE_LIKE
 
-  it('WHERE:官方名、中文名、示例职称三格各 ILIKE 同一个 $1,用 OR 串', () => {
+  it('WHERE:官方名、中文名、示例职称、示例职称中文四格各 ILIKE 同一个 $1,用 OR 串', () => {
     const where = between(sql, 'WHERE', 'ORDER BY')
-    expect(where.split(' OR ')).toEqual(['d.title ILIKE $1', 'd.title_zh ILIKE $1', 'd.examples ILIKE $1'])
+    expect(where.split(' OR ')).toEqual(
+      ['d.title ILIKE $1', 'd.title_zh ILIKE $1', 'd.examples ILIKE $1', 'd.examples_zh ILIKE $1'],
+    )
     expect(flat(sql)).not.toMatch(/\$[2-9]/)
   })
 
