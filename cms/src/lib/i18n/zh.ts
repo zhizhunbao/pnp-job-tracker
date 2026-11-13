@@ -961,7 +961,7 @@ export const jobsZh = {
   // 2026-10-10 批 3「收件箱」(专属投递邮箱、雇主回信、站内回信)与「打开」一条投递的只读框
   'ib.title': '收件箱', 'ib.empty': '还没有雇主回信',
   'ib.search': '搜索邮件',
-  'ib.all': '全部',
+  'ib.all': '全部', 'ib.g.today': '今天', 'ib.g.yesterday': '昨天', 'ib.g.week': '本周', 'ib.g.older': '更早',
   'ib.unreadTab': '未读',
   'ib.about': '关于你投的 {job}',
   'ib.toMe': '发给 我',

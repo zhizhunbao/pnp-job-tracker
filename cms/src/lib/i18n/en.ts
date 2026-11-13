@@ -917,7 +917,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'mj.pushDaily': 'Email me daily', 'mj.pushOn': 'Job alerts are on', 'mj.pushBad': 'Invalid email', 'mj.pushFail': 'Couldn’t save. Try again', 'mj.pushMailFail': 'Couldn’t send the confirmation email. Try again',
   'ib.title': 'Inbox', 'ib.empty': 'No employer replies yet',
   'ib.search': 'Search mail',
-  'ib.all': 'All',
+  'ib.all': 'All', 'ib.g.today': 'Today', 'ib.g.yesterday': 'Yesterday', 'ib.g.week': 'This week', 'ib.g.older': 'Older',
   'ib.unreadTab': 'Unread',
   'ib.about': 'About your application: {job}',
   'ib.toMe': 'To: me',

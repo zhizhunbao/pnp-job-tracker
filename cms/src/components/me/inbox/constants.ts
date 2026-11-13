@@ -67,14 +67,60 @@ export const TEXT_NONE = ''
 
 
 /**
- * 日期切片起点(`YYYY-MM-DD HH:mm` 取 `MM-DD`)。
+ * 清单行时刻的长度:今天写 `HH:mm`、其余写 `MM-DD`,都是 5 个字
+ * (2026-11-13 Frank「我的这个排版和 outlook 不一样啊」:照 Outlook 今天的信写钟点;原先一律 `MM-DD`)。
  */
-export const MD_FROM = 5
+export const ROW_TIME_LEN = 5
 
 /**
- * 日期切片终点。
+ * 纯日期补成 UTC 零点的尾巴(算「第几天」用,不受本机时区影响)。
  */
-export const MD_TO = 10
+export const MIDNIGHT_UTC = 'T00:00:00Z'
+
+/**
+ * 清单日期分组:今天(2026-11-13 照 Outlook 清单的 Today / Yesterday / This Week 分组头)。
+ */
+export const GROUP_TODAY = 'today'
+
+/**
+ * 清单日期分组:昨天。
+ */
+export const GROUP_YESTERDAY = 'yesterday'
+
+/**
+ * 清单日期分组:本周(周日起算,同 Outlook 默认)里更早的几天。
+ */
+export const GROUP_WEEK = 'week'
+
+/**
+ * 清单日期分组:更早。
+ */
+export const GROUP_OLDER = 'older'
+
+/**
+ * 分组 → 分组头的词条键。
+ */
+export const GROUP_LABEL_KEY = {
+  /**
+   * 今天。
+   */
+  today: 'ib.g.today',
+
+  /**
+   * 昨天。
+   */
+  yesterday: 'ib.g.yesterday',
+
+  /**
+   * 本周。
+   */
+  week: 'ib.g.week',
+
+  /**
+   * 更早。
+   */
+  older: 'ib.g.older',
+}
 
 /**
  * 发件人「名字 <地址>」的左括号。

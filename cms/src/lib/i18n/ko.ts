@@ -882,7 +882,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'mj.pushDaily': '매일 받기', 'mj.pushOn': '새 공고 알림을 켰습니다', 'mj.pushBad': '이메일 형식이 올바르지 않습니다', 'mj.pushFail': '저장하지 못했습니다. 다시 시도해 주세요', 'mj.pushMailFail': '확인 메일을 보내지 못했습니다. 다시 시도해 주세요',
   'ib.title': '받은편지함', 'ib.empty': '아직 고용주 회신이 없습니다',
   'ib.search': '메일 검색',
-  'ib.all': '전체',
+  'ib.all': '전체', 'ib.g.today': '오늘', 'ib.g.yesterday': '어제', 'ib.g.week': '이번 주', 'ib.g.older': '이전',
   'ib.unreadTab': '읽지 않음',
   'ib.about': '지원한 일자리: {job}',
   'ib.toMe': '받는 사람: 나',

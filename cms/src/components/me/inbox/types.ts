@@ -505,6 +505,11 @@ export type InboxPanel = {
   shown: InboxItem[]
 
   /**
+   * 此刻(进页时取一次;清单按它分「今天 / 昨天」、今天的信写钟点)。
+   */
+  now: number
+
+  /**
    * 没读的封数(筛选页签上的数)。
    */
   unreadN: number
@@ -526,6 +531,71 @@ export type InboxPartIn = {
 }
 
 /**
+ * 清单日期分组的名字。
+ */
+export type GroupKey = 'today' | 'yesterday' | 'week' | 'older'
+
+/**
+ * 清单里的一组。
+ */
+export type InboxGroup = {
+  /**
+   * 哪一组。
+   */
+  key: GroupKey
+
+  /**
+   * 这一组的信,新的在前。
+   */
+  items: InboxItem[]
+}
+
+/**
+ * `groupsOf` 的入参。
+ */
+export type GroupsIn = {
+  /**
+   * 留下的信,新的在前。
+   */
+  items: InboxItem[]
+
+  /**
+   * 此刻。
+   */
+  now: number
+}
+
+/**
+ * `groupKeyOf` 的入参。
+ */
+export type GroupKeyIn = {
+  /**
+   * 那一封落在第几天。
+   */
+  day: number
+
+  /**
+   * 今天是第几天。
+   */
+  today: number
+}
+
+/**
+ * `rowTimeOf` 的入参。
+ */
+export type RowTimeIn = {
+  /**
+   * 时刻。
+   */
+  iso: string
+
+  /**
+   * 此刻。
+   */
+  now: number
+}
+
+/**
  * InboxRow(清单里一封)的 props。
  */
 export type InboxRowIn = {
@@ -533,6 +603,11 @@ export type InboxRowIn = {
    * 那一封。
    */
   m: InboxItem
+
+  /**
+   * 此刻(今天的信写钟点)。
+   */
+  now: number
 
   /**
    * 是不是当前打开的那封。
@@ -633,4 +708,9 @@ export type InboxMsgIn = {
    * 正文。
    */
   text: string
+
+  /**
+   * 卡头右上角的钮(来信是「回复」;我的回信没有,给 null)。
+   */
+  acts: React.ReactNode
 }

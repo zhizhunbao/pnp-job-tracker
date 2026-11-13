@@ -5,6 +5,7 @@
  * 2026-11-13 Frank「先修收件箱问题」:宽屏默认显示的那一封(没点过也摆在右边)显示了就算已读,
  * 原先要再点一下才标,红点不消;换到别的信先清回信草稿(原先给甲写的草稿会留在乙的回信框里)。
  * 同日「同时转到」开关撤(Frank「照这个做」:固定都转),转发开关手柄随之撤。
+ * 同日 Frank「我的这个排版和 outlook 不一样啊」:多交一格「此刻」(进页时取一次),清单按它分组、今天的信写钟点。
  *
  * @author Frank
  * @time 2026-11-07 16:30:00
@@ -35,6 +36,7 @@ export function useInbox(x: InboxIn): InboxPanel {
   const [replyNote, setReplyNote] = useState(TEXT_NONE)
   const [q, setQ] = useState(TEXT_NONE)
   const [filter, setFilter] = useState(FILTER_ALL)
+  const [now] = useState(Date.now)
 
   useEffect(function firstLoad() {
     void makeLoadInbox({ setData, setFailed })()
@@ -91,6 +93,7 @@ export function useInbox(x: InboxIn): InboxPanel {
     filter,
     onFilter: setFilter,
     shown: shownOf({ data, q, filter }),
+    now,
     unreadN: unreadNOf(data),
   }
 }

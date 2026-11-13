@@ -9,15 +9,17 @@
  * @time 2026-11-07 16:30:00
  */
 import { cssOf } from '@/components/css'
-import { fmtLocal } from '@/lib/time'
+import { DAY_MS, fmtLocal, fmtLocalShort, ymd } from '@/lib/time'
 import {
-  ADDR_L, ADDR_R, CRED_INCLUDE, EV_UNREAD, HDR_CONTENT_TYPE, MD_FROM, MD_TO, METHOD_POST, MIME_JSON,
+  ADDR_L, ADDR_R, CRED_INCLUDE, EV_UNREAD, GROUP_OLDER, GROUP_TODAY, GROUP_WEEK, GROUP_YESTERDAY, HDR_CONTENT_TYPE,
+  METHOD_POST, MIDNIGHT_UTC, MIME_JSON, ROW_TIME_LEN,
   ONE_SPACE, P_MSG, SNIPPET_LEN, SNIPPET_MORE, SPACE_RUN_RE, ST_TOO_MANY, ST_UNAVAILABLE, TEXT_NONE,
   URL_INBOX, URL_READ, URL_REPLY,
   FILTER_UNREAD,
 } from './constants'
 import type {
-  AfterReplyIn, CurIn, DraftResetIn, FlagSetIn, InboxItem, InboxRowClsIn, InboxView,
+  AfterReplyIn, CurIn, DraftResetIn, FlagSetIn, GroupKey, GroupKeyIn, GroupsIn, InboxGroup, InboxItem, InboxRowClsIn,
+  InboxView, RowTimeIn,
   LoadInboxIn,
   OpenAppIn, ShownIn,
   PickMakeIn, PickOfFn, ReplyPostIn, ReplyRespJson, ReplySendIn, SubjectIn, TextSetIn, UnpickIn,
@@ -367,16 +369,17 @@ export function senderLineOf(m: InboxItem): string {
 }
 
 /**
- * 清单里的日期(MM-DD)。
+ * 清单里的时刻:今天的写钟点(HH:mm),其余写月-日(MM-DD)。
+ * 2026-11-13 Frank「我的这个排版和 outlook 不一样啊」:照 Outlook,原先一律月-日。
  *
- * @param iso 时刻。
- * @returns 月-日;空时刻为空串。
+ * @param x 时刻与此刻。
+ * @returns 钟点或月-日;空时刻为空串。
  */
-export function dayOf(iso: string): string {
-  if (iso === TEXT_NONE) {
+export function rowTimeOf(x: RowTimeIn): string {
+  if (x.iso === TEXT_NONE) {
     return TEXT_NONE
   }
-  return fmtLocal(iso).slice(MD_FROM, MD_TO)
+  return fmtLocalShort({ iso: x.iso, now: x.now }).slice(0, ROW_TIME_LEN)
 }
 
 /**
@@ -458,6 +461,64 @@ export function shownOf(x: ShownIn): InboxItem[] {
     out.push(m)
   }
   return out
+}
+
+/**
+ * 留下的信按日期分组(照 Outlook 清单:今天 / 昨天 / 本周 / 更早;信本来新的在前,同组的挨着,空组不出)。
+ *
+ * @param x 留下的信与此刻。
+ * @returns 分组,新的在前。
+ */
+export function groupsOf(x: GroupsIn): InboxGroup[] {
+  const today = dayNoOf(new Date(x.now).toISOString())
+  const out: InboxGroup[] = []
+  let last: InboxGroup | null = null
+  for (const m of x.items) {
+    const key = groupKeyOf({ day: dayNoOf(m.at), today })
+    if (last == null || last.key !== key) {
+      last = { key, items: [] }
+      out.push(last)
+    }
+    last.items.push(m)
+  }
+  return out
+}
+
+/**
+ * 时刻落在渥太华时间的第几天(自 1970-01-01 起的天数;只用来比先后差几天)。
+ *
+ * @param iso 时刻。
+ * @returns 天数;空时刻或解析不了为 0(归「更早」)。
+ */
+export function dayNoOf(iso: string): number {
+  if (iso === TEXT_NONE) {
+    return 0
+  }
+  const n = new Date(ymd(fmtLocal(iso)) + MIDNIGHT_UTC).getTime()
+  if (Number.isFinite(n) === false) {
+    return 0
+  }
+  return Math.round(n / DAY_MS)
+}
+
+/**
+ * 一封信归哪一组:当天 = 今天,前一天 = 昨天,再往前但还在本周(周日起算)= 本周,其余 = 更早。
+ *
+ * @param x 那一封的天数与今天的天数。
+ * @returns 分组。
+ */
+export function groupKeyOf(x: GroupKeyIn): GroupKey {
+  const diff = x.today - x.day
+  if (diff <= 0) {
+    return GROUP_TODAY
+  }
+  if (diff === 1) {
+    return GROUP_YESTERDAY
+  }
+  if (diff <= new Date(x.today * DAY_MS).getUTCDay()) {
+    return GROUP_WEEK
+  }
+  return GROUP_OLDER
 }
 
 /**
