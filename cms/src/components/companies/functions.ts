@@ -309,13 +309,15 @@ export function hasBaseSecOf(x: BriefSecsIn): boolean {
 
 /**
  * 公司所在市(2026-09-14 Frank「加上省市」):companies 表没有市列,取该司在招岗里第一座城;没岗给空串。
+ * 2026-11-13(Frank「这个地方有个小 bug」那条面包屑顺带查出):只取与公司所在省同省的岗的城 —— 原先不看省,
+ * EB Games Canada(公司在 Ontario,第一个在招岗在 Laval, QC)面包屑成了「Ontario › Laval」。公司没有省时照旧取第一座城。
  *
  * @param x 公司档案。
  * @returns 城市名或空串。
  */
 export function cityOf(x: CompanyOnlyIn): string {
   for (const j of x.company.jobs) {
-    if (j.city !== TEXT_NONE) {
+    if (j.city !== TEXT_NONE && (x.company.province === TEXT_NONE || j.province === x.company.province)) {
       return j.city
     }
   }

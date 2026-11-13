@@ -45,7 +45,6 @@ export function CompanyBody({
   similar,
   t,
   lang,
-  updatedAt,
   showTrans = false,
   afterSponsor = null,
   onTransBusy,
@@ -78,7 +77,6 @@ export function CompanyBody({
       <CompanyJobsCard company={company}
         t={t}
         lang={lang}
-        updatedAt={updatedAt}
         showTrans={showTrans} />
       <CompanySimilarCard key={simAnchorOf(similar)} similar={similar} t={t} lang={lang}
         showTrans={showTrans} />

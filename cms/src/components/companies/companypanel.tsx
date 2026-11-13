@@ -68,7 +68,6 @@ export function CompanyPanel({
         similar={p.data.similar}
         t={t}
         lang={lang}
-        updatedAt={TEXT_NONE}
         showTrans={showTrans}
         onTransBusy={onTransBusy}
         onSiteDone={p.reload} />

@@ -606,11 +606,6 @@ export type CompanyIn = {
   similar?: SimilarEmployer[]
 
   /**
-   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO,页面门 SSR 取;'' = 还没拿到,不渲)。
-   */
-  updatedAt: string
-
-  /**
    * 分层态(2026-09-19:页上点在招职位叠开职位描述弹框,弹框的额度闸与投递栏按它走)。
    */
   plan: CompanyPlan
@@ -684,12 +679,6 @@ export type CompanyBodyIn = {
    * 界面语言。
    */
   lang: CompaniesLang
-
-  /**
-   * 数据更新时刻(在招职位卡标题行右端那句);'' = 还没拿到,整行不出 ——
-   * 弹框走客户端取数没有服务端心跳,传的就是空串。
-   */
-  updatedAt: string
 
   /**
    * 显示中文对照(#185:点了才在英文段下挂译文);可省 = 不显示。
@@ -1380,11 +1369,6 @@ export type CompanyJobsCardIn = {
    * 界面语言(岗名下的 NOC 译名跟着它走)。
    */
   lang: CompaniesLang
-
-  /**
-   * 数据更新时刻(卡标题行右端那句「更新时间 …」);'' = 还没拿到,整行不出。
-   */
-  updatedAt: string
 
   /**
    * 中文对照开着(2026-09-16 Frank「在招职位 和 相似雇主 下面的也算中文翻译」:名下的对照行跟开关走)。

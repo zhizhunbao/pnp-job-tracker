@@ -8,6 +8,7 @@
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位(展开态就近落在这一件里)。
  * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:
  * 卡标题行右端挂 time 桶的 Updated(心跳由页面门 SSR 取好递进来;弹框没有,空串自己不渲)。
+ * 2026-11-13 Frank「在招职位 右边的 时间也去掉吧」:卡头右端那句「更新时间 …」撤,`updatedAt` 一格从页面门到本件整条撤。
  * 2026-09-14 Frank「这个去掉」「在招职位那部分加一个收起的功能就行」:「在职位板查看其余 N 个」链撤;
  * 展开钮改成展开 / 收起来回切。
  * 2026-09-14 Frank「这个翻译老是翻译不全啊」:没 NOC 译名的行一次批量懒翻标题当副题(useTitleMap)。
@@ -26,27 +27,24 @@
  * @time 2026-08-28 18:13:09
  */
 import { lazyTitleOf, titleSubOf, untranslatedOf, useTitleMap } from '@/components/jobtitle'
-import { cssOf } from '@/components/css'
 import { FOLD_FIRST, FoldLine, useFold } from '@/components/pager'
-import { Updated } from '@/components/time'
 import { JobMiniRow } from './jobminirow'
 import {
-  CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, K_JOBS_UNIT, LANG_EN, PAREN_CLOSE, PAREN_OPEN,
+  CARD_HEAD_CLS, CARD_MD_CLS, K_JOBS_UNIT, LANG_EN, PAREN_CLOSE, PAREN_OPEN,
 } from './constants'
 import {
   jobsShownOf, jobSubOf, zhShownOf,
 } from './functions'
 import type { CompanyJobsCardIn } from './types'
-import css from './companies.module.css'
 
 /**
  * 在招职位卡。
  *
- * @param props 公司档案、取词函数、界面语言、更新时刻与中文对照开关(逐格注释见 CompanyJobsCardIn)。
+ * @param props 公司档案、取词函数、界面语言与中文对照开关(逐格注释见 CompanyJobsCardIn)。
  * @returns 一张卡;一个在招岗都没有时整卡不渲。
  */
 export function CompanyJobsCard({
-  company, t, lang, updatedAt, showTrans,
+  company, t, lang, showTrans,
 }: CompanyJobsCardIn) {
   const fold = useFold({ hidden: Math.max(0, company.jobs.length - FOLD_FIRST) })
   const shown = jobsShownOf({ jobs: company.jobs, n: FOLD_FIRST + fold.extra })
@@ -73,9 +71,8 @@ export function CompanyJobsCard({
   }
   return (
     <div className={CARD_MD_CLS}>
-      <div className={CARD_HEAD_CLS + CLS_SEP + cssOf(css.jobsHead)}>
+      <div className={CARD_HEAD_CLS}>
         {t('co.openJobs')} {PAREN_OPEN}{company.openCount}{PAREN_CLOSE}
-        <Updated iso={updatedAt} t={t} />
       </div>
       <div>
         {rows}

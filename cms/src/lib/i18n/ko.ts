@@ -928,6 +928,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'ap.e.noEmail': '이 공고에는 지원 이메일이 없습니다', 'ap.e.limit': '오늘 지원이 너무 많습니다. 내일 다시 시도해 주세요',
   'ap.e.busy': '오늘 발송 한도가 찼습니다. 내일 다시 시도해 주세요', 'ap.e.mailOff': '메일 발송이 꺼져 있습니다',
   'ap.e.mail': '보내지 못했습니다. 잠시 후 다시 시도해 주세요',
+  // 2026-11-13 公司行业十类(companies.industry = NOC 第 1 位的官方大类:管理 / 商务 / 科技 / 医疗 / 教育 / 文体 / 服务 / 技工 / 资源 / 制造)里词条表原先缺的五个:公司页面包屑与雇主板行业格露出过「broad.服务」这样的键名。
+  'broad.管理': '관리직', 'broad.科技': '과학기술', 'broad.文体': '예술 스포츠', 'broad.服务': '판매 서비스', 'broad.资源': '천연자원',
   'broad.管理层': '관리직', 'broad.商务': '비즈니스', 'broad.行政': '행정', 'broad.文员': '사무직', 'broad.金融': '금융',
   'broad.会计': '회계', 'broad.法律': '법률', 'broad.IT': '테크', 'broad.工程': '엔지니어링', 'broad.科学': '과학',
   'broad.医疗': '의료', 'broad.教育': '교육', 'broad.社会服务': '사회 서비스', 'broad.艺术': '예술', 'broad.体育': '스포츠',

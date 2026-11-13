@@ -55,7 +55,7 @@ import css from './companies.module.css'
  * @param props 公司档案、相似雇主、数据更新时刻与分层态(逐格注释见 CompanyIn)。
  * @returns 正文(Shell 轨 + 面包屑 + 头卡 + CompanyBody 卡组)。
  */
-export function Company({ company, similar = [], updatedAt, plan }: CompanyIn) {
+export function Company({ company, similar = [], plan }: CompanyIn) {
   const [lang, , t] = useLang()
   const router = useRouter()
   const aliasPanel = useCompanyAlias({
@@ -106,7 +106,7 @@ export function Company({ company, similar = [], updatedAt, plan }: CompanyIn) {
           <h1 className={css.h1}>{company.name}</h1>
           {alias !== TEXT_NONE && <div className={css.h1Sub}>{alias}</div>}
         </div>
-        <CompanyBody company={company} similar={similar} t={t} lang={lang} updatedAt={updatedAt}
+        <CompanyBody company={company} similar={similar} t={t} lang={lang}
           showTrans={lang !== LANG_EN}
           onSiteDone={router.refresh} />
         {company.jobs.length === 0 && <Notice kind={NOTICE_KIND_INFO}>{t('co.notFound')}</Notice>}

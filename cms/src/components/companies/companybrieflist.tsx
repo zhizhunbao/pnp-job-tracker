@@ -3,6 +3,7 @@
  * AI 整理简介里「主营业务」那一节:小标题 + 要点列表(一条一行,各带自己的中文对照)。
  * 2026-11-13 Frank「主营业务也应该是 AI 整理的 bullets」:原先这一节和别的节一样是一段散文;现在按行拆成圆点列表
  * (拆法见 functions 的 briefItemsOf),与职位描述的要点同一个读法。别的节(所在地、规模、成立时间……)照旧走 CompanyBriefSec。
+ * 同日 Frank「只有一条就不用 bullets 了吧」:只有一条的不走本件,照旧一段话(CompanyBriefBody 判,两条以上才出列表)。
  *
  * @author Frank
  * @time 2026-11-13 01:30:00

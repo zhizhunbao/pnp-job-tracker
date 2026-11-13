@@ -967,6 +967,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'ap.e.limit': 'Too many applications today. Try again tomorrow',
   'ap.e.busy': 'Today’s sending quota is used up. Try again tomorrow', 'ap.e.mailOff': 'Email sending is off',
   'ap.e.mail': 'Couldn’t send. Try again later',
+  // 2026-11-13 公司行业十类(companies.industry = NOC 第 1 位的官方大类:管理 / 商务 / 科技 / 医疗 / 教育 / 文体 / 服务 / 技工 / 资源 / 制造)里词条表原先缺的五个:公司页面包屑与雇主板行业格露出过「broad.服务」这样的键名。
+  'broad.管理': 'Management', 'broad.科技': 'Science & tech', 'broad.文体': 'Arts & sport', 'broad.服务': 'Sales & service', 'broad.资源': 'Natural resources',
   'broad.管理层': 'Management', 'broad.商务': 'Business', 'broad.行政': 'Administration', 'broad.文员': 'Office clerks', 'broad.金融': 'Finance',
   'broad.会计': 'Accounting', 'broad.法律': 'Legal', 'broad.IT': 'Tech', 'broad.工程': 'Engineering', 'broad.科学': 'Science',
   'broad.医疗': 'Healthcare', 'broad.教育': 'Education', 'broad.社会服务': 'Social services', 'broad.艺术': 'Arts', 'broad.体育': 'Sport',

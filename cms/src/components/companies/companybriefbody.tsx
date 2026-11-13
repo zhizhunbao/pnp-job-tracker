@@ -16,7 +16,7 @@ import { CompanyBriefSec } from './companybriefsec'
 import { CompanyZhLine } from './companyzhline'
 import { CLS_SEP, CO_SEC_BASE, CO_SEC_HAS_RE, CO_SEC_MARKS, CO_SEC_WHAT, TEXT_NONE } from './constants'
 import {
-  briefSecsOf, hasSecOf, secBodyClsOf, secClsOf, secHeadClsOf, secKeyOf, secTextOf, secZhOf,
+  briefLinesOf, briefSecsOf, hasSecOf, secBodyClsOf, secClsOf, secHeadClsOf, secKeyOf, secTextOf, secZhOf,
 } from './functions'
 import type { CompanyBriefBodyIn } from './types'
 import css from './companies.module.css'
@@ -59,7 +59,7 @@ export function CompanyBriefBody({
       zh = baseZh
     }
     const skipped = skipBase && mark === CO_SEC_BASE
-    if (hasSecOf({ secs, mark }) && skipped === false && mark === CO_SEC_WHAT) {
+    if (hasSecOf({ secs, mark }) && skipped === false && mark === CO_SEC_WHAT && briefLinesOf(text).length > 1) {
       rows.push(
         <CompanyBriefList key={mark}
           labelKey={secKeyOf({ mark })}

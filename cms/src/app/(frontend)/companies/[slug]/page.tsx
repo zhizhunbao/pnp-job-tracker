@@ -23,7 +23,7 @@ import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
 import { getDb } from '@/lib/db/server'
 import { hasProfile, normalizeProfile, SITE_FALLBACK, type ProfileJson } from '@/lib/jobs'
-import { checkedAt, companyJsonOf, loadCompanyBySlug, loadSimilarEmployers } from '@/lib/jobs/server'
+import { companyJsonOf, loadCompanyBySlug, loadSimilarEmployers } from '@/lib/jobs/server'
 import { getUser, isPro } from '@/lib/quota/server'
 import type { SessionUser } from '@/components/jobs'
 import type { SimilarEmployer } from '@/lib/jobs/server'
@@ -66,7 +66,6 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
   const { slug } = await params
   const company = await loadCompanyBySlug({ db: await getDb(), slug })
   const user = await getUser(await headers())
-  const updatedAt = await checkedAt(await getDb())
   const profile = normalizeProfile(user?.profile as ProfileJson | null)
   const plan = toJobPlan({
     user: user as SessionUser | null, pro: isPro(user), profile, profileOk: hasProfile(profile),
@@ -81,7 +80,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
         address: '', province: '',
         lmiaPositions: null, lmiaLmias: null, lmiaLastQuarter: '', lmiaStreams: '', lmiaSkilled: null,
         lmiaNocs: [], designatedPrograms: [], designatedProvinces: [], openCount: 0, jobs: [],
-      }} updatedAt={updatedAt} plan={plan} />
+      }} plan={plan} />
       <Footer />
     </Frame>
   }
@@ -97,7 +96,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
     <JsonLd json={companyJsonOf({ company })} />
     <Frame>
       <Header loggedIn={!!user} />
-      <Company company={company} similar={similar} updatedAt={updatedAt} plan={plan} />
+      <Company company={company} similar={similar} plan={plan} />
       <Footer />
     </Frame>
   </>
