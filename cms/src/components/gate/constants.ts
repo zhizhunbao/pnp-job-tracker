@@ -385,11 +385,6 @@ export const CRED_INCLUDE = 'include'
 export const FORM_PICK_NONE = ''
 
 /**
- * 一页表单:叠开专业选择器。
- */
-export const FORM_PICK_MAJOR = 'major'
-
-/**
  * 一页表单:叠开职业选择器。
  */
 export const FORM_PICK_JOB = 'job'
@@ -634,3 +629,158 @@ export const FILL_KIND_ERR = 'err'
  * 结果提示那一格的读屏角色(内容变了会念)。
  */
 export const FILL_ROLE = 'status'
+
+/**
+ * 词条键:工作经历一段没选职业时那一格的字。
+ */
+export const K_WORK_OCC = 'pf.w.occ'
+
+/**
+ * 词条键:工作经历「职位名称」的占位词。
+ */
+export const K_WORK_TITLE = 'pf.w.title'
+
+/**
+ * 词条键:工作经历「公司」的占位词。
+ */
+export const K_WORK_ORG = 'pf.w.org'
+
+/**
+ * 词条键:工作经历「城市」的占位词。
+ */
+export const K_WORK_CITY = 'pf.w.city'
+
+/**
+ * 词条键:工作经历「开始年月」的占位词。
+ */
+export const K_WORK_FROM = 'pf.w.from'
+
+/**
+ * 词条键:工作经历「结束年月」的占位词。
+ */
+export const K_WORK_TO = 'pf.w.to'
+
+/**
+ * 词条键:工作经历「做了什么」的提示。
+ */
+export const K_WORK_DESC = 'pf.w.desc'
+
+/**
+ * 词条键:选职业框的标题。
+ */
+export const K_WORK_OCC_TITLE = 'pf.w.occTitle'
+
+/**
+ * 词条键:电话那一格的标签。
+ */
+export const K_CV_PHONE = 'pf.phone'
+
+/**
+ * 词条键:个人链接那一格的标签。
+ */
+export const K_CV_LINK = 'pf.link'
+
+/**
+ * 词条键:技能那一格的标签。
+ */
+export const K_CV_SKILLS = 'pf.skills'
+
+/**
+ * 词条键:技能那一格的提示。
+ */
+export const K_CV_SKILLS_PH = 'pf.skills.ph'
+
+/**
+ * 词条键:只用于生成简历的三格的灰字说明。
+ */
+export const K_CV_OPT = 'pf.optCv'
+
+/**
+ * 词条键:「生成简历」一段的标签(也是预览框的灰色小标)。
+ */
+export const K_CV_TITLE = 'pf.cv'
+
+/**
+ * 词条键:模板「传统单栏」。
+ */
+export const K_TPL_CLASSIC = 'pf.tpl.classic'
+
+/**
+ * 词条键:模板「现代色条」。
+ */
+export const K_TPL_MODERN = 'pf.tpl.modern'
+
+/**
+ * 词条键:主钮「生成简历」。
+ */
+export const K_CV_BTN = 'pf.cv.btn'
+
+/**
+ * 词条键:钮旁「用 1 个额度,剩 {n} 个」。
+ */
+export const K_CV_COST = 'pf.cv.cost'
+
+/**
+ * 词条键:档案还不够生成时钮旁的话。
+ */
+export const K_CV_NEED = 'pf.cv.need'
+
+/**
+ * 词条键:预览框标题。
+ */
+export const K_CV_PV_TITLE = 'pf.cv.pvTitle'
+
+/**
+ * 词条键:「设为我的简历」。
+ */
+export const K_CV_SET = 'pf.cv.set'
+
+/**
+ * 词条键:「重新生成」。
+ */
+export const K_CV_AGAIN = 'pf.cv.again'
+
+/**
+ * 词条键:「下载」。
+ */
+export const K_CV_DL = 'pf.cv.dl'
+
+/**
+ * 词条键:预览框底下的灰字「会替换已上传的那一份」。
+ */
+export const K_CV_REPLACE = 'pf.cv.replace'
+
+/**
+ * 词条键:额度用完时升级框里的那句由头。
+ */
+export const K_CV_REASON = 'pf.cv.reason'
+
+/**
+ * 词条键:教育经历一段没选专业时那一格的字。
+ */
+export const K_EDU_MAJOR_NONE = 'pf.e.majorNone'
+
+/**
+ * 词条键:档案没取到。
+ */
+export const K_LOAD_FAIL = 'pf.loadFail'
+
+/**
+ * 两个类名之间的分隔。
+ */
+export const CLS_SEP = ' '
+
+/**
+ * 模板卡那一组的读屏角色。
+ */
+export const TPL_GROUP_ROLE = 'group'
+
+/**
+ * 电话、个人链接至多几个字(同 lib/quiz CV_LINE_LEN)。
+ */
+export const CV_LINE_LEN = 120
+
+/**
+ * 技能至多几个字(同 lib/quiz CV_TEXT_LEN)。
+ */
+export const CV_TEXT_LEN = 2000

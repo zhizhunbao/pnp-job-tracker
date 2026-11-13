@@ -12,14 +12,15 @@
  */
 import { eduRowsOf } from '@/lib/pathways'
 import {
-  EDU_ABROAD, EDU_CRED_LEN, EDU_F_CRED, EDU_F_FROM, EDU_F_KIND, EDU_F_LEN, EDU_F_PROV, EDU_F_SCHOOL, EDU_F_TO,
+  EDU_ABROAD, EDU_AT_NONE, EDU_CRED_LEN, EDU_F_CRED, EDU_F_FROM, EDU_F_KIND, EDU_F_LEN, EDU_F_PROV, EDU_F_SCHOOL,
+  EDU_F_TO,
   EDU_KINDS, EDU_LEN_MASTER, EDU_LEN_Y1, EDU_LEN_Y2, EDU_LEN_Y3, EDU_LENS, EDU_LIST_MAX, EDU_MASTER_RE,
   EDU_NON_DIGIT_RE, EDU_PROVS, EDU_SCHOOL_LEN, EDU_SEP, EDU_SPAN_Y1, EDU_SPAN_Y2, EDU_YEAR_LEN, EDU_YEAR_RE,
   GATE_ABROAD_KEY, K_KIND_HEAD, K_LEN_HEAD, K_PROV_HEAD, TEXT_NONE,
 } from './constants'
 import type {
-  EduCellSetIn, EduEntry, EduItemIn, EduLabelIn, EduLenIn, EduMergeIn, EduMergeOut, EduPick, EduPickIn, EduRowsIn,
-  EduSeedIn, EduSelIn,
+  EduCellSetIn, EduEntry, EduItemIn, EduLabelIn, EduLenIn, EduMajorIn, EduMajorsIn, EduMergeIn, EduMergeOut, EduPick,
+  EduPickIn, EduRowsIn, EduSeedIn, EduSelIn,
 } from './types'
 
 /**
@@ -46,11 +47,12 @@ export function eduPicksOf(strs: string[]): EduPick[] {
  */
 function eduBlankOf(): EduPick {
   const s = TEXT_NONE
-  return { prov: s, kind: s, len: s, cred: s, school: s, from: s, to: s }
+  return { prov: s, kind: s, len: s, cred: s, school: s, from: s, to: s, major: s }
 }
 
 /**
  * 档案里的教育经历 → 表单起头的几段(2026-11-12):有明细按明细(key 拆回三只下拉);只有老的教育经历串就按串起头、明细全空。
+ * 同日 Frank「教育经历 和 专业是不是重复了」:各段都还没挂专业的老档案,档案里的专业码按序落进各段(见 eduWithMajorsOf)。
  *
  * @param x 教育经历明细与教育经历串。
  * @returns 几段。
@@ -59,13 +61,15 @@ export function eduFormRowsOf(x: EduSeedIn): EduPick[] {
   const out: EduPick[] = []
   for (const e of x.list) {
     for (const p of eduPicksOf([e.key])) {
-      out.push({ prov: p.prov, kind: p.kind, len: p.len, cred: e.cred, school: e.school, from: e.from, to: e.to })
+      out.push({
+        prov: p.prov, kind: p.kind, len: p.len, cred: e.cred, school: e.school, from: e.from, to: e.to, major: e.major,
+      })
     }
   }
   if (out.length === 0) {
-    return eduPicksOf(x.strs)
+    return eduWithMajorsOf({ rows: eduPicksOf(x.strs), codes: x.majors })
   }
-  return out
+  return eduWithMajorsOf({ rows: out, codes: x.majors })
 }
 
 /**
@@ -78,8 +82,10 @@ export function eduListOf(rows: EduPick[]): EduEntry[] {
   const out: EduEntry[] = []
   for (const r of rows) {
     const key = eduStrsOf([r]).join(TEXT_NONE)
-    const e = { key, cred: r.cred.trim(), school: r.school.trim(), from: eduYearOf(r.from), to: eduYearOf(r.to) }
-    if (e.key + e.cred + e.school + e.from + e.to !== TEXT_NONE && out.length < EDU_LIST_MAX) {
+    const e = {
+      key, cred: r.cred.trim(), school: r.school.trim(), from: eduYearOf(r.from), to: eduYearOf(r.to), major: r.major,
+    }
+    if (e.key + e.cred + e.school + e.from + e.to + e.major !== TEXT_NONE && out.length < EDU_LIST_MAX) {
       out.push(e)
     }
   }
@@ -328,7 +334,7 @@ function eduToppedOf(x: EduItemIn): EduPick[] {
       const prov = eduSelOf({ have: r.prov, got: x.it.prov, opts: EDU_PROVS })
       const kind = eduSelOf({ have: r.kind, got: x.it.kind, opts: EDU_KINDS })
       const len = eduSelOf({ have: r.len, got: x.it.len, opts: EDU_LENS })
-      out.push({ prov, kind, len, cred: r.cred, school: r.school, from, to })
+      out.push({ prov, kind, len, cred: r.cred, school: r.school, from, to, major: r.major })
     } else {
       out.push(r)
     }
@@ -355,7 +361,7 @@ function eduPlacedOf(x: EduItemIn): EduPick[] {
       const prov = eduSelOf({ have: r.prov, got: x.it.prov, opts: EDU_PROVS })
       const kind = eduSelOf({ have: r.kind, got: x.it.kind, opts: EDU_KINDS })
       const len = eduSelOf({ have: r.len, got: x.it.len, opts: EDU_LENS })
-      out.push({ prov, kind, len, cred, school, from, to: eduYearOf(x.it.to) })
+      out.push({ prov, kind, len, cred, school, from, to: eduYearOf(x.it.to), major: r.major })
     } else if (i < x.rows.length) {
       out.push(r)
     }
@@ -377,4 +383,75 @@ function eduSelOf(x: EduSelIn): string {
     return x.got
   }
   return TEXT_NONE
+}
+
+/**
+ * 几段 → 档案的专业码(2026-11-12:专业并进教育经历的每一段,档案的专业由各段汇出):按段的先后,重复的只留一个。
+ *
+ * @param rows 几段。
+ * @returns 专业码。
+ */
+export function eduMajorsOf(rows: EduPick[]): string[] {
+  const out: string[] = []
+  for (const r of rows) {
+    if (r.major !== TEXT_NONE && out.includes(r.major) === false) {
+      out.push(r.major)
+    }
+  }
+  return out
+}
+
+/**
+ * 把一串专业码落进几段(老档案起头与「从简历填写」用):只在各段都还没挂专业时才落 —— 已经有哪一段挂了专业,原样不动;
+ * 按序一码一段,段不够的在末尾补空段(到 EDU_LIST_MAX 段为止,再多的不要)。
+ *
+ * @param x 现在的几段与专业码。
+ * @returns 落过之后的几段。
+ */
+export function eduWithMajorsOf(x: EduMajorsIn): EduPick[] {
+  if (x.codes.length === 0 || eduMajorsOf(x.rows).length > 0) {
+    return x.rows
+  }
+  const out: EduPick[] = []
+  for (const [i, code] of x.codes.slice(0, EDU_LIST_MAX).entries()) {
+    let row = eduBlankOf()
+    const have = x.rows[i]
+    if (have != null) {
+      row = have
+    }
+    out.push(Object.assign({}, row, { major: code }))
+  }
+  return out.concat(x.rows.slice(out.length))
+}
+
+/**
+ * 造「专业选择框里点了一个专业」的手柄:一段只挂一个专业 —— 新点上的码替掉这一段原来的,选上就关框;
+ * 点掉已选的 = 这一段不挂专业,框不关。
+ *
+ * @param x 现在的几段、落格、正在给第几段选与它的落格。
+ * @returns 专业选择器的 onChange。
+ */
+export function makeEduMajor(x: EduMajorIn): (next: string[]) => void {
+  return function pickEduMajor(next: string[]): void {
+    const out: EduPick[] = []
+    let picked = false
+    for (const [i, r] of x.rows.entries()) {
+      if (i !== x.at) {
+        out.push(r)
+      } else {
+        let major = TEXT_NONE
+        for (const code of next) {
+          if (code !== r.major) {
+            major = code
+            picked = true
+          }
+        }
+        out.push(Object.assign({}, r, { major }))
+      }
+    }
+    x.setRows(out)
+    if (picked) {
+      x.setAt(EDU_AT_NONE)
+    }
+  }
 }

@@ -699,16 +699,6 @@ export type FileNameIn = {
 export type MaybeResumeId = number | null
 
 /**
- * POST /api/resume/build 的请求体(跨边界断言目标;草稿零读格透传给 cv 域收窄,这里不透明)。
- */
-export type BuildBody = {
-  /**
-   * 草稿(线格式)。
-   */
-  draft?: object
-}
-
-/**
  * 从简历填档案时模型回的 JSON(先按声明形状收下,逐格判后才用)。
  */
 export type PrefillData = {
@@ -731,6 +721,11 @@ export type PrefillData = {
    * 教育经历(2026-11-12;证书或学历名称、学校、起止年份)。
    */
   education: JsonCell
+
+  /**
+   * 工作经历(2026-11-12;职业、职位名称、雇主、城市、起止年月、职责)。模型可能漏掉这一格:缺席按没有读。
+   */
+  jobs?: JsonCell
 }
 
 /**
@@ -756,7 +751,122 @@ export type PrefillFact = {
    * 教育经历(2026-11-12;洗净的,至多 PREFILL_EDU_MAX 条)。
    */
   education: PrefillEdus
+
+  /**
+   * 工作经历(2026-11-12;洗净的,至多 PREFILL_JOBS_MAX 段)。
+   */
+  jobs: PrefillJobs
 }
+
+/**
+ * 从简历提取的一段工作经历(洗净的;各格字符串,简历没写 = 空串)。
+ */
+export type PrefillJob = {
+  /**
+   * 职业的英文通称(映射职业码用)。
+   */
+  occupation: string
+
+  /**
+   * 职位名称,照简历原文。
+   */
+  title: string
+
+  /**
+   * 雇主。
+   */
+  employer: string
+
+  /**
+   * 城市。
+   */
+  city: string
+
+  /**
+   * 开始年月(2021 或 2021-03);没写 = 空串。
+   */
+  from: string
+
+  /**
+   * 结束年月;在职或没写 = 空串。
+   */
+  to: string
+
+  /**
+   * 职责,一行一条,照简历原文。
+   */
+  notes: string
+}
+
+/**
+ * 几段工作经历。
+ */
+export type PrefillJobs = PrefillJob[]
+
+/**
+ * 一段工作经历或没有(toPrefillJob:这一项不合形或全空就丢)。
+ */
+export type MaybePrefillJob = PrefillJob | null
+
+/**
+ * 回给档案表单的一段工作经历(形同答案档 cv.work 的一项)。
+ */
+export type PrefillWork = {
+  /**
+   * 这一段对应的职业码;映射不上 = 空列。
+   */
+  nocs: string[]
+
+  /**
+   * 职位名称。
+   */
+  title: string
+
+  /**
+   * 公司。
+   */
+  org: string
+
+  /**
+   * 城市。
+   */
+  city: string
+
+  /**
+   * 开始年月。
+   */
+  from: string
+
+  /**
+   * 结束年月;在职或没写 = 空串。
+   */
+  to: string
+
+  /**
+   * 做了什么(职责原文,一行一条)。
+   */
+  desc: string
+}
+
+/**
+ * prefillJobsOf 的入参。
+ */
+export type PrefillJobsIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+
+  /**
+   * 洗净的几段工作经历。
+   */
+  jobs: PrefillJobs
+}
+
+/**
+ * prefillJobsOf 的返回。
+ */
+export type PrefillJobsOut = Promise<PrefillWork[]>
 
 /**
  * 从简历提取的一条教育经历(2026-11-12;四格都是字符串,简历没写 = 空串)。

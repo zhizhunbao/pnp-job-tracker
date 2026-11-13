@@ -9,7 +9,7 @@
 import { cssOf } from '@/components/css'
 import { ymd } from '@/lib/time'
 import {
-  BYTES_KB, BYTES_MB, CARD_HEAD_CLS, CLS_SEP, CRED_INCLUDE, FIELD_FILE, MB_DIGITS, METHOD_DELETE,
+  BYTES_KB, BYTES_MB, CARD_HEAD_CLS, CLS_SEP, CRED_INCLUDE, EV_BUILD, EV_UPLOADED, FIELD_FILE, MB_DIGITS, METHOD_DELETE,
   METHOD_PUT, MIME_PDF, Q_DL_TAIL, Q_ID_HEAD, Q_VER_MID, RESUME_MAX_BYTES, RF_ERR_FALLBACK, RF_ERR_KEY, RF_ERR_SIZE,
   TEXT_NONE, UNIT_KB, UNIT_MB, URL_RESUME_FILE, URL_RESUME_FILES,
 } from './constants'
@@ -209,6 +209,7 @@ export function rfErrKeyOf(code: string): string {
 /**
  * 造「上传一份」的函数:太大的在浏览器里先挡(不白传);其余交给服务端判(类型按文件头判,浏览器判不准)。
  * 带 replaceId 就替换现有那一份,否则新加;成功重拉清单并清掉报错;失败按错误码出文案,原来的不动。
+ * 2026-11-12 Frank「这个应该是自动填的吧」:成功后发一个页面事件,档案那一半听到、档案还有空格就打开修改面板自动从简历填写。
  *
  * @param x 替换哪一份、重拉与两个落格。
  * @returns 一次上传。
@@ -231,6 +232,7 @@ export function makeResumeUpload(x: ResumeUploadIn): ResumeUploadFn {
       const r = await fetch(url, { method: METHOD_PUT, credentials: CRED_INCLUDE, body: form })
       if (r.ok) {
         await x.reload()
+        window.dispatchEvent(new Event(EV_UPLOADED))
       } else {
         x.setErr(rfErrKeyOf(String((await r.json() as ResumeRespJson).error)))
       }
@@ -239,6 +241,16 @@ export function makeResumeUpload(x: ResumeUploadIn): ResumeUploadFn {
     }
     x.setBusy(false)
   }
+}
+
+/**
+ * 点「生成简历」(2026-11-12 Frank「和我修改简历那一部分合并一下」):发一个页面事件,档案那一半听到就打开修改面板
+ * (生成简历在它的末段)。
+ *
+ * @returns 无。
+ */
+export function fireBuild(): void {
+  window.dispatchEvent(new Event(EV_BUILD))
 }
 
 /**

@@ -49,7 +49,7 @@ vi.mock('next/navigation', () => ({
 const t = ((key: string) => key) as TFn
 
 // 档案全空(GateForm 七格从这里起)
-const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [], eduList: [], workNocs: [], matchBy: '', matchMode: '', fromResume: [] }
+const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [], eduList: [], workNocs: [], matchBy: '', matchMode: '', fromResume: [], cv: { work: [], phone: '', link: '', skills: '', tpl: 'classic' } }
 
 // 从简历提取的回包(⑨ 用;别的用例不点「从简历填写」)
 const PREFILL = {
@@ -115,10 +115,10 @@ function buttonOf(host: HTMLElement, text: string): HTMLButtonElement | undefine
 }
 
 // 2026-11-12 Frank「这个也需要弹框吧」「这个也弹框修改」:所在地、教育经历两格改成摘要加「修改」,省下拉 / 城市 / 教育经历几段
-// 挪进叠开的弹框 —— 先点那一格的「修改」(面板里自上而下:专业 0、想做的工作 1、做过的工作 2、所在地 3、教育经历 4),
+// 挪进叠开的弹框 —— 先点那一格的「修改」(面板里自上而下:想做的工作 0、做过的工作 1、所在地 2、教育经历 3;2026-11-12 专业那一格撤,并进教育经历的每一段),
 // 改完点「选好了」收起
-const EDIT_WHERE = 3
-const EDIT_EDU = 4
+const EDIT_WHERE = 2
+const EDIT_EDU = 3
 function openEdit(host: HTMLElement, at: number) {
   const btn = Array.from(host.querySelectorAll('button')).filter((b) => b.textContent === 'pf.edit')[at]
   if (btn == null) {
@@ -242,7 +242,7 @@ describe('⑤ 一页表单保存(2026-11-07 GateForm)', () => {
     expect(basic.fitWho).toBe('pgwp')
     expect(basic.fitEdu).toEqual(['ON.public.y1'])
     expect(basic.eduList).toEqual([
-      { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' },
+      { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026', major: '' },
     ])
     expect(basic.matchBy).toBe('')
     expect(basic.matchMode).toBe('')
@@ -323,8 +323,8 @@ describe('⑨ 从简历填写教育经历(2026-11-12)', () => {
     expect(eduInputs(m.host, 'pf.eduCred')).toHaveLength(2)
     const basic = await saveAndReadBasic(m, sent, onSaved, 1)
     expect(basic.eduList).toEqual([
-      { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' },
-      { key: 'abroad.public.y3', cred: 'Bachelor of Engineering', school: 'Wuhan University', from: '2014', to: '2018' },
+      { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026', major: '' },
+      { key: 'abroad.public.y3', cred: 'Bachelor of Engineering', school: 'Wuhan University', from: '2014', to: '2018', major: '' },
     ])
     expect(basic.fitEdu).toEqual(['ON.public.y1', 'abroad.public.y3'])
     act(() => m.root.unmount())

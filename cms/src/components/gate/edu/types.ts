@@ -51,6 +51,11 @@ export type EduPick = {
    * 结束年份;空串 = 没填或在读。
    */
   to: string
+
+  /**
+   * 这一段学的专业(CIP 码;2026-11-12 Frank「教育经历 和 专业是不是重复了」:专业并进每一段,档案的专业由各段汇出);空串 = 没选。
+   */
+  major: string
 }
 
 /**
@@ -81,6 +86,11 @@ export type EduEntry = {
    * 结束年份(四位数字)或空串。
    */
   to: string
+
+  /**
+   * 这一段学的专业(CIP 码;2026-11-12);没选 = 空串。
+   */
+  major: string
 }
 
 /**
@@ -96,6 +106,11 @@ export type EduSeedIn = {
    * 教育经历串(没有明细时按它起头)。
    */
   strs: string[]
+
+  /**
+   * 档案里的专业码(2026-11-12:各段都还没挂专业的老档案,按序落进各段,多出的补成新段)。
+   */
+  majors: string[]
 }
 
 /**
@@ -312,4 +327,44 @@ export type EduSelIn = {
    * 这只下拉的选项。
    */
   opts: string[]
+}
+
+/**
+ * eduWithMajorsOf 的入参。
+ */
+export type EduMajorsIn = {
+  /**
+   * 现在的几段。
+   */
+  rows: EduPick[]
+
+  /**
+   * 要落进各段的专业码,按序。
+   */
+  codes: string[]
+}
+
+/**
+ * makeEduMajor 的入参(专业选择框里点了一个专业)。
+ */
+export type EduMajorIn = {
+  /**
+   * 现在的几段。
+   */
+  rows: EduPick[]
+
+  /**
+   * 写几段。
+   */
+  setRows: (v: EduPick[]) => void
+
+  /**
+   * 正在给第几段选;没在选 = EDU_AT_NONE。
+   */
+  at: number
+
+  /**
+   * 写「正在给第几段选」(选完关框)。
+   */
+  setAt: (v: number) => void
 }

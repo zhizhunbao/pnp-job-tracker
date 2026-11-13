@@ -156,3 +156,8 @@ export const K_PROV_HEAD = 'pr.'
  * 「加拿大境外」的词条键(院校所在地选「国外」时出这个词;同父桶 GATE_ABROAD_KEY)。
  */
 export const GATE_ABROAD_KEY = 'gate.abroad'
+
+/**
+ * 没在选专业(专业选择框关着)时「正在给第几段选」的值。
+ */
+export const EDU_AT_NONE = -1

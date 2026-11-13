@@ -12,12 +12,12 @@
  */
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import { useCvOpen } from '@/components/cv'
 import { useLang } from '@/components/i18n'
 import { storedTitleOf, titleSubOf, useTitleTrans } from '@/components/jobtitle'
 import { isSenderName, pdfBadCharsOf } from '@/lib/apply'
 import {
-  ERR_NONE, EV_APPLY_NAV, EV_APPLY_OPEN, EV_APPLY_SENT, EV_PAGEHIDE, EV_POPSTATE, LOAD_BUSY, STEP_DONE, TEXT_NONE,
+  ERR_NONE, EV_APPLY_NAV, EV_APPLY_OPEN, EV_APPLY_SENT, EV_PAGEHIDE, EV_POPSTATE, EV_RESUME, LOAD_BUSY, STEP_DONE,
+  TEXT_NONE,
 } from './constants'
 import {
   baseLetterOf, baseStepOf, isMemberOf, isOutOf, leftAfterOf, makeMode, MODE_BASE, MODE_TAILOR, outReasonOf,
@@ -26,7 +26,7 @@ import {
 import {
   makeBaseSend, makeReviewSent, makeReviewUpsell,
   loadNextPicks,
-  canNextOf, closeApply, loadStart, mailOf, makeAdd, makeAuthRetry, makeBack, makeCvDone, makeFile, makeNameChange,
+  canNextOf, closeApply, loadStart, mailOf, makeAdd, makeAuthRetry, makeBack, makeBuiltReload, makeFile, makeNameChange,
   makeNext, makePickOf, makeQuietSave, makeSetTo, makeTab, nextKeyOf, noteOpened, openFromEvent,
   readApplyId, resumeHrefOf, resumeMimeOf, resumeNameOf, sentOfEvent, startStepOf, titledOf, upsellBackOf,
   loadPushOffer, makePushOn,
@@ -37,7 +37,7 @@ import {
 } from './letter'
 import type {
   NextPick, NextPicksPanel, ApplyGatePanel, ApplyScreenIn, ApplyScreenPanel, Letter0In,
-  ApplyCells, ApplyHostPanel, ApplyPageIn, ApplyPanel, ApplyResumeView, ApplyStartPanel, ApplyStartView,
+  ApplyCells, ApplyHostPanel, CvOpenView, ApplyPageIn, ApplyPanel, ApplyResumeView, ApplyStartPanel, ApplyStartView,
   LetterOpt, MaybeRewrite, SentFn,
   PushOfferIn, PushOfferPanel,
 } from './types'
@@ -138,7 +138,7 @@ export function useApply(x: ApplyPageIn): ApplyPanel {
   useEffect(function reportBig() {
     onBig(big)
   }, [big, onBig])
-  const cv = useCvOpen({ onDone: makeCvDone(cells) })
+  const cv = useBuildOpen(cells)
 
   const badChars = pdfBadCharsOf(letter)
   const chosen = { resumes, resumeId }
@@ -345,6 +345,26 @@ export function useApplyHost(): ApplyHostPanel {
     return off
   }, [])
   return { jobId, onClose: closeApply }
+}
+
+/**
+ * 「生成简历」的开关(2026-11-12:改开修改档案的右侧栏,生成并进了它的末段):开、关;开着时听「简历换了」的页面事件
+ * (在侧栏里把生成的设为我的简历后发),听到就重拉清单、选中那一份。
+ *
+ * @param cells 整机的可变格。
+ * @returns 开着吗与两只手柄。
+ */
+function useBuildOpen(cells: ApplyCells): CvOpenView {
+  const [open, setOpen] = useState(false)
+  useEffect(function listenResumeChanged() {
+    const onChanged = makeBuiltReload(cells)
+    window.addEventListener(EV_RESUME, onChanged)
+    return function stopListen(): void {
+      window.removeEventListener(EV_RESUME, onChanged)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 可变格每帧是新对象,里面的落格都是稳定的;只挂一次
+  }, [])
+  return { open, onOpen: makeSetTo({ set: setOpen, v: true }), onClose: makeSetTo({ set: setOpen, v: false }) }
 }
 
 /**

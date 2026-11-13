@@ -576,24 +576,29 @@ export const DISP_ATTACH = 'attachment'
 export const DISP_NAME_HEAD = "; filename*=UTF-8''"
 
 /**
- * 生成简历(2026-11-07):请求体里没有草稿。
+ * 从简历提取的工作经历至多几段(同答案档 CV_WORK_MAX 以内)。
  */
-export const E_BAD_DRAFT = 'badDraft'
+export const PREFILL_JOBS_MAX = 6
 
 /**
- * 生成简历:没填英文姓名(简历顶上那一行,不能空)。
+ * 提取的工作经历里一行字的格(职业、职位名称、雇主、城市)至多几个字。
  */
-export const E_NO_NAME = 'noName'
+export const PREFILL_JOB_LINE_LEN = 120
 
 /**
- * 生成简历:有写不进 PDF 的字(简历是英文的,中文要改成英文),响应带上是哪几个字。
+ * 提取的工作经历里职责至多几个字。
  */
-export const E_CHARS = 'chars'
+export const PREFILL_JOB_NOTES_LEN = 2000
 
 /**
- * 生成简历的文件名尾巴(「Peng Wang Resume.pdf」)。
+ * 提取的起止年月:四位年份,可带两位月份。
  */
-export const CV_FILE_TAIL = ' Resume.pdf'
+export const PREFILL_YM_RE = /^\d{4}(?:-(?:0[1-9]|1[0-2]))?$/
+
+/**
+ * 起止年月至多几个字(2021-03)。
+ */
+export const PREFILL_YM_LEN = 7
 
 /**
  * 用量账本里的功能名:上传简历解析(2026-11-08)。
@@ -618,8 +623,9 @@ export const PREFILL_PROVIDER = 'anthropic'
 
 /**
  * 从简历填档案的输出 token 上限(姓名、三个职业、两个专业的 JSON;比 EXTRACT_TOKENS_MAX 宽,防长职名被截成坏 JSON)。
+ * 2026-11-12 多回几段工作经历(每段带职责原文),上限自 800 放到 3000。
  */
-export const PREFILL_TOKENS_MAX = 800
+export const PREFILL_TOKENS_MAX = 3000
 
 /**
  * 从简历填档案的限流计数键前缀(按人)。走独立计数、不占每日免费次数(2026-11-09 Frank「照此做」:这一步是为了让推荐变准)。

@@ -32,7 +32,7 @@ import type {
   NextLoadIn, NextPicksJson,
   ApplyCells, ApplyResumeView, ApplyStartView, CanNextIn, DraftIn, DraftOfIn, ErrJson, ErrOut, FileMakeIn,
   GoStepIn, LoadStartIn, MailIn, MailView,
-  PageHideIn, PickBuiltIn, PickIn, PickOfFn, ResumeFilesJson, ResumeNameIn, SetFn, SetToIn,
+  PageHideIn, PickIn, PickOfFn, ResumeFilesJson, ResumeNameIn, SetFn, SetToIn,
   UploadedTextIn, UploadIn, UploadJson,
   ApplySentOut,
   ApplyIdIn, ApplyOpenDetail, OpenedIn,
@@ -668,27 +668,31 @@ async function upload(x: UploadIn): Promise<void> {
 }
 
 /**
- * 生成简历存成了(2026-11-07):重拉清单、选中新生成的那份。
+ * 造「简历换了」的回调(2026-11-12:在修改档案的右侧栏里把生成的简历设为我的简历之后):重拉清单、选中那一份。
  *
  * @param c 整机的可变格。
- * @returns 收新简历 id 的手柄。
+ * @returns 事件回调。
  */
-export function makeCvDone(c: ApplyCells): (id: number) => void {
-  return function onCvDone(id: number): void {
-    void pickBuilt({ cells: c, id })
+export function makeBuiltReload(c: ApplyCells): () => void {
+  return function onBuiltReload(): void {
+    void pickBuilt(c)
   }
 }
 
 /**
- * 重拉清单并选中某一份。
+ * 重拉清单并选中第一份(每人只留一份,第一份就是刚设的那份)。
  *
- * @param x 整机的可变格与简历 id。
+ * @param c 整机的可变格。
  * @returns 无。
  */
-async function pickBuilt(x: PickBuiltIn): Promise<void> {
-  x.cells.setResumes(await loadResumes())
-  x.cells.setResumeId(x.id)
-  x.cells.setErr(ERR_NONE)
+async function pickBuilt(c: ApplyCells): Promise<void> {
+  const list = await loadResumes()
+  c.setResumes(list)
+  const first = list[0]
+  if (first != null) {
+    c.setResumeId(first.id)
+  }
+  c.setErr(ERR_NONE)
 }
 
 /**

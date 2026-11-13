@@ -9,12 +9,14 @@
  * 生成简历窗口(cv 桶)挂在本卡,存成了重拉清单、选中新的那份。
  * 2026-11-09 Frank 定的投递动线:本卡只在没有基础简历时出(先上传或生成,做完接着投这个职位),卡头的「按职位改写」撤 ——
  * 改不改写在有了基础简历之后的那一屏选。
+ * 2026-11-12 Frank「生成简历…和我修改简历那一部分合并一下,不要弹框,而是右侧弹 sidebar」:「生成简历」改开修改档案的右侧栏
+ * (gate 桶 GateFormLoad,自己取档案;生成在它的末段),原先的生成简历窗口(cv 桶)撤;在那里把生成的设为我的简历后,本卡重拉清单。
  *
  * @author Frank
  * @time 2026-10-07 03:00:00
  */
 import { Button } from '@/components/button'
-import { CvBuilder } from '@/components/cv'
+import { GateFormLoad } from '@/components/gate'
 import { ApplyCard } from './applycard'
 import { ApplyFileInput } from './applyfileinput'
 import { ApplyPick } from './applypick'
@@ -69,7 +71,7 @@ export function ApplyResume({ p }: ApplyStepIn) {
         )}
         {p.resumeSrc !== TEXT_NONE && p.resumeMime !== MIME_PDF && <div className={css.note}>{p.t('ap.noPv')}</div>}
       </div>
-      {p.cv.open && <CvBuilder onClose={p.cv.onClose} onSaved={p.cv.onSaved} />}
+      {p.cv.open && <GateFormLoad t={p.t} onClose={p.cv.onClose} onSaved={p.cv.onClose} />}
     </ApplyCard>
   )
 }

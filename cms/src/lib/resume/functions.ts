@@ -22,6 +22,7 @@ import {
   PREFILL_MAJORS_MAX, PREFILL_NONE, PREFILL_SIM_MIN, TITLES_N_MAX, WS_ALL_RE,
   PREFILL_CRED_LEN, PREFILL_EDU_MAX, PREFILL_SCHOOL_LEN, PREFILL_YEAR_LEN, PREFILL_YEAR_RE,
   PREFILL_EDU_KINDS, PREFILL_EDU_LENS, PREFILL_EDU_PROVS, PREFILL_OPT_LEN,
+  PREFILL_JOB_LINE_LEN, PREFILL_JOB_NOTES_LEN, PREFILL_JOBS_MAX, PREFILL_YM_LEN, PREFILL_YM_RE,
 } from './constants'
 import { MATCH_REWRITE, MATCH_SYSTEM, MATCH_USER, OUT_LANG, OUT_LANG_DEFAULT } from './prompts'
 import type {
@@ -32,7 +33,7 @@ import type {
   ResumeBlobOut, ResumeDeleteOut, ResumeFileDbRow, ResumeFileMeta, ResumeListOut, ResumeSaveIn, ResumeSaveOut, ResumeUserIn,
   CountDbRow, MaybeResumeId, ResumeCountOut, ResumeIdDbRow, ResumeIdFact, ResumeOneIn, TimeCell,
   CellTextsIn, JsonCell, MaybePrefillEdu, NocSimFact, PrefillCellIn, PrefillCodes, PrefillEdus, PrefillData, PrefillFact, PrefillMajorsIn, PrefillTextOut, PrefillWorksIn, PrefillWorksOut,
-  PrefillOptIn,
+  PrefillOptIn, MaybePrefillJob, PrefillJob, PrefillJobs, PrefillJobsIn, PrefillJobsOut, PrefillWork,
 } from './types'
 
 /**
@@ -346,7 +347,89 @@ export function prefillFactOf(d: PrefillData): PrefillFact {
     titles: cellTextsOf({ cell: d.titles, max: TITLES_N_MAX }),
     majors: cellTextsOf({ cell: d.majors, max: PREFILL_MAJORS_MAX }),
     education: toPrefillEdus(d.education),
+    jobs: toPrefillJobs({ cell: d.jobs, max: PREFILL_JOBS_MAX }),
   }
+}
+
+/**
+ * 模型回的工作经历一格 → 洗净的几段(2026-11-12):不是数组(含缺席)给空列;不合形或全空的项丢掉;至多 PREFILL_JOBS_MAX 段。
+ *
+ * @param x 模型回的一格(缺席按没有读)与至多几段。
+ * @returns 几段工作经历。
+ */
+function toPrefillJobs(x: PrefillCellIn): PrefillJobs {
+  const out: PrefillJobs = []
+  if (Array.isArray(x.cell)) {
+    for (const c of x.cell) {
+      const job = toPrefillJob(c)
+      if (job != null && out.length < x.max) {
+        out.push(job)
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * 模型回的一项 → 一段工作经历:各格去首尾空白、截到上限;起止年月不合形的清空;职位名称、雇主、职责都没有的整项丢。
+ *
+ * @param c 模型回的一项。
+ * @returns 一段;不是对象或全空 null。
+ */
+function toPrefillJob(c: JsonCell): MaybePrefillJob {
+  if (c == null || typeof c !== 'object' || Array.isArray(c)) {
+    return null
+  }
+  const job: PrefillJob = {
+    occupation: prefillCellOf({ cell: c.occupation, max: PREFILL_JOB_LINE_LEN }),
+    title: prefillCellOf({ cell: c.title, max: PREFILL_JOB_LINE_LEN }),
+    employer: prefillCellOf({ cell: c.employer, max: PREFILL_JOB_LINE_LEN }),
+    city: prefillCellOf({ cell: c.city, max: PREFILL_JOB_LINE_LEN }),
+    from: prefillYmOf({ cell: c.from, max: PREFILL_YM_LEN }),
+    to: prefillYmOf({ cell: c.to, max: PREFILL_YM_LEN }),
+    notes: prefillCellOf({ cell: c.notes, max: PREFILL_JOB_NOTES_LEN }),
+  }
+  if (job.title === PREFILL_NONE && job.employer === PREFILL_NONE && job.notes === PREFILL_NONE) {
+    return null
+  }
+  return job
+}
+
+/**
+ * 模型回的一格 → 起止年月:合形(2021 或 2021-03)才留,别的给空串。
+ *
+ * @param x 模型回的一格(缺席按没有读)与至多几个字。
+ * @returns 年月或空串。
+ */
+function prefillYmOf(x: PrefillCellIn): string {
+  const v = prefillCellOf(x)
+  if (PREFILL_YM_RE.test(v)) {
+    return v
+  }
+  return PREFILL_NONE
+}
+
+/**
+ * 几段工作经历 → 回给档案表单的几段(2026-11-12):每段按职业的英文通称(没有就用职位名称)映射一个职业码
+ * (规矩同 prefillWorksOf:相似度够、库内有名字才收),映射不上这一段照留、不挂职业。
+ *
+ * @param x 连接与洗净的几段。
+ * @returns 表单用的几段。
+ */
+export async function prefillJobsOf(x: PrefillJobsIn): PrefillJobsOut {
+  const out: PrefillWork[] = []
+  for (const j of x.jobs) {
+    let q = j.occupation
+    if (q === PREFILL_NONE) {
+      q = j.title
+    }
+    let nocs: string[] = []
+    if (q !== PREFILL_NONE) {
+      nocs = await prefillWorksOf({ db: x.db, titles: [q] })
+    }
+    out.push({ nocs, title: j.title, org: j.employer, city: j.city, from: j.from, to: j.to, desc: j.notes })
+  }
+  return out
 }
 
 /**

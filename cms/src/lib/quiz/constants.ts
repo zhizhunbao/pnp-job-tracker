@@ -156,6 +156,7 @@ export const EMPTY: Answers = {
   eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, goalBand: 0, canadaEduBand: 0,
   permitBand: 0, resProv: '', resCity: '', fieldMatchBand: 0, eduProv: '', eduYearsBand: 0, frenchBand: 0,
   studyMonthsBand: 0, studyLevelBand: 0, majors: [], fitWho: '', fitEdu: [], eduList: [], workNocs: [], matchBy: '', matchMode: '', fromResume: [], bandsV2: true,
+  cv: { work: [], phone: '', link: '', skills: '', tpl: 'classic' },
 }
 
 /**
@@ -481,6 +482,72 @@ export const EDU_YEAR_RE = /^\d{4}$/
  * 教育经历串的合法形状:「院校所在地.公立私立.课程时长」,三格取值同档案表单的三只下拉(gate 桶 EDU_PROVS / EDU_KINDS / EDU_LENS)。
  */
 export const EDU_KEY_RE = /^(?:ON|QC|BC|AB|SK|MB|NS|NB|NL|PE|abroad)\.(?:public|private)\.(?:y1|y2|y3|master)$/
+
+/**
+ * 答案档基础段里简历资料那一格的键(2026-11-12 Frank「右侧弹 sidebar 用户一项一项填,最后用 sonnet 生成简历」;
+ * 服务端收答案时过 toCvFacts 洗)。
+ */
+export const F_CV = 'cv'
+
+/**
+ * 工作经历至多几段。
+ */
+export const CV_WORK_MAX = 8
+
+/**
+ * 工作经历一段至多挂几个职业码(同一个职业在职业分类里可能有几个码)。
+ */
+export const CV_NOCS_MAX = 6
+
+/**
+ * 职业码:五位数字。
+ */
+export const CV_NOC_RE = /^\d{5}$/
+
+/**
+ * 职位名称、公司、城市、电话、链接这类一行字至多几个字。
+ */
+export const CV_LINE_LEN = 120
+
+/**
+ * 「做了什么」与技能至多几个字。
+ */
+export const CV_TEXT_LEN = 2000
+
+/**
+ * 起止年月:四位年份,可带两位月份(2021 或 2021-03)。
+ */
+export const CV_YM_RE = /^\d{4}(?:-(?:0[1-9]|1[0-2]))?$/
+
+/**
+ * 简历模板:传统单栏(没选过也按它)。
+ */
+export const CV_TPL_CLASSIC = 'classic'
+
+/**
+ * 简历模板:带色条的现代款。
+ */
+export const CV_TPL_MODERN = 'modern'
+
+/**
+ * 搜学校:检索词至少几个字(少于它不查,回空列)。
+ */
+export const SCHOOL_Q_MIN = 2
+
+/**
+ * 搜学校:至多回几所。
+ */
+export const SCHOOL_LIMIT = 8
+
+/**
+ * LIKE 的元字符(百分号、下划线、反斜杠;检索词里的要转义,同 lib/noc 的 LIKE_SPECIAL_RE)。
+ */
+export const SCHOOL_LIKE_RE = /[%_\\]/g
+
+/**
+ * LIKE 元字符的转义写法(前面加反斜杠)。
+ */
+export const SCHOOL_LIKE_ESCAPE = '\\$&'
 
 /**
  * 用户表的 collection 名(答案档存取用)。

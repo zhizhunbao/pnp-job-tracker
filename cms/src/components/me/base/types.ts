@@ -78,31 +78,6 @@ export type InputChangeEvent = React.ChangeEvent<HTMLInputElement>
 export type DivDragEvent = React.DragEvent<HTMLDivElement>
 
 /**
- * 生成简历窗口的开关(形同 cv 桶 CvOpenPanel,本桶自声明)。
- */
-export type CvOpenView = {
-  /**
-   * 开着吗。
-   */
-  open: boolean
-
-  /**
-   * 开。
-   */
-  onOpen: () => void
-
-  /**
-   * 关。
-   */
-  onClose: () => void
-
-  /**
-   * 存成了。
-   */
-  onSaved: (id: number) => void
-}
-
-/**
  * 等着确认的一次动作(删除或替换;2026-10-12 Frank「所有删除按钮不要直接删,先弹框确认是否删除」,替换同理)。
  */
 export type Ask = {
@@ -242,9 +217,9 @@ export type BasePanel = {
   rep: AskPanel
 
   /**
-   * 生成简历窗口的开关(存成了重拉清单)。
+   * 点「生成简历」(2026-11-12:发页面事件,档案那一半打开修改面板 —— 生成并进了它的末段)。
    */
-  cv: CvOpenView
+  onBuild: () => void
 }
 
 /**

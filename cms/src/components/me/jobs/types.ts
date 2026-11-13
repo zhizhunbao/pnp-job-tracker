@@ -1757,6 +1757,11 @@ export type PfView = {
   eduList: PfEduItem[]
 
   /**
+   * 简历资料(2026-11-12:工作经历几段、电话、链接、技能与模板)。
+   */
+  cv: PfCv
+
+  /**
    * 做过的工作(码与译名,2026-11-08)。
    */
   works: PfName[]
@@ -1805,6 +1810,11 @@ export type PfEduItem = {
    * 结束年份(四位数字);没填或在读 = 空串。
    */
   to: string
+
+  /**
+   * 这一段学的专业(CIP 码;2026-11-12 专业并进教育经历的每一段);没选 = 空串。
+   */
+  major: string
 }
 
 /**
@@ -1870,6 +1880,11 @@ export type PfSeed = {
    * 教育经历明细(2026-11-12)。
    */
   eduList: PfEduItem[]
+
+  /**
+   * 简历资料(2026-11-12:工作经历几段、电话、链接、技能与模板)。
+   */
+  cv: PfCv
 
   /**
    * 做过的工作(职业码,2026-11-08)。
@@ -2140,4 +2155,75 @@ export type SavedBook = {
    * 重拉清单。
    */
   reload: () => Promise<void>
+}
+
+/**
+ * 档案里的简历资料(2026-11-12 Frank「右侧弹 sidebar 用户一项一项填,最后用 sonnet 生成简历」;服务端已洗;
+ * 形同 lib/quiz CvFacts 与 gate 桶 GateCv,本桶自声明、整份递给修改面板)。
+ */
+export type PfCv = {
+  /**
+   * 工作经历几段;空列 = 还没存过。
+   */
+  work: PfWork[]
+
+  /**
+   * 电话;空串 = 没填。
+   */
+  phone: string
+
+  /**
+   * 个人链接(领英等);空串 = 没填。
+   */
+  link: string
+
+  /**
+   * 技能,一行一项;空串 = 没填。
+   */
+  skills: string
+
+  /**
+   * 简历模板:classic / modern。
+   */
+  tpl: string
+}
+
+/**
+ * 工作经历一段(形同 lib/quiz CvWork)。
+ */
+export type PfWork = {
+  /**
+   * 这一段对应的职业码;空列 = 没选。
+   */
+  nocs: string[]
+
+  /**
+   * 职位名称。
+   */
+  title: string
+
+  /**
+   * 公司。
+   */
+  org: string
+
+  /**
+   * 城市。
+   */
+  city: string
+
+  /**
+   * 开始年月(2021 或 2021-03)。
+   */
+  from: string
+
+  /**
+   * 结束年月;空串 = 至今或没填。
+   */
+  to: string
+
+  /**
+   * 做了什么。
+   */
+  desc: string
 }

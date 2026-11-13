@@ -41,6 +41,8 @@ import {
   TOTAL_EXP, TOTAL_V2_MAP, TTL, UNSURE_BAND, URL_ANSWERS, MAJOR_CACHE_MAX, MAJOR_KEY_SEP, MAJOR_N_MAX, TOP_N_DEFAULT,
   MAJOR_CODE_RE, MAJOR_PICK_MAX, MAJOR_SEP,
   EDU_CRED_LEN, EDU_KEY_RE, EDU_LIST_MAX, EDU_SCHOOL_LEN, EDU_YEAR_RE, F_EDU_LIST, F_FIT_EDU,
+  SCHOOL_LIKE_ESCAPE, SCHOOL_LIKE_RE, SCHOOL_LIMIT, SCHOOL_Q_MIN,
+  CV_LINE_LEN, CV_NOCS_MAX, CV_NOC_RE, CV_TEXT_LEN, CV_TPL_CLASSIC, CV_TPL_MODERN, CV_WORK_MAX, CV_YM_RE, F_CV,
 } from './constants'
 import { firstOf, jsonOrNull, queryRows, SQL, text } from '../db'
 import { CACHE } from './variables'
@@ -55,6 +57,7 @@ import type {
   ProfileAnswersJson, ProfileBasicFact, ProfileBasicJson, ProfileLoadIn, ProfileName, ProfileNames, ProfileNamesOut,
   QuizProfileOut, SenderDbRow,
   EduItem, EduItems, EduTextIn, Json, MaybeEduItem, MaybeEduItems,
+  CvFacts, CvWork, MaybeCvWork, SchoolDbRow, SchoolHit, SchoolsIn, SchoolsOut,
 } from './types'
 import { HDR_CONTENT_TYPE, UNAUTHORIZED } from '../http'
 
@@ -734,6 +737,7 @@ export async function saveAnswers(input: SaveAnswersIn): SaveAnswersOut {
  * 客户端送来的基础段 → 要落库的基础段(2026-11-12 信任边界):教育经历明细 eduList 过 toEduList 洗过才存(不合形的丢,
  * 绝不原样落库);洗完不空时教育经历串 fitEdu 改由它派生(不空的 key,按序),空的时候 fitEdu 照客户端送的留着
  * (只有老 fitEdu、还没存过明细的人,别的题一保存不能把它冲掉)。没带 eduList 的档(旧页面)原样过;其余格不读不动。
+ * 同日:简历资料 cv 一格同样过 toCvFacts 洗过才存。
  *
  * @param basic 路由验过是对象的基础段。
  * @returns 要落库的基础段。
@@ -747,6 +751,8 @@ export function toStoredBasic(basic: Json): Json {
   for (const [k, v] of Object.entries(basic)) {
     if (k === F_EDU_LIST) {
       list = toEduList(v)
+    } else if (k === F_CV) {
+      out[k] = toCvFacts(v)
     } else {
       out[k] = v
     }
@@ -830,6 +836,7 @@ export function toEduList(v: RawField): EduItems {
 /**
  * 明细里的一项 → 教育经历一条:五格去首尾空白;名称与学校截到上限;年份不是四位数字的清空;key 不是认得的
  * 「所在地.公立私立.时长」串的清空;五格全空的整项丢。
+ * 2026-11-12 多一格专业码 major:不是合形的专业码(含老档案里没有这一格)按空串;六格全空才整项丢。
  *
  * @param c 原料项。
  * @returns 一条;不合形 null。
@@ -853,12 +860,87 @@ function toEduItem(c: RawCell): MaybeEduItem {
     school: school.trim().slice(0, EDU_SCHOOL_LEN),
     from: eduTextOf({ v: from, re: EDU_YEAR_RE }),
     to: eduTextOf({ v: to, re: EDU_YEAR_RE }),
+    major: eduTextOf({ v: cvTextOf(c.major), re: MAJOR_CODE_RE }),
   }
   if (out.key === STR_NONE && out.cred === STR_NONE && out.school === STR_NONE && out.from === STR_NONE
-    && out.to === STR_NONE) {
+    && out.to === STR_NONE && out.major === STR_NONE) {
     return null
   }
   return out
+}
+
+/**
+ * 档里的一格 → 简历资料(2026-11-12;信任边界的值级清洗全在这里):不是对象给各格空;工作经历逐段过 toCvWork,
+ * 至多 CV_WORK_MAX 段;电话、链接、技能不是字符串当没填、超长截断;模板只认两个取值,别的按传统单栏。
+ *
+ * @param v 原料格。
+ * @returns 洗净的简历资料。
+ */
+export function toCvFacts(v: RawField): CvFacts {
+  const out: CvFacts = { work: [], phone: STR_NONE, link: STR_NONE, skills: STR_NONE, tpl: CV_TPL_CLASSIC }
+  if (v == null || typeof v !== 'object' || Array.isArray(v)) {
+    return out
+  }
+  if (Array.isArray(v.work)) {
+    for (const c of v.work) {
+      const w = toCvWork(c)
+      if (w != null && out.work.length < CV_WORK_MAX) {
+        out.work.push(w)
+      }
+    }
+  }
+  out.phone = cvTextOf(v.phone).slice(0, CV_LINE_LEN)
+  out.link = cvTextOf(v.link).slice(0, CV_LINE_LEN)
+  out.skills = cvTextOf(v.skills).slice(0, CV_TEXT_LEN)
+  if (v.tpl === CV_TPL_MODERN) {
+    out.tpl = CV_TPL_MODERN
+  }
+  return out
+}
+
+/**
+ * 工作经历里的一项 → 一段:职业码只留五位数字的,至多 CV_NOCS_MAX 个;四格一行字截到上限;年月不合形的清空;
+ * 七格全空的整项丢。
+ *
+ * @param c 原料项。
+ * @returns 一段;不合形 null。
+ */
+function toCvWork(c: RawCell): MaybeCvWork {
+  if (c == null || typeof c !== 'object' || Array.isArray(c)) {
+    return null
+  }
+  const nocs: string[] = []
+  for (const n of arr(c.nocs)) {
+    if (CV_NOC_RE.test(n) && nocs.length < CV_NOCS_MAX) {
+      nocs.push(n)
+    }
+  }
+  const out: CvWork = {
+    nocs,
+    title: cvTextOf(c.title).slice(0, CV_LINE_LEN),
+    org: cvTextOf(c.org).slice(0, CV_LINE_LEN),
+    city: cvTextOf(c.city).slice(0, CV_LINE_LEN),
+    from: eduTextOf({ v: cvTextOf(c.from), re: CV_YM_RE }),
+    to: eduTextOf({ v: cvTextOf(c.to), re: CV_YM_RE }),
+    desc: cvTextOf(c.desc).slice(0, CV_TEXT_LEN),
+  }
+  if (out.nocs.length === 0 && out.title + out.org + out.city + out.from + out.to + out.desc === STR_NONE) {
+    return null
+  }
+  return out
+}
+
+/**
+ * 简历资料里的一格字:是字符串去首尾空白,不是当没填。
+ *
+ * @param v 原料格。
+ * @returns 字或空串。
+ */
+function cvTextOf(v: RawField): string {
+  if (typeof v === 'string') {
+    return v.trim()
+  }
+  return STR_NONE
 }
 
 /**
@@ -1383,6 +1465,7 @@ export function normalize(cur: RawAnswersSource): Answers {
     studyMonthsBand: num(raw.studyMonthsBand), studyLevelBand: num(raw.studyLevelBand),
     majors: arr(raw.majors), fitWho: str(raw.fitWho), fitEdu: arr(raw.fitEdu), eduList: toEduList(raw.eduList),
     workNocs: arr(raw.workNocs), matchBy: str(raw.matchBy), matchMode: str(raw.matchMode), fromResume: arr(raw.fromResume),
+    cv: toCvFacts(raw.cv),
   }
   if (raw.done === true) {
     out.done = true
@@ -1714,6 +1797,7 @@ export async function loadQuizProfile(x: ProfileLoadIn): QuizProfileOut {
   let b: ProfileBasicFact = {
     goal: 0, majors: [], nocs: [], prov: STR_NONE, abroad: false, city: STR_NONE, asked: false, who: STR_NONE, edu: [],
     eduList: [], workNocs: [], matchBy: STR_NONE, matchMode: STR_NONE, fromResume: [],
+    cv: toCvFacts(null),
   }
   if (got != null) {
     b = got
@@ -1734,7 +1818,35 @@ export async function loadQuizProfile(x: ProfileLoadIn): QuizProfileOut {
     goal: b.goal, majors, nocs, prov: b.prov, abroad: b.abroad, city, name, asked: b.asked, who: b.who, edu: b.edu,
     eduList: b.eduList,
     works, matchBy: b.matchBy, matchMode: b.matchMode, fromResume: b.fromResume,
+    cv: b.cv,
   }
+}
+
+/**
+ * 按校名搜指定院校(2026-11-12「修改档案」教育经历那一段搜学校):检索词去首尾空白,不够 SCHOOL_Q_MIN 个字回空列;
+ * LIKE 元字符先转义。
+ *
+ * @param x 连接与检索词。
+ * @returns 至多 SCHOOL_LIMIT 所学校。
+ */
+export async function loadSchools(x: SchoolsIn): SchoolsOut {
+  const q = x.q.trim()
+  if (q.length < SCHOOL_Q_MIN) {
+    return []
+  }
+  return queryRows({
+    db: x.db, sql: SQL.DLI_SEARCH, params: [q.replace(SCHOOL_LIKE_RE, SCHOOL_LIKE_ESCAPE), SCHOOL_LIMIT], map: toSchoolHit,
+  })
+}
+
+/**
+ * 搜学校的库行 → 一所学校。
+ *
+ * @param r 库行。
+ * @returns 一所学校。
+ */
+export function toSchoolHit(r: SchoolDbRow): SchoolHit {
+  return { name: r.name, nameZh: text(r.name_zh), prov: text(r.province), isPublic: r.is_public === true }
 }
 
 /**
@@ -1868,6 +1980,7 @@ export function toProfileBasic(r: ProfileAnswersDbRow): ProfileBasicFact {
   return {
     goal, majors: textListOf(majors), nocs: textListOf(nocs), prov, abroad, city, asked: b.jobsAsked === true, who,
     edu: eduStrs, eduList, workNocs: textListOf(workNocs), matchBy, matchMode, fromResume: textListOf(fromResume),
+    cv: toCvFacts(b.cv),
   }
 }
 
@@ -1880,7 +1993,7 @@ export function toProfileBasic(r: ProfileAnswersDbRow): ProfileBasicFact {
 function eduListFromKeys(keys: CodeList): EduItems {
   const out: EduItems = []
   for (const key of keys) {
-    out.push({ key, cred: STR_NONE, school: STR_NONE, from: STR_NONE, to: STR_NONE })
+    out.push({ key, cred: STR_NONE, school: STR_NONE, from: STR_NONE, to: STR_NONE, major: STR_NONE })
   }
   return out
 }

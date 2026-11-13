@@ -793,6 +793,7 @@ name: v.name,
 who: v.who,
 edu: v.edu,
 eduList: v.eduList,
+    cv: v.cv,
   }
 }
 

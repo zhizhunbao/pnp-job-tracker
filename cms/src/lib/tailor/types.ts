@@ -1080,3 +1080,13 @@ export type LineOkIn = {
    */
   base: string
 }
+
+/**
+ * 用档案生成基础简历的请求体(2026-11-12)。
+ */
+export type ProfileBodyJson = {
+  /**
+   * 模板:modern = 带色条的现代款;别的值或缺席按传统单栏。
+   */
+  tpl?: string
+}

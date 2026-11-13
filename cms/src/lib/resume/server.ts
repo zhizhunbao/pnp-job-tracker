@@ -7,7 +7,7 @@
  */
 
 export {
-  resumeBuildRoute, resumeExtractRoute, resumeFileDeleteRoute, resumeFileGetRoute, resumeFilePutRoute, resumeFilesRoute,
+  resumeExtractRoute, resumeFileDeleteRoute, resumeFileGetRoute, resumeFilePutRoute, resumeFilesRoute,
   resumeMatchRoute, resumePrefillRoute, resumeRoute,
 } from './routes'
 export { ensureResumeBody } from './functions'

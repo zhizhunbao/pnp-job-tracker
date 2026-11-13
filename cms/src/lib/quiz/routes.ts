@@ -18,7 +18,7 @@ import { BAD_REQUEST, TOO_LARGE, UNAUTHORIZED } from '../http'
 import { loadBroadNocs, loadMajorNocs, loadNocOpenCounts, loadQuizFacts, loadTopNocs, searchNocByTitle } from '../jobs/server'
 import { getMajorBroads } from '../majors/server'
 import {
-  getMajorNocsCached, getTopNocsCached, loadAnswers, loadQuizProfile, majorCodesOf, majorNOf, makeFactsStore,
+  getMajorNocsCached, getTopNocsCached, loadAnswers, loadQuizProfile, loadSchools, majorCodesOf, majorNOf, makeFactsStore,
   saveAnswers, swallowFactsError, toStoredBasic,
 } from './functions'
 import { getUserOrNull } from '../quota/server'
@@ -215,4 +215,20 @@ export async function quizAnswersPutRoute(req: Request): Promise<Response> {
   const payload = await getPayload({ config: await config })
   await saveAnswers({ payload: payload, userId: user.id, basic: toStoredBasic(basic), score: score, updatedAt: updatedAt })
   return Response.json({ ok: true, updatedAt })
+}
+
+/**
+ * GET /api/quiz/schools?q=:按校名搜指定院校(2026-11-12「修改档案」教育经历那一段搜学校,选中后带出所在省与公立私立)。
+ * 院校名单是公开数据,不设登录墙;检索词截到 Q_LEN_MAX,不够两个字回空列。
+ *
+ * @param req 请求(q 在查询参数)。
+ * @returns { schools }。
+ */
+export async function quizSchoolsRoute(req: Request): Promise<Response> {
+  let q = PARAM_NONE
+  const qParam = new URL(req.url).searchParams.get(P_Q)
+  if (qParam != null) {
+    q = qParam.slice(0, Q_LEN_MAX)
+  }
+  return Response.json({ schools: await loadSchools({ db: await getDb(), q }) })
 }

@@ -1616,6 +1616,17 @@ export const DLI_SCHOOLS = `SELECT d.dli_number, d.name, d.name_zh, d.province,
        ORDER BY min(d.qs_rank) ASC NULLS LAST, d.name ASC LIMIT $1`
 
 /**
+ * 按校名搜指定院校(2026-11-12「修改档案」教育经历那一段搜学校,选中后带出所在省与公立私立)。
+ * $1=检索词(调用方已转义 LIKE 元字符),$2=行数。校 × 城行按 DLI# 收回校级;英文名或中文译名里有这个词就算,
+ * 英文名以它开头的排前,再按 QS 名次(榜外沉底)与校名。dli 只有几百行,顺扫即可。
+ */
+export const DLI_SEARCH = `SELECT d.name, min(d.name_zh) AS name_zh, d.province, bool_or(d.is_public) AS is_public
+       FROM dli d
+       WHERE d.name ILIKE '%' || $1 || '%' OR COALESCE(d.name_zh, '') ILIKE '%' || $1 || '%'
+       GROUP BY d.dli_number, d.name, d.province
+       ORDER BY bool_or(d.name ILIKE $1 || '%') DESC, min(d.qs_rank) ASC NULLS LAST, d.name ASC LIMIT $2`
+
+/**
  * 城市详情页基面(2026-09-12 批三首件):cities 维度打底 LEFT JOIN 快照 ——
  * 有城无在招也给页(快照格空着显杠),查无城 0 行页走 Notice。$1=城英文名、$2=省码。
  */
@@ -2258,19 +2269,6 @@ export const fineCounts = (a1: string | number) => `SELECT fine, count(*)::int A
  * 职业的职责与要求原文(JD 对照用)。$1=NOC。
  */
 export const NOC_DUTIES_BY_CODE = `SELECT duties, requirements FROM noc_descriptions WHERE noc = $1 LIMIT 1`
-
-/**
- * 生成简历「导入职责」按职位名找职业(2026-11-07 照 Job Bank Resume Builder 的 Import job duties):
- * 官方职业名与示例职位名里每个词都出现、且有职责原文的职业;整句都在的排前面(LIMIT 截不掉它们),细排在函数里做。
- * 2026-11-07 Frank 本地实测「Big data architect」整句搜不到(官方只有 data architect、big data analyst)→ 改成按词都在。
- * $1=各词的 ILIKE 串(text[]),$2=整句的 ILIKE 串,$3=最多几行。
- */
-export const NOC_DUTY_SEARCH = `SELECT noc, COALESCE(title,'') title, COALESCE(duties,'') duties, COALESCE(examples,'') examples
-     FROM noc_descriptions
-     WHERE COALESCE(duties,'') <> ''
-       AND (SELECT bool_and((COALESCE(title,'') || E'\\n' || COALESCE(examples,'')) ILIKE p) FROM unnest($1::text[]) p)
-     ORDER BY ((COALESCE(title,'') || E'\\n' || COALESCE(examples,'')) ILIKE $2) DESC, noc
-     LIMIT $3`
 
 /**
  * 按职位 id 取 JD 整理稿缓存。$1=职位 id(2026-09-20 改键,原按 apply_url,见 JD_TRANS_BY_ID)。

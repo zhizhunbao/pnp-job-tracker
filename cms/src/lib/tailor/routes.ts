@@ -9,9 +9,10 @@ import { headers } from 'next/headers'
 import * as PdfLib from 'pdf-lib'
 import { COVER_MAX, coverPdfOf, letterCleanOf, letterSystemOf, pdfBadCharsOf } from '../apply'
 import {
-  isCreditOpen, loadApplyBlob, loadApplyJob, loadApplyPrefs, loadApplyResumes, loadApplyRow, loadCredit, markCredit,
+  creditLeftOf, isCreditOpen, loadApplyBlob, loadApplyJob, loadApplyPrefs, loadApplyResumes, loadApplyRow, loadCredit,
+  markCredit,
 } from '../apply/server'
-import { cvBadCharsOf, cvLayoutOf, cvPdfOf, toCvDraft } from '../cv'
+import { cvBadCharsOf, cvLayoutOf, cvModernPdfOf, cvPdfOf, toCvDraft } from '../cv'
 import { getDb } from '../db/server'
 import {
   BAD_GATEWAY, BAD_REQUEST, CONFLICT, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, NOT_FOUND, PAYMENT_REQUIRED, TOO_MANY, UNAUTHORIZED, UNPROCESSABLE,
@@ -21,6 +22,7 @@ import { jdPlainOf, jobDescriptionMarked, jobFormattedMarked, loadApplyUrlById }
 import { completeText, friendLlmReady } from '../llm'
 import { APPLY_LOG, log } from '../log'
 import { checkLimit, getUserOrNull } from '../quota/server'
+import { loadQuizProfile } from '../quiz/server'
 import { extractText, parseLlmJson } from '../resume'
 import {
   B64, CACHE_PRIVATE, E_AUTH, E_BASE, E_BODY, E_JOB, E_LIMIT, E_LLM, E_NONE, E_NO_JD, E_PRO, E_RESUME_BAD, E_SENT, KEY_SEP, KIND_COVER, MIME_PDF,
@@ -28,7 +30,14 @@ import {
   BOX_DIRECT, BOX_VIA_GATEWAY, FIX_DAILY, FIX_PREFIX, ONE_SPACE,
 } from './constants'
 import { loadExtra, loadTailorRow, pickJdOf, runStep, saveCover, saveExtra, saveResume, toStepBody } from './functions'
-import type { CompleteIn, CoverBodyJson, CvPdfFact, FactMap, JsonCell, ResumeBodyJson, StepBodyJson, StepDeps } from './types'
+import {
+  E_NEED, isProfileReady, latinOf, PROFILE_FEATURE, PROFILE_FILE_TAIL, PROFILE_SYSTEM, PROFILE_TOKENS_MAX,
+  PROFILE_USER_DAILY, PROFILE_USER_PREFIX, profileDraftOf, profileFactsOf, profileRefOf, profileSchemaOf, profileUserOf,
+  toProfileOut, TPL_MODERN,
+} from './profile'
+import type {
+  CompleteIn, CoverBodyJson, CvPdfFact, FactMap, JsonCell, ProfileBodyJson, ResumeBodyJson, StepBodyJson, StepDeps,
+} from './types'
 
 /**
  * POST /api/tailor/step:跑一步(拆要求、写简历、写求职信、核对);回包的 next 告诉前端下一步。
@@ -363,4 +372,77 @@ export async function tailorFileRoute(req: Request): Promise<Response> {
     bytes = Buffer.from(row.pdfB64, B64)
   }
   return new Response(new Uint8Array(bytes), { headers: { [HDR_CONTENT_TYPE]: MIME_PDF, [HDR_CACHE_CONTROL]: CACHE_PRIVATE } })
+}
+
+/**
+ * POST /api/tailor/profile:用档案生成一份基础简历(2026-11-12 Frank「右侧弹 sidebar 用户一项一项填,最后用 sonnet 生成简历,
+ * 可以选择模板。这部分功能是收费的」)。档案里的工作经历、教育经历、专业、技能交给模型写成英文(只许用档案里的事实),
+ * 段数与起止年月只取档案里的;排成 PDF 回给前端预览 —— 这里不存,用户点「设为我的简历」才走上传那条路替换。
+ * 收费:扣按职位改写同一本额度账,生成一份扣一个;记账号按天,同一天再生成不另扣;只在排成了 PDF 才记账。
+ *
+ * @param req 请求(body 是 { tpl })。
+ * @returns { pdf, fileName, left };未登录 401、超限 429、档案不够 400、额度用完 402、模型失败 502、排不成 PDF 422。
+ */
+export async function tailorProfileRoute(req: Request): Promise<Response> {
+  const user = await getUserOrNull(await headers())
+  if (user == null) {
+    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
+  }
+  if (checkLimit([[PROFILE_USER_PREFIX + String(user.id), PROFILE_USER_DAILY]]) === false) {
+    return Response.json({ error: E_LIMIT }, { status: TOO_MANY })
+  }
+  let body: ProfileBodyJson = {}
+  try {
+    body = await req.json() as ProfileBodyJson
+  } catch {
+    body = {}
+  }
+  const db = await getDb()
+  const facts = profileFactsOf({ p: await loadQuizProfile({ db, userId: Number(user.id) }), email: user.email })
+  if (isProfileReady(facts) === false) {
+    return Response.json({ error: E_NEED }, { status: BAD_REQUEST })
+  }
+  const ref = profileRefOf(Date.now())
+  const credit = await loadCredit({ db, userId: user.id, jobId: ref, proUntil: user.proUntil, nowMs: Date.now() })
+  if (isCreditOpen(credit) === false) {
+    return Response.json({ error: E_PRO, plan: credit.plan, resetAt: credit.resetAt }, { status: PAYMENT_REQUIRED })
+  }
+  let raw = TEXT_NONE
+  try {
+    raw = await completeText({
+      feature: PROFILE_FEATURE, db, anthropicSchema: profileSchemaOf(), maxTokens: PROFILE_TOKENS_MAX + THINKING_ROOM,
+      provider: TAILOR_PROVIDER, anthropicModel: TAILOR_MODEL,
+      messages: [{ role: ROLE_SYSTEM, content: PROFILE_SYSTEM }, { role: ROLE_USER, content: profileUserOf(facts) }],
+    })
+  } catch (e) {
+    if (e instanceof Error && isLlmError(e)) {
+      log({ tag: APPLY_LOG.tag, text: APPLY_LOG.tailorFail + user.id + APPLY_LOG.whyFrag + PROFILE_FEATURE })
+      return Response.json({ error: E_LLM }, { status: BAD_GATEWAY })
+    }
+    throw e
+  }
+  const out = toProfileOut(parseLlmJson(raw) as JsonCell)
+  const layout = cvLayoutOf(toCvDraft(profileDraftOf({ f: facts, out })))
+  const link = latinOf(facts.link)
+  if (link !== TEXT_NONE) {
+    layout.contact.push(link)
+  }
+  if (layout.sections.length === 0 || cvBadCharsOf(layout).length > 0) {
+    log({ tag: APPLY_LOG.tag, text: APPLY_LOG.tailorFail + user.id + APPLY_LOG.whyFrag + PROFILE_FEATURE + ONE_SPACE + E_RESUME_BAD })
+    return Response.json({ error: E_RESUME_BAD }, { status: UNPROCESSABLE })
+  }
+  let bytes: Uint8Array = new Uint8Array(0)
+  if (body.tpl === TPL_MODERN) {
+    bytes = await cvModernPdfOf({ pdf: PdfLib, layout })
+  } else {
+    bytes = await cvPdfOf({ pdf: PdfLib, layout })
+  }
+  const marked = credit.here === false
+  if (marked) {
+    await markCredit({ db, userId: user.id, jobId: ref, plan: credit.plan })
+  }
+  return Response.json(
+    { pdf: Buffer.from(bytes).toString(B64), fileName: layout.name + PROFILE_FILE_TAIL, left: creditLeftOf({ credit, marked }) },
+    { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } },
+  )
 }

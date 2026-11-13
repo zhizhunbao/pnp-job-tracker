@@ -39,6 +39,7 @@
  */
 export { GateAuth } from './gateauth'
 export { GateForm } from './gateform'
+export { GateFormLoad } from './gateformload'
 export { eduPicksOf, makeEduLabel } from './edu'
 export { isFromResume, missingStepsOf } from './functions'
 export { GateSync } from './gatesync'

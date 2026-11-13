@@ -19,6 +19,12 @@
  * 同日 Frank「这部分不能直接显示具体的年份和学历 证书吗?」:教育经历几段从档案的明细 eduList 起头(没有就按老的教育经历串),
  * 保存时明细与由它派生的教育经历串一并交;多交一个整份写几段的落格(「从简历填写」用)。
  *
+ * 2026-11-12 Frank「右侧弹 sidebar 用户一项一项填,能搜索的就弹框搜索,最后用 sonnet 生成简历」:「做过的工作」从一串职业码
+ * 改成几段(useWorkRows,职业码由各段汇出,整机不再单独存它);多电话、链接、技能、模板四格;查名字用的选职业控件
+ * 由 useWorkSync 跟着各段的码走。
+ * 同日 Frank「教育经历 和 专业是不是重复了」:专业并进教育经历的每一段 —— 整机的专业码由各段汇出(不再单独存、上报口撤),
+ * 教育经历几段多「正在给第几段选专业」一格;一页表单的「专业」那一格与它的弹框手柄 onMajor 撤。
+ *
  * @author Frank
  * @time 2026-10-04 02:10:00
  */
@@ -29,12 +35,24 @@ import { useLang } from '@/components/i18n'
 import { takeEntryGate } from '@/lib/guest'
 import { track } from '@/lib/track'
 import {
-  FILL_KIND_INFO, FORM_PICK_EDU, FORM_PICK_JOB, FORM_PICK_MAJOR, FORM_PICK_NONE, FORM_PICK_WHERE, FORM_PICK_WORK,
+  FILL_KIND_INFO, FORM_PICK_EDU, FORM_PICK_JOB, FORM_PICK_NONE, FORM_PICK_WHERE, FORM_PICK_WORK,
   TEXT_NONE, TRACK_GATE_OPEN,
 } from './constants'
-import { eduFormRowsOf, eduListOf, eduStrsOf, makeEduAdd, makeEduPick, makeEduRemove } from './edu'
 import {
-  fromKeptOf, makeResumeFill,
+  EDU_AT_NONE, eduFormRowsOf, eduListOf, eduMajorsOf, eduStrsOf, makeEduAdd, makeEduMajor, makeEduPick, makeEduRemove,
+} from './edu'
+import {
+  LEFT_NONE, loadCvLeft, makeCvDocClose, makeCvDownload, makeCvGen, makeCvSet, MSG_INFO,
+} from './cv'
+import { loadSeed } from './seed'
+import { makeSchoolPickOf, makeSchoolSearch, makeSchoolTypeOf, SCHOOL_AT_NONE, schoolQOf } from './school'
+import {
+  makeWorkAdd, makeWorkCell, makeWorkOcc, makeWorkOccClose, makeWorkRemove, WORK_AT_NONE, workFormRowsOf, workListOf,
+  workNocsOf,
+} from './work'
+import {
+  cvFactsOf, fromKeptOf, makeAreaSet, makeAtSet, makeAtSetOf, makeFlagOff, makeSeedSet, makeFormClose, makeResumeFill,
+  makeSaveThen,
   cityOptsOf, gateProvActiveOf, loadProvCities, makeCityPick, makeEditSave,
   makeRulePick, ruleOf,
   makeEntryClose, makeEntryDone, makeGateAuthDone, makePickSet, makeProvPick, nameBadOf,
@@ -43,6 +61,9 @@ import type {
   FillMsg, ResumeFillHookIn, ResumeFillPanel,
   CitiesGot, CityOpt, CityPickHookIn, CityPickOut, DeadFlag, EduCellIn, EduPick, EduRowsPanel, EntryGatePanel,
   GateAuthHookIn, GateFormHookIn, GatePanel, GatePickPanel, ProvCitiesIn, EduSeedIn,
+  WorkCellIn, WorkPick, WorkRowsPanel, WorkSeedIn, WorkSyncIn,
+  SchoolHookIn, SchoolOpt, SchoolPanel, SeedLoadPanel,
+  CvCellsPanel, CvGenDoc, CvGenHookIn, CvGenMsg, CvGenPanel, GateCv, GateEditSeed,
 } from './types'
 
 /**
@@ -153,22 +174,24 @@ export function useGateForm(x: GateFormHookIn): GatePanel {
   const [lang] = useLang()
   const s = x.seed
   const [goal, setGoal] = useState(s.goal)
-  const [majors, setMajors] = useState<string[]>(s.majors)
   const [nocs, setNocs] = useState<string[]>(s.nocs)
   const [prov, setProv] = useState(s.prov)
   const [abroad, setAbroad] = useState(s.abroad)
   const c = useCityPick({ prov, lang, seed: s.city })
   const [name, setName] = useState(s.name)
   const [who, setWho] = useState(s.who)
-  const [workNocs, setWorkNocs] = useState<string[]>(s.workNocs)
+  const w = useWorkRows({ list: s.cv.work, nocs: s.workNocs })
+  const workNocs = workNocsOf(w.work)
+  const cvc = useCvCells(s.cv)
   const [matchBy, setMatchBy] = useState(s.matchBy)
   const [matchMode, setMatchMode] = useState(s.matchMode)
   const [fromResume, setFromResume] = useState<string[]>(s.fromResume)
-  const e = useEduRows({ list: s.eduList, strs: s.edu })
+  const e = useEduRows({ list: s.eduList, strs: s.edu, majors: s.majors })
+  const majors = eduMajorsOf(e.edu)
   const [saving, setSaving] = useState(false)
   const [failKey, setFail] = useState(TEXT_NONE)
-  const save = makeEditSave({
-    a: { goal,
+  const [savedOnce, setSavedOnce] = useState(false)
+  const a: GateEditSeed = { goal,
 majors,
 nocs,
 prov,
@@ -181,20 +204,16 @@ eduList: eduListOf(e.edu),
       workNocs,
 matchBy,
 matchMode,
-      fromResume: fromKeptOf({ marks: fromResume, majors, workNocs, name: name.trim() }) },
-    setSaving,
-    setFail,
-    onSaved: x.onSaved,
-  })
+      fromResume: fromKeptOf({ marks: fromResume, majors, workNocs, name: name.trim() }),
+      cv: cvFactsOf({ work: workListOf(w.work), cvc }) }
+  const save = makeEditSave({ a, setSaving, setFail, onSaved: x.onSaved })
   return {
     goal,
     majors,
-    onMajors: setMajors,
     lang,
     nocs,
     setNocs,
     workNocs,
-    setWorkNocs,
     provActive: gateProvActiveOf({ prov, abroad }),
     onProv: makeProvPick({ setProv, setAbroad, setCity: c.setCity }),
     cities: c.panel,
@@ -212,43 +231,205 @@ matchMode,
       onEduAdd: e.onEduAdd,
       eduRemoveOf: e.eduRemoveOf,
       setEdu: e.setEdu,
+      em: e.em,
       setGoal,
       setWho,
       rule: ruleOf({ matchBy, matchMode }),
       onRule: makeRulePick({ setMatchBy, setMatchMode }),
       onSave: save,
+      w,
+      cvc,
+      saveThen: makeSaveThen({ a, setSaving, setFail, setSavedOnce }),
+      cvReady: a.name !== TEXT_NONE && nameBadOf(name) === false && (a.cv.work.length > 0 || a.eduList.length > 0),
     },
-    onClose: x.onClose,
+    onClose: makeFormClose({ savedOnce, onClose: x.onClose, onSaved: x.onSaved }),
   }
 }
 
 /**
  * 教育经历题的几段(2026-10-13 档案加题;自 useGateEdit 拆出 —— 几段与改格 / 加段 / 删段三个手柄自成一件)。
  *
- * @param seed 档案里的教育经历明细与教育经历串(2026-11-12:有明细按明细起头)。
+ * @param seed 档案里的教育经历明细、教育经历串与专业码(2026-11-12:有明细按明细起头;各段都没挂专业的,专业码按序落进各段)。
  * @returns 几段、整份写几段的落格与三个手柄。
  */
 function useEduRows(seed: EduSeedIn): EduRowsPanel {
   const [edu, setEdu] = useState<EduPick[]>(eduFormRowsOf(seed))
+  const [majorAt, setMajorAt] = useState<number>(EDU_AT_NONE)
   function eduPickOf(cell: EduCellIn): (v: string) => void {
     return makeEduPick({ cell, edu, setEdu })
   }
   function eduRemoveOf(i: number): () => void {
     return makeEduRemove({ edu, setEdu, i })
   }
-  return { edu, setEdu, eduPickOf, onEduAdd: makeEduAdd({ edu, setEdu, i: 0 }), eduRemoveOf }
+  return {
+    edu,
+    setEdu,
+    eduPickOf,
+    onEduAdd: makeEduAdd({ edu, setEdu, i: 0 }),
+    eduRemoveOf,
+    em: {
+      at: majorAt,
+      openOf: makeAtSetOf(setMajorAt),
+      onPick: makeEduMajor({ rows: edu, setRows: setEdu, at: majorAt, setAt: setMajorAt }),
+      onClose: makeAtSet({ setAt: setMajorAt, v: EDU_AT_NONE }),
+    },
+  }
+}
+
+/**
+ * 只有生成简历才用的四格(2026-11-12):电话、链接、技能、模板,从档案里的简历资料起头。
+ *
+ * @param seed 档案里的简历资料。
+ * @returns 四格与它们的落格。
+ */
+function useCvCells(seed: GateCv): CvCellsPanel {
+  const [phone, setPhone] = useState(seed.phone)
+  const [link, setLink] = useState(seed.link)
+  const [skills, setSkills] = useState(seed.skills)
+  const [tpl, setTpl] = useState(seed.tpl)
+  return {
+    phone, onPhone: setPhone, link, onLink: setLink, skills, onSkills: makeAreaSet(setSkills), tpl, onTpl: setTpl,
+  }
+}
+
+/**
+ * 自己取档案当修改面板的起始答案(2026-11-12:投递第 1 步的「生成简历」改开修改面板,那里手里没有档案):挂上取一次。
+ *
+ * @returns 起始答案与取不到。
+ */
+export function useSeedLoad(): SeedLoadPanel {
+  const [seed, setSeed] = useState<GateEditSeed | null>(null)
+  const [failed, setFailed] = useState(false)
+  useEffect(function loadSeedOnce() {
+    void loadSeed({ setSeed: makeSeedSet(setSeed), setFailed })
+  }, [])
+  return { seed, failed }
+}
+
+/**
+ * 教育经历「搜学校」的状态(2026-11-12):记下在搜哪一段(那一段学校格里的字就是检索词),字一变防抖搜一次指定院校名单;
+ * 选中一所把校名、所在省、公立私立填进那一段并收起结果。名单里没有的学校照常手填。
+ *
+ * @param x 教育经历几段、整份写几段的落格与界面语。
+ * @returns 搜学校整机。
+ */
+export function useSchoolSearch(x: SchoolHookIn): SchoolPanel {
+  const [at, setAt] = useState<number>(SCHOOL_AT_NONE)
+  const [hits, setHits] = useState<SchoolOpt[]>([])
+  const q = schoolQOf({ rows: x.rows, at })
+  useEffect(function searchSchools() {
+    return makeSchoolSearch({ q, setHits })()
+  }, [q])
+  return {
+    at,
+    hits,
+    typeOf: makeSchoolTypeOf({ rows: x.rows, setRows: x.setRows, setAt }),
+    pickOf: makeSchoolPickOf({ rows: x.rows, setRows: x.setRows, at, setAt }),
+    lang: x.lang,
+  }
+}
+
+/**
+ * 「做过的工作」的几段(2026-11-12):几段、改格 / 加段 / 删段三个手柄,和「正在给第几段选职业」那一格
+ * (选职业框开没开看它;框里点了一个职业就落进那一段并关框)。
+ *
+ * @param seed 档案里存过的几段与老的职业码(没存过几段的按码一码一段起头)。
+ * @returns 几段与手柄。
+ */
+function useWorkRows(seed: WorkSeedIn): WorkRowsPanel {
+  const [work, setWork] = useState<WorkPick[]>(workFormRowsOf(seed))
+  const [occAt, setOccAt] = useState<number>(WORK_AT_NONE)
+  function workCellOf(cell: WorkCellIn): (v: string) => void {
+    return makeWorkCell({ cell, rows: work, setRows: setWork })
+  }
+  function workRemoveOf(i: number): () => void {
+    return makeWorkRemove({ rows: work, setRows: setWork, i })
+  }
+  return {
+    work,
+    setWork,
+    workCellOf,
+    onWorkAdd: makeWorkAdd({ rows: work, setRows: setWork, i: 0 }),
+    workRemoveOf,
+    occAt,
+    setOccAt,
+    onWorkOcc: makeWorkOcc({ rows: work, setRows: setWork, at: occAt, setAt: setOccAt }),
+    onOccClose: makeWorkOccClose(setOccAt),
+  }
+}
+
+/**
+ * 查名字用的选职业控件跟着各段的职业码走(2026-11-12):各段的码一变,就把控件里已选的码整份换成它们,
+ * 控件随之把新码的名字取回来(摘要行与各段职业那一格读它的名字表)。
+ *
+ * @param x 各段汇出的职业码与控件的整份替换口。
+ * @returns 无。
+ */
+export function useWorkSync(x: WorkSyncIn): void {
+  const key = x.nocs.join()
+  const onReplace = x.onReplace
+  useEffect(function syncWorkNocs() {
+    onReplace(x.nocs)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只认码变没变(key);码清单每帧是新数组,进依赖会每帧都换
+  }, [key, onReplace])
+}
+
+/**
+ * 「生成简历」一段的状态(2026-11-12 Frank「最后用 sonnet 生成简历,可以选择模板。这部分功能是收费的」):
+ * 开面板取一次剩余额度;生成中、一行提示、生成出来还没存的那一份(有它预览框就开)、正在存、升级框开没开。
+ *
+ * @param x 表单整机。
+ * @returns 生成整机。
+ */
+export function useCvGen(x: CvGenHookIn): CvGenPanel {
+  const [left, setLeft] = useState<number>(LEFT_NONE)
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState<CvGenMsg>({ key: TEXT_NONE, kind: MSG_INFO })
+  const [doc, setDoc] = useState<CvGenDoc | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [upgrade, setUpgrade] = useState(false)
+  useEffect(function loadLeftOnce() {
+    void loadCvLeft({ setLeft })
+  }, [])
+  return {
+    ready: x.g.edit.cvReady,
+    left,
+    busy,
+    msg,
+    doc,
+    saving,
+    upgrade,
+    onGen: makeCvGen({
+      tpl: x.g.edit.cvc.tpl, saveThen: x.g.edit.saveThen, doc, setBusy, setMsg, setDoc, setUpgrade, setLeft,
+    }),
+    onSet: makeCvSet({ doc, setSaving, setMsg, setDoc }),
+    onDownload: makeCvDownload(doc),
+    onDocClose: makeCvDocClose({ doc, setDoc }),
+    onUpgradeClose: makeFlagOff(setUpgrade),
+  }
 }
 
 /**
  * 「从简历填写」的状态(2026-11-09「我的」第一批):取数中与一行提示。
  *
- * @param x 表单状态与选择器同步口。
+ * 2026-11-12 Frank「这个应该是自动填的吧」:x.auto 时一开面板就自己填一次(刚上传或替换了简历、档案还有空格),
+ * 填上的照旧保存才入档案、可先改。
+ *
+ * @param x 表单状态与要不要一开就填。
  * @returns 面板。
  */
 export function useResumeFill(x: ResumeFillHookIn): ResumeFillPanel {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<FillMsg>({ key: TEXT_NONE, n: 0, kind: FILL_KIND_INFO })
-  return { busy, msg, onFill: makeResumeFill({ g: x.g, onWork: x.onWork, setBusy, setMsg }) }
+  const onFill = makeResumeFill({ g: x.g, setBusy, setMsg })
+  const auto = x.auto
+  useEffect(function fillOnOpen() {
+    if (auto) {
+      onFill()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只在开面板那一下跑一次;onFill 每帧是新函数,进依赖会反复填
+  }, [auto])
+  return { busy, msg, onFill }
 }
 
 /**
@@ -260,7 +441,6 @@ export function useGatePick(): GatePickPanel {
   const [picking, setPicking] = useState<string>(FORM_PICK_NONE)
   return {
     picking,
-    onMajor: makePickSet({ setPicking, v: FORM_PICK_MAJOR }),
     onJob: makePickSet({ setPicking, v: FORM_PICK_JOB }),
     onWork: makePickSet({ setPicking, v: FORM_PICK_WORK }),
     onWhere: makePickSet({ setPicking, v: FORM_PICK_WHERE }),

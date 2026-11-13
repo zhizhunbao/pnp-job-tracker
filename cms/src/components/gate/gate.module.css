@@ -444,3 +444,253 @@
 .pickBody .cities {
   margin-top: 0;
 }
+
+/*
+ * 工作经历一段的第一行:职业与「修改」在左,删这一段的 ✕ 在右(2026-11-12)。
+ */
+.workHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/*
+ * 职业的字与它的「修改」钮。
+ */
+.workOcc {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/*
+ * 还没选职业时的灰字。
+ */
+.workOccNone {
+  font-weight: 400;
+  color: #6b7280;
+}
+
+/*
+ * 多行输入框(工作经历「做了什么」、技能;形照生成简历窗口原先那只)。
+ */
+.area {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 96px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #1f2937;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+/*
+ * 「生成简历」的两张模板卡并排;手机上各占一半。
+ */
+.tpls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+/*
+ * 一张模板卡:上面缩略样子,下面名字。
+ */
+.tplCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  height: auto;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+/*
+ * 选着的模板卡:主色边。
+ */
+.tplCardOn {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+/*
+ * 缩略样子的那张纸。
+ */
+.tplPaper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 72px;
+  height: 92px;
+  box-sizing: border-box;
+  padding: 12px 8px 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 3px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+/*
+ * 现代款页顶的色条。
+ */
+.tplBand {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: var(--primary);
+}
+
+/*
+ * 缩略样子里的姓名(传统款黑)。
+ */
+.tplName {
+  width: 60%;
+  height: 5px;
+  border-radius: 2px;
+  background: #1f2937;
+}
+
+/*
+ * 缩略样子里的姓名(现代款主色)。
+ */
+.tplNameOn {
+  width: 60%;
+  height: 5px;
+  border-radius: 2px;
+  background: var(--primary);
+}
+
+/*
+ * 缩略样子里分区标题下的横线(传统款黑)。
+ */
+.tplRule {
+  width: 100%;
+  height: 1px;
+  margin-top: 3px;
+  background: #1f2937;
+}
+
+/*
+ * 缩略样子里分区标题下的横线(现代款主色)。
+ */
+.tplRuleOn {
+  width: 100%;
+  height: 1px;
+  margin-top: 3px;
+  background: var(--primary);
+}
+
+/*
+ * 缩略样子里的一行正文。
+ */
+.tplLine {
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: #d1d5db;
+}
+
+/*
+ * 主钮与钮旁灰字一行。
+ */
+.cvAct {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+/*
+ * 预览框正文:预览区吃掉余下的高、自己滚,底下一行钮钉住。
+ */
+.cvPv {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/*
+ * 预览区。
+ */
+.cvPvView {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/*
+ * 预览框底下一行钮与灰字。
+ */
+.cvPvFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+}
+
+/*
+ * 学校格下面搜到的几所学校:竖排一列,带边框(2026-11-12)。
+ */
+.schoolHits {
+  display: flex;
+  flex-direction: column;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/*
+ * 一所学校:校名在上、灰字在下,左对齐,整行可点。
+ */
+.schoolHit {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  height: auto;
+  padding: 6px 10px;
+  border-radius: 0;
+  font-size: 14px;
+  text-align: left;
+}
+
+/*
+ * 学校那一行下面的灰字(译名、省码、公立私立)。
+ */
+.schoolSub {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/*
+ * 多行输入框聚焦。
+ */
+.area:focus {
+  outline: none;
+  border-color: #93c5fd;
+}

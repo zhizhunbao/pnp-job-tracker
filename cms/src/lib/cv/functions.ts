@@ -8,7 +8,7 @@
  */
 import { coverLinesOf, makeMeasure, pdfBadCharsOf } from '../apply'
 import {
-  BASE_LIFT, BODY_H, BODY_SIZE, BULLET, BULLET_RE, BULLET_TEXT_X, BULLET_X, CONTACT_H, CONTACT_SIZE, CV_ITEMS_MAX,
+  ACCENT_B, ACCENT_G, ACCENT_R, BAND_H, BASE_LIFT, BODY_H, BODY_SIZE, BULLET, BULLET_RE, BULLET_TEXT_X, BULLET_X, CONTACT_H, CONTACT_SIZE, CV_ITEMS_MAX,
   CV_LINE_MAX, CV_TEXT_MAX, DATE_GAP, DATE_SEP, GRAY, HALF, HEAD_AWARDS, HEAD_CREDS, HEAD_EDU, HEAD_H, HEAD_KEEP, HEAD_SIZE,
   HEAD_SKILLS, HEAD_SUMMARY, HEAD_VOLUNTEER, HEAD_WORK, INK, ITEM_GAP, KIND_NONE, KIND_ONE, KIND_RANGE, LINE_SEP, MARGIN, MONTH_EN, MONTH_MAX, MONTH_MIN,
   MONTH_YEAR_SEP, NAME_H, NAME_SIZE, PAGE_H, PAGE_W, PLACE_SEP, PRESENT, RULE_H, RULE_W, SUB_SEP, TEXT_NONE, TITLE_SIZE, YEAR_RE,
@@ -16,7 +16,7 @@ import {
 import type {
   CapIn, CenterRowIn, CvContact, CvContactJson, CvDraft, CvDraftJson, CvEntries, CvEntry, CvEntryJson, CvItems, CvLayout,
   CvLines, CvRows, CvTexts, MaybeCvSection,
-  CvPdfFont, CvPdfIn, CvPdfOut, CvRow, CvRowsIn, CvSection, DateIn, EntriesIn, ItemRowsIn, ItemsIn, JoinIn, LineRowsIn,
+  CvDrawIn, CvPdfFont, CvPdfIn, CvPdfOut, CvRow, CvRowsIn, CvSection, DateIn, EntriesIn, ItemRowsIn, ItemsIn, JoinIn, LineRowsIn,
   ListSectionIn, SectionRowsIn, TextRowsIn, TextSectionIn, WhenIn, WireIn,
 } from './types'
 
@@ -237,11 +237,36 @@ export function cvLinesOf(text: string): CvLines {
  * @returns PDF 字节。
  */
 export async function cvPdfOf<F extends CvPdfFont, C>(x: CvPdfIn<F, C>): CvPdfOut {
+  return pdfOf({ pdf: x.pdf, layout: x.layout, accent: false })
+}
+
+/**
+ * 版式画成现代款 PDF(2026-11-12 Frank「可以选择模板」):排法与传统款逐行相同(仍是单栏、文字可整段复制),
+ * 只多第一页页顶一条主色色条,姓名、分区标题与标题下的横线用主色。
+ *
+ * @param x 注进来的 pdf-lib 与版式。
+ * @returns PDF 字节。
+ */
+export async function cvModernPdfOf<F extends CvPdfFont, C>(x: CvPdfIn<F, C>): CvPdfOut {
+  return pdfOf({ pdf: x.pdf, layout: x.layout, accent: true })
+}
+
+/**
+ * 两款共用的画法。
+ *
+ * @param x 注进来的 pdf-lib、版式与要不要主色。
+ * @returns PDF 字节。
+ */
+async function pdfOf<F extends CvPdfFont, C>(x: CvDrawIn<F, C>): CvPdfOut {
   const doc = await x.pdf.PDFDocument.create({ updateMetadata: false })
   const reg = await doc.embedFont(x.pdf.StandardFonts.Helvetica)
   const bold = await doc.embedFont(x.pdf.StandardFonts.HelveticaBold)
   const ink = x.pdf.rgb(INK, INK, INK)
   const gray = x.pdf.rgb(GRAY, GRAY, GRAY)
+  let accent = ink
+  if (x.accent) {
+    accent = x.pdf.rgb(ACCENT_R, ACCENT_G, ACCENT_B)
+  }
   const rows = cvRowsOf({
     layout: x.layout,
     m: {
@@ -253,6 +278,9 @@ export async function cvPdfOf<F extends CvPdfFont, C>(x: CvPdfIn<F, C>): CvPdfOu
     },
   })
   let page = doc.addPage([PAGE_W, PAGE_H])
+  if (x.accent) {
+    page.drawRectangle({ x: 0, y: PAGE_H - BAND_H, width: PAGE_W, height: BAND_H, color: accent })
+  }
   let y = PAGE_H - MARGIN
   for (const row of rows) {
     if (y - row.h - row.keep < MARGIN) {
@@ -269,11 +297,14 @@ export async function cvPdfOf<F extends CvPdfFont, C>(x: CvPdfIn<F, C>): CvPdfOu
       if (part.gray) {
         color = gray
       }
+      if (part.bold && (part.size === NAME_SIZE || part.size === HEAD_SIZE)) {
+        color = accent
+      }
       page.drawText(part.text, { x: part.x, y: y + BASE_LIFT, size: part.size, font, color })
     }
     if (row.rule) {
       const ly = y + RULE_H
-      page.drawLine({ start: { x: MARGIN, y: ly }, end: { x: PAGE_W - MARGIN, y: ly }, thickness: RULE_W, color: ink })
+      page.drawLine({ start: { x: MARGIN, y: ly }, end: { x: PAGE_W - MARGIN, y: ly }, thickness: RULE_W, color: accent })
     }
   }
   return doc.save()

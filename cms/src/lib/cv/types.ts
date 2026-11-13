@@ -641,6 +641,41 @@ export type CvPdfPage<F extends CvPdfFont, C> = {
    * 画一条线。
    */
   drawLine(options: CvLineOpts<C>): void
+
+  /**
+   * 画一个实心矩形(现代款页顶的色条)。
+   */
+  drawRectangle(options: CvRectOpts<C>): void
+}
+
+/**
+ * pdf-lib `drawRectangle` 的选项(只用到的格;外部库形状)。
+ */
+export type CvRectOpts<C> = {
+  /**
+   * 左下角的横坐标(pt)。
+   */
+  x: number
+
+  /**
+   * 左下角的纵坐标(pt,从页底量)。
+   */
+  y: number
+
+  /**
+   * 宽(pt)。
+   */
+  width: number
+
+  /**
+   * 高(pt)。
+   */
+  height: number
+
+  /**
+   * 填充色。
+   */
+  color: C
 }
 
 /**
@@ -946,6 +981,26 @@ export type CvPdfIn<F extends CvPdfFont, C> = {
    * 版式。
    */
   layout: CvLayout
+}
+
+/**
+ * `pdfOf` 的入参:注进来的 pdf-lib、版式与要不要主色。
+ */
+export type CvDrawIn<F extends CvPdfFont, C> = {
+  /**
+   * 注进来的 pdf-lib。
+   */
+  pdf: CvPdfLib<F, C>
+
+  /**
+   * 版式。
+   */
+  layout: CvLayout
+
+  /**
+   * 现代款:页顶色条,姓名、分区标题与标题下的横线用主色;传统款 false。
+   */
+  accent: boolean
 }
 
 /**

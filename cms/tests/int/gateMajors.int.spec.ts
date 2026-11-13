@@ -62,7 +62,7 @@ function row(code: string, en: string, zh: string | null = null, ko: string | nu
 }
 
 // 档案编辑弹框的空档(2026-10-11 访客向导删,整机走一遍改挂 GateEdit:同一套题,五题全问从目标题起;2026-11-07 改挂一页表单 GateForm)
-const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [], eduList: [], workNocs: [], matchBy: '', matchMode: '', fromResume: [] }
+const EMPTY_SEED = { goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [], eduList: [], workNocs: [], matchBy: '', matchMode: '', fromResume: [], cv: { work: [], phone: '', link: '', skills: '', tpl: 'classic' } }
 
 const HOT: MajorRow[] = [
   row('52.0201', 'Business Administration and Management, General.', '工商管理', '경영학', ['商务', '高管']),
@@ -123,18 +123,21 @@ afterEach(() => {
 })
 
 describe('整机与选择器接线(2026-10-05 选择器搬家后)', () => {
-  it('整机:点热门里的专业 → 专业格存的就是 class 码清单;再点一个追加、再点第一个摘掉', async () => {
+  it('整机(2026-11-12 专业并进教育经历):给第一段点热门里的专业 → 这一段挂上它、选择框关,整机的专业码由各段汇出;再开再点另一个 = 换掉', async () => {
     majorsApi()
     const g = runHook(() => {
       const w = useGateForm({ seed: EMPTY_SEED, onClose: () => undefined, onSaved: () => undefined })
-      return { w, m: useMajorPicker({ value: w.majors, onChange: w.onMajors }) }
+      return { w, m: useMajorPicker({ value: [], onChange: w.edit.em.onPick }) }
     })
     await vi.waitFor(() => expect(g.current?.m.hotLoaded).toBe(true))
+    act(() => g.current?.w.edit.em.openOf(0)())
+    expect(g.current?.w.edit.em.at).toBe(0)
     act(() => g.current?.m.pickOf(HOT[0] as MajorRow)())
     expect(g.current?.w.majors).toEqual(['52.0201'])
+    expect(g.current?.w.edit.edu[0]?.major).toBe('52.0201')
+    expect(g.current?.w.edit.em.at).toBe(-1)
+    act(() => g.current?.w.edit.em.openOf(0)())
     act(() => g.current?.m.pickOf(HOT[1] as MajorRow)())
-    expect(g.current?.w.majors).toEqual(['52.0201', '11.0701'])
-    act(() => g.current?.m.pickOf(HOT[0] as MajorRow)())
     expect(g.current?.w.majors).toEqual(['11.0701'])
   })
 
@@ -277,13 +280,17 @@ function railApi() {
     if (url.startsWith('/api/majors?cat=')) {
       return reply({ groups: [], singles: [] })
     }
+    if (url.startsWith('/api/majors?code=')) {
+      const code = decodeURIComponent(url.slice('/api/majors?code='.length))
+      return reply({ major: RAIL_FIN.groups[0]?.majors.find((m) => m.code === code) })
+    }
     return reply({ answers: null })
   }))
 }
 
 describe('④ 整机走一遍(原 gateMajorRail ④,2026-10-05 随选择器搬家挪来;同日多选)', () => {
-  it('点专业那一格的「修改」叠开选择器:左栏竖排 tablist(界面中文);点大类出专业类白卡(头行 aria-expanded + 个数);点开、点专业 → 选中;'
-    + '再点一个两个都亮、已选一行两枚;再点第一个摘掉;「选好了」收框,那一格显示已选 1 个', async () => {
+  it('2026-11-12 专业并进教育经历:教育经历弹框里那一段的「修改」叠开选择器 —— 左栏竖排 tablist(界面中文);点大类出专业类白卡'
+    + '(头行 aria-expanded + 个数);点开、点专业 → 这一段挂上它、选择器收起;再开再点另一个 = 换掉;「选好了」收框,教育经历那一格显示专业名', async () => {
     railApi()
     const tk = ((key: string, vars?: Record<string, string | number>) => key + (vars == null ? '' : JSON.stringify(vars))) as TFn
     vi.stubGlobal('matchMedia', () => ({
@@ -298,8 +305,13 @@ describe('④ 整机走一遍(原 gateMajorRail ④,2026-10-05 随选择器搬�
     })
     const edits = () => Array.from(host.querySelectorAll('button')).filter((b) => b.textContent === 'pf.edit')
     expect(host.textContent).toContain('pf.none')
-    act(() => edits()[0]?.click())
-    const list = host.querySelector('[role="tablist"][aria-orientation="vertical"]') as HTMLElement
+    // 面板里自上而下:想做的工作 0、做过的工作 1、所在地 2、教育经历 3;弹框里那一段专业的「修改」是最后一颗
+    const lastEdit = () => edits()[edits().length - 1] as HTMLButtonElement
+    const listNow = () => host.querySelector('[role="tablist"][aria-orientation="vertical"]') as HTMLElement
+    act(() => edits()[3]?.click())
+    expect(host.textContent).toContain('pf.e.majorNone')
+    act(() => lastEdit().click())
+    const list = listNow()
     expect(list).not.toBeNull()
     await vi.waitFor(() => expect(list.querySelectorAll('[role="tab"]').length).toBe(3))
     const tabs = Array.from(list.querySelectorAll('[role="tab"]'))
@@ -316,18 +328,21 @@ describe('④ 整机走一遍(原 gateMajorRail ④,2026-10-05 随选择器搬�
     const lineOf = (label: string) =>
       Array.from(host.querySelectorAll('button[aria-pressed]')).find((b) => b.textContent === label) as HTMLButtonElement
     act(() => lineOf('会计').click())
+    expect(listNow()).toBeNull()
+    await vi.waitFor(() => expect(host.textContent).toContain('会计'))
+    expect(host.textContent).not.toContain('pf.e.majorNone')
+    act(() => lastEdit().click())
+    await vi.waitFor(() => expect(listNow().querySelectorAll('[role="tab"]').length).toBe(3))
+    act(() => (Array.from(listNow().querySelectorAll('[role="tab"]')).find((x) => x.textContent === '财会金融') as HTMLButtonElement).click())
+    await vi.waitFor(() => expect(host.querySelectorAll('button[aria-expanded]').length).toBe(2))
+    act(() => (host.querySelectorAll('button[aria-expanded]')[0] as HTMLButtonElement).click())
     expect(lineOf('会计').getAttribute('aria-pressed')).toBe('true')
     act(() => lineOf('会计技术与簿记').click())
-    expect(lineOf('会计').getAttribute('aria-pressed')).toBe('true')
-    expect(lineOf('会计技术与簿记').getAttribute('aria-pressed')).toBe('true')
-    const delsNow = () => Array.from(host.querySelectorAll('button[aria-label^="ob.tagDel"]'))
-    expect(delsNow().map((b) => b.getAttribute('aria-label')))
-      .toEqual(['ob.tagDel{"name":"会计"}', 'ob.tagDel{"name":"会计技术与簿记"}'])
-    act(() => lineOf('会计').click())
-    expect(lineOf('会计').getAttribute('aria-pressed')).toBe('false')
-    const done = () => Array.from(host.querySelectorAll('button')).find((b) => b.textContent === 'pf.pickDone') as HTMLButtonElement
+    expect(listNow()).toBeNull()
+    await vi.waitFor(() => expect(host.textContent).toContain('会计技术与簿记'))
+    const done = () => Array.from(host.querySelectorAll('button')).find((x) => x.textContent === 'pf.pickDone') as HTMLButtonElement
     act(() => done().click())
-    expect(host.querySelector('[role="tablist"]')).toBeNull()
+    expect(host.querySelector('button[aria-pressed]')).toBeNull()
     expect(host.textContent).toContain('会计技术与簿记')
     act(() => root.unmount())
     host.remove()
@@ -337,6 +352,7 @@ describe('④ 整机走一遍(原 gateMajorRail ④,2026-10-05 随选择器搬�
 // 2026-10-05 第 3 题改成与第 2 题同一副左右两栏(Frank「也改成左右 两部分吗?」「改啊」):访客向导整机走到第 3 题 ——
 // 左栏 推荐 + 全站大类;点一行 → 下一步亮、已选一行一颗;× 摘掉 → 下一步回灰。两栏本身的性质见 occPicker.int.spec.ts。
 // 2026-11-07 改挂一页表单 GateForm:专业那一格「修改」选一个专业、「选好了」;再点想做的工作那一格「修改」,职业选择器按选好的专业取热门;
+// 2026-11-12 专业并进教育经历的每一段:专业改从教育经历弹框里那一段的「修改」选(选上即收),其余不变;
 // 「下一步亮 / 回灰」改成选中态与收框后那一格的「已选 N 个」。
 const Q3_TOP = [
   { noc: '21232', title: 'Software developers and programmers', titleZh: '软件开发人员和程序员', titleZhShort: '软件开发',
@@ -360,6 +376,9 @@ describe('第 3 题整机走一遍(2026-10-05 改左右两栏)', () => {
       if (url.startsWith('/api/quiz?major=')) {
         return reply({ top: Q3_TOP })
       }
+      if (url.startsWith('/api/majors?code=')) {
+        return reply({ major: HOT[1] })
+      }
       return reply({ answers: null })
     }))
     const tk = ((key: string, vars?: Record<string, string | number>) => key + (vars == null ? '' : JSON.stringify(vars))) as TFn
@@ -375,14 +394,16 @@ describe('第 3 题整机走一遍(2026-10-05 改左右两栏)', () => {
     })
     const edits = () => Array.from(host.querySelectorAll('button')).filter((b) => b.textContent === 'pf.edit')
     const done = () => Array.from(host.querySelectorAll('button')).find((b) => b.textContent === 'pf.pickDone') as HTMLButtonElement
-    await act(async () => edits()[0]?.click())
+    // 2026-11-12 专业并进教育经历:教育经历那一格「修改」(面板第 4 颗)→ 弹框里那一段专业的「修改」(最后一颗)→ 选上即收
+    await act(async () => edits()[3]?.click())
+    await act(async () => edits()[edits().length - 1]?.click())
     const lineOf = (label: string) =>
       Array.from(host.querySelectorAll('button[aria-pressed]')).find((b) => b.textContent === label) as HTMLButtonElement
     expect(lineOf('计算机科学')).not.toBeUndefined()
-    act(() => lineOf('计算机科学').click())
+    await act(async () => lineOf('计算机科学').click())
     await act(async () => done().click())
-    expect(host.textContent).toContain('计算机科学')
-    await act(async () => edits()[1]?.click())
+    await vi.waitFor(() => expect(host.textContent).toContain('计算机科学'))
+    await act(async () => edits()[0]?.click())
     await vi.waitFor(() => expect(lineOf('软件开发')).not.toBeUndefined())
     expect(urls).toContain('/api/quiz?major=11.0701&n=24')
     const tabs = () => Array.from(host.querySelectorAll('[role="tablist"][aria-orientation="vertical"] [role="tab"]'))

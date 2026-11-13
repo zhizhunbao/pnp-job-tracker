@@ -169,3 +169,18 @@ export const CARD_MD_CLS = 'cardMd'
  * 分区卡卡头标题的全局类(main.css 的 .mcardHead)。
  */
 export const CARD_HEAD_CLS = 'mcardHead'
+
+/**
+ * 简历上传成了的页面事件名(本卡上传或替换成功后发;档案那一半听它 —— 档案还有空格就打开修改面板并自动从简历填写)。
+ */
+export const EV_UPLOADED = 'o2p-resume-uploaded'
+
+/**
+ * 要生成简历的页面事件名(本卡空态的「生成简历」钮发;档案那一半听它打开修改面板)。
+ */
+export const EV_BUILD = 'o2p-resume-build'
+
+/**
+ * 简历换了的页面事件名(修改档案面板里「设为我的简历」存成后发,同 gate 桶子桶 cv 的 EV_RESUME;本卡听它重拉清单)。
+ */
+export const EV_RESUME = 'o2p-resume-changed'

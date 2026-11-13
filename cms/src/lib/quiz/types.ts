@@ -580,7 +580,88 @@ export type Answers = {
    * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
    */
   fromResume: string[]
+
+  /**
+   * 简历资料(2026-11-12 Frank「右侧弹 sidebar 用户一项一项填,最后用 sonnet 生成简历」):工作经历几段、电话、链接、
+   * 技能与选的模板;档案填一次,匹配与生成简历都读。
+   */
+  cv: CvFacts
 }
+
+/**
+ * 简历资料(答案档 cv 一格)。
+ */
+export type CvFacts = {
+  /**
+   * 工作经历几段,新的在前;空列 = 没填。
+   */
+  work: CvWork[]
+
+  /**
+   * 电话;没填 = 空串。
+   */
+  phone: string
+
+  /**
+   * 个人链接(领英等);没填 = 空串。
+   */
+  link: string
+
+  /**
+   * 技能,一行一项;没填 = 空串。
+   */
+  skills: string
+
+  /**
+   * 简历模板:classic / modern。
+   */
+  tpl: string
+}
+
+/**
+ * 工作经历一段(七格,没有 = 空串或空列)。
+ */
+export type CvWork = {
+  /**
+   * 这一段对应的职业码(职位匹配读的 workNocs 由各段的码汇出);没选 = 空列。
+   */
+  nocs: string[]
+
+  /**
+   * 职位名称,照自己当时的头衔写。
+   */
+  title: string
+
+  /**
+   * 公司。
+   */
+  org: string
+
+  /**
+   * 城市。
+   */
+  city: string
+
+  /**
+   * 开始年月(2021 或 2021-03)。
+   */
+  from: string
+
+  /**
+   * 结束年月;空串 = 至今或没填。
+   */
+  to: string
+
+  /**
+   * 做了什么,用户自己的话(任何语言);生成简历时由模型写成英文要点。
+   */
+  desc: string
+}
+
+/**
+ * 工作经历一段或没有(toCvWork:这一项不合形就丢)。
+ */
+export type MaybeCvWork = CvWork | null
 
 /**
  * 教育经历一条(2026-11-12;答案档 eduList 的一项,五格都是字符串,没有 = 空串)。
@@ -610,6 +691,12 @@ export type EduItem = {
    * 结束年份(四位数字);没填或在读 = 空串。
    */
   to: string
+
+  /**
+   * 这一段学的专业(CIP 2021 class 码;2026-11-12 Frank「教育经历 和 专业是不是重复了」:专业并进每一段,
+   * 答案档的 majors 由各段汇出);没选 = 空串。老档案里没有这一格,读的时候按空串。
+   */
+  major: string
 }
 
 /**
@@ -1416,6 +1503,11 @@ export type QuizProfile = {
    * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
    */
   fromResume: string[]
+
+  /**
+   * 简历资料(2026-11-12:工作经历几段、电话、链接、技能与模板;洗净的)。
+   */
+  cv: CvFacts
 }
 
 /**
@@ -1491,6 +1583,11 @@ export type ProfileBasicFact = {
    * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
    */
   fromResume: string[]
+
+  /**
+   * 简历资料(2026-11-12;洗净的;档里没有 = 各格空)。
+   */
+  cv: CvFacts
 }
 
 /**
@@ -1586,7 +1683,82 @@ export type ProfileBasicJson = {
    * 来自简历的标记(2026-11-09)。
    */
   fromResume?: string[] | null
+
+  /**
+   * 简历资料(2026-11-12;形状不可信,过 toCvFacts 才用)。
+   */
+  cv?: RawCell | null
 }
+
+/**
+ * 搜学校的库行(dli,校级)。
+ */
+export type SchoolDbRow = {
+  /**
+   * 校名(英文)。
+   */
+  name: string
+
+  /**
+   * 中文译名;没有 = null 或空串。
+   */
+  name_zh: string | null
+
+  /**
+   * 所在省码。
+   */
+  province: string | null
+
+  /**
+   * 公立。
+   */
+  is_public: boolean | null
+}
+
+/**
+ * 搜到的一所学校(对外)。
+ */
+export type SchoolHit = {
+  /**
+   * 校名(英文)。
+   */
+  name: string
+
+  /**
+   * 中文译名;没有 = 空串。
+   */
+  nameZh: string
+
+  /**
+   * 所在省码;库里没有 = 空串。
+   */
+  prov: string
+
+  /**
+   * 公立 true、私立 false。
+   */
+  isPublic: boolean
+}
+
+/**
+ * loadSchools 的入参。
+ */
+export type SchoolsIn = {
+  /**
+   * 连接。
+   */
+  db: Db
+
+  /**
+   * 检索词(原样;函数里转义 LIKE 元字符)。
+   */
+  q: string
+}
+
+/**
+ * loadSchools 的返回。
+ */
+export type SchoolsOut = Promise<SchoolHit[]>
 
 /**
  * 专业名的库行(cip_programs)。

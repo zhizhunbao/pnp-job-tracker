@@ -16,8 +16,6 @@ import { describe, expect, it } from 'vitest'
 import { MARGIN, PAGE_W } from '@/lib/cv/constants'
 import { cvBadCharsOf, cvLayoutOf, cvLinesOf, cvPdfOf, cvRowsOf, toCvDraft, whenOf } from '@/lib/cv/functions'
 import type { CvDraft, CvEntry } from '@/lib/cv/types'
-import { LIKE_ESCAPE, LIKE_SPECIAL_RE } from '@/lib/noc/constants'
-import { nocDutyHitsOf } from '@/lib/noc/functions'
 
 function entry(over: Partial<CvEntry>): CvEntry {
   return {
@@ -133,35 +131,5 @@ describe('PDF', () => {
         expect(p.x + w).toBeLessThanOrEqual(PAGE_W - MARGIN + 0.01)
       }
     }
-  })
-})
-
-describe('导入职责排序', () => {
-  const row = (noc: string, title: string, examples: string[]) => ({ noc, title, duties: 'Do A\n\nDo B', examples: examples.join('\n') })
-  it('⑦ 示例名一字不差排最前、命中名是那个示例名、职责拆条', () => {
-    const hits = nocDutyHitsOf({
-      q: 'Data Engineer',
-      rows: [
-        row('21223', 'Database analysts and data engineers', ['database analyst']),
-        row('21211', 'Data scientists', ['big data engineer', 'data engineer']),
-      ],
-    })
-    expect(hits.map((h) => h.noc)).toEqual(['21211', '21223'])
-    expect(hits[0]?.hit).toBe('data engineer')
-    expect(hits[0]?.duties).toEqual(['Do A', 'Do B'])
-  })
-  it('⑦ 整句哪儿都没有时按词:排在整句命中之后,命中名报含词最多的示例名', () => {
-    const hits = nocDutyHitsOf({
-      q: 'Big data architect',
-      rows: [
-        row('21211', 'Data scientists', ['big data analyst', 'data architect']),
-        row('21223', 'Database analysts and data administrators', ['big data architect']),
-      ],
-    })
-    expect(hits.map((h) => h.noc)).toEqual(['21223', '21211'])
-    expect(hits[1]?.hit).toBe('big data analyst')
-  })
-  it('⑦ LIKE 元字符转义', () => {
-    expect('50%_off\\'.replace(LIKE_SPECIAL_RE, LIKE_ESCAPE)).toBe('50\\%\\_off\\\\')
   })
 })

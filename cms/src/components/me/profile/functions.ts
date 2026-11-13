@@ -14,12 +14,13 @@ import { eduPicksOf, makeEduLabel } from '@/components/gate'
 import { log, PROFILE_LOG } from '@/lib/log'
 import {
   CRED_INCLUDE, MS_PROV_FED, MS_PROVS, PF_ERR_EMPTY, PF_FOLD_N, PF_GOAL_JOBS, PF_GOAL_JOBS_KEY, PF_GOAL_PR,
-  PF_GOAL_PR_KEY, PF_LOAD_FAIL, PF_LOAD_OK, TEXT_NONE, URL_PROFILE,
+  PF_GOAL_PR_KEY, PF_LOAD_FAIL, PF_LOAD_OK, PF_START_FILL, TEXT_NONE, URL_PROFILE,
   EDU_F_KIND, EDU_F_LEN, EDU_F_PROV, PF_LIST_SEP, PF_MATCH_EDU, PF_MODE_STRICT, PF_RULE_EDU_KEY, PF_RULE_EDU_STRICT_KEY,
   PF_RULE_WORK_KEY, PF_RULE_WORK_STRICT_KEY, PF_YEAR_OPEN, PF_YEAR_SEP,
 } from './constants'
 import type {
   MsOpenIn, MsProvPickIn, MyStreamCellRow, PfEditOpenIn, PfFlagSetIn, PfJson, PfLoadIn, PfNames, PfSavedIn, PfSeed,
+  PfUploadedIn,
   PfShownIn, PfTextSetIn, PfView,
   PfEduItem, PfEduLine, PfEduLineIn, PfEduLinesIn, PfRuleIn,
 } from './types'
@@ -58,6 +59,23 @@ export function makeEditOpen(x: PfEditOpenIn): () => void {
   return function editOpen(): void {
     x.setStart(x.start)
     x.setEditing(true)
+  }
+}
+
+/**
+ * 造「简历上传成了」的回调(2026-11-12 Frank「这个应该是自动填的吧」):档案已取到、且做过的工作、教育经历、英文姓名
+ * 里还有空着的,就打开修改面板并让它一开就从简历填写(只填空格,保存前可改);都填过了什么都不做。
+ *
+ * @param x 档案与两个落格。
+ * @returns 事件回调。
+ */
+export function makeUploadedFill(x: PfUploadedIn): () => void {
+  return function uploadedFill(): void {
+    const v = x.view
+    if (v != null && (v.works.length === 0 || v.eduList.length === 0 || v.name === TEXT_NONE)) {
+      x.setStart(PF_START_FILL)
+      x.setEditing(true)
+    }
   }
 }
 
@@ -121,6 +139,7 @@ name: v.name,
 who: v.who,
 edu: v.edu,
 eduList: v.eduList,
+    cv: v.cv,
   }
 }
 

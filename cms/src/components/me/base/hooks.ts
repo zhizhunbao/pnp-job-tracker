@@ -4,15 +4,17 @@
  * 生成简历窗口)。2026-11-12 自子桶 resume 的 useResume 裁出重写,为档案与简历并页(2026-11-11 Frank
  * 「只留一份上传的吧。因为之后都可以按岗位改写」「左边我的档案,右面我的简历」):页签、求职信、设默认、预览框、表格行都不带。
  *
+ * 同日 Frank「最后用 sonnet 生成简历」:修改档案面板里生成的简历点「设为我的简历」存成后发一个页面事件,本卡听到就重拉清单。
+ *
  * @author Frank
  * @time 2026-11-12 10:00:00
  */
 import { useEffect, useState } from 'react'
-import { useCvOpen } from '@/components/cv'
 import { useIsNarrow } from '@/components/modal'
-import { TEXT_NONE } from './constants'
+import { EV_RESUME, TEXT_NONE } from './constants'
 import {
-  errTextOf, fileOf, makeAskClose, makeAskOk, makeDeleteAsk, makeDragLeave, makeDragOver, makeFileDrop, makeFilePick,
+  errTextOf, fileOf, fireBuild, makeAskClose, makeAskOk, makeDeleteAsk, makeDragLeave, makeDragOver, makeFileDrop,
+  makeFilePick,
   makePicker, makeReplaceAsk, makeResumeListLoad, makeResumeUpload, replaceIdOf,
 } from './functions'
 import type { Ask, AskPanel, BaseIn, BasePanel, ResumeMetas } from './types'
@@ -37,12 +39,18 @@ export function useBase(x: BaseIn): BasePanel {
   useEffect(function firstLoad() {
     void makeResumeListLoad({ setItems, setChecked })()
   }, [])
+  useEffect(function listenResumeChanged() {
+    const onChanged = makeResumeListLoad({ setItems, setChecked })
+    window.addEventListener(EV_RESUME, onChanged)
+    return function stopListen(): void {
+      window.removeEventListener(EV_RESUME, onChanged)
+    }
+  }, [])
 
   const file = fileOf(items)
   const upload = makeResumeUpload({ replaceId: replaceIdOf(file), reload, setBusy, setErr })
   const del = useAsk()
   const rep = useAsk()
-  const cv = useCvOpen({ onDone: reload })
   return {
     narrow,
     checked,
@@ -60,7 +68,7 @@ export function useBase(x: BaseIn): BasePanel {
     onDelete: makeDeleteAsk({ file, setAsk: del.setAsk, act: { reload, setErr } }),
     del,
     rep,
-    cv,
+    onBuild: fireBuild,
   }
 }
 

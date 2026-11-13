@@ -224,6 +224,21 @@ export const PF_LOAD_FAIL = 'fail'
 export const PF_START_WHO = 'who'
 
 /**
+ * 编辑面板的起始方式:一开就自动从简历填写(2026-11-12 刚上传或替换了简历、档案还有空格时)。
+ */
+export const PF_START_FILL = 'fill'
+
+/**
+ * 要生成简历的页面事件名(「基础简历」卡空态的「生成简历」钮发,同子桶 base 的 EV_BUILD)。
+ */
+export const EV_BUILD = 'o2p-resume-build'
+
+/**
+ * 简历上传成了的页面事件名(「基础简历」卡上传或替换成功后发,同子桶 base 的 EV_UPLOADED)。
+ */
+export const EV_UPLOADED = 'o2p-resume-uploaded'
+
+/**
  * 档案卡卡头的词条键(「我的档案」;2026-11-11 档案页成两栏后每张卡自带卡头)。
  */
 export const PF_TITLE_KEY = 'pf.title'

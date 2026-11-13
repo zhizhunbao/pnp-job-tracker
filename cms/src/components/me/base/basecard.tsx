@@ -10,7 +10,6 @@
  * @time 2026-11-12 10:00:00
  */
 import { cssOf } from '@/components/css'
-import { CvBuilder } from '@/components/cv'
 import { ConfirmModal } from '@/components/modal'
 import { BaseDrop } from './basedrop'
 import { BaseFile } from './basefile'
@@ -53,7 +52,6 @@ export function BaseCard({ b, t }: BasePartIn) {
         <ConfirmModal title={t('rf.replaceAsk')} body={b.rep.ask.name} okText={t('rf.replace')}
           cancelText={t('rf.cancel')} onOk={b.rep.onOk} onCancel={b.rep.onCancel} />
       )}
-      {b.cv.open && <CvBuilder onClose={b.cv.onClose} onSaved={b.cv.onSaved} />}
     </>
   )
 }

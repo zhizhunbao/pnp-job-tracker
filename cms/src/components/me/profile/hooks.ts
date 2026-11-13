@@ -7,16 +7,18 @@
  */
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
-import { PF_LOAD_BUSY, PF_START_WHO, TEXT_NONE } from './constants'
+import { EV_BUILD, EV_UPLOADED, PF_LOAD_BUSY, PF_START_WHO, TEXT_NONE } from './constants'
 import {
   loadProfile, makeEditOpen, makeFlagSet, makeProfileSaved, makeProvPickOf, makeStreamOpenOf, makeTextSet,
-  msInitProvOf,
+  makeUploadedFill, msInitProvOf,
 } from './functions'
 import type { MyStreamsHookIn, MyStreamsPanel, PfView, ProfileHookIn, ProfilePanel } from './types'
 
 /**
  * 我的档案整机(2026-10-09「我的档案」批):挂上取一次档案;「修改」开访客向导同款的编辑弹框,保存成功关框并换一代重取。
  * 2026-11-07 多一格 autoEdit:从「我的求职」顶上那条「补全档案」点「去补全」过来,一进页就开着修改面板。
+ * 2026-11-12 Frank「和我修改简历那一部分合并一下」:听「要生成简历」的页面事件(简历卡空态的钮),打开修改面板。
+ * 2026-11-12 Frank「这个应该是自动填的吧」:听「简历上传成了」的页面事件,档案还有空格就打开修改面板并自动从简历填写。
  *
  * @param x 取词函数。
  * @returns 我的档案的面板。
@@ -31,6 +33,20 @@ export function useProfile(x: ProfileHookIn): ProfilePanel {
   useEffect(function loadOnGen() {
     void loadProfile({ setView, setLoad })
   }, [gen])
+  useEffect(function listenBuild() {
+    const onBuild = makeEditOpen({ setStart, setEditing, start: TEXT_NONE })
+    window.addEventListener(EV_BUILD, onBuild)
+    return function stopListen(): void {
+      window.removeEventListener(EV_BUILD, onBuild)
+    }
+  }, [])
+  useEffect(function listenUploaded() {
+    const onUploaded = makeUploadedFill({ view, setStart, setEditing })
+    window.addEventListener(EV_UPLOADED, onUploaded)
+    return function stopListen(): void {
+      window.removeEventListener(EV_UPLOADED, onUploaded)
+    }
+  }, [view])
   return {
     t: x.t,
     lang,

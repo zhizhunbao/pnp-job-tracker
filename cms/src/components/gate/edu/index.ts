@@ -8,6 +8,8 @@
  * @time 2026-11-12 10:00:00
  */
 
+export { EDU_AT_NONE } from './constants'
 export {
-  eduFormRowsOf, eduListOf, eduMergedOf, eduPicksOf, eduStrsOf, makeEduAdd, makeEduLabel, makeEduPick, makeEduRemove,
+  eduFormRowsOf, eduListOf, eduMajorsOf, eduMergedOf, eduPicksOf, eduStrsOf, eduWithMajorsOf, makeEduAdd, makeEduLabel,
+  makeEduMajor, makeEduPick, makeEduRemove,
 } from './functions'

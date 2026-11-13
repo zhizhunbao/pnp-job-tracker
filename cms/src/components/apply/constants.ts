@@ -125,6 +125,11 @@ export const EV_APPLY_OPEN = 'offer2pr:apply-open'
 export const EV_APPLY_SENT = 'offer2pr:apply-sent'
 
 /**
+ * 简历换了的页面事件名(修改档案的右侧栏里把生成的简历设为我的简历后发,同 gate 桶子桶 cv 的 EV_RESUME)。
+ */
+export const EV_RESUME = 'o2p-resume-changed'
+
+/**
  * 投递框的尺寸记忆键(10-09 Frank「所有弹框 都能放大缩小 拖动,保持一致」:与职位 / 公司 / 省提名弹框共用一份记住的宽高;
  * 值与 advisor 的 ADV_PREF 相同,各域自抄)。
  */

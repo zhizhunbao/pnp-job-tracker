@@ -15,14 +15,11 @@
 
 import { firstOf, queryRows, SQL, text } from '../db'
 import {
-  BROAD_COLOR, DUTY_HITS_MAX, DUTY_SCAN_ROWS, KEY_BROAD, KEY_CAT, LANG_KO, LANG_ZH, LIKE_ANY, LIKE_ESCAPE, LIKE_SPECIAL_RE,
-  LINE_SEP, NA, NAME_NONE, RANK_EXACT, RANK_EXAMPLE, RANK_START, RANK_TITLE, RANK_WORDS, DUTY_WORD_MIN,
-  DUTY_WORDS_MAX, WORD_SPLIT_RE,
+  BROAD_COLOR, KEY_BROAD, KEY_CAT, LANG_KO, LANG_ZH, NA, NAME_NONE,
 } from './constants'
 import { CACHE } from './variables'
 import type {
-  BestExampleIn, Cat, CatLabelRows, CatNameIn, MaybeBroad, NocDutiesIn, NocDutiesOut, NocDutiesRow, NocDutyHits, NocDutyHitsIn, NocDutyLines, NocDutyRankIn,
-  NocDutyRanked, NocDutyRow, NocDutySearchIn, NocDutySearchOut, NocLocalTitleIn, PickNameIn, Row,
+  Cat, CatLabelRows, CatNameIn, MaybeBroad, NocDutiesIn, NocDutiesOut, NocDutiesRow, NocLocalTitleIn, PickNameIn, Row,
 } from './types'
 
 /**
@@ -151,168 +148,6 @@ export async function loadNocDuties(input: NocDutiesIn): NocDutiesOut {
   return firstOf(rows)
 }
 
-/**
- * 生成简历「导入职责」:按职位名找职业(职业名与示例职位名里每个词都出现、且有职责原文的;整句都在的先捞,细排另做)。
- *
- * @param input 连接与检索词。
- * @returns 命中的行(未细排)。
- */
-export async function loadNocDutyRows(input: NocDutySearchIn): NocDutySearchOut {
-  const phrase = likeOf(input.q)
-  const likes: NocDutyLines = []
-  for (const w of dutyWordsOf(input.q)) {
-    likes.push(likeOf(w))
-  }
-  if (likes.length === 0) {
-    likes.push(phrase)
-  }
-  return queryRows({ db: input.db, sql: SQL.NOC_DUTY_SEARCH, params: [likes, phrase, DUTY_SCAN_ROWS], map: toNocDutyRow })
-}
-
-/**
- * 子串匹配的 ILIKE 串(元字符转义)。
- *
- * @param s 一段字。
- * @returns `%…%`。
- */
-function likeOf(s: string): string {
-  return LIKE_ANY + s.replace(LIKE_SPECIAL_RE, LIKE_ESCAPE) + LIKE_ANY
-}
-
-/**
- * 检索词拆成小写的词(太短的丢掉,最多几个)。
- *
- * @param q 检索词。
- * @returns 各个词。
- */
-export function dutyWordsOf(q: string): NocDutyLines {
-  const out: NocDutyLines = []
-  for (const w of q.toLowerCase().split(WORD_SPLIT_RE)) {
-    if (w.length >= DUTY_WORD_MIN && out.length < DUTY_WORDS_MAX) {
-      out.push(w)
-    }
-  }
-  return out
-}
-
-/**
- * 搜到的行排档取前几个:一字不差 → 开头相同 → 职业名含 → 只有示例名含;同档按职业码。
- *
- * @param x 库里捞回的行与检索词。
- * @returns 前几个职业(职责拆成一条一项)。
- */
-export function nocDutyHitsOf(x: NocDutyHitsIn): NocDutyHits {
-  const q = x.q.toLowerCase()
-  const words = dutyWordsOf(x.q)
-  const ranked: NocDutyRanked[] = []
-  for (const row of x.rows) {
-    ranked.push(rankedOf({ row, q, words }))
-  }
-  ranked.sort(byDutyRank)
-  const out: NocDutyHits = []
-  for (const r of ranked.slice(0, DUTY_HITS_MAX)) {
-    out.push({ noc: r.row.noc, title: r.row.title, hit: r.hit, duties: dutyLinesOf(r.row.duties) })
-  }
-  return out
-}
-
-/**
- * 一行排哪一档、命中的是哪个名字(职业名与各示例职位名里挑档最靠前的那个)。
- *
- * @param x 一行与小写检索词。
- * @returns 排过档的行。
- */
-function rankedOf(x: NocDutyRankIn): NocDutyRanked {
-  let best: NocDutyRanked = { row: x.row, rank: RANK_EXAMPLE, hit: x.row.title }
-  const title = x.row.title.toLowerCase()
-  if (title === x.q) {
-    return { row: x.row, rank: RANK_EXACT, hit: x.row.title }
-  }
-  if (title.startsWith(x.q)) {
-    best = { row: x.row, rank: RANK_START, hit: x.row.title }
-  } else if (title.includes(x.q)) {
-    best = { row: x.row, rank: RANK_TITLE, hit: x.row.title }
-  }
-  let firstExample = NAME_NONE
-  for (const raw of x.row.examples.split(LINE_SEP)) {
-    const ex = raw.trim()
-    const low = ex.toLowerCase()
-    if (low === x.q) {
-      return { row: x.row, rank: RANK_EXACT, hit: ex }
-    }
-    if (low.startsWith(x.q) && best.rank > RANK_START) {
-      best = { row: x.row, rank: RANK_START, hit: ex }
-    }
-    if (low.includes(x.q) && firstExample === NAME_NONE) {
-      firstExample = ex
-    }
-  }
-  if (best.rank === RANK_EXAMPLE && firstExample !== NAME_NONE) {
-    best = { row: x.row, rank: RANK_EXAMPLE, hit: firstExample }
-  }
-  if (best.rank === RANK_EXAMPLE && firstExample === NAME_NONE) {
-    best = { row: x.row, rank: RANK_WORDS, hit: bestExampleOf({ row: x.row, words: x.words }) }
-  }
-  return best
-}
-
-/**
- * 只按词命中时报哪个名字:含词最多的示例职位名(同数取先出现的);一个都不含报职业名。
- *
- * @param x 一行与各个词。
- * @returns 命中的名字。
- */
-function bestExampleOf(x: BestExampleIn): string {
-  let hit = x.row.title
-  let most = 0
-  for (const raw of x.row.examples.split(LINE_SEP)) {
-    const low = raw.trim().toLowerCase()
-    let n = 0
-    for (const w of x.words) {
-      if (low.includes(w)) {
-        n += 1
-      }
-    }
-    if (n > most) {
-      most = n
-      hit = raw.trim()
-    }
-  }
-  return hit
-}
-
-/**
- * 排档比较:档小的在前,同档按职业码。
- *
- * @param a 一行。
- * @param b 另一行。
- * @returns 负数 a 在前。
- */
-// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
-function byDutyRank(a: NocDutyRanked, b: NocDutyRanked): number {
-  if (a.rank !== b.rank) {
-    return a.rank - b.rank
-  }
-  return a.row.noc.localeCompare(b.row.noc)
-}
-
-/**
- * 职责原文拆成一条一项(去头尾空格、丢空行)。
- *
- * @param duties 职责逐行文本。
- * @returns 各条。
- */
-function dutyLinesOf(duties: string): NocDutyLines {
-  const out: NocDutyLines = []
-  for (const raw of duties.split(LINE_SEP)) {
-    const line = raw.trim()
-    if (line !== NAME_NONE) {
-      out.push(line)
-    }
-  }
-  return out
-}
-
 // =========================================================================
 // 行构造器（rows 抽屉 2026-08-23 撤编后的固定尾段：db 词汇只许 to* 体内）
 // =========================================================================
@@ -327,12 +162,3 @@ export function toNocDutiesRow(r: Row): NocDutiesRow {
   return { duties: text(r.duties), requirements: text(r.requirements) }
 }
 
-/**
- * 一行「导入职责」搜职业(SQL.NOC_DUTY_SEARCH)。
- *
- * @param r 库里的一行。
- * @returns 四格(缺位空串)。
- */
-export function toNocDutyRow(r: Row): NocDutyRow {
-  return { noc: text(r.noc), title: text(r.title), duties: text(r.duties), examples: text(r.examples) }
-}

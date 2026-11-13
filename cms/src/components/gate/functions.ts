@@ -35,6 +35,7 @@
  * @author Frank
  * @time 2026-10-04 02:10:00
  */
+import { cssOf } from '@/components/css'
 import { majorNameOf } from '@/components/majors'
 import { quizToProfile, shortOcc } from '@/components/quiz'
 import { isSenderName } from '@/lib/apply'
@@ -53,16 +54,19 @@ import {
   FROM_WORK, METHOD_POST, URL_PREFILL,
   K_RULE_HEAD, MATCH_EDU, MATCH_WORK, MODE_DEFAULT, MODE_STRICT, RULE_EDU, RULE_EDU_STRICT,
   EDU_F_KIND, EDU_F_LEN, EDU_F_PROV, EDU_SUM_SEP, EDU_YEAR_SEP, LINE_KEY_CITY, LINE_KEY_PROV,
-  RULE_WORK_STRICT,
+  RULE_WORK_STRICT, CLS_SEP,
 } from './constants'
-import { eduMergedOf, makeEduLabel } from './edu'
+import { eduMajorsOf, eduMergedOf, eduWithMajorsOf, makeEduLabel } from './edu'
+import { workFilledOf } from './work'
+import css from './gate.module.css'
 import type {
   CitiesJson, CityLabelIn, CityOpt, CityOptsIn, CityPickIn, EditPatch, EditSaveIn,
   EntryCloseIn, EntryDoneIn, GateAuthDoneIn, GateEditSeed, GateLabelOfIn, GatePickSetIn,
-  ApplyPrefillIn, EduLinesIn, EduSumIn, FillMsg, FromKeptIn, FromResumeIn, MajorLinesIn, OccLinesIn, PickedLine,
+  ApplyPrefillIn, EduLinesIn, EduSumIn, FillMsg, FromKeptIn, FromResumeIn, OccLinesIn, PickedLine,
   PrefillFact, PrefillJson, WhereLinesIn,
   ResumeFillIn, GateProvActiveIn, GateStep, LoadCitiesIn, ProvPickIn,
   RuleOfIn, RulePickIn,
+  AtSetIn, CvFactsIn, EduMajorAtIn, FormCloseIn, SeedLoaded, GateCv, MajorNamesIn, SavedThenIn, SaveThenIn, TplClsIn,
 } from './types'
 
 /**
@@ -329,6 +333,7 @@ async function runEditSave(x: EditSaveIn): Promise<void> {
  * 编辑模式写进答案档的那几格:答了境外写处境 overseas、省市清空;否则写省与城市(处境不动)。
  * 2026-10-13:身份与教育经历两格一并整格覆盖。
  * 2026-11-12:教育经历明细 eduList 一并整格覆盖;fitEdu 不再直接取表单,改由 eduList 派生(不空的 key,按序)。
+ * 同日:简历资料 cv(工作经历几段、电话、链接、技能、模板)一并整格覆盖;workNocs 由工作经历各段汇出。
  *
  * @param a 这一份答案。
  * @returns 要覆盖的格。
@@ -349,6 +354,7 @@ function editPatchOf(a: GateEditSeed): EditPatch {
       matchBy: a.matchBy,
       matchMode: a.matchMode,
       fromResume: a.fromResume,
+      cv: a.cv,
     }
   }
   return {
@@ -364,6 +370,7 @@ function editPatchOf(a: GateEditSeed): EditPatch {
     matchBy: a.matchBy,
     matchMode: a.matchMode,
     fromResume: a.fromResume,
+    cv: a.cv,
   }
 }
 
@@ -574,26 +581,6 @@ export function occLinesOf(x: OccLinesIn): PickedLine[] {
 }
 
 /**
- * 已选专业 → 名字行(按码排,名字还没取到的先占位,不闪「没选」)。
- *
- * @param x 已选码、已取到的行、界面语与标记。
- * @returns 名字行。
- */
-export function majorLinesOf(x: MajorLinesIn): PickedLine[] {
-  const out: PickedLine[] = []
-  for (const code of x.codes) {
-    let name: string = FORM_NAME_WAIT
-    for (const row of x.rows) {
-      if (row.code === code) {
-        name = majorNameOf({ row, lang: x.lang })
-      }
-    }
-    out.push({ key: code, name, from: isFromResume({ marks: x.marks, field: FROM_MAJORS, value: code }) })
-  }
-  return out
-}
-
-/**
  * 所在地 → 摘要行:省一行、城市一行(2026-11-12 Frank「这个也需要弹框吧」:所在地改成摘要框加「修改」)。
  * 城市名用这一刻摆着的那批里的界面语名字,不在里面(搜索换了一批)就用英文名。
  *
@@ -621,6 +608,185 @@ export function whereLinesOf(x: WhereLinesIn): PickedLine[] {
 }
 
 /**
+ * 造多行输入框的 onChange:把框里的字交给落格。
+ *
+ * @param set 落格。
+ * @returns 多行输入框的 onChange。
+ */
+export function makeAreaSet(set: (v: string) => void): (e: React.ChangeEvent<HTMLTextAreaElement>) => void {
+  return function areaSet(e: React.ChangeEvent<HTMLTextAreaElement>): void {
+    set(e.target.value)
+  }
+}
+
+/**
+ * 模板卡的类名:选着的多一个高亮类。
+ *
+ * @param x 选着没有。
+ * @returns 类名。
+ */
+export function tplClsOf(x: TplClsIn): string {
+  if (x.on) {
+    return cssOf(css.tplCard) + CLS_SEP + cssOf(css.tplCardOn)
+  }
+  return cssOf(css.tplCard)
+}
+
+/**
+ * 造「存成了」的回调(「生成简历」先存档案那一步用):记下这一回开面板存过了,再跑后面那一步;面板不关。
+ *
+ * @param x 落格与后面那一步。
+ * @returns 回调。
+ */
+export function makeSavedThen(x: SavedThenIn): () => void {
+  return function savedThen(): void {
+    x.setSavedOnce(true)
+    x.after()
+  }
+}
+
+/**
+ * 表单上的工作经历与四格 → 要存的简历资料(电话、链接、技能去首尾空白)。
+ *
+ * @param x 要存的工作经历与四格。
+ * @returns 简历资料。
+ */
+export function cvFactsOf(x: CvFactsIn): GateCv {
+  const c = x.cvc
+  return { work: x.work, phone: c.phone.trim(), link: c.link.trim(), skills: c.skills.trim(), tpl: c.tpl }
+}
+
+/**
+ * 造「先存档案、存成了再跑后面那一步」的工厂(「生成简历」用;存成了面板不关,只记下存过了)。
+ *
+ * @param x 要存的答案与三个落格。
+ * @returns 后面那一步 → 点击手柄。
+ */
+export function makeSaveThen(x: SaveThenIn): (after: () => void) => () => void {
+  return function saveThen(after: () => void): () => void {
+    return makeEditSave({
+      a: x.a,
+      setSaving: x.setSaving,
+      setFail: x.setFail,
+      onSaved: makeSavedThen({ setSavedOnce: x.setSavedOnce, after }),
+    })
+  }
+}
+
+/**
+ * 各段专业那一格的字(2026-11-12 专业并进教育经历):这一段的专业码在已取到名字的行里的界面语名字;
+ * 没选 = 空串,选了但名字还没取到先占位。
+ *
+ * @param x 几段、已取到名字的专业行与界面语。
+ * @returns 与几段一一对应的字。
+ */
+export function majorNamesOf(x: MajorNamesIn): string[] {
+  const out: string[] = []
+  for (const r of x.rows) {
+    let name: string = TEXT_NONE
+    if (r.major !== TEXT_NONE) {
+      name = FORM_NAME_WAIT
+    }
+    for (const row of x.picked) {
+      if (row.code === r.major) {
+        name = majorNameOf({ row, lang: x.lang })
+      }
+    }
+    out.push(name)
+  }
+  return out
+}
+
+/**
+ * 正在选专业的那一段现在挂的专业码(专业选择框打开时把它标成已选);没在选、那一段没挂 = 空列。
+ *
+ * @param x 几段与正在给第几段选。
+ * @returns 至多一个码。
+ */
+export function eduMajorAtOf(x: EduMajorAtIn): string[] {
+  const row = x.rows[x.at]
+  if (row == null || row.major === TEXT_NONE) {
+    return []
+  }
+  return [row.major]
+}
+
+/**
+ * 造「把『正在给第几段选』落成某个值」的手柄(关专业选择框用)。
+ *
+ * @param x 落格与要落的值。
+ * @returns 点击手柄。
+ */
+export function makeAtSet(x: AtSetIn): () => void {
+  return function atSet(): void {
+    x.setAt(x.v)
+  }
+}
+
+/**
+ * 造「点第几段就落第几段」的手柄工厂(开专业选择框用)。
+ *
+ * @param setAt 「正在给第几段选」的落格。
+ * @returns 第几段 → 点击手柄。
+ */
+export function makeAtSetOf(setAt: (v: number) => void): (i: number) => () => void {
+  return function atSetOf(i: number): () => void {
+    return makeAtSet({ setAt, v: i })
+  }
+}
+
+/**
+ * 没人听的码清单上报口(只查名字用的专业选择器不露面,点不到,它的上报口什么都不做)。
+ *
+ * @param _codes 码清单。
+ * @returns 无。
+ */
+export function dropCodes(_codes: string[]): void {
+  return
+}
+
+/**
+ * 造起始答案的落格(装配点):子桶 seed 交回的那一份,教育经历明细与简历资料是服务端洗过、原样透传的,
+ * 在这里断言成本域的起始答案。
+ *
+ * @param set 起始答案的落格。
+ * @returns 子桶用的落格。
+ */
+export function makeSeedSet(set: (v: GateEditSeed | null) => void): (v: SeedLoaded) => void {
+  return function seedSet(v: SeedLoaded): void {
+    set(v as GateEditSeed | null)
+  }
+}
+
+/**
+ * 造「把一个开关落成关」的手柄(关升级框用)。
+ *
+ * @param set 开关的落格。
+ * @returns 点击手柄。
+ */
+export function makeFlagOff(set: (v: boolean) => void): () => void {
+  return function flagOff(): void {
+    set(false)
+  }
+}
+
+/**
+ * 造关面板的手柄:这一回存过(生成简历时存的)就按「存好了」关,档案页随之重取;没存过照常关。
+ *
+ * @param x 存过没有与两个出口。
+ * @returns 点击手柄。
+ */
+export function makeFormClose(x: FormCloseIn): () => void {
+  return function closeForm(): void {
+    if (x.savedOnce) {
+      x.onSaved()
+    } else {
+      x.onClose()
+    }
+  }
+}
+
+/**
  * 教育经历 → 摘要行:一段一行,什么都没填的段不出(2026-11-12 Frank「这个也弹框修改」)。
  *
  * @param x 现在的几段与取词。
@@ -629,7 +795,12 @@ export function whereLinesOf(x: WhereLinesIn): PickedLine[] {
 export function eduLinesOf(x: EduLinesIn): PickedLine[] {
   const out: PickedLine[] = []
   for (const [i, row] of x.rows.entries()) {
-    const name = eduSumOf({ row, t: x.t })
+    let major: string = TEXT_NONE
+    const got = x.majors[i]
+    if (got != null) {
+      major = got
+    }
+    const name = eduSumOf({ row, major, t: x.t })
     if (name !== TEXT_NONE) {
       out.push({ key: String(i), name, from: false })
     }
@@ -638,7 +809,7 @@ export function eduLinesOf(x: EduLinesIn): PickedLine[] {
 }
 
 /**
- * 一段教育经历的摘要:学校、证书或学历名称、年份里填了的连成一行;这三样都没填,用三只下拉选了的字
+ * 一段教育经历的摘要:学校、证书或学历名称、专业、年份里填了的连成一行;这四样都没填,用三只下拉选了的字
  * (所在地、公立私立、学制)。
  *
  * @param x 这一段与取词。
@@ -651,7 +822,7 @@ function eduSumOf(x: EduSumIn): string {
     years = years + EDU_YEAR_SEP + r.to.trim()
   }
   const named: string[] = []
-  for (const v of [r.school.trim(), r.cred.trim(), years]) {
+  for (const v of [r.school.trim(), r.cred.trim(), x.major, years]) {
     if (v !== TEXT_NONE) {
       named.push(v)
     }
@@ -758,12 +929,18 @@ function toPrefill(b: PrefillJson): PrefillFact {
   if (b.education != null) {
     education = b.education
   }
-  return { works, majors, name, education }
+  let jobs: PrefillFact['jobs'] = []
+  if (b.jobs != null) {
+    jobs = b.jobs
+  }
+  return { works, majors, name, education, jobs }
 }
 
 /**
  * 把提取结果填进表单:只填空着的格,不动用户已经选的;填上的值打「来自简历」。
  * 2026-11-12:提取到的教育经历并进教育经历几段(规矩见子桶 edu 的 eduMergedOf),并进去一条以上算填上一项;教育经历不打「来自简历」。
+ * 同日 Frank「都改完」:提取到的几段工作经历(公司、时间、职责)填进「做过的工作」,规矩见子桶 work 的 workFilledOf。
+ * 同日专业并进教育经历:各段都还没挂专业时,提取到的专业码按序落进各段(并完教育经历之后落,见子桶 edu 的 eduWithMajorsOf)。
  *
  * @param y 手柄与提取结果。
  * @returns 填上了几项。
@@ -773,18 +950,11 @@ function applyPrefill(y: ApplyPrefillIn): number {
   const d = y.d
   const marks = x.g.fromResume.slice()
   let n = 0
-  if (x.g.workNocs.length === 0 && d.works.length > 0) {
-    x.g.setWorkNocs(d.works)
-    x.onWork(d.works)
-    for (const c of d.works) {
+  const work = workFilledOf({ rows: x.g.edit.w.work, jobs: d.jobs, codes: d.works })
+  if (work.filled) {
+    x.g.edit.w.setWork(work.rows)
+    for (const c of work.codes) {
       marks.push(FROM_WORK + FROM_SEP + c)
-    }
-    n++
-  }
-  if (x.g.majors.length === 0 && d.majors.length > 0) {
-    x.g.onMajors(d.majors)
-    for (const c of d.majors) {
-      marks.push(FROM_MAJORS + FROM_SEP + c)
     }
     n++
   }
@@ -794,10 +964,18 @@ function applyPrefill(y: ApplyPrefillIn): number {
     n++
   }
   const merged = eduMergedOf({ rows: x.g.edit.edu, items: d.education })
+  let rows = merged.rows
   if (merged.n > 0) {
-    x.g.edit.setEdu(merged.rows)
     n++
   }
+  if (eduMajorsOf(rows).length === 0 && d.majors.length > 0) {
+    rows = eduWithMajorsOf({ rows, codes: d.majors })
+    for (const c of d.majors) {
+      marks.push(FROM_MAJORS + FROM_SEP + c)
+    }
+    n++
+  }
+  x.g.edit.setEdu(rows)
   x.g.setFromResume(marks)
   return n
 }

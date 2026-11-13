@@ -1378,21 +1378,6 @@ export type UploadIn = {
 }
 
 /**
- * `pickBuilt` 的入参(生成简历存成了,选中它)。
- */
-export type PickBuiltIn = {
-  /**
-   * 整机的可变格。
-   */
-  cells: ApplyCells
-
-  /**
-   * 新简历 id。
-   */
-  id: number
-}
-
-/**
  * ApplyPick(单选一行)的 props(2026-10-10 起简历与求职信共用:文件名、默认小标、灰字小注)。
  */
 export type ApplyPickIn = {
@@ -1583,7 +1568,7 @@ export type ApplyShowIn = {
  */
 
 /**
- * 生成简历窗口的开关(形同 cv 桶 CvOpenPanel,本域自声明)。
+ * 「生成简历」的开关(2026-11-12 起开的是修改档案的右侧栏;原「存成了」一格随生成简历窗口撤)。
  */
 export type CvOpenView = {
   /**
@@ -1600,11 +1585,6 @@ export type CvOpenView = {
    * 关。
    */
   onClose: () => void
-
-  /**
-   * 存成了。
-   */
-  onSaved: (id: number) => void
 }
 
 /**

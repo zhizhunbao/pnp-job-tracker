@@ -20,9 +20,7 @@
  * @time 2026-08-23 10:30:00
  */
 import { headers } from 'next/headers'
-import * as PdfLib from 'pdf-lib'
 import { isSenderName } from '../apply'
-import { cvBadCharsOf, cvLayoutOf, cvPdfOf, toCvDraft } from '../cv'
 import { getDb } from '../db/server'
 import { isLlmError } from '../error'
 import {
@@ -42,16 +40,16 @@ import { checkLimit, freeGate, getUser, getUserOrNull, ipOf, isPro } from '../qu
 import {
   EXTRACT_FEATURE, MATCH_FEATURE, BLANKS2, BLANKS3_RE, BODY_TEXT_NONE, CLB_MAX, CLB_MIN, CODE_TIMEOUT, CODE_TOO_LONG, CR_DROP, CR_RE, DAILY_FREE, DATE_LEN, DETAIL_CAP, ERR_LOG_CAP, EXTRACT_CHARS_MAX, EXTRACT_OUT_MAX, EXTRACT_TEXT_MIN, EXTRACT_TOKENS_MAX, E_AUTH, E_BUSY, E_LIMIT, E_LLM, E_LOGIN, E_NOFILE, E_NO_JD, E_PARSE, E_SCAN, E_SIZE, E_TOO_LONG, E_TOO_SHORT, FIELD_FILE, JD_DB_NONE, JD_LEN_MIN, LANG_FALLBACK_EN, LLM_TEXT_NONE, LOG_DASH, MATCH_PROVIDER, MATCH_TEMPERATURE, MATCH_TOKENS_FREE, MATCH_TOKENS_PRO, META_VIA_LEGACY, MIN_RESUME, ONE_SPACE, RESUME_MAX_BYTES, RESUME_SAVE_CAP, REWRITE_CAP, ROLE_SYSTEM, ROLE_USER, SPACES_RE, TEST_MAIL_SUFFIX, TITLES_N_MAX, TITLE_Q_LEN_MAX, TITLE_Q_LEN_MIN, USES_CELL_NONE, USES_SEP, WS_ALL_RE,
   B64, CACHE_PRIVATE, E_NO_ID, E_NOT_FOUND, E_TYPE, HDR_NOSNIFF, MAGIC_ENC, MAGIC_LEN, NOSNIFF, P_DOWNLOAD, RF_IP_DAILY,
-  RF_IP_PREFIX, RF_USER_DAILY, RF_USER_PREFIX, CV_FILE_TAIL, E_BAD_DRAFT, E_CHARS, E_NO_NAME, MIME_PDF,
+  RF_IP_PREFIX, RF_USER_DAILY, RF_USER_PREFIX,
   E_NO_RESUME, PREFILL_FEATURE, PREFILL_NONE, PREFILL_IP_DAILY, PREFILL_IP_PREFIX, PREFILL_PROVIDER, PREFILL_TOKENS_MAX, PREFILL_USER_DAILY, PREFILL_USER_PREFIX,
 } from './constants'
 import {
   deleteResumeFile, dispositionOf, extractText, fileMimeOf, fileNameOf, gateMatch, ieltsToClb, loadPrefillText, loadResumeBlob,
-  loadResumeCount, loadResumeList, matchPrompt, nocCandidatesOf, normalizeRows, parseLlmJson, prefillFactOf, prefillMajorsOf, prefillWorksOf,
+  loadResumeCount, loadResumeList, matchPrompt, nocCandidatesOf, normalizeRows, parseLlmJson, prefillFactOf, prefillJobsOf, prefillMajorsOf, prefillWorksOf,
   resumeIdOf, saveResumeFile,
 } from './functions'
 import { EXTRACT_SYSTEM, PREFILL_SYSTEM } from './prompts'
-import type { BuildBody, ExtractData, MatchBody, MatchUsesProfile, MaybeNum, PrefillCodes, PrefillData, PrefillHitsFn } from './types'
+import type { ExtractData, MatchBody, MatchUsesProfile, MaybeNum, PrefillCodes, PrefillData, PrefillHitsFn } from './types'
 
 /**
  * POST /api/resume:简历上传解析(E11-07)—— PDF/DOCX → 文本 → LLM 抽取(职名/语言)→
@@ -150,7 +148,10 @@ export async function resumeRoute(req: Request): Promise<Response> {
  * 2026-11-12 Frank「简历里能抽出来吧」:education 每条多三格 prov / kind / len(院校所在地、公立私立、课程时长;只认表单下拉的取值,别的空串)。
  *
  * @param req 请求。
- * @returns { works, majors, name, education };未登录 401、超限 429、没简历 404、读不出 422、模型失败 502。
+ * 2026-11-12 Frank「都改完」:多回 jobs(几段工作经历:职业码、职位名称、公司、城市、起止年月、职责原文),档案的「做过的工作」
+ * 一段一个框直接填上;works(只有职业码)照回,旧页面和没提出工作经历时用。
+ *
+ * @returns { works, majors, name, education, jobs };未登录 401、超限 429、没简历 404、读不出 422、模型失败 502。
  */
 export async function resumePrefillRoute(req: Request): Promise<Response> {
   const user = await getUserOrNull(await headers())
@@ -205,51 +206,9 @@ export async function resumePrefillRoute(req: Request): Promise<Response> {
   if (isSenderName(fact.name)) {
     name = fact.name
   }
+  const jobs = await prefillJobsOf({ db, jobs: fact.jobs })
   log({ tag: RESUME_LOG.tag, text: RESUME_LOG.prefillOk + user.id + RESUME_LOG.errSep + works.length + RESUME_LOG.errSep + majors.length })
-  return Response.json({ works, majors, name, education: fact.education })
-}
-
-/**
- * POST /api/resume/build:生成简历 —— 填好的草稿(联系方式、简介、工作、教育、技能、证书、志愿、奖项、自定义分区)
- * 排成 Job Bank 传统模板的英文 PDF,存成「我的简历」里新的一份。免费;限流与上传同一道(每人每天、每 IP 每天)。
- * 草稿逐格收窄在 cv 域(行构造器),字先查坏字(Helvetica 只认西文),坏字回给前端标出来。
- *
- * @param req 请求(body 是 { draft })。
- * @returns { meta };未登录 401、超限 429、没草稿 / 没姓名 / 有坏字 400。
- */
-export async function resumeBuildRoute(req: Request): Promise<Response> {
-  const user = await getUserOrNull(await headers())
-  if (user == null) {
-    return Response.json({ error: E_AUTH }, { status: UNAUTHORIZED })
-  }
-  if (checkLimit([[RF_USER_PREFIX + String(user.id), RF_USER_DAILY], [RF_IP_PREFIX + ipOf(req), RF_IP_DAILY]]) === false) {
-    return Response.json({ error: E_LIMIT }, { status: TOO_MANY })
-  }
-  let body: BuildBody = {}
-  try {
-    body = await req.json() as BuildBody
-  } catch {
-    body = {}
-  }
-  if (body.draft == null) {
-    return Response.json({ error: E_BAD_DRAFT }, { status: BAD_REQUEST })
-  }
-  const layout = cvLayoutOf(toCvDraft(body.draft))
-  if (layout.name === '') {
-    return Response.json({ error: E_NO_NAME }, { status: BAD_REQUEST })
-  }
-  const chars = cvBadCharsOf(layout)
-  if (chars.length > 0) {
-    return Response.json({ error: E_CHARS, chars }, { status: BAD_REQUEST })
-  }
-  const db = await getDb()
-  const buf = Buffer.from(await cvPdfOf({ pdf: PdfLib, layout }))
-  const meta = await saveResumeFile({
-    db, userId: user.id, replaceId: null, b64: buf.toString(B64), fileName: fileNameOf({ name: layout.name + CV_FILE_TAIL, mime: MIME_PDF }),
-    mime: MIME_PDF, sizeBytes: buf.byteLength,
-  })
-  log({ tag: RESUME_LOG.tag, text: RESUME_LOG.cvSaved + user.id + RESUME_LOG.fileB + buf.byteLength + RESUME_LOG.bSuffix })
-  return Response.json({ meta })
+  return Response.json({ works, majors, name, education: fact.education, jobs })
 }
 
 /**

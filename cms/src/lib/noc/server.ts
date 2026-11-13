@@ -7,4 +7,4 @@
  */
 
 export { loadNocDuties } from './functions'
-export { nocDutiesRoute, nocTranslateRoute } from './routes'
+export { nocTranslateRoute } from './routes'

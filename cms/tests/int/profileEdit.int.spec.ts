@@ -24,7 +24,7 @@ import { pfEduLinesOf, pfRuleKeyOf } from '@/components/me/profile/functions'
 import { eduKeysOf, toProfileBasic } from '@/lib/quiz/functions'
 
 describe('手填名称或年份时替他推课程时长(2026-11-12「简历里能抽出来吧」)', () => {
-  const BLANK = { prov: '', kind: '', len: '', cred: '', school: '', from: '', to: '' }
+  const BLANK = { prov: '', kind: '', len: '', cred: '', school: '', from: '', to: '', major: '' }
   type Row = typeof BLANK
 
   // 在只有一段的表单上改一格,回改过的那一段(走的就是表单的 makeEduPick)
@@ -42,7 +42,7 @@ describe('手填名称或年份时替他推课程时长(2026-11-12「简历里�
       expect(edit(BLANK, 'cred', cred).len).toBe('')
     }
     // 名称说是硕士,年份怎么填都按 master
-    expect(edit({ ...BLANK, from: '2020', to: '2021' }, 'cred', 'MBA').len).toBe('master')
+    expect(edit({ ...BLANK, from: '2020', to: '2021', major: '' }, 'cred', 'MBA').len).toBe('master')
   })
 
   it('金标(年份):两个都是四位数字才推 —— 差 0 或 1 → y1,差 2 → y2,差 3 及以上 → y3;没填全、结束早于开始不推', () => {
@@ -70,7 +70,7 @@ describe('手填名称或年份时替他推课程时长(2026-11-12「简历里�
 
   it('性质:时长下拉一旦有值(推出来的或他选的)就再也不自动改;别的格(学校、所在地、公立私立)不触发', () => {
     for (const len of ['y1', 'y2', 'y3', 'master']) {
-      const row = { ...BLANK, len, from: '2020', to: '2021' }
+      const row = { ...BLANK, len, from: '2020', to: '2021', major: '' }
       expect(edit(row, 'cred', 'Master of Science').len).toBe(len)
       expect(edit(row, 'cred', 'Diploma').len).toBe(len)
       expect(edit(row, 'to', '2029').len).toBe(len)
@@ -82,7 +82,7 @@ describe('手填名称或年份时替他推课程时长(2026-11-12「简历里�
     expect(edit(auto, 'to', '2029').len).toBe('y1')
     expect(edit(auto, 'cred', 'Master of Science').len).toBe('y1')
     // 改学校、所在地、公立私立不推
-    const ready = { ...BLANK, cred: 'MBA', from: '2020', to: '2022' }
+    const ready = { ...BLANK, cred: 'MBA', from: '2020', to: '2022', major: '' }
     expect(edit(ready, 'school', 'Ivey').len).toBe('')
     expect(edit(ready, 'prov', 'ON').len).toBe('')
     expect(edit(ready, 'kind', 'public').len).toBe('')
@@ -90,7 +90,7 @@ describe('手填名称或年份时替他推课程时长(2026-11-12「简历里�
     expect(edit(edit(auto, 'len', ''), 'to', '2028').len).toBe('y3')
     // 只动时长这一格;别的格原样
     expect(edit({ ...BLANK, prov: 'ON', kind: 'public', school: 'S', from: '2024' }, 'to', '2026'))
-      .toEqual({ prov: 'ON', kind: 'public', len: 'y2', cred: '', school: 'S', from: '2024', to: '2026' })
+      .toEqual({ prov: 'ON', kind: 'public', len: 'y2', cred: '', school: 'S', from: '2024', to: '2026', major: '' })
   })
 })
 
@@ -156,7 +156,7 @@ describe('档案取数:答案档 → 五格', () => {
     const basic = { goalBand: 2, majors: ['11.0701', '52.0201'], nocs: ['21220'], resProv: 'ON', resCity: 'Mississauga' }
     const want = {
       goal: 2, majors: ['11.0701', '52.0201'], nocs: ['21220'], prov: 'ON', abroad: false, city: 'Mississauga', asked: false,
-      who: '', edu: [], eduList: [], workNocs: [], matchBy: '', matchMode: '', fromResume: [] }
+      who: '', edu: [], eduList: [], workNocs: [], matchBy: '', matchMode: '', fromResume: [], cv: { work: [], phone: '', link: '', skills: '', tpl: 'classic' } }
     expect(toProfileBasic({ answers: { basic } })).toEqual(want)
     expect(toProfileBasic({ answers: JSON.stringify({ basic }) })).toEqual(want)
   })
@@ -165,17 +165,17 @@ describe('档案取数:答案档 → 五格', () => {
     expect(toProfileBasic({ answers: { basic: { status: 'overseas', resProv: 'ON', resCity: 'Toronto' } } }))
       .toEqual({
         goal: 0, majors: [], nocs: [], prov: '', abroad: true, city: '', asked: false, who: '', edu: [], eduList: [],
-        workNocs: [], matchBy: '', matchMode: '', fromResume: [],
+        workNocs: [], matchBy: '', matchMode: '', fromResume: [], cv: { work: [], phone: '', link: '', skills: '', tpl: 'classic' },
       })
     expect(toProfileBasic({ answers: { basic: { resCity: 'Toronto' } } }).city).toBe('')
     expect(toProfileBasic({ answers: { basic: { goalBand: null, majors: null, nocs: [7, '', '21220'] as unknown as string[] } } }))
       .toEqual({
         goal: 0, majors: [], nocs: ['21220'], prov: '', abroad: false, city: '', asked: false, who: '', edu: [], eduList: [],
-        workNocs: [], matchBy: '', matchMode: '', fromResume: [],
+        workNocs: [], matchBy: '', matchMode: '', fromResume: [], cv: { work: [], phone: '', link: '', skills: '', tpl: 'classic' },
       })
     expect(toProfileBasic({ answers: null })).toEqual({
       goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', asked: false, who: '', edu: [], eduList: [],
-      workNocs: [], matchBy: '', matchMode: '', fromResume: [],
+      workNocs: [], matchBy: '', matchMode: '', fromResume: [], cv: { work: [], phone: '', link: '', skills: '', tpl: 'classic' },
     })
     expect(toProfileBasic({ answers: { basic: { jobsAsked: true } } }).asked).toBe(true)
   })
@@ -183,16 +183,16 @@ describe('档案取数:答案档 → 五格', () => {
 
 const FULL = {
   goal: 2, majors: ['11.0701'], nocs: ['21220'], prov: 'ON', abroad: false, city: 'Toronto', name: 'Li Wei', who: 'student', edu: ['ON|public|y2'], eduList: [],
-  workNocs: ['21220'], matchBy: '', matchMode: '', fromResume: [],
+  workNocs: ['21220'], matchBy: '', matchMode: '', fromResume: [], cv: { work: [], phone: '', link: '', skills: '', tpl: 'classic' },
 }
 const EMPTY = {
   goal: 0, majors: [], nocs: [], prov: '', abroad: false, city: '', name: '', who: '', edu: [], eduList: [],
-  workNocs: [], matchBy: '', matchMode: '', fromResume: [],
+  workNocs: [], matchBy: '', matchMode: '', fromResume: [], cv: { work: [], phone: '', link: '', skills: '', tpl: 'classic' },
 }
 const PF_FULL = {
   goal: 2, majors: [{ code: '11.0701', en: 'CS', zh: '', ko: '' }], nocs: [{ code: '21220', en: 'Dev', zh: '', ko: '' }],
   prov: 'ON', abroad: false, city: { code: '', en: 'Toronto', zh: '', ko: '' }, name: 'Li Wei', asked: false, who: 'student',
-  edu: ['ON|public|y2'], eduList: [], works: [{ code: '21220', en: 'Dev', zh: '', ko: '' }], matchBy: '', matchMode: '', fromResume: [],
+  edu: ['ON|public|y2'], eduList: [], works: [{ code: '21220', en: 'Dev', zh: '', ko: '' }], matchBy: '', matchMode: '', fromResume: [], cv: { work: [], phone: '', link: '', skills: '', tpl: 'classic' },
 }
 
 describe('进我的求职先弹五题(2026-10-11)', () => {
@@ -226,7 +226,7 @@ describe('档案加身份、教育经历(2026-10-13)', () => {
   const cell = (xs: string[]) => fc.oneof(fc.constant(''), fc.constantFrom(...xs))
 
   it('性质:存档串 → 几段 → 存档串原样回来;选了一半的段不存;界面总留一段', () => {
-    fc.assert(fc.property(fc.array(fc.record({ prov: cell(PROVS), kind: cell(KINDS), len: cell(LENS), cred: fc.constant(''), school: fc.constant(''), from: fc.constant(''), to: fc.constant('') }), { maxLength: 2 }), (rows) => {
+    fc.assert(fc.property(fc.array(fc.record({ prov: cell(PROVS), kind: cell(KINDS), len: cell(LENS), cred: fc.constant(''), school: fc.constant(''), from: fc.constant(''), to: fc.constant(''), major: fc.constant('') }), { maxLength: 2 }), (rows) => {
       const strs = eduStrsOf(rows)
       for (const s of strs) {
         expect(s.split('.')).toHaveLength(3)
@@ -239,8 +239,8 @@ describe('档案加身份、教育经历(2026-10-13)', () => {
   })
 
   it('金标:格数不对的串按没有', () => {
-    expect(eduPicksOf(['ON.public', 'bad', ''])).toEqual([{ prov: '', kind: '', len: '', cred: '', school: '', from: '', to: '' }])
-    expect(eduPicksOf(['ON.public.y1'])).toEqual([{ prov: 'ON', kind: 'public', len: 'y1', cred: '', school: '', from: '', to: '' }])
+    expect(eduPicksOf(['ON.public', 'bad', ''])).toEqual([{ prov: '', kind: '', len: '', cred: '', school: '', from: '', to: '', major: '' }])
+    expect(eduPicksOf(['ON.public.y1'])).toEqual([{ prov: 'ON', kind: 'public', len: 'y1', cred: '', school: '', from: '', to: '', major: '' }])
   })
 
   it('金标:库里的身份、教育经历读得回来,错型按没答', () => {
@@ -283,20 +283,20 @@ describe('匹配规则:一只下拉 ↔ 匹配依据、匹配模式两格(2026-1
 
 describe('教育经历明细 eduList(2026-11-12)', () => {
   const t = (k: string) => k
-  const BLANK = { prov: '', kind: '', len: '', cred: '', school: '', from: '', to: '' }
+  const BLANK = { prov: '', kind: '', len: '', cred: '', school: '', from: '', to: '', major: '' }
 
   it('金标:表单几段 → 明细;教育经历串 = 明细里不空的 key,按序(与原先只收三格选全的段同一个结果)', () => {
     const rows = [
-      { prov: 'ON', kind: 'public', len: 'y1', cred: ' Graduate Certificate ', school: ' Algonquin College ', from: '2025', to: '2026' },
-      { prov: 'BC', kind: '', len: '', cred: 'Bachelor of Engineering', school: '', from: '201', to: '' },
+      { prov: 'ON', kind: 'public', len: 'y1', cred: ' Graduate Certificate ', school: ' Algonquin College ', from: '2025', to: '2026', major: '' },
+      { prov: 'BC', kind: '', len: '', cred: 'Bachelor of Engineering', school: '', from: '201', to: '', major: '' },
       BLANK,
       { ...BLANK, prov: 'QC', kind: 'private', len: 'y3' },
     ]
     const list = eduListOf(rows)
     expect(list).toEqual([
-      { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' },
-      { key: '', cred: 'Bachelor of Engineering', school: '', from: '', to: '' },
-      { key: 'QC.private.y3', cred: '', school: '', from: '', to: '' },
+      { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026', major: '' },
+      { key: '', cred: 'Bachelor of Engineering', school: '', from: '', to: '', major: '' },
+      { key: 'QC.private.y3', cred: '', school: '', from: '', to: '', major: '' },
     ])
     expect(eduKeysOf(list)).toEqual(['ON.public.y1', 'QC.private.y3'])
     expect(eduKeysOf(list)).toEqual(eduStrsOf(rows))
@@ -305,28 +305,28 @@ describe('教育经历明细 eduList(2026-11-12)', () => {
   it('金标:明细 → 表单几段(key 拆回三只下拉);没有明细按老的教育经历串起头、明细全空;都没有留一行空的', () => {
     expect(eduFormRowsOf({
       list: [
-        { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' },
-        { key: '', cred: 'Bachelor of Engineering', school: '', from: '2014', to: '' },
+        { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026', major: '' },
+        { key: '', cred: 'Bachelor of Engineering', school: '', from: '2014', to: '', major: '' },
       ],
-      strs: ['BC.private.y2'],
+      strs: ['BC.private.y2'], majors: [],
     })).toEqual([
-      { prov: 'ON', kind: 'public', len: 'y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' },
+      { prov: 'ON', kind: 'public', len: 'y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026', major: '' },
       { ...BLANK, cred: 'Bachelor of Engineering', from: '2014' },
     ])
-    expect(eduFormRowsOf({ list: [], strs: ['BC.private.y2'] })).toEqual([{ ...BLANK, prov: 'BC', kind: 'private', len: 'y2' }])
-    expect(eduFormRowsOf({ list: [], strs: [] })).toEqual([BLANK])
+    expect(eduFormRowsOf({ list: [], strs: ['BC.private.y2'], majors: [] })).toEqual([{ ...BLANK, prov: 'BC', kind: 'private', len: 'y2' }])
+    expect(eduFormRowsOf({ list: [], strs: [], majors: [] })).toEqual([BLANK])
   })
 
   it('金标(档案取数):有明细用明细(洗过);没有明细按老串现补、明细全空;老串那一格原样', () => {
-    const item = { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' }
+    const item = { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026', major: '' }
     const got = toProfileBasic({ answers: { basic: { fitEdu: ['ON.public.y1'], eduList: [item, 'junk', { key: 'x' }] } } as never })
     expect(got.eduList).toEqual([item])
     expect(got.edu).toEqual(['ON.public.y1'])
     const old = toProfileBasic({ answers: { basic: { fitEdu: ['ON.public.y1', 'BC.private.y2'] } } })
     expect(old.edu).toEqual(['ON.public.y1', 'BC.private.y2'])
     expect(old.eduList).toEqual([
-      { key: 'ON.public.y1', cred: '', school: '', from: '', to: '' },
-      { key: 'BC.private.y2', cred: '', school: '', from: '', to: '' },
+      { key: 'ON.public.y1', cred: '', school: '', from: '', to: '', major: '' },
+      { key: 'BC.private.y2', cred: '', school: '', from: '', to: '', major: '' },
     ])
   })
 
@@ -334,10 +334,10 @@ describe('教育经历明细 eduList(2026-11-12)', () => {
     const lines = pfEduLinesOf({
       t,
       list: [
-        { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026' },
-        { key: '', cred: 'Bachelor of Engineering', school: 'Wuhan University', from: '2014', to: '' },
-        { key: '', cred: 'Diploma', school: '', from: '', to: '2010' },
-        { key: 'abroad.private.master', cred: '', school: '', from: '2001', to: '2003' },
+        { key: 'ON.public.y1', cred: 'Graduate Certificate', school: 'Algonquin College', from: '2025', to: '2026', major: '' },
+        { key: '', cred: 'Bachelor of Engineering', school: 'Wuhan University', from: '2014', to: '', major: '' },
+        { key: '', cred: 'Diploma', school: '', from: '', to: '2010', major: '' },
+        { key: 'abroad.private.master', cred: '', school: '', from: '2001', to: '2003', major: '' },
       ],
     })
     expect(lines).toEqual([
@@ -350,22 +350,22 @@ describe('教育经历明细 eduList(2026-11-12)', () => {
   })
 
   it('金标(档案卡):同一条明细,有年份(只有开始、只有结束也算)第二行没有时长;没有年份第二行照旧带时长', () => {
-    const e = { key: 'ON.public.y2', cred: 'Diploma', school: 'Seneca', from: '', to: '' }
+    const e = { key: 'ON.public.y2', cred: 'Diploma', school: 'Seneca', from: '', to: '', major: '' }
     expect(pfEduLinesOf({ t, list: [e] })).toEqual([{ main: ['Diploma'], sub: 'Seneca, pr.ON, fit.kind.public, fit.len.y2' }])
     expect(pfEduLinesOf({ t, list: [{ ...e, from: '2020' }] })).toEqual([{ main: ['2020 –', 'Diploma'], sub: 'Seneca, pr.ON, fit.kind.public' }])
-    expect(pfEduLinesOf({ t, list: [{ ...e, to: '2022' }] })).toEqual([{ main: ['2022', 'Diploma'], sub: 'Seneca, pr.ON, fit.kind.public' }])
-    expect(pfEduLinesOf({ t, list: [{ ...e, from: '2020', to: '2022' }] }))
+    expect(pfEduLinesOf({ t, list: [{ ...e, to: '2022', major: '' }] })).toEqual([{ main: ['2022', 'Diploma'], sub: 'Seneca, pr.ON, fit.kind.public' }])
+    expect(pfEduLinesOf({ t, list: [{ ...e, from: '2020', to: '2022', major: '' }] }))
       .toEqual([{ main: ['2020 – 2022', 'Diploma'], sub: 'Seneca, pr.ON, fit.kind.public' }])
-    const all = pfEduLinesOf({ t, list: [e, { ...e, from: '2020', to: '2022' }] })
+    const all = pfEduLinesOf({ t, list: [e, { ...e, from: '2020', to: '2022', major: '' }] })
     expect(JSON.stringify(all)).not.toContain('·')
   })
 
   it('金标(档案卡退回):年份和名称都没有 → 第一行是原先那一句,第二行只剩学校、不重复那三个词;只有学校时学校上第一行', () => {
-    expect(pfEduLinesOf({ t, list: [{ key: 'ON.public.y1', cred: '', school: '', from: '', to: '' }] }))
+    expect(pfEduLinesOf({ t, list: [{ key: 'ON.public.y1', cred: '', school: '', from: '', to: '', major: '' }] }))
       .toEqual([{ main: ['pr.ON, fit.kind.public, fit.len.y1'], sub: '' }])
-    expect(pfEduLinesOf({ t, list: [{ key: 'BC.private.y2', cred: '', school: 'Langara College', from: '', to: '' }] }))
+    expect(pfEduLinesOf({ t, list: [{ key: 'BC.private.y2', cred: '', school: 'Langara College', from: '', to: '', major: '' }] }))
       .toEqual([{ main: ['pr.BC, fit.kind.private, fit.len.y2'], sub: 'Langara College' }])
-    expect(pfEduLinesOf({ t, list: [{ key: '', cred: '', school: 'Langara College', from: '', to: '' }] }))
+    expect(pfEduLinesOf({ t, list: [{ key: '', cred: '', school: 'Langara College', from: '', to: '', major: '' }] }))
       .toEqual([{ main: ['Langara College'], sub: '' }])
   })
 })

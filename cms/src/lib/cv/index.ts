@@ -7,4 +7,4 @@
  */
 
 export { CV_LINE_MAX, CV_TEXT_MAX } from './constants'
-export { cvBadCharsOf, cvLayoutOf, cvLinesOf, cvPdfOf, toCvDraft } from './functions'
+export { cvBadCharsOf, cvLayoutOf, cvLinesOf, cvModernPdfOf, cvPdfOf, toCvDraft } from './functions'

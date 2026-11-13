@@ -76,15 +76,9 @@ export type GatePanel = {
   /**
    * 专业的 CIP 2021 class 码清单(至多 3 个,选的先后序);空列 = 没答。
    * A1 立时是专业大类码;2026-10-04 A2 起是 class 码;2026-10-05 改多选(格名 major → majors,单个码 → 码清单)。
+   * 2026-11-12 起由教育经历各段的专业汇出,不再单独改(上报口 onMajors 撤)。
    */
   majors: string[]
-
-  /**
-   * 报新的专业码清单(专业题选择器的上报口;记「动过了」)。
-   * 2026-10-05 立:原「专业题的热门 / 搜索 / 选中回显」一格(majors: MajorPanel,整机开屏就取热门)撤 ——
-   * 选择器机器搬去 components/majors,由向导件 GateWizard 开屏挂上(照旧开屏就取热门),这里只留值与上报口。
-   */
-  onMajors: (v: string[]) => void
 
   /**
    * 界面语言码(专业名按它挑;职业题的选职业控件也要它)。
@@ -102,14 +96,9 @@ export type GatePanel = {
   setNocs: SetNocsFn
 
   /**
-   * 做过的工作(职业码)。
+   * 做过的工作(职业码;2026-11-12 起由工作经历各段汇出,不再单独改)。
    */
   workNocs: string[]
-
-  /**
-   * 改做过的工作。
-   */
-  setWorkNocs: SetNocsFn
 
   /**
    * 所在省那一格亮哪个(省码;境外 = PROV_ABROAD;空串 = 都不亮)。
@@ -457,6 +446,586 @@ export type EditBits = {
    * 直接保存(一页表单的「保存」;向导走 onNext 翻到最后一题才存)。
    */
   onSave: () => void
+
+  /**
+   * 「做过的工作」几段与它的手柄(2026-11-12)。
+   */
+  w: WorkRowsPanel
+
+  /**
+   * 只有生成简历才用的四格:电话、链接、技能、模板(2026-11-12)。
+   */
+  cvc: CvCellsPanel
+
+  /**
+   * 先存档案、存成了再跑后面那一步(「生成简历」用:生成读的是库里的档案;面板不关)。
+   */
+  saveThen: (after: () => void) => () => void
+
+  /**
+   * 现在填的够不够生成简历:英文姓名合规,且工作经历与教育经历至少填了一样。
+   */
+  cvReady: boolean
+
+  /**
+   * 教育经历几段的专业那一格:正在给第几段选、开框、点选与关框(2026-11-12)。
+   */
+  em: EduMajorPanel
+}
+
+/**
+ * 只有生成简历才用的四格与它们的落格(useCvCells 出;2026-11-12)。
+ */
+export type CvCellsPanel = {
+  /**
+   * 电话。
+   */
+  phone: string
+
+  /**
+   * 改电话。
+   */
+  onPhone: (v: string) => void
+
+  /**
+   * 个人链接(领英等)。
+   */
+  link: string
+
+  /**
+   * 改个人链接。
+   */
+  onLink: (v: string) => void
+
+  /**
+   * 技能,一行一项。
+   */
+  skills: string
+
+  /**
+   * 改技能(多行输入框的 onChange)。
+   */
+  onSkills: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+
+  /**
+   * 简历模板:classic / modern。
+   */
+  tpl: string
+
+  /**
+   * 选简历模板。
+   */
+  onTpl: (v: string) => void
+}
+
+/**
+ * cvFactsOf 的入参。
+ */
+export type CvFactsIn = {
+  /**
+   * 要存的工作经历(已去空段)。
+   */
+  work: WorkPick[]
+
+  /**
+   * 电话、链接、技能、模板四格。
+   */
+  cvc: CvCellsPanel
+}
+
+/**
+ * makeSaveThen 的入参。
+ */
+export type SaveThenIn = {
+  /**
+   * 要存的答案。
+   */
+  a: GateEditSeed
+
+  /**
+   * 正在保存落格。
+   */
+  setSaving: (v: boolean) => void
+
+  /**
+   * 失败那一行的词条键落格。
+   */
+  setFail: (v: string) => void
+
+  /**
+   * 落「这一回开面板存过了」。
+   */
+  setSavedOnce: (v: boolean) => void
+}
+
+/**
+ * GateWorkLayers(「做过的工作」弹框与叠在上面的选职业框)的 props。
+ */
+export type GateWorkLayersIn = {
+  /**
+   * 表单整机。
+   */
+  g: GatePanel
+
+  /**
+   * 叠开哪个选择器与它的手柄。
+   */
+  k: GatePickPanel
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 各段职业那一格的字。
+   */
+  names: string[]
+
+  /**
+   * 造「点第几段的选职业」的手柄。
+   */
+  occOpenOf: (i: number) => () => void
+
+  /**
+   * 选职业控件(叠开的选职业框的正文;调用方拼好递进来)。
+   */
+  rail: React.ReactNode
+}
+
+/**
+ * 「生成简历」一段的整机(useCvGen 出;2026-11-12)。
+ */
+export type CvGenPanel = {
+  /**
+   * 现在填的够不够生成。
+   */
+  ready: boolean
+
+  /**
+   * 还剩几个改写额度;-1 = 还没取到。
+   */
+  left: number
+
+  /**
+   * 生成中。
+   */
+  busy: boolean
+
+  /**
+   * 一行提示。
+   */
+  msg: CvGenMsg
+
+  /**
+   * 生成出来、还没存的那一份;没有 = null(预览框关着)。
+   */
+  doc: CvGenDoc | null
+
+  /**
+   * 正在存成我的简历。
+   */
+  saving: boolean
+
+  /**
+   * 升级框开没开(额度用完)。
+   */
+  upgrade: boolean
+
+  /**
+   * 点「生成简历」/「重新生成」。
+   */
+  onGen: () => void
+
+  /**
+   * 点「设为我的简历」。
+   */
+  onSet: () => void
+
+  /**
+   * 点「下载」。
+   */
+  onDownload: () => void
+
+  /**
+   * 关预览框。
+   */
+  onDocClose: () => void
+
+  /**
+   * 关升级框。
+   */
+  onUpgradeClose: () => void
+}
+
+/**
+ * 生成出来的一份简历(形同子桶 cv 的 CvDoc)。
+ */
+export type CvGenDoc = {
+  /**
+   * 浏览器里的临时地址。
+   */
+  url: string
+
+  /**
+   * 文件名。
+   */
+  fileName: string
+
+  /**
+   * PDF 文件。
+   */
+  file: File
+}
+
+/**
+ * 「生成简历」一段的一行提示(形同子桶 cv 的 CvMsg)。
+ */
+export type CvGenMsg = {
+  /**
+   * 词条键;空串 = 不出。
+   */
+  key: string
+
+  /**
+   * 颜色。
+   */
+  kind: 'ok' | 'info' | 'err'
+}
+
+/**
+ * useCvGen 的入参。
+ */
+export type CvGenHookIn = {
+  /**
+   * 表单整机。
+   */
+  g: GatePanel
+}
+
+/**
+ * GateCvGen(「生成简历」一段)的 props。
+ */
+export type GateCvGenIn = {
+  /**
+   * 表单整机。
+   */
+  g: GatePanel
+
+  /**
+   * 生成整机。
+   */
+  c: CvGenPanel
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * GateCvPreview(简历预览框)的 props。
+ */
+export type GateCvPreviewIn = {
+  /**
+   * 生成整机。
+   */
+  c: CvGenPanel
+
+  /**
+   * 生成出来的那一份。
+   */
+  doc: CvGenDoc
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * tplClsOf 的入参。
+ */
+export type TplClsIn = {
+  /**
+   * 这张模板卡选着没有。
+   */
+  on: boolean
+}
+
+/**
+ * makeSavedThen 的入参。
+ */
+export type SavedThenIn = {
+  /**
+   * 落「这一回开面板存过了」。
+   */
+  setSavedOnce: (v: boolean) => void
+
+  /**
+   * 存成了之后跑的那一步。
+   */
+  after: () => void
+}
+
+/**
+ * makeFormClose 的入参。
+ */
+export type FormCloseIn = {
+  /**
+   * 这一回开面板存过没有。
+   */
+  savedOnce: boolean
+
+  /**
+   * 关面板(什么都没存)。
+   */
+  onClose: () => void
+
+  /**
+   * 存好了(关面板并让档案页重取)。
+   */
+  onSaved: () => void
+}
+
+/**
+ * 工作经历一段(2026-11-12 Frank「右侧弹 sidebar 用户一项一项填」;界面上的七格,形同子桶 work 的 WorkPick 与 lib/quiz CvWork)。
+ */
+export type WorkPick = {
+  /**
+   * 这一段对应的职业码(同一个职业可能有几个码);空列 = 没选。
+   */
+  nocs: string[]
+
+  /**
+   * 职位名称;空串 = 没填。
+   */
+  title: string
+
+  /**
+   * 公司;空串 = 没填。
+   */
+  org: string
+
+  /**
+   * 城市;空串 = 没填。
+   */
+  city: string
+
+  /**
+   * 开始年月(2021 或 2021-03;输入中可能还不合形);空串 = 没填。
+   */
+  from: string
+
+  /**
+   * 结束年月;空串 = 没填或至今。
+   */
+  to: string
+
+  /**
+   * 做了什么;空串 = 没填。
+   */
+  desc: string
+}
+
+/**
+ * 档案里的简历资料(答案档 cv 一格;形同 lib/quiz CvFacts,本域自声明)。
+ */
+export type GateCv = {
+  /**
+   * 工作经历几段;空列 = 还没存过。
+   */
+  work: WorkPick[]
+
+  /**
+   * 电话;空串 = 没填。
+   */
+  phone: string
+
+  /**
+   * 个人链接(领英等);空串 = 没填。
+   */
+  link: string
+
+  /**
+   * 技能,一行一项;空串 = 没填。
+   */
+  skills: string
+
+  /**
+   * 简历模板:classic / modern。
+   */
+  tpl: string
+}
+
+/**
+ * 「做过的工作」几段的整机(useWorkRows 出)。
+ */
+export type WorkRowsPanel = {
+  /**
+   * 几段(至少一段,可能七格都空)。
+   */
+  work: WorkPick[]
+
+  /**
+   * 整份写几段(「从简历填写」用)。
+   */
+  setWork: (v: WorkPick[]) => void
+
+  /**
+   * 造「改某段某格」的手柄。
+   */
+  workCellOf: (x: WorkCellIn) => (v: string) => void
+
+  /**
+   * 「+ 再加一段」。
+   */
+  onWorkAdd: () => void
+
+  /**
+   * 造「删第几段」的手柄。
+   */
+  workRemoveOf: (i: number) => () => void
+
+  /**
+   * 正在给第几段选职业;-1 = 没在选(选职业框关着)。
+   */
+  occAt: number
+
+  /**
+   * 写「正在给第几段选职业」。
+   */
+  setOccAt: (v: number) => void
+
+  /**
+   * 选职业框里点了一个职业(选职业控件的 onChange)。
+   */
+  onWorkOcc: (next: string[]) => void
+
+  /**
+   * 关选职业框。
+   */
+  onOccClose: () => void
+}
+
+/**
+ * 「改工作经历某段某格」的入参(形同子桶 work 的 WorkCellIn)。
+ */
+export type WorkCellIn = {
+  /**
+   * 第几段。
+   */
+  i: number
+
+  /**
+   * 哪一格:title / org / city / from / to / desc。
+   */
+  f: string
+}
+
+/**
+ * useWorkRows 的入参。
+ */
+export type WorkSeedIn = {
+  /**
+   * 档案里存过的几段;空列 = 还没存过。
+   */
+  list: WorkPick[]
+
+  /**
+   * 做过的工作(职业码);还没存过几段的人按它一码一段起头。
+   */
+  nocs: string[]
+}
+
+/**
+ * GateWork(工作经历弹框正文)的 props。
+ */
+export type GateWorkIn = {
+  /**
+   * 表单整机。
+   */
+  g: GatePanel
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 各段职业那一格的字(与几段一一对应;没选 = 空串)。
+   */
+  names: string[]
+
+  /**
+   * 造「点第几段的选职业」的手柄。
+   */
+  occOpenOf: (i: number) => () => void
+}
+
+/**
+ * GateWorkLine(工作经历一段)的 props。
+ */
+export type GateWorkLineIn = {
+  /**
+   * 表单整机。
+   */
+  g: GatePanel
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 第几段。
+   */
+  i: number
+
+  /**
+   * 这一段。
+   */
+  row: WorkPick
+
+  /**
+   * 这一段职业那一格的字;没选 = 空串。
+   */
+  name: string
+
+  /**
+   * 点「选职业」。
+   */
+  onOcc: () => void
+}
+
+/**
+ * useWorkSync 的入参。
+ */
+export type WorkSyncIn = {
+  /**
+   * 各段汇出的职业码。
+   */
+  nocs: string[]
+
+  /**
+   * 把查名字用的选职业控件里已选的码整份换掉。
+   */
+  onReplace: (codes: string[]) => void
+}
+
+/**
+ * GateCvFields(电话、链接、技能三格)的 props。
+ */
+export type GateCvFieldsIn = {
+  /**
+   * 表单整机。
+   */
+  g: GatePanel
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
 }
 
 /**
@@ -487,6 +1056,11 @@ export type EduRowsPanel = {
    * 造「删第几段」的手柄。
    */
   eduRemoveOf: (i: number) => () => void
+
+  /**
+   * 几段的专业那一格:正在给第几段选、开框、点选与关框(2026-11-12 专业并进教育经历的每一段)。
+   */
+  em: EduMajorPanel
 }
 
 /**
@@ -528,6 +1102,11 @@ export type EduPick = {
    * 结束年份;空串 = 没填或在读。
    */
   to: string
+
+  /**
+   * 这一段学的专业(CIP 码;2026-11-12 Frank「教育经历 和 专业是不是重复了」:专业并进每一段,档案的专业由各段汇出);空串 = 没选。
+   */
+  major: string
 }
 
 /**
@@ -558,6 +1137,11 @@ export type EduEntry = {
    * 结束年份(四位数字)或空串。
    */
   to: string
+
+  /**
+   * 这一段学的专业(CIP 码;2026-11-12);没选 = 空串。
+   */
+  major: string
 }
 
 /**
@@ -573,6 +1157,11 @@ export type EduSeedIn = {
    * 教育经历串(没有明细时按它起头)。
    */
   strs: string[]
+
+  /**
+   * 档案里的专业码(2026-11-12:各段都还没挂专业的老档案,按序落进各段,多出的补成新段)。
+   */
+  majors: string[]
 }
 
 /**
@@ -684,6 +1273,21 @@ export type GateEduLineIn = {
    * 这一段。
    */
   row: EduPick
+
+  /**
+   * 这一段专业的名字;没选 = 空串。
+   */
+  major: string
+
+  /**
+   * 点专业那一格的「修改」。
+   */
+  onMajor: () => void
+
+  /**
+   * 搜学校整机(这一段的学校格边打边搜)。
+   */
+  sch: SchoolPanel
 }
 
 /**
@@ -930,6 +1534,11 @@ export type GateEditSeed = {
    * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
    */
   fromResume: string[]
+
+  /**
+   * 简历资料(2026-11-12:工作经历几段、电话、链接、技能与模板)。
+   */
+  cv: GateCv
 }
 
 /**
@@ -1045,6 +1654,11 @@ export type EditPatch = {
    * 从简历提取、用户保存过的值(「字段:值」串;2026-11-09,值改掉就不再列,胶囊据它出)。
    */
   fromResume: string[]
+
+  /**
+   * 简历资料(2026-11-12),整格覆盖。
+   */
+  cv: GateCv
 }
 
 /**
@@ -1070,6 +1684,11 @@ export type GateFormIn = {
    * 存好了。
    */
   onSaved: () => void
+
+  /**
+   * 一开面板就自动从简历填写一次(2026-11-12:刚上传或替换了简历、档案还有空格时由档案页给);可省 = 不自动填。
+   */
+  autoFill?: boolean
 }
 
 /**
@@ -1080,11 +1699,6 @@ export type GatePickPanel = {
    * 叠开着哪一个(专业 / 职业);没开为空串。
    */
   picking: string
-
-  /**
-   * 开专业选择器。
-   */
-  onMajor: () => void
 
   /**
    * 开职业选择器。
@@ -1227,6 +1841,11 @@ export type GatePickBoxIn = {
  */
 export type GateFormFieldsIn = {
   /**
+   * 「生成简历」一段的整机(2026-11-12)。
+   */
+  c: CvGenPanel
+
+  /**
    * 表单状态(useGateEdit 同一台;2026-11-07 起改名 useGateForm)。
    */
   g: GatePanel
@@ -1256,11 +1875,6 @@ export type GateFormFieldsIn = {
  * 三格已选名字。
  */
 export type GatePickLines = {
-  /**
-   * 专业。
-   */
-  majors: PickedLine[]
-
   /**
    * 想做的工作。
    */
@@ -1320,6 +1934,11 @@ export type EduLinesIn = {
    * 取词。
    */
   t: TFn
+
+  /**
+   * 各段专业的名字(与几段一一对应;没选 = 空串)。
+   */
+  majors: string[]
 }
 
 /**
@@ -1335,6 +1954,11 @@ export type EduSumIn = {
    * 取词。
    */
   t: TFn
+
+  /**
+   * 这一段专业的名字;没选 = 空串。
+   */
+  major: string
 }
 
 /**
@@ -1367,15 +1991,20 @@ export type ResumeFillHookIn = {
   g: GatePanel
 
   /**
-   * 把提取到的做过的工作同步给选择器。
+   * 一开面板就自动填一次(2026-11-12 Frank「这个应该是自动填的吧」:刚上传或替换了简历、档案还有空格时由档案页打开)。
    */
-  onWork: (codes: string[]) => void
+  auto: boolean
 }
 
 /**
  * makeResumeFill 的入参。
  */
-export type ResumeFillIn = ResumeFillHookIn & {
+export type ResumeFillIn = {
+  /**
+   * 表单状态。
+   */
+  g: GatePanel
+
   /**
    * 落「取数中」。
    */
@@ -1450,6 +2079,11 @@ export type PrefillJson = {
    * 教育经历(2026-11-12)。
    */
   education?: PrefillEdu[]
+
+  /**
+   * 几段工作经历(2026-11-12:职业码、职位名称、公司、城市、起止年月、做了什么;服务端已洗)。
+   */
+  jobs?: WorkPick[]
 }
 
 /**
@@ -1475,6 +2109,11 @@ export type PrefillFact = {
    * 教育经历(2026-11-12);没有 = 空列。
    */
   education: PrefillEdu[]
+
+  /**
+   * 几段工作经历(2026-11-12);没有 = 空列。
+   */
+  jobs: WorkPick[]
 }
 
 /**
@@ -1563,32 +2202,7 @@ export type OccLineGroup = {
 }
 
 /**
- * majorLinesOf 的入参。
- */
-export type MajorLinesIn = {
-  /**
-   * 已选专业码。
-   */
-  codes: string[]
-
-  /**
-   * 已取到名字的专业行。
-   */
-  rows: MajorLineRow[]
-
-  /**
-   * 界面语。
-   */
-  lang: string
-
-  /**
-   * 标记。
-   */
-  marks: string[]
-}
-
-/**
- * majorLinesOf 读的专业行(形同 majors 桶的 MajorRow,喂 majorNameOf 全格照抄)。
+ * majorNamesOf 读的专业行(形同 majors 桶的 MajorRow,喂 majorNameOf 全格照抄)。
  */
 export type MajorLineRow = {
   /**
@@ -1635,4 +2249,234 @@ export type ApplyPrefillIn = {
    * 提取结果。
    */
   d: PrefillFact
+}
+
+/**
+ * 教育经历几段「专业」那一格的手柄(2026-11-12 专业并进教育经历的每一段)。
+ */
+export type EduMajorPanel = {
+  /**
+   * 正在给第几段选专业;-1 = 没在选。
+   */
+  at: number
+
+  /**
+   * 造「点第几段的专业修改」的手柄。
+   */
+  openOf: (i: number) => () => void
+
+  /**
+   * 专业选择框里点了一个专业。
+   */
+  onPick: (next: string[]) => void
+
+  /**
+   * 关专业选择框。
+   */
+  onClose: () => void
+}
+
+/**
+ * GateEdu(教育经历弹框正文)的 props。
+ */
+export type GateEduIn = {
+  /**
+   * 表单整机。
+   */
+  g: GatePanel
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 各段专业的名字(与几段一一对应;没选 = 空串)。
+   */
+  majors: string[]
+
+  /**
+   * 搜学校整机。
+   */
+  sch: SchoolPanel
+}
+
+/**
+ * majorNamesOf 的入参。
+ */
+export type MajorNamesIn = {
+  /**
+   * 几段。
+   */
+  rows: EduPick[]
+
+  /**
+   * 已取到名字的专业行(专业选择器的已选行)。
+   */
+  picked: MajorLineRow[]
+
+  /**
+   * 界面语。
+   */
+  lang: string
+}
+
+/**
+ * 搜到的一所学校(形同子桶 school 的 SchoolHit)。
+ */
+export type SchoolOpt = {
+  /**
+   * 校名(英文)。
+   */
+  name: string
+
+  /**
+   * 中文译名;没有 = 空串。
+   */
+  nameZh: string
+
+  /**
+   * 所在省码;库里没有 = 空串。
+   */
+  prov: string
+
+  /**
+   * 公立 true、私立 false。
+   */
+  isPublic: boolean
+}
+
+/**
+ * 教育经历「搜学校」的整机(useSchoolSearch 出;2026-11-12)。
+ */
+export type SchoolPanel = {
+  /**
+   * 正在搜第几段(结果摆在那一段的学校格下面);-1 = 没在搜。
+   */
+  at: number
+
+  /**
+   * 搜到的学校;没搜到、没在搜 = 空列。
+   */
+  hits: SchoolOpt[]
+
+  /**
+   * 造第几段学校格的打字手柄。
+   */
+  typeOf: (i: number) => (v: string) => void
+
+  /**
+   * 造「点一所搜到的学校」的手柄。
+   */
+  pickOf: (hit: SchoolOpt) => () => void
+
+  /**
+   * 界面语(结果行的灰字按它出中文译名)。
+   */
+  lang: string
+}
+
+/**
+ * useSchoolSearch 的入参。
+ */
+export type SchoolHookIn = {
+  /**
+   * 教育经历几段。
+   */
+  rows: EduPick[]
+
+  /**
+   * 整份写几段。
+   */
+  setRows: (v: EduPick[]) => void
+
+  /**
+   * 界面语。
+   */
+  lang: string
+}
+
+/**
+ * GateSchoolHits(学校格下面那几行搜到的学校)的 props。
+ */
+export type GateSchoolHitsIn = {
+  /**
+   * 搜学校整机。
+   */
+  sch: SchoolPanel
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * GateFormLoad(自己取档案的修改面板;投递第 1 步的「生成简历」用)的 props。
+ */
+export type GateFormLoadIn = {
+  /**
+   * 取词。
+   */
+  t: TFn
+
+  /**
+   * 关面板。
+   */
+  onClose: () => void
+
+  /**
+   * 存好了。
+   */
+  onSaved: () => void
+}
+
+/**
+ * 自己取到的起始答案(useSeedLoad 出)。
+ */
+export type SeedLoadPanel = {
+  /**
+   * 起始答案;还没取到、取不到 = null。
+   */
+  seed: GateEditSeed | null
+
+  /**
+   * 取不到(没登录、接口挂了)。
+   */
+  failed: boolean
+}
+
+/**
+ * 子桶 seed 交回的起始答案(教育经历明细与简历资料在那边不透明;makeSeedSet 的装配点断言成 GateEditSeed)。
+ */
+export type SeedLoaded = object | null
+
+/**
+ * eduMajorAtOf 的入参。
+ */
+export type EduMajorAtIn = {
+  /**
+   * 几段。
+   */
+  rows: EduPick[]
+
+  /**
+   * 正在给第几段选专业;-1 = 没在选。
+   */
+  at: number
+}
+
+/**
+ * makeAtSet 的入参。
+ */
+export type AtSetIn = {
+  /**
+   * 「正在给第几段选」的落格。
+   */
+  setAt: (v: number) => void
+
+  /**
+   * 要落的值。
+   */
+  v: number
 }

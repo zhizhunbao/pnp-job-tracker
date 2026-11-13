@@ -259,6 +259,26 @@ export const GRAY = 0.38
 export const INK = 0
 
 /**
+ * 现代款的主色:红分量(0~1;站内主色蓝 #1d4ed8)。
+ */
+export const ACCENT_R = 0.114
+
+/**
+ * 现代款的主色:绿分量。
+ */
+export const ACCENT_G = 0.306
+
+/**
+ * 现代款的主色:蓝分量。
+ */
+export const ACCENT_B = 0.847
+
+/**
+ * 现代款第一页页顶色条的高(pt)。
+ */
+export const BAND_H = 16
+
+/**
  * 居中时左右各占一半。
  */
 export const HALF = 2

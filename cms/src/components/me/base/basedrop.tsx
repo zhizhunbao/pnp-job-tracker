@@ -30,7 +30,7 @@ export function BaseDrop({ b, t }: BasePartIn) {
         <Button kind={PRIMARY_KIND} onClick={b.onAdd} busy={b.busy} className={cssOf(css.dropBtn)}>
           {t('rf.upBtn')}
         </Button>
-        <Button kind={SECONDARY_KIND} onClick={b.cv.onOpen}>{t('cv.gen')}</Button>
+        <Button kind={SECONDARY_KIND} onClick={b.onBuild}>{t('cv.gen')}</Button>
         <span className={cssOf(css.hint)}>{t('rf.upDrag')}</span>
       </div>
     </>
