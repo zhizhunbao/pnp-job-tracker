@@ -320,6 +320,11 @@ export type ReviewFlowIn = {
   province: string
 
   /**
+   * 雇主指定的邮件标题(没有 = 空串,标题用模板;2026-11-12)。
+   */
+  subject: string
+
+  /**
    * 公司英文名。
    */
   company: string

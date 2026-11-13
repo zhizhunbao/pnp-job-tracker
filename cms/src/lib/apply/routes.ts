@@ -534,7 +534,7 @@ export async function applySendRoute(req: Request): Promise<Response> {
     replyTo = user.email
   }
   const withCover = row.cover.trim() !== TEXT_NONE
-  const parts = { title: job.title, city: job.city, province: job.province, name: prefs.senderName }
+  const parts = { title: job.title, city: job.city, province: job.province, name: prefs.senderName, subject: job.subject }
   const subject = mailSubjectOf(parts)
   let bodyText = mailTextOf({ title: job.title, city: job.city, province: job.province, name: prefs.senderName, cover: withCover })
   if (row.mailBody.trim() !== TEXT_NONE) {

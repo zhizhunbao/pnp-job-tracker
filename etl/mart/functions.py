@@ -289,6 +289,11 @@ from mart.constants import (
     K_HOWTO_AT, K_HOWTO_EMAILS, K_HOWTO_STATUS, K_HOWTO_UNTIL, K_VERIFY_UNTIL, PRINT_APPLY_TPL,
 )
 from mart.constants import APPLY_CONFIDENTIAL_RE, APPLY_VERB_BEFORE, APPLY_VERB_NEAR_RE
+from mart.constants import (  # 2026-11-12 雇主指定的投递邮件标题
+    APPLY_SUBJECT_AFTER_RE, APPLY_SUBJECT_BAD_RE, APPLY_SUBJECT_BEFORE_RE, APPLY_SUBJECT_MIN, APPLY_SUBJECT_QUOTED,
+    APPLY_SUBJECT_SCARRED, APPLY_SUBJECT_TRIM, K_APPLY_SUBJECT, PRINT_APPLY_SUBJECT_TPL,
+)
+from mart.scheme import MartApplySubjectTest  # 同上
 from mart.scheme import ApplyTally, HowtoRecIn
 from mart.constants import (  # 2026-09-28 缺数据修复批:待修清单(Frank「先做拆分」)
     FIELD_BODY, FIELD_CITY, FIELD_EMAIL, FIELD_HOURS, FIELD_NOC, FIELD_PROVINCE, FIELD_SALARY, FIELD_TERM, K_NOC_FROM,
@@ -8050,12 +8055,19 @@ def fill_apply_emails(ctx: MartCtx) -> None:
     2026-09-27 Frank 勾「Job Bank 截止日」:帖子行自带详情快照里的截止日(to_jb_job_fields)后,这里改成有就覆盖 ——
     验尸帖页(每次验活重读,延期跟得上)> howto(只抓一次)> 详情快照(首抓那次);原先「行里没有才补」会让快照那份一次性的日期
     挡住验尸刷新的。非 Job Bank 行这里 until 恒为空串,不受影响。
+    2026-11-12 Frank「这个信息整理 jd 的时候没加进来啊」「依次修吧」:同一段顺手从正文抽雇主指定的投递邮件标题(applySubject,
+    text_subject_of),有就落列、没有不落;每轮照正文重算,不保旧值。
     """
     howto = load_howto_table()
     page_until = load_page_until()
     tally = ApplyTally(jb=0, text=0, until=0)
     from_page = 0
+    subjects = 0
     for row in ctx.jobs:
+        subject = text_subject_of(row.get(K_DESCRIPTION) or "")
+        if subject != "":
+            row[K_APPLY_SUBJECT] = subject
+            subjects += 1
         rec = howto_rec_of(HowtoRecIn(row=row, howto=howto))
         mail = howto_mail_of(rec)
         if mail != "":
@@ -8076,6 +8088,26 @@ def fill_apply_emails(ctx: MartCtx) -> None:
             tally.until += 1
     say(PRINT_APPLY_TPL.format(jb=tally.jb, text=tally.text, until=tally.until, page=from_page,
                                total=tally.jb + tally.text, jobs=len(ctx.jobs)))
+    say(PRINT_APPLY_SUBJECT_TPL.format(n=subjects))
+
+
+def text_subject_of(text: str) -> str:
+    """正文里雇主指定的投递邮件标题(2026-11-12):只认带引号写明的现成标题,先找写在「subject line」后面的、再找写在前面的;
+    无障碍 / 便利安排 / 隐私语境里的(「with "Accommodation Request" in the subject line」)与投递邮箱同一把尺子排除;
+    填空格式(带 [Your Name] / Job Title 之类)不收。都不是给空串 —— 投递信照旧用本站模板。
+
+    @param text 洗过的正文纯文本。
+    @returns 标题(两头空白与标点已剥);没有给空串。
+    """
+    for rx in (APPLY_SUBJECT_AFTER_RE, APPLY_SUBJECT_BEFORE_RE):
+        for m in rx.finditer(text):
+            window = text[max(0, m.start() - APPLY_CTX_BEFORE):m.end() + APPLY_CTX_AFTER]
+            if APPLY_SKIP_CTX_RE.search(window):
+                continue
+            subject = (m.group(APPLY_SUBJECT_QUOTED) or m.group(APPLY_SUBJECT_SCARRED) or "").strip(APPLY_SUBJECT_TRIM)
+            if len(subject) >= APPLY_SUBJECT_MIN and APPLY_SUBJECT_BAD_RE.search(subject) is None:
+                return subject
+    return ""
 
 
 def load_howto_table() -> dict:
@@ -8203,10 +8235,11 @@ def run_tests() -> None:
     2026-10-05 再加一组:MartNocDescExamplesTest(noc_descriptions 行带官方示例职称:换行拼接、没有给空串)。
     2026-10-11 再加一组:MartOfferDrawTest(省「雇主 offer 类通道最近一次抽选日」:只认 jobLinked 点名的组、按月补月末、没收录不挂)。
     2026-10-12 再加一组:RankMonthOnlyTest(住 mart/rank 子域:只到月不进间隔、状态三档金标、合卡与省提名专场、邀请人数排前)。
-    2026-10-15 再加一组:MartDeadTableTest(判死台账:howto 判下架之后又被验尸验活的不算死)。"""
+    2026-10-15 再加一组:MartDeadTableTest(判死台账:howto 判下架之后又被验尸验活的不算死)。
+    2026-11-12 再加一组:MartApplySubjectTest(雇主指定的投递邮件标题:带引号的金标、不带引号与填空格式不收、无障碍语境排除、变异探针)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
-                 MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest, MartNbNlOpsTest,
+                 MartApplySubjectTest, MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest, MartNbNlOpsTest,
                  MartBcFunnelOpsTest, MartMbPoolTest, MartAbFederalTest,
                  MartDrawSelectionTest, MartDrawAnchorTest, MartDesignatedSplitTest, MartCipProgramsTest,
                  MartNocDescExamplesTest, MartOfferDrawTest, RankMonthOnlyTest, MartDeadTableTest):

@@ -56,6 +56,11 @@ export type ApplyJobView = {
   hasEmail: boolean
 
   /**
+   * 雇主指定的投递邮件标题(没有 = 空串,标题用模板;2026-11-12)。
+   */
+  subject: string
+
+  /**
    * 职位名中文译名(没有 / 过期 = 空串;2026-10-09 投递弹框换 section 形,英文在上、译名灰字在下)。
    */
   titleZh: string

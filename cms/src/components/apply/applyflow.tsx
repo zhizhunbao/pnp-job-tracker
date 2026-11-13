@@ -49,6 +49,7 @@ export function ApplyFlow({ start, titleSub, onSent, base, onBig }: ApplyPageIn)
           title={p.job.title}
           city={p.job.city}
           province={p.job.province}
+          subject={p.job.subject}
           company={p.job.company}
           to={p.mail.to}
           name={p.name}

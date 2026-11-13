@@ -4631,6 +4631,76 @@ class MartApplyMailTest(unittest.TestCase):
                         self.assertEqual(fn.text_mail_of(text), "")
 
 
+class MartApplySubjectTest(unittest.TestCase):
+    """正文抽雇主指定的投递邮件标题自测(2026-11-12 Frank「这个信息整理 jd 的时候没加进来啊」「依次修吧」):带引号写明的现成标题要收
+    (直引号、弯引号、源头写坏成一对问号的;写在 subject line 前或后),不带引号、填空格式、无障碍语境里的一律留空;
+    性质与变异探针各一条。正例原句取自 2026-11-12 的 mart 职位表。"""
+
+    def positives(self) -> list[tuple[str, str]]:
+        """手写金标:(正文片段, 该抽到的标题)。"""
+        return [
+            ("Please email your resume and a brief cover letter to amountney@opusartsupplies.com. Please use the subject "
+             "line \"Retail Store Manager Application.\"", "Retail Store Manager Application"),
+            ("apply by email at HR@GNB.CA stating \"2026-31 Intake Officer\" in your email subject line before November 23, "
+             "2026.", "2026-31 Intake Officer"),
+            ("Submit your cover letter and resume to tim@theplayhouse.ca with \"Employment Application 26-10\" in the "
+             "subject line by November 23, 2026.", "Employment Application 26-10"),
+            ("send your curriculum vitae and letter of interest with the Subject Line - \"DC Operational Support - Calgary "
+             "Police\" in confidence to apply@jssearch.ca.", "DC Operational Support - Calgary Police"),
+            ("Applications should be sent to hr@murphycentre.ca with the subject line “Executive Director Application” by "
+             "November 16th, 2026.", "Executive Director Application"),
+            ("Please e-mail your resume with subject heading, ?Bookkeeper? to careers@mrsbgroup.com.", "Bookkeeper"),
+            ("Send your resume to info@thepawlidayinn.ca with ?Kennel Attendant? in the subject line.", "Kennel Attendant"),
+            ("email your résumé to manager@mirajhammam.com with the subject line ?Spa Receptionist Application.?",
+             "Spa Receptionist Application"),
+        ]
+
+    def negatives(self) -> list[str]:
+        """反例:没写现成标题、不带引号、填空格式、嵌套的坏引号、无障碍语境、无关的 subject。"""
+        return [
+            "Please submit cover letter and resume including position title in subject line to careers@cfht.ca",
+            "If applying via email, please provide the job ID # in your subject line",
+            "? Attention: Human Resources ? Subject line: CHILD & YOUTH COORDINATOR Good to Know: ? We thank all applicants",
+            "submit your resume to i.d.a.malonepharmacy@gmail.com with the subject line MOA Application.",
+            "Please include \"Assistant Accountant Application - [Your Name]\" in the subject line.",
+            "Use the subject line \"Job Title - Your Name\" when you apply.",
+            "kitty.koo@siwon.ca with the subject line: ?Full-time Immigration Consultant Position at Immigration Management "
+            "?Si-Won?. Please note",
+            "If you require accommodation, email jobs@acme.ca with \"Accommodation Request\" in the subject line.",
+            "Produce informational materials to awaken curiosity and interest in the subject matter",
+            "Put your name in the subject line. \"We thank all applicants\" is our standard reply.",
+        ]
+
+    def test_golden(self) -> None:
+        """正反金标。"""
+        from mart import functions as fn
+        for text, want in self.positives():
+            with self.subTest(text=text):
+                self.assertEqual(fn.text_subject_of(text), want)
+        for text in self.negatives():
+            with self.subTest(text=text):
+                self.assertEqual(fn.text_subject_of(text), "")
+
+    def test_never_template_or_scar(self) -> None:
+        """性质:不管引号里写什么,抽出来的标题不带填空记号与写坏的问号,两头没有空白和句末标点。"""
+        from mart import functions as fn
+        for inner in ("Cook Application.", " Cook Application ", "Cook - [Your Name]", "Cook ? Kitchen", "Your Name - Cook",
+                      "Position Title", "Job ID 123", "<Cook>", "Cook!", "Cook;"):
+            for text in ("Use the subject line \"" + inner + "\" please.", "Apply with \"" + inner + "\" in the subject line."):
+                with self.subTest(text=text):
+                    got = fn.text_subject_of(text)
+                    self.assertIsNone(re.search(r"[\[\]<>{}?]|\byour\b", got, re.I))
+                    self.assertEqual(got, got.strip(" .,;:!"))
+
+    def test_skip_ctx_probe(self) -> None:
+        """变异探针:排除语境换成永不命中,无障碍那条反例就被收进来 —— 证明挡住它的是这条判据。"""
+        from mart import functions as fn
+        text = "If you require accommodation, email jobs@acme.ca with \"Accommodation Request\" in the subject line."
+        self.assertEqual(fn.text_subject_of(text), "")
+        with mock.patch.object(fn, "APPLY_SKIP_CTX_RE", re.compile(r"(?!x)x")):
+            self.assertEqual(fn.text_subject_of(text), "Accommodation Request")
+
+
 class MartAtsEmpTest(unittest.TestCase):
     """ATS 工时 / 雇佣期透传自测(2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」):to_ats_job_fields 落列键名与 Job Bank 同、
     缺键老数据不落列;collect_ats_jobs 读源两格;评分段(判通道)与岗位装配段(fill_formatted 落列)穷举组合下取值逐格相同。

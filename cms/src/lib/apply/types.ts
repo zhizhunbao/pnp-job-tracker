@@ -137,6 +137,11 @@ export type MailPartsIn = {
    * 英文署名。
    */
   name: string
+
+  /**
+   * 雇主指定的邮件标题(没有 = 空串,标题用模板;2026-11-12)。
+   */
+  subject: string
 }
 
 /**
@@ -478,6 +483,11 @@ export type ApplyJobDbRow = {
   apply_email: string | null
 
   /**
+   * 雇主指定的投递邮件标题(原文没写明是 NULL;2026-11-12)。
+   */
+  apply_subject: string | null
+
+  /**
    * 职位名中文译名(2026-10-09;没译 / 过期由版本号判)。
    */
   title_zh: string | null
@@ -558,6 +568,11 @@ export type ApplyJobFact = {
   email: string
 
   /**
+   * 雇主指定的投递邮件标题(没有 = 空串;2026-11-12)。
+   */
+  subject: string
+
+  /**
    * 职位名中文译名(没有 / 过期 = 空串;2026-10-09 投递弹框换 section 形)。
    */
   titleZh: string
@@ -636,6 +651,11 @@ export type ApplyJobRow = {
    * 库里有投递邮箱(没有就投不了)。
    */
   hasEmail: boolean
+
+  /**
+   * 雇主指定的投递邮件标题(没有 = 空串;「确认」页的邮件预览要照它显示,2026-11-12)。
+   */
+  subject: string
 
   /**
    * 职位名中文译名(没有 / 过期 = 空串;2026-10-09 投递弹框换 section 形)。

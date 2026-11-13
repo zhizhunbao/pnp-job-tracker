@@ -24,7 +24,7 @@ import css from './review.module.css'
  * @returns 收发信息与正文。
  */
 export function ReviewMail({ p, x }: ReviewFootIn) {
-  const parts = { title: x.title, city: x.city, province: x.province, name: x.name }
+  const parts = { title: x.title, city: x.city, province: x.province, name: x.name, subject: x.subject }
   const mailText = mailTextOf({ title: x.title, city: x.city, province: x.province, name: x.name, cover: true })
   let shown = mailText
   if (p.mail !== TEXT_NONE) {

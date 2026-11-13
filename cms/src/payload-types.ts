@@ -585,6 +585,10 @@ export interface Job {
    * 雇主投递邮箱(站内投递批 1;仅管理员可读)
    */
   applyEmail?: string | null;
+  /**
+   * 雇主指定的投递邮件标题(原文带引号写明的才有)
+   */
+  applySubject?: string | null;
   officialUrl?: string | null;
   /**
    * 原始薪资文本(悬停展示/搜索)
@@ -3465,6 +3469,7 @@ export interface JobsSelect<T extends boolean = true> {
   region?: T;
   applyUrl?: T;
   applyEmail?: T;
+  applySubject?: T;
   officialUrl?: T;
   salary?: T;
   salaryAnnual?: T;

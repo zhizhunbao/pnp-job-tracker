@@ -17,7 +17,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   bounceKindOf, coverFillOf, coverLinesOf, coverPdfOf, idemKeyOf, isSenderName, isSvixValid,
-  mailTextOf, pdfBadCharsOf, recipientOf, resumeFileOf, coverFileOf, senderFromOf, letterCleanOf, letterMessagesOf, letterProviderOf,
+  mailSubjectOf, mailTextOf, pdfBadCharsOf, recipientOf, resumeFileOf, coverFileOf, senderFromOf, letterCleanOf, letterMessagesOf, letterProviderOf,
 } from '@/lib/apply/functions'
 import { COVER_DEFAULT } from '@/lib/apply/constants'
 
@@ -119,6 +119,21 @@ describe('代发', () => {
     // 2026-10-10 投递框三步:「不附求职信」只发简历,正文与来源说明都不提求职信
     expect(body).toContain('cover letter')
     expect(mailTextOf({ title: 'Cook', city: '', province: '', name: 'Z Q', cover: false })).not.toContain('cover letter')
+  })
+
+  // 2026-11-12 Frank「依次修吧」:雇主在原文里指定了邮件标题(jobs.apply_subject)就原样用,没指定才用模板。
+  // 探针:mailSubjectOf 不看 subject → 第一条红;有 subject 时还拼职位名或署名 → 性质那条红。
+  it('标题:雇主指定了就原样用,没指定用模板', () => {
+    const base = { title: 'store manager - retail', city: 'Langley', province: 'BC', name: 'Zhang San' }
+    expect(mailSubjectOf({ ...base, subject: 'Retail Store Manager Application' })).toBe('Retail Store Manager Application')
+    expect(mailSubjectOf({ ...base, subject: '' })).toBe('Application for store manager - retail - Zhang San')
+    for (const subject of ['2026-31 Intake Officer', 'Employment Application 26-10', 'Bookkeeper', 'A {{title}} B {{name}}']) {
+      for (const name of ['Zhang San', '', 'Z Q']) {
+        for (const title of ['Cook', 'store manager - retail']) {
+          expect(mailSubjectOf({ title, city: '', province: '', name, subject })).toBe(subject)
+        }
+      }
+    }
   })
 })
 

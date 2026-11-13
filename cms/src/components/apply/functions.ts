@@ -567,7 +567,9 @@ function reach(x: GoStepIn): void {
  */
 export function mailOf(x: MailIn): MailView {
   const cover = x.letter.trim() !== TEXT_NONE
-  const parts = { title: x.job.title, city: x.job.city, province: x.job.province, name: x.name.trim() }
+  const parts = {
+    title: x.job.title, city: x.job.city, province: x.job.province, name: x.name.trim(), subject: x.job.subject,
+  }
   let coverName = TEXT_NONE
   if (cover) {
     coverName = coverFileOf(x.job.company)

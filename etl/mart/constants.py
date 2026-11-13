@@ -7354,6 +7354,43 @@ APPLY_NOREPLY_RE = re.compile(r"no-?reply|donotreply|do-not-reply|ne-?pas-?repon
 APPLY_SKIP_HOSTS = ("jobbank", "gc.ca", "canada.ca", "jobillico.", "jobboom.", "careerbeacon.", "example.")
 """不算雇主邮箱的域(Job Bank / 政府域 / 招聘板自己 / 示例地址)。"""
 
+K_APPLY_SUBJECT = "applySubject"
+"""jobs 行键:雇主指定的投递邮件标题(原文带引号写明的才有;没有就不落这一格,投递信用本站固定模板)。
+2026-11-12 Frank「这个信息整理 jd 的时候没加进来啊」「依次修吧」:Opus Art Supplies 帖要求标题写 "Retail Store Manager Application",
+本站代投的信标题却是固定模板,雇主按标题找信就漏掉。列 docs/sql/jobs-apply-subject-20261112.sql。"""
+
+APPLY_SUBJECT_AFTER_RE = re.compile(
+    r"subject\s+(?:line|heading|field)\b[^\"“”?\n.!;]{0,40}"
+    r"(?:[\"“](?P<q>[^\"“”\n]{3,80})[\"”]|\?(?P<m>\S[^?\n]{1,78}\S)\?)", re.I)
+"""指定标题写在「subject line」后面(2026-11-12):「use the subject line "X"」「Subject Line - "X"」。只认带引号的 ——
+直引号、弯引号,或源头把弯引号写坏成的一对「?」(?Bookkeeper?,问号紧贴文字两头才算,带空格的是写坏的项目符号)。
+「Subject line: X」这种不带引号的不收:标题到哪里结束定不准(11-12 试跑 6 条里 2 条会抽错),宁可留空用本站模板。"""
+
+APPLY_SUBJECT_BEFORE_RE = re.compile(
+    r"(?:[\"“](?P<q>[^\"“”\n]{3,80})[\"”]|\?(?P<m>\S[^?\n]{1,78}\S)\?)"
+    r"\s*(?:in|as|on)\s+(?:the|your)\s+(?:e-?mail\s+)?subject\s+(?:line|heading|field)\b", re.I)
+"""指定标题写在「in the subject line」前面(2026-11-12):「with "X" in the subject line」「stating "X" in your email subject line」。
+引号口径同 APPLY_SUBJECT_AFTER_RE。"""
+
+APPLY_SUBJECT_QUOTED = "q"
+"""两条标题正则里的组名:正常引号(直引号 / 弯引号)里的标题。"""
+
+APPLY_SUBJECT_SCARRED = "m"
+"""两条标题正则里的组名:写坏成一对「?」的引号里的标题。"""
+
+APPLY_SUBJECT_BAD_RE = re.compile(r"\byour\b|\b(?:job|position)\s+(?:title|name|id|number)\b|[\[\]<>{}?]", re.I)
+"""抽到的不是现成标题而是填空格式(「Assistant Accountant Application - [Your Name]」「Job Title - Your Name」),
+或里面还带写坏的「?」:不收,留空用本站模板(模板本身带职位名与署名)。"""
+
+APPLY_SUBJECT_TRIM = " .,;:!"
+"""标题两头要剥的空白与标点(美式写法句号收在引号里:"Retail Store Manager Application.")。"""
+
+APPLY_SUBJECT_MIN = 3
+"""剥完标点后标题最短几个字(再短不像标题)。"""
+
+PRINT_APPLY_SUBJECT_TPL = "投递邮件标题:原文指定 {n} 条"
+"""投递邮箱段收尾第二行:抽到雇主指定标题的岗数(2026-11-12)。"""
+
 PRINT_APPLY_TPL = ("投递邮箱:Job Bank 投递区 {jb} 条 · 正文抽取 {text} 条 · 截止日补 {until} 条(取自验尸帖页 {page})· "
                    "有邮箱合计 {total} / {jobs}")
 """投递邮箱段收尾一行(2026-09-26 加「取自验尸帖页」数:截止日用了验尸刷新的帖页那份、没用 howto 那份的岗数)。"""

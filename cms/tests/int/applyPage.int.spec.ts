@@ -39,7 +39,7 @@ vi.mock('next/navigation', () => ({
 
 const TPL = 'Dear Hiring Manager,\n\nI apply for {{title}} at {{company}}.\n\nSincerely,\n{{name}}'
 const JOB = {
-  id: 42, title: 'Cook', company: 'Pie Wood', city: 'Steinbach', province: 'MB', closed: false, hasEmail: true,
+  id: 42, title: 'Cook', company: 'Pie Wood', city: 'Steinbach', province: 'MB', closed: false, hasEmail: true, subject: '',
   titleZh: '厨师', titleKo: '요리사', companyZh: '', companyKo: '', cityZh: '斯坦巴克', cityKo: '', companySlug: 'pie-wood',
 }
 const LETTER = 'Dear Hiring Manager,\n\nI apply for Cook at Pie Wood.\n\nSincerely,\nZhang San'

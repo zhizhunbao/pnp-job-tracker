@@ -33,6 +33,9 @@ export const Jobs: CollectionConfig = {
       access: { read: ({ req }) => req.user?.role === 'admin' },
       admin: { description: '雇主投递邮箱(站内投递批 1;仅管理员可读)' },
     },
+    // 雇主指定的投递邮件标题(2026-11-12,docs/sql/jobs-apply-subject-20261112.sql):mart 投递邮箱段从正文抽(只认带引号写明的)。
+    // 有值时站内投递的信用它当标题,没有用固定模板(lib/apply 的 mailSubjectOf)。
+    { name: 'applySubject', type: 'text', admin: { description: '雇主指定的投递邮件标题(原文带引号写明的才有)' } },
     { name: 'officialUrl', type: 'text' },
     { name: 'salary', type: 'text', admin: { description: '原始薪资文本(悬停展示/搜索)' } },
     { name: 'salaryAnnual', type: 'number', index: true, admin: { description: '年薪折算(04d 清洗;排序/vs中位用)' } },

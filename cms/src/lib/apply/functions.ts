@@ -160,11 +160,16 @@ export function isSenderName(name: string): boolean {
 
 /**
  * 投递信标题。
+ * 2026-11-12 Frank「这个信息整理 jd 的时候没加进来啊」「依次修吧」:雇主在原文里指定了邮件标题(jobs.apply_subject,数据层抽)就原样用它,
+ * 没指定才用模板 —— 雇主按标题找信,用模板的那封会被漏掉。
  *
  * @param x 本岗与署名。
  * @returns 标题。
  */
 export function mailSubjectOf(x: MailPartsIn): string {
+  if (x.subject !== TEXT_NONE) {
+    return x.subject
+  }
   return SUBJECT_TPL.replace(PH_TITLE, x.title).replace(PH_NAME, x.name)
 }
 
@@ -601,6 +606,7 @@ export function toApplyJob(r: ApplyJobDbRow): ApplyJobFact {
   return {
     id: count(r.id), title: text(r.title), company: text(r.company_name), city: text(r.city),
     province: text(r.province), closed: r.job_status === JOB_CLOSED, email: text(r.apply_email).trim(),
+    subject: text(r.apply_subject).trim(),
     titleZh: vtext({ v: r.job_trans_v, cell: r.title_zh }), titleKo: vtext({ v: r.job_trans_v, cell: r.title_ko }),
     companyZh: text(r.alias_zh), companyKo: text(r.alias_ko), cityZh: text(r.city_zh), cityKo: text(r.city_ko),
     companySlug: text(r.company_slug),
@@ -616,7 +622,7 @@ export function toApplyJob(r: ApplyJobDbRow): ApplyJobFact {
 export function applyJobRowOf(j: ApplyJobFact): ApplyJobRow {
   return {
     id: j.id, title: j.title, company: j.company, city: j.city, province: j.province, closed: j.closed,
-    hasEmail: j.email !== TEXT_NONE, titleZh: j.titleZh, titleKo: j.titleKo, companyZh: j.companyZh,
+    hasEmail: j.email !== TEXT_NONE, subject: j.subject, titleZh: j.titleZh, titleKo: j.titleKo, companyZh: j.companyZh,
     companyKo: j.companyKo, cityZh: j.cityZh, cityKo: j.cityKo, companySlug: j.companySlug,
   }
 }

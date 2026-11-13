@@ -7,12 +7,14 @@
  * 「怎么投」整节不渲(链接 / 邮箱 / 行文三档都不出,投递出口只留投递栏的钮;JdApplyLines 件随撤)。
  * 2026-09-14 Frank「这个地点应该是可以点击跳到 google map 的」:「工作地点」节的英文行链 Google 地图。
  * 2026-10-11 Frank「三处都按你说的」:与职位信息卡重复撤:「工作地点」合成节撤,本件的地点分支随之撤。
+ * 2026-11-12 Frank「这个信息整理 jd 的时候没加进来啊」「依次修吧」:「怎么投」有内容时照普通节出行文(雇主指定的邮件标题、
+ * 截止日期、联系人、要交什么都在这一行里;邮箱电话入库前已抹),不带链接;整节缺的两档照旧不出,投递出口仍只有投递栏的钮。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { cssOf } from '@/components/css'
-import { JD_SEC_APPLY, SEC_MODE, TEXT_NONE } from './constants'
+import { SEC_MODE, TEXT_NONE } from './constants'
 import { JdSecLines } from './jdseclines'
 import { JdZhLine } from './jdzhline'
 import type { JdSectionIn } from './types'
@@ -25,7 +27,7 @@ import css from './jobs.module.css'
  * @returns 一节。
  */
 export function JdSection({ sec }: JdSectionIn) {
-  if (sec.mode === SEC_MODE.none || sec.m === JD_SEC_APPLY) {
+  if (sec.mode === SEC_MODE.none || sec.mode === SEC_MODE.applyEmail || sec.mode === SEC_MODE.applyLink) {
     return null
   }
   return (
@@ -34,7 +36,7 @@ export function JdSection({ sec }: JdSectionIn) {
       {sec.mode === SEC_MODE.payFallback && (
         <ul className={cssOf(css.bullets)}><li>{sec.payFallback}<JdZhLine zh={sec.payFallbackZh} /></li></ul>
       )}
-      {sec.mode === SEC_MODE.lines && (
+      {(sec.mode === SEC_MODE.lines || sec.mode === SEC_MODE.applyLines) && (
         <>
           {sec.payFallback !== TEXT_NONE && (
             <ul className={cssOf(css.bullets)}><li>{sec.payFallback}<JdZhLine zh={sec.payFallbackZh} /></li></ul>

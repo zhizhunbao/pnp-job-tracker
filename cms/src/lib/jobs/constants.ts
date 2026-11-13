@@ -1199,8 +1199,10 @@ export const DIR_ASC = 'ASC'
  * not/none/n\/a + stated/specified/mentioned/provided/available/applicable/listed 一律算缺节。
  * 2026-09-14 追加「Information not available in search results.」一族(AI 简介的规模 / 成立时间常这么写,
  * Frank「没有为什么显示出来」「信息不足不要显示」):「Information insufficient」同族,整句当「没有」,节不出。
+ * 2026-11-12「怎么投」一节恢复显示时补:本地模型把 not 写坏成 `(dnot stated)` / `(don't stated)`(11-12 整理缓存里 27 条),
+ * 同样算缺节,不然这两种会原样露在「怎么投」下面。
  */
-export const JD_NONE_RE = /^(\(?\s*(not|none|n\/a)(\s+(stated|specified|mentioned|provided|available|applicable|listed))?\s*\)?|information (is )?not available[^.]*\.?|(information )?insufficient( information)?\.?)$/i
+export const JD_NONE_RE = /^(\(?\s*(d?not|don'?t|none|n\/a)(\s+(stated|specified|mentioned|provided|available|applicable|listed))?\s*\)?|information (is )?not available[^.]*\.?|(information )?insufficient( information)?\.?)$/i
 
 /**
  * #198(Frank「这句话删掉」指 "Not stated in the results."):模型偶尔写整句而非短语 ——
