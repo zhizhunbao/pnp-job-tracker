@@ -166,6 +166,7 @@ export function makeLoadThread(x: LoadThreadIn): () => Promise<void> {
 
 /**
  * 回包 → 框要的往来(时刻换成渥太华时间到分;转发关着不给邮箱)。
+ * 2026-11-13 「同时转到」开关撤(Frank「照这个做」:固定都转),转到的邮箱固定是账户邮箱。
  *
  * @param d 回包。
  * @returns 往来。
@@ -175,10 +176,6 @@ export function toThreadView(d: ThreadJson): ThreadView {
   const messages: ThreadMsg[] = []
   for (const m of d.messages) {
     messages.push(toThreadMsg(m))
-  }
-  let forwardTo = TEXT_NONE
-  if (d.forward) {
-    forwardTo = d.account
   }
   return {
     senderName: a.senderName,
@@ -190,7 +187,7 @@ export function toThreadView(d: ThreadJson): ThreadView {
     body: a.body,
     sentAt: minuteOf(a.sentAt),
     messages,
-    forwardTo,
+    forwardTo: d.account,
   }
 }
 

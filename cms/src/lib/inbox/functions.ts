@@ -2,6 +2,8 @@
  * 收件箱域(lib/inbox)的行为:专属投递邮箱(懒建、子地址标记)、Resend 收信回调(认人 → 取全文 → 对投递 → 记库 →
  * 投递记「雇主回复」→ 转一份到账户邮箱)、站内回信、收件箱清单与「打开」一条投递的往来。
  * 池由调用方注进来(方案 A);投递域的两个纯函数(测试号收件人换算、发件人显示)由 routes 注入,不跨域取。
+ * 2026-11-13 Frank「最好是用户用我们的收件箱回信」「照这个做」:回信只在站内回 —— 转发信的回复地址改成本人专属地址
+ * 挂 m<信 id>,本人在自己邮箱里点了回复,信回到本站,不转给雇主,回他一封带站内链接的提示信;「同时转到」开关撤,固定都转。
  *
  * @author Frank
  * @time 2026-10-10 23:50:00
@@ -14,6 +16,7 @@ import {
   ADDR_IN_ANGLE_RE, ADDR_L, ADDR_R, ALIAS_NAME_FALLBACK, ALIAS_NAME_MAX, ALIAS_RAND_CHARS, ALIAS_RAND_LEN, ALIAS_RE,
   ALIAS_SEP, ALIAS_TRIES, ANGLE_L, APP_TAG, APP_TAG_RE, AT, BEARER_PREFIX, BLANKS_RE, BODY_MAX, DIR_OUT, E_NOT_FOUND,
   EV_RECEIVED, FWD_FOOT, FWD_FROM, FWD_LINK, FWD_SEP, FWD_SUBJECT, FWD_SUBJECT_HEAD, HDR_AUTH, HDR_IN_REPLY_TO,
+  MSG_TAG, MSG_TAG_RE, NOTE_IDEM_HEAD, NOTE_LEAD, NOTE_SUBJECT_HEAD, RECV_NOTED,
   HDR_IN_REPLY_TO_LC, HDR_REFERENCES, HDR_REFERENCES_LC, HTML_BR, HTML_BREAK_RE, HTML_DROP_RE, HTML_ENTITIES,
   HTML_ENTITY_RE, HTML_ESC, HTML_ESC_RE, HTML_TAG_RE, INBOUND_DOMAIN, INBOX_PATH_HEAD, LIST_LIMIT, MAIL_EN, MAIL_KO, MAIL_ZH, MSG_ID_RE,
   NAME_DROP_RE, NAME_QUOTES_RE, NEWLINE, PLUS, RE_HEAD, RE_RE, RECEIVED_URL, RECV_DUP, RECV_FETCH, RECV_IGNORED,
@@ -21,7 +24,8 @@ import {
 } from './constants'
 import type {
   AddressIn, AliasDbRow, AliasEnsureIn, AliasFact, AliasOut, AliasUserDbRow, AliasUserFact, CountDbRow, CountOut,
-  ForwardIn, ForwardSetIn, ForwardTextIn, HeaderOfIn, IdDbRow, InboxAddressIn, InboxAddressOut, InboxIn, InboxMsgRow,
+  ForwardIn, ForwardTextIn, HeaderOfIn, IdDbRow, InboxAddressIn, InboxAddressOut, InboxIn, InboxMsgRow,
+  MsgAddressIn, NoticeIn, NoticeTextIn,
   InboxMsgRows, InboxOut, InboxReplyRow, InboxRowsIn, InMail, InMailOfIn, LinkAppIn, LinkAppOut, MailHeaders, MailLang,
   MaybeAliasOut, MaybeId, MaybeRecipientHit, MaybeReplyBody, MsgDbRow, MsgFact, MsgOneDbRow, MsgOneFact, OutAddDbRow,
   OutAddFact, ParsedAddr, RawId, ReadBodyJson, ReceivedEmailFact, ReceivedEmailJson, ReceivedEventJson, ReceivedFact,
@@ -78,7 +82,7 @@ export async function ensureAlias(x: AliasEnsureIn): AliasOut {
 }
 
 /**
- * 本人的专属地址与转发开关。
+ * 本人的专属地址。
  *
  * @param x 连接与用户 id。
  * @returns 地址;还没建给 null。
@@ -88,13 +92,13 @@ export async function loadAlias(x: UserIn): MaybeAliasOut {
 }
 
 /**
- * 专属地址库行 → 地址(开关缺省按开)。
+ * 专属地址库行 → 地址。
  *
  * @param r 库行。
  * @returns 地址。
  */
 export function toAlias(r: AliasDbRow): AliasFact {
-  return { alias: text(r.alias), forward: r.forward !== false }
+  return { alias: text(r.alias) }
 }
 
 /**
@@ -155,6 +159,16 @@ export function addressOf(x: AddressIn): string {
 }
 
 /**
+ * 转发信与提示信的回复地址:地址名 + m<收件箱信 id> @ 收信子域(本人在自己邮箱里点回复,信回到本站,不到雇主手里)。
+ *
+ * @param x 地址名与信 id。
+ * @returns 地址。
+ */
+export function msgAddressOf(x: MsgAddressIn): string {
+  return x.alias + PLUS + MSG_TAG + x.msgId + AT + INBOUND_DOMAIN
+}
+
+/**
  * 去掉子地址标记(给本人看的回复邮箱不带 +a123)。
  *
  * @param addr 地址。
@@ -170,7 +184,7 @@ export function baseAddrOf(addr: string): string {
 }
 
 /**
- * 收件人里认本站地址:域名是收信子域、地址名合形;+ 后面是 a<数字> 就是挂的投递。
+ * 收件人里认本站地址:域名是收信子域、地址名合形;+ 后面是 a<数字> 就是挂的投递,m<数字> 就是回的收件箱里哪一封。
  *
  * @param x 收件人与收信子域。
  * @returns 认出的地址;没有给 null。
@@ -192,7 +206,7 @@ export function recipientHitOf(x: RecipientHitIn): MaybeRecipientHit {
       alias = alias.slice(0, plus)
     }
     if (ALIAS_RE.test(alias)) {
-      return { alias, appId: tagAppIdOf(tag) }
+      return { alias, appId: tagAppIdOf(tag), msgId: tagMsgIdOf(tag) }
     }
   }
   return null
@@ -240,13 +254,29 @@ export function tagAppIdOf(tag: string): MaybeId {
   return Number(g.groups.id)
 }
 
+/**
+ * 子地址标记 → 收件箱信 id。
+ *
+ * @param tag + 后面那段。
+ * @returns 信 id;不是 m<数字> 给 null。
+ */
+export function tagMsgIdOf(tag: string): MaybeId {
+  const g = MSG_TAG_RE.exec(tag)
+  if (g == null || g.groups == null || g.groups.id == null) {
+    return null
+  }
+  return Number(g.groups.id)
+}
+
 // =========================================================================
 // 2. 收信
 // =========================================================================
 
 /**
- * Resend 收信回调(已验签):认人 → 取全文 → 对投递 → 记库 → 投递记「雇主回复」→ 开着转发就转一份到账户邮箱。
+ * Resend 收信回调(已验签):认人 → 取全文 → 对投递 → 记库 → 投递记「雇主回复」→ 转一份到账户邮箱。
  * 不是收信事件、不是本站地址、发件人是本站收信子域(回环)、地址不是任何人的,都不记;同一封重放只记一次。
+ * 2026-11-13:收件地址挂着 m<信 id>、发件人就是本人账户邮箱、那一封确是他收到的 = 他在自己邮箱里回了转发信:
+ * 不转给雇主、不记进收件箱,只回他一封提示信;发件人不是他本人的照旧当普通来信收。转发不再看开关,固定转。
  *
  * @param x 连接、回调原始体与转发收件人换算。
  * @returns 结果(RECV_* 之一);取不到全文 = fetch(调用方回 502 让 Resend 重试)。
@@ -269,6 +299,13 @@ export async function receiveInbound(x: ReceiveIn): ReceiveOut {
   if (user == null) {
     return RECV_UNKNOWN
   }
+  if (hit.msgId != null && from.addr === user.email.toLowerCase()) {
+    const own = firstOf(await queryRows({ db: x.db, sql: SQL.INBOX_MSG_ONE, params: [user.userId, hit.msgId], map: toMsgOne }))
+    if (own != null) {
+      await sendNotice({ user, alias: hit.alias, msgId: own.id, subject: d.subject, emailId: d.emailId, mailTo: x.mailTo })
+      return RECV_NOTED
+    }
+  }
   const full = await fetchReceived(d.emailId)
   if (full == null) {
     return RECV_FETCH
@@ -289,9 +326,7 @@ export async function receiveInbound(x: ReceiveIn): ReceiveOut {
   if (mail.appId != null) {
     await x.db.query(SQL.INBOX_APP_REPLIED, [mail.appId, user.userId])
   }
-  if (user.forward) {
-    await forwardIn({ db: x.db, mail, msgId: id, mailTo: x.mailTo })
-  }
+  await forwardIn({ db: x.db, mail, msgId: id, alias: hit.alias, mailTo: x.mailTo })
   return RECV_STORED
 }
 
@@ -331,28 +366,31 @@ export function toReceived(d: ReceivedDataJson): ReceivedFact {
 /**
  * 认人库行 → 人。
  * 2026-10-11 批 5:多带界面语(转发信按它出三语;认不得的按中文)。
+ * 2026-11-13:认不得的改按英文(见 mailLangOf);转发开关那一格撤。
  *
  * @param r 库行。
  * @returns 人。
  */
 export function toAliasUser(r: AliasUserDbRow): AliasUserFact {
-  return { userId: count(r.user_id), forward: r.forward !== false, email: text(r.email), lang: mailLangOf(text(r.locale)) }
+  return { userId: count(r.user_id), email: text(r.email), lang: mailLangOf(text(r.locale)) }
 }
 
 /**
  * 界面语 → 转发信语言(认不得的按中文,同周报 / 每日推送)。
+ * 2026-11-13 Frank「照这个做」改判:为空或认不得的按英文(原任务「顺手修转发信的语言」:没设语言的人收到中文外壳);
+ * 周报 / 每日推送各有自己的函数,不在这次范围。
  *
  * @param locale 界面语。
  * @returns 转发信语言。
  */
 export function mailLangOf(locale: string): MailLang {
-  if (locale === MAIL_EN) {
-    return MAIL_EN
+  if (locale === MAIL_ZH) {
+    return MAIL_ZH
   }
   if (locale === MAIL_KO) {
     return MAIL_KO
   }
-  return MAIL_ZH
+  return MAIL_EN
 }
 
 /**
@@ -528,8 +566,9 @@ export function inMailOf(x: InMailOfIn): InMail {
 /**
  * 转一份到账户邮箱:回复地址设成原发件人(在邮箱里直接回就是回给雇主);账户邮箱本身在收信子域上不转(防回环)。
  * 发出去了记转发时刻;没发出去 postMail 已留痕,信照样在收件箱里。
+ * 2026-11-13 改判:回复地址不再是原发件人,改成本人专属地址挂 m<信 id>(对话留在站内,见文件头)。
  *
- * @param x 连接、那一封、信 id 与收件人换算。
+ * @param x 连接、那一封、信 id、地址名与收件人换算。
  * @returns 无。
  */
 export async function forwardIn(x: ForwardIn): WriteOut {
@@ -540,7 +579,8 @@ export async function forwardIn(x: ForwardIn): WriteOut {
   const body = forwardTextOf({ mail: x.mail, msgId: x.msgId })
   const r = await postMail({
     to: x.mailTo({ userEmail: to, employerEmail: to }), subject: FWD_SUBJECT_HEAD + x.mail.subject, html: htmlOf(body),
-    text: body, from: TEXT_NONE, replyTo: x.mail.from.addr, attachments: [], idemKey: TEXT_NONE, headers: {},
+    text: body, from: TEXT_NONE, replyTo: msgAddressOf({ alias: x.alias, msgId: x.msgId }), attachments: [],
+    idemKey: TEXT_NONE, headers: {},
   })
   if (r.ok) {
     await x.db.query(SQL.INBOX_FORWARDED, [x.msgId])
@@ -550,6 +590,7 @@ export async function forwardIn(x: ForwardIn): WriteOut {
 /**
  * 转发信正文:分隔行、原发件人、原标题、原文、去站内看的链接、为什么收到。
  * 2026-10-11 批 5:除原文外几行按收件人界面语出(中 / 英 / 韩)。
+ * 2026-11-13:去站内的链接挪到第一行(「在 Offer2PR 回复」),原文下面那一行撤。
  *
  * @param x 那一封与信 id。
  * @returns 纯文本。
@@ -557,15 +598,48 @@ export async function forwardIn(x: ForwardIn): WriteOut {
 export function forwardTextOf(x: ForwardTextIn): string {
   const lang = x.mail.user.lang
   return [
+    FWD_LINK[lang] + SITE + INBOX_PATH_HEAD + x.msgId,
+    TEXT_NONE,
     FWD_SEP[lang],
     FWD_FROM[lang] + senderLineOf(x.mail.from),
     FWD_SUBJECT[lang] + x.mail.subject,
     TEXT_NONE,
     x.mail.text,
     TEXT_NONE,
-    FWD_LINK[lang] + SITE + INBOX_PATH_HEAD + x.msgId,
     FWD_FOOT[lang],
   ].join(NEWLINE)
+}
+
+/**
+ * 提示信:本人在自己邮箱里回了转发信,告诉他这封没发给雇主、去站内哪里回。回复地址照旧挂 m<信 id>(再回还是提示);
+ * 幂等键 = Resend 收信 id(同一封回调重放只回一封)。发没发出去都留痕。
+ *
+ * @param x 本人、地址名、回的哪一封、他那封回信的标题、收信 id 与收件人换算。
+ * @returns 无。
+ */
+export async function sendNotice(x: NoticeIn): WriteOut {
+  const to = x.user.email
+  const body = noticeTextOf({ lang: x.user.lang, msgId: x.msgId })
+  const r = await postMail({
+    to: x.mailTo({ userEmail: to, employerEmail: to }), subject: NOTE_SUBJECT_HEAD[x.user.lang] + x.subject,
+    html: htmlOf(body), text: body, from: TEXT_NONE, replyTo: msgAddressOf({ alias: x.alias, msgId: x.msgId }),
+    attachments: [], idemKey: NOTE_IDEM_HEAD + x.emailId, headers: {},
+  })
+  if (r.ok) {
+    log({ tag: INBOX_LOG.tag, text: INBOX_LOG.noted + x.user.userId })
+    return
+  }
+  log({ tag: INBOX_LOG.tag, text: INBOX_LOG.noteFailed + x.user.userId + INBOX_LOG.whyFrag + r.why })
+}
+
+/**
+ * 提示信正文:没发给雇主一行、去站内回的链接一行。
+ *
+ * @param x 语言与回的哪一封。
+ * @returns 纯文本。
+ */
+export function noticeTextOf(x: NoticeTextIn): string {
+  return [NOTE_LEAD[x.lang], FWD_LINK[x.lang] + SITE + INBOX_PATH_HEAD + x.msgId].join(NEWLINE)
 }
 
 /**
@@ -693,26 +767,19 @@ export function reSubjectOf(s: string): string {
 // =========================================================================
 
 /**
- * 收件箱:专属地址(开通了才建)、转发开关、账户邮箱与收到的信(回出去的挂在下面)。
+ * 收件箱:专属地址(开通了才建)与收到的信(回出去的挂在下面)。
  *
- * @param x 连接、用户 id 与账户邮箱。
+ * @param x 连接与用户 id。
  * @returns 回包。
  */
 export async function loadInbox(x: InboxIn): InboxOut {
   let address = TEXT_NONE
-  let forward = true
   if (INBOUND_DOMAIN !== TEXT_NONE) {
     const a = await ensureAlias({ db: x.db, userId: x.userId })
     address = addressOf({ alias: a.alias, appId: null })
-    forward = a.forward
-  } else {
-    const a = await loadAlias({ db: x.db, userId: x.userId })
-    if (a != null) {
-      forward = a.forward
-    }
   }
   const facts = await queryRows({ db: x.db, sql: SQL.INBOX_LIST, params: [x.userId, LIST_LIMIT], map: toMsg })
-  return { address, forward, account: x.email, items: inboxRowsOf({ facts, desc: true }) }
+  return { address, items: inboxRowsOf({ facts, desc: true }) }
 }
 
 /**
@@ -805,18 +872,7 @@ export async function markRead(x: UserIdIn): WriteOut {
 }
 
 /**
- * 改转发开关(还没建地址先建)。
- *
- * @param x 连接、用户 id 与开关。
- * @returns 无。
- */
-export async function saveForward(x: ForwardSetIn): WriteOut {
-  await ensureAlias({ db: x.db, userId: x.userId })
-  await x.db.query(SQL.INBOX_FORWARD_SET, [x.userId, x.forward])
-}
-
-/**
- * 「打开」一条投递:发出那一封、挂在上面的往来信、转发开关与账户邮箱。
+ * 「打开」一条投递:发出那一封、挂在上面的往来信与账户邮箱。
  *
  * @param x 连接、用户 id、账户邮箱与投递行 id。
  * @returns 回包;不是本人的 / 还没发给 null。
@@ -827,12 +883,7 @@ export async function loadThread(x: ThreadIn): ThreadOut {
     return null
   }
   const facts = await queryRows({ db: x.db, sql: SQL.INBOX_THREAD_MSGS, params: [x.userId, x.appId], map: toMsg })
-  const a = await loadAlias({ db: x.db, userId: x.userId })
-  let forward = true
-  if (a != null) {
-    forward = a.forward
-  }
-  return { app, messages: inboxRowsOf({ facts, desc: false }), forward, account: x.email }
+  return { app, messages: inboxRowsOf({ facts, desc: false }), account: x.email }
 }
 
 /**

@@ -95,16 +95,6 @@ export type InboxView = {
   address: string
 
   /**
-   * 雇主回信同时转到账户邮箱没有。
-   */
-  forward: boolean
-
-  /**
-   * 账户邮箱。
-   */
-  account: string
-
-  /**
    * 来信,新的在前。
    */
   items: InboxItem[]
@@ -248,61 +238,6 @@ export type OpenAppIn = {
    * 打开投递记录框(由父桶注入:我的求职那一块的投递记录框)。
    */
   open: (appId: number) => void
-}
-
-/**
- * 转发开关手柄工厂的入参。
- */
-export type ForwardMakeIn = {
-  /**
-   * 回包;还没回为 null。
-   */
-  data: InboxView | null
-
-  /**
-   * 换回包(先改后存,存失败改回)。
-   */
-  setData: (v: InboxView) => void
-
-  /**
-   * 取词。
-   */
-  t: TFn
-}
-
-/**
- * 转发开关存好后那句提示的入参。
- */
-export type ForwardSavedIn = {
-  /**
-   * 开还是关。
-   */
-  forward: boolean
-
-  /**
-   * 账户邮箱。
-   */
-  account: string
-
-  /**
-   * 取词。
-   */
-  t: TFn
-}
-
-/**
- * 改转发开关后的回包入参。
- */
-export type WithForwardIn = {
-  /**
-   * 原回包。
-   */
-  data: InboxView
-
-  /**
-   * 新的开关值。
-   */
-  forward: boolean
 }
 
 /**
@@ -498,11 +433,6 @@ export type InboxPanel = {
    * 关掉当前那封(窄屏弹框的关)。
    */
   onUnpick: () => void
-
-  /**
-   * 翻转发开关。
-   */
-  onForward: () => void
 
   /**
    * 打开当前那封对上的投递。

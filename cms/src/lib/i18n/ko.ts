@@ -880,7 +880,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'mj.push': '새 공고 알림', 'mj.pushRow': '추천과 저장 공고 소식을 이메일로 받기', 'mj.freqOff': '받지 않음', 'mj.freqDaily': '매일', 'mj.freqWeekly': '매주',
   'mj.pushTo': '받는 주소', 'mj.pushSave': '저장', 'mj.pushSaved': '저장됨', 'mj.pushPending': '{e}로 보낸 링크를 누르면 적용됩니다',
   'mj.pushDaily': '매일 받기', 'mj.pushOn': '새 공고 알림을 켰습니다', 'mj.pushBad': '이메일 형식이 올바르지 않습니다', 'mj.pushFail': '저장하지 못했습니다. 다시 시도해 주세요', 'mj.pushMailFail': '확인 메일을 보내지 못했습니다. 다시 시도해 주세요',
-  'ib.title': '받은편지함', 'ib.forward': '{e}(으)로도 전달', 'ib.empty': '아직 고용주 회신이 없습니다',
+  'ib.title': '받은편지함', 'ib.empty': '아직 고용주 회신이 없습니다',
   'ib.search': '메일 검색',
   'ib.all': '전체',
   'ib.unreadTab': '읽지 않음',
@@ -894,7 +894,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'ib.reply': '회신', 'ib.openApp': '지원 내역 열기', 'ib.noSubject': '(제목 없음)', 'ib.mine': '내 회신',
   'ib.send': '보내기', 'ib.cancel': '취소', 'ib.e.send': '보내지 못했습니다. 다시 시도해 주세요', 'ib.e.off': '메일 발송이 아직 설정되지 않았습니다', 'ib.e.limit': '오늘 답장 횟수를 모두 사용했습니다. 내일 다시 시도하세요.',
   // 2026-10-11 배치 5: 오른쪽 위 알림 문구와 상단 알림 패널
-  'mj.pushMailSent': '확인 메일을 보냈습니다', 'ib.fwdOn': '회신이 {e}(으)로도 전달됩니다', 'ib.fwdOff': '회신을 더 이상 전달하지 않습니다',
+  'mj.pushMailSent': '확인 메일을 보냈습니다',
   'nt.title': '알림', 'nt.empty': '알림이 없습니다', 'nt.fail': '알림을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요',
   'nt.go': '{page}(으)로 이동, {at}',
   'nt.reply': '{co}에서 회신했습니다', 'nt.bounced': '{co}(으)로 보낸 메일이 반송되었습니다', 'nt.sent': '{co}에 보냈습니다', 'nt.picks': '오늘의 추천 {n}건이 업데이트되었습니다',

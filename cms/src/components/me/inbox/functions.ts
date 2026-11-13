@@ -2,24 +2,25 @@
  * me 桶子桶 inbox 的行为:拉收件箱、点信标已读、深链、转发开关、站内回信,外加几样显示用的纯派生。
  * 2026-11-07 自 inbox 桶在新域重写(Frank「全部在新域重写」):接口、深链、未读事件照旧;转发开关从勾选框换成开关钮
  * (效果图:页标题右边一颗开关),清单行去掉头像、多一行摘要。
+ * 2026-11-13 Frank「这个是不是不保留」「照这个做」:「同时转到」开关撤(固定都转,关掉 = 不上站就不知道雇主回信了),
+ * 开关手柄、存开关、存好后的提示一并撤。
  *
  * @author Frank
  * @time 2026-11-07 16:30:00
  */
 import { cssOf } from '@/components/css'
-import { toast } from '@/components/toast'
 import { fmtLocal } from '@/lib/time'
 import {
-  ADDR_L, ADDR_R, CRED_INCLUDE, EV_UNREAD, HDR_CONTENT_TYPE, MD_FROM, MD_TO, METHOD_PATCH, METHOD_POST, MIME_JSON,
-  ONE_SPACE, P_MSG, SNIPPET_LEN, SNIPPET_MORE, SPACE_RUN_RE, ST_TOO_MANY, ST_UNAVAILABLE, TEXT_NONE, TOAST_ERR,
-  TOAST_OK, URL_INBOX, URL_PREFS, URL_READ, URL_REPLY,
+  ADDR_L, ADDR_R, CRED_INCLUDE, EV_UNREAD, HDR_CONTENT_TYPE, MD_FROM, MD_TO, METHOD_POST, MIME_JSON,
+  ONE_SPACE, P_MSG, SNIPPET_LEN, SNIPPET_MORE, SPACE_RUN_RE, ST_TOO_MANY, ST_UNAVAILABLE, TEXT_NONE,
+  URL_INBOX, URL_READ, URL_REPLY,
   FILTER_UNREAD,
 } from './constants'
 import type {
-  AfterReplyIn, CurIn, DraftResetIn, FlagSetIn, ForwardMakeIn, ForwardSavedIn, InboxItem, InboxRowClsIn, InboxView,
+  AfterReplyIn, CurIn, DraftResetIn, FlagSetIn, InboxItem, InboxRowClsIn, InboxView,
   LoadInboxIn,
   OpenAppIn, ShownIn,
-  PickMakeIn, PickOfFn, ReplyPostIn, ReplyRespJson, ReplySendIn, SubjectIn, TextSetIn, UnpickIn, WithForwardIn,
+  PickMakeIn, PickOfFn, ReplyPostIn, ReplyRespJson, ReplySendIn, SubjectIn, TextSetIn, UnpickIn,
   WithReadIn, WithReplyIn,
 } from './types'
 import css from './inbox.module.css'
@@ -185,7 +186,7 @@ export function withRead(x: WithReadIn): InboxView {
       replies: m.replies,
     })
   }
-  return { address: x.data.address, forward: x.data.forward, account: x.data.account, items }
+  return { address: x.data.address, items }
 }
 
 /**
@@ -218,74 +219,6 @@ export function makeOpenApp(x: OpenAppIn): () => void {
     }
     x.open(x.cur.appId)
   }
-}
-
-/**
- * 转发开关手柄:本地先翻,存失败翻回来并提示;存好了右上角说一句。
- *
- * @param x 回包、换回包与取词。
- * @returns 无参手柄。
- */
-export function makeForward(x: ForwardMakeIn): () => void {
-  return function onForward(): void {
-    if (x.data == null) {
-      return
-    }
-    const before = x.data
-    const forward = before.forward === false
-    x.setData(withForward({ data: before, forward }))
-    void saveForward(forward).then(function done(ok: boolean): void {
-      if (ok === false) {
-        x.setData(before)
-        toast({ kind: TOAST_ERR, title: x.t('mj.pushFail') })
-        return
-      }
-      toast({ kind: TOAST_OK, title: forwardSavedOf({ forward, account: before.account, t: x.t }) })
-    })
-  }
-}
-
-/**
- * 转发开关存好后的那句提示。
- *
- * @param x 开关值、账户邮箱与取词。
- * @returns 提示文字。
- */
-export function forwardSavedOf(x: ForwardSavedIn): string {
-  if (x.forward) {
-    return x.t('ib.fwdOn', { e: x.account })
-  }
-  return x.t('ib.fwdOff')
-}
-
-/**
- * 存转发开关。
- *
- * @param forward 新值。
- * @returns 存成了没有。
- */
-export async function saveForward(forward: boolean): Promise<boolean> {
-  try {
-    const r = await fetch(URL_PREFS, {
-      method: METHOD_PATCH,
-      credentials: CRED_INCLUDE,
-      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ forward }),
-    })
-    return r.ok
-  } catch {
-    return false
-  }
-}
-
-/**
- * 改了转发开关的回包。
- *
- * @param x 原回包与新值。
- * @returns 新回包。
- */
-export function withForward(x: WithForwardIn): InboxView {
-  return { address: x.data.address, forward: x.forward, account: x.data.account, items: x.data.items }
 }
 
 /**
@@ -380,7 +313,7 @@ export function withReply(x: WithReplyIn): InboxView {
       replies,
     })
   }
-  return { address: x.data.address, forward: x.data.forward, account: x.data.account, items }
+  return { address: x.data.address, items }
 }
 
 /**

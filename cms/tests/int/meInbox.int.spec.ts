@@ -18,7 +18,7 @@ function item(id: number, read: boolean): InboxItem {
 }
 
 function view(): InboxView {
-  return { address: '', forward: true, account: 'a@test.local', items: [item(1, false), item(2, true), item(3, false)] }
+  return { address: '', items: [item(1, false), item(2, true), item(3, false)] }
 }
 
 describe('收件箱:点信', () => {

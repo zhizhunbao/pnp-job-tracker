@@ -4,11 +4,16 @@
 //          发件人就是本站子域(自己转自己)→ loop;
 //       ② 对投递:子地址标记 a<id> 且是本人的 → 那一条;标记不是本人的退到「发件人 = 投过的雇主邮箱」;没标记按 In-Reply-To 对上同一串;
 //       ③ 对上投递 → 那一条记「雇主回复」(参数带本人 id);同一封重放(插入回 0 行)不再改状态、不再转发;
-//       ④ 转发开 → 发一封到账户邮箱,回复地址 = 原发件人,正文带原发件人;转发关 → 不发;
+//       ④ 转发(2026-11-13 开关撤,固定转):发一封到账户邮箱,回复地址 = 本人专属地址挂 m<信 id>、不含雇主地址,
+//          正文第一行是站内回复链接、带原发件人与原文;
 //       ⑤ 回调口:验过签的 email.received 地址不是任何人的 → 200 不重试;全文取不到 → 502 让 Resend 重试;
 //       ⑥ 隔离:/api/inbox、/api/inbox/thread、/api/inbox/read 的每条 SQL 第一个参数都是会话里的用户;别人的投递 → 404。
+//       ⑦ 本人在自己邮箱里回了转发信(2026-11-13):收件地址挂 m<信 id>、发件人 = 账户邮箱(不分大小写)、那一封是本人收到的
+//          → noted:只回一封提示信(带站内链接、幂等键 = 收信 id),不取全文、不写库、雇主收不到;
+//          发件人不是本人、或那一封不是本人的 → 照普通来信收。
 // 探针:recipientHitOf 不核域名 → ①ignored 那条红;linkAppOf 不核标记归属 → ②第二条红;receiveInbound 重放也改状态 → ③红;
-//       forwardIn 不看开关 → ④红;applyInboundRoute 把 fetch 失败也回 200 → ⑤红;INBOX_THREAD_APP 去掉 user_id 条件(桩按参数判)→ ⑥红。
+//       forwardIn 回复地址写回原发件人 → ④红;applyInboundRoute 把 fetch 失败也回 200 → ⑤红;INBOX_THREAD_APP 去掉 user_id 条件(桩按参数判)→ ⑥红;
+//       receiveInbound 不比发件人就发提示信 → ⑦第二条红;不核那一封归属 → ⑦第三条红。
 import { createHmac } from 'node:crypto'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -17,13 +22,13 @@ process.env.RESEND_API_KEY = 're_test'
 const SECRET_RAW = Buffer.from('inbox-secret').toString('base64')
 process.env.RESEND_WEBHOOK_SECRET = 'whsec_' + SECRET_RAW
 
-const sent: { to: string, subject: string, text: string, replyTo: string }[] = []
+const sent: { to: string, subject: string, text: string, replyTo: string, idemKey: string }[] = []
 vi.mock('@/lib/mail', async (orig) => {
   const real = await orig<typeof import('@/lib/mail')>()
   return {
     ...real,
-    postMail: async (x: { to: string, subject: string, text: string, replyTo: string }) => {
-      sent.push({ to: x.to, subject: x.subject, text: x.text, replyTo: x.replyTo })
+    postMail: async (x: { to: string, subject: string, text: string, replyTo: string, idemKey: string }) => {
+      sent.push({ to: x.to, subject: x.subject, text: x.text, replyTo: x.replyTo, idemKey: x.idemKey })
       return { ok: true, id: 'out_1', why: '' }
     },
   }
@@ -43,14 +48,14 @@ vi.mock('next/headers', () => ({ headers: async () => new Headers() }))
 const { SQL } = await import('@/lib/db')
 // 测试例外:域内函数直接点文件
 const { receiveInbound } = await import('@/lib/inbox/functions')
-const { RECV_DUP, RECV_IGNORED, RECV_LOOP, RECV_STORED, RECV_UNKNOWN } = await import('@/lib/inbox/constants')
+const { RECV_DUP, RECV_IGNORED, RECV_LOOP, RECV_NOTED, RECV_STORED, RECV_UNKNOWN } = await import('@/lib/inbox/constants')
 const { inboxReadRoute, inboxRoute, inboxThreadRoute } = await import('@/lib/inbox/routes')
 const { applyInboundRoute } = await import('@/lib/apply/routes')
 
 type Call = { sql: string, params: unknown[] }
 
 type Opts = {
-  forward?: boolean
+  ownMsgs?: number[]
   ownApps?: number[]
   threadApp?: number | null
   senderApp?: number | null
@@ -64,7 +69,11 @@ function db(o: Opts = {}) {
     query: async (sql: string, params: unknown[]) => {
       calls.push({ sql, params })
       if (sql === SQL.INBOX_ALIAS_USER) {
-        return { rows: params[0] === (o.knownAlias ?? 'liwei.k3x9q') ? [{ user_id: 5, forward: o.forward ?? true, email: 'li@gmail.com' }] : [] }
+        return { rows: params[0] === (o.knownAlias ?? 'liwei.k3x9q') ? [{ user_id: 5, email: 'li@gmail.com' }] : [] }
+      }
+      if (sql === SQL.INBOX_MSG_ONE) {
+        const own = params[0] === 5 && (o.ownMsgs ?? []).includes(Number(params[1]))
+        return { rows: own ? [{ id: params[1], from_addr: 'sarah@corp.com', subject: 'Interview', alias: 'liwei.k3x9q' }] : [] }
       }
       if (sql === SQL.INBOX_APP_TAG) {
         return { rows: (o.ownApps ?? []).includes(Number(params[0])) && params[1] === 5 ? [{ id: params[0] }] : [] }
@@ -174,23 +183,66 @@ describe('收信回调:对投递与状态', () => {
     expect(sent).toEqual([])
   })
 
-  it('④ 转发开:发到账户邮箱、回复地址是原发件人、正文带原发件人;关:不发', async () => {
+  it('④ 转发:发到账户邮箱、回复地址是本人专属地址挂信 id 不含雇主、第一行是站内回复链接、正文带原发件人', async () => {
     stubFetch()
-    const a = db({ forward: true })
+    const a = db()
     await receiveInbound({ db: a.conn as never, body: event('liwei.k3x9q@in.test.dev'), mailTo })
     expect(sent).toHaveLength(1)
     expect(sent[0]?.to).toBe('li@gmail.com')
-    expect(sent[0]?.replyTo).toBe('sarah@corp.com')
+    expect(sent[0]?.replyTo).toBe('liwei.k3x9q+m501@in.test.dev')
+    expect(sent[0]?.replyTo).not.toContain('corp.com')
+    expect(sent[0]?.text.split('\n')[0]?.startsWith('Reply in Offer2PR: http')).toBe(true)
+    expect(sent[0]?.text.split('\n')[0]?.endsWith('/account?sec=inbox&msg=501')).toBe(true)
     expect(sent[0]?.text).toContain('Sarah Chen <sarah@corp.com>')
     expect(sent[0]?.text).toContain('Are you free Tuesday?')
     expect(a.calls.some((c) => c.sql === SQL.INBOX_FORWARDED)).toBe(true)
+  })
+})
+
+describe('收信回调:本人在自己邮箱里回了转发信', () => {
+  it('⑦ 只回提示信,不取全文不写库;发件人不是本人、那一封不是本人的照普通来信收', async () => {
+    stubFetch()
+    const a = db({ ownMsgs: [501] })
+    const mine = event('liwei.k3x9q+m501@in.test.dev', 'Li Wei <LI@Gmail.com>')
+    expect(await receiveInbound({ db: a.conn as never, body: mine, mailTo })).toBe(RECV_NOTED)
+    expect(a.calls.find((c) => c.sql === SQL.INBOX_MSG_ONE)?.params).toEqual([5, 501])
+    expect(writes(a.calls)).toEqual([])
+    expect(fetched).toEqual([])
+    expect(sent).toHaveLength(1)
+    expect(sent[0]?.to).toBe('li@gmail.com')
+    expect(sent[0]?.subject).toBe('Not sent: Re: Application')
+    expect(sent[0]?.replyTo).toBe('liwei.k3x9q+m501@in.test.dev')
+    expect(sent[0]?.idemKey).toBe('inbox-note-rcv_1')
+    expect(sent[0]?.text.split('\n')).toHaveLength(2)
+    expect(sent[0]?.text.split('\n')[0]).toBe('This reply was not sent to the employer.')
+    expect(sent[0]?.text.split('\n')[1]?.startsWith('Reply in Offer2PR: http')).toBe(true)
+    expect(sent[0]?.text.split('\n')[1]?.endsWith('/account?sec=inbox&msg=501')).toBe(true)
 
     sent.length = 0
     stubFetch()
-    const b = db({ forward: false })
-    await receiveInbound({ db: b.conn as never, body: event('liwei.k3x9q@in.test.dev'), mailTo })
-    expect(sent).toEqual([])
-    expect(b.calls.some((c) => c.sql === SQL.INBOX_FORWARDED)).toBe(false)
+    const b = db({ ownMsgs: [501] })
+    expect(await receiveInbound({ db: b.conn as never, body: event('liwei.k3x9q+m501@in.test.dev'), mailTo })).toBe(RECV_STORED)
+    expect(b.calls.some((c) => c.sql === SQL.INBOX_MSG_ONE)).toBe(false)
+    expect(b.calls.some((c) => c.sql === SQL.INBOX_IN_ADD)).toBe(true)
+
+    sent.length = 0
+    stubFetch()
+    const c = db({ ownMsgs: [] })
+    expect(await receiveInbound({ db: c.conn as never, body: mine, mailTo })).toBe(RECV_STORED)
+    expect(c.calls.some((x) => x.sql === SQL.INBOX_IN_ADD)).toBe(true)
+    expect(sent.some((m) => m.subject.startsWith('Not sent'))).toBe(false)
+  })
+
+  it('⑦ 子地址标记:m<数字> 认成信 id,a<数字> 认成投递,互不串', async () => {
+    const { recipientHitOf } = await import('@/lib/inbox/functions')
+    const hit = (to: string) => recipientHitOf({ addrs: [to], domain: 'in.test.dev' })
+    expect(hit('liwei.k3x9q+m501@in.test.dev')).toEqual({ alias: 'liwei.k3x9q', appId: null, msgId: 501 })
+    expect(hit('liwei.k3x9q+a42@in.test.dev')).toEqual({ alias: 'liwei.k3x9q', appId: 42, msgId: null })
+    expect(hit('liwei.k3x9q@in.test.dev')).toEqual({ alias: 'liwei.k3x9q', appId: null, msgId: null })
+    expect(hit('Liwei.K3x9q+M501@IN.test.dev')).toEqual({ alias: 'liwei.k3x9q', appId: null, msgId: 501 })
+    for (const bad of ['m', 'm0x1', 'mm5', 'm1234567890', 'a42m501']) {
+      expect(hit('liwei.k3x9q+' + bad + '@in.test.dev')).toEqual({ alias: 'liwei.k3x9q', appId: null, msgId: null })
+    }
   })
 })
 
@@ -227,7 +279,7 @@ describe('本人隔离', () => {
           return { rows: params[0] === 1 && params[1] === 42 ? [{ id: 42, company: 'Co', reply_to: 'a+a42@in.test.dev' }] : [] }
         }
         if (sql === SQL.INBOX_ALIAS_ONE) {
-          return { rows: [{ alias: 'a', forward: true }] }
+          return { rows: [{ alias: 'a' }] }
         }
         return { rows: [] }
       },
@@ -256,22 +308,27 @@ describe('本人隔离', () => {
 })
 
 // 2026-10-11 批 5:转发信按收件人界面语(users.locale)出三语;认不得的按中文;原发件人与原文三语都原样在。
-// 探针:mailLangOf 把 ko 折成 zh → 韩文那条红;forwardTextOf 写死英文 → 中文那条红。
+// 2026-11-13 改判:界面语为空或认不得的按英文;去站内的那一行改成「在 Offer2PR 回复」并挪到第一行;提示信同三语。
+// 探针:mailLangOf 把 ko 折成 zh → 韩文那条红;forwardTextOf 写死英文 → 中文那条红;mailLangOf 空值仍给 zh → 第一条红。
 describe('转发信语言', () => {
-  it('zh / en / ko 各出各的;认不得按中文;原发件人原文都在', async () => {
-    const { forwardTextOf, mailLangOf } = await import('@/lib/inbox/functions')
-    expect([mailLangOf('en'), mailLangOf('ko'), mailLangOf('zh'), mailLangOf(''), mailLangOf('fr')]).toEqual(['en', 'ko', 'zh', 'zh', 'zh'])
+  it('zh / en / ko 各出各的;为空或认不得按英文;原发件人原文都在', async () => {
+    const { forwardTextOf, mailLangOf, noticeTextOf } = await import('@/lib/inbox/functions')
+    expect([mailLangOf('en'), mailLangOf('ko'), mailLangOf('zh'), mailLangOf(''), mailLangOf('fr')]).toEqual(['en', 'ko', 'zh', 'en', 'en'])
     const base = {
       appId: null, from: { addr: 'sarah@corp.com', name: 'Sarah Chen' }, to: 'x', subject: 'Interview', text: 'Are you free?',
       messageId: '', inReplyTo: '', inboundId: 'in_1',
     }
     const of = (lang: 'zh' | 'en' | 'ko') => forwardTextOf({
-      mail: { ...base, user: { userId: 5, forward: true, email: 'li@gmail.com', lang } }, msgId: 9,
+      mail: { ...base, user: { userId: 5, email: 'li@gmail.com', lang } }, msgId: 9,
     } as never)
-    expect(of('zh')).toContain('在 Offer2PR 打开')
-    expect(of('en')).toContain('Open in Offer2PR')
-    expect(of('ko')).toContain('Offer2PR에서 열기')
+    expect(of('zh').split('\n')[0]?.startsWith('在 Offer2PR 回复:http')).toBe(true)
+    expect(of('en').split('\n')[0]?.startsWith('Reply in Offer2PR: http')).toBe(true)
+    expect(of('ko').split('\n')[0]?.startsWith('Offer2PR에서 답장: http')).toBe(true)
+    expect(noticeTextOf({ lang: 'zh', msgId: 9 }).split('\n')[0]).toBe('这封回信没有发给雇主。')
+    expect(noticeTextOf({ lang: 'ko', msgId: 9 }).split('\n')[0]).toBe('이 답장은 고용주에게 전송되지 않았습니다.')
     for (const l of ['zh', 'en', 'ko'] as const) {
+      expect(of(l).split('\n')[0]?.endsWith('/account?sec=inbox&msg=9')).toBe(true)
+      expect(noticeTextOf({ lang: l, msgId: 9 })).toContain('/account?sec=inbox&msg=9')
       expect(of(l)).toContain('Sarah Chen <sarah@corp.com>')
       expect(of(l)).toContain('Are you free?')
     }

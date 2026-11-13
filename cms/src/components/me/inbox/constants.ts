@@ -11,11 +11,6 @@
 export const URL_INBOX = '/api/inbox'
 
 /**
- * 转发开关接口。
- */
-export const URL_PREFS = '/api/inbox/prefs'
-
-/**
  * 标已读接口。
  */
 export const URL_READ = '/api/inbox/read'
@@ -46,11 +41,6 @@ export const CRED_INCLUDE = 'include'
 export const METHOD_POST = 'POST'
 
 /**
- * PATCH 方法名。
- */
-export const METHOD_PATCH = 'PATCH'
-
-/**
  * 请求头名:内容类型。
  */
 export const HDR_CONTENT_TYPE = 'Content-Type'
@@ -75,15 +65,6 @@ export const ST_TOO_MANY = 429
  */
 export const TEXT_NONE = ''
 
-/**
- * 右上角提示:成功档。
- */
-export const TOAST_OK = 'ok'
-
-/**
- * 右上角提示:失败档。
- */
-export const TOAST_ERR = 'err'
 
 /**
  * 日期切片起点(`YYYY-MM-DD HH:mm` 取 `MM-DD`)。

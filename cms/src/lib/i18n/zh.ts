@@ -959,7 +959,7 @@ export const jobsZh = {
   'mj.pushTo': '发到', 'mj.pushSave': '保存', 'mj.pushSaved': '已保存', 'mj.pushPending': '点 {e} 收到的链接后生效',
   'mj.pushDaily': '每天发给我', 'mj.pushOn': '新岗推送已开启', 'mj.pushBad': '邮箱格式不对', 'mj.pushFail': '没保存上,再试一次', 'mj.pushMailFail': '确认信没发出去,再试一次',
   // 2026-10-10 批 3「收件箱」(专属投递邮箱、雇主回信、站内回信)与「打开」一条投递的只读框
-  'ib.title': '收件箱', 'ib.forward': '同时转到 {e}', 'ib.empty': '还没有雇主回信',
+  'ib.title': '收件箱', 'ib.empty': '还没有雇主回信',
   'ib.search': '搜索邮件',
   'ib.all': '全部',
   'ib.unreadTab': '未读',
@@ -973,7 +973,7 @@ export const jobsZh = {
   'ib.reply': '回复', 'ib.openApp': '打开这次投递', 'ib.noSubject': '(无主题)', 'ib.mine': '我的回复',
   'ib.send': '发送', 'ib.cancel': '取消', 'ib.e.send': '没发出去,再试一次', 'ib.e.off': '发信还没开通', 'ib.e.limit': '今天的回信次数用完了,明天再回',
   // 2026-10-11 批 5「提示统一 + 顶栏铃铛」:右上角提示的几句与顶栏通知面板
-  'mj.pushMailSent': '确认信已发出', 'ib.fwdOn': '回信会同时转到 {e}', 'ib.fwdOff': '回信不再转发',
+  'mj.pushMailSent': '确认信已发出',
   'nt.title': '通知', 'nt.empty': '暂无通知', 'nt.fail': '通知没拉下来,稍后再试',
   'nt.go': '去{page}，{at}',
   'nt.reply': '{co} 回信了', 'nt.bounced': '投给 {co} 的信被退回', 'nt.sent': '已发给 {co}', 'nt.picks': '今日推荐 {n} 条已更新',

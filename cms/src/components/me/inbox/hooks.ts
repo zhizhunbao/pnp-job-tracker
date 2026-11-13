@@ -4,6 +4,7 @@
  * 2026-11-07 照 Outlook 网页版:多 搜索 / 全部 / 未读 筛选 / 未读数;回信改在阅读区里就地展开(状态照旧,只是不再走弹框)。
  * 2026-11-13 Frank「先修收件箱问题」:宽屏默认显示的那一封(没点过也摆在右边)显示了就算已读,
  * 原先要再点一下才标,红点不消;换到别的信先清回信草稿(原先给甲写的草稿会留在乙的回信框里)。
+ * 同日「同时转到」开关撤(Frank「照这个做」:固定都转),转发开关手柄随之撤。
  *
  * @author Frank
  * @time 2026-11-07 16:30:00
@@ -12,7 +13,7 @@ import { useEffect, useState } from 'react'
 import { useIsNarrow } from '@/components/modal'
 import { FILTER_ALL, TEXT_NONE } from './constants'
 import {
-  curIdOf, curOf, makeDraftReset, makeFlagSet, makeForward, makeLoadInbox, makeOpenApp, makePickOf, makeReplySend,
+  curIdOf, curOf, makeDraftReset, makeFlagSet, makeLoadInbox, makeOpenApp, makePickOf, makeReplySend,
   makeTextSet, makeUnpick, msgLinkOf, shownOf, unreadNOf,
 } from './functions'
 import type { InboxIn, InboxPanel, InboxView } from './types'
@@ -66,7 +67,6 @@ export function useInbox(x: InboxIn): InboxPanel {
     cur,
     pickOf,
     onUnpick: makeUnpick({ setSel }),
-    onForward: makeForward({ data, setData, t: x.t }),
     onOpenApp: makeOpenApp({ cur, open: x.openApp }),
     replying,
     onReply: makeFlagSet({ set: setReplying, v: true }),

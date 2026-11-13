@@ -72,6 +72,18 @@ export const APP_TAG = 'a'
 export const APP_TAG_RE = /^a(?<id>\d{1,9})$/
 
 /**
+ * 子地址标记的头字母(m = message):转发信的回复地址挂的是收件箱里那一封的 id。
+ * 2026-11-13 Frank「最好是用户用我们的收件箱回信」「照这个做」:转发信的回复地址不再是雇主,
+ * 本人在自己邮箱里点了回复,信回到本站,本站回一封提示信请他到站内回。
+ */
+export const MSG_TAG = 'm'
+
+/**
+ * 子地址标记:m + 收件箱信 id。
+ */
+export const MSG_TAG_RE = /^m(?<id>\d{1,9})$/
+
+/**
  * 专属地址本身的合形(防回调里的怪地址进 SQL 前就挡掉;与表上的 CHECK 同口径)。
  */
 export const ALIAS_RE = /^[a-z0-9.]{3,40}$/
@@ -260,6 +272,11 @@ export const RECV_FETCH = 'fetch'
  */
 export const RECV_STORED = 'stored'
 
+/**
+ * 收信结果:本人在自己邮箱里回了转发信(不转给雇主、不记进收件箱,回他一封提示信;回 200 不重试)。
+ */
+export const RECV_NOTED = 'noted'
+
 // =========================================================================
 // 3. 转发与回信
 // =========================================================================
@@ -335,47 +352,97 @@ export const FWD_SUBJECT = {
 /**
  * 转发信正文:去站内看的一行。
  * 2026-10-11 批 5(Frank 早先点的「转发信按用户语言」):按收件人界面语(users.locale)三语,认不得的按中文(同周报 / 每日推送)。
+ * 2026-11-13 Frank「最好是用户用我们的收件箱回信」「照这个做」:这一行挪到信的最上面,从「在 Offer2PR 打开」改成
+ * 「在 Offer2PR 回复」;提示信(本人在邮箱里直接回了)第二行也用它。
  */
 export const FWD_LINK = {
   /**
    * 中文。
    */
-  zh: '在 Offer2PR 打开:',
+  zh: '在 Offer2PR 回复:',
 
   /**
    * 英文。
    */
-  en: 'Open in Offer2PR: ',
+  en: 'Reply in Offer2PR: ',
 
   /**
    * 韩文。
    */
-  ko: 'Offer2PR에서 열기: ',
+  ko: 'Offer2PR에서 답장: ',
 }
 
 /**
  * 转发信页脚:为什么收到这一封。
  * 2026-10-11 批 5(Frank 早先点的「转发信按用户语言」):按收件人界面语(users.locale)三语,认不得的按中文(同周报 / 每日推送)。
+ * 2026-11-13 「同时转到」开关撤了(Frank「照这个做」:固定都转),页脚不再提开关,只说这封信寄到了哪里。
  */
 export const FWD_FOOT = {
   /**
    * 中文。
    */
-  zh: '你收到这一份,是因为在 Offer2PR 收件箱里开着「同时转到」。',
+  zh: '这封信寄到了你的 Offer2PR 投递邮箱。',
 
   /**
    * 英文。
    */
-  en: 'You get this copy because forwarding is on in Offer2PR > Inbox.',
+  en: 'This message was sent to your Offer2PR application address.',
 
   /**
    * 韩文。
    */
-  ko: 'Offer2PR 받은편지함에서 전달이 켜져 있어 이 사본을 받았습니다.',
+  ko: 'Offer2PR 지원용 주소로 온 메일입니다.',
 }
 
 /**
+ * 提示信标题头(后接本人回的那一封的标题):本人在自己邮箱里回了转发信,这封回信没有发给雇主。
+ * 2026-11-13 Frank「最好是用户用我们的收件箱回信」「照这个做」。
+ */
+export const NOTE_SUBJECT_HEAD = {
+  /**
+   * 中文。
+   */
+  zh: '未发出:',
+
+  /**
+   * 英文。
+   */
+  en: 'Not sent: ',
+
+  /**
+   * 韩文。
+   */
+  ko: '전송되지 않음: ',
+}
+
+/**
+ * 提示信正文第一行(第二行是「在 Offer2PR 回复」加链接)。
+ */
+export const NOTE_LEAD = {
+  /**
+   * 中文。
+   */
+  zh: '这封回信没有发给雇主。',
+
+  /**
+   * 英文。
+   */
+  en: 'This reply was not sent to the employer.',
+
+  /**
+   * 韩文。
+   */
+  ko: '이 답장은 고용주에게 전송되지 않았습니다.',
+}
+
+/**
+ * 提示信的幂等键头(后接 Resend 收信 id):同一封回调重放只回一封提示信。
+ */
+export const NOTE_IDEM_HEAD = 'inbox-note-'
+
+/**
  * 转发信语言:英文(界面语 users.locale 的值;2026-10-11 批 5)。
+ * 2026-11-13 Frank「照这个做」:界面语为空或认不得的也按它(原先按中文;八成八的流量是英文,没设语言的多半不读中文)。
  */
 export const MAIL_EN = 'en'
 
@@ -386,6 +453,7 @@ export const MAIL_KO = 'ko'
 
 /**
  * 转发信语言:中文(认不得的界面语也按它,同周报 / 每日推送)。
+ * 2026-11-13 改判:认不得的不再按它,按英文(见 MAIL_EN)。
  */
 export const MAIL_ZH = 'zh'
 

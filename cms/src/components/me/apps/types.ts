@@ -401,12 +401,7 @@ export type ThreadJson = {
   messages: ThreadMsgJson[]
 
   /**
-   * 同时转到账户邮箱。
-   */
-  forward: boolean
-
-  /**
-   * 账户邮箱。
+   * 账户邮箱(回信固定转一份到这里)。
    */
   account: string
 }

@@ -8,5 +8,5 @@
 
 export { inboxAddressOf, receiveInbound } from './functions'
 export { RECV_FETCH } from './constants'
-export { inboxCountRoute, inboxPrefsRoute, inboxReadRoute, inboxReplyRoute, inboxRoute, inboxThreadRoute } from './routes'
+export { inboxCountRoute, inboxReadRoute, inboxReplyRoute, inboxRoute, inboxThreadRoute } from './routes'
 export type { MailToFn } from './types'

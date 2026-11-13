@@ -23,11 +23,6 @@ export type AliasDbRow = {
    * 地址名(@ 前那段)。
    */
   alias: string | null
-
-  /**
-   * 转发开关。
-   */
-  forward: boolean | null
 }
 
 /**
@@ -38,11 +33,6 @@ export type AliasFact = {
    * 地址名。
    */
   alias: string
-
-  /**
-   * 收到回信同时转到账户邮箱。
-   */
-  forward: boolean
 }
 
 /**
@@ -143,6 +133,11 @@ export type RecipientHit = {
    * 子地址标记里的投递行 id;没标记给 null。
    */
   appId: number | null
+
+  /**
+   * 子地址标记里的收件箱信 id(转发信的回复地址挂的);没标记给 null。
+   */
+  msgId: number | null
 }
 
 /**
@@ -394,11 +389,6 @@ export type AliasUserDbRow = {
   user_id: number | string | null
 
   /**
-   * 转发开关。
-   */
-  forward: boolean | null
-
-  /**
    * 账户邮箱。
    */
   email: string | null
@@ -424,17 +414,12 @@ export type AliasUserFact = {
   userId: number
 
   /**
-   * 转发开关。
-   */
-  forward: boolean
-
-  /**
    * 账户邮箱。
    */
   email: string
 
   /**
-   * 转发信用的语言(界面语认不得按中文)。
+   * 转发信用的语言(界面语为空或认不得按英文)。
    */
   lang: MailLang
 }
@@ -614,9 +599,79 @@ export type ForwardIn = {
   msgId: number
 
   /**
+   * 本人地址名(回复地址 = 它 + m<信 id>)。
+   */
+  alias: string
+
+  /**
    * 转发收件人换算。
    */
   mailTo: MailToFn
+}
+
+/**
+ * `msgAddressOf` 的入参。
+ */
+export type MsgAddressIn = {
+  /**
+   * 本人地址名。
+   */
+  alias: string
+
+  /**
+   * 收件箱里的信 id。
+   */
+  msgId: number
+}
+
+/**
+ * `sendNotice` 的入参。
+ */
+export type NoticeIn = {
+  /**
+   * 本人。
+   */
+  user: AliasUserFact
+
+  /**
+   * 本人地址名。
+   */
+  alias: string
+
+  /**
+   * 他回的是收件箱里哪一封。
+   */
+  msgId: number
+
+  /**
+   * 他这封回信的标题。
+   */
+  subject: string
+
+  /**
+   * Resend 收信 id(幂等键用:重放只回一封)。
+   */
+  emailId: string
+
+  /**
+   * 收件人换算。
+   */
+  mailTo: MailToFn
+}
+
+/**
+ * `noticeTextOf` 的入参。
+ */
+export type NoticeTextIn = {
+  /**
+   * 提示信用的语言。
+   */
+  lang: MailLang
+
+  /**
+   * 他回的是收件箱里哪一封。
+   */
+  msgId: number
 }
 
 /**
@@ -903,16 +958,6 @@ export type ReadBodyJson = {
   id?: number | string
 }
 
-/**
- * 转发开关的请求体(线格式)。
- */
-export type PrefsBodyJson = {
-  /**
-   * 开 / 关。
-   */
-  forward?: boolean
-}
-
 // =========================================================================
 // 4. 清单与一条投递
 // =========================================================================
@@ -1155,11 +1200,6 @@ export type InboxIn = {
    * 用户 id。
    */
   userId: InboxUserId
-
-  /**
-   * 账户邮箱。
-   */
-  email: string
 }
 
 /**
@@ -1170,16 +1210,6 @@ export type InboxJson = {
    * 专属地址(收件箱没开通给空串)。
    */
   address: string
-
-  /**
-   * 同时转到账户邮箱。
-   */
-  forward: boolean
-
-  /**
-   * 账户邮箱。
-   */
-  account: string
 
   /**
    * 收到的信。
@@ -1230,26 +1260,6 @@ export type UserIdIn = {
    * 信 id 或投递行 id。
    */
   id: number
-}
-
-/**
- * `saveForward` 的入参。
- */
-export type ForwardSetIn = {
-  /**
-   * 能查的连接。
-   */
-  db: Db
-
-  /**
-   * 用户 id。
-   */
-  userId: InboxUserId
-
-  /**
-   * 开 / 关。
-   */
-  forward: boolean
 }
 
 /**
@@ -1372,12 +1382,7 @@ export type ThreadJson = {
   messages: InboxMsgRow[]
 
   /**
-   * 同时转到账户邮箱。
-   */
-  forward: boolean
-
-  /**
-   * 账户邮箱。
+   * 账户邮箱(回信固定转一份到这里)。
    */
   account: string
 }

@@ -915,7 +915,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'mj.push': 'Job alerts', 'mj.pushRow': 'Email me picks and saved-job updates', 'mj.freqOff': 'Off', 'mj.freqDaily': 'Daily', 'mj.freqWeekly': 'Weekly',
   'mj.pushTo': 'Send to', 'mj.pushSave': 'Save', 'mj.pushSaved': 'Saved', 'mj.pushPending': 'Click the link sent to {e} to confirm',
   'mj.pushDaily': 'Email me daily', 'mj.pushOn': 'Job alerts are on', 'mj.pushBad': 'Invalid email', 'mj.pushFail': 'Couldn’t save. Try again', 'mj.pushMailFail': 'Couldn’t send the confirmation email. Try again',
-  'ib.title': 'Inbox', 'ib.forward': 'Also forward to {e}', 'ib.empty': 'No employer replies yet',
+  'ib.title': 'Inbox', 'ib.empty': 'No employer replies yet',
   'ib.search': 'Search mail',
   'ib.all': 'All',
   'ib.unreadTab': 'Unread',
@@ -929,7 +929,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'ib.reply': 'Reply', 'ib.openApp': 'Open application', 'ib.noSubject': '(No subject)', 'ib.mine': 'My reply',
   'ib.send': 'Send', 'ib.cancel': 'Cancel', 'ib.e.send': 'Not sent. Try again', 'ib.e.off': 'Sending isn’t set up yet', 'ib.e.limit': 'You’ve used today’s replies. Try again tomorrow.',
   // 2026-10-11 batch 5: toast lines and the header notifications panel
-  'mj.pushMailSent': 'Confirmation email sent', 'ib.fwdOn': 'Replies will also go to {e}', 'ib.fwdOff': 'Replies will no longer be forwarded',
+  'mj.pushMailSent': 'Confirmation email sent',
   'nt.title': 'Notifications', 'nt.empty': 'No notifications', 'nt.fail': 'Couldn’t load notifications. Try again later',
   'nt.go': 'Go to {page}, {at}',
   'nt.reply': '{co} replied', 'nt.bounced': 'Your email to {co} bounced', 'nt.sent': 'Sent to {co}', 'nt.picks': 'Today’s picks updated: {n}',

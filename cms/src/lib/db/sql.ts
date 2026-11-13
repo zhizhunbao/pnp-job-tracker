@@ -3681,9 +3681,10 @@ export const DIGEST_DAILY_MARK = `UPDATE digest_prefs SET last_daily_at = now() 
 // =========================================================================
 
 /**
- * 本人的专属地址与转发开关(没行 = 还没建地址)。$1=用户 id。
+ * 本人的专属地址(没行 = 还没建地址)。$1=用户 id。
+ * 2026-11-13 「同时转到」开关撤(Frank「照这个做」:固定都转),不再取 forward;表上那一列留着不删。
  */
-export const INBOX_ALIAS_ONE = `SELECT alias, forward FROM inbox_aliases WHERE user_id = $1`
+export const INBOX_ALIAS_ONE = `SELECT alias FROM inbox_aliases WHERE user_id = $1`
 
 /**
  * 建专属地址(懒建:第一次要用时)。本人已有、或地址撞了别人都不写,回 0 行(调用方再读一次本人的;撞了换随机段重试)。
@@ -3698,16 +3699,12 @@ export const INBOX_SEED = `SELECT COALESCE(NULLIF(p.sender_name, ''), u.email) A
      FROM users u LEFT JOIN apply_prefs p ON p.user_id = u.id WHERE u.id = $1`
 
 /**
- * 回调认人:地址名 → 用户 id、转发开关、账户邮箱。inbox_aliases.alias 唯一索引管这条。$1=地址名。
+ * 回调认人:地址名 → 用户 id、账户邮箱。inbox_aliases.alias 唯一索引管这条。$1=地址名。
  * 2026-10-11 批 5:多取界面语 u.locale(转发信按它出三语)。
+ * 2026-11-13 「同时转到」开关撤,不再取 a.forward。
  */
-export const INBOX_ALIAS_USER = `SELECT a.user_id, a.forward, u.email, u.locale FROM inbox_aliases a JOIN users u ON u.id = a.user_id
+export const INBOX_ALIAS_USER = `SELECT a.user_id, u.email, u.locale FROM inbox_aliases a JOIN users u ON u.id = a.user_id
      WHERE a.alias = $1`
-
-/**
- * 改转发开关。$1=用户 id,$2=开 / 关。
- */
-export const INBOX_FORWARD_SET = `UPDATE inbox_aliases SET forward = $2, updated_at = now() WHERE user_id = $1`
 
 /**
  * 对投递:子地址标记里的投递行是不是本人的。$1=投递行 id,$2=用户 id。
@@ -3771,6 +3768,7 @@ export const INBOX_READ = `UPDATE inbox_messages SET read_at = now() WHERE user_
 
 /**
  * 要回的那一封(只认本人收到的):发件人、标题、Message-ID、挂的投递,连同本人的地址与投递署名。$1=用户 id,$2=信 id。
+ * 2026-11-13 收信回调也用它:本人在自己邮箱里回了转发信,核那一封确是他收到的。
  */
 export const INBOX_MSG_ONE = `SELECT m.id, m.application_id, m.from_addr, m.subject, m.message_id, x.alias, p.sender_name
      FROM inbox_messages m JOIN inbox_aliases x ON x.user_id = m.user_id

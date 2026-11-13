@@ -883,9 +883,19 @@ export const INBOX_LOG = {
   tag: 'inbox',
 
   /**
-   * 收信回调处理完(后接结果:ignored / unknown / loop / dup / fetch / stored)。
+   * 收信回调处理完(后接结果:ignored / unknown / loop / dup / fetch / stored / noted)。
    */
   received: 'inbound result=',
+
+  /**
+   * 本人在自己邮箱里回了转发信,没转给雇主,提示信发出去了(后接用户 id;2026-11-13)。
+   */
+  noted: 'reply by email not relayed, notice sent user=',
+
+  /**
+   * 同上,但提示信没发出去(后接用户 id 与原因)。
+   */
+  noteFailed: 'reply by email not relayed, notice failed user=',
 
   /**
    * 取收信全文没成(后接状态码或原因)。
