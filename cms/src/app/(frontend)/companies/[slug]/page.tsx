@@ -78,7 +78,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
       <Company company={{
         name: slug, slug, website: '', websiteSource: '', careersUrl: '', hq: '', hqSource: '', industry: '', sectors: '', aliasZh: '', aliasKo: '',
         wikiUrl: '', sponsorGrade: null, scoreDetail: null, aiBrief: '', aiWebsite: '', aiSources: [], aiFetched: '',
-        description: '', address: '', province: '',
+        address: '', province: '',
         lmiaPositions: null, lmiaLmias: null, lmiaLastQuarter: '', lmiaStreams: '', lmiaSkilled: null,
         lmiaNocs: [], designatedPrograms: [], designatedProvinces: [], openCount: 0, jobs: [],
       }} updatedAt={updatedAt} plan={plan} />

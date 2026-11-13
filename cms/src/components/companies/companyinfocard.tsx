@@ -22,7 +22,7 @@ import { useShowTrans } from '@/components/name'
 import { makeT } from '@/lib/i18n'
 import { CompanyBasicCard } from './companybasiccard'
 import { LANG_EN, TEXT_NONE } from './constants'
-import { hasDescOf, ignoreFlag } from './functions'
+import { ignoreFlag } from './functions'
 import { useCompanyOfJob, useCompanyTrans } from './hooks'
 import type { CompanyInfoCardIn } from './types'
 import css from './companies.module.css'
@@ -39,14 +39,12 @@ export function CompanyInfoCard({ jobId, lang, seed }: CompanyInfoCardIn) {
   let name = TEXT_NONE
   let slug = TEXT_NONE
   let brief = TEXT_NONE
-  let hasDesc = false
   if (p.data != null) {
     name = p.data.company.name
     slug = p.data.company.slug
     brief = p.data.company.aiBrief
-    hasDesc = hasDescOf({ company: p.data.company })
   }
-  const tr = useCompanyTrans({ name, slug, aiBrief: brief, hasDesc, lang })
+  const tr = useCompanyTrans({ name, slug, aiBrief: brief, lang })
   const showTrans = useShowTrans()
   if (p.data == null) {
     return null

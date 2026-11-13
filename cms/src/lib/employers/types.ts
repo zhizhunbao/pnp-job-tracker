@@ -3912,46 +3912,6 @@ export type BriefNamedIn = {
 }
 
 /**
- * companies 官网简介单格(pg 原始行)。
- */
-export type CompanyDescDbRow = {
-  /**
-   * 官网简介;NULL = 没有。
-   */
-  description: string | null
-}
-
-/**
- * `saveCompanyDescZh` 的入参。
- */
-export type SaveDescZhIn = {
-  /**
-   * 数据库连接。
-   */
-  db: Db
-
-  /**
-   * 公司名。
-   */
-  name: string
-
-  /**
-   * 译文。
-   */
-  text: string
-}
-
-/**
- * companies 官网简介中文版单格(pg 原始行)。
- */
-export type CompanyDescZhDbRow = {
-  /**
-   * 官网简介中文版;NULL = 没有。
-   */
-  description_zh: string | null
-}
-
-/**
  * 公司「重译」接口的请求体(线格式)。
  */
 export type EmployersRetransBody = {

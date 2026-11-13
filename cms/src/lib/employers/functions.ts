@@ -33,7 +33,7 @@ import {
   SPACE_GLOBAL_RE,
   SQL_FRAG_NONE, SUFFIX_RE, UNDERSCORE, URL_QS, VERDICT_ORDER, VIEW, WD_ACTION_ENTITIES, WD_ACTION_SEARCH, WD_API,
   WD_LANGS, WD_LANG_EN, WD_LANG_KO, WD_LANG_ZH, WD_LANG_ZH_CN, WD_LANG_ZH_HANS, WD_LIMIT, WD_PROPS, WD_SITE_EN,
-  WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA, WEBSITE_NONE, ALIAS_KEY_SEP, DESC_KEY_TAIL,
+  WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA, WEBSITE_NONE, ALIAS_KEY_SEP, 
   SITE_BRIEF_MAX, SITE_SOURCES_MAX, SITE_STAGES, SITE_TEXT_MAX,
   HDR_ACCEPT_LANGUAGE, HDR_UA, BRAND_ALIASES,
 } from './constants'
@@ -54,7 +54,7 @@ import type {
   ExploreResult, ExploreResultJson, ExploreTodo, ExploreTodosOut, IdCell, LoadPoolAliasesIn, PoolAliasDbRow, PoolAliasIn, PoolAliasRow, PoolAliasesOut, SaveExploreIn, MaybeStr, OccDbRow, OccRow, PoolCitiesIn, PoolDistrictsIn, ReqDbRow, ReqRow, WithCitiesIn,
   SponsorDbRow, StrListCell, ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
   CompanyBriefZhDbRow, SaveBriefZhIn, DoneOut, AliasCellIn, AliasDbRow, AliasFact, AliasOut, SaveAliasIn,
-  CompanyDescDbRow, CompanyDescZhDbRow, SaveDescZhIn,
+  
   ExploreSeenIn, ExploreSeenOut, SeenDbRow, SeenRow,
   SaveSiteDoneIn, SiteByNameIn, SiteDone, SiteDoneJson, SiteOpenDbRow, SiteOpenOut, SiteOpenRow, SiteSavedOut,
   SiteStageDbRow, SiteStageOut, SiteStageRow,
@@ -1403,60 +1403,6 @@ function blankIfNull(v: MaybeNum): string {
 }
 
 /**
- * 官网简介中文版(已落库且版本对得上的)。
- *
- * @param input 连接与公司名。
- * @returns 译文;没有 / 过期给 null。
- */
-export async function loadCompanyDescZh(input: CompanyBriefIn): MaybeStrOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_DESC_ZH_BY_NAME, params: [input.name, TRANS_V],
-    map: toDescZhCell })
-  return firstOf(rows)
-}
-
-/**
- * 官网简介中文版单格行 → 串。
- *
- * @param r 原始行。
- * @returns 译文;NULL 给 null。
- */
-function toDescZhCell(r: CompanyDescZhDbRow): MaybeStr {
-  return textOrNull(r.description_zh)
-}
-
-/**
- * 官网简介中文版落库(带版本)。
- *
- * @param input 连接、公司名与译文。
- * @returns 无。
- */
-export async function saveCompanyDescZh(input: SaveDescZhIn): DoneOut {
-  await input.db.query(SQL.COMPANY_UPDATE_DESC_ZH, [input.text, input.name, TRANS_V])
-}
-
-/**
- * 公司 AI 检索简介（companies.ai_brief，五节标记；懒翻译的源 —— 只翻库内，
- * 不收任意文本防开放代理）。
- *
- * @param input 连接与公司名（大小写不敏感）。
- * @returns 简介全文；没查过/查无这家是 null。
- */
-export async function loadCompanyDesc(input: CompanyBriefIn): MaybeStrOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_DESC_BY_NAME, params: [input.name], map: toDescCell })
-  return firstOf(rows)
-}
-
-/**
- * 官网简介单格行 → 串。
- *
- * @param r 原始行。
- * @returns 简介;NULL 给 null。
- */
-function toDescCell(r: CompanyDescDbRow): MaybeStr {
-  return textOrNull(r.description)
-}
-
-/**
  * 公司 AI 简介原文(按名)。
  *
  * @param input 连接与公司名。
@@ -2428,6 +2374,5 @@ export async function resetCompanyTrans(input: CompanyBriefIn): DoneOut {
   for (const lang of TRANS_LANGS) {
     CACHE.aliasBy.delete(key + ALIAS_KEY_SEP + lang)
     CACHE.briefTransBy.delete(key + TRANS_KEY_SEP + lang)
-    CACHE.briefTransBy.delete(key + TRANS_KEY_SEP + lang + DESC_KEY_TAIL)
   }
 }

@@ -16,17 +16,18 @@
  * 不打断简介阅读;懒查岔照旧(简介位本来空着)。
  * 2026-10-13 Frank「这个主营业务那几个字怎么没了」:官网简介那一岔也挂「主营业务」小标题(与 K 调查五节第一节同一个类),
  * 正文照旧整段保留换行。
+ * 2026-11-13 Frank「主营业务也应该是 AI 整理的 bullets」「选项一」:官网抓来的原文那一岔撤 —— 原文没人整理过,
+ * 抓到导航菜单、样式代码、「86 likes」都照登(Caressant Care 一屏菜单文字,AI 整理版被它盖住)。现在只剩两岔:
+ * 缓存的 AI 整理五节 > 点开时现查;原文的对照懒翻(useCompanyDescTrans)随之撤。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
 import { CompanyAiSection } from './companyaisection'
 import { CompanySteps } from './companysteps'
-import { CompanyZhLine } from './companyzhline'
 import { CompanyBriefCards } from './companybriefcards'
-import { CO_SEC_WHAT, TEXT_NONE } from './constants'
-import { hasDescOf, isSiteActive, secClsOf, secHeadClsOf, secKeyOf } from './functions'
-import { useCompanyDescTrans } from './hooks'
+import { TEXT_NONE } from './constants'
+import { isSiteActive } from './functions'
 import type { CompanyIntroIn } from './types'
 import css from './companies.module.css'
 
@@ -39,22 +40,9 @@ import css from './companies.module.css'
 export function CompanyIntro({
   company, t, lang, showTrans, trans, skipBase, baseZh = TEXT_NONE, onBusy, stage = TEXT_NONE, ahead = 0,
 }: CompanyIntroIn) {
-  const descZh = useCompanyDescTrans({ name: company.name, lang, has: hasDescOf({ company }) })
   let steps = null
   if (isSiteActive(stage)) {
     steps = <CompanySteps stage={stage} ahead={ahead} hasSite={company.website !== TEXT_NONE} lang={lang} t={t} />
-  }
-  if (hasDescOf({ company })) {
-    return (
-      <div className={css.descWrap}>
-        <div className={secClsOf({ flat: false })}>
-          <div className={secHeadClsOf({ flat: false })}>{t(secKeyOf({ mark: CO_SEC_WHAT }))}</div>
-          <div className={css.desc}>{company.description}</div>
-          {showTrans === true && descZh !== TEXT_NONE && <CompanyZhLine text={descZh} prose />}
-        </div>
-        {steps}
-      </div>
-    )
   }
   if (company.aiBrief !== TEXT_NONE) {
     let shown = null

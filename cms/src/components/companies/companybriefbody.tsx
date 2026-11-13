@@ -11,6 +11,7 @@
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
+import { CompanyBriefList } from './companybrieflist'
 import { CompanyBriefSec } from './companybriefsec'
 import { CompanyZhLine } from './companyzhline'
 import { CLS_SEP, CO_SEC_BASE, CO_SEC_HAS_RE, CO_SEC_MARKS, CO_SEC_WHAT, TEXT_NONE } from './constants'
@@ -58,7 +59,16 @@ export function CompanyBriefBody({
       zh = baseZh
     }
     const skipped = skipBase && mark === CO_SEC_BASE
-    if (hasSecOf({ secs, mark }) && skipped === false) {
+    if (hasSecOf({ secs, mark }) && skipped === false && mark === CO_SEC_WHAT) {
+      rows.push(
+        <CompanyBriefList key={mark}
+          labelKey={secKeyOf({ mark })}
+          text={text}
+          zh={zh}
+          t={t}
+          flat={flat} />,
+      )
+    } else if (hasSecOf({ secs, mark }) && skipped === false) {
       rows.push(
         <CompanyBriefSec key={mark}
           labelKey={secKeyOf({ mark })}

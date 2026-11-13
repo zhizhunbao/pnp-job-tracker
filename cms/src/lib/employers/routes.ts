@@ -29,14 +29,14 @@ import {
   EMP_PAGE_SIZE, EXPORT_PROVS, EXPORT_Q_LEN_MAX, HDR_HUMAN, HDR_UA, HUMAN_YES, NAME_LEN_MAX, NOC5_RE, UA_LOG_MAX, PAGE_SIZE_MAX, PARAM, SORT_OPEN,
   SORT_SKILLED, SPONSORS_CACHE_CONTROL, VIEW,
   FETCHED_NONE, FILTER_UNSET, LANG_UNSET, NAME_UNSET, SLUG_UNSET, WD_LANG_ZH, ALIAS_KEY_SEP, ALIAS_LIMIT_PREFIX, ALIAS_MAX_LEN,
-  ALIAS_PREFIX, NEWLINE, DESC_KEY_TAIL,
+  ALIAS_PREFIX, NEWLINE, 
   EXPLORE_KEY_LEN_MAX, EXPLORE_KEYS_MAX, EXPLORE_TAKE_DEFAULT, EXPLORE_TAKE_MAX, P_EXPLORE_LIMIT,
   P_SITE_KIND, SEEN_TAKE_MAX, SITE_KIND_FIND, SITE_TAKE_DEFAULT, SITE_TAKE_MAX,
 } from './constants'
 import {
   applySponsorFilters, buildSponsorBoards, companyRow, loadSponsorEmployers, investigateCompany,
   loadCompanyBrief, loadCompanyBriefZh, loadEmployerPage, normalizePoolFilters, saveCompanyBriefZh, sponsorCsvOf,
-  aliasCellOf, brandCellOf, loadBriefSrc, loadCompanyAlias, saveCompanyAlias, loadCompanyDesc, loadCompanyDescZh, saveCompanyDescZh,
+  aliasCellOf, brandCellOf, loadBriefSrc, loadCompanyAlias, saveCompanyAlias, 
   resetCompanyTrans, enqueueExplore, loadExplorePending, loadPoolAliases, saveExploreResults,
   loadExploreSeen, loadSiteStage, loadSiteTodos, openExploreSite, saveSiteDone, isCrawlerHeaders,
 } from './functions'
@@ -590,72 +590,6 @@ export async function employersAliasRoute(req: Request): Promise<Response> {
     CACHE.aliasBy.set(ck, clean)
     await saveCompanyAlias({ db: db, name: name, lang: lang, alias: clean })
     return Response.json({ ok: true, alias: clean, cached: false })
-  } catch (e) {
-    let msg = String(e)
-    if (e instanceof Error) {
-      msg = e.message
-    }
-    return Response.json({ ok: false, error: msg }, { status: BAD_GATEWAY })
-  }
-}
-
-/**
- * 官网简介懒翻(2026-09-14 Frank「这个也没加翻译」):companies.description 当纯文本译一遍,进程内缓存(键带 desc 尾巴,
- * 与同名 AI 简介分开)。
- * 2026-09-21 同 AI 简介那条(Frank「都修」):缓存那一格连原文一起存,官网简介换了就当没缓存。
- *
- * @param req 请求体 { name, lang }。
- * @returns { ok, text, cached }。
- */
-export async function employersDescRoute(req: Request): Promise<Response> {
-  if (translateReady() === false) {
-    return Response.json({ ok: false, error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
-  }
-  let name = NAME_UNSET
-  let lang = LANG_UNSET
-  try {
-    const b = await req.json() as EmployersTransBody
-    if (typeof b.name === 'string') {
-      name = b.name.trim()
-    }
-    if (typeof b.lang === 'string') {
-      lang = b.lang
-    }
-  } catch {
-    name = NAME_UNSET
-  }
-  if (name === '' || TRANS_LANGS.includes(lang) === false) {
-    return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
-  }
-  const ck = name.toLowerCase() + TRANS_KEY_SEP + lang + DESC_KEY_TAIL
-  const db = await getDb()
-  const text = await loadCompanyDesc({ db: db, name: name })
-  if (text == null) {
-    return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
-  }
-  const hit = CACHE.briefTransBy.get(ck)
-  if (hit != null && hit.src === text) {
-    return Response.json({ ok: true, text: hit.text, cached: true })
-  }
-  const stored = await loadCompanyDescZh({ db: db, name: name })
-  if (stored != null && lang === WD_LANG_ZH) {
-    CACHE.briefTransBy.set(ck, { src: text, text: stored })
-    return Response.json({ ok: true, text: stored, cached: true })
-  }
-  if (checkLimit([[CO_LIMIT_PREFIX + ipOf(req), CO_IP_DAILY]]) === false) {
-    return Response.json({ ok: false, error: E_RATE_LIMITED }, { status: TOO_MANY })
-  }
-  try {
-    const r = await translatePlainLines({ text: text, lang: lang,
-      signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS) })
-    if (r.full === false || translationOk({ src: text, out: r.text, lang: lang }) === false) {
-      return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
-    }
-    CACHE.briefTransBy.set(ck, { src: text, text: r.text })
-    if (lang === WD_LANG_ZH) {
-      await saveCompanyDescZh({ db: db, name: name, text: r.text })
-    }
-    return Response.json({ ok: true, text: r.text, cached: false })
   } catch (e) {
     let msg = String(e)
     if (e instanceof Error) {

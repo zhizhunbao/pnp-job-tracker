@@ -59,7 +59,7 @@ import {
   TEXT_NONE,
 } from './constants'
 import {
-  addrShownOf, baseZhOf, cardTitleOf, hasDescOf, hasIdOf, homeProvinceOf, hqMapOf, ignoreDone, isGovCompany,
+  addrShownOf, baseZhOf, cardTitleOf, hasIdOf, homeProvinceOf, hqMapOf, ignoreDone, isGovCompany,
   isCuratedOf, noSiteOf, siteDoneOf, siteHqOf, siteWebsiteOf, wikiTitleOf,
 } from './functions'
 import { useCompanySite } from './hooks'
@@ -76,16 +76,15 @@ import css from './companies.module.css'
 export function CompanyBasicCard({
   company, t, lang, showTrans, trans, onBusy, head = TEXT_NONE, linked, onSiteDone = ignoreDone,
 }: CompanyBasicCardIn) {
-  const hasDesc = hasDescOf({ company })
-  const briefCached = hasDesc === false && company.aiBrief !== TEXT_NONE
+  const briefCached = company.aiBrief !== TEXT_NONE
   const prov = homeProvinceOf({ company })
-  const onDone = siteDoneOf({ fn: onSiteDone, settled: hasDesc || briefCached })
+  const onDone = siteDoneOf({ fn: onSiteDone, settled: briefCached })
   const site = useCompanySite({ name: company.name, onDone })
   const hq = siteHqOf({ company, site, t, lang })
   const addr = addrShownOf({ addr: company.address })
   const website = siteWebsiteOf({ company, site, t, lang })
   const hasId = hasIdOf({ company, addr: company.address }) || prov !== TEXT_NONE
-  const hasBody = hasDesc || briefCached || company.name !== TEXT_NONE
+  const hasBody = briefCached || company.name !== TEXT_NONE
   if (hasId === false && hasBody === false) {
     return null
   }

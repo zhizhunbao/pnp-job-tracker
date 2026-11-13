@@ -461,11 +461,6 @@ export type CompanyDetail = {
   aiFetched: string
 
   /**
-   * 名录厚简介(够长才算有,见 DESC_MIN_LEN)。
-   */
-  description: string
-
-  /**
    * 地址;空串 = 库里只有省级,没有街号那种精确地址。
    */
   address: string
@@ -1055,6 +1050,66 @@ export type CompanyBriefBodyIn = {
  * CompanyBriefSec(简介一节)的 props。
  */
 export type CompanyBriefSecIn = {
+  /**
+   * 小标题文案键。
+   */
+  labelKey: string
+
+  /**
+   * 本节正文。
+   */
+  text: string
+
+  /**
+   * 本节译文;'' = 不出中文对照。
+   */
+  zh: string
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 扁平态。
+   */
+  flat: boolean
+}
+
+/**
+ * 「主营业务」的一条要点(原文与它的对照)。
+ */
+export type BriefItem = {
+  /**
+   * 原文。
+   */
+  en: string
+
+  /**
+   * 这一条的对照;'' = 不出。
+   */
+  zh: string
+}
+
+/**
+ * briefItemsOf 的入参。
+ */
+export type BriefItemsIn = {
+  /**
+   * 本节正文。
+   */
+  text: string
+
+  /**
+   * 本节译文;'' = 没有。
+   */
+  zh: string
+}
+
+/**
+ * CompanyBriefList(要点列表形的一节)的 props。
+ */
+export type CompanyBriefListIn = {
   /**
    * 小标题文案键。
    */
@@ -1983,11 +2038,6 @@ export type CompanyTransHookIn = {
   aiBrief: string
 
   /**
-   * 名录厚简介够长(那条路径不走懒翻)。
-   */
-  hasDesc: boolean
-
-  /**
    * 界面语言。
    */
   lang: CompaniesLang
@@ -2433,46 +2483,6 @@ export type BaseZhIn = {
    * 公司档案(AI 简介与在招岗)。
    */
   company: CompanyDetail
-}
-
-/**
- * makeLoadDescTrans 的入参。
- */
-export type LoadDescTransIn = {
-  /**
-   * 公司名。
-   */
-  name: string
-
-  /**
-   * 界面语言。
-   */
-  lang: CompaniesLang
-
-  /**
-   * 译文落格。
-   */
-  setTrans: SetTextFn
-}
-
-/**
- * useCompanyDescTrans 的入参。
- */
-export type DescTransHookIn = {
-  /**
-   * 公司名;'' = 不翻。
-   */
-  name: string
-
-  /**
-   * 界面语言(英文不翻)。
-   */
-  lang: CompaniesLang
-
-  /**
-   * 有官网简介没;没有不翻。2026-09-17 早先一版曾把页眉开关并进来(关着不翻),同日 Frank「后台要自动翻译」改回:开关只管显不显。
-   */
-  has: boolean
 }
 
 /**

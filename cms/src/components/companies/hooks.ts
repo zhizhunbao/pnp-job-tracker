@@ -18,7 +18,7 @@ import { usePagedFold } from '@/components/pager'
 import { LANG_EN, MS_PER_SEC, TEXT_NONE, TICK_MS,
 } from './constants'
 import {
-  ignoreFlag, isSiteActive, makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel,
+  ignoreFlag, isSiteActive, makeLoadAlias, makeLoadBrief, makeLoadPanel,
   makeLoadTrans, makeOpenSite, nextRevOf, seedPanelOf,
   simAnchorOf, simPageUrlOf, simTotalOf,
 } from './functions'
@@ -26,7 +26,7 @@ import type {
   CompanyAiHookIn, CompanyAiPanel, CompanyAliasHookIn, CompanyAliasPanel, CompanyBriefFact,
   CompanyOfJobHookIn, CompanyPanelData, CompanyPanelHookIn, CompanyPanelState,
   CompanyTransHookIn,
-  CompanySiteHookIn, CompanyTransPanel, DeadFlag, DescTransHookIn, SitePanel,
+  CompanySiteHookIn, CompanyTransPanel, DeadFlag, SitePanel,
   SimCardHookIn, SimCardPanel, SimilarEmployer,
 } from './types'
 
@@ -170,7 +170,7 @@ export function useTickSec(on: boolean): number {
  * 2026-09-21 Frank「都修」:简介换了(官网那条活办完、整卡重取回来的是官网版)译文当场清掉重取 ——
  * 原先手里有译文就不再取,新简介底下挂的还是旧简介的中文。
  *
- * @param x 公司名、缓存简介、厚简介标记与界面语言。
+ * @param x 公司名、缓存简介与界面语言。
  * @returns 译文与现场翻译在途态。
  */
 export function useCompanyTrans(x: CompanyTransHookIn): CompanyTransPanel {
@@ -186,13 +186,13 @@ export function useCompanyTrans(x: CompanyTransHookIn): CompanyTransPanel {
 
   useEffect(function loadTrans() {
     const flag: DeadFlag = { dead: false }
-    if (trans == null && x.hasDesc === false && x.aiBrief !== '' && x.lang !== LANG_EN) {
+    if (trans == null && x.aiBrief !== '' && x.lang !== LANG_EN) {
       makeLoadTrans({ company: x.name, slug: x.slug, lang: x.lang, setTrans, setBusy })(flag)
     }
     return function stop(): void {
       flag.dead = true
     }
-  }, [x.hasDesc, x.aiBrief, x.name, x.slug, x.lang, trans])
+  }, [x.aiBrief, x.name, x.slug, x.lang, trans])
 
   return { trans, busy }
 }
@@ -317,36 +317,6 @@ export function useCompanyAlias(x: CompanyAliasHookIn): CompanyAliasPanel {
     text = alias
   }
   return { alias: text, settled: settled || lang === LANG_EN || name === TEXT_NONE }
-}
-
-/**
- * 官网简介的对照(2026-09-14):中 / 韩界面且有官网简介才打一次接口。
- * 2026-09-17:has 由调用方并入页眉对照开关 —— 开关关着不打接口(Frank「这个 公司的 弹框 也 默认关闭」)。
- * 2026-09-17 同日 Frank「后台要自动翻译」改回:不看开关,有官网简介就翻好存着,开关只管出不出那一行。
- *
- * @param x 公司名、界面语言与有没有官网简介。
- * @returns 译文;'' = 还没有。
- */
-export function useCompanyDescTrans(x: DescTransHookIn): string {
-  const [trans, setTrans] = useState<string | null>(null)
-  const name = x.name
-  const lang = x.lang
-  const want = x.has && name !== TEXT_NONE && lang !== LANG_EN && trans === null
-
-  useEffect(function loadDesc() {
-    const flag: DeadFlag = { dead: false }
-    if (want) {
-      makeLoadDescTrans({ name, lang, setTrans })(flag)
-    }
-    return function stop(): void {
-      flag.dead = true
-    }
-  }, [want, name, lang])
-
-  if (trans == null) {
-    return TEXT_NONE
-  }
-  return trans
 }
 
 /**

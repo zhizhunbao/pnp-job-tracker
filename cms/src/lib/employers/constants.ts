@@ -1151,8 +1151,3 @@ export const BRAND_ALIASES = {
    */
   cibc: { re: /\bcibc\b|\bcanadian imperial bank of commerce\b/i, zh: '加拿大帝国商业银行', ko: '캐나다임페리얼상업은행' },
 }
-
-/**
- * 官网简介翻译缓存键的尾巴。
- */
-export const DESC_KEY_TAIL = '|desc'

@@ -227,6 +227,22 @@ export const CO_SEC_BASE = 'BASE'
 export const CO_SEC_WHAT = 'WHAT'
 
 /**
+ * 「主营业务」一节拆要点:按行拆(2026-11-13 Frank「主营业务也应该是 AI 整理的 bullets」)。只按换行拆、不按句号拆 ——
+ * 公司名里的 Ltd. / Inc. / St. 会被句号误切。
+ */
+export const BRIEF_LINE_SPLIT_RE = /\r?\n/
+
+/**
+ * 译文条数和原文对不上时,整段译文并成一行挂在最后一条下面,行与行之间用的分隔(一个空格)。
+ */
+export const BRIEF_ZH_JOIN = ' '
+
+/**
+ * 要点行首模型自带的项目符号(- / • / *),出圆点列表前剥掉,免得一行两个点。
+ */
+export const BRIEF_ITEM_LEAD_RE = /^[-•*]\s+/
+
+/**
  * 模型答「查不到」的那族句子(2026-09-14 Frank「没查到的不要显示说 没查到」「啥也没查到吗」):
  * 「not provided / stated / mentioned / available in the (available) search results」「no information / details」
  * 「do not contain information」「unknown / unavailable / N/A」—— 命中的节整节不出;整篇都是这族 = 简介卡不出。
@@ -312,12 +328,6 @@ export const STREAM_LOW_RE = /low wage/
  * 农业股(非技能类)。
  */
 export const STREAM_AGRI_RE = /agricultur/
-
-/**
- * 名录厚简介的字数门槛(≥120 字才算「有正文可读」,不够长的按没有算,让位 AI 五节)。
- * 阈值统一 120 —— 原公司弹框那份 200 的私有阈值 2026-07 退役。
- */
-export const DESC_MIN_LEN = 120
 
 /**
  * 在招职位卡展开钮的量词词条(「个」;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:卡底钮走 pager 桶 FoldLine,一次展开 20 个 ——
@@ -803,11 +813,6 @@ export const URL_EMPLOYERS_PROV = '/employers?prov='
  * 行业桶显示名的 i18n 键头(companies.industry 存的是职位板大类键,显示名走 broad.*)。
  */
 export const BROAD_KEY_HEAD = 'broad.'
-
-/**
- * 官网简介懒翻接口(2026-09-14)。
- */
-export const URL_CO_DESC = '/api/employers/desc'
 
 /**
  * 官网那条工种入队接口:公司卡被真人点开报一声(2026-09-20;设计稿 docs/design/点开优先抓取与纠错-20260920.md)。

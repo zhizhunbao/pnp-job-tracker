@@ -2284,11 +2284,6 @@ export const COMPANY_BRIEF_BY_NAME = `SELECT ai_brief FROM companies
     WHERE (CASE WHEN $2 <> '' THEN slug = $2 ELSE lower(name) = lower($1) END) AND ai_brief IS NOT NULL LIMIT 1`
 
 /**
- * 公司官网简介原文(懒翻用,2026-09-14 Frank「这个也没加翻译」)。
- */
-export const COMPANY_DESC_BY_NAME = `SELECT description FROM companies WHERE lower(name) = lower($1) AND description IS NOT NULL LIMIT 1`
-
-/**
  * AI 简介中文版(已落库的)。$1=公司名,$2=译文版本号,$3=slug(非空按 slug 取,空才按名;2026-10-02,同 COMPANY_BRIEF_BY_NAME)。
  */
 export const COMPANY_BRIEF_ZH_BY_NAME = `SELECT ai_brief_zh FROM companies
@@ -2303,20 +2298,6 @@ export const COMPANY_UPDATE_AI_BRIEF_ZH = `UPDATE companies
          alias_zh = CASE WHEN trans_v = $3 THEN alias_zh END, alias_ko = CASE WHEN trans_v = $3 THEN alias_ko END,
          description_zh = CASE WHEN trans_v = $3 THEN description_zh END
      WHERE (CASE WHEN $4 <> '' THEN slug = $4 ELSE lower(name) = lower($2) END)`
-
-/**
- * 官网简介中文版(版本对得上才算有)。
- */
-export const COMPANY_DESC_ZH_BY_NAME = `SELECT description_zh FROM companies WHERE lower(name) = lower($1) AND trans_v = $2 AND coalesce(description_zh, '') <> '' LIMIT 1`
-
-/**
- * 官网简介中文版落库(同行其余译文若是旧版本一并清空,一行的译文永远同一个版本)。
- */
-export const COMPANY_UPDATE_DESC_ZH = `UPDATE companies
-     SET description_zh = $1, trans_v = $3,
-         alias_zh = CASE WHEN trans_v = $3 THEN alias_zh END, alias_ko = CASE WHEN trans_v = $3 THEN alias_ko END,
-         ai_brief_zh = CASE WHEN trans_v = $3 THEN ai_brief_zh END
-     WHERE lower(name) = lower($2)`
 
 /**
  * 公司别名两格(懒翻公司名前先查库,2026-09-14 Frank「这些相似雇主的中文名都加上懒加载翻译」)。

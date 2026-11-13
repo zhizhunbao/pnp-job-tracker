@@ -25,10 +25,11 @@ import { isJdNone } from '@/lib/jobs'
 import { mapsUrl, PROV_NAMES, provName } from '@/lib/location'
 import { track } from '@/lib/track'
 import {
-  BASE_CITY_PROV_RE, CARD_HEAD_CLS, CARD_MD_CLS, CH_C_AMBER, CH_C_DEEP, CH_C_GRAY, CH_C_GREEN, CH_C_NONE,
+  BASE_CITY_PROV_RE, BRIEF_ITEM_LEAD_RE, BRIEF_LINE_SPLIT_RE, BRIEF_ZH_JOIN,
+  CARD_HEAD_CLS, CARD_MD_CLS, CH_C_AMBER, CH_C_DEEP, CH_C_GRAY, CH_C_GREEN, CH_C_NONE,
   CH_GRADE_AMBER_MIN, CH_GRADE_DEEP_MIN, CH_GRADE_GRAY_MIN, CH_GRADE_GREEN_MIN, CLS_SEP, CO_COUNTRY_ONLY_RE,
   CO_NOT_FOUND_RE, CO_SEC_BASE, CO_SEC_HAS_RE, CO_SEC_KEYS, CO_SEC_MARKS, CO_SEC_SPLIT_RE, CO_STREAM_COUNT_RE,
-  CO_STREAM_SPLIT_RE, DASH_EM, DESC_MIN_LEN, FAME_PROVS_MIN, GOV_BODY_RE, GOV_ORG_RE, GOV_PLACE_RE, GRADE_AMBER_MIN,
+  CO_STREAM_SPLIT_RE, DASH_EM, FAME_PROVS_MIN, GOV_BODY_RE, GOV_ORG_RE, GOV_PLACE_RE, GRADE_AMBER_MIN,
   GRADE_C_2, GRADE_C_3, GRADE_C_4, GRADE_C_5, GRADE_C_NONE, GRADE_DEEP_GREEN_MIN, GRADE_GREEN_MIN, GRADE_NEUTRAL_MIN,
   HDR_CONTENT_TYPE, HDR_HUMAN, HTTP_OK, HTTP_URL_RE, HUMAN_EVENTS, HUMAN_NO, HUMAN_YES,
   JD_ZH_CLS, KEY_ACT_EVIDENCE, KEY_ACT_EVIDENCE_ONE,
@@ -40,7 +41,7 @@ import {
   MIME_JSON, NBSP, NOCS_TOP_N, PROV_LOCALE_ONLY, PROV_PAREN_RE, SECS_PER_MIN, SEC_PAIR_STEP, SEP_ENUM, SIGN_PLUS,
   P_SIM_KEY, STREAM_AGRI_RE,
   STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE,
-  TRACK_KIND_COMPANY, TRACK_SIMILAR, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO,
+  TRACK_KIND_COMPANY, TRACK_SIMILAR, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_INFO,
   URL_CO_TRANSLATE,
   URL_JOBS_COMPANY, URL_JOBS_SIMILAR,
   URL_PLAN_PR_HEAD, URL_PROV_HEAD, WIKI_PATH_SEP, WIKI_WORD_JOIN,
@@ -55,11 +56,12 @@ import { cssOf } from '@/components/css'
 import { lazyTitleOf, titleSubOf } from '@/components/jobtitle'
 import type {
   ActiveTextIn, AiNoteClsIn, AliasJson, AliasOfIn, BaseZhIn, BriefJson, BriefSecsIn, CanTransIn, ChColorIn,
+  BriefItem, BriefItemsIn,
   CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyDetail, CompanyJobRow, CompanyOnlyIn,
   CompanyPanelData, CompanySeed, CompanyStream,
   DeadFlag, DisplayNameIn, FameTextIn, FetchCoTransIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn, IsGovIn,
   JobNocNameIn, JobsShownIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn,
-  LoadBriefIn, LoadDescTransIn, LoadFn, LoadPanelIn, LoadTransIn, NocRowsIn,
+  LoadBriefIn, LoadFn, LoadPanelIn, LoadTransIn, NocRowsIn,
   PanelBody, PanelBodyIn,
   PanelJson, PanelSlugIn,
   PillClsIn, ProvFullOfIn, ProvHrefOfIn, SalaryTextIn, SecKeyIn, SecTextIn, SecZhIn,
@@ -153,6 +155,46 @@ export function secTextOf(x: SecTextIn): string {
 }
 
 /**
+ * 「主营业务」一节 → 要点(2026-11-13 Frank「主营业务也应该是 AI 整理的 bullets」):正文按行拆,空行丢掉,行首模型自带的
+ * 项目符号剥掉。译文同样拆;条数对得上就一条配一条,对不上整段挂在最后一条下面(不硬配,配错比不配糟)。
+ *
+ * @param x 本节正文与译文。
+ * @returns 要点;正文空给空表。
+ */
+export function briefItemsOf(x: BriefItemsIn): BriefItem[] {
+  const en = briefLinesOf(x.text)
+  const zh = briefLinesOf(x.zh)
+  const out: BriefItem[] = []
+  for (let i = 0; i < en.length; i += 1) {
+    let pair = TEXT_NONE
+    if (zh.length === en.length) {
+      pair = String(zh[i])
+    } else if (i === en.length - 1) {
+      pair = zh.join(BRIEF_ZH_JOIN)
+    }
+    out.push({ en: String(en[i]), zh: pair })
+  }
+  return out
+}
+
+/**
+ * 一段文字拆成要点行:按行拆、去首尾空白、剥行首项目符号、丢空行。
+ *
+ * @param text 一段文字。
+ * @returns 行。
+ */
+export function briefLinesOf(text: string): string[] {
+  const out: string[] = []
+  for (const raw of text.split(BRIEF_LINE_SPLIT_RE)) {
+    const line = raw.trim().replace(BRIEF_ITEM_LEAD_RE, TEXT_NONE).trim()
+    if (line !== TEXT_NONE) {
+      out.push(line)
+    }
+  }
+  return out
+}
+
+/**
  * 取某一节小标题的文案键(表里没有这个标记时给空串)。
  *
  * @param x 节标记。
@@ -217,16 +259,6 @@ export function secZhOf(x: SecZhIn): string {
     return TEXT_NONE
   }
   return zh
-}
-
-/**
- * 名录厚简介够不够长(≥120 字才算有正文可读;不够长的按没有算,让位 K 调查五节)。
- *
- * @param x 公司档案。
- * @returns 有没有厚简介。
- */
-export function hasDescOf(x: CompanyOnlyIn): boolean {
-  return x.company.description.length >= DESC_MIN_LEN
 }
 
 /**
@@ -406,12 +438,13 @@ export function hqOf(x: BaseZhIn): string {
  * 公司弹框正文首帧要不要先藏(2026-09-14 Frank「所以肯定是渲染了好几次」:aiBusy 初值 false、由 CompanyAiSection 的
  * effect 事后回报,首帧正文先露一下再被藏 —— 那一闪就是它)。要懒抓 AI 简介的那一档(没厚简介、没缓存简介、有名字,
  * 与 CompanyIntro 的分支同序)首帧就按在途算。
+ * 2026-11-13 官网原文那一岔撤(见 CompanyIntro 的头注):判据只剩「没缓存简介、有名字」。
  *
  * @param x 公司档案。
  * @returns 要懒抓 = true。
  */
 export function needsAiFetchOf(x: CompanyOnlyIn): boolean {
-  return hasDescOf(x) === false && x.company.aiBrief === TEXT_NONE && x.company.name !== TEXT_NONE
+  return x.company.aiBrief === TEXT_NONE && x.company.name !== TEXT_NONE
 }
 
 /**
@@ -446,27 +479,14 @@ export function hasIdOf(x: HasIdIn): boolean {
  * 弹框里「显示中文对照」钮出不出(#196 放宽):AI 简介可翻,**或**在招职位有
  * 界面语译名可显 —— 原先只认 AI 简介,于是「名录厚简介 + 在招译名」的公司没钮,
  * 译名却无条件冒出来。英文界面一律不出(译名与主文案同语)。
+ * 2026-11-13 官网原文那一岔撤(见 CompanyIntro 的头注):每家公司的简介都是 AI 整理版(缓存的或点开时现查的),都可翻,
+ * 原先「厚简介公司要看在招职位有没有译名」那一档随之没了 —— 取到公司、不是英文界面就出。
  *
  * @param x 公司档案与界面语言。
  * @returns 出不出。
  */
 export function canTransOf(x: CanTransIn): boolean {
-  if (x.lang === LANG_EN || x.company == null) {
-    return false
-  }
-  if (hasDescOf({ company: x.company }) === false) {
-    return true
-  }
-  for (const job of x.company.jobs) {
-    let zh = job.nocTitleKo
-    if (x.lang === LANG_ZH) {
-      zh = job.nocTitleZh
-    }
-    if (zh !== TEXT_NONE && zh.toLowerCase() !== job.title.toLowerCase()) {
-      return true
-    }
-  }
-  return false
+  return x.lang !== LANG_EN && x.company != null
 }
 
 /**
@@ -1562,37 +1582,6 @@ export function makeLoadAlias(x: LoadAliasIn): LoadFn {
       x.onSettled(true)
     }
     fetch(URL_CO_ALIAS, {
-      method: METHOD_POST,
-      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ name: x.name, lang: x.lang }),
-    }).then(read).then(land).catch(fall)
-  }
-}
-
-/**
- * 官网简介懒翻(2026-09-14 Frank「这个也没加翻译」):打 /api/employers/desc;失败静默(只显英文)。
- *
- * @param x 公司名、界面语言与落格。
- * @returns 取数函数(带死旗)。
- */
-export function makeLoadDescTrans(x: LoadDescTransIn): LoadFn {
-  return function loadDescTrans(flag: DeadFlag): void {
-    function read(r: Response): Promise<TransJson> {
-      return r.json().catch(none)
-    }
-    function none(): null {
-      return null
-    }
-    function land(j: TransJson): void {
-      if (flag.dead || j == null || j.ok !== true || j.text == null || j.text === TEXT_NONE) {
-        return
-      }
-      x.setTrans(j.text)
-    }
-    function fall(): void {
-      return
-    }
-    fetch(URL_CO_DESC, {
       method: METHOD_POST,
       headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
       body: JSON.stringify({ name: x.name, lang: x.lang }),

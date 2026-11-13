@@ -29,7 +29,7 @@ import { CompanyBasicCard } from './companybasiccard'
 import { CompanyJobsCard } from './companyjobscard'
 import { CompanySimilarCard } from './companysimilarcard'
 import { useEffect, useState } from 'react'
-import { hasDescOf, ignoreDone, simAnchorOf } from './functions'
+import { ignoreDone, simAnchorOf } from './functions'
 import { useCompanyTrans } from './hooks'
 import type { CompanyBodyIn } from './types'
 import css from './companies.module.css'
@@ -55,7 +55,6 @@ export function CompanyBody({
     name: company.name,
     slug: company.slug,
     aiBrief: company.aiBrief,
-    hasDesc: hasDescOf({ company }),
     lang,
   })
   const [aiTransBusy, setAiTransBusy] = useState(false)
