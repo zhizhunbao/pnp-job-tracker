@@ -16,7 +16,8 @@ import {
   FILTER_UNREAD,
 } from './constants'
 import type {
-  AfterReplyIn, CurIn, FlagSetIn, ForwardMakeIn, ForwardSavedIn, InboxItem, InboxRowClsIn, InboxView, LoadInboxIn,
+  AfterReplyIn, CurIn, DraftResetIn, FlagSetIn, ForwardMakeIn, ForwardSavedIn, InboxItem, InboxRowClsIn, InboxView,
+  LoadInboxIn,
   OpenAppIn, ShownIn,
   PickMakeIn, PickOfFn, ReplyPostIn, ReplyRespJson, ReplySendIn, SubjectIn, TextSetIn, UnpickIn, WithForwardIn,
   WithReadIn, WithReplyIn,
@@ -84,14 +85,32 @@ export function curOf(x: CurIn): InboxItem | null {
 }
 
 /**
- * 点信手柄工厂:换当前那封,没读过的顺手标已读(本地先改,再告诉服务端)。
+ * 现在显示着的那封的信号。
  *
- * @param x 回包与两个 setter。
+ * @param cur 那一封;没有为 null。
+ * @returns 信号;没有为 null。
+ */
+export function curIdOf(cur: InboxItem | null): number | null {
+  if (cur == null) {
+    return null
+  }
+  return cur.id
+}
+
+/**
+ * 点信手柄工厂:换当前那封,没读过的顺手标已读(本地先改,再告诉服务端)。
+ * 2026-11-13(Frank「先修收件箱问题」途中查出):换到别的信先清回信草稿并收起回信框 —— 原先草稿跟着框走,
+ * 给甲写了一半切到乙,点发送就发给了乙;点的还是眼前这封不清。
+ *
+ * @param x 回包、两个 setter、眼前那封的信号与清草稿手柄。
  * @returns 收信号的手柄工厂。
  */
 export function makePickOf(x: PickMakeIn): PickOfFn {
   return function pickOf(id: number): () => void {
     return function pick(): void {
+      if (id !== x.curId) {
+        x.resetDraft()
+      }
       x.setSel(id)
       if (x.data == null) {
         return
@@ -103,6 +122,20 @@ export function makePickOf(x: PickMakeIn): PickOfFn {
         }
       }
     }
+  }
+}
+
+/**
+ * 清回信草稿手柄:收起回信框、清草稿、清失败说明。
+ *
+ * @param x 三个 setter。
+ * @returns 无参手柄。
+ */
+export function makeDraftReset(x: DraftResetIn): () => void {
+  return function resetDraft(): void {
+    x.setOpen(false)
+    x.setText(TEXT_NONE)
+    x.setNote(TEXT_NONE)
   }
 }
 
@@ -521,4 +554,17 @@ export function unreadNOf(data: InboxView | null): number {
     }
   }
   return n
+}
+
+/**
+ * 「未读」页签的角标:没有未读不出角标(空串 = 通用页签件不出;2026-11-13 原先 0 封也挂一个「0」)。
+ *
+ * @param n 没读的封数。
+ * @returns 角标文字;不出为空串。
+ */
+export function unreadBadgeOf(n: number): string {
+  if (n === 0) {
+    return TEXT_NONE
+  }
+  return String(n)
 }

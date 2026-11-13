@@ -357,6 +357,8 @@ export function loginLinkOf(): string {
  * 换节手柄:换到哪节都先清「一进档案就开修改面板」(只有「去补全」那一下开)。
  *
  * 2026-11-09 三枚页签挪到侧边栏:点的是「我的求职」的子项时,换到「我的求职」并换子项。
+ * 2026-11-13 Frank「先修收件箱问题」:换节同时把这一节写进地址栏(writeSecLink)—— 原先切侧栏地址栏不动,
+ * 从收件箱切到别的节再刷新,又回到收件箱。
  *
  * @param x 换节、开面板与换子项三个 setter。
  * @returns 收键的手柄。
@@ -368,11 +370,13 @@ export function makeSecPick(x: SecPickIn): (key: MeKey) => void {
     if (tab != null) {
       x.setJobTab(tab)
       x.setSec(SEC_DEFAULT)
+      writeSecLink(key)
       return
     }
     const sec = meSecOf(key)
     if (sec != null) {
       x.setSec(sec)
+      writeSecLink(key)
     }
   }
 }
@@ -387,5 +391,21 @@ export function makeFill(x: SecPickIn): () => void {
   return function fill(): void {
     x.setAutoEdit(true)
     x.setSec(SEC_PROFILE)
+    writeSecLink(SEC_PROFILE)
   }
+}
+
+/**
+ * 把当前这一节写进地址栏 `?sec=`(2026-11-13):只换这一格,别的参数不动;不进浏览历史(replaceState),已经是它就不写。
+ *
+ * @param key 节或「我的求职」子项的键。
+ * @returns 无。
+ */
+export function writeSecLink(key: MeKey): void {
+  const url = new URL(window.location.href)
+  if (url.searchParams.get(QP_SEC) === key) {
+    return
+  }
+  url.searchParams.set(QP_SEC, key)
+  window.history.replaceState(null, TEXT_NONE, url.pathname + url.search + url.hash)
 }

@@ -12,6 +12,7 @@ import { cssOf } from '@/components/css'
 import { Search } from '@/components/search'
 import { Tabs } from '@/components/tabs'
 import { CARD_MD_CLS, FILTER_ALL, FILTER_ARIA_KEY, FILTER_TABS_ID, FILTER_UNREAD } from './constants'
+import { unreadBadgeOf } from './functions'
 import { InboxModal } from './inboxmodal'
 import { InboxRead } from './inboxread'
 import { InboxRow } from './inboxrow'
@@ -41,7 +42,7 @@ export function InboxBody({ p, t }: InboxPartIn) {
   }
   const filters = [
     { key: FILTER_ALL, label: t('ib.all') },
-    { key: FILTER_UNREAD, label: t('ib.unreadTab'), badge: p.unreadN },
+    { key: FILTER_UNREAD, label: t('ib.unreadTab'), badge: unreadBadgeOf(p.unreadN) },
   ]
   return (
     <>

@@ -178,6 +178,36 @@ export type PickMakeIn = {
    * 换当前那封。
    */
   setSel: (v: number | null) => void
+
+  /**
+   * 现在显示着的那封的信号(没有为 null;2026-11-13:换到别的信才清回信草稿)。
+   */
+  curId: number | null
+
+  /**
+   * 清回信草稿并收起回信框(换到别的信时调)。
+   */
+  resetDraft: () => void
+}
+
+/**
+ * 清回信草稿手柄(makeDraftReset)的入参。
+ */
+export type DraftResetIn = {
+  /**
+   * 回信框开没开。
+   */
+  setOpen: (v: boolean) => void
+
+  /**
+   * 换草稿。
+   */
+  setText: (v: string) => void
+
+  /**
+   * 换发信失败的那句说明。
+   */
+  setNote: (v: string) => void
 }
 
 /**
@@ -598,11 +628,6 @@ export type InboxReadIn = {
    * 收件箱状态。
    */
   p: InboxPanel
-
-  /**
-   * 装在窄屏读信弹框里(弹框标题已是主题,阅读区不再出大字主题)。
-   */
-  inModal?: boolean
 
   /**
    * 那一封。
