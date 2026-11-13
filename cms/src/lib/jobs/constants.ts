@@ -2813,9 +2813,15 @@ export const TITLE_CTX_PREFIX = 'Job title: '
 export const DESIGNATED_PLACE_SEP = '|'
 
 /**
- * 公司页灰注里项目与地点之间的空格(`RCIP North Bay and Area`)。
+ * 公司页指定雇主卡的先后(2026-11-13 Frank「LMIA AIP RCIP FCIP 都是单独的卡」):表里有的照这个顺序排前面,
+ * 名单以后多出来的项目(表里没有的)照池里的顺序接在后面,不用改代码。
  */
-export const DESIGNATED_PLACE_GAP = ' '
+export const DESIGNATED_ORDER = ['AIP', 'RCIP', 'FCIP']
+
+/**
+ * 登记名后面那句「在哪」里地点与省码之间的分隔(`Marystown, NL`)。
+ */
+export const DESIGNATED_WHERE_SEP = ', '
 
 /**
  * 歧义标题(小写):只写了一个泛称、不看这一岗做什么就翻不准的(architect 可以是建筑师也可以是 IT 架构师,

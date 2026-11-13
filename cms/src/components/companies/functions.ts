@@ -56,7 +56,7 @@ import { cssOf } from '@/components/css'
 import { lazyTitleOf, titleSubOf } from '@/components/jobtitle'
 import type {
   ActiveTextIn, AiNoteClsIn, AliasJson, AliasOfIn, BaseZhIn, BriefJson, BriefSecsIn, CanTransIn, ChColorIn,
-  BriefItem, BriefItemsIn,
+  BriefItem, BriefItemsIn, DesignatedName, LmiaBatchNoteIn, NamesShownIn,
   CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyDetail, CompanyJobRow, CompanyOnlyIn,
   CompanyPanelData, CompanySeed, CompanyStream,
   DeadFlag, DisplayNameIn, FameTextIn, FetchCoTransIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn, IsGovIn,
@@ -269,31 +269,6 @@ export function secZhOf(x: SecZhIn): string {
  */
 export function isCuratedOf(x: CompanyOnlyIn): boolean {
   return x.company.websiteSource === SITE_SRC_CURATED
-}
-
-/**
- * 担保记录深块出不出:有 LMIA 获批岗位,或者是 AIP 指定雇主;2026-09-13 晚起雇主池里的指定雇主(AIP / RCIP / FCIP)也出 ——
- * 板上说指定、落点页得能看见。
- *
- * @param x 公司档案。
- * @returns 出不出。
- */
-export function showSponsorOf(x: CompanyOnlyIn): boolean {
-  if (x.company.designatedPrograms.length > 0) {
-    return true
-  }
-  let positions = 0
-  if (x.company.lmiaPositions != null) {
-    positions = x.company.lmiaPositions
-  }
-  if (positions > 0) {
-    return true
-  }
-  const detail = x.company.scoreDetail
-  if (detail == null || detail.sponsor == null || detail.sponsor.v == null) {
-    return false
-  }
-  return detail.sponsor.v.aip
 }
 
 /**
@@ -835,6 +810,47 @@ export function displayNameOf(x: DisplayNameIn): string {
  */
 export function jobsShownOf(x: JobsShownIn): CompanyJobRow[] {
   return x.jobs.slice(0, x.n)
+}
+
+/**
+ * 指定雇主卡里现在露出来的登记名(同在招职位卡:先出几个,其余一批一批展开)。
+ *
+ * @param x 登记名与现在露几条。
+ * @returns 露出来的那几条。
+ */
+export function namesShownOf(x: NamesShownIn): DesignatedName[] {
+  return x.names.slice(0, x.n)
+}
+
+/**
+ * LMIA 卡出不出(2026-11-13 Frank「没有信息就不显示这个卡」):获批岗位数、最近获批季度、通道分布、获批职业,
+ * 四样一样都没有就不出。
+ *
+ * @param x 公司档案。
+ * @returns 出不出。
+ */
+export function hasLmiaOf(x: CompanyOnlyIn): boolean {
+  let positions = 0
+  if (x.company.lmiaPositions != null) {
+    positions = x.company.lmiaPositions
+  }
+  if (positions > 0 || x.company.lmiaNocs.length > 0) {
+    return true
+  }
+  return x.company.lmiaLastQuarter !== TEXT_NONE || x.company.lmiaStreams !== TEXT_NONE
+}
+
+/**
+ * LMIA 卡「获批岗位」那一行的灰注:获批了几份 LMIA;份数没有就不写。
+ *
+ * @param x 公司档案与取词函数。
+ * @returns 灰注;没有给空串。
+ */
+export function lmiaBatchNoteOf(x: LmiaBatchNoteIn): string {
+  if (x.company.lmiaLmias == null) {
+    return TEXT_NONE
+  }
+  return x.t('co.spBatchN', { n: x.company.lmiaLmias })
 }
 
 /**

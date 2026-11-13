@@ -21,12 +21,17 @@
  * 2026-10-02 Frank「相似雇主 3000 多?为什么只能展开 14 个」:相似卡改按页取,卡挂 React key = 锚(框里换一家时已取的页与展开态一并重置)。
  * 2026-10-09 N6b 批:在招职位 / 相似雇主两卡的点击接线(onOpenJob / resolveJob / onOpenCompany / newTab)撤 —— N6 起名字由 name 桶自开弹框;
  * 基本信息卡公司名那格递显式开关 linked(本骨架恒 false:公司页与公司弹框里公司名是纯文字)。
+ * 2026-11-13 Frank「做成单独的卡 LMIA AIP RCIP FCIP 都是单独的卡。这样比较清晰」「没有信息就不显示这个卡」:基本信息卡下面
+ * 接 LMIA 卡(CompanyLmiaCard)与各项目的指定雇主卡(CompanyProgramCard,一个项目一张,由服务端分好的清单决定出几张),
+ * 再是在招职位;09-14 撤掉的那张合并的「担保记录」卡(CompanySponsorCard)由它们取代,文件随之删。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
 import { CompanyBasicCard } from './companybasiccard'
 import { CompanyJobsCard } from './companyjobscard'
+import { CompanyLmiaCard } from './companylmiacard'
+import { CompanyProgramCard } from './companyprogramcard'
 import { CompanySimilarCard } from './companysimilarcard'
 import { useEffect, useState } from 'react'
 import { ignoreDone, simAnchorOf } from './functions'
@@ -63,6 +68,10 @@ export function CompanyBody({
       onTransBusy(busy)
     }
   }, [busy, onTransBusy])
+  const programCards = []
+  for (const card of company.designated) {
+    programCards.push(<CompanyProgramCard key={card.program} card={card} t={t} />)
+  }
   return (
     <div className={css.body}>
       <CompanyBasicCard company={company}
@@ -73,6 +82,8 @@ export function CompanyBody({
         onBusy={setAiTransBusy}
         linked={false}
         onSiteDone={onSiteDone} />
+      <CompanyLmiaCard company={company} t={t} lang={lang} />
+      {programCards}
       {afterSponsor}
       <CompanyJobsCard company={company}
         t={t}

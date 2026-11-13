@@ -22,7 +22,7 @@ import { JOBS_LOG, log } from '../log'
 import { fill } from '../template'
 import { fmtLocal, ymd } from '../time'
 import {
-  DESIGNATED_PLACE_GAP, DESIGNATED_PLACE_SEP,
+  DESIGNATED_ORDER, DESIGNATED_PLACE_SEP, DESIGNATED_WHERE_SEP,
   ACCEPT_HTML, BLOCKED_SRC,
   BLOCKED_SRC_NONE, BROAD_NOCS_MAX, CAT_LEVEL, CELL_NONE, CNT_SEP, COLON_END_RE, COL_PROVINCE, COMMA,
   COMPANY_SLUG_COND, COMP_KEY, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES,
@@ -67,7 +67,8 @@ import { CACHE } from './variables'
 import type {
   ApplyUrlIn, BigDimsIn, BigDimsOut, BroadNoc, BroadNocsIn, BroadNocsOut, MajorNocsIn, MajorNocsOut, BuildWhereIn, CaughtError, Cell,
   CheckedAtOut, CityDim, CompanyByJobIn, CompanyByPoolKeyIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow,
-  CompanyJsonIn, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DesignatedIn, DesignatedOut,
+  CompanyJsonIn, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DesignatedCard, DesignatedCards, DesignatedCardsIn, DesignatedIn,
+  DesignatedName, DesignatedNameDbRow, DesignatedNameFact, DesignatedOut, DesignatedPoolIn,
   DistrictDim, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim, EeBroad, EeDisplayIn,
   EeKeyDisplayIn, EeOcc, ExpiredJobIn, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft, JobIdWire,
   MaybeJobId, JdFormattedIn, JdIn, JdOut, SecIntoIn, JdSsr, JdSsrOut, JdStateOut, JdStateRow, JdTransCellIn, JdTransFact,
@@ -1484,12 +1485,7 @@ export async function loadCompanyByPoolKey(input: CompanyByPoolKeyIn): CompanyOu
   if (r == null) {
     return null
   }
-  let programs: string[] = []
-  let provinces: string[] = []
-  if (r.designated === true) {
-    programs = strListOf(r.designated_programs)
-    provinces = designatedWhereOf(r)
-  }
+  const designated = await designatedCardsOfPool({ db: input.db, row: r })
   return {
     name: poolCellOf(r.name), slug: CELL_NONE, website: CELL_NONE, websiteSource: CELL_NONE, careersUrl: CELL_NONE,
     hq: CELL_NONE, hqSource: CELL_NONE,
@@ -1497,7 +1493,7 @@ export async function loadCompanyByPoolKey(input: CompanyByPoolKeyIn): CompanyOu
     sponsorGrade: null, scoreDetail: null, aiBrief: CELL_NONE, aiWebsite: CELL_NONE, aiSources: [],
     aiFetched: CELL_NONE, description: CELL_NONE, address: CELL_NONE, province: poolCellOf(r.province),
     lmiaPositions: null, lmiaLmias: null, lmiaLastQuarter: poolCellOf(r.lmia_last_quarter), lmiaStreams: CELL_NONE,
-    lmiaSkilled: null, lmiaNocs: [], designatedPrograms: programs, designatedProvinces: provinces,
+    lmiaSkilled: null, lmia4q: null, lmiaNocs: [], designated: designated,
     openCount: 0, jobs: [],
   }
 }
@@ -1601,8 +1597,9 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
     description: strCell(c.description), address: strCell(c.address), province: strCell(c.region),
     lmiaPositions: numCell(c.lmia_positions), lmiaLmias: numCell(c.lmia_lmias),
     lmiaLastQuarter: strCell(c.lmia_last_quarter),
-    lmiaStreams: strCell(c.lmia_streams), lmiaSkilled: numCell(c.lmia_positions_skilled), lmiaNocs: lmiaNocs,
-    designatedPrograms: designated.programs, designatedProvinces: designated.provinces,
+    lmiaStreams: strCell(c.lmia_streams), lmiaSkilled: numCell(c.lmia_positions_skilled),
+    lmia4q: numCell(c.lmia_positions_4q), lmiaNocs: lmiaNocs,
+    designated: designated,
     openCount: openCount,
     jobs: jr,
   }
@@ -1679,49 +1676,126 @@ async function lmiaNocsOf(input: LmiaNocsIn): LmiaNocsOut {
 }
 
 /**
- * 公司页「指定雇主」那一行的灰注:池里记了资格所在地就逐条写「项目 地点」(`RCIP North Bay and Area`、`AIP NB`),没记才退回省码清单
- * (2026-09-19 Frank「在公司详情里面说明一下 RCIP 所在地不就行了,没必要在列表里加」—— 全国连锁的指定资格只属于某一处,
- * RONA 的在 BC 省 West Kootenay、岗却全在魁省;写明所在地,用户自己判断)。
- *
- * @param r 雇主池的一行。
- * @returns 灰注清单。
- */
-function designatedWhereOf(r: JsonRow): StrList {
-  const out: StrList = []
-  for (const p of strListOf(r.designated_places)) {
-    out.push(p.split(DESIGNATED_PLACE_SEP).join(DESIGNATED_PLACE_GAP))
-  }
-  if (out.length === 0) {
-    return strListOf(r.designated_provinces)
-  }
-  return out
-}
-
-/**
- * 公司的指定雇主事实(AIP / RCIP / FCIP 项目与归属省;2026-09-13 晚 /fe 雇主页 Frank 拍板补:板上说「指定雇主」
- * 而落点页整页没有这四个字)。读雇主池按 slug 一行;池里没这家或非指定 = 两清单皆空(那一行不渲)。
+ * 公司的指定雇主卡(一个项目一张;2026-09-13 晚 /fe 雇主页 Frank 拍板补:板上说「指定雇主」而落点页整页没有这四个字)。
+ * 读雇主池按 slug 一行;池里没这家或非指定 = 空表(一张卡都不出)。
  * 容缺同 lmiaNocsOf:employer_pool 没建 / 没灌时公司页照常出,不并主 SELECT。
+ * 2026-09-19 Frank「在公司详情里面说明一下 RCIP 所在地不就行了,没必要在列表里加」:全国连锁的指定资格只属于某一处
+ * (RONA 的在 BC 省 West Kootenay、岗却全在魁省),写明所在地,用户自己判断 —— 现在所在地住在各项目卡的「地点」里。
+ * 2026-11-13 Frank「LMIA AIP RCIP FCIP 都是单独的卡」:原先回「项目清单 + 归属省清单」两格(designatedWhereOf 把
+ * `项目|地点` 拼成一行灰注),换成按项目分好的卡,那个拼灰注的函数随之撤。
  *
  * @param input 连接与公司 slug。
- * @returns 项目与归属省清单;容缺皆空。
+ * @returns 各项目的卡;容缺空表。
  */
 async function designatedOf(input: DesignatedIn): DesignatedOut {
   try {
     const rows = await queryRows({ db: input.db, sql: SQL.EMPLOYER_POOL_BY_SLUG, params: [input.slug],
       map: passJsonRow })
     const first = rows[0]
-    if (first == null || first.designated !== true) {
-      return { programs: [], provinces: [] }
+    if (first == null) {
+      return []
     }
-    return { programs: strListOf(first.designated_programs), provinces: designatedWhereOf(first) }
+    return await designatedCardsOfPool({ db: input.db, row: first })
   } catch (e) {
     let why = String(e)
     if (e instanceof Error) {
       why = e.message
     }
     log({ tag: JOBS_LOG.tag, text: JOBS_LOG.designatedProbeFailed + why })
-    return { programs: [], provinces: [] }
+    return []
   }
+}
+
+/**
+ * 雇主池的一行 → 各项目的卡:非指定给空表;登记名去名单表认各属哪个项目、登记在哪。
+ *
+ * @param x 连接与雇主池的一行。
+ * @returns 各项目的卡。
+ */
+async function designatedCardsOfPool(x: DesignatedPoolIn): DesignatedOut {
+  if (x.row.designated !== true) {
+    return []
+  }
+  const names = strListOf(x.row.designated_names)
+  let rows: DesignatedNameFact[] = []
+  if (names.length > 0) {
+    rows = await queryRows({ db: x.db, sql: SQL.DESIGNATED_NAMES, params: [names], map: toDesignatedName })
+  }
+  return designatedCardsOf({
+    programs: strListOf(x.row.designated_programs), places: strListOf(x.row.designated_places), rows,
+  })
+}
+
+/**
+ * 登记名库行 → 洗净(行构造器):「在哪」= 名单上记的地点;地点没记才用省码。名单的地点多半自带省码
+ * (`Peace Liard, BC`),这时不再接一遍省码(接了就是「Peace Liard, BC, BC」);地点不带省码的接上。
+ *
+ * @param r 库行。
+ * @returns 一条登记名。
+ */
+export function toDesignatedName(r: DesignatedNameDbRow): DesignatedNameFact {
+  let location = ''
+  if (r.location != null) {
+    location = r.location.trim()
+  }
+  let province = ''
+  if (r.province != null) {
+    province = r.province.trim()
+  }
+  let where = location
+  if (location === '') {
+    where = province
+  } else if (province !== '' && location.endsWith(DESIGNATED_WHERE_SEP + province) === false) {
+    where = location + DESIGNATED_WHERE_SEP + province
+  }
+  let name = ''
+  if (r.name != null) {
+    name = r.name
+  }
+  let program = ''
+  if (r.source != null) {
+    program = r.source
+  }
+  return { name, program, where }
+}
+
+/**
+ * 项目码、指定地点与登记名 → 一个项目一张卡。顺序:DESIGNATED_ORDER 里有的排前面,其余照池里的顺序接后面;
+ * 地点只收 `项目|地点` 里项目对得上的,登记名只收名单表里记在这个项目下的。
+ *
+ * @param x 项目码、指定地点与登记名。
+ * @returns 各项目的卡。
+ */
+export function designatedCardsOf(x: DesignatedCardsIn): DesignatedCards {
+  const ordered: string[] = []
+  for (const program of DESIGNATED_ORDER) {
+    if (x.programs.includes(program)) {
+      ordered.push(program)
+    }
+  }
+  for (const program of x.programs) {
+    if (ordered.includes(program) === false) {
+      ordered.push(program)
+    }
+  }
+  const out: DesignatedCard[] = []
+  for (const program of ordered) {
+    const head = program + DESIGNATED_PLACE_SEP
+    const places: string[] = []
+    for (const place of x.places) {
+      if (place.startsWith(head)) {
+        places.push(place.slice(head.length))
+      }
+    }
+    const names: DesignatedName[] = []
+    for (const r of x.rows) {
+      if (r.program === program) {
+        names.push({ name: r.name, where: r.where })
+      }
+    }
+    out.push({ program, places, names })
+  }
+  return out
 }
 
 /**

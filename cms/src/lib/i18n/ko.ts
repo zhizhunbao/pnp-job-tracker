@@ -518,6 +518,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'co.spNocs': '승인 직종(최근 2년)', 'co.spNocRest': '기타 {n}개 직종',
   'co.spSource': '출처: ESDC 긍정 LMIA 고용주 목록, IRCC',
   'co.similar': '유사 고용주',
+  // 2026-11-13 公司页 LMIA 卡与指定雇主卡(一个项目一张)的格名(Frank「LMIA AIP RCIP FCIP 都是单独的卡」);项目卡的卡名是项目码本身,不进词条。
+  'co.lmia': 'LMIA', 'co.lmiaPos': '승인 일자리', 'co.lmia4q': '최근 4분기', 'co.places': '지정 지역', 'co.listNames': '공식 명단 등록명',
   'gr.dim.coSponsor': '스폰서 기록', 'gr.dim.coActive': '채용 활발도', 'gr.dim.coSalary': '급여 수준', 'gr.dim.coFame': '규모·인지도',
   'gr.co.sp.d': '최근 2년 승인 {total}건(기술직 스트림 {n}건; 최근 {q})', 'gr.co.sp.aip': 'AIP 지정 고용주(LMIA 없이도 스폰서 가능)', 'gr.co.sp.na': '최근 2년 공개 승인 기록 없음',
   'gr.co.act.d': '채용 중 {open}건, 최근 30일 신규 {n}건', 'gr.co.act.d1': '채용 중 1건, 최근 30일 신규 {n}건', 'gr.co.sal.d': '채용 공고 급여가 지역 중위값 대비 평균 {pct}%',

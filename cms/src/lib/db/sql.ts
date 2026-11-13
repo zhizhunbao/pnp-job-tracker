@@ -256,7 +256,7 @@ export const companyDetail = (cond: string) =>
             COALESCE(NULLIF(c.alias_zh, ''), x.alias_zh) AS alias_zh, COALESCE(NULLIF(c.alias_ko, ''), x.alias_ko) AS alias_ko,
             c.trans_v, c.wiki_url,
             c.sponsor_grade, c.score_detail, c.ai_brief, c.ai_website, c.ai_sources, c.ai_fetched, c.description, c.address, c.region,
-            c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled
+            c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled, c.lmia_positions_4q
      FROM companies c LEFT JOIN employer_explore x ON x.key = c.slug AND x.status = 'done' WHERE ${cond} LIMIT 1`
 
 /**
@@ -968,13 +968,20 @@ export const EMPLOYER_POOL_DISTRICTS = `SELECT district FROM (SELECT district, c
  * 一家公司在雇主池里的指定雇主事实(公司详情页「担保记录」卡补「指定雇主」行;2026-09-13 晚 /fe 雇主页:
  * 板上说指定、落点页整页没这四个字)。$1=公司 slug;池里没这家就是零行。
  */
-export const EMPLOYER_POOL_BY_SLUG = `SELECT designated, designated_programs, designated_provinces, designated_places FROM employer_pool WHERE slug = $1 LIMIT 1`
+export const EMPLOYER_POOL_BY_SLUG = `SELECT designated, designated_programs, designated_provinces, designated_places, designated_names FROM employer_pool WHERE slug = $1 LIMIT 1`
+
+/**
+ * 一批名单登记名各属哪个项目、登记在哪(2026-11-13 Frank「LMIA AIP RCIP FCIP 都是单独的卡」:公司页一个项目一张卡,
+ * 卡里列这个项目名单上登记的名字)。$1=登记名数组(雇主池 designated_names)。designated_employers_name_idx 管这条。
+ */
+export const DESIGNATED_NAMES = `SELECT DISTINCT name, source, province, location FROM designated_employers
+     WHERE name = ANY($1::text[]) ORDER BY source, name`
 
 /**
  * 雇主池里没有公司页的一家(2026-09-19 Frank「招聘是 0 的公司也可以点击」:池里约一半雇主来自指定名单 / LMIA,
  * 从没在本站有过岗,companies 表里没有它):公司弹框按池键取这一行,拼一份只有池里事实的档案。$1=池键(`n:` 开头)。
  */
-export const EMPLOYER_POOL_BY_KEY = `SELECT name, industry, province, designated, designated_programs, designated_provinces, designated_places, lmia_last_quarter FROM employer_pool WHERE key = $1 AND slug IS NULL LIMIT 1`
+export const EMPLOYER_POOL_BY_KEY = `SELECT name, industry, province, designated, designated_programs, designated_provinces, designated_places, designated_names, lmia_last_quarter FROM employer_pool WHERE key = $1 AND slug IS NULL LIMIT 1`
 
 /**
  * 直达参数 noc= 换算成行业组:职业 → 在招岗上的本站大类 → noc_categories 的组键(分组只有数据层一份,

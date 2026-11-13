@@ -496,14 +496,15 @@ export type CompanyDetail = {
   lmiaNocs: LmiaNocRow[]
 
   /**
-   * 指定雇主项目清单(AIP / RCIP / FCIP);空数组 = 非指定(担保记录卡那一行不渲)。2026-09-13 晚 /fe 雇主页补。
+   * 近四个季度的 LMIA 获批岗位数;null = 没有(2026-11-13 LMIA 卡)。
    */
-  designatedPrograms: string[]
+  lmia4q: number | null
 
   /**
-   * 指定归属省清单(那一行的灰注);空数组 = 非指定。
+   * 指定雇主卡(一个项目一张:AIP / RCIP / FCIP ……);空数组 = 非指定,一张都不出。
+   * 2026-11-13 Frank「LMIA AIP RCIP FCIP 都是单独的卡」:原先是「项目清单 + 归属省清单」两格拼一行,换成服务端按项目分好的卡。
    */
-  designatedProvinces: string[]
+  designated: DesignatedCard[]
 
   /**
    * 在招总数(职位板同一份口径,与雇主板同数)。
@@ -1297,9 +1298,89 @@ export type CompanyGradeNameIn = {
 }
 
 /**
- * CompanySponsorCard(担保记录深块)的 props。
+ * 一个项目的指定雇主卡(服务端 lib/jobs 的 designatedCardsOf 分好的;本域自声明,只声明真读的格)。
  */
-export type CompanySponsorCardIn = {
+export type DesignatedCard = {
+  /**
+   * 项目码(卡标题)。
+   */
+  program: string
+
+  /**
+   * 这个项目下的指定地点;没有给空表。
+   */
+  places: string[]
+
+  /**
+   * 这个项目官方名单上登记的名字。
+   */
+  names: DesignatedName[]
+}
+
+/**
+ * 名单上登记的一个名字。
+ */
+export type DesignatedName = {
+  /**
+   * 登记名。
+   */
+  name: string
+
+  /**
+   * 登记在哪(地点、省码拼一行;没有 = 空串)。
+   */
+  where: string
+}
+
+/**
+ * CompanyProgramCard(一个项目的指定雇主卡)的 props。
+ */
+export type CompanyProgramCardIn = {
+  /**
+   * 这个项目的卡。
+   */
+  card: DesignatedCard
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * namesShownOf 的入参。
+ */
+export type NamesShownIn = {
+  /**
+   * 登记名(全量)。
+   */
+  names: DesignatedName[]
+
+  /**
+   * 现在露几条。
+   */
+  n: number
+}
+
+/**
+ * lmiaBatchNoteOf 的入参。
+ */
+export type LmiaBatchNoteIn = {
+  /**
+   * 公司档案。
+   */
+  company: CompanyDetail
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * CompanyLmiaCard(LMIA 卡)的 props。
+ */
+export type CompanyLmiaCardIn = {
   /**
    * 公司档案。
    */

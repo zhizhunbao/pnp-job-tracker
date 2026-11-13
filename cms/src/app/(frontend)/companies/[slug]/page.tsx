@@ -79,7 +79,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
         wikiUrl: '', sponsorGrade: null, scoreDetail: null, aiBrief: '', aiWebsite: '', aiSources: [], aiFetched: '',
         address: '', province: '',
         lmiaPositions: null, lmiaLmias: null, lmiaLastQuarter: '', lmiaStreams: '', lmiaSkilled: null,
-        lmiaNocs: [], designatedPrograms: [], designatedProvinces: [], openCount: 0, jobs: [],
+        lmia4q: null, lmiaNocs: [], designated: [], openCount: 0, jobs: [],
       }} plan={plan} />
       <Footer />
     </Frame>

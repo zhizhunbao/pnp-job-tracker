@@ -569,6 +569,8 @@ export const jobsZh = {
   'co.spNocs': '获批职业(近两年)', 'co.spNocRest': '其余 {n} 个职业',
   'co.spSource': '来源:ESDC 正面 LMIA 雇主名录、IRCC',
   'co.similar': '相似雇主',
+  // 2026-11-13 公司页 LMIA 卡与指定雇主卡(一个项目一张)的格名(Frank「LMIA AIP RCIP FCIP 都是单独的卡」);项目卡的卡名是项目码本身,不进词条。
+  'co.lmia': 'LMIA', 'co.lmiaPos': '获批岗位', 'co.lmia4q': '近四个季度', 'co.places': '指定地点', 'co.listNames': '名单登记名',
   'gr.dim.coSponsor': '担保记录', 'gr.dim.coActive': '在库活跃', 'gr.dim.coSalary': '薪资水平', 'gr.dim.coFame': '规模知名',
   'gr.co.sp.d': '近两年获批 {total} 岗(技能岗 {n};最近 {q})', 'gr.co.sp.aip': 'AIP 指定雇主(不走 LMIA 也具担保资格)', 'gr.co.sp.na': '近两年无公开获批记录',
   'gr.co.act.d': '在招 {open} 岗,近 30 天新发 {n}', 'gr.co.act.d1': '在招 1 岗,近 30 天新发 {n}', 'gr.co.sal.d': '在招岗帖面薪资平均较当地中位 {pct}%',

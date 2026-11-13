@@ -26,8 +26,8 @@ function company(over: Partial<CompanyDetail>): CompanyDetail {
     name: 'Caressant Care', slug: 'caressant-care', website: '', websiteSource: '', careersUrl: '', hq: '', hqSource: '',
     industry: '', sectors: '', aliasZh: '', aliasKo: '', wikiUrl: '', sponsorGrade: null, scoreDetail: null, aiBrief: '',
     aiWebsite: '', aiSources: [], aiFetched: '', address: '', province: '', lmiaPositions: null, lmiaLmias: null,
-    lmiaLastQuarter: '', lmiaStreams: '', lmiaSkilled: null, lmiaNocs: [], designatedPrograms: [],
-    designatedProvinces: [], openCount: 0, jobs: [], ...over,
+    lmiaLastQuarter: '', lmiaStreams: '', lmiaSkilled: null, lmia4q: null, lmiaNocs: [], designated: [],
+    openCount: 0, jobs: [], ...over,
   }
 }
 

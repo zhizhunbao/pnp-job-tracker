@@ -3282,15 +3282,15 @@ export type CompanyDetail = {
   lmiaNocs: LmiaNocRow[]
 
   /**
-   * 指定雇主项目清单(AIP / RCIP / FCIP,雇主池按 slug;2026-09-13 晚 /fe 雇主页:板上说指定、落点页整页没这四个字);
-   * 空数组 = 非指定或池里没这家。
+   * 近四个季度的 LMIA 获批岗位数;null = 列未回填(2026-11-13 LMIA 卡)。
    */
-  designatedPrograms: string[]
+  lmia4q: number | null
 
   /**
-   * 指定归属省清单(AIP 按省给资格);空数组 = 非指定。
+   * 指定雇主卡(一个项目一张:AIP / RCIP / FCIP ……;雇主池按 slug 取);空数组 = 非指定或池里没这家。
+   * 2026-11-13 Frank「LMIA AIP RCIP FCIP 都是单独的卡」:原先是「项目清单 + 归属省清单」两格拼一行,换成按项目分好的卡。
    */
-  designatedProvinces: string[]
+  designated: DesignatedCard[]
 
   /**
    * 在招总数(职位板同一份 WHERE:status = open 且非 is_dup;2026-09-13 晚统一口径)。
@@ -4282,24 +4282,130 @@ export type DesignatedIn = {
 }
 
 /**
- * 一家公司的指定雇主事实(两清单皆空 = 非指定或池里没这家)。
+ * 公司页一张指定雇主卡:一个项目一张(2026-11-13 Frank「LMIA AIP RCIP FCIP 都是单独的卡」)。项目码照名单的写法
+ * (AIP / RCIP / FCIP / RCIP+FCIP),名单以后多一个项目就多一张卡,代码不用动。
  */
-export type DesignatedFact = {
+export type DesignatedCard = {
   /**
-   * 项目清单(AIP / RCIP / FCIP)。
+   * 项目码(卡标题)。
+   */
+  program: string
+
+  /**
+   * 这个项目下的指定地点(社区或省;池里没记给空表)。
+   */
+  places: string[]
+
+  /**
+   * 这个项目官方名单上登记的名字。
+   */
+  names: DesignatedName[]
+}
+
+/**
+ * 名单上登记的一个名字。
+ */
+export type DesignatedName = {
+  /**
+   * 登记名(名单原样)。
+   */
+  name: string
+
+  /**
+   * 登记在哪(地点、省码拼一行;都没有 = 空串)。
+   */
+  where: string
+}
+
+/**
+ * DESIGNATED_NAMES 的库行。
+ */
+export type DesignatedNameDbRow = {
+  /**
+   * 登记名。
+   */
+  name: string | null
+
+  /**
+   * 项目码。
+   */
+  source: string | null
+
+  /**
+   * 省码。
+   */
+  province: string | null
+
+  /**
+   * 地点(社区;AIP 多为空)。
+   */
+  location: string | null
+}
+
+/**
+ * 洗净的一条登记名(带它属于哪个项目)。
+ */
+export type DesignatedNameFact = {
+  /**
+   * 登记名。
+   */
+  name: string
+
+  /**
+   * 项目码。
+   */
+  program: string
+
+  /**
+   * 登记在哪。
+   */
+  where: string
+}
+
+/**
+ * `designatedCardsOf` 的入参。
+ */
+export type DesignatedCardsIn = {
+  /**
+   * 这家命中的项目码(雇主池 designated_programs)。
    */
   programs: string[]
 
   /**
-   * 归属省清单。
+   * 指定地点(雇主池 designated_places,`项目|地点` 形)。
    */
-  provinces: string[]
+  places: string[]
+
+  /**
+   * 登记名(已认好各属哪个项目)。
+   */
+  rows: DesignatedNameFact[]
 }
 
 /**
- * `designatedOf` 的返回;容缺两清单皆空。
+ * `designatedCardsOfPool` 的入参。
  */
-export type DesignatedOut = Promise<DesignatedFact>
+export type DesignatedPoolIn = {
+  /**
+   * 数据库连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 雇主池的一行。
+   */
+  row: JsonRow
+}
+
+/**
+ * 一家公司的指定雇主卡清单(数组进签名要有自己的名字)。
+ */
+export type DesignatedCards = DesignatedCard[]
+
+/**
+ * `designatedOf` / `designatedCardsOfPool` 的返回;非指定或池里没这家给空表。
+ */
+export type DesignatedOut = Promise<DesignatedCards>
 
 /**
  * 拉一页 HTML 的返回;拉不到空串。
