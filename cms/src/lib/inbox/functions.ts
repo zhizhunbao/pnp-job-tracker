@@ -15,7 +15,7 @@ import { postMail } from '../mail'
 import {
   ADDR_IN_ANGLE_RE, ADDR_L, ADDR_R, ALIAS_NAME_FALLBACK, ALIAS_NAME_MAX, ALIAS_RAND_CHARS, ALIAS_RAND_LEN, ALIAS_RE,
   ALIAS_SEP, ALIAS_TRIES, ANGLE_L, APP_TAG, APP_TAG_RE, AT, BEARER_PREFIX, BLANKS_RE, BODY_MAX, DIR_OUT, E_NOT_FOUND,
-  EV_RECEIVED, FWD_FOOT, FWD_FROM, FWD_LINK, FWD_SEP, FWD_SUBJECT, FWD_SUBJECT_HEAD, HDR_AUTH, HDR_IN_REPLY_TO,
+  EV_RECEIVED, FWD_FOOT, FWD_FROM, FWD_LINK, FWD_SEP, FWD_SUBJECT, FWD_SUBJECT_HEAD, HDR_AUTH, HDR_FROM_LC, HDR_IN_REPLY_TO,
   MSG_TAG, MSG_TAG_RE, NOTE_IDEM_HEAD, NOTE_LEAD, NOTE_SUBJECT_HEAD, RECV_NOTED,
   HDR_IN_REPLY_TO_LC, HDR_REFERENCES, HDR_REFERENCES_LC, HTML_BR, HTML_BREAK_RE, HTML_DROP_RE, HTML_ENTITIES,
   HTML_ENTITY_RE, HTML_ESC, HTML_ESC_RE, HTML_TAG_RE, INBOUND_DOMAIN, INBOX_PATH_HEAD, LIST_LIMIT, MAIL_EN, MAIL_KO, MAIL_ZH, MSG_ID_RE,
@@ -25,7 +25,7 @@ import {
 import type {
   AddressIn, AliasDbRow, AliasEnsureIn, AliasFact, AliasOut, AliasUserDbRow, AliasUserFact, CountDbRow, CountOut,
   ForwardIn, ForwardTextIn, HeaderOfIn, IdDbRow, InboxAddressIn, InboxAddressOut, InboxIn, InboxMsgRow,
-  MsgAddressIn, NoticeIn, NoticeTextIn,
+  MsgAddressIn, NamedIn, NoticeIn, NoticeTextIn,
   InboxMsgRows, InboxOut, InboxReplyRow, InboxRowsIn, InMail, InMailOfIn, LinkAppIn, LinkAppOut, MailHeaders, MailLang,
   MaybeAliasOut, MaybeId, MaybeRecipientHit, MaybeReplyBody, MsgDbRow, MsgFact, MsgOneDbRow, MsgOneFact, OutAddDbRow,
   OutAddFact, ParsedAddr, RawId, ReadBodyJson, ReceivedEmailFact, ReceivedEmailJson, ReceivedEventJson, ReceivedFact,
@@ -311,11 +311,12 @@ export async function receiveInbound(x: ReceiveIn): ReceiveOut {
     return RECV_FETCH
   }
   const appId = await linkAppOf({ db: x.db, userId: user.userId, tagAppId: hit.appId, refs: full.refs, from: from.addr })
-  const mail = inMailOf({ d, full, user, from, alias: hit.alias, appId })
+  const sender = namedOf({ from, name: full.fromName })
+  const mail = inMailOf({ d, full, user, from: sender, alias: hit.alias, appId })
   const id = firstOf(await queryRows({
     db: x.db, sql: SQL.INBOX_IN_ADD,
     params: [
-      user.userId, mail.appId, from.addr, from.name, mail.to, mail.subject, mail.text, mail.messageId, mail.inReplyTo,
+      user.userId, mail.appId, sender.addr, sender.name, mail.to, mail.subject, mail.text, mail.messageId, mail.inReplyTo,
       mail.inboundId,
     ],
     map: toId,
@@ -420,7 +421,7 @@ export async function fetchReceived(id: string): ReceivedOut {
 
 /**
  * 全文 → 洗净(行构造器):标题、纯文本正文(没有纯文本把 HTML 去标签;不存、不渲外来 HTML)、Message-ID、
- * In-Reply-To 与这一封回的是哪几封(In-Reply-To + References 里的 Message-ID)。
+ * In-Reply-To 与这一封回的是哪几封(In-Reply-To + References 里的 Message-ID)、发件人显示名(From 头,没有拿 from 格兜底)。
  *
  * @param full 全文。
  * @returns 洗净的全文。
@@ -428,10 +429,27 @@ export async function fetchReceived(id: string): ReceivedOut {
 export function toReceivedEmail(full: ReceivedEmailJson): ReceivedEmailFact {
   const inReplyTo = headerOf({ full, key: HDR_IN_REPLY_TO_LC })
   const refs = refsOf(inReplyTo + NEWLINE + headerOf({ full, key: HDR_REFERENCES_LC }))
+  let fromRaw = headerOf({ full, key: HDR_FROM_LC })
+  if (fromRaw === TEXT_NONE) {
+    fromRaw = text(full.from)
+  }
   return {
     subject: text(full.subject), text: textOf({ text: text(full.text), html: text(full.html) }),
-    messageId: text(full.message_id), inReplyTo, refs,
+    messageId: text(full.message_id), inReplyTo, refs, fromName: parseAddr(fromRaw).name.trim(),
   }
+}
+
+/**
+ * 发件人补名字:回调里认出的没带名字,就用全文 From 头里的(2026-11-13:回调的 from 实测只有地址)。
+ *
+ * @param x 回调里认出的发件人与全文里的显示名。
+ * @returns 发件人(地址不变)。
+ */
+export function namedOf(x: NamedIn): ParsedAddr {
+  if (x.from.name !== TEXT_NONE) {
+    return x.from
+  }
+  return { addr: x.from.addr, name: x.name }
 }
 
 /**

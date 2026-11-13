@@ -356,6 +356,21 @@ export function senderOf(m: InboxItem): string {
 }
 
 /**
+ * 来信卡头的第二行:发件人有名字时出他的地址;没名字时第一行已经是地址,不再重复,给空串。
+ * 2026-11-13 Frank「这个算不算废话」:原先固定写「<地址> 发给 我」—— 没名字时地址重复一遍,
+ * 「发给 我」在自己的收件箱里没有信息量,撤。
+ *
+ * @param m 那一封。
+ * @returns 地址或空串。
+ */
+export function fromLineOf(m: InboxItem): string {
+  if (m.fromName === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  return m.fromAddr
+}
+
+/**
  * 阅读区的发件人一行:「名字 <地址>」,没名字只出地址。
  *
  * @param m 那一封。

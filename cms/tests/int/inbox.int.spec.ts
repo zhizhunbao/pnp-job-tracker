@@ -334,3 +334,38 @@ describe('转发信语言', () => {
     }
   })
 })
+
+// 2026-11-13 Frank「这个为什么有的有名字有的没名字」:回调里的 from 实测只有地址(库里 3 封真来信名字全空),名字从全文的 From 头补。
+// 性质:回调带名字用回调的;回调只有地址、全文 From 头带名字 → 用头里的(去引号去空白);头没有但全文 from 格带名字 → 用它;
+//       都没有 → 空串(界面出地址);地址永远用回调的,不被头里的地址换掉。
+// 探针:namedOf 一律用头里的名字 → 第一条红;toReceivedEmail 不读 From 头 → 第二条红。
+describe('收信回调:发件人名字', () => {
+  const nameOf = (calls: Call[]) => calls.find((c) => c.sql === SQL.INBOX_IN_ADD)?.params[3]
+  const addrOf = (calls: Call[]) => calls.find((c) => c.sql === SQL.INBOX_IN_ADD)?.params[2]
+
+  it('回调带名字用回调的;只有地址时从全文 From 头补;都没有为空串', async () => {
+    stubFetch(true, { from: '"Other Name" <other@corp.com>' })
+    const a = db()
+    await receiveInbound({ db: a.conn as never, body: event('liwei.k3x9q@in.test.dev'), mailTo })
+    expect([addrOf(a.calls), nameOf(a.calls)]).toEqual(['sarah@corp.com', 'Sarah Chen'])
+
+    stubFetch(true, { from: '"Sarah Chen" <sarah@corp.com>' })
+    const b = db()
+    await receiveInbound({ db: b.conn as never, body: event('liwei.k3x9q@in.test.dev', 'sarah@corp.com'), mailTo })
+    expect([addrOf(b.calls), nameOf(b.calls)]).toEqual(['sarah@corp.com', 'Sarah Chen'])
+    expect(sent[0]?.text).toContain('Sarah Chen <sarah@corp.com>')
+
+    stubFetch()
+    const c = db()
+    await receiveInbound({ db: c.conn as never, body: event('liwei.k3x9q@in.test.dev', 'sarah@corp.com'), mailTo })
+    expect([addrOf(c.calls), nameOf(c.calls)]).toEqual(['sarah@corp.com', ''])
+  })
+
+  it('头里没有 From 时拿全文的 from 格兜底', async () => {
+    const { toReceivedEmail } = await import('@/lib/inbox/functions')
+    expect(toReceivedEmail({ from: 'Maple Dental HR <hr@maple.example>' }).fromName).toBe('Maple Dental HR')
+    expect(toReceivedEmail({ from: 'hr@maple.example' }).fromName).toBe('')
+    expect(toReceivedEmail({ headers: { from: ['A Name <a@x.dev>'] }, from: 'B Name <b@x.dev>' }).fromName).toBe('A Name')
+    expect(toReceivedEmail({}).fromName).toBe('')
+  })
+})

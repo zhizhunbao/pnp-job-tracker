@@ -885,8 +885,6 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'ib.all': '전체', 'ib.g.today': '오늘', 'ib.g.yesterday': '어제', 'ib.g.week': '이번 주', 'ib.g.older': '이전',
   'ib.unreadTab': '읽지 않음',
   'ib.about': '지원한 일자리: {job}',
-  'ib.toMe': '받는 사람: 나',
-  'ib.toThem': '받는 사람: {e}',
   'ib.me': '나',
   'ib.replyPh': '{name}에게 회신…',
   'ib.pick': '읽을 메일을 선택하세요',

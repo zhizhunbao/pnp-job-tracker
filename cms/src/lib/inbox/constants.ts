@@ -133,6 +133,13 @@ export const BEARER_PREFIX = 'Bearer '
 export const HDR_IN_REPLY_TO_LC = 'in-reply-to'
 
 /**
+ * 收信接口回的邮件头(小写键):发件人「名字 <地址>」。
+ * 2026-11-13 Frank「这个为什么有的有名字有的没名字」:回调里的 from 只有地址(库里 3 封真来信名字全空,Gmail、Outlook 发的都带名字),
+ * 名字改从全文的这个头补。
+ */
+export const HDR_FROM_LC = 'from'
+
+/**
  * 收信接口回的邮件头(小写键):整串往来的 Message-ID。
  */
 export const HDR_REFERENCES_LC = 'references'

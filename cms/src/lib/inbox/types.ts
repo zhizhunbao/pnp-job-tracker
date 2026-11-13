@@ -234,6 +234,11 @@ export type ReceivedEmailJson = {
   headers?: ReceivedHeadersJson
 
   /**
+   * 发件人(可能带显示名;邮件头里没有 From 时拿它兜底)。
+   */
+  from?: string | null
+
+  /**
    * 标题。
    */
   subject?: string | null
@@ -307,6 +312,26 @@ export type ReceivedEmailFact = {
    * 这一封回的是哪几封(In-Reply-To + References 里的 Message-ID)。
    */
   refs: TextList
+
+  /**
+   * 发件人显示名(From 头里的;没有给空串)。
+   */
+  fromName: string
+}
+
+/**
+ * `namedOf` 的入参。
+ */
+export type NamedIn = {
+  /**
+   * 回调里认出的发件人(名字可能是空串)。
+   */
+  from: ParsedAddr
+
+  /**
+   * 全文里的发件人显示名(没有给空串)。
+   */
+  name: string
 }
 
 /**

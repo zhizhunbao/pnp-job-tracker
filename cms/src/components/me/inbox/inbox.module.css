@@ -340,17 +340,6 @@
 }
 
 /*
- * 卡头右边:上面钮、下面时刻,靠右(2026-11-13 照 Outlook:回复在右上角,时刻在它下面)。
- */
-.ibMsgSide {
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-}
-
-/*
  * 时刻灰字。
  */
 .ibMsgAt {
@@ -367,6 +356,22 @@
   word-break: break-word;
   font-size: 14px;
   line-height: 1.6;
+}
+
+/*
+ * 会话底部「回复」一行。
+ */
+.ibReplyRow {
+  margin-top: 4px;
+}
+
+/*
+ * 会话底部「回复」钮:图标与字之间留 6(2026-11-07 截图验收:贴在一起)。
+ */
+.ibReplyBtn.ibReplyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /*
@@ -451,11 +456,8 @@
     grid-row: span 2;
   }
 
-  .ibMsgSide {
+  .ibMsgAt {
     grid-column: 2;
-    flex-direction: row-reverse;
-    align-items: center;
-    justify-content: space-between;
   }
 
   .ibConv {

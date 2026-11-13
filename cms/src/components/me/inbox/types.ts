@@ -695,7 +695,7 @@ export type InboxMsgIn = {
   avatarName: string
 
   /**
-   * 谁发给谁那一行。
+   * 谁发给谁那一行(空串不出)。
    */
   toLine: string
 
@@ -708,9 +708,4 @@ export type InboxMsgIn = {
    * 正文。
    */
   text: string
-
-  /**
-   * 卡头右上角的钮(来信是「回复」;我的回信没有,给 null)。
-   */
-  acts: React.ReactNode
 }

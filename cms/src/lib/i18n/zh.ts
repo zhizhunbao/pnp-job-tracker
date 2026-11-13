@@ -964,8 +964,6 @@ export const jobsZh = {
   'ib.all': '全部', 'ib.g.today': '今天', 'ib.g.yesterday': '昨天', 'ib.g.week': '本周', 'ib.g.older': '更早',
   'ib.unreadTab': '未读',
   'ib.about': '关于你投的 {job}',
-  'ib.toMe': '发给 我',
-  'ib.toThem': '发给 {e}',
   'ib.me': '我',
   'ib.replyPh': '回复 {name}…',
   'ib.pick': '选一封邮件来看',

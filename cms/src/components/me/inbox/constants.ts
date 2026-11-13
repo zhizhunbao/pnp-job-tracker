@@ -227,7 +227,3 @@ export const AVATAR_CARD = 32
  */
 export const FILTER_ARIA_KEY = 'ib.title'
 
-/**
- * 来信卡上「地址」与「发给 我」之间的空格。
- */
-export const ADDR_GAP = ' '

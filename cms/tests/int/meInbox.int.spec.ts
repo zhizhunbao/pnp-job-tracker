@@ -15,7 +15,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { writeSecLink } from '@/components/me/functions'
 import {
-  curIdOf, dayNoOf, groupKeyOf, groupsOf, makePickOf, rowTimeOf, unreadBadgeOf,
+  curIdOf, dayNoOf, fromLineOf, groupKeyOf, groupsOf, makePickOf, rowTimeOf, senderOf, unreadBadgeOf,
 } from '@/components/me/inbox/functions'
 import type { InboxItem, InboxView } from '@/components/me/inbox/types'
 
@@ -183,6 +183,14 @@ describe('收件箱:清单按日期分组', () => {
     expect(groups.map((g) => g.items.map((m) => m.id))).toEqual([[1, 2], [3], [4, 5], [6, 7]])
     expect(groups.flatMap((g) => g.items)).toEqual(items)
     expect(groupsOf({ items: [], now: NOW })).toEqual([])
+  })
+
+  it('⑦ 来信卡头第二行:有名字出地址,没名字不重复地址', () => {
+    const named = item(1, true)
+    named.fromName = 'Sarah Chen'
+    expect([senderOf(named), fromLineOf(named)]).toEqual(['Sarah Chen', 'hr1@example.com'])
+    const bare = item(2, true)
+    expect([senderOf(bare), fromLineOf(bare)]).toEqual(['hr2@example.com', ''])
   })
 
   it('⑥ 今天写钟点,别的日子写月-日', () => {

@@ -920,8 +920,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'ib.all': 'All', 'ib.g.today': 'Today', 'ib.g.yesterday': 'Yesterday', 'ib.g.week': 'This week', 'ib.g.older': 'Older',
   'ib.unreadTab': 'Unread',
   'ib.about': 'About your application: {job}',
-  'ib.toMe': 'To: me',
-  'ib.toThem': 'To: {e}',
   'ib.me': 'Me',
   'ib.replyPh': 'Reply to {name}…',
   'ib.pick': 'Select an item to read',

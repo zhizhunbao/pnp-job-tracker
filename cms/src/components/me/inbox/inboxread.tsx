@@ -10,15 +10,19 @@
  * 完整主题只能放正文里(弹框标题改写发件人,见 InboxModal);`inModal` 一格随之撤。
  * 同日 Frank「我的这个排版和 outlook 不一样啊」:「回复」从会话底部挪到来信卡头右上角(Outlook 的位置,时刻在它下面),
  * 底部那一颗撤,仍只有一颗「回复」;点了照旧在会话底部展开写信框。
+ * 同日 Frank「这个算不算废话」:来信卡头第二行的「<地址> 发给 我」撤,发件人有名字时才在第二行出地址。
+ * 同日 Frank「这个呢」:我的回信卡头第二行「发给 <地址>」也撤(这一串只有一个对方,就是上面那位发件人)。
+ * 同日 Frank「是不是像 outlook 一样 放到最下面呢?」:「回复」从来信卡头右上角撤回会话最下面(补了多封往来后看,
+ * 读完整串再回更顺;Outlook 信的最下面也有一颗)。
  *
  * @author Frank
  * @time 2026-11-07 16:30:00
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { IconBriefcase, IconMail } from '@/components/icons'
-import { ADDR_GAP, PLAIN_BTN_KIND, TEXT_NONE } from './constants'
-import { minuteOf, senderOf, subjectOf } from './functions'
+import { IconBriefcase } from '@/components/icons'
+import { PLAIN_BTN_KIND, TEXT_NONE } from './constants'
+import { fromLineOf, minuteOf, senderOf, subjectOf } from './functions'
 import { InboxCompose } from './inboxcompose'
 import { InboxMsg } from './inboxmsg'
 import type { InboxReadIn } from './types'
@@ -34,15 +38,10 @@ export function InboxRead({ p, m, t }: InboxReadIn) {
   const mine = []
   for (const r of m.replies) {
     mine.push(
-      <InboxMsg key={r.id} who={t('ib.me')} avatarName={t('ib.me')} toLine={t('ib.toThem', { e: m.fromAddr })}
-        at={minuteOf(r.at)} text={r.text} acts={null} />,
+      <InboxMsg key={r.id} who={t('ib.me')} avatarName={t('ib.me')} toLine={TEXT_NONE}
+        at={minuteOf(r.at)} text={r.text} />,
     )
   }
-  const reply = (
-    <Button kind={PLAIN_BTN_KIND} onClick={p.onReply} className={cssOf(css.ibCmdBtn)}>
-      <IconMail />{t('ib.reply')}
-    </Button>
-  )
   return (
     <div className={cssOf(css.ibRead)}>
       {m.appId != null && (
@@ -55,8 +54,8 @@ export function InboxRead({ p, m, t }: InboxReadIn) {
       <div className={cssOf(css.ibConv)}>
         <h2 className={cssOf(css.ibReadTitle)}>{subjectOf({ m, t })}</h2>
         {m.jobTitle !== TEXT_NONE && <div className={cssOf(css.ibAbout)}>{t('ib.about', { job: m.jobTitle })}</div>}
-        <InboxMsg who={senderOf(m)} avatarName={senderOf(m)} toLine={m.fromAddr + ADDR_GAP + t('ib.toMe')}
-          at={minuteOf(m.at)} text={m.text} acts={reply} />
+        <InboxMsg who={senderOf(m)} avatarName={senderOf(m)} toLine={fromLineOf(m)}
+          at={minuteOf(m.at)} text={m.text} />
         {mine}
         <InboxCompose p={p} m={m} t={t} />
       </div>
