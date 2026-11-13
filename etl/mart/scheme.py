@@ -5750,6 +5750,50 @@ class MartOfferDrawTest(unittest.TestCase):
         self.assertEqual(fn.draw_last_day_of(""), "")
 
 
+class MartEnrichJunkTest(unittest.TestCase):
+    """富化简介的消费端代码闸自测(2026-11-13 Frank 实拍 Buta Ramen「主营业务」是一屏样式代码):SCRIPT_JUNK_RE 认样式 @ 规则、
+    带「属性:值」的花括号块、var(-- 变量与原有的脚本记号;正常简介(带冒号、带 @ 账号名、带不含冒号的花括号)不误伤。
+    正例取自 2026-11-13 的 company_enrich.json。"""
+
+    def junk(self) -> list[str]:
+        """该拒收的简介(样式 / 脚本残渣)。"""
+        return [
+            "0 Skip to Content @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) { .header-blur-background { } } "
+            ".top-bun, .patty, .bottom-bun { height: 1px; } Open Menu Close Menu",
+            "@keyframes ticker { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }",
+            "About Menu Gallery Contact Us .cls-1 { fill: none; } .cls-2, .cls-3 { fill: #00a651; }",
+            ".elementor-widget-image{text-align:center}.elementor-widget-image a{display:inline-block}",
+            "align-items:center}.RCu3LN.u28UtA{color:var(--wst-links-and-actions-color,rgb(var(--txt,var(--color_18,color_18))))}",
+            "window.__hsEnvConfig = {\"hsDeployed\":true,\"hsEnv\":\"prod\"}",
+            "var __uzdbm_1 = \"abc\"; (function(){})();",
+            "var aspect = 0.425; var sliderWrapper = document.getElementById('motoslider_wrapper'); var w = 1;",
+            "Copyright new Date().getFullYear()>&&document.write(new Date().getFullYear());2019 All rights reserved.",
+            "\"aria_close_button_label\": \"Close lightbox\", \"aria_previous_button_label\": \"Previous image\"",
+        ]
+
+    def fine(self) -> list[str]:
+        """该照收的正常简介。"""
+        return [
+            "Boiling amazing ramen in Halifax, Dartmouth and Bedford, 363 days a year.",
+            "Our services: bookkeeping, payroll and tax filing for small businesses in Ottawa.",
+            "Follow us @mediagroup and @import_export_co for daily specials.",
+            "Family bakery {est. 1990} serving fresh bread; open Monday to Saturday.",
+            "We provide support for the media industry and import goods from Asia.",
+            "Bay window. We install doors, windows and siding; see our document library for warranties.",
+            "Our motto: \"quality first\"; our variety of services keeps growing.",
+        ]
+
+    def test_golden(self) -> None:
+        """正反金标。"""
+        from mart.constants import SCRIPT_JUNK_RE
+        for text in self.junk():
+            with self.subTest(text=text[:50]):
+                self.assertIsNotNone(SCRIPT_JUNK_RE.search(text))
+        for text in self.fine():
+            with self.subTest(text=text[:50]):
+                self.assertIsNone(SCRIPT_JUNK_RE.search(text))
+
+
 class MartDeadTableTest(unittest.TestCase):
     """判死台账自测(2026-10-15 漏帖修复批):验尸判死照收;howto 判下架的帖、之后被验尸验活过的(jobbank 复活复查)
     不算死,没验活过或验活早于下架的照算死;验尸名单里已有的以验尸为准。只读用例自己的临时文件。"""

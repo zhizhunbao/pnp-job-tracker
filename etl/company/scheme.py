@@ -2342,3 +2342,61 @@ class AboutWwwRetryTest(unittest.TestCase):
         self.assertEqual((rec.status, rec.website), ("ok", self.www))
         self.assertTrue(rec.browser)
 
+
+class ExtractMetaJunkTest(unittest.TestCase):
+    """首页取简介的代码闸自测(2026-11-13 Frank 实拍 Buta Ramen「主营业务」是一屏样式代码):<p> 兜底只认真正的 <p>、
+    先整块丢掉样式 / 脚本 / SVG;抽到的像代码当没抽到(meta 也算);正常段落与 meta 照收。金标的页面结构照 butaramen.ca
+    首页实测(购物车图标的 <path 开头、紧跟 <style> 块);性质一条(收进来的简介不含样式 / 脚本记号);变异探针一条。不联网。"""
+
+    junk = ('<svg><path d="M4.69 0.0004C2.1 0.0004 0 2.09 0 4.68"></path></svg><span>0</span><a>Skip to Content</a>'
+            "<style>@supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) { .header-blur-background { } } "
+            ".top-bun, .patty, .bottom-bun { height: 1px; }</style><button>Open Menu Close Menu</button>")
+    """butaramen.ca 首页开头的形:SVG 图标、购物车数、跳转链接、样式块、菜单钮。"""
+
+    real = "Boiling amazing ramen in Halifax, Dartmouth and Bedford, 363 days a year, with broth simmered for hours."
+    """一段正常的正文(超过兜底的最短长度)。"""
+
+    def page(self, body: str) -> str:
+        """拼一页没有 meta 简介的首页。"""
+        return "<html><head><title>Buta Ramen</title></head><body>" + body + "</body></html>"
+
+    def test_golden(self) -> None:
+        """金标:只有图标和样式 → 空;后面跟着正常段落 → 取那一段;meta 有正常简介 → 取 meta;meta 是代码 → 退到段落。"""
+        from company import functions as fn
+        self.assertEqual(fn.extract_meta(self.page(self.junk + "<p>Menu</p>")).description, "")
+        self.assertEqual(fn.extract_meta(self.page(self.junk + "<p>" + self.real + "</p>")).description, self.real)
+        self.assertEqual(fn.extract_meta(self.page('<p class="lead">' + self.real + "</p>")).description, self.real)
+        meta_ok = '<meta name="description" content="Family-run ramen shop in Halifax."><body><p>' + self.real + "</p>"
+        self.assertEqual(fn.extract_meta(meta_ok).description, "Family-run ramen shop in Halifax.")
+        meta_code = ('<meta name="description" content=".cls-1 { fill: none; } .cls-2 { fill: #00a651; }"><body><p>'
+                     + self.real + "</p>")
+        self.assertEqual(fn.extract_meta(meta_code).description, self.real)
+
+    def test_never_code(self) -> None:
+        """性质:各种样式 / 脚本残渣摆在段落里外,收进来的简介都不含样式 @ 规则、花括号块、var(-- 与脚本函数。"""
+        from company import functions as fn
+        from company.constants import DESC_CODE_RE
+        scraps = [
+            "@keyframes ticker { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }",
+            ".elementor-widget-image{text-align:center}.elementor-widget-image a{display:inline-block}",
+            ":root{ --thmr-logo:#009390; --thmr-pl: #0065A4; } .a{color:var(--wst-links-and-actions-color)}",
+            "window.__hsEnvConfig = {\"hsDeployed\":true}; (function(){ var l = 1; })();",
+            "@media (max-width: 768px) { [data-element-id] { min-height: 624px; } }",
+        ]
+        for scrap in scraps:
+            for body in ("<p>" + scrap + " " + self.real + "</p>", "<style>" + scrap + "</style><p>" + scrap + "</p>",
+                         "<path d='M0 0'></path>" + scrap + "</p>", "<pre>" + scrap + "</pre><p>" + self.real + "</p>"):
+                with self.subTest(body=body[:60]):
+                    got = fn.extract_meta(self.page(body)).description
+                    self.assertIsNone(DESC_CODE_RE.search(got))
+
+    def test_gates_probe(self) -> None:
+        """变异探针:三道闸(只认 <p>、先丢块、像代码不收)都换回原样,butaramen 那种页面又抽出一屏样式代码 —— 证明挡住它的是这三道。"""
+        import re
+        from company import functions as fn
+        page = self.page(self.junk + "<p>Menu</p>")
+        self.assertEqual(fn.extract_meta(page).description, "")
+        never = re.compile(r"(?!x)x")
+        old_p = re.compile(r"<p[^>]*>(.*?)</p>", re.I | re.S)
+        with mock.patch.object(fn, "P_TAG_RE", old_p), mock.patch.object(fn, "DESC_DROP_BLOCK_RE", never),                 mock.patch.object(fn, "DESC_CODE_RE", never):
+            self.assertIn("@supports", fn.extract_meta(page).description)

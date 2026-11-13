@@ -570,8 +570,23 @@ ISO_UTC_OFFSET = "+00:00"
 ISO_Z = "Z"
 """fetched 时刻的 UTC 记号。"""
 
-P_TAG_RE = re.compile(r"<p[^>]*>(.*?)</p>", re.I | re.S)
-"""meta 全空时兜底扫 <p> 段落。"""
+P_TAG_RE = re.compile(r"<p(?:\s[^>]*)?>(.*?)</p>", re.I | re.S)
+"""meta 全空时兜底扫 <p> 段落。
+2026-11-13 Frank 实拍 Buta Ramen「主营业务」是一屏样式代码:原式 `<p[^>]*>` 把 `<path …>`(SVG 图标)、`<picture>`、`<pre>`
+也当段落开头 —— butaramen.ca 首页从购物车图标的 <path 扫到第一个 </p>,跨 12 万字符、中间的 <style> 全进了简介。
+现在只认真正的 <p>(标签名后面是 > 或空白)。"""
+
+DESC_DROP_BLOCK_RE = re.compile(r"<(style|script|svg|noscript)\b[^>]*>.*?</\1>", re.I | re.S)
+"""扫 <p> 兜底之前整块丢掉的段:样式、脚本、SVG、noscript(块里的字不是正文;2026-11-13 同上)。"""
+
+DESC_CODE_RE = re.compile(
+    r"var __|<script|function\s*\(|@(?:supports|media|keyframes|font-face|import)\b"
+    r"|\{[^{}]{0,300}:[^{}]{0,300}\}|var\(--"
+    r"|\bvar\s+[A-Za-z_$][\w$]*\s*=|\bdocument\.(?:write|getElementById|querySelector|createElement)\b"
+    r"|\bwindow\.[A-Za-z_$][\w$]*\s*=|\"[a-z_]+\"\s*:\s*\"", re.I)
+"""简介像代码(样式 @ 规则、带「属性:值」的花括号块、var(-- 变量、脚本函数与变量赋值、document / window 调用、JSON 键值对):
+当没抽到,宁可留空(2026-11-13)。
+mart 域消费端有同一套判据(SCRIPT_JUNK_RE),各域自抄。"""
 
 TAG_STRIP_RE = re.compile(r"<[^>]+>")
 """段落文本里剥标签。"""

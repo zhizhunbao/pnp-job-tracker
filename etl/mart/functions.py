@@ -318,6 +318,7 @@ from mart.constants import (  # 2026-10-11 推荐只给近 90 天抽过雇主 of
 )
 from mart.scheme import MartOfferDrawTest, OfferDrawIn  # 同上
 from mart.scheme import MartDeadTableTest  # 2026-10-15 漏帖修复批(howto 判下架后又验活的不算死)
+from mart.scheme import MartEnrichJunkTest  # 2026-11-13 富化简介的消费端代码闸
 from mart.constants import (  # 2026-10-11 申请步骤时间线(段25)
     IN_PTIME, PTIME_MISSING_TPL, TL_APPLY_DAY_KEYS, TL_APPLY_STEPS, TL_DAY, TL_DAYS_PER_MONTH, TL_DONE_TPL, TL_DRAW_STEP,
     TL_EE_FACT, TL_EE_STEP, TL_EXACT, TL_EXP_FACTOR, TL_EXP_UNIT, TL_FACT_N, TL_FED_BASE, TL_FED_EE, TL_FED_UPDATED,
@@ -8236,13 +8237,15 @@ def run_tests() -> None:
     2026-10-11 再加一组:MartOfferDrawTest(省「雇主 offer 类通道最近一次抽选日」:只认 jobLinked 点名的组、按月补月末、没收录不挂)。
     2026-10-12 再加一组:RankMonthOnlyTest(住 mart/rank 子域:只到月不进间隔、状态三档金标、合卡与省提名专场、邀请人数排前)。
     2026-10-15 再加一组:MartDeadTableTest(判死台账:howto 判下架之后又被验尸验活的不算死)。
+    2026-11-13 再加一组:MartEnrichJunkTest(富化简介的消费端代码闸:样式 / 脚本残渣拒收、正常简介不误伤)。
     2026-11-12 再加一组:MartApplySubjectTest(雇主指定的投递邮件标题:带引号的金标、不带引号与填空格式不收、无障碍语境排除、变异探针)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
                  MartApplySubjectTest, MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest, MartNbNlOpsTest,
                  MartBcFunnelOpsTest, MartMbPoolTest, MartAbFederalTest,
                  MartDrawSelectionTest, MartDrawAnchorTest, MartDesignatedSplitTest, MartCipProgramsTest,
-                 MartNocDescExamplesTest, MartOfferDrawTest, RankMonthOnlyTest, MartDeadTableTest):
+                 MartNocDescExamplesTest, MartOfferDrawTest, RankMonthOnlyTest, MartDeadTableTest,
+                 MartEnrichJunkTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

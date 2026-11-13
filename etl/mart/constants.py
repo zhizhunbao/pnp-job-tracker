@@ -1410,9 +1410,18 @@ PORTAL_ATS_DOMAINS = ("greenhouse.io", "lever.co", "workable.com", "bamboohr.com
 """第三方 ATS 的整域名(主机等于它或以「.它」收尾才算 —— 检测闸要精确,别学 CAREERS_ATS_HOSTS 的宽词:
 greenhouse / workday 当子串会把蔬菜大棚公司的真官网(witzkesgreenhouses.ca)和 Workday 母公司自己误伤)。"""
 
-SCRIPT_JUNK_RE = re.compile(r"var __|__uzdbm|SSJSConnectorObj|<script|function\s*\(", re.I)
+SCRIPT_JUNK_RE = re.compile(
+    r"var __|__uzdbm|SSJSConnectorObj|<script|function\s*\("
+    r"|@(?:supports|media|keyframes|font-face|import)\b|\{[^{}]{0,300}:[^{}]{0,300}\}|var\(--"
+    r"|\bvar\s+[A-Za-z_$][\w$]*\s*=|\bdocument\.(?:write|getElementById|querySelector|createElement)\b"
+    r"|\bwindow\.[A-Za-z_$][\w$]*\s*=|\"[a-z_]+\"\s*:\s*\"", re.I)
 """富化 description 的脚本判据(2026-09-22 OPS 实撞:官网撞 Radware 墙,挑战页 JS 源码被当简介存了
-—— enrich 老记录带着这坨,消费端拒收)。"""
+—— enrich 老记录带着这坨,消费端拒收)。
+2026-11-13 Frank 实拍 Buta Ramen「主营业务」是一屏样式代码(「0 Skip to Content @supports … .top-bun, .patty …」):
+company 域取简介的 <p> 兜底把 SVG 的 <path 当成段落开头,一路扫进 <style> 块(源头同日已修)。这里补样式判据 ——
+@ 规则(@supports / @media / @keyframes / @font-face / @import)、带「属性:值」的花括号块、var(-- 变量;
+外加四种脚本写法(var x =、document.write / getElementById 这类调用、window.x =、JSON 键值对)。
+同日在 4,179 条在库简介上试跑,新增命中的 90 条逐类看过全是样式或脚本,没有误伤。老记录不重抓,照旧消费端拒收。"""
 
 IN_SITE_PAGES = paths.PROCESSED_SITES / "pages.json"
 """公司官网抓取记录(sites 域 fetch / visit 步产,slug → 抓取状态 + 官网主机名;2026-09-20 自动纠错:status = dead 的是死站 ——

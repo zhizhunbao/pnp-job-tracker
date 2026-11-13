@@ -69,7 +69,8 @@ from company.constants import (
     DASH_NONE, ENTRY_DEPTH, ENTRY_MERGE_ATS, ENTRY_HOP_DEPTH, ENTRY_HOP_LINK_RE, ENTRY_HOP_MAX_PAGES, ENTRY_HOP_SLUG_TPL, ENTRY_KEYWORDS, ENTRY_LINK_RES, ENTRY_MAX_PAGES, ENTRY_SITE_RES, ENTRY_SLUG_TPL, ENTRY_TIMEOUT_S,
     IN_ENTRIES_CAREERS, OUT_ENTRIES, PRINT_ENTRY_DONE_TPL, PRINT_ENTRY_ROW_TPL, STATUS_OK,
     CAREERS_WORKERS, COL_TRIM_CHARS, COMMON_CAREER_PATHS, DDG_GUARD_N, DDG_HTML_URL, SEARCH_QUERY_TPL,
-    COOKIE_TEXT_RE, DDG_REDIRECT_PARAM, DDG_RESULT_RE, DDG_SCAN_N, DDG_TIMEOUT_S, DESC_LEN_MAX, DESC_P_MIN_LEN,
+    COOKIE_TEXT_RE, DDG_REDIRECT_PARAM, DDG_RESULT_RE, DDG_SCAN_N, DDG_TIMEOUT_S, DESC_CODE_RE, DESC_DROP_BLOCK_RE,
+    DESC_LEN_MAX, DESC_P_MIN_LEN,
     DOT_SEP, EMAIL_DOMAIN_RE, ENRICH_LIMIT, ENRICH_MIN_INTERVAL_S, ENRICH_REFRESH_DAYS,
     FACTS_COMMA, FACTS_INDENT, FACTS_SUFFIX_RE, FACTS_TICK, FETCH_SLEEP_S, FETCH_TIMEOUT_S,
     FIND_CLIENT_TIMEOUT_S, FIND_LIMIT, FIND_SLEEP_S, FORMAT_JSON, FOUND_JD, FOUND_SEARCHED,
@@ -150,7 +151,7 @@ from company.scheme import (
     EntitySiteIn, FindOut, WikiFindIn, WikiLoopIn,
     NameExtendIn, QuoteInTextIn, SearchHqOneIn, SearchHqPageIn, SearchHqRecord, SearchHqRoundIn,
     DeskJsonIn, DeskReq, DeskResp, HqBlockedIn, HqBlockedItem, SearchHqHtmlIn, SearchHqPageOut,
-    AboutWwwRetryTest, HomePageOut,
+    AboutWwwRetryTest, ExtractMetaJunkTest, HomePageOut,
 )
 
 # =========================================================================
@@ -847,14 +848,16 @@ def extract_meta(page: str) -> MetaOut:
     行业取 meta keywords 前 KEYWORDS_TOP_N 个。
     2026-09-22 cookie 闸:抽到的是 cookie 同意横幅的话术(COOKIE_TEXT_RE)当没抽到 ——
     横幅常是页面第一段,<p> 兜底正好收走它(Argen Canada 实拍,来由见常量的 JSDoc)。
+    2026-11-13 代码闸(Frank 实拍 Buta Ramen「主营业务」是一屏样式代码):<p> 兜底先整块丢掉样式 / 脚本 / SVG 再扫,
+    只认真正的 <p>;抽到的(meta 也算)像代码(DESC_CODE_RE)当没抽到。
     """
     desc = first_meta_match(MetaScanIn(page=page, patterns=META_DESC_PATTERNS))
-    if desc and COOKIE_TEXT_RE.search(desc) is not None:
+    if desc and is_junk_desc(desc):
         desc = ""
     if not desc:
-        for m in P_TAG_RE.finditer(page):
+        for m in P_TAG_RE.finditer(DESC_DROP_BLOCK_RE.sub("", page)):
             txt = TAG_STRIP_RE.sub("", m.group(1)).strip()
-            if len(txt) >= DESC_P_MIN_LEN and COOKIE_TEXT_RE.search(txt) is None:
+            if len(txt) >= DESC_P_MIN_LEN and is_junk_desc(txt) is False:
                 desc = txt
                 break
     kw = first_meta_match(MetaScanIn(page=page, patterns=META_KEYWORDS_PATTERNS))
@@ -864,6 +867,15 @@ def extract_meta(page: str) -> MetaOut:
             parts.append(k.strip())
     sectors = LIST_JOIN_SEP.join(parts) if kw else ""
     return MetaOut(description=clean_text(desc), sectors=clean_text(sectors))
+
+
+def is_junk_desc(text: str) -> bool:
+    """抽到的这段是不是不该当简介的:cookie 同意横幅的话术,或像样式 / 脚本代码(2026-11-13)。
+
+    @param text 候选简介。
+    @returns 不该收给 True。
+    """
+    return COOKIE_TEXT_RE.search(text) is not None or DESC_CODE_RE.search(text) is not None
 
 
 def company_targets() -> tuple[dict[str, SiteLead], dict[str, NositeLead]]:
@@ -3315,10 +3327,12 @@ def desk_drop(url: str) -> dict:
 
 def run_tests() -> None:
     """本域手动件 `--only test`:跑 about 步补 www. 再试的自测(用例集住 scheme 的 AboutWwwRetryTest,先例 ats / gate.scheme);
-    不联网、不读写仓内文件;有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。"""
+    不联网、不读写仓内文件;有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。
+    2026-11-13 再加一组:ExtractMetaJunkTest(首页取简介的代码闸:只认真正的 <p>、先丢样式脚本块、像代码不收)。"""
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
     suite.addTests(loader.loadTestsFromTestCase(AboutWwwRetryTest))
+    suite.addTests(loader.loadTestsFromTestCase(ExtractMetaJunkTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)
 
