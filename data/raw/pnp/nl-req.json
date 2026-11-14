@@ -5,7 +5,7 @@
   "url": "https://www.gov.nl.ca/immigration/4-skilled-worker-category-eligibility-criteria/",
   "pageUrl": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/skilled-worker/",
   "guideEffective": "",
-  "fetched": "2026-10-08",
+  "fetched": "2026-11-14",
   "requirements": [
     {
       "stream": "NLPNP Skilled Worker Category",
@@ -82,7 +82,7 @@
       "appliesArea": "",
       "familySize": null,
       "basis": "",
-      "label": "Employer must be permanently based in NL, registered with Service NL, and operated under current management for at least 2 years (1 year in special cases)",
+      "label": "Employer must be permanently established in NL and in active business under current ownership and management, in NL, for at least 2 consecutive years (1 year may be accepted in exceptional circumstances)",
       "section": "Employer Criteria — established in NL",
       "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/employers/employer-criteria",
       "factor": "empYears"

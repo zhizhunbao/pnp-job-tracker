@@ -1,12 +1,97 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-10-08",
+  "fetched": "2026-11-14",
   "provinces": {
     "MB": {
       "label": "MPNP Expression of Interest",
       "scale": "MPNP EOI",
       "url": "https://immigratemanitoba.com/draws/",
       "draws": [
+        {
+          "date": "2026-11-05",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections",
+          "note": "Draw #283: Occupation-specific selections",
+          "score": null,
+          "invitations": 448,
+          "selection": "occ",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-11-05",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #283",
+          "score": null,
+          "invitations": 78,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-22",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Completed post-secondary study in Manitoba",
+          "note": "Draw #282: Completed post-secondary study in Manitoba",
+          "score": 816,
+          "invitations": 734,
+          "selection": "grad",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-22",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Overall Top Scoring",
+          "note": "Draw #282: Overall Top Scoring",
+          "score": 846,
+          "invitations": 513,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-22",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #282",
+          "score": null,
+          "invitations": 57,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-08",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections",
+          "note": "Draw #281: Occupation-specific selections",
+          "score": null,
+          "invitations": 46,
+          "selection": "occ",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-08",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections – Profiles declaring current employment in Manitoba in the unit groups listed below were considered.",
+          "note": "Draw #281: Occupation-specific selections – Profiles declaring current employment in Manitoba in the unit groups listed below were considered.",
+          "score": null,
+          "invitations": 211,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-08",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #281",
+          "score": null,
+          "invitations": 83,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
         {
           "date": "2026-09-24",
           "stream": "Skilled Worker in Manitoba",

@@ -5,15 +5,16 @@
 
 | 省 | 指定雇主总数 | 科技相关 | 占比 |
 |---|---:|---:|---:|
-| 纽芬兰与拉布拉多（NL） | 644 | 44 | 7% |
-| 新不伦瑞克（NB） | 1259 | 48 | 4% |
+| 纽芬兰与拉布拉多（NL） | 648 | 45 | 7% |
+| 新不伦瑞克（NB） | 1263 | 46 | 4% |
 | 新斯科舍（NS） | 1574 | 66 | 4% |
 | 爱德华王子岛（PE） | 395 | 14 | 4% |
 
-## 纽芬兰与拉布拉多（NL） — 科技相关指定雇主（44 家）
+## 纽芬兰与拉布拉多（NL） — 科技相关指定雇主（45 家）
 
 | 雇主 | 地点 |
 |---|---|
+| 10112755 Canada Inc. o/a Strobel TEK | St. John's |
 | 13910 NF & Lab Inc. o/a Fewers Ambulance Service | Holyrood, Conception Bay South |
 | 72351 NL & LAB INC o/a Reliable Ambulance Service | Stephenville |
 | 75961 Newfoundland and Labrador Inc. o/a Cyno | St. John's |
@@ -59,14 +60,12 @@
 | Verafin Solutions ULC | St. John's |
 | Vision33 Canada Inc. o/a Vision33 | St. John's |
 
-## 新不伦瑞克（NB） — 科技相关指定雇主（48 家）
+## 新不伦瑞克（NB） — 科技相关指定雇主（46 家）
 
 | 雇主 | 地点 |
 |---|---|
 | A-1 Detailing and Engineering Ltd |  |
 | ABM Integrated Solutions (ABM Systems Ltd) |  |
-| Altimate Global Solutions,668054 N.B. LTD |  |
-| Altimate Home Solutions (AHS) |  |
 | Amiko Control Systems & Consulting (Amiko Electrical/PLC Control Systems and Consulting Inc.) |  |
 | Apex Industries Product Development & Automation Group Inc |  |
 | Approach Navigation Systems Inc |  |

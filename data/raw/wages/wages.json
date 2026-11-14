@@ -59,6 +59,16 @@
    "lowHourly": 16.89,
    "year": "2021"
   },
+  "NT": {
+   "annual": 124000,
+   "hourly": 59.62,
+   "year": "2021"
+  },
+  "NU": {
+   "annual": 153000,
+   "hourly": 73.56,
+   "year": "2021"
+  },
   "ON": {
    "annual": 80000,
    "highAnnual": 186000,
@@ -66,6 +76,11 @@
    "hourly": 38.46,
    "lowAnnual": 37561,
    "lowHourly": 18.06,
+   "year": "2021"
+  },
+  "PE": {
+   "annual": 100000,
+   "hourly": 48.08,
    "year": "2021"
   },
   "QC": {
@@ -84,6 +99,11 @@
    "hourly": 35.34,
    "lowAnnual": 34747,
    "lowHourly": 16.71,
+   "year": "2021"
+  },
+  "YT": {
+   "annual": 97000,
+   "hourly": 46.63,
    "year": "2021"
   }
  },
@@ -151,6 +171,24 @@
    "lowHourly": 38.62,
    "year": "2024"
   },
+  "NT": {
+   "annual": 162698,
+   "highAnnual": 297606,
+   "highHourly": 143.08,
+   "hourly": 78.22,
+   "lowAnnual": 118830,
+   "lowHourly": 57.13,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 184933,
+   "highAnnual": 308277,
+   "highHourly": 148.21,
+   "hourly": 88.91,
+   "lowAnnual": 146827,
+   "lowHourly": 70.59,
+   "year": "2024"
+  },
   "ON": {
    "annual": 133328,
    "highAnnual": 248643,
@@ -159,6 +197,15 @@
    "lowAnnual": 93371,
    "lowHourly": 44.89,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 117083,
+   "highAnnual": 226075,
+   "highHourly": 108.69,
+   "hourly": 56.29,
+   "lowAnnual": 88317,
+   "lowHourly": 42.46,
+   "year": "2024"
   },
   "QC": {
    "annual": 112008,
@@ -177,6 +224,15 @@
    "lowAnnual": 98550,
    "lowHourly": 47.38,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 160264,
+   "highAnnual": 264867,
+   "highHourly": 127.34,
+   "hourly": 77.05,
+   "lowAnnual": 124758,
+   "lowHourly": 59.98,
+   "year": "2024"
   }
  },
  "00012": {
@@ -429,6 +485,24 @@
    "lowHourly": 36.72,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 143250,
+   "highAnnual": 182686,
+   "highHourly": 87.83,
+   "hourly": 68.87,
+   "lowAnnual": 90854,
+   "lowHourly": 43.68,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 158080,
+   "highAnnual": 215114,
+   "highHourly": 103.42,
+   "hourly": 76.0,
+   "lowAnnual": 117354,
+   "lowHourly": 56.42,
+   "year": "2024"
+  },
   "ON": {
    "annual": 128003,
    "highAnnual": 190008,
@@ -436,6 +510,15 @@
    "hourly": 61.54,
    "lowAnnual": 85010,
    "lowHourly": 40.87,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 106558,
+   "highAnnual": 135470,
+   "highHourly": 65.13,
+   "hourly": 51.23,
+   "lowAnnual": 52000,
+   "lowHourly": 25.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -454,6 +537,15 @@
    "hourly": 57.69,
    "lowAnnual": 74672,
    "lowHourly": 35.9,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 128003,
+   "highAnnual": 161990,
+   "highHourly": 77.88,
+   "hourly": 61.54,
+   "lowAnnual": 79997,
+   "lowHourly": 38.46,
    "year": "2023-2024"
   }
  },
@@ -521,6 +613,24 @@
    "lowHourly": 39.49,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 142626,
+   "highAnnual": 182374,
+   "highHourly": 87.68,
+   "hourly": 68.57,
+   "lowAnnual": 106974,
+   "lowHourly": 51.43,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 143998,
+   "highAnnual": 169603,
+   "highHourly": 81.54,
+   "hourly": 69.23,
+   "lowAnnual": 104000,
+   "lowHourly": 50.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 117333,
    "highAnnual": 182853,
@@ -528,6 +638,15 @@
    "hourly": 56.41,
    "lowAnnual": 82992,
    "lowHourly": 39.9,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 104000,
+   "highAnnual": 173326,
+   "highHourly": 83.33,
+   "hourly": 50.0,
+   "lowAnnual": 75982,
+   "lowHourly": 36.53,
    "year": "2023-2024"
   },
   "QC": {
@@ -547,6 +666,15 @@
    "lowAnnual": 85342,
    "lowHourly": 41.03,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 117208,
+   "highAnnual": 161013,
+   "highHourly": 77.41,
+   "hourly": 56.35,
+   "lowAnnual": 82555,
+   "lowHourly": 39.69,
+   "year": "2024"
   }
  },
  "10012": {
@@ -705,6 +833,24 @@
    "lowHourly": 33.57,
    "year": "2024"
   },
+  "NT": {
+   "annual": 128066,
+   "highAnnual": 182853,
+   "highHourly": 87.91,
+   "hourly": 61.57,
+   "lowAnnual": 92934,
+   "lowHourly": 44.68,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 144123,
+   "highAnnual": 206461,
+   "highHourly": 99.26,
+   "hourly": 69.29,
+   "lowAnnual": 103750,
+   "lowHourly": 49.88,
+   "year": "2024"
+  },
   "ON": {
    "annual": 104998,
    "highAnnual": 160160,
@@ -713,6 +859,15 @@
    "lowAnnual": 79997,
    "lowHourly": 38.46,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 107515,
+   "highAnnual": 141170,
+   "highHourly": 67.87,
+   "hourly": 51.69,
+   "lowAnnual": 76294,
+   "lowHourly": 36.68,
+   "year": "2024"
   },
   "QC": {
    "annual": 102856,
@@ -730,6 +885,15 @@
    "hourly": 49.64,
    "lowAnnual": 68016,
    "lowHourly": 32.7,
+   "year": "2024"
+  },
+  "YT": {
+   "annual": 124093,
+   "highAnnual": 167294,
+   "highHourly": 80.43,
+   "hourly": 59.66,
+   "lowAnnual": 94078,
+   "lowHourly": 45.23,
    "year": "2024"
   }
  },
@@ -805,6 +969,15 @@
    "lowAnnual": 85342,
    "lowHourly": 41.03,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 104936,
+   "highAnnual": 144643,
+   "highHourly": 69.54,
+   "hourly": 50.45,
+   "lowAnnual": 76086,
+   "lowHourly": 36.58,
+   "year": "2024"
   },
   "QC": {
    "annual": 124509,
@@ -889,6 +1062,11 @@
    "lowHourly": 33.33,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 130000,
+   "hourly": 62.5,
+   "year": "2021"
+  },
   "ON": {
    "annual": 122658,
    "highAnnual": 199992,
@@ -896,6 +1074,15 @@
    "hourly": 58.97,
    "lowAnnual": 79997,
    "lowHourly": 38.46,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 94931,
+   "highAnnual": 128003,
+   "highHourly": 61.54,
+   "hourly": 45.64,
+   "lowAnnual": 73590,
+   "lowHourly": 35.38,
    "year": "2023-2024"
   },
   "QC": {
@@ -915,6 +1102,15 @@
    "lowAnnual": 74672,
    "lowHourly": 35.9,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 119413,
+   "highAnnual": 178422,
+   "highHourly": 85.78,
+   "hourly": 57.41,
+   "lowAnnual": 90064,
+   "lowHourly": 43.3,
+   "year": "2024"
   }
  },
  "10022": {
@@ -981,6 +1177,24 @@
    "lowHourly": 28.85,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 127067,
+   "highAnnual": 166962,
+   "highHourly": 80.27,
+   "hourly": 61.09,
+   "lowAnnual": 84635,
+   "lowHourly": 40.69,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 143520,
+   "highAnnual": 183851,
+   "highHourly": 88.39,
+   "hourly": 69.0,
+   "lowAnnual": 96637,
+   "lowHourly": 46.46,
+   "year": "2024"
+  },
   "ON": {
    "annual": 119475,
    "highAnnual": 184995,
@@ -988,6 +1202,15 @@
    "hourly": 57.44,
    "lowAnnual": 76669,
    "lowHourly": 36.86,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 106995,
+   "highAnnual": 192005,
+   "highHourly": 92.31,
+   "hourly": 51.44,
+   "lowAnnual": 66560,
+   "lowHourly": 32.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -1007,6 +1230,15 @@
    "lowAnnual": 75005,
    "lowHourly": 36.06,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 118643,
+   "highAnnual": 158080,
+   "highHourly": 76.0,
+   "hourly": 57.04,
+   "lowAnnual": 84656,
+   "lowHourly": 40.7,
+   "year": "2024"
   }
  },
  "10029": {
@@ -1082,6 +1314,15 @@
    "lowHourly": 31.25,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 87651,
+   "highAnnual": 131435,
+   "highHourly": 63.19,
+   "hourly": 42.14,
+   "lowAnnual": 65062,
+   "lowHourly": 31.28,
+   "year": "2024"
+  },
   "QC": {
    "annual": 107744,
    "highAnnual": 168730,
@@ -1098,6 +1339,15 @@
    "hourly": 50.75,
    "lowAnnual": 73008,
    "lowHourly": 35.1,
+   "year": "2024"
+  },
+  "YT": {
+   "annual": 119309,
+   "highAnnual": 151070,
+   "highHourly": 72.63,
+   "hourly": 57.36,
+   "lowAnnual": 73798,
+   "lowHourly": 35.48,
    "year": "2024"
   }
  },
@@ -1248,6 +1498,24 @@
    "lowHourly": 21.15,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 110240,
+   "highAnnual": 122658,
+   "highHourly": 58.97,
+   "hourly": 53.0,
+   "lowAnnual": 60008,
+   "lowHourly": 28.85,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 138174,
+   "highAnnual": 188032,
+   "highHourly": 90.4,
+   "hourly": 66.43,
+   "lowAnnual": 94474,
+   "lowHourly": 45.42,
+   "year": "2024"
+  },
   "ON": {
    "annual": 85010,
    "highAnnual": 150010,
@@ -1255,6 +1523,15 @@
    "hourly": 40.87,
    "lowAnnual": 51438,
    "lowHourly": 24.73,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 83200,
+   "highAnnual": 127400,
+   "highHourly": 61.25,
+   "hourly": 40.0,
+   "lowAnnual": 50128,
+   "lowHourly": 24.1,
    "year": "2023-2024"
   },
   "QC": {
@@ -1274,6 +1551,15 @@
    "lowAnnual": 49920,
    "lowHourly": 24.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 94848,
+   "highAnnual": 132662,
+   "highHourly": 63.78,
+   "hourly": 45.6,
+   "lowAnnual": 64085,
+   "lowHourly": 30.81,
+   "year": "2024"
   }
  },
  "11101": {
@@ -1347,6 +1633,15 @@
    "hourly": 43.27,
    "lowAnnual": 58677,
    "lowHourly": 28.21,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 77480,
+   "highAnnual": 107848,
+   "highHourly": 51.85,
+   "hourly": 37.25,
+   "lowAnnual": 58240,
+   "lowHourly": 28.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -1432,6 +1727,11 @@
    "lowHourly": 23.59,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 89482,
+   "hourly": 43.02,
+   "year": "2021"
+  },
   "ON": {
    "annual": 75005,
    "highAnnual": 159994,
@@ -1439,6 +1739,15 @@
    "hourly": 36.06,
    "lowAnnual": 48006,
    "lowHourly": 23.08,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 67205,
+   "highAnnual": 159994,
+   "highHourly": 76.92,
+   "hourly": 32.31,
+   "lowAnnual": 35194,
+   "lowHourly": 16.92,
    "year": "2023-2024"
   },
   "QC": {
@@ -1458,6 +1767,15 @@
    "lowAnnual": 49920,
    "lowHourly": 24.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 90938,
+   "highAnnual": 139589,
+   "highHourly": 67.11,
+   "hourly": 43.72,
+   "lowAnnual": 55370,
+   "lowHourly": 26.62,
+   "year": "2024"
   }
  },
  "11103": {
@@ -1690,6 +2008,24 @@
    "lowHourly": 26.92,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 120640,
+   "highAnnual": 148262,
+   "highHourly": 71.28,
+   "hourly": 58.0,
+   "lowAnnual": 69992,
+   "lowHourly": 33.65,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 89440,
+   "highAnnual": 106080,
+   "highHourly": 51.0,
+   "hourly": 43.0,
+   "lowAnnual": 72800,
+   "lowHourly": 35.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 82992,
    "highAnnual": 129002,
@@ -1697,6 +2033,15 @@
    "hourly": 39.9,
    "lowAnnual": 52998,
    "lowHourly": 25.48,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 69992,
+   "highAnnual": 107723,
+   "highHourly": 51.79,
+   "hourly": 33.65,
+   "lowAnnual": 52000,
+   "lowHourly": 25.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -1715,6 +2060,15 @@
    "hourly": 37.53,
    "lowAnnual": 51958,
    "lowHourly": 24.98,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 88150,
+   "highAnnual": 128939,
+   "highHourly": 61.99,
+   "hourly": 42.38,
+   "lowAnnual": 66560,
+   "lowHourly": 32.0,
    "year": "2023-2024"
   }
  },
@@ -1782,6 +2136,15 @@
    "lowHourly": 26.92,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 119080,
+   "highAnnual": 156187,
+   "highHourly": 75.09,
+   "hourly": 57.25,
+   "lowAnnual": 81723,
+   "lowHourly": 39.29,
+   "year": "2024"
+  },
   "ON": {
    "annual": 93475,
    "highAnnual": 154669,
@@ -1789,6 +2152,15 @@
    "hourly": 44.94,
    "lowAnnual": 58178,
    "lowHourly": 27.97,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 87464,
+   "highAnnual": 114130,
+   "highHourly": 54.87,
+   "hourly": 42.05,
+   "lowAnnual": 48006,
+   "lowHourly": 23.08,
    "year": "2023-2024"
   },
   "QC": {
@@ -1808,6 +2180,15 @@
    "lowAnnual": 67974,
    "lowHourly": 32.68,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 94162,
+   "highAnnual": 122824,
+   "highHourly": 59.05,
+   "hourly": 45.27,
+   "lowAnnual": 69430,
+   "lowHourly": 33.38,
+   "year": "2024"
   }
  },
  "11202": {
@@ -1874,6 +2255,24 @@
    "lowHourly": 18.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 94370,
+   "highAnnual": 130499,
+   "highHourly": 62.74,
+   "hourly": 45.37,
+   "lowAnnual": 62712,
+   "lowHourly": 30.15,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 109554,
+   "highAnnual": 149760,
+   "highHourly": 72.0,
+   "hourly": 52.67,
+   "lowAnnual": 77917,
+   "lowHourly": 37.46,
+   "year": "2024"
+  },
   "ON": {
    "annual": 77002,
    "highAnnual": 122658,
@@ -1882,6 +2281,15 @@
    "lowAnnual": 41600,
    "lowHourly": 20.0,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 64251,
+   "highAnnual": 104104,
+   "highHourly": 50.05,
+   "hourly": 30.89,
+   "lowAnnual": 44158,
+   "lowHourly": 21.23,
+   "year": "2024"
   },
   "QC": {
    "annual": 70990,
@@ -1900,6 +2308,15 @@
    "lowAnnual": 41600,
    "lowHourly": 20.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 95264,
+   "highAnnual": 124800,
+   "highHourly": 60.0,
+   "hourly": 45.8,
+   "lowAnnual": 72051,
+   "lowHourly": 34.64,
+   "year": "2024"
   }
  },
  "12010": {
@@ -1975,6 +2392,15 @@
    "lowHourly": 21.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 73840,
+   "highAnnual": 91083,
+   "highHourly": 43.79,
+   "hourly": 35.5,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 75005,
    "highAnnual": 97302,
@@ -1992,6 +2418,15 @@
    "lowAnnual": 37440,
    "lowHourly": 18.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 88483,
+   "highAnnual": 106330,
+   "highHourly": 51.12,
+   "hourly": 42.54,
+   "lowAnnual": 64376,
+   "lowHourly": 30.95,
+   "year": "2024"
   }
  },
  "12011": {
@@ -2065,6 +2500,15 @@
    "hourly": 34.87,
    "lowAnnual": 44990,
    "lowHourly": 21.63,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 71469,
+   "highAnnual": 85342,
+   "highHourly": 41.03,
+   "hourly": 34.36,
+   "lowAnnual": 49920,
+   "lowHourly": 24.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -2251,6 +2695,15 @@
    "lowHourly": 19.08,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 56160,
+   "highAnnual": 84448,
+   "highHourly": 40.6,
+   "hourly": 27.0,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 60986,
    "highAnnual": 90002,
@@ -2334,6 +2787,24 @@
    "lowHourly": 20.27,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 83845,
+   "highAnnual": 111530,
+   "highHourly": 53.62,
+   "hourly": 40.31,
+   "lowAnnual": 64542,
+   "lowHourly": 31.03,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 99715,
+   "highAnnual": 132205,
+   "highHourly": 63.56,
+   "hourly": 47.94,
+   "lowAnnual": 72197,
+   "lowHourly": 34.71,
+   "year": "2024"
+  },
   "ON": {
    "annual": 74734,
    "highAnnual": 104000,
@@ -2341,6 +2812,15 @@
    "hourly": 35.93,
    "lowAnnual": 54371,
    "lowHourly": 26.14,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 59738,
+   "highAnnual": 91437,
+   "highHourly": 43.96,
+   "hourly": 28.72,
+   "lowAnnual": 38480,
+   "lowHourly": 18.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -2360,6 +2840,15 @@
    "lowAnnual": 50003,
    "lowHourly": 24.04,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 76835,
+   "highAnnual": 95867,
+   "highHourly": 46.09,
+   "hourly": 36.94,
+   "lowAnnual": 57595,
+   "lowHourly": 27.69,
+   "year": "2024"
   }
  },
  "12101": {
@@ -2426,6 +2915,24 @@
    "lowHourly": 18.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 105622,
+   "highAnnual": 131893,
+   "highHourly": 63.41,
+   "hourly": 50.78,
+   "lowAnnual": 76627,
+   "lowHourly": 36.84,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 105810,
+   "highAnnual": 137342,
+   "highHourly": 66.03,
+   "hourly": 50.87,
+   "lowAnnual": 81765,
+   "lowHourly": 39.31,
+   "year": "2024"
+  },
   "ON": {
    "annual": 72530,
    "highAnnual": 109678,
@@ -2433,6 +2940,15 @@
    "hourly": 34.87,
    "lowAnnual": 41600,
    "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 72530,
+   "highAnnual": 110926,
+   "highHourly": 53.33,
+   "hourly": 34.87,
+   "lowAnnual": 49920,
+   "lowHourly": 24.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -2451,6 +2967,15 @@
    "hourly": 33.33,
    "lowAnnual": 39874,
    "lowHourly": 19.17,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 83200,
+   "highAnnual": 99382,
+   "highHourly": 47.78,
+   "hourly": 40.0,
+   "lowAnnual": 73570,
+   "lowHourly": 35.37,
    "year": "2023-2024"
   }
  },
@@ -2518,6 +3043,24 @@
    "lowHourly": 25.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 110282,
+   "highAnnual": 113714,
+   "highHourly": 54.67,
+   "hourly": 53.02,
+   "lowAnnual": 93600,
+   "lowHourly": 45.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 110115,
+   "highAnnual": 134992,
+   "highHourly": 64.9,
+   "hourly": 52.94,
+   "lowAnnual": 75941,
+   "lowHourly": 36.51,
+   "year": "2024"
+  },
   "ON": {
    "annual": 75733,
    "highAnnual": 121597,
@@ -2526,6 +3069,15 @@
    "lowAnnual": 52000,
    "lowHourly": 25.0,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 67038,
+   "highAnnual": 97261,
+   "highHourly": 46.76,
+   "hourly": 32.23,
+   "lowAnnual": 49192,
+   "lowHourly": 23.65,
+   "year": "2024"
   },
   "QC": {
    "annual": 72800,
@@ -2544,6 +3096,15 @@
    "lowAnnual": 54600,
    "lowHourly": 26.25,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 83970,
+   "highAnnual": 122034,
+   "highHourly": 58.67,
+   "hourly": 40.37,
+   "lowAnnual": 61360,
+   "lowHourly": 29.5,
+   "year": "2024"
   }
  },
  "12103": {
@@ -2619,6 +3180,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 52000,
+   "highAnnual": 70720,
+   "highHourly": 34.0,
+   "hourly": 25.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 62400,
    "highAnnual": 89440,
@@ -2636,6 +3206,15 @@
    "lowAnnual": 41600,
    "lowHourly": 20.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 66581,
+   "highAnnual": 101816,
+   "highHourly": 48.95,
+   "hourly": 32.01,
+   "lowAnnual": 39354,
+   "lowHourly": 18.92,
+   "year": "2024"
   }
  },
  "12104": {
@@ -2702,6 +3281,15 @@
    "lowHourly": 21.33,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 85134,
+   "highAnnual": 112154,
+   "highHourly": 53.92,
+   "hourly": 40.93,
+   "lowAnnual": 55682,
+   "lowHourly": 26.77,
+   "year": "2024"
+  },
   "ON": {
    "annual": 74672,
    "highAnnual": 115190,
@@ -2709,6 +3297,15 @@
    "hourly": 35.9,
    "lowAnnual": 55286,
    "lowHourly": 26.58,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 72800,
+   "highAnnual": 88005,
+   "highHourly": 42.31,
+   "hourly": 35.0,
+   "lowAnnual": 58469,
+   "lowHourly": 28.11,
    "year": "2023-2024"
   },
   "QC": {
@@ -3126,6 +3723,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 85342,
+   "highAnnual": 105872,
+   "highHourly": 50.9,
+   "hourly": 41.03,
+   "lowAnnual": 56160,
+   "lowHourly": 27.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 89440,
+   "highAnnual": 104624,
+   "highHourly": 50.3,
+   "hourly": 43.0,
+   "lowAnnual": 53789,
+   "lowHourly": 25.86,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 59280,
    "highAnnual": 95992,
@@ -3133,6 +3748,15 @@
    "hourly": 28.5,
    "lowAnnual": 39998,
    "lowHourly": 19.23,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 52000,
+   "highAnnual": 81994,
+   "highHourly": 39.42,
+   "hourly": 25.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -3151,6 +3775,15 @@
    "hourly": 27.16,
    "lowAnnual": 37440,
    "lowHourly": 18.0,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 87360,
+   "highAnnual": 100090,
+   "highHourly": 48.12,
+   "hourly": 42.0,
+   "lowAnnual": 62400,
+   "lowHourly": 30.0,
    "year": "2023-2024"
   }
  },
@@ -3225,6 +3858,15 @@
    "hourly": 35.0,
    "lowAnnual": 44574,
    "lowHourly": 21.43,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 67496,
+   "highAnnual": 81141,
+   "highHourly": 39.01,
+   "hourly": 32.45,
+   "lowAnnual": 36005,
+   "lowHourly": 17.31,
    "year": "2023-2024"
   },
   "QC": {
@@ -3411,6 +4053,15 @@
    "lowHourly": 26.37,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 74734,
+   "highAnnual": 96262,
+   "highHourly": 46.28,
+   "hourly": 35.93,
+   "lowAnnual": 53269,
+   "lowHourly": 25.61,
+   "year": "2024"
+  },
   "QC": {
    "annual": 62712,
    "highAnnual": 105602,
@@ -3494,6 +4145,24 @@
    "lowHourly": 19.71,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 80080,
+   "highAnnual": 126880,
+   "highHourly": 61.0,
+   "hourly": 38.5,
+   "lowAnnual": 62400,
+   "lowHourly": 30.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 76960,
+   "highAnnual": 117333,
+   "highHourly": 56.41,
+   "hourly": 37.0,
+   "lowAnnual": 47840,
+   "lowHourly": 23.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 61110,
    "highAnnual": 93600,
@@ -3501,6 +4170,15 @@
    "hourly": 29.38,
    "lowAnnual": 41538,
    "lowHourly": 19.97,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 57990,
+   "highAnnual": 83117,
+   "highHourly": 39.96,
+   "hourly": 27.88,
+   "lowAnnual": 39998,
+   "lowHourly": 19.23,
    "year": "2023-2024"
   },
   "QC": {
@@ -3519,6 +4197,15 @@
    "hourly": 28.05,
    "lowAnnual": 41600,
    "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 79040,
+   "highAnnual": 102045,
+   "highHourly": 49.06,
+   "hourly": 38.0,
+   "lowAnnual": 66851,
+   "lowHourly": 32.14,
    "year": "2023-2024"
   }
  },
@@ -3586,6 +4273,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 87880,
+   "highAnnual": 119142,
+   "highHourly": 57.28,
+   "hourly": 42.25,
+   "lowAnnual": 55619,
+   "lowHourly": 26.74,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 105914,
+   "highAnnual": 138944,
+   "highHourly": 66.8,
+   "hourly": 50.92,
+   "lowAnnual": 76918,
+   "lowHourly": 36.98,
+   "year": "2024"
+  },
   "ON": {
    "annual": 62670,
    "highAnnual": 117333,
@@ -3593,6 +4298,15 @@
    "hourly": 30.13,
    "lowAnnual": 36670,
    "lowHourly": 17.63,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 59800,
+   "highAnnual": 80683,
+   "highHourly": 38.79,
+   "hourly": 28.75,
+   "lowAnnual": 35360,
+   "lowHourly": 17.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -3612,6 +4326,15 @@
    "lowAnnual": 32594,
    "lowHourly": 15.67,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 86570,
+   "highAnnual": 130686,
+   "highHourly": 62.83,
+   "hourly": 41.62,
+   "lowAnnual": 50960,
+   "lowHourly": 24.5,
+   "year": "2024"
   }
  },
  "13102": {
@@ -3678,6 +4401,24 @@
    "lowHourly": 20.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 96200,
+   "highAnnual": 122325,
+   "highHourly": 58.81,
+   "hourly": 46.25,
+   "lowAnnual": 64251,
+   "lowHourly": 30.89,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 103646,
+   "highAnnual": 129875,
+   "highHourly": 62.44,
+   "hourly": 49.83,
+   "lowAnnual": 65645,
+   "lowHourly": 31.56,
+   "year": "2024"
+  },
   "ON": {
    "annual": 62400,
    "highAnnual": 92373,
@@ -3685,6 +4426,15 @@
    "hourly": 30.0,
    "lowAnnual": 39998,
    "lowHourly": 19.23,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 54392,
+   "highAnnual": 72800,
+   "highHourly": 35.0,
+   "hourly": 26.15,
+   "lowAnnual": 39000,
+   "lowHourly": 18.75,
    "year": "2023-2024"
   },
   "QC": {
@@ -3704,6 +4454,15 @@
    "lowAnnual": 43992,
    "lowHourly": 21.15,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 71094,
+   "highAnnual": 90189,
+   "highHourly": 43.36,
+   "hourly": 34.18,
+   "lowAnnual": 54808,
+   "lowHourly": 26.35,
+   "year": "2024"
   }
  },
  "13110": {
@@ -3770,6 +4529,24 @@
    "lowHourly": 18.3,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 74880,
+   "highAnnual": 87360,
+   "highHourly": 42.0,
+   "hourly": 36.0,
+   "lowAnnual": 52000,
+   "lowHourly": 25.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 67392,
+   "highAnnual": 101338,
+   "highHourly": 48.72,
+   "hourly": 32.4,
+   "lowAnnual": 51210,
+   "lowHourly": 24.62,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 55474,
    "highAnnual": 78936,
@@ -3777,6 +4554,15 @@
    "hourly": 26.67,
    "lowAnnual": 39520,
    "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 55474,
+   "highAnnual": 71677,
+   "highHourly": 34.46,
+   "hourly": 26.67,
+   "lowAnnual": 34570,
+   "lowHourly": 16.62,
    "year": "2023-2024"
   },
   "QC": {
@@ -3795,6 +4581,15 @@
    "hourly": 25.0,
    "lowAnnual": 37856,
    "lowHourly": 18.2,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 69680,
+   "highAnnual": 82139,
+   "highHourly": 39.49,
+   "hourly": 33.5,
+   "lowAnnual": 48006,
+   "lowHourly": 23.08,
    "year": "2023-2024"
   }
  },
@@ -3862,6 +4657,15 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NU": {
+   "annual": 78021,
+   "highAnnual": 100318,
+   "highHourly": 48.23,
+   "hourly": 37.51,
+   "lowAnnual": 50814,
+   "lowHourly": 24.43,
+   "year": "2024"
+  },
   "ON": {
    "annual": 54995,
    "highAnnual": 87422,
@@ -3869,6 +4673,15 @@
    "hourly": 26.44,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 45760,
+   "highAnnual": 52000,
+   "highHourly": 25.0,
+   "hourly": 22.0,
+   "lowAnnual": 38189,
+   "lowHourly": 18.36,
    "year": "2023-2024"
   },
   "QC": {
@@ -3888,6 +4701,15 @@
    "lowAnnual": 35360,
    "lowHourly": 17.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 62629,
+   "highAnnual": 84240,
+   "highHourly": 40.5,
+   "hourly": 30.11,
+   "lowAnnual": 47923,
+   "lowHourly": 23.04,
+   "year": "2024"
   }
  },
  "13112": {
@@ -3963,6 +4785,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 52000,
+   "highAnnual": 63024,
+   "highHourly": 30.3,
+   "hourly": 25.0,
+   "lowAnnual": 38147,
+   "lowHourly": 18.34,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 49920,
    "highAnnual": 58240,
@@ -3980,6 +4811,15 @@
    "lowAnnual": 38397,
    "lowHourly": 18.46,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 57283,
+   "highAnnual": 76877,
+   "highHourly": 36.96,
+   "hourly": 27.54,
+   "lowAnnual": 43930,
+   "lowHourly": 21.12,
+   "year": "2024"
   }
  },
  "13200": {
@@ -4120,6 +4960,15 @@
    "lowHourly": 20.19,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 60611,
+   "highAnnual": 67018,
+   "highHourly": 32.22,
+   "hourly": 29.14,
+   "lowAnnual": 42723,
+   "lowHourly": 20.54,
+   "year": "2024"
+  },
   "QC": {
    "annual": 60965,
    "highAnnual": 104998,
@@ -4203,6 +5052,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 62005,
+   "highAnnual": 87360,
+   "highHourly": 42.0,
+   "hourly": 29.81,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 69430,
+   "highAnnual": 96616,
+   "highHourly": 46.45,
+   "hourly": 33.38,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2024"
+  },
   "ON": {
    "annual": 48006,
    "highAnnual": 72800,
@@ -4210,6 +5077,15 @@
    "hourly": 23.08,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 46280,
+   "highAnnual": 61859,
+   "highHourly": 29.74,
+   "hourly": 22.25,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -4228,6 +5104,15 @@
    "hourly": 22.0,
    "lowAnnual": 33530,
    "lowHourly": 16.12,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 62400,
+   "highAnnual": 85197,
+   "highHourly": 40.96,
+   "hourly": 30.0,
+   "lowAnnual": 47840,
+   "lowHourly": 23.0,
    "year": "2023-2024"
   }
  },
@@ -4295,6 +5180,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 66560,
+   "highAnnual": 83554,
+   "highHourly": 40.17,
+   "hourly": 32.0,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 64480,
+   "highAnnual": 87360,
+   "highHourly": 42.0,
+   "hourly": 31.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 42640,
    "highAnnual": 58240,
@@ -4302,6 +5205,15 @@
    "hourly": 20.5,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 42349,
+   "highAnnual": 52000,
+   "highHourly": 25.0,
+   "hourly": 20.36,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -4394,6 +5306,15 @@
    "hourly": 27.78,
    "lowAnnual": 39520,
    "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 56160,
+   "highAnnual": 79123,
+   "highHourly": 38.04,
+   "hourly": 27.0,
+   "lowAnnual": 42390,
+   "lowHourly": 20.38,
    "year": "2023-2024"
   },
   "QC": {
@@ -4571,6 +5492,15 @@
    "lowHourly": 19.12,
    "year": "2024"
   },
+  "NT": {
+   "annual": 63086,
+   "highAnnual": 92622,
+   "highHourly": 44.53,
+   "hourly": 30.33,
+   "lowAnnual": 36192,
+   "lowHourly": 17.4,
+   "year": "2024"
+  },
   "ON": {
    "annual": 50294,
    "highAnnual": 122990,
@@ -4579,6 +5509,15 @@
    "lowAnnual": 36608,
    "lowHourly": 17.6,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 49483,
+   "highAnnual": 81328,
+   "highHourly": 39.1,
+   "hourly": 23.79,
+   "lowAnnual": 34778,
+   "lowHourly": 16.72,
+   "year": "2024"
   },
   "QC": {
    "annual": 42432,
@@ -4663,6 +5602,24 @@
    "lowHourly": 16.73,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 77522,
+   "highAnnual": 93080,
+   "highHourly": 44.75,
+   "hourly": 37.27,
+   "lowAnnual": 56867,
+   "lowHourly": 27.34,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 67475,
+   "highAnnual": 92560,
+   "highHourly": 44.5,
+   "hourly": 32.44,
+   "lowAnnual": 43202,
+   "lowHourly": 20.77,
+   "year": "2024"
+  },
   "ON": {
    "annual": 47840,
    "highAnnual": 72530,
@@ -4670,6 +5627,15 @@
    "hourly": 23.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 49067,
+   "highAnnual": 65478,
+   "highHourly": 31.48,
+   "hourly": 23.59,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -4689,6 +5655,15 @@
    "lowAnnual": 36005,
    "lowHourly": 17.31,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 60694,
+   "highAnnual": 77709,
+   "highHourly": 37.36,
+   "hourly": 29.18,
+   "lowAnnual": 41558,
+   "lowHourly": 19.98,
+   "year": "2024"
   }
  },
  "14112": {
@@ -4793,6 +5768,24 @@
    "lowHourly": 16.83,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 72800,
+   "highAnnual": 91208,
+   "highHourly": 43.85,
+   "hourly": 35.0,
+   "lowAnnual": 52000,
+   "lowHourly": 25.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 85280,
+   "highAnnual": 116480,
+   "highHourly": 56.0,
+   "hourly": 41.0,
+   "lowAnnual": 40040,
+   "lowHourly": 19.25,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 52000,
    "highAnnual": 76960,
@@ -4800,6 +5793,15 @@
    "hourly": 25.0,
    "lowAnnual": 37690,
    "lowHourly": 18.12,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 52000,
+   "highAnnual": 69618,
+   "highHourly": 33.47,
+   "hourly": 25.0,
+   "lowAnnual": 37440,
+   "lowHourly": 18.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -4818,6 +5820,15 @@
    "hourly": 24.5,
    "lowAnnual": 37440,
    "lowHourly": 18.0,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 70200,
+   "highAnnual": 81120,
+   "highHourly": 39.0,
+   "hourly": 33.75,
+   "lowAnnual": 47840,
+   "lowHourly": 23.0,
    "year": "2023-2024"
   }
  },
@@ -4892,6 +5903,15 @@
    "hourly": 25.48,
    "lowAnnual": 37440,
    "lowHourly": 18.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 57158,
+   "highAnnual": 72800,
+   "highHourly": 35.0,
+   "hourly": 27.48,
+   "lowAnnual": 42661,
+   "lowHourly": 20.51,
    "year": "2023-2024"
   },
   "QC": {
@@ -5069,6 +6089,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 48173,
+   "highAnnual": 69846,
+   "highHourly": 33.58,
+   "hourly": 23.16,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2024"
+  },
   "QC": {
    "annual": 49920,
    "highAnnual": 62109,
@@ -5085,6 +6114,15 @@
    "hourly": 21.15,
    "lowAnnual": 32115,
    "lowHourly": 15.44,
+   "year": "2024"
+  },
+  "YT": {
+   "annual": 63253,
+   "highAnnual": 90459,
+   "highHourly": 43.49,
+   "hourly": 30.41,
+   "lowAnnual": 42078,
+   "lowHourly": 20.23,
    "year": "2024"
   }
  },
@@ -5152,6 +6190,15 @@
    "lowHourly": 18.0,
    "year": "2023-2024"
   },
+  "NU": {
+   "annual": 90002,
+   "highAnnual": 111030,
+   "highHourly": 53.38,
+   "hourly": 43.27,
+   "lowAnnual": 65354,
+   "lowHourly": 31.42,
+   "year": "2024"
+  },
   "ON": {
    "annual": 57138,
    "highAnnual": 79040,
@@ -5178,6 +6225,15 @@
    "lowAnnual": 35360,
    "lowHourly": 17.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 79706,
+   "highAnnual": 90542,
+   "highHourly": 43.53,
+   "hourly": 38.32,
+   "lowAnnual": 62213,
+   "lowHourly": 29.91,
+   "year": "2024"
   }
  },
  "14400": {
@@ -5244,6 +6300,15 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 53976,
+   "highAnnual": 71198,
+   "highHourly": 34.23,
+   "hourly": 25.95,
+   "lowAnnual": 40414,
+   "lowHourly": 19.43,
+   "year": "2024"
+  },
   "ON": {
    "annual": 47174,
    "highAnnual": 62400,
@@ -5251,6 +6316,15 @@
    "hourly": 22.68,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 41600,
+   "highAnnual": 58240,
+   "highHourly": 28.0,
+   "hourly": 20.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -5270,6 +6344,15 @@
    "lowAnnual": 33280,
    "lowHourly": 16.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 50835,
+   "highAnnual": 62192,
+   "highHourly": 29.9,
+   "hourly": 24.44,
+   "lowAnnual": 40747,
+   "lowHourly": 19.59,
+   "year": "2024"
   }
  },
  "14401": {
@@ -5336,6 +6419,15 @@
    "lowHourly": 17.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 83554,
+   "highAnnual": 103522,
+   "highHourly": 49.77,
+   "hourly": 40.17,
+   "lowAnnual": 57283,
+   "lowHourly": 27.54,
+   "year": "2024"
+  },
   "ON": {
    "annual": 56160,
    "highAnnual": 85280,
@@ -5343,6 +6435,15 @@
    "hourly": 27.0,
    "lowAnnual": 39520,
    "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 51002,
+   "highAnnual": 99029,
+   "highHourly": 47.61,
+   "hourly": 24.52,
+   "lowAnnual": 40789,
+   "lowHourly": 19.61,
    "year": "2023-2024"
   },
   "QC": {
@@ -5362,6 +6463,15 @@
    "lowAnnual": 41600,
    "lowHourly": 20.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 62670,
+   "highAnnual": 80080,
+   "highHourly": 38.5,
+   "hourly": 30.13,
+   "lowAnnual": 41725,
+   "lowHourly": 20.06,
+   "year": "2024"
   }
  },
  "14402": {
@@ -5529,6 +6639,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 43680,
+   "highAnnual": 59010,
+   "highHourly": 28.37,
+   "hourly": 21.0,
+   "lowAnnual": 43680,
+   "lowHourly": 21.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 48880,
    "highAnnual": 94848,
@@ -5612,6 +6731,24 @@
    "lowHourly": 18.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 76336,
+   "highAnnual": 101130,
+   "highHourly": 48.62,
+   "hourly": 36.7,
+   "lowAnnual": 63253,
+   "lowHourly": 30.41,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 82139,
+   "highAnnual": 117936,
+   "highHourly": 56.7,
+   "hourly": 39.49,
+   "lowAnnual": 48339,
+   "lowHourly": 23.24,
+   "year": "2024"
+  },
   "ON": {
    "annual": 55640,
    "highAnnual": 89814,
@@ -5619,6 +6756,15 @@
    "hourly": 26.75,
    "lowAnnual": 40248,
    "lowHourly": 19.35,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 52437,
+   "highAnnual": 78998,
+   "highHourly": 37.98,
+   "hourly": 25.21,
+   "lowAnnual": 37440,
+   "lowHourly": 18.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -5638,6 +6784,15 @@
    "lowAnnual": 40206,
    "lowHourly": 19.33,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 80850,
+   "highAnnual": 120848,
+   "highHourly": 58.1,
+   "hourly": 38.87,
+   "lowAnnual": 57658,
+   "lowHourly": 27.72,
+   "year": "2024"
   }
  },
  "14405": {
@@ -5897,6 +7052,15 @@
    "lowHourly": 45.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 115294,
+   "highAnnual": 172890,
+   "highHourly": 83.12,
+   "hourly": 55.43,
+   "lowAnnual": 76606,
+   "lowHourly": 36.83,
+   "year": "2024"
+  },
   "QC": {
    "annual": 132350,
    "highAnnual": 198661,
@@ -5980,6 +7144,15 @@
    "lowHourly": 46.15,
    "year": "2023-2024"
   },
+  "NU": {
+   "annual": 156894,
+   "highAnnual": 217298,
+   "highHourly": 104.47,
+   "hourly": 75.43,
+   "lowAnnual": 113651,
+   "lowHourly": 54.64,
+   "year": "2024"
+  },
   "ON": {
    "annual": 138674,
    "highAnnual": 223995,
@@ -5987,6 +7160,15 @@
    "hourly": 66.67,
    "lowAnnual": 93746,
    "lowHourly": 45.07,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 122658,
+   "highAnnual": 181334,
+   "highHourly": 87.18,
+   "hourly": 58.97,
+   "lowAnnual": 41475,
+   "lowHourly": 19.94,
    "year": "2023-2024"
   },
   "QC": {
@@ -6006,6 +7188,15 @@
    "lowAnnual": 83200,
    "lowHourly": 40.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 136614,
+   "highAnnual": 191214,
+   "highHourly": 91.93,
+   "hourly": 65.68,
+   "lowAnnual": 94848,
+   "lowHourly": 45.6,
+   "year": "2024"
   }
  },
  "21100": {
@@ -6155,6 +7346,15 @@
    "lowHourly": 27.09,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 75733,
+   "highAnnual": 107723,
+   "highHourly": 51.79,
+   "hourly": 36.41,
+   "lowAnnual": 45760,
+   "lowHourly": 22.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 80870,
    "highAnnual": 126360,
@@ -6264,6 +7464,15 @@
    "lowAnnual": 57200,
    "lowHourly": 27.5,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 94744,
+   "highAnnual": 138445,
+   "highHourly": 66.56,
+   "hourly": 45.55,
+   "lowAnnual": 70637,
+   "lowHourly": 33.96,
+   "year": "2024"
   }
  },
  "21103": {
@@ -6433,6 +7642,24 @@
    "lowHourly": 24.62,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 121347,
+   "highAnnual": 167315,
+   "highHourly": 80.44,
+   "hourly": 58.34,
+   "lowAnnual": 82285,
+   "lowHourly": 39.56,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 119517,
+   "highAnnual": 160680,
+   "highHourly": 77.25,
+   "hourly": 57.46,
+   "lowAnnual": 84365,
+   "lowHourly": 40.56,
+   "year": "2024"
+  },
   "ON": {
    "annual": 83200,
    "highAnnual": 143998,
@@ -6440,6 +7667,15 @@
    "hourly": 40.0,
    "lowAnnual": 50960,
    "lowHourly": 24.5,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 74672,
+   "highAnnual": 92997,
+   "highHourly": 44.71,
+   "hourly": 35.9,
+   "lowAnnual": 65000,
+   "lowHourly": 31.25,
    "year": "2023-2024"
   },
   "QC": {
@@ -6458,6 +7694,15 @@
    "hourly": 42.85,
    "lowAnnual": 58698,
    "lowHourly": 28.22,
+   "year": "2024"
+  },
+  "YT": {
+   "annual": 100235,
+   "highAnnual": 136386,
+   "highHourly": 65.57,
+   "hourly": 48.19,
+   "lowAnnual": 76086,
+   "lowHourly": 36.58,
    "year": "2024"
   }
  },
@@ -6581,6 +7826,15 @@
    "lowHourly": 22.23,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 73902,
+   "highAnnual": 112778,
+   "highHourly": 54.22,
+   "hourly": 35.53,
+   "lowAnnual": 47466,
+   "lowHourly": 22.82,
+   "year": "2024"
+  },
   "QC": {
    "annual": 85800,
    "highAnnual": 108784,
@@ -6664,6 +7918,24 @@
    "lowHourly": 32.97,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 121264,
+   "highAnnual": 167253,
+   "highHourly": 80.41,
+   "hourly": 58.3,
+   "lowAnnual": 81619,
+   "lowHourly": 39.24,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 122741,
+   "highAnnual": 167544,
+   "highHourly": 80.55,
+   "hourly": 59.01,
+   "lowAnnual": 87610,
+   "lowHourly": 42.12,
+   "year": "2024"
+  },
   "ON": {
    "annual": 97074,
    "highAnnual": 137134,
@@ -6672,6 +7944,15 @@
    "lowAnnual": 65312,
    "lowHourly": 31.4,
    "year": "2024"
+  },
+  "PE": {
+   "annual": 85280,
+   "highAnnual": 112008,
+   "highHourly": 53.85,
+   "hourly": 41.0,
+   "lowAnnual": 61568,
+   "lowHourly": 29.6,
+   "year": "2023-2024"
   },
   "QC": {
    "annual": 94931,
@@ -6690,6 +7971,15 @@
    "lowAnnual": 47840,
    "lowHourly": 23.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 107307,
+   "highAnnual": 162573,
+   "highHourly": 78.16,
+   "hourly": 51.59,
+   "lowAnnual": 72176,
+   "lowHourly": 34.7,
+   "year": "2024"
   }
  },
  "21200": {
@@ -6895,6 +8185,24 @@
    "lowHourly": 28.54,
    "year": "2024"
   },
+  "NT": {
+   "annual": 107286,
+   "highAnnual": 143562,
+   "highHourly": 69.02,
+   "hourly": 51.58,
+   "lowAnnual": 74818,
+   "lowHourly": 35.97,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 118435,
+   "highAnnual": 177590,
+   "highHourly": 85.38,
+   "hourly": 56.94,
+   "lowAnnual": 73632,
+   "lowHourly": 35.4,
+   "year": "2024"
+  },
   "ON": {
    "annual": 98550,
    "highAnnual": 158080,
@@ -6921,6 +8229,15 @@
    "lowAnnual": 44720,
    "lowHourly": 21.5,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 93642,
+   "highAnnual": 135824,
+   "highHourly": 65.3,
+   "hourly": 45.02,
+   "lowAnnual": 70741,
+   "lowHourly": 34.01,
+   "year": "2024"
   }
  },
  "21203": {
@@ -7004,6 +8321,15 @@
    "lowAnnual": 62400,
    "lowHourly": 30.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 97240,
+   "highAnnual": 132829,
+   "highHourly": 63.86,
+   "hourly": 46.75,
+   "lowAnnual": 73050,
+   "lowHourly": 35.12,
+   "year": "2024"
   }
  },
  "21210": {
@@ -7355,6 +8681,15 @@
    "lowHourly": 33.33,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 79747,
+   "highAnnual": 109928,
+   "highHourly": 52.85,
+   "hourly": 38.34,
+   "lowAnnual": 59987,
+   "lowHourly": 28.84,
+   "year": "2024"
+  },
   "QC": {
    "annual": 95992,
    "highAnnual": 140171,
@@ -7438,6 +8773,24 @@
    "lowHourly": 29.33,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 110822,
+   "highAnnual": 152360,
+   "highHourly": 73.25,
+   "hourly": 53.28,
+   "lowAnnual": 83845,
+   "lowHourly": 40.31,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 129085,
+   "highAnnual": 167045,
+   "highHourly": 80.31,
+   "hourly": 62.06,
+   "lowAnnual": 95014,
+   "lowHourly": 45.68,
+   "year": "2024"
+  },
   "ON": {
    "annual": 97760,
    "highAnnual": 151008,
@@ -7445,6 +8798,15 @@
    "hourly": 47.0,
    "lowAnnual": 59467,
    "lowHourly": 28.59,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 83200,
+   "highAnnual": 128003,
+   "highHourly": 61.54,
+   "hourly": 40.0,
+   "lowAnnual": 50003,
+   "lowHourly": 24.04,
    "year": "2023-2024"
   },
   "QC": {
@@ -7464,6 +8826,15 @@
    "lowAnnual": 58677,
    "lowHourly": 28.21,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 96574,
+   "highAnnual": 157373,
+   "highHourly": 75.66,
+   "hourly": 46.43,
+   "lowAnnual": 76814,
+   "lowHourly": 36.93,
+   "year": "2024"
   }
  },
  "21223": {
@@ -7537,6 +8908,15 @@
    "hourly": 40.87,
    "lowAnnual": 51126,
    "lowHourly": 24.58,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 75504,
+   "highAnnual": 102398,
+   "highHourly": 49.23,
+   "hourly": 36.3,
+   "lowAnnual": 37440,
+   "lowHourly": 18.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -7631,6 +9011,15 @@
    "lowHourly": 27.04,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 81058,
+   "highAnnual": 98134,
+   "highHourly": 47.18,
+   "hourly": 38.97,
+   "lowAnnual": 63794,
+   "lowHourly": 30.67,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 88005,
    "highAnnual": 143520,
@@ -7723,6 +9112,15 @@
    "lowHourly": 36.06,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 86715,
+   "highAnnual": 163238,
+   "highHourly": 78.48,
+   "hourly": 41.69,
+   "lowAnnual": 60070,
+   "lowHourly": 28.88,
+   "year": "2024"
+  },
   "QC": {
    "annual": 111488,
    "highAnnual": 180003,
@@ -7813,6 +9211,15 @@
    "hourly": 48.08,
    "lowAnnual": 63003,
    "lowHourly": 30.29,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 79997,
+   "highAnnual": 112008,
+   "highHourly": 53.85,
+   "hourly": 38.46,
+   "lowAnnual": 55474,
+   "lowHourly": 26.67,
    "year": "2023-2024"
   },
   "QC": {
@@ -7907,6 +9314,15 @@
    "lowHourly": 21.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 65437,
+   "highAnnual": 99112,
+   "highHourly": 47.65,
+   "hourly": 31.46,
+   "lowAnnual": 52853,
+   "lowHourly": 25.41,
+   "year": "2024"
+  },
   "QC": {
    "annual": 77002,
    "highAnnual": 122658,
@@ -7999,6 +9415,15 @@
    "lowHourly": 21.63,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 72197,
+   "highAnnual": 119995,
+   "highHourly": 57.69,
+   "hourly": 34.71,
+   "lowAnnual": 47507,
+   "lowHourly": 22.84,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 79997,
    "highAnnual": 104000,
@@ -8082,6 +9507,15 @@
    "lowHourly": 30.14,
    "year": "2024"
   },
+  "NT": {
+   "annual": 128440,
+   "highAnnual": 179608,
+   "highHourly": 86.35,
+   "hourly": 61.75,
+   "lowAnnual": 95597,
+   "lowHourly": 45.96,
+   "year": "2024"
+  },
   "ON": {
    "annual": 100006,
    "highAnnual": 150010,
@@ -8089,6 +9523,15 @@
    "hourly": 48.08,
    "lowAnnual": 63440,
    "lowHourly": 30.5,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 75504,
+   "highAnnual": 112507,
+   "highHourly": 54.09,
+   "hourly": 36.3,
+   "lowAnnual": 66560,
+   "lowHourly": 32.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -8108,6 +9551,15 @@
    "lowAnnual": 60008,
    "lowHourly": 28.85,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 96054,
+   "highAnnual": 136926,
+   "highHourly": 65.83,
+   "hourly": 46.18,
+   "lowAnnual": 62941,
+   "lowHourly": 30.26,
+   "year": "2024"
   }
  },
  "21301": {
@@ -8275,6 +9727,15 @@
    "lowHourly": 33.65,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 95992,
+   "highAnnual": 174990,
+   "highHourly": 84.13,
+   "hourly": 46.15,
+   "lowAnnual": 52000,
+   "lowHourly": 25.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 112008,
    "highAnnual": 162677,
@@ -8366,6 +9827,15 @@
    "lowAnnual": 69992,
    "lowHourly": 33.65,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 100526,
+   "highAnnual": 135491,
+   "highHourly": 65.14,
+   "hourly": 48.33,
+   "lowAnnual": 59738,
+   "lowHourly": 28.72,
+   "year": "2024"
   },
   "QC": {
    "annual": 114296,
@@ -8541,6 +10011,15 @@
    "lowAnnual": 57990,
    "lowHourly": 27.88,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 83678,
+   "highAnnual": 127774,
+   "highHourly": 61.43,
+   "hourly": 40.23,
+   "lowAnnual": 57574,
+   "lowHourly": 27.68,
+   "year": "2024"
   },
   "QC": {
    "annual": 89502,
@@ -8995,6 +10474,15 @@
    "lowHourly": 27.25,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 90542,
+   "highAnnual": 161262,
+   "highHourly": 77.53,
+   "hourly": 43.53,
+   "lowAnnual": 61027,
+   "lowHourly": 29.34,
+   "year": "2024"
+  },
   "QC": {
    "annual": 100006,
    "highAnnual": 148283,
@@ -9076,6 +10564,15 @@
    "hourly": 30.0,
    "lowAnnual": 44720,
    "lowHourly": 21.5,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 61859,
+   "highAnnual": 69326,
+   "highHourly": 33.33,
+   "hourly": 29.74,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -9187,6 +10684,15 @@
    "lowAnnual": 46426,
    "lowHourly": 22.32,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 102918,
+   "highAnnual": 119600,
+   "highHourly": 57.5,
+   "hourly": 49.48,
+   "lowAnnual": 54912,
+   "lowHourly": 26.4,
+   "year": "2024"
   }
  },
  "22110": {
@@ -9253,6 +10759,15 @@
    "lowHourly": 16.73,
    "year": "2024"
   },
+  "NU": {
+   "annual": 106475,
+   "highAnnual": 126922,
+   "highHourly": 61.02,
+   "hourly": 51.19,
+   "lowAnnual": 58094,
+   "lowHourly": 27.93,
+   "year": "2024"
+  },
   "ON": {
    "annual": 62400,
    "highAnnual": 93600,
@@ -9261,6 +10776,15 @@
    "lowAnnual": 41018,
    "lowHourly": 19.72,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 61194,
+   "highAnnual": 70096,
+   "highHourly": 33.7,
+   "hourly": 29.42,
+   "lowAnnual": 38730,
+   "lowHourly": 18.62,
+   "year": "2024"
   },
   "QC": {
    "annual": 58240,
@@ -9279,6 +10803,15 @@
    "lowAnnual": 34840,
    "lowHourly": 16.75,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 78582,
+   "highAnnual": 97552,
+   "highHourly": 46.9,
+   "hourly": 37.78,
+   "lowAnnual": 44949,
+   "lowHourly": 21.61,
+   "year": "2024"
   }
  },
  "22111": {
@@ -9353,6 +10886,15 @@
    "lowAnnual": 70720,
    "lowHourly": 34.0,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 73154,
+   "highAnnual": 87443,
+   "highHourly": 42.04,
+   "hourly": 35.17,
+   "lowAnnual": 49920,
+   "lowHourly": 24.0,
+   "year": "2024"
   },
   "QC": {
    "annual": 70366,
@@ -9437,6 +10979,15 @@
    "lowHourly": 19.6,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 82014,
+   "highAnnual": 115544,
+   "highHourly": 55.55,
+   "hourly": 39.43,
+   "lowAnnual": 42411,
+   "lowHourly": 20.39,
+   "year": "2024"
+  },
   "ON": {
    "annual": 73590,
    "highAnnual": 93704,
@@ -9445,6 +10996,15 @@
    "lowAnnual": 47611,
    "lowHourly": 22.89,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 64542,
+   "highAnnual": 80704,
+   "highHourly": 38.8,
+   "hourly": 31.03,
+   "lowAnnual": 48027,
+   "lowHourly": 23.09,
+   "year": "2024"
   },
   "QC": {
    "annual": 66560,
@@ -9529,6 +11089,24 @@
    "lowHourly": 24.89,
    "year": "2024"
   },
+  "NT": {
+   "annual": 112008,
+   "highAnnual": 140962,
+   "highHourly": 67.77,
+   "hourly": 53.85,
+   "lowAnnual": 72030,
+   "lowHourly": 34.63,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 107910,
+   "highAnnual": 137904,
+   "highHourly": 66.3,
+   "hourly": 51.88,
+   "lowAnnual": 56930,
+   "lowHourly": 27.37,
+   "year": "2024"
+  },
   "ON": {
    "annual": 74672,
    "highAnnual": 139360,
@@ -9537,6 +11115,15 @@
    "lowAnnual": 45656,
    "lowHourly": 21.95,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 72966,
+   "highAnnual": 90792,
+   "highHourly": 43.65,
+   "hourly": 35.08,
+   "lowAnnual": 47861,
+   "lowHourly": 23.01,
+   "year": "2024"
   },
   "QC": {
    "annual": 69597,
@@ -9554,6 +11141,15 @@
    "hourly": 41.6,
    "lowAnnual": 61797,
    "lowHourly": 29.71,
+   "year": "2024"
+  },
+  "YT": {
+   "annual": 100069,
+   "highAnnual": 126485,
+   "highHourly": 60.81,
+   "hourly": 48.11,
+   "lowAnnual": 63690,
+   "lowHourly": 30.62,
    "year": "2024"
   }
  },
@@ -9629,6 +11225,15 @@
    "lowAnnual": 45760,
    "lowHourly": 22.0,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 54309,
+   "highAnnual": 75150,
+   "highHourly": 36.13,
+   "hourly": 26.11,
+   "lowAnnual": 41642,
+   "lowHourly": 20.02,
+   "year": "2024"
   },
   "QC": {
    "annual": 56160,
@@ -9897,6 +11502,15 @@
    "lowHourly": 20.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 55973,
+   "highAnnual": 72821,
+   "highHourly": 35.01,
+   "hourly": 26.91,
+   "lowAnnual": 42869,
+   "lowHourly": 20.61,
+   "year": "2024"
+  },
   "QC": {
    "annual": 62005,
    "highAnnual": 88005,
@@ -10068,6 +11682,24 @@
    "lowHourly": 22.41,
    "year": "2024"
   },
+  "NT": {
+   "annual": 103958,
+   "highAnnual": 127234,
+   "highHourly": 61.17,
+   "hourly": 49.98,
+   "lowAnnual": 63544,
+   "lowHourly": 30.55,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 85488,
+   "highAnnual": 111883,
+   "highHourly": 53.79,
+   "hourly": 41.1,
+   "lowAnnual": 49691,
+   "lowHourly": 23.89,
+   "year": "2024"
+  },
   "ON": {
    "annual": 72800,
    "highAnnual": 99195,
@@ -10094,6 +11726,15 @@
    "lowAnnual": 42640,
    "lowHourly": 20.5,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 92477,
+   "highAnnual": 110261,
+   "highHourly": 53.01,
+   "hourly": 44.46,
+   "lowAnnual": 68162,
+   "lowHourly": 32.77,
+   "year": "2024"
   }
  },
  "22220": {
@@ -10160,6 +11801,20 @@
    "lowHourly": 19.23,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 104000,
+   "hourly": 50.0,
+   "year": "2021"
+  },
+  "NU": {
+   "annual": 113152,
+   "highAnnual": 142875,
+   "highHourly": 68.69,
+   "hourly": 54.4,
+   "lowAnnual": 79747,
+   "lowHourly": 38.34,
+   "year": "2024"
+  },
   "ON": {
    "annual": 74277,
    "highAnnual": 119995,
@@ -10167,6 +11822,15 @@
    "hourly": 35.71,
    "lowAnnual": 39520,
    "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 70990,
+   "highAnnual": 104000,
+   "highHourly": 50.0,
+   "hourly": 34.13,
+   "lowAnnual": 44720,
+   "lowHourly": 21.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -10186,6 +11850,15 @@
    "lowAnnual": 45760,
    "lowHourly": 22.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 79581,
+   "highAnnual": 101130,
+   "highHourly": 48.62,
+   "hourly": 38.26,
+   "lowAnnual": 46571,
+   "lowHourly": 22.39,
+   "year": "2024"
   }
  },
  "22221": {
@@ -10261,6 +11934,15 @@
    "lowHourly": 20.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 61859,
+   "highAnnual": 107723,
+   "highHourly": 51.79,
+   "hourly": 29.74,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 64002,
    "highAnnual": 95992,
@@ -10278,6 +11960,15 @@
    "lowAnnual": 41517,
    "lowHourly": 19.96,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 71094,
+   "highAnnual": 93080,
+   "highHourly": 44.75,
+   "hourly": 34.18,
+   "lowAnnual": 41579,
+   "lowHourly": 19.99,
+   "year": "2024"
   }
  },
  "22222": {
@@ -10611,6 +12302,15 @@
    "lowHourly": 24.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 84448,
+   "highAnnual": 116438,
+   "highHourly": 55.98,
+   "hourly": 40.6,
+   "lowAnnual": 51938,
+   "lowHourly": 24.97,
+   "year": "2024"
+  },
   "ON": {
    "annual": 79040,
    "highAnnual": 114400,
@@ -10618,6 +12318,15 @@
    "hourly": 38.0,
    "lowAnnual": 45760,
    "lowHourly": 22.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 87360,
+   "highAnnual": 103459,
+   "highHourly": 49.74,
+   "hourly": 42.0,
+   "lowAnnual": 69992,
+   "lowHourly": 33.65,
    "year": "2023-2024"
   },
   "QC": {
@@ -10636,6 +12345,15 @@
    "hourly": 41.32,
    "lowAnnual": 57512,
    "lowHourly": 27.65,
+   "year": "2024"
+  },
+  "YT": {
+   "annual": 77854,
+   "highAnnual": 116875,
+   "highHourly": 56.19,
+   "hourly": 37.43,
+   "lowAnnual": 50357,
+   "lowHourly": 24.21,
    "year": "2024"
   }
  },
@@ -10712,6 +12430,15 @@
    "lowHourly": 25.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 67933,
+   "highAnnual": 138570,
+   "highHourly": 66.62,
+   "hourly": 32.66,
+   "lowAnnual": 51272,
+   "lowHourly": 24.65,
+   "year": "2024"
+  },
   "QC": {
    "annual": 75067,
    "highAnnual": 93600,
@@ -10728,6 +12455,15 @@
    "hourly": 38.31,
    "lowAnnual": 55328,
    "lowHourly": 26.6,
+   "year": "2024"
+  },
+  "YT": {
+   "annual": 89814,
+   "highAnnual": 119101,
+   "highHourly": 57.26,
+   "hourly": 43.18,
+   "lowAnnual": 46051,
+   "lowHourly": 22.14,
    "year": "2024"
   }
  },
@@ -10804,6 +12540,15 @@
    "lowHourly": 22.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 70658,
+   "highAnnual": 90126,
+   "highHourly": 43.33,
+   "hourly": 33.97,
+   "lowAnnual": 56056,
+   "lowHourly": 26.95,
+   "year": "2024"
+  },
   "QC": {
    "annual": 70283,
    "highAnnual": 106662,
@@ -10821,6 +12566,15 @@
    "lowAnnual": 48006,
    "lowHourly": 23.08,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 76419,
+   "highAnnual": 102149,
+   "highHourly": 49.11,
+   "hourly": 36.74,
+   "lowAnnual": 57866,
+   "lowHourly": 27.82,
+   "year": "2024"
   }
  },
  "22301": {
@@ -10895,6 +12649,15 @@
    "lowAnnual": 47840,
    "lowHourly": 23.0,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 59093,
+   "highAnnual": 100963,
+   "highHourly": 48.54,
+   "hourly": 28.41,
+   "lowAnnual": 41246,
+   "lowHourly": 19.83,
+   "year": "2024"
   },
   "QC": {
    "annual": 72800,
@@ -11080,6 +12843,15 @@
    "lowHourly": 24.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 65354,
+   "highAnnual": 123864,
+   "highHourly": 59.55,
+   "hourly": 31.42,
+   "lowAnnual": 47944,
+   "lowHourly": 23.05,
+   "year": "2024"
+  },
   "QC": {
    "annual": 69680,
    "highAnnual": 99840,
@@ -11264,6 +13036,15 @@
    "lowHourly": 18.75,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 57949,
+   "highAnnual": 84635,
+   "highHourly": 40.69,
+   "hourly": 27.86,
+   "lowAnnual": 38210,
+   "lowHourly": 18.37,
+   "year": "2024"
+  },
   "QC": {
    "annual": 56160,
    "highAnnual": 74880,
@@ -11281,6 +13062,15 @@
    "lowAnnual": 43430,
    "lowHourly": 20.88,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 69347,
+   "highAnnual": 99819,
+   "highHourly": 47.99,
+   "hourly": 33.34,
+   "lowAnnual": 49629,
+   "lowHourly": 23.86,
+   "year": "2024"
   }
  },
  "22312": {
@@ -11531,6 +13321,15 @@
    "lowHourly": 38.97,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 137675,
+   "highAnnual": 180752,
+   "highHourly": 86.9,
+   "hourly": 66.19,
+   "lowAnnual": 105830,
+   "lowHourly": 50.88,
+   "year": "2024"
+  },
   "ON": {
    "annual": 116480,
    "highAnnual": 181334,
@@ -11538,6 +13337,15 @@
    "hourly": 56.0,
    "lowAnnual": 74672,
    "lowHourly": 35.9,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 108784,
+   "highAnnual": 159994,
+   "highHourly": 76.92,
+   "hourly": 52.3,
+   "lowAnnual": 106080,
+   "lowHourly": 51.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -11557,6 +13365,15 @@
    "lowAnnual": 76960,
    "lowHourly": 37.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 117125,
+   "highAnnual": 160035,
+   "highHourly": 76.94,
+   "hourly": 56.31,
+   "lowAnnual": 94349,
+   "lowHourly": 45.36,
+   "year": "2024"
   }
  },
  "31100": {
@@ -11632,6 +13449,15 @@
    "lowHourly": 53.36,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 318714,
+   "highAnnual": 473486,
+   "highHourly": 227.64,
+   "hourly": 153.23,
+   "lowAnnual": 103834,
+   "lowHourly": 49.92,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 343031,
    "highAnnual": 556888,
@@ -11639,6 +13465,15 @@
    "hourly": 164.92,
    "lowAnnual": 144640,
    "lowHourly": 69.54,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 247242,
+   "highAnnual": 300271,
+   "highHourly": 144.36,
+   "hourly": 118.87,
+   "lowAnnual": 34935,
+   "lowHourly": 16.8,
    "year": "2023-2024"
   }
  },
@@ -11715,6 +13550,15 @@
    "lowHourly": 56.99,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 530709,
+   "highAnnual": 309016,
+   "highHourly": 148.57,
+   "hourly": 255.15,
+   "lowAnnual": 73872,
+   "lowHourly": 35.52,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 397319,
    "highAnnual": 642495,
@@ -11722,6 +13566,11 @@
    "hourly": 191.02,
    "lowAnnual": 165663,
    "lowHourly": 79.65,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 403299,
+   "hourly": 193.89,
    "year": "2023-2024"
   }
  },
@@ -11798,6 +13647,15 @@
    "lowHourly": 40.51,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 209676,
+   "highAnnual": 333708,
+   "highHourly": 160.44,
+   "hourly": 100.81,
+   "lowAnnual": 89508,
+   "lowHourly": 43.03,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 268808,
    "highAnnual": 505024,
@@ -11805,6 +13663,15 @@
    "hourly": 129.23,
    "lowAnnual": 95137,
    "lowHourly": 45.74,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 219382,
+   "highAnnual": 424378,
+   "highHourly": 204.03,
+   "hourly": 105.47,
+   "lowAnnual": 82632,
+   "lowHourly": 39.73,
    "year": "2023-2024"
   }
  },
@@ -11879,6 +13746,15 @@
    "hourly": 60.0,
    "lowAnnual": 62005,
    "lowHourly": 29.81,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 107786,
+   "highAnnual": 148158,
+   "highHourly": 71.23,
+   "hourly": 51.82,
+   "lowAnnual": 61006,
+   "lowHourly": 29.33,
    "year": "2023-2024"
   },
   "QC": {
@@ -12107,6 +13983,15 @@
    "lowHourly": 29.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 97323,
+   "highAnnual": 116085,
+   "highHourly": 55.81,
+   "hourly": 46.79,
+   "lowAnnual": 82992,
+   "lowHourly": 39.9,
+   "year": "2024"
+  },
   "QC": {
    "annual": 85280,
    "highAnnual": 107120,
@@ -12199,6 +14084,15 @@
    "lowHourly": 37.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 115440,
+   "highAnnual": 130000,
+   "highHourly": 62.5,
+   "hourly": 55.5,
+   "lowAnnual": 97510,
+   "lowHourly": 46.88,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 131040,
    "highAnnual": 156000,
@@ -12216,6 +14110,15 @@
    "lowAnnual": 73174,
    "lowHourly": 35.18,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 134597,
+   "highAnnual": 172390,
+   "highHourly": 82.88,
+   "hourly": 64.71,
+   "lowAnnual": 90709,
+   "lowHourly": 43.61,
+   "year": "2024"
   }
  },
  "31121": {
@@ -12289,6 +14192,15 @@
    "hourly": 42.0,
    "lowAnnual": 41600,
    "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 83990,
+   "highAnnual": 91520,
+   "highHourly": 44.0,
+   "hourly": 40.38,
+   "lowAnnual": 64002,
+   "lowHourly": 30.77,
    "year": "2023-2024"
   },
   "QC": {
@@ -12542,6 +14454,15 @@
    "lowHourly": 25.64,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 87110,
+   "highAnnual": 93600,
+   "highHourly": 45.0,
+   "hourly": 41.88,
+   "lowAnnual": 39998,
+   "lowHourly": 19.23,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 100006,
    "highAnnual": 114213,
@@ -12625,6 +14546,11 @@
    "lowHourly": 33.28,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 108430,
+   "hourly": 52.13,
+   "year": "2021"
+  },
   "ON": {
    "annual": 93600,
    "highAnnual": 116272,
@@ -12632,6 +14558,15 @@
    "hourly": 45.0,
    "lowAnnual": 69326,
    "lowHourly": 33.33,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 82077,
+   "highAnnual": 98925,
+   "highHourly": 47.56,
+   "hourly": 39.46,
+   "lowAnnual": 74880,
+   "lowHourly": 36.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -12865,6 +14800,15 @@
    "lowHourly": 29.23,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 89606,
+   "highAnnual": 110240,
+   "highHourly": 53.0,
+   "hourly": 43.08,
+   "lowAnnual": 48006,
+   "lowHourly": 23.08,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 94931,
    "highAnnual": 122366,
@@ -12948,6 +14892,24 @@
    "lowHourly": 30.2,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 120640,
+   "highAnnual": 143998,
+   "highHourly": 69.23,
+   "hourly": 58.0,
+   "lowAnnual": 93600,
+   "lowHourly": 45.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 120619,
+   "highAnnual": 148866,
+   "highHourly": 71.57,
+   "hourly": 57.99,
+   "lowAnnual": 93600,
+   "lowHourly": 45.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 87360,
    "highAnnual": 114400,
@@ -12955,6 +14917,15 @@
    "hourly": 42.0,
    "lowAnnual": 60320,
    "lowHourly": 29.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 87360,
+   "highAnnual": 103958,
+   "highHourly": 49.98,
+   "hourly": 42.0,
+   "lowAnnual": 65520,
+   "lowHourly": 31.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -12973,6 +14944,15 @@
    "hourly": 47.13,
    "lowAnnual": 79040,
    "lowHourly": 38.0,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 100880,
+   "highAnnual": 126630,
+   "highHourly": 60.88,
+   "hourly": 48.5,
+   "lowAnnual": 68640,
+   "lowHourly": 33.0,
    "year": "2023-2024"
   }
  },
@@ -13048,6 +15028,15 @@
    "lowAnnual": 83200,
    "lowHourly": 40.0,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 105352,
+   "highAnnual": 123843,
+   "highHourly": 59.54,
+   "hourly": 50.65,
+   "lowAnnual": 78499,
+   "lowHourly": 37.74,
+   "year": "2024"
   },
   "QC": {
    "annual": 119995,
@@ -13307,6 +15296,15 @@
    "lowHourly": 28.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 91832,
+   "highAnnual": 101629,
+   "highHourly": 48.86,
+   "hourly": 44.15,
+   "lowAnnual": 62400,
+   "lowHourly": 30.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 64480,
    "highAnnual": 78915,
@@ -13314,6 +15312,15 @@
    "hourly": 31.0,
    "lowAnnual": 52666,
    "lowHourly": 25.32,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 64480,
+   "highAnnual": 67080,
+   "highHourly": 32.25,
+   "hourly": 31.0,
+   "lowAnnual": 52000,
+   "lowHourly": 25.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -13332,6 +15339,15 @@
    "hourly": 38.09,
    "lowAnnual": 68640,
    "lowHourly": 33.0,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 90480,
+   "highAnnual": 110240,
+   "highHourly": 53.0,
+   "hourly": 43.5,
+   "lowAnnual": 79040,
+   "lowHourly": 38.0,
    "year": "2023-2024"
   }
  },
@@ -13399,6 +15415,15 @@
    "lowHourly": 22.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 98467,
+   "highAnnual": 143562,
+   "highHourly": 69.02,
+   "hourly": 47.34,
+   "lowAnnual": 67163,
+   "lowHourly": 32.29,
+   "year": "2024"
+  },
   "ON": {
    "annual": 87714,
    "highAnnual": 105685,
@@ -13406,6 +15431,15 @@
    "hourly": 42.17,
    "lowAnnual": 63960,
    "lowHourly": 30.75,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 56805,
+   "highAnnual": 72800,
+   "highHourly": 35.0,
+   "hourly": 27.31,
+   "lowAnnual": 36400,
+   "lowHourly": 17.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -13425,6 +15459,11 @@
    "lowAnnual": 52000,
    "lowHourly": 25.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 80766,
+   "hourly": 38.83,
+   "year": "2021"
   }
  },
  "32103": {
@@ -13592,6 +15631,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 39520,
+   "highAnnual": 62400,
+   "highHourly": 30.0,
+   "hourly": 19.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 47840,
    "highAnnual": 64480,
@@ -13609,6 +15657,15 @@
    "lowAnnual": 34320,
    "lowHourly": 16.5,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 53477,
+   "highAnnual": 59155,
+   "highHourly": 28.44,
+   "hourly": 25.71,
+   "lowAnnual": 47174,
+   "lowHourly": 22.68,
+   "year": "2024"
   }
  },
  "32109": {
@@ -13684,6 +15741,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 56160,
+   "highAnnual": 59010,
+   "highHourly": 28.37,
+   "hourly": 27.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 62400,
    "highAnnual": 79040,
@@ -13701,6 +15767,15 @@
    "lowAnnual": 47778,
    "lowHourly": 22.97,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 72738,
+   "highAnnual": 90792,
+   "highHourly": 43.65,
+   "hourly": 34.97,
+   "lowAnnual": 52666,
+   "lowHourly": 25.32,
+   "year": "2024"
   }
  },
  "32110": {
@@ -13818,6 +15893,15 @@
    "hourly": 44.0,
    "lowAnnual": 68640,
    "lowHourly": 33.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 95680,
+   "highAnnual": 99840,
+   "highHourly": 48.0,
+   "hourly": 46.0,
+   "lowAnnual": 81120,
+   "lowHourly": 39.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -14004,6 +16088,15 @@
    "lowHourly": 23.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 78146,
+   "highAnnual": 86840,
+   "highHourly": 41.75,
+   "hourly": 37.57,
+   "lowAnnual": 35360,
+   "lowHourly": 17.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 72800,
    "highAnnual": 83200,
@@ -14094,6 +16187,15 @@
    "hourly": 45.0,
    "lowAnnual": 72800,
    "lowHourly": 35.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 78146,
+   "highAnnual": 100381,
+   "highHourly": 48.26,
+   "hourly": 37.57,
+   "lowAnnual": 66560,
+   "lowHourly": 32.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -14372,6 +16474,15 @@
    "lowHourly": 18.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 43680,
+   "highAnnual": 67995,
+   "highHourly": 32.69,
+   "hourly": 21.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 41600,
    "highAnnual": 56160,
@@ -14389,6 +16500,15 @@
    "lowAnnual": 32240,
    "lowHourly": 15.5,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 64813,
+   "highAnnual": 79560,
+   "highHourly": 38.25,
+   "hourly": 31.16,
+   "lowAnnual": 47923,
+   "lowHourly": 23.04,
+   "year": "2024"
   }
  },
  "32129": {
@@ -14551,6 +16671,11 @@
    "lowHourly": 18.06,
    "year": "2021"
   },
+  "PE": {
+   "annual": 40800,
+   "hourly": 19.62,
+   "year": "2021"
+  },
   "QC": {
    "annual": 33109,
    "highAnnual": 49200,
@@ -14683,6 +16808,15 @@
    "lowHourly": 20.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 49920,
+   "highAnnual": 54080,
+   "highHourly": 26.0,
+   "hourly": 24.0,
+   "lowAnnual": 39354,
+   "lowHourly": 18.92,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 54080,
    "highAnnual": 62733,
@@ -14775,6 +16909,15 @@
    "lowHourly": 17.62,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 58240,
+   "highAnnual": 74339,
+   "highHourly": 35.74,
+   "hourly": 28.0,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 60362,
    "highAnnual": 77022,
@@ -14858,6 +17001,24 @@
    "lowHourly": 17.91,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 72800,
+   "highAnnual": 83200,
+   "highHourly": 40.0,
+   "hourly": 35.0,
+   "lowAnnual": 62400,
+   "lowHourly": 30.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 62400,
+   "highAnnual": 94474,
+   "highHourly": 45.42,
+   "hourly": 30.0,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 49920,
    "highAnnual": 62400,
@@ -14865,6 +17026,15 @@
    "hourly": 24.0,
    "lowAnnual": 40539,
    "lowHourly": 19.49,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 48381,
+   "highAnnual": 55494,
+   "highHourly": 26.68,
+   "hourly": 23.26,
+   "lowAnnual": 37440,
+   "lowHourly": 18.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -14883,6 +17053,15 @@
    "hourly": 23.97,
    "lowAnnual": 35360,
    "lowHourly": 17.0,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 68640,
+   "highAnnual": 103002,
+   "highHourly": 49.52,
+   "hourly": 33.0,
+   "lowAnnual": 54080,
+   "lowHourly": 26.0,
    "year": "2023-2024"
   }
  },
@@ -14957,6 +17136,15 @@
    "hourly": 19.5,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 37440,
+   "highAnnual": 52000,
+   "highHourly": 25.0,
+   "hourly": 18.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -15051,6 +17239,15 @@
    "lowHourly": 18.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 52000,
+   "highAnnual": 79040,
+   "highHourly": 38.0,
+   "hourly": 25.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 47840,
    "highAnnual": 54080,
@@ -15068,6 +17265,15 @@
    "lowAnnual": 33010,
    "lowHourly": 15.87,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 56410,
+   "highAnnual": 88213,
+   "highHourly": 42.41,
+   "hourly": 27.12,
+   "lowAnnual": 38355,
+   "lowHourly": 18.44,
+   "year": "2024"
   }
  },
  "40010": {
@@ -15134,6 +17340,24 @@
    "lowHourly": 43.59,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 149760,
+   "highAnnual": 193814,
+   "highHourly": 93.18,
+   "hourly": 72.0,
+   "lowAnnual": 100734,
+   "lowHourly": 48.43,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 141086,
+   "highAnnual": 186202,
+   "highHourly": 89.52,
+   "hourly": 67.83,
+   "lowAnnual": 107203,
+   "lowHourly": 51.54,
+   "year": "2024"
+  },
   "ON": {
    "annual": 134410,
    "highAnnual": 163010,
@@ -15142,6 +17366,15 @@
    "lowAnnual": 105602,
    "lowHourly": 50.77,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 109491,
+   "highAnnual": 140130,
+   "highHourly": 67.37,
+   "hourly": 52.64,
+   "lowAnnual": 86944,
+   "lowHourly": 41.8,
+   "year": "2024"
   },
   "QC": {
    "annual": 122533,
@@ -15159,6 +17392,15 @@
    "hourly": 57.73,
    "lowAnnual": 84094,
    "lowHourly": 40.43,
+   "year": "2024"
+  },
+  "YT": {
+   "annual": 130978,
+   "highAnnual": 168189,
+   "highHourly": 80.86,
+   "hourly": 62.97,
+   "lowAnnual": 91458,
+   "lowHourly": 43.97,
    "year": "2024"
   }
  },
@@ -15226,6 +17468,24 @@
    "lowHourly": 51.28,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 155168,
+   "highAnnual": 200221,
+   "highHourly": 96.26,
+   "hourly": 74.6,
+   "lowAnnual": 112674,
+   "lowHourly": 54.17,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 160534,
+   "highAnnual": 195229,
+   "highHourly": 93.86,
+   "hourly": 77.18,
+   "lowAnnual": 121139,
+   "lowHourly": 58.24,
+   "year": "2024"
+  },
   "ON": {
    "annual": 142459,
    "highAnnual": 182853,
@@ -15233,6 +17493,15 @@
    "hourly": 68.49,
    "lowAnnual": 108763,
    "lowHourly": 52.29,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 128003,
+   "highAnnual": 149323,
+   "highHourly": 71.79,
+   "hourly": 61.54,
+   "lowAnnual": 85509,
+   "lowHourly": 41.11,
    "year": "2023-2024"
   },
   "QC": {
@@ -15252,6 +17521,11 @@
    "lowAnnual": 77168,
    "lowHourly": 37.1,
    "year": "2024"
+  },
+  "YT": {
+   "annual": 142002,
+   "hourly": 68.27,
+   "year": "2021"
   }
  },
  "40012": {
@@ -15410,6 +17684,24 @@
    "lowHourly": 43.96,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 135574,
+   "highAnnual": 152506,
+   "highHourly": 73.32,
+   "hourly": 65.18,
+   "lowAnnual": 79997,
+   "lowHourly": 38.46,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 143998,
+   "highAnnual": 192005,
+   "highHourly": 92.31,
+   "hourly": 69.23,
+   "lowAnnual": 97760,
+   "lowHourly": 47.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 129522,
    "highAnnual": 162136,
@@ -15417,6 +17709,15 @@
    "hourly": 62.27,
    "lowAnnual": 90002,
    "lowHourly": 43.27,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 128003,
+   "highAnnual": 154669,
+   "highHourly": 74.36,
+   "hourly": 61.54,
+   "lowAnnual": 74672,
+   "lowHourly": 35.9,
    "year": "2023-2024"
   },
   "QC": {
@@ -15436,6 +17737,15 @@
    "lowAnnual": 81598,
    "lowHourly": 39.23,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 127483,
+   "highAnnual": 197246,
+   "highHourly": 94.83,
+   "hourly": 61.29,
+   "lowAnnual": 95014,
+   "lowHourly": 45.68,
+   "year": "2024"
   }
  },
  "40020": {
@@ -15510,6 +17820,15 @@
    "lowAnnual": 69992,
    "lowHourly": 33.65,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 117728,
+   "highAnnual": 150280,
+   "highHourly": 72.25,
+   "hourly": 56.6,
+   "lowAnnual": 79144,
+   "lowHourly": 38.05,
+   "year": "2024"
   },
   "QC": {
    "annual": 118144,
@@ -15594,6 +17913,24 @@
    "lowHourly": 33.33,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 146453,
+   "highAnnual": 181293,
+   "highHourly": 87.16,
+   "hourly": 70.41,
+   "lowAnnual": 107370,
+   "lowHourly": 51.62,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 151736,
+   "highAnnual": 183581,
+   "highHourly": 88.26,
+   "hourly": 72.95,
+   "lowAnnual": 105706,
+   "lowHourly": 50.82,
+   "year": "2024"
+  },
   "ON": {
    "annual": 118851,
    "highAnnual": 150155,
@@ -15601,6 +17938,15 @@
    "hourly": 57.14,
    "lowAnnual": 74277,
    "lowHourly": 35.71,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 108805,
+   "highAnnual": 128003,
+   "highHourly": 61.54,
+   "hourly": 52.31,
+   "lowAnnual": 61859,
+   "lowHourly": 29.74,
    "year": "2023-2024"
   },
   "QC": {
@@ -15620,6 +17966,15 @@
    "lowAnnual": 79997,
    "lowHourly": 38.46,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 139859,
+   "highAnnual": 173410,
+   "highHourly": 83.37,
+   "hourly": 67.24,
+   "lowAnnual": 105019,
+   "lowHourly": 50.49,
+   "year": "2024"
   }
  },
  "40030": {
@@ -15686,6 +18041,24 @@
    "lowHourly": 23.08,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 130416,
+   "highAnnual": 165672,
+   "highHourly": 79.65,
+   "hourly": 62.7,
+   "lowAnnual": 80122,
+   "lowHourly": 38.52,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 119995,
+   "highAnnual": 189862,
+   "highHourly": 91.28,
+   "hourly": 57.69,
+   "lowAnnual": 95992,
+   "lowHourly": 46.15,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 100006,
    "highAnnual": 156790,
@@ -15693,6 +18066,15 @@
    "hourly": 48.08,
    "lowAnnual": 62400,
    "lowHourly": 30.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 70928,
+   "highAnnual": 115877,
+   "highHourly": 55.71,
+   "hourly": 34.1,
+   "lowAnnual": 48006,
+   "lowHourly": 23.08,
    "year": "2023-2024"
   },
   "QC": {
@@ -15711,6 +18093,15 @@
    "hourly": 38.46,
    "lowAnnual": 49920,
    "lowHourly": 24.0,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 104853,
+   "highAnnual": 138507,
+   "highHourly": 66.59,
+   "hourly": 50.41,
+   "lowAnnual": 83200,
+   "lowHourly": 40.0,
    "year": "2023-2024"
   }
  },
@@ -15944,6 +18335,15 @@
    "lowHourly": 37.19,
    "year": "2024"
   },
+  "NT": {
+   "annual": 124342,
+   "highAnnual": 165818,
+   "highHourly": 79.72,
+   "hourly": 59.78,
+   "lowAnnual": 87131,
+   "lowHourly": 41.89,
+   "year": "2024"
+  },
   "ON": {
    "annual": 114650,
    "highAnnual": 162032,
@@ -15951,6 +18351,15 @@
    "hourly": 55.12,
    "lowAnnual": 73861,
    "lowHourly": 35.51,
+   "year": "2024"
+  },
+  "PE": {
+   "annual": 84781,
+   "highAnnual": 121389,
+   "highHourly": 58.36,
+   "hourly": 40.76,
+   "lowAnnual": 55349,
+   "lowHourly": 26.61,
    "year": "2024"
   },
   "QC": {
@@ -16036,6 +18445,15 @@
    "lowHourly": 159.58,
    "year": "2024"
   },
+  "NU": {
+   "annual": 414900,
+   "highAnnual": 455000,
+   "highHourly": 218.75,
+   "hourly": 199.47,
+   "lowAnnual": 414900,
+   "lowHourly": 199.47,
+   "year": "2024"
+  },
   "ON": {
    "annual": 414900,
    "highAnnual": 416900,
@@ -16043,6 +18461,13 @@
    "hourly": 199.47,
    "lowAnnual": 387006,
    "lowHourly": 186.06,
+   "year": "2024"
+  },
+  "PE": {
+   "annual": 414900,
+   "highAnnual": 455000,
+   "highHourly": 218.75,
+   "hourly": 199.47,
    "year": "2024"
   },
   "QC": {
@@ -16128,6 +18553,20 @@
    "lowHourly": 24.13,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 133973,
+   "hourly": 64.41,
+   "year": "2021"
+  },
+  "NU": {
+   "annual": 142126,
+   "highAnnual": 185203,
+   "highHourly": 89.04,
+   "hourly": 68.33,
+   "lowAnnual": 94931,
+   "lowHourly": 45.64,
+   "year": "2024"
+  },
   "ON": {
    "annual": 135637,
    "highAnnual": 234998,
@@ -16135,6 +18574,15 @@
    "hourly": 65.21,
    "lowAnnual": 66664,
    "lowHourly": 32.05,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 119995,
+   "highAnnual": 168542,
+   "highHourly": 81.03,
+   "hourly": 57.69,
+   "lowAnnual": 53331,
+   "lowHourly": 25.64,
    "year": "2023-2024"
   },
   "QC": {
@@ -16153,6 +18601,15 @@
    "hourly": 57.88,
    "lowAnnual": 66664,
    "lowHourly": 32.05,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 128003,
+   "highAnnual": 159994,
+   "highHourly": 76.92,
+   "hourly": 61.54,
+   "lowAnnual": 83200,
+   "lowHourly": 40.0,
    "year": "2023-2024"
   }
  },
@@ -16227,6 +18684,15 @@
    "hourly": 64.1,
    "lowAnnual": 69992,
    "lowHourly": 33.65,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 119995,
+   "highAnnual": 181002,
+   "highHourly": 87.02,
+   "hourly": 57.69,
+   "lowAnnual": 66664,
+   "lowHourly": 32.05,
    "year": "2023-2024"
   },
   "QC": {
@@ -16321,6 +18787,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 57595,
+   "highAnnual": 95992,
+   "highHourly": 46.15,
+   "hourly": 27.69,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 56160,
    "highAnnual": 87360,
@@ -16338,6 +18813,15 @@
    "lowAnnual": 31928,
    "lowHourly": 15.35,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 65998,
+   "highAnnual": 96741,
+   "highHourly": 46.51,
+   "hourly": 31.73,
+   "lowAnnual": 39312,
+   "lowHourly": 18.9,
+   "year": "2024"
   }
  },
  "41210": {
@@ -16404,11 +18888,38 @@
    "lowHourly": 21.25,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 115336,
+   "highAnnual": 124800,
+   "highHourly": 60.0,
+   "hourly": 55.45,
+   "lowAnnual": 82992,
+   "lowHourly": 39.9,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 108576,
+   "highAnnual": 124800,
+   "highHourly": 60.0,
+   "hourly": 52.2,
+   "lowAnnual": 66560,
+   "lowHourly": 32.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 93600,
    "highAnnual": 228800,
    "highHourly": 110.0,
    "hourly": 45.0,
+   "lowAnnual": 49920,
+   "lowHourly": 24.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 85342,
+   "highAnnual": 108160,
+   "highHourly": 52.0,
+   "hourly": 41.03,
    "lowAnnual": 49920,
    "lowHourly": 24.0,
    "year": "2023-2024"
@@ -16430,6 +18941,15 @@
    "lowAnnual": 52790,
    "lowHourly": 25.38,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 96762,
+   "highAnnual": 144830,
+   "highHourly": 69.63,
+   "hourly": 46.52,
+   "lowAnnual": 67829,
+   "lowHourly": 32.61,
+   "year": "2024"
   }
  },
  "41220": {
@@ -16496,6 +19016,15 @@
    "lowHourly": 19.79,
    "year": "2023-2024"
   },
+  "NU": {
+   "annual": 124322,
+   "highAnnual": 147930,
+   "highHourly": 71.12,
+   "hourly": 59.77,
+   "lowAnnual": 66560,
+   "lowHourly": 32.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 100006,
    "highAnnual": 128003,
@@ -16503,6 +19032,15 @@
    "hourly": 48.08,
    "lowAnnual": 61006,
    "lowHourly": 29.33,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 92435,
+   "highAnnual": 108368,
+   "highHourly": 52.1,
+   "hourly": 44.44,
+   "lowAnnual": 55474,
+   "lowHourly": 26.67,
    "year": "2023-2024"
   },
   "QC": {
@@ -16521,6 +19059,15 @@
    "hourly": 44.71,
    "lowAnnual": 62400,
    "lowHourly": 30.0,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 114296,
+   "highAnnual": 159994,
+   "highHourly": 76.92,
+   "hourly": 54.95,
+   "lowAnnual": 64480,
+   "lowHourly": 31.0,
    "year": "2023-2024"
   }
  },
@@ -16588,6 +19135,24 @@
    "lowHourly": 20.77,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 127005,
+   "highAnnual": 154669,
+   "highHourly": 74.36,
+   "hourly": 61.06,
+   "lowAnnual": 72010,
+   "lowHourly": 34.62,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 104000,
+   "highAnnual": 131206,
+   "highHourly": 63.08,
+   "hourly": 50.0,
+   "lowAnnual": 62400,
+   "lowHourly": 30.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 95992,
    "highAnnual": 122283,
@@ -16595,6 +19160,15 @@
    "hourly": 46.15,
    "lowAnnual": 57200,
    "lowHourly": 27.5,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 83200,
+   "highAnnual": 102627,
+   "highHourly": 49.34,
+   "hourly": 40.0,
+   "lowAnnual": 56451,
+   "lowHourly": 27.14,
    "year": "2023-2024"
   },
   "QC": {
@@ -16613,6 +19187,15 @@
    "hourly": 40.38,
    "lowAnnual": 53997,
    "lowHourly": 25.96,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 114130,
+   "highAnnual": 130666,
+   "highHourly": 62.82,
+   "hourly": 54.87,
+   "lowAnnual": 95992,
+   "lowHourly": 46.15,
    "year": "2023-2024"
   }
  },
@@ -16680,6 +19263,24 @@
    "lowHourly": 24.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 118061,
+   "highAnnual": 161325,
+   "highHourly": 77.56,
+   "hourly": 56.76,
+   "lowAnnual": 80870,
+   "lowHourly": 38.88,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 134306,
+   "highAnnual": 162822,
+   "highHourly": 78.28,
+   "hourly": 64.57,
+   "lowAnnual": 92851,
+   "lowHourly": 44.64,
+   "year": "2024"
+  },
   "ON": {
    "annual": 80413,
    "highAnnual": 110906,
@@ -16687,6 +19288,15 @@
    "hourly": 38.66,
    "lowAnnual": 52000,
    "lowHourly": 25.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 83200,
+   "highAnnual": 96845,
+   "highHourly": 46.56,
+   "hourly": 40.0,
+   "lowAnnual": 52686,
+   "lowHourly": 25.33,
    "year": "2023-2024"
   },
   "QC": {
@@ -16705,6 +19315,15 @@
    "hourly": 38.0,
    "lowAnnual": 56326,
    "lowHourly": 27.08,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 99195,
+   "highAnnual": 119475,
+   "highHourly": 57.44,
+   "hourly": 47.69,
+   "lowAnnual": 91998,
+   "lowHourly": 44.23,
    "year": "2023-2024"
   }
  },
@@ -16772,6 +19391,24 @@
    "lowHourly": 20.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 110552,
+   "highAnnual": 145850,
+   "highHourly": 70.12,
+   "hourly": 53.15,
+   "lowAnnual": 60091,
+   "lowHourly": 28.89,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 114296,
+   "highAnnual": 124800,
+   "highHourly": 60.0,
+   "hourly": 54.95,
+   "lowAnnual": 87360,
+   "lowHourly": 42.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 68640,
    "highAnnual": 99840,
@@ -16779,6 +19416,15 @@
    "hourly": 33.0,
    "lowAnnual": 47840,
    "lowHourly": 23.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 65520,
+   "highAnnual": 90147,
+   "highHourly": 43.34,
+   "hourly": 31.5,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -16797,6 +19443,15 @@
    "hourly": 37.0,
    "lowAnnual": 52000,
    "lowHourly": 25.0,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 99195,
+   "highAnnual": 104624,
+   "highHourly": 50.3,
+   "hourly": 47.69,
+   "lowAnnual": 66352,
+   "lowHourly": 31.9,
    "year": "2023-2024"
   }
  },
@@ -16864,6 +19519,15 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 76315,
+   "highAnnual": 104915,
+   "highHourly": 50.44,
+   "hourly": 36.69,
+   "lowAnnual": 44949,
+   "lowHourly": 21.61,
+   "year": "2024"
+  },
   "ON": {
    "annual": 60008,
    "highAnnual": 119995,
@@ -16871,6 +19535,15 @@
    "hourly": 28.85,
    "lowAnnual": 38397,
    "lowHourly": 18.46,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 56222,
+   "highAnnual": 90002,
+   "highHourly": 43.27,
+   "hourly": 27.03,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -16890,6 +19563,15 @@
    "lowAnnual": 31990,
    "lowHourly": 15.38,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 70741,
+   "highAnnual": 113693,
+   "highHourly": 54.66,
+   "hourly": 34.01,
+   "lowAnnual": 50939,
+   "lowHourly": 24.49,
+   "year": "2024"
   }
  },
  "41310": {
@@ -17039,6 +19721,15 @@
    "lowHourly": 28.67,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 111301,
+   "highAnnual": 157872,
+   "highHourly": 75.9,
+   "hourly": 53.51,
+   "lowAnnual": 78291,
+   "lowHourly": 37.64,
+   "year": "2024"
+  },
   "ON": {
    "annual": 81058,
    "highAnnual": 100651,
@@ -17131,6 +19822,15 @@
    "lowHourly": 17.09,
    "year": "2023-2024"
   },
+  "NU": {
+   "annual": 107120,
+   "highAnnual": 144976,
+   "highHourly": 69.7,
+   "hourly": 51.5,
+   "lowAnnual": 81182,
+   "lowHourly": 39.03,
+   "year": "2024"
+  },
   "ON": {
    "annual": 83200,
    "highAnnual": 115710,
@@ -17139,6 +19839,15 @@
    "lowAnnual": 45760,
    "lowHourly": 22.0,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 88504,
+   "highAnnual": 117042,
+   "highHourly": 56.27,
+   "hourly": 42.55,
+   "lowAnnual": 64584,
+   "lowHourly": 31.05,
+   "year": "2024"
   },
   "QC": {
    "annual": 91520,
@@ -17157,6 +19866,15 @@
    "lowAnnual": 48360,
    "lowHourly": 23.25,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 111342,
+   "highAnnual": 149802,
+   "highHourly": 72.02,
+   "hourly": 53.53,
+   "lowAnnual": 72238,
+   "lowHourly": 34.73,
+   "year": "2024"
   }
  },
  "41321": {
@@ -17230,6 +19948,15 @@
    "hourly": 29.23,
    "lowAnnual": 44366,
    "lowHourly": 21.33,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 53040,
+   "highAnnual": 74672,
+   "highHourly": 35.9,
+   "hourly": 25.5,
+   "lowAnnual": 43680,
+   "lowHourly": 21.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -17315,6 +20042,24 @@
    "lowHourly": 21.38,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 117000,
+   "highAnnual": 132267,
+   "highHourly": 63.59,
+   "hourly": 56.25,
+   "lowAnnual": 91520,
+   "lowHourly": 44.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 130562,
+   "highAnnual": 161741,
+   "highHourly": 77.76,
+   "hourly": 62.77,
+   "lowAnnual": 93621,
+   "lowHourly": 45.01,
+   "year": "2024"
+  },
   "ON": {
    "annual": 90667,
    "highAnnual": 140005,
@@ -17322,6 +20067,15 @@
    "hourly": 43.59,
    "lowAnnual": 64480,
    "lowHourly": 31.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 76128,
+   "highAnnual": 107162,
+   "highHourly": 51.52,
+   "hourly": 36.6,
+   "lowAnnual": 67205,
+   "lowHourly": 32.31,
    "year": "2023-2024"
   },
   "QC": {
@@ -17340,6 +20094,15 @@
    "hourly": 41.03,
    "lowAnnual": 49920,
    "lowHourly": 24.0,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 85280,
+   "highAnnual": 110926,
+   "highHourly": 53.33,
+   "hourly": 41.0,
+   "lowAnnual": 62400,
+   "lowHourly": 30.0,
    "year": "2023-2024"
   }
  },
@@ -17416,6 +20179,15 @@
    "lowHourly": 35.71,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 97115,
+   "highAnnual": 128003,
+   "highHourly": 61.54,
+   "hourly": 46.69,
+   "lowAnnual": 69326,
+   "lowHourly": 33.33,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 95680,
    "highAnnual": 173867,
@@ -17432,6 +20204,15 @@
    "hourly": 47.8,
    "lowAnnual": 70054,
    "lowHourly": 33.68,
+   "year": "2024"
+  },
+  "YT": {
+   "annual": 101670,
+   "highAnnual": 133619,
+   "highHourly": 64.24,
+   "hourly": 48.88,
+   "lowAnnual": 74402,
+   "lowHourly": 35.77,
    "year": "2024"
   }
  },
@@ -17499,6 +20280,24 @@
    "lowHourly": 28.67,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 109325,
+   "highAnnual": 139693,
+   "highHourly": 67.16,
+   "hourly": 52.56,
+   "lowAnnual": 80163,
+   "lowHourly": 38.54,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 107411,
+   "highAnnual": 141274,
+   "highHourly": 67.92,
+   "hourly": 51.64,
+   "lowAnnual": 79747,
+   "lowHourly": 38.34,
+   "year": "2024"
+  },
   "ON": {
    "annual": 94931,
    "highAnnual": 149323,
@@ -17506,6 +20305,15 @@
    "hourly": 45.64,
    "lowAnnual": 62400,
    "lowHourly": 30.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 76960,
+   "highAnnual": 100006,
+   "highHourly": 48.08,
+   "hourly": 37.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -17525,6 +20333,11 @@
    "lowAnnual": 60320,
    "lowHourly": 29.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 99736,
+   "hourly": 47.95,
+   "year": "2021"
   }
  },
  "41403": {
@@ -17591,6 +20404,24 @@
    "lowHourly": 26.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 117000,
+   "highAnnual": 149760,
+   "highHourly": 72.0,
+   "hourly": 56.25,
+   "lowAnnual": 79040,
+   "lowHourly": 38.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 116272,
+   "highAnnual": 149323,
+   "highHourly": 71.79,
+   "hourly": 55.9,
+   "lowAnnual": 79248,
+   "lowHourly": 38.1,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 92810,
    "highAnnual": 133328,
@@ -17598,6 +20429,15 @@
    "hourly": 44.62,
    "lowAnnual": 55994,
    "lowHourly": 26.92,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 78936,
+   "highAnnual": 104541,
+   "highHourly": 50.26,
+   "hourly": 37.95,
+   "lowAnnual": 58240,
+   "lowHourly": 28.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -17616,6 +20456,15 @@
    "hourly": 39.49,
    "lowAnnual": 60008,
    "lowHourly": 28.85,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 102586,
+   "highAnnual": 116979,
+   "highHourly": 56.24,
+   "hourly": 49.32,
+   "lowAnnual": 61152,
+   "lowHourly": 29.4,
    "year": "2023-2024"
   }
  },
@@ -17683,6 +20532,24 @@
    "lowHourly": 30.38,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 117333,
+   "highAnnual": 137717,
+   "highHourly": 66.21,
+   "hourly": 56.41,
+   "lowAnnual": 87672,
+   "lowHourly": 42.15,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 104541,
+   "highAnnual": 140088,
+   "highHourly": 67.35,
+   "hourly": 50.26,
+   "lowAnnual": 70720,
+   "lowHourly": 34.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 92810,
    "highAnnual": 129834,
@@ -17690,6 +20557,15 @@
    "hourly": 44.62,
    "lowAnnual": 55120,
    "lowHourly": 26.5,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 92810,
+   "highAnnual": 130000,
+   "highHourly": 62.5,
+   "hourly": 44.62,
+   "lowAnnual": 73050,
+   "lowHourly": 35.12,
    "year": "2023-2024"
   },
   "QC": {
@@ -17709,6 +20585,15 @@
    "lowAnnual": 55474,
    "lowHourly": 26.67,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 101608,
+   "highAnnual": 139318,
+   "highHourly": 66.98,
+   "hourly": 48.85,
+   "lowAnnual": 69181,
+   "lowHourly": 33.26,
+   "year": "2024"
   }
  },
  "41405": {
@@ -17775,6 +20660,24 @@
    "lowHourly": 24.04,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 120182,
+   "highAnnual": 153171,
+   "highHourly": 73.64,
+   "hourly": 57.78,
+   "lowAnnual": 84594,
+   "lowHourly": 40.67,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 121222,
+   "highAnnual": 159557,
+   "highHourly": 76.71,
+   "hourly": 58.28,
+   "lowAnnual": 76731,
+   "lowHourly": 36.89,
+   "year": "2024"
+  },
   "ON": {
    "annual": 86174,
    "highAnnual": 119995,
@@ -17782,6 +20685,15 @@
    "hourly": 41.43,
    "lowAnnual": 57034,
    "lowHourly": 27.42,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 87006,
+   "highAnnual": 124800,
+   "highHourly": 60.0,
+   "hourly": 41.83,
+   "lowAnnual": 51501,
+   "lowHourly": 24.76,
    "year": "2023-2024"
   },
   "QC": {
@@ -17801,6 +20713,15 @@
    "lowAnnual": 63606,
    "lowHourly": 30.58,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 97760,
+   "highAnnual": 142126,
+   "highHourly": 68.33,
+   "hourly": 47.0,
+   "lowAnnual": 60341,
+   "lowHourly": 29.01,
+   "year": "2024"
   }
  },
  "41406": {
@@ -17867,6 +20788,15 @@
    "lowHourly": 18.28,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 100422,
+   "highAnnual": 128190,
+   "highHourly": 61.63,
+   "hourly": 48.28,
+   "lowAnnual": 63107,
+   "lowHourly": 30.34,
+   "year": "2024"
+  },
   "ON": {
    "annual": 68640,
    "highAnnual": 114130,
@@ -17875,6 +20805,15 @@
    "lowAnnual": 41600,
    "lowHourly": 20.0,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 73611,
+   "highAnnual": 91021,
+   "highHourly": 43.76,
+   "hourly": 35.39,
+   "lowAnnual": 61963,
+   "lowHourly": 29.79,
+   "year": "2024"
   },
   "QC": {
    "annual": 64480,
@@ -17893,6 +20832,15 @@
    "lowAnnual": 41600,
    "lowHourly": 20.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 75171,
+   "highAnnual": 111051,
+   "highHourly": 53.39,
+   "hourly": 36.14,
+   "lowAnnual": 56472,
+   "lowHourly": 27.15,
+   "year": "2024"
   }
  },
  "41407": {
@@ -17959,6 +20907,24 @@
    "lowHourly": 26.22,
    "year": "2024"
   },
+  "NT": {
+   "annual": 132974,
+   "highAnnual": 169250,
+   "highHourly": 81.37,
+   "hourly": 63.93,
+   "lowAnnual": 97656,
+   "lowHourly": 46.95,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 124446,
+   "highAnnual": 172078,
+   "highHourly": 82.73,
+   "hourly": 59.83,
+   "lowAnnual": 54829,
+   "lowHourly": 26.36,
+   "year": "2024"
+  },
   "ON": {
    "annual": 95992,
    "highAnnual": 143998,
@@ -17966,6 +20932,15 @@
    "hourly": 46.15,
    "lowAnnual": 69326,
    "lowHourly": 33.33,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 75462,
+   "highAnnual": 110573,
+   "highHourly": 53.16,
+   "hourly": 36.28,
+   "lowAnnual": 44803,
+   "lowHourly": 21.54,
    "year": "2023-2024"
   },
   "QC": {
@@ -17976,6 +20951,15 @@
    "lowAnnual": 60008,
    "lowHourly": 28.85,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 114670,
+   "highAnnual": 144602,
+   "highHourly": 69.52,
+   "hourly": 55.13,
+   "lowAnnual": 76024,
+   "lowHourly": 36.55,
+   "year": "2024"
   }
  },
  "41409": {
@@ -18134,6 +21118,24 @@
    "lowHourly": 33.65,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 109762,
+   "highAnnual": 139485,
+   "highHourly": 67.06,
+   "hourly": 52.77,
+   "lowAnnual": 78520,
+   "lowHourly": 37.75,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 117458,
+   "highAnnual": 150405,
+   "highHourly": 72.31,
+   "hourly": 56.47,
+   "lowAnnual": 82805,
+   "lowHourly": 39.81,
+   "year": "2024"
+  },
   "ON": {
    "annual": 105144,
    "highAnnual": 133120,
@@ -18141,6 +21143,15 @@
    "hourly": 50.55,
    "lowAnnual": 66997,
    "lowHourly": 32.21,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 109990,
+   "highAnnual": 129002,
+   "highHourly": 62.02,
+   "hourly": 52.88,
+   "lowAnnual": 76794,
+   "lowHourly": 36.92,
    "year": "2023-2024"
   },
   "QC": {
@@ -18159,6 +21170,15 @@
    "hourly": 52.0,
    "lowAnnual": 72800,
    "lowHourly": 35.0,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 112154,
+   "highAnnual": 126006,
+   "highHourly": 60.58,
+   "hourly": 53.92,
+   "lowAnnual": 100006,
+   "lowHourly": 48.08,
    "year": "2023-2024"
   }
  },
@@ -18226,6 +21246,20 @@
    "lowHourly": 21.9,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 120910,
+   "hourly": 58.13,
+   "year": "2021"
+  },
+  "NU": {
+   "annual": 101858,
+   "highAnnual": 161138,
+   "highHourly": 77.47,
+   "hourly": 48.97,
+   "lowAnnual": 58032,
+   "lowHourly": 27.9,
+   "year": "2024"
+  },
   "ON": {
    "annual": 100942,
    "highAnnual": 134326,
@@ -18252,6 +21286,11 @@
    "lowAnnual": 61901,
    "lowHourly": 29.76,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 117499,
+   "hourly": 56.49,
+   "year": "2021"
   }
  },
  "42102": {
@@ -18401,6 +21440,15 @@
    "lowHourly": 20.71,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 54080,
+   "highAnnual": 68578,
+   "highHourly": 32.97,
+   "hourly": 26.0,
+   "lowAnnual": 42952,
+   "lowHourly": 20.65,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 59426,
    "highAnnual": 93829,
@@ -18418,6 +21466,15 @@
    "lowAnnual": 41600,
    "lowHourly": 20.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 76149,
+   "highAnnual": 113755,
+   "highHourly": 54.69,
+   "hourly": 36.61,
+   "lowAnnual": 62982,
+   "lowHourly": 30.28,
+   "year": "2024"
   }
  },
  "42201": {
@@ -18484,6 +21541,24 @@
    "lowHourly": 18.29,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 66560,
+   "highAnnual": 95160,
+   "highHourly": 45.75,
+   "hourly": 32.0,
+   "lowAnnual": 34736,
+   "lowHourly": 16.7,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 72800,
+   "highAnnual": 106080,
+   "highHourly": 51.0,
+   "hourly": 35.0,
+   "lowAnnual": 45760,
+   "lowHourly": 22.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 55120,
    "highAnnual": 77438,
@@ -18491,6 +21566,15 @@
    "hourly": 26.5,
    "lowAnnual": 41163,
    "lowHourly": 19.79,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 56160,
+   "highAnnual": 68640,
+   "highHourly": 33.0,
+   "hourly": 27.0,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -18509,6 +21593,15 @@
    "hourly": 23.08,
    "lowAnnual": 36005,
    "lowHourly": 17.31,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 62400,
+   "highAnnual": 92810,
+   "highHourly": 44.62,
+   "hourly": 30.0,
+   "lowAnnual": 52000,
+   "lowHourly": 25.0,
    "year": "2023-2024"
   }
  },
@@ -18576,6 +21669,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 55432,
+   "highAnnual": 77272,
+   "highHourly": 37.15,
+   "hourly": 26.65,
+   "lowAnnual": 37419,
+   "lowHourly": 17.99,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 52000,
+   "highAnnual": 86091,
+   "highHourly": 41.39,
+   "hourly": 25.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 45760,
    "highAnnual": 64480,
@@ -18583,6 +21694,15 @@
    "hourly": 22.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 44824,
+   "highAnnual": 65166,
+   "highHourly": 31.33,
+   "hourly": 21.55,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -18601,6 +21721,15 @@
    "hourly": 18.75,
    "lowAnnual": 31928,
    "lowHourly": 15.35,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 62400,
+   "highAnnual": 69680,
+   "highHourly": 33.5,
+   "hourly": 30.0,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
    "year": "2023-2024"
   }
  },
@@ -18667,6 +21796,15 @@
    "lowAnnual": 39998,
    "lowHourly": 19.23,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 66331,
+   "highAnnual": 88733,
+   "highHourly": 42.66,
+   "hourly": 31.89,
+   "lowAnnual": 45677,
+   "lowHourly": 21.96,
+   "year": "2024"
   },
   "QC": {
    "annual": 68494,
@@ -18751,6 +21889,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 41018,
+   "highAnnual": 63232,
+   "highHourly": 30.4,
+   "hourly": 19.72,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2024"
+  },
   "QC": {
    "annual": 52000,
    "highAnnual": 90563,
@@ -18834,6 +21981,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 74880,
+   "highAnnual": 91000,
+   "highHourly": 43.75,
+   "hourly": 36.0,
+   "lowAnnual": 56160,
+   "lowHourly": 27.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 74880,
+   "highAnnual": 99840,
+   "highHourly": 48.0,
+   "hourly": 36.0,
+   "lowAnnual": 52000,
+   "lowHourly": 25.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 54080,
    "highAnnual": 67434,
@@ -18841,6 +22006,15 @@
    "hourly": 26.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 57429,
+   "highAnnual": 65062,
+   "highHourly": 31.28,
+   "hourly": 27.61,
+   "lowAnnual": 44970,
+   "lowHourly": 21.62,
    "year": "2023-2024"
   },
   "QC": {
@@ -18859,6 +22033,15 @@
    "hourly": 22.0,
    "lowAnnual": 37440,
    "lowHourly": 18.0,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 58677,
+   "highAnnual": 76960,
+   "highHourly": 37.0,
+   "hourly": 28.21,
+   "lowAnnual": 49067,
+   "lowHourly": 23.59,
    "year": "2023-2024"
   }
  },
@@ -18926,6 +22109,15 @@
    "lowHourly": 18.75,
    "year": "2023-2024"
   },
+  "NU": {
+   "annual": 51813,
+   "highAnnual": 105290,
+   "highHourly": 50.62,
+   "hourly": 24.91,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2024"
+  },
   "ON": {
    "annual": 41600,
    "highAnnual": 72800,
@@ -18933,6 +22125,15 @@
    "hourly": 20.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 52000,
+   "highAnnual": 58240,
+   "highHourly": 28.0,
+   "hourly": 25.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -19110,6 +22311,24 @@
    "lowHourly": 25.64,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 98051,
+   "highAnnual": 111654,
+   "highHourly": 53.68,
+   "hourly": 47.14,
+   "lowAnnual": 68931,
+   "lowHourly": 33.14,
+   "year": "2021"
+  },
+  "NU": {
+   "annual": 86902,
+   "highAnnual": 114130,
+   "highHourly": 54.87,
+   "hourly": 41.78,
+   "lowAnnual": 52208,
+   "lowHourly": 25.1,
+   "year": "2024"
+  },
   "ON": {
    "annual": 81120,
    "highAnnual": 100006,
@@ -19117,6 +22336,15 @@
    "hourly": 39.0,
    "lowAnnual": 61214,
    "lowHourly": 29.43,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 68640,
+   "highAnnual": 89440,
+   "highHourly": 43.0,
+   "hourly": 33.0,
+   "lowAnnual": 52790,
+   "lowHourly": 25.38,
    "year": "2023-2024"
   },
   "QC": {
@@ -19202,6 +22430,15 @@
    "lowHourly": 36.06,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 97282,
+   "highAnnual": 111467,
+   "highHourly": 53.59,
+   "hourly": 46.77,
+   "lowAnnual": 76586,
+   "lowHourly": 36.82,
+   "year": "2024"
+  },
   "ON": {
    "annual": 85966,
    "highAnnual": 104291,
@@ -19228,6 +22465,15 @@
    "lowAnnual": 37440,
    "lowHourly": 18.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 84552,
+   "highAnnual": 98571,
+   "highHourly": 47.39,
+   "hourly": 40.65,
+   "lowAnnual": 66435,
+   "lowHourly": 31.94,
+   "year": "2024"
   }
  },
  "43203": {
@@ -19320,6 +22566,15 @@
    "lowAnnual": 56950,
    "lowHourly": 27.38,
    "year": "2024"
+  },
+  "YT": {
+   "annual": 83138,
+   "highAnnual": 102336,
+   "highHourly": 49.2,
+   "hourly": 39.97,
+   "lowAnnual": 60133,
+   "lowHourly": 28.91,
+   "year": "2024"
   }
  },
  "43204": {
@@ -19386,6 +22641,15 @@
    "lowHourly": 27.24,
    "year": "2024"
   },
+  "NT": {
+   "annual": 78416,
+   "highAnnual": 89336,
+   "highHourly": 42.95,
+   "hourly": 37.7,
+   "lowAnnual": 67538,
+   "lowHourly": 32.47,
+   "year": "2024"
+  },
   "ON": {
    "annual": 71677,
    "highAnnual": 96221,
@@ -19393,6 +22657,15 @@
    "hourly": 34.46,
    "lowAnnual": 55536,
    "lowHourly": 26.7,
+   "year": "2024"
+  },
+  "PE": {
+   "annual": 69264,
+   "highAnnual": 86008,
+   "highHourly": 41.35,
+   "hourly": 33.3,
+   "lowAnnual": 53706,
+   "lowHourly": 25.82,
    "year": "2024"
   },
   "QC": {
@@ -19477,6 +22750,20 @@
    "lowAnnual": 34320,
    "lowHourly": 16.5,
    "year": "2023-2024"
+  },
+  "NT": {
+   "annual": 35277,
+   "hourly": 16.96,
+   "year": "2021"
+  },
+  "NU": {
+   "annual": 47986,
+   "highAnnual": 72738,
+   "highHourly": 34.97,
+   "hourly": 23.07,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2024"
   },
   "ON": {
    "annual": 39520,
@@ -19570,6 +22857,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 70554,
+   "highAnnual": 87235,
+   "highHourly": 41.94,
+   "hourly": 33.92,
+   "lowAnnual": 47840,
+   "lowHourly": 23.0,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 78229,
+   "highAnnual": 108971,
+   "highHourly": 52.39,
+   "hourly": 37.61,
+   "lowAnnual": 55182,
+   "lowHourly": 26.53,
+   "year": "2024"
+  },
   "ON": {
    "annual": 45760,
    "highAnnual": 58240,
@@ -19577,6 +22882,15 @@
    "hourly": 22.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 45760,
+   "highAnnual": 54870,
+   "highHourly": 26.38,
+   "hourly": 22.0,
+   "lowAnnual": 35360,
+   "lowHourly": 17.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -19595,6 +22909,15 @@
    "hourly": 20.0,
    "lowAnnual": 31928,
    "lowHourly": 15.35,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 72800,
+   "highAnnual": 78811,
+   "highHourly": 37.89,
+   "hourly": 35.0,
+   "lowAnnual": 43202,
+   "lowHourly": 20.77,
    "year": "2023-2024"
   }
  },
@@ -19850,6 +23173,15 @@
    "lowAnnual": 53914,
    "lowHourly": 25.92,
    "year": "2024"
+  },
+  "YT": {
+   "annual": 69368,
+   "highAnnual": 130270,
+   "highHourly": 62.63,
+   "hourly": 33.35,
+   "lowAnnual": 58406,
+   "lowHourly": 28.08,
+   "year": "2024"
   }
  },
  "50011": {
@@ -20008,6 +23340,15 @@
    "lowHourly": 25.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 67995,
+   "highAnnual": 129792,
+   "highHourly": 62.4,
+   "hourly": 32.69,
+   "lowAnnual": 52707,
+   "lowHourly": 25.34,
+   "year": "2024"
+  },
   "QC": {
    "annual": 86070,
    "highAnnual": 138674,
@@ -20025,6 +23366,15 @@
    "lowAnnual": 60008,
    "lowHourly": 28.85,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 90189,
+   "highAnnual": 132933,
+   "highHourly": 63.91,
+   "hourly": 43.36,
+   "lowAnnual": 64168,
+   "lowHourly": 30.85,
+   "year": "2024"
   }
  },
  "51100": {
@@ -20100,6 +23450,15 @@
    "lowHourly": 27.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 83741,
+   "highAnnual": 107661,
+   "highHourly": 51.76,
+   "hourly": 40.26,
+   "lowAnnual": 59925,
+   "lowHourly": 28.81,
+   "year": "2024"
+  },
   "QC": {
    "annual": 94931,
    "highAnnual": 106662,
@@ -20116,6 +23475,15 @@
    "hourly": 31.32,
    "lowAnnual": 37066,
    "lowHourly": 17.82,
+   "year": "2024"
+  },
+  "YT": {
+   "annual": 82867,
+   "highAnnual": 159245,
+   "highHourly": 76.56,
+   "hourly": 39.84,
+   "lowAnnual": 55765,
+   "lowHourly": 26.81,
    "year": "2024"
   }
  },
@@ -20598,6 +23966,15 @@
    "lowHourly": 21.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 51792,
+   "highAnnual": 62483,
+   "highHourly": 30.04,
+   "hourly": 24.9,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2024"
+  },
   "QC": {
    "annual": 77875,
    "highAnnual": 108222,
@@ -20671,6 +24048,15 @@
    "lowAnnual": 34320,
    "lowHourly": 16.5,
    "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 101442,
+   "highAnnual": 146598,
+   "highHourly": 70.48,
+   "hourly": 48.77,
+   "lowAnnual": 65478,
+   "lowHourly": 31.48,
+   "year": "2024"
   },
   "ON": {
    "annual": 53331,
@@ -20772,6 +24158,15 @@
    "lowAnnual": 38002,
    "lowHourly": 18.27,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 73133,
+   "highAnnual": 103688,
+   "highHourly": 49.85,
+   "hourly": 35.16,
+   "lowAnnual": 38210,
+   "lowHourly": 18.37,
+   "year": "2024"
   },
   "QC": {
    "annual": 83200,
@@ -20975,6 +24370,15 @@
    "lowAnnual": 48006,
    "lowHourly": 23.08,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 56243,
+   "highAnnual": 75650,
+   "highHourly": 36.37,
+   "hourly": 27.04,
+   "lowAnnual": 42453,
+   "lowHourly": 20.41,
+   "year": "2024"
   },
   "QC": {
    "annual": 58115,
@@ -21428,6 +24832,15 @@
    "lowAnnual": 45760,
    "lowHourly": 22.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 90667,
+   "highAnnual": 114899,
+   "highHourly": 55.24,
+   "hourly": 43.59,
+   "lowAnnual": 45926,
+   "lowHourly": 22.08,
+   "year": "2024"
   }
  },
  "52120": {
@@ -21502,6 +24915,15 @@
    "lowAnnual": 43680,
    "lowHourly": 21.0,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 54891,
+   "highAnnual": 70824,
+   "highHourly": 34.05,
+   "hourly": 26.39,
+   "lowAnnual": 40290,
+   "lowHourly": 19.37,
+   "year": "2024"
   },
   "QC": {
    "annual": 62400,
@@ -21687,6 +25109,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 45760,
+   "highAnnual": 94931,
+   "highHourly": 45.64,
+   "hourly": 22.0,
+   "lowAnnual": 37440,
+   "lowHourly": 18.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 41600,
    "highAnnual": 58240,
@@ -21704,6 +25135,15 @@
    "lowAnnual": 31928,
    "lowHourly": 15.35,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 46446,
+   "highAnnual": 60008,
+   "highHourly": 28.85,
+   "hourly": 22.33,
+   "lowAnnual": 38272,
+   "lowHourly": 18.4,
+   "year": "2024"
   }
  },
  "53110": {
@@ -22247,6 +25687,15 @@
    "lowHourly": 18.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 43451,
+   "highAnnual": 66768,
+   "highHourly": 32.1,
+   "hourly": 20.89,
+   "lowAnnual": 34778,
+   "lowHourly": 16.72,
+   "year": "2024"
+  },
   "QC": {
    "annual": 54205,
    "highAnnual": 79747,
@@ -22395,6 +25844,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 53019,
+   "highAnnual": 90459,
+   "highHourly": 43.49,
+   "hourly": 25.49,
+   "lowAnnual": 34736,
+   "lowHourly": 16.7,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 47840,
+   "highAnnual": 83200,
+   "highHourly": 40.0,
+   "hourly": 23.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 38480,
    "highAnnual": 64480,
@@ -22402,6 +25869,15 @@
    "hourly": 18.5,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 37440,
+   "highAnnual": 52666,
+   "highHourly": 25.32,
+   "hourly": 18.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -22421,6 +25897,15 @@
    "lowAnnual": 31928,
    "lowHourly": 15.35,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 56867,
+   "highAnnual": 82077,
+   "highHourly": 39.46,
+   "hourly": 27.34,
+   "lowAnnual": 39541,
+   "lowHourly": 19.01,
+   "year": "2024"
   }
  },
  "55109": {
@@ -22507,6 +25992,15 @@
    "lowHourly": 38.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 96304,
+   "highAnnual": 152048,
+   "highHourly": 73.1,
+   "hourly": 46.3,
+   "lowAnnual": 63024,
+   "lowHourly": 30.3,
+   "year": "2024"
+  },
   "QC": {
    "annual": 117000,
    "highAnnual": 213325,
@@ -22590,6 +26084,24 @@
    "lowHourly": 21.65,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 87859,
+   "highAnnual": 154398,
+   "highHourly": 74.23,
+   "hourly": 42.24,
+   "lowAnnual": 55266,
+   "lowHourly": 26.57,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 94890,
+   "highAnnual": 142542,
+   "highHourly": 68.53,
+   "hourly": 45.62,
+   "lowAnnual": 57803,
+   "lowHourly": 27.79,
+   "year": "2024"
+  },
   "ON": {
    "annual": 90002,
    "highAnnual": 169998,
@@ -22598,6 +26110,15 @@
    "lowAnnual": 44200,
    "lowHourly": 21.25,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 72488,
+   "highAnnual": 123885,
+   "highHourly": 59.56,
+   "hourly": 34.85,
+   "lowAnnual": 47507,
+   "lowHourly": 22.84,
+   "year": "2024"
   },
   "QC": {
    "annual": 78000,
@@ -22616,6 +26137,15 @@
    "lowAnnual": 50003,
    "lowHourly": 24.04,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 86029,
+   "highAnnual": 141398,
+   "highHourly": 67.98,
+   "hourly": 41.36,
+   "lowAnnual": 54683,
+   "lowHourly": 26.29,
+   "year": "2024"
   }
  },
  "60030": {
@@ -22682,6 +26212,15 @@
    "lowHourly": 18.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 83595,
+   "highAnnual": 130042,
+   "highHourly": 62.52,
+   "hourly": 40.19,
+   "lowAnnual": 52686,
+   "lowHourly": 25.33,
+   "year": "2024"
+  },
   "ON": {
    "annual": 57138,
    "highAnnual": 100006,
@@ -22689,6 +26228,15 @@
    "hourly": 27.47,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 44990,
+   "highAnnual": 72010,
+   "highHourly": 34.62,
+   "hourly": 21.63,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -22708,6 +26256,15 @@
    "lowAnnual": 35360,
    "lowHourly": 17.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 79019,
+   "highAnnual": 114982,
+   "highHourly": 55.28,
+   "hourly": 37.99,
+   "lowAnnual": 49504,
+   "lowHourly": 23.8,
+   "year": "2024"
   }
  },
  "60031": {
@@ -22774,6 +26331,24 @@
    "lowHourly": 21.15,
    "year": "2024"
   },
+  "NT": {
+   "annual": 89606,
+   "highAnnual": 150218,
+   "highHourly": 72.22,
+   "hourly": 43.08,
+   "lowAnnual": 48984,
+   "lowHourly": 23.55,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 99050,
+   "highAnnual": 160181,
+   "highHourly": 77.01,
+   "hourly": 47.62,
+   "lowAnnual": 59613,
+   "lowHourly": 28.66,
+   "year": "2024"
+  },
   "ON": {
    "annual": 83200,
    "highAnnual": 145600,
@@ -22781,6 +26356,15 @@
    "hourly": 40.0,
    "lowAnnual": 44803,
    "lowHourly": 21.54,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 70990,
+   "highAnnual": 100006,
+   "highHourly": 48.08,
+   "hourly": 34.13,
+   "lowAnnual": 45760,
+   "lowHourly": 22.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -22799,6 +26383,15 @@
    "hourly": 32.91,
    "lowAnnual": 42890,
    "lowHourly": 20.62,
+   "year": "2024"
+  },
+  "YT": {
+   "annual": 94058,
+   "highAnnual": 135096,
+   "highHourly": 64.95,
+   "hourly": 45.22,
+   "lowAnnual": 52582,
+   "lowHourly": 25.28,
    "year": "2024"
   }
  },
@@ -22958,6 +26551,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 52458,
+   "highAnnual": 89128,
+   "highHourly": 42.85,
+   "hourly": 25.22,
+   "lowAnnual": 34882,
+   "lowHourly": 16.77,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 47694,
+   "highAnnual": 66560,
+   "highHourly": 32.0,
+   "hourly": 22.93,
+   "lowAnnual": 40456,
+   "lowHourly": 19.45,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 44720,
    "highAnnual": 79997,
@@ -22965,6 +26576,15 @@
    "hourly": 21.5,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 44408,
+   "highAnnual": 65000,
+   "highHourly": 31.25,
+   "hourly": 21.35,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -22984,6 +26604,15 @@
    "lowAnnual": 31928,
    "lowHourly": 15.35,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 57803,
+   "highAnnual": 77064,
+   "highHourly": 37.05,
+   "hourly": 27.79,
+   "lowAnnual": 40872,
+   "lowHourly": 19.65,
+   "year": "2024"
   }
  },
  "62020": {
@@ -23050,6 +26679,11 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 39603,
+   "hourly": 19.04,
+   "year": "2021"
+  },
   "ON": {
    "annual": 39520,
    "highAnnual": 56160,
@@ -23057,6 +26691,15 @@
    "hourly": 19.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 38480,
+   "highAnnual": 52000,
+   "highHourly": 25.0,
+   "hourly": 18.5,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -23076,6 +26719,15 @@
    "lowAnnual": 31928,
    "lowHourly": 15.35,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 43077,
+   "highAnnual": 63066,
+   "highHourly": 30.32,
+   "hourly": 20.71,
+   "lowAnnual": 37315,
+   "lowHourly": 17.94,
+   "year": "2024"
   }
  },
  "62021": {
@@ -23225,6 +26877,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 45760,
+   "highAnnual": 58677,
+   "highHourly": 28.21,
+   "hourly": 22.0,
+   "lowAnnual": 38480,
+   "lowHourly": 18.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 60008,
    "highAnnual": 95680,
@@ -23315,6 +26976,15 @@
    "hourly": 28.21,
    "lowAnnual": 38397,
    "lowHourly": 18.46,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 46925,
+   "highAnnual": 69326,
+   "highHourly": 33.33,
+   "hourly": 22.56,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -23409,6 +27079,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 45261,
+   "highAnnual": 63315,
+   "highHourly": 30.44,
+   "hourly": 21.76,
+   "lowAnnual": 39978,
+   "lowHourly": 19.22,
+   "year": "2024"
+  },
   "QC": {
    "annual": 51480,
    "highAnnual": 80080,
@@ -23501,6 +27180,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 47424,
+   "highAnnual": 61110,
+   "highHourly": 29.38,
+   "hourly": 22.8,
+   "lowAnnual": 38210,
+   "lowHourly": 18.37,
+   "year": "2024"
+  },
   "QC": {
    "annual": 45760,
    "highAnnual": 75005,
@@ -23591,6 +27279,15 @@
    "hourly": 38.0,
    "lowAnnual": 43680,
    "lowHourly": 21.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 57990,
+   "highAnnual": 119995,
+   "highHourly": 57.69,
+   "hourly": 27.88,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -23685,6 +27382,15 @@
    "lowHourly": 20.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 44699,
+   "highAnnual": 72779,
+   "highHourly": 34.99,
+   "hourly": 21.49,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2024"
+  },
   "QC": {
    "annual": 66560,
    "highAnnual": 106018,
@@ -23768,6 +27474,15 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 66914,
+   "highAnnual": 100048,
+   "highHourly": 48.1,
+   "hourly": 32.17,
+   "lowAnnual": 42952,
+   "lowHourly": 20.65,
+   "year": "2024"
+  },
   "ON": {
    "annual": 45760,
    "highAnnual": 71115,
@@ -23775,6 +27490,15 @@
    "hourly": 22.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 39520,
+   "highAnnual": 54080,
+   "highHourly": 26.0,
+   "hourly": 19.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -23794,6 +27518,15 @@
    "lowAnnual": 31928,
    "lowHourly": 15.35,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 54330,
+   "highAnnual": 120266,
+   "highHourly": 57.82,
+   "hourly": 26.12,
+   "lowAnnual": 41704,
+   "lowHourly": 20.05,
+   "year": "2024"
   }
  },
  "62201": {
@@ -24008,6 +27741,15 @@
    "lowHourly": 21.63,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 60008,
+   "highAnnual": 78062,
+   "highHourly": 37.53,
+   "hourly": 28.85,
+   "lowAnnual": 36046,
+   "lowHourly": 17.33,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 63440,
    "highAnnual": 113693,
@@ -24025,6 +27767,15 @@
    "lowAnnual": 37128,
    "lowHourly": 17.85,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 84282,
+   "highAnnual": 104832,
+   "highHourly": 50.4,
+   "hourly": 40.52,
+   "lowAnnual": 57803,
+   "lowHourly": 27.79,
+   "year": "2024"
   }
  },
  "63101": {
@@ -24100,6 +27851,11 @@
    "lowHourly": 18.06,
    "year": "2021"
   },
+  "PE": {
+   "annual": 35556,
+   "hourly": 17.09,
+   "year": "2021"
+  },
   "QC": {
    "annual": 57200,
    "highAnnual": 155000,
@@ -24116,6 +27872,11 @@
    "hourly": 29.04,
    "lowAnnual": 34747,
    "lowHourly": 16.71,
+   "year": "2021"
+  },
+  "YT": {
+   "annual": 168000,
+   "hourly": 80.77,
    "year": "2021"
   }
  },
@@ -24190,6 +27951,15 @@
    "hourly": 31.79,
    "lowAnnual": 41600,
    "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 58677,
+   "highAnnual": 94994,
+   "highHourly": 45.67,
+   "hourly": 28.21,
+   "lowAnnual": 37440,
+   "lowHourly": 18.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -24275,6 +28045,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 52000,
+   "highAnnual": 78000,
+   "highHourly": 37.5,
+   "hourly": 25.0,
+   "lowAnnual": 38480,
+   "lowHourly": 18.5,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 52000,
+   "highAnnual": 72800,
+   "highHourly": 35.0,
+   "hourly": 25.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 37440,
    "highAnnual": 49920,
@@ -24282,6 +28070,15 @@
    "hourly": 18.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 37440,
+   "highAnnual": 53518,
+   "highHourly": 25.73,
+   "hourly": 18.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -24300,6 +28097,15 @@
    "hourly": 17.0,
    "lowAnnual": 31928,
    "lowHourly": 15.35,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 59010,
+   "highAnnual": 86674,
+   "highHourly": 41.67,
+   "hourly": 28.37,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
    "year": "2023-2024"
   }
  },
@@ -24459,6 +28265,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 34320,
+   "highAnnual": 36400,
+   "highHourly": 17.5,
+   "hourly": 16.5,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 37024,
    "highAnnual": 50170,
@@ -24476,6 +28291,15 @@
    "lowAnnual": 31928,
    "lowHourly": 15.35,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 47195,
+   "highAnnual": 63149,
+   "highHourly": 30.36,
+   "hourly": 22.69,
+   "lowAnnual": 38043,
+   "lowHourly": 18.29,
+   "year": "2024"
   }
  },
  "63210": {
@@ -24549,6 +28373,15 @@
    "hourly": 18.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 41600,
+   "highAnnual": 48006,
+   "highHourly": 23.08,
+   "hourly": 20.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -24641,6 +28474,15 @@
    "hourly": 19.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 41600,
+   "highAnnual": 54850,
+   "highHourly": 26.37,
+   "hourly": 20.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -24793,6 +28635,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 41600,
+   "highAnnual": 52000,
+   "highHourly": 25.0,
+   "hourly": 20.0,
+   "lowAnnual": 34736,
+   "lowHourly": 16.7,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 40560,
+   "highAnnual": 79997,
+   "highHourly": 38.46,
+   "hourly": 19.5,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 36608,
    "highAnnual": 60008,
@@ -24800,6 +28660,15 @@
    "hourly": 17.6,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 34320,
+   "highAnnual": 51168,
+   "highHourly": 24.6,
+   "hourly": 16.5,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -24818,6 +28687,15 @@
    "hourly": 16.0,
    "lowAnnual": 31928,
    "lowHourly": 15.35,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 41600,
+   "highAnnual": 62400,
+   "highHourly": 30.0,
+   "hourly": 20.0,
+   "lowAnnual": 37315,
+   "lowHourly": 17.94,
    "year": "2023-2024"
   }
  },
@@ -24892,6 +28770,15 @@
    "hourly": 31.25,
    "lowAnnual": 39998,
    "lowHourly": 19.23,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 60008,
+   "highAnnual": 93600,
+   "highHourly": 45.0,
+   "hourly": 28.85,
+   "lowAnnual": 38106,
+   "lowHourly": 18.32,
    "year": "2023-2024"
   },
   "QC": {
@@ -25125,6 +29012,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 37253,
+   "highAnnual": 61027,
+   "highHourly": 29.34,
+   "hourly": 17.91,
+   "lowAnnual": 34570,
+   "lowHourly": 16.62,
+   "year": "2024"
+  },
   "QC": {
    "annual": 36400,
    "highAnnual": 72800,
@@ -25217,6 +29113,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 35360,
+   "highAnnual": 62400,
+   "highHourly": 30.0,
+   "hourly": 17.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 46675,
    "highAnnual": 83200,
@@ -25300,6 +29205,15 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NU": {
+   "annual": 71157,
+   "highAnnual": 124966,
+   "highHourly": 60.08,
+   "hourly": 34.21,
+   "lowAnnual": 52458,
+   "lowHourly": 25.22,
+   "year": "2024"
+  },
   "ON": {
    "annual": 52000,
    "highAnnual": 69763,
@@ -25308,6 +29222,15 @@
    "lowAnnual": 36608,
    "lowHourly": 17.6,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 47986,
+   "highAnnual": 74859,
+   "highHourly": 35.99,
+   "hourly": 23.07,
+   "lowAnnual": 37440,
+   "lowHourly": 18.0,
+   "year": "2024"
   },
   "QC": {
    "annual": 44990,
@@ -25325,6 +29248,15 @@
    "hourly": 24.37,
    "lowAnnual": 47070,
    "lowHourly": 22.63,
+   "year": "2024"
+  },
+  "YT": {
+   "annual": 61942,
+   "highAnnual": 66394,
+   "highHourly": 31.92,
+   "hourly": 29.78,
+   "lowAnnual": 45053,
+   "lowHourly": 21.66,
    "year": "2024"
   }
  },
@@ -25473,6 +29405,24 @@
    "hourly": 21.0,
    "lowAnnual": 34632,
    "lowHourly": 16.65,
+   "year": "2023-2024"
+  },
+  "NT": {
+   "annual": 58136,
+   "highAnnual": 138362,
+   "highHourly": 66.52,
+   "hourly": 27.95,
+   "lowAnnual": 34736,
+   "lowHourly": 16.7,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 48880,
+   "highAnnual": 76960,
+   "highHourly": 37.0,
+   "hourly": 23.5,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
    "year": "2023-2024"
   },
   "ON": {
@@ -25650,6 +29600,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 35360,
+   "highAnnual": 43680,
+   "highHourly": 21.0,
+   "hourly": 17.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 43680,
    "highAnnual": 62400,
@@ -25667,6 +29626,15 @@
    "lowAnnual": 31928,
    "lowHourly": 15.35,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 42286,
+   "highAnnual": 54288,
+   "highHourly": 26.1,
+   "hourly": 20.33,
+   "lowAnnual": 38709,
+   "lowHourly": 18.61,
+   "year": "2024"
   }
  },
  "64320": {
@@ -25964,6 +29932,15 @@
    "lowHourly": 18.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 59238,
+   "highAnnual": 79914,
+   "highHourly": 38.42,
+   "hourly": 28.48,
+   "lowAnnual": 43139,
+   "lowHourly": 20.74,
+   "year": "2024"
+  },
   "ON": {
    "annual": 45760,
    "highAnnual": 63211,
@@ -25971,6 +29948,15 @@
    "hourly": 22.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 43680,
+   "highAnnual": 56160,
+   "highHourly": 27.0,
+   "hourly": 21.0,
+   "lowAnnual": 36005,
+   "lowHourly": 17.31,
    "year": "2023-2024"
   },
   "QC": {
@@ -25990,6 +29976,15 @@
    "lowAnnual": 39707,
    "lowHourly": 19.09,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 56243,
+   "highAnnual": 79144,
+   "highHourly": 38.05,
+   "hourly": 27.04,
+   "lowAnnual": 42453,
+   "lowHourly": 20.41,
+   "year": "2024"
   }
  },
  "64401": {
@@ -26148,6 +30143,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 59613,
+   "highAnnual": 81474,
+   "highHourly": 39.17,
+   "hourly": 28.66,
+   "lowAnnual": 41309,
+   "lowHourly": 19.86,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 72613,
+   "highAnnual": 104770,
+   "highHourly": 50.37,
+   "hourly": 34.91,
+   "lowAnnual": 52624,
+   "lowHourly": 25.3,
+   "year": "2024"
+  },
   "ON": {
    "annual": 44720,
    "highAnnual": 68994,
@@ -26155,6 +30168,15 @@
    "hourly": 21.5,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 34320,
+   "highAnnual": 60008,
+   "highHourly": 28.85,
+   "hourly": 16.5,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -26173,6 +30195,15 @@
    "hourly": 23.0,
    "lowAnnual": 31928,
    "lowHourly": 15.35,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 52000,
+   "highAnnual": 70720,
+   "highHourly": 34.0,
+   "hourly": 25.0,
+   "lowAnnual": 37440,
+   "lowHourly": 18.0,
    "year": "2023-2024"
   }
  },
@@ -26240,6 +30271,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 54766,
+   "highAnnual": 95805,
+   "highHourly": 46.06,
+   "hourly": 26.33,
+   "lowAnnual": 37066,
+   "lowHourly": 17.82,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 52000,
+   "highAnnual": 68640,
+   "highHourly": 33.0,
+   "hourly": 25.0,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 41600,
    "highAnnual": 72530,
@@ -26247,6 +30296,15 @@
    "hourly": 20.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 37440,
+   "highAnnual": 53768,
+   "highHourly": 25.85,
+   "hourly": 18.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -26265,6 +30323,15 @@
    "hourly": 20.0,
    "lowAnnual": 31928,
    "lowHourly": 15.35,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 55494,
+   "highAnnual": 79040,
+   "highHourly": 38.0,
+   "hourly": 26.68,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
    "year": "2023-2024"
   }
  },
@@ -26332,6 +30399,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 35360,
+   "highAnnual": 41600,
+   "highHourly": 20.0,
+   "hourly": 17.0,
+   "lowAnnual": 34736,
+   "lowHourly": 16.7,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 39520,
+   "highAnnual": 43680,
+   "highHourly": 21.0,
+   "hourly": 19.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 36608,
    "highAnnual": 38480,
@@ -26339,6 +30424,15 @@
    "hourly": 17.6,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 34320,
+   "highAnnual": 37440,
+   "highHourly": 18.0,
+   "hourly": 16.5,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -26357,6 +30451,15 @@
    "hourly": 15.35,
    "lowAnnual": 31928,
    "lowHourly": 15.35,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 37315,
+   "highAnnual": 41600,
+   "highHourly": 20.0,
+   "hourly": 17.94,
+   "lowAnnual": 37315,
+   "lowHourly": 17.94,
    "year": "2023-2024"
   }
  },
@@ -26424,6 +30527,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 35880,
+   "highAnnual": 65395,
+   "highHourly": 31.44,
+   "hourly": 17.25,
+   "lowAnnual": 34736,
+   "lowHourly": 16.7,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 39520,
+   "highAnnual": 47840,
+   "highHourly": 23.0,
+   "hourly": 19.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 36608,
    "highAnnual": 43680,
@@ -26432,6 +30553,13 @@
    "lowAnnual": 36608,
    "lowHourly": 17.6,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 34320,
+   "highAnnual": 37357,
+   "highHourly": 17.96,
+   "hourly": 16.5,
+   "year": "2024"
   },
   "QC": {
    "annual": 33488,
@@ -26450,6 +30578,15 @@
    "lowAnnual": 31928,
    "lowHourly": 15.35,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 38022,
+   "highAnnual": 45240,
+   "highHourly": 21.75,
+   "hourly": 18.28,
+   "lowAnnual": 37315,
+   "lowHourly": 17.94,
+   "year": "2024"
   }
  },
  "65102": {
@@ -26516,6 +30653,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 37440,
+   "highAnnual": 43680,
+   "highHourly": 21.0,
+   "hourly": 18.0,
+   "lowAnnual": 34736,
+   "lowHourly": 16.7,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 39520,
+   "highAnnual": 49920,
+   "highHourly": 24.0,
+   "hourly": 19.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 36608,
    "highAnnual": 45760,
@@ -26523,6 +30678,15 @@
    "hourly": 17.6,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 34320,
+   "highAnnual": 37960,
+   "highHourly": 18.25,
+   "hourly": 16.5,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -26541,6 +30705,15 @@
    "hourly": 15.35,
    "lowAnnual": 31928,
    "lowHourly": 15.35,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 37315,
+   "highAnnual": 41600,
+   "highHourly": 20.0,
+   "hourly": 17.94,
+   "lowAnnual": 37315,
+   "lowHourly": 17.94,
    "year": "2023-2024"
   }
  },
@@ -26616,6 +30789,15 @@
    "lowAnnual": 36608,
    "lowHourly": 17.6,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 34320,
+   "highAnnual": 39146,
+   "highHourly": 18.82,
+   "hourly": 16.5,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2024"
   },
   "QC": {
    "annual": 41600,
@@ -26700,6 +30882,15 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 34736,
+   "highAnnual": 51189,
+   "highHourly": 24.61,
+   "hourly": 16.7,
+   "lowAnnual": 34736,
+   "lowHourly": 16.7,
+   "year": "2024"
+  },
   "ON": {
    "annual": 36608,
    "highAnnual": 54080,
@@ -26708,6 +30899,15 @@
    "lowAnnual": 36608,
    "lowHourly": 17.6,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 39125,
+   "highAnnual": 58219,
+   "highHourly": 27.99,
+   "hourly": 18.81,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2024"
   },
   "QC": {
    "annual": 41600,
@@ -26725,6 +30925,15 @@
    "hourly": 15.35,
    "lowAnnual": 31928,
    "lowHourly": 15.35,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 45760,
+   "highAnnual": 62400,
+   "highHourly": 30.0,
+   "hourly": 22.0,
+   "lowAnnual": 37315,
+   "lowHourly": 17.94,
    "year": "2023-2024"
   }
  },
@@ -26792,6 +31001,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 41600,
+   "highAnnual": 66560,
+   "highHourly": 32.0,
+   "hourly": 20.0,
+   "lowAnnual": 34736,
+   "lowHourly": 16.7,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 53872,
+   "highAnnual": 62400,
+   "highHourly": 30.0,
+   "hourly": 25.9,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 36608,
    "highAnnual": 43680,
@@ -26799,6 +31026,15 @@
    "hourly": 17.6,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 34320,
+   "highAnnual": 43638,
+   "highHourly": 20.98,
+   "hourly": 16.5,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -26817,6 +31053,15 @@
    "hourly": 15.35,
    "lowAnnual": 31928,
    "lowHourly": 15.35,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 41600,
+   "highAnnual": 65520,
+   "highHourly": 31.5,
+   "hourly": 20.0,
+   "lowAnnual": 37315,
+   "lowHourly": 17.94,
    "year": "2023-2024"
   }
  },
@@ -27041,6 +31286,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 42099,
+   "highAnnual": 49774,
+   "highHourly": 23.93,
+   "hourly": 20.24,
+   "lowAnnual": 34736,
+   "lowHourly": 16.7,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 39520,
+   "highAnnual": 56389,
+   "highHourly": 27.11,
+   "hourly": 19.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2024"
+  },
   "ON": {
    "annual": 36608,
    "highAnnual": 57200,
@@ -27048,6 +31311,15 @@
    "hourly": 17.6,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 35360,
+   "highAnnual": 47840,
+   "highHourly": 23.0,
+   "hourly": 17.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -27067,6 +31339,15 @@
    "lowAnnual": 31928,
    "lowHourly": 15.35,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 37315,
+   "highAnnual": 51147,
+   "highHourly": 24.59,
+   "hourly": 17.94,
+   "lowAnnual": 37315,
+   "lowHourly": 17.94,
+   "year": "2024"
   }
  },
  "65220": {
@@ -27140,6 +31421,15 @@
    "hourly": 19.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 34320,
+   "highAnnual": 35360,
+   "highHourly": 17.0,
+   "hourly": 16.5,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -27256,6 +31546,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 43680,
+   "highAnnual": 54080,
+   "highHourly": 26.0,
+   "hourly": 21.0,
+   "lowAnnual": 34736,
+   "lowHourly": 16.7,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 47840,
+   "highAnnual": 72800,
+   "highHourly": 35.0,
+   "hourly": 23.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 39520,
    "highAnnual": 53851,
@@ -27263,6 +31571,15 @@
    "hourly": 19.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 37440,
+   "highAnnual": 47840,
+   "highHourly": 23.0,
+   "hourly": 18.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -27282,6 +31599,15 @@
    "lowAnnual": 31928,
    "lowHourly": 15.35,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 51251,
+   "highAnnual": 69077,
+   "highHourly": 33.21,
+   "hourly": 24.64,
+   "lowAnnual": 37606,
+   "lowHourly": 18.08,
+   "year": "2024"
   }
  },
  "65311": {
@@ -27357,6 +31683,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 37440,
+   "highAnnual": 54080,
+   "highHourly": 26.0,
+   "hourly": 18.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 43680,
    "highAnnual": 54080,
@@ -27374,6 +31709,15 @@
    "lowAnnual": 31928,
    "lowHourly": 15.35,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 42390,
+   "highAnnual": 76440,
+   "highHourly": 36.75,
+   "hourly": 20.38,
+   "lowAnnual": 37315,
+   "lowHourly": 17.94,
+   "year": "2024"
   }
  },
  "65312": {
@@ -27440,6 +31784,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 48090,
+   "highAnnual": 62400,
+   "highHourly": 30.0,
+   "hourly": 23.12,
+   "lowAnnual": 37440,
+   "lowHourly": 18.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 52000,
+   "highAnnual": 62400,
+   "highHourly": 30.0,
+   "hourly": 25.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 45760,
    "highAnnual": 58240,
@@ -27447,6 +31809,15 @@
    "hourly": 22.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 43202,
+   "highAnnual": 48880,
+   "highHourly": 23.5,
+   "hourly": 20.77,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -27465,6 +31836,15 @@
    "hourly": 20.62,
    "lowAnnual": 31928,
    "lowHourly": 15.35,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 58240,
+   "highAnnual": 72800,
+   "highHourly": 35.0,
+   "hourly": 28.0,
+   "lowAnnual": 37440,
+   "lowHourly": 18.0,
    "year": "2023-2024"
   }
  },
@@ -27539,6 +31919,15 @@
    "hourly": 19.72,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 39520,
+   "highAnnual": 44720,
+   "highHourly": 21.5,
+   "hourly": 19.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -27633,6 +32022,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 39270,
+   "highAnnual": 59426,
+   "highHourly": 28.57,
+   "hourly": 18.88,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2024"
+  },
   "QC": {
    "annual": 37440,
    "highAnnual": 52000,
@@ -27716,6 +32114,24 @@
    "lowHourly": 30.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 131997,
+   "highAnnual": 167939,
+   "highHourly": 80.74,
+   "hourly": 63.46,
+   "lowAnnual": 92290,
+   "lowHourly": 44.37,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 133474,
+   "highAnnual": 178069,
+   "highHourly": 85.61,
+   "hourly": 64.17,
+   "lowAnnual": 83949,
+   "lowHourly": 40.36,
+   "year": "2024"
+  },
   "ON": {
    "annual": 105269,
    "highAnnual": 191173,
@@ -27724,6 +32140,15 @@
    "lowAnnual": 64002,
    "lowHourly": 30.77,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 94286,
+   "highAnnual": 152942,
+   "highHourly": 73.53,
+   "hourly": 45.33,
+   "lowAnnual": 64771,
+   "lowHourly": 31.14,
+   "year": "2024"
   },
   "QC": {
    "annual": 91520,
@@ -27741,6 +32166,15 @@
    "hourly": 49.68,
    "lowAnnual": 69992,
    "lowHourly": 33.65,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 113339,
+   "highAnnual": 166400,
+   "highHourly": 80.0,
+   "hourly": 54.49,
+   "lowAnnual": 99840,
+   "lowHourly": 48.0,
    "year": "2023-2024"
   }
  },
@@ -27809,6 +32243,11 @@
    "lowHourly": 18.06,
    "year": "2021"
   },
+  "PE": {
+   "annual": 38800,
+   "hourly": 18.65,
+   "year": "2021"
+  },
   "QC": {
    "annual": 38000,
    "highAnnual": 85000,
@@ -27825,6 +32264,11 @@
    "hourly": 20.0,
    "lowAnnual": 34747,
    "lowHourly": 16.71,
+   "year": "2021"
+  },
+  "YT": {
+   "annual": 60000,
+   "hourly": 28.85,
    "year": "2021"
   }
  },
@@ -27892,6 +32336,24 @@
    "lowHourly": 26.44,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 131144,
+   "highAnnual": 177590,
+   "highHourly": 85.38,
+   "hourly": 63.05,
+   "lowAnnual": 85654,
+   "lowHourly": 41.18,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 135907,
+   "highAnnual": 178360,
+   "highHourly": 85.75,
+   "hourly": 65.34,
+   "lowAnnual": 85259,
+   "lowHourly": 40.99,
+   "year": "2024"
+  },
   "ON": {
    "annual": 93995,
    "highAnnual": 146286,
@@ -27899,6 +32361,15 @@
    "hourly": 45.19,
    "lowAnnual": 53997,
    "lowHourly": 25.96,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 90002,
+   "highAnnual": 143000,
+   "highHourly": 68.75,
+   "hourly": 43.27,
+   "lowAnnual": 65520,
+   "lowHourly": 31.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -27918,6 +32389,15 @@
    "lowAnnual": 64293,
    "lowHourly": 30.91,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 98342,
+   "highAnnual": 143686,
+   "highHourly": 69.08,
+   "hourly": 47.28,
+   "lowAnnual": 67122,
+   "lowHourly": 32.27,
+   "year": "2024"
   }
  },
  "70020": {
@@ -27984,6 +32464,15 @@
    "lowHourly": 24.04,
    "year": "2023-2024"
   },
+  "NU": {
+   "annual": 115918,
+   "highAnnual": 161512,
+   "highHourly": 77.65,
+   "hourly": 55.73,
+   "lowAnnual": 74714,
+   "lowHourly": 35.92,
+   "year": "2024"
+  },
   "ON": {
    "annual": 112403,
    "highAnnual": 167960,
@@ -27992,6 +32481,15 @@
    "lowAnnual": 66373,
    "lowHourly": 31.91,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 91166,
+   "highAnnual": 112653,
+   "highHourly": 54.16,
+   "hourly": 43.83,
+   "lowAnnual": 64626,
+   "lowHourly": 31.07,
+   "year": "2024"
   },
   "QC": {
    "annual": 102856,
@@ -28009,6 +32507,15 @@
    "hourly": 49.12,
    "lowAnnual": 62234,
    "lowHourly": 29.92,
+   "year": "2024"
+  },
+  "YT": {
+   "annual": 110115,
+   "highAnnual": 161408,
+   "highHourly": 77.6,
+   "hourly": 52.94,
+   "lowAnnual": 78811,
+   "lowHourly": 37.89,
    "year": "2024"
   }
  },
@@ -28177,6 +32684,15 @@
    "lowHourly": 28.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 70346,
+   "highAnnual": 87422,
+   "highHourly": 42.03,
+   "hourly": 33.82,
+   "lowAnnual": 55869,
+   "lowHourly": 26.86,
+   "year": "2024"
+  },
   "QC": {
    "annual": 74880,
    "highAnnual": 93600,
@@ -28268,6 +32784,15 @@
    "lowAnnual": 60008,
    "lowHourly": 28.85,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 74235,
+   "highAnnual": 120016,
+   "highHourly": 57.7,
+   "hourly": 35.69,
+   "lowAnnual": 53622,
+   "lowHourly": 25.78,
+   "year": "2024"
   },
   "QC": {
    "annual": 95992,
@@ -28453,6 +32978,15 @@
    "lowHourly": 24.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 57221,
+   "highAnnual": 73840,
+   "highHourly": 35.5,
+   "hourly": 27.51,
+   "lowAnnual": 52000,
+   "lowHourly": 25.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 87006,
    "highAnnual": 97760,
@@ -28543,6 +33077,15 @@
    "hourly": 37.5,
    "lowAnnual": 52000,
    "lowHourly": 25.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 72800,
+   "highAnnual": 95992,
+   "highHourly": 46.15,
+   "hourly": 35.0,
+   "lowAnnual": 47840,
+   "lowHourly": 23.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -28637,6 +33180,15 @@
    "lowHourly": 22.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 75816,
+   "highAnnual": 79040,
+   "highHourly": 38.0,
+   "hourly": 36.45,
+   "lowAnnual": 49920,
+   "lowHourly": 24.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 79040,
    "highAnnual": 114400,
@@ -28654,6 +33206,15 @@
    "lowAnnual": 58240,
    "lowHourly": 28.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 86861,
+   "highAnnual": 102190,
+   "highHourly": 49.13,
+   "hourly": 41.76,
+   "lowAnnual": 60674,
+   "lowHourly": 29.17,
+   "year": "2024"
   }
  },
  "72021": {
@@ -28720,6 +33281,15 @@
    "lowHourly": 22.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 101234,
+   "highAnnual": 132371,
+   "highHourly": 63.64,
+   "hourly": 48.67,
+   "lowAnnual": 67725,
+   "lowHourly": 32.56,
+   "year": "2024"
+  },
   "ON": {
    "annual": 83200,
    "highAnnual": 114400,
@@ -28727,6 +33297,15 @@
    "hourly": 40.0,
    "lowAnnual": 56160,
    "lowHourly": 27.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 52000,
+   "highAnnual": 79997,
+   "highHourly": 38.46,
+   "hourly": 25.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -28746,6 +33325,15 @@
    "lowAnnual": 50003,
    "lowHourly": 24.04,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 95056,
+   "highAnnual": 123448,
+   "highHourly": 59.35,
+   "hourly": 45.7,
+   "lowAnnual": 59322,
+   "lowHourly": 28.52,
+   "year": "2024"
   }
  },
  "72022": {
@@ -29025,6 +33613,15 @@
    "lowHourly": 22.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 68349,
+   "highAnnual": 80746,
+   "highHourly": 38.82,
+   "hourly": 32.86,
+   "lowAnnual": 44262,
+   "lowHourly": 21.28,
+   "year": "2024"
+  },
   "QC": {
    "annual": 66560,
    "highAnnual": 79290,
@@ -29042,6 +33639,15 @@
    "lowAnnual": 41600,
    "lowHourly": 20.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 60798,
+   "highAnnual": 123906,
+   "highHourly": 59.57,
+   "hourly": 29.23,
+   "lowAnnual": 39811,
+   "lowHourly": 19.14,
+   "year": "2024"
   }
  },
  "72100": {
@@ -29116,6 +33722,15 @@
    "lowAnnual": 43680,
    "lowHourly": 21.0,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 58157,
+   "highAnnual": 66186,
+   "highHourly": 31.82,
+   "hourly": 27.96,
+   "lowAnnual": 45656,
+   "lowHourly": 21.95,
+   "year": "2024"
   },
   "QC": {
    "annual": 57200,
@@ -29633,6 +34248,15 @@
    "lowHourly": 21.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 100443,
+   "highAnnual": 119974,
+   "highHourly": 57.68,
+   "hourly": 48.29,
+   "lowAnnual": 46758,
+   "lowHourly": 22.48,
+   "year": "2024"
+  },
   "ON": {
    "annual": 58240,
    "highAnnual": 85862,
@@ -29640,6 +34264,15 @@
    "hourly": 28.0,
    "lowAnnual": 43680,
    "lowHourly": 21.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 52000,
+   "highAnnual": 67600,
+   "highHourly": 32.5,
+   "hourly": 25.0,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -29659,6 +34292,15 @@
    "lowAnnual": 45760,
    "lowHourly": 22.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 77938,
+   "highAnnual": 103397,
+   "highHourly": 49.71,
+   "hourly": 37.47,
+   "lowAnnual": 64397,
+   "lowHourly": 30.96,
+   "year": "2024"
   }
  },
  "72200": {
@@ -29725,6 +34367,24 @@
    "lowHourly": 19.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 84344,
+   "highAnnual": 105165,
+   "highHourly": 50.56,
+   "hourly": 40.55,
+   "lowAnnual": 62691,
+   "lowHourly": 30.14,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 72114,
+   "highAnnual": 99216,
+   "highHourly": 47.7,
+   "hourly": 34.67,
+   "lowAnnual": 44616,
+   "lowHourly": 21.45,
+   "year": "2024"
+  },
   "ON": {
    "annual": 70720,
    "highAnnual": 105040,
@@ -29732,6 +34392,15 @@
    "hourly": 34.0,
    "lowAnnual": 41600,
    "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 54995,
+   "highAnnual": 83200,
+   "highHourly": 40.0,
+   "hourly": 26.44,
+   "lowAnnual": 41267,
+   "lowHourly": 19.84,
    "year": "2023-2024"
   },
   "QC": {
@@ -29822,6 +34491,15 @@
    "highAnnual": 99840,
    "highHourly": 48.0,
    "hourly": 40.5,
+   "lowAnnual": 60320,
+   "lowHourly": 29.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 72654,
+   "highAnnual": 88400,
+   "highHourly": 42.5,
+   "hourly": 34.93,
    "lowAnnual": 60320,
    "lowHourly": 29.0,
    "year": "2023-2024"
@@ -30001,6 +34679,15 @@
    "lowHourly": 29.61,
    "year": "2024"
   },
+  "NT": {
+   "annual": 137946,
+   "highAnnual": 163301,
+   "highHourly": 78.51,
+   "hourly": 66.32,
+   "lowAnnual": 81910,
+   "lowHourly": 39.38,
+   "year": "2024"
+  },
   "ON": {
    "annual": 93600,
    "highAnnual": 128960,
@@ -30008,6 +34695,15 @@
    "hourly": 45.0,
    "lowAnnual": 61776,
    "lowHourly": 29.7,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 87360,
+   "highAnnual": 93600,
+   "highHourly": 45.0,
+   "hourly": 42.0,
+   "lowAnnual": 56160,
+   "lowHourly": 27.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -30027,6 +34723,15 @@
    "lowAnnual": 72800,
    "lowHourly": 35.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 151320,
+   "highAnnual": 165506,
+   "highHourly": 79.57,
+   "hourly": 72.75,
+   "lowAnnual": 113589,
+   "lowHourly": 54.61,
+   "year": "2024"
   }
  },
  "72204": {
@@ -30194,6 +34899,15 @@
    "lowHourly": 20.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 62400,
+   "highAnnual": 78000,
+   "highHourly": 37.5,
+   "hourly": 30.0,
+   "lowAnnual": 44990,
+   "lowHourly": 21.63,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 72134,
    "highAnnual": 92976,
@@ -30277,11 +34991,38 @@
    "lowHourly": 18.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 80246,
+   "highAnnual": 103043,
+   "highHourly": 49.54,
+   "hourly": 38.58,
+   "lowAnnual": 52562,
+   "lowHourly": 25.27,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 93226,
+   "highAnnual": 110490,
+   "highHourly": 53.12,
+   "hourly": 44.82,
+   "lowAnnual": 52582,
+   "lowHourly": 25.28,
+   "year": "2024"
+  },
   "ON": {
    "annual": 67600,
    "highAnnual": 104790,
    "highHourly": 50.38,
    "hourly": 32.5,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 62400,
+   "highAnnual": 79040,
+   "highHourly": 38.0,
+   "hourly": 30.0,
    "lowAnnual": 41600,
    "lowHourly": 20.0,
    "year": "2023-2024"
@@ -30303,6 +35044,15 @@
    "lowAnnual": 45760,
    "lowHourly": 22.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 64522,
+   "highAnnual": 85800,
+   "highHourly": 41.25,
+   "hourly": 31.02,
+   "lowAnnual": 42515,
+   "lowHourly": 20.44,
+   "year": "2024"
   }
  },
  "72301": {
@@ -30544,6 +35294,24 @@
    "lowHourly": 20.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 69326,
+   "highAnnual": 104000,
+   "highHourly": 50.0,
+   "hourly": 33.33,
+   "lowAnnual": 46800,
+   "lowHourly": 22.5,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 71448,
+   "highAnnual": 108139,
+   "highHourly": 51.99,
+   "hourly": 34.35,
+   "lowAnnual": 42557,
+   "lowHourly": 20.46,
+   "year": "2024"
+  },
   "ON": {
    "annual": 66560,
    "highAnnual": 99840,
@@ -30551,6 +35319,15 @@
    "hourly": 32.0,
    "lowAnnual": 45760,
    "lowHourly": 22.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 52000,
+   "highAnnual": 72800,
+   "highHourly": 35.0,
+   "hourly": 25.0,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -30569,6 +35346,15 @@
    "hourly": 30.0,
    "lowAnnual": 39520,
    "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 72800,
+   "highAnnual": 93600,
+   "highHourly": 45.0,
+   "hourly": 35.0,
+   "lowAnnual": 52000,
+   "lowHourly": 25.0,
    "year": "2023-2024"
   }
  },
@@ -30876,6 +35662,15 @@
    "lowHourly": 22.44,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 96678,
+   "highAnnual": 155251,
+   "highHourly": 74.64,
+   "hourly": 46.48,
+   "lowAnnual": 53310,
+   "lowHourly": 25.63,
+   "year": "2024"
+  },
   "ON": {
    "annual": 74027,
    "highAnnual": 100880,
@@ -30883,6 +35678,15 @@
    "hourly": 35.59,
    "lowAnnual": 47840,
    "lowHourly": 23.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 62483,
+   "highAnnual": 76960,
+   "highHourly": 37.0,
+   "hourly": 30.04,
+   "lowAnnual": 45760,
+   "lowHourly": 22.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -30902,6 +35706,15 @@
    "lowAnnual": 54080,
    "lowHourly": 26.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 87506,
+   "highAnnual": 120994,
+   "highHourly": 58.17,
+   "hourly": 42.07,
+   "lowAnnual": 46654,
+   "lowHourly": 22.43,
+   "year": "2024"
   }
  },
  "72401": {
@@ -30968,6 +35781,24 @@
    "lowHourly": 20.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 108618,
+   "highAnnual": 170581,
+   "highHourly": 82.01,
+   "hourly": 52.22,
+   "lowAnnual": 68370,
+   "lowHourly": 32.87,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 110240,
+   "highAnnual": 114400,
+   "highHourly": 55.0,
+   "hourly": 53.0,
+   "lowAnnual": 74880,
+   "lowHourly": 36.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 72800,
    "highAnnual": 106475,
@@ -30975,6 +35806,15 @@
    "hourly": 35.0,
    "lowAnnual": 45760,
    "lowHourly": 22.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 58240,
+   "highAnnual": 79997,
+   "highHourly": 38.46,
+   "hourly": 28.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -30994,6 +35834,15 @@
    "lowAnnual": 46800,
    "lowHourly": 22.5,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 91874,
+   "highAnnual": 118269,
+   "highHourly": 56.86,
+   "hourly": 44.17,
+   "lowAnnual": 63107,
+   "lowHourly": 30.34,
+   "year": "2024"
   }
  },
  "72402": {
@@ -31068,6 +35917,15 @@
    "lowAnnual": 43680,
    "lowHourly": 21.0,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 64917,
+   "highAnnual": 70762,
+   "highHourly": 34.02,
+   "hourly": 31.21,
+   "lowAnnual": 43722,
+   "lowHourly": 21.02,
+   "year": "2024"
   },
   "QC": {
    "annual": 79040,
@@ -31226,6 +36084,15 @@
    "lowHourly": 24.99,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 86757,
+   "highAnnual": 118352,
+   "highHourly": 56.9,
+   "hourly": 41.71,
+   "lowAnnual": 57782,
+   "lowHourly": 27.78,
+   "year": "2024"
+  },
   "ON": {
    "annual": 79040,
    "highAnnual": 109533,
@@ -31233,6 +36100,15 @@
    "hourly": 38.0,
    "lowAnnual": 45760,
    "lowHourly": 22.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 56160,
+   "highAnnual": 72800,
+   "highHourly": 35.0,
+   "hourly": 27.0,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -31252,6 +36128,15 @@
    "lowAnnual": 52000,
    "lowHourly": 25.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 90022,
+   "highAnnual": 116522,
+   "highHourly": 56.02,
+   "hourly": 43.28,
+   "lowAnnual": 74922,
+   "lowHourly": 36.02,
+   "year": "2024"
   }
  },
  "72405": {
@@ -31448,6 +36333,24 @@
    "lowHourly": 17.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 87360,
+   "highAnnual": 120640,
+   "highHourly": 58.0,
+   "hourly": 42.0,
+   "lowAnnual": 47840,
+   "lowHourly": 23.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 74006,
+   "highAnnual": 107890,
+   "highHourly": 51.87,
+   "hourly": 35.58,
+   "lowAnnual": 45115,
+   "lowHourly": 21.69,
+   "year": "2024"
+  },
   "ON": {
    "annual": 62400,
    "highAnnual": 90002,
@@ -31455,6 +36358,15 @@
    "hourly": 30.0,
    "lowAnnual": 39000,
    "lowHourly": 18.75,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 53040,
+   "highAnnual": 66560,
+   "highHourly": 32.0,
+   "hourly": 25.5,
+   "lowAnnual": 34632,
+   "lowHourly": 16.65,
    "year": "2023-2024"
   },
   "QC": {
@@ -31474,6 +36386,15 @@
    "lowAnnual": 37440,
    "lowHourly": 18.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 72842,
+   "highAnnual": 93954,
+   "highHourly": 45.17,
+   "hourly": 35.02,
+   "lowAnnual": 46717,
+   "lowHourly": 22.46,
+   "year": "2024"
   }
  },
  "72411": {
@@ -31549,6 +36470,15 @@
    "lowHourly": 18.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 52000,
+   "highAnnual": 76960,
+   "highHourly": 37.0,
+   "hourly": 25.0,
+   "lowAnnual": 49005,
+   "lowHourly": 23.56,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 52000,
    "highAnnual": 74880,
@@ -31566,6 +36496,15 @@
    "lowAnnual": 35360,
    "lowHourly": 17.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 75837,
+   "highAnnual": 98738,
+   "highHourly": 47.47,
+   "hourly": 36.46,
+   "lowAnnual": 59176,
+   "lowHourly": 28.45,
+   "year": "2024"
   }
  },
  "72420": {
@@ -32114,6 +37053,15 @@
    "lowHourly": 24.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 86174,
+   "highAnnual": 124613,
+   "highHourly": 59.91,
+   "hourly": 41.43,
+   "lowAnnual": 51064,
+   "lowHourly": 24.55,
+   "year": "2024"
+  },
   "ON": {
    "annual": 131040,
    "highAnnual": 263994,
@@ -32206,6 +37154,15 @@
    "lowHourly": 26.64,
    "year": "2024"
   },
+  "NT": {
+   "annual": 117062,
+   "highAnnual": 150446,
+   "highHourly": 72.33,
+   "hourly": 56.28,
+   "lowAnnual": 66560,
+   "lowHourly": 32.0,
+   "year": "2024"
+  },
   "ON": {
    "annual": 110157,
    "highAnnual": 210475,
@@ -32231,6 +37188,15 @@
    "hourly": 43.91,
    "lowAnnual": 63024,
    "lowHourly": 30.3,
+   "year": "2024"
+  },
+  "YT": {
+   "annual": 113277,
+   "highAnnual": 157976,
+   "highHourly": 75.95,
+   "hourly": 54.46,
+   "lowAnnual": 68682,
+   "lowHourly": 33.02,
    "year": "2024"
   }
  },
@@ -32789,6 +37755,15 @@
    "lowHourly": 22.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 52000,
+   "highAnnual": 62400,
+   "highHourly": 30.0,
+   "hourly": 25.0,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 78208,
    "highAnnual": 93600,
@@ -32935,6 +37910,15 @@
    "hourly": 25.0,
    "lowAnnual": 41600,
    "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 45760,
+   "highAnnual": 54080,
+   "highHourly": 26.0,
+   "hourly": 22.0,
+   "lowAnnual": 38480,
+   "lowHourly": 18.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -33121,6 +38105,15 @@
    "lowHourly": 18.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 52000,
+   "highAnnual": 66997,
+   "highHourly": 32.21,
+   "hourly": 25.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 53560,
    "highAnnual": 83200,
@@ -33204,6 +38197,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 76814,
+   "highAnnual": 99258,
+   "highHourly": 47.72,
+   "hourly": 36.93,
+   "lowAnnual": 45510,
+   "lowHourly": 21.88,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 73278,
+   "highAnnual": 105726,
+   "highHourly": 50.83,
+   "hourly": 35.23,
+   "lowAnnual": 39936,
+   "lowHourly": 19.2,
+   "year": "2024"
+  },
   "ON": {
    "annual": 49920,
    "highAnnual": 81120,
@@ -33211,6 +38222,15 @@
    "hourly": 24.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 49920,
+   "highAnnual": 62213,
+   "highHourly": 29.91,
+   "hourly": 24.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -33230,6 +38250,15 @@
    "lowAnnual": 33280,
    "lowHourly": 16.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 70678,
+   "highAnnual": 86070,
+   "highHourly": 41.38,
+   "hourly": 33.98,
+   "lowAnnual": 48090,
+   "lowHourly": 23.12,
+   "year": "2024"
   }
  },
  "73202": {
@@ -33397,6 +38426,15 @@
    "lowHourly": 19.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 46904,
+   "highAnnual": 52645,
+   "highHourly": 25.31,
+   "hourly": 22.55,
+   "lowAnnual": 41558,
+   "lowHourly": 19.98,
+   "year": "2024"
+  },
   "QC": {
    "annual": 52000,
    "highAnnual": 62400,
@@ -33480,6 +38518,24 @@
    "lowHourly": 18.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 62400,
+   "highAnnual": 83200,
+   "highHourly": 40.0,
+   "hourly": 30.0,
+   "lowAnnual": 52000,
+   "lowHourly": 25.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 60320,
+   "highAnnual": 83200,
+   "highHourly": 40.0,
+   "hourly": 29.0,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 54080,
    "highAnnual": 72800,
@@ -33487,6 +38543,15 @@
    "hourly": 26.0,
    "lowAnnual": 39998,
    "lowHourly": 19.23,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 49920,
+   "highAnnual": 63003,
+   "highHourly": 30.29,
+   "hourly": 24.0,
+   "lowAnnual": 37440,
+   "lowHourly": 18.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -33505,6 +38570,15 @@
    "hourly": 27.0,
    "lowAnnual": 38480,
    "lowHourly": 18.5,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 70720,
+   "highAnnual": 90002,
+   "highHourly": 43.27,
+   "hourly": 34.0,
+   "lowAnnual": 55120,
+   "lowHourly": 26.5,
    "year": "2023-2024"
   }
  },
@@ -33572,6 +38646,24 @@
    "lowHourly": 19.98,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 58656,
+   "highAnnual": 71947,
+   "highHourly": 34.59,
+   "hourly": 28.2,
+   "lowAnnual": 41538,
+   "lowHourly": 19.97,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 46800,
+   "highAnnual": 78437,
+   "highHourly": 37.71,
+   "hourly": 22.5,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2024"
+  },
   "ON": {
    "annual": 46654,
    "highAnnual": 79040,
@@ -33579,6 +38671,15 @@
    "hourly": 22.43,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 48880,
+   "highAnnual": 58677,
+   "highHourly": 28.21,
+   "hourly": 23.5,
+   "lowAnnual": 35360,
+   "lowHourly": 17.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -33598,6 +38699,15 @@
    "lowAnnual": 33280,
    "lowHourly": 16.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 74797,
+   "highAnnual": 91166,
+   "highHourly": 43.83,
+   "hourly": 35.96,
+   "lowAnnual": 56368,
+   "lowHourly": 27.1,
+   "year": "2024"
   }
  },
  "73310": {
@@ -33821,6 +38931,24 @@
    "lowHourly": 18.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 90958,
+   "highAnnual": 133141,
+   "highHourly": 64.01,
+   "hourly": 43.73,
+   "lowAnnual": 55744,
+   "lowHourly": 26.8,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 79206,
+   "highAnnual": 107099,
+   "highHourly": 51.49,
+   "hourly": 38.08,
+   "lowAnnual": 45490,
+   "lowHourly": 21.87,
+   "year": "2024"
+  },
   "ON": {
    "annual": 66560,
    "highAnnual": 99216,
@@ -33828,6 +38956,15 @@
    "hourly": 32.0,
    "lowAnnual": 49150,
    "lowHourly": 23.63,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 49920,
+   "highAnnual": 72800,
+   "highHourly": 35.0,
+   "hourly": 24.0,
+   "lowAnnual": 37960,
+   "lowHourly": 18.25,
    "year": "2023-2024"
   },
   "QC": {
@@ -33846,6 +38983,15 @@
    "hourly": 30.0,
    "lowAnnual": 49920,
    "lowHourly": 24.0,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 81120,
+   "highAnnual": 87360,
+   "highHourly": 42.0,
+   "hourly": 39.0,
+   "lowAnnual": 67912,
+   "lowHourly": 32.65,
    "year": "2023-2024"
   }
  },
@@ -34070,6 +39216,15 @@
    "lowHourly": 18.92,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 56160,
+   "highAnnual": 62400,
+   "highHourly": 30.0,
+   "hourly": 27.0,
+   "lowAnnual": 35360,
+   "lowHourly": 17.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 54038,
    "highAnnual": 64480,
@@ -34087,6 +39242,15 @@
    "lowAnnual": 41288,
    "lowHourly": 19.85,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 59134,
+   "highAnnual": 62670,
+   "highHourly": 30.13,
+   "hourly": 28.43,
+   "lowAnnual": 37315,
+   "lowHourly": 17.94,
+   "year": "2024"
   }
  },
  "74101": {
@@ -34162,6 +39326,15 @@
    "lowHourly": 23.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 55994,
+   "highAnnual": 65520,
+   "highHourly": 31.5,
+   "hourly": 26.92,
+   "lowAnnual": 45760,
+   "lowHourly": 22.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 58386,
    "highAnnual": 64480,
@@ -34179,6 +39352,13 @@
    "lowAnnual": 45760,
    "lowHourly": 22.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 66602,
+   "hourly": 32.02,
+   "lowAnnual": 50648,
+   "lowHourly": 24.35,
+   "year": "2024"
   }
  },
  "74102": {
@@ -34253,6 +39433,15 @@
    "lowAnnual": 39520,
    "lowHourly": 19.0,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 54579,
+   "highAnnual": 62317,
+   "highHourly": 29.96,
+   "hourly": 26.24,
+   "lowAnnual": 43139,
+   "lowHourly": 20.74,
+   "year": "2024"
   },
   "QC": {
    "annual": 46613,
@@ -34429,6 +39618,15 @@
    "lowHourly": 19.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 53643,
+   "highAnnual": 62400,
+   "highHourly": 30.0,
+   "hourly": 25.79,
+   "lowAnnual": 40851,
+   "lowHourly": 19.64,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 56160,
    "highAnnual": 71989,
@@ -34501,6 +39699,15 @@
    "hourly": 20.0,
    "lowAnnual": 37440,
    "lowHourly": 18.0,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 54080,
+   "highAnnual": 71760,
+   "highHourly": 34.5,
+   "hourly": 26.0,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
    "year": "2023-2024"
   },
   "ON": {
@@ -34604,6 +39811,13 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 45698,
+   "highAnnual": 44970,
+   "highHourly": 21.62,
+   "hourly": 21.97,
+   "year": "2024"
+  },
   "QC": {
    "annual": 44574,
    "highAnnual": 56680,
@@ -34621,6 +39835,15 @@
    "lowAnnual": 33280,
    "lowHourly": 16.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 56368,
+   "highAnnual": 71656,
+   "highHourly": 34.45,
+   "hourly": 27.1,
+   "lowAnnual": 40331,
+   "lowHourly": 19.39,
+   "year": "2024"
   }
  },
  "74204": {
@@ -34779,6 +40002,24 @@
    "lowHourly": 20.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 59363,
+   "highAnnual": 70075,
+   "highHourly": 33.69,
+   "hourly": 28.54,
+   "lowAnnual": 45094,
+   "lowHourly": 21.68,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 72488,
+   "highAnnual": 104104,
+   "highHourly": 50.05,
+   "hourly": 34.85,
+   "lowAnnual": 44242,
+   "lowHourly": 21.27,
+   "year": "2024"
+  },
   "ON": {
    "annual": 60382,
    "highAnnual": 72696,
@@ -34786,6 +40027,15 @@
    "hourly": 29.03,
    "lowAnnual": 52000,
    "lowHourly": 25.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 52000,
+   "highAnnual": 64272,
+   "highHourly": 30.9,
+   "hourly": 25.0,
+   "lowAnnual": 39998,
+   "lowHourly": 19.23,
    "year": "2023-2024"
   },
   "QC": {
@@ -34945,6 +40195,15 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NU": {
+   "annual": 39520,
+   "highAnnual": 54288,
+   "highHourly": 26.1,
+   "hourly": 19.0,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2024"
+  },
   "ON": {
    "annual": 44720,
    "highAnnual": 62317,
@@ -34952,6 +40211,15 @@
    "hourly": 21.5,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 39520,
+   "highAnnual": 49920,
+   "highHourly": 24.0,
+   "hourly": 19.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -34971,6 +40239,15 @@
    "lowAnnual": 31928,
    "lowHourly": 15.35,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 49213,
+   "highAnnual": 66394,
+   "highHourly": 31.92,
+   "hourly": 23.66,
+   "lowAnnual": 38002,
+   "lowHourly": 18.27,
+   "year": "2024"
   }
  },
  "75110": {
@@ -35037,6 +40314,24 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 52000,
+   "highAnnual": 62400,
+   "highHourly": 30.0,
+   "hourly": 25.0,
+   "lowAnnual": 43347,
+   "lowHourly": 20.84,
+   "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 60320,
+   "highAnnual": 87360,
+   "highHourly": 42.0,
+   "hourly": 29.0,
+   "lowAnnual": 45760,
+   "lowHourly": 22.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 56160,
    "highAnnual": 87360,
@@ -35044,6 +40339,15 @@
    "hourly": 27.0,
    "lowAnnual": 38480,
    "lowHourly": 18.5,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 44720,
+   "highAnnual": 60320,
+   "highHourly": 29.0,
+   "hourly": 21.5,
+   "lowAnnual": 35360,
+   "lowHourly": 17.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -35062,6 +40366,15 @@
    "hourly": 23.0,
    "lowAnnual": 35360,
    "lowHourly": 17.0,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 59280,
+   "highAnnual": 72197,
+   "highHourly": 34.71,
+   "hourly": 28.5,
+   "lowAnnual": 49920,
+   "lowHourly": 24.0,
    "year": "2023-2024"
   }
  },
@@ -35295,6 +40608,22 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 46114,
+   "highAnnual": 63877,
+   "highHourly": 30.71,
+   "hourly": 22.17,
+   "lowAnnual": 34736,
+   "lowHourly": 16.7,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 39520,
+   "highAnnual": 54787,
+   "highHourly": 26.34,
+   "hourly": 19.0,
+   "year": "2024"
+  },
   "ON": {
    "annual": 41600,
    "highAnnual": 62400,
@@ -35302,6 +40631,15 @@
    "hourly": 20.0,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 37440,
+   "highAnnual": 66310,
+   "highHourly": 31.88,
+   "hourly": 18.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -35321,6 +40659,15 @@
    "lowAnnual": 31928,
    "lowHourly": 15.35,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 44824,
+   "highAnnual": 79331,
+   "highHourly": 38.14,
+   "hourly": 21.55,
+   "lowAnnual": 37315,
+   "lowHourly": 17.94,
+   "year": "2024"
   }
  },
  "75210": {
@@ -35461,6 +40808,15 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NU": {
+   "annual": 48173,
+   "highAnnual": 64251,
+   "highHourly": 30.89,
+   "hourly": 23.16,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 42453,
    "highAnnual": 60320,
@@ -35553,6 +40909,15 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 60299,
+   "highAnnual": 87547,
+   "highHourly": 42.09,
+   "hourly": 28.99,
+   "lowAnnual": 36317,
+   "lowHourly": 17.46,
+   "year": "2024"
+  },
   "ON": {
    "annual": 55536,
    "highAnnual": 70720,
@@ -35560,6 +40925,15 @@
    "hourly": 26.7,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 43680,
+   "highAnnual": 52000,
+   "highHourly": 25.0,
+   "hourly": 21.0,
+   "lowAnnual": 38626,
+   "lowHourly": 18.57,
    "year": "2023-2024"
   },
   "QC": {
@@ -35579,6 +40953,15 @@
    "lowAnnual": 39104,
    "lowHourly": 18.8,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 56555,
+   "highAnnual": 69888,
+   "highHourly": 33.6,
+   "hourly": 27.19,
+   "lowAnnual": 37315,
+   "lowHourly": 17.94,
+   "year": "2024"
   }
  },
  "80010": {
@@ -35671,6 +41054,15 @@
    "lowAnnual": 90002,
    "lowHourly": 43.27,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 177362,
+   "highAnnual": 285480,
+   "highHourly": 137.25,
+   "hourly": 85.27,
+   "lowAnnual": 89877,
+   "lowHourly": 43.21,
+   "year": "2024"
   }
  },
  "80020": {
@@ -35735,6 +41127,15 @@
    "hourly": 31.25,
    "lowAnnual": 41995,
    "lowHourly": 20.19,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 55994,
+   "highAnnual": 114400,
+   "highHourly": 55.0,
+   "hourly": 26.92,
+   "lowAnnual": 36400,
+   "lowHourly": 17.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -35979,6 +41380,15 @@
    "lowHourly": 28.62,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 121950,
+   "highAnnual": 188198,
+   "highHourly": 90.48,
+   "hourly": 58.63,
+   "lowAnnual": 71323,
+   "lowHourly": 34.29,
+   "year": "2024"
+  },
   "ON": {
    "annual": 108992,
    "highAnnual": 157997,
@@ -36145,6 +41555,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 52000,
+   "highAnnual": 74006,
+   "highHourly": 35.58,
+   "hourly": 25.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 48235,
    "highAnnual": 64480,
@@ -36237,6 +41656,15 @@
    "lowHourly": 21.68,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 54891,
+   "highAnnual": 70824,
+   "highHourly": 34.05,
+   "hourly": 26.39,
+   "lowAnnual": 46821,
+   "lowHourly": 22.51,
+   "year": "2024"
+  },
   "QC": {
    "annual": 58240,
    "highAnnual": 83262,
@@ -36254,6 +41682,15 @@
    "lowAnnual": 37440,
    "lowHourly": 18.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 64813,
+   "highAnnual": 82597,
+   "highHourly": 39.71,
+   "hourly": 31.16,
+   "lowAnnual": 54496,
+   "lowHourly": 26.2,
+   "year": "2024"
   }
  },
  "83100": {
@@ -36320,6 +41757,24 @@
    "lowHourly": 22.89,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 92186,
+   "highAnnual": 171142,
+   "highHourly": 82.28,
+   "hourly": 44.32,
+   "lowAnnual": 54434,
+   "lowHourly": 26.17,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 85280,
+   "highAnnual": 124800,
+   "highHourly": 60.0,
+   "hourly": 41.0,
+   "lowAnnual": 62400,
+   "lowHourly": 30.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 82576,
    "highAnnual": 116480,
@@ -36346,6 +41801,15 @@
    "lowAnnual": 64480,
    "lowHourly": 31.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 90730,
+   "highAnnual": 153837,
+   "highHourly": 73.96,
+   "hourly": 43.62,
+   "lowAnnual": 53539,
+   "lowHourly": 25.74,
+   "year": "2024"
   }
  },
  "83101": {
@@ -36589,6 +42053,15 @@
    "lowHourly": 19.77,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 52000,
+   "highAnnual": 93600,
+   "highHourly": 45.0,
+   "hourly": 25.0,
+   "lowAnnual": 36400,
+   "lowHourly": 17.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 47590,
    "highAnnual": 69888,
@@ -36653,6 +42126,15 @@
    "lowAnnual": 52000,
    "lowHourly": 25.0,
    "year": "2023-2024"
+  },
+  "NU": {
+   "annual": 74360,
+   "highAnnual": 140837,
+   "highHourly": 67.71,
+   "hourly": 35.75,
+   "lowAnnual": 54683,
+   "lowHourly": 26.29,
+   "year": "2024"
   },
   "ON": {
    "annual": 78000,
@@ -36885,6 +42367,15 @@
    "lowHourly": 18.0,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 67600,
+   "highAnnual": 79040,
+   "highHourly": 38.0,
+   "hourly": 32.5,
+   "lowAnnual": 57200,
+   "lowHourly": 27.5,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 52790,
    "highAnnual": 68640,
@@ -36910,6 +42401,15 @@
    "hourly": 20.0,
    "lowAnnual": 31928,
    "lowHourly": 15.35,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 61443,
+   "highAnnual": 68640,
+   "highHourly": 33.0,
+   "hourly": 29.54,
+   "lowAnnual": 56909,
+   "lowHourly": 27.36,
    "year": "2023-2024"
   }
  },
@@ -36977,6 +42477,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 41974,
+   "highAnnual": 59800,
+   "highHourly": 28.75,
+   "hourly": 20.18,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 43680,
    "highAnnual": 62400,
@@ -37031,6 +42540,15 @@
    "hourly": 25.0,
    "lowAnnual": 36525,
    "lowHourly": 17.56,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 47840,
+   "highAnnual": 62400,
+   "highHourly": 30.0,
+   "hourly": 23.0,
+   "lowAnnual": 38480,
+   "lowHourly": 18.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -37115,6 +42633,15 @@
    "lowAnnual": 36608,
    "lowHourly": 17.6,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 37294,
+   "highAnnual": 69306,
+   "highHourly": 33.32,
+   "hourly": 17.93,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2024"
   },
   "QC": {
    "annual": 39520,
@@ -37208,6 +42735,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 39520,
+   "highAnnual": 45760,
+   "highHourly": 22.0,
+   "hourly": 19.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 39520,
    "highAnnual": 52000,
@@ -37269,6 +42805,15 @@
    "highAnnual": 72800,
    "highHourly": 35.0,
    "hourly": 21.15,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 41600,
+   "highAnnual": 62400,
+   "highHourly": 30.0,
+   "hourly": 20.0,
    "lowAnnual": 34320,
    "lowHourly": 16.5,
    "year": "2023-2024"
@@ -37354,6 +42899,15 @@
    "hourly": 20.5,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 37440,
+   "highAnnual": 56160,
+   "highHourly": 27.0,
+   "hourly": 18.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -37484,6 +43038,24 @@
    "hourly": 29.34,
    "lowAnnual": 40102,
    "lowHourly": 19.28,
+   "year": "2024"
+  },
+  "NT": {
+   "annual": 71344,
+   "highAnnual": 77376,
+   "highHourly": 37.2,
+   "hourly": 34.3,
+   "lowAnnual": 45594,
+   "lowHourly": 21.92,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 72114,
+   "highAnnual": 132995,
+   "highHourly": 63.94,
+   "hourly": 34.67,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
    "year": "2024"
   },
   "ON": {
@@ -37762,6 +43334,15 @@
    "lowHourly": 16.5,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 52000,
+   "highAnnual": 70595,
+   "highHourly": 33.94,
+   "hourly": 25.0,
+   "lowAnnual": 37440,
+   "lowHourly": 18.0,
+   "year": "2023-2024"
+  },
   "ON": {
    "annual": 43597,
    "highAnnual": 57013,
@@ -37769,6 +43350,15 @@
    "hourly": 20.96,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 39520,
+   "highAnnual": 48589,
+   "highHourly": 23.36,
+   "hourly": 19.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -37787,6 +43377,15 @@
    "hourly": 20.0,
    "lowAnnual": 32240,
    "lowHourly": 15.5,
+   "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 63045,
+   "highAnnual": 69181,
+   "highHourly": 33.26,
+   "hourly": 30.31,
+   "lowAnnual": 52000,
+   "lowHourly": 25.0,
    "year": "2023-2024"
   }
  },
@@ -37861,6 +43460,15 @@
    "hourly": 52.88,
    "lowAnnual": 69992,
    "lowHourly": 33.65,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 90002,
+   "highAnnual": 159994,
+   "highHourly": 76.92,
+   "hourly": 43.27,
+   "lowAnnual": 62400,
+   "lowHourly": 30.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -37946,6 +43554,15 @@
    "lowHourly": 40.92,
    "year": "2024"
   },
+  "NT": {
+   "annual": 147763,
+   "highAnnual": 200720,
+   "highHourly": 96.5,
+   "hourly": 71.04,
+   "lowAnnual": 110760,
+   "lowHourly": 53.25,
+   "year": "2024"
+  },
   "ON": {
    "annual": 131997,
    "highAnnual": 205712,
@@ -37972,6 +43589,15 @@
    "lowAnnual": 106662,
    "lowHourly": 51.28,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 109387,
+   "highAnnual": 186576,
+   "highHourly": 89.7,
+   "hourly": 52.59,
+   "lowAnnual": 79310,
+   "lowHourly": 38.13,
+   "year": "2024"
   }
  },
  "92010": {
@@ -38139,6 +43765,15 @@
    "lowHourly": 25.0,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 85010,
+   "highAnnual": 109990,
+   "highHourly": 52.88,
+   "hourly": 40.87,
+   "lowAnnual": 62400,
+   "lowHourly": 30.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 77501,
    "highAnnual": 110656,
@@ -38229,6 +43864,15 @@
    "hourly": 29.0,
    "lowAnnual": 41600,
    "lowHourly": 20.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 49920,
+   "highAnnual": 78666,
+   "highHourly": 37.82,
+   "hourly": 24.0,
+   "lowAnnual": 39998,
+   "lowHourly": 19.23,
    "year": "2023-2024"
   },
   "QC": {
@@ -38870,6 +44514,24 @@
    "lowHourly": 25.37,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 91811,
+   "highAnnual": 130853,
+   "highHourly": 62.91,
+   "hourly": 44.14,
+   "lowAnnual": 65811,
+   "lowHourly": 31.64,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 96699,
+   "highAnnual": 130790,
+   "highHourly": 62.88,
+   "hourly": 46.49,
+   "lowAnnual": 73694,
+   "lowHourly": 35.43,
+   "year": "2024"
+  },
   "ON": {
    "annual": 118560,
    "highAnnual": 180960,
@@ -38877,6 +44539,15 @@
    "hourly": 57.0,
    "lowAnnual": 69410,
    "lowHourly": 33.37,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 59280,
+   "highAnnual": 102003,
+   "highHourly": 49.04,
+   "hourly": 28.5,
+   "lowAnnual": 51834,
+   "lowHourly": 24.92,
    "year": "2023-2024"
   },
   "QC": {
@@ -38896,6 +44567,15 @@
    "lowAnnual": 53810,
    "lowHourly": 25.87,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 102669,
+   "highAnnual": 155459,
+   "highHourly": 74.74,
+   "hourly": 49.36,
+   "lowAnnual": 62483,
+   "lowHourly": 30.04,
+   "year": "2024"
   }
  },
  "92101": {
@@ -38962,6 +44642,24 @@
    "lowHourly": 23.39,
    "year": "2023-2024"
   },
+  "NT": {
+   "annual": 70824,
+   "highAnnual": 102086,
+   "highHourly": 49.08,
+   "hourly": 34.05,
+   "lowAnnual": 47986,
+   "lowHourly": 23.07,
+   "year": "2024"
+  },
+  "NU": {
+   "annual": 72384,
+   "highAnnual": 112320,
+   "highHourly": 54.0,
+   "hourly": 34.8,
+   "lowAnnual": 39520,
+   "lowHourly": 19.0,
+   "year": "2024"
+  },
   "ON": {
    "annual": 79269,
    "highAnnual": 108160,
@@ -38969,6 +44667,15 @@
    "hourly": 38.11,
    "lowAnnual": 56160,
    "lowHourly": 27.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 63003,
+   "highAnnual": 77854,
+   "highHourly": 37.43,
+   "hourly": 30.29,
+   "lowAnnual": 48651,
+   "lowHourly": 23.39,
    "year": "2023-2024"
   },
   "QC": {
@@ -38988,6 +44695,15 @@
    "lowAnnual": 47840,
    "lowHourly": 23.0,
    "year": "2023-2024"
+  },
+  "YT": {
+   "annual": 71074,
+   "highAnnual": 114171,
+   "highHourly": 54.89,
+   "hourly": 34.17,
+   "lowAnnual": 47486,
+   "lowHourly": 22.83,
+   "year": "2024"
   }
  },
  "93100": {
@@ -39256,6 +44972,15 @@
    "hourly": 30.77,
    "lowAnnual": 39998,
    "lowHourly": 19.23,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 56160,
+   "highAnnual": 85280,
+   "highHourly": 41.0,
+   "hourly": 27.0,
+   "lowAnnual": 41600,
+   "lowHourly": 20.0,
    "year": "2023-2024"
   },
   "QC": {
@@ -40722,6 +46447,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 44990,
+   "highAnnual": 56160,
+   "highHourly": 27.0,
+   "hourly": 21.63,
+   "lowAnnual": 37440,
+   "lowHourly": 18.0,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 47008,
    "highAnnual": 70262,
@@ -40814,6 +46548,15 @@
    "lowHourly": 18.7,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 41600,
+   "highAnnual": 45760,
+   "highHourly": 22.0,
+   "hourly": 20.0,
+   "lowAnnual": 36400,
+   "lowHourly": 17.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 49920,
    "highAnnual": 55744,
@@ -40897,6 +46640,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 34320,
+   "highAnnual": 34840,
+   "highHourly": 16.75,
+   "hourly": 16.5,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 40560,
    "highAnnual": 45760,
@@ -40978,6 +46730,15 @@
    "hourly": 24.0,
    "lowAnnual": 37440,
    "lowHourly": 18.0,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 38480,
+   "highAnnual": 48880,
+   "highHourly": 23.5,
+   "hourly": 18.5,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {
@@ -41295,6 +47056,15 @@
    "lowAnnual": 45760,
    "lowHourly": 22.0,
    "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 40352,
+   "highAnnual": 45635,
+   "highHourly": 21.94,
+   "hourly": 19.4,
+   "lowAnnual": 38251,
+   "lowHourly": 18.39,
+   "year": "2024"
   },
   "QC": {
    "annual": 52146,
@@ -42662,6 +48432,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 41600,
+   "highAnnual": 47840,
+   "highHourly": 23.0,
+   "hourly": 20.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 41704,
    "highAnnual": 54080,
@@ -42745,6 +48524,15 @@
    "lowHourly": 17.6,
    "year": "2023-2024"
   },
+  "PE": {
+   "annual": 37440,
+   "highAnnual": 49920,
+   "highHourly": 24.0,
+   "hourly": 18.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
+   "year": "2023-2024"
+  },
   "QC": {
    "annual": 40539,
    "highAnnual": 45760,
@@ -42826,6 +48614,15 @@
    "hourly": 19.89,
    "lowAnnual": 36608,
    "lowHourly": 17.6,
+   "year": "2023-2024"
+  },
+  "PE": {
+   "annual": 37440,
+   "highAnnual": 42744,
+   "highHourly": 20.55,
+   "hourly": 18.0,
+   "lowAnnual": 34320,
+   "lowHourly": 16.5,
    "year": "2023-2024"
   },
   "QC": {

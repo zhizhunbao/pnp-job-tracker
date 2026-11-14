@@ -5,7 +5,7 @@
   "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-with-employment-offer",
   "pageUrl": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-occupations-in-demand",
   "guideEffective": "",
-  "fetched": "2026-10-01",
+  "fetched": "2026-11-14",
   "requirements": [
     {
       "stream": "SINP International Skilled Worker (Employment Offer / Occupations In-Demand)",
@@ -128,7 +128,7 @@
       "appliesArea": "",
       "familySize": null,
       "basis": "windowYears=5;sameNoc",
-      "label": "If you have not been working for your supporting employer full-time for at least six months, then you must have at least one-year of work experience in your occupation within the last five years",
+      "label": "If you have not been working for your supporting employer full time for at least six months, then you must have at least one-year of work experience in your occupation within the last five years",
       "section": "Health Talent Pathway — Eligibility (Non-Express Entry)",
       "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/health-talent-pathway",
       "factor": "experience"
@@ -146,7 +146,7 @@
       "appliesArea": "",
       "familySize": null,
       "basis": "employerTenure",
-      "label": "If applying from in Saskatchewan: Currently working in Saskatchewan and have worked six-months (780 hours) of full-time (30+ hours per week) work experience in the job with the employer that has supported you with the Employer Position Assessment",
+      "label": "If applying from in Saskatchewan: Currently working in Saskatchewan and have worked six months (780 hours) of full-time (30+ hours per week) work experience in the job with the employer that has supported you with the Employer Position Assessment",
       "section": "Health Talent Pathway — Eligibility (Non-Express Entry)",
       "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/health-talent-pathway",
       "factor": "experienceAlt"

@@ -1,5 +1,5 @@
 {
- "fetched": "2026-10-08",
+ "fetched": "2026-11-14",
  "note": "各社区官方公示的指定雇主名单(批C 自动刷新,pilot_extractors 逐社区抽取;塌方保旧)。『指定』≠『在招』;excluded/de-designated 已在抽取层剔除;Peace Liard 官方待公示。",
  "rows": [
   {
@@ -427,6 +427,14 @@
    "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
   },
   {
+   "community": "Superior East Region, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "Northern Neighbours Nurse Practitioner-Led Clinic",
+   "location": "",
+   "url": "https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip/fcip-employers"
+  },
+  {
    "community": "St. Pierre Jolys, MB",
    "province": "MB",
    "type": "FCIP",
@@ -486,6 +494,14 @@
    "community": "Kelowna, BC",
    "province": "BC",
    "type": "FCIP",
+   "name": "4TR2 Special Services",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
    "name": "Acera Insurance",
    "location": "Kelowna",
    "url": "https://www.sdecb.com/en/pilot-program/"
@@ -511,6 +527,14 @@
    "province": "BC",
    "type": "FCIP",
    "name": "Best Western Kelowna",
+   "location": "Kelowna",
+   "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "community": "Kelowna, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "name": "Big Fat Lion Bakeshop",
    "location": "Kelowna",
    "url": "https://www.sdecb.com/en/pilot-program/"
   },

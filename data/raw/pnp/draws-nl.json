@@ -1,12 +1,142 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-10-08",
+  "fetched": "2026-11-14",
   "provinces": {
     "NL": {
       "label": "NLPNP + AIP",
       "scale": null,
       "url": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/",
       "draws": [
+        {
+          "date": "2026-11-13",
+          "stream": "NLPNP (ITA batch)",
+          "note": "NLPNP – 38",
+          "score": null,
+          "invitations": 38,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-11-09",
+          "stream": "NLPNP (ITA batch)",
+          "note": "NLPNP – 35, AIP – 22",
+          "score": null,
+          "invitations": 35,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-11-09",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 35, AIP – 22",
+          "score": null,
+          "invitations": 22,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-11-04",
+          "stream": "NLPNP (ITA batch)",
+          "note": "NLPNP – 24, AIP – 1",
+          "score": null,
+          "invitations": 24,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-11-04",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 24, AIP – 1",
+          "score": null,
+          "invitations": 1,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-11-02",
+          "stream": "NLPNP (ITA batch)",
+          "note": "NLPNP – 50",
+          "score": null,
+          "invitations": 50,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-29",
+          "stream": "NLPNP (ITA batch)",
+          "note": "NLPNP – 75, AIP – 10",
+          "score": null,
+          "invitations": 75,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-29",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 75, AIP – 10",
+          "score": null,
+          "invitations": 10,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-23",
+          "stream": "NLPNP (ITA batch)",
+          "note": "NLPNP – 120",
+          "score": null,
+          "invitations": 120,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-16",
+          "stream": "NLPNP (ITA batch)",
+          "note": "NLPNP – 125, AIP – 01",
+          "score": null,
+          "invitations": 125,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-16",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 125, AIP – 01",
+          "score": null,
+          "invitations": 1,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-09",
+          "stream": "NLPNP (ITA batch)",
+          "note": "NLPNP – 130, AIP – 01",
+          "score": null,
+          "invitations": 130,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-09",
+          "stream": "AIP (ITA batch)",
+          "note": "NLPNP – 130, AIP – 01",
+          "score": null,
+          "invitations": 1,
+          "selection": "",
+          "program": "AIP",
+          "unit": "invitation"
+        },
         {
           "date": "2026-09-25",
           "stream": "NLPNP (ITA batch)",

@@ -2,8 +2,8 @@
  "source": "IRCC — check processing times (permanent residence, economic classes)",
  "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/check-processing-times.html",
  "dataUrl": "https://www.canada.ca/content/dam/ircc/documents/json/flpt-en.json",
- "fetched": "2026-10-12",
- "updated": "2026-09-03",
+ "fetched": "2026-11-13",
+ "updated": "2026-10-09",
  "interval": "monthly",
  "note": "官方工具现行估算(申请递交后到出结果的大致时长);月数由原文「About N months」解析,别的写法记 null。",
  "programs": [

@@ -1,12 +1,32 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-10-08",
+  "fetched": "2026-11-14",
   "provinces": {
     "NS": {
       "label": "NSNP + AIP",
       "scale": null,
       "url": "https://liveinnovascotia.com/eoi-selection",
       "draws": [
+        {
+          "date": "2026-09",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 946,
+          "selection": "",
+          "program": "PNP+AIP",
+          "unit": "selection"
+        },
+        {
+          "date": "2026-08",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 1212,
+          "selection": "",
+          "program": "PNP+AIP",
+          "unit": "selection"
+        },
         {
           "date": "2026-07",
           "stream": "Monthly EOI selections",

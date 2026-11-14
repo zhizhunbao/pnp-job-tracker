@@ -1,31 +1,6 @@
 {
   "ats": "bamboohr",
   "token": "truecontext",
-  "count": 1,
-  "jobs": [
-    {
-      "title": "Technical Analyst",
-      "location": "Ottawa, Ontario",
-      "url": "https://truecontext.bamboohr.com/careers/47",
-      "department": "Ops-Support",
-      "posted": "2026-09-21",
-      "valid_through": "",
-      "address": "",
-      "salary": "$60,000 - $75,000",
-      "employment_hours": "",
-      "employment_term": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "salaryAnnual": 67500,
-      "salaryText": "$60K–$75K/yr",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
-    }
-  ]
+  "count": 0,
+  "jobs": []
 }

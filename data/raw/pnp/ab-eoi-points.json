@@ -6,8 +6,8 @@
   "source": "Worker Expression of Interest (EOI) Points Grid — Alberta Advantage Immigration Program",
   "url": "https://www.alberta.ca/system/files/im-worker-stream-expression-of-interest-points-grid.pdf",
   "pageUrl": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams",
-  "guideEffective": "2025-08-07",
-  "fetched": "2026-08-14",
+  "guideEffective": "2026-09-28",
+  "fetched": "2026-11-14",
   "note": "EOI 抽选制,无及格线(passMark null):AAIP 按月从池中定向邀请。法语(NCLC)列与「英法取高」规则未建模——档案只有单一 CLB 值,按英语列计,英法双语加分保留为勾选项。cert1y(一年证书)会保守落 0(引擎学历梯度无 certificate 档,官方 Diploma/Certificate 行为 4 分);Trades 证书持有人经引擎匹配拿 Diploma/Certificate 的 4 分(官方 7)——两处都只低不高。",
   "groupMax": {
     "I": 69,

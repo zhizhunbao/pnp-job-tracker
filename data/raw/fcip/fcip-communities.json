@@ -1,5 +1,5 @@
 {
- "fetched": "2026-10-08",
+ "fetched": "2026-11-14",
  "source": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots.html",
  "note": "IRCC 官方参与社区名单(fed-rcip crawl 缓存解析)。cities=人工核对的 Job Bank 城市映射,空=区域型社区界线未举证不打标(宁漏勿错);试点须雇主被社区指定,城市命中只是粗筛信号。",
  "rows": [
@@ -67,6 +67,83 @@
     "Kelowna"
    ],
    "url": "https://www.sdecb.com/en/pilot-program/"
+  },
+  {
+   "name": "Pictou County, NS",
+   "province": "NS",
+   "type": "FCIP",
+   "cities": [],
+   "url": "https://pictoucountypartnership.com/rcip/"
+  },
+  {
+   "name": "Sault Ste. Marie, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "cities": [],
+   "url": "https://welcometossm.com/rcip/"
+  },
+  {
+   "name": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "cities": [],
+   "url": "https://gotothunderbay.ca/why-thunder-bay/immigration/"
+  },
+  {
+   "name": "Steinbach, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "cities": [],
+   "url": "https://steinbachedc.com/rcip/"
+  },
+  {
+   "name": "Altona/Rhineland, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "cities": [],
+   "url": "https://ared-rpga.com/immigration/rcip/"
+  },
+  {
+   "name": "Brandon, MB",
+   "province": "MB",
+   "type": "FCIP",
+   "cities": [],
+   "url": "https://economicdevelopmentbrandon.com/rcip/rcip"
+  },
+  {
+   "name": "Moose Jaw, SK",
+   "province": "SK",
+   "type": "FCIP",
+   "cities": [],
+   "url": "https://rcip.mjchamber.com/"
+  },
+  {
+   "name": "Claresholm, AB",
+   "province": "AB",
+   "type": "FCIP",
+   "cities": [],
+   "url": "https://claresholm-rcip.ca/"
+  },
+  {
+   "name": "West Kootenay, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "cities": [],
+   "url": "https://wk-rnip.ca/"
+  },
+  {
+   "name": "North Okanagan Shuswap, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "cities": [],
+   "url": "https://rcipnorthokanaganshuswap.com/"
+  },
+  {
+   "name": "Peace Liard, BC",
+   "province": "BC",
+   "type": "FCIP",
+   "cities": [],
+   "url": "https://www.nebcimmigration.ca/"
   }
  ]
 }

@@ -4,15 +4,47 @@
   "province": "NS",
   "type": "indemand",
   "url": "https://liveinnovascotia.com/critical-vacancies",
-  "fetched": "2026-10-08",
+  "fetched": "2026-11-14",
   "occupations": [
     {
       "noc": "22300",
       "name": "Civil Engineering Technologists and Technicians"
     },
     {
+      "noc": "31120",
+      "name": "Hospital Pharmacists"
+    },
+    {
+      "noc": "31200",
+      "name": "Psychologists"
+    },
+    {
+      "noc": "31202",
+      "name": "Physiotherapists"
+    },
+    {
+      "noc": "31203",
+      "name": "Occupational therapists"
+    },
+    {
+      "noc": "31301",
+      "name": "Registered nurses"
+    },
+    {
+      "noc": "31302",
+      "name": "Nurse practitioners"
+    },
+    {
       "noc": "32101",
       "name": "Licensed Practical Nurse"
+    },
+    {
+      "noc": "32103",
+      "name": "Respiratory therapists"
+    },
+    {
+      "noc": "32121",
+      "name": "Medical radiation technologists"
     },
     {
       "noc": "33102",

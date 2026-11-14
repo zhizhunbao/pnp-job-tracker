@@ -1,7 +1,7 @@
 {
  "source": "https://data.novascotia.ca/Immigration-and-Migration/Annual-Allocations-for-Immigration-Programs/8rf7-hw2p",
  "api": "https://data.novascotia.ca/resource/8rf7-hw2p.json",
- "fetched": "2026-10-08",
+ "fetched": "2026-11-14",
  "byProgram": {
   "nsnp": {
    "2015": 1350,
@@ -15,7 +15,7 @@
    "2023": 4263,
    "2024": 3570,
    "2025": 3369,
-   "2026": 2344
+   "2026": 4344
   },
   "aip": {
    "2015": 0,

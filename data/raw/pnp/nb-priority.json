@@ -4,10 +4,14 @@
   "province": "NB",
   "type": "indemand",
   "url": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/guide-new-brunswick-priority-occupations.pdf",
-  "fetched": "2026-10-08",
+  "fetched": "2026-11-14",
   "note": "只认 NB 省政府招聘团直接招来的 offer;只作参考信号,不当通道。",
   "signal": true,
   "occupations": [
+    {
+      "noc": "31102",
+      "name": "General practitioners and family physicians"
+    },
     {
       "noc": "31301",
       "name": "Registered nurses and registered psychiatric nurses"
@@ -43,6 +47,10 @@
     {
       "noc": "41221",
       "name": "Elementary school and kindergarten teachers"
+    },
+    {
+      "noc": "41300",
+      "name": "Social workers"
     },
     {
       "noc": "42201",

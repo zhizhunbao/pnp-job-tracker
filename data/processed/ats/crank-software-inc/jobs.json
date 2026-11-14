@@ -15,15 +15,15 @@
       "employment_hours": "",
       "employment_term": "",
       "tech": true,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false,
       "apprentice_friendly": false,
       "country": "Canada",
       "province": "ON",
       "city": "Ottawa",
       "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "aip": false
     }
   ]
 }

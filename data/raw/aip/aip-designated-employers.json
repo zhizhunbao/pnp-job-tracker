@@ -1,6 +1,12 @@
 [
   {
     "province": "NL",
+    "employer": "10112755 Canada Inc. o/a Strobel TEK",
+    "location": "St. John's",
+    "tech": true
+  },
+  {
+    "province": "NL",
     "employer": "10113 Newfoundland Ltd. o/a Mary Brown’s",
     "location": "Clarenville",
     "tech": false
@@ -727,6 +733,12 @@
   },
   {
     "province": "NL",
+    "employer": "Breton Bay Holding o/a Tim Horton’s",
+    "location": "Conception Bay South",
+    "tech": false
+  },
+  {
+    "province": "NL",
     "employer": "Briarside Addendum o/a Animal House Grooming",
     "location": "Corner Brook",
     "tech": false
@@ -891,6 +903,12 @@
     "province": "NL",
     "employer": "Central Health Integrated Health Authority o/a Central Health",
     "location": "Grand Falls - Windsor",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "CG Aberdeen Holdings o/a Harvey’s",
+    "location": "St. John's",
     "tech": false
   },
   {
@@ -1171,6 +1189,12 @@
   },
   {
     "province": "NL",
+    "employer": "Day & Ross Inc.",
+    "location": "Corner Brook, Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
     "employer": "DBC Marine Safety Systems Ltd",
     "location": "Mount Pearl",
     "tech": true
@@ -1363,6 +1387,12 @@
   },
   {
     "province": "NL",
+    "employer": "East to West Holdings Inc. o/a Wendy’s Topsail Road",
+    "location": "St John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
     "employer": "EcoBloc Inc.",
     "location": "St. John's",
     "tech": true
@@ -1383,12 +1413,6 @@
     "province": "NL",
     "employer": "EgyCana Fast Food Enterprises Inc. o/a Big Bite Pita",
     "location": "St. John's",
-    "tech": false
-  },
-  {
-    "province": "NL",
-    "employer": "ELH Enterprises Inc. o/a Wing’n It Corner Brook",
-    "location": "Corner Brook, NL",
     "tech": false
   },
   {
@@ -1455,6 +1479,12 @@
     "province": "NL",
     "employer": "Exploits Valley Animal Hospital Limited",
     "location": "Grand Falls-Windsor",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Fahey Building Ltd. o/a The Labrador Inn",
+    "location": "Happy Valley-Goose Bay",
     "tech": false
   },
   {
@@ -2457,12 +2487,6 @@
     "province": "NL",
     "employer": "MJR MASONRY INC.",
     "location": "Carbonear",
-    "tech": false
-  },
-  {
-    "province": "NL",
-    "employer": "Momentum Development Support Corp.",
-    "location": "St. John's",
     "tech": false
   },
   {
@@ -4009,6 +4033,12 @@
   },
   {
     "province": "NB",
+    "employer": "A2Z Renovations Ltd",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
     "employer": "ABM Integrated Solutions (ABM Systems Ltd)",
     "location": "",
     "tech": true
@@ -4114,18 +4144,6 @@
     "employer": "Al-Pack Enterprises Ltd",
     "location": "",
     "tech": false
-  },
-  {
-    "province": "NB",
-    "employer": "Altimate Global Solutions,668054 N.B. LTD",
-    "location": "",
-    "tech": true
-  },
-  {
-    "province": "NB",
-    "employer": "Altimate Home Solutions (AHS)",
-    "location": "",
-    "tech": true
   },
   {
     "province": "NB",
@@ -4339,6 +4357,12 @@
   },
   {
     "province": "NB",
+    "employer": "Audi Moncton (Aviation A Auto Inc.) - Lounsbury Group",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
     "employer": "Aulac Big Stop Restaurant (W.J. Allen & Sons)",
     "location": "",
     "tech": false
@@ -4495,12 +4519,6 @@
   },
   {
     "province": "NB",
-    "employer": "Bhreagh Developments",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
     "employer": "Bicom Systems Limited",
     "location": "",
     "tech": true
@@ -4562,6 +4580,12 @@
   {
     "province": "NB",
     "employer": "BMM QA Canada Ltd",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
+    "employer": "BMW/MINI Moncton (632241 NB Inc.) - Lounsbury Group",
     "location": "",
     "tech": false
   },
@@ -4850,12 +4874,6 @@
   {
     "province": "NB",
     "employer": "Canvas Moncton, Tapestry Hotel by Hilton (55Opal Developments Inc.)",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
-    "employer": "Capital Foodservice Limited",
     "location": "",
     "tech": false
   },
@@ -5366,12 +5384,6 @@
   {
     "province": "NB",
     "employer": "Crowne Plaza Moncton Downtown",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
-    "employer": "Crowne Plaza Saint John (Eastern Hospitality Inc.)",
     "location": "",
     "tech": false
   },
@@ -6055,6 +6067,12 @@
   },
   {
     "province": "NB",
+    "employer": "Flanagan Foodservice Inc",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
     "employer": "Fleet Retreading",
     "location": "",
     "tech": false
@@ -6475,7 +6493,7 @@
   },
   {
     "province": "NB",
-    "employer": "Gahan Port City ( Gahan Saint John Inc. Murphy's Investments)",
+    "employer": "Gahan Port City (Gahan Saint John Inc. Murphy's Investments)",
     "location": "",
     "tech": false
   },
@@ -7003,12 +7021,6 @@
   },
   {
     "province": "NB",
-    "employer": "Hilton Saint John (Innvest Hotels GP Ltd)",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
     "employer": "Hire Potential, SJACL Inc",
     "location": "",
     "tech": false
@@ -7477,6 +7489,12 @@
   },
   {
     "province": "NB",
+    "employer": "Jungle Jim's - Moncton (Yogi Restaurant and Bar Ltd )",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
     "employer": "Jungle Jim's Eatery, Saint John",
     "location": "",
     "tech": false
@@ -7868,6 +7886,12 @@
   {
     "province": "NB",
     "employer": "Lucky Freight Inc",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
+    "employer": "Lunar Rogue Pub (Bhreagh Developments)",
     "location": "",
     "tech": false
   },
@@ -8611,12 +8635,6 @@
   },
   {
     "province": "NB",
-    "employer": "Northshore Ventures Inc. (Tim Hortons)",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
     "employer": "Notre Marché St-Isidore (685433 N.B. Ltd.)",
     "location": "",
     "tech": false
@@ -8815,6 +8833,12 @@
   },
   {
     "province": "NB",
+    "employer": "Perfection Paving Ltd",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
     "employer": "Perfection Sheet Metal Inc",
     "location": "",
     "tech": false
@@ -8834,6 +8858,18 @@
   {
     "province": "NB",
     "employer": "Picket Hill Equestrian Centre",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
+    "employer": "Pinder Renovations & Cleaning (Pinder Yellow Elder Inc)",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
+    "employer": "Pinder's Platinum Repair & Sales (Pinder Yellow Elder Inc)",
     "location": "",
     "tech": false
   },
@@ -8906,6 +8942,12 @@
   {
     "province": "NB",
     "employer": "Pizza Boy (708077 NB INC)",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
+    "employer": "Pizza Delight (Bathurst Pizza Ltd.)",
     "location": "",
     "tech": false
   },
@@ -9583,6 +9625,12 @@
   },
   {
     "province": "NB",
+    "employer": "Saint John Harbourfront Hotel (Innvest Hotels GP Ltd)",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
     "employer": "Saint John Human Development Council Inc",
     "location": "",
     "tech": false
@@ -9937,7 +9985,7 @@
   },
   {
     "province": "NB",
-    "employer": "Shoppers Drug Mart, Saint John (Coffill Pharmacy Inc.)",
+    "employer": "Shoppers Drug Mart, Saint John (Coffills Pharmacy Inc.)",
     "location": "",
     "tech": false
   },
@@ -9998,12 +10046,6 @@
   {
     "province": "NB",
     "employer": "Skillsoft Canada Ltd",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
-    "employer": "SLBG Quispam Holdings Inc",
     "location": "",
     "tech": false
   },
@@ -10136,6 +10178,12 @@
   {
     "province": "NB",
     "employer": "St. Louis Bar & Grill (7726848 Canada Inc.)",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
+    "employer": "St. Louis Bar and Grill (SLBG Quispam Holdings Inc.)",
     "location": "",
     "tech": false
   },
@@ -10585,6 +10633,18 @@
   },
   {
     "province": "NB",
+    "employer": "Tim Hortons - Head Office (Northshore Ventures Ltd)",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
+    "employer": "Tim Hortons - Miramichi Head Office (Jaden Ent Ltd)",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
     "employer": "Tim Hortons (ROLAND RIOUX LTEE)",
     "location": "",
     "tech": false
@@ -10598,12 +10658,6 @@
   {
     "province": "NB",
     "employer": "Tim Hortons Bouctouche (Corey Craig Ltd)",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
-    "employer": "Tim Hortons Campbellton (Northshore Ventures Inc.)",
     "location": "",
     "tech": false
   },
@@ -10664,12 +10718,6 @@
   {
     "province": "NB",
     "employer": "Tim Hortons Grand Falls (C&A Toner Ltd)",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
-    "employer": "Tim Hortons Miramichi (Jaden Ent Ltd)",
     "location": "",
     "tech": false
   },
@@ -11131,7 +11179,7 @@
   },
   {
     "province": "NB",
-    "employer": "Villa Maria Inc",
+    "employer": "Villa Maria Inc (Réseau vie confort)",
     "location": "",
     "tech": false
   },
@@ -11186,6 +11234,12 @@
   {
     "province": "NB",
     "employer": "Vong's Restaurant (Bouctouche)",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
+    "employer": "VW Moncton (Aviation V Auto Inc.) - Lounsbury Group",
     "location": "",
     "tech": false
   },
@@ -11378,12 +11432,6 @@
   {
     "province": "NB",
     "employer": "YMCA of Southwestern New Brunswick Inc",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
-    "employer": "Yogi Restaurant and Bar Ltd (Jungle Jim's - Moncton)",
     "location": "",
     "tech": false
   },

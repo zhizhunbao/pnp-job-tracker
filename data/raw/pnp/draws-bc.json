@@ -1,12 +1,155 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-10-08",
+  "fetched": "2026-11-14",
   "provinces": {
     "BC": {
       "label": "BC PNP Skills Immigration",
       "scale": "SIRS",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
       "draws": [
+        {
+          "date": "2026-11-13",
+          "stream": "Care: Childcare",
+          "note": "Early childhood educators only *",
+          "score": 95,
+          "invitations": 153,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-11-13",
+          "stream": "Care: Health",
+          "note": "All priority health care occupations *",
+          "score": 72,
+          "invitations": 103,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-11-13",
+          "stream": "Care: Veterinary Care",
+          "note": "All priority veterinary care occupations",
+          "score": 100,
+          "invitations": null,
+          "invitationsBelow": 5,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-11-13",
+          "stream": "Care: Veterinary Care",
+          "note": "Animal health technologists and veterinary technicians (NOC 32104) with valid professional designation",
+          "score": 100,
+          "invitations": null,
+          "invitationsBelow": 5,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-11-13",
+          "stream": "Build: Construction Trades",
+          "note": "All priority construction occupations *",
+          "score": 94,
+          "invitations": 128,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-29",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Minimum wage of $49/hour and $99,000/year, and NOC 0, 1, 2, or 3",
+          "score": null,
+          "invitations": 524,
+          "invitationsBelow": null,
+          "selection": "wage:49:99000",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-29",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Points",
+          "score": 131,
+          "invitations": 248,
+          "invitationsBelow": null,
+          "selection": "points",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-15",
+          "stream": "Temporary Rural/Remote Health Support Initiative",
+          "note": "Points",
+          "score": 54,
+          "invitations": 16,
+          "invitationsBelow": null,
+          "selection": "points",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-08",
+          "stream": "Care: Childcare",
+          "note": "Early childhood educators only *",
+          "score": 99,
+          "invitations": 86,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-08",
+          "stream": "Care: Health",
+          "note": "All priority health care occupations *",
+          "score": 76,
+          "invitations": 82,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-08",
+          "stream": "Care: Veterinary Care",
+          "note": "All priority veterinary care occupations",
+          "score": 86,
+          "invitations": null,
+          "invitationsBelow": 5,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-08",
+          "stream": "Care: Veterinary Care",
+          "note": "Animal health technologists and veterinary technicians (NOC 32104) with valid professional designation",
+          "score": 86,
+          "invitations": null,
+          "invitationsBelow": 5,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
+        {
+          "date": "2026-10-08",
+          "stream": "Build: Construction Trades",
+          "note": "All priority construction occupations *",
+          "score": 94,
+          "invitations": 115,
+          "invitationsBelow": null,
+          "selection": "",
+          "program": "PNP",
+          "unit": "invitation"
+        },
         {
           "date": "2026-09-24",
           "stream": "Innovate: High Economic Impact",
