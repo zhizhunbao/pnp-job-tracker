@@ -414,7 +414,7 @@ function eduToppedOf(x: EduItemIn): EduPick[] {
       }
       const prov = eduSelOf({ have: r.prov, got: x.it.prov, opts: EDU_PROVS })
       const kind = eduSelOf({ have: r.kind, got: x.it.kind, opts: EDU_KINDS })
-      const len = eduSelOf({ have: r.len, got: x.it.len, opts: EDU_LENS })
+      const len = eduSelOf({ have: r.len, got: eduLenOf({ cred: r.cred, from, to }), opts: EDU_LENS })
       out.push({ prov, kind, len, cred: r.cred, school: r.school, from, to, major: r.major })
     } else {
       out.push(r)
@@ -426,6 +426,9 @@ function eduToppedOf(x: EduItemIn): EduPick[] {
 /**
  * 把提取到的一条放进几段:第一段四格明细全空的接住它(末尾先备一段空的,没用上不留;已到 EDU_LIST_MAX 段则不备)。
  * 2026-11-12 Frank「简历里能抽出来吧」:接住它的那一段,三只下拉里还空着的填上提取到的值;已经选了的照留。
+ * 2026-11-13 Frank「那怎么办」(起因:还在读、没有结束年份的「Cloud Development and Operations (Co-op)」被模型猜成三年及以上,
+ * 其实是一年制):课程时长不再用模型给的值,这里和 eduToppedOf 都改由程序按名称与年份推(eduLenOf,与手填时同一把尺);
+ * 推不出(年份不全)就留空让人自己选 —— 猜错会把通道匹配算错,留空只是多选一下。
  *
  * @param x 现在的几段与提取到的一条。
  * @returns 放过之后的几段。
@@ -441,8 +444,9 @@ function eduPlacedOf(x: EduItemIn): EduPick[] {
       const from = eduYearOf(x.it.from)
       const prov = eduSelOf({ have: r.prov, got: x.it.prov, opts: EDU_PROVS })
       const kind = eduSelOf({ have: r.kind, got: x.it.kind, opts: EDU_KINDS })
-      const len = eduSelOf({ have: r.len, got: x.it.len, opts: EDU_LENS })
-      out.push({ prov, kind, len, cred, school, from, to: eduYearOf(x.it.to), major: r.major })
+      const to = eduYearOf(x.it.to)
+      const len = eduSelOf({ have: r.len, got: eduLenOf({ cred, from, to }), opts: EDU_LENS })
+      out.push({ prov, kind, len, cred, school, from, to, major: r.major })
     } else if (i < x.rows.length) {
       out.push(r)
     }
