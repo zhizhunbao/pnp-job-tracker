@@ -473,6 +473,11 @@ export type ApplyJobDbRow = {
   province: string | null
 
   /**
+   * 职业码(NOC 五位码;未分类是 NULL;2026-11-13)。
+   */
+  noc: string | null
+
+  /**
    * 职位状态(open / closed / campus)。
    */
   job_status: string | null
@@ -558,6 +563,11 @@ export type ApplyJobFact = {
   province: string
 
   /**
+   * 职业码(NOC 五位码;未分类 = 空串;2026-11-13 投出后档案里「想做的工作」空着就填它)。
+   */
+  noc: string
+
+  /**
    * 已下架。
    */
   closed: boolean
@@ -641,6 +651,11 @@ export type ApplyJobRow = {
    * 省码(没有 = 空串)。
    */
   province: string
+
+  /**
+   * 职业码(NOC 五位码;未分类 = 空串;2026-11-13 投出后档案里「想做的工作」空着就填它)。
+   */
+  noc: string
 
   /**
    * 已下架。

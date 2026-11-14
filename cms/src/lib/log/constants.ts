@@ -1211,6 +1211,17 @@ export const GUEST_LOG = {
    * 档案编辑保存没成(2026-10-09「我的档案」批):答案档没推上去 / 署名没存上,框不关、摆一行「没存上」,后面接哪一半与错误。
    */
   editSave: 'profile edit save failed: ',
+
+  /**
+   * 传简历后自己读简历填档案没成(2026-11-13 Frank「别等一周啊 都做完」,组件桶 gate 子桶 fill):档案原样不动、
+   * 界面上什么都不出,后面接哪一步与错误。
+   */
+  autoResume: 'profile auto fill from resume failed: ',
+
+  /**
+   * 投出后补想做的工作与现居省没成(同上一条那一批):档案原样不动,后面接哪一步与错误。
+   */
+  autoApply: 'profile auto fill after apply failed: ',
 } as const
 
 /**

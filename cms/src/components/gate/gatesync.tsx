@@ -8,13 +8,15 @@
  * 2026-10-04 访客四题改版:随访客向导自 profile 桶迁入 gate 桶,原样搬。
  * 2026-10-11 Frank「我应该先注册 再问问题吧」→「需要改」:访客不再答题,没有草稿可补交 —— 补交那一半(useGateSync)删,
  * 本件只剩进站即弹,弹的从访客向导换成注册框(GateAuth,注册档、框内能切登录);判哪一页弹照旧在 useEntryGate。
+ * 2026-11-13 Frank「别等一周啊 都做完」(档案自动生成,不用用户填):全站骨架只挂这一处,顺带起档案自动填写的监听
+ * (hooks 的 useAutoFill,无界面):传简历后后台读简历填档案的空格,投出后补想做的工作与现居省。
  *
  * @author Frank
  * @time 2026-10-03 20:40:00
  */
 import { GATE_INTENT_ENTRY } from './constants'
 import { GateAuth } from './gateauth'
-import { useEntryGate } from './hooks'
+import { useAutoFill, useEntryGate } from './hooks'
 
 /**
  * 进站即弹(2026-10-11 起弹注册框;原为草稿补交件 + 进站向导)。
@@ -23,6 +25,7 @@ import { useEntryGate } from './hooks'
  */
 export function GateSync() {
   const e = useEntryGate()
+  useAutoFill()
   if (e.open === false) {
     return null
   }

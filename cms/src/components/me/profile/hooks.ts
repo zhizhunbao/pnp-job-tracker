@@ -7,10 +7,10 @@
  */
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
-import { EV_BUILD, EV_UPLOADED, PF_LOAD_BUSY, PF_START_CV, PF_START_WHO, TEXT_NONE } from './constants'
+import { EV_AUTO_DONE, EV_BUILD, PF_LOAD_BUSY, PF_START_CV, PF_START_WHO, TEXT_NONE } from './constants'
 import {
   loadProfile, makeEditOpen, makeFlagSet, makeProfileSaved, makeProvPickOf, makeStreamOpenOf, makeTextSet,
-  makeUploadedFill, msInitProvOf,
+  msInitProvOf, pfGenNextOf,
 } from './functions'
 import type { MyStreamsHookIn, MyStreamsPanel, PfView, ProfileHookIn, ProfilePanel } from './types'
 
@@ -21,6 +21,9 @@ import type { MyStreamsHookIn, MyStreamsPanel, PfView, ProfileHookIn, ProfilePan
  * 2026-11-12 Frank「这个应该是自动填的吧」:听「简历上传成了」的页面事件,档案还有空格就打开修改面板并自动从简历填写。
  * 2026-11-13 Frank「生成简历 应该和 修改档案 应该是分开的吧」:「要生成简历」的页面事件不再开修改面板,开生成简历弹框
  * (起始方式 PF_START_CV,档案页据此给 GateForm 的 cv)。
+ *
+ * 2026-11-14 Frank「都改成自动点击 但是可以修改」:传简历后不再打开修改面板 —— 后台自己读简历填空格并存(gate 桶子桶 fill),
+ * 这里听「后台填好了」重取档案;想改照旧点「修改」。
  *
  * @param x 取词函数。
  * @returns 我的档案的面板。
@@ -42,13 +45,15 @@ export function useProfile(x: ProfileHookIn): ProfilePanel {
       window.removeEventListener(EV_BUILD, onBuild)
     }
   }, [])
-  useEffect(function listenUploaded() {
-    const onUploaded = makeUploadedFill({ view, setStart, setEditing })
-    window.addEventListener(EV_UPLOADED, onUploaded)
-    return function stopListen(): void {
-      window.removeEventListener(EV_UPLOADED, onUploaded)
+  useEffect(function listenAutoDone() {
+    function onAutoDone(): void {
+      setGen(pfGenNextOf)
     }
-  }, [view])
+    window.addEventListener(EV_AUTO_DONE, onAutoDone)
+    return function stopListen(): void {
+      window.removeEventListener(EV_AUTO_DONE, onAutoDone)
+    }
+  }, [])
   return {
     t: x.t,
     lang,

@@ -521,16 +521,6 @@ export const RULE_OPTS = ['workStrict', 'edu', 'eduStrict'] as const
 export const K_RULE_HEAD = 'pf.rule.'
 
 /**
- * 从简历提取档案建议的接口(2026-11-09「我的」第一批)。
- */
-export const URL_PREFILL = '/api/resume/prefill'
-
-/**
- * POST。
- */
-export const METHOD_POST = 'POST'
-
-/**
  * 来自简历标记里字段与值的分隔。
  */
 export const FROM_SEP = ':'
@@ -559,41 +549,6 @@ export const PICK_FOLD_N = 3
  * 折叠行的量词词条。
  */
 export const PICK_FOLD_UNIT_KEY = 'fold.u.item'
-
-/**
- * 接口错误码 → 提示词条。
- */
-export const FILL_ERR_KEYS: Record<string, string> = {
-  /**
-   * 还没有简历。
-   */
-  noResume: 'pf.fillNoResume',
-
-  /**
-   * 扫描件。
-   */
-  scan: 'pf.fillScan',
-
-  /**
-   * 文件读不出。
-   */
-  parse: 'pf.fillParse',
-
-  /**
-   * 超过每日次数。
-   */
-  limit: 'pf.fillLimit',
-}
-
-/**
- * 其余失败(模型层、网络)的提示词条。
- */
-export const FILL_ERR_DEFAULT = 'pf.fillLlm'
-
-/**
- * 什么也没填上的提示词条。
- */
-export const FILL_NONE_KEY = 'pf.fillNone'
 
 /**
  * 提示:普通的颜色。

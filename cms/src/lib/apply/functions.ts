@@ -605,7 +605,8 @@ export async function loadApplyJob(x: ApplyJobIn): ApplyJobOut {
 export function toApplyJob(r: ApplyJobDbRow): ApplyJobFact {
   return {
     id: count(r.id), title: text(r.title), company: text(r.company_name), city: text(r.city),
-    province: text(r.province), closed: r.job_status === JOB_CLOSED, email: text(r.apply_email).trim(),
+    province: text(r.province), noc: text(r.noc).trim(), closed: r.job_status === JOB_CLOSED,
+    email: text(r.apply_email).trim(),
     subject: text(r.apply_subject).trim(),
     titleZh: vtext({ v: r.job_trans_v, cell: r.title_zh }), titleKo: vtext({ v: r.job_trans_v, cell: r.title_ko }),
     companyZh: text(r.alias_zh), companyKo: text(r.alias_ko), cityZh: text(r.city_zh), cityKo: text(r.city_ko),
@@ -621,7 +622,7 @@ export function toApplyJob(r: ApplyJobDbRow): ApplyJobFact {
  */
 export function applyJobRowOf(j: ApplyJobFact): ApplyJobRow {
   return {
-    id: j.id, title: j.title, company: j.company, city: j.city, province: j.province, closed: j.closed,
+    id: j.id, title: j.title, company: j.company, city: j.city, province: j.province, noc: j.noc, closed: j.closed,
     hasEmail: j.email !== TEXT_NONE, subject: j.subject, titleZh: j.titleZh, titleKo: j.titleKo, companyZh: j.companyZh,
     companyKo: j.companyKo, cityZh: j.cityZh, cityKo: j.cityKo, companySlug: j.companySlug,
   }

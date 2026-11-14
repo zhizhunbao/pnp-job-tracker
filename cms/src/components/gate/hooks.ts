@@ -24,6 +24,8 @@
  * 由 useWorkSync 跟着各段的码走。
  * 同日 Frank「教育经历 和 专业是不是重复了」:专业并进教育经历的每一段 —— 整机的专业码由各段汇出(不再单独存、上报口撤),
  * 教育经历几段多「正在给第几段选专业」一格;一页表单的「专业」那一格与它的弹框手柄 onMajor 撤。
+ * 2026-11-13 Frank「别等一周啊 都做完」(档案自动生成,不用用户填):多一只无界面的钩子 useAutoFill(全站骨架上的 GateSync 起),
+ * 听「简历上传成了」与「投递发出去了」,后台把档案里空着的格子填上并存;「从简历填写」的手柄改从子桶 ./fill 取。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
@@ -44,6 +46,7 @@ import {
 import {
   LEFT_NONE, loadCvLeft, makeCvDocClose, makeCvDownload, makeCvGen, makeCvSet, MSG_INFO,
 } from './cv'
+import { EV_APPLY_SENT, EV_UPLOADED, EV_UPLOADED_APPLY, makeResumeFill } from './fill'
 import { loadSeed } from './seed'
 import { makeSchoolPickOf, makeSchoolSearch, makeSchoolTypeOf, SCHOOL_AT_NONE, schoolQOf } from './school'
 import {
@@ -51,8 +54,8 @@ import {
   workNocsOf,
 } from './work'
 import {
-  cvFactsOf, fromKeptOf, makeAreaSet, makeAtSet, makeAtSetOf, makeFlagOff, makeSeedSet, makeFormClose, makeResumeFill,
-  makeSaveThen,
+  cvFactsOf, fillFnsOf, fromKeptOf, makeAreaSet, makeAtSet, makeAtSetOf, makeFlagOff, makeSeedSet, makeFormClose,
+  makeSaveThen, onApplySentFill, onResumeUploaded,
   cityOptsOf, gateProvActiveOf, loadProvCities, makeCityPick, makeEditSave,
   makeRulePick, ruleOf,
   makeEntryClose, makeEntryDone, makeGateAuthDone, makePickSet, makeProvPick, nameBadOf,
@@ -415,6 +418,7 @@ export function useCvGen(x: CvGenHookIn): CvGenPanel {
  *
  * 2026-11-12 Frank「这个应该是自动填的吧」:x.auto 时一开面板就自己填一次(刚上传或替换了简历、档案还有空格),
  * 填上的照旧保存才入档案、可先改。
+ * 2026-11-13:手柄搬去子桶 ./fill,并法由 fillFnsOf 注进去(与传简历后后台自己填的那条路同一个合并核)。
  *
  * @param x 表单状态与要不要一开就填。
  * @returns 面板。
@@ -422,15 +426,28 @@ export function useCvGen(x: CvGenHookIn): CvGenPanel {
 export function useResumeFill(x: ResumeFillHookIn): ResumeFillPanel {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<FillMsg>({ key: TEXT_NONE, n: 0, kind: FILL_KIND_INFO })
-  const onFill = makeResumeFill({ g: x.g, setBusy, setMsg })
-  const auto = x.auto
-  useEffect(function fillOnOpen() {
-    if (auto) {
-      onFill()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只在开面板那一下跑一次;onFill 每帧是新函数,进依赖会反复填
-  }, [auto])
+  const onFill = makeResumeFill({ g: x.g, setBusy, setMsg, fns: fillFnsOf() })
   return { busy, msg, onFill }
+}
+
+/**
+ * 档案自动填写的监听(无界面;2026-11-13 Frank「别等一周啊 都做完」:档案自动生成,不用用户填):全站骨架上的 GateSync 起,
+ * 每个页面都在。听到「简历上传成了」(「我的」页基础简历卡、投递框第 1 步各发一个事件)就后台读简历填档案里空着的格;
+ * 听到「投递发出去了」就补想做的工作与现居省。两个回调都是模块级的函数,挂一次、卸载时摘。
+ *
+ * @returns 无。
+ */
+export function useAutoFill(): void {
+  useEffect(function listenAutoFill() {
+    window.addEventListener(EV_UPLOADED, onResumeUploaded)
+    window.addEventListener(EV_UPLOADED_APPLY, onResumeUploaded)
+    window.addEventListener(EV_APPLY_SENT, onApplySentFill)
+    return function stopAutoFill(): void {
+      window.removeEventListener(EV_UPLOADED, onResumeUploaded)
+      window.removeEventListener(EV_UPLOADED_APPLY, onResumeUploaded)
+      window.removeEventListener(EV_APPLY_SENT, onApplySentFill)
+    }
+  }, [])
 }
 
 /**

@@ -24,6 +24,9 @@
  * 2026-11-12 按「大于 1000 就拆子桶」:教育经历几段这一族的函数搬去子桶 ./edu,只有它们在用的七个入参 / 返回形状
  * (EduMergeIn / EduMergeOut / EduItemIn / EduPickIn / EduLabelIn / EduCellSetIn / EduRowsIn)连注释搬去子桶的 types;
  * 整机与件还在读的(EduPick / EduEntry / EduSeedIn / EduCellIn / PrefillEdu)留在这里,子桶自声明一份同形的。
+ * 2026-11-13 Frank「别等一周啊 都做完」:「从简历填写」这一族搬去子桶 ./fill,只有它读的形状(ResumeFillIn / PrefillJson /
+ * PrefillFact / ApplyPrefillIn / PrefillEdu)随之删(子桶自声明);上一行的 PrefillEdu 不再留在这里。新增同步旧档案的入参
+ * OldSyncIn 与「投递发出去了」事件里本域读的两格 ApplySentDetail。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
@@ -1180,47 +1183,6 @@ export type EduSeedIn = {
 }
 
 /**
- * 从简历提取的一条教育经历(/api/resume/prefill 的 education 一项)。
- * 2026-11-12 Frank「简历里能抽出来吧」:多三格 —— 院校所在地、公立私立、课程时长(并进一段时只填还空着的下拉,并法在子桶 edu)。
- */
-export type PrefillEdu = {
-  /**
-   * 证书或学历名称。
-   */
-  credential: string
-
-  /**
-   * 学校。
-   */
-  school: string
-
-  /**
-   * 开始年份或空串。
-   */
-  from: string
-
-  /**
-   * 结束年份或空串。
-   */
-  to: string
-
-  /**
-   * 院校所在地:省码或 abroad;简历看不出 = 空串。
-   */
-  prov: string
-
-  /**
-   * public / private;简历看不出 = 空串。
-   */
-  kind: string
-
-  /**
-   * y1 / y2 / y3 / master;简历看不出 = 空串。
-   */
-  len: string
-}
-
-/**
  * ruleOf 的入参。
  */
 export type RuleOfIn = {
@@ -1701,11 +1663,6 @@ export type GateFormIn = {
   onSaved: () => void
 
   /**
-   * 一开面板就自动从简历填写一次(2026-11-12:刚上传或替换了简历、档案还有空格时由档案页给);可省 = 不自动填。
-   */
-  autoFill?: boolean
-
-  /**
    * 开成生成简历弹框(2026-11-13 Frank「生成简历 应该和 修改档案 应该是分开的吧」:同一台表单整机,换一只壳、
    * 只出写简历要填的格子);可省 = 开成修改档案的右侧栏。
    */
@@ -2040,31 +1997,6 @@ export type ResumeFillHookIn = {
    * 表单状态。
    */
   g: GatePanel
-
-  /**
-   * 一开面板就自动填一次(2026-11-12 Frank「这个应该是自动填的吧」:刚上传或替换了简历、档案还有空格时由档案页打开)。
-   */
-  auto: boolean
-}
-
-/**
- * makeResumeFill 的入参。
- */
-export type ResumeFillIn = {
-  /**
-   * 表单状态。
-   */
-  g: GatePanel
-
-  /**
-   * 落「取数中」。
-   */
-  setBusy: (v: boolean) => void
-
-  /**
-   * 落提示。
-   */
-  setMsg: (v: FillMsg) => void
 }
 
 /**
@@ -2110,71 +2042,6 @@ export type GateResumeFillIn = {
    * 这一格的控件。
    */
   children: React.ReactNode
-}
-
-/**
- * 接口回包(缺席按空读)。
- */
-export type PrefillJson = {
-  /**
-   * 错误码。
-   */
-  error?: string
-
-  /**
-   * 做过的工作。
-   */
-  works?: string[]
-
-  /**
-   * 专业。
-   */
-  majors?: string[]
-
-  /**
-   * 英文姓名。
-   */
-  name?: string
-
-  /**
-   * 教育经历(2026-11-12)。
-   */
-  education?: PrefillEdu[]
-
-  /**
-   * 几段工作经历(2026-11-12:职业码、职位名称、公司、城市、起止年月、做了什么;服务端已洗)。
-   */
-  jobs?: WorkPick[]
-}
-
-/**
- * 洗净的提取结果。
- */
-export type PrefillFact = {
-  /**
-   * 做过的工作。
-   */
-  works: string[]
-
-  /**
-   * 专业。
-   */
-  majors: string[]
-
-  /**
-   * 英文姓名;没有 = 空串。
-   */
-  name: string
-
-  /**
-   * 教育经历(2026-11-12);没有 = 空列。
-   */
-  education: PrefillEdu[]
-
-  /**
-   * 几段工作经历(2026-11-12);没有 = 空列。
-   */
-  jobs: WorkPick[]
 }
 
 /**
@@ -2295,21 +2162,6 @@ export type MajorLineRow = {
    * 落的本站大类。
    */
   broads: string[]
-}
-
-/**
- * applyPrefill 的入参。
- */
-export type ApplyPrefillIn = {
-  /**
-   * 手柄。
-   */
-  x: ResumeFillIn
-
-  /**
-   * 提取结果。
-   */
-  d: PrefillFact
 }
 
 /**
@@ -2540,4 +2392,34 @@ export type AtSetIn = {
    * 要落的值。
    */
   v: number
+}
+
+/**
+ * syncOldProfile 的入参(2026-11-13:把职业与省同步进旧档案,保存与投出后补格共用)。
+ */
+export type OldSyncIn = {
+  /**
+   * 想做的工作(职业码)。
+   */
+  nocs: string[]
+
+  /**
+   * 现居省码;空串 = 没答或在境外。
+   */
+  prov: string
+}
+
+/**
+ * 「投递发出去了」事件带的那一份里本域读的两格(apply 桶 ApplySentOut 的子集,本域自声明;2026-11-13 投出后补档案用)。
+ */
+export type ApplySentDetail = {
+  /**
+   * 刚投的职位的职业码;没有 = 空串。
+   */
+  noc: string
+
+  /**
+   * 刚投的职位的省码;没有 = 空串。
+   */
+  province: string
 }

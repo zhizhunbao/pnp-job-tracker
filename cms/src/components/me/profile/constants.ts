@@ -200,19 +200,16 @@ export const PF_START_WHO = 'who'
 export const PF_START_CV = 'cv'
 
 /**
- * 编辑面板的起始方式:一开就自动从简历填写(2026-11-12 刚上传或替换了简历、档案还有空格时)。
- */
-export const PF_START_FILL = 'fill'
-
-/**
  * 要生成简历的页面事件名(「基础简历」卡空态的「生成简历」钮发,同子桶 base 的 EV_BUILD)。
  */
 export const EV_BUILD = 'o2p-resume-build'
 
 /**
- * 简历上传成了的页面事件名(「基础简历」卡上传或替换成功后发,同子桶 base 的 EV_UPLOADED)。
+ * 后台把档案填好并存成了的页面事件名(gate 桶子桶 fill 发,同它的 EV_AUTO_DONE)。
+ * 2026-11-14 Frank「都改成自动点击 但是可以修改」:传简历后不再打开修改面板,后台自己填并存,档案页听这个事件重取档案;
+ * 原先听的「简历上传成了」(o2p-resume-uploaded)随之不听。
  */
-export const EV_UPLOADED = 'o2p-resume-uploaded'
+export const EV_AUTO_DONE = 'o2p-profile-auto'
 
 /**
  * 档案卡卡头的词条键(「我的档案」;2026-11-11 档案页成两栏后每张卡自带卡头)。

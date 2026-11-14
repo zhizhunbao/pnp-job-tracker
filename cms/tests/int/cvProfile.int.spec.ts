@@ -20,7 +20,6 @@ import type { WorkPick } from '@/components/gate/work/types'
 import { eduFormRowsOf, eduMajorsOf, eduWithMajorsOf } from '@/components/gate/edu/functions'
 import { makeSchoolPickOf, makeSchoolTypeOf, schoolQOf, schoolSubOf } from '@/components/gate/school/functions'
 import { seedOf } from '@/components/gate/seed/functions'
-import { makeUploadedFill } from '@/components/me/profile/functions'
 import { cvLayoutOf, cvModernPdfOf, cvPdfOf, toCvDraft } from '@/lib/cv/functions'
 import { toCvFacts, toEduList, toSchoolHit, toStoredBasic } from '@/lib/quiz/functions'
 import {
@@ -227,7 +226,7 @@ describe('⑥ 现代款 PDF', () => {
 //       ⑧ 选中一所学校:校名换成名单里的写法、公立私立照名单;省码是下拉认得的才填(地区不动原值);别的段不动、结果收起;
 //       ⑨ 上传成了:档案里做过的工作、教育经历、英文姓名有一样空着才打开修改面板并自动填;都填了什么都不做;
 //       ⑩ 档案 → 起始答案:带码的名字只取码、城市取英文名。
-// 探针:eduWithMajorsOf 不判已有专业 → ⑦ 红;makeSchoolPickOf 不判省码 → ⑧ 红;makeUploadedFill 不判空格 → ⑨ 红。
+// 探针:eduWithMajorsOf 不判已有专业 → ⑦ 红;makeSchoolPickOf 不判省码 → ⑧ 红。
 describe('⑦ 专业并进教育经历', () => {
   const B = { prov: '', kind: '', len: '', cred: '', school: '', from: '', to: '', major: '' }
 
@@ -308,17 +307,7 @@ describe('⑧ 教育经历里搜学校', () => {
 })
 
 describe('⑨⑩ 上传后自动填与自己取档案', () => {
-  it('上传成了:有空格才打开修改面板并自动填', () => {
-    const full = { works: [{}], eduList: [{}], name: 'Li Wei' }
-    const calls: string[] = []
-    const set = { setStart: (v: string) => { calls.push('start:' + v) }, setEditing: (v: boolean) => { calls.push('edit:' + String(v)) } }
-    makeUploadedFill({ view: full as never, ...set })()
-    makeUploadedFill({ view: null, ...set })()
-    expect(calls).toEqual([])
-    makeUploadedFill({ view: { ...full, works: [] } as never, ...set })()
-    expect(calls).toEqual(['start:fill', 'edit:true'])
-  })
-
+  // 2026-11-14 ⑨ 撤:上传后不再开修改面板,改后台自动填并存(性质住 profileAuto.int.spec.ts)
   it('档案 → 起始答案', () => {
     const got = seedOf({
       goal: 2, majors: [{ code: '11.0701' }], nocs: [{ code: '21232' }], prov: 'ON', abroad: false, city: { en: 'Ottawa' }, name: 'Li Wei',

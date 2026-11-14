@@ -54,7 +54,7 @@ import css from './gate.module.css'
  * @param props 取词、档案现值、关面板与存好了。
  * @returns 面板 + 叠开的选择器。
  */
-export function GateForm({ t, seed, onClose, onSaved, autoFill = false, cv = false }: GateFormIn) {
+export function GateForm({ t, seed, onClose, onSaved, cv = false }: GateFormIn) {
   const g = useGateForm({ seed, onClose, onSaved })
   const k = useGatePick()
   const picker = useMajorPicker({ value: g.majors, onChange: dropCodes })
@@ -71,7 +71,7 @@ export function GateForm({ t, seed, onClose, onSaved, autoFill = false, cv = fal
     t, lang: g.lang, initial: [], onChange: w.onWorkOcc, onDone: w.onOccClose, majorCode: occMajorOf(g.majors),
   })
   useWorkSync({ nocs: g.workNocs, onReplace: work.onReplace })
-  const f = useResumeFill({ g, auto: autoFill })
+  const f = useResumeFill({ g })
   const c = useCvGen({ g })
   const names = workNamesOf({ rows: w.work, titles: work.titles })
   const n = {

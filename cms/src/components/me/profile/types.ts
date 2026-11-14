@@ -381,26 +381,6 @@ export type PfEditOpenIn = {
 }
 
 /**
- * makeUploadedFill 的入参。
- */
-export type PfUploadedIn = {
-  /**
-   * 档案;还没取到 = null。
-   */
-  view: PfView | null
-
-  /**
-   * 起始方式落格。
-   */
-  setStart: (v: string) => void
-
-  /**
-   * 修改面板开关落格。
-   */
-  setEditing: (v: boolean) => void
-}
-
-/**
  * makeFlagSet 的入参。
  */
 export type PfFlagSetIn = {

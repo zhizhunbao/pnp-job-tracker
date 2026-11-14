@@ -39,8 +39,8 @@ vi.mock('next/navigation', () => ({
 
 const TPL = 'Dear Hiring Manager,\n\nI apply for {{title}} at {{company}}.\n\nSincerely,\n{{name}}'
 const JOB = {
-  id: 42, title: 'Cook', company: 'Pie Wood', city: 'Steinbach', province: 'MB', closed: false, hasEmail: true, subject: '',
-  titleZh: '厨师', titleKo: '요리사', companyZh: '', companyKo: '', cityZh: '斯坦巴克', cityKo: '', companySlug: 'pie-wood',
+  id: 42, title: 'Cook', company: 'Pie Wood', city: 'Steinbach', province: 'MB', noc: '63200', closed: false, hasEmail: true,
+  subject: '', titleZh: '厨师', titleKo: '요리사', companyZh: '', companyKo: '', cityZh: '斯坦巴克', cityKo: '', companySlug: 'pie-wood',
 }
 const LETTER = 'Dear Hiring Manager,\n\nI apply for Cook at Pie Wood.\n\nSincerely,\nZhang San'
 const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
@@ -230,11 +230,12 @@ describe('② 直接投基础简历:附原件、模板信可改、不调模型',
     expect(draft.resumeId).toBe(7)
     expect(bodyOf(callsTo('/api/apply/send')[0]![1])).toEqual({ jobId: 42, base: true })
     expect(calls.indexOf('PUT /api/apply/draft')).toBeLessThan(calls.indexOf('POST /api/apply/send'))
-    expect(el.textContent).toContain('Pie Wood')
+    // 2026-11-13 成功绿条撤:「已发给 <公司>」改由投递框宿主听广播发右上角提示,这一屏不再写公司名,只验广播
     expect(heard.cos).toEqual(['Pie Wood'])
   })
 
-  it('发出后「接着投」:按刚投的职位取同类岗,第一条是主按钮「下一个:职位名」,点了只换地址栏里的职位号', async () => {
+  // 2026-11-13 第一条的主按钮「下一个:职位名」撤,每条同形(职位名 + 「投递」)
+  it('发出后「接着投」:按刚投的职位取同类岗,每条一颗「投递」,点第一条只换地址栏里的职位号', async () => {
     const pick = (id: number, title: string) => ({
       id, title, titleZh: '', titleKo: '', company: 'Maple Diner', companyZh: '', companyKo: '', companySlug: 'maple-diner',
       address: '', city: 'Steinbach', cityZh: '', cityKo: '', province: 'MB',
@@ -248,10 +249,10 @@ describe('② 直接投基础简历:附原件、模板信可改、不调模型',
     await click(el, '发送投递')
     expect(calls).toContain('GET /api/myjobs/picks?after=42')
     expect(calls.filter((c) => c.includes('/api/myjobs/picks?prov='))).toEqual([])
-    expect(btn(el, '下一个:Line Cook')).toBeTruthy()
-    expect(Array.from(el.querySelectorAll('button')).filter((b) => b.textContent === '投递').length).toBe(1)
+    expect(el.textContent).toContain('Line Cook')
+    expect(Array.from(el.querySelectorAll('button')).filter((b) => b.textContent === '投递').length).toBe(2)
     const before = calls.length
-    await click(el, '下一个:Line Cook')
+    await click(el, '投递')
     expect(new URL(window.location.href).searchParams.get('apply')).toBe('77')
     expect(window.location.pathname).toBe('/account')
     expect(tailorCalls(calls.slice(before))).toEqual([])

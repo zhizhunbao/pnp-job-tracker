@@ -22,7 +22,7 @@ import {
   NEXT_KEY, NO_EMAIL_KEY, P_JOB,
   SENT_STATUSES, STEP_CONFIRM, STEP_DONE, STEP_LETTER, STEP_ORDER, STEP_RESUME, TEXT_NONE,
   TRACK_APPLY_SENT,
-  UPLOADED_KEY, URL_BACK_HEAD, URL_COVER_HEAD, URL_DRAFT, URL_RESUME_FILE, URL_RESUME_FILES, URL_SEND,
+  UPLOADED_KEY, EV_UPLOADED, URL_BACK_HEAD, URL_COVER_HEAD, URL_DRAFT, URL_RESUME_FILE, URL_RESUME_FILES, URL_SEND,
   URL_START_HEAD, BREAK_AFTER_RE,
   Q_ID_HEAD, EV_APPLY_NAV, EV_APPLY_SENT, PATH_ACCOUNT, P_APPLY,
   UPSELL_KEY, TRACK_APPLY_NEXT, URL_NEXT_AFTER, NEXT_POS_HEAD, NEXT_SHOWN_HEAD, TRACK_NEXT_SHOWN, VIA_DIRECT, VIA_NEXT,
@@ -642,7 +642,7 @@ function fileOf(e: React.ChangeEvent<HTMLInputElement>): File | null {
 }
 
 /**
- * 传一份简历(PUT /api/resume/file 新加),成了重拉清单、选中它。
+ * 传一份简历(PUT /api/resume/file 新加),成了重拉清单、选中它,并发「传简历成了」的页面事件(2026-11-13:档案自动填写听它)。
  *
  * @param x 整机的可变格与文件。
  * @returns 无。
@@ -671,6 +671,7 @@ async function upload(x: UploadIn): Promise<void> {
   if (newId != null) {
     c.setResumes(await loadResumes())
     c.setResumeId(newId)
+    window.dispatchEvent(new Event(EV_UPLOADED))
   }
   c.setUploading(false)
   c.setErr(err)
@@ -840,7 +841,7 @@ async function send(x: SendIn): Promise<void> {
   }
   track(TRACK_APPLY_SENT, { kind: CACHE.via })
   c.setStep(STEP_DONE)
-  c.onSent({ company: c.job.company })
+  c.onSent({ company: c.job.company, noc: c.job.noc, province: c.job.province })
 }
 
 /**
@@ -864,7 +865,7 @@ export function makeBaseSend(c: ApplyCells): () => void {
 export function makeReviewSent(c: ApplyCells): () => void {
   return function onReviewSent(): void {
     c.setStep(STEP_DONE)
-    c.onSent({ company: c.job.company })
+    c.onSent({ company: c.job.company, noc: c.job.noc, province: c.job.province })
   }
 }
 

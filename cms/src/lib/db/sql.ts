@@ -3377,8 +3377,9 @@ export const MYJOBS_APPLIED_DELETE = `WITH d AS (
  * (职位名译文带版本号,过期当没有;城市译名按城市 + 省连 cities(原照智能投递队列那条,2026-10-10 随该功能撤)),只给界面看,信照旧只用英文原名。
  * 同日 N 批:再带公司 slug(投递框里点公司名开公司框)。
  * 2026-11-12:再带雇主指定的投递邮件标题(apply_subject,docs/sql/jobs-apply-subject-20261112.sql;有值时信用它当标题)。
+ * 2026-11-13 Frank「别等一周啊 都做完」:再带职业码 noc(投出后档案里「想做的工作」空着就填它)。
  */
-export const APPLY_JOB = `SELECT j.id, j.title, c.name AS company_name, j.city, j.province,
+export const APPLY_JOB = `SELECT j.id, j.title, c.name AS company_name, j.city, j.province, j.noc,
        j.status::text AS job_status, j.apply_email, j.apply_subject,
        j.title_zh, j.title_ko, j.trans_v AS job_trans_v, c.alias_zh, c.alias_ko, ci.name_zh AS city_zh, ci.name_ko AS city_ko,
        c.slug AS company_slug

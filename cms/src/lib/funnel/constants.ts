@@ -27,8 +27,9 @@
  * 2026-10-07 批 B2 / C:尾部再追加 apply-sent(站内投递真发出去了)。apply 记的是职位页点「邮箱投递」那一下
  * (mailto 时代点了就算投出去;站内投递后它只是进了投递区),发没发出去只有 apply-sent 说得准;同样只计数不成链。
  * 2026-11-13 Frank「都要有记录」:尾部再追加投出后相似职位卡两计数 —— next-shown(卡取完了)与 apply-next(点了卡上一条);只计数不成链。
+ * 同日 Frank「别等一周啊 都做完」:尾部再追加 profile-auto(档案自动填:传简历后读简历填空格、投出后补想做的工作与省份);只计数不成链。
  */
-export const FUNNEL_STEPS = ['jd-open', 'pricing-open', 'pay-click', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done', 'pulse-card', 'pulse-occ', 'pulse-cta', 'emp-search', 'emp-filter', 'emp-row', 'emp-page', 'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open', 'apply', 'signup', 'checkout', 'weekly-optin', 'gate-open', 'gate-step', 'apply-click', 'apply-sent', 'next-shown', 'apply-next'] as const
+export const FUNNEL_STEPS = ['jd-open', 'pricing-open', 'pay-click', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done', 'pulse-card', 'pulse-occ', 'pulse-cta', 'emp-search', 'emp-filter', 'emp-row', 'emp-page', 'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open', 'apply', 'signup', 'checkout', 'weekly-optin', 'gate-open', 'gate-step', 'apply-click', 'apply-sent', 'next-shown', 'apply-next', 'profile-auto'] as const
 
 /**
  * 漏斗步骤名(从白名单数组派生 —— 类型与它派生自的数组同居,派生即护栏:加一步只改数组)。
@@ -83,6 +84,8 @@ export type FunnelStep = (typeof FUNNEL_STEPS)[number]
  * 2026-11-13 Frank「都要有记录」:apply-sent 10-07 只进了步骤清单、这张表漏了它,第一方表一条没记过 —— 补上,
  * kind 记从哪进的投递框(next 投出后相似职位卡 / direct 其余);同日入册相似职位卡两事件:next-shown 卡取完了
  * (kind = n 加条数,n0 是一条都没有)、apply-next 点了卡上一条(kind = p 加第几条)。职位号永不进 prop。
+ * 同日 profile-auto 入册:档案自动填的一次结果,kind 四档 —— resume-ok 读简历填上了至少一项、resume-none 读成了但没有空格可填、
+ * resume-fail 读简历或保存失败、apply-ok 投出后补上了想做的工作或省份。简历内容、职业码、省码永不进 prop。
  */
 export const ALIAS: Record<string, FunnelStep> = {
   'modal-jd': 'jd-open',
@@ -118,6 +121,7 @@ export const ALIAS: Record<string, FunnelStep> = {
   'apply-sent': 'apply-sent',
   'next-shown': 'next-shown',
   'apply-next': 'apply-next',
+  'profile-auto': 'profile-auto',
 }
 
 /**

@@ -31,6 +31,11 @@
  * 存档 eduListOf / eduStrsOf、改格加段删段 makeEduPick / makeEduAdd / makeEduRemove、选项字 makeEduLabel、并简历 eduMergedOf
  * 与它们的私件)原样搬去子桶 ./edu;本文件只剩「从简历填写」里调 eduMergedOf 那一处。
  * 同日 Frank「简历里能抽出来吧」:简历提取的教育经历多带院校所在地、公立私立、课程时长(回包照收,并法在子桶)。
+ * 2026-11-13 Frank「别等一周啊 都做完」(档案自动生成,不用用户填):本文件又到 981 行贴线,「从简历填写」这一族
+ * (makeResumeFill / runResumeFill / fillErrOf / fillMsgOf / toPrefill / applyPrefill)原样搬去子桶 ./fill,与新加的两条无界面的路
+ * (传简历后自己读简历填并存、投出后补想做的工作与现居省)同住;本文件留装配点 fillFnsOf(把子桶 work / edu / seed 的函数与
+ * 本文件的存取注给它)和两个页面事件的回调 onResumeUploaded / onApplySentFill;上面「本文件只剩『从简历填写』里调 eduMergedOf
+ * 那一处」作废。同步旧档案那一步收成 syncOldProfile(保存与投出后补格共用)。
  *
  * @author Frank
  * @time 2026-10-04 02:10:00
@@ -49,22 +54,25 @@ import {
   HDR_CONTENT_TYPE,
   K_WHO_HEAD, LANG_KO, LANG_ZH, MAJOR_SEP, METHOD_PATCH, MIME_JSON, PROV_ABROAD, SAVE_FAIL_KEY,
   STATUS_OVERSEAS, TEXT_NONE, URL_CITIES_HEAD, URL_PREFS,
-  FILL_ERR_DEFAULT, FILL_ERR_KEYS, FILL_KIND_ERR, FILL_KIND_INFO, FILL_NONE_KEY, FROM_MAJORS,
+  FROM_MAJORS,
   FROM_NAME, FROM_SEP,
-  FROM_WORK, METHOD_POST, URL_PREFILL,
+  FROM_WORK,
   K_RULE_HEAD, MATCH_EDU, MATCH_WORK, MODE_DEFAULT, MODE_STRICT, RULE_EDU, RULE_EDU_STRICT,
   EDU_F_KIND, EDU_F_LEN, EDU_F_PROV, EDU_SUM_SEP, EDU_YEAR_SEP, LINE_KEY_CITY, LINE_KEY_PROV,
   RULE_WORK_STRICT, CLS_SEP,
 } from './constants'
-import { eduMajorsOf, eduMergedOf, eduWithMajorsOf, makeEduLabel } from './edu'
-import { workFilledOf } from './work'
+import { eduFormRowsOf, eduListOf, eduMajorsOf, eduMergedOf, eduWithMajorsOf, makeEduLabel } from './edu'
+import { runApplyAuto, runResumeAuto } from './fill'
+import type { FillFns } from './fill'
+import { pullSeed } from './seed'
+import { workFilledOf, workFormRowsOf, workListOf, workNocsOf } from './work'
 import css from './gate.module.css'
 import type {
   CitiesJson, CityLabelIn, CityOpt, CityOptsIn, CityPickIn, EditPatch, EditSaveIn,
   EntryCloseIn, EntryDoneIn, GateAuthDoneIn, GateEditSeed, GateLabelOfIn, GatePickSetIn,
-  ApplyPrefillIn, EduLinesIn, EduSumIn, FillMsg, FromKeptIn, FromResumeIn, OccLinesIn, PickedLine,
-  PrefillFact, PrefillJson, WhereLinesIn,
-  ResumeFillIn, GateProvActiveIn, GateStep, LoadCitiesIn, ProvPickIn,
+  ApplySentDetail, EduLinesIn, EduSumIn, FromKeptIn, FromResumeIn, OccLinesIn, OldSyncIn, PickedLine,
+  WhereLinesIn,
+  GateProvActiveIn, GateStep, LoadCitiesIn, ProvPickIn,
   RuleOfIn, RulePickIn,
   AtSetIn, CvFactsIn, EduMajorAtIn, FormCloseIn, SeedLoaded, GateCv, MajorNamesIn, SavedThenIn, SaveThenIn, TplClsIn,
 } from './types'
@@ -319,7 +327,7 @@ async function runEditSave(x: EditSaveIn): Promise<void> {
     if (x.a.name !== TEXT_NONE) {
       await saveEditName(x.a.name)
     }
-    await quizToProfile({ status: readAnswers().status, nocs: x.a.nocs, provs: editProvsOf(x.a) })
+    await syncOldProfile({ nocs: x.a.nocs, prov: x.a.prov })
     x.setSaving(false)
     x.onSaved()
   } catch (e) {
@@ -375,20 +383,33 @@ function editPatchOf(a: GateEditSeed): EditPatch {
 }
 
 /**
- * 同步进旧档案的目标省:答案档里答过目标省(PR 那套题)就用它;没答过用现居省;在境外给空列(旧档案原样留)。
+ * 把职业与省同步进旧档案(users.profile;makeEditSave 头注说的那一步)。
+ * 2026-11-13 Frank「别等一周啊 都做完」:自 runEditSave 拆出 —— 投出后补想做的工作与现居省(子桶 fill)存完也要同步,
+ * 两处走这一个口。
  *
- * @param a 这一份答案。
+ * @param x 想做的工作与现居省。
+ * @returns 无。
+ */
+async function syncOldProfile(x: OldSyncIn): Promise<void> {
+  await quizToProfile({ status: readAnswers().status, nocs: x.nocs, provs: editProvsOf(x.prov) })
+}
+
+/**
+ * 同步进旧档案的目标省:答案档里答过目标省(PR 那套题)就用它;没答过用现居省;在境外给空列(旧档案原样留)。
+ * 2026-11-13:入参从整份答案收成现居省(只读这一格;投出后补格那条路手里没有整份答案)。
+ *
+ * @param prov 现居省码;空串 = 没答或在境外。
  * @returns 目标省码清单。
  */
-function editProvsOf(a: GateEditSeed): string[] {
+function editProvsOf(prov: string): string[] {
   const provs = readAnswers().provs
   if (provs.length > 0) {
     return provs
   }
-  if (a.prov === TEXT_NONE) {
+  if (prov === TEXT_NONE) {
     return []
   }
-  return [a.prov]
+  return [prov]
 }
 
 /**
@@ -844,138 +865,61 @@ function eduSumOf(x: EduSumIn): string {
 }
 
 /**
- * 造「从简历填写」的点击手柄。
+ * 子桶 fill 要的那一组函数(装配点;2026-11-13 Frank「别等一周啊 都做完」):「从简历填写」这一族搬去子桶 ./fill
+ * (本文件贴 1000 行线),它不取父桶也不取兄弟子桶 —— 工作经历、教育经历的并法(子桶 work / edu)、取档案(子桶 seed)、
+ * 存姓名与同步旧档案(本文件)由这里注进去;表单那条路与两条无界面的路用同一组。
  *
- * @param x 表单状态、选择器同步口与两个落格。
- * @returns 点击手柄。
+ * @returns 注给子桶 fill 的函数。
  */
-export function makeResumeFill(x: ResumeFillIn): () => void {
-  return function onResumeFill(): void {
-    x.setBusy(true)
-    x.setMsg({ key: TEXT_NONE, n: 0, kind: FILL_KIND_INFO })
-    void runResumeFill(x)
+export function fillFnsOf(): FillFns {
+  return {
+    workFilledOf,
+    workFormRowsOf,
+    workListOf,
+    workNocsOf,
+    eduMergedOf,
+    eduMajorsOf,
+    eduWithMajorsOf,
+    eduFormRowsOf,
+    eduListOf,
+    fromKeptOf,
+    nameBadOf,
+    pullSeed: pullEditSeed,
+    saveName: saveEditName,
+    syncOld: syncOldProfile,
   }
 }
 
 /**
- * 取提取结果并填表;失败摆一行提示并留痕。
+ * 取服务端那份档案(装配点):子桶 seed 交回的那一份,教育经历明细与简历资料是服务端洗过、原样透传的,
+ * 在这里断言成本域的起始答案(同 makeSeedSet)。
  *
- * @param x 同 makeResumeFill。
+ * @returns 起始答案;没登录、接口回了错 = null。
+ */
+async function pullEditSeed(): Promise<GateEditSeed | null> {
+  return await pullSeed() as GateEditSeed | null
+}
+
+/**
+ * 听到「简历上传成了」(「我的」页基础简历卡、投递框第 1 步;2026-11-13 Frank「别等一周啊 都做完」:档案自动生成,不用用户填):
+ * 后台自己读简历,把档案里空着的格子填上并存 —— 不出界面、不弹提示、不挡投递(本体在子桶 fill 的 runResumeAuto)。
+ * 「生成简历」后「设为我的简历」发的是另一个事件,不走这里(那份简历本来就是档案生成的)。
+ *
  * @returns 无。
  */
-async function runResumeFill(x: ResumeFillIn): Promise<void> {
-  try {
-    const r = await fetch(URL_PREFILL, { method: METHOD_POST, credentials: CRED_INCLUDE })
-    const body = await r.json() as PrefillJson
-    if (r.ok === false) {
-      x.setMsg(fillErrOf(body.error))
-    } else {
-      x.setMsg(fillMsgOf(applyPrefill({ x, d: toPrefill(body) })))
-    }
-  } catch (e) {
-    log({ tag: GUEST_LOG.tag, text: GUEST_LOG.editSave + String(e) })
-    x.setMsg({ key: FILL_ERR_DEFAULT, n: 0, kind: FILL_KIND_ERR })
-  }
-  x.setBusy(false)
+export function onResumeUploaded(): void {
+  void runResumeAuto(fillFnsOf())
 }
 
 /**
- * 接口错误码 → 提示。
+ * 听到「投递发出去了」(2026-11-13 同上一批):想做的工作空着就填刚投那个职位的职业码,现居省空着且不是境外就填它的省
+ * (本体在子桶 fill 的 runApplyAuto)。DOM 的监听签名只给 Event,自定义事件的 detail 由 apply 桶的 announceSent 一处发出,
+ * 断言只住这一处。
  *
- * @param code 错误码。
- * @returns 提示。
+ * @param e 事件。
+ * @returns 无。
  */
-function fillErrOf(code: string | undefined): FillMsg {
-  let key = FILL_ERR_DEFAULT
-  if (code != null && FILL_ERR_KEYS[code] != null) {
-    key = FILL_ERR_KEYS[code]
-  }
-  return { key, n: 0, kind: FILL_KIND_ERR }
-}
-
-/**
- * 填上了几项 → 提示(2026-11-13 Frank「这个绿条不需要」:填上了不出提示,只有什么也没填上才说一句)。
- *
- * @param n 填上了几项。
- * @returns 提示。
- */
-function fillMsgOf(n: number): FillMsg {
-  if (n === 0) {
-    return { key: FILL_NONE_KEY, n, kind: FILL_KIND_INFO }
-  }
-  return { key: TEXT_NONE, n, kind: FILL_KIND_INFO }
-}
-
-/**
- * 回包 → 提取结果(缺席按空读)。
- *
- * @param b 回包。
- * @returns 提取结果。
- */
-function toPrefill(b: PrefillJson): PrefillFact {
-  let works: string[] = []
-  if (b.works != null) {
-    works = b.works
-  }
-  let majors: string[] = []
-  if (b.majors != null) {
-    majors = b.majors
-  }
-  let name: string = TEXT_NONE
-  if (b.name != null) {
-    name = b.name
-  }
-  let education: PrefillFact['education'] = []
-  if (b.education != null) {
-    education = b.education
-  }
-  let jobs: PrefillFact['jobs'] = []
-  if (b.jobs != null) {
-    jobs = b.jobs
-  }
-  return { works, majors, name, education, jobs }
-}
-
-/**
- * 把提取结果填进表单:只填空着的格,不动用户已经选的;填上的值打「来自简历」。
- * 2026-11-12:提取到的教育经历并进教育经历几段(规矩见子桶 edu 的 eduMergedOf),并进去一条以上算填上一项;教育经历不打「来自简历」。
- * 同日 Frank「都改完」:提取到的几段工作经历(公司、时间、职责)填进「做过的工作」,规矩见子桶 work 的 workFilledOf。
- * 同日专业并进教育经历:各段都还没挂专业时,提取到的专业码按序落进各段(并完教育经历之后落,见子桶 edu 的 eduWithMajorsOf)。
- *
- * @param y 手柄与提取结果。
- * @returns 填上了几项。
- */
-function applyPrefill(y: ApplyPrefillIn): number {
-  const x = y.x
-  const d = y.d
-  const marks = x.g.fromResume.slice()
-  let n = 0
-  const work = workFilledOf({ rows: x.g.edit.w.work, jobs: d.jobs, codes: d.works })
-  if (work.filled) {
-    x.g.edit.w.setWork(work.rows)
-    for (const c of work.codes) {
-      marks.push(FROM_WORK + FROM_SEP + c)
-    }
-    n++
-  }
-  if (x.g.edit.name.trim() === TEXT_NONE && d.name !== TEXT_NONE) {
-    x.g.edit.onName(d.name)
-    marks.push(FROM_NAME + FROM_SEP + d.name)
-    n++
-  }
-  const merged = eduMergedOf({ rows: x.g.edit.edu, items: d.education })
-  let rows = merged.rows
-  if (merged.n > 0) {
-    n++
-  }
-  if (eduMajorsOf(rows).length === 0 && d.majors.length > 0) {
-    rows = eduWithMajorsOf({ rows, codes: d.majors })
-    for (const c of d.majors) {
-      marks.push(FROM_MAJORS + FROM_SEP + c)
-    }
-    n++
-  }
-  x.g.edit.setEdu(rows)
-  x.g.setFromResume(marks)
-  return n
+export function onApplySentFill(e: Event): void {
+  const d = (e as CustomEvent<ApplySentDetail>).detail
+  void runApplyAuto({ noc: d.noc, prov: d.province, provs: formProvOptsOf(), fns: fillFnsOf() })
 }

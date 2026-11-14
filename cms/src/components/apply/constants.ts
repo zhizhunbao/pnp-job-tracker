@@ -130,6 +130,12 @@ export const EV_APPLY_SENT = 'offer2pr:apply-sent'
 export const EV_RESUME = 'o2p-resume-changed'
 
 /**
+ * 投递框里传简历成了的页面事件名(2026-11-13 Frank「别等一周啊 都做完」:gate 桶子桶 fill 听它,后台读简历把档案里空着的
+ * 格子填上;不借「我的」页的 o2p-resume-uploaded —— 「我的档案」听那个会开修改面板,投递中不该弹)。
+ */
+export const EV_UPLOADED = 'o2p-apply-resume-uploaded'
+
+/**
  * 投递框的尺寸记忆键(10-09 Frank「所有弹框 都能放大缩小 拖动,保持一致」:与职位 / 公司 / 省提名弹框共用一份记住的宽高;
  * 值与 advisor 的 ADV_PREF 相同,各域自抄)。
  */

@@ -8,7 +8,7 @@
  */
 import { GUEST_LOG, log } from '@/lib/log'
 import { CRED_INCLUDE, URL_PROFILE } from './constants'
-import type { Codes, SeedCodes, SeedJson, SeedLoadIn, SeedOut, SeedProfile } from './types'
+import type { Codes, MaybeSeed, SeedCodes, SeedJson, SeedLoadIn, SeedOut, SeedProfile } from './types'
 
 /**
  * 取档案并落起始答案;没登录、接口挂了落「取不到」,留痕。
@@ -18,16 +18,30 @@ import type { Codes, SeedCodes, SeedJson, SeedLoadIn, SeedOut, SeedProfile } fro
  */
 export async function loadSeed(x: SeedLoadIn): Promise<void> {
   try {
-    const r = await fetch(URL_PROFILE, { credentials: CRED_INCLUDE })
-    const j = await r.json() as SeedJson
-    if (r.ok && j.profile != null) {
-      x.setSeed(seedOf(j.profile))
+    const seed = await pullSeed()
+    if (seed != null) {
+      x.setSeed(seed)
       return
     }
   } catch (e) {
     log({ tag: GUEST_LOG.tag, text: GUEST_LOG.editSave + String(e) })
   }
   x.setFailed(true)
+}
+
+/**
+ * 取本人的档案并拼成起始答案(2026-11-13 Frank「别等一周啊 都做完」:自 loadSeed 拆出 —— 传简历后、投出后自动填档案
+ * 那两条无界面的路也要服务端这一份,取法只有这一处)。请求没发出去照抛,由调用方留痕。
+ *
+ * @returns 起始答案;没登录、接口回了错 = null。
+ */
+export async function pullSeed(): Promise<MaybeSeed> {
+  const r = await fetch(URL_PROFILE, { credentials: CRED_INCLUDE })
+  const j = await r.json() as SeedJson
+  if (r.ok && j.profile != null) {
+    return seedOf(j.profile)
+  }
+  return null
 }
 
 /**

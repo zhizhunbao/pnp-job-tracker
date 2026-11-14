@@ -46,6 +46,11 @@ export type ApplyJobView = {
   province: string
 
   /**
+   * 职业码(NOC 五位码;未分类 = 空串;2026-11-13 投出后档案里「想做的工作」空着就填它)。
+   */
+  noc: string
+
+  /**
    * 已下架。
    */
   closed: boolean
@@ -405,12 +410,24 @@ export type MailView = {
 
 /**
  * 发出去了交给外面的那一份(「我的」页拿它出成功条;2026-10-08)。
+ * 2026-11-13 Frank「别等一周啊 都做完」:多带刚投那个职位的职业码与省码(gate 桶子桶 fill 听这个事件,档案里想做的工作、
+ * 现居省空着就补上)。
  */
 export type ApplySentOut = {
   /**
    * 发给了哪家(公司名)。
    */
   company: string
+
+  /**
+   * 刚投的职位的职业码(没有 = 空串)。
+   */
+  noc: string
+
+  /**
+   * 刚投的职位的省码(没有 = 空串)。
+   */
+  province: string
 }
 
 /**

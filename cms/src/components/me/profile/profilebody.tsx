@@ -20,7 +20,7 @@ import { cssOf } from '@/components/css'
 import { GateForm } from '@/components/gate'
 import {
   BUSY_ON, CARD_HEAD_CLS, CARD_MD_CLS, ONE_SPACE, PF_EDIT_KEY, PF_FAIL_KEY, PF_LOAD_FAIL, PF_LOAD_OK, PF_LOADING_KEY,
-  PF_START_CV, PF_START_FILL, PF_TITLE_KEY, SECONDARY_KIND,
+  PF_START_CV, PF_TITLE_KEY, SECONDARY_KIND,
 } from './constants'
 import { profileSeedOf } from './functions'
 import { ProfileRows } from './profilerows'
@@ -59,7 +59,7 @@ export function ProfileBody({ p, t }: ProfilePartIn) {
       </section>
       {p.editing && (
         <GateForm t={t} seed={profileSeedOf(v)} onClose={p.onClose} onSaved={p.onSaved}
-          autoFill={p.start === PF_START_FILL} cv={p.start === PF_START_CV} />
+          cv={p.start === PF_START_CV} />
       )}
     </>
   )

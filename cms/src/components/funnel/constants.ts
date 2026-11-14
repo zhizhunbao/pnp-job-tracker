@@ -169,6 +169,11 @@ export const STEP_LABEL: Record<string, string> = {
    * 点了相似职位卡上一条(2026-11-13;kind = p 加第几条)。
    */
   'apply-next': '相似职位 · 点一条',
+
+  /**
+   * 档案自动填的一次结果(2026-11-13;kind = resume-ok 填上了 / resume-none 没有空格可填 / resume-fail 失败 / apply-ok 投出后补上了)。
+   */
+  'profile-auto': '档案 · 自动填',
 }
 
 /**
