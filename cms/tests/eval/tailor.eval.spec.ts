@@ -219,7 +219,11 @@ function localDepsOf(calls: { n: number }) {
       if (!r.ok) {
         throw new Error('ollama ' + r.status + ' ' + (await r.text()).slice(0, 200))
       }
-      return String(((await r.json()) as { message?: { content?: string } }).message?.content ?? '')
+      const j = (await r.json()) as { message?: { content?: string }, done_reason?: string, eval_count?: number, prompt_eval_count?: number }
+      if (process.env.EVAL_DEBUG) {
+        console.log('[raw]', x.feature, 'max', x.maxTokens, 'done', j.done_reason, 'out', j.eval_count, 'in', j.prompt_eval_count, 'tail', String(j.message?.content ?? '').slice(-160))
+      }
+      return String(j.message?.content ?? '')
     },
   }
 }
