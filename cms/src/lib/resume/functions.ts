@@ -22,7 +22,7 @@ import {
   PREFILL_MAJORS_MAX, PREFILL_NONE, PREFILL_SIM_MIN, TITLES_N_MAX, WS_ALL_RE,
   PREFILL_CRED_LEN, PREFILL_EDU_MAX, PREFILL_SCHOOL_LEN, PREFILL_YEAR_LEN, PREFILL_YEAR_RE,
   PREFILL_EDU_KINDS, PREFILL_EDU_LENS, PREFILL_EDU_PROVS, PREFILL_OPT_LEN,
-  PREFILL_JOB_LINE_LEN, PREFILL_JOB_NOTES_LEN, PREFILL_JOBS_MAX, PREFILL_YM_LEN, PREFILL_YM_RE,
+  PREFILL_JOB_LINE_LEN, PREFILL_JOB_NOTES_LEN, PREFILL_JOBS_MAX, PREFILL_SIDE_RE, PREFILL_YM_LEN, PREFILL_YM_RE,
 } from './constants'
 import { MATCH_REWRITE, MATCH_SYSTEM, MATCH_USER, OUT_LANG, OUT_LANG_DEFAULT } from './prompts'
 import type {
@@ -353,21 +353,45 @@ export function prefillFactOf(d: PrefillData): PrefillFact {
 
 /**
  * 模型回的工作经历一格 → 洗净的几段(2026-11-12):不是数组(含缺席)给空列;不合形或全空的项丢掉;至多 PREFILL_JOBS_MAX 段。
+ * 2026-11-13 Frank「做」(起因:他简历的项目一节排在前面,名额全被项目占了):模型给每段标了它所在的节;
+ * 只要有一段来自雇佣经历那一节,项目、课程作业、志愿这些节下的段全删;一段雇佣经历都没有(简历只有项目)才照留。
  *
  * @param x 模型回的一格(缺席按没有读)与至多几段。
  * @returns 几段工作经历。
  */
 function toPrefillJobs(x: PrefillCellIn): PrefillJobs {
-  const out: PrefillJobs = []
+  const all: PrefillJobs = []
+  const side: boolean[] = []
   if (Array.isArray(x.cell)) {
     for (const c of x.cell) {
       const job = toPrefillJob(c)
-      if (job != null && out.length < x.max) {
-        out.push(job)
+      if (job != null) {
+        all.push(job)
+        side.push(isSideSection(c))
       }
     }
   }
+  const employed = side.includes(false)
+  const out: PrefillJobs = []
+  for (const [i, job] of all.entries()) {
+    if ((employed === false || side[i] === false) && out.length < x.max) {
+      out.push(job)
+    }
+  }
   return out
+}
+
+/**
+ * 模型回的一项是不是来自「不算雇佣经历」的节(项目、课程作业、志愿这些):看它标的节标题;没标节的按雇佣经历算。
+ *
+ * @param c 模型回的一项。
+ * @returns 来自项目类的节 = true。
+ */
+function isSideSection(c: JsonCell): boolean {
+  if (c == null || typeof c !== 'object' || Array.isArray(c)) {
+    return false
+  }
+  return PREFILL_SIDE_RE.test(prefillCellOf({ cell: c.section, max: PREFILL_JOB_LINE_LEN }))
 }
 
 /**

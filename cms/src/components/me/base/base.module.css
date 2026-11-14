@@ -27,12 +27,11 @@
 
 /*
  * 清单拉回来之前的占位块:拉回来后不整块跳。
+ * 2026-11-13 Frank「这两个中间的灰框没必要吧」:灰底撤,只占着高。
  */
 .skel {
   height: 220px;
   margin-top: 12px;
-  background: var(--hairline);
-  border-radius: 12px;
 }
 
 /*
@@ -149,39 +148,16 @@
 }
 
 /*
- * 卡身顶上的三行「标签-值」(文件、上传日期、大小):标签灰字一列定宽,值一列,长文件名能断行。
+ * 预览下面的一行小灰字(文件名、上传日期、大小;2026-11-13 Frank「放到简历下面,然后小字就行了」):
+ * 三样之间留空,放不下折行,长文件名能断行。
  */
 .facts {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 0 0 12px;
-  font-size: 14px;
-}
-
-/*
- * 一行「标签-值」。
- */
-.fact {
-  display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
-  column-gap: 16px;
-}
-
-/*
- * 标签:灰字。
- */
-.fact dt {
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 8px;
+  font-size: 12px;
   color: var(--text2);
-}
-
-/*
- * 值:正文色,长值折行不撑破。
- */
-.fact dd {
-  margin: 0;
-  min-width: 0;
-  color: var(--text);
   overflow-wrap: anywhere;
 }
 

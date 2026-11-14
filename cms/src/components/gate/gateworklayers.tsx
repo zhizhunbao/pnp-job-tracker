@@ -21,14 +21,14 @@ import css from './gate.module.css'
  * @param props 表单整机、叠开哪个、取词、各段职业的字、选职业手柄工厂与选职业控件。
  * @returns 两层弹框(各自开着才出)。
  */
-export function GateWorkLayers({ g, k, t, names, occOpenOf, rail }: GateWorkLayersIn) {
+export function GateWorkLayers({ g, k, t, names, occOpenOf, rail, full }: GateWorkLayersIn) {
   const w = g.edit.w
   return (
     <>
       {k.picking === FORM_PICK_WORK && (
         <GatePick title={t('pf.work')} doneText={t('pf.pickDone')} onDone={k.onDone}>
           <div className={cssOf(css.pickBody)}>
-            <GateWork g={g} t={t} names={names} occOpenOf={occOpenOf} />
+            <GateWork g={g} t={t} names={names} occOpenOf={occOpenOf} full={full} />
           </div>
         </GatePick>
       )}

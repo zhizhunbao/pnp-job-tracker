@@ -31,9 +31,9 @@ import {
 } from './constants'
 import { loadExtra, loadTailorRow, pickJdOf, runStep, saveCover, saveExtra, saveResume, toStepBody } from './functions'
 import {
-  E_NEED, isProfileReady, latinOf, PROFILE_FEATURE, PROFILE_FILE_TAIL, PROFILE_SYSTEM, PROFILE_TOKENS_MAX,
+  CACHE_SAMPLE, E_NEED, isProfileReady, latinOf, P_TPL, PROFILE_FEATURE, PROFILE_FILE_TAIL, PROFILE_SYSTEM, PROFILE_TOKENS_MAX,
   PROFILE_USER_DAILY, PROFILE_USER_PREFIX, profileDraftOf, profileFactsOf, profileRefOf, profileSchemaOf, profileUserOf,
-  toProfileOut, TPL_MODERN,
+  SAMPLE_DRAFT, toProfileOut, TPL_MODERN,
 } from './profile'
 import type {
   CompleteIn, CoverBodyJson, CvPdfFact, FactMap, JsonCell, ProfileBodyJson, ResumeBodyJson, StepBodyJson, StepDeps,
@@ -445,4 +445,22 @@ export async function tailorProfileRoute(req: Request): Promise<Response> {
     { pdf: Buffer.from(bytes).toString(B64), fileName: layout.name + PROFILE_FILE_TAIL, left: creditLeftOf({ credit, marked }) },
     { headers: { [HDR_CACHE_CONTROL]: CACHE_PRIVATE } },
   )
+}
+
+/**
+ * GET /api/tailor/sample:模板示例 PDF(2026-11-13 Frank「这个应该有个预览功能吧」)。拿一份虚构简历照选的模板排一页,
+ * 和真生成走同一台排版机,所以示例就是成品的样子;不认人、不调模型、不扣额度。
+ *
+ * @param req 请求(查询参数 tpl:modern = 带色条的现代款,别的值按传统单栏)。
+ * @returns PDF。
+ */
+export async function tailorSampleRoute(req: Request): Promise<Response> {
+  const layout = cvLayoutOf(toCvDraft(SAMPLE_DRAFT))
+  let bytes: Uint8Array = new Uint8Array(0)
+  if (new URL(req.url).searchParams.get(P_TPL) === TPL_MODERN) {
+    bytes = await cvModernPdfOf({ pdf: PdfLib, layout })
+  } else {
+    bytes = await cvPdfOf({ pdf: PdfLib, layout })
+  }
+  return new Response(new Uint8Array(bytes), { headers: { [HDR_CONTENT_TYPE]: MIME_PDF, [HDR_CACHE_CONTROL]: CACHE_SAMPLE } })
 }

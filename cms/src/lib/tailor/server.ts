@@ -6,5 +6,6 @@
  */
 
 export {
-  tailorCoverRoute, tailorFileRoute, tailorProfileRoute, tailorResumeRoute, tailorStateRoute, tailorStepRoute,
+  tailorCoverRoute, tailorFileRoute, tailorProfileRoute, tailorResumeRoute, tailorSampleRoute, tailorStateRoute,
+  tailorStepRoute,
 } from './routes'

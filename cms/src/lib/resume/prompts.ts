@@ -71,10 +71,14 @@ export const EXTRACT_SYSTEM = 'You extract structured facts from a resume. Reply
  * 标准学制给;拿不准一律空串(服务端只认下拉的取值,别的清空)。
  * 2026-11-12 Frank「都改完」:多回 jobs(至多 6 段工作:职业、职位名称、雇主、城市、起止年月、职责,照简历原文抄),
  * 档案的「做过的工作」一段一个框,生成简历时每段才有公司、时间和要点可写。
+ * 2026-11-13 Frank「做」(起因:他简历的 PROJECTS 一节排在前面,六个名额全被项目占了,真正的工作一段没带进来):
+ * jobs 与 titles 只认雇佣经历那一节;项目、课程作业、志愿、发表这些节下的条目不算工作,简历里压根没有雇佣经历时才退而用它们。
+ * 同日实测:光叫模型「别带项目」不稳(同一份简历时对时错)。改成每段多回 section(它在简历里哪个标题下,照抄),
+ * 雇佣经历排前面、至多 8 段;项目类的由服务端按 section 删(lib/resume/functions.ts 的 toPrefillJobs),模型只管标、不管删。
  */
 export const PREFILL_SYSTEM = 'You extract profile facts from a resume. Reply with ONLY a JSON object, no prose, no markdown fence:\n'
   + '{"name":"<full name>"|null,"titles":["<occupation in English>"],"majors":["<field of study in English>"],'
-  + '"jobs":[{"occupation":"<occupation in English>","title":"<job title>","employer":"<employer>","city":"<city>",'
+  + '"jobs":[{"section":"<resume heading this entry is under>","occupation":"<occupation in English>","title":"<job title>","employer":"<employer>","city":"<city>",'
   + '"from":"<YYYY-MM or YYYY>","to":"<YYYY-MM or YYYY, or empty>","notes":"<what the person did, one item per line>"}],'
   + '"education":[{"credential":"<credential or degree name>","school":"<school name>","from":"<start year>","to":"<end year>",'
   + '"prov":"<ON|QC|BC|AB|SK|MB|NS|NB|NL|PE|abroad, or empty>","kind":"<public|private, or empty>","len":"<y1|y2|y3|master, or empty>"}]}\n'
@@ -88,7 +92,12 @@ export const PREFILL_SYSTEM = 'You extract profile facts from a resume. Reply wi
   + 'len = the programme length: "master" when the credential is a master\'s degree or a doctorate; otherwise from the programme\'s own length - one year or less = "y1", two years = "y2", three years or more = "y3" - '
   + 'using the dates on the resume or, when there are no dates, the standard length of that credential type in Canada '
   + '(for example an Ontario college graduate certificate = one year, a diploma = two years, an advanced diploma = three years, a bachelor\'s degree = three years or more); use "" for len when it cannot be told. '
-  + 'jobs = up to 6 jobs the candidate has held, most recent first, copied from the resume: occupation = the same generic occupational phrasing as in titles; '
+  + 'jobs = up to 8 entries copied from the resume, each with section = the resume heading the entry appears under, copied exactly as written '
+  + '(for example "PROFESSIONAL EXPERIENCE", "Work Experience", "PROJECTS", "Volunteer"). '
+  + 'List every entry under the employment heading (Experience, Work Experience, Professional Experience, Employment, Work History or similar) first, most recent first; '
+  + 'only after all of those, add entries from other headings such as Projects. '
+  + 'occupation = the same generic occupational phrasing as in titles; '
+  + 'titles must come from the entries under the employment heading when the resume has one - a role held only in a project is not an occupation held. '
   + 'title = the job title as written on the resume; employer and city as written; from / to = the start and end as "YYYY-MM" (or "YYYY" when no month is given), '
   + 'to is "" when the job is current; notes = the duties and achievements listed under that job, copied as written, one per line, keeping every number and tool; '
   + 'use "" for any part the resume does not state. Never invent an employer, a date or a duty. '

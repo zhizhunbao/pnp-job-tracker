@@ -20,7 +20,7 @@ import css from './gate.module.css'
  * @param props 表单整机、取词、各段职业的字与选职业手柄工厂。
  * @returns 「+ 再加一段」与几段。
  */
-export function GateWork({ g, t, names, occOpenOf }: GateWorkIn) {
+export function GateWork({ g, t, names, occOpenOf, full }: GateWorkIn) {
   const w = g.edit.w
   const lines = []
   for (const [i, row] of w.work.entries()) {
@@ -29,7 +29,8 @@ export function GateWork({ g, t, names, occOpenOf }: GateWorkIn) {
     if (got != null) {
       name = got
     }
-    lines.push(<GateWorkLine key={i} g={g} t={t} i={i} row={row} name={name} onOcc={occOpenOf(i)} />)
+    lines.push(<GateWorkLine key={i} g={g} t={t} i={i} row={row} name={name} onOcc={occOpenOf(i)}
+      full={full} />)
   }
   return (
     <div className={cssOf(css.eduLines)}>

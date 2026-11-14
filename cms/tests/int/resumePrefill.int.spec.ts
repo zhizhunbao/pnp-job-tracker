@@ -60,6 +60,23 @@ describe('模型回包洗数', () => {
     expect(prefillFactOf({ name: null, titles: [], majors: [], education: [], jobs: many }).jobs).toHaveLength(6)
   })
 
+  it('2026-11-13 项目不当成工作:有雇佣经历那一节的段时,项目类的节下的段全删;只有项目时照留;没标节的按雇佣经历算', () => {
+    const base = { name: null, titles: [], majors: [], education: [] }
+    const mixed = [
+      { section: 'PROJECTS', title: 'Founder' },
+      { section: 'Personal Projects', title: 'Lead Architect' },
+      { section: 'PROFESSIONAL EXPERIENCE', title: 'Senior Big Data Architect' },
+      { section: '', title: 'Java Developer' },
+      { section: 'Volunteer', title: 'Tutor' },
+    ]
+    expect(prefillFactOf({ ...base, jobs: mixed }).jobs.map((j) => j.title)).toEqual(['Senior Big Data Architect', 'Java Developer'])
+    const onlyProjects = [{ section: 'PROJECTS', title: 'Founder' }, { section: 'Capstone', title: 'Developer' }]
+    expect(prefillFactOf({ ...base, jobs: onlyProjects }).jobs.map((j) => j.title)).toEqual(['Founder', 'Developer'])
+    // 项目排在前面占满名额也不挤掉后面的雇佣经历
+    const crowded = Array.from({ length: 7 }, () => ({ section: 'Projects', title: 'P' })).concat([{ section: 'Experience', title: 'Real' }])
+    expect(prefillFactOf({ ...base, jobs: crowded }).jobs.map((j) => j.title)).toEqual(['Real'])
+  })
+
   it('教育经历(2026-11-12):照抄、去空白、截断;年份只认四位数字(数字型也认);不是对象或四格全空的丢;至多 4 条', () => {
     const got = prefillFactOf({
       name: null, titles: [], majors: [],

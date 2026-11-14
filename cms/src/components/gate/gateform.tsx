@@ -13,6 +13,11 @@
  * (点「修改」再叠一层专业选择框,一段只挂一个);原先那只专业选择器留着只查名字。
  * 同日 Frank「最后用 sonnet 生成简历,可以选择模板。这部分功能是收费的」:面板末段多「生成简历」(GateCvGen,在七格件里),
  * 生成完叠预览框(GateCvPreview),额度用完叠升级框。
+ * 2026-11-13 Frank「生成简历 应该和 修改档案 应该是分开的吧」「生成简历需要填的内容不要放到修改档案那里」:生成简历自成
+ * 一只窗口弹框(GateCvBox;cv 为真时开它、不开右侧栏),电话、链接、技能、每段工作的职位名称 / 公司 / 城市 / 做了什么与
+ * 选模板、生成、预览框、升级框都跟过去;右侧栏只剩匹配工作和通道用的格子。两只壳共用这一台表单整机与叠开的选择器。
+ * 同日 Frank「点击 从简历填写 后,用户不能做操作」:读简历期间面板里的格子整块不可操作(inert:点不了、键盘也进不去)、
+ * 「保存」不可点 —— 免得这时改的格子被读回来的内容盖掉;「取消」和右上角关闭照常能用。
  *
  * @author Frank
  * @time 2026-11-07 19:00:00
@@ -21,11 +26,10 @@ import { cssOf } from '@/components/css'
 import { Button } from '@/components/button'
 import { Drawer } from '@/components/drawer'
 import { MajorPicker, useMajorPicker } from '@/components/majors'
-import { UpgradeModal } from '@/components/pricing'
 import { OccRail, useOccPicker } from '@/components/quiz'
 import {
   FORM_PICK_EDU, FORM_PICK_JOB, FORM_PICK_WHERE, FORM_PRIMARY_KIND,
-  FORM_SECONDARY_KIND, FORM_TITLE_KEY, K_CV_REASON, TEXT_NONE,
+  FORM_SECONDARY_KIND, FORM_TITLE_KEY, TEXT_NONE,
 } from './constants'
 import { EDU_AT_NONE } from './edu'
 import {
@@ -36,7 +40,7 @@ import { GateFormFields } from './gateformfields'
 import { GatePick } from './gatepick'
 import { GateWhere } from './gatewhere'
 import { GateWorkLayers } from './gateworklayers'
-import { GateCvPreview } from './gatecvpreview'
+import { GateCvBox } from './gatecvbox'
 import { useCvGen, useGateForm, useGatePick, useResumeFill, useSchoolSearch, useWorkSync } from './hooks'
 import { makeWorkOccOpenOf, workLinesOf, workNamesOf } from './work'
 import type { GateFormIn } from './types'
@@ -48,7 +52,7 @@ import css from './gate.module.css'
  * @param props 取词、档案现值、关面板与存好了。
  * @returns 面板 + 叠开的选择器。
  */
-export function GateForm({ t, seed, onClose, onSaved, autoFill = false }: GateFormIn) {
+export function GateForm({ t, seed, onClose, onSaved, autoFill = false, cv = false }: GateFormIn) {
   const g = useGateForm({ seed, onClose, onSaved })
   const k = useGatePick()
   const picker = useMajorPicker({ value: g.majors, onChange: dropCodes })
@@ -70,13 +74,14 @@ export function GateForm({ t, seed, onClose, onSaved, autoFill = false }: GateFo
   const names = workNamesOf({ rows: w.work, titles: work.titles })
   const n = {
     jobs: occLinesOf({ picked: occ.picked, titles: occ.titles, marks: [] }),
-    works: workLinesOf({ rows: w.work, names, marks: g.fromResume, t }),
+    works: workLinesOf({ rows: w.work, names, marks: g.fromResume, t, titles: work.titles, full: cv }),
     where: whereLinesOf({ prov: g.provActive, city: g.cities.city, opts: g.cities.opts, t }),
     edu: eduLinesOf({ rows: g.edit.edu, majors, t }),
   }
   const foot = (
     <>
-      <Button kind={FORM_PRIMARY_KIND} onClick={g.edit.onSave} busy={g.edit.saving} disabled={g.edit.nameBad}>
+      <Button kind={FORM_PRIMARY_KIND} onClick={g.edit.onSave} busy={g.edit.saving}
+        disabled={g.edit.nameBad || f.busy}>
         {t('gate.save')}
       </Button>
       <Button kind={FORM_SECONDARY_KIND} onClick={g.onClose}>{t('pf.cancel')}</Button>
@@ -85,23 +90,26 @@ export function GateForm({ t, seed, onClose, onSaved, autoFill = false }: GateFo
   )
   return (
     <>
-      <Drawer title={t(FORM_TITLE_KEY)} onClose={g.onClose} foot={foot}>
-        <GateFormFields g={g} k={k} t={t} n={n} f={f} c={c} />
-      </Drawer>
+      {cv === false && (
+        <Drawer title={t(FORM_TITLE_KEY)} onClose={g.onClose} foot={foot}>
+          <div className={cssOf(css.formBody)} inert={f.busy}>
+            <GateFormFields g={g} k={k} t={t} n={n} f={f} />
+          </div>
+        </Drawer>
+      )}
+      {cv && <GateCvBox g={g} k={k} t={t} n={n} c={c} />}
       {k.picking === FORM_PICK_JOB && (
         <GatePick title={t('pf.jobs')} doneText={t('pf.pickDone')} onDone={k.onDone}>
           <OccRail t={t} lang={g.lang} d={occ} />
         </GatePick>
       )}
-      <GateWorkLayers g={g} k={k} t={t} names={names} rail={<OccRail t={t} lang={g.lang} d={one} />}
+      <GateWorkLayers g={g} k={k} t={t} names={names} full={cv} rail={<OccRail t={t} lang={g.lang} d={one} />}
         occOpenOf={makeWorkOccOpenOf({ rows: w.work, setAt: w.setOccAt, onReplace: one.onReplace })} />
       {k.picking === FORM_PICK_WHERE && (
         <GatePick title={t('pf.where')} doneText={t('pf.pickDone')} onDone={k.onDone}>
           <GateWhere g={g} t={t} />
         </GatePick>
       )}
-      {c.doc != null && <GateCvPreview c={c} doc={c.doc} t={t} />}
-      {c.upgrade && <UpgradeModal t={t} onClose={c.onUpgradeClose} reason={t(K_CV_REASON)} />}
       {k.picking === FORM_PICK_EDU && (
         <GatePick title={t('pf.edu')} doneText={t('pf.pickDone')} onDone={k.onDone}>
           <div className={cssOf(css.pickBody)}>

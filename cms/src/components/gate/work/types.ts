@@ -257,6 +257,11 @@ export type WorkLine = {
   name: string
 
   /**
+   * 这一行下面的灰字(修改档案里:职位名称在上时,这里是它对上的加拿大职业全名);没有空串。
+   */
+  sub: string
+
+  /**
    * 职业是不是从简历来的(挂「来自简历」胶囊)。
    */
   from: boolean
@@ -300,6 +305,52 @@ export type WorkLinesIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 职业码 → 职业全名(选职业控件的名字表;修改档案里的灰字用全名,短名会撞)。
+   */
+  titles: Record<string, string>
+
+  /**
+   * 写简历用的摘要(职位名称、公司、起止年月连成一行;生成简历弹框);false = 修改档案用的两行
+   * (职位名称黑字、加拿大职业灰字)。
+   */
+  full: boolean
+}
+
+/**
+ * workMatchLineOf 的入参。
+ */
+export type WorkMatchIn = {
+  /**
+   * 这一段。
+   */
+  row: WorkPick
+
+  /**
+   * 行键。
+   */
+  key: string
+
+  /**
+   * 职业码 → 职业全名。
+   */
+  titles: Record<string, string>
+
+  /**
+   * 职业是不是从简历来的。
+   */
+  from: boolean
+}
+
+/**
+ * workMergedOf 的入参。
+ */
+export type WorkMergedIn = {
+  /**
+   * 一段一行的摘要行。
+   */
+  lines: WorkLine[]
 }
 
 /**

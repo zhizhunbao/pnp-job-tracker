@@ -11,7 +11,7 @@ import { cssOf } from '@/components/css'
 import { FoldLine, useFold } from '@/components/pager'
 import { Tag } from '@/components/tag'
 import {
-  FORM_NONE_KEY, FORM_SECONDARY_KIND, FROM_TAG_KEY, FROM_TAG_V, PICK_FOLD_N, PICK_FOLD_UNIT_KEY,
+  FORM_NONE_KEY, FORM_SECONDARY_KIND, FROM_TAG_KEY, FROM_TAG_V, PICK_FOLD_N, PICK_FOLD_UNIT_KEY, TEXT_NONE,
 } from './constants'
 import type { GatePickedIn } from './types'
 import css from './gate.module.css'
@@ -31,6 +31,7 @@ export function GatePicked({ lines, onEdit, t }: GatePickedIn) {
       <div key={l.key} className={cssOf(css.pickName)}>
         <span>{l.name}</span>
         {l.from && <Tag variant={FROM_TAG_V}>{t(FROM_TAG_KEY)}</Tag>}
+        {l.sub !== TEXT_NONE && <span className={cssOf(css.pickSub)}>{l.sub}</span>}
       </div>,
     )
   }

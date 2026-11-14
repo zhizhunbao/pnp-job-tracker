@@ -224,6 +224,12 @@ export const PF_LOAD_FAIL = 'fail'
 export const PF_START_WHO = 'who'
 
 /**
+ * 编辑面板的起始方式:开成生成简历弹框(2026-11-13 Frank「生成简历 应该和 修改档案 应该是分开的吧」;
+ * 「基础简历」卡空态的「生成简历」钮)。
+ */
+export const PF_START_CV = 'cv'
+
+/**
  * 编辑面板的起始方式:一开就自动从简历填写(2026-11-12 刚上传或替换了简历、档案还有空格时)。
  */
 export const PF_START_FILL = 'fill'

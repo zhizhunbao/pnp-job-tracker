@@ -191,3 +191,64 @@ export const SCHEMA_WORK_KEYS = ['title', 'org', 'city', 'bullets']
  * 模型输出里一条教育经历必须有的键。
  */
 export const SCHEMA_EDU_KEYS = ['credential', 'school']
+
+/**
+ * 查询参数:模板(取模板示例 PDF 用)。
+ */
+export const P_TPL = 'tpl'
+
+/**
+ * 模板示例 PDF 的缓存头:内容只随代码变,浏览器与边缘都可存一天。
+ */
+export const CACHE_SAMPLE = 'public, max-age=86400'
+
+/**
+ * 模板示例用的一份虚构简历(2026-11-13 Frank「这个应该有个预览功能吧」:选模板时看一页示例排版,不调模型、不扣额度);
+ * 形同排版草稿 ProfileDraft,人名、公司、学校都是编的。
+ */
+export const SAMPLE_DRAFT = {
+  /**
+   * 联系方式。
+   */
+  contact: { name: 'Alex Chen', email: 'alex.chen@example.com', phone: '613-555-0142', city: 'Ottawa', region: 'ON' },
+
+  /**
+   * 简介。
+   */
+  summary: 'Software developer with four years of experience building web applications and internal tools. '
+    + 'Comfortable across the stack, from database design to accessible front ends.',
+
+  /**
+   * 工作经历。
+   */
+  work: [
+    {
+      title: 'Software Developer', org: 'Maple Leaf Software', city: 'Ottawa, ON', fromY: '2023', fromM: '5', toY: '', toM: '',
+      now: true,
+      desc: 'Built a scheduling service used by 40 clinics, cutting booking errors by 30%.\n'
+        + 'Moved nightly reports from manual scripts to an automated pipeline.\n'
+        + 'Reviewed code and mentored two junior developers.',
+    },
+    {
+      title: 'Junior Developer', org: 'Rideau Digital', city: 'Toronto, ON', fromY: '2021', fromM: '6', toY: '2023', toM: '4',
+      now: false,
+      desc: 'Added search and filtering to a customer portal with 12,000 monthly users.\n'
+        + 'Wrote integration tests that caught regressions before release.',
+    },
+  ],
+
+  /**
+   * 教育经历。
+   */
+  edu: [
+    {
+      title: 'Diploma, Computer Programming', org: 'Example College', city: 'Ottawa, ON', fromY: '2019', fromM: '9',
+      toY: '2021', toM: '4', now: false, desc: '',
+    },
+  ],
+
+  /**
+   * 技能(一行一条)。
+   */
+  skills: 'TypeScript, React, Node.js\nPostgreSQL, Redis\nDocker, GitHub Actions',
+}

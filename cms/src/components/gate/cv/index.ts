@@ -8,6 +8,7 @@
  */
 
 export {
-  CV_PV_H, CV_PV_PREF, CV_PV_W, EV_RESUME, LEFT_NONE, MSG_INFO, TPL_CLASSIC, TPL_MODERN,
+  CV_BOX_H, CV_BOX_PREF, CV_BOX_W, CV_PV_H, CV_PV_PREF, CV_PV_W, EV_RESUME, LEFT_NONE, MSG_INFO, TPL_CLASSIC,
+  TPL_MODERN, URL_CV_SAMPLE,
 } from './constants'
 export { loadCvLeft, makeCvDocClose, makeCvDownload, makeCvGen, makeCvSet } from './functions'

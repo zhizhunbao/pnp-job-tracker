@@ -14,7 +14,7 @@ import { PDFParse } from 'pdf-parse'
 import { describe, expect, it } from 'vitest'
 
 import {
-  makeWorkOcc, workFilledOf, workFormRowsOf, workListOf, workNocsOf,
+  makeWorkOcc, workFilledOf, workFormRowsOf, workLinesOf, workListOf, workNocsOf,
 } from '@/components/gate/work/functions'
 import type { WorkPick } from '@/components/gate/work/types'
 import { eduFormRowsOf, eduMajorsOf, eduWithMajorsOf } from '@/components/gate/edu/functions'
@@ -238,6 +238,29 @@ describe('⑦ 专业并进教育经历', () => {
     expect(eduWithMajorsOf({ rows: out, codes: ['99.9999'] })).toBe(out)
     expect(eduMajorsOf(out.concat([{ ...B, major: '11.0701' }]))).toEqual(['11.0701', '52.0301'])
     expect(eduFormRowsOf({ list: [], strs: [], majors: ['11.0701'] })).toEqual([{ ...B, major: '11.0701' }])
+  })
+
+  it('2026-11-13 不猜专业属于哪一段:两段以上时现有各段不动,专业各占末尾一个空段,一个不丢', () => {
+    const rows = [{ ...B, school: 'Cloud program' }, { ...B, school: 'AI program' }]
+    const out = eduWithMajorsOf({ rows, codes: ['11.0102', '11.0902'] })
+    expect(out).toEqual([rows[0], rows[1], { ...B, major: '11.0102' }, { ...B, major: '11.0902' }])
+    expect(eduMajorsOf(out)).toEqual(['11.0102', '11.0902'])
+    // 没有教育经历:专业各占一段
+    expect(eduWithMajorsOf({ rows: [], codes: ['11.0102'] })).toEqual([{ ...B, major: '11.0102' }])
+  })
+
+  it('2026-11-13 做过的工作摘要:字一样的几段只出一行(不写段数),不一样的照旧一段一行', () => {
+    const W = { nocs: ['21232'], title: '', org: '', city: '', from: '', to: '', desc: '' }
+    const t = (k: string) => k
+    const rows = [W, W, { ...W, org: 'Acme' }, W]
+    const names = ['Software developers', 'Software developers', 'Software developers', 'Software developers']
+    expect(workLinesOf({ rows, names, marks: [], t, titles: {}, full: true }).map((l) => l.name))
+      .toEqual(['Software developers', 'Software developers, Acme'])
+    // 修改档案里(full = false):职位名称黑字、加拿大职业全名灰字;没填职位名称的职业全名顶上来;公司不出
+    const titles = { '21232': 'Software developers and programmers' }
+    const mine = [{ ...W, title: 'Java 开发', org: 'Acme' }, W, W]
+    expect(workLinesOf({ rows: mine, names, marks: [], t, titles, full: false }).map((l) => [l.name, l.sub]))
+      .toEqual([['Java 开发', 'Software developers and programmers'], ['Software developers and programmers', '']])
   })
 
   it('服务端收答案:专业码不合形(含老档案没有这一格)按空串;只有专业码的一条也留', () => {

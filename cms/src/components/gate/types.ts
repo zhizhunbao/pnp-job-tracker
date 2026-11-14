@@ -591,6 +591,11 @@ export type GateWorkLayersIn = {
    * 选职业控件(叠开的选职业框的正文;调用方拼好递进来)。
    */
   rail: React.ReactNode
+
+  /**
+   * 出不出只有写简历才用的四格(职位名称、公司、城市、做了什么;2026-11-13:生成简历弹框里出,修改档案里不出)。
+   */
+  full: boolean
 }
 
 /**
@@ -961,6 +966,11 @@ export type GateWorkIn = {
    * 造「点第几段的选职业」的手柄。
    */
   occOpenOf: (i: number) => () => void
+
+  /**
+   * 出不出只有写简历才用的四格(职位名称、公司、城市、做了什么;2026-11-13:生成简历弹框里出,修改档案里不出)。
+   */
+  full: boolean
 }
 
 /**
@@ -996,6 +1006,11 @@ export type GateWorkLineIn = {
    * 点「选职业」。
    */
   onOcc: () => void
+
+  /**
+   * 出不出只有写简历才用的四格(职位名称、公司、城市、做了什么;2026-11-13:生成简历弹框里出,修改档案里不出)。
+   */
+  full: boolean
 }
 
 /**
@@ -1689,6 +1704,42 @@ export type GateFormIn = {
    * 一开面板就自动从简历填写一次(2026-11-12:刚上传或替换了简历、档案还有空格时由档案页给);可省 = 不自动填。
    */
   autoFill?: boolean
+
+  /**
+   * 开成生成简历弹框(2026-11-13 Frank「生成简历 应该和 修改档案 应该是分开的吧」:同一台表单整机,换一只壳、
+   * 只出写简历要填的格子);可省 = 开成修改档案的右侧栏。
+   */
+  cv?: boolean
+}
+
+/**
+ * GateCvBox(生成简历弹框;2026-11-13)的 props。
+ */
+export type GateCvBoxIn = {
+  /**
+   * 表单整机。
+   */
+  g: GatePanel
+
+  /**
+   * 叠开选择器的手柄。
+   */
+  k: GatePickPanel
+
+  /**
+   * 取词。
+   */
+  t: TFn
+
+  /**
+   * 几格已选的名字(这里用做过的工作、教育经历两格)。
+   */
+  n: GatePickLines
+
+  /**
+   * 生成整机。
+   */
+  c: CvGenPanel
 }
 
 /**
@@ -1766,6 +1817,11 @@ export type PickedLine = {
   name: string
 
   /**
+   * 显示名下面的灰字(2026-11-13:做过的工作一格,职位名称对上的加拿大职业);没有空串。
+   */
+  sub: string
+
+  /**
    * 来自简历。
    */
   from: boolean
@@ -1840,11 +1896,6 @@ export type GatePickBoxIn = {
  * GateFormFields(一页表单七格)的 props。
  */
 export type GateFormFieldsIn = {
-  /**
-   * 「生成简历」一段的整机(2026-11-12)。
-   */
-  c: CvGenPanel
-
   /**
    * 表单状态(useGateEdit 同一台;2026-11-07 起改名 useGateForm)。
    */
@@ -2049,6 +2100,16 @@ export type GateResumeFillIn = {
    * 取词。
    */
   t: TFn
+
+  /**
+   * 这一格的标签(2026-11-13:按钮并进面板第一格的标签行)。
+   */
+  label: string
+
+  /**
+   * 这一格的控件。
+   */
+  children: React.ReactNode
 }
 
 /**

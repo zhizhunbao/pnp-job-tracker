@@ -174,9 +174,8 @@
 
 /*
  * 档案取回来之前的占位块(不出字;取回来后不整块跳)。
+ * 2026-11-13 Frank「这两个中间的灰框没必要吧」:灰底撤,只占着高。
  */
 .skel {
   height: 320px;
-  background: var(--hairline);
-  border-radius: 12px;
 }

@@ -9,7 +9,8 @@
  */
 import { shortOcc } from '@/components/quiz'
 import {
-  K_WORK_NOW, TEXT_NONE, WORK_AT_NONE, WORK_DESC_LEN, WORK_F_CITY, WORK_F_DESC, WORK_F_FROM, WORK_F_ORG, WORK_F_TITLE,
+  K_WORK_NOW, TEXT_NONE, WORK_AT_NONE, WORK_DESC_LEN, WORK_F_CITY, WORK_F_DESC, WORK_F_FROM, WORK_F_ORG,
+  WORK_F_TITLE,
   WORK_F_TO,
   WORK_FROM, WORK_FROM_SEP, WORK_LINE_LEN, WORK_NAME_WAIT, WORK_NOCS_MAX,
   WORK_ROWS_MAX, WORK_SUM_SEP, WORK_YM_BAD_RE, WORK_YM_LEN,
@@ -17,7 +18,7 @@ import {
 } from './constants'
 import type {
   WorkCellPickIn, WorkCellSetIn, WorkFillIn, WorkFillOut,
-  WorkLine, WorkLinesIn, WorkMarkedIn, WorkNamesIn, WorkOccIn, WorkOccOpenIn, WorkPick,
+  WorkLine, WorkLinesIn, WorkMarkedIn, WorkMatchIn, WorkMergedIn, WorkNamesIn, WorkOccIn, WorkOccOpenIn, WorkPick,
   WorkRowsIn, WorkSeedIn, WorkSumIn,
 } from './types'
 
@@ -346,6 +347,11 @@ export function workNamesOf(x: WorkNamesIn): string[] {
 
 /**
  * 做过的工作 → 摘要行:一段一行,什么都没填的段不出;职业从简历来的挂「来自简历」。
+ * 2026-11-13 Frank「一起修」(起因:他档案里三段只有职业、没有公司和时间,摘要成了三行一模一样的「软件开发」):
+ * 字一样的几行合成一行,后面写「N 段」(见 workMergedOf)。
+ * 同日 Frank「这个三段是什么意思」:「N 段」看不懂,撤 —— 字一样的只出一行,不写段数。
+ * 同日 Frank「中国的职业和加拿大的职业名字不一样怎么办」→「做」:修改档案里一段两行 —— 用户自己的职位名称黑字,
+ * 它对上的加拿大职业全名灰字(见 workMatchLineOf);公司、起止年月不在档案里出。生成简历弹框照旧一行连排(full)。
  *
  * @param x 几段、各段职业的字、标记与取词。
  * @returns 摘要行。
@@ -361,9 +367,62 @@ export function workLinesOf(x: WorkLinesIn): WorkLine[] {
     if (occ === TEXT_NONE && row.nocs.length > 0) {
       occ = WORK_NAME_WAIT
     }
-    const name = workSumOf({ row, name: occ, t: x.t })
-    if (name !== TEXT_NONE) {
-      out.push({ key: String(i), name, from: workMarkedOf({ row, marks: x.marks }) })
+    const from = workMarkedOf({ row, marks: x.marks })
+    let line: WorkLine = { key: String(i), name: workSumOf({ row, name: occ, t: x.t }), sub: TEXT_NONE, from }
+    if (x.full === false) {
+      line = workMatchLineOf({ row, key: String(i), titles: x.titles, from })
+    }
+    if (line.name !== TEXT_NONE) {
+      out.push(line)
+    }
+  }
+  return workMergedOf({ lines: out })
+}
+
+/**
+ * 修改档案里一段工作的两行:职位名称(用户自己的叫法)黑字在上,它对上的加拿大职业全名灰字在下;
+ * 没填职位名称的,职业全名顶上来当黑字、不出灰字;选了职业但名字还没取到先占位。两样都没有 = 空行(不出)。
+ *
+ * @param x 这一段、行键、名字表与来自简历。
+ * @returns 一行。
+ */
+function workMatchLineOf(x: WorkMatchIn): WorkLine {
+  let occ: string = TEXT_NONE
+  const head = x.row.nocs[0]
+  if (head != null) {
+    occ = WORK_NAME_WAIT
+    const got = x.titles[head]
+    if (got != null && got !== TEXT_NONE) {
+      occ = got
+    }
+  }
+  const title = x.row.title.trim()
+  if (title === TEXT_NONE) {
+    return { key: x.key, name: occ, sub: TEXT_NONE, from: x.from }
+  }
+  return { key: x.key, name: title, sub: occ, from: x.from }
+}
+
+/**
+ * 字一样(黑字、灰字都一样)的摘要行只出一行:留头一次出现的位置与行键;合进来的行里有一行来自简历就算来自简历。
+ *
+ * @param x 一段一行的摘要行。
+ * @returns 合过的摘要行。
+ */
+function workMergedOf(x: WorkMergedIn): WorkLine[] {
+  const out: WorkLine[] = []
+  const seen: string[] = []
+  for (const l of x.lines) {
+    const id = l.name + WORK_SUM_SEP + l.sub
+    if (seen.includes(id) === false) {
+      seen.push(id)
+      let from = false
+      for (const m of x.lines) {
+        if (m.name === l.name && m.sub === l.sub && m.from) {
+          from = true
+        }
+      }
+      out.push({ key: l.key, name: l.name, sub: l.sub, from })
     }
   }
   return out

@@ -9,6 +9,10 @@
  * 省下拉加城市区(GateWhere)、教育经历几段(GateEdu)挪进叠开的弹框(见 gateform.tsx)。
  * 2026-11-12 Frank「右侧弹 sidebar 用户一项一项填,最后用 sonnet 生成简历」:英文姓名后面多电话、链接、技能三格(GateCvFields)。
  * 同日 Frank「教育经历 和 专业是不是重复了」:「专业」那一格撤,专业并进教育经历的每一段(在教育经历弹框里选)。
+ * 2026-11-13 Frank「档案的内容 只用来 匹配工作和通道」「生成简历需要填的内容不要放到修改档案那里」:电话、链接、技能三格
+ * 与末段「生成简历」搬去生成简历弹框(GateCvBox),这里不再有。
+ * 同日 Frank「一起修」:身份、教育经历两格标签后的灰字(「选填,用来算我的通道」「选填,最近两段」)撤 ——
+ * 11-12 定了网站上不加解释,后一句还和实际能填的段数对不上。
  *
  * @author Frank
  * @time 2026-11-07 19:00:00
@@ -23,8 +27,6 @@ import {
   RULE_OPTS,
 } from './constants'
 import { isFromResume, makeRuleLabel, makeWhoLabel } from './functions'
-import { GateCvFields } from './gatecvfields'
-import { GateCvGen } from './gatecvgen'
 import { GateField } from './gatefield'
 import { GateName } from './gatename'
 import { GatePicked } from './gatepicked'
@@ -37,18 +39,17 @@ import type { GateFormFieldsIn } from './types'
  * @param props 表单状态、叠开选择器的手柄与取词。
  * @returns 七格。
  */
-export function GateFormFields({ g, k, t, n, f, c }: GateFormFieldsIn) {
+export function GateFormFields({ g, k, t, n, f }: GateFormFieldsIn) {
   return (
     <>
-      <GateResumeFill f={f} t={t} />
-      <GateField label={t('pf.goal')}>
+      <GateResumeFill f={f} t={t} label={t('pf.goal')}>
         <SegGroup>
           <Button kind={FORM_SEG_KIND} active={g.goal === GOAL_JOBS}
             onClick={makeOptPick({ value: GOAL_JOBS, onPick: g.edit.setGoal })}>{t(GOAL_JOBS_KEY)}</Button>
           <Button kind={FORM_SEG_KIND} active={g.goal === GOAL_PR}
             onClick={makeOptPick({ value: GOAL_PR, onPick: g.edit.setGoal })}>{t(GOAL_PR_KEY)}</Button>
         </SegGroup>
-      </GateField>
+      </GateResumeFill>
       <GateField label={t('pf.jobs')}>
         <GatePicked lines={n.jobs} onEdit={k.onJob} t={t} />
       </GateField>
@@ -58,11 +59,11 @@ export function GateFormFields({ g, k, t, n, f, c }: GateFormFieldsIn) {
       <GateField label={t('pf.where')}>
         <GatePicked lines={n.where} onEdit={k.onWhere} t={t} />
       </GateField>
-      <GateField label={t('pf.who')} hint={t('pf.optWho')}>
+      <GateField label={t('pf.who')}>
         <Select value={g.edit.who} onChange={g.edit.setWho} opts={FIT_WHOS} all={t(FORM_NONE_KEY)}
           labelOf={makeWhoLabel({ t })} />
       </GateField>
-      <GateField label={t('pf.edu')} hint={t('pf.optEdu')}>
+      <GateField label={t('pf.edu')}>
         <GatePicked lines={n.edu} onEdit={k.onEdu} t={t} />
       </GateField>
       <GateField label={t('pf.rule')}>
@@ -75,8 +76,6 @@ export function GateFormFields({ g, k, t, n, f, c }: GateFormFieldsIn) {
           <Tag variant={FROM_TAG_V}>{t(FROM_TAG_KEY)}</Tag>
         )}
       </GateField>
-      <GateCvFields g={g} t={t} />
-      <GateCvGen g={g} c={c} t={t} />
     </>
   )
 }

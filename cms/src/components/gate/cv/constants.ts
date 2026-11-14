@@ -138,6 +138,26 @@ export const CV_ERR_KEYS: Record<string, string> = {
 }
 
 /**
+ * 模板示例 PDF 的接口(lib/tailor 的 tailorSampleRoute),后面接模板名(2026-11-13)。
+ */
+export const URL_CV_SAMPLE = '/api/tailor/sample?tpl='
+
+/**
+ * 生成简历弹框尺寸记忆的本地存储键(2026-11-13)。
+ */
+export const CV_BOX_PREF = 'o2p.cvgen.box'
+
+/**
+ * 生成简历弹框没有记忆时的宽(px)。
+ */
+export const CV_BOX_W = 1080
+
+/**
+ * 生成简历弹框没有记忆时的高(px)。
+ */
+export const CV_BOX_H = 860
+
+/**
  * 预览框尺寸记忆的本地存储键。
  */
 export const CV_PV_PREF = 'o2p.cvgen.preview'

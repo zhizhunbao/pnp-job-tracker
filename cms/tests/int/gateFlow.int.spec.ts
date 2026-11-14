@@ -317,7 +317,9 @@ describe('⑨ 从简历填写教育经历(2026-11-12)', () => {
     expect(eduInputs(m.host, 'pf.eduFrom').map((i) => i.value)).toEqual(['2025', '2014'])
     expect(eduLines(m.host)[0]?.map((s) => s.value)).toEqual(['ON', 'public', 'y1'])
     expect(eduLines(m.host)[1]?.map((s) => s.value)).toEqual(['abroad', 'public', 'y3'])
-    await vi.waitFor(() => expect(m.host.textContent).toContain('pf.fillOk'))
+    // 2026-11-13 Frank「这个绿条不需要」:填上了不出提示;读完进度条收掉
+    await vi.waitFor(() => expect(m.host.querySelector('[role="progressbar"]')).toBeNull())
+    expect(m.host.textContent).not.toContain('pf.fillOk')
     act(() => (buttonOf(m.host, 'pf.fill') as HTMLButtonElement).click())
     await vi.waitFor(() => expect(m.host.textContent).toContain('pf.fillNone'))
     expect(eduInputs(m.host, 'pf.eduCred')).toHaveLength(2)

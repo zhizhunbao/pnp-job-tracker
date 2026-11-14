@@ -49,7 +49,7 @@ import {
   HDR_CONTENT_TYPE,
   K_WHO_HEAD, LANG_KO, LANG_ZH, MAJOR_SEP, METHOD_PATCH, MIME_JSON, PROV_ABROAD, SAVE_FAIL_KEY,
   STATUS_OVERSEAS, TEXT_NONE, URL_CITIES_HEAD, URL_PREFS,
-  FILL_ERR_DEFAULT, FILL_ERR_KEYS, FILL_KIND_ERR, FILL_KIND_INFO, FILL_KIND_OK, FILL_NONE_KEY, FILL_OK_KEY, FROM_MAJORS,
+  FILL_ERR_DEFAULT, FILL_ERR_KEYS, FILL_KIND_ERR, FILL_KIND_INFO, FILL_NONE_KEY, FROM_MAJORS,
   FROM_NAME, FROM_SEP,
   FROM_WORK, METHOD_POST, URL_PREFILL,
   K_RULE_HEAD, MATCH_EDU, MATCH_WORK, MODE_DEFAULT, MODE_STRICT, RULE_EDU, RULE_EDU_STRICT,
@@ -575,7 +575,7 @@ export function occLinesOf(x: OccLinesIn): PickedLine[] {
         from = true
       }
     }
-    out.push({ key: g.key, name, from })
+    out.push({ key: g.key, name, sub: TEXT_NONE, from })
   }
   return out
 }
@@ -593,7 +593,7 @@ export function whereLinesOf(x: WhereLinesIn): PickedLine[] {
     return out
   }
   const provLabel = makeProvLabel({ t: x.t })
-  out.push({ key: LINE_KEY_PROV, name: provLabel(x.prov), from: false })
+  out.push({ key: LINE_KEY_PROV, name: provLabel(x.prov), sub: TEXT_NONE, from: false })
   if (x.city === TEXT_NONE) {
     return out
   }
@@ -603,7 +603,7 @@ export function whereLinesOf(x: WhereLinesIn): PickedLine[] {
       name = o.label
     }
   }
-  out.push({ key: LINE_KEY_CITY, name, from: false })
+  out.push({ key: LINE_KEY_CITY, name, sub: TEXT_NONE, from: false })
   return out
 }
 
@@ -802,7 +802,7 @@ export function eduLinesOf(x: EduLinesIn): PickedLine[] {
     }
     const name = eduSumOf({ row, major, t: x.t })
     if (name !== TEXT_NONE) {
-      out.push({ key: String(i), name, from: false })
+      out.push({ key: String(i), name, sub: TEXT_NONE, from: false })
     }
   }
   return out
@@ -894,7 +894,7 @@ function fillErrOf(code: string | undefined): FillMsg {
 }
 
 /**
- * 填上了几项 → 提示。
+ * 填上了几项 → 提示(2026-11-13 Frank「这个绿条不需要」:填上了不出提示,只有什么也没填上才说一句)。
  *
  * @param n 填上了几项。
  * @returns 提示。
@@ -903,7 +903,7 @@ function fillMsgOf(n: number): FillMsg {
   if (n === 0) {
     return { key: FILL_NONE_KEY, n, kind: FILL_KIND_INFO }
   }
-  return { key: FILL_OK_KEY, n, kind: FILL_KIND_OK }
+  return { key: TEXT_NONE, n, kind: FILL_KIND_INFO }
 }
 
 /**

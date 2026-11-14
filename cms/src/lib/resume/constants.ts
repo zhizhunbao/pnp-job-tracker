@@ -576,6 +576,12 @@ export const DISP_ATTACH = 'attachment'
 export const DISP_NAME_HEAD = "; filename*=UTF-8''"
 
 /**
+ * 简历里「不算雇佣经历」的节标题(2026-11-13 Frank「做」:项目、课程作业、志愿、发表这些节下的条目长得像工作 ——
+ * 有头衔、机构、起止 —— 但不是工作)。模型给每段标上它所在的节,有雇佣经历那一节的段时,标题对上这条的段删掉。
+ */
+export const PREFILL_SIDE_RE = /project|capstone|course|academic|volunteer|publication|research|award|activit/i
+
+/**
  * 从简历提取的工作经历至多几段(同答案档 CV_WORK_MAX 以内)。
  */
 export const PREFILL_JOBS_MAX = 6

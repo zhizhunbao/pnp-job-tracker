@@ -8,7 +8,8 @@
  */
 
 export {
-  E_NEED, PROFILE_FEATURE, PROFILE_FILE_TAIL, PROFILE_TOKENS_MAX, PROFILE_USER_DAILY, PROFILE_USER_PREFIX, TPL_MODERN,
+  CACHE_SAMPLE, E_NEED, P_TPL, PROFILE_FEATURE, PROFILE_FILE_TAIL, PROFILE_TOKENS_MAX, PROFILE_USER_DAILY,
+  PROFILE_USER_PREFIX, SAMPLE_DRAFT, TPL_MODERN,
 } from './constants'
 export {
   isProfileReady, latinOf, profileDraftOf, profileFactsOf, profileRefOf, profileSchemaOf, profileUserOf, toProfileOut,

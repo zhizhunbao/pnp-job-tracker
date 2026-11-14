@@ -601,19 +601,9 @@ export const FILL_ERR_KEYS: Record<string, string> = {
 export const FILL_ERR_DEFAULT = 'pf.fillLlm'
 
 /**
- * 填上了几项的提示词条。
- */
-export const FILL_OK_KEY = 'pf.fillOk'
-
-/**
  * 什么也没填上的提示词条。
  */
 export const FILL_NONE_KEY = 'pf.fillNone'
-
-/**
- * 提示:成功的颜色。
- */
-export const FILL_KIND_OK = 'ok'
 
 /**
  * 提示:普通的颜色。
@@ -624,6 +614,11 @@ export const FILL_KIND_INFO = 'info'
  * 提示:失败的颜色。
  */
 export const FILL_KIND_ERR = 'err'
+
+/**
+ * 「从简历填写」进行中那条进度条的读屏角色(2026-11-13)。
+ */
+export const FILL_BAR_ROLE = 'progressbar'
 
 /**
  * 结果提示那一格的读屏角色(内容变了会念)。
@@ -691,9 +686,24 @@ export const K_CV_SKILLS = 'pf.skills'
 export const K_CV_SKILLS_PH = 'pf.skills.ph'
 
 /**
- * 词条键:只用于生成简历的三格的灰字说明。
+ * 词条键:生成简历弹框「联系方式」卡的卡头(2026-11-13)。
  */
-export const K_CV_OPT = 'pf.optCv'
+export const K_CV_CONTACT = 'pf.cv.contact'
+
+/**
+ * 词条键:生成简历弹框「模板」卡的卡头(2026-11-13)。
+ */
+export const K_CV_TPL = 'pf.cv.tpl'
+
+/**
+ * 全站分区卡的全局类(main.css 的 .cardMd;生成简历弹框的几张卡用)。
+ */
+export const CARD_MD_CLS = 'cardMd'
+
+/**
+ * 分区卡卡头标题的全局类(main.css 的 .mcardHead)。
+ */
+export const CARD_HEAD_CLS = 'mcardHead'
 
 /**
  * 词条键:「生成简历」一段的标签(也是预览框的灰色小标)。

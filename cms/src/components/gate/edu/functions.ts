@@ -404,6 +404,10 @@ export function eduMajorsOf(rows: EduPick[]): string[] {
 /**
  * 把一串专业码落进几段(老档案起头与「从简历填写」用):只在各段都还没挂专业时才落 —— 已经有哪一段挂了专业,原样不动;
  * 按序一码一段,段不够的在末尾补空段(到 EDU_LIST_MAX 段为止,再多的不要)。
+ * 2026-11-13 Frank「一起修」(起因:他档案里 Cloud Development 那段挂了「人工智能」、AI Software Development 那段挂了
+ * 「云计算」—— 专业清单的先后和教育经历的先后不是一回事,按序套就套反了):不再猜哪个专业属于哪一段。
+ * 只有一段教育经历时第一个码落给它(没得错配);有两段以上时现有各段原样不动。落不进现有段的码各占末尾一个空段
+ * (只挂专业,让人自己挪),专业一个不丢;上面「按序一码一段」作废。
  *
  * @param x 现在的几段与专业码。
  * @returns 落过之后的几段。
@@ -413,15 +417,23 @@ export function eduWithMajorsOf(x: EduMajorsIn): EduPick[] {
     return x.rows
   }
   const out: EduPick[] = []
-  for (const [i, code] of x.codes.slice(0, EDU_LIST_MAX).entries()) {
-    let row = eduBlankOf()
-    const have = x.rows[i]
-    if (have != null) {
-      row = have
+  let rest = x.codes
+  const only = x.rows[0]
+  const head = x.codes[0]
+  if (x.rows.length === 1 && only != null && head != null) {
+    out.push(Object.assign({}, only, { major: head }))
+    rest = x.codes.slice(1)
+  } else {
+    for (const r of x.rows) {
+      out.push(r)
     }
-    out.push(Object.assign({}, row, { major: code }))
   }
-  return out.concat(x.rows.slice(out.length))
+  for (const code of rest) {
+    if (out.length < EDU_LIST_MAX) {
+      out.push(Object.assign({}, eduBlankOf(), { major: code }))
+    }
+  }
+  return out
 }
 
 /**

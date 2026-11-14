@@ -382,7 +382,17 @@
 }
 
 /*
+ * 已选名字下面的灰字(2026-11-13:做过的工作一格,职位名称对上的加拿大职业):独占一行、小一号。
+ */
+.pickSub {
+  flex-basis: 100%;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+/*
  * 「从简历填写」一行:说明在左,按钮在右。
+ * 2026-11-13 Frank「这个按钮放到右边」「放到一行啊」:这一行并进面板第一格(目标)的标签行 —— 标签在左、按钮在右。
  */
 .fillRow {
   display: flex;
@@ -390,7 +400,15 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+}
+
+/*
+ * 「从简历填写」那一行左边的标签:同一格的标签(13 半粗)。
+ */
+.fillLabel {
+  font-size: 13px;
+  font-weight: 600;
 }
 
 /*
@@ -693,4 +711,107 @@
 .area:focus {
   outline: none;
   border-color: #93c5fd;
+}
+
+/*
+ * 生成简历弹框正文(2026-11-13):左边表单几张卡,右边模板示例,各自滚。
+ */
+.cvBox {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  height: 100%;
+  min-height: 0;
+}
+
+/*
+ * 生成简历弹框左栏:几张分区卡竖排。
+ */
+.cvBoxForm {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/*
+ * 生成简历弹框右栏:模板示例那一页。
+ */
+.cvBoxSample {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/*
+ * 手机上生成简历弹框上下排:表单在上,示例在下,整框一起滚。
+ */
+@media (max-width: 640px) {
+  .cvBox {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+  }
+
+  .cvBoxForm {
+    overflow-y: visible;
+  }
+
+  .cvBoxSample {
+    height: 70vh;
+  }
+}
+
+/*
+ * 「从简历填写」进行中的进度条(2026-11-13 Frank「点击 从简历填写的时候 需要一个进度条」):标签行下面一条细轨,
+ * 里面一段主色来回走(读不出真实进度,不画百分比);读完整条收掉。
+ */
+.fillBar {
+  position: relative;
+  height: 4px;
+  margin-bottom: 8px;
+  border-radius: 2px;
+  background: var(--hairline);
+  overflow: hidden;
+}
+
+/*
+ * 轨里来回走的那一段。
+ */
+.fillBarRun {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 35%;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--primary);
+  animation: fillBarRun 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes fillBarRun {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(186%);
+  }
+}
+
+/*
+ * 系统设了「减少动态效果」:那一段不走,铺满轨。
+ */
+@media (prefers-reduced-motion: reduce) {
+  .fillBarRun {
+    width: 100%;
+    animation: none;
+  }
+}
+
+/*
+ * 修改档案面板里的几格(2026-11-13 Frank「点击 从简历填写 后,用户不能做操作」):读简历期间整块 inert,
+ * 颜色压淡让人看得出现在动不了。
+ */
+.formBody[inert] {
+  opacity: 0.55;
 }

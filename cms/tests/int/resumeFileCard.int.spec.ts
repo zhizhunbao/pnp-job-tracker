@@ -20,7 +20,7 @@ import { BaseCard, useBase } from '@/components/me/base'
 
 const PDF_A = { id: 11, fileName: 'Zhang_San_Resume.pdf', mime: 'application/pdf', sizeBytes: 151552, uploadedAt: '2026-10-03T15:00:00.000Z' }
 // 2026-11-12 Frank「这个搞成一坨了」:文件、上传日期、大小各一行「标签-值」;这是「文件」那一行整行的字
-const FILE_LINE = 'rf.kNameZhang_San_Resume.pdf'
+const FILE_LINE = 'Zhang_San_Resume.pdf2026-10-03148 KB'
 const DOCX_B = { id: 12, fileName: 'cv.docx', mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', sizeBytes: 2048, uploadedAt: '2026-10-02T15:00:00.000Z' }
 
 type Reply = { status: number, body: object }
@@ -158,8 +158,7 @@ describe('「基础简历」卡', () => {
     expect(name).toBeTruthy()
     expect(name?.querySelector('a, button')).toBeNull()
     expect(el.textContent?.split('Zhang_San_Resume.pdf').length).toBe(2)
-    expect(el.textContent).toContain('rf.kDate2026-10-03')
-    expect(el.textContent).toContain('rf.kSize148 KB')
+    expect(el.textContent).toContain('Zhang_San_Resume.pdf2026-10-03148 KB')
     for (const k of ['rf.download', 'rf.replace', 'rf.delete']) {
       expect(labels(el)).toContain(k)
     }
@@ -182,7 +181,7 @@ describe('「基础简历」卡', () => {
     server({ 'GET /api/resume/files': { status: 200, body: { items: [DOCX_B] } } })
     const el = await mount()
     expect(el.textContent).toContain('cv.docx')
-    expect(el.textContent).toContain('rf.kDate2026-10-02rf.kSize2 KB')
+    expect(el.textContent).toContain('2026-10-022 KB')
     expect(el.textContent).toContain('rf.pvFail')
     expect(el.textContent).not.toContain('rf.loading')
     const dl = Array.from(el.querySelectorAll('a')).find((x) => x.textContent === 'rf.download')
@@ -251,7 +250,7 @@ describe('「基础简历」卡', () => {
     await pick(el, new File(['%PDF-'], 'Zhang_San_Resume.pdf'))
     expect(puts()).toEqual(['PUT /api/resume/file', 'PUT /api/resume/file', 'PUT /api/resume/file'])
     expect(el.textContent).not.toContain('rf.err.size')
-    expect(el.textContent).toContain('rf.kDate2026-10-03rf.kSize148 KB')
+    expect(el.textContent).toContain('2026-10-03148 KB')
     // 「替换文件」先问:框里写着文件名,取消什么都不做;确认后选的文件带 id 发出去
     await click(el, 'rf.replace')
     expect(box()?.textContent).toContain('Zhang_San_Resume.pdf')
