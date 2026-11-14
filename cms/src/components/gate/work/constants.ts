@@ -94,16 +94,6 @@ export const WORK_SUM_SEP = ', '
 export const WORK_YM_SEP = '–'
 
 /**
- * 「来自简历」标记里做过的工作那一格的格名(同父桶 FROM_WORK)。
- */
-export const WORK_FROM = 'workNocs'
-
-/**
- * 「来自简历」标记里格名与值之间的分隔(同父桶 FROM_SEP)。
- */
-export const WORK_FROM_SEP = ':'
-
-/**
  * 词条键:结束年月空着时摘要里写的「至今」。
  */
 export const K_WORK_NOW = 'pf.w.now'

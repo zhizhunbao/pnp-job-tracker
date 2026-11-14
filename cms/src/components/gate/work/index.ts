@@ -14,5 +14,5 @@ export {
 export {
   makeWorkAdd, makeWorkCell, makeWorkOcc, makeWorkOccClose, makeWorkOccOpenOf, makeWorkRemove, workFilledOf,
   workFormRowsOf,
-  workLinesOf, workListOf, workMarkedOf, workNamesOf, workNocsOf, workRowsFromCodes,
+  workLinesOf, workListOf, workNamesOf, workNocsOf, workRowsFromCodes,
 } from './functions'

@@ -28,4 +28,24 @@ export type DrawerIn = {
    * 面板正文(内容多了自己滚)。
    */
   children: React.ReactNode
+
+  /**
+   * 锁着(2026-11-13:面板里的事还没做完,点遮罩、点 ×、按 Esc 都不关,× 变灰);可省 = 不锁。
+   */
+  locked?: boolean
+}
+
+/**
+ * makeLockedClose 的入参。
+ */
+export type LockedCloseIn = {
+  /**
+   * 锁没锁。
+   */
+  locked: boolean
+
+  /**
+   * 真正的关闭回调。
+   */
+  onClose: () => void
 }

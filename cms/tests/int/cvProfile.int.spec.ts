@@ -254,13 +254,16 @@ describe('⑦ 专业并进教育经历', () => {
     const t = (k: string) => k
     const rows = [W, W, { ...W, org: 'Acme' }, W]
     const names = ['Software developers', 'Software developers', 'Software developers', 'Software developers']
-    expect(workLinesOf({ rows, names, marks: [], t, titles: {}, full: true }).map((l) => l.name))
+    expect(workLinesOf({ rows, names, t, titles: {}, full: true }).map((l) => l.name))
       .toEqual(['Software developers', 'Software developers, Acme'])
-    // 修改档案里(full = false):职位名称黑字、加拿大职业全名灰字;没填职位名称的职业全名顶上来;公司不出
+    // 修改档案里(full = false):加拿大职业黑字、职位名称灰字;同一个职业已有带职位名称的行时,不带的那行不出;公司不出
     const titles = { '21232': 'Software developers and programmers' }
     const mine = [{ ...W, title: 'Java 开发', org: 'Acme' }, W, W]
-    expect(workLinesOf({ rows: mine, names, marks: [], t, titles, full: false }).map((l) => [l.name, l.sub]))
-      .toEqual([['Java 开发', 'Software developers and programmers'], ['Software developers and programmers', '']])
+    expect(workLinesOf({ rows: mine, names, t, titles, full: false }).map((l) => [l.name, l.sub]))
+      .toEqual([['Software developers and programmers', 'Java 开发']])
+    // 只有职业、没有职位名称的几段:照旧合成一行
+    expect(workLinesOf({ rows: [W, W], names, t, titles, full: false }).map((l) => [l.name, l.sub]))
+      .toEqual([['Software developers and programmers', '']])
   })
 
   it('服务端收答案:专业码不合形(含老档案没有这一格)按空串;只有专业码的一条也留', () => {

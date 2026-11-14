@@ -12,13 +12,13 @@ import {
   K_WORK_NOW, TEXT_NONE, WORK_AT_NONE, WORK_DESC_LEN, WORK_F_CITY, WORK_F_DESC, WORK_F_FROM, WORK_F_ORG,
   WORK_F_TITLE,
   WORK_F_TO,
-  WORK_FROM, WORK_FROM_SEP, WORK_LINE_LEN, WORK_NAME_WAIT, WORK_NOCS_MAX,
+  WORK_LINE_LEN, WORK_NAME_WAIT, WORK_NOCS_MAX,
   WORK_ROWS_MAX, WORK_SUM_SEP, WORK_YM_BAD_RE, WORK_YM_LEN,
   WORK_YM_RE, WORK_YM_SEP,
 } from './constants'
 import type {
   WorkCellPickIn, WorkCellSetIn, WorkFillIn, WorkFillOut,
-  WorkLine, WorkLinesIn, WorkMarkedIn, WorkMatchIn, WorkMergedIn, WorkNamesIn, WorkOccIn, WorkOccOpenIn, WorkPick,
+  WorkLine, WorkLinesIn, WorkMatchIn, WorkMergedIn, WorkNamesIn, WorkOccIn, WorkOccOpenIn, WorkPick,
   WorkRowsIn, WorkSeedIn, WorkSumIn,
 } from './types'
 
@@ -156,21 +156,6 @@ export function workNocsOf(rows: WorkPick[]): string[] {
     }
   }
   return out
-}
-
-/**
- * 这一段的职业是不是从简历来的(任一个码带标记就算)。
- *
- * @param x 这一段与标记。
- * @returns 来自简历 true。
- */
-export function workMarkedOf(x: WorkMarkedIn): boolean {
-  for (const n of x.row.nocs) {
-    if (x.marks.includes(WORK_FROM + WORK_FROM_SEP + n)) {
-      return true
-    }
-  }
-  return false
 }
 
 /**
@@ -352,6 +337,8 @@ export function workNamesOf(x: WorkNamesIn): string[] {
  * 同日 Frank「这个三段是什么意思」:「N 段」看不懂,撤 —— 字一样的只出一行,不写段数。
  * 同日 Frank「中国的职业和加拿大的职业名字不一样怎么办」→「做」:修改档案里一段两行 —— 用户自己的职位名称黑字,
  * 它对上的加拿大职业全名灰字(见 workMatchLineOf);公司、起止年月不在档案里出。生成简历弹框照旧一行连排(full)。
+ * 同日 Frank「来自简历不是删掉吗」:这一格不再挂「来自简历」胶囊(每行都挂一样的一颗,只添乱),上面第一句的后半句作废;
+ * 判这一段是不是从简历来的那只函数随之删。档案里记的标记本身照旧存着,只是这里不显示。
  *
  * @param x 几段、各段职业的字、标记与取词。
  * @returns 摘要行。
@@ -367,10 +354,9 @@ export function workLinesOf(x: WorkLinesIn): WorkLine[] {
     if (occ === TEXT_NONE && row.nocs.length > 0) {
       occ = WORK_NAME_WAIT
     }
-    const from = workMarkedOf({ row, marks: x.marks })
-    let line: WorkLine = { key: String(i), name: workSumOf({ row, name: occ, t: x.t }), sub: TEXT_NONE, from }
+    let line: WorkLine = { key: String(i), name: workSumOf({ row, name: occ, t: x.t }), sub: TEXT_NONE, from: false }
     if (x.full === false) {
-      line = workMatchLineOf({ row, key: String(i), titles: x.titles, from })
+      line = workMatchLineOf({ row, key: String(i), titles: x.titles })
     }
     if (line.name !== TEXT_NONE) {
       out.push(line)
@@ -382,8 +368,10 @@ export function workLinesOf(x: WorkLinesIn): WorkLine[] {
 /**
  * 修改档案里一段工作的两行:职位名称(用户自己的叫法)黑字在上,它对上的加拿大职业全名灰字在下;
  * 没填职位名称的,职业全名顶上来当黑字、不出灰字;选了职业但名字还没取到先占位。两样都没有 = 空行(不出)。
+ * 2026-11-13 Frank「中文格式都用 中文」「做过工作 用 加拿大的工作来表示吧,然后灰字用从简历里提取的工作」:两行对调 ——
+ * 加拿大职业(界面语的名字)黑字在上,职位名称灰字在下;没挂职业的段,职位名称顶上来当黑字。上面第一句的上下作废。
  *
- * @param x 这一段、行键、名字表与来自简历。
+ * @param x 这一段、行键与名字表。
  * @returns 一行。
  */
 function workMatchLineOf(x: WorkMatchIn): WorkLine {
@@ -397,32 +385,35 @@ function workMatchLineOf(x: WorkMatchIn): WorkLine {
     }
   }
   const title = x.row.title.trim()
-  if (title === TEXT_NONE) {
-    return { key: x.key, name: occ, sub: TEXT_NONE, from: x.from }
+  if (occ === TEXT_NONE) {
+    return { key: x.key, name: title, sub: TEXT_NONE, from: false }
   }
-  return { key: x.key, name: title, sub: occ, from: x.from }
+  return { key: x.key, name: occ, sub: title, from: false }
 }
 
 /**
- * 字一样(黑字、灰字都一样)的摘要行只出一行:留头一次出现的位置与行键;合进来的行里有一行来自简历就算来自简历。
+ * 字一样(黑字、灰字都一样)的摘要行只出一行:留头一次出现的位置与行键。
+ * 2026-11-13 Frank「两个软件开发吗」(起因:从简历填写带进「软件开发 / Java Developer」后,他原来存的那段只有职业的
+ * 「软件开发」还单独占一行):同一个黑字已经有带灰字的行时,不带灰字的那行不出 —— 它没有多说任何东西。
  *
  * @param x 一段一行的摘要行。
  * @returns 合过的摘要行。
  */
 function workMergedOf(x: WorkMergedIn): WorkLine[] {
+  const titled: string[] = []
+  for (const l of x.lines) {
+    if (l.sub !== TEXT_NONE) {
+      titled.push(l.name)
+    }
+  }
   const out: WorkLine[] = []
   const seen: string[] = []
   for (const l of x.lines) {
     const id = l.name + WORK_SUM_SEP + l.sub
-    if (seen.includes(id) === false) {
+    const bare = l.sub === TEXT_NONE && titled.includes(l.name)
+    if (bare === false && seen.includes(id) === false) {
       seen.push(id)
-      let from = false
-      for (const m of x.lines) {
-        if (m.name === l.name && m.sub === l.sub && m.from) {
-          from = true
-        }
-      }
-      out.push({ key: l.key, name: l.name, sub: l.sub, from })
+      out.push(l)
     }
   }
   return out

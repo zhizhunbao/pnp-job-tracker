@@ -18,6 +18,8 @@
  * 选模板、生成、预览框、升级框都跟过去;右侧栏只剩匹配工作和通道用的格子。两只壳共用这一台表单整机与叠开的选择器。
  * 同日 Frank「点击 从简历填写 后,用户不能做操作」:读简历期间面板里的格子整块不可操作(inert:点不了、键盘也进不去)、
  * 「保存」不可点 —— 免得这时改的格子被读回来的内容盖掉;「取消」和右上角关闭照常能用。
+ * 同日 Frank「这个运行时候,中间也不能点」:读简历期间面板整个锁住 —— 点左边的遮罩、右上角 ×、「取消」、Esc 都不关
+ * (drawer 桶的 locked),上一句「照常能用」作废。
  *
  * @author Frank
  * @time 2026-11-07 19:00:00
@@ -74,7 +76,7 @@ export function GateForm({ t, seed, onClose, onSaved, autoFill = false, cv = fal
   const names = workNamesOf({ rows: w.work, titles: work.titles })
   const n = {
     jobs: occLinesOf({ picked: occ.picked, titles: occ.titles, marks: [] }),
-    works: workLinesOf({ rows: w.work, names, marks: g.fromResume, t, titles: work.titles, full: cv }),
+    works: workLinesOf({ rows: w.work, names, t, titles: work.titles, full: cv }),
     where: whereLinesOf({ prov: g.provActive, city: g.cities.city, opts: g.cities.opts, t }),
     edu: eduLinesOf({ rows: g.edit.edu, majors, t }),
   }
@@ -84,14 +86,14 @@ export function GateForm({ t, seed, onClose, onSaved, autoFill = false, cv = fal
         disabled={g.edit.nameBad || f.busy}>
         {t('gate.save')}
       </Button>
-      <Button kind={FORM_SECONDARY_KIND} onClick={g.onClose}>{t('pf.cancel')}</Button>
+      <Button kind={FORM_SECONDARY_KIND} onClick={g.onClose} disabled={f.busy}>{t('pf.cancel')}</Button>
       {g.edit.failKey !== TEXT_NONE && <span className={cssOf(css.fail)}>{t(g.edit.failKey)}</span>}
     </>
   )
   return (
     <>
       {cv === false && (
-        <Drawer title={t(FORM_TITLE_KEY)} onClose={g.onClose} foot={foot}>
+        <Drawer title={t(FORM_TITLE_KEY)} onClose={g.onClose} foot={foot} locked={f.busy}>
           <div className={cssOf(css.formBody)} inert={f.busy}>
             <GateFormFields g={g} k={k} t={t} n={n} f={f} />
           </div>

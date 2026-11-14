@@ -183,21 +183,6 @@ export type WorkOccOpenIn = {
 }
 
 /**
- * workMarkedOf 的入参。
- */
-export type WorkMarkedIn = {
-  /**
-   * 这一段。
-   */
-  row: WorkPick
-
-  /**
-   * 来自简历的标记(「字段:值」串)。
-   */
-  marks: string[]
-}
-
-/**
  * workFilledOf 的入参(「从简历填写」)。
  */
 export type WorkFillIn = {
@@ -262,7 +247,7 @@ export type WorkLine = {
   sub: string
 
   /**
-   * 职业是不是从简历来的(挂「来自简历」胶囊)。
+   * 挂不挂「来自简历」胶囊(摘要清单件要这一格;2026-11-13 Frank「来自简历不是删掉吗」:这里恒为不挂)。
    */
   from: boolean
 }
@@ -295,11 +280,6 @@ export type WorkLinesIn = {
    * 各段职业那一格的字(与几段一一对应)。
    */
   names: string[]
-
-  /**
-   * 来自简历的标记。
-   */
-  marks: string[]
 
   /**
    * 取词函数。
@@ -336,11 +316,6 @@ export type WorkMatchIn = {
    * 职业码 → 职业全名。
    */
   titles: Record<string, string>
-
-  /**
-   * 职业是不是从简历来的。
-   */
-  from: boolean
 }
 
 /**
