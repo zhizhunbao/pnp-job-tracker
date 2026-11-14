@@ -1,0 +1,328 @@
+/*
+ * assistant 域的私有样式(2026-11-14):右下角圆钮 + 对话面板。
+ * 层级:圆钮 40、面板 44,都高过顶栏(30)、低过右侧栏(45)与弹框(遮罩 49、弹框 50 起),不盖投递框与职位框。
+ * 颜色取全站色板(--primary / --card / --border / --text 等)。
+ */
+
+/*
+ * 圆钮:贴右下,四边各留 16px(手机上再让出底部安全区)。类名加倍压过 button 桶的钮底。
+ */
+.dock.dock {
+  position: fixed;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.dock.dock:hover {
+  background: none;
+}
+
+/*
+ * 入口那只小猫(2026-11-14):图自带地上的影子,钮本身不再画蓝色圆底与投影;指上去略放大。
+ */
+.dockImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.15s;
+}
+
+.dock.dock:hover .dockImg {
+  transform: scale(1.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dockImg {
+    transition: none;
+  }
+}
+
+.dock.dock:focus-visible {
+  outline: 2px solid var(--primary-deep);
+  outline-offset: 2px;
+}
+
+/*
+ * 面板:桌面是右下角浮起的一块,标题 / 对话 / 输入三段竖排。
+ */
+.panel {
+  position: fixed;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 44;
+  width: min(380px, calc(100vw - 32px));
+  height: min(560px, calc(100dvh - 96px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 20px 52px rgb(15 23 42 / 20%);
+}
+
+/*
+ * 标题栏:标题在左,关闭钮在右。
+ */
+.head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 8px 10px 16px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/*
+ * 关闭钮:36px 的方钮,手机上够得着。
+ */
+.close.close {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.close.close:hover {
+  background: var(--hairline);
+}
+
+/*
+ * 对话区:占满中间,自己滚。
+ */
+.thread {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--bg);
+}
+
+/*
+ * 气泡:最宽占八成半,长词折行。
+ */
+.bubble {
+  max-width: 85%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * 助手说的:靠左白底。
+ */
+.bot {
+  align-self: flex-start;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+/*
+ * 访客说的:靠右蓝底白字。
+ */
+.mine {
+  align-self: flex-end;
+  background: var(--primary);
+  color: #fff;
+}
+
+/*
+ * 正文:保留模型给的换行。
+ */
+.say {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/*
+ * 回复下面的链接:一行一条。
+ */
+.links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.link {
+  color: var(--primary);
+  font-weight: 500;
+  text-decoration: underline;
+}
+
+.link:hover {
+  color: var(--primary-deep);
+}
+
+/*
+ * 只给读屏听的字。
+ */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/*
+ * 正在输入:三个点一行,后面可能跟一句「还在想」。
+ */
+.typing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 21px;
+}
+
+.dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text3);
+  animation: asst-blink 1.2s infinite;
+}
+
+.dots i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dots i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.slow {
+  color: var(--text2);
+  font-size: 13px;
+}
+
+@keyframes asst-blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+  }
+
+  40% {
+    opacity: 1;
+  }
+}
+
+/*
+ * 系统设了「减少动态效果」:三个点不动。
+ */
+@media (prefers-reduced-motion: reduce) {
+  .dots i {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/*
+ * 出错提示:输入框上方一行红字。
+ */
+.err {
+  flex: none;
+  margin: 0;
+  padding: 8px 16px 0;
+  color: var(--danger);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/*
+ * 输入区:输入框占满,发送钮贴右下。
+ */
+.composer {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--hairline);
+  background: var(--card);
+}
+
+/*
+ * 输入框:16px 的字(手机上小于 16px 聚焦会被系统放大整页)。
+ */
+.input {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -1px;
+}
+
+.send.send {
+  flex: none;
+}
+
+/*
+ * 手机(640px 及以下):面板铺满;圆钮小一号,仍留 16px 边距。
+ */
+@media (width <= 640px) {
+  .panel {
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+    border: none;
+    border-radius: 0;
+  }
+
+  .dock.dock {
+    width: 60px;
+    height: 60px;
+  }
+}

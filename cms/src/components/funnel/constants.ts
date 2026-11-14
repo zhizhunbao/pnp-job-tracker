@@ -174,6 +174,16 @@ export const STEP_LABEL: Record<string, string> = {
    * 档案自动填的一次结果(2026-11-13;kind = resume-ok 填上了 / resume-none 没有空格可填 / resume-fail 失败 / apply-ok 投出后补上了)。
    */
   'profile-auto': '档案 · 自动填',
+
+  /**
+   * 点开全站对话助手的面板(2026-11-14;不分组)。
+   */
+  'assistant-open': '对话助手 · 点开',
+
+  /**
+   * 在对话助手里发出一条(2026-11-14;不分组,内容不进这张表)。
+   */
+  'assistant-send': '对话助手 · 发出一条',
 }
 
 /**

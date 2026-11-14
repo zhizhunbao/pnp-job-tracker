@@ -1427,6 +1427,20 @@ export const consultKo: Record<keyof typeof consultZh, string> = {
   'guide.dest.plan_pr': 'PR 경로 점검', 'guide.dest.pte': 'PTE 연습', 'guide.dest.news': '뉴스', 'guide.dest.cases': '사례',
   'guide.dest.rankings': '순위', 'guide.dest.timeline': '타임라인', 'guide.dest.resources': '자료실', 'guide.dest.pricing': '요금',
   'guide.dest.account': '내 계정',
+  // asst.* = 사이트 전체 도우미 (components/assistant, 2026-11-14)
+  'asst.open': '도우미 열기', 'asst.title': '도우미', 'asst.close': '닫기',
+  'asst.hello': '안녕하세요, 사이트 도우미입니다. 구직이나 사이트 이용에 대해 물어보세요.',
+  'asst.ph': '메시지 입력', 'asst.send': '보내기', 'asst.you': '나',
+  'asst.typing': '도우미가 입력 중입니다', 'asst.slow': '아직 생각 중입니다. 잠시만 기다려 주세요',
+  'asst.refuse': '이민 관련 조언은 제공하지 않습니다. 아래 페이지에 공식 정보가 있습니다.',
+  'asst.off': '구직과 사이트 이용에 대해서만 도와드릴 수 있습니다.',
+  'asst.err.limit': '오늘의 대화 횟수를 모두 사용했습니다. 내일 다시 이용해 주세요.',
+  'asst.err.net': '연결하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+  'asst.page.jobs': '채용공고', 'asst.page.employers': '고용주', 'asst.page.occupations': '직업',
+  'asst.page.streams': '이민 경로', 'asst.page.steps': '신청 절차', 'asst.page.news': '정책 동향',
+  'asst.page.resources': '공식 자료', 'asst.page.pricing': '요금', 'asst.page.profile': '프로필과 이력서',
+  'asst.page.applications': '내 지원 현황', 'asst.page.inbox': '받은편지함', 'asst.page.alerts': '내 구독',
+  'asst.page.settings': '계정 설정',
 }
 
 // =========================================================================

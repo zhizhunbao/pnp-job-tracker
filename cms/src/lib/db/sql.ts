@@ -4208,3 +4208,14 @@ export const OPS_FRESH = `SELECT u.name,
        extract(epoch FROM now() - r.ended_at)::int AS age_s
      FROM etl_units u LEFT JOIN (SELECT name, max(ended_at) AS ended_at FROM etl_unit_runs WHERE ok GROUP BY name) r ON r.name = u.name
      ORDER BY u.name`
+
+// =========================================================================
+// 42. 对话助手留痕(2026-11-14 Frank「就正常收集用户对话」;表 docs/sql/chat-logs.sql:chat_logs;lib/assistant)
+// =========================================================================
+
+/**
+ * 记一轮问答。不存用户、邮箱、IP;其余可空列留空。
+ * $1=串号(首轮提问的哈希) $2=第几轮 $3=语种 $4=提问 $5=答复(没有为 NULL) $6=服务端是否改过模型的结果 $7=结果码(正常为 NULL) $8=耗时毫秒。
+ */
+export const ASSISTANT_LOG_INSERT = `INSERT INTO chat_logs (thread, turn, lang, question, answer, degraded, err, ms)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`

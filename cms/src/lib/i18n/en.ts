@@ -1471,6 +1471,20 @@ export const consultEn: Record<keyof typeof consultZh, string> = {
   'guide.dest.plan_pr': 'the PR path check', 'guide.dest.pte': 'PTE practice', 'guide.dest.news': 'news', 'guide.dest.cases': 'cases',
   'guide.dest.rankings': 'rankings', 'guide.dest.timeline': 'the timeline', 'guide.dest.resources': 'resources', 'guide.dest.pricing': 'pricing',
   'guide.dest.account': 'your account',
+  // asst.* = site-wide assistant (components/assistant, 2026-11-14)
+  'asst.open': 'Open assistant', 'asst.title': 'Assistant', 'asst.close': 'Close',
+  'asst.hello': 'Hi, I am the site assistant. Ask me about finding a job or using this site.',
+  'asst.ph': 'Type a message', 'asst.send': 'Send', 'asst.you': 'You',
+  'asst.typing': 'Assistant is typing', 'asst.slow': 'Still thinking, one moment',
+  'asst.refuse': 'I do not give immigration advice. These pages have the official information.',
+  'asst.off': 'I can only help with job search and using this site.',
+  'asst.err.limit': 'You have reached today\'s message limit. Please come back tomorrow.',
+  'asst.err.net': 'Could not connect. Please try again shortly.',
+  'asst.page.jobs': 'Jobs', 'asst.page.employers': 'Employers', 'asst.page.occupations': 'Occupations',
+  'asst.page.streams': 'Immigration streams', 'asst.page.steps': 'Application steps', 'asst.page.news': 'Policy updates',
+  'asst.page.resources': 'Official resources', 'asst.page.pricing': 'Pricing', 'asst.page.profile': 'Profile and resume',
+  'asst.page.applications': 'My applications', 'asst.page.inbox': 'Inbox', 'asst.page.alerts': 'My subscription',
+  'asst.page.settings': 'Account settings',
 }
 
 // =========================================================================

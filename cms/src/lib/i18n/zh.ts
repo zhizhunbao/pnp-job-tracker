@@ -1578,6 +1578,21 @@ export const consultZh = {
   // 答复反馈(2026-08-05)。**点踩是数据缺口报警器,不是训练信号** —— 用户在替我们标注
   // 「这里答不好」,而且按真实频次排好序。所以问句要轻到不烦人、又显眼到有人愿意点。
 
+  // asst.* = 全站右下角对话助手(components/assistant;2026-11-14 Frank「开始做吧」「照表做」)。
+  // asst.page.* 的键尾与 lib/assistant 页面清单 PAGE_ROUTE 的 13 个键一一对应(单测守着),回复下面的链接拿它当页名。
+  'asst.open': '打开助手', 'asst.title': '助手', 'asst.close': '关闭',
+  'asst.hello': '你好,我是本站助手。找工作或使用本站的问题都可以问我。',
+  'asst.ph': '输入消息', 'asst.send': '发送', 'asst.you': '你',
+  'asst.typing': '助手正在输入', 'asst.slow': '还在想,请稍等',
+  'asst.refuse': '我不提供移民建议,这些页面有官方信息。',
+  'asst.off': '我只能回答找工作和使用本站的问题。',
+  'asst.err.limit': '今天的对话次数已用完,请明天再来。',
+  'asst.err.net': '没有连上,请稍后再试。',
+  'asst.page.jobs': '职位', 'asst.page.employers': '雇主', 'asst.page.occupations': '职业',
+  'asst.page.streams': '移民通道', 'asst.page.steps': '申请步骤', 'asst.page.news': '政策动态',
+  'asst.page.resources': '官方资源', 'asst.page.pricing': '定价', 'asst.page.profile': '档案与简历',
+  'asst.page.applications': '我的求职', 'asst.page.inbox': '收件箱', 'asst.page.alerts': '我的订阅',
+  'asst.page.settings': '账户设置',
 }
 
 // =========================================================================

@@ -28,8 +28,9 @@
  * (mailto 时代点了就算投出去;站内投递后它只是进了投递区),发没发出去只有 apply-sent 说得准;同样只计数不成链。
  * 2026-11-13 Frank「都要有记录」:尾部再追加投出后相似职位卡两计数 —— next-shown(卡取完了)与 apply-next(点了卡上一条);只计数不成链。
  * 同日 Frank「别等一周啊 都做完」:尾部再追加 profile-auto(档案自动填:传简历后读简历填空格、投出后补想做的工作与省份);只计数不成链。
+ * 2026-11-14 Frank「开始做吧」「照表做」:尾部再追加全站对话助手两计数 —— assistant-open(点开面板)、assistant-send(发出一条);只计数不成链。
  */
-export const FUNNEL_STEPS = ['jd-open', 'pricing-open', 'pay-click', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done', 'pulse-card', 'pulse-occ', 'pulse-cta', 'emp-search', 'emp-filter', 'emp-row', 'emp-page', 'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open', 'apply', 'signup', 'checkout', 'weekly-optin', 'gate-open', 'gate-step', 'apply-click', 'apply-sent', 'next-shown', 'apply-next', 'profile-auto'] as const
+export const FUNNEL_STEPS = ['jd-open', 'pricing-open', 'pay-click', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done', 'pulse-card', 'pulse-occ', 'pulse-cta', 'emp-search', 'emp-filter', 'emp-row', 'emp-page', 'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open', 'apply', 'signup', 'checkout', 'weekly-optin', 'gate-open', 'gate-step', 'apply-click', 'apply-sent', 'next-shown', 'apply-next', 'profile-auto', 'assistant-open', 'assistant-send'] as const
 
 /**
  * 漏斗步骤名(从白名单数组派生 —— 类型与它派生自的数组同居,派生即护栏:加一步只改数组)。
@@ -122,6 +123,8 @@ export const ALIAS: Record<string, FunnelStep> = {
   'next-shown': 'next-shown',
   'apply-next': 'apply-next',
   'profile-auto': 'profile-auto',
+  'assistant-open': 'assistant-open',
+  'assistant-send': 'assistant-send',
 }
 
 /**

@@ -78,7 +78,7 @@ describe('漏斗事件白名单', () => {
       'emp-search', 'emp-filter', 'emp-row', 'emp-page',
       'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open',
       'apply', 'signup', 'checkout', 'weekly-optin',
-      'gate-open', 'gate-step', 'apply-click', 'apply-sent', 'next-shown', 'apply-next', 'profile-auto'])
+      'gate-open', 'gate-step', 'apply-click', 'apply-sent', 'next-shown', 'apply-next', 'profile-auto', 'assistant-open', 'assistant-send'])
   })
 
   it('链按名写死,每一步都在白名单里;转化四计数不进任何链(2026-09-26)', () => {
@@ -88,7 +88,7 @@ describe('漏斗事件白名单', () => {
     expect([...LEGACY_STEPS]).toEqual(['pricing-open', 'pay-click'])
     expect([...DECISION_STEPS]).toEqual(['dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done'])
     for (const step of ['jd-open', 'apply', 'signup', 'checkout', 'weekly-optin', 'gate-open', 'gate-step', 'apply-click',
-      'apply-sent', 'next-shown', 'apply-next', 'profile-auto']) {
+      'apply-sent', 'next-shown', 'apply-next', 'profile-auto', 'assistant-open', 'assistant-send']) {
       expect([...LEGACY_STEPS, ...DECISION_STEPS], step).not.toContain(step)
     }
   })

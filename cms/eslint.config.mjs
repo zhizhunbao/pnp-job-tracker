@@ -40,7 +40,9 @@ const BARRELS = ['agent', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', '
   // 2026-11-08 立 ops(管理员运维页:页面清单、按页取数、线格式;index 与 server 两门,替换 queue)。
   'ops',
   // 2026-11-07 立 cv(生成简历:草稿排成英文简历版式、画 PDF;只有 index 桶,不连库,pdf-lib 由 resume 域路由注入)。
-  'cv']
+  'cv',
+  // 2026-11-14 立 assistant(全站对话助手:走朋友网关、链接只出自站内页面清单、每轮存 chat_logs;index 给类型与边界数,server 给两个路由芯)。
+  'assistant']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 // jobs / points / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
 // 理由见 lib/jobs/index.ts 顶上那段:混着 payload 依赖的桶会把连接池打进浏览器包)。
@@ -80,6 +82,7 @@ const ALLOW = [
   '!**/lib/inbox/server', '!./inbox/server', '!../inbox/server',
   '!**/lib/notify/server', '!./notify/server', '!../notify/server',
   '!**/lib/ops/server', '!./ops/server', '!../ops/server',
+  '!**/lib/assistant/server', '!./assistant/server', '!../assistant/server',
 ]
 const SIBLING = BARRELS.flatMap((m) => [`./${m}/*`, `../${m}/*`])
 const barrelOnly = (group) => ({

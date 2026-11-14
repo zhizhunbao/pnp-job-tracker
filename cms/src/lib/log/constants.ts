@@ -1315,3 +1315,38 @@ export const LEDGER_LOG = {
    */
   degraded: 'degraded to friend feature=',
 }
+
+/**
+ * 对话助手域(lib/assistant)的日志字面量(2026-11-14 立)。
+ */
+export const ASSISTANT_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'assistant',
+
+  /**
+   * 一轮走完:后面接类别。
+   */
+  done: 'kind=',
+
+  /**
+   * 接上一条:给了几条链接。
+   */
+  linksSep: ' links=',
+
+  /**
+   * 接上一条:耗时(毫秒)。
+   */
+  msSep: ' ms=',
+
+  /**
+   * 模型没答上来:这一轮回 502,照样记一行。
+   */
+  llmFailed: 'llm failed: ',
+
+  /**
+   * chat_logs 写库失败(留痕是副产品,不影响答复)。
+   */
+  logFailed: 'chat_logs insert failed: ',
+}

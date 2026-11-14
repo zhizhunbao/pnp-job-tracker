@@ -16,6 +16,7 @@ import { GateSync } from '@/components/gate'
 import { ApplyHost } from '@/components/apply'
 import { PeekHost } from '@/components/peek'
 import { ToastHost } from '@/components/toast'
+import { AssistantLauncher } from '@/components/assistant'
 import { SITE_JSON_LD } from '@/components/shell'
 import { headers } from 'next/headers'
 import { ssrLang } from '@/lib/i18n/server'
@@ -70,6 +71,7 @@ export const metadata = {
  * /start 自己判断不显示(那页有内联 ChatBox)。
  * 2026-09-23 Frank「那个点击跳 whatsapp 那个小球先隐藏吧」:先不挂(09-14 起圆球只剩直连 WhatsApp 一个去处,不挂不丢别的功能);
  * components/chat 桶原样保留,要回来把 ChatLauncher 从 '@/components/chat' 引回来、挂回 `<main>` 之后即可。
+ * 2026-11-14 Frank「开始做吧」「照表做」:换成 assistant 桶的入口(接本地模型、盒子不在线不出)。
  *
  * 下面两条是 2026-08-29 形制批从体内原样上提的记录(闸 local/no-comment-in-function:
  * 门里不留函数体注释),一句未删。
@@ -117,6 +119,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
             <PeekHost />
             <ToastHost />
             <main>{children}</main>
+            <AssistantLauncher />
           </SessionProvider>
         </LangProvider>
       </body>
