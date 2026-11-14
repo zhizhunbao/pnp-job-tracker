@@ -783,56 +783,6 @@
 }
 
 /*
- * 找回成功页里的返回登录(蓝字,与成功框同列)。
- */
-.sentBack {
-  /*
-   * 无描边。
-   */
-  border: none;
-
-  /*
-   * 无底。
-   */
-  background: none;
-
-  /*
-   * 无内衬。
-   */
-  padding: 0;
-
-  /*
-   * 链接蓝。
-   */
-  color: #2563eb;
-
-  /*
-   * 小字号。
-   */
-  font-size: 12.5px;
-
-  /*
-   * 可点手型。
-   */
-  cursor: pointer;
-
-  /*
-   * 与成功框留 12px。
-   */
-  margin-top: 12px;
-
-  /*
-   * 常规字重(2026-08-29 裸 <button> 换装批补写,理由同 .footForgot)。
-   */
-  font-weight: 400;
-
-  /*
-   * 允许折行(同上)。
-   */
-  white-space: normal;
-}
-
-/*
  * 头像图形态:圆形裁剪。
  */
 .avatarImg {

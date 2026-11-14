@@ -320,13 +320,6 @@
   font-size: 13px;
 }
 
-/*
- * 「已发给 <公司>」成功条:与下面的内容留 12px(2026-11-07 随 SentNotice 自「我的」挪来)。
- */
-.sentOk {
-  margin-bottom: 12px;
-}
-
 /* 投出后一键开启推送:宽屏左字右钮,窄屏钮落到字下面。 */
 .pushRow {
   display: flex;
@@ -363,14 +356,6 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
-}
-
-/*
- * 「接着投」的第一条(2026-11-09):公司与地点在上,主按钮「下一个:职位名」单占一行铺满。
- */
-.nextRowMain {
-  flex-direction: column;
-  align-items: stretch;
 }
 
 /*

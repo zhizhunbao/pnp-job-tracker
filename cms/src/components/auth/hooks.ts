@@ -12,10 +12,11 @@
  */
 import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useLang } from '@/components/i18n'
+import { toast } from '@/components/toast'
 import {
   ERR_NONE, EV_MOUSEDOWN, FIELD_EMPTY, FLOW_ERR, FLOW_SENT, GOOGLE_TAP_GAP_MS, HISTORY_TITLE_UNUSED, KEY_ERR_CRED,
   KEY_ERR_EXISTS,
-  MODE_BACK_TO, MODE_LOGIN, MODE_REGISTER, OAUTH_FAIL,
+  MODE_BACK_TO, MODE_LOGIN, MODE_REGISTER, OAUTH_FAIL, SENT_TOAST_KEY, SENT_TOAST_KIND,
   OAUTH_PARAM, QS_NONE, QS_PREFIX,
 } from './constants'
 import {
@@ -116,7 +117,6 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
   const [pw, setPw] = useState(FIELD_EMPTY)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(ERR_NONE)
-  const [sent, setSent] = useState(false)
   const [lang] = useLang()
   const goGoogle = useGoogleGo({ returnTo: x.returnTo })
   useOauthFail(oauthFailed)
@@ -127,12 +127,6 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
 
   function switchMode(m: AuthMode) {
     setMode(m)
-    setErr(ERR_NONE)
-  }
-
-  function backFromSent() {
-    setMode(MODE_BACK_TO)
-    setSent(false)
     setErr(ERR_NONE)
   }
 
@@ -151,7 +145,8 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
     try {
       const out = await runAuthFlow({ mode, email, pw, resetToken: x.resetToken, locale: lang })
       if (out.kind === FLOW_SENT) {
-        setSent(true)
+        toast({ kind: SENT_TOAST_KIND, title: x.t(SENT_TOAST_KEY) })
+        setMode(MODE_BACK_TO)
         return
       }
       if (out.kind === FLOW_ERR && out.errKey === KEY_ERR_EXISTS && mode === MODE_REGISTER) {
@@ -179,7 +174,7 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
     }
   }
 
-  return { mode, email, pw, busy, err, sent, switchMode, backFromSent, onEmail, onPw, goGoogle, submit }
+  return { mode, email, pw, busy, err, switchMode, onEmail, onPw, goGoogle, submit }
 }
 
 /**

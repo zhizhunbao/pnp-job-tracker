@@ -521,11 +521,13 @@ export const BREAK_AFTER_RE = /(?<=_)/
 
 /**
  * 「已发给 <公司>」成功条的词条(2026-11-07 随 SentNotice 自「我的」挪来)。
+ * 2026-11-13 Frank「这个能不能全站统一一下」「都换」:操作成功一律右上角提示,绿色成功条撤,这句改成右上角提示的那一行。
  */
 export const SENT_NOTICE_KEY = 'mj.sentTo'
 
 /**
  * 成功条的档(notice 桶 ok:绿)。
+ * 2026-11-13 改作右上角提示的档(toast 桶 ok)。
  */
 export const SENT_NOTICE_KIND = 'ok'
 
@@ -606,11 +608,6 @@ export const PUSH_TO_GAP = ' '
 export const URL_NEXT_AFTER = '/api/myjobs/picks?after='
 
 /**
- * 第一条的按钮样式:主按钮「下一个:职位名」。
- */
-export const NEXT_KIND_MAIN = 'primary'
-
-/**
  * 卡头词条。
  */
 export const NEXT_HEAD_KEY = 'ap.nextHead'
@@ -629,6 +626,31 @@ export const NEXT_BTN_KIND = 'secondary'
  * 点了接下一个的埋点。
  */
 export const TRACK_APPLY_NEXT = 'apply-next'
+
+/**
+ * 点了第几条的分组前缀(后接从 1 起的序号,如 p1)。
+ */
+export const NEXT_POS_HEAD = 'p'
+
+/**
+ * 相似职位卡取完了的埋点(2026-11-13 Frank「都要有记录」;一条都没有也记,好知道多少人根本没看到卡)。
+ */
+export const TRACK_NEXT_SHOWN = 'next-shown'
+
+/**
+ * 卡出了几条的分组前缀(后接条数,如 n0、n5)。
+ */
+export const NEXT_SHOWN_HEAD = 'n'
+
+/**
+ * 投递框的来路:投出后相似职位卡。
+ */
+export const VIA_NEXT = 'next'
+
+/**
+ * 投递框的来路:其余(职位页、今日推荐、深链)。
+ */
+export const VIA_DIRECT = 'direct'
 
 /**
  * 三屏试用用完时升级框的原因词条。

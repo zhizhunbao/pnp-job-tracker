@@ -7,7 +7,7 @@
 //          「Pro 包含」五条只出名字;付款记录按 /api/stripe/payments 拉,有出表(日期 / 内容 / 金额 / 收据),
 //          没有出「还没有付款」(2026-11-07 改:原来整段不出),拉失败报错不冒充「还没有付款」;
 //          新岗推送设置挪到订阅页(2026-11-07,原在「我的求职」);
-//       ③ 发出后的成功条写公司名;
+//       ③ 发出后的成功条写公司名;(2026-11-13 成功条撤,改投递框宿主发右上角提示,这条随件删)
 //       ④ 行构造器:付款的天数读 metadata、金额分换元、收据只认展开到扣款的(2026-11-12 求职信那条随清单接口撤)。
 // 探针:SubPlan 把 pro 判反 → ② 红;
 //       SubPays 失败分支落「还没有付款」→ ②「拉失败」红;toPaymentRow 不判 intent 是串 → ④ 收据红。
@@ -16,7 +16,6 @@ import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { SentNotice } from '@/components/apply/sentnotice'
 import { MeSub } from '@/components/me'
 import { toPaymentRow } from '@/lib/stripe/functions'
 import type { StripeCheckoutSession } from '@/lib/stripe/types'
@@ -55,7 +54,7 @@ const t = (k: string, v?: Record<string, string | number>) => (v == null ? k : k
 // 整页件(MeSub)要框架三格:宽屏、导航抽屉关着
 const FRAME = { narrow: false, open: false, onOpen: () => undefined }
 
-async function mount(comp: typeof MeSub | typeof SentNotice, props: object) {
+async function mount(comp: typeof MeSub, props: object) {
   const el = document.createElement('div')
   document.body.appendChild(el)
   const root = createRoot(el)
@@ -148,13 +147,6 @@ describe('② 我的订阅', () => {
     expect(el.textContent).toContain('mj.push')
     expect(el.textContent).toContain('mj.pushSave')
     expect(Array.from(el.querySelectorAll('input')).map((x) => x.value)).toContain('li@example.com')
-  })
-})
-
-describe('③ 成功条', () => {
-  it('写公司名', async () => {
-    const el = await mount(SentNotice, { company: 'i3 Solutions Inc.' })
-    expect(el.textContent).toContain('mj.sentTo{"co":"i3 Solutions Inc."}')
   })
 })
 

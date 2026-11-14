@@ -82,8 +82,9 @@ export const P_AFTER = 'after'
 
 /**
  * 「接着投的同类岗」最多几条(第一条是主按钮「下一个」)。
+ * 2026-11-13 Frank「给 3 到 5 个相似职位」:3 改 5;同日第一条的主按钮撤,每条同形。
  */
-export const AFTER_MAX = 3
+export const AFTER_MAX = 5
 
 /**
  * 查询参数名:要删的那一条(今日推荐给职位 id,我的投递给投递 id;2026-10-12 操作列加「删除」)。

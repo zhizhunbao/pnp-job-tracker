@@ -998,7 +998,7 @@ export const jobsZh = {
   'tr.editResume': '修改简历', 'tr.cvSummary': '个人简介', 'tr.cvSkills': '技能', 'tr.cvHint': '每行一条。公司、职位和日期以基础简历为准,这里不能改',
   'tr.mailHead': '邮件', 'tr.errChars': '有写不进文件的字,只能用英文字母、数字和常用标点',
   'tr.score': '匹配分', 'tr.of100': '/100', 'tr.fillAll': '补充经历,修复 {n} 条', 'tr.tapZoom': '点击放大', 'tr.notCovered': '未覆盖', 'tr.fillHead': '补充真实经历', 'tr.fillSave': '保存并改写', 'tr.fillHint': '下面几条要求在你的简历里找不到依据。真实做过的写在这里,保存后并入基础简历,换职位不用再填。没做过的不用写,照样可以投', 'tr.fillWhat': '在哪家公司、什么时候、具体做了什么、规模或数量', 'tr.editCover': '修改求职信', 'tr.to': '发到', 'tr.subject': '主题', 'tr.mailBody': '邮件正文', 'tr.send': '发送投递', 'tr.resume': '本职位简历', 'tr.cover': '求职信', 'tr.jd': '职位描述', 'tr.pdfFail': '预览失败',
-  'ap.nextHead': '接着投这几个', 'ap.nextOne': '下一个:{title}',
+  'ap.nextHead': '接着投这几个',
   'ap.applied': '已投递', 'ap.resume': '简历', 'ap.name': '英文姓名', 'ap.letter': '求职信',
   'ap.to': '收件人', 'ap.subject': '主题', 'ap.attach': '附件', 'ap.next': '下一步', 'ap.back': '上一步', 'ap.send': '投出', 'ap.pdf': '查看 PDF', 'ap.sign': '署名', 'ap.view': '打开', 'ap.edit': '改信',
   'ap.badChars': '这些字写不进 PDF:', 'ap.sending': '发送中', 'ap.e.name': '英文姓名只能用英文字母、空格、点、撇号和连字符,2 到 60 个字',

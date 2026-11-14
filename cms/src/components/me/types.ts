@@ -393,11 +393,6 @@ export type OnAppliedIn = {
    * 代数 +1(投递表重挂、推荐重拉)。
    */
   setGen: (f: (n: number) => number) => void
-
-  /**
-   * 取词。
-   */
-  t: TFn
 }
 
 /**

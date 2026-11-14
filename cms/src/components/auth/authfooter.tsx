@@ -21,7 +21,7 @@ import css from './auth.module.css'
  * @param props 态与切换回调。
  * @returns 页脚钮组。
  */
-export function AuthFooter({ t, mode, sent, onMode }: AuthFooterIn) {
+export function AuthFooter({ t, mode, onMode }: AuthFooterIn) {
   const handles = makeAuthFooterHandles({ mode, onMode })
   let toggleKey = KEY_TO_LOGIN
   if (mode === MODE_LOGIN) {
@@ -39,7 +39,7 @@ export function AuthFooter({ t, mode, sent, onMode }: AuthFooterIn) {
           {t('acct.forgot')}
         </Button>
       )}
-      {(mode === MODE_RESET || (mode === MODE_FORGOT && sent === false)) && (
+      {(mode === MODE_RESET || mode === MODE_FORGOT) && (
         <Button kind={PLAIN_BTN_KIND} type={BTN_TYPE_BUTTON} onClick={handles.toLogin} className={css.footBack}>
           {t('acct.backLogin')}
         </Button>

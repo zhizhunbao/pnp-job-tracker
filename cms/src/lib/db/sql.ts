@@ -3309,6 +3309,7 @@ export const MYJOBS_REQS = `SELECT province, stream, factor, op, value, unit, ap
  * 取同省同 5 位职业码的在架岗;投递表里有的(任何状态)、退过信的邮箱、30 天内给同一雇主邮箱发过的不出。
  * 列名与 MYJOBS_PICKS 对齐(同一个行构造器 toPickRow),推荐理由那几格这里不算。$1=用户 id,$2=刚投的职位 id,$3=条数。
  * idx_jobs_noc / idx_jobs_province 管连接。
+ * 2026-11-13 Frank「同城优先,其次同省」:与刚投那一岗同城的排前面,同城内、同省内各自仍按新旧排。
  */
 export const MYJOBS_AFTER = `SELECT j.id, j.title, j.title_zh, j.title_ko, j.trans_v, c.name AS company_name, c.alias_zh, c.alias_ko,
             c.slug AS company_slug, j.address, j.city, ci.name_zh AS city_zh, ci.name_ko AS city_ko, j.province,
@@ -3326,7 +3327,7 @@ export const MYJOBS_AFTER = `SELECT j.id, j.title, j.title_zh, j.title_ko, j.tra
         AND NOT EXISTS (SELECT 1 FROM bounced_emails b WHERE b.email = lower(j.apply_email))
         AND NOT EXISTS (SELECT 1 FROM applications a2 WHERE a2.user_id = $1 AND lower(a2.employer_email) = lower(j.apply_email)
                         AND a2.status IN ('sending', 'sent', 'replied') AND a2.updated_at > now() - interval '30 days')
-      ORDER BY j.date_posted DESC NULLS LAST, j.id DESC
+      ORDER BY (j.city = ref.city) DESC NULLS LAST, j.date_posted DESC NULLS LAST, j.id DESC
       LIMIT $3`
 
 /**

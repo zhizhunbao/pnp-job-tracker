@@ -954,7 +954,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'tr.editResume': 'Edit resume', 'tr.cvSummary': 'Summary', 'tr.cvSkills': 'Skills', 'tr.cvHint': 'One point per line. Employer, title and dates come from your base resume and cannot be changed here.',
   'tr.mailHead': 'Email', 'tr.errChars': 'Some characters cannot be written to the file. Use English letters, numbers and common punctuation only.',
   'tr.score': 'Match score', 'tr.of100': '/100', 'tr.fillAll': 'Add experience to fix {n}', 'tr.tapZoom': 'Tap to enlarge', 'tr.notCovered': 'Not covered', 'tr.fillHead': 'Add your real experience', 'tr.fillSave': 'Save and rewrite', 'tr.fillHint': 'Your resume shows no evidence for the requirements below. Write what you actually did. It is saved to your base resume and reused for every job. Skip anything you have not done. You can still apply.', 'tr.fillWhat': 'Which employer, when, what exactly you did, and how much or how many', 'tr.editCover': 'Edit cover letter', 'tr.to': 'To', 'tr.subject': 'Subject', 'tr.mailBody': 'Email text', 'tr.send': 'Send application', 'tr.resume': 'Resume for this job', 'tr.cover': 'Cover letter', 'tr.jd': 'Job description', 'tr.pdfFail': 'Could not show the preview',
-  'ap.nextHead': 'Apply to these next', 'ap.nextOne': 'Next: {title}',
+  'ap.nextHead': 'Apply to these next',
   'ap.applied': 'Applied', 'ap.resume': 'Resume', 'ap.name': 'Full name',
   'ap.letter': 'Cover letter', 'ap.to': 'To', 'ap.subject': 'Subject', 'ap.attach': 'Attachments', 'ap.next': 'Next', 'ap.back': 'Back', 'ap.send': 'Send',
   'ap.pdf': 'View PDF', 'ap.sign': 'Signed as', 'ap.view': 'Open', 'ap.edit': 'Edit letter', 'ap.badChars': 'Can’t go into the PDF:', 'ap.sending': 'Sending',

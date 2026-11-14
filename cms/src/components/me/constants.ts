@@ -225,11 +225,6 @@ export const TOAST_OK = 'ok'
 export const PAY_OK_KEY = 'acct.payOk'
 
 /**
- * 「已发给 <公司>」那句的词条。
- */
-export const SENT_NOTICE_KEY = 'mj.sentTo'
-
-/**
  * 空串(判空、清地址栏参数时 replaceState 的标题位)。
  */
 export const TEXT_NONE = ''

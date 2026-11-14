@@ -13,11 +13,12 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useLang } from '@/components/i18n'
+import { toast } from '@/components/toast'
 import { storedTitleOf, titleSubOf, useTitleTrans } from '@/components/jobtitle'
 import { isSenderName, pdfBadCharsOf } from '@/lib/apply'
 import {
   ERR_NONE, EV_APPLY_NAV, EV_APPLY_OPEN, EV_APPLY_SENT, EV_PAGEHIDE, EV_POPSTATE, EV_RESUME, LOAD_BUSY, STEP_DONE,
-  TEXT_NONE,
+  SENT_NOTICE_KEY, SENT_NOTICE_KIND, TEXT_NONE,
 } from './constants'
 import {
   baseLetterOf, baseStepOf, isMemberOf, isOutOf, leftAfterOf, makeMode, MODE_BASE, MODE_TAILOR, outReasonOf,
@@ -315,6 +316,7 @@ export function useApplyStart(jobId: number): ApplyStartPanel {
  * @returns 要投的职位 id 与关框手柄。
  */
 export function useApplyHost(): ApplyHostPanel {
+  const [, , t] = useLang()
   const path = usePathname()
   const query = useSearchParams().toString()
   const [jobId, setJobId] = useState<number | null>(null)
@@ -344,6 +346,16 @@ export function useApplyHost(): ApplyHostPanel {
     }
     return off
   }, [])
+  useEffect(function listenSentToast() {
+    function onSentToast(e: Event) {
+      toast({ kind: SENT_NOTICE_KIND, title: t(SENT_NOTICE_KEY, { co: sentOfEvent(e).company }) })
+    }
+    window.addEventListener(EV_APPLY_SENT, onSentToast)
+    function off() {
+      window.removeEventListener(EV_APPLY_SENT, onSentToast)
+    }
+    return off
+  }, [t])
   return { jobId, onClose: closeApply }
 }
 

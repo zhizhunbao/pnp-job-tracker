@@ -156,6 +156,11 @@ export type CvSetIn = {
   setMsg: (v: CvMsg) => void
 
   /**
+   * 取词(存成了右上角说「已设为我的简历」)。
+   */
+  t: (key: string) => string
+
+  /**
    * 落生成出来的那一份(存成了关预览框)。
    */
   setDoc: (v: MaybeCvDoc) => void

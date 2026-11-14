@@ -70,7 +70,7 @@ export function useMePage(): MePagePanel {
     pro: proOf({ until }),
     until,
     appliedGen,
-    onApplied: makeOnApplied({ setGen: setAppliedGen, t }),
+    onApplied: makeOnApplied({ setGen: setAppliedGen }),
     unread,
     askedGen,
     onAsked: makeGenBump({ setGen: setAskedGen }),

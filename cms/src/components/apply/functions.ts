@@ -25,11 +25,11 @@ import {
   UPLOADED_KEY, URL_BACK_HEAD, URL_COVER_HEAD, URL_DRAFT, URL_RESUME_FILE, URL_RESUME_FILES, URL_SEND,
   URL_START_HEAD, BREAK_AFTER_RE,
   Q_ID_HEAD, EV_APPLY_NAV, EV_APPLY_SENT, PATH_ACCOUNT, P_APPLY,
-  UPSELL_KEY, TRACK_APPLY_NEXT, URL_NEXT_AFTER,
+  UPSELL_KEY, TRACK_APPLY_NEXT, URL_NEXT_AFTER, NEXT_POS_HEAD, NEXT_SHOWN_HEAD, TRACK_NEXT_SHOWN, VIA_DIRECT, VIA_NEXT,
   EV_PUSH, PUSH_FAIL_KEY, PUSH_FREQ_DAILY, PUSH_ON_KEY, PUSH_ON_VALUE, PUSH_TOAST_ERR, PUSH_TOAST_OK, URL_PUSH,
 } from './constants'
 import type {
-  NextLoadIn, NextPicksJson,
+  NextApplyIn, NextLoadIn, NextPicksJson,
   ApplyCells, ApplyResumeView, ApplyStartView, CanNextIn, DraftIn, DraftOfIn, ErrJson, ErrOut, FileMakeIn,
   GoStepIn, LoadStartIn, MailIn, MailView,
   PageHideIn, PickIn, PickOfFn, ResumeFilesJson, ResumeNameIn, SetFn, SetToIn,
@@ -102,6 +102,7 @@ export function readApplyId(): number | null {
   const id = applyIdOf({ search: window.location.search, path: window.location.pathname })
   if (id == null) {
     CACHE.pushed = false
+    CACHE.via = VIA_DIRECT
   }
   return id
 }
@@ -127,6 +128,7 @@ export function noteOpened(x: OpenedIn): void {
  * @returns 无。
  */
 export function openApply(jobId: number): void {
+  CACHE.via = VIA_DIRECT
   const url = new URL(window.location.href)
   if (url.searchParams.get(P_APPLY) !== String(jobId)) {
     url.searchParams.set(P_APPLY, String(jobId))
@@ -151,14 +153,16 @@ export function swapApply(jobId: number): void {
 
 /**
  * 造「投递」手柄(投出后接下一岗)。
+ * 2026-11-13 Frank「相似职位的点击和再投次数」:点击记第几条,并记下这只投递框是从卡进来的。
  *
- * @param jobId 职位 id。
+ * @param x 职位 id 与第几条。
  * @returns 点击手柄。
  */
-export function makeNextApply(jobId: number): () => void {
+export function makeNextApply(x: NextApplyIn): () => void {
   return function onNextApply(): void {
-    track(TRACK_APPLY_NEXT)
-    swapApply(jobId)
+    track(TRACK_APPLY_NEXT, { kind: NEXT_POS_HEAD + String(x.pos) })
+    CACHE.via = VIA_NEXT
+    swapApply(x.jobId)
   }
 }
 
@@ -176,9 +180,12 @@ export async function loadNextPicks(x: NextLoadIn): Promise<void> {
       throw new Error(String(r.status))
     }
     const body = await r.json() as NextPicksJson
+    let shown = 0
     if (body.picks != null) {
       x.setRows(body.picks)
+      shown = body.picks.length
     }
+    track(TRACK_NEXT_SHOWN, { kind: NEXT_SHOWN_HEAD + String(shown) })
   } catch (e) {
     log({ tag: APPLY_LOG.tag, text: APPLY_LOG.nextFail + String(e) })
   }
@@ -831,7 +838,7 @@ async function send(x: SendIn): Promise<void> {
     c.setErr(err)
     return
   }
-  track(TRACK_APPLY_SENT)
+  track(TRACK_APPLY_SENT, { kind: CACHE.via })
   c.setStep(STEP_DONE)
   c.onSent({ company: c.job.company })
 }

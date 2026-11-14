@@ -1593,21 +1593,6 @@ export type CvOpenView = {
 }
 
 /**
- * SentNotice(「已发给 <公司>」成功条)的 props。
- */
-export type SentNoticeIn = {
-  /**
-   * 取词函数。
-   */
-  t: (key: string, vars?: Record<string, string | number>) => string
-
-  /**
-   * 发给了哪家。
-   */
-  company: string
-}
-
-/**
  * PushOffer(投出后一键开启推送)的 props。
  */
 export type PushOfferIn = {
@@ -1823,6 +1808,21 @@ export type NextPicksIn = {
 }
 
 /**
+ * makeNextApply 的入参。
+ */
+export type NextApplyIn = {
+  /**
+   * 要接着投的职位 id。
+   */
+  jobId: number
+
+  /**
+   * 卡上第几条(从 1 起)。
+   */
+  pos: number
+}
+
+/**
  * NextPickRow 的 props。
  */
 export type NextPickRowIn = {
@@ -1837,9 +1837,9 @@ export type NextPickRowIn = {
   lang: Lang
 
   /**
-   * 是不是第一条(第一条是主按钮「下一个:职位名」)。
+   * 卡上第几条(从 1 起;点击埋点按它分组)。
    */
-  first: boolean
+  pos: number
 
   /**
    * 取词。

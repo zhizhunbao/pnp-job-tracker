@@ -6,6 +6,7 @@
  * @author Frank
  * @time 2026-10-09 01:30:00
  */
+import { VIA_DIRECT } from './constants'
 
 /**
  * 投递框的历史记账。
@@ -15,4 +16,10 @@ export const CACHE = {
    * 当前开着的投递框是本站 pushState 推出来的。
    */
   pushed: false,
+
+  /**
+   * 当前开着的投递框从哪进来的(2026-11-13 Frank「相似职位的点击和再投次数」):next = 投出后相似职位卡,direct = 其余;
+   * 发出那一下记进 apply-sent 的分组。
+   */
+  via: VIA_DIRECT,
 }

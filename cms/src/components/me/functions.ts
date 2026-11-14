@@ -12,7 +12,6 @@ import {
   COUNT_NONE, CRED_INCLUDE, EMAIL_OK, EMAIL_TAKEN, EV_INBOX_UNREAD, QP_EMAIL, TOAST_ERR, LABEL_NONE, LOGIN_URL, ME_SECS,
   NEXT_SEP, PAY_OK_KEY, QP_OK, QP_OK_ON,
   JOB_TAB_SAVED, ME_JOB_TABS, QP_SEC, SEC_COUNTED, SEC_DEFAULT, SEC_PROFILE, SEC_FAVS_OLD, SEC_RESUME_OLD,
-  SENT_NOTICE_KEY,
   TEXT_NONE, TOAST_OK, UNREAD_NONE,
   URL_INBOX_COUNT, URL_ME,
 } from './constants'
@@ -321,14 +320,14 @@ export function genNextOf(n: number): number {
 
 /**
  * 「投递框发出去了」:投递表重挂、推荐重拉,右上角说「已发给 <公司>」。
+ * 2026-11-13 右上角那一句改由投递框宿主在全站发(apply 桶 useApplyHost),这里重复的一句撤,只剩重挂与重拉。
  *
- * @param x 代数 setter 与取词。
+ * @param x 代数 setter。
  * @returns 收发出结果的手柄。
  */
 export function makeOnApplied(x: OnAppliedIn): (y: AppliedSentIn) => void {
-  return function onApplied(y: AppliedSentIn): void {
+  return function onApplied(): void {
     x.setGen(genNextOf)
-    toast({ kind: TOAST_OK, title: x.t(SENT_NOTICE_KEY, { co: y.company }) })
   }
 }
 

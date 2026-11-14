@@ -26,8 +26,9 @@
  * (apply-click),同样只计数不成链。
  * 2026-10-07 批 B2 / C:尾部再追加 apply-sent(站内投递真发出去了)。apply 记的是职位页点「邮箱投递」那一下
  * (mailto 时代点了就算投出去;站内投递后它只是进了投递区),发没发出去只有 apply-sent 说得准;同样只计数不成链。
+ * 2026-11-13 Frank「都要有记录」:尾部再追加投出后相似职位卡两计数 —— next-shown(卡取完了)与 apply-next(点了卡上一条);只计数不成链。
  */
-export const FUNNEL_STEPS = ['jd-open', 'pricing-open', 'pay-click', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done', 'pulse-card', 'pulse-occ', 'pulse-cta', 'emp-search', 'emp-filter', 'emp-row', 'emp-page', 'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open', 'apply', 'signup', 'checkout', 'weekly-optin', 'gate-open', 'gate-step', 'apply-click', 'apply-sent'] as const
+export const FUNNEL_STEPS = ['jd-open', 'pricing-open', 'pay-click', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done', 'pulse-card', 'pulse-occ', 'pulse-cta', 'emp-search', 'emp-filter', 'emp-row', 'emp-page', 'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open', 'apply', 'signup', 'checkout', 'weekly-optin', 'gate-open', 'gate-step', 'apply-click', 'apply-sent', 'next-shown', 'apply-next'] as const
 
 /**
  * 漏斗步骤名(从白名单数组派生 —— 类型与它派生自的数组同居,派生即护栏:加一步只改数组)。
@@ -79,6 +80,9 @@ export type FunnelStep = (typeof FUNNEL_STEPS)[number]
  * 只计数不成链,prop 全是低基数枚举。
  * 2026-10-03 付费闭环批 B1:外链投递撤,apply 的方式只剩 email(库里 web 历史行不动)。
  * 2026-10-04 进站即弹:gate-open 的 kind 加 entry(过 PROP_OK 的低基数值,不改白名单)。
+ * 2026-11-13 Frank「都要有记录」:apply-sent 10-07 只进了步骤清单、这张表漏了它,第一方表一条没记过 —— 补上,
+ * kind 记从哪进的投递框(next 投出后相似职位卡 / direct 其余);同日入册相似职位卡两事件:next-shown 卡取完了
+ * (kind = n 加条数,n0 是一条都没有)、apply-next 点了卡上一条(kind = p 加第几条)。职位号永不进 prop。
  */
 export const ALIAS: Record<string, FunnelStep> = {
   'modal-jd': 'jd-open',
@@ -111,6 +115,9 @@ export const ALIAS: Record<string, FunnelStep> = {
   'gate-open': 'gate-open',
   'gate-step': 'gate-step',
   'apply-click': 'apply-click',
+  'apply-sent': 'apply-sent',
+  'next-shown': 'next-shown',
+  'apply-next': 'apply-next',
 }
 
 /**

@@ -919,7 +919,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'tr.editResume': '이력서 수정', 'tr.cvSummary': '요약', 'tr.cvSkills': '기술', 'tr.cvHint': '한 줄에 한 항목씩 적어 주세요. 회사, 직책, 날짜는 기본 이력서 기준이라 여기서는 바꿀 수 없습니다.',
   'tr.mailHead': '메일', 'tr.errChars': '파일에 쓸 수 없는 글자가 있습니다. 영문자, 숫자, 일반 문장부호만 써 주세요.',
   'tr.score': '매칭 점수', 'tr.of100': '/100', 'tr.fillAll': '경력 추가로 {n}건 보완', 'tr.tapZoom': '탭하여 확대', 'tr.notCovered': '미충족', 'tr.fillHead': '실제 경력 추가', 'tr.fillSave': '저장 후 다시 작성', 'tr.fillHint': '아래 요건은 이력서에서 근거를 찾지 못했습니다. 실제로 한 일을 적어 주세요. 기본 이력서에 저장되어 다른 공고에도 쓰입니다. 해 본 적 없는 일은 적지 않아도 지원할 수 있습니다.', 'tr.fillWhat': '어느 회사에서, 언제, 구체적으로 무엇을 했는지, 규모나 수량', 'tr.editCover': '자기소개서 수정', 'tr.to': '받는 곳', 'tr.subject': '제목', 'tr.mailBody': '메일 본문', 'tr.send': '지원서 보내기', 'tr.resume': '이 공고용 이력서', 'tr.cover': '자기소개서', 'tr.jd': '직무 설명', 'tr.pdfFail': '미리보기에 실패했습니다',
-  'ap.nextHead': '이어서 지원할 공고', 'ap.nextOne': '다음: {title}',
+  'ap.nextHead': '이어서 지원할 공고',
   'ap.applied': '지원 완료', 'ap.resume': '이력서', 'ap.name': '영문 이름', 'ap.letter': '자기소개서',
   'ap.to': '받는 곳', 'ap.subject': '제목', 'ap.attach': '첨부', 'ap.next': '다음', 'ap.back': '이전', 'ap.send': '보내기', 'ap.pdf': 'PDF 보기', 'ap.sign': '서명', 'ap.view': '열기', 'ap.edit': '편지 수정',
   'ap.badChars': 'PDF에 넣을 수 없는 문자:', 'ap.sending': '보내는 중', 'ap.e.name': '영문 이름은 영문자, 공백, 마침표, 아포스트로피, 하이픈만 2~60자',

@@ -341,11 +341,6 @@ export type AuthFooterIn = {
   mode: AuthMode
 
   /**
-   * 找回邮件是否已发(sent 后 forgot 态不渲返回钮 —— 成功页自带)。
-   */
-  sent: boolean
-
-  /**
    * 切换到指定态(顺带清报错)。
    */
   onMode: (m: AuthMode) => void
@@ -411,19 +406,9 @@ export type AuthFormHookOut = {
   err: string
 
   /**
-   * 找回邮件已(声称)发出。
-   */
-  sent: boolean
-
-  /**
    * 切态(顺带清报错)。
    */
   switchMode: (m: AuthMode) => void
-
-  /**
-   * 从找回成功页返回登录(顺带清 sent)。
-   */
-  backFromSent: () => void
 
   /**
    * 邮箱输入。

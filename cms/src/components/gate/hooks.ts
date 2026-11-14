@@ -382,6 +382,7 @@ export function useWorkSync(x: WorkSyncIn): void {
  * @returns 生成整机。
  */
 export function useCvGen(x: CvGenHookIn): CvGenPanel {
+  const [, , t] = useLang()
   const [left, setLeft] = useState<number>(LEFT_NONE)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<CvGenMsg>({ key: TEXT_NONE, kind: MSG_INFO })
@@ -402,7 +403,7 @@ export function useCvGen(x: CvGenHookIn): CvGenPanel {
     onGen: makeCvGen({
       tpl: x.g.edit.cvc.tpl, saveThen: x.g.edit.saveThen, doc, setBusy, setMsg, setDoc, setUpgrade, setLeft,
     }),
-    onSet: makeCvSet({ doc, setSaving, setMsg, setDoc }),
+    onSet: makeCvSet({ doc, setSaving, setMsg, setDoc, t }),
     onDownload: makeCvDownload(doc),
     onDocClose: makeCvDocClose({ doc, setDoc }),
     onUpgradeClose: makeFlagOff(setUpgrade),

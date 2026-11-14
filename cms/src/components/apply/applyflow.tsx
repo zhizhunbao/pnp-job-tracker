@@ -9,6 +9,7 @@
  * 还需要再显示一遍 职位信息吗?」);步数行换成每张卡里的三个页签;第 3 步「预览」改「确认」;钮组挪到卡外、框底;
  * 「按职位改写」免费号弹的升级框挂在这里(简历页、求职信页共用)。
  * 2026-11-08 清单第 1 条:已投递一步多一张「新岗推送」卡(PushOffer)。
+ * 2026-11-13 Frank「这个能不能全站统一一下」「都换」:操作成功一律右上角提示,绿色成功条撤;「已发给 <公司>」改由投递框宿主发右上角提示(useApplyHost),已投递一步从相似职位卡开始。
  * 2026-11-09 Frank 高质量投递:有基础简历就走三屏对照(子桶 review),原三步只剩没有简历时的上传。
  * 2026-11-09 Frank「照此做」(「我的」第一批):21 个投过的人 16 个只投 1 封,已投递一步接一张「接着投这几个」(NextPicks),在推送卡上面。
  * 2026-11-09 Frank 定的投递动线:有基础简历后分三屏 —— 两个选择(免费有额度:点了改写才生成并扣额度)、三屏对照、
@@ -22,12 +23,11 @@ import { ReviewFlow } from './review'
 import { ApplyBase } from './applybase'
 import { ApplyChoose } from './applychoose'
 import { ApplyResume } from './applyresume'
-import { CARD_MD_CLS, STEP_DONE, TEXT_NONE } from './constants'
+import { STEP_DONE, TEXT_NONE } from './constants'
 import { MODE_BASE, MODE_CHOOSE, MODE_TAILOR } from './entry'
 import { useApply } from './hooks'
 import { NextPicks } from './nextpicks'
 import { PushOffer } from './pushoffer'
-import { SentNotice } from './sentnotice'
 import type { ApplyPageIn } from './types'
 
 /**
@@ -61,7 +61,6 @@ export function ApplyFlow({ start, titleSub, onSent, base, onBig }: ApplyPageIn)
           onBase={p.onBase}
           leftText={p.leftText} />
       )}
-      {p.step === STEP_DONE && <div className={CARD_MD_CLS}><SentNotice t={p.t} company={p.job.company} /></div>}
       {p.step === STEP_DONE && <NextPicks t={p.t} jobId={p.job.id} />}
       {p.step === STEP_DONE && <PushOffer t={p.t} />}
       {p.upsell !== TEXT_NONE && p.mode !== MODE_BASE && (

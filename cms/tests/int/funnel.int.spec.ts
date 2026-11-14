@@ -78,7 +78,7 @@ describe('漏斗事件白名单', () => {
       'emp-search', 'emp-filter', 'emp-row', 'emp-page',
       'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open',
       'apply', 'signup', 'checkout', 'weekly-optin',
-      'gate-open', 'gate-step', 'apply-click', 'apply-sent'])
+      'gate-open', 'gate-step', 'apply-click', 'apply-sent', 'next-shown', 'apply-next'])
   })
 
   it('链按名写死,每一步都在白名单里;转化四计数不进任何链(2026-09-26)', () => {
@@ -88,7 +88,7 @@ describe('漏斗事件白名单', () => {
     expect([...LEGACY_STEPS]).toEqual(['pricing-open', 'pay-click'])
     expect([...DECISION_STEPS]).toEqual(['dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done'])
     for (const step of ['jd-open', 'apply', 'signup', 'checkout', 'weekly-optin', 'gate-open', 'gate-step', 'apply-click',
-      'apply-sent']) {
+      'apply-sent', 'next-shown', 'apply-next']) {
       expect([...LEGACY_STEPS, ...DECISION_STEPS], step).not.toContain(step)
     }
   })
@@ -104,6 +104,14 @@ describe('漏斗事件白名单', () => {
     expect(toFunnelHit({ name: 'apply-click', prop: null })).toEqual({ event: 'apply-click', prop: '' })
     // apply 与 apply-click 是两件事:前者是真投出去,后者是未登录点了钮
     expect(toFunnelHit({ name: 'apply-click', prop: null })?.event).not.toBe('apply')
+  })
+
+  // 2026-11-13:apply-sent 先前只在步骤清单里、别名表漏了,一条没记过;相似职位卡两事件同日入册。
+  it('投递发出与相似职位卡两事件归位,kind 原样进分组', () => {
+    expect(toFunnelHit({ name: 'apply-sent', prop: 'next' })).toEqual({ event: 'apply-sent', prop: 'next' })
+    expect(toFunnelHit({ name: 'apply-sent', prop: 'direct' })).toEqual({ event: 'apply-sent', prop: 'direct' })
+    expect(toFunnelHit({ name: 'next-shown', prop: 'n0' })).toEqual({ event: 'next-shown', prop: 'n0' })
+    expect(toFunnelHit({ name: 'apply-next', prop: 'p1' })).toEqual({ event: 'apply-next', prop: 'p1' })
   })
 
   it('转化四事件归位,prop 只收低基数枚举(投递方式 / 档位 / 开关);邮箱这类自由文本不进分组', () => {

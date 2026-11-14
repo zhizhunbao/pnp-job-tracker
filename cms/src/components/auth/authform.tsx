@@ -9,11 +9,7 @@
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
-import { Button } from '@/components/button'
-import { Notice } from '@/components/notice'
-import {
-  BTN_TYPE_BUTTON, MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET, NOTICE_OK, PLAIN_BTN_KIND,
-} from './constants'
+import { MODE_LOGIN, MODE_REGISTER, MODE_RESET } from './constants'
 import { AuthFields } from './authfields'
 import { AuthFooter } from './authfooter'
 import { AuthHero } from './authhero'
@@ -60,16 +56,7 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
         <AuthHero t={t} mode={f.mode} hero={heroIn} go={f.goGoogle} />
       )}
       {f.mode === MODE_RESET && <div className={css.resetTitle}>{t('acct.resetTitle')}</div>}
-      {f.mode === MODE_FORGOT && f.sent && (
-        <div>
-          <Notice kind={NOTICE_OK}>{t('acct.forgotSent')}</Notice>
-          <Button kind={PLAIN_BTN_KIND} type={BTN_TYPE_BUTTON} onClick={f.backFromSent} className={css.sentBack}>
-            {t('acct.backLogin')}
-          </Button>
-        </div>
-      )}
-      {(f.mode !== MODE_FORGOT || f.sent === false) && (
-        <AuthFields t={t}
+      <AuthFields t={t}
           mode={f.mode}
           email={f.email}
           pw={f.pw}
@@ -78,8 +65,7 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
           onEmail={f.onEmail}
           onPw={f.onPw}
           onSubmit={f.submit} />
-      )}
-      <AuthFooter t={t} mode={f.mode} sent={f.sent} onMode={f.switchMode} />
+      <AuthFooter t={t} mode={f.mode} onMode={f.switchMode} />
     </div>
   )
 }

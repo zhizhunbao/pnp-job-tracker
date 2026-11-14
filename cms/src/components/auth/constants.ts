@@ -390,11 +390,6 @@ export const PLAIN_BTN_KIND = 'ghost'
 export const NOTICE_ERR = 'err'
 
 /**
- * 成功提醒框的色:notice 域四色里的绿。找回邮件发出那一页用它。
- */
-export const NOTICE_OK = 'ok'
-
-/**
  * 登录弹框的宽档:三档里最窄的 sm。表单只有邮箱、密码两个字段,
  * 再宽就是一屏空白。
  */
@@ -564,6 +559,16 @@ export const ERR_NONE = ''
  * 空参数时留一个孤零零的 `?` 会让地址栏看着像出了错。
  */
 export const QS_PREFIX = '?'
+
+/**
+ * 找回邮件发出后右上角提示的档(toast 桶 ok;2026-11-13 Frank「这个能不能全站统一一下」「都换」:操作成功一律右上角提示,绿色成功条撤)。
+ */
+export const SENT_TOAST_KIND = 'ok'
+
+/**
+ * 找回邮件发出后右上角那一句的词条。
+ */
+export const SENT_TOAST_KEY = 'acct.forgotSent'
 
 /**
  * 「回到登录」用的模式名。`sent`(已发出重置邮件)那屏的返回落在登录而不是上一屏 ——

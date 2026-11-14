@@ -7,6 +7,7 @@
  * @author Frank
  * @time 2026-11-12 18:00:00
  */
+import { toast } from '@/components/toast'
 import { GUEST_LOG, log } from '@/lib/log'
 import {
   CRED_INCLUDE, CV_ERR_KEYS, EV_RESUME, FIELD_FILE, HDR_CONTENT_TYPE, K_CV_FAIL, K_CV_SET_FAIL, K_CV_SET_OK,
@@ -126,6 +127,7 @@ function dropCvDoc(doc: MaybeCvDoc): void {
 
 /**
  * 造「设为我的简历」的点击手柄:走上传那条路(已有基础简历的是替换它);存成了关预览、摆一行「已设为我的简历」,
+ * (2026-11-13 Frank「这个能不能全站统一一下」「都换」:操作成功一律右上角提示,绿色成功条撤,「已设为我的简历」改右上角提示)
  * 并发页面事件让「基础简历」卡重拉;没存上预览不关、摆一行提示。
  *
  * @param x 生成出来的那一份与各落格。
@@ -160,7 +162,7 @@ async function runCvSet(y: CvSetRunIn): Promise<void> {
   if (ok) {
     dropCvDoc(y.doc)
     y.x.setDoc(null)
-    y.x.setMsg({ key: K_CV_SET_OK, kind: MSG_OK })
+    toast({ kind: MSG_OK, title: y.x.t(K_CV_SET_OK) })
     window.dispatchEvent(new Event(EV_RESUME))
   } else {
     y.x.setMsg({ key: K_CV_SET_FAIL, kind: MSG_ERR })

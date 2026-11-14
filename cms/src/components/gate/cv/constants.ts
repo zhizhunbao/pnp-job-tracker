@@ -89,6 +89,7 @@ export const EV_RESUME = 'o2p-resume-changed'
 
 /**
  * 提示:成功的颜色。
+ * 2026-11-13 成功不再摆绿条,改右上角提示,这是那一条的档(toast 桶 ok)。
  */
 export const MSG_OK = 'ok'
 
