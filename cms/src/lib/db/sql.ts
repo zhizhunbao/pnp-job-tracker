@@ -2953,42 +2953,6 @@ export const USER_PTE_DONE = `SELECT pte_done AS "pteDone" FROM users WHERE id =
 export const USER_PTE_DONE_SET = `UPDATE users SET pte_done = $2::jsonb WHERE id = $1`
 
 // =========================================================================
-// 29. 站内向导留痕(/api/guide;2026-09-05 批二,设计稿 docs/design/顾问改向导-20260904.md §4)
-// =========================================================================
-
-/**
- * 记一轮:带路 / 问题 / 建议 / 闲聊各一行。$1=thread,$2=turn,$3=lang,$4=path,$5=question,$6=kind,$7=dest,
- * $8=params(JSON 串),$9=say,$10=ms,$11=err。回 id 给前端,留邮箱时按 id + thread 找回这一行。
- */
-export const ASK_INSERT = `INSERT INTO asks (thread, turn, lang, path, question, kind, dest, params, say, ms, err)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11) RETURNING id`
-
-/**
- * 用户主动留邮箱:只写到他自己那一行(id 与 thread 都对得上才写)。$1=id,$2=thread,$3=email。
- */
-export const ASK_SET_EMAIL = `UPDATE asks SET email = $3, updated_at = now() WHERE id = $1 AND thread = $2 RETURNING id`
-
-/**
- * 向导答题·某省的官方门槛条文(2026-09-06 Frank 拍板「问题类先用站内数据答再记」:「安省提名要什么条件」
- * 此前按规则一律记成「站上没有」,而 pnp_requirements 里 ON 有 13 条)。$1=省码,$2=行数。
- */
-export const GUIDE_REQ_BY_PROV = `SELECT stream, subject, factor, op, value, value_text, unit, applies_teer, label
-     FROM pnp_requirements WHERE province = $1 ORDER BY seq LIMIT $2`
-
-/**
- * 向导答题·拿过 LMIA 且当前在招的雇主。按 **TEER 0-3 岗位数**排(裸 LMIA 总量永不入排序:农业 / 医疗水量霸榜,
- * CLAUDE.md 雇主机会口径);$1=省码或空串(空串 = 全国),$2=职业码或空串(给了就只算该职业在招的雇主),$3=行数。
- */
-export const GUIDE_LMIA_EMPLOYERS = `SELECT c.name, c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter,
-            COUNT(*)::int AS open_jobs
-     FROM companies c JOIN jobs j ON j.company_id = c.id
-     WHERE COALESCE(j.status, 'open') <> 'closed' AND COALESCE(c.lmia_positions, 0) > 0
-       AND ($1 = '' OR j.province = $1) AND ($2 = '' OR j.noc = $2)
-     GROUP BY c.id, c.name, c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter
-     ORDER BY COALESCE(c.lmia_positions_skilled, 0) DESC, open_jobs DESC, c.name ASC
-     LIMIT $3`
-
-// =========================================================================
 // 30. 简历原件(「我的简历」;2026-10-05 立,设计稿 docs/design/我的模块v2-20261005.md「定稿」;
 //     2026-10-06 改一人多份,最多 5 份、一份默认,表 docs/sql/user-resumes-multi-20261006.sql)
 // =========================================================================

@@ -71,6 +71,7 @@ export const metadata = {
  * /start 自己判断不显示(那页有内联 ChatBox)。
  * 2026-09-23 Frank「那个点击跳 whatsapp 那个小球先隐藏吧」:先不挂(09-14 起圆球只剩直连 WhatsApp 一个去处,不挂不丢别的功能);
  * components/chat 桶原样保留,要回来把 ChatLauncher 从 '@/components/chat' 引回来、挂回 `<main>` 之后即可。
+ * (2026-11-14 Frank「旧的对话没啥用吧」「删」:chat、guide 两桶与 lib 的 agent、guide 两域已删,入口由 assistant 桶接替;上面两句留作当初为什么。)
  * 2026-11-14 Frank「开始做吧」「照表做」:换成 assistant 桶的入口(接本地模型、盒子不在线不出)。
  *
  * 下面两条是 2026-08-29 形制批从体内原样上提的记录(闸 local/no-comment-in-function:

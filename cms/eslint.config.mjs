@@ -15,7 +15,7 @@ import importX from 'eslint-plugin-import-x'
 import stylistic from '@stylistic/eslint-plugin'
 
 // 带桶的模块(`lib/<名>/index.ts`)—— 下面那道边界闸认这几个,加新桶就加这里一行。
-const BARRELS = ['agent', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume', 'legal', 'official',
+const BARRELS = ['db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', 'quiz', 'ruling', 'employers', 'plan', 'stats', 'quota', 'llm', 'resume', 'legal', 'official',
   // 2026-08-23 singles 批立域:funnel/location/noc/rankings/mailer/lmia/track 有 index 桶;
   // profile/auth/stripe 只有 server 门(纯服务端域),照样进名单 —— ABSOLUTE 拦直点文件,ALLOW 放行 server。
   'funnel', 'location', 'noc', 'rankings', 'mail', 'lmia', 'track', 'profile', 'auth', 'stripe',
@@ -26,7 +26,7 @@ const BARRELS = ['agent', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', '
   'myjobs',
   // 2026-09-05 批二立 guide 替 consult;批三 consult 目录已删,它那行一起撤。
   // 2026-09-28 advisor 域删(Frank「接口也删了吧」:/api/advisor 前端零调用方),它那一名与下面 server 门三条一起撤。
-  'guide',
+  // 2026-11-14 guide、agent 两域删(Frank「旧的对话没啥用吧」「删」:新域 assistant 整个替换),两名与下面各自的 server 门三条一起撤。
   // 2026-10-01 立 bots(挡非搜索类爬虫,index 给页面门,边缘运行时)与 traffic(出站流量记账,只有 server 门给启动钩子)。
   'bots', 'traffic',
   // 2026-10-04 立 majors(CIP 2021 专业表:访客四题第 2 题取数,/api/majors;index 给行形状与纯筛法,server 给取数与路由芯)。
@@ -60,7 +60,6 @@ const ALLOW = [
   '!**/lib/quota/server', '!./quota/server', '!../quota/server',
   '!**/lib/official/server', '!./official/server', '!../official/server',
   '!**/lib/pathways/server', '!./pathways/server', '!../pathways/server',
-  '!**/lib/agent/server', '!./agent/server', '!../agent/server',
   '!**/lib/db/server', '!./db/server', '!../db/server',
   '!**/lib/i18n/server', '!./i18n/server', '!../i18n/server',
   '!**/lib/profile/server', '!./profile/server', '!../profile/server',
@@ -75,7 +74,6 @@ const ALLOW = [
   '!**/lib/noc/server', '!./noc/server', '!../noc/server',
   '!**/lib/mart/server', '!./mart/server', '!../mart/server',
   '!**/lib/seo/server', '!./seo/server', '!../seo/server',
-  '!**/lib/guide/server', '!./guide/server', '!../guide/server',
   '!**/lib/traffic/server', '!./traffic/server', '!../traffic/server',
   '!**/lib/majors/server', '!./majors/server', '!../majors/server',
   '!**/lib/apply/server', '!./apply/server', '!../apply/server',

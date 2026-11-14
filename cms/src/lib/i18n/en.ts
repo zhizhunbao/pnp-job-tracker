@@ -950,7 +950,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'ap.rwAfter': 'Rewritten', 'ap.rwAgain': 'Try again', 'ap.rwUse': 'Use this version',
   'tr.stagePlan': 'Reading the job requirements', 'tr.stageResume': 'Tailoring your resume', 'tr.stageCover': 'Writing your cover letter', 'tr.stageAudit': 'Checking each requirement', 'tr.waitTitle': 'Matching your resume to this job', 'tr.fillOld': 'Experience you added before', 'tr.editMail': 'Edit email text', 'tr.mailReset': 'Restore default', 'tr.errBox': 'This employer has reached today\'s limit of applications from Offer2PR. Send it tomorrow; your draft is saved', 'tr.errMail': 'Could not save the email text. Try again.', 'tr.needHead': 'This requirement is not covered here yet', 'tr.needAi': 'Write it in for me', 'tr.needInCover': 'Your cover letter says this. Add a matching line under the right job', 'tr.needInResume': 'Your resume says this. Add a matching sentence',
   'tr.errPro': 'Free tries used up', 'tr.errBase': 'Upload a base resume first', 'tr.errJd': 'This job has no description', 'tr.errLimit': 'Daily limit reached', 'tr.errResume': 'The tailored resume did not pass the check. Regenerate it.', 'tr.errLlm': 'Could not generate. Try again.', 'tr.errSend': 'Could not send. Try again.', 'tr.errName': 'Enter a valid English name',
-  'tr.covered': '{a} of {b} covered', 'tr.needResume': 'Not in resume', 'tr.needCover': 'Not in cover letter', 'tr.needBoth': 'In neither', 
+  'tr.covered': '{a} of {b} covered', 'tr.needResume': 'Not in resume', 'tr.needCover': 'Not in cover letter', 'tr.needBoth': 'In neither',
   'tr.editResume': 'Edit resume', 'tr.cvSummary': 'Summary', 'tr.cvSkills': 'Skills', 'tr.cvHint': 'One point per line. Employer, title and dates come from your base resume and cannot be changed here.',
   'tr.mailHead': 'Email', 'tr.errChars': 'Some characters cannot be written to the file. Use English letters, numbers and common punctuation only.',
   'tr.score': 'Match score', 'tr.of100': '/100', 'tr.fillAll': 'Add experience to fix {n}', 'tr.tapZoom': 'Tap to enlarge', 'tr.notCovered': 'Not covered', 'tr.fillHead': 'Add your real experience', 'tr.fillSave': 'Save and rewrite', 'tr.fillHint': 'Your resume shows no evidence for the requirements below. Write what you actually did. It is saved to your base resume and reused for every job. Skip anything you have not done. You can still apply.', 'tr.fillWhat': 'Which employer, when, what exactly you did, and how much or how many', 'tr.editCover': 'Edit cover letter', 'tr.to': 'To', 'tr.subject': 'Subject', 'tr.mailBody': 'Email text', 'tr.send': 'Send application', 'tr.resume': 'Resume for this job', 'tr.cover': 'Cover letter', 'tr.jd': 'Job description', 'tr.pdfFail': 'Could not show the preview',
@@ -1041,13 +1041,9 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'rf.uploaded': 'Uploaded {d}', 'rf.preview': 'Preview', 'rf.replace': 'Replace', 'rf.download': 'Download', 'rf.delete': 'Delete',
   'rf.delAsk': 'Delete this?', 'rf.replaceAsk': 'Replace this resume?', 'rf.cancel': 'Cancel',
   'rf.default': 'Default', 'rf.add': 'Add resume', 'rf.loading': 'Loading', 'rf.pvFail': 'Can’t preview this file. Download it to view.',
- 
   'rf.count': 'Resumes {c}',
   'rf.err.type': 'Only PDF or Word (.docx) files', 'rf.err.size': 'File is larger than 5 MB',
   'rf.err.limit': 'Upload limit reached for today. Try again tomorrow.', 'rf.err.net': 'That didn’t work. Try again later.',
-  'cw.open': 'WhatsApp', 'cw.minimize': 'Minimize', 'cw.close': 'Close', 'cw.hint': 'Looking for something? Ask',
-  'cw.max': 'Fullscreen', 'cw.restore': 'Exit fullscreen',
-  'cw.reset': 'Reset', 'cw.resetOk': 'Confirm',
   // 档案匹配(E5-00)
   'match.title': 'What this means for me',
   'match.disclaimer': 'This is a mechanical comparison of your self-reported profile against published lists / draw data — not immigration advice; official sources prevail.',
@@ -1341,7 +1337,6 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'tl.alloc': '{y} allocation', 'tl.prTarget': '{y} PR target', 'tl.nDays': '{n} days', 'tl.gapDays': '~{n} days',
   'tl.nTimes': '{n}', 'tl.nPeople': '{n}', 'tl.n': '{n}', 'tl.late': 'Later than usual', 'tl.idle': 'No recent draws',
   'tl.covers': 'Covers {list}', 'tl.unitCard': 'cards',
- 
   'tl.min': 'Min {n}', 'tl.inv': '{n} invited', 'tl.src': 'Official source',
   'tl.entry': 'Draws & policy timeline', 'tl.empty': 'No matching events',
   'loading': 'Loading…',
@@ -1448,29 +1443,11 @@ export const consultEn: Record<keyof typeof consultZh, string> = {
   'advisor.left': '{n} free uses left today',
   'ai.retry': 'Retry',
   // Chat-first landing (C2). Every error code says its own thing — a generic "try later" makes users retry for nothing
-  'chat.title': 'Site guide', 'chat.ph': 'What to see, or what to ask', 'chat.send': 'Send',
-  'chat.waiting': 'Looking',
 
   // Keep every error under ~38 chars: the error box has ~265px of writable width at 375
 
-  'chat.err.limit': "That's a lot for today — try tomorrow",
-  'chat.err.net': 'Could not reach the service — retry',
   // 空态三条示例:真人开口的第一句,三类人各一条(刚毕业没工作 / 有 offer / 中介开价)
 
-  'chat.opt.rec': 'Recommended',
-  'chat.retry': 'Retry',
-  'chat.hello': 'Hi, I am the site guide. Tell me what you want to see and I will take you there. Questions and suggestions go here too, I note them all.',
-  'chat.why': 'What are you looking for?', 'chat.ask': 'Questions and suggestions go here',
-  'chat.chip1': 'Carpenter jobs in BC', 'chat.chip2': 'Employers with LMIA approvals', 'chat.chip3': 'Ontario PNP requirements', 'chat.chip4': 'PTE speaking questions',
-  'chat.noted': 'Not on this site yet. Noted. It will show up here once built.', 'chat.gotIt': 'Got it, noted. It will show up here once built.',
-  'chat.notify': 'Leave an email, get notified', 'chat.emailPh': 'Email', 'chat.emailSent': 'Noted, you will hear from us when it is live', 'chat.emailFail': 'Not sent, try again',
-  'chat.openDest': 'Open {name}',
-  'chat.map': 'Here is what the site has. Pick one.',
-  'guide.dest.jobs': 'the job board', 'guide.dest.occupations': 'the occupation directory', 'guide.dest.employers_hiring': 'employers hiring',
-  'guide.dest.employers_designated': 'designated employers', 'guide.dest.employers_compare': 'employer comparison', 'guide.dest.pulse': 'the market pulse',
-  'guide.dest.plan_pr': 'the PR path check', 'guide.dest.pte': 'PTE practice', 'guide.dest.news': 'news', 'guide.dest.cases': 'cases',
-  'guide.dest.rankings': 'rankings', 'guide.dest.timeline': 'the timeline', 'guide.dest.resources': 'resources', 'guide.dest.pricing': 'pricing',
-  'guide.dest.account': 'your account',
   // asst.* = site-wide assistant (components/assistant, 2026-11-14)
   'asst.open': 'Open assistant', 'asst.title': 'Assistant', 'asst.close': 'Close',
   'asst.hello': 'Hi, I am the site assistant. Ask me about finding a job or using this site.',

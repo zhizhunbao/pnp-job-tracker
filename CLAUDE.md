@@ -79,8 +79,8 @@ pnp-job-tracker/
 │   ├── src/app/api/           #   服务端接口,一功能一目录一壳(og/sitemaps/seed 也在此,壳=一行转发)
 │   ├── src/app/(frontend)/    #   公开页。**白名单三文件:page.tsx / layout.tsx / main.css**(eslint + pre-push 双闸,加名过 Frank)
 │   │   └── <路由>/page.tsx    #   页面门:只拼装 components 桶(page-compose 五闸)
-│   ├── src/components/        #   组件桶 44 个:通用(button/table/card/modal/select/shell/banner…)+ 业务(jobs/employers/chat…);og 桶含 server 门(HTTP 芯住组件桶首例)
-│   ├── src/lib/               #   领域模块:一域一目录+桶;db/(database+sql)、i18n/(zh/en/ko 一语一文件)、ruling/ points/ jobs/(判定评分)、agent/ consult/ llm/(对话)…
+│   ├── src/components/        #   组件桶 44 个:通用(button/table/card/modal/select/shell/banner…)+ 业务(jobs/employers/assistant…);og 桶含 server 门(HTTP 芯住组件桶首例)
+│   ├── src/lib/               #   领域模块:一域一目录+桶;db/(database+sql)、i18n/(zh/en/ko 一语一文件)、ruling/ points/ jobs/(判定评分)、assistant/ llm/(对话)…
 │   └── tests/                 #   int(vitest)、e2e(playwright)、eval(评测批)
 └── docs/                      # prd.md + design/(一案一文件带日期)+ sql/(生产 DDL,永不清仓)
 ```
@@ -126,7 +126,7 @@ pnp-job-tracker/
 - **🔴 内部页也要三语,界面字不进 `lib`**(2026-11-10 Frank「写进」;起因:11-08 运维页照 funnel 先例「内部页,文案只有中文」,约 260 条界面字写进 `lib/ops` 的 constants、句子在服务端拼好,切 EN 不变):只有 admin 看得见的页同样接 `lib/i18n/` 三语,「内部页只有中文」不再是先例。界面字(页名、表头、卡片名、状态词、单位、空态)存成词条键住组件桶 constants,带数字的句子在组件桶 functions 用 `t` 拼(样张 `components/companies/` 的 `STAGE_LABEL` 与 `t('co.stage.pos', { n })`);`lib` 域只交词条键、数字、时刻、状态码和数据原文,不交任何一门语言的字,也不交成品句子(运维页的列头、标题由 `lib/ops` 的清单定,所以那里存的是 `ops.` 开头的词条键,形状 `{ key, vars }`,取词仍在 `components/ops`)。数据本身(额度名、模型名、功能名、公司与职位名、报错原文)不翻译。服务端取词只留给浏览器取不到的地方(`<html lang>`、页面 meta)。存量:运维页当批改,funnel 页另起一批。
 - **提示词不是文案**:给模型看的归 `prompts.ts`,不进 i18n。
 
-### 域内文件的标准形态(终态 2026-08-23 定,样板 `cms/src/lib/agent/`)
+### 域内文件的标准形态(终态 2026-08-23 定,样板 `cms/src/lib/assistant/`;原样板 `lib/agent` 2026-11-14 随旧对话删)
 
 > 进了说清领域的目录,按构造分文件反而最好定位。**终态九个名字**(闸 `domain-file-names`):
 > `constants.ts` / `variables.ts` / `prompts.ts` / `schemas.ts` / `types.ts` / `functions.ts` / `routes.ts` + `index.ts`、`server.ts` 两门。
@@ -154,7 +154,7 @@ pnp-job-tracker/
 - **`as` 允许但先问它在补什么**:实测多数是「本该写注解的地方拿断言顶了」;跨边界形状(DB 行、库逆变)留着并写清为什么。**禁 `as unknown as X` 双重断言**。`as const` 只在靠字面量窄化时用。
 - **默认值词汇表只有四词**(`lib/db`:`text`/`count`/`numOrNull`/`show`):🔴 官方可空数值必须 `numOrNull` 保 null —— 折 0 = 替官方编数。
 - **不用 `class`**:失败抛原生 Error,身份挂 `name`,造错走 `lib/error` 的 `fail()`,判定写类型谓词 `isXxx(err): err is Xxx`(谓词签名语言规定,是「一参一型」唯一例外);跨模块与 vi.mock 下 `instanceof` 失灵,`name` 不会。外部库要求的垫片除外。
-- **不许成员变量/共享可变状态**;唯一例外 = 外部库回调交回结果的接缝,类型上写明特批(样板 `lib/agent` Inbox)。
+- **不许成员变量/共享可变状态**;唯一例外 = 外部库回调交回结果的接缝,类型上写明特批(样板 `lib/agent` Inbox;该域 2026-11-14 已删,形见 git 历史)。
 - **try/catch 只加在真会抛的地方**(I/O、外部调用、模块入口);纯函数不许套 —— catch 返回兜底值把异常变假事实。
 - **日志与失败不写在域里**:`console.log` 只有 `lib/log.ts` 一处,造错判错只有 `lib/error.ts` 一处;域里连 logFailure 包装都不留。
 - **域之间不互取常量、不互借取数函数**(共享叶子 `lib/location`、`lib/db` 例外 —— 基础设施判据:换掉它业务一个字不用改);跨域只留一条边:上层把函数注进去。
@@ -189,13 +189,13 @@ pnp-job-tracker/
 
 | 形 | 样张 |
 |---|---|
-| lib 域标准形态 | `cms/src/lib/agent/` |
+| lib 域标准形态 | `cms/src/lib/assistant/`(2026-11-14 替退役的 agent 域) |
 | 组件桶 + 页面拼装门 | `cms/src/components/companies/` + `app/(frontend)/companies/[slug]/page.tsx` |
 | 表格列构造(洗行→展示行→哑单元格) | `cms/src/components/employers/` functions.ts 列构造段 + 任一 `*cell.tsx` |
 | 多视图 + hooks 桶 | `cms/src/components/me/`(2026-11-07 替退役的 account 桶;父桶拼页、子桶各管一节) |
-| 挂件(懒加载/手柄工厂) | `cms/src/components/chat/` |
+| 挂件(全站常驻入口/手柄工厂) | `cms/src/components/assistant/`(2026-11-14 替退役的 chat 桶;懒加载的形要用时查 git 历史里的 chat 桶) |
 | 段横幅与编号分段 | `cms/src/lib/db/sql.ts` |
-| 常量表(主题_角色、逐键 JSDoc) | `cms/src/components/chat/constants.ts` |
+| 常量表(主题_角色、逐键 JSDoc) | `cms/src/components/assistant/constants.ts` |
 | 整页外框/正文轨 | `cms/src/components/shell/` |
 | api 壳一行转发 | `cms/src/app/api/og/[file]/route.ts` |
 | 桶超 1000 行拆子桶 | `cms/src/components/apply/letter/` |

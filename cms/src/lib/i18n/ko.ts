@@ -915,7 +915,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'ap.rwAfter': '수정본', 'ap.rwAgain': '다시 쓰기', 'ap.rwUse': '이 버전 사용',
   'tr.stagePlan': '직무 요건을 읽는 중', 'tr.stageResume': '이력서를 맞춤 작성하는 중', 'tr.stageCover': '자기소개서를 작성하는 중', 'tr.stageAudit': '요건을 하나씩 확인하는 중', 'tr.waitTitle': '공고에 맞추는 중', 'tr.fillOld': '이전에 추가한 경력', 'tr.editMail': '이메일 본문 수정', 'tr.mailReset': '기본값으로', 'tr.errBox': '이 고용주는 오늘 Offer2PR 지원 한도에 도달했습니다. 내일 보내세요. 초안은 저장되었습니다', 'tr.errMail': '이메일 본문을 저장하지 못했습니다. 다시 시도하세요.', 'tr.needHead': '이 요건이 아직 반영되지 않았습니다', 'tr.needAi': '대신 써 주기', 'tr.needInCover': '자기소개서에는 이렇게 썼습니다. 해당 경력에 맞춰 한 줄 추가하세요', 'tr.needInResume': '이력서에는 이렇게 썼습니다. 맞춰서 한 문장 추가하세요',
   'tr.errPro': '무료 횟수를 모두 사용했습니다', 'tr.errBase': '먼저 기본 이력서를 업로드하세요', 'tr.errJd': '이 공고에는 직무 설명이 없습니다', 'tr.errLimit': '오늘 횟수를 모두 사용했습니다', 'tr.errResume': '이력서가 확인을 통과하지 못했습니다. 다시 생성하세요.', 'tr.errLlm': '생성에 실패했습니다. 다시 시도하세요.', 'tr.errSend': '전송에 실패했습니다. 다시 시도하세요.', 'tr.errName': '올바른 영문 이름을 입력하세요',
-  'tr.covered': '{b}건 중 {a}건 충족', 'tr.needResume': '이력서에 없음', 'tr.needCover': '자기소개서에 없음', 'tr.needBoth': '둘 다 없음', 
+  'tr.covered': '{b}건 중 {a}건 충족', 'tr.needResume': '이력서에 없음', 'tr.needCover': '자기소개서에 없음', 'tr.needBoth': '둘 다 없음',
   'tr.editResume': '이력서 수정', 'tr.cvSummary': '요약', 'tr.cvSkills': '기술', 'tr.cvHint': '한 줄에 한 항목씩 적어 주세요. 회사, 직책, 날짜는 기본 이력서 기준이라 여기서는 바꿀 수 없습니다.',
   'tr.mailHead': '메일', 'tr.errChars': '파일에 쓸 수 없는 글자가 있습니다. 영문자, 숫자, 일반 문장부호만 써 주세요.',
   'tr.score': '매칭 점수', 'tr.of100': '/100', 'tr.fillAll': '경력 추가로 {n}건 보완', 'tr.tapZoom': '탭하여 확대', 'tr.notCovered': '미충족', 'tr.fillHead': '실제 경력 추가', 'tr.fillSave': '저장 후 다시 작성', 'tr.fillHint': '아래 요건은 이력서에서 근거를 찾지 못했습니다. 실제로 한 일을 적어 주세요. 기본 이력서에 저장되어 다른 공고에도 쓰입니다. 해 본 적 없는 일은 적지 않아도 지원할 수 있습니다.', 'tr.fillWhat': '어느 회사에서, 언제, 구체적으로 무엇을 했는지, 규모나 수량', 'tr.editCover': '자기소개서 수정', 'tr.to': '받는 곳', 'tr.subject': '제목', 'tr.mailBody': '메일 본문', 'tr.send': '지원서 보내기', 'tr.resume': '이 공고용 이력서', 'tr.cover': '자기소개서', 'tr.jd': '직무 설명', 'tr.pdfFail': '미리보기에 실패했습니다',
@@ -1002,13 +1002,9 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'rf.uploaded': '{d} 업로드', 'rf.preview': '미리보기', 'rf.replace': '교체', 'rf.download': '다운로드', 'rf.delete': '삭제',
   'rf.delAsk': '삭제할까요?', 'rf.replaceAsk': '이 이력서를 교체할까요?', 'rf.cancel': '취소',
   'rf.default': '기본', 'rf.add': '이력서 추가', 'rf.loading': '불러오는 중', 'rf.pvFail': '미리 볼 수 없습니다. 다운로드해서 확인하세요.',
- 
   'rf.count': '이력서 {c}',
   'rf.err.type': 'PDF 또는 Word(.docx) 파일만 올릴 수 있습니다', 'rf.err.size': '파일이 5MB를 넘습니다',
   'rf.err.limit': '오늘 업로드 횟수를 모두 사용했습니다. 내일 다시 시도하세요.', 'rf.err.net': '처리하지 못했습니다. 잠시 후 다시 시도하세요.',
-  'cw.open': 'WhatsApp', 'cw.minimize': '최소화', 'cw.close': '닫기', 'cw.hint': '무엇을 찾으세요? 물어보세요',
-  'cw.max': '전체 화면', 'cw.restore': '전체 화면 종료',
-  'cw.reset': '초기화', 'cw.resetOk': '지우기 확인',
   // 档案匹配(E5-00)
   'match.title': '나에게 의미하는 것',
   'match.disclaimer': '자가 보고 프로필과 공개 목록/추첨 데이터의 기계적 비교이며 이민 자문이 아닙니다. 공식 발표 기준.',
@@ -1297,7 +1293,6 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'tl.alloc': '{y} 배정', 'tl.prTarget': '{y} 영주권 목표', 'tl.nDays': '{n}일', 'tl.gapDays': '~{n}일',
   'tl.nTimes': '{n}회', 'tl.nPeople': '{n}명', 'tl.n': '{n}', 'tl.late': '평소보다 늦음', 'tl.idle': '장기간 추첨 없음',
   'tl.covers': '{list} 포함', 'tl.unitCard': '개',
- 
   'tl.min': '최저 {n}점', 'tl.inv': '초청 {n}명', 'tl.src': '공식 출처',
   'tl.entry': '추첨·정책 타임라인', 'tl.empty': '일치하는 이벤트 없음',
   'loading': '로딩 중…',
@@ -1404,29 +1399,11 @@ export const consultKo: Record<keyof typeof consultZh, string> = {
   'advisor.left': '오늘 무료 {n}회 남음',
   'ai.retry': '다시 시도',
   // 대화형 랜딩(C2). 오류 코드마다 다른 안내 — 뭉뚱그린 "잠시 후 다시"는 헛된 재시도만 부름
-  'chat.title': '사이트 안내', 'chat.ph': '보고 싶은 것, 묻고 싶은 것', 'chat.send': '보내기',
-  'chat.waiting': '찾는 중',
 
   // 오류 문구는 20자 이내: 375에서 오류 박스의 가용 폭은 약 265px(넘으면 줄바꿈)
 
-  'chat.err.limit': '오늘 질문 한도에 도달했습니다',
-  'chat.err.net': '서비스에 연결하지 못했습니다',
   // 빈 화면 예시 3개:실제 사람이 처음 꺼내는 한 문장(졸업 직후 / 오퍼 보유 / 에이전트 견적)
 
-  'chat.opt.rec': '추천',
-  'chat.retry': '다시 시도',
-  'chat.hello': '안녕하세요, 사이트 안내입니다. 보고 싶은 것을 말하면 그 페이지로 안내합니다. 질문과 제안도 여기에 적어 주세요. 모두 기록합니다.',
-  'chat.why': '무엇을 찾으세요?', 'chat.ask': '질문과 제안은 바로 적어 주세요',
-  'chat.chip1': 'BC 목수 채용', 'chat.chip2': 'LMIA 승인 고용주', 'chat.chip3': '온타리오 주정부 지명 요건', 'chat.chip4': 'PTE 말하기 문제',
-  'chat.noted': '아직 이 사이트에 없습니다. 기록했고, 만들어지면 여기에 올라옵니다.', 'chat.gotIt': '알겠습니다, 기록했습니다. 만들어지면 여기에 올라옵니다.',
-  'chat.notify': '이메일을 남기면 출시 때 알려 드립니다', 'chat.emailPh': '이메일', 'chat.emailSent': '기록했습니다. 출시되면 알려 드립니다', 'chat.emailFail': '전송되지 않았습니다. 다시 시도해 주세요',
-  'chat.openDest': '{name} 열기',
-  'chat.map': '사이트에 있는 것들입니다. 하나 골라 주세요.',
-  'guide.dest.jobs': '채용 게시판', 'guide.dest.occupations': '직업 목록', 'guide.dest.employers_hiring': '채용 중인 고용주',
-  'guide.dest.employers_designated': '지정 고용주', 'guide.dest.employers_compare': '고용주 비교', 'guide.dest.pulse': '시장 동향',
-  'guide.dest.plan_pr': 'PR 경로 점검', 'guide.dest.pte': 'PTE 연습', 'guide.dest.news': '뉴스', 'guide.dest.cases': '사례',
-  'guide.dest.rankings': '순위', 'guide.dest.timeline': '타임라인', 'guide.dest.resources': '자료실', 'guide.dest.pricing': '요금',
-  'guide.dest.account': '내 계정',
   // asst.* = 사이트 전체 도우미 (components/assistant, 2026-11-14)
   'asst.open': '도우미 열기', 'asst.title': '도우미', 'asst.close': '닫기',
   'asst.hello': '안녕하세요, 사이트 도우미입니다. 구직이나 사이트 이용에 대해 물어보세요.',

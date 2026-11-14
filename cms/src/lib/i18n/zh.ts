@@ -994,7 +994,7 @@ export const jobsZh = {
   'ap.rwAfter': '改写后', 'ap.rwAgain': '再写一次', 'ap.rwUse': '用这一版',
   'tr.stagePlan': '正在读职位要求', 'tr.stageResume': '正在按职位改写简历', 'tr.stageCover': '正在写求职信', 'tr.stageAudit': '正在逐条核对', 'tr.waitTitle': '努力匹配中', 'tr.fillOld': '之前补充过的经历', 'tr.editMail': '修改邮件正文', 'tr.mailReset': '恢复默认', 'tr.errBox': '这家雇主今天收到的本站投递已满,明天再发。草稿已保存', 'tr.errMail': '邮件正文没存上,请重试', 'tr.needHead': '这条要求还没写进去', 'tr.needAi': '帮我写进去', 'tr.needInCover': '求职信里是这样写的,可以照着加进对应的那段工作', 'tr.needInResume': '简历里是这样写的,可以照着加一句',
   'tr.errPro': '免费额度已用完', 'tr.errBase': '先上传一份基础简历', 'tr.errJd': '这个职位没有职位描述', 'tr.errLimit': '今天的次数已用完', 'tr.errResume': '简历改写未通过核对,请重新生成', 'tr.errLlm': '生成失败,请重试', 'tr.errSend': '发送失败,请重试', 'tr.errName': '英文姓名不合规',
-  'tr.covered': '已覆盖 {a} / {b}', 'tr.needResume': '缺简历', 'tr.needCover': '缺求职信', 'tr.needBoth': '两份都缺', 
+  'tr.covered': '已覆盖 {a} / {b}', 'tr.needResume': '缺简历', 'tr.needCover': '缺求职信', 'tr.needBoth': '两份都缺',
   'tr.editResume': '修改简历', 'tr.cvSummary': '个人简介', 'tr.cvSkills': '技能', 'tr.cvHint': '每行一条。公司、职位和日期以基础简历为准,这里不能改',
   'tr.mailHead': '邮件', 'tr.errChars': '有写不进文件的字,只能用英文字母、数字和常用标点',
   'tr.score': '匹配分', 'tr.of100': '/100', 'tr.fillAll': '补充经历,修复 {n} 条', 'tr.tapZoom': '点击放大', 'tr.notCovered': '未覆盖', 'tr.fillHead': '补充真实经历', 'tr.fillSave': '保存并改写', 'tr.fillHint': '下面几条要求在你的简历里找不到依据。真实做过的写在这里,保存后并入基础简历,换职位不用再填。没做过的不用写,照样可以投', 'tr.fillWhat': '在哪家公司、什么时候、具体做了什么、规模或数量', 'tr.editCover': '修改求职信', 'tr.to': '发到', 'tr.subject': '主题', 'tr.mailBody': '邮件正文', 'tr.send': '发送投递', 'tr.resume': '本职位简历', 'tr.cover': '求职信', 'tr.jd': '职位描述', 'tr.pdfFail': '预览失败',
@@ -1088,14 +1088,12 @@ export const jobsZh = {
   'rf.uploaded': '上传于 {d}', 'rf.preview': '预览', 'rf.replace': '替换', 'rf.download': '下载', 'rf.delete': '删除',
   'rf.delAsk': '确认删除?', 'rf.replaceAsk': '替换这份简历?', 'rf.cancel': '取消',
   'rf.default': '默认', 'rf.add': '添加简历', 'rf.loading': '加载中', 'rf.pvFail': '这份预览不了,下载后查看',
- 
   'rf.count': '简历 {c}',
   'rf.err.type': '只收 PDF 或 Word(.docx)文件', 'rf.err.size': '文件超过 5 MB',
   'rf.err.limit': '今天上传次数用完了,明天再试', 'rf.err.net': '没成功,稍后再试',
   // cw.* = 全站右下角对话挂件的**壳**(ChatLauncher);面板标题复用 chat.title,不另开一份
-  'cw.open': 'WhatsApp', 'cw.minimize': '最小化', 'cw.close': '关闭', 'cw.hint': '想看什么?问一句',
-  'cw.max': '全屏', 'cw.restore': '退出全屏',  // 桌面面板大小(手机恒全屏,不出这个钮)
-  'cw.reset': '重置', 'cw.resetOk': '确认清空',   // 就地二次确认(误清一整轮问答不可逆),不上弹框
+  // 桌面面板大小(手机恒全屏,不出这个钮)
+  // 就地二次确认(误清一整轮问答不可逆),不上弹框
   // 档案匹配(E5-00)+ 我的匹配视图(E5-05)
   'match.title': '对我意味着什么',
   'match.disclaimer': '以上是你自报档案与公开清单/抽选数据的机械比对,不构成移民建议;以官方发布为准。',
@@ -1417,7 +1415,6 @@ export const siteZh = {
   'tl.alloc': '{y} 配额', 'tl.prTarget': '{y} 永居目标', 'tl.nDays': '{n} 天', 'tl.gapDays': '~{n} 天',
   'tl.nTimes': '{n} 次', 'tl.nPeople': '{n} 人', 'tl.n': '{n}', 'tl.late': '比平常晚', 'tl.idle': '久未抽选',
   'tl.covers': '覆盖 {list}', 'tl.unitCard': '条',
- 
   'tl.min': '最低分 {n}', 'tl.inv': '邀请 {n} 人', 'tl.src': '官方来源',
   'tl.entry': '抽选与政策时间线', 'tl.empty': '没有匹配的事件',
   'loading': '加载中…',
@@ -1536,21 +1533,16 @@ export const consultZh = {
   'ai.retry': '重试',
   // 对话即产品(C2):landing 主输入框。错误码一句一说 —— 笼统的「稍后再试」让用户白重试(简历对照实撞)
   // 标题=身份词(2026-08-06 Frank「有冗余」:原「说说你的情况」与输入框占位重复,动作指引留给占位符)
-  'chat.title': '站内向导', 'chat.ph': '想看什么,或者想问什么', 'chat.send': '发送',
-  'chat.waiting': '正在找',
   // 工具轨迹的折叠条(答复落地后弱化,见 ChatBox §流式)
   // 轨迹折叠条的一行文案(2026-08-04:等待期就折叠,后面那个秒数是**实测**的,不是编的)
 
   // 每条答复唯一的操作钮(不做分叉/重生成/继续)
   // 错误文案一律 ≤20 字:375 上错误框可写宽约 265px,超了就折行(文案一行放下站规)
 
-  'chat.err.limit': '今天问得有点多,明天再来',
-  'chat.err.net': '没连上服务,请重试',
   // 空态三条示例(2026-08-04 对话形态重做):照案例库原话形状写成**真人会说的一句话**,
   // 覆盖三类人 —— 刚毕业没工作(C06)、有 offer 不知道够不够(C13)、中介开价该不该信(C01/C14)。
   // 检索式的「查询 XX 省提名要求」不写:那是搜索框的说法,不是人开口的第一句
 
-  'chat.opt.rec': '推荐',
   // D4(对话闭环总设计-20260809 §2):匿名三句原样保留 ——
   // tests/int/chatPreset1-3.int.spec.ts 三份端到端回归把这三句原文当 fixture 常量硬编码并做
   // 逐字断言(makeT(lang)('chat.ex1')===preset),字面改一个字就会带崩那三份测试;骨架本就
@@ -1561,20 +1553,7 @@ export const consultZh = {
 
   // 已建档:从档案槽位生成(chatExamples.ts pickExamples),{noc}/{title}/{prov}/{clb}/{m} 由调用方注入
 
-  'chat.retry': '重试',
   // 站内向导(2026-09-05 批三,设计稿 docs/design/顾问改向导-20260904.md §5):开场白 / 胶囊 / 固定答复 / 留邮箱 / 目的地名
-  'chat.hello': '你好,我是站内向导。想看什么直接说,我带你过去。有问题、有建议也写在这里,我都记下。',
-  'chat.why': '想看什么?', 'chat.ask': '问题和建议直接写',
-  'chat.chip1': 'BC 省的木匠岗位', 'chat.chip2': '哪些雇主拿过 LMIA', 'chat.chip3': '安省提名要什么条件', 'chat.chip4': 'PTE 口语题',
-  'chat.noted': '这个站上还没有。已经记下,做出来会放在这里。', 'chat.gotIt': '收到,记下了。做出来会放在这里。',
-  'chat.notify': '留个邮箱,上线通知我', 'chat.emailPh': '邮箱', 'chat.emailSent': '记下了,上线会通知你', 'chat.emailFail': '没发出去,再试一次',
-  'chat.openDest': '打开{name}',
-  'chat.map': '站上有这些,点一个过去',
-  'guide.dest.jobs': '职位板', 'guide.dest.occupations': '职业目录', 'guide.dest.employers_hiring': '在招雇主',
-  'guide.dest.employers_designated': '指定雇主', 'guide.dest.employers_compare': '雇主对比', 'guide.dest.pulse': '把脉',
-  'guide.dest.plan_pr': 'PR 决策', 'guide.dest.pte': 'PTE 刷题', 'guide.dest.news': '新闻', 'guide.dest.cases': '案例',
-  'guide.dest.rankings': '榜单', 'guide.dest.timeline': '时间线', 'guide.dest.resources': '资料库', 'guide.dest.pricing': '定价',
-  'guide.dest.account': '账户',
   // 答复反馈(2026-08-05)。**点踩是数据缺口报警器,不是训练信号** —— 用户在替我们标注
   // 「这里答不好」,而且按真实频次排好序。所以问句要轻到不烦人、又显眼到有人愿意点。
 
