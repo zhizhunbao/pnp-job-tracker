@@ -21,7 +21,7 @@ import {
 } from './constants'
 import type {
   EduCellSetIn, EduEntry, EduItemIn, EduLabelIn, EduLenIn, EduMajorIn, EduMajorsIn, EduMergeIn, EduMergeOut, EduPick,
-  EduPickIn, EduRowsIn, EduSameIn, EduSeedIn, EduSelIn,
+  EduPickIn, EduRowsIn, EduSameIn, EduSeedIn, EduSelIn, EduWordsIn, EduYearsIn,
 } from './types'
 
 /**
@@ -314,6 +314,9 @@ function isEduKnown(x: EduItemIn): boolean {
  * 「Bachelor of Engineering - Telecommunications Engineering」与只差横线的另一种写法;模型每次提取的名称写法不一样,
  * 逐字比就当成新的一段):学校名相等(去首尾空白、不分大小写),且名称的词一样(见 eduWordsOf,不管标点、虚词和先后)。
  * 不拿「同校同年份」当同一段 —— 同校同年读两个专业的人会被误合。
+ * 同日 Frank 截图「还有重复」(档案里是「Bachelor of Engineering - Telecommunications Engineering」,换了一份简历后模型只提取出
+ * 「Bachelor of Engineering」,又多加一段):名称的词不全一样时,一边的词全在另一边里(只是写得短一些),且两边的年份不冲突
+ * (见 isEduYearOk),也算同一段;年份对不上的仍是两段(同校先后拿两个「Graduate Certificate」的人不误合)。
  *
  * @param x 表单里的一段与提取到的一条。
  * @returns 同一段 true。
@@ -322,17 +325,56 @@ function isEduSame(x: EduSameIn): boolean {
   if (x.row.school.trim().toLowerCase() !== x.it.school.trim().toLowerCase()) {
     return false
   }
-  return eduWordsOf(x.row.cred) === eduWordsOf(x.it.credential)
+  const a = eduWordsOf(x.row.cred)
+  const b = eduWordsOf(x.it.credential)
+  if (a.join(EDU_WORD_JOIN) === b.join(EDU_WORD_JOIN)) {
+    return true
+  }
+  if (a.length === 0 || b.length === 0) {
+    return false
+  }
+  if (isEduWordsIn({ part: a, all: b }) === false && isEduWordsIn({ part: b, all: a }) === false) {
+    return false
+  }
+  return isEduYearOk({ a: x.row.from, b: x.it.from }) && isEduYearOk({ a: x.row.to, b: x.it.to })
+}
+
+/**
+ * 一串词是不是全在另一串里。
+ *
+ * @param x 短的那串与长的那串。
+ * @returns 全在 true。
+ */
+function isEduWordsIn(x: EduWordsIn): boolean {
+  for (const w of x.part) {
+    if (x.all.includes(w) === false) {
+      return false
+    }
+  }
+  return true
+}
+
+/**
+ * 两边的一个年份冲不冲突:有一边没填(或不是四位数字)不算冲突;两边都有就得相等。
+ *
+ * @param x 表单里那一段的年份与提取到的年份。
+ * @returns 不冲突 true。
+ */
+function isEduYearOk(x: EduYearsIn): boolean {
+  const a = eduYearOf(x.a)
+  const b = eduYearOf(x.b)
+  return a === TEXT_NONE || b === TEXT_NONE || a === b
 }
 
 /**
  * 证书或学历名称 → 拿来比的一串词:小写,按字母数字以外的字拆开,去掉虚词(EDU_STOP_WORDS)和重复的,排好序再连起来。
  * 缩写先展开成它代表的几个词再比(EDU_WORD_ALIAS:AI 与 Artificial Intelligence 算同一个说法)。
+ * 2026-11-13:交出排好序的词(不再连成一串),isEduSame 还要拿它比「一边的词全在另一边里」。
  *
  * @param cred 证书或学历名称。
- * @returns 排好序的词;一个词都没有空串。
+ * @returns 排好序的词;一个词都没有空列。
  */
-function eduWordsOf(cred: string): string {
+function eduWordsOf(cred: string): string[] {
   const out: string[] = []
   for (const raw of cred.toLowerCase().split(EDU_WORD_SEP_RE)) {
     let words = [raw]
@@ -346,7 +388,7 @@ function eduWordsOf(cred: string): string {
       }
     }
   }
-  return out.sort().join(EDU_WORD_JOIN)
+  return out.sort()
 }
 
 /**

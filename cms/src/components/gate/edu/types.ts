@@ -325,6 +325,36 @@ export type EduSameIn = {
 }
 
 /**
+ * isEduWordsIn 的入参(2026-11-13:一串词是不是全在另一串里)。
+ */
+export type EduWordsIn = {
+  /**
+   * 要查的那串词。
+   */
+  part: string[]
+
+  /**
+   * 拿来对的那串词。
+   */
+  all: string[]
+}
+
+/**
+ * isEduYearOk 的入参(2026-11-13:两边的一个年份冲不冲突)。
+ */
+export type EduYearsIn = {
+  /**
+   * 表单里那一段的年份;空串 = 没填。
+   */
+  a: string
+
+  /**
+   * 从简历提取到的年份;空串或不是四位数字 = 没有。
+   */
+  b: string
+}
+
+/**
  * eduSelOf 的入参(2026-11-12:一只下拉并进来之后取什么值)。
  */
 export type EduSelIn = {

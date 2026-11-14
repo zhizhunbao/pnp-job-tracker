@@ -172,6 +172,13 @@ describe('简历里的教育经历并进表单几段(2026-11-12)', () => {
     // AI 与 Artificial Intelligence 算同一个说法
     const full = [{ ...ai, cred: 'Graduate Certificate in Artificial Intelligence Software Development' }, beng]
     expect(eduMergedOf({ rows: full, items: [aiAgain, bengAgain] })).toEqual({ rows: full, n: 0 })
+    // 提取到的名称只是写得短一些(词全在已有那段里)、年份不冲突:同一段
+    const bengShort = { credential: 'Bachelor of Engineering', school: 'Wuhan University', from: '2008', to: '2012', ...NO_SEL }
+    expect(eduMergedOf({ rows, items: [bengShort] })).toEqual({ rows, n: 0 })
+    expect(eduMergedOf({ rows: [{ ...beng, cred: 'Bachelor of Engineering' }], items: [bengAgain] }).rows.length).toBe(1)
+    // 写得短一些但年份对不上:两段
+    const certLater = { credential: 'Graduate Certificate', school, from: '2027', to: '2028', ...NO_SEL }
+    expect(eduMergedOf({ rows, items: [certLater] }).rows.length).toBe(3)
     // 同校同年份、证书不同:两段
     const cloud = { credential: 'Graduate Certificate in Cloud Development', school, from: '2025', to: '2026', ...NO_SEL }
     const out = eduMergedOf({ rows, items: [cloud] })
