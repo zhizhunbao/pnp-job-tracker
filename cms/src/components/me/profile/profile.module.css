@@ -99,8 +99,15 @@
  */
 .eduLine {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
+}
+
+/*
+ * 第一行有两格时(只会是年份 + 名称,见 functions 的 pfEduLineOf):年份不缩不折,名称在它右边自己折行。
+ * 2026-11-13 Frank 截图:原先这一行可换行,名称一长整块掉到下一行,年份独占一行(实测 364px 宽的卡里名称占满整行)。
+ */
+.eduLine > span:first-child:not(:only-child) {
+  flex: none;
 }
 
 /*

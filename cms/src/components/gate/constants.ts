@@ -551,16 +551,6 @@ export const FROM_MAJORS = 'majors'
 export const FROM_NAME = 'name'
 
 /**
- * 来自简历胶囊的变体。
- */
-export const FROM_TAG_V = 'info'
-
-/**
- * 来自简历胶囊的词条。
- */
-export const FROM_TAG_KEY = 'pf.fromResume'
-
-/**
  * 已选名字先摆几个(多了折起,同「我的档案」)。
  */
 export const PICK_FOLD_N = 3

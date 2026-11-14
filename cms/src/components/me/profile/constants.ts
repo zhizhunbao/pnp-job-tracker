@@ -48,36 +48,6 @@ export const PF_FOLD_N = 3
 export const PF_FOLD_UNIT_KEY = 'fold.u.item'
 
 /**
- * 来自简历标记的字段:专业。
- */
-export const PF_FROM_MAJORS = 'majors'
-
-/**
- * 来自简历标记的字段:做过的工作。
- */
-export const PF_FROM_WORK = 'workNocs'
-
-/**
- * 来自简历标记的字段:英文姓名。
- */
-export const PF_FROM_NAME = 'name'
-
-/**
- * 来自简历胶囊的变体。
- */
-export const PF_FROM_TAG_V = 'info'
-
-/**
- * 来自简历胶囊的词条。
- */
-export const PF_FROM_TAG_KEY = 'pf.fromResume'
-
-/**
- * 想做的工作不打标记时传的字段(空串 = 不打)。
- */
-export const PF_FROM_NONE = ''
-
-/**
  * 「修改」的词条键。
  */
 export const PF_EDIT_KEY = 'pf.edit'

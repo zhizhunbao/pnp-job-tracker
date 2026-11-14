@@ -138,6 +138,34 @@ export const EDU_YEAR_RE = /^\d{4}$/
 export const EDU_NON_DIGIT_RE = /\D/g
 
 /**
+ * 证书或学历名称拆词时的分隔:字母和数字以外的一串字(空白、横线、括号、逗号都算)。
+ * 2026-11-13:判「是不是同一段教育经历」只比词,不比标点和先后(见 functions 的 isEduSame)。
+ */
+export const EDU_WORD_SEP_RE = /[^\p{L}\p{N}]+/u
+
+/**
+ * 比证书或学历名称时不算数的虚词(小写):「Graduate Certificate in X」与「X (Graduate Certificate)」只差这类词。
+ */
+export const EDU_STOP_WORDS: string[] = ['in', 'of', 'the', 'and', 'a', 'an', 'for']
+
+/**
+ * 比证书或学历名称时当成同一个说法的缩写(小写缩写 → 展开后的几个词)。
+ * 2026-11-13 Frank「你改下吧」:他档案里的名称改成学校官方的「Artificial Intelligence Software Development」,简历里写的是
+ * 「AI Software Development」,不认这一条下次「从简历填写」又会多加一段。
+ */
+export const EDU_WORD_ALIAS: Record<string, string[]> = {
+  /**
+   * AI = Artificial Intelligence。
+   */
+  ai: ['artificial', 'intelligence'],
+}
+
+/**
+ * 证书或学历名称的词排好序之后拿什么连成一串来比。
+ */
+export const EDU_WORD_JOIN = ' '
+
+/**
  * 「公立 / 私立」词条键的前缀。
  */
 export const K_KIND_HEAD = 'fit.kind.'

@@ -500,16 +500,6 @@ export type PfNamesIn = {
   names: PfNames
 
   /**
-   * 来自简历的标记。
-   */
-  marks: string[]
-
-  /**
-   * 这一格在标记里的字段名;空串 = 不打胶囊。
-   */
-  field: string
-
-  /**
    * 界面语。
    */
   lang: Lang

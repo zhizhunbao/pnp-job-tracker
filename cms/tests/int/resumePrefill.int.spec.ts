@@ -161,6 +161,26 @@ describe('简历里的教育经历并进表单几段(2026-11-12)', () => {
     expect(eduMergedOf({ rows: out.rows, items: [CERT, BENG] })).toEqual({ rows: out.rows, n: 0 })
   })
 
+  it('同一段学历换个写法不再加一段(2026-11-13):只差词序、括号、横线、虚词算同一段;同校不同证书仍是两段', () => {
+    const school = 'Algonquin College'
+    const ai = { ...BLANK, cred: 'Graduate Certificate in AI Software Development', school, from: '2025', to: '2026' }
+    const beng = { ...BLANK, cred: 'Bachelor of Engineering - Telecommunications Engineering', school: 'Wuhan University', from: '2008', to: '2012' }
+    const rows = [ai, beng]
+    const aiAgain = { credential: 'AI Software Development (Graduate Certificate)', school, from: '2025', to: '2026', ...NO_SEL }
+    const bengAgain = { credential: 'Bachelor of Engineering — Telecommunications Engineering', school: 'wuhan university', from: '2008', to: '2012', ...NO_SEL }
+    expect(eduMergedOf({ rows, items: [aiAgain, bengAgain] })).toEqual({ rows, n: 0 })
+    // AI 与 Artificial Intelligence 算同一个说法
+    const full = [{ ...ai, cred: 'Graduate Certificate in Artificial Intelligence Software Development' }, beng]
+    expect(eduMergedOf({ rows: full, items: [aiAgain, bengAgain] })).toEqual({ rows: full, n: 0 })
+    // 同校同年份、证书不同:两段
+    const cloud = { credential: 'Graduate Certificate in Cloud Development', school, from: '2025', to: '2026', ...NO_SEL }
+    const out = eduMergedOf({ rows, items: [cloud] })
+    expect(out.n).toBe(1)
+    expect(out.rows.length).toBe(3)
+    // 同证书不同学校:两段
+    expect(eduMergedOf({ rows, items: [{ ...aiAgain, school: 'Carleton University' }] }).rows.length).toBe(3)
+  })
+
   it('名称和学校都没有的不要;年份不是四位数字的不带;到 6 段为止不再加', () => {
     expect(eduMergedOf({ rows: [BLANK], items: [{ credential: ' ', school: '', from: '2020', to: '2021', ...NO_SEL }] }))
       .toEqual({ rows: [BLANK], n: 0 })

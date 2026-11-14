@@ -310,6 +310,21 @@ export type EduItemIn = {
 }
 
 /**
+ * isEduSame 的入参(2026-11-13:表单里的一段和提取到的一条是不是同一段教育经历)。
+ */
+export type EduSameIn = {
+  /**
+   * 表单里的一段。
+   */
+  row: EduPick
+
+  /**
+   * 从简历提取的一条。
+   */
+  it: PrefillEdu
+}
+
+/**
  * eduSelOf 的入参(2026-11-12:一只下拉并进来之后取什么值)。
  */
 export type EduSelIn = {

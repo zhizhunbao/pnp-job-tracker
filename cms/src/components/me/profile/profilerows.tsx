@@ -7,17 +7,13 @@
  * 2026-11-07 照 Fluent 效果图在新域重写:原先电脑两列并排的 Row 换成一列「标签-值」(ProfileItem),手机标签在上、值在下。
  * 2026-11-12 Frank「这两个不能合并成一个吗?比如匹配规则 是 按专业,还是按什么其他的一个下拉选」:「匹配依据」「匹配模式」两行并成
  * 一行「匹配规则」;同日教育经历那一行改读明细(年份、证书或学历名称、学校)。
+ * 2026-11-13 Frank「来自简历 删掉」:专业、做过的工作、英文姓名后面的「来自简历」胶囊撤。
  *
  * @author Frank
  * @time 2026-11-07 16:05:00
  */
 import { cssOf } from '@/components/css'
-import { isFromResume } from '@/components/gate'
-import { Tag } from '@/components/tag'
-import {
-  PF_FROM_MAJORS, PF_FROM_NAME, PF_FROM_NONE, PF_FROM_TAG_KEY, PF_FROM_TAG_V, PF_FROM_WORK, PF_NONE_KEY,
-  PF_NONE_NAME_KEY, PF_ROW_KEYS, PF_WHO_HEAD, TEXT_NONE,
-} from './constants'
+import { PF_NONE_KEY, PF_NONE_NAME_KEY, PF_ROW_KEYS, PF_WHO_HEAD, TEXT_NONE } from './constants'
 import { pfGoalKeyOf, pfRuleKeyOf } from './functions'
 import { ProfileEdu } from './profileedu'
 import { ProfileItem } from './profileitem'
@@ -43,19 +39,15 @@ export function ProfileRows({ v, lang, t }: PfRowsIn) {
       </ProfileItem>
       <ProfileItem k={t(PF_ROW_KEYS.majors)}>
         {v.majors.length === 0 && none}
-        {v.majors.length > 0 && (
-          <ProfileNames names={v.majors} marks={v.fromResume} field={PF_FROM_MAJORS} lang={lang} t={t} />
-        )}
+        {v.majors.length > 0 && <ProfileNames names={v.majors} lang={lang} t={t} />}
       </ProfileItem>
       <ProfileItem k={t(PF_ROW_KEYS.jobs)}>
         {v.nocs.length === 0 && none}
-        {v.nocs.length > 0 && <ProfileNames names={v.nocs} marks={[]} field={PF_FROM_NONE} lang={lang} t={t} />}
+        {v.nocs.length > 0 && <ProfileNames names={v.nocs} lang={lang} t={t} />}
       </ProfileItem>
       <ProfileItem k={t(PF_ROW_KEYS.work)}>
         {v.works.length === 0 && none}
-        {v.works.length > 0 && (
-          <ProfileNames names={v.works} marks={v.fromResume} field={PF_FROM_WORK} lang={lang} t={t} />
-        )}
+        {v.works.length > 0 && <ProfileNames names={v.works} lang={lang} t={t} />}
       </ProfileItem>
       <ProfileItem k={t(PF_ROW_KEYS.where)}>
         {v.prov === TEXT_NONE && v.abroad === false && none}
@@ -74,14 +66,7 @@ export function ProfileRows({ v, lang, t }: PfRowsIn) {
       </ProfileItem>
       <ProfileItem k={t(PF_ROW_KEYS.name)}>
         {v.name === TEXT_NONE && <span className={cssOf(css.none)}>{t(PF_NONE_NAME_KEY)}</span>}
-        {v.name !== TEXT_NONE && (
-          <div className={cssOf(css.nameMark)}>
-            {v.name}
-            {isFromResume({ marks: v.fromResume, field: PF_FROM_NAME, value: v.name }) && (
-              <Tag variant={PF_FROM_TAG_V}>{t(PF_FROM_TAG_KEY)}</Tag>
-            )}
-          </div>
-        )}
+        {v.name !== TEXT_NONE && v.name}
       </ProfileItem>
     </div>
   )

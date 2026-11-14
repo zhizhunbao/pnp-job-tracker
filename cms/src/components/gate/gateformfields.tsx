@@ -20,13 +20,12 @@
 import { Button, SegGroup } from '@/components/button'
 import { makeOptPick } from '@/components/profile'
 import { Select } from '@/components/select'
-import { Tag } from '@/components/tag'
 import {
-  FIT_WHOS, FORM_NONE_KEY, FORM_SEG_KIND, FROM_NAME, FROM_TAG_KEY, FROM_TAG_V, GOAL_JOBS, GOAL_JOBS_KEY, GOAL_PR,
+  FIT_WHOS, FORM_NONE_KEY, FORM_SEG_KIND, GOAL_JOBS, GOAL_JOBS_KEY, GOAL_PR,
   GOAL_PR_KEY,
   RULE_OPTS,
 } from './constants'
-import { isFromResume, makeRuleLabel, makeWhoLabel } from './functions'
+import { makeRuleLabel, makeWhoLabel } from './functions'
 import { GateField } from './gatefield'
 import { GateName } from './gatename'
 import { GatePicked } from './gatepicked'
@@ -72,9 +71,6 @@ export function GateFormFields({ g, k, t, n, f }: GateFormFieldsIn) {
       </GateField>
       <GateField label={t('pf.name')} hint={t('pf.optName')}>
         <GateName g={g} t={t} />
-        {isFromResume({ marks: g.fromResume, field: FROM_NAME, value: g.edit.name.trim() }) && (
-          <Tag variant={FROM_TAG_V}>{t(FROM_TAG_KEY)}</Tag>
-        )}
       </GateField>
     </>
   )

@@ -15,12 +15,13 @@ import {
   EDU_ABROAD, EDU_AT_NONE, EDU_CRED_LEN, EDU_F_CRED, EDU_F_FROM, EDU_F_KIND, EDU_F_LEN, EDU_F_PROV, EDU_F_SCHOOL,
   EDU_F_TO,
   EDU_KINDS, EDU_LEN_MASTER, EDU_LEN_Y1, EDU_LEN_Y2, EDU_LEN_Y3, EDU_LENS, EDU_LIST_MAX, EDU_MASTER_RE,
-  EDU_NON_DIGIT_RE, EDU_PROVS, EDU_SCHOOL_LEN, EDU_SEP, EDU_SPAN_Y1, EDU_SPAN_Y2, EDU_YEAR_LEN, EDU_YEAR_RE,
+  EDU_NON_DIGIT_RE, EDU_PROVS, EDU_SCHOOL_LEN, EDU_SEP, EDU_SPAN_Y1, EDU_SPAN_Y2, EDU_STOP_WORDS,
+  EDU_WORD_ALIAS, EDU_WORD_JOIN, EDU_WORD_SEP_RE, EDU_YEAR_LEN, EDU_YEAR_RE,
   GATE_ABROAD_KEY, K_KIND_HEAD, K_LEN_HEAD, K_PROV_HEAD, TEXT_NONE,
 } from './constants'
 import type {
   EduCellSetIn, EduEntry, EduItemIn, EduLabelIn, EduLenIn, EduMajorIn, EduMajorsIn, EduMergeIn, EduMergeOut, EduPick,
-  EduPickIn, EduRowsIn, EduSeedIn, EduSelIn,
+  EduPickIn, EduRowsIn, EduSameIn, EduSeedIn, EduSelIn,
 } from './types'
 
 /**
@@ -293,19 +294,59 @@ export function eduMergedOf(x: EduMergeIn): EduMergeOut {
 
 /**
  * 表单里是不是已有同名称同学校的一段(去首尾空白、不分大小写)。
+ * 2026-11-13:「同一段」怎么判收到 isEduSame 一处,这里和 eduToppedOf 都用它。
  *
  * @param x 现在的几段与提取到的一条。
  * @returns 已有 true。
  */
 function isEduKnown(x: EduItemIn): boolean {
-  const cred = x.it.credential.trim().toLowerCase()
-  const school = x.it.school.trim().toLowerCase()
   for (const r of x.rows) {
-    if (r.cred.trim().toLowerCase() === cred && r.school.trim().toLowerCase() === school) {
+    if (isEduSame({ row: r, it: x.it })) {
       return true
     }
   }
   return false
+}
+
+/**
+ * 表单里的一段和提取到的一条是不是同一段教育经历(2026-11-13 Frank 截图:档案里同一段学历出现两次,只是写法不同 ——
+ * 「Graduate Certificate in AI Software Development」与「AI Software Development (Graduate Certificate)」,
+ * 「Bachelor of Engineering - Telecommunications Engineering」与只差横线的另一种写法;模型每次提取的名称写法不一样,
+ * 逐字比就当成新的一段):学校名相等(去首尾空白、不分大小写),且名称的词一样(见 eduWordsOf,不管标点、虚词和先后)。
+ * 不拿「同校同年份」当同一段 —— 同校同年读两个专业的人会被误合。
+ *
+ * @param x 表单里的一段与提取到的一条。
+ * @returns 同一段 true。
+ */
+function isEduSame(x: EduSameIn): boolean {
+  if (x.row.school.trim().toLowerCase() !== x.it.school.trim().toLowerCase()) {
+    return false
+  }
+  return eduWordsOf(x.row.cred) === eduWordsOf(x.it.credential)
+}
+
+/**
+ * 证书或学历名称 → 拿来比的一串词:小写,按字母数字以外的字拆开,去掉虚词(EDU_STOP_WORDS)和重复的,排好序再连起来。
+ * 缩写先展开成它代表的几个词再比(EDU_WORD_ALIAS:AI 与 Artificial Intelligence 算同一个说法)。
+ *
+ * @param cred 证书或学历名称。
+ * @returns 排好序的词;一个词都没有空串。
+ */
+function eduWordsOf(cred: string): string {
+  const out: string[] = []
+  for (const raw of cred.toLowerCase().split(EDU_WORD_SEP_RE)) {
+    let words = [raw]
+    const alias = EDU_WORD_ALIAS[raw]
+    if (alias != null) {
+      words = alias
+    }
+    for (const w of words) {
+      if (w !== TEXT_NONE && EDU_STOP_WORDS.includes(w) === false && out.includes(w) === false) {
+        out.push(w)
+      }
+    }
+  }
+  return out.sort().join(EDU_WORD_JOIN)
 }
 
 /**
@@ -316,12 +357,10 @@ function isEduKnown(x: EduItemIn): boolean {
  * @returns 补过之后的几段。
  */
 function eduToppedOf(x: EduItemIn): EduPick[] {
-  const cred = x.it.credential.trim().toLowerCase()
-  const school = x.it.school.trim().toLowerCase()
   const out: EduPick[] = []
   let done = false
   for (const r of x.rows) {
-    if (done === false && r.cred.trim().toLowerCase() === cred && r.school.trim().toLowerCase() === school) {
+    if (done === false && isEduSame({ row: r, it: x.it })) {
       done = true
       let from = r.from
       if (from === TEXT_NONE) {
